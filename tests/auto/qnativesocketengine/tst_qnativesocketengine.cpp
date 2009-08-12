@@ -153,14 +153,14 @@ void tst_QNativeSocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QVERIFY(socketDevice.state() == QAbstractSocket::UnconnectedState);
 
-    const bool isConnected = socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143);
+    const bool isConnected = socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143);
     if (!isConnected) {
         QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
         QVERIFY(socketDevice.waitForWrite());
         QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
     }
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(socketDevice.peerAddress() == QHostAddress(QtNetworkSettings::serverIP()));
+    QVERIFY(socketDevice.peerAddress() == QtNetworkSettings::serverIP());
 
     // Wait for the greeting
     QVERIFY(socketDevice.waitForRead());
@@ -204,9 +204,9 @@ void tst_QNativeSocketEngine::simpleConnectToIMAP()
 //---------------------------------------------------------------------------
 void tst_QNativeSocketEngine::udpLoopbackTest()
 {
-#ifdef SYMBIAN_WINSOCK_CONNECTIVITY     
+#ifdef SYMBIAN_WINSOCK_CONNECTIVITY
     QSKIP("Not working on Emulator without WinPCAP", SkipAll);
-#endif   
+#endif
     QNativeSocketEngine udpSocket;
 
     // Initialize device #1
@@ -257,7 +257,7 @@ void tst_QNativeSocketEngine::udpIPv6LoopbackTest()
 {
 #if defined(Q_OS_SYMBIAN)
     QSKIP("Symbian: IPv6 is not yet supported", SkipAll);
-#endif    
+#endif
     QNativeSocketEngine udpSocket;
 
     // Initialize device #1
@@ -309,7 +309,7 @@ void tst_QNativeSocketEngine::broadcastTest()
 {
 #ifdef Q_OS_AIX
     QSKIP("Broadcast does not work on darko", SkipAll);
-#endif  
+#endif
     QNativeSocketEngine broadcastSocket;
 
     // Initialize a regular Udp socket
@@ -401,10 +401,10 @@ void tst_QNativeSocketEngine::serverTest()
 
 //---------------------------------------------------------------------------
 void tst_QNativeSocketEngine::udpLoopbackPerformance()
-{   
-#ifdef SYMBIAN_WINSOCK_CONNECTIVITY    
+{
+#ifdef SYMBIAN_WINSOCK_CONNECTIVITY
     QSKIP("Not working on Emulator without WinPCAP", SkipAll);
-#endif    
+#endif
     QNativeSocketEngine udpSocket;
 
     // Initialize device #1
@@ -576,13 +576,13 @@ void tst_QNativeSocketEngine::bind()
     QNativeSocketEngine binder3;
     QVERIFY(binder3.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QVERIFY(!binder3.bind(QHostAddress::Any, 31180));
-    
-#ifdef SYMBIAN_WINSOCK_CONNECTIVITY    
+
+#ifdef SYMBIAN_WINSOCK_CONNECTIVITY
     qDebug("On Symbian Emulator (WinSock) we get EADDRNOTAVAIL instead of EADDRINUSE");
-    QVERIFY(binder3.error() == QAbstractSocket::SocketAddressNotAvailableError); 
+    QVERIFY(binder3.error() == QAbstractSocket::SocketAddressNotAvailableError);
 #else
     QVERIFY(binder3.error() == QAbstractSocket::AddressInUseError);
-#endif 
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -592,7 +592,7 @@ void tst_QNativeSocketEngine::networkError()
 
     QVERIFY(client.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
 
-    const bool isConnected = client.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143);
+    const bool isConnected = client.connectToHost(QtNetworkSettings::serverIP(), 143);
     if (!isConnected) {
         QVERIFY(client.state() == QAbstractSocket::ConnectingState);
         QVERIFY(client.waitForWrite());

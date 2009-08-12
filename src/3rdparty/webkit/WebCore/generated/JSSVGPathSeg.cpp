@@ -46,7 +46,7 @@ static const HashTableValue JSSVGPathSegTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSSVGPathSegTableValues, 0 };
 #else
@@ -80,19 +80,19 @@ static const HashTableValue JSSVGPathSegConstructorTableValues[21] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGPathSegConstructorTableValues, 0 };
 #else
     { 70, 63, JSSVGPathSegConstructorTableValues, 0 };
 #endif
 
-class JSSVGPathSegConstructor : public DOMObject {
+class JSSVGPathSegConstructor : public DOMConstructorObject {
 public:
-    JSSVGPathSegConstructor(ExecState* exec)
-        : DOMObject(JSSVGPathSegConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSSVGPathSegConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGPathSegConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSSVGPathSegPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSSVGPathSegPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -138,7 +138,7 @@ static const HashTableValue JSSVGPathSegPrototypeTableValues[21] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 2047, JSSVGPathSegPrototypeTableValues, 0 };
 #else
@@ -159,9 +159,8 @@ bool JSSVGPathSegPrototype::getOwnPropertySlot(ExecState* exec, const Identifier
 
 const ClassInfo JSSVGPathSeg::s_info = { "SVGPathSeg", 0, &JSSVGPathSegTable, 0 };
 
-JSSVGPathSeg::JSSVGPathSeg(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSeg> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGPathSeg::JSSVGPathSeg(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSeg> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -183,25 +182,28 @@ bool JSSVGPathSeg::getOwnPropertySlot(ExecState* exec, const Identifier& propert
 
 JSValue jsSVGPathSegPathSegType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSeg* castedThis = static_cast<JSSVGPathSeg*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSeg* imp = static_cast<SVGPathSeg*>(static_cast<JSSVGPathSeg*>(asObject(slot.slotBase()))->impl());
+    SVGPathSeg* imp = static_cast<SVGPathSeg*>(castedThis->impl());
     return jsNumber(exec, imp->pathSegType());
 }
 
 JSValue jsSVGPathSegPathSegTypeAsLetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSeg* castedThis = static_cast<JSSVGPathSeg*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSeg* imp = static_cast<SVGPathSeg*>(static_cast<JSSVGPathSeg*>(asObject(slot.slotBase()))->impl());
+    SVGPathSeg* imp = static_cast<SVGPathSeg*>(castedThis->impl());
     return jsString(exec, imp->pathSegTypeAsLetter());
 }
 
 JSValue jsSVGPathSegConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSSVGPathSeg*>(asObject(slot.slotBase()))->getConstructor(exec);
+    UNUSED_PARAM(slot);
+    return JSSVGPathSeg::getConstructor(exec, deprecatedGlobalObjectForPrototype(exec));
 }
-JSValue JSSVGPathSeg::getConstructor(ExecState* exec)
+JSValue JSSVGPathSeg::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSSVGPathSegConstructor>(exec);
+    return getDOMConstructor<JSSVGPathSegConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 // Constant getters

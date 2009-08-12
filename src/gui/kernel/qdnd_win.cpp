@@ -154,9 +154,9 @@ QOleDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium)
 #ifdef QDND_DEBUG
     qDebug("QOleDataObject::GetData(LPFORMATETC pformatetc, LPSTGMEDIUM pmedium)");
 #ifndef Q_OS_WINCE
-    char buf[256] = {0};
-    GetClipboardFormatNameA(pformatetc->cfFormat, buf, 255);
-    qDebug("CF = %d : %s", pformatetc->cfFormat, buf);
+    wchar_t buf[256] = {0};
+    GetClipboardFormatName(pformatetc->cfFormat, buf, 255);
+    qDebug("CF = %d : %s", pformatetc->cfFormat, QString::fromWCharArray(buf));
 #endif
 #endif
 
@@ -398,52 +398,47 @@ void QOleDropSource::createCursors()
             int h = cpm.height();
 
             if (!pm.isNull()) {
-                int x1 = qMin(-hotSpot.x(),0);
-                int x2 = qMax(pm.width()-hotSpot.x(),cpm.width());
-                int y1 = qMin(-hotSpot.y(),0);
-                int y2 = qMax(pm.height()-hotSpot.y(),cpm.height());
+                int x1 = qMin(-hotSpot.x(), 0);
+                int x2 = qMax(pm.width() - hotSpot.x(), cpm.width());
+                int y1 = qMin(-hotSpot.y(), 0);
+                int y2 = qMax(pm.height() - hotSpot.y(), cpm.height());
 
-                w = x2-x1+1;
-                h = y2-y1+1;
+                w = x2 - x1 + 1;
+                h = y2 - y1 + 1;
             }
 
             QRect srcRect = pm.rect();
             QPoint pmDest = QPoint(qMax(0, -hotSpot.x()), qMax(0, -hotSpot.y()));
             QPoint newHotSpot = hotSpot;
 
-#if !defined(Q_OS_WINCE) || defined(GWES_ICONCURS)
-                        bool limitedCursorSize = (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based)
-                                                  || (QSysInfo::WindowsVersion == QSysInfo::WV_NT)
-                                  || (QSysInfo::WindowsVersion == QSysInfo::WV_CE);
+#if defined(Q_OS_WINCE)
+            // Limited cursor size
+            int reqw = GetSystemMetrics(SM_CXCURSOR);
+            int reqh = GetSystemMetrics(SM_CYCURSOR);
 
-            if (limitedCursorSize) {
-                // Limited cursor size
-                int reqw = GetSystemMetrics(SM_CXCURSOR);
-                int reqh = GetSystemMetrics(SM_CYCURSOR);
+            QPoint hotspotInPM = newHotSpot - pmDest;
+            if (reqw < w) {
+                // Not wide enough - move objectpm right
+                qreal r = qreal(newHotSpot.x()) / w;
+                newHotSpot = QPoint(int(r * reqw), newHotSpot.y());
+                if (newHotSpot.x() + cpm.width() > reqw)
+                    newHotSpot.setX(reqw - cpm.width());
 
-                QPoint hotspotInPM = newHotSpot - pmDest;
-                if (reqw < w) {
-                    // Not wide enough - move objectpm right
-                    qreal r = qreal(newHotSpot.x()) / w;
-                    newHotSpot = QPoint(int(r * reqw), newHotSpot.y());
-                    if (newHotSpot.x() + cpm.width() > reqw)
-                        newHotSpot.setX(reqw - cpm.width());
-
-                    srcRect = QRect(QPoint(hotspotInPM.x() - newHotSpot.x(), srcRect.top()), QSize(reqw, srcRect.height()));
-                }
-                if (reqh < h) {
-                    qreal r = qreal(newHotSpot.y()) / h;
-                    newHotSpot = QPoint(newHotSpot.x(), int(r * reqh));
-                    if (newHotSpot.y() + cpm.height() > reqh)
-                        newHotSpot.setY(reqh - cpm.height());
-
-                    srcRect = QRect(QPoint(srcRect.left(), hotspotInPM.y() - newHotSpot.y()), QSize(srcRect.width(), reqh));
-                }
-                // Always use system cursor size
-                w = reqw;
-                h = reqh;
+                srcRect = QRect(QPoint(hotspotInPM.x() - newHotSpot.x(), srcRect.top()), QSize(reqw, srcRect.height()));
             }
+            if (reqh < h) {
+                qreal r = qreal(newHotSpot.y()) / h;
+                newHotSpot = QPoint(newHotSpot.x(), int(r * reqh));
+                if (newHotSpot.y() + cpm.height() > reqh)
+                    newHotSpot.setY(reqh - cpm.height());
+
+                srcRect = QRect(QPoint(srcRect.left(), hotspotInPM.y() - newHotSpot.y()), QSize(srcRect.width(), reqh));
+            }
+            // Always use system cursor size
+            w = reqw;
+            h = reqh;
 #endif
+
             QPixmap newCursor(w, h);
             if (!pm.isNull()) {
                 newCursor.fill(QColor(0, 0, 0, 0));

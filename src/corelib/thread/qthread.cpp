@@ -183,7 +183,7 @@ QThreadPrivate::QThreadPrivate(QThreadData *d)
     id = 0;
     waiters = 0;
 #endif
-#if defined (Q_WS_WIN) || defined (Q_OS_SYMBIAN)  
+#if defined (Q_WS_WIN) || defined (Q_OS_SYMBIAN)
     terminationEnabled = true;
     terminatePending = false;
 #endif
@@ -264,9 +264,14 @@ QThreadPrivate::~QThreadPrivate()
     Returns the thread handle of the currently executing thread.
 
     \warning The handle returned by this function is used for internal
-    purposes and should not be used in any application code. On
-    Windows, the returned value is a pseudo-handle for the current
-    thread that cannot be used for numerical comparison.
+    purposes and should not be used in any application code.
+
+    \warning On Windows, the returned value is a pseudo-handle for the
+    current thread. It can't be used for numerical comparison. i.e.,
+    this function returns the DWORD (Windows-Thread ID) returned by
+    the Win32 function getCurrentThreadId(), not the HANDLE
+    (Windows-Thread HANDLE) returned by the Win32 function
+    getCurrentThread().
 */
 
 /*!

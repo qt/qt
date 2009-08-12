@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
     0 for black and 1 for white.
 
     The QBitmap class provides the transformed() function returning a
-    transformed copy of the bitmap; use the QMatrix argument to
+    transformed copy of the bitmap; use the QTransform argument to
     translate, scale, shear, and rotate the bitmap. In addition,
     QBitmap provides the static fromData() function which returns a
     bitmap constructed from the given \c uchar data, and the static
@@ -318,6 +318,7 @@ QBitmap QBitmap::transformed(const QTransform &matrix) const
 
 /*!
   \overload
+  \obsolete
 
   This convenience function converts the \a matrix to a QTransform
   and calls the overloaded function.

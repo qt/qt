@@ -19,6 +19,9 @@
 */
 
 #include "config.h"
+
+#if ENABLE(DATAGRID)
+
 #include "JSHTMLDataGridCellElement.h"
 
 #include "HTMLDataGridCellElement.h"
@@ -46,7 +49,7 @@ static const HashTableValue JSHTMLDataGridCellElementTableValues[7] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDataGridCellElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDataGridCellElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSHTMLDataGridCellElementTableValues, 0 };
 #else
@@ -60,19 +63,19 @@ static const HashTableValue JSHTMLDataGridCellElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDataGridCellElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDataGridCellElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLDataGridCellElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLDataGridCellElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLDataGridCellElementConstructor : public DOMObject {
+class JSHTMLDataGridCellElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLDataGridCellElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLDataGridCellElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLDataGridCellElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLDataGridCellElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLDataGridCellElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLDataGridCellElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -98,7 +101,7 @@ static const HashTableValue JSHTMLDataGridCellElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDataGridCellElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDataGridCellElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLDataGridCellElementPrototypeTableValues, 0 };
 #else
@@ -114,8 +117,8 @@ JSObject* JSHTMLDataGridCellElementPrototype::self(ExecState* exec, JSGlobalObje
 
 const ClassInfo JSHTMLDataGridCellElement::s_info = { "HTMLDataGridCellElement", &JSHTMLElement::s_info, &JSHTMLDataGridCellElementTable, 0 };
 
-JSHTMLDataGridCellElement::JSHTMLDataGridCellElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLDataGridCellElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLDataGridCellElement::JSHTMLDataGridCellElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDataGridCellElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -131,42 +134,48 @@ bool JSHTMLDataGridCellElement::getOwnPropertySlot(ExecState* exec, const Identi
 
 JSValue jsHTMLDataGridCellElementLabel(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()))->impl());
+    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThis->impl());
     return jsString(exec, imp->label());
 }
 
 JSValue jsHTMLDataGridCellElementFocused(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()))->impl());
+    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThis->impl());
     return jsBoolean(imp->focused());
 }
 
 JSValue jsHTMLDataGridCellElementChecked(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()))->impl());
+    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThis->impl());
     return jsBoolean(imp->checked());
 }
 
 JSValue jsHTMLDataGridCellElementIndeterminate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()))->impl());
+    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThis->impl());
     return jsBoolean(imp->indeterminate());
 }
 
 JSValue jsHTMLDataGridCellElementProgress(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDataGridCellElement* castedThis = static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()))->impl());
+    HTMLDataGridCellElement* imp = static_cast<HTMLDataGridCellElement*>(castedThis->impl());
     return jsNumber(exec, imp->progress());
 }
 
 JSValue jsHTMLDataGridCellElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLDataGridCellElement* domObject = static_cast<JSHTMLDataGridCellElement*>(asObject(slot.slotBase()));
+    return JSHTMLDataGridCellElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLDataGridCellElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -203,10 +212,12 @@ void setJSHTMLDataGridCellElementProgress(ExecState* exec, JSObject* thisObject,
     imp->setProgress(value.toFloat(exec));
 }
 
-JSValue JSHTMLDataGridCellElement::getConstructor(ExecState* exec)
+JSValue JSHTMLDataGridCellElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLDataGridCellElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLDataGridCellElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 
 }
+
+#endif // ENABLE(DATAGRID)

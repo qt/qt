@@ -43,6 +43,7 @@
 #include "helpviewer.h"
 #include "searchwidget.h"
 #include "mainwindow.h"
+#include "preferencesdialog.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QEvent>
@@ -423,6 +424,27 @@ void CentralWidget::setSource(const QUrl &url)
     tabWidget->setTabText(lastTabPage, quoteTabTitle(viewer->documentTitle()));
 }
 
+void CentralWidget::setupWidget()
+{
+    int option = helpEngine->customValue(QLatin1String("StartOption"),
+        ShowLastPages).toInt();
+
+    if (option != ShowLastPages) {
+        QString homePage;
+        if (option == ShowHomePage) {
+            homePage = helpEngine->customValue(QLatin1String("defaultHomepage"),
+                QLatin1String("help")).toString();
+            homePage = helpEngine->customValue(QLatin1String("homepage"),
+                homePage).toString();
+        }
+        if (option == ShowBlankPage)
+            homePage = QLatin1String("about:blank");
+        setSource(homePage);
+    } else {
+        setLastShownPages();
+    }
+}
+
 void CentralWidget::setLastShownPages()
 {
     const QLatin1String key("LastShownPages");
@@ -739,8 +761,10 @@ void CentralWidget::setTabTitle(const QUrl &url)
     QTabBar *tabBar = qFindChild<QTabBar*>(tabWidget);
     for (int tab = 0; tab < tabBar->count(); ++tab) {
         HelpViewer *viewer = qobject_cast<HelpViewer*>(tabWidget->widget(tab));
-        if (viewer)
-            tabWidget->setTabText(tab, viewer->documentTitle().trimmed());
+        if (viewer) {
+            tabWidget->setTabText(tab,
+                quoteTabTitle(viewer->documentTitle().trimmed()));
+        }
     }
 #else
     HelpViewer *viewer = currentHelpViewer();

@@ -95,7 +95,7 @@
 #include <windows.h>
 
 static bool qt_wince_is_smartphone() {
-    TCHAR tszPlatform[64];
+    wchar_t tszPlatform[64];
     if (SystemParametersInfo(SPI_GETPLATFORMTYPE,
                              sizeof(tszPlatform)/sizeof(*tszPlatform),tszPlatform,0))
       if (0 == _tcsicmp(reinterpret_cast<const wchar_t *> (QString::fromLatin1("Smartphone").utf16()), tszPlatform))
@@ -360,7 +360,7 @@ void tst_QStyle::testAllFunctions(QStyle *style)
     testScrollBarSubControls(style);
 }
 
-void tst_QStyle::testScrollBarSubControls(QStyle *)
+void tst_QStyle::testScrollBarSubControls(QStyle* style)
 {
 #ifdef Q_OS_WINCE_WM
     if (qobject_cast<QWindowsMobileStyle*>(style) && qt_wince_is_smartphone())

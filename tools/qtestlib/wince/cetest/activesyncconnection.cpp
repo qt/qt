@@ -113,6 +113,8 @@ bool ActiveSyncConnection::copyFileToDevice(const QString &localSource, const QS
                 CeCloseHandle(deviceHandle);
                 return true;
             }
+        } else {
+            qWarning("Could not open %s: %s", qPrintable(localSource), qPrintable(file.errorString()));
         }
         return false;
     }
@@ -120,7 +122,7 @@ bool ActiveSyncConnection::copyFileToDevice(const QString &localSource, const QS
     deleteFile(deviceDest);
     HANDLE deviceHandle = CeCreateFile(deviceDest.utf16(), GENERIC_WRITE, 0, 0, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
     if (deviceHandle == INVALID_HANDLE_VALUE) {
-        debugOutput(QString::fromLatin1("  Could not create target file"), 2);
+        qWarning("Could not create %s: %s", qPrintable(deviceDest), strwinerror(CeGetLastError()).constData());
         return false;
     }
 
@@ -144,7 +146,7 @@ bool ActiveSyncConnection::copyFileToDevice(const QString &localSource, const QS
         if (toWrite == 0)
             break;
         if (!CeWriteFile(deviceHandle, data.data() , toWrite, &written, NULL)) {
-            debugOutput(QString::fromLatin1("  Could not write File"), 2);
+            qWarning("Could not write to %s: %s", qPrintable(deviceDest), strwinerror(CeGetLastError()).constData());
             return false;
         }
         currentPos += written;
@@ -270,8 +272,8 @@ bool ActiveSyncConnection::copyDirectoryFromDevice(const QString &deviceSource, 
     }
 
     do {
-        QString srcFile = deviceSource + "\\" + QString::fromUtf16(data.cFileName);
-        QString destFile = localDest + "\\" + QString::fromUtf16(data.cFileName);
+        QString srcFile = deviceSource + "\\" + QString::fromWCharArray(data.cFileName);
+        QString destFile = localDest + "\\" + QString::fromWCharArray(data.cFileName);
         if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
             if (recursive && !copyDirectoryFromDevice(srcFile, destFile, recursive)) {
                 wprintf(L"Copy of subdirectory(%s) failed\n", srcFile.utf16());
@@ -306,8 +308,8 @@ bool ActiveSyncConnection::copyDirectory(const QString &srcDirectory, const QStr
     }
 
     do {
-        QString srcFile = srcDirectory + "\\" + QString::fromUtf16(data.cFileName);
-        QString destFile = destDirectory + "\\" + QString::fromUtf16(data.cFileName);
+        QString srcFile = srcDirectory + "\\" + QString::fromWCharArray(data.cFileName);
+        QString destFile = destDirectory + "\\" + QString::fromWCharArray(data.cFileName);
         if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
             if (recursive && !copyDirectory(srcFile, destFile, recursive)) {
                 wprintf(L"Copy of subdirectory(%s) failed\n", srcFile.utf16());
@@ -341,7 +343,7 @@ bool ActiveSyncConnection::deleteDirectory(const QString &directory, bool recurs
         return false;
 
     do {
-        QString FileName = directory + "\\" + QString::fromUtf16(FindFileData.cFileName);
+        QString FileName = directory + "\\" + QString::fromWCharArray(FindFileData.cFileName);
         if((FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
             if (recursive)
                 if (!deleteDirectory(FileName, recursive, failIfContentExists))
@@ -380,12 +382,17 @@ bool ActiveSyncConnection::execute(QString program, QString arguments, int timeo
         BYTE* output;
         IRAPIStream *stream;
         int returned = 0;
+        DWORD error = 0;
         HRESULT res = CeRapiInvoke(dllLocation.utf16(), functionName.utf16(), 0, 0, &outputSize, &output, &stream, 0);
         if (S_OK != res) {
-            if (S_OK != CeGetLastError())
-                debugOutput(QString::fromLatin1("Error: Could not invoke method on QtRemote"),1);
-            else
-                debugOutput(QString::fromLatin1("Error: QtRemote return unexpectedly with error Code %1").arg(res), 1);
+            DWORD ce_error = CeGetLastError();
+            if (S_OK != ce_error) {
+                qWarning("Error invoking %s on %s: %s", qPrintable(functionName),
+                    qPrintable(dllLocation), strwinerror(ce_error).constData());
+            } else {
+                qWarning("Error: %s on %s unexpectedly returned %d", qPrintable(functionName),
+                    qPrintable(dllLocation), res);
+            }
         } else {
             DWORD written;
             int strSize = program.length();
@@ -414,9 +421,18 @@ bool ActiveSyncConnection::execute(QString program, QString arguments, int timeo
             if (S_OK != stream->Read(&returned, sizeof(returned), &written)) {
                 qWarning("   Could not access return value of process");
             }
-            result = true;
-        }
+            if (S_OK != stream->Read(&error, sizeof(error), &written)) {
+                qWarning("   Could not access error code");
+            }
 
+            if (error) {
+                qWarning("Error on target: %s", strwinerror(error).constData());
+                result = false;
+            }
+            else {
+                result = true;
+            }
+        }
 
         if (returnValue)
             *returnValue = returned;

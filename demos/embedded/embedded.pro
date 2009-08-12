@@ -3,8 +3,8 @@ SUBDIRS   = styledemo
 
 contains(QT_CONFIG, svg) {
     SUBDIRS += embeddedsvgviewer \
-               fluidlauncher \
                desktopservices
+    !vxworks:!qnx:SUBDIRS += fluidlauncher
 }
 
 contains(QT_CONFIG, webkit) {
@@ -17,4 +17,3 @@ sources.path = $$[QT_INSTALL_DEMOS]/embedded
 INSTALLS += sources
 
 include($$QT_SOURCE_TREE/demos/demobase.pri)
-

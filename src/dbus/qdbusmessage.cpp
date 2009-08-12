@@ -62,7 +62,8 @@ static inline const char *data(const QByteArray &arr)
 
 QDBusMessagePrivate::QDBusMessagePrivate()
     : msg(0), reply(0), type(DBUS_MESSAGE_TYPE_INVALID),
-      timeout(-1), localReply(0), ref(1), delayedReply(false), localMessage(false)
+      timeout(-1), localReply(0), ref(1), delayedReply(false), localMessage(false),
+      parametersValidated(false)
 {
 }
 
@@ -94,11 +95,17 @@ QString QDBusMessage::errorMessage() const
     \internal
     Constructs a DBusMessage object from this object. The returned value must be de-referenced
     with q_dbus_message_unref.
+
+    The \a error object is set to indicate the error if anything went wrong with the
+    marshalling. Usually, this error message will be placed in the reply, as if the call failed.
+    The \a error pointer must not be null.
 */
-DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message)
+DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message, QDBusError *error)
 {
-    if (!qdbus_loadLibDBus())
+    if (!qdbus_loadLibDBus()) {
+        *error = QDBusError(QDBusError::Failed, QLatin1String("Could not open lidbus-1 library"));
         return 0;
+    }
 
     DBusMessage *msg = 0;
     const QDBusMessagePrivate *d_ptr = message.d_ptr;
@@ -108,10 +115,19 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message)
         //qDebug() << "QDBusMessagePrivate::toDBusMessage" <<  "message is invalid";
         break;
     case DBUS_MESSAGE_TYPE_METHOD_CALL:
-        // only interface can be empty
-        if (d_ptr->service.isEmpty() || d_ptr->path.isEmpty() || d_ptr->name.isEmpty())
-            break;
-        msg = q_dbus_message_new_method_call(d_ptr->service.toUtf8(), d_ptr->path.toUtf8(),
+        // only service and interface can be empty -> path and name must not be empty
+        if (!d_ptr->parametersValidated) {
+            if (!QDBusUtil::checkBusName(d_ptr->service, QDBusUtil::EmptyAllowed, error))
+                return 0;
+            if (!QDBusUtil::checkObjectPath(d_ptr->path, QDBusUtil::EmptyNotAllowed, error))
+                return 0;
+            if (!QDBusUtil::checkInterfaceName(d_ptr->interface, QDBusUtil::EmptyAllowed, error))
+                return 0;
+            if (!QDBusUtil::checkMemberName(d_ptr->name, QDBusUtil::EmptyNotAllowed, error, "method"))
+                return 0;
+        }
+
+        msg = q_dbus_message_new_method_call(data(d_ptr->service.toUtf8()), d_ptr->path.toUtf8(),
                                              data(d_ptr->interface.toUtf8()), d_ptr->name.toUtf8());
         break;
     case DBUS_MESSAGE_TYPE_METHOD_RETURN:
@@ -123,8 +139,10 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message)
         break;
     case DBUS_MESSAGE_TYPE_ERROR:
         // error name can't be empty
-        if (d_ptr->name.isEmpty())
-            break;
+        if (!d_ptr->parametersValidated
+            && !QDBusUtil::checkErrorName(d_ptr->name, QDBusUtil::EmptyNotAllowed, error))
+            return 0;
+
         msg = q_dbus_message_new(DBUS_MESSAGE_TYPE_ERROR);
         q_dbus_message_set_error_name(msg, d_ptr->name.toUtf8());
         if (!d_ptr->localMessage) {
@@ -134,8 +152,15 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message)
         break;
     case DBUS_MESSAGE_TYPE_SIGNAL:
         // nothing can be empty here
-        if (d_ptr->path.isEmpty() || d_ptr->interface.isEmpty() || d_ptr->name.isEmpty())
-            break;
+        if (!d_ptr->parametersValidated) {
+            if (!QDBusUtil::checkObjectPath(d_ptr->path, QDBusUtil::EmptyNotAllowed, error))
+                return 0;
+            if (!QDBusUtil::checkInterfaceName(d_ptr->interface, QDBusUtil::EmptyAllowed, error))
+                return 0;
+            if (!QDBusUtil::checkMemberName(d_ptr->name, QDBusUtil::EmptyNotAllowed, error, "method"))
+                return 0;
+        }
+
         msg = q_dbus_message_new_signal(d_ptr->path.toUtf8(), d_ptr->interface.toUtf8(),
                                         d_ptr->name.toUtf8());
         break;
@@ -143,16 +168,11 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message)
         Q_ASSERT(false);
         break;
     }
-#if 0
-    DBusError err;
-    q_dbus_error_init(&err);
-    if (q_dbus_error_is_set(&err)) {
-        QDBusError qe(&err);
-        qDebug() << "QDBusMessagePrivate::toDBusMessage" << qe;
-    }
-#endif
-    if (!msg)
-        return 0;
+
+    // if we got here, the parameters validated
+    // and since the message parameters cannot be changed once the message is created
+    // we can record this fact
+    d_ptr->parametersValidated = true;
 
     QDBusMarshaller marshaller;
     QVariantList::ConstIterator it =  d_ptr->arguments.constBegin();
@@ -170,6 +190,7 @@ DBusMessage *QDBusMessagePrivate::toDBusMessage(const QDBusMessage &message)
 
     // not ok;
     q_dbus_message_unref(msg);
+    *error = QDBusError(QDBusError::Failed, QLatin1String("Marshalling failed: ") + marshaller.errorString);
     return 0;
 }
 
@@ -247,7 +268,13 @@ QDBusMessage QDBusMessagePrivate::makeLocal(const QDBusConnectionPrivate &conn,
             // yes, we are
             // we must marshall and demarshall again so as to create QDBusArgument
             // entries for the complex types
-            DBusMessage *message = toDBusMessage(asSent);
+            QDBusError error;
+            DBusMessage *message = toDBusMessage(asSent, &error);
+            if (!message) {
+                // failed to marshall, so it's a call error
+                return QDBusMessage::createError(error);
+            }
+
             q_dbus_message_set_sender(message, conn.baseService.toUtf8());
 
             QDBusMessage retval = fromDBusMessage(message);
@@ -466,6 +493,13 @@ QDBusMessage QDBusMessage::createErrorReply(const QString name, const QString &m
   Constructs a new DBus reply message for the error type \a type using
   the message \a msg. Returns the DBus message.
 */
+QDBusMessage QDBusMessage::createErrorReply(QDBusError::ErrorType atype, const QString &amsg) const
+{
+    QDBusMessage msg = createErrorReply(QDBusError::errorString(atype), amsg);
+    msg.d_ptr->parametersValidated = true;
+    return msg;
+}
+
 
 /*!
     Constructs an empty, invalid QDBusMessage object.

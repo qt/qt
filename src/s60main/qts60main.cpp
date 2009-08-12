@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the Symbian application wrapper of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,22 +42,21 @@
 // INCLUDE FILES
 #include <exception>
 #include <eikstart.h>
-#include "qts60mainapplication.h"
+#include "qts60mainapplication_p.h"
 
 /**
  * factory function to create the QtS60Main application class
  */
 LOCAL_C CApaApplication* NewApplication()
-	{
-	return new CQtS60MainApplication;
-	}
+{
+    return new CQtS60MainApplication;
+}
 
 /**
  * A normal Symbian OS executable provides an E32Main() function which is
  * called by the operating system to start the program.
  */
 GLDEF_C TInt E32Main()
-	{
-	return EikStart::RunApplication( NewApplication );
-	}
-
+{
+    return EikStart::RunApplication(NewApplication);
+}

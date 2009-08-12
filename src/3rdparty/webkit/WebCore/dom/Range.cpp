@@ -90,6 +90,7 @@ PassRefPtr<Range> Range::create(PassRefPtr<Document> ownerDocument, PassRefPtr<N
 
 PassRefPtr<Range> Range::create(PassRefPtr<Document> ownerDocument, const Position& start, const Position& end)
 {
+    // FIXME: we shouldn't be using deprecatedEditingOffset here
     return adoptRef(new Range(ownerDocument, start.node(), start.deprecatedEditingOffset(), end.node(), end.deprecatedEditingOffset()));
 }
 
@@ -294,7 +295,7 @@ bool Range::isPointInRange(Node* refNode, int offset, ExceptionCode& ec)
         && compareBoundaryPoints(refNode, offset, m_end.container(), m_end.offset()) <= 0;
 }
 
-short Range::comparePoint(Node* refNode, int offset, ExceptionCode& ec)
+short Range::comparePoint(Node* refNode, int offset, ExceptionCode& ec) const
 {
     // http://developer.mozilla.org/en/docs/DOM:range.comparePoint
     // This method returns -1, 0 or 1 depending on if the point described by the 
@@ -332,7 +333,7 @@ short Range::comparePoint(Node* refNode, int offset, ExceptionCode& ec)
     return 0;
 }
 
-Range::CompareResults Range::compareNode(Node* refNode, ExceptionCode& ec)
+Range::CompareResults Range::compareNode(Node* refNode, ExceptionCode& ec) const
 {
     // http://developer.mozilla.org/en/docs/DOM:range.compareNode
     // This method returns 0, 1, 2, or 3 based on if the node is before, after,
@@ -725,7 +726,7 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
         for (; leftParent != commonRoot; leftParent = leftParent->parentNode()) {
             if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
                 RefPtr<Node> leftContentsParent = leftParent->cloneNode(false);
-                leftContentsParent->appendChild(leftContents,ec);
+                leftContentsParent->appendChild(leftContents, ec);
                 leftContents = leftContentsParent;
             }
 
@@ -733,11 +734,11 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
             for (; n; n = next) {
                 next = n->nextSibling();
                 if (action == EXTRACT_CONTENTS)
-                    leftContents->appendChild(n,ec); // will remove n from leftParent
+                    leftContents->appendChild(n, ec); // will remove n from leftParent
                 else if (action == CLONE_CONTENTS)
-                    leftContents->appendChild(n->cloneNode(true),ec);
+                    leftContents->appendChild(n->cloneNode(true), ec);
                 else
-                    leftParent->removeChild(n,ec);
+                    leftParent->removeChild(n, ec);
             }
             n = leftParent->nextSibling();
         }
@@ -795,7 +796,7 @@ PassRefPtr<DocumentFragment> Range::processContents(ActionType action, Exception
         for (; rightParent != commonRoot; rightParent = rightParent->parentNode()) {
             if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
                 RefPtr<Node> rightContentsParent = rightParent->cloneNode(false);
-                rightContentsParent->appendChild(rightContents,ec);
+                rightContentsParent->appendChild(rightContents, ec);
                 rightContents = rightContentsParent;
             }
             Node* prev;

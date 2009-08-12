@@ -44,7 +44,7 @@ static const HashTableValue JSSVGAnimatedStringTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedStringTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedStringTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGAnimatedStringTableValues, 0 };
 #else
@@ -58,7 +58,7 @@ static const HashTableValue JSSVGAnimatedStringPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGAnimatedStringPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGAnimatedStringPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGAnimatedStringPrototypeTableValues, 0 };
 #else
@@ -74,9 +74,8 @@ JSObject* JSSVGAnimatedStringPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSSVGAnimatedString::s_info = { "SVGAnimatedString", 0, &JSSVGAnimatedStringTable, 0 };
 
-JSSVGAnimatedString::JSSVGAnimatedString(PassRefPtr<Structure> structure, PassRefPtr<SVGAnimatedString> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGAnimatedString::JSSVGAnimatedString(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedString> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -98,15 +97,17 @@ bool JSSVGAnimatedString::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 JSValue jsSVGAnimatedStringBaseVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedString* castedThis = static_cast<JSSVGAnimatedString*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedString* imp = static_cast<SVGAnimatedString*>(static_cast<JSSVGAnimatedString*>(asObject(slot.slotBase()))->impl());
+    SVGAnimatedString* imp = static_cast<SVGAnimatedString*>(castedThis->impl());
     return jsString(exec, imp->baseVal());
 }
 
 JSValue jsSVGAnimatedStringAnimVal(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGAnimatedString* castedThis = static_cast<JSSVGAnimatedString*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGAnimatedString* imp = static_cast<SVGAnimatedString*>(static_cast<JSSVGAnimatedString*>(asObject(slot.slotBase()))->impl());
+    SVGAnimatedString* imp = static_cast<SVGAnimatedString*>(castedThis->impl());
     return jsString(exec, imp->animVal());
 }
 
@@ -123,9 +124,9 @@ void setJSSVGAnimatedStringBaseVal(ExecState* exec, JSObject* thisObject, JSValu
         static_cast<JSSVGAnimatedString*>(thisObject)->context()->svgAttributeChanged(static_cast<JSSVGAnimatedString*>(thisObject)->impl()->associatedAttributeName());
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGAnimatedString* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGAnimatedString* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGAnimatedString>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGAnimatedString>(exec, globalObject, object, context);
 }
 SVGAnimatedString* toSVGAnimatedString(JSC::JSValue value)
 {

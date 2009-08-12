@@ -631,13 +631,13 @@ static bool readUiAttributes(QIODevice *dev, QString *errorMessage,
                     *language = attributes.value(languageAttribute).toString();
                 return true;
             } else {
-                *errorMessage = QCoreApplication::translate("Designer", "Invalid ui file: The root element <ui> is missing.");
+                *errorMessage = QCoreApplication::translate("Designer", "Invalid UI file: The root element <ui> is missing.");
                 return false;
 
             }
         }
     }
-    *errorMessage = QCoreApplication::translate("Designer", "An error has occurred while reading the ui file at line %1, column %2: %3")
+    *errorMessage = QCoreApplication::translate("Designer", "An error has occurred while reading the UI file at line %1, column %2: %3")
                     .arg(reader.lineNumber()).arg(reader.columnNumber()).arg(reader.errorString());
     return false;
 }
@@ -756,7 +756,7 @@ void QDesignerResource::setSaveRelative(bool relative)
 QWidget *QDesignerResource::create(DomUI *ui, QWidget *parentWidget)
 {
     // Load extra info extension. This is used by Jambi for preventing
-    // C++ ui files from being loaded
+    // C++ UI files from being loaded
     if (QDesignerExtraInfoExtension *extra = qt_extension<QDesignerExtraInfoExtension*>(core()->extensionManager(), core())) {
         if (!extra->loadUiExtraInfo(ui)) {
             const QString errorMessage = QApplication::translate("Designer", "This file cannot be read because the extra info extension failed to load.");

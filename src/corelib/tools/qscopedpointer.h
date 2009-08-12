@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,8 +49,46 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Core)
 
 template <typename T>
+struct QScopedPointerDeleter
+{
+    static inline void cleanup(T *pointer)
+    {
+        // Enforce a complete type.
+        // If you get a compile error here, read the secion on forward declared
+        // classes in the QScopedPointer documentation.
+        typedef char IsIncompleteType[ sizeof(T) ? 1 : -1 ];
+        (void) sizeof(IsIncompleteType);
+
+        delete pointer;
+    }
+};
+
+template <typename T>
+struct QScopedPointerArrayDeleter
+{
+    static inline void cleanup(T *pointer)
+    {
+        // Enforce a complete type.
+        // If you get a compile error here, read the secion on forward declared
+        // classes in the QScopedPointer documentation.
+        typedef char IsIncompleteType[ sizeof(T) ? 1 : -1 ];
+        (void) sizeof(IsIncompleteType);
+
+        delete [] pointer;
+    }
+};
+
+struct QScopedPointerPodDeleter
+{
+    static inline void cleanup(void *pointer) { if (pointer) qFree(pointer); }
+};
+
+template <typename T, typename Cleanup = QScopedPointerDeleter<T> >
 class QScopedPointer
 {
+#ifndef Q_CC_NOKIAX86
+    typedef T *QScopedPointer:: *RestrictedBool;
+#endif
 public:
     explicit inline QScopedPointer(T *p = 0) : d(p)
     {
@@ -58,33 +96,49 @@ public:
 
     inline ~QScopedPointer()
     {
-        delete d;
+        T *oldD = this->d;
+        Cleanup::cleanup(oldD);
+        this->d = 0;
     }
 
     inline T &operator*() const
     {
+        Q_ASSERT(d);
         return *d;
     }
 
     inline T *operator->() const
     {
+        Q_ASSERT(d);
         return d;
     }
 
-    inline bool operator==(const QScopedPointer<T> &other) const
+    inline bool operator==(const QScopedPointer<T, Cleanup> &other) const
     {
         return d == other.d;
     }
 
-    inline bool operator!=(const QScopedPointer<T> &other) const
+    inline bool operator!=(const QScopedPointer<T, Cleanup> &other) const
     {
         return d != other.d;
     }
 
+    inline bool operator!() const
+    {
+        return !d;
+    }
+
+#if defined(Q_CC_NOKIAX86) || defined(Q_QDOC)
     inline operator bool() const
     {
-        return d;
+        return isNull() ? 0 : &QScopedPointer::d;
     }
+#else
+    inline operator RestrictedBool() const
+    {
+        return isNull() ? 0 : &QScopedPointer::d;
+    }
+#endif
 
     inline T *data() const
     {
@@ -98,9 +152,11 @@ public:
 
     inline void reset(T *other = 0)
     {
+        if (d == other)
+            return;
         T *oldD = d;
         d = other;
-        delete oldD;
+        Cleanup::cleanup(oldD);
     }
 
     inline T *take()
@@ -110,6 +166,8 @@ public:
         return oldD;
     }
 
+    typedef T *pointer;
+
 protected:
     T *d;
 
@@ -117,37 +175,72 @@ private:
     Q_DISABLE_COPY(QScopedPointer)
 };
 
-/* internal class - allows special handling for resetting and cleaning the pointer */
-template <typename T, typename CustomHandler>
-class QScopedCustomPointer : public QScopedPointer<T>
+template <typename T, typename Cleanup = QScopedPointerArrayDeleter<T> >
+class QScopedArrayPointer : public QScopedPointer<T, Cleanup>
 {
 public:
-    inline QScopedCustomPointer(T *p = 0)
-        : QScopedPointer<T>(p)
+    explicit inline QScopedArrayPointer(T *p = 0)
+        : QScopedPointer<T, Cleanup>(p)
     {
     }
 
-    inline ~QScopedCustomPointer()
+    inline T &operator[](int i)
     {
-        T *oldD = this->d;
-        this->d = 0;
-        CustomHandler::cleanup(oldD);
+        return this->d[i];
     }
 
-    inline void reset(T *other = 0)
+    inline const T &operator[](int i) const
     {
-        CustomHandler::reset(this->d, other);
+        return this->d[i];
+    }
+
+    inline bool operator==(const QScopedArrayPointer<T, Cleanup> &other) const
+    {
+        return this->d == other.d;
+    }
+
+    inline bool operator!=(const QScopedArrayPointer<T, Cleanup> &other) const
+    {
+        return this->d != other.d;
+    }
+
+private:
+    Q_DISABLE_COPY(QScopedArrayPointer)
+};
+
+/* Internal helper class - exposes the data through data_ptr (legacy from QShared).
+   Required for some internal Qt classes, do not use otherwise. */
+template <typename T, typename Cleanup = QScopedPointerDeleter<T> >
+class QCustomScopedPointer : public QScopedPointer<T, Cleanup>
+{
+public:
+    explicit inline QCustomScopedPointer(T *p = 0)
+        : QScopedPointer<T, Cleanup>(p)
+    {
     }
 
     inline T *&data_ptr()
     {
         return this->d;
     }
+
+    inline bool operator==(const QCustomScopedPointer<T, Cleanup> &other) const
+    {
+        return this->d == other.d;
+    }
+
+    inline bool operator!=(const QCustomScopedPointer<T, Cleanup> &other) const
+    {
+        return this->d != other.d;
+    }
+
+private:
+    Q_DISABLE_COPY(QCustomScopedPointer)
 };
 
-/* Internal helper class - a handler for QShared* classes, to be used in QScopedCustomPointer */
+/* Internal helper class - a handler for QShared* classes, to be used in QCustomScopedPointer */
 template <typename T>
-class QScopedSharedPointerHandler
+class QScopedPointerSharedDeleter
 {
 public:
     static inline void cleanup(T *d)
@@ -155,24 +248,17 @@ public:
         if (d && !d->ref.deref())
             delete d;
     }
-
-    static inline void reset(T *&d, T *other)
-    {
-        T *oldD = d;
-        d = other;
-        cleanup(oldD);
-    }
 };
 
-/* Internal. This should really have been a typedef, but you can't have a templated typedef :)
+/* Internal.
    This class is basically a scoped pointer pointing to a ref-counted object
  */
 template <typename T>
-class QScopedSharedPointer : public QScopedCustomPointer<T, QScopedSharedPointerHandler<T> >
+class QScopedSharedPointer : public QCustomScopedPointer<T, QScopedPointerSharedDeleter<T> >
 {
 public:
-    inline QScopedSharedPointer(T *p = 0)
-        : QScopedCustomPointer<T, QScopedSharedPointerHandler<T> >(p)
+    explicit inline QScopedSharedPointer(T *p = 0)
+        : QCustomScopedPointer<T, QScopedPointerSharedDeleter<T> >(p)
     {
     }
 
@@ -189,8 +275,21 @@ public:
             other->ref.ref();
         T *oldD = this->d;
         this->d = other;
-        QScopedSharedPointerHandler<T>::cleanup(oldD);
+        QScopedPointerSharedDeleter<T>::cleanup(oldD);
     }
+
+    inline bool operator==(const QScopedSharedPointer<T> &other) const
+    {
+        return this->d == other.d;
+    }
+
+    inline bool operator!=(const QScopedSharedPointer<T> &other) const
+    {
+        return this->d != other.d;
+    }
+
+private:
+    Q_DISABLE_COPY(QScopedSharedPointer)
 };
 
 QT_END_NAMESPACE

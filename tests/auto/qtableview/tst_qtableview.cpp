@@ -175,6 +175,8 @@ private slots:
     // task-specific tests:
     void task173773_updateVerticalHeader();
     void task227953_setRootIndex();
+    void task240266_veryBigColumn();
+    void task248688_autoScrollNavigation();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -586,7 +588,7 @@ void tst_QTableView::keyboardNavigation()
     QModelIndex index = model.index(rowCount - 1, columnCount - 1);
     view.setCurrentIndex(index);
 
-    QApplication::instance()->processEvents();
+    QApplication::processEvents();
 
     int row = rowCount - 1;
     int column = columnCount - 1;
@@ -618,7 +620,7 @@ void tst_QTableView::keyboardNavigation()
         }
 
         QTest::keyClick(&view, key);
-        QApplication::instance()->processEvents();
+        QApplication::processEvents();
 
         QModelIndex index = model.index(row, column);
         QCOMPARE(view.currentIndex(), index);
@@ -2540,7 +2542,7 @@ void tst_QTableView::span_data()
       << 2 << 1
       << false;
 
-  /* This makes no sens. 
+  /* This makes no sens.
     QTest::newRow("top left 2x0")
       << 10 << 10
       << -1 << -1
@@ -2629,7 +2631,7 @@ void tst_QTableView::span()
     view.hideRow(hiddenRow);
     view.hideColumn(hiddenColumn);
     view.show();
-    
+
     QCOMPARE(view.rowSpan(row, column), expectedRowSpan);
     QCOMPARE(view.columnSpan(row, column), expectedColumnSpan);
 
@@ -3108,14 +3110,14 @@ void tst_QTableView::task227953_setRootIndex()
     }
 
     tableView.setModel(&model);
-    
+
     //show the first 10 rows of the first table
     QModelIndex root = model.indexFromItem(&item1);
 	tableView.setRootIndex(root);
 	for (int i = 10; i != 40; ++i) {
 		tableView.setRowHidden(i, true);
 	}
-	
+
     QCOMPARE(tableView.verticalHeader()->count(), 40);
     QCOMPARE(tableView.verticalHeader()->hiddenSectionCount(), 30);
 
@@ -3125,6 +3127,53 @@ void tst_QTableView::task227953_setRootIndex()
     QCOMPARE(tableView.verticalHeader()->count(), 10);
     QCOMPARE(tableView.verticalHeader()->hiddenSectionCount(), 0);
     QVERIFY(!tableView.verticalHeader()->isHidden());
+}
+
+void tst_QTableView::task240266_veryBigColumn()
+{
+    QTableView table;
+    table.setFixedSize(500, 300); //just to make sure we have the 2 first columns visible
+    QStandardItemModel model(1, 3);
+    table.setModel(&model);
+    table.setColumnWidth(0, 100); //normal column
+    table.setColumnWidth(1, 100); //normal column
+    table.setColumnWidth(2, 9000); //very big column
+    table.show();
+    QTest::qWait(100);
+
+    QScrollBar *scroll = table.horizontalScrollBar();
+    QCOMPARE(scroll->minimum(), 0);
+    QCOMPARE(scroll->maximum(), model.columnCount() - 1);
+    QCOMPARE(scroll->singleStep(), 1);
+
+    //1 is not always a very correct value for pageStep. Ideally this should be dynamic.
+    //Maybe something for Qt 5 ;-)
+    QCOMPARE(scroll->pageStep(), 1);
+
+}
+
+void tst_QTableView::task248688_autoScrollNavigation()
+{
+    //we make sure that when navigating with the keyboard the view is correctly scrolled
+    //to the current item
+    QStandardItemModel model(16, 16);
+    QTableView view;
+    view.setModel(&model);
+
+	view.hideColumn(8);
+	view.hideRow(8);
+    view.show();
+    for (int r = 0; r < model.rowCount(); ++r) {
+        if (view.isRowHidden(r))
+            continue;
+        for (int c = 0; c < model.columnCount(); ++c) {
+            if (view.isColumnHidden(c))
+                continue;
+            QModelIndex index = model.index(r, c);
+            view.setCurrentIndex(index);
+            QVERIFY(view.viewport()->rect().contains(view.visualRect(index)));
+        }
+    }
 }
 
 

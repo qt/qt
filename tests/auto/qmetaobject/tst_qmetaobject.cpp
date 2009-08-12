@@ -108,6 +108,8 @@ class tst_QMetaObject : public QObject
     Q_PROPERTY(int value6 READ value6 NOTIFY value6Changed)
     Q_PROPERTY(MyStruct value7 READ value7 WRITE setVal7 NOTIFY value7Changed)
     Q_PROPERTY(int value8 READ value8 NOTIFY value8Changed)
+    Q_PROPERTY(int value9 READ value9 CONSTANT)
+    Q_PROPERTY(int value10 READ value10 FINAL)
 
 public:
     enum EnumType { EnumType1 };
@@ -137,6 +139,10 @@ public:
 
     int value8() const { return 1; }
 
+    int value9() const { return 1; }
+
+    int value10() const { return 1; }
+
     QList<QVariant> value4;
     QVariantList value5;
 
@@ -159,6 +165,8 @@ private slots:
     void customPropertyType();
     void checkScope();
     void propertyNotify();
+    void propertyConstant();
+    void propertyFinal();
 
     void stdSet();
     void classInfo();
@@ -783,6 +791,32 @@ void tst_QMetaObject::propertyNotify()
     QVERIFY(!prop.hasNotifySignal());
     signal = prop.notifySignal();
     QCOMPARE(signal.signature(), (const char *)0);
+}
+
+void tst_QMetaObject::propertyConstant()
+{
+    const QMetaObject *mo = metaObject();
+
+    QMetaProperty prop = mo->property(mo->indexOfProperty("value8"));
+    QVERIFY(prop.isValid());
+    QVERIFY(!prop.isConstant());
+
+    prop = mo->property(mo->indexOfProperty("value9"));
+    QVERIFY(prop.isValid());
+    QVERIFY(prop.isConstant());
+}
+
+void tst_QMetaObject::propertyFinal()
+{
+    const QMetaObject *mo = metaObject();
+
+    QMetaProperty prop = mo->property(mo->indexOfProperty("value10"));
+    QVERIFY(prop.isValid());
+    QVERIFY(prop.isFinal());
+
+    prop = mo->property(mo->indexOfProperty("value9"));
+    QVERIFY(prop.isValid());
+    QVERIFY(!prop.isFinal());
 }
 
 class ClassInfoTestObjectA : public QObject

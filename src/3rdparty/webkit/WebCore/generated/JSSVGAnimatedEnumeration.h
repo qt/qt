@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -30,10 +31,10 @@
 
 namespace WebCore {
 
-class JSSVGAnimatedEnumeration : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGAnimatedEnumeration : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGAnimatedEnumeration(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedEnumeration>, SVGElement* context);
+    JSSVGAnimatedEnumeration(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAnimatedEnumeration>, SVGElement* context);
     virtual ~JSSVGAnimatedEnumeration();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -47,14 +48,12 @@ public:
     }
 
     SVGAnimatedEnumeration* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGAnimatedEnumeration > m_impl;
+    RefPtr<SVGAnimatedEnumeration> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGAnimatedEnumeration*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGAnimatedEnumeration*, SVGElement* context);
 SVGAnimatedEnumeration* toSVGAnimatedEnumeration(JSC::JSValue);
 
 class JSSVGAnimatedEnumerationPrototype : public JSC::JSObject {

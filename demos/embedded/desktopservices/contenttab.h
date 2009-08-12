@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,41 +61,41 @@ QT_END_NAMESPACE
 
 /**
 * ContentTab class.
-* 
+*
 * This class implements general purpose tab for media files.
 */
 class ContentTab : public QListWidget
 {
     Q_OBJECT
 
-public:         // Constructors & Destructors          
+public:         // Constructors & Destructors
     ContentTab(QWidget *parent);
     virtual ~ContentTab();
-    
+
 public:         // New Methods
-    virtual void init(const QDesktopServices::StandardLocation &location, 
-                      const QString &filter, 
-                      const QString &icon);    
-    
+    virtual void init(const QDesktopServices::StandardLocation &location,
+                      const QString &filter,
+                      const QString &icon);
+
 protected:      // New Methods
     virtual void setContentDir(const QDesktopServices::StandardLocation &location);
-    virtual void setIcon(const QString &icon);    
+    virtual void setIcon(const QString &icon);
     virtual void populateListWidget();
     virtual QString itemName(const QFileInfo &item);
     virtual QUrl itemUrl(QListWidgetItem *item);
     virtual void handleErrorInOpen(QListWidgetItem *item);
 protected:
-    void keyPressEvent(QKeyEvent *event);   
-    
-public slots:   // New Slots
-    virtual void openItem(QListWidgetItem *item);  
+    void keyPressEvent(QKeyEvent *event);
 
-protected:     // Owned variables   
+public slots:   // New Slots
+    virtual void openItem(QListWidgetItem *item);
+
+protected:     // Owned variables
     QDir m_ContentDir;
     QIcon m_Icon;
 };
 
 
-#endif // CONTENTTAB_H_    
+#endif // CONTENTTAB_H_
 
 // End of File

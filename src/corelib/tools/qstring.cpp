@@ -45,6 +45,7 @@
 #ifndef QT_NO_TEXTCODEC
 #include <qtextcodec.h>
 #endif
+#include <private/qutfcodec_p.h>
 #include <qdatastream.h>
 #include <qlist.h>
 #include "qlocale.h"
@@ -964,7 +965,8 @@ int QString::toWCharArray(wchar_t *array) const
     Constructs a string initialized with the first \a size characters
     of the QChar array \a unicode.
 
-    QString makes a deep copy of the string data.
+    QString makes a deep copy of the string data. The unicode data is copied as
+    is and the Byte Order Mark is preserved if present.
 */
 QString::QString(const QChar *unicode, int size)
 {
@@ -1023,6 +1025,7 @@ QString::QString(int size, QChar ch)
 QString::QString(int size, Qt::Initialization)
 {
     d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
+    Q_CHECK_PTR(d);
     d->ref = 1;
     d->alloc = d->size = size;
     d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
@@ -1236,11 +1239,9 @@ void QString::realloc(int alloc)
             asciiCache->remove(d);
         }
 #endif
-        Data *x = static_cast<Data *>(qRealloc(d, sizeof(Data) + alloc * sizeof(QChar)));
-        Q_CHECK_PTR(x);
-        x->alloc = alloc;
-        x->data = x->array;
-        d = x;
+        d = static_cast<Data *>(q_check_ptr(qRealloc(d, sizeof(Data) + alloc * sizeof(QChar))));
+        d->alloc = alloc;
+        d->data = d->array;
     }
 }
 
@@ -3482,7 +3483,7 @@ QByteArray QString::toAscii() const
     return toLatin1();
 }
 
-#ifndef Q_WS_MAC
+#if !defined(Q_WS_MAC) && defined(Q_OS_UNIX)
 static QByteArray toLocal8Bit_helper(const QChar *data, int length)
 {
 #ifndef QT_NO_TEXTCODEC
@@ -3717,13 +3718,13 @@ QByteArray qt_winQString2MB(const QChar *ch, int uclen)
     BOOL used_def;
     QByteArray mb(4096, 0);
     int len;
-    while (!(len=WideCharToMultiByte(CP_ACP, 0, (const WCHAR*)ch, uclen,
+    while (!(len=WideCharToMultiByte(CP_ACP, 0, (const wchar_t*)ch, uclen,
                 mb.data(), mb.size()-1, 0, &used_def)))
     {
         int r = GetLastError();
         if (r == ERROR_INSUFFICIENT_BUFFER) {
             mb.resize(1+WideCharToMultiByte(CP_ACP, 0,
-                                (const WCHAR*)ch, uclen,
+                                (const wchar_t*)ch, uclen,
                                 0, 0, 0, &used_def));
                 // and try again...
         } else {
@@ -3744,9 +3745,9 @@ QString qt_winMB2QString(const char *mb, int mblen)
     if (!mb || !mblen)
         return QString();
     const int wclen_auto = 4096;
-    WCHAR wc_auto[wclen_auto];
+    wchar_t wc_auto[wclen_auto];
     int wclen = wclen_auto;
-    WCHAR *wc = wc_auto;
+    wchar_t *wc = wc_auto;
     int len;
     while (!(len=MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
                 mb, mblen, wc, wclen)))
@@ -3759,7 +3760,7 @@ QString qt_winMB2QString(const char *mb, int mblen)
             } else {
                 wclen = MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED,
                                     mb, mblen, 0, 0);
-                wc = new WCHAR[wclen];
+                wc = new wchar_t[wclen];
                 // and try again...
             }
         } else {
@@ -3802,11 +3803,6 @@ QString QString::fromLocal8Bit(const char *str, int size)
         return QString();
     if (size == 0 || (!*str && size < 0))
         return QLatin1String("");
-#if defined(Q_OS_WIN32)
-    if(QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) {
-        return qt_winMB2QString(str, size);
-    }
-#endif
 #if !defined(QT_NO_TEXTCODEC)
     if (size < 0)
         size = qstrlen(str);
@@ -3851,74 +3847,7 @@ QString QString::fromUtf8(const char *str, int size)
     if (size < 0)
         size = qstrlen(str);
 
-    QString result(size, Qt::Uninitialized); // worst case
-    ushort *qch = result.d->data;
-    uint uc = 0;
-    uint min_uc = 0;
-    int need = 0;
-    int error = -1;
-    uchar ch;
-    int i = 0;
-
-    // skip utf8-encoded byte order mark
-    if (size >= 3
-        && (uchar)str[0] == 0xef && (uchar)str[1] == 0xbb && (uchar)str[2] == 0xbf)
-        i += 3;
-
-    for (; i < size; ++i) {
-        ch = str[i];
-        if (need) {
-            if ((ch&0xc0) == 0x80) {
-                uc = (uc << 6) | (ch & 0x3f);
-                need--;
-                if (!need) {
-                    if (uc > 0xffffU && uc < 0x110000U) {
-                        // surrogate pair
-                        *qch++ = QChar::highSurrogate(uc);
-                        uc = QChar::lowSurrogate(uc);
-                    } else if ((uc < min_uc) || (uc >= 0xd800 && uc <= 0xdfff) || (uc >= 0xfffe)) {
-			// overlong seqence, UTF16 surrogate or BOM
-                        uc = QChar::ReplacementCharacter;
-                    }
-                    *qch++ = uc;
-                }
-            } else {
-                i = error;
-                need = 0;
-                *qch++ = QChar::ReplacementCharacter;
-            }
-        } else {
-            if (ch < 128) {
-                *qch++ = ch;
-            } else if ((ch & 0xe0) == 0xc0) {
-                uc = ch & 0x1f;
-                need = 1;
-                error = i;
-                min_uc = 0x80;
-            } else if ((ch & 0xf0) == 0xe0) {
-                uc = ch & 0x0f;
-                need = 2;
-                error = i;
-                min_uc = 0x800;
-            } else if ((ch&0xf8) == 0xf0) {
-                uc = ch & 0x07;
-                need = 3;
-                error = i;
-                min_uc = 0x10000;
-            } else {
-                // Error
-                *qch++ = QChar::ReplacementCharacter;
-            }
-        }
-    }
-    if (need) {
-        // we have some invalid characters remaining we need to add to the string
-        for (int i = error; i < size; ++i)
-            *qch++ = QChar::ReplacementCharacter;
-    }
-
-    result.truncate(qch - result.d->data);
-    return result;
+    return QUtf8::convertToUnicode(str, size, 0);
 }
 
 /*!
@@ -3941,7 +3870,7 @@ QString QString::fromUtf16(const ushort *unicode, int size)
         while (unicode[size] != 0)
             ++size;
     }
-    return QString((const QChar *)unicode, size);
+    return QUtf16::convertToUnicode((const char *)unicode, size*2, 0);
 }
 
 
@@ -3965,20 +3894,7 @@ QString QString::fromUcs4(const uint *unicode, int size)
         while (unicode[size] != 0)
             ++size;
     }
-
-    QString s(size * 2, Qt::Uninitialized); // worst case
-    ushort *uc = s.d->data;
-    for (int i = 0; i < size; ++i) {
-        uint u = unicode[i];
-        if (u > 0xffff) {
-            // decompose into a surrogate pair
-            *uc++ = QChar::highSurrogate(u);
-            u = QChar::lowSurrogate(u);
-        }
-        *uc++ = u;
-    }
-    s.resize(uc - s.d->data);
-    return s;
+    return QUtf32::convertToUnicode((const char *)unicode, size*4, 0);
 }
 
 /*!
@@ -4700,16 +4616,7 @@ int QString::localeAwareCompare_helper(const QChar *data1, int length1,
         return ucstrcmp(data1, length1, data2, length2);
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
-    int res;
-    QT_WA({
-        const TCHAR* s1 = (TCHAR*)data1;
-        const TCHAR* s2 = (TCHAR*)data2;
-        res = CompareStringW(GetUserDefaultLCID(), 0, s1, length1, s2, length2);
-    } , {
-        QByteArray s1 = toLocal8Bit_helper(data1, length1);
-        QByteArray s2 = toLocal8Bit_helper(data2, length2);
-        res = CompareStringA(GetUserDefaultLCID(), 0, s1.data(), s1.length(), s2.data(), s2.length());
-    });
+    int res = CompareString(GetUserDefaultLCID(), 0, (wchar_t*)data1, length1, (wchar_t*)data2, length2);
 
     switch (res) {
     case CSTR_LESS_THAN:
@@ -6123,6 +6030,7 @@ QString QString::repeated(int times) const
     return result;
 }
 
+void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::UnicodeVersion version, int from);
 /*!
     \overload
     \fn QString QString::normalized(NormalizationForm mode, QChar::UnicodeVersion version) const
@@ -6132,42 +6040,48 @@ QString QString::repeated(int times) const
 */
 QString QString::normalized(QString::NormalizationForm mode, QChar::UnicodeVersion version) const
 {
+    QString copy = *this;
+    qt_string_normalize(&copy, mode, version, 0);
+    return copy;
+}
+
+void qt_string_normalize(QString *data, QString::NormalizationForm mode, QChar::UnicodeVersion version, int from)
+{
     bool simple = true;
-    for (int i = 0; i < d->size; ++i) {
-        if (d->data[i] >= 0x80) {
+    const QChar *p = data->constData();
+    int len = data->length();
+    for (int i = from; i < len; ++i) {
+        if (p[i].unicode() >= 0x80) {
             simple = false;
             break;
         }
     }
     if (simple)
-        return *this;
+        return;
 
-    QString s = *this;
+    QString &s = *data;
     if (version != CURRENT_VERSION) {
         for (int i = 0; i < NumNormalizationCorrections; ++i) {
             const NormalizationCorrection &n = uc_normalization_corrections[i];
             if (n.version > version) {
+                int pos = from;
                 if (n.ucs4 > 0xffff) {
                     ushort ucs4High = QChar::highSurrogate(n.ucs4);
                     ushort ucs4Low = QChar::lowSurrogate(n.ucs4);
                     ushort oldHigh = QChar::highSurrogate(n.old_mapping);
                     ushort oldLow = QChar::lowSurrogate(n.old_mapping);
-                    int pos = 0;
-                    while (pos < s.d->size - 1) {
-                        if (s.d->data[pos] == ucs4High && s.d->data[pos + 1] == ucs4Low) {
-                            s.detach();
-                            s.d->data[pos] = oldHigh;
-                            s.d->data[pos + 1] = oldLow;
+                    while (pos < s.length() - 1) {
+                        if (s.at(pos).unicode() == ucs4High && s.at(pos + 1).unicode() == ucs4Low) {
+                            s[pos] = oldHigh;
+                            s[pos + 1] = oldLow;
                             ++pos;
                         }
                         ++pos;
                     }
                 } else {
-                    int pos = 0;
-                    while (pos < s.d->size) {
-                        if (s.d->data[pos] == n.ucs4) {
-                            s.detach();
-                            s.d->data[pos] = n.old_mapping;
+                    while (pos < s.length()) {
+                        if (s.at(pos).unicode() == n.ucs4) {
+                            s[pos] = n.old_mapping;
                         }
                         ++pos;
                     }
@@ -6175,15 +6089,14 @@ QString QString::normalized(QString::NormalizationForm mode, QChar::UnicodeVersi
             }
         }
     }
-    s = decomposeHelper(s, mode < QString::NormalizationForm_KD, version);
+    decomposeHelper(data, mode < QString::NormalizationForm_KD, version, from);
 
-    s = canonicalOrderHelper(s, version);
+    canonicalOrderHelper(data, version, from);
 
     if (mode == QString::NormalizationForm_D || mode == QString::NormalizationForm_KD)
-        return s;
+        return;
 
-    return composeHelper(s);
-
+    composeHelper(data, from);
 }
 
 
@@ -6568,7 +6481,7 @@ QString QString::arg(qlonglong a, int fieldWidth, int base, const QChar &fillCha
     ArgEscapeData d = findArgEscapes(*this);
 
     if (d.occurrences == 0) {
-        qWarning("QString::arg: Argument missing: %s, %lld", toLocal8Bit().data(), a);
+        qWarning() << "QString::arg: Argument missing:" << *this << ',' << a;
         return *this;
     }
 
@@ -6611,7 +6524,7 @@ QString QString::arg(qulonglong a, int fieldWidth, int base, const QChar &fillCh
     ArgEscapeData d = findArgEscapes(*this);
 
     if (d.occurrences == 0) {
-        qWarning("QString::arg: Argument missing: %s, %llu", toLocal8Bit().data(), a);
+        qWarning() << "QString::arg: Argument missing:" << *this << ',' << a;
         return *this;
     }
 

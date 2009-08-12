@@ -56,7 +56,7 @@ class QDirectFBPaintEngine;
 class QDirectFBPixmapData : public QPixmapData, public QDirectFBPaintDevice
 {
 public:
-    QDirectFBPixmapData(PixelType pixelType);
+    QDirectFBPixmapData(QDirectFBScreen *screen, PixelType pixelType);
     ~QDirectFBPixmapData();
 
     // Re-implemented from QPixmapData:
@@ -71,7 +71,7 @@ public:
     virtual QImage *buffer();
     virtual int metric(QPaintDevice::PaintDeviceMetric m) const {return QDirectFBPaintDevice::metric(m);}
 
-    QImage *buffer(uint lockFlags);
+    QImage *buffer(DFBSurfaceLockFlags lockFlags);
 
     // Pure virtual in QPixmapData, so re-implement here and delegate to QDirectFBPaintDevice
     inline QImage::Format pixelFormat() const { return format; }
@@ -79,7 +79,6 @@ public:
     inline bool hasAlphaChannel() const { return alpha; }
 private:
     void invalidate();
-    QDirectFBPaintEngine *engine;
     QImage::Format format;
     bool alpha;
 };

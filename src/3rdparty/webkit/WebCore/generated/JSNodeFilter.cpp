@@ -39,7 +39,7 @@ static const HashTableValue JSNodeFilterTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNodeFilterTable =
+static JSC_CONST_HASHTABLE HashTable JSNodeFilterTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSNodeFilterTableValues, 0 };
 #else
@@ -69,19 +69,19 @@ static const HashTableValue JSNodeFilterConstructorTableValues[17] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNodeFilterConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSNodeFilterConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 127, JSNodeFilterConstructorTableValues, 0 };
 #else
     { 34, 31, JSNodeFilterConstructorTableValues, 0 };
 #endif
 
-class JSNodeFilterConstructor : public DOMObject {
+class JSNodeFilterConstructor : public DOMConstructorObject {
 public:
-    JSNodeFilterConstructor(ExecState* exec)
-        : DOMObject(JSNodeFilterConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSNodeFilterConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSNodeFilterConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSNodeFilterPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSNodeFilterPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -124,7 +124,7 @@ static const HashTableValue JSNodeFilterPrototypeTableValues[18] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSNodeFilterPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSNodeFilterPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSNodeFilterPrototypeTableValues, 0 };
 #else
@@ -145,8 +145,8 @@ bool JSNodeFilterPrototype::getOwnPropertySlot(ExecState* exec, const Identifier
 
 const ClassInfo JSNodeFilter::s_info = { "NodeFilter", 0, &JSNodeFilterTable, 0 };
 
-JSNodeFilter::JSNodeFilter(PassRefPtr<Structure> structure, PassRefPtr<NodeFilter> impl)
-    : DOMObject(structure)
+JSNodeFilter::JSNodeFilter(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<NodeFilter> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -168,11 +168,12 @@ bool JSNodeFilter::getOwnPropertySlot(ExecState* exec, const Identifier& propert
 
 JSValue jsNodeFilterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSNodeFilter*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSNodeFilter* domObject = static_cast<JSNodeFilter*>(asObject(slot.slotBase()));
+    return JSNodeFilter::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSNodeFilter::getConstructor(ExecState* exec)
+JSValue JSNodeFilter::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSNodeFilterConstructor>(exec);
+    return getDOMConstructor<JSNodeFilterConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsNodeFilterPrototypeFunctionAcceptNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -266,9 +267,9 @@ JSValue jsNodeFilterSHOW_NOTATION(ExecState* exec, const Identifier&, const Prop
     return jsNumber(exec, static_cast<int>(0x00000800));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, NodeFilter* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, NodeFilter* object)
 {
-    return getDOMObjectWrapper<JSNodeFilter>(exec, object);
+    return getDOMObjectWrapper<JSNodeFilter>(exec, globalObject, object);
 }
 
 }

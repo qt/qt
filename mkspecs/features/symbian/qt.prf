@@ -7,7 +7,8 @@ CONFIG += qtmain
 load(qt)
 
 contains(CONFIG, qt):!contains(TARGET.UID3, 0x2001E61C):!contains(TARGET.UID3, 0xE001E61C) {
-    default_deployment.depends += \
+    default_deployment.pkg_prerules += \
+        "; Default dependency to Qt libraries" \
         "(0x2001E61C), $${QT_MAJOR_VERSION}, $${QT_MINOR_VERSION}, $${QT_PATCH_VERSION},  {\"QtLibs pre-release\"}"
 }
 

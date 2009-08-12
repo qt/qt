@@ -22,6 +22,7 @@
 #include "JSHTMLBRElement.h"
 
 #include "HTMLBRElement.h"
+#include "HTMLNames.h"
 #include "KURL.h"
 #include <runtime/JSString.h>
 #include <wtf/GetPtr.h>
@@ -41,7 +42,7 @@ static const HashTableValue JSHTMLBRElementTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLBRElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLBRElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSHTMLBRElementTableValues, 0 };
 #else
@@ -55,19 +56,19 @@ static const HashTableValue JSHTMLBRElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLBRElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLBRElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLBRElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLBRElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLBRElementConstructor : public DOMObject {
+class JSHTMLBRElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLBRElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLBRElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLBRElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLBRElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLBRElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLBRElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -93,7 +94,7 @@ static const HashTableValue JSHTMLBRElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLBRElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLBRElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLBRElementPrototypeTableValues, 0 };
 #else
@@ -109,8 +110,8 @@ JSObject* JSHTMLBRElementPrototype::self(ExecState* exec, JSGlobalObject* global
 
 const ClassInfo JSHTMLBRElement::s_info = { "HTMLBRElement", &JSHTMLElement::s_info, &JSHTMLBRElementTable, 0 };
 
-JSHTMLBRElement::JSHTMLBRElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLBRElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLBRElement::JSHTMLBRElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLBRElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -126,14 +127,16 @@ bool JSHTMLBRElement::getOwnPropertySlot(ExecState* exec, const Identifier& prop
 
 JSValue jsHTMLBRElementClear(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLBRElement* castedThis = static_cast<JSHTMLBRElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLBRElement* imp = static_cast<HTMLBRElement*>(static_cast<JSHTMLBRElement*>(asObject(slot.slotBase()))->impl());
-    return jsString(exec, imp->clear());
+    HTMLBRElement* imp = static_cast<HTMLBRElement*>(castedThis->impl());
+    return jsString(exec, imp->getAttribute(HTMLNames::clearAttr));
 }
 
 JSValue jsHTMLBRElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLBRElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLBRElement* domObject = static_cast<JSHTMLBRElement*>(asObject(slot.slotBase()));
+    return JSHTMLBRElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLBRElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -143,12 +146,12 @@ void JSHTMLBRElement::put(ExecState* exec, const Identifier& propertyName, JSVal
 void setJSHTMLBRElementClear(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     HTMLBRElement* imp = static_cast<HTMLBRElement*>(static_cast<JSHTMLBRElement*>(thisObject)->impl());
-    imp->setClear(valueToStringWithNullCheck(exec, value));
+    imp->setAttribute(HTMLNames::clearAttr, valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLBRElement::getConstructor(ExecState* exec)
+JSValue JSHTMLBRElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLBRElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLBRElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

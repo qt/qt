@@ -512,6 +512,13 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
         dialog = popup = false;                        // force these flags off
         data.crect.setRect(0, 0, sw, sh);
     } else if (topLevel && !q->testAttribute(Qt::WA_Resized)) {
+        QDesktopWidget *desktopWidget = qApp->desktop();
+        if (desktopWidget->isVirtualDesktop()) {
+            QRect r = desktopWidget->screenGeometry();
+            sw = r.width();
+            sh = r.height();
+        }
+
         int width = sw / 2;
         int height = 4 * sh / 10;
         if (extra) {
@@ -1008,7 +1015,11 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             if (destroyWindow)
                 qt_XDestroyWindow(this, X11->display, data->winid);
         }
-        d->setWinId(0);
+        QT_TRY {
+            d->setWinId(0);
+        } QT_CATCH (const std::bad_alloc &) {
+            // swallow - destructors must not throw
+        }
 
         extern void qPRCleanup(QWidget *widget); // from qapplication_x11.cpp
         if (testAttribute(Qt::WA_WState_Reparented))

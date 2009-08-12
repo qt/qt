@@ -47,10 +47,17 @@
 #include "WMLSelectElement.h"
 #endif
 
-#if PLATFORM(MAC)
+// Configure platform-specific behavior when focused pop-up receives arrow/space/return keystroke.
+// (PLATFORM(MAC) is always false in Chromium, hence the extra test.)
+#if PLATFORM(MAC) || (PLATFORM(CHROMIUM) && PLATFORM(DARWIN))
 #define ARROW_KEYS_POP_MENU 1
+#define SPACE_OR_RETURN_POP_MENU 0
+#elif PLATFORM(GTK)
+#define ARROW_KEYS_POP_MENU 0
+#define SPACE_OR_RETURN_POP_MENU 1
 #else
 #define ARROW_KEYS_POP_MENU 0
+#define SPACE_OR_RETURN_POP_MENU 0
 #endif
 
 using std::min;
@@ -509,6 +516,29 @@ void SelectElement::reset(SelectElementData& data, Element* element)
 
     element->setNeedsStyleRecalc();
 }
+    
+#if !ARROW_KEYS_POP_MENU
+enum SkipDirection {
+    SkipBackwards = -1,
+    SkipForwards = 1
+};
+
+// Returns the index of the next valid list item |skip| items past |listIndex| in direction |direction|.
+static int nextValidIndex(const Vector<Element*>& listItems, int listIndex, SkipDirection direction, int skip)
+{
+    int lastGoodIndex = listIndex;
+    int size = listItems.size();
+    for (listIndex += direction; listIndex >= 0 && listIndex < size; listIndex += direction) {
+        --skip;
+        if (!listItems[listIndex]->disabled() && isOptionElement(listItems[listIndex])) {
+            lastGoodIndex = listIndex;
+            if (skip <= 0)
+                break;
+        }
+    }
+    return lastGoodIndex;
+}
+#endif
 
 void SelectElement::menuListDefaultEventHandler(SelectElementData& data, Element* element, Event* event, HTMLFormElement* htmlForm)
 {
@@ -535,24 +565,30 @@ void SelectElement::menuListDefaultEventHandler(SelectElementData& data, Element
         }
 #else
         const Vector<Element*>& listItems = data.listItems(element);
-        int size = listItems.size();
 
         int listIndex = optionToListIndex(data, element, selectedIndex(data, element));
         if (keyIdentifier == "Down" || keyIdentifier == "Right") {
-            for (listIndex += 1;
-                 listIndex >= 0 && listIndex < size && (listItems[listIndex]->disabled() || !isOptionElement(listItems[listIndex]));
-                 ++listIndex) { }
-            if (listIndex >= 0 && listIndex < size)
-                setSelectedIndex(data, element, listToOptionIndex(data, element, listIndex));
+            listIndex = nextValidIndex(listItems, listIndex, SkipForwards, 1);
             handled = true;
         } else if (keyIdentifier == "Up" || keyIdentifier == "Left") {
-            for (listIndex -= 1;
-                 listIndex >= 0 && listIndex < size && (listItems[listIndex]->disabled() || !isOptionElement(listItems[listIndex]));
-                 --listIndex) { }
-            if (listIndex >= 0 && listIndex < size)
-                setSelectedIndex(data, element, listToOptionIndex(data, element, listIndex));
+            listIndex = nextValidIndex(listItems, listIndex, SkipBackwards, 1);
+            handled = true;
+        } else if (keyIdentifier == "PageDown") {
+            listIndex = nextValidIndex(listItems, listIndex, SkipForwards, 3);
+            handled = true;
+        } else if (keyIdentifier == "PageUp") {
+            listIndex = nextValidIndex(listItems, listIndex, SkipBackwards, 3);
+            handled = true;
+        } else if (keyIdentifier == "Home") {
+            listIndex = nextValidIndex(listItems, -1, SkipForwards, 1);
+            handled = true;
+        } else if (keyIdentifier == "End") {
+            listIndex = nextValidIndex(listItems, listItems.size(), SkipBackwards, 1);
             handled = true;
         }
+        
+        if (handled && listIndex >= 0 && listIndex < listItems.size())
+            setSelectedIndex(data, element, listToOptionIndex(data, element, listIndex));
 #endif
         if (handled)
             event->setDefaultHandled();
@@ -567,7 +603,17 @@ void SelectElement::menuListDefaultEventHandler(SelectElementData& data, Element
         int keyCode = static_cast<KeyboardEvent*>(event)->keyCode();
         bool handled = false;
 
-#if ARROW_KEYS_POP_MENU
+#if SPACE_OR_RETURN_POP_MENU
+        if (keyCode == ' ' || keyCode == '\r') {
+            element->focus();
+            // Save the selection so it can be compared to the new selection when dispatching change events during setSelectedIndex,
+            // which gets called from RenderMenuList::valueChanged, which gets called after the user makes a selection from the menu.
+            saveLastSelection(data, element);
+            if (RenderMenuList* menuList = static_cast<RenderMenuList*>(element->renderer()))
+                menuList->showPopup();
+            handled = true;
+        }
+#elif ARROW_KEYS_POP_MENU
         if (keyCode == ' ') {
             element->focus();
             // Save the selection so it can be compared to the new selection when dispatching change events during setSelectedIndex,
@@ -865,6 +911,19 @@ void SelectElement::accessKeySetSelectedIndex(SelectElementData& data, Element* 
  
     listBoxOnChange(data, element);
     scrollToSelection(data, element);
+}
+
+unsigned SelectElement::optionCount(const SelectElementData& data, const Element* element)
+{
+    unsigned options = 0;
+
+    const Vector<Element*>& items = data.listItems(element);
+    for (unsigned i = 0; i < items.size(); ++i) {
+        if (isOptionElement(items[i]))
+            ++options;
+    }
+
+    return options;
 }
 
 // SelectElementData

@@ -28,20 +28,27 @@ DEPENDPATH += $$QT_BUILD_TREE/src/corelib/tools $$QT_BUILD_TREE/src/corelib/io
 # Input
 HEADERS += \
         remoteconnection.h \
-        activesyncconnection.h \
         deployment.h
 
 SOURCES += \
         remoteconnection.cpp \
-        activesyncconnection.cpp \
         deployment.cpp \
         main.cpp
 
-win32-msvc*:LIBS += ole32.lib advapi32.lib rapi.lib
+LIBS += ole32.lib advapi32.lib
+
+isEmpty(QT_CE_RAPI_INC) {
+    DEFINES += QT_CETEST_NO_ACTIVESYNC
+    HEADERS += cetcpsyncconnection.h
+    SOURCES += cetcpsyncconnection.cpp
+} else {
+    HEADERS += activesyncconnection.h
+    SOURCES += activesyncconnection.cpp
+    LIBS += rapi.lib
+    INCLUDEPATH += $$QT_CE_RAPI_INC
+    LIBS += -L$$QT_CE_RAPI_LIB
+}
 
 include(qmake_include.pri)
 include(bootstrapped.pri)
 include($$QT_SOURCE_TREE/src/script/script.pri)
-
-INCLUDEPATH += $$QT_CE_RAPI_INC
-LIBS += -L$$QT_CE_RAPI_LIB

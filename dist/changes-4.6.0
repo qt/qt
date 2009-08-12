@@ -31,10 +31,18 @@ information about a particular change.
 *                      Platform Specific Changes                           *
 ****************************************************************************
 
+ - Significant external contribution from Milan Burda for planned removal
+   of (non-unicode) Windows 9x/ME support.
 
+ - QRegion is no longer a GDI object by default. This means it is no
+   longer subjuect to gui-thread only nor does it potentially impact
+   the 10.000 GDI object limit per process. By explicitly calling
+   .handle() a GDI object will be created and memory managed by
+   QRegion. The native handle is for reading out only. Any GDI calls
+   made on the HRGN handle will not affect the QRegion.
 
 ****************************************************************************
-*                   Important Behavior Changes                             *
+* Important Behavior Changes *
 ****************************************************************************
 
  - The experimental Direct3D paint engine has been removed. The reason for
@@ -68,3 +76,33 @@ information about a particular change.
       to the item's position and transformation, you can set the flag
       QGraphicsItem::ItemSendsGeometryChanges (which is enabled by default by
       QGraphicsWidget and QGraphicsProxyWidget).
+
+ - QDesktopWidget on X11 no longer emits the resized(int) signal when screens
+   are added or removed. This was not done on other platforms. Use the
+   screenCountChanged signal instead
+ 
+ - QUrl's parser is more strict when for hostnames in URLs. QUrl now
+   enforces STD 3 rules:
+ 
+    * each individual hostname section (between dots) must be at most
+      63 ASCII characters in length;
+ 
+    * only letters, digits, and the hyphen character are allowed in the
+      ASCII range; letters outside the ASCII range follow the normal
+      IDN rules
+ 
+   That means QUrl no longer accepts some URLs that were invalid
+   before, but weren't interpreted as such.
+ 
+ - The Unix configure-time check for STL is stricter now in Qt
+   4.6.0. This means some legacy STL implementations may fail to pass
+   the test and, therefore, Qt will automatically disable STL support.
+ 
+   This is a binary-compatible change: existing code will continue to
+   work without being recompiled. However, it affects the source code,
+   since some STL-compatibility API will not be enabled.
+ 
+   Platforms affected by this change:
+     * solaris-cc-* with the default (Cstd) C++ STL library
+       recommendation: use -library=stlport4
+       See Sun Studio's documentation for the effects of this option

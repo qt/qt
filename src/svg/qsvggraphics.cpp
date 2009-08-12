@@ -266,21 +266,23 @@ void QSvgRect::draw(QPainter *p, QSvgExtraStates &states)
     }
 }
 
+QSvgTspan * const QSvgText::LINEBREAK = 0;
+
 QSvgText::QSvgText(QSvgNode *parent, const QPointF &coord)
     : QSvgNode(parent)
     , m_coord(coord)
-    , m_textAlignment(Qt::AlignLeft)
-    , m_scale(1)
-    , m_appendSpace(false)
     , m_type(TEXT)
     , m_size(0, 0)
+    , m_mode(Default)
 {
-    m_paragraphs.push_back(QString());
-    m_formatRanges.push_back(QList<QTextLayout::FormatRange>());
 }
 
 QSvgText::~QSvgText()
 {
+    for (int i = 0; i < m_tspans.size(); ++i) {
+        if (m_tspans[i] != LINEBREAK)
+            delete m_tspans[i];
+    }
 }
 
 void QSvgText::setTextArea(const QSizeF &size)
@@ -295,175 +297,173 @@ void QSvgText::draw(QPainter *p, QSvgExtraStates &states)
 {
     applyStyle(p, states);
 
-    QSvgFontStyle *fontStyle = static_cast<QSvgFontStyle*>(
-        styleProperty(QSvgStyleProperty::FONT));
-    if (fontStyle && fontStyle->svgFont()) {
-        // SVG fonts not fully supported...
-        QString text = m_paragraphs.front();
-        for (int i = 1; i < m_paragraphs.size(); ++i) {
-            text.append(QLatin1Char('\n'));
-            text.append(m_paragraphs[i]);
-        }
-        fontStyle->svgFont()->draw(p, m_coord, text, fontStyle->pointSize(), m_textAlignment);
-        revertStyle(p, states);
-        return;
-    }
+    // Force the font to have a size of 100 pixels to avoid truncation problems
+    // when the font is very small.
+    qreal scale = 100.0 / p->font().pointSizeF();
+    Qt::Alignment alignment = states.textAnchor;
 
-    // Scale the font to its correct size.
     QTransform oldTransform = p->worldTransform();
-    p->scale(1 / m_scale, 1 / m_scale);
+    p->scale(1 / scale, 1 / scale);
 
     qreal y = 0;
     bool initial = true;
-    qreal px = m_coord.x() * m_scale;
-    qreal py = m_coord.y() * m_scale;
-    QSizeF scaledSize = m_size * m_scale;
+    qreal px = m_coord.x() * scale;
+    qreal py = m_coord.y() * scale;
+    QSizeF scaledSize = m_size * scale;
 
     if (m_type == TEXTAREA) {
-        if (m_textAlignment == Qt::AlignHCenter)
+        if (alignment == Qt::AlignHCenter)
             px += scaledSize.width() / 2;
-        else if (m_textAlignment == Qt::AlignRight)
+        else if (alignment == Qt::AlignRight)
             px += scaledSize.width();
     }
 
     QRectF bounds;
     if (m_size.height() != 0)
-        bounds = QRectF(0, 0, 1, scaledSize.height());
+        bounds = QRectF(0, py, 1, scaledSize.height()); // x and width are not used.
 
-    for (int i = 0; i < m_paragraphs.size(); ++i) {
-        QTextLayout tl(m_paragraphs[i]);
-        QTextOption op = tl.textOption();
-        op.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-        tl.setTextOption(op);
-        tl.setAdditionalFormats(m_formatRanges[i]);
-        tl.beginLayout();
-        forever {
-            QTextLine line = tl.createLine();
-            if (!line.isValid())
-                break;
+    bool appendSpace = false;
+    QVector<QString> paragraphs;
+    QStack<QTextCharFormat> formats;
+    QVector<QList<QTextLayout::FormatRange> > formatRanges;
+    paragraphs.push_back(QString());
+    formatRanges.push_back(QList<QTextLayout::FormatRange>());
 
-            if (m_size.width() != 0)
-                line.setLineWidth(scaledSize.width());
-        }
-        tl.endLayout();
+    for (int i = 0; i < m_tspans.size(); ++i) {
+        if (m_tspans[i] == LINEBREAK) {
+            if (m_type == TEXTAREA) {
+                if (paragraphs.back().isEmpty()) {
+                    QFont font = p->font();
+                    font.setPixelSize(font.pointSizeF() * scale);
 
-        bool endOfBoundsReached = false;
-        for (int i = 0; i < tl.lineCount(); ++i) {
-            QTextLine line = tl.lineAt(i);
+                    QTextLayout::FormatRange range;
+                    range.start = 0;
+                    range.length = 1;
+                    range.format.setFont(font);
+                    formatRanges.back().append(range);
 
-            qreal x = 0;
-            if (m_textAlignment == Qt::AlignHCenter)
-                x -= line.naturalTextWidth() / 2;
-            else if (m_textAlignment == Qt::AlignRight)
-                x -= line.naturalTextWidth();
+                    paragraphs.back().append(QLatin1Char(' '));;
+                }
+                appendSpace = false;
+                paragraphs.push_back(QString());
+                formatRanges.push_back(QList<QTextLayout::FormatRange>());
+            }
+        } else {
+            WhitespaceMode mode = m_tspans[i]->whitespaceMode();
+            m_tspans[i]->applyStyle(p, states);
 
-            if (initial && m_type == TEXT)
-                y -= line.ascent();
-            initial = false;
+            QFont font = p->font();
+            font.setPixelSize(font.pointSizeF() * scale);
 
-            line.setPosition(QPointF(x, y));
-            if ((m_size.width() != 0 && line.naturalTextWidth() > scaledSize.width())
-                || (m_size.height() != 0 && y + line.height() > scaledSize.height())) {
-                bounds.setHeight(y);
-                endOfBoundsReached = true;
-                break;
+            QString newText(m_tspans[i]->text());
+            newText.replace(QLatin1Char('\t'), QLatin1Char(' '));
+            newText.replace(QLatin1Char('\n'), QLatin1Char(' '));
+
+            bool prependSpace = !appendSpace && !m_tspans[i]->isTspan() && (mode == Default) && !paragraphs.back().isEmpty() && newText.startsWith(QLatin1Char(' '));
+            if (appendSpace || prependSpace)
+                paragraphs.back().append(QLatin1Char(' '));
+
+            bool appendSpaceNext = (!m_tspans[i]->isTspan() && (mode == Default) && newText.endsWith(QLatin1Char(' ')));
+
+            if (mode == Default) {
+                newText = newText.simplified();
+                if (newText.isEmpty())
+                    appendSpaceNext = false;
             }
 
-            y += 1.1 * line.height();
-        }
-        tl.draw(p, QPointF(px, py), QVector<QTextLayout::FormatRange>(), bounds);
+            QTextLayout::FormatRange range;
+            range.start = paragraphs.back().length();
+            range.length = newText.length();
+            range.format.setFont(font);
+            range.format.setTextOutline(p->pen());
+            range.format.setForeground(p->brush());
 
-        if (endOfBoundsReached)
-            break;
+            if (appendSpace) {
+                Q_ASSERT(!formatRanges.back().isEmpty());
+                ++formatRanges.back().back().length;
+            } else if (prependSpace) {
+                --range.start;
+                ++range.length;
+            }
+            formatRanges.back().append(range);
+
+            appendSpace = appendSpaceNext;
+            paragraphs.back() += newText;
+
+            m_tspans[i]->revertStyle(p, states);
+        }
+    }
+
+    if (states.svgFont) {
+        // SVG fonts not fully supported...
+        QString text = paragraphs.front();
+        for (int i = 1; i < paragraphs.size(); ++i) {
+            text.append(QLatin1Char('\n'));
+            text.append(paragraphs[i]);
+        }
+        states.svgFont->draw(p, m_coord, text, p->font().pointSizeF() * scale, states.textAnchor);
+    } else {
+        for (int i = 0; i < paragraphs.size(); ++i) {
+            QTextLayout tl(paragraphs[i]);
+            QTextOption op = tl.textOption();
+            op.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+            tl.setTextOption(op);
+            tl.setAdditionalFormats(formatRanges[i]);
+            tl.beginLayout();
+
+            forever {
+                QTextLine line = tl.createLine();
+                if (!line.isValid())
+                    break;
+                if (m_size.width() != 0)
+                    line.setLineWidth(scaledSize.width());
+            }
+            tl.endLayout();
+
+            bool endOfBoundsReached = false;
+            for (int i = 0; i < tl.lineCount(); ++i) {
+                QTextLine line = tl.lineAt(i);
+
+                qreal x = 0;
+                if (alignment == Qt::AlignHCenter)
+                    x -= 0.5 * line.naturalTextWidth();
+                else if (alignment == Qt::AlignRight)
+                    x -= line.naturalTextWidth();
+
+                if (initial && m_type == TEXT)
+                    y -= line.ascent();
+                initial = false;
+
+                line.setPosition(QPointF(x, y));
+
+                // Check if the current line fits into the bounding rectangle.
+                if ((m_size.width() != 0 && line.naturalTextWidth() > scaledSize.width())
+                    || (m_size.height() != 0 && y + line.height() > scaledSize.height())) {
+                    // I need to set the bounds height to 'y-epsilon' to avoid drawing the current
+                    // line. Since the font is scaled to 100 units, 1 should be a safe epsilon.
+                    bounds.setHeight(y - 1);
+                    endOfBoundsReached = true;
+                    break;
+                }
+
+                y += 1.1 * line.height();
+            }
+            tl.draw(p, QPointF(px, py), QVector<QTextLayout::FormatRange>(), bounds);
+
+            if (endOfBoundsReached)
+                break;
+        }
     }
 
     p->setWorldTransform(oldTransform, false);
     revertStyle(p, states);
 }
 
-void QSvgText::insertText(const QString &text, WhitespaceMode mode)
+void QSvgText::addText(const QString &text)
 {
-    bool isTSpan = (m_formats.count() == 2);
-    QString newText(text);
-    newText.replace(QLatin1Char('\t'), QLatin1Char(' '));
-    newText.replace(QLatin1Char('\n'), QLatin1Char(' '));
-
-    bool prependSpace = !m_appendSpace && !isTSpan && (mode == Default) && !m_paragraphs.back().isEmpty() && newText.startsWith(QLatin1Char(' '));
-    if (m_appendSpace || prependSpace)
-        m_paragraphs.back().append(QLatin1Char(' '));
-
-    bool appendSpaceNext = (!isTSpan && (mode == Default) && newText.endsWith(QLatin1Char(' ')));
-
-    if (mode == Default) {
-        newText = newText.simplified();
-        if (newText.isEmpty())
-            appendSpaceNext = false;
-    }
-
-    if (!m_formats.isEmpty()) {
-        QTextLayout::FormatRange range;
-        range.start = m_paragraphs.back().length();
-        range.length = newText.length();
-        range.format = m_formats.top();
-        if (m_appendSpace) {
-            Q_ASSERT(!m_formatRanges.back().isEmpty());
-            ++m_formatRanges.back().back().length;
-        } else if (prependSpace) {
-            --range.start;
-            ++range.length;
-        }
-        m_formatRanges.back().append(range);
-    }
-
-    m_appendSpace = appendSpaceNext;
-    m_paragraphs.back() += newText;
-}
-
-void QSvgText::insertFormat(const QTextCharFormat &format)
-{
-    QTextCharFormat mergedFormat = format;
-    if (!m_formats.isEmpty()) {
-        mergedFormat = m_formats.top();
-        mergedFormat.merge(format);
-    }
-    m_formats.push(mergedFormat);
-}
-
-void QSvgText::insertLineBreak()
-{
-    if (m_type == TEXTAREA) {
-        if (m_paragraphs.back().isEmpty())
-            insertText(QLatin1String(" "), Preserve);
-        m_appendSpace = false;
-        m_paragraphs.push_back(QString());
-        m_formatRanges.push_back(QList<QTextLayout::FormatRange>());
-    }
-}
-
-void QSvgText::popFormat()
-{
-    if (m_formats.count() > 1)
-        m_formats.pop();
-}
-
-qreal QSvgText::scale() const
-{
-    return m_scale;
-}
-
-void QSvgText::setScale(qreal scale)
-{
-    m_scale = scale;
-}
-
-const QTextCharFormat &QSvgText::topFormat() const
-{
-    return m_formats.top();
-}
-
-void QSvgText::setTextAlignment(const Qt::Alignment &alignment)
-{
-    m_textAlignment = alignment;
+    m_tspans.append(new QSvgTspan(this, false));
+    m_tspans.back()->setWhitespaceMode(m_mode);
+    m_tspans.back()->addText(text);
 }
 
 QSvgUse::QSvgUse(const QPointF &start, QSvgNode *parent, QSvgNode *node)

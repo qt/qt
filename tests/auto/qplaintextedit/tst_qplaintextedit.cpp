@@ -875,7 +875,12 @@ void tst_QPlainTextEdit::lineWrapModes()
     ed->setLineWrapMode(QPlainTextEdit::NoWrap);
     QCOMPARE(lineCount(), 1);
     ed->setLineWrapMode(QPlainTextEdit::WidgetWidth);
-    ed->resize(1, 1000);
+
+    // QPlainTextEdit does lazy line layout on resize, only for the visible blocks.
+    // We thus need to make it wide enough to show something visible.
+    int minimumWidth = 2 * ed->document()->documentMargin();
+    minimumWidth += ed->fontMetrics().width(QLatin1Char('a'));
+    ed->resize(minimumWidth, 1000);
     QCOMPARE(lineCount(), 26);
     ed->setParent(0);
     delete window;
@@ -1128,6 +1133,7 @@ void tst_QPlainTextEdit::mimeDataReimplementations()
     QCOMPARE(ed.canInsertCallCount, 0);
     QCOMPARE(ed.insertCallCount, 0);
 
+#ifdef QT_BUILD_INTERNAL
     QTextControl *control = qFindChild<QTextControl *>(&ed);
     QVERIFY(control);
 
@@ -1142,6 +1148,7 @@ void tst_QPlainTextEdit::mimeDataReimplementations()
     QCOMPARE(ed.createMimeDataCallCount, 1);
     QCOMPARE(ed.canInsertCallCount, 1);
     QCOMPARE(ed.insertCallCount, 1);
+#endif
 }
 #endif
 

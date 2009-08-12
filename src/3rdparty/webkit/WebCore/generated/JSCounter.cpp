@@ -43,7 +43,7 @@ static const HashTableValue JSCounterTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCounterTable =
+static JSC_CONST_HASHTABLE HashTable JSCounterTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSCounterTableValues, 0 };
 #else
@@ -57,19 +57,19 @@ static const HashTableValue JSCounterConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCounterConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCounterConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCounterConstructorTableValues, 0 };
 #else
     { 1, 0, JSCounterConstructorTableValues, 0 };
 #endif
 
-class JSCounterConstructor : public DOMObject {
+class JSCounterConstructor : public DOMConstructorObject {
 public:
-    JSCounterConstructor(ExecState* exec)
-        : DOMObject(JSCounterConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSCounterConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSCounterConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSCounterPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSCounterPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -95,7 +95,7 @@ static const HashTableValue JSCounterPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCounterPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCounterPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCounterPrototypeTableValues, 0 };
 #else
@@ -111,8 +111,8 @@ JSObject* JSCounterPrototype::self(ExecState* exec, JSGlobalObject* globalObject
 
 const ClassInfo JSCounter::s_info = { "Counter", 0, &JSCounterTable, 0 };
 
-JSCounter::JSCounter(PassRefPtr<Structure> structure, PassRefPtr<Counter> impl)
-    : DOMObject(structure)
+JSCounter::JSCounter(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Counter> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -134,37 +134,41 @@ bool JSCounter::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
 
 JSValue jsCounterIdentifier(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCounter* castedThis = static_cast<JSCounter*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Counter* imp = static_cast<Counter*>(static_cast<JSCounter*>(asObject(slot.slotBase()))->impl());
+    Counter* imp = static_cast<Counter*>(castedThis->impl());
     return jsString(exec, imp->identifier());
 }
 
 JSValue jsCounterListStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCounter* castedThis = static_cast<JSCounter*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Counter* imp = static_cast<Counter*>(static_cast<JSCounter*>(asObject(slot.slotBase()))->impl());
+    Counter* imp = static_cast<Counter*>(castedThis->impl());
     return jsString(exec, imp->listStyle());
 }
 
 JSValue jsCounterSeparator(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCounter* castedThis = static_cast<JSCounter*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Counter* imp = static_cast<Counter*>(static_cast<JSCounter*>(asObject(slot.slotBase()))->impl());
+    Counter* imp = static_cast<Counter*>(castedThis->impl());
     return jsString(exec, imp->separator());
 }
 
 JSValue jsCounterConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCounter*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSCounter* domObject = static_cast<JSCounter*>(asObject(slot.slotBase()));
+    return JSCounter::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSCounter::getConstructor(ExecState* exec)
+JSValue JSCounter::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSCounterConstructor>(exec);
+    return getDOMConstructor<JSCounterConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, Counter* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Counter* object)
 {
-    return getDOMObjectWrapper<JSCounter>(exec, object);
+    return getDOMObjectWrapper<JSCounter>(exec, globalObject, object);
 }
 Counter* toCounter(JSC::JSValue value)
 {

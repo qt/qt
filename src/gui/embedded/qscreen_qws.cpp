@@ -2420,7 +2420,7 @@ void QScreen::exposeRegion(QRegion r, int windowIndex)
 #endif
     compose(0, r, blendRegion, &blendBuffer, changing);
 
-    if (blendBuffer) {
+    if (blendBuffer && !blendBuffer->isNull()) {
         const QPoint offset = blendRegion.boundingRect().topLeft();
 #ifndef QT_NO_QWS_CURSOR
         if (qt_screencursor && !qt_screencursor->isAccelerated()) {

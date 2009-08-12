@@ -1034,18 +1034,19 @@ QRect QGridLayoutPrivate::cellRect(int row, int col) const
     other layouts into the cells of your grid layout using
     addWidget(), addItem(), and addLayout().
 
-    QGridLayout also includes two margin widths: the margin() and the
-    spacing(). The margin is the width of the reserved space along
-    each of the QGridLayout's four sides. The spacing is the width of
-    the automatically allocated spacing between neighboring boxes.
+    QGridLayout also includes two margin widths:
+    the \l{getContentsMargins()}{contents margin} and the spacing().
+    The contents margin is the width of the reserved space along each
+    of the QGridLayout's four sides. The spacing() is the width of the
+    automatically allocated spacing between neighboring boxes.
 
-    The default margin() and spacing() values are provided by the
-    style. The default margin Qt styles specify is 9 for child
-    widgets and 11 for windows. The spacing defaults to the same as
+    The default contents margin values are provided by the
+    \l{QStyle::pixelMetric()}{style}. The default value Qt styles specify
+    is 9 for child widgets and 11 for windows. The spacing defaults to the same as
     the margin width for a top-level layout, or to the same as the
     parent layout.
 
-    \sa QBoxLayout, QStackedLayout, {Layout Classes}, {Basic Layouts Example}
+    \sa QBoxLayout, QStackedLayout, {Layout Management}, {Basic Layouts Example}
 */
 
 
@@ -1078,7 +1079,7 @@ QGridLayout::QGridLayout()
 
 #ifdef QT3_SUPPORT
 /*!
-  \obsolete
+    \obsolete
     Constructs a new QGridLayout with \a nRows rows, \a nCols columns
     and parent widget, \a  parent. \a parent may not be 0. The grid
     layout is called \a name.

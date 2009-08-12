@@ -107,7 +107,7 @@ static int posix_helper(const wchar_t *dirpath)
     wchar_t appendedPath[MAX_PATH];
     wcscpy(appendedPath, dirpath);
     wcscat(appendedPath, L"\\*");
-    hSearch = FindFirstFileW(appendedPath, &fd);
+    hSearch = FindFirstFile(appendedPath, &fd);
     appendedPath[origDirPathLength] = 0;
 
     if (hSearch == INVALID_HANDLE_VALUE) {

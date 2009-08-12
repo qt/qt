@@ -87,6 +87,9 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     indicates the progress of the upload for operations that have such
     content.
 
+    \note Do not delete the object in the slot connected to the
+    error() or finished() signal. Use deleteLater().
+
     \sa QNetworkRequest, QNetworkAccessManager
 */
 
@@ -232,6 +235,9 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     QNetworkAccessManager::finished() where that signal's reply
     parameter is this object.
 
+    \note Do not delete the object in the slot connected to this
+    signal. Use deleteLater().
+
     \sa QNetworkAccessManager::finished()
 */
 
@@ -245,6 +251,9 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     The \a code parameter contains the code of the error that was
     detected. Call errorString() to obtain a textual representation of
     the error condition.
+
+    \note Do not delete the object in the slot connected to this
+    signal. Use deleteLater().
 
     \sa error(), errorString()
 */
@@ -442,6 +451,31 @@ QNetworkReply::NetworkError QNetworkReply::error() const
 }
 
 /*!
+    \since 4.6
+
+    Returns true when the reply has finished or was aborted.
+
+    \sa isRunning()
+*/
+bool QNetworkReply::isFinished() const
+{
+    return d_func()->isFinished();
+}
+
+/*!
+    \since 4.6
+
+    Returns true when the request is still processing and the
+    reply has not finished or was aborted yet.
+
+    \sa isFinished()
+*/
+bool QNetworkReply::isRunning() const
+{
+    return !isFinished();
+}
+
+/*!
     Returns the URL of the content downloaded or uploaded. Note that
     the URL may be different from that of the original request.
 
@@ -559,6 +593,38 @@ void QNetworkReply::setSslConfiguration(const QSslConfiguration &config)
         qt_metacall(QMetaObject::InvokeMetaMethod, id, arr);
     }
 }
+
+/*!
+    \overload
+    \since 4.6
+
+    If this function is called, the SSL errors given in \a errors
+    will be ignored.
+
+    Note that you can set the expected certificate in the SSL error:
+    If, for instance, you want to issue a request to a server that uses
+    a self-signed certificate, consider the following snippet:
+
+    \snippet doc/src/snippets/code/src_network_access_qnetworkreply.cpp 0
+
+    Multiple calls to this function will replace the list of errors that
+    were passed in previous calls.
+    You can clear the list of errors you want to ignore by calling this
+    function with an empty list.
+
+    \sa sslConfiguration(), sslErrors(), QSslSocket::ignoreSslErrors()
+*/
+void QNetworkReply::ignoreSslErrors(const QList<QSslError> &errors)
+{
+    // do this cryptic trick, because we could not add a virtual method to this class later on
+    // since that breaks binary compatibility
+    int id = metaObject()->indexOfMethod("ignoreSslErrorsImplementation(QList<QSslError>)");
+    if (id != -1) {
+        QList<QSslError> copy(errors);
+        void *arr[] = { 0, &copy };
+        qt_metacall(QMetaObject::InvokeMetaMethod, id, arr);
+    }
+}
 #endif
 
 /*!
@@ -573,7 +639,7 @@ void QNetworkReply::setSslConfiguration(const QSslConfiguration &config)
     sslErrors() signal, which indicates which errors were
     found.
 
-    \sa sslConfiguration(), sslErrors()
+    \sa sslConfiguration(), sslErrors(), QSslSocket::ignoreSslErrors()
 */
 void QNetworkReply::ignoreSslErrors()
 {

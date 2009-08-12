@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the qmake spec of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -157,9 +157,9 @@
 #endif
 
 
-#if defined(_XOPEN_SOURCE) && (_XOPEN_SOURCE >= 500)
-#define QT_SNPRINTF		::snprintf
-#define QT_VSNPRINTF		::vsnprintf
+#if defined(__ISO_C_VISIBLE) && (__ISO_C_VISIBLE >= 1999)
+#define QT_SNPRINTF     ::snprintf
+#define QT_VSNPRINTF    ::vsnprintf
 #endif
 
 

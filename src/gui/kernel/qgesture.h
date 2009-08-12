@@ -42,12 +42,12 @@
 #ifndef QGESTURE_H
 #define QGESTURE_H
 
-#include "qobject.h"
-#include "qlist.h"
-#include "qdatetime.h"
-#include "qpoint.h"
-#include "qrect.h"
-#include "qmetatype.h"
+#include <QtCore/qobject.h>
+#include <QtCore/qlist.h>
+#include <QtCore/qdatetime.h>
+#include <QtCore/qpoint.h>
+#include <QtCore/qrect.h>
+#include <QtCore/qmetatype.h>
 
 QT_BEGIN_HEADER
 
@@ -55,97 +55,43 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
+class QGraphicsItem;
 class QGesturePrivate;
 class Q_GUI_EXPORT QGesture : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QGesture)
 
-    Q_PROPERTY(QString type READ type)
     Q_PROPERTY(Qt::GestureState state READ state)
 
-    Q_PROPERTY(QDateTime startTime READ startTime)
-    Q_PROPERTY(uint duration READ duration)
-
-    Q_PROPERTY(QRect rect READ rect WRITE setRect)
-    Q_PROPERTY(QPoint hotSpot READ hotSpot WRITE setHotSpot)
-    Q_PROPERTY(QPoint startPos READ startPos WRITE setStartPos)
-    Q_PROPERTY(QPoint lastPos READ lastPos WRITE setLastPos)
-    Q_PROPERTY(QPoint pos READ pos WRITE setPos)
-
 public:
-    QGesture(QObject *parent, const QString &type,
-             Qt::GestureState state = Qt::GestureStarted);
-    QGesture(QObject *parent,
-             const QString &type, const QPoint &startPos,
-             const QPoint &lastPos, const QPoint &pos, const QRect &rect,
-             const QPoint &hotSpot, const QDateTime &startTime,
-             uint duration, Qt::GestureState state);
-    virtual ~QGesture();
+    explicit QGesture(QObject *parent = 0);
+    ~QGesture();
 
-    inline void setAccepted(bool accepted) { m_accept = accepted; }
-    inline bool isAccepted() const { return m_accept; }
+    virtual bool filterEvent(QEvent *event) = 0;
 
-    inline void accept() { m_accept = true; }
-    inline void ignore() { m_accept = false; }
+    void setGraphicsItem(QGraphicsItem *);
+    QGraphicsItem *graphicsItem() const;
 
-    QString type() const;
+    virtual void reset();
+
     Qt::GestureState state() const;
 
-    QDateTime startTime() const;
-    uint duration() const;
-
-    QRect rect() const;
-    void setRect(const QRect &rect);
-    QPoint hotSpot() const;
-    void setHotSpot(const QPoint &point);
-
-    QPoint startPos() const;
-    void setStartPos(const QPoint &point);
-    QPoint lastPos() const;
-    void setLastPos(const QPoint &point);
-    QPoint pos() const;
-    void setPos(const QPoint &point);
-
 protected:
-    QGesture(QGesturePrivate &dd, QObject *parent, const QString &type,
-             Qt::GestureState state = Qt::GestureStarted);
-    virtual void translate(const QPoint &offset);
+    QGesture(QGesturePrivate &dd, QObject *parent);
+    bool eventFilter(QObject*, QEvent*);
+
+    void updateState(Qt::GestureState state);
+
+Q_SIGNALS:
+    void started();
+    void triggered();
+    void finished();
+    void cancelled();
 
 private:
-    ushort m_accept : 1;
-
-    friend class QGestureManager;
-    friend class QApplication;
-    friend class QGraphicsScene;
-    friend class QGraphicsScenePrivate;
-    friend class QGestureRecognizerPan;
-    friend class QDoubleTapGestureRecognizer;
-    friend class QTapAndHoldGestureRecognizer;
+    friend class QWidget;
 };
-
-class QPanningGesturePrivate;
-class Q_GUI_EXPORT QPanningGesture : public QGesture
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QPanningGesture)
-
-    Q_PROPERTY(Qt::DirectionType lastDirection READ lastDirection)
-    Q_PROPERTY(Qt::DirectionType direction READ direction)
-
-public:
-    Qt::DirectionType lastDirection() const;
-    Qt::DirectionType direction() const;
-
-private:
-    QPanningGesture(QObject *parent = 0);
-    ~QPanningGesture();
-
-    friend class QGestureRecognizerPan;
-};
-
-Q_DECLARE_METATYPE(Qt::DirectionType)
-Q_DECLARE_METATYPE(Qt::GestureState)
 
 QT_END_NAMESPACE
 

@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtCore of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,13 +61,12 @@ Q_CORE_EXPORT HBufC* qt_QString2HBufC(const QString& aString)
 #else
     TPtrC16 ptr(qt_QString2TPtrC(aString));
 #endif
-    buffer = HBufC::New(ptr.Length());
-    Q_CHECK_PTR(buffer);
+    buffer = q_check_ptr(HBufC::New(ptr.Length()));
     buffer->Des().Copy(ptr);
     return buffer;
 }
 
-Q_CORE_EXPORT QString qt_TDesC2QStringL(const TDesC& aDescriptor)
+Q_CORE_EXPORT QString qt_TDesC2QString(const TDesC& aDescriptor)
 {
 #ifdef QT_NO_UNICODE
     return QString::fromLocal8Bit(aDescriptor.Ptr(), aDescriptor.Length());
@@ -82,9 +81,8 @@ QHBufC::QHBufC()
 }
 
 QHBufC::QHBufC(const QHBufC &src)
+	: m_hBufC(q_check_ptr(src.m_hBufC->Alloc()))
 {
-    m_hBufC = src.m_hBufC->Alloc();
-    Q_CHECK_PTR(m_hBufC);
 }
 
 /*!

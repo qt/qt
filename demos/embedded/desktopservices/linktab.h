@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,30 +57,30 @@ QT_END_NAMESPACE
 
 /**
 * LinkTab class.
-* 
+*
 * This class implements tab for opening http and mailto links.
 */
 class LinkTab : public ContentTab
 {
     Q_OBJECT
-    
-public:     // Constructors & Destructors   
+
+public:     // Constructors & Destructors
     LinkTab(QWidget *parent);
-    ~LinkTab();    
-    
-protected:  // Derived Methods  
+    ~LinkTab();
+
+protected:  // Derived Methods
     virtual void populateListWidget();
-    virtual QUrl itemUrl(QListWidgetItem *item);    
+    virtual QUrl itemUrl(QListWidgetItem *item);
     virtual void handleErrorInOpen(QListWidgetItem *item);
-    
-private:    // Used variables  
+
+private:    // Used variables
     QListWidgetItem *m_WebItem;
-    QListWidgetItem *m_MailToItem; 
-    
-private:    // Owned variables      
-    
+    QListWidgetItem *m_MailToItem;
+
+private:    // Owned variables
+
 };
 
-#endif // CONTENTTAB_H_    
-    
+#endif // CONTENTTAB_H_
+
 // End of File

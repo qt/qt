@@ -44,12 +44,8 @@ HEADERS += \
 	kernel/qkeymapper_p.h \
 	kernel/qgesture.h \
 	kernel/qgesture_p.h \
-	kernel/qgesturemanager_p.h \
-	kernel/qgesturerecognizer_p.h \
-	kernel/qgesturerecognizer.h \
-	kernel/qgesturestandardrecognizers_p.h \
-	kernel/qdirectionrecognizer_p.h \
-	kernel/qdirectionsimplificator_p.h
+	kernel/qstandardgestures.h \
+	kernel/qstandardgestures_p.h
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -80,10 +76,7 @@ SOURCES += \
 	kernel/qwidgetaction.cpp \
 	kernel/qkeymapper.cpp \
 	kernel/qgesture.cpp \
-	kernel/qgesturemanager.cpp \
-	kernel/qgesturerecognizer.cpp \
-	kernel/qgesturestandardrecognizers.cpp \
-	kernel/qdirectionrecognizer.cpp
+	kernel/qstandardgestures.cpp
 
 win32 {
 	DEFINES += QT_NO_DIRECTDRAW
@@ -114,7 +107,7 @@ symbian {
                 kernel/qclipboard_s60.cpp\
                 kernel/qdnd_s60.cpp \
                 kernel/qsound_s60.cpp
-                
+
         HEADERS += \
                 kernel/qt_s60_p.h \
                 kernel/qeventdispatcher_s60_p.h
@@ -128,7 +121,8 @@ unix:x11 {
 	INCLUDEPATH += ../3rdparty/xorg
 	HEADERS += \
 		kernel/qx11embed_x11.h \
-		kernel/qx11info_x11.h
+		kernel/qx11info_x11.h \
+        kernel/qkde_p.h
 
 	SOURCES += \
 		kernel/qapplication_x11.cpp \
@@ -142,7 +136,8 @@ unix:x11 {
 		kernel/qwidgetcreate_x11.cpp \
 		kernel/qx11embed_x11.cpp \
 		kernel/qx11info_x11.cpp \
-		kernel/qkeymapper_x11.cpp
+		kernel/qkeymapper_x11.cpp \
+		kernel/qkde.cpp
 
         contains(QT_CONFIG, glib) {
             SOURCES += \
@@ -198,7 +193,7 @@ embedded {
                 qcocoaview_mac_p.h \
                 qcocoaapplication_mac_p.h \
                 qcocoaapplicationdelegate_mac_p.h \
-                qmultitouch_mac_p.h 
+                qmultitouch_mac_p.h
 
         OBJECTIVE_SOURCES += \
                 kernel/qcursor_mac.mm \
@@ -216,7 +211,7 @@ embedded {
                 kernel/qt_cocoa_helpers_mac.mm \
                 kernel/qdesktopwidget_mac.mm \
                 kernel/qeventdispatcher_mac.mm \
-                kernel/qcocoawindowcustomthemeframe_mac.mm \   
+                kernel/qcocoawindowcustomthemeframe_mac.mm \
                 kernel/qmultitouch_mac.mm \
 
         HEADERS += \
@@ -225,10 +220,10 @@ embedded {
                 kernel/qcocoaapplicationdelegate_mac_p.h \
                 kernel/qeventdispatcher_mac_p.h
 
-        MENU_NIB.files = mac/qt_menu.nib 
-        MENU_NIB.path = Resources 
+        MENU_NIB.files = mac/qt_menu.nib
+        MENU_NIB.path = Resources
         MENU_NIB.version = Versions
-        QMAKE_BUNDLE_DATA += MENU_NIB 
+        QMAKE_BUNDLE_DATA += MENU_NIB
         RESOURCES += mac/macresources.qrc
 
         LIBS += -framework AppKit

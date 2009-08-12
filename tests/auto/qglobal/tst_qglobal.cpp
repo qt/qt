@@ -51,6 +51,7 @@ private slots:
     void for_each();
     void qassert();
     void qtry();
+    void checkptr();
 };
 
 void tst_QGlobal::qIsNull()
@@ -250,6 +251,15 @@ void tst_QGlobal::qtry()
             i = 4;
         }
     QCOMPARE(i, 4);
+}
+
+void tst_QGlobal::checkptr()
+{
+    int i;
+    QCOMPARE(q_check_ptr(&i), &i);
+
+    const char *c = "hello";
+    QCOMPARE(q_check_ptr(c), c);
 }
 
 QTEST_MAIN(tst_QGlobal)

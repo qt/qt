@@ -272,9 +272,10 @@ void JavadocGenerator::generateFakeNode(const FakeNode *fake, CodeMarker *marker
     HtmlGenerator::generateFakeNode(fake, marker);
 }
 
-void JavadocGenerator::generateText(const Text& text, const Node *relative, CodeMarker *marker)
+bool JavadocGenerator::generateText(const Text& text, const Node *relative, CodeMarker *marker)
 {
     HtmlGenerator::generateText(text, relative, marker);
+    return true;
 }
 
 void JavadocGenerator::generateBody(const Node *node, CodeMarker *marker)

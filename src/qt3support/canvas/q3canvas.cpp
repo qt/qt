@@ -4828,7 +4828,7 @@ void Q3CanvasText::draw(QPainter& painter)
 }
 
 /*!
-  \reimp
+  \internal
 */
 void Q3CanvasText::changeChunks()
 {

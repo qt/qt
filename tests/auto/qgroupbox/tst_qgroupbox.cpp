@@ -80,6 +80,7 @@ private slots:
     void clicked();
     void toggledVsClicked();
     void childrenAreDisabled();
+    void propagateFocus();
     
 private:
     bool checked;
@@ -457,6 +458,16 @@ void tst_QGroupBox::childrenAreDisabled()
             QVERIFY(!widget->testAttribute(Qt::WA_ForceDisabled));
         }
     }
+}
+
+void tst_QGroupBox::propagateFocus()
+{
+    QGroupBox box;
+    QLineEdit lineEdit(&box);
+    box.show();
+    box.setFocus();
+    QTest::qWait(250);
+    QCOMPARE(qApp->focusWidget(), static_cast<QWidget*>(&lineEdit));
 }
 
 QTEST_MAIN(tst_QGroupBox)

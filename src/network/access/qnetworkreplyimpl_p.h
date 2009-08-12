@@ -61,6 +61,7 @@
 #include "QtCore/qqueue.h"
 #include "QtCore/qbuffer.h"
 #include "private/qringbuffer_p.h"
+#include "private/qbytedata_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -88,6 +89,7 @@ public:
     Q_INVOKABLE QSslConfiguration sslConfigurationImplementation() const;
     Q_INVOKABLE void setSslConfigurationImplementation(const QSslConfiguration &configuration);
     virtual void ignoreSslErrors();
+    Q_INVOKABLE virtual void ignoreSslErrorsImplementation(const QList<QSslError> &errors);
 #endif
 
     Q_DECLARE_PRIVATE(QNetworkReplyImpl)
@@ -144,13 +146,15 @@ public:
     void consume(qint64 count);
     void emitUploadProgress(qint64 bytesSent, qint64 bytesTotal);
     qint64 nextDownstreamBlockSize() const;
-    void appendDownstreamData(const QByteArray &data);
+    void appendDownstreamData(QByteDataBuffer &data);
     void appendDownstreamData(QIODevice *data);
     void finished();
     void error(QNetworkReply::NetworkError code, const QString &errorString);
     void metaDataChanged();
     void redirectionRequested(const QUrl &target);
     void sslErrors(const QList<QSslError> &errors);
+
+    bool isFinished() const;
 
     QNetworkAccessBackend *backend;
     QIODevice *outgoingData;
@@ -170,7 +174,7 @@ public:
     QList<QNetworkProxy> proxyList;
 #endif
 
-    QRingBuffer readBuffer;
+    QByteDataBuffer readBuffer;
     qint64 bytesDownloaded;
     qint64 lastBytesDownloaded;
     qint64 bytesUploaded;

@@ -32,4 +32,3 @@ sources.path = $$[QT_INSTALL_DEMOS]/spreadsheet
 INSTALLS += target sources
 
 include($$QT_SOURCE_TREE/demos/demobase.pri)
-

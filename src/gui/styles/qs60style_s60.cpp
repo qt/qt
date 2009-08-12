@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -80,7 +80,7 @@ enum TSupportRelease {
     ES60_5_1      = 0x0008,
     ES60_5_2      = 0x0010,
     // Add all new releases here
-    ES60_AllReleases = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2 
+    ES60_AllReleases = ES60_3_1 | ES60_3_2 | ES60_5_0 | ES60_5_1 | ES60_5_2
 };
 
 typedef struct {
@@ -106,10 +106,10 @@ public:
     static QPixmap generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
 
 private:
-    static QPixmap createSkinnedGraphicsL(QS60StyleEnums::SkinParts part,
+    static QPixmap createSkinnedGraphicsLX(QS60StyleEnums::SkinParts part,
         const QSize &size, QS60StylePrivate::SkinElementFlags flags);
-    static QPixmap createSkinnedGraphicsL(QS60StylePrivate::SkinFrameElements frameElement, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
-    static QPixmap colorSkinnedGraphicsL(const QS60StyleEnums::SkinParts &stylepart,
+    static QPixmap createSkinnedGraphicsLX(QS60StylePrivate::SkinFrameElements frameElement, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
+    static QPixmap colorSkinnedGraphicsLX(const QS60StyleEnums::SkinParts &stylepart,
         const QSize &size, QS60StylePrivate::SkinElementFlags flags);
     static void frameIdAndCenterId(QS60StylePrivate::SkinFrameElements frameElement, TAknsItemID &frameId, TAknsItemID &centerId);
     static TRect innerRectFromElement(QS60StylePrivate::SkinFrameElements frameElement, const TRect &outerRect);
@@ -317,7 +317,7 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrButtonSideBInactive */    {KAknsIIDQsnFrButtonTbSideB,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b6},
     /* SP_QsnFrButtonSideLInactive */    {KAknsIIDQsnFrButtonTbSideL,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b7},
     /* SP_QsnFrButtonSideRInactive */    {KAknsIIDQsnFrButtonTbSideR,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b8},
-    /* SP_QsnFrButtonCenterInactive */   {KAknsIIDQsnFrButtonTbCenter,          EDrawIcon,   ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b9},  
+    /* SP_QsnFrButtonCenterInactive */   {KAknsIIDQsnFrButtonTbCenter,          EDrawIcon,   ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b9},
 
     /* SP_QsnFrNotepadCornerTl */        {KAknsIIDQsnFrNotepadContCornerTl,     ENoDraw,     ES60_AllReleases,    -1,-1},
     /* SP_QsnFrNotepadCornerTr */        {KAknsIIDQsnFrNotepadContCornerTr,     ENoDraw,     ES60_AllReleases,    -1,-1},
@@ -336,10 +336,10 @@ QPixmap QS60StyleModeSpecifics::skinnedGraphics(
     QS60StylePrivate::SkinElementFlags flags)
 {
     QPixmap themedImage;
-    TRAPD( error, {
-            const QPixmap skinnedImage = createSkinnedGraphicsL(stylepart, size, flags);
+    TRAPD( error, QT_TRYCATCH_LEAVING({
+            const QPixmap skinnedImage = createSkinnedGraphicsLX(stylepart, size, flags);
             themedImage = skinnedImage;
-    });
+    }));
     if (error)
         return themedImage = QPixmap();
     return themedImage;
@@ -349,10 +349,10 @@ QPixmap QS60StyleModeSpecifics::skinnedGraphics(
     QS60StylePrivate::SkinFrameElements frame, const QSize &size, QS60StylePrivate::SkinElementFlags flags)
 {
     QPixmap themedImage;
-    TRAPD( error, {
-            const QPixmap skinnedImage = createSkinnedGraphicsL(frame, size, flags);
+    TRAPD( error, QT_TRYCATCH_LEAVING({
+            const QPixmap skinnedImage = createSkinnedGraphicsLX(frame, size, flags);
             themedImage = skinnedImage;
-    });
+    }));
     if (error)
         return themedImage = QPixmap();
     return themedImage;
@@ -363,7 +363,7 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphics(
     const QSize &size, QS60StylePrivate::SkinElementFlags flags)
 {
     QPixmap colorGraphics;
-    TRAPD(error, colorGraphics = colorSkinnedGraphicsL(stylepart, size, flags));
+    TRAPD(error, QT_TRYCATCH_LEAVING(colorGraphics = colorSkinnedGraphicsLX(stylepart, size, flags)));
     return error ? QPixmap() : colorGraphics;
 }
 
@@ -521,10 +521,11 @@ void QS60StyleModeSpecifics::fallbackInfo(const QS60StyleEnums::SkinParts &style
     }
 }
 
-QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsL(
+QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsLX(
     const QS60StyleEnums::SkinParts &stylepart,
     const QSize &size, QS60StylePrivate::SkinElementFlags flags)
 {
+    // this function can throw both exceptions and leaves. There are no cleanup dependencies between Qt and Symbian parts.
     const int stylepartIndex = (int)stylepart;
     const TAknsItemID skinId = m_partMap[stylepartIndex].skinID;
 
@@ -563,6 +564,13 @@ QColor QS60StyleModeSpecifics::colorValue(const TAknsItemID &colorGroup, int col
     return QColor(skinnedColor.Red(),skinnedColor.Green(),skinnedColor.Blue());
 }
 
+struct QAutoFbsBitmapHeapLock
+{
+    QAutoFbsBitmapHeapLock(CFbsBitmap* aBmp) : mBmp(aBmp) { mBmp->LockHeap(); }
+    ~QAutoFbsBitmapHeapLock() { mBmp->UnlockHeap(); }
+    CFbsBitmap* mBmp;
+};
+
 QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask, QS60StylePrivate::SkinElementFlags flags, QImage::Format format)
 {
     Q_ASSERT(icon);
@@ -589,13 +597,13 @@ QPixmap QS60StyleModeSpecifics::fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask
         if (mask) { //checkAndUnCompressBitmap might set mask to NULL
             const TSize maskSize = icon->SizeInPixels();
             const int maskBytesPerLine = CFbsBitmap::ScanLineLength(maskSize.iWidth, mask->DisplayMode());
-            mask->LockHeap();
+            // heap lock object required because QImage ctor might throw
+            QAutoFbsBitmapHeapLock maskHeapLock(mask);
             const uchar *const maskBytes = (uchar *)mask->DataAddress();
             // Since no other bitmap should be locked, we can just "borrow" the mask data for setAlphaChannel
             const QImage maskImage(maskBytes, maskSize.iWidth, maskSize.iHeight, maskBytesPerLine, QImage::Format_Indexed8);
             if (!maskImage.isNull())
                 iconImage.setAlphaChannel(maskImage);
-            mask->UnlockHeap();
         }
     }
 
@@ -631,10 +639,11 @@ QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
     return QPoint(globalPos.iX, globalPos.iY);
 }
 
-QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(
+QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
     QS60StyleEnums::SkinParts part,
     const QSize &size, QS60StylePrivate::SkinElementFlags flags)
 {
+    // this function can throw both exceptions and leaves. There are no cleanup dependencies between Qt and Symbian parts.
     if (!size.isValid())
         return QPixmap();
 
@@ -712,9 +721,10 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(
     return result;
 }
 
-QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsL(QS60StylePrivate::SkinFrameElements frameElement,
+QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFrameElements frameElement,
     const QSize &size, QS60StylePrivate::SkinElementFlags flags)
 {
+    // this function can throw both exceptions and leaves. There are no cleanup dependencies between Qt and Symbian parts.
     if (!size.isValid())
         return QPixmap();
 
@@ -892,7 +902,10 @@ void QS60StyleModeSpecifics::checkAndUnCompressBitmap(CFbsBitmap*& aOriginalBitm
 
 void QS60StyleModeSpecifics::checkAndUnCompressBitmapL(CFbsBitmap*& aOriginalBitmap)
 {
-    if (aOriginalBitmap->IsCompressedInRAM()) {
+    const TSize iconSize = aOriginalBitmap->SizeInPixels();
+    const int iconBytesPerLine = CFbsBitmap::ScanLineLength(iconSize.iWidth, aOriginalBitmap->DisplayMode());
+    const int iconBytesCount = iconBytesPerLine * iconSize.iHeight;
+    if (aOriginalBitmap->IsCompressedInRAM() || aOriginalBitmap->Header().iBitmapSize < iconBytesCount) {
         const TSize iconSize(aOriginalBitmap->SizeInPixels().iWidth,
             aOriginalBitmap->SizeInPixels().iHeight);
         CFbsBitmap* uncompressedBitmap = new (ELeave) CFbsBitmap();
@@ -941,7 +954,7 @@ QFont QS60StylePrivate::s60Font_specific(
     }
 
     QFont result;
-    TRAPD( error, {
+    TRAPD( error, QT_TRYCATCH_LEAVING({
         const CAknLayoutFont* aknFont =
             AknFontAccess::CreateLayoutFontFromSpecificationL(*dev, spec);
 
@@ -950,7 +963,7 @@ QFont QS60StylePrivate::s60Font_specific(
             result.setPointSize(pointSize); // Correct the font size returned by CreateLayoutFontFromSpecificationL()
 
         delete aknFont;
-    });
+    }));
     if (error) result = QFont();
     return result;
 }
@@ -1178,7 +1191,9 @@ void QS60StyleModeSpecifics::unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap
         User::Leave(KErrArgument);
 
    // Note! aSrcBitmap->IsCompressedInRAM() is always ETrue, since this method is called only if that applies!
-   ASSERT(aSrcBitmap->IsCompressedInRAM());
+   // Extra note! this function is also being used when bitmaps appear to be compressed (because DataSize is too small)
+   // even when they pretend they are not. Assert removed.
+//   ASSERT(aSrcBitmap->IsCompressedInRAM());
 
     TDisplayMode displayMode = aSrcBitmap->DisplayMode();
 
@@ -1343,26 +1358,24 @@ QS60Style::QS60Style()
 {
 }
 
-void QS60Style::handleDynamicLayoutVariantSwitch()
+void QS60StylePrivate::handleDynamicLayoutVariantSwitch()
 {
-    Q_D(QS60Style);
-    d->clearCaches(QS60StylePrivate::CC_LayoutChange);
-    d->setActiveLayout();
-    d->refreshUI();
-    d->setBackgroundTexture(qApp);
+    clearCaches(QS60StylePrivate::CC_LayoutChange);
+    setActiveLayout();
+    refreshUI();
+    setBackgroundTexture(qApp);
     foreach (QWidget *widget, QApplication::allWidgets())
         widget->ensurePolished();
 }
 
-void QS60Style::handleSkinChange()
+void QS60StylePrivate::handleSkinChange()
 {
-    Q_D(QS60Style);
-    d->clearCaches(QS60StylePrivate::CC_ThemeChange);
-    d->setThemePalette(qApp);
+    clearCaches(QS60StylePrivate::CC_ThemeChange);
+    setThemePalette(qApp);
     foreach (QWidget *topLevelWidget, QApplication::allWidgets()){
         QEvent e(QEvent::StyleChange);
         QApplication::sendEvent(topLevelWidget, &e);
-        d->setThemePalette(topLevelWidget);
+        setThemePalette(topLevelWidget);
         topLevelWidget->ensurePolished();
     }
 }

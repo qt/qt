@@ -89,7 +89,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \fn Type QTextLength::type() const
 
-    Returns the type of length.
+    Returns the type of this length object.
 
     \sa QTextLength::Type
 */
@@ -129,9 +129,15 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QTextLength::Type
 
-    \value VariableLength
-    \value FixedLength
-    \value PercentageLength
+    This enum describes the different types a length object can
+    have.
+
+    \value VariableLength The width of the object is variable
+    \value FixedLength The width of the object is fixed
+    \value PercentageLength The width of the object is in
+                            percentage of the maximum width
+
+    \sa type()
 */
 
 /*!
@@ -417,7 +423,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     more useful, and describe the formatting that is applied to
     specific parts of the document.
 
-    A format has a \c FormatType which specifies the kinds of thing it
+    A format has a \c FormatType which specifies the kinds of text item it
     can format; e.g. a block of text, a list, a table, etc. A format
     also has various properties (some specific to particular format
     types), as described by the Property enum. Every property has a
@@ -447,24 +453,32 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 /*!
     \enum QTextFormat::FormatType
 
-    \value InvalidFormat
-    \value BlockFormat
-    \value CharFormat
-    \value ListFormat
-    \value TableFormat
-    \value FrameFormat
+    This enum describes the text item a QTextFormat object is formatting.
+
+    \value InvalidFormat An invalid format as created by the default
+                         constructor
+    \value BlockFormat The object formats a text block
+    \value CharFormat The object formats a single character
+    \value ListFormat The object formats a list
+    \value TableFormat The object formats a table
+    \value FrameFormat The object formats a frame
 
     \value UserFormat
+
+    \sa QTextCharFormat, QTextBlockFormat, QTextListFormat,
+    QTextTableFormat, type()
 */
 
 /*!
     \enum QTextFormat::Property
 
-    \value ObjectIndex
+    This enum describes the different properties a format can have.
+
+    \value ObjectIndex The index of the formatted object. See objectIndex().
 
     Paragraph and character properties
 
-    \value CssFloat
+    \value CssFloat How a frame is located relative to the surrounding text
     \value LayoutDirection  The layout direction of the text in the document
                             (Qt::LayoutDirection).
 
@@ -482,25 +496,25 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \value BlockRightMargin
     \value TextIndent
     \value TabPositions     Specifies the tab positions.  The tab positions are structs of QTextOption::Tab which are stored in
-                                          a QList (internally, in a QList<QVariant>).
+                            a QList (internally, in a QList<QVariant>).
     \value BlockIndent
     \value BlockNonBreakableLines
-    \value BlockTrailingHorizontalRulerWidth
+    \value BlockTrailingHorizontalRulerWidth The width of a horizontal ruler element.
 
     Character properties
 
     \value FontFamily
     \value FontPointSize
+    \value FontPixelSize
     \value FontSizeAdjustment       Specifies the change in size given to the fontsize already set using
                                     FontPointSize or FontPixelSize.
+    \value FontFixedPitch
     \omitvalue FontSizeIncrement
     \value FontWeight
     \value FontItalic
     \value FontUnderline \e{This property has been deprecated.} Use QTextFormat::TextUnderlineStyle instead.
     \value FontOverline
     \value FontStrikeOut
-    \value FontFixedPitch
-    \value FontPixelSize
     \value FontCapitalization Specifies the capitalization type that is to be applied to the text.
     \value FontLetterSpacing Changes the default spacing between individual letters in the font. The value is
                                                 specified in percentage, with 100 as the default value.
@@ -512,7 +526,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     \omitvalue FirstFontProperty
     \omitvalue LastFontProperty
-    
+
     \value TextUnderlineColor
     \value TextVerticalAlignment
     \value TextOutline
@@ -533,7 +547,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     \value FrameBorder
     \value FrameBorderBrush
-    \value FrameBorderStyle
+    \value FrameBorderStyle See the \l{QTextFrameFormat::BorderStyle}{BorderStyle} enum.
     \value FrameBottomMargin
     \value FrameHeight
     \value FrameLeftMargin
@@ -565,33 +579,46 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
 
     Selection properties
 
-    \value FullWidthSelection When set on the characterFormat of a selection, the whole width of the text will be shown selected
+    \value FullWidthSelection When set on the characterFormat of a selection,
+                              the whole width of the text will be shown selected.
 
     Page break properties
 
-    \value PageBreakPolicy
+    \value PageBreakPolicy Specifies how pages are broken. See the PageBreakFlag enum.
 
     \value UserProperty
+
+    \sa property(), setProperty()
 */
 
 /*!
     \enum QTextFormat::ObjectTypes
+
+    This enum describes what kind of QTextObject this format is associated with.
 
     \value NoObject
     \value ImageObject
     \value TableObject
     \value TableCellObject
     \value UserObject The first object that can be used for application-specific purposes.
+
+    \sa QTextObject, QTextTable, QTextObject::format()
 */
 
 /*!
     \enum QTextFormat::PageBreakFlag
     \since 4.2
 
+    This enum describes how page breaking is performed when printing. It maps to the
+    corresponding css properties.
+
     \value PageBreak_Auto The page break is determined automatically depending on the
                           available space on the current page
     \value PageBreak_AlwaysBefore The page is always broken before the paragraph/table
     \value PageBreak_AlwaysAfter  A new page is always started after the paragraph/table
+
+    \sa QTextBlockFormat::pageBreakPolicy(), QTextFrameFormat::pageBreakPolicy(),
+    PageBreakPolicy
 */
 
 /*!
@@ -971,6 +998,8 @@ QVector<QTextLength> QTextFormat::lengthVectorProperty(int propertyId) const
 
 /*!
     Returns the property specified by the given \a propertyId.
+
+    \sa Property
 */
 QVariant QTextFormat::property(int propertyId) const
 {
@@ -979,6 +1008,8 @@ QVariant QTextFormat::property(int propertyId) const
 
 /*!
     Sets the property specified by the \a propertyId to the given \a value.
+
+    \sa Property
 */
 void QTextFormat::setProperty(int propertyId, const QVariant &value)
 {
@@ -1006,8 +1037,10 @@ void QTextFormat::setProperty(int propertyId, const QVector<QTextLength> &value)
 }
 
 /*!
-  Clears the value of the property given by \a propertyId
- */
+    Clears the value of the property given by \a propertyId
+
+    \sa Property
+*/
 void QTextFormat::clearProperty(int propertyId)
 {
     if (!d)
@@ -1019,14 +1052,18 @@ void QTextFormat::clearProperty(int propertyId)
 /*!
     \fn void QTextFormat::setObjectType(int type)
 
-    Sets the text format's object \a type. See \c{ObjectTypes}.
+    Sets the text format's object type to \a type.
+
+    \sa ObjectTypes, objectType()
 */
 
 
 /*!
     \fn int QTextFormat::objectType() const
 
-    Returns the text format's object type. See \c{ObjectTypes}.
+    Returns the text format's object type.
+
+    \sa ObjectTypes, setObjectType()
 */
 
 
@@ -2078,6 +2115,8 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     \value ListDecimal     decimal values in ascending order
     \value ListLowerAlpha  lower case Latin characters in alphabetical order
     \value ListUpperAlpha  upper case Latin characters in alphabetical order
+    \value ListLowerRoman  lower case roman numerals (supports up to 4999 items only)
+    \value ListUpperRoman  upper case roman numerals (supports up to 4999 items only)
     \omitvalue ListStyleUndefined
 */
 
@@ -2114,17 +2153,17 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
 /*!
     \fn void QTextListFormat::setStyle(Style style)
 
-    Sets the list format's \a style. See \c{Style} for the available styles.
+    Sets the list format's \a style.
 
-    \sa style()
+    \sa style() Style
 */
 
 /*!
     \fn Style QTextListFormat::style() const
 
-    Returns the list format's style. See \c{Style}.
+    Returns the list format's style.
 
-    \sa setStyle()
+    \sa setStyle() Style
 */
 
 
@@ -2186,15 +2225,20 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
 /*!
     \enum QTextFrameFormat::Position
 
+    This enum describes how a frame is located relative to the surrounding text.
+
     \value InFlow
     \value FloatLeft
     \value FloatRight
 
+    \sa position() CssFloat
 */
 
 /*!
     \enum QTextFrameFormat::BorderStyle
     \since 4.3
+
+    This enum describes different border styles for the text frame.
 
     \value BorderStyle_None
     \value BorderStyle_Dotted
@@ -2208,6 +2252,7 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
     \value BorderStyle_Inset
     \value BorderStyle_Outset
 
+    \sa borderStyle() FrameBorderStyle
 */
 
 /*!
@@ -2996,12 +3041,18 @@ int QTextFormatCollection::indexForFormat(const QTextFormat &format)
     int idx = formats.size();
     formats.append(format);
 
-    QTextFormat &f = formats.last();
-    if (!f.d)
-        f.d = new QTextFormatPrivate;
-    f.d->resolveFont(defaultFnt);
+    QT_TRY{
+        QTextFormat &f = formats.last();
+        if (!f.d)
+            f.d = new QTextFormatPrivate;
+        f.d->resolveFont(defaultFnt);
 
-    hashes.insert(hash);
+        hashes.insert(hash);
+
+    } QT_CATCH(...) {
+        formats.pop_back();
+        QT_RETHROW;
+    }
     return idx;
 }
 

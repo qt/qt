@@ -48,7 +48,6 @@
 #include <qlibrary.h>
 #include <qpaintdevice.h>
 #include <qpainter.h>
-#include <qlibrary.h>
 #include <limits.h>
 
 #include <qendian.h>
@@ -84,8 +83,6 @@
     (((quint32)(ch2)) << 8) | \
     ((quint32)(ch1)) \
    )
-
-typedef BOOL (WINAPI *PtrGetCharWidthI)(HDC, UINT, UINT, LPWORD, LPINT);
 
 // common DC for all fonts
 
@@ -128,8 +125,7 @@ HDC shared_dc()
 }
 #endif
 
-static HFONT stock_sysfont  = 0;
-
+typedef BOOL (WINAPI *PtrGetCharWidthI)(HDC, UINT, UINT, LPWORD, LPINT);
 static PtrGetCharWidthI ptrGetCharWidthI = 0;
 static bool resolvedGetCharWidthI = false;
 
@@ -139,27 +135,6 @@ static void resolveGetCharWidthI()
         return;
     resolvedGetCharWidthI = true;
     ptrGetCharWidthI = (PtrGetCharWidthI)QLibrary::resolve(QLatin1String("gdi32"), "GetCharWidthI");
-}
-
-// Copy a LOGFONTW struct into a LOGFONTA by converting the face name to an 8 bit value.
-// This is needed when calling CreateFontIndirect on non-unicode windowses.
-inline static void wa_copy_logfont(LOGFONTW *lfw, LOGFONTA *lfa)
-{
-    lfa->lfHeight = lfw->lfHeight;
-    lfa->lfWidth = lfw->lfWidth;
-    lfa->lfEscapement = lfw->lfEscapement;
-    lfa->lfOrientation = lfw->lfOrientation;
-    lfa->lfWeight = lfw->lfWeight;
-    lfa->lfItalic = lfw->lfItalic;
-    lfa->lfUnderline = lfw->lfUnderline;
-    lfa->lfCharSet = lfw->lfCharSet;
-    lfa->lfOutPrecision = lfw->lfOutPrecision;
-    lfa->lfClipPrecision = lfw->lfClipPrecision;
-    lfa->lfQuality = lfw->lfQuality;
-    lfa->lfPitchAndFamily = lfw->lfPitchAndFamily;
-
-    QString fam = QString::fromUtf16((const ushort*)lfw->lfFaceName);
-    memcpy(lfa->lfFaceName, fam.toLocal8Bit().constData(), fam.length() + 1);
 }
 
 // defined in qtextengine_win.cpp
@@ -187,14 +162,6 @@ static inline quint16 getUShort(unsigned char *p)
     return val;
 }
 
-static inline HFONT systemFont()
-{
-    if (stock_sysfont == 0)
-        stock_sysfont = (HFONT)GetStockObject(SYSTEM_FONT);
-    return stock_sysfont;
-}
-
-
 // general font engine
 
 QFixed QFontEngineWin::lineThickness() const
@@ -205,33 +172,18 @@ QFixed QFontEngineWin::lineThickness() const
     return QFontEngine::lineThickness();
 }
 
-#if defined(Q_WS_WINCE)
-static OUTLINETEXTMETRICW *getOutlineTextMetric(HDC hdc)
+static OUTLINETEXTMETRIC *getOutlineTextMetric(HDC hdc)
 {
     int size;
-    size = GetOutlineTextMetricsW(hdc, 0, 0);
-    OUTLINETEXTMETRICW *otm = (OUTLINETEXTMETRICW *)malloc(size);
-    GetOutlineTextMetricsW(hdc, size, otm);
+    size = GetOutlineTextMetrics(hdc, 0, 0);
+    OUTLINETEXTMETRIC *otm = (OUTLINETEXTMETRIC *)malloc(size);
+    GetOutlineTextMetrics(hdc, size, otm);
     return otm;
 }
-#else
-static OUTLINETEXTMETRICA *getOutlineTextMetric(HDC hdc)
-{
-    int size;
-    size = GetOutlineTextMetricsA(hdc, 0, 0);
-    OUTLINETEXTMETRICA *otm = (OUTLINETEXTMETRICA *)malloc(size);
-    GetOutlineTextMetricsA(hdc, size, otm);
-    return otm;
-}
-#endif
 
 void QFontEngineWin::getCMap()
 {
-    QT_WA({
-        ttf = (bool)(tm.w.tmPitchAndFamily & TMPF_TRUETYPE);
-    } , {
-        ttf = (bool)(tm.a.tmPitchAndFamily & TMPF_TRUETYPE);
-    });
+    ttf = (bool)(tm.tmPitchAndFamily & TMPF_TRUETYPE);
     HDC hdc = shared_dc();
     SelectObject(hdc, hfont);
     bool symb = false;
@@ -249,11 +201,7 @@ void QFontEngineWin::getCMap()
     designToDevice = 1;
     _faceId.index = 0;
     if(cmap) {
-#if defined(Q_WS_WINCE)
-        OUTLINETEXTMETRICW *otm = getOutlineTextMetric(hdc);
-#else
-        OUTLINETEXTMETRICA *otm = getOutlineTextMetric(hdc);
-#endif
+        OUTLINETEXTMETRIC *otm = getOutlineTextMetric(hdc);
         designToDevice = QFixed((int)otm->otmEMSquare)/int(otm->otmTextMetrics.tmHeight);
         unitsPerEm = otm->otmEMSquare;
         x_height = (int)otm->otmsXHeight;
@@ -263,7 +211,7 @@ void QFontEngineWin::getCMap()
         fsType = otm->otmfsType;
         free(otm);
     } else {
-        unitsPerEm = tm.w.tmHeight;
+        unitsPerEm = tm.tmHeight;
     }
 }
 
@@ -303,19 +251,14 @@ int QFontEngineWin::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout
             }
         } else {
 #endif
-            ushort first, last;
-            QT_WA({
-                first = tm.w.tmFirstChar;
-                last = tm.w.tmLastChar;
-            }, {
-                first = tm.a.tmFirstChar;
-                last = tm.a.tmLastChar;
-            });
+            wchar_t first = tm.tmFirstChar;
+            wchar_t last = tm.tmLastChar;
+
             for (; i < numChars; ++i, ++glyph_pos) {
                 uint ucs = QChar::mirroredChar(getChar(str, i, numChars));
                 if (
 #ifdef Q_WS_WINCE
-                    tm.w.tmFirstChar > 60000 || // see line 375
+                    tm.tmFirstChar > 60000 || // see line 375
 #endif
                         ucs >= first && ucs <= last)
                     glyphs->glyphs[glyph_pos] = ucs;
@@ -341,19 +284,14 @@ int QFontEngineWin::getGlyphIndexes(const QChar *str, int numChars, QGlyphLayout
             }
         } else {
 #endif
-            ushort first, last;
-            QT_WA({
-                first = tm.w.tmFirstChar;
-                last = tm.w.tmLastChar;
-            }, {
-                first = tm.a.tmFirstChar;
-                last = tm.a.tmLastChar;
-            });
+            wchar_t first = tm.tmFirstChar;
+            wchar_t last = tm.tmLastChar;
+
             for (; i < numChars; ++i, ++glyph_pos) {
                 uint uc = getChar(str, i, numChars);
                 if (
 #ifdef Q_WS_WINCE
-                    tm.w.tmFirstChar > 60000 || // see comment in QFontEngineWin
+                    tm.tmFirstChar > 60000 || // see comment in QFontEngineWin
 #endif
                         uc >= first && uc <= last)
                     glyphs->glyphs[glyph_pos] = uc;
@@ -387,28 +325,14 @@ QFontEngineWin::QFontEngineWin(const QString &name, HFONT _hfont, bool stockFont
     lineWidth = -1;
     x_height = -1;
 
-    BOOL res;
-    QT_WA({
-        res = GetTextMetricsW(hdc, &tm.w);
-    } , {
-        res = GetTextMetricsA(hdc, &tm.a);
-    });
-    fontDef.fixedPitch = !(tm.w.tmPitchAndFamily & TMPF_FIXED_PITCH);
+    BOOL res = GetTextMetrics(hdc, &tm);
+    fontDef.fixedPitch = !(tm.tmPitchAndFamily & TMPF_FIXED_PITCH);
     if (!res)
         qErrnoWarning("QFontEngineWin: GetTextMetrics failed");
 
-    cache_cost = tm.w.tmHeight * tm.w.tmAveCharWidth * 2000;
+    cache_cost = tm.tmHeight * tm.tmAveCharWidth * 2000;
     getCMap();
 
-    useTextOutA = false;
-#ifndef Q_OS_WINCE
-    // TextOutW doesn't work for symbol fonts on Windows 95!
-    // since we're using glyph indices we don't care for ttfs about this!
-    if (QSysInfo::WindowsVersion == QSysInfo::WV_95 && !ttf &&
-         (_name == QLatin1String("Marlett") || _name == QLatin1String("Symbol") ||
-           _name == QLatin1String("Webdings") || _name == QLatin1String("Wingdings")))
-            useTextOutA = true;
-#endif
     widthCache = 0;
     widthCacheSize = 0;
     designAdvances = 0;
@@ -427,7 +351,7 @@ QFontEngineWin::~QFontEngineWin()
         free(widthCache);
 
     // make sure we aren't by accident still selected
-    SelectObject(shared_dc(), systemFont());
+    SelectObject(shared_dc(), (HFONT)GetStockObject(SYSTEM_FONT));
 
     if (!stockFont) {
         if (!DeleteObject(hfont))
@@ -435,39 +359,12 @@ QFontEngineWin::~QFontEngineWin()
     }
 }
 
-HGDIOBJ QFontEngineWin::selectDesignFont(QFixed *overhang) const
+HGDIOBJ QFontEngineWin::selectDesignFont() const
 {
     LOGFONT f = logfont;
     f.lfHeight = unitsPerEm;
-    HFONT designFont;
-    QT_WA({
-        designFont = CreateFontIndirectW(&f);
-    }, {
-        LOGFONTA fa;
-        wa_copy_logfont(&f, &fa);
-        designFont = CreateFontIndirectA(&fa);
-    });
-    HGDIOBJ oldFont = SelectObject(shared_dc(), designFont);
-
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) {
-        BOOL res;
-        QT_WA({
-            TEXTMETRICW tm;
-            res = GetTextMetricsW(shared_dc(), &tm);
-            if (!res)
-                qErrnoWarning("QFontEngineWin: GetTextMetrics failed");
-            *overhang = QFixed((int)tm.tmOverhang) / designToDevice;
-        } , {
-            TEXTMETRICA tm;
-            res = GetTextMetricsA(shared_dc(), &tm);
-            if (!res)
-                qErrnoWarning("QFontEngineWin: GetTextMetrics failed");
-            *overhang = QFixed((int)tm.tmOverhang) / designToDevice;
-        });
-    } else {
-        *overhang = 0;
-    }
-    return oldFont;
+    HFONT designFont = CreateFontIndirect(&f);
+    return SelectObject(shared_dc(), designFont);
 }
 
 bool QFontEngineWin::stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const
@@ -486,8 +383,6 @@ bool QFontEngineWin::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
     HDC hdc = shared_dc();
     if (flags & QTextEngine::DesignMetrics) {
         HGDIOBJ oldFont = 0;
-        QFixed overhang = 0;
-
         int glyph_pos = 0;
         for(register int i = 0; i < len; i++) {
             bool surrogate = (str[i].unicode() >= 0xd800 && str[i].unicode() < 0xdc00 && i < len-1
@@ -495,16 +390,16 @@ bool QFontEngineWin::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
             unsigned int glyph = glyphs->glyphs[glyph_pos];
             if(int(glyph) >= designAdvancesSize) {
                 int newSize = (glyph + 256) >> 8 << 8;
-                designAdvances = (QFixed *)realloc(designAdvances, newSize*sizeof(QFixed));
+                designAdvances = q_check_ptr((QFixed *)realloc(designAdvances, newSize*sizeof(QFixed)));
                 for(int i = designAdvancesSize; i < newSize; ++i)
                     designAdvances[i] = -1000000;
                 designAdvancesSize = newSize;
             }
             if(designAdvances[glyph] < -999999) {
                 if(!oldFont)
-                    oldFont = selectDesignFont(&overhang);
+                    oldFont = selectDesignFont();
                 SIZE size = {0, 0};
-                GetTextExtentPoint32W(hdc, (wchar_t *)(str+i), surrogate ? 2 : 1, &size);
+                GetTextExtentPoint32(hdc, (wchar_t *)(str+i), surrogate ? 2 : 1, &size);
                 designAdvances[glyph] = QFixed((int)size.cx)/designToDevice;
             }
             glyphs->advances_x[glyph_pos] = designAdvances[glyph];
@@ -528,7 +423,8 @@ bool QFontEngineWin::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
 
             if (glyph >= widthCacheSize) {
                 int newSize = (glyph + 256) >> 8 << 8;
-                widthCache = (unsigned char *)realloc(widthCache, newSize*sizeof(QFixed));
+                widthCache = q_check_ptr((unsigned char *)realloc(widthCache,
+                            newSize*sizeof(QFixed)));
                 memset(widthCache + widthCacheSize, 0, newSize - widthCacheSize);
                 widthCacheSize = newSize;
             }
@@ -538,7 +434,7 @@ bool QFontEngineWin::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
                 SIZE size = {0, 0};
                 if (!oldFont)
                     oldFont = SelectObject(hdc, hfont);
-                GetTextExtentPoint32W(hdc, (wchar_t *)str + i, surrogate ? 2 : 1, &size);
+                GetTextExtentPoint32(hdc, (wchar_t *)str + i, surrogate ? 2 : 1, &size);
                 glyphs->advances_x[glyph_pos] = size.cx;
                 // if glyph's within cache range, store it for later
                 if (size.cx > 0 && size.cx < 0x100)
@@ -564,46 +460,24 @@ void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
     HGDIOBJ oldFont = 0;
     HDC hdc = shared_dc();
     if (ttf && (flags & QTextEngine::DesignMetrics)) {
-        QFixed overhang = 0;
-
         for(int i = 0; i < glyphs->numGlyphs; i++) {
             unsigned int glyph = glyphs->glyphs[i];
             if(int(glyph) >= designAdvancesSize) {
                 int newSize = (glyph + 256) >> 8 << 8;
-                designAdvances = (QFixed *)realloc(designAdvances, newSize*sizeof(QFixed));
+                designAdvances = q_check_ptr((QFixed *)realloc(designAdvances,
+                            newSize*sizeof(QFixed)));
                 for(int i = designAdvancesSize; i < newSize; ++i)
                     designAdvances[i] = -1000000;
                 designAdvancesSize = newSize;
             }
-            if(designAdvances[glyph] < -999999) {
-                if(!oldFont)
-                    oldFont = selectDesignFont(&overhang);
+            if (designAdvances[glyph] < -999999) {
+                if (!oldFont)
+                    oldFont = selectDesignFont();
 
-                if (ptrGetCharWidthI) {
-                    int width = 0;
+                int width = 0;
+                if (ptrGetCharWidthI)
                     ptrGetCharWidthI(hdc, glyph, 1, 0, &width);
-
-                    designAdvances[glyph] = QFixed(width) / designToDevice;
-                } else {
-#ifndef Q_WS_WINCE
-                    GLYPHMETRICS gm;
-                    DWORD res = GDI_ERROR;
-                    MAT2 mat;
-                    mat.eM11.value = mat.eM22.value = 1;
-                    mat.eM11.fract = mat.eM22.fract = 0;
-                    mat.eM21.value = mat.eM12.value = 0;
-                    mat.eM21.fract = mat.eM12.fract = 0;
-                    QT_WA({
-                        res = GetGlyphOutlineW(hdc, glyph, GGO_METRICS|GGO_GLYPH_INDEX|GGO_NATIVE, &gm, 0, 0, &mat);
-                    } , {
-                        res = GetGlyphOutlineA(hdc, glyph, GGO_METRICS|GGO_GLYPH_INDEX|GGO_NATIVE, &gm, 0, 0, &mat);
-                    });
-
-                    if (res != GDI_ERROR) {
-                        designAdvances[glyph] = QFixed(gm.gmCellIncX) / designToDevice;
-                    }
-#endif
-                }
+                designAdvances[glyph] = QFixed(width) / designToDevice;
             }
             glyphs->advances_x[i] = designAdvances[glyph];
             glyphs->advances_y[i] = 0;
@@ -611,8 +485,6 @@ void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
         if(oldFont)
             DeleteObject(SelectObject(hdc, oldFont));
     } else {
-        int overhang = (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) ? tm.a.tmOverhang : 0;
-
         for(int i = 0; i < glyphs->numGlyphs; i++) {
             unsigned int glyph = glyphs->glyphs[i];
 
@@ -620,7 +492,8 @@ void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
 
             if (glyph >= widthCacheSize) {
                 int newSize = (glyph + 256) >> 8 << 8;
-                widthCache = (unsigned char *)realloc(widthCache, newSize*sizeof(QFixed));
+                widthCache = q_check_ptr((unsigned char *)realloc(widthCache,
+                            newSize*sizeof(QFixed)));
                 memset(widthCache + widthCacheSize, 0, newSize - widthCacheSize);
                 widthCacheSize = newSize;
             }
@@ -640,31 +513,10 @@ void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
                         ++chrLen;
                     }
                     SIZE size = {0, 0};
-                    GetTextExtentPoint32W(hdc, (wchar_t *)ch, chrLen, &size);
+                    GetTextExtentPoint32(hdc, (wchar_t *)ch, chrLen, &size);
                     width = size.cx;
                 } else if (ptrGetCharWidthI) {
                     ptrGetCharWidthI(hdc, glyph, 1, 0, &width);
-
-                    width -= overhang;
-                } else {
-#ifndef Q_WS_WINCE
-                    GLYPHMETRICS gm;
-                    DWORD res = GDI_ERROR;
-                    MAT2 mat;
-                    mat.eM11.value = mat.eM22.value = 1;
-                    mat.eM11.fract = mat.eM22.fract = 0;
-                    mat.eM21.value = mat.eM12.value = 0;
-                    mat.eM21.fract = mat.eM12.fract = 0;
-                    QT_WA({
-                        res = GetGlyphOutlineW(hdc, glyph, GGO_METRICS|GGO_GLYPH_INDEX, &gm, 0, 0, &mat);
-                    } , {
-                        res = GetGlyphOutlineA(hdc, glyph, GGO_METRICS|GGO_GLYPH_INDEX, &gm, 0, 0, &mat);
-                    });
-
-                    if (res != GDI_ERROR) {
-                        width = gm.gmCellIncX;
-                    }
-#endif
                 }
                 glyphs->advances_x[i] = width;
                 // if glyph's within cache range, store it for later
@@ -687,16 +539,9 @@ glyph_metrics_t QFontEngineWin::boundingBox(const QGlyphLayout &glyphs)
     for (int i = 0; i < glyphs.numGlyphs; ++i)
         w += glyphs.effectiveAdvance(i);
 
-    return glyph_metrics_t(0, -tm.w.tmAscent, w, tm.w.tmHeight, w, 0);
+    return glyph_metrics_t(0, -tm.tmAscent, w, tm.tmHeight, w, 0);
 }
 
-
-
-
-#ifndef Q_WS_WINCE
-typedef HRESULT (WINAPI *pGetCharABCWidthsFloat)(HDC, UINT, UINT, LPABCFLOAT);
-static pGetCharABCWidthsFloat qt_GetCharABCWidthsFloat = 0;
-#endif
 
 glyph_metrics_t QFontEngineWin::boundingBox(glyph_t glyph, const QTransform &t)
 {
@@ -705,30 +550,13 @@ glyph_metrics_t QFontEngineWin::boundingBox(glyph_t glyph, const QTransform &t)
 
     HDC hdc = shared_dc();
     SelectObject(hdc, hfont);
-    if(!ttf) {
-        SIZE s = {0, 0};
-        WCHAR ch = glyph;
-        int width;
-        int overhang = 0;
-        static bool resolved = false;
-        if (!resolved) {
-            QLibrary lib(QLatin1String("gdi32"));
-            qt_GetCharABCWidthsFloat = (pGetCharABCWidthsFloat) lib.resolve("GetCharABCWidthsFloatW");
-            resolved = true;
-        }
-        if (QT_WA_INLINE(true, false) && qt_GetCharABCWidthsFloat) {
-            ABCFLOAT abc;
-            qt_GetCharABCWidthsFloat(hdc, ch, ch, &abc);
-            width = qRound(abc.abcfB);
-        } else {
-            GetTextExtentPoint32W(hdc, &ch, 1, &s);
-            overhang = (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) ? tm.a.tmOverhang : 0;
-            width = s.cx;
-        }
+    if (!ttf) {
+        wchar_t ch = glyph;
+        ABCFLOAT abc;
+        GetCharABCWidthsFloat(hdc, ch, ch, &abc);
+        int width = qRound(abc.abcfB);
 
-        return glyph_metrics_t(0, -tm.a.tmAscent,
-                               width, tm.a.tmHeight,
-                               width-overhang, 0).transformed(t);
+        return glyph_metrics_t(0, -tm.tmAscent, width, tm.tmHeight, width, 0).transformed(t);
     } else {
         DWORD res = 0;
         MAT2 mat;
@@ -753,11 +581,8 @@ glyph_metrics_t QFontEngineWin::boundingBox(glyph_t glyph, const QTransform &t)
             SetWorldTransform(hdc, &xform);
         }
 
-        QT_WA({
-            res = GetGlyphOutlineW(hdc, glyph, GGO_METRICS|GGO_GLYPH_INDEX, &gm, 0, 0, &mat);
-        } , {
-            res = GetGlyphOutlineA(hdc, glyph, GGO_METRICS|GGO_GLYPH_INDEX, &gm, 0, 0, &mat);
-        });
+        res = GetGlyphOutline(hdc, glyph, GGO_METRICS | GGO_GLYPH_INDEX, &gm, 0, 0, &mat);
+
         if (t.type() > QTransform::TxTranslate) {
             XFORM xform;
             xform.eM11 = xform.eM22 = 1;
@@ -793,28 +618,28 @@ glyph_metrics_t QFontEngineWin::boundingBox(glyph_t glyph, const QTransform &t)
     else
 #endif
     {   // fallback
-        width = tm.w.tmMaxCharWidth;
+        width = tm.tmMaxCharWidth;
         advance = width;
     }
 
     SelectObject(hdc, oldFont);
-    return glyph_metrics_t(0, -tm.w.tmAscent, width, tm.w.tmHeight, advance, 0).transformed(t);
+    return glyph_metrics_t(0, -tm.tmAscent, width, tm.tmHeight, advance, 0).transformed(t);
 #endif
 }
 
 QFixed QFontEngineWin::ascent() const
 {
-    return tm.w.tmAscent;
+    return tm.tmAscent;
 }
 
 QFixed QFontEngineWin::descent() const
 {
-    return tm.w.tmDescent;
+    return tm.tmDescent;
 }
 
 QFixed QFontEngineWin::leading() const
 {
-    return tm.w.tmExternalLeading;
+    return tm.tmExternalLeading;
 }
 
 
@@ -827,12 +652,12 @@ QFixed QFontEngineWin::xHeight() const
 
 QFixed QFontEngineWin::averageCharWidth() const
 {
-    return tm.w.tmAveCharWidth;
+    return tm.tmAveCharWidth;
 }
 
 qreal QFontEngineWin::maxCharWidth() const
 {
-    return tm.w.tmMaxCharWidth;
+    return tm.tmMaxCharWidth;
 }
 
 enum { max_font_count = 256 };
@@ -879,10 +704,10 @@ qreal QFontEngineWin::minRightBearing() const
         SelectObject(hdc, hfont);
         if (ttf) {
             ABC *abc = 0;
-            int n = QT_WA_INLINE(tm.w.tmLastChar - tm.w.tmFirstChar, tm.a.tmLastChar - tm.a.tmFirstChar);
+            int n = tm.tmLastChar - tm.tmFirstChar;
             if (n <= max_font_count) {
                 abc = new ABC[n+1];
-                GetCharABCWidths(hdc, tm.w.tmFirstChar, tm.w.tmLastChar, abc);
+                GetCharABCWidths(hdc, tm.tmFirstChar, tm.tmLastChar, abc);
             } else {
                 abc = new ABC[char_table_entries+1];
                 for(int i = 0; i < char_table_entries; i++)
@@ -898,9 +723,6 @@ qreal QFontEngineWin::minRightBearing() const
                 }
             }
             delete [] abc;
-        } else {
-            ml = 0;
-            mr = -tm.a.tmOverhang;
         }
         lbearing = ml;
         rbearing = mr;
@@ -915,28 +737,14 @@ qreal QFontEngineWin::minRightBearing() const
         SelectObject(hdc, hfont);
         if (ttf) {
             ABC *abc = 0;
-            int n = QT_WA_INLINE(tm.w.tmLastChar - tm.w.tmFirstChar, tm.a.tmLastChar - tm.a.tmFirstChar);
+            int n = tm.tmLastChar - tm.tmFirstChar;
             if (n <= max_font_count) {
                 abc = new ABC[n+1];
-                QT_WA({
-                    GetCharABCWidths(hdc, tm.w.tmFirstChar, tm.w.tmLastChar, abc);
-                }, {
-                    GetCharABCWidthsA(hdc,tm.a.tmFirstChar,tm.a.tmLastChar,abc);
-                });
+                GetCharABCWidths(hdc, tm.tmFirstChar, tm.tmLastChar, abc);
             } else {
                 abc = new ABC[char_table_entries+1];
-                QT_WA({
-                    for(int i = 0; i < char_table_entries; i++)
-                        GetCharABCWidths(hdc, char_table[i], char_table[i], abc+i);
-                }, {
-                    for(int i = 0; i < char_table_entries; i++) {
-                        QByteArray w = QString(QChar(char_table[i])).toLocal8Bit();
-                        if (w.length() == 1) {
-                            uint ch8 = (uchar)w[0];
-                            GetCharABCWidthsA(hdc, ch8, ch8, abc+i);
-                        }
-                    }
-                });
+                for(int i = 0; i < char_table_entries; i++)
+                    GetCharABCWidths(hdc, char_table[i], char_table[i], abc + i);
                 n = char_table_entries;
             }
             ml = abc[0].abcA;
@@ -949,33 +757,28 @@ qreal QFontEngineWin::minRightBearing() const
             }
             delete [] abc;
         } else {
-            QT_WA({
-                ABCFLOAT *abc = 0;
-                int n = tm.w.tmLastChar - tm.w.tmFirstChar+1;
-                if (n <= max_font_count) {
-                    abc = new ABCFLOAT[n];
-                    GetCharABCWidthsFloat(hdc, tm.w.tmFirstChar, tm.w.tmLastChar, abc);
-                } else {
-                    abc = new ABCFLOAT[char_table_entries];
-                    for(int i = 0; i < char_table_entries; i++)
-                        GetCharABCWidthsFloat(hdc, char_table[i], char_table[i], abc+i);
-                    n = char_table_entries;
+            ABCFLOAT *abc = 0;
+            int n = tm.tmLastChar - tm.tmFirstChar+1;
+            if (n <= max_font_count) {
+                abc = new ABCFLOAT[n];
+                GetCharABCWidthsFloat(hdc, tm.tmFirstChar, tm.tmLastChar, abc);
+            } else {
+                abc = new ABCFLOAT[char_table_entries];
+                for(int i = 0; i < char_table_entries; i++)
+                    GetCharABCWidthsFloat(hdc, char_table[i], char_table[i], abc+i);
+                n = char_table_entries;
+            }
+            float fml = abc[0].abcfA;
+            float fmr = abc[0].abcfC;
+            for (int i=1; i<n; i++) {
+                if (abc[i].abcfA + abc[i].abcfB + abc[i].abcfC != 0) {
+                    fml = qMin(fml,abc[i].abcfA);
+                    fmr = qMin(fmr,abc[i].abcfC);
                 }
-                float fml = abc[0].abcfA;
-                float fmr = abc[0].abcfC;
-                for (int i=1; i<n; i++) {
-                    if (abc[i].abcfA + abc[i].abcfB + abc[i].abcfC != 0) {
-                        fml = qMin(fml,abc[i].abcfA);
-                        fmr = qMin(fmr,abc[i].abcfC);
-                    }
-                }
-                ml = int(fml-0.9999);
-                mr = int(fmr-0.9999);
-                delete [] abc;
-            } , {
-                ml = 0;
-                mr = -tm.a.tmOverhang;
-            });
+            }
+            ml = int(fml - 0.9999);
+            mr = int(fmr - 0.9999);
+            delete [] abc;
         }
         lbearing = ml;
         rbearing = mr;
@@ -1012,17 +815,10 @@ bool QFontEngineWin::canRender(const QChar *string,  int len)
                 return false;
         }
     } else {
-        QT_WA({
-            while(len--) {
-                if (tm.w.tmFirstChar > string->unicode() || tm.w.tmLastChar < string->unicode())
-                    return false;
-            }
-        }, {
-            while(len--) {
-                if (tm.a.tmFirstChar > string->unicode() || tm.a.tmLastChar < string->unicode())
-                    return false;
-            }
-        });
+        while(len--) {
+            if (tm.tmFirstChar > string->unicode() || tm.tmLastChar < string->unicode())
+                return false;
+        }
     }
     return true;
 }
@@ -1065,11 +861,7 @@ static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
     memset(&gMetric, 0, sizeof(GLYPHMETRICS));
     int bufferSize = GDI_ERROR;
 #if !defined(Q_WS_WINCE)
-    QT_WA( {
-        bufferSize = GetGlyphOutlineW(hdc, glyph, glyphFormat, &gMetric, 0, 0, &mat);
-    }, {
-        bufferSize = GetGlyphOutlineA(hdc, glyph, glyphFormat, &gMetric, 0, 0, &mat);
-    });
+    bufferSize = GetGlyphOutline(hdc, glyph, glyphFormat, &gMetric, 0, 0, &mat);
 #endif
     if ((DWORD)bufferSize == GDI_ERROR) {
         return false;
@@ -1078,13 +870,7 @@ static bool addGlyphToPath(glyph_t glyph, const QFixedPoint &position, HDC hdc,
     void *dataBuffer = new char[bufferSize];
     DWORD ret = GDI_ERROR;
 #if !defined(Q_WS_WINCE)
-    QT_WA( {
-        ret = GetGlyphOutlineW(hdc, glyph, glyphFormat, &gMetric, bufferSize,
-                            dataBuffer, &mat);
-    }, {
-        ret = GetGlyphOutlineA(hdc, glyph, glyphFormat, &gMetric, bufferSize,
-                                dataBuffer, &mat);
-    } );
+    ret = GetGlyphOutline(hdc, glyph, glyphFormat, &gMetric, bufferSize, dataBuffer, &mat);
 #endif
     if (ret == GDI_ERROR) {
         delete [](char *)dataBuffer;
@@ -1171,14 +957,7 @@ void QFontEngineWin::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, in
     // font at the correct pixel size.
     lf.lfHeight = -unitsPerEm;
     lf.lfWidth = 0;
-    HFONT hf;
-    QT_WA({
-        hf = CreateFontIndirectW(&lf);
-    }, {
-        LOGFONTA lfa;
-        wa_copy_logfont(&lf, &lfa);
-        hf = CreateFontIndirectA(&lfa);
-    });
+    HFONT hf = CreateFontIndirect(&lf);
     HDC hdc = shared_dc();
     HGDIOBJ oldfont = SelectObject(hdc, hf);
 
@@ -1200,7 +979,7 @@ void QFontEngineWin::addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyp
                                       QPainterPath *path, QTextItem::RenderFlags flags)
 {
 #if !defined(Q_WS_WINCE)
-    if(tm.w.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR)) {
+    if(tm.tmPitchAndFamily & (TMPF_TRUETYPE | TMPF_VECTOR)) {
         hasOutline = true;
         QFontEngine::addOutlineToPath(x, y, glyphs, path, flags);
         if (hasOutline)  {
@@ -1234,11 +1013,11 @@ int QFontEngineWin::synthesized() const
             uchar data[4];
             GetFontData(hdc, HEAD, 44, &data, 4);
             USHORT macStyle = getUShort(data);
-            if (tm.w.tmItalic && !(macStyle & 2))
+            if (tm.tmItalic && !(macStyle & 2))
                 synthesized_flags = SynthesizedItalic;
             if (fontDef.stretch != 100 && ttf)
                 synthesized_flags |= SynthesizedStretch;
-            if (tm.w.tmWeight >= 500 && !(macStyle & 1))
+            if (tm.tmWeight >= 500 && !(macStyle & 1))
                 synthesized_flags |= SynthesizedBold;
             //qDebug() << "font is" << _name <<
             //    "it=" << (macStyle & 2) << fontDef.style << "flags=" << synthesized_flags;
@@ -1254,24 +1033,12 @@ QFixed QFontEngineWin::emSquareSize() const
 
 QFontEngine::Properties QFontEngineWin::properties() const
 {
-
     LOGFONT lf = logfont;
     lf.lfHeight = unitsPerEm;
-    HFONT hf;
-    QT_WA({
-        hf = CreateFontIndirectW(&lf);
-    }, {
-        LOGFONTA lfa;
-        wa_copy_logfont(&lf, &lfa);
-        hf = CreateFontIndirectA(&lfa);
-    });
+    HFONT hf = CreateFontIndirect(&lf);
     HDC hdc = shared_dc();
     HGDIOBJ oldfont = SelectObject(hdc, hf);
-#if defined(Q_WS_WINCE)
-    OUTLINETEXTMETRICW *otm = getOutlineTextMetric(hdc);
-#else
-    OUTLINETEXTMETRICA *otm = getOutlineTextMetric(hdc);
-#endif
+    OUTLINETEXTMETRIC *otm = getOutlineTextMetric(hdc);
     Properties p;
     p.emSquare = unitsPerEm;
     p.italicAngle = otm->otmItalicAngle;
@@ -1301,14 +1068,7 @@ void QFontEngineWin::getUnscaledGlyph(glyph_t glyph, QPainterPath *path, glyph_m
     if(flags & SynthesizedItalic)
         lf.lfItalic = false;
     lf.lfWidth = 0;
-    HFONT hf;
-    QT_WA({
-        hf = CreateFontIndirectW(&lf);
-    }, {
-        LOGFONTA lfa;
-        wa_copy_logfont(&lf, &lfa);
-        hf = CreateFontIndirectA(&lfa);
-    });
+    HFONT hf = CreateFontIndirect(&lf);
     HDC hdc = shared_dc();
     HGDIOBJ oldfont = SelectObject(hdc, hf);
     QFixedPoint p;
@@ -1377,14 +1137,7 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
         memset(&mat, 0, sizeof(mat));
         mat.eM11.value = mat.eM22.value = 1;
 
-        int error = 0;
-        QT_WA( {
-                error = GetGlyphOutlineW(hdc, glyph, ggo_options, &tgm, 0, 0, &mat);
-            }, {
-                error = GetGlyphOutlineA(hdc, glyph, ggo_options, &tgm, 0, 0, &mat);
-            } );
-
-        if (error == GDI_ERROR) {
+        if (GetGlyphOutline(hdc, glyph, ggo_options, &tgm, 0, 0, &mat) == GDI_ERROR) {
             qWarning("QWinFontEngine: unable to query transformed glyph metrics...");
             return 0;
         }
@@ -1430,11 +1183,11 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
     if (has_transformation) {
         SetGraphicsMode(hdc, GM_ADVANCED);
         SetWorldTransform(hdc, &xform);
-        ExtTextOutW(hdc, 0, 0, options, 0, (LPCWSTR) &glyph, 1, 0);
+        ExtTextOut(hdc, 0, 0, options, 0, (LPCWSTR) &glyph, 1, 0);
     } else
 #endif
     {
-        ExtTextOutW(hdc, -gx + margin, -gy + margin, options, 0, (LPCWSTR) &glyph, 1, 0);
+        ExtTextOut(hdc, -gx + margin, -gy + margin, options, 0, (LPCWSTR) &glyph, 1, 0);
     }
 
     SelectObject(hdc, old_font);
@@ -1450,7 +1203,7 @@ QImage QFontEngineWin::alphaMapForGlyph(glyph_t glyph, const QTransform &xform)
     if (qt_cleartype_enabled) {
         LOGFONT lf = logfont;
         lf.lfQuality = ANTIALIASED_QUALITY;
-        font = CreateFontIndirectW(&lf);
+        font = CreateFontIndirect(&lf);
     }
     QImage::Format mask_format = QNativeImage::systemFormat();
 #ifndef Q_OS_WINCE
@@ -1557,17 +1310,9 @@ void QFontEngineMultiWin::loadEngine(int at)
     QString fam = fallbacks.at(at-1);
 
     LOGFONT lf = static_cast<QFontEngineWin *>(engines.at(0))->logfont;
-    HFONT hfont;
-    QT_WA({
-        memcpy(lf.lfFaceName, fam.utf16(), sizeof(TCHAR)*qMin(fam.length()+1,32));  // 32 = Windows hard-coded
-        hfont = CreateFontIndirectW(&lf);
-    } , {
-        // LOGFONTA and LOGFONTW are binary compatible
-        QByteArray lname = fam.toLocal8Bit();
-        memcpy(lf.lfFaceName,lname.data(),
-            qMin(lname.length()+1,32));  // 32 = Windows hard-coded
-        hfont = CreateFontIndirectA((LOGFONTA*)&lf);
-    });
+    memcpy(lf.lfFaceName, fam.utf16(), sizeof(wchar_t) * qMin(fam.length() + 1, 32));  // 32 = Windows hard-coded
+    HFONT hfont = CreateFontIndirect(&lf);
+
     bool stockFont = false;
     if (hfont == 0) {
         hfont = (HFONT)GetStockObject(ANSI_VAR_FONT);

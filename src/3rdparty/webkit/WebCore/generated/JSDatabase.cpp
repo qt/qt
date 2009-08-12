@@ -44,7 +44,7 @@ static const HashTableValue JSDatabaseTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDatabaseTable =
+static JSC_CONST_HASHTABLE HashTable JSDatabaseTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDatabaseTableValues, 0 };
 #else
@@ -60,7 +60,7 @@ static const HashTableValue JSDatabasePrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDatabasePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDatabasePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSDatabasePrototypeTableValues, 0 };
 #else
@@ -81,8 +81,8 @@ bool JSDatabasePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 const ClassInfo JSDatabase::s_info = { "Database", 0, &JSDatabaseTable, 0 };
 
-JSDatabase::JSDatabase(PassRefPtr<Structure> structure, PassRefPtr<Database> impl)
-    : DOMObject(structure)
+JSDatabase::JSDatabase(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Database> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -104,8 +104,9 @@ bool JSDatabase::getOwnPropertySlot(ExecState* exec, const Identifier& propertyN
 
 JSValue jsDatabaseVersion(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDatabase* castedThis = static_cast<JSDatabase*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Database* imp = static_cast<Database*>(static_cast<JSDatabase*>(asObject(slot.slotBase()))->impl());
+    Database* imp = static_cast<Database*>(castedThis->impl());
     return jsString(exec, imp->version());
 }
 
@@ -127,9 +128,9 @@ JSValue JSC_HOST_CALL jsDatabasePrototypeFunctionTransaction(ExecState* exec, JS
     return castedThisObj->transaction(exec, args);
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, Database* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, Database* object)
 {
-    return getDOMObjectWrapper<JSDatabase>(exec, object);
+    return getDOMObjectWrapper<JSDatabase>(exec, globalObject, object);
 }
 Database* toDatabase(JSC::JSValue value)
 {

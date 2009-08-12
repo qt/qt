@@ -43,7 +43,7 @@ static const HashTableValue JSSVGPointListTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPointListTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPointListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPointListTableValues, 0 };
 #else
@@ -64,7 +64,7 @@ static const HashTableValue JSSVGPointListPrototypeTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPointListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPointListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSSVGPointListPrototypeTableValues, 0 };
 #else
@@ -85,9 +85,8 @@ bool JSSVGPointListPrototype::getOwnPropertySlot(ExecState* exec, const Identifi
 
 const ClassInfo JSSVGPointList::s_info = { "SVGPointList", 0, &JSSVGPointListTable, 0 };
 
-JSSVGPointList::JSSVGPointList(PassRefPtr<Structure> structure, PassRefPtr<SVGPointList> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGPointList::JSSVGPointList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPointList> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -109,8 +108,9 @@ bool JSSVGPointList::getOwnPropertySlot(ExecState* exec, const Identifier& prope
 
 JSValue jsSVGPointListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPointList* castedThis = static_cast<JSSVGPointList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPointList* imp = static_cast<SVGPointList*>(static_cast<JSSVGPointList*>(asObject(slot.slotBase()))->impl());
+    SVGPointList* imp = static_cast<SVGPointList*>(castedThis->impl());
     return jsNumber(exec, imp->numberOfItems());
 }
 
@@ -177,9 +177,9 @@ JSValue JSC_HOST_CALL jsSVGPointListPrototypeFunctionAppendItem(ExecState* exec,
     return castedThisObj->appendItem(exec, args);
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGPointList* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGPointList* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGPointList>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGPointList>(exec, globalObject, object, context);
 }
 SVGPointList* toSVGPointList(JSC::JSValue value)
 {

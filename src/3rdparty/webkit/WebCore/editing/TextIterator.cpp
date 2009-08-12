@@ -42,6 +42,7 @@
 #include "visible_units.h"
 
 #if USE(ICU_UNICODE) && !UCONFIG_NO_COLLATION
+#include "TextBreakIteratorInternalICU.h"
 #include <unicode/usearch.h>
 #endif
 
@@ -56,7 +57,7 @@ using namespace HTMLNames;
 // Keeps enough of the previous text to be able to search in the future, but no more.
 // Non-breaking spaces are always equal to normal spaces.
 // Case folding is also done if <isCaseSensitive> is false.
-class SearchBuffer : Noncopyable {
+class SearchBuffer : public Noncopyable {
 public:
     SearchBuffer(const String& target, bool isCaseSensitive);
     ~SearchBuffer();
@@ -143,7 +144,7 @@ unsigned BitStack::size() const
 
 // --------
 
-static inline Node* parentOrShadowParent(Node* node)
+static inline Node* parentCrossingShadowBoundaries(Node* node)
 {
     if (Node* parent = node->parentNode())
         return parent;
@@ -155,20 +156,50 @@ static inline Node* parentOrShadowParent(Node* node)
 static unsigned depthCrossingShadowBoundaries(Node* node)
 {
     unsigned depth = 0;
-    for (Node* parent = parentOrShadowParent(node); parent; parent = parentOrShadowParent(parent))
+    for (Node* parent = parentCrossingShadowBoundaries(node); parent; parent = parentCrossingShadowBoundaries(parent))
         ++depth;
     return depth;
 }
 
 #endif
 
+// This function is like Range::pastLastNode, except for the fact that it can climb up out of shadow trees.
+static Node* nextInPreOrderCrossingShadowBoundaries(Node* rangeEndContainer, int rangeEndOffset)
+{
+    if (!rangeEndContainer)
+        return 0;
+    if (rangeEndOffset >= 0 && !rangeEndContainer->offsetInCharacters()) {
+        if (Node* next = rangeEndContainer->childNode(rangeEndOffset))
+            return next;
+    }
+    for (Node* node = rangeEndContainer; node; node = parentCrossingShadowBoundaries(node)) {
+        if (Node* next = node->nextSibling())
+            return next;
+    }
+    return 0;
+}
+
+static Node* previousInPostOrderCrossingShadowBoundaries(Node* rangeStartContainer, int rangeStartOffset)
+{
+    if (!rangeStartContainer)
+        return 0;
+    if (rangeStartOffset > 0 && !rangeStartContainer->offsetInCharacters()) {
+        if (Node* previous = rangeStartContainer->childNode(rangeStartOffset - 1))
+            return previous;
+    }
+    for (Node* node = rangeStartContainer; node; node = parentCrossingShadowBoundaries(node)) {
+        if (Node* previous = node->previousSibling())
+            return previous;
+    }
+    return 0;
+}
+
+// --------
+
 static inline bool fullyClipsContents(Node* node)
 {
     RenderObject* renderer = node->renderer();
-    if (!renderer || !renderer->isBox())
-        return false;
-    RenderStyle* style = renderer->style();
-    if (style->overflowX() == OVISIBLE && style->overflowY() == OVISIBLE)
+    if (!renderer || !renderer->isBox() || !renderer->hasOverflowClip())
         return false;
     return toRenderBox(renderer)->size().isEmpty();
 }
@@ -195,7 +226,7 @@ static void setUpFullyClippedStack(BitStack& stack, Node* node)
 {
     // Put the nodes in a vector so we can iterate in reverse order.
     Vector<Node*, 100> ancestry;
-    for (Node* parent = parentOrShadowParent(node); parent; parent = parentOrShadowParent(parent))
+    for (Node* parent = parentCrossingShadowBoundaries(node); parent; parent = parentCrossingShadowBoundaries(parent))
         ancestry.append(parent);
 
     // Call pushFullyClippedState on each node starting with the earliest ancestor.
@@ -265,7 +296,7 @@ TextIterator::TextIterator(const Range* r, bool emitCharactersBetweenAllVisibleP
     m_handledChildren = false;
 
     // calculate first out of bounds node
-    m_pastEndNode = r->pastLastNode();
+    m_pastEndNode = nextInPreOrderCrossingShadowBoundaries(endContainer, endOffset);
 
     // initialize node processing state
     m_needAnotherNewline = false;
@@ -352,14 +383,14 @@ void TextIterator::advance()
             next = m_node->nextSibling();
             if (!next) {
                 bool pastEnd = m_node->traverseNextNode() == m_pastEndNode;
-                Node* parentNode = parentOrShadowParent(m_node);
+                Node* parentNode = parentCrossingShadowBoundaries(m_node);
                 while (!next && parentNode) {
                     if ((pastEnd && parentNode == m_endContainer) || m_endContainer->isDescendantOf(parentNode))
                         return;
                     bool haveRenderer = m_node->renderer();
                     m_node = parentNode;
                     m_fullyClippedStack.pop();
-                    parentNode = parentOrShadowParent(m_node);
+                    parentNode = parentCrossingShadowBoundaries(m_node);
                     if (haveRenderer)
                         exitNode();
                     if (m_positionNode) {
@@ -883,14 +914,14 @@ Node* TextIterator::node() const
 
 // --------
 
-SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator() : m_positionNode(0)
+SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator()
+    : m_positionNode(0)
 {
 }
 
 SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r)
+    : m_positionNode(0)
 {
-    m_positionNode = 0;
-
     if (!r)
         return;
 
@@ -932,15 +963,8 @@ SimplifiedBackwardsTextIterator::SimplifiedBackwardsTextIterator(const Range* r)
 
     m_lastTextNode = 0;
     m_lastCharacter = '\n';
-    
-    if (startOffset == 0 || !startNode->firstChild()) {
-        m_pastStartNode = startNode->previousSibling();
-        while (!m_pastStartNode && startNode->parentNode()) {
-            startNode = startNode->parentNode();
-            m_pastStartNode = startNode->previousSibling();
-        }
-    } else
-        m_pastStartNode = startNode->childNode(startOffset - 1);
+
+    m_pastStartNode = previousInPostOrderCrossingShadowBoundaries(startNode, startOffset);
 
     advance();
 }
@@ -987,7 +1011,7 @@ void SimplifiedBackwardsTextIterator::advance()
             // Exit all other containers.
             next = m_node->previousSibling();
             while (!next) {
-                Node* parentNode = parentOrShadowParent(m_node);
+                Node* parentNode = parentCrossingShadowBoundaries(m_node);
                 if (!parentNode)
                     break;
                 m_node = parentNode;
@@ -1053,26 +1077,22 @@ bool SimplifiedBackwardsTextIterator::handleNonTextNode()
 {    
     // We can use a linefeed in place of a tab because this simple iterator is only used to
     // find boundaries, not actual content.  A linefeed breaks words, sentences, and paragraphs.
-    if (shouldEmitNewlineForNode(m_node) ||
-        shouldEmitNewlineAfterNode(m_node) ||
-        shouldEmitTabBeforeNode(m_node)) {
+    if (shouldEmitNewlineForNode(m_node) || shouldEmitNewlineAfterNode(m_node) || shouldEmitTabBeforeNode(m_node)) {
         unsigned index = m_node->nodeIndex();
-        // The start of this emitted range is wrong, ensuring correctness would require
-        // VisiblePositions and so would be slow.  previousBoundary expects this.
+        // The start of this emitted range is wrong. Ensuring correctness would require
+        // VisiblePositions and so would be slow. previousBoundary expects this.
         emitCharacter('\n', m_node->parentNode(), index + 1, index + 1);
     }
-    
     return true;
 }
 
 void SimplifiedBackwardsTextIterator::exitNode()
 {
-    if (shouldEmitNewlineForNode(m_node) ||
-        shouldEmitNewlineBeforeNode(m_node) ||
-        shouldEmitTabBeforeNode(m_node))
-        // The start of this emitted range is wrong, ensuring correctness would require
-        // VisiblePositions and so would be slow.  previousBoundary expects this.
+    if (shouldEmitNewlineForNode(m_node) || shouldEmitNewlineBeforeNode(m_node) || shouldEmitTabBeforeNode(m_node)) {
+        // The start of this emitted range is wrong. Ensuring correctness would require
+        // VisiblePositions and so would be slow. previousBoundary expects this.
         emitCharacter('\n', m_node, 0, 0);
+    }
 }
 
 void SimplifiedBackwardsTextIterator::emitCharacter(UChar c, Node* node, int startOffset, int endOffset)
@@ -1373,7 +1393,39 @@ const UChar* WordAwareIterator::characters() const
 
 // --------
 
+static inline UChar foldQuoteMark(UChar c)
+{
+    switch (c) {
+        case hebrewPunctuationGershayim:
+        case leftDoubleQuotationMark:
+        case rightDoubleQuotationMark:
+            return '"';
+        case hebrewPunctuationGeresh:
+        case leftSingleQuotationMark:
+        case rightSingleQuotationMark:
+            return '\'';
+        default:
+            return c;
+    }
+}
+
+static inline void foldQuoteMarks(String& s)
+{
+    s.replace(hebrewPunctuationGeresh, '\'');
+    s.replace(hebrewPunctuationGershayim, '"');
+    s.replace(leftDoubleQuotationMark, '"');
+    s.replace(leftSingleQuotationMark, '\'');
+    s.replace(rightDoubleQuotationMark, '"');
+    s.replace(rightSingleQuotationMark, '\'');
+}
+
 #if USE(ICU_UNICODE) && !UCONFIG_NO_COLLATION
+
+static inline void foldQuoteMarks(UChar* data, size_t length)
+{
+    for (size_t i = 0; i < length; ++i)
+        data[i] = foldQuoteMark(data[i]);
+}
 
 static const size_t minimumSearchBufferSize = 8192;
 
@@ -1386,13 +1438,9 @@ static UStringSearch* createSearcher()
     // Provide a non-empty pattern and non-empty text so usearch_open will not fail,
     // but it doesn't matter exactly what it is, since we don't perform any searches
     // without setting both the pattern and the text.
-
-    // Pass empty string for the locale for now to get the Unicode Collation Algorithm,
-    // rather than something locale-specific.
-
     UErrorCode status = U_ZERO_ERROR;
-    UStringSearch* searcher = usearch_open(&newlineCharacter, 1, &newlineCharacter, 1, "", 0, &status);
-    ASSERT(status == U_ZERO_ERROR);
+    UStringSearch* searcher = usearch_open(&newlineCharacter, 1, &newlineCharacter, 1, currentSearchLocaleID(), 0, &status);
+    ASSERT(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING || status == U_USING_DEFAULT_WARNING);
     return searcher;
 }
 
@@ -1424,7 +1472,12 @@ inline SearchBuffer::SearchBuffer(const String& target, bool isCaseSensitive)
 {
     ASSERT(!m_target.isEmpty());
 
-    size_t targetLength = target.length();
+    // FIXME: We'd like to tailor the searcher to fold quote marks for us instead
+    // of doing it in a separate replacement pass here, but ICU doesn't offer a way
+    // to add tailoring on top of the locale-specific tailoring as of this writing.
+    foldQuoteMarks(m_target);
+
+    size_t targetLength = m_target.length();
     m_buffer.reserveInitialCapacity(max(targetLength * 8, minimumSearchBufferSize));
     m_overlap = m_buffer.capacity() / 4;
 
@@ -1464,9 +1517,11 @@ inline size_t SearchBuffer::append(const UChar* characters, size_t length)
         m_buffer.shrink(m_overlap);
     }
 
-    size_t usableLength = min(m_buffer.capacity() - m_buffer.size(), length);
+    size_t oldLength = m_buffer.size();
+    size_t usableLength = min(m_buffer.capacity() - oldLength, length);
     ASSERT(usableLength);
     m_buffer.append(characters, usableLength);
+    foldQuoteMarks(m_buffer.data() + oldLength, usableLength);
     return usableLength;
 }
 
@@ -1533,6 +1588,7 @@ inline SearchBuffer::SearchBuffer(const String& target, bool isCaseSensitive)
 {
     ASSERT(!m_target.isEmpty());
     m_target.replace(noBreakSpace, ' ');
+    foldQuoteMarks(m_target);
 }
 
 inline SearchBuffer::~SearchBuffer()
@@ -1552,7 +1608,7 @@ inline bool SearchBuffer::atBreak() const
 
 inline void SearchBuffer::append(UChar c, bool isStart)
 {
-    m_buffer[m_cursor] = c == noBreakSpace ? ' ' : c;
+    m_buffer[m_cursor] = c == noBreakSpace ? ' ' : foldQuoteMark(c);
     m_isCharacterStartBuffer[m_cursor] = isStart;
     if (++m_cursor == m_target.length()) {
         m_cursor = 0;
@@ -1859,11 +1915,6 @@ tryAgain:
 
 PassRefPtr<Range> findPlainText(const Range* range, const String& target, bool forward, bool caseSensitive)
 {
-    // We can't search effectively for a string that's entirely made of collapsible
-    // whitespace, so we won't even try. This also takes care of the empty string case.
-    if (isAllCollapsibleWhitespace(target))
-        return collapsedToBoundary(range, forward);
-
     // First, find the text.
     size_t matchStart;
     size_t matchLength;

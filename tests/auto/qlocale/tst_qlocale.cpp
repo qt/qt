@@ -335,9 +335,8 @@ void tst_QLocale::emptyCtor()
     { \
     /* Test constructor without arguments. Needs separate process */ \
     /* because of caching of the system locale. */ \
-    QString oldEnv = QString::fromLocal8Bit(qgetenv("LANG")); \
-	qputenv("LANG", QString(req_lc).toLocal8Bit()); \
     QProcess process; \
+    process.setEnvironment(QStringList(env) << QString("LANG=%1").arg(req_lc)); \
     process.start("syslocaleapp/syslocaleapp"); \
     process.waitForReadyRead(); \
     QString ret = QString(process.readAll()); \
@@ -345,18 +344,23 @@ void tst_QLocale::emptyCtor()
     QVERIFY2(!ret.isEmpty(), "Cannot launch external process"); \
     QVERIFY2(QString(exp_str) == ret, QString("Expected: " + QString(exp_str) + ", got: " \
             + ret + ". Requested: " + QString(req_lc)).toLatin1().constData()); \
-	qputenv("LANG", oldEnv.toLocal8Bit()); \
+    }
+
+    // Get an environment free of any locale-related variables
+    QStringList env;
+    foreach (QString const& entry, QProcess::systemEnvironment()) {
+        if (entry.startsWith("LANG=") || entry.startsWith("LC_"))
+            continue;
+        env << entry;
     }
 
     // Get default locale.
-    QString old = QString::fromLocal8Bit(qgetenv("LANG"));
-    qputenv("LANG", "");
     QProcess p;
+    p.setEnvironment(env);
     p.start("syslocaleapp/syslocaleapp");
     p.waitForReadyRead();
     QString defaultLoc = QString(p.readAll());
     p.waitForFinished();
-    qputenv("LANG", old.toLocal8Bit());
 
     TEST_CTOR("C", "C")
     TEST_CTOR("bla", "C")
@@ -1101,12 +1105,7 @@ void tst_QLocale::macDefaultLocale()
 static QString getWinLocaleInfo(LCTYPE type)
 {
     LCID id = GetThreadLocale();
-    int cnt = 0;
-    QT_WA({
-        cnt = GetLocaleInfoW(id, type, 0, 0)*2;
-    } , {
-        cnt = GetLocaleInfoA(id, type, 0, 0);
-    });
+    int cnt = GetLocaleInfo(id, type, 0, 0) * 2;
 
     if (cnt == 0) {
         qWarning("QLocale: empty windows locale info (%d)", type);
@@ -1115,38 +1114,20 @@ static QString getWinLocaleInfo(LCTYPE type)
 
     QByteArray buff(cnt, 0);
 
-    QT_WA({
-        cnt = GetLocaleInfoW(id, type,
-                                reinterpret_cast<wchar_t*>(buff.data()),
-                                buff.size()/2);
-    } , {
-        cnt = GetLocaleInfoA(id, type,
-                                buff.data(), buff.size());
-    });
+    cnt = GetLocaleInfo(id, type, reinterpret_cast<wchar_t*>(buff.data()), buff.size() / 2);
 
     if (cnt == 0) {
         qWarning("QLocale: empty windows locale info (%d)", type);
         return QString();
     }
 
-    QString result;
-    QT_WA({
-        result = QString::fromUtf16(reinterpret_cast<ushort*>(buff.data()));
-    } , {
-        result = QString::fromLocal8Bit(buff.data());
-    });
-    return result;
+    return QString::fromWCharArray(reinterpret_cast<wchar_t*>(buff.data()));
 }
 
 static void setWinLocaleInfo(LCTYPE type, const QString &value)
 {
     LCID id = GetThreadLocale();
-
-    QT_WA({
-        SetLocaleInfoW(id, type, reinterpret_cast<const wchar_t*>(value.utf16()));
-    } , {
-        SetLocaleInfoA(id, type, value.toLocal8Bit());
-    });
+    SetLocaleInfo(id, type, reinterpret_cast<const wchar_t*>(value.utf16()));
 }
 
 class RestoreLocaleHelper {
@@ -2061,7 +2042,7 @@ void tst_QLocale::symbianSystemLocale()
     TBuf<50> s60FormattedDate;
     TRAPD(err, s60Date.FormatL(s60FormattedDate, s60DateFormat));
     QVERIFY(err == KErrNone);
-    QString s60FinalResult = qt_TDes2QStringL(s60FormattedDate);
+    QString s60FinalResult = qt_TDesC2QString(s60FormattedDate);
     QString finalResult = date.toString(dateFormat);
 
     QCOMPARE(finalResult, s60FinalResult);

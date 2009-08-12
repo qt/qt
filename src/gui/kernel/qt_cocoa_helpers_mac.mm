@@ -74,9 +74,11 @@
 ****************************************************************************/
 
 #include <private/qcore_mac_p.h>
+#include <qaction.h>
 #include <qwidget.h>
 #include <qdesktopwidget.h>
 #include <qevent.h>
+#include <qpixmapcache.h>
 #include <private/qevent_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qt_mac_p.h>
@@ -177,11 +179,10 @@ void macWindowToolbarShow(const QWidget *widget, bool show )
 {
     OSWindowRef wnd = qt_mac_window_for(widget);
 #if QT_MAC_USE_COCOA
-    NSToolbar *toolbar	= [wnd toolbar];
-    if (toolbar) {
+    if (NSToolbar *toolbar = [wnd toolbar]) {
         QMacCocoaAutoReleasePool pool;
         if (show != [toolbar isVisible]) {
-           [wnd toggleToolbarShown:wnd];
+           [toolbar setVisible:show];
         } else {
             // The toolbar may be in sync, but we are not, update our framestrut.
             qt_widget_private(const_cast<QWidget *>(widget))->updateFrameStrut();
@@ -197,22 +198,21 @@ void macWindowToolbarSet( void * /*OSWindowRef*/ window, void *toolbarRef  )
 {
     OSWindowRef wnd = static_cast<OSWindowRef>(window);
 #if QT_MAC_USE_COCOA
-	[wnd setToolbar:static_cast<NSToolbar *>(toolbarRef)];
+    [wnd setToolbar:static_cast<NSToolbar *>(toolbarRef)];
 #else
     SetWindowToolbar(wnd, static_cast<HIToolbarRef>(toolbarRef));
 #endif
 }
 
-bool macWindowToolbarVisible( void * /*OSWindowRef*/ window )
+bool macWindowToolbarIsVisible( void * /*OSWindowRef*/ window )
 {
     OSWindowRef wnd = static_cast<OSWindowRef>(window);
 #if QT_MAC_USE_COCOA
-	NSToolbar *toolbar	= [wnd toolbar];
-	if (toolbar)
+    if (NSToolbar *toolbar = [wnd toolbar])
         return [toolbar isVisible];
     return false;
 #else
-	return IsWindowToolbarVisible(wnd);
+    return IsWindowToolbarVisible(wnd);
 #endif
 }
 
@@ -220,12 +220,12 @@ void macWindowSetHasShadow( void * /*OSWindowRef*/ window, bool hasShadow  )
 {
     OSWindowRef wnd = static_cast<OSWindowRef>(window);
 #if QT_MAC_USE_COCOA
-	[wnd setHasShadow:BOOL(hasShadow)];
+    [wnd setHasShadow:BOOL(hasShadow)];
 #else
-	if (hasShadow)
-		ChangeWindowAttributes(wnd, 0, kWindowNoShadowAttribute);
-	else
-		ChangeWindowAttributes(wnd, kWindowNoShadowAttribute, 0);
+    if (hasShadow)
+        ChangeWindowAttributes(wnd, 0, kWindowNoShadowAttribute);
+    else
+        ChangeWindowAttributes(wnd, kWindowNoShadowAttribute, 0);
 #endif
 }
 
@@ -233,9 +233,9 @@ void macWindowFlush(void * /*OSWindowRef*/ window)
 {
     OSWindowRef wnd = static_cast<OSWindowRef>(window);
 #if QT_MAC_USE_COCOA
-	[wnd flushWindowIfNeeded];
+    [wnd flushWindowIfNeeded];
 #else
-	HIWindowFlush(wnd);
+    HIWindowFlush(wnd);
 #endif
 }
 
@@ -350,6 +350,12 @@ Qt::MouseButton qt_mac_get_button(EventMouseButton button)
         }
     }
     return Qt::NoButton;
+}
+
+void macSendToolbarChangeEvent(QWidget *widget)
+{
+    QToolBarChangeEvent ev(!(GetCurrentKeyModifiers() & cmdKey));
+    qt_sendSpontaneousEvent(widget, &ev);
 }
 
 Q_GLOBAL_STATIC(QMacTabletHash, tablet_hash)
@@ -1063,6 +1069,17 @@ void qt_mac_updateContentBorderMetricts(void * /*OSWindowRef */window, const ::H
 #endif
 }
 
+void qt_mac_showBaseLineSeparator(void * /*OSWindowRef */window, bool show)
+{
+#if QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    OSWindowRef theWindow = static_cast<OSWindowRef>(window);
+    NSToolbar *macToolbar = [theWindow toolbar];
+    if (macToolbar)
+        [macToolbar setShowsBaselineSeparator: show];
+#endif
+}
+
 QStringList qt_mac_NSArrayToQStringList(void *nsarray)
 {
     QStringList result;
@@ -1129,6 +1146,96 @@ CGFloat qt_mac_get_scalefactor()
 #else
     return [[NSScreen mainScreen] userSpaceScaleFactor];
 #endif
+}
+
+QString qt_mac_get_pasteboardString()
+{
+    QMacCocoaAutoReleasePool pool;
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    NSString *text = [pb stringForType:NSStringPboardType];
+    if (text) {
+        return qt_mac_NSStringToQString(text);
+    } else {
+        return QString();
+    }
+}
+
+QPixmap qt_mac_convert_iconref(const IconRef icon, int width, int height)
+{
+    QPixmap ret(width, height);
+    ret.fill(QColor(0, 0, 0, 0));
+
+    CGRect rect = CGRectMake(0, 0, width, height);
+
+    CGContextRef ctx = qt_mac_cg_context(&ret);
+    CGAffineTransform old_xform = CGContextGetCTM(ctx);
+    CGContextConcatCTM(ctx, CGAffineTransformInvert(old_xform));
+    CGContextConcatCTM(ctx, CGAffineTransformIdentity);
+
+    ::RGBColor b;
+    b.blue = b.green = b.red = 255*255;
+    PlotIconRefInContext(ctx, &rect, kAlignNone, kTransformNone, &b, kPlotIconRefNormalFlags, icon);
+    CGContextRelease(ctx);
+    return ret;
+}
+
+void qt_mac_constructQIconFromIconRef(const IconRef icon, const IconRef overlayIcon, QIcon *retIcon, QStyle::StandardPixmap standardIcon)
+{
+    int size = 16;
+    while (size <= 128) {
+
+        const QString cacheKey = QLatin1String("qt_mac_constructQIconFromIconRef") + QString::number(standardIcon) + QString::number(size);
+        QPixmap mainIcon;
+        if (standardIcon >= QStyle::SP_CustomBase) {
+            mainIcon = qt_mac_convert_iconref(icon, size, size);
+        } else if (QPixmapCache::find(cacheKey, mainIcon) == false) {
+            mainIcon = qt_mac_convert_iconref(icon, size, size);
+            QPixmapCache::insert(cacheKey, mainIcon);
+        }
+
+        if (overlayIcon) {
+            int littleSize = size / 2;
+            QPixmap overlayPix = qt_mac_convert_iconref(overlayIcon, littleSize, littleSize);
+            QPainter painter(&mainIcon);
+            painter.drawPixmap(size - littleSize, size - littleSize, overlayPix);
+        }
+
+        retIcon->addPixmap(mainIcon);
+        size += size;  // 16 -> 32 -> 64 -> 128
+    }
+}
+
+void qt_mac_menu_collapseSeparators(void */*NSMenu **/ theMenu, bool collapse)
+{
+    OSMenuRef menu = static_cast<OSMenuRef>(theMenu);
+    if (collapse) {
+        bool previousIsSeparator = true; // setting to true kills all the separators placed at the top.
+        NSMenuItem *previousItem = nil;
+            
+        NSArray *itemArray = [menu itemArray];
+        for (unsigned int i = 0; i < [itemArray count]; ++i) {
+            NSMenuItem *item = reinterpret_cast<NSMenuItem *>([itemArray objectAtIndex:i]);
+            if ([item isSeparatorItem]) {
+                [item setHidden:previousIsSeparator];
+            }
+
+            if (![item isHidden]) {
+                previousItem = item;
+                previousIsSeparator = ([previousItem isSeparatorItem]);
+            }
+        }
+
+        // We now need to check the final item since we don't want any separators at the end of the list.
+        if (previousItem && previousIsSeparator)
+            [previousItem setHidden:YES];
+    } else {
+        NSArray *itemArray = [menu itemArray];
+        for (unsigned int i = 0; i < [itemArray count]; ++i) {
+            NSMenuItem *item = reinterpret_cast<NSMenuItem *>([itemArray objectAtIndex:i]);
+            if (QAction *action = reinterpret_cast<QAction *>([item tag]))
+                [item setHidden:!action->isVisible()];
+        }
+    }
 }
 
 QT_END_NAMESPACE

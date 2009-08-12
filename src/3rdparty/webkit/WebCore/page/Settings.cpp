@@ -64,6 +64,7 @@ Settings::Settings(Page* page)
     , m_arePluginsEnabled(false)
     , m_databasesEnabled(false)
     , m_localStorageEnabled(false)
+    , m_sessionStorageEnabled(true)
     , m_isJavaScriptEnabled(false)
     , m_isWebSecurityEnabled(true)
     , m_allowUniversalAccessFromFileURLs(true)
@@ -75,6 +76,7 @@ Settings::Settings(Page* page)
 #endif
     , m_needsAdobeFrameReloadingQuirk(false)
     , m_needsKeyboardEventDisambiguationQuirks(false)
+    , m_treatsAnyTextCSSLinkAsStylesheet(false)
     , m_needsLeopardMailQuirks(false)
     , m_needsTigerMailQuirks(false)
     , m_isDOMPasteAllowed(false)
@@ -87,6 +89,7 @@ Settings::Settings(Page* page)
     , m_needsSiteSpecificQuirks(false)
     , m_fontRenderingMode(0)
     , m_webArchiveDebugModeEnabled(false)
+    , m_localFileContentSniffingEnabled(false)
     , m_inApplicationChromeMode(false)
     , m_offlineWebApplicationCacheEnabled(false)
     , m_shouldPaintCustomScrollbars(false)
@@ -242,6 +245,11 @@ void Settings::setLocalStorageEnabled(bool localStorageEnabled)
     m_localStorageEnabled = localStorageEnabled;
 }
 
+void Settings::setSessionStorageEnabled(bool sessionStorageEnabled)
+{
+    m_sessionStorageEnabled = sessionStorageEnabled;
+}
+
 void Settings::setPrivateBrowsingEnabled(bool privateBrowsingEnabled)
 {
     m_privateBrowsingEnabled = privateBrowsingEnabled;
@@ -312,6 +320,11 @@ void Settings::setNeedsAdobeFrameReloadingQuirk(bool shouldNotReloadIFramesForUn
 void Settings::setNeedsKeyboardEventDisambiguationQuirks(bool needsQuirks)
 {
     m_needsKeyboardEventDisambiguationQuirks = needsQuirks;
+}
+
+void Settings::setTreatsAnyTextCSSLinkAsStylesheet(bool treatsAnyTextCSSLinkAsStylesheet)
+{
+    m_treatsAnyTextCSSLinkAsStylesheet = treatsAnyTextCSSLinkAsStylesheet;
 }
 
 void Settings::setNeedsLeopardMailQuirks(bool needsQuirks)
@@ -398,6 +411,11 @@ void Settings::setNeedsSiteSpecificQuirks(bool needsQuirks)
 void Settings::setWebArchiveDebugModeEnabled(bool enabled)
 {
     m_webArchiveDebugModeEnabled = enabled;
+}
+
+void Settings::setLocalFileContentSniffingEnabled(bool enabled)
+{
+    m_localFileContentSniffingEnabled = enabled;
 }
 
 void Settings::setLocalStorageDatabasePath(const String& path)

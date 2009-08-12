@@ -42,7 +42,7 @@ static const HashTableValue JSEntityTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSEntityTable =
+static JSC_CONST_HASHTABLE HashTable JSEntityTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSEntityTableValues, 0 };
 #else
@@ -56,19 +56,19 @@ static const HashTableValue JSEntityConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSEntityConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSEntityConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSEntityConstructorTableValues, 0 };
 #else
     { 1, 0, JSEntityConstructorTableValues, 0 };
 #endif
 
-class JSEntityConstructor : public DOMObject {
+class JSEntityConstructor : public DOMConstructorObject {
 public:
-    JSEntityConstructor(ExecState* exec)
-        : DOMObject(JSEntityConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSEntityConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSEntityConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSEntityPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSEntityPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -94,7 +94,7 @@ static const HashTableValue JSEntityPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSEntityPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSEntityPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSEntityPrototypeTableValues, 0 };
 #else
@@ -110,8 +110,8 @@ JSObject* JSEntityPrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 
 const ClassInfo JSEntity::s_info = { "Entity", &JSNode::s_info, &JSEntityTable, 0 };
 
-JSEntity::JSEntity(PassRefPtr<Structure> structure, PassRefPtr<Entity> impl)
-    : JSNode(structure, impl)
+JSEntity::JSEntity(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Entity> impl)
+    : JSNode(structure, globalObject, impl)
 {
 }
 
@@ -127,32 +127,36 @@ bool JSEntity::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNam
 
 JSValue jsEntityPublicId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSEntity* castedThis = static_cast<JSEntity*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Entity* imp = static_cast<Entity*>(static_cast<JSEntity*>(asObject(slot.slotBase()))->impl());
+    Entity* imp = static_cast<Entity*>(castedThis->impl());
     return jsStringOrNull(exec, imp->publicId());
 }
 
 JSValue jsEntitySystemId(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSEntity* castedThis = static_cast<JSEntity*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Entity* imp = static_cast<Entity*>(static_cast<JSEntity*>(asObject(slot.slotBase()))->impl());
+    Entity* imp = static_cast<Entity*>(castedThis->impl());
     return jsStringOrNull(exec, imp->systemId());
 }
 
 JSValue jsEntityNotationName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSEntity* castedThis = static_cast<JSEntity*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    Entity* imp = static_cast<Entity*>(static_cast<JSEntity*>(asObject(slot.slotBase()))->impl());
+    Entity* imp = static_cast<Entity*>(castedThis->impl());
     return jsStringOrNull(exec, imp->notationName());
 }
 
 JSValue jsEntityConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSEntity*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSEntity* domObject = static_cast<JSEntity*>(asObject(slot.slotBase()));
+    return JSEntity::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSEntity::getConstructor(ExecState* exec)
+JSValue JSEntity::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSEntityConstructor>(exec);
+    return getDOMConstructor<JSEntityConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

@@ -28,9 +28,10 @@ module threads {
 
     interface [
         Conditional=WORKERS,
-        DelegatingGetOwnPropertySlot,
         CustomMarkFunction,
+        DelegatingGetOwnPropertySlot,
         ExtendsDOMGlobalObject,
+        IsWorkerContext,
         LegacyParent=JSWorkerContextBase,
         NoStaticTables
     ] WorkerContext {
@@ -41,20 +42,13 @@ module threads {
 #endif
                  attribute [Replaceable] WorkerLocation location;
         void close();
-        //         attribute EventListener onclose;
-        //         attribute EventListener onerror;
+                 attribute EventListener onerror;
 
         // WorkerUtils
         [Custom] void importScripts(/*[Variadic] in DOMString urls */);
                  attribute [Replaceable] WorkerNavigator navigator;
         // Database openDatabase(in DOMString name, in DOMString version, in DOMString displayName, in unsigned long estimatedSize);
         // DatabaseSync openDatabaseSync(in DOMString name, in DOMString version, in DOMString displayName, in unsigned long estimatedSize);
-
-
-        // DedicatedWorkerGlobalScope
-        void postMessage(in DOMString message);
-                 attribute EventListener onmessage;
-
 
         // Timers
         [Custom] long setTimeout(in TimeoutHandler handler, in long timeout);
@@ -80,6 +74,9 @@ module threads {
         attribute MessageEventConstructor MessageEvent;
         attribute WorkerLocationConstructor WorkerLocation;
 
+#if ENABLE_CHANNEL_MESSAGING
+        attribute [JSCCustomGetter] MessageChannelConstructor MessageChannel;
+#endif
         attribute [JSCCustomGetter] XMLHttpRequestConstructor XMLHttpRequest;
     };
 

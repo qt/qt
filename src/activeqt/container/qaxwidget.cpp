@@ -37,11 +37,6 @@
 **
 ****************************************************************************/
 
-#ifndef UNICODE
-#define UNICODE
-#endif
-
-
 #include "qaxwidget.h"
 
 #ifndef QT_NO_WIN_ACTIVEQT
@@ -123,6 +118,8 @@ public:
     QSize minimumSizeHint() const;
 
     int qt_metacall(QMetaObject::Call, int isignal, void **argv);
+    void* qt_metacast(const char *clname);
+
     inline QAxClientSite *clientSite() const
     {
         return axhost;
@@ -470,7 +467,7 @@ static QAbstractEventDispatcher::EventFilter previous_filter = 0;
 #if defined(Q_WS_WINCE)
 static int filter_ref = 0;
 #else
-static const char *qaxatom = "QAxContainer4_Atom";
+static const wchar_t *qaxatom = L"QAxContainer4_Atom";
 #endif
 
 // The filter procedure listening to user interaction on the control
@@ -483,7 +480,9 @@ bool axc_FilterProc(void *m)
         QAxWidget *ax = 0;
         QAxHostWidget *host = 0;
         while (!host && hwnd) {
-            host = qobject_cast<QAxHostWidget*>(QWidget::find(hwnd));
+            QWidget *widget = QWidget::find(hwnd);
+            if (widget && widget->inherits("QAxHostWidget"))
+                host = qobject_cast<QAxHostWidget*>(widget);
             hwnd = ::GetParent(hwnd);
         }
         if (host)
@@ -532,7 +531,7 @@ bool axc_FilterProc(void *m)
 }
 
 QAxClientSite::QAxClientSite(QAxWidget *c)
-: ref(1), widget(c), host(0), eventTranslated(true)
+: eventTranslated(true), ref(1), widget(c), host(0)
 {
     aggregatedObject = widget->createAggregate();
     if (aggregatedObject) {
@@ -714,7 +713,7 @@ bool QAxClientSite::activateObject(bool initialized, const QByteArray &data)
         BSTR userType;
         HRESULT result = m_spOleObject->GetUserType(USERCLASSTYPE_SHORT, &userType);
         if (result == S_OK) {
-            widget->setWindowTitle(QString::fromUtf16((const ushort *)userType));
+            widget->setWindowTitle(QString::fromWCharArray(userType));
             CoTaskMemFree(userType);
         }
     } else {
@@ -981,13 +980,38 @@ HRESULT WINAPI QAxClientSite::TransformCoords(POINTL* /*pPtlHimetric*/, POINTF* 
 
 HRESULT WINAPI QAxClientSite::TranslateAccelerator(LPMSG lpMsg, DWORD /*grfModifiers*/)
 {
-    eventTranslated = false;
     if (lpMsg->message == WM_KEYDOWN && !lpMsg->wParam)
         return S_OK;
-    QT_WA_INLINE(
-        SendMessage(host->winId(), lpMsg->message, lpMsg->wParam, lpMsg->lParam),
-        SendMessageA(host->winId(), lpMsg->message, lpMsg->wParam, lpMsg->lParam)
-    );
+
+    bool ActiveQtDetected = false;
+    bool fromInProcServer = false;
+#ifdef GWLP_USERDATA
+    LONG_PTR serverType = GetWindowLongPtr(lpMsg->hwnd, GWLP_USERDATA);
+#else
+    LONG serverType = GetWindowLong(lpMsg->hwnd, GWL_USERDATA);
+#endif
+    if (serverType == QAX_INPROC_SERVER) {
+        ActiveQtDetected = true;
+        fromInProcServer = true;
+    } else if (serverType == QAX_OUTPROC_SERVER) {
+        ActiveQtDetected = true;
+        fromInProcServer = false;
+    }
+
+    eventTranslated = false;
+    if (!ActiveQtDetected || !fromInProcServer) {
+        // if the request is coming from an out-of-proc server or a non ActiveQt server,
+        // we send the message to the host window. This will make sure this key event
+        // comes to Qt for processing.
+        SendMessage(host->winId(), lpMsg->message, lpMsg->wParam, lpMsg->lParam);
+        if (ActiveQtDetected && !fromInProcServer) {
+            // ActiveQt based servers will need further processing of the event
+            // (eg. <SPACE> key for a checkbox), so we return false.
+            return S_FALSE;
+        }
+    }
+    // ActiveQt based in-processes-servers will handle the event properly, so
+    // we dont need to send this key event to the host.
     return S_OK;
 }
 
@@ -1173,15 +1197,15 @@ HRESULT WINAPI QAxClientSite::InsertMenus(HMENU /*hmenuShared*/, LPOLEMENUGROUPW
 #endif
 }
 
-static int menuItemEntry(HMENU menu, int index, MENUITEMINFOA item, QString &text, QPixmap &/*icon*/)
+static int menuItemEntry(HMENU menu, int index, MENUITEMINFO item, QString &text, QPixmap &/*icon*/)
 {
     if (item.fType == MFT_STRING && item.cch) {
-        char *titlebuf = new char[item.cch+1];
+        wchar_t *titlebuf = new wchar_t[item.cch + 1];
         item.dwTypeData = titlebuf;
         item.cch++;
-        ::GetMenuItemInfoA(menu, index, true, &item);
-        text = QString::fromLocal8Bit(titlebuf);
-        delete []titlebuf;
+        ::GetMenuItemInfo(menu, index, true, &item);
+        text = QString::fromWCharArray(titlebuf);
+        delete [] titlebuf;
         return MFT_STRING;
     }
 #if 0
@@ -1191,7 +1215,7 @@ static int menuItemEntry(HMENU menu, int index, MENUITEMINFOA item, QString &tex
         GetBitmapDimensionEx(hbm, &bmsize);
         QPixmap pixmap(1,1);
         QSize sz(MAP_LOGHIM_TO_PIX(bmsize.cx, pixmap.logicalDpiX()),
-            MAP_LOGHIM_TO_PIX(bmsize.cy, pixmap.logicalDpiY()));
+                 MAP_LOGHIM_TO_PIX(bmsize.cy, pixmap.logicalDpiY()));
 
         pixmap.resize(bmsize.cx, bmsize.cy);
         if (!pixmap.isNull()) {
@@ -1215,11 +1239,11 @@ QMenu *QAxClientSite::generatePopup(HMENU subMenu, QWidget *parent)
     if (count)
         popup = new QMenu(parent);
     for (int i = 0; i < count; ++i) {
-        MENUITEMINFOA item;
-        memset(&item, 0, sizeof(MENUITEMINFOA));
-        item.cbSize = sizeof(MENUITEMINFOA);
+        MENUITEMINFO item;
+        memset(&item, 0, sizeof(MENUITEMINFO));
+        item.cbSize = sizeof(MENUITEMINFO);
         item.fMask = MIIM_ID | MIIM_TYPE | MIIM_SUBMENU;
-        ::GetMenuItemInfoA(subMenu, i, true, &item);
+        ::GetMenuItemInfo(subMenu, i, true, &item);
 
         QAction *action = 0;
         QMenu *popupMenu = 0;
@@ -1295,11 +1319,11 @@ HRESULT WINAPI QAxClientSite::SetMenu(HMENU hmenuShared, HOLEMENU holemenu, HWND
 
         int count = GetMenuItemCount(hmenuShared);
         for (int i = 0; i < count; ++i) {
-            MENUITEMINFOA item;
-            memset(&item, 0, sizeof(MENUITEMINFOA));
-            item.cbSize = sizeof(MENUITEMINFOA);
+            MENUITEMINFO item;
+            memset(&item, 0, sizeof(MENUITEMINFO));
+            item.cbSize = sizeof(MENUITEMINFO);
             item.fMask = MIIM_ID | MIIM_TYPE | MIIM_SUBMENU;
-            ::GetMenuItemInfoA(hmenuShared, i, true, &item);
+            ::GetMenuItemInfo(hmenuShared, i, true, &item);
 
             QAction *action = 0;
             QMenu *popupMenu = 0;
@@ -1379,7 +1403,7 @@ int QAxClientSite::qt_metacall(QMetaObject::Call call, int isignal, void **argv)
 
     OleMenuItem oleItem = menuItemMap.value(action);
     if (oleItem.hMenu)
-        ::PostMessageA(m_menuOwner, WM_COMMAND, oleItem.id, 0);
+        ::PostMessage(m_menuOwner, WM_COMMAND, oleItem.id, 0);
     return -1;
 #endif
 }
@@ -1404,7 +1428,7 @@ HRESULT WINAPI QAxClientSite::RemoveMenus(HMENU /*hmenuShared*/)
 
 HRESULT WINAPI QAxClientSite::SetStatusText(LPCOLESTR pszStatusText)
 {
-    QStatusTipEvent tip(QString::fromUtf16((const ushort *)(BSTR)pszStatusText));
+    QStatusTipEvent tip(QString::fromWCharArray(pszStatusText));
     QApplication::sendEvent(widget, &tip);
     return S_OK;
 }
@@ -1513,7 +1537,7 @@ HRESULT WINAPI QAxClientSite::SetActiveObject(IOleInPlaceActiveObject *pActiveOb
     AX_DEBUG(QAxClientSite::SetActiveObject);
 
     if (pszObjName && widget)
-        widget->setWindowTitle(QString::fromUtf16((const ushort *)(BSTR)pszObjName));
+        widget->setWindowTitle(QString::fromWCharArray(pszObjName));
 
     if (m_spInPlaceActiveObject) {
         if (!inPlaceModelessEnabled)
@@ -1623,6 +1647,14 @@ int QAxHostWidget::qt_metacall(QMetaObject::Call call, int isignal, void **argv)
     if (axhost)
         return axhost->qt_metacall(call, isignal, argv);
     return -1;
+}
+
+void* QAxHostWidget::qt_metacast(const char *clname)
+{
+    if (!clname) return 0;
+    if (!qstrcmp(clname,"QAxHostWidget"))
+        return static_cast<void*>(const_cast< QAxHostWidget*>(this));
+    return QWidget::qt_metacast(clname);
 }
 
 QSize QAxHostWidget::sizeHint() const
@@ -1952,12 +1984,12 @@ bool QAxWidget::createHostWindow(bool initialized, const QByteArray &data)
     container->activateObject(initialized, data);
 
 #if !defined(Q_OS_WINCE)
-    ATOM filter_ref = FindAtomA(qaxatom);
+    ATOM filter_ref = FindAtom(qaxatom);
 #endif
     if (!filter_ref)
         previous_filter = QAbstractEventDispatcher::instance()->setEventFilter(axc_FilterProc);
 #if !defined(Q_OS_WINCE)
-    AddAtomA(qaxatom);
+    AddAtom(qaxatom);
 #else
     ++filter_ref;
 #endif
@@ -1992,10 +2024,10 @@ void QAxWidget::clear()
         return;
     if (!control().isEmpty()) {
 #if !defined(Q_OS_WINCE)
-        ATOM filter_ref = FindAtomA(qaxatom);
+        ATOM filter_ref = FindAtom(qaxatom);
         if (filter_ref)
             DeleteAtom(filter_ref);
-        filter_ref = FindAtomA(qaxatom);
+        filter_ref = FindAtom(qaxatom);
         if (!filter_ref) {
 #else
         if (!filter_ref && !--filter_ref) {
@@ -2042,7 +2074,7 @@ bool QAxWidget::doVerb(const QString &verb)
 */
 
 /*!
-    \reimp
+    \internal
 */
 const QMetaObject *QAxWidget::metaObject() const
 {
@@ -2050,7 +2082,7 @@ const QMetaObject *QAxWidget::metaObject() const
 }
 
 /*!
-    \reimp
+    \internal
 */
 const QMetaObject *QAxWidget::parentMetaObject() const
 {
@@ -2068,7 +2100,7 @@ void *QAxWidget::qt_metacast(const char *cname)
 }
 
 /*!
-    \reimp
+    \internal
 */
 const char *QAxWidget::className() const
 {
@@ -2076,7 +2108,7 @@ const char *QAxWidget::className() const
 }
 
 /*!
-    \reimp
+    \internal
 */
 int QAxWidget::qt_metacall(QMetaObject::Call call, int id, void **v)
 {

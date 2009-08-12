@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -94,8 +94,8 @@ class QShapedPixmapWidget
 public:
     QShapedPixmapWidget(RWsSession aWsSession,RWindowTreeNode* aNode)
     {
-     sprite = RWsSprite(aWsSession);     
-     cursorSprite.iBitmap = 0; 
+     sprite = RWsSprite(aWsSession);
+     cursorSprite.iBitmap = 0;
      cursorSprite.iMaskBitmap = 0;
      cursorSprite.iInvertMask = EFalse;
      cursorSprite.iOffset = TPoint(0,0);
@@ -127,8 +127,8 @@ public:
         //### heaplock centralized.
         QImage temp = pm.toImage();
         QSize size = pm.size();
-        temp.bits();        
-        CFbsBitmap *curbm = new (ELeave) CFbsBitmap();
+        temp.bits();
+        CFbsBitmap *curbm = q_check_ptr(new CFbsBitmap());		// CBase derived object needs check on new
         curbm->Create(TSize(size.width(),size.height()),EColor16MA);
         curbm->LockHeap(ETrue);
         memcpy((uchar*)curbm->DataAddress(),temp.bits(),temp.numBytes());
@@ -188,7 +188,7 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
     switch(e->type()) {
         case QEvent::MouseButtonPress:
         {
-        }   
+        }
         case QEvent::MouseMove:
         {
             if (!object) { //#### this should not happen
@@ -211,7 +211,7 @@ bool QDragManager::eventFilter(QObject *o, QEvent *e)
                 if (!cw)
                     return true;
                 TPoint windowPos = cw->effectiveWinId()->PositionRelativeToScreen();
-                qt_symbian_dnd_deco->sprite.SetPosition(TPoint(me->globalX()- windowPos.iX,me->globalY()- windowPos.iY));                                
+                qt_symbian_dnd_deco->sprite.SetPosition(TPoint(me->globalX()- windowPos.iX,me->globalY()- windowPos.iY));
 
                 while (cw && !cw->acceptDrops() && !cw->isWindow())
                     cw = cw->parentWidget();
@@ -318,7 +318,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     object->d_func()->target = 0;
     TPoint windowPos = source()->effectiveWinId()->PositionRelativeToScreen();
     qt_symbian_dnd_deco->sprite.SetPosition(TPoint(QCursor::pos().x()- windowPos.iX ,QCursor::pos().y() - windowPos.iY));
-    
+
     QPoint hotspot = drag_object->hotSpot();
     qt_symbian_dnd_deco->cursorSprite.iOffset = TPoint(- hotspot.x(),- hotspot.y());
     qt_symbian_dnd_deco->sprite.UpdateMember(0,qt_symbian_dnd_deco->cursorSprite);

@@ -72,7 +72,11 @@ namespace WebCore {
 
         // Determines whether the script should be allowed or denied execution
         // based on the content of any user-submitted data.
-        bool canEvaluate(const String& sourceCode) const;
+        bool canEvaluate(const String& code) const;
+
+        // Determines whether the JavaScript URL should be allowed or denied execution
+        // based on the content of any user-submitted data.
+        bool canEvaluateJavaScriptURL(const String& code) const;
 
         // Determines whether the event listener should be created based on the
         // content of any user-submitted data.
@@ -80,7 +84,7 @@ namespace WebCore {
 
         // Determines whether the external script should be loaded based on the
         // content of any user-submitted data.
-        bool canLoadExternalScriptFromSrc(const String& url) const;
+        bool canLoadExternalScriptFromSrc(const String& context, const String& url) const;
 
         // Determines whether object should be loaded based on the content of
         // any user-submitted data.
@@ -88,12 +92,22 @@ namespace WebCore {
         // This method is called by FrameLoader::requestObject.
         bool canLoadObject(const String& url) const;
 
+        // Determines whether the base URL should be changed based on the content
+        // of any user-submitted data.
+        //
+        // This method is called by HTMLBaseElement::process.
+        bool canSetBaseElementURL(const String& url) const;
+
     private:
-        static String decodeURL(const String& url, const TextEncoding& encoding = UTF8Encoding(), bool allowControlCharacters = false);
+        static String canonicalize(const String&);
+        
+        static String decodeURL(const String& url, const TextEncoding& encoding = UTF8Encoding(), bool decodeHTMLentities = true);
+        
+        static String decodeHTMLEntities(const String&, bool leaveUndecodableHTMLEntitiesUntouched = true);
 
-        bool findInRequest(const String&) const;
+        bool findInRequest(const String&, bool decodeHTMLentities = true) const;
 
-        bool findInRequest(Frame*, const String&) const;
+        bool findInRequest(Frame*, const String&, bool decodeHTMLentities = true) const;
 
         // The frame to audit.
         Frame* m_frame;

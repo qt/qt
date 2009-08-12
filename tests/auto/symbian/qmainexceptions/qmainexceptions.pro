@@ -1,5 +1,3 @@
 load(qttest_p4)
-HEADERS += 
+HEADERS +=
 SOURCES += tst_qmainexceptions.cpp
-
-

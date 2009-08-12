@@ -597,8 +597,7 @@ static void qmake_error_msg(const QString &msg)
             msg.toLatin1().constData());
 }
 
-enum isForSymbian_enum
-{
+enum isForSymbian_enum {
     isForSymbian_NOT_SET = -1,
     isForSymbian_FALSE = 0,
     isForSymbian_ABLD = 1,
@@ -704,10 +703,6 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
         case Option::TARG_MAC9_MODE:
             concat << base_concat + QDir::separator() + "mac";
             concat << base_concat + QDir::separator() + "mac9";
-            break;
-        case Option::TARG_QNX6_MODE: //also a unix
-            concat << base_concat + QDir::separator() + "qnx6";
-            concat << base_concat + QDir::separator() + "unix";
             break;
         }
         concat << base_concat;
@@ -1606,8 +1601,8 @@ QMakeProject::read(uchar cmd)
 
     if(cmd & ReadProFile) { // parse project file
         debug_msg(1, "Project file: reading %s", pfile.toLatin1().constData());
-        if(pfile != "-" && !QFile::exists(pfile) && !pfile.endsWith(".pro"))
-            pfile += ".pro";
+        if(pfile != "-" && !QFile::exists(pfile) && !pfile.endsWith(Option::pro_ext))
+            pfile += Option::pro_ext;
         if(!read(pfile, vars))
             return false;
     }
@@ -1707,12 +1702,10 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QMap<QString, QString
         return true;
 
     //mkspecs
-    if((Option::target_mode == Option::TARG_MACX_MODE || Option::target_mode == Option::TARG_QNX6_MODE ||
+    if((Option::target_mode == Option::TARG_MACX_MODE ||
         Option::target_mode == Option::TARG_UNIX_MODE) && x == "unix")
         return !isForSymbian();
     else if(Option::target_mode == Option::TARG_MACX_MODE && x == "macx")
-        return !isForSymbian();
-    else if(Option::target_mode == Option::TARG_QNX6_MODE && x == "qnx6")
         return !isForSymbian();
     else if(Option::target_mode == Option::TARG_MAC9_MODE && x == "mac9")
         return !isForSymbian();
@@ -2843,10 +2836,15 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
     case T_LOAD: {
         QString parseInto;
         const bool include_statement = (func_t == T_INCLUDE);
-        bool ignore_error = include_statement;
-        if(args.count() == 2) {
+        bool ignore_error = false;
+        if(args.count() >= 2) {
             if(func_t == T_INCLUDE) {
                 parseInto = args[1];
+                if (args.count() == 3){
+                    QString sarg = args[2];
+                    if (sarg.toLower() == "true" || sarg.toInt())
+                        ignore_error = true;
+                }
             } else {
                 QString sarg = args[1];
                 ignore_error = (sarg.toLower() == "true" || sarg.toInt());
@@ -2888,8 +2886,8 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
         if(stat == IncludeFeatureAlreadyLoaded) {
             warn_msg(WarnParser, "%s:%d: Duplicate of loaded feature %s",
                      parser.file.toLatin1().constData(), parser.line_no, file.toLatin1().constData());
-        } else if(stat == IncludeNoExist && include_statement) {
-            warn_msg(WarnParser, "%s:%d: Unable to find file for inclusion %s",
+        } else if(stat == IncludeNoExist && !ignore_error) {
+            warn_msg(WarnAll, "%s:%d: Unable to find file for inclusion %s",
                      parser.file.toLatin1().constData(), parser.line_no, file.toLatin1().constData());
             return false;
         } else if(stat >= IncludeFailure) {
@@ -3261,9 +3259,9 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
             ret = "Windows";
         } else if(type == "name") {
             DWORD name_length = 1024;
-            TCHAR name[1024];
-            if(GetComputerName(name, &name_length))
-                ret = QString::fromUtf16((ushort*)name, name_length);
+            wchar_t name[1024];
+            if (GetComputerName(name, &name_length))
+                ret = QString::fromWCharArray(name);
         } else if(type == "version" || type == "version_string") {
             QSysInfo::WinVersion ver = QSysInfo::WindowsVersion;
             if(type == "version")
@@ -3339,51 +3337,49 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
 
 
 // UIDs starting with 0xE are test UIDs in symbian
-QString generate_test_uid(const QString& target) {
+QString generate_test_uid(const QString& target)
+{
     QString tmp = generate_uid(target);
-    tmp.replace(0,1,"E");
+    tmp.replace(0, 1, "E");
     tmp.prepend("0x");
-
-    // printf("generate_test_uid for %s is %s \n", qPrintable(target), qPrintable(tmp));
 
     return tmp;
 }
 
 
 // UIDs starting with 0xE are test UIDs in symbian
-QString generate_uid(const QString& target) {
-
+QString generate_uid(const QString& target)
+{
     static QMap<QString, QString> targetToUid;
 
     QString tmp = targetToUid[target];
 
-    if(!tmp.isEmpty()) {
-        // printf("generate_uid for %s is %s \n", qPrintable(target), qPrintable(tmp));
+    if (!tmp.isEmpty()) {
         return tmp;
     }
 
     unsigned long hash = 5381;
     int c;
 
-    for(int i = 0; i < target.size(); ++i) {
+    for (int i = 0; i < target.size(); ++i) {
         c = target.at(i).toAscii();
-        hash ^= c + ((c-i) << i%20) + ((c+i) << (i+5)%20) + ((c-2*i) << (i+10)%20) + ((c+2*i) << (i+15)%20);
+        hash ^= c + ((c - i) << i % 20) + ((c + i) << (i + 5) % 20) + ((c - 2 * i) << (i + 10) % 20) + ((c + 2 * i) << (i + 15) % 20);
     }
 
     tmp.setNum(hash, 16);
-    for(int i = tmp.size(); i < 8; ++i)
+    for (int i = tmp.size(); i < 8; ++i)
         tmp.prepend("0");
 
 #if 0
     static QMap<QString, QString> uidConflictCheckList;
     QString testStr = tmp;
-    testStr.replace(0,1,"E"); // Simulate actual UID generation
+    testStr.replace(0, 1, "E"); // Simulate actual UID generation
     if (uidConflictCheckList.contains(testStr)) {
         printf("\n\n!!!! generated duplicate uid for %s is %s <-> %s !!!!\n\n\n",
-            qPrintable(target),
-            qPrintable(testStr),
-            qPrintable(uidConflictCheckList.value(testStr)));
-        }
+               qPrintable(target),
+               qPrintable(testStr),
+               qPrintable(uidConflictCheckList.value(testStr)));
+    }
     uidConflictCheckList.insert(testStr, target);
     printf("generate_uid for %s is %s \n", qPrintable(target), qPrintable(tmp));
 #endif
@@ -3395,7 +3391,7 @@ QString generate_uid(const QString& target) {
 
 static void fixEpocRootStr(QString& path)
 {
-    path.replace("\\","/");
+    path.replace("\\", "/");
 
     if (path.size() > 1 && path[1] == QChar(':')) {
         path = path.mid(2);
@@ -3412,8 +3408,7 @@ static QString epocRootStr;
 
 QString epocRoot()
 {
-    if (!epocRootStr.isEmpty())
-    {
+    if (!epocRootStr.isEmpty()) {
         return epocRootStr;
     }
 

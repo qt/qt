@@ -57,7 +57,7 @@ static const HashTableValue JSDOMApplicationCacheTableValues[10] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMApplicationCacheTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMApplicationCacheTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSDOMApplicationCacheTableValues, 0 };
 #else
@@ -82,7 +82,7 @@ static const HashTableValue JSDOMApplicationCachePrototypeTableValues[12] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMApplicationCachePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMApplicationCachePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSDOMApplicationCachePrototypeTableValues, 0 };
 #else
@@ -103,8 +103,8 @@ bool JSDOMApplicationCachePrototype::getOwnPropertySlot(ExecState* exec, const I
 
 const ClassInfo JSDOMApplicationCache::s_info = { "DOMApplicationCache", 0, &JSDOMApplicationCacheTable, 0 };
 
-JSDOMApplicationCache::JSDOMApplicationCache(PassRefPtr<Structure> structure, PassRefPtr<DOMApplicationCache> impl)
-    : DOMObject(structure)
+JSDOMApplicationCache::JSDOMApplicationCache(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMApplicationCache> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -126,15 +126,17 @@ bool JSDOMApplicationCache::getOwnPropertySlot(ExecState* exec, const Identifier
 
 JSValue jsDOMApplicationCacheStatus(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDOMApplicationCache* castedThis = static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
+    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThis->impl());
     return jsNumber(exec, imp->status());
 }
 
 JSValue jsDOMApplicationCacheOnchecking(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDOMApplicationCache* castedThis = static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
+    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThis->impl());
     if (EventListener* listener = imp->onchecking()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -144,8 +146,9 @@ JSValue jsDOMApplicationCacheOnchecking(ExecState* exec, const Identifier&, cons
 
 JSValue jsDOMApplicationCacheOnerror(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDOMApplicationCache* castedThis = static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
+    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThis->impl());
     if (EventListener* listener = imp->onerror()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -155,8 +158,9 @@ JSValue jsDOMApplicationCacheOnerror(ExecState* exec, const Identifier&, const P
 
 JSValue jsDOMApplicationCacheOnnoupdate(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDOMApplicationCache* castedThis = static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
+    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThis->impl());
     if (EventListener* listener = imp->onnoupdate()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -166,8 +170,9 @@ JSValue jsDOMApplicationCacheOnnoupdate(ExecState* exec, const Identifier&, cons
 
 JSValue jsDOMApplicationCacheOndownloading(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDOMApplicationCache* castedThis = static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
+    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThis->impl());
     if (EventListener* listener = imp->ondownloading()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -177,8 +182,9 @@ JSValue jsDOMApplicationCacheOndownloading(ExecState* exec, const Identifier&, c
 
 JSValue jsDOMApplicationCacheOnprogress(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDOMApplicationCache* castedThis = static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
+    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThis->impl());
     if (EventListener* listener = imp->onprogress()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -188,8 +194,9 @@ JSValue jsDOMApplicationCacheOnprogress(ExecState* exec, const Identifier&, cons
 
 JSValue jsDOMApplicationCacheOnupdateready(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDOMApplicationCache* castedThis = static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
+    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThis->impl());
     if (EventListener* listener = imp->onupdateready()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -199,8 +206,9 @@ JSValue jsDOMApplicationCacheOnupdateready(ExecState* exec, const Identifier&, c
 
 JSValue jsDOMApplicationCacheOncached(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDOMApplicationCache* castedThis = static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
+    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThis->impl());
     if (EventListener* listener = imp->oncached()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -210,8 +218,9 @@ JSValue jsDOMApplicationCacheOncached(ExecState* exec, const Identifier&, const 
 
 JSValue jsDOMApplicationCacheOnobsolete(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSDOMApplicationCache* castedThis = static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(asObject(slot.slotBase()))->impl());
+    DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(castedThis->impl());
     if (EventListener* listener = imp->onobsolete()) {
         if (JSObject* jsFunction = listener->jsFunction())
             return jsFunction;
@@ -398,9 +407,9 @@ JSValue jsDOMApplicationCacheOBSOLETE(ExecState* exec, const Identifier&, const 
     return jsNumber(exec, static_cast<int>(5));
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, DOMApplicationCache* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, DOMApplicationCache* object)
 {
-    return getDOMObjectWrapper<JSDOMApplicationCache>(exec, object);
+    return getDOMObjectWrapper<JSDOMApplicationCache>(exec, globalObject, object);
 }
 DOMApplicationCache* toDOMApplicationCache(JSC::JSValue value)
 {

@@ -14,7 +14,7 @@
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
-** General Public License version 2.1 as published by the Free Software
+** General Public License version 2.1 as published by  Free Software
 ** Foundation and appearing in the file LICENSE.LGPL included in the
 ** packaging of this file.  Please review the following information to
 ** ensure the GNU Lesser General Public License version 2.1 requirements
@@ -92,6 +92,8 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+const char * const lupinellaIp = "10.3.4.6";
+
 
 class tst_QHostInfo : public QObject
 {
@@ -165,7 +167,7 @@ tst_QHostInfo::tst_QHostInfo()
 }
 
 tst_QHostInfo::~tst_QHostInfo()
-{ 
+{
 }
 
 void tst_QHostInfo::initTestCase()
@@ -216,16 +218,13 @@ void tst_QHostInfo::lookupIPv4_data()
 
 #ifdef Q_OS_SYMBIAN
     // Test server lookup
-    QTest::newRow("lookup_01") << QtNetworkSettings::serverName() << QtNetworkSettings::serverIP() << int(QHostInfo::NoError);
-    QTest::newRow("literal_ip4") << QtNetworkSettings::serverIP() << QtNetworkSettings::serverIP() << int(QHostInfo::NoError);
+    QTest::newRow("lookup_01") << QtNetworkSettings::serverName() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
+    QTest::newRow("literal_ip4") << QtNetworkSettings::serverIP().toString() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
     QTest::newRow("multiple_ip4") << "multi.dev.troll.no" << "1.2.3.4 1.2.3.5 10.3.3.31" << int(QHostInfo::NoError);
 #else
     QTest::newRow("empty") << "" << "" << int(QHostInfo::HostNotFound);
 
-    QTest::newRow("lupinella_00") << "l" << lupinellaIp << int(QHostInfo::NoError);
-    QTest::newRow("lupinella_01") << "lupinella" << lupinellaIp << int(QHostInfo::NoError);       
-    QTest::newRow("lupinella_02") << "lupinella.troll.no" << lupinellaIp << int(QHostInfo::NoError);
-    QTest::newRow("lupinella_03") << "lupinella.trolltech.com" << lupinellaIp << int(QHostInfo::NoError);
+    QTest::newRow("single_ip4") << "lupinella.troll.no" << lupinellaIp << int(QHostInfo::NoError);
     QTest::newRow("multiple_ip4") << "multi.dev.troll.no" << "1.2.3.4 1.2.3.5 10.3.3.31" << int(QHostInfo::NoError);
     QTest::newRow("literal_ip4") << lupinellaIp << lupinellaIp << int(QHostInfo::NoError);
 #endif
@@ -392,7 +391,7 @@ protected:
 void tst_QHostInfo::threadSafety()
 {
     const int nattempts = 5;
-#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN) 
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     const int runs = 10;
 #else
     const int runs = 100;

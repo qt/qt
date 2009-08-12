@@ -41,6 +41,7 @@
 
 #include "qlocalsocket.h"
 #include "qlocalsocket_p.h"
+#include "qnet_unix_p.h"
 
 #ifndef QT_NO_LOCALSOCKET
 
@@ -54,6 +55,10 @@
 #include <qdatetime.h>
 #include <qdir.h>
 #include <qdebug.h>
+
+#ifdef Q_OS_VXWORKS
+#  include <selectLib.h>
+#endif
 
 #define QT_CONNECT_TIMEOUT 30000
 
@@ -232,7 +237,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
     }
 
     // create the socket
-    if (-1 == (d->connectingSocket = qSocket(PF_UNIX, SOCK_STREAM, 0))) {
+    if (-1 == (d->connectingSocket = qt_safe_socket(PF_UNIX, SOCK_STREAM, 0))) {
         d->errorOccurred(UnsupportedSocketOperationError,
                         QLatin1String("QLocalSocket::connectToServer"));
         return;
@@ -283,7 +288,7 @@ void QLocalSocketPrivate::_q_connectToSocket()
     }
     ::memcpy(name.sun_path, connectingPathName.toLatin1().data(),
              connectingPathName.toLatin1().size() + 1);
-    if (-1 == qConnect(connectingSocket, (struct sockaddr *)&name, sizeof(name)) && errno != EISCONN) {
+    if (-1 == qt_safe_connect(connectingSocket, (struct sockaddr *)&name, sizeof(name))) {
         QString function = QLatin1String("QLocalSocket::connectToServer");
         switch (errno)
         {
@@ -301,7 +306,7 @@ void QLocalSocketPrivate::_q_connectToSocket()
         case ETIMEDOUT:
             errorOccurred(QLocalSocket::SocketTimeoutError, function);
             break;
-        case EINPROGRESS:            
+        case EINPROGRESS:
         case EAGAIN:
             // Try again later, all of the sockets listening are full
             if (!delayConnect) {
@@ -534,14 +539,14 @@ bool QLocalSocket::waitForConnected(int msec)
     timer.start();
     while (state() == ConnectingState
            && (-1 == msec || timer.elapsed() < msec)) {
-#ifdef Q_OS_SYMBIAN           
-        // On Symbian, ready-to-write is signaled when non-blocking socket 
-        // connect is finised. Is ready-to-read really used on other 
-        // UNIX paltforms when using non-blocking AF_UNIX socket? 
+#ifdef Q_OS_SYMBIAN
+        // On Symbian, ready-to-write is signaled when non-blocking socket
+        // connect is finised. Is ready-to-read really used on other
+        // UNIX paltforms when using non-blocking AF_UNIX socket?
         result = ::select(d->connectingSocket + 1, 0, &fds, 0, &timeout);
 #else
-        result = ::select(d->connectingSocket + 1, &fds, 0, 0, &timeout);        
-#endif        
+        result = ::select(d->connectingSocket + 1, &fds, 0, 0, &timeout);
+#endif
         if (-1 == result && errno != EINTR) {
             d->errorOccurred( QLocalSocket::UnknownSocketError,
                     QLatin1String("QLocalSocket::waitForConnected"));

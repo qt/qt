@@ -47,7 +47,7 @@ static const HashTableValue JSHTMLTableColElementTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTableColElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTableColElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 511, JSHTMLTableColElementTableValues, 0 };
 #else
@@ -61,19 +61,19 @@ static const HashTableValue JSHTMLTableColElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTableColElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTableColElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLTableColElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLTableColElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLTableColElementConstructor : public DOMObject {
+class JSHTMLTableColElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLTableColElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLTableColElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLTableColElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLTableColElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLTableColElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLTableColElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -99,7 +99,7 @@ static const HashTableValue JSHTMLTableColElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLTableColElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLTableColElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLTableColElementPrototypeTableValues, 0 };
 #else
@@ -115,8 +115,8 @@ JSObject* JSHTMLTableColElementPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSHTMLTableColElement::s_info = { "HTMLTableColElement", &JSHTMLElement::s_info, &JSHTMLTableColElementTable, 0 };
 
-JSHTMLTableColElement::JSHTMLTableColElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLTableColElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLTableColElement::JSHTMLTableColElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLTableColElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -132,49 +132,56 @@ bool JSHTMLTableColElement::getOwnPropertySlot(ExecState* exec, const Identifier
 
 JSValue jsHTMLTableColElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLTableColElement* castedThis = static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->impl());
+    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThis->impl());
     return jsString(exec, imp->align());
 }
 
 JSValue jsHTMLTableColElementCh(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLTableColElement* castedThis = static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->impl());
+    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThis->impl());
     return jsString(exec, imp->ch());
 }
 
 JSValue jsHTMLTableColElementChOff(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLTableColElement* castedThis = static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->impl());
+    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThis->impl());
     return jsString(exec, imp->chOff());
 }
 
 JSValue jsHTMLTableColElementSpan(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLTableColElement* castedThis = static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->impl());
+    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThis->impl());
     return jsNumber(exec, imp->span());
 }
 
 JSValue jsHTMLTableColElementVAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLTableColElement* castedThis = static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->impl());
+    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThis->impl());
     return jsString(exec, imp->vAlign());
 }
 
 JSValue jsHTMLTableColElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLTableColElement* castedThis = static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->impl());
+    HTMLTableColElement* imp = static_cast<HTMLTableColElement*>(castedThis->impl());
     return jsString(exec, imp->width());
 }
 
 JSValue jsHTMLTableColElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLTableColElement* domObject = static_cast<JSHTMLTableColElement*>(asObject(slot.slotBase()));
+    return JSHTMLTableColElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLTableColElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -217,9 +224,9 @@ void setJSHTMLTableColElementWidth(ExecState* exec, JSObject* thisObject, JSValu
     imp->setWidth(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLTableColElement::getConstructor(ExecState* exec)
+JSValue JSHTMLTableColElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLTableColElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLTableColElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

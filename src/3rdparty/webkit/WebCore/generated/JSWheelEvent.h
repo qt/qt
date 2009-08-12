@@ -30,7 +30,7 @@ class WheelEvent;
 class JSWheelEvent : public JSUIEvent {
     typedef JSUIEvent Base;
 public:
-    JSWheelEvent(PassRefPtr<JSC::Structure>, PassRefPtr<WheelEvent>);
+    JSWheelEvent(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<WheelEvent>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -41,7 +41,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 };
 
 

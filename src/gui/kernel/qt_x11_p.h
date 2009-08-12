@@ -74,11 +74,19 @@
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 #ifdef index
-# undef index
+#  undef index
 #endif
 #ifdef rindex
-# undef rindex
+#  undef rindex
 #endif
+#ifdef Q_OS_VXWORS
+#  ifdef open
+#    undef open
+#  endif
+#  ifdef getpid
+#    undef getpid
+#  endif
+#endif // Q_OS_VXWORKS
 #include <X11/Xatom.h>
 
 //#define QT_NO_SHAPE
@@ -507,7 +515,8 @@ struct QX11Data
 
     char *startupId;
 
-    DesktopEnvironment desktopEnvironment;
+    DesktopEnvironment desktopEnvironment : 8;
+    uint desktopVersion : 8;  /* Used only for KDE */
 
     /* Warning: if you modify this list, modify the names of atoms in qapplication_x11.cpp as well! */
     enum X11Atom {

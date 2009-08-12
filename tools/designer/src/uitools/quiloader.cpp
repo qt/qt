@@ -574,20 +574,20 @@ void QUiLoaderPrivate::setupWidgetMap() const
 
     \brief The QUiLoader class enables standalone applications to
     dynamically create user interfaces at run-time using the
-    information stored in .ui files or specified in plugin paths.
+    information stored in UI files or specified in plugin paths.
 
     In addition, you can customize or create your own user interface by
     deriving your own loader class.
 
     If you have a custom component or an application that embeds \QD, you can
     also use the QFormBuilder class provided by the QtDesigner module to create
-    user interfaces from \c{.ui} files.
+    user interfaces from UI files.
 
     The QUiLoader class provides a collection of functions allowing you to
-    create widgets based on the information stored in \c .ui files (created
+    create widgets based on the information stored in UI files (created
     with \QD) or available in the specified plugin paths. The specified plugin
     paths can be retrieved using the pluginPaths() function. Similarly, the
-    contents of a \c{.ui} file  can be retrieved using the load() function. For
+    contents of a UI file can be retrieved using the load() function. For
     example:
 
     \snippet doc/src/snippets/quiloader/mywidget.cpp 0

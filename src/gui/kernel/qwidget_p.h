@@ -311,7 +311,7 @@ public:
 
     void setUpdatesEnabled_helper(bool );
 
-    void paintBackground(QPainter *, const QRegion &, const QPoint & = QPoint(), int flags = DrawAsRoot) const;
+    void paintBackground(QPainter *, const QRegion &, int flags = DrawAsRoot) const;
     bool isAboutToShow() const;
     QRegion prepareToRender(const QRegion &region, QWidget::RenderFlags renderFlags);
     void render_helper(QPainter *painter, const QPoint &targetOffset, const QRegion &sourceRegion,
@@ -490,10 +490,11 @@ public:
     QWidgetItemV2 *widgetItem;
     QPaintEngine *extraPaintEngine;
     mutable const QMetaObject *polished;
-    // All widgets are initially added into the uncreatedWidgets set. Once
-    // they receive a window id they are removed and added to the mapper
+    // All widgets are added into the allWidgets set. Once
+    // they receive a window id they are also added to the mapper.
+    // This should just ensure that all widgets are deleted by QApplication
     static QWidgetMapper *mapper;
-    static QWidgetSet *uncreatedWidgets;
+    static QWidgetSet *allWidgets;
 #if !defined(QT_NO_IM)
     QPointer<QInputContext> ic;
     Qt::InputMethodHints imHints;
@@ -541,11 +542,6 @@ public:
     QList<QAction*> actions;
 #endif
 
-    QSet<int> gestures;
-    int grabGesture(int gestureId);
-    bool releaseGesture(int gestureId);
-    bool hasGesture(const QString &type) const;
-
     // Bit fields.
     uint high_attributes[3]; // the low ones are in QWidget::widget_attributes
     QPalette::ColorRole fg_role : 8;
@@ -581,6 +577,7 @@ public:
 #endif
     void grabMouseWhileInWindow();
     void registerTouchWindow();
+    void winSetupGestures();
 #elif defined(Q_WS_MAC) // <--------------------------------------------------------- MAC
     // This is new stuff
     uint needWindowChange : 1;

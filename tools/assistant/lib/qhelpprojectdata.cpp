@@ -41,9 +41,11 @@
 
 #include "qhelpprojectdata_p.h"
 
+#include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QStack>
 #include <QtCore/QMap>
+#include <QtCore/QRegExp>
 #include <QtCore/QVariant>
 #include <QtXml/QXmlStreamReader>
 
@@ -73,6 +75,9 @@ private:
     void readKeywords();
     void readFiles();
     void raiseUnknownTokenError();
+    void addMatchingFiles(const QString &pattern);
+
+    QMap<QString, QStringList> dirEntriesCache;
 };
 
 void QHelpProjectDataPrivate::raiseUnknownTokenError()
@@ -161,7 +166,7 @@ void QHelpProjectDataPrivate::readFilterSection()
         readNext();
         if (isStartElement()) {
             if (name() == QLatin1String("filterAttribute"))
-                filterSectionList.last().addFilterAttribute(readElementText());				
+                filterSectionList.last().addFilterAttribute(readElementText());
             else if (name() == QLatin1String("toc"))
                 readTOC();
             else if (name() == QLatin1String("keywords"))
@@ -244,7 +249,7 @@ void QHelpProjectDataPrivate::readFiles()
         readNext();
         if (isStartElement()) {
             if (name() == QLatin1String("file"))
-                filterSectionList.last().addFile(readElementText());
+                addMatchingFiles(readElementText());
             else
                 raiseUnknownTokenError();
         } else if (isEndElement()) {
@@ -258,7 +263,47 @@ void QHelpProjectDataPrivate::readFiles()
     }
 }
 
+// Expand file pattern and add matches into list. If the pattern does not match
+// any files, insert the pattern itself so the QHelpGenerator will emit a
+// meaningful warning later.
+void QHelpProjectDataPrivate::addMatchingFiles(const QString &pattern)
+{
+    // The pattern matching is expensive, so we skip it if no
+    // wildcard symbols occur in the string.
+    if (!pattern.contains('?') && !pattern.contains('*')
+        && !pattern.contains('[') && !pattern.contains(']')) {
+        filterSectionList.last().addFile(pattern);
+        return;
+    }
 
+    QFileInfo fileInfo(rootPath + '/' + pattern);
+    const QDir &dir = fileInfo.dir();
+    const QString &path = dir.canonicalPath();
+
+    // QDir::entryList() is expensive, so we cache the results.
+    QMap<QString, QStringList>::ConstIterator it = dirEntriesCache.find(path);
+    const QStringList &entries = it != dirEntriesCache.constEnd() ?
+                                 it.value() : dir.entryList(QDir::Files);
+    if (it == dirEntriesCache.constEnd())
+        dirEntriesCache.insert(path, entries);
+
+    bool matchFound = false;
+#ifdef Q_OS_WIN
+    Qt::CaseSensitivity cs = Qt::CaseInsensitive;
+#else
+    Qt::CaseSensitivity cs = Qt::CaseSensitive;
+#endif
+    QRegExp regExp(fileInfo.fileName(), cs, QRegExp::Wildcard);
+    foreach (const QString &file, entries) {
+        if (regExp.exactMatch(file)) {
+            matchFound = true;
+            filterSectionList.last().
+                addFile(QFileInfo(pattern).dir().path() + '/' + file);
+        }
+    }
+    if (!matchFound)
+        filterSectionList.last().addFile(pattern);
+}
 
 /*!
     \internal

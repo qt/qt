@@ -72,6 +72,7 @@ class QGraphicsSceneHoverEvent;
 class QGraphicsSceneMouseEvent;
 class QGraphicsSceneWheelEvent;
 class QGraphicsScene;
+class QGraphicsTransform;
 class QGraphicsWidget;
 class QInputMethodEvent;
 class QKeyEvent;
@@ -99,7 +100,9 @@ public:
         ItemStacksBehindParent = 0x100,
         ItemUsesExtendedStyleOption = 0x200,
         ItemHasNoContents = 0x400,
-        ItemSendsGeometryChanges = 0x800
+        ItemSendsGeometryChanges = 0x800,
+        ItemAcceptsInputMethod = 0x1000,
+        ItemAutoDetectsFocusProxy = 0x2000
         // NB! Don't forget to increase the d_ptr->flags bit field by 1 when adding a new flag.
     };
     Q_DECLARE_FLAGS(GraphicsItemFlags, GraphicsItemFlag)
@@ -142,7 +145,7 @@ public:
 
     QGraphicsItem(QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                  // obsolete argument
+                  // ### obsolete argument
                   , QGraphicsScene *scene = 0
 #endif
         );
@@ -209,12 +212,15 @@ public:
     Qt::MouseButtons acceptedMouseButtons() const;
     void setAcceptedMouseButtons(Qt::MouseButtons buttons);
 
-    bool acceptsHoverEvents() const; // obsolete
-    void setAcceptsHoverEvents(bool enabled); // obsolete
+    bool acceptsHoverEvents() const; // ### obsolete
+    void setAcceptsHoverEvents(bool enabled); // ### obsolete
     bool acceptHoverEvents() const;
     void setAcceptHoverEvents(bool enabled);
     bool acceptTouchEvents() const;
     void setAcceptTouchEvents(bool enabled);
+
+    bool filtersChildEvents() const;
+    void setFiltersChildEvents(bool enabled);
 
     bool handlesChildEvents() const;
     void setHandlesChildEvents(bool enabled);
@@ -222,6 +228,11 @@ public:
     bool hasFocus() const;
     void setFocus(Qt::FocusReason focusReason = Qt::OtherFocusReason);
     void clearFocus();
+
+    QGraphicsItem *focusProxy() const;
+    void setFocusProxy(QGraphicsItem *item);
+
+    QGraphicsItem *focusItem() const;
 
     void grabMouse();
     void ungrabMouse();
@@ -259,34 +270,19 @@ public:
     void shear(qreal sh, qreal sv);     // ### obsolete
     void translate(qreal dx, qreal dy); // ### obsolete
 
-    qreal xRotation() const;
-    void setXRotation(qreal angle);
+    void setRotation(qreal angle);
+    qreal rotation() const;
 
-    qreal yRotation() const;
-    void setYRotation(qreal angle);
+    void setScale(qreal scale);
+    qreal scale() const;
 
-    qreal zRotation() const;
-    void setZRotation(qreal angle);
-    void setRotation(qreal x, qreal y, qreal z);
+    QList<QGraphicsTransform *> transformations() const;
+    void setTransformations(const QList<QGraphicsTransform *> &transformations);
 
-    qreal xScale() const;
-    void setXScale(qreal factor);
-
-    qreal yScale() const;
-    void setYScale(qreal factor);
-    void setScale(qreal sx, qreal sy);
-
-    qreal horizontalShear() const;
-    void setHorizontalShear(qreal shear);
-
-    qreal verticalShear() const;
-    void setVerticalShear(qreal shear);
-    void setShear(qreal sh, qreal sv);
-
-    QPointF transformOrigin() const;
-    void setTransformOrigin(const QPointF &origin);
-    inline void setTransformOrigin(qreal x, qreal y)
-    { setTransformOrigin(QPointF(x,y)); }
+    QPointF transformOriginPoint() const;
+    void setTransformOriginPoint(const QPointF &origin);
+    inline void setTransformOriginPoint(qreal x, qreal y)
+    { setTransformOriginPoint(QPointF(x,y)); }
 
     virtual void advance(int phase);
 
@@ -380,10 +376,8 @@ public:
     QVariant data(int key) const;
     void setData(int key, const QVariant &value);
 
-    int grabGesture(Qt::GestureType gesture);
-    int grabGesture(const QString &gesture);
-    void releaseGesture(int gestureId);
-    void setGestureEnabled(int gestureId, bool enable = true);
+    Qt::InputMethodHints inputMethodHints() const;
+    void setInputMethodHints(Qt::InputMethodHints hints);
 
     enum {
         Type = 1,
@@ -442,11 +436,17 @@ private:
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;
     friend class QGraphicsSceneFindItemBspTreeVisitor;
+    friend class QGraphicsSceneBspTree;
     friend class QGraphicsView;
     friend class QGraphicsViewPrivate;
     friend class QGraphicsWidget;
     friend class QGraphicsWidgetPrivate;
     friend class QGraphicsProxyWidgetPrivate;
+    friend class QGraphicsSceneIndex;
+    friend class QGraphicsSceneIndexPrivate;
+    friend class QGraphicsSceneBspTreeIndex;
+    friend class QGraphicsSceneBspTreeIndexPrivate;
+    friend class QGraphicsTransformPrivate;
     friend class ::tst_QGraphicsItem;
     friend bool qt_closestLeaf(const QGraphicsItem *, const QGraphicsItem *);
     friend bool qt_closestItemFirst(const QGraphicsItem *, const QGraphicsItem *);
@@ -512,8 +512,18 @@ class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY xChanged)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY yChanged)
     Q_PROPERTY(qreal z READ zValue WRITE setZValue NOTIFY zChanged)
+    Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
+    Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
+    Q_PROPERTY(QPointF transformOriginPoint READ transformOriginPoint WRITE setTransformOriginPoint)
 public:
     QGraphicsObject(QGraphicsItem *parent = 0);
+
+    // ### Qt 5: Disambiguate
+#ifdef Q_NO_USING_KEYWORD
+    const QObjectList &children() const { return QObject::children(); }
+#else
+    using QObject::children;
+#endif
 
 Q_SIGNALS:
     void parentChanged();
@@ -523,6 +533,8 @@ Q_SIGNALS:
     void xChanged();
     void yChanged();
     void zChanged();
+    void rotationChanged();
+    void scaleChanged();
 
 protected:
     QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent, QGraphicsScene *scene);
@@ -538,7 +550,7 @@ class Q_GUI_EXPORT QAbstractGraphicsShapeItem : public QGraphicsItem
 public:
     QAbstractGraphicsShapeItem(QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                               // obsolete argument
+                               // ### obsolete argument
                                , QGraphicsScene *scene = 0
 #endif
         );
@@ -568,13 +580,13 @@ class Q_GUI_EXPORT QGraphicsPathItem : public QAbstractGraphicsShapeItem
 public:
     QGraphicsPathItem(QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                      // obsolete argument
+                      // ### obsolete argument
                       , QGraphicsScene *scene = 0
 #endif
         );
     QGraphicsPathItem(const QPainterPath &path, QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                      // obsolete argument
+                      // ### obsolete argument
                       , QGraphicsScene *scene = 0
 #endif
         );
@@ -611,19 +623,19 @@ class Q_GUI_EXPORT QGraphicsRectItem : public QAbstractGraphicsShapeItem
 public:
     QGraphicsRectItem(QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                      // obsolete argument
+                      // ### obsolete argument
                       , QGraphicsScene *scene = 0
 #endif
         );
     QGraphicsRectItem(const QRectF &rect, QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                      // obsolete argument
+                      // ### obsolete argument
                       , QGraphicsScene *scene = 0
 #endif
         );
     QGraphicsRectItem(qreal x, qreal y, qreal w, qreal h, QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                      // obsolete argument
+                      // ### obsolete argument
                       , QGraphicsScene *scene = 0
 #endif
         );
@@ -664,19 +676,19 @@ class Q_GUI_EXPORT QGraphicsEllipseItem : public QAbstractGraphicsShapeItem
 public:
     QGraphicsEllipseItem(QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                         // obsolete argument
+                         // ### obsolete argument
                          , QGraphicsScene *scene = 0
 #endif
         );
     QGraphicsEllipseItem(const QRectF &rect, QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                         // obsolete argument
+                         // ### obsolete argument
                          , QGraphicsScene *scene = 0
 #endif
         );
     QGraphicsEllipseItem(qreal x, qreal y, qreal w, qreal h, QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                         // obsolete argument
+                         // ### obsolete argument
                          , QGraphicsScene *scene = 0
 #endif
         );
@@ -723,14 +735,14 @@ class Q_GUI_EXPORT QGraphicsPolygonItem : public QAbstractGraphicsShapeItem
 public:
     QGraphicsPolygonItem(QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                         // obsolete argument
+                         // ### obsolete argument
                          , QGraphicsScene *scene = 0
 #endif
         );
     QGraphicsPolygonItem(const QPolygonF &polygon,
                          QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                         // obsolete argument
+                         // ### obsolete argument
                          , QGraphicsScene *scene = 0
 #endif
         );
@@ -770,19 +782,19 @@ class Q_GUI_EXPORT QGraphicsLineItem : public QGraphicsItem
 public:
     QGraphicsLineItem(QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                      // obsolete argument
+                      // ### obsolete argument
                       , QGraphicsScene *scene = 0
 #endif
         );
     QGraphicsLineItem(const QLineF &line, QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                      // obsolete argument
+                      // ### obsolete argument
                       , QGraphicsScene *scene = 0
 #endif
         );
     QGraphicsLineItem(qreal x1, qreal y1, qreal x2, qreal y2, QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                      // obsolete argument
+                      // ### obsolete argument
                       , QGraphicsScene *scene = 0
 #endif
         );
@@ -830,13 +842,13 @@ public:
 
     QGraphicsPixmapItem(QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                        // obsolete argument
+                        // ### obsolete argument
                         , QGraphicsScene *scene = 0
 #endif
         );
     QGraphicsPixmapItem(const QPixmap &pixmap, QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                        // obsolete argument
+                        // ### obsolete argument
                         , QGraphicsScene *scene = 0
 #endif
         );
@@ -892,13 +904,13 @@ class Q_GUI_EXPORT QGraphicsTextItem : public QGraphicsObject
 public:
     QGraphicsTextItem(QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                      // obsolete argument
+                      // ### obsolete argument
                       , QGraphicsScene *scene = 0
 #endif
         );
     QGraphicsTextItem(const QString &text, QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                      // obsolete argument
+                      // ### obsolete argument
                       , QGraphicsScene *scene = 0
 #endif
         );
@@ -993,13 +1005,13 @@ class Q_GUI_EXPORT QGraphicsSimpleTextItem : public QAbstractGraphicsShapeItem
 public:
     QGraphicsSimpleTextItem(QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                            // obsolete argument
+                            // ### obsolete argument
                             , QGraphicsScene *scene = 0
 #endif
         );
     QGraphicsSimpleTextItem(const QString &text, QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                            // obsolete argument
+                            // ### obsolete argument
                             , QGraphicsScene *scene = 0
 #endif
         );
@@ -1039,7 +1051,7 @@ class Q_GUI_EXPORT QGraphicsItemGroup : public QGraphicsItem
 public:
     QGraphicsItemGroup(QGraphicsItem *parent = 0
 #ifndef Q_QDOC
-                       // obsolete argument
+                       // ### obsolete argument
                        , QGraphicsScene *scene = 0
 #endif
         );

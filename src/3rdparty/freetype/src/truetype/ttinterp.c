@@ -799,8 +799,6 @@
     return driver->context;
 
   Fail:
-    FT_FREE( exec );
-
     return 0;
   }
 

@@ -54,6 +54,10 @@
 #endif
 #include <stdlib.h>
 
+#ifdef QT_NO_PROCESS
+QTEST_NOOP_MAIN
+#else
+
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #endif
@@ -1317,7 +1321,7 @@ private:
 //-----------------------------------------------------------------------------
 void tst_QProcess::processInAThread()
 {
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 10; ++i) {
         TestThread thread;
 #if defined(Q_OS_SYMBIAN)
         thread.setStackSize(0x14000);
@@ -1801,8 +1805,9 @@ void tst_QProcess::setEnvironment_data()
 
 void tst_QProcess::setEnvironment()
 {
-#if !defined (Q_OS_WINCE)
-    // there is no concept of system variables on Windows CE as there is no console
+#if defined (Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+    QSKIP("OS doesn't support environment variables", SkipAll);
+#endif
 
     // make sure our environment variables are correct
     QVERIFY(qgetenv("tst_QProcess").isEmpty());
@@ -1878,7 +1883,6 @@ void tst_QProcess::setEnvironment()
 
         QCOMPARE(process.readAll(), value.toLocal8Bit());
     }
-#endif
 }
 //-----------------------------------------------------------------------------
 void tst_QProcess::systemEnvironment()
@@ -2349,3 +2353,4 @@ void tst_QProcess::invalidProgramString()
 
 QTEST_MAIN(tst_QProcess)
 #include "tst_qprocess.moc"
+#endif

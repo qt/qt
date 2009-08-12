@@ -33,7 +33,7 @@ class SVGFontElement;
 class JSSVGFontElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGFontElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFontElement>);
+    JSSVGFontElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGFontElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;

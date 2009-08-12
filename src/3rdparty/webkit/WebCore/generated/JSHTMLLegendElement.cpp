@@ -45,7 +45,7 @@ static const HashTableValue JSHTMLLegendElementTableValues[5] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLLegendElementTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLLegendElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSHTMLLegendElementTableValues, 0 };
 #else
@@ -59,19 +59,19 @@ static const HashTableValue JSHTMLLegendElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLLegendElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLLegendElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLLegendElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLLegendElementConstructorTableValues, 0 };
 #endif
 
-class JSHTMLLegendElementConstructor : public DOMObject {
+class JSHTMLLegendElementConstructor : public DOMConstructorObject {
 public:
-    JSHTMLLegendElementConstructor(ExecState* exec)
-        : DOMObject(JSHTMLLegendElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLLegendElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLLegendElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLLegendElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLLegendElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -97,7 +97,7 @@ static const HashTableValue JSHTMLLegendElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLLegendElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLLegendElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLLegendElementPrototypeTableValues, 0 };
 #else
@@ -113,8 +113,8 @@ JSObject* JSHTMLLegendElementPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSHTMLLegendElement::s_info = { "HTMLLegendElement", &JSHTMLElement::s_info, &JSHTMLLegendElementTable, 0 };
 
-JSHTMLLegendElement::JSHTMLLegendElement(PassRefPtr<Structure> structure, PassRefPtr<HTMLLegendElement> impl)
-    : JSHTMLElement(structure, impl)
+JSHTMLLegendElement::JSHTMLLegendElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLLegendElement> impl)
+    : JSHTMLElement(structure, globalObject, impl)
 {
 }
 
@@ -130,28 +130,32 @@ bool JSHTMLLegendElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 JSValue jsHTMLLegendElementForm(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLLegendElement* castedThis = static_cast<JSHTMLLegendElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLLegendElement* imp = static_cast<HTMLLegendElement*>(static_cast<JSHTMLLegendElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->form()));
+    HTMLLegendElement* imp = static_cast<HTMLLegendElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->form()));
 }
 
 JSValue jsHTMLLegendElementAccessKey(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLLegendElement* castedThis = static_cast<JSHTMLLegendElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLLegendElement* imp = static_cast<HTMLLegendElement*>(static_cast<JSHTMLLegendElement*>(asObject(slot.slotBase()))->impl());
+    HTMLLegendElement* imp = static_cast<HTMLLegendElement*>(castedThis->impl());
     return jsString(exec, imp->accessKey());
 }
 
 JSValue jsHTMLLegendElementAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLLegendElement* castedThis = static_cast<JSHTMLLegendElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLLegendElement* imp = static_cast<HTMLLegendElement*>(static_cast<JSHTMLLegendElement*>(asObject(slot.slotBase()))->impl());
+    HTMLLegendElement* imp = static_cast<HTMLLegendElement*>(castedThis->impl());
     return jsString(exec, imp->align());
 }
 
 JSValue jsHTMLLegendElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLLegendElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLLegendElement* domObject = static_cast<JSHTMLLegendElement*>(asObject(slot.slotBase()));
+    return JSHTMLLegendElement::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLLegendElement::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -170,9 +174,9 @@ void setJSHTMLLegendElementAlign(ExecState* exec, JSObject* thisObject, JSValue 
     imp->setAlign(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLLegendElement::getConstructor(ExecState* exec)
+JSValue JSHTMLLegendElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLLegendElementConstructor>(exec);
+    return getDOMConstructor<JSHTMLLegendElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

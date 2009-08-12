@@ -69,6 +69,7 @@ public:
     MethodType methodType() const;
     enum Attributes { Compatibility = 0x1, Cloned = 0x2, Scriptable = 0x4 };
     int attributes() const;
+    int methodIndex() const;
 
     inline const QMetaObject *enclosingMetaObject() const { return mobj; }
 
@@ -178,6 +179,7 @@ public:
     const char *typeName() const;
     QVariant::Type type() const;
     int userType() const;
+    int propertyIndex() const;
 
     bool isReadable() const;
     bool isWritable() const;
@@ -187,6 +189,8 @@ public:
     bool isStored(const QObject *obj = 0) const;
     bool isEditable(const QObject *obj = 0) const;
     bool isUser(const QObject *obj = 0) const;
+    bool isConstant() const;
+    bool isFinal() const;
 
     bool isFlagType() const;
     bool isEnumType() const;

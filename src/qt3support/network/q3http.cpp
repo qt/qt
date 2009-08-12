@@ -42,7 +42,7 @@
 #include <qplatformdefs.h>
 #include "q3http.h"
 
-#ifndef QT_NO_NETWORKPROTOCOL_HTTP
+#ifndef QT_NO_HTTP
 
 #include "q3socket.h"
 #include "qtextstream.h"
@@ -785,7 +785,7 @@ int Q3HttpResponseHeader::minorVersion() const
     return minVer;
 }
 
-/*! \reimp
+/*! \internal
 */
 bool Q3HttpResponseHeader::parseLine( const QString& line, int number )
 {
@@ -952,7 +952,7 @@ int Q3HttpRequestHeader::minorVersion() const
     return minVer;
 }
 
-/*! \reimp
+/*! \internal
 */
 bool Q3HttpRequestHeader::parseLine( const QString& line, int number )
 {

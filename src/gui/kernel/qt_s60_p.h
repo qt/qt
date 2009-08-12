@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,17 +73,12 @@
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
 #endif
-    
+
 QT_BEGIN_NAMESPACE
 
-// Application internal HandleResourceChangeL events, 
+// Application internal HandleResourceChangeL events,
 // system evens seems to start with 0x10
 const TInt KInternalStatusPaneChange = 0x50000000;
-
-struct QS60Data;
-extern QS60Data *qt_s60Data;
-
-#define S60 qt_s60Data
 
 class QS60Data
 {
@@ -114,10 +109,13 @@ public:
 #endif
 };
 
+QS60Data* qGlobalS60Data();
+#define S60 qGlobalS60Data()
+
 class QAbstractLongTapObserver
 {
 public:
-    virtual void HandleLongTapEventL( const TPoint& aPenEventLocation, 
+    virtual void HandleLongTapEventL( const TPoint& aPenEventLocation,
                                       const TPoint& aPenEventScreenLocation ) = 0;
 };
 class QLongTapTimer;
@@ -152,6 +150,7 @@ protected:
     void FocusChanged(TDrawNow aDrawNow);
 
 private:
+    void HandlePointerEvent(const TPointerEvent& aPointerEvent);
     TKeyResponse OfferKeyEvent(const TKeyEvent& aKeyEvent,TEventCode aType);
     TKeyResponse sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent);
     void sendMouseEvent(QWidget *widget, QMouseEvent *mEvent);
@@ -241,7 +240,7 @@ inline CEikButtonGroupContainer* QS60Data::buttonGroupContainer()
 static inline QFont qt_TFontSpec2QFontL(const TFontSpec &fontSpec)
 {
     return QFont(
-        qt_TDesC2QStringL(fontSpec.iTypeface.iName),
+        qt_TDesC2QString(fontSpec.iTypeface.iName),
         fontSpec.iHeight / KTwipsPerPoint,
         fontSpec.iFontStyle.StrokeWeight() == EStrokeWeightNormal ? QFont::Normal : QFont::Bold,
         fontSpec.iFontStyle.Posture() == EPostureItalic

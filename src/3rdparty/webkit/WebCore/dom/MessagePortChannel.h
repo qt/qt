@@ -48,8 +48,10 @@ namespace WebCore {
 
     // MessagePortChannel is a platform-independent interface to the remote side of a message channel.
     // It acts as a wrapper around the platform-dependent PlatformMessagePortChannel implementation which ensures that the platform-dependent close() method is invoked before destruction.
-    class MessagePortChannel : Noncopyable {
+    class MessagePortChannel : public Noncopyable {
     public:
+        static void createChannel(PassRefPtr<MessagePort>, PassRefPtr<MessagePort>);
+
         // Creates a new wrapper for the passed channel.
         static PassOwnPtr<MessagePortChannel> create(PassRefPtr<PlatformMessagePortChannel>);
 
@@ -92,6 +94,8 @@ namespace WebCore {
         MessagePort* locallyEntangledPort(const ScriptExecutionContext*);
 
         ~MessagePortChannel();
+
+        PlatformMessagePortChannel* channel() const { return m_channel.get(); }
 
     private:
         MessagePortChannel(PassRefPtr<PlatformMessagePortChannel>);

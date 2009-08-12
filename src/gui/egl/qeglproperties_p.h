@@ -107,6 +107,7 @@ class Q_GUI_EXPORT QEglProperties
 {
 public:
     QEglProperties();
+    QEglProperties(EGLConfig);
     QEglProperties(const QEglProperties& other) : props(other.props) {}
     ~QEglProperties() {}
 

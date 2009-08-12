@@ -57,7 +57,7 @@ static const HashTableValue JSSVGFEFloodElementTableValues[10] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEFloodElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEFloodElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFEFloodElementTableValues, 0 };
 #else
@@ -71,19 +71,19 @@ static const HashTableValue JSSVGFEFloodElementConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEFloodElementConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEFloodElementConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEFloodElementConstructorTableValues, 0 };
 #else
     { 1, 0, JSSVGFEFloodElementConstructorTableValues, 0 };
 #endif
 
-class JSSVGFEFloodElementConstructor : public DOMObject {
+class JSSVGFEFloodElementConstructor : public DOMConstructorObject {
 public:
-    JSSVGFEFloodElementConstructor(ExecState* exec)
-        : DOMObject(JSSVGFEFloodElementConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSSVGFEFloodElementConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSSVGFEFloodElementConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSSVGFEFloodElementPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSSVGFEFloodElementPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -110,7 +110,7 @@ static const HashTableValue JSSVGFEFloodElementPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFEFloodElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFEFloodElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFEFloodElementPrototypeTableValues, 0 };
 #else
@@ -131,8 +131,8 @@ bool JSSVGFEFloodElementPrototype::getOwnPropertySlot(ExecState* exec, const Ide
 
 const ClassInfo JSSVGFEFloodElement::s_info = { "SVGFEFloodElement", &JSSVGElement::s_info, &JSSVGFEFloodElementTable, 0 };
 
-JSSVGFEFloodElement::JSSVGFEFloodElement(PassRefPtr<Structure> structure, PassRefPtr<SVGFEFloodElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGFEFloodElement::JSSVGFEFloodElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEFloodElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -148,74 +148,83 @@ bool JSSVGFEFloodElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
 
 JSValue jsSVGFEFloodElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEFloodElement* castedThis = static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->in1Animated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEFloodElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEFloodElement* castedThis = static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->xAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEFloodElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEFloodElement* castedThis = static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->yAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEFloodElementWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEFloodElement* castedThis = static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->widthAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEFloodElementHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEFloodElement* castedThis = static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
     RefPtr<SVGAnimatedLength> obj = imp->heightAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEFloodElementResult(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEFloodElement* castedThis = static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->resultAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEFloodElementClassName(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEFloodElement* castedThis = static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()))->impl());
+    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->classNameAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEFloodElementStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFEFloodElement* castedThis = static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->style()));
+    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->style()));
 }
 
 JSValue jsSVGFEFloodElementConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSSVGFEFloodElement* domObject = static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()));
+    return JSSVGFEFloodElement::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSSVGFEFloodElement::getConstructor(ExecState* exec)
+JSValue JSSVGFEFloodElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSSVGFEFloodElementConstructor>(exec);
+    return getDOMConstructor<JSSVGFEFloodElementConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsSVGFEFloodElementPrototypeFunctionGetPresentationAttribute(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -228,7 +237,7 @@ JSValue JSC_HOST_CALL jsSVGFEFloodElementPrototypeFunctionGetPresentationAttribu
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getPresentationAttribute(name)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getPresentationAttribute(name)));
     return result;
 }
 

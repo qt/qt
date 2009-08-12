@@ -1,7 +1,7 @@
 ;/****************************************************************************
 ;**
 ;** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-;** Contact: Qt Software Information (qt-info@nokia.com)
+;** Contact: Nokia Corporation (qt-info@nokia.com)
 ;**
 ;** This file is part of the QtGui module of the Qt Toolkit.
 ;**
@@ -34,7 +34,7 @@
 ;** met: http://www.gnu.org/copyleft/gpl.html.
 ;**
 ;** If you are unsure which license is appropriate for your use, please
-;** contact the sales department at qt-sales@nokia.com.
+;** contact the sales department at http://www.qtsoftware.com/contact.
 ;** $QT_END_LICENSE$
 ;**
 ;****************************************************************************/
@@ -52,22 +52,22 @@
 
 		ARM
 		PRESERVE8
-		
+
 		INCLUDE		qdrawhelper_armv6_rvct.inc
-		
+
 ;-----------------------------------------------------------------------------
 ; qt_memfill32_armv6
-; 
+;
 ; @brief Not yet in use!
 ;
 ; @param dest			Destination	buffer						(r0)
 ; @param value			Value									(r1)
 ; @param count			Count									(r2)
-; 
+;
 ;---------------------------------------------------------------------------
 qt_memfill32_armv6 Function
 		stmfd	sp!, {r4-r12, r14}
-		
+
 		mov		r3, r1
 		mov		r4, r1
 		mov		r5, r1
@@ -75,7 +75,7 @@ qt_memfill32_armv6 Function
 		mov		r7, r1
 		mov		r8, r1
 		mov		r9, r1
-	
+
 mfill_loop
 		; Fill 32 pixels per loop iteration
 		subs	r2, r2, #32
@@ -88,16 +88,16 @@ mfill_loop
 mfill_remaining
 
 		; Fill up to 31 remaining pixels
-		
+
 		; Fill 16 pixels
 		tst		r2, #16
 		stmneia	r0!, {r1, r3, r4, r5, r6, r7, r8, r9}
 		stmneia	r0!, {r1, r3, r4, r5, r6, r7, r8, r9}
-		
+
 		; Fill 8 pixels
 		tst		r2, #8
 		stmneia	r0!, {r1, r3, r4, r5, r6, r7, r8, r9}
-		
+
 		; Fill 4 pixels
 		tst		r2, #4
 		stmneia	r0!, {r1, r3, r4, r5}
@@ -109,31 +109,31 @@ mfill_remaining
 		; Fill last one
 		tst		r2, #1
 		strne 	r1, [r0]
-		
+
 		ldmfd	sp!, {r4-r12, pc}		; pop and return
-					
+
 ;-----------------------------------------------------------------------------
 ; comp_func_Source_arm
-; 
-; @brief 
+;
+; @brief
 ;
 ; @param dest			Destination	buffer						(r0)
 ; @param src			Source buffer							(r1)
 ; @param length			Length									(r2)
 ; @param const_alpha	Constant alpha							(r3)
-; 
+;
 ;---------------------------------------------------------------------------
 comp_func_Source_armv6 Function
 		stmfd	sp!, {r4-r12, r14}
-	
+
 		cmp		r3, #255 ; if(r3 == 255)
 		bne		src2 ; branch if not
-	
+
 src1	PixCpy	r0, r1, r2
 
 		ldmfd	sp!, {r4-r12, pc}		; pop and return
 
-src2	
+src2
 		;ldr		r14, =ComponentHalf ; load 0x800080 to r14
 		mov		r14, #0x800000
 		add		r14, r14, #0x80
@@ -144,35 +144,34 @@ src22   BlendRow PixelSourceConstAlpha
 
 ;-----------------------------------------------------------------------------
 ; comp_func_SourceOver_arm
-; 
-; @brief 
+;
+; @brief
 ;
 ; @param dest			Destination	buffer						(r0)
 ; @param src			Source buffer							(r1)
 ; @param length			Length									(r2)
 ; @param const_alpha	Constant alpha							(r3)
-; 
+;
 ;---------------------------------------------------------------------------
 comp_func_SourceOver_armv6 Function
 		stmfd	sp!, {r4-r12, r14}
-	
+
 		;ldr		r14, =ComponentHalf ; load 0x800080 to r14
 		mov		r14, #0x800000
 		add		r14, r14, #0x80
-	
+
 		cmp		r3, #255 ; if(r3 == 255)
 		bne		srcovr2 ; branch if not
-	
+
 srcovr1	 BlendRow PixelSourceOver
-		
+
 		ldmfd	sp!, {r4-r12, pc}		; pop and return
 
 srcovr2
- 
+
 srcovr22  BlendRow PixelSourceOverConstAlpha
 
 		ldmfd	sp!, {r4-r12, pc}		; pop and return
-		
 
-		END	; File end		
-		
+
+		END	; File end

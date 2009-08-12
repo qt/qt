@@ -53,6 +53,7 @@
 #include <qtimer.h>
 #include <qpointer.h>
 #include <qendian.h>
+#include <private/qcore_unix_p.h> // overrides QT_OPEN
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -1141,7 +1142,7 @@ void QWSSoundServerPrivate::sendCompletedSignals()
 int QWSSoundServerPrivate::openFile(int wid, int sid, const QString& filename)
 {
     stopFile(wid, sid); // close and re-open.
-    int f = ::open(QFile::encodeName(filename), O_RDONLY|O_NONBLOCK);
+    int f = QT_OPEN(QFile::encodeName(filename), O_RDONLY|O_NONBLOCK);
     if (f == -1) {
         // XXX check ferror, check reason.
         qDebug("Failed opening \"%s\"",filename.toLatin1().data());
@@ -1161,7 +1162,7 @@ bool QWSSoundServerPrivate::openDevice()
 {
         if (fd < 0) {
             if( silent ) {
-                fd = ::open( "/dev/null", O_WRONLY );
+                fd = QT_OPEN( "/dev/null", O_WRONLY );
                 // Emulate write to audio device
                 int delay = 1000*(sound_buffer_size>>(sound_stereo+sound_16bit))/sound_speed/2;
                 timerId = startTimer(delay);
@@ -1172,7 +1173,7 @@ bool QWSSoundServerPrivate::openDevice()
             // Don't block open right away.
             //
             bool openOkay = false;
-            if ((fd = ::open("/dev/dsp", O_WRONLY|O_NONBLOCK)) != -1) {
+            if ((fd = QT_OPEN("/dev/dsp", O_WRONLY|O_NONBLOCK)) != -1) {
                 int flags = fcntl(fd, F_GETFL);
                 flags &= ~O_NONBLOCK;
 		openOkay = (fcntl(fd, F_SETFL, flags) == 0);
@@ -1226,7 +1227,7 @@ bool QWSSoundServerPrivate::openDevice()
 	    //
 	    // Check system volume
 	    //
-	    int mixerHandle = ::open( "/dev/mixer", O_RDWR|O_NONBLOCK );
+	    int mixerHandle = QT_OPEN( "/dev/mixer", O_RDWR|O_NONBLOCK );
 	    if ( mixerHandle >= 0 ) {
 		int volume;
 		ioctl( mixerHandle, MIXER_READ(0), &volume );

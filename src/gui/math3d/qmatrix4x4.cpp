@@ -53,10 +53,6 @@ QT_BEGIN_NAMESPACE
     \brief The QMatrix4x4 class represents a 4x4 transformation matrix in 3D space.
     \since 4.6
 
-    The matrix elements are stored internally using the most efficient
-    numeric representation for the underlying hardware: floating-point
-    or fixed-point.
-
     \sa QVector3D, QGenericMatrix
 */
 
@@ -308,8 +304,7 @@ QMatrix4x4::QMatrix4x4(const QTransform& transform)
 // The 4x4 matrix inverse algorithm is based on that described at:
 // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q24
 // Some optimization has been done to avoid making copies of 3x3
-// sub-matrices, to do calculations in fixed-point where required,
-// and to unroll the loops.
+// sub-matrices and to unroll the loops.
 
 // Calculate the determinant of a 3x3 sub-matrix.
 //     | A B C |
@@ -1002,10 +997,6 @@ QMatrix4x4& QMatrix4x4::rotate(qreal angle, const QVector3D& vector)
     return rotate(angle, vector.x(), vector.y(), vector.z());
 }
 
-#endif
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
 #endif
 
 /*!
@@ -1803,6 +1794,51 @@ QDebug operator<<(QDebug dbg, const QMatrix4x4 &m)
 
 #endif
 
-#endif
+#ifndef QT_NO_DATASTREAM
+
+/*!
+    \fn QDataStream &operator<<(QDataStream &stream, const QMatrix4x4 &matrix)
+    \relates QMatrix4x4
+
+    Writes the given \a matrix to the given \a stream and returns a
+    reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator<<(QDataStream &stream, const QMatrix4x4 &matrix)
+{
+    for (int row = 0; row < 4; ++row)
+        for (int col = 0; col < 4; ++col)
+            stream << double(matrix(row, col));
+    return stream;
+}
+
+/*!
+    \fn QDataStream &operator>>(QDataStream &stream, QMatrix4x4 &matrix)
+    \relates QMatrix4x4
+
+    Reads a 4x4 matrix from the given \a stream into the given \a matrix
+    and returns a reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator>>(QDataStream &stream, QMatrix4x4 &matrix)
+{
+    double x;
+    for (int row = 0; row < 4; ++row) {
+        for (int col = 0; col < 4; ++col) {
+            stream >> x;
+            matrix(row, col) = float(x);
+        }
+    }
+    matrix.inferSpecialType();
+    return stream;
+}
+
+#endif // QT_NO_DATASTREAM
+
+#endif // QT_NO_MATRIX4X4
 
 QT_END_NAMESPACE

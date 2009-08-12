@@ -59,8 +59,7 @@ namespace WebCore {
     struct FrameLoadRequest;
 }
 
-class QWEBKIT_EXPORT QWebPage : public QObject
-{
+class QWEBKIT_EXPORT QWebPage : public QObject {
     Q_OBJECT
 
     Q_PROPERTY(bool modified READ isModified)
@@ -149,6 +148,7 @@ public:
         InsertLineSeparator,
 
         SelectAll,
+        ReloadAndBypassCache,
 
         PasteAndMatchStyle,
         RemoveFormat,
@@ -193,6 +193,7 @@ public:
 
     QWebFrame *mainFrame() const;
     QWebFrame *currentFrame() const;
+    QWebFrame* frameAt(const QPoint& pos) const;
 
     QWebHistory *history() const;
     QWebSettings *settings() const;
@@ -286,6 +287,9 @@ public:
     virtual bool supportsExtension(Extension extension) const;
 
     inline QWebPagePrivate* handle() const { return d; }
+
+public Q_SLOTS:
+    bool shouldInterruptJavaScript();
 
 Q_SIGNALS:
     void loadStarted();

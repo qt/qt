@@ -47,7 +47,7 @@ static const HashTableValue JSCSSRuleTableValues[6] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSRuleTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSRuleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSCSSRuleTableValues, 0 };
 #else
@@ -71,19 +71,19 @@ static const HashTableValue JSCSSRuleConstructorTableValues[11] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSRuleConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSRuleConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSCSSRuleConstructorTableValues, 0 };
 #else
     { 34, 31, JSCSSRuleConstructorTableValues, 0 };
 #endif
 
-class JSCSSRuleConstructor : public DOMObject {
+class JSCSSRuleConstructor : public DOMConstructorObject {
 public:
-    JSCSSRuleConstructor(ExecState* exec)
-        : DOMObject(JSCSSRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSCSSRuleConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSCSSRuleConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSCSSRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSCSSRulePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -119,7 +119,7 @@ static const HashTableValue JSCSSRulePrototypeTableValues[11] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSRulePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSRulePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSCSSRulePrototypeTableValues, 0 };
 #else
@@ -140,8 +140,8 @@ bool JSCSSRulePrototype::getOwnPropertySlot(ExecState* exec, const Identifier& p
 
 const ClassInfo JSCSSRule::s_info = { "CSSRule", 0, &JSCSSRuleTable, 0 };
 
-JSCSSRule::JSCSSRule(PassRefPtr<Structure> structure, PassRefPtr<CSSRule> impl)
-    : DOMObject(structure)
+JSCSSRule::JSCSSRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSRule> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -163,35 +163,40 @@ bool JSCSSRule::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
 
 JSValue jsCSSRuleType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSRule* imp = static_cast<CSSRule*>(static_cast<JSCSSRule*>(asObject(slot.slotBase()))->impl());
+    CSSRule* imp = static_cast<CSSRule*>(castedThis->impl());
     return jsNumber(exec, imp->type());
 }
 
 JSValue jsCSSRuleCssText(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSRule* imp = static_cast<CSSRule*>(static_cast<JSCSSRule*>(asObject(slot.slotBase()))->impl());
+    CSSRule* imp = static_cast<CSSRule*>(castedThis->impl());
     return jsStringOrNull(exec, imp->cssText());
 }
 
 JSValue jsCSSRuleParentStyleSheet(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSRule* imp = static_cast<CSSRule*>(static_cast<JSCSSRule*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->parentStyleSheet()));
+    CSSRule* imp = static_cast<CSSRule*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentStyleSheet()));
 }
 
 JSValue jsCSSRuleParentRule(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSRule* castedThis = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSRule* imp = static_cast<CSSRule*>(static_cast<JSCSSRule*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->parentRule()));
+    CSSRule* imp = static_cast<CSSRule*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->parentRule()));
 }
 
 JSValue jsCSSRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCSSRule*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSCSSRule* domObject = static_cast<JSCSSRule*>(asObject(slot.slotBase()));
+    return JSCSSRule::getConstructor(exec, domObject->globalObject());
 }
 void JSCSSRule::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -206,9 +211,9 @@ void setJSCSSRuleCssText(ExecState* exec, JSObject* thisObject, JSValue value)
     setDOMException(exec, ec);
 }
 
-JSValue JSCSSRule::getConstructor(ExecState* exec)
+JSValue JSCSSRule::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSCSSRuleConstructor>(exec);
+    return getDOMConstructor<JSCSSRuleConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 // Constant getters

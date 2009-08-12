@@ -23,6 +23,7 @@
 
 #if ENABLE(XPATH)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class XPathNSResolver;
 
-class JSXPathNSResolver : public DOMObject {
-    typedef DOMObject Base;
+class JSXPathNSResolver : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSXPathNSResolver(PassRefPtr<JSC::Structure>, PassRefPtr<XPathNSResolver>);
+    JSXPathNSResolver(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<XPathNSResolver>);
     virtual ~JSXPathNSResolver();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
@@ -46,7 +47,7 @@ private:
     RefPtr<XPathNSResolver> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, XPathNSResolver*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, XPathNSResolver*);
 XPathNSResolver* toXPathNSResolver(JSC::JSValue);
 
 class JSXPathNSResolverPrototype : public JSC::JSObject {

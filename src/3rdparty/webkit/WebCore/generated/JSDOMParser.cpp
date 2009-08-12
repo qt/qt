@@ -42,7 +42,7 @@ static const HashTableValue JSDOMParserTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMParserTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMParserTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDOMParserTableValues, 0 };
 #else
@@ -56,19 +56,19 @@ static const HashTableValue JSDOMParserConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMParserConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMParserConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDOMParserConstructorTableValues, 0 };
 #else
     { 1, 0, JSDOMParserConstructorTableValues, 0 };
 #endif
 
-class JSDOMParserConstructor : public DOMObject {
+class JSDOMParserConstructor : public DOMConstructorObject {
 public:
-    JSDOMParserConstructor(ExecState* exec)
-        : DOMObject(JSDOMParserConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSDOMParserConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSDOMParserConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSDOMParserPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSDOMParserPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -78,13 +78,13 @@ public:
     { 
         return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
     }
-    static JSObject* construct(ExecState* exec, JSObject*, const ArgList&)
+    static JSObject* constructDOMParser(ExecState* exec, JSObject* constructor, const ArgList&)
     {
-        return asObject(toJS(exec, DOMParser::create()));
+        return asObject(toJS(exec, static_cast<JSDOMParserConstructor*>(constructor)->globalObject(), DOMParser::create()));
     }
     virtual ConstructType getConstructData(ConstructData& constructData)
     {
-        constructData.native.function = construct;
+        constructData.native.function = constructDOMParser;
         return ConstructTypeHost;
     }
 };
@@ -104,7 +104,7 @@ static const HashTableValue JSDOMParserPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSDOMParserPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSDOMParserPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSDOMParserPrototypeTableValues, 0 };
 #else
@@ -125,8 +125,8 @@ bool JSDOMParserPrototype::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 const ClassInfo JSDOMParser::s_info = { "DOMParser", 0, &JSDOMParserTable, 0 };
 
-JSDOMParser::JSDOMParser(PassRefPtr<Structure> structure, PassRefPtr<DOMParser> impl)
-    : DOMObject(structure)
+JSDOMParser::JSDOMParser(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<DOMParser> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -148,11 +148,12 @@ bool JSDOMParser::getOwnPropertySlot(ExecState* exec, const Identifier& property
 
 JSValue jsDOMParserConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSDOMParser*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSDOMParser* domObject = static_cast<JSDOMParser*>(asObject(slot.slotBase()));
+    return JSDOMParser::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSDOMParser::getConstructor(ExecState* exec)
+JSValue JSDOMParser::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSDOMParserConstructor>(exec);
+    return getDOMConstructor<JSDOMParserConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsDOMParserPrototypeFunctionParseFromString(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -166,13 +167,13 @@ JSValue JSC_HOST_CALL jsDOMParserPrototypeFunctionParseFromString(ExecState* exe
     const UString& contentType = args.at(1).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->parseFromString(str, contentType)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->parseFromString(str, contentType)));
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, DOMParser* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, DOMParser* object)
 {
-    return getDOMObjectWrapper<JSDOMParser>(exec, object);
+    return getDOMObjectWrapper<JSDOMParser>(exec, globalObject, object);
 }
 DOMParser* toDOMParser(JSC::JSValue value)
 {

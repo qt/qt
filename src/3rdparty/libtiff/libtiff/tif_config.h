@@ -104,7 +104,7 @@
 /* #undef HAVE_PTHREAD */
 
 /* Define to 1 if you have the <search.h> header file. */
-#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN) && !defined(Q_OS_VXWORKS)
 #define HAVE_SEARCH_H 1
 #endif
 
@@ -284,9 +284,11 @@
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef Q_OS_SYMBIAN
 #ifndef __cplusplus
 #undef inline
 #define inline
+#endif
 #endif
 
 /* Define to `long' if <sys/types.h> does not define. */

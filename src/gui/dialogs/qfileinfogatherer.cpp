@@ -44,8 +44,11 @@
 #include <qfsfileengine.h>
 #include <qdiriterator.h>
 #ifndef Q_OS_WIN
-#include <unistd.h>
-#include <sys/types.h>
+#  include <unistd.h>
+#  include <sys/types.h>
+#endif
+#if defined(Q_OS_VXWORKS)
+#  include "qplatformdefs.h"
 #endif
 
 QT_BEGIN_NAMESPACE

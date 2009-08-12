@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -68,14 +68,38 @@
 
 QT_BEGIN_NAMESPACE
 
+_LIT(KCacheSubDir, "Cache\\");
 _LIT(KSysBin, "\\Sys\\Bin\\");
 _LIT(KTempDir, "\\System\\Temp\\");
 _LIT(KBrowserPrefix, "4 " );
 _LIT(KFontsDir, "z:\\resource\\Fonts\\");
 const TUid KUidBrowser = { 0x10008D39 };
 
-static void handleMailtoSchemeL(const QUrl &url)
+template<class R>
+class QAutoClose
 {
+public:
+    QAutoClose(R& aObj) : mPtr(&aObj) {}
+    ~QAutoClose()
+    {
+        if (mPtr)
+            mPtr->Close();
+    }
+    void Forget()
+    {
+        mPtr = 0;
+    }
+private:
+    QAutoClose(const QAutoClose&);
+    QAutoClose& operator=(const QAutoClose&);
+private:
+    R* mPtr;
+};
+
+static void handleMailtoSchemeLX(const QUrl &url)
+{
+    // this function has many intermingled leaves and throws. Qt and Symbian objects do not have
+    // destructor dependencies, and cleanup object is used to prevent cleanup stack dependency on stack.
     QString recipient = url.path();
     QString subject = url.queryItemValue("subject");
     QString body = url.queryItemValue("body");
@@ -84,15 +108,15 @@ static void handleMailtoSchemeL(const QUrl &url)
     QString bcc = url.queryItemValue("bcc");
 
     // these fields might have comma separated addresses
-    QStringList recipients = recipient.split(",");
-    QStringList tos = to.split(",");
-    QStringList ccs = cc.split(",");
-    QStringList bccs = bcc.split(",");
+    QStringList recipients = recipient.split(",", QString::SkipEmptyParts);
+    QStringList tos = to.split(",", QString::SkipEmptyParts);
+    QStringList ccs = cc.split(",", QString::SkipEmptyParts);
+    QStringList bccs = bcc.split(",", QString::SkipEmptyParts);
 
 
-	RSendAs sendAs;
-	User::LeaveIfError(sendAs.Connect());
-	CleanupClosePushL(sendAs);
+    RSendAs sendAs;
+    User::LeaveIfError(sendAs.Connect());
+    QAutoClose<RSendAs> sendAsCleanup(sendAs);
 
 
     CSendAsAccounts* accounts = CSendAsAccounts::NewL();
@@ -101,88 +125,84 @@ static void handleMailtoSchemeL(const QUrl &url)
     TInt count = accounts->Count();
     CleanupStack::PopAndDestroy(accounts);
 
-	if(!count) {
-        // TODO: we should try to create account if count == 0
+    if(!count) {
+        // TODO: Task 259192: We should try to create account if count == 0
         // CSendUi would provide account creation service for us, but it requires ridicilous
         // capabilities: LocalServices NetworkServices ReadDeviceData ReadUserData WriteDeviceData WriteUserData
-        User::Leave(KErrNotSupported);	
-	} else {
-        RSendAsMessage sendAsMessage;    
+        User::Leave(KErrNotSupported);
+    } else {
+        RSendAsMessage sendAsMessage;
         sendAsMessage.CreateL(sendAs, KUidMsgTypeSMTP);
-        CleanupClosePushL(sendAsMessage);
-        
-        
+        QAutoClose<RSendAsMessage> sendAsMessageCleanup(sendAsMessage);
+
+
         // Subject
         sendAsMessage.SetSubjectL(qt_QString2TPtrC(subject));
-        
+
         // Body
         sendAsMessage.SetBodyTextL(qt_QString2TPtrC(body));
-        
+
         // To
         foreach(QString item, recipients)
-         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo );
-        
+         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo);
+
         foreach(QString item, tos)
-         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo );
-        
+         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientTo);
+
         // Cc
         foreach(QString item, ccs)
-         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientCc );
-        
+         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientCc);
+
         // Bcc
         foreach(QString item, bccs)
-         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientBcc );
-        
+         sendAsMessage.AddRecipientL(qt_QString2TPtrC(item), RSendAsMessage::ESendAsRecipientBcc);
+
         // send the message
         sendAsMessage.LaunchEditorAndCloseL();
-        
-        // sendAsMessage (already closed)
-        CleanupStack::Pop();
-	}
-	// sendAs
-	CleanupStack::PopAndDestroy();             
+        // sendAsMessage is already closed
+        sendAsMessageCleanup.Forget();
+    }
 }
 
 static bool handleMailtoScheme(const QUrl &url)
 {
-    TRAPD(err, handleMailtoSchemeL(url));
+    TRAPD(err, QT_TRYCATCH_LEAVING(handleMailtoSchemeLX(url)));
     return err ? false : true;
 }
 
 static void handleOtherSchemesL(const TDesC& aUrl)
 {
     // Other schemes are at the moment passed to WEB browser
-	HBufC* buf16 = HBufC::NewLC( aUrl.Length() + KBrowserPrefix.iTypeLength );
-	buf16->Des().Copy( KBrowserPrefix ); // Prefix used to launch correct browser view
-	buf16->Des().Append( aUrl );
+    HBufC* buf16 = HBufC::NewLC(aUrl.Length() + KBrowserPrefix.iTypeLength);
+    buf16->Des().Copy(KBrowserPrefix); // Prefix used to launch correct browser view
+    buf16->Des().Append(aUrl);
 
-    TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
-    TApaTask task = taskList.FindApp( KUidBrowser );
-    if ( task.Exists() )
-        {
+    TApaTaskList taskList(CEikonEnv::Static()->WsSession());
+    TApaTask task = taskList.FindApp(KUidBrowser);
+    if (task.Exists()){
         // Switch to existing browser instance
-        HBufC8* param8 = HBufC8::NewLC( buf16->Length() );
-        param8->Des().Append( buf16->Des() );
-        task.SendMessage( TUid::Uid( 0 ), *param8 ); // Uid is not used
-        CleanupStack::PopAndDestroy( param8 );
-        }
-    else
-        {
+        HBufC8* param8 = HBufC8::NewLC(buf16->Length());
+        param8->Des().Append(buf16->Des());
+        task.SendMessage(TUid::Uid( 0 ), *param8); // Uid is not used
+        CleanupStack::PopAndDestroy(param8);
+    } else {
         // Start a new browser instance
-	    RApaLsSession appArcSession;
-	    User::LeaveIfError( appArcSession.Connect() );
-	    CleanupClosePushL<RApaLsSession>( appArcSession );
-	    TThreadId id;
-        appArcSession.StartDocument( *buf16, KUidBrowser , id );
-	    CleanupStack::PopAndDestroy(); // appArcSession
-        }
+        RApaLsSession appArcSession;
+        User::LeaveIfError(appArcSession.Connect());
+        CleanupClosePushL<RApaLsSession>(appArcSession);
+        TThreadId id;
+        appArcSession.StartDocument(*buf16, KUidBrowser, id);
+        CleanupStack::PopAndDestroy(); // appArcSession
+    }
 
-    CleanupStack::PopAndDestroy( buf16 );
+    CleanupStack::PopAndDestroy(buf16);
 }
 
 static bool handleOtherSchemes(const QUrl &url)
 {
-    TRAPD( err, handleOtherSchemesL(qt_QString2TPtrC(url.toEncoded())));
+    QString encUrl(url.toEncoded());
+    TPtrC urlPtr(qt_QString2TPtrC(encUrl));
+    TRAPD( err, handleOtherSchemesL(urlPtr));
     return err ? false : true;
 }
 
@@ -197,8 +217,8 @@ static TDriveUnit exeDrive()
 static TDriveUnit writableExeDrive()
 {
     TDriveUnit drive = exeDrive();
-    if( drive.operator TInt() == EDriveZ )
-        return TDriveUnit( EDriveC );
+    if(drive.operator TInt() == EDriveZ)
+        return TDriveUnit(EDriveC);
     return drive;
 }
 
@@ -206,7 +226,7 @@ static TPtrC writableDataRoot()
 {
     TDriveUnit drive = exeDrive();
 #ifdef Q_WS_S60
-    switch( drive.operator TInt() ){
+    switch(drive.operator TInt()){
         case EDriveC:
             return PathInfo::PhoneMemoryRootPath();
             break;
@@ -219,7 +239,6 @@ static TPtrC writableDataRoot()
             return PathInfo::PhoneMemoryRootPath();
             break;
         default:
-            // TODO: Should we return drive root similar to MemoryCardRootPath
             return PathInfo::PhoneMemoryRootPath();
             break;
     }
@@ -233,34 +252,34 @@ static void openDocumentL(const TDesC& aUrl)
 {
 #ifndef USE_DOCUMENTHANDLER
     // Start app associated to file MIME type by using RApaLsSession
-	// Apparc base method cannot be used to open app in embedded mode,
-	// but seems to be most stable way at the moment
+    // Apparc base method cannot be used to open app in embedded mode,
+    // but seems to be most stable way at the moment
     RApaLsSession appArcSession;
-    User::LeaveIfError( appArcSession.Connect() );
-    CleanupClosePushL<RApaLsSession>( appArcSession );
+    User::LeaveIfError(appArcSession.Connect());
+    CleanupClosePushL<RApaLsSession>(appArcSession);
     TThreadId id;
     // ESwitchFiles means do not start another instance
     // Leaves if file does not exist, leave is trapped in openDocument and false returned to user.
-    User::LeaveIfError( appArcSession.StartDocument( aUrl, id,
-    		RApaLsSession::ESwitchFiles ) ); // ELaunchNewApp
+    User::LeaveIfError(appArcSession.StartDocument(aUrl, id,
+            RApaLsSession::ESwitchFiles)); // ELaunchNewApp
     CleanupStack::PopAndDestroy(); // appArcSession
 #else
     // This is an alternative way to launch app associated to MIME type
-	// CDocumentHandler would support opening apps in embedded mode,
-	// but our Qt application window group seems to always get switched on top of embedded one
-	// -> Cannot use menus etc of embedded app -> used
+    // CDocumentHandler would support opening apps in embedded mode,
+    // but our Qt application window group seems to always get switched on top of embedded one
+    // -> Cannot use menus etc of embedded app -> used
 
-	CDocumentHandler* docHandler = CDocumentHandler::NewLC();
-	TDataType temp;
-	//Standalone file opening fails for some file-types at least in S60 3.1 emulator
-	//For example .txt file fails with KErrAlreadyInUse and music files with KERN-EXEC 0
-	//Workaround is to use OpenFileEmbeddedL
-	//docHandler->OpenFileL(aUrl, temp);
+    CDocumentHandler* docHandler = CDocumentHandler::NewLC();
+    TDataType temp;
+    //Standalone file opening fails for some file-types at least in S60 3.1 emulator
+    //For example .txt file fails with KErrAlreadyInUse and music files with KERN-EXEC 0
+    //Workaround is to use OpenFileEmbeddedL
+    //docHandler->OpenFileL(aUrl, temp);
 
-	// Opening file with CDocumentHandler will leave if file does not exist
-	// Leave is trapped in openDocument and false returned to user.
-	docHandler->OpenFileEmbeddedL(aUrl, temp);
-	CleanupStack::PopAndDestroy(docHandler);
+    // Opening file with CDocumentHandler will leave if file does not exist
+    // Leave is trapped in openDocument and false returned to user.
+    docHandler->OpenFileEmbeddedL(aUrl, temp);
+    CleanupStack::PopAndDestroy(docHandler);
 #endif
 }
 
@@ -273,28 +292,30 @@ static void openDocumentL(const TDesC& aUrl)
 // wide range of schemes and is extensible by plugins
 static bool handleUrl(const QUrl &url)
 {
-	if (!url.isValid())
-		return false;
+    if (!url.isValid())
+        return false;
 
-    TRAPD( err, handleUrlL(qt_QString2TPtrC(url.toString())));
+    QString urlString(url.toString());
+    TPtrC urlPtr(qt_QString2TPtrC(urlString));
+    TRAPD( err, handleUrlL(urlPtr));
     return err ? false : true;
 }
 
 static void handleUrlL(const TDesC& aUrl)
 {
-    CSchemeHandler* schemeHandler = CSchemeHandler::NewL( aUrl );
-    CleanupStack::PushL( schemeHandler );
+    CSchemeHandler* schemeHandler = CSchemeHandler::NewL(aUrl);
+    CleanupStack::PushL(schemeHandler);
     schemeHandler->HandleUrlStandaloneL(); // Process the Url in standalone mode
     CleanupStack::PopAndDestroy();
 }
 static bool launchWebBrowser(const QUrl &url)
 {
-	return handleUrl(url);
+    return handleUrl(url);
 }
 
 static bool openDocument(const QUrl &file)
 {
-	return handleUrl(url);
+    return handleUrl(url);
 }
 #endif
 
@@ -316,7 +337,8 @@ static bool openDocument(const QUrl &file)
 
     QString filePath = file.toLocalFile();
     filePath = QDir::toNativeSeparators(filePath);
-    TRAPD(err, openDocumentL(qt_QString2TPtrC(filePath)));
+    TPtrC filePathPtr(qt_QString2TPtrC(filePath));
+    TRAPD(err, openDocumentL(filePathPtr));
     return err ? false : true;
 }
 
@@ -326,7 +348,9 @@ QString QDesktopServices::storageLocation(StandardLocation type)
 
     switch (type) {
     case DesktopLocation:
-        qWarning("QDesktopServices::storageLocation %d not implemented", type);
+        qWarning("No desktop concept in Symbian OS");
+        // But lets still use some feasible default
+        path.Append(writableDataRoot());           
         break;
     case DocumentsLocation:
         path.Append(writableDataRoot());
@@ -366,11 +390,17 @@ QString QDesktopServices::storageLocation(StandardLocation type)
         //return QDir::homePath(); break;
         break;
     case DataLocation:
-    	CEikonEnv::Static()->FsSession().PrivatePath( path );
-        // TODO: Should we actually return phone mem if data is on ROM?
-        path.Insert( 0, exeDrive().Name() );
+        CEikonEnv::Static()->FsSession().PrivatePath(path);
+        path.Insert(0, writableExeDrive().Name());
         break;
+    case CacheLocation:
+        CEikonEnv::Static()->FsSession().PrivatePath(path);
+        path.Insert(0, writableExeDrive().Name());
+        path.Append(KCacheSubDir);
+        break;        
     default:
+        // Lets use feasible default
+        path.Append(writableDataRoot());    
         break;
     }
 

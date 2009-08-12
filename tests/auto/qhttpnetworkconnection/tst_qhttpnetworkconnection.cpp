@@ -252,8 +252,8 @@ void tst_QHttpNetworkConnection::get()
     QByteArray ba;
     do {
         QCoreApplication::instance()->processEvents();
-        if (reply->bytesAvailable())
-            ba += reply->read();
+        while (reply->bytesAvailable())
+            ba += reply->readAny();
         if (stopWatch.elapsed() >= 30000)
             break;
     } while (!reply->isFinished());
@@ -335,7 +335,8 @@ void tst_QHttpNetworkConnection::put()
 
     if (reply->isFinished()) {
         QByteArray ba;
-        ba += reply->read();
+        while (reply->bytesAvailable())
+            ba += reply->readAny();
     } else if(finishedWithErrorCalled) {
         if(!succeed) {
             delete reply;
@@ -419,30 +420,30 @@ void tst_QHttpNetworkConnection::post()
 
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
-    
+
     qint64 cLen = reply->contentLength();
     if (cLen==-1) {
-        // HTTP 1.1 server may respond with chunked encoding and in that 
+        // HTTP 1.1 server may respond with chunked encoding and in that
         // case contentLength is not present in reply -> verify that it is the case
         QByteArray transferEnc = reply->headerField("Transfer-Encoding");
         QCOMPARE(transferEnc, QByteArray("chunked"));
-    } else { 
+    } else {
         QCOMPARE(cLen, qint64(contentLength));
-    }        
-    
+    }
+
     stopWatch.start();
     QByteArray ba;
     do {
         QCoreApplication::instance()->processEvents();
-        if (reply->bytesAvailable())
-            ba += reply->read();
+        while (reply->bytesAvailable())
+            ba += reply->readAny();
         if (stopWatch.elapsed() >= 30000)
             break;
     } while (!reply->isFinished());
 
     QVERIFY(reply->isFinished());
     QCOMPARE(ba.size(), downloadSize);
-      
+
     delete reply;
 }
 
@@ -634,8 +635,8 @@ void tst_QHttpNetworkConnection::compression()
     QByteArray ba;
     do {
         QCoreApplication::instance()->processEvents();
-        if (reply->bytesAvailable())
-            ba += reply->read();
+        while (reply->bytesAvailable())
+            ba += reply->readAny();
         if (stopWatch.elapsed() >= 30000)
             break;
     } while (!reply->isFinished());

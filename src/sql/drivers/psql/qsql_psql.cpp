@@ -54,11 +54,33 @@
 #include <qstringlist.h>
 #include <qmutex.h>
 
+
 #include <libpq-fe.h>
 #include <pg_config.h>
 
 #include <stdlib.h>
 #include <math.h>
+// below code taken from an example at http://www.gnu.org/software/hello/manual/autoconf/Function-Portability.html
+#ifndef isnan
+    # define isnan(x) \
+        (sizeof (x) == sizeof (long double) ? isnan_ld (x) \
+        : sizeof (x) == sizeof (double) ? isnan_d (x) \
+        : isnan_f (x))
+    static inline int isnan_f  (float       x) { return x != x; }
+    static inline int isnan_d  (double      x) { return x != x; }
+    static inline int isnan_ld (long double x) { return x != x; }
+#endif
+
+#ifndef isinf
+    # define isinf(x) \
+        (sizeof (x) == sizeof (long double) ? isinf_ld (x) \
+        : sizeof (x) == sizeof (double) ? isinf_d (x) \
+        : isinf_f (x))
+    static inline int isinf_f  (float       x) { return isnan (x - x); }
+    static inline int isinf_d  (double      x) { return isnan (x - x); }
+    static inline int isinf_ld (long double x) { return isnan (x - x); }
+#endif
+
 
 // workaround for postgres defining their OIDs in a private header file
 #define QBOOLOID 16
@@ -601,10 +623,9 @@ static QPSQLDriver::Protocol getPSQLVersion(PGconn* connection)
 {
     QPSQLDriver::Protocol serverVersion = QPSQLDriver::Version6;
     PGresult* result = PQexec(connection, "select version()");
-    int status =  PQresultStatus(result);
+    int status = PQresultStatus(result);
     if (status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK) {
         QString val = QString::fromAscii(PQgetvalue(result, 0, 0));
-        PQclear(result);
         QRegExp rx(QLatin1String("(\\d+)\\.(\\d+)"));
         rx.setMinimal(true); // enforce non-greedy RegExp
         if (rx.indexIn(val) != -1) {
@@ -645,6 +666,7 @@ static QPSQLDriver::Protocol getPSQLVersion(PGconn* connection)
             }
         }
     }
+    PQclear(result);
 
     if (serverVersion < QPSQLDriver::Version71)
         qWarning("This version of PostgreSQL is not supported and may not work.");
@@ -918,7 +940,7 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
     case QPSQLDriver::Version6:
         stmt = QLatin1String("select pg_att1.attname, int(pg_att1.atttypid), pg_cl.relname "
                 "from pg_attribute pg_att1, pg_attribute pg_att2, pg_class pg_cl, pg_index pg_ind "
-                "where lower(pg_cl.relname) = '%1_pkey' "
+                "where pg_cl.relname = '%1_pkey' "
                 "and pg_cl.oid = pg_ind.indexrelid "
                 "and pg_att2.attrelid = pg_ind.indexrelid "
                 "and pg_att1.attrelid = pg_ind.indrelid "
@@ -929,7 +951,7 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
     case QPSQLDriver::Version71:
         stmt = QLatin1String("select pg_att1.attname, pg_att1.atttypid::int, pg_cl.relname "
                 "from pg_attribute pg_att1, pg_attribute pg_att2, pg_class pg_cl, pg_index pg_ind "
-                "where lower(pg_cl.relname) = '%1_pkey' "
+                "where pg_cl.relname = '%1_pkey' "
                 "and pg_cl.oid = pg_ind.indexrelid "
                 "and pg_att2.attrelid = pg_ind.indexrelid "
                 "and pg_att1.attrelid = pg_ind.indrelid "
@@ -994,7 +1016,7 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
                 "pg_attribute.attnotnull, pg_attribute.attlen, pg_attribute.atttypmod, "
                 "int(pg_attribute.attrelid), pg_attribute.attnum "
                 "from pg_class, pg_attribute "
-                "where lower(pg_class.relname) = '%1' "
+                "where pg_class.relname = '%1' "
                 "and pg_attribute.attnum > 0 "
                 "and pg_attribute.attrelid = pg_class.oid ");
         break;
@@ -1003,7 +1025,7 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
                 "pg_attribute.attnotnull, pg_attribute.attlen, pg_attribute.atttypmod, "
                 "pg_attribute.attrelid::int, pg_attribute.attnum "
                 "from pg_class, pg_attribute "
-                "where lower(pg_class.relname) = '%1' "
+                "where pg_class.relname = '%1' "
                 "and pg_attribute.attnum > 0 "
                 "and pg_attribute.attrelid = pg_class.oid ");
         break;
@@ -1014,7 +1036,7 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
                 "from pg_class, pg_attribute "
                 "left join pg_attrdef on (pg_attrdef.adrelid = "
                 "pg_attribute.attrelid and pg_attrdef.adnum = pg_attribute.attnum) "
-                "where lower(pg_class.relname) = '%1' "
+                "where pg_class.relname = '%1' "
                 "and pg_attribute.attnum > 0 "
                 "and pg_attribute.attrelid = pg_class.oid "
                 "order by pg_attribute.attnum ");
@@ -1159,6 +1181,21 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             r += QLatin1String((const char*)data);
             r += QLatin1Char('\'');
             qPQfreemem(data);
+            break;
+        }
+        case QVariant::Double: {
+            double val = field.value().toDouble();
+            if (isnan(val))
+                r = QLatin1String("'NaN'");
+            else {
+                int res = isinf(val);
+                if (res == 1)
+                    r = QLatin1String("'Infinity'");
+                else if (res == -1)
+                    r = QLatin1String("'-Infinity'");
+                else
+                    r = QSqlDriver::formatValue(field, trimStrings);
+            }
             break;
         }
         default:

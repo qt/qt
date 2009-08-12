@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the qmake application of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,15 +45,20 @@
 #include <qdebug.h>
 
 #define PLUGIN_STUB_DIR "qmakepluginstubs"
+#define SYSBIN_DIR "\\sys\\bin"
+
+#define SUFFIX_DLL "dll"
+#define SUFFIX_EXE "exe"
+#define SUFFIX_QTPLUGIN "qtplugin"
 
 static bool isPlugin(const QFileInfo& info, const QString& devicePath)
 {
     // Libraries are plugins if deployment path is something else than
-    // \\sys\\bin or x:\\sys\\bin
-    if (0 == info.suffix().compare(QLatin1String("dll")) &&
-        (devicePath.size() < 8 ||
-         (0 != devicePath.compare(QLatin1String("\\sys\\bin")) &&
-          0 != devicePath.mid(1).compare(QLatin1String(":\\sys\\bin"))))) {
+    // SYSBIN_DIR with or without drive letter
+    if (0 == info.suffix().compare(QLatin1String(SUFFIX_DLL), Qt::CaseInsensitive) &&
+            (devicePath.size() < 8 ||
+             (0 != devicePath.compare(QLatin1String(SYSBIN_DIR), Qt::CaseInsensitive) &&
+              0 != devicePath.mid(1).compare(QLatin1String(":" SYSBIN_DIR), Qt::CaseInsensitive)))) {
         return true;
     } else {
         return false;
@@ -62,8 +67,8 @@ static bool isPlugin(const QFileInfo& info, const QString& devicePath)
 
 static bool isBinary(const QFileInfo& info)
 {
-    if (0 == info.suffix().compare(QLatin1String("dll")) ||
-        0 == info.suffix().compare(QLatin1String("exe"))) {
+    if (0 == info.suffix().compare(QLatin1String(SUFFIX_DLL), Qt::CaseInsensitive) ||
+            0 == info.suffix().compare(QLatin1String(SUFFIX_EXE), Qt::CaseInsensitive)) {
         return true;
     } else {
         return false;
@@ -74,27 +79,28 @@ static void createPluginStub(const QFileInfo& info,
                              const QString& devicePath,
                              DeploymentList &deploymentList,
                              QStringList& generatedDirs,
-                             QStringList& generatedFiles) {
+                             QStringList& generatedFiles)
+{
     QDir().mkpath(QLatin1String(PLUGIN_STUB_DIR "\\"));
     if (!generatedDirs.contains(PLUGIN_STUB_DIR))
         generatedDirs << PLUGIN_STUB_DIR;
     // Plugin stubs must have different name from the actual plugins, because
     // the toolchain for creating ROM images cannot handle non-binary .dll files properly.
-    QFile stubFile(QLatin1String(PLUGIN_STUB_DIR "\\") + info.completeBaseName() + ".qtplugin");
-    if(stubFile.open(QIODevice::WriteOnly)) {
+    QFile stubFile(QLatin1String(PLUGIN_STUB_DIR "\\") + info.completeBaseName() + "." SUFFIX_QTPLUGIN);
+    if (stubFile.open(QIODevice::WriteOnly)) {
         if (!generatedFiles.contains(stubFile.fileName()))
             generatedFiles << stubFile.fileName();
         QTextStream t(&stubFile);
         // Add note to stub so that people will not wonder what it is.
         // Creation date is added to make new stub to deploy always to
         // force plugin cache miss when loading plugins.
-        t << "This file is a Qt plugin stub file. The real Qt plugin is located in \\sys\\bin. Created:" << QDateTime::currentDateTime().toString(Qt::ISODate) << "\n";
+        t << "This file is a Qt plugin stub file. The real Qt plugin is located in " SYSBIN_DIR ". Created:" << QDateTime::currentDateTime().toString(Qt::ISODate) << "\n";
     } else {
         fprintf(stderr, "cannot deploy \"%s\" because of plugin stub file creation failed\n", info.fileName().toLatin1().constData());
     }
     QFileInfo stubInfo(stubFile);
     deploymentList.append(CopyItem(Option::fixPathToLocalOS(stubInfo.absoluteFilePath()),
-        Option::fixPathToLocalOS(devicePath + "\\" + stubInfo.fileName())));
+                                   Option::fixPathToLocalOS(devicePath + "\\" + stubInfo.fileName())));
 }
 
 void initProjectDeploySymbian(QMakeProject* project,
@@ -110,7 +116,7 @@ void initProjectDeploySymbian(QMakeProject* project,
     if (targetPath.isEmpty())
         targetPath = testPath;
     if (targetPath.endsWith("/") || targetPath.endsWith("\\"))
-        targetPath = targetPath.mid(0,targetPath.size()-1);
+        targetPath = targetPath.mid(0, targetPath.size() - 1);
 
     bool targetPathHasDriveLetter = false;
     if (targetPath.size() > 1) {
@@ -118,14 +124,12 @@ void initProjectDeploySymbian(QMakeProject* project,
     }
     QString deploymentDrive = targetPathHasDriveLetter ? targetPath.left(2) : QLatin1String("c:");
 
-    // foreach item in DEPLOYMENT
     foreach(QString item, project->values("DEPLOYMENT")) {
-        // get item.path
         QString devicePath = project->first(item + ".path");
         if (!deployBinaries
-            && !devicePath.isEmpty()
-            && (0 == devicePath.compare(project->values("APP_RESOURCE_DIR").join(""))
-              || 0 == devicePath.compare(project->values("REG_RESOURCE_IMPORT_DIR").join("")))) {
+                && !devicePath.isEmpty()
+                && (0 == devicePath.compare(project->values("APP_RESOURCE_DIR").join(""), Qt::CaseInsensitive)
+                    || 0 == devicePath.compare(project->values("REG_RESOURCE_IMPORT_DIR").join(""), Qt::CaseInsensitive))) {
             // Do not deploy resources in emulator builds, as that seems to cause conflicts
             // If there is ever a real need to deploy pre-built resources for emulator,
             // BLD_INF_RULES.prj_exports can be used as a workaround.
@@ -142,14 +146,14 @@ void initProjectDeploySymbian(QMakeProject* project,
         }
         // check if item.path is relative (! either / or \)
         else if (!(devicePath.at(0) == QLatin1Char('/')
-            || devicePath.at(0) == QLatin1Char('\\')
-            || devicePathHasDriveLetter)) {
+                   || devicePath.at(0) == QLatin1Char('\\')
+                   || devicePathHasDriveLetter)) {
             // create output path
             devicePath = Option::fixPathToLocalOS(QDir::cleanPath(targetPath + QLatin1Char('\\') + devicePath));
         } else {
-            if (0 == platform.compare(QLatin1String("winscw"))) {
+            if (0 == platform.compare(QLatin1String("winscw"), Qt::CaseInsensitive)) {
                 if (devicePathHasDriveLetter) {
-                    devicePath = epocRoot() + "epoc32\\winscw\\" + devicePath.remove(1,1);
+                    devicePath = epocRoot() + "epoc32\\winscw\\" + devicePath.remove(1, 1);
                 } else {
                     devicePath = epocRoot() + "epoc32\\winscw\\c" + devicePath;
                 }
@@ -164,15 +168,14 @@ void initProjectDeploySymbian(QMakeProject* project,
         devicePath.replace(QLatin1String("/"), QLatin1String("\\"));
 
         if (!deployBinaries &&
-            0 == devicePath.right(8).compare(QLatin1String("\\sys\\bin"))) {
-                // Skip deploying to \\sys\\bin for anything but binary deployments
-                // Note: Deploying pre-built binaries also follow this rule, so emulator builds
-                // will not get those deployed. Since there is no way to differentiate currently
-                // between pre-built binaries for emulator and HW anyway, this is not a major issue.
-                continue;
-            }
+                0 == devicePath.right(8).compare(QLatin1String(SYSBIN_DIR), Qt::CaseInsensitive)) {
+            // Skip deploying to SYSBIN_DIR for anything but binary deployments
+            // Note: Deploying pre-built binaries also follow this rule, so emulator builds
+            // will not get those deployed. Since there is no way to differentiate currently
+            // between pre-built binaries for emulator and HW anyway, this is not a major issue.
+            continue;
+        }
 
-        // foreach d in item.sources
         foreach(QString source, project->values(item + ".sources")) {
             source = Option::fixPathToLocalOS(source);
             QString nameFilter;
@@ -196,7 +199,7 @@ void initProjectDeploySymbian(QMakeProject* project,
                             // Executables and libraries are deployed to \sys\bin
                             QFileInfo releasePath(epocRoot() + "epoc32\\release\\" + platform + "\\" + build + "\\");
                             deploymentList.append(CopyItem(Option::fixPathToLocalOS(releasePath.absolutePath() + "\\" + info.fileName()),
-                                Option::fixPathToLocalOS(deploymentDrive + QLatin1String("\\sys\\bin\\") + info.fileName())));
+                                                           Option::fixPathToLocalOS(deploymentDrive + QLatin1String(SYSBIN_DIR "\\") + info.fileName())));
                         }
                         if (isPlugin(info, devicePath)) {
                             createPluginStub(info, devicePath, deploymentList, generatedDirs, generatedFiles);
@@ -206,7 +209,7 @@ void initProjectDeploySymbian(QMakeProject* project,
                         // Generate deployment even if file doesn't exist, as this may be the case
                         // when generating .pkg files.
                         deploymentList.append(CopyItem(Option::fixPathToLocalOS(info.absoluteFilePath()),
-                            Option::fixPathToLocalOS(devicePath + "\\" + info.fileName())));
+                                                       Option::fixPathToLocalOS(devicePath + "\\" + info.fileName())));
                         continue;
                     }
                 }
@@ -215,9 +218,9 @@ void initProjectDeploySymbian(QMakeProject* project,
             int pathSize = info.absolutePath().size();
             QDirIterator iterator(searchPath, QStringList() << nameFilter
                                   , QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks
-                                  , dirSearch ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags );
-            // foreach dirIterator-entry in d
-            while(iterator.hasNext()) {
+                                  , dirSearch ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
+
+            while (iterator.hasNext()) {
                 iterator.next();
                 QFileInfo iteratorInfo(iterator.filePath());
                 QString absoluteItemPath = Option::fixPathToLocalOS(iteratorInfo.absolutePath());
@@ -226,16 +229,16 @@ void initProjectDeploySymbian(QMakeProject* project,
                 if (!iteratorInfo.isDir()) {
                     if (isPlugin(iterator.fileInfo(), devicePath)) {
                         // This deploys pre-built plugins. Other pre-built binaries will deploy normally,
-                        // as they have \sys\bin target path.
+                        // as they have SYSBIN_DIR target path.
                         if (deployBinaries) {
                             deploymentList.append(CopyItem(Option::fixPathToLocalOS(absoluteItemPath + "\\" + iterator.fileName()),
-                                Option::fixPathToLocalOS(deploymentDrive + QLatin1String("\\sys\\bin\\") + iterator.fileName())));
+                                                           Option::fixPathToLocalOS(deploymentDrive + QLatin1String(SYSBIN_DIR "\\") + iterator.fileName())));
                         }
                         createPluginStub(info, devicePath + "\\" + absoluteItemPath.right(diffSize), deploymentList, generatedDirs, generatedFiles);
                         continue;
                     } else {
                         deploymentList.append(CopyItem(Option::fixPathToLocalOS(absoluteItemPath + "\\" + iterator.fileName()),
-                            Option::fixPathToLocalOS(devicePath + "\\" + absoluteItemPath.right(diffSize) + "\\" + iterator.fileName())));
+                                                       Option::fixPathToLocalOS(devicePath + "\\" + absoluteItemPath.right(diffSize) + "\\" + iterator.fileName())));
                     }
                 }
             }

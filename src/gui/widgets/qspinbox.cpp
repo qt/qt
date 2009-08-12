@@ -50,6 +50,7 @@
 #include <qdebug.h>
 
 #include <math.h>
+#include <float.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -832,8 +833,8 @@ void QDoubleSpinBox::setRange(double minimum, double maximum)
      Sets how many decimals the spinbox will use for displaying and
      interpreting doubles.
 
-     \warning The results might not be reliable with very high values
-     for \a decimals.
+     \warning The maximum value for \a decimals is DBL_MAX_10_EXP +
+     DBL_DIG (ie. 323) because of the limitations of the double type.
 
      Note: The maximum, minimum and value might change as a result of
      changing this property.
@@ -849,7 +850,7 @@ int QDoubleSpinBox::decimals() const
 void QDoubleSpinBox::setDecimals(int decimals)
 {
     Q_D(QDoubleSpinBox);
-    d->decimals = qMax(0, decimals);
+    d->decimals = qBound(0, decimals, DBL_MAX_10_EXP + DBL_DIG);
 
     setRange(minimum(), maximum()); // make sure values are rounded
     setValue(value());
@@ -1214,7 +1215,7 @@ bool QDoubleSpinBoxPrivate::isIntermediateValue(const QString &str) const
         return false;
     }
     if (doright) {
-        QSBDEBUG("match %lld min_left %lld max_left %lld", match, min_left, max_left);
+        QSBDEBUG() << "match" << match << "min_left" << min_left << "max_left" << max_left;
         if (!doleft) {
             if (min_left == max_left) {
                 const bool ret = isIntermediateValueHelper(qAbs(left),
@@ -1481,7 +1482,7 @@ QString QDoubleSpinBoxPrivate::textFromValue(const QVariant &f) const
 
 static bool isIntermediateValueHelper(qint64 num, qint64 min, qint64 max, qint64 *match)
 {
-    QSBDEBUG("%lld %lld %lld", num, min, max);
+    QSBDEBUG() << num << min << max;
 
     if (num >= min && num <= max) {
         if (match)

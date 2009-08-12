@@ -225,6 +225,8 @@ public:
     StrokeHandler *strokeHandler;
     QStrokerOps *activeStroker;
     QPen strokerPen;
+
+    QRect exDeviceRect;
 };
 
 inline uint QVectorPath::polygonFlags(QPaintEngine::PolygonDrawMode mode) {

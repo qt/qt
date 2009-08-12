@@ -62,7 +62,7 @@ static const HashTableValue JSHTMLDocumentTableValues[17] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDocumentTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDocumentTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSHTMLDocumentTableValues, 0 };
 #else
@@ -76,19 +76,19 @@ static const HashTableValue JSHTMLDocumentConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDocumentConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDocumentConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSHTMLDocumentConstructorTableValues, 0 };
 #else
     { 1, 0, JSHTMLDocumentConstructorTableValues, 0 };
 #endif
 
-class JSHTMLDocumentConstructor : public DOMObject {
+class JSHTMLDocumentConstructor : public DOMConstructorObject {
 public:
-    JSHTMLDocumentConstructor(ExecState* exec)
-        : DOMObject(JSHTMLDocumentConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSHTMLDocumentConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSHTMLDocumentConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSHTMLDocumentPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSHTMLDocumentPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -122,7 +122,7 @@ static const HashTableValue JSHTMLDocumentPrototypeTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSHTMLDocumentPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSHTMLDocumentPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 31, JSHTMLDocumentPrototypeTableValues, 0 };
 #else
@@ -143,8 +143,8 @@ bool JSHTMLDocumentPrototype::getOwnPropertySlot(ExecState* exec, const Identifi
 
 const ClassInfo JSHTMLDocument::s_info = { "HTMLDocument", &JSDocument::s_info, &JSHTMLDocumentTable, 0 };
 
-JSHTMLDocument::JSHTMLDocument(PassRefPtr<Structure> structure, PassRefPtr<HTMLDocument> impl)
-    : JSDocument(structure, impl)
+JSHTMLDocument::JSHTMLDocument(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLDocument> impl)
+    : JSDocument(structure, globalObject, impl)
 {
 }
 
@@ -164,110 +164,126 @@ bool JSHTMLDocument::getOwnPropertySlot(ExecState* exec, const Identifier& prope
 
 JSValue jsHTMLDocumentEmbeds(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->embeds()));
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->embeds()));
 }
 
 JSValue jsHTMLDocumentPlugins(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->plugins()));
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->plugins()));
 }
 
 JSValue jsHTMLDocumentScripts(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->scripts()));
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->scripts()));
 }
 
 JSValue jsHTMLDocumentAll(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->all(exec);
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
+    return castedThis->all(exec);
 }
 
 JSValue jsHTMLDocumentWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
     return jsNumber(exec, imp->width());
 }
 
 JSValue jsHTMLDocumentHeight(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
     return jsNumber(exec, imp->height());
 }
 
 JSValue jsHTMLDocumentDir(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
     return jsString(exec, imp->dir());
 }
 
 JSValue jsHTMLDocumentDesignMode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
     return jsString(exec, imp->designMode());
 }
 
 JSValue jsHTMLDocumentCompatMode(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
     return jsString(exec, imp->compatMode());
 }
 
 JSValue jsHTMLDocumentActiveElement(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->activeElement()));
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->activeElement()));
 }
 
 JSValue jsHTMLDocumentBgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
     return jsString(exec, imp->bgColor());
 }
 
 JSValue jsHTMLDocumentFgColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
     return jsString(exec, imp->fgColor());
 }
 
 JSValue jsHTMLDocumentAlinkColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
     return jsString(exec, imp->alinkColor());
 }
 
 JSValue jsHTMLDocumentLinkColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
     return jsString(exec, imp->linkColor());
 }
 
 JSValue jsHTMLDocumentVlinkColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSHTMLDocument* castedThis = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    HTMLDocument* imp = static_cast<HTMLDocument*>(static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->impl());
+    HTMLDocument* imp = static_cast<HTMLDocument*>(castedThis->impl());
     return jsString(exec, imp->vlinkColor());
 }
 
 JSValue jsHTMLDocumentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSHTMLDocument*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSHTMLDocument* domObject = static_cast<JSHTMLDocument*>(asObject(slot.slotBase()));
+    return JSHTMLDocument::getConstructor(exec, domObject->globalObject());
 }
 void JSHTMLDocument::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -321,9 +337,9 @@ void setJSHTMLDocumentVlinkColor(ExecState* exec, JSObject* thisObject, JSValue 
     imp->setVlinkColor(valueToStringWithNullCheck(exec, value));
 }
 
-JSValue JSHTMLDocument::getConstructor(ExecState* exec)
+JSValue JSHTMLDocument::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSHTMLDocumentConstructor>(exec);
+    return getDOMConstructor<JSHTMLDocumentConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsHTMLDocumentPrototypeFunctionOpen(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

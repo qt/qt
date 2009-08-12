@@ -201,8 +201,8 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
     if (licenseFeatures == '5') //Floating
         dictionary["METERED LICENSE"] = "true";
 
-    if (!CopyFileA(QDir::toNativeSeparators(fromLicenseFile).toLocal8Bit(),
-        QDir::toNativeSeparators(toLicenseFile).toLocal8Bit(), FALSE)) {
+    if (!CopyFile((wchar_t*)QDir::toNativeSeparators(fromLicenseFile).utf16(),
+        (wchar_t*)QDir::toNativeSeparators(toLicenseFile).utf16(), FALSE)) {
         cout << "Failed to copy license file (" << fromLicenseFile << ")";
         dictionary["DONE"] = "error";
         return;

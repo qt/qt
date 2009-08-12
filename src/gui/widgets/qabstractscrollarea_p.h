@@ -60,9 +60,10 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SCROLLAREA
 
+class QPanGesture;
 class QScrollBar;
 class QAbstractScrollAreaScrollBarContainer;
-class QAbstractScrollAreaPrivate: public QFramePrivate
+class Q_AUTOTEST_EXPORT QAbstractScrollAreaPrivate: public QFramePrivate
 {
     Q_DECLARE_PUBLIC(QAbstractScrollArea)
 
@@ -88,7 +89,7 @@ public:
     void init();
     void layoutChildren();
     // ### Fix for 4.4, talk to Bjoern E or Girish.
-    virtual void scrollBarPolicyChanged(Qt::Orientation, Qt::ScrollBarPolicy);
+    virtual void scrollBarPolicyChanged(Qt::Orientation, Qt::ScrollBarPolicy) {}
 
     void _q_hslide(int);
     void _q_vslide(int);
@@ -99,6 +100,13 @@ public:
     inline bool viewportEvent(QEvent *event)
     { return q_func()->viewportEvent(event); }
     QScopedPointer<QObject> viewportFilter;
+
+    virtual void _q_gestureTriggered();
+    QPanGesture *panGesture;
+#ifdef Q_WS_WIN
+    bool singleFingerPanEnabled;
+    void setSingleFingerPanEnabled(bool on = true);
+#endif
 };
 
 class QAbstractScrollAreaFilter : public QObject

@@ -125,6 +125,9 @@ namespace WebCore {
         void setLocalStorageEnabled(bool);
         bool localStorageEnabled() const { return m_localStorageEnabled; }
 
+        void setSessionStorageEnabled(bool);
+        bool sessionStorageEnabled() const { return m_sessionStorageEnabled; }
+
         void setPrivateBrowsingEnabled(bool);
         bool privateBrowsingEnabled() const { return m_privateBrowsingEnabled; }
 
@@ -162,6 +165,9 @@ namespace WebCore {
 
         void setNeedsKeyboardEventDisambiguationQuirks(bool);
         bool needsKeyboardEventDisambiguationQuirks() const { return m_needsKeyboardEventDisambiguationQuirks; }
+
+        void setTreatsAnyTextCSSLinkAsStylesheet(bool);
+        bool treatsAnyTextCSSLinkAsStylesheet() const { return m_treatsAnyTextCSSLinkAsStylesheet; }
 
         void setNeedsLeopardMailQuirks(bool);
         bool needsLeopardMailQuirks() const { return m_needsLeopardMailQuirks; }
@@ -201,6 +207,9 @@ namespace WebCore {
         
         void setWebArchiveDebugModeEnabled(bool);
         bool webArchiveDebugModeEnabled() const { return m_webArchiveDebugModeEnabled; }
+
+        void setLocalFileContentSniffingEnabled(bool);
+        bool localFileContentSniffingEnabled() const { return m_localFileContentSniffingEnabled; }
 
         void setLocalStorageDatabasePath(const String&);
         const String& localStorageDatabasePath() const { return m_localStorageDatabasePath; }
@@ -271,6 +280,7 @@ namespace WebCore {
         bool m_arePluginsEnabled : 1;
         bool m_databasesEnabled : 1;
         bool m_localStorageEnabled : 1;
+        bool m_sessionStorageEnabled : 1;
         bool m_isJavaScriptEnabled : 1;
         bool m_isWebSecurityEnabled : 1;
         bool m_allowUniversalAccessFromFileURLs: 1;
@@ -282,6 +292,7 @@ namespace WebCore {
 #endif
         bool m_needsAdobeFrameReloadingQuirk : 1;
         bool m_needsKeyboardEventDisambiguationQuirks : 1;
+        bool m_treatsAnyTextCSSLinkAsStylesheet : 1;
         bool m_needsLeopardMailQuirks : 1;
         bool m_needsTigerMailQuirks : 1;
         bool m_isDOMPasteAllowed : 1;
@@ -294,6 +305,7 @@ namespace WebCore {
         bool m_needsSiteSpecificQuirks : 1;
         unsigned m_fontRenderingMode : 1;
         bool m_webArchiveDebugModeEnabled : 1;
+        bool m_localFileContentSniffingEnabled : 1;
         bool m_inApplicationChromeMode : 1;
         bool m_offlineWebApplicationCacheEnabled : 1;
         bool m_shouldPaintCustomScrollbars : 1;

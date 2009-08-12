@@ -2891,8 +2891,8 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             bool customUp = true, customDown = true;
             QRenderRule upRule = renderRule(w, opt, PseudoElement_SpinBoxUpButton);
             QRenderRule downRule = renderRule(w, opt, PseudoElement_SpinBoxDownButton);
-            bool upRuleMatch = upRule.hasGeometry();
-            bool downRuleMatch = downRule.hasGeometry();
+            bool upRuleMatch = upRule.hasGeometry() || upRule.hasPosition();
+            bool downRuleMatch = downRule.hasGeometry() || downRule.hasPosition();
             if (rule.hasNativeBorder() && !upRuleMatch && !downRuleMatch) {
                 rule.drawBackgroundImage(p, spinOpt.rect);
                 customUp = (opt->subControls & QStyle::SC_SpinBoxUp)
@@ -4171,7 +4171,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         if (!rule.hasDrawable()) {
             QWidget *container = containerWidget(w);
             if (autoFillDisabledWidgets->contains(container)
-                && (container == w || !renderRule(container, opt).hasDrawable())) {
+                && (container == w || !renderRule(container, opt).hasBackground())) {
                 //we do not have a background, but we disabled the autofillbackground anyway. so fill the background now.
                 // (this may happen if we have rules like :focus)
                 p->fillRect(opt->rect, opt->palette.brush(w->backgroundRole()));
@@ -5167,8 +5167,8 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
             QRenderRule upRule = renderRule(w, opt, PseudoElement_SpinBoxUpButton);
             QRenderRule downRule = renderRule(w, opt, PseudoElement_SpinBoxDownButton);
             bool ruleMatch = rule.hasBox() || !rule.hasNativeBorder();
-            bool upRuleMatch = upRule.hasGeometry();
-            bool downRuleMatch = downRule.hasGeometry();
+            bool upRuleMatch = upRule.hasGeometry() || upRule.hasPosition();
+            bool downRuleMatch = downRule.hasGeometry() || upRule.hasPosition();
             if (ruleMatch || upRuleMatch || downRuleMatch) {
                 switch (sc) {
                 case SC_SpinBoxFrame:

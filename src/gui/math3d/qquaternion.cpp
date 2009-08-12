@@ -55,10 +55,6 @@ QT_BEGIN_NAMESPACE
     Quaternions are used to represent rotations in 3D space, and
     consist of a 3D rotation axis specified by the x, y, and z
     coordinates, and a scalar representing the rotation angle.
-
-    The components of a quaternion are stored internally using the most
-    efficient representation for the GL rendering engine, which will be
-    either floating-point or fixed-point.
 */
 
 /*!
@@ -339,10 +335,6 @@ QVector3D QQuaternion::rotateVector(const QVector3D& vector) const
     \sa operator*=()
 */
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 #ifndef QT_NO_VECTOR3D
 
 /*!
@@ -578,6 +570,51 @@ QDebug operator<<(QDebug dbg, const QQuaternion &q)
 }
 
 #endif
+
+#ifndef QT_NO_DATASTREAM
+
+/*!
+    \fn QDataStream &operator<<(QDataStream &stream, const QQuaternion &quaternion)
+    \relates QQuaternion
+
+    Writes the given \a quaternion to the given \a stream and returns a
+    reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator<<(QDataStream &stream, const QQuaternion &quaternion)
+{
+    stream << double(quaternion.scalar()) << double(quaternion.x())
+           << double(quaternion.y()) << double(quaternion.z());
+    return stream;
+}
+
+/*!
+    \fn QDataStream &operator>>(QDataStream &stream, QQuaternion &quaternion)
+    \relates QQuaternion
+
+    Reads a quaternion from the given \a stream into the given \a quaternion
+    and returns a reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+QDataStream &operator>>(QDataStream &stream, QQuaternion &quaternion)
+{
+    double scalar, x, y, z;
+    stream >> scalar;
+    stream >> x;
+    stream >> y;
+    stream >> z;
+    quaternion.setScalar(qreal(scalar));
+    quaternion.setX(qreal(x));
+    quaternion.setY(qreal(y));
+    quaternion.setZ(qreal(z));
+    return stream;
+}
+
+#endif // QT_NO_DATASTREAM
 
 #endif
 

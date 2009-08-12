@@ -42,6 +42,7 @@
 #include "qplatformdefs.h"
 #include "qabstractfileengine.h"
 #include "private/qfsfileengine_p.h"
+#include "private/qcore_unix_p.h"
 
 #ifndef QT_NO_FSFILEENGINE
 
@@ -110,6 +111,12 @@ static QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QString &
         if (flags & QIODevice::ReadOnly)
             mode += '+';
     }
+
+#if defined(__GLIBC__) && (__GLIBC__ * 0x100 + __GLIBC_MINOR__) >= 0x0207
+    // must be glibc >= 2.7
+    mode += 'e';
+#endif
+
     return mode;
 }
 
@@ -138,12 +145,6 @@ static int openModeToOpenFlags(QIODevice::OpenMode mode)
             oflags |= QT_OPEN_TRUNC;
     }
 
-#ifdef O_CLOEXEC
-    // supported on Linux >= 2.6.23; avoids one extra system call
-    // and avoids a race condition: if another thread forks, we could
-    // end up leaking a file descriptor...
-    oflags |= O_CLOEXEC;
-#endif
     return oflags;
 }
 
@@ -196,11 +197,6 @@ bool QFSFileEnginePrivate::nativeOpen(QIODevice::OpenMode openMode)
                 return false;
             }
         }
-
-#ifndef O_CLOEXEC
-        // not needed on Linux >= 2.6.23
-        setCloseOnExec(fd);     // ignore failure
-#endif
 
         // Seek to the end when in Append mode.
         if (flags & QFile::Append) {
@@ -468,7 +464,7 @@ bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) con
                 if (QT_STAT(chunk, &st) != -1) {
                     if ((st.st_mode & S_IFMT) != S_IFDIR)
                         return false;
-                } else if (::mkdir(chunk, 0777) != 0) {
+                } else if (QT_MKDIR(chunk, 0777) != 0) {
                         return false;
                 }
             }
@@ -479,7 +475,7 @@ bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) con
     if (dirName[dirName.length() - 1] == QLatin1Char('/'))
         dirName = dirName.left(dirName.length() - 1);
 #endif
-    return (::mkdir(QFile::encodeName(dirName), 0777) == 0);
+    return (QT_MKDIR(QFile::encodeName(dirName), 0777) == 0);
 }
 
 bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) const
@@ -521,7 +517,7 @@ bool QFSFileEngine::caseSensitive() const
 bool QFSFileEngine::setCurrentPath(const QString &path)
 {
     int r;
-    r = ::chdir(QFile::encodeName(path));
+    r = QT_CHDIR(QFile::encodeName(path));
     return r >= 0;
 }
 
@@ -1003,11 +999,7 @@ QString QFSFileEngine::fileName(FileName file) const
             int size = PATH_CHUNK_SIZE;
 
             while (1) {
-                s = (char *) ::realloc(s, size);
-                if (s == 0) {
-                    len = -1;
-                    break;
-                }
+                s = q_check_ptr((char *) ::realloc(s, size));
                 len = ::readlink(d->nativeFilePath.constData(), s, size);
                 if (len < 0) {
                     ::free(s);

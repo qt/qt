@@ -33,38 +33,26 @@ ASSERT_CLASS_FITS_IN_CELL(JSXMLHttpRequestConstructor);
 const ClassInfo JSXMLHttpRequestConstructor::s_info = { "XMLHttpRequestConstructor", 0, 0, 0 };
 
 JSXMLHttpRequestConstructor::JSXMLHttpRequestConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
-    : DOMObject(JSXMLHttpRequestConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
-    , m_globalObject(globalObject)
+    : DOMConstructorObject(JSXMLHttpRequestConstructor::createStructure(globalObject->objectPrototype()), globalObject)
 {
-    putDirect(exec->propertyNames().prototype, JSXMLHttpRequestPrototype::self(exec, exec->lexicalGlobalObject()), None);
-}
-
-ScriptExecutionContext* JSXMLHttpRequestConstructor::scriptExecutionContext() const
-{
-    return m_globalObject->scriptExecutionContext();
+    putDirect(exec->propertyNames().prototype, JSXMLHttpRequestPrototype::self(exec, globalObject), None);
 }
 
 static JSObject* constructXMLHttpRequest(ExecState* exec, JSObject* constructor, const ArgList&)
 {
-    ScriptExecutionContext* context = static_cast<JSXMLHttpRequestConstructor*>(constructor)->scriptExecutionContext();
+    JSXMLHttpRequestConstructor* jsConstructor = static_cast<JSXMLHttpRequestConstructor*>(constructor);
+    ScriptExecutionContext* context = jsConstructor->scriptExecutionContext();
     if (!context)
         return throwError(exec, ReferenceError, "XMLHttpRequest constructor associated document is unavailable");
 
     RefPtr<XMLHttpRequest> xmlHttpRequest = XMLHttpRequest::create(context);
-    return CREATE_DOM_OBJECT_WRAPPER(exec, XMLHttpRequest, xmlHttpRequest.get());
+    return CREATE_DOM_OBJECT_WRAPPER(exec, jsConstructor->globalObject(), XMLHttpRequest, xmlHttpRequest.get());
 }
 
 ConstructType JSXMLHttpRequestConstructor::getConstructData(ConstructData& constructData)
 {
     constructData.native.function = constructXMLHttpRequest;
     return ConstructTypeHost;
-}
-
-void JSXMLHttpRequestConstructor::mark()
-{
-    DOMObject::mark();
-    if (!m_globalObject->marked())
-        m_globalObject->mark();
 }
 
 } // namespace WebCore

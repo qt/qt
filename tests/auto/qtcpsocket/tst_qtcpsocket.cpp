@@ -63,10 +63,12 @@
 #include <QHostAddress>
 #include <QHostInfo>
 #include <QMap>
+#ifndef Q_OS_VXWORKS
 #include <QMessageBox>
+#include <QPushButton>
+#endif
 #include <QPointer>
 #include <QProcess>
-#include <QPushButton>
 #include <QStringList>
 #include <QTcpServer>
 #include <QTcpSocket>
@@ -174,9 +176,7 @@ private slots:
     void connectToLocalHostNoService();
 #endif
     void waitForConnectedInHostLookupSlot();
-#ifndef Q_OS_WIN
     void waitForConnectedInHostLookupSlot2();
-#endif
     void readyReadSignalsAfterWaitForReadyRead();
 #ifdef Q_OS_LINUX
     void linuxKernelBugLocalSocket();
@@ -902,12 +902,12 @@ void tst_QTcpSocket::disconnectWhileConnecting()
         socket->disconnectFromHost();
     }
 
-    connect(socket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));    
-#ifndef Q_OS_SYMBIAN    
+    connect(socket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));
+#ifndef Q_OS_SYMBIAN
     enterLoop(10);
-#else    
+#else
     enterLoop(30);
-#endif    
+#endif
     QVERIFY2(!timeout(), "Network timeout");
     QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
     if (!closeDirectly) {
@@ -971,11 +971,11 @@ protected:
 
         QTcpSocket *socket = server->nextPendingConnection();
         while (!quit) {
-#ifndef Q_OS_SYMBIAN    
+#ifndef Q_OS_SYMBIAN
             if (socket->waitForDisconnected(500))
-#else    
+#else
             if (socket->waitForDisconnected(5000))
-#endif     
+#endif
                 break;
             if (socket->error() != QAbstractSocket::SocketTimeoutError)
                 return;
@@ -1023,11 +1023,11 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
         socket->disconnectFromHost();
     }
 
-#ifndef Q_OS_SYMBIAN    
+#ifndef Q_OS_SYMBIAN
     QVERIFY2(socket->waitForDisconnected(10000), "Network timeout");
-#else    
+#else
     QVERIFY2(socket->waitForDisconnected(30000), "Network timeout");
-#endif     
+#endif
     QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
     if (!closeDirectly) {
         QCOMPARE(int(socket->openMode()), int(QIODevice::ReadWrite));
@@ -1073,11 +1073,11 @@ void tst_QTcpSocket::disconnectWhileLookingUp()
 
     // let anything queued happen
     QEventLoop loop;
-#ifndef Q_OS_SYMBIAN    
+#ifndef Q_OS_SYMBIAN
     QTimer::singleShot(50, &loop, SLOT(quit()));
-#else    
+#else
     QTimer::singleShot(5000, &loop, SLOT(quit()));
-#endif     
+#endif
     loop.exec();
 
     // recheck
@@ -1599,6 +1599,7 @@ void tst_QTcpSocket::remoteCloseErrorSlot()
 
 void tst_QTcpSocket::messageBoxSlot()
 {
+#if !defined(Q_OS_VXWORKS) // no gui
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
     socket->deleteLater();
     QMessageBox box;
@@ -1609,10 +1610,14 @@ void tst_QTcpSocket::messageBoxSlot()
 
     // Fire a non-0 singleshot to leave time for the delete
     QTimer::singleShot(250, this, SLOT(exitLoopSlot()));
+#endif
 }
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::openMessageBoxInErrorSlot()
 {
+#if defined(Q_OS_VXWORKS) // no gui
+    QSKIP("no default gui available on VxWorks", SkipAll);
+#else
     QTcpSocket *socket = newSocket();
     QPointer<QTcpSocket> p(socket);
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(messageBoxSlot()));
@@ -1620,6 +1625,7 @@ void tst_QTcpSocket::openMessageBoxInErrorSlot()
     socket->connectToHost("hostnotfoundhostnotfound.troll.no", 9999); // Host not found, fyi
     enterLoop(30);
     QVERIFY(!p);
+#endif
 }
 
 //----------------------------------------------------------------------------------
@@ -1738,9 +1744,12 @@ public slots:
 };
 
 //----------------------------------------------------------------------------------
-#ifndef Q_OS_WIN
 void tst_QTcpSocket::waitForConnectedInHostLookupSlot2()
 {
+#if defined(Q_OS_WIN) || defined(Q_OS_VXWORKS)
+    QSKIP("waitForConnectedInHostLookupSlot2 is not run on Windows and VxWorks", SkipAll);
+#else
+
     Foo foo;
     QPushButton top("Go", 0);
     top.show();
@@ -1754,9 +1763,9 @@ void tst_QTcpSocket::waitForConnectedInHostLookupSlot2()
         QFAIL("Network timeout");
 
     QVERIFY(foo.attemptedToConnect);
-    QCOMPARE(foo.count, 1);  
-}
+    QCOMPARE(foo.count, 1);
 #endif
+}
 
 //----------------------------------------------------------------------------------
 void tst_QTcpSocket::readyReadSignalsAfterWaitForReadyRead()
@@ -1774,7 +1783,7 @@ void tst_QTcpSocket::readyReadSignalsAfterWaitForReadyRead()
     QCOMPARE(readyReadSpy.count(), 1);
 
     QString s = socket->readLine();
-#ifdef TEST_QNETWORK_PROXY    
+#ifdef TEST_QNETWORK_PROXY
     QNetworkProxy::ProxyType proxyType = QNetworkProxy::applicationProxy().type();
     if(proxyType == QNetworkProxy::NoProxy) {
         QCOMPARE(s.toLatin1().constData(), "* OK [CAPABILITY IMAP4REV1] aspiriniks Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
@@ -1782,8 +1791,8 @@ void tst_QTcpSocket::readyReadSignalsAfterWaitForReadyRead()
         QCOMPARE(s.toLatin1().constData(), "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] aspiriniks Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
     }
 #else
-    QCOMPARE(s.toLatin1().constData(), QtNetworkSettings::expectedReplyIMAP().constData()); 
-#endif    
+    QCOMPARE(s.toLatin1().constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+#endif
     QCOMPARE(socket->bytesAvailable(), qint64(0));
 
     QCoreApplication::instance()->processEvents();
@@ -1999,10 +2008,10 @@ void tst_QTcpSocket::suddenRemoteDisconnect_data()
 
 void tst_QTcpSocket::suddenRemoteDisconnect()
 {
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_VXWORKS)
     QSKIP("stressTest subprocess needs Qt3Support", SkipAll);
 #elif defined( Q_OS_SYMBIAN )
-    QSKIP("Symbian: QProcess IO is not yet supported, fix when supported", SkipAll);    
+    QSKIP("Symbian: QProcess IO is not yet supported, fix when supported", SkipAll);
 #else
     QFETCH(QString, client);
     QFETCH(QString, server);
@@ -2058,6 +2067,9 @@ void tst_QTcpSocket::connectToMultiIP()
 {
 	QSKIP("TODO: setup DNS in the new network", SkipAll);
 
+#if defined(Q_OS_VXWORKS)
+    QSKIP("VxSim in standard config doesn't even run a DNS resolver", SkipAll);
+#else
     QFETCH_GLOBAL(bool, ssl);
     if (ssl)
         return;
@@ -2085,6 +2097,7 @@ void tst_QTcpSocket::connectToMultiIP()
     QCOMPARE(socket->error(), QAbstractSocket::SocketTimeoutError);
 
     delete socket;
+#endif
 }
 
 //----------------------------------------------------------------------------------

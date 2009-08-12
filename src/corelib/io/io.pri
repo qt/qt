@@ -66,7 +66,10 @@ win32 {
         SOURCES += io/qfsfileengine_iterator_unix.cpp
         symbian:SOURCES += io/qprocess_symbian.cpp
         else:SOURCES += io/qprocess_unix.cpp
-        mac:SOURCES += io/qsettings_mac.cpp
+        macx-*: {
+            HEADERS += io/qfilesystemwatcher_fsevents_p.h
+            SOURCES += io/qsettings_mac.cpp io/qfilesystemwatcher_fsevents.cpp
+        }
 
         linux-*:{
             SOURCES += \

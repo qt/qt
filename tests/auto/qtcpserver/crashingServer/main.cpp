@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
     file.close();
 #else
     printf("Listening\n");
-    fflush(stdout);    
+    fflush(stdout);
 #endif
 
     server.waitForNewConnection(5000);

@@ -50,6 +50,8 @@ class tst_Cmptest: public QObject
 private slots:
     void compare_boolfuncs();
     void compare_pointerfuncs();
+    void compare_tostring();
+    void compare_tostring_data();
 };
 
 static bool boolfunc() { return true; }
@@ -74,6 +76,50 @@ void tst_Cmptest::compare_pointerfuncs()
     QCOMPARE(&i, &i);
     QCOMPARE(intptr(), &i);
     QCOMPARE(&i, intptr());
+}
+
+Q_DECLARE_METATYPE(QVariant)
+
+class PhonyClass
+{};
+
+void tst_Cmptest::compare_tostring_data()
+{
+    QTest::addColumn<QVariant>("actual");
+    QTest::addColumn<QVariant>("expected");
+
+    QTest::newRow("int, string")
+        << QVariant::fromValue(123)
+        << QVariant::fromValue(QString("hi"))
+    ;
+
+    QTest::newRow("both invalid")
+        << QVariant()
+        << QVariant()
+    ;
+
+    QTest::newRow("null hash, invalid")
+        << QVariant(QVariant::Hash)
+        << QVariant()
+    ;
+
+    QTest::newRow("string, null user type")
+        << QVariant::fromValue(QString::fromLatin1("A simple string"))
+        << QVariant(QVariant::Type(qRegisterMetaType<PhonyClass>("PhonyClass")))
+    ;
+
+    QTest::newRow("both non-null user type")
+        << QVariant(qRegisterMetaType<PhonyClass>("PhonyClass"), (const void*)0)
+        << QVariant(qRegisterMetaType<PhonyClass>("PhonyClass"), (const void*)0)
+    ;
+}
+
+void tst_Cmptest::compare_tostring()
+{
+    QFETCH(QVariant, actual);
+    QFETCH(QVariant, expected);
+
+    QCOMPARE(actual, expected);
 }
 
 QTEST_MAIN(tst_Cmptest)

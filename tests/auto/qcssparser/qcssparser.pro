@@ -1,6 +1,8 @@
 load(qttest_p4)
-SOURCES += tst_cssparser.cpp
+SOURCES += tst_qcssparser.cpp
 QT += xml
+
+requires(contains(QT_CONFIG,private_tests))
 
 !symbian: {
    DEFINES += SRCDIR=\\\"$$PWD\\\"
@@ -11,4 +13,3 @@ wince*|symbian: {
    addFiles.path = .
    DEPLOYMENT += addFiles
 }
-

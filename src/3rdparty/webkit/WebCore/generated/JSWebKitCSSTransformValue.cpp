@@ -40,7 +40,7 @@ static const HashTableValue JSWebKitCSSTransformValueTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSTransformValueTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSTransformValueTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSWebKitCSSTransformValueTableValues, 0 };
 #else
@@ -75,19 +75,19 @@ static const HashTableValue JSWebKitCSSTransformValueConstructorTableValues[22] 
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSTransformValueConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSTransformValueConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSWebKitCSSTransformValueConstructorTableValues, 0 };
 #else
     { 68, 63, JSWebKitCSSTransformValueConstructorTableValues, 0 };
 #endif
 
-class JSWebKitCSSTransformValueConstructor : public DOMObject {
+class JSWebKitCSSTransformValueConstructor : public DOMConstructorObject {
 public:
-    JSWebKitCSSTransformValueConstructor(ExecState* exec)
-        : DOMObject(JSWebKitCSSTransformValueConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSWebKitCSSTransformValueConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSWebKitCSSTransformValueConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSWebKitCSSTransformValuePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSWebKitCSSTransformValuePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -134,7 +134,7 @@ static const HashTableValue JSWebKitCSSTransformValuePrototypeTableValues[22] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSWebKitCSSTransformValuePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSWebKitCSSTransformValuePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1023, JSWebKitCSSTransformValuePrototypeTableValues, 0 };
 #else
@@ -155,8 +155,8 @@ bool JSWebKitCSSTransformValuePrototype::getOwnPropertySlot(ExecState* exec, con
 
 const ClassInfo JSWebKitCSSTransformValue::s_info = { "WebKitCSSTransformValue", &JSCSSValueList::s_info, &JSWebKitCSSTransformValueTable, 0 };
 
-JSWebKitCSSTransformValue::JSWebKitCSSTransformValue(PassRefPtr<Structure> structure, PassRefPtr<WebKitCSSTransformValue> impl)
-    : JSCSSValueList(structure, impl)
+JSWebKitCSSTransformValue::JSWebKitCSSTransformValue(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitCSSTransformValue> impl)
+    : JSCSSValueList(structure, globalObject, impl)
 {
 }
 
@@ -172,18 +172,20 @@ bool JSWebKitCSSTransformValue::getOwnPropertySlot(ExecState* exec, const Identi
 
 JSValue jsWebKitCSSTransformValueOperationType(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSWebKitCSSTransformValue* castedThis = static_cast<JSWebKitCSSTransformValue*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    WebKitCSSTransformValue* imp = static_cast<WebKitCSSTransformValue*>(static_cast<JSWebKitCSSTransformValue*>(asObject(slot.slotBase()))->impl());
+    WebKitCSSTransformValue* imp = static_cast<WebKitCSSTransformValue*>(castedThis->impl());
     return jsNumber(exec, imp->operationType());
 }
 
 JSValue jsWebKitCSSTransformValueConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSWebKitCSSTransformValue*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSWebKitCSSTransformValue* domObject = static_cast<JSWebKitCSSTransformValue*>(asObject(slot.slotBase()));
+    return JSWebKitCSSTransformValue::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSWebKitCSSTransformValue::getConstructor(ExecState* exec)
+JSValue JSWebKitCSSTransformValue::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSWebKitCSSTransformValueConstructor>(exec);
+    return getDOMConstructor<JSWebKitCSSTransformValueConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 // Constant getters

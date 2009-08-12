@@ -61,7 +61,10 @@ static int menuBarHeightForWidth(QWidget *menubar, int w)
         int result = menubar->heightForWidth(qMax(w, menubar->minimumWidth()));
         if (result != -1)
             return result;
-        result = menubar->sizeHint().height();
+        result = menubar->sizeHint()
+            .expandedTo(menubar->minimumSize())
+            .expandedTo(menubar->minimumSizeHint())
+            .boundedTo(menubar->maximumSize()).height();
         if (result != -1)
             return result;
     }
@@ -80,7 +83,7 @@ static int menuBarHeightForWidth(QWidget *menubar, int w)
 
     For users of QLayout subclasses or of QMainWindow there is seldom
     any need to use the basic functions provided by QLayout, such as
-    setSizeConstraint() or setMenuBar(). See \l{Layout Classes}
+    setSizeConstraint() or setMenuBar(). See \l{Layout Management}
     for more information.
 
     To make your own layout manager, implement the functions
@@ -95,7 +98,7 @@ static int menuBarHeightForWidth(QWidget *menubar, int w)
 
     Geometry management stops when the layout manager is deleted.
 
-    \sa QLayoutItem, {Layout Classes}, {Basic Layouts Example},
+    \sa QLayoutItem, {Layout Management}, {Basic Layouts Example},
         {Border Layout Example}, {Flow Layout Example}
 */
 

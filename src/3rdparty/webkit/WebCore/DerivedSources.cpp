@@ -25,6 +25,7 @@
 
 // This all-in-one cpp file cuts down on template bloat to allow us to build our Windows release build.
 
+#include "JSAbstractWorker.cpp"
 #include "JSAttr.cpp"
 #include "JSBarInfo.cpp"
 #include "JSCanvasGradient.cpp"
@@ -56,6 +57,7 @@
 #include "JSDatabase.cpp"
 #include "JSDataGridColumn.cpp"
 #include "JSDataGridColumnList.cpp"
+#include "JSDedicatedWorkerContext.cpp"
 #include "JSDocument.cpp"
 #include "JSDocumentFragment.cpp"
 #include "JSDocumentType.cpp"
@@ -68,6 +70,7 @@
 #include "JSElement.cpp"
 #include "JSEntity.cpp"
 #include "JSEntityReference.cpp"
+#include "JSErrorEvent.cpp"
 #include "JSEvent.cpp"
 #include "JSEventException.cpp"
 #include "JSFile.cpp"
@@ -170,7 +173,9 @@
 #include "JSRange.cpp"
 #include "JSRangeException.cpp"
 #include "JSRect.cpp"
+#include "JSRGBColor.cpp"
 #include "JSScreen.cpp"
+#include "JSSharedWorker.cpp"
 #include "JSSQLError.cpp"
 #include "JSSQLResultSet.cpp"
 #include "JSSQLResultSetRowList.cpp"
@@ -317,6 +322,7 @@
 #include "JSTimeRanges.cpp"
 #include "JSTreeWalker.cpp"
 #include "JSUIEvent.cpp"
+#include "JSValidityState.cpp"
 #include "JSVoidCallback.cpp"
 #include "JSWebKitAnimationEvent.cpp"
 #include "JSWebKitCSSKeyframeRule.cpp"
@@ -349,5 +355,5 @@
 // want StaticConstructors.h to "pollute" all the source files we #include here
 // accidentally, so we'll throw an error whenever any file includes it.
 #ifdef StaticConstructors_h
-#error Don't include any file in DerivedSources.cpp that includes StaticConstructors.h
+#error Do not include any file in DerivedSources.cpp that includes StaticConstructors.h
 #endif

@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,8 +75,8 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
 
 
     // We create empty CFbsBitmap here -> it will be resized in setGeometry
-    d_ptr->bitmap = new (ELeave) CFbsBitmap;
-    User::LeaveIfError( d_ptr->bitmap->Create(TSize(0, 0), mode ) );
+    d_ptr->bitmap = q_check_ptr(new CFbsBitmap);	// CBase derived object needs check on new
+    qt_throwIfError( d_ptr->bitmap->Create(TSize(0, 0), mode ) );
 
     updatePaintDeviceOnBitmap();
 
@@ -85,8 +85,8 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
 
 QS60WindowSurface::~QS60WindowSurface()
 {
-    // Ensure that locking and unlocking of this surface were symmetrical
-    Q_ASSERT(QS60WindowSurfacePrivate::lockedSurface != this);
+    if (QS60WindowSurfacePrivate::lockedSurface == this)
+        unlockBitmapHeap();
 
     delete d_ptr->bitmap;
     delete d_ptr;
@@ -97,7 +97,9 @@ void QS60WindowSurface::beginPaint(const QRegion &rgn)
     if(!d_ptr->bitmap)
         return;
 
-    Q_ASSERT(!QS60WindowSurfacePrivate::lockedSurface);
+    if (QS60WindowSurfacePrivate::lockedSurface)
+        unlockBitmapHeap();
+    
     QS60WindowSurfacePrivate::lockedSurface = this;
     lockBitmapHeap();
 
@@ -141,7 +143,8 @@ bool QS60WindowSurface::scroll(const QRegion &area, int dx, int dy)
     if (d_ptr->device.isNull())
         return false;
 
-    CFbsBitmapDevice *bitmapDevice = CFbsBitmapDevice::NewL(d_ptr->bitmap);
+    CFbsBitmapDevice *bitmapDevice = 0;
+    QT_TRAP_THROWING(bitmapDevice = CFbsBitmapDevice::NewL(d_ptr->bitmap));
     CBitmapContext *bitmapContext;
     TInt err = bitmapDevice->CreateBitmapContext(bitmapContext);
     if (err != KErrNone) {
@@ -177,7 +180,7 @@ void QS60WindowSurface::setGeometry(const QRect& rect)
     QWindowSurface::setGeometry(rect);
 
     TRect nativeRect(qt_QRect2TRect(rect));
-    User::LeaveIfError(d_ptr->bitmap->Resize(nativeRect.Size()));
+    qt_throwIfError(d_ptr->bitmap->Resize(nativeRect.Size()));
 
     if (!rect.isNull())
         updatePaintDeviceOnBitmap();

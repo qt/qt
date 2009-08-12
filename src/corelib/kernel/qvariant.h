@@ -154,7 +154,12 @@ class Q_CORE_EXPORT QVariant
         TextFormat = 79,
         Matrix = 80,
         Transform = 81,
-        LastGuiType = Transform,
+        Matrix4x4 = 82,
+        Vector2D = 83,
+        Vector3D = 84,
+        Vector4D = 85,
+        Quaternion = 86,
+        LastGuiType = Quaternion,
 
         UserType = 127,
 #ifdef QT3_SUPPORT
@@ -353,6 +358,7 @@ class Q_CORE_EXPORT QVariant
             float f;
             qlonglong ll;
             qulonglong ull;
+            QObject *o;
             void *ptr;
             PrivateShared *shared;
         } data;

@@ -108,17 +108,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#ifdef Q_OS_WIN
-inline QString convertString(TCHAR* sz)
-{
-#ifdef UNICODE
-    return QString::fromUtf16(sz);
-#else
-    return QString::fromLocal8Bit(sz);
-#endif
-}
-#endif
-
 class QFileSystemIteratorPrivate
 {
 public:
@@ -202,7 +191,7 @@ QFileSystemIteratorPrivate::~QFileSystemIteratorPrivate()
 }
 
 #ifdef Q_OS_WIN
-static bool isDotOrDotDot(const TCHAR* name)
+static bool isDotOrDotDot(const wchar_t* name)
 {
     if (name[0] == L'.' && name[1] == 0)
         return true;
@@ -339,7 +328,7 @@ bool QFileSystemIteratorPrivate::advanceHelper()
     if (m_entry->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
         QByteArray ba = m_dirPaths.top();
         ba += '\\';
-        ba += convertString(m_entry->cFileName);
+        ba += QString::fromWCharArray(m_entry->cFileName);
         pushSubDirectory(ba);
     }
 #else
@@ -634,7 +623,7 @@ QString QFileSystemIterator::fileName() const
     if (d->m_currentDirShown == QFileSystemIteratorPrivate::ShowDotDotDir)
         return QLatin1String("@@");
 #ifdef Q_OS_WIN
-    return convertString(d->m_entry->cFileName);
+    return QString::fromWCharArray(d->m_entry->cFileName);
 #else
     return QString::fromLocal8Bit(d->m_entry->d_name);
 #endif
@@ -659,7 +648,7 @@ QString QFileSystemIterator::filePath() const
     else if (d->m_entry) {
         ba += '/';
 #ifdef Q_OS_WIN
-        ba += convertString(d->m_entry->cFileName);
+        ba += QString::fromWCharArray(d->m_entry->cFileName);
 #else
         ba += d->m_entry->d_name;
 #endif

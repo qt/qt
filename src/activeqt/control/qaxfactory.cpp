@@ -50,7 +50,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern char qAxModuleFilename[MAX_PATH];
+extern wchar_t qAxModuleFilename[MAX_PATH];
 
 /*!
     \class QAxFactory
@@ -277,7 +277,7 @@ bool QAxFactory::validateLicenseKey(const QString &key, const QString &licenseKe
         return true;
 
     if (licenseKey.isEmpty()) {
-        QString licFile(QFile::decodeName(qAxModuleFilename));
+        QString licFile(QString::fromWCharArray(qAxModuleFilename));
         int lastDot = licFile.lastIndexOf(QLatin1Char('.'));
         licFile = licFile.left(lastDot) + QLatin1String(".lic");
         if (QFile::exists(licFile))
@@ -360,7 +360,7 @@ bool QAxFactory::isServer()
     return qAxIsServer;
 }
 
-extern char qAxModuleFilename[MAX_PATH];
+extern wchar_t qAxModuleFilename[MAX_PATH];
 
 /*!
     Returns the directory that contains the server binary.
@@ -372,7 +372,7 @@ extern char qAxModuleFilename[MAX_PATH];
 */
 QString QAxFactory::serverDirPath()
 {
-    return QFileInfo(QString::fromLocal8Bit(qAxModuleFilename)).absolutePath();
+    return QFileInfo(QString::fromWCharArray(qAxModuleFilename)).absolutePath();
 }
 
 /*!
@@ -384,7 +384,7 @@ QString QAxFactory::serverDirPath()
 */
 QString QAxFactory::serverFilePath()
 {
-    return QString::fromLocal8Bit(qAxModuleFilename);
+    return QString::fromWCharArray(qAxModuleFilename);
 }
 
 /*!
@@ -492,7 +492,7 @@ bool QAxFactory::registerActiveObject(QObject *object)
     if (qstricmp(object->metaObject()->classInfo(object->metaObject()->indexOfClassInfo("RegisterObject")).value(), "yes"))
         return false;
 
-    if (!QString::fromLocal8Bit(qAxModuleFilename).toLower().endsWith(QLatin1String(".exe")))
+    if (!QString::fromWCharArray(qAxModuleFilename).toLower().endsWith(QLatin1String(".exe")))
 	return false;
 
     ActiveObject *active = new ActiveObject(object, qAxFactory());

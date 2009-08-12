@@ -33,7 +33,7 @@ class SVGFontFaceNameElement;
 class JSSVGFontFaceNameElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGFontFaceNameElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFontFaceNameElement>);
+    JSSVGFontFaceNameElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGFontFaceNameElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;

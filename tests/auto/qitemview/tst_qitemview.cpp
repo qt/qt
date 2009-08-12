@@ -55,7 +55,7 @@
 
 #if defined(Q_OS_WINCE)
 bool qt_wince_is_platform(const QString &platformString) {
-    TCHAR tszPlatform[64];
+    wchar_t tszPlatform[64];
     if (SystemParametersInfo(SPI_GETPLATFORMTYPE,
                              sizeof(tszPlatform)/sizeof(*tszPlatform),tszPlatform,0))
       if (0 == _tcsicmp(reinterpret_cast<const wchar_t *> (platformString.utf16()), tszPlatform))
@@ -173,8 +173,6 @@ public:
     }
 
     QModelIndex index( int row, int column, const QModelIndex & parent = QModelIndex() ) const {
-        Q_ASSERT(row >= 0 && row <= rowCount(parent));
-        Q_ASSERT(column >= 0 && column <= columnCount(parent));
         return QStandardItemModel::index(row, column, parent);
     };
 
@@ -256,7 +254,7 @@ void tst_QItemView::populate()
 {
     treeModel = new CheckerModel;
     QModelIndex parent;
-#if defined(QT_ARCH_ARM) || defined(Q_OS_SYMBIAN) 
+#if defined(QT_ARCH_ARM) || defined(Q_OS_SYMBIAN)
     const int baseInsert = 4;
 #else
     const int baseInsert = 26;
@@ -360,7 +358,7 @@ void tst_QItemView::nonDestructiveBasicTest()
     QCOMPARE(view->showDropIndicator(), false);
     view->setDropIndicatorShown(true);
     QCOMPARE(view->showDropIndicator(), true);
-    
+
     // setDragEnabled
     view->setDragEnabled(false);
     QCOMPARE(view->dragEnabled(), false);

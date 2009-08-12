@@ -40,7 +40,7 @@ static const HashTableValue JSSVGHKernElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGHKernElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGHKernElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGHKernElementPrototypeTableValues, 0 };
 #else
@@ -56,8 +56,8 @@ JSObject* JSSVGHKernElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSSVGHKernElement::s_info = { "SVGHKernElement", &JSSVGElement::s_info, 0, 0 };
 
-JSSVGHKernElement::JSSVGHKernElement(PassRefPtr<Structure> structure, PassRefPtr<SVGHKernElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGHKernElement::JSSVGHKernElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGHKernElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 

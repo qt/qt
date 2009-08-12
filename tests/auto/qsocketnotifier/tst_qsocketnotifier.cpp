@@ -134,24 +134,24 @@ void tst_QSocketNotifier::unexpectedDisconnection()
 
     QNativeSocketEngine readEnd1;
     readEnd1.initialize(QAbstractSocket::TcpSocket);
-    bool b = readEnd1.connectToHost(server.serverAddress(), server.serverPort());    
+    bool b = readEnd1.connectToHost(server.serverAddress(), server.serverPort());
     QVERIFY(readEnd1.waitForWrite());
 //    while (!b && readEnd1.state() != QAbstractSocket::ConnectedState)
 //        b = readEnd1.connectToHost(server.serverAddress(), server.serverPort());
     QVERIFY(readEnd1.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(server.waitForNewConnection());    
+    QVERIFY(server.waitForNewConnection());
     QTcpSocket *writeEnd1 = server.nextPendingConnection();
     QVERIFY(writeEnd1 != 0);
-    
+
     QNativeSocketEngine readEnd2;
     readEnd2.initialize(QAbstractSocket::TcpSocket);
-    b = readEnd2.connectToHost(server.serverAddress(), server.serverPort());    
+    b = readEnd2.connectToHost(server.serverAddress(), server.serverPort());
     QVERIFY(readEnd2.waitForWrite());
 //    while (!b)
 //        b = readEnd2.connectToHost(server.serverAddress(), server.serverPort());
     QVERIFY(readEnd2.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(server.waitForNewConnection());    
-    QTcpSocket *writeEnd2 = server.nextPendingConnection();    
+    QVERIFY(server.waitForNewConnection());
+    QTcpSocket *writeEnd2 = server.nextPendingConnection();
     QVERIFY(writeEnd2 != 0);
 
     writeEnd1->write("1", 1);
@@ -167,7 +167,7 @@ void tst_QSocketNotifier::unexpectedDisconnection()
 
     do {
         // we have to wait until sequence value changes
-        // as any event can make us jump out processing 
+        // as any event can make us jump out processing
         QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
     }  while(tester.getSequence() <= 0);
 
@@ -175,7 +175,7 @@ void tst_QSocketNotifier::unexpectedDisconnection()
     QVERIFY(readEnd2.state() == QAbstractSocket::ConnectedState);
 #if defined(Q_OS_WIN)
     qWarning("### Windows returns 1 activation, Unix returns 2.");
-    QCOMPARE(tester.sequence, 1);
+    QCOMPARE(tester.getSequence(), 1);
 #else
     QCOMPARE(tester.getSequence(), 2);
 #endif

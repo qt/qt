@@ -22,7 +22,7 @@ include(../lib/uilib/uilib.pri)
 HEADERS += quiloader.h
 SOURCES += quiloader.cpp
 
-include($$QT_BUILD_TREE/include/QtUiTools/headers.pri)
+include($$QT_BUILD_TREE/include/QtUiTools/headers.pri, "", true)
 quitools_headers.files = $$SYNCQT.HEADER_FILES $$SYNCQT.HEADER_CLASSES
 quitools_headers.path = $$[QT_INSTALL_HEADERS]/QtUiTools
 INSTALLS        += quitools_headers

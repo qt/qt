@@ -44,6 +44,10 @@
 
 #include <QtScript>
 
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -785,6 +789,8 @@ tst_Suite::tst_Suite()
     addFileExclusion("regress-322135-04.js", "takes forever");
     addFileExclusion("ecma_3/RegExp/regress-375715-04.js", "bug");
 
+    static const char klass[] = "tst_QScriptJsTestSuite";
+
     QVector<uint> *data = qt_meta_data_tst_Suite();
     // content:
     *data << 1 // revision
@@ -796,7 +802,7 @@ tst_Suite::tst_Suite()
         ;
 
     QVector<char> *stringdata = qt_meta_stringdata_tst_Suite();
-    appendCString(stringdata, "tst_Suite");
+    appendCString(stringdata, klass);
     appendCString(stringdata, "");
 
 // don't execute any tests on slow machines
@@ -814,11 +820,12 @@ tst_Suite::tst_Suite()
             // slot: signature, parameters, type, tag, flags
             QString data_slot = QString::fromLatin1("%0/%1_data()")
                            .arg(testSuiteDir.dirName()).arg(ssdi.fileName());
-            *data << stringdata->size() << 10 << 10 << 10 << 0x08;
+            static const int nullbyte = sizeof(klass);
+            *data << stringdata->size() << nullbyte << nullbyte << nullbyte << 0x08;
             appendCString(stringdata, data_slot.toLatin1());
             QString slot = QString::fromLatin1("%0/%1()")
                            .arg(testSuiteDir.dirName()).arg(ssdi.fileName());
-            *data << stringdata->size() << 10 << 10 << 10 << 0x08;
+            *data << stringdata->size() << nullbyte << nullbyte << nullbyte << 0x08;
             appendCString(stringdata, slot.toLatin1());
         }
     }

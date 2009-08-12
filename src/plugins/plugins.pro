@@ -10,3 +10,4 @@ unix:!symbian {
 embedded:SUBDIRS *=  gfxdrivers decorations mousedrivers kbddrivers
 symbian:SUBDIRS += s60
 contains(QT_CONFIG, phonon): SUBDIRS *= phonon
+contains(QT_CONFIG, multimedia): SUBDIRS *= audio

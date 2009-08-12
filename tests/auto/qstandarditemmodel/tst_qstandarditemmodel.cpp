@@ -1456,6 +1456,7 @@ static QStandardItem *itemFromText(QStandardItem *parent, const QString &text)
     return item;
 }
 
+#ifdef QT_BUILD_INTERNAL
 static QModelIndex indexFromText(QStandardItemModel *model, const QString &text)
 {
     QStandardItem *item = itemFromText(model->invisibleRootItem(), text);
@@ -1469,9 +1470,11 @@ struct FriendlyTreeView : public QTreeView
     friend class tst_QStandardItemModel;
 	Q_DECLARE_PRIVATE(QTreeView)
 };
+#endif
 
 void tst_QStandardItemModel::treeDragAndDrop()
 {
+#ifdef QT_BUILD_INTERNAL
     const int nRow = 5;
     const int nCol = 3;
 
@@ -1609,6 +1612,7 @@ void tst_QStandardItemModel::treeDragAndDrop()
 
         QVERIFY(compareModels(&model, &checkModel));
     }
+#endif
 }
 
 void tst_QStandardItemModel::removeRowsAndColumns()

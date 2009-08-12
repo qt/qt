@@ -43,6 +43,7 @@
 #define QSTYLE_P_H
 
 #include "private/qobject_p.h"
+#include "private/qstylehelper_p.h"
 #include <QtGui/qstyle.h>
 
 QT_BEGIN_NAMESPACE
@@ -64,7 +65,7 @@ class QStyle;
 
 class QStylePrivate: public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QStyle);
+    Q_DECLARE_PUBLIC(QStyle)
 public:
     inline QStylePrivate()
         : layoutSpacingIndex(-1), proxyStyle(0) {}
@@ -78,7 +79,7 @@ public:
     QPixmap internalPixmapCache; \
     QImage imageCache; \
     QPainter *p = painter; \
-    QString unique = uniqueName((a), option, option->rect.size()); \
+    QString unique = QStyleHelper::uniqueName((a), option, option->rect.size()); \
     int txType = painter->deviceTransform().type() | painter->worldTransform().type(); \
     bool doPixmapCache = txType <= QTransform::TxTranslate; \
     if (doPixmapCache && QPixmapCache::find(unique, internalPixmapCache)) { \

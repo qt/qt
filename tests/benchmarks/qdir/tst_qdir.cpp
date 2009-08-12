@@ -1,9 +1,13 @@
 #include <QtTest/QtTest>
 
-#include<dirent.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#ifdef Q_OS_WIN
+#   include <windows.h>
+#else
+#   include <sys/stat.h>
+#   include <sys/types.h>
+#   include <dirent.h>
+#   include <unistd.h>
+#endif
 
 class Test : public QObject{
   Q_OBJECT
@@ -73,10 +77,29 @@ private slots:
             }
         }
     }
-#ifndef Q_OS_WIN
+
     void testLowLevel() {
+#ifdef Q_OS_WIN
+        const wchar_t *dirpath = (wchar_t*)testdir.absolutePath().utf16();
+        wchar_t appendedPath[MAX_PATH];
+        wcscpy(appendedPath, dirpath);
+        wcscat(appendedPath, L"\\*");
+
+        WIN32_FIND_DATA fd;
+        HANDLE hSearch = FindFirstFileW(appendedPath, &fd);
+        QVERIFY(hSearch == INVALID_HANDLE_VALUE);
+
+        QBENCHMARK {
+            do {
+
+            } while (FindNextFile(hSearch, &fd));
+        }
+        FindClose(hSearch);
+#else
         QDir testdir(QDir::tempPath() + QLatin1String("/test_speed"));
         DIR *dir = opendir(qPrintable(testdir.absolutePath()));
+        QVERIFY(dir);
+
         QVERIFY(!chdir(qPrintable(testdir.absolutePath())));
         QBENCHMARK {
             struct dirent *item = readdir(dir);
@@ -90,8 +113,8 @@ private slots:
             }
         }
         closedir(dir);
-    }
 #endif
+    }
 };
 
 QTEST_MAIN(Test)

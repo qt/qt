@@ -141,7 +141,11 @@ private:
 struct QSvgExtraStates
 {
     QSvgExtraStates();
+
     qreal fillOpacity;
+    QSvgFont *svgFont;
+    Qt::Alignment textAnchor;
+    int fontWeight;
 };
 
 class QSvgStyleProperty : public QSvgRefCounted
@@ -224,12 +228,29 @@ public:
 
     void setFillRule(Qt::FillRule f);
     void setFillOpacity(qreal opacity);
+    void setFillStyle(QSvgStyleProperty* style);
+    void setBrush(QBrush brush);
 
     const QBrush & qbrush() const
     {
         return m_fill;
     }
 
+    qreal fillOpacity() const
+    {
+        return m_fillOpacity;
+    }
+
+    Qt::FillRule fillRule() const
+    {
+        return m_fillRule;
+    }
+
+    QSvgStyleProperty* style() const
+    {
+        return m_style;
+    }
+	
     void setGradientId(const QString &Id)
     {
         m_gradientId = Id;
@@ -240,7 +261,6 @@ public:
         return m_gradientId;
     }
 
-
     void setGradientResolved(bool resolved)
     {
         m_gradientResolved = resolved;
@@ -249,16 +269,6 @@ public:
     bool isGradientResolved() const
     {
         return m_gradientResolved;
-    }
-
-    void setFillStyle(QSvgStyleProperty* style)
-    {
-        m_style = style;
-    }
-
-    void setBrush(QBrush brush)
-    {
-        m_fill = brush;
     }
 
 private:
@@ -275,6 +285,7 @@ private:
     qreal m_oldOpacity;
     QString m_gradientId;
     bool m_gradientResolved;
+    bool m_fillSet;
 };
 
 class QSvgViewportFillStyle : public QSvgStyleProperty
@@ -300,41 +311,85 @@ private:
 class QSvgFontStyle : public QSvgStyleProperty
 {
 public:
+    static const int LIGHTER = -1;
+    static const int BOLDER = 1;
+
     QSvgFontStyle(QSvgFont *font, QSvgTinyDocument *doc);
-    QSvgFontStyle(const QFont &font, QSvgTinyDocument *doc);
+    QSvgFontStyle();
     virtual void apply(QPainter *p, const QRectF &, QSvgNode *node, QSvgExtraStates &states);
     virtual void revert(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
 
-    void setPointSize(qreal size);
-    qreal pointSize() const;
+    void setSize(qreal size)
+    {
+        // Store the _pixel_ size in the font. Since QFont::setPixelSize() only takes an int, call
+        // QFont::SetPointSize() instead. Set proper font size just before rendering.
+        m_qfont.setPointSize(size);
+        m_sizeSet = 1;
+    }
 
-    //### hack to avoid having a separate style element for text-anchor
-    QString textAnchor() const;
-    void setTextAnchor(const QString &anchor);
+    void setTextAnchor(Qt::Alignment anchor)
+    {
+        m_textAnchor = anchor;
+        m_textAnchorSet = 1;
+    }
+
+    void setFamily(const QString &family)
+    {
+        m_qfont.setFamily(family);
+        m_familySet = 1;
+    }
+
+    void setStyle(QFont::Style fontStyle) {
+        m_qfont.setStyle(fontStyle);
+        m_styleSet = 1;
+    }
+
+    void setVariant(QFont::Capitalization fontVariant)
+    {
+        m_qfont.setCapitalization(fontVariant);
+        m_variantSet = 1;
+    }
+
+    static int SVGToQtWeight(int weight);
+
+    void setWeight(int weight)
+    {
+        m_weight = weight;
+        m_weightSet = 1;
+    }
 
     QSvgFont * svgFont() const
     {
-        return m_font;
-    }
-    QSvgTinyDocument *doc() const
-    {
-        return m_doc;
+        return m_svgFont;
     }
 
-    const QFont & qfont() const
+    const QFont &qfont() const
     {
         return m_qfont;
     }
+
+    QSvgTinyDocument *doc() const {return m_doc;}
+
 private:
-    QSvgFont *m_font;
-    qreal     m_pointSize;
+    QSvgFont *m_svgFont;
     QSvgTinyDocument *m_doc;
-
-    QString m_textAnchor;
-
     QFont m_qfont;
-    QFont m_oldFont;
+
+    int m_weight;
+    Qt::Alignment m_textAnchor;
+
+    QSvgFont *m_oldSvgFont;
+    QFont m_oldQFont;
+    Qt::Alignment m_oldTextAnchor;
+    int m_oldWeight;
+
+    unsigned m_familySet : 1;
+    unsigned m_sizeSet : 1;
+    unsigned m_styleSet : 1;
+    unsigned m_variantSet : 1;
+    unsigned m_weightSet : 1;
+    unsigned m_textAnchorSet : 1;
 };
 
 class QSvgStrokeStyle : public QSvgStyleProperty
@@ -344,6 +399,16 @@ public:
     virtual void apply(QPainter *p, const QRectF &, QSvgNode *node, QSvgExtraStates &states);
     virtual void revert(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
+
+    void setStroke(bool stroke)
+    {
+        m_strokePresent = stroke;
+    }
+
+    bool strokePresent() const
+    {
+        return m_strokePresent;
+    }
 
     const QPen & qpen() const
     {
@@ -359,8 +424,8 @@ private:
     // stroke-opacity    v 	v 	'inherit' | <OpacityValue.datatype>
     // stroke-width      v 	v 	'inherit' | <StrokeWidthValue.datatype>
     QPen m_stroke;
-
     QPen m_oldStroke;
+	bool m_strokePresent;
 };
 
 

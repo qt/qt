@@ -33,7 +33,7 @@ class SVGFESpecularLightingElement;
 class JSSVGFESpecularLightingElement : public JSSVGElement {
     typedef JSSVGElement Base;
 public:
-    JSSVGFESpecularLightingElement(PassRefPtr<JSC::Structure>, PassRefPtr<SVGFESpecularLightingElement>);
+    JSSVGFESpecularLightingElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGFESpecularLightingElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }

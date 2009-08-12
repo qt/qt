@@ -178,7 +178,7 @@ void tst_QGraphicsLayout::automaticReparenting()
     QCOMPARE(w1->parentItem(), static_cast<QGraphicsItem*>(window));
     QCOMPARE(w2->parentItem(), static_cast<QGraphicsItem*>(window));
 
-    // Sublayouts    
+    // Sublayouts
     QGraphicsLinearLayout *l2 = new QGraphicsLinearLayout();
     QGraphicsWidget *w3 = new QGraphicsWidget();
     l2->addItem(w3);
@@ -212,7 +212,7 @@ void tst_QGraphicsLayout::automaticReparenting()
 class TestLayout : public QGraphicsLinearLayout
 {
     public:
-    TestLayout(QGraphicsLayoutItem *parent = 0) 
+    TestLayout(QGraphicsLayoutItem *parent = 0)
         : QGraphicsLinearLayout(parent)
     {
         m_count = 0;
@@ -224,7 +224,7 @@ class TestLayout : public QGraphicsLinearLayout
         QGraphicsLinearLayout::setGeometry(rect);
     }
 
-    
+
     int m_count;
 };
 
@@ -320,9 +320,9 @@ public:
     }
 
     void setGeometry(const QRectF &geom);
-    
+
     QSizeF sizeHint(Qt::SizeHint which, const QSizeF & constraint = QSizeF() ) const;
-    
+
     inline QGraphicsRectItem *rectItem() {
         return static_cast<QGraphicsRectItem *>(graphicsItem());
     }
@@ -354,20 +354,20 @@ QSizeF AnimatedLayoutItem::sizeHint(Qt::SizeHint which, const QSizeF &constraint
 class AnimatedLayout : public QObject, public QGraphicsLinearLayout {
     Q_OBJECT
 public:
-    AnimatedLayout(QGraphicsWidget *widget) : QGraphicsLinearLayout(widget), m_timeline(500, this) 
+    AnimatedLayout(QGraphicsWidget *widget) : QGraphicsLinearLayout(widget), m_timeline(500, this)
     {
         connect(&m_timeline, SIGNAL(valueChanged(qreal)), this, SLOT(valueChanged(qreal)));
     }
-    
+
     void setGeometry(const QRectF &geom) {
         fromGeoms.clear();
         toGeoms.clear();
         for (int i = 0; i < count(); ++i) {
             fromGeoms << itemAt(i)->geometry();
         }
-        
+
         QGraphicsLinearLayout::setGeometry(geom);
-        
+
         for (int i = 0; i < count(); ++i) {
             toGeoms << itemAt(i)->geometry();
         }
@@ -380,13 +380,13 @@ private slots:
             QGraphicsLayoutItem *li = itemAt(i);
             QRectF from = fromGeoms.at(i);
             QRectF to = toGeoms.at(i);
-            
-            QRectF geom(from.topLeft() + (to.topLeft() - from.topLeft()) * value, 
+
+            QRectF geom(from.topLeft() + (to.topLeft() - from.topLeft()) * value,
                         from.size() + (to.size() - from.size()) * value);
             static_cast<QGraphicsRectItem*>(li->graphicsItem())->setRect(geom);
         }
     }
-private:    
+private:
     QTimeLine m_timeline;
     QVector<QRectF> fromGeoms;
     QVector<QRectF> toGeoms;
@@ -407,7 +407,7 @@ void tst_QGraphicsLayout::alternativeLayoutItems()
     QGraphicsRectItem *item1 = new QGraphicsRectItem;
     AnimatedLayoutItem *li1 = new AnimatedLayoutItem(item1);
     lout->addItem(li1);
-    
+
     QGraphicsRectItem *item2 = new QGraphicsRectItem;
     AnimatedLayoutItem *li2 = new AnimatedLayoutItem(item2);
     lout->addItem(li2);
@@ -417,7 +417,7 @@ void tst_QGraphicsLayout::alternativeLayoutItems()
     lout->addItem(li3);
 
     window->setLayout(lout);
-    
+
     window->setGeometry(0, 0, 99, 99);
     view.setSceneRect(QRectF(-10, -10, 110, 110));
     view.resize(150, 150);
@@ -426,11 +426,11 @@ void tst_QGraphicsLayout::alternativeLayoutItems()
     QApplication::processEvents();
     QTest::qWait(750);
     QApplication::processEvents();
-    
+
     QCOMPARE(static_cast<QGraphicsRectItem*>(li1->graphicsItem())->rect(), QRectF( 0, 0, 33, 99));
     QCOMPARE(static_cast<QGraphicsRectItem*>(li2->graphicsItem())->rect(), QRectF(33, 0, 33, 99));
     QCOMPARE(static_cast<QGraphicsRectItem*>(li3->graphicsItem())->rect(), QRectF(66, 0, 33, 99));
-    
+
     lout->setOrientation(Qt::Vertical);
 
     QApplication::processEvents();
@@ -439,7 +439,7 @@ void tst_QGraphicsLayout::alternativeLayoutItems()
     QCOMPARE(static_cast<QGraphicsRectItem*>(li1->graphicsItem())->rect(), QRectF(0, 0,  99, 33));
     QCOMPARE(static_cast<QGraphicsRectItem*>(li2->graphicsItem())->rect(), QRectF(0, 33, 99, 33));
     QCOMPARE(static_cast<QGraphicsRectItem*>(li3->graphicsItem())->rect(), QRectF(0, 66, 99, 33));
-    
+
 }
 
 class CustomLayoutItem : public QGraphicsLayoutItem {
@@ -451,8 +451,8 @@ public:
         setOwnedByLayout(true);
     }
 
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF & constraint = QSizeF() ) const;    
-    
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF & constraint = QSizeF() ) const;
+
     ~CustomLayoutItem() {
         m_destructedSet->insert(this);
     }
@@ -482,8 +482,8 @@ public:
         m_destructedSet = destructedSet;
     }
 
-    QSizeF sizeHint(Qt::SizeHint which, const QSizeF & constraint = QSizeF() ) const;    
-    
+    QSizeF sizeHint(Qt::SizeHint which, const QSizeF & constraint = QSizeF() ) const;
+
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget * = 0)
     {
         const QRect r = option->rect.adjusted(0, 0, -1, -1);
@@ -565,7 +565,7 @@ void insertItem(int index, QGraphicsLayoutItem *item)
 
     QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
     updateParentWidget(widget);
-    
+
 
     if (index == items.count()) {
         items.append(item);
@@ -613,7 +613,7 @@ void tst_QGraphicsLayout::ownership()
         CustomLayoutItem *li3 = new CustomLayoutItem(&destructedSet);
         lay->addItem(li3);
         destructedSet.clear();
-        
+
         delete lay;
         QSet<QGraphicsLayoutItem*> expected;
         expected << li1 << li2 << li3;
@@ -642,10 +642,10 @@ void tst_QGraphicsLayout::ownership()
     {
         QGraphicsWidget *window = new QGraphicsWidget(0, Qt::Window);
         QGraphicsLinearLayout *lay = new QGraphicsLinearLayout;
-        
+
         CustomGraphicsWidget *li1 = new CustomGraphicsWidget;
         lay->addItem(li1);
-        
+
         QGraphicsLinearLayout *li2 = new QGraphicsLinearLayout;
         CustomGraphicsWidget *li2_1 = new CustomGraphicsWidget;
         li2->addItem(li2_1);
@@ -654,25 +654,25 @@ void tst_QGraphicsLayout::ownership()
         CustomGraphicsWidget *li2_3 = new CustomGraphicsWidget;
         li2->addItem(li2_3);
         lay->addItem(li2);
-        
+
         CustomGraphicsWidget *li3 = new CustomGraphicsWidget;
         lay->addItem(li3);
-        
+
         window->setLayout(lay);
         scene.addItem(window);
         view.resize(500, 200);
         view.show();
-        
+
         for (int i = li2->count(); i > 0; --i) {
             QCOMPARE(li2->count(), i);
             delete li2->itemAt(0);
         }
-        
+
         for (int i = lay->count(); i > 0; --i) {
             QCOMPARE(lay->count(), i);
             delete lay->itemAt(0);
         }
-        
+
         delete window;
     }
 
@@ -687,7 +687,6 @@ void tst_QGraphicsLayout::ownership()
         delete top;
         //don't crash after that.
     }
-        
 }
 
 QTEST_MAIN(tst_QGraphicsLayout)

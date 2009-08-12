@@ -431,7 +431,7 @@ void QGroupBoxPrivate::_q_fixFocus(Qt::FocusReason reason)
 {
     Q_Q(QGroupBox);
     QWidget *fw = q->focusWidget();
-    if (!fw) {
+    if (!fw || fw == q) {
         QWidget * best = 0;
         QWidget * candidate = 0;
         QWidget * w = q;
@@ -449,8 +449,7 @@ void QGroupBoxPrivate::_q_fixFocus(Qt::FocusReason reason)
         }
         if (best)
             fw = best;
-        else
-            if (candidate)
+        else if (candidate)
                 fw = candidate;
     }
     if (fw)
@@ -479,11 +478,7 @@ void QGroupBox::focusInEvent(QFocusEvent *fe)
     if (focusPolicy() == Qt::NoFocus) {
         d->_q_fixFocus(fe->reason());
     } else {
-        QStyleOptionGroupBox box;
-        initStyleOption(&box);
-        QRect rect = style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxCheckBox, this)
-            | style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxLabel, this);
-        update(rect);
+        QWidget::focusInEvent(fe);
     }
 }
 

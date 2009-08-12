@@ -378,7 +378,17 @@ void QToolButton::initStyleOption(QStyleOptionToolButton *option) const
     if (d->hasMenu())
         option->features |= QStyleOptionToolButton::HasMenu;
 #endif
-    option->toolButtonStyle = d->toolButtonStyle;
+    if (d->toolButtonStyle == Qt::ToolButtonFollowStyle) {
+        option->toolButtonStyle = Qt::ToolButtonStyle(style()->styleHint(QStyle::SH_ToolButtonStyle, option, this));
+    } else
+        option->toolButtonStyle = d->toolButtonStyle;
+
+    if (option->toolButtonStyle == Qt::ToolButtonTextBesideIcon) {
+        // If the action is not prioritized, remove the text label to save space
+        if (d->defaultAction && d->defaultAction->priority() < QAction::NormalPriority)
+            option->toolButtonStyle = Qt::ToolButtonIconOnly;
+    }
+
     if (d->icon.isNull() && d->arrowType == Qt::NoArrow && !forceNoText) {
         if (!d->text.isEmpty())
             option->toolButtonStyle = Qt::ToolButtonTextOnly;
@@ -475,6 +485,9 @@ QSize QToolButton::minimumSizeHint() const
     or text beside/below the icon.
 
     The default is Qt::ToolButtonIconOnly.
+
+    To have the style of toolbuttons follow the system settings (as available
+    in GNOME and KDE desktop environments), set this property to Qt::ToolButtonFollowStyle.
 
     QToolButton automatically connects this slot to the relevant
     signal in the QMainWindow in which is resides.

@@ -1745,10 +1745,9 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
 
             int maxWidth = rect.width() - 4;
             int minWidth = 4;
-			qint64 progress = (qint64)qMax(bar->progress, bar->minimum); // workaround for bug in QProgressBar
-			double vc6_workaround = ((progress - qint64(bar->minimum)) / qMax(double(1.0), double(qint64(bar->maximum) - qint64(bar->minimum))) * maxWidth);
-			int progressBarWidth = (int(vc6_workaround) > minWidth ) ? int(vc6_workaround) : minWidth;
-			int width = indeterminate ? maxWidth : progressBarWidth;
+            qreal progress = qMax(bar->progress, bar->minimum); // workaround for bug in QProgressBar
+            int progressBarWidth = (progress - bar->minimum) * qreal(maxWidth) / qMax(qreal(1.0), qreal(bar->maximum) - bar->minimum);
+            int width = indeterminate ? maxWidth : qMax(minWidth, progressBarWidth);
 
             bool reverse = (!vertical && (bar->direction == Qt::RightToLeft)) || vertical;
             if (inverted)
@@ -2042,6 +2041,12 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                     s = s.left(t);
                 }
                 QFont font = menuitem->font;
+                // font may not have any "hard" flags set. We override
+                // the point size so that when it is resolved against the device, this font will win.
+                // This is mainly to handle cases where someone sets the font on the window
+                // and then the combo inherits it and passes it onward. At that point the resolve mask
+                // is very, very weak. This makes it stonger.
+                font.setPointSizeF(menuItem->font.pointSizeF());
 
                 if (menuitem->menuItemType == QStyleOptionMenuItem::DefaultItem)
                     font.setBold(true);

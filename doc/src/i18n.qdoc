@@ -144,13 +144,13 @@
     aligned, so for these languages use the version of drawText() that
     takes a QRect since this will align in accordance with the language.
 
-    \o When you write your own text input controls, use \l
-    QFontMetrics::charWidth() to determine the width of a character in a
-    string. In some languages (e.g. Arabic or languages from the Indian
+    \o When you write your own text input controls, use QTextLayout.
+    In some languages (e.g. Arabic or languages from the Indian
     subcontinent), the width and shape of a glyph changes depending on the
-    surrounding characters. Writing input controls usually requires a
-    certain knowledge of the scripts it is going to be used in. Usually
-    the easiest way is to subclass QLineEdit or QTextEdit.
+    surrounding characters, which QTextLayout takes into account.
+    Writing input controls usually requires a certain knowledge of the
+    scripts it is going to be used in. Usually the easiest way is to
+    subclass QLineEdit or QTextEdit.
 
     \endlist
 
@@ -266,19 +266,19 @@
 
     \o Run \c lupdate to extract translatable text from the C++
     source code of the Qt application, resulting in a message file
-    for translators (a \c .ts file). The utility recognizes the tr()
+    for translators (a TS file). The utility recognizes the tr()
     construct and the \c{QT_TR*_NOOP()} macros described above and
-    produces \c .ts files (usually one per language).
+    produces TS files (usually one per language).
 
-    \o Provide translations for the source texts in the \c .ts file, using
-    \e{Qt Linguist}. Since \c .ts files are in XML format, you can also
+    \o Provide translations for the source texts in the TS file, using
+    \e{Qt Linguist}. Since TS files are in XML format, you can also
     edit them by hand.
 
-    \o Run \c lrelease to obtain a light-weight message file (a \c .qm
-    file) from the \c .ts file, suitable only for end use. Think of the \c
-    .ts files as "source files", and \c .qm files as "object files". The
-    translator edits the \c .ts files, but the users of your application
-    only need the \c .qm files. Both kinds of files are platform and
+    \o Run \c lrelease to obtain a light-weight message file (a QM
+    file) from the TS file, suitable only for end use. Think of the TS
+    files as "source files", and QM files as "object files". The
+    translator edits the TS files, but the users of your application
+    only need the QM files. Both kinds of files are platform and
     locale independent.
 
     \endlist

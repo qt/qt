@@ -42,7 +42,7 @@ static const HashTableValue JSSVGTRefElementTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTRefElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTRefElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGTRefElementTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSSVGTRefElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTRefElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTRefElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGTRefElementPrototypeTableValues, 0 };
 #else
@@ -72,8 +72,8 @@ JSObject* JSSVGTRefElementPrototype::self(ExecState* exec, JSGlobalObject* globa
 
 const ClassInfo JSSVGTRefElement::s_info = { "SVGTRefElement", &JSSVGTextPositioningElement::s_info, &JSSVGTRefElementTable, 0 };
 
-JSSVGTRefElement::JSSVGTRefElement(PassRefPtr<Structure> structure, PassRefPtr<SVGTRefElement> impl)
-    : JSSVGTextPositioningElement(structure, impl)
+JSSVGTRefElement::JSSVGTRefElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTRefElement> impl)
+    : JSSVGTextPositioningElement(structure, globalObject, impl)
 {
 }
 
@@ -89,10 +89,11 @@ bool JSSVGTRefElement::getOwnPropertySlot(ExecState* exec, const Identifier& pro
 
 JSValue jsSVGTRefElementHref(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGTRefElement* castedThis = static_cast<JSSVGTRefElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGTRefElement* imp = static_cast<SVGTRefElement*>(static_cast<JSSVGTRefElement*>(asObject(slot.slotBase()))->impl());
+    SVGTRefElement* imp = static_cast<SVGTRefElement*>(castedThis->impl());
     RefPtr<SVGAnimatedString> obj = imp->hrefAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 

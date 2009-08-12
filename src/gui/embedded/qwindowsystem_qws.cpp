@@ -39,6 +39,8 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
+
 #include "qwindowsystem_qws.h"
 #include "qwsevent_qws.h"
 #include "qwscommand_qws_p.h"
@@ -71,24 +73,26 @@
 
 #include <qdebug.h>
 
-#include <unistd.h>
+#include "qkbddriverfactory_qws.h"
+#include "qmousedriverfactory_qws.h"
+
+#include <qbuffer.h>
+#include <qdir.h>
+
+#include <private/qwindowsurface_qws_p.h>
+#include <private/qfontengine_qpf_p.h>
+
+#include "qwindowsystem_p.h"
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 
 #ifndef QT_NO_QWS_MULTIPROCESS
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/ipc.h>
-#include <sys/shm.h>
-#ifndef Q_OS_DARWIN
-# include <sys/sem.h>
-#endif
 #include <sys/param.h>
 #include <sys/mount.h>
 #endif
-#include <signal.h>
-#include <fcntl.h>
 
 #if !defined(QT_NO_SOUND) && !defined(Q_OS_DARWIN)
 #ifdef QT_USE_OLD_QWS_SOUND
@@ -100,17 +104,6 @@
 #include "qsoundqss_qws.h"
 #endif
 #endif
-
-#include "qkbddriverfactory_qws.h"
-#include "qmousedriverfactory_qws.h"
-
-#include <qbuffer.h>
-#include <qdir.h>
-
-#include <private/qwindowsurface_qws_p.h>
-#include <private/qfontengine_qpf_p.h>
-
-#include "qwindowsystem_p.h"
 
 //#define QWS_DEBUG_FONTCLEANUP
 
@@ -1406,7 +1399,7 @@ void QWSServerPrivate::initServer(int flags)
 #ifndef QT_NO_QWS_MULTIPROCESS
 
     if (!geteuid()) {
-#if !defined(Q_OS_FREEBSD) && !defined(Q_OS_SOLARIS) && !defined(Q_OS_DARWIN) && !defined(QT_LINUXBASE)
+#if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
         if(mount(0,"/var/shm", "shm", 0, 0)) {
             /* This just confuses people with 2.2 kernels
             if (errno != EBUSY)
@@ -1768,10 +1761,16 @@ void QWSServerPrivate::cleanupFonts(bool force)
 #if defined(QWS_DEBUG_FONTCLEANUP)
             qDebug() << "removing unused font file" << fontName;
 #endif
-            QFile::remove(QFile::decodeName(fontName));
-            sendFontRemovedEvent(fontName);
+            QT_TRY {
+                QFile::remove(QFile::decodeName(fontName));
+                sendFontRemovedEvent(fontName);
 
-            it = fontReferenceCount.erase(it);
+                it = fontReferenceCount.erase(it);
+            } QT_CATCH(...) {
+                // so we were not able to remove the font.
+                // don't be angry and just continue with the next ones.
+                ++it;
+            }
         }
     }
 

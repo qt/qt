@@ -65,6 +65,7 @@ public:
         m_ignoreUnfinished(false),
         m_sortContexts(false),
         m_noUiLines(false),
+        m_idBased(false),
         m_saveMode(SaveEverything)
     {}
 
@@ -83,7 +84,8 @@ public:
 
 public:
     QString m_defaultContext;
-    QByteArray m_codecForSource; // CPP specific
+    QByteArray m_codecForSource; // CPP, PO & QM specific
+    QByteArray m_outputCodec; // PO specific
     QString m_sourceFileName;
     QString m_targetFileName;
     QDir m_sourceDir;
@@ -97,6 +99,7 @@ public:
     bool m_ignoreUnfinished;
     bool m_sortContexts;
     bool m_noUiLines;
+    bool m_idBased;
     TranslatorSaveMode m_saveMode;
 };
 
@@ -156,8 +159,8 @@ public:
     static QString guessLanguageCodeFromFileName(const QString &fileName);
     QList<TranslatorMessage> messages() const;
     QList<TranslatorMessage> translatedMessages() const;
-    static QStringList normalizedTranslations(const TranslatorMessage &m,
-        QLocale::Language lang, QLocale::Country country);
+    static QStringList normalizedTranslations(const TranslatorMessage &m, int numPlurals);
+    void normalizeTranslations(ConversionData &cd);
     QStringList normalizedTranslations(const TranslatorMessage &m, ConversionData &cd, bool *ok) const;
 
     int messageCount() const { return m_messages.size(); }

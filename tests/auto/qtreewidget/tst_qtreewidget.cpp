@@ -238,6 +238,9 @@ void tst_QTreeWidget::initTestCase()
 
     testWidget = new CustomTreeWidget();
     testWidget->show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(testWidget);
+#endif
 }
 
 void tst_QTreeWidget::cleanupTestCase()
@@ -2017,7 +2020,7 @@ void tst_QTreeWidget::setHeaderItem()
     headerItem->setText(0, "0");
     headerItem->setText(1, "1");
     testWidget->setHeaderItem(headerItem);
-    qApp->processEvents();
+    QTest::qWait(100);
     QCOMPARE(testWidget->headerItem(), headerItem);
     QCOMPARE(headerItem->treeWidget(), static_cast<QTreeWidget *>(testWidget));
 
@@ -2762,16 +2765,18 @@ void tst_QTreeWidget::defaultRowSizes()
         for (int j=0; j<tw->columnCount() - 1; ++j) {
             it->setText(j, "This is a test");
         }
+        QPixmap icon = tw->style()->standardPixmap((QStyle::StandardPixmap)(i + QStyle::SP_TitleBarMenuButton));
+        if (icon.isNull())
+            QSKIP("No pixmap found on current style, skipping this test.", SkipSingle);
         it->setIcon(tw->columnCount() - 1,
-                    tw->style()->standardPixmap((QStyle::StandardPixmap)(i + QStyle::SP_TitleBarMenuButton)).
-                    scaled(tw->iconSize()));
+                    icon.scaled(tw->iconSize()));
     }
     tw->resize(100,100);
     tw->show();
     QApplication::processEvents();
 
     QRect visualRect = tw->visualItemRect(tw->topLevelItem(0));
-    QVERIFY(visualRect.height() >=50);
+    QVERIFY(visualRect.height() >= 50);
 }
 
 void tst_QTreeWidget::task191552_rtl()

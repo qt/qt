@@ -67,6 +67,8 @@
 #include <qtexttable.h>
 #include <qvariant.h>
 
+#include <qstandardgestures.h>
+
 #include <qinputcontext.h>
 #endif
 
@@ -116,6 +118,9 @@ QTextEditPrivate::QTextEditPrivate()
     preferRichText = false;
     showCursorOnInitialShow = true;
     inDrag = false;
+#ifdef Q_WS_WIN
+    setSingleFingerPanEnabled(true);
+#endif
 }
 
 void QTextEditPrivate::createAutoBulletList()
@@ -2623,7 +2628,6 @@ void QTextEdit::ensureCursorVisible()
     Q_D(QTextEdit);
     d->control->ensureCursorVisible();
 }
-
 
 /*!
     \enum QTextEdit::KeyboardAction

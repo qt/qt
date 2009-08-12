@@ -23,6 +23,7 @@
 
 #if ENABLE(OFFLINE_WEB_APPLICATIONS)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -31,10 +32,10 @@ namespace WebCore {
 
 class DOMApplicationCache;
 
-class JSDOMApplicationCache : public DOMObject {
-    typedef DOMObject Base;
+class JSDOMApplicationCache : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSDOMApplicationCache(PassRefPtr<JSC::Structure>, PassRefPtr<DOMApplicationCache>);
+    JSDOMApplicationCache(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DOMApplicationCache>);
     virtual ~JSDOMApplicationCache();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -59,7 +60,7 @@ private:
     RefPtr<DOMApplicationCache> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, DOMApplicationCache*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, DOMApplicationCache*);
 DOMApplicationCache* toDOMApplicationCache(JSC::JSValue);
 
 class JSDOMApplicationCachePrototype : public JSC::JSObject {

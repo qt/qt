@@ -68,6 +68,7 @@ QString Option::obj_ext;
 QString Option::lex_ext;
 QString Option::yacc_ext;
 QString Option::pro_ext;
+QString Option::mmp_ext;
 QString Option::dir_sep;
 QString Option::dirlist_sep;
 QString Option::h_moc_mod;
@@ -99,8 +100,6 @@ QStringList Option::shellPath;
 Option::TARG_MODE Option::target_mode = Option::TARG_WIN_MODE;
 #elif defined(Q_OS_MAC)
 Option::TARG_MODE Option::target_mode = Option::TARG_MACX_MODE;
-#elif defined(Q_OS_QNX6)
-Option::TARG_MODE Option::target_mode = Option::TARG_QNX6_MODE;
 #else
 Option::TARG_MODE Option::target_mode = Option::TARG_UNIX_MODE;
 #endif
@@ -152,6 +151,9 @@ bool usage(const char *a0)
             "                 In this mode qmake interprets files as files to\n"
             "                 be built,\n"
             "                 defaults to %s\n"
+            "                 Note: The created .pro file probably will \n"
+            "                 need to be edited. For example add the QT variable to \n"
+            "                 specify what modules are required.\n"
             "  -makefile      Put qmake into makefile generation mode%s\n"
             "                 In this mode qmake interprets files as project files to\n"
             "                 be processed, if skipped qmake will try to find a project\n"
@@ -381,6 +383,7 @@ Option::init(int argc, char **argv)
     Option::lex_ext = ".l";
     Option::yacc_ext = ".y";
     Option::pro_ext = ".pro";
+    Option::mmp_ext = ".mmp";
 #ifdef Q_OS_WIN
     Option::dirlist_sep = ";";
     Option::shellPath = detectShellPath();
@@ -716,16 +719,9 @@ QString qmake_libraryInfoFile()
 {
     QString ret;
 #if defined( Q_OS_WIN )
-    QFileInfo filePath;
-    QT_WA({
-        unsigned short module_name[256];
-        GetModuleFileNameW(0, reinterpret_cast<wchar_t *>(module_name), sizeof(module_name));
-        filePath = QString::fromUtf16(module_name);
-    }, {
-        char module_name[256];
-        GetModuleFileNameA(0, module_name, sizeof(module_name));
-        filePath = QString::fromLocal8Bit(module_name);
-    });
+    wchar_t module_name[MAX_PATH];
+    GetModuleFileName(0, module_name, MAX_PATH);
+    QFileInfo filePath = QString::fromWCharArray(module_name);
     ret = filePath.filePath();
 #else
     QString argv0 = QFile::decodeName(QByteArray(Option::application_argv0));

@@ -139,6 +139,7 @@ private slots:
     void task190205_setModelAdjustToContents();
     void task248169_popupWithMinimalSize();
     void task247863_keyBoardSelection();
+    void task220195_keyBoardSelection2();
     void setModelColumn();
     void noScrollbar_data();
     void noScrollbar();
@@ -1246,7 +1247,7 @@ void tst_QComboBox::insertItem()
 
     QCOMPARE(testWidget->count(), initialItems.count() + 1);
     QCOMPARE(testWidget->itemText(expectedIndex), itemLabel);
-    
+
     if (editable)
         QCOMPARE(testWidget->currentText(), QString("FOO"));
 }
@@ -1976,6 +1977,7 @@ void tst_QComboBox::task190351_layout()
     listCombo.showPopup();
     QTest::qWait(100);
 
+#ifdef QT_BUILD_INTERNAL
     QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&listCombo);
     QVERIFY(container);
     QCOMPARE(static_cast<QAbstractItemView *>(list), qFindChild<QAbstractItemView *>(container));
@@ -1983,6 +1985,7 @@ void tst_QComboBox::task190351_layout()
     QVERIFY(top);
     QVERIFY(top->isVisible());
     QCOMPARE(top->mapToGlobal(QPoint(0, top->height())).y(), list->mapToGlobal(QPoint()).y());
+#endif
 
     QApplication::setStyle(oldStyle);
 #else
@@ -2048,6 +2051,7 @@ void tst_QComboBox::task191329_size()
     tableCombo.showPopup();
     QTest::qWait(100);
 
+#ifdef QT_BUILD_INTERNAL
     QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&tableCombo);
     QVERIFY(container);
     QCOMPARE(static_cast<QAbstractItemView *>(table), qFindChild<QAbstractItemView *>(container));
@@ -2055,6 +2059,7 @@ void tst_QComboBox::task191329_size()
         //the popup should be large enough to contains everithing so the top and left button are hidden
         QVERIFY(!button->isVisible());
     }
+#endif
 
     QApplication::setStyle(oldStyle);
 #else
@@ -2091,7 +2096,7 @@ void tst_QComboBox::task190205_setModelAdjustToContents()
 #endif
 
     // box should be resized to the same size as correctBox
-    QCOMPARE(box.size(), correctBox.size());
+    QTRY_COMPARE(box.size(), correctBox.size());
 }
 
 void tst_QComboBox::task248169_popupWithMinimalSize()
@@ -2110,9 +2115,11 @@ void tst_QComboBox::task248169_popupWithMinimalSize()
     comboBox.showPopup();
     QTest::qWait(100);
 
+#ifdef QT_BUILD_INTERNAL
     QFrame *container = qFindChild<QComboBoxPrivateContainer *>(&comboBox);
     QVERIFY(container);
     QVERIFY(desktop.screenGeometry(container).contains(container->geometry()));
+#endif
 }
 
 void tst_QComboBox::task247863_keyBoardSelection()
@@ -2134,6 +2141,40 @@ void tst_QComboBox::task247863_keyBoardSelection()
   QCOMPARE(combo.currentText(), QLatin1String("222"));
   QCOMPARE(spy.count(), 1);
 }
+
+void tst_QComboBox::task220195_keyBoardSelection2()
+{
+    QComboBox combo;
+    combo.setEditable(false);
+    combo.addItem( QLatin1String("foo1"));
+    combo.addItem( QLatin1String("foo2"));
+    combo.addItem( QLatin1String("foo3"));
+    combo.show();
+    QApplication::setActiveWindow(&combo);
+    QTest::qWait(100);
+
+    combo.setCurrentIndex(-1);
+    QVERIFY(combo.currentText().isNull());
+
+    QTest::keyClick(&combo, 'f');
+    QCOMPARE(combo.currentText(), QLatin1String("foo1"));
+    QTest::qWait(QApplication::keyboardInputInterval() + 30);
+    QTest::keyClick(&combo, 'f');
+    QCOMPARE(combo.currentText(), QLatin1String("foo2"));
+    QTest::qWait(QApplication::keyboardInputInterval() + 30);
+    QTest::keyClick(&combo, 'f');
+    QCOMPARE(combo.currentText(), QLatin1String("foo3"));
+    QTest::qWait(QApplication::keyboardInputInterval() + 30);
+    QTest::keyClick(&combo, 'f');
+    QCOMPARE(combo.currentText(), QLatin1String("foo1"));
+    QTest::qWait(QApplication::keyboardInputInterval() + 30);
+
+    combo.setCurrentIndex(1);
+    QCOMPARE(combo.currentText(), QLatin1String("foo2"));
+    QTest::keyClick(&combo, 'f');
+    QCOMPARE(combo.currentText(), QLatin1String("foo3"));
+}
+
 
 void tst_QComboBox::setModelColumn()
 {
@@ -2196,7 +2237,7 @@ void tst_QComboBox::noScrollbar()
         QVERIFY(!comboBox.view()->horizontalScrollBar()->isVisible());
         QVERIFY(!comboBox.view()->verticalScrollBar()->isVisible());
     }
-    
+
     {
         QTableWidget *table = new QTableWidget(2,2);
         QComboBox comboBox;
@@ -2234,6 +2275,7 @@ void tst_QComboBox::task253944_itemDelegateIsReset()
     comboBox.setStyleSheet("QComboBox { border: 1px solid gray; }");
     QCOMPARE(static_cast<QStyledItemDelegate*>(comboBox.itemDelegate()), itemDelegate);
 }
+
 
 QTEST_MAIN(tst_QComboBox)
 #include "tst_qcombobox.moc"

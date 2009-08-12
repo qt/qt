@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -88,16 +88,16 @@ static const QByteArray propertyKeyCurrentlayout = "currentlayout";
 
 const layoutHeader QS60StylePrivate::m_layoutHeaders[] = {
 // *** generated layout data ***
-{240,320,1,14,true,QLatin1String("QVGA Landscape Mirrored")},
-{240,320,1,14,false,QLatin1String("QVGA Landscape")},
-{320,240,1,14,true,QLatin1String("QVGA Portrait Mirrored")},
-{320,240,1,14,false,QLatin1String("QVGA Portrait")},
-{360,640,1,14,true,QLatin1String("NHD Landscape Mirrored")},
-{360,640,1,14,false,QLatin1String("NHD Landscape")},
-{640,360,1,14,true,QLatin1String("NHD Portrait Mirrored")},
-{640,360,1,14,false,QLatin1String("NHD Portrait")},
-{352,800,1,12,true,QLatin1String("E90 Landscape Mirrored")},
-{352,800,1,12,false,QLatin1String("E90 Landscape")}
+{240,320,1,14,true,"QVGA Landscape Mirrored"},
+{240,320,1,14,false,"QVGA Landscape"},
+{320,240,1,14,true,"QVGA Portrait Mirrored"},
+{320,240,1,14,false,"QVGA Portrait"},
+{360,640,1,14,true,"NHD Landscape Mirrored"},
+{360,640,1,14,false,"NHD Landscape"},
+{640,360,1,14,true,"NHD Portrait Mirrored"},
+{640,360,1,14,false,"NHD Portrait"},
+{352,800,1,12,true,"E90 Landscape Mirrored"},
+{352,800,1,12,false,"E90 Landscape"}
 // *** End of generated data ***
 };
 const int QS60StylePrivate::m_numberOfLayouts =
@@ -280,7 +280,7 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
         break;
     case SE_Editor:
         drawFrame(SF_Editor, painter, rect, flags | SF_PointNorth);
-        break;        
+        break;
     default:
         break;
     }
@@ -319,7 +319,7 @@ QVariant QS60StylePrivate::styleProperty(const char *name) const
         static QStringList layouts;
         if (layouts.isEmpty())
             for (int i = 0; i < m_numberOfLayouts; i++)
-                layouts.append(m_layoutHeaders[i].layoutName);
+                layouts.append(QLatin1String(m_layoutHeaders[i].layoutName));
         return layouts;
     }
     return QVariant();
@@ -796,12 +796,12 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QTextEdit");
     widgetPalette = *palette;
-    
+
     widgetPalette.setColor(QPalette::All, QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QComboBox");
     widgetPalette = *palette;
-    
+
     widgetPalette.setColor(QPalette::WindowText, mainAreaTextColor);
     widgetPalette.setColor(QPalette::Button, QApplication::palette().color(QPalette::Button));
     widgetPalette.setColor(QPalette::Dark, mainAreaTextColor.darker());
@@ -2854,8 +2854,7 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
 
 extern QPoint qt_s60_fill_background_offset(const QWidget *targetWidget);
 
-bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset,
-            const QBrush &brush)
+bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
     const QPixmap backgroundTexture(QS60StylePrivate::backgroundTexture());
     if (backgroundTexture.cacheKey() != brush.texture().cacheKey())
@@ -2864,8 +2863,7 @@ bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QPoint 
     const QPaintDevice *target = painter->device();
     if (target->devType() == QInternal::Widget) {
         const QWidget *widget = static_cast<const QWidget *>(target);
-        const QRegion translated = rgn.translated(offset);
-        const QVector<QRect> &rects = translated.rects();
+        const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i) {
             const QRect rect(rects.at(i));
             painter->drawPixmap(rect.topLeft(), backgroundTexture,

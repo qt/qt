@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,7 +75,7 @@ typedef struct {
     int major_version;
     int minor_version;
     bool mirroring; // TODO: (nice to have) Use Qt::LayoutDirection
-    QString layoutName;
+    const char* layoutName;
 } layoutHeader;
 
 #ifdef Q_OS_SYMBIAN
@@ -270,7 +270,7 @@ public:
         SP_QsnFrButtonSideBInactive,
         SP_QsnFrButtonSideLInactive,
         SP_QsnFrButtonSideRInactive,
-        SP_QsnFrButtonCenterInactive,        
+        SP_QsnFrButtonCenterInactive,
         SP_QsnFrNotepadCornerTl,
         SP_QsnFrNotepadCornerTr,
         SP_QsnFrNotepadCornerBl,
@@ -454,6 +454,11 @@ public:
     static QPixmap frame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap backgroundTexture();
+
+#ifdef Q_WS_S60
+    void handleDynamicLayoutVariantSwitch();
+    void handleSkinChange();
+#endif // Q_WS_S60
 
 private:
     static void drawPart(QS60StyleEnums::SkinParts part, QPainter *painter,

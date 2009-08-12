@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 /*! \internal
  */
-struct QScriptValuePrivatePointerHandler
+struct QScriptValuePrivatePointerDeleter
 {
     static inline void cleanup(QScriptValuePrivate *d)
     {
@@ -70,12 +70,6 @@ struct QScriptValuePrivatePointerHandler
         } else {
             delete d;
         }
-    }
-
-    static inline void reset(QScriptValuePrivate *&d, QScriptValuePrivate *other)
-    {
-        cleanup(d);
-        d = other;
     }
 };
 
@@ -574,9 +568,11 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
 }
 
 /*!
-  Returns the scope object of this QScriptValue. This function is only
-  relevant for function objects. The scope determines how variables are
-  resolved when the function is invoked.
+    \since 4.6
+
+    Returns the scope object of this QScriptValue. This function is only
+    relevant for function objects. The scope determines how variables are
+    resolved when the function is invoked.
 */
 QScriptValue QScriptValue::scope() const
 {
@@ -588,9 +584,11 @@ QScriptValue QScriptValue::scope() const
 }
 
 /*!
-  Sets the \a scope object of this QScriptValue. This function is only
-  relevant for function objects. Changing the scope is useful when creating
-  closures; see \l{Nested Functions and the Scope Chain}.
+    \since 4.6
+
+    Sets the \a scope object of this QScriptValue. This function is only
+    relevant for function objects. Changing the scope is useful when creating
+    closures; see \l{Nested Functions and the Scope Chain}.
 */
 void QScriptValue::setScope(const QScriptValue &scope)
 {
@@ -1438,7 +1436,7 @@ bool QScriptValue::isUndefined() const
   Note that function values, variant values, and QObject values are
   objects, so this function returns true for such values.
 
-  \sa toObject(), QScriptEngine::newObject()
+  \sa QScriptEngine::toObject(), QScriptEngine::newObject()
 */
 bool QScriptValue::isObject() const
 {

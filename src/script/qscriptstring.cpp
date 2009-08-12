@@ -55,7 +55,7 @@
 QT_BEGIN_NAMESPACE
 
 /*! \internal */
-struct QScriptStringPrivatePointerHandler
+struct QScriptStringPrivatePointerDeleter
 {
     static inline void cleanup(QScriptStringPrivate *d)
     {
@@ -68,12 +68,6 @@ struct QScriptStringPrivatePointerHandler
             // the engine has already been deleted
             delete d;
         }
-    }
-
-    static inline void reset(QScriptStringPrivate *&d, QScriptStringPrivate *other)
-    {
-        cleanup(d);
-        d = other;
     }
 };
 

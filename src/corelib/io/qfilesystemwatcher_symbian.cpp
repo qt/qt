@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtCore of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -80,7 +80,7 @@ void CNotifyChangeEvent::RunL()
     if (iStatus.Int() == KErrNone){
         fsSession.NotifyChange(ENotifyAll, iStatus, watchedPath);
         SetActive();
-        QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(engine->emitPathChanged(this));
+        QT_TRYCATCH_LEAVING(engine->emitPathChanged(this));
     } else {
         qWarning("CNotifyChangeEvent::RunL() - Failed to order change notifications: %d", iStatus.Int());
     }

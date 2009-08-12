@@ -99,6 +99,74 @@ public:
     static bool isTtyOutput();
 };
 
+struct QTestCharBuffer
+{
+    enum { InitialSize = 512 };
+
+    inline QTestCharBuffer()
+            : _size(InitialSize), buf(staticBuf)
+    {
+        staticBuf[0] = '\0';
+    }
+
+    inline ~QTestCharBuffer()
+    {
+        if (buf != staticBuf)
+            qFree(buf);
+    }
+
+    inline char *data()
+    {
+        return buf;
+    }
+
+    inline char **buffer()
+    {
+        return &buf;
+    }
+
+    inline const char* constData() const
+    {
+        return buf;
+    }
+
+    inline int size() const
+    {
+        return _size;
+    }
+
+    inline bool reset(int newSize)
+    {
+        char *newBuf = 0;
+        if (buf == staticBuf) {
+            // if we point to our internal buffer, we need to malloc first
+            newBuf = reinterpret_cast<char *>(qMalloc(newSize));
+        } else {
+            // if we already malloc'ed, just realloc
+            newBuf = reinterpret_cast<char *>(qRealloc(buf, newSize));
+        }
+
+        // if the allocation went wrong (newBuf == 0), we leave the object as is
+        if (!newBuf)
+            return false;
+
+        _size = newSize;
+        buf = newBuf;
+        return true;
+    }
+
+private:
+    int _size;
+    char* buf;
+    char staticBuf[InitialSize];
+};
+
+namespace QTest
+{
+    int qt_asprintf(QTestCharBuffer *buf, const char *format, ...);
+}
+
+
 QT_END_NAMESPACE
 
 #endif

@@ -150,7 +150,7 @@ private slots:
     void preserveCharFormatInAppend();
 #ifndef QT_NO_CLIPBOARD
     void copyAndSelectAllInReadonly();
-#endif    
+#endif
     void ctrlAltInput();
     void noPropertiesOnDefaultTextEditCharFormat();
     void setPlainTextShouldUseCurrentCharFormat();
@@ -1488,6 +1488,7 @@ void tst_QTextEdit::mimeDataReimplementations()
     QCOMPARE(ed.canInsertCallCount, 0);
     QCOMPARE(ed.insertCallCount, 0);
 
+#ifdef QT_BUILD_INTERNAL
     QTextControl *control = qFindChild<QTextControl *>(&ed);
     QVERIFY(control);
 
@@ -1502,6 +1503,7 @@ void tst_QTextEdit::mimeDataReimplementations()
     QCOMPARE(ed.createMimeDataCallCount, 1);
     QCOMPARE(ed.canInsertCallCount, 1);
     QCOMPARE(ed.insertCallCount, 1);
+#endif
 }
 #endif
 
@@ -1915,7 +1917,7 @@ void tst_QTextEdit::setText()
 }
 
 QT_BEGIN_NAMESPACE
-extern Q_GUI_EXPORT bool qt_enable_test_font;
+extern void qt_setQtEnableTestFont(bool value);
 QT_END_NAMESPACE
 
 void tst_QTextEdit::fullWidthSelection_data()
@@ -1962,7 +1964,7 @@ void tst_QTextEdit::fullWidthSelection()
     cursor.setBlockFormat(bf1);
 
     // use the test font so we always know where stuff will end up.
-    qt_enable_test_font = true;
+    qt_setQtEnableTestFont(true);
     QFont testFont;
     testFont.setFamily("__Qt__Box__Engine__");
     testFont.setPixelSize(12);
@@ -2010,7 +2012,7 @@ void tst_QTextEdit::fullWidthSelection2()
     QTextCursor cursor = widget.textCursor();
 
     // use the test font so we always know where stuff will end up.
-    qt_enable_test_font = true;
+    qt_setQtEnableTestFont(true);
     QFont testFont;
     testFont.setFamily("__Qt__Box__Engine__");
     testFont.setPixelSize(12);
@@ -2097,6 +2099,7 @@ void tst_QTextEdit::cursorRect()
 
 void tst_QTextEdit::setDocumentPreservesPalette()
 {
+#ifdef QT_BUILD_INTERNAL
     QTextControl *control = qFindChild<QTextControl *>(ed);
     QVERIFY(control);
 
@@ -2116,6 +2119,7 @@ void tst_QTextEdit::setDocumentPreservesPalette()
     QVERIFY(control->document() == newDoc);
     QVERIFY(whitePal.color(QPalette::Active, QPalette::Text)
             == control->palette().color(QPalette::Active, QPalette::Text));
+#endif
 }
 
 class PublicTextEdit : public QTextEdit

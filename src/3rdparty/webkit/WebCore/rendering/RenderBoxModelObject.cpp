@@ -173,13 +173,20 @@ void RenderBoxModelObject::updateBoxModelInfoFromStyle()
 
 int RenderBoxModelObject::relativePositionOffsetX() const
 {
+    // Objects that shrink to avoid floats normally use available line width when computing containing block width.  However
+    // in the case of relative positioning using percentages, we can't do this.  The offset should always be resolved using the
+    // available width of the containing block.  Therefore we don't use containingBlockWidthForContent() here, but instead explicitly
+    // call availableWidth on our containing block.
     if (!style()->left().isAuto()) {
+        RenderBlock* cb = containingBlock();
         if (!style()->right().isAuto() && containingBlock()->style()->direction() == RTL)
-            return -style()->right().calcValue(containingBlockWidthForContent());
-        return style()->left().calcValue(containingBlockWidthForContent());
+            return -style()->right().calcValue(cb->availableWidth());
+        return style()->left().calcValue(cb->availableWidth());
     }
-    if (!style()->right().isAuto())
-        return -style()->right().calcValue(containingBlockWidthForContent());
+    if (!style()->right().isAuto()) {
+        RenderBlock* cb = containingBlock();
+        return -style()->right().calcValue(cb->availableWidth());
+    }
     return 0;
 }
 
@@ -322,6 +329,18 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
         clippedToBorderRadius = true;
     }
 
+    bool clippedWithLocalScrolling = hasOverflowClip() && bgLayer->attachment() == LocalBackgroundAttachment;
+    if (clippedWithLocalScrolling) {
+        // Clip to the overflow area.
+        context->save();
+        context->clip(toRenderBox(this)->overflowClipRect(tx, ty));
+        
+        // Now adjust our tx, ty, w, h to reflect a scrolled content box with borders at the ends.
+        layer()->subtractScrolledContentOffset(tx, ty);
+        w = bLeft + layer()->scrollWidth() + bRight;
+        h = borderTop() + layer()->scrollHeight() + borderBottom();
+    }
+    
     if (bgLayer->clip() == PaddingFillBox || bgLayer->clip() == ContentFillBox) {
         // Clip to the padding or content boxes as necessary.
         bool includePadding = bgLayer->clip() == ContentFillBox;
@@ -465,6 +484,9 @@ void RenderBoxModelObject::paintFillLayerExtended(const PaintInfo& paintInfo, co
     if (clippedToBorderRadius)
         // Undo the border radius clip
         context->restore();
+        
+    if (clippedWithLocalScrolling) // Undo the clip for local background attachments.
+        context->restore();
 }
 
 IntSize RenderBoxModelObject::calculateBackgroundSize(const FillLayer* bgLayer, int scaledWidth, int scaledHeight) const
@@ -521,9 +543,9 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* bgL
     int rh = 0;
 
     // CSS2 chapter 14.2.1
-
-    if (bgLayer->attachment()) {
-        // Scroll
+    bool fixedAttachment = bgLayer->attachment() == FixedBackgroundAttachment;
+    if (!fixedAttachment) {
+        // Scroll and Local
         if (bgLayer->origin() != BorderFillBox) {
             left = borderLeft();
             right = borderRight();
@@ -553,7 +575,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* bgL
         pw = w - left - right;
         ph = h - top - bottom;
     } else {
-        // Fixed
+        // Fixed background attachment.
         IntRect vr = viewRect();
         cx = vr.x();
         cy = vr.y();
@@ -567,7 +589,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* bgL
     int ch;
 
     IntSize scaledImageSize;
-    if (isRoot() && bgLayer->attachment())
+    if (isRoot() && !fixedAttachment)
         scaledImageSize = calculateBackgroundSize(bgLayer, rw, rh);
     else
         scaledImageSize = calculateBackgroundSize(bgLayer, pw, ph);
@@ -578,7 +600,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* bgL
     EFillRepeat backgroundRepeat = bgLayer->repeat();
     
     int xPosition;
-    if (isRoot() && bgLayer->attachment())
+    if (isRoot() && !fixedAttachment)
         xPosition = bgLayer->xPosition().calcMinValue(rw - scaledImageWidth, true);
     else
         xPosition = bgLayer->xPosition().calcMinValue(pw - scaledImageWidth, true);
@@ -592,7 +614,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* bgL
     }
     
     int yPosition;
-    if (isRoot() && bgLayer->attachment())
+    if (isRoot() && !fixedAttachment)
         yPosition = bgLayer->yPosition().calcMinValue(rh - scaledImageHeight, true);
     else 
         yPosition = bgLayer->yPosition().calcMinValue(ph - scaledImageHeight, true);
@@ -605,7 +627,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* bgL
         ch = scaledImageHeight + min(yPosition + top, 0);
     }
 
-    if (!bgLayer->attachment()) {
+    if (fixedAttachment) {
         sx += max(tx - cx, 0);
         sy += max(ty - cy, 0);
     }
@@ -1120,52 +1142,209 @@ void RenderBoxModelObject::paintBorder(GraphicsContext* graphicsContext, int tx,
         graphicsContext->restore();
 }
 
-void RenderBoxModelObject::paintBoxShadow(GraphicsContext* context, int tx, int ty, int w, int h, const RenderStyle* s, bool begin, bool end)
+void RenderBoxModelObject::paintBoxShadow(GraphicsContext* context, int tx, int ty, int w, int h, const RenderStyle* s, ShadowStyle shadowStyle, bool begin, bool end)
 {
     // FIXME: Deal with border-image.  Would be great to use border-image as a mask.
 
+    if (context->paintingDisabled())
+        return;
+
     IntRect rect(tx, ty, w, h);
+    IntSize topLeft;
+    IntSize topRight;
+    IntSize bottomLeft;
+    IntSize bottomRight;
+
     bool hasBorderRadius = s->hasBorderRadius();
+    if (hasBorderRadius && (begin || end)) {
+        IntSize topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius;
+        s->getBorderRadiiForRect(rect, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius);
+
+        if (begin) {
+            if (shadowStyle == Inset) {
+                topLeftRadius.expand(-borderLeft(), -borderTop());
+                topLeftRadius.clampNegativeToZero();
+                bottomLeftRadius.expand(-borderLeft(), -borderBottom());
+                bottomLeftRadius.clampNegativeToZero();
+            }
+            topLeft = topLeftRadius;
+            bottomLeft = bottomLeftRadius;
+        }
+        if (end) {
+            if (shadowStyle == Inset) {
+                topRightRadius.expand(-borderRight(), -borderTop());
+                topRightRadius.clampNegativeToZero();
+                bottomRightRadius.expand(-borderRight(), -borderBottom());
+                bottomRightRadius.clampNegativeToZero();
+            }
+            topRight = topRightRadius;
+            bottomRight = bottomRightRadius;
+        }
+    }
+
+    if (shadowStyle == Inset) {
+        rect.move(begin ? borderLeft() : 0, borderTop());
+        rect.setWidth(rect.width() - (begin ? borderLeft() : 0) - (end ? borderRight() : 0));
+        rect.setHeight(rect.height() - borderTop() - borderBottom());
+    }
+
     bool hasOpaqueBackground = s->backgroundColor().isValid() && s->backgroundColor().alpha() == 255;
     for (ShadowData* shadow = s->boxShadow(); shadow; shadow = shadow->next) {
-        context->save();
+        if (shadow->style != shadowStyle)
+            continue;
 
         IntSize shadowOffset(shadow->x, shadow->y);
         int shadowBlur = shadow->blur;
-        IntRect fillRect(rect);
+        int shadowSpread = shadow->spread;
+        Color& shadowColor = shadow->color;
 
-        if (hasBorderRadius) {
+        if (shadow->style == Normal) {
+            IntRect fillRect(rect);
+            fillRect.inflate(shadowSpread);
+            if (fillRect.isEmpty())
+                continue;
+
             IntRect shadowRect(rect);
-            shadowRect.inflate(shadowBlur);
+            shadowRect.inflate(shadowBlur + shadowSpread);
             shadowRect.move(shadowOffset);
+
+            context->save();
             context->clip(shadowRect);
 
             // Move the fill just outside the clip, adding 1 pixel separation so that the fill does not
             // bleed in (due to antialiasing) if the context is transformed.
-            IntSize extraOffset(w + max(0, shadowOffset.width()) + shadowBlur + 1, 0);
+            IntSize extraOffset(w + max(0, shadowOffset.width()) + shadowBlur + 2 * shadowSpread + 1, 0);
             shadowOffset -= extraOffset;
             fillRect.move(extraOffset);
-        }
 
-        context->setShadow(shadowOffset, shadowBlur, shadow->color);
-        if (hasBorderRadius) {
-            IntSize topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius;
-            s->getBorderRadiiForRect(rect, topLeftRadius, topRightRadius, bottomLeftRadius, bottomRightRadius);
+            context->setShadow(shadowOffset, shadowBlur, shadowColor);
+            if (hasBorderRadius) {
+                IntRect rectToClipOut = rect;
+                IntSize topLeftToClipOut = topLeft;
+                IntSize topRightToClipOut = topRight;
+                IntSize bottomLeftToClipOut = bottomLeft;
+                IntSize bottomRightToClipOut = bottomRight;
 
-            IntSize topLeft = begin ? topLeftRadius : IntSize();
-            IntSize topRight = end ? topRightRadius : IntSize();
-            IntSize bottomLeft = begin ? bottomLeftRadius : IntSize();
-            IntSize bottomRight = end ? bottomRightRadius : IntSize();
+                if (shadowSpread < 0) {
+                    topLeft.expand(shadowSpread, shadowSpread);
+                    topLeft.clampNegativeToZero();
 
-            if (!hasOpaqueBackground)
-                context->clipOutRoundedRect(rect, topLeft, topRight, bottomLeft, bottomRight);
-            context->fillRoundedRect(fillRect, topLeft, topRight, bottomLeft, bottomRight, Color::black);
+                    topRight.expand(shadowSpread, shadowSpread);
+                    topRight.clampNegativeToZero();
+
+                    bottomLeft.expand(shadowSpread, shadowSpread);
+                    bottomLeft.clampNegativeToZero();
+
+                    bottomRight.expand(shadowSpread, shadowSpread);
+                    bottomRight.clampNegativeToZero();
+                }
+
+                // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
+                // when painting the shadow. On the other hand, it introduces subpixel gaps along the
+                // corners. Those are avoided by insetting the clipping path by one pixel.
+                if (hasOpaqueBackground) {
+                    rectToClipOut.inflate(-1);
+
+                    topLeftToClipOut.expand(-1, -1);
+                    topLeftToClipOut.clampNegativeToZero();
+
+                    topRightToClipOut.expand(-1, -1);
+                    topRightToClipOut.clampNegativeToZero();
+
+                    bottomLeftToClipOut.expand(-1, -1);
+                    bottomLeftToClipOut.clampNegativeToZero();
+
+                    bottomRightToClipOut.expand(-1, -1);
+                    bottomRightToClipOut.clampNegativeToZero();
+                }
+
+                if (!rectToClipOut.isEmpty())
+                    context->clipOutRoundedRect(rectToClipOut, topLeftToClipOut, topRightToClipOut, bottomLeftToClipOut, bottomRightToClipOut);
+                context->fillRoundedRect(fillRect, topLeft, topRight, bottomLeft, bottomRight, Color::black);
+            } else {
+                IntRect rectToClipOut = rect;
+
+                // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
+                // when painting the shadow. On the other hand, it introduces subpixel gaps along the
+                // edges if they are not pixel-aligned. Those are avoided by insetting the clipping path
+                // by one pixel.
+                if (hasOpaqueBackground) {
+                    TransformationMatrix currentTransformation = context->getCTM();
+                    if (currentTransformation.a() != 1 || (currentTransformation.d() != 1 && currentTransformation.d() != -1)
+                            || currentTransformation.b() || currentTransformation.c())
+                        rectToClipOut.inflate(-1);
+                }
+
+                if (!rectToClipOut.isEmpty())
+                    context->clipOut(rectToClipOut);
+                context->fillRect(fillRect, Color::black);
+            }
+
+            context->restore();
         } else {
-            if (!hasOpaqueBackground)
-                context->clipOut(rect);
-            context->fillRect(fillRect, Color::black);
+            // Inset shadow.
+            IntRect holeRect(rect);
+            holeRect.inflate(-shadowSpread);
+
+            if (holeRect.isEmpty()) {
+                if (hasBorderRadius)
+                    context->fillRoundedRect(rect, topLeft, topRight, bottomLeft, bottomRight, shadowColor);
+                else
+                    context->fillRect(rect, shadowColor);
+                continue;
+            }
+            if (!begin) {
+                holeRect.move(-max(shadowOffset.width(), 0) - shadowBlur, 0);
+                holeRect.setWidth(holeRect.width() + max(shadowOffset.width(), 0) + shadowBlur);
+            }
+            if (!end)
+                holeRect.setWidth(holeRect.width() - min(shadowOffset.width(), 0) + shadowBlur);
+
+            Color fillColor(shadowColor.red(), shadowColor.green(), shadowColor.blue(), 255);
+
+            IntRect outerRect(rect);
+            outerRect.inflateX(w - 2 * shadowSpread);
+            outerRect.inflateY(h - 2 * shadowSpread);
+
+            context->save();
+
+            if (hasBorderRadius)
+                context->clip(Path::createRoundedRectangle(rect, topLeft, topRight, bottomLeft, bottomRight));
+            else
+                context->clip(rect);
+
+            IntSize extraOffset(2 * w + max(0, shadowOffset.width()) + shadowBlur - 2 * shadowSpread + 1, 0);
+            context->translate(extraOffset.width(), extraOffset.height());
+            shadowOffset -= extraOffset;
+
+            context->beginPath();
+            context->addPath(Path::createRectangle(outerRect));
+
+            if (hasBorderRadius) {
+                if (shadowSpread > 0) {
+                    topLeft.expand(-shadowSpread, -shadowSpread);
+                    topLeft.clampNegativeToZero();
+
+                    topRight.expand(-shadowSpread, -shadowSpread);
+                    topRight.clampNegativeToZero();
+
+                    bottomLeft.expand(-shadowSpread, -shadowSpread);
+                    bottomLeft.clampNegativeToZero();
+
+                    bottomRight.expand(-shadowSpread, -shadowSpread);
+                    bottomRight.clampNegativeToZero();
+                }
+                context->addPath(Path::createRoundedRectangle(holeRect, topLeft, topRight, bottomLeft, bottomRight));
+            } else
+                context->addPath(Path::createRectangle(holeRect));
+
+            context->setFillRule(RULE_EVENODD);
+            context->setFillColor(fillColor);
+            context->setShadow(shadowOffset, shadowBlur, shadowColor);
+            context->fillPath();
+
+            context->restore();
         }
-        context->restore();
     }
 }
 

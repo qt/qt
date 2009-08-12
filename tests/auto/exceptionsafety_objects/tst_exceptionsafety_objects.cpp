@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,15 +42,21 @@
 #include <QtGui/QtGui>
 #include <QtTest/QtTest>
 
+#include <stddef.h>
+
 QT_USE_NAMESPACE
 
-// this test only works with GLIBC (let moc run regardless, because it doesn't know about __GLIBC__)
-#if defined(QT_NO_EXCEPTIONS) || (!defined(__GLIBC__) && !defined(Q_MOC_RUN))
+// this test only works with
+//   * GLIBC
+//   * MSVC - only debug builds (we need the crtdbg.h helpers)
+#if (defined(QT_NO_EXCEPTIONS) || (!defined(__GLIBC__) && !defined(Q_CC_MSVC) && !defined(Q_OS_SYMBIAN))) && !defined(Q_MOC_RUN)
     QTEST_NOOP_MAIN
 #else
 
 #include "oomsimulator.h"
+#if !defined(Q_OS_SYMBIAN)
 #include "3rdparty/memcheck.h"
+#endif
 
 class tst_ExceptionSafetyObjects: public QObject
 {
@@ -65,71 +71,174 @@ private slots:
 
     void widgets_data();
     void widgets();
+
+    void vector_data();
+    void vector();
+
+    void list_data();
+    void list();
+
+    void linkedList_data();
+    void linkedList();
 };
 
 // helper structs to create an arbitrary widget
-struct AbstractObjectCreator
+struct AbstractTester
 {
-    virtual QObject *create(QObject *parent) = 0;
+    virtual void operator()(QObject *parent) = 0;
 };
+Q_DECLARE_METATYPE(AbstractTester *)
 
-Q_DECLARE_METATYPE(AbstractObjectCreator *)
+typedef void (*TestFunction)(QObject*);
+Q_DECLARE_METATYPE(TestFunction)
 
 template <typename T>
-struct ObjectCreator : public AbstractObjectCreator
+struct ObjectCreator : public AbstractTester
 {
-    QObject *create(QObject *parent)
+    void operator()(QObject *)
     {
-        return parent ? new T(parent) : new T;
+        QScopedPointer<T> ptr(new T);
+    }
+};
+
+struct BitArrayCreator : public AbstractTester
+{
+    void operator()(QObject *)
+    { QScopedPointer<QBitArray> bitArray(new QBitArray(100, true)); }
+};
+
+struct ByteArrayMatcherCreator : public AbstractTester
+{
+    void operator()(QObject *)
+    { QScopedPointer<QByteArrayMatcher> ptr(new QByteArrayMatcher("ralf test",8)); }
+};
+
+struct CryptographicHashCreator : public AbstractTester
+{
+    void operator()(QObject *)
+    {
+        QScopedPointer<QCryptographicHash> ptr(new QCryptographicHash(QCryptographicHash::Sha1));
+        ptr->addData("ralf test",8);
+    }
+};
+
+struct DataStreamCreator : public AbstractTester
+{
+    void operator()(QObject *)
+    {
+        QScopedPointer<QByteArray> arr(new QByteArray("hallo, test"));
+        QScopedPointer<QDataStream> ptr(new QDataStream(arr.data(), QIODevice::ReadWrite));
+        ptr->writeBytes("ralf test",8);
+    }
+};
+
+struct DirCreator : public AbstractTester
+{
+    void operator()(QObject *)
+    {
+        QDir::cleanPath("../////././");
+        QScopedPointer<QDir> ptr(new QDir("."));
+        while( ptr->cdUp() )
+            ; // just going up
+        ptr->count();
+        ptr->exists(ptr->path());
+
+        QStringList filters;
+        filters << "*.cpp" << "*.cxx" << "*.cc";
+        ptr->setNameFilters(filters);
     }
 };
 
 void tst_ExceptionSafetyObjects::objects_data()
 {
-    QTest::addColumn<AbstractObjectCreator *>("objectCreator");
+    QTest::addColumn<AbstractTester *>("objectCreator");
 
-#define NEWROW(T) QTest::newRow(#T) << static_cast<AbstractObjectCreator *>(new ObjectCreator<T >)
+#define NEWROW(T) QTest::newRow(#T) << static_cast<AbstractTester *>(new ObjectCreator<T >)
     NEWROW(QObject);
+    NEWROW(QBuffer);
+    NEWROW(QFile);
+    NEWROW(QProcess);
+    NEWROW(QSettings);
+    // NEWROW(QSocketNotifier);
+    NEWROW(QThread);
+    NEWROW(QThreadPool);
+    NEWROW(QTranslator);
+    NEWROW(QFSFileEngine);
+
+#define NEWROW2(T, CREATOR) QTest::newRow(#T) << static_cast<AbstractTester *>(new CREATOR)
+    NEWROW2(QBitArray, BitArrayCreator);
+    NEWROW2(QByteArrayMatcher, ByteArrayMatcherCreator);
+    NEWROW2(QCryptographicHash, CryptographicHashCreator);
+    NEWROW2(QDataStream, DataStreamCreator);
+    NEWROW2(QDir, DirCreator);
+
 }
 
 // create and destructs an object, and lets each and every allocation
 // during construction and destruction fail.
-static void doOOMTest(AbstractObjectCreator *creator, QObject *parent)
+template <typename T>
+static void doOOMTest(T &testFunc, QObject *parent, int start=0)
 {
-    AllocFailer allocFailer;
-    int currentOOMIndex = 0;
+    int currentOOMIndex = start;
     bool caught = false;
+    bool done = false;
 
-    int allocStartIndex = 0;
-    int allocEndIndex = 0;
-    int lastAllocCount = 0;
+    AllocFailer allocFailer(0);
+    int allocCountBefore = allocFailer.currentAllocIndex();
 
     do {
-        allocFailer.setAllocFailIndex(++currentOOMIndex);
+        allocFailer.reactivateAt(++currentOOMIndex);
 
         caught = false;
-        lastAllocCount = allocEndIndex - allocStartIndex;
-        allocStartIndex = allocFailer.currentAllocIndex();
 
         try {
-            QScopedPointer<QObject> ptr(creator->create(parent));
+            testFunc(parent);
         } catch (const std::bad_alloc &) {
+            caught = true;
+        } catch (const std::exception &ex) {
+            if (strcmp(ex.what(), "autotest swallow") != 0)
+                throw;
             caught = true;
         }
 
-        allocEndIndex = allocFailer.currentAllocIndex();
+        if (!caught) {
+            void *buf = malloc(42);
+            if (buf) {
+                // we got memory here - oom test is over.
+                free(buf);
+                done = true;
+            }
+        }
 
-    } while (caught || allocEndIndex - allocStartIndex != lastAllocCount);
+        // if we get a FAIL, stop executing now
+        if (QTest::currentTestFailed())
+            done = true;
+
+//#define REALLY_VERBOSE
+#ifdef REALLY_VERBOSE
+    fprintf(stderr, " OOM Index: %d\n", currentOOMIndex);
+#endif
+
+
+    } while (caught || !done);
 
     allocFailer.deactivate();
+
+//#define VERBOSE
+#ifdef VERBOSE
+    fprintf(stderr, "OOM Test done, checked allocs: %d (range %d - %d)\n", currentOOMIndex,
+                allocCountBefore, allocFailer.currentAllocIndex());
+#else
+    Q_UNUSED(allocCountBefore);
+#endif
 }
 
-static bool alloc1Failed = false;
-static bool alloc2Failed = false;
-static bool alloc3Failed = false;
-static bool alloc4Failed = false;
-static bool malloc1Failed = false;
-static bool malloc2Failed = false;
+static int alloc1Failed = 0;
+static int alloc2Failed = 0;
+static int alloc3Failed = 0;
+static int alloc4Failed = 0;
+static int malloc1Failed = 0;
+static int malloc2Failed = 0;
 
 // Tests that new, new[] and malloc() fail at least once during OOM testing.
 class SelfTestObject : public QObject
@@ -138,93 +247,403 @@ public:
     SelfTestObject(QObject *parent = 0)
         : QObject(parent)
     {
-        try { delete new int; } catch (const std::bad_alloc &) { alloc1Failed = true; }
-        try { delete [] new double[5]; } catch (const std::bad_alloc &) { alloc2Failed = true; }
+        try { delete new int; } catch (const std::bad_alloc &) { ++alloc1Failed; throw; }
+        try { delete [] new double[5]; } catch (const std::bad_alloc &) { ++alloc2Failed; throw ;}
         void *buf = malloc(42);
         if (buf)
             free(buf);
         else
-            malloc1Failed = true;
+            ++malloc1Failed;
     }
 
     ~SelfTestObject()
     {
-        try { delete new int; } catch (const std::bad_alloc &) { alloc3Failed = true; }
-        try { delete [] new double[5]; } catch (const std::bad_alloc &) { alloc4Failed = true; }
+        try { delete new int; } catch (const std::bad_alloc &) { ++alloc3Failed; }
+        try { delete [] new double[5]; } catch (const std::bad_alloc &) { ++alloc4Failed; }
         void *buf = malloc(42);
         if (buf)
             free(buf);
         else
-            malloc2Failed = true;
+            ++malloc2Failed = true;
     }
 };
 
 void tst_ExceptionSafetyObjects::initTestCase()
 {
-    if (RUNNING_ON_VALGRIND) {
-        QVERIFY2(VALGRIND_GET_ALLOC_INDEX != -1u,
-                 "You must use a valgrind with oom simulation support");
-        // running in valgrind - don't use glibc hooks
-        disableHooks();
-    }
+    QVERIFY(AllocFailer::initialize());
 
     // sanity check whether OOM simulation works
-    AllocFailer allocFailer;
+    AllocFailer allocFailer(0);
 
     // malloc fail index is 0 -> this malloc should fail.
     void *buf = malloc(42);
+    allocFailer.deactivate();
     QVERIFY(!buf);
 
     // malloc fail index is 1 - second malloc should fail.
-    allocFailer.setAllocFailIndex(1);
+    allocFailer.reactivateAt(1);
     buf = malloc(42);
-    QVERIFY(buf);
-    free(buf);
-    buf = malloc(42);
-    QVERIFY(!buf);
-
+    void *buf2 = malloc(42);
     allocFailer.deactivate();
 
-    doOOMTest(new ObjectCreator<SelfTestObject>, 0);
+    QVERIFY(buf);
+    free(buf);
+    QVERIFY(!buf2);
+
+#ifdef Q_OS_SYMBIAN
+    // temporary workaround for INC138398
+    std::new_handler nh_func = std::set_new_handler(0);
+    (void) std::set_new_handler(nh_func);
+#endif
+
+    ObjectCreator<SelfTestObject> *selfTest = new ObjectCreator<SelfTestObject>;
+    doOOMTest(*selfTest, 0);
+    delete selfTest;
+    QCOMPARE(alloc1Failed, 1);
+    QCOMPARE(alloc2Failed, 1);
+    QCOMPARE(alloc3Failed, 2);
+    QCOMPARE(alloc4Failed, 3);
+    QCOMPARE(malloc1Failed, 1);
+    QCOMPARE(malloc2Failed, 1);
 }
 
 void tst_ExceptionSafetyObjects::objects()
 {
-    QFETCH(AbstractObjectCreator *, objectCreator);
+    QFETCH(AbstractTester *, objectCreator);
 
-    doOOMTest(objectCreator, 0);
+    doOOMTest(*objectCreator, 0);
+    
+    delete objectCreator;
 }
 
 template <typename T>
-struct WidgetCreator : public AbstractObjectCreator
+struct WidgetCreator : public AbstractTester
 {
-    QObject *create(QObject *parent)
+    void operator()(QObject *parent)
     {
-        return parent ? new T(static_cast<QWidget *>(parent)) : new T;
+        Q_ASSERT(!parent || parent->isWidgetType());
+        QScopedPointer<T> ptr(parent ? new T(static_cast<QWidget *>(parent)) : new T);
     }
 };
 
+// QSizeGrip doesn't have a default constructor - always pass parent (even though it might be 0)
+template <> struct WidgetCreator<QSizeGrip> : public AbstractTester
+{
+    void operator()(QObject *parent)
+    {
+        Q_ASSERT(!parent || parent->isWidgetType());
+        QScopedPointer<QSizeGrip> ptr(new QSizeGrip(static_cast<QWidget *>(parent)));
+    }
+};
+
+// QDesktopWidget doesn't need a parent.
+template <> struct WidgetCreator<QDesktopWidget> : public AbstractTester
+{
+    void operator()(QObject *parent)
+    {
+        Q_ASSERT(!parent || parent->isWidgetType());
+        QScopedPointer<QDesktopWidget> ptr(new QDesktopWidget());
+    }
+};
 void tst_ExceptionSafetyObjects::widgets_data()
 {
-    QTest::addColumn<AbstractObjectCreator *>("widgetCreator");
+    QTest::addColumn<AbstractTester *>("widgetCreator");
 
 #undef NEWROW
-#define NEWROW(T) QTest::newRow(#T) << static_cast<AbstractObjectCreator *>(new WidgetCreator<T >)
+#define NEWROW(T) QTest::newRow(#T) << static_cast<AbstractTester *>(new WidgetCreator<T >)
+
     NEWROW(QWidget);
-    NEWROW(QPushButton);
-    NEWROW(QLabel);
+
+    NEWROW(QButtonGroup);
+    NEWROW(QDesktopWidget);
+    NEWROW(QCheckBox);
+    NEWROW(QComboBox);
+    NEWROW(QCommandLinkButton);
+    NEWROW(QDateEdit);
+    NEWROW(QDateTimeEdit);
+    NEWROW(QDial);
+    NEWROW(QDoubleSpinBox);
+    NEWROW(QFocusFrame);
+    NEWROW(QFontComboBox);
     NEWROW(QFrame);
+    NEWROW(QGroupBox);
+    NEWROW(QLCDNumber);
+    NEWROW(QLabel);
+    NEWROW(QLCDNumber);
+    NEWROW(QLineEdit);
+    NEWROW(QMenu);
+    NEWROW(QPlainTextEdit);
+    NEWROW(QProgressBar);
+    NEWROW(QPushButton);
+    NEWROW(QRadioButton);
+    NEWROW(QScrollArea);
+    NEWROW(QScrollBar);
+    NEWROW(QSizeGrip);
+    NEWROW(QSlider);
+    NEWROW(QSpinBox);
+    NEWROW(QSplitter);
     NEWROW(QStackedWidget);
+    NEWROW(QStatusBar);
+    NEWROW(QTabBar);
+    NEWROW(QTabWidget);
+    NEWROW(QTextBrowser);
+    NEWROW(QTextEdit);
+    NEWROW(QTimeEdit);
+    NEWROW(QToolBox);
+    NEWROW(QToolButton);
+    NEWROW(QStatusBar);
+    NEWROW(QSplitter);
+    NEWROW(QTextEdit);
+    NEWROW(QTextBrowser);
+    NEWROW(QToolBar);
+    NEWROW(QMenuBar);
+    NEWROW(QMainWindow);
+    NEWROW(QWorkspace);
+    NEWROW(QColumnView);
+    NEWROW(QListView);
+    NEWROW(QListWidget);
+    NEWROW(QTableView);
+    NEWROW(QTableWidget);
+    NEWROW(QTreeView);
+    NEWROW(QTreeWidget);
 }
 
 void tst_ExceptionSafetyObjects::widgets()
 {
-    QFETCH(AbstractObjectCreator *, widgetCreator);
+    QFETCH(AbstractTester *, widgetCreator);
 
-    doOOMTest(widgetCreator, 0);
+    doOOMTest(*widgetCreator, 0, 00000);
 
     QWidget parent;
-    doOOMTest(widgetCreator, &parent);
+    doOOMTest(*widgetCreator, &parent, 00000);
+
+    delete widgetCreator;
+
+    // if the test reaches here without crashing, we passed :)
+    QVERIFY(true);
+}
+
+struct Integer
+{
+    Integer(int value = 42)
+        : ptr(new int(value))
+    {
+        ++instanceCount;
+    }
+
+    Integer(const Integer &other)
+        : ptr(new int(*other.ptr))
+    {
+        ++instanceCount;
+    }
+
+    Integer &operator=(const Integer &other)
+    {
+        int *newPtr = new int(*other.ptr);
+        delete ptr;
+        ptr = newPtr;
+        return *this;
+    }
+
+    ~Integer()
+    {
+        --instanceCount;
+        delete ptr;
+    }
+
+    int value() const
+    {
+        return *ptr;
+    }
+
+    int *ptr;
+    static int instanceCount;
+};
+
+int Integer::instanceCount = 0;
+
+template <template<typename T> class Container>
+void containerInsertTest(QObject*)
+{
+    Container<Integer> container;
+
+    // insert an item in an empty container
+    try {
+        container.insert(container.begin(), 41);
+    } catch (...) {
+        QVERIFY(container.isEmpty());
+        QCOMPARE(Integer::instanceCount, 0);
+        return;
+    }
+
+    QCOMPARE(container.size(), 1);
+    QCOMPARE(Integer::instanceCount, 1);
+
+    // insert an item before another item
+    try {
+        container.insert(container.begin(), 42);
+    } catch (...) {
+        QCOMPARE(container.size(), 1);
+        QCOMPARE(container.first().value(), 41);
+        QCOMPARE(Integer::instanceCount, 1);
+        return;
+    }
+
+    QCOMPARE(Integer::instanceCount, 2);
+
+    // insert an item in between
+    try {
+        container.insert(container.begin() + 1, 43);
+    } catch (...) {
+        QCOMPARE(container.size(), 2);
+        QCOMPARE(container.first().value(), 41);
+        QCOMPARE((container.begin() + 1)->value(), 42);
+        QCOMPARE(Integer::instanceCount, 2);
+        return;
+    }
+
+    QCOMPARE(Integer::instanceCount, 3);
+}
+
+template <template<typename T> class Container>
+void containerAppendTest(QObject*)
+{
+    Container<Integer> container;
+
+    // append to an empty container
+    try {
+        container.append(42);
+    } catch (...) {
+        QCOMPARE(container.size(), 0);
+        QCOMPARE(Integer::instanceCount, 0);
+        return;
+    }
+
+    // append to a container with one item
+    try {
+        container.append(43);
+    } catch (...) {
+        QCOMPARE(container.size(), 1);
+        QCOMPARE(container.first().value(), 42);
+        QCOMPARE(Integer::instanceCount, 1);
+        return;
+    }
+}
+
+template <template<typename T> class Container>
+void containerEraseTest(QObject*)
+{
+    Container<Integer> container;
+
+    try {
+        container.append(42);
+        container.append(43);
+        container.append(44);
+        container.append(45);
+        container.append(46);
+    } catch (...) {
+        // don't care
+        return;
+    }
+
+    // sanity checks
+    QCOMPARE(container.size(), 5);
+    QCOMPARE(Integer::instanceCount, 5);
+
+    // delete the first one
+    try {
+        container.erase(container.begin());
+    } catch (...) {
+        QCOMPARE(container.size(), 5);
+        QCOMPARE(container.first().value(), 42);
+        QCOMPARE(Integer::instanceCount, 5);
+        return;
+    }
+
+    QCOMPARE(container.size(), 4);
+    QCOMPARE(container.first().value(), 43);
+    QCOMPARE(Integer::instanceCount, 4);
+
+    // delete the last one
+    try {
+        container.erase(container.end() - 1);
+    } catch (...) {
+        QCOMPARE(container.size(), 4);
+        QCOMPARE(Integer::instanceCount, 4);
+        return;
+    }
+
+    QCOMPARE(container.size(), 3);
+    QCOMPARE(container.first().value(), 43);
+    QCOMPARE((container.begin() + 1)->value(), 44);
+    QCOMPARE((container.begin() + 2)->value(), 45);
+    QCOMPARE(Integer::instanceCount, 3);
+
+    // delete the middle one
+    try {
+        container.erase(container.begin() + 1);
+    } catch (...) {
+        QCOMPARE(container.size(), 3);
+        QCOMPARE(container.first().value(), 43);
+        QCOMPARE((container.begin() + 1)->value(), 44);
+        QCOMPARE((container.begin() + 2)->value(), 45);
+        QCOMPARE(Integer::instanceCount, 3);
+        return;
+    }
+
+    QCOMPARE(container.size(), 2);
+    QCOMPARE(container.first().value(), 43);
+    QCOMPARE((container.begin() + 1)->value(), 45);
+    QCOMPARE(Integer::instanceCount, 2);
+}
+
+template <template<typename T> class Container>
+static void containerData()
+{
+    QTest::addColumn<TestFunction>("testFunction");
+
+    QTest::newRow("insert") << static_cast<TestFunction>(containerInsertTest<Container>);
+    QTest::newRow("append") << static_cast<TestFunction>(containerAppendTest<Container>);
+    QTest::newRow("erase") << static_cast<TestFunction>(containerEraseTest<Container>);
+}
+
+void tst_ExceptionSafetyObjects::vector_data()
+{
+    containerData<QVector>();
+}
+
+void tst_ExceptionSafetyObjects::vector()
+{
+    QFETCH(TestFunction, testFunction);
+
+    if (QLatin1String(QTest::currentDataTag()) == QLatin1String("insert"))
+        QSKIP("QVector::insert is currently not strongly exception safe", SkipSingle);
+
+    doOOMTest(testFunction, 0);
+}
+
+void tst_ExceptionSafetyObjects::list_data()
+{
+    containerData<QList>();
+}
+
+void tst_ExceptionSafetyObjects::list()
+{
+    QFETCH(TestFunction, testFunction);
+
+    doOOMTest(testFunction, 0);
+}
+
+void tst_ExceptionSafetyObjects::linkedList_data()
+{
+    containerData<QLinkedList>();
+}
+
+void tst_ExceptionSafetyObjects::linkedList()
+{
+    QFETCH(TestFunction, testFunction);
+
+    doOOMTest(testFunction, 0);
 }
 
 QTEST_MAIN(tst_ExceptionSafetyObjects)

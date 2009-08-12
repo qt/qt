@@ -8,7 +8,7 @@ contains(S60_VERSION, 3.1) {
 } else {
     SOURCES += ../src/qlocale_3_2.cpp \
         ../src/qdesktopservices_3_2.cpp
-    LIBS += -ldirectorylocalizer    
+    LIBS += -ldirectorylocalizer
     INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
 }
 

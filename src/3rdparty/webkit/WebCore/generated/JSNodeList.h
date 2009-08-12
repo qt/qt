@@ -21,6 +21,7 @@
 #ifndef JSNodeList_h
 #define JSNodeList_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/CallData.h>
 #include <runtime/JSGlobalObject.h>
@@ -30,10 +31,10 @@ namespace WebCore {
 
 class NodeList;
 
-class JSNodeList : public DOMObject {
-    typedef DOMObject Base;
+class JSNodeList : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSNodeList(PassRefPtr<JSC::Structure>, PassRefPtr<NodeList>);
+    JSNodeList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<NodeList>);
     virtual ~JSNodeList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -49,7 +50,7 @@ public:
     virtual JSC::CallType getCallData(JSC::CallData&);
 
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     NodeList* impl() const { return m_impl.get(); }
 
 private:
@@ -60,7 +61,7 @@ private:
     static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 };
 
-JSC::JSValue toJS(JSC::ExecState*, NodeList*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, NodeList*);
 NodeList* toNodeList(JSC::JSValue);
 
 class JSNodeListPrototype : public JSC::JSObject {

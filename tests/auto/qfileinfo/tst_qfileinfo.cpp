@@ -127,6 +127,8 @@ private slots:
     void size_data();
     void size();
 
+    void systemFiles();
+
     void compare_data();
     void compare();
 
@@ -151,9 +153,7 @@ private slots:
     void brokenShortcut();
 #endif
 
-#ifdef Q_OS_UNIX
     void isWritable();
-#endif
     void isExecutable();
     void testDecomposedUnicodeNames_data();
     void testDecomposedUnicodeNames();
@@ -237,7 +237,6 @@ void tst_QFileInfo::copy()
 
 tst_QFileInfo::tst_QFileInfo()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 void tst_QFileInfo::isFile_data()
@@ -249,6 +248,7 @@ void tst_QFileInfo::isFile_data()
     QTest::newRow("data1") << "tst_qfileinfo.cpp" << true;
     QTest::newRow("data2") << ":/tst_qfileinfo/resources/" << false;
     QTest::newRow("data3") << ":/tst_qfileinfo/resources/file1" << true;
+    QTest::newRow("data4") << ":/tst_qfileinfo/resources/afilethatshouldnotexist" << false;
 }
 
 void tst_QFileInfo::isFile()
@@ -281,6 +281,7 @@ void tst_QFileInfo::isDir_data()
     QTest::newRow("data1") << "tst_qfileinfo.cpp" << false;
     QTest::newRow("data2") << ":/tst_qfileinfo/resources/" << true;
     QTest::newRow("data3") << ":/tst_qfileinfo/resources/file1" << false;
+    QTest::newRow("data4") << ":/tst_qfileinfo/resources/afilethatshouldnotexist" << false;
 
     QTest::newRow("simple dir") << "resources" << true;
     QTest::newRow("simple dir with slash") << "resources/" << true;
@@ -318,15 +319,19 @@ void tst_QFileInfo::isRoot_data()
     QTest::addColumn<bool>("expected");
     QTest::newRow("data0") << QDir::currentPath() << false;
     QTest::newRow("data1") << "/" << true;
-    QTest::newRow("data2") << ":/tst_qfileinfo/resources/" << false;
-    QTest::newRow("data3") << ":/" << true;
+    QTest::newRow("data2") << "*" << false;
+    QTest::newRow("data3") << "/*" << false;
+    QTest::newRow("data4") << ":/tst_qfileinfo/resources/" << false;
+    QTest::newRow("data5") << ":/" << true;
 
     QTest::newRow("simple dir") << "resources" << false;
     QTest::newRow("simple dir with slash") << "resources/" << false;
 #if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
     QTest::newRow("drive 1") << "c:" << false;
     QTest::newRow("drive 2") << "c:/" << true;
+    QTest::newRow("drive 3") << "p:/" << false;
 #endif
+
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QTest::newRow("unc 1") << "//"  + QtNetworkSettings::winServerName() << true;
     QTest::newRow("unc 2") << "//"  + QtNetworkSettings::winServerName() + "/" << true;
@@ -359,8 +364,9 @@ void tst_QFileInfo::exists_data()
     QTest::newRow("data6") << "resources/*" << false;
     QTest::newRow("data7") << "resources/*.foo" << false;
     QTest::newRow("data8") << "resources/*.ext1" << false;
-    QTest::newRow("data9") << "." << true;
-    QTest::newRow("data10") << ". " << false;
+    QTest::newRow("data9") << "resources/file?.ext1" << false;
+    QTest::newRow("data10") << "." << true;
+    QTest::newRow("data11") << ". " << false;
 
     QTest::newRow("simple dir") << "resources" << true;
     QTest::newRow("simple dir with slash") << "resources/" << true;
@@ -481,6 +487,8 @@ void tst_QFileInfo::canonicalFilePath()
             QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
         }
     }
+#  if !defined(Q_OS_SYMBIAN)
+    // Symbian doesn't support links to directories
     {
         const QString link(QDir::tempPath() + QDir::separator() + "tst_qfileinfo");
         QFile::remove(link);
@@ -512,6 +520,7 @@ void tst_QFileInfo::canonicalFilePath()
             QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
         }
     }
+#  endif
 #endif
 
 }
@@ -721,7 +730,9 @@ void tst_QFileInfo::permission()
     QFETCH(QString, file);
     QFETCH(int, perms);
     QFETCH(bool, expected);
-    QEXPECT_FAIL("data0", "No user based rights in Symbian OS - SOS needs platform security tests instead", Abort);
+#ifdef Q_OS_SYMBIAN
+    QSKIP("No user based rights in Symbian OS - SOS needs platform security tests instead", SkipAll);
+#endif
     QFileInfo fi(file);
     QCOMPARE(fi.permission(QFile::Permissions(perms)), expected);
 }
@@ -748,6 +759,17 @@ void tst_QFileInfo::size()
     QFileInfo fi(file);
     (void)fi.permissions();     // see task 104198
     QTEST(int(fi.size()), "size");
+}
+
+void tst_QFileInfo::systemFiles()
+{
+#if !defined(Q_OS_WIN) || defined(Q_OS_WINCE)
+    QSKIP("This is a Windows only test", SkipAll);
+#endif
+    QFileInfo fi("c:\\pagefile.sys");
+    QVERIFY(fi.exists());      // task 167099
+    QVERIFY(fi.size() > 0);    // task 189202
+    QVERIFY(fi.lastModified().isValid());
 }
 
 void tst_QFileInfo::compare_data()
@@ -874,11 +896,6 @@ void tst_QFileInfo::fileTimes()
 #if !defined(Q_OS_UNIX) && !defined(Q_OS_WINCE)
     QVERIFY(fileInfo.created() < beforeWrite);
 #endif
-#ifdef Q_OS_WIN
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) {
-        QVERIFY(fileInfo.lastRead().addDays(1) > beforeRead);
-    } else
-#endif
     //In Vista the last-access timestamp is not updated when the file is accessed/touched (by default).
     //To enable this the HKLM\SYSTEM\CurrentControlSet\Control\FileSystem\NtfsDisableLastAccessUpdate
     //is set to 0, in the test machine.
@@ -912,40 +929,37 @@ void tst_QFileInfo::fileTimes_oldFile()
     // WriteOnly can create files, ReadOnly cannot.
     DWORD creationDisp = OPEN_ALWAYS;
 
-    HANDLE fileHandle;
-
     // Create the file handle.
-    QT_WA({
-        fileHandle = CreateFileW(L"oldfile.txt",
-            accessRights,
-            shareMode,
-            &securityAtts,
-            creationDisp,
-            flagsAndAtts,
-            NULL);
-    }, {
-        fileHandle = CreateFileA("oldfile.txt",
-            accessRights,
-            shareMode,
-            &securityAtts,
-            creationDisp,
-            flagsAndAtts,
-            NULL);
-    });
+    HANDLE fileHandle = CreateFile(L"oldfile.txt",
+        accessRights,
+        shareMode,
+        &securityAtts,
+        creationDisp,
+        flagsAndAtts,
+        NULL);
 
     // Set file times back to 1601.
+    SYSTEMTIME stime;
+    stime.wYear = 1601;
+    stime.wMonth = 1;
+    stime.wDayOfWeek = 1;
+    stime.wDay = 1;
+    stime.wHour = 1;
+    stime.wMinute = 0;
+    stime.wSecond = 0;
+    stime.wMilliseconds = 0;
+
     FILETIME ctime;
-    ctime.dwLowDateTime = 1;
-    ctime.dwHighDateTime = 0;
+    QVERIFY(SystemTimeToFileTime(&stime, &ctime));
     FILETIME atime = ctime;
     FILETIME mtime = atime;
     QVERIFY(fileHandle);
     QVERIFY(SetFileTime(fileHandle, &ctime, &atime, &mtime) != 0);
 
-    QFileInfo info("oldfile.txt");
-    QCOMPARE(info.lastModified(), QDateTime(QDate(1601, 1, 1), QTime(1, 0)));
-
     CloseHandle(fileHandle);
+
+    QFileInfo info("oldfile.txt");
+    QCOMPARE(info.lastModified(), QDateTime(QDate(1601, 1, 1), QTime(1, 0), Qt::UTC).toLocalTime());
 #endif
 }
 
@@ -980,8 +994,8 @@ void tst_QFileInfo::isHidden_data()
 {
     QTest::addColumn<QString>("path");
     QTest::addColumn<bool>("isHidden");
-    foreach (QFileInfo info, QDir::drives()) {
-	QTest::newRow(qPrintable("drive." + info.path())) << info.path() << false;
+    foreach (const QFileInfo& info, QDir::drives()) {
+        QTest::newRow(qPrintable("drive." + info.path())) << info.path() << false;
     }
 #ifdef Q_OS_MAC
     QTest::newRow("mac_etc") << QString::fromLatin1("/etc") << true;
@@ -1082,26 +1096,36 @@ void tst_QFileInfo::brokenShortcut()
 }
 #endif
 
-#ifdef Q_OS_UNIX
 void tst_QFileInfo::isWritable()
 {
 #ifdef Q_OS_SYMBIAN
-    QSKIP("This is a UNIX only test - no passwd in Symbian OS", SkipAll);
+    QSKIP("Currently skipped on Symbian OS, but surely there is a writeable file somewhere???", SkipAll);
 #endif
 
+    QVERIFY(QFileInfo("tst_qfileinfo.cpp").isWritable());
+#ifdef Q_OS_WIN
+#ifdef Q_OS_WINCE
+    QFileInfo fi("\\Windows\\wince.nls");
+#else
+    QFileInfo fi("c:\\pagefile.sys");
+#endif
+    QVERIFY(fi.exists());
+    QVERIFY(!fi.isWritable());
+#endif
+#ifdef Q_OS_UNIX
     if (::getuid() == 0)
         QVERIFY(QFileInfo("/etc/passwd").isWritable());
     else
         QVERIFY(!QFileInfo("/etc/passwd").isWritable());
-}
 #endif
+}
 
 void tst_QFileInfo::isExecutable()
 {
 #ifdef Q_OS_SYMBIAN
 # if defined(Q_CC_NOKIAX86)
     QSKIP("Impossible to implement reading/touching of application binaries in Symbian emulator", SkipAll);
-# endif    
+# endif
     QString appPath = "c:/sys/bin/tst_qfileinfo.exe";
 #else
     QString appPath = QCoreApplication::applicationDirPath();

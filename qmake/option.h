@@ -92,6 +92,7 @@ struct Option
     static QString dirlist_sep;
     static QString sysenv_mod;
     static QString pro_ext;
+    static QString mmp_ext;
     static QString res_ext;
     static char field_sep;
     static const char *application_argv0;
@@ -149,7 +150,7 @@ struct Option
     static int warn_level;
     static bool recursive;
     static QStringList before_user_vars, after_user_vars, user_configs, after_user_configs;
-    enum TARG_MODE { TARG_UNIX_MODE, TARG_WIN_MODE, TARG_MACX_MODE, TARG_MAC9_MODE, TARG_QNX6_MODE };
+    enum TARG_MODE { TARG_UNIX_MODE, TARG_WIN_MODE, TARG_MACX_MODE, TARG_MAC9_MODE };
     static TARG_MODE target_mode;
     static QString user_template, user_template_prefix;
     static QStringList shellPath;

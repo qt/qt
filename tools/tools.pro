@@ -13,6 +13,7 @@ no-png {
          SUBDIRS += designer
      }
      SUBDIRS     += linguist
+     symbian: SUBDIRS = designer
      wince*: SUBDIRS = qtestlib designer
      unix:!mac:!embedded:contains(QT_CONFIG, qt3support):SUBDIRS += qtconfig
      win32:!wince*:SUBDIRS += activeqt
@@ -25,7 +26,7 @@ mac {
 embedded:SUBDIRS += kmap2qmap
 
 contains(QT_CONFIG, dbus):SUBDIRS += qdbus
-!wince*:contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns
+!wince*:contains(QT_CONFIG, xmlpatterns): SUBDIRS += xmlpatterns xmlpatternsvalidator
 embedded: SUBDIRS += makeqpf
 
 CONFIG+=ordered

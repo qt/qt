@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,19 +55,19 @@ QT_END_NAMESPACE
 // CLASS DECLARATION
 /**
 * DesktopWidget class.
-* 
+*
 * Implements the main top level widget for QDesktopServices demo app.
 */
 class DesktopWidget : public QWidget
 {
-    Q_OBJECT        
-        
-public:        // Constructors & Destructors  
+    Q_OBJECT
+
+public:        // Constructors & Destructors
     DesktopWidget(QWidget *parent);
     ~DesktopWidget();
-   
+
 };
-    
-#endif // DESKTOPWIDGET_H_    
-    
+
+#endif // DESKTOPWIDGET_H_
+
 // End of file

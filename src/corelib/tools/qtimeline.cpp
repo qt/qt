@@ -69,7 +69,6 @@ public:
     int currentLoopCount;
 
     int currentTime;
-    int elapsedTime;
     int timerId;
     QTime timer;
 
@@ -212,7 +211,7 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
     applies an interpolation algorithm to generate these value. You can choose
     from a set of predefined timeline algorithms by calling
     setCurveShape().
-   
+
     Note that by default, QTimeLine uses the EaseInOut curve shape,
     which provides a value that grows slowly, then grows steadily, and
     finally grows slowly. For a custom timeline, you can reimplement
@@ -549,15 +548,17 @@ void QTimeLine::setCurveShape(CurveShape shape)
     case CosineCurve:
         setEasingCurve(QEasingCurve(QEasingCurve::CosineCurve));
         break;
-    } 
+    }
 }
 
 /*!
     \property QTimeLine::easingCurve
 
+    \since 4.6
+
     Specifies the easing curve that the timeline will use.
     If both easing curve and curveShape are set, the last set property will
-    override the previous one. (If valueForTime() is reimplemented it will 
+    override the previous one. (If valueForTime() is reimplemented it will
     override both)
 */
 
@@ -661,6 +662,7 @@ qreal QTimeLine::valueForTime(int msec) const
     second). You can change the update interval by calling
     setUpdateInterval().
 
+    The timeline will start from position 0, or the end if going backward.
     If you want to resume a stopped timeline without restarting, you can call
     resume() instead.
 
@@ -673,10 +675,8 @@ void QTimeLine::start()
         qWarning("QTimeLine::start: already running");
         return;
     }
-    int curTime = d->currentTime;
-    if (curTime == d->duration && d->direction == Forward)
-        curTime = 0;
-    else if (curTime == 0 && d->direction == Backward)
+    int curTime = 0;
+    if (d->direction == Backward)
         curTime = d->duration;
     d->timerId = startTimer(d->updateInterval);
     d->startTime = curTime;
@@ -692,7 +692,7 @@ void QTimeLine::start()
     frame and value at regular intervals.
 
     In contrast to start(), this function does not restart the timeline before
-    is resumes.
+    it resumes.
 
     \sa start(), updateInterval(), frameChanged(), valueChanged()
 */

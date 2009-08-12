@@ -319,11 +319,11 @@ void tst_QSocks5SocketEngine::simpleConnectToIMAP()
 
     socketDevice.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080));
 
-    QVERIFY(!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143));
+    QVERIFY(!socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143));
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
     QVERIFY(socketDevice.waitForWrite());
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(socketDevice.peerAddress() == QHostAddress(QtNetworkSettings::serverIP()));
+    QVERIFY(socketDevice.peerAddress() == QtNetworkSettings::serverIP());
 
     // Wait for the greeting
     QVERIFY(socketDevice.waitForRead());
@@ -336,7 +336,7 @@ void tst_QSocks5SocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
     // Check that the greeting is what we expect it to be
-    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());            
+    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
 
     // Write a logout message
     QByteArray array2 = "XXXX LOGOUT\r\n";
@@ -528,10 +528,10 @@ void tst_QSocks5SocketEngine::serverTest()
 //---------------------------------------------------------------------------
 void tst_QSocks5SocketEngine::udpTest()
 {
-#ifdef SYMBIAN_WINSOCK_CONNECTIVITY    
+#ifdef SYMBIAN_WINSOCK_CONNECTIVITY
     QSKIP("UDP works bads on non WinPCAP emulator setting", SkipAll);
-#endif    
-    
+#endif
+
     QSocks5SocketEngine udpSocket;
 
     // Initialize device #1
@@ -669,10 +669,10 @@ void tst_QSocks5SocketEngine::tcpSocketNonBlockingTest()
     }
 
     // Read greeting
-    QVERIFY(!tcpSocketNonBlocking_data.isEmpty());        
-    QCOMPARE(tcpSocketNonBlocking_data.at(0).toLatin1().constData(), 
-            QtNetworkSettings::expectedReplyIMAP().constData()); 
-            
+    QVERIFY(!tcpSocketNonBlocking_data.isEmpty());
+    QCOMPARE(tcpSocketNonBlocking_data.at(0).toLatin1().constData(),
+            QtNetworkSettings::expectedReplyIMAP().constData());
+
     tcpSocketNonBlocking_data.clear();
 
     tcpSocketNonBlocking_totalWritten = 0;
@@ -838,14 +838,14 @@ void tst_QSocks5SocketEngine::passwordAuth()
     socketDevice.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1080, "qsockstest", "password"));
 
     // Connect to imap.trolltech.com's IP
-    QVERIFY(!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143));
+    QVERIFY(!socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143));
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
     QVERIFY(socketDevice.waitForWrite());
-    if (!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143)) {
+    if (!socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143)) {
         qDebug("%d, %s", socketDevice.error(), socketDevice.errorString().toLatin1().constData());
     }
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(socketDevice.peerAddress() == QHostAddress(QtNetworkSettings::serverIP()));
+    QVERIFY(socketDevice.peerAddress() == QtNetworkSettings::serverIP());
 
     // Wait for the greeting
     QVERIFY(socketDevice.waitForRead());
@@ -857,9 +857,9 @@ void tst_QSocks5SocketEngine::passwordAuth()
     array.resize(available);
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
-    // Check that the greeting is what we expect it to be 
-    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData()); 
-        
+    // Check that the greeting is what we expect it to be
+    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+
     // Write a logout message
     QByteArray array2 = "XXXX LOGOUT\r\n";
     QVERIFY(socketDevice.write(array2.data(),
@@ -904,16 +904,16 @@ void tst_QSocks5SocketEngine::passwordAuth2()
     socketDevice.setProxy(QNetworkProxy(QNetworkProxy::Socks5Proxy, QtNetworkSettings::serverName(), 1081));
     socketDevice.setReceiver(this);
 
-    QVERIFY(!socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143));
+    QVERIFY(!socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143));
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectingState);
     while (socketDevice.state() == QAbstractSocket::ConnectingState) {
         QVERIFY(socketDevice.waitForWrite());
-        socketDevice.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143);
+        socketDevice.connectToHost(QtNetworkSettings::serverIP(), 143);
     }
     if (socketDevice.state() != QAbstractSocket::ConnectedState)
         qDebug("%d, %s", socketDevice.error(), socketDevice.errorString().toLatin1().constData());
     QVERIFY(socketDevice.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(socketDevice.peerAddress() == QHostAddress(QtNetworkSettings::serverIP()));
+    QVERIFY(socketDevice.peerAddress() == QtNetworkSettings::serverIP());
 
     // Wait for the greeting
     QVERIFY(socketDevice.waitForRead());
@@ -925,9 +925,9 @@ void tst_QSocks5SocketEngine::passwordAuth2()
     array.resize(available);
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
-    // Check that the greeting is what we expect it to be 
-    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData()); 
-        
+    // Check that the greeting is what we expect it to be
+    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+
     // Write a logout message
     QByteArray array2 = "XXXX LOGOUT\r\n";
     QVERIFY(socketDevice.write(array2.data(),

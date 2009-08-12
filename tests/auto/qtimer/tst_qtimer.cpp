@@ -262,7 +262,7 @@ void tst_QTimer::livelock()
     QEXPECT_FAIL("non-zero timer", "", Continue);
 #elif defined(Q_OS_WIN)
 	if (QSysInfo::WindowsVersion < QSysInfo::WV_XP)
-		QEXPECT_FAIL("non-zero timer", "Multimedia timers are not available on Win2K/9x", Continue);
+		QEXPECT_FAIL("non-zero timer", "Multimedia timers are not available on Windows 2000", Continue);
 #endif
     QVERIFY(tester.postEventAtRightTime);
 }
@@ -549,4 +549,3 @@ void tst_QTimer::timerFiresOnlyOncePerProcessEvents()
 
 QTEST_MAIN(tst_QTimer)
 #include "tst_qtimer.moc"
-

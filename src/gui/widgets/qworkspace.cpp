@@ -110,11 +110,11 @@ bool QMDIControl::event(QEvent *event)
         QStyle::SubControl ctrl = style()->hitTestComplexControl(QStyle::CC_MdiControls, &opt,
                                                                  helpEvent->pos(), this);
         if (ctrl == QStyle::SC_MdiCloseButton)
-            QToolTip::showText(helpEvent->globalPos(), QWorkspace::tr("Close"));
+            QToolTip::showText(helpEvent->globalPos(), QWorkspace::tr("Close"), this);
         else if (ctrl == QStyle::SC_MdiMinButton)
-            QToolTip::showText(helpEvent->globalPos(), QWorkspace::tr("Minimize"));
+            QToolTip::showText(helpEvent->globalPos(), QWorkspace::tr("Minimize"), this);
         else if (ctrl == QStyle::SC_MdiNormalButton)
-            QToolTip::showText(helpEvent->globalPos(), QWorkspace::tr("Restore Down"));
+            QToolTip::showText(helpEvent->globalPos(), QWorkspace::tr("Restore Down"), this);
         else
             QToolTip::hideText();
 #endif // QT_NO_TOOLTIP
@@ -397,21 +397,17 @@ void QWorkspaceTitleBarPrivate::readColors()
         pal.setColor(QPalette::Inactive, QPalette::Highlight, colorref2qrgb(GetSysColor(COLOR_INACTIVECAPTION)));
         pal.setColor(QPalette::Active, QPalette::HighlightedText, colorref2qrgb(GetSysColor(COLOR_CAPTIONTEXT)));
         pal.setColor(QPalette::Inactive, QPalette::HighlightedText, colorref2qrgb(GetSysColor(COLOR_INACTIVECAPTIONTEXT)));
-        if (QSysInfo::WindowsVersion != QSysInfo::WV_95 && QSysInfo::WindowsVersion != QSysInfo::WV_NT) {
-            colorsInitialized = true;
-            BOOL gradient;
-            QT_WA({
-                SystemParametersInfo(SPI_GETGRADIENTCAPTIONS, 0, &gradient, 0);
-            } , {
-                SystemParametersInfoA(SPI_GETGRADIENTCAPTIONS, 0, &gradient, 0);
-            });
-            if (gradient) {
-                pal.setColor(QPalette::Active, QPalette::Base, colorref2qrgb(GetSysColor(COLOR_GRADIENTACTIVECAPTION)));
-                pal.setColor(QPalette::Inactive, QPalette::Base, colorref2qrgb(GetSysColor(COLOR_GRADIENTINACTIVECAPTION)));
-            } else {
-                pal.setColor(QPalette::Active, QPalette::Base, pal.color(QPalette::Active, QPalette::Highlight));
-                pal.setColor(QPalette::Inactive, QPalette::Base, pal.color(QPalette::Inactive, QPalette::Highlight));
-            }
+
+        colorsInitialized = true;
+        BOOL gradient = false;
+        SystemParametersInfo(SPI_GETGRADIENTCAPTIONS, 0, &gradient, 0);
+
+        if (gradient) {
+            pal.setColor(QPalette::Active, QPalette::Base, colorref2qrgb(GetSysColor(COLOR_GRADIENTACTIVECAPTION)));
+            pal.setColor(QPalette::Inactive, QPalette::Base, colorref2qrgb(GetSysColor(COLOR_GRADIENTINACTIVECAPTION)));
+        } else {
+            pal.setColor(QPalette::Active, QPalette::Base, pal.color(QPalette::Active, QPalette::Highlight));
+            pal.setColor(QPalette::Inactive, QPalette::Base, pal.color(QPalette::Inactive, QPalette::Highlight));
         }
     }
 #endif // Q_WS_WIN

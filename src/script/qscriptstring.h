@@ -56,7 +56,7 @@ QT_MODULE(Script)
 
 class QScriptEngine;
 class QScriptStringPrivate;
-struct QScriptStringPrivatePointerHandler;
+struct QScriptStringPrivatePointerDeleter;
 
 class Q_SCRIPT_EXPORT QScriptString
 {
@@ -76,7 +76,7 @@ public:
     operator QString() const;
 
 private:
-    QScopedCustomPointer<QScriptStringPrivate, QScriptStringPrivatePointerHandler> d_ptr;
+    QCustomScopedPointer<QScriptStringPrivate, QScriptStringPrivatePointerDeleter> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptString)
 };

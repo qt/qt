@@ -1,7 +1,41 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at http://www.qtsoftware.com/contact.
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -20,34 +54,35 @@ class tst_QScopedPointer : public QObject
     Q_OBJECT
 
 private Q_SLOTS:
-    void defaultConstructor() const;
-    void dataOnDefaultConstructed() const;
-    void useSubClassInConstructor() const;
-    void dataOnValue() const;
-    void dataSignature() const;
-    void reset() const;
-    void dereferenceOperator() const;
-    void dereferenceOperatorSignature() const;
-    void pointerOperator() const;
-    void pointerOperatorSignature() const;
-    void negationOperator() const;
-    void negationOperatorSignature() const;
-    void operatorBool() const;
-    void operatorBoolSignature() const;
-    void isNull() const;
-    void isNullSignature() const;
-    void objectSize() const;
-    // TODO instansiate on const object
+    void defaultConstructor();
+    void dataOnDefaultConstructed();
+    void useSubClassInConstructor();
+    void dataOnValue();
+    void dataSignature();
+    void reset();
+    void dereferenceOperator();
+    void dereferenceOperatorSignature();
+    void pointerOperator();
+    void pointerOperatorSignature();
+    void negationOperator();
+    void negationOperatorSignature();
+    void operatorBool();
+    void operatorBoolSignature();
+    void isNull();
+    void isNullSignature();
+    void objectSize();
+    void comparison();
+    // TODO instanciate on const object
 };
 
-void tst_QScopedPointer::defaultConstructor() const
+void tst_QScopedPointer::defaultConstructor()
 {
     /* Check that the members, one, is correctly initialized. */
     QScopedPointer<int> p;
     QCOMPARE(p.data(), static_cast<int *>(0));
 }
 
-void tst_QScopedPointer::dataOnDefaultConstructed() const
+void tst_QScopedPointer::dataOnDefaultConstructed()
 {
     QScopedPointer<int> p;
 
@@ -62,13 +97,13 @@ class MySubClass : public MyClass
 {
 };
 
-void tst_QScopedPointer::useSubClassInConstructor() const
+void tst_QScopedPointer::useSubClassInConstructor()
 {
     /* Use a syntax which users typically would do. */
     QScopedPointer<MyClass> p(new MyClass());
 }
 
-void tst_QScopedPointer::dataOnValue() const
+void tst_QScopedPointer::dataOnValue()
 {
     int *const rawPointer = new int(5);
     QScopedPointer<int> p(rawPointer);
@@ -76,14 +111,14 @@ void tst_QScopedPointer::dataOnValue() const
     QCOMPARE(p.data(), rawPointer);
 }
 
-void tst_QScopedPointer::dataSignature() const
+void tst_QScopedPointer::dataSignature()
 {
     const QScopedPointer<int> p;
     /* data() should be const. */
     p.data();
 }
 
-void tst_QScopedPointer::reset() const
+void tst_QScopedPointer::reset()
 {
     /* Call reset() on a default constructed value. */
     {
@@ -137,7 +172,7 @@ public:
     }
 };
 
-void tst_QScopedPointer::dereferenceOperator() const
+void tst_QScopedPointer::dereferenceOperator()
 {
     /* Dereference a basic value. */
     {
@@ -157,7 +192,7 @@ void tst_QScopedPointer::dereferenceOperator() const
     }
 }
 
-void tst_QScopedPointer::dereferenceOperatorSignature() const
+void tst_QScopedPointer::dereferenceOperatorSignature()
 {
     /* The operator should be const. */
     {
@@ -184,7 +219,7 @@ public:
     int value;
 };
 
-void tst_QScopedPointer::pointerOperator() const
+void tst_QScopedPointer::pointerOperator()
 {
     QScopedPointer<AnyForm> p(new AnyForm());
     p->value = 5;
@@ -192,7 +227,7 @@ void tst_QScopedPointer::pointerOperator() const
     QCOMPARE(p->value, 5);
 }
 
-void tst_QScopedPointer::pointerOperatorSignature() const
+void tst_QScopedPointer::pointerOperatorSignature()
 {
     /* The operator should be const. */
     const QScopedPointer<AnyForm> p(new AnyForm);
@@ -201,7 +236,7 @@ void tst_QScopedPointer::pointerOperatorSignature() const
     QVERIFY(p->value);
 }
 
-void tst_QScopedPointer::negationOperator() const
+void tst_QScopedPointer::negationOperator()
 {
     /* Invoke on default constructed value. */
     {
@@ -216,7 +251,7 @@ void tst_QScopedPointer::negationOperator() const
     }
 }
 
-void tst_QScopedPointer::negationOperatorSignature() const
+void tst_QScopedPointer::negationOperatorSignature()
 {
     /* The signature should be const. */
     const QScopedPointer<int> p;
@@ -226,7 +261,7 @@ void tst_QScopedPointer::negationOperatorSignature() const
     static_cast<bool>(!p);
 }
 
-void tst_QScopedPointer::operatorBool() const
+void tst_QScopedPointer::operatorBool()
 {
     /* Invoke on default constructed value. */
     {
@@ -241,15 +276,15 @@ void tst_QScopedPointer::operatorBool() const
     }
 }
 
-void tst_QScopedPointer::operatorBoolSignature() const
+void tst_QScopedPointer::operatorBoolSignature()
 {
     /* The signature should be const and return bool. */
     const QScopedPointer<int> p;
 
-    static_cast<bool>(p);
+    (void)static_cast<bool>(p);
 }
 
-void tst_QScopedPointer::isNull() const
+void tst_QScopedPointer::isNull()
 {
     /* Invoke on default constructed value. */
     {
@@ -264,7 +299,7 @@ void tst_QScopedPointer::isNull() const
     }
 }
 
-void tst_QScopedPointer::isNullSignature() const
+void tst_QScopedPointer::isNullSignature()
 {
     const QScopedPointer<int> p(new int(69));
 
@@ -272,10 +307,36 @@ void tst_QScopedPointer::isNullSignature() const
     static_cast<bool>(p.isNull());
 }
 
-void tst_QScopedPointer::objectSize() const
+void tst_QScopedPointer::objectSize()
 {
     /* The size of QScopedPointer should be the same as one pointer. */
     QCOMPARE(sizeof(QScopedPointer<int>), sizeof(void *));
+}
+
+void tst_QScopedPointer::comparison()
+{
+    int *a = new int(42);
+    int *b = new int(43);
+
+    QScopedPointer<int> pa(a);
+    QScopedPointer<int> pa2(a);
+    QScopedPointer<int> pb(b);
+
+    // test equality on equal pointers
+    QVERIFY(pa == pa2);
+    QVERIFY(pa2 == pa);
+
+    // test unequality on equal pointers
+    QVERIFY(!(pa != pa2));
+    QVERIFY(!(pa2 != pa));
+
+    // test on unequal pointers
+    QVERIFY(!(pa == pb));
+    QVERIFY(!(pb == pa));
+    QVERIFY(pb != pa);
+    QVERIFY(pa != pb);
+
+    pa2.take();
 }
 
 QTEST_MAIN(tst_QScopedPointer)

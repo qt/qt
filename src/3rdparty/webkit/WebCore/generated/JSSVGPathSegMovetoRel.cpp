@@ -43,7 +43,7 @@ static const HashTableValue JSSVGPathSegMovetoRelTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegMovetoRelTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegMovetoRelTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSSVGPathSegMovetoRelTableValues, 0 };
 #else
@@ -57,7 +57,7 @@ static const HashTableValue JSSVGPathSegMovetoRelPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegMovetoRelPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegMovetoRelPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegMovetoRelPrototypeTableValues, 0 };
 #else
@@ -73,8 +73,8 @@ JSObject* JSSVGPathSegMovetoRelPrototype::self(ExecState* exec, JSGlobalObject* 
 
 const ClassInfo JSSVGPathSegMovetoRel::s_info = { "SVGPathSegMovetoRel", &JSSVGPathSeg::s_info, &JSSVGPathSegMovetoRelTable, 0 };
 
-JSSVGPathSegMovetoRel::JSSVGPathSegMovetoRel(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSegMovetoRel> impl, SVGElement* context)
-    : JSSVGPathSeg(structure, impl, context)
+JSSVGPathSegMovetoRel::JSSVGPathSegMovetoRel(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegMovetoRel> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 
@@ -90,15 +90,17 @@ bool JSSVGPathSegMovetoRel::getOwnPropertySlot(ExecState* exec, const Identifier
 
 JSValue jsSVGPathSegMovetoRelX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegMovetoRel* castedThis = static_cast<JSSVGPathSegMovetoRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(static_cast<JSSVGPathSegMovetoRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(castedThis->impl());
     return jsNumber(exec, imp->x());
 }
 
 JSValue jsSVGPathSegMovetoRelY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegMovetoRel* castedThis = static_cast<JSSVGPathSegMovetoRel*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(static_cast<JSSVGPathSegMovetoRel*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegMovetoRel* imp = static_cast<SVGPathSegMovetoRel*>(castedThis->impl());
     return jsNumber(exec, imp->y());
 }
 

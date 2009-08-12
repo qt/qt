@@ -153,9 +153,7 @@ QT_BEGIN_NAMESPACE
         future uses. If the value is false, the data obtained will not
         be automatically cached. If true, data may be cached, provided
         it is cacheable (what is cacheable depends on the protocol
-        being used). Note that the default QNetworkAccessManager
-        implementation does not support caching, so it will ignore
-        this attribute.
+        being used).
 
     \value SourceIsFromCacheAttribute
         Replies only, type: QVariant::Bool (default: false)
@@ -242,18 +240,6 @@ public:
     mutable QSslConfiguration *sslConfiguration;
 #endif
 };
-
-/*!
-    Constructs a QNetworkRequest object with empty QUrl.
-
-    \sa url(), setUrl()
-*/
-QNetworkRequest::QNetworkRequest()
-    : d(new QNetworkRequestPrivate)
-{
-    d->url = QUrl();
-}
-
 
 /*!
     Constructs a QNetworkRequest object with \a url as the URL to be

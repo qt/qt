@@ -46,7 +46,7 @@ static const HashTableValue JSCSSMediaRuleTableValues[4] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSMediaRuleTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSMediaRuleTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSCSSMediaRuleTableValues, 0 };
 #else
@@ -60,19 +60,19 @@ static const HashTableValue JSCSSMediaRuleConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSMediaRuleConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSMediaRuleConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCSSMediaRuleConstructorTableValues, 0 };
 #else
     { 1, 0, JSCSSMediaRuleConstructorTableValues, 0 };
 #endif
 
-class JSCSSMediaRuleConstructor : public DOMObject {
+class JSCSSMediaRuleConstructor : public DOMConstructorObject {
 public:
-    JSCSSMediaRuleConstructor(ExecState* exec)
-        : DOMObject(JSCSSMediaRuleConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSCSSMediaRuleConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSCSSMediaRuleConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSCSSMediaRulePrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSCSSMediaRulePrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -100,7 +100,7 @@ static const HashTableValue JSCSSMediaRulePrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCSSMediaRulePrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCSSMediaRulePrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 1, JSCSSMediaRulePrototypeTableValues, 0 };
 #else
@@ -121,8 +121,8 @@ bool JSCSSMediaRulePrototype::getOwnPropertySlot(ExecState* exec, const Identifi
 
 const ClassInfo JSCSSMediaRule::s_info = { "CSSMediaRule", &JSCSSRule::s_info, &JSCSSMediaRuleTable, 0 };
 
-JSCSSMediaRule::JSCSSMediaRule(PassRefPtr<Structure> structure, PassRefPtr<CSSMediaRule> impl)
-    : JSCSSRule(structure, impl)
+JSCSSMediaRule::JSCSSMediaRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CSSMediaRule> impl)
+    : JSCSSRule(structure, globalObject, impl)
 {
 }
 
@@ -138,25 +138,28 @@ bool JSCSSMediaRule::getOwnPropertySlot(ExecState* exec, const Identifier& prope
 
 JSValue jsCSSMediaRuleMedia(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSMediaRule* castedThis = static_cast<JSCSSMediaRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSMediaRule* imp = static_cast<CSSMediaRule*>(static_cast<JSCSSMediaRule*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->media()));
+    CSSMediaRule* imp = static_cast<CSSMediaRule*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->media()));
 }
 
 JSValue jsCSSMediaRuleCssRules(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCSSMediaRule* castedThis = static_cast<JSCSSMediaRule*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CSSMediaRule* imp = static_cast<CSSMediaRule*>(static_cast<JSCSSMediaRule*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->cssRules()));
+    CSSMediaRule* imp = static_cast<CSSMediaRule*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->cssRules()));
 }
 
 JSValue jsCSSMediaRuleConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCSSMediaRule*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSCSSMediaRule* domObject = static_cast<JSCSSMediaRule*>(asObject(slot.slotBase()));
+    return JSCSSMediaRule::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSCSSMediaRule::getConstructor(ExecState* exec)
+JSValue JSCSSMediaRule::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSCSSMediaRuleConstructor>(exec);
+    return getDOMConstructor<JSCSSMediaRuleConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsCSSMediaRulePrototypeFunctionInsertRule(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtCore of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,8 +65,8 @@ QT_BEGIN_NAMESPACE
 
 Q_CORE_EXPORT HBufC* qt_QString2HBufC(const QString& aString);
 
-Q_CORE_EXPORT QString qt_TDesC2QStringL(const TDesC& aDescriptor);
-inline QString qt_TDes2QStringL(const TDes& aDescriptor) { return qt_TDesC2QStringL(aDescriptor); }
+Q_CORE_EXPORT QString qt_TDesC2QString(const TDesC& aDescriptor);
+inline QString qt_TDes2QString(const TDes& aDescriptor) { return qt_TDesC2QString(aDescriptor); }
 
 static inline QSize qt_TSize2QSize(const TSize& ts)
 {

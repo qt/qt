@@ -1,7 +1,7 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ****************************************************************************/
 
@@ -280,11 +280,11 @@ void tst_qfile::readBigFile()
             HANDLE hndl;
 
             // ensure we don't account string conversion
-            TCHAR* cfilename = (TCHAR*)filename.utf16();
+            wchar_t* cfilename = (wchar_t*)filename.utf16();
 
             hndl = CreateFile(cfilename, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
             Q_ASSERT(hndl);
-            TCHAR* nativeBuffer = new TCHAR[BUFSIZE];
+            wchar_t* nativeBuffer = new wchar_t[BUFSIZE];
             DWORD numberOfBytesRead;
 
             QBENCHMARK {
@@ -363,7 +363,7 @@ void tst_qfile::seek()
             HANDLE hndl;
 
             // ensure we don't account string conversion
-            TCHAR* cfilename = (TCHAR*)filename.utf16();
+            wchar_t* cfilename = (wchar_t*)filename.utf16();
 
             hndl = CreateFile(cfilename, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
             Q_ASSERT(hndl);
@@ -446,7 +446,7 @@ void tst_qfile::open()
             HANDLE hndl;
 
             // ensure we don't account string conversion
-            TCHAR* cfilename = (TCHAR*)filename.utf16();
+            wchar_t* cfilename = (wchar_t*)filename.utf16();
 
             QBENCHMARK {
                 hndl = CreateFile(cfilename, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
@@ -625,11 +625,11 @@ void tst_qfile::readSmallFiles()
             HANDLE hndl;
 
             // ensure we don't account string conversion
-            TCHAR* cfilename = (TCHAR*)filename.utf16();
+            wchar_t* cfilename = (wchar_t*)filename.utf16();
 
             hndl = CreateFile(cfilename, GENERIC_READ, 0, 0, OPEN_EXISTING, 0, 0);
             Q_ASSERT(hndl);
-            TCHAR* nativeBuffer = new TCHAR[BUFSIZE];
+            wchar_t* nativeBuffer = new wchar_t[BUFSIZE];
             DWORD numberOfBytesRead;
             QBENCHMARK {
                 do {

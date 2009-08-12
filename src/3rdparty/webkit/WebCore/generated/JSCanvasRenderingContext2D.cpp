@@ -69,7 +69,7 @@ static const HashTableValue JSCanvasRenderingContext2DTableValues[18] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCanvasRenderingContext2DTable =
+static JSC_CONST_HASHTABLE HashTable JSCanvasRenderingContext2DTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 8191, JSCanvasRenderingContext2DTableValues, 0 };
 #else
@@ -83,19 +83,19 @@ static const HashTableValue JSCanvasRenderingContext2DConstructorTableValues[1] 
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCanvasRenderingContext2DConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCanvasRenderingContext2DConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCanvasRenderingContext2DConstructorTableValues, 0 };
 #else
     { 1, 0, JSCanvasRenderingContext2DConstructorTableValues, 0 };
 #endif
 
-class JSCanvasRenderingContext2DConstructor : public DOMObject {
+class JSCanvasRenderingContext2DConstructor : public DOMConstructorObject {
 public:
-    JSCanvasRenderingContext2DConstructor(ExecState* exec)
-        : DOMObject(JSCanvasRenderingContext2DConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSCanvasRenderingContext2DConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSCanvasRenderingContext2DConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSCanvasRenderingContext2DPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSCanvasRenderingContext2DPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -165,7 +165,7 @@ static const HashTableValue JSCanvasRenderingContext2DPrototypeTableValues[45] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCanvasRenderingContext2DPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCanvasRenderingContext2DPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 4095, JSCanvasRenderingContext2DPrototypeTableValues, 0 };
 #else
@@ -186,8 +186,8 @@ bool JSCanvasRenderingContext2DPrototype::getOwnPropertySlot(ExecState* exec, co
 
 const ClassInfo JSCanvasRenderingContext2D::s_info = { "CanvasRenderingContext2D", 0, &JSCanvasRenderingContext2DTable, 0 };
 
-JSCanvasRenderingContext2D::JSCanvasRenderingContext2D(PassRefPtr<Structure> structure, PassRefPtr<CanvasRenderingContext2D> impl)
-    : DOMObject(structure)
+JSCanvasRenderingContext2D::JSCanvasRenderingContext2D(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasRenderingContext2D> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -209,115 +209,132 @@ bool JSCanvasRenderingContext2D::getOwnPropertySlot(ExecState* exec, const Ident
 
 JSValue jsCanvasRenderingContext2DCanvas(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
-    return toJS(exec, WTF::getPtr(imp->canvas()));
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->canvas()));
 }
 
 JSValue jsCanvasRenderingContext2DGlobalAlpha(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
     return jsNumber(exec, imp->globalAlpha());
 }
 
 JSValue jsCanvasRenderingContext2DGlobalCompositeOperation(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
     return jsString(exec, imp->globalCompositeOperation());
 }
 
 JSValue jsCanvasRenderingContext2DLineWidth(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
     return jsNumber(exec, imp->lineWidth());
 }
 
 JSValue jsCanvasRenderingContext2DLineCap(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
     return jsString(exec, imp->lineCap());
 }
 
 JSValue jsCanvasRenderingContext2DLineJoin(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
     return jsString(exec, imp->lineJoin());
 }
 
 JSValue jsCanvasRenderingContext2DMiterLimit(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
     return jsNumber(exec, imp->miterLimit());
 }
 
 JSValue jsCanvasRenderingContext2DShadowOffsetX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
     return jsNumber(exec, imp->shadowOffsetX());
 }
 
 JSValue jsCanvasRenderingContext2DShadowOffsetY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
     return jsNumber(exec, imp->shadowOffsetY());
 }
 
 JSValue jsCanvasRenderingContext2DShadowBlur(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
     return jsNumber(exec, imp->shadowBlur());
 }
 
 JSValue jsCanvasRenderingContext2DShadowColor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
     return jsString(exec, imp->shadowColor());
 }
 
 JSValue jsCanvasRenderingContext2DFont(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
     return jsString(exec, imp->font());
 }
 
 JSValue jsCanvasRenderingContext2DTextAlign(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
     return jsString(exec, imp->textAlign());
 }
 
 JSValue jsCanvasRenderingContext2DTextBaseline(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->impl());
+    CanvasRenderingContext2D* imp = static_cast<CanvasRenderingContext2D*>(castedThis->impl());
     return jsString(exec, imp->textBaseline());
 }
 
 JSValue jsCanvasRenderingContext2DStrokeStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->strokeStyle(exec);
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    return castedThis->strokeStyle(exec);
 }
 
 JSValue jsCanvasRenderingContext2DFillStyle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->fillStyle(exec);
+    JSCanvasRenderingContext2D* castedThis = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    return castedThis->fillStyle(exec);
 }
 
 JSValue jsCanvasRenderingContext2DConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSCanvasRenderingContext2D* domObject = static_cast<JSCanvasRenderingContext2D*>(asObject(slot.slotBase()));
+    return JSCanvasRenderingContext2D::getConstructor(exec, domObject->globalObject());
 }
 void JSCanvasRenderingContext2D::put(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot& slot)
 {
@@ -412,9 +429,9 @@ void setJSCanvasRenderingContext2DFillStyle(ExecState* exec, JSObject* thisObjec
     static_cast<JSCanvasRenderingContext2D*>(thisObject)->setFillStyle(exec, value);
 }
 
-JSValue JSCanvasRenderingContext2D::getConstructor(ExecState* exec)
+JSValue JSCanvasRenderingContext2D::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSCanvasRenderingContext2DConstructor>(exec);
+    return getDOMConstructor<JSCanvasRenderingContext2DConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionSave(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -532,7 +549,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionCreateLinearGra
     float y1 = args.at(3).toFloat(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createLinearGradient(x0, y0, x1, y1, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createLinearGradient(x0, y0, x1, y1, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -553,7 +570,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionCreateRadialGra
     float r1 = args.at(5).toFloat(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createRadialGradient(x0, y0, r0, x1, y1, r1, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createRadialGradient(x0, y0, r0, x1, y1, r1, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -810,7 +827,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionMeasureText(Exe
     const UString& text = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->measureText(text)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->measureText(text)));
     return result;
 }
 
@@ -978,7 +995,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionCreateImageData
     float sh = args.at(1).toFloat(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->createImageData(sw, sh)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->createImageData(sw, sh)));
     return result;
 }
 
@@ -996,7 +1013,7 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionGetImageData(Ex
     float sh = args.at(3).toFloat(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->getImageData(sx, sy, sw, sh, ec)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getImageData(sx, sy, sw, sh, ec)));
     setDOMException(exec, ec);
     return result;
 }
@@ -1010,9 +1027,9 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext2DPrototypeFunctionPutImageData(Ex
     return castedThisObj->putImageData(exec, args);
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, CanvasRenderingContext2D* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, CanvasRenderingContext2D* object)
 {
-    return getDOMObjectWrapper<JSCanvasRenderingContext2D>(exec, object);
+    return getDOMObjectWrapper<JSCanvasRenderingContext2D>(exec, globalObject, object);
 }
 CanvasRenderingContext2D* toCanvasRenderingContext2D(JSC::JSValue value)
 {

@@ -872,12 +872,7 @@ void tst_QPixmap::toWinHBITMAP()
     BITMAP bitmap_info;
     memset(&bitmap_info, 0, sizeof(BITMAP));
 
-    int res;
-    QT_WA({
-        res = GetObjectW(bitmap, sizeof(BITMAP), &bitmap_info);
-    } , {
-        res = GetObjectA(bitmap, sizeof(BITMAP), &bitmap_info);
-    });
+    int res = GetObject(bitmap, sizeof(BITMAP), &bitmap_info);
     QVERIFY(res);
 
     QCOMPARE(100, (int) bitmap_info.bmWidth);

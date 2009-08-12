@@ -45,6 +45,10 @@
 
 #include <QtScript>
 
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -256,8 +260,9 @@ tst_Suite::tst_Suite()
 
 #ifdef Q_OS_SYMBIAN
     addTestExclusion("nested-repetition-count-overflow", "Demands too much memory on Symbian");
-    addTestExclusion("unicode-test", "Demands too much memory on Symbian");    
-#endif    
+    addTestExclusion("unicode-test", "Demands too much memory on Symbian");
+#endif
+    static const char klass[] = "tst_QScriptV8TestSuite";
 
     QVector<uint> *data = qt_meta_data_tst_Suite();
     // content:
@@ -270,7 +275,7 @@ tst_Suite::tst_Suite()
         ;
 
     QVector<char> *stringdata = qt_meta_stringdata_tst_Suite();
-    appendCString(stringdata, "tst_Suite");
+    appendCString(stringdata, klass);
     appendCString(stringdata, "");
 
     QFileInfoList testFileInfos;
@@ -280,7 +285,8 @@ tst_Suite::tst_Suite()
         QString name = tfi.baseName();
         // slot: signature, parameters, type, tag, flags
         QString slot = QString::fromLatin1("%0()").arg(name);
-        *data << stringdata->size() << 10 << 10 << 10 << 0x08;
+        static const int nullbyte = sizeof(klass);
+        *data << stringdata->size() << nullbyte << nullbyte << nullbyte << 0x08;
         appendCString(stringdata, slot.toLatin1());
         testNames.append(name);
     }

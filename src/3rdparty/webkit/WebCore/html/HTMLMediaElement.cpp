@@ -391,7 +391,7 @@ String HTMLMediaElement::canPlayType(const String& mimeType) const
     switch (support)
     {
         case MediaPlayer::IsNotSupported:
-            canPlay = "no";
+            canPlay = "";
             break;
         case MediaPlayer::MayBeSupported:
             canPlay = "maybe";
@@ -690,7 +690,6 @@ void HTMLMediaElement::setNetworkState(MediaPlayer::NetworkState state)
     }
 
     if (state == MediaPlayer::Idle) {
-        ASSERT(static_cast<ReadyState>(m_player->readyState()) < HAVE_ENOUGH_DATA);
         if (m_networkState > NETWORK_IDLE) {
             stopPeriodicTimers();
             scheduleProgressEvent(eventNames().suspendEvent);
@@ -752,7 +751,6 @@ void HTMLMediaElement::setReadyState(MediaPlayer::ReadyState state)
     if (m_seeking && m_readyState < HAVE_CURRENT_DATA) {
         // 4.8.10.10, step 9
         scheduleEvent(eventNames().seekingEvent);
-        m_seeking = false;
     }
 
     if (wasPotentiallyPlaying && m_readyState < HAVE_FUTURE_DATA) {
@@ -839,6 +837,23 @@ void HTMLMediaElement::progressEventTimerFired(Timer<HTMLMediaElement>*)
     }
 }
 
+void HTMLMediaElement::rewind(float timeDelta)
+{
+    ExceptionCode e;
+    setCurrentTime(max(currentTime() - timeDelta, minTimeSeekable()), e);
+}
+
+void HTMLMediaElement::returnToRealtime()
+{
+    ExceptionCode e;
+    setCurrentTime(maxTimeSeekable(), e);
+}  
+
+bool HTMLMediaElement::supportsSave() const
+{
+    return m_player ? m_player->supportsSave() : false;
+}
+    
 void HTMLMediaElement::seek(float time, ExceptionCode& ec)
 {
     // 4.8.10.10. Seeking
@@ -889,6 +904,11 @@ void HTMLMediaElement::seek(float time, ExceptionCode& ec)
 HTMLMediaElement::ReadyState HTMLMediaElement::readyState() const
 {
     return m_readyState;
+}
+
+MediaPlayer::MovieLoadType HTMLMediaElement::movieLoadType() const
+{
+    return m_player ? m_player->movieLoadType() : MediaPlayer::Unknown;
 }
 
 bool HTMLMediaElement::seeking() const
@@ -1408,9 +1428,9 @@ PassRefPtr<TimeRanges> HTMLMediaElement::played() const
 PassRefPtr<TimeRanges> HTMLMediaElement::seekable() const
 {
     // FIXME real ranges support
-    if (!m_player || !m_player->maxTimeSeekable())
+    if (!maxTimeSeekable())
         return TimeRanges::create();
-    return TimeRanges::create(0, m_player->maxTimeSeekable());
+    return TimeRanges::create(minTimeSeekable(), maxTimeSeekable());
 }
 
 bool HTMLMediaElement::potentiallyPlaying() const
@@ -1444,6 +1464,16 @@ bool HTMLMediaElement::pausedForUserInteraction() const
     return false;
 }
 
+float HTMLMediaElement::minTimeSeekable() const
+{
+    return 0;
+}
+
+float HTMLMediaElement::maxTimeSeekable() const
+{
+    return m_player ? m_player->maxTimeSeekable() : 0;
+}
+    
 void HTMLMediaElement::updateVolume()
 {
     if (!m_player)
@@ -1603,7 +1633,7 @@ bool HTMLMediaElement::processingUserGesture() const
     FrameLoader* loader = frame ? frame->loader() : 0;
 
     // return 'true' for safety if we don't know the answer 
-    return loader ? loader->userGestureHint() : true;
+    return loader ? loader->isProcessingUserGesture() : true;
 }
 
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)

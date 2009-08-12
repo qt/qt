@@ -1,7 +1,7 @@
 ;/****************************************************************************
 ;**
 ;** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-;** Contact: Qt Software Information (qt-info@nokia.com)
+;** Contact: Nokia Corporation (qt-info@nokia.com)
 ;**
 ;** This file is part of the QtGui module of the Qt Toolkit.
 ;**
@@ -34,7 +34,7 @@
 ;** met: http://www.gnu.org/copyleft/gpl.html.
 ;**
 ;** If you are unsure which license is appropriate for your use, please
-;** contact the sales department at qt-sales@nokia.com.
+;** contact the sales department at http://www.qtsoftware.com/contact.
 ;** $QT_END_LICENSE$
 ;**
 ;****************************************************************************/
@@ -52,10 +52,10 @@
 
 ;-----------------------------------------------------------------------------
 ; Globals.
-; Earch marcro expects that caller has loaded 0x800080 to r14. 
+; Earch marcro expects that caller has loaded 0x800080 to r14.
 ;-----------------------------------------------------------------------------
 
-ComponentHalf	EQU	0x800080		
+ComponentHalf	EQU	0x800080
 
 ;-----------------------------------------------------------------------------
 ; ARM assembly implementations of accelerated graphics operations.
@@ -65,7 +65,7 @@ ComponentHalf	EQU	0x800080
 ; 	- r0 = Target buffer pointer
 ;	- r1 = Source buffer pointer
 ; 	- r2 = Length of the buffer to blend
-;	- r3 = Constant alpha for source buffer 
+;	- r3 = Constant alpha for source buffer
 ;
 ;-----------------------------------------------------------------------------
 
@@ -78,8 +78,8 @@ $func	Function
 		CODE32
 $func
 		MEND
-		
-		
+
+
 ;-----------------------------------------------------------------------------
 ; Armv6 boosted implementation of BYTE_MUL(...) function found in qdrawhelper_p.h.
 ;
@@ -98,29 +98,29 @@ $func
 		; uint r8 = (x & 0xff00ff) * a + 0x800080
 		uxtb16	r8, $x	; r8 = r8 & 0x00FF00FF
 		mla		r8, r8, $a, r14
-		
+
 		; x = ((r >> 8) & 0xff00ff) * a + 0x800080
 		uxtb16	$x, $x, ror #8
 		mla		$x, $x, $a, r14
 
-				
+
 		; r8 = (r8 + ((r8 >> 8) & 0xff00ff) ) >> 8
 		; r8 &= 0xff00ff
 		uxtab16	r8, r8, r8, ror #8
 		uxtb16	r8, r8, ror #8
-			
+
 		; x = x + ((x >>8) & 0xff00ff)
 		uxtab16	$x, $x, $x, ror #8
-		
+
 		; x &= 0xff00ff00
 		; x |= r8
 		uxtb16	$x, $x, ror #8
 		orr		$dst, r8, $x, lsl #8
-		
+
 		MEND
-		
+
 ;-----------------------------------------------------------------------------
-; Armv6 boosted implementation of INTERPOLATE_PIXEL_255(...) function found in 
+; Armv6 boosted implementation of INTERPOLATE_PIXEL_255(...) function found in
 ; qdrawhelper_p.h.
 ;
 ;  @param dst	Destination register where to store the result
@@ -129,7 +129,7 @@ $func
 ;  @param y     Second value to multiply
 ;  @param b     Multiplicator byte for second value
 ;  @param r14   Component half 0x800080
-;  
+;
 ;
 ;  @note Trashes x, r8, r14
 ;-----------------------------------------------------------------------------
@@ -143,40 +143,40 @@ $func
 		; uint r8 = (((x & 0xff00ff) * a) + 0x800080)
 		uxtb16	r8, $x	; r8 = r8 & 0x00FF00FF
 		mla		r8, r8, $a, r14
-		
+
 		; x = ((((x >> 8) & 0xff00ff) * a) + 0x800080)
 		uxtb16	$x, $x, ror #8
 		mla		$x, $x, $a, r14
-		
+
 		; Now we are trashing r14 to free it for other purposes
-		
+
 		; uint r14 = (y & 0xff00ff) * b
 		uxtb16	r14, $y	; r14 = y & 0x00FF00FF
 		mul		r14, r14, $b
-		
+
 		; r8 = r8 + r14
 		add		r8, r8, r14
-		
+
 		; r8 = (r8 + ((r8 >> 8) & 0xff00ff) ) >> 8
 		; r8 &= 0xff00ff
 		uxtab16	r8, r8, r8, ror #8
 		uxtb16	r8, r8, ror #8
-		
+
 		; r14 = ((y >> 8) & 0xff00ff) * b
 		uxtb16	r14, $y, ror #8	; r14 = ((y >> 8) & 0xFF00FF)
 		mul		r14, r14, $b
-		
+
 		; x = x + r14
 		add		$x, $x, r14
-			
+
 		; x = x + ((x >>8) & 0xff00ff)
 		uxtab16	$x, $x, $x, ror #8
-		
+
 		; x &= 0xff00ff00
 		; x |= r8
 		uxtb16	$x, $x, ror #8
 		orr		$dst, r8, $x, lsl #8
-		
+
 		MEND
 
 ;-----------------------------------------------------------------------------
@@ -184,19 +184,19 @@ $func
 ;-----------------------------------------------------------------------------
 		MACRO
 $label	Blend4Pixels $BlendPixel
-		
-		; Blend first 4 pixels		
-		
+
+		; Blend first 4 pixels
+
 		ldmia	r1!, {r4-r7}
 		ldm		r0, {r9-r12}
-		
+
 b4p1_$label	$BlendPixel r9, r4, r3
 b4p2_$label	$BlendPixel r10, r5, r3
 b4p3_$label	$BlendPixel r11, r6, r3
 b4p4_$label	$BlendPixel r12, r7, r3
-		
+
 		stmia 	r0!, {r9-r12}
-		
+
 		MEND
 
 ;-----------------------------------------------------------------------------
@@ -204,43 +204,43 @@ b4p4_$label	$BlendPixel r12, r7, r3
 ;-----------------------------------------------------------------------------
 		MACRO
 $label	Blend8Pixels $BlendPixel
-		
+
 b8p1_$label Blend4Pixels $BlendPixel
-b8p2_$label Blend4Pixels $BlendPixel		
-				
+b8p2_$label Blend4Pixels $BlendPixel
+
 		MEND
-		
+
 ;-----------------------------------------------------------------------------
 ;
 ;-----------------------------------------------------------------------------
 		MACRO
 $label	Blend16Pixels $BlendPixel
-		
+
 b16p1_$label Blend8Pixels $BlendPixel
-b16p2_$label Blend8Pixels $BlendPixel		
-				
+b16p2_$label Blend8Pixels $BlendPixel
+
 		MEND
-		
+
 ;-----------------------------------------------------------------------------
 ;
 ;-----------------------------------------------------------------------------
 		MACRO
 $label	Blend32Pixels $BlendPixel
-		
+
 b32p1_$label Blend16Pixels $BlendPixel
-b32p2_$label Blend16Pixels $BlendPixel		
-				
+b32p2_$label Blend16Pixels $BlendPixel
+
 		MEND
 
 ;-----------------------------------------------------------------------------
-; A macro for source over compositing one row of pixels and saving the results 
+; A macro for source over compositing one row of pixels and saving the results
 ; to destination buffer.
 ;
 ; @param dest			Destination	buffer						(r0)
 ; @param src			Source buffer							(r1)
 ; @param length			Length									(r2)
 ; @param const_alpha	Constant alpha					  		(r3)
-; @param r14 			Component Half (0x800080)		  		(r14)	
+; @param r14 			Component Half (0x800080)		  		(r14)
 ;
 ;  @note Advances r0, r1
 ;  @note Trashes r2, r4-r12
@@ -260,73 +260,73 @@ brp1_$label	Blend32Pixels $BlendPixel
 		b		bloop_$label
 
 b_remaining_$label
-		
+
 		; Remaining 31 pixels
-		
+
 		addmi	r2, r2, #32
 
 		; Blend 16 pixels
 		tst		r2, #16
 		beq		b_remaining8_$label
-		
+
 brp2_$label Blend16Pixels $BlendPixel
-	
-b_remaining8_$label	
-		
+
+b_remaining8_$label
+
 		; Blend 8 pixels
 		tst		r2, #8
 		beq		b_remaining4_$label
-		
-brp3_$label Blend8Pixels $BlendPixel			
-		
-b_remaining4_$label		
-		
+
+brp3_$label Blend8Pixels $BlendPixel
+
+b_remaining4_$label
+
 		; Blend 4 pixels
 		tst		r2, #4
 		beq		b_remaining3_$label
-		
-brp4_$label Blend4Pixels $BlendPixel			
+
+brp4_$label Blend4Pixels $BlendPixel
 
 b_remaining3_$label
 
 		; Remaining 3 pixels
-	
+
 		tst		r2, #2
 		beq		b_last_$label
-		
+
 		ldmia 	r1!, {r4-r5}
 		ldm	  	r0,  {r9-r10}
-		
+
 brp5_$label	$BlendPixel r9, r4, r3
 brp6_$label	$BlendPixel r10, r5, r3
-		
+
 		stmia 	r0!, {r9-r10}
 
 b_last_$label
-		
+
 		tst		r2, #1
 		beq		bexit_$label
-		
+
 		ldr		r4, [r1]
 		ldr		r9, [r0]
 
 bpl_$label	$BlendPixel r9, r4, r3
-		
+
 		str 	r9, [r0]
 
 bexit_$label
 
 		MEND
-		
+
 ;-----------------------------------------------------------------------------
-; A macro for source over compositing one row of pixels and saving the results 
+; A macro for source over compositing one row of pixels and saving the results
 ; to destination buffer. Restores all registers.
 ;
 ; @param dest			Destination	buffer						(r0)
 ; @param src			Source buffer							(r1)
 ; @param length			Length									(r2)
 ; @param const_alpha	Constant alpha					  		(r3)
-; @param r14 			Component Half (0x800080)		  		(r14)	
+; @param r14 			Component Half (0x800080)		  		(r14)
 ;
 ;  @note Advances r0, r1
 ;  @note Trashes r2, r4-r12
@@ -336,16 +336,16 @@ $label	BlendRowSafe $BlendPixel
 
 		stmfd	sp!, {r0-r6} ; Preserves registers only up to r6
 
-brs_$label  BlendRow $BlendPixel		
+brs_$label  BlendRow $BlendPixel
 
 		ldmfd	sp!, {r0-r6}
 
-		MEND		
-		
+		MEND
+
 
 ;-----------------------------------------------------------------------------
-; Pix Copy. 
-; NOTE! Cache line size of ARM1136JF-S and ARM1136J-S is 32 bytes (8 pixels). 
+; Pix Copy.
+; NOTE! Cache line size of ARM1136JF-S and ARM1136J-S is 32 bytes (8 pixels).
 ;
 ; @param dst			Destination	pixels						(r0)
 ; @param src			Source pixels							(r1)
@@ -369,7 +369,7 @@ pcpy_loop_$label
 pcpy_remaining_$label
 
 		; Copy up to 7 remaining pixels
-		
+
 		; Copy 4 pixels
 		tst		$len, #4
 		ldmneia	$src!, {r3-r6}
@@ -384,9 +384,9 @@ pcpy_remaining_$label
 		strne 	r3, [$dst]
 
 		MEND
-		
+
 ;-----------------------------------------------------------------------------
-; General Pix Copy. Maximum 8 pixels at time. Restores all registers. 
+; General Pix Copy. Maximum 8 pixels at time. Restores all registers.
 ;
 ; @param dst			Destination	pixels						(r0)
 ; @param src			Source pixels							(r1)
@@ -402,10 +402,10 @@ $label	PixCpySafe $dst, $src, $len
 pcs_$label  PixCpy $dst, $src, $len
 
 		ldmfd	sp!, {r0-r6}		; pop
-		
+
 		MEND
-		
-		
+
+
 ;-----------------------------------------------------------------------------
 ; A macro for source over compositing one pixel and saving the result to
 ; dst register.
@@ -422,7 +422,7 @@ $label	PixelSourceOver $dst, $src, $const_alpha
 
 		; Negate src and extract alpha
 		mvn		$const_alpha, $src ; bitwise not
-		uxtb	$const_alpha, $const_alpha, ror #24	; r3 = ((r3 & 0xFF000000) >> 24);  
+		uxtb	$const_alpha, $const_alpha, ror #24	; r3 = ((r3 & 0xFF000000) >> 24);
 
 		;cmp		$const_alpha, #255	; test for full transparency ( negated )
 		;beq		exit_$label
@@ -430,12 +430,12 @@ $label	PixelSourceOver $dst, $src, $const_alpha
 		moveq	$dst, $src
 		beq		exit_$label
 
-		ByteMul	$dst, $dst, $const_alpha	
+		ByteMul	$dst, $dst, $const_alpha
 		add		$dst, $src, $dst
-		
+
 exit_$label
 		MEND
-		
+
 ;-----------------------------------------------------------------------------
 ; A macro for source over compositing one pixel and saving the result to
 ; dst register.
@@ -457,7 +457,7 @@ $label	PixelSourceOverConstAlpha $dst, $src, $const_alpha
 
 		; Negate src and extract alpha
 		mvn		$const_alpha, $src ; bitwise not
-		uxtb	$const_alpha, $const_alpha, ror #24	; r3 = ((r3 & 0xFF000000) >> 24);  
+		uxtb	$const_alpha, $const_alpha, ror #24	; r3 = ((r3 & 0xFF000000) >> 24);
 
 		ByteMul	$dst, $dst, $const_alpha
 
@@ -466,8 +466,8 @@ $label	PixelSourceOverConstAlpha $dst, $src, $const_alpha
 		; recover alpha
 		ldmfd	sp!, {$const_alpha}
 
-		MEND		
-		
+		MEND
+
 ;-----------------------------------------------------------------------------
 ; A macro for source over compositing one pixel and saving the result to
 ; a register.
@@ -491,6 +491,6 @@ $label	PixelSourceConstAlpha $dst, $src, $const_alpha
 		; recover r2 and r14
 		ldmfd	sp!, {r2, r14}
 
-		MEND		
-		
+		MEND
+
 		END ; File end

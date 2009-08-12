@@ -1719,7 +1719,7 @@ void QTableWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
 
     This signal is emitted whenever the selection changes.
 
-    \sa selectedItems() isItemSelected()
+    \sa selectedItems() QTableWidgetItem::isSelected()
 */
 
 

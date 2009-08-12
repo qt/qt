@@ -50,6 +50,7 @@
 #include <QStatusBar>
 #include <QListWidget>
 #include <QWidgetAction>
+#include <QDesktopWidget>
 
 #include <qmenu.h>
 #include <qstyle.h>
@@ -95,6 +96,8 @@ private slots:
     void task250673_activeMultiColumnSubMenuPosition();
     void task256918_setFont();
     void menuSizeHint();
+    void task258920_mouseBorder();
+    void setFixedWidth();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -443,7 +446,7 @@ void tst_QMenu::overrideMenuAction()
 
 	delete aFileMenu;
 
-	//after the deletion of the override menu action, 
+	//after the deletion of the override menu action,
 	//the menu should have its default menu action back
 	QCOMPARE(m->menuAction(), menuaction);
 
@@ -472,7 +475,7 @@ void tst_QMenu::statusTip()
 
     QVERIFY(btn != NULL);
 
-    //because showMenu calls QMenu::exec, we need to use a singleshot 
+    //because showMenu calls QMenu::exec, we need to use a singleshot
     //to continue the test
     QTimer::singleShot(200,this, SLOT(onStatusTipTimer()));
     btn->showMenu();
@@ -486,10 +489,10 @@ void tst_QMenu::onStatusTipTimer()
     QVERIFY(menu != 0);
     QVERIFY(menu->isVisible());
     QTest::keyClick(menu, Qt::Key_Down);
-    
+
     //we store the statustip to press escape in any case
     //otherwise, if the test fails it blocks (never gets out of QMenu::exec
-    const QString st=statustip; 
+    const QString st=statustip;
 
     menu->close(); //goes out of the menu
 
@@ -554,10 +557,10 @@ void tst_QMenu::tearOff()
     menu->popup(QPoint(0,0));
     QTest::qWait(50);
     QVERIFY(!menu->isTearOffMenuVisible());
-    
+
     QTest::mouseClick(menu, Qt::LeftButton, 0, QPoint(3, 3), 10);
     QTest::qWait(100);
-    
+
     QVERIFY(menu->isTearOffMenuVisible());
     QPointer<QMenu> torn = 0;
     foreach (QWidget *w, QApplication::allWidgets()) {
@@ -640,7 +643,7 @@ void tst_QMenu::activeSubMenuPosition()
 
     main->setActiveAction(menuAction);
     sub->setActiveAction(subAction);
-#ifdef Q_OS_SYMBIAN    
+#ifdef Q_OS_SYMBIAN
     main->popup(QPoint(50,200));
 #else
     main->popup(QPoint(200,200));
@@ -697,6 +700,12 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     };
 
     QMenu sub;
+	
+    if (sub.style()->styleHint(QStyle::SH_Menu_Scrollable, 0, &sub)) {
+        //the style prevents the menus from getting columns
+        QSKIP("the style doesn't support multiple columns, it makes the menu scrollable", SkipSingle);
+    }
+	
     sub.addAction("Sub-Item1");
     QAction *subAction = sub.addAction("Sub-Item2");
 
@@ -708,6 +717,7 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     uint i = 2;
     while (main.columnCount() < 2) {
         main.addAction(QString("Item %1").arg(i));
+        qDebug() << "adding action" << i;
         ++i;
         Q_ASSERT(i<1000);
     }
@@ -769,6 +779,52 @@ void tst_QMenu::menuSizeHint()
 
     QCOMPARE(resSize, menu.sizeHint());
 }
+
+class Menu258920 : public QMenu
+{
+    Q_OBJECT
+public slots:
+    void paintEvent(QPaintEvent *e)
+    {
+        QMenu::paintEvent(e);
+        painted = true;
+    }
+
+public:
+    bool painted;
+};
+
+void tst_QMenu::task258920_mouseBorder()
+{
+    Menu258920 menu;
+    QAction *action = menu.addAction("test");
+
+    menu.popup(QApplication::desktop()->availableGeometry().center());
+    QTest::qWait(100);
+    QRect actionRect = menu.actionGeometry(action);
+    QTest::mouseMove(&menu, actionRect.center());
+    QTest::qWait(30);
+    QTest::mouseMove(&menu, actionRect.center() + QPoint(10, 0));
+    QTest::qWait(30);
+    QCOMPARE(action, menu.activeAction());
+    menu.painted = false;
+    QTest::mouseMove(&menu, QPoint(actionRect.center().x(), actionRect.bottom() + 1));
+    QTest::qWait(30);
+    QCOMPARE(static_cast<QAction*>(0), menu.activeAction());
+    QVERIFY(menu.painted);
+}
+
+void tst_QMenu::setFixedWidth()
+{
+    QMenu menu;
+    menu.addAction("action");
+    menu.setFixedWidth(300);
+    //the sizehint should reflect the minimumwidth because the action will try to
+    //get as much space as possible
+    QCOMPARE(menu.sizeHint().width(), menu.minimumWidth());
+}
+
+
 
 QTEST_MAIN(tst_QMenu)
 #include "tst_qmenu.moc"

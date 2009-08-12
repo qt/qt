@@ -150,8 +150,8 @@ private:
     QString fixSeparators(QString somePath);
     bool filesDiffer(const QString &file1, const QString &file2);
 
-    static bool findFile(const QString &fileName);
-    static bool findFileInPaths(const QString &fileName, const QStringList &paths);
+    bool findFile(const QString &fileName);
+    static QString findFileInPaths(const QString &fileName, const QString &paths);
 #if !defined(EVAL)
     void reloadCmdLine();
     void saveCmdLine();

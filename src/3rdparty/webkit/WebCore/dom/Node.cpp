@@ -495,7 +495,7 @@ void Node::setTabIndexExplicitly(short i)
 
 String Node::nodeValue() const
 {
-  return String();
+    return String();
 }
 
 void Node::setNodeValue(const String& /*nodeValue*/, ExceptionCode& ec)
@@ -517,7 +517,7 @@ PassRefPtr<NodeList> Node::childNodes()
         document()->addNodeListCache();
     }
 
-    return ChildNodeList::create(this, &data->nodeLists()->m_childNodeListCaches);
+    return ChildNodeList::create(this, data->nodeLists()->m_childNodeListCaches.get());
 }
 
 Node *Node::lastDescendant() const
@@ -777,7 +777,7 @@ unsigned Node::nodeIndex() const
 {
     Node *_tempNode = previousSibling();
     unsigned count=0;
-    for( count=0; _tempNode; count++ )
+    for ( count=0; _tempNode; count++ )
         _tempNode = _tempNode->previousSibling();
     return count;
 }
@@ -1500,9 +1500,9 @@ PassRefPtr<NodeList> Node::getElementsByTagNameNS(const AtomicString& namespaceU
         
     pair<NodeListsNodeData::TagCacheMap::iterator, bool> result = data->nodeLists()->m_tagNodeListCaches.add(QualifiedName(nullAtom, localNameAtom, namespaceURI), 0);
     if (result.second)
-        result.first->second = new DynamicNodeList::Caches;
+        result.first->second = DynamicNodeList::Caches::create();
     
-    return TagNodeList::create(this, namespaceURI.isEmpty() ? nullAtom : namespaceURI, localNameAtom, result.first->second);
+    return TagNodeList::create(this, namespaceURI.isEmpty() ? nullAtom : namespaceURI, localNameAtom, result.first->second.get());
 }
 
 PassRefPtr<NodeList> Node::getElementsByName(const String& elementName)
@@ -1515,9 +1515,9 @@ PassRefPtr<NodeList> Node::getElementsByName(const String& elementName)
 
     pair<NodeListsNodeData::CacheMap::iterator, bool> result = data->nodeLists()->m_nameNodeListCaches.add(elementName, 0);
     if (result.second)
-        result.first->second = new DynamicNodeList::Caches;
+        result.first->second = DynamicNodeList::Caches::create();
     
-    return NameNodeList::create(this, elementName, result.first->second);
+    return NameNodeList::create(this, elementName, result.first->second.get());
 }
 
 PassRefPtr<NodeList> Node::getElementsByClassName(const String& classNames)
@@ -1530,9 +1530,9 @@ PassRefPtr<NodeList> Node::getElementsByClassName(const String& classNames)
 
     pair<NodeListsNodeData::CacheMap::iterator, bool> result = data->nodeLists()->m_classNodeListCaches.add(classNames, 0);
     if (result.second)
-        result.first->second = new DynamicNodeList::Caches;
+        result.first->second = DynamicNodeList::Caches::create();
     
-    return ClassNodeList::create(this, classNames, result.first->second);
+    return ClassNodeList::create(this, classNames, result.first->second.get());
 }
 
 template <typename Functor>
@@ -2185,7 +2185,7 @@ void Node::formatForDebugger(char* buffer, unsigned length) const
 
 void NodeListsNodeData::invalidateCaches()
 {
-    m_childNodeListCaches.reset();
+    m_childNodeListCaches->reset();
     TagCacheMap::const_iterator tagCachesEnd = m_tagNodeListCaches.end();
     for (TagCacheMap::const_iterator it = m_tagNodeListCaches.begin(); it != tagCachesEnd; ++it)
         it->second->reset();
@@ -2208,24 +2208,24 @@ bool NodeListsNodeData::isEmpty() const
     if (!m_listsWithCaches.isEmpty())
         return false;
 
-    if (m_childNodeListCaches.refCount)
+    if (m_childNodeListCaches->refCount())
         return false;
     
     TagCacheMap::const_iterator tagCachesEnd = m_tagNodeListCaches.end();
     for (TagCacheMap::const_iterator it = m_tagNodeListCaches.begin(); it != tagCachesEnd; ++it) {
-        if (it->second->refCount)
+        if (it->second->refCount())
             return false;
     }
 
     CacheMap::const_iterator classCachesEnd = m_classNodeListCaches.end();
     for (CacheMap::const_iterator it = m_classNodeListCaches.begin(); it != classCachesEnd; ++it) {
-        if (it->second->refCount)
+        if (it->second->refCount())
             return false;
     }
 
     CacheMap::const_iterator nameCachesEnd = m_nameNodeListCaches.end();
     for (CacheMap::const_iterator it = m_nameNodeListCaches.begin(); it != nameCachesEnd; ++it) {
-        if (it->second->refCount)
+        if (it->second->refCount())
             return false;
     }
 

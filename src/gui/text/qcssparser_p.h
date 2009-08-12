@@ -67,6 +67,11 @@
 
 #ifndef QT_NO_CSSPARSER
 
+// VxWorks defines NONE as (-1) "for times when NULL won't do"
+#if defined(Q_OS_VXWORKS) && defined(NONE)
+#  undef NONE
+#endif
+
 QT_BEGIN_NAMESPACE
 
 namespace QCss
@@ -223,6 +228,8 @@ enum KnownValue {
     Value_Decimal,
     Value_LowerAlpha,
     Value_UpperAlpha,
+    Value_LowerRoman,
+    Value_UpperRoman,
     Value_SmallCaps,
     Value_Uppercase,
     Value_Lowercase,

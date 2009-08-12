@@ -58,10 +58,14 @@
 #include <math.h>
 
 #ifndef Q_WS_WIN
-#   include <time.h>
-#   include <sys/time.h>
+#  include <time.h>
+#  ifndef Q_OS_VXWORKS
+#    include <sys/time.h>
+#  else
+#    include "qplatformdefs.h"
+#  endif
 #else
-#   include <windows.h>
+#  include <windows.h>
 #endif
 
 QT_BEGIN_NAMESPACE

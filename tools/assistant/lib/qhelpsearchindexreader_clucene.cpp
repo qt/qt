@@ -59,60 +59,18 @@ namespace qt {
     namespace fulltextsearch {
         namespace clucene {
 
-QHelpSearchIndexReader::QHelpSearchIndexReader()
-    : QThread()
-    , m_cancel(false)
+QHelpSearchIndexReaderClucene::QHelpSearchIndexReaderClucene()
+    : QHelpSearchIndexReader()
 {
     // nothing todo
 }
 
-QHelpSearchIndexReader::~QHelpSearchIndexReader()
+QHelpSearchIndexReaderClucene::~QHelpSearchIndexReaderClucene()
 {
-    mutex.lock();
-    this->m_cancel = true;
-    mutex.unlock();
-
-    wait();
 }
 
-void QHelpSearchIndexReader::cancelSearching()
-{
-    mutex.lock();
-    this->m_cancel = true;
-    mutex.unlock();
-}
 
-void QHelpSearchIndexReader::search(const QString &collectionFile, const QString &indexFilesFolder,
-    const QList<QHelpSearchQuery> &queryList)
-{
-    wait();
-    
-    this->hitList.clear();
-    this->m_cancel = false;
-    this->m_query = queryList;
-    this->m_collectionFile = collectionFile;
-    this->m_indexFilesFolder = indexFilesFolder;
-
-    start(QThread::NormalPriority);
-}
-
-int QHelpSearchIndexReader::hitsCount() const
-{
-    QMutexLocker lock(&mutex);
-    return hitList.count();
-}
-
-QList<QHelpSearchEngine::SearchHit> QHelpSearchIndexReader::hits(int start,
-                                                                 int end) const
-{
-    QList<QHelpSearchEngine::SearchHit> hits;
-    QMutexLocker lock(&mutex);
-    for (int i = start; i < end && i < hitList.count(); ++i)
-        hits.append(hitList.at(i));
-    return hits;
-}
-
-void QHelpSearchIndexReader::run()
+void QHelpSearchIndexReaderClucene::run()
 {
     mutex.lock();
 
@@ -140,7 +98,7 @@ void QHelpSearchIndexReader::run()
     if(QCLuceneIndexReader::indexExists(indexPath)) {
         mutex.lock();
         if (m_cancel) {
-            mutex.unlock();          
+            mutex.unlock();
             return;
         }
         mutex.unlock();
@@ -227,7 +185,7 @@ void QHelpSearchIndexReader::run()
     }
 }
 
-bool QHelpSearchIndexReader::defaultQuery(const QString &term, QCLuceneBooleanQuery &booleanQuery,
+bool QHelpSearchIndexReaderClucene::defaultQuery(const QString &term, QCLuceneBooleanQuery &booleanQuery,
     QCLuceneStandardAnalyzer &analyzer)
 {
     const QLatin1String c("content");
@@ -244,7 +202,7 @@ bool QHelpSearchIndexReader::defaultQuery(const QString &term, QCLuceneBooleanQu
     return false;
 }
 
-bool QHelpSearchIndexReader::buildQuery(QCLuceneBooleanQuery &booleanQuery,
+bool QHelpSearchIndexReaderClucene::buildQuery(QCLuceneBooleanQuery &booleanQuery,
     const QList<QHelpSearchQuery> &queryList, QCLuceneStandardAnalyzer &analyzer)
 {
     foreach (const QHelpSearchQuery query, queryList) {
@@ -344,7 +302,7 @@ bool QHelpSearchIndexReader::buildQuery(QCLuceneBooleanQuery &booleanQuery,
     return true;
 }
 
-bool QHelpSearchIndexReader::buildTryHarderQuery(QCLuceneBooleanQuery &booleanQuery,
+bool QHelpSearchIndexReaderClucene::buildTryHarderQuery(QCLuceneBooleanQuery &booleanQuery,
     const QList<QHelpSearchQuery> &queryList, QCLuceneStandardAnalyzer &analyzer)
 {
     bool retVal = false;
@@ -367,7 +325,7 @@ bool QHelpSearchIndexReader::buildTryHarderQuery(QCLuceneBooleanQuery &booleanQu
     return retVal;
 }
 
-void QHelpSearchIndexReader::boostSearchHits(const QHelpEngineCore &engine,
+void QHelpSearchIndexReaderClucene::boostSearchHits(const QHelpEngineCore &engine,
     QList<QHelpSearchEngine::SearchHit> &hitList, const QList<QHelpSearchQuery> &queryList)
 {
     foreach (const QHelpSearchQuery query, queryList) {

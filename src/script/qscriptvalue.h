@@ -72,7 +72,7 @@ typedef QList<QScriptValue> QScriptValueList;
 typedef double qsreal;
 
 class QScriptValuePrivate;
-struct QScriptValuePrivatePointerHandler;
+struct QScriptValuePrivatePointerDeleter;
 class Q_SCRIPT_EXPORT QScriptValue
 {
 public:
@@ -223,7 +223,7 @@ private:
     inline QScriptValue(QScriptEngine *, void *);
 
 private:
-    QScopedCustomPointer<QScriptValuePrivate, QScriptValuePrivatePointerHandler> d_ptr;
+    QCustomScopedPointer<QScriptValuePrivate, QScriptValuePrivatePointerDeleter> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptValue)
 };

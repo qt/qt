@@ -37,7 +37,7 @@ namespace WebCore {
     class CachedPage;
     class HistoryItem;
     
-    class PageCache : Noncopyable {
+    class PageCache : public Noncopyable {
     public:
         friend PageCache* pageCache();
 
@@ -49,6 +49,10 @@ namespace WebCore {
         CachedPage* get(HistoryItem* item) { return item ? item->m_cachedPage.get() : 0; }
 
         void releaseAutoreleasedPagesNow();
+        
+        int pageCount() const { return m_size; }
+        int frameCount() const;
+        int autoreleasedPageCount() const;
 
     private:
         typedef HashSet<RefPtr<CachedPage> > CachedPageSet;

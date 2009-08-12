@@ -85,7 +85,12 @@ QT_BEGIN_NAMESPACE
 
 extern int qt_defaultDpiY(); // in qfont.cpp
 
-Q_GUI_EXPORT bool qt_enable_test_font = false;
+bool qt_enable_test_font = false;
+
+Q_AUTOTEST_EXPORT void qt_setQtEnableTestFont(bool value)
+{
+    qt_enable_test_font = value;
+}
 
 static int getFontWeight(const QString &weightString)
 {
@@ -226,7 +231,9 @@ struct QtFontStyle
         delete [] setwidthName;
 #endif
 #if defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
-        while (count--) {
+        while (count) {
+            // bitfield count-- in while condition does not work correctly in mwccsym2
+            count--;
 #ifdef Q_WS_X11
             free(pixelSizes[count].encodings);
 #endif
@@ -2586,7 +2593,7 @@ QStringList QFontDatabase::applicationFontFamilies(int id)
     \sa removeApplicationFont(), addApplicationFont(), addApplicationFontFromData()
 */
 
-/*! 
+/*!
     \fn bool QFontDatabase::supportsThreadedFontRendering()
     \since 4.4
 

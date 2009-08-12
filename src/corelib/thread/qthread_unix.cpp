@@ -66,6 +66,13 @@
 #ifdef Q_OS_BSD4
 #include <sys/sysctl.h>
 #endif
+#ifdef Q_OS_VXWORKS
+#  if (_WRS_VXWORKS_MAJOR > 6) || ((_WRS_VXWORKS_MAJOR == 6) && (_WRS_VXWORKS_MINOR >= 6))
+#    include <vxCpuLib.h>
+#    include <cpuset.h>
+#    define QT_VXWORKS_HAS_CPUSET
+#  endif
+#endif
 
 #if defined(Q_OS_MAC)
 # ifdef qDebug
@@ -90,6 +97,13 @@ static pthread_key_t current_thread_data_key;
 
 static void destroy_current_thread_data(void *p)
 {
+#if defined(Q_OS_VXWORKS)
+    // Calling setspecific(..., 0) sets the value to 0 for ALL threads.
+    // The 'set to 1' workaround adds a bit of an overhead though,
+    // since this function is called twice now.
+    if (p == (void *)1)
+        return;
+#endif
     // POSIX says the value in our key is set to zero before calling
     // this destructor function, so we need to set it back to the
     // right value...
@@ -98,7 +112,12 @@ static void destroy_current_thread_data(void *p)
     // ... but we must reset it to zero before returning so we aren't
     // called again (POSIX allows implementations to call destructor
     // functions repeatedly until all values are zero)
-    pthread_setspecific(current_thread_data_key, 0);
+    pthread_setspecific(current_thread_data_key,
+#if defined(Q_OS_VXWORKS)
+                                                 (void *)1);
+#else
+                                                 0);
+#endif
 }
 
 static void create_current_thread_data_key()
@@ -178,7 +197,7 @@ void QThreadPrivate::createEventDispatcher(QThreadData *data)
     else
 #endif
 #ifdef Q_OS_SYMBIAN
-    	data->eventDispatcher = new QEventDispatcherSymbian;
+        data->eventDispatcher = new QEventDispatcherSymbian;
 #else
         data->eventDispatcher = new QEventDispatcherUNIX;
 #endif
@@ -193,7 +212,7 @@ void *QThreadPrivate::start(void *arg)
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
     pthread_cleanup_push(QThreadPrivate::finish, arg);
 #endif
-    
+
     QThread *thr = reinterpret_cast<QThread *>(arg);
     QThreadData *data = QThreadData::get2(thr);
 
@@ -226,7 +245,7 @@ void *QThreadPrivate::start(void *arg)
 #ifndef Q_OS_SYMBIAN
     pthread_cleanup_pop(1);
 #else
-    QThreadPrivate::finish(arg);    
+    QThreadPrivate::finish(arg);
 #endif
 
     return 0;
@@ -266,7 +285,7 @@ void QThreadPrivate::finish(void *arg)
     d->thread_id = 0;
 #ifdef Q_OS_SYMBIAN
     if (closeNativeHandle)
-    	d->data->symbian_thread_handle.Close();
+        d->data->symbian_thread_handle.Close();
 #endif
     d->thread_done.wakeAll();
 #ifdef Q_OS_SYMBIAN
@@ -323,10 +342,28 @@ int QThread::idealThreadCount()
     // IRIX
     cores = (int)sysconf(_SC_NPROC_ONLN);
 #elif defined(Q_OS_INTEGRITY)
-    // ### TODO - how to get the amound of CPUs on INTEGRITY?
-#elif defined(Q_OS_SYMBIAN)
-	// ### TODO - Get the number of cores from HAL? when multicore architectures (SMP) are supported
+    // as of aug 2008 Integrity only supports one single core CPU
     cores = 1;
+#elif defined(Q_OS_SYMBIAN)
+	 // ### TODO - Get the number of cores from HAL? when multicore architectures (SMP) are supported
+    cores = 1;
+#elif defined(Q_OS_VXWORKS)
+    // VxWorks
+#  if defined(QT_VXWORKS_HAS_CPUSET)
+    cpuset_t cpus = vxCpuEnabledGet();
+    cores = 0;
+
+    // 128 cores should be enough for everyone ;)
+    for (int i = 0; i < 128 && !CPUSET_ISZERO(cpus); ++i) {
+        if (CPUSET_ISSET(cpus, i)) {
+            CPUSET_CLR(cpus, i);
+            cores++;
+        }
+    }
+#  else
+    // as of aug 2008 VxWorks < 6.6 only supports one single core CPU
+    cores = 1;
+#  endif
 #else
     // the rest: Linux, Solaris, AIX, Tru64
     cores = (int)sysconf(_SC_NPROCESSORS_ONLN);
@@ -545,10 +582,10 @@ void QThread::terminate()
         d->terminatePending = true;
         return;
     }
-   
+
     d->terminated = true;
     QThreadPrivate::finish(this, false, false);
-    d->data->symbian_thread_handle.Terminate(KErrNone);         
+    d->data->symbian_thread_handle.Terminate(KErrNone);
     d->data->symbian_thread_handle.Close();
 #endif
 
@@ -592,7 +629,7 @@ void QThread::setTerminationEnabled(bool enabled)
         d->terminated = true;
         QThreadPrivate::finish(thr, false);
         locker.unlock(); // don't leave the mutex locked!
-	    pthread_exit(NULL);    
+        pthread_exit(NULL);
     }
 #endif
 }

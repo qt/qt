@@ -4,7 +4,7 @@
 
 
 //! [1]
-configure -qt-kbd-s15000
+configure -qt-kbd-linuxinput
 //! [1]
 
 

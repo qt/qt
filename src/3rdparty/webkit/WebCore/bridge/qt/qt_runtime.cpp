@@ -167,7 +167,7 @@ QVariant convertValueToQVariant(ExecState* exec, JSValue value, QMetaType::Type 
         return QVariant();
     }
 
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
     JSRealType type = valueRealType(exec, value);
     if (hint == QMetaType::Void) {
         switch(type) {
@@ -770,7 +770,7 @@ JSValue convertQVariantToValue(ExecState* exec, PassRefPtr<RootObject> root, con
         return jsNull();
     }
 
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
 
     if (type == QMetaType::Bool)
         return jsBoolean(variant.toBool());
@@ -907,7 +907,7 @@ JSValue convertQVariantToValue(ExecState* exec, PassRefPtr<RootObject> root, con
 const ClassInfo QtRuntimeMethod::s_info = { "QtRuntimeMethod", 0, 0, 0 };
 
 QtRuntimeMethod::QtRuntimeMethod(QtRuntimeMethodData* dd, ExecState* exec, const Identifier& ident, PassRefPtr<QtInstance> inst)
-    : InternalFunction(&exec->globalData(), getDOMStructure<QtRuntimeMethod>(exec), ident)
+    : InternalFunction(&exec->globalData(), deprecatedGetDOMStructure<QtRuntimeMethod>(exec), ident)
     , d_ptr(dd)
 {
     QW_D(QtRuntimeMethod);
@@ -916,6 +916,8 @@ QtRuntimeMethod::QtRuntimeMethod(QtRuntimeMethodData* dd, ExecState* exec, const
 
 QtRuntimeMethod::~QtRuntimeMethod()
 {
+    QW_D(QtRuntimeMethod);
+    d->m_instance->removeCachedMethod(this);
     delete d_ptr;
 }
 
@@ -1345,7 +1347,7 @@ JSValue QtRuntimeMetaMethod::call(ExecState* exec, JSObject* functionObject, JSV
         return jsUndefined();
 
     // We have to pick a method that matches..
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
 
     QObject *obj = d->m_instance->getObject();
     if (obj) {
@@ -1438,7 +1440,7 @@ JSValue QtRuntimeConnectionMethod::call(ExecState* exec, JSObject* functionObjec
 {
     QtRuntimeConnectionMethodData* d = static_cast<QtRuntimeConnectionMethod *>(functionObject)->d_func();
 
-    JSLock lock(false);
+    JSLock lock(SilenceAssertionsOnly);
 
     QObject* sender = d->m_instance->getObject();
 
@@ -1668,7 +1670,7 @@ void QtConnectionObject::execute(void **argv)
 
         int argc = parameterTypes.count();
 
-        JSLock lock(false);
+        JSLock lock(SilenceAssertionsOnly);
 
         // ### Should the Interpreter/ExecState come from somewhere else?
         RefPtr<RootObject> ro = m_instance->rootObject();

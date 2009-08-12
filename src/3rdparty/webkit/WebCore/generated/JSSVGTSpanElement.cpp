@@ -40,7 +40,7 @@ static const HashTableValue JSSVGTSpanElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGTSpanElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGTSpanElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGTSpanElementPrototypeTableValues, 0 };
 #else
@@ -56,8 +56,8 @@ JSObject* JSSVGTSpanElementPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSSVGTSpanElement::s_info = { "SVGTSpanElement", &JSSVGTextPositioningElement::s_info, 0, 0 };
 
-JSSVGTSpanElement::JSSVGTSpanElement(PassRefPtr<Structure> structure, PassRefPtr<SVGTSpanElement> impl)
-    : JSSVGTextPositioningElement(structure, impl)
+JSSVGTSpanElement::JSSVGTSpanElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTSpanElement> impl)
+    : JSSVGTextPositioningElement(structure, globalObject, impl)
 {
 }
 

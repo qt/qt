@@ -527,7 +527,7 @@ void QBoxLayoutPrivate::calcHfw(int w)
     You will almost always want to use QVBoxLayout and QHBoxLayout
     rather than QBoxLayout because of their convenient constructors.
 
-    \sa QGridLayout, QStackedLayout, {Layout Classes}
+    \sa QGridLayout, QStackedLayout, {Layout Management}
 */
 
 /*!
@@ -925,9 +925,15 @@ void QBoxLayout::insertSpacing(int index, int size)
     else
         b = QLayoutPrivate::createSpacerItem(this, 0, size, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
-    QBoxLayoutItem *it = new QBoxLayoutItem(b);
-    it->magic = true;
-    d->list.insert(index, it);
+    QT_TRY {
+        QBoxLayoutItem *it = new QBoxLayoutItem(b);
+        it->magic = true;
+        d->list.insert(index, it);
+
+    } QT_CATCH(...) {
+        delete b;
+        QT_RETHROW;
+    }
     invalidate();
 }
 
@@ -1027,8 +1033,21 @@ void QBoxLayout::insertWidget(int index, QWidget *widget, int stretch,
         index = d->list.count();
     QWidgetItem *b = QLayoutPrivate::createWidgetItem(this, widget);
     b->setAlignment(alignment);
-    QBoxLayoutItem *it = new QBoxLayoutItem(b, stretch);
-    d->list.insert(index, it);
+
+    QBoxLayoutItem *it;
+    QT_TRY{
+        it = new QBoxLayoutItem(b, stretch);
+    } QT_CATCH(...) {
+        delete b;
+        QT_RETHROW;
+    }
+
+    QT_TRY{
+        d->list.insert(index, it);
+    } QT_CATCH(...) {
+        delete it;
+        QT_RETHROW;
+    }
     invalidate();
 }
 
@@ -1295,7 +1314,7 @@ QBoxLayout::Direction QBoxLayout::direction() const
 
     \image qhboxlayout-with-5-children.png Horizontal box layout with five child widgets
 
-    \sa QVBoxLayout, QGridLayout, QStackedLayout, {Layout Classes}, {Basic Layouts Example}
+    \sa QVBoxLayout, QGridLayout, QStackedLayout, {Layout Management}, {Basic Layouts Example}
 */
 
 
@@ -1413,7 +1432,7 @@ QHBoxLayout::~QHBoxLayout()
 
     \image qvboxlayout-with-5-children.png Horizontal box layout with five child widgets
 
-    \sa QHBoxLayout, QGridLayout, QStackedLayout, {Layout Classes}, {Basic Layouts Example}
+    \sa QHBoxLayout, QGridLayout, QStackedLayout, {Layout Management}, {Basic Layouts Example}
 */
 
 /*!

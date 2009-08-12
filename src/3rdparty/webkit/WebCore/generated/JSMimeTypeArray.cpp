@@ -45,7 +45,7 @@ static const HashTableValue JSMimeTypeArrayTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMimeTypeArrayTable =
+static JSC_CONST_HASHTABLE HashTable JSMimeTypeArrayTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSMimeTypeArrayTableValues, 0 };
 #else
@@ -59,19 +59,19 @@ static const HashTableValue JSMimeTypeArrayConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMimeTypeArrayConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSMimeTypeArrayConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSMimeTypeArrayConstructorTableValues, 0 };
 #else
     { 1, 0, JSMimeTypeArrayConstructorTableValues, 0 };
 #endif
 
-class JSMimeTypeArrayConstructor : public DOMObject {
+class JSMimeTypeArrayConstructor : public DOMConstructorObject {
 public:
-    JSMimeTypeArrayConstructor(ExecState* exec)
-        : DOMObject(JSMimeTypeArrayConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSMimeTypeArrayConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSMimeTypeArrayConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSMimeTypeArrayPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSMimeTypeArrayPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -99,7 +99,7 @@ static const HashTableValue JSMimeTypeArrayPrototypeTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSMimeTypeArrayPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSMimeTypeArrayPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSMimeTypeArrayPrototypeTableValues, 0 };
 #else
@@ -120,8 +120,8 @@ bool JSMimeTypeArrayPrototype::getOwnPropertySlot(ExecState* exec, const Identif
 
 const ClassInfo JSMimeTypeArray::s_info = { "MimeTypeArray", 0, &JSMimeTypeArrayTable, 0 };
 
-JSMimeTypeArray::JSMimeTypeArray(PassRefPtr<Structure> structure, PassRefPtr<MimeTypeArray> impl)
-    : DOMObject(structure)
+JSMimeTypeArray::JSMimeTypeArray(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<MimeTypeArray> impl)
+    : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {
 }
@@ -167,14 +167,16 @@ bool JSMimeTypeArray::getOwnPropertySlot(ExecState* exec, unsigned propertyName,
 
 JSValue jsMimeTypeArrayLength(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSMimeTypeArray* castedThis = static_cast<JSMimeTypeArray*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    MimeTypeArray* imp = static_cast<MimeTypeArray*>(static_cast<JSMimeTypeArray*>(asObject(slot.slotBase()))->impl());
+    MimeTypeArray* imp = static_cast<MimeTypeArray*>(castedThis->impl());
     return jsNumber(exec, imp->length());
 }
 
 JSValue jsMimeTypeArrayConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSMimeTypeArray*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSMimeTypeArray* domObject = static_cast<JSMimeTypeArray*>(asObject(slot.slotBase()));
+    return JSMimeTypeArray::getConstructor(exec, domObject->globalObject());
 }
 void JSMimeTypeArray::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
@@ -183,9 +185,9 @@ void JSMimeTypeArray::getPropertyNames(ExecState* exec, PropertyNameArray& prope
      Base::getPropertyNames(exec, propertyNames);
 }
 
-JSValue JSMimeTypeArray::getConstructor(ExecState* exec)
+JSValue JSMimeTypeArray::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSMimeTypeArrayConstructor>(exec);
+    return getDOMConstructor<JSMimeTypeArrayConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsMimeTypeArrayPrototypeFunctionItem(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -198,7 +200,7 @@ JSValue JSC_HOST_CALL jsMimeTypeArrayPrototypeFunctionItem(ExecState* exec, JSOb
     unsigned index = args.at(0).toInt32(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->item(index)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->item(index)));
     return result;
 }
 
@@ -212,7 +214,7 @@ JSValue JSC_HOST_CALL jsMimeTypeArrayPrototypeFunctionNamedItem(ExecState* exec,
     const UString& name = args.at(0).toString(exec);
 
 
-    JSC::JSValue result = toJS(exec, WTF::getPtr(imp->namedItem(name)));
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->namedItem(name)));
     return result;
 }
 
@@ -220,11 +222,11 @@ JSValue JSC_HOST_CALL jsMimeTypeArrayPrototypeFunctionNamedItem(ExecState* exec,
 JSValue JSMimeTypeArray::indexGetter(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSMimeTypeArray* thisObj = static_cast<JSMimeTypeArray*>(asObject(slot.slotBase()));
-    return toJS(exec, static_cast<MimeTypeArray*>(thisObj->impl())->item(slot.index()));
+    return toJS(exec, thisObj->globalObject(), static_cast<MimeTypeArray*>(thisObj->impl())->item(slot.index()));
 }
-JSC::JSValue toJS(JSC::ExecState* exec, MimeTypeArray* object)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, MimeTypeArray* object)
 {
-    return getDOMObjectWrapper<JSMimeTypeArray>(exec, object);
+    return getDOMObjectWrapper<JSMimeTypeArray>(exec, globalObject, object);
 }
 MimeTypeArray* toMimeTypeArray(JSC::JSValue value)
 {

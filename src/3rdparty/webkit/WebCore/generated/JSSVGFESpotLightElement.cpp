@@ -49,7 +49,7 @@ static const HashTableValue JSSVGFESpotLightElementTableValues[9] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFESpotLightElementTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFESpotLightElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 15, JSSVGFESpotLightElementTableValues, 0 };
 #else
@@ -63,7 +63,7 @@ static const HashTableValue JSSVGFESpotLightElementPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGFESpotLightElementPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGFESpotLightElementPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGFESpotLightElementPrototypeTableValues, 0 };
 #else
@@ -79,8 +79,8 @@ JSObject* JSSVGFESpotLightElementPrototype::self(ExecState* exec, JSGlobalObject
 
 const ClassInfo JSSVGFESpotLightElement::s_info = { "SVGFESpotLightElement", &JSSVGElement::s_info, &JSSVGFESpotLightElementTable, 0 };
 
-JSSVGFESpotLightElement::JSSVGFESpotLightElement(PassRefPtr<Structure> structure, PassRefPtr<SVGFESpotLightElement> impl)
-    : JSSVGElement(structure, impl)
+JSSVGFESpotLightElement::JSSVGFESpotLightElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFESpotLightElement> impl)
+    : JSSVGElement(structure, globalObject, impl)
 {
 }
 
@@ -96,66 +96,74 @@ bool JSSVGFESpotLightElement::getOwnPropertySlot(ExecState* exec, const Identifi
 
 JSValue jsSVGFESpotLightElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFESpotLightElement* castedThis = static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
+    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->xAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFESpotLightElementY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFESpotLightElement* castedThis = static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
+    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->yAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFESpotLightElementZ(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFESpotLightElement* castedThis = static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
+    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->zAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFESpotLightElementPointsAtX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFESpotLightElement* castedThis = static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
+    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->pointsAtXAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFESpotLightElementPointsAtY(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFESpotLightElement* castedThis = static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
+    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->pointsAtYAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFESpotLightElementPointsAtZ(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFESpotLightElement* castedThis = static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
+    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->pointsAtZAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFESpotLightElementSpecularExponent(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFESpotLightElement* castedThis = static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
+    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->specularExponentAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFESpotLightElementLimitingConeAngle(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGFESpotLightElement* castedThis = static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(static_cast<JSSVGFESpotLightElement*>(asObject(slot.slotBase()))->impl());
+    SVGFESpotLightElement* imp = static_cast<SVGFESpotLightElement*>(castedThis->impl());
     RefPtr<SVGAnimatedNumber> obj = imp->limitingConeAngleAnimated();
-    return toJS(exec, obj.get(), imp);
+    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 

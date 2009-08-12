@@ -63,9 +63,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 static const char yv12ToRgb[] =
 "!!ARBfp1.0"
 "PARAM c[5] = { program.local[0..1],"
-"                { 1.164, 0, 1.596, 0.5 },"
-"                { 0.0625, 1.164, -0.391, -0.81300002 },"
-"                { 1.164, 2.0179999, 0 } };"
+"{ 1.164, 0, 1.596, 0.5 },"
+"{ 0.0625, 1.164, -0.391, -0.81300002 },"
+"{ 1.164, 2.0179999, 0 } };"
 "TEMP R0;"
 "TEX R0.x, fragment.texcoord[0], texture[1], 2D;"
 "ADD R0.y, R0.x, -c[2].w;"
@@ -89,11 +89,11 @@ static const char yv12ToRgb[] =
 "END";
 
 static const char yuy2ToRgb[] =
-    "!!ARBfp1.0"
+"!!ARBfp1.0"
 "PARAM c[5] = { program.local[0..1],"
-"                { 0.5, 2, 1, 0.0625 },"
-"                { 1.164, 0, 1.596, 2.0179999 },"
-"                { 1.164, -0.391, -0.81300002 } };"
+"{ 0.5, 2, 1, 0.0625 },"
+"{ 1.164, 0, 1.596, 2.0179999 },"
+"{ 1.164, -0.391, -0.81300002 } };"
 "TEMP R0;"
 "TEMP R1;"
 "TEMP R2;"
@@ -149,24 +149,16 @@ namespace Phonon
     {
         static const QVector<AM_MEDIA_TYPE> videoMediaTypes()
         {
-            AM_MEDIA_TYPE mt;
-            qMemSet(&mt, 0, sizeof(AM_MEDIA_TYPE));
-            mt.majortype = MEDIATYPE_Video;
-
-            //we accept any video format
-            mt.formattype = GUID_NULL;
-            mt.cbFormat = 0;
-            mt.pbFormat = 0;
+            AM_MEDIA_TYPE mt = { MEDIATYPE_Video, MEDIASUBTYPE_YV12, 0, 0, 0, GUID_NULL, 0, 0, 0 };
 
             QVector<AM_MEDIA_TYPE> ret;
 
-            //we support YUV (YV12 and YUY2) and RGB32
-            mt.subtype = MEDIASUBTYPE_YV12;
-            ret << mt;
+            //we add all the subtypes we support
+            ret << mt; //YV12
             mt.subtype = MEDIASUBTYPE_YUY2;
-            ret << mt;
+            ret << mt; //YUY2
             mt.subtype = MEDIASUBTYPE_RGB32;
-            ret << mt;
+            ret << mt; //RGB32
 
             return ret;
         }
@@ -202,8 +194,8 @@ namespace Phonon
                 m_sampleBuffer = ComPointer<IMediaSample>();
 #ifndef QT_NO_OPENGL
                 freeGLResources();
-#endif // QT_NO_OPENGL
                 m_textureUploaded = false;
+#endif // QT_NO_OPENGL
             }
 
             void endOfStream()
@@ -322,7 +314,6 @@ namespace Phonon
             REFERENCE_TIME m_start;
             HANDLE m_renderEvent, m_receiveCanWait;         // Signals sample to render
             QSize m_size;
-            bool m_textureUploaded;
 
             //mixer settings
             qreal m_brightness,
@@ -364,6 +355,7 @@ namespace Phonon
 
             bool m_checkedPrograms;
             bool m_usingOpenGL;
+            bool m_textureUploaded;
             GLuint m_program[2];
             GLuint m_texture[3];
 #endif
@@ -444,7 +436,7 @@ namespace Phonon
         QBaseFilter(CLSID_NULL), m_inputPin(new VideoRendererSoftPin(this)),
             m_renderer(renderer), m_start(0)
 #ifndef QT_NO_OPENGL
-            ,m_usingOpenGL(false), m_checkedPrograms(false), m_textureUploaded(false)
+            , m_checkedPrograms(false), m_usingOpenGL(false), m_textureUploaded(false)
 #endif
         {
             m_renderEvent    = ::CreateEvent(0, 0, 0, 0);

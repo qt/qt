@@ -197,7 +197,7 @@ void QDesktopWidgetPrivate::init()
 
     if (screens) {
         // leaks QWidget* pointers on purpose, can't delete them as pointer escapes
-        screens = (QWidget**) realloc(screens, j * sizeof(QWidget*));
+        screens = q_check_ptr((QWidget**) realloc(screens, j * sizeof(QWidget*)));
         if (j > screenCount)
             memset(&screens[screenCount], 0, (j-screenCount) * sizeof(QWidget*));
     }
@@ -285,26 +285,36 @@ const QRect QDesktopWidget::availableGeometry(int screen) const
     if (d->workareas[screen].isValid())
         return d->workareas[screen];
 
-    if ((d->screenCount == 1 || !isVirtualDesktop())
-        && X11->isSupportedByWM(ATOM(_NET_WORKAREA))) {
+    if (X11->isSupportedByWM(ATOM(_NET_WORKAREA))) {
+        int x11Screen = isVirtualDesktop() ? DefaultScreen(X11->display) : screen;
+
         Atom ret;
         int format, e;
         unsigned char *data = 0;
         unsigned long nitems, after;
 
         e = XGetWindowProperty(X11->display,
-                                QX11Info::appRootWindow(screen),
-                                ATOM(_NET_WORKAREA), 0, 4, False, XA_CARDINAL,
-                                &ret, &format, &nitems, &after, &data);
+                               QX11Info::appRootWindow(x11Screen),
+                               ATOM(_NET_WORKAREA), 0, 4, False, XA_CARDINAL,
+                               &ret, &format, &nitems, &after, &data);
 
+        QRect workArea;
         if (e == Success && ret == XA_CARDINAL &&
             format == 32 && nitems == 4) {
             long *workarea = (long *) data;
-            d->workareas[screen].setRect(workarea[0], workarea[1],
-                                          workarea[2], workarea[3]);
+            workArea = QRect(workarea[0], workarea[1], workarea[2], workarea[3]);
         } else {
-            d->workareas[screen] = screenGeometry(screen);
+            workArea = screenGeometry(screen);
         }
+
+        if (isVirtualDesktop()) {
+            // intersect the workarea (which spawns all Xinerama screens) with the rect for the
+            // requested screen
+            workArea &= screenGeometry(screen);
+        }
+
+        d->workareas[screen] = workArea;
+
         if (data)
             XFree(data);
     } else {
@@ -372,7 +382,32 @@ int QDesktopWidget::screenNumber(const QPoint &point) const
 void QDesktopWidget::resizeEvent(QResizeEvent *event)
 {
     Q_D(QDesktopWidget);
+    int oldScreenCount = d->screenCount;
+    QVector<QRect> oldRects(oldScreenCount);
+    QVector<QRect> oldWorks(oldScreenCount);
+    for (int i = 0; i < oldScreenCount; ++i) {
+        oldRects[i] = d->rects[i];
+        oldWorks[i] = d->workareas[i];
+    }
+
     d->init();
+
+    for (int i = 0; i < qMin(oldScreenCount, d->screenCount); ++i) {
+        if (oldRects.at(i) != d->rects[i])
+            emit resized(i);
+    }
+
+    // ### workareas are just reset by init, not filled with new values
+    // ### so this will not work correctly
+    for (int j = 0; j < qMin(oldScreenCount, d->screenCount); ++j) {
+        if (oldWorks.at(j) != d->workareas[j])
+            emit workAreaResized(j);
+    }
+
+    if (oldScreenCount != d->screenCount) {
+        emit screenCountChanged(d->screenCount);
+    }
+
     qt_desktopwidget_workarea_dirty = true;
     QWidget::resizeEvent(event);
 }

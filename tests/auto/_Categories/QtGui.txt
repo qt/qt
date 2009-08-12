@@ -1,4 +1,7 @@
-languagechange
+exceptionsafety_objects
+#gestures  This test is incomplete and also missing from auto.pro -> disabled for now
+#languagechange  Uses unexported method QThreadData::current() and also missing from auto.pro -> disabled for now
+math3d
 modeltest
 qabstractbutton
 qabstractitemview
@@ -35,12 +38,12 @@ qdesktopwidget
 qdial
 qdialog
 qdialogbuttonbox
-qdirectpainter cetest-subdir: test
+#qdirectpainter cetest-subdir: test TEST IS FOR EMBEDDED LINUX ONLY
 qdirmodel
 qdockwidget
 qdoublespinbox
 qdoublevalidator
-qdrag 
+qdrag
 qerrormessage
 qfiledialog
 qfileiconprovider
@@ -59,6 +62,7 @@ qgraphicsitemanimation
 qgraphicslayout
 qgraphicslayoutitem
 qgraphicslinearlayout
+qgraphicsobject
 qgraphicspixmapitem
 qgraphicspolygonitem
 qgraphicsproxywidget
@@ -75,6 +79,7 @@ qimage
 qimageiohandler
 qimagereader
 qimagewriter
+qinputcontext
 qinputdialog
 qintvalidator
 qitemdelegate
@@ -82,7 +87,6 @@ qitemeditorfactory
 qitemmodel
 qitemselectionmodel
 qitemview
-qkeyevent
 qkeysequence
 qlabel
 qlayout
@@ -113,7 +117,6 @@ qpixmap
 qpixmapcache
 qpixmapfilter
 qplaintextedit
-qpointarray
 #qprinter NO PRINTING SUPPORT ON SYMBIAN YET
 #qprinterinfo
 qprogressbar
@@ -161,7 +164,7 @@ qtextlist
 qtextobject
 qtextodfwriter
 #This test can only be compiled on HW currently, because it does not use reduced exports
-#Because we are planning to use class level exports also in HW later on, there is no 
+#Because we are planning to use class level exports also in HW later on, there is no
 #sense to enable this at all
 #qtextpiecetable
 qtextscriptengine
@@ -170,6 +173,7 @@ qtoolbar
 qtoolbox
 qtoolbutton
 qtooltip
+qtouchevent
 qtransform
 qtransformedscreen
 qtreeview

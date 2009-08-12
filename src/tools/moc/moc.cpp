@@ -337,11 +337,10 @@ bool Moc::testFunctionAttribute(Token tok, FunctionDef *def)
 bool Moc::parseFunction(FunctionDef *def, bool inMacro)
 {
     def->isVirtual = false;
-    while (test(INLINE) || test(STATIC) || test(VIRTUAL)
-           || testFunctionAttribute(def)) {
-        if (lookup() == VIRTUAL)
-            def->isVirtual = true;
-    }
+    //skip modifiers and attributes
+    while (test(INLINE) || test(STATIC) ||
+        (test(VIRTUAL) && (def->isVirtual = true)) //mark as virtual
+        || testFunctionAttribute(def)) {}
     bool templateFunction = (lookup() == TEMPLATE);
     def->type = parseType();
     if (def->type.name.isEmpty()) {
@@ -429,11 +428,10 @@ bool Moc::parseFunction(FunctionDef *def, bool inMacro)
 bool Moc::parseMaybeFunction(const ClassDef *cdef, FunctionDef *def)
 {
     def->isVirtual = false;
-    while (test(EXPLICIT) || test(INLINE) || test(STATIC) || test(VIRTUAL)
-           || testFunctionAttribute(def)) {
-        if (lookup() == VIRTUAL)
-            def->isVirtual = true;
-    }
+    //skip modifiers and attributes
+    while (test(EXPLICIT) || test(INLINE) || test(STATIC) ||
+        (test(VIRTUAL) && (def->isVirtual = true)) //mark as virtual
+        || testFunctionAttribute(def)) {}
     bool tilde = test(TILDE);
     def->type = parseType();
     if (def->type.name.isEmpty())
@@ -862,7 +860,7 @@ void Moc::parseSignals(ClassDef *def)
         funcDef.access = FunctionDef::Protected;
         parseFunction(&funcDef);
         if (funcDef.isVirtual)
-            error("Signals cannot be declared virtual");
+            warning("Signals cannot be declared virtual");
         if (funcDef.inlineCode)
             error("Not a signal declaration");
         def->signalList += funcDef;
@@ -910,6 +908,15 @@ void Moc::parseProperty(ClassDef *def)
     propDef.name = lexem();
     while (test(IDENTIFIER)) {
         QByteArray l = lexem();
+
+        if (l[0] == 'C' && l == "CONSTANT") {
+            propDef.constant = true;
+            continue;
+        } else if(l[0] == 'F' && l == "FINAL") {
+            propDef.final = true;
+            continue;
+        }
+
         QByteArray v, v2;
         if (test(LPAREN)) {
             v = lexemUntil(RPAREN);
@@ -965,6 +972,23 @@ void Moc::parseProperty(ClassDef *def)
         msg += " has no READ accessor function. The property will be invalid.";
         warning(msg.constData());
     }
+    if (propDef.constant && !propDef.write.isNull()) {
+        QByteArray msg;
+        msg += "Property declaration ";
+        msg += propDef.name;
+        msg += " is both WRITEable and CONSTANT. CONSTANT will be ignored.";
+        propDef.constant = false;
+        warning(msg.constData());
+    }
+    if (propDef.constant && !propDef.notify.isNull()) {
+        QByteArray msg;
+        msg += "Property declaration ";
+        msg += propDef.name;
+        msg += " is both NOTIFYable and CONSTANT. CONSTANT will be ignored.";
+        propDef.constant = false;
+        warning(msg.constData());
+    }
+
     if(!propDef.notify.isEmpty())
         def->notifyableProperties++;
 

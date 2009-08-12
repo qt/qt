@@ -156,7 +156,7 @@ static void construct(QVariant::Private *x, const void *copy)
         x->data.b = copy ? *static_cast<const bool *>(copy) : false;
         break;
     case QVariant::Double:
-#if defined(Q_CC_RVCT) 
+#if defined(Q_CC_RVCT)
         // Using trinary operator with 64bit constants crashes when ran on Symbian device
         if (copy){
             x->data.d = *static_cast<const double*>(copy);
@@ -165,13 +165,16 @@ static void construct(QVariant::Private *x, const void *copy)
         }
 #else
         x->data.d = copy ? *static_cast<const double*>(copy) : 0.0;
-#endif        
+#endif
         break;
     case QMetaType::Float:
         x->data.f = copy ? *static_cast<const float*>(copy) : 0.0f;
         break;
+    case QMetaType::QObjectStar:
+        x->data.o = copy ? *static_cast<QObject *const*>(copy) : 0;
+        break;
     case QVariant::LongLong:
-#if defined(Q_CC_RVCT) 
+#if defined(Q_CC_RVCT)
         // Using trinary operator with 64bit constants crashes when ran on Symbian device
         if (copy){
             x->data.ll = *static_cast<const qlonglong *>(copy);
@@ -180,10 +183,10 @@ static void construct(QVariant::Private *x, const void *copy)
         }
 #else
         x->data.ll = copy ? *static_cast<const qlonglong *>(copy) : Q_INT64_C(0);
-#endif        
+#endif
         break;
     case QVariant::ULongLong:
-#if defined(Q_CC_RVCT) 
+#if defined(Q_CC_RVCT)
         // Using trinary operator with 64bit constants crashes when ran on Symbian device
         if (copy){
             x->data.ull = *static_cast<const qulonglong *>(copy);
@@ -192,7 +195,7 @@ static void construct(QVariant::Private *x, const void *copy)
         }
 #else
         x->data.ull = copy ? *static_cast<const qulonglong *>(copy) : Q_UINT64_C(0);
-#endif        
+#endif
         break;
     case QVariant::Invalid:
     case QVariant::UserType:
@@ -284,6 +287,7 @@ static void clear(QVariant::Private *d)
     case QVariant::ULongLong:
     case QVariant::Double:
     case QMetaType::Float:
+    case QMetaType::QObjectStar:
         break;
     case QVariant::Invalid:
     case QVariant::UserType:
@@ -353,6 +357,7 @@ static bool isNull(const QVariant::Private *d)
     case QVariant::Bool:
     case QVariant::Double:
     case QMetaType::Float:
+    case QMetaType::QObjectStar:
         break;
     }
     return d->is_null;
@@ -446,6 +451,8 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
         return a->data.d == b->data.d;
     case QMetaType::Float:
         return a->data.f == b->data.f;
+    case QMetaType::QObjectStar:
+        return a->data.o == b->data.o;
     case QVariant::Date:
         return *v_cast<QDate>(a) == *v_cast<QDate>(b);
     case QVariant::Time:
@@ -618,7 +625,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
         ok = &dummy;
 
     switch (uint(t)) {
-    case QVariant::Url: 
+    case QVariant::Url:
         switch (d->type) {
         case QVariant::String:
             *static_cast<QUrl *>(result) = QUrl(*v_cast<QString>(d));
@@ -1075,6 +1082,9 @@ static void streamDebug(QDebug dbg, const QVariant &v)
     case QMetaType::Float:
         dbg.nospace() << qVariantValue<float>(v);
         break;
+    case QMetaType::QObjectStar:
+        dbg.nospace() << qVariantValue<QObject *>(v);
+        break;
     case QVariant::Double:
         dbg.nospace() << v.toDouble();
         break;
@@ -1214,8 +1224,8 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     and versatile, but may prove less memory and speed efficient than
     storing specific types in standard data structures.
 
-    QVariant also supports the notion of null values, where you can 
-    have a defined type with no value set. However, note that QVariant 
+    QVariant also supports the notion of null values, where you can
+    have a defined type with no value set. However, note that QVariant
     types can only be cast when they have had a value set.
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 1
@@ -1291,6 +1301,7 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     \value Map  a QVariantMap
     \value Matrix  a QMatrix
     \value Transform  a QTransform
+    \value Matrix4x4  a QMatrix4x4
     \value Palette  a QPalette
     \value Pen  a QPen
     \value Pixmap  a QPixmap
@@ -1298,6 +1309,7 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     \value PointArray  a QPointArray
     \value PointF  a QPointF
     \value Polygon a QPolygon
+    \value Quaternion  a QQuaternion
     \value Rect  a QRect
     \value RectF  a QRectF
     \value RegExp  a QRegExp
@@ -1313,6 +1325,9 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     \value UInt  a \l uint
     \value ULongLong a \l qulonglong
     \value Url  a QUrl
+    \value Vector2D  a QVector2D
+    \value Vector3D  a QVector3D
+    \value Vector4D  a QVector4D
 
     \value UserType Base value for user-defined types.
 
@@ -1383,7 +1398,7 @@ void QVariant::create(int type, const void *copy)
 
 QVariant::~QVariant()
 {
-    if (d.type > Char && d.type != QMetaType::Float && (!d.is_shared || !d.data.shared->ref.deref()))
+    if (d.type > Char && d.type != QMetaType::Float && d.type != QMetaType::QObjectStar && (!d.is_shared || !d.data.shared->ref.deref()))
         handler->clear(&d);
 }
 
@@ -1399,7 +1414,7 @@ QVariant::QVariant(const QVariant &p)
 {
     if (d.is_shared) {
         d.data.shared->ref.ref();
-    } else if (p.d.type > Char && p.d.type != QMetaType::Float) {
+    } else if (p.d.type > Char && p.d.type != QMetaType::Float && p.d.type != QMetaType::QObjectStar) {
         handler->construct(&d, p.constData());
         d.is_null = p.d.is_null;
     }
@@ -1704,7 +1719,7 @@ QVariant::QVariant(Qt::GlobalColor color) { create(62, &color); }
     Note that return values in the ranges QVariant::Char through
     QVariant::RegExp and QVariant::Font through QVariant::Transform
     correspond to the values in the ranges QMetaType::QChar through
-    QMetaType::QRegExp and QMetaType::QFont through QMetaType::QTransform.
+    QMetaType::QRegExp and QMetaType::QFont through QMetaType::QQuaternion.
 
     Pay particular attention when working with char and QChar
     variants.  Note that there is no QVariant constructor specifically
@@ -1755,7 +1770,7 @@ QVariant& QVariant::operator=(const QVariant &variant)
     if (variant.d.is_shared) {
         variant.d.data.shared->ref.ref();
         d = variant.d;
-    } else if (variant.d.type > Char && variant.d.type != QMetaType::Float) {
+    } else if (variant.d.type > Char && variant.d.type != QMetaType::Float && variant.d.type != QMetaType::QObjectStar) {
         d.type = variant.d.type;
         handler->construct(&d, variant.constData());
         d.is_null = variant.d.is_null;
@@ -1932,7 +1947,7 @@ void QVariant::load(QDataStream &s)
     create(static_cast<int>(u), 0);
     d.is_null = is_null;
 
-    if (d.type == QVariant::Invalid) {
+    if (!isValid()) {
         // Since we wrote something, we should read something
         QString x;
         s >> x;
@@ -1976,7 +1991,7 @@ void QVariant::save(QDataStream &s) const
         s << QMetaType::typeName(userType());
     }
 
-    if (d.type == QVariant::Invalid) {
+    if (!isValid()) {
         s << QString();
         return;
     }

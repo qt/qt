@@ -43,7 +43,7 @@ static const HashTableValue JSTextEventTableValues[3] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextEventTable =
+static JSC_CONST_HASHTABLE HashTable JSTextEventTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 3, JSTextEventTableValues, 0 };
 #else
@@ -57,19 +57,19 @@ static const HashTableValue JSTextEventConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextEventConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSTextEventConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSTextEventConstructorTableValues, 0 };
 #else
     { 1, 0, JSTextEventConstructorTableValues, 0 };
 #endif
 
-class JSTextEventConstructor : public DOMObject {
+class JSTextEventConstructor : public DOMConstructorObject {
 public:
-    JSTextEventConstructor(ExecState* exec)
-        : DOMObject(JSTextEventConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSTextEventConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSTextEventConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSTextEventPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSTextEventPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -96,7 +96,7 @@ static const HashTableValue JSTextEventPrototypeTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSTextEventPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSTextEventPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSTextEventPrototypeTableValues, 0 };
 #else
@@ -117,8 +117,8 @@ bool JSTextEventPrototype::getOwnPropertySlot(ExecState* exec, const Identifier&
 
 const ClassInfo JSTextEvent::s_info = { "TextEvent", &JSUIEvent::s_info, &JSTextEventTable, 0 };
 
-JSTextEvent::JSTextEvent(PassRefPtr<Structure> structure, PassRefPtr<TextEvent> impl)
-    : JSUIEvent(structure, impl)
+JSTextEvent::JSTextEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<TextEvent> impl)
+    : JSUIEvent(structure, globalObject, impl)
 {
 }
 
@@ -134,18 +134,20 @@ bool JSTextEvent::getOwnPropertySlot(ExecState* exec, const Identifier& property
 
 JSValue jsTextEventData(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSTextEvent* castedThis = static_cast<JSTextEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    TextEvent* imp = static_cast<TextEvent*>(static_cast<JSTextEvent*>(asObject(slot.slotBase()))->impl());
+    TextEvent* imp = static_cast<TextEvent*>(castedThis->impl());
     return jsString(exec, imp->data());
 }
 
 JSValue jsTextEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSTextEvent*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSTextEvent* domObject = static_cast<JSTextEvent*>(asObject(slot.slotBase()));
+    return JSTextEvent::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSTextEvent::getConstructor(ExecState* exec)
+JSValue JSTextEvent::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSTextEventConstructor>(exec);
+    return getDOMConstructor<JSTextEventConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 JSValue JSC_HOST_CALL jsTextEventPrototypeFunctionInitTextEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

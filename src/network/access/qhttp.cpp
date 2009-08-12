@@ -513,6 +513,7 @@ public:
 
 /*!
     \class QHttpHeader
+    \obsolete
     \brief The QHttpHeader class contains header information for HTTP.
 
     \ingroup io
@@ -1006,6 +1007,7 @@ public:
 
 /*!
     \class QHttpResponseHeader
+    \obsolete
     \brief The QHttpResponseHeader class contains response header information for HTTP.
 
     \ingroup io
@@ -1151,7 +1153,7 @@ int QHttpResponseHeader::minorVersion() const
     return d->minVer;
 }
 
-/*! \reimp
+/*! \internal
 */
 bool QHttpResponseHeader::parseLine(const QString &line, int number)
 {
@@ -1210,6 +1212,7 @@ public:
 
 /*!
     \class QHttpRequestHeader
+    \obsolete
     \brief The QHttpRequestHeader class contains request header information for HTTP.
 
     \ingroup io
@@ -1365,7 +1368,7 @@ int QHttpRequestHeader::minorVersion() const
     return d->minVer;
 }
 
-/*! \reimp
+/*! \internal
 */
 bool QHttpRequestHeader::parseLine(const QString &line, int number)
 {

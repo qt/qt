@@ -194,6 +194,7 @@ class Q_XML_EXPORT QXmlParseException
 public:
     explicit QXmlParseException(const QString &name = QString(), int c = -1, int l = -1,
                                 const QString &p = QString(), const QString &s = QString());
+    QXmlParseException(const QXmlParseException &other);
     ~QXmlParseException();
 
     int columnNumber() const;

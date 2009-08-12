@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -30,10 +31,10 @@
 
 namespace WebCore {
 
-class JSSVGAnimatedBoolean : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGAnimatedBoolean : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGAnimatedBoolean(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedBoolean>, SVGElement* context);
+    JSSVGAnimatedBoolean(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAnimatedBoolean>, SVGElement* context);
     virtual ~JSSVGAnimatedBoolean();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -47,14 +48,12 @@ public:
     }
 
     SVGAnimatedBoolean* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGAnimatedBoolean > m_impl;
+    RefPtr<SVGAnimatedBoolean> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGAnimatedBoolean*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGAnimatedBoolean*, SVGElement* context);
 SVGAnimatedBoolean* toSVGAnimatedBoolean(JSC::JSValue);
 
 class JSSVGAnimatedBooleanPrototype : public JSC::JSObject {

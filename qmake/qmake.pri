@@ -17,14 +17,14 @@ SOURCES += project.cpp property.cpp main.cpp generators/makefile.cpp \
            generators/symbian/symmake.cpp \
            generators/symbian/symmake_abld.cpp \
            generators/symbian/symmake_sbsv2.cpp \
-           generators/symbian/initprojectdeploy_symbian.cpp 
+           generators/symbian/initprojectdeploy_symbian.cpp
 
 # MWC does not provide an implementation of popen() so fake it.
 win32-mwc {
     SOURCES += qpopen.cpp \
 }
 
-           
+
 HEADERS += project.h property.h generators/makefile.h \
            generators/unix/unixmake.h meta.h option.h cachekeys.h \
            generators/win32/winmakefile.h generators/projectgenerator.h \
@@ -68,6 +68,8 @@ bootstrap { #Qt code
         qmap.cpp \
         qmetatype.cpp \
         qregexp.cpp \
+        qtextcodec.cpp \
+        qutfcodec.cpp \
         qstring.cpp \
         qstringlist.cpp \
         qtemporaryfile.cpp \
@@ -107,6 +109,8 @@ bootstrap { #Qt code
         qmap.h \
         qmetatype.h \
         qregexp.h \
+        qtextcodec.h \
+        qutfcodec.h \
         qstring.h \
         qstringlist.h \
         qstringmatcher.h \
@@ -122,7 +126,7 @@ bootstrap { #Qt code
         SOURCES += qfsfileengine_unix.cpp qfsfileengine_iterator_unix.cpp
         mac {
           SOURCES += qcore_mac.cpp qsettings_mac.cpp
-          QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.3 #enables weak linking for 10.3 (exported)
+          QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4 #enables weak linking for 10.4 (exported)
           LIBS += -framework ApplicationServices
         }
     } else:win32 {

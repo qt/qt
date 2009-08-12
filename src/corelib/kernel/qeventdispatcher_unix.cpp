@@ -49,10 +49,21 @@
 #include "qeventdispatcher_unix_p.h"
 #include <private/qthread_p.h>
 #include <private/qcoreapplication_p.h>
+#include <private/qcore_unix_p.h>
 
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+// VxWorks doesn't correctly set the _POSIX_... options
+#if defined(Q_OS_VXWORKS)
+#  if defined(_POSIX_MONOTONIC_CLOCK) && (_POSIX_MONOTONIC_CLOCK <= 0)
+#    undef _POSIX_MONOTONIC_CLOCK
+#    define _POSIX_MONOTONIC_CLOCK 1
+#  endif
+#  include <pipeDrv.h>
+#  include <selectLib.h>
+#endif
 
 #if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
 #  include <sys/times.h>
@@ -76,6 +87,7 @@ static void signalHandler(int sig)
 }
 
 
+#if defined(Q_OS_INTEGRITY) || defined(Q_OS_VXWORKS)
 static void initThreadPipeFD(int fd)
 {
     int ret = fcntl(fd, F_SETFD, FD_CLOEXEC);
@@ -90,25 +102,52 @@ static void initThreadPipeFD(int fd)
     if (ret == -1)
         perror("QEventDispatcherUNIXPrivate: Unable to set flags on thread pipe");
 }
-
+#endif
 
 QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
 {
     extern Qt::HANDLE qt_application_thread_id;
     mainThread = (QThread::currentThreadId() == qt_application_thread_id);
+    bool pipefail = false;
 
     // initialize the common parts of the event loop
-#ifdef Q_OS_INTEGRITY
+#if defined(Q_OS_INTEGRITY)
     // INTEGRITY doesn't like a "select" on pipes, so use socketpair instead
-    if (socketpair(AF_INET, SOCK_STREAM, PF_INET, thread_pipe) == -1)
+    if (socketpair(AF_INET, SOCK_STREAM, PF_INET, thread_pipe) == -1) {
         perror("QEventDispatcherUNIXPrivate(): Unable to create socket pair");
+        pipefail = true;
+    } else {
+        initThreadPipeFD(thread_pipe[0]);
+        initThreadPipeFD(thread_pipe[1]);
+    }
+#elif defined(Q_OS_VXWORKS)
+    char name[20];
+    qsnprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdCurrent));
+
+    // make sure there is no pipe with this name
+    pipeDevDelete(name, true);
+    // create the pipe
+    if (pipeDevCreate(name, 128 /*maxMsg*/, 1 /*maxLength*/) != OK) {
+        perror("QEventDispatcherUNIXPrivate(): Unable to create thread pipe device");
+        pipefail = true;
+    } else {
+        if ((thread_pipe[0] = open(name, O_RDWR, 0)) < 0) {
+            perror("QEventDispatcherUNIXPrivate(): Unable to create thread pipe");
+            pipefail = true;
+        } else {
+            initThreadPipeFD(thread_pipe[0]);
+            thread_pipe[1] = thread_pipe[0];
+        }
+    }
 #else
-    if (pipe(thread_pipe) == -1)
+    if (qt_safe_pipe(thread_pipe, O_NONBLOCK) == -1) {
         perror("QEventDispatcherUNIXPrivate(): Unable to create thread pipe");
+        pipefail = true;
+    }
 #endif
 
-    initThreadPipeFD(thread_pipe[0]);
-    initThreadPipeFD(thread_pipe[1]);
+    if (pipefail)
+        qFatal("QEventDispatcherUNIXPrivate(): Can not continue without a thread pipe");
 
     sn_highest = -1;
 
@@ -117,9 +156,18 @@ QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
 
 QEventDispatcherUNIXPrivate::~QEventDispatcherUNIXPrivate()
 {
+#if defined(Q_OS_VXWORKS)
+    close(thread_pipe[0]);
+
+    char name[20];
+    qsnprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdCurrent));
+
+    pipeDevDelete(name, true);
+#else
     // cleanup the common parts of the event loop
     close(thread_pipe[0]);
     close(thread_pipe[1]);
+#endif
 
     // cleanup timers
     qDeleteAll(timerList);
@@ -224,9 +272,15 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
     // select doesn't immediately return next time
     int nevents = 0;
     if (nsel > 0 && FD_ISSET(thread_pipe[0], &sn_vec[0].select_fds)) {
+#if defined(Q_OS_VXWORKS)
+        char c[16];
+        ::read(thread_pipe[0], c, sizeof(c));
+        ::ioctl(thread_pipe[0], FIOFLUSH, 0);
+#else
         char c[16];
         while (::read(thread_pipe[0], c, sizeof(c)) > 0)
             ;
+#endif
         if (!wakeUps.testAndSetRelease(1, 0)) {
             // hopefully, this is dead code
             qWarning("QEventDispatcherUNIX: internal error, wakeUps.testAndSetRelease(1, 0) failed!");
@@ -257,18 +311,10 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
 
 QTimerInfoList::QTimerInfoList()
 {
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0)
-    useMonotonicTimers = false;
+    currentTime = qt_gettime();
 
-#  if (_POSIX_MONOTONIC_CLOCK == 0)
-    // detect if the system support monotonic timers
-    long x = sysconf(_SC_MONOTONIC_CLOCK);
-    useMonotonicTimers = x != -1;
-#  endif
-
-    getTime(currentTime);
-
-    if (!useMonotonicTimers) {
+#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)
+    if (!qt_gettime_is_monotonic()) {
         // not using monotonic timers, initialize the timeChanged() machinery
         previousTime = currentTime;
 
@@ -284,9 +330,6 @@ QTimerInfoList::QTimerInfoList()
         ticksPerSecond = 0;
         msPerTick = 0;
     }
-#else
-    // using monotonic timers unconditionally
-    getTime(currentTime);
 #endif
 
     firstTimerInfo = currentTimerInfo = 0;
@@ -294,11 +337,24 @@ QTimerInfoList::QTimerInfoList()
 
 timeval QTimerInfoList::updateCurrentTime()
 {
-    getTime(currentTime);
-    return currentTime;
+    return (currentTime = qt_gettime());
 }
 
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
+#if ((_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(Q_OS_MAC)) || defined(QT_BOOTSTRAPPED)
+
+template <>
+timeval qAbs(const timeval &t)
+{
+    timeval tmp = t;
+    if (tmp.tv_sec < 0) {
+        tmp.tv_sec = -tmp.tv_sec - 1;
+        tmp.tv_usec -= 1000000;
+    }
+    if (tmp.tv_sec == 0 && tmp.tv_usec < 0) {
+        tmp.tv_usec = -tmp.tv_usec;
+    }
+    return normalizedTimeval(tmp);
+}
 
 /*
   Returns true if the real time clock has changed by more than 10%
@@ -309,60 +365,35 @@ timeval QTimerInfoList::updateCurrentTime()
 */
 bool QTimerInfoList::timeChanged(timeval *delta)
 {
-    tms unused;
+    struct tms unused;
     clock_t currentTicks = times(&unused);
 
-    int elapsedTicks = currentTicks - previousTicks;
+    clock_t elapsedTicks = currentTicks - previousTicks;
     timeval elapsedTime = currentTime - previousTime;
-    int elapsedMsecTicks = (elapsedTicks * 1000) / ticksPerSecond;
-    int deltaMsecs = (elapsedTime.tv_sec * 1000 + elapsedTime.tv_usec / 1000)
-                     - elapsedMsecTicks;
 
-    if (delta) {
-	delta->tv_sec = deltaMsecs / 1000;
-	delta->tv_usec = (deltaMsecs % 1000) * 1000;
-    }
+    timeval elapsedTimeTicks;
+    elapsedTimeTicks.tv_sec = elapsedTicks / ticksPerSecond;
+    elapsedTimeTicks.tv_usec = (((elapsedTicks * 1000) / ticksPerSecond) % 1000) * 1000;
+
+    timeval dummy;
+    if (!delta)
+        delta = &dummy;
+    *delta = elapsedTime - elapsedTimeTicks;
+
     previousTicks = currentTicks;
     previousTime = currentTime;
 
     // If tick drift is more than 10% off compared to realtime, we assume that the clock has
     // been set. Of course, we have to allow for the tick granularity as well.
-
-     return (qAbs(deltaMsecs) - msPerTick) * 10 > elapsedMsecTicks;
-}
-
-void QTimerInfoList::getTime(timeval &t)
-{
-#if !defined(QT_NO_CLOCK_MONOTONIC) && !defined(QT_BOOTSTRAPPED)
-    if (useMonotonicTimers) {
-        timespec ts;
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-        t.tv_sec = ts.tv_sec;
-        t.tv_usec = ts.tv_nsec / 1000;
-        return;
-    }
-#endif
-
-    gettimeofday(&t, 0);
-    // NTP-related fix
-    while (t.tv_usec >= 1000000l) {
-        t.tv_usec -= 1000000l;
-        ++t.tv_sec;
-    }
-    while (t.tv_usec < 0l) {
-        if (t.tv_sec > 0l) {
-            t.tv_usec += 1000000l;
-            --t.tv_sec;
-        } else {
-            t.tv_usec = 0l;
-            break;
-        }
-    }
+    timeval tickGranularity;
+    tickGranularity.tv_sec = 0;
+    tickGranularity.tv_usec = msPerTick * 1000;
+    return elapsedTimeTicks < ((qAbs(*delta) - tickGranularity) * 10);
 }
 
 void QTimerInfoList::repairTimersIfNeeded()
 {
-    if (useMonotonicTimers)
+    if (qt_gettime_is_monotonic())
         return;
     timeval delta;
     if (timeChanged(&delta))
@@ -370,14 +401,6 @@ void QTimerInfoList::repairTimersIfNeeded()
 }
 
 #else // !(_POSIX_MONOTONIC_CLOCK-0 <= 0) && !defined(QT_BOOTSTRAPPED)
-
-void QTimerInfoList::getTime(timeval &t)
-{
-    timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    t.tv_sec = ts.tv_sec;
-    t.tv_usec = ts.tv_nsec / 1000;
-}
 
 void QTimerInfoList::repairTimersIfNeeded()
 {
@@ -407,7 +430,7 @@ void QTimerInfoList::timerRepair(const timeval &diff)
     // repair all timers
     for (int i = 0; i < size(); ++i) {
         register QTimerInfo *t = at(i);
-        t->timeout = t->timeout - diff;
+        t->timeout = t->timeout + diff;
     }
 }
 
@@ -607,25 +630,7 @@ QEventDispatcherUNIX::~QEventDispatcherUNIX()
 int QEventDispatcherUNIX::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                                  timeval *timeout)
 {
-    Q_D(QEventDispatcherUNIX);
-    if (timeout) {
-        // handle the case where select returns with a timeout, too
-        // soon.
-        timeval tvStart = d->timerList.currentTime;
-        timeval tvCurrent = tvStart;
-        timeval originalTimeout = *timeout;
-
-        int nsel;
-        do {
-            timeval tvRest = originalTimeout + tvStart - tvCurrent;
-            nsel = ::select(nfds, readfds, writefds, exceptfds, &tvRest);
-            d->timerList.getTime(tvCurrent);
-        } while (nsel == 0 && (tvCurrent - tvStart) < originalTimeout);
-
-        return nsel;
-    }
-
-    return ::select(nfds, readfds, writefds, exceptfds, timeout);
+    return ::qt_safe_select(nfds, readfds, writefds, exceptfds, timeout);
 }
 
 /*!

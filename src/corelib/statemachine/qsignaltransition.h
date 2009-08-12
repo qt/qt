@@ -62,9 +62,6 @@ public:
     QSignalTransition(QState *sourceState = 0);
     QSignalTransition(QObject *sender, const char *signal,
                       QState *sourceState = 0);
-    QSignalTransition(QObject *sender, const char *signal,
-                      const QList<QAbstractState*> &targets,
-                      QState *sourceState = 0);
     ~QSignalTransition();
 
     QObject *senderObject() const;

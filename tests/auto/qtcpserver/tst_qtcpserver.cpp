@@ -134,7 +134,7 @@ tst_QTcpServer::tst_QTcpServer()
 }
 
 tst_QTcpServer::~tst_QTcpServer()
-{  
+{
 }
 
 void tst_QTcpServer::initTestCase_data()
@@ -278,42 +278,35 @@ void tst_QTcpServer::ipv4LoopbackPerformanceTest()
     QTcpSocket *clientB = server.nextPendingConnection();
     QVERIFY(clientB);
 
-#if defined(Q_WS_WIN)
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) {
-        QSKIP("Dont run performance tests on QSysInfo::WV_DOS_based systems, overloads the system", SkipAll);
-    } else
-#endif
-    {
-        QByteArray buffer(16384, '@');
-        QTime stopWatch;
-        stopWatch.start();
-        qlonglong totalWritten = 0;
-        while (stopWatch.elapsed() < 5000) {
-            QVERIFY(clientA.write(buffer.data(), buffer.size()) > 0);
-            clientA.flush();
-            totalWritten += buffer.size();
-            while (clientB->waitForReadyRead(100)) {
-                if (clientB->bytesAvailable() == 16384)
-                    break;
-            }
-            clientB->read(buffer.data(), buffer.size());
-            clientB->write(buffer.data(), buffer.size());
-            clientB->flush();
-            totalWritten += buffer.size();
-            while (clientA.waitForReadyRead(100)) {
-                if (clientA.bytesAvailable() == 16384)
-                    break;
-            }
-            clientA.read(buffer.data(), buffer.size());
+    QByteArray buffer(16384, '@');
+    QTime stopWatch;
+    stopWatch.start();
+    qlonglong totalWritten = 0;
+    while (stopWatch.elapsed() < 5000) {
+        QVERIFY(clientA.write(buffer.data(), buffer.size()) > 0);
+        clientA.flush();
+        totalWritten += buffer.size();
+        while (clientB->waitForReadyRead(100)) {
+            if (clientB->bytesAvailable() == 16384)
+                break;
         }
-
-        qDebug("\t\t%s: %.1fMB/%.1fs: %.1fMB/s",
-               server.serverAddress().toString().toLatin1().constData(),
-               totalWritten / (1024.0 * 1024.0),
-               stopWatch.elapsed() / 1000.0,
-               (totalWritten / (stopWatch.elapsed() / 1000.0)) / (1024 * 1024));
-
+        clientB->read(buffer.data(), buffer.size());
+        clientB->write(buffer.data(), buffer.size());
+        clientB->flush();
+        totalWritten += buffer.size();
+        while (clientA.waitForReadyRead(100)) {
+            if (clientA.bytesAvailable() == 16384)
+                break;
+        }
+        clientA.read(buffer.data(), buffer.size());
     }
+
+    qDebug("\t\t%s: %.1fMB/%.1fs: %.1fMB/s",
+           server.serverAddress().toString().toLatin1().constData(),
+           totalWritten / (1024.0 * 1024.0),
+           stopWatch.elapsed() / 1000.0,
+           (totalWritten / (stopWatch.elapsed() / 1000.0)) / (1024 * 1024));
+
     delete clientB;
 }
 
@@ -385,42 +378,35 @@ void tst_QTcpServer::ipv4PerformanceTest()
     QTcpSocket *clientB = server.nextPendingConnection();
     QVERIFY(clientB);
 
-#if defined(Q_WS_WIN)
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based) {
-        QSKIP("Dont run performance tests on QSysInfo::WV_DOS_based systems, overloads the system", SkipAll);
-    } else
-#endif
-    {
-
-        QByteArray buffer(16384, '@');
-        QTime stopWatch;
-        stopWatch.start();
-        qlonglong totalWritten = 0;
-        while (stopWatch.elapsed() < 5000) {
-            qlonglong writtenA = clientA.write(buffer.data(), buffer.size());
-            clientA.flush();
-            totalWritten += buffer.size();
-            while (clientB->waitForReadyRead(100)) {
-                if (clientB->bytesAvailable() == writtenA)
-                    break;
-            }
-            clientB->read(buffer.data(), buffer.size());
-            qlonglong writtenB = clientB->write(buffer.data(), buffer.size());
-            clientB->flush();
-            totalWritten += buffer.size();
-            while (clientA.waitForReadyRead(100)) {
-                if (clientA.bytesAvailable() == writtenB)
-                   break;
-            }
-            clientA.read(buffer.data(), buffer.size());
+    QByteArray buffer(16384, '@');
+    QTime stopWatch;
+    stopWatch.start();
+    qlonglong totalWritten = 0;
+    while (stopWatch.elapsed() < 5000) {
+        qlonglong writtenA = clientA.write(buffer.data(), buffer.size());
+        clientA.flush();
+        totalWritten += buffer.size();
+        while (clientB->waitForReadyRead(100)) {
+            if (clientB->bytesAvailable() == writtenA)
+                break;
         }
-
-        qDebug("\t\t%s: %.1fMB/%.1fs: %.1fMB/s",
-               probeSocket.localAddress().toString().toLatin1().constData(),
-               totalWritten / (1024.0 * 1024.0),
-               stopWatch.elapsed() / 1000.0,
-               (totalWritten / (stopWatch.elapsed() / 1000.0)) / (1024 * 1024));
+        clientB->read(buffer.data(), buffer.size());
+        qlonglong writtenB = clientB->write(buffer.data(), buffer.size());
+        clientB->flush();
+        totalWritten += buffer.size();
+        while (clientA.waitForReadyRead(100)) {
+            if (clientA.bytesAvailable() == writtenB)
+               break;
+        }
+        clientA.read(buffer.data(), buffer.size());
     }
+
+    qDebug("\t\t%s: %.1fMB/%.1fs: %.1fMB/s",
+           probeSocket.localAddress().toString().toLatin1().constData(),
+           totalWritten / (1024.0 * 1024.0),
+           stopWatch.elapsed() / 1000.0,
+           (totalWritten / (stopWatch.elapsed() / 1000.0)) / (1024 * 1024));
+
     delete clientB;
 }
 
@@ -524,7 +510,7 @@ private:
 //----------------------------------------------------------------------------------
 void tst_QTcpServer::waitForConnectionTest()
 {
-    
+
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
 #ifdef TEST_QNETWORK_PROXY
@@ -628,10 +614,10 @@ protected:
 
 void tst_QTcpServer::addressReusable()
 {
-#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)    
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
     QSKIP("Symbian: Emulator does not support process launching", SkipAll );
 #endif
-    
+
 #if defined(QT_NO_PROCESS)
     QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
 #else

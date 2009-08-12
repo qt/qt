@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = 
+TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 
@@ -55,9 +55,9 @@ wince*{
     DEPLOYMENT_PLUGIN += qgif qjpeg qmng qsvg
 }
 
-symbian {                    
+symbian {
     load(data_caging_paths)
-    
+
     TARGET.UID3 = 0xA000A641
 
     executables.sources = \
@@ -72,8 +72,10 @@ symbian {
         desktopservices.exe \
         fridgemagnets.exe \
         drilldown.exe \
-        softkeys.exe \
-        anomaly.exe
+        softkeys.exe
+    contains(QT_CONFIG, webkit) {
+        executables.sources += anomaly.exe
+        }
 
     executables.path = /sys/bin
 
@@ -89,11 +91,12 @@ symbian {
          $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/desktopservices_reg.rsc \
          $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/fridgemagnets_reg.rsc \
          $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/drilldown_reg.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/softkeys_reg.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/anomaly_reg.rsc
+         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/softkeys_reg.rsc
+    contains(QT_CONFIG, webkit) {
+        reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/anomaly_reg.rsc
+        }
 
     reg_resource.path = $$REG_RESOURCE_IMPORT_DIR
-
 
     resource.sources = \
          $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/embeddedsvgviewer.rsc \
@@ -107,8 +110,10 @@ symbian {
          $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/desktopservices.rsc \
          $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/fridgemagnets.rsc \
          $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/drilldown.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/softkeys.rsc \
-         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/anomaly.rsc
+         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/softkeys.rsc
+    contains(QT_CONFIG, webkit) {
+        resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/anomaly.rsc
+        }
 
     resource.path = $$APP_RESOURCE_DIR
 
@@ -129,9 +134,9 @@ symbian {
         $$PWD/../desktopservices/data/*.mp3 \
         $$PWD/../desktopservices/data/*.wav
     desktopservices_music.path = /data/sounds
-    
+
     desktopservices_images.sources = $$PWD/../desktopservices/data/*.png
-    desktopservices_images.path = /data/images    
+    desktopservices_images.path = /data/images
 
     saxbookmarks.sources = $$PWD/../../../examples/xml/saxbookmarks/frank.xbel
     saxbookmarks.sources += $$PWD/../../../examples/xml/saxbookmarks/jennifer.xbel

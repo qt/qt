@@ -59,6 +59,8 @@
 
 #include <qobject.h>
 
+#include "../../shared/util.h"
+
 QT_FORWARD_DECLARE_CLASS(QMainWindow)
 
 #include <qmenubar.h>
@@ -1531,6 +1533,7 @@ void tst_QMenuBar::task223138_triggered()
 void tst_QMenuBar::task256322_highlight()
 {
     QMainWindow win;
+	win.menuBar()->setNativeMenuBar(false);  //we can't check the geometry of native menubars
     QMenu menu;
     QAction *file = win.menuBar()->addMenu(&menu);
     file->setText("file");
@@ -1540,27 +1543,24 @@ void tst_QMenuBar::task256322_highlight()
     QAction *nothing = win.menuBar()->addAction("nothing");
 
     win.show();
+    QTest::qWait(200);
 
+    QTest::mouseMove(win.menuBar(), win.menuBar()->actionGeometry(file).center());
     QTest::mouseClick(win.menuBar(), Qt::LeftButton, 0, win.menuBar()->actionGeometry(file).center());
-    QVERIFY(menu.isVisible());
+    QTRY_VERIFY(menu.isVisible());
     QVERIFY(!menu2.isVisible());
     QCOMPARE(win.menuBar()->activeAction(), file);
 
     QTest::mouseMove(win.menuBar(), win.menuBar()->actionGeometry(file2).center());
-    QVERIFY(!menu.isVisible());
+    QTRY_VERIFY(!menu.isVisible());
     QVERIFY(menu2.isVisible());
     QCOMPARE(win.menuBar()->activeAction(), file2);
 
-    QTest::mouseMove(win.menuBar(), win.menuBar()->actionGeometry(nothing).center());
+    QPoint nothingCenter = win.menuBar()->actionGeometry(nothing).center();
+    QTest::mouseMove(win.menuBar(), nothingCenter);
+    QTRY_VERIFY(!menu2.isVisible());
     QVERIFY(!menu.isVisible());
-    QVERIFY(!menu2.isVisible());
     QCOMPARE(win.menuBar()->activeAction(), nothing);
-
-    QTest::mouseMove(&win, win.menuBar()->geometry().bottomLeft() + QPoint(1,1));
-
-    QVERIFY(!menu.isVisible());
-    QVERIFY(!menu2.isVisible());
-    QVERIFY(!win.menuBar()->activeAction());
 }
 
 void tst_QMenuBar::menubarSizeHint()
@@ -1580,12 +1580,15 @@ void tst_QMenuBar::menubarSizeHint()
                 return 11;
             case PM_MenuBarPanelWidth:
                 return 1;
+            default:
+              return QWindowsStyle::pixelMetric(metric, option, widget);
             }
-            return QWindowsStyle::pixelMetric(metric, option, widget);
         }
     } style;
 
     QMenuBar mb;
+    mb.setNativeMenuBar(false); //we can't check the geometry of native menubars
+		
     mb.setStyle(&style);
     //this is a list of arbitrary strings so that we check the geometry
     QStringList list = QStringList() << "trer" << "ezrfgtgvqd" << "sdgzgzerzerzer" << "eerzertz"  << "er";

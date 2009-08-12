@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtCore of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,13 +34,44 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include <QtCore/qglobal.h>
 #include <QtCore/qatomic.h>
+
+#include <e32debug.h>
+
+// Heap and handle info printer. This code is placed here as it happens to make it the very last static to be destroyed in a Qt app.
+// This way we can report on heap cells and handles that are really not owned by anything which still exists.
+// This information can be used to detect whether memory leaks are happening, particularly if these numbers grow as the app is used more.
+struct SPrintExitInfo
+{
+    SPrintExitInfo()
+    {
+        RThread().HandleCount(initProcessHandleCount,initThreadHandleCount);
+        initCells = User::CountAllocCells();
+    }
+    ~SPrintExitInfo()
+    {
+        RProcess myProc;
+        TFullName fullName = myProc.FileName();
+        TInt cells = User::CountAllocCells();
+        TInt processHandleCount=0;
+        TInt threadHandleCount=0;
+        RThread().HandleCount(processHandleCount,threadHandleCount);
+        RDebug::Print(_L("%S exiting with %d allocated cells, %d handles"),
+                &fullName,
+                cells - initCells,
+                (processHandleCount + threadHandleCount) - (initProcessHandleCount + initThreadHandleCount));
+    }
+    TInt initCells;
+    TInt initProcessHandleCount;
+    TInt initThreadHandleCount;
+} printExitInfo;
+
 
 #if defined(Q_CC_RVCT)
 
@@ -76,4 +107,3 @@ __declspec(dllexport) __asm int QBasicAtomicInt::fetchAndStoreOrdered(int newVal
 QT_END_NAMESPACE
 
 #endif // Q_CC_RVCT
-

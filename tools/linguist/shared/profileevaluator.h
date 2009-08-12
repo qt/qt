@@ -50,16 +50,21 @@
 #include <QtCore/QStringList>
 #include <QtCore/QStack>
 
+#if (!defined(__GNUC__) || __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ > 3)) && !defined(__SUNPRO_CC)
+# define HAVE_TEMPLATE_CLASS_FRIENDS
+#endif
+
 QT_BEGIN_NAMESPACE
-
-class ProFile;
-class ProFileEvaluator;
-
-void evaluateProFile(const ProFileEvaluator &visitor, QHash<QByteArray, QStringList> *varMap);
-bool evaluateProFile(const QString &fileName, bool verbose, QHash<QByteArray, QStringList> *varMap);
 
 class ProFileEvaluator
 {
+#ifdef HAVE_TEMPLATE_CLASS_FRIENDS
+private:
+#else
+public:
+#endif
+    class Private;
+
 public:
     enum TemplateType {
         TT_Unknown = 0,
@@ -85,6 +90,10 @@ public:
     void addProperties(const QHash<QString, QString> &properties);
     QStringList values(const QString &variableName) const;
     QStringList values(const QString &variableName, const ProFile *pro) const;
+    QStringList absolutePathValues(const QString &variable, const QString &baseDirectory) const;
+    QStringList absoluteFileValues(
+            const QString &variable, const QString &baseDirectory, const QStringList &searchDirs,
+            const ProFile *pro) const;
     QString propertyValue(const QString &val) const;
 
     // for our descendents
@@ -95,8 +104,11 @@ public:
     virtual void fileMessage(const QString &msg); // error() and message() from .pro file
 
 private:
-    class Private;
     Private *d;
+
+#ifdef HAVE_TEMPLATE_CLASS_FRIENDS
+    template<typename T> friend class QTypeInfo;
+#endif
 };
 
 QT_END_NAMESPACE

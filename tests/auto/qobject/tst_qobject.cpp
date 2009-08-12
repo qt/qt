@@ -118,6 +118,7 @@ private slots:
     void connectToSender();
     void qobjectConstCast();
     void uniqConnection();
+    void interfaceIid();
 protected:
 };
 
@@ -1422,7 +1423,7 @@ void tst_QObject::moveToThread()
 #if defined(Q_OS_SYMBIAN)
         // Child timer will be registered after parent timer in the new
         // thread, and 10ms is less than symbian timer resolution, so
-        // child->timerEventThread compare after thread.wait() will 
+        // child->timerEventThread compare after thread.wait() will
         // usually fail unless timers are farther apart.
         child->startTimer(100);
         object->startTimer(150);
@@ -2438,12 +2439,15 @@ void tst_QObject::recursiveSignalEmission()
 {
 #if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
     QSKIP("Emulator builds in Symbian do not support launching processes linking to Qt", SkipAll);
-#endif
+#elif defined(QT_NO_PROCESS)
+    QSKIP("Test requires QProcess", SkipAll);
+#else
     QProcess proc;
     proc.start("./signalbug");
     QVERIFY(proc.waitForFinished());
     QVERIFY(proc.exitStatus() == QProcess::NormalExit);
     QCOMPARE(proc.exitCode(), 0);
+#endif
 }
 
 void tst_QObject::blockingQueuedConnection()
@@ -2894,6 +2898,16 @@ void tst_QObject::uniqConnection()
     delete s;
     delete r1;
     delete r2;
+}
+
+void tst_QObject::interfaceIid()
+{
+    QCOMPARE(QByteArray(qobject_interface_iid<Foo::Bleh *>()), 
+             QByteArray(Bleh_iid));
+    QCOMPARE(QByteArray(qobject_interface_iid<Foo::Bar *>()), 
+             QByteArray("com.qtest.foobar"));
+    QCOMPARE(QByteArray(qobject_interface_iid<FooObject *>()), 
+             QByteArray());
 }
 
 QTEST_MAIN(tst_QObject)

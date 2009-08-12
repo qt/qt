@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the Symbian application wrapper of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,22 +34,22 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 // INCLUDE FILES
 #include <exception>
-#include "qts60maindocument.h"
-#include "qts60mainapplication.h"
+#include "qts60maindocument_p.h"
+#include "qts60mainapplication_p.h"
 #include <bautils.h>
 #include <coemain.h>
 
 // ============================ MEMBER FUNCTIONS ===============================
 
 
-_LIT( KQtWrapperResourceFile,"\\resource\\apps\\s60main.rsc" );
+_LIT(KQtWrapperResourceFile, "\\resource\\apps\\s60main.rsc");
 
 // -----------------------------------------------------------------------------
 // CQtS60MainApplication::CreateDocumentL()
@@ -57,10 +57,10 @@ _LIT( KQtWrapperResourceFile,"\\resource\\apps\\s60main.rsc" );
 // -----------------------------------------------------------------------------
 //
 CApaDocument* CQtS60MainApplication::CreateDocumentL()
-    {
+{
     // Create an QtS60Main document, and return a pointer to it
-    return (static_cast<CApaDocument*>( CQtS60MainDocument::NewL( *this ) ) );
-    }
+    return (static_cast<CApaDocument*>(CQtS60MainDocument::NewL(*this)));
+}
 
 // -----------------------------------------------------------------------------
 // CQtS60MainApplication::AppDllUid()
@@ -68,10 +68,10 @@ CApaDocument* CQtS60MainApplication::CreateDocumentL()
 // -----------------------------------------------------------------------------
 //
 TUid CQtS60MainApplication::AppDllUid() const
-    {
+{
     // Return the UID for the QtS60Main application
     return ProcessUid();
-    }
+}
 
 // -----------------------------------------------------------------------------
 // CQtS60MainApplication::ResourceFileName()
@@ -79,14 +79,13 @@ TUid CQtS60MainApplication::AppDllUid() const
 // -----------------------------------------------------------------------------
 //
 TFileName CQtS60MainApplication::ResourceFileName() const
-    {
+{
     TFindFile finder(iCoeEnv->FsSession());
     TInt err = finder.FindByDir(KQtWrapperResourceFile, KNullDesC);
     if (err == KErrNone)
         return finder.File();
     return KNullDesC();
-    }
+}
 
 
 // End of File
-

@@ -137,10 +137,13 @@ private slots:
     void dotProduct3();
     void dotProduct4_data();
     void dotProduct4();
+
+    void properties();
+    void metaTypes();
 };
 
-// qFuzzyCompare isn't quite "fuzzy" enough to handle conversion
-// to fixed-point and back again.  So create "fuzzier" compares.
+// qFuzzyCompare isn't always "fuzzy" enough to handle conversion
+// between float, double, and qreal.  So create "fuzzier" compares.
 static bool fuzzyCompare(float x, float y)
 {
     float diff = x - y;
@@ -2038,6 +2041,99 @@ void tst_QVector::dotProduct4()
     qreal d = x1 * x2 + y1 * y2 + z1 * z2 + w1 * w2;
 
     QCOMPARE(QVector4D::dotProduct(v1, v2), d);
+}
+
+class tst_QVectorProperties : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QVector2D vector2D READ vector2D WRITE setVector2D)
+    Q_PROPERTY(QVector3D vector3D READ vector3D WRITE setVector3D)
+    Q_PROPERTY(QVector4D vector4D READ vector4D WRITE setVector4D)
+public:
+    tst_QVectorProperties(QObject *parent = 0) : QObject(parent) {}
+
+    QVector2D vector2D() const { return v2; }
+    void setVector2D(const QVector2D& value) { v2 = value; }
+
+    QVector3D vector3D() const { return v3; }
+    void setVector3D(const QVector3D& value) { v3 = value; }
+
+    QVector4D vector4D() const { return v4; }
+    void setVector4D(const QVector4D& value) { v4 = value; }
+
+private:
+    QVector2D v2;
+    QVector3D v3;
+    QVector4D v4;
+};
+
+// Test getting and setting vector properties via the metaobject system.
+void tst_QVector::properties()
+{
+    tst_QVectorProperties obj;
+
+    obj.setVector2D(QVector2D(1.0f, 2.0f));
+    obj.setVector3D(QVector3D(3.0f, 4.0f, 5.0f));
+    obj.setVector4D(QVector4D(6.0f, 7.0f, 8.0f, 9.0f));
+
+    QVector2D v2 = qVariantValue<QVector2D>(obj.property("vector2D"));
+    QCOMPARE(v2.x(), (qreal)1.0f);
+    QCOMPARE(v2.y(), (qreal)2.0f);
+
+    QVector3D v3 = qVariantValue<QVector3D>(obj.property("vector3D"));
+    QCOMPARE(v3.x(), (qreal)3.0f);
+    QCOMPARE(v3.y(), (qreal)4.0f);
+    QCOMPARE(v3.z(), (qreal)5.0f);
+
+    QVector4D v4 = qVariantValue<QVector4D>(obj.property("vector4D"));
+    QCOMPARE(v4.x(), (qreal)6.0f);
+    QCOMPARE(v4.y(), (qreal)7.0f);
+    QCOMPARE(v4.z(), (qreal)8.0f);
+    QCOMPARE(v4.w(), (qreal)9.0f);
+
+    obj.setProperty("vector2D",
+                    qVariantFromValue(QVector2D(-1.0f, -2.0f)));
+    obj.setProperty("vector3D",
+                    qVariantFromValue(QVector3D(-3.0f, -4.0f, -5.0f)));
+    obj.setProperty("vector4D",
+                    qVariantFromValue(QVector4D(-6.0f, -7.0f, -8.0f, -9.0f)));
+
+    v2 = qVariantValue<QVector2D>(obj.property("vector2D"));
+    QCOMPARE(v2.x(), (qreal)-1.0f);
+    QCOMPARE(v2.y(), (qreal)-2.0f);
+
+    v3 = qVariantValue<QVector3D>(obj.property("vector3D"));
+    QCOMPARE(v3.x(), (qreal)-3.0f);
+    QCOMPARE(v3.y(), (qreal)-4.0f);
+    QCOMPARE(v3.z(), (qreal)-5.0f);
+
+    v4 = qVariantValue<QVector4D>(obj.property("vector4D"));
+    QCOMPARE(v4.x(), (qreal)-6.0f);
+    QCOMPARE(v4.y(), (qreal)-7.0f);
+    QCOMPARE(v4.z(), (qreal)-8.0f);
+    QCOMPARE(v4.w(), (qreal)-9.0f);
+}
+
+void tst_QVector::metaTypes()
+{
+    QVERIFY(QMetaType::type("QVector2D") == QMetaType::QVector2D);
+    QVERIFY(QMetaType::type("QVector3D") == QMetaType::QVector3D);
+    QVERIFY(QMetaType::type("QVector4D") == QMetaType::QVector4D);
+
+    QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QVector2D)),
+             QByteArray("QVector2D"));
+    QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QVector3D)),
+             QByteArray("QVector3D"));
+    QCOMPARE(QByteArray(QMetaType::typeName(QMetaType::QVector4D)),
+             QByteArray("QVector4D"));
+
+    QVERIFY(QMetaType::isRegistered(QMetaType::QVector2D));
+    QVERIFY(QMetaType::isRegistered(QMetaType::QVector3D));
+    QVERIFY(QMetaType::isRegistered(QMetaType::QVector4D));
+
+    QVERIFY(qMetaTypeId<QVector2D>() == QMetaType::QVector2D);
+    QVERIFY(qMetaTypeId<QVector3D>() == QMetaType::QVector3D);
+    QVERIFY(qMetaTypeId<QVector4D>() == QMetaType::QVector4D);
 }
 
 QTEST_APPLESS_MAIN(tst_QVector)

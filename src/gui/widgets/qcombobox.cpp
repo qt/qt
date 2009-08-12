@@ -148,8 +148,10 @@ QStyleOptionMenuItem QComboMenuDelegate::getStyleOption(const QStyleOptionViewIt
     menuOption.rect = option.rect;
 
     // Make sure fonts set on the combo box also overrides the font for the popup menu.
-    if (mCombo->testAttribute(Qt::WA_SetFont) || mCombo->testAttribute(Qt::WA_MacSmallSize)
-            || mCombo->testAttribute(Qt::WA_MacMiniSize))
+    if (mCombo->testAttribute(Qt::WA_SetFont)
+            || mCombo->testAttribute(Qt::WA_MacSmallSize)
+            || mCombo->testAttribute(Qt::WA_MacMiniSize)
+            || mCombo->font() != qt_app_fonts_hash()->value("QComboBox", QFont()))
         menuOption.font = mCombo->font();
     else
         menuOption.font = qt_app_fonts_hash()->value("QComboMenuItem", mCombo->font());
@@ -1249,8 +1251,12 @@ QComboBox::~QComboBox()
     // ### check delegateparent and delete delegate if us?
     Q_D(QComboBox);
 
-    disconnect(d->model, SIGNAL(destroyed()),
-               this, SLOT(_q_modelDestroyed()));
+    QT_TRY {
+        disconnect(d->model, SIGNAL(destroyed()),
+                this, SLOT(_q_modelDestroyed()));
+    } QT_CATCH(...) {
+        ; // objects can't throw in destructor
+    }
 }
 
 /*!

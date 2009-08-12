@@ -787,8 +787,7 @@ void QDialog::setVisible(bool visible)
 #ifdef Q_WS_WIN
     if (d->mainDef && isActiveWindow()) {
         BOOL snapToDefault = false;
-        if ( QT_WA_INLINE( SystemParametersInfo(SPI_GETSNAPTODEFBUTTON, 0, &snapToDefault, 0) ,
-                           SystemParametersInfoA(SPI_GETSNAPTODEFBUTTON, 0, &snapToDefault, 0) )) {
+        if (SystemParametersInfo(SPI_GETSNAPTODEFBUTTON, 0, &snapToDefault, 0)) {
             if (snapToDefault)
                 QCursor::setPos(d->mainDef->mapToGlobal(d->mainDef->rect().center()));
         }

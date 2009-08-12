@@ -359,6 +359,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
     const QChar quote = QLatin1Char('"');
     const QChar newline = QLatin1Char('\n');
     QTextStream in(&dev);
+    in.setCodec(cd.m_codecForSource.isEmpty() ? QByteArray("UTF-8") : cd.m_codecForSource);
     bool error = false;
 
     // format of a .po file entry:
@@ -554,7 +555,7 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     bool ok = true;
     QTextStream out(&dev);
-    //qDebug() << "OUT CODEC: " << out.codec()->name();
+    out.setCodec(cd.m_outputCodec.isEmpty() ? QByteArray("UTF-8") : cd.m_outputCodec);
 
     bool first = true;
     if (translator.messages().isEmpty() || !translator.messages().first().sourceText().isEmpty()) {
@@ -636,7 +637,7 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
             if (plural.isEmpty())
                 plural = msg.sourceText();
             out << poEscapedString(prefix, QLatin1String("msgid_plural"), noWrap, plural);
-            QStringList translations = translator.normalizedTranslations(msg, cd, &ok);
+            const QStringList &translations = msg.translations();
             for (int i = 0; i != translations.size(); ++i) {
                 QString str = translations.at(i);
                 str.replace(QChar(Translator::BinaryVariantSeparator),

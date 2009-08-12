@@ -83,6 +83,7 @@
 #include "qtimer.h"
 #include "qlibrary.h"
 #include <private/qgraphicssystemfactory_p.h>
+#include "qkde_p.h"
 
 #if !defined (QT_NO_TABLET)
 extern "C" {
@@ -117,7 +118,9 @@ extern "C" {
 
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
+#if !defined(QT_NO_XINPUT)
 #include <X11/extensions/XI.h>
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -655,11 +658,13 @@ static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
         break;
 
     default:
+#if !defined(QT_NO_XINPUT)
         if (err->request_code == X11->xinput_major
             && err->error_code == (X11->xinput_errorbase + XI_BadDevice)
             && err->minor_code == 3 /* X_OpenDevice */) {
             return 0;
         }
+#endif
         break;
     }
 
@@ -809,33 +814,6 @@ Q_GUI_EXPORT void qt_x11_apply_settings_in_all_apps()
                     PropModeReplace, (unsigned char *)stamp.data(), stamp.size());
 }
 
-static int kdeSessionVersion()
-{
-    static int kdeVersion = 0;
-    if (!kdeVersion)
-        kdeVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
-    return kdeVersion;
-}
-
-/*! \internal
-    Gets the current KDE 3 or 4 home path
-*/
-QString QApplicationPrivate::kdeHome()
-{
-    static QString kdeHomePath;
-    if (kdeHomePath.isEmpty()) {
-        kdeHomePath = QString::fromLocal8Bit(qgetenv("KDEHOME"));
-        if (kdeHomePath.isEmpty()) {
-            QDir homeDir(QDir::homePath());
-            QString kdeConfDir(QLatin1String("/.kde"));
-            if (4 == kdeSessionVersion() && homeDir.exists(QLatin1String(".kde4")))
-                kdeConfDir = QLatin1String("/.kde4");
-            kdeHomePath = QDir::homePath() + kdeConfDir;
-        }
-    }
-    return kdeHomePath;
-}
-
 /*! \internal
     apply the settings to the application
 */
@@ -901,8 +879,8 @@ bool QApplicationPrivate::x11_apply_settings()
         QFont font(QApplication::font());
         QString fontDescription;
         // Override Qt font if KDE4 settings can be used
-        if (4 == kdeSessionVersion()) {
-            QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
+        if (X11->desktopEnvironment == DE_KDE && X11->desktopVersion >= 4) {
+            QSettings kdeSettings(QKde::kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
             fontDescription = kdeSettings.value(QLatin1String("font")).toString();
             if (fontDescription.isEmpty()) {
                 // KDE stores fonts without quotes
@@ -931,7 +909,6 @@ bool QApplicationPrivate::x11_apply_settings()
 
     // read new QStyle
     QString stylename = settings.value(QLatin1String("style")).toString();
-
 
     if (stylename.isEmpty() && QApplicationPrivate::styleOverride.isNull() && X11->use_xrender) {
         stylename = x11_desktop_style();
@@ -1088,22 +1065,6 @@ static void qt_set_input_encoding()
         qt_input_mapper = QTextCodec::codecForName("ISO 8859-8-I");
     if(data)
         XFree((char *)data);
-}
-
-// Reads a KDE color setting
-static QColor kdeColor(const QString &key, const QSettings &kdeSettings)
-{
-    QVariant variant = kdeSettings.value(key);
-    if (variant.isValid()) {
-        QStringList values = variant.toStringList();
-        if (values.size() == 3) {
-            int r = values[0].toInt();
-            int g = values[1].toInt();
-            int b = values[2].toInt();
-            return QColor(r, g, b);
-        }
-    }
-    return QColor();
 }
 
 // set font, foreground and background from x11 resources. The
@@ -1272,9 +1233,10 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
 
         QApplicationPrivate::setSystemFont(fnt);
     }
+    // QGtkStyle sets it's own system palette
+    bool gtkStyle = QApplicationPrivate::app_style && QApplicationPrivate::app_style->inherits("QGtkStyle");
     bool kdeColors = (QApplication::desktopSettingsAware() && X11->desktopEnvironment == DE_KDE);
-
-    if (kdeColors || (button || !resBG.isEmpty() || !resFG.isEmpty())) {// set app colors
+    if (!gtkStyle && (kdeColors || (button || !resBG.isEmpty() || !resFG.isEmpty()))) {// set app colors
         bool allowX11ColorNames = QColor::allowX11ColorNames();
         QColor::setAllowX11ColorNames(true);
 
@@ -1310,45 +1272,6 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
             bright_mode = true;
         }
 
-        if (kdeColors) {
-            const QSettings theKdeSettings(
-                QApplicationPrivate::kdeHome()
-                + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
-
-            // Setup KDE palette
-            QColor color;
-            color = kdeColor(QLatin1String("buttonBackground"), theKdeSettings);
-            if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Button/BackgroundNormal"), theKdeSettings);
-            if (color.isValid())
-                btn = color;
-
-            color = kdeColor(QLatin1String("background"), theKdeSettings);
-            if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Window/BackgroundNormal"), theKdeSettings);
-            if (color.isValid())
-                bg = color;
-
-            color = kdeColor(QLatin1String("foreground"), theKdeSettings);
-            if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:View/ForegroundNormal"), theKdeSettings);
-            if (color.isValid()) {
-                fg = color;
-            }
-
-            color = kdeColor(QLatin1String("windowForeground"), theKdeSettings);
-            if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Window/ForegroundNormal"), theKdeSettings);
-            if (color.isValid())
-                wfg = color;
-
-            color = kdeColor(QLatin1String("windowBackground"), theKdeSettings);
-            if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:View/BackgroundNormal"), theKdeSettings);
-            if (color.isValid())
-                base = color;
-        }
-
         QPalette pal(fg, btn, btn.lighter(125), btn.darker(130), btn.darker(120), wfg.isValid() ? wfg : fg, Qt::white, base, bg);
         QColor disabled((fg.red()   + btn.red())  / 2,
                         (fg.green() + btn.green())/ 2,
@@ -1360,38 +1283,6 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
         if (!selectBackground.isEmpty() && !selectForeground.isEmpty()) {
             highlight = QColor(selectBackground);
             highlightText = QColor(selectForeground);
-        }
-        // Use KDE3 or KDE4 color settings if present
-        if (kdeColors) {
-            const QSettings theKdeSettings(
-                QApplicationPrivate::kdeHome()
-                + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
-
-            QColor color = kdeColor(QLatin1String("selectBackground"), theKdeSettings);
-            if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Selection/BackgroundNormal"), theKdeSettings);
-            if (color.isValid())
-                highlight = color;
-
-            color = kdeColor(QLatin1String("selectForeground"), theKdeSettings);
-            if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Selection/ForegroundNormal"), theKdeSettings);
-            if (color.isValid())
-                highlightText = color;
-
-            color = kdeColor(QLatin1String("alternateBackground"), theKdeSettings);
-            if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:View/BackgroundAlternate"), theKdeSettings);
-            if (color.isValid())
-                pal.setColor(QPalette::AlternateBase, color);
-            else
-                pal.setBrush(QPalette::AlternateBase, pal.base().color().darker(110));
-
-            color = kdeColor(QLatin1String("buttonForeground"), theKdeSettings);
-            if (!color.isValid())
-                color = kdeColor(QLatin1String("Colors:Button/ForegroundNormal"), theKdeSettings);
-            if (color.isValid())
-                pal.setColor(QPalette::ButtonText, color);
         }
 
         if (highlight.isValid() && highlightText.isValid()) {
@@ -1415,10 +1306,9 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
             pal.setColor(QPalette::Disabled, QPalette::Highlight, Qt::darkBlue);
         }
 
-        // QGtkStyle sets it's own system palette
-        if (!(QApplicationPrivate::app_style && QApplicationPrivate::app_style->inherits("QGtkStyle"))) {
-            QApplicationPrivate::setSystemPalette(pal);
-        }
+        if (kdeColors)
+            pal = QKde::kdePalette().resolve(pal);
+        QApplicationPrivate::setSystemPalette(pal);
         QColor::setAllowX11ColorNames(allowX11ColorNames);
     }
 
@@ -2299,6 +2189,7 @@ void qt_init(QApplicationPrivate *priv, int,
         X11->compositingManagerRunning = XGetSelectionOwner(X11->display,
                                                             ATOM(_NET_WM_CM_S0));
         X11->desktopEnvironment = DE_UNKNOWN;
+        X11->desktopVersion = 0;
 
         // See if the current window manager is using the freedesktop.org spec to give its name
         Window windowManagerWindow = XNone;
@@ -2373,6 +2264,9 @@ void qt_init(QApplicationPrivate *priv, int,
             if (data)
                 XFree((char *)data);
         }
+
+        if (X11->desktopEnvironment == DE_KDE)
+            X11->desktopVersion = QString::fromLocal8Bit(qgetenv("KDE_SESSION_VERSION")).toInt();
 
         qt_set_input_encoding();
 
@@ -2641,44 +2535,30 @@ void qt_init(QApplicationPrivate *priv, int,
 QString QApplicationPrivate::x11_desktop_style()
 {
     QString stylename;
-    QStringList availableStyles = QStyleFactory::keys();
-    // Override Qt style if KDE4 settings can be used
-    if (4 == kdeSessionVersion()) {
-        QSettings kdeSettings(kdeHome() + QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
-        QString kde4Style = kdeSettings.value(QLatin1String("widgetStyle"),
-                                              QLatin1String("Oxygen")).toString();
-        foreach (const QString &style, availableStyles) {
-            if (style.toLower() == kde4Style.toLower())
-                stylename = kde4Style;
-        }
-    // Set QGtkStyle for GNOME
-    } else if (X11->desktopEnvironment == DE_GNOME) {
+    switch(X11->desktopEnvironment) {
+    case DE_KDE:
+        stylename = QKde::kdeStyle();
+        break;
+    case DE_GNOME: {
+        QStringList availableStyles = QStyleFactory::keys();
+        // Set QGtkStyle for GNOME if available
         QString gtkStyleKey = QString::fromLatin1("GTK+");
-        if (availableStyles.contains(gtkStyleKey))
+        if (availableStyles.contains(gtkStyleKey)) {
             stylename = gtkStyleKey;
-    }
-
-    if (stylename.isEmpty()) {
-        switch(X11->desktopEnvironment) {
-        case DE_KDE:
-            if (X11->use_xrender)
-                stylename = QLatin1String("plastique");
-            else
-                stylename = QLatin1String("windows");
-            break;
-        case DE_GNOME:
-            if (X11->use_xrender)
-                stylename = QLatin1String("cleanlooks");
-            else
-                stylename = QLatin1String("windows");
-            break;
-        case DE_CDE:
-            stylename = QLatin1String("cde");
-            break;
-        default:
-            // Don't do anything
             break;
         }
+        if (X11->use_xrender)
+            stylename = QLatin1String("cleanlooks");
+        else
+            stylename = QLatin1String("windows");
+        break;
+        }
+    case DE_CDE:
+        stylename = QLatin1String("cde");
+        break;
+    default:
+        // Don't do anything
+        break;
     }
     return stylename;
 }
@@ -3230,48 +3110,43 @@ int QApplication::x11ProcessEvent(XEvent* event)
 #ifdef ALIEN_DEBUG
     //qDebug() << "QApplication::x11ProcessEvent:" << event->type;
 #endif
-    Time time = 0, userTime = 0;
     switch (event->type) {
     case ButtonPress:
         pressed_window = event->xbutton.window;
-        userTime = event->xbutton.time;
+        X11->userTime = event->xbutton.time;
         // fallthrough intended
     case ButtonRelease:
-        time = event->xbutton.time;
+        X11->time = event->xbutton.time;
         break;
     case MotionNotify:
-        time = event->xmotion.time;
+        X11->time = event->xmotion.time;
         break;
     case XKeyPress:
-        userTime = event->xkey.time;
+        X11->userTime = event->xkey.time;
         // fallthrough intended
     case XKeyRelease:
-        time = event->xkey.time;
+        X11->time = event->xkey.time;
         break;
     case PropertyNotify:
-        time = event->xproperty.time;
+        X11->time = event->xproperty.time;
         break;
     case EnterNotify:
     case LeaveNotify:
-        time = event->xcrossing.time;
+        X11->time = event->xcrossing.time;
         break;
     case SelectionClear:
-        time = event->xselectionclear.time;
+        X11->time = event->xselectionclear.time;
         break;
     default:
-#ifndef QT_NO_XFIXES
-        if (X11->use_xfixes && event->type == (X11->xfixes_eventbase + XFixesSelectionNotify)) {
-            XFixesSelectionNotifyEvent *req =
-                reinterpret_cast<XFixesSelectionNotifyEvent *>(event);
-            time = req->selection_timestamp;
-        }
-#endif
         break;
     }
-    if (time > X11->time)
-        X11->time = time;
-    if (userTime > X11->userTime)
-        X11->userTime = userTime;
+#ifndef QT_NO_XFIXES
+    if (X11->use_xfixes && event->type == (X11->xfixes_eventbase + XFixesSelectionNotify)) {
+        XFixesSelectionNotifyEvent *req =
+            reinterpret_cast<XFixesSelectionNotifyEvent *>(event);
+        X11->time = req->selection_timestamp;
+    }
+#endif
 
     QETWidget *widget = (QETWidget*)QWidget::find((WId)event->xany.window);
 
@@ -3437,19 +3312,10 @@ int QApplication::x11ProcessEvent(XEvent* event)
         QSize oldSize(w->size());
         w->data->crect.setWidth(DisplayWidth(X11->display, scr));
         w->data->crect.setHeight(DisplayHeight(X11->display, scr));
-        QVarLengthArray<QRect> oldSizes(desktop->numScreens());
-        for (int i = 0; i < desktop->numScreens(); ++i)
-            oldSizes[i] = desktop->screenGeometry(i);
         QResizeEvent e(w->size(), oldSize);
         QApplication::sendEvent(w, &e);
-        for (int i = 0; i < qMin(oldSizes.count(), desktop->numScreens()); ++i) {
-            if (oldSizes[i] != desktop->screenGeometry(i))
-                emit desktop->resized(i);
-        }
-        for (int i = oldSizes.count(); i < desktop->numScreens(); ++i)
-            emit desktop->resized(i); // added
-        for (int i = desktop->numScreens(); i < oldSizes.count(); ++i)
-            emit desktop->resized(i); // removed
+        if (w != desktop)
+            QApplication::sendEvent(desktop, &e);
     }
 #endif // QT_NO_XRANDR
 

@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -76,12 +76,17 @@ QT_BEGIN_NAMESPACE
 static bool        appNoGrab        = false;        // Grabbing enabled
 #endif
 
-Q_GUI_EXPORT QS60Data *qt_s60Data = 0;
+Q_GLOBAL_STATIC(QS60Data, qt_s60Data);
 extern bool qt_sendSpontaneousEvent(QObject*,QEvent*);
 
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidget *qt_button_down = 0;                     // widget got last button-down
+
+QS60Data* qGlobalS60Data()
+{
+    return qt_s60Data();
+}
 
 bool qt_nograb()                                // application no-grab option
 {
@@ -119,7 +124,7 @@ private:
 
 QS60Beep::~QS60Beep()
 {
-    delete iToneUtil;   
+    delete iToneUtil;
 }
 
 QS60Beep* QS60Beep::NewL(TInt aFrequency, TTimeIntervalMicroSeconds aDuration)
@@ -148,7 +153,7 @@ void QS60Beep::Play()
             iState=EBeepPrepared;
         }
     }
-    
+
     iToneUtil->Play();
     iState=EBeepPlaying;
 }
@@ -290,7 +295,7 @@ void QLongTapTimer::PointerEventL(const TPointerEvent& event)
     Cancel();
     m_event = event;
     if (event.iType == TPointerEvent::EButton1Down)
-    {   
+    {
         m_pressedCoordinates = QPoint(event.iPosition.iX,event.iPosition.iY);
         // must be same as KLongTapDelay in aknlongtapdetector.h
         After(800000);
@@ -347,8 +352,13 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
 
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
 {
-    //### refactor me, getting too complex
     m_longTapDetector->PointerEventL(pEvent);
+    QT_TRYCATCH_LEAVING(HandlePointerEvent(pEvent));  
+}
+
+void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
+{
+    //### refactor me, getting too complex
     QMouseEvent::Type type;
     Qt::MouseButton button;
     mapS60MouseEventTypeToQt(&type, &button, &pEvent);
@@ -361,7 +371,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
         }
     if (type == QMouseEvent::None)
         return;
-    
+
     // store events for later sending/saving
     QWidget *alienWidget;
     typedef QPair<QWidget*,QMouseEvent> Event;
@@ -370,7 +380,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
     QPoint widgetPos = QPoint(pEvent.iPosition.iX, pEvent.iPosition.iY);
     TPoint controlScreenPos = PositionRelativeToScreen();
     QPoint globalPos = QPoint(controlScreenPos.iX, controlScreenPos.iY) + widgetPos;
-    
+
     if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick)
     {
         // get the button press target
@@ -401,7 +411,7 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
                 events.append(Event(S60->lastPointerEventTarget,mEventLeave));
             }
             QMouseEvent mEventEnter(QEvent::Enter, alienWidget->mapFromGlobal(globalPos), globalPos,
-                button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));        
+                button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));
 
             events.append(Event(alienWidget,mEventEnter));
         }
@@ -441,7 +451,7 @@ void QSymbianControl::sendMouseEvent(QWidget *widget, QMouseEvent *mEvent)
 TKeyResponse QSymbianControl::OfferKeyEventL(const TKeyEvent& keyEvent, TEventCode type)
 {
     TKeyResponse r = EKeyWasNotConsumed;
-    QT_TRANSLATE_EXCEPTION_TO_SYMBIAN_LEAVE(r = OfferKeyEvent(keyEvent, type));
+    QT_TRYCATCH_LEAVING(r = OfferKeyEvent(keyEvent, type));
     return r;
 }
 
@@ -667,14 +677,14 @@ void QSymbianControl::HandleResourceChange(int resourceType)
 {
     switch (resourceType) {
     case KInternalStatusPaneChange:
-    	qwidget->d_func()->setWindowIcon_sys(true);
-    	break;
+        qwidget->d_func()->setWindowIcon_sys(true);
+        break;
     case KUidValueCoeFontChangeEvent:
         // font change event
         break;
 #ifdef Q_WS_S60
     case KEikDynamicLayoutVariantSwitch:
-    {        
+    {
         if (qwidget->isFullScreen()) {
             SetExtentToWholeScreen();
         } else if (qwidget->isMaximized()) {
@@ -706,8 +716,6 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
 
 void qt_init(QApplicationPrivate * /* priv */, int)
 {
-    S60 = new QS60Data;
-
 #ifdef QT_NO_DEBUG
     if (!qgetenv("QT_S60_AUTO_FLUSH_WSERV").isEmpty())
 #endif
@@ -722,12 +730,6 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     RProcess me;
     TSecureId securId = me.SecureId();
     S60->uid = securId.operator TUid();
-
-    // New code to configure the window group name such that window server knows the associated application's UID
-    CApaWindowGroupName *wgn = CApaWindowGroupName::NewL(S60->wsSession());
-    wgn->SetAppUid(S60->uid);
-    User::LeaveIfError(wgn->SetWindowGroupName((S60->windowGroup())));
-    delete wgn;
 
 /*
  ### Commented out for now as parameter handling not needed in SOS(yet). Code below will break testlib with -o flag
@@ -947,10 +949,10 @@ void QApplication::beep()
     QS60Beep* beep=NULL;
     TRAPD(err, beep=QS60Beep::NewL(frequency, duration));
     if(!err) {
-        beep->Play();    
+        beep->Play();
     }
     delete beep;
-    beep=NULL;       
+    beep=NULL;
 }
 
 int QApplication::s60ProcessEvent(TWsEvent *event)
@@ -1084,8 +1086,8 @@ void QApplication::symbianResourceChange(int type)
     case KEikDynamicLayoutVariantSwitch:
         {
         if (S60)
-            S60->updateScreenSize();            
-        
+            S60->updateScreenSize();
+
 #ifndef QT_NO_STYLE_S60
         QS60Style *s60Style = 0;
 
@@ -1098,16 +1100,16 @@ void QApplication::symbianResourceChange(int type)
             s60Style = qobject_cast<QS60Style*>(QApplication::style());
 
         if (s60Style)
-            s60Style->handleDynamicLayoutVariantSwitch();
-#endif    
+            s60Style->d_func()->handleDynamicLayoutVariantSwitch();
+#endif
         }
         break;
 
 #ifndef QT_NO_STYLE_S60
     case KAknsMessageSkinChange:
         if (QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style()))
-            s60Style->handleSkinChange();
-        break; 
+            s60Style->d_func()->handleSkinChange();
+        break;
 #endif
 #endif // Q_WS_S60
     default:
@@ -1178,5 +1180,3 @@ void QSessionManager::cancel()
 }
 #endif //QT_NO_SESSIONMANAGER
 QT_END_NAMESPACE
-
-

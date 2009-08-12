@@ -1,7 +1,7 @@
 
 #global defaults
 isEmpty(QMAKE_MOC) {
-    win32:QMAKE_MOC = $$[QT_INSTALL_BINS]\moc.exe
+    contains(QMAKE_HOST.os,Windows):QMAKE_MOC = $$[QT_INSTALL_BINS]\moc.exe
     else:QMAKE_MOC = $$[QT_INSTALL_BINS]/moc
 }
 isEmpty(MOC_DIR):MOC_DIR = .
@@ -15,10 +15,7 @@ WIN_INCLUDETEMP=
 win32:count($$list($$INCPATH), 40, >) {
     INCLUDETEMP = $$MOC_DIR/mocinclude.tmp
 
-    # Remove any existing mocinclude.tmp when qmake runs
     WIN_INCLUDETEMP=$$INCLUDETEMP
-    WIN_INCLUDETEMP~=s,/,\,g
-    system($$QMAKE_DEL_FILE $$WIN_INCLUDETEMP > NUL 2>&1)
 
     EOC = $$escape_expand(\n\t)
 
@@ -65,7 +62,9 @@ moc_header.output = $$MOC_DIR/$${QMAKE_H_MOD_MOC}${QMAKE_FILE_BASE}$${first(QMAK
 moc_header.input = HEADERS
 moc_header.variable_out = SOURCES
 moc_header.name = MOC ${QMAKE_FILE_IN}
-!isEmpty(INCLUDETEMP):moc_header.depends += $$INCLUDETEMP
+if(!contains(TEMPLATE, "vc.*"):!contains(TEMPLATE_PREFIX, "vc")) {
+	!isEmpty(INCLUDETEMP):moc_header.depends += $$INCLUDETEMP
+}
 silent:moc_header.commands = @echo moc ${QMAKE_FILE_IN} && $$moc_header.commands
 QMAKE_EXTRA_COMPILERS += moc_header
 INCREDIBUILD_XGE += moc_header
@@ -77,14 +76,16 @@ moc_source.commands = ${QMAKE_FUNC_mocCmd}
 moc_source.output = $$MOC_DIR/$${QMAKE_CPP_MOD_MOC}${QMAKE_FILE_BASE}$${QMAKE_EXT_CPP_MOC}
 moc_source.input = SOURCES OBJECTIVE_SOURCES
 moc_source.name = MOC ${QMAKE_FILE_IN}
-!isEmpty(INCLUDETEMP):moc_source.depends += $$INCLUDETEMP
+if(!contains(TEMPLATE, "vc.*"):!contains(TEMPLATE_PREFIX, "vc")) {
+	!isEmpty(INCLUDETEMP):moc_source.depends += $$INCLUDETEMP
+}
 silent:moc_source.commands = @echo moc ${QMAKE_FILE_IN} && $$moc_source.commands
 QMAKE_EXTRA_COMPILERS += moc_source
 INCREDIBUILD_XGE += moc_source
 
 #make sure we can include these files
 moc_dir_short = $$MOC_DIR
-win32:moc_dir_short ~= s,^.:,/,
+contains(QMAKE_HOST.os,Windows):moc_dir_short ~= s,^.:,/,
 contains(moc_dir_short, ^[/\\\\].*):INCLUDEPATH += $$MOC_DIR
 else:INCLUDEPATH += $$OUT_PWD/$$MOC_DIR
 

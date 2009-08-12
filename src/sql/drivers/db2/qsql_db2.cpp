@@ -51,10 +51,6 @@
 #include <qvector.h>
 #include <QDebug>
 
-#ifndef UNICODE
-#define UNICODE
-#endif
-
 #if defined(Q_CC_BOR)
 // DB2's sqlsystm.h (included through sqlcli1.h) defines the SQL_BIGINT_TYPE
 // and SQL_BIGUINT_TYPE to wrong the types for Borland; so do the defines to
@@ -62,6 +58,8 @@
 #define SQL_BIGINT_TYPE qint64
 #define SQL_BIGUINT_TYPE quint64
 #endif
+
+#define UNICODE
 
 #include <sqlcli1.h>
 
@@ -111,22 +109,14 @@ public:
 
 static QString qFromTChar(SQLTCHAR* str)
 {
-#ifdef UNICODE
     return QString::fromUtf16(str);
-#else
-    return QString::fromLocal8Bit((const char*) str);
-#endif
 }
 
 // dangerous!! (but fast). Don't use in functions that
 // require out parameters!
 static SQLTCHAR* qToTChar(const QString& str)
 {
-#ifdef UNICODE
     return (SQLTCHAR*)str.utf16();
-#else
-    return (unsigned char*) str.ascii();
-#endif
 }
 
 static QString qWarnDB2Handle(int handleType, SQLHANDLE handle)
@@ -347,12 +337,8 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool& is
 
     while (true) {
         r = SQLGetData(hStmt,
-                        column+1,
-#ifdef UNICODE
+                        column + 1,
                         SQL_C_WCHAR,
-#else
-                        SQL_C_CHAR,
-#endif
                         (SQLPOINTER)buf,
                         colSize * sizeof(SQLTCHAR),
                         &lengthIndicator);
@@ -740,7 +726,6 @@ bool QDB2Result::exec()
                                       ind);
                 break; }
             case QVariant::String:
-#ifdef UNICODE
             {
                 QString str(values.at(i).toString());
                 if (*ind != SQL_NULL_DATA)
@@ -774,8 +759,6 @@ bool QDB2Result::exec()
                 }
                 break;
             }
-#endif
-            // fall through
             default: {
                 QByteArray ba = values.at(i).toString().toAscii();
                 int len = ba.length() + 1;
@@ -849,12 +832,9 @@ bool QDB2Result::exec()
             case QVariant::ByteArray:
                 break;
             case QVariant::String:
-#ifdef UNICODE
                 if (bindValueType(i) & QSql::Out)
                     values[i] = QString::fromUtf16((ushort*)tmpStorage.takeFirst().constData());
                 break;
-#endif
-                // fall through
             default: {
                 values[i] = QString::fromAscii(tmpStorage.takeFirst().constData());
                 break; }
@@ -888,11 +868,13 @@ bool QDB2Result::fetch(int i)
                             SQL_FETCH_ABSOLUTE,
                             actualIdx);
     }
-    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
+    if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO && r != SQL_NO_DATA) {
         setLastError(qMakeError(QCoreApplication::translate("QDB2Result",
                                 "Unable to fetch record %1").arg(i), QSqlError::StatementError, d));
         return false;
     }
+    else if (r == SQL_NO_DATA)
+        return false;
     setAt(i);
     return true;
 }
@@ -1542,13 +1524,7 @@ bool QDB2Driver::hasFeature(DriverFeature f) const
         case FinishQuery:
             return true;
         case Unicode:
-        // this is the query that shows the codepage for the types:
-        // select typename, codepage from syscat.datatypes
-#ifdef UNICODE
             return true;
-#else
-            return false;
-#endif
     }
     return false;
 }

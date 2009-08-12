@@ -125,13 +125,37 @@ void DeploymentHandler::initQtDeploy(QMakeProject *project, DeploymentList &depl
     if (!project->values("QMAKE_QT_DLL").isEmpty() && !project->values("QMAKE_LIBDIR").isEmpty()) {
         QStringList libs = project->values("LIBS");
         QStringList qtLibs;
+        QStringList libPaths;
         foreach (QString item, libs) {
-            if (item.startsWith("-lQt")) {
-                qtLibs += project->values("QMAKE_LIBDIR").at(0) + QDir::separator() + item.mid(2) + QLatin1String("4.dll");
+
+            if (item.startsWith("-L")) {
+                // -L -> a directory containing DLLs
+                libPaths << item.mid(2);
+                continue;
+            }
+
+            QStringList libCandidates;
+
+            if (item.startsWith("-l")) {
+                // -l -> a library located within one of the standard library paths
+                QString lib = item.mid(2);
+
+                // Check if it's a Qt library first, then check in all paths given with -L.
+                // Note Qt libraries get a `4' appended to them, others don't.
+                libCandidates << project->values("QMAKE_LIBDIR").at(0) + QDir::separator() + lib + QLatin1String("4.dll");
+                foreach (QString const& libPath, libPaths) {
+                    libCandidates << libPath + QDir::separator() + lib + QLatin1String(".dll");
+                }
             } else {
-                QFileInfo info(item);
-                if (info.exists() && info.isAbsolute() && info.fileName().startsWith(QLatin1String("Qt")))
-                    qtLibs += info.dir().absoluteFilePath(info.fileName().replace(QLatin1String(".lib"), QLatin1String(".dll")));
+                libCandidates << item.replace(".lib",".dll");
+            }
+
+            foreach (QString const& file, libCandidates) {
+                QFileInfo info(file);
+                if (info.exists()) {
+                    qtLibs += info.dir().absoluteFilePath(info.fileName());
+                    break;
+                }
             }
         }
         for (QStringList::ConstIterator it = qtLibs.constBegin(); it != qtLibs.constEnd(); ++it) {
@@ -144,6 +168,7 @@ void DeploymentHandler::initQtDeploy(QMakeProject *project, DeploymentList &depl
         }
     }
 
+#ifndef QT_CETEST_NO_ACTIVESYNC
     // QtRemote deployment. We always deploy to \Windows
     if (!project->values("QMAKE_LIBDIR").isEmpty()) {
         QString remoteLibName = QLatin1String("QtRemote.dll");
@@ -153,6 +178,7 @@ void DeploymentHandler::initQtDeploy(QMakeProject *project, DeploymentList &depl
         else
             debugOutput(QString::fromLatin1("Could not find QtRemote. Might not be able to launch target executable"),0);
     }
+#endif
 
     // C-runtime deployment
     QString runtime = project->values("QT_CE_C_RUNTIME").join(QLatin1String(" "));

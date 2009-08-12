@@ -10,6 +10,12 @@ RESOURCES = input.qrc
 
 QT += network
 
+wince* {
+    DEFINES += SRCDIR=\\\"./\\\"
+} else:!symbian {
+    DEFINES += SRCDIR=\\\"$$PWD/\\\"
+}
+
 include (../xmlpatterns.pri)
 
 wince*|symbian*: {

@@ -55,9 +55,9 @@
 #include "QtNetwork/qhostaddress.h"
 #include "private/qabstractsocketengine_p.h"
 #ifndef Q_OS_WIN
-# include "qplatformdefs.h"
+#  include "qplatformdefs.h"
 #else
-# include <winsock2.h>
+#  include <winsock2.h>
 #endif
 
 #ifdef Q_OS_SYMBIAN
@@ -66,166 +66,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-
-#ifndef Q_OS_WIN
-// Almost always the same. If not, specify in qplatformdefs.h.
-#if !defined(QT_SOCKOPTLEN_T)
-# define QT_SOCKOPTLEN_T QT_SOCKLEN_T
-#endif
-
-// Tru64 redefines accept -> _accept with _XOPEN_SOURCE_EXTENDED
-static inline int qt_socket_accept(int s, struct sockaddr *addr, QT_SOCKLEN_T *addrlen)
-{ return ::accept(s, addr, static_cast<QT_SOCKLEN_T *>(addrlen)); }
-#if defined(accept)
-# undef accept
-#endif
-
-// UnixWare 7 redefines listen -> _listen
-static inline int qt_socket_listen(int s, int backlog)
-{
-	return ::listen(s, backlog);
-}
-#if defined(listen)
-# undef listen
-#endif
-
-static inline int qt_socket_connect(int s, const struct sockaddr * addrptr, socklen_t namelen)
-{
-	return ::connect(s, addrptr, namelen);
-}
-#if defined(connect)
-# undef connect
-#endif
-
-static inline int qt_socket_bind(int s, const struct sockaddr * addrptr, socklen_t namelen)
-{
-	return ::bind(s, addrptr, namelen);
-}
-#if defined(bind)
-# undef bind
-#endif
-
-static inline int qt_socket_write(int socket, const char *data, qint64 len)
-{
-	return ::write(socket, data, len);
-}
-#if defined(write)
-# undef write
-#endif
-
-static inline int qt_socket_read(int socket, char *data, qint64 len)
-{
-	return ::read(socket, data, len);
-}
-#if defined(read)
-# undef read
-#endif
-
-static inline int qt_socket_recv(int socket, void *data, size_t length, int flags)
-{
-	return ::recv(socket, data, length, flags);
-}
-#if defined(recv)
-# undef recv
-#endif
-
-static inline int qt_socket_recvfrom(int socket, void *data, size_t length,
-	                                 int flags, struct sockaddr *address,
-	                                 socklen_t *address_length)
-{
-	return ::recvfrom(socket, data, length, flags, address, address_length);
-}
-#if defined(recvfrom)
-# undef recvfrom
-#endif
-
-static inline int qt_socket_sendto(int socket, const void *data, size_t length,
-	                               int flags, const struct sockaddr *dest_addr,
-	                               socklen_t dest_length)
-{
-	return ::sendto(socket, data, length, flags, dest_addr, dest_length);
-}
-#if defined(sendto)
-# undef sendto
-#endif
-static inline int qt_socket_close(int socket)
-{
-	return ::close(socket);
-}
-#if defined(close)
-# undef close
-#endif
-
-static inline int qt_socket_fcntl(int socket, int command, int option)
-{
-	return ::fcntl(socket, command, option);
-}
-#if defined(fcntl)
-# undef fcntl
-#endif
-
-static inline int qt_socket_ioctl(int socket, int command, char *option)
-{
-	return ::ioctl(socket, command, option);
-}
-#if defined(ioctl)
-# undef ioctl
-#endif
-
-static inline int qt_socket_getsockname(int socket, struct sockaddr *address, socklen_t *address_len)
-{
-	return ::getsockname(socket, address, address_len);
-}
-#if defined(getsockname)
-# undef getsockname
-#endif
-
-static inline int qt_socket_getpeername(int socket, struct sockaddr *address, socklen_t *address_len)
-{
-	return ::getpeername(socket, address, address_len);
-}
-#if defined(getpeername)
-# undef getpeername
-#endif
-
-static inline int qt_socket_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
-{
-	return ::select(nfds, readfds, writefds, exceptfds, timeout);
-}
-
-#if defined(select)
-# undef select
-#endif
-
-static inline int qt_socket_getsockopt(int socket, int level, int optname, void *optval, socklen_t *optlen)
-{
-	return ::getsockopt(socket, level, optname, optval, optlen);
-}
-
-#if defined(getsockopt)
-# undef getsockopt
-#endif
-
-static inline int qt_socket_setsockopt(int socket, int level, int optname, void *optval, socklen_t optlen)
-{
-	return ::setsockopt(socket, level, optname, optval, optlen);
-}
-
-#if defined(setsockopt)
-# undef setsockopt
-#endif
-
-// UnixWare 7 redefines socket -> _socket
-static inline int qt_socket_socket(int domain, int type, int protocol)
-{
-	return ::socket(domain, type, protocol);
-}
-#if defined(socket)
-# undef socket
-#endif
-
-#endif
 
 // Use our own defines and structs which we know are correct
 #  define QT_SS_MAXSIZE 128
@@ -351,8 +191,8 @@ public:
     struct sockaddr_storage aa;
 #else
     struct sockaddr_in aa;
-#endif    
-    
+#endif
+
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
 
 #ifdef Q_OS_WIN

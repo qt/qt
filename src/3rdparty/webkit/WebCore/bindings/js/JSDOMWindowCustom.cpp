@@ -45,6 +45,7 @@
 #include "JSMessageChannelConstructor.h"
 #include "JSMessagePort.h"
 #include "JSOptionConstructor.h"
+#include "JSSharedWorkerConstructor.h"
 #include "JSWebKitCSSMatrixConstructor.h"
 #include "JSWebKitPointConstructor.h"
 #include "JSWorkerConstructor.h"
@@ -358,7 +359,8 @@ JSValue JSDOMWindow::history(ExecState* exec) const
     if (DOMObject* wrapper = getCachedDOMObjectWrapper(exec->globalData(), history))
         return wrapper;
 
-    JSHistory* jsHistory = new (exec) JSHistory(getDOMStructure<JSHistory>(exec, const_cast<JSDOMWindow*>(this)), history);
+    JSDOMWindow* window = const_cast<JSDOMWindow*>(this);
+    JSHistory* jsHistory = new (exec) JSHistory(getDOMStructure<JSHistory>(exec, window), window, history);
     cacheDOMObjectWrapper(exec->globalData(), history, jsHistory);
     return jsHistory;
 }
@@ -369,7 +371,8 @@ JSValue JSDOMWindow::location(ExecState* exec) const
     if (DOMObject* wrapper = getCachedDOMObjectWrapper(exec->globalData(), location))
         return wrapper;
 
-    JSLocation* jsLocation = new (exec) JSLocation(getDOMStructure<JSLocation>(exec, const_cast<JSDOMWindow*>(this)), location);
+    JSDOMWindow* window = const_cast<JSDOMWindow*>(this);
+    JSLocation* jsLocation = new (exec) JSLocation(getDOMStructure<JSLocation>(exec, window), window, location);
     cacheDOMObjectWrapper(exec->globalData(), location, jsLocation);
     return jsLocation;
 }
@@ -442,12 +445,12 @@ JSValue JSDOMWindow::audio(ExecState* exec) const
 
 JSValue JSDOMWindow::webKitPoint(ExecState* exec) const
 {
-    return getDOMConstructor<JSWebKitPointConstructor>(exec);
+    return getDOMConstructor<JSWebKitPointConstructor>(exec, this);
 }
 
 JSValue JSDOMWindow::webKitCSSMatrix(ExecState* exec) const
 {
-    return getDOMConstructor<JSWebKitCSSMatrixConstructor>(exec);
+    return getDOMConstructor<JSWebKitCSSMatrixConstructor>(exec, this);
 }
  
 JSValue JSDOMWindow::xmlHttpRequest(ExecState* exec) const
@@ -458,7 +461,7 @@ JSValue JSDOMWindow::xmlHttpRequest(ExecState* exec) const
 #if ENABLE(XSLT)
 JSValue JSDOMWindow::xsltProcessor(ExecState* exec) const
 {
-    return getDOMConstructor<JSXSLTProcessorConstructor>(exec);
+    return getDOMConstructor<JSXSLTProcessorConstructor>(exec, this);
 }
 #endif
 
@@ -472,7 +475,14 @@ JSValue JSDOMWindow::messageChannel(ExecState* exec) const
 #if ENABLE(WORKERS)
 JSValue JSDOMWindow::worker(ExecState* exec) const
 {
-    return getDOMConstructor<JSWorkerConstructor>(exec);
+    return getDOMConstructor<JSWorkerConstructor>(exec, this);
+}
+#endif
+
+#if ENABLE(SHARED_WORKERS)
+JSValue JSDOMWindow::sharedWorker(ExecState* exec) const
+{
+    return getDOMConstructor<JSSharedWorkerConstructor>(exec, this);
 }
 #endif
 

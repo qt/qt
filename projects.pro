@@ -29,7 +29,7 @@ isEmpty(QT_BUILD_PARTS) { #defaults
 }
 
 symbian {
-   QT_BUILD_PARTS = libs examples demos
+   QT_BUILD_PARTS = libs tools examples demos
 }
 
 #process the projects

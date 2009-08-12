@@ -54,6 +54,10 @@
 #ifndef QXMLSTREAM_P_H
 #define QXMLSTREAM_P_H
 
+#if defined(Q_OS_VXWORKS) && defined(ERROR)
+#  undef ERROR
+#endif
+
 class QXmlStreamReader_Table
 {
 public:
@@ -648,6 +652,7 @@ public:
         if (tos + extraCapacity + 1 > cap) {
             cap = qMax(tos + extraCapacity + 1, cap << 1 );
             data = reinterpret_cast<T *>(qRealloc(data, cap * sizeof(T)));
+            Q_CHECK_PTR(data);
         }
     }
 

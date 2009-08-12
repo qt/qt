@@ -80,7 +80,7 @@ public:
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
                          QPainterPath *path, QTextItem::RenderFlags flags);
 
-    HGDIOBJ selectDesignFont(QFixed *) const;
+    HGDIOBJ selectDesignFont() const;
 
     virtual glyph_metrics_t boundingBox(const QGlyphLayout &glyphs);
     virtual glyph_metrics_t boundingBox(glyph_t g) { return boundingBox(g, QTransform()); }
@@ -109,18 +109,14 @@ public:
     int getGlyphIndexes(const QChar *ch, int numChars, QGlyphLayout *glyphs, bool mirrored) const;
     void getCMap();
 
-    QString        _name;
-    HFONT        hfont;
+    QString     _name;
+    HFONT       hfont;
     LOGFONT     logfont;
-    uint        stockFont   : 1;
-    uint        useTextOutA : 1;
-    uint        ttf         : 1;
+    uint        stockFont  : 1;
+    uint        ttf        : 1;
     uint        hasOutline : 1;
-    union {
-        TEXTMETRICW        w;
-        TEXTMETRICA        a;
-    } tm;
-    int                lw;
+    TEXTMETRIC  tm;
+    int         lw;
     const unsigned char *cmap;
     QByteArray cmapTable;
     mutable qreal lbearing;

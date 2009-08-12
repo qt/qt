@@ -1307,6 +1307,7 @@ QByteArray::QByteArray(int size, char ch)
 QByteArray::QByteArray(int size, Qt::Initialization)
 {
     d = static_cast<Data *>(qMalloc(sizeof(Data)+size));
+    Q_CHECK_PTR(d);
     d->ref = 1;
     d->alloc = d->size = size;
     d->data = d->array;

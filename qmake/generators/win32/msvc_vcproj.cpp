@@ -120,14 +120,7 @@ static QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
     QString rSubkeyPath = keyPath(rSubkey);
 
     HKEY handle = 0;
-    LONG res;
-    QT_WA( {
-        res = RegOpenKeyExW(parentHandle, (WCHAR*)rSubkeyPath.utf16(),
-                            0, KEY_READ, &handle);
-    } , {
-        res = RegOpenKeyExA(parentHandle, rSubkeyPath.toLocal8Bit(),
-                            0, KEY_READ, &handle);
-    } );
+    LONG res = RegOpenKeyEx(parentHandle, (wchar_t*)rSubkeyPath.utf16(), 0, KEY_READ, &handle);
 
     if (res != ERROR_SUCCESS)
         return QString();
@@ -135,11 +128,7 @@ static QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
     // get the size and type of the value
     DWORD dataType;
     DWORD dataSize;
-    QT_WA( {
-        res = RegQueryValueExW(handle, (WCHAR*)rSubkeyName.utf16(), 0, &dataType, 0, &dataSize);
-    }, {
-        res = RegQueryValueExA(handle, rSubkeyName.toLocal8Bit(), 0, &dataType, 0, &dataSize);
-    } );
+    res = RegQueryValueEx(handle, (wchar_t*)rSubkeyName.utf16(), 0, &dataType, 0, &dataSize);
     if (res != ERROR_SUCCESS) {
         RegCloseKey(handle);
         return QString();
@@ -147,13 +136,8 @@ static QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
 
     // get the value
     QByteArray data(dataSize, 0);
-    QT_WA( {
-        res = RegQueryValueExW(handle, (WCHAR*)rSubkeyName.utf16(), 0, 0,
-                               reinterpret_cast<unsigned char*>(data.data()), &dataSize);
-    }, {
-        res = RegQueryValueExA(handle, rSubkeyName.toLocal8Bit(), 0, 0,
-                               reinterpret_cast<unsigned char*>(data.data()), &dataSize);
-    } );
+    res = RegQueryValueEx(handle, (wchar_t*)rSubkeyName.utf16(), 0, 0,
+                          reinterpret_cast<unsigned char*>(data.data()), &dataSize);
     if (res != ERROR_SUCCESS) {
         RegCloseKey(handle);
         return QString();
@@ -163,11 +147,7 @@ static QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
     switch (dataType) {
         case REG_EXPAND_SZ:
         case REG_SZ: {
-            QT_WA( {
-                result = QString::fromUtf16(((const ushort*)data.constData()));
-            }, {
-                result = QString::fromLatin1(data.constData());
-            } );
+            result = QString::fromWCharArray(((const wchar_t *)data.constData()));
             break;
         }
 
@@ -175,12 +155,7 @@ static QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
             QStringList l;
             int i = 0;
             for (;;) {
-                QString s;
-                QT_WA( {
-                    s = QString::fromUtf16((const ushort*)data.constData() + i);
-                }, {
-                    s = QString::fromLatin1(data.constData() + i);
-                } );
+                QString s = QString::fromWCharArray((const wchar_t *)data.constData() + i);
                 i += s.length() + 1;
 
                 if (s.isEmpty())
@@ -193,11 +168,7 @@ static QString readRegistryKey(HKEY parentHandle, const QString &rSubkey)
 
         case REG_NONE:
         case REG_BINARY: {
-            QT_WA( {
-                result = QString::fromUtf16((const ushort*)data.constData(), data.size()/2);
-            }, {
-                result = QString::fromLatin1(data.constData(), data.size());
-            } );
+            result = QString::fromWCharArray((const wchar_t *)data.constData(), data.size() / 2);
             break;
         }
 
@@ -524,7 +495,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                 QString profile = tmp;
                 if(!profile.endsWith(Option::dir_sep))
                     profile += Option::dir_sep;
-                profile += fi.baseName() + ".pro";
+                profile += fi.baseName() + Option::pro_ext;
                 subdirs.append(profile);
             } else {
                 QMakeProject tmp_proj;
@@ -1268,9 +1239,8 @@ void VcprojGenerator::initDeploymentTool()
     foreach(QString item, project->values("DEPLOYMENT")) {
         // get item.path
         QString devicePath = project->first(item + ".path");
-        // if the path does not exist, skip it
         if (devicePath.isEmpty())
-            continue;
+            devicePath = targetPath;
         // check if item.path is relative (! either /,\ or %)
         if (!(devicePath.at(0) == QLatin1Char('/')
             || devicePath.at(0) == QLatin1Char('\\')
@@ -1291,7 +1261,13 @@ void VcprojGenerator::initDeploymentTool()
                 searchPath = info.absoluteFilePath();
             } else {
                 nameFilter = source.split('\\').last();
-                searchPath = info.absolutePath();
+                if (source.contains('*')) {                    
+                    source = source.split('*').first();                    
+                    info = QFileInfo(source);
+                 }
+                 searchPath = info.absolutePath();
+                 if (!info.exists())
+                    fprintf(stderr, "Deployment file is missing %s\n", source.toLatin1().constData());
             }
 
             int pathSize = searchPath.size();

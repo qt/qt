@@ -165,7 +165,6 @@ public:
 
     void updateMatrix(const QTransform &matrix);
 
-    void drawPath(const QPainterPath &path);
     void drawPolygon(const QPointF *points, int pointCount, PolygonDrawMode mode);
     void drawPolygon(const QPoint *points, int pointCount, PolygonDrawMode mode);
     void fillPath(const QPainterPath &path, QSpanData *fillData);
@@ -327,14 +326,13 @@ public:
 
     inline const QClipData *clip() const;
 
-    void strokeProjective(const QPainterPath &path);
     void initializeRasterizer(QSpanData *data);
 
     void recalculateFastImages();
 
     QPaintDevice *device;
-    QOutlineMapper *outlineMapper;
-    QRasterBuffer *rasterBuffer;
+    QScopedPointer<QOutlineMapper> outlineMapper;
+    QScopedPointer<QRasterBuffer>  rasterBuffer;
 
 #if defined (Q_WS_WIN)
     HDC hdc;
@@ -345,9 +343,9 @@ public:
     QRect deviceRect;
 
     QStroker basicStroker;
-    QDashStroker *dashStroker;
+    QScopedPointer<QDashStroker> dashStroker;
 
-    QT_FT_Raster *grayRaster;
+    QScopedPointer<QT_FT_Raster> grayRaster;
     unsigned long rasterPoolSize;
     unsigned char *rasterPoolBase;
 
@@ -359,7 +357,7 @@ public:
 
     QFontEngineGlyphCache::Type glyphCacheType;
 
-    QClipData *baseClip;
+    QScopedPointer<QClipData> baseClip;
 
     int deviceDepth;
 
@@ -370,7 +368,7 @@ public:
     uint isPlain45DegreeRotation : 1;
 #endif
 
-    QRasterizer *rasterizer;
+    QScopedPointer<QRasterizer> rasterizer;
 };
 
 
@@ -541,7 +539,7 @@ inline const QClipData *QRasterPaintEnginePrivate::clip() const {
     Q_Q(const QRasterPaintEngine);
     if (q->state() && q->state()->clip && q->state()->clip->enabled)
         return q->state()->clip;
-    return baseClip;
+    return baseClip.data();
 }
 
 

@@ -82,6 +82,8 @@
 #include "private/qstyle_p.h"
 #include "private/qinputcontext_p.h"
 #include "qfileinfo.h"
+#include "qstandardgestures.h"
+#include "qstandardgestures_p.h"
 
 #if defined (Q_WS_WIN)
 # include <private/qwininputcontext_p.h>
@@ -111,9 +113,9 @@
 #include "private/qgraphicsproxywidget_p.h"
 #include "QtGui/qabstractscrollarea.h"
 #include "private/qabstractscrollarea_p.h"
+#include "private/qevent_p.h"
 
 #include "private/qgraphicssystem_p.h"
-#include "private/qgesturemanager_p.h"
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -131,8 +133,6 @@ Q_GUI_EXPORT void qt_x11_set_global_double_buffer(bool enable)
     qt_enable_backingstore = enable;
 }
 #endif
-
-QString qt_getStandardGestureTypeName(Qt::GestureType);
 
 static inline bool qRectIntersects(const QRect &r1, const QRect &r2)
 {
@@ -511,7 +511,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     been outlined to indicate their full sizes.
 
     If you want to use a QWidget to hold child widgets you will usually want to
-    add a layout to the parent QWidget. See \l{Layout Classes} for more
+    add a layout to the parent QWidget. See \l{Layout Management} for more
     information.
 
 
@@ -869,8 +869,8 @@ void QWidget::setAutoFillBackground(bool enabled)
     \list
     \o X11: This feature relies on the use of an X server that supports ARGB visuals
     and a compositing window manager.
-    \o Windows: This feature requires Windows 2000 or later. The widget needs to have
-    the Qt::FramelessWindowHint window flag set for the translucency to work.
+    \o Windows: The widget needs to have the Qt::FramelessWindowHint window flag set
+    for the translucency to work.
     \endlist
 
 
@@ -896,22 +896,22 @@ void QWidget::setAutoFillBackground(bool enabled)
     \endlist
 
     \sa QEvent, QPainter, QGridLayout, QBoxLayout
-    
+
     \section1 SoftKeys
     \since 4.6
     \preliminary
 
-    Softkeys API is a platform independent way of mapping actions to (hardware)keys 
+    Softkeys API is a platform independent way of mapping actions to (hardware)keys
     and toolbars provided by the underlying platform.
-    
-    There are three major use cases supported. First one is a mobile device 
+
+    There are three major use cases supported. First one is a mobile device
     with keypad navigation and no touch ui. Second use case is a mobile
-    device with touch ui. Third use case is desktop. For now the softkey API is 
+    device with touch ui. Third use case is desktop. For now the softkey API is
     only implemented for Series60.
-    
-    QActions are set to widget(s) via softkey API. Actions in focused widget are 
+
+    QActions are set to widget(s) via softkey API. Actions in focused widget are
     mapped to native toolbar or hardware keys. Even though the API allows to set
-    any amount of widgets there might be physical restrictions to amount of 
+    any amount of widgets there might be physical restrictions to amount of
     softkeys that can be used by the device.
 
     \o Series60: For series60 menu button is automatically mapped to left
@@ -919,11 +919,11 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     \sa softKeys()
     \sa setSoftKey()
-        
+
 */
 
-QWidgetMapper *QWidgetPrivate::mapper = 0;                // widget with wid
-QWidgetSet *QWidgetPrivate::uncreatedWidgets = 0;         // widgets with no wid
+QWidgetMapper *QWidgetPrivate::mapper = 0;          // widget with wid
+QWidgetSet *QWidgetPrivate::allWidgets = 0;         // widgets with no wid
 
 
 /*****************************************************************************
@@ -969,7 +969,7 @@ struct QWidgetExceptionCleaner
     static inline void cleanup(QWidget *that, QWidgetPrivate *d)
     {
 #ifndef QT_NO_EXCEPTIONS
-        QWidgetPrivate::uncreatedWidgets->remove(that);
+        QWidgetPrivate::allWidgets->remove(that);
         if (d->focus_next != that) {
             if (d->focus_next)
                 d->focus_next->d_func()->focus_prev = d->focus_prev;
@@ -1121,8 +1121,8 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     if (QApplication::type() == QApplication::Tty)
         qFatal("QWidget: Cannot create a QWidget when no GUI is being used");
 
-    Q_ASSERT(uncreatedWidgets);
-    uncreatedWidgets->insert(q);
+    Q_ASSERT(allWidgets);
+    allWidgets->insert(q);
 
     QWidget *desktopWidget = 0;
     if (parentWidget && parentWidget->windowType() == Qt::Desktop) {
@@ -1415,15 +1415,31 @@ QWidget::~QWidget()
     }
 #endif
 
-    clearFocus();
+    QT_TRY {
+        clearFocus();
+    } QT_CATCH(...) {
+        // swallow this problem because we are in a destructor
+    }
 
     d->setDirtyOpaqueRegion();
 
-    if (isWindow() && isVisible() && internalWinId())
-        d->close_helper(QWidgetPrivate::CloseNoEvent);
+    if (isWindow() && isVisible() && internalWinId()) {
+        QT_TRY {
+            d->close_helper(QWidgetPrivate::CloseNoEvent);
+        } QT_CATCH(...) {
+            // if we're out of memory, at least hide the window.
+            QT_TRY {
+                hide();
+            } QT_CATCH(...) {
+                // and if that also doesn't work, then give up
+            }
+        }
+    }
+
 #if defined(Q_WS_WIN) || defined(Q_WS_X11)
-    else if (!internalWinId() && isVisible())
+    else if (!internalWinId() && isVisible()) {
         qApp->d_func()->sendSyntheticEnterLeave(this);
+    }
 #endif
 
     if (QWidgetBackingStore *bs = d->maybeBackingStore()) {
@@ -1438,17 +1454,25 @@ QWidget::~QWidget()
     // set all QPointers for this object to zero
     QObjectPrivate::clearGuards(this);
 
+    if (d->declarativeData) {
+        d->declarativeData->destroyed(this);
+        d->declarativeData = 0;                 // don't activate again in ~QObject
+    }
+
     if (!d->children.isEmpty())
         d->deleteChildren();
 
     QApplication::removePostedEvents(this);
 
-    destroy();                                        // platform-dependent cleanup
-
+    QT_TRY {
+        destroy();                                        // platform-dependent cleanup
+    } QT_CATCH(...) {
+        // if this fails we can't do anything about it but at least we are not allowed to throw.
+    }
     --QWidgetPrivate::instanceCounter;
 
-    if (QWidgetPrivate::uncreatedWidgets) // might have been deleted by ~QApplication
-        QWidgetPrivate::uncreatedWidgets->remove(this);
+    if (QWidgetPrivate::allWidgets) // might have been deleted by ~QApplication
+        QWidgetPrivate::allWidgets->remove(this);
 
     QEvent e(QEvent::Destroy);
     QCoreApplication::sendEvent(this, &e);
@@ -1468,7 +1492,6 @@ void QWidgetPrivate::setWinId(WId id)                // set widget identifier
     bool userDesktopWidget = qt_desktopWidget != 0 && qt_desktopWidget != q && q->windowType() == Qt::Desktop;
     if (mapper && data.winid && !userDesktopWidget) {
         mapper->remove(data.winid);
-        uncreatedWidgets->insert(q);
     }
 
     data.winid = id;
@@ -1477,7 +1500,6 @@ void QWidgetPrivate::setWinId(WId id)                // set widget identifier
 #endif
     if (mapper && id && !userDesktopWidget) {
         mapper->insert(data.winid, q);
-        uncreatedWidgets->remove(q);
     }
 }
 
@@ -2035,10 +2057,9 @@ void QPixmap::fill( const QWidget *widget, const QPoint &off )
     QPainter p(this);
     p.translate(-off);
     widget->d_func()->paintBackground(&p, QRect(off, size()));
-
 }
 
-static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QPoint &offset, const QBrush &brush)
+static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
     Q_ASSERT(painter);
 
@@ -2047,33 +2068,45 @@ static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QPoin
         // Optimize pattern filling on mac by using HITheme directly
         // when filling with the standard widget background.
         // Defined in qmacstyle_mac.cpp
-        extern void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset, const QBrush &brush);
-        qt_mac_fill_background(painter, rgn, offset, brush);
+        extern void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush);
+        qt_mac_fill_background(painter, rgn, brush);
 #else
 #if !defined(QT_NO_STYLE_S60)
         // Defined in qs60style.cpp
-        extern bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn,
-                        const QPoint &offset, const QBrush &brush);
-        if (!qt_s60_fill_background(painter, rgn, offset, brush))
+        extern bool qt_s60_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush);
+        if (!qt_s60_fill_background(painter, rgn, brush))
 #endif // !defined(QT_NO_STYLE_S60)
         {
-            const QRegion translated = rgn.translated(offset);
-            const QRect rect(translated.boundingRect());
-            painter->setClipRegion(translated);
+            const QRect rect(rgn.boundingRect());
+            painter->setClipRegion(rgn);
             painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
         }
 #endif // Q_WS_MAC
     } else {
         const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i)
-            painter->fillRect(rects.at(i).translated(offset), brush);
+            painter->fillRect(rects.at(i), brush);
     }
 }
 
-
-void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, const QPoint &offset, int flags) const
+void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, int flags) const
 {
     Q_Q(const QWidget);
+
+#ifndef QT_NO_SCROLLAREA
+    bool resetBrushOrigin = false;
+    QPointF oldBrushOrigin;
+    //If we are painting the viewport of a scrollarea, we must apply an offset to the brush in case we are drawing a texture
+    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(parent);
+    if (scrollArea && scrollArea->viewport() == q) {
+        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr.data();
+        QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);
+        oldBrushOrigin = painter->brushOrigin();
+        resetBrushOrigin = true;
+        painter->setBrushOrigin(-priv->contentsOffset());
+
+    }
+#endif // QT_NO_SCROLLAREA
 
     const QBrush autoFillBrush = q->palette().brush(q->backgroundRole());
 
@@ -2083,19 +2116,24 @@ void QWidgetPrivate::paintBackground(QPainter *painter, const QRegion &rgn, cons
         if (!(flags & DontSetCompositionMode) && painter->paintEngine()->hasFeature(QPaintEngine::PorterDuff))
             painter->setCompositionMode(QPainter::CompositionMode_Source); //copy alpha straight in
 #endif
-        fillRegion(painter, rgn, offset, bg);
-
+        fillRegion(painter, rgn, bg);
     }
 
     if (q->autoFillBackground())
-        fillRegion(painter, rgn, offset, autoFillBrush);
+        fillRegion(painter, rgn, autoFillBrush);
+
 
     if (q->testAttribute(Qt::WA_StyledBackground)) {
-        painter->setClipRegion(rgn.translated(offset));
+        painter->setClipRegion(rgn);
         QStyleOption opt;
         opt.initFrom(q);
         q->style()->drawPrimitive(QStyle::PE_Widget, &opt, painter, q);
     }
+
+#ifndef QT_NO_SCROLLAREA
+    if (resetBrushOrigin)
+        painter->setBrushOrigin(oldBrushOrigin);
+#endif // QT_NO_SCROLLAREA
 }
 
 /*
@@ -3535,27 +3573,32 @@ bool QWidgetPrivate::setMinimumSize_helper(int &minw, int &minh)
         }
     }
 #endif
+    int mw = minw, mh = minh;
+    if (mw == QWIDGETSIZE_MAX)
+        mw = 0;
+    if (mh == QWIDGETSIZE_MAX)
+        mh = 0;
     if (minw > QWIDGETSIZE_MAX || minh > QWIDGETSIZE_MAX) {
         qWarning("QWidget::setMinimumSize: (%s/%s) "
                 "The largest allowed size is (%d,%d)",
                  q->objectName().toLocal8Bit().data(), q->metaObject()->className(), QWIDGETSIZE_MAX,
                 QWIDGETSIZE_MAX);
-        minw = qMin<int>(minw, QWIDGETSIZE_MAX);
-        minh = qMin<int>(minh, QWIDGETSIZE_MAX);
+        minw = mw = qMin<int>(minw, QWIDGETSIZE_MAX);
+        minh = mh = qMin<int>(minh, QWIDGETSIZE_MAX);
     }
     if (minw < 0 || minh < 0) {
         qWarning("QWidget::setMinimumSize: (%s/%s) Negative sizes (%d,%d) "
                 "are not possible",
                 q->objectName().toLocal8Bit().data(), q->metaObject()->className(), minw, minh);
-        minw = qMax(minw, 0);
-        minh = qMax(minh, 0);
+        minw = mw = qMax(minw, 0);
+        minh = mh = qMax(minh, 0);
     }
     createExtra();
-    if (extra->minw == minw && extra->minh == minh)
+    if (extra->minw == mw && extra->minh == mh)
         return false;
-    extra->minw = minw;
-    extra->minh = minh;
-    extra->explicitMinSize = (minw ? Qt::Horizontal : 0) | (minh ? Qt::Vertical : 0);
+    extra->minw = mw;
+    extra->minh = mh;
+    extra->explicitMinSize = (mw ? Qt::Horizontal : 0) | (mh ? Qt::Vertical : 0);
     return true;
 }
 
@@ -3615,7 +3658,8 @@ bool QWidgetPrivate::setMaximumSize_helper(int &maxw, int &maxh)
         return false;
     extra->maxw = maxw;
     extra->maxh = maxh;
-    extra->explicitMaxSize = (maxw != QWIDGETSIZE_MAX ? Qt::Horizontal : 0) | (maxh != QWIDGETSIZE_MAX ? Qt::Vertical : 0);
+    extra->explicitMaxSize = (maxw != QWIDGETSIZE_MAX ? Qt::Horizontal : 0) |
+                             (maxh != QWIDGETSIZE_MAX ? Qt::Vertical : 0);
     return true;
 }
 
@@ -3694,6 +3738,8 @@ void QWidget::setBaseSize(int basew, int baseh)
 
     This will override the default size constraints set by QLayout.
 
+    To remove constraints, set the size to QWIDGETSIZE_MAX.
+
     Alternatively, if you want the widget to have a
     fixed size based on its contents, you can call
     QLayout::setSizeConstraint(QLayout::SetFixedSize);
@@ -3735,7 +3781,8 @@ void QWidget::setFixedSize(int w, int h)
     else
         d->updateGeometry_helper(true);
 
-    resize(w, h);
+    if (w != QWIDGETSIZE_MAX || h != QWIDGETSIZE_MAX)
+        resize(w, h);
 }
 
 void QWidget::setMinimumWidth(int w)
@@ -4619,6 +4666,11 @@ void QWidget::unsetLayoutDirection()
     By default, this property contains a cursor with the Qt::ArrowCursor
     shape.
 
+    Some underlying window implementations will reset the cursor if it
+    leaves a widget even if the mouse is grabbed. If you want to have
+    a cursor set for all widgets, even when outside the window, consider
+    QApplication::setOverrideCursor().
+
     \sa QApplication::setOverrideCursor()
 */
 
@@ -4645,8 +4697,9 @@ void QWidget::setCursor(const QCursor &cursor)
 #endif
     {
         d->createExtra();
+        QCursor *newCursor = new QCursor(cursor);
         delete d->extra->curs;
-        d->extra->curs = new QCursor(cursor);
+        d->extra->curs = newCursor;
     }
     setAttribute(Qt::WA_SetCursor);
     d->setCursor_sys(cursor);
@@ -5078,19 +5131,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                     && !q->testAttribute(Qt::WA_OpaquePaintEvent) && !q->testAttribute(Qt::WA_NoSystemBackground)) {
 
                     QPainter p(q);
-                    QPoint scrollAreaOffset;
-
-#ifndef QT_NO_SCROLLAREA
-                    QAbstractScrollArea *scrollArea = qobject_cast<QAbstractScrollArea *>(parent);
-                    if (scrollArea && scrollArea->viewport() == q) {
-                        QObjectData *scrollPrivate = static_cast<QWidget *>(scrollArea)->d_ptr.data();
-                        QAbstractScrollAreaPrivate *priv = static_cast<QAbstractScrollAreaPrivate *>(scrollPrivate);
-                        scrollAreaOffset = priv->contentsOffset();
-                        p.translate(-scrollAreaOffset);
-                    }
-#endif // QT_NO_SCROLLAREA
-
-                    paintBackground(&p, toBePainted, scrollAreaOffset, (asRoot || onScreen) ? flags | DrawAsRoot : 0);
+                    paintBackground(&p, toBePainted, (asRoot || onScreen) ? flags | DrawAsRoot : 0);
                 }
 
                 if (!sharedPainter)
@@ -5359,6 +5400,17 @@ QString QWidget::windowTitle() const
     return QString();
 }
 
+/*!
+    Returns a modified window title with the [*] place holder
+    replaced according to the rules described in QWidget::setWindowTitle
+
+    This function assumes that "[*]" can be quoted by another
+    "[*]", so it will replace two place holders by one and
+    a single last one by either "*" or nothing depending on
+    the modified flag.
+
+    \internal
+*/
 QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widget)
 {
     Q_ASSERT(widget);
@@ -5370,16 +5422,21 @@ QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widg
     QString cap = title;
 #endif
 
-    QString placeHolder(QLatin1String("[*]"));
+    if (cap.isEmpty())
+        return cap;
+
+    QLatin1String placeHolder("[*]");
+    int placeHolderLength = 3; // QLatin1String doesn't have length()
 
     int index = cap.indexOf(placeHolder);
 
+    // here the magic begins
     while (index != -1) {
-        index += placeHolder.length();
+        index += placeHolderLength;
         int count = 1;
         while (cap.indexOf(placeHolder, index) == index) {
             ++count;
-            index += placeHolder.length();
+            index += placeHolderLength;
         }
 
         if (count%2) { // odd number of [*] -> replace last one
@@ -5394,7 +5451,7 @@ QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widg
         index = cap.indexOf(placeHolder, index);
     }
 
-    cap.replace(QLatin1String("[*][*]"), QLatin1String("[*]"));
+    cap.replace(QLatin1String("[*][*]"), placeHolder);
 
     return cap;
 }
@@ -5523,8 +5580,6 @@ QString QWidget::windowIconText() const
 
     \list
     \o The file name of the specified path, obtained using QFileInfo::fileName().
-    \o An optional \c{*} character, if the \l windowModified property is set,
-    as per the Apple Human Interface Guidelines.
     \endlist
 
     On Windows and X11:
@@ -5573,7 +5628,7 @@ void QWidgetPrivate::setWindowFilePath_helper(const QString &filePath)
 {
     if (extra->topextra && extra->topextra->caption.isEmpty()) {
 #ifdef Q_WS_MAC
-        setWindowTitle_helper(filePath);
+        setWindowTitle_helper(QFileInfo(filePath).fileName());
 #else
         Q_Q(QWidget);
         Q_UNUSED(filePath);
@@ -5734,7 +5789,7 @@ void QWidget::setFocus(Qt::FocusReason reason)
 
     if (!isEnabled())
         return;
-    
+
     QWidget *f = this;
     while (f->d_func()->extra && f->d_func()->extra->focus_proxy)
         f = f->d_func()->extra->focus_proxy;
@@ -7571,7 +7626,6 @@ bool QWidget::event(QEvent *event)
 #ifndef QT_NO_WHEELEVENT
         case QEvent::Wheel:
 #endif
-        case QEvent::Gesture:
             return false;
         default:
             break;
@@ -7972,9 +8026,6 @@ bool QWidget::event(QEvent *event)
         d->needWindowChange = false;
         break;
 #endif
-    case QEvent::Gesture:
-        event->ignore();
-        break;
     case QEvent::TouchBegin:
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
@@ -8069,10 +8120,12 @@ void QWidget::changeEvent(QEvent * event)
 
     case QEvent::FontChange:
     case QEvent::StyleChange: {
+        Q_D(QWidget);
         update();
         updateGeometry();
+        if (d->layout)
+            d->layout->invalidate();
 #ifdef Q_WS_QWS
-        Q_D(QWidget);
         if (isWindow())
             d->data.fstrut_dirty = true;
 #endif
@@ -8937,7 +8990,7 @@ QRegion QWidget::mask() const
     The layout manager sets the geometry of the widget's children
     that have been added to the layout.
 
-    \sa setLayout(), sizePolicy(), {Layout Classes}
+    \sa setLayout(), sizePolicy(), {Layout Management}
 */
 QLayout *QWidget::layout() const
 {
@@ -8967,7 +9020,7 @@ QLayout *QWidget::layout() const
 
     The QWidget will take ownership of \a layout.
 
-    \sa layout(), {Layout Classes}
+    \sa layout(), {Layout Management}
 */
 
 void QWidget::setLayout(QLayout *l)
@@ -9933,6 +9986,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             data->window_modality = (w && w->testAttribute(Qt::WA_GroupLeader))
                                     ? Qt::WindowModal
                                     : Qt::ApplicationModal;
+            // Some window managers does not allow us to enter modal after the
+            // window is showing. Therefore, to be consistent, we cannot call
+            // QApplicationPrivate::enterModal(this) here. The window must be
+            // hidden before changing modality.
         }
         if (testAttribute(Qt::WA_WState_Created)) {
             // don't call setModal_sys() before create_sys()
@@ -9986,11 +10043,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_InputMethodEnabled: {
         QInputContext *ic = d->ic;
-        if (!ic) {
-            // implicitly create input context only if we have a focus
-            if (hasFocus())
-                ic = d->inputContext();
-        }
+        if (!ic && (!on || hasFocus()))
+            ic = d->inputContext();
         if (ic) {
             if (on && hasFocus() && ic->focusWidget() != this && isEnabled()) {
                 ic->setFocusWidget(this);
@@ -10105,8 +10159,8 @@ bool QWidget::testAttribute_helper(Qt::WidgetAttribute attribute) const
 
   By default the value of this property is 1.0.
 
-  This feature is available on Embedded Linux, Mac OS X, X11 platforms that
-  support the Composite extension, and Windows 2000 and later.
+  This feature is available on Embedded Linux, Mac OS X, Windows,
+  and X11 platforms that support the Composite extension.
 
   This feature is not available on Windows CE.
 
@@ -11157,103 +11211,6 @@ QWindowSurface *QWidget::windowSurface() const
     return bs ? bs->windowSurface : 0;
 }
 
-/*!
-    \since 4.6
-
-    Subscribes the widget to the specified \a gesture type.
-
-    Returns the id of the gesture.
-
-    \sa releaseGesture(), setGestureEnabled()
-*/
-int QWidget::grabGesture(const QString &gesture)
-{
-    Q_D(QWidget);
-    int id = d->grabGesture(QGestureManager::instance()->makeGestureId(gesture));
-    if (d->extra && d->extra->proxyWidget)
-        d->extra->proxyWidget->QGraphicsItem::d_ptr->grabGesture(id);
-    return id;
-}
-
-int QWidgetPrivate::grabGesture(int gestureId)
-{
-    gestures << gestureId;
-    ++qApp->d_func()->grabbedGestures[QGestureManager::instance()->gestureNameFromId(gestureId)];
-    return gestureId;
-}
-
-bool QWidgetPrivate::releaseGesture(int gestureId)
-{
-    QApplicationPrivate *qAppPriv = qApp->d_func();
-    if (gestures.contains(gestureId)) {
-        QString name = QGestureManager::instance()->gestureNameFromId(gestureId);
-        Q_ASSERT(qAppPriv->grabbedGestures[name] > 0);
-        --qAppPriv->grabbedGestures[name];
-        gestures.remove(gestureId);
-        return true;
-    }
-    return false;
-}
-
-bool QWidgetPrivate::hasGesture(const QString &name) const
-{
-    QGestureManager *gm = QGestureManager::instance();
-    QSet<int>::const_iterator it = gestures.begin(),
-                               e = gestures.end();
-    for (; it != e; ++it) {
-        if (gm->gestureNameFromId(*it) == name)
-            return true;
-    }
-    return false;
-}
-
-/*!
-    \since 4.6
-
-    Subscribes the widget to the specified \a gesture type.
-
-    Returns the id of the gesture.
-
-    \sa releaseGesture(), setGestureEnabled()
-*/
-int QWidget::grabGesture(Qt::GestureType gesture)
-{
-    return grabGesture(qt_getStandardGestureTypeName(gesture));
-}
-
-/*!
-    \since 4.6
-
-    Unsubscribes the widget from a gesture, which is specified by the
-    \a gestureId.
-
-    \sa grabGesture(), setGestureEnabled()
-*/
-void QWidget::releaseGesture(int gestureId)
-{
-    Q_D(QWidget);
-    if (d->releaseGesture(gestureId)) {
-        if (d->extra && d->extra->proxyWidget)
-            d->extra->proxyWidget->QGraphicsItem::d_ptr->releaseGesture(gestureId);
-        QGestureManager::instance()->releaseGestureId(gestureId);
-    }
-}
-
-/*!
-    \since 4.6
-
-    If \a enable is true, the gesture with the given \a gestureId is
-    enabled; otherwise the gesture is disabled.
-
-    The id of the gesture is returned by the grabGesture().
-
-    \sa grabGesture(), releaseGesture()
-*/
-void QWidget::setGestureEnabled(int gestureId, bool enable)
-{
-    //###
-}
-
 void QWidgetPrivate::getLayoutItemMargins(int *left, int *top, int *right, int *bottom) const
 {
     if (left)
@@ -11330,8 +11287,6 @@ Q_GUI_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget)
 {
     return widget->d_func();
 }
-
-
 
 
 #ifndef QT_NO_GRAPHICSVIEW
@@ -11664,7 +11619,7 @@ void QWidget::clearMask()
 /*!
     \preliminary
     \since 4.6
-    
+
     Returns the (possibly empty) list of this widget's softkeys.
     Returned list cannot be changed. Softkeys should be added
     and removed via method called setSoftKeys
@@ -11685,7 +11640,7 @@ const QList<QAction*>& QWidget::softKeys() const
 /*!
     \preliminary
     \since 4.6
-    
+
     Sets the softkey \a softkey to this widget's list of softkeys,
     Setting 0 as softkey will clear all the existing softkeys set
     to the widget

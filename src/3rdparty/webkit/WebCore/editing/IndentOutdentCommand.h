@@ -46,12 +46,16 @@ private:
     virtual void doApply();
     virtual EditAction editingAction() const { return m_typeOfAction == Indent ? EditActionIndent : EditActionOutdent; }
 
+    // FIXME: Does this belong in htmlediting.cpp?
+    bool isAtUnsplittableElement(const Position&) const;
+    void appendParagraphIntoNode(const VisiblePosition& start, const VisiblePosition& end, Node* newParent);
+    void removeUnnecessaryLineBreakAt(const Position& endOfParagraph);
+
     void indentRegion();
     void outdentRegion();
     void outdentParagraph();
-    PassRefPtr<Element> prepareBlockquoteLevelForInsertion(const VisiblePosition&, RefPtr<Element>&);
     bool tryIndentingAsListItem(const VisiblePosition&);
-    void indentIntoBlockquote(const VisiblePosition&, const VisiblePosition&, RefPtr<Element>&);
+    void indentIntoBlockquote(const VisiblePosition&, const VisiblePosition&, RefPtr<Element>& targetBlockquote, Node* nodeToSplitTo);
 
     EIndentType m_typeOfAction;
     int m_marginInPixels;

@@ -86,7 +86,7 @@ class QDirPrivate
     QDir *q_ptr;
     Q_DECLARE_PUBLIC(QDir)
 
-    friend class QScopedPointer<QDirPrivate>;
+    friend struct QScopedPointerDeleter<QDirPrivate>;
 protected:
     QDirPrivate(QDir*, const QDir *copy=0);
     ~QDirPrivate();
@@ -288,10 +288,10 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QFileInfoList &l,
                     names->append(l.at(i).fileName());
             }
         } else {
-            QDirSortItem *si = new QDirSortItem[n];
+            QScopedArrayPointer<QDirSortItem> si(new QDirSortItem[n]);
             for (int i = 0; i < n; ++i)
                 si[i].item = l.at(i);
-            qSort(si, si+n, QDirSortItemComparator(sort));
+            qSort(si.data(), si.data()+n, QDirSortItemComparator(sort));
             // put them back in the list(s)
             if(infos) {
                 for (int i = 0; i < n; ++i)
@@ -301,7 +301,6 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QFileInfoList &l,
                 for (int i = 0; i < n; ++i)
                     names->append(si[i].item.fileName());
             }
-            delete [] si;
         }
     }
 }
@@ -334,8 +333,9 @@ void QDirPrivate::detach(bool createFileEngine)
 {
     qAtomicDetach(data);
     if (createFileEngine) {
+        QAbstractFileEngine *newFileEngine = QAbstractFileEngine::create(data->path);
         delete data->fileEngine;
-        data->fileEngine = QAbstractFileEngine::create(data->path);
+        data->fileEngine = newFileEngine;
     }
 }
 
@@ -1824,7 +1824,7 @@ QChar QDir::separator()
 {
 #if defined (Q_FS_FAT) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
     return QLatin1Char('\\');
-#elif defined(Q_OS_UNIX) 
+#elif defined(Q_OS_UNIX)
     return QLatin1Char('/');
 #elif defined (Q_OS_MAC)
     return QLatin1Char(':');

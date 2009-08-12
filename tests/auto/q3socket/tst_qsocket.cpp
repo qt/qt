@@ -124,8 +124,10 @@ void tst_Q3Socket::peerAddress_data()
     QTest::addColumn<bool>("peerClosesConnection");
     QTest::addColumn<QString>("peerAddr");
 
-    QTest::newRow( "echo" )    << QString("qt-test-server.troll.no") << (uint)7  << false << QString("10.3.3.69");
-    QTest::newRow( "daytime" ) << QString("qt-test-server.troll.no") << (uint)13 << true << QString("10.3.3.69");
+    QTest::newRow( "echo" )    << QtNetworkSettings::serverLocalName() << (uint)7  << false
+        << QtNetworkSettings::serverIP().toString();
+    QTest::newRow( "daytime" ) << QtNetworkSettings::serverLocalName() << (uint)13 << true
+        << QtNetworkSettings::serverIP().toString();
 }
 
 void tst_Q3Socket::peerAddress()
@@ -191,7 +193,7 @@ void tst_Q3Socket::emitConnectionRefused()
 {
     Q3Socket sock;
     connect( &sock, SIGNAL(error(int)), SLOT(emitConnectionRefused_error(int)) );
-    sock.connectToHost( "ares.troll.no", 12331 );
+    sock.connectToHost( QtNetworkSettings::serverLocalName(), 12331 );
 
     emitConnectionRefused_errorReceived = false;
     QTestEventLoop::instance().enterLoop( 30 );
@@ -225,8 +227,8 @@ void tst_Q3Socket::connectionAttempts_data()
     QTest::addColumn<int>("port");
     QTest::addColumn<bool>("expectedResult");
 
-    QTest::newRow("fluke port 80") << QString("qt-test-server.troll.no") << 80 << true;
-    QTest::newRow("fluke port 79") << QString("qt-test-server.troll.no") << 79 << false;
+    QTest::newRow("fluke port 80") << QtNetworkSettings::serverLocalName() << 80 << true;
+    QTest::newRow("fluke port 79") << QtNetworkSettings::serverLocalName() << 79 << false;
 }
 
 void tst_Q3Socket::connectionAttempts()
@@ -266,7 +268,7 @@ void tst_Q3Socket::canReadLine()
     connect(&socket, SIGNAL(connected()), &loop, SLOT(quit()));
     // timeout error will fail in #238
     connect(&socket, SIGNAL(error(int)), &loop, SLOT(quit()));
-    socket.connectToHost("qt-test-server.troll.no", 143);
+    socket.connectToHost(QtNetworkSettings::serverLocalName(), 143);
 
     loop.exec();
 

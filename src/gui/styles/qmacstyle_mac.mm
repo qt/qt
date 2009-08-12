@@ -558,7 +558,6 @@ QT_END_INCLUDE_NAMESPACE
   External functions
  *****************************************************************************/
 extern CGContextRef qt_mac_cg_context(const QPaintDevice *); //qpaintdevice_mac.cpp
-extern QPixmap qt_mac_convert_iconref(const IconRef, int, int); //qpixmap_mac.cpp
 extern QRegion qt_mac_convert_mac_region(HIShapeRef); //qregion_mac.cpp
 void qt_mac_dispose_rgn(RgnHandle r); //qregion_mac.cpp
 extern QPaintDevice *qt_mac_safe_pdev; //qapplication_mac.cpp
@@ -1871,24 +1870,23 @@ QPixmap QMacStylePrivate::generateBackgroundPattern() const
     Fills the given \a rect with the pattern stored in \a brush. As an optimization,
     HIThemeSetFill us used directly if we are filling with the standard background.
 */
-void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint &offset, const QBrush &brush)
+void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QBrush &brush)
 {
     QPoint dummy;
     const QPaintDevice *target = painter->device();
     const QPaintDevice *redirected = QPainter::redirected(target, &dummy);
     const bool usePainter = redirected && redirected != target;
-    const QRegion translated = rgn.translated(offset);
 
     if (!usePainter && qt_mac_backgroundPattern
         && qt_mac_backgroundPattern->cacheKey() == brush.texture().cacheKey()) {
 
-        painter->setClipRegion(translated);
+        painter->setClipRegion(rgn);
 
         CGContextRef cg = qt_mac_cg_context(target);
         CGContextSaveGState(cg);
         HIThemeSetFill(kThemeBrushDialogBackgroundActive, 0, cg, kHIThemeOrientationInverted);
 
-        const QVector<QRect> &rects = translated.rects();
+        const QVector<QRect> &rects = rgn.rects();
         for (int i = 0; i < rects.size(); ++i) {
             const QRect rect(rects.at(i));
             // Anchor the pattern to the top so it stays put when the window is resized.
@@ -1899,8 +1897,8 @@ void qt_mac_fill_background(QPainter *painter, const QRegion &rgn, const QPoint 
 
         CGContextRestoreGState(cg);
     } else {
-        const QRect rect(translated.boundingRect());
-        painter->setClipRegion(translated);
+        const QRect rect(rgn.boundingRect());
+        painter->setClipRegion(rgn);
         painter->drawTiledPixmap(rect, brush.texture(), rect.topLeft());
     }
 }
@@ -2303,9 +2301,6 @@ int QMacStyle::pixelMetric(PixelMetric metric, const QStyleOption *opt, const QW
         break;
     case PM_ToolBarItemSpacing:
         ret = 4;
-        break;
-    case PM_MessageBoxIconSize:
-        ret = 64;
         break;
     case PM_SplitterWidth:
         ret = qMax(7, QApplication::globalStrut().width());
@@ -3362,6 +3357,9 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
                         }
                         proxy()->drawItemPixmap(p, pr, Qt::AlignCenter, pixmap);
                         break; }
+                    default:
+                        Q_ASSERT(false);
+                        break;
                     }
 
                     if (needText) {
@@ -3991,8 +3989,12 @@ void QMacStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPainter
 
                 const int xm = macItemFrame + maxpmw + macItemHMargin;
                 QFont myFont = mi->font;
-                if (mi->state & QStyle::State_Mini)
-                    myFont.setPointSize(mi->font.pointSize());
+                // myFont may not have any "hard" flags set. We override
+                // the point size so that when it is resolved against the device, this font will win.
+                // This is mainly to handle cases where someone sets the font on the window
+                // and then the combo inherits it and passes it onward. At that point the resolve mask
+                // is very, very weak. This makes it stonger.
+                myFont.setPointSizeF(mi->font.pointSizeF());
                 p->setFont(myFont);
                 p->drawText(xpos, yPos, contentRect.width() - xm - tabwidth + 1,
                             contentRect.height(), text_flags ^ Qt::AlignRight, s);
@@ -5508,9 +5510,15 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 break;
             }
             case SC_SpinBoxEditField:
-                ret.setRect(fw, fw,
-                            spin->rect.width() - spinner_w - fw * 2 - spinBoxSep,
-                            spin->rect.height() - fw * 2);
+                if (spin->buttonSymbols == QAbstractSpinBox::NoButtons) {
+                    ret.setRect(fw, fw,
+                                spin->rect.width() - fw * 2,
+                                spin->rect.height() - fw * 2);
+                } else {
+                    ret.setRect(fw, fw,
+                                spin->rect.width() - fw * 2 - spinBoxSep - spinner_w,
+                                spin->rect.height() - fw * 2);
+                }
                 ret = visualRect(spin->direction, spin->rect, ret);
                 break;
             default:
@@ -5852,76 +5860,12 @@ bool QMacStyle::event(QEvent *e)
     return false;
 }
 
-void qt_mac_constructQIconFromIconRef(const IconRef icon, const IconRef overlayIcon, QIcon *retIcon, QStyle::StandardPixmap standardIcon = QStyle::SP_CustomBase)
-{
-    int size = 16;
-    while (size <= 128) {
-
-        const QString cacheKey = QLatin1String("qt_mac_constructQIconFromIconRef") + QString::number(standardIcon) + QString::number(size);
-        QPixmap mainIcon;
-        if (standardIcon >= QStyle::SP_CustomBase) {
-            mainIcon = qt_mac_convert_iconref(icon, size, size);
-        } else if (QPixmapCache::find(cacheKey, mainIcon) == false) {
-            mainIcon = qt_mac_convert_iconref(icon, size, size);
-            QPixmapCache::insert(cacheKey, mainIcon);
-        }
-
-        if (overlayIcon) {
-            int littleSize = size / 2;
-            QPixmap overlayPix = qt_mac_convert_iconref(overlayIcon, littleSize, littleSize);
-            QPainter painter(&mainIcon);
-            painter.drawPixmap(size - littleSize, size - littleSize, overlayPix);
-        }
-
-        retIcon->addPixmap(mainIcon);
-        size += size;  // 16 -> 32 -> 64 -> 128
-    }
-}
-
 QIcon QMacStyle::standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *opt,
                                             const QWidget *widget) const
 {
-    OSType iconType = 0;
     switch (standardIcon) {
-    case QStyle::SP_MessageBoxQuestion:
-    case QStyle::SP_MessageBoxInformation:
-    case QStyle::SP_MessageBoxWarning:
-    case QStyle::SP_MessageBoxCritical:
-        iconType = kGenericApplicationIcon;
-        break;
-    case SP_DesktopIcon:
-        iconType = kDesktopIcon;
-        break;
-    case SP_TrashIcon:
-        iconType = kTrashIcon;
-        break;
-    case SP_ComputerIcon:
-        iconType = kComputerIcon;
-        break;
-    case SP_DriveFDIcon:
-        iconType = kGenericFloppyIcon;
-        break;
-    case SP_DriveHDIcon:
-        iconType = kGenericHardDiskIcon;
-        break;
-    case SP_DriveCDIcon:
-    case SP_DriveDVDIcon:
-        iconType = kGenericCDROMIcon;
-        break;
-    case SP_DriveNetIcon:
-        iconType = kGenericNetworkIcon;
-        break;
-    case SP_DirOpenIcon:
-        iconType = kOpenFolderIcon;
-        break;
-    case SP_DirClosedIcon:
-    case SP_DirLinkIcon:
-        iconType = kGenericFolderIcon;
-        break;
-    case SP_FileLinkIcon:
-    case SP_FileIcon:
-        iconType = kGenericDocumentIcon;
-        break;
+    default:
+        return QWindowsStyle::standardIconImplementation(standardIcon, opt, widget);
     case SP_ToolBarHorizontalExtensionButton:
     case SP_ToolBarVerticalExtensionButton: {
         QPixmap pixmap(qt_mac_toolbar_ext);
@@ -5935,58 +5879,8 @@ QIcon QMacStyle::standardIconImplementation(StandardPixmap standardIcon, const Q
             return pix2;
         }
         return pixmap;
-        }
-        break;
-    case SP_DirIcon: {
-        // A rather special case
-        QIcon closeIcon = QStyle::standardIcon(SP_DirClosedIcon, opt, widget);
-        QIcon openIcon = QStyle::standardIcon(SP_DirOpenIcon, opt, widget);
-        closeIcon.addPixmap(openIcon.pixmap(16, 16), QIcon::Normal, QIcon::On);
-        closeIcon.addPixmap(openIcon.pixmap(32, 32), QIcon::Normal, QIcon::On);
-        closeIcon.addPixmap(openIcon.pixmap(64, 64), QIcon::Normal, QIcon::On);
-        closeIcon.addPixmap(openIcon.pixmap(128, 128), QIcon::Normal, QIcon::On);
-        return closeIcon;
     }
-    case SP_TitleBarNormalButton:
-    case SP_TitleBarCloseButton: {
-        QIcon titleBarIcon;
-        if (standardIcon == SP_TitleBarCloseButton) {
-            titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/closedock-16.png"));
-            titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/closedock-down-16.png"), QSize(16, 16), QIcon::Normal, QIcon::On);
-        } else {
-            titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/dockdock-16.png"));
-            titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/dockdock-down-16.png"), QSize(16, 16), QIcon::Normal, QIcon::On);
-        }
-        return titleBarIcon;
     }
-    default:
-        break;
-    }
-    if (iconType != 0) {
-        QIcon retIcon;
-        IconRef icon;
-        IconRef overlayIcon = 0;
-        if (iconType != kGenericApplicationIcon) {
-            GetIconRef(kOnSystemDisk, kSystemIconsCreator, iconType, &icon);
-        } else {
-            FSRef fsRef;
-            ProcessSerialNumber psn = { 0, kCurrentProcess };
-            GetProcessBundleLocation(&psn, &fsRef);
-            GetIconRefFromFileInfo(&fsRef, 0, 0, 0, 0, kIconServicesNormalUsageFlag, &icon, 0);
-            if (standardIcon == SP_MessageBoxCritical) {
-                overlayIcon = icon;
-                GetIconRef(kOnSystemDisk, kSystemIconsCreator, kAlertCautionIcon, &icon);
-            }
-        }
-        if (icon) {
-            qt_mac_constructQIconFromIconRef(icon, overlayIcon, &retIcon, standardIcon);
-            ReleaseIconRef(icon);
-        }
-        if (overlayIcon)
-            ReleaseIconRef(overlayIcon);
-        return retIcon;
-    }
-    return QWindowsStyle::standardIconImplementation(standardIcon, opt, widget);
 }
 
 int QMacStyle::layoutSpacingImplementation(QSizePolicy::ControlType control1,

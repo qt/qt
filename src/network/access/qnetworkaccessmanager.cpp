@@ -121,7 +121,9 @@ static void ensureInitialized()
     as well as meta-data (headers, etc.).
 
     \note After the request has finished, it is the responsibility of the user
-    to delete the QNetworkReply object at an appropriate time.
+    to delete the QNetworkReply object at an appropriate time. Do not directly
+    delete it inside the slot connected to finished(). You can use the
+    deleteLater() function.
 
     A more involved example, assuming the manager is already existent,
     can be:
@@ -201,6 +203,9 @@ static void ensureInitialized()
 
     See QNetworkReply::finished() for information on the status that
     the object will be in.
+
+    \note Do not delete the \a reply object in the slot connected to this
+    signal. Use deleteLater().
 
     \sa QNetworkReply::finished(), QNetworkReply::error()
 */
@@ -540,10 +545,10 @@ void QNetworkAccessManager::setCookieJar(QNetworkCookieJar *cookieJar)
 }
 
 /*!
-    This function is used to post a request to obtain the network
-    headers for \a request. It takes its name after the HTTP request
-    associated (HEAD). It returns a new QNetworkReply object which
-    will contain such headers.
+    Posts a request to obtain the network headers for \a request
+    and returns a new QNetworkReply object which will contain such headers
+
+    The function is named after the HTTP request associated (HEAD).
 */
 QNetworkReply *QNetworkAccessManager::head(const QNetworkRequest &request)
 {
@@ -551,11 +556,12 @@ QNetworkReply *QNetworkAccessManager::head(const QNetworkRequest &request)
 }
 
 /*!
-    This function is used to post a request to obtain the contents of
-    the target \a request. It will cause the contents to be
-    downloaded, along with the headers associated with it. It returns
-    a new QNetworkReply object opened for reading which emits its
-    QIODevice::readyRead() signal whenever new data arrives.
+    Posts a request to obtain the contents of the target \a request
+    and returns a new QNetworkReply object opened for reading which emits the 
+    \l{QIODevice::readyRead()}{readyRead()} signal whenever new data 
+    arrives.
+
+    The contents as well as associated headers will be downloaded.
 
     \sa post(), put(), deleteResource()
 */
@@ -565,18 +571,15 @@ QNetworkReply *QNetworkAccessManager::get(const QNetworkRequest &request)
 }
 
 /*!
-    This function is used to send an HTTP POST request to the
-    destination specified by \a request. The contents of the \a data
+    Sends an HTTP POST request to the destination specified by \a request
+    and returns a new QNetworkReply object opened for reading that will 
+    contain the reply sent by the server. The contents of  the \a data 
     device will be uploaded to the server.
 
-    \a data must be opened for reading when this function is called
-    and must remain valid until the finished() signal is emitted for
-    this reply.
+    \a data must be open for reading and must remain valid until the 
+    finished() signal is emitted for this reply.
 
-    The returned QNetworkReply object will be open for reading and
-    will contain the reply sent by the server to the POST request.
-
-    Note: sending a POST request on protocols other than HTTP and
+    \note Sending a POST request on protocols other than HTTP and
     HTTPS is undefined and will probably fail.
 
     \sa get(), put(), deleteResource()
@@ -588,8 +591,9 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, QIODe
 
 /*!
     \overload
-    This function sends the contents of the \a data byte array to the
-    destination specified by \a request.
+
+    Sends the contents of the \a data byte array to the destination 
+    specified by \a request.
 */
 QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, const QByteArray &data)
 {
@@ -603,20 +607,19 @@ QNetworkReply *QNetworkAccessManager::post(const QNetworkRequest &request, const
 }
 
 /*!
-    This function is used to upload the contents of \a data to the
-    destination \a request.
+    Uploads the contents of \a data to the destination \a request and
+    returnes a new QNetworkReply object that will be open for reply.
 
     \a data must be opened for reading when this function is called
     and must remain valid until the finished() signal is emitted for
     this reply.
 
-    The returned QNetworkReply object will be open for reply, but
-    whether anything will be available for reading is protocol
-    dependent. For HTTP, the server may send a small HTML page
-    indicating the upload was successful (or not). Other protocols
-    will probably have content in their replies.
+    Whether anything will be available for reading from the returned
+    object is protocol dependent. For HTTP, the server may send a 
+    small HTML page indicating the upload was successful (or not). 
+    Other protocols will probably have content in their replies.
 
-    For HTTP, this request will send a PUT request, which most servers
+    \note For HTTP, this request will send a PUT request, which most servers
     do not allow. Form upload mechanisms, including that of uploading
     files through HTML forms, use the POST mechanism.
 
@@ -629,8 +632,8 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, QIODev
 
 /*!
     \overload
-    This function sends the contents of the \a data byte array to the
-    destination specified by \a request.
+    Sends the contents of the \a data byte array to the destination 
+    specified by \a request.
 */
 QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const QByteArray &data)
 {
@@ -646,9 +649,10 @@ QNetworkReply *QNetworkAccessManager::put(const QNetworkRequest &request, const 
 /*!
     \since 4.6
 
-    This function is used to send a request to delete the resource
-    identified by the URL of \a request.
-    This feature is currently available for HTTP only, performing an HTTP DELETE request.
+    Sends a request to delete the resource identified by the URL of \a request.
+
+    \note This feature is currently available for HTTP only, performing an 
+    HTTP DELETE request.
 
     \sa get(), post(), put()
 */

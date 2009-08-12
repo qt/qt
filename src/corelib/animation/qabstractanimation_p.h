@@ -58,6 +58,8 @@
 #include <QtCore/qtimer.h>
 #include <private/qobject_p.h>
 
+#ifndef QT_NO_ANIMATION
+
 QT_BEGIN_NAMESPACE
 
 class QAnimationGroup;
@@ -133,11 +135,8 @@ public:
 
 protected:
     void timerEvent(QTimerEvent *);
-    void updateTimer();
 
 private:
-    void updateRecentlyStartedAnimations();
-
     QBasicTimer animationTimer, startStopAnimationTimer;
     QTime time;
     int lastTick;
@@ -147,4 +146,7 @@ private:
 };
 
 QT_END_NAMESPACE
-#endif
+
+#endif //QT_NO_ANIMATION
+
+#endif //QABSTRACTANIMATION_P_H

@@ -137,12 +137,12 @@ void Uic::writeCopyrightHeader(DomUI *ui)
         out << "/*\n" << comment << "\n*/\n\n";
 
         out << "/********************************************************************************\n";
-        out << "** Form generated from reading ui file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
+        out << "** Form generated from reading UI file '" << QFileInfo(opt.inputFile).fileName() << "'\n";
         out << "**\n";
         out << "** Created: " << QDateTime::currentDateTime().toString() << "\n";
         out << "**      " << QString::fromLatin1("by: Qt User Interface Compiler version %1\n").arg(QLatin1String(QT_VERSION_STR));
         out << "**\n";
-        out << "** WARNING! All changes made in this file will be lost when recompiling ui file!\n";
+        out << "** WARNING! All changes made in this file will be lost when recompiling UI file!\n";
         out << "********************************************************************************/\n\n";
 }
 
@@ -184,9 +184,9 @@ DomUI *Uic::parseUiFile(QXmlStreamReader &reader)
     if (reader.hasError()) {
         delete ui;
         ui = 0;
-        fprintf(stderr, "uic: Error in line %llu, column %llu : %s\n",
-                reader.lineNumber(), reader.columnNumber(),
-                reader.errorString().toAscii().constData());
+        fprintf(stderr, "%s\n", qPrintable(QString::fromLatin1("uic: Error in line %1, column %2 : %3")
+                                    .arg(reader.lineNumber()).arg(reader.columnNumber())
+                                    .arg(reader.errorString())));
     }
 
     return ui;

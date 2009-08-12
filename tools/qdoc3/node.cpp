@@ -43,6 +43,7 @@
   node.cpp
 */
 
+#include <QtCore>
 #include "node.h"
 
 QT_BEGIN_NAMESPACE
@@ -113,6 +114,9 @@ void Node::setRelates(InnerNode *pseudoParent)
 }
 
 /*!
+  This function creates a pair that describes a link.
+  The pair is composed from \a link and \a desc. The
+  \a linkType is the map index the pair is filed under.
  */
 void Node::setLink(LinkType linkType, const QString &link, const QString &desc)
 {
@@ -623,7 +627,7 @@ void InnerNode::removeRelated(Node *pseudoChild)
  */
 
 /*!
-  Returns false because this is an InnerNode.
+  Returns false because this is a LeafNode.
  */
 bool LeafNode::isInnerNode() const
 {
@@ -713,9 +717,11 @@ void ClassNode::fixBaseClasses()
  */
 
 /*!
+  The type of a FakeNode is Fake, and it has a \a subtype,
+  which specifies the type of FakeNode.
  */
-FakeNode::FakeNode(InnerNode *parent, const QString& name, SubType subType)
-    : InnerNode(Fake, parent, name), sub(subType)
+FakeNode::FakeNode(InnerNode *parent, const QString& name, SubType subtype)
+    : InnerNode(Fake, parent, name), sub(subtype)
 {
 }
 
@@ -865,6 +871,18 @@ void FunctionNode::setOverload(bool overlode)
 {
     parent()->setOverload(this, overlode);
     ove = overlode;
+}
+
+/*!
+  Sets the function node's reimplementation flag to \a r.
+  When \a r is true, it is supposed to mean that this function
+  is a reimplementation of a virtual function in a base class,
+  but it really just means the \e reimp command was seen in the
+  qdoc comment.
+ */
+void FunctionNode::setReimp(bool r)
+{
+    reimp = r;
 }
 
 /*!
@@ -1020,5 +1038,99 @@ bool TargetNode::isInnerNode() const
 {
     return false;
 }
+
+#ifdef QDOC_QML
+/*!
+  Constructor for the Qml class node.
+ */
+QmlClassNode::QmlClassNode(InnerNode *parent,
+                           const QString& name,
+                           const ClassNode* cn)
+    : FakeNode(parent, name, QmlClass), cnode(cn)
+{
+    setTitle("QML " + name + " Element Reference");
+}
+
+/*!
+  The base file name for this kind of node has "qml_"
+  prepended to it.
+
+  But not yet. Still testing.
+ */
+QString QmlClassNode::fileBase() const
+{
+#if 0    
+    if (Node::fileBase() == "item")
+        qDebug() << "FILEBASE: qmlitem" << name();
+    return "qml_" + Node::fileBase();
+#endif
+    return Node::fileBase();
+}
+
+/*!
+  Constructor for the Qml property group node. \a parent is
+  always a QmlClassNode. 
+ */
+QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent, const QString& name)
+    : FakeNode(parent, name, QmlPropertyGroup), isdefault(false)
+{
+    // nothing.
+}
+
+/*!
+  Constructor for the QML property node.
+ */
+QmlPropertyNode::QmlPropertyNode(QmlPropGroupNode *parent,
+                                 const QString& name,
+                                 const QString& type)
+    : LeafNode(QmlProperty, parent, name),
+      dt(type),
+      sto(Trool_Default),
+      des(Trool_Default)
+{
+    // nothing.
+}
+
+/*!
+  I don't know what this is.
+ */
+QmlPropertyNode::Trool QmlPropertyNode::toTrool(bool boolean)
+{
+    return boolean ? Trool_True : Trool_False;
+}
+
+/*!
+  I don't know what this is either.
+ */
+bool QmlPropertyNode::fromTrool(Trool troolean, bool defaultValue)
+{
+    switch (troolean) {
+    case Trool_True:
+        return true;
+    case Trool_False:
+        return false;
+    default:
+        return defaultValue;
+    }
+}
+
+/*!
+  Constructor for the QML signal node.
+ */
+QmlSignalNode::QmlSignalNode(QmlClassNode *parent, const QString& name)
+    : LeafNode(QmlSignal, parent, name)
+{
+    // nothing.
+}
+
+/*!
+  Constructor for the QML method node.
+ */
+QmlMethodNode::QmlMethodNode(QmlClassNode *parent, const QString& name)
+    : LeafNode(QmlMethod, parent, name)
+{
+    // nothing.
+}
+#endif
 
 QT_END_NAMESPACE

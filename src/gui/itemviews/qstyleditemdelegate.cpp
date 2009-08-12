@@ -671,7 +671,7 @@ bool QStyledItemDelegate::eventFilter(QObject *object, QEvent *event)
         if (editor->parentWidget())
             editor->parentWidget()->setFocus();
         return true;
-    } else if (event->type() == QEvent::FocusOut || event->type() == QEvent::Hide) {
+    } else if (event->type() == QEvent::FocusOut || (event->type() == QEvent::Hide && editor->isWindow())) {
         //the Hide event will take care of he editors that are in fact complete dialogs
         if (!editor->isActiveWindow() || (QApplication::focusWidget() != editor)) {
             QWidget *w = QApplication::focusWidget();
@@ -686,13 +686,7 @@ bool QStyledItemDelegate::eventFilter(QObject *object, QEvent *event)
             if (QDragManager::self() && QDragManager::self()->object != 0)
                 return false;
 #endif
-            // Opening a modal dialog will start a new eventloop
-            // that will process the deleteLater event.
-            QWidget *activeModalWidget = QApplication::activeModalWidget();
-            if (activeModalWidget
-                && !activeModalWidget->isAncestorOf(editor)
-                && qobject_cast<QDialog*>(activeModalWidget))
-                return false;
+
             emit commitData(editor);
             emit closeEditor(editor, NoHint);
         }
@@ -752,8 +746,13 @@ bool QStyledItemDelegate::editorEvent(QEvent *event,
         return false;
     }
 
-    Qt::CheckState state = (static_cast<Qt::CheckState>(value.toInt()) == Qt::Checked
+    Qt::CheckState state;
+    if ( flags & Qt::ItemIsTristate ) {
+        state = static_cast<Qt::CheckState>( (value.toInt() + 1) % 3 );
+    } else {
+        state = (static_cast<Qt::CheckState>(value.toInt()) == Qt::Checked
                             ? Qt::Unchecked : Qt::Checked);
+    }
     return model->setData(index, state, Qt::CheckStateRole);
 }
 

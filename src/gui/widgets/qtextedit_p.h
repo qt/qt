@@ -70,7 +70,6 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_TEXTEDIT
 
 class QMimeData;
-
 class QTextEditPrivate : public QAbstractScrollAreaPrivate
 {
     Q_DECLARE_PUBLIC(QTextEdit)

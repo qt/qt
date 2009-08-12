@@ -21,6 +21,8 @@
 #ifndef JSHTMLDataGridCellElement_h
 #define JSHTMLDataGridCellElement_h
 
+#if ENABLE(DATAGRID)
+
 #include "JSHTMLElement.h"
 
 namespace WebCore {
@@ -30,7 +32,7 @@ class HTMLDataGridCellElement;
 class JSHTMLDataGridCellElement : public JSHTMLElement {
     typedef JSHTMLElement Base;
 public:
-    JSHTMLDataGridCellElement(PassRefPtr<JSC::Structure>, PassRefPtr<HTMLDataGridCellElement>);
+    JSHTMLDataGridCellElement(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<HTMLDataGridCellElement>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue, JSC::PutPropertySlot&);
@@ -42,7 +44,7 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 };
 
 
@@ -70,5 +72,7 @@ void setJSHTMLDataGridCellElementProgress(JSC::ExecState*, JSC::JSObject*, JSC::
 JSC::JSValue jsHTMLDataGridCellElementConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 
 } // namespace WebCore
+
+#endif // ENABLE(DATAGRID)
 
 #endif

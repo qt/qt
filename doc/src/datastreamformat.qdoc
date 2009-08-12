@@ -220,6 +220,25 @@
             \o dx (double)
             \o dy (double)
             \endlist
+    \row \o QMatrix4x4
+         \o \list
+            \o m11 (double)
+            \o m12 (double)
+            \o m13 (double)
+            \o m14 (double)
+            \o m21 (double)
+            \o m22 (double)
+            \o m23 (double)
+            \o m24 (double)
+            \o m31 (double)
+            \o m32 (double)
+            \o m33 (double)
+            \o m34 (double)
+            \o m41 (double)
+            \o m42 (double)
+            \o m43 (double)
+            \o m44 (double)
+            \endlist
     \row \o QPair<T1, T2>
          \o \list
             \o first (T1)
@@ -266,6 +285,13 @@
             \o The x coordinate (qint32)
             \o The y coordinate (qint32)
             \endlist
+    \row \o QQuaternion
+         \o \list
+            \o The scalar component (double)
+            \o The x coordinate (double)
+            \o The y coordinate (double)
+            \o The z coordinate (double)
+            \endlist
     \row \o QRect
          \o \list
             \o left (qint32)
@@ -301,6 +327,18 @@
          \o \list
             \o Milliseconds since midnight (quint32)
             \endlist
+    \row \o QTransform
+         \o \list
+            \o m11 (double)
+            \o m12 (double)
+            \o m13 (double)
+            \o m21 (double)
+            \o m22 (double)
+            \o m23 (double)
+            \o m31 (double)
+            \o m32 (double)
+            \o m33 (double)
+            \endlist
     \row \o QUrl
          \o \list
             \o Holds an URL (QString)
@@ -310,6 +348,24 @@
             \o The type of the data (quint32)
             \o The null flag (qint8)
             \o The data of the specified type
+            \endlist
+    \row \o QVector2D
+         \o \list
+            \o the x coordinate (double)
+            \o the y coordinate (double)
+            \endlist
+    \row \o QVector3D
+         \o \list
+            \o the x coordinate (double)
+            \o the y coordinate (double)
+            \o the z coordinate (double)
+            \endlist
+    \row \o QVector4D
+         \o \list
+            \o the x coordinate (double)
+            \o the y coordinate (double)
+            \o the z coordinate (double)
+            \o the w coordinate (double)
             \endlist
     \row \o QVector<T>
          \o \list

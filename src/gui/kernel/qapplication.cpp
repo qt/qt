@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "qplatformdefs.h"
 #include "qabstracteventdispatcher.h"
 #include "qaccessible.h"
 #include "qapplication.h"
@@ -93,8 +94,6 @@
 
 #include "qapplication.h"
 
-#include <private/qgesturemanager_p.h>
-
 #ifdef Q_WS_WINCE
 #include "qdatetime.h"
 #include "qguifunctions_wince.h"
@@ -131,7 +130,7 @@ int QApplicationPrivate::app_compile_version = 0x040000; //we don't know exactly
 QApplication::Type qt_appType=QApplication::Tty;
 QApplicationPrivate *QApplicationPrivate::self = 0;
 
-QInputContext *QApplicationPrivate::inputContext;
+QInputContext *QApplicationPrivate::inputContext = 0;
 
 bool QApplicationPrivate::quitOnLastWindowClosed = true;
 
@@ -141,14 +140,6 @@ bool QApplicationPrivate::autoSipEnabled = false;
 #else
 bool QApplicationPrivate::autoSipEnabled = true;
 #endif
-
-QGestureManager* QGestureManager::instance()
-{
-    QApplicationPrivate *d = qApp->d_func();
-    if (!d->gestureManager)
-        d->gestureManager = new QGestureManager(qApp);
-    return d->gestureManager;
-}
 
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type)
     : QCoreApplicationPrivate(argc, argv)
@@ -173,8 +164,6 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
     directPainters = 0;
 #endif
 
-    gestureManager = 0;
-
     if (!self)
         self = this;
 }
@@ -195,11 +184,11 @@ QApplicationPrivate::~QApplicationPrivate()
 
     QApplication contains the main event loop, where all events from the window
     system and other sources are processed and dispatched. It also handles the
-    application's initialization and finalization, and provides session
-    management. In addition, it handles most system-wide and application-wide
-    settings.
+    application's initialization, finalization, and provides session
+    management. In addition, QApplication handles most of the system-wide and
+    application-wide settings.
 
-    For any GUI application using Qt, there is precisely one QApplication
+    For any GUI application using Qt, there is precisely \bold one QApplication
     object, no matter whether the application has 0, 1, 2 or more windows at
     any given time. For non-GUI Qt applications, use QCoreApplication instead,
     as it does not depend on the \l QtGui library.
@@ -255,9 +244,9 @@ QApplicationPrivate::~QApplicationPrivate()
                 saveState() for details.
         \endlist
 
-    The QApplication object does so much initialization. Hence, it \e{must} be
+    Since the QApplication object does so much initialization, it \e{must} be
     created before any other objects related to the user interface are created.
-    Since QApplication also deals with common command line arguments, it is
+    QApplication also deals with common command line arguments. Hence, it is
     usually a good idea to create it \e before any interpretation or
     modification of \c argv is done in the application itself.
 
@@ -699,9 +688,9 @@ QApplication::QApplication(int &argc, char **argv, int _internal)
 
     On X11, the window system is initialized if \a GUIenabled is true. If
     \a GUIenabled is false, the application does not connect to the X server.
-    On Windows and Macintosh, currently the window system is always
-    initialized, regardless of the value of GUIenabled. This may change in
-    future versions of Qt.
+    On Windows and Mac OS, currently the window system is always initialized,
+    regardless of the value of GUIenabled. This may change in future versions
+    of Qt.
 
     The following example shows how to create an application that uses a
     graphical interface when available.
@@ -846,6 +835,12 @@ QApplication::QApplication(Display *dpy, int &argc, char **argv,
 #endif // Q_WS_X11
 
 extern void qInitDrawhelperAsm();
+extern int qRegisterGuiVariant();
+extern int qUnregisterGuiVariant();
+#ifndef QT_NO_STATEMACHINE
+extern int qRegisterGuiStateMachine();
+extern int qUnregisterGuiStateMachine();
+#endif
 
 /*!
   \fn void QApplicationPrivate::initialize()
@@ -855,15 +850,13 @@ extern void qInitDrawhelperAsm();
 void QApplicationPrivate::initialize()
 {
     QWidgetPrivate::mapper = new QWidgetMapper;
-    QWidgetPrivate::uncreatedWidgets = new QWidgetSet;
+    QWidgetPrivate::allWidgets = new QWidgetSet;
     if (qt_appType != QApplication::Tty)
         (void) QApplication::style();  // trigger creation of application style
     // trigger registering of QVariant's GUI types
-    extern int qRegisterGuiVariant();
     qRegisterGuiVariant();
 #ifndef QT_NO_STATEMACHINE
     // trigger registering of QStateMachine's GUI types
-    extern int qRegisterGuiStateMachine();
     qRegisterGuiStateMachine();
 #endif
 
@@ -877,12 +870,6 @@ void QApplicationPrivate::initialize()
 
     if (qgetenv("QT_USE_NATIVE_WINDOWS").toInt() > 0)
         q->setAttribute(Qt::AA_NativeWindows);
-
-#if defined(Q_WS_WIN)
-    // Alien is not currently working on Windows 98
-    if (QSysInfo::WindowsVersion & QSysInfo::WV_DOS_based)
-        q->setAttribute(Qt::AA_NativeWindows);
-#endif
 
 #ifdef Q_WS_WINCE
 #ifdef QT_AUTO_MAXIMIZE_THRESHOLD
@@ -1007,23 +994,13 @@ QApplication::~QApplication()
     qt_clipboard = 0;
 #endif
 
-    // delete widget mapper
-    if (QWidgetPrivate::mapper) {
-        QWidgetMapper * myMapper = QWidgetPrivate::mapper;
-        QWidgetPrivate::mapper = 0;
-        for (QWidgetMapper::ConstIterator it = myMapper->constBegin();
-                it != myMapper->constEnd(); ++it) {
-            register QWidget *w = *it;
-            if (!w->parent())                        // window
-                w->destroy(true, true);
-        }
-        delete myMapper;
-    }
+    delete QWidgetPrivate::mapper;
+    QWidgetPrivate::mapper = 0;
 
-    // delete uncreated widgets
-    if (QWidgetPrivate::uncreatedWidgets) {
-        QWidgetSet *mySet = QWidgetPrivate::uncreatedWidgets;
-        QWidgetPrivate::uncreatedWidgets = 0;
+    // delete all widgets
+    if (QWidgetPrivate::allWidgets) {
+        QWidgetSet *mySet = QWidgetPrivate::allWidgets;
+        QWidgetPrivate::allWidgets = 0;
         for (QWidgetSet::ConstIterator it = mySet->constBegin(); it != mySet->constEnd(); ++it) {
             register QWidget *w = *it;
             if (!w->parent())                        // window
@@ -1095,11 +1072,9 @@ QApplication::~QApplication()
 
 #ifndef QT_NO_STATEMACHINE
     // trigger unregistering of QStateMachine's GUI types
-    extern int qUnregisterGuiStateMachine();
     qUnregisterGuiStateMachine();
 #endif
     // trigger unregistering of QVariant's GUI types
-    extern int qUnregisterGuiVariant();
     qUnregisterGuiVariant();
 }
 
@@ -1226,21 +1201,22 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     \since 4.4
     \brief defines a threshold for auto maximizing widgets
 
-    The auto maximize threshold is only available as part of Qt for Windows CE.
+    \bold{The auto maximize threshold is only available as part of Qt for
+    Windows CE.}
 
     This property defines a threshold for the size of a window as a percentage
     of the screen size. If the minimum size hint of a window exceeds the
-    threshold, calling show() will then cause the window to be maximized
+    threshold, calling show() will cause the window to be maximized
     automatically.
 
-    Setting the threshold to be 100 or greater means that it will cause it to
-    always be maximized. Setting it to be 50 means that the widget is maximized
-    if the vertical minimum size hint is at least 50% of the vertical screen
-    size.
+    Setting the threshold to 100 or greater means that the widget will always
+    be maximized. Alternatively, setting the threshold to 50 means that the
+    widget will be maximized only if the vertical minimum size hint is at least
+    50% of the vertical screen size.
 
-    If -1 is specified then this will disable the feature.
+    Setting the threshold to -1 disables the feature.
 
-    On Windows CE the default is -1 (i.e. it is disabled).
+    On Windows CE the default is -1 (i.e., it is disabled).
     On Windows Mobile the default is 40.
 */
 
@@ -1249,13 +1225,13 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     \since 4.5
     \brief toggles automatic SIP (software input panel) visibility
 
-    Set this property to true to automatically display the SIP when entering
+    Set this property to \c true to automatically display the SIP when entering
     widgets that accept keyboard input. This property only affects widgets with
     the WA_InputMethodEnabled attribute set, and is typically used to launch
     a virtual keyboard on devices which have very few or no keys.
 
-    The property only has an effect on platforms which use software input
-    panels, such as Windows CE and Symbian.
+    \bold{ The property only has an effect on platforms which use software input
+    panels, such as Windows CE and Symbian.}
 
     The default is platform dependent.
 */
@@ -1553,7 +1529,7 @@ int QApplication::colorSpec()
             strategy. Use this option if your application uses buttons, menus,
             texts and pixmaps with few colors. With this option, the
             application uses system global colors. This works fine for most
-            applications under X11, but on Windows machines it may cause
+            applications under X11, but on the Windows platform, it may cause
             dithering of non-standard colors.
         \o  QApplication::CustomColor. Use this option if your application
             needs a small number of custom colors. On X11, this option is the
@@ -2050,12 +2026,9 @@ QWidgetList QApplication::topLevelWidgets()
 
 QWidgetList QApplication::allWidgets()
 {
-    QWidgetList list;
-    if (QWidgetPrivate::mapper)
-        list += QWidgetPrivate::mapper->values();
-    if (QWidgetPrivate::uncreatedWidgets)
-        list += QWidgetPrivate::uncreatedWidgets->toList();
-    return list;
+    if (QWidgetPrivate::allWidgets)
+        return QWidgetPrivate::allWidgets->toList();
+    return QWidgetList();
 }
 
 /*!
@@ -3596,12 +3569,12 @@ void QApplication::changeOverrideCursor(const QCursor &cursor)
 
     We recommend that you connect clean-up code to the
     \l{QCoreApplication::}{aboutToQuit()} signal, instead of putting it in your
-    application's \c{main()} function because on some platforms the
-    QApplication::exec() call may not return. For example, on Windows when the
-    user logs off, the system terminates the process after Qt closes all
-    top-level windows. Hence, there is no guarantee that the application will
-    have time to exit its event loop and execute code at the end of the
-    \c{main()} function after the QApplication::exec() call.
+    application's \c{main()} function. This is because, on some platforms the
+    QApplication::exec() call may not return. For example, on the Windows
+    platform, when the user logs off, the system terminates the process after Qt
+    closes all top-level windows. Hence, there is \e{no guarantee} that the
+    application will have time to exit its event loop and execute code at the
+    end of the \c{main()} function, after the QApplication::exec() call.
 
     \sa quitOnLastWindowClosed, quit(), exit(), processEvents(),
         QCoreApplication::exec()
@@ -3667,14 +3640,6 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QApplicationPrivate::modifier_buttons = ie->modifiers();
         }
 #endif // !QT_NO_WHEELEVENT || !QT_NO_TABLETEVENT
-    }
-
-    if (!d->grabbedGestures.isEmpty() && e->spontaneous() && receiver->isWidgetType()) {
-        const QEvent::Type t = e->type();
-        if (t != QEvent::Gesture && t != QEvent::GraphicsSceneGesture) {
-            if (QGestureManager::instance()->filterEvent(static_cast<QWidget*>(receiver), e))
-                return true;
-        }
     }
 
     // User input and window activation makes tooltips sleep
@@ -4164,6 +4129,19 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         res = d->notify_helper(receiver, e);
         break;
 
+    case QEvent::NativeGesture:
+    {
+        // only propagate the first gesture event (after the GID_BEGIN)
+        QWidget *w = static_cast<QWidget *>(receiver);
+        while (w) {
+            e->ignore();
+            res = d->notify_helper(w, e);
+            if ((res && e->isAccepted()) || w->isWindow())
+                break;
+            w = w->parentWidget();
+        }
+        break;
+    }
     default:
         res = d->notify_helper(receiver, e);
         break;
@@ -4511,13 +4489,13 @@ HRESULT qt_CoCreateGuid(GUID* guid)
 {
     // We will use the following information to create the GUID
     // 1. absolute path to application
-    wchar_t tempFilename[512];
-    if (!GetModuleFileNameW(0, tempFilename, 512))
+    wchar_t tempFilename[MAX_PATH];
+    if (!GetModuleFileName(0, tempFilename, MAX_PATH))
         return S_FALSE;
-    unsigned int hash = qHash(QString::fromUtf16((const unsigned short *) tempFilename));
+    unsigned int hash = qHash(QString::fromWCharArray(tempFilename));
     guid->Data1 = hash;
     // 2. creation time of file
-    QFileInfo info(QString::fromUtf16((const unsigned short *) tempFilename));
+    QFileInfo info(QString::fromWCharArray(tempFilename));
     guid->Data2 = qHash(info.created().toTime_t());
     // 3. current system time
     guid->Data3 = qHash(QDateTime::currentDateTime().toTime_t());
@@ -4551,10 +4529,10 @@ QSessionManager::QSessionManager(QApplication * app, QString &id, QString &key)
     GUID guid;
     CoCreateGuid(&guid);
     StringFromGUID2(guid, guidstr, 40);
-    id = QString::fromUtf16((ushort*)guidstr);
+    id = QString::fromWCharArray(guidstr);
     CoCreateGuid(&guid);
     StringFromGUID2(guid, guidstr, 40);
-    key = QString::fromUtf16((ushort*)guidstr);
+    key = QString::fromWCharArray(guidstr);
 #endif
     d->sessionId = id;
     d->sessionKey = key;
@@ -4862,7 +4840,7 @@ bool QApplication::keypadNavigationEnabled()
     On Mac OS X, this works more at the application level and will cause the
     application icon to bounce in the dock.
 
-    On Windows this causes the window's taskbar entry to flash for a time. If
+    On Windows, this causes the window's taskbar entry to flash for a time. If
     \a msec is zero, the flashing will stop and the taskbar entry will turn a
     different color (currently orange).
 
@@ -4879,24 +4857,22 @@ bool QApplication::keypadNavigationEnabled()
     caret display. Usually the text cursor is displayed for half the cursor
     flash time, then hidden for the same amount of time, but this may vary.
 
-    The default value on X11 is 1000 milliseconds. On Windows, the control
-    panel value is used. Widgets should not cache this value since it may be
-    changed at any time by the user changing the global desktop settings.
+    The default value on X11 is 1000 milliseconds. On Windows, the
+    \gui{Control Panel} value is used and setting this property sets the cursor
+    flash time for all applications.
 
-    \note On Microsoft Windows, setting this property sets the cursor flash
-    time for all applications.
+    We recommend that widgets do not cache this value as it may change at any
+    time if the user changes the global desktop settings.
 */
 
 /*!
     \property QApplication::doubleClickInterval
-    \brief the time limit in milliseconds that distinguishes a double click from two
-    consecutive mouse clicks
+    \brief the time limit in milliseconds that distinguishes a double click
+    from two consecutive mouse clicks
 
-    The default value on X11 is 400 milliseconds. On Windows and Mac OS X, the
-    operating system's value is used.
-
-    On Microsoft Windows and Symbian, calling this function sets the
-    double click interval for all applications.
+    The default value on X11 is 400 milliseconds. On Windows and Mac OS, the
+    operating system's value is used. However, on Windows and Symbian OS,
+    calling this function sets the double click interval for all applications.
 */
 
 /*!
@@ -4905,7 +4881,7 @@ bool QApplication::keypadNavigationEnabled()
     from two consecutive key presses
     \since 4.2
 
-    The default value on X11 is 400 milliseconds. On Windows and Mac OS X, the
+    The default value on X11 is 400 milliseconds. On Windows and Mac OS, the
     operating system's value is used.
 */
 
@@ -4970,7 +4946,7 @@ bool QApplication::keypadNavigationEnabled()
     You need not have a main widget; connecting lastWindowClosed() to quit()
     is an alternative.
 
-    For X11, this function also resizes and moves the main widget according
+    On X11, this function also resizes and moves the main widget according
     to the \e -geometry command-line option, so you should set the default
     geometry (using \l QWidget::setGeometry()) before calling setMainWidget().
 
@@ -4999,9 +4975,10 @@ bool QApplication::keypadNavigationEnabled()
     Application cursors are stored on an internal stack. setOverrideCursor()
     pushes the cursor onto the stack, and restoreOverrideCursor() pops the
     active cursor off the stack. changeOverrideCursor() changes the curently
-    active application override cursor. Every setOverrideCursor() must
-    eventually be followed by a corresponding restoreOverrideCursor(),
-    otherwise the stack will never be emptied.
+    active application override cursor.
+
+    Every setOverrideCursor() must eventually be followed by a corresponding
+    restoreOverrideCursor(), otherwise the stack will never be emptied.
 
     Example:
     \snippet doc/src/snippets/code/src_gui_kernel_qapplication_x11.cpp 0
@@ -5166,57 +5143,6 @@ bool QApplicationPrivate::shouldSetFocus(QWidget *w, Qt::FocusPolicy policy)
     return true;
 }
 
-/*!
-    \since 4.6
-
-    Adds custom gesture \a recognizer object.
-
-    Qt takes ownership of the provided \a recognizer.
-
-    \sa Qt::AA_EnableGestures, QGestureEvent
-*/
-void QApplication::addGestureRecognizer(QGestureRecognizer *recognizer)
-{
-    QGestureManager::instance()->addRecognizer(recognizer);
-}
-
-/*!
-    \since 4.6
-
-    Removes custom gesture \a recognizer object.
-
-    \sa Qt::AA_EnableGestures, QGestureEvent
-*/
-void QApplication::removeGestureRecognizer(QGestureRecognizer *recognizer)
-{
-    Q_D(QApplication);
-    if (!d->gestureManager)
-        return;
-    d->gestureManager->removeRecognizer(recognizer);
-}
-
-/*!
-    \property QApplication::eventDeliveryDelayForGestures
-    \since 4.6
-
-    Specifies the \a delay before input events are delivered to the
-    gesture enabled widgets.
-
-    The delay allows to postpone widget's input event handling until
-    gestures framework can successfully recognize a gesture.
-
-    \sa QWidget::grabGesture
-*/
-void QApplication::setEventDeliveryDelayForGestures(int delay)
-{
-    QGestureManager::instance()->setEventDeliveryDelay(delay);
-}
-
-int QApplication::eventDeliveryDelayForGestures()
-{
-    return QGestureManager::instance()->eventDeliveryDelay();
-}
-
 /*! \fn QDecoration &QApplication::qwsDecoration()
     Return the QWSDecoration used for decorating windows.
 
@@ -5239,19 +5165,19 @@ int QApplication::eventDeliveryDelayForGestures()
 */
 
 /*! \fn QDecoration* QApplication::qwsSetDecoration(const QString &decoration)
-  \overload
+    \overload
 
-  Requests a QDecoration object for \a decoration from the QDecorationFactory.
+    Requests a QDecoration object for \a decoration from the
+    QDecorationFactory.
 
-  The string must be one of the QDecorationFactory::keys(). Keys are
-  case insensitive.
+    The string must be one of the QDecorationFactory::keys(). Keys are case
+    insensitive.
 
-  A later call to the QApplication constructor will override the
-  requested style when a "-style" option is passed in as a commandline
-  parameter.
+    A later call to the QApplication constructor will override the requested
+    style when a "-style" option is passed in as a commandline parameter.
 
-  Returns 0 if an unknown \a decoration is passed, otherwise the QStyle object
-  returned is set as the application's GUI style.
+    Returns 0 if an unknown \a decoration is passed, otherwise the QStyle object
+    returned is set as the application's GUI style.
 */
 
 /*!
@@ -5400,8 +5326,6 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
                                                  const QList<QTouchEvent::TouchPoint> &touchPoints)
 {
     QApplicationPrivate *d = self;
-    QApplication *q = self->q_func();
-
     typedef QPair<Qt::TouchPointStates, QList<QTouchEvent::TouchPoint> > StatesAndTouchPoints;
     QHash<QWidget *, StatesAndTouchPoints> widgetsNeedingEvents;
 
@@ -5423,7 +5347,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
             if (!widget) {
                 // determine which widget this event will go to
                 if (!window)
-                    window = q->topLevelAt(touchPoint.screenPos().toPoint());
+                    window = QApplication::topLevelAt(touchPoint.screenPos().toPoint());
                 if (!window)
                     continue;
                 widget = window->childAt(window->mapFromGlobal(touchPoint.screenPos().toPoint()));
@@ -5523,7 +5447,7 @@ void QApplicationPrivate::translateRawTouchEvent(QWidget *window,
 
         QTouchEvent touchEvent(eventType,
                                deviceType,
-                               q->keyboardModifiers(),
+                               QApplication::keyboardModifiers(),
                                it.value().first,
                                it.value().second);
         updateTouchPointsForWidget(widget, &touchEvent);

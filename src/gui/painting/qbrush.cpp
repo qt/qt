@@ -230,7 +230,7 @@ struct QGradientBrushData : public QBrushData
     QGradient gradient;
 };
 
-struct QBrushDataPointerHandler
+struct QBrushDataPointerDeleter
 {
     static inline void deleteData(QBrushData *d)
     {
@@ -253,12 +253,6 @@ struct QBrushDataPointerHandler
         if (d && !d->ref.deref()) {
             deleteData(d);
         }
-    }
-
-    static inline void reset(QBrushData *&d, QBrushData *other)
-    {
-        cleanup(d);
-        d = other;
     }
 };
 
@@ -580,7 +574,7 @@ QBrush::~QBrush()
 
 void QBrush::cleanUp(QBrushData *x)
 {
-    QBrushDataPointerHandler::deleteData(x);
+    QBrushDataPointerDeleter::deleteData(x);
 }
 
 

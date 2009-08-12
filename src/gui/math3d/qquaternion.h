@@ -198,24 +198,17 @@ inline QQuaternion &QQuaternion::operator*=(qreal factor)
 
 inline const QQuaternion operator*(const QQuaternion &q1, const QQuaternion& q2)
 {
-    // Algorithm from:
-    // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q53
-    float x = q1.wp * q2.xp +
-                    q1.xp * q2.wp +
-                    q1.yp * q2.zp -
-                    q1.zp * q2.yp;
-    float y = q1.wp * q2.yp +
-                    q1.yp * q2.wp +
-                    q1.zp * q2.xp -
-                    q1.xp * q2.zp;
-    float z = q1.wp * q2.zp +
-                    q1.zp * q2.wp +
-                    q1.xp * q2.yp -
-                    q1.yp * q2.xp;
-    float w = q1.wp * q2.wp -
-                    q1.xp * q2.xp -
-                    q1.yp * q2.yp -
-                    q1.zp * q2.zp;
+    float ww = (q1.zp + q1.xp) * (q2.xp + q2.yp);
+    float yy = (q1.wp - q1.yp) * (q2.wp + q2.zp);
+    float zz = (q1.wp + q1.yp) * (q2.wp - q2.zp);
+    float xx = ww + yy + zz;
+    float qq = 0.5 * (xx + (q1.zp - q1.xp) * (q2.xp - q2.yp));
+
+    float w = qq - ww + (q1.zp - q1.yp) * (q2.yp - q2.zp);
+    float x = qq - xx + (q1.xp + q1.wp) * (q2.xp + q2.wp);
+    float y = qq - yy + (q1.wp - q1.xp) * (q2.yp + q2.zp);
+    float z = qq - zz + (q1.zp + q1.yp) * (q2.wp - q2.xp);
+
     return QQuaternion(w, x, y, z, 1);
 }
 
@@ -324,13 +317,14 @@ inline QVector4D QQuaternion::toVector4D() const
 Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QQuaternion &q);
 #endif
 
+#ifndef QT_NO_DATASTREAM
+Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QQuaternion &);
+Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QQuaternion &);
+#endif
+
 #endif
 
 QT_END_NAMESPACE
-
-#ifndef QT_NO_QUATERNION
-Q_DECLARE_METATYPE(QQuaternion)
-#endif
 
 QT_END_HEADER
 

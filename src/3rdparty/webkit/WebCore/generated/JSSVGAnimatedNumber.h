@@ -23,6 +23,7 @@
 
 #if ENABLE(SVG)
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include "SVGElement.h"
 #include <runtime/JSGlobalObject.h>
@@ -30,10 +31,10 @@
 
 namespace WebCore {
 
-class JSSVGAnimatedNumber : public DOMObject {
-    typedef DOMObject Base;
+class JSSVGAnimatedNumber : public DOMObjectWithSVGContext {
+    typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGAnimatedNumber(PassRefPtr<JSC::Structure>, PassRefPtr<SVGAnimatedNumber>, SVGElement* context);
+    JSSVGAnimatedNumber(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAnimatedNumber>, SVGElement* context);
     virtual ~JSSVGAnimatedNumber();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -47,14 +48,12 @@ public:
     }
 
     SVGAnimatedNumber* impl() const { return m_impl.get(); }
-    SVGElement* context() const { return m_context.get(); }
 
 private:
-    RefPtr<SVGElement> m_context;
-    RefPtr<SVGAnimatedNumber > m_impl;
+    RefPtr<SVGAnimatedNumber> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, SVGAnimatedNumber*, SVGElement* context);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGAnimatedNumber*, SVGElement* context);
 SVGAnimatedNumber* toSVGAnimatedNumber(JSC::JSValue);
 
 class JSSVGAnimatedNumberPrototype : public JSC::JSObject {

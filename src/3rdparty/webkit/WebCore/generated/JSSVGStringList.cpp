@@ -45,7 +45,7 @@ static const HashTableValue JSSVGStringListTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGStringListTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGStringListTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGStringListTableValues, 0 };
 #else
@@ -66,7 +66,7 @@ static const HashTableValue JSSVGStringListPrototypeTableValues[8] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGStringListPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGStringListPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 63, JSSVGStringListPrototypeTableValues, 0 };
 #else
@@ -87,9 +87,8 @@ bool JSSVGStringListPrototype::getOwnPropertySlot(ExecState* exec, const Identif
 
 const ClassInfo JSSVGStringList::s_info = { "SVGStringList", 0, &JSSVGStringListTable, 0 };
 
-JSSVGStringList::JSSVGStringList(PassRefPtr<Structure> structure, PassRefPtr<SVGStringList> impl, SVGElement* context)
-    : DOMObject(structure)
-    , m_context(context)
+JSSVGStringList::JSSVGStringList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGStringList> impl, SVGElement* context)
+    : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {
 }
@@ -111,8 +110,9 @@ bool JSSVGStringList::getOwnPropertySlot(ExecState* exec, const Identifier& prop
 
 JSValue jsSVGStringListNumberOfItems(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGStringList* castedThis = static_cast<JSSVGStringList*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGStringList* imp = static_cast<SVGStringList*>(static_cast<JSSVGStringList*>(asObject(slot.slotBase()))->impl());
+    SVGStringList* imp = static_cast<SVGStringList*>(castedThis->impl());
     return jsNumber(exec, imp->numberOfItems());
 }
 
@@ -228,9 +228,9 @@ JSValue JSC_HOST_CALL jsSVGStringListPrototypeFunctionAppendItem(ExecState* exec
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, SVGStringList* object, SVGElement* context)
+JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, SVGStringList* object, SVGElement* context)
 {
-    return getDOMObjectWrapper<JSSVGStringList>(exec, object, context);
+    return getDOMObjectWrapper<JSSVGStringList>(exec, globalObject, object, context);
 }
 SVGStringList* toSVGStringList(JSC::JSValue value)
 {

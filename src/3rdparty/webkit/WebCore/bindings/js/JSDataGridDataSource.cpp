@@ -24,6 +24,9 @@
  */
 
 #include "config.h"
+
+#if ENABLE(DATAGRID)
+
 #include "JSDataGridDataSource.h"
 
 #include "Document.h"
@@ -47,34 +50,6 @@ JSDataGridDataSource::~JSDataGridDataSource()
 {
 }
 
-void JSDataGridDataSource::initialize(HTMLDataGridElement* datagrid)
-{
-    if (!m_frame->script()->isEnabled())
-        return;
-
-    JSLock lock(false);
-    RefPtr<JSDataGridDataSource> protect(this);
-
-    ExecState* exec = m_frame->script()->globalObject()->globalExec();
-
-    if (!jsDataSource().isObject())
-        return;
-
-    JSValue initializeFunction = jsDataSource().get(exec, Identifier(exec, "initialize"));
-    CallData callData;
-    CallType callType = initializeFunction.getCallData(callData);
-    if (callType == CallTypeNone)
-        return;
-
-    MarkedArgumentBuffer args;
-    args.append(toJS(exec, datagrid));
-
-    JSDOMWindowBase::commonJSGlobalData()->timeoutChecker.start();
-    call(exec, initializeFunction, callType, callData, m_dataSource, args);
-    JSDOMWindowBase::commonJSGlobalData()->timeoutChecker.stop();
-
-    if (exec->hadException())
-        reportCurrentException(exec);
-}
-
 } // namespace WebCore
+
+#endif // ENABLE(DATAGRID)

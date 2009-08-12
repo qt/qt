@@ -55,7 +55,7 @@
 #ifdef Q_OS_SYMBIAN
     #define STRINGIFY(x) #x
     #define TOSTRING(x) STRINGIFY(x)
-    #define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"   
+    #define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
 #endif
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketError)
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketState)
@@ -87,6 +87,8 @@ private slots:
     void sendData_data();
     void sendData();
 
+    void readBufferOverflow();
+
     void fullPath();
 
     void hitMaximumConnections_data();
@@ -109,6 +111,7 @@ private slots:
     void recycleServer();
 
     void multiConnect();
+    void writeOnlySocket();
 
     void debug();
 
@@ -377,7 +380,7 @@ void tst_QLocalSocket::listenAndConnect()
         QSignalSpy spyReadyRead(socket, SIGNAL(readyRead()));
 
         socket->connectToServer(name);
-#if defined(QT_LOCALSOCKET_TCP) || defined (Q_OS_SYMBIAN) 
+#if defined(QT_LOCALSOCKET_TCP) || defined (Q_OS_SYMBIAN)
         QTest::qWait(250);
 #endif
 
@@ -558,6 +561,40 @@ void tst_QLocalSocket::sendData()
     QCOMPARE(spy.count(), (canListen ? 1 : 0));
 }
 
+void tst_QLocalSocket::readBufferOverflow()
+{
+    const int readBufferSize = 128;
+    const int dataBufferSize = readBufferSize * 2;
+    const QString serverName = QLatin1String("myPreciousTestServer");
+    LocalServer server;
+    server.listen(serverName);
+    QVERIFY(server.isListening());
+
+    LocalSocket client;
+    client.setReadBufferSize(readBufferSize);
+    client.connectToServer(serverName);
+
+    bool timedOut = true;
+    QVERIFY(server.waitForNewConnection(3000, &timedOut));
+    QVERIFY(!timedOut);
+
+    QCOMPARE(client.state(), QLocalSocket::ConnectedState);
+    QVERIFY(server.hasPendingConnections());
+
+    QLocalSocket* serverSocket = server.nextPendingConnection();
+    char buffer[dataBufferSize];
+    memset(buffer, 0, dataBufferSize);
+    serverSocket->write(buffer, dataBufferSize);
+    serverSocket->flush();
+
+    QVERIFY(client.waitForReadyRead());
+    QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
+#ifdef QT_LOCALSOCKET_TCP
+    QTest::qWait(250);
+#endif
+    QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
+}
+
 // QLocalSocket/Server can take a name or path, check that it works as expected
 void tst_QLocalSocket::fullPath()
 {
@@ -579,10 +616,10 @@ void tst_QLocalSocket::fullPath()
 
     LocalSocket socket;
     socket.connectToServer(serverName);
-#if defined (Q_OS_SYMBIAN) 
+#if defined (Q_OS_SYMBIAN)
     QTest::qWait(250);
-#endif    
-    
+#endif
+
     QCOMPARE(socket.serverName(), serverName);
     QCOMPARE(socket.fullServerName(), serverName);
     socket.disconnectFromServer();
@@ -730,16 +767,16 @@ void tst_QLocalSocket::threadedConnection()
     Server server;
 #if defined(Q_OS_SYMBIAN)
     server.setStackSize(0x14000);
-#endif    
+#endif
     server.clients = threads;
     server.start();
 
     QList<Client*> clients;
     for (int i = 0; i < threads; ++i) {
         clients.append(new Client());
-#if defined(Q_OS_SYMBIAN)        
+#if defined(Q_OS_SYMBIAN)
         clients.last()->setStackSize(0x14000);
-#endif        
+#endif
         clients.last()->start();
     }
 
@@ -926,6 +963,23 @@ void tst_QLocalSocket::multiConnect()
     QVERIFY(server.nextPendingConnection() != 0);
 }
 
+void tst_QLocalSocket::writeOnlySocket()
+{
+    QLocalServer server;
+    QVERIFY(server.listen("writeOnlySocket"));
+
+    QLocalSocket client;
+    client.connectToServer("writeOnlySocket", QIODevice::WriteOnly);
+    QVERIFY(client.waitForConnected());
+
+    QVERIFY(server.waitForNewConnection());
+    QLocalSocket* serverSocket = server.nextPendingConnection();
+    QVERIFY(serverSocket);
+
+    QCOMPARE(client.bytesAvailable(), qint64(0));
+    QCOMPARE(client.state(), QLocalSocket::ConnectedState);
+}
+
 void tst_QLocalSocket::debug()
 {
     // Make sure this compiles
@@ -951,7 +1005,7 @@ void tst_QLocalSocket::unlink(QString name)
     int result = ::unlink(fullName.toUtf8().data());
 
     if(result != 0) {
-        qWarning() << "Unlinking " << fullName << " failed with " << strerror(errno); 
+        qWarning() << "Unlinking " << fullName << " failed with " << strerror(errno);
     }
 }
 #endif

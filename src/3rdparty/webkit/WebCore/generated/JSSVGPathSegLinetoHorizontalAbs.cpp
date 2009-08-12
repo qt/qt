@@ -42,7 +42,7 @@ static const HashTableValue JSSVGPathSegLinetoHorizontalAbsTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegLinetoHorizontalAbsTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegLinetoHorizontalAbsTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegLinetoHorizontalAbsTableValues, 0 };
 #else
@@ -56,7 +56,7 @@ static const HashTableValue JSSVGPathSegLinetoHorizontalAbsPrototypeTableValues[
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSSVGPathSegLinetoHorizontalAbsPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSSVGPathSegLinetoHorizontalAbsPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSSVGPathSegLinetoHorizontalAbsPrototypeTableValues, 0 };
 #else
@@ -72,8 +72,8 @@ JSObject* JSSVGPathSegLinetoHorizontalAbsPrototype::self(ExecState* exec, JSGlob
 
 const ClassInfo JSSVGPathSegLinetoHorizontalAbs::s_info = { "SVGPathSegLinetoHorizontalAbs", &JSSVGPathSeg::s_info, &JSSVGPathSegLinetoHorizontalAbsTable, 0 };
 
-JSSVGPathSegLinetoHorizontalAbs::JSSVGPathSegLinetoHorizontalAbs(PassRefPtr<Structure> structure, PassRefPtr<SVGPathSegLinetoHorizontalAbs> impl, SVGElement* context)
-    : JSSVGPathSeg(structure, impl, context)
+JSSVGPathSegLinetoHorizontalAbs::JSSVGPathSegLinetoHorizontalAbs(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGPathSegLinetoHorizontalAbs> impl, SVGElement* context)
+    : JSSVGPathSeg(structure, globalObject, impl, context)
 {
 }
 
@@ -89,8 +89,9 @@ bool JSSVGPathSegLinetoHorizontalAbs::getOwnPropertySlot(ExecState* exec, const 
 
 JSValue jsSVGPathSegLinetoHorizontalAbsX(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
+    JSSVGPathSegLinetoHorizontalAbs* castedThis = static_cast<JSSVGPathSegLinetoHorizontalAbs*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
-    SVGPathSegLinetoHorizontalAbs* imp = static_cast<SVGPathSegLinetoHorizontalAbs*>(static_cast<JSSVGPathSegLinetoHorizontalAbs*>(asObject(slot.slotBase()))->impl());
+    SVGPathSegLinetoHorizontalAbs* imp = static_cast<SVGPathSegLinetoHorizontalAbs*>(castedThis->impl());
     return jsNumber(exec, imp->x());
 }
 

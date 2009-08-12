@@ -15,4 +15,3 @@ sources.path = $$[QT_INSTALL_DEMOS]/mainwindow
 INSTALLS += target sources
 
 include($$QT_SOURCE_TREE/demos/demobase.pri)
-

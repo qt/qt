@@ -1,9 +1,9 @@
 /****************************************************************************
 **
-** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the QtGui of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://www.qtsoftware.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -89,7 +89,7 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
             return;
     }
     CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();
-    nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
+    QT_TRAP_THROWING(nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS));
 
     int position = -1;
     int command;
@@ -137,12 +137,12 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
 
         if (position != -1) {
             TPtrC text = qt_QString2TPtrC(softKeyAction->text());
-            nativeContainer->SetCommandL(position, command, text);
+            QT_TRAP_THROWING(nativeContainer->SetCommandL(position, command, text));
         }
     }
 
     if (needsExitButton)
-        nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QObject::tr("Exit")));
+        QT_TRAP_THROWING(nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QObject::tr("Exit"))));
 
     nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
 #else
@@ -299,6 +299,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
     CCoeControl *destroyw = 0;
 
+    createExtra();
     if(window) {
         if (destroyOldWindow)
             destroyw = data.winid;
@@ -310,9 +311,20 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
     } else if (topLevel) {
         if (!q->testAttribute(Qt::WA_Moved) && !q->testAttribute(Qt::WA_DontShowOnScreen))
             data.crect.moveTopLeft(QPoint(clientRect.iTl.iX, clientRect.iTl.iY));
-        QSymbianControl *control= new QSymbianControl(q);
-        control->ConstructL(true,desktop);
+        QSymbianControl *control= q_check_ptr(new QSymbianControl(q));
+        id = (WId)control;
+        setWinId(id);
+        QT_TRAP_THROWING(control->ConstructL(true,desktop));
+        
         if (!desktop) {
+            TInt stackingFlags;
+            if ((q->windowType() & Qt::Popup) == Qt::Popup) {
+                stackingFlags = ECoeStackFlagRefusesAllKeys | ECoeStackFlagRefusesFocus;
+            } else {
+                stackingFlags = ECoeStackFlagStandard;
+            }
+            QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
+
             QTLWExtra *topExtra = topData();
             topExtra->rwindow = control->DrawableWindow();
             // Request mouse move events.
@@ -328,11 +340,6 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
             }
         }
 
-
-        id = (WId)control;
-
-        setWinId(id);
-
         q->setAttribute(Qt::WA_WState_Created);
 
         int x, y, w, h;
@@ -340,10 +347,19 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         control->SetRect(TRect(TPoint(x, y), TSize(w, h)));
     } else if (q->testAttribute(Qt::WA_NativeWindow) || paintOnScreen()) { // create native child widget
         QSymbianControl *control = new QSymbianControl(q);
-        control->ConstructL(!parentWidget);
         setWinId(control);
+        QT_TRAP_THROWING(control->ConstructL(!parentWidget));
+
+        TInt stackingFlags;
+        if ((q->windowType() & Qt::Popup) == Qt::Popup) {
+            stackingFlags = ECoeStackFlagRefusesAllKeys | ECoeStackFlagRefusesFocus;
+        } else {
+            stackingFlags = ECoeStackFlagStandard;
+        }
+        QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
+
         WId parentw = parentWidget->effectiveWinId();
-        control->SetContainerWindowL(*parentw);
+        QT_TRAP_THROWING(control->SetContainerWindowL(*parentw));
 
         q->setAttribute(Qt::WA_WState_Created);
         int x, y, w, h;
@@ -378,17 +394,11 @@ void QWidgetPrivate::show_sys()
 
         WId id = q->internalWinId();
         if (!extra->topextra->activated) {
-            id->ActivateL();
+            QT_TRAP_THROWING(id->ActivateL());
             extra->topextra->activated = 1;
         }
-        TInt stackingFlags;
-        if ((q->windowType() & Qt::Popup) == Qt::Popup) {
-            stackingFlags = ECoeStackFlagRefusesAllKeys | ECoeStackFlagRefusesFocus;
-        } else {
-            stackingFlags = ECoeStackFlagStandard;
-        }
-        id->ControlEnv()->AppUi()->AddToStackL(id, ECoeStackPriorityDefault, stackingFlags);
         id->MakeVisible(true);
+        id->SetFocus(true);
 
         // Force setting of the icon after window is made visible,
         // this is needed even WA_SetWindowIcon is not set, as in that case we need
@@ -406,10 +416,9 @@ void QWidgetPrivate::hide_sys()
     deactivateWidgetCleanup();
     WId id = q->internalWinId();
     if (q->isWindow() && id) {
-        if(id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
+        if(id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
             id->SetFocus(false);
         id->MakeVisible(false);
-        id->ControlEnv()->AppUi()->RemoveFromStack(id);
         if (QWidgetBackingStore *bs = maybeBackingStore())
             bs->releaseBuffer();
     } else {
@@ -544,7 +553,8 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     // destroyed when emitting the child remove event below. See QWorkspace.
     if (wasCreated && old_winid) {
         old_winid->MakeVisible(false);
-        old_winid->ControlEnv()->AppUi()->RemoveFromStack(old_winid);
+        if(old_winid->IsFocused()) // Avoid unnecessary calls to FocusChanged()
+            old_winid->SetFocus(false);
         old_winid->SetParent(0);
     }
 
@@ -608,9 +618,9 @@ void QWidgetPrivate::s60UpdateIsOpaque()
     }
 }
 
-CFbsBitmap* qt_pixmapToNativeBitmapL(QPixmap pixmap, bool invert)
+CFbsBitmap* qt_pixmapToNativeBitmap(QPixmap pixmap, bool invert)
 {
-    CFbsBitmap* fbsBitmap = new(ELeave)CFbsBitmap;
+    CFbsBitmap* fbsBitmap = q_check_ptr(new CFbsBitmap);    // CBase derived object needs check on new
     TSize size(pixmap.size().width(), pixmap.size().height());
     TDisplayMode mode(EColor16MU);
 
@@ -621,7 +631,7 @@ CFbsBitmap* qt_pixmapToNativeBitmapL(QPixmap pixmap, bool invert)
     // Will fix later on when native pixmap is implemented
     switch(pixmap.depth()) {
     case 1:
-		mode = EGray2;
+        mode = EGray2;
         break;
     case 4:
         mode = EColor16;
@@ -646,12 +656,12 @@ CFbsBitmap* qt_pixmapToNativeBitmapL(QPixmap pixmap, bool invert)
         break;
     }
 
-    User::LeaveIfError(fbsBitmap->Create(size, mode));
+    qt_throwIfError(fbsBitmap->Create(size, mode));
     fbsBitmap->LockHeap();
     QImage image = pixmap.toImage();
 
     if(invert)
-    	image.invertPixels();
+        image.invertPixels();
 
     int height = pixmap.size().height();
     for(int i=0;i<height;i++ )
@@ -695,15 +705,51 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
             // Convert to CFbsBitmp
             // TODO: When QPixmap is adapted to use native CFbsBitmap,
             // it could be set directly to context pane
-            CFbsBitmap* nBitmap = qt_pixmapToNativeBitmapL(pm, false);
-            CFbsBitmap* nMask = qt_pixmapToNativeBitmapL(mask, true);
+            CFbsBitmap* nBitmap = qt_pixmapToNativeBitmap(pm, false);
+            CFbsBitmap* nMask = qt_pixmapToNativeBitmap(mask, true);
 
             contextPane->SetPicture(nBitmap,nMask);
         } else {
             // Icon set to null -> set context pane picture to default
-            contextPane->SetPictureToDefaultL();
+            QT_TRAP_THROWING(contextPane->SetPictureToDefaultL());
+        }
+    } else {
+        // Context pane does not exist, try setting small icon to title pane
+        TRect titlePaneRect;
+        TBool found = AknLayoutUtils::LayoutMetricsRect( AknLayoutUtils::ETitlePane, titlePaneRect );
+        CAknTitlePane* titlePane = S60->titlePane();
+        if (found && titlePane) { // We have title pane with valid metrics
+            // The API to get title_pane graphics size is not public -> assume square space based
+            // on titlebar font height. CAknBitmap would be optimum, wihtout setting the size, since
+            // then title pane would automatically scale the bitmap. Unfortunately it is not public API
+            const CFont * font = AknLayoutUtils::FontFromId(EAknLogicalFontTitleFont);
+            TSize iconSize(font->HeightInPixels(), font->HeightInPixels());
+
+            QIcon icon = q->windowIcon();
+            if (!icon.isNull()) {
+                // Valid icon -> set it as an title pane small picture
+                QSize size = icon.actualSize(QSize(iconSize.iWidth, iconSize.iHeight));
+                QPixmap pm = icon.pixmap(size);
+                QBitmap mask = pm.mask();
+                if (mask.isNull()) {
+                    mask = QBitmap(pm.size());
+                    mask.fill(Qt::color1);
+                }
+
+                // Convert to CFbsBitmp
+                // TODO: When QPixmap is adapted to use native CFbsBitmap,
+                // it could be set directly to context pane
+                CFbsBitmap* nBitmap = qt_pixmapToNativeBitmap(pm, false);
+                CFbsBitmap* nMask = qt_pixmapToNativeBitmap(mask, true);
+
+                titlePane->SetSmallPicture( nBitmap, nMask, ETrue );
+            } else {
+                // Icon set to null -> set context pane picture to default
+                titlePane->SetSmallPicture( NULL, NULL, EFalse );
+            }
         }
     }
+
 #else
         Q_UNUSED(forceReset)
 #endif
@@ -716,8 +762,13 @@ void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
     if (q->isWindow()) {
         Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
         CAknTitlePane* titlePane = S60->titlePane();
-        if(titlePane)
-            titlePane->SetTextL(qt_QString2TPtrC(caption));
+        if(titlePane) {
+            if(caption.isEmpty()) {
+                QT_TRAP_THROWING(titlePane->SetTextToDefaultL());
+            } else {
+                QT_TRAP_THROWING(titlePane->SetTextL(qt_QString2TPtrC(caption)));
+            }
+        }
     }
 #else
     Q_UNUSED(caption)
@@ -801,7 +852,12 @@ void QWidgetPrivate::createSysExtra()
 
 void QWidgetPrivate::deleteSysExtra()
 {
-
+    // this should only be non-zero if destroy() has not run due to constructor fail
+    if (data.winid) {
+        data.winid->ControlEnv()->AppUi()->RemoveFromStack(data.winid);
+        delete data.winid;
+        data.winid = 0;
+    }
 }
 
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
@@ -992,14 +1048,16 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             if (newstate & Qt::WindowMinimized) {
                 if (isVisible()) {
                     WId id = effectiveWinId();
+                    if(id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
+                        id->SetFocus(false);
                     id->MakeVisible(false);
-                    id->ControlEnv()->AppUi()->RemoveFromStack(id);
                 }
             } else {
                 if (isVisible()) {
                     WId id = effectiveWinId();
                     id->MakeVisible(true);
-                    id->ControlEnv()->AppUi()->AddToStackL(id);
+                    if(!id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
+                        id->SetFocus(true);
                 }
                 const QRect normalGeometry = geometry();
                 const QRect r = top->normalGeometry;
@@ -1026,6 +1084,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
     if (!isWindow() && parentWidget())
         parentWidget()->d_func()->invalidateBuffer(geometry());
     d->deactivateWidgetCleanup();
+    WId id = internalWinId();
     if (testAttribute(Qt::WA_WState_Created)) {
 
 #ifndef QT_NO_IM
@@ -1051,12 +1110,10 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             releaseMouse();
         if (QWidgetPrivate::keyboardGrabber == this)
             releaseKeyboard();
-        if (destroyWindow && !(windowType() == Qt::Desktop) && internalWinId()) {
-            WId id = internalWinId();
+        if (destroyWindow && !(windowType() == Qt::Desktop) && id) {
             if(id->IsFocused()) // Avoid unnecessry calls to FocusChanged()
                 id->SetFocus(false);
             id->ControlEnv()->AppUi()->RemoveFromStack(id);
-            CBase::Delete(id);
 
             // Hack to activate window under destroyed one. With this activation
             // the next visible window will get keyboard focus
@@ -1064,11 +1121,22 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             if (wid) {
                 QWidget *widget = QWidget::find(wid);
                 QApplication::setActiveWindow(widget);
+                if (widget) {
+                    // Reset global window title for focusing window
+                    widget->d_func()->setWindowTitle_sys(widget->windowTitle());
+                }
             }
-
         }
+    }
 
+    QT_TRY {
         d->setWinId(0);
+    } QT_CATCH (const std::bad_alloc &) {
+        // swallow - destructors must not throw
+    }
+
+    if (destroyWindow) {
+        delete id;
     }
 }
 

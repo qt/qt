@@ -21,6 +21,7 @@
 #ifndef JSMessagePort_h
 #define JSMessagePort_h
 
+#include "DOMObjectWithSVGContext.h"
 #include "JSDOMBinding.h"
 #include <runtime/JSGlobalObject.h>
 #include <runtime/ObjectPrototype.h>
@@ -29,10 +30,10 @@ namespace WebCore {
 
 class MessagePort;
 
-class JSMessagePort : public DOMObject {
-    typedef DOMObject Base;
+class JSMessagePort : public DOMObjectWithGlobalPointer {
+    typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSMessagePort(PassRefPtr<JSC::Structure>, PassRefPtr<MessagePort>);
+    JSMessagePort(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MessagePort>);
     virtual ~JSMessagePort();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -47,7 +48,7 @@ public:
 
     virtual void mark();
 
-    static JSC::JSValue getConstructor(JSC::ExecState*);
+    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
 
     // Custom functions
     JSC::JSValue addEventListener(JSC::ExecState*, const JSC::ArgList&);
@@ -58,7 +59,7 @@ private:
     RefPtr<MessagePort> m_impl;
 };
 
-JSC::JSValue toJS(JSC::ExecState*, MessagePort*);
+JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, MessagePort*);
 MessagePort* toMessagePort(JSC::JSValue);
 
 class JSMessagePortPrototype : public JSC::JSObject {

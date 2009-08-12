@@ -57,7 +57,7 @@
 #include "qsslsocket_p.h"
 
 #ifdef Q_OS_WIN
-#include <windows.h>
+#include <qt_windows.h>
 #if defined(OCSP_RESPONSE)
 #undef OCSP_RESPONSE
 #endif

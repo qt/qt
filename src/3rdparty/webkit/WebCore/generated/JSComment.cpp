@@ -38,7 +38,7 @@ static const HashTableValue JSCommentTableValues[2] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCommentTable =
+static JSC_CONST_HASHTABLE HashTable JSCommentTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCommentTableValues, 0 };
 #else
@@ -52,19 +52,19 @@ static const HashTableValue JSCommentConstructorTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCommentConstructorTable =
+static JSC_CONST_HASHTABLE HashTable JSCommentConstructorTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCommentConstructorTableValues, 0 };
 #else
     { 1, 0, JSCommentConstructorTableValues, 0 };
 #endif
 
-class JSCommentConstructor : public DOMObject {
+class JSCommentConstructor : public DOMConstructorObject {
 public:
-    JSCommentConstructor(ExecState* exec)
-        : DOMObject(JSCommentConstructor::createStructure(exec->lexicalGlobalObject()->objectPrototype()))
+    JSCommentConstructor(ExecState* exec, JSDOMGlobalObject* globalObject)
+        : DOMConstructorObject(JSCommentConstructor::createStructure(globalObject->objectPrototype()), globalObject)
     {
-        putDirect(exec->propertyNames().prototype, JSCommentPrototype::self(exec, exec->lexicalGlobalObject()), None);
+        putDirect(exec->propertyNames().prototype, JSCommentPrototype::self(exec, globalObject), None);
     }
     virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
     virtual const ClassInfo* classInfo() const { return &s_info; }
@@ -90,7 +90,7 @@ static const HashTableValue JSCommentPrototypeTableValues[1] =
     { 0, 0, 0, 0 }
 };
 
-static const HashTable JSCommentPrototypeTable =
+static JSC_CONST_HASHTABLE HashTable JSCommentPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 0, JSCommentPrototypeTableValues, 0 };
 #else
@@ -106,8 +106,8 @@ JSObject* JSCommentPrototype::self(ExecState* exec, JSGlobalObject* globalObject
 
 const ClassInfo JSComment::s_info = { "Comment", &JSCharacterData::s_info, &JSCommentTable, 0 };
 
-JSComment::JSComment(PassRefPtr<Structure> structure, PassRefPtr<Comment> impl)
-    : JSCharacterData(structure, impl)
+JSComment::JSComment(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Comment> impl)
+    : JSCharacterData(structure, globalObject, impl)
 {
 }
 
@@ -123,11 +123,12 @@ bool JSComment::getOwnPropertySlot(ExecState* exec, const Identifier& propertyNa
 
 JSValue jsCommentConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
-    return static_cast<JSComment*>(asObject(slot.slotBase()))->getConstructor(exec);
+    JSComment* domObject = static_cast<JSComment*>(asObject(slot.slotBase()));
+    return JSComment::getConstructor(exec, domObject->globalObject());
 }
-JSValue JSComment::getConstructor(ExecState* exec)
+JSValue JSComment::getConstructor(ExecState* exec, JSGlobalObject* globalObject)
 {
-    return getDOMConstructor<JSCommentConstructor>(exec);
+    return getDOMConstructor<JSCommentConstructor>(exec, static_cast<JSDOMGlobalObject*>(globalObject));
 }
 
 

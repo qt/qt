@@ -5,7 +5,7 @@
 
 // Dependancies for more than one module
 #include <base.iby>
-#include <openenv.iby> // QtCore, QtGui, QtNetwork, QtOpenGL, QSvgIconEngine, 
+#include <openenv.iby> // QtCore, QtGui, QtNetwork, QtOpenGL, QSvgIconEngine,
 #include <cone.iby> // QtGui, QtOpenGL
 #include <stdcpp.iby> // for std C++ support
 

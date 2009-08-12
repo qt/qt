@@ -28,7 +28,8 @@ SOURCES += socket/qabstractsocketengine.cpp \
 unix:SOURCES += socket/qnativesocketengine_unix.cpp \
                 socket/qlocalsocket_unix.cpp \
                 socket/qlocalserver_unix.cpp
-
+unix:HEADERS += \
+                socket/qnet_unix_p.h
 
 win32:SOURCES += socket/qnativesocketengine_win.cpp \
                 socket/qlocalsocket_win.cpp \

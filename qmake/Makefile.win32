@@ -86,11 +86,11 @@ CFLAGS      = $(CFLAGS) -DQMAKE_OPENSOURCE_EDITION
 QTOBJS= \
 	qbitarray.obj \
 	qbuffer.obj \
-        qcryptographichash.obj \
+	qcryptographichash.obj \
 	qfsfileengine.obj \
 	qfsfileengine_iterator.obj \
 	qbytearray.obj \
-        qvsnprintf.obj \
+	qvsnprintf.obj \
 	qbytearraymatcher.obj \
 	qdatetime.obj \
 	qdir.obj \
@@ -107,9 +107,11 @@ QTOBJS= \
 	qlistdata.obj \
 	qlinkedlist.obj \
 	qlocale.obj \
-        qmalloc.obj \
+	qmalloc.obj \
 	qmap.obj \
 	qregexp.obj \
+	qtextcodec.obj \
+	qutfcodec.obj \
 	qstring.obj \
 	qstringlist.obj \
 	qtextstream.obj \
@@ -119,9 +121,9 @@ QTOBJS= \
 	qsettings.obj \
 	qlibraryinfo.obj \
 	qvariant.obj \
-        qurl.obj \
+	qurl.obj \
 	qsettings_win.obj \
-        qmetatype.obj \
+	qmetatype.obj \
 	qnumeric.obj \
 	qscriptasm.obj \
 	qscriptast.obj \
@@ -179,7 +181,7 @@ clean::
 	-del qfsfileengine.obj
 	-del qfsfileengine_iterator.obj
 	-del qbytearray.obj
-        -del qvsnprintf.obj
+	-del qvsnprintf.obj
 	-del qbytearraymatcher.obj
 	-del qdatetime.obj
 	-del qdir.obj
@@ -198,6 +200,8 @@ clean::
 	-del qmalloc.obj
 	-del qmap.obj
 	-del qregexp.obj
+	-del qtextcodec.obj
+	-del qutfcodec.obj
 	-del qstring.obj
 	-del qstringlist.obj
 	-del qtextstream.obj
@@ -207,9 +211,9 @@ clean::
 	-del qsettings.obj
 	-del qlibraryinfo.obj
 	-del qvariant.obj
-        -del qurl.obj
+	-del qurl.obj
 	-del qsettings_win.obj
-        -del qmetatype.obj
+	-del qmetatype.obj
 	-del project.obj
 	-del main.obj
 	-del makefile.obj
@@ -347,6 +351,9 @@ qbytearraymatcher.obj: $(SOURCE_PATH)\src\corelib\tools\qbytearraymatcher.cpp
 qchar.obj: $(SOURCE_PATH)\src\corelib\tools\qchar.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\tools\qchar.cpp
 
+qutfcodec.obj: $(SOURCE_PATH)\src\corelib\codecs\qutfcodec.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\codecs\qutfcodec.cpp
+
 qstring.obj: $(SOURCE_PATH)\src\corelib\tools\qstring.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\tools\qstring.cpp
 
@@ -389,8 +396,8 @@ qfsfileengine_iterator.obj: $(SOURCE_PATH)\src\corelib\io\qfsfileengine_iterator
 qabstractfileengine.obj: $(SOURCE_PATH)\src\corelib\io\qabstractfileengine.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\io\qabstractfileengine.cpp
 
-qtextcodec.obj: $(SOURCE_PATH)\src\codecs\qtextcodec.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\codecs\qtextcodec.cpp
+qtextcodec.obj: $(SOURCE_PATH)\src\corelib\codecs\qtextcodec.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\codecs\qtextcodec.cpp
 
 qregexp.obj: $(SOURCE_PATH)\src\corelib\tools\qregexp.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\tools\qregexp.cpp
@@ -424,6 +431,7 @@ qmap.obj: $(SOURCE_PATH)\src\corelib\tools\qmap.cpp
 
 qunicodetables.obj: $(SOURCE_PATH)\src\corelib\tools\qunicodetables.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\tools\qunicodetables.cpp
+
 makefile.obj: $(SOURCE_PATH)/qmake/generators\makefile.cpp
 	$(CXX) $(CXXFLAGS) generators\makefile.cpp
 
@@ -464,7 +472,7 @@ symmake_sbsv2.obj: $(SOURCE_PATH)/qmake/generators/symbian/symmake_sbsv2.cpp
 	$(CXX) $(CXXFLAGS) generators/symbian/symmake_sbsv2.cpp
 
 initprojectdeploy_symbian.obj: $(SOURCE_PATH)/qmake/generators/symbian/initprojectdeploy_symbian.cpp
-        $(CXX) $(CXXFLAGS) generators/symbian/initprojectdeploy_symbian.cpp
+	$(CXX) $(CXXFLAGS) generators/symbian/initprojectdeploy_symbian.cpp
 
 md5.obj: $(SOURCE_PATH)\src\3rdparty\md5\md5.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\3rdparty\md5\md5.cpp

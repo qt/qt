@@ -1,11 +1,11 @@
 
 isEmpty(QMAKE_UIC3) {
-    win32:QMAKE_UIC3 = $$[QT_INSTALL_BINS]\uic3.exe
+    contains(QMAKE_HOST.os,Windows):QMAKE_UIC3 = $$[QT_INSTALL_BINS]\uic3.exe
     else:QMAKE_UIC3 = $$[QT_INSTALL_BINS]/uic3
 }
 
 isEmpty(QMAKE_UIC) {
-   win32:QMAKE_UIC = $$[QT_INSTALL_BINS]\uic.exe
+   contains(QMAKE_HOST.os,Windows):QMAKE_UIC = $$[QT_INSTALL_BINS]\uic.exe
    else:QMAKE_UIC = $$[QT_INSTALL_BINS]/uic
 }
 
@@ -36,7 +36,7 @@ isEmpty(QMAKE_MOD_UIC):QMAKE_MOD_UIC = ui_
 
 !isEmpty(FORMS)|!isEmpty(FORMS3) {
     ui_dir_short = $$UI_HEADERS_DIR
-    win32:ui_dir_short ~= s,^.:,/,
+    contains(QMAKE_HOST.os,Windows):ui_dir_short ~= s,^.:,/,
     contains(ui_dir_short, ^[/\\\\].*):INCLUDEPATH += $$UI_HEADERS_DIR
     else:INCLUDEPATH += $$OUT_PWD/$$UI_HEADERS_DIR
 }
@@ -51,7 +51,7 @@ equals(UI_DIR, .) {
 uic3 {
     isEmpty(FORMS3) {
         UIC3_FORMS = FORMS
-        !build_pass:message("Project contains CONFIG+=uic3, but no files in FORMS3; .ui files in FORMS treated as UIC3 form files.")
+        !build_pass:message("Project contains CONFIG+=uic3, but no files in FORMS3; UI files in FORMS treated as UIC3 form files.")
     } else {
         UIC3_FORMS = FORMS3
     }
