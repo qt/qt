@@ -9108,7 +9108,6 @@ void QGraphicsTextItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             QApplication::sendEvent(receiver, &_event);
         } 
     }
-    QGraphicsItem::mouseReleaseEvent(event);
 
     dd->clickCausedFocus = 0;
     dd->sendControlEvent(event);
