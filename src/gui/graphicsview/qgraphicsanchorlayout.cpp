@@ -131,10 +131,10 @@ void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
  * \a firstItem and \a secondItem are automatically added to the layout if they are not part
  * of the layout. This means that count() can increase with up to 2.
  */
-void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
-                                   Qt::Corner firstCorner,
-                                   QGraphicsLayoutItem *secondItem,
-                                   Qt::Corner secondCorner)
+void QGraphicsAnchorLayout::anchorCorner(QGraphicsLayoutItem *firstItem,
+                                         Qt::Corner firstCorner,
+                                         QGraphicsLayoutItem *secondItem,
+                                         Qt::Corner secondCorner)
 {
     Q_D(QGraphicsAnchorLayout);
 
@@ -157,10 +157,10 @@ void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
  * By calling this function the caller can specify the magnitude of the anchor with \a spacing.
  *
  */
-void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
-                                   Qt::Corner firstCorner,
-                                   QGraphicsLayoutItem *secondItem,
-                                   Qt::Corner secondCorner, qreal spacing)
+void QGraphicsAnchorLayout::anchorCorner(QGraphicsLayoutItem *firstItem,
+                                         Qt::Corner firstCorner,
+                                         QGraphicsLayoutItem *secondItem,
+                                         Qt::Corner secondCorner, qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
 
