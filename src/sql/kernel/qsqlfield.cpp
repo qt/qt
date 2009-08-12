@@ -159,20 +159,11 @@ public:
 
     \sa setRequiredStatus() setLength() setPrecision() setDefaultValue() setGenerated() setReadOnly()
 */
-QSqlField::QSqlField()
-{
-    d = new QSqlFieldPrivate(QString(),  QVariant::Invalid);
-}
-
-QSqlField::QSqlField(const QString& fieldName)
-{
-    d = new QSqlFieldPrivate(fieldName,  QVariant::Invalid);
-}
-
 QSqlField::QSqlField(const QString& fieldName, QVariant::Type type)
 {
     d = new QSqlFieldPrivate(fieldName, type);
 }
+
 /*!
     Constructs a copy of \a other.
 */
