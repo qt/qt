@@ -32,6 +32,7 @@
 #ifdef QT_BUILD_SCRIPT_LIB
 #include "Debugger.h"
 #include "DebuggerCallFrame.h"
+#include "JSGlobalObject.h"
 #endif
 
 namespace JSC {
