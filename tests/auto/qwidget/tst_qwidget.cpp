@@ -9272,7 +9272,7 @@ void tst_QWidget::inputFocus_task257832()
             QSKIP("No input context", SkipSingle);
       widget->setFocus();
       context->setFocusWidget(widget);
-      QCOMPARE(context->focusWidget(), widget);
+      QCOMPARE(context->focusWidget(), static_cast<QWidget*>(widget));
       widget->setReadOnly(true);
       QVERIFY(!context->focusWidget());
       delete widget;
