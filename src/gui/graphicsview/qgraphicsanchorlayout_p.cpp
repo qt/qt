@@ -1088,7 +1088,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     //     However, as the two setAnchorSizeHints methods above are not
     //     ready to be run on top of a simplified graph, we must simplify
     //     and restore it every time we get here.
-    simplifyGraph(orientation);
+    //simplifyGraph(orientation);
 
     // Traverse all graph edges and store the possible paths to each vertex
     findPaths(orientation);
@@ -1248,7 +1248,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
         (*iter)->updateChildrenSizes();
 
     // Restore the graph. See the ### note next to the simplifyGraph() call.
-    restoreSimplifiedGraph(orientation);
+    //restoreSimplifiedGraph(orientation);
 }
 
 void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromDefaults(Orientation orientation)
