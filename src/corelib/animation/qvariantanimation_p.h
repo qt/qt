@@ -84,7 +84,6 @@ public:
     QVariantAnimation::KeyValues keyValues;
     QVariant currentValue;
     QVariant defaultStartValue;
-    bool hasStartValue;
 
     //this is used to keep track of the KeyValue interval in which we currently are
     struct
