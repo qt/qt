@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Patternist project on Trolltech Labs.
+** This file is part of the Patternist project on Qt Labs.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -192,7 +192,7 @@ protected:
 
 #ifdef Q_OS_WIN
             /* If we don't open stdout in "binary" mode on Windows, it will translate
-             * 0xA into 0xD 0xA. See Trolltech task 173619, for an example. */
+             * 0xA into 0xD 0xA. */
             _setmode(_fileno(stdout), _O_BINARY);
             m_stdout = _wfdopen(_fileno(stdout), L"wb");
             out->open(m_stdout, QIODevice::WriteOnly);

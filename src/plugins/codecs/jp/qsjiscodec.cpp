@@ -41,7 +41,7 @@
 
 // Most of the code here was originally written by Serika Kurusugawa
 // a.k.a. Junji Takagi, and is included in Qt with the author's permission,
-// and the grateful thanks of the Trolltech team.
+// and the grateful thanks of the Qt team.
 
 /*! \class QSjisCodec
     \reentrant

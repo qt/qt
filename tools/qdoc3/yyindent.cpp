@@ -719,7 +719,7 @@ static int indentForContinuationLine()
                 delimDepth--;
                 /*
                     An unclosed delimiter is a good place to align at,
-                    at least for some styles (including Trolltech's).
+                    at least for some styles (including Qt's).
                 */
                 if ( delimDepth == -1 )
                     hook = j;

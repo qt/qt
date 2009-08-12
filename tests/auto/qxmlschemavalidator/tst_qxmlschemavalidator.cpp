@@ -167,7 +167,7 @@ void tst_QXmlSchemaValidator::resetSchemaNamePool() const
     QXmlNamePool np2 = schema2.namePool();
 
     const QXmlName name2(np2, QLatin1String("remoteName"),
-                              QLatin1String("http://trolltech.com/"),
+                              QLatin1String("http://example.com/"),
                               QLatin1String("suffix"));
 
     // make sure that after re-setting the schema, the new namepool is used
@@ -175,7 +175,7 @@ void tst_QXmlSchemaValidator::resetSchemaNamePool() const
 
     {
         QXmlNamePool compNamePool(validator.namePool());
-        QCOMPARE(name2.namespaceUri(compNamePool), QString::fromLatin1("http://trolltech.com/"));
+        QCOMPARE(name2.namespaceUri(compNamePool), QString::fromLatin1("http://example.com/"));
         QCOMPARE(name2.localName(compNamePool), QString::fromLatin1("remoteName"));
         QCOMPARE(name2.prefix(compNamePool), QString::fromLatin1("suffix"));
     }

@@ -184,7 +184,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         // verify that we are licensed to use Qt for Windows CE
         if (dictionary["LICENSE_EXTENSION"] != "-EMBEDDED" && dictionary["LICENSE_EXTENSION"] != "-ALLOS") {
             cout << "You are not licensed for the " << dictionary["PLATFORM NAME"] << " platform." << endl << endl;
-            cout << "Please contact sales@trolltech.com to upgrade your license" << endl;
+            cout << "Please contact qt-info@nokia.com to upgrade your license" << endl;
             cout << "to include the " << dictionary["PLATFORM NAME"] << " platform, or install the" << endl;
             cout << "Qt Open Source Edition if you intend to develop free software." << endl;
             dictionary["DONE"] = "error";

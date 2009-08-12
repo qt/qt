@@ -183,7 +183,7 @@ QRegExp PatternPlatform::parsePattern(const QString &patternP,
        patternP == QLatin1String("(.)\\2"))
     {
         context->error(QLatin1String("We don't want to hang infinitely on K2-MatchesFunc-9, "
-                                     "10 and 11. See Trolltech task 148505."),
+                                     "10 and 11."),
                        ReportContext::FOER0000, location);
         return QRegExp();
     }

@@ -70,7 +70,6 @@
 /**
  * @class QSharedData
  * @short Qt's base class for reference counting.
- * @author Trolltech
  */
 
 QT_BEGIN_HEADER
