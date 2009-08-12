@@ -113,8 +113,8 @@ public:
     QScriptEnginePrivate();
     virtual ~QScriptEnginePrivate();
 
-    static QScriptEnginePrivate *get(QScriptEngine*);
-    static QScriptEngine *get(QScriptEnginePrivate*);
+    static QScriptEnginePrivate *get(QScriptEngine *q) { return q ? q->d_func() : 0; }
+    static QScriptEngine *get(QScriptEnginePrivate *d) { return d ? d->q_func() : 0; }
 
     static bool convert(const QScriptValue &value,
                         int type, void *ptr,

@@ -130,7 +130,7 @@ public:
     QVariant &variantValue() const;
     void setVariantValue(const QVariant &value);
 
-    static QScriptValuePrivate *get(const QScriptValue &q);
+    static QScriptValuePrivate *get(const QScriptValue &q) { return q.d_ptr; }
 
     QScriptValue property(const JSC::Identifier &id, int resolveMode) const;
     QScriptValue property(const QString &, int resolveMode) const;

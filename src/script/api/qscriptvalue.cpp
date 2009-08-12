@@ -348,11 +348,6 @@ bool QScriptValuePrivate::isJSC() const
     return (type == JSC);
 }
 
-QScriptValuePrivate *QScriptValuePrivate::get(const QScriptValue &q)
-{
-    return q.d_ptr;
-}
-
 QScriptValue QScriptValuePrivate::property(const QString &name, int resolveMode) const
 {
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine);

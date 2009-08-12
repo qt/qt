@@ -1363,20 +1363,6 @@ void QScriptEnginePrivate::detachAllRegisteredScriptValues()
     }
 }
 
-QScriptEnginePrivate *QScriptEnginePrivate::get(QScriptEngine *q)
-{
-    if (!q)
-        return 0;
-    return q->d_func();
-}
-
-QScriptEngine *QScriptEnginePrivate::get(QScriptEnginePrivate *d)
-{
-    if (!d)
-        return 0;
-    return d->q_func();
-}
-
 #ifdef QT_NO_QOBJECT
 
 QScriptEngine::QScriptEngine()
