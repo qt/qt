@@ -353,7 +353,7 @@ void qDrawBorder(QPainter *p, const QRect &rect, const QCss::BorderStyle *styles
     qNormalizeRadii(rect, radii, &tlr, &trr, &blr, &brr);
 
     // Drawn in increasing order of precendence
-    if (styles[BottomEdge] != BorderStyle_None) {
+    if (styles[BottomEdge] != BorderStyle_None && borders[BottomEdge] > 0) {
         qreal dw1 = (blr.width() || paintsOver(styles, colors, BottomEdge, LeftEdge)) ? 0 : borders[LeftEdge];
         qreal dw2 = (brr.width() || paintsOver(styles, colors, BottomEdge, RightEdge)) ? 0 : borders[RightEdge];
         qreal x1 = br.x() + blr.width();
@@ -365,7 +365,7 @@ void qDrawBorder(QPainter *p, const QRect &rect, const QCss::BorderStyle *styles
         if (blr.width() || brr.width())
             qDrawRoundedCorners(p, x1, y1, x2, y2, blr, brr, BottomEdge, styles[BottomEdge], colors[BottomEdge]);
     }
-    if (styles[RightEdge] != BorderStyle_None) {
+    if (styles[RightEdge] != BorderStyle_None && borders[RightEdge] > 0) {
         qreal dw1 = (trr.height() || paintsOver(styles, colors, RightEdge, TopEdge)) ? 0 : borders[TopEdge];
         qreal dw2 = (brr.height() || paintsOver(styles, colors, RightEdge, BottomEdge)) ? 0 : borders[BottomEdge];
         qreal x1 = br.x() + br.width() - borders[RightEdge];
@@ -377,7 +377,7 @@ void qDrawBorder(QPainter *p, const QRect &rect, const QCss::BorderStyle *styles
         if (trr.height() || brr.height())
             qDrawRoundedCorners(p, x1, y1, x2, y2, trr, brr, RightEdge, styles[RightEdge], colors[RightEdge]);
     }
-    if (styles[LeftEdge] != BorderStyle_None) {
+    if (styles[LeftEdge] != BorderStyle_None && borders[LeftEdge] > 0) {
         qreal dw1 = (tlr.height() || paintsOver(styles, colors, LeftEdge, TopEdge)) ? 0 : borders[TopEdge];
         qreal dw2 = (blr.height() || paintsOver(styles, colors, LeftEdge, BottomEdge)) ? 0 : borders[BottomEdge];
         qreal x1 = br.x();
@@ -389,7 +389,7 @@ void qDrawBorder(QPainter *p, const QRect &rect, const QCss::BorderStyle *styles
         if (tlr.height() || blr.height())
             qDrawRoundedCorners(p, x1, y1, x2, y2, tlr, blr, LeftEdge, styles[LeftEdge], colors[LeftEdge]);
     }
-    if (styles[TopEdge] != BorderStyle_None) {
+    if (styles[TopEdge] != BorderStyle_None && borders[TopEdge] > 0) {
         qreal dw1 = (tlr.width() || paintsOver(styles, colors, TopEdge, LeftEdge)) ? 0 : borders[LeftEdge];
         qreal dw2 = (trr.width() || paintsOver(styles, colors, TopEdge, RightEdge)) ? 0 : borders[RightEdge];
         qreal x1 = br.x() + tlr.width();
