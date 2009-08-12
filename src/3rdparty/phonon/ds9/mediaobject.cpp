@@ -512,7 +512,8 @@ namespace Phonon
 
             qSwap(m_graphs[0], m_graphs[1]); //swap the graphs
 
-            m_graphs[1]->stop(); //make sure we stop the previous graph
+            if (m_transitionTime >= 0)
+                m_graphs[1]->stop(); //make sure we stop the previous graph
 
             if (currentGraph()->mediaSource().type() != Phonon::MediaSource::Invalid &&
                 catchComError(currentGraph()->renderResult())) {
