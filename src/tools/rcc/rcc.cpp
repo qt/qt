@@ -894,10 +894,10 @@ bool RCCResourceLibrary::writeInitializer()
         if (m_useNameSpace)
             writeString("QT_BEGIN_NAMESPACE\n\n");
         if (m_root) {
-            writeString("extern bool qRegisterResourceData\n    "
+            writeString("extern Q_CORE_EXPORT bool qRegisterResourceData\n    "
                 "(int, const unsigned char *, "
                 "const unsigned char *, const unsigned char *);\n\n");
-            writeString("extern bool qUnregisterResourceData\n    "
+            writeString("extern Q_CORE_EXPORT bool qUnregisterResourceData\n    "
                 "(int, const unsigned char *, "
                 "const unsigned char *, const unsigned char *);\n\n");
         }
