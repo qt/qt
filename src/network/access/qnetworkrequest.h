@@ -87,9 +87,7 @@ public:
         AlwaysCache
     };
 
-
-    explicit QNetworkRequest();
-    explicit QNetworkRequest(const QUrl &url);
+    explicit QNetworkRequest(const QUrl &url = QUrl());
     QNetworkRequest(const QNetworkRequest &other);
     ~QNetworkRequest();
     QNetworkRequest &operator=(const QNetworkRequest &other);
