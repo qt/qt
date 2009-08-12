@@ -5,7 +5,7 @@ void wrapInFunction()
 QFile file("file.dat");
 file.open(QIODevice::WriteOnly);
 QDataStream out(&file);   // we will serialize the data into the file
-out << "the answer is";   // serialize a string
+out << QString("the answer is");   // serialize a string
 out << (qint32)42;        // serialize an integer
 //! [0]
 
