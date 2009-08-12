@@ -80,9 +80,6 @@ SOURCES += \
         painting/qtransform.cpp \
         painting/qwindowsurface.cpp \
 
-        DEFINES += QT_RASTER_IMAGEENGINE
-        win32:DEFINES += QT_RASTER_PAINTENGINE
-        embedded:DEFINES += QT_RASTER_PAINTENGINE
         SOURCES +=                                      \
                 painting/qpaintengine_raster.cpp        \
                 painting/qdrawhelper.cpp                \
