@@ -75,7 +75,7 @@ QHash<QByteArray, QVariant> Backend::objectDescriptionProperties(ObjectDescripti
 
 bool Backend::startConnectionChange(QSet<QObject *>)
 {
-    return false;
+    return true;
 }
 
 bool Backend::connectNodes(QObject *source, QObject *target)
@@ -87,6 +87,7 @@ bool Backend::connectNodes(QObject *source, QObject *target)
         return false;
 
     ao->setMediaObject(mo);
+    mo->setAudioOutput(ao);
 
     return true;
 }

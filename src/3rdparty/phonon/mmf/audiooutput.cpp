@@ -16,39 +16,45 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include <DrmAudioSamplePlayer.h>
-
 #include "mediaobject.h"
 #include "audiooutput.h"
+#include "utils.h"
 
 using namespace Phonon;
 using namespace Phonon::MMF;
 
-MMF::AudioOutput::AudioOutput(Backend *, QObject *parent) : m_mediaObject(0)
-                                                          , m_volume(0)
-                                                          , m_maxVolume(-1)
+MMF::AudioOutput::AudioOutput(Backend *, QObject *parent) : m_mediaObject(NULL)
 {
     setParent(parent);
 }
 
 qreal MMF::AudioOutput::volume() const
 {
-    return 0;
+    TRACE_CONTEXT(AudioOutput::volume, EAudioApi);
+    TRACE_ENTRY("m_mediaObject 0x%08x", m_mediaObject);
+
+    const qreal result = m_mediaObject ? m_mediaObject->volume() : 0.0;
+
+    TRACE_RETURN("%f", result);
 }
 
-void MMF::AudioOutput::setVolume(qreal newVolume)
+void MMF::AudioOutput::setVolume(qreal volume)
 {
-    if(!m_mediaObject)
-        return;
+    TRACE_CONTEXT(AudioOutput::setVolume, EAudioApi);
+    TRACE_ENTRY("volume %f", volume);
 
-    Q_ASSERT(m_mediaObject->m_player);
+    if(m_mediaObject and m_mediaObject->setVolume(volume))
+    {
+        TRACE("emit volumeChanged(%f)", volume)
+        emit volumeChanged(volume);
+    }
 
-    if (newVolume == m_volume)
-        return;
+    TRACE_EXIT_0();
+}
 
-    m_volume = newVolume;
-    m_mediaObject->m_player->SetVolume(newVolume * m_maxVolume);
-    emit volumeChanged(m_volume);
+void MMF::AudioOutput::triggerVolumeChanged(qreal volume)
+{
+    emit volumeChanged(volume);
 }
 
 int MMF::AudioOutput::outputDevice() const
@@ -68,19 +74,7 @@ bool MMF::AudioOutput::setOutputDevice(const Phonon::AudioOutputDevice &)
 
 void MMF::AudioOutput::setMediaObject(MediaObject *mo)
 {
-    Q_ASSERT(m_mediaObject);
+    Q_ASSERT(!m_mediaObject);
     m_mediaObject = mo;
-
-    Q_ASSERT(m_mediaObject->m_player);
-    m_maxVolume = m_mediaObject->m_player->MaxVolume();
-
-    TInt mmfVolume = 0;
-    const TInt errorCode = m_mediaObject->m_player->GetVolume(mmfVolume);
-
-    if(errorCode == KErrNone)
-        return;
-
-    m_volume = mmfVolume / m_maxVolume;
-    emit volumeChanged(m_volume);
 }
 

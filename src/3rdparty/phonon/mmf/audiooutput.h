@@ -55,7 +55,7 @@ namespace Phonon
         public:
             AudioOutput(Backend *backend, QObject *parent);
             virtual qreal volume() const;
-            virtual void setVolume(qreal);
+            virtual void setVolume(qreal volume);
 
             virtual int outputDevice() const;
 
@@ -71,13 +71,18 @@ namespace Phonon
 
             void setMediaObject(MediaObject *mo);
 
+            /**
+             * Called by MediaObject to pass initial volume when clip has been
+             * successfully opened
+             */
+            void triggerVolumeChanged(qreal volume);
+
         Q_SIGNALS:
-            void volumeChanged(qreal newVolume);
+            void volumeChanged(qreal volume);
+            void audioDeviceFailed();
 
         private:
             MediaObject *   m_mediaObject;
-            qreal           m_volume;
-            TInt            m_maxVolume;
         };
     }
 }

@@ -21,15 +21,24 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 /* We use the extra qualification include/ to avoid picking up the include
  * Phonon has. */
-#include <include/VideoPlayer.h>
-
-#include <DrmAudioSamplePlayer.h>
+#include <include/videoplayer.h>
 
 #include <Phonon/MediaSource>
 #include <Phonon/mediaobjectinterface.h>
 
 class CDrmPlayerUtility;
 class TTimeIntervalMicroSeconds;
+class QTimer;
+
+#ifdef QT_PHONON_MMF_AUDIO_DRM
+#include <drmaudiosampleplayer.h>
+typedef CDrmPlayerUtility CPlayerType;
+typedef MDrmAudioPlayerCallback MPlayerObserverType;
+#else
+#include <mdaaudiosampleplayer.h>
+typedef CMdaAudioPlayerUtility CPlayerType;
+typedef MMdaAudioPlayerCallback MPlayerObserverType;
+#endif
 
 namespace Phonon
 {
@@ -45,10 +54,10 @@ namespace Phonon
          */
         class MediaObject : public QObject
                           , public MediaObjectInterface
-                          , public MDrmAudioPlayerCallback
-                          , public MAudioLoadingObserver
-                          , public MVideoLoadingObserver
-                          //, public MVideoPlayerUtilityObserver
+                          , public MPlayerObserverType    // typedef
+#ifdef QT_PHONON_MMF_AUDIO_DRM
+                          ,    public MAudioLoadingObserver
+#endif
         {
             Q_OBJECT
             Q_INTERFACES(Phonon::MediaObjectInterface)
@@ -79,45 +88,91 @@ namespace Phonon
             virtual qint32 transitionTime() const;
             virtual void setTransitionTime(qint32);
 
+#ifdef QT_PHONON_MMF_AUDIO_DRM
             // MDrmAudioPlayerCallback
             virtual void MdapcInitComplete(TInt aError,
                                            const TTimeIntervalMicroSeconds &aDuration);
             virtual void MdapcPlayComplete(TInt aError);
 
             // MAudioLoadingObserver
-            virtual void MaloLoadingComplete();
             virtual void MaloLoadingStarted();
+            virtual void MaloLoadingComplete();
+#else
+            // MMdaAudioPlayerCallback
+            virtual void MapcInitComplete(TInt aError,
+                                                       const TTimeIntervalMicroSeconds &aDuration);
+            virtual void MapcPlayComplete(TInt aError);
+#endif
 
-            // MVideoLoadingObserver
-            virtual void MvloLoadingComplete();
-            virtual void MvloLoadingStarted();
+            qreal volume() const;
+            bool setVolume(qreal volume);
+
+            void setAudioOutput(AudioOutput* audioOutput);
 
         Q_SIGNALS:
             void totalTimeChanged();
             void stateChanged(Phonon::State oldState,
                               Phonon::State newState);
-
             void finished();
+            void tick(qint64 time);
+
+        private Q_SLOTS:
+            /**
+             * Receives signal from m_tickTimer
+             */
+            void tick();
 
         private:
-            friend class AudioOutput;
-            static inline qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
-            static inline TTimeIntervalMicroSeconds toMicroSeconds(qint64 ms);
+            static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
 
             /**
-             * Changes state() to \a newState, and emits stateChanged().
+             * Defined private state enumeration in order to add GroundState
              */
-            inline void transitTo(Phonon::State newState);
+            enum PrivateState
+                {
+                LoadingState    = Phonon::LoadingState,
+                StoppedState    = Phonon::StoppedState,
+                PlayingState    = Phonon::PlayingState,
+                BufferingState    = Phonon::BufferingState,
+                PausedState        = Phonon::PausedState,
+                ErrorState        = Phonon::ErrorState,
+                GroundState
+                };
 
-            CDrmPlayerUtility * m_player;
+            /**
+             * Converts PrivateState into the corresponding Phonon::State
+             */
+            static Phonon::State phononState(PrivateState state);
+
+            /**
+             * Changes state and emits stateChanged()
+             */
+            void changeState(PrivateState newState);
+
+            /**
+             * Using CPlayerType typedef in order to be able to easily switch between
+             * CMdaAudioPlayerUtility and CDrmPlayerUtility
+             */
+            CPlayerType*         m_player;
+
+            AudioOutput*        m_audioOutput;
+
             ErrorType           m_error;
 
             /**
-             * Never update this state by assigning to it. Call transitTo().
+             * Do not set this directly - call changeState() instead.
              */
-            State               m_state;
+            PrivateState        m_state;
+
+            qint32                m_tickInterval;
+
+            QTimer*                m_tickTimer;
+
             MediaSource         m_mediaSource;
             MediaSource         m_nextSource;
+
+            qreal                m_volume;
+            int                    m_maxVolume;
         };
     }
 }
