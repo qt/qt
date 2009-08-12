@@ -48,23 +48,22 @@ Rect {
     }
 
     Script {
-        function leftPressed() {
+        function left() {
             if (selectedItemColumn <= 0) return;
             selectedItemColumn -= 1;
             MyLayout.slowDeform = false;
             MyLayout.targetDeform = Math.max(Math.min(MyLayout.deform - 0.1, -0.1), -0.4);
         }
-        function rightPressed() {
+        function right() {
             selectedItemColumn += 1;
             MyLayout.slowDeform = false;
             MyLayout.targetDeform = Math.min(Math.max(MyLayout.deform + 0.1, 0.1), 0.4);
         }
     }
-    KeyActions {
-        focus: true
-        leftArrow: "leftPressed()"
-        rightArrow: "rightPressed()"
-        upArrow: "if (selectedItemRow > 0) selectedItemRow = selectedItemRow - 1"
-        downArrow: "if (selectedItemRow < 3) selectedItemRow = selectedItemRow + 1"
-    }
+
+    focus: true
+    Keys.onLeftPressed: "left()"
+    Keys.onRightPressed: "right()"
+    Keys.onUpPressed: "if (selectedItemRow > 0) selectedItemRow = selectedItemRow - 1"
+    Keys.onDownPressed: "if (selectedItemRow < 3) selectedItemRow = selectedItemRow + 1"
 }

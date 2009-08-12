@@ -15,7 +15,6 @@ HEADERS += \
            fx/qfxitem.h \
            fx/qfxitem_p.h \
            fx/qfxfocusscope.h \
-           fx/qfxkeyactions.h \
            fx/qfxkeyproxy.h \
            fx/qfxlayouts.h \
            fx/qfxlayouts_p.h \
@@ -55,7 +54,6 @@ SOURCES += \
            fx/qfxpainteditem.cpp \
            fx/qfxitem.cpp \
            fx/qfxfocusscope.cpp \
-           fx/qfxkeyactions.cpp \
            fx/qfxkeyproxy.cpp \
            fx/qfxlayouts.cpp \
            fx/qfxloader.cpp \

@@ -1136,7 +1136,8 @@ void QFxGridView::keyPressEvent(QKeyEvent *event)
         }
     }
     d->moveReason = QFxGridViewPrivate::Other;
-    QFxFlickable::keyPressEvent(event);
+    if (!event->isAccepted())
+        QFxFlickable::keyPressEvent(event);
 }
 
 /*!

@@ -95,6 +95,7 @@ class QmlTransition;
 class QFxKeyEvent;
 class QFxAnchors;
 class QFxItemPrivate;
+class QFxKeysAttached;
 class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserStatus
 {
     Q_OBJECT
@@ -195,8 +196,6 @@ Q_SIGNALS:
     void focusChanged();
     void activeFocusChanged();
     void parentChanged();
-    void keyPress(QFxKeyEvent *event);
-    void keyRelease(QFxKeyEvent *event);
 
 protected:
     bool isComponentComplete() const;
@@ -234,10 +233,13 @@ private:
     QFxAnchorLine verticalCenter() const;
     QFxAnchorLine baseline() const;
 
+    void setKeyHandler(QFxKeysAttached *);
+
     // ### move to d-pointer
     void init(QFxItem *parent);
     friend class QmlStatePrivate;
     friend class QFxAnchors;
+    friend class QFxKeysAttached;
     Q_DISABLE_COPY(QFxItem)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxItem)
 };

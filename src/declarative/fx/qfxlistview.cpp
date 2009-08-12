@@ -1362,7 +1362,8 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
         }
     }
     d->moveReason = QFxListViewPrivate::Other;
-    QFxFlickable::keyPressEvent(event);
+    if (!event->isAccepted())
+        QFxFlickable::keyPressEvent(event);
 }
 
 void QFxListView::componentComplete()
