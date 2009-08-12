@@ -92,7 +92,7 @@ private:
     friend class LinearLayoutAttached;
     void clearChildren();
     void insertLayoutItem(int, QGraphicsLayoutItem *);
-    static QHash<QGraphicsLayoutItem*, QObject*> attachedProperties;
+    static QHash<QGraphicsLayoutItem*, LinearLayoutAttached*> attachedProperties;
 
     class ChildList : public QmlList<QGraphicsLayoutItem *>
     {
@@ -150,7 +150,7 @@ private:
     void addWidget(QGraphicsWidget *);
     void clearChildren();
     void addLayoutItem(QGraphicsLayoutItem *);
-    static QHash<QGraphicsLayoutItem*, QObject*> attachedProperties;
+    static QHash<QGraphicsLayoutItem*, GridLayoutAttached*> attachedProperties;
 
     class ChildList : public QmlList<QGraphicsLayoutItem *>
     {

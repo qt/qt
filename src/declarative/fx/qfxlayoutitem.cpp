@@ -78,7 +78,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,LayoutItem,QFxLayoutItem)
 */
 
 QFxLayoutItem::QFxLayoutItem(QFxItem* parent)
-    : QFxItem(parent), m_maximumSize(INT_MAX,INT_MAX), m_minimumSize(0,0), m_preferredSize(100,100)
+    : QFxItem(parent), m_maximumSize(INT_MAX,INT_MAX), m_minimumSize(0,0), m_preferredSize(0,0)
 {
     setGraphicsItem(this);
 }

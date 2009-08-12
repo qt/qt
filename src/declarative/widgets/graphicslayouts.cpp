@@ -48,6 +48,10 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_INTERFACE(QGraphicsLayoutItem)
 QML_DEFINE_INTERFACE(QGraphicsLayout)
 
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QGraphicsLinearLayoutStretchItem,QGraphicsLinearLayoutStretchItemObject)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QGraphicsLinearLayout,QGraphicsLinearLayoutObject)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QGraphicsGridLayout,QGraphicsGridLayoutObject)
+
 class LinearLayoutAttached : public QObject
 {
     Q_OBJECT
@@ -89,7 +93,6 @@ private:
     Qt::Alignment _alignment;
 };
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QGraphicsLinearLayoutStretchItem,QGraphicsLinearLayoutStretchItemObject)
 
 QGraphicsLinearLayoutStretchItemObject::QGraphicsLinearLayoutStretchItemObject(QObject *parent)
         : QObject(parent)
@@ -103,7 +106,6 @@ QSizeF QGraphicsLinearLayoutStretchItemObject::sizeHint(Qt::SizeHint which, cons
     return QSizeF();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QGraphicsLinearLayout,QGraphicsLinearLayoutObject)
 
 QGraphicsLinearLayoutObject::QGraphicsLinearLayoutObject(QObject *parent)
 : QObject(parent), _children(this)
@@ -119,9 +121,9 @@ void QGraphicsLinearLayoutObject::insertLayoutItem(int index, QGraphicsLayoutIte
     insertItem(index, item);
 
     //connect attached properties
-    if (QObject *obj = attachedProperties.value(item)) {
-        setStretchFactor(item, static_cast<LinearLayoutAttached *>(obj)->stretchFactor());
-        setAlignment(item, static_cast<LinearLayoutAttached *>(obj)->alignment());
+    if (LinearLayoutAttached *obj = attachedProperties.value(item)) {
+        setStretchFactor(item, obj->stretchFactor());
+        setAlignment(item, obj->alignment());
         QObject::connect(obj, SIGNAL(stretchChanged(QGraphicsLayoutItem*,int)),
                          this, SLOT(updateStretch(QGraphicsLayoutItem*,int)));
         QObject::connect(obj, SIGNAL(alignmentChanged(QGraphicsLayoutItem*,Qt::Alignment)),
@@ -147,7 +149,7 @@ void QGraphicsLinearLayoutObject::updateAlignment(QGraphicsLayoutItem *item, Qt:
     QGraphicsLinearLayout::setAlignment(item, alignment);
 }
 
-QHash<QGraphicsLayoutItem*, QObject*> QGraphicsLinearLayoutObject::attachedProperties;
+QHash<QGraphicsLayoutItem*, LinearLayoutAttached*> QGraphicsLinearLayoutObject::attachedProperties;
 LinearLayoutAttached *QGraphicsLinearLayoutObject::qmlAttachedProperties(QObject *obj)
 {
     // ### This is not allowed - you must attach to any object
@@ -246,8 +248,6 @@ private:
     Qt::Alignment _alignment;
 };
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QGraphicsGridLayout,QGraphicsGridLayoutObject)
-
 
 QGraphicsGridLayoutObject::QGraphicsGridLayoutObject(QObject *parent)
 : QObject(parent), _children(this)
@@ -277,12 +277,12 @@ void QGraphicsGridLayoutObject::addWidget(QGraphicsWidget *wid)
 void QGraphicsGridLayoutObject::addLayoutItem(QGraphicsLayoutItem *item)
 {
     //use attached properties
-    if (QObject *obj = attachedProperties.value(item)) {
-        int row = static_cast<GridLayoutAttached *>(obj)->row();
-        int column = static_cast<GridLayoutAttached *>(obj)->column();
-        int rowSpan = static_cast<GridLayoutAttached *>(obj)->rowSpan();
-        int columnSpan = static_cast<GridLayoutAttached *>(obj)->columnSpan();
-        Qt::Alignment alignment = static_cast<GridLayoutAttached *>(obj)->alignment();
+    if (GridLayoutAttached *obj = attachedProperties.value(item)) {
+        int row = obj->row();
+        int column = obj->column();
+        int rowSpan = obj->rowSpan();
+        int columnSpan = obj->columnSpan();
+        Qt::Alignment alignment = obj->alignment();
         if (row == -1 || column == -1) {
             qWarning() << "Must set row and column for an item in a grid layout";
             return;
@@ -307,7 +307,7 @@ qreal QGraphicsGridLayoutObject::spacing() const
     return -1;  //XXX
 }
 
-QHash<QGraphicsLayoutItem*, QObject*> QGraphicsGridLayoutObject::attachedProperties;
+QHash<QGraphicsLayoutItem*, GridLayoutAttached*> QGraphicsGridLayoutObject::attachedProperties;
 GridLayoutAttached *QGraphicsGridLayoutObject::qmlAttachedProperties(QObject *obj)
 {
     // ### This is not allowed - you must attach to any object
