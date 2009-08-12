@@ -1543,7 +1543,6 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
     }
 
     QList<QSimplexConstraint *> trunkConstraints;
-    QList<QSimplexConstraint *> nonTrunkConstraints;
     QSet<QSimplexVariable *> trunkVariables;
 
     trunkVariables += edgeL1;
@@ -1551,7 +1550,6 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
         trunkVariables += edgeL2;
 
     bool dirty;
-    bool hasNonTrunkConstraints = false;
     do {
         dirty = false;
 
@@ -1577,9 +1575,15 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
                 it = remainingConstraints.erase(it);
                 dirty = true;
             } else {
-                nonTrunkConstraints += c;
-                it = remainingConstraints.erase(it);
-                hasNonTrunkConstraints = true;
+                // Note that we don't erase the constraint if it's not
+                // a match, since in a next iteration of a do-while we
+                // can pass on it again and it will be a match.
+                //
+                // For example: if trunk share a variable with
+                // remainingConstraints[1] and it shares with
+                // remainingConstraints[0], we need a second iteration
+                // of the do-while loop to match both.
+                ++it;
             }
         }
     } while (dirty);
@@ -1587,8 +1591,15 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
     QList< QList<QSimplexConstraint *> > result;
     result += trunkConstraints;
 
-    if (hasNonTrunkConstraints)
+    if (!remainingConstraints.isEmpty()) {
+        QList<QSimplexConstraint *> nonTrunkConstraints;
+        QLinkedList<QSimplexConstraint *>::iterator it = remainingConstraints.begin();
+        while (it != remainingConstraints.end()) {
+            nonTrunkConstraints += *it;
+            ++it;
+        }
         result += nonTrunkConstraints;
+    }
 
     return result;
 }
