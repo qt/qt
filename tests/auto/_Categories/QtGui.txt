@@ -1,6 +1,6 @@
 exceptionsafety_objects
-gestures
-languagechange
+#gestures  This test is incomplete and also missing from auto.pro -> disabled for now
+#languagechange  Uses unexported method QThreadData::current() and also missing from auto.pro -> disabled for now
 math3d
 modeltest
 qabstractbutton
