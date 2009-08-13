@@ -218,7 +218,7 @@ inline static qreal checkAdd(qreal a, qreal b)
  * anchors between \a before and \a after, and can be restored back to the anchors it is a
  * placeholder for.
  */
-static void simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
+static bool simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
                                     AnchorVertex *before,
                                     const QVector<AnchorVertex*> &vertices,
                                     AnchorVertex *after)
@@ -281,6 +281,23 @@ static void simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
         newAnchor->sizeAtMaximum = pref;
     }
     graph->createEdge(before, after, newAnchor);
+
+    // True if we created a parallel anchor
+    return newAnchor != sequence;
+}
+
+void QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
+{
+    AnchorVertex *rootVertex = graph[orientation].rootVertex();
+
+    if (!rootVertex)
+        return;
+
+    bool dirty;
+    int count = 0;
+    do {
+        dirty = simplifyGraphIteration(orientation);
+    } while (dirty);
 }
 
 /*!
@@ -312,21 +329,21 @@ static void simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
  *    sequence. This is ok, but that sequence should not be affected by stretch factors.
  *
  */
-void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::Orientation orientation)
+bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutPrivate::Orientation orientation)
 {
     Q_Q(QGraphicsAnchorLayout);
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
     AnchorVertex *v = g.rootVertex();
 
-    if (!v)
-        return;
-    QSet<AnchorVertex*> visited;
+    QSet<AnchorVertex *> visited;
     QStack<AnchorVertex *> stack;
     stack.push(v);
     QVector<AnchorVertex*> candidates;
 
     const QGraphicsAnchorLayout::Edge centerEdge = pickEdge(QGraphicsAnchorLayout::HCenter, orientation);
     const QGraphicsAnchorLayout::Edge layoutEdge = oppositeEdge(v->m_edge);
+
+    bool dirty = false;
 
     // walk depth-first.
     while (!stack.isEmpty()) {
@@ -422,7 +439,10 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
                                 subCandidates.prepend(candidates.at(intervalFrom - 1));
                             } while (intervalFrom < intervalTo - 1);
                         }
-                        simplifySequentialChunk(&g, intervalVertexFrom, subCandidates, intervalVertexTo);
+                        if (simplifySequentialChunk(&g, intervalVertexFrom, subCandidates, intervalVertexTo)) {
+                            dirty = true;
+                            break;
+                        }
                         // finished simplification of chunk with same direction
                     }
                     if (forward == (prev == data->origin))
@@ -433,7 +453,11 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
                 }
                 prev = v1;
             }
+
+            if (dirty)
+                break;
         }
+
         if (endOfSequence)
             candidates.clear();
 
@@ -445,8 +469,11 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(QGraphicsAnchorLayoutPrivate::O
                 continue;
             stack.push(next);
         }
+
         visited.insert(v);
     }
+
+    return dirty;
 }
 
 static void restoreSimplifiedAnchor(Graph<AnchorVertex, AnchorData> &g,

@@ -343,7 +343,9 @@ public:
 
     // Activation methods
     void simplifyGraph(Orientation orientation);
+    bool simplifyGraphIteration(Orientation orientation);
     void restoreSimplifiedGraph(Orientation orientation);
+
     void calculateGraphs();
     void calculateGraphs(Orientation orientation);
     void setAnchorSizeHintsFromItems(Orientation orientation);
