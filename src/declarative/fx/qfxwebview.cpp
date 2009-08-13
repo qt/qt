@@ -523,6 +523,37 @@ void QFxWebView::setCacheSize(int pixels)
     d->max_imagecache_size = pixels;
 }
 
+/*!
+    \qmlproperty list<object> WebView::javaScriptWindowObjects
+
+    This property is a list of object that are available from within
+    the webview's JavaScript context.
+
+    The \a object will be inserted as a child of the frame's window
+    object, under the name given by the attached property \c WebView.windowObjectName.
+
+    \qml
+    WebView {
+        javaScriptWindowObjects: Object { 
+            WebView.windowObjectName: "coordinates"
+        }
+    }
+    \endqml
+
+    Properties of the object will be exposed as JavaScript properties and slots as
+    JavaScript methods.
+
+    If Javascript is not enabled for this page, then this property does nothing.
+*/
+
+/*!
+    \property QFxWebView::javaScriptWindowObjects
+
+    The list of object that are available from within
+    the webview's JavaScript context.
+
+    \sa QWebFrame::addToJavaScriptWindowObject
+*/
 QmlList<QObject *> *QFxWebView::javaScriptWindowObjects()
 {
     Q_D(QFxWebView);
