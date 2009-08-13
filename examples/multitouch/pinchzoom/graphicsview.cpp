@@ -47,11 +47,11 @@
 GraphicsView::GraphicsView(QGraphicsScene *scene, QWidget *parent)
     : QGraphicsView(scene, parent)
 {
-    setAttribute(Qt::WA_AcceptTouchEvents);
+    viewport()->setAttribute(Qt::WA_AcceptTouchEvents);
     setDragMode(ScrollHandDrag);
 }
 
-bool GraphicsView::event(QEvent *event)
+bool GraphicsView::viewportEvent(QEvent *event)
 {
     switch (event->type()) {
     case QEvent::TouchBegin:
@@ -72,5 +72,5 @@ bool GraphicsView::event(QEvent *event)
     default:
         break;
     }
-    return QGraphicsView::event(event);
+    return QGraphicsView::viewportEvent(event);
 }
