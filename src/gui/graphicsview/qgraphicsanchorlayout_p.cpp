@@ -1121,9 +1121,6 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     // Reset the nominal sizes of each anchor based on the current item sizes
     setAnchorSizeHintsFromItems(orientation);
 
-    // Reset the nominal sizes of each anchor based on the current item sizes
-    //setAnchorSizeHintsFromDefaults(orientation);
-
     // Simplify the graph
     // ### Ideally we would like to do that if, and only if, anchors had
     //     been added or removed since the last time this method was called.
@@ -1253,33 +1250,6 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     qDeleteAll(constraints[orientation]);
     constraints[orientation].clear();
     graphPaths[orientation].clear(); // ###
-}
-
-void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromDefaults(Orientation orientation)
-{
-    Graph<AnchorVertex, AnchorData> &g = graph[orientation];
-    QSet<AnchorVertex *> setOfVertices = g.vertices();
-
-    for (QSet<AnchorVertex *>::const_iterator it = setOfVertices.begin(); it != setOfVertices.end(); ++it) {
-        AnchorVertex *v = *it;
-        QList<AnchorVertex *> adjacents = g.adjacentVertices(v);
-        for (int i = 0; i < adjacents.count(); ++i) {
-            AnchorVertex *v1 = adjacents.at(i);
-            AnchorData *data = g.edgeData(v, v1);
-            if (!data->hasSize) {
-                bool forward = data->origin == v;
-                if (forward) {
-                    qreal s = effectiveSpacing(orientation);
-                    data->minSize = s;
-                    data->prefSize = s;
-                    data->maxSize = s;
-                    data->sizeAtMinimum = s;
-                    data->sizeAtPreferred = s;
-                    data->sizeAtMaximum = s;
-                }
-            }
-        }
-    }
 }
 
 /*!

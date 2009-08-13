@@ -347,7 +347,6 @@ public:
     void calculateGraphs();
     void calculateGraphs(Orientation orientation);
     void setAnchorSizeHintsFromItems(Orientation orientation);
-    void setAnchorSizeHintsFromDefaults(Orientation orientation);
     void findPaths(Orientation orientation);
     void constraintsFromPaths(Orientation orientation);
     QList<QSimplexConstraint *> constraintsFromSizeHints(const QList<AnchorData *> &anchors);
