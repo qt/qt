@@ -411,7 +411,7 @@ public:
     // inline ~QSharedPointer() { }
 
     inline explicit QSharedPointer(T *ptr) : BaseClass(Qt::Uninitialized)
-    { internalConstruct(ptr); }
+    { BaseClass::internalConstruct(ptr); }
 
     template <typename Deleter>
     inline QSharedPointer(T *ptr, Deleter d) { BaseClass::internalConstruct(ptr, d); }
@@ -441,7 +441,7 @@ public:
 
     template <class X>
     inline QSharedPointer<T> &operator=(const QWeakPointer<X> &other)
-    { internalSet(other.d, other.value); return *this; }
+    { BaseClass::internalSet(other.d, other.value); return *this; }
 
     template <class X>
     QSharedPointer<X> staticCast() const
