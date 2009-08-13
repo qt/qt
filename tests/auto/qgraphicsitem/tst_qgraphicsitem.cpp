@@ -280,6 +280,7 @@ private slots:
     void autoDetectFocusProxy();
     void subFocus();
     void reverseCreateAutoFocusProxy();
+    void focusProxyDeletion();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -7514,6 +7515,47 @@ void tst_QGraphicsItem::reverseCreateAutoFocusProxy()
     QGraphicsScene scene;
     scene.addItem(text);
     QVERIFY(text2->hasFocus());
+}
+
+void tst_QGraphicsItem::focusProxyDeletion()
+{
+    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    QGraphicsRectItem *rect2 = new QGraphicsRectItem;
+    rect->setFocusProxy(rect2);
+    QCOMPARE(rect->focusProxy(), (QGraphicsItem *)rect2);
+
+    delete rect2;
+    QCOMPARE(rect->focusProxy(), (QGraphicsItem *)0);
+
+    rect2 = new QGraphicsRectItem;
+    rect->setFocusProxy(rect2);
+    delete rect; // don't crash
+
+    rect = new QGraphicsRectItem;
+    rect->setFocusProxy(rect2);
+    QGraphicsScene *scene = new QGraphicsScene;
+    scene->addItem(rect);
+    scene->addItem(rect2);
+    delete rect2;
+    QCOMPARE(rect->focusProxy(), (QGraphicsItem *)0);
+
+    rect2 = new QGraphicsRectItem;
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsItem::setFocusProxy: focus proxy must be in same scene");
+    rect->setFocusProxy(rect2);
+    QCOMPARE(rect->focusProxy(), (QGraphicsItem *)0);
+    scene->addItem(rect2);
+    rect->setFocusProxy(rect2);
+    QCOMPARE(rect->focusProxy(), (QGraphicsItem *)rect2);
+    delete rect; // don't crash
+
+    rect = new QGraphicsRectItem;
+    rect2 = new QGraphicsRectItem;
+    rect->setFocusProxy(rect2);
+    QCOMPARE(rect->focusProxy(), (QGraphicsItem *)rect2);
+    scene->addItem(rect);
+    scene->addItem(rect2);
+    rect->setFocusProxy(rect2);
+    delete scene; // don't crash
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

@@ -494,11 +494,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     item->d_func()->scene = 0;
 
     // Unregister focus proxy.
-    QMultiHash<QGraphicsItem *, QGraphicsItem *>::iterator it = focusProxyReverseMap.find(item);
-    while (it != focusProxyReverseMap.end() && it.key() == item) {
-        it.value()->d_ptr->focusProxy = 0;
-        it = focusProxyReverseMap.erase(it);
-    }
+    item->d_ptr->resetFocusProxy();
 
     // Remove from parent, or unregister from toplevels.
     if (QGraphicsItem *parentItem = item->parentItem()) {
