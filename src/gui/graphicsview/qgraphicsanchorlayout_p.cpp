@@ -1164,13 +1164,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     // objective function.
 
     // Retrieve that path
-    QGraphicsAnchorLayout::Edge end;
-    if (orientation == Horizontal) {
-        end = QGraphicsAnchorLayout::Right;
-    } else {
-        end = QGraphicsAnchorLayout::Bottom;
-    }
-    AnchorVertex *v = internalVertex(q, end);
+    AnchorVertex *v = internalVertex(q, pickEdge(QGraphicsAnchorLayout::Right, orientation));
     GraphPath trunkPath = graphPaths[orientation].value(v);
 
     if (!trunkConstraints.isEmpty()) {
