@@ -21,7 +21,7 @@ Flipable {
     transform: Rotation3D {
         id: Rotation
         origin.x: Container.width / 2;
-        axis.y: 1;
+        axis.y: 1; axis.z: 0
     }
 
     front: Item {

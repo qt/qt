@@ -41,8 +41,8 @@ Rect {
             y: Follow { source: -(selectedY + imageHeight / 2); velocity: 500 }
         }
 
-        transform: Rotation3D { 
-            axis.y: 1
+        transform: Rotation {
+            axis.y: 1; axis.z: 0
             angle: MyLayout.deform * 100
         }
     }
