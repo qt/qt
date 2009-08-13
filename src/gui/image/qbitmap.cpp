@@ -265,15 +265,12 @@ QBitmap QBitmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
         img.setColor(1, c0);
     }
 
-    QPixmapData *d;
     QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
-    if (gs)
-        d = gs->createPixmapData(QPixmapData::BitmapType);
-    else
-        d = QGraphicsSystem::createDefaultPixmapData(QPixmapData::BitmapType);
+    QScopedPointer<QPixmapData> data(gs ? gs->createPixmapData(QPixmapData::BitmapType)
+                : QGraphicsSystem::createDefaultPixmapData(QPixmapData::BitmapType));
 
-    d->fromImage(img, flags | Qt::MonoOnly);
-    return QPixmap(d);
+    data->fromImage(img, flags | Qt::MonoOnly);
+    return QPixmap(data.take());
 }
 
 /*!
