@@ -43,7 +43,7 @@ Rect {
 
         transform: Rotation {
             axis.y: 1; axis.z: 0
-            angle: MyLayout.deform * 100
+            angle: MyLayout.deform * -100
         }
     }
 
