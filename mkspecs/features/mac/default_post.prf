@@ -6,7 +6,6 @@ load(default_post)
 # contains both then use the compiler default. Make a similiar decision for
 # PowerPC-based systems. Note that this logic assumes that Qt has been 
 # configured with an architecture that is usable on the system.
-message(hei $$QT_CONFIG )
 qt:!isEmpty(QT_CONFIG) {
     contains(QMAKE_HOST.arch, ppc) {
         !contains(QT_CONFIG, ppc64):contains(QT_CONFIG, ppc):CONFIG += ppc
