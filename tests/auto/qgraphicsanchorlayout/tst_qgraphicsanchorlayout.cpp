@@ -37,12 +37,14 @@ public:
 
 static QGraphicsWidget *createItem(const QSizeF &minimum = QSizeF(100.0, 100.0),
                                    const QSizeF &preferred = QSize(150.0, 100.0),
-                                   const QSizeF &maximum = QSizeF(200.0, 100.0))
+                                   const QSizeF &maximum = QSizeF(200.0, 100.0),
+                                   const QString &name = QString())
 {
     QGraphicsWidget *w = new RectWidget;
     w->setMinimumSize(minimum);
     w->setPreferredSize(preferred);
     w->setMaximumSize(maximum);
+    w->setData(0, name);
     return w;
 }
 
@@ -149,29 +151,29 @@ void tst_QGraphicsAnchorLayout::diagonal()
 
 void tst_QGraphicsAnchorLayout::parallel()
 {
-    QGraphicsWidget *a = createItem(QSizeF(100.0, 100.0),
-                                    QSizeF(150.0, 100.0),
-                                    QSizeF(200.0, 100.0));
+    QGraphicsWidget *a = createItem(QSizeF(100, 100),
+                                    QSizeF(150, 100),
+                                    QSizeF(200, 100), "A");
 
-    QGraphicsWidget *b = createItem(QSizeF(100.0, 100.0),
-                                    QSizeF(150.0, 100.0),
-                                    QSizeF(200.0, 100.0));
+    QGraphicsWidget *b = createItem(QSizeF(100, 100),
+                                    QSizeF(150, 100),
+                                    QSizeF(300, 100), "B");
 
-    QGraphicsWidget *c = createItem(QSizeF(100.0, 100.0),
-                                    QSizeF(200.0, 100.0),
-                                    QSizeF(300.0, 100.0));
+    QGraphicsWidget *c = createItem(QSizeF(100, 100),
+                                    QSizeF(200, 100),
+                                    QSizeF(350, 100), "C");
 
-    QGraphicsWidget *d = createItem(QSizeF(100.0, 100.0),
-                                    QSizeF(170.0, 100.0),
-                                    QSizeF(200.0, 100.0));
+    QGraphicsWidget *d = createItem(QSizeF(100, 100),
+                                    QSizeF(170, 100),
+                                    QSizeF(200, 100), "D");
 
-    QGraphicsWidget *e = createItem(QSizeF(150.0, 100.0),
-                                    QSizeF(150.0, 100.0),
-                                    QSizeF(200.0, 100.0));
+    QGraphicsWidget *e = createItem(QSizeF(150, 100),
+                                    QSizeF(150, 100),
+                                    QSizeF(200, 100), "E");
 
-    QGraphicsWidget *f = createItem(QSizeF(100.0, 100.0),
-                                    QSizeF(150.0, 100.0),
-                                    QSizeF(200.0, 100.0));
+    QGraphicsWidget *f = createItem(QSizeF(100, 100),
+                                    QSizeF(150, 100),
+                                    QSizeF(200, 100), "F");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -203,38 +205,38 @@ void tst_QGraphicsAnchorLayout::parallel()
     QSizeF layoutPreferredSize = l->effectiveSizeHint(Qt::PreferredSize);
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
 
-    QCOMPARE(layoutMinimumSize, QSizeF(450.0, 600.0));
-    QCOMPARE(layoutPreferredSize, QSizeF(600.0, 600.0));
-    QCOMPARE(layoutMaximumSize, QSizeF(700.0, 600.0));
+    QCOMPARE(layoutMinimumSize, QSizeF(450, 600));
+    QCOMPARE(layoutPreferredSize, QSizeF(620, 600));
+    QCOMPARE(layoutMaximumSize, QSizeF(750, 600));
 
     p.resize(layoutMinimumSize);
-    QCOMPARE(a->geometry(), QRectF(0.0, 0.0, 100.0, 100.0));
-    QCOMPARE(b->geometry(), QRectF(100.0, 100.0, 100.0, 100.0));
-    QCOMPARE(c->geometry(), QRectF(100.0, 200.0, 250.0, 100.0));
-    QCOMPARE(d->geometry(), QRectF(200.0, 300.0, 150.0, 100.0));
-    QCOMPARE(e->geometry(), QRectF(200.0, 400.0, 150.0, 100.0));
-    QCOMPARE(f->geometry(), QRectF(350.0, 500.0, 100.0, 100.0));
+    QCOMPARE(a->geometry(), QRectF(0, 0, 100, 100));
+    QCOMPARE(b->geometry(), QRectF(100, 100, 100, 100));
+    QCOMPARE(c->geometry(), QRectF(100, 200, 250, 100));
+    QCOMPARE(d->geometry(), QRectF(200, 300, 150, 100));
+    QCOMPARE(e->geometry(), QRectF(200, 400, 150, 100));
+    QCOMPARE(f->geometry(), QRectF(350, 500, 100, 100));
     QCOMPARE(p.size(), layoutMinimumSize);
 
     p.resize(layoutPreferredSize);
-    QCOMPARE(a->geometry(), QRectF(0.0, 0.0, 150.0, 100.0));
-    QCOMPARE(b->geometry(), QRectF(150.0, 100.0, 150.0, 100.0));
-    QCOMPARE(c->geometry(), QRectF(150.0, 200.0, 300.0, 100.0));
-    QCOMPARE(d->geometry(), QRectF(300.0, 300.0, 150.0, 100.0));
-    QCOMPARE(e->geometry(), QRectF(300.0, 400.0, 150.0, 100.0));
-    QCOMPARE(f->geometry(), QRectF(450.0, 500.0, 150.0, 100.0));
+    QCOMPARE(a->geometry(), QRectF(0, 0, 150, 100));
+    QCOMPARE(b->geometry(), QRectF(150, 100, 150, 100));
+    QCOMPARE(c->geometry(), QRectF(150, 200, 320, 100));
+    QCOMPARE(d->geometry(), QRectF(300, 300, 170, 100));
+    QCOMPARE(e->geometry(), QRectF(300, 400, 170, 100));
+    QCOMPARE(f->geometry(), QRectF(470, 500, 150, 100));
     QCOMPARE(p.size(), layoutPreferredSize);
 
     // Maximum size depends on simplification / fair distribution
     // Without that, test may or may not pass, depending on the
     // solution found by the solver at runtime.
     p.resize(layoutMaximumSize);
-    QCOMPARE(a->geometry(), QRectF(0.0, 0.0, 200.0, 100.0));
-    QCOMPARE(b->geometry(), QRectF(200.0, 100.0, 150.0, 100.0));
-    QCOMPARE(c->geometry(), QRectF(200.0, 200.0, 300.0, 100.0));
-    QCOMPARE(d->geometry(), QRectF(350.0, 300.0, 150.0, 100.0));
-    QCOMPARE(e->geometry(), QRectF(350.0, 400.0, 150.0, 100.0));
-    QCOMPARE(f->geometry(), QRectF(500.0, 500.0, 200.0, 100.0));
+    QCOMPARE(a->geometry(), QRectF(0, 0, 200, 100));
+    QCOMPARE(b->geometry(), QRectF(200, 100, 175, 100));
+    QCOMPARE(c->geometry(), QRectF(200, 200, 350, 100));
+    QCOMPARE(d->geometry(), QRectF(375, 300, 175, 100));
+    QCOMPARE(e->geometry(), QRectF(375, 400, 175, 100));
+    QCOMPARE(f->geometry(), QRectF(550, 500, 200, 100));
     QCOMPARE(p.size(), layoutMaximumSize);
 }
 
