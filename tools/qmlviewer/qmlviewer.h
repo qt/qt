@@ -44,6 +44,8 @@ public:
     void setNetworkCacheSize(int size);
     void addLibraryPath(const QString& lib);
 
+    QStringList builtinSkins() const;
+
     QMenuBar *menuBar() const;
 
 public slots:

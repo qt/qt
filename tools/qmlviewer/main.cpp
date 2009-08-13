@@ -27,7 +27,8 @@ void usage()
     qWarning("  -v, -version ............................. display version");
     qWarning("  -frameless ............................... run with no window frame");
     qWarning("  -skin <qvfbskindir> ...................... run with a skin window frame");
-    qWarning("  -scaleview ...................... run with a skin window frame");
+    qWarning("                                             \"list\" for a list of built-ins");
+    qWarning("  -resizeview .............................. resize the view, not the skin");
     qWarning("  -recordfile <output> ..................... set video recording file");
     qWarning("                                              - ImageMagick 'convert' for GIF)");
     qWarning("                                              - png file for raw frames");
@@ -65,7 +66,7 @@ int main(int argc, char ** argv)
     app.setOrganizationDomain("nokia.com");
 
     bool frameless = false;
-    bool scaleview = false;
+    bool resizeview = false;
     QString fileName;
     double fps = 0;
     int autorecord_from = 0;
@@ -85,8 +86,8 @@ int main(int argc, char ** argv)
             frameless = true;
         } else if (arg == "-skin") {
             skin = QString(argv[++i]);
-        } else if (arg == "-scaleview") {
-            scaleview = true;
+        } else if (arg == "-resizeview") {
+            resizeview = true;
         } else if (arg == "-netcache") {
             cache = QString(argv[++i]).toInt();
         } else if (arg == "-recordrate") {
@@ -133,14 +134,21 @@ int main(int argc, char ** argv)
         viewer.addLibraryPath(lib);
     viewer.setNetworkCacheSize(cache);
     viewer.setRecordFile(recordfile);
-    if (scaleview)
+    if (resizeview)
         viewer.setScaleView();
     if (fps>0)
         viewer.setRecordRate(fps);
     if (autorecord_to)
         viewer.setAutoRecord(autorecord_from,autorecord_to);
-    if (!skin.isEmpty() && QDir(skin).exists())
-        viewer.setSkin(skin);
+    if (!skin.isEmpty()) {
+        if (skin == "list") {
+            foreach (QString s, viewer.builtinSkins())
+                qWarning(s.toUtf8());
+            exit(0);
+        } else {
+            viewer.setSkin(skin);
+        }
+    }
     if (devkeys)
         viewer.setDeviceKeys(true);
     viewer.setRecordDither(dither);
