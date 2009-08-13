@@ -16,6 +16,7 @@ private slots:
     void snakeOppositeDirections();
     void fairDistribution();
     void fairDistributionOppositeDirections();
+    void proportionalPreferred();
     void example();
 };
 
@@ -545,6 +546,67 @@ void tst_QGraphicsAnchorLayout::fairDistributionOppositeDirections()
     QCOMPARE(a->size(), d->size());
     QCOMPARE(e->size().width(), 4 * a->size().width());
     QCOMPARE(p.size(), layoutMaximumSize);
+}
+
+void tst_QGraphicsAnchorLayout::proportionalPreferred()
+{
+    QSizeF min(0, 100);
+
+    QGraphicsWidget *a = createItem(min, QSizeF(10, 100), QSizeF(20, 100));
+    QGraphicsWidget *b = createItem(min, QSizeF(20, 100), QSizeF(30, 100));
+    QGraphicsWidget *c = createItem(min, QSizeF(14, 100), QSizeF(20, 100));
+    QGraphicsWidget *d = createItem(min, QSizeF(10, 100), QSizeF(20, 100));
+
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    l->setContentsMargins(0, 0, 0, 0);
+
+    l->anchor(l, QGraphicsAnchorLayout::Top, a, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(a, QGraphicsAnchorLayout::Bottom, b, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(b, QGraphicsAnchorLayout::Bottom, c, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(c, QGraphicsAnchorLayout::Bottom, d, QGraphicsAnchorLayout::Top, 0);
+    l->anchor(d, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom, 0);
+
+    l->anchor(l, QGraphicsAnchorLayout::Left, a, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(l, QGraphicsAnchorLayout::Left, b, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(a, QGraphicsAnchorLayout::Right, c, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(a, QGraphicsAnchorLayout::Right, d, QGraphicsAnchorLayout::Left, 0);
+    l->anchor(b, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right, 0);
+    l->anchor(c, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right, 0);
+    l->anchor(d, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right, 0);
+
+    QCOMPARE(l->count(), 4);
+
+    QGraphicsWidget p;
+    p.setLayout(l);
+
+    QSizeF layoutMinimumSize = l->effectiveSizeHint(Qt::MinimumSize);
+    QSizeF layoutPreferredSize = l->effectiveSizeHint(Qt::PreferredSize);
+    QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
+
+    QCOMPARE(layoutMinimumSize, QSizeF(0, 400));
+    QCOMPARE(layoutPreferredSize, QSizeF(24, 400));
+    QCOMPARE(layoutMaximumSize, QSizeF(30, 400));
+
+    p.resize(layoutMinimumSize);
+    QCOMPARE(p.size(), layoutMinimumSize);
+
+    p.resize(layoutPreferredSize);
+    QCOMPARE(c->size().width(), d->size().width());
+    QCOMPARE(p.size(), layoutPreferredSize);
+
+    p.resize(layoutMaximumSize);
+    QCOMPARE(p.size(), layoutMaximumSize);
+
+    p.resize(QSizeF(12, 400));
+
+    // Proportionality between size given and preferred size, this
+    // should be respected in this graph for (a) and (b)|(c).
+    qreal factor = 12.0 / 24.0;
+
+    QCOMPARE(c->size().width(), d->size().width());
+    QCOMPARE(a->size().width() * factor, 10 * factor);
+    QCOMPARE(c->size().width() * factor, 14 * factor);
+    QCOMPARE(p.size(), QSizeF(12, 400));
 }
 
 void tst_QGraphicsAnchorLayout::example()
