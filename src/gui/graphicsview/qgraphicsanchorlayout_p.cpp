@@ -168,8 +168,10 @@ QString GraphPath::toString() const
 QGraphicsAnchorLayoutPrivate::QGraphicsAnchorLayoutPrivate()
     : calculateGraphCacheDirty(1)
 {
-    for (int i = 0; i < NOrientations; ++i)
+    for (int i = 0; i < NOrientations; ++i) {
         spacing[i] = -1;
+        graphSimplified[i] = false;
+    }
 }
 
 QGraphicsAnchorLayout::Edge QGraphicsAnchorLayoutPrivate::oppositeEdge(
@@ -288,6 +290,13 @@ static bool simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
 
 void QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
 {
+    if (graphSimplified[orientation])
+        return;
+    graphSimplified[orientation] = true;
+
+    qDebug("Simplifying Graph for %s",
+           orientation == Horizontal ? "Horizontal" : "Vertical");
+
     AnchorVertex *rootVertex = graph[orientation].rootVertex();
 
     if (!rootVertex)
@@ -523,6 +532,13 @@ static void restoreSimplifiedAnchor(Graph<AnchorVertex, AnchorData> &g,
 
 void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientation)
 {
+    if (!graphSimplified[orientation])
+        return;
+    graphSimplified[orientation] = false;
+
+    qDebug("Restoring Simplified Graph for %s",
+           orientation == Horizontal ? "Horizontal" : "Vertical");
+
     Q_Q(QGraphicsAnchorLayout);
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
 
@@ -593,6 +609,8 @@ void QGraphicsAnchorLayoutPrivate::deleteLayoutEdges()
 
 void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
 {
+    Q_ASSERT(!graphSimplified[Horizontal] && !graphSimplified[Vertical]);
+
     items.append(item);
 
     // Horizontal
@@ -640,6 +658,8 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
         // Don't create center edges unless needed
         return;
     }
+
+    Q_ASSERT(!graphSimplified[orientation]);
 
     // Check if vertex already exists
     if (internalVertex(item, centerEdge))
@@ -699,6 +719,8 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
         // Don't remove edges that not the center ones
         return;
     }
+
+    Q_ASSERT(!graphSimplified[orientation]);
 
     // Orientation code
     QGraphicsAnchorLayout::Edge firstEdge;
@@ -770,6 +792,8 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
 void QGraphicsAnchorLayoutPrivate::removeCenterConstraints(QGraphicsLayoutItem *item,
                                                            Orientation orientation)
 {
+    Q_ASSERT(!graphSimplified[orientation]);
+
     // Remove the item center constraints associated to this item
     // ### This is a temporary solution. We should probably use a better
     // data structure to hold items and/or their associated constraints
@@ -829,6 +853,10 @@ void QGraphicsAnchorLayoutPrivate::anchor(QGraphicsLayoutItem *firstItem,
         return;
     }
 
+    // Guarantee that the graph is no simplified when adding this anchor,
+    // anchor manipulation always happen in the full graph
+    restoreSimplifiedGraph(edgeOrientation(firstEdge));
+
     // In QGraphicsAnchorLayout, items are represented in its internal
     // graph as four anchors that connect:
     //  - Left -> HCenter
@@ -887,6 +915,10 @@ void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
                                              QGraphicsAnchorLayout::Edge secondEdge,
                                              AnchorData *data)
 {
+    // Guarantee that the graph is no simplified when adding this anchor,
+    // anchor manipulation always happen in the full graph
+    restoreSimplifiedGraph(edgeOrientation(firstEdge));
+
     // Is the Vertex (firstItem, firstEdge) already represented in our
     // internal structure?
     AnchorVertex *v1 = addInternalVertex(firstItem, firstEdge);
@@ -960,6 +992,10 @@ void QGraphicsAnchorLayoutPrivate::removeAnchor(QGraphicsLayoutItem *firstItem,
                                                 QGraphicsLayoutItem *secondItem,
                                                 QGraphicsAnchorLayout::Edge secondEdge)
 {
+    // Guarantee that the graph is no simplified when adding this anchor,
+    // anchor manipulation always happen in the full graph
+    restoreSimplifiedGraph(edgeOrientation(firstEdge));
+
     // Look for both vertices
     AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
     AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
@@ -990,6 +1026,8 @@ void QGraphicsAnchorLayoutPrivate::removeVertex(QGraphicsLayoutItem *item, QGrap
 
 void QGraphicsAnchorLayoutPrivate::removeAnchors(QGraphicsLayoutItem *item)
 {
+    Q_ASSERT(!graphSimplified[Horizontal] && !graphSimplified[Vertical]);
+
     // remove the center anchor first!!
     removeCenterAnchors(item, QGraphicsAnchorLayout::HCenter, false);
     removeVertex(item, QGraphicsAnchorLayout::Left);
@@ -1090,14 +1128,6 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs()
     if (!calculateGraphCacheDirty)
         return;
 
-    //simplifyGraph(Horizontal);
-    //simplifyGraph(Vertical);
-    //Q_Q(QGraphicsAnchorLayout);
-    //q->dumpGraph();
-    //restoreSimplifiedGraph(Horizontal);    // should not be here, but currently crashes if not
-    //restoreSimplifiedGraph(Vertical);    // should not be here, but currently crashes if not
-
-
     calculateGraphs(Horizontal);
     calculateGraphs(Vertical);
 
@@ -1145,6 +1175,10 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
 {
     Q_Q(QGraphicsAnchorLayout);
 
+    // ### REMOVE IT WHEN calculateVertexPositions and setItemsGeometries are
+    // simplification compatible!
+    restoreSimplifiedGraph(orientation);
+
     // Reset the nominal sizes of each anchor based on the current item sizes
     setAnchorSizeHintsFromItems(orientation);
 
@@ -1154,9 +1188,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     //     However, as the two setAnchorSizeHints methods above are not
     //     ready to be run on top of a simplified graph, we must simplify
     //     and restore it every time we get here.
-    static bool simplification = qgetenv("QT_ANCHORLAYOUT_NO_SIMPLIFICATION").isEmpty();
-    if (simplification)
-        simplifyGraph(orientation);
+    simplifyGraph(orientation);
 
     // Traverse all graph edges and store the possible paths to each vertex
     findPaths(orientation);
@@ -1285,9 +1317,6 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     qDeleteAll(constraints[orientation]);
     constraints[orientation].clear();
     graphPaths[orientation].clear(); // ###
-
-    if (simplification)
-        restoreSimplifiedGraph(orientation);
 }
 
 /*!

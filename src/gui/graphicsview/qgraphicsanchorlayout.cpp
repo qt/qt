@@ -221,6 +221,12 @@ qreal QGraphicsAnchorLayout::spacing(Qt::Orientation orientation) const
 void QGraphicsAnchorLayout::setGeometry(const QRectF &geom)
 {
     Q_D(QGraphicsAnchorLayout);
+
+    // ### REMOVE IT WHEN calculateVertexPositions and setItemsGeometries are
+    // simplification compatible!
+    d->restoreSimplifiedGraph(QGraphicsAnchorLayoutPrivate::Horizontal);
+    d->restoreSimplifiedGraph(QGraphicsAnchorLayoutPrivate::Vertical);
+
     QGraphicsLayout::setGeometry(geom);
     d->calculateVertexPositions(QGraphicsAnchorLayoutPrivate::Horizontal);
     d->calculateVertexPositions(QGraphicsAnchorLayoutPrivate::Vertical);
@@ -234,6 +240,10 @@ void QGraphicsAnchorLayout::removeAt(int index)
 
     if (!item)
         return;
+
+    // Removing an item affects both horizontal and vertical graphs
+    d->restoreSimplifiedGraph(QGraphicsAnchorLayoutPrivate::Horizontal);
+    d->restoreSimplifiedGraph(QGraphicsAnchorLayoutPrivate::Vertical);
 
     d->removeCenterConstraints(item, QGraphicsAnchorLayoutPrivate::Horizontal);
     d->removeCenterConstraints(item, QGraphicsAnchorLayoutPrivate::Vertical);

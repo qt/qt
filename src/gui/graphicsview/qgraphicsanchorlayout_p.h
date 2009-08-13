@@ -403,5 +403,8 @@ public:
     Interval interpolationInterval[2];
     qreal interpolationProgress[2];
 
+    // ###
+    bool graphSimplified[2];
+
     uint calculateGraphCacheDirty : 1;
 };
