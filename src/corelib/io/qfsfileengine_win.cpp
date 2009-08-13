@@ -107,15 +107,12 @@ typedef DWORD (WINAPI *PtrGetNamedSecurityInfoW)(LPWSTR, SE_OBJECT_TYPE, SECURIT
 static PtrGetNamedSecurityInfoW ptrGetNamedSecurityInfoW = 0;
 typedef BOOL (WINAPI *PtrLookupAccountSidW)(LPCWSTR, PSID, LPWSTR, LPDWORD, LPWSTR, LPDWORD, PSID_NAME_USE);
 static PtrLookupAccountSidW ptrLookupAccountSidW = 0;
-typedef BOOL (WINAPI *PtrAllocateAndInitializeSid)(PSID_IDENTIFIER_AUTHORITY, BYTE, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, PSID*);
-static PtrAllocateAndInitializeSid ptrAllocateAndInitializeSid = 0;
 typedef VOID (WINAPI *PtrBuildTrusteeWithSidW)(PTRUSTEE_W, PSID);
 static PtrBuildTrusteeWithSidW ptrBuildTrusteeWithSidW = 0;
 typedef DWORD (WINAPI *PtrGetEffectiveRightsFromAclW)(PACL, PTRUSTEE_W, OUT PACCESS_MASK);
 static PtrGetEffectiveRightsFromAclW ptrGetEffectiveRightsFromAclW = 0;
-typedef PVOID (WINAPI *PtrFreeSid)(PSID);
-static PtrFreeSid ptrFreeSid = 0;
 static TRUSTEE_W currentUserTrusteeW;
+static TRUSTEE_W worldTrusteeW;
 
 typedef BOOL (WINAPI *PtrGetUserProfileDirectoryW)(HANDLE, LPWSTR, LPDWORD);
 static PtrGetUserProfileDirectoryW ptrGetUserProfileDirectoryW = 0;
@@ -146,10 +143,8 @@ void QFSFileEnginePrivate::resolveLibs()
         if (advapiHnd) {
             ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)GetProcAddress(advapiHnd, "GetNamedSecurityInfoW");
             ptrLookupAccountSidW = (PtrLookupAccountSidW)GetProcAddress(advapiHnd, "LookupAccountSidW");
-            ptrAllocateAndInitializeSid = (PtrAllocateAndInitializeSid)GetProcAddress(advapiHnd, "AllocateAndInitializeSid");
             ptrBuildTrusteeWithSidW = (PtrBuildTrusteeWithSidW)GetProcAddress(advapiHnd, "BuildTrusteeWithSidW");
             ptrGetEffectiveRightsFromAclW = (PtrGetEffectiveRightsFromAclW)GetProcAddress(advapiHnd, "GetEffectiveRightsFromAclW");
-            ptrFreeSid = (PtrFreeSid)GetProcAddress(advapiHnd, "FreeSid");
         }
         if (ptrBuildTrusteeWithSidW) {
             // Create TRUSTEE for current user
@@ -161,6 +156,19 @@ void QFSFileEnginePrivate::resolveLibs()
                 if (::GetTokenInformation(token, TokenUser, &tu, sizeof(tu), &retsize))
                     ptrBuildTrusteeWithSidW(&currentUserTrusteeW, tu.User.Sid);
                 ::CloseHandle(token);
+            }
+
+            typedef BOOL (WINAPI *PtrAllocateAndInitializeSid)(PSID_IDENTIFIER_AUTHORITY, BYTE, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, PSID*);
+            PtrAllocateAndInitializeSid ptrAllocateAndInitializeSid = (PtrAllocateAndInitializeSid)GetProcAddress(advapiHnd, "AllocateAndInitializeSid");
+            typedef PVOID (WINAPI *PtrFreeSid)(PSID);
+            PtrFreeSid ptrFreeSid = (PtrFreeSid)GetProcAddress(advapiHnd, "FreeSid");
+            if (ptrAllocateAndInitializeSid && ptrFreeSid) {
+                // Create TRUSTEE for Everyone (World)
+                SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
+                PSID pWorld = 0;
+                if (ptrAllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &pWorld))
+                    ptrBuildTrusteeWithSidW(&worldTrusteeW, pWorld);
+                ptrFreeSid(pWorld);
             }
         }
         HINSTANCE userenvHnd = LoadLibraryW(L"userenv");
@@ -1332,7 +1340,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
 
         enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
         resolveLibs();
-        if(ptrGetNamedSecurityInfoW && ptrAllocateAndInitializeSid && ptrBuildTrusteeWithSidW && ptrGetEffectiveRightsFromAclW && ptrFreeSid) {
+        if(ptrGetNamedSecurityInfoW && ptrBuildTrusteeWithSidW && ptrGetEffectiveRightsFromAclW) {
 
             QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
             DWORD res = ptrGetNamedSecurityInfoW((wchar_t*)fname.utf16(), SE_FILE_OBJECT,
@@ -1374,21 +1382,14 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
                         ret |= QAbstractFileEngine::ExeGroupPerm;
                 }
                 { //other (world)
-                    // Create SID for Everyone (World)
-                    SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
-                    PSID pWorld = 0;
-                    if(ptrAllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0,0,0,0,0,0,0, &pWorld)) {
-                        ptrBuildTrusteeWithSidW(&trustee, pWorld);
-                        if(ptrGetEffectiveRightsFromAclW(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
-                            access_mask = (ACCESS_MASK)-1; // ###
-                        if(access_mask & ReadMask)
-                            ret |= QAbstractFileEngine::ReadOtherPerm;
-                        if(access_mask & WriteMask)
-                            ret |= QAbstractFileEngine::WriteOtherPerm;
-                        if(access_mask & ExecMask)
-                            ret |= QAbstractFileEngine::ExeOtherPerm;
-                    }
-                    ptrFreeSid(pWorld);
+                    if(ptrGetEffectiveRightsFromAclW(pDacl, &worldTrusteeW, &access_mask) != ERROR_SUCCESS)
+                        access_mask = (ACCESS_MASK)-1; // ###
+                    if(access_mask & ReadMask)
+                        ret |= QAbstractFileEngine::ReadOtherPerm;
+                    if(access_mask & WriteMask)
+                        ret |= QAbstractFileEngine::WriteOtherPerm;
+                    if(access_mask & ExecMask)
+                        ret |= QAbstractFileEngine::ExeOtherPerm;
                 }
                 LocalFree(pSD);
             }
