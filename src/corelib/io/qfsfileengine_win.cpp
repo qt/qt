@@ -1706,7 +1706,7 @@ bool QFSFileEngine::setPermissions(uint perms)
 #if !defined(Q_OS_WINCE)
     ret = ::_wchmod((wchar_t*)d->filePath.utf16(), mode) == 0;
 #else
-    ret = ::_wchmod((wchar_t*)d->longFileName(d->filePath).utf16(), mode);
+    ret = ::_wchmod((wchar_t*)d->longFileName(d->filePath).utf16(), mode) == 0;
 #endif
    return ret;
 }
