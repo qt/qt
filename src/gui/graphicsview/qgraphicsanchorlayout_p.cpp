@@ -1127,7 +1127,9 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     //     However, as the two setAnchorSizeHints methods above are not
     //     ready to be run on top of a simplified graph, we must simplify
     //     and restore it every time we get here.
-    //simplifyGraph(orientation);
+    static bool simplification = qgetenv("QT_ANCHORLAYOUT_NO_SIMPLIFICATION").isEmpty();
+    if (simplification)
+        simplifyGraph(orientation);
 
     // Traverse all graph edges and store the possible paths to each vertex
     findPaths(orientation);
@@ -1256,6 +1258,9 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     qDeleteAll(constraints[orientation]);
     constraints[orientation].clear();
     graphPaths[orientation].clear(); // ###
+
+    if (simplification)
+        restoreSimplifiedGraph(orientation);
 }
 
 /*!
