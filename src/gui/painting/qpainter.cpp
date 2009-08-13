@@ -264,7 +264,8 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
         sp->d_ptr->d_ptrs = q_check_ptr((QPainterPrivate **)realloc(sp->d_ptr->d_ptrs, newSize));
     }
     sp->d_ptr->d_ptrs[++sp->d_ptr->refcount - 2] = q->d_ptr.data();
-    q->d_ptr.data_ptr() = sp->d_ptr.data();
+    q->d_ptr.take();
+    q->d_ptr.reset(sp->d_ptr.data());
 
     Q_ASSERT(q->d_ptr->state);
 
@@ -317,7 +318,8 @@ void QPainterPrivate::detachPainterPrivate(QPainter *q)
 
     d_ptrs[refcount - 1] = 0;
     q->restore();
-    q->d_ptr.data_ptr() = original;
+    q->d_ptr.take();
+    q->d_ptr.reset(original);
 
     if (emulationEngine) {
         extended = emulationEngine->real_engine;

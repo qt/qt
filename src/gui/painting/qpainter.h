@@ -500,7 +500,7 @@ private:
     Q_DISABLE_COPY(QPainter)
     friend class Q3Painter;
 
-    QCustomScopedPointer<QPainterPrivate> d_ptr;
+    QScopedPointer<QPainterPrivate> d_ptr;
 
     friend class QFontEngine;
     friend class QFontEngineBox;
