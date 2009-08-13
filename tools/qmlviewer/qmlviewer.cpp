@@ -301,7 +301,9 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 
     QAction *recordOptions = new QAction(tr("Video &Options..."), parent);
     connect(recordOptions, SIGNAL(triggered()), this, SLOT(chooseRecordingOptions()));
-    recordMenu->addAction(recordOptions);
+
+    if (flatmenu)
+        flatmenu->addAction(recordOptions);
 
     if (flatmenu) flatmenu->addSeparator();
 
@@ -355,6 +357,10 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     QAction *proxyAction = new QAction(tr("Http &proxy..."), parent);
     connect(proxyAction, SIGNAL(triggered()), this, SLOT(showProxySettings()));
     settingsMenu->addAction(proxyAction);
+    if (!flatmenu)
+        settingsMenu->addAction(recordOptions);
+
+    if (flatmenu) flatmenu->addSeparator();
 
     QMenu *helpMenu = flatmenu ? flatmenu : menu->addMenu(tr("&Help"));
     QAction *aboutAction = new QAction(tr("&About Qt..."), parent);
