@@ -55,6 +55,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QNetworkAccessManager>
+#include <QTimer>
 #include <QList>
 #include <QPair>
 #include <QDebug>
@@ -929,12 +930,37 @@ void QmlValueTypeScriptClass::setProperty(QScriptValue &object,
     QtScript for QML.
  */
 
+QScriptValue QmlObjectToString(QScriptContext *context, QScriptEngine *engine)
+{
+    QObject* obj = context->thisObject().data().toQObject();
+    QString ret = QLatin1String("Qml Object, ");
+    if(obj){
+        //###Should this be designer or developer details? Dev for now.
+        //TODO: Can we print the id too?
+        ret += QLatin1String("\"");
+        ret += obj->objectName();
+        ret += QLatin1String("\" ");
+        ret += obj->metaObject()->className();
+        ret += QLatin1String("(0x");
+        ret += QString::number((int)obj,16);
+        ret += QLatin1String(")");
+    }else{
+        ret += "null";
+    }
+    return engine->newVariant(ret);
+}
+
 QScriptValue QmlObjectDestroy(QScriptContext *context, QScriptEngine *engine)
 {
     QObject* obj = context->thisObject().data().toQObject();
-    if(obj)
-        delete obj;
-    context->thisObject().setData(QScriptValue(engine, 0));
+    if(obj){
+        int delay = 0;
+        if(context->argumentCount() > 0)
+            delay = context->argument(0).toInt32();
+        QTimer::singleShot(delay, obj, SLOT(deleteLater()));
+        //### Should this be delayed as well?
+        context->thisObject().setData(QScriptValue(engine, 0));
+    }
     return engine->nullValue();
 }
 
@@ -944,6 +970,8 @@ QmlObjectScriptClass::QmlObjectScriptClass(QmlEngine *bindEngine)
     engine = bindEngine;
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(bindEngine);
     prototypeObject = scriptEngine->newObject();
+    prototypeObject.setProperty(QLatin1String("toStr"),//TODO: Why won't toString work?
+                                scriptEngine->newFunction(QmlObjectToString));
     prototypeObject.setProperty(QLatin1String("destroy"),
                                 scriptEngine->newFunction(QmlObjectDestroy));
 }
