@@ -440,6 +440,20 @@ QVariant QFxWebView::evaluateJavaScript(const QString &scriptSource)
     return this->page()->mainFrame()->evaluateJavaScript(scriptSource);
 }
 
+void QFxWebView::focusChanged(bool flag)
+{
+    QFocusEvent *e;
+    if (flag) {
+        e = new QFocusEvent (QEvent::FocusIn);
+    }
+    else {
+        e = new QFocusEvent (QEvent::FocusOut);
+    }
+    page()->event(e);
+    delete e;
+    emit QFxItem::focusChanged();
+}
+
 void QFxWebView::expandToWebPage()
 {
     Q_D(QFxWebView);
@@ -702,6 +716,7 @@ void QFxWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxWebView);
     if (d->interactive) {
+        setFocus (true);
         QMouseEvent *me = sceneMouseEventToMouseEvent(event);
         if (d->lastPress) delete d->lastPress;
         d->lastPress = me;
@@ -709,7 +724,7 @@ void QFxWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
         event->setAccepted(
     /*
       It is not correct to send the press event upwards, if it is not accepted by WebKit
-      e.g. push button does not work, if done so as QGraohucsScene will not send the release event at all to WebKit
+      e.g. push button does not work, if done so as QGraphicsScene will not send the release event at all to WebKit
       Might be a bug in WebKit, though
       */
 #if 1 //QT_VERSION <= 0x040500 // XXX see bug 230835

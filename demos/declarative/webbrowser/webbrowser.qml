@@ -80,7 +80,6 @@ Item {
                     id: HeaderText
 
                     text: MyWebView.title!='' || MyWebView.progress == 1.0 ? MyWebView.title : 'Loading...'
-                    //text: MyWebView.url
                     elide: "ElideRight"
 
                     color: "white"

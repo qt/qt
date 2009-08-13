@@ -17,7 +17,6 @@ Item {
             if (!mouseGrabbed) {
                 fieldText.startEdit();
                 fieldText.state='editing';
-                textEdit.selectAll();
                 mouseGrabbed=true;
             }
         }
@@ -61,7 +60,7 @@ Item {
         opacity: 0
     }
 
-    TextEdit {
+    LineEdit {
         id: textEdit
         text: fieldText.text
         focus: false
@@ -73,7 +72,9 @@ Item {
         color: "black"
         font.bold: true
         readOnly: true
-        wrap: false
+        Keys.onEnterPressed: confirm()
+        Keys.onReturnPressed: confirm()
+        Keys.onEscapePressed: reset()
     }
 
     Text {
@@ -93,20 +94,6 @@ Item {
                 duration: 250
             }
         }
-    }
-
-    KeyProxy {
-        id: proxy
-        focus: false
-        anchors.fill: parent
-        targets: [keyActions,textEdit]
-    }
-
-    Item {
-        id: keyActions
-        Keys.onEnterPressed: confirm()
-        Keys.onReturnPressed: confirm()
-        Keys.onEscapePressed: reset()
     }
 
     MouseRegion {
@@ -140,6 +127,9 @@ Item {
             target: textEdit
             color: "black"
             readOnly: false
+            focus: true
+            selectionStart: 0
+            selectionEnd: -1
         }
         SetProperties {
             target: editRegion
@@ -152,10 +142,6 @@ Item {
         SetProperties {
             target: textEdit.anchors
             rightMargin: 34
-        }
-        SetProperties {
-            target: proxy
-            focus: true
         }
     }
     ]

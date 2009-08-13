@@ -885,6 +885,7 @@ void QFxTextEdit::keyReleaseEvent(QKeyEvent *event)
 void QFxTextEdit::focusChanged(bool hasFocus)
 {
     setCursorVisible(hasFocus);
+    emit QFxItem::focusChanged();
 }
 
 /*!
