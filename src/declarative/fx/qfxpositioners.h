@@ -60,20 +60,15 @@ class Q_DECLARATIVE_EXPORT QFxBasePositioner : public QFxItem
     Q_OBJECT
 
     Q_PROPERTY(int spacing READ spacing WRITE setSpacing)
-    Q_PROPERTY(int margin READ margin WRITE setMargin)
     Q_PROPERTY(QmlTransition *move READ move WRITE setMove)
     Q_PROPERTY(QmlTransition *add READ add WRITE setAdd)
     Q_PROPERTY(QmlTransition *remove READ remove WRITE setRemove)
-    Q_PROPERTY(QFxItem *item READ layoutItem NOTIFY layoutItemChanged)
 public:
     enum AutoUpdateType { None = 0x0, Horizontal = 0x1, Vertical = 0x2, Both = 0x3 };
     QFxBasePositioner(AutoUpdateType, QFxItem *parent);
 
     int spacing() const;
     void setSpacing(int);
-
-    int margin() const;
-    void setMargin(int);
 
     QmlTransition *move() const;
     void setMove(QmlTransition *);
@@ -83,8 +78,6 @@ public:
 
     QmlTransition *remove() const;
     void setRemove(QmlTransition *);
-
-    QFxItem *layoutItem() const;
 
 protected:
     virtual void componentComplete();
@@ -102,11 +95,10 @@ Q_SIGNALS:
     void layoutItemChanged();
 
 protected Q_SLOTS:
-    virtual void doLayout()=0;
-    void setLayoutItem(QFxItem *);
+    virtual void doPositioning()=0;
 
 private Q_SLOTS:
-    void preLayout();
+    void prePositioning();
 
 protected:
     QFxBasePositioner(QFxBasePositionerPrivate &dd, AutoUpdateType at, QFxItem *parent);
@@ -125,7 +117,7 @@ class Q_DECLARATIVE_EXPORT QFxVerticalPositioner : public QFxBasePositioner
 public:
     QFxVerticalPositioner(QFxItem *parent=0);
 protected Q_SLOTS:
-    virtual void doLayout();
+    virtual void doPositioning();
 private:
     Q_DISABLE_COPY(QFxVerticalPositioner)
 };
@@ -136,7 +128,7 @@ class Q_DECLARATIVE_EXPORT QFxHorizontalPositioner: public QFxBasePositioner
 public:
     QFxHorizontalPositioner(QFxItem *parent=0);
 protected Q_SLOTS:
-    virtual void doLayout();
+    virtual void doPositioning();
 private:
     Q_DISABLE_COPY(QFxHorizontalPositioner)
 };
@@ -155,7 +147,7 @@ public:
     int columns() const {return _columns;}
     void setcolumns(const int columns){_columns = columns;}
 protected Q_SLOTS:
-    virtual void doLayout();
+    virtual void doPositioning();
 
 private:
     int _rows;
