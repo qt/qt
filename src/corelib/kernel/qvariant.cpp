@@ -658,6 +658,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
             break;
         case QVariant::Url:
             *str = v_cast<QUrl>(d)->toString();
+            break;
         default:
             return false;
         }
