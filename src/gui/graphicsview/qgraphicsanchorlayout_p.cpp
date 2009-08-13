@@ -1177,6 +1177,15 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
         // and variables internally.
         solvePreferred(trunkConstraints);
 
+        // Propagate the new sizes down the simplified graph, ie. tell the
+        // group anchors to set their children anchors sizes.
+
+        // ### we calculated variables already a few times, can't we reuse that?
+        QList<AnchorData *> trunkVariables = getVariables(trunkConstraints);
+
+        for (int i = 0; i < trunkVariables.count(); ++i)
+            trunkVariables.at(i)->updateChildrenSizes();
+
         // Calculate and set the preferred size for the layout from the edge sizes that
         // were calculated above.
         qreal pref(0.0);
@@ -1197,6 +1206,9 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
         ad->sizeAtMinimum = ad->minSize;
         ad->sizeAtPreferred = ad->prefSize;
         ad->sizeAtMaximum = ad->maxSize;
+
+        // Propagate
+        ad->updateChildrenSizes();
 
         sizeHints[orientation][Qt::MinimumSize] = ad->sizeAtMinimum;
         sizeHints[orientation][Qt::PreferredSize] = ad->sizeAtPreferred;
@@ -1228,6 +1240,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
             Q_ASSERT(ad);
             ad->sizeAtMinimum = ad->sizeAtPreferred;
             ad->sizeAtMaximum = ad->sizeAtPreferred;
+            ad->updateChildrenSizes();
         }
 
         // Delete the constraints, we won't use them anymore.
@@ -1240,51 +1253,6 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     qDeleteAll(constraints[orientation]);
     constraints[orientation].clear();
     graphPaths[orientation].clear(); // ###
-
-    // Propagate the new sizes down the simplified graph, ie. tell the group anchors
-    // to set their children anchors sizes.
-
-    // ### Note that we can split the anchors into two categories:
-    //     1) Those that appeared in at least one constraint and so went through the
-    //        Simplex solver. Either as a Trunk or Non-Trunk variable.
-    //     2) Those that did not go through the Simplex solver at all.
-    //
-    //     Anchors of the type (1) had its effective sizes (ie. sizeAtMinimum/Pref/Max)
-    //     properly set by the "solveMinMax" and "solvePreferred" methods.
-    //
-    //     However, those of type (2), still need to have their effective sizes set,
-    //     in that case, to their own nominal values.
-    //
-    //     Due to the above reasons, we can't simply iterate on the variables that
-    //     belong to a graph part. We have to iterate through _all_ root anchors
-    //     in graph[orientation]. That's why we collect "allAnchors". We gotta make
-    //     this better somehow.
-
-    // ### Did I say that's ugly?
-    QSet<AnchorData *> allAnchors;
-    QQueue<AnchorVertex *> queue;
-    queue << graph[orientation].rootVertex();
-    while (!queue.isEmpty()) {
-        AnchorVertex *vertex = queue.dequeue();
-        QList<AnchorVertex *> adjacentVertices = graph[orientation].adjacentVertices(vertex);
-        for (int i = 0; i < adjacentVertices.count(); ++i) {
-            AnchorData *edge = graph[orientation].edgeData(vertex, adjacentVertices[i]);
-            if (allAnchors.contains(edge))
-                continue;
-            allAnchors << edge;
-            queue << adjacentVertices[i];
-        }
-    }
-
-    // Ok, now that we have all anchors, actually propagate the sizes down its children.
-    // Note that for anchors that didn't have its effectiveSizes set yet, we use the
-    // nominal one instead.
-    QSet<AnchorData *>::const_iterator iter;
-    for (iter = allAnchors.constBegin(); iter != allAnchors.constEnd(); ++iter)
-        (*iter)->updateChildrenSizes();
-
-    // Restore the graph. See the ### note next to the simplifyGraph() call.
-    //restoreSimplifiedGraph(orientation);
 }
 
 void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromDefaults(Orientation orientation)
