@@ -942,6 +942,7 @@ void QFxVisualDataModel::_q_destroyingPackage(QmlPackage *package)
     emit destroyingItem(qobject_cast<QFxItem*>(package->part(d->m_part)));
 }
 
+QML_DEFINE_NOCREATE_TYPE(QFxVisualModel);
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisualItemModel,QFxVisualItemModel)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisualDataModel,QFxVisualDataModel)
 

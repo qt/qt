@@ -190,6 +190,7 @@ private:
 
 QT_END_NAMESPACE
 
+QML_DECLARE_TYPE(QFxVisualModel)
 QML_DECLARE_TYPE(QFxVisualItemModel)
 QML_DECLARE_TYPE(QFxVisualDataModel)
 
