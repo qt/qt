@@ -111,8 +111,6 @@ typedef BOOL (WINAPI *PtrAllocateAndInitializeSid)(PSID_IDENTIFIER_AUTHORITY, BY
 static PtrAllocateAndInitializeSid ptrAllocateAndInitializeSid = 0;
 typedef VOID (WINAPI *PtrBuildTrusteeWithSidW)(PTRUSTEE_W, PSID);
 static PtrBuildTrusteeWithSidW ptrBuildTrusteeWithSidW = 0;
-typedef VOID (WINAPI *PtrBuildTrusteeWithNameW)(PTRUSTEE_W, unsigned short*);
-static PtrBuildTrusteeWithNameW ptrBuildTrusteeWithNameW = 0;
 typedef DWORD (WINAPI *PtrGetEffectiveRightsFromAclW)(PACL, PTRUSTEE_W, OUT PACCESS_MASK);
 static PtrGetEffectiveRightsFromAclW ptrGetEffectiveRightsFromAclW = 0;
 typedef PVOID (WINAPI *PtrFreeSid)(PSID);
@@ -150,61 +148,24 @@ void QFSFileEnginePrivate::resolveLibs()
             ptrLookupAccountSidW = (PtrLookupAccountSidW)GetProcAddress(advapiHnd, "LookupAccountSidW");
             ptrAllocateAndInitializeSid = (PtrAllocateAndInitializeSid)GetProcAddress(advapiHnd, "AllocateAndInitializeSid");
             ptrBuildTrusteeWithSidW = (PtrBuildTrusteeWithSidW)GetProcAddress(advapiHnd, "BuildTrusteeWithSidW");
-            ptrBuildTrusteeWithNameW = (PtrBuildTrusteeWithNameW)GetProcAddress(advapiHnd, "BuildTrusteeWithNameW");
             ptrGetEffectiveRightsFromAclW = (PtrGetEffectiveRightsFromAclW)GetProcAddress(advapiHnd, "GetEffectiveRightsFromAclW");
             ptrFreeSid = (PtrFreeSid)GetProcAddress(advapiHnd, "FreeSid");
         }
-        if (ptrBuildTrusteeWithNameW) {
-            HINSTANCE versionHnd = LoadLibraryW(L"version");
-            if (versionHnd) {
-                typedef DWORD (WINAPI *PtrGetFileVersionInfoSizeW)(LPCWSTR lptstrFilename,LPDWORD lpdwHandle);
-                PtrGetFileVersionInfoSizeW ptrGetFileVersionInfoSizeW = (PtrGetFileVersionInfoSizeW)GetProcAddress(versionHnd, "GetFileVersionInfoSizeW");
-                typedef BOOL (WINAPI *PtrGetFileVersionInfoW)(LPCWSTR lptstrFilename,DWORD dwHandle,DWORD dwLen,LPVOID lpData);
-                PtrGetFileVersionInfoW ptrGetFileVersionInfoW = (PtrGetFileVersionInfoW)GetProcAddress(versionHnd, "GetFileVersionInfoW");
-                typedef BOOL (WINAPI *PtrVerQueryValueW)(const LPVOID pBlock,LPCWSTR lpSubBlock,LPVOID *lplpBuffer,PUINT puLen);
-                PtrVerQueryValueW ptrVerQueryValueW = (PtrVerQueryValueW)GetProcAddress(versionHnd, "VerQueryValueW");
-                if(ptrGetFileVersionInfoSizeW && ptrGetFileVersionInfoW && ptrVerQueryValueW) {
-                    DWORD fakeHandle;
-                    DWORD versionSize = ptrGetFileVersionInfoSizeW(L"secur32.dll", &fakeHandle);
-                    if(versionSize) {
-                        LPVOID versionData;
-                        versionData = malloc(versionSize);
-                        if(ptrGetFileVersionInfoW(L"secur32.dll", 0, versionSize, versionData)) {
-                            UINT puLen;
-                            VS_FIXEDFILEINFO *pLocalInfo;
-                            if(ptrVerQueryValueW(versionData, L"\\", (void**)&pLocalInfo, &puLen)) {
-                                WORD wVer1, wVer2, wVer3, wVer4;
-                                wVer1 = HIWORD(pLocalInfo->dwFileVersionMS);
-                                wVer2 = LOWORD(pLocalInfo->dwFileVersionMS);
-                                wVer3 = HIWORD(pLocalInfo->dwFileVersionLS);
-                                wVer4 = LOWORD(pLocalInfo->dwFileVersionLS);
-                                // It will not work with secur32.dll version 5.0.2195.2862
-                                if(!(wVer1 == 5 && wVer2 == 0 && wVer3 == 2195 && (wVer4 == 2862 || wVer4 == 4587))) {
-                                    HINSTANCE userHnd = LoadLibraryW(L"secur32");
-                                    if (userHnd) {
-                                        typedef BOOL (WINAPI *PtrGetUserNameExW)(EXTENDED_NAME_FORMAT nameFormat, ushort* lpBuffer, LPDWORD nSize);
-                                        PtrGetUserNameExW ptrGetUserNameExW = (PtrGetUserNameExW)GetProcAddress(userHnd, "GetUserNameExW");
-                                        if(ptrGetUserNameExW) {
-                                            static wchar_t buffer[258];
-                                            DWORD bufferSize = 257;
-                                            ptrGetUserNameExW(NameSamCompatible, (ushort*)buffer, &bufferSize);
-                                            ptrBuildTrusteeWithNameW(&currentUserTrusteeW, (ushort*)buffer);
-                                        }
-                                        FreeLibrary(userHnd);
-                                    }
-                                }
-                            }
-                        }
-                        free(versionData);
-                    }
-                }
-                FreeLibrary(versionHnd);
-            }
-            HINSTANCE userenvHnd = LoadLibraryW(L"userenv");
-            if (userenvHnd) {
-                ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
+        if (ptrBuildTrusteeWithSidW) {
+            // Create TRUSTEE for current user
+            HANDLE hnd = ::GetCurrentProcess();
+            HANDLE token = 0;
+            if (::OpenProcessToken(hnd, TOKEN_QUERY, &token)) {
+                TOKEN_USER tu;
+                DWORD retsize;
+                if (::GetTokenInformation(token, TokenUser, &tu, sizeof(tu), &retsize))
+                    ptrBuildTrusteeWithSidW(&currentUserTrusteeW, tu.User.Sid);
+                ::CloseHandle(token);
             }
         }
+        HINSTANCE userenvHnd = LoadLibraryW(L"userenv");
+        if (userenvHnd)
+            ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
 #endif
     }
 }
