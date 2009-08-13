@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,6 +56,7 @@
 #include <qvarlengtharray.h>
 #include <qset.h>
 #include <qsemaphore.h>
+#include <qsharedpointer.h>
 
 #include <private/qorderedmutexlocker_p.h>
 #include <private/qmutexpool_p.h>
@@ -122,8 +123,11 @@ extern "C" Q_CORE_EXPORT void qt_removeObject(QObject *)
     }
 }
 
+QObjectData::~QObjectData() {}
+QDeclarativeData::~QDeclarativeData() {}
+
 QObjectPrivate::QObjectPrivate(int version)
-    : threadData(0), currentSender(0), currentChildBeingDeleted(0), connectionLists(0), senders(0)
+    : threadData(0), connectionLists(0), senders(0), currentSender(0), currentChildBeingDeleted(0), declarativeData(0), objectGuards(0)
 {
     if (version != QObjectPrivateVersion)
         qFatal("Cannot mix incompatible Qt libraries");
@@ -144,7 +148,6 @@ QObjectPrivate::QObjectPrivate(int version)
     inEventHandler = false;
     inThreadChangeEvent = false;
     deleteWatch = 0;
-    objectGuards = 0;
     metaObject = 0;
     hasGuards = false;
 }
@@ -793,7 +796,21 @@ QObject::~QObject()
         QObjectPrivate::clearGuards(this);
     }
 
+    if (d->sharedRefcount) {
+        if (d->sharedRefcount->strongref > 0) {
+            qWarning("QObject: shared QObject was deleted directly. The program is malformed and may crash.");
+            // but continue deleting, it's too late to stop anyway
+        }
+
+        // indicate to all QWeakPointers that this QObject has now been deleted
+        d->sharedRefcount->strongref = 0;
+        if (!d->sharedRefcount->weakref.deref())
+            delete d->sharedRefcount;
+    }
+
     emit destroyed(this);
+    if (d->declarativeData)
+        d->declarativeData->destroyed(this);
 
     {
         QMutexLocker locker(signalSlotLock(this));
@@ -856,9 +873,9 @@ QObject::~QObject()
             if (senderLists)
                 senderLists->dirty = true;
 
+            node = node->next;
             if (needToUnlock)
                 m->unlock();
-            node = node->next;
         }
     }
 
@@ -874,23 +891,12 @@ QObject::~QObject()
 
     d->eventFilters.clear();
 
-    // As declarativeData is in a union with currentChildBeingDeleted, this must
-    // be done (and declarativeData set back to 0) before deleting children.
-    if(d->declarativeData) {
-        QDeclarativeData *dd = d->declarativeData;
-        d->declarativeData = 0;
-        dd->destroyed(this);
-    }
-
     if (!d->children.isEmpty())
         d->deleteChildren();
 
     qt_removeObject(this);
 
-    QMutexLocker locker2(&d->threadData->postEventList.mutex);
-    if (d->postedEvents > 0)
-        QCoreApplicationPrivate::removePostedEvents_unlocked(this, 0, d->threadData);
-    locker2.unlock();
+    QCoreApplication::removePostedEvents(this);
 
     if (d->parent)        // remove it from parent object
         d->setParent_helper(0);
@@ -3942,19 +3948,12 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
     Synonym for QList<QObject *>.
 */
 
-#ifdef QT_JAMBI_BUILD
-class QDPtrAccessor : public QObject {
-public:
-    QObjectData *d() const { return d_ptr; }
-};
-#endif
-
 void qDeleteInEventHandler(QObject *o)
 {
 #ifdef QT_JAMBI_BUILD
     if (!o)
         return;
-    ((QDPtrAccessor *) o)->d()->inEventHandler = false;
+    QObjectPrivate::get(o)->inEventHandler = false;
 #endif
     delete o;
 }

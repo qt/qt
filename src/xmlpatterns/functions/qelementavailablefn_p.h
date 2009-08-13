@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,7 +65,7 @@ namespace QPatternist
      * @ingroup Patternist_functions
      * @see <a href="http://www.w3.org/TR/xslt20/#unparsed-text">XSL
      * Transformations (XSLT) Version 2.0, 16.2 unparsed-text</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @since 4.5
      */
     class ElementAvailableFN : public StaticNamespacesContainer

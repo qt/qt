@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2851,7 +2851,7 @@ QWidget *QApplicationPrivate::pickMouseReceiver(QWidget *candidate, const QPoint
     QWidget *receiver = candidate;
 
     if (!mouseGrabber)
-        mouseGrabber = buttonDown ? buttonDown : alienWidget;
+        mouseGrabber = (buttonDown && !isBlockedByModal(buttonDown)) ? buttonDown : alienWidget;
 
     if (mouseGrabber && mouseGrabber != candidate) {
         receiver = mouseGrabber;
@@ -4052,7 +4052,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         touchEvent->setAccepted(eventAccepted);
         break;
     }
-    case QEvent::WinGesture:
+    case QEvent::NativeGesture:
     {
         // only propagate the first gesture event (after the GID_BEGIN)
         QWidget *w = static_cast<QWidget *>(receiver);

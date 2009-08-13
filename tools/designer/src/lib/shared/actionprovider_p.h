@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -86,7 +86,7 @@ template <class Widget>
     // actionGeometry() can be wrong sometimes; it returns a geometry that
     // stretches to the end of the toolbar/menu bar. So, check from the beginning
     // in the case of a horizontal right-to-left orientation.
-    const bool checkTopRight = orientation == Qt::Horizontal && QApplication::layoutDirection() == Qt::RightToLeft;
+    const bool checkTopRight = orientation == Qt::Horizontal && w->layoutDirection() == Qt::RightToLeft;
     const QPoint topRight = QPoint(w->rect().width(), 0);
     for (int index = 0; index < actionCount; ++index) {
         QRect g = w->actionGeometry(actions.at(index));

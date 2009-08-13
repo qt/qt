@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -70,7 +70,6 @@ QT_BEGIN_NAMESPACE
 #ifndef QT_NO_TEXTEDIT
 
 class QMimeData;
-class QPanGesture;
 class QTextEditPrivate : public QAbstractScrollAreaPrivate
 {
     Q_DECLARE_PUBLIC(QTextEdit)
@@ -128,9 +127,6 @@ public:
     Qt::TextFormat textFormat;
 
     QString anchorToScrollToWhenVisible;
-
-    void _q_gestureTriggered();
-    QPanGesture *panGesture;
 
 #ifdef QT_KEYPAD_NAVIGATION
     QBasicTimer deleteAllTimer;

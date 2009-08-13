@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -206,8 +206,8 @@ QSvgFontStyle::QSvgFontStyle(QSvgFont *font, QSvgTinyDocument *doc)
 }
 
 QSvgFontStyle::QSvgFontStyle()
-    : m_doc(0)
-    , m_svgFont(0)
+    : m_svgFont(0)
+    , m_doc(0)
     , m_familySet(0)
     , m_sizeSet(0)
     , m_styleSet(0)

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -875,7 +875,8 @@ int QTextFormat::intProperty(int propertyId) const
 
 /*!
     Returns the value of the property specified by \a propertyId. If the
-    property isn't of QVariant::Double type, 0 is returned instead.
+    property isn't of QVariant::Double or QMetaType::Float type, 0 is
+    returned instead.
 
     \sa setProperty() boolProperty() intProperty() stringProperty() colorProperty() lengthProperty() lengthVectorProperty() Property
 */
@@ -884,9 +885,9 @@ qreal QTextFormat::doubleProperty(int propertyId) const
     if (!d)
         return 0.;
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Double)
+    if (prop.type() != QVariant::Double && prop.type() != QMetaType::Float)
         return 0.;
-    return prop.toDouble(); // ####
+    return qVariantValue<qreal>(prop);
 }
 
 /*!
@@ -1603,7 +1604,7 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
     \fn void QTextCharFormat::setAnchorHref(const QString &value)
 
     Sets the hypertext link for the text format to the given \a value.
-    This is typically a URL like "http://qtsoftware.com/index.html".
+    This is typically a URL like "http://example.com/index.html".
 
     The anchor will be displayed with the \a value as its display text;
     if you want to display different text call setAnchorNames().

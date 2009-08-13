@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -152,21 +152,6 @@ QSignalTransition::QSignalTransition(QState *sourceState)
 QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
                                      QState *sourceState)
     : QAbstractTransition(*new QSignalTransitionPrivate, sourceState)
-{
-    Q_D(QSignalTransition);
-    d->sender = sender;
-    d->signal = signal;
-}
-
-/*!
-  Constructs a new signal transition associated with the given \a signal of
-  the given \a sender. The transition has the given \a targets and \a
-  sourceState.
-*/
-QSignalTransition::QSignalTransition(QObject *sender, const char *signal,
-                                     const QList<QAbstractState*> &targets,
-                                     QState *sourceState)
-    : QAbstractTransition(*new QSignalTransitionPrivate, targets, sourceState)
 {
     Q_D(QSignalTransition);
     d->sender = sender;

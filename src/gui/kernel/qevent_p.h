@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -119,20 +119,35 @@ public:
     qreal pressure;
 };
 
-class QWinGestureEvent : public QEvent
+class QNativeGestureEvent : public QEvent
 {
 public:
     enum Type {
         None,
+        GestureBegin,
         GestureEnd,
         Pan,
-        Pinch
+        Zoom,
+        Rotate,
+        Swipe
     };
 
-    QWinGestureEvent() : QEvent(QEvent::WinGesture), gestureType(None), sequenceId(0) { }
+    QNativeGestureEvent()
+        : QEvent(QEvent::NativeGesture), gestureType(None), percentage(0)
+#ifdef Q_WS_WIN
+        , sequenceId(0), argument(0)
+#endif
+    {
+    }
+
     Type gestureType;
+    float percentage;
     QPoint position;
+    QSize direction;
+#ifdef Q_WS_WIN
     ulong sequenceId;
+    quint64 argument;
+#endif
 };
 
 QT_END_NAMESPACE

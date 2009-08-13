@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,7 +73,7 @@ void QTestXunitStreamer::indentForElement(const QTestElement* element, char* buf
     }
 }
 
-void QTestXunitStreamer::formatStart(const QTestElement *element, char **formatted) const
+void QTestXunitStreamer::formatStart(const QTestElement *element, QTestCharBuffer *formatted) const
 {
     if(!element || !formatted )
         return;
@@ -85,8 +85,7 @@ void QTestXunitStreamer::formatStart(const QTestElement *element, char **formatt
     if (element->elementType() == QTest::LET_Error) {
         if (element->parentElement()->elementType() == QTest::LET_SystemError) {
             QTest::qt_asprintf(formatted, "<![CDATA[");
-        }
-        else {
+        } else {
             QTest::qt_asprintf(formatted, "%s<!--", indent);
         }
         return;
@@ -95,13 +94,13 @@ void QTestXunitStreamer::formatStart(const QTestElement *element, char **formatt
     QTest::qt_asprintf(formatted, "%s<%s", indent, element->elementName());
 }
 
-void QTestXunitStreamer::formatEnd(const QTestElement *element, char **formatted) const
+void QTestXunitStreamer::formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const
 {
-    if(!element || !formatted )
+    if (!element || !formatted )
         return;
 
-    if(!element->childElements()){
-        QTest::qt_asprintf(formatted, "");
+    if (!element->childElements()){
+        formatted->data()[0] = '\0';
         return;
     }
 
@@ -111,7 +110,7 @@ void QTestXunitStreamer::formatEnd(const QTestElement *element, char **formatted
     QTest::qt_asprintf(formatted, "%s</%s>\n", indent, element->elementName());
 }
 
-void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTestElementAttribute *attribute, char **formatted) const
+void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const
 {
     if(!attribute || !formatted )
         return;
@@ -136,15 +135,14 @@ void QTestXunitStreamer::formatAttributes(const QTestElement* element, const QTe
 
     if (key) {
         QTestCharBuffer quotedValue;
-        QXmlTestLogger::xmlQuote(quotedValue, attribute->value());
+        QXmlTestLogger::xmlQuote(&quotedValue, attribute->value());
         QTest::qt_asprintf(formatted, " %s=\"%s\"", key, quotedValue.constData());
-    }
-    else {
-        QTest::qt_asprintf(formatted, "");
+    } else {
+        formatted->data()[0] = '\0';
     }
 }
 
-void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, char **formatted) const
+void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const
 {
     if(!element || !formatted )
         return;
@@ -153,8 +151,7 @@ void QTestXunitStreamer::formatAfterAttributes(const QTestElement *element, char
     if (element->elementType() == QTest::LET_Error) {
         if (element->parentElement()->elementType() == QTest::LET_SystemError) {
             QTest::qt_asprintf(formatted, "]]>\n");
-        }
-        else {
+        } else {
             QTest::qt_asprintf(formatted, " -->\n");
         }
         return;
@@ -187,22 +184,22 @@ void QTestXunitStreamer::outputElements(QTestElement *element, bool) const
         hasChildren = element->childElements();
 
         if(element->elementType() != QTest::LET_Benchmark){
-            formatStart(element, buf);
-            outputString(buf);
+            formatStart(element, &buf);
+            outputString(buf.data());
 
-            formatBeforeAttributes(element, buf);
-            outputString(buf);
+            formatBeforeAttributes(element, &buf);
+            outputString(buf.data());
 
             outputElementAttributes(element, element->attributes());
 
-            formatAfterAttributes(element, buf);
-            outputString(buf);
+            formatAfterAttributes(element, &buf);
+            outputString(buf.data());
 
             if(hasChildren)
                 outputElements(element->childElements(), true);
 
-            formatEnd(element, buf);
-            outputString(buf);
+            formatEnd(element, &buf);
+            outputString(buf.data());
         }
         element = element->previousElement();
     }

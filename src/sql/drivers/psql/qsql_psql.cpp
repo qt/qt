@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -158,7 +158,7 @@ void QPSQLDriverPrivate::appendTables(QStringList &tl, QSqlQuery &t, QChar type)
 class QPSQLResultPrivate
 {
 public:
-    QPSQLResultPrivate(QPSQLResult *qq): q(qq), driver(0), result(0), currentSize(-1) {}
+    QPSQLResultPrivate(QPSQLResult *qq): q(qq), driver(0), result(0), currentSize(-1), preparedQueriesEnabled(false) {}
 
     QPSQLResult *q;
     const QPSQLDriverPrivate *driver;
@@ -940,7 +940,7 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
     case QPSQLDriver::Version6:
         stmt = QLatin1String("select pg_att1.attname, int(pg_att1.atttypid), pg_cl.relname "
                 "from pg_attribute pg_att1, pg_attribute pg_att2, pg_class pg_cl, pg_index pg_ind "
-                "where lower(pg_cl.relname) = '%1_pkey' "
+                "where pg_cl.relname = '%1_pkey' "
                 "and pg_cl.oid = pg_ind.indexrelid "
                 "and pg_att2.attrelid = pg_ind.indexrelid "
                 "and pg_att1.attrelid = pg_ind.indrelid "
@@ -951,7 +951,7 @@ QSqlIndex QPSQLDriver::primaryIndex(const QString& tablename) const
     case QPSQLDriver::Version71:
         stmt = QLatin1String("select pg_att1.attname, pg_att1.atttypid::int, pg_cl.relname "
                 "from pg_attribute pg_att1, pg_attribute pg_att2, pg_class pg_cl, pg_index pg_ind "
-                "where lower(pg_cl.relname) = '%1_pkey' "
+                "where pg_cl.relname = '%1_pkey' "
                 "and pg_cl.oid = pg_ind.indexrelid "
                 "and pg_att2.attrelid = pg_ind.indexrelid "
                 "and pg_att1.attrelid = pg_ind.indrelid "
@@ -1016,7 +1016,7 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
                 "pg_attribute.attnotnull, pg_attribute.attlen, pg_attribute.atttypmod, "
                 "int(pg_attribute.attrelid), pg_attribute.attnum "
                 "from pg_class, pg_attribute "
-                "where lower(pg_class.relname) = '%1' "
+                "where pg_class.relname = '%1' "
                 "and pg_attribute.attnum > 0 "
                 "and pg_attribute.attrelid = pg_class.oid ");
         break;
@@ -1025,7 +1025,7 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
                 "pg_attribute.attnotnull, pg_attribute.attlen, pg_attribute.atttypmod, "
                 "pg_attribute.attrelid::int, pg_attribute.attnum "
                 "from pg_class, pg_attribute "
-                "where lower(pg_class.relname) = '%1' "
+                "where pg_class.relname = '%1' "
                 "and pg_attribute.attnum > 0 "
                 "and pg_attribute.attrelid = pg_class.oid ");
         break;
@@ -1036,7 +1036,7 @@ QSqlRecord QPSQLDriver::record(const QString& tablename) const
                 "from pg_class, pg_attribute "
                 "left join pg_attrdef on (pg_attrdef.adrelid = "
                 "pg_attribute.attrelid and pg_attrdef.adnum = pg_attribute.attnum) "
-                "where lower(pg_class.relname) = '%1' "
+                "where pg_class.relname = '%1' "
                 "and pg_attribute.attnum > 0 "
                 "and pg_attribute.attrelid = pg_class.oid "
                 "order by pg_attribute.attnum ");

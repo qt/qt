@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -125,7 +125,6 @@ private slots:
     Qt::Orientations expandingDirections() const;
 */
 
-    void fieldMinimumSize();
 };
 
 tst_QFormLayout::tst_QFormLayout()
@@ -904,35 +903,6 @@ void tst_QFormLayout::layoutAlone()
     w.show();
     layout.activate();
     QTest::qWait(500);
-}
-
-
-void tst_QFormLayout::fieldMinimumSize()
-{
-    //check that the field with is bigger than its minimumSizeHint for any size of the widget
-    // even if the label with is not fixed
-    QWidget w;
-    QFormLayout layout;
-    layout.setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
-    w.setLayout(&layout);
-    QLabel label1("Here is a strange test case");
-    label1.setWordWrap(true);
-    QLabel label2("Here is another label");
-    label2.setWordWrap(true);
-    QLabel shortLabel("short");
-    QLabel longLabel("Quite long label");
-    layout.addRow(&label1, &shortLabel);
-    layout.addRow(&label2, &longLabel);
-    w.show();
-    int width = w.size().width() + 9;
-
-    do {
-        w.resize(width, w.size().height());
-        layout.activate();
-        QVERIFY(shortLabel.size().width() >= shortLabel.minimumSizeHint().width());
-        QVERIFY(longLabel.size().width() >= longLabel.minimumSizeHint().width());
-        width -= 3;
-    } while(width >= w.minimumSizeHint().width());
 }
 
 QTEST_MAIN(tst_QFormLayout)

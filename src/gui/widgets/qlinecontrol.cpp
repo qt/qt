@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -257,6 +257,7 @@ void QLineControl::setSelection(int start, int length)
         m_cursor = m_selstart;
     }
     emit selectionChanged();
+    emitCursorPositionChanged();
 }
 
 void QLineControl::_q_clipboardChanged()
@@ -1295,7 +1296,7 @@ bool QLineControl::processEvent(QEvent* ev)
                 }
                 if ((ev->type() == QEvent::KeyRelease)
                     && !isReadOnly()
-                    && deleteAllTimer) {
+                    && m_deleteAllTimer) {
                     killTimer(m_deleteAllTimer);
                     m_deleteAllTimer = 0;
                     backspace();
@@ -1701,12 +1702,12 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
                     if (text().length() == 0) {
                         setText(m_cancelText);
 
-                        if (passwordEchoEditing)
+                        if (passwordEchoEditing())
                             updatePasswordEchoEditing(false);
 
-                        setEditFocus(false);
-                    } else if (!deleteAllTimer) {
-                        deleteAllTimer = startTimer(750);
+                        emit editFocusChange(false);
+                    } else if (!m_deleteAllTimer) {
+                        m_deleteAllTimer = startTimer(750);
                     }
                 } else {
                     unknown = true;

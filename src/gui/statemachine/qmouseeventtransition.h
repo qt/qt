@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,10 +63,6 @@ public:
     QMouseEventTransition(QState *sourceState = 0);
     QMouseEventTransition(QObject *object, QEvent::Type type,
                           Qt::MouseButton button, QState *sourceState = 0);
-    QMouseEventTransition(QObject *object, QEvent::Type type,
-                          Qt::MouseButton button,
-                          const QList<QAbstractState*> &targets,
-                          QState *sourceState = 0);
     ~QMouseEventTransition();
 
     Qt::MouseButton button() const;

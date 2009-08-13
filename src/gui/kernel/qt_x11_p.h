@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -515,7 +515,8 @@ struct QX11Data
 
     char *startupId;
 
-    DesktopEnvironment desktopEnvironment;
+    DesktopEnvironment desktopEnvironment : 8;
+    uint desktopVersion : 8;  /* Used only for KDE */
 
     /* Warning: if you modify this list, modify the names of atoms in qapplication_x11.cpp as well! */
     enum X11Atom {

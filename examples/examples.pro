@@ -27,6 +27,7 @@ SUBDIRS       = \
                 multitouch \
                 gestures
 
+contains(QT_CONFIG, multimedia):!static: SUBDIRS += multimedia
 contains(QT_CONFIG, phonon):!static: SUBDIRS += phonon
 contains(QT_CONFIG, webkit): SUBDIRS += webkit
 embedded:SUBDIRS += qws

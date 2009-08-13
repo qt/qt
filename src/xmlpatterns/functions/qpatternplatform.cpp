@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,7 +59,7 @@ namespace QPatternist
      * to make the synthesized assignment operator and copy constructor work.
      *
      * @ingroup Patternist_utils
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class PatternFlag
     {
@@ -183,7 +183,7 @@ QRegExp PatternPlatform::parsePattern(const QString &patternP,
        patternP == QLatin1String("(.)\\2"))
     {
         context->error(QLatin1String("We don't want to hang infinitely on K2-MatchesFunc-9, "
-                                     "10 and 11. See Trolltech task 148505."),
+                                     "10 and 11."),
                        ReportContext::FOER0000, location);
         return QRegExp();
     }

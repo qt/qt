@@ -3,13 +3,13 @@ QNetworkAccessManager *manager = new QNetworkAccessManager(this);
 connect(manager, SIGNAL(finished(QNetworkReply*)),
         this, SLOT(replyFinished(QNetworkReply*)));
 
-manager->get(QNetworkRequest(QUrl("http://qtsoftware.com")));
+manager->get(QNetworkRequest(QUrl("http://qt.nokia.com")));
 //! [0]
 
 
 //! [1]
 QNetworkRequest request;
-request.setUrl(QUrl("http://qtsoftware.com"));
+request.setUrl(QUrl("http://qt.nokia.com"));
 request.setRawHeader("User-Agent", "MyOwnBrowser 1.0");
 
 QNetworkReply *reply = manager->get(request);

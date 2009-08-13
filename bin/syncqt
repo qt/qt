@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 ######################################################################
 #
-# Synchronizes Qt header files - internal Trolltech tool.
+# Synchronizes Qt header files - internal development tool.
 #
 # Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 # Contact: Nokia Corporation (qt-info@nokia.com)
@@ -44,6 +44,7 @@ my %modules = ( # path to module name map
         "QtDBus" => "$basedir/src/dbus",
         "QtWebKit" => "$basedir/src/3rdparty/webkit/WebCore",
         "phonon" => "$basedir/src/phonon",
+        "QtMultimedia" => "$basedir/src/multimedia",
 );
 my %moduleheaders = ( # restrict the module headers to those found in relative path
         "QtWebKit" => "../WebKit/qt/Api",

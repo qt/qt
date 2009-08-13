@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -80,6 +80,7 @@ QT_BEGIN_NAMESPACE
 class QHttpNetworkRequest;
 class QHttpNetworkReply;
 class QByteArray;
+class QHttpNetworkConnection;
 
 class QHttpNetworkConnectionChannel : public QObject {
     Q_OBJECT
@@ -117,7 +118,31 @@ public:
 #ifndef QT_NO_OPENSSL
     , ignoreAllSslErrors(false)
 #endif
+    , connection(0)
     {}
+
+    void setConnection(QHttpNetworkConnection *c) {connection = c;}
+    QHttpNetworkConnection *connection;
+
+    void init();
+    void close();
+
+    protected slots:
+    void _q_bytesWritten(qint64 bytes); // proceed sending
+    void _q_readyRead(); // pending data to read
+    void _q_disconnected(); // disconnected from host
+    void _q_connected(); // start sending request
+    void _q_error(QAbstractSocket::SocketError); // error from socket
+#ifndef QT_NO_NETWORKPROXY
+    void _q_proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *auth); // from transparent proxy
+#endif
+
+    void _q_uploadDataReadyRead();
+
+#ifndef QT_NO_OPENSSL
+    void _q_encrypted(); // start sending request (https)
+    void _q_sslErrors(const QList<QSslError> &errors); // ssl errors from the socket
+#endif
 };
 
 

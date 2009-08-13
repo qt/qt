@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,7 +73,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:node-name()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NodeNameFN : public FunctionCall
     {
@@ -85,7 +85,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:nilled()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NilledFN : public FunctionCall
     {
@@ -97,7 +97,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:string()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringFN : public FunctionCall
     {
@@ -110,7 +110,7 @@ namespace QPatternist
     /**
      * @short Implements the function <tt>fn:base-uri()</tt>.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class BaseURIFN : public FunctionCall
     {
@@ -122,7 +122,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:document-uri()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DocumentURIFN : public FunctionCall
     {

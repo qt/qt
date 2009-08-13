@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -99,9 +99,17 @@ void tst_QDesktopWidget::availableGeometry()
 {
     QDesktopWidget desktop;
 
-    QRect total = desktop.screenGeometry();
-    QRect available = desktop.availableGeometry();
+    QRect total;
+    QRect available;
 
+    for (int i = 0; i < desktop.screenCount(); ++i) {
+        total = desktop.screenGeometry(i);
+        available = desktop.availableGeometry(i);
+        QVERIFY(total.contains(available));
+    }
+
+    total = desktop.screenGeometry();
+    available = desktop.availableGeometry();
     QVERIFY(total.contains(available));
     QCOMPARE(desktop.availableGeometry(desktop.primaryScreen()), available);
     QCOMPARE(desktop.screenGeometry(desktop.primaryScreen()), total);

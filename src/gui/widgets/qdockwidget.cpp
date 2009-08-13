@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1390,7 +1390,7 @@ bool QDockWidget::event(QEvent *event)
         break;
     case QEvent::Show:
         d->toggleViewAction->setChecked(true);
-        emit visibilityChanged(true);
+        emit visibilityChanged(geometry().right() >= 0 && geometry().bottom() >= 0);
         break;
 #endif
     case QEvent::ApplicationLayoutDirectionChange:

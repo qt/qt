@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,9 +61,6 @@ class Q_GUI_EXPORT QKeyEventTransition : public QEventTransition
 public:
     QKeyEventTransition(QState *sourceState = 0);
     QKeyEventTransition(QObject *object, QEvent::Type type, int key,
-                        QState *sourceState = 0);
-    QKeyEventTransition(QObject *object, QEvent::Type type, int key,
-                        const QList<QAbstractState*> &targets,
                         QState *sourceState = 0);
     ~QKeyEventTransition();
 

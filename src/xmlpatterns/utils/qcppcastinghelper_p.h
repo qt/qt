@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -91,7 +91,7 @@ namespace QPatternist
      * CppCastingHelper is a template class where the TSubClass parameter must be the class
      * inheriting CppCastingHelper. See Item or Expression for demonstration.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<typename TSubClass>
     class CppCastingHelper

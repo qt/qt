@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,6 +60,8 @@
 #include "qgesture.h"
 #include "qgesture_p.h"
 
+#include "qstandardgestures.h"
+
 QT_BEGIN_NAMESPACE
 
 class QPanGesturePrivate : public QGesturePrivate
@@ -67,23 +69,45 @@ class QPanGesturePrivate : public QGesturePrivate
     Q_DECLARE_PUBLIC(QPanGesture)
 
 public:
-    QPanGesturePrivate() { }
+    QPanGesturePrivate()
+    {
+#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
+        panFinishedTimer = 0;
+#endif
+    }
 
-    QList<QTouchEvent::TouchPoint> touchPoints;
+    QSize totalOffset;
+    QSize lastOffset;
+    QPoint lastPosition;
+
+#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
+    int panFinishedTimer;
+#endif
 };
 
-class QTapAndHoldGesturePrivate : public QGesturePrivate
+class QPinchGesturePrivate : public QGesturePrivate
 {
-    Q_DECLARE_PUBLIC(QTapAndHoldGesture)
+    Q_DECLARE_PUBLIC(QPinchGesture)
 
 public:
-    QTapAndHoldGesturePrivate()
-        : iteration(0) { }
-
-    QBasicTimer timer;
-    int iteration;
-    static const int iterationCount;
-    static const int iterationTimeout;
+    QPinchGesturePrivate()
+        : scaleFactor(0), lastScaleFactor(0),
+          rotationAngle(0), lastRotationAngle(0)
+#ifdef Q_WS_WIN
+          ,initialDistance(0)
+#endif
+    {
+    }
+    qreal scaleFactor;
+    qreal lastScaleFactor;
+    qreal rotationAngle;
+    qreal lastRotationAngle;
+    QPoint startCenterPoint;
+    QPoint lastCenterPoint;
+    QPoint centerPoint;
+#ifdef Q_WS_WIN
+    int initialDistance;
+#endif
 };
 
 QT_END_NAMESPACE

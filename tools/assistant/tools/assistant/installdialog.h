@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,6 +46,8 @@
 #include <QtGui/QDialog>
 #include <QtNetwork/QHttpResponseHeader>
 #include "ui_installdialog.h"
+
+#ifndef QT_NO_HTTP
 
 QT_BEGIN_NAMESPACE
 
@@ -97,5 +99,7 @@ private:
 };
 
 QT_END_NAMESPACE
+
+#endif
 
 #endif // INSTALLDIALOG_H

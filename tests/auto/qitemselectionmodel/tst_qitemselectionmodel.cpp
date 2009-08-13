@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -90,6 +90,7 @@ private slots:
     void merge();
     void task119433_isRowSelected();
     void task252069_rowIntersectsSelection();
+    void task232634_childrenDeselectionSignal();
 
 private:
     QAbstractItemModel *model;
@@ -1547,7 +1548,7 @@ void tst_QItemSelectionModel::resetModel()
     model.reset();
 
     QVERIFY(view.selectionModel()->selection().isEmpty());
-    QVERIFY(view.selectionModel()->hasSelection());
+    QVERIFY(view.selectionModel()->hasSelection() == false);
 
     view.selectionModel()->select(QItemSelection(model.index(0, 0), model.index(5, 5)), QItemSelectionModel::Select);
 
@@ -2185,6 +2186,59 @@ void tst_QItemSelectionModel::task252069_rowIntersectsSelection()
     QVERIFY( selected.columnIntersectsSelection(2, QModelIndex()));
     QVERIFY( selected.columnIntersectsSelection(3, QModelIndex()));
     QVERIFY(!selected.columnIntersectsSelection(5, QModelIndex()));
+}
+
+void tst_QItemSelectionModel::task232634_childrenDeselectionSignal()
+{
+    QStandardItemModel model;
+
+    QStandardItem *parentItem = model.invisibleRootItem();
+    for (int i = 0; i < 4; ++i) {
+        QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+        parentItem->appendRow(item);
+        parentItem = item;
+    }
+
+    QModelIndex root = model.index(0,0);
+    QModelIndex par = root.child(0,0);
+    QModelIndex sel = par.child(0,0);
+
+    QItemSelectionModel selectionModel(&model);
+    selectionModel.select(sel, QItemSelectionModel::SelectCurrent);
+
+    QSignalSpy deselectSpy(&selectionModel, SIGNAL(selectionChanged(const QItemSelection& , const QItemSelection&)));
+    model.removeRows(0, 1, root);
+    QVERIFY(deselectSpy.count() == 1);
+
+    // More testing stress for the patch.
+    model.clear();
+    selectionModel.clear();
+
+    parentItem = model.invisibleRootItem();
+    for (int i = 0; i < 2; ++i) {
+        QStandardItem *item = new QStandardItem(QString("item %0").arg(i));
+        parentItem->appendRow(item);
+    }
+    for (int i = 0; i < 2; ++i) {
+        parentItem = model.invisibleRootItem()->child(i, 0);
+        for (int j = 0; j < 2; ++j) {
+            QStandardItem *item = new QStandardItem(QString("item %0.%1").arg(i).arg(j));
+            parentItem->appendRow(item);
+        }
+    }
+
+    sel = model.index(0, 0).child(0, 0);
+    selectionModel.select(sel, QItemSelectionModel::Select);
+    QModelIndex sel2 = model.index(1, 0).child(0, 0);
+    selectionModel.select(sel2, QItemSelectionModel::Select);
+
+    QVERIFY(selectionModel.selection().contains(sel));
+    QVERIFY(selectionModel.selection().contains(sel2));
+    deselectSpy.clear();
+    model.removeRow(0, model.index(0, 0));
+    QVERIFY(deselectSpy.count() == 1);
+    QVERIFY(!selectionModel.selection().contains(sel));
+    QVERIFY(selectionModel.selection().contains(sel2));
 }
 
 QTEST_MAIN(tst_QItemSelectionModel)

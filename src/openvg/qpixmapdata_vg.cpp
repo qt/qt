@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -339,6 +339,31 @@ void QVGPixmapData::forceToImage()
 QImage::Format QVGPixmapData::sourceFormat() const
 {
     return QImage::Format_ARGB32_Premultiplied;
+}
+
+/*
+    \internal
+
+    Returns the VGImage that is storing the contents of \a pixmap.
+    Returns VG_INVALID_HANDLE if \a pixmap is not owned by the OpenVG
+    graphics system or \a pixmap is invalid.
+
+    This function is typically used to access the backing store
+    for a pixmap when executing raw OpenVG calls.  It must only
+    be used when a QPainter is active and the OpenVG paint engine
+    is in use by the QPainter.
+
+    \sa {QtOpenVG Module}
+*/
+Q_OPENVG_EXPORT VGImage qPixmapToVGImage(const QPixmap& pixmap)
+{
+    QPixmapData *pd = pixmap.pixmapData();
+    if (pd->classId() == QPixmapData::OpenVGClass) {
+        QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
+        if (vgpd->isValid())
+            return vgpd->toVGImage();
+    }
+    return VG_INVALID_HANDLE;
 }
 
 QT_END_NAMESPACE

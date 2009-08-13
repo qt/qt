@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -466,7 +466,7 @@ QRect ToolBarEventFilter::freeArea(const QToolBar *tb)
     QRect exclusionRectangle = actionList.empty() ? handleArea(tb) : tb->actionGeometry(actionList.back());
     switch (tb->orientation()) {
     case Qt::Horizontal:
-        switch (QApplication::layoutDirection()) {
+        switch (tb->layoutDirection()) {
         case Qt::LeftToRight:
             rc.setX(exclusionRectangle.right() + 1);
             break;

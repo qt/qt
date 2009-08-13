@@ -1,0 +1,4 @@
+tst_lupdate
+testdata/good/*/project.ts
+testdata/output_ts/toplevel/library/tools/translations/project.ts
+testdata/recursivescan/*.ts

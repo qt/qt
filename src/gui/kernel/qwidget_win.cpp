@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,6 +55,10 @@
 #include "qwidget_p.h"
 #include "private/qbackingstore_p.h"
 #include "private/qwindowsurface_raster_p.h"
+
+#include "qscrollbar.h"
+#include "qabstractscrollarea.h"
+#include <private/qabstractscrollarea_p.h>
 
 #include <qdebug.h>
 
@@ -1156,6 +1160,8 @@ void QWidgetPrivate::show_sys()
             data.window_state |= Qt::WindowMaximized;
     }
 
+    winSetupGestures();
+
     invalidateBuffer(q->rect());
 }
 #endif //Q_WS_WINCE
@@ -1432,10 +1438,7 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                     qt_wince_maximize(q);
                 } else {
 #endif
-                    if (!isTranslucentWindow)
-                        MoveWindow(q->internalWinId(), fs.x(), fs.y(), fs.width(), fs.height(), true);
-                    else if (isMove && !isResize)
-                        SetWindowPos(q->internalWinId(), 0, fs.x(), fs.y(), 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOZORDER);
+                    MoveWindow(q->internalWinId(), fs.x(), fs.y(), fs.width(), fs.height(), true);
                 }
                 if (!q->isVisible())
                     InvalidateRect(q->internalWinId(), 0, FALSE);
@@ -2050,6 +2053,70 @@ void QWidgetPrivate::registerTouchWindow()
         && QApplicationPrivate::RegisterTouchWindow
         && q->windowType() != Qt::Desktop)
         QApplicationPrivate::RegisterTouchWindow(q->effectiveWinId(), 0);
+}
+
+void QWidgetPrivate::winSetupGestures()
+{
+    Q_Q(QWidget);
+    if (!q)
+        return;
+    q->setAttribute(Qt::WA_DontCreateNativeAncestors);
+    q->setAttribute(Qt::WA_NativeWindow);
+    if (!q->isVisible())
+        return;
+    QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+    bool needh = false;
+    bool needv = false;
+    bool singleFingerPanEnabled = false;
+    QStandardGestures gestures = qAppPriv->widgetGestures[q];
+    WId winid = 0;
+
+    if (QAbstractScrollArea *asa = qobject_cast<QAbstractScrollArea*>(q)) {
+        winid = asa->viewport()->winId();
+        QScrollBar *hbar = asa->horizontalScrollBar();
+        QScrollBar *vbar = asa->verticalScrollBar();
+        Qt::ScrollBarPolicy hbarpolicy = asa->horizontalScrollBarPolicy();
+        Qt::ScrollBarPolicy vbarpolicy = asa->verticalScrollBarPolicy();
+        needh = (hbarpolicy == Qt::ScrollBarAlwaysOn ||
+                 (hbarpolicy == Qt::ScrollBarAsNeeded && hbar->minimum() < hbar->maximum()));
+        needv = (vbarpolicy == Qt::ScrollBarAlwaysOn ||
+                 (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
+        singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
+    } else {
+        winid = q->winId();
+    }
+    if (qAppPriv->SetGestureConfig) {
+        GESTURECONFIG gc[3];
+        memset(gc, 0, sizeof(gc));
+        gc[0].dwID = GID_PAN;
+        if (gestures.pan) {
+            gc[0].dwWant = GC_PAN;
+            if (needv && singleFingerPanEnabled)
+                gc[0].dwWant |= GC_PAN_WITH_SINGLE_FINGER_VERTICALLY;
+            else
+                gc[0].dwBlock |= GC_PAN_WITH_SINGLE_FINGER_VERTICALLY;
+            if (needh && singleFingerPanEnabled)
+                gc[0].dwWant |= GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
+            else
+                gc[0].dwBlock |= GC_PAN_WITH_SINGLE_FINGER_HORIZONTALLY;
+        } else {
+            gc[0].dwBlock = GC_PAN;
+        }
+
+        gc[1].dwID = GID_ZOOM;
+        if (gestures.pinch)
+            gc[1].dwWant = GC_ZOOM;
+        else
+            gc[1].dwBlock = GC_ZOOM;
+        gc[2].dwID = GID_ROTATE;
+        if (gestures.pinch)
+            gc[2].dwWant = GC_ROTATE;
+        else
+            gc[2].dwBlock = GC_ROTATE;
+
+        Q_ASSERT(winid);
+        qAppPriv->SetGestureConfig(winid, 0, sizeof(gc)/sizeof(gc[0]), gc, sizeof(gc[0]));
+    }
 }
 
 QT_END_NAMESPACE

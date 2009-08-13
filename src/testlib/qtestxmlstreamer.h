@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,9 +59,9 @@ class QTestXmlStreamer: public QTestBasicStreamer
         QTestXmlStreamer();
         ~QTestXmlStreamer();
 
-        void formatStart(const QTestElement *element, char **formatted) const;
-        void formatEnd(const QTestElement *element, char **formatted) const;
-        void formatBeforeAttributes(const QTestElement *element, char **formatted) const;
+        void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
+        void formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const;
+        void formatBeforeAttributes(const QTestElement *element, QTestCharBuffer *formatted) const;
         void output(QTestElement *element) const;
 };
 

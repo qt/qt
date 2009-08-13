@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,6 +50,7 @@
 #include <private/qdnd_p.h>
 #include <private/qmacinputcontext_p.h>
 #include <private/qmultitouch_mac_p.h>
+#include <private/qevent_p.h>
 
 #include <qscrollarea.h>
 #include <qhash.h>
@@ -327,7 +328,7 @@ extern "C" {
         return NSDragOperationNone;
     } else {
         // save the mouse position, used by draggingExited handler.
-        DnDParams *dndParams = [QCocoaView currentMouseEvent];
+        DnDParams *dndParams = [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent];
         dndParams->activeDragEnterPos = windowPoint;
         // send a drag move event immediately after a drag enter event (as per documentation).
         QDragMoveEvent qDMEvent(posDrag, qtAllowed, mimeData, QApplication::mouseButtons(), modifiers);
@@ -406,7 +407,7 @@ extern "C" {
     dragEnterSequence = -1;
     if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
         // try sending the leave event to the last view which accepted drag enter.
-        DnDParams *dndParams = [QCocoaView currentMouseEvent];
+        DnDParams *dndParams = [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent];
         NSView *candidateView = [[[self window] contentView] hitTest:dndParams->activeDragEnterPos];
         if (candidateView && candidateView != self)
             return [candidateView draggingExited:sender];
@@ -868,32 +869,65 @@ extern "C" {
 
 - (void)magnifyWithEvent:(NSEvent *)event;
 {
-    Q_UNUSED(event);
-//    qDebug() << "magnifyWithEvent";
+    if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
+        return;
+
+    QNativeGestureEvent qNGEvent;
+    qNGEvent.gestureType = QNativeGestureEvent::Zoom;
+    NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
+    qNGEvent.position = flipPoint(p).toPoint();
+    qNGEvent.percentage = [event magnification];
+    qApp->sendEvent(qwidget, &qNGEvent);
 }
 
 - (void)rotateWithEvent:(NSEvent *)event;
 {
-    Q_UNUSED(event);
-//    qDebug() << "rotateWithEvent";
+    if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
+        return;
+
+    QNativeGestureEvent qNGEvent;
+    qNGEvent.gestureType = QNativeGestureEvent::Rotate;
+    NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
+    qNGEvent.position = flipPoint(p).toPoint();
+    qNGEvent.percentage = [event rotation];
+    qApp->sendEvent(qwidget, &qNGEvent);
 }
 
 - (void)swipeWithEvent:(NSEvent *)event;
 {
-    Q_UNUSED(event);
-//    qDebug() << "swipeWithEvent";
+    if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
+        return;
+
+    QNativeGestureEvent qNGEvent;
+    qNGEvent.gestureType = QNativeGestureEvent::Swipe;
+    NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
+    qNGEvent.position = flipPoint(p).toPoint();
+    qNGEvent.direction = QSize(-[event deltaX], -[event deltaY]);
+    qApp->sendEvent(qwidget, &qNGEvent);
 }
 
 - (void)beginGestureWithEvent:(NSEvent *)event;
 {
-    Q_UNUSED(event);
-//    qDebug() << "beginGestureWithEvent";
+    if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
+        return;
+
+    QNativeGestureEvent qNGEvent;
+    qNGEvent.gestureType = QNativeGestureEvent::GestureBegin;
+    NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
+    qNGEvent.position = flipPoint(p).toPoint();
+    qApp->sendEvent(qwidget, &qNGEvent);
 }
 
 - (void)endGestureWithEvent:(NSEvent *)event;
 {
-    Q_UNUSED(event);
-//    qDebug() << "endGestureWithEvent";
+    if (!QApplicationPrivate::tryModalHelper(qwidget, 0))
+        return;
+
+    QNativeGestureEvent qNGEvent;
+    qNGEvent.gestureType = QNativeGestureEvent::GestureEnd;
+    NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
+    qNGEvent.position = flipPoint(p).toPoint();
+    qApp->sendEvent(qwidget, &qNGEvent);
 }
 #endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
 

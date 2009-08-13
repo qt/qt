@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -126,7 +126,7 @@
     value is constant.  For a given object instance, the READ method of a 
     constant property must return the same value every time it is called.  This
     constant value may be different for different instances of the object.  A
-    constant property cannot have a WRTE method or a NOTIFY signal.
+    constant property cannot have a WRITE method or a NOTIFY signal.
 
     \o The presence of the \c FINAL attribute indicates that the property
     will not be overridden by a derived class.  This can be used for performance

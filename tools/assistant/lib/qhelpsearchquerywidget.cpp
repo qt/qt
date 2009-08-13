@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,9 +43,12 @@
 
 #include <QtCore/QDebug>
 
+#include <QtCore/QAbstractListModel>
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
+#include <QtCore/QtGlobal>
 
+#include <QtGui/QCompleter>
 #include <QtGui/QLabel>
 #include <QtGui/QLayout>
 #include <QtGui/QLineEdit>
@@ -60,8 +63,46 @@ class QHelpSearchQueryWidgetPrivate : public QObject
     Q_OBJECT
 
 private:
+    struct QueryHistory {
+        explicit QueryHistory() : curQuery(-1) {}
+        QList<QList<QHelpSearchQuery> > queries;
+        int curQuery;
+    };
+
+    class CompleterModel : public QAbstractListModel
+    {
+    public:
+        explicit CompleterModel(QObject *parent)
+          : QAbstractListModel(parent) {}
+
+        int rowCount(const QModelIndex &parent = QModelIndex()) const
+        {
+            return parent.isValid() ? 0 : termList.size();
+        }
+
+        QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const
+        {
+            if (!index.isValid() || index.row() >= termList.count()||
+                (role != Qt::EditRole && role != Qt::DisplayRole))
+                return QVariant();
+            return termList.at(index.row());
+        }
+
+        void addTerm(const QString &term)
+        {
+            if (!termList.contains(term)) {
+                termList.append(term);
+                reset();
+            }
+        }
+
+    private:
+        QStringList termList;
+    };
+
     QHelpSearchQueryWidgetPrivate()
-        : QObject()
+        : QObject(), simpleSearch(true),
+          searchCompleter(new CompleterModel(this), this)
     {
         searchButton = 0;
         advancedSearchWidget = 0;
@@ -136,11 +177,102 @@ private:
         return wordList;
     }
 
+    void saveQuery(const QList<QHelpSearchQuery> &query, QueryHistory &queryHist)
+    {
+        // We only add the query to the list if it is different from the last one.
+        bool insert = false;
+        if (queryHist.queries.empty())
+            insert = true;
+        else {
+            const QList<QHelpSearchQuery> &lastQuery = queryHist.queries.last();
+            if (lastQuery.size() != query.size()) {
+                insert = true;
+            } else {
+                for (int i = 0; i < query.size(); ++i) {
+                    if (query.at(i).fieldName != lastQuery.at(i).fieldName
+                        || query.at(i).wordList != lastQuery.at(i).wordList) {
+                        insert = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (insert) {
+            queryHist.queries.append(query);
+            foreach (const QHelpSearchQuery &queryPart, query) {
+                static_cast<CompleterModel *>(searchCompleter.model())->
+                        addTerm(queryPart.wordList.join(" "));
+            }
+        }
+    }
+
+    void nextOrPrevQuery(int maxOrMinIndex, int addend,
+                         QToolButton *thisButton, QToolButton *otherButton)
+    {
+        QueryHistory *queryHist;
+        QList<QLineEdit *> lineEdits;
+        if (simpleSearch) {
+            queryHist = &simpleQueries;
+            lineEdits << defaultQuery;
+        } else {
+            queryHist = &complexQueries;
+            lineEdits << allQuery << atLeastQuery << similarQuery
+                    << withoutQuery << exactQuery;
+        }
+        foreach (QLineEdit *lineEdit, lineEdits)
+            lineEdit->clear();
+
+        // Otherwise, the respective button would be disabled.
+        Q_ASSERT(queryHist->curQuery != maxOrMinIndex);
+
+        queryHist->curQuery += addend;
+        const QList<QHelpSearchQuery> &query =
+                queryHist->queries.at(queryHist->curQuery);
+        foreach (const QHelpSearchQuery &queryPart, query) {
+            QLineEdit *lineEdit;
+            switch (queryPart.fieldName) {
+            case QHelpSearchQuery::DEFAULT:
+                lineEdit = defaultQuery;
+                break;
+            case QHelpSearchQuery::ALL:
+                lineEdit = allQuery;
+                break;
+            case QHelpSearchQuery::ATLEAST:
+                lineEdit = atLeastQuery;
+                break;
+            case QHelpSearchQuery::FUZZY:
+                lineEdit = similarQuery;
+                break;
+            case QHelpSearchQuery::WITHOUT:
+                lineEdit = withoutQuery;
+                break;
+            case QHelpSearchQuery::PHRASE:
+                lineEdit = exactQuery;
+                break;
+            default:
+                Q_ASSERT(0);
+            }
+            lineEdit->setText(queryPart.wordList.join(" "));
+        }
+
+        if (queryHist->curQuery == maxOrMinIndex)
+            thisButton->setEnabled(false);
+        otherButton->setEnabled(true);
+    }
+
+    void enableOrDisableToolButtons()
+    {
+        const QueryHistory &queryHist =
+                simpleSearch ? simpleQueries : complexQueries;
+        prevQueryButton->setEnabled(queryHist.curQuery > 0);
+        nextQueryButton->setEnabled(queryHist.curQuery <
+                                    queryHist.queries.size() - 1);
+    }
+
 private slots:
     void showHideAdvancedSearch()
     {
-        bool hidden = advancedSearchWidget->isHidden();
-        if (hidden) {
+        if (simpleSearch) {
             advancedSearchWidget->show();
             showHideAdvancedSearchButton->setText((QLatin1String("-")));
         } else {
@@ -148,12 +280,86 @@ private slots:
             showHideAdvancedSearchButton->setText((QLatin1String("+")));
         }
 
-        defaultQuery->setEnabled(!hidden);
+        simpleSearch = !simpleSearch;
+        defaultQuery->setEnabled(simpleSearch);
+        enableOrDisableToolButtons();
+    }
+
+    void searchRequested()
+    {
+        QList<QHelpSearchQuery> queryList;
+#if !defined(QT_CLUCENE_SUPPORT)
+        queryList.append(QHelSearchQuery(QHelpSearchQuery::DEFAULT,
+                                          QStringList(defaultQuery->text())));
+
+#else
+        if (defaultQuery->isEnabled()) {
+            queryList.append(QHelpSearchQuery(QHelpSearchQuery::DEFAULT,
+                                              buildTermList(escapeString(defaultQuery->text()))));
+        } else {
+            const QRegExp exp(QLatin1String("\\s+"));
+            QStringList lst = similarQuery->text().split(exp, QString::SkipEmptyParts);
+            if (!lst.isEmpty()) {
+                QStringList fuzzy;
+                foreach (const QString term, lst)
+                    fuzzy += buildTermList(escapeString(term));
+                queryList.append(QHelpSearchQuery(QHelpSearchQuery::FUZZY, fuzzy));
+            }
+
+            lst = withoutQuery->text().split(exp, QString::SkipEmptyParts);
+            if (!lst.isEmpty()) {
+                QStringList without;
+                foreach (const QString term, lst)
+                    without.append(escapeString(term));
+                queryList.append(QHelpSearchQuery(QHelpSearchQuery::WITHOUT, without));
+            }
+
+            if (!exactQuery->text().isEmpty()) {
+                QString phrase = exactQuery->text().remove(QLatin1Char('\"'));
+                phrase = escapeString(phrase.simplified());
+                queryList.append(QHelpSearchQuery(QHelpSearchQuery::PHRASE, QStringList(phrase)));
+            }
+
+            lst = allQuery->text().split(exp, QString::SkipEmptyParts);
+            if (!lst.isEmpty()) {
+                QStringList all;
+                foreach (const QString term, lst)
+                    all.append(escapeString(term));
+                queryList.append(QHelpSearchQuery(QHelpSearchQuery::ALL, all));
+            }
+
+            lst = atLeastQuery->text().split(exp, QString::SkipEmptyParts);
+            if (!lst.isEmpty()) {
+                QStringList atLeast;
+                foreach (const QString term, lst)
+                    atLeast += buildTermList(escapeString(term));
+                queryList.append(QHelpSearchQuery(QHelpSearchQuery::ATLEAST, atLeast));
+            }
+        }
+#endif
+        QueryHistory &queryHist = simpleSearch ? simpleQueries : complexQueries;
+        saveQuery(queryList, queryHist);
+        queryHist.curQuery = queryHist.queries.size() - 1;
+        if (queryHist.curQuery > 0)
+            prevQueryButton->setEnabled(true);
+        nextQueryButton->setEnabled(false);
+    }
+
+    void nextQuery()
+    {
+        nextOrPrevQuery((simpleSearch ? simpleQueries : complexQueries).queries.size() - 1,
+                        1, nextQueryButton, prevQueryButton);
+    }
+
+    void prevQuery()
+    {
+        nextOrPrevQuery(0, -1, prevQueryButton, nextQueryButton);
     }
 
 private:
     friend class QHelpSearchQueryWidget;
 
+    bool simpleSearch;
     QPushButton *searchButton;
     QWidget* advancedSearchWidget;
     QToolButton *showHideAdvancedSearchButton;
@@ -163,6 +369,11 @@ private:
     QLineEdit *withoutQuery;
     QLineEdit *allQuery;
     QLineEdit *atLeastQuery;
+    QToolButton *nextQueryButton;
+    QToolButton *prevQueryButton;
+    QueryHistory simpleQueries;
+    QueryHistory complexQueries;
+    QCompleter searchCompleter;
 };
 
 #include "qhelpsearchquerywidget.moc"
@@ -199,13 +410,26 @@ QHelpSearchQueryWidget::QHelpSearchQueryWidget(QWidget *parent)
     QHBoxLayout* hBoxLayout = new QHBoxLayout();
     QLabel *label = new QLabel(tr("Search for:"), this);
     d->defaultQuery = new QLineEdit(this);
+    d->defaultQuery->setCompleter(&d->searchCompleter);
+    d->prevQueryButton = new QToolButton(this);
+    d->prevQueryButton->setArrowType(Qt::LeftArrow);
+    d->prevQueryButton->setToolTip(tr("Previous search"));
+    d->prevQueryButton->setEnabled(false);
+    d->nextQueryButton = new QToolButton(this);
+    d->nextQueryButton->setArrowType(Qt::RightArrow);
+    d->nextQueryButton->setToolTip(tr("Next search"));
+    d->nextQueryButton->setEnabled(false);
     d->searchButton = new QPushButton(tr("Search"), this);
     hBoxLayout->addWidget(label);
     hBoxLayout->addWidget(d->defaultQuery);
+    hBoxLayout->addWidget(d->prevQueryButton);
+    hBoxLayout->addWidget(d->nextQueryButton);
     hBoxLayout->addWidget(d->searchButton);
 
     vLayout->addLayout(hBoxLayout);
 
+    connect(d->prevQueryButton, SIGNAL(clicked()), d, SLOT(prevQuery()));
+    connect(d->nextQueryButton, SIGNAL(clicked()), d, SLOT(nextQuery()));
     connect(d->searchButton, SIGNAL(clicked()), this, SIGNAL(search()));
     connect(d->defaultQuery, SIGNAL(returnPressed()), this, SIGNAL(search()));
 
@@ -236,26 +460,31 @@ QHelpSearchQueryWidget::QHelpSearchQueryWidget(QWidget *parent)
     label = new QLabel(tr("words <B>similar</B> to:"), this);
     gLayout->addWidget(label, 0, 0);
     d->similarQuery = new QLineEdit(this);
+    d->similarQuery->setCompleter(&d->searchCompleter);
     gLayout->addWidget(d->similarQuery, 0, 1);
 
     label = new QLabel(tr("<B>without</B> the words:"), this);
     gLayout->addWidget(label, 1, 0);
     d->withoutQuery = new QLineEdit(this);
+    d->withoutQuery->setCompleter(&d->searchCompleter);
     gLayout->addWidget(d->withoutQuery, 1, 1);
 
     label = new QLabel(tr("with <B>exact phrase</B>:"), this);
     gLayout->addWidget(label, 2, 0);
     d->exactQuery = new QLineEdit(this);
+    d->exactQuery->setCompleter(&d->searchCompleter);
     gLayout->addWidget(d->exactQuery, 2, 1);
 
     label = new QLabel(tr("with <B>all</B> of the words:"), this);
     gLayout->addWidget(label, 3, 0);
     d->allQuery = new QLineEdit(this);
+    d->allQuery->setCompleter(&d->searchCompleter);
     gLayout->addWidget(d->allQuery, 3, 1);
 
     label = new QLabel(tr("with <B>at least one</B> of the words:"), this);
     gLayout->addWidget(label, 4, 0);
     d->atLeastQuery = new QLineEdit(this);
+    d->atLeastQuery->setCompleter(&d->searchCompleter);
     gLayout->addWidget(d->atLeastQuery, 4, 1);
 
     vLayout->addWidget(d->advancedSearchWidget);
@@ -269,6 +498,7 @@ QHelpSearchQueryWidget::QHelpSearchQueryWidget(QWidget *parent)
     connect(d->showHideAdvancedSearchButton, SIGNAL(clicked()),
         d, SLOT(showHideAdvancedSearch()));
 #endif
+    connect(this, SIGNAL(search()), d, SLOT(searchRequested()));
 }
 
 /*!
@@ -285,59 +515,10 @@ QHelpSearchQueryWidget::~QHelpSearchQueryWidget()
 */
 QList<QHelpSearchQuery> QHelpSearchQueryWidget::query() const
 {
-#if !defined(QT_CLUCENE_SUPPORT)
-    QList<QHelpSearchQuery> queryList;
-    queryList.append(QHelpSearchQuery(QHelpSearchQuery::DEFAULT,
-        QStringList(d->defaultQuery->text())));
-
-    return queryList;
-#else
-    QList<QHelpSearchQuery> queryList;
-    if (d->defaultQuery->isEnabled()) {
-        queryList.append(QHelpSearchQuery(QHelpSearchQuery::DEFAULT,
-            d->buildTermList(d->escapeString(d->defaultQuery->text()))));
-    } else {
-        const QRegExp exp(QLatin1String("\\s+"));
-        QStringList lst = d->similarQuery->text().split(exp, QString::SkipEmptyParts);
-        if (!lst.isEmpty()) {
-            QStringList fuzzy;
-            foreach (const QString term, lst)
-                fuzzy += d->buildTermList(d->escapeString(term));
-            queryList.append(QHelpSearchQuery(QHelpSearchQuery::FUZZY, fuzzy));
-        }
-
-        lst = d->withoutQuery->text().split(exp, QString::SkipEmptyParts);
-        if (!lst.isEmpty()) {
-            QStringList without;
-            foreach (const QString term, lst)
-                without.append(d->escapeString(term));
-            queryList.append(QHelpSearchQuery(QHelpSearchQuery::WITHOUT, without));
-        }
-
-        if (!d->exactQuery->text().isEmpty()) {
-            QString phrase = d->exactQuery->text().remove(QLatin1Char('\"'));
-            phrase = d->escapeString(phrase.simplified());
-            queryList.append(QHelpSearchQuery(QHelpSearchQuery::PHRASE, QStringList(phrase)));
-        }
-
-        lst = d->allQuery->text().split(exp, QString::SkipEmptyParts);
-        if (!lst.isEmpty()) {
-            QStringList all;
-            foreach (const QString term, lst)
-                all.append(d->escapeString(term));
-            queryList.append(QHelpSearchQuery(QHelpSearchQuery::ALL, all));
-        }
-
-        lst = d->atLeastQuery->text().split(exp, QString::SkipEmptyParts);
-        if (!lst.isEmpty()) {
-            QStringList atLeast;
-            foreach (const QString term, lst)
-                atLeast += d->buildTermList(d->escapeString(term));
-            queryList.append(QHelpSearchQuery(QHelpSearchQuery::ATLEAST, atLeast));
-        }
-    }
-    return queryList;
-#endif
+    const QHelpSearchQueryWidgetPrivate::QueryHistory &queryHist =
+        d->simpleSearch ? d->simpleQueries : d->complexQueries;
+    return queryHist.queries.isEmpty() ?
+        QList<QHelpSearchQuery>() : queryHist.queries.last();
 }
 
 /*! \reimp

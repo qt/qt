@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -719,7 +719,7 @@ static int indentForContinuationLine()
                 delimDepth--;
                 /*
                     An unclosed delimiter is a good place to align at,
-                    at least for some styles (including Trolltech's).
+                    at least for some styles (including Qt's).
                 */
                 if ( delimDepth == -1 )
                     hook = j;

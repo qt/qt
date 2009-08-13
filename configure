@@ -400,7 +400,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             echo
             echo "You are not licensed for Qt for Embedded Linux."
             echo
-            echo "Please contact sales@trolltech.com to upgrade your license"
+            echo "Please contact qt-info@nokia.com to upgrade your license"
             echo "to include Qt for Embedded Linux, or install the"
             echo "Qt Open Source Edition if you intend to develop free software."
             exit 1
@@ -420,7 +420,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             echo
             echo "You are not licensed for the Qt/Mac platform."
             echo
-            echo "Please contact sales@trolltech.com to upgrade your license"
+            echo "Please contact qt-info@nokia.com to upgrade your license"
             echo "to include the Qt/Mac platform."
             exit 1
             ;;
@@ -439,7 +439,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
              echo
              echo "You are not licensed for the Qt/X11 platform."
              echo
-             echo "Please contact sales@trolltech.com to upgrade your license to"
+             echo "Please contact qt-info@nokia.com to upgrade your license to"
              echo "include the Qt/X11 platform, or install the Qt Open Source Edition"
              echo "if you intend to develop free software."
              exit 1
@@ -609,6 +609,7 @@ CFG_NOBUILD_PARTS=""
 CFG_RELEASE_QMAKE=no
 CFG_PHONON=auto
 CFG_PHONON_BACKEND=yes
+CFG_MULTIMEDIA=yes
 CFG_SVG=yes
 CFG_DECLARATIVE=yes
 CFG_WEBKIT=auto # (yes|no|auto)
@@ -710,6 +711,7 @@ OPT_VERBOSE=no
 OPT_HELP=
 CFG_SILENT=no
 CFG_GRAPHICS_SYSTEM=default
+CFG_ALSA=auto
 
 # initalize variables used for installation
 QT_INSTALL_PREFIX=
@@ -849,7 +851,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-svg|-declarative|-webkit|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-declarative|-webkit|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1988,6 +1990,13 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
+    multimedia)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
+            CFG_MULTIMEDIA="$VAL"
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
     *)
         UNKNOWN_OPT=yes
         ;;
@@ -2203,6 +2212,8 @@ if [ -z "$MAKE" ]; then
         echo >&2 "Cannot proceed."
         exit 1
     fi
+    # export MAKE, we need it later in the config.tests
+    export MAKE
 fi
 
 fi ### help
@@ -2971,7 +2982,7 @@ fi
 #prefix
 if [ -z "$QT_INSTALL_PREFIX" ]; then
     if [ "$CFG_DEV" = "yes" ]; then
-	QT_INSTALL_PREFIX="$outpath" # At Trolltech, we use sandboxed builds by default
+	QT_INSTALL_PREFIX="$outpath" # In Development, we use sandboxed builds by default
     elif [ "$PLATFORM_QWS" = "yes" ]; then
         QT_INSTALL_PREFIX="/usr/local/Trolltech/QtEmbedded-${QT_VERSION}"
         if [ "$PLATFORM" != "$XPLATFORM" ]; then
@@ -3164,6 +3175,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
         [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
         [-no-openssl] [-openssl] [-openssl-linked]
+        [-no-multimedia] [-multimedia]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit]
         [-no-scripttools] [-scripttools] [-no-declarative] [-declarative]
 
@@ -3303,6 +3315,9 @@ fi
                          Phonon is built if a decent C++ compiler is used.
     -no-phonon-backend.. Do not build the platform phonon plugin.
  +  -phonon-backend..... Build the platform phonon plugin.
+
+    -no-multimedia ..... Do not build the multimedia module.
+ *  -multimedia ........ Build the multimedia module.
 
     -no-svg ............ Do not build the SVG module.
  +  -svg ............... Build the SVG module.
@@ -3881,7 +3896,7 @@ elif [ "$Edition" != "OpenSource" ]; then
                     echo "  Your support and upgrade period has expired."
                     echo
                     echo "  You are no longer licensed to use this version of Qt."
-                    echo "  Please contact sales@trolltech.com to renew your support"
+                    echo "  Please contact qt-info@nokia.com to renew your support"
                     echo "  and upgrades for this license."
                     echo
                     echo "NOTICE  NOTICE  NOTICE  NOTICE"
@@ -3899,7 +3914,7 @@ elif [ "$Edition" != "OpenSource" ]; then
                     echo "  support, nor are you entitled to use any more recent"
                     echo "  Qt releases."
                     echo
-                    echo "  Please contact sales@trolltech.com to renew your"
+                    echo "  Please contact qt-info@nokia.com to renew your"
                     echo "  support and upgrades for this license."
                     echo
                     echo "WARNING  WARNING  WARNING  WARNING"
@@ -3914,7 +3929,7 @@ elif [ "$Edition" != "OpenSource" ]; then
                 echo "  Your Evaluation license has expired."
                 echo
                 echo "  You are no longer licensed to use this software. Please"
-                echo "  contact sales@trolltech.com to purchase license, or install"
+                echo "  contact qt-info@nokia.com to purchase license, or install"
                 echo "  the Qt Open Source Edition if you intend to develop free"
                 echo "  software."
                 echo
@@ -5679,6 +5694,14 @@ if [ "$CFG_PTMALLOC" != "no" ]; then
     QMakeVar add QMAKE_LFLAGS "$outpath/lib/libptmalloc3.a"
 fi
 
+if [ "$CFG_ALSA" = "auto" ]; then
+    if "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/alsa "alsa" $L_FLAGS $I_FLAGS $l_FLAGS; then
+        CFG_ALSA=yes
+    else
+        CFG_ALSA=no
+    fi
+fi
+
 #-------------------------------------------------------------------------------
 # ask for all that hasn't been auto-detected or specified in the arguments
 #-------------------------------------------------------------------------------
@@ -5722,17 +5745,23 @@ if [ "$CFG_MAC_DWARF2" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG dwarf2"
 fi
 
-# Set the default arch. Select 32-bit/carbon if nothing else has 
-# been specified on the configure line.
+# Set the default arch.
+# Carbon builds: 32 bit x86/ppc.
+# For "-cocoa" builds on snow leopard : compiler default (64-bit).
+# For "-cocoa" builds on leopard : compiler default (32-bit).
 if [ "$PLATFORM_MAC" = "yes" ]  && [ "$CFG_MAC_ARCHS" == "" ]; then
     source "$mactests/defaultarch.test" "$TEST_COMPILER" "$OPT_VERBOSE" "$mactests"
 
-    if [ "$QT_MAC_DEFUALT_ARCH" == "x86_64" ]; then
-        CFG_MAC_ARCHS=" x86"
-    elif [ "$QT_MAC_DEFUALT_ARCH" == "ppc64" ]; then
-        CFG_MAC_ARCHS=" ppc"
-    else
-        CFG_MAC_ARCHS=" $QT_MAC_DEFUALT_ARCH"
+	if [ "$CFG_MAC_COCOA" != "yes" ]; then
+		if [ "$QT_MAC_DEFAULT_ARCH" == "x86_64" ]; then
+			CFG_MAC_ARCHS=" x86"
+		elif [ "$QT_MAC_DEFAULT_ARCH" == "ppc64" ]; then
+			CFG_MAC_ARCHS=" ppc"
+		else
+			CFG_MAC_ARCHS=" $QT_MAC_DEFAULT_ARCH"
+		fi
+	else
+		CFG_MAC_ARCHS=" $QT_MAC_DEFAULT_ARCH"
     fi
 
     [ "$OPT_VERBOSE" == "yes" ] && echo "Setting Mac architechture to$CFG_MAC_ARCHS."
@@ -5939,7 +5968,9 @@ fi
 if [ "$CFG_INOTIFY" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG inotify"
 fi
-if [ "$CFG_LIBJPEG" = "system" ]; then
+if [ "$CFG_LIBJPEG" = "no" ]; then
+    CFG_JPEG="no"
+elif [ "$CFG_LIBJPEG" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-jpeg"
 fi
 if [ "$CFG_JPEG" = "no" ]; then
@@ -5947,7 +5978,9 @@ if [ "$CFG_JPEG" = "no" ]; then
 elif [ "$CFG_JPEG" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG jpeg"
 fi
-if [ "$CFG_LIBMNG" = "system" ]; then
+if [ "$CFG_LIBMNG" = "no" ]; then
+    CFG_MNG="no"
+elif [ "$CFG_LIBMNG" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-mng"
 fi
 if [ "$CFG_MNG" = "no" ]; then
@@ -5971,7 +6004,9 @@ if [ "$CFG_GIF" = "no" ]; then
 elif [ "$CFG_GIF" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG gif"
 fi
-if [ "$CFG_LIBTIFF" = "system" ]; then
+if [ "$CFG_LIBTIFF" = "no" ]; then
+    CFG_TIFF="no"
+elif [ "$CFG_LIBTIFF" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-tiff"
 fi
 if [ "$CFG_TIFF" = "no" ]; then
@@ -6111,6 +6146,10 @@ fi
 
 if [ "$CFG_EXCEPTIONS" != "no" ]; then
     QTCONFIG_CONFIG="$QTCONFIG_CONFIG exceptions"
+fi
+
+if [ "$CFG_ALSA" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG alsa"
 fi
 
 #
@@ -6288,6 +6327,12 @@ if [ "$CFG_SCRIPTTOOLS" = "yes" ]; then
     CFG_SCRIPTTOOLS="yes"
 else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPTTOOLS"
+fi
+
+if [ "$CFG_MULTIMEDIA" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG multimedia"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
 fi
 
 if [ "$CFG_EXCEPTIONS" = "no" ]; then
@@ -6791,6 +6836,7 @@ fi
 [ "$CFG_XFIXES" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XFIXES"
 [ "$CFG_XRANDR" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XRANDR"
 [ "$CFG_XINPUT" = "runtime" ]    && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_RUNTIME_XINPUT"
+[ "$CFG_ALSA" = "no" ]           && QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ALSA"
 
 # sort QCONFIG_FLAGS for neatness if we can
 [ '!' -z "$AWK" ] && QCONFIG_FLAGS=`echo $QCONFIG_FLAGS | $AWK '{ gsub(" ", "\n"); print }' | sort | uniq`
@@ -7150,6 +7196,7 @@ echo "QtConcurrent code.... $CFG_CONCURRENT"
 echo "QtScriptTools module  $CFG_SCRIPTTOOLS"
 echo "QtXmlPatterns module  $CFG_XMLPATTERNS"
 echo "Phonon module ....... $CFG_PHONON"
+echo "Multimedia module ... $CFG_MULTIMEDIA"
 echo "SVG module .......... $CFG_SVG"
 echo "WebKit module ....... $CFG_WEBKIT"
 echo "Declarative module .. $CFG_DECLARATIVE"
@@ -7301,6 +7348,7 @@ if [ "$PLATFORM_MAC" = "yes" ] && [ "$CFG_FRAMEWORK" = "yes" ] && [ "$CFG_DEBUG"
     echo "NOTE: Mac OS X frameworks implicitly build debug and release Qt libraries."
     echo
 fi
+echo "alsa support ........ $CFG_ALSA"
 echo
 
 sepath=`echo "$relpath" | sed -e 's/\\./\\\\./g'`

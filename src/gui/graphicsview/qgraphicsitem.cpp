@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -678,19 +678,22 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
             return;
         }
 
-        // Inherit the enabled-state from our parents.
-        if ((parent && ((parent->d_ptr->ancestorFlags & flag)
-                        || (int(parent->d_ptr->flags & childFlag) == childFlag)
+        if (parent) {
+            // Inherit the enabled-state from our parents.
+            if ((parent->d_ptr->ancestorFlags & flag)
+                    || (int(parent->d_ptr->flags & childFlag) == childFlag)
                         || (childFlag == -1 && parent->d_ptr->handlesChildEvents)
-                        || (childFlag == -2 && parent->d_ptr->filtersDescendantEvents)))) {
-            enabled = true;
-            ancestorFlags |= flag;
-        }
-
-        // Top-level root items don't have any ancestors, so there are no
-        // ancestor flags either.
-        if (!parent)
+                        || (childFlag == -2 && parent->d_ptr->filtersDescendantEvents)) {
+                enabled = true;
+                ancestorFlags |= flag;
+            } else {
+                ancestorFlags &= ~flag;
+            }
+        } else {
+            // Top-level root items don't have any ancestors, so there are no
+            // ancestor flags either.
             ancestorFlags = 0;
+        }
     } else {
         // Don't set or propagate the ancestor flag if it's already correct.
         if (((ancestorFlags & flag) && enabled) || (!(ancestorFlags & flag) && !enabled))
@@ -3538,7 +3541,13 @@ void QGraphicsItem::resetTransform()
 /*!
     \obsolete
 
-    Use setRotation() instead
+    Use
+
+    \code
+    setRotation(rotation() + angle);
+    \endcode
+
+    instead.
 
     Rotates the current item transformation \a angle degrees clockwise around
     its origin. To translate around an arbitrary point (x, y), you need to
@@ -3558,7 +3567,13 @@ void QGraphicsItem::rotate(qreal angle)
 /*!
     \obsolete
 
-    Use setScale() instead
+    Use
+
+    \code
+    setTransform(QTransform::fromScale(sx, sy), true);
+    \endcode
+
+    instead.
 
     Scales the current item transformation by (\a sx, \a sy) around its
     origin. To scale from an arbitrary point (x, y), you need to combine
@@ -3578,7 +3593,13 @@ void QGraphicsItem::scale(qreal sx, qreal sy)
 /*!
     \obsolete
 
-    Use setTransform() instead.
+    Use 
+
+    \code
+    setTransform(QTransform().shear(sh, sv), true);
+    \endcode
+
+    instead.
 
     Shears the current item transformation by (\a sh, \a sv).
 
@@ -3592,7 +3613,12 @@ void QGraphicsItem::shear(qreal sh, qreal sv)
 /*!
     \obsolete
 
-    Use setPos() or setTransformOriginPoint() instead.
+    Use setPos() or setTransformOriginPoint() instead. For identical
+    behavior, use
+    
+    \code
+    setTransform(QTransform::fromTranslate(dx, dy), true);
+    \endcode
 
     Translates the current item transformation by (\a dx, \a dy).
 
@@ -6371,7 +6397,7 @@ void QGraphicsItem::inputMethodEvent(QInputMethodEvent *event)
     surrounding text and reconversions. \a query specifies which
     property is queried.
 
-    \sa inputMethodEvent()
+    \sa inputMethodEvent(), QInputMethodEvent, QInputContext
 */
 QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 {
@@ -6384,6 +6410,39 @@ QVariant QGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 
     Q_UNUSED(query);
     return QVariant();
+}
+
+/*!
+    Returns the current input method hints of this item.
+
+    Input method hints are only relevant for input items.
+    The hints are used by the input method to indicate how it should operate.
+    For example, if the Qt::ImhNumbersOnly flag is set, the input method may change
+    its visual components to reflect that only numbers can be entered.
+
+    The effect may vary between input method implementations.
+
+    \since 4.6
+
+    \sa setInputMethodHints(), inputMethodQuery(), QInputContext
+*/
+Qt::InputMethodHints QGraphicsItem::inputMethodHints() const
+{
+    Q_D(const QGraphicsItem);
+    return d->imHints;
+}
+
+/*!
+    Sets the current input method hints of this item to \a hints.
+
+    \since 4.6
+
+    \sa inputMethodHints(), inputMethodQuery(), QInputContext
+*/
+void QGraphicsItem::setInputMethodHints(Qt::InputMethodHints hints)
+{
+    Q_D(QGraphicsItem);
+    d->imHints = hints;
 }
 
 /*!
@@ -9788,20 +9847,25 @@ void QGraphicsItemGroup::addToGroup(QGraphicsItem *item)
     }
 
     // COMBINE
-    // ### Use itemTransform() instead.
-    QTransform oldSceneMatrix = item->sceneTransform();
+    bool ok;
+    QTransform itemTransform = item->itemTransform(this, &ok);
+
+    if (!ok) {
+        qWarning("QGraphicsItemGroup::addToGroup: could not find a valid transformation from item to group coordinates");
+        return;
+    }
+
+    QTransform newItemTransform(itemTransform);
     item->setPos(mapFromItem(item, 0, 0));
     item->setParentItem(this);
-    QTransform newItemTransform(oldSceneMatrix);
-    newItemTransform *= sceneTransform().inverted();
+
+    // removing position from translation component of the new transform
     if (!item->pos().isNull())
         newItemTransform *= QTransform::fromTranslate(-item->x(), -item->y());
+
     item->setTransform(newItemTransform);
     item->d_func()->setIsMemberOfGroup(true);
     prepareGeometryChange();
-    QTransform itemTransform(item->transform());
-    if (!item->pos().isNull())
-        itemTransform *= QTransform::fromTranslate(item->x(), item->y());
     d->itemsBoundingRect |= itemTransform.mapRect(item->boundingRect() | item->childrenBoundingRect());
     update();
 }

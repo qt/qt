@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -590,8 +590,8 @@ class FunctionNode : public LeafNode
 class PropertyNode : public LeafNode
 {
  public:
-    enum FunctionRole { Getter, Setter, Resetter };
-    enum { NumFunctionRoles = Resetter + 1 };
+    enum FunctionRole { Getter, Setter, Resetter, Notifier };
+    enum { NumFunctionRoles = Notifier + 1 };
 
     PropertyNode(InnerNode *parent, const QString& name);
     virtual ~PropertyNode() { }
@@ -609,6 +609,7 @@ class PropertyNode : public LeafNode
     NodeList getters() const { return functions(Getter); }
     NodeList setters() const { return functions(Setter); }
     NodeList resetters() const { return functions(Resetter); }
+    NodeList notifiers() const { return functions(Notifier); }
     bool isStored() const { return fromTrool(sto, storedDefault()); }
     bool isDesignable() const { return fromTrool(des, designableDefault()); }
     const PropertyNode *overriddenFrom() const { return overrides; }

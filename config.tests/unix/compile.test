@@ -64,14 +64,14 @@ test -d "$OUTDIR/$TEST" || mkdir -p "$OUTDIR/$TEST"
 
 cd "$OUTDIR/$TEST"
 
-test -r Makefile && make distclean >/dev/null 2>&1
+test -r Makefile && $MAKE distclean >/dev/null 2>&1
 
 "$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "CONFIG+=$QMAKE_CONFIG" "LIBS*=$LFLAGS" "LIBS+=$MAC_ARCH_LFLAGS" "INCLUDEPATH*=$INCLUDEPATH" "QMAKE_CXXFLAGS*=$CXXFLAGS" "QMAKE_CXXFLAGS+=$MAC_ARCH_CXXFLAGS" "$SRCDIR/$TEST/$EXE.pro" -o "$OUTDIR/$TEST/Makefile"
 
 if [ "$VERBOSE" = "yes" ]; then
-    make
+    $MAKE
 else
-    make >/dev/null 2>&1
+    $MAKE >/dev/null 2>&1
 fi
 
 [ -x "$EXE" ] && SUCCESS=yes

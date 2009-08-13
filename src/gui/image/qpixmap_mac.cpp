@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1178,6 +1178,7 @@ QPixmap QPixmap::fromMacCGImageRef(CGImageRef image)
     const size_t w = CGImageGetWidth(image),
                  h = CGImageGetHeight(image);
     QPixmap ret(w, h);
+    ret.fill(Qt::transparent);
     CGRect rect = CGRectMake(0, 0, w, h);
     CGContextRef ctx = qt_mac_cg_context(&ret);
     qt_mac_drawCGImage(ctx, &rect, image);

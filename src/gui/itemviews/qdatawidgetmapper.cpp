@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -278,11 +278,11 @@ void QDataWidgetMapperPrivate::_q_modelDestroyed()
     Let us assume that we have an item model named \c{model} with the following contents:
 
     \table
-    \row \o 1 \o Nokia Corporation and/or its subsidiary(-ies)    \o Oslo
-    \row \o 2 \o Trolltech Pty   \o Brisbane
-    \row \o 3 \o Trolltech Inc   \o Palo Alto
-    \row \o 4 \o Trolltech China \o Beijing
-    \row \o 5 \o Trolltech GmbH  \o Berlin
+    \row \o 1 \o Qt Norway       \o Oslo
+    \row \o 2 \o Qt Australia    \o Brisbane
+    \row \o 3 \o Qt USA          \o Palo Alto
+    \row \o 4 \o Qt China        \o Beijing
+    \row \o 5 \o Qt Germany      \o Berlin
     \endtable
 
     The following code will map the columns of the model to widgets called \c mySpinBox,
@@ -780,11 +780,11 @@ void QDataWidgetMapper::clearMapping()
     Use Qt::Horizontal for tabular data that looks like this:
 
     \table
-    \row \o 1 \o Nokia Corporation and/or its subsidiary(-ies)     \o Oslo
-    \row \o 2 \o Trolltech Pty   \o Brisbane
-    \row \o 3 \o Trolltech Inc   \o Silicon Valley
-    \row \o 4 \o Trolltech China \o Beijing
-    \row \o 5 \o Trolltech GmbH  \o Berlin
+    \row \o 1 \o Qt Norway       \o Oslo
+    \row \o 2 \o Qt Australia    \o Brisbane
+    \row \o 3 \o Qt USA          \o Silicon Valley
+    \row \o 4 \o Qt China        \o Beijing
+    \row \o 5 \o Qt Germany      \o Berlin
     \endtable
 
     If the orientation is set to Qt::Vertical, a widget is mapped to
@@ -796,7 +796,7 @@ void QDataWidgetMapper::clearMapping()
 
     \table
     \row \o 1 \o 2 \o 3 \o 4 \o 5
-    \row \o Nokia Corporation and/or its subsidiary(-ies) \o Trolltech Pty \o Trolltech Inc \o Trolltech China \o Trolltech GmbH
+    \row \o Qt Norway \o Qt Australia \o Qt USA \o Qt China \o Qt Germany
     \row \o Oslo \o Brisbane \o Silicon Valley \o Beijing \i Berlin
     \endtable
 

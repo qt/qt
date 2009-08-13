@@ -2,7 +2,7 @@ Qt 3.1 introduces many significant new features and many improvements
 over the 3.0.x series. This file provides an overview of the main
 changes since version 3.0.x. For further details see the online
 documentation which is included in this distribution, and also
-available at http://doc.trolltech.com/.
+available at http://qt.nokia.com/doc/.
 
 The Qt version 3.1 series is binary compatible with the 3.0.x series:
 applications compiled for 3.0 will continue to run with 3.1.

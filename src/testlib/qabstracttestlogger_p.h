@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -101,27 +101,26 @@ public:
 
 struct QTestCharBuffer
 {
+    enum { InitialSize = 512 };
+
     inline QTestCharBuffer()
-            : buf(0)
-    {}
+            : _size(InitialSize), buf(staticBuf)
+    {
+        staticBuf[0] = '\0';
+    }
 
     inline ~QTestCharBuffer()
     {
-        delete[] buf;
-        buf = 0;
+        if (buf != staticBuf)
+            qFree(buf);
     }
 
-    inline operator void*()
+    inline char *data()
     {
         return buf;
     }
 
-    inline operator char*()
-    {
-        return buf;
-    }
-
-    inline operator char**()
+    inline char **buffer()
     {
         return &buf;
     }
@@ -131,9 +130,42 @@ struct QTestCharBuffer
         return buf;
     }
 
+    inline int size() const
+    {
+        return _size;
+    }
+
+    inline bool reset(int newSize)
+    {
+        char *newBuf = 0;
+        if (buf == staticBuf) {
+            // if we point to our internal buffer, we need to malloc first
+            newBuf = reinterpret_cast<char *>(qMalloc(newSize));
+        } else {
+            // if we already malloc'ed, just realloc
+            newBuf = reinterpret_cast<char *>(qRealloc(buf, newSize));
+        }
+
+        // if the allocation went wrong (newBuf == 0), we leave the object as is
+        if (!newBuf)
+            return false;
+
+        _size = newSize;
+        buf = newBuf;
+        return true;
+    }
+
 private:
+    int _size;
     char* buf;
+    char staticBuf[InitialSize];
 };
+
+namespace QTest
+{
+    int qt_asprintf(QTestCharBuffer *buf, const char *format, ...);
+}
+
 
 QT_END_NAMESPACE
 

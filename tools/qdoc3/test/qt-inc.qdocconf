@@ -3,7 +3,7 @@ include(macros.qdocconf)
 
 project                 = Qt
 description             = Qt Reference Documentation
-url                     = http://doc.qtsoftware.com/4.6
+url                     = http://qt.nokia.com/doc/4.6
 
 edition.Console         = QtCore QtNetwork QtSql QtXml QtScript QtTest
 edition.Desktop         = QtCore QtGui QtNetwork QtOpenGL QtSql QtSvg QtXml QtScript \
@@ -123,7 +123,7 @@ HTML.stylesheets        = $QTDIR/util/qdoc3/test/classic.css
 HTML.postheader         = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"100%\">\n" \
                           "<tr>\n" \
                           "<td align=\"left\" valign=\"top\" width=\"32\">" \
-                          "<a href=\"http://qtsoftware.com/products/qt\"><img src=\"images/qt-logo.png\" align=\"left\" width=\"32\" height=\"32\" border=\"0\" /></a>" \
+                          "<a href=\"http://qt.nokia.com/\"><img src=\"images/qt-logo.png\" align=\"left\" width=\"32\" height=\"32\" border=\"0\" /></a>" \
                           "</td>\n" \
                           "<td width=\"1\">&nbsp;&nbsp;</td>" \
                           "<td class=\"postheader\" valign=\"center\">" \
@@ -140,7 +140,7 @@ HTML.postheader         = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0
                           " <a href=\"functions.html\">" \
                           "<font color=\"#004faf\">Functions</font></a>" \
                           "</td>\n" \
-                          "<td align=\"right\" valign=\"top\" width=\"230\"><a href=\"http://qtsoftware.com\"><img src=\"images/trolltech-logo.png\" align=\"right\" width=\"203\" height=\"32\" border=\"0\" /></a></td></tr></table>"
+                          "<td align=\"right\" valign=\"top\" width=\"230\"><a href=\"http://qt.nokia.com\"><img src=\"images/trolltech-logo.png\" align=\"right\" width=\"203\" height=\"32\" border=\"0\" /></a></td></tr></table>"
 
 HTML.footer             = "<p /><address><hr /><div align=\"center\">\n" \
                           "<table width=\"100%\" cellspacing=\"0\" border=\"0\"><tr class=\"address\">\n" \
