@@ -204,7 +204,9 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
 
             if (QTypeInfo<T>::isStatic) {
                 QT_TRY {
-                    while (s < asize) {
+                    // copy all the old elements
+                    const int copySize = qMin(asize, osize);
+                    while (s < copySize) {
                         new (ptr+s) T(*(oldPtr+s));
                         (oldPtr+s)->~T();
                         s++;
