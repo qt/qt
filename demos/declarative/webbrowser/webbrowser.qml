@@ -10,6 +10,9 @@ Item {
 
     state: "Normal"
 
+    width: 640
+    height: 480
+
     Script {
         function zoomOut() {
             WebBrowser.state = "ZoomedOut";
