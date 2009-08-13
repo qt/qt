@@ -294,6 +294,11 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
             // update the default start value
             if (oldState == Stopped) {
                 d->setDefaultStartValue(d->target->property(d->propertyName.constData()));
+                //let's check if we have a start value and an end value
+                if (d->direction == Forward && !startValue().isValid() && !d->defaultStartEndValue.isValid())
+                    qWarning("QPropertyAnimation::updateState: starting an animation without start value");
+                if (d->direction == Backward && !endValue().isValid() && !d->defaultStartEndValue.isValid())
+                    qWarning("QPropertyAnimation::updateState: starting an animation without end value");
             }
         } else if (hash.value(key) == this) {
             hash.remove(key);
