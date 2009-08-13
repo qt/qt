@@ -23,7 +23,7 @@ public:
 
     void message(const QByteArray &);
 
-    QmlEngineDebugClient client;
+    QmlEngineDebugClient *client;
     int nextId;
     int getId();
 
@@ -51,7 +51,7 @@ void QmlEngineDebugClient::messageReceived(const QByteArray &data)
 }
 
 QmlEngineDebugPrivate::QmlEngineDebugPrivate(QmlDebugConnection *c)
-: client(c, this), nextId(0)
+: client(new QmlEngineDebugClient(c, this)), nextId(0)
 {
 }
 
@@ -247,7 +247,7 @@ QmlDebugEnginesQuery *QmlEngineDebug::queryAvailableEngines(QObject *parent)
     Q_D(QmlEngineDebug);
 
     QmlDebugEnginesQuery *query = new QmlDebugEnginesQuery(parent);
-    if (d->client.isConnected()) {
+    if (d->client->isConnected()) {
         query->m_client = this;
         int queryId = d->getId();
         query->m_queryId = queryId;
@@ -256,7 +256,7 @@ QmlDebugEnginesQuery *QmlEngineDebug::queryAvailableEngines(QObject *parent)
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
         ds << QByteArray("LIST_ENGINES") << queryId;
-        d->client.sendMessage(message);
+        d->client->sendMessage(message);
     } else {
         query->m_state = QmlDebugQuery::Error;
     }
@@ -269,7 +269,7 @@ QmlDebugRootContextQuery *QmlEngineDebug::queryRootContexts(const QmlDebugEngine
     Q_D(QmlEngineDebug);
 
     QmlDebugRootContextQuery *query = new QmlDebugRootContextQuery(parent);
-    if (d->client.isConnected() && engine.debugId() != -1) {
+    if (d->client->isConnected() && engine.debugId() != -1) {
         query->m_client = this;
         int queryId = d->getId();
         query->m_queryId = queryId;
@@ -278,7 +278,7 @@ QmlDebugRootContextQuery *QmlEngineDebug::queryRootContexts(const QmlDebugEngine
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
         ds << QByteArray("LIST_OBJECTS") << queryId << engine.debugId();
-        d->client.sendMessage(message);
+        d->client->sendMessage(message);
     } else {
         query->m_state = QmlDebugQuery::Error;
     }
@@ -291,7 +291,7 @@ QmlDebugObjectQuery *QmlEngineDebug::queryObject(const QmlDebugObjectReference &
     Q_D(QmlEngineDebug);
 
     QmlDebugObjectQuery *query = new QmlDebugObjectQuery(parent);
-    if (d->client.isConnected() && object.debugId() != -1) {
+    if (d->client->isConnected() && object.debugId() != -1) {
         query->m_client = this;
         int queryId = d->getId();
         query->m_queryId = queryId;
@@ -301,7 +301,7 @@ QmlDebugObjectQuery *QmlEngineDebug::queryObject(const QmlDebugObjectReference &
         QDataStream ds(&message, QIODevice::WriteOnly);
         ds << QByteArray("FETCH_OBJECT") << queryId << object.debugId() 
            << false;
-        d->client.sendMessage(message);
+        d->client->sendMessage(message);
     } else {
         query->m_state = QmlDebugQuery::Error;
     }
@@ -314,7 +314,7 @@ QmlDebugObjectQuery *QmlEngineDebug::queryObjectRecursive(const QmlDebugObjectRe
     Q_D(QmlEngineDebug);
 
     QmlDebugObjectQuery *query = new QmlDebugObjectQuery(parent);
-    if (d->client.isConnected() && object.debugId() != -1) {
+    if (d->client->isConnected() && object.debugId() != -1) {
         query->m_client = this;
         int queryId = d->getId();
         query->m_queryId = queryId;
@@ -324,7 +324,7 @@ QmlDebugObjectQuery *QmlEngineDebug::queryObjectRecursive(const QmlDebugObjectRe
         QDataStream ds(&message, QIODevice::WriteOnly);
         ds << QByteArray("FETCH_OBJECT") << queryId << object.debugId() 
            << true;
-        d->client.sendMessage(message);
+        d->client->sendMessage(message);
     } else {
         query->m_state = QmlDebugQuery::Error;
     }
