@@ -793,29 +793,30 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
         if (exists)
             ret |= ExistsFlag;
 #if defined(Q_OS_SYMBIAN)
-    if (d->filePath == QLatin1String("/") || (d->filePath.at(0).isLetter() && d->filePath.mid(1,d->filePath.length()) == QLatin1String(":/")))
-        ret |= RootFlag;
+        if (d->filePath == QLatin1String("/")
+            || (d->filePath.at(0).isLetter() && d->filePath.mid(1,d->filePath.length()) == QLatin1String(":/")))
+            ret |= RootFlag;
 
-    // In Symbian, all symlinks have hidden attribute for some reason;
-    // lets make them visible for better compatibility with other platforms.
-    // If somebody actually wants a hidden link, then they are out of luck.
-    if (!(ret & RootFlag) && !d->isSymlink())
-        if(_q_isSymbianHidden(d->filePath, ret & DirectoryType)
-#else
-            if (d->filePath == QLatin1String("/")) {
-                ret |= RootFlag;
-            } else {
-                QString baseName = fileName(BaseName);
-                if ((baseName.size() > 1
-                     && baseName.at(0) == QLatin1Char('.') && baseName.at(1) != QLatin1Char('.'))
+        // In Symbian, all symlinks have hidden attribute for some reason;
+        // lets make them visible for better compatibility with other platforms.
+        // If somebody actually wants a hidden link, then they are out of luck.
+        if (!(ret & RootFlag) && !d->isSymlink())
+            if(_q_isSymbianHidden(d->filePath, ret & DirectoryType))
+                    ret |= HiddenFlag;
+#endif
+        if (d->filePath == QLatin1String("/")) {
+            ret |= RootFlag;
+        } else {
+            QString baseName = fileName(BaseName);
+            if ((baseName.size() > 1
+                 && baseName.at(0) == QLatin1Char('.') && baseName.at(1) != QLatin1Char('.'))
 #if !defined(QWS) && defined(Q_OS_MAC)
                     || _q_isMacHidden(d->filePath)
 #endif
-#endif // Q_OS_SYMBIAN
-                ) {
-                    ret |= HiddenFlag;
-                }
+               ) {
+                ret |= HiddenFlag;
             }
+        }
     }
     return ret;
 }
