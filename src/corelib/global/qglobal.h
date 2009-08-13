@@ -2401,15 +2401,15 @@ QT_END_NAMESPACE
 namespace std { class exception; }
 #endif
 QT_BEGIN_NAMESPACE
-Q_CORE_EXPORT void qt_throwIfError(int error);
-Q_CORE_EXPORT void qt_exception2SymbianLeaveL(const std::exception& ex);
-Q_CORE_EXPORT int qt_exception2SymbianError(const std::exception& ex);
+Q_CORE_EXPORT void qt_symbian_throwIfError(int error);
+Q_CORE_EXPORT void qt_symbian_exception2LeaveL(const std::exception& ex);
+Q_CORE_EXPORT int qt_symbian_exception2Error(const std::exception& ex);
 
 #define QT_TRAP_THROWING(_f)                        \
     {                                               \
         TInt ____error;                             \
         TRAP(____error, _f);                        \
-        qt_throwIfError(____error);                 \
+        qt_symbian_throwIfError(____error);                 \
      }
 
 #define QT_TRYCATCH_ERROR(_err, _f)                         \
@@ -2418,7 +2418,7 @@ Q_CORE_EXPORT int qt_exception2SymbianError(const std::exception& ex);
         try {                                               \
             _f;                                             \
         } catch (const std::exception &____ex) {            \
-            _err = qt_exception2SymbianError(____ex);       \
+            _err = qt_symbian_exception2Error(____ex);       \
         }                                                   \
     }
 

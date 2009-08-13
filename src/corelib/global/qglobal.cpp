@@ -3383,9 +3383,9 @@ public:
 
     \warning This function is only available on Symbian.
 
-    \sa qt_exception2SymbianLeaveL(), qt_exception2SymbianError()
+    \sa qt_symbian_exception2LeaveL(), qt_symbian_exception2Error()
 */
-void qt_throwIfError(int error)
+void qt_symbian_throwIfError(int error)
 {
     if (error >= KErrNone)
         return;  // do nothing - not an exception
@@ -3410,11 +3410,11 @@ void qt_throwIfError(int error)
 
     \warning This function is only available on Symbian.
 
-    \sa qt_throwIfError(), qt_exception2SymbianError()
+    \sa qt_symbian_throwIfError(), qt_symbian_exception2Error()
 */
-void qt_exception2SymbianLeaveL(const std::exception& aThrow)
+void qt_symbian_exception2LeaveL(const std::exception& aThrow)
 {
-    User::Leave(qt_exception2SymbianError(aThrow));
+    User::Leave(qt_symbian_exception2Error(aThrow));
 }
 
 /*! \relates <QtGlobal>
@@ -3424,9 +3424,9 @@ void qt_exception2SymbianLeaveL(const std::exception& aThrow)
 
     \warning This function is only available on Symbian.
 
-    \sa qt_throwIfError(), qt_exception2SymbianLeaveL()
+    \sa qt_symbian_throwIfError(), qt_symbian_exception2LeaveL()
 */
-int qt_exception2SymbianError(const std::exception& aThrow)
+int qt_symbian_exception2Error(const std::exception& aThrow)
 {
     const std::type_info& atype = typeid(aThrow);
     int err = KErrGeneral;
