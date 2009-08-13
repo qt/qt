@@ -19,10 +19,12 @@ Rect { id: page; width: 800; height: 800; color:"black"
                     if(a!=null) {
                         a.parent = targetItem2;//BUG: this should happen automatically
                         fourthBox = a;
+                        print(a.toStr());
                         extendStars = true;
                     }
                 } else {
-                    fourthBox.destroy();
+                    fourthBox.state = 'dying';
+                    fourthBox.destroy(500);
                     fourthBox = null;
                     extendStars = false;
                 }

@@ -98,7 +98,7 @@ Rect {
         id: Flick
         anchors.fill: parent
         viewportWidth: Lay.width
-        HorizontalLayout {
+        HorizontalPositioner {
             id: Lay
             Repeater {
                 dataSource: List

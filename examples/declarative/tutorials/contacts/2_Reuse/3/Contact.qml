@@ -14,7 +14,7 @@ Item {
     onEmailChanged: { emailField.value = email }
     onPhoneChanged: { phoneField.value = phone }
 
-    VerticalLayout {
+    VerticalPositioner {
         id: layout
         anchors.fill: parent
         spacing: 5

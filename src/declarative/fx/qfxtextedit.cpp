@@ -179,7 +179,7 @@ void QFxTextEdit::setText(const QString &text)
     \row
     \o
     \qml
-VerticalLayout {
+VerticalPositioner {
     TextEdit {
         font.size: 24
         text: "<b>Hello</b> <i>World!</i>"

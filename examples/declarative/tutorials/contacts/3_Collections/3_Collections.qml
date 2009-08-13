@@ -11,7 +11,7 @@ Rect {
     }
     // relies on the current focus behavior whereby setting focus=true on a
     // component removes focus from any previous element
-    GridLayout {
+    GridPositioner {
         id: layout
         width: contents.width
         height: contents.height

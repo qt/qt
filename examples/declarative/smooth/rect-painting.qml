@@ -12,7 +12,7 @@ Rect {
         color: "#eeeeee"
     }
 
-    GridLayout {
+    GridPositioner {
         anchors.centerIn: parent
         columns: 8; rows:4; spacing: 30
 

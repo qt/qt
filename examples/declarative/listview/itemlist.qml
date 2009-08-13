@@ -40,7 +40,7 @@ Rect {
         height: 30
         width: 240
 
-        HorizontalLayout {
+        HorizontalPositioner {
             anchors.centerIn: parent
             spacing: 20
             Repeater {

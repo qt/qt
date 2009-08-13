@@ -13,7 +13,7 @@ Rect {
         y: 30
         anchors.horizontalCenter: Page.horizontalCenter
     }
-    GridLayout {
+    GridPositioner {
         id: ColorPicker
         x: 0
         anchors.bottom: Page.bottom
