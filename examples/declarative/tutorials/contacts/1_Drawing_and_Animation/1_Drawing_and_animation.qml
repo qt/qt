@@ -5,7 +5,7 @@ Rect {
     width: layout.width
     height: layout.height
     color: "white"
-    VerticalLayout {
+    VerticalPositioner {
         id: layout
         width: contents.width
         GroupBox {

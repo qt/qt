@@ -14,7 +14,7 @@ Rect {
         Item {
             id: Wrapper
             width: 200; height: 50
-            VerticalLayout {
+            VerticalPositioner {
                 Text { text: 'Name: ' + name }
                 Text { text: 'Type: ' + type }
                 Text { text: 'Age: ' + age }

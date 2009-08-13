@@ -56,25 +56,25 @@
 #include <private/qfxitem_p.h>
 #include <QtCore/QObject>
 #include <QtCore/QString>
-#include <QtDeclarative/qfxlayouts.h>
+#include <QtDeclarative/qfxpositioners.h>
 #include <QtDeclarative/qmlstate.h>
 #include <private/qmltransitionmanager_p.h>
 #include <QtDeclarative/qmlstateoperations.h>
 
 QT_BEGIN_NAMESPACE
-class QFxBaseLayoutPrivate : public QFxItemPrivate
+class QFxBasePositionerPrivate : public QFxItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxBaseLayout)
+    Q_DECLARE_PUBLIC(QFxBasePositioner)
 
 public:
-    QFxBaseLayoutPrivate()
+    QFxBasePositionerPrivate()
         : _ep(false), _componentComplete(false), _spacing(0),
-        _margin(0), aut(QFxBaseLayout::None), moveTransition(0), addTransition(0),
+        _margin(0), aut(QFxBasePositioner::None), moveTransition(0), addTransition(0),
         removeTransition(0), _layoutItem(0), _movingItem(0)
     {
     }
 
-    void init(QFxBaseLayout::AutoUpdateType at)
+    void init(QFxBasePositioner::AutoUpdateType at)
     {
         aut = at;
     }
@@ -83,7 +83,7 @@ public:
     bool _componentComplete;
     int _spacing;
     int _margin;
-    QFxBaseLayout::AutoUpdateType aut;
+    QFxBasePositioner::AutoUpdateType aut;
     QmlTransition *moveTransition;
     QmlTransition *addTransition;
     QmlTransition *removeTransition;
