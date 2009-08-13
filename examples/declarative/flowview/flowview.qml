@@ -32,7 +32,7 @@ Rect {
 
         color: "lightsteelblue"
 
-        VisualModel {
+        VisualDataModel {
             id: Model
             model: ListModel {
                 ListElement { background: "red"; weblet: "rect.qml"  }
