@@ -119,12 +119,8 @@ typedef PVOID (WINAPI *PtrFreeSid)(PSID);
 static PtrFreeSid ptrFreeSid = 0;
 static TRUSTEE_W currentUserTrusteeW;
 
-typedef BOOL (WINAPI *PtrOpenProcessToken)(HANDLE, DWORD, PHANDLE );
-static PtrOpenProcessToken ptrOpenProcessToken = 0;
 typedef BOOL (WINAPI *PtrGetUserProfileDirectoryW)(HANDLE, LPWSTR, LPDWORD);
 static PtrGetUserProfileDirectoryW ptrGetUserProfileDirectoryW = 0;
-typedef BOOL (WINAPI *PtrSetFilePointerEx)(HANDLE, LARGE_INTEGER, PLARGE_INTEGER, DWORD);
-static PtrSetFilePointerEx ptrSetFilePointerEx = 0;
 QT_END_INCLUDE_NAMESPACE
 
 
@@ -204,14 +200,10 @@ void QFSFileEnginePrivate::resolveLibs()
                 }
                 FreeLibrary(versionHnd);
             }
-            ptrOpenProcessToken = (PtrOpenProcessToken)GetProcAddress(advapiHnd, "OpenProcessToken");
-                HINSTANCE userenvHnd = LoadLibraryW(L"userenv");
+            HINSTANCE userenvHnd = LoadLibraryW(L"userenv");
             if (userenvHnd) {
                 ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
             }
-            HINSTANCE kernelHnd = LoadLibraryW(L"kernel32");
-            if (kernelHnd)
-                ptrSetFilePointerEx = (PtrSetFilePointerEx)GetProcAddress(kernelHnd, "SetFilePointerEx");
         }
 #endif
     }
@@ -596,34 +588,27 @@ qint64 QFSFileEnginePrivate::nativePos() const
     if (fileHandle == INVALID_HANDLE_VALUE)
         return 0;
 
-#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
-    QFSFileEnginePrivate::resolveLibs();
-    if (!ptrSetFilePointerEx) {
-#endif
-        LARGE_INTEGER filepos;
-        filepos.HighPart = 0;
-        DWORD newFilePointer = SetFilePointer(fileHandle, 0, &filepos.HighPart, FILE_CURRENT);
-        if (newFilePointer == 0xFFFFFFFF && GetLastError() != NO_ERROR) {
-            thatQ->setError(QFile::UnspecifiedError, qt_error_string());
-            return 0;
-        }
-
-        // Note: This is the case for MOC, UIC, qmake and other
-        //       bootstrapped tools, and for Windows CE.
-        filepos.LowPart = newFilePointer;
-        return filepos.QuadPart;
-#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
-    }
-
+#if !defined(Q_OS_WINCE)
     LARGE_INTEGER currentFilePos;
     LARGE_INTEGER offset;
     offset.QuadPart = 0;
-    if (!ptrSetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_CURRENT)) {
+    if (!::SetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_CURRENT)) {
         thatQ->setError(QFile::UnspecifiedError, qt_error_string());
         return 0;
     }
 
     return qint64(currentFilePos.QuadPart);
+#else
+    LARGE_INTEGER filepos;
+    filepos.HighPart = 0;
+    DWORD newFilePointer = SetFilePointer(fileHandle, 0, &filepos.HighPart, FILE_CURRENT);
+    if (newFilePointer == 0xFFFFFFFF && GetLastError() != NO_ERROR) {
+        thatQ->setError(QFile::UnspecifiedError, qt_error_string());
+        return 0;
+    }
+
+    filepos.LowPart = newFilePointer;
+    return filepos.QuadPart;
 #endif
 }
 
@@ -632,39 +617,32 @@ qint64 QFSFileEnginePrivate::nativePos() const
 */
 bool QFSFileEnginePrivate::nativeSeek(qint64 pos)
 {
-    Q_Q(const QFSFileEngine);
-    QFSFileEngine *thatQ = const_cast<QFSFileEngine *>(q);
+    Q_Q(QFSFileEngine);
 
     if (fh || fd != -1) {
         // stdlib / stdio mode.
         return seekFdFh(pos);
     }
 
-#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
-    QFSFileEnginePrivate::resolveLibs();
-    if (!ptrSetFilePointerEx) {
-#endif
-        DWORD newFilePointer;
-        LARGE_INTEGER *li = reinterpret_cast<LARGE_INTEGER*>(&pos);
-        newFilePointer = SetFilePointer(fileHandle, li->LowPart, &li->HighPart, FILE_BEGIN);
-        if (newFilePointer == 0xFFFFFFFF && GetLastError() != NO_ERROR) {
-            thatQ->setError(QFile::PositionError, qt_error_string());
-            return false;
-        }
-
-        // Note: This is the case for MOC, UIC, qmake and other
-        //       bootstrapped tools, and for Windows CE.
-        return true;
-#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
-    }
-
+#if !defined(Q_OS_WINCE)
     LARGE_INTEGER currentFilePos;
     LARGE_INTEGER offset;
     offset.QuadPart = pos;
-    if (ptrSetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_BEGIN) == 0) {
-        thatQ->setError(QFile::UnspecifiedError, qt_error_string());
+    if (!::SetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_BEGIN)) {
+        q->setError(QFile::UnspecifiedError, qt_error_string());
         return false;
     }
+
+    return true;
+#else
+    DWORD newFilePointer;
+    LARGE_INTEGER *li = reinterpret_cast<LARGE_INTEGER*>(&pos);
+    newFilePointer = SetFilePointer(fileHandle, li->LowPart, &li->HighPart, FILE_BEGIN);
+    if (newFilePointer == 0xFFFFFFFF && GetLastError() != NO_ERROR) {
+        q->setError(QFile::PositionError, qt_error_string());
+        return false;
+    }
+
     return true;
 #endif
 }
@@ -1044,10 +1022,10 @@ QString QFSFileEngine::homePath()
     QString ret;
 #if !defined(QT_NO_LIBRARY)
     QFSFileEnginePrivate::resolveLibs();
-    if (ptrOpenProcessToken && ptrGetUserProfileDirectoryW) {
+    if (ptrGetUserProfileDirectoryW) {
         HANDLE hnd = ::GetCurrentProcess();
         HANDLE token = 0;
-        BOOL ok = ::ptrOpenProcessToken(hnd, TOKEN_QUERY, &token);
+        BOOL ok = ::OpenProcessToken(hnd, TOKEN_QUERY, &token);
         if (ok) {
             DWORD dwBufferSize = 0;
             // First call, to determine size of the strings (with '\0').
