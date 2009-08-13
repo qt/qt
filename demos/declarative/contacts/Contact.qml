@@ -80,7 +80,7 @@ Item {
     function remove() {
         removeContactQuery.exec();
     }
-    VerticalLayout {
+    VerticalPositioner {
         id: layout
         anchors.fill: parent
         spacing: 5

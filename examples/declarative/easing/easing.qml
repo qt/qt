@@ -51,7 +51,7 @@ Rect {
         ListElement { type: "easeOutInBounce" }
     }
     
-    VerticalLayout {
+    VerticalPositioner {
         id: Layout
         anchors.left: Window.left
         anchors.right: Window.right

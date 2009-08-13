@@ -53,9 +53,9 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QFxBaseLayoutPrivate;
+class QFxBasePositionerPrivate;
 
-class Q_DECLARATIVE_EXPORT QFxBaseLayout : public QFxItem
+class Q_DECLARATIVE_EXPORT QFxBasePositioner : public QFxItem
 {
     Q_OBJECT
 
@@ -67,7 +67,7 @@ class Q_DECLARATIVE_EXPORT QFxBaseLayout : public QFxItem
     Q_PROPERTY(QFxItem *item READ layoutItem NOTIFY layoutItemChanged)
 public:
     enum AutoUpdateType { None = 0x0, Horizontal = 0x1, Vertical = 0x2, Both = 0x3 };
-    QFxBaseLayout(AutoUpdateType, QFxItem *parent);
+    QFxBasePositioner(AutoUpdateType, QFxItem *parent);
 
     int spacing() const;
     void setSpacing(int);
@@ -109,45 +109,45 @@ private Q_SLOTS:
     void preLayout();
 
 protected:
-    QFxBaseLayout(QFxBaseLayoutPrivate &dd, AutoUpdateType at, QFxItem *parent);
+    QFxBasePositioner(QFxBasePositionerPrivate &dd, AutoUpdateType at, QFxItem *parent);
     void setMovingItem(QFxItem *);
 
 private:
     void applyTransition(const QList<QPair<QString, QVariant> >& changes, QFxItem* target,
             QmlStateOperation::ActionList &actions);
-    Q_DISABLE_COPY(QFxBaseLayout)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxBaseLayout)
+    Q_DISABLE_COPY(QFxBasePositioner)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxBasePositioner)
 };
 
-class Q_DECLARATIVE_EXPORT QFxVerticalLayout : public QFxBaseLayout
+class Q_DECLARATIVE_EXPORT QFxVerticalPositioner : public QFxBasePositioner
 {
     Q_OBJECT
 public:
-    QFxVerticalLayout(QFxItem *parent=0);
+    QFxVerticalPositioner(QFxItem *parent=0);
 protected Q_SLOTS:
     virtual void doLayout();
 private:
-    Q_DISABLE_COPY(QFxVerticalLayout)
+    Q_DISABLE_COPY(QFxVerticalPositioner)
 };
 
-class Q_DECLARATIVE_EXPORT QFxHorizontalLayout: public QFxBaseLayout
+class Q_DECLARATIVE_EXPORT QFxHorizontalPositioner: public QFxBasePositioner
 {
     Q_OBJECT
 public:
-    QFxHorizontalLayout(QFxItem *parent=0);
+    QFxHorizontalPositioner(QFxItem *parent=0);
 protected Q_SLOTS:
     virtual void doLayout();
 private:
-    Q_DISABLE_COPY(QFxHorizontalLayout)
+    Q_DISABLE_COPY(QFxHorizontalPositioner)
 };
 
-class Q_DECLARATIVE_EXPORT QFxGridLayout : public QFxBaseLayout
+class Q_DECLARATIVE_EXPORT QFxGridPositioner : public QFxBasePositioner
 {
     Q_OBJECT
     Q_PROPERTY(int rows READ rows WRITE setRows)
     Q_PROPERTY(int columns READ columns WRITE setcolumns)
 public:
-    QFxGridLayout(QFxItem *parent=0);
+    QFxGridPositioner(QFxItem *parent=0);
 
     int rows() const {return _rows;}
     void setRows(const int rows){_rows = rows;}
@@ -160,14 +160,14 @@ protected Q_SLOTS:
 private:
     int _rows;
     int _columns;
-    Q_DISABLE_COPY(QFxGridLayout)
+    Q_DISABLE_COPY(QFxGridPositioner)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxVerticalLayout)
-QML_DECLARE_TYPE(QFxHorizontalLayout)
-QML_DECLARE_TYPE(QFxGridLayout)
+QML_DECLARE_TYPE(QFxVerticalPositioner)
+QML_DECLARE_TYPE(QFxHorizontalPositioner)
+QML_DECLARE_TYPE(QFxGridPositioner)
 
 QT_END_HEADER
 

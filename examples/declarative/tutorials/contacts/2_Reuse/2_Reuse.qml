@@ -5,7 +5,7 @@ Rect {
     width: layout.width
     height: layout.height
     color: "white"
-    GridLayout {
+    GridPositioner {
         id: layout
         columns: 2
         rows: 4

@@ -102,8 +102,8 @@ Item {
         anchors.fill: Container
         targets: [(ReturnKey), (Editor)]
     }
-    KeyActions {
+    Item {
         id: ReturnKey
-        keyReturn: "Container.state = ''"
+        Keys.onReturnPressed: "Container.state = ''"
     }
 }

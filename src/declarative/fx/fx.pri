@@ -20,8 +20,8 @@ HEADERS += \
            fx/qfxitem_p.h \
            fx/qfxfocusscope.h \
            fx/qfxkeyproxy.h \
-           fx/qfxlayouts.h \
-           fx/qfxlayouts_p.h \
+           fx/qfxpositioners.h \
+           fx/qfxpositioners_p.h \
            fx/qfxloader.h \
            fx/qfxloader_p.h \
            fx/qfxmouseregion.h \
@@ -61,7 +61,7 @@ SOURCES += \
            fx/qfxitem.cpp \
            fx/qfxfocusscope.cpp \
            fx/qfxkeyproxy.cpp \
-           fx/qfxlayouts.cpp \
+           fx/qfxpositioners.cpp \
            fx/qfxloader.cpp \
            fx/qfxmouseregion.cpp \
            fx/qfxpath.cpp \
