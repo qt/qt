@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -856,7 +856,12 @@ void tst_QPlainTextEdit::lineWrapModes()
     ed->setLineWrapMode(QPlainTextEdit::NoWrap);
     QCOMPARE(lineCount(), 1);
     ed->setLineWrapMode(QPlainTextEdit::WidgetWidth);
-    ed->resize(1, 1000);
+
+    // QPlainTextEdit does lazy line layout on resize, only for the visible blocks.
+    // We thus need to make it wide enough to show something visible.
+    int minimumWidth = 2 * ed->document()->documentMargin();
+    minimumWidth += ed->fontMetrics().width(QLatin1Char('a'));
+    ed->resize(minimumWidth, 1000);
     QCOMPARE(lineCount(), 26);
     ed->setParent(0);
     delete window;

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -67,7 +67,7 @@ namespace QPatternist
      * @short Implements the type @c xs:anyAtomicType.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AnyAtomicType : public BuiltinAtomicType
     {
@@ -112,7 +112,7 @@ namespace QPatternist
      * @short Implements the type @c xs:untypedAtomic.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class UntypedAtomicType : public BuiltinAtomicType
     {
@@ -136,7 +136,7 @@ namespace QPatternist
      * @short Implements the type @c xs:dateTime.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DateTimeType : public BuiltinAtomicType
     {
@@ -160,7 +160,7 @@ namespace QPatternist
      * @short Implements the type @c xs:date.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DateType : public BuiltinAtomicType
     {
@@ -184,7 +184,7 @@ namespace QPatternist
      * @short Implements the type @c xs:time.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SchemaTimeType : public BuiltinAtomicType
     {
@@ -209,7 +209,7 @@ namespace QPatternist
      * @short Implements the type @c xs:duration.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DurationType : public BuiltinAtomicType
     {
@@ -233,7 +233,7 @@ namespace QPatternist
      * @short Implements the type @c xs:yearMonthDuration.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class YearMonthDurationType : public BuiltinAtomicType
     {
@@ -257,7 +257,7 @@ namespace QPatternist
      * @short Implements the type @c xs:dayTimeDuration.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DayTimeDurationType : public BuiltinAtomicType
     {
@@ -281,7 +281,7 @@ namespace QPatternist
      * @short Implements the type @c xs:double.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DoubleType : public BuiltinAtomicType
     {
@@ -305,7 +305,7 @@ namespace QPatternist
      * @short Implements the type @c xs:float.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class FloatType : public BuiltinAtomicType
     {
@@ -329,7 +329,7 @@ namespace QPatternist
      * @short Implements the type @c xs:decimal.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DecimalType : public BuiltinAtomicType
     {
@@ -360,7 +360,7 @@ namespace QPatternist
      * this way.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class IntegerType : public BuiltinAtomicType
     {
@@ -434,7 +434,7 @@ namespace QPatternist
      * @short Implements the type @c xs:gYearMonth.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GYearMonthType : public BuiltinAtomicType
     {
@@ -458,7 +458,7 @@ namespace QPatternist
      * @short Implements the type @c xs:gYear.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GYearType : public BuiltinAtomicType
     {
@@ -482,7 +482,7 @@ namespace QPatternist
      * @short Implements the type @c xs:gMonthDay.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GMonthDayType : public BuiltinAtomicType
     {
@@ -506,7 +506,7 @@ namespace QPatternist
      * @short Implements the type @c xs:gDay.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GDayType : public BuiltinAtomicType
     {
@@ -530,7 +530,7 @@ namespace QPatternist
      * @short Implements the type @c xs:gMonth.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class GMonthType : public BuiltinAtomicType
     {
@@ -554,7 +554,7 @@ namespace QPatternist
      * @short Implements the type @c xs:boolean.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class BooleanType : public BuiltinAtomicType
     {
@@ -578,7 +578,7 @@ namespace QPatternist
      * @short Implements the type @c xs:base64Binary.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Base64BinaryType : public BuiltinAtomicType
     {
@@ -602,7 +602,7 @@ namespace QPatternist
      * @short Implements the type @c xs:hexBinary.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class HexBinaryType : public BuiltinAtomicType
     {
@@ -626,7 +626,7 @@ namespace QPatternist
      * @short Implements the type @c xs:anyURI.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AnyURIType : public BuiltinAtomicType
     {
@@ -650,7 +650,7 @@ namespace QPatternist
      * @short Implements the type @c xs:QName.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class QNameType : public BuiltinAtomicType
     {
@@ -682,7 +682,7 @@ namespace QPatternist
      * this way.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringType : public BuiltinAtomicType
     {
@@ -754,7 +754,7 @@ namespace QPatternist
      * @short Implements the type @c xs:NOTATION.
      *
      * @ingroup Patternist_types
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NOTATIONType : public BuiltinAtomicType
     {

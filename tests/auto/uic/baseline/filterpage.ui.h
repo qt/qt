@@ -1,10 +1,10 @@
 /********************************************************************************
-** Form generated from reading ui file 'filterpage.ui'
+** Form generated from reading UI file 'filterpage.ui'
 **
 ** Created: Mon Jun 16 17:58:59 2008
 **      by: Qt User Interface Compiler version 4.5.0
 **
-** WARNING! All changes made in this file will be lost when recompiling ui file!
+** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
 #ifndef FILTERPAGE_H

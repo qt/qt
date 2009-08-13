@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,7 +57,7 @@
 class QDirectFBScreenPrivate : public QObject, public QWSGraphicsSystem
 {
 public:
-    QDirectFBScreenPrivate(QDirectFBScreen*);
+    QDirectFBScreenPrivate(QDirectFBScreen *qptr);
     ~QDirectFBScreenPrivate();
 
     void setFlipFlags(const QStringList &args);
@@ -82,10 +82,11 @@ public:
     QDirectFBScreen::DirectFBFlags directFBFlags;
     QImage::Format alphaPixmapFormat;
     QColor backgroundColor;
+    QDirectFBScreen *q;
 };
 
-QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *screen)
-    : QWSGraphicsSystem(screen), dfb(0), dfbSurface(0), flipFlags(DSFLIP_NONE)
+QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *qptr)
+    : QWSGraphicsSystem(qptr), dfb(0), dfbSurface(0), flipFlags(DSFLIP_NONE)
 #ifndef QT_NO_DIRECTFB_LAYER
     , dfbLayer(0)
 #endif
@@ -98,6 +99,7 @@ QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *screen)
 #endif
     , directFBFlags(QDirectFBScreen::NoFlags)
     , alphaPixmapFormat(QImage::Format_Invalid)
+    , q(qptr)
 {
 #ifndef QT_NO_QWS_SIGNALHANDLER
     QWSSignalHandler::instance()->addObject(this);
@@ -742,7 +744,7 @@ QPixmapData *QDirectFBScreenPrivate::createPixmapData(QPixmapData::PixelType typ
     if (type == QPixmapData::BitmapType)
         return QWSGraphicsSystem::createPixmapData(type);
 
-    return new QDirectFBPixmapData(type);
+    return new QDirectFBPixmapData(q, type);
 }
 
 #if (Q_DIRECTFB_VERSION >= 0x000923)
@@ -913,9 +915,6 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     ::setIntOption(displayArgs, QLatin1String("imagecachesize"), &imageCacheSize);
     QDirectFBPaintEngine::initImageCache(imageCacheSize);
 #endif
-
-    if (displayArgs.contains(QLatin1String("ignoresystemclip"), Qt::CaseInsensitive))
-        d_ptr->directFBFlags |= IgnoreSystemClip;
 
 #ifndef QT_NO_DIRECTFB_WM
     if (displayArgs.contains(QLatin1String("fullscreen")))
@@ -1328,15 +1327,15 @@ void QDirectFBScreen::flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags
             for (int i=0; i<rects.size(); ++i) {
                 const QRect &r = rects.at(i);
                 const DFBRegion dfbReg = { r.x() + offset.x(), r.y() + offset.y(),
-                                           r.x() + r.width() + offset.x(),
-                                           r.y() + r.height() + offset.y() };
+                                           r.right() + offset.x(),
+                                           r.bottom() + offset.y() };
                 surface->Flip(surface, &dfbReg, i + 1 < rects.size() ? nonWaitFlags : flipFlags);
             }
         } else {
             const QRect r = region.boundingRect();
             const DFBRegion dfbReg = { r.x() + offset.x(), r.y() + offset.y(),
-                                       r.x() + r.width() + offset.x(),
-                                       r.y() + r.height() + offset.y() };
+                                       r.right() + offset.x(),
+                                       r.bottom() + offset.y() };
             surface->Flip(surface, &dfbReg, flipFlags);
         }
     }

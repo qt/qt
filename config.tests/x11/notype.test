@@ -31,9 +31,9 @@ if [ $XPLATFORM = "solaris-g++" -o $XPLATFORM = "hpux-g++" -o $XPLATFORM = "aix-
     cd "$OUTDIR/config.tests/x11/notype"
 
     if [ "$VERBOSE" = "yes" ]; then
-	make
+	$MAKE
     else
-	make >/dev/null 2>&1
+	$MAKE >/dev/null 2>&1
     fi
 
     [ -x notypetest ] && NOTYPE=no

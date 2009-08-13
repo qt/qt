@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -162,7 +162,17 @@ private:
     QMap<int, QProcessInfo *> children;
 };
 
-Q_GLOBAL_STATIC(QProcessManager, processManager)
+
+Q_GLOBAL_STATIC(QMutex, processManagerGlobalMutex)
+
+static QProcessManager *processManager() {
+    // The constructor of QProcessManager should be called only once
+    // so we cannot use Q_GLOBAL_STATIC directly for QProcessManager
+    QMutex *mutex = processManagerGlobalMutex();
+    QMutexLocker locker(mutex);
+    static QProcessManager processManager;
+    return &processManager;
+}
 
 QProcessManager::QProcessManager()
 {

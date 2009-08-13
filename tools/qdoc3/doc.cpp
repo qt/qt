@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,20 +73,20 @@ struct Macro
 };
 
 enum {
-    CMD_A, CMD_ABSTRACT, CMD_BADCODE, CMD_BASENAME, CMD_BOLD,
-    CMD_BRIEF, CMD_C, CMD_CAPTION, CMD_CHAPTER, CMD_CODE,
-    CMD_CODELINE, CMD_DOTS, CMD_ELSE, CMD_ENDABSTRACT,
-    CMD_ENDCHAPTER, CMD_ENDCODE, CMD_ENDFOOTNOTE, CMD_ENDIF,
-    CMD_ENDLEGALESE, CMD_ENDLINK, CMD_ENDLIST, CMD_ENDOMIT,
-    CMD_ENDPART, CMD_ENDQUOTATION, CMD_ENDRAW, CMD_ENDSECTION1,
-    CMD_ENDSECTION2, CMD_ENDSECTION3, CMD_ENDSECTION4,
-    CMD_ENDSIDEBAR, CMD_ENDTABLE, CMD_EXPIRE, CMD_FOOTNOTE,
-    CMD_GENERATELIST, CMD_GRANULARITY, CMD_HEADER, CMD_I,
-    CMD_IF, CMD_IMAGE, CMD_INCLUDE, CMD_INLINEIMAGE, CMD_INDEX,
-    CMD_KEYWORD, CMD_L, CMD_LEGALESE, CMD_LINK, CMD_LIST,
-    CMD_META, CMD_NEWCODE, CMD_O, CMD_OLDCODE, CMD_OMIT,
-    CMD_OMITVALUE, CMD_OVERLOAD,
-    CMD_PART, CMD_PRINTLINE, CMD_PRINTTO,
+    CMD_A, CMD_ABSTRACT, CMD_ANNOTATEDLIST, CMD_BADCODE,
+    CMD_BASENAME, CMD_BOLD, CMD_BRIEF, CMD_C, CMD_CAPTION,
+    CMD_CHAPTER, CMD_CODE, CMD_CODELINE, CMD_DOTS, CMD_ELSE,
+    CMD_ENDABSTRACT, CMD_ENDCHAPTER, CMD_ENDCODE,
+    CMD_ENDFOOTNOTE, CMD_ENDIF, CMD_ENDLEGALESE, CMD_ENDLINK,
+    CMD_ENDLIST, CMD_ENDOMIT, CMD_ENDPART, CMD_ENDQUOTATION,
+    CMD_ENDRAW, CMD_ENDSECTION1, CMD_ENDSECTION2,
+    CMD_ENDSECTION3, CMD_ENDSECTION4, CMD_ENDSIDEBAR,
+    CMD_ENDTABLE, CMD_EXPIRE, CMD_FOOTNOTE, CMD_GENERATELIST,
+    CMD_GRANULARITY, CMD_HEADER, CMD_I, CMD_IF, CMD_IMAGE,
+    CMD_INCLUDE, CMD_INLINEIMAGE, CMD_INDEX, CMD_KEYWORD,
+    CMD_L, CMD_LEGALESE, CMD_LINK, CMD_LIST, CMD_META,
+    CMD_NEWCODE, CMD_O, CMD_OLDCODE, CMD_OMIT, CMD_OMITVALUE,
+    CMD_OVERLOAD, CMD_PART, CMD_PRINTLINE, CMD_PRINTTO,
     CMD_PRINTUNTIL, CMD_QUOTATION, CMD_QUOTEFILE,
     CMD_QUOTEFROMFILE, CMD_QUOTEFUNCTION, CMD_RAW, CMD_ROW,
     CMD_SA, CMD_SECTION1, CMD_SECTION2, CMD_SECTION3,
@@ -108,6 +108,7 @@ static struct {
 } cmds[] = {
     { "a", CMD_A, 0 },
     { "abstract", CMD_ABSTRACT, 0 },
+    { "annotatedlist", CMD_ANNOTATEDLIST, 0 },
     { "badcode", CMD_BADCODE, 0 },
     { "basename", CMD_BASENAME, 0 }, // ### don't document for now
     { "bold", CMD_BOLD, 0 },
@@ -722,6 +723,9 @@ void DocParser::parse(const QString& source,
                             append(Atom::FootnoteLeft);
                             paraState = OutsidePara; // ###
                         }
+                        break;
+                    case CMD_ANNOTATEDLIST:
+                        append(Atom::AnnotatedList, getArgument());
                         break;
                     case CMD_GENERATELIST:
                         append(Atom::GeneratedList, getArgument());

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,7 +66,7 @@ public:
     virtual Qt::Orientation orientation() const = 0;
 
 protected:
-    virtual QRect indicatorGeometry(const QPoint &pos) const;
+    virtual QRect indicatorGeometry(const QPoint &pos, Qt::LayoutDirection layoutDirection) const;
 
 private:
     QWidget *m_indicator;
@@ -84,7 +84,7 @@ public:
     Qt::Orientation orientation() const;
 
 protected:
-    virtual QRect indicatorGeometry(const QPoint &pos) const;
+    virtual QRect indicatorGeometry(const QPoint &pos, Qt::LayoutDirection layoutDirection) const;
 
 private:
     QToolBar *m_widget;

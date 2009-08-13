@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -70,7 +70,7 @@ namespace QPatternist
     /**
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DecimalMathematician : public AtomicMathematician
                                , public DelegatingSourceLocationReflection
@@ -90,7 +90,7 @@ namespace QPatternist
      * @short Performs arithmetics between Integer values.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class IntegerMathematician : public AtomicMathematician
                                , public DelegatingSourceLocationReflection
@@ -111,7 +111,7 @@ namespace QPatternist
      * and Double values.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DurationNumericMathematician : public AtomicMathematician
                                        , public DelegatingSourceLocationReflection
@@ -132,7 +132,7 @@ namespace QPatternist
      * YearMonthDuration and YearMonthDuration.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DurationDurationDivisor : public AtomicMathematician
     {
@@ -148,7 +148,7 @@ namespace QPatternist
      * YearMonthDuration and YearMonthDuration.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DurationDurationMathematician : public AtomicMathematician
     {
@@ -175,7 +175,7 @@ namespace QPatternist
      * <tt>xs:yearMonthDuration * numeric</tt>.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class OperandSwitcherMathematician : public AtomicMathematician
     {
@@ -205,7 +205,7 @@ namespace QPatternist
      * an AbstractDuration value.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DateTimeDurationMathematician : public AtomicMathematician
                                         , public DelegatingSourceLocationReflection
@@ -230,7 +230,7 @@ namespace QPatternist
      * @short Performs arithmetics between two AbstractDateTime values.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDateTimeMathematician : public AtomicMathematician
     {

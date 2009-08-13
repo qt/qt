@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -98,15 +98,14 @@
     access made to the data being guarded: if it's a non-const access,
     it creates a copy atomically for the operation to complete.
 
-    QExplicitlySharedDataPointer behaves like QSharedDataPointer,
-    except that it only detaches if
-    QExplicitlySharedDataPointer::detach() is explicitly called.
+    QExplicitlySharedDataPointer is a variant of QSharedDataPointer, except
+    that it only detaches if QExplicitlySharedDataPointer::detach() is
+    explicitly called (hence the name).
 
-    Finally, QPointer holds a pointer to a QObject-derived object, but
-    it does so weakly. QPointer is similar, in that behaviour, to
-    QWeakPointer: it does not allow you to prevent the object from
-    being destroyed. All you can do is query whether it has been
-    destroyed or not.
+    Finally, QPointer holds a pointer to a QObject-derived object, but it
+    does so weakly. QPointer can be replaced by QWeakPointer in almost all
+    cases, since they have the same functionality. See
+    \l{QWeakPointer#tracking-qobject} for more information.
 
     \sa QSharedDataPointer, QWeakPointer
 */
@@ -123,12 +122,65 @@
     directly, but it can be used to verify if the pointer has been
     deleted or not in another context.
 
-    QWeakPointer objects can only be created by assignment
-    from a QSharedPointer.
+    QWeakPointer objects can only be created by assignment from a
+    QSharedPointer. The exception is pointers derived from QObject: in that
+    case, QWeakPointer serves as a replacement to QPointer.
 
-    To access the pointer that QWeakPointer is tracking, you
-    must first create a QSharedPointer object and verify if the pointer
-    is null or not.
+    It's important to note that QWeakPointer provides no automatic casting
+    operators to prevent mistakes from happening. Even though QWeakPointer
+    tracks a pointer, it should not be considered a pointer itself, since it
+    doesn't guarantee that the pointed object remains valid.
+
+    Therefore, to access the pointer that QWeakPointer is tracking, you must
+    first promote it to QSharedPointer and verify if the resulting object is
+    null or not. QSharedPointer guarantees that the object isn't deleted, so
+    if you obtain a non-null object, you may use the pointer. See
+    QWeakPointer::toStrongRef() for more an example.
+
+    QWeakPointer also provides the QWeakPointer::data() method that returns
+    the tracked pointer without ensuring that it remains valid. This function
+    is provided if you can guarantee by external means that the object will
+    not get deleted (or if you only need the pointer value) and the cost of
+    creating a QSharedPointer using toStrongRef() is too high.
+
+    That function can also be used to obtain the tracked pointer for
+    QWeakPointers that cannot be promoted to QSharedPointer, such as those
+    created directly from a QObject pointer (not via QSharedPointer).
+
+    \section1 Tracking QObject
+
+    QWeakPointer can be used to track deletion classes derives from QObject,
+    even if they are not managed by QSharedPointer. When used in that role,
+    QWeakPointer replaces the older QPointer in all use-cases. QWeakPointer
+    is also more efficient than QPointer, so it should be preferred in all
+    new code.
+
+    To do that, QWeakPointer provides a special constructor that is only
+    available if the template parameter \tt T is either QObject or a class
+    deriving from it. Trying to use that constructor if \tt T does not derive
+    from QObject will result in compilation errors.
+
+    To obtain the QObject being tracked by QWeakPointer, you must use the
+    QWeakPointer::data() function, but only if you can guarantee that the
+    object cannot get deleted by another context. It should be noted that
+    QPointer had the same constraint, so use of QWeakPointer forces you to
+    consider whether the pointer is still valid.
+
+    QObject-derived classes can only be deleted in the thread they have
+    affinity to (which is the thread they were created in or moved to, using
+    QObject::moveToThread()). In special, QWidget-derived classes cannot be
+    created in non-GUI threads nor moved there. Therefore, guaranteeing that
+    the tracked QObject has affinity to the current thread is enough to also
+    guarantee that it won't be deleted asynchronously.
+
+    Note that QWeakPointer's size and data layout do not match QPointer, so
+    it cannot replace that class in a binary-compatible manner.
+
+    Care must also be taken with QWeakPointers created directly from QObject
+    pointers when dealing with code that was compiled with Qt versions prior
+    to 4.6. Those versions may not track the reference counters correctly, so
+    QWeakPointers created from QObject should never be passed to code that
+    hasn't been recompiled.
 
     \sa QSharedPointer
 */
@@ -210,6 +262,8 @@
     If \tt T is a derived type of the template parameter of this
     class, QSharedPointer will perform an automatic cast. Otherwise,
     you will get a compiler error.
+
+    \sa QWeakPointer::toStrongRef()
 */
 
 /*!
@@ -362,6 +416,8 @@
 
     Returns a weak reference object that shares the pointer referenced
     by this object.
+
+    \sa QWeakPointer::QWeakPointer()
 */
 
 /*!
@@ -405,6 +461,35 @@
     If \tt T is a derived type of the template parameter of this
     class, QWeakPointer will perform an automatic cast. Otherwise,
     you will get a compiler error.
+*/
+
+/*!
+    \fn QWeakPointer::QWeakPointer(const QObject *obj)
+    \since 4.6
+
+    Creates a QWeakPointer that holds a weak reference directly to the
+    QObject \a obj. This constructor is only available if the template type
+    \tt T is QObject or derives from it (otherwise a compilation error will
+    result).
+
+    You can use this constructor with any QObject, even if they were not
+    created with \l QSharedPointer.
+
+    Note that QWeakPointers created this way on arbitrary QObjects usually
+    cannot be promoted to QSharedPointer.
+
+    \sa QSharedPointer, QWeakPointer#tracking-qobject
+*/
+
+/*!
+    \fn QWeakPointer &QWeakPointer::operator=(const QObject *obj)
+    \since 4.6
+
+    Makes this QWeakPointer hold a weak reference to directly to the QObject
+    \a obj. This function is only available if the template type \tt T is
+    QObject or derives from it.
+
+    \sa QWeakPointer#tracking-qobject
 */
 
 /*!
@@ -478,10 +563,78 @@
 */
 
 /*!
+    \fn T *QWeakPointer::data() const
+    \since 4.6
+
+    Returns the value of the pointer being tracked by this QWeakPointer,
+    \b without ensuring that it cannot get deleted. To have that guarantee,
+    use toStrongRef(), which returns a QSharedPointer object. If this
+    function can determine that the pointer has already been deleted, it
+    returns 0.
+
+    It is ok to obtain the value of the pointer and using that value itself,
+    like for example in debugging statements:
+
+    \code
+        qDebug("Tracking %p", weakref.data());
+    \endcode
+
+    However, dereferencing the pointer is only allowed if you can guarantee
+    by external means that the pointer does not get deleted. For example,
+    if you can be certain that no other thread can delete it, nor the
+    functions that you may call.
+
+    If that is the case, then the following code is valid:
+
+    \code
+        // this pointer cannot be used in another thread
+        // so other threads cannot delete it
+        QWeakPointer<int> weakref = obtainReference();
+
+        Object *obj = weakref.data();
+        if (obj) {
+            // if the pointer wasn't deleted yet, we know it can't get
+            // deleted by our own code here nor the functions we call
+            otherFunction(obj);
+        }
+    \endcode
+
+    Use this function with care.
+
+    \sa isNull(), toStrongRef()
+*/
+
+/*!
     \fn QSharedPointer<T> QWeakPointer::toStrongRef() const
 
     Promotes this weak reference to a strong one and returns a
-    QSharedPointer object holding that reference.
+    QSharedPointer object holding that reference. When promoting to
+    QSharedPointer, this function verifies if the object has been deleted
+    already or not. If it hasn't, this function increases the reference
+    count to the shared object, thus ensuring that it will not get
+    deleted.
+
+    Since this function can fail to obtain a valid strong reference to the
+    shared object, you should always verify if the conversion succeeded,
+    by calling QSharedPointer::isNull() on the returned object.
+
+    For example, the following code promotes a QWeakPointer that was held
+    to a strong reference and, if it succeeded, it prints the value of the
+    integer that was held:
+
+    \code
+        QWeakPointer<int> weakref;
+
+        // ...
+
+        QSharedPointer<int> strong = weakref.toStrongRef();
+        if (strong)
+            qDebug() << "The value is:" << *strong;
+        else
+            qDebug() << "The value has already been deleted";
+    \endcode
+
+    \sa QSharedPointer::QSharedPointer()
 */
 
 /*!
@@ -792,6 +945,63 @@
 #include <qset.h>
 #include <qmutex.h>
 
+#if !defined(QT_NO_QOBJECT)
+#include "../kernel/qobject_p.h"
+
+QT_BEGIN_NAMESPACE
+
+/*!
+    \internal
+    This function is called for a just-created QObject \a obj, to enable
+    the use of QSharedPointer and QWeakPointer.
+
+    When QSharedPointer is active in a QObject, the object must not be deleted
+    directly: the lifetime is managed by the QSharedPointer object. In that case,
+    the deleteLater() and parent-child relationship in QObject only decrease
+    the strong reference count, instead of deleting the object.
+*/
+void QtSharedPointer::ExternalRefCountData::setQObjectShared(const QObject *obj, bool)
+{
+    Q_ASSERT(obj);
+    QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
+
+    if (d->sharedRefcount)
+        qFatal("QSharedPointer: pointer %p already has reference counting", obj);
+    d->sharedRefcount = this;
+
+    // QObject decreases the refcount too, so increase it up
+    weakref.ref();
+}
+
+QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::getAndRef(const QObject *obj)
+{
+    Q_ASSERT(obj);
+    QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
+    Q_ASSERT_X(!d->wasDeleted, "QWeakPointer", "Detected QWeakPointer creation in a QObject being deleted");
+
+    ExternalRefCountData *that = d->sharedRefcount;
+    if (that) {
+        that->weakref.ref();
+        return that;
+    }
+
+    // we can create the refcount data because it doesn't exist
+    ExternalRefCountData *x = new ExternalRefCountData(Qt::Uninitialized);
+    x->strongref = -1;
+    x->weakref = 2;  // the QWeakPointer that called us plus the QObject itself
+    if (!d->sharedRefcount.testAndSetRelease(0, x)) {
+        delete x;
+        d->sharedRefcount->weakref.ref();
+    }
+    return d->sharedRefcount;
+}
+
+QT_END_NAMESPACE
+
+#endif
+
+
+
 #if !defined(QT_NO_MEMBER_TEMPLATES)
 
 //#  define QT_SHARED_POINTER_BACKTRACE_SUPPORT
@@ -809,6 +1019,8 @@
 #    include <stdio.h>
 #    include <unistd.h>
 #    include <sys/wait.h>
+
+QT_BEGIN_NAMESPACE
 
 static inline QByteArray saveBacktrace() __attribute__((always_inline));
 static inline QByteArray saveBacktrace()
@@ -870,6 +1082,9 @@ static void printBacktrace(QByteArray stacktrace)
         waitpid(child, 0, 0);
     }
 }
+
+QT_END_NAMESPACE
+
 #  endif  // BACKTRACE_SUPPORTED
 
 namespace {
@@ -897,6 +1112,7 @@ QT_BEGIN_NAMESPACE
 namespace QtSharedPointer {
     Q_CORE_EXPORT void internalSafetyCheckAdd(const volatile void *);
     Q_CORE_EXPORT void internalSafetyCheckRemove(const volatile void *);
+    Q_AUTOTEST_EXPORT void internalSafetyCheckCleanCheck();
 }
 
 /*!
@@ -961,6 +1177,7 @@ void QtSharedPointer::internalSafetyCheckAdd2(const void *d_ptr, const volatile 
 
     kp->dPointers.insert(d_ptr, data);
     kp->dataPointers.insert(ptr, d_ptr);
+    Q_ASSERT(kp->dPointers.size() == kp->dataPointers.size());
 }
 
 /*!
@@ -985,10 +1202,29 @@ void QtSharedPointer::internalSafetyCheckRemove2(const void *d_ptr)
     Q_ASSERT(it2 != kp->dataPointers.end());
 
     //qDebug("Removing d=%p value=%p", d_ptr, it->pointer);
-    
+
     // remove entries
     kp->dataPointers.erase(it2);
     kp->dPointers.erase(it);
+    Q_ASSERT(kp->dPointers.size() == kp->dataPointers.size());
+}
+
+/*!
+    \internal
+    Called by the QSharedPointer autotest
+*/
+void QtSharedPointer::internalSafetyCheckCleanCheck()
+{
+#  ifdef QT_BUILD_INTERNAL
+    KnownPointers *const kp = knownPointers();
+    Q_ASSERT_X(kp, "internalSafetyCheckSelfCheck()", "Called after global statics deletion!");
+
+    if (kp->dPointers.size() != kp->dataPointers.size())
+        qFatal("Internal consistency error: the number of pointers is not equal!");
+
+    if (!kp->dPointers.isEmpty())
+        qFatal("Pointer cleaning failed: %d entries remaining", kp->dPointers.size());
+#  endif
 }
 
 QT_END_NAMESPACE

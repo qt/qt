@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -86,6 +86,9 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     of the reply, it also emits the uploadProgress() signal, which
     indicates the progress of the upload for operations that have such
     content.
+
+    \note Do not delete the object in the slot connected to the
+    error() or finished() signal. Use deleteLater().
 
     \sa QNetworkRequest, QNetworkAccessManager
 */
@@ -232,6 +235,9 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     QNetworkAccessManager::finished() where that signal's reply
     parameter is this object.
 
+    \note Do not delete the object in the slot connected to this
+    signal. Use deleteLater().
+
     \sa QNetworkAccessManager::finished()
 */
 
@@ -245,6 +251,9 @@ QNetworkReplyPrivate::QNetworkReplyPrivate()
     The \a code parameter contains the code of the error that was
     detected. Call errorString() to obtain a textual representation of
     the error condition.
+
+    \note Do not delete the object in the slot connected to this
+    signal. Use deleteLater().
 
     \sa error(), errorString()
 */

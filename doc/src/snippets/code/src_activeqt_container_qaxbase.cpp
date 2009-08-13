@@ -105,12 +105,12 @@ ctrl->setControl("DOMAIN/user:password@server/{8E27C92B-1264-101C-8A2F-040224009
 
 
 //! [15]
-activeX->dynamicCall("Navigate(const QString&)", "qtsoftware.com");
+activeX->dynamicCall("Navigate(const QString&)", "qt.nokia.com");
 //! [15]
 
 
 //! [16]
-activeX->dynamicCall("Navigate(\"qtsoftware.com\")");
+activeX->dynamicCall("Navigate(\"qt.nokia.com\")");
 //! [16]
 
 

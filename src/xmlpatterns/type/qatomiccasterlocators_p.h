@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
 namespace QPatternist
 {
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToStringCasterLocator : public AtomicCasterLocator
     {
@@ -124,7 +124,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToUntypedAtomicCasterLocator : public AtomicCasterLocator
     {
@@ -179,7 +179,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToAnyURICasterLocator : public AtomicCasterLocator
     {
@@ -194,7 +194,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToBooleanCasterLocator : public AtomicCasterLocator
     {
@@ -217,7 +217,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToDoubleCasterLocator : public AtomicCasterLocator
     {
@@ -240,7 +240,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToFloatCasterLocator : public AtomicCasterLocator
     {
@@ -263,7 +263,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToDecimalCasterLocator : public AtomicCasterLocator
     {
@@ -286,7 +286,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToIntegerCasterLocator : public AtomicCasterLocator
     {
@@ -309,7 +309,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToBase64BinaryCasterLocator : public AtomicCasterLocator
     {
@@ -326,7 +326,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToHexBinaryCasterLocator : public AtomicCasterLocator
     {
@@ -343,7 +343,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToQNameCasterLocator : public AtomicCasterLocator
     {
@@ -356,7 +356,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToGYearCasterLocator : public AtomicCasterLocator
     {
@@ -375,7 +375,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToGDayCasterLocator : public AtomicCasterLocator
     {
@@ -394,7 +394,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToGMonthCasterLocator : public AtomicCasterLocator
     {
@@ -413,7 +413,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToGYearMonthCasterLocator : public AtomicCasterLocator
     {
@@ -432,7 +432,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToGMonthDayCasterLocator : public AtomicCasterLocator
     {
@@ -451,7 +451,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToDateTimeCasterLocator : public AtomicCasterLocator
     {
@@ -468,7 +468,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToDateCasterLocator : public AtomicCasterLocator
     {
@@ -485,7 +485,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToSchemaTimeCasterLocator : public AtomicCasterLocator
     {
@@ -502,7 +502,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToDurationCasterLocator : public AtomicCasterLocator
     {
@@ -521,7 +521,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToDayTimeDurationCasterLocator : public AtomicCasterLocator
     {
@@ -540,7 +540,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ToYearMonthDurationCasterLocator : public AtomicCasterLocator
     {
@@ -559,7 +559,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<TypeOfDerivedInteger type>
     class ToDerivedIntegerCasterLocator : public ToIntegerCasterLocator
@@ -702,7 +702,7 @@ namespace QPatternist
     };
 
     /**
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<TypeOfDerivedString type>
     class ToDerivedStringCasterLocator : public ToStringCasterLocator

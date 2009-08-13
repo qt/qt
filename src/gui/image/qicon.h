@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -96,6 +96,16 @@ public:
     void addFile(const QString &fileName, const QSize &size = QSize(), Mode mode = Normal, State state = Off);
 
     QList<QSize> availableSizes(Mode mode = Normal, State state = Off) const;
+
+    static QIcon fromTheme(const QString &name, const QIcon &fallback = QIcon());
+    static bool hasThemeIcon(const QString &name);
+
+    static QStringList themeSearchPaths();
+    static void setThemeSearchPaths(const QStringList &searchpath);
+
+    static QString themeName();
+    static void setThemeName(const QString &path);
+
 
 #ifdef QT3_SUPPORT
     enum Size { Small, Large, Automatic = Small };

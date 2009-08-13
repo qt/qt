@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,7 +63,7 @@ void q3InitNetworkProtocols()
 #ifndef QT_NO_NETWORKPROTOCOL_FTP
     Q3NetworkProtocol::registerNetworkProtocol( QLatin1String("ftp"), new Q3NetworkProtocolFactory< Q3Ftp > );
 #endif
-#ifndef QT_NO_NETWORKPROTOCOL_HTTP
+#ifndef QT_NO_HTTP
     Q3NetworkProtocol::registerNetworkProtocol( QLatin1String("http"), new Q3NetworkProtocolFactory< Q3Http > );
 #endif
 }

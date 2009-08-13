@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -76,13 +76,13 @@
 // This test depends on the fonts in the following package being installed:
 // http://people.freedesktop.org/~hausmann/harfbuzz-test-fonts-0.1.tar.bz2
 
-class tst_QScriptEngine : public QObject
+class tst_QTextScriptEngine : public QObject
 {
 Q_OBJECT
 
 public:
-    tst_QScriptEngine();
-    virtual ~tst_QScriptEngine();
+    tst_QTextScriptEngine();
+    virtual ~tst_QTextScriptEngine();
 
 
 public slots:
@@ -104,19 +104,19 @@ private slots:
     void linearB();
 };
 
-tst_QScriptEngine::tst_QScriptEngine()
+tst_QTextScriptEngine::tst_QTextScriptEngine()
 {
 }
 
-tst_QScriptEngine::~tst_QScriptEngine()
+tst_QTextScriptEngine::~tst_QTextScriptEngine()
 {
 }
 
-void tst_QScriptEngine::init()
+void tst_QTextScriptEngine::init()
 {
 }
 
-void tst_QScriptEngine::cleanup()
+void tst_QTextScriptEngine::cleanup()
 {
 }
 
@@ -172,7 +172,7 @@ static bool shaping( const QFont &f, const ShapeTable *s)
 }
 #endif
 
-void tst_QScriptEngine::devanagari()
+void tst_QTextScriptEngine::devanagari()
 {
 #if defined(Q_WS_X11)
     {
@@ -284,7 +284,7 @@ void tst_QScriptEngine::devanagari()
 #endif
 }
 
-void tst_QScriptEngine::bengali()
+void tst_QTextScriptEngine::bengali()
 {
 #if defined(Q_WS_X11)
     {
@@ -531,7 +531,7 @@ void tst_QScriptEngine::bengali()
 #endif
 }
 
-void tst_QScriptEngine::gurmukhi()
+void tst_QTextScriptEngine::gurmukhi()
 {
 #if defined(Q_WS_X11)
     {
@@ -556,7 +556,7 @@ void tst_QScriptEngine::gurmukhi()
 #endif
 }
 
-void tst_QScriptEngine::oriya()
+void tst_QTextScriptEngine::oriya()
 {
 #if defined(Q_WS_X11)
     {
@@ -596,7 +596,7 @@ void tst_QScriptEngine::oriya()
 }
 
 
-void tst_QScriptEngine::tamil()
+void tst_QTextScriptEngine::tamil()
 {
 #if defined(Q_WS_X11)
     {
@@ -667,7 +667,7 @@ void tst_QScriptEngine::tamil()
 }
 
 
-void tst_QScriptEngine::telugu()
+void tst_QTextScriptEngine::telugu()
 {
 #if defined(Q_WS_X11)
     {
@@ -713,7 +713,7 @@ void tst_QScriptEngine::telugu()
 }
 
 
-void tst_QScriptEngine::kannada()
+void tst_QTextScriptEngine::kannada()
 {
 #if defined(Q_WS_X11)
     {
@@ -783,7 +783,7 @@ void tst_QScriptEngine::kannada()
 
 
 
-void tst_QScriptEngine::malayalam()
+void tst_QTextScriptEngine::malayalam()
 {
 #if defined(Q_WS_X11)
     {
@@ -838,7 +838,7 @@ void tst_QScriptEngine::malayalam()
 
 
 
-void tst_QScriptEngine::khmer()
+void tst_QTextScriptEngine::khmer()
 {
 #if defined(Q_WS_X11)
     {
@@ -881,7 +881,7 @@ void tst_QScriptEngine::khmer()
 #endif
 }
 
-void tst_QScriptEngine::linearB()
+void tst_QTextScriptEngine::linearB()
 {
 #if defined(Q_WS_X11)
     {
@@ -909,5 +909,5 @@ void tst_QScriptEngine::linearB()
 }
 
 
-QTEST_MAIN(tst_QScriptEngine)
+QTEST_MAIN(tst_QTextScriptEngine)
 #include "tst_qtextscriptengine.moc"

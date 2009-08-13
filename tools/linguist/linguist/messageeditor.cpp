@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -710,7 +710,7 @@ void MessageEditor::setEditingEnabled(int model, bool enabled)
     updateCanPaste();
 }
 
-void MessageEditor::setLenghtVariants(bool on)
+void MessageEditor::setLengthVariants(bool on)
 {
     m_lengthVariants = on;
     foreach (const MessageEditorData &ed, m_editors)

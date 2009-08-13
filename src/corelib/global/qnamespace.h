@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -233,7 +233,8 @@ public:
         TextHideMnemonic = 0x8000,
         TextJustificationForced = 0x10000,
         TextForceLeftToRight = 0x20000,
-        TextForceRightToLeft = 0x40000
+        TextForceRightToLeft = 0x40000,
+        TextLongestVariant = 0x80000
 
 #if defined(QT3_SUPPORT) && !defined(Q_MOC_RUN)
         ,SingleLine = TextSingleLine,
@@ -1406,6 +1407,21 @@ public:
         ImCurrentSelection
     };
 
+    enum InputMethodHint {
+        ImhNone = 0x0,
+        ImhHiddenText = 0x1,
+        ImhNumbersOnly = 0x2,
+        ImhUppercaseOnly = 0x4,
+        ImhLowercaseOnly = 0x8,
+        ImhNoAutoUppercase = 0x10,
+        ImhPreferNumbers = 0x20,
+        ImhPreferUppercase = 0x40,
+        ImhPreferLowercase = 0x80,
+        ImhNoPredictiveText = 0x100,
+        ImhDialableCharactersOnly = 0x200
+    };
+    Q_DECLARE_FLAGS(InputMethodHints, InputMethodHint)
+
     enum ToolButtonStyle {
         ToolButtonIconOnly,
         ToolButtonTextOnly,
@@ -1591,6 +1607,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ItemFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodHints)
 
 typedef bool (*qInternalCallback)(void **);
 

@@ -36,8 +36,8 @@ Item {
                     property real angle: 0 * 0
 
                     transform: [
-                        Rotation3D {
-                            id: Rotation; origin.x: 30; axis.x: 30; axis.y: 60
+                        Rotation {
+                            id: Rotation; origin.x: 30; axis.x: 30; axis.y: 60; axis.z: 0
                             angle: Wrapper.angle
                         }
                     ]

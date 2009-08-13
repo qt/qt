@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
 struct QPropertyAssignment
 {
     QPropertyAssignment()
-        : object(0) {}
+        : object(0), explicitlySet(true) {}
     QPropertyAssignment(QObject *o, const QByteArray &n,
                         const QVariant &v, bool es = true)
         : object(o), propertyName(n), value(v), explicitlySet(es)

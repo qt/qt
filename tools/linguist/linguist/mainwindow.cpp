@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -482,9 +482,9 @@ MainWindow::MainWindow()
     readConfig();
     m_statistics = 0;
 
-    connect(m_ui.actionLenghtVariants, SIGNAL(toggled(bool)),
-            m_messageEditor, SLOT(setLenghtVariants(bool)));
-    m_messageEditor->setLenghtVariants(m_ui.actionLenghtVariants->isChecked());
+    connect(m_ui.actionLengthVariants, SIGNAL(toggled(bool)),
+            m_messageEditor, SLOT(setLengthVariants(bool)));
+    m_messageEditor->setLengthVariants(m_ui.actionLengthVariants->isChecked());
 
     m_focusWatcher = new FocusWatcher(m_messageEditor, this);
     m_contextView->installEventFilter(m_focusWatcher);
@@ -2521,7 +2521,7 @@ void MainWindow::readConfig()
         config.value(settingPath("Validators/PhraseMatch"), true).toBool());
     m_ui.actionPlaceMarkerMatches->setChecked(
         config.value(settingPath("Validators/PlaceMarkers"), true).toBool());
-    m_ui.actionLenghtVariants->setChecked(
+    m_ui.actionLengthVariants->setChecked(
         config.value(settingPath("Options/LengthVariants"), false).toBool());
 
     recentFiles().readConfig();
@@ -2548,7 +2548,7 @@ void MainWindow::writeConfig()
     config.setValue(settingPath("Validators/PlaceMarkers"),
         m_ui.actionPlaceMarkerMatches->isChecked());
     config.setValue(settingPath("Options/LengthVariants"),
-        m_ui.actionLenghtVariants->isChecked());
+        m_ui.actionLengthVariants->isChecked());
     config.setValue(settingPath("MainWindowState"),
         saveState());
     recentFiles().writeConfig();

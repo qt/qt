@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -214,7 +214,8 @@ void QParallelAnimationGroup::updateState(QAbstractAnimation::State oldState,
         d->connectUncontrolledAnimations();
         for (int i = 0; i < d->animations.size(); ++i) {
             QAbstractAnimation *animation = d->animations.at(i);
-            animation->stop();
+            if (oldState == Stopped)
+                animation->stop();
             animation->setDirection(d->direction);
             animation->start();
         }

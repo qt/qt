@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -116,14 +116,11 @@ public:
     QByteArray memberToDisconnectOnClose;
 
 #ifdef Q_WS_MAC
-    static void *openCocoaColorPanel(const QColor &initial,
-            QWidget *parent, const QString &title,
-            QColorDialog::ColorDialogOptions options,
-            QColorDialogPrivate *priv = 0);
-    static void closeCocoaColorPanel(void *delegate);
-    static QColor execCocoaColorPanel(const QColor &initial, QWidget *parent,
-            const QString &title, QColorDialog::ColorDialogOptions options);
-    static void setColor(void *delegate, const QColor &color);
+    void openCocoaColorPanel(const QColor &initial,
+            QWidget *parent, const QString &title, QColorDialog::ColorDialogOptions options);
+    void closeCocoaColorPanel();
+    void releaseCocoaColorPanelDelegate();
+    void setCocoaPanelColor(const QColor &color);
 
     inline void done(int result) { q_func()->done(result); }
     inline QColorDialog *colorDialog() { return q_func(); }

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -404,7 +404,7 @@ QWidget *BuddyEditor::findBuddy(QLabel *l, const QWidgetList &existingBuddies) c
     const QRect geom = l->geometry();
     const int y = geom.center().y();
     QWidget *neighbour = 0;
-    switch (QApplication::layoutDirection()) {
+    switch (l->layoutDirection()) {
     case Qt::LeftToRight: { // Walk right to find next managed neighbour
         const int xEnd = parent->size().width();
         for (int x = geom.right() + 1; x < xEnd; x += DeltaX)

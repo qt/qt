@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -393,6 +393,9 @@ QList<QUrl> QFileDialog::sidebarUrls() const
 }
 
 static const qint32 QFileDialogMagic = 0xbe;
+
+const char *qt_file_dialog_filter_reg_exp =
+"^(.*)\\(([a-zA-Z0-9_.*? +;#\\-\\[\\]@\\{\\}/!<>\\$%&=^~:\\|]*)\\)$";
 
 /*!
     \since 4.3
@@ -984,8 +987,13 @@ void QFileDialog::setNameFilters(const QStringList &filters)
 
     if (testOption(HideNameFilterDetails)) {
         QStringList strippedFilters;
+        QRegExp r(QString::fromLatin1(qt_file_dialog_filter_reg_exp));
         for (int i = 0; i < cleanedFilters.count(); ++i) {
-            strippedFilters.append(cleanedFilters[i].mid(0, cleanedFilters[i].indexOf(QLatin1String(" ("))));
+            QString filterName;
+            int index = r.indexIn(cleanedFilters[i]);
+            if (index >= 0)
+                filterName = r.cap(1);
+            strippedFilters.append(filterName.simplified());
         }
         d->qFileDialogUi->fileTypeCombo->addItems(strippedFilters);
     } else {
@@ -2836,9 +2844,6 @@ void QFileDialogPrivate::_q_goToDirectory(const QString &path)
 #endif // QT_NO_MESSAGEBOX
     }
 }
-
-const char *qt_file_dialog_filter_reg_exp =
-    "^([^()]*)\\(([a-zA-Z0-9_.*? +;#\\-\\[\\]@\\{\\}/!<>\\$%&=^~:\\|]*)\\)$";
 
 // Makes a list of filters from a normal filter string "Image Files (*.png *.jpg)"
 QStringList qt_clean_filter_list(const QString &filter)

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -109,12 +109,12 @@ static void slashify( QString& s, bool allowMultiple = true )
 
     Example:
 
-    <tt>http://qtsoftware.com:80/cgi-bin/test%20me.pl?cmd=Hello%20you</tt>
+    <tt>http://example.com:80/cgi-bin/test%20me.pl?cmd=Hello%20you</tt>
 
     \table
     \header \i Function	    \i Returns
     \row \i \l protocol()   \i "http"
-    \row \i \l host()	    \i "qtsoftware.com"
+    \row \i \l host()	    \i "example.com"
     \row \i \l port()	    \i 80
     \row \i \l path()	    \i "/cgi-bin/test&nbsp;me.pl"
     \row \i \l fileName()   \i "test&nbsp;me.pl"
@@ -123,13 +123,13 @@ static void slashify( QString& s, bool allowMultiple = true )
 
     Example:
 
-    <tt>http://doc.trolltech.com/qdockarea.html#lines</tt>
+    <tt>http://qt.nokia.com/doc/qdockarea.html#lines</tt>
 
     \table
     \header \i Function	    \i Returns
     \row \i \l protocol()   \i "http"
-    \row \i \l host()	    \i "doc.trolltech.com"
-    \row \i \l fileName()   \i "qdockarea.html"
+    \row \i \l host()	    \i "qt.nokia.com"
+    \row \i \l fileName()   \i "doc/qdockarea.html"
     \row \i \l ref()	    \i "lines"
     \endtable
 
@@ -228,7 +228,7 @@ bool Q3Url::isRelativeUrl( const QString &url )
 
     On the other hand,
     \snippet doc/src/snippets/code/src_qt3support_network_q3url.cpp 3
-    will result in a new URL, "ftp://ftp.trolltech.com/usr/local",
+    will result in a new URL, "ftp://ftp.qt.nokia.com/usr/local",
     because "/usr/local" isn't relative.
 
     Similarly,

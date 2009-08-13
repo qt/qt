@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -93,6 +93,7 @@ QString Atom::UPPERROMAN_    ("upperroman");
 
   \value AbstractLeft
   \value AbstractRight
+  \value AnnotatedList
   \value AutoLink
   \value BaseName
   \value BriefLeft
@@ -163,6 +164,7 @@ static const struct {
 } atms[] = {
     { "AbstractLeft", Atom::AbstractLeft },
     { "AbstractRight", Atom::AbstractRight },
+    { "AnnotatedList", Atom::AnnotatedList },
     { "AutoLink", Atom::AutoLink },
     { "BaseName", Atom::BaseName },
     { "BriefLeft", Atom::BriefLeft },

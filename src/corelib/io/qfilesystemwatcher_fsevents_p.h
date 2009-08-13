@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -114,6 +114,7 @@ private:
     CFRunLoopRef threadsRunLoop;
     QMutex mutex;
     QWaitCondition waitCondition;
+    QWaitCondition waitForStop;
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
     PathHash filePathInfoHash;
     PathHash dirPathInfoHash;

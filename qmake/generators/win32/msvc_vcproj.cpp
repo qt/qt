@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1261,7 +1261,13 @@ void VcprojGenerator::initDeploymentTool()
                 searchPath = info.absoluteFilePath();
             } else {
                 nameFilter = source.split('\\').last();
-                searchPath = info.absolutePath();
+                if (source.contains('*')) {                    
+                    source = source.split('*').first();                    
+                    info = QFileInfo(source);
+                 }
+                 searchPath = info.absolutePath();
+                 if (!info.exists())
+                    fprintf(stderr, "Deployment file is missing %s\n", source.toLatin1().constData());
             }
 
             int pathSize = searchPath.size();

@@ -34,14 +34,14 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 /****************************************************************************
 **
-** In addition, as a special exception, Trolltech gives permission to link
+** In addition, as a special exception, Nokia gives permission to link
 ** the code of its release of Qt with the OpenSSL project's "OpenSSL" library
 ** (or modified versions of the "OpenSSL" library that use the same license
 ** as the original version), and distribute the linked executables.

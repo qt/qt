@@ -1,6 +1,0 @@
-For good performance, be sure to use disk cache for remote content:
-
-  duiviewer -cache webbrowser.qml
-
-Otherwise everything always re-loads over the network.
-

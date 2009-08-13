@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -661,6 +661,7 @@ void tst_QPushButton::sizeHint()
         tabWidget->setCurrentWidget(tab2);
         tabWidget->setCurrentWidget(tab1);
         QTest::qWait(100);
+        QApplication::processEvents();
 
         QCOMPARE(button1_2->size(), button2_2->size());
     }

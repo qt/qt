@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -306,7 +306,7 @@ void HelpViewer::setSource(const QUrl &url)
     loadFinished = false;
     if (url.toString() == QLatin1String("help")) {
         load(QUrl(QLatin1String("qthelp://com.trolltech.com."
-            "assistantinternal_1.0.0/assistant/assistant.html")));
+            "assistantinternal-1.0.0/assistant/assistant.html")));
     } else {
         load(url);
     }
@@ -425,7 +425,7 @@ void HelpViewer::setSource(const QUrl &url)
 
     if (help) {
         QTextBrowser::setSource(QUrl(QLatin1String("qthelp://com.trolltech.com."
-            "assistantinternal_1.0.0/assistant/assistant.html")));
+            "assistantinternal-1.0.0/assistant/assistant.html")));
     } else {
         QTextBrowser::setSource(url);
         setHtml(tr("<title>Error 404...</title><div align=\"center\"><br><br>"

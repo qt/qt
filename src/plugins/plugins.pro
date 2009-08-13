@@ -10,3 +10,4 @@ unix {
 embedded:SUBDIRS *=  gfxdrivers decorations mousedrivers kbddrivers
 !win32:!embedded:!mac:SUBDIRS *= inputmethods
 contains(QT_CONFIG, phonon): SUBDIRS *= phonon
+contains(QT_CONFIG, multimedia): SUBDIRS *= audio

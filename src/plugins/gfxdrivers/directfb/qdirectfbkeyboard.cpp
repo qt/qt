@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -77,13 +77,15 @@ private:
     QSocketNotifier *keyboardNotifier;
     DFBEvent event;
     int bytesRead;
-
+    int lastUnicode, lastKeycode;
+    Qt::KeyboardModifiers lastModifiers;
 private Q_SLOTS:
     void readKeyboardData();
 };
 
 QDirectFBKeyboardHandlerPrivate::QDirectFBKeyboardHandlerPrivate(QDirectFBKeyboardHandler *h)
-    : handler(h), eventBuffer(0)
+    : handler(h), eventBuffer(0), keyboardNotifier(0), bytesRead(0),
+      lastUnicode(0), lastKeycode(0), lastModifiers(0)
 {
     Q_ASSERT(qt_screen);
 
@@ -114,8 +116,6 @@ QDirectFBKeyboardHandlerPrivate::QDirectFBKeyboardHandlerPrivate(QDirectFBKeyboa
     ::fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 
     memset(&event, 0, sizeof(event));
-    bytesRead = 0;
-
 
     keyboardNotifier = new QSocketNotifier(fd, QSocketNotifier::Read, this);
     connect(keyboardNotifier, SIGNAL(activated(int)),
@@ -213,8 +213,27 @@ void QDirectFBKeyboardHandlerPrivate::readKeyboardData()
             unicode = symbol;
 
         if (unicode != -1 || keycode != 0) {
+            bool autoRepeat = false;
+            if (press) {
+                if (unicode == lastUnicode && keycode == lastKeycode && modifiers == lastModifiers) {
+                    autoRepeat = true;
+                } else {
+                    lastUnicode = unicode;
+                    lastKeycode = keycode;
+                    lastModifiers = modifiers;
+                }
+            } else {
+                lastUnicode = lastKeycode = -1;
+                lastModifiers = 0;
+            }
+            if (autoRepeat) {
+                handler->processKeyEvent(unicode, keycode,
+                                         modifiers, false, autoRepeat);
+
+            }
+
             handler->processKeyEvent(unicode, keycode,
-                                     modifiers, press, false);
+                                     modifiers, press, autoRepeat);
         }
     }
 }

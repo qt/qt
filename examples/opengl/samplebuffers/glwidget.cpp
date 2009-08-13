@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -106,7 +106,7 @@ void GLWidget::timerEvent(QTimerEvent *)
 
 void GLWidget::makeObject()
 {
-    QColor trolltechGreen(QColor::fromCmykF(0.40, 0.0, 1.0, 0.0));
+    QColor qtGreen(QColor::fromCmykF(0.40, 0.0, 1.0, 0.0));
     const double Pi = 3.14159265358979323846;
     const int NumSectors = 15;
     GLdouble x1 = +0.06;
@@ -134,13 +134,13 @@ void GLWidget::makeObject()
             GLdouble x8 = 0.30 * sin(angle2);
             GLdouble y8 = 0.30 * cos(angle2);
 
-            qglColor(trolltechGreen);
+            qglColor(qtGreen);
             quad(GL_QUADS, x5, y5, x6, y6, x7, y7, x8, y8);
             qglColor(Qt::black);
             quad(GL_LINE_LOOP, x5, y5, x6, y6, x7, y7, x8, y8);
         }
 
-        qglColor(trolltechGreen);
+        qglColor(qtGreen);
         quad(GL_QUADS, x1, y1, x2, y2, y2, x2, y1, x1);
         quad(GL_QUADS, x3, y3, x4, y4, y4, x4, y3, x3);
 

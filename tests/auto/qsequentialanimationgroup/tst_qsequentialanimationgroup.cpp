@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -88,6 +88,7 @@ private slots:
     void currentAnimationWithZeroDuration();
     void insertAnimation();
     void clearAnimations();
+    void pauseResume();
 };
 
 tst_QSequentialAnimationGroup::tst_QSequentialAnimationGroup()
@@ -1642,6 +1643,41 @@ void tst_QSequentialAnimationGroup::clearAnimations()
     QTest::qWait(anim1->duration() + 100);
     QVERIFY(anim1 == 0); //anim1 should have been deleted
     QCOMPARE(group.state(), QAbstractAnimation::Running);
+}
+
+void tst_QSequentialAnimationGroup::pauseResume()
+{
+    QObject dummy;
+    dummy.setProperty("foo", 0);
+    QParallelAnimationGroup group;
+    QPropertyAnimation *anim = new QPropertyAnimation(&dummy, "foo", &group);
+    anim->setDuration(250);
+    anim->setEndValue(250);
+    QSignalSpy spy(anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
+    QCOMPARE(group.duration(), 250);
+    group.start();
+    QTest::qWait(100);
+    QCOMPARE(group.state(), QAnimationGroup::Running);
+    QCOMPARE(anim->state(), QAnimationGroup::Running);
+    QCOMPARE(spy.count(), 1);
+    spy.clear();
+    const int currentTime = group.currentTime();
+    QCOMPARE(anim->currentTime(), currentTime);
+
+    group.pause();
+    QCOMPARE(group.state(), QAnimationGroup::Paused);
+    QCOMPARE(group.currentTime(), currentTime);
+    QCOMPARE(anim->state(), QAnimationGroup::Paused);
+    QCOMPARE(anim->currentTime(), currentTime);
+    QCOMPARE(spy.count(), 1);
+    spy.clear();
+
+    group.resume();
+    QCOMPARE(group.state(), QAnimationGroup::Running);
+    QCOMPARE(group.currentTime(), currentTime);
+    QCOMPARE(anim->state(), QAnimationGroup::Running);
+    QCOMPARE(anim->currentTime(), currentTime);
+    QCOMPARE(spy.count(), 1);
 }
 
 QTEST_MAIN(tst_QSequentialAnimationGroup)

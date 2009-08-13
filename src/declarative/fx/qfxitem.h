@@ -262,7 +262,6 @@ QML_DECLARE_TYPE(QFxItem)
 QML_DECLARE_TYPE(QGraphicsTransform)
 QML_DECLARE_TYPE(QGraphicsScale)
 QML_DECLARE_TYPE(QGraphicsRotation)
-QML_DECLARE_TYPE(QGraphicsRotation3D)
 
 QT_END_HEADER
 

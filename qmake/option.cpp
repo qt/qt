@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -150,6 +150,9 @@ bool usage(const char *a0)
             "                 In this mode qmake interprets files as files to\n"
             "                 be built,\n"
             "                 defaults to %s\n"
+            "                 Note: The created .pro file probably will \n"
+            "                 need to be edited. For example add the QT variable to \n"
+            "                 specify what modules are required.\n"
             "  -makefile      Put qmake into makefile generation mode%s\n"
             "                 In this mode qmake interprets files as project files to\n"
             "                 be processed, if skipped qmake will try to find a project\n"

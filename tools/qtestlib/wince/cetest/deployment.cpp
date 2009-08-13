@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -168,6 +168,7 @@ void DeploymentHandler::initQtDeploy(QMakeProject *project, DeploymentList &depl
         }
     }
 
+#ifndef QT_CETEST_NO_ACTIVESYNC
     // QtRemote deployment. We always deploy to \Windows
     if (!project->values("QMAKE_LIBDIR").isEmpty()) {
         QString remoteLibName = QLatin1String("QtRemote.dll");
@@ -177,6 +178,7 @@ void DeploymentHandler::initQtDeploy(QMakeProject *project, DeploymentList &depl
         else
             debugOutput(QString::fromLatin1("Could not find QtRemote. Might not be able to launch target executable"),0);
     }
+#endif
 
     // C-runtime deployment
     QString runtime = project->values("QT_CE_C_RUNTIME").join(QLatin1String(" "));

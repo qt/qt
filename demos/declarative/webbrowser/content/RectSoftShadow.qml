@@ -1,14 +1,14 @@
 import Qt 4.6
 
 Item {
-    Image {
+    BorderImage {
         source: "pics/softshadow-left.sci"
         x: -16
         y: -16
         width: 16
         height: parent.height+32
     }
-    Image {
+    BorderImage {
         source: "pics/softshadow-right.sci"
         x: parent.width
         y: -16

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,6 +56,7 @@
 #include <QtNetwork/QHttp>
 
 QT_BEGIN_NAMESPACE
+#ifndef QT_NO_HTTP
 
 #define QCH_FILENAME  92943
 #define QCH_NAMESPACE 92944
@@ -105,7 +106,7 @@ void InstallDialog::init()
     m_ui.statusLabel->setText(tr("Downloading documentation info..."));
     m_ui.progressBar->show();
     
-    QUrl url(QLatin1String("http://doc.trolltech.com/assistantdocs/docs.txt"));
+    QUrl url(QLatin1String("http://qt.nokia.com/doc/assistantdocs/docs.txt"));
     m_buffer = new QBuffer();
     m_buffer->open(QBuffer::ReadWrite);
 
@@ -213,7 +214,7 @@ void InstallDialog::downloadNextFile()
     m_ui.statusLabel->setText(tr("Downloading %1...").arg(fileName));
     m_ui.progressBar->show();
 
-    QLatin1String urlStr("http://doc.trolltech.com/assistantdocs/%1");
+    QLatin1String urlStr("http://qt.nokia.com/doc/assistantdocs/%1");
     QUrl url(QString(urlStr).arg(fileName));    
     
     m_httpAborted = false;
@@ -335,4 +336,5 @@ void InstallDialog::browseDirectories()
         m_ui.pathLineEdit->setText(dir);
 }
 
+#endif
 QT_END_NAMESPACE

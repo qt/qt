@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1156,8 +1156,8 @@ QLayoutItem *QToolBarAreaLayout::unplug(const QList<int> &path, QToolBarAreaLayo
                     if (!next.skip()) {
                         newExtraSpace = next.pos - previous.pos - pick(line.o, previous.sizeHint());
                         previous.resize(line.o, next.pos - previous.pos);
+                        break;
                     }
-                    break;
                 }
                 break;
             }

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,32 +66,57 @@ public:
     QPanGesture(QWidget *parent);
 
     bool filterEvent(QEvent *event);
-    void reset();
 
     QSize totalOffset() const;
     QSize lastOffset() const;
 
 protected:
-    bool event(QEvent *event);
+    void reset();
 
 private:
+    bool event(QEvent *event);
+    bool eventFilter(QObject *receiver, QEvent *event);
+
     friend class QWidget;
 };
 
-class QTapAndHoldGesturePrivate;
-class Q_GUI_EXPORT QTapAndHoldGesture : public QGesture
+class QPinchGesturePrivate;
+class Q_GUI_EXPORT QPinchGesture : public QGesture
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QTapAndHoldGesture)
+    Q_DECLARE_PRIVATE(QPinchGesture)
+
+    Q_PROPERTY(qreal scaleFactor READ scaleFactor)
+    Q_PROPERTY(qreal lastScaleFactor READ lastScaleFactor)
+
+    Q_PROPERTY(qreal rotationAngle READ rotationAngle)
+    Q_PROPERTY(qreal lastRotationAngle READ lastRotationAngle)
+
+    Q_PROPERTY(QPoint startCenterPoint READ startCenterPoint)
+    Q_PROPERTY(QPoint lastCenterPoint READ lastCenterPoint)
+    Q_PROPERTY(QPoint centerPoint READ centerPoint)
 
 public:
-    QTapAndHoldGesture(QWidget *parent);
+    QPinchGesture(QWidget *parent);
 
     bool filterEvent(QEvent *event);
     void reset();
 
-protected:
-    void timerEvent(QTimerEvent *event);
+    QPoint startCenterPoint() const;
+    QPoint lastCenterPoint() const;
+    QPoint centerPoint() const;
+
+    qreal scaleFactor() const;
+    qreal lastScaleFactor() const;
+
+    qreal rotationAngle() const;
+    qreal lastRotationAngle() const;
+
+private:
+    bool event(QEvent *event);
+    bool eventFilter(QObject *receiver, QEvent *event);
+
+    friend class QWidget;
 };
 
 QT_END_NAMESPACE

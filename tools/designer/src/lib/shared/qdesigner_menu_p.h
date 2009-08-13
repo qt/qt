@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -181,6 +181,9 @@ protected:
     void selectCurrentAction();
 
 private:
+    bool hideSubMenuOnCursorKey();
+    bool showSubMenuOnCursorKey();
+
     QPoint m_startPosition;
     int m_currentIndex;
     QAction *m_addItem;

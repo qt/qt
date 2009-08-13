@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,6 +72,7 @@ private slots:
     void scopeChain();
     void pushAndPopScope();
     void getSetActivationObject();
+    void inheritActivationAndThisObject();
     void toString();
 };
 
@@ -686,6 +687,35 @@ void tst_QScriptContext::getSetActivationObject()
         QVERIFY(ret.isObject());
         QVERIFY(ret.property("arguments").isObject());
         QCOMPARE(ret.property("arguments").property("length").toInt32(), 3);
+    }
+}
+
+static QScriptValue myEval(QScriptContext *ctx, QScriptEngine *eng)
+{
+     QString code = ctx->argument(0).toString();
+     ctx->setActivationObject(ctx->parentContext()->activationObject());
+     ctx->setThisObject(ctx->parentContext()->thisObject());
+     return eng->evaluate(code);
+}
+
+void tst_QScriptContext::inheritActivationAndThisObject()
+{
+    QScriptEngine eng;
+    eng.globalObject().setProperty("myEval", eng.newFunction(myEval));
+    {
+        QScriptValue ret = eng.evaluate("var a = 123; myEval('a')");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 123);
+    }
+    {
+        QScriptValue ret = eng.evaluate("(function() { return myEval('this'); }).call(Number)");
+        QVERIFY(ret.isFunction());
+        QVERIFY(ret.equals(eng.globalObject().property("Number")));
+    }
+    {
+        QScriptValue ret = eng.evaluate("(function(a) { return myEval('a'); })(123)");
+        QVERIFY(ret.isNumber());
+        QCOMPARE(ret.toInt32(), 123);
     }
 }
 

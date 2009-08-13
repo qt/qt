@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ****************************************************************************/
 
@@ -62,14 +62,14 @@ static QXmlSchema createValidSchema()
     const QByteArray data( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                            "<xsd:schema"
                            "        xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
-                           "        xmlns=\"http://www.qtsoftware.com/xmlschematest\""
-                           "        targetNamespace=\"http://www.qtsoftware.com/xmlschematest\""
+                           "        xmlns=\"http://qt.nokia.com/xmlschematest\""
+                           "        targetNamespace=\"http://qt.nokia.com/xmlschematest\""
                            "        version=\"1.0\""
                            "        elementFormDefault=\"qualified\">"
                            "  <xsd:element name=\"myRoot\" type=\"xsd:string\"/>"
                            "</xsd:schema>" );
 
-    const QUrl documentUri("http://www.qtsoftware.com/xmlschematest");
+    const QUrl documentUri("http://qt.nokia.com/xmlschematest");
 
     QXmlSchema schema;
     schema.load(data, documentUri);
@@ -167,7 +167,7 @@ void tst_QXmlSchemaValidator::resetSchemaNamePool() const
     QXmlNamePool np2 = schema2.namePool();
 
     const QXmlName name2(np2, QLatin1String("remoteName"),
-                              QLatin1String("http://trolltech.com/"),
+                              QLatin1String("http://example.com/"),
                               QLatin1String("suffix"));
 
     // make sure that after re-setting the schema, the new namepool is used
@@ -175,7 +175,7 @@ void tst_QXmlSchemaValidator::resetSchemaNamePool() const
 
     {
         QXmlNamePool compNamePool(validator.namePool());
-        QCOMPARE(name2.namespaceUri(compNamePool), QString::fromLatin1("http://trolltech.com/"));
+        QCOMPARE(name2.namespaceUri(compNamePool), QString::fromLatin1("http://example.com/"));
         QCOMPARE(name2.localName(compNamePool), QString::fromLatin1("remoteName"));
         QCOMPARE(name2.prefix(compNamePool), QString::fromLatin1("suffix"));
     }
@@ -206,7 +206,7 @@ void tst_QXmlSchemaValidator::loadInstanceDeviceSuccess() const
 {
     const QXmlSchema schema(createValidSchema());
 
-    QByteArray data( "<myRoot xmlns=\"http://www.qtsoftware.com/xmlschematest\">Testme</myRoot>" );
+    QByteArray data( "<myRoot xmlns=\"http://qt.nokia.com/xmlschematest\">Testme</myRoot>" );
     QBuffer buffer(&data);
     buffer.open(QIODevice::ReadOnly);
 
@@ -218,7 +218,7 @@ void tst_QXmlSchemaValidator::loadInstanceDeviceFail() const
 {
     const QXmlSchema schema(createValidSchema());
 
-    QByteArray data( "<myRoot xmlns=\"http://www.qtsoftware.com/xmlschematest\">Testme</myRoot>" );
+    QByteArray data( "<myRoot xmlns=\"http://qt.nokia.com/xmlschematest\">Testme</myRoot>" );
     QBuffer buffer(&data);
     // a closed device can not be loaded
 
@@ -230,7 +230,7 @@ void tst_QXmlSchemaValidator::loadInstanceDataSuccess() const
 {
     const QXmlSchema schema(createValidSchema());
 
-    const QByteArray data( "<myRoot xmlns=\"http://www.qtsoftware.com/xmlschematest\">Testme</myRoot>" );
+    const QByteArray data( "<myRoot xmlns=\"http://qt.nokia.com/xmlschematest\">Testme</myRoot>" );
 
     QXmlSchemaValidator validator(schema);
     QVERIFY(validator.validate(data));

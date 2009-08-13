@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -5510,9 +5510,15 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 break;
             }
             case SC_SpinBoxEditField:
-                ret.setRect(fw, fw,
-                            spin->rect.width() - spinner_w - fw * 2 - spinBoxSep,
-                            spin->rect.height() - fw * 2);
+                if (spin->buttonSymbols == QAbstractSpinBox::NoButtons) {
+                    ret.setRect(fw, fw,
+                                spin->rect.width() - fw * 2,
+                                spin->rect.height() - fw * 2);
+                } else {
+                    ret.setRect(fw, fw,
+                                spin->rect.width() - fw * 2 - spinBoxSep - spinner_w,
+                                spin->rect.height() - fw * 2);
+                }
                 ret = visualRect(spin->direction, spin->rect, ret);
                 break;
             default:
