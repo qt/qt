@@ -57,11 +57,22 @@ void ParallelAnchorData::updateChildrenSizes()
 
 void ParallelAnchorData::refreshSizeHints()
 {
+    // ### should we warn if the parallel connection is invalid?
+    // e.g. 1-2-3 with 10-20-30, the minimum of the latter is
+    // bigger than the maximum of the former.
+
     firstEdge->refreshSizeHints();
     secondEdge->refreshSizeHints();
+
     minSize = qMax(firstEdge->minSize, secondEdge->minSize);
-    prefSize = qMin(firstEdge->prefSize, secondEdge->prefSize);
     maxSize = qMin(firstEdge->maxSize, secondEdge->maxSize);
+
+    prefSize = qMax(firstEdge->prefSize, secondEdge->prefSize);
+    prefSize = qMin(prefSize, maxSize);
+
+    sizeAtMinimum = prefSize;
+    sizeAtPreferred = prefSize;
+    sizeAtMaximum = prefSize;
 }
 
 void SequentialAnchorData::updateChildrenSizes()
@@ -90,6 +101,10 @@ void SequentialAnchorData::refreshSizeHints()
         prefSize += edge->prefSize;
         maxSize += edge->maxSize;
     }
+
+    sizeAtMinimum = prefSize;
+    sizeAtPreferred = prefSize;
+    sizeAtMaximum = prefSize;
 }
 
 void AnchorData::dump(int indent) {
@@ -251,8 +266,11 @@ static void simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
     if (AnchorData *oldAnchor = graph->takeEdge(before, after)) {
         newAnchor = new ParallelAnchorData(oldAnchor, sequence);
         min = qMax(oldAnchor->minSize, sequence->minSize);
-        pref = qMax(oldAnchor->prefSize, sequence->prefSize);
         max = qMin(oldAnchor->maxSize, sequence->maxSize);
+
+        pref = qMax(oldAnchor->prefSize, sequence->prefSize);
+        pref = qMin(pref, max);
+
         newAnchor->minSize = min;
         newAnchor->prefSize = pref;
         newAnchor->maxSize = max;
