@@ -165,6 +165,15 @@ public:
     bool isCollecting() const;
     void collectGarbage();
 
+    //flags that we set on the return value register for native function. (ie when codeBlock is 0)
+    enum ContextFlags {
+        NativeContext = 1,
+        CalledAsConstructorContext = 2,
+        HasScopeContext = 4
+    };
+    static uint contextFlags(JSC::ExecState *);
+    static void setContextFlags(JSC::ExecState *, uint);
+
     QScript::TimeoutCheckerProxy *timeoutChecker() const;
 
 #ifndef QT_NO_QOBJECT

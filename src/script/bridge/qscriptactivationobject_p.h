@@ -74,12 +74,9 @@ public:
 
     struct QScriptActivationObjectData : public JSVariableObjectData {
         QScriptActivationObjectData(JSC::Register* registers)
-            : JSVariableObjectData(&symbolTable, registers), calledAsConstructor(false)
+            : JSVariableObjectData(&symbolTable, registers)
         { }
         JSC::SymbolTable symbolTable;
-
-        //specifies if the context of this activation object is called as constructor
-        bool calledAsConstructor;
     };
 
     QScriptActivationObjectData *d_ptr() const { return static_cast<QScriptActivationObjectData *>(d); }

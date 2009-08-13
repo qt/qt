@@ -806,10 +806,26 @@ void tst_QScriptEngine::newQMetaObject()
     QVERIFY(instance3.instanceOf(qclass));
     args.clear();
 
+    QPointer<QObject> qpointer1 = instance.toQObject();
+    QPointer<QObject> qpointer2 = instance2.toQObject();
+    QPointer<QObject> qpointer3 = instance3.toQObject();
+
+    QVERIFY(qpointer1);
+    QVERIFY(qpointer2);
+    QVERIFY(qpointer3);
+
     // verify that AutoOwnership is in effect
     instance = QScriptValue();
     eng.collectGarbage();
+
+    QEXPECT_FAIL("","collectGarbage not working", Continue);
+    QVERIFY(!qpointer1);
+    QVERIFY(qpointer2);
+    QEXPECT_FAIL("","collectGarbage not working", Continue);
+    QVERIFY(!qpointer3); // was child of instance
+
     QVERIFY(instance.toQObject() == 0);
+    QEXPECT_FAIL("","collectGarbage not working", Continue);
     QVERIFY(instance3.toQObject() == 0); // was child of instance
     QVERIFY(instance2.toQObject() != 0);
     instance2 = QScriptValue();
@@ -2060,7 +2076,6 @@ void tst_QScriptEngine::collectGarbage()
         QScriptValue v = eng.newQObject(ptr, QScriptEngine::ScriptOwnership);
     }
     eng.collectGarbage();
-    QEXPECT_FAIL("", "", Continue);
     QVERIFY(ptr == 0);
 }
 

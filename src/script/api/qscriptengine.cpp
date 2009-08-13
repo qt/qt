@@ -1114,6 +1114,30 @@ JSC::JSValue QScriptEnginePrivate::thisForContext(JSC::ExecState *frame)
     }
 }
 
+/*! \internal
+     For native context, we use the ReturnValueRegister entry in the stackframe header to store flags.
+     We can do that because this header is not used as the native function return their value thought C++
+
+     when setting flags, NativeContext should always be set
+
+     contextFlags returns 0 for non native context
+ */
+uint QScriptEnginePrivate::contextFlags(JSC::ExecState *exec)
+{
+    if (exec->codeBlock())
+        return 0; //js function doesn't have flags
+
+    return exec->returnValueRegister();
+}
+
+void QScriptEnginePrivate::setContextFlags(JSC::ExecState *exec, uint flags)
+{
+    Q_ASSERT(!exec->codeBlock());
+    quintptr flag_ptr = flags;
+    exec->registers()[JSC::RegisterFile::ReturnValueRegister] = JSC::JSValue(reinterpret_cast<JSC::JSObject*>(flag_ptr));
+}
+
+
 void QScriptEnginePrivate::mark()
 {
     if (!originalGlobalObject()->marked())
@@ -2126,6 +2150,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     Q_D(QScriptEngine);
 
     JSC::JSLock lock(false); // ### hmmm
+    currentContext()->activationObject(); //force the creation of a context for native function;
 
     JSC::UString jscProgram = QScript::qtStringToJSCUString(program);
     JSC::UString jscFileName = QScript::qtStringToJSCUString(fileName);
@@ -2269,6 +2294,10 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, const JS
         thisObject = new (exec) QScriptObject(structure);
     }
 
+    int flags = NativeContext;
+    if (calledAsConstructor)
+        flags |= CalledAsConstructorContext;
+
     JSC::CallFrame *newCallFrame = exec;
     if (callee == 0 || !(exec->callee() == callee && exec->returnPC() != 0)) {
         //We need to check if the Interpreter might have already created a frame for function called from JS.
@@ -2285,16 +2314,16 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, const JS
         for (it = args.begin(); it != args.end(); ++it)
             newCallFrame[++dst] = *it;
         newCallFrame += argc + JSC::RegisterFile::CallFrameHeaderSize;
-        newCallFrame->init(0, /*vPC=*/0, exec->scopeChain(), exec, 0, argc, callee);
-    } else if (calledAsConstructor) {
-        //update the new created this
-        JSC::Register* thisRegister = newCallFrame->registers() - JSC::RegisterFile::CallFrameHeaderSize - newCallFrame->argumentCount();
-        *thisRegister = thisObject;
+        newCallFrame->init(0, /*vPC=*/0, exec->scopeChain(), exec, flags, argc, callee);
+    } else {
+        setContextFlags(newCallFrame, flags);
+        if (calledAsConstructor) {
+            //update the new created this
+            JSC::Register* thisRegister = newCallFrame->registers() - JSC::RegisterFile::CallFrameHeaderSize - newCallFrame->argumentCount();
+            *thisRegister = thisObject;
+        }
     }
     currentFrame = newCallFrame;
-    QScript::QScriptActivationObject *scope = new (newCallFrame) QScript::QScriptActivationObject(newCallFrame);
-    scope->d_ptr()->calledAsConstructor = calledAsConstructor;
-    newCallFrame->setScopeChain(newCallFrame->scopeChain()->copy()->push(scope));
     return newCallFrame;
 }
 
@@ -2311,7 +2340,7 @@ void QScriptEngine::popContext()
         agent()->contextPop();
     Q_D(QScriptEngine);
     if (d->currentFrame->returnPC() != 0 || d->currentFrame->codeBlock() != 0
-        || d->currentFrame->returnValueRegister() != 0 || !currentContext()->parentContext()) {
+        || !currentContext()->parentContext()) {
         qWarning("QScriptEngine::popContext() doesn't match with pushContext()");
         return;
     }
@@ -2324,17 +2353,18 @@ void QScriptEngine::popContext()
  */
 void QScriptEnginePrivate::popContext()
 {
+    bool hasScope = contextFlags(currentFrame) & HasScopeContext;
     if (currentFrame->returnPC() == 0) { //normal case
         JSC::RegisterFile &registerFile = currentFrame->interpreter()->registerFile();
         JSC::Register *const newEnd = currentFrame->registers() - JSC::RegisterFile::CallFrameHeaderSize - currentFrame->argumentCount();
-        currentFrame->scopeChain()->pop()->deref();
+        if (hasScope)
+            currentFrame->scopeChain()->pop()->deref();
         currentFrame = currentFrame->callerFrame();
         registerFile.shrink(newEnd);
-    } else { //the stack frame was created by the Interpreter, we don't need to rewind it.
+    } else if(hasScope) { //the stack frame was created by the Interpreter, we don't need to rewind it.
         currentFrame->setScopeChain(currentFrame->scopeChain()->pop());
         currentFrame->scopeChain()->deref();
     }
-
 }
 
 /*!

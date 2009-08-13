@@ -2020,6 +2020,7 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
                  "a different engine");
         return QScriptValue();
     }
+    engine()->currentContext()->activationObject(); //force the creation of a context for native function;
 
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::ExecState *exec = eng_p->currentFrame;
@@ -2095,6 +2096,7 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
                  "a different engine");
         return QScriptValue();
     }
+    engine()->currentContext()->activationObject(); //force the creation of a context for native function;
 
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::ExecState *exec = eng_p->currentFrame;
@@ -2161,6 +2163,7 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
     Q_D(const QScriptValue);
     if (!isFunction())
         return QScriptValue();
+    engine()->currentContext()->activationObject(); //force the creation of a context for native function;
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::ExecState *exec = eng_p->currentFrame;
 
@@ -2172,6 +2175,7 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
         else
             argsVector[i] = eng_p->scriptValueToJSCValue(args.at(i));
     }
+
     JSC::ArgList jscArgs(argsVector.data(), argsVector.size());
 
     JSC::JSValue callee = d->jscValue;
@@ -2208,6 +2212,7 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
     Q_D(QScriptValue);
     if (!isFunction())
         return QScriptValue();
+    engine()->currentContext()->activationObject(); //force the creation of a context for native function;
     QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(d->engine);
     JSC::ExecState *exec = eng_p->currentFrame;
 

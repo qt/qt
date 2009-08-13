@@ -329,18 +329,10 @@ bool QScriptContext::isCalledAsConstructor() const
 {
     JSC::CallFrame *frame = const_cast<JSC::ExecState*>(QScriptEnginePrivate::frameForContext(this));
 
-    //For native functions, look up for the QScriptActivationObject and its calledAsConstructor flag.
-    JSC::ScopeChainNode *node = frame->scopeChain();
-    JSC::ScopeChainIterator it(node);
-    for (it = node->begin(); it != node->end(); ++it) {
-        if ((*it) && (*it)->isVariableObject()) {
-            if ((*it)->inherits(&QScript::QScriptActivationObject::info)) {
-                return static_cast<QScript::QScriptActivationObject *>(*it)->d_ptr()->calledAsConstructor;
-            }
-            //not a native function
-            break;
-        }
-    }
+    //For native functions, look up flags.
+    uint flags = QScriptEnginePrivate::contextFlags(frame);
+    if (flags & QScriptEnginePrivate::NativeContext)
+        return flags & QScriptEnginePrivate::CalledAsConstructorContext;
 
     //Not a native function, try to look up in the bytecode if we where called from op_construct
     JSC::Instruction* returnPC = frame->returnPC();
@@ -422,17 +414,21 @@ void QScriptContext::setReturnValue(const QScriptValue &result)
 
   \sa argument(), argumentsObject()
 */
+
 QScriptValue QScriptContext::activationObject() const
 {
     JSC::CallFrame *frame = const_cast<JSC::ExecState*>(QScriptEnginePrivate::frameForContext(this));
-    // ### this is still a bit shaky
-    // if properties of the activation are accessed after this context is
-    // popped, we CRASH.
-    // Ideally we should be able to store the activation object in the callframe
-    // and JSC would clean it up for us.
     JSC::JSObject *result = 0;
-    // look in scope chain
-    {
+
+    uint flags = QScriptEnginePrivate::contextFlags(frame);
+    if ((flags & QScriptEnginePrivate::NativeContext) && !(flags & QScriptEnginePrivate::HasScopeContext)) {
+        //For native functions, lazily create it if needed
+        QScript::QScriptActivationObject *scope = new (frame) QScript::QScriptActivationObject(frame);
+        frame->setScopeChain(frame->scopeChain()->copy()->push(scope));
+        result = scope;
+        QScriptEnginePrivate::setContextFlags(frame, flags | QScriptEnginePrivate::HasScopeContext);
+    } else {
+        // look in scope chain
         JSC::ScopeChainNode *node = frame->scopeChain();
         JSC::ScopeChainIterator it(node);
         for (it = node->begin(); it != node->end(); ++it) {
@@ -443,14 +439,21 @@ QScriptValue QScriptContext::activationObject() const
         }
     }
     if (!result) {
-        JSC::CodeBlock *codeBlock = frame->codeBlock();
+        if (!parentContext())
+            return engine()->globalObject();
+
+        qWarning("QScriptContext::activationObject:  could not get activation object for frame");
+        return QScriptValue();
+        /*JSC::CodeBlock *codeBlock = frame->codeBlock();
         if (!codeBlock) {
-            // native function
+            // non-Qt native function 
+            Q_ASSERT(true); //### this should in theorry not happen
             result = new (frame)QScript::QScriptActivationObject(frame);
         } else {
+            // ### this is wrong
             JSC::FunctionBodyNode *body = static_cast<JSC::FunctionBodyNode*>(codeBlock->ownerNode());
             result = new (frame)JSC::JSActivation(frame, body);
-        }
+        }*/
     }
     return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(result);
 }
@@ -481,7 +484,15 @@ void QScriptContext::setActivationObject(const QScriptValue &activation)
         return;
     }
 
-    // replace the first activation object in the scope chain
+    uint flags = QScriptEnginePrivate::contextFlags(frame);
+    if ((flags & QScriptEnginePrivate::NativeContext) && !(flags & QScriptEnginePrivate::HasScopeContext)) {
+        //For native functions, we create a scope node
+        frame->setScopeChain(frame->scopeChain()->copy()->push(object));
+        QScriptEnginePrivate::setContextFlags(frame, flags | QScriptEnginePrivate::HasScopeContext);
+        return;
+    }
+
+    // else replace the first activation object in the scope chain
     JSC::ScopeChainNode *node = frame->scopeChain();
     while (node != 0) {
         if (node->object && node->object->isVariableObject()) {
@@ -630,6 +641,7 @@ QString QScriptContext::toString() const
 */
 QScriptValueList QScriptContext::scopeChain() const
 {
+    activationObject(); //ensure the creation of the normal scope for native context
     const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
     QScriptEnginePrivate *engine = QScript::scriptEngineFromExec(frame);
     QScriptValueList result;
@@ -652,6 +664,7 @@ QScriptValueList QScriptContext::scopeChain() const
 */
 void QScriptContext::pushScope(const QScriptValue &object)
 {
+    activationObject(); //ensure the creation of the normal scope for native context
     if (!object.isObject())
         return;
     else if (object.engine() != engine()) {
