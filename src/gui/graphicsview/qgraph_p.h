@@ -182,10 +182,11 @@ public:
                 EdgeData *data = edgeData(v, v1);
                 bool forward = data->origin == v;
                 if (forward) {
-                    edges += QString::fromAscii("%1->%2 [label=\"[%3,%4]\" dir=both color=\"#000000:#a0a0a0\"] \n")
+                    edges += QString::fromAscii("%1->%2 [label=\"[%3,%4,%5]\" dir=both color=\"#000000:#a0a0a0\"] \n")
                         .arg(v->toString())
                         .arg(v1->toString())
                         .arg(data->minSize)
+                        .arg(data->prefSize)
                         .arg(data->maxSize)
                         ;
                 }
