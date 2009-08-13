@@ -78,6 +78,8 @@ void StdInListenerWin::run()
     bool ok = true;
     char chBuf[4096];
     DWORD dwRead;
+
+#ifndef Q_WS_WINCE
     HANDLE hStdin, hStdinDup;
 
     hStdin = GetStdHandle(STD_INPUT_HANDLE);
@@ -89,6 +91,10 @@ void StdInListenerWin::run()
         0, false, DUPLICATE_SAME_ACCESS);
 
     CloseHandle(hStdin);
+#else
+    HANDLE hStdinDup;
+    hStdinDup = stdin;
+#endif
 
     while (ok) {
         ok = ReadFile(hStdinDup, chBuf, 4096, &dwRead, NULL);

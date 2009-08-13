@@ -178,8 +178,7 @@ template<> Q_INLINE_TEMPLATE QLineF _q_interpolate(const QLineF &f, const QLineF
     return QLineF( _q_interpolate(f.p1(), t.p1(), progress), _q_interpolate(f.p2(), t.p2(), progress));
 }
 
-QVariantAnimationPrivate::QVariantAnimationPrivate() : duration(250), hasStartValue(false),
-                          interpolator(&defaultInterpolator),
+QVariantAnimationPrivate::QVariantAnimationPrivate() : duration(250), interpolator(&defaultInterpolator),
                           changedSignalMask(1 << QVariantAnimation::staticMetaObject.indexOfSignal("valueChanged(QVariant)"))
 {
     //we keep the mask so that we emit valueChanged only when needed (for performance reasons)
@@ -221,35 +220,47 @@ void QVariantAnimationPrivate::updateInterpolator()
 */
 void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
 {
-    // can't interpolate if we have only 1 key value
-    if (keyValues.count() <= 1)
+    // can't interpolate if we don't have at least 2 values
+    if ((keyValues.count() + (defaultStartEndValue.isValid() ? 1 : 0)) < 2)
         return;
 
     const qreal progress = easing.valueForProgress(((duration == 0) ? qreal(1) : qreal(currentTime) / qreal(duration)));
 
-    if (force || progress < currentInterval.start.first || progress > currentInterval.end.first) {
+    //0 and 1 are still the boundaries
+    if (force || (currentInterval.start.first > 0 && progress < currentInterval.start.first)
+        || (currentInterval.end.first < 1 && progress > currentInterval.end.first)) {
         //let's update currentInterval
-        QVariantAnimation::KeyValues::const_iterator itStart = qLowerBound(keyValues.constBegin(),
-                                                                           keyValues.constEnd(),
-                                                                           qMakePair(progress, QVariant()),
-                                                                           animationValueLessThan);
-        QVariantAnimation::KeyValues::const_iterator itEnd = itStart;
-
-        // If we are at the end we should continue to use the last keyValues in case of extrapolation (progress > 1.0).
-        // This is because the easing function can return a value slightly outside the range [0, 1]
-        if (itStart != keyValues.constEnd()) {
-            // this can't happen because we always prepend the default start value there
-            if (itStart == keyValues.constBegin()) {
-                ++itEnd;
+        QVariantAnimation::KeyValues::const_iterator it = qLowerBound(keyValues.constBegin(),
+                                                                      keyValues.constEnd(),
+                                                                      qMakePair(progress, QVariant()),
+                                                                      animationValueLessThan);
+        if (it == keyValues.constBegin()) {
+            //the item pointed to by it is the start element in the range    
+            if (it->first == 0 && keyValues.count() > 1) {
+                currentInterval.start = *it;
+                currentInterval.end = *(it+1);
             } else {
-                --itStart;
+                currentInterval.start = qMakePair(qreal(0), defaultStartEndValue);
+                currentInterval.end = *it;
             }
-
-            // update all the values of the currentInterval
-            currentInterval.start = *itStart;
-            currentInterval.end = *itEnd;
-            updateInterpolator();
+        } else if (it == keyValues.constEnd()) {
+            --it; //position the iterator on the last item
+            if (it->first == 1 && keyValues.count() > 1) {
+                //we have an end value (item with progress = 1)
+                currentInterval.start = *(it-1);
+                currentInterval.end = *it;
+            } else {
+                //we use the default end value here
+                currentInterval.start = *it;
+                currentInterval.end = qMakePair(qreal(1), defaultStartEndValue);
+            }
+        } else {
+            currentInterval.start = *(it-1);
+            currentInterval.end = *it;
         }
+
+        // update all the values of the currentInterval
+        updateInterpolator();
     }
     setCurrentValueForProgress(progress);
 }
@@ -298,8 +309,6 @@ void QVariantAnimationPrivate::setValueAt(qreal step, const QVariant &value)
     } else {
         if (value.isValid())
             result->second = value; // replaces the previous value
-        else if (step == 0 && !hasStartValue && defaultStartValue.isValid())
-            result->second = defaultStartValue; // resets to the default start value
         else
             keyValues.erase(result); // removes the previous value
     }
@@ -307,11 +316,10 @@ void QVariantAnimationPrivate::setValueAt(qreal step, const QVariant &value)
     recalculateCurrentInterval(/*force=*/true);
 }
 
-void QVariantAnimationPrivate::setDefaultStartValue(const QVariant &value)
+void QVariantAnimationPrivate::setDefaultStartEndValue(const QVariant &value)
 {
-    defaultStartValue = value;
-    if (!hasStartValue)
-      setValueAt(0, value);
+    defaultStartEndValue = value;
+    recalculateCurrentInterval(/*force=*/true);
 }
 
 /*!
@@ -526,11 +534,7 @@ void QVariantAnimation::setEndValue(const QVariant &value)
 */
 QVariant QVariantAnimation::keyValueAt(qreal step) const
 {
-    Q_D(const QVariantAnimation);
-    if (step == 0 && !d->hasStartValue)
-        return QVariant(); //special case where we don't have an explicit startValue
-
-    return d->valueAt(step);
+    return d_func()->valueAt(step);
 }
 
 /*!
@@ -552,10 +556,7 @@ QVariant QVariantAnimation::keyValueAt(qreal step) const
 */
 void QVariantAnimation::setKeyValueAt(qreal step, const QVariant &value)
 {
-    Q_D(QVariantAnimation);
-    if (step == 0)
-        d->hasStartValue = value.isValid();
-    d->setValueAt(step, value);
+    d_func()->setValueAt(step, value);
 }
 
 /*!
@@ -565,12 +566,7 @@ void QVariantAnimation::setKeyValueAt(qreal step, const QVariant &value)
 */
 QVariantAnimation::KeyValues QVariantAnimation::keyValues() const
 {
-    Q_D(const QVariantAnimation);
-    QVariantAnimation::KeyValues ret = d->keyValues;
-    //in case we added the default start value, we remove it
-    if (!d->hasStartValue && !ret.isEmpty() && ret.at(0).first == 0)
-        ret.remove(0);
-    return ret;
+    return d_func()->keyValues;
 }
 
 /*!
@@ -584,7 +580,6 @@ void QVariantAnimation::setKeyValues(const KeyValues &keyValues)
     Q_D(QVariantAnimation);
     d->keyValues = keyValues;
     qSort(d->keyValues.begin(), d->keyValues.end(), animationValueLessThan);
-    d->hasStartValue = !d->keyValues.isEmpty() && d->keyValues.at(0).first == 0;
     d->recalculateCurrentInterval(/*force=*/true);
 }
 

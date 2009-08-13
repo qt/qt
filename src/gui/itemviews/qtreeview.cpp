@@ -2797,15 +2797,14 @@ int QTreeView::indexRowSizeHint(const QModelIndex &index) const
 
     if (isRightToLeft()) {
         start = (start == -1 ? count - 1 : start);
-        end = (end == -1 ? 0 : end);
+        end = 0;
     } else {
         start = (start == -1 ? 0 : start);
-        end = (end == -1 ? count - 1 : end);
+        end = count - 1;
     }
 
-    int tmp = start;
-    start = qMin(start, end);
-    end = qMax(tmp, end);
+    if (end < start)
+        qSwap(end, start);
 
     int height = -1;
     QStyleOptionViewItemV4 option = d->viewOptionsV4();

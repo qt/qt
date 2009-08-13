@@ -102,6 +102,7 @@ private slots:
     void easingcurve_data();
     void easingcurve();
     void startWithoutStartValue();
+    void startBackwardWithoutEndValue();
     void playForwardBackward();
     void interpolated();
     void setStartEndValues_data();
@@ -581,6 +582,47 @@ void tst_QPropertyAnimation::startWithoutStartValue()
     QVERIFY(current >= 100);
     QVERIFY(current <= 110);
 }
+
+void tst_QPropertyAnimation::startBackwardWithoutEndValue()
+{
+    QObject o;
+    o.setProperty("ole", 42);
+    QCOMPARE(o.property("ole").toInt(), 42);
+
+    QPropertyAnimation anim(&o, "ole");
+    anim.setStartValue(100);
+    anim.setDirection(QAbstractAnimation::Backward);
+
+    //we start without an end value
+    anim.start();
+    QCOMPARE(anim.state(), QAbstractAnimation::Running);
+    QCOMPARE(o.property("ole").toInt(), 42); //the initial value
+
+    QTest::qWait(100);
+    int current = anim.currentValue().toInt();
+    //it is somewhere in the animation
+    QVERIFY(current > 42);
+    QVERIFY(current < 100);
+
+    QTest::qWait(200);
+    QCOMPARE(anim.state(), QVariantAnimation::Stopped);
+    current = anim.currentValue().toInt();
+    QCOMPARE(current, 100);
+    QCOMPARE(o.property("ole").toInt(), current);
+
+    anim.setStartValue(110);
+    anim.start();
+    current = anim.currentValue().toInt();
+    // the default start value will reevaluate the current property
+    // and set it to the end value of the last iteration
+    QCOMPARE(current, 100);
+    QTest::qWait(100);
+    current = anim.currentValue().toInt();
+    //it is somewhere in the animation
+    QVERIFY(current >= 100);
+    QVERIFY(current <= 110);
+}
+
 
 void tst_QPropertyAnimation::playForwardBackward()
 {
