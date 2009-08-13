@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -68,7 +68,7 @@ void MainWindow::on_aboutAction_triggered()
 {
     QMessageBox::about(this, tr("About Style sheet"),
         tr("The <b>Style Sheet</b> example shows how widgets can be styled "
-           "using <a href=\"http://doc.trolltech.com/4.5/stylesheet.html\">Qt "
+           "using <a href=\"http://qt.nokia.com/doc/4.5/stylesheet.html\">Qt "
            "Style Sheets</a>. Click <b>File|Edit Style Sheet</b> to pop up the "
            "style editor, and either choose an existing style sheet or design "
            "your own."));

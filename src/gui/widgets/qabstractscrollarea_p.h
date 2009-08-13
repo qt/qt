@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,6 +60,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SCROLLAREA
 
+class QPanGesture;
 class QScrollBar;
 class QAbstractScrollAreaScrollBarContainer;
 class Q_AUTOTEST_EXPORT QAbstractScrollAreaPrivate: public QFramePrivate
@@ -100,10 +101,12 @@ public:
     { return q_func()->viewportEvent(event); }
     QObject *viewportFilter;
 
+    virtual void _q_gestureTriggered();
+    QPanGesture *panGesture;
 #ifdef Q_WS_WIN
     bool singleFingerPanEnabled;
+    void setSingleFingerPanEnabled(bool on = true);
 #endif
-    void setupGestures();
 };
 
 class QAbstractScrollAreaFilter : public QObject

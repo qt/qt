@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -81,6 +81,9 @@ int main(int argc, char *argv[])
 
     if (QApplication::arguments().size() > 1)
         w.openDirectory(QApplication::arguments().at(1));
+    else
+        w.openDirectory(QFileDialog::getExistingDirectory(0, "Select image folder"));
+
     return app.exec();
 }
 

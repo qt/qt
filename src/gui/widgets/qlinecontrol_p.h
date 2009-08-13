@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -343,6 +343,9 @@ Q_SIGNALS:
     void editingFinished();
     void updateNeeded(const QRect &);
 
+#ifdef QT_KEYPAD_NAVIGATION
+    void editFocusChange(bool);
+#endif
 protected:
     virtual void timerEvent(QTimerEvent *event);
 
@@ -638,7 +641,7 @@ inline void QLineControl::setCursorPosition(int pos)
 {
     if (pos < 0)
         pos = 0;
-    if (pos < m_text.length())
+    if (pos <= m_text.length())
         moveCursor(pos);
 }
 

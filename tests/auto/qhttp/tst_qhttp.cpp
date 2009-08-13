@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -317,8 +317,8 @@ void tst_QHttp::get_data()
 	QTest::newRow( QString("failprot_02_%1").arg(i).toLatin1() ) << QtNetworkSettings::serverName() << 80u
 	    << QString("qtest/rfc3252.txt") << 1 << 400 << QByteArray() << (bool)(i==1);
 
-  // doc.trolltech.com uses transfer-encoding=chunked
-    /* doc.trolltech.com no longer seams to be using chuncked encodig.
+  // qt.nokia.com/doc uses transfer-encoding=chunked
+    /* qt.nokia.com/doc no longer seams to be using chuncked encodig.
     QTest::newRow( QString("chunked_01_%1").arg(i).toLatin1() ) << QString("test.troll.no") << 80u
 	    << QString("/") << 1 << 200 << trolltech << (bool)(i==1);
     */
@@ -415,8 +415,8 @@ void tst_QHttp::head_data()
     QTest::newRow( "failprot_02" ) << QtNetworkSettings::serverName() << 80u
 	<< QString("qtest/rfc3252.txt") << 1 << 400 << 0u;
 
-    /* doc.trolltech.com no longer seams to be using chuncked encodig.
-    QTest::newRow( "chunked_01" ) << QString("doc.trolltech.com") << 80u
+    /* qt.nokia.com/doc no longer seams to be using chuncked encodig.
+    QTest::newRow( "chunked_01" ) << QString("qt.nokia.com/doc") << 80u
 	<< QString("/index.html") << 1 << 200 << 0u;
     */
     QTest::newRow( "chunked_02" ) << QtNetworkSettings::serverName() << 80u
@@ -737,13 +737,13 @@ void tst_QHttp::proxy_data()
     QTest::addColumn<QString>("proxypass");
 
     QTest::newRow("qt-test-server") << QtNetworkSettings::serverName() << 3128
-                                 << QString::fromLatin1("www.qtsoftware.com") << QString::fromLatin1("/")
+                                 << QString::fromLatin1("qt.nokia.com") << QString::fromLatin1("/")
                                  << QString::fromLatin1("") << QString::fromLatin1("");
     QTest::newRow("qt-test-server pct") << QtNetworkSettings::serverName() << 3128
-                                 << QString::fromLatin1("www.qtsoftware.com") << QString::fromLatin1("/%64eveloper")
+                                 << QString::fromLatin1("qt.nokia.com") << QString::fromLatin1("/%64eveloper")
                                  << QString::fromLatin1("") << QString::fromLatin1("");
     QTest::newRow("qt-test-server-basic") << QtNetworkSettings::serverName() << 3129
-                                 << QString::fromLatin1("www.qtsoftware.com") << QString::fromLatin1("/")
+                                 << QString::fromLatin1("qt.nokia.com") << QString::fromLatin1("/")
                                  << QString::fromLatin1("qsockstest") << QString::fromLatin1("password");
 
 #if 0
@@ -751,7 +751,7 @@ void tst_QHttp::proxy_data()
     // the tst_QHttp class is too strict to handle the byte counts sent by dataSendProgress
     // So don't run this test:
     QTest::newRow("qt-test-server-ntlm") << QtNetworkSettings::serverName() << 3130
-                                 << QString::fromLatin1("www.qtsoftware.com") << QString::fromLatin1("/")
+                                 << QString::fromLatin1("qt.nokia.com") << QString::fromLatin1("/")
                                  << QString::fromLatin1("qsockstest") << QString::fromLatin1("password");
 #endif
 }

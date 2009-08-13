@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,7 +43,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Patternist project on Trolltech Labs.
+** This file is part of the Patternist project on Qt Labs.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -74,7 +74,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ***************************************************************************
@@ -148,7 +148,7 @@ namespace QPatternistSDK
      * Language (XML) 1.0 (Third Edition)</a>
      * @see <a href="http://www.w3.org/TR/REC-xml-names/">Namespaces in XML</a>
      * @todo Replace this class with QXmlStreamWriter
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup PatternistSDK
      */
     class Q_PATTERNISTSDK_EXPORT XMLWriter : public QXmlContentHandler

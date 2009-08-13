@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -93,13 +93,24 @@ void tst_lupdate::doCompare(const QStringList &actual, const QString &expectedFn
         } else if (i == ei) {
             ei = 0;
             break;
-        } else if (err ? !QRegExp(expected.at(i)).exactMatch(actual.at(i)) :
-                         (actual.at(i) != expected.at(i))) {
-            while ((ei - 1) >= i && (gi - 1) >= i &&
-                     (err ? QRegExp(expected.at(ei - 1)).exactMatch(actual.at(gi - 1)) :
-                            (actual.at(gi - 1) == expected.at(ei - 1))))
-                ei--, gi--;
-            break;
+        } else {
+            QString act = actual.at(i);
+            act.remove('\r');
+            if (err ? !QRegExp(expected.at(i)).exactMatch(act) :
+                         (act != expected.at(i))) {
+                bool cond = true;
+                while (cond) {
+                    act = actual.at(gi - 1);
+                    act.remove('\r');
+                    cond = (ei - 1) >= i && (gi - 1) >= i &&
+                         (err ? QRegExp(expected.at(ei - 1)).exactMatch(act) :
+                                (act == expected.at(ei - 1)));
+                    if (cond) {
+                        ei--, gi--;
+                    }
+                }
+                break;
+            }
         }
     }
     QByteArray diff;

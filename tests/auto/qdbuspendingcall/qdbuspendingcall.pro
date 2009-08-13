@@ -1,4 +1,5 @@
 load(qttest_p4)
-QT = core
-contains(QT_CONFIG, dbus):QT += dbus
+requires(contains(QT_CONFIG, dbus))
+QT = core dbus
 SOURCES += tst_qdbuspendingcall.cpp
+

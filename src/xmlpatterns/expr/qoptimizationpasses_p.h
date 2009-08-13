@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,7 +65,7 @@ namespace QPatternist
     /**
      * @short Contains a set of common OptimizerPass instances.
      *
-     * @author Frans englich <fenglich@trolltech.com>
+     * @author Frans englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     namespace OptimizationPasses
@@ -119,7 +119,7 @@ namespace QPatternist
          * This class is not supposed to be instantiated, but to be used via its init()
          * function. In fact, this class cannot be instantiated.
          *
-         * @author Frans englich <fenglich@trolltech.com>
+         * @author Frans englich <frans.englich@nokia.com>
          */
         class Coordinator
         {

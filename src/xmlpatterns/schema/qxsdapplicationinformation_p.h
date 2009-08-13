@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -69,7 +69,7 @@ namespace QPatternist
      * of a XML schema as described <a href="http://www.w3.org/TR/xmlschema11-1/#cAnnotations">here</a>.
      *
      * @ingroup Patternist_schema
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class XsdApplicationInformation : public NamedSchemaComponent
     {

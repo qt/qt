@@ -154,6 +154,11 @@
   <category dirname="phonon" name="Phonon">
     <example filename="musicplayer" name="Music Player" />
   </category>
+  <category dirname="multimedia/audio" name="Multimedia">
+    <example filename="audiodevices" name="Audio Devices" />
+    <example filename="audiooutput" name="Audio Output" />
+    <example filename="audioinput" name="Audio Input" />
+  </category>
   <category dirname="richtext" name="Rich Text">
     <example filename="calendar" name="Calendar" />
     <example filename="orderform" name="Order Form" />
@@ -178,6 +183,7 @@
   </category>
   <category dirname="statemachine" name="State Machine">
     <example filename="eventtransitions" name="Event Transitions" />
+    <example filename="rogue" name="Rogue" />
     <example filename="tankgame" name="Tank Game" />
     <example filename="trafficlight" name="Traffic Light" />
     <example filename="twowaybutton" name="Two-way Button" />

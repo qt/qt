@@ -16,10 +16,11 @@ Item {
                 width: 40
                 height: 40
                 property int angle: 0;
-                transform: Rotation3D {
+                transform: Rotation {
                     origin.x: 20
                     origin.y: 20
                     axis.x: 1
+                    axis.z: 0
                     angle: flipable.angle;
                 }
                 front: Image {

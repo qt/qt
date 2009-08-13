@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -105,7 +105,7 @@
     including translations to various languages.
 
     Another valuable source of example code and explanations of Qt
-    features is the archive of articles from \l {http://doc.trolltech.com/qq}
+    features is the archive of articles from \l {http://qt.nokia.com/doc/qq}
     {Qt Quarterly}, a quarterly newsletter for users of Qt.
 
     For documentation on specific Qt modules and other guides, refer to

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -772,7 +772,7 @@ QMatchData QUnsortedModelEngine::filter(const QString& part, const QModelIndex& 
 ///////////////////////////////////////////////////////////////////////////////
 QCompleterPrivate::QCompleterPrivate()
 : widget(0), proxy(0), popup(0), cs(Qt::CaseSensitive), role(Qt::EditRole), column(0),
-  sorting(QCompleter::UnsortedModel), wrap(true), maxVisibleItems(7), eatFocusOut(true)
+  maxVisibleItems(7), sorting(QCompleter::UnsortedModel), wrap(true), eatFocusOut(true)
 {
 }
 

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -69,9 +69,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-#if !defined(_POSIX_MONOTONIC_CLOCK)
-#  define _POSIX_MONOTONIC_CLOCK -1
-#endif
 
 // internal timer info
 struct QTimerInfo {

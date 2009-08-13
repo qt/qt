@@ -18,10 +18,10 @@ Flipable {
 
     signal closed
 
-    transform: Rotation3D {
+    transform: Rotation {
         id: Rotation
         origin.x: Container.width / 2;
-        axis.y: 1;
+        axis.y: 1; axis.z: 0
     }
 
     front: Item {

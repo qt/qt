@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -373,13 +373,12 @@
 
     In the model/view architecture, the model provides a standard interface
     that views and delegates use to access data. In Qt, the standard
-    interface is defined by the QAbstractItemModel class. No matter how
-    the items of data are stored in any underlying data structure, all
-    subclasses of QAbstractItemModel represent the data as a hierarchical
-    structure containing tables of items.
-    Views use this \e convention to access items of data in the model, but
-    they are not restricted in the way that they present this information
-    to the user.
+    interface is defined by the QAbstractItemModel class. No matter how the
+    items of data are stored in any underlying data structure, all subclasses
+    of QAbstractItemModel represent the data as a hierarchical structure
+    containing tables of items. Views use this \e convention to access items
+    of data in the model, but they are not restricted in the way that they
+    present this information to the user.
 
     \image modelview-models.png
 
@@ -393,27 +392,26 @@
     \section2 Model Indexes
 
     To ensure that the representation of the data is kept separate from the
-    way it is accessed, the concept of a \e{model index} is introduced.
-    Each piece of information that can be obtained via a model is
-    represented by a model index. Views and delegates use these indexes to
-    request items of data to display.
+    way it is accessed, the concept of a \e{model index} is introduced. Each
+    piece of information that can be obtained via a model is represented by
+    a model index. Views and delegates use these indexes to request items of
+    data to display.
 
-    As a result, only the model needs to know how to obtain data, and the
-    type of data managed by the model can be defined fairly generally.
-    Model indexes contain a pointer to the model that created them, and
-    this prevents confusion when working with more than one model.
+    As a result, only the model needs to know how to obtain data, and the type
+    of data managed by the model can be defined fairly generally. Model indexes
+    contain a pointer to the model that created them, and this prevents
+    confusion when working with more than one model.
 
     \snippet doc/src/snippets/code/doc_src_model-view-programming.qdoc 0
 
-    Model indexes provide \e temporary references to pieces of information,
-    and can be used to retrieve or modify data via the model. Since models
-    may reorganize their internal structures from time to time, model
-    indexes may become invalid, and \e{should not be stored}. If a
-    long-term reference to a piece of information is required, a
-    \e{persistent model index} must be created. This provides a reference
-    to the information that the model keeps up-to-date.
-    Temporary model indexes are provided by the QModelIndex class, and
-    persistent model indexes are provided by the QPersistentModelIndex
+    Model indexes provide \e temporary references to pieces of information, and
+    can be used to retrieve or modify data via the model. Since models may
+    reorganize their internal structures from time to time, model indexes may
+    become invalid, and \e{should not be stored}. If a long-term reference to a
+    piece of information is required, a \e{persistent model index} must be
+    created. This provides a reference to the information that the model keeps
+    up-to-date. Temporary model indexes are provided by the QModelIndex class,
+    and persistent model indexes are provided by the QPersistentModelIndex
     class.
 
     To obtain a model index that corresponds to an item of data, three
@@ -423,30 +421,29 @@
 
     \section2 Rows and Columns
 
-    In its most basic form, a model can be accessed as a simple table
-    in which items are located by their row and column numbers. \e{This does
-    not mean that the underlying pieces of data are stored in an array
-    structure}; the use of row and column numbers is only a convention to
-    allow components to communicate with each other.
-    We can retrieve information about any given item by specifying its row
-    and column numbers to the model, and we receive an index that
-    represents the item:
+    In its most basic form, a model can be accessed as a simple table in which
+    items are located by their row and column numbers. \e{This does not mean
+    that the underlying pieces of data are stored in an array structure}; the
+    use of row and column numbers is only a convention to allow components to
+    communicate with each other. We can retrieve information about any given
+    item by specifying its row and column numbers to the model, and we receive
+    an index that represents the item:
 
     \snippet doc/src/snippets/code/doc_src_model-view-programming.qdoc 1
 
-    Models that provide interfaces to simple, single level data structures
-    like lists and tables do not need any other information to be provided
-    but, as the above code indicates, we need to supply more information
-    when obtaining a model index.
+    Models that provide interfaces to simple, single level data structures like
+    lists and tables do not need any other information to be provided but, as
+    the above code indicates, we need to supply more information when obtaining
+    a model index.
 
     \table
     \row \i \inlineimage modelview-tablemodel.png
     \i \bold{Rows and columns}
 
     The diagram shows a representation of a basic table model in which each
-    item is located by a pair of row and column numbers.
-    By passing the relevant row and column numbers to the model we
-    obtain a model index that refers to an item of data.
+    item is located by a pair of row and column numbers. We obtain a model
+    index that refers to an item of data by passing the relevant row and
+    column numbers to the model.
 
     \snippet doc/src/snippets/code/doc_src_model-view-programming.qdoc 2
 
@@ -458,17 +455,16 @@
     \section2 Parents of Items
 
     The table-like interface to item data provided by models is ideal when
-    using data in a table or list view; the row and column number system
-    maps exactly to the way the views display items.
-    However, structures such as tree views require the model to expose a more
-    flexible interface to the items within. As a result, each item can also be
-    the parent of another table of items, in much the same way that a top-level
-    item in a tree view can contain another list of items.
+    using data in a table or list view; the row and column number system maps
+    exactly to the way the views display items. However, structures such as
+    tree views require the model to expose a more flexible interface to the
+    items within. As a result, each item can also be the parent of another
+    table of items, in much the same way that a top-level item in a tree view
+    can contain another list of items.
 
-    When requesting an index for a model item, we must provide some
-    information about the item's parent. Outside the model, the only way to
-    refer to an item is through a model index, so a parent model index must
-    also be given:
+    When requesting an index for a model item, we must provide some information
+    about the item's parent. Outside the model, the only way to refer to an
+    item is through a model index, so a parent model index must also be given:
 
     \snippet doc/src/snippets/code/doc_src_model-view-programming.qdoc 3
 
@@ -476,14 +472,16 @@
     \row \i \inlineimage modelview-treemodel.png
     \i \bold{Parents, rows, and columns}
 
-    The diagram shows a representation of a tree model in which each item
-    is referred to by a parent, a row number, and a column number.
+    The diagram shows a representation of a tree model in which each item is
+    referred to by a parent, a row number, and a column number.
 
     Items "A" and "C" are represented as top-level siblings in the model:
+
     \snippet doc/src/snippets/code/doc_src_model-view-programming.qdoc 4
 
     Item "A" has a number of children. A model index for item "B" is
     obtained with the following code:
+
     \snippet doc/src/snippets/code/doc_src_model-view-programming.qdoc 5
     \endtable
 
@@ -492,9 +490,8 @@
     Items in a model can perform various \e roles for other components,
     allowing different kinds of data to be supplied for different situations.
     For example, Qt::DisplayRole is used to access a string that can be
-    displayed as text in a view.
-    Typically, items contain data for a number of different roles, and the
-    standard roles are defined by Qt::ItemDataRole.
+    displayed as text in a view. Typically, items contain data for a number of
+    different roles, and the standard roles are defined by Qt::ItemDataRole.
 
     We can ask the model for the item's data by passing it the model index
     corresponding to the item, and by specifying a role to obtain the type
@@ -510,13 +507,13 @@
     Views can display the roles in different ways, so it is important to
     supply appropriate information for each role.
 
-    The \l{Creating New Models} section covers some specific uses of roles
-    in more detail.
+    The \l{Creating New Models} section covers some specific uses of roles in
+    more detail.
     \endtable
 
-    Most common uses for item data are covered by the standard roles defined
-    in Qt::ItemDataRole. By supplying appropriate item data for each role,
-    models can provide hints to views and delegates about how items should be
+    Most common uses for item data are covered by the standard roles defined in
+    Qt::ItemDataRole. By supplying appropriate item data for each role, models
+    can provide hints to views and delegates about how items should be
     presented to the user. Different kinds of views have the freedom to
     interpret or ignore this information as required. It is also possible to
     define additional roles for application-specific purposes.
@@ -983,42 +980,77 @@
 
     \section1 Concepts
 
-    The selection model used in the new item view classes offers many
-    improvements over the selection model used in Qt 3. It provides a
-    more general description of selections based on the facilities of
-    the model/view architecture. Although the standard classes for
-    manipulating selections are sufficient for the item views provided,
-    the selection model allows you to create specialized selection models
-    to suit the requirements for your own item models and views.
+    The selection model used in the item view classes offers many improvements
+    over the selection model used in Qt 3. It provides a more general
+    description of selections based on the facilities of the model/view
+    architecture. Although the standard classes for manipulating selections are
+    sufficient for the item views provided, the selection model allows you to
+    create specialized selection models to suit the requirements for your own
+    item models and views.
 
-    Information about the items selected in a view is stored in an instance
-    of the \l QItemSelectionModel class. This maintains model indexes for
-    items in a single model, and is independent of any views. Since there
-    can be many views onto a model, it is possible to share selections
-    between views, allowing applications to show multiple views in a
-    consistent way.
+    Information about the items selected in a view is stored in an instance of
+    the \l QItemSelectionModel class. This maintains model indexes for items in
+    a single model, and is independent of any views. Since there can be many
+    views onto a model, it is possible to share selections between views,
+    allowing applications to show multiple views in a consistent way.
 
-    Selections are made up of \e{selection ranges}. These efficiently
-    maintain information about large selections of items by recording
-    only the starting and ending model indexes for each range of selected
-    items. Non-contiguous selections of items are constructed by using
-    more than one selection range to describe the selection.
+    Selections are made up of \e{selection ranges}. These efficiently maintain
+    information about large selections of items by recording only the starting
+    and ending model indexes for each range of selected items. Non-contiguous
+    selections of items are constructed by using more than one selection range
+    to describe the selection.
 
-    Selections are applied to a collection of model indexes held by
-    a selection model. The most recent selection of items applied is
-    known as the \e{current selection}. The effects of this selection can
-    be modified even after its application through the use of certain
-    types of selection commands. These are discussed later in this
-    section.
+    Selections are applied to a collection of model indexes held by a selection
+    model. The most recent selection of items applied is known as the
+    \e{current selection}. The effects of this selection can be modified even
+    after its application through the use of certain types of selection
+    commands. These are discussed later in this section.
+
+
+    \section2 Current Item and Selected Items
+
+    In a view, there is always a current item and a selected item - two
+    independent states. An item can be the current item and selected at the
+    same time. The view is responsible for ensuring that there is always a
+    current item as keyboard navigation, for example, requires a current item.
+
+    The table below highlights the differences between current item and
+    selected items.
+
+    \table
+    \header
+        \o  Current Item
+        \o  Selected Items
+
+    \row
+        \o  There can only be one current item.
+        \o  There can be multiple selected items.
+    \row
+        \o  The current item will be changed with key navigation or mouse
+            button clicks.
+        \o  The selected state of items is set or unset, depending on several
+            pre-defined modes - e.g., single selection, multiple selection,
+            etc. - when the user interacts with the items.
+    \row
+        \o  The current item will be edited if the edit key, \gui F2, is
+            pressed or the item is double-clicked (provided that editing is
+            enabled).
+        \o  The current item can be used together with an anchor to specify a
+            range that should be selected or deselected (or a combination of
+            the two).
+    \row
+        \o  The current item is indicated by the focus rectangle.
+        \o  The selected items are indicated with the selection rectangle.
+    \endtable
 
     When manipulating selections, it is often helpful to think of
-    \l QItemSelectionModel as a record of the selection state of all the
-    items in an item model. Once a selection model is set up, collections
-    of items can be selected, deselected, or their selection states can
-    be toggled without the need to know which items are already selected.
-    The indexes of all selected items can be retrieved at any time, and
-    other components can be informed of changes to the selection model
-    via the signals and slots mechanism.
+    \l QItemSelectionModel as a record of the selection state of all the items
+    in an item model. Once a selection model is set up, collections of items
+    can be selected, deselected, or their selection states can be toggled
+    without the need to know which items are already selected. The indexes of
+    all selected items can be retrieved at any time, and other components can
+    be informed of changes to the selection model via the signals and slots
+    mechanism.
 
 
     \section1 Using a Selection Model
@@ -1400,7 +1432,7 @@
     \snippet doc/src/snippets/stringlistmodel/model.h 3
 
     \section2 Making the Model Editable
-    
+
     A delegate checks whether an item is editable before creating an
     editor. The model must let the delegate know that its items are
     editable. We do this by returning the correct flags for each item in
@@ -1436,7 +1468,7 @@
     is limited to just one model index.
 
     Also the data() function needs to be changed to add the Qt::EditRole test:
-    
+
     \snippet doc/src/snippets/stringlistmodel/model.cpp 1
 
     \section2 Inserting and Removing Rows
@@ -2449,4 +2481,3 @@
     {fetchMore()} must be reimplemented as their default implementation returns
     false and does nothing.
 */
-

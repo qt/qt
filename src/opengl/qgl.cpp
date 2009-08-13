@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -4604,7 +4604,7 @@ QGLFormat QGLDrawable::format() const
 
 GLuint QGLDrawable::bindTexture(const QImage &image, GLenum target, GLint format)
 {
-    QGLTexture *texture;
+    QGLTexture *texture = 0;
     if (widget)
         texture = widget->d_func()->glcx->d_func()->bindTexture(image, target, format, true);
     else if (buffer)
@@ -4620,7 +4620,7 @@ GLuint QGLDrawable::bindTexture(const QImage &image, GLenum target, GLint format
 
 GLuint QGLDrawable::bindTexture(const QPixmap &pixmap, GLenum target, GLint format)
 {
-    QGLTexture *texture;
+    QGLTexture *texture = 0;
     if (widget)
         texture = widget->d_func()->glcx->d_func()->bindTexture(pixmap, target, format, true, true);
     else if (buffer)
@@ -4718,6 +4718,7 @@ void QGLShareRegister::removeShare(const QGLContext *context) {
 
     int count = it.value().removeAll(context);
     Q_ASSERT(count == 1);
+    Q_UNUSED(count);
 
     Q_ASSERT(it.value().size() != 0);
     if (it.value().size() == 1)

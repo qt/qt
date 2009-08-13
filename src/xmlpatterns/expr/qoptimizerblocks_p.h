@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,7 +65,7 @@ namespace QPatternist
     /**
      * @short Identifies Expression instances by their Expression::id().
      *
-     * @author Frans englich <fenglich@trolltech.com>
+     * @author Frans englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class ByIDIdentifier : public ExpressionIdentifier
@@ -91,7 +91,7 @@ namespace QPatternist
      * item type <tt>xs:string</tt>, but returns @c false for a static type involving
      * <tt>xs:date</tt>.
      *
-     * @author Frans englich <fenglich@trolltech.com>
+     * @author Frans englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class BySequenceTypeIdentifier : public ExpressionIdentifier
@@ -114,7 +114,7 @@ namespace QPatternist
      * @short Determines whether an Expression is a value or general comparison or both,
      * with a certain operator.
      *
-     * @author Frans englich <fenglich@trolltech.com>
+     * @author Frans englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class ComparisonIdentifier : public ExpressionIdentifier
@@ -153,7 +153,7 @@ namespace QPatternist
      * For example IntegerIdentifier(4) would match the former but
      * not the latter operand in this expression: "4 + 5".
      *
-     * @author Frans englich <fenglich@trolltech.com>
+     * @author Frans englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class IntegerIdentifier : public ExpressionIdentifier
@@ -172,7 +172,7 @@ namespace QPatternist
      * For example BooleanIdentifier(true) would match the former but
      * not the latter operand in this expression: "true() + false()".
      *
-     * @author Frans englich <fenglich@trolltech.com>
+     * @author Frans englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class BooleanIdentifier : public ExpressionIdentifier
@@ -191,7 +191,7 @@ namespace QPatternist
      * For example, if ByIDCreator() is passed Expression::IDCountFN, create()
      * will return CountFN instances.
      *
-     * @author Frans englich <fenglich@trolltech.com>
+     * @author Frans englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class ByIDCreator : public ExpressionCreator

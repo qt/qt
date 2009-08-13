@@ -34,13 +34,12 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "qoutlinemapper_p.h"
-#include "qbezier_p.h"
 
 #include "qmath.h"
 
@@ -199,69 +198,29 @@ void QOutlineMapper::endOutline()
                                           m_m22 * e.y() + m_m12 * e.x() + m_dy);
             }
         } else {
-            // ## TODO: this case needs to be plain code polygonal paths
-            QTransform matrix(m_m11, m_m12, m_m13, m_m21, m_m22, m_m23, m_dx, m_dy, m_m33);
-
-            if (m_element_types.isEmpty()) {
-                if (!m_elements.isEmpty())
-                    m_elements_dev << m_elements.at(0) * matrix;
-                for (int i=1; i<m_elements.size(); ++i)
-                    m_elements_dev << m_elements.at(i) * matrix;
-
-            } else {
-                for (int i=0, t=0; i<m_elements.size(); ++i) {
-                    switch (m_element_types.at(t)) {
-                    case QPainterPath::MoveToElement:
-                        m_elements_dev << m_elements.at(i) * matrix;
-                        ++t;
-                        break;
-                    case QPainterPath::LineToElement:
-                        m_elements_dev << m_elements.at(i) * matrix;
-                        ++t;
-                        break;
-                    case QPainterPath::CurveToElement: {
-                        QPolygonF segment = QBezier::fromPoints(m_elements.at(i-1),
-                                                                m_elements.at(i),
-                                                                m_elements.at(i+1),
-                                                                m_elements.at(i+2)).toPolygon();
-                        if (segment.size() > 3) 
-                            m_element_types.insertBlank(t, segment.size() - 3);
-                        else if (segment.size() < 3) 
-                            m_element_types.removeAndShift(t, 3 - segment.size());
-
-                        for (QPolygonF::const_iterator it = segment.constBegin();
-                            it < segment.constEnd(); ++it, ++t) {
-                            m_elements_dev << *it * matrix;
-                            m_element_types.at(t) = QPainterPath::LineToElement;
-                        }
-                        i += 2;
-                    } break;
-                    default:
-                        Q_ASSERT(false);
-                        break;
-                    }
-                }
-                element_count = m_elements_dev.size();
-            }
+            const QVectorPath vp((qreal *)m_elements.data(), m_elements.size(), m_element_types.data());
+            QPainterPath path = vp.convertToPainterPath();
+            path = QTransform(m_m11, m_m12, m_m13, m_m21, m_m22, m_m23, m_dx, m_dy, m_m33).map(path);
+            if (!(m_outline.flags & QT_FT_OUTLINE_EVEN_ODD_FILL))
+                path.setFillRule(Qt::WindingFill);
+            uint old_txop = m_txop;
+            m_txop = QTransform::TxNone;
+            if (path.isEmpty())
+                m_valid = false;
+            else
+                convertPath(path);
+            m_txop = old_txop;
+            return;
         }
         elements = m_elements_dev.data();
     }
 
     if (m_round_coords) {
         // round coordinates to match outlines drawn with drawLine_midpoint_i
-        for (int i = 0; i < element_count; ++i)
+        for (int i = 0; i < m_elements.size(); ++i)
             elements[i] = QPointF(qFloor(elements[i].x() + aliasedCoordinateDelta),
                                   qFloor(elements[i].y() + aliasedCoordinateDelta));
     }
-
-#ifdef QT_DEBUG_CONVERT
-    for (int i=0; i<element_count; ++i) {
-        printf("%d: (%.2f, %.2f)\n",
-               !m_element_types.isEmpty() ? m_element_types.at(i) : -1,
-               elements[i].x(),
-               elements[i].y());
-    }
-#endif
 
     controlPointRect = boundingRect(elements, element_count);
 

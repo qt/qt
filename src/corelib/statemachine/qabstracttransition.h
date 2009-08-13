@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,7 +72,6 @@ class Q_CORE_EXPORT QAbstractTransition : public QObject
     Q_PROPERTY(QList<QAbstractState*> targetStates READ targetStates WRITE setTargetStates)
 public:
     QAbstractTransition(QState *sourceState = 0);
-    QAbstractTransition(const QList<QAbstractState*> &targets, QState *sourceState = 0);
     virtual ~QAbstractTransition();
 
     QState *sourceState() const;
@@ -104,8 +103,6 @@ protected:
 
 protected:
     QAbstractTransition(QAbstractTransitionPrivate &dd, QState *parent);
-    QAbstractTransition(QAbstractTransitionPrivate &dd,
-                        const QList<QAbstractState*> &targets, QState *parent);
 
 private:
     Q_DISABLE_COPY(QAbstractTransition)

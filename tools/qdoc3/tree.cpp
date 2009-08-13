@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -419,6 +419,8 @@ void Tree::addPropertyFunction(PropertyNode *property,
 }
 
 /*!
+  This function adds the \a node to the \a group. The group
+  can be listed anywhere using the \e{annotated list} command.
  */
 void Tree::addToGroup(Node *node, const QString &group)
 {
@@ -483,6 +485,7 @@ void Tree::resolveProperties()
         QString getterName = (*propEntry)[PropertyNode::Getter];
         QString setterName = (*propEntry)[PropertyNode::Setter];
         QString resetterName = (*propEntry)[PropertyNode::Resetter];
+        QString notifierName = (*propEntry)[PropertyNode::Notifier];
 
         NodeList::ConstIterator c = parent->childNodes().begin();
         while (c != parent->childNodes().end()) {
@@ -497,6 +500,8 @@ void Tree::resolveProperties()
                         property->addFunction(function, PropertyNode::Setter);
                     } else if (function->name() == resetterName) {
                         property->addFunction(function, PropertyNode::Resetter);
+                    } else if (function->name() == notifierName) {
+                        property->addFunction(function, PropertyNode::Notifier);
                     }
                 }
             }
@@ -573,10 +578,12 @@ void Tree::resolveGroups()
         if (fake && fake->subType() == Node::Group) {
             fake->addGroupMember(i.value());
         }
+#if 0        
         else {
             if (prevGroup != i.key())
                 i.value()->doc().location().warning(tr("No such group '%1'").arg(i.key()));
         }
+#endif        
 
         prevGroup = i.key();
     }

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -100,19 +100,6 @@ QKeyEventTransition::QKeyEventTransition(QState *sourceState)
 QKeyEventTransition::QKeyEventTransition(QObject *object, QEvent::Type type,
                                          int key, QState *sourceState)
     : QEventTransition(*new QKeyEventTransitionPrivate, object, type, sourceState)
-{
-    Q_D(QKeyEventTransition);
-    d->transition = new QBasicKeyEventTransition(type, key);
-}
-
-/*!
-  Constructs a new key event transition for events of the given \a type for
-  the given \a object, with the given \a key, \a targets and \a sourceState.
-*/
-QKeyEventTransition::QKeyEventTransition(QObject *object, QEvent::Type type,
-                                         int key, const QList<QAbstractState*> &targets,
-                                         QState *sourceState)
-    : QEventTransition(*new QKeyEventTransitionPrivate, object, type, targets, sourceState)
 {
     Q_D(QKeyEventTransition);
     d->transition = new QBasicKeyEventTransition(type, key);

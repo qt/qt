@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -271,6 +271,9 @@ QRect QMenuBarPrivate::actionRect(QAction *act) const
 
     //makes sure the geometries are up-to-date
     const_cast<QMenuBarPrivate*>(this)->updateGeometries();
+
+    if (index >= actionRects.count())
+        return QRect(); // that can happen in case of native menubar
 
     QRect ret = actionRects.at(index);
     return QStyle::visualRect(q->layoutDirection(), q->rect(), ret);

@@ -7,7 +7,7 @@ Rect {
     Palette { id: Palette }
     Script { source: "calculator.js" }
 
-    VerticalLayout {
+    VerticalPositioner {
         x: 2; spacing: 10; margin: 2
 
         Rect {
@@ -56,7 +56,7 @@ Rect {
                 CalcButton { operation: "C"; id: C; width: 76 }
                 CalcButton { operation: "AC"; id: AC; x: 78; width: 76 }
 
-                GridLayout {
+                GridPositioner {
                     id: NumKeypad; y: 32; spacing: 2; columns: 3
 
                     CalcButton { operation: "7" }
@@ -70,7 +70,7 @@ Rect {
                     CalcButton { operation: "3" }
                 }
 
-                HorizontalLayout {
+                HorizontalPositioner {
                     y: 128; spacing: 2
 
                     CalcButton { operation: "0"; width: 50 }
@@ -78,7 +78,7 @@ Rect {
                     CalcButton { operation: "="; id: Equals; x: 77;  width: 102 }
                 }
 
-                VerticalLayout {
+                VerticalPositioner {
                     id: SimpleOperations
                     x: 156; y: 0; spacing: 2
 
@@ -89,7 +89,7 @@ Rect {
                 }
             }
 
-            GridLayout {
+            GridPositioner {
                 id: AdvancedButtons
                 x: 350; spacing: 2; columns: 2; opacity: 0
 

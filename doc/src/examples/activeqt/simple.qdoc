@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,7 +46,7 @@
 
     \raw HTML
     <object ID="QSimpleAX" CLASSID="CLSID:DF16845C-92CD-4AAB-A982-EB9840E74669"
-    CODEBASE="http://qtsoftware.com/demos/simpleax.cab">
+    CODEBASE="http://qt.nokia.com/demos/simpleax.cab">
         <PARAM NAME="text" VALUE="A simple control" />
         <PARAM NAME="value" VALUE="1" />
     [Object not available! Did you forget to build and register the server?]

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -68,39 +68,39 @@ QTestBasicStreamer::QTestBasicStreamer()
 QTestBasicStreamer::~QTestBasicStreamer()
 {}
 
-void QTestBasicStreamer::formatStart(const QTestElement *element, char **formatted) const
+void QTestBasicStreamer::formatStart(const QTestElement *element, QTestCharBuffer *formatted) const
 {
     if(!element || !formatted )
         return;
-    QTest::qt_asprintf(formatted, "");
+    formatted->data()[0] = '\0';
 }
 
-void QTestBasicStreamer::formatEnd(const QTestElement *element, char **formatted) const
+void QTestBasicStreamer::formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const
 {
     if(!element || !formatted )
         return;
-    QTest::qt_asprintf(formatted, "");
+    formatted->data()[0] = '\0';
 }
 
-void QTestBasicStreamer::formatBeforeAttributes(const QTestElement *element, char **formatted) const
+void QTestBasicStreamer::formatBeforeAttributes(const QTestElement *element, QTestCharBuffer *formatted) const
 {
     if(!element || !formatted )
         return;
-    QTest::qt_asprintf(formatted, "");
+    formatted->data()[0] = '\0';
 }
 
-void QTestBasicStreamer::formatAfterAttributes(const QTestElement *element, char **formatted) const
+void QTestBasicStreamer::formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const
 {
     if(!element || !formatted )
         return;
-    QTest::qt_asprintf(formatted, "");
+    formatted->data()[0] = '\0';
 }
 
-void QTestBasicStreamer::formatAttributes(const QTestElement *, const QTestElementAttribute *attribute, char **formatted) const
+void QTestBasicStreamer::formatAttributes(const QTestElement *, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const
 {
     if(!attribute || !formatted )
         return;
-    QTest::qt_asprintf(formatted, "");
+    formatted->data()[0] = '\0';
 }
 
 void QTestBasicStreamer::output(QTestElement *element) const
@@ -125,22 +125,22 @@ void QTestBasicStreamer::outputElements(QTestElement *element, bool) const
     while (element) {
         hasChildren = element->childElements();
 
-        formatStart(element, buf);
-        outputString(buf);
+        formatStart(element, &buf);
+        outputString(buf.data());
 
-        formatBeforeAttributes(element, buf);
-        outputString(buf);
+        formatBeforeAttributes(element, &buf);
+        outputString(buf.data());
 
         outputElementAttributes(element, element->attributes());
 
-        formatAfterAttributes(element, buf);
-        outputString(buf);
+        formatAfterAttributes(element, &buf);
+        outputString(buf.data());
 
         if(hasChildren)
             outputElements(element->childElements(), true);
 
-        formatEnd(element, buf);
-        outputString(buf);
+        formatEnd(element, &buf);
+        outputString(buf.data());
 
         element = element->previousElement();
     }
@@ -150,8 +150,8 @@ void QTestBasicStreamer::outputElementAttributes(const QTestElement* element, QT
 {
     QTestCharBuffer buf;
     while(attribute){
-        formatAttributes(element, attribute, buf);
-        outputString(buf);
+        formatAttributes(element, attribute, &buf);
+        outputString(buf.data());
         attribute = attribute->nextElement();
     }
 }

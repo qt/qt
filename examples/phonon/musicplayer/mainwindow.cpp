@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ***************************************************************************/
@@ -157,9 +157,12 @@ void MainWindow::tableClicked(int row, int /* column */)
     mediaObject->stop();
     mediaObject->clearQueue();
 
+    if (row >= sources.size())
+        return;
+
     mediaObject->setCurrentSource(sources[row]);
 
-    if (wasPlaying) 
+    if (wasPlaying)
         mediaObject->play();
     else
         mediaObject->stop();

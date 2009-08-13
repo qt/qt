@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -274,7 +274,7 @@ bool MainWindow::initHelpDB()
         return false;
 
     bool assistantInternalDocRegistered = false;
-    QString intern(QLatin1String("com.trolltech.com.assistantinternal_"));
+    QString intern(QLatin1String("com.trolltech.com.assistantinternal-"));
     foreach (const QString &ns, m_helpEngine->registeredDocumentations()) {
         if (ns.startsWith(intern)) {
             intern = ns;
@@ -407,7 +407,7 @@ void MainWindow::insertLastPages()
     if (m_cmdLine->url().isValid())
         m_centralWidget->setSource(m_cmdLine->url());
     else
-        m_centralWidget->setLastShownPages();
+        m_centralWidget->setupWidget();
 
     if (m_cmdLine->search() == CmdLineParser::Activate)
         showSearch();
@@ -544,6 +544,19 @@ void MainWindow::setupActions()
     menu = menuBar()->addMenu(tr("&Help"));
     m_aboutAction = menu->addAction(tr("About..."), this, SLOT(showAboutDialog()));
     m_aboutAction->setMenuRole(QAction::AboutRole);
+
+#ifdef Q_WS_X11
+    m_backAction->setIcon(QIcon::fromTheme("go-previous" , m_backAction->icon()));
+    m_nextAction->setIcon(QIcon::fromTheme("go-next" , m_nextAction->icon()));
+    m_zoomInAction->setIcon(QIcon::fromTheme("zoom-in" , m_zoomInAction->icon()));
+    m_zoomOutAction->setIcon(QIcon::fromTheme("zoom-out" , m_zoomOutAction->icon()));
+    m_resetZoomAction->setIcon(QIcon::fromTheme("zoom-original" , m_resetZoomAction->icon()));
+    m_syncAction->setIcon(QIcon::fromTheme("view-refresh" , m_syncAction->icon()));
+    m_copyAction->setIcon(QIcon::fromTheme("edit-copy" , m_copyAction->icon()));
+    m_findAction->setIcon(QIcon::fromTheme("edit-find" , m_findAction->icon()));
+    m_homeAction->setIcon(QIcon::fromTheme("go-home" , m_homeAction->icon()));
+    m_printAction->setIcon(QIcon::fromTheme("document-print" , m_printAction->icon()));
+#endif
 
     QToolBar *navigationBar = addToolBar(tr("Navigation Toolbar"));
     navigationBar->setObjectName(QLatin1String("NavigationToolBar"));

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,7 +55,7 @@
 // We mean it.
 //
 
-#if !defined(QT_NO_QOBJECT) && !defined(QT_NO_SCRIPT)
+#ifndef QT_NO_SCRIPT
 
 QT_BEGIN_NAMESPACE
 
@@ -79,6 +79,6 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_QOBJECT && QT_NO_SCRIPT
+#endif // QT_NO_SCRIPT
 
 #endif

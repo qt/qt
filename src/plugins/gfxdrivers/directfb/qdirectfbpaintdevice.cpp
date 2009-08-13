@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,10 +43,17 @@
 
 #include "qdirectfbscreen.h"
 #include "qdirectfbpaintdevice.h"
+#include "qdirectfbpaintengine.h"
+
+QDirectFBPaintDevice::QDirectFBPaintDevice(QDirectFBScreen *scr)
+    : QCustomRasterPaintDevice(0), dfbSurface(0), lockedImage(0), screen(scr),
+      lock(DFBSurfaceLockFlags(0)), mem(0), engine(0)
+{}
 
 QDirectFBPaintDevice::~QDirectFBPaintDevice()
 {
     delete lockedImage;
+    delete engine;
 }
 
 
@@ -164,4 +171,10 @@ int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     }
 }
 
+QPaintEngine *QDirectFBPaintDevice::paintEngine() const
+{
+    return engine;
+}
+
 #endif
+

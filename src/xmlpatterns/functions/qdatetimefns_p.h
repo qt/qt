@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -88,7 +88,7 @@ namespace QPatternist
      * is guaranteed to never be @c null.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<typename TSubClass>
     class ExtractFromDurationFN : public FunctionCall
@@ -105,7 +105,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:years-from-duration()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class YearsFromDurationFN : public ExtractFromDurationFN<YearsFromDurationFN>
     {
@@ -117,7 +117,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:months-from-duration()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class MonthsFromDurationFN : public ExtractFromDurationFN<MonthsFromDurationFN>
     {
@@ -129,7 +129,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:days-from-duration()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DaysFromDurationFN : public ExtractFromDurationFN<DaysFromDurationFN>
     {
@@ -141,7 +141,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:hours-from-duration()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class HoursFromDurationFN : public ExtractFromDurationFN<HoursFromDurationFN>
     {
@@ -153,7 +153,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:minutes-from-duration()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class MinutesFromDurationFN : public ExtractFromDurationFN<MinutesFromDurationFN>
     {
@@ -165,7 +165,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:seconds-from-duration()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SecondsFromDurationFN : public ExtractFromDurationFN<SecondsFromDurationFN>
     {
@@ -187,7 +187,7 @@ namespace QPatternist
      * is guaranteed to never be @c null.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<typename TSubClass>
     class ExtractFromDateTimeFN : public FunctionCall
@@ -205,7 +205,7 @@ namespace QPatternist
      * This function implements <tt>fn:year-from-dateTime()</tt> and <tt>fn:year-from-date()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class YearFromAbstractDateTimeFN : public ExtractFromDateTimeFN<YearFromAbstractDateTimeFN>
     {
@@ -218,7 +218,7 @@ namespace QPatternist
      * This function implements <tt>fn:day-from-dateTime()</tt> and <tt>fn:day-from-date()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DayFromAbstractDateTimeFN : public ExtractFromDateTimeFN<DayFromAbstractDateTimeFN>
     {
@@ -232,7 +232,7 @@ namespace QPatternist
      * <tt>fn:hours-from-time()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class HoursFromAbstractDateTimeFN : public ExtractFromDateTimeFN<HoursFromAbstractDateTimeFN>
     {
@@ -246,7 +246,7 @@ namespace QPatternist
      * <tt>fn:minutes-from-time()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class MinutesFromAbstractDateTimeFN : public ExtractFromDateTimeFN<MinutesFromAbstractDateTimeFN>
     {
@@ -260,7 +260,7 @@ namespace QPatternist
      * <tt>fn:seconds-from-time()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class SecondsFromAbstractDateTimeFN : public ExtractFromDateTimeFN<SecondsFromAbstractDateTimeFN>
     {
@@ -274,7 +274,7 @@ namespace QPatternist
      * <tt>fn:timezone-from-time()</tt> and <tt>fn:timezone-from-date()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class TimezoneFromAbstractDateTimeFN : public ExtractFromDateTimeFN<TimezoneFromAbstractDateTimeFN>
     {
@@ -286,7 +286,7 @@ namespace QPatternist
      * @short implements the functions <tt>fn:month-from-dateTime()</tt> and <tt>fn:month-from-date()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class MonthFromAbstractDateTimeFN : public ExtractFromDateTimeFN<MonthFromAbstractDateTimeFN>
     {

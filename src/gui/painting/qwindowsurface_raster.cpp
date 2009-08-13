@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -118,7 +118,7 @@ QPaintDevice *QRasterWindowSurface::paintDevice()
 void QRasterWindowSurface::beginPaint(const QRegion &rgn)
 {
 #if (defined(Q_WS_X11) && !defined(QT_NO_XRENDER)) || (defined(Q_WS_WIN) && !defined(Q_WS_WINCE))
-    if (!qt_widget_private(window())->isOpaque) {
+    if (!qt_widget_private(window())->isOpaque && window()->testAttribute(Qt::WA_TranslucentBackground)) {
 #if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
         if (d_ptr->image->image.format() != QImage::Format_ARGB32_Premultiplied)
             prepareBuffer(QImage::Format_ARGB32_Premultiplied, window());
@@ -149,7 +149,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     QRect br = rgn.boundingRect();
 
 #ifndef Q_WS_WINCE
-    if (!qt_widget_private(window())->isOpaque) {
+    if (!qt_widget_private(window())->isOpaque && window()->testAttribute(Qt::WA_TranslucentBackground)) {
         QRect r = window()->frameGeometry();
         QPoint frameOffset = qt_widget_private(window())->frameStrut().topLeft();
         QRect dirtyRect = br.translated(offset + frameOffset);

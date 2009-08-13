@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,6 +72,19 @@ Q_DECLARE_METATYPE(QAction*)
 QT_BEGIN_NAMESPACE
 
 using namespace qdesigner_internal;
+
+// give the user a little more space to click on the sub menu rectangle
+static inline void extendClickableArea(QRect *subMenuRect, Qt::LayoutDirection dir)
+{
+    switch (dir) {
+    case Qt::LeftToRight:
+        subMenuRect->setLeft(subMenuRect->left() - 20);
+        break;
+    case Qt::RightToLeft:
+        subMenuRect->setRight(subMenuRect->right() + 20);
+        break;
+    }
+}
 
 QDesignerMenu::QDesignerMenu(QWidget *parent) :
     QMenu(parent),
@@ -325,8 +338,7 @@ bool QDesignerMenu::handleMouseDoubleClickEvent(QWidget *, QMouseEvent *event)
     QRect pm_rect;
     if (action->menu() || hasSubMenuPixmap(action)) {
         pm_rect = subMenuPixmapRect(action);
-        pm_rect.setLeft(pm_rect.left() - 20); // give the user a little more
-                                              // space to click
+        extendClickableArea(&pm_rect, layoutDirection());
     }
 
     if (!pm_rect.contains(event->pos()) && m_currentIndex != -1)
@@ -381,7 +393,7 @@ bool QDesignerMenu::handleMousePressEvent(QWidget * /*widget*/, QMouseEvent *eve
 
     QAction *action = safeActionAt(index);
     QRect pm_rect = subMenuPixmapRect(action);
-    pm_rect.setLeft(pm_rect.left() - 20); // give the user a little more space to click
+    extendClickableArea(&pm_rect, layoutDirection());
 
     const int old_index = m_currentIndex;
     m_currentIndex = index;
@@ -540,7 +552,7 @@ QRect QDesignerMenu::subMenuPixmapRect(QAction *action) const
 {
     static const QPixmap pm(QLatin1String(":/trolltech/formeditor/images/submenu.png"));
     const QRect g = actionGeometry(action);
-    const int x = g.right() - pm.width() - 2;
+    const int x = layoutDirection() == Qt::LeftToRight ? (g.right() - pm.width() - 2) : 2;
     const int y = g.top() + (g.height() - pm.height())/2 + 1;
     return QRect(x, y, pm.width(), pm.height());
 }
@@ -863,38 +875,52 @@ void QDesignerMenu::closeMenuChain()
     m_lastSubMenuIndex = -1;
 }
 
-void QDesignerMenu::moveLeft()
+// Close submenu using the left/right keys according to layoutDirection().
+// Return false to indicate the event must be propagated to the menu bar.
+bool QDesignerMenu::hideSubMenuOnCursorKey()
 {
     if (parentMenu()) {
         hide();
-    } else {
-        closeMenuChain();
-        if (QDesignerMenuBar *mb = parentMenuBar()) {
-            if (QApplication::layoutDirection() == Qt::LeftToRight)
-                mb->moveLeft();
-            else
-                mb->moveRight();
-        }
+        return true;
     }
+    closeMenuChain();
     update();
+    if (parentMenuBar())
+        return false;
+    return true;
+}
+
+// Open a submenu using the left/right keys according to layoutDirection().
+// Return false to indicate the event must be propagated to the menu bar.
+bool QDesignerMenu::showSubMenuOnCursorKey()
+{
+    const QAction *action = currentAction();
+
+    if (qobject_cast<const SpecialMenuAction*>(action) || action->isSeparator()) {
+        closeMenuChain();
+        if (parentMenuBar())
+            return false;
+        return true;
+    }
+    m_lastSubMenuIndex = -1; // force a refresh
+    slotShowSubMenuNow();
+    return true;
+}
+
+void QDesignerMenu::moveLeft()
+{
+    const bool handled = layoutDirection() == Qt::LeftToRight ?
+                         hideSubMenuOnCursorKey() : showSubMenuOnCursorKey();
+    if (!handled)
+        parentMenuBar()->moveLeft();
 }
 
 void QDesignerMenu::moveRight()
 {
-    QAction *action = currentAction();
-
-    if (qobject_cast<SpecialMenuAction*>(action) || action->isSeparator()) {
-        closeMenuChain();
-        if (QDesignerMenuBar *mb = parentMenuBar()) {
-            if (QApplication::layoutDirection() == Qt::LeftToRight)
-                mb->moveRight();
-            else
-                mb->moveLeft();
-        }
-    } else {
-        m_lastSubMenuIndex = -1; // force a refresh
-        slotShowSubMenuNow();
-    }
+    const bool handled = layoutDirection() == Qt::LeftToRight ?
+                         showSubMenuOnCursorKey() : hideSubMenuOnCursorKey();
+    if (!handled)
+        parentMenuBar()->moveRight();
 }
 
 void QDesignerMenu::moveUp(bool ctrl)
@@ -1053,7 +1079,15 @@ void QDesignerMenu::slotShowSubMenuNow()
             if ((menu->windowFlags() & Qt::Popup) != Qt::Popup)
                 menu->setWindowFlags(Qt::Popup);
             const QRect g = actionGeometry(action);
-            menu->move(mapToGlobal(g.topRight()));
+            if (layoutDirection() == Qt::LeftToRight) {
+                menu->move(mapToGlobal(g.topRight()));
+            } else {
+                // The position is not initially correct due to the unknown width,
+                // causing it to overlap a bit the first time it is invoked.
+                const QSize menuSize = menu->size();
+                QPoint point = g.topLeft() - QPoint(menu->width() + 10, 0);
+                menu->move(mapToGlobal(point));
+            }
             menu->show();
             menu->setFocus();
         } else {

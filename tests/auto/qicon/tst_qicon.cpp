@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -74,6 +74,7 @@ private slots:
     void availableSizes();
     void streamAvailableSizes_data();
     void streamAvailableSizes();
+    void fromTheme();
 
     void task184901_badCache();
     void task223279_inconsistentAddFile();
@@ -604,6 +605,72 @@ void tst_QIcon::task184901_badCache()
     //the disabled icon must now be the same as the normal one.
     QVERIFY( icon.pixmap(32, QIcon::Normal).toImage() == icon.pixmap(32, QIcon::Disabled).toImage() );
 }
+
+void tst_QIcon::fromTheme()
+{
+    const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
+    QString searchPath = prefix + QLatin1String("/icons");
+    QIcon::setThemeSearchPaths(QStringList() << searchPath);
+    QVERIFY(QIcon::themeSearchPaths().size() == 1);
+    QCOMPARE(searchPath, QIcon::themeSearchPaths()[0]);
+
+    QString themeName("testtheme");
+    QIcon::setThemeName(themeName);
+    QCOMPARE(QIcon::themeName(), themeName);
+
+    // Test normal icon
+    QIcon appointmentIcon = QIcon::fromTheme("appointment-new");
+    QVERIFY(!appointmentIcon.isNull());
+    QVERIFY(!appointmentIcon.availableSizes(QIcon::Normal, QIcon::Off).isEmpty());
+    QVERIFY(appointmentIcon.availableSizes().contains(QSize(16, 16)));
+    QVERIFY(appointmentIcon.availableSizes().contains(QSize(32, 32)));
+    QVERIFY(appointmentIcon.availableSizes().contains(QSize(22, 22)));
+
+    // Test icon from parent theme
+    QIcon abIcon = QIcon::fromTheme("address-book-new");
+    QVERIFY(!abIcon.isNull());
+    QVERIFY(QIcon::hasThemeIcon("address-book-new"));
+    QVERIFY(!abIcon.availableSizes().isEmpty());
+
+    // Test non existing icon
+    QIcon noIcon = QIcon::fromTheme("broken-icon");
+    QVERIFY(noIcon.isNull());
+    QVERIFY(!QIcon::hasThemeIcon("broken-icon"));
+
+    // Test non existing icon with fallback
+    noIcon = QIcon::fromTheme("broken-icon", abIcon);
+    QVERIFY(noIcon.cacheKey() == abIcon.cacheKey());
+
+    // Test svg-only icon
+    noIcon = QIcon::fromTheme("svg-icon", abIcon);
+    QVERIFY(!noIcon.availableSizes().isEmpty());
+
+    QByteArray ba;
+    // write to QByteArray
+    {
+        QBuffer buffer(&ba);
+        buffer.open(QIODevice::WriteOnly);
+        QDataStream stream(&buffer);
+        stream << abIcon;
+    }
+
+    // read from QByteArray
+    {
+        QBuffer buffer(&ba);
+        buffer.open(QIODevice::ReadOnly);
+        QDataStream stream(&buffer);
+        QIcon i;
+        stream >> i;
+        QCOMPARE(i.isNull(), abIcon.isNull());
+        QCOMPARE(i.availableSizes(), abIcon.availableSizes());
+    }
+
+    // Make sure setting the theme name clears the state
+    QIcon::setThemeName("");
+    abIcon = QIcon::fromTheme("address-book-new");
+    QVERIFY(abIcon.isNull());
+}
+
 
 void tst_QIcon::task223279_inconsistentAddFile()
 {

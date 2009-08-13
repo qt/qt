@@ -1,7 +1,7 @@
 Qt 4.3 introduces many new features as well as many improvements and
 bugfixes over the 4.2.x series. For more details, see the online
 documentation which is included in this distribution. The
-documentation is also available at http://doc.trolltech.com/4.3
+documentation is also available at http://qt.nokia.com/doc/4.3
 
 The Qt version 4.3 series is binary compatible with the 4.2.x series.
 Applications compiled for 4.2 will continue to run with 4.3.
@@ -13,7 +13,7 @@ in Platform Specific Changes below.
 Some of the changes listed in this file include issue tracking numbers
 corresponding to tasks in the Task Tracker:
 
-  http://www.trolltech.com/developer/task-tracker
+  http://qt.nokia.com/developer/task-tracker
 
 Each of these identifiers can be entered in the task tracker to obtain
 more information about a particular change.
@@ -34,7 +34,7 @@ General Improvements
 - Documentation and Examples
     * Added information about the TS file format used in Linguist.
     * Moved platform and compiler support information from
-      www.trolltech.com into the documentation.
+      website into the documentation.
     * Added an Accessibility overview document.
     * Added new example to show usage of QCompleter with custom tree models.
 

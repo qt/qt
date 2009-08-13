@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -79,7 +79,7 @@ class QAbstractAnimation;
 #endif
 
 class QStateMachine;
-class QStateMachinePrivate : public QStatePrivate
+class Q_CORE_EXPORT QStateMachinePrivate : public QStatePrivate
 {
     Q_DECLARE_PUBLIC(QStateMachine)
 public:
@@ -116,6 +116,9 @@ public:
 
     QState *rootState() const;
 
+    QState *startState();
+    void removeStartState();
+
     void microstep(QEvent *event, const QList<QAbstractTransition*> &transitionList);
     bool isPreempted(const QAbstractState *s, const QSet<QAbstractTransition*> &transitions) const;
     QSet<QAbstractTransition*> selectTransitions(QEvent *event) const;
@@ -138,6 +141,8 @@ public:
     static bool isDescendantOf(const QAbstractState *s, const QAbstractState *other);
     static QList<QState*> properAncestors(const QAbstractState *s, const QState *upperBound);
 
+    void goToState(QAbstractState *targetState);
+
     void registerTransitions(QAbstractState *state);
     void registerSignalTransition(QSignalTransition *transition);
     void unregisterSignalTransition(QSignalTransition *transition);
@@ -147,7 +152,7 @@ public:
 #endif
     void unregisterTransition(QAbstractTransition *transition);
     void unregisterAllTransitions();
-    void handleTransitionSignal(const QObject *sender, int signalIndex,
+    void handleTransitionSignal(QObject *sender, int signalIndex,
                                 void **args);    
     void scheduleProcess();
     
@@ -162,6 +167,7 @@ public:
 #endif
 
     State state;
+    QState *_startState;
     bool processing;
     bool processingScheduled;
     bool stop;
@@ -208,7 +214,7 @@ public:
         f_cloneEvent cloneEvent;
     };
 
-    static Q_CORE_EXPORT const Handler *handler;
+    static const Handler *handler;
 };
 
 QT_END_NAMESPACE

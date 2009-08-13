@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -140,6 +140,16 @@ MainWindow::MainWindow()
     ui.actionZoomIn->setIcon(QIcon(MacIconPath + QLatin1String("/zoomin.png")));
     ui.actionSyncToc->setIcon(QIcon(MacIconPath + QLatin1String("/synctoc.png")));
     ui.actionHelpWhatsThis->setIcon(QIcon(MacIconPath + QLatin1String("/whatsthis.png")));
+#elif defined(Q_WS_X11)
+    ui.actionGoNext->setIcon(QIcon::fromTheme("go-next" , ui.actionGoNext->icon()));
+    ui.actionGoPrevious->setIcon(QIcon::fromTheme("go-previous" , ui.actionGoPrevious->icon()));
+    ui.actionGoHome->setIcon(QIcon::fromTheme("user-home" , ui.actionGoHome->icon()));
+    ui.actionEditCopy->setIcon(QIcon::fromTheme("edit-copy" , ui.actionEditCopy->icon()));
+    ui.actionEditFind->setIcon(QIcon::fromTheme("edit-find" , ui.actionEditFind->icon()));
+    ui.actionFilePrint->setIcon(QIcon::fromTheme("document-print" , ui.actionFilePrint->icon()));
+    ui.actionZoomOut->setIcon(QIcon::fromTheme("zoom-out" , ui.actionZoomOut->icon()));
+    ui.actionZoomIn->setIcon(QIcon::fromTheme("zoom-in" , ui.actionZoomIn->icon()));
+    ui.actionSyncToc->setIcon(QIcon::fromTheme("view-refresh" , ui.actionSyncToc->icon()));
 #endif
 }
 

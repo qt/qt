@@ -782,8 +782,8 @@
         <translation type="obsolete">Usuń</translation>
     </message>
     <message>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/about/businessmodel&quot;&gt;http://qtsoftware.com/company/about/businessmodel&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">Aby móc tworzyć przy pomocy Qt własne aplikacje bez publikowania kodu (closed source) potrzebujesz wydania komercyjnego. Opis sposobów licencjonowania Qt znajduje się na stronie &lt;a href=&quot;http://qtsoftware.com/company/model.html&quot;&gt;qtsoftware.com/company/model.html&lt;/a&gt;.</translation>
+        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/about/businessmodel&quot;&gt;http://qt.nokia.com/company/about/businessmodel&lt;/a&gt; for an overview of Qt licensing.</source>
+        <translation type="obsolete">Aby móc tworzyć przy pomocy Qt własne aplikacje bez publikowania kodu (closed source) potrzebujesz wydania komercyjnego. Opis sposobów licencjonowania Qt znajduje się na stronie &lt;a href=&quot;http://qt.nokia.com/company/model.html&quot;&gt;qt.nokia.com/company/model.html&lt;/a&gt;.</translation>
     </message>
     <message>
         <location line="-136"/>

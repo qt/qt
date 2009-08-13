@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -339,7 +339,8 @@ QSignalTransition *QState::addTransition(QObject *sender, const char *signal,
             return 0;
         }
     }
-    QSignalTransition *trans = new QSignalTransition(sender, signal, QList<QAbstractState*>() << target);
+    QSignalTransition *trans = new QSignalTransition(sender, signal);
+    trans->setTargetState(target);
     addTransition(trans);
     return trans;
 }
@@ -351,7 +352,8 @@ class UnconditionalTransition : public QAbstractTransition
 {
 public:
     UnconditionalTransition(QAbstractState *target)
-        : QAbstractTransition(QList<QAbstractState*>() << target) {}
+        : QAbstractTransition()
+    { setTargetState(target); }
 protected:
     void onTransition(QEvent *) {}
     bool eventTest(QEvent *) { return true; }

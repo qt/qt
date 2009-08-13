@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -214,10 +214,7 @@ void tst_QHostInfo::lookupIPv4_data()
 
     QTest::newRow("empty") << "" << "" << int(QHostInfo::HostNotFound);
 
-    QTest::newRow("lupinella_00") << "l" << lupinellaIp << int(QHostInfo::NoError);
-    QTest::newRow("lupinella_01") << "lupinella" << lupinellaIp << int(QHostInfo::NoError);
-    QTest::newRow("lupinella_02") << "lupinella.troll.no" << lupinellaIp << int(QHostInfo::NoError);
-    QTest::newRow("lupinella_03") << "lupinella.trolltech.com" << lupinellaIp << int(QHostInfo::NoError);
+    QTest::newRow("single_ip4") << "lupinella.troll.no" << lupinellaIp << int(QHostInfo::NoError);
     QTest::newRow("multiple_ip4") << "multi.dev.troll.no" << "1.2.3.4 1.2.3.5 10.3.3.31" << int(QHostInfo::NoError);
     QTest::newRow("literal_ip4") << lupinellaIp << lupinellaIp << int(QHostInfo::NoError);
     QTest::newRow("notfound") << "this-name-does-not-exist-hopefully." << "" << int(QHostInfo::HostNotFound);
@@ -375,7 +372,7 @@ class LookupThread : public QThread
 protected:
     inline void run()
     {
-         QHostInfo info = QHostInfo::fromName("www.trolltech.com");
+         QHostInfo info = QHostInfo::fromName("qt.nokia.com");
          QCOMPARE(info.addresses().at(0).toString(), QString("87.238.50.178"));
     }
 };
