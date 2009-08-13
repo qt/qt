@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -184,7 +184,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         // verify that we are licensed to use Qt for Windows CE
         if (dictionary["LICENSE_EXTENSION"] != "-EMBEDDED" && dictionary["LICENSE_EXTENSION"] != "-ALLOS") {
             cout << "You are not licensed for the " << dictionary["PLATFORM NAME"] << " platform." << endl << endl;
-            cout << "Please contact sales@trolltech.com to upgrade your license" << endl;
+            cout << "Please contact qt-info@nokia.com to upgrade your license" << endl;
             cout << "to include the " << dictionary["PLATFORM NAME"] << " platform, or install the" << endl;
             cout << "Qt Open Source Edition if you intend to develop free software." << endl;
             dictionary["DONE"] = "error";

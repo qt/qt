@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1542,9 +1542,11 @@ bool QDir::isReadable() const
 /*!
     \overload
 
-    Returns true if the \e directory exists; otherwise returns false.
-    (If a file with the same name is found this function will return
-    false).
+    Returns true if the directory exists; otherwise returns false.
+    (If a file with the same name is found this function will return false).
+
+    The overload of this function that accepts an argument is used to test
+    for the presence of files and directories within a directory.
 
     \sa QFileInfo::exists(), QFile::exists()
 */
@@ -1774,8 +1776,11 @@ bool QDir::rename(const QString &oldName, const QString &newName)
 
 /*!
     Returns true if the file called \a name exists; otherwise returns
-    false. Unless \a name contains an absolute file path, the file
-    name is assumed to be relative to the current directory.
+    false.
+
+    Unless \a name contains an absolute file path, the file name is assumed
+    to be relative to the directory itself, so this function is typically used
+    to check for the presence of files within a directory.
 
     \sa QFileInfo::exists(), QFile::exists()
 */

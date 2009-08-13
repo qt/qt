@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -123,6 +123,13 @@ namespace QtSharedPointer {
 #endif
     public:
         typedef T Type;
+        typedef T element_type;
+        typedef T value_type;
+        typedef value_type *pointer;
+        typedef const value_type *const_pointer;
+        typedef value_type &reference;
+        typedef const value_type &const_reference;
+        typedef ptrdiff_t difference_type;
 
         inline T *data() const { return value; }
         inline bool isNull() const { return !data(); }
@@ -498,6 +505,14 @@ class QWeakPointer
     typedef QtSharedPointer::ExternalRefCountData Data;
 
 public:
+    typedef T element_type;
+    typedef T value_type;
+    typedef value_type *pointer;
+    typedef const value_type *const_pointer;
+    typedef value_type &reference;
+    typedef const value_type &const_reference;
+    typedef ptrdiff_t difference_type;
+
     inline bool isNull() const { return d == 0 || d->strongref == 0 || value == 0; }
 #ifndef Q_CC_NOKIAX86
     inline operator RestrictedBool() const { return isNull() ? 0 : &QWeakPointer::value; }
@@ -644,6 +659,12 @@ template <class T, class X>
 bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
 {
     return ptr2 != ptr1;
+}
+
+template <class T, class X>
+Q_INLINE_TEMPLATE typename T::difference_type operator-(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+{
+    return ptr1.data() - ptr2.data();
 }
 
 template <class T>

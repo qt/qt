@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1451,8 +1451,7 @@ QString QHttpRequestHeader::toString() const
 
     To make an HTTP request you must set up suitable HTTP headers. The
     following example demonstrates how to request the main HTML page
-    from the Trolltech home page (i.e., the URL
-    \c http://qtsoftware.com/index.html):
+    from the Qt website (i.e., the URL \c http://qt.nokia.com/index.html):
 
     \snippet doc/src/snippets/code/src_network_access_qhttp.cpp 2
 
@@ -1596,11 +1595,11 @@ QHttp::~QHttp()
 
     This enum is used to specify the mode of connection to use:
 
-    \value ConnectionModeHttp The connection is a regular Http connection to the server
-    \value ConnectionModeHttps The Https protocol is used and the connection is encrypted using SSL.
+    \value ConnectionModeHttp The connection is a regular HTTP connection to the server
+    \value ConnectionModeHttps The HTTPS protocol is used and the connection is encrypted using SSL.
 
-    When using the Https mode, care should be taken to connect to the sslErrors signal, and
-    handle possible Ssl errors.
+    When using the HTTPS mode, care should be taken to connect to the sslErrors signal, and
+    handle possible SSL errors.
 
     \sa QSslSocket
 */
@@ -2038,7 +2037,7 @@ int QHttp::setHost(const QString &hostName, quint16 port)
     port \a port using the connection mode \a mode.
 
     If port is 0, it will use the default port for the \a mode used
-    (80 for Http and 443 fopr Https).
+    (80 for HTTP and 443 for HTTPS).
 
     The function does not block; instead, it returns immediately. The request
     is scheduled, and its execution is performed asynchronously. The
@@ -2165,7 +2164,7 @@ int QHttp::setProxy(const QNetworkProxy &proxy)
     as specified in the constructor.
 
     \a path must be a absolute path like \c /index.html or an
-    absolute URI like \c http://qtsoftware.com/index.html and
+    absolute URI like \c http://example.com/index.html and
     must be encoded with either QUrl::toPercentEncoding() or
     QUrl::encodedPath().
 
@@ -2204,7 +2203,7 @@ int QHttp::get(const QString &path, QIODevice *to)
     as specified in the constructor.
 
     \a path must be an absolute path like \c /index.html or an
-    absolute URI like \c http://qtsoftware.com/index.html and
+    absolute URI like \c http://example.com/index.html and
     must be encoded with either QUrl::toPercentEncoding() or
     QUrl::encodedPath().
 
@@ -2255,7 +2254,7 @@ int QHttp::post(const QString &path, const QByteArray &data, QIODevice *to)
     or as specified in the constructor.
 
     \a path must be an absolute path like \c /index.html or an
-    absolute URI like \c http://qtsoftware.com/index.html.
+    absolute URI like \c http://example.com/index.html.
 
     The function does not block; instead, it returns immediately. The request
     is scheduled, and its execution is performed asynchronously. The

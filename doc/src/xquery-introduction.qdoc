@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -760,7 +760,7 @@ You can also ask questions on XQuery mail lists:
 
 \list
 \o
-\l{http://lists.trolltech.com/qt-interest/}{qt-interest}
+\l{http://qt.nokia.com/lists/qt-interest/}{qt-interest}
 \o
 \l{http://www.x-query.com/mailman/listinfo/talk}{talk at x-query.com}.
 \endlist

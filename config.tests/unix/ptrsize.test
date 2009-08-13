@@ -14,9 +14,9 @@ test -d "$OUTDIR/config.tests/unix/ptrsize" || mkdir -p "$OUTDIR/config.tests/un
 cd "$OUTDIR/config.tests/unix/ptrsize"
 
 if [ "$VERBOSE" = "yes" ]; then
-  (make clean && make)
+  ($MAKE clean && $MAKE)
 else
-  (make clean && make) >/dev/null 2>&1
+  ($MAKE clean && $MAKE) >/dev/null 2>&1
 fi
 RETVAL=$?
 

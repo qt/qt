@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1377,7 +1377,9 @@ void tst_QSharedPointer::threadStressTest_data()
     QTest::newRow("5+10") << 5 << 10;
     QTest::newRow("5+30") << 5 << 30;
 
+#ifndef Q_OS_WINCE
     QTest::newRow("100+100") << 100 << 100;
+#endif
 }
 
 void tst_QSharedPointer::threadStressTest()
@@ -1595,6 +1597,21 @@ void tst_QSharedPointer::invalidConstructs_data()
         << "QObject *ptr = new QObject;\n"
            "QWeakPointer<QObject> weak = ptr;\n"    // this makes the object unmanaged
            "QSharedPointer<QObject> shared(ptr);\n";
+
+#ifndef QT_NO_DEBUG
+    // this tests a Q_ASSERT, so it is only valid in debug mode
+    // the DerivedFromQObject destructor below creates a QWeakPointer from parent().
+    // parent() is not 0 in the current Qt implementation, but has started destruction,
+    // so the code should detect that issue
+    QTest::newRow("shared-pointer-from-qobject-in-destruction")
+        << &QTest::QExternalTest::tryRunFail
+        << "class DerivedFromQObject: public QObject { public:\n"
+           "    DerivedFromQObject(QObject *parent): QObject(parent) {}\n"
+           "    ~DerivedFromQObject() { QWeakPointer<QObject> weak = parent(); }\n"
+           "};\n"
+           "QObject obj;\n"
+           "new DerivedFromQObject(&obj);";
+#endif
 }
 
 void tst_QSharedPointer::invalidConstructs()

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,6 +45,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/QProcess>
 #include <QtCore/QByteArray>
+#include <QtCore/QLibraryInfo>
 
 #ifndef Q_OS_WINCE
 
@@ -77,7 +78,7 @@ private:
 
 tst_uic::tst_uic()
     : uicExists(true)
-    , command(QLatin1String("uic"))
+    , command(QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/uic"))
 {
 }
 
@@ -218,7 +219,7 @@ QString tst_uic::workingDir() const
     return QDir::cleanPath(SRCDIR);
 }
 
-QTEST_MAIN(tst_uic)
+QTEST_APPLESS_MAIN(tst_uic)
 #include "tst_uic.moc"
 #else
 QTEST_NOOP_MAIN

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -331,7 +331,7 @@ static  bool parsePropertySpecs(QXmlStreamReader &sr,
             const bool noTr = notrS == QLatin1String("true") || notrS == QLatin1String("1");
             QDesignerCustomWidgetSharedData::StringPropertyType v(typeStringToType(type, &typeOk), !noTr);
             if (!typeOk) {
-                *errorMessage = QDesignerPluginManager::tr("'%1' is not a valid string property specification!").arg(type);
+                *errorMessage = QDesignerPluginManager::tr("'%1' is not a valid string property specification.").arg(type);
                 return false;
             }
             rc->insert(name, v);

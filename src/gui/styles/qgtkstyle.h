@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -106,6 +106,10 @@ public:
 
     void unpolish(QWidget *widget);
     void unpolish(QApplication *app);
+
+protected Q_SLOTS:
+    QIcon standardIconImplementation(StandardPixmap standardIcon, const QStyleOption *option,
+                                     const QWidget *widget = 0) const;
 };
 
 

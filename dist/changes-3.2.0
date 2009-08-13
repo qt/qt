@@ -3,7 +3,7 @@ Qt 3.2 introduces new features as well as many improvements over the
 3.1.x series. This file gives an overview of the main changes since
 version 3.1.2.  For more details, see the online documentation which
 is included in this distribution. The documentation is also available
-at http://doc.trolltech.com/
+at http://qt.nokia.com/doc/
 
 The Qt version 3.2 series is binary compatible with the 3.1.x series.
 Applications compiled for 3.1 will continue to run with 3.2.

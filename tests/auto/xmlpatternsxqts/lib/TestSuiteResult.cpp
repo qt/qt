@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,7 +43,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the Patternist project on Trolltech Labs.
+** This file is part of the Patternist project on Qt Labs.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -74,7 +74,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ***************************************************************************
@@ -111,7 +111,7 @@ void TestSuiteResult::toXML(XMLWriter &receiver) const
     const QString organizationName          (QLatin1String("K Desktop Environment(KDE)"));
     const QString organizationWebsite       (QLatin1String("http://www.kde.org/"));
     const QString submittorName             (QLatin1String("Frans Englich"));
-    const QString submittorEmail            (QLatin1String("fenglich@trolltech.com"));
+    const QString submittorEmail            (QLatin1String("frans.englich@nokia.com"));
     const QString implementationVersion     (QLatin1String("0.1"));
     const QString implementationName        (QLatin1String("Patternist"));
     const QString implementationDescription (QLatin1String(

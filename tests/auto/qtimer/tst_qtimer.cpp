@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,6 +73,7 @@ public slots:
     void init();
     void cleanup();
 private slots:
+    void zeroTimer();
     void singleShotTimeout();
     void timeout();
     void livelock_data();
@@ -129,6 +130,20 @@ void tst_QTimer::init()
 
 void tst_QTimer::cleanup()
 {
+}
+
+void tst_QTimer::zeroTimer()
+{
+    TimerHelper helper;
+    QTimer timer;
+    timer.setInterval(0);
+    timer.start();
+
+    connect(&timer, SIGNAL(timeout()), &helper, SLOT(timeout()));
+
+    QCoreApplication::processEvents();
+
+    QCOMPARE(helper.count, 1);
 }
 
 void tst_QTimer::singleShotTimeout()

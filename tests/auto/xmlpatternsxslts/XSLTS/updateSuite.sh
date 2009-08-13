@@ -1,8 +1,8 @@
 # This script updates the suite from W3C's CVS server.
 #
-# NOTE: the files checked out CANNOT be added to Trolltech's
+# NOTE: the files checked out CANNOT be added to Qt's
 # repository at the moment, due to legal complications. However,
-# when the test suite is publically released, it is posssible as
+# when the test suite is publically released, it is possible as
 # according to W3C's usual license agreements.
 
 echo "*** This script typically doesn't need to be run, and it needs to be updated anyway."

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,7 +66,7 @@ namespace QPatternist
      * @short Base class for all named components that can appear in a W3C XML Schema.
      *
      * @ingroup Patternist_types
-     * @author Tobias Koenig <tobias.koenig@trolltech.com>
+     * @author Tobias Koenig <tobias.koenig@nokia.com>
      */
     class NamedSchemaComponent : public SchemaComponent
     {

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -328,7 +328,7 @@
     for reporting local names, namespace prefixes and URIs. With \e
     http://xml.org/sax/features/namespaces set to true the parser will
     report \e title as the local name of the \e fnord:title attribute, \e
-    fnord being the namespace prefix and \e http://www.qtsoftware.com/fnord/ as
+    fnord being the namespace prefix and \e http://example.com/fnord/ as
     the namespace URI. When \e http://xml.org/sax/features/namespaces is
     false none of them are reported.
 
@@ -511,18 +511,18 @@
     Before we can apply a namespace to element or attribute names we must
     declare it.
 
-    Namespaces are URIs like \e http://www.qtsoftware.com/fnord/book/. This
+    Namespaces are URIs like \e http://example.com/fnord/book/. This
     does not mean that data must be available at this address; the URI is
     simply used to provide a unique name.
 
     We declare namespaces in the same way as attributes; strictly speaking
     they \e are attributes. To make for example \e
-    http://www.qtsoftware.com/fnord/ the document's default XML namespace \e
+    http://example.com/fnord/ the document's default XML namespace \e
     xmlns we write
 
     \snippet doc/src/snippets/code/doc_src_qtxml.qdoc 8
 
-    To distinguish the \e http://www.qtsoftware.com/fnord/book/ namespace from
+    To distinguish the \e http://example.com/fnord/book/ namespace from
     the default, we must supply it with a prefix:
 
     \snippet doc/src/snippets/code/doc_src_qtxml.qdoc 9
@@ -549,12 +549,12 @@
     \snippet doc/src/snippets/code/doc_src_qtxml.qdoc 10
 
     Within the \e document element we have two namespaces declared. The
-    default namespace \e http://www.qtsoftware.com/fnord/ applies to the \e
+    default namespace \e http://example.com/fnord/ applies to the \e
     book element, the \e chapter element, the appropriate \e title element
     and of course to \e document itself.
 
     The \e book:author and \e book:title elements belong to the namespace
-    with the URI \e http://www.qtsoftware.com/fnord/book/.
+    with the URI \e http://example.com/fnord/book/.
 
     The two \e book:author attributes \e title and \e name have no XML
     namespace assigned. They are only members of the "traditional"
@@ -562,7 +562,7 @@
     \e title attributes in \e book:author are forbidden.
 
     In the above example we circumvent the last rule by adding a \e title
-    attribute from the \e http://www.qtsoftware.com/fnord/ namespace to \e
+    attribute from the \e http://example.com/fnord/ namespace to \e
     book:author: the \e fnord:title comes from the namespace with the
     prefix \e fnord that is declared in the \e book:author element.
 
@@ -603,7 +603,7 @@
         local part of \e book:title.)
     \o  The \e {namespace URI} ("Uniform Resource Identifier") is a unique
         identifier for a namespace. It looks like a URL
-        (e.g. \e http://www.qtsoftware.com/fnord/ ) but does not require
+        (e.g. \e http://example.com/fnord/ ) but does not require
         data to be accessible by the given protocol at the named address.
     \endlist
 

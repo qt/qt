@@ -84,7 +84,19 @@ namespace Phonon
             void setCurrentRenderer(AbstractVideoRenderer *renderer)
             {
                 m_currentRenderer = renderer;
-                update();
+                //we disallow repaint on that widget for just a fraction of second
+                //this allows better transition between videos
+                setUpdatesEnabled(false);
+                m_flickerFreeTimer.start(20, this);
+            }
+
+            void timerEvent(QTimerEvent *e)
+            {
+                if (e->timerId() == m_flickerFreeTimer.timerId()) {
+                    m_flickerFreeTimer.stop();
+                    setUpdatesEnabled(true);
+                }
+                QWidget::timerEvent(e);
             }
 
             QSize sizeHint() const
@@ -106,6 +118,8 @@ namespace Phonon
 
             void paintEvent(QPaintEvent *e)
             {
+                if (!updatesEnabled())
+                    return; //this avoids repaint from native events
                 checkCurrentRenderingMode();
                 m_currentRenderer->repaintCurrentFrame(this, e->rect());
             }
@@ -160,6 +174,7 @@ namespace Phonon
             VideoWidget *m_node;
             AbstractVideoRenderer *m_currentRenderer;
             QVariant m_restoreScreenSaverActive;
+            QBasicTimer m_flickerFreeTimer;
         };
 
         VideoWidget::VideoWidget(QWidget *parent)
