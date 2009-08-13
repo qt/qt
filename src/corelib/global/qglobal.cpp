@@ -2202,7 +2202,7 @@ void qt_message_output(QtMsgType msgType, const char *buf)
 /*!
     \internal
     Uses a local buffer to output the message. Not locale safe + cuts off
-    everything after character 1023, but will work in out of memory situations.
+    everything after character 255, but will work in out of memory situations.
 */
 static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
 {
