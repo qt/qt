@@ -77,8 +77,9 @@ public:
 
     QFxScaleGrid *getScaleGrid()
     {
+        Q_Q(QFxBorderImage);
         if (!border)
-            border = new QFxScaleGrid;
+            border = new QFxScaleGrid(q);
         return border;
     }
 
