@@ -2291,6 +2291,9 @@ int QWindowsCEStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QW
         break;
     case SH_EtchDisabledText:
         ret = false;
+    case SH_RequestSoftwareInputPanel:
+        ret = RSIP_OnMouseClick;
+        break;
     default:
         ret = QWindowsStyle::styleHint(hint, opt, widget, returnData);
         break;

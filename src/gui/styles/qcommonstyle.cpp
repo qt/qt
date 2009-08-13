@@ -5356,6 +5356,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         }
 #endif
         break;
+    case SH_RequestSoftwareInputPanel:
+        ret = RSIP_OnMouseClickAndAlreadyFocused;
+        break;
     default:
         ret = 0;
         break;
