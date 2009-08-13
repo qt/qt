@@ -1020,6 +1020,13 @@ HIRect QMacStylePrivate::pushButtonContentBounds(const QStyleOptionButton *btn,
 
     HIRect contentBounds;
     HIThemeGetButtonContentBounds(&outerBounds, bdi, &contentBounds);
+
+    // Return the button rect if the rect returned by HIThemeGetButtonContentBounds
+    // is invalid. This avoids passing around bad rects to code that does not expect it.
+    if (contentBounds.size.height == 0 && contentBounds.size.width == 0) {
+        return qt_hirectForQRect(btn->rect);
+    }
+    
     return contentBounds;
 }
 
