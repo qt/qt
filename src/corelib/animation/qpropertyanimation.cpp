@@ -293,7 +293,7 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
             hash.insert(key, this);
             // update the default start value
             if (oldState == Stopped) {
-                d->setDefaultStartValue(d->target->property(d->propertyName.constData()));
+                d->setDefaultStartEndValue(d->target->property(d->propertyName.constData()));
                 //let's check if we have a start value and an end value
                 if (d->direction == Forward && !startValue().isValid() && !d->defaultStartEndValue.isValid())
                     qWarning("QPropertyAnimation::updateState: starting an animation without start value");
