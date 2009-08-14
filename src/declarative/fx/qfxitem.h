@@ -235,8 +235,6 @@ private:
 
     void setKeyHandler(QFxKeysAttached *);
 
-    // ### move to d-pointer
-    void init(QFxItem *parent);
     friend class QmlStatePrivate;
     friend class QFxAnchors;
     friend class QFxKeysAttached;
