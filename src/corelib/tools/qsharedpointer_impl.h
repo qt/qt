@@ -171,8 +171,8 @@ namespace QtSharedPointer {
 
         inline ExternalRefCountData()
         {
-            QBasicAtomicInt proto = Q_BASIC_ATOMIC_INITIALIZER(1);
-            weakref = strongref = proto;
+            strongref = 1;
+            weakref = 1;
         }
         inline ExternalRefCountData(Qt::Initialization) { }
         virtual inline ~ExternalRefCountData() { Q_ASSERT(!weakref); Q_ASSERT(strongref <= 0); }
@@ -385,6 +385,12 @@ namespace QtSharedPointer {
                 delete this->value;
         }
 
+        inline void internalSwap(ExternalRefCount &other)
+        {
+            qSwap(d, other.d);
+            qSwap(this->value, other.value);
+        }
+
 #if defined(Q_NO_TEMPLATE_FRIENDS)
     public:
 #else
@@ -464,6 +470,9 @@ public:
     template <class X>
     inline QSharedPointer<T> &operator=(const QWeakPointer<X> &other)
     { internalSet(other.d, other.value); return *this; }
+
+    inline void swap(QSharedPointer &other)
+    { internalSwap(other); }
 
     template <class X>
     QSharedPointer<X> staticCast() const
@@ -680,6 +689,12 @@ template <class T>
 Q_INLINE_TEMPLATE QWeakPointer<T> QSharedPointer<T>::toWeakRef() const
 {
     return QWeakPointer<T>(*this);
+}
+
+template <class T>
+inline void qSwap(QSharedPointer<T> &p1, QSharedPointer<T> &p2)
+{
+    p1.swap(p2);
 }
 
 namespace QtSharedPointer {
