@@ -90,10 +90,8 @@
 
     \snippet examples/script/calculator/calculator.js 1
 
-    The digitClicked() function uses the special local variable
-    __qt_sender__ to access the object that triggered the signal;
-    this gives us a simple way to retrieve the value of the digit
-    that was clicked.
+    The digitClicked() function is called when a digit button is
+    clicked, with the input digit as argument.
 
     \snippet examples/script/calculator/calculator.js 2
 
