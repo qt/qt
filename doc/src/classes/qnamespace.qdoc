@@ -2747,7 +2747,7 @@
 
     This enum type describes the state of a gesture.
 
-    \omitvalue NoGesture
+    \value NoGesture        Initial state
     \value GestureStarted   A continuous gesture has started.
     \value GestureUpdated   A gesture continues.
     \value GestureFinished  A gesture has finished.

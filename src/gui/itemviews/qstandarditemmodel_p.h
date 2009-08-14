@@ -75,6 +75,7 @@ public:
           parent(0),
           rows(0),
           columns(0),
+          q_ptr(0),
           lastIndexOf(2)
         { }
     virtual ~QStandardItemPrivate();

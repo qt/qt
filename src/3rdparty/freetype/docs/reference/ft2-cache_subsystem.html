@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.6 API Reference</title>
+<title>FreeType-2.3.9 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -31,7 +31,11 @@
 </style>
 </head>
 <body>
-<center><h1>FreeType-2.3.6 API Reference</h1></center>
+
+<table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+<center><h1>FreeType-2.3.9 API Reference</h1></center>
 
 <center><h1>
 Cache Sub-System
@@ -55,7 +59,7 @@ Cache Sub-System
 </table><br><br>
 
 <table align=center width="87%"><tr><td>
-<p>This section describes the FreeType 2 cache sub-system, which is used to limit the number of concurrently opened <a href="ft2-base_interface.html#FT_Face">FT_Face</a> and <a href="ft2-base_interface.html#FT_Size">FT_Size</a> objects, as well as caching information like character maps and glyph images while limiting their maximum memory usage.</p>
+<p>This section describes the FreeType&nbsp;2 cache sub-system, which is used to limit the number of concurrently opened <a href="ft2-base_interface.html#FT_Face">FT_Face</a> and <a href="ft2-base_interface.html#FT_Size">FT_Size</a> objects, as well as caching information like character maps and glyph images while limiting their maximum memory usage.</p>
 <p>Note that all types and functions begin with the &lsquo;FTC_&rsquo; prefix.</p>
 <p>The cache is highly portable and thus doesn't know anything about the fonts installed on your system, or how to access them. This implies the following scheme:</p>
 <p>First, available or installed font faces are uniquely identified by <a href="ft2-cache_subsystem.html#FTC_FaceID">FTC_FaceID</a> values, provided to the cache by the client. Note that the cache only stores and compares these values, and doesn't try to interpret them in any way.</p>
@@ -72,14 +76,6 @@ Cache Sub-System
 <table align=center width="75%"><tr><td>
 <h4><a name="FTC_Manager">FTC_Manager</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_CACHE_H (freetype/ftcache.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FTC_ManagerRec_*  <b>FTC_Manager</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>This object corresponds to one instance of the cache-subsystem. It is used to cache one or more <a href="ft2-base_interface.html#FT_Face">FT_Face</a> objects, along with corresponding <a href="ft2-base_interface.html#FT_Size">FT_Size</a> objects.</p>
 <p>The manager intentionally limits the total number of opened <a href="ft2-base_interface.html#FT_Face">FT_Face</a> and <a href="ft2-base_interface.html#FT_Size">FT_Size</a> objects to control memory usage. See the &lsquo;max_faces&rsquo; and &lsquo;max_sizes&rsquo; parameters of <a href="ft2-cache_subsystem.html#FTC_Manager_New">FTC_Manager_New</a>.</p>
 <p>The manager is also used to cache &lsquo;nodes&rsquo; of various types while limiting their total memory usage.</p>
@@ -93,14 +89,6 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FTC_FaceID">FTC_FaceID</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_CACHE_H (freetype/ftcache.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <a href="ft2-basic_types.html#FT_Pointer">FT_Pointer</a>  <b>FTC_FaceID</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>An opaque pointer type that is used to identity face objects. The contents of such objects is application-dependent.</p>
 <p>These pointers are typically used to point to a user-defined structure containing a font file path, and face index.</p>
@@ -157,7 +145,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The third parameter &lsquo;req_data&rsquo; is the same as the one passed by the client when <a href="ft2-cache_subsystem.html#FTC_Manager_New">FTC_Manager_New</a> is called.</p>
@@ -172,15 +160,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FTC_Node">FTC_Node</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_CACHE_H (freetype/ftcache.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FTC_NodeRec_*  <b>FTC_Node</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
-<p>An opaque handle to a cache node object. Each cache node is reference-counted. A node with a count of 0 might be flushed out of a full cache whenever a lookup request is performed.</p>
+<p>An opaque handle to a cache node object. Each cache node is reference-counted. A node with a count of&nbsp;0 might be flushed out of a full cache whenever a lookup request is performed.</p>
 <p>If you lookup nodes, you have the ability to &lsquo;acquire&rsquo; them, i.e., to increment their reference count. This will prevent the node from being flushed out of the cache until you explicitly &lsquo;release&rsquo; it (see <a href="ft2-cache_subsystem.html#FTC_Node_Unref">FTC_Node_Unref</a>).</p>
 <p>See also <a href="ft2-cache_subsystem.html#FTC_SBitCache_Lookup">FTC_SBitCache_Lookup</a> and <a href="ft2-cache_subsystem.html#FTC_ImageCache_Lookup">FTC_ImageCache_Lookup</a>.</p>
 </td></tr></table><br>
@@ -208,7 +188,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Creates a new cache manager.</p>
+<p>Create a new cache manager.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -217,13 +197,13 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 <p>The parent FreeType library handle to use.</p>
 </td></tr>
 <tr valign=top><td><b>max_faces</b></td><td>
-<p>Maximum number of opened <a href="ft2-base_interface.html#FT_Face">FT_Face</a> objects managed by this cache instance. Use 0 for defaults.</p>
+<p>Maximum number of opened <a href="ft2-base_interface.html#FT_Face">FT_Face</a> objects managed by this cache instance. Use&nbsp;0 for defaults.</p>
 </td></tr>
 <tr valign=top><td><b>max_sizes</b></td><td>
-<p>Maximum number of opened <a href="ft2-base_interface.html#FT_Size">FT_Size</a> objects managed by this cache instance. Use 0 for defaults.</p>
+<p>Maximum number of opened <a href="ft2-base_interface.html#FT_Size">FT_Size</a> objects managed by this cache instance. Use&nbsp;0 for defaults.</p>
 </td></tr>
 <tr valign=top><td><b>max_bytes</b></td><td>
-<p>Maximum number of bytes to use for cached data nodes. Use 0 for defaults. Note that this value does not account for managed <a href="ft2-base_interface.html#FT_Face">FT_Face</a> and <a href="ft2-base_interface.html#FT_Size">FT_Size</a> objects.</p>
+<p>Maximum number of bytes to use for cached data nodes. Use&nbsp;0 for defaults. Note that this value does not account for managed <a href="ft2-base_interface.html#FT_Face">FT_Face</a> and <a href="ft2-base_interface.html#FT_Size">FT_Size</a> objects.</p>
 </td></tr>
 <tr valign=top><td><b>requester</b></td><td>
 <p>An application-provided callback used to translate face IDs into real <a href="ft2-base_interface.html#FT_Face">FT_Face</a> objects.</p>
@@ -237,12 +217,12 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>amanager</b></td><td>
-<p>A handle to a new manager object. 0 in case of failure.</p>
+<p>A handle to a new manager object. 0&nbsp;in case of failure.</p>
 </td></tr>
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -262,7 +242,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Empties a given cache manager. This simply gets rid of all the currently cached <a href="ft2-base_interface.html#FT_Face">FT_Face</a> and <a href="ft2-base_interface.html#FT_Size">FT_Size</a> objects within the manager.</p>
+<p>Empty a given cache manager. This simply gets rid of all the currently cached <a href="ft2-base_interface.html#FT_Face">FT_Face</a> and <a href="ft2-base_interface.html#FT_Size">FT_Size</a> objects within the manager.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>inout</b></em></td></tr><tr><td>
 <p></p>
@@ -290,7 +270,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Destroys a given manager after emptying it.</p>
+<p>Destroy a given manager after emptying it.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -320,7 +300,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Retrieves the <a href="ft2-base_interface.html#FT_Face">FT_Face</a> object that corresponds to a given face ID through a cache manager.</p>
+<p>Retrieve the <a href="ft2-base_interface.html#FT_Face">FT_Face</a> object that corresponds to a given face ID through a cache manager.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -342,7 +322,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The returned <a href="ft2-base_interface.html#FT_Face">FT_Face</a> object is always owned by the manager. You should never try to discard it yourself.</p>
@@ -395,10 +375,10 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 <p>A Boolean. If 1, the &lsquo;width&rsquo; and &lsquo;height&rsquo; fields are interpreted as integer pixel character sizes. Otherwise, they are expressed as 1/64th of points.</p>
 </td></tr>
 <tr valign=top><td><b>x_res</b></td><td>
-<p>Only used when &lsquo;pixel&rsquo; is value 0 to indicate the horizontal resolution in dpi.</p>
+<p>Only used when &lsquo;pixel&rsquo; is value&nbsp;0 to indicate the horizontal resolution in dpi.</p>
 </td></tr>
 <tr valign=top><td><b>y_res</b></td><td>
-<p>Only used when &lsquo;pixel&rsquo; is value 0 to indicate the vertical resolution in dpi.</p>
+<p>Only used when &lsquo;pixel&rsquo; is value&nbsp;0 to indicate the vertical resolution in dpi.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -413,14 +393,6 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FTC_Scaler">FTC_Scaler</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_CACHE_H (freetype/ftcache.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FTC_ScalerRec_*  <b>FTC_Scaler</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A handle to an <a href="ft2-cache_subsystem.html#FTC_ScalerRec">FTC_ScalerRec</a> structure.</p>
 </td></tr></table><br>
@@ -466,7 +438,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The returned <a href="ft2-base_interface.html#FT_Size">FT_Size</a> object is always owned by the manager. You should never try to discard it by yourself.</p>
@@ -553,14 +525,6 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FTC_CMapCache">FTC_CMapCache</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_CACHE_H (freetype/ftcache.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FTC_CMapCacheRec_*  <b>FTC_CMapCache</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>An opaque handle used to model a charmap cache. This cache is to hold character codes -&gt; glyph indices mappings.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -601,7 +565,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>Like all other caches, this one will be destroyed with the cache manager.</p>
@@ -639,7 +603,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 <p>The source face ID.</p>
 </td></tr>
 <tr valign=top><td><b>cmap_index</b></td><td>
-<p>The index of the charmap in the source face.</p>
+<p>The index of the charmap in the source face. Any negative value means to use the cache <a href="ft2-base_interface.html#FT_Face">FT_Face</a>'s default charmap.</p>
 </td></tr>
 <tr valign=top><td><b>char_code</b></td><td>
 <p>The character code (in the corresponding charmap).</p>
@@ -647,7 +611,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>Glyph index. 0 means &lsquo;no glyph&rsquo;.</p>
+<p>Glyph index. 0&nbsp;means &lsquo;no glyph&rsquo;.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -701,14 +665,6 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FTC_ImageType">FTC_ImageType</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_CACHE_H (freetype/ftcache.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FTC_ImageTypeRec_*  <b>FTC_ImageType</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A handle to an <a href="ft2-cache_subsystem.html#FTC_ImageTypeRec">FTC_ImageTypeRec</a> structure.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -719,14 +675,6 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FTC_ImageCache">FTC_ImageCache</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_CACHE_H (freetype/ftcache.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FTC_ImageCacheRec_*  <b>FTC_ImageCache</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A handle to an glyph image cache object. They are designed to hold many distinct glyph images while not exceeding a certain memory threshold.</p>
 </td></tr></table><br>
@@ -749,7 +697,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Creates a new glyph image cache.</p>
+<p>Create a new glyph image cache.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -768,7 +716,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -792,7 +740,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Retrieves a given glyph image from a glyph image cache.</p>
+<p>Retrieve a given glyph image from a glyph image cache.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -812,7 +760,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>aglyph</b></td><td>
-<p>The corresponding <a href="ft2-glyph_management.html#FT_Glyph">FT_Glyph</a> object. 0 in case of failure.</p>
+<p>The corresponding <a href="ft2-glyph_management.html#FT_Glyph">FT_Glyph</a> object. 0&nbsp;in case of failure.</p>
 </td></tr>
 <tr valign=top><td><b>anode</b></td><td>
 <p>Used to return the address of of the corresponding cache node after incrementing its reference count (see note below).</p>
@@ -820,7 +768,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The returned glyph is owned and managed by the glyph image cache. Never try to transform or discard it manually! You can however create a copy with <a href="ft2-glyph_management.html#FT_Glyph_Copy">FT_Glyph_Copy</a> and modify the new one.</p>
@@ -873,7 +821,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>aglyph</b></td><td>
-<p>The corresponding <a href="ft2-glyph_management.html#FT_Glyph">FT_Glyph</a> object. 0 in case of failure.</p>
+<p>The corresponding <a href="ft2-glyph_management.html#FT_Glyph">FT_Glyph</a> object. 0&nbsp;in case of failure.</p>
 </td></tr>
 <tr valign=top><td><b>anode</b></td><td>
 <p>Used to return the address of of the corresponding cache node after incrementing its reference count (see note below).</p>
@@ -881,12 +829,13 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The returned glyph is owned and managed by the glyph image cache. Never try to transform or discard it manually! You can however create a copy with <a href="ft2-glyph_management.html#FT_Glyph_Copy">FT_Glyph_Copy</a> and modify the new one.</p>
 <p>If &lsquo;anode&rsquo; is <i>not</i> NULL, it receives the address of the cache node containing the glyph image, after increasing its reference count. This ensures that the node (as well as the <a href="ft2-glyph_management.html#FT_Glyph">FT_Glyph</a>) will always be kept in the cache until you call <a href="ft2-cache_subsystem.html#FTC_Node_Unref">FTC_Node_Unref</a> to &lsquo;release&rsquo; it.</p>
 <p>If &lsquo;anode&rsquo; is NULL, the cache node is left unchanged, which means that the <a href="ft2-glyph_management.html#FT_Glyph">FT_Glyph</a> could be flushed out of the cache on the next call to one of the caching sub-system APIs. Don't assume that it is persistent!</p>
+<p>Calls to <a href="ft2-base_interface.html#FT_Set_Char_Size">FT_Set_Char_Size</a> and friends have no effect on cached glyphs; you should always use the FreeType cache API instead.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -896,14 +845,6 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FTC_SBit">FTC_SBit</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_CACHE_H (freetype/ftcache.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FTC_SBitRec_*  <b>FTC_SBit</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A handle to a small bitmap descriptor. See the <a href="ft2-cache_subsystem.html#FTC_SBitRec">FTC_SBitRec</a> structure for details.</p>
 </td></tr></table><br>
@@ -954,13 +895,13 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 <p>The horizontal distance from the pen position to the left bitmap border (a.k.a. &lsquo;left side bearing&rsquo;, or &lsquo;lsb&rsquo;).</p>
 </td></tr>
 <tr valign=top><td><b>top</b></td><td>
-<p>The vertical distance from the pen position (on the baseline) to the upper bitmap border (a.k.a. &lsquo;top side bearing&rsquo;). The distance is positive for upwards Y coordinates.</p>
+<p>The vertical distance from the pen position (on the baseline) to the upper bitmap border (a.k.a. &lsquo;top side bearing&rsquo;). The distance is positive for upwards y&nbsp;coordinates.</p>
 </td></tr>
 <tr valign=top><td><b>format</b></td><td>
 <p>The format of the glyph bitmap (monochrome or gray).</p>
 </td></tr>
 <tr valign=top><td><b>max_grays</b></td><td>
-<p>Maximum gray level value (in the range 1 to 255).</p>
+<p>Maximum gray level value (in the range 1 to&nbsp;255).</p>
 </td></tr>
 <tr valign=top><td><b>pitch</b></td><td>
 <p>The number of bytes per bitmap line. May be positive or negative.</p>
@@ -985,14 +926,6 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FTC_SBitCache">FTC_SBitCache</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_CACHE_H (freetype/ftcache.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FTC_SBitCacheRec_*  <b>FTC_SBitCache</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A handle to a small bitmap cache. These are special cache objects used to store small glyph bitmaps (and anti-aliased pixmaps) in a much more efficient way than the traditional glyph image cache implemented by <a href="ft2-cache_subsystem.html#FTC_ImageCache">FTC_ImageCache</a>.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -1014,7 +947,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Creates a new cache to store small glyph bitmaps.</p>
+<p>Create a new cache to store small glyph bitmaps.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -1033,7 +966,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -1057,7 +990,7 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Looks up a given small glyph bitmap in a given sbit cache and &lsquo;lock&rsquo; it to prevent its flushing from the cache until needed.</p>
+<p>Look up a given small glyph bitmap in a given sbit cache and &lsquo;lock&rsquo; it to prevent its flushing from the cache until needed.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -1085,11 +1018,11 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The small bitmap descriptor and its bit buffer are owned by the cache and should never be freed by the application. They might as well disappear from memory on the next cache lookup, so don't treat them as persistent data.</p>
-<p>The descriptor's &lsquo;buffer&rsquo; field is set to 0 to indicate a missing glyph bitmap.</p>
+<p>The descriptor's &lsquo;buffer&rsquo; field is set to&nbsp;0 to indicate a missing glyph bitmap.</p>
 <p>If &lsquo;anode&rsquo; is <i>not</i> NULL, it receives the address of the cache node containing the bitmap, after increasing its reference count. This ensures that the node (as well as the image) will always be kept in the cache until you call <a href="ft2-cache_subsystem.html#FTC_Node_Unref">FTC_Node_Unref</a> to &lsquo;release&rsquo; it.</p>
 <p>If &lsquo;anode&rsquo; is NULL, the cache node is left unchanged, which means that the bitmap could be flushed out of the cache on the next call to one of the caching sub-system APIs. Don't assume that it is persistent!</p>
 </td></tr></table>
@@ -1147,11 +1080,11 @@ Defined in FT_CACHE_H (freetype/ftcache.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The small bitmap descriptor and its bit buffer are owned by the cache and should never be freed by the application. They might as well disappear from memory on the next cache lookup, so don't treat them as persistent data.</p>
-<p>The descriptor's &lsquo;buffer&rsquo; field is set to 0 to indicate a missing glyph bitmap.</p>
+<p>The descriptor's &lsquo;buffer&rsquo; field is set to&nbsp;0 to indicate a missing glyph bitmap.</p>
 <p>If &lsquo;anode&rsquo; is <i>not</i> NULL, it receives the address of the cache node containing the bitmap, after increasing its reference count. This ensures that the node (as well as the image) will always be kept in the cache until you call <a href="ft2-cache_subsystem.html#FTC_Node_Unref">FTC_Node_Unref</a> to &lsquo;release&rsquo; it.</p>
 <p>If &lsquo;anode&rsquo; is NULL, the cache node is left unchanged, which means that the bitmap could be flushed out of the cache on the next call to one of the caching sub-system APIs. Don't assume that it is persistent!</p>
 </td></tr></table>

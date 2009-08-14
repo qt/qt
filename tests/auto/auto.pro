@@ -316,6 +316,7 @@ SUBDIRS += \
            qstatusbar \
            qstl \
            qstring \
+           qstringbuilder \
            qstringmatcher \
            qstringlist \
            qstringlistmodel \

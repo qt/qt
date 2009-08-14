@@ -4579,6 +4579,7 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
         // Do event compression.  Skip over tablet+mouse move events if there are newer ones.
         qt_tablet_motion_data tabletMotionData;
         tabletMotionData.tabletMotionType = tablet->xinput_motion;
+        XEvent dummy;
         while (true) {
             // Find first mouse event since we expect them in pairs inside Qt
             tabletMotionData.error =false;
@@ -4591,7 +4592,6 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
             }
 
             // Now discard any duplicate tablet events.
-            XEvent dummy;
             tabletMotionData.error = false;
             tabletMotionData.timestamp = mouseMotionEvent.xmotion.time;
             while (XCheckIfEvent(X11->display, &dummy, &qt_tabletMotion_scanner, (XPointer) &tabletMotionData)) {

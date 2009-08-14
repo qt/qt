@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    CID-keyed Type1 font loader (body).                                  */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002, 2003, 2004, 2005, 2006 by                   */
+/*  Copyright 1996-2001, 2002, 2003, 2004, 2005, 2006, 2009 by             */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -95,6 +95,10 @@
 
     case T1_FIELD_LOCATION_FONT_INFO:
       object = (FT_Byte*)&cid->font_info;
+      break;
+
+    case T1_FIELD_LOCATION_FONT_EXTRA:
+      object = (FT_Byte*)&face->font_extra;
       break;
 
     case T1_FIELD_LOCATION_BBOX:
@@ -234,14 +238,38 @@
   }
 
 
+  /* by mistake, `expansion_factor' appears both in PS_PrivateRec */
+  /* and CID_FaceDictRec (both are public header files and can't  */
+  /* changed); we simply copy the value                           */
+
+  FT_CALLBACK_DEF( FT_Error )
+  parse_expansion_factor( CID_Face     face,
+                          CID_Parser*  parser )
+  {
+    CID_FaceDict  dict;
+
+
+    if ( parser->num_dict >= 0 )
+    {
+      dict = face->cid.font_dicts + parser->num_dict;
+
+      dict->expansion_factor              = cid_parser_to_fixed( parser, 0 );
+      dict->private_dict.expansion_factor = dict->expansion_factor;
+    }
+
+    return CID_Err_Ok;
+  }
+
+
   static
   const T1_FieldRec  cid_field_records[] =
   {
 
 #include "cidtoken.h"
 
-    T1_FIELD_CALLBACK( "FDArray",    parse_fd_array, 0 )
-    T1_FIELD_CALLBACK( "FontMatrix", parse_font_matrix, 0 )
+    T1_FIELD_CALLBACK( "FDArray",         parse_fd_array, 0 )
+    T1_FIELD_CALLBACK( "FontMatrix",      parse_font_matrix, 0 )
+    T1_FIELD_CALLBACK( "ExpansionFactor", parse_expansion_factor, 0 )
 
     { 0, T1_FIELD_LOCATION_CID_INFO, T1_FIELD_TYPE_NONE, 0, 0, 0, 0, 0, 0 }
   };

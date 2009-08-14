@@ -1443,14 +1443,13 @@ static bool setFloatAttribute(qreal *destination, const QString &value)
 
 static void setWidthAttribute(QTextLength *width, QString value)
 {
-    qreal realVal;
     bool ok = false;
-    realVal = value.toDouble(&ok);
+    qreal realVal = value.toDouble(&ok);
     if (ok) {
         *width = QTextLength(QTextLength::FixedLength, realVal);
     } else {
         value = value.trimmed();
-        if (!value.isEmpty() && value.at(value.length() - 1) == QLatin1Char('%')) {
+        if (!value.isEmpty() && value.endsWith(QLatin1Char('%'))) {
             value.chop(1);
             realVal = value.toDouble(&ok);
             if (ok)
