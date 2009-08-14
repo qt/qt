@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
             ny = affine._m12 * FX_ + affine._m22 * FY_ + affine._dy;        \
             if (t == TxProject) {                                       \
                 qreal w = (m_13 * FX_ + m_23 * FY_ + m_33);              \
-                if (w < Q_NEAR_CLIP) w = Q_NEAR_CLIP;                   \
+                if (w < qreal(Q_NEAR_CLIP)) w = qreal(Q_NEAR_CLIP);     \
                 w = 1./w;                                               \
                 nx *= w;                                                \
                 ny *= w;                                                \

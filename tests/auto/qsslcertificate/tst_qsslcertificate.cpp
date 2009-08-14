@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -100,6 +100,7 @@ private slots:
     void fromPath();
     void certInfo();
     void task256066toPem();
+    void nulInCN();
 // ### add tests for certificate bundles (multiple certificates concatenated into a single
 //     structure); both PEM and DER formatted
 #endif
@@ -725,6 +726,22 @@ void tst_QSslCertificate::task256066toPem()
     QSslCertificate cert2(pem2);
     QVERIFY(!cert2.isNull());
     QCOMPARE(pem1, pem2);
+}
+
+void tst_QSslCertificate::nulInCN()
+{
+    QList<QSslCertificate> certList =
+        QSslCertificate::fromPath(SRCDIR "more-certificates/badguy-nul-cn.crt");
+    QCOMPARE(certList.size(), 1);
+
+    const QSslCertificate &cert = certList.at(0);
+    QVERIFY(!cert.isNull());
+
+    QString cn = cert.subjectInfo(QSslCertificate::CommonName);
+    QVERIFY(cn != "www.bank.com");
+
+    static const char realCN[] = "www.bank.com\\x00.badguy.com";
+    QCOMPARE(cn, QString::fromLatin1(realCN, sizeof realCN - 1));
 }
 
 #endif // QT_NO_OPENSSL

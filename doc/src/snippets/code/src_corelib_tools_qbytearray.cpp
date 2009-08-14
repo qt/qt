@@ -211,14 +211,14 @@ ba.lastIndexOf("X");        // returns -1
 
 
 //! [25]
-QByteArray url("ftp://ftp.trolltech.com/");
+QByteArray url("ftp://ftp.qt.nokia.com/");
 if (url.startsWith("ftp:"))
     ...
 //! [25]
 
 
 //! [26]
-QByteArray url("http://qtsoftware.com/index.html");
+QByteArray url("http://qt.nokia.com/index.html");
 if (url.endsWith(".html"))
     ...
 //! [26]
@@ -246,16 +246,16 @@ QByteArray z = x.mid(5);        // z == "pineapples"
 
 
 //! [30]
-QByteArray x("TROlltECH");
+QByteArray x("Qt by NOKIA");
 QByteArray y = x.toLower();
-// y == "trolltech"
+// y == "qt by nokia"
 //! [30]
 
 
 //! [31]
-QByteArray x("TROlltECH");
+QByteArray x("Qt by NOKIA");
 QByteArray y = x.toUpper();
-// y == "TROLLTECH"
+// y == "QT BY NOKIA"
 //! [31]
 
 

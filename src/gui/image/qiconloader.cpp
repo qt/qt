@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,6 +53,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QDir>
 #include <QtCore/QSettings>
+#include <QtGui/QPainter>
 
 #ifdef Q_WS_MAC
 #include <private/qt_cocoa_helpers_mac_p.h>
@@ -72,8 +73,12 @@ static QString systemThemeName()
     QString result;
 #ifdef Q_WS_X11
     if (X11->desktopEnvironment == DE_GNOME) {
+#if defined(QT_NO_STYLE_GTK)
+        result = QLatin1String("gnome");
+#else	
         result = QGtk::getGConfString(QLatin1String("/desktop/gnome/interface/icon_theme"),
                                       QLatin1String("gnome"));
+#endif
     } else if (X11->desktopEnvironment == DE_KDE) {
         QString kdeDefault = X11->desktopVersion >= 4 ?
                              QString::fromLatin1("oxygen") :

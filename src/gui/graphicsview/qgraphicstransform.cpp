@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,7 +73,7 @@
     QGraphicsTransform can be used together with QGraphicsItem::setTransform(),
     QGraphicsItem::setRotation(), and QGraphicsItem::setScale().
 
-    \sa QGraphicsItem::transform(), QGraphicsScale, QGraphicsRotation, QGraphicsRotation3D
+    \sa QGraphicsItem::transform(), QGraphicsScale, QGraphicsRotation
 */
 
 #include "qgraphicstransform.h"
@@ -326,8 +326,16 @@ void QGraphicsScale::applyTo(QTransform *transform) const
 
 /*!
     \class QGraphicsRotation
-    \brief The QGraphicsRotation class provides a rotation transformation.
+    \brief The QGraphicsRotation class provides a rotation transformation around
+    a given axis.
     \since 4.6
+
+    You can provide the desired axis by assigning a QVector3D to the axis property
+    or by passing a member if Qt::Axis to the setAxis convenience function.
+    By default the axis is (0, 0, 1) i.e., rotation around the Z axis.
+
+    The angle property, which is provided by QGraphicsRotation, now
+    describes the number of degrees to rotate around this axis.
 
     QGraphicsRotation provides certain parameters to help control how the
     rotation should be applied.
@@ -342,16 +350,28 @@ void QGraphicsScale::applyTo(QTransform *transform) const
     provide rotation angles exceeding (-360, 360) degrees, for instance to
     animate how an item rotates several times.
 
+    Note: the final rotation is the combined effect of a rotation in
+    3D space followed by a projection back to 2D.  If several rotations
+    are performed in succession, they will not behave as expected unless
+    they were all around the Z axis.
+
     \sa QGraphicsTransform, QGraphicsItem::setRotation(), QTransform::rotate()
 */
+
+#define VECTOR_FOR_AXIS_X QVector3D(1, 0, 0)
+#define VECTOR_FOR_AXIS_Y QVector3D(0, 1, 0)
+#define VECTOR_FOR_AXIS_Z QVector3D(0, 0, 1)
+
 
 class QGraphicsRotationPrivate : public QGraphicsTransformPrivate
 {
 public:
     QGraphicsRotationPrivate()
-            : angle(0) {}
+        : angle(0), axis(VECTOR_FOR_AXIS_Z), simpleAxis(Qt::ZAxis) {}
     QPointF origin;
     qreal angle;
+    QVector3D axis;
+    int simpleAxis;
 };
 
 /*!
@@ -359,14 +379,6 @@ public:
 */
 QGraphicsRotation::QGraphicsRotation(QObject *parent)
     : QGraphicsTransform(*new QGraphicsRotationPrivate, parent)
-{
-}
-
-/*!
-    \internal
-*/
-QGraphicsRotation::QGraphicsRotation(QGraphicsRotationPrivate &p, QObject *parent)
-    : QGraphicsTransform(p, parent)
 {
 }
 
@@ -427,19 +439,6 @@ void QGraphicsRotation::setAngle(qreal angle)
 }
 
 /*!
-    \reimp
-*/
-void QGraphicsRotation::applyTo(QTransform *t) const
-{
-    Q_D(const QGraphicsRotation);
-    if (d->angle) {
-        t->translate(d->origin.x(), d->origin.y());
-        t->rotate(d->angle);
-        t->translate(-d->origin.x(), -d->origin.y());
-    }
-}
-
-/*!
     \fn QGraphicsRotation::originChanged()
 
     This signal is emitted whenever the origin has changed.
@@ -456,78 +455,63 @@ void QGraphicsRotation::applyTo(QTransform *t) const
 */
 
 /*!
-    \class QGraphicsRotation3D
-    \brief The QGraphicsRotation3D class provides rotation in 3 dimensions.
-    \since 4.6
-
-    QGraphicsRotation3D extends QGraphicsRotation with the ability to rotate
-    around a given axis.
-
-    You can provide the desired axis by assigning a QVector3D to the axis
-    property. The angle property, which is provided by QGraphicsRotation, now
-    describes the number of degrees to rotate around this axis.
-
-    By default the axis is (0, 0, 1), giving QGraphicsRotation3D the same
-    default behavior as QGraphicsRotation (i.e., rotation around the Z axis).
-
-    Note: the final rotation is the combined effect of a rotation in
-    3D space followed by a projection back to 2D.  If several rotations
-    are performed in succession, they will not behave as expected unless
-    they were all around the Z axis.
-
-    \sa QGraphicsTransform, QGraphicsItem::setRotation(), QTransform::rotate()
-*/
-
-class QGraphicsRotation3DPrivate : public QGraphicsRotationPrivate
-{
-public:
-    QGraphicsRotation3DPrivate() : axis(0, 0, 1) {}
-
-    QVector3D axis;
-};
-
-/*!
-    Constructs a new QGraphicsRotation3D with the given \a parent.
-*/
-QGraphicsRotation3D::QGraphicsRotation3D(QObject *parent)
-    : QGraphicsRotation(*new QGraphicsRotation3DPrivate, parent)
-{
-}
-
-/*!
-    Destroys the 3D graphics rotation.
-*/
-QGraphicsRotation3D::~QGraphicsRotation3D()
-{
-}
-
-/*!
-    \property QGraphicsRotation3D::axis
+    \property QGraphicsRotation::axis
     \brief a rotation axis, specified by a vector in 3D space.
 
     This can be any axis in 3D space. By default the axis is (0, 0, 1),
-    which is aligned with the Z axis and provides the same behavior
-    for the rotation angle as QGraphicsRotation. If you provide another
-    axis, QGraphicsRotation3D will provide a transformation that rotates
+    which is aligned with the Z axis. If you provide another axis,
+    QGraphicsRotation will provide a transformation that rotates
     around this axis. For example, if you would like to rotate an item
     around its X axis, you could pass (1, 0, 0) as the axis.
 
     \sa QTransform, QGraphicsRotation::angle
 */
-QVector3D QGraphicsRotation3D::axis()
+QVector3D QGraphicsRotation::axis() const
 {
-    Q_D(QGraphicsRotation3D);
+    Q_D(const QGraphicsRotation);
     return d->axis;
 }
-void QGraphicsRotation3D::setAxis(const QVector3D &axis)
+void QGraphicsRotation::setAxis(const QVector3D &axis)
 {
-    Q_D(QGraphicsRotation3D);
-    if (d->axis == axis)
-        return;
-    d->axis = axis;
+    Q_D(QGraphicsRotation);
+     if (d->axis == axis)
+         return;
+     d->axis = axis;
+    if (axis == VECTOR_FOR_AXIS_X) {
+        d->simpleAxis = Qt::XAxis;
+    } else if (axis == VECTOR_FOR_AXIS_Y) {
+        d->simpleAxis = Qt::YAxis;
+    } else if (axis == VECTOR_FOR_AXIS_Z) {
+        d->simpleAxis = Qt::ZAxis;
+    } else {
+        d->simpleAxis = -1; // no predefined axis
+    }
     update();
     emit axisChanged();
 }
+
+/*!
+    \fn void QGraphicsRotation::setAxis(Qt::Axis axis)
+
+    Convenience function to set the axis to \a axis.
+*/
+
+void QGraphicsRotation::setAxis(Qt::Axis axis)
+{
+    switch (axis)
+    {
+    case Qt::XAxis:
+        setAxis(VECTOR_FOR_AXIS_X);
+        break;
+    case Qt::YAxis:
+        setAxis(VECTOR_FOR_AXIS_Y);
+        break;
+    case Qt::ZAxis:
+        setAxis(VECTOR_FOR_AXIS_Z);
+        break;
+    }
+}
+
 
 const qreal deg2rad = qreal(0.017453292519943295769);        // pi/180
 static const qreal inv_dist_to_plane = 1. / 1024.;
@@ -535,14 +519,28 @@ static const qreal inv_dist_to_plane = 1. / 1024.;
 /*!
     \reimp
 */
-void QGraphicsRotation3D::applyTo(QTransform *t) const
+void QGraphicsRotation::applyTo(QTransform *t) const
 {
-    Q_D(const QGraphicsRotation3D);
+    Q_D(const QGraphicsRotation);
 
     qreal a = d->angle;
 
-    if (a == 0. ||
-        (d->axis.z() == 0. && d->axis.y() == 0 && d->axis.x() == 0))
+    if (a == 0.)
+        return;
+
+    if (d->simpleAxis != -1) {
+        //that's an optimization for simple axis
+        t->translate(d->origin.x(), d->origin.y());
+        t->rotate(a, Qt::Axis(d->simpleAxis));
+        t->translate(-d->origin.x(), -d->origin.y());
+        return;
+    }
+
+    qreal x = d->axis.x();
+    qreal y = d->axis.y();
+    qreal z = d->axis.z();
+
+    if (x == 0. && y == 0 && z == 0)
         return;
 
     qreal c, s;
@@ -561,27 +559,23 @@ void QGraphicsRotation3D::applyTo(QTransform *t) const
         c = qCos(b);
     }
 
-    qreal x = d->axis.x();
-    qreal y = d->axis.y();
-    qreal z = d->axis.z();
-
     qreal len = x * x + y * y + z * z;
     if (len != 1.) {
-        len = 1./::sqrt(len);
+        len = 1. / qSqrt(len);
         x *= len;
         y *= len;
         z *= len;
     }
 
     t->translate(d->origin.x(), d->origin.y());
-    *t = QTransform(x*x*(1-c)+c, x*y*(1-c)-z*s, x*z*(1-c)+y*s*inv_dist_to_plane,
-                             y*x*(1-c)+z*s, y*y*(1-c)+c, y*z*(1-c)-x*s*inv_dist_to_plane,
-                             0, 0, 1) * *t;
+    *t = QTransform(x*x*(1-c)+c,   x*y*(1-c)+z*s, x*z*(1-c)-y*s*inv_dist_to_plane,
+                    y*x*(1-c)-z*s, y*y*(1-c)+c,   y*z*(1-c)-x*s*inv_dist_to_plane,
+                             0,    0,             1) * *t;
     t->translate(-d->origin.x(), -d->origin.y());
 }
 
 /*!
-    \fn void QGraphicsRotation3D::axisChanged()
+    \fn void QGraphicsRotation::axisChanged()
 
     This signal is emitted whenever the axis of the object changes.
 */

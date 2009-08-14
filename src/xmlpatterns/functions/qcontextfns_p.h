@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,7 +75,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-position">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 16.1 fn:position</a>
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class PositionFN : public FunctionCall
     {
@@ -89,7 +89,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-last">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 16.2 fn:last</a>
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class LastFN : public FunctionCall
     {
@@ -103,7 +103,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-implicit-timezone">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 16.6 fn:implicit-timezone</a>
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ImplicitTimezoneFN : public FunctionCall
     {
@@ -117,7 +117,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-current-dateTime">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 16.3 fn:current-dateTime</a>
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class CurrentDateTimeFN : public FunctionCall
     {
@@ -131,7 +131,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-current-date">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 16.4 fn:current-date</a>
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class CurrentDateFN : public FunctionCall
     {
@@ -145,7 +145,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-current-time">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 16.5 fn:current-date</a>
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class CurrentTimeFN : public FunctionCall
     {
@@ -161,7 +161,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-default-collation">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 16.7 fn:default-collation</a>
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DefaultCollationFN : public FunctionCall
     {
@@ -178,7 +178,7 @@ namespace QPatternist
      * @see <a href="http://www.w3.org/TR/xpath-functions/#func-static-base-uri">XQuery 1.0
      * and XPath 2.0 Functions and Operators, 16.8 fn:static-base-uri</a>
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StaticBaseURIFN : public FunctionCall
     {

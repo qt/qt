@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -109,7 +109,8 @@ class ReturnState : public QAnimationState
 public:
     ReturnState(SubMarine *submarine, QState *parent = 0) : QAnimationState(parent)
     {
-        returnAnimation = new QPropertyAnimation(submarine->rotation3d(), "angle");
+        returnAnimation = new QPropertyAnimation(submarine->rotation(), "angle");
+        returnAnimation->setDuration(500);
         AnimationManager::self()->registerAnimation(returnAnimation);
         setAnimation(returnAnimation);
         this->submarine = submarine;
@@ -119,9 +120,7 @@ protected:
     void onEntry(QEvent *e)
     {
         returnAnimation->stop();
-        returnAnimation->setStartValue(submarine->rotation3d()->angle());
         returnAnimation->setEndValue(submarine->currentDirection() == SubMarine::Right ? 360. : 180.);
-        returnAnimation->setDuration(500);
         QAnimationState::onEntry(e);
     }
 

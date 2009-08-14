@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -372,7 +372,7 @@ class LookupThread : public QThread
 protected:
     inline void run()
     {
-         QHostInfo info = QHostInfo::fromName("www.trolltech.com");
+         QHostInfo info = QHostInfo::fromName("qt.nokia.com");
          QCOMPARE(info.addresses().at(0).toString(), QString("87.238.50.178"));
     }
 };

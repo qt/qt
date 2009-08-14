@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -658,6 +658,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
             break;
         case QVariant::Url:
             *str = v_cast<QUrl>(d)->toString();
+            break;
         default:
             return false;
         }

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -835,7 +835,7 @@ void qt_init(QApplicationPrivate *priv, int)
     priv->SetGestureConfig =
             (PtrSetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
                                                    "SetGestureConfig");
-    priv->SetGestureConfig =
+    priv->GetGestureConfig =
             (PtrGetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
                                                    "GetGestureConfig");
     priv->BeginPanningFeedback =

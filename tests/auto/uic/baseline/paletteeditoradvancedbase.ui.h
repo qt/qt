@@ -1,44 +1,43 @@
-/*
-*********************************************************************
+/****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the tools applications of the Qt Toolkit.
+** This file is part of the autotests of the Qt Toolkit.
 **
-** This file may be used under the terms of the GNU General Public
-** License versions 2.0 or 3.0 as published by the Free Software
-** Foundation and appearing in the files LICENSE.GPL2 and LICENSE.GPL3
-** included in the packaging of this file.  Alternatively you may (at
-** your option) use any later version of the GNU General Public
-** License if such license has been publicly approved by Nokia Corporation and/or its subsidiary(-ies)
-** (or its successors, if any) and the KDE Free Qt Foundation. In
-** addition, as a special exception, Trolltech gives you certain
-** additional rights. These rights are described in the Trolltech GPL
-** Exception version 1.2, which can be found at
-** http://www.trolltech.com/products/qt/gplexception/ and in the file
-** GPL_EXCEPTION.txt in this package.
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
 **
-** Please review the following information to ensure GNU General
-** Public Licensing requirements will be met:
-** http://trolltech.com/products/qt/licenses/licensing/opensource/. If
-** you are unsure which license is appropriate for your use, please
-** review the following information:
-** http://trolltech.com/products/qt/licenses/licensing/licensingoverview
-** or contact the sales department at sales@trolltech.com.
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Trolltech, as the sole
-** copyright holder for Qt Designer, grants users of the Qt/Eclipse
-** Integration plug-in the right for the Qt/Eclipse Integration to
-** link to functionality provided by Qt Designer and its related
-** libraries.
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
 **
-** This file is provided "AS IS" with NO WARRANTY OF ANY KIND,
-** INCLUDING THE WARRANTIES OF DESIGN, MERCHANTABILITY AND FITNESS FOR
-** A PARTICULAR PURPOSE. Trolltech reserves all rights not expressly
-** granted herein.
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
 **
-*********************************************************************
-*/
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at http://qt.nokia.com/contact.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
 
 /********************************************************************************
 ** Form generated from reading UI file 'paletteeditoradvancedbase.ui'

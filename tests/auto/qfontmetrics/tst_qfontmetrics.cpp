@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -71,6 +71,7 @@ private slots:
     void elidedText();
     void veryNarrowElidedText();
     void averageCharWidth();
+    void elidedMultiLenght();
 };
 
 tst_QFontMetrics::tst_QFontMetrics()
@@ -168,7 +169,8 @@ void tst_QFontMetrics::elidedText_data()
     QTest::addColumn<QFont>("font");
     QTest::addColumn<QString>("text");
 
-    QTest::newRow("helvetica hello") << QFont("helvetica",10) << QString("hello");
+    QTest::newRow("helvetica hello") << QFont("helvetica",10) << QString("hello") ;
+    QTest::newRow("helvetica hello &Bye") << QFont("helvetica",10) << QString("hello&Bye") ;
 }
 
 
@@ -178,9 +180,9 @@ void tst_QFontMetrics::elidedText()
     QFETCH(QString, text);
     QFontMetrics fm(font);
     int w = fm.width(text);
-    QString newtext = fm.elidedText(text,Qt::ElideRight,w);
+    QString newtext = fm.elidedText(text,Qt::ElideRight,w, 0);
     QCOMPARE(text,newtext); // should not elide
-    newtext = fm.elidedText(text,Qt::ElideRight,w-1);
+    newtext = fm.elidedText(text,Qt::ElideRight,w-1, 0);
     QVERIFY(text != newtext); // should elide
 }
 
@@ -199,6 +201,28 @@ void tst_QFontMetrics::averageCharWidth()
     QVERIFY(fm.averageCharWidth() != 0);
     QFontMetricsF fmf(f);
     QVERIFY(fmf.averageCharWidth() != 0);
+}
+
+void tst_QFontMetrics::elidedMultiLenght()
+{
+    QString text1 = "Long Text 1\x9cShorter\x9csmall";
+    QString text1_long = "Long Text 1";
+    QString text1_short = "Shorter";
+    QString text1_small = "small";
+    QFontMetrics fm = QFontMetrics(QFont());
+    int width_long = fm.width(text1_long);
+    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, 8000), text1_long);
+    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_long), text1_long);
+    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_long - 1), text1_short);
+    int width_short = fm.width(text1_short);
+    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short), text1_short);
+    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short - 1), text1_small);
+
+    QChar ellipsisChar(0x2026);
+    QString text1_el = QString::fromLatin1("sm") + ellipsisChar;
+    int width_small = fm.width(text1_el);
+    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_small + 1), text1_el);
+
 }
 
 QTEST_MAIN(tst_QFontMetrics)

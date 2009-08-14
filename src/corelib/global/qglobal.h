@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -848,6 +848,8 @@ typedef quint64 qulonglong;
       && sizeof(void *) == sizeof(qptrdiff)
 */
 template <int> struct QIntegerForSize;
+template <>    struct QIntegerForSize<1> { typedef quint8  Unsigned; typedef qint8  Signed; };
+template <>    struct QIntegerForSize<2> { typedef quint16 Unsigned; typedef qint16 Signed; };
 template <>    struct QIntegerForSize<4> { typedef quint32 Unsigned; typedef qint32 Signed; };
 template <>    struct QIntegerForSize<8> { typedef quint64 Unsigned; typedef qint64 Signed; };
 template <class T> struct QIntegerForSizeof: QIntegerForSize<sizeof(T)> { };
@@ -1292,7 +1294,7 @@ class QDataStream;
 
 /*
    No, this is not an evil backdoor. QT_BUILD_INTERNAL just exports more symbols
-   for Trolltech's internal unit tests. If you want slower loading times and more
+   for Qt's internal unit tests. If you want slower loading times and more
    symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.
 */
 #if defined(QT_BUILD_INTERNAL) && defined(Q_OS_WIN) && defined(QT_MAKEDLL)

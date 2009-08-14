@@ -34,13 +34,13 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 /* The following copyright notice pertains to the code as contributed
-to Trolltech, not to Trolltech's modifications. It is replicated
+to Qt, not to Nokia's modifications. It is replicated
 in doc/dnd.doc, where the documentation system can see it. */
 
 /* Copyright 1996 Daniel Dardailler.

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -157,6 +157,6 @@ void tst_rcc::rcc()
 
 
 
-QTEST_MAIN(tst_rcc)
+QTEST_APPLESS_MAIN(tst_rcc)
 
 #include "tst_rcc.moc"

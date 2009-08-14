@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -138,6 +138,7 @@ void QLineEditPrivate::init(const QString& txt)
 {
     Q_Q(QLineEdit);
     control = new QLineControl(txt);
+    control->setFont(q->font());
     QObject::connect(control, SIGNAL(textChanged(const QString &)),
             q, SIGNAL(textChanged(const QString &)));
     QObject::connect(control, SIGNAL(textEdited(const QString &)),

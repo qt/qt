@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1611,6 +1611,8 @@ void tst_QSqlQuery::prepare_bind_exec()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
+    if(db.driverName().startsWith("QIBASE") && (db.databaseName() == "silence.nokia.troll.no:c:\\ibase\\testdb_ascii" || db.databaseName() == "/opt/interbase/qttest.gdb"))
+        QSKIP("Can't transliterate extended unicode to ascii", SkipSingle);
 
     {
         // new scope for SQLITE

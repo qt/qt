@@ -17,7 +17,9 @@
 #if defined(_CLCOMPILER_MSVC) && defined(_DEBUG)
 #   define CRTDBG_MAP_ALLOC
 #   include <stdlib.h>
+#ifndef UNDER_CE
 #   include <crtdbg.h>
+#endif
 #endif
 
 CL_NS_USE(util)

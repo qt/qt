@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,7 +61,7 @@ namespace QPatternist
      * functions, such as @c fn:concat().
      *
      * @defgroup Patternist_functions Function Implementations
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
 
     /**
@@ -85,26 +85,26 @@ namespace QPatternist
      * code.
      *
      * @defgroup Patternist_expressions Expressions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
 
     /**
      * @short Various classes that contains small utility functions.
      *
      * @defgroup Patternist Utility Classes
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
 
     /**
      * @short Classes for the type system in the XQuery & XSL-T language.
      *
      * @defgroup Patternist_types Type system
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
 
     /**
      * @defgroup Patternist_xdm XQuery/XPath Data Model
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
 
     /**
@@ -145,6 +145,6 @@ namespace QPatternist
      * and the MappingCallback.
      *
      * @defgroup Patternist_iterators Iterators
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
 }

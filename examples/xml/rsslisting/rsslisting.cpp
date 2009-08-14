@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -76,7 +76,7 @@ RSSListing::RSSListing(QWidget *parent)
     : QWidget(parent)
 {
     lineEdit = new QLineEdit(this);
-    lineEdit->setText("http://labs.trolltech.com/blogs/feed");
+    lineEdit->setText("http://labs.qt.nokia.com/blogs/feed");
 
     fetchButton = new QPushButton(tr("Fetch"), this);
     abortButton = new QPushButton(tr("Abort"), this);

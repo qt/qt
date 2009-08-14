@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -82,7 +82,7 @@ public:
           uniformRowHeights(false), rootDecoration(true),
           itemsExpandable(true), sortingEnabled(false),
           expandsOnDoubleClick(true),
-          allColumnsShowFocus(false), current(0),
+          allColumnsShowFocus(false), current(0), spanning(false),
           animationsEnabled(false), columnResizeTimerID(0),
           autoExpandDelay(-1), hoverBranch(-1), geometryRecursionBlock(false) {}
 

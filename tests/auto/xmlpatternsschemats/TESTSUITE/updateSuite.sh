@@ -2,7 +2,7 @@
 
 # This script updates the suite from W3C's server.
 #
-# NOTE: the files checked out CANNOT be added to Trolltech's
+# NOTE: the files checked out CANNOT be added to Qt's
 # repository at the moment, due to legal complications.
 
 DIRECTORY_NAME="xmlschema2006-11-06"

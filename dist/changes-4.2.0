@@ -1,7 +1,7 @@
 Qt 4.2 introduces many new features as well as many improvements and
 bugfixes over the 4.1.x series. For more details, see the online
 documentation which is included in this distribution. The
-documentation is also available at http://doc.trolltech.com/
+documentation is also available at http://qt.nokia.com/doc/
 
 The Qt version 4.2 series is binary compatible with the 4.1.x series.
 Applications compiled for 4.1 will continue to run with 4.2.

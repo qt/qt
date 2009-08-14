@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1196,10 +1196,12 @@ QGraphicsItem::~QGraphicsItem()
         Q_ASSERT(d_ptr->children.isEmpty());
     }
 
-    if (d_ptr->scene)
+    if (d_ptr->scene) {
         d_ptr->scene->d_func()->removeItemHelper(this);
-    else
+    } else {
+        d_ptr->resetFocusProxy();
         d_ptr->setParentItemHelper(0);
+    }
 
     if (d_ptr->transformData) {
         for(int i = 0; i < d_ptr->transformData->graphicsTransforms.size(); ++i) {
@@ -2613,13 +2615,11 @@ void QGraphicsItem::setFocusProxy(QGraphicsItem *item)
     }
 
     QGraphicsItem *lastFocusProxy = d_ptr->focusProxy;
+    if (lastFocusProxy)
+        lastFocusProxy->d_ptr->focusProxyRefs.removeOne(&d_ptr->focusProxy);
     d_ptr->focusProxy = item;
-    if (d_ptr->scene) {
-        if (lastFocusProxy)
-            d_ptr->scene->d_func()->focusProxyReverseMap.remove(lastFocusProxy, this);
-        if (item)
-            d_ptr->scene->d_func()->focusProxyReverseMap.insert(item, this);
-    }
+    if (item)
+        item->d_ptr->focusProxyRefs << &d_ptr->focusProxy;
 }
 
 /*!
@@ -4621,6 +4621,19 @@ void QGraphicsItemPrivate::clearSubFocus()
             break;
         parent->d_ptr->subFocusItem = 0;
     } while (!parent->isWindow() && (parent = parent->d_ptr->parent));
+}
+
+/*!
+    \internal
+
+    Sets the focusProxy pointer to 0 for all items that have this item as their
+    focusProxy. ### Qt 5: Use QPointer instead.
+*/
+void QGraphicsItemPrivate::resetFocusProxy()
+{
+    for (int i = 0; i < focusProxyRefs.size(); ++i)
+        *focusProxyRefs.at(i) = 0;
+    focusProxyRefs.clear();
 }
 
 /*!

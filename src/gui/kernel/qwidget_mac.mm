@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2245,7 +2245,7 @@ void QWidgetPrivate::createWindow_sys()
 
     OSWindowRef windowRef = qt_mac_create_window(q, topExtra->wclass, wattr, data.crect);
     if (windowRef == 0)
-        qWarning("QWidget: Internal error: %s:%d: If you reach this error please contact Trolltech and include the\n"
+        qWarning("QWidget: Internal error: %s:%d: If you reach this error please contact Qt Support and include the\n"
                 "      WidgetFlags used in creating the widget.", __FILE__, __LINE__);
 #ifndef QT_MAC_USE_COCOA
     finishCreateWindow_sys_Carbon(windowRef);

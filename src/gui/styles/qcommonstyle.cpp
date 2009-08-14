@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -5196,8 +5196,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = Qt::ToolButtonIconOnly;
 #ifdef Q_WS_X11
         {
-            Q_D(const QCommonStyle);
-            static int buttonStyle = d->lookupToolButtonStyle();
+            static int buttonStyle = d_func()->lookupToolButtonStyle();
             return buttonStyle;
         }
 #endif

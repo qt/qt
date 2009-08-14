@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -431,6 +431,12 @@ void QScrollBarPrivate::init()
     q->setSizePolicy(sp);
     q->setAttribute(Qt::WA_WState_OwnSizePolicy, false);
     q->setAttribute(Qt::WA_OpaquePaintEvent);
+
+#if !defined(QT_NO_CONTEXTMENU) && defined(Q_WS_WINCE)
+    if (!q->style()->styleHint(QStyle::SH_ScrollBar_ContextMenu, 0, q)) {
+        q->setContextMenuPolicy(Qt::PreventContextMenu);
+    }
+#endif
 }
 
 #ifndef QT_NO_CONTEXTMENU
