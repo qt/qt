@@ -313,7 +313,7 @@ void tst_QHostInfo::reverseLookup_data()
 
     // ### Use internal DNS instead. Discussed with Andreas.
     //QTest::newRow("classical.hexago.com") << QString("2001:5c0:0:2::24") << QStringList(QString("classical.hexago.com")) << 0;
-    QTest::newRow("www.cisco.com") << QString("198.133.219.25") << QStringList(QString("origin-www.cisco.com")) << 0;
+    QTest::newRow("origin.cisco.com") << QString("12.159.148.94") << QStringList(QString("origin.cisco.com")) << 0;
     QTest::newRow("bogusexample.doenstexist.org") << QString("1::2::3::4") << QStringList() << 1;
 }
 
