@@ -18,3 +18,11 @@ FORMS = recopts.ui \
 include($$QT_SOURCE_TREE/tools/shared/deviceskin/deviceskin.pri)
 target.path = $$[QT_INSTALL_BINS]
 INSTALLS += target
+
+wince* {
+QT += scripttools \
+    xml \
+    xmlpatterns \
+    webkit \
+    phonon
+}
