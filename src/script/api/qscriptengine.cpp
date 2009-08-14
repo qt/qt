@@ -477,7 +477,7 @@ bool isFunction(const JSC::JSValue &value)
 static JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 static JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 
-JSC::JSValue functionDisconnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
+JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
 {
 #ifndef QT_NO_QOBJECT
     if (args.size() == 0) {
@@ -542,7 +542,7 @@ JSC::JSValue functionDisconnect(JSC::ExecState *exec, JSC::JSObject */*callee*/,
 #endif // QT_NO_QOBJECT
 }
 
-JSC::JSValue functionConnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
+JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
 {
 #ifndef QT_NO_QOBJECT
     if (args.size() == 0) {
@@ -630,7 +630,7 @@ static JSC::JSValue JSC_HOST_CALL functionPrint(JSC::ExecState*, JSC::JSObject*,
 static JSC::JSValue JSC_HOST_CALL functionGC(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 static JSC::JSValue JSC_HOST_CALL functionVersion(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 
-JSC::JSValue functionPrint(JSC::ExecState* exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList& args)
+JSC::JSValue JSC_HOST_CALL functionPrint(JSC::ExecState* exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList& args)
 {
     QString result;
     for (unsigned i = 0; i < args.size(); ++i) {
@@ -647,14 +647,14 @@ JSC::JSValue functionPrint(JSC::ExecState* exec, JSC::JSObject*, JSC::JSValue, c
     return JSC::jsUndefined();
 }
 
-JSC::JSValue functionGC(JSC::ExecState* exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&)
+JSC::JSValue JSC_HOST_CALL functionGC(JSC::ExecState* exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&)
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     engine->collectGarbage();
     return JSC::jsUndefined();
 }
 
-JSC::JSValue functionVersion(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&)
+JSC::JSValue JSC_HOST_CALL functionVersion(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&)
 {
     return JSC::JSValue(exec, 1);
 }
@@ -664,7 +664,7 @@ static JSC::JSValue JSC_HOST_CALL functionQsTranslateNoOp(JSC::ExecState*, JSC::
 static JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 static JSC::JSValue JSC_HOST_CALL functionQsTrNoOp(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 
-JSC::JSValue functionQsTranslate(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
+JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
 {
     if (args.size() < 2)
         return JSC::throwError(exec, JSC::GeneralError, "qsTranslate() requires at least two arguments");
@@ -712,14 +712,14 @@ JSC::JSValue functionQsTranslate(JSC::ExecState *exec, JSC::JSObject*, JSC::JSVa
     return JSC::jsString(exec, qtStringToJSCUString(result));
 }
 
-JSC::JSValue functionQsTranslateNoOp(JSC::ExecState *, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
+JSC::JSValue JSC_HOST_CALL functionQsTranslateNoOp(JSC::ExecState *, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
 {
     if (args.size() < 2)
         return JSC::jsUndefined();
     return args.at(1);
 }
 
-JSC::JSValue functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
+JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
 {
     if (args.size() < 1)
         return JSC::throwError(exec, JSC::GeneralError, "qsTr() requires at least one argument");
@@ -756,7 +756,7 @@ JSC::JSValue functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue, co
     return JSC::jsString(exec, qtStringToJSCUString(result));
 }
 
-JSC::JSValue functionQsTrNoOp(JSC::ExecState *, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
+JSC::JSValue JSC_HOST_CALL functionQsTrNoOp(JSC::ExecState *, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
 {
     if (args.size() < 1)
         return JSC::jsUndefined();
@@ -765,7 +765,7 @@ JSC::JSValue functionQsTrNoOp(JSC::ExecState *, JSC::JSObject*, JSC::JSValue, co
 
 static JSC::JSValue JSC_HOST_CALL stringProtoFuncArg(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 
-JSC::JSValue stringProtoFuncArg(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue thisObject, const JSC::ArgList &args)
+JSC::JSValue JSC_HOST_CALL stringProtoFuncArg(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue thisObject, const JSC::ArgList &args)
 {
     QString value = qtStringFromJSCUString(thisObject.toString(exec));
     JSC::JSValue arg = (args.size() != 0) ? args.at(0) : JSC::jsUndefined();
