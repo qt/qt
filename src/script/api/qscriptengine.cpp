@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "config.h"
 #include "qscriptengine.h"
 #include "qscriptsyntaxchecker_p.h"
 #include "qnumeric.h"

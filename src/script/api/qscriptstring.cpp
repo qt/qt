@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "config.h"
 #include "qscriptstring.h"
 
 #include "qscriptstring_p.h"

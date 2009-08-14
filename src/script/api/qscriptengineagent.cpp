@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "config.h"
 #include "qscriptengineagent.h"
 #include "qscriptengineagent_p.h"
 

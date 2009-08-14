@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "config.h"
 #include "qscriptqobject_p.h"
 
 #include <QtCore/qmetaobject.h>

@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "config.h"
 #include "qscriptactivationobject_p.h"
 
 #include "JSVariableObject.h"

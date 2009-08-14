@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "config.h"
 #include "qscriptvalueiterator.h"
 
 #include "qscriptstring.h"

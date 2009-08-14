@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "config.h"
 #include "qscriptobject_p.h"
 
 QT_BEGIN_NAMESPACE

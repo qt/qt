@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "config.h"
 #include "qscriptclassobject_p.h"
 
 #include "../api/qscriptengine.h"

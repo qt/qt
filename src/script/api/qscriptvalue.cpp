@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "config.h"
 #include "qscriptvalue.h"
 
 #include "qscriptvalue_p.h"

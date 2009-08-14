@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "config.h"
 #include "qscriptfunction_p.h"
 
 #include "private/qscriptengine_p.h"

@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "config.h"
 #include "qscriptcontextinfo.h"
 
 #include "qscriptcontext_p.h"
