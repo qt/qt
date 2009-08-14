@@ -488,7 +488,7 @@ public:
     inline int animateSpeed(Animates) const { return 33; }
 
     // Utility functions
-    void drawColorlessButton(const HIRect &macRect, HIThemeButtonDrawInfo *bdi,
+    void drawColorlessButton(const QRect &macRect, HIThemeButtonDrawInfo *bdi,
                              QPainter *p, const QStyleOption *opt) const;
 
     void drawPantherTab(const QStyleOptionTab *tab, QPainter *p, const QWidget *w = 0) const;
@@ -505,7 +505,7 @@ public:
 
     static QRect comboboxEditBounds(const QRect &outerBounds, const HIThemeButtonDrawInfo &bdi);
 
-    static void drawCombobox(const HIRect &outerBounds, const HIThemeButtonDrawInfo &bdi, QPainter *p);
+    static void drawCombobox(const QRect &outerBounds, const HIThemeButtonDrawInfo &bdi, QPainter *p);
     static void drawTableHeader(const HIRect &outerBounds, bool drawTopBorder, bool drawLeftBorder,
                                      const HIThemeButtonDrawInfo &bdi, QPainter *p);
     bool contentFitsInPushButton(const QStyleOptionButton *btn, HIThemeButtonDrawInfo *bdi,
@@ -1287,11 +1287,12 @@ QRect QMacStylePrivate::comboboxEditBounds(const QRect &outerBounds, const HIThe
     create it manually by drawing a small Carbon combo onto a pixmap (use pixmap cache), chop
     it up, and copy it back onto the widget. Othervise, draw the combobox supplied by Carbon directly.
 */
-void QMacStylePrivate::drawCombobox(const HIRect &outerBounds, const HIThemeButtonDrawInfo &bdi, QPainter *p)
+void QMacStylePrivate::drawCombobox(const QRect &outerBounds, const HIThemeButtonDrawInfo &bdi, QPainter *p)
 {
-    if (!(bdi.kind == kThemeComboBox && outerBounds.size.height > 28)){
+    if (!(bdi.kind == kThemeComboBox && outerBounds.height() > 28)){
         // We have an unscaled combobox, or popup-button; use Carbon directly.
-        HIRect innerBounds = QMacStylePrivate::comboboxInnerBounds(outerBounds, bdi.kind);
+        const HIRect hiOuterBounds = qt_hirectForQRect(outerBounds);
+        HIRect innerBounds = QMacStylePrivate::comboboxInnerBounds(hiOuterBounds, bdi.kind);
         HIThemeDrawButton(&innerBounds, &bdi, QMacCGContext(p), kHIThemeOrientationNormal, 0);
     } else {
         QPixmap buffer;
@@ -1306,31 +1307,50 @@ void QMacStylePrivate::drawCombobox(const HIRect &outerBounds, const HIThemeButt
             QPixmapCache::insert(key, buffer);
         }
 
-        const int bwidth = 20;
-        const int fwidth = 10;
-        const int fheight = 10;
-        int w = qRound(outerBounds.size.width);
-        int h = qRound(outerBounds.size.height);
-        int bstart = w - bwidth;
-        int blower = fheight + 1;
-        int flower = h - fheight;
-        int sheight = flower - fheight;
-        int center = qRound(outerBounds.size.height + outerBounds.origin.y) / 2;
+        const int widgetX = outerBounds.x();
+        const int widgetY = outerBounds.y();
+        const int widgetWidth = outerBounds.width();
+        const int widgetHeight = outerBounds.height();
+
+        const int buttonWidth = 20;
+        const int frameWidth = 10;
+        const int frameHeight = 10; // frame height
+        const int bstart = widgetWidth - buttonWidth;
+        const int flower = widgetHeight - frameHeight;
 
         // Draw upper and lower gap
-        p->drawPixmap(fwidth, 0, bstart - fwidth, fheight, buffer, fwidth, 0, 1, fheight);
-        p->drawPixmap(fwidth, flower, bstart - fwidth, fheight, buffer, fwidth, buffer.height() - fheight, 1, fheight);
+        p->drawPixmap(widgetX + frameWidth, widgetY, bstart - frameWidth, frameHeight,
+                      buffer, frameWidth, 0, 1, frameHeight); // upper
+        p->drawPixmap(widgetX + frameWidth, widgetY + flower, bstart - frameWidth, frameHeight,
+                      buffer, frameWidth, buffer.height() - frameHeight, 1, frameHeight); // lower
+
+        const int center = widgetY + widgetHeight / 2;
+        const int sheight = flower - frameHeight;
+
         // Draw left and right gap. Right gap is drawn top and bottom separatly
-        p->drawPixmap(0, fheight, fwidth, sheight, buffer, 0, fheight, fwidth, 1);
-        p->drawPixmap(bstart, fheight, bwidth, center - fheight, buffer, buffer.width() - bwidth, fheight - 1, bwidth, 1);
-        p->drawPixmap(bstart, center, bwidth, sheight / 2, buffer, buffer.width() - bwidth, fheight + 6, bwidth, 1);
+        p->drawPixmap(widgetX, widgetY + frameHeight, frameWidth, sheight,
+                      buffer, 0, frameHeight, frameWidth, 1); // right
+        p->drawPixmap(widgetX + bstart, widgetY + frameHeight, buttonWidth, widgetHeight / 2 - frameHeight,
+                      buffer, buffer.width() - buttonWidth, frameHeight - 1, buttonWidth, 1); // top left
+        p->drawPixmap(widgetX + bstart, center, buttonWidth, sheight / 2,
+                      buffer, buffer.width() - buttonWidth, frameHeight + 6, buttonWidth, 1); // bottom left
+
         // Draw arrow
-        p->drawPixmap(bstart, center - 4, bwidth - 3, 6, buffer, buffer.width() - bwidth, fheight, bwidth - 3, 6);
+        p->drawPixmap(widgetX + bstart, center - 4, buttonWidth - 3, 6,
+                      buffer, buffer.width() - buttonWidth, frameHeight, buttonWidth - 3, 6);
+
         // Draw corners
-        p->drawPixmap(0, 0, fwidth, fheight, buffer, 0, 0, fwidth, fheight);
-        p->drawPixmap(bstart, 0, bwidth, fheight, buffer, buffer.width() - bwidth, 0, bwidth, fheight);
-        p->drawPixmap(0, flower, fwidth, fheight, buffer, 0, buffer.height() - fheight, fwidth, fheight);
-        p->drawPixmap(bstart, h - blower, bwidth, blower, buffer, buffer.width() - bwidth, buffer.height() - blower, bwidth, blower);
+        p->drawPixmap(widgetX, widgetY, frameWidth, frameHeight,
+                      buffer, 0, 0, frameWidth, frameHeight); // top left
+        p->drawPixmap(widgetX + bstart, widgetY, buttonWidth, frameHeight,
+                      buffer, buffer.width() - buttonWidth, 0, buttonWidth, frameHeight); // top right
+        p->drawPixmap(widgetX, widgetY + flower, frameWidth, frameHeight,
+                      buffer, 0, buffer.height() - frameHeight, frameWidth, frameHeight); // bottom left
+
+        const int blower = frameHeight + 1;
+        p->drawPixmap(widgetX + bstart, widgetY + widgetHeight - blower, buttonWidth, blower,
+                      buffer,
+                      buffer.width() - buttonWidth, buffer.height() - blower, buttonWidth, blower); // bottom right
     }
 }
 
@@ -1895,7 +1915,7 @@ bool QMacStylePrivate::doAnimate(QMacStylePrivate::Animates as)
     return true;
 }
 
-void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonDrawInfo *bdi,
+void QMacStylePrivate::drawColorlessButton(const QRect &outerBounds, HIThemeButtonDrawInfo *bdi,
                                            QPainter *p, const QStyleOption *opt) const
 {
     int xoff = 0,
@@ -1905,8 +1925,8 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
         finalyoff = 0;
 
     const QStyleOptionComboBox *combo = qstyleoption_cast<const QStyleOptionComboBox *>(opt);
-    int width = int(macRect.size.width) + extraWidth;
-    int height = int(macRect.size.height) + extraHeight;
+    const int width = outerBounds.width() + extraWidth;
+    const int height = outerBounds.height() + extraHeight;
 
     if (width <= 0 || height <= 0)
         return;   // nothing to draw
@@ -1923,11 +1943,11 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
                 // Carbon combos don't scale. Therefore we draw it
                 // ourselves, if a scaled version is needed.
                 QPainter tmpPainter(&activePixmap);
-                QMacStylePrivate::drawCombobox(macRect, *bdi, &tmpPainter);
+                QMacStylePrivate::drawCombobox(outerBounds, *bdi, &tmpPainter);
             }
             else {
                 QMacCGContext cg(&activePixmap);
-                HIRect newRect = CGRectMake(xoff, yoff, macRect.size.width, macRect.size.height);
+                HIRect newRect = CGRectMake(xoff, yoff, outerBounds.width(), outerBounds.height());
                 HIThemeDrawButton(&newRect, bdi, cg, kHIThemeOrientationNormal, 0);
             }
         }
@@ -1967,7 +1987,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
                 colorlessPixmap.fill(Qt::transparent);
 
                 QMacCGContext cg(&colorlessPixmap);
-                HIRect newRect = CGRectMake(xoff, yoff, macRect.size.width, macRect.size.height);
+                HIRect newRect = CGRectMake(xoff, yoff, outerBounds.width(), outerBounds.height());
                 int oldValue = bdi->value;
                 bdi->value = kThemeButtonOff;
                 HIThemeDrawButton(&newRect, bdi, cg, kHIThemeOrientationNormal, 0);
@@ -1997,7 +2017,7 @@ void QMacStylePrivate::drawColorlessButton(const HIRect &macRect, HIThemeButtonD
         }
         QPixmapCache::insert(key, pm);
     }
-    p->drawPixmap(int(macRect.origin.x), int(macRect.origin.y) + finalyoff, width, height, pm);
+    p->drawPixmap(outerBounds.x(), outerBounds.y() + finalyoff, width, height, pm);
 }
 
 QMacStyle::QMacStyle()
@@ -3221,15 +3241,13 @@ void QMacStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, QPai
             bdi.value = kThemeButtonOn;
         else
             bdi.value = kThemeButtonOff;
-        HIRect macRect;
-        if (pe == PE_Q3CheckListExclusiveIndicator || pe == PE_Q3CheckListIndicator)
-            macRect = qt_hirectForQRect(opt->rect);
-        else
-            macRect = qt_hirectForQRect(opt->rect);
-        if (!drawColorless)
+
+        if (!drawColorless) {
+            const HIRect macRect = qt_hirectForQRect(opt->rect);
             HIThemeDrawButton(&macRect, &bdi, cg, kHIThemeOrientationNormal, 0);
-        else
-            d->drawColorlessButton(macRect, &bdi, p, opt);
+        } else {
+            d->drawColorlessButton(opt->rect, &bdi, p, opt);
+        }
         break; }
     case PE_FrameFocusRect:
         // Use the our own focus widget stuff.
@@ -4945,9 +4963,9 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             d->initComboboxBdi(combo, &bdi, widget, d->getDrawState(opt->state));
             bool drawColorless = combo->palette.currentColorGroup() == QPalette::Active && tds == kThemeStateInactive;
             if (!drawColorless)
-                QMacStylePrivate::drawCombobox(qt_hirectForQRect(combo->rect), bdi, p);
+                QMacStylePrivate::drawCombobox(combo->rect, bdi, p);
             else
-                d->drawColorlessButton(qt_hirectForQRect(combo->rect), &bdi, p, opt);
+                d->drawColorlessButton(combo->rect, &bdi, p, opt);
         }
         break;
     case CC_TitleBar:

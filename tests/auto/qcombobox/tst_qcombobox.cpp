@@ -144,6 +144,7 @@ private slots:
     void noScrollbar();
     void setItemDelegate();
     void task253944_itemDelegateIsReset();
+    void paintingWithOffset();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -2230,6 +2231,49 @@ void tst_QComboBox::task253944_itemDelegateIsReset()
 
     comboBox.setStyleSheet("QComboBox { border: 1px solid gray; }");
     QCOMPARE(comboBox.itemDelegate(), itemDelegate);
+}
+
+static void paintCombo(QImage *image, const QRect &rect)
+{
+    class FriendlyCombo : public QComboBox {
+    public:
+        void styleOption(QStyleOptionComboBox *optCombo) {
+            initStyleOption(optCombo);
+        }
+    } combo;
+    combo.setEditable(true);
+
+    QStyleOptionComboBox optCombo;
+    combo.styleOption(&optCombo);
+    optCombo.rect = rect;
+    optCombo.palette.setCurrentColorGroup(QPalette::Active);
+    optCombo.state = QStyle::State_None;
+
+    QPainter painter(image);
+    painter.fillRect(image->rect(), Qt::white);
+    QApplication::style()->drawComplexControl(QStyle::CC_ComboBox, &optCombo, &painter, 0);
+}
+
+void tst_QComboBox::paintingWithOffset()
+{
+    // The painting of the combobox should not depend on its position in
+    // the widget. Some style are making the assumuption that the combobox
+    // start at 0,0
+    const QSize comboSize(80, 30);
+    QImage noOffsetImage(comboSize, QImage::Format_ARGB32);
+    const QRect noOffsetRect(QPoint(0, 0), comboSize);
+    paintCombo(&noOffsetImage, noOffsetRect);
+
+    QImage offsetImage(105, 80, QImage::Format_ARGB32);
+    const QRect offsetRect(QPoint(25, 50), comboSize);
+    paintCombo(&offsetImage, offsetRect);
+
+    QImage translatedOffsetImage(comboSize, QImage::Format_ARGB32);
+    {
+        QPainter painter(&translatedOffsetImage);
+        painter.drawImage(noOffsetRect, offsetImage, offsetRect);
+    }
+    QCOMPARE(noOffsetImage, translatedOffsetImage);
 }
 
 QTEST_MAIN(tst_QComboBox)
