@@ -72,6 +72,9 @@
 #else
     #define _CL_HAVE_UNISTD_H
 #endif
+#ifdef UNDER_CE
+#undef _CL_HAVE_SYS_TIMEB_H
+#endif
 
 ////////////////////////////////////////////////
 //now for individual functions. some compilers

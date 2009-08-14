@@ -2400,18 +2400,12 @@ QVariant QODBCDriver::handle() const
 
 QString QODBCDriver::escapeIdentifier(const QString &identifier, IdentifierType) const
 {
+    QChar quote = d->quoteChar();
     QString res = identifier;
-    if (d->isMySqlServer) {
-        if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('`')) && !identifier.endsWith(QLatin1Char('`')) ) {
-            res.prepend(QLatin1Char('`')).append(QLatin1Char('`'));
-            res.replace(QLatin1Char('.'), QLatin1String("`.`"));
-        }
-    } else {
-        if(!identifier.isEmpty() && !identifier.startsWith(QLatin1Char('"')) && !identifier.endsWith(QLatin1Char('"')) ) {
-            res.replace(QLatin1Char('"'), QLatin1String("\"\""));
-            res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
-            res.replace(QLatin1Char('.'), QLatin1String("\".\""));
-        }
+    if(!identifier.isEmpty() && !identifier.startsWith(quote) && !identifier.endsWith(quote) ) {
+        res.replace(quote, QString(quote)+QString(quote));
+        res.prepend(quote).append(quote);
+        res.replace(QLatin1Char('.'), QString(quote)+QLatin1Char('.')+QString(quote));
     }
     return res;
 }

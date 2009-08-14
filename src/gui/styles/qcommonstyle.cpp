@@ -5196,8 +5196,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = Qt::ToolButtonIconOnly;
 #ifdef Q_WS_X11
         {
-            Q_D(const QCommonStyle);
-            static int buttonStyle = d->lookupToolButtonStyle();
+            static int buttonStyle = d_func()->lookupToolButtonStyle();
             return buttonStyle;
         }
 #endif

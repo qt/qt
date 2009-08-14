@@ -60,6 +60,7 @@ private slots:
     void pullFile();
 
 private:
+    bool           available;
     QAudioFormat   format;
     QAudioInput*   audio;
 };
@@ -73,46 +74,62 @@ void tst_QAudioInput::initTestCase()
     format.setByteOrder(QAudioFormat::LittleEndian);
     format.setSampleType(QAudioFormat::UnSignedInt);
 
-    audio = new QAudioInput(format, this);
+    // Only perform tests if audio input device exists!
+    QList<QAudioDeviceId> devices = QAudioDeviceInfo::deviceList(QAudio::AudioInput);
+    if(devices.size() > 0)
+        available = true;
+    else {
+        qWarning()<<"NOTE: no audio input device found, no test will be performed";
+        available = false;
+    }
+
+    if(available)
+        audio = new QAudioInput(format, this);
 }
 
 void tst_QAudioInput::settings()
 {
-    QAudioFormat f = audio->format();
+    if(available) {
+        QAudioFormat f = audio->format();
 
-    QVERIFY(format.channels() == f.channels());
-    QVERIFY(format.frequency() == f.frequency());
-    QVERIFY(format.sampleSize() == f.sampleSize());
-    QVERIFY(format.codec() == f.codec());
-    QVERIFY(format.byteOrder() == f.byteOrder());
-    QVERIFY(format.sampleType() == f.sampleType());
+        QVERIFY(format.channels() == f.channels());
+        QVERIFY(format.frequency() == f.frequency());
+        QVERIFY(format.sampleSize() == f.sampleSize());
+        QVERIFY(format.codec() == f.codec());
+        QVERIFY(format.byteOrder() == f.byteOrder());
+        QVERIFY(format.sampleType() == f.sampleType());
+    }
 }
 
 void tst_QAudioInput::notifyInterval()
 {
-    QVERIFY(audio->notifyInterval() == 1000);   // Default
+    if(available) {
+        QVERIFY(audio->notifyInterval() == 1000);   // Default
 
-    audio->setNotifyInterval(500);
-    QVERIFY(audio->notifyInterval() == 500);    // Custom
+        audio->setNotifyInterval(500);
+        QVERIFY(audio->notifyInterval() == 500);    // Custom
 
-    audio->setNotifyInterval(1000);             // reset
+        audio->setNotifyInterval(1000);             // reset
+    }
 }
 
 void tst_QAudioInput::pullFile()
 {
-    QFile filename(SRCDIR "test.raw");
-    filename.open( QIODevice::WriteOnly | QIODevice::Truncate );
+    if(available) {
+        QFile filename(SRCDIR "test.raw");
+        filename.open( QIODevice::WriteOnly | QIODevice::Truncate );
 
-    QSignalSpy readSignal(audio, SIGNAL(notify()));
-    audio->start(&filename);
+        QSignalSpy readSignal(audio, SIGNAL(notify()));
+        audio->start(&filename);
 
-    QTest::qWait(5000);
+        QTest::qWait(5000);
 
-    QVERIFY(readSignal.count() > 0);
-    QVERIFY(audio->totalTime() > 0);
+        QVERIFY(readSignal.count() > 0);
+        QVERIFY(audio->totalTime() > 0);
 
-    audio->stop();
-    filename.close();
+        audio->stop();
+        filename.close();
+    }
 }
 
 QTEST_MAIN(tst_QAudioInput)

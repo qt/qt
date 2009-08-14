@@ -261,7 +261,7 @@ UnixMakefileGenerator::init()
                     bundle += project->first("QMAKE_BUNDLE_EXTENSION");
                 else if(!bundle.endsWith(".plugin"))
                     bundle += ".plugin";
-                if(!project->isEmpty("QMAKE_BUNDLE_LOCATION"))
+                if(project->isEmpty("QMAKE_BUNDLE_LOCATION"))
                     project->values("QMAKE_BUNDLE_LOCATION").append("Contents/MacOS");
             } else {
                 if(!project->isEmpty("QMAKE_FRAMEWORK_BUNDLE_NAME"))

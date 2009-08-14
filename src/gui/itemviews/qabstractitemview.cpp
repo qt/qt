@@ -73,6 +73,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         currentlyCommittingEditor(0),
         pressedModifiers(Qt::NoModifier),
         pressedPosition(QPoint(-1, -1)),
+        pressedAlreadySelected(false),
         viewportEnteredNeeded(false),
         state(QAbstractItemView::NoState),
         editTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed),

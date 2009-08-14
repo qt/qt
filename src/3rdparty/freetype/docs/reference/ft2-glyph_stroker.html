@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.6 API Reference</title>
+<title>FreeType-2.3.9 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -31,7 +31,11 @@
 </style>
 </head>
 <body>
-<center><h1>FreeType-2.3.6 API Reference</h1></center>
+
+<table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+<center><h1>FreeType-2.3.9 API Reference</h1></center>
 
 <center><h1>
 Glyph Stroker
@@ -57,14 +61,6 @@ Glyph Stroker
 </td></tr></table><br>
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Stroker">FT_Stroker</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_STROKER_H (freetype/ftstroke.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_StrokerRec_*  <b>FT_Stroker</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>Opaque handler to a path stroker object.</p>
 </td></tr></table><br>
@@ -221,7 +217,7 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>The border index. <a href="ft2-glyph_stroker.html#FT_StrokerBorder">FT_STROKER_BORDER_LEFT</a> for empty or invalid outlines.</p>
+<p>The border index. <a href="ft2-glyph_stroker.html#FT_StrokerBorder">FT_STROKER_BORDER_RIGHT</a> for empty or invalid outlines.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -292,7 +288,7 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -339,7 +335,7 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>The radius is expressed in the same units that the outline coordinates.</p>
+<p>The radius is expressed in the same units as the outline coordinates.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -401,16 +397,16 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 <p>The source outline.</p>
 </td></tr>
 <tr valign=top><td><b>opened</b></td><td>
-<p>A boolean. If 1, the outline is treated as an open path instead of a closed one.</p>
+<p>A boolean. If&nbsp;1, the outline is treated as an open path instead of a closed one.</p>
 </td></tr>
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>If &lsquo;opened&rsquo; is 0 (the default), the outline is treated as a closed path, and the stroker will generate two distinct &lsquo;border&rsquo; outlines.</p>
-<p>If &lsquo;opened&rsquo; is 1, the outline is processed as an open path, and the stroker will generate a single &lsquo;stroke&rsquo; outline.</p>
+<p>If &lsquo;opened&rsquo; is&nbsp;0 (the default), the outline is treated as a closed path, and the stroker generates two distinct &lsquo;border&rsquo; outlines.</p>
+<p>If &lsquo;opened&rsquo; is&nbsp;1, the outline is processed as an open path, and the stroker generates a single &lsquo;stroke&rsquo; outline.</p>
 <p>This function calls <a href="ft2-glyph_stroker.html#FT_Stroker_Rewind">FT_Stroker_Rewind</a> automatically.</p>
 </td></tr></table>
 </td></tr></table>
@@ -445,12 +441,12 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 <p>A pointer to the start vector.</p>
 </td></tr>
 <tr valign=top><td><b>open</b></td><td>
-<p>A boolean. If 1, the sub-path is treated as an open one.</p>
+<p>A boolean. If&nbsp;1, the sub-path is treated as an open one.</p>
 </td></tr>
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>This function is useful when you need to stroke a path that is not stored as an <a href="ft2-outline_processing.html#FT_Outline">FT_Outline</a> object.</p>
@@ -484,10 +480,10 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>You should call this function after <a href="ft2-glyph_stroker.html#FT_Stroker_BeginSubPath">FT_Stroker_BeginSubPath</a>. If the subpath was not &lsquo;opened&rsquo;, this function will &lsquo;draw&rsquo; a single line segment to the start position when needed.</p>
+<p>You should call this function after <a href="ft2-glyph_stroker.html#FT_Stroker_BeginSubPath">FT_Stroker_BeginSubPath</a>. If the subpath was not &lsquo;opened&rsquo;, this function &lsquo;draws&rsquo; a single line segment to the start position when needed.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -522,7 +518,7 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>You should call this function between <a href="ft2-glyph_stroker.html#FT_Stroker_BeginSubPath">FT_Stroker_BeginSubPath</a> and <a href="ft2-glyph_stroker.html#FT_Stroker_EndSubPath">FT_Stroker_EndSubPath</a>.</p>
@@ -564,7 +560,7 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>You should call this function between <a href="ft2-glyph_stroker.html#FT_Stroker_BeginSubPath">FT_Stroker_BeginSubPath</a> and <a href="ft2-glyph_stroker.html#FT_Stroker_EndSubPath">FT_Stroker_EndSubPath</a>.</p>
@@ -610,7 +606,7 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>You should call this function between <a href="ft2-glyph_stroker.html#FT_Stroker_BeginSubPath">FT_Stroker_BeginSubPath</a> and <a href="ft2-glyph_stroker.html#FT_Stroker_EndSubPath">FT_Stroker_EndSubPath</a>.</p>
@@ -636,7 +632,7 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Call this function once you have finished parsing your paths with the stroker. It will return the number of points and contours necessary to export one of the &lsquo;border&rsquo; or &lsquo;stroke&rsquo; outlines generated by the stroker.</p>
+<p>Call this function once you have finished parsing your paths with the stroker. It returns the number of points and contours necessary to export one of the &lsquo;border&rsquo; or &lsquo;stroke&rsquo; outlines generated by the stroker.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -661,7 +657,7 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>When an outline, or a sub-path, is &lsquo;closed&rsquo;, the stroker generates two independent &lsquo;border&rsquo; outlines, named &lsquo;left&rsquo; and &lsquo;right&rsquo;.</p>
@@ -689,7 +685,7 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 </pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>Call this function after <a href="ft2-glyph_stroker.html#FT_Stroker_GetBorderCounts">FT_Stroker_GetBorderCounts</a> to export the corresponding border to your own <a href="ft2-outline_processing.html#FT_Outline">FT_Outline</a> structure.</p>
-<p>Note that this function will append the border points and contours to your outline, but will not try to resize its arrays.</p>
+<p>Note that this function appends the border points and contours to your outline, but does not try to resize its arrays.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -753,7 +749,7 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -775,7 +771,7 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 </pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>Call this function after <a href="ft2-glyph_stroker.html#FT_Stroker_GetBorderCounts">FT_Stroker_GetBorderCounts</a> to export the all borders to your own <a href="ft2-outline_processing.html#FT_Outline">FT_Outline</a> structure.</p>
-<p>Note that this function will append the border points and contours to your outline, but will not try to resize its arrays.</p>
+<p>Note that this function appends the border points and contours to your outline, but does not try to resize its arrays.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -853,12 +849,12 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 <p>A stroker handle.</p>
 </td></tr>
 <tr valign=top><td><b>destroy</b></td><td>
-<p>A Boolean. If 1, the source glyph object is destroyed on success.</p>
+<p>A Boolean. If&nbsp;1, the source glyph object is destroyed on success.</p>
 </td></tr>
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The source glyph is untouched in case of error.</p>
@@ -901,15 +897,15 @@ Defined in FT_STROKER_H (freetype/ftstroke.h).
 <p>A stroker handle.</p>
 </td></tr>
 <tr valign=top><td><b>inside</b></td><td>
-<p>A Boolean. If 1, return the inside border, otherwise the outside border.</p>
+<p>A Boolean. If&nbsp;1, return the inside border, otherwise the outside border.</p>
 </td></tr>
 <tr valign=top><td><b>destroy</b></td><td>
-<p>A Boolean. If 1, the source glyph object is destroyed on success.</p>
+<p>A Boolean. If&nbsp;1, the source glyph object is destroyed on success.</p>
 </td></tr>
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The source glyph is untouched in case of error.</p>

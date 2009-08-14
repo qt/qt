@@ -1298,7 +1298,6 @@ void QRenderRule::unsetClip(QPainter *p)
 
 void QRenderRule::drawBackground(QPainter *p, const QRect& rect, const QPoint& off)
 {
-    setClip(p, borderRect(rect));
     QBrush brush = hasBackground() ? background()->brush : QBrush();
     if (brush.style() == Qt::NoBrush)
         brush = defaultBackground;
@@ -1306,11 +1305,19 @@ void QRenderRule::drawBackground(QPainter *p, const QRect& rect, const QPoint& o
     if (brush.style() != Qt::NoBrush) {
         Origin origin = hasBackground() ? background()->clip : Origin_Border;
         // ### fix for  gradients
-        p->fillRect(originRect(rect, origin), brush);
+        const QPainterPath &borderPath = borderClip(originRect(rect, origin));
+        if (!borderPath.isEmpty()) {
+            // Drawn intead of being used as clipping path for better visual quality
+            bool wasAntialiased = p->renderHints() & QPainter::Antialiasing;
+            p->setRenderHint(QPainter::Antialiasing);
+            p->fillPath(borderPath, brush);
+            p->setRenderHint(QPainter::Antialiasing, wasAntialiased);
+        } else {
+            p->fillRect(originRect(rect, origin), brush);
+        }
     }
 
     drawBackgroundImage(p, rect, off);
-    unsetClip(p);
 }
 
 void QRenderRule::drawFrame(QPainter *p, const QRect& rect)

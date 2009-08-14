@@ -352,7 +352,10 @@ void QItemDelegate::setClipping(bool clip)
 QString QItemDelegatePrivate::valueToText(const QVariant &value, const QStyleOptionViewItemV4 &option)
 {
     QString text;
-    switch (value.type()) {
+    switch (value.userType()) {
+        case QMetaType::Float:
+            text = option.locale.toString(value.toFloat(), 'g');
+            break;
         case QVariant::Double:
             text = option.locale.toString(value.toDouble(), 'g', DBL_DIG);
             break;

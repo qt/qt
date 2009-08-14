@@ -198,8 +198,8 @@ public:
         if (v.isNull()) {
             return cellPadding;
         } else {
-            Q_ASSERT(v.type() == QVariant::Double);
-            return QFixed::fromReal(v.toDouble() * deviceScale);
+            Q_ASSERT(v.userType() == QVariant::Double || v.userType() == QMetaType::Float);
+            return QFixed::fromReal(v.toReal() * deviceScale);
         }
     }
 
