@@ -102,7 +102,7 @@ void QCoeFepInputContext::reset()
 
 void QCoeFepInputContext::ReportAknEdStateEvent(MAknEdStateObserver::EAknEdwinStateEvent aEventType)
 {
-	QT_TRAP_THROWING(m_fepState->ReportAknEdStateEventL(QT_EAknCursorPositionChanged));
+    QT_TRAP_THROWING(m_fepState->ReportAknEdStateEventL(aEventType));
 }
 
 void QCoeFepInputContext::update()
