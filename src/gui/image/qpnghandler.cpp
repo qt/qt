@@ -956,7 +956,7 @@ QVariant QPngHandler::option(ImageOption option) const
 void QPngHandler::setOption(ImageOption option, const QVariant &value)
 {
     if (option == Gamma)
-        d->gamma = value.toDouble();
+        d->gamma = value.toFloat();
     else if (option == Quality)
         d->quality = value.toInt();
     else if (option == Description)

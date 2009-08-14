@@ -2192,11 +2192,10 @@ qreal QGraphicsItem::effectiveOpacity() const
 void QGraphicsItem::setOpacity(qreal opacity)
 {
     // Notify change.
-    const QVariant newOpacityVariant(itemChange(ItemOpacityChange, double(opacity)));
-    qreal newOpacity = newOpacityVariant.toDouble();
+    const QVariant newOpacityVariant(itemChange(ItemOpacityChange, opacity));
 
-    // Normalize.
-    newOpacity = qBound<qreal>(0.0, newOpacity, 1.0);
+    // Normalized opacity
+    qreal newOpacity = qBound(qreal(0), newOpacityVariant.toReal(), qreal(1));
 
     // No change? Done.
     if (newOpacity == d_ptr->opacity)
@@ -3696,8 +3695,8 @@ qreal QGraphicsItem::zValue() const
 */
 void QGraphicsItem::setZValue(qreal z)
 {
-    const QVariant newZVariant(itemChange(ItemZValueChange, double(z)));
-    qreal newZ = qreal(newZVariant.toDouble());
+    const QVariant newZVariant(itemChange(ItemZValueChange, z));
+    qreal newZ = newZVariant.toReal();
     if (newZ == d_ptr->z)
         return;
 

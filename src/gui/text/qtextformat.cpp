@@ -271,6 +271,7 @@ static uint variantHash(const QVariant &variant)
     case QVariant::Invalid: return 0;
     case QVariant::Bool: return variant.toBool();
     case QVariant::Int: return variant.toInt();
+    case QMetaType::Float: return static_cast<int>(variant.toFloat());
     case QVariant::Double: return static_cast<int>(variant.toDouble());
     case QVariant::String: return qHash(variant.toString());
     case QVariant::Color: return qHash(qvariant_cast<QColor>(variant).rgb());
@@ -325,7 +326,7 @@ void QTextFormatPrivate::recalcFont() const
                 f.setFamily(props.at(i).value.toString());
                 break;
             case QTextFormat::FontPointSize:
-                f.setPointSizeF(props.at(i).value.toDouble());
+                f.setPointSizeF(props.at(i).value.toReal());
                 break;
             case  QTextFormat::FontPixelSize:
                 f.setPixelSize(props.at(i).value.toInt());
@@ -352,10 +353,10 @@ void QTextFormatPrivate::recalcFont() const
                 f.setStrikeOut(props.at(i).value.toBool());
                 break;
             case QTextFormat::FontLetterSpacing:
-                f.setLetterSpacing(QFont::PercentageSpacing, props.at(i).value.toDouble());
+                f.setLetterSpacing(QFont::PercentageSpacing, props.at(i).value.toReal());
                 break;
             case QTextFormat::FontWordSpacing:
-                f.setWordSpacing(props.at(i).value.toDouble());
+                f.setWordSpacing(props.at(i).value.toReal());
                 break;
             case QTextFormat::FontCapitalization:
                 f.setCapitalization(static_cast<QFont::Capitalization> (props.at(i).value.toInt()));

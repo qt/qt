@@ -2316,7 +2316,7 @@ bool QSortFilterProxyModel::lessThan(const QModelIndex &left, const QModelIndex 
     Q_D(const QSortFilterProxyModel);
     QVariant l = (left.model() ? left.model()->data(left, d->sort_role) : QVariant());
     QVariant r = (right.model() ? right.model()->data(right, d->sort_role) : QVariant());
-    switch (l.type()) {
+    switch (l.userType()) {
     case QVariant::Invalid:
         return (r.type() == QVariant::Invalid);
     case QVariant::Int:
@@ -2327,6 +2327,8 @@ bool QSortFilterProxyModel::lessThan(const QModelIndex &left, const QModelIndex 
         return l.toLongLong() < r.toLongLong();
     case QVariant::ULongLong:
         return l.toULongLong() < r.toULongLong();
+    case QMetaType::Float:
+        return l.toFloat() < r.toFloat();
     case QVariant::Double:
         return l.toDouble() < r.toDouble();
     case QVariant::Char:
