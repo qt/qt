@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -490,6 +490,7 @@
     \omitvalue WordBreak
     \omitvalue TextForceLeftToRight
     \omitvalue TextForceRightToLeft
+    \omitvalue TextLongestVariant Always use the longest variant when computing the size of a multi-variant string
 
     You can use as many modifier flags as you want, except that
     Qt::TextSingleLine and Qt::TextWordWrap cannot be combined.
@@ -514,7 +515,6 @@
     slots. In particular, it determines whether a particular signal is delivered to a
     slot immediately or queued for delivery at a later time.
 
-    \omitvalue AutoCompatConnection
     \value DirectConnection  When emitted, the signal is immediately delivered to the slot.
     \value QueuedConnection  When emitted, the signal is queued until the event loop is
                              able to deliver it to the slot.
@@ -533,6 +533,12 @@
                              not already connected to the same slot before connecting, otherwise,
                              the connection will fail.
                              This value was introduced in Qt 4.6.
+    \value AutoCompatConnection
+           The default connection type for signals and slots when Qt 3 support
+           is enabled. Equivalent to AutoConnection for connections but will cause warnings
+           to be output under certain circumstances. See
+           \l{Porting to Qt 4#Compatibility Signals and Slots}{Compatibility Signals and Slots}
+           for further information.
 
     With queued connections, the parameters must be of types that are known to
     Qt's meta-object system, because Qt needs to copy the arguments to store them
@@ -2569,10 +2575,10 @@
     \value ElideNone    Ellipsis should NOT appear in the text.
 
     Qt::ElideMiddle is normally the most appropriate choice for URLs (e.g.,
-    "\l{http://www.qtsoftware.com/careers/movingto/beijing/}{http://www.qtsof...ovingto/beijing/}"),
+    "\l{http://qt.nokia.com/careers/movingto/brisbane/}{http://qt.nok...ovingto/brisbane/}"),
     whereas Qt::ElideRight is appropriate
     for other strings (e.g.,
-    "\l{http://doc.trolltech.com/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").
+    "\l{http://qt.nokia.com/doc/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").
 
     \sa QAbstractItemView::textElideMode, QFontMetrics::elidedText(), AlignmentFlag QTabBar::elideMode
 */

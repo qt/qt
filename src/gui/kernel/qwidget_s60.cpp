@@ -656,7 +656,7 @@ CFbsBitmap* qt_pixmapToNativeBitmap(QPixmap pixmap, bool invert)
         break;
     }
 
-    qt_throwIfError(fbsBitmap->Create(size, mode));
+    qt_symbian_throwIfError(fbsBitmap->Create(size, mode));
     fbsBitmap->LockHeap();
     QImage image = pixmap.toImage();
 

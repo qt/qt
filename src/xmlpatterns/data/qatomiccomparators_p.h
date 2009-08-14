@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,7 +72,7 @@ namespace QPatternist
      * between @c xs:anyUri, @c xs:string, and @c xs:untypedAtomic.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class StringComparator : public AtomicComparator
     {
@@ -107,7 +107,7 @@ namespace QPatternist
      * between @c xs:anyUri, @c xs:string, and @c xs:untypedAtomic.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class CaseInsensitiveStringComparator : public AtomicComparator
     {
@@ -129,7 +129,7 @@ namespace QPatternist
     /**
      * @short Compares @c xs:base64Binary and @c xs:hexBinary values.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class BinaryDataComparator : public AtomicComparator
     {
@@ -143,7 +143,7 @@ namespace QPatternist
      *
      * This is done via the object's Boolean::evaluteEBV() function.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class BooleanComparator : public AtomicComparator
     {
@@ -161,7 +161,7 @@ namespace QPatternist
      *
      * @todo Add docs about numeric promotion
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractFloatComparator : public AtomicComparator
     {
@@ -179,7 +179,7 @@ namespace QPatternist
      *
      * @todo Add docs about numeric promotion
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<const AtomicComparator::Operator t_op>
     class AbstractFloatSortComparator : public AbstractFloatComparator
@@ -215,7 +215,7 @@ namespace QPatternist
     /**
      * @short Compares @c xs:decimal values.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DecimalComparator : public AtomicComparator
     {
@@ -231,7 +231,7 @@ namespace QPatternist
     /**
      * @short Compares @c xs:integer values.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class IntegerComparator : public AtomicComparator
     {
@@ -247,7 +247,7 @@ namespace QPatternist
     /**
      * @short Compares @c xs:QName values.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class QNameComparator : public AtomicComparator
     {
@@ -259,7 +259,7 @@ namespace QPatternist
     /**
      * @short Compares sub-classes of AbstractDateTime.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDateTimeComparator : public AtomicComparator
     {
@@ -274,7 +274,7 @@ namespace QPatternist
     /**
      * @short Compares sub-classes of AbstractDuration.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AbstractDurationComparator : public AtomicComparator
     {

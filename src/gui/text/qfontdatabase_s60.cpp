@@ -221,7 +221,7 @@ static void initializeDb()
         QS60Data::screenDevice()->TypefaceSupport(typefaceSupport, i);
         CFont *font; // We have to get a font instance in order to know all the details
         TFontSpec fontSpec(typefaceSupport.iTypeface.iName, 11);
-        qt_throwIfError(QS60Data::screenDevice()->GetNearestFontInPixels(font, fontSpec));
+        qt_symbian_throwIfError(QS60Data::screenDevice()->GetNearestFontInPixels(font, fontSpec));
         if (font->TypeUid() == KCFbsFontUid) {
             TOpenFontFaceAttrib faceAttrib;
             const CFbsFont *cfbsFont = dynamic_cast<const CFbsFont *>(font);

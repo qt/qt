@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -94,43 +94,6 @@ QT_BEGIN_NAMESPACE
 
     \sa QNetworkCookieJar, QNetworkRequest, QNetworkReply
 */
-
-/*!
-    Create a new QNetworkCookie object, initializing the cookie name
-    and its value to empty QByteArray
-
-    A cookie is only valid if it has a name. However, the value is
-    opaque to the application and being empty may have significance to
-    the remote server.
-*/
-QNetworkCookie::QNetworkCookie()
-    : d(new QNetworkCookiePrivate)
-{
-    qRegisterMetaType<QNetworkCookie>();
-    qRegisterMetaType<QList<QNetworkCookie> >();
-
-    d->name = QByteArray();
-    d->value = QByteArray();
-}
-
-/*!
-    Create a new QNetworkCookie object, initializing the cookie name
-    to \a name and its value to empty QByteArray.
-
-    A cookie is only valid if it has a name. However, the value is
-    opaque to the application and being empty may have significance to
-    the remote server.
-*/
-QNetworkCookie::QNetworkCookie( const QByteArray &name )
-    : d(new QNetworkCookiePrivate)
-{
-    qRegisterMetaType<QNetworkCookie>();
-    qRegisterMetaType<QList<QNetworkCookie> >();
-
-    d->name = name;
-    d->value = QByteArray();
-}
-
 
 /*!
     Create a new QNetworkCookie object, initializing the cookie name

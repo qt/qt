@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2202,7 +2202,7 @@ void qt_message_output(QtMsgType msgType, const char *buf)
 /*!
     \internal
     Uses a local buffer to output the message. Not locale safe + cuts off
-    everything after character 1023, but will work in out of memory situations.
+    everything after character 255, but will work in out of memory situations.
 */
 static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
 {
@@ -2461,7 +2461,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 #endif
 }
 
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
 
 #  if defined(Q_OS_INTEGRITY) && defined(__GHS_VERSION_NUMBER) && (__GHS_VERSION_NUMBER < 500)
 // older versions of INTEGRITY used a long instead of a uint for the seed.
@@ -2471,9 +2471,7 @@ typedef uint SeedStorageType;
 #  endif
 
 typedef QThreadStorage<SeedStorageType *> SeedStorage;
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
 Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
-#endif
 
 #endif
 
@@ -3385,9 +3383,9 @@ public:
 
     \warning This function is only available on Symbian.
 
-    \sa qt_exception2SymbianLeaveL(), qt_exception2SymbianError()
+    \sa qt_symbian_exception2LeaveL(), qt_symbian_exception2Error()
 */
-void qt_throwIfError(int error)
+void qt_symbian_throwIfError(int error)
 {
     if (error >= KErrNone)
         return;  // do nothing - not an exception
@@ -3412,11 +3410,11 @@ void qt_throwIfError(int error)
 
     \warning This function is only available on Symbian.
 
-    \sa qt_throwIfError(), qt_exception2SymbianError()
+    \sa qt_symbian_throwIfError(), qt_symbian_exception2Error()
 */
-void qt_exception2SymbianLeaveL(const std::exception& aThrow)
+void qt_symbian_exception2LeaveL(const std::exception& aThrow)
 {
-    User::Leave(qt_exception2SymbianError(aThrow));
+    User::Leave(qt_symbian_exception2Error(aThrow));
 }
 
 /*! \relates <QtGlobal>
@@ -3426,9 +3424,9 @@ void qt_exception2SymbianLeaveL(const std::exception& aThrow)
 
     \warning This function is only available on Symbian.
 
-    \sa qt_throwIfError(), qt_exception2SymbianLeaveL()
+    \sa qt_symbian_throwIfError(), qt_symbian_exception2LeaveL()
 */
-int qt_exception2SymbianError(const std::exception& aThrow)
+int qt_symbian_exception2Error(const std::exception& aThrow)
 {
     const std::type_info& atype = typeid(aThrow);
     int err = KErrGeneral;

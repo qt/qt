@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1144,7 +1144,7 @@ static void delete_d( const Q3Ftp* foo )
     Some commands, e.g. list(), emit additional signals to report
     their results.
 
-    Example: If you want to download the INSTALL file from Trolltech's
+    Example: If you want to download the INSTALL file from the Qt
     FTP server, you would write this:
 
     \snippet doc/src/snippets/code/src_qt3support_network_q3ftp.cpp 2

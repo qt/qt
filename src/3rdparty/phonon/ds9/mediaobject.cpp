@@ -57,24 +57,6 @@ namespace Phonon
         {
         }
 
-        WorkerThread::Work WorkerThread::dequeueWork()
-        {
-            QMutexLocker locker(&m_mutex);
-            if (m_finished) {
-                return Work();
-            }
-            Work ret = m_queue.dequeue();
-
-            //we ensure to have the wait condition in the right state
-            if (m_queue.isEmpty()) {
-                m_waitCondition.reset();
-            } else {
-                m_waitCondition.set();
-            }
-
-            return ret;
-        }
-
         void WorkerThread::run()
         {
             while (m_finished == false) {
@@ -88,11 +70,6 @@ namespace Phonon
                 }
                 DWORD result = ::WaitForMultipleObjects(count, handles, FALSE, INFINITE);
                 if (result == WAIT_OBJECT_0) {
-                    if (m_finished) {
-                        //that's the end of the thread execution
-                        return;
-                    }
-
                     handleTask();
                 } else {
                     //this is the event management
@@ -199,22 +176,28 @@ namespace Phonon
 
         void WorkerThread::handleTask()
         {
-            const Work w = dequeueWork();
-
-            if (m_finished) {
+            QMutexLocker locker(&m_mutex);
+            if (m_finished || m_queue.isEmpty()) {
                 return;
+            }
+
+            const Work w = m_queue.dequeue();
+
+            //we ensure to have the wait condition in the right state
+            if (m_queue.isEmpty()) {
+                m_waitCondition.reset();
+            } else {
+                m_waitCondition.set();
             }
 
             HRESULT hr = S_OK;
 
             {
-                QMutexLocker locker(&m_mutex);
+                QMutexLocker locker(&m_currentMutex);
                 m_currentRender = w.graph;
-                m_currentRenderId = w.id;
+			    m_currentRenderId = w.id;
             }
-
             if (w.task == ReplaceGraph) {
-                QMutexLocker locker(&m_mutex);
                 int index = -1;
                 for(int i = 0; i < FILTER_COUNT; ++i) {
                     if (m_graphHandle[i].graph == w.oldGraph) {
@@ -328,7 +311,7 @@ namespace Phonon
             }
 
             {
-                QMutexLocker locker(&m_mutex);
+                QMutexLocker locker(&m_currentMutex);
                 m_currentRender = Graph();
                 m_currentRenderId = 0;
             }
@@ -336,6 +319,13 @@ namespace Phonon
 
         void WorkerThread::abortCurrentRender(qint16 renderId)
         {
+            {
+                QMutexLocker locker(&m_currentMutex);
+                if (m_currentRender && m_currentRenderId == renderId) {
+                    m_currentRender->Abort();
+                }
+            }
+
             QMutexLocker locker(&m_mutex);
             bool found = false;
             for(int i = 0; !found && i < m_queue.size(); ++i) {
@@ -343,11 +333,10 @@ namespace Phonon
                 if (w.id == renderId) {
                     found = true;
                     m_queue.removeAt(i);
+                    if (m_queue.isEmpty()) {
+                        m_waitCondition.reset();
+                    }
                 }
-            }
-
-            if (m_currentRender && m_currentRenderId == renderId) {
-                m_currentRender->Abort();
             }
         }
 
@@ -522,6 +511,9 @@ namespace Phonon
             m_oldHasVideo = currentGraph()->hasVideo();
 
             qSwap(m_graphs[0], m_graphs[1]); //swap the graphs
+
+            if (m_transitionTime >= 0)
+                m_graphs[1]->stop(); //make sure we stop the previous graph
 
             if (currentGraph()->mediaSource().type() != Phonon::MediaSource::Invalid &&
                 catchComError(currentGraph()->renderResult())) {

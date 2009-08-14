@@ -1,64 +1,66 @@
 /****************************************************************************
-*
-* Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)
-* This is version of the Pictureflow animated image show widget modified by Nokia.
-*
-*  $QT_BEGIN_LICENSE:LGPL$
-*  No Commercial Usage
-*  This file contains pre-release code and may not be distributed.
-*  You may use this file in accordance with the terms and conditions
-*  contained in the either Technology Preview License Agreement or the
-*  Beta Release License Agreement.
-* 
-*  GNU Lesser General Public License Usage
-*  Alternatively, this file may be used under the terms of the GNU Lesser
-*  General Public License version 2.1 as published by the Free Software
-*  Foundation and appearing in the file LICENSE.LGPL included in the
-*  packaging of this file.  Please review the following information to
-*  ensure the GNU Lesser General Public License version 2.1 requirements
-*  will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-* 
-*  In addition, as a special exception, Nokia gives you certain
-*  additional rights. These rights are described in the Nokia Qt LGPL
-*  Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-*  package.
-* 
-*  GNU General Public License Usage
-*  Alternatively, this file may be used under the terms of the GNU
-*  General Public License version 3.0 as published by the Free Software
-*  Foundation and appearing in the file LICENSE.GPL included in the
-*  packaging of this file.  Please review the following information to
-*  ensure the GNU General Public License version 3.0 requirements will be
-*  met: http://www.gnu.org/copyleft/gpl.html.
-* 
-*  If you are unsure which license is appropriate for your use, please
-*  contact the sales department at http://www.qtsoftware.com/contact.
-*  $QT_END_LICENSE$
-*
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*     * Redistributions of source code must retain the above copyright
-*       notice, this list of conditions and the following disclaimer.
-*     * Redistributions in binary form must reproduce the above copyright
-*       notice, this list of conditions and the following disclaimer in the
-*       documentation and/or other materials provided with the distribution.
-*     * Neither the name of the <organization> nor the
-*       names of its contributors may be used to endorse or promote products
-*       derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY TROLLTECH ASA ``AS IS'' AND ANY
-* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL <copyright holder> BE LIABLE FOR ANY
-* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This is a version of the Pictureflow animated image show widget modified by Nokia.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at http://qt.nokia.com/contact.
+** $QT_END_LICENSE$
+**
+** Redistribution and use in source and binary forms, with or without
+** modification, are permitted provided that the following conditions are met:
+**     * Redistributions of source code must retain the above copyright
+**       notice, this list of conditions and the following disclaimer.
+**     * Redistributions in binary form must reproduce the above copyright
+**       notice, this list of conditions and the following disclaimer in the
+**       documentation and/or other materials provided with the distribution.
+**     * Neither the name of the <organization> nor the
+**       names of its contributors may be used to endorse or promote products
+**       derived from this software without specific prior written permission.
+**
+** THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY
+** EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+** WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+** DISCLAIMED. IN NO EVENT SHALL Nokia Corporation BE LIABLE FOR ANY
+** DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+** (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+** LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+** ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+** (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+** SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+**
 ****************************************************************************/
+
 /*
   ORIGINAL COPYRIGHT HEADER
   PictureFlow - animated image show widget
@@ -93,15 +95,15 @@
 class PictureFlowPrivate;
 
 /*!
-  Class PictureFlow implements an image show widget with animation effect 
-  like Apple's CoverFlow (in iTunes and iPod). Images are arranged in form 
-  of slides, one main slide is shown at the center with few slides on 
-  the left and right sides of the center slide. When the next or previous 
-  slide is brought to the front, the whole slides flow to the right or 
-  the right with smooth animation effect; until the new slide is finally 
+  Class PictureFlow implements an image show widget with animation effect
+  like Apple's CoverFlow (in iTunes and iPod). Images are arranged in form
+  of slides, one main slide is shown at the center with few slides on
+  the left and right sides of the center slide. When the next or previous
+  slide is brought to the front, the whole slides flow to the right or
+  the right with smooth animation effect; until the new slide is finally
   placed at the center.
 
- */ 
+ */
 class PictureFlow : public QWidget
 {
 Q_OBJECT
@@ -114,7 +116,7 @@ Q_OBJECT
 public:
   /*!
     Creates a new PictureFlow widget.
-  */  
+  */
   PictureFlow(QWidget* parent = 0);
 
   /*!
@@ -134,17 +136,17 @@ public:
 
   /*!
     Returns the dimension of each slide (in pixels).
-  */  
+  */
   QSize slideSize() const;
 
   /*!
     Sets the dimension of each slide (in pixels).
-  */  
+  */
   void setSlideSize(QSize size);
 
   /*!
     Sets the zoom factor (in percent).
-  */ 
+  */
   void setZoomFactor(int zoom);
 
   /*!
@@ -161,13 +163,13 @@ public:
     Returns QImage of specified slide.
     This function will be called only whenever necessary, e.g. the 100th slide
     will not be retrived when only the first few slides are visible.
-  */  
+  */
   virtual QImage slide(int index) const;
 
   /*!
     Sets an image for specified slide. If the slide already exists,
     it will be replaced.
-  */  
+  */
   virtual void setSlide(int index, const QImage& image);
 
   virtual void setSlideCaption(int index, QString caption);
@@ -175,20 +177,20 @@ public:
   /*!
     Sets a pixmap for specified slide. If the slide already exists,
     it will be replaced.
-  */  
+  */
   virtual void setSlide(int index, const QPixmap& pixmap);
 
   /*!
     Returns the index of slide currently shown in the middle of the viewport.
-  */  
+  */
   int currentSlide() const;
 
 public slots:
 
   /*!
-    Sets slide to be shown in the middle of the viewport. No animation 
+    Sets slide to be shown in the middle of the viewport. No animation
     effect will be produced, unlike using showSlide.
-  */  
+  */
   void setCurrentSlide(int index);
 
   /*!

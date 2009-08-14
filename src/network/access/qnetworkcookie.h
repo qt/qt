@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -67,9 +67,7 @@ public:
         Full
     };
 
-    QNetworkCookie();
-    QNetworkCookie(const QByteArray &name );
-    QNetworkCookie(const QByteArray &name, const QByteArray &value );
+    QNetworkCookie(const QByteArray &name = QByteArray(), const QByteArray &value = QByteArray());
     QNetworkCookie(const QNetworkCookie &other);
     ~QNetworkCookie();
     QNetworkCookie &operator=(const QNetworkCookie &other);
@@ -108,15 +106,15 @@ private:
 };
 Q_DECLARE_TYPEINFO(QNetworkCookie, Q_MOVABLE_TYPE);
 
-// ### Qt5 remove this include
-#include "qnetworkcookiejar.h"
-
 #ifndef QT_NO_DEBUG_STREAM
 class QDebug;
 Q_NETWORK_EXPORT QDebug operator<<(QDebug, const QNetworkCookie &);
 #endif
 
 QT_END_NAMESPACE
+
+// ### Qt5 remove this include
+#include "qnetworkcookiejar.h"
 
 Q_DECLARE_METATYPE(QNetworkCookie)
 Q_DECLARE_METATYPE(QList<QNetworkCookie>)

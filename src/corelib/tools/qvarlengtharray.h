@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -204,7 +204,9 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
 
             if (QTypeInfo<T>::isStatic) {
                 QT_TRY {
-                    while (s < asize) {
+                    // copy all the old elements
+                    const int copySize = qMin(asize, osize);
+                    while (s < copySize) {
                         new (ptr+s) T(*(oldPtr+s));
                         (oldPtr+s)->~T();
                         s++;

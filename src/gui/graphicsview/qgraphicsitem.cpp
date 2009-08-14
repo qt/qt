@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -584,6 +584,7 @@
 #include <private/qtextcontrol_p.h>
 #include <private/qtextdocumentlayout_p.h>
 #include <private/qtextengine_p.h>
+#include <private/qwidget_p.h>
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -9100,16 +9101,10 @@ void QGraphicsTextItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         return;
     }
 
-    if (event->button() == Qt::LeftButton && qApp->autoSipEnabled()
-            && (!dd->clickCausedFocus || qApp->autoSipOnMouseFocus())) {
-        QEvent _event(QEvent::RequestSoftwareInputPanel);
-        QWidget *receiver = event->widget();
-        if(receiver) {
-            QApplication::sendEvent(receiver, &_event);
-        } 
+    QWidget *widget = event->widget();
+    if (widget) {
+        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), dd->clickCausedFocus);
     }
-    QGraphicsItem::mouseReleaseEvent(event);
-
     dd->clickCausedFocus = 0;
     dd->sendControlEvent(event);
 }

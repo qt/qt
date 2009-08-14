@@ -1,5 +1,5 @@
 exceptionsafety_objects
-gestures
+#gestures  This test is incomplete and also missing from auto.pro -> disabled for now
 languagechange
 math3d
 modeltest
@@ -38,7 +38,7 @@ qdesktopwidget
 qdial
 qdialog
 qdialogbuttonbox
-qdirectpainter cetest-subdir: test
+#qdirectpainter cetest-subdir: test TEST IS FOR EMBEDDED LINUX ONLY
 qdirmodel
 qdockwidget
 qdoublespinbox
@@ -100,7 +100,7 @@ qmainwindow
 #qmdisubwindow not relevant for S60, skip for now
 qmenu
 qmenubar
-#qmessagebox that's a hanger
+qmessagebox
 qmouseevent
 qmouseevent_modal
 qmovie

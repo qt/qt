@@ -32,7 +32,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -96,8 +96,6 @@ public:
             return entry->recordValue();
         }
 #endif
-        //return QString("qttest");
-        //return QString("aspiriniks");
         return QString("qt-test-server");
     }
     static QString serverDomainName()
@@ -110,8 +108,6 @@ public:
             return entry->recordValue();
         }
 #endif
-        //return QString("it.local");
-        //return QString("troll.no");
         return QString("qt-test-net");
     }
     static QString serverName()
@@ -162,15 +158,11 @@ public:
             }
             return imapExpectedReply.data();
         }
-#endif
-        /*QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " );
-        expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
-        expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");*/
-
-        QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4REV1] " );
-        expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
+#else
+		QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " );
+        expected = expected.append(QtNetworkSettings::serverName().toAscii());
         expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
-
+#endif
         return expected;
     }
 

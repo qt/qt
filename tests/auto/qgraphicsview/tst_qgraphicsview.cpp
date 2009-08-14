@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2531,7 +2531,7 @@ void tst_QGraphicsView::scrollBarRanges()
         QSKIP("No Motif style compiled.", SkipSingle);
 #endif
     } else {
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
         view.setStyle(new QWindowsStyle);
 #elif !defined(QT_NO_STYLE_PLASTIQUE)
         view.setStyle(new QPlastiqueStyle);

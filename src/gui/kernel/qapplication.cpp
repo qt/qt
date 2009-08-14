@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -453,7 +453,6 @@ bool QApplicationPrivate::animate_tooltip = false;
 bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
-bool QApplicationPrivate::auto_sip_on_mouse_focus = false;
 #if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
 bool QApplicationPrivate::inSizeMove = false;
 #endif
@@ -1068,7 +1067,6 @@ QApplication::~QApplication()
     QApplicationPrivate::animate_tooltip = false;
     QApplicationPrivate::fade_tooltip = false;
     QApplicationPrivate::widgetCount = false;
-    QApplicationPrivate::auto_sip_on_mouse_focus = false;
 
 #ifndef QT_NO_STATEMACHINE
     // trigger unregistering of QStateMachine's GUI types
@@ -2873,7 +2871,7 @@ QWidget *QApplicationPrivate::pickMouseReceiver(QWidget *candidate, const QPoint
     QWidget *receiver = candidate;
 
     if (!mouseGrabber)
-        mouseGrabber = buttonDown ? buttonDown : alienWidget;
+        mouseGrabber = (buttonDown && !isBlockedByModal(buttonDown)) ? buttonDown : alienWidget;
 
     if (mouseGrabber && mouseGrabber != candidate) {
         receiver = mouseGrabber;
@@ -3458,39 +3456,6 @@ void QApplication::setLayoutDirection(Qt::LayoutDirection direction)
 Qt::LayoutDirection QApplication::layoutDirection()
 {
     return layout_direction;
-}
-
-/*!
-    \property autoSipOnMouseFocus
-    \since 4.6
-    \brief toggles SIP (software input panel) launch policy
-
-    This property holds whether widgets should request a software input
-    panel when it is focused with the mouse. This is typically used to
-    launch a virtual keyboard on devices which have very few or no keys.
-
-    If the property is set to true, the widget asks for an input panel
-    on the mouse click which causes the widget to be focused. If the
-    property is set to false, the user must click a second time before
-    the widget asks for an input panel.
-
-    \note If the widget is focused by other means than a mouse click,
-          the next click is will trigger an input panel request,
-          regardless of the value of this property.
-
-    The default is platform dependent.
-
-    \sa QEvent::RequestSoftwareInputPanel, QInputContext
-*/
-
-void QApplication::setAutoSipOnMouseFocus(bool enable)
-{
-    QApplicationPrivate::auto_sip_on_mouse_focus = enable;
-}
-
-bool QApplication::autoSipOnMouseFocus()
-{
-    return QApplicationPrivate::auto_sip_on_mouse_focus;
 }
 
 

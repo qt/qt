@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,14 +73,13 @@ public:
     void setGraphicsItem(QGraphicsItem *);
     QGraphicsItem *graphicsItem() const;
 
-    virtual void reset();
-
     Qt::GestureState state() const;
 
 protected:
     QGesture(QGesturePrivate &dd, QObject *parent);
     bool eventFilter(QObject*, QEvent*);
 
+    virtual void reset();
     void updateState(Qt::GestureState state);
 
 Q_SIGNALS:

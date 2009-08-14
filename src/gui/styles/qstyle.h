@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -632,6 +632,11 @@ public:
     virtual QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
                                    const QSize &contentsSize, const QWidget *w = 0) const = 0;
 
+    enum RequestSoftwareInputPanel {
+        RSIP_OnMouseClickAndAlreadyFocused,
+        RSIP_OnMouseClick
+    };
+
     enum StyleHint {
         SH_EtchDisabledText,
         SH_DitherDisabledText,
@@ -731,6 +736,7 @@ public:
         SH_TabBar_CloseButtonPosition,
         SH_DockWidget_ButtonsHaveFrame,
         SH_ToolButtonStyle,
+        SH_RequestSoftwareInputPanel,
         // Add new style hint values here
 
 #ifdef QT3_SUPPORT

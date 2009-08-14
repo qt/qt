@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -240,18 +240,6 @@ public:
     mutable QSslConfiguration *sslConfiguration;
 #endif
 };
-
-/*!
-    Constructs a QNetworkRequest object with empty QUrl.
-
-    \sa url(), setUrl()
-*/
-QNetworkRequest::QNetworkRequest()
-    : d(new QNetworkRequestPrivate)
-{
-    d->url = QUrl();
-}
-
 
 /*!
     Constructs a QNetworkRequest object with \a url as the URL to be

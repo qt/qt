@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -159,20 +159,11 @@ public:
 
     \sa setRequiredStatus() setLength() setPrecision() setDefaultValue() setGenerated() setReadOnly()
 */
-QSqlField::QSqlField()
-{
-    d = new QSqlFieldPrivate(QString(),  QVariant::Invalid);
-}
-
-QSqlField::QSqlField(const QString& fieldName)
-{
-    d = new QSqlFieldPrivate(fieldName,  QVariant::Invalid);
-}
-
 QSqlField::QSqlField(const QString& fieldName, QVariant::Type type)
 {
     d = new QSqlFieldPrivate(fieldName, type);
 }
+
 /*!
     Constructs a copy of \a other.
 */

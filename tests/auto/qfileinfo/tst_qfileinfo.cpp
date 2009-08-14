@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -147,6 +147,9 @@ private slots:
     void isBundle_data();
     void isBundle();
 
+    void isLocalFs_data();
+    void isLocalFs();
+
     void refresh();
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
@@ -237,7 +240,6 @@ void tst_QFileInfo::copy()
 
 tst_QFileInfo::tst_QFileInfo()
 {
-    Q_SET_DEFAULT_IAP
 }
 
 void tst_QFileInfo::isFile_data()
@@ -331,6 +333,9 @@ void tst_QFileInfo::isRoot_data()
     QTest::newRow("drive 1") << "c:" << false;
     QTest::newRow("drive 2") << "c:/" << true;
     QTest::newRow("drive 3") << "p:/" << false;
+#endif
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QTest::newRow("unc 1") << "//"  + QtNetworkSettings::winServerName() << true;
     QTest::newRow("unc 2") << "//"  + QtNetworkSettings::winServerName() + "/" << true;
     QTest::newRow("unc 3") << "//"  + QtNetworkSettings::winServerName() + "/testshare" << false;
@@ -485,6 +490,8 @@ void tst_QFileInfo::canonicalFilePath()
             QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
         }
     }
+#  if !defined(Q_OS_SYMBIAN)
+    // Symbian doesn't support links to directories
     {
         const QString link(QDir::tempPath() + QDir::separator() + "tst_qfileinfo");
         QFile::remove(link);
@@ -516,6 +523,7 @@ void tst_QFileInfo::canonicalFilePath()
             QCOMPARE(info1.canonicalFilePath(), info2.canonicalFilePath());
         }
     }
+#  endif
 #endif
 
 }
@@ -725,7 +733,9 @@ void tst_QFileInfo::permission()
     QFETCH(QString, file);
     QFETCH(int, perms);
     QFETCH(bool, expected);
-    QEXPECT_FAIL("data0", "No user based rights in Symbian OS - SOS needs platform security tests instead", Abort);
+#ifdef Q_OS_SYMBIAN
+    QSKIP("No user based rights in Symbian OS - SOS needs platform security tests instead", SkipAll);
+#endif
     QFileInfo fi(file);
     QCOMPARE(fi.permission(QFile::Permissions(perms)), expected);
 }
@@ -990,6 +1000,22 @@ void tst_QFileInfo::isHidden_data()
     foreach (const QFileInfo& info, QDir::drives()) {
         QTest::newRow(qPrintable("drive." + info.path())) << info.path() << false;
     }
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    QTest::newRow("C:/RECYCLER") << QString::fromLatin1("C:/RECYCLER") << true;
+    QTest::newRow("C:/RECYCLER/.") << QString::fromLatin1("C:/RECYCLER/.") << false;
+    QTest::newRow("C:/RECYCLER/..") << QString::fromLatin1("C:/RECYCLER/..") << false;
+#endif
+#if defined(Q_OS_UNIX)
+    QTest::newRow("~/.qt") << QDir::homePath() + QString("/.qt") << true;
+    QTest::newRow("~/.qt/.") << QDir::homePath() + QString("/.qt/.") << false;
+    QTest::newRow("~/.qt/..") << QDir::homePath() + QString("/.qt/..") << false;
+#endif
+
+#if !defined(Q_OS_WIN)
+    QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << false;
+#endif
+
 #ifdef Q_OS_MAC
     QTest::newRow("mac_etc") << QString::fromLatin1("/etc") << true;
     QTest::newRow("mac_private_etc") << QString::fromLatin1("/private/etc") << false;
@@ -1022,6 +1048,29 @@ void tst_QFileInfo::isBundle()
     QFETCH(bool, isBundle);
     QFileInfo fi(path);
     QCOMPARE(fi.isBundle(), isBundle);
+}
+
+void tst_QFileInfo::isLocalFs_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("isLocalFs");
+
+    QTest::newRow("local root") << QString::fromLatin1("/") << true;
+    QTest::newRow("local non-existent file") << QString::fromLatin1("/abrakadabra.boo") << true;
+
+    QTest::newRow("qresource root") << QString::fromLatin1(":/") << false;
+}
+
+void tst_QFileInfo::isLocalFs()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, isLocalFs);
+
+    QFileInfo info(path);
+    QFileInfoPrivate *privateInfo = getPrivate(info);
+    QVERIFY(privateInfo->data->fileEngine);
+    QCOMPARE(bool(privateInfo->data->fileEngine->fileFlags(QAbstractFileEngine::LocalDiskFlag)
+                  & QAbstractFileEngine::LocalDiskFlag), isLocalFs);
 }
 
 void tst_QFileInfo::refresh()

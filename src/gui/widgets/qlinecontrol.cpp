@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -400,8 +400,17 @@ void QLineControl::moveCursor(int pos, bool mark)
 */
 void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 {
-    int priorState = m_undoState;
-    removeSelectedText();
+    int priorState = 0;
+    bool isGettingInput = !event->commitString().isEmpty() || !event->preeditString().isEmpty()
+            || event->replacementLength() > 0;
+    bool cursorPositionChanged = false;
+
+    if (isGettingInput) {
+        // If any text is being input, remove selected text.
+        priorState = m_undoState;
+        removeSelectedText();
+    }
+
 
     int c = m_cursor; // cursor position after insertion of commit string
     if (event->replacementStart() <= 0)
@@ -415,10 +424,29 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
         m_selend = m_selstart + event->replacementLength();
         removeSelectedText();
     }
-    if (!event->commitString().isEmpty())
+    if (!event->commitString().isEmpty()) {
         insert(event->commitString());
+        cursorPositionChanged = true;
+    }
 
     m_cursor = qMin(c, m_text.length());
+
+    for (int i = 0; i < event->attributes().size(); ++i) {
+        const QInputMethodEvent::Attribute &a = event->attributes().at(i);
+        if (a.type == QInputMethodEvent::Selection) {
+            m_cursor = qBound(0, a.start + a.length, m_text.length());
+            if (a.length) {
+                m_selstart = qMax(0, qMin(a.start, m_text.length()));
+                m_selend = m_cursor;
+                if (m_selend < m_selstart) {
+                    qSwap(m_selstart, m_selend);
+                }
+            } else {
+                m_selstart = m_selend = 0;
+            }
+            cursorPositionChanged = true;
+        }
+    }
 
     setPreeditArea(m_cursor, event->preeditString());
     m_preeditCursor = event->preeditString().length();
@@ -442,9 +470,10 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
     }
     m_textLayout.setAdditionalFormats(formats);
     updateDisplayText();
-    if (!event->commitString().isEmpty())
+    if (cursorPositionChanged)
         emitCursorPositionChanged();
-    finishChange(priorState);
+    if (isGettingInput)
+        finishChange(priorState);
 }
 
 /*!

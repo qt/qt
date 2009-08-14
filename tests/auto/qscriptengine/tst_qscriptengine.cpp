@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,16 +49,17 @@
 #include <qstandarditemmodel.h>
 #include <QtCore/qnumeric.h>
 
-#if defined(Q_OS_SYMBIAN)
-# define SRCDIR ""
-#endif
-
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QObjectList)
 
 //TESTED_CLASS=
 //TESTED_FILES=
 
+#if defined(Q_OS_SYMBIAN)
+# define STRINGIFY(x) #x
+# define TOSTRING(x) STRINGIFY(x)
+# define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID)
+#endif
 class tst_QScriptEngine : public QObject
 {
     Q_OBJECT
@@ -231,7 +232,7 @@ void tst_QScriptEngine::newFunction()
         QCOMPARE(fun.prototype().isValid(), true);
         QCOMPARE(fun.prototype().isFunction(), true);
         QCOMPARE(fun.prototype().strictlyEquals(eng.evaluate("Function.prototype")), true);
-        
+
         QCOMPARE(fun.call().isNull(), true);
         QCOMPARE(fun.construct().isObject(), true);
     }

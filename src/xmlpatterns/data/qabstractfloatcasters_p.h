@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -121,7 +121,7 @@ namespace QPatternist
     * castFrom() uses Numeric::toDouble() for doing the actual casting.
     *
     * @ingroup Patternist_xdm
-    * @author Frans Englich <fenglich@trolltech.com>
+    * @author Frans Englich <frans.englich@nokia.com>
     */
     typedef NumericToAbstractFloatCaster<true> NumericToDoubleCaster;
 
@@ -131,7 +131,7 @@ namespace QPatternist
     * castFrom() uses Numeric::toFloat() for doing the actual casting.
     *
     * @ingroup Patternist_xdm
-    * @author Frans Englich <fenglich@trolltech.com>
+    * @author Frans Englich <frans.englich@nokia.com>
     */
     typedef NumericToAbstractFloatCaster<false> NumericToFloatCaster;
 
@@ -139,7 +139,7 @@ namespace QPatternist
      * @short Casts a string value, @c xs:string or @c xs:untypedAtomic, to @c xs:double.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     typedef StringToAbstractFloatCaster<true> StringToDoubleCaster;
 
@@ -147,7 +147,7 @@ namespace QPatternist
      * @short Casts a string value, @c xs:string or @c xs:untypedAtomic, to @c xs:float.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     typedef StringToAbstractFloatCaster<false> StringToFloatCaster;
 
@@ -155,7 +155,7 @@ namespace QPatternist
     * @short Casts a value of type @c xs:boolean to @c xs:double.
     *
     * @ingroup Patternist_xdm
-    * @author Frans Englich <fenglich@trolltech.com>
+    * @author Frans Englich <frans.englich@nokia.com>
     */
     typedef BooleanToAbstractFloatCaster<true> BooleanToDoubleCaster;
 
@@ -163,7 +163,7 @@ namespace QPatternist
      * @short Casts a value of type @c xs:boolean to @c xs:float.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     typedef BooleanToAbstractFloatCaster<false> BooleanToFloatCaster;
 }

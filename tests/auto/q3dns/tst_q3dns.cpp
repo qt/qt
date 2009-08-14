@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -113,7 +113,7 @@ void tst_Q3Dns::destructor()
 	{
 	    QApplication a( argc, argv );
 	    Q3Socket *s = new Q3Socket( &a );
-	    s->connectToHost( "ftp.trolltech.com", 21 );
+	    s->connectToHost( "ftp.qt.nokia.com", 21 );
 	    return 0;
 	}
     */
@@ -121,7 +121,7 @@ void tst_Q3Dns::destructor()
     char **v = 0;
     QCoreApplication a(c, v);
     Q3Socket *s = new Q3Socket(&a);
-    s->connectToHost("ftp.trolltech.com", 21);
+    s->connectToHost("ftp.qt.nokia.com", 21);
 
     // dummy verify since this test only makes shure that it does not crash
     QVERIFY( TRUE );
@@ -206,7 +206,7 @@ void tst_Q3Dns::simpleLookup()
     int c = 0;
     char **v = 0;
     QCoreApplication a(c, v);
-    Q3Dns dns("www.trolltech.com");
+    Q3Dns dns("qt.nokia.com");
 
     QSignalSpy spy(&dns, SIGNAL(resultsReady()));
     connect(&dns, SIGNAL(resultsReady()), this, SLOT(simpleLookupDone()));

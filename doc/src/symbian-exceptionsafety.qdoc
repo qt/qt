@@ -80,7 +80,7 @@
     Symbian leaves to standard C++ exceptions. The following help is provided:
 
     \list
-        \o \l qt_throwIfError() takes a Symbian
+        \o \l qt_symbian_throwIfError() takes a Symbian
         error code and throws an appropriate exception to represent it. 
         This will do nothing if the error code is not in fact an error. The 
         function is equivalent to Symbian's \c User::LeaveIfError.
@@ -104,11 +104,11 @@
     _LIT(KStr,"abc");
     TInt pos = KStr().Locate('c');
     // pos is a good value, >= 0, so no exception is thrown
-    qt_throwIfError(pos);
+    qt_symbian_throwIfError(pos);
     
     pos = KStr().Locate('d');
     // pos == KErrNotFound, so this throws an exception
-    qt_throwIfError(pos);
+    qt_symbian_throwIfError(pos);
     
     // we are asking for a lot of memory, HBufC::New may return NULL, so check it
     HBufC *buffer = q_check_ptr(HBufC::New(1000000));
@@ -137,11 +137,11 @@
     provided:
 
     \list
-        \o \l qt_exception2SymbianError() -
+        \o \l qt_symbian_exception2Error() -
         this takes a standard exception and gives an appropriate Symbian 
         error code. If no mapping is known for the exception type, 
         \c KErrGeneral is returned.
-        \o \l qt_exception2SymbianLeaveL() -
+        \o \l qt_symbian_exception2LeaveL() -
         this takes a standard exception and generates an appropriate Symbian 
         leave.
         \o \l QT_TRYCATCH_ERROR() - this macro

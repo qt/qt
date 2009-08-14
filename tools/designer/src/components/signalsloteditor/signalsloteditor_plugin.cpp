@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,7 +72,8 @@ void SignalSlotEditorPlugin::initialize(QDesignerFormEditorInterface *core)
     m_action = new QAction(tr("Edit Signals/Slots"), this);
     m_action->setObjectName(QLatin1String("__qt_edit_signals_slots_action"));
     m_action->setShortcut(tr("F4"));
-    QIcon icon(QIcon(core->resourceLocation() + QLatin1String("/signalslottool.png")));
+    QIcon icon = QIcon::fromTheme("designer-edit-signals",
+                                  QIcon(core->resourceLocation() + QLatin1String("/signalslottool.png")));
     m_action->setIcon(icon);
     m_action->setEnabled(false);
 

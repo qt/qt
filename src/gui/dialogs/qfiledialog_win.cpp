@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,6 +63,7 @@
 #if !defined(Q_WS_WINCE) && !defined(Q_CC_MINGW)
 #include <shobjidl.h>
 #endif
+
 #include <objbase.h>
 
 #if defined(__IFileDialog_INTERFACE_DEFINED__) \

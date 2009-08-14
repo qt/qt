@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -164,7 +164,7 @@ protected slots:
     void restartProcess();
     void waitForReadyReadInAReadyReadSlotSlot();
     void waitForBytesWrittenInABytesWrittenSlotSlot();
-    
+
 private:
     QProcess *process;
     qint64 bytesAvailable;
@@ -1805,8 +1805,9 @@ void tst_QProcess::setEnvironment_data()
 
 void tst_QProcess::setEnvironment()
 {
-#if !defined (Q_OS_WINCE)
-    // there is no concept of system variables on Windows CE as there is no console
+#if defined (Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+    QSKIP("OS doesn't support environment variables", SkipAll);
+#endif
 
     // make sure our environment variables are correct
     QVERIFY(qgetenv("tst_QProcess").isEmpty());
@@ -1882,7 +1883,6 @@ void tst_QProcess::setEnvironment()
 
         QCOMPARE(process.readAll(), value.toLocal8Bit());
     }
-#endif
 }
 //-----------------------------------------------------------------------------
 void tst_QProcess::systemEnvironment()

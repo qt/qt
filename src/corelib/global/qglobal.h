@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1336,7 +1336,7 @@ class QDataStream;
 
 /*
    No, this is not an evil backdoor. QT_BUILD_INTERNAL just exports more symbols
-   for Trolltech's internal unit tests. If you want slower loading times and more
+   for Qt's internal unit tests. If you want slower loading times and more
    symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.
 */
 #if defined(QT_BUILD_INTERNAL) && (defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)) && defined(QT_MAKEDLL)
@@ -2401,15 +2401,15 @@ QT_END_NAMESPACE
 namespace std { class exception; }
 #endif
 QT_BEGIN_NAMESPACE
-Q_CORE_EXPORT void qt_throwIfError(int error);
-Q_CORE_EXPORT void qt_exception2SymbianLeaveL(const std::exception& ex);
-Q_CORE_EXPORT int qt_exception2SymbianError(const std::exception& ex);
+Q_CORE_EXPORT void qt_symbian_throwIfError(int error);
+Q_CORE_EXPORT void qt_symbian_exception2LeaveL(const std::exception& ex);
+Q_CORE_EXPORT int qt_symbian_exception2Error(const std::exception& ex);
 
 #define QT_TRAP_THROWING(_f)                        \
     {                                               \
         TInt ____error;                             \
         TRAP(____error, _f);                        \
-        qt_throwIfError(____error);                 \
+        qt_symbian_throwIfError(____error);                 \
      }
 
 #define QT_TRYCATCH_ERROR(_err, _f)                         \
@@ -2418,7 +2418,7 @@ Q_CORE_EXPORT int qt_exception2SymbianError(const std::exception& ex);
         try {                                               \
             _f;                                             \
         } catch (const std::exception &____ex) {            \
-            _err = qt_exception2SymbianError(____ex);       \
+            _err = qt_symbian_exception2Error(____ex);       \
         }                                                   \
     }
 
