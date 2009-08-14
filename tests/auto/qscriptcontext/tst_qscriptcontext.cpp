@@ -77,6 +77,7 @@ private slots:
     void calledAsConstructor();
     void argumentsObjectInNative();
     void jsActivationObject();
+    void qobjectAsActivationObject();
 };
 
 tst_QScriptContext::tst_QScriptContext()
@@ -716,9 +717,7 @@ void tst_QScriptContext::getSetActivationObject()
     QCOMPARE(ctx->engine(), &eng);
 
     QScriptValue obj = eng.newObject();
-    QTest::ignoreMessage(QtWarningMsg, "QScriptContext::setActivationObject() failed: not an activation object");
     ctx->setActivationObject(obj);
-    QEXPECT_FAIL("", "Normal object cannot be set as activation object", Continue);
     QVERIFY(ctx->activationObject().equals(obj));
 
     {
@@ -911,6 +910,42 @@ void tst_QScriptContext::jsActivationObject()
     QVERIFY(result2.isObject());
     QCOMPARE(result2.property("v1").toInt32() , 42);
     QCOMPARE(result2.property("arguments").property(1).toString() , QString::fromLatin1("2"));
+}
+
+void tst_QScriptContext::qobjectAsActivationObject()
+{
+    QScriptEngine eng;
+    QObject object;
+    QScriptValue scriptObject = eng.newQObject(&object);
+    QScriptContext *ctx = eng.pushContext();
+    ctx->setActivationObject(scriptObject);
+    QVERIFY(ctx->activationObject().equals(scriptObject));
+
+    QVERIFY(!scriptObject.property("foo").isValid());
+    eng.evaluate("function foo() { return 123; }");
+    {
+        QScriptValue val = scriptObject.property("foo");
+        QVERIFY(val.isValid());
+        QVERIFY(val.isFunction());
+    }
+    QVERIFY(!eng.globalObject().property("foo").isValid());
+
+    QVERIFY(!scriptObject.property("bar").isValid());
+    eng.evaluate("var bar = 123");
+    {
+        QScriptValue val = scriptObject.property("bar");
+        QVERIFY(val.isValid());
+        QVERIFY(val.isNumber());
+        QCOMPARE(val.toInt32(), 123);
+    }
+    QVERIFY(!eng.globalObject().property("bar").isValid());
+
+    {
+        QScriptValue val = eng.evaluate("delete foo");
+        QVERIFY(val.isBool());
+        QVERIFY(val.toBool());
+        QVERIFY(!scriptObject.property("foo").isValid());
+    }
 }
 
 QTEST_MAIN(tst_QScriptContext)

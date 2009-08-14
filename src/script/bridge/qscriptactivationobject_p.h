@@ -64,20 +64,36 @@ namespace QScript
 
 class QScriptActivationObject : public JSC::JSVariableObject {
 public:
-    QScriptActivationObject(JSC::ExecState *callFrame);
+    QScriptActivationObject(JSC::ExecState *callFrame, JSC::JSObject *delegate = 0);
     virtual ~QScriptActivationObject();
     virtual bool isDynamicScope() const { return true; }
+
+    virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
+    virtual bool getPropertyAttributes(JSC::ExecState*, const JSC::Identifier&, unsigned&) const;
+    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
+
     virtual void putWithAttributes(JSC::ExecState *exec, const JSC::Identifier &propertyName, JSC::JSValue value, unsigned attributes);
+    virtual void put(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSValue value, JSC::PutPropertySlot&);
+    virtual void put(JSC::ExecState*, unsigned propertyName, JSC::JSValue value);
+
+    virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier& propertyName, bool checkDontDelete = true);
 
     virtual const JSC::ClassInfo* classInfo() const { return &info; }
     static const JSC::ClassInfo info;
 
     struct QScriptActivationObjectData : public JSVariableObjectData {
-        QScriptActivationObjectData(JSC::Register* registers)
-            : JSVariableObjectData(&symbolTable, registers)
+        QScriptActivationObjectData(JSC::Register* registers, JSC::JSObject *dlg)
+            : JSVariableObjectData(&symbolTable, registers),
+              delegate(dlg)
         { }
         JSC::SymbolTable symbolTable;
+        JSC::JSObject *delegate;
     };
+
+    JSC::JSObject *delegate() const
+    { return d_ptr()->delegate; }
+    void setDelegate(JSC::JSObject *delegate)
+    { d_ptr()->delegate = delegate; }
 
     QScriptActivationObjectData *d_ptr() const { return static_cast<QScriptActivationObjectData *>(d); }
 };

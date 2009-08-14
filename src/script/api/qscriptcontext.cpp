@@ -461,6 +461,13 @@ QScriptValue QScriptContext::activationObject() const
             result = new (frame)JSC::JSActivation(frame, body);
         }*/
     }
+
+    if (result && result->isObject(&QScript::QScriptActivationObject::info)
+        && (static_cast<QScript::QScriptActivationObject*>(result)->delegate() != 0)) {
+        // Return the object that property access is being delegated to
+        result = static_cast<QScript::QScriptActivationObject*>(result)->delegate();
+    }
+
     return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(result);
 }
 
@@ -485,15 +492,16 @@ void QScriptContext::setActivationObject(const QScriptValue &activation)
     JSC::JSObject *object = JSC::asObject(engine->scriptValueToJSCValue(activation));
     if (object == engine->originalGlobalObjectProxy)
         object = engine->originalGlobalObject();
-    if (!object->isVariableObject()) {
-        qWarning("QScriptContext::setActivationObject() failed: not an activation object");
-        return;
-    }
 
     uint flags = QScriptEnginePrivate::contextFlags(frame);
     if ((flags & QScriptEnginePrivate::NativeContext) && !(flags & QScriptEnginePrivate::HasScopeContext)) {
         //For native functions, we create a scope node
-        frame->setScopeChain(frame->scopeChain()->copy()->push(object));
+        JSC::JSObject *scope = object;
+        if (!scope->isVariableObject()) {
+            // Create a QScriptActivationObject that acts as a proxy
+            scope = new (frame) QScript::QScriptActivationObject(frame, scope);
+        }
+        frame->setScopeChain(frame->scopeChain()->copy()->push(scope));
         QScriptEnginePrivate::setContextFlags(frame, flags | QScriptEnginePrivate::HasScopeContext);
         return;
     }
@@ -502,7 +510,16 @@ void QScriptContext::setActivationObject(const QScriptValue &activation)
     JSC::ScopeChainNode *node = frame->scopeChain();
     while (node != 0) {
         if (node->object && node->object->isVariableObject()) {
-            node->object = object;
+            if (!object->isVariableObject()) {
+                if (node->object->isObject(&QScript::QScriptActivationObject::info)) {
+                    static_cast<QScript::QScriptActivationObject*>(node->object)->setDelegate(object);
+                } else {
+                    // Create a QScriptActivationObject that acts as a proxy
+                    node->object = new (frame) QScript::QScriptActivationObject(frame, object);
+                }
+            } else {
+                node->object = object;
+            }
             break;
         }
         node = node->next;
