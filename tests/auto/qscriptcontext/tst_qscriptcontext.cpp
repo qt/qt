@@ -709,6 +709,11 @@ void tst_QScriptContext::pushAndPopScope()
     QCOMPARE(ctx->scopeChain().size(), 1);
     QVERIFY(ctx->scopeChain().at(0).strictlyEquals(eng.globalObject()));
 
+    QVERIFY(ctx->popScope().strictlyEquals(eng.globalObject()));
+    ctx->pushScope(eng.globalObject());
+    QCOMPARE(ctx->scopeChain().size(), 1);
+    QVERIFY(ctx->scopeChain().at(0).strictlyEquals(eng.globalObject()));
+
     QScriptValue obj = eng.newObject();
     ctx->pushScope(obj);
     QCOMPARE(ctx->scopeChain().size(), 2);
@@ -758,24 +763,16 @@ void tst_QScriptContext::pushAndPopScope()
     QVERIFY(ctx->popScope().strictlyEquals(eng.globalObject()));
     QVERIFY(ctx->scopeChain().isEmpty());
 
+    // Used to work with old back-end, doesn't with new one because JSC requires that the last object in
+    // a scope chain is the Global Object.
+    QTest::ignoreMessage(QtWarningMsg, "QScriptContext::pushScope() failed: initial object in scope chain has to be the Global Object");
     ctx->pushScope(obj);
-    QCOMPARE(ctx->scopeChain().size(), 1);
-    QVERIFY(ctx->scopeChain().at(0).strictlyEquals(obj));
-    QVERIFY(!obj.property("foo").isValid());
-#if 0 // ### CRASHES, JSC expects last scope object to always be the Global Object
-    eng.evaluate("function foo() {}");
-    // function declarations should always end up in the activation object (ECMA-262, chapter 13)
-    QVERIFY(!obj.property("foo").isValid());
-#endif
-    QEXPECT_FAIL("", "JSC requires last object in scope chain to be the Global Object", Continue);
-    QVERIFY(ctx->activationObject().property("foo").isFunction());
+    QCOMPARE(ctx->scopeChain().size(), 0);
 
     QScriptEngine eng2;
     QScriptValue obj2 = eng2.newObject();
     QTest::ignoreMessage(QtWarningMsg, "QScriptContext::pushScope() failed: cannot push an object created in a different engine");
     ctx->pushScope(obj2);
-
-    QVERIFY(ctx->popScope().strictlyEquals(obj));
     QVERIFY(ctx->scopeChain().isEmpty());
 
     QVERIFY(!ctx->popScope().isValid());

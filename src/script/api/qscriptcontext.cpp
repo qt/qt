@@ -711,13 +711,22 @@ void QScriptContext::pushScope(const QScriptValue &object)
         return;
     }
     JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
-    JSC::JSValue jscObject = QScript::scriptEngineFromExec(frame)->scriptValueToJSCValue(object);
+    QScriptEnginePrivate *engine = QScript::scriptEngineFromExec(frame);
+    JSC::JSObject *jscObject = JSC::asObject(engine->scriptValueToJSCValue(object));
+    if (jscObject == engine->originalGlobalObjectProxy)
+        jscObject = engine->originalGlobalObject();
     JSC::ScopeChainNode *scope = frame->scopeChain();
     Q_ASSERT(scope != 0);
-    if (!scope->object) // pushing to an "empty" chain
-        scope->object = JSC::asObject(jscObject);
+    if (!scope->object) {
+        // pushing to an "empty" chain
+        if (!jscObject->isGlobalObject()) {
+            qWarning("QScriptContext::pushScope() failed: initial object in scope chain has to be the Global Object");
+            return;
+        }
+        scope->object = jscObject;
+    }
     else
-        frame->setScopeChain(scope->push(JSC::asObject(jscObject)));
+        frame->setScopeChain(scope->push(jscObject));
 }
 
 /*!
