@@ -336,9 +336,9 @@ EOT
 
 if [ -d "$repository/.git" -a -n "$lastImportRevison" ]; then
     echo >>commitlog.txt
-    echo "Changes in WebKit since the last update:" >>commitlog.txt
+    echo "Changes in WebKit/qt since the last update:" >>commitlog.txt
     echo >>commitlog.txt
-    git --git-dir=$repository/.git ls-files | egrep "ChangeLog$" | xargs git --git-dir=$repository/.git diff $lastImportRevison $rev -- | sed -n -e "s,^\+\(.*\),\1,p" >>commitlog.txt
+    git --git-dir=$repository/.git diff $lastImportRevison $rev -- WebKit/qt/ChangeLog | sed -n -e "s,^\+\(.*\),\1,p" >>commitlog.txt
 fi
 
 echo "Changes:"
