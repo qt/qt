@@ -2601,13 +2601,13 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
                 // float has been added in the meantime, redo
                 layoutStruct->pendingFloats.clear();
 
-                if (haveWordOrAnyWrapMode) {
-                    option.setWrapMode(QTextOption::WrapAnywhere);
-                    tl->setTextOption(option);
-                }
-
                 line.setLineWidth((right-left).toReal());
                 if (QFixed::fromReal(line.naturalTextWidth()) > right-left) {
+                    if (haveWordOrAnyWrapMode) {
+                        option.setWrapMode(QTextOption::WrapAnywhere);
+                        tl->setTextOption(option);
+                    }
+
                     layoutStruct->pendingFloats.clear();
                     // lines min width more than what we have
                     layoutStruct->y = findY(layoutStruct->y, layoutStruct, QFixed::fromReal(line.naturalTextWidth()));
@@ -2619,12 +2619,13 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
                     else
                         right -= text_indent;
                     line.setLineWidth(qMax<qreal>(line.naturalTextWidth(), (right-left).toReal()));
+
+                    if (haveWordOrAnyWrapMode) {
+                        option.setWrapMode(QTextOption::WordWrap);
+                        tl->setTextOption(option);
+                    }
                 }
 
-                if (haveWordOrAnyWrapMode) {
-                    option.setWrapMode(QTextOption::WordWrap);
-                    tl->setTextOption(option);
-                }
             }
 
             QFixed lineHeight = QFixed::fromReal(line.height());
