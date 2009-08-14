@@ -405,7 +405,6 @@ public:
     bool emitting;
     QFxParticleMotion *motion;
     QFxParticlesPainter *paintItem;
-    QPointer<QNetworkReply> reply;
 
     QList<QFxParticle> particles;
     QTickAnimationProxy<QFxParticlesPrivate, &QFxParticlesPrivate::tick> clock;
@@ -660,9 +659,9 @@ void QFxParticles::setSource(const QUrl &name)
     } else {
         d->url = name;
         Q_ASSERT(!name.isRelative());
-        d->reply = QFxPixmapCache::get(qmlEngine(this), d->url, &d->image);
-        if (d->reply)
-            connect(d->reply, SIGNAL(finished()), this, SLOT(imageLoaded()));
+        QNetworkReply *reply = QFxPixmapCache::get(qmlEngine(this), d->url, &d->image);
+        if (reply)
+            connect(reply, SIGNAL(finished()), this, SLOT(imageLoaded()));
         else {
             //### unify with imageLoaded
             d->paintItem->updateSize();

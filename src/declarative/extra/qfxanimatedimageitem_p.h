@@ -58,6 +58,7 @@
 QT_BEGIN_NAMESPACE
 
 class QMovie;
+class QNetworkReply;
 
 class QFxAnimatedImageItemPrivate : public QFxImagePrivate
 {
@@ -65,13 +66,14 @@ class QFxAnimatedImageItemPrivate : public QFxImagePrivate
 
 public:
     QFxAnimatedImageItemPrivate()
-      : playing(true), paused(false), _movie(0)
+      : playing(true), paused(false), _movie(0), reply(0)
     {
     }
 
     bool playing;
     bool paused;
     QMovie *_movie;
+    QNetworkReply *reply;
 };
 
 QT_END_NAMESPACE

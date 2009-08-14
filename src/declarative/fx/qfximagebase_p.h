@@ -73,7 +73,6 @@ public:
     QPixmap pix;
     QFxImageBase::Status status;
     QUrl url;
-    QPointer<QNetworkReply> reply;
     qreal progress;
 };
 
