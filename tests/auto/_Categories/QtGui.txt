@@ -1,6 +1,6 @@
 exceptionsafety_objects
 #gestures  This test is incomplete and also missing from auto.pro -> disabled for now
-#languagechange  Uses unexported method QThreadData::current() and also missing from auto.pro -> disabled for now
+languagechange
 math3d
 modeltest
 qabstractbutton
@@ -100,7 +100,7 @@ qmainwindow
 #qmdisubwindow not relevant for S60, skip for now
 qmenu
 qmenubar
-#qmessagebox that's a hanger
+qmessagebox
 qmouseevent
 qmouseevent_modal
 qmovie
