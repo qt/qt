@@ -584,7 +584,7 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
                "QAbstractItemView::setModel",
                "The parent of a top level index should be invalid");
 
-    if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
+    if (d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
         connect(d->model, SIGNAL(destroyed()),
                 this, SLOT(_q_modelDestroyed()));
         connect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
