@@ -133,6 +133,8 @@ bool FactoryPrivate::createBackend()
                 continue;
             }
 
+			QStringList plugins(dir.entryList(QDir::Files));
+
 #ifdef Q_OS_SYMBIAN
             /* On Symbian OS we might have two plugins, one which uses Symbian
              * MMF framework("phonon_mmf"), and one which uses Real Networks's
