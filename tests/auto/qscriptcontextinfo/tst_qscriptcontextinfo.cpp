@@ -149,10 +149,10 @@ void tst_QScriptContextInfo::nativeFunction()
         QScriptContextInfo info = lst.at(1);
         QVERIFY(!info.isNull());
         QCOMPARE(info.functionType(), QScriptContextInfo::NativeFunction);
-        QEXPECT_FAIL("", "Script ID isn't valid for evaluate() call", Abort);
         QVERIFY(info.scriptId() != -1);
         QCOMPARE(info.fileName(), fileName);
         QCOMPARE(info.lineNumber(), lineNumber);
+        QEXPECT_FAIL("", "columnNumber doesn't work", Continue);
         QCOMPARE(info.columnNumber(), 1);
         QCOMPARE(info.functionName(), QString());
         QCOMPARE(info.functionEndLineNumber(), -1);
@@ -200,10 +200,10 @@ void tst_QScriptContextInfo::scriptFunction()
         // evaluate()
         QScriptContextInfo info = lst.at(2);
         QCOMPARE(info.functionType(), QScriptContextInfo::NativeFunction);
-        QEXPECT_FAIL("", "Script ID is invalid for evaluate() call", Abort);
         QVERIFY(info.scriptId() != -1);
         QCOMPARE(info.fileName(), fileName);
         QCOMPARE(info.lineNumber(), lineNumber + 3);
+        QEXPECT_FAIL("", "columnNumber doesn't work", Continue);
         QCOMPARE(info.columnNumber(), 1);
         QCOMPARE(info.functionName(), QString());
         QCOMPARE(info.functionEndLineNumber(), -1);

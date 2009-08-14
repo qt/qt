@@ -160,14 +160,42 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     columnNumber = -1;
 
     const JSC::ExecState *frame = QScriptEnginePrivate::frameForContext(context);
+
+    // Get the line number:
+
+    //We need to know the context directly up in the backtrace, in order to get the line number, and adjust the global context
+    QScriptContext *rewindContext = context->engine()->currentContext();
+    if (rewindContext != context) {  //ignore top context (native function)
+        // rewind the stack from the top in order to find the frame from the caller where the returnPC is stored
+        while (rewindContext && rewindContext->parentContext() != context)
+            rewindContext = rewindContext->parentContext();
+        if (rewindContext) {
+            JSC::ExecState *aboveFrame = QScriptEnginePrivate::frameForContext(rewindContext);
+            frame = aboveFrame->callerFrame()->removeHostCallFrameFlag(); //it will be different for the global context.
+
+            JSC::Instruction *returnPC = aboveFrame->returnPC();
+            JSC::CodeBlock *codeBlock = frame->codeBlock();
+            if (returnPC && codeBlock) {
+                lineNumber = codeBlock->lineNumberForBytecodeOffset(const_cast<JSC::ExecState *>(frame),
+                                                                    returnPC - codeBlock->instructions().begin());
+            }
+        }
+    }
+
+    // Get the filename and the scriptId:
+    JSC::CodeBlock *codeBlock = frame->codeBlock();
+    if (codeBlock) {
+           JSC::SourceProvider *source = codeBlock->source();
+           scriptId = source->asID();
+           fileName = QScript::qtStringFromJSCUString(source->url());
+    }
+
+    // Get the others informations:
     JSC::JSObject *callee = frame->callee();
     if (callee && callee->isObject(&JSC::InternalFunction::info))
         functionName = QScript::qtStringFromJSCUString(JSC::asInternalFunction(callee)->name(&frame->globalData()));
     if (callee && callee->isObject(&JSC::JSFunction::info)) {
         functionType = QScriptContextInfo::ScriptFunction;
-        JSC::SourceProvider *source = frame->codeBlock()->source();
-        scriptId = source->asID();
-        fileName = QScript::qtStringFromJSCUString(source->url());
         JSC::FunctionBodyNode *body = JSC::asFunction(callee)->body();
         functionStartLineNumber = body->firstLine();
         functionEndLineNumber = body->lastLine();
@@ -190,24 +218,6 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     else if (callee && callee->isObject(&QScript::QtPropertyFunction::info)) {
         functionType = QScriptContextInfo::QtPropertyFunction;
         functionMetaIndex = static_cast<QScript::QtPropertyFunction*>(callee)->propertyIndex();
-    }
-
-    // get the lineNumber:
-    QScriptContext *rewindContext = context->engine()->currentContext();
-    if (rewindContext == context) {
-        //ignore native function
-    } else {
-        // rewind the stack from the top in order to find the frame from the caller where the returnPC is stored
-        while (rewindContext && rewindContext->parentContext() != context)
-            rewindContext = rewindContext->parentContext();
-        if (rewindContext) {
-            JSC::Instruction *returnPC = QScriptEnginePrivate::frameForContext(rewindContext)->returnPC();
-            JSC::CodeBlock *codeBlock = frame->codeBlock();
-            if (returnPC && codeBlock) {
-                lineNumber = codeBlock->lineNumberForBytecodeOffset(const_cast<JSC::ExecState *>(frame),
-                                                                    returnPC - codeBlock->instructions().begin());
-            }
-        }
     }
 }
 

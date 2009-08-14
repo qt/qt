@@ -557,9 +557,9 @@ void tst_QScriptContext::backtrace()
 
     QString fileName = "testfile";
     QStringList expected;
-    expected << "<native>(123)@:-1"
-             << "foo(hello,[object Object])@testfile:2"
-             << "<global>()@testfile:4";
+    expected << "<native> (123) at -1"
+             << "foo ([object Object], [object global]) at testfile:2"
+             << "<global> () at testfile:4";
 
     QScriptValue ret = eng.evaluate(
         "function foo() {\n"
@@ -569,7 +569,6 @@ void tst_QScriptContext::backtrace()
 
     QVERIFY(ret.isArray());
     QStringList slist = qscriptvalue_cast<QStringList>(ret);
-    QEXPECT_FAIL("", "Backtrace is not correct", Continue);
     QCOMPARE(slist, expected);
 }
 
