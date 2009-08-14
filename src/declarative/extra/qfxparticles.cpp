@@ -50,7 +50,7 @@
 #ifndef INT_MAX
 #define INT_MAX 2147483647
 #endif
-#include <qfxpixmap.h>
+#include <qfxpixmapcache.h>
 #include <private/qfxperf_p.h>
 #include <private/qmlanimation_p.h>
 #include <QNetworkReply>
@@ -617,7 +617,7 @@ QFxParticles::~QFxParticles()
 {
     Q_D(QFxParticles);
     if (!d->url.isEmpty())
-        QFxPixmap::cancelGet(d->url, this);
+        QFxPixmapCache::cancelGet(d->url, this);
 }
 
 /*!
@@ -638,7 +638,7 @@ QUrl QFxParticles::source() const
 void QFxParticles::imageLoaded()
 {
     Q_D(QFxParticles);
-    QFxPixmap::find(d->url, &d->image);
+    QFxPixmapCache::find(d->url, &d->image);
     d->paintItem->updateSize();
     d->paintItem->update();
 }
@@ -651,7 +651,7 @@ void QFxParticles::setSource(const QUrl &name)
         return;
 
     if (!d->url.isEmpty())
-        QFxPixmap::cancelGet(d->url, this);
+        QFxPixmapCache::cancelGet(d->url, this);
     if (name.isEmpty()) {
         d->url = name;
         d->image = QPixmap();
@@ -660,7 +660,7 @@ void QFxParticles::setSource(const QUrl &name)
     } else {
         d->url = name;
         Q_ASSERT(!name.isRelative());
-        d->reply = QFxPixmap::get(qmlEngine(this), d->url, &d->image);
+        d->reply = QFxPixmapCache::get(qmlEngine(this), d->url, &d->image);
         if (d->reply)
             connect(d->reply, SIGNAL(finished()), this, SLOT(imageLoaded()));
         else {

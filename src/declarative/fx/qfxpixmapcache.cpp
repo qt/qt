@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qfxpixmap.h"
+#include "qfxpixmapcache.h"
 #include <QImageReader>
 #include <QHash>
 #include <QNetworkReply>
@@ -116,16 +116,14 @@ static bool readImage(QIODevice *dev, QPixmap *pixmap)
 
 /*!
     \internal
-    \class QFxPixmap
-    \ingroup group_utility
+    \class QFxPixmapCache
     \brief Enacapsultes a pixmap for QFx items.
 
     This class is NOT reentrant.
-    The pixmap cache will grow indefinately.
  */
 
 
-bool QFxPixmap::find(const QUrl& url, QPixmap *pixmap)
+bool QFxPixmapCache::find(const QUrl& url, QPixmap *pixmap)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::PixmapLoad> perf;
@@ -149,7 +147,7 @@ bool QFxPixmap::find(const QUrl& url, QPixmap *pixmap)
             QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
             if (iter == qfxActiveNetworkReplies.end()) {
                 // API usage error
-                qWarning() << "QFxPixmap: URL not loaded" << url;
+                qWarning() << "QFxPixmapCache: URL not loaded" << url;
             } else {
                 if ((*iter)->reply->error()) {
                     qWarning() << "Network error loading" << url << (*iter)->reply->errorString();
@@ -175,7 +173,7 @@ bool QFxPixmap::find(const QUrl& url, QPixmap *pixmap)
     Returns a QNetworkReply if the image is not immediately available, otherwise
     returns 0.  The QNetworkReply must not be stored - it may be destroyed at any time.
 */
-QNetworkReply *QFxPixmap::get(QmlEngine *engine, const QUrl& url, QPixmap *pixmap)
+QNetworkReply *QFxPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *pixmap)
 {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     if (url.scheme()==QLatin1String("file")) {
@@ -220,7 +218,7 @@ QNetworkReply *QFxPixmap::get(QmlEngine *engine, const QUrl& url, QPixmap *pixma
     Any connections to the QNetworkReply returned by get() will be
     disconnected.
 */
-void QFxPixmap::cancelGet(const QUrl& url, QObject* obj)
+void QFxPixmapCache::cancelGet(const QUrl& url, QObject* obj)
 {
     QString key = url.toString();
     QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);

@@ -45,7 +45,7 @@
 #include <QNetworkReply>
 #include <QFile>
 #include <QtDeclarative/qmlengine.h>
-#include <QtDeclarative/qfxpixmap.h>
+#include <QtDeclarative/qfxpixmapcache.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,7 +65,7 @@ QFxImageBase::~QFxImageBase()
 {
     Q_D(QFxImageBase);
     if (!d->url.isEmpty())
-        QFxPixmap::cancelGet(d->url, this);
+        QFxPixmapCache::cancelGet(d->url, this);
 }
 
 QFxImageBase::Status QFxImageBase::status() const
@@ -103,7 +103,7 @@ void QFxImageBase::setSource(const QUrl &url)
         return;
 
     if (!d->url.isEmpty())
-        QFxPixmap::cancelGet(d->url, this);
+        QFxPixmapCache::cancelGet(d->url, this);
 
     d->url = url;
     if (d->progress != 0.0) {
@@ -123,7 +123,7 @@ void QFxImageBase::setSource(const QUrl &url)
         update();
     } else {
         d->status = Loading;
-            d->reply = QFxPixmap::get(qmlEngine(this), d->url, &d->pix);
+            d->reply = QFxPixmapCache::get(qmlEngine(this), d->url, &d->pix);
             if (d->reply) {
                 connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
                 connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
@@ -156,7 +156,7 @@ void QFxImageBase::requestFinished()
             if (d->reply->error() != QNetworkReply::NoError)
                 d->status = Error;
         }
-        QFxPixmap::find(d->url, &d->pix);
+        QFxPixmapCache::find(d->url, &d->pix);
     setImplicitWidth(d->pix.width());
     setImplicitHeight(d->pix.height());
 

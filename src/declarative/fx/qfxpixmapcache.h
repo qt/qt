@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFXPIXMAP_H
-#define QFXPIXMAP_H
+#ifndef QFXPIXMAPCACHE_H
+#define QFXPIXMAPCACHE_H
 
 #include <QtCore/QString>
 #include <QtGui/QPixmap>
@@ -54,17 +54,17 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 class QmlEngine;
 class QNetworkReply;
-class Q_DECLARATIVE_EXPORT QFxPixmap    //### rename QFxPixmapCache
+class Q_DECLARATIVE_EXPORT QFxPixmapCache
 {
 public:
     static QNetworkReply *get(QmlEngine *, const QUrl& url, QPixmap *pixmap);
     static void cancelGet(const QUrl& url, QObject* obj);
 
-    static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QFxPixmap::get, and finished. Or must be a local file.
+    static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QFxPixmapCache::get, and finished. Or must be a local file.
 };
-
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
-#endif // QFXPIXMAP_H
+
+#endif // QFXPIXMAPCACHE_H
