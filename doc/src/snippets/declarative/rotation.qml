@@ -10,19 +10,19 @@ Rect {
         Image { source: "pics/qt.png" }
         Image {
             source: "pics/qt.png"
-            transform: Rotation3D { axis.startX: 30; axis.endX: 30; axis.endY: 60; angle: 18 }
+            transform: Rotation { origin.x: 30; axis.y: 60; axis.z: 0 angle: 18 }
         }
         Image {
             source: "pics/qt.png"
-            transform: Rotation3D { axis.startX: 30; axis.endX: 30; axis.endY: 60; angle: 36 }
+            transform: Rotation { origin.x: 30; axis.y: 60; axis.z: 0 angle: 36 }
         }
         Image {
             source: "pics/qt.png"
-            transform: Rotation3D { axis.startX: 30; axis.endX: 30; axis.endY: 60; angle: 54 }
+            transform: Rotation { origin.x: 30; axis.y: 60; axis.z: 0; angle: 54 }
         }
         Image {
             source: "pics/qt.png"
-            transform: Rotation3D { axis.startX: 30; axis.endX: 30; axis.endY: 60; angle: 72 }
+            transform: Rotation { origin.x: 30; axis.y: 60; axis.z: 0; angle: 72 }
         }
     }
 //! [0]

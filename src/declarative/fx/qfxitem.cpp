@@ -77,6 +77,92 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Scale,QGraphicsScale)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 
 /*!
+    \qmlclass Transform
+    \brief A transformation.
+*/
+
+/*!
+    \qmlclass Scale
+    \brief A Scale object provides a way to scale an Item.
+
+    The scale object gives more control over scaling than using Item's scale property. Specifically,
+    it allows a different scale for the x and y axes, and allows the scale to be relative to an
+    arbitrary point.
+
+    The following example scales the X axis of the Rect, relative to its interior point 25, 25:
+    \qml
+    Rect {
+        width: 100; height: 100
+        color: "blue"
+        transform: Scale { origin.x: 25; origin.y: 25; xScale: 3}
+    }
+    \endqml
+*/
+
+/*!
+    \qmlproperty real Scale::origin.x
+    \qmlproperty real Scale::origin.y
+
+    The origin point for the scale. The scale will be relative to this point.
+*/
+
+/*!
+    \qmlproperty real Scale::xScale
+
+    The scaling factor for the X axis.
+*/
+
+/*!
+    \qmlproperty real Scale::yScale
+
+    The scaling factor for the Y axis.
+*/
+
+/*!
+    \qmlclass Rotation
+    \brief A Rotation object provides a way to rotate an Item around a point using an axis in 3D space.
+
+    The following example rotates a Rect around its interior point 25, 25:
+    \qml
+    Rect {
+        width: 100; height: 100
+        color: "blue"
+        transform: Rotation { origin.x: 25; origin.y: 25; angle: 45}
+    }
+    \endqml
+
+    Here is an example of various rotations applied to an \l Image.
+    \snippet doc/src/snippets/declarative/rotation.qml 0
+
+    \image axisrotation.png
+*/
+
+/*!
+    \qmlproperty real Rotation::origin.x
+    \qmlproperty real Rotation::origin.y
+
+    The point to rotate around.
+*/
+
+/*!
+    \qmlproperty real Rotation::axis.x
+    \qmlproperty real Rotation::axis.y
+    \qmlproperty real Rotation::axis.z
+
+    A rotation axis is specified by a vector in 3D space By default the vector defines a rotation around the z-Axis.
+
+    \image 3d-rotation-axis.png
+
+*/
+
+/*!
+    \qmlproperty real Rotation::angle
+
+    The angle, in degrees, to rotate.
+*/
+
+
+/*!
     \group group_animation
     \title Animation
 */
