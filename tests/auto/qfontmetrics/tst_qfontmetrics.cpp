@@ -71,7 +71,7 @@ private slots:
     void elidedText();
     void veryNarrowElidedText();
     void averageCharWidth();
-    void elidedMultiLenght();
+    void elidedMultiLength();
 };
 
 tst_QFontMetrics::tst_QFontMetrics()
@@ -203,7 +203,7 @@ void tst_QFontMetrics::averageCharWidth()
     QVERIFY(fmf.averageCharWidth() != 0);
 }
 
-void tst_QFontMetrics::elidedMultiLenght()
+void tst_QFontMetrics::elidedMultiLength()
 {
     QString text1 = "Long Text 1\x9cShorter\x9csmall";
     QString text1_long = "Long Text 1";
