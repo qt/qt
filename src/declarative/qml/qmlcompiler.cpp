@@ -1490,7 +1490,7 @@ bool QmlCompiler::buildValueTypeProperty(QObject *type,
     foreach (Property *prop, obj->properties) {
         int idx = type->metaObject()->indexOfProperty(prop->name.constData());
         if (idx == -1)
-            COMPILE_EXCEPTION(prop, "Cannot assign to non-existant property");
+            COMPILE_EXCEPTION(prop, "Cannot assign to non-existant property" << prop->name);
         QMetaProperty p = type->metaObject()->property(idx);
         prop->index = idx;
         prop->type = p.userType();
