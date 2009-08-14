@@ -147,8 +147,6 @@ struct AnchorData : public QSimplexVariable {
 
     virtual void updateChildrenSizes() { };
 
-    virtual void refreshSizeHints() { };
-
     void dump(int indent = 2);
 
     inline QString toString() const;
@@ -199,7 +197,6 @@ struct SequentialAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
-    virtual void refreshSizeHints();
 
     void setVertices(const QVector<AnchorVertex*> &vertices)
     {
@@ -223,8 +220,6 @@ struct ParallelAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
-    virtual void refreshSizeHints();
-
 
     AnchorData* firstEdge;
     AnchorData* secondEdge;
