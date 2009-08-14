@@ -194,7 +194,7 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
     QString string = v->value.asScript();
 
     if (!prop.isWritable())
-        COMPILE_EXCEPTION(v, "Invalid property assignment: read-only property");
+        COMPILE_EXCEPTION(v, "Invalid property assignment:" << QLatin1String(prop.name()) << "is a read-only property");
 
     if (prop.isEnumType()) {
         int value;
@@ -2042,7 +2042,7 @@ bool QmlCompiler::buildBinding(QmlParser::Value *value,
 
     QMetaProperty mp = prop->parent->metaObject()->property(prop->index);
     if (!mp.isWritable() && !QmlMetaType::isList(prop->type))
-        COMPILE_EXCEPTION(prop, "Invalid property assignment: read-only property");
+        COMPILE_EXCEPTION(prop, "Invalid property assignment:" << QString::fromLatin1(prop->name) << "is a read-only property");
 
     BindingReference reference;
     reference.expression = value->value;
