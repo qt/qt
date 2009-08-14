@@ -1743,7 +1743,7 @@ static void parseOpacity(QSvgNode *node,
     const QString value = attributes.value(QLatin1String("opacity")).toString().trimmed();
 
     bool ok = false;
-    qreal op = value.toReal(&ok);
+    qreal op = value.toDouble(&ok);
 
     if (ok) {
         QSvgOpacityStyle *opacity = new QSvgOpacityStyle(qBound(qreal(0.0), op, qreal(1.0)));
