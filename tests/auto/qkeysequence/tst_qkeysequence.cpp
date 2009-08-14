@@ -311,15 +311,7 @@ void tst_QKeySequence::standardKeys_data()
     QTest::newRow("zoomOut") << (int)QKeySequence::ZoomOut<< QString("CTRL+-");
     QTest::newRow("whatsthis") << (int)QKeySequence::WhatsThis<< QString("SHIFT+F1");
 
-#ifndef Q_WS_MAC
-    QTest::newRow("help") << (int)QKeySequence::HelpContents<< QString("F1");
-    QTest::newRow("nextChild") << (int)QKeySequence::NextChild<< QString("CTRL+Tab");
-    QTest::newRow("previousChild") << (int)QKeySequence::PreviousChild<< QString("CTRL+SHIFT+BACKTAB");
-    QTest::newRow("forward") << (int)QKeySequence::Forward << QString("ALT+RIGHT");
-    QTest::newRow("backward") << (int)QKeySequence::Back << QString("ALT+LEFT");
-    QTest::newRow("MoveToEndOfBlock") << (int)QKeySequence::MoveToEndOfBlock<< QString(""); //mac only
-    QTest::newRow("SelectEndOfDocument") << (int)QKeySequence::SelectEndOfDocument<< QString("CTRL+SHIFT+END"); //mac only
-#else
+#if defined(Q_WS_MAC)
     QTest::newRow("help") << (int)QKeySequence::HelpContents<< QString("Ctrl+?");
     QTest::newRow("nextChild") << (int)QKeySequence::NextChild << QString("CTRL+}");
     QTest::newRow("previousChild") << (int)QKeySequence::PreviousChild << QString("CTRL+{");
@@ -327,6 +319,17 @@ void tst_QKeySequence::standardKeys_data()
     QTest::newRow("forward") << (int)QKeySequence::Forward << QString("CTRL+]");
     QTest::newRow("backward") << (int)QKeySequence::Back << QString("CTRL+[");
     QTest::newRow("SelectEndOfDocument") << (int)QKeySequence::SelectEndOfDocument<< QString("CTRL+SHIFT+DOWN"); //mac only
+#elif defined(Q_WS_S60)
+    QTest::newRow("help") << (int)QKeySequence::HelpContents<< QString("F2");
+    QTest::newRow("SelectEndOfDocument") << (int)QKeySequence::SelectEndOfDocument<< QString("CTRL+SHIFT+END"); //mac only
+#else
+    QTest::newRow("help") << (int)QKeySequence::HelpContents<< QString("F1");
+    QTest::newRow("nextChild") << (int)QKeySequence::NextChild<< QString("CTRL+Tab");
+    QTest::newRow("previousChild") << (int)QKeySequence::PreviousChild<< QString("CTRL+SHIFT+BACKTAB");
+    QTest::newRow("forward") << (int)QKeySequence::Forward << QString("ALT+RIGHT");
+    QTest::newRow("backward") << (int)QKeySequence::Back << QString("ALT+LEFT");
+    QTest::newRow("MoveToEndOfBlock") << (int)QKeySequence::MoveToEndOfBlock<< QString(""); //mac only
+    QTest::newRow("SelectEndOfDocument") << (int)QKeySequence::SelectEndOfDocument<< QString("CTRL+SHIFT+END"); //mac only
 #endif
 }
 
@@ -343,7 +346,7 @@ void tst_QKeySequence::keyBindings()
 {
     QList<QKeySequence> bindings = QKeySequence::keyBindings(QKeySequence::Copy);
     QList<QKeySequence> expected;
-#ifdef Q_WS_MAC
+#if defined(Q_WS_MAC) || defined (Q_WS_S60)
     expected  << QKeySequence("CTRL+C");
 #elif defined Q_WS_X11
     expected  << QKeySequence("CTRL+C") << QKeySequence("F16") << QKeySequence("CTRL+INSERT");
@@ -505,7 +508,7 @@ void tst_QKeySequence::translated()
 #ifdef Q_WS_MAC
     QSKIP("No need to translate modifiers on Mac OS X", SkipAll);
 #elif defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
-    QSKIP("No need to translate modifiers on WinCE", SkipAll);
+    QSKIP("No need to translate modifiers on WinCE or Symbian", SkipAll);
 #endif
 
     qApp->installTranslator(ourTranslator);
