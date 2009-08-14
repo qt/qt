@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>engines.qml</file>
+    </qresource>
+</RCC>
