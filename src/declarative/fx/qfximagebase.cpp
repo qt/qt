@@ -123,25 +123,25 @@ void QFxImageBase::setSource(const QUrl &url)
         update();
     } else {
         d->status = Loading;
-            d->reply = QFxPixmapCache::get(qmlEngine(this), d->url, &d->pix);
-            if (d->reply) {
-                connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
-                connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
-                        this, SLOT(requestProgress(qint64,qint64)));
-            } else {
-                //### should be unified with requestFinished
-                setImplicitWidth(d->pix.width());
-                setImplicitHeight(d->pix.height());
+        QNetworkReply *reply = QFxPixmapCache::get(qmlEngine(this), d->url, &d->pix);
+        if (reply) {
+            connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+            connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+                    this, SLOT(requestProgress(qint64,qint64)));
+        } else {
+            //### should be unified with requestFinished
+            setImplicitWidth(d->pix.width());
+            setImplicitHeight(d->pix.height());
 
-                if (d->status == Loading)
-                    d->status = Ready;
-                d->progress = 1.0;
-                emit statusChanged(d->status);
-                emit sourceChanged(d->url);
-                emit progressChanged(1.0);
-                update();
-            }
+            if (d->status == Loading)
+                d->status = Ready;
+            d->progress = 1.0;
+            emit statusChanged(d->status);
+            emit sourceChanged(d->url);
+            emit progressChanged(1.0);
+            update();
         }
+    }
 
     emit statusChanged(d->status);
 }
@@ -149,14 +149,8 @@ void QFxImageBase::setSource(const QUrl &url)
 void QFxImageBase::requestFinished()
 {
     Q_D(QFxImageBase);
-        if (d->reply) {
-            //###disconnect really needed?
-            disconnect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
-                       this, SLOT(requestProgress(qint64,qint64)));
-            if (d->reply->error() != QNetworkReply::NoError)
-                d->status = Error;
-        }
-        QFxPixmapCache::find(d->url, &d->pix);
+    if (!QFxPixmapCache::find(d->url, &d->pix))
+        d->status = Error;
     setImplicitWidth(d->pix.width());
     setImplicitHeight(d->pix.height());
 
