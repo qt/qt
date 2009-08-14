@@ -202,10 +202,13 @@ return a null QPixmap.
 
 QPixmap QPixmap::fromSymbianCFbsBitmap(CFbsBitmap *bitmap)
 {
+    if (!bitmap)
+        return QPixmap();
+
     int width = bitmap->SizeInPixels().iWidth;
     int height = bitmap->SizeInPixels().iHeight;
 
-    if (!bitmap || width <= 0 || height <= 0 || bitmap->IsCompressedInRAM())
+    if (width <= 0 || height <= 0 || bitmap->IsCompressedInRAM())
         return QPixmap();
 
     TDisplayMode displayMode = bitmap->DisplayMode();
