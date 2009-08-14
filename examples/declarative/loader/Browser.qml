@@ -36,7 +36,7 @@ Rect {
                 id: NameText
                 anchors.fill: parent; vAlign: "AlignVCenter"
                 text: fileName; anchors.leftMargin: 32
-                font.size: 10
+                font.pointSize: 10
                 color: activePalette.windowText
             }
             MouseRegion {

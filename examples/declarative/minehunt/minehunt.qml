@@ -148,7 +148,7 @@ Item {
         y: 380
         Text {
             color: "white"
-            font.size: 18
+            font.pointSize: 18
             x: 20
             y: 20
         }

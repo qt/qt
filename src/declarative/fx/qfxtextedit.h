@@ -71,7 +71,7 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor)
     Q_PROPERTY(QColor highlightedTextColor READ highlightedTextColor WRITE setHighlightedTextColor)
-    Q_PROPERTY(QmlFont * font READ font)
+    Q_PROPERTY(QFont font READ font WRITE setFont)
     Q_PROPERTY(HAlignment hAlign READ hAlign WRITE setHAlign)
     Q_PROPERTY(VAlignment vAlign READ vAlign WRITE setVAlign)
     Q_PROPERTY(bool wrap READ wrap WRITE setWrap)
@@ -114,8 +114,8 @@ public:
     TextFormat textFormat() const;
     void setTextFormat(TextFormat format);
 
-    // leave in, have affect the default text
-    QmlFont *font();
+    QFont font() const;
+    void setFont(const QFont &font);
 
     QColor color() const;
     void setColor(const QColor &c);
@@ -192,7 +192,6 @@ public Q_SLOTS:
     void selectAll();
 
 private Q_SLOTS:
-    void fontChanged();
     void updateImgCache(const QRectF &rect);
     void q_textChanged();
     void updateSelectionMarkers();
@@ -223,8 +222,6 @@ protected:
 
     void drawContents(QPainter *, const QRect &);
 private:
-
-    friend class QmlFont;
     Q_DISABLE_COPY(QFxTextEdit)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxTextEdit)
 };

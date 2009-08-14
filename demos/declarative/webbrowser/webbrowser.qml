@@ -87,7 +87,7 @@ Item {
                     style: "Raised"
 
                     font.family: "Helvetica"
-                    font.size: 10
+                    font.pointSize: 10
                     font.bold: true
 
                     anchors.left: Header.left
@@ -136,7 +136,7 @@ Item {
                             /*<<<<<<< HEAD:demos/declarative/webbrowser/webbrowser.qml
                             text: MyWebView.url == '' ? ' ' : MyWebView.url
                             wrap: false
-                            font.size: 11
+                            font.pointSize: 11
                             color: "#555555"
                             focusOnPress: true
                             =======*/

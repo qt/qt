@@ -49,7 +49,7 @@ Rect {
                         text: '<a href=\'' + link + '\'>' + title + '</a>'
                         font.bold: true
                         font.family: "Helvetica"
-                        font.size: 14
+                        font.pointSize: 14
                         onLinkActivated: { print('link clicked: ' + link) }
                     }
                     Text {

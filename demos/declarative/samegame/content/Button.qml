@@ -13,6 +13,6 @@ Rect {
     MouseRegion { id:mr; anchors.fill: parent; onClicked: page.clicked() }
     Text {
         id: txtItem; text: page.text; anchors.centerIn: page; color: activePalette.buttonText 
-        font.size: 14;
+        font.pointSize: 14;
     }
 }

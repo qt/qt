@@ -18,7 +18,7 @@ Rect {
         x: 20
         y: 20
         height: 40
-        font.size: 14
+        font.pointSize: 14
         font.bold: true
         width: 370
         text: day
@@ -50,7 +50,7 @@ Rect {
                 TextEdit {
                     id: MyText
                     smooth: true
-                    font.size: 28
+                    font.pointSize: 28
                     readOnly: false
                     x: -104
                     y: 36

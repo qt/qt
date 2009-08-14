@@ -24,21 +24,21 @@ Rect {
             color: Palette.windowText
             width: parent.width; elide: "ElideRight"
             font.family: "Times"
-            font.size: 32
+            font.pointSize: 32
         }
         Text {
             text: myText
             color: Palette.windowText
             width: parent.width; elide: "ElideRight"
             font.family: FixedFont.name
-            font.size: 32
+            font.pointSize: 32
         }
         Text {
             text: myText
             color: Palette.windowText
             width: parent.width; elide: "ElideRight"
             font.family: LocalFont.name
-            font.size: 32
+            font.pointSize: 32
         }
         Text {
             text: {
@@ -49,7 +49,7 @@ Rect {
             color: Palette.windowText
             width: parent.width; elide: "ElideRight"
             font.family: WebFont.name
-            font.size: 32
+            font.pointSize: 32
         }
         Text {
             text: {
@@ -60,7 +60,7 @@ Rect {
             color: Palette.windowText
             width: parent.width; elide: "ElideRight"
             font.family: WebFont2.name
-            font.size: 32
+            font.pointSize: 32
         }
     }
 }

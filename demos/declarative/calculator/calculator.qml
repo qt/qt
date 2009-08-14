@@ -17,7 +17,7 @@ Rect {
 
             Text {
                 id: CurNum
-                font.bold: true; font.size: 16
+                font.bold: true; font.pointSize: 16
                 color: Palette.text
                 anchors.right: Container.right
                 anchors.rightMargin: 5
@@ -27,7 +27,7 @@ Rect {
             Text {
                 id: CurrentOperation
                 color: Palette.text
-                font.bold: true; font.size: 16
+                font.bold: true; font.pointSize: 16
                 anchors.left: Container.left
                 anchors.leftMargin: 5
                 anchors.verticalCenter: Container.verticalCenter
