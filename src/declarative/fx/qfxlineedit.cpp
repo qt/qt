@@ -467,7 +467,7 @@ void QFxLineEdit::focusChanged(bool hasFocus)
     Q_D(QFxLineEdit);
     d->focused = hasFocus;
     setCursorVisible(hasFocus);
-    emit QFxItem::focusChanged();
+    QFxItem::focusChanged(hasFocus);
 }
 
 void QFxLineEdit::keyPressEvent(QKeyEvent* ev)

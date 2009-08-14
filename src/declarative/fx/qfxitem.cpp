@@ -1822,8 +1822,10 @@ void QFxItem::activeFocusChanged(bool flag)
 
 /*!
   This function emits the \e focusChanged signal.
-  \a flag is not used.
- */
+
+  Subclasses overriding this function should call up
+  to their base class.
+*/
 void QFxItem::focusChanged(bool flag)
 {
     Q_UNUSED(flag);

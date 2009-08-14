@@ -440,18 +440,11 @@ QVariant QFxWebView::evaluateJavaScript(const QString &scriptSource)
     return this->page()->mainFrame()->evaluateJavaScript(scriptSource);
 }
 
-void QFxWebView::focusChanged(bool flag)
+void QFxWebView::focusChanged(bool hasFocus)
 {
-    QFocusEvent *e;
-    if (flag) {
-        e = new QFocusEvent (QEvent::FocusIn);
-    }
-    else {
-        e = new QFocusEvent (QEvent::FocusOut);
-    }
-    page()->event(e);
-    delete e;
-    emit QFxItem::focusChanged();
+    QFocusEvent e(hasFocus ? QEvent::FocusIn : QEvent::FocusOut);
+    page()->event(&e);
+    QFxItem::focusChanged(hasFocus);
 }
 
 void QFxWebView::expandToWebPage()
