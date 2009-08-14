@@ -5235,8 +5235,6 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
     case CC_ComboBox:
         if (const QStyleOptionComboBox *cmb = qstyleoption_cast<const QStyleOptionComboBox *>(opt)) {
             sc = QWindowsStyle::hitTestComplexControl(cc, cmb, pt, widget);
-            if (!cmb->editable && sc != QStyle::SC_None)
-                sc = SC_ComboBoxArrow;  // A bit of a lie, but what we want
         }
         break;
     case CC_Slider:
