@@ -101,10 +101,11 @@ struct QObjectConnection
     {
         if (senderWrapper && !senderWrapper.marked()) {
             // see if the sender should be marked or not
-            Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
-#if 0
-            Q_ASSERT(JSC::asObject(senderWrapper)->inherits(&QObjectWrapperObject::info));
-            QObjectWrapperObject *inst = static_cast<QObjectWrapperObject*>(JSC::asObject(senderWrapper));
+            Q_ASSERT(senderWrapper.isObject(&QScriptObject::info));
+            QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(senderWrapper));
+            QScriptObjectDelegate *delegate = scriptObject->delegate();
+            Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::QtObject));
+            QObjectDelegate *inst = static_cast<QObjectDelegate*>(delegate);
             if ((inst->ownership() == QScriptEngine::ScriptOwnership)
                 || ((inst->ownership() == QScriptEngine::AutoOwnership)
                     && inst->value() && !inst->value()->parent())) {
@@ -112,7 +113,6 @@ struct QObjectConnection
             } else {
                 senderWrapper.mark();
             }
-#endif
         }
         if (receiver && !receiver.marked())
             receiver.mark();
