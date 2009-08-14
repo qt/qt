@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qscriptclass.h"
+#include "qscriptstring.h"
 
 QT_BEGIN_NAMESPACE
 
