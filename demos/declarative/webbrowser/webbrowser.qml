@@ -6,7 +6,7 @@ import "fieldtext"
 Item {
     id: WebBrowser
 
-    property string urlString : "http://www.qtsoftware.com/"
+    property string urlString : "http://qt.nokia.com/"
 
     state: "Normal"
 
