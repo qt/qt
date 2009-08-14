@@ -130,18 +130,21 @@ struct AnchorData : public QSimplexVariable {
         Parallel
     };
     AnchorData(qreal minimumSize, qreal preferredSize, qreal maximumSize)
-        : QSimplexVariable(), minSize(minimumSize), prefSize(preferredSize),
+        : QSimplexVariable(), from(0), to(0),
+          minSize(minimumSize), prefSize(preferredSize),
           maxSize(maximumSize), sizeAtMinimum(preferredSize),
           sizeAtPreferred(preferredSize), sizeAtMaximum(preferredSize),
           skipInPreferred(0), type(Normal), hasSize(true) {}
 
     AnchorData(qreal size)
-        : QSimplexVariable(), minSize(size), prefSize(size), maxSize(size),
+        : QSimplexVariable(), from(0), to(0),
+          minSize(size), prefSize(size), maxSize(size),
           sizeAtMinimum(size), sizeAtPreferred(size), sizeAtMaximum(size),
           skipInPreferred(0), type(Normal), hasSize(true) {}
 
     AnchorData()
-        : QSimplexVariable(), minSize(0), prefSize(0), maxSize(0),
+        : QSimplexVariable(), from(0), to(0),
+          minSize(0), prefSize(0), maxSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0), sizeAtMaximum(0),
           skipInPreferred(0), type(Normal), hasSize(false) {}
 
@@ -153,7 +156,8 @@ struct AnchorData : public QSimplexVariable {
     QString name;
 
     // Anchor is semantically directed
-    AnchorVertex *origin;
+    AnchorVertex *from;
+    AnchorVertex *to;
 
     // Size restrictions of this edge. For anchors internal to items, these
     // values are derived from the respective item size hints. For anchors
@@ -175,7 +179,8 @@ struct AnchorData : public QSimplexVariable {
     uint hasSize : 1;       // if false, get size from style.
 protected:
     AnchorData(Type type, qreal size = 0)
-        : QSimplexVariable(), minSize(size), prefSize(size),
+        : QSimplexVariable(), from(0), to(0),
+          minSize(size), prefSize(size),
           maxSize(size), sizeAtMinimum(size),
           sizeAtPreferred(size), sizeAtMaximum(size),
           skipInPreferred(0), type(type), hasSize(true) {}
@@ -214,8 +219,12 @@ struct ParallelAnchorData : public AnchorData
         : AnchorData(AnchorData::Parallel),
         firstEdge(first), secondEdge(second)
     {
-        Q_ASSERT(first->origin == second->origin);
-        origin = first->origin;
+        // ### Those asserts force that both child anchors have the same direction,
+        // but can't we simplify a pair of anchors in opposite directions?
+        Q_ASSERT(first->from == second->from);
+        Q_ASSERT(first->to == second->to);
+        from = first->from;
+        to = first->to;
         name = QString::fromAscii("%1 | %2").arg(first->toString(), second->toString());
     }
 

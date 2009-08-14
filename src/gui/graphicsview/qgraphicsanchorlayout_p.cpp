@@ -225,7 +225,16 @@ static bool simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
     sequence->sizeAtMaximum = pref;
 
     sequence->setVertices(vertices);
-    sequence->origin = data->origin == vertices.last() ? before : after;
+
+    sequence->from = before;
+    sequence->to = after;
+
+    // data here is the last edge in the sequence
+    // ### this seems to be here for supporting reverse order sequences,
+    // but doesnt seem to be used right now
+    if (data->from != vertices.last())
+        qSwap(sequence->from, sequence->to);
+
     AnchorData *newAnchor = sequence;
     if (AnchorData *oldAnchor = graph->takeEdge(before, after)) {
         newAnchor = new ParallelAnchorData(oldAnchor, sequence);
@@ -362,7 +371,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
             AnchorVertex *prev = beforeSequence;
             int intervalFrom = 0;
 
-            // Check for directionality (origin). We don't want to destroy that information,
+            // Check for directionality (from). We don't want to destroy that information,
             // thus we only combine anchors with the same direction.
 
             // "i" is the index *including* the beforeSequence and afterSequence vertices.
@@ -372,10 +381,10 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
                 AnchorData *data = g.edgeData(prev, v1);
                 Q_ASSERT(data);
                 if (i == 1) {
-                    forward = (prev == data->origin ? true : false);
-                } else if (forward != (prev == data->origin) || atVertexAfter) {
+                    forward = (prev == data->from ? true : false);
+                } else if (forward != (prev == data->from) || atVertexAfter) {
                     int intervalTo = i;
-                    if (forward != (prev == data->origin))
+                    if (forward != (prev == data->from))
                         --intervalTo;
 
                     // intervalFrom and intervalTo should now be indices to the vertex before and
@@ -416,7 +425,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
                         }
                         // finished simplification of chunk with same direction
                     }
-                    if (forward == (prev == data->origin))
+                    if (forward == (prev == data->from))
                         --intervalTo;
                     intervalFrom = intervalTo;
 
@@ -464,7 +473,7 @@ static void restoreSimplifiedAnchor(Graph<AnchorVertex, AnchorData> &g,
         // restore the sequential anchor
         AnchorVertex *prev = before;
         AnchorVertex *last = after;
-        if (edge->origin != prev)
+        if (edge->from != prev)
             qSwap(last, prev);
 
         for (int i = 0; i < seqEdge->m_edges.count(); ++i) {
@@ -894,7 +903,8 @@ void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
     // Create a bi-directional edge in the sense it can be transversed both
     // from v1 or v2. "data" however is shared between the two references
     // so we still know that the anchor direction is from 1 to 2.
-    data->origin = v1;
+    data->from = v1;
+    data->to = v2;
     data->name = QString::fromAscii("%1 --to--> %2").arg(v1->toString()).arg(v2->toString());
 
     graph[edgeOrientation(firstEdge)].createEdge(v1, v2, data);
@@ -1272,9 +1282,8 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     graphPaths[orientation].clear(); // ###
 }
 
-// ###
-static QPair<QList<QPair<AnchorVertex *, AnchorVertex *> >, QList<AnchorData *> >
-getAnchorsDependenciesFirst(Graph<AnchorVertex, AnchorData> &g)
+// ### REMOVE ME: call recursion using children methods before
+static QList<AnchorData *> getAnchorsDependenciesFirst(Graph<AnchorVertex, AnchorData> &g)
 {
     QList<QPair<AnchorVertex *, AnchorVertex *> > conns(g.connections());
 
@@ -1290,14 +1299,12 @@ getAnchorsDependenciesFirst(Graph<AnchorVertex, AnchorData> &g)
         anchors.push(data);
     }
 
-    QList<QPair<AnchorVertex *, AnchorVertex *> > allVertices;
     QList<AnchorData *> allAnchors;
 
     // Build list of all edges
     while (!vertices.isEmpty()) {
         QPair<AnchorVertex *, AnchorVertex *> vertexPair = vertices.pop();
         AnchorData *data = anchors.pop();
-        allVertices.prepend(vertexPair);
         allAnchors.prepend(data);
 
         if (data->type == AnchorData::Parallel) {
@@ -1305,15 +1312,11 @@ getAnchorsDependenciesFirst(Graph<AnchorVertex, AnchorData> &g)
 
             // Prepend dependencies so they are before the parent anchor in
             // the result list
-            allVertices.prepend(vertexPair);
             allAnchors.prepend(p->firstEdge);
-            allVertices.prepend(vertexPair);
             allAnchors.prepend(p->secondEdge);
 
             // Push dependencies so they are 'recursively' processed
-            vertices.push(vertexPair);
             anchors.push(p->firstEdge);
-            vertices.push(vertexPair);
             anchors.push(p->secondEdge);
 
         } else if (data->type == AnchorData::Sequential) {
@@ -1322,7 +1325,7 @@ getAnchorsDependenciesFirst(Graph<AnchorVertex, AnchorData> &g)
             AnchorVertex *prev = vertexPair.first;
             AnchorVertex *last = vertexPair.second;
 
-            if (s->origin != prev)
+            if (s->from != prev)
                 qSwap(last, prev);
 
             for (int i = 0; i < s->m_edges.count(); ++i) {
@@ -1331,11 +1334,9 @@ getAnchorsDependenciesFirst(Graph<AnchorVertex, AnchorData> &g)
                 QPair<AnchorVertex *, AnchorVertex *> pair(prev, v1);
 
                 // Prepend dependencies in result list
-                allVertices.prepend(pair);
                 allAnchors.prepend(data);
 
                 // Push dependencies in the stack so they are processed
-                vertices.push(pair);
                 anchors.push(data);
 
                 prev = v1;
@@ -1343,7 +1344,7 @@ getAnchorsDependenciesFirst(Graph<AnchorVertex, AnchorData> &g)
         }
     }
 
-    return qMakePair(allVertices, allAnchors);
+    return allAnchors;
 }
 
 static void setInternalAnchorSizeHint(AnchorVertex *from, AnchorVertex *to,
@@ -1420,19 +1421,16 @@ void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orien
     // order of dependency, so an item dependencies appear before the
     // item. Then we traverse the list filling the size hint information.
     //
-    // This two stage is necessary because the leaves themselves (AnchorData)
-    // doesn't have access to the pair of Anchor Vertices that they represent.
+    // ### use recursion instead
 
-    QPair<QList<QPair<AnchorVertex *, AnchorVertex *> >, QList<AnchorData *> > all;
-    all = getAnchorsDependenciesFirst(g);
-
-    QList<QPair<AnchorVertex *, AnchorVertex *> > allVertices = all.first;
-    QList<AnchorData *> allAnchors = all.second;
+    QList<AnchorData *> allAnchors = getAnchorsDependenciesFirst(g);
 
     for (int i = 0; i < allAnchors.size(); ++i) {
-        AnchorVertex *from = allVertices.at(i).first;
-        AnchorVertex *to = allVertices.at(i).second;
         AnchorData *data = allAnchors.at(i);
+        AnchorVertex *from = data->from;
+        AnchorVertex *to = data->to;
+
+        Q_ASSERT(from && to);
 
         // Internal anchor that is not the layout
         if (from->m_item != q && from->m_item == to->m_item) {
@@ -1530,7 +1528,7 @@ void QGraphicsAnchorLayoutPrivate::findPaths(Orientation orientation)
         visited.insert(edge);
         GraphPath current = graphPaths[orientation].value(pair.first);
 
-        if (edge->origin == pair.first)
+        if (edge->from == pair.first)
             current.positives.insert(edge);
         else
             current.negatives.insert(edge);
@@ -1774,7 +1772,7 @@ void QGraphicsAnchorLayoutPrivate::calculateVertexPositions(
         qreal distance;
         AnchorData *edge = graph[orientation].edgeData(pair.first, pair.second);
 
-        if (edge->origin == pair.first) {
+        if (edge->from == pair.first) {
             distance = pair.first->distance + interpolateEdge(edge);
         } else {
             distance = pair.first->distance - interpolateEdge(edge);
@@ -1841,7 +1839,7 @@ qreal QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorData *edge)
 {
     qreal lower, upper;
 
-    Orientation orientation = edgeOrientation(edge->origin->m_edge);
+    Orientation orientation = edgeOrientation(edge->from->m_edge);
 
     if (interpolationInterval[orientation] == MinToPreferred) {
         lower = edge->sizeAtMinimum;
