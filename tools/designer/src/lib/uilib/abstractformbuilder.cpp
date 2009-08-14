@@ -2669,13 +2669,6 @@ QMetaEnum QAbstractFormBuilder::toolBarAreaMetaEnum()
     return metaEnum<QAbstractFormBuilderGadget>("toolBarArea");
 }
 
-namespace {
-    // set forward slashes in image path.
-    inline void fixImagePath(QString &p)    {
-        p.replace(QLatin1Char('\\'), QLatin1Char('/'));
-    }
-}
-
 /*!
     \internal
     Return paths of an icon.
