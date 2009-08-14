@@ -631,17 +631,21 @@ QString QScriptContext::toString() const
     }
 
     QStringList parameterNames = info.functionParameterNames();
-    result.append(QLatin1String(" ("));
+    result.append(QLatin1Char('('));
     for (int i = 0; i < argumentCount(); ++i) {
         if (i > 0)
             result.append(QLatin1String(", "));
         if (i < parameterNames.count()) {
             result.append(parameterNames.at(i));
-            result.append(QLatin1Char('='));
+            result.append(QLatin1String(" = "));
         }
         QScriptValue arg = argument(i);
-//        result.append(safeValueToString(arg)); ###
+        if (arg.isString())
+            result.append(QLatin1Char('\''));
         result.append(arg.toString());
+        if (arg.isString())
+            result.append(QLatin1Char('\''));
+
     }
     result.append(QLatin1Char(')'));
 

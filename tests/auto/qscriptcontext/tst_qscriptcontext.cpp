@@ -563,9 +563,9 @@ void tst_QScriptContext::backtrace_data()
 
     {
         QStringList expected;
-        expected << "<native> (123) at -1"
-                 << "foo ([object Object], [object global]) at testfile:2" //### object instead of 'hello'
-                 << "<global> () at testfile:4";
+        expected << "<native>(123) at -1"
+                 << "foo([object Object], [object global]) at testfile:2" //### object instead of 'hello'
+                 << "<global>() at testfile:4";
 
         QString source(
                  "function foo() {\n"
@@ -585,10 +585,10 @@ void tst_QScriptContext::backtrace_data()
             "foo('hello', 456)"
            ).arg("\\n \\n bt('hey'); \\n");
 
-           expected << "<native> (hey) at -1"
-                    << "<native> () at 3"  //### <native> should be <eval>
-                    << "foo (arg1=hello, arg2=456) at testfile:-1" //### line number should be 2
-                    << "<global> () at testfile:4";
+           expected << "<native>('hey') at -1"
+                    << "<native>() at 3"  //### <native> should be <eval>
+                    << "foo(arg1 = 'hello', arg2 = 456) at testfile:-1" //### line number should be 2
+                    << "<global>() at testfile:4";
 
             QTest::newRow("eval") << source << expected;
     }
@@ -607,12 +607,12 @@ void tst_QScriptContext::backtrace_data()
             ).arg(eval_code);
 
         QStringList expected;
-        expected << "<native> (m) at -1"
-                 << "bar (a=b) at eval.js:2"
-                 << "<native> () at eval.js:4" //### should be <eval>
-                 << QString("<native> (%1, eval.js) at -1").arg(eval_code.replace("\\n", "\n"))
-                 << "foo () at testfile:2"
-                 << "<global> () at testfile:4";
+        expected << "<native>('m') at -1"
+                 << "bar(a = 'b') at eval.js:2"
+                 << "<native>() at eval.js:4" //### should be <eval>
+                 << QString("<native>('%1', 'eval.js') at -1").arg(eval_code.replace("\\n", "\n"))
+                 << "foo() at testfile:2"
+                 << "<global>() at testfile:4";
 
         QTest::newRow("custom_eval") << source << expected;
     }
@@ -626,10 +626,10 @@ void tst_QScriptContext::backtrace_data()
             ).arg(f);
 
         QStringList expected;
-        expected << "<native> (b) at -1"
-                 << "<anonymous> (a=b) at testfile:5"
-                 << QString("foo (f=%1) at testfile:2").arg(f)
-                 << "<global> () at testfile:6";
+        expected << "<native>('b') at -1"
+                 << "<anonymous>(a = 'b') at testfile:5"
+                 << QString("foo(f = %1) at testfile:2").arg(f)
+                 << "<global>() at testfile:6";
 
         QTest::newRow("closure") << source << expected;
     }
@@ -870,7 +870,7 @@ void tst_QScriptContext::toString()
                                     "    return parentContextToString();\n"
                                     "}; foo(1, 2, 3)", "script.qs");
     QVERIFY(ret.isString());
-    QCOMPARE(ret.toString(), QString::fromLatin1("foo (first=1, second=2, third=3) at script.qs:2"));
+    QCOMPARE(ret.toString(), QString::fromLatin1("foo(first = 1, second = 2, third = 3) at script.qs:2"));
 }
 
 static QScriptValue storeCalledAsConstructor(QScriptContext *ctx, QScriptEngine *eng)
