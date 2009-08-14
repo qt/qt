@@ -206,7 +206,7 @@ bool QPanGesture::filterEvent(QEvent *event)
     }
 #ifdef Q_OS_MAC
     else if (event->type() == QEvent::Wheel) {
-        // On Mac, there is really no native panning gesture. Instead, a two 
+        // On Mac, there is really no native panning gesture. Instead, a two
         // finger pan is delivered as mouse wheel events. Otoh, on Windows, you
         // either get mouse wheel events or pan events. We have decided to make this
         // the Qt behaviour as well, meaning that on Mac, wheel
