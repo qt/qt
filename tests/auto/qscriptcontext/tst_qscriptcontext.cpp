@@ -68,6 +68,7 @@ private slots:
     void evaluateInFunction();
     void pushAndPopContext();
     void lineNumber();
+    void backtrace_data();
     void backtrace();
     void scopeChain();
     void pushAndPopScope();
@@ -550,26 +551,106 @@ static QScriptValue getBacktrace(QScriptContext *ctx, QScriptEngine *eng)
     return qScriptValueFromValue(eng, ctx->backtrace());
 }
 
+static QScriptValue custom_eval(QScriptContext *ctx, QScriptEngine *eng)
+{
+    return eng->evaluate(ctx->argumentsObject().property(0).toString(), ctx->argumentsObject().property(1).toString());
+}
+
+void tst_QScriptContext::backtrace_data()
+{
+    QTest::addColumn<QString>("code");
+    QTest::addColumn<QStringList>("expectedbacktrace");
+
+    {
+        QStringList expected;
+        expected << "<native> (123) at -1"
+                 << "foo ([object Object], [object global]) at testfile:2" //### object instead of 'hello'
+                 << "<global> () at testfile:4";
+
+        QString source(
+                 "function foo() {\n"
+                 "  return bt(123);\n"
+                 "}\n"
+                 "foo('hello', { })" );
+
+        QTest::newRow("simple") << source << expected;
+    }
+
+    {
+        QStringList expected;
+        QString source = QString(
+            "function foo(arg1 , arg2) {\n"
+            "  return eval(\"%1\");\n"
+            "}\n"
+            "foo('hello', 456)"
+           ).arg("\\n \\n bt('hey'); \\n");
+
+           expected << "<native> (hey) at -1"
+                    << "<native> () at 3"  //### <native> should be <eval>
+                    << "foo (arg1=hello, arg2=456) at testfile:-1" //### line number should be 2
+                    << "<global> () at testfile:4";
+
+            QTest::newRow("eval") << source << expected;
+    }
+
+    {
+        QString eval_code(
+                "function bar(a) {\\n"
+                "  return bt('m');\\n"
+                "}\\n"
+                "bar('b'); \\n");
+        QString source = QString(
+                "function foo() {\n"
+                "  return custom_eval(\"%1\", 'eval.js');\n"
+                "}\n"
+                "foo()"
+            ).arg(eval_code);
+
+        QStringList expected;
+        expected << "<native> (m) at -1"
+                 << "bar (a=b) at eval.js:2"
+                 << "<native> () at eval.js:4" //### should be <eval>
+                 << QString("<native> (%1, eval.js) at -1").arg(eval_code.replace("\\n", "\n"))
+                 << "foo () at testfile:2"
+                 << "<global> () at testfile:4";
+
+        QTest::newRow("custom_eval") << source << expected;
+    }
+    {
+        QString f("function (a) {\n return bt(a); \n  }");
+        QString source = QString(
+                "function foo(f) {\n"
+                "  return f('b');\n"
+                "}\n"
+                "foo(%1)"
+            ).arg(f);
+
+        QStringList expected;
+        expected << "<native> (b) at -1"
+                 << "<anonymous> (a=b) at testfile:5"
+                 << QString("foo (f=%1) at testfile:2").arg(f)
+                 << "<global> () at testfile:6";
+
+        QTest::newRow("closure") << source << expected;
+    }
+}
+
+
 void tst_QScriptContext::backtrace()
 {
+    QFETCH(QString, code);
+    QFETCH(QStringList, expectedbacktrace);
+
     QScriptEngine eng;
     eng.globalObject().setProperty("bt", eng.newFunction(getBacktrace));
+    eng.globalObject().setProperty("custom_eval", eng.newFunction(custom_eval));
 
     QString fileName = "testfile";
-    QStringList expected;
-    expected << "<native> (123) at -1"
-             << "foo ([object Object], [object global]) at testfile:2"
-             << "<global> () at testfile:4";
-
-    QScriptValue ret = eng.evaluate(
-        "function foo() {\n"
-        "  return bt(123);\n"
-        "}\n"
-        "foo('hello', { })", fileName);
-
+    QScriptValue ret = eng.evaluate(code, fileName);
+    QVERIFY(!eng.hasUncaughtException());
     QVERIFY(ret.isArray());
     QStringList slist = qscriptvalue_cast<QStringList>(ret);
-    QCOMPARE(slist, expected);
+    QCOMPARE(slist, expectedbacktrace);
 }
 
 static QScriptValue getScopeChain(QScriptContext *ctx, QScriptEngine *eng)
