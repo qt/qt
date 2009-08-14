@@ -110,6 +110,7 @@ excluded_directories="$excluded_directories WebCore/platform/graphics/win"
 excluded_directories="$excluded_directories WebCore/platform/graphics/skia"
 excluded_directories="$excluded_directories WebCore/platform/graphics/chromium"
 excluded_directories="$excluded_directories WebCore/platform/graphics/wince"
+excluded_directories="$excluded_directories WebCore/platform/graphics/haiku"
 
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/bmp"
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/gif"
@@ -135,6 +136,8 @@ excluded_directories="$excluded_directories WebCore/accessibility/wx"
 excluded_directories="$excluded_directories WebCore/storage/wince"
 
 excluded_directories="$excluded_directories WebCore/platform/wx"
+excluded_directories="$excluded_directories WebCore/platform/wince"
+
 excluded_directories="$excluded_directories WebKit/gtk"
 excluded_directories="$excluded_directories WebKit/win"
 excluded_directories="$excluded_directories WebKit/wx"
