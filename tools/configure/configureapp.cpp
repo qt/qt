@@ -1883,10 +1883,8 @@ bool Configure::checkAvailability(const QString &part)
         }
     } else if (part == "MULTIMEDIA") {
         available = true;
-    } else if (part == "WEBKIT") {
+    } else if (part == "WEBKIT" || part == "SCRIPT" || part == "SCRIPTTOOLS") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
-    } else if (part == "SCRIPT" || part == "SCRIPTTOOLS") {
-        available = true;
     }
 
     return available;
