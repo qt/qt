@@ -2783,7 +2783,7 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
     QS60StyleEnums::SkinParts part;
     QS60StylePrivate::SkinElementFlags adjustedFlags;
     if (option)
-        adjustedFlags = (option->state & State_Enabled) ?
+        adjustedFlags = (option->state & State_Enabled || option->state == 0) ?
             QS60StylePrivate::SF_StateEnabled :
             QS60StylePrivate::SF_StateDisabled;
 
