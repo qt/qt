@@ -119,7 +119,7 @@ JSC::JSObject* FunctionWrapper::proxyConstruct(JSC::ExecState *exec, JSC::JSObje
 
     QScriptValue result = self->data->function(ctx, QScriptEnginePrivate::get(eng_p));
 #ifdef QT_BUILD_SCRIPT_LIB
-    if (JSC::Debugger* debugger = exec->lexicalGlobalObject()->debugger())
+    if (JSC::Debugger* debugger = eng_p->originalGlobalObject()->debugger())
         debugger->functionExit(QScriptValuePrivate::get(result)->jscValue, -1);
 #endif
     if (!result.isObject())

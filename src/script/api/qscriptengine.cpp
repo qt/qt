@@ -2160,7 +2160,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
 
 #ifdef QT_BUILD_SCRIPT_LIB
     intptr_t sourceId = source.provider()->asID();
-    JSC::Debugger* debugger = exec->lexicalGlobalObject()->debugger();
+    JSC::Debugger* debugger = d->originalGlobalObject()->debugger();
     exec->globalData().scriptpool->startEvaluating(source);
     if (debugger)
         debugger->evaluateStart(sourceId);
@@ -2291,7 +2291,7 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, const JS
         //JSC doesn't create default created object for native functions. so we do it
         JSC::JSValue prototype = callee->get(exec, exec->propertyNames().prototype);
         JSC::Structure *structure = prototype.isObject() ? JSC::asObject(prototype)->inheritorID()
-                                                         : exec->lexicalGlobalObject()->emptyObjectStructure();
+                                                         : originalGlobalObject()->emptyObjectStructure();
         thisObject = new (exec) QScriptObject(structure);
     }
 
