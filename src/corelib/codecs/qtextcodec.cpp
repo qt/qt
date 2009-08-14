@@ -92,10 +92,8 @@
 #  define QT_NO_SETLOCALE
 #endif
 
-#if 0 // ### TODO - remove me!
 // enabling this is not exception safe!
-#define Q_DEBUG_TEXTCODEC
-#endif
+// #define Q_DEBUG_TEXTCODEC
 
 QT_BEGIN_NAMESPACE
 
