@@ -45,6 +45,56 @@
 
 #include "qgraphicsanchorlayout_p.h"
 
+void AnchorData::refreshSizeHints(qreal effectiveSpacing)
+{
+    if (!isLayoutAnchor && from->m_item == to->m_item) {
+        bool hasCenter = false;
+        QGraphicsLayoutItem *item = from->m_item;
+
+        if (QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge)
+            == QGraphicsAnchorLayoutPrivate::Horizontal) {
+            minSize = item->minimumWidth();
+            prefSize = item->preferredWidth();
+            maxSize = item->maximumWidth();
+            hasCenter = (from->m_edge == QGraphicsAnchorLayout::HCenter
+                         || to->m_edge == QGraphicsAnchorLayout::HCenter);
+        } else {
+            minSize = item->minimumHeight();
+            prefSize = item->preferredHeight();
+            maxSize = item->maximumHeight();
+            hasCenter = (from->m_edge == QGraphicsAnchorLayout::VCenter
+                         || to->m_edge == QGraphicsAnchorLayout::VCenter);
+        }
+
+        if (hasCenter) {
+            minSize /= 2;
+            prefSize /= 2;
+            maxSize /= 2;
+        }
+
+        // Set the anchor effective sizes to preferred.
+        //
+        // Note: The idea here is that all items should remain at their
+        // preferred size unless where that's impossible.  In cases where
+        // the item is subject to restrictions (anchored to the layout
+        // edges, for instance), the simplex solver will be run to
+        // recalculate and override the values we set here.
+        sizeAtMinimum = prefSize;
+        sizeAtPreferred = prefSize;
+        sizeAtMaximum = prefSize;
+
+    } else if (!hasSize) {
+        // Anchor has no size defined, use given default information
+        minSize = effectiveSpacing;
+        prefSize = effectiveSpacing;
+        maxSize = effectiveSpacing;
+
+        sizeAtMinimum = prefSize;
+        sizeAtPreferred = prefSize;
+        sizeAtMaximum = prefSize;
+    }
+}
+
 void ParallelAnchorData::updateChildrenSizes()
 {
     firstEdge->sizeAtMinimum = secondEdge->sizeAtMinimum = sizeAtMinimum;
@@ -53,6 +103,28 @@ void ParallelAnchorData::updateChildrenSizes()
 
     firstEdge->updateChildrenSizes();
     secondEdge->updateChildrenSizes();
+}
+
+void ParallelAnchorData::refreshSizeHints(qreal effectiveSpacing)
+{
+    // First refresh children information
+    firstEdge->refreshSizeHints(effectiveSpacing);
+    secondEdge->refreshSizeHints(effectiveSpacing);
+
+    // ### should we warn if the parallel connection is invalid?
+    // e.g. 1-2-3 with 10-20-30, the minimum of the latter is
+    // bigger than the maximum of the former.
+
+    minSize = qMax(firstEdge->minSize, secondEdge->minSize);
+    maxSize = qMin(firstEdge->maxSize, secondEdge->maxSize);
+
+    prefSize = qMax(firstEdge->prefSize, secondEdge->prefSize);
+    prefSize = qMin(prefSize, maxSize);
+
+    // See comment in AnchorData::refreshSizeHints() about sizeAt* values
+    sizeAtMinimum = prefSize;
+    sizeAtPreferred = prefSize;
+    sizeAtMaximum = prefSize;
 }
 
 void SequentialAnchorData::updateChildrenSizes()
@@ -67,6 +139,29 @@ void SequentialAnchorData::updateChildrenSizes()
         m_edges[i]->sizeAtMaximum = m_edges[i]->maxSize * maxFactor;
         m_edges[i]->updateChildrenSizes();
     }
+}
+
+void SequentialAnchorData::refreshSizeHints(qreal effectiveSpacing)
+{
+    minSize = 0;
+    prefSize = 0;
+    maxSize = 0;
+
+    for (int i = 0; i < m_edges.count(); ++i) {
+        AnchorData *edge = m_edges.at(i);
+
+        // First refresh children information
+        edge->refreshSizeHints(effectiveSpacing);
+
+        minSize += edge->minSize;
+        prefSize += edge->prefSize;
+        maxSize += edge->maxSize;
+    }
+
+    // See comment in AnchorData::refreshSizeHints() about sizeAt* values
+    sizeAtMinimum = prefSize;
+    sizeAtPreferred = prefSize;
+    sizeAtMaximum = prefSize;
 }
 
 void AnchorData::dump(int indent) {
@@ -235,9 +330,19 @@ static bool simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
     if (data->from != vertices.last())
         qSwap(sequence->from, sequence->to);
 
+    // Note that since layout 'edges' can't be simplified away from
+    // the graph, it's safe to assume that if there's a layout
+    // 'edge', it'll be in the boundaries of the sequence.
+    sequence->isLayoutAnchor = (sequence->m_edges.first()->isLayoutAnchor
+                                || sequence->m_edges.last()->isLayoutAnchor);
+
     AnchorData *newAnchor = sequence;
     if (AnchorData *oldAnchor = graph->takeEdge(before, after)) {
         newAnchor = new ParallelAnchorData(oldAnchor, sequence);
+
+        newAnchor->isLayoutAnchor = (oldAnchor->isLayoutAnchor
+                                     || sequence->isLayoutAnchor);
+
         min = qMax(oldAnchor->minSize, sequence->minSize);
         max = qMin(oldAnchor->maxSize, sequence->maxSize);
 
@@ -886,6 +991,8 @@ void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
                                              QGraphicsAnchorLayout::Edge secondEdge,
                                              AnchorData *data)
 {
+    Q_Q(QGraphicsAnchorLayout);
+
     // Guarantee that the graph is no simplified when adding this anchor,
     // anchor manipulation always happen in the full graph
     restoreSimplifiedGraph(edgeOrientation(firstEdge));
@@ -906,6 +1013,9 @@ void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
     data->from = v1;
     data->to = v2;
     data->name = QString::fromAscii("%1 --to--> %2").arg(v1->toString()).arg(v2->toString());
+
+    // Keep track of anchors that are connected to the layout 'edges'
+    data->isLayoutAnchor = (v1->m_item == q || v2->m_item == q);
 
     graph[edgeOrientation(firstEdge)].createEdge(v1, v2, data);
 }
@@ -1282,215 +1392,23 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     graphPaths[orientation].clear(); // ###
 }
 
-// ### REMOVE ME: call recursion using children methods before
-static QList<AnchorData *> getAnchorsDependenciesFirst(Graph<AnchorVertex, AnchorData> &g)
-{
-    QList<QPair<AnchorVertex *, AnchorVertex *> > conns(g.connections());
-
-    QStack<QPair<AnchorVertex *, AnchorVertex *> > vertices;
-    QStack<AnchorData *> anchors;
-
-    // Fill AnchorData to match vertices
-    for (int i = 0; i < conns.count(); ++i) {
-        QPair<AnchorVertex *, AnchorVertex *> vertexPair = conns.at(i);
-        AnchorData *data = g.edgeData(vertexPair.first, vertexPair.second);
-        Q_ASSERT(data);
-        vertices.push(vertexPair);
-        anchors.push(data);
-    }
-
-    QList<AnchorData *> allAnchors;
-
-    // Build list of all edges
-    while (!vertices.isEmpty()) {
-        QPair<AnchorVertex *, AnchorVertex *> vertexPair = vertices.pop();
-        AnchorData *data = anchors.pop();
-        allAnchors.prepend(data);
-
-        if (data->type == AnchorData::Parallel) {
-            ParallelAnchorData *p = static_cast<ParallelAnchorData *>(data);
-
-            // Prepend dependencies so they are before the parent anchor in
-            // the result list
-            allAnchors.prepend(p->firstEdge);
-            allAnchors.prepend(p->secondEdge);
-
-            // Push dependencies so they are 'recursively' processed
-            anchors.push(p->firstEdge);
-            anchors.push(p->secondEdge);
-
-        } else if (data->type == AnchorData::Sequential) {
-            SequentialAnchorData *s = static_cast<SequentialAnchorData *>(data);
-
-            AnchorVertex *prev = vertexPair.first;
-            AnchorVertex *last = vertexPair.second;
-
-            if (s->from != prev)
-                qSwap(last, prev);
-
-            for (int i = 0; i < s->m_edges.count(); ++i) {
-                AnchorVertex *v1 = (i < s->m_children.count()) ? s->m_children.at(i) : last;
-                AnchorData *data = s->m_edges.at(i);
-                QPair<AnchorVertex *, AnchorVertex *> pair(prev, v1);
-
-                // Prepend dependencies in result list
-                allAnchors.prepend(data);
-
-                // Push dependencies in the stack so they are processed
-                anchors.push(data);
-
-                prev = v1;
-            }
-        }
-    }
-
-    return allAnchors;
-}
-
-static void setInternalAnchorSizeHint(AnchorVertex *from, AnchorVertex *to,
-                                      AnchorData *data, QGraphicsAnchorLayoutPrivate::Orientation orientation)
-{
-    qreal min;
-    qreal pref;
-    qreal max;
-    bool hasCenter = false;
-    QGraphicsLayoutItem *item = from->m_item;
-
-    if (orientation == QGraphicsAnchorLayoutPrivate::Horizontal) {
-        min = item->minimumWidth();
-        pref = item->preferredWidth();
-        max = item->maximumWidth();
-        hasCenter = (from->m_edge == QGraphicsAnchorLayout::HCenter
-                     || to->m_edge == QGraphicsAnchorLayout::HCenter);
-    } else {
-        min = item->minimumHeight();
-        pref = item->preferredHeight();
-        max = item->maximumHeight();
-        hasCenter = (from->m_edge == QGraphicsAnchorLayout::VCenter
-                     || to->m_edge == QGraphicsAnchorLayout::VCenter);
-    }
-
-    if (hasCenter) {
-        min /= 2;
-        pref /= 2;
-        max /= 2;
-    }
-
-    // Set the anchor nominal sizes to those of the corresponding item
-    data->minSize = min;
-    data->prefSize = pref;
-    data->maxSize = max;
-
-    // Set the anchor effective sizes to preferred.
-    //
-    // Note: The idea here is that all items should remain at their
-    // preferred size unless where that's impossible.  In cases where
-    // the item is subject to restrictions (anchored to the layout
-    // edges, for instance), the simplex solver will be run to
-    // recalculate and override the values we set here.
-    data->sizeAtMinimum = pref;
-    data->sizeAtPreferred = pref;
-    data->sizeAtMaximum = pref;
-}
-
 /*!
   \internal
 
   For graph edges ("anchors") that represent items, this method updates their
   intrinsic size restrictions, based on the item size hints.
-
-  ################################################################################
-  ### TODO: This method is not simplification ready. The fact that the graph may
-            have been simplified means that not all anchors exist in the graph.
-            This causes the Q_ASSERT(data) calls below to fail.
-
-            A possible approach is to use a recursive method that goes through
-            all edges in the graph updating their sizes based on their kind, i.e.:
-             - Anchors -> update their size based on the style defaults
-             - ItemAnchors -> update their size based on the item sizeHints
-             - SimplificationAnchors -> call "update()" on its children and then
-               calculate its own sizes
-  ################################################################################
 */
 void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orientation)
 {
-    Q_Q(QGraphicsAnchorLayout);
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
+    QList<QPair<AnchorVertex *, AnchorVertex *> > vertices = g.connections();
 
-    // First we build a list of edges (actually vertex pairs) in reverse
-    // order of dependency, so an item dependencies appear before the
-    // item. Then we traverse the list filling the size hint information.
-    //
-    // ### use recursion instead
+    qreal spacing = effectiveSpacing(orientation);
 
-    QList<AnchorData *> allAnchors = getAnchorsDependenciesFirst(g);
-
-    for (int i = 0; i < allAnchors.size(); ++i) {
-        AnchorData *data = allAnchors.at(i);
-        AnchorVertex *from = data->from;
-        AnchorVertex *to = data->to;
-
-        Q_ASSERT(from && to);
-
-        // Internal anchor that is not the layout
-        if (from->m_item != q && from->m_item == to->m_item) {
-            // If you have two vertices from the same item, it must
-            // not be a complex anchor, since if a center was created,
-            // it must have at least 3 adjacent vertices (2 from the
-            // item, and 1 that 'created' it), so it's "un-simplifiable".
-            Q_ASSERT(data->type == AnchorData::Normal);
-
-            setInternalAnchorSizeHint(from, to, data, orientation);
-
-        } else if (data->type == AnchorData::Parallel) {
-            ParallelAnchorData *p = static_cast<ParallelAnchorData *>(data);
-            AnchorData *first = p->firstEdge;
-            AnchorData *second = p->secondEdge;
-
-            // ### should we warn if the parallel connection is invalid?
-            // e.g. 1-2-3 with 10-20-30, the minimum of the latter is
-            // bigger than the maximum of the former.
-
-            p->minSize = qMax(first->minSize, second->minSize);
-            p->maxSize = qMin(first->maxSize, second->maxSize);
-
-            p->prefSize = qMax(first->prefSize, second->prefSize);
-            p->prefSize = qMin(p->prefSize, p->maxSize);
-
-            // See comment in setInternalAnchorSizeHint() about sizeAt* values
-            p->sizeAtMinimum = p->prefSize;
-            p->sizeAtPreferred = p->prefSize;
-            p->sizeAtMaximum = p->prefSize;
-
-        } else if (data->type == AnchorData::Sequential) {
-            SequentialAnchorData *s = static_cast<SequentialAnchorData *>(data);
-
-            s->minSize = 0;
-            s->prefSize = 0;
-            s->maxSize = 0;
-
-            for (int i = 0; i < s->m_edges.count(); ++i) {
-                AnchorData *edge = s->m_edges.at(i);
-                s->minSize += edge->minSize;
-                s->prefSize += edge->prefSize;
-                s->maxSize += edge->maxSize;
-            }
-
-            // See comment in setInternalAnchorSizeHint() about sizeAt* values
-            s->sizeAtMinimum = s->prefSize;
-            s->sizeAtPreferred = s->prefSize;
-            s->sizeAtMaximum = s->prefSize;
-
-        } else if (!data->hasSize) {
-            // Anchor has no data defined, look for style information
-            qreal s = effectiveSpacing(orientation);
-            data->minSize = s;
-            data->prefSize = s;
-            data->maxSize = s;
-            data->sizeAtMinimum = s;
-            data->sizeAtPreferred = s;
-            data->sizeAtMaximum = s;
-        }
+    for (int i = 0; i < vertices.count(); ++i) {
+        AnchorData *data = g.edgeData(vertices.at(i).first, vertices.at(i).second);;
+        Q_ASSERT(data->from && data->to);
+        data->refreshSizeHints(spacing);
     }
 }
 

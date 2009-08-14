@@ -134,21 +134,25 @@ struct AnchorData : public QSimplexVariable {
           minSize(minimumSize), prefSize(preferredSize),
           maxSize(maximumSize), sizeAtMinimum(preferredSize),
           sizeAtPreferred(preferredSize), sizeAtMaximum(preferredSize),
-          skipInPreferred(0), type(Normal), hasSize(true) {}
+          skipInPreferred(0), type(Normal), hasSize(true),
+          isLayoutAnchor(false) {}
 
     AnchorData(qreal size)
         : QSimplexVariable(), from(0), to(0),
           minSize(size), prefSize(size), maxSize(size),
           sizeAtMinimum(size), sizeAtPreferred(size), sizeAtMaximum(size),
-          skipInPreferred(0), type(Normal), hasSize(true) {}
+          skipInPreferred(0), type(Normal), hasSize(true),
+          isLayoutAnchor(false) {}
 
     AnchorData()
         : QSimplexVariable(), from(0), to(0),
           minSize(0), prefSize(0), maxSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0), sizeAtMaximum(0),
-          skipInPreferred(0), type(Normal), hasSize(false) {}
+          skipInPreferred(0), type(Normal), hasSize(false),
+          isLayoutAnchor(false) {}
 
     virtual void updateChildrenSizes() { };
+    virtual void refreshSizeHints(qreal effectiveSpacing);
 
     void dump(int indent = 2);
 
@@ -175,15 +179,17 @@ struct AnchorData : public QSimplexVariable {
     qreal sizeAtMaximum;
 
     uint skipInPreferred : 1;
-    uint type : 2;          // either Normal, Sequential or Parallel
-    uint hasSize : 1;       // if false, get size from style.
+    uint type : 2;            // either Normal, Sequential or Parallel
+    uint hasSize : 1;         // if false, get size from style.
+    uint isLayoutAnchor : 1;  // if this anchor is connected to a layout 'edge'
 protected:
     AnchorData(Type type, qreal size = 0)
         : QSimplexVariable(), from(0), to(0),
           minSize(size), prefSize(size),
           maxSize(size), sizeAtMinimum(size),
           sizeAtPreferred(size), sizeAtMaximum(size),
-          skipInPreferred(0), type(type), hasSize(true) {}
+          skipInPreferred(0), type(type), hasSize(true),
+          isLayoutAnchor(false) {}
 };
 
 inline QString AnchorData::toString() const
@@ -202,6 +208,7 @@ struct SequentialAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
+    virtual void refreshSizeHints(qreal effectiveSpacing);
 
     void setVertices(const QVector<AnchorVertex*> &vertices)
     {
@@ -229,6 +236,7 @@ struct ParallelAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
+    virtual void refreshSizeHints(qreal effectiveSpacing);
 
     AnchorData* firstEdge;
     AnchorData* secondEdge;
