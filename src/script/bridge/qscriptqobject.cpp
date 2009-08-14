@@ -2220,3 +2220,6 @@ namespace JSC
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qscriptqobject_p.cpp"
+
