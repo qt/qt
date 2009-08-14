@@ -586,7 +586,7 @@ void tst_QScriptContext::backtrace_data()
            ).arg("\\n \\n bt('hey'); \\n");
 
            expected << "<native>('hey') at -1"
-                    << "<native>() at 3"  //### <native> should be <eval>
+                    << "<eval>() at 3"
                     << "foo(arg1 = 'hello', arg2 = 456) at testfile:-1" //### line number should be 2
                     << "<global>() at testfile:4";
 
@@ -609,7 +609,7 @@ void tst_QScriptContext::backtrace_data()
         QStringList expected;
         expected << "<native>('m') at -1"
                  << "bar(a = 'b') at eval.js:2"
-                 << "<native>() at eval.js:4" //### should be <eval>
+                 << "<eval>() at eval.js:4"
                  << QString("<native>('%1', 'eval.js') at -1").arg(eval_code.replace("\\n", "\n"))
                  << "foo() at testfile:2"
                  << "<global>() at testfile:4";

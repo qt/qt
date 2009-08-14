@@ -619,8 +619,11 @@ QString QScriptContext::toString() const
     QString functionName = info.functionName();
     if (functionName.isEmpty()) {
         if (parentContext()) {
+            const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
             if (info.functionType() == QScriptContextInfo::ScriptFunction)
                 result.append(QLatin1String("<anonymous>"));
+            else if(frame->callerFrame()->hasHostCallFrameFlag())
+                result.append(QLatin1String("<eval>"));
             else
                 result.append(QLatin1String("<native>"));
         } else {
