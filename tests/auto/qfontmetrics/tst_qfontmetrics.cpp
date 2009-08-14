@@ -218,8 +218,9 @@ void tst_QFontMetrics::elidedMultiLength()
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short), text1_short);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short - 1), text1_small);
 
+    // Not even wide enough for "small" - should use ellipsis
     QChar ellipsisChar(0x2026);
-    QString text1_el = QString::fromLatin1("sm") + ellipsisChar;
+    QString text1_el = QString::fromLatin1("s") + ellipsisChar;
     int width_small = fm.width(text1_el);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_small + 1), text1_el);
 
