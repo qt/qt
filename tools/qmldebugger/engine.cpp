@@ -141,6 +141,8 @@ void EnginePane::queryContext(int id)
 void EnginePane::contextChanged()
 {
     dump(m_context->rootContext(), 0);
+    foreach (const QmlDebugObjectReference &object, m_context->rootContext().objects())
+        fetchObject(object.debugId());
     delete m_context; m_context = 0;
 }
 
@@ -171,12 +173,19 @@ void EnginePane::dump(const QmlDebugObjectReference &obj, int ind)
 
 void EnginePane::buildTree(const QmlDebugObjectReference &obj, QTreeWidgetItem *parent)
 {
+    if (!parent)
+        m_objTree->clear();
+        m_objTree->expandAll();
+
     QTreeWidgetItem *item = parent ? new QTreeWidgetItem(parent) : new QTreeWidgetItem(m_objTree);
     item->setText(0, obj.className());
     item->setData(0, Qt::UserRole, obj.debugId());
 
     for (int ii = 0; ii < obj.children().count(); ++ii)
         buildTree(obj.children().at(ii), item);
+
+    if (!parent)
+        m_objTree->expandAll();
 }
 
 void EnginePane::queryEngines()
