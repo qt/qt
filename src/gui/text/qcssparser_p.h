@@ -369,7 +369,7 @@ struct Q_GUI_EXPORT Value
 
 struct ColorData {
     ColorData() : role(QPalette::NoRole), type(Invalid) {}
-    ColorData(const QColor &col) : role(QPalette::NoRole), color(col), type(Color) {}
+    ColorData(const QColor &col) : color(col), role(QPalette::NoRole), type(Color) {}
     ColorData(QPalette::ColorRole r) : role(r), type(Role) {}
     QColor color;
     QPalette::ColorRole role;
