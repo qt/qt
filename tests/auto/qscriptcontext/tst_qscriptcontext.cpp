@@ -719,6 +719,8 @@ void tst_QScriptContext::getSetActivationObject()
     QScriptValue obj = eng.newObject();
     ctx->setActivationObject(obj);
     QVERIFY(ctx->activationObject().equals(obj));
+    QCOMPARE(ctx->scopeChain().size(), 1);
+    QVERIFY(ctx->scopeChain().at(0).equals(obj));
 
     {
         QScriptEngine eng2;

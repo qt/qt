@@ -671,8 +671,15 @@ QScriptValueList QScriptContext::scopeChain() const
     JSC::ScopeChainNode *node = frame->scopeChain();
     JSC::ScopeChainIterator it(node);
     for (it = node->begin(); it != node->end(); ++it) {
-        if (*it)
-            result.append(engine->scriptValueFromJSCValue(*it));
+        JSC::JSObject *object = *it;
+        if (!object)
+            continue;
+        if (object->isObject(&QScript::QScriptActivationObject::info)
+            && (static_cast<QScript::QScriptActivationObject*>(object)->delegate() != 0)) {
+            // Return the object that property access is being delegated to
+            object = static_cast<QScript::QScriptActivationObject*>(object)->delegate();
+        }
+        result.append(engine->scriptValueFromJSCValue(object));
     }
     return result;
 }
