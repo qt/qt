@@ -126,7 +126,6 @@ void tst_QScriptContextInfo::nativeFunction()
     int lineNumber = 123;
     QScriptValue ret = eng.evaluate("getContextInfoList()", fileName, lineNumber);
     QList<QScriptContextInfo> lst = qscriptvalue_cast<QList<QScriptContextInfo> >(ret);
-    QEXPECT_FAIL("", "getContextInfoList() returns one item too many", Continue);
     QCOMPARE(lst.size(), 2);
 
     {
@@ -173,7 +172,6 @@ void tst_QScriptContextInfo::scriptFunction()
     QScriptValue ret = eng.evaluate("function bar(a, b, c) {\n return getContextInfoList();\n}\nbar()",
                                     fileName, lineNumber);
     QList<QScriptContextInfo> lst = qscriptvalue_cast<QList<QScriptContextInfo> >(ret);
-    QEXPECT_FAIL("", "getContextInfoList() returns one item too many", Continue);
     QCOMPARE(lst.size(), 3);
 
     // getContextInfoList()
@@ -236,7 +234,6 @@ void tst_QScriptContextInfo::qtFunction()
         }
         QScriptValue ret = eng.evaluate(code);
         QList<QScriptContextInfo> lst = qscriptvalue_cast<QList<QScriptContextInfo> >(ret);
-        QEXPECT_FAIL("", "getContextInfoList() returns one item too many", Continue);
         QCOMPARE(lst.size(), 3);
 
         // getContextInfoList()
@@ -277,7 +274,6 @@ void tst_QScriptContextInfo::qtPropertyFunction()
 
     QScriptValue ret = eng.evaluate("qobj.testProperty");
     QList<QScriptContextInfo> lst = qscriptvalue_cast<QList<QScriptContextInfo> >(ret);
-    QEXPECT_FAIL("", "getContextInfoList() returns one item too many", Continue);
     QCOMPARE(lst.size(), 3);
 
     // getContextInfoList()
@@ -544,7 +540,6 @@ void tst_QScriptContextInfo::streaming()
         QScriptValue ret = eng.evaluate("function bar(a, b, c) {\n return getContextInfoList();\n}\nbar()",
                                         fileName, lineNumber);
         QList<QScriptContextInfo> lst = qscriptvalue_cast<QList<QScriptContextInfo> >(ret);
-        QEXPECT_FAIL("", "getContextInfoList() returns one item too many", Continue);
         QCOMPARE(lst.size(), 3);
         for (int i = 0; i < lst.size(); ++i) {
             const QScriptContextInfo &info = lst.at(i);
@@ -578,7 +573,6 @@ void tst_QScriptContextInfo::assignmentAndComparison()
     QScriptValue ret = eng.evaluate("function bar(a, b, c) {\n return getContextInfoList();\n}\nbar()",
                                     fileName, lineNumber);
     QList<QScriptContextInfo> lst = qscriptvalue_cast<QList<QScriptContextInfo> >(ret);
-    QEXPECT_FAIL("", "getContextInfoList() returns one item too many", Continue);
     QCOMPARE(lst.size(), 3);
     QScriptContextInfo ci = lst.at(0);
     QScriptContextInfo same = ci;

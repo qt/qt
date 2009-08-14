@@ -362,6 +362,11 @@ QScriptContext *QScriptContext::parentContext() const
 {
     const JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
     JSC::CallFrame *callerFrame = frame->callerFrame()->removeHostCallFrameFlag();
+    if (callerFrame && callerFrame->callerFrame()->hasHostCallFrameFlag()
+        && callerFrame->callerFrame()->removeHostCallFrameFlag() == QScript::scriptEngineFromExec(frame)->globalExec()) {
+        //skip the "fake" context created in Interpreter::execute.
+        callerFrame = callerFrame->callerFrame()->removeHostCallFrameFlag();
+    }
     return reinterpret_cast<QScriptContext *>(callerFrame);
 }
 
