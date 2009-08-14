@@ -267,7 +267,7 @@ private:
 
 static uint variantHash(const QVariant &variant)
 {
-    switch (variant.type()) {
+    switch (variant.userType()) {
     case QVariant::Invalid: return 0;
     case QVariant::Bool: return variant.toBool();
     case QVariant::Int: return variant.toInt();
@@ -852,7 +852,7 @@ bool QTextFormat::boolProperty(int propertyId) const
     if (!d)
         return false;
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Bool)
+    if (prop.userType() != QVariant::Bool)
         return false;
     return prop.toBool();
 }
@@ -868,7 +868,7 @@ int QTextFormat::intProperty(int propertyId) const
     if (!d)
         return 0;
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Int)
+    if (prop.userType() != QVariant::Int)
         return 0;
     return prop.toInt();
 }
@@ -885,7 +885,7 @@ qreal QTextFormat::doubleProperty(int propertyId) const
     if (!d)
         return 0.;
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Double && prop.type() != QMetaType::Float)
+    if (prop.userType() != QVariant::Double && prop.userType() != QMetaType::Float)
         return 0.;
     return qVariantValue<qreal>(prop);
 }
@@ -902,7 +902,7 @@ QString QTextFormat::stringProperty(int propertyId) const
     if (!d)
         return QString();
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::String)
+    if (prop.userType() != QVariant::String)
         return QString();
     return prop.toString();
 }
@@ -920,7 +920,7 @@ QColor QTextFormat::colorProperty(int propertyId) const
     if (!d)
         return QColor();
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Color)
+    if (prop.userType() != QVariant::Color)
         return QColor();
     return qvariant_cast<QColor>(prop);
 }
@@ -937,7 +937,7 @@ QPen QTextFormat::penProperty(int propertyId) const
     if (!d)
         return QPen(Qt::NoPen);
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Pen)
+    if (prop.userType() != QVariant::Pen)
         return QPen(Qt::NoPen);
     return qvariant_cast<QPen>(prop);
 }
@@ -954,7 +954,7 @@ QBrush QTextFormat::brushProperty(int propertyId) const
     if (!d)
         return QBrush(Qt::NoBrush);
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Brush)
+    if (prop.userType() != QVariant::Brush)
         return QBrush(Qt::NoBrush);
     return qvariant_cast<QBrush>(prop);
 }
@@ -984,13 +984,13 @@ QVector<QTextLength> QTextFormat::lengthVectorProperty(int propertyId) const
     if (!d)
         return vector;
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::List)
+    if (prop.userType() != QVariant::List)
         return vector;
 
     QList<QVariant> propertyList = prop.toList();
     for (int i=0; i<propertyList.size(); ++i) {
         QVariant var = propertyList.at(i);
-        if (var.type() == QVariant::TextLength)
+        if (var.userType() == QVariant::TextLength)
             vector.append(qvariant_cast<QTextLength>(var));
     }
 
@@ -1078,7 +1078,7 @@ int QTextFormat::objectIndex() const
     if (!d)
         return -1;
     const QVariant prop = d->property(ObjectIndex);
-    if (prop.type() != QVariant::Int) // ####
+    if (prop.userType() != QVariant::Int) // ####
         return -1;
     return prop.toInt();
 }
@@ -1654,9 +1654,9 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
 QString QTextCharFormat::anchorName() const
 {
     QVariant prop = property(AnchorName);
-    if (prop.type() == QVariant::StringList)
+    if (prop.userType() == QVariant::StringList)
         return prop.toStringList().value(0);
-    else if (prop.type() != QVariant::String)
+    else if (prop.userType() != QVariant::String)
         return QString();
     return prop.toString();
 }
@@ -1672,9 +1672,9 @@ QString QTextCharFormat::anchorName() const
 QStringList QTextCharFormat::anchorNames() const
 {
     QVariant prop = property(AnchorName);
-    if (prop.type() == QVariant::StringList)
+    if (prop.userType() == QVariant::StringList)
         return prop.toStringList();
-    else if (prop.type() != QVariant::String)
+    else if (prop.userType() != QVariant::String)
         return QStringList();
     return QStringList(prop.toString());
 }
