@@ -1871,6 +1871,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 //todo: update to horizontal table graphic
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, option->rect, flags | QS60StylePrivate::SF_PointWest);
             }
+        } else if (qobject_cast<const QFrame *>(widget)) { 
+            QCommonStyle::drawControl(element, option, painter, widget); 
         }
         if (option->state & State_HasFocus)
             drawPrimitive(PE_FrameFocusRect, option, painter, widget);
