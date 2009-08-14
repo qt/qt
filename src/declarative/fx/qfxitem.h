@@ -217,9 +217,6 @@ protected:
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
 
-private Q_SLOTS:
-    void doUpdate();
-
 protected:
     QFxItem(QFxItemPrivate &dd, QFxItem *parent = 0);
 

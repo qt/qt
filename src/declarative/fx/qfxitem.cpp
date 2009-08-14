@@ -876,13 +876,6 @@ QFxItem::QFxItem(QFxItemPrivate &dd, QFxItem *parent)
     d->init(parent);
 }
 
-/*! \internal
-*/
-void QFxItem::doUpdate()
-{
-    update();
-}
-
 /*!
     Destroys the QFxItem.
 */
