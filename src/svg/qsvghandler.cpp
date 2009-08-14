@@ -1740,14 +1740,13 @@ static void parseOpacity(QSvgNode *node,
                          const QSvgAttributes &attributes,
                          QSvgHandler *)
 {
-    QString value = attributes.value(QLatin1String("opacity")).toString();
-    value = value.trimmed();
+    const QString value = attributes.value(QLatin1String("opacity")).toString().trimmed();
 
     bool ok = false;
-    qreal op = value.toDouble(&ok);
+    qreal op = value.toReal(&ok);
 
     if (ok) {
-        QSvgOpacityStyle *opacity = new QSvgOpacityStyle(qMin(qreal(1.0), qMax(qreal(0.0), op)));
+        QSvgOpacityStyle *opacity = new QSvgOpacityStyle(qBound(qreal(0.0), op, qreal(1.0)));
         node->appendStyleProperty(opacity, someId(attributes));
     }
 }

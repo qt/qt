@@ -134,7 +134,7 @@ Item AtomicValue::toXDM(const QVariant &value)
     Q_ASSERT_X(value.isValid(), Q_FUNC_INFO,
                "QVariants sent to Patternist must be valid.");
 
-    switch(value.type())
+    switch(value.userType())
     {
         case QVariant::Char:
         /* Fallthrough. A single codepoint is a string in XQuery. */
@@ -166,6 +166,8 @@ Item AtomicValue::toXDM(const QVariant &value)
             return Date::fromDateTime(QDateTime(value.toDate(), QTime(), Qt::UTC));
         case QVariant::DateTime:
             return DateTime::fromDateTime(value.toDateTime());
+        case QMetaType::Float:
+            return Item(Double::fromValue(value.toFloat()));
         case QVariant::Double:
             return Item(Double::fromValue(value.toDouble()));
         default:
