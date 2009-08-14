@@ -100,7 +100,7 @@ qmainwindow
 #qmdisubwindow not relevant for S60, skip for now
 qmenu
 qmenubar
-#qmessagebox that's a hanger
+qmessagebox
 qmouseevent
 qmouseevent_modal
 qmovie

@@ -75,10 +75,11 @@ QT_BEGIN_NAMESPACE
 #if defined(QT_DEBUG)
 static bool        appNoGrab        = false;        // Grabbing enabled
 #endif
-
+static bool        app_do_modal        = false;        // modal mode
 Q_GLOBAL_STATIC(QS60Data, qt_s60Data);
-extern bool qt_sendSpontaneousEvent(QObject*,QEvent*);
 
+extern bool qt_sendSpontaneousEvent(QObject*,QEvent*);
+extern QWidgetList *qt_modal_stack;              // stack of modal widgets
 extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidget *qt_button_down = 0;                     // widget got last button-down
@@ -788,17 +789,26 @@ QString QApplicationPrivate::appName() const
 
 bool QApplicationPrivate::modalState()
 {
-    return false;
+    return app_do_modal;
 }
 
-void QApplicationPrivate::enterModal_sys(QWidget * /* widget */)
+void QApplicationPrivate::enterModal_sys(QWidget *widget)
 {
-    // TODO: Implement QApplicationPrivate::enterModal_sys(QWidget *widget)
+    if (!qt_modal_stack)
+        qt_modal_stack = new QWidgetList;
+    qt_modal_stack->insert(0, widget);
+    app_do_modal = true;    
 }
 
-void QApplicationPrivate::leaveModal_sys(QWidget * /* widget */)
+void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 {
-    // TODO: Implement QApplicationPrivate::leaveModal_sys(QWidget *widget)
+    if (qt_modal_stack && qt_modal_stack->removeAll(widget)) {
+        if (qt_modal_stack->isEmpty()) {
+            delete qt_modal_stack;
+            qt_modal_stack = 0;
+        }
+    }
+    app_do_modal = qt_modal_stack != 0;
 }
 
 void QApplicationPrivate::openPopup(QWidget *popup)
