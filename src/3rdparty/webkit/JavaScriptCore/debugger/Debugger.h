@@ -22,11 +22,11 @@
 #ifndef Debugger_h
 #define Debugger_h
 
+#include <debugger/DebuggerCallFrame.h>
 #include "Protect.h"
 
 namespace JSC {
 
-    class DebuggerCallFrame;
     class ExecState;
     class JSGlobalObject;
     class SourceCode;
