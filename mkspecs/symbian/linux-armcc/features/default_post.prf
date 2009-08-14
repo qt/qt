@@ -1,0 +1,14 @@
+exports.commands = winewrapper getexports.exe ${QMAKE_FILE_NAME} > ${OBJECTS_DIR}${QMAKE_FILE_BASE}.exports
+exports.output = $$OBJECTS_DIR/${QMAKE_FILE_BASE}.exports
+exports.input = OBJECTS
+exports.variable_out = ORDINALMAP
+exports.CONFIG = no_link
+
+ordinalmap.input = ORDINALMAP
+ordinalmap.output = $$OBJECTS_DIR/$${TARGET}.lib
+ordinalmap.commands = makeordinalmap $$OBJECTS_DIR $$OBJECTS_DIR/$${TARGET}.lib $${TARGET}.dll ${QMAKE_FILE_NAME}
+ordinalmap.variable_out = PRE_TARGETDEPS
+ordinalmap.CONFIG = combine
+
+QMAKE_EXTRA_COMPILERS += ordinalmap
+QMAKE_EXTRA_COMPILERS += exports

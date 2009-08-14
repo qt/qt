@@ -1,0 +1,65 @@
+#!/usr/bin/perl -w
+
+my $objects_dir = $ARGV[0];
+my $target = $ARGV[1];
+my $dllFile = $ARGV[2];
+
+shift @ARGV;
+shift @ARGV;
+shift @ARGV;
+
+sub uniqueify {
+    # String must be sorted beforehand.
+    my $c;
+    my $last = $_[0];
+    for ($c = 1; $c < scalar(@_); $c++) {
+        if ($_[$c] eq $last) {
+            splice(@_, $c, 1);
+            $c--;
+        } else {
+            $last = $_[$c];
+        }
+    }
+
+    return @_;
+}
+
+my @exports;
+
+foreach (@ARGV) {
+    my $file;
+    open($file, "< $_") or die("Could not open $_");
+    while (<$file>) {
+        push (@exports, $_);
+    }
+    close($file);
+}
+
+@exports = sort(@exports);
+
+@exports = uniqueify(@exports);
+
+open(HANDLE, "> test.txt");
+print (HANDLE join("", @exports));
+close(HANDLE);
+
+my @ordinalfiles;
+
+for (my $c = 0; $c < scalar(@exports); $c++) {
+    my $symbol = $exports[$c];
+    my $genstubs;
+    open ($genstubs, "| winewrapper genstubs.exe") or die ("Could not execute genstubs");
+    print ($genstubs "$objects_dir/ordinal-$c.o $symbol #<DLL>$dllFile#<\\DLL>$c\n");
+    push (@ordinalfiles, "$objects_dir/ordinal-$c.o");
+    close ($genstubs);
+}
+
+my $via;
+open ($via, "> $objects_dir/input.via") or die("Could not open $objects_dir/input.via");
+print ($via join("\n", @ordinalfiles));
+close($via);
+
+my $result = system("armar --create $target --via $objects_dir/input.via");
+die("Could not execute armar") if ($result);
+
+exit 0
