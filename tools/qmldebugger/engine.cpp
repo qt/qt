@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include <QTreeWidget>
 #include <QTableWidget>
+#include <QFile>
 #include <private/qmlenginedebug_p.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qfxitem.h>
@@ -38,10 +39,14 @@ EnginePane::EnginePane(QmlDebugConnection *client, QWidget *parent)
 
     setLayout(layout);
 
+    QFile enginesFile(":/engines.qml");
+    enginesFile.open(QFile::ReadOnly);
+    Q_ASSERT(enginesFile.isOpen());
+
     m_engineView = new QFxView(this);
     m_engineView->rootContext()->setContextProperty("engines", qVariantFromValue(&m_engineItems));
     m_engineView->setContentResizable(true);
-    m_engineView->setUrl(QUrl::fromLocalFile("engines.qml"));
+    m_engineView->setQml(enginesFile.readAll());
     m_engineView->execute();
     m_engineView->setFixedHeight(100);
     QObject::connect(m_engineView->root(), SIGNAL(engineClicked(int)),

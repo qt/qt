@@ -11,10 +11,10 @@ Item {
         Repeater {
             dataSource: engines
             Item {
-                width: 100; height: 100; 
+                width: 100; height: 100;
                 Image { 
                     id: Image; 
-                    source: "engine.png" 
+                    source: "qrc:/engine.png"
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
                 Text { 
@@ -33,7 +33,7 @@ Item {
 
     Image { 
         y: 15
-        source: "refresh.png"; 
+        source: "qrc:/refresh.png";
         width: 75; 
         height: 63; 
         smooth: true 
