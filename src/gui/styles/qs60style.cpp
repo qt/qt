@@ -1636,7 +1636,9 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
             if (optionProgressBar->minimum == optionProgressBar->maximum && optionProgressBar->minimum == 0) {
                 // busy indicator
-                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWait, painter, progressRect,flags);
+                const int orientationFlag = optionProgressBar->orientation == Qt::Horizontal ?
+                    QS60StylePrivate::SF_PointNorth : QS60StylePrivate::SF_PointWest;
+                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWait, painter, progressRect, flags | orientationFlag);
             } else {
                 const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? 1.0
                     : (qreal)optionProgressBar->progress / optionProgressBar->maximum;
