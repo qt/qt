@@ -54,7 +54,7 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 #if defined(Q_OS_SYMBIAN)
-# define SRCDIR "."
+# define SRCDIR ""
 #endif
 
 class Widget : public QWidget
