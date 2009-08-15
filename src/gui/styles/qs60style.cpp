@@ -1636,7 +1636,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
             if (optionProgressBar->minimum == optionProgressBar->maximum && optionProgressBar->minimum == 0) {
                 // busy indicator
-                const int orientationFlag = optionProgressBar->orientation == Qt::Horizontal ?
+                const QS60StylePrivate::SkinElementFlag orientationFlag = optionProgressBar->orientation == Qt::Horizontal ?
                     QS60StylePrivate::SF_PointNorth : QS60StylePrivate::SF_PointWest;
                 QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWait, painter, progressRect, flags | orientationFlag);
             } else {
