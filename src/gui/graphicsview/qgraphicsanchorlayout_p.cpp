@@ -127,17 +127,83 @@ void ParallelAnchorData::refreshSizeHints(qreal effectiveSpacing)
     sizeAtMaximum = prefSize;
 }
 
+static qreal getFactor(qreal value, qreal min, qreal pref, qreal max, bool *minToPref)
+{
+    // ### Maybe remove some of the assertions? (since outside is asserting us)
+    Q_ASSERT(value > min || qFuzzyCompare(value, min));
+    Q_ASSERT(value < max || qFuzzyCompare(value, max));
+
+    if (qFuzzyCompare(value, min)) {
+        *minToPref = true;
+        return 0.0;
+
+    } else if (qFuzzyCompare(value, pref)) {
+        *minToPref = true;
+        return 1.0;
+
+    } else if (qFuzzyCompare(value, max)) {
+        *minToPref = false;
+        return 1.0;
+
+    } else if (value < pref) {
+        *minToPref = true;
+        // Since value < pref and value != pref and min <= value,
+        // we can assert that min < pref.
+        Q_ASSERT(min < pref);
+        return (value - min) / (pref - min);
+
+    } else {
+        *minToPref = false;
+        // Since value > pref and value != pref and max >= value,
+        // we can assert that max > pref.
+        Q_ASSERT(max > pref);
+        return (value - pref) / (max - pref);
+    }
+}
+
 void SequentialAnchorData::updateChildrenSizes()
 {
-    qreal minFactor = sizeAtMinimum / minSize;
-    qreal prefFactor = sizeAtPreferred / prefSize;
-    qreal maxFactor = sizeAtMaximum / maxSize;
+    // ### REMOVE ME
+    // ### check whether we are guarantee to get those or we need to warn stuff at this
+    // point.
+    Q_ASSERT(sizeAtMinimum > minSize || qFuzzyCompare(sizeAtMinimum, minSize));
+    Q_ASSERT(sizeAtMinimum < maxSize || qFuzzyCompare(sizeAtMinimum, maxSize));
+    Q_ASSERT(sizeAtPreferred > minSize || qFuzzyCompare(sizeAtPreferred, minSize));
+    Q_ASSERT(sizeAtPreferred < maxSize || qFuzzyCompare(sizeAtPreferred, maxSize));
+    Q_ASSERT(sizeAtMaximum > minSize || qFuzzyCompare(sizeAtMaximum, minSize));
+    Q_ASSERT(sizeAtMaximum < maxSize || qFuzzyCompare(sizeAtMaximum, maxSize));
+
+    // Band here refers if the value is in the Minimum To Preferred
+    // band (the lower band) or the Preferred To Maximum (the upper band).
+
+    bool minLowerBand;
+    qreal minFactor = getFactor(sizeAtMinimum, minSize, prefSize, maxSize, &minLowerBand);
+
+    bool prefLowerBand;
+    qreal prefFactor = getFactor(sizeAtPreferred, minSize, prefSize, maxSize, &prefLowerBand);
+
+    bool maxLowerBand;
+    qreal maxFactor = getFactor(sizeAtMaximum, minSize, prefSize, maxSize, &maxLowerBand);
 
     for (int i = 0; i < m_edges.count(); ++i) {
-        m_edges[i]->sizeAtMinimum = m_edges[i]->minSize * minFactor;
-        m_edges[i]->sizeAtPreferred = m_edges[i]->prefSize * prefFactor;
-        m_edges[i]->sizeAtMaximum = m_edges[i]->maxSize * maxFactor;
-        m_edges[i]->updateChildrenSizes();
+        AnchorData *e = m_edges.at(i);
+
+        if (minLowerBand)
+            e->sizeAtMinimum = e->minSize + ((e->prefSize - e->minSize) * minFactor);
+        else
+            e->sizeAtMinimum = e->prefSize + ((e->maxSize - e->prefSize) * minFactor);
+
+        if (prefLowerBand)
+            e->sizeAtPreferred = e->minSize + ((e->prefSize - e->minSize) * prefFactor);
+        else
+            e->sizeAtPreferred = e->prefSize + ((e->maxSize - e->prefSize) * prefFactor);
+
+        if (maxLowerBand)
+            e->sizeAtMaximum = e->minSize + ((e->prefSize - e->minSize) * maxFactor);
+        else
+            e->sizeAtMaximum = e->prefSize + ((e->maxSize - e->prefSize) * maxFactor);
+
+        e->updateChildrenSizes();
     }
 }
 

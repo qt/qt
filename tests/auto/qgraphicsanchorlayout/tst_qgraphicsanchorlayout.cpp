@@ -234,7 +234,6 @@ void tst_QGraphicsAnchorLayout::parallel()
     // solution found by the solver at runtime.
     p.resize(layoutMaximumSize);
     QCOMPARE(a->geometry(), QRectF(0, 0, 200, 100));
-    QEXPECT_FAIL("", "see commit 23441f49a23cbf936b60140c5c8a6d5cb3ca00a7 for explanation", Abort);
     QCOMPARE(b->geometry(), QRectF(200, 100, 175, 100));
     QCOMPARE(c->geometry(), QRectF(200, 200, 350, 100));
     QCOMPARE(d->geometry(), QRectF(375, 300, 175, 100));
@@ -609,9 +608,8 @@ void tst_QGraphicsAnchorLayout::proportionalPreferred()
     qreal factor = 12.0 / 24.0;
 
     QCOMPARE(c->size().width(), d->size().width());
-    QEXPECT_FAIL("", "see commit 23441f49a23cbf936b60140c5c8a6d5cb3ca00a7 for explanation", Abort);
-    QCOMPARE(a->size().width() * factor, 10 * factor);
-    QCOMPARE(c->size().width() * factor, 14 * factor);
+    QCOMPARE(a->size().width(), 10 * factor);
+    QCOMPARE(c->size().width(), 14 * factor);
     QCOMPARE(p.size(), QSizeF(12, 400));
 }
 
