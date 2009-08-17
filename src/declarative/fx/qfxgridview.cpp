@@ -961,15 +961,6 @@ void QFxGridView::setWrapEnabled(bool wrap)
   and below the bottom of the view to cache.  Setting this value can make
   scrolling the view smoother at the expense of additional memory usage.
 */
-
-/*!
-  \property QFxGridView::cacheBuffer
-  \brief sets the number of off-screen pixels to cache.
-
-  This property determines the number of pixels above the top of the view
-  and below the bottom of the view to cache.  Setting this value can make
-  scrolling the view smoother at the expense of additional memory usage.
-*/
 int QFxGridView::cacheBuffer() const
 {
     Q_D(const QFxGridView);

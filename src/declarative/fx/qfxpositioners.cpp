@@ -55,16 +55,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \internal
     \class QFxBasePositioner
-    \brief The QFxBasePositioner class provides a base for QFx layouts.
-
-    To create a QFx Layout, simple subclass QFxBasePositioner and implement
-    doLayout(), which is automatically called when the layout might need
-    updating.
-
-    It is strongly recommended that in your implementation of doLayout()
-    that you use the move, remove and add transitions when those conditions
-    arise.
-
     \ingroup group_layouts
 */
 QFxBasePositioner::QFxBasePositioner(AutoUpdateType at, QFxItem *parent)
@@ -81,12 +71,6 @@ QFxBasePositioner::QFxBasePositioner(QFxBasePositionerPrivate &dd, AutoUpdateTyp
     d->init(at);
 }
 
-/*!
-  \property QFxBasePositioner::spacing
-  \brief the amount of spacing between items (in px)
-
-  Note that the subclass is repsonsible for ensuring this.
-*/
 int QFxBasePositioner::spacing() const
 {
     Q_D(const QFxBasePositioner);
@@ -102,11 +86,6 @@ void QFxBasePositioner::setSpacing(int s)
     preLayout();
 }
 
-/*!
-  \property QFxBasePositioner::margin
-  \brief the size of the margin around all items (in px)
-
-*/
 int QFxBasePositioner::margin() const
 {
     Q_D(const QFxBasePositioner);
@@ -122,24 +101,6 @@ void QFxBasePositioner::setMargin(int s)
     preLayout();
 }
 
-
-/*!
-    \property QFxBasePositioner::move
-    \brief the transition when moving an item.
-
-    \qml
-BaseLayout {
-    id: layout
-    y: 0
-    move: Transition {
-        NumberAnimation {
-            properties: "y"
-            ease: "easeOutBounce"
-        }
-    }
-}
-    \endqml
-*/
 QmlTransition *QFxBasePositioner::move() const
 {
     Q_D(const QFxBasePositioner);
@@ -152,26 +113,6 @@ void QFxBasePositioner::setMove(QmlTransition *mt)
     d->moveTransition = mt;
 }
 
-/*!
-    \property QFxBasePositioner::add
-    \brief the transition when adding an item.
-
-    \qml
-BaseLayout {
-    id: layout
-    y: 0
-    add: Transition {
-        NumberAnimation {
-            target: layout.item
-            properties: "opacity"
-            from: 0
-            to: 1
-            duration: 500
-        }
-    }
-}
-    \endqml
-*/
 QmlTransition *QFxBasePositioner::add() const
 {
     Q_D(const QFxBasePositioner);
@@ -184,29 +125,6 @@ void QFxBasePositioner::setAdd(QmlTransition *add)
     d->addTransition = add;
 }
 
-
-/*!
-    \property QFxBasePositioner::remove
-    \brief the transition when removing an item.
-
-    Note that the item may be 'removed' because its opacity is zero. This can make certain
-    transitions difficult to see.
-    \qml
-BaseLayout {
-    id: layout
-    y: 0
-    remove: Transition {
-        NumberAnimation {
-            target: layout.item
-            properties: "opacity"
-            from: 1
-            to: 0
-            duration: 500
-        }
-    }
-}
-    \endqml
-*/
 QmlTransition *QFxBasePositioner::remove() const
 {
     Q_D(const QFxBasePositioner);
@@ -218,13 +136,6 @@ void QFxBasePositioner::setRemove(QmlTransition *remove)
     Q_D(QFxBasePositioner);
     d->removeTransition = remove;
 }
-
-/*!
-    \property QFxBasePositioner::item
-
-    The item that is currently being laid out. Used to target transitions that apply
-    only to the item being laid out, such as in the add transition.
-*/
 
 QFxItem *QFxBasePositioner::layoutItem() const
 {
@@ -475,7 +386,7 @@ void QFxBasePositioner::applyRemove(const QList<QPair<QString, QVariant> >& chan
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VerticalPositioner,QFxVerticalPositioner)
 /*!
   \qmlclass VerticalPositioner
-  \brief The VerticalPositioner item arranges its children in a vertical layout.
+  \brief The VerticalPositioner item lines up its children vertically.
   \inherits Item
 
   The VerticalPositioner item arranges its child items so that they are vertically
@@ -678,7 +589,7 @@ void QFxVerticalPositioner::doLayout()
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,HorizontalPositioner,QFxHorizontalPositioner)
 /*!
   \qmlclass HorizontalPositioner
-  \brief The HorizontalPositioner item arranges its children in a horizontal layout.
+  \brief The HorizontalPositioner item lines up its children horizontally.
   \inherits Item
 
   The HorizontalPositioner item arranges its child items so that they are horizontally aligned and not overlapping. Spacing can be added between the items, and a margin around all items can also be added. It also provides for transitions to be set when items are added, moved, or removed in the layout. Adding and removing apply both to items which are deleted or have their position in the document changed so as to no longer be children of the layout, as well as to items which have their opacity set to or from zero so as to appear or disappear.
@@ -844,7 +755,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GridPositioner,QFxGridPositioner
 
 /*!
   \qmlclass GridPositioner QFxGridPositioner
-  \brief The GridPositioner item arranges its children in a grid layout.
+  \brief The GridPositioner item positions its children in a grid.
   \inherits Item
 
   The GridPositioner item arranges its child items so that they are
@@ -867,7 +778,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GridPositioner,QFxGridPositioner
   example demonstrates this.
 
   \table
-  \row 
+  \row
   \o \image gridLayout_example.png
   \o
   \qml
@@ -1016,16 +927,6 @@ QFxGridPositioner::QFxGridPositioner(QFxItem *parent) :
     When the rows property is set the GridPositioner will always have that
     many rows. Note that if you do not have enough items to fill this
     many rows some rows will be of zero width.
-*/
-
-/*!
-    \property QFxGridPositioner::columns
-    \brief the number of columns in the grid.
-*/
-
-/*!
-    \property QFxGridPositioner::rows
-    \brief the number of rows in the grid.
 */
 
 void QFxGridPositioner::doLayout()

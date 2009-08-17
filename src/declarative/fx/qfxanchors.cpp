@@ -181,7 +181,7 @@ void QFxAnchorsPrivate::centerInChanged()
 
 void QFxAnchorsPrivate::clearItem(QFxItem *item)
 {
-    if (fill == item) 
+    if (fill == item)
         fill = 0;
     if (centerIn == item)
         centerIn = 0;
@@ -220,7 +220,7 @@ void QFxAnchorsPrivate::addDepend(QFxItem *item)
     Q_Q(QFxAnchors);
     if (!item)
         return;
-    QFxItemPrivate *p = 
+    QFxItemPrivate *p =
         static_cast<QFxItemPrivate *>(QGraphicsItemPrivate::get(item));
     p->dependantAnchors.append(q);
 }
@@ -230,7 +230,7 @@ void QFxAnchorsPrivate::remDepend(QFxItem *item)
     Q_Q(QFxAnchors);
     if (!item)
         return;
-    QFxItemPrivate *p = 
+    QFxItemPrivate *p =
         static_cast<QFxItemPrivate *>(QGraphicsItemPrivate::get(item));
     p->dependantAnchors.removeAll(q);
 }
@@ -319,13 +319,6 @@ void QFxAnchorsPrivate::update(QFxItem *, const QRectF &newG, const QRectF &oldG
         updateVerticalAnchors();
 }
 
-/*!
-    \property QFxAnchors::fill
-    \brief which item the item should fill.
-
-    This is a convenience property. It is the same as anchoring the left, right, top, and bottom
-    to another item's left, right, top, and bottom.
-*/
 QFxItem *QFxAnchors::fill() const
 {
     Q_D(const QFxAnchors);
@@ -348,16 +341,9 @@ void QFxAnchors::setFill(QFxItem *f)
     d->fill = f;
     d->addDepend(d->fill);
 
-    d->fillChanged();  
+    d->fillChanged();
 }
 
-/*!
-    \property QFxAnchors::centerIn
-    \brief which item the item should stay centered in.
-
-    This is a convenience property. It is the same as anchoring the horizontalCenter
-    and verticalCenter to another item's horizontalCenter and verticalCenter.
-*/
 QFxItem *QFxAnchors::centerIn() const
 {
     Q_D(const QFxAnchors);

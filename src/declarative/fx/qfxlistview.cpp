@@ -1194,15 +1194,6 @@ void QFxListView::setWrapEnabled(bool wrap)
     and below the bottom of the list to cache.  Setting this value can make
     scrolling the list smoother at the expense of additional memory usage.
 */
-
-/*!
-    \property QFxListView::cacheBuffer
-    \brief sets the number of off-screen pixels to cache.
-
-    This property determines the number of pixels above the top of the list
-    and below the bottom of the list to cache.  Setting this value can make
-    scrolling the list smoother at the expense of additional memory usage.
-*/
 int QFxListView::cacheBuffer() const
 {
     Q_D(const QFxListView);

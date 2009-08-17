@@ -65,32 +65,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Gradient,QFxGradient)
     \endqml
 */
 
-/*! \property QFxPen::width
-    \brief the width of the border.
-
-    A width of 1 is a single-pixel line on the border of the item being painted.
-
-    If the width is less than 1 the pen is considered invalid and won't be used.
-*/
-
-/*!
-    \property QFxPen::color
-    \brief the color of the border.
-
-    color is most commonly specified in hexidecimal notation (#RRGGBB)
-    or as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color keyword name}
-     (as defined by the World Wide Web Consortium). For example:
-    \qml
-    // rect with green border using hexidecimal notation
-    Rect { border.color: "#00FF00" }
-
-    // rect with steelblue border using SVG color name
-    Rect { border.color: "steelblue" }
-    \endqml
-
-    For the full set of ways to specify color, see Qt's QColor::setNamedColor documentation.
-*/
-
 void QFxPen::setColor(const QColor &c)
 {
     _color = c;
@@ -98,19 +72,6 @@ void QFxPen::setColor(const QColor &c)
     emit updated();
 }
 
-/*!
-    \property QFxPen::width
-    \brief the width of the border.
-
-    \qml
-    Rect { border.width: 4 }
-    \endqml
-
-    A width of 1 creates a thin line. For no line, use a width of 0 or a transparent color.
-
-    To keep the border smooth (rather than blurry), odd pen widths cause the rect to be painted at
-    a half-pixel offset;
-*/
 void QFxPen::setWidth(int w)
 {
     _width = w;

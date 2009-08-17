@@ -141,14 +141,6 @@ QFxImage::~QFxImage()
 {
 }
 
-/*!
-    \property QFxImage::pixmap
-    \brief the image displayed in this item.
-
-    This property contains the pixmap currently being displayed by this item,
-    which may be empty if nothing is currently displayed. Setting the source
-    property overrides any setting of this property.
-*/
 QPixmap QFxImage::pixmap() const
 {
     Q_D(const QFxImage);
