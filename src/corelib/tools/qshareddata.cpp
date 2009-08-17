@@ -285,6 +285,11 @@ QT_BEGIN_NAMESPACE
   \sa data()
 */
 
+/*! \fn void QSharedDataPointer::swap(QSharedDataPointer &other)
+  Swap this instance's shared data pointer with the shared
+  data pointer in \a other.
+ */
+
 /*! \fn bool QSharedDataPointer::operator==(const QSharedDataPointer<T>& other) const
   Returns true if \a other and \e this have the same \e{d pointer}.
   This function does \e not call detach().
@@ -435,6 +440,11 @@ QT_BEGIN_NAMESPACE
 
   \sa data()
 */
+
+/*! \fn void QExplicitlySharedDataPointer::swap(QExplicitlySharedDataPointer &other)
+  Swap this instance's explicitly shared data pointer with
+  the explicitly shared data pointer in \a other.
+ */
 
 /*! \fn bool QExplicitlySharedDataPointer::operator==(const QExplicitlySharedDataPointer<T>& other) const
   Returns true if \a other and \e this have the same \e{d pointer}.
