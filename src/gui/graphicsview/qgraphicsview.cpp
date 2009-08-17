@@ -493,8 +493,8 @@ void QGraphicsViewPrivate::centerView(QGraphicsView::ViewportAnchor anchor)
             // Last scene pos: lastMouseMoveScenePoint
             // Current mouse pos:
             QPointF transformationDiff = q->mapToScene(viewport->rect().center())
-                                         - q->mapToScene(q->mapFromGlobal(QCursor::pos()));
-            q->centerOn(lastMouseMoveScenePoint + transformationDiff);;
+                                         - q->mapToScene(viewport->mapFromGlobal(QCursor::pos()));
+            q->centerOn(lastMouseMoveScenePoint + transformationDiff);
         } else {
             q->centerOn(lastCenterPoint);
         }
