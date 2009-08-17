@@ -107,6 +107,7 @@
 #include <private/qcocoapanel_mac_p.h>
 
 #include "qwidget_p.h"
+#include "qevent_p.h"
 #include "qdnd_p.h"
 #include <QtGui/qgraphicsproxywidget.h>
 
@@ -729,7 +730,12 @@ static EventTypeSpec window_events[] = {
     { kEventClassWindow, kEventWindowGetRegion },
     { kEventClassWindow, kEventWindowGetClickModality },
     { kEventClassWindow, kEventWindowTransitionCompleted },
-    { kEventClassMouse, kEventMouseDown }
+    { kEventClassMouse, kEventMouseDown },
+    { kEventClassGesture, kEventGestureStarted },
+    { kEventClassGesture, kEventGestureEnded },
+    { kEventClassGesture, kEventGestureMagnify },
+    { kEventClassGesture, kEventGestureSwipe },
+    { kEventClassGesture, kEventGestureRotate }
 };
 static EventHandlerUPP mac_win_eventUPP = 0;
 static void cleanup_win_eventUPP()
@@ -1013,6 +1019,69 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
             return SendEventToApplication(event);
         handled_event = false;
         break; }
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    case kEventClassGesture: {
+        // First, find the widget that was under
+        // the mouse when the gesture happened:
+        HIPoint screenLocation;
+        if (GetEventParameter(event, kEventParamMouseLocation, typeHIPoint, 0,
+                    sizeof(screenLocation), 0, &screenLocation) != noErr) {
+            handled_event = false;
+            break;
+        }
+        QWidget *widget = QApplication::widgetAt(screenLocation.x, screenLocation.y);
+        if (!widget) {
+            handled_event = false;
+            break;
+        }
+
+        QNativeGestureEvent qNGEvent;
+        qNGEvent.position = QPoint(screenLocation.x, screenLocation.y);
+
+        switch (ekind) {
+            case kEventGestureStarted:
+                qNGEvent.gestureType = QNativeGestureEvent::GestureBegin;
+                break;
+            case kEventGestureEnded:
+                qNGEvent.gestureType = QNativeGestureEvent::GestureEnd;
+                break;
+            case kEventGestureRotate: {
+                CGFloat amount;
+                if (GetEventParameter(event, kEventParamRotationAmount, typeCGFloat, 0,
+                            sizeof(amount), 0, &amount) != noErr) {
+                    handled_event = false;
+                    break;
+                }
+                qNGEvent.gestureType = QNativeGestureEvent::Zoom;
+                qNGEvent.percentage = float(amount);
+                break; }
+            case kEventGestureSwipe: {
+                HIPoint swipeDirection;
+                if (GetEventParameter(event, kEventParamSwipeDirection, typeHIPoint, 0,
+                            sizeof(swipeDirection), 0, &swipeDirection) != noErr) {
+                    handled_event = false;
+                    break;
+                }
+                qNGEvent.gestureType = QNativeGestureEvent::Swipe;
+                qNGEvent.direction = QSize(-swipeDirection.x, -swipeDirection.y);
+                break; }
+            case kEventGestureMagnify: {
+                CGFloat amount;
+                if (GetEventParameter(event, kEventParamMagnificationAmount, typeCGFloat, 0,
+                            sizeof(amount), 0, &amount) != noErr) {
+                    handled_event = false;
+                    break;
+                }
+                qNGEvent.gestureType = QNativeGestureEvent::Zoom;
+                qNGEvent.percentage = float(amount);
+                break; }
+        }
+
+        QApplication::sendSpontaneousEvent(widget, &qNGEvent);
+    break; }
+#endif // gestures
+
     default:
         handled_event = false;
     }
