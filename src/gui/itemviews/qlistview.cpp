@@ -1974,8 +1974,10 @@ QListViewPrivate::QListViewPrivate()
 
 QListViewPrivate::~QListViewPrivate()
 {
-    delete staticListView;
-    delete dynamicListView;
+    if (viewMode == QListView::ListMode)
+        delete staticListView;
+    else
+        delete dynamicListView;
 }
 
 void QListViewPrivate::clear()
