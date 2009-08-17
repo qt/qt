@@ -21,6 +21,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Phonon/MediaSource>
 #include <Phonon/MediaObjectInterface>
+#include <QScopedPointer>
 
 namespace Phonon
 {
@@ -76,7 +77,10 @@ namespace Phonon
             void tick(qint64 time);
 
         private:
-            AbstractPlayer *m_player;
+            void loadPlayer(const MediaSource &source);
+
+            QScopedPointer<AbstractPlayer> m_player;
+
         };
     }
 }

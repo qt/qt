@@ -17,6 +17,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "abstractplayer.h"
+#include "audioplayer.h"
+#include "mmf_videoplayer.h"
 #include "mediaobject.h"
 
 using namespace Phonon;
@@ -65,7 +67,7 @@ qint32 MMF::MediaObject::tickInterval() const
 
 void MMF::MediaObject::setTickInterval(qint32 interval)
 {
-    m_player->setTransitionTime(interval);
+    m_player->setTickInterval(interval);
 }
 
 bool MMF::MediaObject::hasVideo() const
@@ -110,7 +112,22 @@ MediaSource MMF::MediaObject::source() const
 
 void MMF::MediaObject::setSource(const MediaSource &source)
 {
+    loadPlayer(source);
+
     return m_player->setSource(source);
+}
+
+void MMF::MediaObject::loadPlayer(const MediaSource &source)
+{
+    disconnect(m_player.data(), 0, this, 0);
+
+    // TODO determine media type
+    m_player.reset(new AudioPlayer());
+
+    connect(m_player.data(), SIGNAL(totalTimeChanged()), SIGNAL(totalTimeChanged()));
+    connect(m_player.data(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), SIGNAL(stateChanged(Phonon::State, Phonon::State)));
+    connect(m_player.data(), SIGNAL(finished()), SIGNAL(finished()));
+    connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
 }
 
 void MMF::MediaObject::setNextSource(const MediaSource &source)

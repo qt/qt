@@ -37,7 +37,7 @@ namespace Phonon
             virtual void stop() = 0;
             virtual void seek(qint64 milliseconds) = 0;
             virtual qint32 tickInterval() const = 0;
-            virtual void setTickInterval() const = 0;
+            virtual void setTickInterval(qint32) = 0;
             virtual bool hasVideo() const = 0;
             virtual bool isSeekable() const = 0;
             virtual qint64 currentTime() const = 0;
@@ -53,10 +53,8 @@ namespace Phonon
             virtual qint32 transitionTime() const = 0;
             virtual qint32 prefinishMark() const = 0;
             virtual void setPrefinishMark(qint32) = 0;
-
             virtual bool setVolume(qreal) = 0;
             virtual qreal volume() const = 0;
-
             virtual void setAudioOutput(AudioOutput *) = 0;
         };
     }

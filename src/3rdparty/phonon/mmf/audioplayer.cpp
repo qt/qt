@@ -39,14 +39,14 @@ const int        NullMaxVolume = -1;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AudioPlayer::AudioPlayer(QObject *parent) : m_player(NULL)
-                                               , m_audioOutput(NULL)
-                                               , m_error(NoError)
-                                               , m_state(GroundState)
-                                               , m_tickInterval(DefaultTickInterval)
-                                               , m_tickTimer(NULL)
-                                               , m_volume(0.0)
-                                               , m_maxVolume(NullMaxVolume)
+MMF::AudioPlayer::AudioPlayer() : m_player(NULL)
+                                , m_audioOutput(NULL)
+                                , m_error(NoError)
+                                , m_state(GroundState)
+                                , m_tickInterval(DefaultTickInterval)
+                                , m_tickTimer(NULL)
+                                , m_volume(0.0)
+                                , m_maxVolume(NullMaxVolume)
 {
     TRACE_CONTEXT(AudioPlayer::AudioPlayer, EAudioApi);
     TRACE_ENTRY_0();

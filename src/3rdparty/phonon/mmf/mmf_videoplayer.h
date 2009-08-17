@@ -46,7 +46,7 @@ namespace Phonon
         {
             Q_OBJECT
         public:
-            VideoPlayer(QObject *parent);
+            VideoPlayer();
             virtual ~VideoPlayer();
 
             // AbstractPlayer

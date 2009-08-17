@@ -56,7 +56,7 @@ namespace Phonon
             Q_OBJECT
 
         public:
-            AudioPlayer(QObject *parent);
+            AudioPlayer();
             virtual ~AudioPlayer();
 
             // AbstractPlayer
