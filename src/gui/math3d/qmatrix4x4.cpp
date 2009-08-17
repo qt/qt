@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
     \class QMatrix4x4
     \brief The QMatrix4x4 class represents a 4x4 transformation matrix in 3D space.
     \since 4.6
+    \ingroup painting-3D
 
     \sa QVector3D, QGenericMatrix
 */

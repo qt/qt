@@ -100,7 +100,7 @@ void QActionGroupPrivate::_q_actionHovered()
     \class QActionGroup
     \brief The QActionGroup class groups actions together.
 
-    \ingroup application
+    \ingroup mainwindow-classes
 
     In some situations it is useful to group actions together. For
     example, if you have a \gui{Left Align} action, a \gui{Right

@@ -289,7 +289,7 @@ void **QListData::erase(void **xi)
 
     \ingroup tools
     \ingroup shared
-    \mainclass
+
     \reentrant
 
     QList\<T\> is one of Qt's generic \l{container classes}. It

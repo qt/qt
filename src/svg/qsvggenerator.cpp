@@ -511,7 +511,7 @@ public:
 
 /*!
     \class QSvgGenerator
-    \ingroup multimedia
+    \ingroup painting
     \since 4.3
     \brief The QSvgGenerator class provides a paint device that is used to create SVG drawings.
     \reentrant

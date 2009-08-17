@@ -1938,7 +1938,7 @@ void QDomNodePrivate::setLocation(int lineNumber, int columnNumber)
 
     \inmodule QtXml
     \ingroup xml-tools
-    \mainclass
+
 
     Many functions in the DOM return a QDomNode.
 
@@ -6522,7 +6522,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
     \brief The QDomDocument class represents an XML document.
 
     \inmodule QtXml
-    \mainclass
+
     \ingroup xml-tools
 
     The QDomDocument class represents the entire XML document.

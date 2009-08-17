@@ -854,9 +854,9 @@ QTextLayout *QTextCursorPrivate::blockLayout(QTextBlock &block) const{
 
     \brief The QTextCursor class offers an API to access and modify QTextDocuments.
 
-    \ingroup text
+    \ingroup richtext-processing
     \ingroup shared
-    \mainclass
+
 
     Text cursors are objects that are used to access and modify the contents
     and underlying structure of text documents via a programming interface

@@ -61,8 +61,6 @@ QT_BEGIN_NAMESPACE
     \brief The QLabel widget provides a text or image display.
 
     \ingroup basicwidgets
-    \ingroup text
-    \mainclass
 
     QLabel is used for displaying text or an image. No user
     interaction functionality is provided. The visual appearance of

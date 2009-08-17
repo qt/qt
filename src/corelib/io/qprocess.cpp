@@ -151,8 +151,7 @@ void QProcessPrivate::Channel::clear()
     to communicate with them.
 
     \ingroup io
-    \ingroup misc
-    \mainclass
+
     \reentrant
 
     \section1 Running a Process

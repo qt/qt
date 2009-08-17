@@ -101,7 +101,7 @@ QT_BEGIN_NAMESPACE
     \brief The QFlags class provides a type-safe way of storing
     OR-combinations of enum values.
 
-    \mainclass
+
     \ingroup tools
 
     The QFlags<Enum> class is a template class, where Enum is an enum
@@ -401,7 +401,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \headerfile <QtGlobal>
     \title Global Qt Declarations
-    \ingroup architecture
+    \ingroup classlists
 
     \brief The <QtGlobal> header provides basic declarations and
     is included by all other Qt headers.

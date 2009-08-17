@@ -412,8 +412,8 @@ void QToolBarPrivate::plug(const QRect &r)
     \brief The QToolBar class provides a movable panel that contains a
     set of controls.
 
-    \ingroup application
-    \mainclass
+    \ingroup mainwindow-classes
+
 
     Toolbar buttons are added by adding \e actions, using addAction()
     or insertAction(). Groups of buttons can be separated using

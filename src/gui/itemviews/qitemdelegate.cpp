@@ -185,7 +185,7 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     data items from a model.
 
     \ingroup model-view
-    \mainclass
+
 
     QItemDelegate can be used to provide custom display features and editor
     widgets for item views based on QAbstractItemView subclasses. Using a

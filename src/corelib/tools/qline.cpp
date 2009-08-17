@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QLine
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QLine class provides a two-dimensional vector using
     integer precision.
@@ -309,7 +309,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 
 /*!
     \class QLineF
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QLineF class provides a two-dimensional vector using
     floating point precision.

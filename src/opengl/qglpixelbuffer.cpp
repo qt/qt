@@ -44,7 +44,7 @@
     \brief The QGLPixelBuffer class encapsulates an OpenGL pbuffer.
     \since 4.1
 
-    \ingroup multimedia
+    \ingroup painting-3D
 
     Rendering into a pbuffer is normally done using full hardware
     acceleration. This can be significantly faster than rendering

@@ -75,9 +75,8 @@ extern int qt_defaultDpi();
 
     \brief The QFontMetrics class provides font metrics information.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \ingroup text
 
     QFontMetrics functions calculate the size of characters and
     strings for a given font. There are three ways you can create a
@@ -941,9 +940,8 @@ int QFontMetrics::lineWidth() const
 
     \brief The QFontMetricsF class provides font metrics information.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \ingroup text
 
     QFontMetricsF functions calculate the size of characters and
     strings for a given font. You can construct a QFontMetricsF object

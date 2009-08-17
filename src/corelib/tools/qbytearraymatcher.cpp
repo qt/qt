@@ -94,7 +94,7 @@ static inline int bm_find(const uchar *cc, int l, int index, const uchar *puc, u
     can be quickly matched in a byte array.
 
     \ingroup tools
-    \ingroup text
+    \ingroup string-processing
 
     This class is useful when you have a sequence of bytes that you
     want to repeatedly match against some byte arrays (perhaps in a

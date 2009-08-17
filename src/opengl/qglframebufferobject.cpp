@@ -90,7 +90,7 @@ public:
 
     \since 4.6
 
-    \ingroup multimedia
+    \ingroup painting-3D
 
     A framebuffer object has several characteristics:
     \list
@@ -476,7 +476,7 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
     \brief The QGLFramebufferObject class encapsulates an OpenGL framebuffer object.
     \since 4.2
 
-    \ingroup multimedia
+    \ingroup painting-3D
 
     The QGLFramebufferObject class encapsulates an OpenGL framebuffer
     object, defined by the \c{GL_EXT_framebuffer_object} extension. In

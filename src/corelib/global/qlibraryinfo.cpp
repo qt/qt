@@ -147,9 +147,6 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
     \class QLibraryInfo
     \brief The QLibraryInfo class provides information about the Qt library.
 
-    \ingroup misc
-    \mainclass
-
     Many pieces of information are established when Qt is configured.
     Installation paths, license information, and even a unique build
     key. This class provides an abstraction for accessing this

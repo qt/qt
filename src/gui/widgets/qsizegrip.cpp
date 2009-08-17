@@ -165,9 +165,8 @@ Qt::Corner QSizeGripPrivate::corner() const
 
     \brief The QSizeGrip class provides a resize handle for resizing top-level windows.
 
-    \ingroup application
+    \ingroup mainwindow-classes
     \ingroup basicwidgets
-    \ingroup appearance
 
     This widget works like the standard Windows resize handle. In the
     X11 version this resize handle generally works differently from

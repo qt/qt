@@ -182,8 +182,8 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     \brief The QAction class provides an abstract user interface
     action that can be inserted into widgets.
 
-    \ingroup application
-    \mainclass
+    \ingroup mainwindow-classes
+
 
     \omit
         * parent and widget are different
