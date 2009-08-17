@@ -399,6 +399,7 @@ public:
 
     void setSubFocus();
     void clearSubFocus();
+    void resetFocusProxy();
 
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
@@ -420,6 +421,7 @@ public:
     int siblingIndex;
     int depth;
     QGraphicsItem *focusProxy;
+    QList<QGraphicsItem **> focusProxyRefs;
     QGraphicsItem *subFocusItem;
     Qt::InputMethodHints imHints;
 

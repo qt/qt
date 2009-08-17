@@ -1968,7 +1968,8 @@ QListViewPrivate::QListViewPrivate()
       modeProperties(0),
       column(0),
       uniformItemSizes(false),
-      batchSize(100)
+      batchSize(100),
+      showElasticBand(false)
 {
 }
 

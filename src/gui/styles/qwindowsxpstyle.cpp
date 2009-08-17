@@ -125,11 +125,9 @@ static PtrIsThemeBackgroundPartiallyTransparent pIsThemeBackgroundPartiallyTrans
 
 // General const values
 static const int windowsItemFrame        =  2; // menu item frame width
-static const int windowsSepHeight        =  9; // separator item height
 static const int windowsItemHMargin      =  3; // menu item hor text margin
 static const int windowsItemVMargin      =  0; // menu item ver text margin
 static const int windowsArrowHMargin     =  6; // arrow horizontal margin
-static const int windowsCheckMarkHMargin =  0; // horiz. margins of check mark
 static const int windowsRightBorder      = 12; // right border on windows
 
 // External function calls

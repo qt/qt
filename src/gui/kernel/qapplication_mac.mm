@@ -1409,13 +1409,8 @@ void QApplicationPrivate::enterModal_sys(QWidget *widget)
     qt_button_down = 0;
 
 #ifdef QT_MAC_USE_COCOA
-    if (!qt_mac_is_macsheet(widget)) {
-        // Add a new, empty (null), NSModalSession to the stack.
-        // The next time we spin the event dispatcher, it will
-        // check the stack, and recurse into a modal session for it:
-        QCocoaModalSessionInfo info = {widget, 0};
-        QEventDispatcherMacPrivate::cocoaModalSessionStack.push(info);
-    }
+    if (!qt_mac_is_macsheet(widget))
+        QEventDispatcherMacPrivate::beginModalSession(widget);
 #endif
 }
 
@@ -1441,7 +1436,7 @@ void QApplicationPrivate::leaveModal_sys(QWidget *widget)
         }
 #ifdef QT_MAC_USE_COCOA
         if (!qt_mac_is_macsheet(widget))
-            QEventDispatcherMacPrivate::rebuildModalSessionStack(true);
+            QEventDispatcherMacPrivate::endModalSession(widget);
 #endif
     }
 #ifdef DEBUG_MODAL_EVENTS
@@ -1451,21 +1446,6 @@ void QApplicationPrivate::leaveModal_sys(QWidget *widget)
     if (!app_do_modal)
         qt_event_request_menubarupdate();
 }
-
-#if defined(QT_MAC_USE_COCOA)
-void QApplicationPrivate::_q_runAppModalWindow()
-{
-    if (QEventDispatcherMacPrivate::blockCocoaRequestModal) {
-        // Just postpone the event until the event dispatcher tells
-        // us (by releasing the block) that it is OK to recurse into
-        // a new event loop for our non-execing modal window:
-        qApp->postEvent(qApp, new QEvent(QEvent::CocoaRequestModal));
-    } else {
-        // Recurse into a new event loop for the current app modal window:
-        threadData->eventDispatcher->processEvents(QEventLoop::DialogExec);
-    }
-}
-#endif
 
 QWidget *QApplicationPrivate::tryModalHelper_sys(QWidget *top)
 {

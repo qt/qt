@@ -2074,6 +2074,8 @@ QList<QTreeWidgetItem*> QTreeWidgetItem::takeChildren()
 void QTreeWidgetItemPrivate::sortChildren(int column, Qt::SortOrder order, bool climb)
 {
     QTreeModel *model = (q->view ? qobject_cast<QTreeModel*>(q->view->model()) : 0);
+    if (!model)
+        return;   
     model->sortItems(&q->children, column, order);
     if (climb) {
         QList<QTreeWidgetItem*>::iterator it = q->children.begin();
