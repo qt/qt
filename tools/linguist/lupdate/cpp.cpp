@@ -312,26 +312,28 @@ void CppParser::setInput(QTextStream &ts, const QString &fileName)
 
 uint CppParser::getChar()
 {
+    int len = yyInStr.size();
+    const ushort *uc = (const ushort *)yyInStr.unicode();
     forever {
-        if (yyInPos >= yyInStr.size())
+        if (yyInPos >= len)
             return EOF;
-        uint c = yyInStr[yyInPos++].unicode();
-        if (c == '\\' && yyInPos < yyInStr.size()) {
-            if (yyInStr[yyInPos].unicode() == '\n') {
+        uint c = uc[yyInPos++];
+        if (c == '\\' && yyInPos < len) {
+            if (uc[yyInPos] == '\n') {
                 ++yyCurLineNo;
                 ++yyInPos;
                 continue;
             }
-            if (yyInStr[yyInPos].unicode() == '\r') {
+            if (uc[yyInPos] == '\r') {
                 ++yyCurLineNo;
                 ++yyInPos;
-                if (yyInPos < yyInStr.size() && yyInStr[yyInPos].unicode() == '\n')
+                if (yyInPos < len && uc[yyInPos] == '\n')
                     ++yyInPos;
                 continue;
             }
         }
         if (c == '\r') {
-            if (yyInPos < yyInStr.size() && yyInStr[yyInPos].unicode() == '\n')
+            if (yyInPos < len && uc[yyInPos] == '\n')
                 ++yyInPos;
             c = '\n';
             ++yyCurLineNo;
