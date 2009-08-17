@@ -2158,13 +2158,11 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     JSC::ExecState* exec = d->currentFrame;
     JSC::SourceCode source = JSC::makeSource(jscProgram, jscFileName, lineNumber);
 
-#ifdef QT_BUILD_SCRIPT_LIB
     intptr_t sourceId = source.provider()->asID();
     JSC::Debugger* debugger = d->originalGlobalObject()->debugger();
     exec->globalData().scriptpool->startEvaluating(source);
     if (debugger)
         debugger->evaluateStart(sourceId);
-#endif
 
     exec->clearException();
     JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
@@ -2175,13 +2173,13 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     if (!evalNode) {
         JSC::JSValue exceptionValue = JSC::Error::create(exec, JSC::SyntaxError, errorMessage, errorLine, source.provider()->asID(), 0);
         exec->setException(exceptionValue);
-#ifdef QT_BUILD_SCRIPT_LIB
+
         if (debugger) {
             debugger->exceptionThrow(JSC::DebuggerCallFrame(exec, exceptionValue), sourceId, false);
             debugger->evaluateStop(exceptionValue, sourceId);
         }
         exec->globalData().scriptpool->stopEvaluating(source);
-#endif
+
         return d->scriptValueFromJSCValue(exceptionValue);
     }
 
@@ -2194,29 +2192,28 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     if (d->timeoutChecker()->shouldAbort()) {
         if (d->abortResult.isError())
             exec->setException(d->scriptValueToJSCValue(d->abortResult));
-#ifdef QT_BUILD_SCRIPT_LIB
+
         if (debugger)
             debugger->evaluateStop(d->scriptValueToJSCValue(d->abortResult), sourceId);
         exec->globalData().scriptpool->stopEvaluating(source);
-#endif
+
         return d->abortResult;
     }
 
     if (exceptionValue) {
         exec->setException(exceptionValue);
-#ifdef QT_BUILD_SCRIPT_LIB
+
         if (debugger)
             debugger->evaluateStop(exceptionValue, sourceId);
         exec->globalData().scriptpool->stopEvaluating(source);
-#endif
+
         return d->scriptValueFromJSCValue(exceptionValue);
     }
 
-#ifdef QT_BUILD_SCRIPT_LIB
     if (debugger)
         debugger->evaluateStop(result, sourceId);
     exec->globalData().scriptpool->stopEvaluating(source);
-#endif
+
     Q_ASSERT(!exec->hadException());
     return d->scriptValueFromJSCValue(result);
 }

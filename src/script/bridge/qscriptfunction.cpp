@@ -81,9 +81,7 @@ FunctionWrapper::~FunctionWrapper()
 JSC::ConstructType FunctionWrapper::getConstructData(JSC::ConstructData& consData)
 {
     consData.native.function = proxyConstruct;
-#ifdef QT_BUILD_SCRIPT_LIB
     consData.native.function.doNotCallDebuggerFunctionExit();
-#endif
     return JSC::ConstructTypeHost;
 }
 
@@ -118,10 +116,10 @@ JSC::JSObject* FunctionWrapper::proxyConstruct(JSC::ExecState *exec, JSC::JSObje
     QScriptContext *ctx = eng_p->contextForFrame(eng_p->currentFrame);
 
     QScriptValue result = self->data->function(ctx, QScriptEnginePrivate::get(eng_p));
-#ifdef QT_BUILD_SCRIPT_LIB
+
     if (JSC::Debugger* debugger = eng_p->originalGlobalObject()->debugger())
         debugger->functionExit(QScriptValuePrivate::get(result)->jscValue, -1);
-#endif
+
     if (!result.isObject())
         result = ctx->thisObject();
 
