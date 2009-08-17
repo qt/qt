@@ -42,6 +42,7 @@
 #include "qstatictext.h"
 #include "qstatictext_p.h"
 #include <private/qtextengine_p.h>
+#include <private/qfontengine_p.h>
 
 #include <QtGui/qapplication.h>
 
@@ -60,9 +61,11 @@ QT_BEGIN_NAMESPACE
     more efficiently than by using QPainter::drawText() in which the layout information is 
     recalculated with every call. 
 
-    The class primarily provides an optimization for cases where text is static over several paint
-    events. If the text or its layout is changed regularly, QPainter::drawText() is the more 
-    efficient alternative.
+    The class primarily provides an optimization for cases where text and the transformations on
+    the painter are static over several paint events. If the text or its layout is changed
+    regularly, QPainter::drawText() is the more efficient alternative. Translating the painter
+    will not affect the performance of drawStaticText(), but altering any other parts of the
+    painter's transformation will cause the layout of the static text to be recalculated.
 
     \code
     class MyWidget: public QWidget
@@ -91,7 +94,7 @@ QT_BEGIN_NAMESPACE
 
     If you set a maximum size on the QStaticText object, this will bound the text. The text will
     be formatted so that no line exceeds the given width. When the object is painted, it will 
-    be clipped vertically at the given height. The position of the text is decided by the argument
+    be clipped at the given size. The position of the text is decided by the argument
     passed to QPainter::drawStaticText() and can change from call to call without affecting 
     performance.
 
