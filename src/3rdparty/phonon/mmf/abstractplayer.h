@@ -27,6 +27,8 @@ namespace Phonon
 {
     namespace MMF
     {
+        class AudioOutput;
+
         class AbstractPlayer : public QObject
         {
         public:
@@ -42,9 +44,20 @@ namespace Phonon
             virtual Phonon::State state() const = 0;
             virtual QString errorString() const = 0;
             virtual Phonon::ErrorType errorType() const = 0;
+            virtual qint64 totalTime() const = 0;
             virtual Phonon::MediaSource source() const = 0;
             virtual void setSource(const Phonon::MediaSource &) = 0;
             virtual void setNextSource(const Phonon::MediaSource &) = 0;
+
+            virtual void setTransitionTime(qint32) = 0;
+            virtual qint32 transitionTime() const = 0;
+            virtual qint32 prefinishMark() const = 0;
+            virtual void setPrefinishMark(qint32) = 0;
+
+            virtual bool setVolume(qreal) = 0;
+            virtual qreal volume() const = 0;
+
+            virtual void setAudioOutput(AudioOutput *) = 0;
         };
     }
 }

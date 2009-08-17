@@ -16,6 +16,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include "abstractplayer.h"
 #include "mediaobject.h"
 
 using namespace Phonon;
@@ -39,83 +40,102 @@ MMF::MediaObject::~MediaObject()
 
 void MMF::MediaObject::play()
 {
+    m_player->play();
 }
 
 void MMF::MediaObject::pause()
 {
+    m_player->pause();
 }
 
 void MMF::MediaObject::stop()
 {
+    m_player->stop();
 }
 
 void MMF::MediaObject::seek(qint64 ms)
 {
-    Q_UNUSED(ms);
+    m_player->seek(ms);
 }
 
 qint32 MMF::MediaObject::tickInterval() const
 {
+    return m_player->tickInterval();
 }
 
 void MMF::MediaObject::setTickInterval(qint32 interval)
 {
+    m_player->setTransitionTime(interval);
 }
 
 bool MMF::MediaObject::hasVideo() const
 {
+    return m_player->hasVideo();
 }
 
 bool MMF::MediaObject::isSeekable() const
 {
+    return m_player->isSeekable();
 }
 
 Phonon::State MMF::MediaObject::state() const
 {
+    return m_player->state();
 }
 
 qint64 MMF::MediaObject::currentTime() const
 {
+    return m_player->currentTime();
 }
 
 QString MMF::MediaObject::errorString() const
 {
+    return m_player->errorString();
 }
 
 Phonon::ErrorType MMF::MediaObject::errorType() const
 {
+    return m_player->errorType();
 }
 
 qint64 MMF::MediaObject::totalTime() const
 {
+    return m_player->totalTime();
 }
 
 MediaSource MMF::MediaObject::source() const
 {
+    return m_player->source();
 }
 
 void MMF::MediaObject::setSource(const MediaSource &source)
 {
+    return m_player->setSource(source);
 }
 
 void MMF::MediaObject::setNextSource(const MediaSource &source)
 {
+    return m_player->setNextSource(source);
 }
 
 qint32 MMF::MediaObject::prefinishMark() const
 {
+    return m_player->prefinishMark();
 }
 
 void MMF::MediaObject::setPrefinishMark(qint32 mark)
 {
+    m_player->setPrefinishMark(mark);
 }
 
 qint32 MMF::MediaObject::transitionTime() const
 {
+    return m_player->transitionTime();
 }
 
 void MMF::MediaObject::setTransitionTime(qint32 time)
 {
+    m_player->setTransitionTime(time);
 }
 
 //-----------------------------------------------------------------------------
@@ -124,13 +144,16 @@ void MMF::MediaObject::setTransitionTime(qint32 time)
 
 qreal MMF::MediaObject::volume() const
 {
+    return m_player->volume();
 }
 
 bool MMF::MediaObject::setVolume(qreal volume)
 {
+    return m_player->setVolume(volume);
 }
 
 void MMF::MediaObject::setAudioOutput(AudioOutput* audioOutput)
 {
+    m_player->setAudioOutput(audioOutput);
 }
 

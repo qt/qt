@@ -26,6 +26,7 @@ namespace Phonon
 {
     namespace MMF
     {
+        class AbstractPlayer;
         class AudioOutput;
 
         /**
@@ -73,6 +74,9 @@ namespace Phonon
                               Phonon::State newState);
             void finished();
             void tick(qint64 time);
+
+        private:
+            AbstractPlayer *m_player;
         };
     }
 }
