@@ -59,7 +59,6 @@ class QmlCustomParser;
 class Q_DECLARATIVE_EXPORT QmlMetaType
 {
 public:
-    static int registerType(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *, const char *version, const char *qmlName, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *);
     static int registerType(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *, int vmaj, int vmin_from, int vmin_to, const char *qmlName, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *);
     static int registerInterface(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *);
 
@@ -67,7 +66,7 @@ public:
 
     static QList<QByteArray> qmlTypeNames();
 
-    static QmlType *qmlType(const QByteArray &);
+    static QmlType *qmlType(const QByteArray &, int, int);
     static QmlType *qmlType(const QMetaObject *);
 
     static QMetaProperty defaultProperty(const QMetaObject *);
@@ -79,20 +78,13 @@ public:
     static QObject *toQObject(const QVariant &);
     static int qmlParserStatusCast(int);
     static int listType(int);
-    static int type(const QByteArray &);
-    static int type(const QString &);
     static bool clear(const QVariant &);
     static bool append(const QVariant &, const QVariant &);
     static QVariant fromObject(QObject *, int type);
-    static QObject *create(const QByteArray &);
-    static const QMetaObject *rawMetaObjectForType(const QByteArray &);
     static const QMetaObject *rawMetaObjectForType(int);
-    static const QMetaObject *metaObjectForType(const QByteArray &);
     static const QMetaObject *metaObjectForType(int);
-    static int attachedPropertiesFuncId(const QByteArray &);
     static int attachedPropertiesFuncId(const QMetaObject *);
     static QmlAttachedPropertiesFunc attachedPropertiesFuncById(int);
-    static QmlAttachedPropertiesFunc attachedPropertiesFunc(const QByteArray &);
 
     enum TypeCategory { Unknown, Object, List, QmlList };
     static TypeCategory typeCategory(int);
@@ -119,6 +111,7 @@ class Q_DECLARATIVE_EXPORT QmlType
 public:
     QByteArray typeName() const;
     QByteArray qmlTypeName() const;
+    bool availableInVersion(int vmajor, int vminor) const;
 
     QByteArray hash() const;
 
@@ -151,7 +144,7 @@ private:
     friend class QmlMetaType;
     friend class QmlTypePrivate;
     QmlType(int, int, int, QmlPrivate::Func, const char *, int);
-    QmlType(int, int, int, QmlPrivate::Func, const char *, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int, QmlPrivate::CreateFunc, const QMetaObject *, int, QmlCustomParser *);
+    QmlType(int, int, int, QmlPrivate::Func, const char *, int, int, int, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int, QmlPrivate::CreateFunc, const QMetaObject *, int, QmlCustomParser *);
     ~QmlType();
 
     QmlTypePrivate *d;
@@ -167,7 +160,7 @@ int qmlRegisterType(const char *typeName)
         qRegisterMetaType<T *>(QByteArray("QmlList<" + name + "*>*").constData())
     };
 
-    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 0, 0,
+    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 0, 0, 0, 0,
             &T::staticMetaObject,
             QmlPrivate::attachedPropertiesFunc<T>(),
             QmlPrivate::attachedPropertiesMetaObject<T>(),
@@ -215,7 +208,7 @@ int qmlRegisterExtendedType(const char *typeName)
         attachedMo = QmlPrivate::attachedPropertiesMetaObject<T>();
     }
 
-    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 0, 0,
+    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 0, 0, 0, 0,
             &T::staticMetaObject, attached, attachedMo,
             QmlPrivate::StaticCastSelector<T,QmlParserStatus>::cast(), 
             QmlPrivate::StaticCastSelector<T,QObject>::cast(), 

@@ -267,6 +267,7 @@ private:
     QList<QmlError> exceptions;
     QmlCompiledData *output;
     QmlEngine *engine;
+    QmlCompositeTypeData *unit;
 };
 QT_END_NAMESPACE
 
