@@ -40,6 +40,9 @@ typedef CMdaAudioPlayerUtility CPlayerType;
 typedef MMdaAudioPlayerCallback MPlayerObserverType;
 #endif
 
+// For recognizer
+#include <apgcli.h>
+
 namespace Phonon
 {
     namespace MMF
@@ -148,6 +151,13 @@ namespace Phonon
              * Changes state and emits stateChanged()
              */
             void changeState(PrivateState newState);
+
+	    RApaLsSession	m_recognizer;
+	    RFs			m_fileServer;
+	    enum MediaType { MediaTypeUnknown, MediaTypeAudio, MediaTypeVideo };
+	    MediaType mimeTypeToMediaType(const TDesC& mimeType);
+	    MediaType fileMediaType(const QString& fileName);
+	    // TODO: urlMediaType function
 
             /**
              * Using CPlayerType typedef in order to be able to easily switch between

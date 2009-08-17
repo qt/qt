@@ -33,6 +33,9 @@ SOURCES +=                                  \
            $$PHONON_MMF_DIR/mediaobject.cpp \
        $$PHONON_MMF_DIR/utils.cpp
 
+LIBS += -lefsrv		# For file server
+LIBS += -lapgrfx.lib	# For recognizer
+
 # This is needed for having the .qtplugin file properly created on Symbian.
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/phonon_backend
 

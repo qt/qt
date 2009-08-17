@@ -53,6 +53,10 @@ MMF::MediaObject::MediaObject(QObject *parent) : m_player(NULL)
 
     Q_UNUSED(parent);
 
+    TInt err = m_recognizer.Connect();
+    err = m_fileServer.Connect();
+    // TODO: handle this error
+
     // TODO: should leaves be trapped in the constructor?
     m_player = CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone);
 
@@ -70,8 +74,62 @@ MMF::MediaObject::~MediaObject()
     delete m_tickTimer;
     delete m_player;
 
+    m_fileServer.Close();
+    m_recognizer.Close();
+
     TRACE_EXIT_0();
 }
+
+
+//-----------------------------------------------------------------------------
+// Recognizer
+//-----------------------------------------------------------------------------
+
+const TInt KMimePrefixLength = 6; // either "audio/" or "video/"
+_LIT(KMimePrefixAudio, "audio/");
+_LIT(KMimePrefixVideo, "video/");
+
+MMF::MediaObject::MediaType MMF::MediaObject::mimeTypeToMediaType(const TDesC& mimeType)
+{
+	MediaType result = MediaTypeUnknown;
+
+	if(mimeType.Left(KMimePrefixLength).Compare(KMimePrefixAudio) == 0)
+		{
+			result = MediaTypeAudio;
+		}
+		else if(mimeType.Left(KMimePrefixLength).Compare(KMimePrefixVideo) == 0)
+		{
+			result = MediaTypeVideo;
+		}
+
+	return result;
+}
+
+
+MMF::MediaObject::MediaType MMF::MediaObject::fileMediaType
+	(const QString& fileName)
+{
+	MediaType result = MediaTypeUnknown;
+	
+	QHBufC fileNameSymbian = Utils::symbianFilename(m_mediaSource.fileName());
+	RFile file;
+	TInt err = file.Open(m_fileServer, *fileNameSymbian, EFileRead);
+
+	if(KErrNone == err)
+	{
+		TDataRecognitionResult recognizerResult;
+		err = m_recognizer.RecognizeData(file, recognizerResult);
+		if(KErrNone == err)
+		{
+			const TPtrC mimeType = recognizerResult.iDataType.Des();
+			result = mimeTypeToMediaType(mimeType);
+		}
+
+		file.Close();
+	}
+	return result;
+}
+
 
 //-----------------------------------------------------------------------------
 // MediaObjectInterface
