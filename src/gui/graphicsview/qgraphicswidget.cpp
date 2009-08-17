@@ -74,7 +74,6 @@ QT_BEGIN_NAMESPACE
     \brief The QGraphicsWidget class is the base class for all widget
     items in a QGraphicsScene.
     \since 4.4
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     QGraphicsWidget is an extended base item that provides extra functionality

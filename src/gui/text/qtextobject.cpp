@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     \brief The QTextObject class is a base class for different kinds
     of objects that can group parts of a QTextDocument together.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     The common grouping text objects are lists (QTextList), frames
     (QTextFrame), and tables (QTextTable). A text object has an
@@ -183,7 +183,7 @@ QTextDocumentPrivate *QTextObject::docHandle() const
     \brief The QTextBlockGroup class provides a container for text blocks within
     a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     Block groups can be used to organize blocks of text within a document.
     They maintain an up-to-date list of the text blocks that belong to
@@ -305,7 +305,7 @@ QTextFrameLayoutData::~QTextFrameLayoutData()
 
     \brief The QTextFrame class represents a frame in a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     Text frames provide structure for the text in a document. They are used
     as generic containers for other document elements.
@@ -599,7 +599,7 @@ void QTextFramePrivate::remove_me()
     \brief The iterator class provides an iterator for reading
     the contents of a QTextFrame.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     A frame consists of an arbitrary sequence of \l{QTextBlock}s and
     child \l{QTextFrame}s. This class provides a way to iterate over the
@@ -799,7 +799,7 @@ QTextFrame::iterator &QTextFrame::iterator::operator--()
     \brief The QTextBlockUserData class is used to associate custom data with blocks of text.
     \since 4.1
 
-    \ingroup text
+    \ingroup richtext-processing
 
     QTextBlockUserData provides an abstract interface for container classes that are used
     to associate application-specific user data with text blocks in a QTextDocument.
@@ -829,7 +829,7 @@ QTextBlockUserData::~QTextBlockUserData()
     \brief The QTextBlock class provides a container for text fragments in a
     QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     A text block encapsulates a block or paragraph of text in a QTextDocument.
     QTextBlock provides read-only access to the block/paragraph structure of
@@ -924,7 +924,7 @@ QTextBlockUserData::~QTextBlockUserData()
     \brief The QTextBlock::iterator class provides an iterator for reading
     the contents of a QTextBlock.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     A block consists of a sequence of text fragments. This class provides
     a way to iterate over these, and read their contents. It does not provide
@@ -1525,7 +1525,7 @@ QTextBlock::iterator &QTextBlock::iterator::operator--()
     \brief The QTextFragment class holds a piece of text in a
     QTextDocument with a single QTextCharFormat.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     A text fragment describes a piece of text that is stored with a single
     character format. Text in which the character format changes can be

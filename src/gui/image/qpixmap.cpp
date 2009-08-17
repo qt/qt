@@ -1550,9 +1550,9 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     \brief The QPixmap class is an off-screen image representation
     that can be used as a paint device.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \mainclass
+
 
     Qt provides four classes for handling image data: QImage, QPixmap,
     QBitmap and QPicture. QImage is designed and optimized for I/O,

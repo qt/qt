@@ -168,7 +168,6 @@ void QAbstractEventDispatcherPrivate::releaseTimerId(int timerId)
     \class QAbstractEventDispatcher
     \brief The QAbstractEventDispatcher class provides an interface to manage Qt's event queue.
 
-    \ingroup application
     \ingroup events
 
     An event dispatcher receives events from the window system and other

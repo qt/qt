@@ -233,7 +233,7 @@ struct QGradientBrushData : public QBrushData
 
 /*!
     \class QBrush
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
 
     \brief The QBrush class defines the fill pattern of shapes drawn
@@ -1153,7 +1153,7 @@ QDataStream &operator>>(QDataStream &s, QBrush &b)
 
 /*!
     \class QGradient
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
 
     \brief The QGradient class is used in combination with QBrush to
@@ -1517,7 +1517,7 @@ bool QGradient::operator==(const QGradient &gradient)
 
 /*!
     \class QLinearGradient
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QLinearGradient class is used in combination with QBrush to
     specify a linear gradient brush.
@@ -1696,7 +1696,7 @@ void QLinearGradient::setFinalStop(const QPointF &stop)
 
 /*!
     \class QRadialGradient
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QRadialGradient class is used in combination with QBrush to
     specify a radial gradient brush.
@@ -1953,7 +1953,7 @@ void QRadialGradient::setFocalPoint(const QPointF &focalPoint)
 
 /*!
     \class QConicalGradient
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QConicalGradient class is used in combination with QBrush to
     specify a conical gradient brush.

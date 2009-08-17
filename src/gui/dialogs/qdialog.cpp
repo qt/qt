@@ -76,9 +76,9 @@ QT_BEGIN_NAMESPACE
     \class QDialog
     \brief The QDialog class is the base class of dialog windows.
 
-    \ingroup dialogs
+    \ingroup dialog-classes
     \ingroup abstractwidgets
-    \mainclass
+
 
     A dialog window is a top-level window mostly used for short-term
     tasks and brief communications with the user. QDialogs may be

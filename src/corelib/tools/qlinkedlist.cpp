@@ -53,7 +53,7 @@ QLinkedListData QLinkedListData::shared_null = {
 
     \ingroup tools
     \ingroup shared
-    \mainclass
+
     \reentrant
 
     QLinkedList\<T\> is one of Qt's generic \l{container classes}. It

@@ -333,9 +333,9 @@ bool QImageData::checkForAlphaPixels() const
 /*!
     \class QImage
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \mainclass
+
     \reentrant
 
     \brief The QImage class provides a hardware-independent image

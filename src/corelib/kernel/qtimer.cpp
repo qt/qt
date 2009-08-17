@@ -50,9 +50,8 @@ QT_BEGIN_NAMESPACE
     \class QTimer
     \brief The QTimer class provides repetitive and single-shot timers.
 
-    \ingroup time
     \ingroup events
-    \mainclass
+
 
     The QTimer class provides a high-level programming interface for
     timers. To use it, create a QTimer, connect its timeout() signal

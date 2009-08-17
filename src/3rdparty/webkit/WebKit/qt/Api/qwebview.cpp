@@ -77,6 +77,8 @@ public:
     web documents.
     \ingroup advanced
 
+    \inmodule QtWebKit
+
     QWebView is the main widget component of the QtWebKit web browsing module.
     It can be used in various applications to display web content live from the
     Internet.

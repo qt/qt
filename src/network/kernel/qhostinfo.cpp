@@ -73,7 +73,7 @@ void QHostInfoAgent::staticCleanup()
 
     \reentrant
     \inmodule QtNetwork
-    \ingroup io
+    \ingroup network
 
     QHostInfo uses the lookup mechanisms provided by the operating
     system to find the IP address(es) associated with a host name,

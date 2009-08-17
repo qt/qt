@@ -85,7 +85,7 @@ Q_GLOBAL_STATIC(QMutex, qt_library_mutex)
     \reentrant
     \brief The QLibrary class loads shared libraries at runtime.
 
-    \mainclass
+
     \ingroup plugins
 
     An instance of a QLibrary object operates on a single shared

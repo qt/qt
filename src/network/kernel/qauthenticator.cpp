@@ -64,7 +64,7 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
   \since 4.3
 
   \reentrant
-  \ingroup io
+  \ingroup network
   \inmodule QtNetwork
 
   The QAuthenticator class is usually used in the

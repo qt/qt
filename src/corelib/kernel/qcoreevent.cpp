@@ -54,7 +54,6 @@ QT_BEGIN_NAMESPACE
     event classes. Event objects contain event parameters.
 
     \ingroup events
-    \ingroup environment
 
     Qt's main event loop (QCoreApplication::exec()) fetches native
     window system events from the event queue, translates them into

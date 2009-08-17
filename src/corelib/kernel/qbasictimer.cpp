@@ -49,7 +49,6 @@ QT_BEGIN_NAMESPACE
     \class QBasicTimer
     \brief The QBasicTimer class provides timer events for objects.
 
-    \ingroup time
     \ingroup events
 
     This is a fast, lightweight, and low-level class used by Qt

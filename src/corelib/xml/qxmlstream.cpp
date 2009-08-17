@@ -244,7 +244,7 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
   \brief The QXmlStreamReader class provides a fast parser for reading
   well-formed XML via a simple streaming API.
 
-  \mainclass
+
   \ingroup xml-tools
 
   QXmlStreamReader is a faster and more convenient replacement for
@@ -2792,7 +2792,7 @@ QStringRef QXmlStreamReader::documentEncoding() const
   \brief The QXmlStreamWriter class provides an XML writer with a
   simple streaming API.
 
-  \mainclass
+
   \inmodule QtXml
   \ingroup xml-tools
 

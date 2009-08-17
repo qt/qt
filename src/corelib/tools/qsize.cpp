@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QSize
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QSize class defines the size of a two-dimensional
     object using integer point precision.
@@ -432,7 +432,7 @@ QDebug operator<<(QDebug dbg, const QSize &s) {
     \brief The QSizeF class defines the size of a two-dimensional object
     using floating point precision.
 
-    \ingroup multimedia
+    \ingroup painting
 
     A size is specified by a width() and a height().  It can be set in
     the constructor and changed using the setWidth(), setHeight(), or

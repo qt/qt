@@ -47,7 +47,7 @@
     for reading images from files or other devices.
 
     \reentrant
-    \ingroup multimedia
+    \ingroup painting
     \ingroup io
 
     The most common way to read images is through QImage and QPixmap's

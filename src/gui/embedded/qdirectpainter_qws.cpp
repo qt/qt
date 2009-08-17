@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QDirectPainter
-    \ingroup multimedia
+    \ingroup painting
     \ingroup qws
 
     \brief The QDirectPainter class provides direct access to the

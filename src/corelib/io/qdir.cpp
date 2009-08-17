@@ -345,7 +345,7 @@ void QDirPrivate::detach(bool createFileEngine)
     \ingroup io
     \ingroup shared
     \reentrant
-    \mainclass
+
 
     A QDir is used to manipulate path names, access information
     regarding paths and files, and manipulate the underlying file

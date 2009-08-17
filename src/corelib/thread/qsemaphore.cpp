@@ -54,7 +54,6 @@ QT_BEGIN_NAMESPACE
     \threadsafe
 
     \ingroup thread
-    \ingroup environment
 
     A semaphore is a generalization of a mutex. While a mutex can
     only be locked once, it's possible to acquire a semaphore

@@ -126,9 +126,8 @@ CFStringRef qt_mac_mime_typeUTI = CFSTR("com.pasteboard.trolltech.marker");
   \l{http://developer.apple.com/macosx/uniformtypeidentifiers.html}{Uniform
   Type Identifier (UTI)} format.
   \since 4.2
-  \ingroup io
+
   \ingroup draganddrop
-  \ingroup misc
 
   Qt's drag and drop and clipboard facilities use the MIME
   standard. On X11, this maps trivially to the Xdnd protocol. On

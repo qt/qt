@@ -147,7 +147,7 @@ QGLSignalProxy *QGLSignalProxy::instance()
     \brief The QGL namespace specifies miscellaneous identifiers used
     in the Qt OpenGL module.
 
-    \ingroup multimedia
+    \ingroup painting-3D
 */
 
 /*!
@@ -190,7 +190,7 @@ QGLSignalProxy *QGLSignalProxy::instance()
     \brief The QGLFormat class specifies the display format of an OpenGL
     rendering context.
 
-    \ingroup multimedia
+    \ingroup painting-3D
 
     A display format has several characteristics:
     \list
@@ -1554,7 +1554,7 @@ Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
     \class QGLContext
     \brief The QGLContext class encapsulates an OpenGL rendering context.
 
-    \ingroup multimedia
+    \ingroup painting-3D
 
     An OpenGL rendering context is a complete set of OpenGL state
     variables. The rendering context's \l {QGL::FormatOption} {format}
@@ -2775,8 +2775,8 @@ const QGLContext* QGLContext::currentContext()
     \class QGLWidget
     \brief The QGLWidget class is a widget for rendering OpenGL graphics.
 
-    \ingroup multimedia
-    \mainclass
+    \ingroup painting-3D
+
 
     QGLWidget provides functionality for displaying OpenGL graphics
     integrated into a Qt application. It is very simple to use. You

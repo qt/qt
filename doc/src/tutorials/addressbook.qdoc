@@ -43,11 +43,10 @@
     \page tutorials-addressbook.html
 
     \startpage {index.html}{Qt Reference Documentation}
+    \contentspage Tutorials
     \nextpage {tutorials/addressbook/part1}{Chapter 1}
 
     \title Address Book Tutorial
-    \ingroup howto
-    \ingroup tutorials
     \brief An introduction to GUI programming, showing how to put together a
     simple yet fully-functioning application.
 

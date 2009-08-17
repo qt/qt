@@ -48,7 +48,7 @@
     common to all socket types.
 
     \reentrant
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     QAbstractSocket is the base class for QTcpSocket and QUdpSocket

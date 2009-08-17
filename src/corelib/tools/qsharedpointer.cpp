@@ -50,7 +50,6 @@
     \since 4.5
 
     \reentrant
-    \ingroup misc
 
     The QSharedPointer is an automatic, shared pointer in C++. It
     behaves exactly like a normal pointer for normal purposes,
@@ -358,7 +357,6 @@
     \brief The QWeakPointer class holds a weak reference to a shared pointer
     \since 4.5
     \reentrant
-    \ingroup misc
 
     The QWeakPointer is an automatic weak reference to a
     pointer in C++. It cannot be used to dereference the pointer

@@ -359,7 +359,7 @@ const QString::Null QString::null = { };
 
     \internal
 
-    \ingroup text
+    \ingroup string-processing
 
     When you get an object of type QCharRef, if you can assign to it,
     the assignment will apply to the character in the string from
@@ -381,8 +381,8 @@ const QString::Null QString::null = { };
 
     \ingroup tools
     \ingroup shared
-    \ingroup text
-    \mainclass
+    \ingroup string-processing
+
 
     QString stores a string of 16-bit \l{QChar}s, where each QChar
     corresponds one Unicode 4.0 character. (Unicode characters
@@ -6939,7 +6939,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
 /*! \class QLatin1String
     \brief The QLatin1String class provides a thin wrapper around an ASCII/Latin-1 encoded string literal.
 
-    \ingroup text
+    \ingroup string-processing
     \reentrant
 
     Many of QString's member functions are overloaded to accept
@@ -7561,7 +7561,7 @@ QDataStream &operator>>(QDataStream &in, QString &str)
     \brief The QStringRef class provides a thin wrapper around QString substrings.
     \reentrant
     \ingroup tools
-    \ingroup text
+    \ingroup string-processing
 
     QStringRef provides a read-only subset of the QString API.
 
