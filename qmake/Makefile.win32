@@ -102,7 +102,7 @@ QTOBJS= \
 	qglobal.obj \
 	qhash.obj \
 	qiodevice.obj \
-	qlistdata.obj \
+	qlist.obj \
 	qlinkedlist.obj \
 	qlocale.obj \
         qmalloc.obj \
@@ -191,7 +191,7 @@ clean::
 	-del qglobal.obj
 	-del qhash.obj
 	-del qiodevice.obj
-	-del qlistdata.obj
+	-del qlist.obj
 	-del qlocale.obj
 	-del qmalloc.obj
 	-del qmap.obj
@@ -359,8 +359,8 @@ quuid.obj: $(SOURCE_PATH)\src\corelib\plugin\quuid.cpp
 qbuffer.obj: $(SOURCE_PATH)\src\corelib\io\qbuffer.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\io\qbuffer.cpp
 
-qlistdata.obj: $(SOURCE_PATH)\src\corelib\tools\qlistdata.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\tools\qlistdata.cpp
+qlist.obj: $(SOURCE_PATH)\src\corelib\tools\qlist.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\tools\qlist.cpp
 
 qlinkedlist.obj: $(SOURCE_PATH)\src\corelib\tools\qlinkedlist.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\tools\qlinkedlist.cpp
