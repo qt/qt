@@ -155,8 +155,16 @@ void QProcessPrivate::Channel::clear()
     \mainclass
     \reentrant
 
+    \section1 Running a Process
+
     To start a process, pass the name and command line arguments of
-    the program you want to run as arguments to start(). For example:
+    the program you want to run as arguments to start(). Arguments
+    are supplied as individual strings in a QStringList.
+
+    For example, the following code snippet runs the analog clock
+    example in the Motif style on X11 platforms by passing strings
+    containing "-style" and "motif" as two items in the list of
+    arguments:
 
     \snippet doc/src/snippets/qprocess/qprocess-simpleexecution.cpp 0
     \dots
@@ -1565,15 +1573,15 @@ QByteArray QProcess::readAllStandardError()
     process, a warning may be printed at the console, and the existing
     process will continue running.
 
-    Note that arguments that contain spaces are not passed to the
+    \note Arguments that contain spaces are not passed to the
     process as separate arguments.
-
-    \bold{Windows:} Arguments that contain spaces are wrapped in quotes.
 
     \note Processes are started asynchronously, which means the started()
     and error() signals may be delayed. Call waitForStarted() to make
     sure the process has started (or has failed to start) and those signals
     have been emitted.
+
+    \bold{Windows:} Arguments that contain spaces are wrapped in quotes.
 
     \sa pid(), started(), waitForStarted()
 */
@@ -1834,7 +1842,7 @@ bool QProcess::startDetached(const QString &program,
     otherwise returns false. If the calling process exits, the
     detached process will continue to live.
 
-    Note that arguments that contain spaces are not passed to the
+    \note Arguments that contain spaces are not passed to the
     process as separate arguments.
 
     \bold{Unix:} The started process will run in its own session and act
