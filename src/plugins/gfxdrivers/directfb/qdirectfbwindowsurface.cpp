@@ -170,7 +170,7 @@ static DFBResult setGeometry(IDirectFBWindow *dfbWindow, const QRect &old, const
 
 void QDirectFBWindowSurface::setGeometry(const QRect &rect)
 {
-    IDirectFBSurface *primarySurface = screen->dfbSurface();
+    IDirectFBSurface *primarySurface = screen->primarySurface();
     Q_ASSERT(primarySurface);
     if (rect.isNull()) {
 #ifndef QT_NO_DIRECTFB_WM
@@ -348,7 +348,7 @@ void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
     }
 
     const QRect windowGeometry = QDirectFBWindowSurface::geometry();
-    IDirectFBSurface *primarySurface = screen->dfbSurface();
+    IDirectFBSurface *primarySurface = screen->primarySurface();
     if (mode == Offscreen) {
         primarySurface->SetBlittingFlags(primarySurface, DSBLIT_NOFX);
         const QRect windowRect(0, 0, windowGeometry.width(), windowGeometry.height());

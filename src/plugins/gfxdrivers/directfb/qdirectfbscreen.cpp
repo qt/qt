@@ -64,7 +64,7 @@ public:
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
 
     IDirectFB *dfb;
-    IDirectFBSurface *dfbSurface;
+    IDirectFBSurface *primarySurface;
     DFBSurfaceFlipFlags flipFlags;
 #ifndef QT_NO_DIRECTFB_LAYER
     IDirectFBDisplayLayer *dfbLayer;
@@ -86,7 +86,7 @@ public:
 };
 
 QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *qptr)
-    : QWSGraphicsSystem(qptr), dfb(0), dfbSurface(0), flipFlags(DSFLIP_NONE)
+    : QWSGraphicsSystem(qptr), dfb(0), primarySurface(0), flipFlags(DSFLIP_NONE)
 #ifndef QT_NO_DIRECTFB_LAYER
     , dfbLayer(0)
 #endif
@@ -119,8 +119,8 @@ QDirectFBScreenPrivate::~QDirectFBScreenPrivate()
         (*it)->Release(*it);
     }
 
-    if (dfbSurface)
-        dfbSurface->Release(dfbSurface);
+    if (primarySurface)
+        primarySurface->Release(primarySurface);
 
 #ifndef QT_NO_DIRECTFB_LAYER
     if (dfbLayer)
@@ -366,9 +366,9 @@ IDirectFB *QDirectFBScreen::dfb()
     return d_ptr->dfb;
 }
 
-IDirectFBSurface *QDirectFBScreen::dfbSurface()
+IDirectFBSurface *QDirectFBScreen::primarySurface()
 {
-    return d_ptr->dfbSurface;
+    return d_ptr->primarySurface;
 }
 
 #ifndef QT_NO_DIRECTFB_LAYER
@@ -952,15 +952,15 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     }
 
     // We don't track the primary surface as it's released in disconnect
-    d_ptr->dfbSurface = createDFBSurface(description, DontTrackSurface);
-    if (!d_ptr->dfbSurface) {
+    d_ptr->primarySurface = createDFBSurface(description, DontTrackSurface);
+    if (!d_ptr->primarySurface) {
         DirectFBError("QDirectFBScreen: error creating primary surface",
                       result);
         return false;
     }
 
     // Work out what format we're going to use for surfaces with an alpha channel
-    d_ptr->alphaPixmapFormat = QDirectFBScreen::getImageFormat(d_ptr->dfbSurface);
+    d_ptr->alphaPixmapFormat = QDirectFBScreen::getImageFormat(d_ptr->primarySurface);
     setPixelFormat(d_ptr->alphaPixmapFormat);
     switch (d_ptr->alphaPixmapFormat) {
     case QImage::Format_RGB666:
@@ -994,7 +994,7 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
         // works already
         break;
     }
-    d_ptr->dfbSurface->GetSize(d_ptr->dfbSurface, &w, &h);
+    d_ptr->primarySurface->GetSize(d_ptr->primarySurface, &w, &h);
 
     data = 0;
     lstep = 0;
@@ -1003,13 +1003,11 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     dh = h;
 
     DFBSurfacePixelFormat format;
-    result = d_ptr->dfbSurface->GetPixelFormat(d_ptr->dfbSurface, &format);
+    result = d_ptr->primarySurface->GetPixelFormat(d_ptr->primarySurface, &format);
     if (result == DFB_OK)
         QScreen::d = depth(format);
     else
         DirectFBError("QDirectFBScreen: error getting surface format", result);
-
-    setPixelFormat(getImageFormat(d_ptr->dfbSurface));
 
     physWidth = physHeight = -1;
     ::setIntOption(displayArgs, QLatin1String("mmWidth"), &physWidth);
@@ -1042,7 +1040,7 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 
 #if (Q_DIRECTFB_VERSION >= 0x000923)
     if (displayArgs.contains(QLatin1String("debug"), Qt::CaseInsensitive))
-        printDirectFBInfo(d_ptr->dfb, d_ptr->dfbSurface);
+        printDirectFBInfo(d_ptr->dfb, d_ptr->primarySurface);
 #endif
 
     QRegExp backgroundColorRegExp("bgcolor=?(.+)");
@@ -1058,8 +1056,8 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 
 void QDirectFBScreen::disconnect()
 {
-    d_ptr->dfbSurface->Release(d_ptr->dfbSurface);
-    d_ptr->dfbSurface = 0;
+    d_ptr->primarySurface->Release(d_ptr->primarySurface);
+    d_ptr->primarySurface = 0;
 
     foreach (IDirectFBSurface *surf, d_ptr->allocatedSurfaces)
         surf->Release(surf);
@@ -1207,7 +1205,7 @@ void QDirectFBScreen::exposeRegion(QRegion r, int changing)
                     const DFBRectangle rect = {
                         source.x(), source.y(), source.width(), source.height()
                     };
-                    d_ptr->dfbSurface->Blit(d_ptr->dfbSurface, surface, &rect,
+                    d_ptr->primarySurface->Blit(d_ptr->primarySurface, surface, &rect,
                                             windowGeometry.x() + source.x(),
                                             windowGeometry.y() + source.y());
                 } else {
@@ -1225,7 +1223,7 @@ void QDirectFBScreen::exposeRegion(QRegion r, int changing)
                         dfbPoints[i].x = (windowGeometry.x() + source.x());
                         dfbPoints[i].y = (windowGeometry.y() + source.y());
                     }
-                    d_ptr->dfbSurface->BatchBlit(d_ptr->dfbSurface, surface, dfbRectangles.constData(),
+                    d_ptr->primarySurface->BatchBlit(d_ptr->primarySurface, surface, dfbRectangles.constData(),
                                                  dfbPoints.constData(), n);
                 }
             }
@@ -1237,15 +1235,15 @@ void QDirectFBScreen::exposeRegion(QRegion r, int changing)
         if (cursor->isVisible() && !cursor->isAccelerated() && cursorRectangle.intersects(brect)) {
             const QImage image = cursor->image();
             IDirectFBSurface *surface = createDFBSurface(image, QDirectFBScreen::DontTrackSurface);
-            d_ptr->dfbSurface->SetBlittingFlags(d_ptr->dfbSurface, DSBLIT_BLEND_ALPHACHANNEL);
-            d_ptr->dfbSurface->Blit(d_ptr->dfbSurface, surface, 0, cursorRectangle.x(), cursorRectangle.y());
+            d_ptr->primarySurface->SetBlittingFlags(d_ptr->primarySurface, DSBLIT_BLEND_ALPHACHANNEL);
+            d_ptr->primarySurface->Blit(d_ptr->primarySurface, surface, 0, cursorRectangle.x(), cursorRectangle.y());
             surface->Release(surface);
 #if (Q_DIRECTFB_VERSION >= 0x010000)
-            d_ptr->dfbSurface->ReleaseSource(d_ptr->dfbSurface);
+            d_ptr->primarySurface->ReleaseSource(d_ptr->primarySurface);
 #endif
         }
     }
-    flipSurface(d_ptr->dfbSurface, d_ptr->flipFlags, r, QPoint());
+    flipSurface(d_ptr->primarySurface, d_ptr->flipFlags, r, QPoint());
 }
 
 void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
@@ -1253,13 +1251,13 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
     if (region.isEmpty())
         return;
 
-    d_ptr->dfbSurface->SetColor(d_ptr->dfbSurface,
+    d_ptr->primarySurface->SetColor(d_ptr->primarySurface,
                                 color.red(), color.green(), color.blue(),
                                 color.alpha());
     const int n = region.numRects();
     if (n > 1) {
         const QRect r = region.boundingRect();
-        d_ptr->dfbSurface->FillRectangle(d_ptr->dfbSurface, r.x(), r.y(), r.width(), r.height());
+        d_ptr->primarySurface->FillRectangle(d_ptr->primarySurface, r.x(), r.y(), r.width(), r.height());
     } else {
         const QVector<QRect> rects = region.rects();
         QVarLengthArray<DFBRectangle, 32> rectArray(n);
@@ -1270,7 +1268,7 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
             rectArray[i].w = r.width();
             rectArray[i].h = r.height();
         }
-        d_ptr->dfbSurface->FillRectangles(d_ptr->dfbSurface, rectArray.constData(), n);
+        d_ptr->primarySurface->FillRectangles(d_ptr->primarySurface, rectArray.constData(), n);
     }
 }
 
