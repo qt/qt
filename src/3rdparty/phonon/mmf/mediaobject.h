@@ -19,26 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_MEDIAOBJECT_H
 #define PHONON_MMF_MEDIAOBJECT_H
 
-/* We use the extra qualification include/ to avoid picking up the include
- * Phonon has. */
-#include <include/videoplayer.h>
-
 #include <Phonon/MediaSource>
-#include <Phonon/mediaobjectinterface.h>
-
-class CDrmPlayerUtility;
-class TTimeIntervalMicroSeconds;
-class QTimer;
-
-#ifdef QT_PHONON_MMF_AUDIO_DRM
-#include <drmaudiosampleplayer.h>
-typedef CDrmPlayerUtility CPlayerType;
-typedef MDrmAudioPlayerCallback MPlayerObserverType;
-#else
-#include <mdaaudiosampleplayer.h>
-typedef CMdaAudioPlayerUtility CPlayerType;
-typedef MMdaAudioPlayerCallback MPlayerObserverType;
-#endif
+#include <Phonon/MediaObjectInterface>
 
 namespace Phonon
 {
@@ -47,17 +29,9 @@ namespace Phonon
         class AudioOutput;
 
         /**
-         *
-         * See
-         * <a href="http://wiki.forum.nokia.com/index.php/How_to_play_a_video_file_using_CVideoPlayerUtility">How to
-         * play a video file using CVideoPlayerUtility</a>
          */
         class MediaObject : public QObject
                           , public MediaObjectInterface
-                          , public MPlayerObserverType    // typedef
-#ifdef QT_PHONON_MMF_AUDIO_DRM
-                          ,    public MAudioLoadingObserver
-#endif
         {
             Q_OBJECT
             Q_INTERFACES(Phonon::MediaObjectInterface)
@@ -88,22 +62,6 @@ namespace Phonon
             virtual qint32 transitionTime() const;
             virtual void setTransitionTime(qint32);
 
-#ifdef QT_PHONON_MMF_AUDIO_DRM
-            // MDrmAudioPlayerCallback
-            virtual void MdapcInitComplete(TInt aError,
-                                           const TTimeIntervalMicroSeconds &aDuration);
-            virtual void MdapcPlayComplete(TInt aError);
-
-            // MAudioLoadingObserver
-            virtual void MaloLoadingStarted();
-            virtual void MaloLoadingComplete();
-#else
-            // MMdaAudioPlayerCallback
-            virtual void MapcInitComplete(TInt aError,
-                                                       const TTimeIntervalMicroSeconds &aDuration);
-            virtual void MapcPlayComplete(TInt aError);
-#endif
-
             qreal volume() const;
             bool setVolume(qreal volume);
 
@@ -115,64 +73,6 @@ namespace Phonon
                               Phonon::State newState);
             void finished();
             void tick(qint64 time);
-
-        private Q_SLOTS:
-            /**
-             * Receives signal from m_tickTimer
-             */
-            void tick();
-
-        private:
-            static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
-
-            /**
-             * Defined private state enumeration in order to add GroundState
-             */
-            enum PrivateState
-                {
-                LoadingState    = Phonon::LoadingState,
-                StoppedState    = Phonon::StoppedState,
-                PlayingState    = Phonon::PlayingState,
-                BufferingState    = Phonon::BufferingState,
-                PausedState        = Phonon::PausedState,
-                ErrorState        = Phonon::ErrorState,
-                GroundState
-                };
-
-            /**
-             * Converts PrivateState into the corresponding Phonon::State
-             */
-            static Phonon::State phononState(PrivateState state);
-
-            /**
-             * Changes state and emits stateChanged()
-             */
-            void changeState(PrivateState newState);
-
-            /**
-             * Using CPlayerType typedef in order to be able to easily switch between
-             * CMdaAudioPlayerUtility and CDrmPlayerUtility
-             */
-            CPlayerType*         m_player;
-
-            AudioOutput*        m_audioOutput;
-
-            ErrorType           m_error;
-
-            /**
-             * Do not set this directly - call changeState() instead.
-             */
-            PrivateState        m_state;
-
-            qint32                m_tickInterval;
-
-            QTimer*                m_tickTimer;
-
-            MediaSource         m_mediaSource;
-            MediaSource         m_nextSource;
-
-            qreal                m_volume;
-            int                    m_maxVolume;
         };
     }
 }

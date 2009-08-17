@@ -21,17 +21,22 @@ phonon_mmf_audio_drm {
     LIBS += -lmediaclientaudio.lib
 }
 
-HEADERS +=                                  \
-           $$PHONON_MMF_DIR/audiooutput.h   \
-           $$PHONON_MMF_DIR/backend.h       \
-           $$PHONON_MMF_DIR/mediaobject.h   \
-       $$PHONON_MMF_DIR/utils.h
+HEADERS +=                                      \
+           $$PHONON_MMF_DIR/abstractplayer.h    \
+           $$PHONON_MMF_DIR/audiooutput.h       \
+           $$PHONON_MMF_DIR/audioplayer.h       \
+           $$PHONON_MMF_DIR/backend.h           \
+           $$PHONON_MMF_DIR/mediaobject.h       \
+           $$PHONON_MMF_DIR/utils.h             \
+           $$PHONON_MMF_DIR/mmf_videoplayer.h
 
-SOURCES +=                                  \
-           $$PHONON_MMF_DIR/audiooutput.cpp \
-           $$PHONON_MMF_DIR/backend.cpp     \
-           $$PHONON_MMF_DIR/mediaobject.cpp \
-       $$PHONON_MMF_DIR/utils.cpp
+SOURCES +=                                      \
+           $$PHONON_MMF_DIR/audiooutput.cpp     \
+           $$PHONON_MMF_DIR/audioplayer.cpp     \
+           $$PHONON_MMF_DIR/backend.cpp         \
+           $$PHONON_MMF_DIR/mediaobject.cpp     \
+           $$PHONON_MMF_DIR/utils.cpp           \
+           $$PHONON_MMF_DIR/mmf_videoplayer.cpp
 
 # This is needed for having the .qtplugin file properly created on Symbian.
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/phonon_backend
