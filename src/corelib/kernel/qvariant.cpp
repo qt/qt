@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -658,6 +658,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
             break;
         case QVariant::Url:
             *str = v_cast<QUrl>(d)->toString();
+            break;
         default:
             return false;
         }
@@ -935,10 +936,10 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
         float *f = static_cast<float *>(result);
         switch (d->type) {
         case QVariant::String:
-            *f = float(v_cast<QString>(d)->toDouble(ok));
+            *f = v_cast<QString>(d)->toFloat(ok);
             break;
         case QVariant::ByteArray:
-            *f = float(v_cast<QByteArray>(d)->toDouble(ok));
+            *f = v_cast<QByteArray>(d)->toFloat(ok);
             break;
         case QVariant::Bool:
             *f = float(d->data.b);
@@ -1053,7 +1054,7 @@ static void streamDebug(QDebug dbg, const QVariant &v)
         dbg.nospace() << v.toULongLong();
         break;
     case QMetaType::Float:
-        dbg.nospace() << qVariantValue<float>(v);
+        dbg.nospace() << v.toFloat();
         break;
     case QMetaType::QObjectStar:
         dbg.nospace() << qVariantValue<QObject *>(v);
@@ -2330,16 +2331,17 @@ QBitArray QVariant::toBitArray() const
 }
 
 template <typename T>
-inline T qNumVariantToHelper(const QVariant::Private &d, QVariant::Type t,
+inline T qNumVariantToHelper(const QVariant::Private &d,
                              const QVariant::Handler *handler, bool *ok, const T& val)
 {
+    uint t = qMetaTypeId<T>();
     if (ok)
         *ok = true;
     if (d.type == t)
         return val;
 
     T ret;
-    if (!handler->convert(&d, t, &ret, ok) && ok)
+    if (!handler->convert(&d, QVariant::Type(t), &ret, ok) && ok)
         *ok = false;
     return ret;
 }
@@ -2361,7 +2363,7 @@ inline T qNumVariantToHelper(const QVariant::Private &d, QVariant::Type t,
 */
 int QVariant::toInt(bool *ok) const
 {
-    return qNumVariantToHelper<int>(d, Int, handler, ok, d.data.i);
+    return qNumVariantToHelper<int>(d, handler, ok, d.data.i);
 }
 
 /*!
@@ -2381,7 +2383,7 @@ int QVariant::toInt(bool *ok) const
 */
 uint QVariant::toUInt(bool *ok) const
 {
-    return qNumVariantToHelper<uint>(d, UInt, handler, ok, d.data.u);
+    return qNumVariantToHelper<uint>(d, handler, ok, d.data.u);
 }
 
 /*!
@@ -2396,7 +2398,7 @@ uint QVariant::toUInt(bool *ok) const
 */
 qlonglong QVariant::toLongLong(bool *ok) const
 {
-    return qNumVariantToHelper<qlonglong>(d, LongLong, handler, ok, d.data.ll);
+    return qNumVariantToHelper<qlonglong>(d, handler, ok, d.data.ll);
 }
 
 /*!
@@ -2412,7 +2414,7 @@ qlonglong QVariant::toLongLong(bool *ok) const
 */
 qulonglong QVariant::toULongLong(bool *ok) const
 {
-    return qNumVariantToHelper<qulonglong>(d, ULongLong, handler, ok, d.data.ull);
+    return qNumVariantToHelper<qulonglong>(d, handler, ok, d.data.ull);
 }
 
 /*!
@@ -2439,7 +2441,7 @@ bool QVariant::toBool() const
 
 /*!
     Returns the variant as a double if the variant has type() \l
-    Double, \l Bool, \l ByteArray, \l Int, \l LongLong, \l String, \l
+    Double, \l QMetaType::Float, \l Bool, \l ByteArray, \l Int, \l LongLong, \l String, \l
     UInt, or \l ULongLong; otherwise returns 0.0.
 
     If \a ok is non-null: \c{*}\a{ok} is set to true if the value could be
@@ -2449,7 +2451,41 @@ bool QVariant::toBool() const
 */
 double QVariant::toDouble(bool *ok) const
 {
-    return qNumVariantToHelper<double>(d, Double, handler, ok, d.data.d);
+    return qNumVariantToHelper<double>(d, handler, ok, d.data.d);
+}
+
+/*!
+    Returns the variant as a float if the variant has type() \l
+    Double, \l QMetaType::Float, \l Bool, \l ByteArray, \l Int, \l LongLong, \l String, \l
+    UInt, or \l ULongLong; otherwise returns 0.0.
+
+    \since 4.6
+
+    If \a ok is non-null: \c{*}\a{ok} is set to true if the value could be
+    converted to a double; otherwise \c{*}\a{ok} is set to false.
+
+    \sa canConvert(), convert()
+*/
+float QVariant::toFloat(bool *ok) const
+{
+    return qNumVariantToHelper<float>(d, handler, ok, d.data.d);
+}
+
+/*!
+    Returns the variant as a qreal if the variant has type() \l
+    Double, \l QMetaType::Float, \l Bool, \l ByteArray, \l Int, \l LongLong, \l String, \l
+    UInt, or \l ULongLong; otherwise returns 0.0.
+
+    \since 4.6
+
+    If \a ok is non-null: \c{*}\a{ok} is set to true if the value could be
+    converted to a double; otherwise \c{*}\a{ok} is set to false.
+
+    \sa canConvert(), convert()
+*/
+qreal QVariant::toReal(bool *ok) const
+{
+    return qNumVariantToHelper<qreal>(d, handler, ok, d.data.d);
 }
 
 /*!
@@ -2740,7 +2776,7 @@ bool QVariant::cmp(const QVariant &v) const
     if (d.type != v2.d.type) {
         if (qIsNumericType(d.type) && qIsNumericType(v.d.type)) {
             if (qIsFloatingPoint(d.type) || qIsFloatingPoint(v.d.type))
-                return qFuzzyCompare(toDouble(), v.toDouble());
+                return qFuzzyCompare(toReal(), v.toReal());
             else
                 return toLongLong() == v.toLongLong();
         }

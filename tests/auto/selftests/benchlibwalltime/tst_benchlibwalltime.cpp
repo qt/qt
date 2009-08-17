@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,6 +50,7 @@ class tst_BenchlibWalltime: public QObject
 private slots:
     void waitForOneThousand();
     void waitForFourThousand();
+    void qbenchmark_once();
 };
 
 void tst_BenchlibWalltime::waitForOneThousand()
@@ -65,6 +66,16 @@ void tst_BenchlibWalltime::waitForFourThousand()
         QTest::qWait(4000);
     }
 }
+
+void tst_BenchlibWalltime::qbenchmark_once()
+{
+    int iterations = 0;
+    QBENCHMARK_ONCE {
+        ++iterations;
+    }
+    QCOMPARE(iterations, 1);
+}
+
 
 QTEST_MAIN(tst_BenchlibWalltime)
 

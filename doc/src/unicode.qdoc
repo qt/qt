@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -71,22 +71,18 @@
 
     \section1 The Standard
 
-    The current version of the standard is 4.0.0.
+    The current version of the standard is \l{http://www.unicode.org/versions/Unicode5.1.0/}{Unicode 5.1.0}.
+
+    Previous printed versions of the specification:
 
     \list
-
-    \i \link http://www.amazon.com/exec/obidos/ASIN/0321185781/trolltech/t
-    The Unicode Standard, version 4.0.\endlink  See also
-    \link http://www.unicode.org/unicode/standard/versions/
-    its home page.\endlink
-    \i \link http://www.amazon.com/exec/obidos/ASIN/0201616335/trolltech/t
-    The Unicode Standard, version 3.2.\endlink 
-    \i \link http://www.amazon.com/exec/obidos/ASIN/0201473459/trolltech/t
-    The Unicode Standard, version 2.0.\endlink  See also the
-    \link http://www.unicode.org/unicode/reports/tr8.html 2.1
-    update\endlink and
-    \link http://www.unicode.org/unicode/standard/versions/enumeratedversions.html#Unicode 2.1.9 the 2.1.9 data files\endlink at www.unicode.org.
-
+    \o \l{http://www.amazon.com/Unicode-Standard-Version-5-0-5th/dp/0321480910/trolltech/t}{The Unicode Standard, Version 5.0}
+    \o \l{http://www.amazon.com/exec/obidos/ASIN/0321185781/trolltech/t}{The Unicode Standard, version 4.0}  
+    \o \l{http://www.amazon.com/exec/obidos/ASIN/0201616335/trolltech/t}{The Unicode Standard, version 3.2}
+    \o \l{http://www.amazon.com/exec/obidos/ASIN/0201473459/trolltech/t}{The Unicode Standard, version 2.0} \mdash
+    see also the \l{http://www.unicode.org/unicode/reports/tr8.html}{2.1 update} and
+    \l{http://www.unicode.org/unicode/standard/versions/enumeratedversions.html#Unicode 2.1.9}{the 2.1.9 data files} at
+    \l{http://www.unicode.org}.
     \endlist
 
     \section1 Unicode in Qt

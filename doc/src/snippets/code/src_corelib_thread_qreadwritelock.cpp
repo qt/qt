@@ -38,9 +38,9 @@ QReadWriteLock lock;
 
 QByteArray readData()
 {
-    locker.lockForRead();
+    lock.lockForRead();
     ...
-    locker.unlock();
+    lock.unlock();
     return data;
 }
 //! [2]
@@ -62,8 +62,8 @@ QReadWriteLock lock;
 
 void writeData(const QByteArray &data)
 {
-    locker.lockForWrite();
+    lock.lockForWrite();
     ...
-    locker.unlock();
+    lock.unlock();
 }
 //! [4]

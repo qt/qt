@@ -10,21 +10,21 @@ QString contentType = header.value( "content-type" );
 
 
 //! [2]
-QUrlOperator op( "http://qtsoftware.com" );
+QUrlOperator op( "http://qt.nokia.com" );
 op.get( "index.html" );
 //! [2]
 
 
 //! [3]
 Q3HttpRequestHeader header( "GET", "/index.html" );
-header.setValue( "Host", "qtsoftware.com" );
-http->setHost( "qtsoftware.com" );
+header.setValue( "Host", "qt.nokia.com" );
+http->setHost( "qt.nokia.com" );
 http->request( header );
 //! [3]
 
 
 //! [4]
-http->setHost( "qtsoftware.com" ); // id == 1
+http->setHost( "qt.nokia.com" ); // id == 1
 http->get( "/index.html" );           // id == 2
 //! [4]
 

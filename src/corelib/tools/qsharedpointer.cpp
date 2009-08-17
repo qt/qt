@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -98,15 +98,257 @@
     access made to the data being guarded: if it's a non-const access,
     it creates a copy atomically for the operation to complete.
 
-    QExplicitlySharedDataPointer behaves like QSharedDataPointer,
-    except that it only detaches if
-    QExplicitlySharedDataPointer::detach() is explicitly called.
+    QExplicitlySharedDataPointer is a variant of QSharedDataPointer, except
+    that it only detaches if QExplicitlySharedDataPointer::detach() is
+    explicitly called (hence the name).
 
-    Finally, QPointer holds a pointer to a QObject-derived object, but
-    it does so weakly. QPointer is similar, in that behaviour, to
-    QWeakPointer: it does not allow you to prevent the object from
-    being destroyed. All you can do is query whether it has been
-    destroyed or not.
+    Finally, QPointer holds a pointer to a QObject-derived object, but it
+    does so weakly. QPointer can be replaced by QWeakPointer in almost all
+    cases, since they have the same functionality. See
+    \l{QWeakPointer#tracking-qobject} for more information.
+
+    \section1 Optional pointer tracking
+
+    A feature of QSharedPointer that can be enabled at compile-time for
+    debugging purposes is a pointer tracking mechanism. When enabled,
+    QSharedPointer registers in a global set all the pointers that it tracks.
+    This allows one to catch mistakes like assigning the same pointer to two
+    QSharedPointer objects.
+
+    This function is enabled by defining the \tt{QT_SHAREDPOINTER_TRACK_POINTERS}
+    macro before including the QSharedPointer header.
+
+    It is safe to use this feature even with code compiled without the
+    feature. QSharedPointer will ensure that the pointer is removed from the
+    tracker even from code compiled without pointer tracking.
+
+    Note, however, that the pointer tracking feature has limitations on
+    multiple- or virtual-inheritance (that is, in cases where two different
+    pointer addresses can refer to the same object). In that case, if a
+    pointer is cast to a different type and its value changes,
+    QSharedPointer's pointer tracking mechanism mail fail to detect that the
+    object being tracked is the same.
+
+    \omit
+    \secton1 QSharedPointer internals
+
+    QSharedPointer is in reality implemented by two ancestor classes:
+    QtSharedPointer::Basic and QtSharedPointer::ExternalRefCount. The reason
+    for having that split is now mostly legacy: in the beginning,
+    QSharedPointer was meant to support both internal reference counting and
+    external reference counting.
+
+    QtSharedPointer::Basic implements the basic functionality that is shared
+    between internal- and external-reference counting. That is, it's mostly
+    the accessor functions into QSharedPointer. Those are all inherited by
+    QSharedPointer, which adds another level of shared functionality (the
+    constructors and assignment operators). The Basic class has one member
+    variable, which is the actual pointer being tracked.
+
+    QtSharedPointer::ExternalRefCount implements the actual reference
+    counting and introduces the d-pointer for QSharedPointer. That d-pointer
+    itself is shared with with other QSharedPointer objects as well as
+    QWeakPointer.
+
+    The reason for keeping the pointer value itself outside the d-pointer is
+    because of multiple inheritance needs. If you have two QSharedPointer
+    objects of different pointer types, but pointing to the same object in
+    memory, it could happen that the pointer values are different. The \tt
+    differentPointers autotest exemplifies this problem. The same thing could
+    happen in the case of virtual inheritance: a pointer of class matching
+    the virtual base has different address compared to the pointer of the
+    complete object. See the \tt virtualBaseDifferentPointers autotest for
+    this problem.
+
+    The d pointer is of type QtSharedPointer::ExternalRefCountData for simple
+    QSharedPointer objects, but could be of a derived type in some cases. It
+    is basically a reference-counted reference-counter.
+
+    \section2 d-pointer
+    \section3 QtSharedPointer::ExternalRefCountData
+
+    This class is basically a reference-counted reference-counter. It has two
+    members: \tt strongref and \tt weakref. The strong reference counter is
+    controlling the lifetime of the object tracked by QSharedPointer. a
+    positive value indicates that the object is alive. It's also the number
+    of QSharedObject instances that are attached to this Data.
+
+    When the strong reference count decreases to zero, the object is deleted
+    (see below for information on custom deleters). The strong reference
+    count can also exceptionally be -1, indicating that there are no
+    QSharedPointers attached to an object, which is tracked too. The only
+    case where this is possible is that of
+    \l{QWeakPointer#tracking-qobject}{QWeakPointers tracking a QObject}.
+
+    The weak reference count controls the lifetime of the d-pointer itself.
+    It can be thought of as an internal/intrusive reference count for
+    ExternalRefCountData itself. This count is equal to the number of
+    QSharedPointers and QWeakPointers that are tracking this object. (In case
+    the object tracked derives from QObject, this number is increased by 1,
+    since QObjectPrivate tracks it too).
+
+    ExternalRefCountData is a virtual class: it has a virtual destructor and
+    a virtual destroy() function. The destroy() function is supposed to
+    delete the object being tracked and return true if it does so. Otherwise,
+    it returns false to indicate that the caller must simply call delete.
+    This allows the normal use-case of QSharedPointer without custom deleters
+    to use only one 12- or 16-byte (depending on whether it's a 32- or 64-bit
+    architecture) external descriptor structure, without paying the price for
+    the custom deleter that it isn't using.
+
+    \section3 QtSharedPointer::ExternalRefCountDataWithDestroyFn
+
+    This class is not used directly, per se. It only exists to enable the two
+    classes that derive from it. It adds one member variable, which is a
+    pointer to a function (which returns void and takes an
+    ExternalRefCountData* as a parameter). It also overrides the destroy()
+    function: it calls that function pointer with \tt this as parameter, and
+    returns true.
+
+    That means when ExternalRefCountDataWithDestroyFn is used, the \tt
+    destroyer field must be set to a valid function that \b will delete the
+    object tracked.
+
+    This class also adds an operator delete function to ensure that simply
+    calls the global operator delete. That should be the behaviour in all
+    compilers already, but to be on the safe side, this class ensures that no
+    funny business happens.
+
+    On a 32-bit architecture, this class is 16 bytes in size, whereas it's 24
+    bytes on 64-bit. (On Itanium where function pointers contain the global
+    pointer, it can be 32 bytes).
+
+    \section3 QtSharedPointer::ExternalRefCountWithCustomDeleter
+
+    This class derives from ExternalRefCountDataWithDestroyFn and is a
+    template class. As template parameters, it has the type of the pointer
+    being tracked (\tt T) and a \tt Deleter, which is anything. It adds two
+    fields to its parent class, matching those template parameters: a member
+    of type \tt Deleter and a member of type \tt T*.
+
+    The purpose of this class is to store the pointer to be deleted and the
+    deleter code along with the d-pointer. This allows the last strong
+    reference to call any arbitrary function that disposes of the object. For
+    example, this allows calling QObject::deleteLater() on a given object.
+    The pointer to the object is kept here to avoid the extra cost of keeping
+    the deleter in the generic case.
+
+    This class is never instantiated directly: the constructors and
+    destructor are private. Only the create() function may be called to
+    return an object of this type. See below for construction details.
+
+    The size of this class depends on the size of \tt Deleter. If it's an
+    empty functor (i.e., no members), ABIs generally assign it the size of 1.
+    But given that it's followed by a pointer, up to 3 or 7 padding bytes may
+    be inserted: in that case, the size of this class is 16+4+4 = 24 bytes on
+    32-bit architectures, or 24+8+8 = 40 bytes on 64-bit architectures (48
+    bytes on Itanium with global pointers stored). If \tt Deleter is a
+    function pointer, the size should be the same as the empty structure
+    case, except for Itanium where it may be 56 bytes due to another global
+    pointer. If \tt Deleter is a pointer to a member function (PMF), the size
+    will be even bigger and will depend on the ABI. For architectures using
+    the Itanium C++ ABI, a PMF is twice the size of a normal pointer, or 24
+    bytes on Itanium itself. In that case, the size of this structure will be
+    16+8+4 = 28 bytes on 32-bit architectures, 24+16+8 = 48 bytes on 64-bit,
+    and 32+24+8 = 64 bytes on Itanium.
+
+    (Values for Itanium consider an LP64 architecture; for ILP32, pointers
+    are 32-bit in length, function pointers are 64-bit and PMF are 96-bit, so
+    the sizes are slightly less)
+
+    \section3 QtSharedPointer::ExternalRefCountWithContiguousData
+
+    This class also derives from ExternalRefCountDataWithDestroyFn and it is
+    also a template class. The template parameter is the type \tt T of the
+    class which QSharedPointer tracks. It adds only one member to its parent,
+    which is of type \tt T (the actual type, not a pointer to it).
+
+    The purpose of this class is to lay the \tt T object out next to the
+    reference counts, saving one memory allocation per shared pointer. This
+    is particularly interesting for small \tt T or for the cases when there
+    are few if any QWeakPointer tracking the object. This class exists to
+    implement the QSharedPointer::create() call.
+
+    Like ExternalRefCountWithCustomDeleter, this class is never instantiated
+    directly. This class also provides a create() member that returns the
+    pointer, and hides its constructors and destructor. (With C++0x, we'd
+    delete them).
+
+    The size of this class depends on the size of \tt T.
+
+    \section3 Instantiating ExternalRefCountWithCustomDeleter and ExternalRefCountWithContiguousData
+
+    Like explained above, these classes have private constructors. Moreover,
+    they are not defined anywhere, so trying to call \tt{new ClassType} would
+    result in a compilation or linker error. Instead, these classes must be
+    constructed via their create() methods.
+
+    Instead of instantiating the class by the normal way, the create() method
+    calls \tt{operator new} directly with the size of the class, then calls
+    the parent class's constructor only (ExternalRefCountDataWithDestroyFn).
+    This ensures that the inherited members are initialised properly, as well
+    as the virtual table pointer, which must point to
+    ExternalRefCountDataWithDestroyFn's virtual table. That way, we also
+    ensure that the virtual destructor being called is
+    ExternalRefCountDataWithDestroyFn's.
+
+    After initialising the base class, the
+    ExternalRefCountWithCustomDeleter::create() function initialises the new
+    members directly, by using the placement \tt{operator new}. In the case
+    of the ExternalRefCountWithContiguousData::create() function, the address
+    to the still-uninitialised \tt T member is saved for the callee to use.
+    The member is only initialised in QSharedPointer::create(), so that we
+    avoid having many variants of the internal functions according to the
+    arguments in use for calling the constructor.
+
+    When initialising the parent class, the create() functions pass the
+    address of the static deleter() member function. That is, when the
+    virtual destroy() is called by QSharedPointer, the deleter() functions
+    are called instead. These functiosn static_cast the ExternalRefCountData*
+    parameter to their own type and execute their deletion: for the
+    ExternalRefCountWithCustomDeleter::deleter() case, it runs the user's
+    custom deleter, then destroys the deleter; for
+    ExternalRefCountWithContiguousData::deleter, it simply calls the \tt T
+    destructor directly.
+
+    By not calling the constructor of the derived classes, we avoid
+    instantiating their virtual tables. Since these classes are
+    template-based, there would be one virtual table per \tt T and \tt
+    Deleter type. (This is what Qt 4.5 did)
+
+    Instead, only one non-inline function is required per template, which is
+    the deleter() static member. All the other functions can be inlined.
+    What's more, the address of deleter() is calculated only in code, which
+    can be resolved at link-time if the linker can determine that the
+    function lies in the current application or library module (since these
+    classes are not exported, that is the case for Windows or for builds with
+    \tt{-fvisibility=hidden}).
+
+    In contrast, a virtual table would require at least 3 relocations to be
+    resolved at module load-time, per module where these classes are used.
+    (In the Itanium C++ ABI, there would be more relocations, due to the
+    RTTI)
+
+    \section3 Modifications due to pointer-tracking
+
+    To ensure that pointers created with pointer-tracking enabled get
+    un-tracked when destroyed, even if destroyed by code compiled without the
+    feature, QSharedPointer modifies slightly the instructions of the
+    previous sections.
+
+    When ExternalRefCountWithCustomDeleter or
+    ExternalRefCountWithContiguousData are used, their create() functions
+    will set the ExternalRefCountDataWithDestroyFn::destroyer function
+    pointer to safetyCheckDeleter() instead. These static member functions
+    simply call internalSafetyCheckRemove2() before passing control to the
+    normal deleter() function.
+
+    If neither custom deleter nor QSharedPointer::create() are used, then
+    QSharedPointer uses a custom deleter of its own: the normalDeleter()
+    function, which simply calls \tt delete. By using a custom deleter, the
+    safetyCheckDeleter() procedure described above kicks in.
+
+    \endomit
 
     \sa QSharedDataPointer, QWeakPointer
 */
@@ -123,12 +365,88 @@
     directly, but it can be used to verify if the pointer has been
     deleted or not in another context.
 
-    QWeakPointer objects can only be created by assignment
-    from a QSharedPointer.
+    QWeakPointer objects can only be created by assignment from a
+    QSharedPointer. The exception is pointers derived from QObject: in that
+    case, QWeakPointer serves as a replacement to QPointer.
 
-    To access the pointer that QWeakPointer is tracking, you
-    must first create a QSharedPointer object and verify if the pointer
-    is null or not. See QWeakPointer::toStrongRef() for more information.
+    It's important to note that QWeakPointer provides no automatic casting
+    operators to prevent mistakes from happening. Even though QWeakPointer
+    tracks a pointer, it should not be considered a pointer itself, since it
+    doesn't guarantee that the pointed object remains valid.
+
+    Therefore, to access the pointer that QWeakPointer is tracking, you must
+    first promote it to QSharedPointer and verify if the resulting object is
+    null or not. QSharedPointer guarantees that the object isn't deleted, so
+    if you obtain a non-null object, you may use the pointer. See
+    QWeakPointer::toStrongRef() for more an example.
+
+    QWeakPointer also provides the QWeakPointer::data() method that returns
+    the tracked pointer without ensuring that it remains valid. This function
+    is provided if you can guarantee by external means that the object will
+    not get deleted (or if you only need the pointer value) and the cost of
+    creating a QSharedPointer using toStrongRef() is too high.
+
+    That function can also be used to obtain the tracked pointer for
+    QWeakPointers that cannot be promoted to QSharedPointer, such as those
+    created directly from a QObject pointer (not via QSharedPointer).
+
+    \section1 Tracking QObject
+
+    QWeakPointer can be used to track deletion classes derives from QObject,
+    even if they are not managed by QSharedPointer. When used in that role,
+    QWeakPointer replaces the older QPointer in all use-cases. QWeakPointer
+    is also more efficient than QPointer, so it should be preferred in all
+    new code.
+
+    To do that, QWeakPointer provides a special constructor that is only
+    available if the template parameter \tt T is either QObject or a class
+    deriving from it. Trying to use that constructor if \tt T does not derive
+    from QObject will result in compilation errors.
+
+    To obtain the QObject being tracked by QWeakPointer, you must use the
+    QWeakPointer::data() function, but only if you can guarantee that the
+    object cannot get deleted by another context. It should be noted that
+    QPointer had the same constraint, so use of QWeakPointer forces you to
+    consider whether the pointer is still valid.
+
+    QObject-derived classes can only be deleted in the thread they have
+    affinity to (which is the thread they were created in or moved to, using
+    QObject::moveToThread()). In special, QWidget-derived classes cannot be
+    created in non-GUI threads nor moved there. Therefore, guaranteeing that
+    the tracked QObject has affinity to the current thread is enough to also
+    guarantee that it won't be deleted asynchronously.
+
+    Note that QWeakPointer's size and data layout do not match QPointer, so
+    it cannot replace that class in a binary-compatible manner.
+
+    Care must also be taken with QWeakPointers created directly from QObject
+    pointers when dealing with code that was compiled with Qt versions prior
+    to 4.6. Those versions may not track the reference counters correctly, so
+    QWeakPointers created from QObject should never be passed to code that
+    hasn't been recompiled.
+
+    \omit
+    \secton1 QWeakPointer internals
+
+    QWeakPointer shares most of its internal functionality with
+    \l{QSharedPointer#qsharedpointer-internals}{QSharedPointer}, so see that
+    class's internal documentation for more information.
+
+    QWeakPointer requires an external reference counter in order to operate.
+    Therefore, it is incompatible by design with \l QSharedData-derived
+    classes.
+
+    It has a special QObject constructor, which works by calling
+    QtSharedPointer::ExternalRefCountData::getAndRef, which retrieves the
+    d-pointer from QObjectPrivate. If one isn't set yet, that function
+    creates the d-pointer and atomically sets it.
+
+    If getAndRef needs to create a d-pointer, it sets the strongref to -1,
+    indicating that the QObject is not shared: QWeakPointer is used only to
+    determine whether the QObject has been deleted. In that case, it cannot
+    be upgraded to QSharedPointer (see the previous section).
+
+    \endomit
 
     \sa QSharedPointer
 */
@@ -409,6 +727,35 @@
     If \tt T is a derived type of the template parameter of this
     class, QWeakPointer will perform an automatic cast. Otherwise,
     you will get a compiler error.
+*/
+
+/*!
+    \fn QWeakPointer::QWeakPointer(const QObject *obj)
+    \since 4.6
+
+    Creates a QWeakPointer that holds a weak reference directly to the
+    QObject \a obj. This constructor is only available if the template type
+    \tt T is QObject or derives from it (otherwise a compilation error will
+    result).
+
+    You can use this constructor with any QObject, even if they were not
+    created with \l QSharedPointer.
+
+    Note that QWeakPointers created this way on arbitrary QObjects usually
+    cannot be promoted to QSharedPointer.
+
+    \sa QSharedPointer, QWeakPointer#tracking-qobject
+*/
+
+/*!
+    \fn QWeakPointer &QWeakPointer::operator=(const QObject *obj)
+    \since 4.6
+
+    Makes this QWeakPointer hold a weak reference to directly to the QObject
+    \a obj. This function is only available if the template type \tt T is
+    QObject or derives from it.
+
+    \sa QWeakPointer#tracking-qobject
 */
 
 /*!
@@ -867,6 +1214,8 @@
 #if !defined(QT_NO_QOBJECT)
 #include "../kernel/qobject_p.h"
 
+QT_BEGIN_NAMESPACE
+
 /*!
     \internal
     This function is called for a just-created QObject \a obj, to enable
@@ -894,6 +1243,8 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
 {
     Q_ASSERT(obj);
     QObjectPrivate *d = QObjectPrivate::get(const_cast<QObject *>(obj));
+    Q_ASSERT_X(!d->wasDeleted, "QWeakPointer", "Detected QWeakPointer creation in a QObject being deleted");
+
     ExternalRefCountData *that = d->sharedRefcount;
     if (that) {
         that->weakref.ref();
@@ -910,6 +1261,9 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
     }
     return d->sharedRefcount;
 }
+
+QT_END_NAMESPACE
+
 #endif
 
 
@@ -931,6 +1285,8 @@ QtSharedPointer::ExternalRefCountData *QtSharedPointer::ExternalRefCountData::ge
 #    include <stdio.h>
 #    include <unistd.h>
 #    include <sys/wait.h>
+
+QT_BEGIN_NAMESPACE
 
 static inline QByteArray saveBacktrace() __attribute__((always_inline));
 static inline QByteArray saveBacktrace()
@@ -992,6 +1348,9 @@ static void printBacktrace(QByteArray stacktrace)
         waitpid(child, 0, 0);
     }
 }
+
+QT_END_NAMESPACE
+
 #  endif  // BACKTRACE_SUPPORTED
 
 namespace {

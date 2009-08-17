@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2245,7 +2245,7 @@ void QWidgetPrivate::createWindow_sys()
 
     OSWindowRef windowRef = qt_mac_create_window(q, topExtra->wclass, wattr, data.crect);
     if (windowRef == 0)
-        qWarning("QWidget: Internal error: %s:%d: If you reach this error please contact Trolltech and include the\n"
+        qWarning("QWidget: Internal error: %s:%d: If you reach this error please contact Qt Support and include the\n"
                 "      WidgetFlags used in creating the widget.", __FILE__, __LINE__);
 #ifndef QT_MAC_USE_COCOA
     finishCreateWindow_sys_Carbon(windowRef);
@@ -3197,10 +3197,13 @@ void QWidgetPrivate::show_sys()
 #else
             // sync the opacity value back (in case of a fade).
             [window setAlphaValue:q->windowOpacity()];
-
             [window makeKeyAndOrderFront:window];
+
+            // If this window is app modal, we need to start spinning
+            // a modal session for it. Interrupting
+            // the event dispatcher will make this happend:
             if (data.window_modality == Qt::ApplicationModal)
-                QCoreApplication::postEvent(qApp, new QEvent(QEvent::CocoaRequestModal));
+                QEventDispatcherMac::instance()->interrupt();
 #endif
             if (q->windowType() == Qt::Popup) {
 			    if (q->focusWidget())
@@ -3218,13 +3221,6 @@ void QWidgetPrivate::show_sys()
 #endif
         } else if (!q->testAttribute(Qt::WA_ShowWithoutActivating)) {
             qt_event_request_activate(q);
-#ifdef QT_MAC_USE_COCOA
-            if (q->windowModality() == Qt::ApplicationModal) {
-                // We call 'activeModalSession' early to force creation of q's modal
-                // session. This seems neccessary for child dialogs to pop to front:
-                QEventDispatcherMacPrivate::activeModalSession();
-            }
-#endif
         }
     } else if(topData()->embedded || !q->parentWidget() || q->parentWidget()->isVisible()) {
 #ifndef QT_MAC_USE_COCOA

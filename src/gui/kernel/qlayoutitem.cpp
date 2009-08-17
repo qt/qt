@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -108,7 +108,7 @@ QSizePolicy::operator QVariant() const
     be expressed using hasHeightForWidth(), heightForWidth(), and
     minimumHeightForWidth(). For more explanation see the \e{Qt
     Quarterly} article
-    \l{http://doc.trolltech.com/qq/qq04-height-for-width.html}{Trading
+    \l{http://qt.nokia.com/doc/qq/qq04-height-for-width.html}{Trading
     Height for Width}.
 
     \sa QLayout

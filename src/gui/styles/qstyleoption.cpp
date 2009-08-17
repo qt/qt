@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -712,7 +712,7 @@ QStyleOptionFrameV2 &QStyleOptionFrameV2::operator=(const QStyleOptionFrame &oth
     Constructs a QStyleOptionFrameV3 object.
 */
 QStyleOptionFrameV3::QStyleOptionFrameV3()
-    : QStyleOptionFrameV2(Version), frameShape(QFrame::NoFrame)
+    : QStyleOptionFrameV2(Version), frameShape(QFrame::NoFrame), unused(0)
 {
 }
 
@@ -726,7 +726,7 @@ QStyleOptionFrameV3::QStyleOptionFrameV3()
     \internal
 */
 QStyleOptionFrameV3::QStyleOptionFrameV3(int version)
-    : QStyleOptionFrameV2(version), frameShape(QFrame::NoFrame)
+    : QStyleOptionFrameV2(version), frameShape(QFrame::NoFrame), unused(0)
 {
 }
 
@@ -954,7 +954,7 @@ QStyleOptionViewItemV2 &QStyleOptionViewItemV2::operator=(const QStyleOptionView
     Constructs a QStyleOptionViewItemV3 object.
 */
 QStyleOptionViewItemV3::QStyleOptionViewItemV3()
-    : QStyleOptionViewItemV2(Version)
+    : QStyleOptionViewItemV2(Version), widget(0)
 {
 }
 
@@ -962,7 +962,7 @@ QStyleOptionViewItemV3::QStyleOptionViewItemV3()
     Constructs a copy of \a other.
 */
 QStyleOptionViewItemV3::QStyleOptionViewItemV3(const QStyleOptionViewItem &other)
-    : QStyleOptionViewItemV2(Version)
+    : QStyleOptionViewItemV2(Version), widget(0)
 {
     (void)QStyleOptionViewItemV3::operator=(other);
 }
@@ -991,7 +991,7 @@ QStyleOptionViewItemV3 &QStyleOptionViewItemV3::operator = (const QStyleOptionVi
     \internal
 */
 QStyleOptionViewItemV3::QStyleOptionViewItemV3(int version)
-    : QStyleOptionViewItemV2(version)
+    : QStyleOptionViewItemV2(version), widget(0)
 {
 }
 
@@ -4845,7 +4845,7 @@ QStyleOptionTabBarBaseV2 &QStyleOptionTabBarBaseV2::operator = (const QStyleOpti
 
 /*! \internal */
 QStyleOptionTabBarBaseV2::QStyleOptionTabBarBaseV2(int version)
-    : QStyleOptionTabBarBase(version)
+    : QStyleOptionTabBarBase(version), documentMode(false)
 {
 }
 

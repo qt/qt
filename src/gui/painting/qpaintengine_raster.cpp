@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1020,9 +1020,6 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
                                           const QRect &sr)
 {
     if (alpha == 0 || !clip.isValid())
-        return;
-
-    if (alpha ==0)
         return;
 
     Q_ASSERT(img.depth() >= 8);
@@ -2541,6 +2538,9 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
 #ifdef QT_DEBUG_DRAW
     qDebug() << " - QRasterPaintEngine::drawImage(), r=" << r << " sr=" << sr << " image=" << img.size() << "depth=" << img.depth();
 #endif
+
+    if (r.isEmpty())
+        return;
 
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();

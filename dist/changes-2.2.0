@@ -4,7 +4,7 @@ Qt 2.2 introduces new features as well as many improvements over the
 since version 2.1.  A complete list would simply be too large to be
 useful.  For more detail see the online documentation which is
 included in this distribution, and also available on
-http://doc.trolltech.com/
+http://qt.nokia.com/doc/
 
 The Qt version 2.2 series is binary compatible with the 2.1.x and
 2.0.x series - applications compiled for 2.0 or 2.1 will continue to

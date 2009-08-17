@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,6 +63,7 @@ private slots:
     void pushFile();
 
 private:
+    bool          available;
     QAudioFormat  format;
     QAudioOutput* audio;
 };
@@ -76,79 +77,95 @@ void tst_QAudioOutput::initTestCase()
     format.setByteOrder(QAudioFormat::LittleEndian);
     format.setSampleType(QAudioFormat::UnSignedInt);
 
+    // Only perform tests if audio output device exists!
+    QList<QAudioDeviceId> devices = QAudioDeviceInfo::deviceList(QAudio::AudioOutput);
+    if(devices.size() > 0)
+        available = true;
+    else {
+        qWarning()<<"NOTE: no audio output device found, no test will be performed";
+        available = false;
+    }
     audio = new QAudioOutput(format, this);
 }
 
 void tst_QAudioOutput::settings()
 {
-    QAudioFormat f = audio->format();
+    if(available) {
+        QAudioFormat f = audio->format();
 
-    QVERIFY(format.channels() == f.channels());
-    QVERIFY(format.frequency() == f.frequency());
-    QVERIFY(format.sampleSize() == f.sampleSize());
-    QVERIFY(format.codec() == f.codec());
-    QVERIFY(format.byteOrder() == f.byteOrder());
-    QVERIFY(format.sampleType() == f.sampleType());
+        QVERIFY(format.channels() == f.channels());
+        QVERIFY(format.frequency() == f.frequency());
+        QVERIFY(format.sampleSize() == f.sampleSize());
+        QVERIFY(format.codec() == f.codec());
+        QVERIFY(format.byteOrder() == f.byteOrder());
+        QVERIFY(format.sampleType() == f.sampleType());
+    }
 }
 
 void tst_QAudioOutput::notifyInterval()
 {
-    QVERIFY(audio->notifyInterval() == 1000);   // Default
+    if(available) {
+        QVERIFY(audio->notifyInterval() == 1000);   // Default
 
-    audio->setNotifyInterval(500);
-    QVERIFY(audio->notifyInterval() == 500);    // Custom
+        audio->setNotifyInterval(500);
+        QVERIFY(audio->notifyInterval() == 500);    // Custom
 
-    audio->setNotifyInterval(1000);             // reset
+        audio->setNotifyInterval(1000);             // reset
+    }
 }
 
 void tst_QAudioOutput::pullFile()
 {
-    QFile filename(SRCDIR "4.wav");
-    QVERIFY(filename.exists());
-    filename.open(QIODevice::ReadOnly);
+    if(available) {
+        QFile filename(SRCDIR "4.wav");
+        QVERIFY(filename.exists());
+        filename.open(QIODevice::ReadOnly);
 
-    QSignalSpy readSignal(audio, SIGNAL(notify()));
-    audio->setNotifyInterval(100);
-    audio->start(&filename);
+        QSignalSpy readSignal(audio, SIGNAL(notify()));
+        audio->setNotifyInterval(100);
+        audio->start(&filename);
 
-    QTestEventLoop::instance().enterLoop(1);
-    // 4.wav is a little less than 700ms, so notify should fire 6 times!
-    QVERIFY(readSignal.count() >= 6);
-    QVERIFY(audio->totalTime() == 692250);
+        QTestEventLoop::instance().enterLoop(1);
+        // 4.wav is a little less than 700ms, so notify should fire 6 times!
+        QVERIFY(readSignal.count() >= 6);
+        QVERIFY(audio->totalTime() == 692250);
 
-    audio->stop();
-    filename.close();
+        audio->stop();
+        filename.close();
+    }
 }
 
 void tst_QAudioOutput::pushFile()
 {
-    QFile filename(SRCDIR "4.wav");
-    QVERIFY(filename.exists());
-    filename.open(QIODevice::ReadOnly);
+    if(available) {
+        QFile filename(SRCDIR "4.wav");
+        QVERIFY(filename.exists());
+        filename.open(QIODevice::ReadOnly);
 
-    const qint64 fileSize = filename.size();
+        const qint64 fileSize = filename.size();
 
-    QIODevice* feed = audio->start(0);
+        QIODevice* feed = audio->start(0);
 
-    char* buffer = new char[fileSize];
-    filename.read(buffer, fileSize);
+        char* buffer = new char[fileSize];
+        filename.read(buffer, fileSize);
 
-    qint64 counter=0;
-    qint64 written=0;
-    while(written < fileSize) {
-        written+=feed->write(buffer+written,fileSize-written);
-        QTest::qWait(20);
-        counter++;
+        qint64 counter=0;
+        qint64 written=0;
+        while(written < fileSize) {
+            written+=feed->write(buffer+written,fileSize-written);
+            QTest::qWait(20);
+            counter++;
+        }
+        QTestEventLoop::instance().enterLoop(1);
+
+        QVERIFY(written == fileSize);
+        QVERIFY(audio->totalTime() == 692250);
+
+        audio->stop();
+        filename.close();
+        delete [] buffer;
+        delete audio;
     }
-    QTestEventLoop::instance().enterLoop(1);
-
-    QVERIFY(written == fileSize);
-    QVERIFY(audio->totalTime() == 692250);
-
-    audio->stop();
-    filename.close();
-    delete [] buffer;
-    delete audio;
 }
 
 QTEST_MAIN(tst_QAudioOutput)

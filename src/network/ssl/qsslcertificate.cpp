@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -693,7 +693,7 @@ static bool matchLineFeed(const QByteArray &pem, int *offset)
         ch = pem.at(++*offset);
 
     if (ch == '\n') {
-        *offset++;
+        *offset += 1;
         return true;
     }
     if (ch == '\r' && pem.size() > (*offset + 1) && pem.at(*offset + 1) == '\n') {

@@ -11,14 +11,14 @@ QString contentType = header.value("content-type");
 
 //! [2]
 QHttpRequestHeader header("GET", QUrl::toPercentEncoding("/index.html"));
-header.setValue("Host", "qtsoftware.com");
-http->setHost("qtsoftware.com");
+header.setValue("Host", "qt.nokia.com");
+http->setHost("qt.nokia.com");
 http->request(header);
 //! [2]
 
 
 //! [3]
-http->setHost("qtsoftware.com");                // id == 1
+http->setHost("qt.nokia.com");                // id == 1
 http->get(QUrl::toPercentEncoding("/index.html")); // id == 2
 //! [3]
 

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -174,7 +174,7 @@
     and MSVC 7.)
 
     If you get stuck, ask on the
-    \l{http://lists.trolltech.com/qt-interest/}{qt-interest}
+    \l{http://qt.nokia.com/lists/qt-interest/}{qt-interest}
     mailing list. If you are a licensed customer, you can also contact
     Qt's technical support team.
 
@@ -473,7 +473,7 @@
     \section1 Explicit Sharing
 
     Qt 4 is the first version of Qt that contains no \link
-    http://doc.trolltech.com/3.3/shclass.html explicitly shared
+    http://qt.nokia.com/doc/3.3/shclass.html explicitly shared
     \endlink classes. All classes that were explicitly shared in Qt 3
     are \e implicitly shared in Qt 4:
 
@@ -560,6 +560,21 @@
 
     \note Setting widget attributes to disable key features of Qt's widget
     rendering model may also cause other features to be disabled.
+
+    \section1 Compatibility Signals and Slots
+
+    When \c QT3_SUPPORT is defined, the default connection type for signals
+    and slots is the Qt::AutoCompatConnection type. This allows so-called
+    \e compatibility signals and slots (defined in Qt 3 support mode to provide
+    Qt 3 compatibility features) to be connected to other signals and
+    slots.
+
+    However, if Qt is compiled with debugging output enabled, and the
+    developer uses other connection types to connect to compatibility
+    signals and slots (perhaps by building their application without Qt 3
+    support enabled), then Qt will output warnings to the console to
+    indicate that compatibility connections are being made. This is intended
+    to be used as an aid in the process of porting a Qt 3 application to Qt 4.
 
     \section1 QAccel
 
@@ -1065,7 +1080,7 @@
     ensuring that the string is '\\0'-terminated. Another important
     issue was that conversions between \c QCString and QByteArray often
     gave confusing results. (See the
-    \l{http://doc.trolltech.com/qq/qq05-achtung.html#qcstringisastringofchars}{Achtung!
+    \l{http://qt.nokia.com/doc/qq/qq05-achtung.html#qcstringisastringofchars}{Achtung!
     Binary and Character Data} article in \e{Qt Quarterly} for an
     overview of the pitfalls.)
 
@@ -2426,13 +2441,13 @@
     that provides the old semantics. See the Q3Painter documentation
     for details and for the reasons why we had to make this change.
 
-    The \l{http://doc.trolltech.com/3.3/qpainter.html#CoordinateMode-enum}{QPainter::CoordinateMode}
+    The \l{http://qt.nokia.com/doc/3.3/qpainter.html#CoordinateMode-enum}{QPainter::CoordinateMode}
     enum has been removed in Qt 4. All clipping
     operations are now defined using logical coordinates and are subject
     to transformation operations.
 
     The
-    \l{http://doc.trolltech.com/3.3/qpainter.html#RasterOP-enum}{QPainter::RasterOP}
+    \l{http://qt.nokia.com/doc/3.3/qpainter.html#RasterOP-enum}{QPainter::RasterOP}
     enum has been replaced with QPainter::CompositionMode.
 
     \section1 QPicture
@@ -3244,7 +3259,7 @@
 
     \list \o If you use Q3SocketDevice in a thread to perform blocking
     network I/O (a technique encouraged by the \e{Qt Quarterly}
-    article \l{http://doc.trolltech.com/qq/qq09-networkthread.html}
+    article \l{http://qt.nokia.com/doc/qq/qq09-networkthread.html}
     {Unblocking Networking}), you can now use QTcpSocket, QFtp, or
     QNetworkAccessManager, which can be used from non-GUI threads.
 
@@ -4039,7 +4054,7 @@
 
     Sample code on how to do obtain similar behavior from Qt 4, previously
     handled by some of the above functions can be found in the
-    \l{http://doc.trolltech.com/qwidget-qt3.html}{Qt 3 Support Members for QWidget}
+    \l{http://qt.nokia.com/doc/qwidget-qt3.html}{Qt 3 Support Members for QWidget}
     page.
 
     A widget now receives change events in its QWidget::changeEvent()
@@ -4137,7 +4152,7 @@
     clearWFlags() has no direct replacement. You can use
     QWidget::setAttribute() instead. For example,
     \c{setAttribute(..., false)} to clear an attribute. More information
-    is available \l{http://doc.trolltech.com/qwidget.html#setAttribute}{here}.
+    is available \l{http://qt.nokia.com/doc/qwidget.html#setAttribute}{here}.
 
     testWFlags() was renamed to \l{QWidget::testAttribute()}{testAttribute()}.
 

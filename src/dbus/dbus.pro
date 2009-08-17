@@ -6,8 +6,8 @@ DEFINES        += QDBUS_MAKEDLL DBUS_API_SUBJECT_TO_CHANGE
 QMAKE_CXXFLAGS += $$QT_CFLAGS_DBUS
 
 contains(QT_CONFIG, dbus-linked) {
-    LIBS       += $$QT_LIBS_DBUS
-    DEFINES    += QT_LINKED_LIBDBUS
+    LIBS_PRIVATE += $$QT_LIBS_DBUS
+    DEFINES      += QT_LINKED_LIBDBUS
 }
 
 #INCLUDEPATH += .
@@ -18,9 +18,9 @@ unix {
 }
 
 win32 {
-   LIBS += -lws2_32 -ladvapi32 -lnetapi32 -luser32
-   CONFIG(debug, debug|release):LIBS += -ldbus-1d
-   else:LIBS += -ldbus-1
+   LIBS_PRIVATE += -lws2_32 -ladvapi32 -lnetapi32 -luser32
+   CONFIG(debug, debug|release):LIBS_PRIVATE += -ldbus-1d
+   else:LIBS_PRIVATE += -ldbus-1
 }
 
 include(../qbase.pri)

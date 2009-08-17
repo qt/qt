@@ -106,8 +106,6 @@ SUBDIRS += \
            qdate \
            qdatetime \
            qdatetimeedit \
-           qdbuspendingcall \
-           qdbuspendingreply \
            qdebug \
            qdesktopservices \
            qdesktopwidget \
@@ -320,6 +318,7 @@ SUBDIRS += \
            qstatusbar \
            qstl \
            qstring \
+           qstringbuilder \
            qstringmatcher \
            qstringlist \
            qstringlistmodel \
@@ -448,6 +447,7 @@ SUBDIRS += checkxmlfiles                \
 xmlpatternsdiagnosticsts.depends = xmlpatternsxqts
 xmlpatternsview.depends = xmlpatternsxqts
 xmlpatternsxslts.depends = xmlpatternsxqts
+xmlpatternsschemats.depends = xmlpatternsxqts
 }
 
 unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
@@ -459,6 +459,8 @@ unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
            qdbusmarshall \
            qdbusmetaobject \
            qdbusmetatype \
+           qdbuspendingcall \
+           qdbuspendingreply \
            qdbusperformance \
            qdbusreply \
            qdbusthreading \

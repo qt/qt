@@ -2,7 +2,7 @@
 
     FreeType font driver for pcf files
 
-    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2008 by
+    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2006, 2007, 2008, 2009 by
     Francesco Zappa Nardelli
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -196,9 +196,14 @@ THE SOFTWARE.
   FT_CALLBACK_DEF( void )
   PCF_Face_Done( FT_Face  pcfface )         /* PCF_Face */
   {
-    PCF_Face   face   = (PCF_Face)pcfface;
-    FT_Memory  memory = FT_FACE_MEMORY( face );
+    PCF_Face   face = (PCF_Face)pcfface;
+    FT_Memory  memory;
 
+
+    if ( !face )
+      return;
+
+    memory = FT_FACE_MEMORY( face );
 
     FT_FREE( face->encodings );
     FT_FREE( face->metrics );
@@ -408,7 +413,7 @@ THE SOFTWARE.
     switch ( req->type )
     {
     case FT_SIZE_REQUEST_TYPE_NOMINAL:
-      if ( height == ( bsize->y_ppem + 32 ) >> 6 )
+      if ( height == ( ( bsize->y_ppem + 32 ) >> 6 ) )
         error = PCF_Err_Ok;
       break;
 
@@ -437,7 +442,7 @@ THE SOFTWARE.
                   FT_Int32      load_flags )
   {
     PCF_Face    face   = (PCF_Face)FT_SIZE_FACE( size );
-    FT_Stream   stream = face->root.stream;
+    FT_Stream   stream;
     FT_Error    error  = PCF_Err_Ok;
     FT_Bitmap*  bitmap = &slot->bitmap;
     PCF_Metric  metric;
@@ -453,6 +458,8 @@ THE SOFTWARE.
       error = PCF_Err_Invalid_Argument;
       goto Exit;
     }
+
+    stream = face->root.stream;
 
     if ( glyph_index > 0 )
       glyph_index--;

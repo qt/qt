@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -131,7 +131,6 @@ public:
     QGraphicsWidget *activeWindow;
     int activationRefCount;
     void setFocusItemHelper(QGraphicsItem *item, Qt::FocusReason focusReason);
-    QMultiHash<QGraphicsItem *, QGraphicsItem *> focusProxyReverseMap;
 
     QList<QGraphicsWidget *> popupWidgets;
     void addPopup(QGraphicsWidget *widget);
@@ -282,9 +281,9 @@ static inline void _q_adjustRect(QRectF *rect)
 {
     Q_ASSERT(rect);
     if (!rect->width())
-        rect->adjust(-0.00001, 0, 0.00001, 0);
+        rect->adjust(qreal(-0.00001), 0, qreal(0.00001), 0);
     if (!rect->height())
-        rect->adjust(0, -0.00001, 0, 0.00001);
+        rect->adjust(0, qreal(-0.00001), 0, qreal(0.00001));
 }
 
 static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)

@@ -12,7 +12,7 @@ contains(QMAKE_MAC_XARCH, no) {
     LIBS += -Xarch_i386 -framework QuickTime -Xarch_ppc -framework QuickTime
 }
 
-LIBS += -framework AudioUnit \
+LIBS += -framework AppKit -framework AudioUnit \
 	-framework AudioToolbox -framework CoreAudio \
 	-framework QuartzCore -framework QTKit
 

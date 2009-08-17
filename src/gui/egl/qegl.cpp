@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -95,7 +95,7 @@ bool QEglContext::chooseConfig
     do {
         // Get the number of matching configurations for this set of properties.
         EGLint matching = 0;
-        if (!eglChooseConfig(dpy, props.properties(), 0, 256, &matching) || !matching)
+        if (!eglChooseConfig(dpy, props.properties(), 0, 0, &matching) || !matching)
             continue;
 
         // If we want the best pixel format, then return the first

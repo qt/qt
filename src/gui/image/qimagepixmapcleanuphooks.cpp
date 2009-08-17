@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,6 +42,8 @@
 #include "qimagepixmapcleanuphooks_p.h"
 #include "qpixmapdata_p.h"
 
+
+QT_BEGIN_NAMESPACE
 
 // Legacy, single instance hooks: ### Qt 5: remove
 typedef void (*_qt_pixmap_cleanup_hook)(int);
@@ -108,3 +110,4 @@ void QImagePixmapCleanupHooks::executeImageHooks(qint64 key)
         qt_image_cleanup_hook_64(key);
 }
 
+QT_END_NAMESPACE

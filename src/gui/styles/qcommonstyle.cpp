@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,7 +63,7 @@
 #include <qtoolbar.h>
 #include <qtoolbutton.h>
 #include <qrubberband.h>
-#include <private/qapplication_p.h>
+#include <../kernel/qkde_p.h>
 #include <private/qcommonstylepixmaps_p.h>
 #include <private/qmath_p.h>
 #include <private/qstylehelper_p.h>
@@ -840,169 +840,8 @@ static void drawArrow(const QStyle *style, const QStyleOptionToolButton *toolbut
 #endif // QT_NO_TOOLBUTTON
 
 
-
 #ifdef Q_WS_X11 // These functions are used to parse the X11 freedesktop icon spec
-static int kdeVersion()
-{
-    static int kdeVersion = qgetenv("KDE_SESSION_VERSION").toInt();
-    return kdeVersion;
-}
 
-void QCommonStylePrivate::lookupIconTheme() const
-{
-    if (!themeName.isEmpty())
-        return;
-
-    QString dataDirs = QString::fromLocal8Bit(getenv("XDG_DATA_DIRS"));
-    if (dataDirs.isEmpty())
-        dataDirs = QLatin1String("/usr/local/share/:/usr/share/");
-    dataDirs += QLatin1Char(':') + QApplicationPrivate::kdeHome() + QLatin1String("/share");
-    dataDirs.prepend(QDir::homePath() + QLatin1String("/:"));
-    QStringList kdeDirs = QString::fromLocal8Bit(getenv("KDEDIRS")).split(QLatin1Char(':'), QString::SkipEmptyParts);
-    foreach (const QString &dirName, kdeDirs)
-        dataDirs.append(QLatin1Char(':') + dirName + QLatin1String("/share"));
-    iconDirs = dataDirs.split(QLatin1Char(':'));
-
-    QFileInfo fileInfo(QLatin1String("/usr/share/icons/default.kde"));
-    QDir dir(fileInfo.canonicalFilePath());
-    QString kdeDefault = kdeVersion() >= 4 ? QString::fromLatin1("oxygen") : QString::fromLatin1("crystalsvg");
-    QString defaultTheme = fileInfo.exists() ? dir.dirName() : kdeDefault;
-    QSettings settings(QApplicationPrivate::kdeHome() +
-                       QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
-    settings.beginGroup(QLatin1String("Icons"));
-    themeName = settings.value(QLatin1String("Theme"), defaultTheme).toString();
-}
-
-QIconTheme QCommonStylePrivate::parseIndexFile(const QString &themeName) const
-{
-    Q_Q(const QCommonStyle);
-    QIconTheme theme;
-    QFile themeIndex;
-    QStringList parents;
-    QHash <int, QString> dirList;
-
-    for ( int i = 0 ; i < iconDirs.size() && !themeIndex.exists() ; ++i) {
-          QString contentDir = QLatin1String(iconDirs[i].startsWith(QDir::homePath()) ?
-                                "/.icons/" : "/icons/");
-          themeIndex.setFileName(iconDirs[i] + contentDir +
-                                 themeName + QLatin1String("/index.theme"));
-    }
-
-    if (themeIndex.open(QIODevice::ReadOnly | QIODevice::Text)) {
-
-        QTextStream in(&themeIndex);
-
-        while (!in.atEnd()) {
-
-            QString line = in.readLine();
-
-            if (line.startsWith(QLatin1String("Inherits="))) {
-                line = line.right(line.length() - 9);
-                parents = line.split(QLatin1Char(','));
-            }
-
-            if (line.startsWith(QLatin1Char('['))) {
-                line = line.trimmed();
-                line.chop(1);
-                QString dirName = line.right(line.length() - 1);
-                if (!in.atEnd()) {
-                    line = in.readLine();
-                    int size;
-                    if (line.startsWith(QLatin1String("Size="))) {
-                        size = line.right(line.length() - 5).toInt();
-                        if (size)
-                            dirList.insertMulti(size, dirName);
-                    }
-                }
-            }
-        }
-    }
-
-    if (q->inherits("QPlastiqueStyle")) {
-        QFileInfo fileInfo(QLatin1String("/usr/share/icons/default.kde"));
-        QDir dir(fileInfo.canonicalFilePath());
-        QString defaultKDETheme = dir.exists() ? dir.dirName() : QString::fromLatin1("crystalsvg");
-        if (!parents.contains(defaultKDETheme) && themeName != defaultKDETheme)
-            parents.append(defaultKDETheme);
-    } else if (parents.isEmpty() && themeName != QLatin1String("hicolor")) {
-        parents.append(QLatin1String("hicolor"));
-    }
-    theme = QIconTheme(dirList, parents);
-    return theme;
-}
-
-QPixmap QCommonStylePrivate::findIconHelper(int size,
-                                                   const QString &themeName,
-                                                   const QString &iconName,
-                                                   QStringList &visited) const
-{
-    QPixmap pixmap;
-
-    if (!themeName.isEmpty()) {
-
-        visited << themeName;
-        QIconTheme theme = themeList.value(themeName);
-
-        if (!theme.isValid()) {
-            theme = parseIndexFile(themeName);
-            themeList.insert(themeName, theme);
-        }
-
-        if (!theme.isValid())
-            return QPixmap();
-
-        QList <QString> subDirs = theme.dirList().values(size);
-
-        for ( int i = 0 ; i < iconDirs.size() ; ++i) {
-            for ( int j = 0 ; j < subDirs.size() ; ++j) {
-                QString contentDir = (iconDirs[i].startsWith(QDir::homePath())) ?
-                                     QLatin1String("/.icons/") : QLatin1String("/icons/");
-                QString fileName = iconDirs[i] + contentDir + themeName + QLatin1Char('/') + subDirs[j] + QLatin1Char('/') + iconName;
-                QFile file(fileName);
-                if (file.exists())
-                    pixmap.load(fileName);
-                if (!pixmap.isNull())
-                    break;
-            }
-        }
-
-        if (pixmap.isNull()) {
-            QStringList parents = theme.parents();
-            //search recursively through inherited themes
-            for (int i = 0 ; pixmap.isNull() && i < parents.size() ; ++i) {
-               QString parentTheme = parents[i].trimmed();
-               if (!visited.contains(parentTheme)) //guard against endless recursion
-                  pixmap = findIconHelper(size, parentTheme, iconName, visited);
-            }
-        }
-    }
-    return pixmap;
-}
-
-QPixmap QCommonStylePrivate::findIcon(int size, const QString &name) const
-{
-    QPixmap pixmap;
-    QString pixmapName = QLatin1String("$qt") + name + QString::number(size);
-
-    if (QPixmapCache::find(pixmapName, pixmap))
-        return pixmap;
-
-    if (!themeName.isEmpty()) {
-        QStringList visited;
-        pixmap = findIconHelper(size, themeName, name, visited);
-    }
-    QPixmapCache::insert(pixmapName, pixmap);
-    return pixmap;
-}
-
-QIcon QCommonStylePrivate::createIcon(const QString &name) const
-{
-    QIcon icon;
-    icon.addPixmap(findIcon(16, name));
-    icon.addPixmap(findIcon(24, name));
-    icon.addPixmap(findIcon(32, name));
-    return icon;
-}
 /*!internal
 
 Checks if you are running KDE and looks up the toolbar
@@ -1012,8 +851,8 @@ from the KDE configuration file
 int QCommonStylePrivate::lookupToolButtonStyle() const
 {
     int result = Qt::ToolButtonIconOnly;
-    if (kdeVersion() >= 4) {
-        QSettings settings(QApplicationPrivate::kdeHome() +
+    if (X11->desktopEnvironment == DE_KDE && X11->desktopVersion >= 4) {
+        QSettings settings(QKde::kdeHome() +
                            QLatin1String("/share/config/kdeglobals"), QSettings::IniFormat);
         settings.beginGroup(QLatin1String("Toolbar style"));
         QString toolbarStyle = settings.value(QLatin1String("ToolButtonStyle"), QLatin1String("TextBesideIcon")).toString();
@@ -4852,8 +4691,24 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
         ret = int(QStyleHelper::dpiScaled(6.));
         break;
 
-    case PM_TabBarIconSize:
     case PM_ToolBarIconSize:
+#ifdef Q_WS_X11
+        if (X11->desktopVersion >= 4) {
+            static int iconSize = 0;
+            if (!iconSize) {
+                QSettings settings(QKde::kdeHome() +
+                                   QLatin1String("/share/config/kdeglobals"), 
+                                   QSettings::IniFormat);
+                settings.beginGroup(QLatin1String("ToolbarIcons"));
+                iconSize = settings.value(QLatin1String("Size"), QLatin1String("22")).toInt();
+            }
+            ret = iconSize;
+        } else
+#endif
+            ret = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
+        break;
+
+    case PM_TabBarIconSize:
     case PM_ListViewIconSize:
         ret = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
         break;
@@ -5341,8 +5196,7 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = Qt::ToolButtonIconOnly;
 #ifdef Q_WS_X11
         {
-            Q_D(const QCommonStyle);
-            static int buttonStyle = d->lookupToolButtonStyle();
+            static int buttonStyle = d_func()->lookupToolButtonStyle();
             return buttonStyle;
         }
 #endif
@@ -5364,94 +5218,147 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
     Q_UNUSED(widget);
     Q_UNUSED(sp);
 #else
-#ifdef Q_WS_X11
-    Q_D(const QCommonStyle);
     QPixmap pixmap;
-    if (QApplication::desktopSettingsAware()) {
-        d->lookupIconTheme();
+
+    if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (sp) {
         case SP_DirHomeIcon:
-            {
-                pixmap = d->findIcon(16, QLatin1String("folder_home.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
+            pixmap = QIcon::fromTheme(QLatin1String("user-home")).pixmap(16);
+            break;
         case SP_MessageBoxInformation:
-            {
-                pixmap = d->findIcon(32, QLatin1String("messagebox_info.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
+            pixmap = QIcon::fromTheme(QLatin1String("messagebox_info")).pixmap(16);
+            break;
         case SP_MessageBoxWarning:
-            {
-                pixmap = d->findIcon(32, QLatin1String("messagebox_warning.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
+            pixmap = QIcon::fromTheme(QLatin1String("messagebox_warning")).pixmap(16);
+            break;
         case SP_MessageBoxCritical:
-            {
-                pixmap = d->findIcon(32, QLatin1String("messagebox_critical.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
+            pixmap = QIcon::fromTheme(QLatin1String("messagebox_critical")).pixmap(16);
+            break;
         case SP_MessageBoxQuestion:
-            {
-                pixmap = d->findIcon(32, QLatin1String("help.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
+            pixmap = QIcon::fromTheme(QLatin1String("help")).pixmap(16);
+            break;
         case SP_DialogOpenButton:
         case SP_DirOpenIcon:
-            {
-                pixmap = d->findIcon(16, QLatin1String("folder-open.png"));
-                if (pixmap.isNull())
-                    pixmap = d->findIcon(16, QLatin1String("folder_open.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
+            pixmap = QIcon::fromTheme(QLatin1String("folder-open")).pixmap(16);
+            break;
         case SP_FileIcon:
-            {
-                pixmap = d->findIcon(16, QLatin1String("text-x-generic.png"));
-                if (pixmap.isNull())
-                    pixmap = d->findIcon(16, QLatin1String("empty.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_FileLinkIcon:
-            {
-                pixmap = d->findIcon(16, QLatin1String("link_overlay.png"));
-                if (!pixmap.isNull()) {
-                    QPixmap fileIcon = d->findIcon(16, QLatin1String("text-x-generic.png"));
-                    if (fileIcon.isNull())
-                        fileIcon = d->findIcon(16, QLatin1String("empty.png"));
-                    if (!fileIcon.isNull()) {
-                        QPainter painter(&fileIcon);
-                        painter.drawPixmap(0, 0, 16, 16, pixmap);
-                        return fileIcon;
-                    }
-                }
-                break;
-           }
+            pixmap = QIcon::fromTheme(QLatin1String("text-x-generic"),
+                                      QIcon::fromTheme(QLatin1String("empty"))).pixmap(16);
+            break;
         case SP_DirClosedIcon:
         case SP_DirIcon:
-            {
-                pixmap = d->findIcon(16, QLatin1String("folder.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
+                pixmap = QIcon::fromTheme(QLatin1String("folder")).pixmap(16);
                 break;
+        case SP_DriveFDIcon:
+                pixmap = QIcon::fromTheme(QLatin1String("media-floppy"),
+                                          QIcon::fromTheme(QLatin1String("3floppy_unmount"))).pixmap(16);
+                break;
+        case SP_ComputerIcon:
+                pixmap = QIcon::fromTheme(QLatin1String("computer"),
+                                          QIcon::fromTheme(QLatin1String("system"))).pixmap(16);
+                break;
+        case SP_DesktopIcon:
+                pixmap = QIcon::fromTheme(QLatin1String("user-desktop"),
+                                          QIcon::fromTheme(QLatin1String("desktop"))).pixmap(16);
+                break;
+        case SP_TrashIcon:
+                pixmap = QIcon::fromTheme(QLatin1String("user-trash"),
+                                          QIcon::fromTheme(QLatin1String("trashcan_empty"))).pixmap(16);
+                break;
+        case SP_DriveCDIcon:
+        case SP_DriveDVDIcon:
+                pixmap = QIcon::fromTheme(QLatin1String("media-optical"),
+                                          QIcon::fromTheme(QLatin1String("cdrom_unmount"))).pixmap(16);
+                break;
+        case SP_DriveHDIcon:
+                pixmap = QIcon::fromTheme(QLatin1String("drive-harddisk"),
+                                          QIcon::fromTheme(QLatin1String("hdd_unmount"))).pixmap(16);
+                break;
+        case SP_FileDialogToParent:
+                pixmap = QIcon::fromTheme(QLatin1String("go-up"),
+                                          QIcon::fromTheme(QLatin1String("up"))).pixmap(16);
+                break;
+        case SP_FileDialogNewFolder:
+                pixmap = QIcon::fromTheme(QLatin1String("folder_new")).pixmap(16);
+                break;
+        case SP_ArrowUp:
+                pixmap = QIcon::fromTheme(QLatin1String("go-up"),
+                                          QIcon::fromTheme(QLatin1String("up"))).pixmap(16);
+                break;
+        case SP_ArrowDown:
+                pixmap = QIcon::fromTheme(QLatin1String("go-down"),
+                                          QIcon::fromTheme(QLatin1String("down"))).pixmap(16);
+                break;
+        case SP_ArrowRight:
+                pixmap = QIcon::fromTheme(QLatin1String("go-next"),
+                                          QIcon::fromTheme(QLatin1String("forward"))).pixmap(16);
+                break;
+        case SP_ArrowLeft:
+                pixmap = QIcon::fromTheme(QLatin1String("go-previous"),
+                                          QIcon::fromTheme(QLatin1String("back"))).pixmap(16);
+                break;
+        case SP_FileDialogDetailedView:
+                pixmap = QIcon::fromTheme(QLatin1String("view_detailed")).pixmap(16);
+                break;
+        case SP_FileDialogListView:
+                pixmap = QIcon::fromTheme(QLatin1String("view_icon")).pixmap(16);
+                break;
+        case SP_BrowserReload:
+                pixmap = QIcon::fromTheme(QLatin1String("reload")).pixmap(16);
+                break;
+        case SP_BrowserStop:
+                pixmap = QIcon::fromTheme(QLatin1String("process-stop")).pixmap(16);
+                break;
+        case SP_MediaPlay:
+                pixmap = QIcon::fromTheme(QLatin1String("media-playback-start")).pixmap(16);
+                break;
+        case SP_MediaPause:
+                pixmap = QIcon::fromTheme(QLatin1String("media-playback-pause")).pixmap(16);
+                break;
+        case SP_MediaStop:
+                pixmap = QIcon::fromTheme(QLatin1String("media-playback-stop")).pixmap(16);
+                break;
+        case SP_MediaSeekForward:
+                pixmap = QIcon::fromTheme(QLatin1String("media-seek-forward")).pixmap(16);
+                break;
+        case SP_MediaSeekBackward:
+                pixmap = QIcon::fromTheme(QLatin1String("media-seek-backward")).pixmap(16);
+                break;
+        case SP_MediaSkipForward:
+                pixmap = QIcon::fromTheme(QLatin1String("media-skip-backward")).pixmap(16);
+                break;
+        case SP_MediaSkipBackward:
+                pixmap = QIcon::fromTheme(QLatin1String("media-skip-backward")).pixmap(16);
+                break;
+        case SP_DialogResetButton:
+                pixmap = QIcon::fromTheme(QLatin1String("edit-clear")).pixmap(24);
+                break;
+        case SP_DialogHelpButton:
+                pixmap = QIcon::fromTheme(QLatin1String("help-contents")).pixmap(24);
+                break;
+        case SP_DialogCancelButton:
+                pixmap = QIcon::fromTheme(QLatin1String("process-stop")).pixmap(24);
+                break;
+        case SP_DialogSaveButton:
+                pixmap = QIcon::fromTheme(QLatin1String("document-save")).pixmap(24);
+                break;
+            case SP_FileLinkIcon:
+            pixmap = QIcon::fromTheme(QLatin1String("emblem-symbolic-link")).pixmap(16);
+            if (!pixmap.isNull()) {
+                QPixmap fileIcon = QIcon::fromTheme(QLatin1String("text-x-generic")).pixmap(16);
+                if (fileIcon.isNull())
+                    fileIcon = QIcon::fromTheme(QLatin1String("empty")).pixmap(16);
+                if (!fileIcon.isNull()) {
+                    QPainter painter(&fileIcon);
+                    painter.drawPixmap(0, 0, 16, 16, pixmap);
+                    return fileIcon;
+                }
             }
+            break;
         case SP_DirLinkIcon:
-            {
-                pixmap = d->findIcon(16, QLatin1String("link_overlay.png"));
+                pixmap = QIcon::fromTheme(QLatin1String("emblem-symbolic-link")).pixmap(16);
                 if (!pixmap.isNull()) {
-                    QPixmap dirIcon = d->findIcon(16, QLatin1String("folder.png"));
+                    QPixmap dirIcon = QIcon::fromTheme(QLatin1String("folder")).pixmap(16);
                     if (!dirIcon.isNull()) {
                         QPainter painter(&dirIcon);
                         painter.drawPixmap(0, 0, 16, 16, pixmap);
@@ -5459,198 +5366,13 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
                     }
                 }
                 break;
-           }
-        case SP_DriveFDIcon:
-            {
-                pixmap = d->findIcon(16, QLatin1String("media-floppy.png"));
-                if (pixmap.isNull())
-                    pixmap = d->findIcon(16, QLatin1String("3floppy_unmount.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_ComputerIcon:
-            {
-                pixmap = d->findIcon(16, QLatin1String("computer.png"));
-                if (pixmap.isNull())
-                    pixmap = d->findIcon(16, QLatin1String("system.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_DesktopIcon:
-            {
-                pixmap = d->findIcon(16, QLatin1String("user-desktop.png"));
-                if (pixmap.isNull())
-                    pixmap = d->findIcon(16, QLatin1String("desktop.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_TrashIcon:
-            {
-                pixmap = d->findIcon(16, QLatin1String("user-trash.png"));
-                if (pixmap.isNull())
-                    pixmap = d->findIcon(16, QLatin1String("trashcan_empty.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_DriveCDIcon:
-        case SP_DriveDVDIcon:
-            {
-                pixmap = d->findIcon(16, QLatin1String("media-optical.png"));
-                if (pixmap.isNull())
-                    pixmap = d->findIcon(16, QLatin1String("cdrom_unmount.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_DriveHDIcon:
-            {
-                pixmap = d->findIcon(16, QLatin1String("drive-harddisk.png"));
-                if (pixmap.isNull())
-                    pixmap = d->findIcon(16, QLatin1String("hdd_unmount.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_FileDialogToParent:
-            {
-                pixmap = d->findIcon(32, QLatin1String("go-up.png"));
-                if (pixmap.isNull())
-                    pixmap = d->findIcon(32, QLatin1String("up.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_FileDialogNewFolder:
-            {
-                pixmap = d->findIcon(16, QLatin1String("folder_new.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_ArrowUp:
-            {
-                pixmap = d->findIcon(32, QLatin1String("go-up.png"));
-                if (pixmap.isNull())
-                    pixmap = d->findIcon(32, QLatin1String("up.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_ArrowDown:
-            {
-                pixmap = d->findIcon(32, QLatin1String("go-down.png"));
-                if (pixmap.isNull())
-                    pixmap = d->findIcon(32, QLatin1String("down.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_ArrowRight:
-            {
-                pixmap = d->findIcon(32, QLatin1String("go-next.png"));
-                if (pixmap.isNull())
-                    pixmap = d->findIcon(32, QLatin1String("forward.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_ArrowLeft:
-            {
-                pixmap = d->findIcon(32, QLatin1String("go-previous.png"));
-                if (pixmap.isNull())
-                    pixmap = d->findIcon(32, QLatin1String("back.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_FileDialogDetailedView:
-            {
-                pixmap = d->findIcon(16, QLatin1String("view_detailed.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-
-        case SP_FileDialogListView:
-            {
-                pixmap = d->findIcon(16, QLatin1String("view_icon.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_BrowserReload:
-            {
-                pixmap = d->findIcon(32, QLatin1String("reload.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_BrowserStop:
-            {
-                pixmap = d->findIcon(32, QLatin1String("stop.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_MediaPlay:
-            {
-                pixmap = d->findIcon(16, QLatin1String("player_play.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_MediaPause:
-            {
-                pixmap = d->findIcon(16, QLatin1String("player_pause.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_MediaStop:
-            {
-                pixmap = d->findIcon(16, QLatin1String("player_stop.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_MediaSeekForward:
-            {
-                pixmap = d->findIcon(16, QLatin1String("player_fwd.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_MediaSeekBackward:
-            {
-                pixmap = d->findIcon(16, QLatin1String("player_rew.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_MediaSkipForward:
-            {
-                pixmap = d->findIcon(16, QLatin1String("player_end.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-        case SP_MediaSkipBackward:
-            {
-                pixmap = d->findIcon(16, QLatin1String("player_start.png"));
-                if (!pixmap.isNull())
-                    return pixmap;
-                break;
-            }
-
         default:
             break;
         }
     }
-#endif //Q_WS_X11
+
+    if (!pixmap.isNull())
+        return pixmap;
 #endif //QT_NO_IMAGEFORMAT_PNG
     switch (sp) {
 #ifndef QT_NO_IMAGEFORMAT_XPM
@@ -5786,254 +5508,178 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
                                                const QWidget *widget) const
 {
     QIcon icon;
-    if (QApplication::desktopSettingsAware()) {
-#ifdef Q_WS_X11
-        Q_D(const QCommonStyle);
-        d->lookupIconTheme();
-        QPixmap pixmap;
+    if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (standardIcon) {
         case SP_DirHomeIcon:
-            {
-                icon = d->createIcon(QLatin1String("folder_home.png"));
+                icon = QIcon::fromTheme(QLatin1String("user-home"));
                 break;
-            }
         case SP_MessageBoxInformation:
-            {
-                icon = d->createIcon(QLatin1String("dialog-information.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("messagebox_info.png"));
+                icon = QIcon::fromTheme(QLatin1String("dialog-information"));
                 break;
-            }
         case SP_MessageBoxWarning:
-            {
-                icon = d->createIcon(QLatin1String("dialog-warning.png"));
-                icon = d->createIcon(QLatin1String("dialog-warning.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("messagebox_warning.png"));
+                icon = QIcon::fromTheme(QLatin1String("dialog-warning"));
                 break;
-            }
         case SP_MessageBoxCritical:
-            {
-                icon = d->createIcon(QLatin1String("dialog-error.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("messagebox_critical.png"));
+                icon = QIcon::fromTheme(QLatin1String("dialog-error"));
                 break;
-            }
         case SP_MessageBoxQuestion:
-            {
-                icon = d->createIcon(QLatin1String("help.png"));
+                icon = QIcon::fromTheme(QLatin1String("dialog-question"));
                 break;
-            }
         case SP_DialogOpenButton:
         case SP_DirOpenIcon:
-            {
-                icon = d->createIcon(QLatin1String("folder-open.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("folder_open.png"));
+                icon = QIcon::fromTheme(QLatin1String("folder-open"));
                 break;
-            }
         case SP_FileIcon:
-            {
-                icon = d->createIcon(QLatin1String("text-x-generic.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("empty.png"));
+                icon = QIcon::fromTheme(QLatin1String("text-x-generic"));
                 break;
-            }
         case SP_DirClosedIcon:
         case SP_DirIcon:
-            {
-                icon = d->createIcon(QLatin1String("folder.png"));
+                icon = QIcon::fromTheme(QLatin1String("folder"));
                 break;
-            }
         case SP_DriveFDIcon:
-            {
-                icon = d->createIcon(QLatin1String("floppy_unmount.png"));
+                icon = QIcon::fromTheme(QLatin1String("floppy_unmount"));
                 break;
-            }
         case SP_ComputerIcon:
-            {
-                icon = d->createIcon(QLatin1String("computer.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("system.png"));
+                icon = QIcon::fromTheme(QLatin1String("computer"),
+                                        QIcon::fromTheme(QLatin1String("system")));
                 break;
-            }
         case SP_DesktopIcon:
-            {
-                icon = d->createIcon(QLatin1String("user-desktop.png"));
+                icon = QIcon::fromTheme(QLatin1String("user-desktop"));
                 break;
-            }
         case SP_TrashIcon:
-            {
-                icon = d->createIcon(QLatin1String("user-trash.png"));
+                icon = QIcon::fromTheme(QLatin1String("user-trash"));
                 break;
-            }
         case SP_DriveCDIcon:
         case SP_DriveDVDIcon:
-            {
-                icon = d->createIcon(QLatin1String("media-optical.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("cdrom_unmount.png"));
+                icon = QIcon::fromTheme(QLatin1String("media-optical"));
                 break;
-            }
         case SP_DriveHDIcon:
-            {
-                icon = d->createIcon(QLatin1String("drive-harddisk.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("hdd_unmount.png"));
+                icon = QIcon::fromTheme(QLatin1String("drive-harddisk"));
                 break;
-            }
         case SP_FileDialogToParent:
-            {
-                icon = d->createIcon(QLatin1String("go-up.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("up.png"));
+                icon = QIcon::fromTheme(QLatin1String("go-up"));
                 break;
-            }
         case SP_FileDialogNewFolder:
-            {
-                icon = d->createIcon(QLatin1String("folder_new.png"));
+                icon = QIcon::fromTheme(QLatin1String("folder-new"));
                 break;
-            }
         case SP_ArrowUp:
-            {
-                icon = d->createIcon(QLatin1String("go-up.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("up.png"));
+                icon = QIcon::fromTheme(QLatin1String("go-up"));
                 break;
-            }
         case SP_ArrowDown:
-            {
-                icon = d->createIcon(QLatin1String("go-down.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("down.png"));
+                icon = QIcon::fromTheme(QLatin1String("go-down"));
                 break;
-            }
         case SP_ArrowRight:
-            {
-                icon = d->createIcon(QLatin1String("go-next.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("forward.png"));
+                icon = QIcon::fromTheme(QLatin1String("go-next"));
                 break;
-            }
         case SP_ArrowLeft:
-            {
-                icon = d->createIcon(QLatin1String("go-previous.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("back.png"));
+                icon = QIcon::fromTheme(QLatin1String("go-previous"));
                 break;
-            }
+        case SP_DialogHelpButton:
+                icon = QIcon::fromTheme(QLatin1String("help-contents"));
+                break;
+        case SP_DialogCancelButton:
+                icon = QIcon::fromTheme(QLatin1String("process-stop"));
+                break;
+        case SP_DialogCloseButton:
+                icon = QIcon::fromTheme(QLatin1String("window-close"));
+                break;
+        case SP_DialogApplyButton:
+                icon = QIcon::fromTheme(QLatin1String("dialog-ok-apply"));
+                break;
+        case SP_DialogOkButton:
+                icon = QIcon::fromTheme(QLatin1String("dialog-ok"));
+                break;
         case SP_FileDialogDetailedView:
-            {
-                icon = d->createIcon(QLatin1String("view-list-details.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("view_detailed.png"));
+                icon = QIcon::fromTheme(QLatin1String("view-list-details"));
                 break;
-            }
         case SP_FileDialogListView:
-            {
-                icon = d->createIcon(QLatin1String("view-list-icons.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("view_icon.png"));
+                icon = QIcon::fromTheme(QLatin1String("view-list-icons"));
                 break;
-            }
         case SP_BrowserReload:
-            {
-                icon = d->createIcon(QLatin1String("view-refresh.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("reload.png"));
+                icon = QIcon::fromTheme(QLatin1String("view-refresh"));
                 break;
-            }
         case SP_BrowserStop:
-            {
-                icon = d->createIcon(QLatin1String("process-stop.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("stop.png"));
+                icon = QIcon::fromTheme(QLatin1String("process-stop"));
                 break;
-            }
         case SP_MediaPlay:
-            {
-                icon = d->createIcon(QLatin1String("media-playback-start.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("player_play.png"));
+                icon = QIcon::fromTheme(QLatin1String("media-playback-start"));
                 break;
-            }
         case SP_MediaPause:
-            {
-                icon = d->createIcon(QLatin1String("media-playback-pause.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("player_pause.png"));
+                icon = QIcon::fromTheme(QLatin1String("media-playback-pause"));
                 break;
-            }
         case SP_MediaStop:
-            {
-                icon = d->createIcon(QLatin1String("media-playback-stop.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("player_stop.png"));
+                icon = QIcon::fromTheme(QLatin1String("media-playback-stop"));
                 break;
-            }
         case SP_MediaSeekForward:
-            {
-                icon = d->createIcon(QLatin1String("media-skip-forward.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("player_fwd.png"));
+                icon = QIcon::fromTheme(QLatin1String("media-seek-forward"));
                 break;
-            }
         case SP_MediaSeekBackward:
-            {
-                icon = d->createIcon(QLatin1String("media-skip-backward.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("player_rew.png"));
+                icon = QIcon::fromTheme(QLatin1String("media-seek-backward"));
                 break;
-            }
         case SP_MediaSkipForward:
-            {
-                icon = d->createIcon(QLatin1String("media-skip-forward.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("player_end.png"));
+                icon = QIcon::fromTheme(QLatin1String("media-skip-forward"));
                 break;
-            }
         case SP_MediaSkipBackward:
-            {
-                icon = d->createIcon(QLatin1String("media-skip-backward.png"));
-                if (icon.isNull())
-                    icon = d->createIcon(QLatin1String("player_start.png"));
+                icon = QIcon::fromTheme(QLatin1String("media-skip-backward"));
                 break;
-            }
-
-        case SP_FileLinkIcon: {
-            icon = QIcon(proxy()->standardPixmap(standardIcon, option, widget));
-            QPixmap pixmap = d->findIcon(32, QLatin1String("link_overlay.png"));
-            if (!pixmap.isNull()) {
-                QPixmap fileIcon = d->findIcon(32, QLatin1String("text-x-generic.png"));
-                if (fileIcon.isNull())
-                    fileIcon = d->findIcon(32, QLatin1String("empty.png"));
-                if (!fileIcon.isNull()) {
-                    QPainter painter(&fileIcon);
-                    painter.drawPixmap(0, 0, 32, 32, pixmap);
-                    icon.addPixmap(fileIcon);
+        case SP_MediaVolume:
+                icon = QIcon::fromTheme(QLatin1String("audio-volume-medium"));
+                break;
+        case SP_MediaVolumeMuted:
+                icon = QIcon::fromTheme(QLatin1String("audio-volume-muted"));
+                break;
+        case SP_DialogResetButton:
+                icon = QIcon::fromTheme(QLatin1String("edit-clear"));
+                break;
+        case SP_ArrowForward:
+            if (QApplication::layoutDirection() == Qt::RightToLeft)
+                return standardIconImplementation(SP_ArrowLeft, option, widget);
+            return standardIconImplementation(SP_ArrowRight, option, widget);
+        case SP_ArrowBack:
+            if (QApplication::layoutDirection() == Qt::RightToLeft)
+                return standardIconImplementation(SP_ArrowRight, option, widget);
+            return standardIconImplementation(SP_ArrowLeft, option, widget);
+        case SP_FileLinkIcon:
+            {
+                QIcon linkIcon = QIcon::fromTheme(QLatin1String("emblem-symbolic-link"));
+                if (!linkIcon.isNull()) {
+                    QIcon baseIcon = standardIconImplementation(SP_FileIcon, option, widget);
+                    const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
+                    for (int i = 0 ; i < sizes.size() ; ++i) {
+                        int size = sizes[i].width();
+                        QPixmap basePixmap = baseIcon.pixmap(size);
+                        QPixmap linkPixmap = linkIcon.pixmap(size/2);
+                        QPainter painter(&basePixmap);
+                        painter.drawPixmap(size/2, size/2, linkPixmap);
+                        icon.addPixmap(basePixmap);
+                    }
                 }
             }
-        }
-        break;
-        case SP_DirLinkIcon: {
-            icon = QIcon(proxy()->standardPixmap(standardIcon, option, widget));
-            QPixmap pixmap = d->findIcon(32, QLatin1String("link_overlay.png"));
-            if (!pixmap.isNull()) {
-                QPixmap fileIcon = d->findIcon(32, QLatin1String("folder.png"));
-                if (!fileIcon.isNull()) {
-                    QPainter painter(&fileIcon);
-                    painter.drawPixmap(0, 0, 32, 32, pixmap);
-                    icon.addPixmap(fileIcon);
+            break;
+        case SP_DirLinkIcon:
+            {
+                QIcon linkIcon = QIcon::fromTheme(QLatin1String("emblem-symbolic-link"));
+                if (!linkIcon.isNull()) {
+                    QIcon baseIcon = standardIconImplementation(SP_DirIcon, option, widget);
+                    const QList<QSize> sizes = baseIcon.availableSizes(QIcon::Normal, QIcon::Off);
+                    for (int i = 0 ; i < sizes.size() ; ++i) {
+                        int size = sizes[i].width();
+                        QPixmap basePixmap = baseIcon.pixmap(size);
+                        QPixmap linkPixmap = linkIcon.pixmap(size/2);
+                        QPainter painter(&basePixmap);
+                        painter.drawPixmap(size/2, size/2, linkPixmap);
+                        icon.addPixmap(basePixmap);
+                    }
                 }
-            }
         }
         break;
         default:
             break;
         }
+
         if (!icon.isNull())
             return icon;
-#elif defined(Q_WS_MAC)
+#if defined(Q_WS_MAC)
     OSType iconType = 0;
     switch (standardIcon) {
     case QStyle::SP_MessageBoxQuestion:
@@ -6124,10 +5770,8 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
             ReleaseIconRef(overlayIcon);
         return retIcon;
     }
-
-#endif //Q_WS_X11 || Q_WS_MAC
+#endif // Q_WS_MAC
     }
-
 
     switch (standardIcon) {
 #ifndef QT_NO_IMAGEFORMAT_PNG

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,6 +51,9 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #ifdef Q_WS_WINCE_WM
 #include <windowsm.h>
 #include <tpcshell.h>
+#ifdef QT_WINCE_GESTURES
+#include <gesture.h>
+#endif
 #endif
 
 #include "qapplication.h"
@@ -427,11 +430,6 @@ extern QCursor *qt_grab_cursor();
 #if defined(Q_WS_WIN)
 #define __export
 #endif
-
-QApplicationPrivate* getQApplicationPrivateInternal()
-{
-    return qApp->d_func();
-}
 
 extern "C" LRESULT CALLBACK QtWndProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -815,30 +813,41 @@ void qt_init(QApplicationPrivate *priv, int)
         ptrSetProcessDPIAware();
 #endif
 
+    priv->GetGestureInfo = 0;
+    priv->GetGestureExtraArgs = 0;
+
+#if defined(Q_WS_WINCE_WM) && defined(QT_WINCE_GESTURES)
+    priv->GetGestureInfo = (PtrGetGestureInfo) &TKGetGestureInfo;
+    priv->GetGestureExtraArgs = (PtrGetGestureExtraArgs) &TKGetGestureExtraArguments;
+    priv->CloseGestureInfoHandle = (PtrCloseGestureInfoHandle) 0;
+    priv->SetGestureConfig = (PtrSetGestureConfig) 0;
+    priv->GetGestureConfig = (PtrGetGestureConfig) 0;
+#elif !defined(Q_WS_WINCE)
     priv->GetGestureInfo =
-        (PtrGetGestureInfo)QLibrary::resolve(QLatin1String("user32"),
-                                             "GetGestureInfo");
+            (PtrGetGestureInfo)QLibrary::resolve(QLatin1String("user32"),
+                                                 "GetGestureInfo");
     priv->GetGestureExtraArgs =
-        (PtrGetGestureExtraArgs)QLibrary::resolve(QLatin1String("user32"),
-                                                  "GetGestureExtraArgs");
+            (PtrGetGestureExtraArgs)QLibrary::resolve(QLatin1String("user32"),
+                                                      "GetGestureExtraArgs");
     priv->CloseGestureInfoHandle =
-        (PtrCloseGestureInfoHandle)QLibrary::resolve(QLatin1String("user32"),
-                                                     "CloseGestureInfoHandle");
+            (PtrCloseGestureInfoHandle)QLibrary::resolve(QLatin1String("user32"),
+                                                         "CloseGestureInfoHandle");
     priv->SetGestureConfig =
-        (PtrSetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
-                                               "SetGestureConfig");
+            (PtrSetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
+                                                   "SetGestureConfig");
     priv->GetGestureConfig =
-        (PtrGetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
-                                               "GetGestureConfig");
+            (PtrGetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
+                                                   "GetGestureConfig");
     priv->BeginPanningFeedback =
-        (PtrBeginPanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
-                                                   "BeginPanningFeedback");
+            (PtrBeginPanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
+                                                       "BeginPanningFeedback");
     priv->UpdatePanningFeedback =
-        (PtrUpdatePanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
-                                                   "UpdatePanningFeedback");
+            (PtrUpdatePanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
+                                                        "UpdatePanningFeedback");
     priv->EndPanningFeedback =
         (PtrEndPanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
                                                    "EndPanningFeedback");
+#endif
 }
 
 /*****************************************************************************
@@ -1243,7 +1252,10 @@ void QApplication::beep()
 
 static void alert_widget(QWidget *widget, int duration)
 {
-#ifndef Q_OS_WINCE
+#ifdef Q_OS_WINCE
+    Q_UNUSED(widget);
+    Q_UNUSED(duration);
+#else
     bool stopFlash = duration < 0;
 
     if (widget && (!widget->isActiveWindow() || stopFlash)) {
@@ -1461,7 +1473,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
 
         // we receive the message for each toplevel window included internal hidden ones,
         // but the aboutToQuit signal should be emitted only once.
-        QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
+        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
         if (endsession && !qAppPriv->aboutToQuitEmitted) {
             qAppPriv->aboutToQuitEmitted = true;
             int index = QApplication::staticMetaObject.indexOfSignal("aboutToQuit()");
@@ -1648,7 +1660,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
     } else {
         switch (message) {
         case WM_TOUCH:
-            result = getQApplicationPrivateInternal()->translateTouchEvent(msg);
+            result = QApplicationPrivate::instance()->translateTouchEvent(msg);
             break;
         case WM_KEYDOWN:                        // keyboard event
         case WM_SYSKEYDOWN:
@@ -3719,19 +3731,33 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
     memset(&gi, 0, sizeof(GESTUREINFO));
     gi.cbSize = sizeof(GESTUREINFO);
 
-    QApplicationPrivate *qAppPriv = getQApplicationPrivateInternal();
-    BOOL bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
+    QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+#if defined(Q_WS_WINCE_WM) && defined(QT_WINCE_GESTURES)
+#undef GID_ZOOM
+#define GID_ZOOM 0xf000
+#undef GID_ROTATE
+#define GID_ROTATE 0xf001
+#undef GID_TWOFINGERTAP
+#define GID_TWOFINGERTAP 0xf002
+#undef GID_ROLLOVER
+#define GID_ROLLOVER 0xf003
+#endif
+    BOOL bResult = false;
+    if (qAppPriv->GetGestureInfo)
+        bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
 
-    const QPoint widgetPos = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
-    QWidget *alienWidget = !internalWinId() ? this : childAt(widgetPos);
-    if (alienWidget && alienWidget->internalWinId())
-        alienWidget = 0;
-    QWidget *widget = alienWidget ? alienWidget : this;
-
-    QNativeGestureEvent event;
-    event.sequenceId = gi.dwSequenceID;
-    event.position = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
     if (bResult) {
+        const QPoint widgetPos = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
+        QWidget *alienWidget = !internalWinId() ? this : childAt(widgetPos);
+        if (alienWidget && alienWidget->internalWinId())
+            alienWidget = 0;
+        QWidget *widget = alienWidget ? alienWidget : this;
+
+        QNativeGestureEvent event;
+        event.sequenceId = gi.dwSequenceID;
+        event.position = QPoint(gi.ptsLocation.x, gi.ptsLocation.y);
+        event.argument = gi.ullArguments;
+
         switch (gi.dwID) {
         case GID_BEGIN:
             event.gestureType = QNativeGestureEvent::GestureBegin;
@@ -3746,12 +3772,15 @@ bool QETWidget::translateGestureEvent(const MSG &msg)
             event.gestureType = QNativeGestureEvent::Pan;
             break;
         case GID_ROTATE:
+            event.gestureType = QNativeGestureEvent::Rotate;
+            break;
         case GID_TWOFINGERTAP:
         case GID_ROLLOVER:
         default:
             break;
         }
-        qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
+        if (qAppPriv->CloseGestureInfoHandle)
+            qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
         if (event.gestureType != QNativeGestureEvent::None)
             qt_sendSpontaneousEvent(widget, &event);
     } else {

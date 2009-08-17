@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -133,9 +133,9 @@ public:
     };
 
     QNativeGestureEvent()
-        : QEvent(QEvent::NativeGesture), gestureType(None), percentage(0), direction(0, 0)
+        : QEvent(QEvent::NativeGesture), gestureType(None), percentage(0)
 #ifdef Q_WS_WIN
-        , sequenceId(0)
+        , sequenceId(0), argument(0)
 #endif
     {
     }
@@ -146,6 +146,7 @@ public:
     QSize direction;
 #ifdef Q_WS_WIN
     ulong sequenceId;
+    quint64 argument;
 #endif
 };
 

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -4024,6 +4024,29 @@ QString QUrlPrivate::createErrorString()
 }
 
 /*!
+    \macro QT_NO_URL_CAST_FROM_STRING
+    \relates QUrl
+
+    Disables automatic conversions from QString (or char *) to QUrl.
+
+    Compiling your code with this define is useful when you have a lot of
+    code that uses QString for file names and you wish to convert it to
+    use QUrl for network transparency. In any code that uses QUrl, it can
+    help avoid missing QUrl::resolved() calls, and other misuses of
+    QString to QUrl conversions.
+
+    \oldcode
+        url = filename; // probably not what you want
+    \newcode
+        url = QUrl::fromLocalFile(filename);
+        url = baseurl.resolved(QUrl(filename));
+    \endcode
+
+    \sa QT_NO_CAST_FROM_ASCII
+*/
+
+
+/*!
     Constructs a URL by parsing \a url. \a url is assumed to be in human
     readable representation, with no percent encoding. QUrl will automatically
     percent encode all characters that are not allowed in a URL.
@@ -5657,7 +5680,7 @@ QString QUrl::fromPunycode(const QByteArray &pc)
     The ASCII Compatible Encoding (ACE) is defined by RFC 3490, RFC 3491
     and RFC 3492. It is part of the Internationalizing Domain Names in
     Applications (IDNA) specification, which allows for domain names
-    (like \c "qtsoftware.com") to be written using international
+    (like \c "example.com") to be written using international
     characters.
 */
 QString QUrl::fromAce(const QByteArray &domain)
@@ -5674,7 +5697,7 @@ QString QUrl::fromAce(const QByteArray &domain)
     The ASCII-Compatible Encoding (ACE) is defined by RFC 3490, RFC 3491
     and RFC 3492. It is part of the Internationalizing Domain Names in
     Applications (IDNA) specification, which allows for domain names
-    (like \c "qtsoftware.com") to be written using international
+    (like \c "example.com") to be written using international
     characters.
 */
 QByteArray QUrl::toAce(const QString &domain)
@@ -5966,10 +5989,10 @@ bool QUrl::isParentOf(const QUrl &childUrl) const
     Use resolved("..") instead.
 
     \oldcode
-        QUrl url("http://qtsoftware.com/Developer/");
+        QUrl url("http://example.com/Developer/");
         url.cdUp();
     \newcode
-        QUrl url("http://qtsoftware.com/Developer/");
+        QUrl url("http://example.com/Developer/");
         url = url.resolved("..");
     \endcode
 */

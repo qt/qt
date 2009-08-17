@@ -77,16 +77,26 @@ x11 {
     }
 
     contains(QT_CONFIG, fontconfig) {
+        contains(QT_CONFIG, system-freetype) {
+            embedded:CONFIG += opentype
+            # pull in the proper freetype2 include directory
             include($$QT_SOURCE_TREE/config.tests/unix/freetype/freetype.pri)
+            LIBS_PRIVATE += -lfreetype
+        } else {
+            ### Note: how does this compile with a non-system freetype?
+	    # This probably doesn't compile
+        }
     } else {
         DEFINES *= QT_NO_FREETYPE
     }
+
+    LIBS_PRIVATE += $$QMAKE_LIBS_DYNLOAD
 }
 
 mac {
     OBJECTIVE_SOURCES += qgl_mac.mm \
                          qglpixelbuffer_mac.mm
-    LIBS += -framework AppKit
+    LIBS_PRIVATE += -framework AppKit -framework Carbon
 }
 win32:!wince*: {
     SOURCES += qgl_win.cpp \
@@ -135,5 +145,5 @@ wince*: {
     }
 
 } else {
-    QMAKE_LIBS += $$QMAKE_LIBS_OPENGL
+    LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL
 }

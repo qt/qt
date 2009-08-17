@@ -1,5 +1,4 @@
 <!DOCTYPE UI><UI version="3.2" stdsetdef="1">
-<class>LicenseAgreementPage</class>
 <widget class="QWidget">
     <property name="name">
         <cstring>LicenseAgreementPage</cstring>
@@ -106,7 +105,7 @@
                     </property>
                     <property name="text">
                         <string>The license could not be found in the package. The package might be corrupted.
-Please contact support@trolltech.com to resolve the problem.</string>
+Please contact qt-info@nokia.com to resolve the problem.</string>
                     </property>
                 </widget>
                 <widget class="QLayoutWidget">

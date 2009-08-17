@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1768,6 +1768,7 @@ QVariant QTreeWidgetItem::data(int column, int role) const
         // special case for check state in tristate
         if (children.count() && (itemFlags & Qt::ItemIsTristate))
             return childrenCheckState(column);
+        // fallthrough intended
    default:
         if (column >= 0 && column < values.size()) {
             const QVector<QWidgetItemData> &column_values = values.at(column);
@@ -1789,9 +1790,7 @@ bool QTreeWidgetItem::operator<(const QTreeWidgetItem &other) const
     int column = view ? view->sortColumn() : 0;
     const QVariant v1 = data(column, Qt::DisplayRole);
     const QVariant v2 = other.data(column, Qt::DisplayRole);
-    if (QAbstractItemModelPrivate::canConvertToDouble(v1) && QAbstractItemModelPrivate::canConvertToDouble(v2))
-        return v1.toDouble() < v2.toDouble();
-    return v1.toString() < v2.toString();
+    return QAbstractItemModelPrivate::variantLessThan(v1, v2);
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -2074,6 +2073,8 @@ QList<QTreeWidgetItem*> QTreeWidgetItem::takeChildren()
 void QTreeWidgetItemPrivate::sortChildren(int column, Qt::SortOrder order, bool climb)
 {
     QTreeModel *model = (q->view ? qobject_cast<QTreeModel*>(q->view->model()) : 0);
+    if (!model)
+        return;   
     model->sortItems(&q->children, column, order);
     if (climb) {
         QList<QTreeWidgetItem*>::iterator it = q->children.begin();

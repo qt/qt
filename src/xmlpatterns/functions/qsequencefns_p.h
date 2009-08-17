@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -79,7 +79,7 @@ namespace QPatternist
      *
      * @see EBVExtractor
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class BooleanFN : public FunctionCall
     {
@@ -99,7 +99,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:index-of()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class IndexOfFN : public FunctionCall,
                       public ComparisonPlatform<IndexOfFN, false>
@@ -126,7 +126,7 @@ namespace QPatternist
      * by instantiating it with either IDExistsFN or IDEmptyFN.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<const Expression::ID Id>
     class Existence : public FunctionCall
@@ -179,7 +179,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:distinct-values()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DistinctValuesFN : public FunctionCall,
                              public ComparisonPlatform<IndexOfFN, false>
@@ -219,7 +219,7 @@ namespace QPatternist
      * @todo docs, explain why evaluateSequence and evaluateSingleton is implemented
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class InsertBeforeFN : public FunctionCall
     {
@@ -243,7 +243,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:remove()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class RemoveFN : public FunctionCall
     {
@@ -270,7 +270,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:reverse()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ReverseFN : public FunctionCall
     {
@@ -298,7 +298,7 @@ statEnv |-  (FN-URI,"reverse")(Type) : prime(Type) * quantifier(Type)
      * @short Implements the function <tt>fn:subsequence()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo Type inference can be made stronger for this function
      */
     class SubsequenceFN : public FunctionCall

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,7 +45,7 @@
     \brief The platforms supported by Nokia for Qt.
     \ingroup platform-notes
 
-    Qt Software strives to provide support for the platforms most
+    The Qt team strives to provide support for the platforms most
     frequently used by Qt users. We have designed our internal testing procedure to
     divide platforms into three test categories (Tier 1, Tier 2 and Tier 3) in order
     to prioritize internal testing and development resources so that the most
@@ -132,7 +132,7 @@
 
     \section1 General Legal Disclaimer
 
-    Please note that Qt Software’s products are offered on an "as is" basis without warranty
+    Please note that Qt is offered on an "as is" basis without warranty
     of any kind and that our products are not error or bug free. To the maximum extent
     permitted by applicable law, Nokia on behalf of itself and its suppliers, disclaims all
     warranties and conditions, either express or implied, including, but not limited to,

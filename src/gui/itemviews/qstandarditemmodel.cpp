@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1809,7 +1809,7 @@ bool QStandardItem::operator<(const QStandardItem &other) const
     const int role = model() ? model()->sortRole() : Qt::DisplayRole;
     const QVariant l = data(role), r = other.data(role);
     // this code is copied from QSortFilterProxyModel::lessThan()
-    switch (l.type()) {
+    switch (l.userType()) {
     case QVariant::Invalid:
         return (r.type() == QVariant::Invalid);
     case QVariant::Int:
@@ -1820,6 +1820,8 @@ bool QStandardItem::operator<(const QStandardItem &other) const
         return l.toLongLong() < r.toLongLong();
     case QVariant::ULongLong:
         return l.toULongLong() < r.toULongLong();
+    case QMetaType::Float:
+        return l.toFloat() < r.toFloat();
     case QVariant::Double:
         return l.toDouble() < r.toDouble();
     case QVariant::Char:

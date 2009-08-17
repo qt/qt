@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.6 API Reference</title>
+<title>FreeType-2.3.9 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -31,7 +31,11 @@
 </style>
 </head>
 <body>
-<center><h1>FreeType-2.3.6 API Reference</h1></center>
+
+<table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+<center><h1>FreeType-2.3.9 API Reference</h1></center>
 
 <center><h1>
 LCD Filtering
@@ -122,14 +126,14 @@ Defined in FT_LCD_FILTER_H (freetype/ftlcdfil.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>This feature is always disabled by default. Clients must make an explicit call to this function with a &lsquo;filter&rsquo; value other than <a href="ft2-lcd_filtering.html#FT_LcdFilter">FT_LCD_FILTER_NONE</a> in order to enable it.</p>
 <p>Due to <b>PATENTS</b> covering subpixel rendering, this function doesn't do anything except returning &lsquo;FT_Err_Unimplemented_Feature&rsquo; if the configuration macro FT_CONFIG_OPTION_SUBPIXEL_RENDERING is not defined in your build of the library, which should correspond to all default builds of FreeType.</p>
 <p>The filter affects glyph bitmaps rendered through <a href="ft2-base_interface.html#FT_Render_Glyph">FT_Render_Glyph</a>, <a href="ft2-outline_processing.html#FT_Outline_Get_Bitmap">FT_Outline_Get_Bitmap</a>, <a href="ft2-base_interface.html#FT_Load_Glyph">FT_Load_Glyph</a>, and <a href="ft2-base_interface.html#FT_Load_Char">FT_Load_Char</a>.</p>
 <p>It does <i>not</i> affect the output of <a href="ft2-outline_processing.html#FT_Outline_Render">FT_Outline_Render</a> and <a href="ft2-outline_processing.html#FT_Outline_Get_Bitmap">FT_Outline_Get_Bitmap</a>.</p>
-<p>If this feature is activated, the dimensions of LCD glyph bitmaps are either larger or taller than the dimensions of the corresponding outline with regards to the pixel grid. For example, for <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_LCD</a>, the filter adds up to 3 pixels to the left, and up to 3 pixels to the right.</p>
+<p>If this feature is activated, the dimensions of LCD glyph bitmaps are either larger or taller than the dimensions of the corresponding outline with regards to the pixel grid. For example, for <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_LCD</a>, the filter adds up to 3&nbsp;pixels to the left, and up to 3&nbsp;pixels to the right.</p>
 <p>The bitmap offset values are adjusted correctly, so clients shouldn't need to modify their layout and glyph positioning code when enabling the filter.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>since</b></em></td></tr><tr><td>

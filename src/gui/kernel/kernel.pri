@@ -100,7 +100,8 @@ unix:x11 {
 	INCLUDEPATH += ../3rdparty/xorg
 	HEADERS += \
 		kernel/qx11embed_x11.h \
-		kernel/qx11info_x11.h
+		kernel/qx11info_x11.h \
+        kernel/qkde_p.h
 
 	SOURCES += \
 		kernel/qapplication_x11.cpp \
@@ -114,7 +115,8 @@ unix:x11 {
 		kernel/qwidgetcreate_x11.cpp \
 		kernel/qx11embed_x11.cpp \
 		kernel/qx11info_x11.cpp \
-		kernel/qkeymapper_x11.cpp
+		kernel/qkeymapper_x11.cpp \
+		kernel/qkde.cpp
 
         contains(QT_CONFIG, glib) {
             SOURCES += \
@@ -122,7 +124,7 @@ unix:x11 {
             HEADERS += \
                 kernel/qguieventdispatcher_glib_p.h
             QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
-	    LIBS +=$$QT_LIBS_GLIB
+	    LIBS_PRIVATE +=$$QT_LIBS_GLIB
 	}
             SOURCES += \
 		kernel/qeventdispatcher_x11.cpp
@@ -203,7 +205,7 @@ embedded {
         QMAKE_BUNDLE_DATA += MENU_NIB 
         RESOURCES += mac/macresources.qrc
 
-        LIBS += -framework AppKit
+        LIBS_PRIVATE += -framework AppKit
 }
 
 wince*: {

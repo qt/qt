@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -79,10 +79,10 @@ public:
     void addMessage(MessageTypes type, const char *message,
                     const char *file = 0, int line = 0);
 
-    static int xmlCdata(char** dest, char const* src);
-    static int xmlQuote(char** dest, char const* src);
-    static int xmlCdata(char* dest, char const* src, size_t n);
-    static int xmlQuote(char* dest, char const* src, size_t n);
+    static int xmlCdata(QTestCharBuffer *dest, char const* src);
+    static int xmlQuote(QTestCharBuffer *dest, char const* src);
+    static int xmlCdata(QTestCharBuffer *dest, char const* src, size_t n);
+    static int xmlQuote(QTestCharBuffer *dest, char const* src, size_t n);
 
 private:
     XmlMode xmlmode;

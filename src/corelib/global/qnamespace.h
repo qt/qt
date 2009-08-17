@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -233,7 +233,8 @@ public:
         TextHideMnemonic = 0x8000,
         TextJustificationForced = 0x10000,
         TextForceLeftToRight = 0x20000,
-        TextForceRightToLeft = 0x40000
+        TextForceRightToLeft = 0x40000,
+        TextLongestVariant = 0x80000
 
 #if defined(QT3_SUPPORT) && !defined(Q_MOC_RUN)
         ,SingleLine = TextSingleLine,

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -352,7 +352,10 @@ void QItemDelegate::setClipping(bool clip)
 QString QItemDelegatePrivate::valueToText(const QVariant &value, const QStyleOptionViewItemV4 &option)
 {
     QString text;
-    switch (value.type()) {
+    switch (value.userType()) {
+        case QMetaType::Float:
+            text = option.locale.toString(value.toFloat(), 'g');
+            break;
         case QVariant::Double:
             text = option.locale.toString(value.toDouble(), 'g', DBL_DIG);
             break;
@@ -719,8 +722,6 @@ void QItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &o
             //let's add the last line (after the last QChar::LineSeparator)
             elided += option.fontMetrics.elidedText(text.mid(start),
                                                     option.textElideMode, textRect.width());
-            if (end != -1)
-                elided += QChar::LineSeparator;
         }
         d->textLayout.setText(elided);
         textLayoutSize = d->doTextLayout(textRect.width());

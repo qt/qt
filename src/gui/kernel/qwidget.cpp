@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2747,7 +2747,7 @@ void QWidget::showNormal()
 bool QWidget::isEnabledTo(QWidget* ancestor) const
 {
     const QWidget * w = this;
-    while (w && !w->testAttribute(Qt::WA_ForceDisabled)
+    while (!w->testAttribute(Qt::WA_ForceDisabled)
             && !w->isWindow()
             && w->parentWidget()
             && w->parentWidget() != ancestor)
@@ -4177,7 +4177,7 @@ void QWidget::setForegroundRole(QPalette::ColorRole role)
     assigning roles to a widget's palette is not guaranteed to change the
     appearance of the widget. Instead, you may choose to apply a \l
     styleSheet. You can refer to our Knowledge Base article
-    \l{http://qtsoftware.com/developer/knowledgebase/22}{here} for more
+    \l{http://qt.nokia.com/developer/knowledgebase/22}{here} for more
     information.
 
     \warning Do not use this function in conjunction with \l{Qt Style Sheets}.
@@ -6863,9 +6863,12 @@ void QWidgetPrivate::hide_helper()
     widgets that are not visible.
 
 
-    Widgets are  hidden if they were created as independent
-    windows or as children of visible widgets, or if hide() or setVisible(false) was called.
-
+    Widgets are hidden if:
+    \list
+        \o they were created as independent windows,
+        \o they were created as children of visible widgets,
+        \o hide() or setVisible(false) was called.
+    \endlist
 */
 
 
@@ -7236,8 +7239,7 @@ bool QWidget::isVisibleTo(QWidget* ancestor) const
     if (!ancestor)
         return isVisible();
     const QWidget * w = this;
-    while (w
-            && !w->isHidden()
+    while (!w->isHidden()
             && !w->isWindow()
             && w->parentWidget()
             && w->parentWidget() != ancestor)

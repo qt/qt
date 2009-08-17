@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -3419,6 +3419,15 @@ void HtmlGenerator::generateDetailedMember(const Node *node,
         if (!section.members.isEmpty()) {
             out() << "<p><b>Access functions:</b></p>\n";
             generateSectionList(section, node, marker, CodeMarker::Accessors);
+        }
+
+        Section notifiers;
+        notifiers.members += property->notifiers();
+        
+        if (!notifiers.members.isEmpty()) {
+            out() << "<p><b>Notifier signal:</b></p>\n";
+            //out() << "<p>This signal is emitted when the property value is changed.</p>\n";
+            generateSectionList(notifiers, node, marker, CodeMarker::Accessors);
         }
     }
     else if (node->type() == Node::Enum) {

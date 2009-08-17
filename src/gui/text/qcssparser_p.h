@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -368,18 +368,18 @@ struct Q_GUI_EXPORT Value
 };
 
 struct ColorData {
-    ColorData() : type(Invalid) {}
-    ColorData(const QColor &col) : color(col) , type(Color) {}
-    ColorData(QPalette::ColorRole r) : role(r) , type(Role) {}
+    ColorData() : role(QPalette::NoRole), type(Invalid) {}
+    ColorData(const QColor &col) : color(col), role(QPalette::NoRole), type(Color) {}
+    ColorData(QPalette::ColorRole r) : role(r), type(Role) {}
     QColor color;
     QPalette::ColorRole role;
     enum { Invalid, Color, Role} type;
 };
 
 struct BrushData {
-    BrushData() : type(Invalid) {}
-    BrushData(const QBrush &br) : brush(br) , type(Brush) {}
-    BrushData(QPalette::ColorRole r) : role(r) , type(Role) {}
+    BrushData() : role(QPalette::NoRole), type(Invalid) {}
+    BrushData(const QBrush &br) : brush(br), role(QPalette::NoRole), type(Brush) {}
+    BrushData(QPalette::ColorRole r) : role(r), type(Role) {}
     QBrush brush;
     QPalette::ColorRole role;
     enum { Invalid, Brush, Role, DependsOnThePalette } type;
@@ -504,7 +504,7 @@ const int NumPseudos = 46;
 
 struct Pseudo
 {
-    Pseudo() : negated(false) { }
+    Pseudo() : type(0), negated(false) { }
     quint64 type;
     QString name;
     QString function;
@@ -726,7 +726,7 @@ enum TokenType {
 
 struct Q_GUI_EXPORT Symbol
 {
-    inline Symbol() : start(0), len(-1) {}
+    inline Symbol() : token(NONE), start(0), len(-1) {}
     TokenType token;
     QString text;
     int start, len;

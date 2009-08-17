@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -493,8 +493,8 @@ void QGraphicsViewPrivate::centerView(QGraphicsView::ViewportAnchor anchor)
             // Last scene pos: lastMouseMoveScenePoint
             // Current mouse pos:
             QPointF transformationDiff = q->mapToScene(viewport->rect().center())
-                                         - q->mapToScene(q->mapFromGlobal(QCursor::pos()));
-            q->centerOn(lastMouseMoveScenePoint + transformationDiff);;
+                                         - q->mapToScene(viewport->mapFromGlobal(QCursor::pos()));
+            q->centerOn(lastMouseMoveScenePoint + transformationDiff);
         } else {
             q->centerOn(lastCenterPoint);
         }
@@ -2209,8 +2209,7 @@ QPolygonF QGraphicsView::mapToScene(const QRect &rect) const
     QPointF br = scrollOffset + r.bottomRight();
     QPointF bl = scrollOffset + r.bottomLeft();
 
-    QPolygonF poly;
-    poly.resize(4);
+    QPolygonF poly(4);
     if (!d->identityMatrix) {
         QTransform x = d->matrix.inverted();
         poly[0] = x.map(tl);
@@ -2313,8 +2312,7 @@ QPolygon QGraphicsView::mapFromScene(const QRectF &rect) const
     br -= scrollOffset;
     bl -= scrollOffset;
 
-    QPolygon poly;
-    poly.resize(4);
+    QPolygon poly(4);
     poly[0] = tl.toPoint();
     poly[1] = tr.toPoint();
     poly[2] = br.toPoint();
@@ -3647,8 +3645,7 @@ QRectF QGraphicsViewPrivate::mapToScene(const QRectF &rect) const
     QPointF br = scrollOffset + rect.bottomRight();
     QPointF bl = scrollOffset + rect.bottomLeft();
 
-    QPolygonF poly;
-    poly.resize(4);
+    QPolygonF poly(4);
     if (!identityMatrix) {
         QTransform x = matrix.inverted();
         poly[0] = x.map(tl);

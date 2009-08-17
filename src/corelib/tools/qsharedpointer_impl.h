@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -115,12 +115,22 @@ namespace QtSharedPointer {
     template <class T> struct RemovePointer<QSharedPointer<T> > { typedef T Type; };
     template <class T> struct RemovePointer<QWeakPointer<T> > { typedef T Type; };
 
+    // This class provides the basic functionality of a pointer wrapper.
+    // Its existence is mostly legacy, since originally QSharedPointer
+    // could also be used for internally-refcounted objects.
     template <class T>
     class Basic
     {
         typedef T *Basic:: *RestrictedBool;
     public:
         typedef T Type;
+        typedef T element_type;
+        typedef T value_type;
+        typedef value_type *pointer;
+        typedef const value_type *const_pointer;
+        typedef value_type &reference;
+        typedef const value_type &const_reference;
+        typedef ptrdiff_t difference_type;
 
         inline T *data() const { return value; }
         inline bool isNull() const { return !data(); }
@@ -148,6 +158,12 @@ namespace QtSharedPointer {
         Type *value;
     };
 
+    // This class is the d-pointer of QSharedPointer and QWeakPointer.
+    //
+    // It is a reference-counted reference counter. "strongref" is the inner
+    // reference counter, and it tracks the lifetime of the pointer itself.
+    // "weakref" is the outer reference counter and it tracks the lifetime of
+    // the ExternalRefCountData object.
     struct ExternalRefCountData
     {
         QBasicAtomicInt weakref;
@@ -155,12 +171,15 @@ namespace QtSharedPointer {
 
         inline ExternalRefCountData()
         {
-            QBasicAtomicInt proto = Q_BASIC_ATOMIC_INITIALIZER(1);
-            weakref = strongref = proto;
+            strongref = 1;
+            weakref = 1;
         }
         inline ExternalRefCountData(Qt::Initialization) { }
         virtual inline ~ExternalRefCountData() { Q_ASSERT(!weakref); Q_ASSERT(strongref <= 0); }
 
+        // overridden by derived classes
+        // returns false to indicate caller should delete the pointer
+        // returns true in case it has already done so
         virtual inline bool destroy() { return false; }
 
 #ifndef QT_NO_QOBJECT
@@ -171,18 +190,8 @@ namespace QtSharedPointer {
     };
     // sizeof(ExternalRefCount) = 12 (32-bit) / 16 (64-bit)
 
-    template <class T, typename Deleter>
-    struct CustomDeleter
-    {
-        Deleter deleter;
-        T *ptr;
-
-        inline CustomDeleter(T *p, Deleter d) : deleter(d), ptr(p) {}
-    };
-    // sizeof(CustomDeleter) = sizeof(Deleter) + sizeof(void*)
-    // for Deleter = function pointer:  8 (32-bit) / 16 (64-bit)
-    // for Deleter = PMF: 12 (32-bit) / 24 (64-bit)  (GCC)
-
+    // This class extends ExternalRefCountData with a pointer
+    // to a function, which is called by the destroy() function.
     struct ExternalRefCountWithDestroyFn: public ExternalRefCountData
     {
         typedef void (*DestroyerFn)(ExternalRefCountData *);
@@ -197,13 +206,26 @@ namespace QtSharedPointer {
     };
     // sizeof(ExternalRefCountWithDestroyFn) = 16 (32-bit) / 24 (64-bit)
 
+    // This class extends ExternalRefCountWithDestroyFn and implements
+    // the static function that deletes the object. The pointer and the
+    // custom deleter are kept in the "extra" member.
     template <class T, typename Deleter>
     struct ExternalRefCountWithCustomDeleter: public ExternalRefCountWithDestroyFn
     {
         typedef ExternalRefCountWithCustomDeleter Self;
-        typedef ExternalRefCountWithDestroyFn Parent;
-        typedef CustomDeleter<T, Deleter> Next;
-        Next extra;
+        typedef ExternalRefCountWithDestroyFn BaseClass;
+
+        struct CustomDeleter
+        {
+            Deleter deleter;
+            T *ptr;
+
+            inline CustomDeleter(T *p, Deleter d) : deleter(d), ptr(p) {}
+        };
+        CustomDeleter extra;
+        // sizeof(CustomDeleter) = sizeof(Deleter) + sizeof(void*)
+        // for Deleter = function pointer:  8 (32-bit) / 16 (64-bit)
+        // for Deleter = PMF: 12 (32-bit) / 24 (64-bit)  (GCC)
 
         static inline void deleter(ExternalRefCountData *self)
         {
@@ -211,7 +233,7 @@ namespace QtSharedPointer {
             executeDeleter(realself->extra.ptr, realself->extra.deleter);
 
             // delete the deleter too
-            realself->extra.~Next();
+            realself->extra.~CustomDeleter();
         }
         static void safetyCheckDeleter(ExternalRefCountData *self)
         {
@@ -229,8 +251,8 @@ namespace QtSharedPointer {
             Self *d = static_cast<Self *>(::operator new(sizeof(Self)));
 
             // initialize the two sub-objects
-            new (&d->extra) Next(ptr, userDeleter);
-            new (d) Parent(destroy); // can't throw
+            new (&d->extra) CustomDeleter(ptr, userDeleter);
+            new (d) BaseClass(destroy); // can't throw
 
             return d;
         }
@@ -240,6 +262,10 @@ namespace QtSharedPointer {
         ~ExternalRefCountWithCustomDeleter();
     };
 
+    // This class extends ExternalRefCountWithDestroyFn and adds a "T"
+    // member. That way, when the create() function is called, we allocate
+    // memory for both QSharedPointer's d-pointer and the actual object being
+    // tracked.
     template <class T>
     struct ExternalRefCountWithContiguousData: public ExternalRefCountWithDestroyFn
     {
@@ -282,6 +308,8 @@ namespace QtSharedPointer {
         ~ExternalRefCountWithContiguousData();
     };
 
+    // This is the main body of QSharedPointer. It implements the
+    // external reference counting functionality.
     template <class T>
     class ExternalRefCount: public Basic<T>
     {
@@ -355,6 +383,12 @@ namespace QtSharedPointer {
         {
             if (!d->destroy())
                 delete this->value;
+        }
+
+        inline void internalSwap(ExternalRefCount &other)
+        {
+            qSwap(d, other.d);
+            qSwap(this->value, other.value);
         }
 
 #if defined(Q_NO_TEMPLATE_FRIENDS)
@@ -437,6 +471,9 @@ public:
     inline QSharedPointer<T> &operator=(const QWeakPointer<X> &other)
     { internalSet(other.d, other.value); return *this; }
 
+    inline void swap(QSharedPointer &other)
+    { internalSwap(other); }
+
     template <class X>
     QSharedPointer<X> staticCast() const
     {
@@ -490,6 +527,14 @@ class QWeakPointer
     typedef QtSharedPointer::ExternalRefCountData Data;
 
 public:
+    typedef T element_type;
+    typedef T value_type;
+    typedef value_type *pointer;
+    typedef const value_type *const_pointer;
+    typedef value_type &reference;
+    typedef const value_type &const_reference;
+    typedef ptrdiff_t difference_type;
+
     inline bool isNull() const { return d == 0 || d->strongref == 0 || value == 0; }
     inline operator RestrictedBool() const { return isNull() ? 0 : &QWeakPointer::value; }
     inline bool operator !() const { return isNull(); }
@@ -634,10 +679,22 @@ bool operator!=(const QSharedPointer<T> &ptr1, const QWeakPointer<X> &ptr2)
     return ptr2 != ptr1;
 }
 
+template <class T, class X>
+Q_INLINE_TEMPLATE typename T::difference_type operator-(const QSharedPointer<T> &ptr1, const QSharedPointer<X> &ptr2)
+{
+    return ptr1.data() - ptr2.data();
+}
+
 template <class T>
 Q_INLINE_TEMPLATE QWeakPointer<T> QSharedPointer<T>::toWeakRef() const
 {
     return QWeakPointer<T>(*this);
+}
+
+template <class T>
+inline void qSwap(QSharedPointer<T> &p1, QSharedPointer<T> &p2)
+{
+    p1.swap(p2);
 }
 
 namespace QtSharedPointer {

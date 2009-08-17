@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -89,7 +89,7 @@ inline Win32MakefileGenerator::~Win32MakefileGenerator()
 { }
 
 inline bool Win32MakefileGenerator::findLibraries()
-{ return findLibraries("QMAKE_LIBS"); }
+{ return findLibraries("QMAKE_LIBS") && findLibraries("QMAKE_LIBS_PRIVATE"); }
 
 QT_END_NAMESPACE
 

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,6 +61,7 @@ private Q_SLOTS:
     void clone() const;
     void data() const;
     void reset() const;
+    void swap() const;
 };
 
 class MyClass : public QSharedData
@@ -231,6 +232,25 @@ void tst_QExplicitlySharedDataPointer::reset() const
         pointer.reset();
         QCOMPARE(pointer.data(), static_cast<MyClass *>(0));
     }
+}
+
+void tst_QExplicitlySharedDataPointer::swap() const
+{
+    QExplicitlySharedDataPointer<MyClass> p1(0), p2(new MyClass());
+    QVERIFY(!p1.data());
+    QVERIFY(p2.data());
+
+    p1.swap(p2);
+    QVERIFY(p1.data());
+    QVERIFY(!p2.data());
+
+    p1.swap(p2);
+    QVERIFY(!p1.data());
+    QVERIFY(p2.data());
+
+    qSwap(p1, p2);
+    QVERIFY(p1.data());
+    QVERIFY(!p2.data());
 }
 
 QTEST_MAIN(tst_QExplicitlySharedDataPointer)

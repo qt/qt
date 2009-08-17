@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2488,6 +2488,7 @@ bool QMetaProperty::isUser(const QObject *object) const
 }
 
 /*!
+    \since 4.6
     Returns true if the property is constant; otherwise returns false.
 
     A property is constant if the \c{Q_PROPERTY()}'s \c CONSTANT attribute
@@ -2502,6 +2503,7 @@ bool QMetaProperty::isConstant() const
 }
 
 /*!
+    \since 4.6
     Returns true if the property is final; otherwise returns false.
 
     A property is final if the \c{Q_PROPERTY()}'s \c FINAL attribute

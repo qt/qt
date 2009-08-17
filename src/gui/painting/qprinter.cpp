@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1665,10 +1665,10 @@ void QPrinter::getPageMargins(qreal *left, qreal *top, qreal *right, qreal *bott
     Q_ASSERT(left && top && right && bottom);
     const qreal multiplier = qt_multiplierForUnit(unit, resolution());
     QList<QVariant> margins(d->printEngine->property(QPrintEngine::PPK_PageMargins).toList());
-    *left = margins.at(0).toDouble() / multiplier;
-    *top = margins.at(1).toDouble() / multiplier;
-    *right = margins.at(2).toDouble() / multiplier;
-    *bottom = margins.at(3).toDouble() / multiplier;
+    *left = margins.at(0).toReal() / multiplier;
+    *top = margins.at(1).toReal() / multiplier;
+    *right = margins.at(2).toReal() / multiplier;
+    *bottom = margins.at(3).toReal() / multiplier;
 }
 
 /*!

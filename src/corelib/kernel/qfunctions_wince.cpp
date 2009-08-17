@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -292,13 +292,14 @@ bool qt_wince__chmod(const char *file, int mode)
 
 bool qt_wince__wchmod(const wchar_t *file, int mode)
 {
+    BOOL success = FALSE;
     // ### Does not work properly, what about just adding one property?
     if(mode&_S_IWRITE) {
-        return SetFileAttributes(file, FILE_ATTRIBUTE_NORMAL);
+        success = SetFileAttributes(file, FILE_ATTRIBUTE_NORMAL);
     } else if((mode&_S_IREAD) && !(mode&_S_IWRITE)) {
-        return SetFileAttributes(file, FILE_ATTRIBUTE_READONLY);
+        success = SetFileAttributes(file, FILE_ATTRIBUTE_READONLY);
     }
-    return false;
+    return success ? 0 : -1;
 }
 
 HANDLE qt_wince_CreateFileA(LPCSTR filename, DWORD access, DWORD share, LPSECURITY_ATTRIBUTES attr, DWORD dispo, DWORD flags, HANDLE tempFile)
