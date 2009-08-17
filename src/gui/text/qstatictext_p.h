@@ -53,12 +53,11 @@
 // We mean it.
 //
 
-#include <private/qtextengine_p.h>
-#include <private/qfontengine_p.h>
+#include <private/qtextureglyphcache_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QStaticTextItem
+class Q_AUTOTEST_EXPORT QStaticTextItem
 {
 public:    
     QStaticTextItem() : chars(0), numChars(0), fontEngine(0) {}
@@ -78,7 +77,7 @@ public:
 };
 
 class QStaticText;
-class QStaticTextPrivate
+class Q_AUTOTEST_EXPORT QStaticTextPrivate
 {
 public:
     QStaticTextPrivate();
