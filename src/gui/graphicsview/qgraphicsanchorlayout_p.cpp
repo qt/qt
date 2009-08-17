@@ -370,8 +370,10 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
         return;
     graphSimplified[orientation] = true;
 
+#if 0
     qDebug("Simplifying Graph for %s",
            orientation == Horizontal ? "Horizontal" : "Vertical");
+#endif
 
     AnchorVertex *rootVertex = graph[orientation].rootVertex();
 
@@ -612,8 +614,10 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientatio
         return;
     graphSimplified[orientation] = false;
 
+#if 0
     qDebug("Restoring Simplified Graph for %s",
            orientation == Horizontal ? "Horizontal" : "Vertical");
+#endif
 
     Q_Q(QGraphicsAnchorLayout);
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
@@ -1300,8 +1304,10 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     GraphPath trunkPath = graphPaths[orientation].value(v);
 
     if (!trunkConstraints.isEmpty()) {
+#if 0
         qDebug("Simplex used for trunk of %s",
                orientation == Horizontal ? "Horizontal" : "Vertical");
+#endif
 
         // Solve min and max size hints for trunk
         QPair<qreal, qreal> minMax = solveMinMax(trunkConstraints, trunkPath);
@@ -1332,8 +1338,10 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
         }
         sizeHints[orientation][Qt::PreferredSize] = pref;
     } else {
+#if 0
         qDebug("Simplex NOT used for trunk of %s",
                orientation == Horizontal ? "Horizontal" : "Vertical");
+#endif
 
         // No Simplex is necessary because the path was simplified all the way to a single
         // anchor.
