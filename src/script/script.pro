@@ -29,6 +29,14 @@ isEmpty(WEBKITDIR) {
     include($$WEBKITDIR/WebKit.pri)
 }
 
+# Windows CE-specific stuff copied from WebCore.pro
+# ### Should rather be in JavaScriptCore.pri?
+wince* {
+    INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/os-wince
+    INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/os-win32
+    LIBS += -lmmtimer
+}
+
 include($$WEBKITDIR/JavaScriptCore/JavaScriptCore.pri)
 
 INCLUDEPATH += $$WEBKITDIR/JavaScriptCore
