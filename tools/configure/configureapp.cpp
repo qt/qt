@@ -241,8 +241,8 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "CE_CRT" ]          = "no";
     dictionary[ "CETEST" ]          = "auto";
     dictionary[ "CE_SIGNATURE" ]    = "no";
-    dictionary[ "SCRIPT" ]          = "yes";
-    dictionary[ "SCRIPTTOOLS" ]     = "yes";
+    dictionary[ "SCRIPT" ]          = "auto";
+    dictionary[ "SCRIPTTOOLS" ]     = "auto";
     dictionary[ "XMLPATTERNS" ]     = "auto";
     dictionary[ "PHONON" ]          = "auto";
     dictionary[ "PHONON_BACKEND" ]  = "yes";
