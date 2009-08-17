@@ -435,6 +435,18 @@ void tst_QScriptValue::toString()
         QCOMPARE(str.toString(), QString("ciao"));
         QCOMPARE(qscriptvalue_cast<QString>(str), QString("ciao"));
     }
+
+    // variant should use internal valueOf(), then fall back to QVariant::toString(),
+    // then fall back to "QVariant(typename)"
+    QScriptValue variant = eng.newVariant(123);
+    QVERIFY(variant.isVariant());
+    QCOMPARE(variant.toString(), QString::fromLatin1("123"));
+    variant = eng.newVariant(QByteArray("hello"));
+    QVERIFY(variant.isVariant());
+    QCOMPARE(variant.toString(), QString::fromLatin1("hello"));
+    variant = eng.newVariant(QVariant(QPoint(10, 20)));
+    QVERIFY(variant.isVariant());
+    QCOMPARE(variant.toString(), QString::fromLatin1("QVariant(QPoint)"));
 }
 
 void tst_QScriptValue::toNumber()

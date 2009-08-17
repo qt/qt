@@ -134,12 +134,15 @@ static JSC::JSValue JSC_HOST_CALL variantProtoFuncToString(JSC::ExecState *exec,
     const QVariant &v = static_cast<QVariantDelegate*>(delegate)->value();
     JSC::UString result;
     JSC::JSValue value = variantProtoFuncValueOf(exec, callee, thisValue, args);
-    if (value && !value.isObject())
+    if (value.isObject()) {
+        result = QScript::qtStringToJSCUString(v.toString());
+        if (result.isEmpty()) {
+            result = "QVariant(";
+            result += v.typeName();
+            result += ")";
+        }
+    } else {
         result = value.toString(exec);
-    if (result.isEmpty()) {
-        result = "QVariant(";
-        result += v.typeName();
-        result += ")";
     }
     return JSC::jsString(exec, result);
 }
