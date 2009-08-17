@@ -381,9 +381,14 @@ public:
 
     // Geometry interpolation methods
     void setItemsGeometries();
+
     void calculateVertexPositions(Orientation orientation);
     void setupEdgesInterpolation(Orientation orientation);
-    qreal interpolateEdge(AnchorData *edge);
+    void interpolateEdge(AnchorVertex *base, AnchorData *edge, Orientation orientation);
+    void interpolateSequentialEdges(AnchorVertex *base, SequentialAnchorData *edge,
+                                    Orientation orientation);
+    void interpolateParallelEdges(AnchorVertex *base, ParallelAnchorData *edge,
+                                  Orientation orientation);
 
     // Linear Programming solver methods
     QPair<qreal, qreal> solveMinMax(QList<QSimplexConstraint *> constraints,

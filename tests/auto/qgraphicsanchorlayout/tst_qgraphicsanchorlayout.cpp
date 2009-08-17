@@ -682,7 +682,6 @@ void tst_QGraphicsAnchorLayout::example()
     QCOMPARE(p.size(), layoutMinimumSize);
     QCOMPARE(a->size(), e->size());
     QCOMPARE(b->size(), d->size());
-    QEXPECT_FAIL("", "please fix this test", Abort);
     QCOMPARE(f->size(), g->size());
 
     p.resize(layoutPreferredSize);

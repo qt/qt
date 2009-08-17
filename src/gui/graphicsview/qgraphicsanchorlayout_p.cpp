@@ -1670,7 +1670,7 @@ void QGraphicsAnchorLayoutPrivate::calculateVertexPositions(
     root->distance = widgetMargin + layoutMargin;
     visited.insert(root);
 
-    //  Add initial edges to the queue
+    // Add initial edges to the queue
     foreach (AnchorVertex *v, graph[orientation].adjacentVertices(root)) {
         queue.enqueue(qMakePair(root, v));
     }
@@ -1678,29 +1678,25 @@ void QGraphicsAnchorLayoutPrivate::calculateVertexPositions(
     // Do initial calculation required by "interpolateEdge()"
     setupEdgesInterpolation(orientation);
 
-    // Traverse the graph and calculate vertex positions.
+    // Traverse the graph and calculate vertex positions, we need to
+    // visit all pairs since each of them could have a sequential
+    // anchor inside, which hides more vertices.
     while (!queue.isEmpty()) {
         QPair<AnchorVertex *, AnchorVertex *> pair = queue.dequeue();
-
-        if (visited.contains(pair.second))
-            continue;
-        visited.insert(pair.second);
-
-        // The distance to the next vertex is equal the distance to the
-        // previous one plus (or less) the size of the edge between them.
-        qreal distance;
         AnchorData *edge = graph[orientation].edgeData(pair.first, pair.second);
 
-        if (edge->from == pair.first) {
-            distance = pair.first->distance + interpolateEdge(edge);
-        } else {
-            distance = pair.first->distance - interpolateEdge(edge);
-        }
-        pair.second->distance = distance;
+        // Both vertices were interpolated, and the anchor itself can't have other
+        // anchors inside (it's not a complex anchor).
+        if (edge->type == AnchorData::Normal && visited.contains(pair.second))
+            continue;
 
-        foreach (AnchorVertex *v,
-                graph[orientation].adjacentVertices(pair.second)) {
-            queue.enqueue(qMakePair(pair.second, v));
+        visited.insert(pair.second);
+        interpolateEdge(pair.first, edge, orientation);
+
+        QList<AnchorVertex *> adjacents = graph[orientation].adjacentVertices(pair.second);
+        for (int i = 0; i < adjacents.count(); ++i) {
+            if (!visited.contains(adjacents.at(i)))
+                queue.enqueue(qMakePair(pair.second, adjacents.at(i)));
         }
     }
 }
@@ -1750,15 +1746,20 @@ void QGraphicsAnchorLayoutPrivate::setupEdgesInterpolation(
    - the layout is at its preferred size.
    - the layout is at its maximum size.
 
-   These three key values are calculated in advance using linear programming
-   (more expensive), then subsequential resizes of the parent layout require
-   a simple interpolation.
-*/
-qreal QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorData *edge)
+   These three key values are calculated in advance using linear
+   programming (more expensive) or the simplification algorithm, then
+   subsequential resizes of the parent layout require a simple
+   interpolation.
+
+   If the edge is sequential or parallel, it's possible to have more
+   vertices to be initalized, so it calls specialized functions that
+   will recurse back to interpolateEdge().
+ */
+void QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorVertex *base,
+                                                   AnchorData *edge,
+                                                   Orientation orientation)
 {
     qreal lower, upper;
-
-    Orientation orientation = edgeOrientation(edge->from->m_edge);
 
     if (interpolationInterval[orientation] == MinToPreferred) {
         lower = edge->sizeAtMinimum;
@@ -1768,9 +1769,76 @@ qreal QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorData *edge)
         upper = edge->sizeAtMaximum;
     }
 
-    return (interpolationProgress[orientation] * (upper - lower)) + lower;
+    qreal edgeDistance = (interpolationProgress[orientation] * (upper - lower)) + lower;
+
+    Q_ASSERT(edge->from == base || edge->to == base);
+
+    if (edge->from == base)
+        edge->to->distance = base->distance + edgeDistance;
+    else
+        edge->from->distance = base->distance - edgeDistance;
+
+    // Process child anchors
+    if (edge->type == AnchorData::Sequential)
+        interpolateSequentialEdges(edge->from,
+                                   static_cast<SequentialAnchorData *>(edge),
+                                   orientation);
+    else if (edge->type == AnchorData::Parallel)
+        interpolateParallelEdges(edge->from,
+                                 static_cast<ParallelAnchorData *>(edge),
+                                 orientation);
 }
 
+void QGraphicsAnchorLayoutPrivate::interpolateParallelEdges(
+    AnchorVertex *base, ParallelAnchorData *data, Orientation orientation)
+{
+    // In parallels the boundary vertices are already calculate, we
+    // just need to look for sequential groups inside, because only
+    // them may have new vertices associated.
+
+    // First edge
+    if (data->firstEdge->type == AnchorData::Sequential)
+        interpolateSequentialEdges(base,
+                                   static_cast<SequentialAnchorData *>(data->firstEdge),
+                                   orientation);
+    else if (data->firstEdge->type == AnchorData::Parallel)
+        interpolateParallelEdges(base,
+                                 static_cast<ParallelAnchorData *>(data->firstEdge),
+                                 orientation);
+
+    // Second edge
+    if (data->secondEdge->type == AnchorData::Sequential)
+        interpolateSequentialEdges(base,
+                                   static_cast<SequentialAnchorData *>(data->secondEdge),
+                                   orientation);
+    else if (data->secondEdge->type == AnchorData::Parallel)
+        interpolateParallelEdges(base,
+                                 static_cast<ParallelAnchorData *>(data->secondEdge),
+                                 orientation);
+}
+
+void QGraphicsAnchorLayoutPrivate::interpolateSequentialEdges(
+    AnchorVertex *base, SequentialAnchorData *data, Orientation orientation)
+{
+    AnchorVertex *prev = base;
+
+    // ### I'm not sure whether this assumption is safe. If not,
+    // consider that m_edges.last() could be used instead (so
+    // at(0) would be the one to be treated specially).
+    Q_ASSERT(base == data->m_edges.at(0)->to || base == data->m_edges.at(0)->from);
+
+    // Skip the last
+    for (int i = 0; i < data->m_edges.count() - 1; ++i) {
+        AnchorData *child = data->m_edges.at(i);
+        interpolateEdge(prev, child, orientation);
+        prev = child->to;
+    }
+
+    // Treat the last specially, since we already calculated it's end
+    // vertex, so it's only interesting if it's a complex one
+    if (data->m_edges.last()->type != AnchorData::Normal)
+        interpolateEdge(prev, data->m_edges.last(), orientation);
+}
 
 QPair<qreal, qreal>
 QGraphicsAnchorLayoutPrivate::solveMinMax(QList<QSimplexConstraint *> constraints,

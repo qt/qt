@@ -380,11 +380,6 @@ void QGraphicsAnchorLayout::setGeometry(const QRectF &geom)
 {
     Q_D(QGraphicsAnchorLayout);
 
-    // ### REMOVE IT WHEN calculateVertexPositions and setItemsGeometries are
-    // simplification compatible!
-    d->restoreSimplifiedGraph(QGraphicsAnchorLayoutPrivate::Horizontal);
-    d->restoreSimplifiedGraph(QGraphicsAnchorLayoutPrivate::Vertical);
-
     QGraphicsLayout::setGeometry(geom);
     d->calculateVertexPositions(QGraphicsAnchorLayoutPrivate::Horizontal);
     d->calculateVertexPositions(QGraphicsAnchorLayoutPrivate::Vertical);
