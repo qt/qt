@@ -26,5 +26,5 @@ SOURCES +=      network/q3dns.cpp \
 
 win32:SOURCES +=  network/q3socketdevice_win.cpp
 unix:SOURCES += network/q3socketdevice_unix.cpp
-mac:LIBS += -lresolv
+mac:LIBS_PRIVATE += -lresolv
 

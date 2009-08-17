@@ -29,5 +29,5 @@ contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
     RESOURCES += network.qrc
 
     # Add optional SSL libs
-    LIBS += $$OPENSSL_LIBS
+    LIBS_PRIVATE += $$OPENSSL_LIBS
 }
