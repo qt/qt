@@ -18,8 +18,8 @@ Item {
     }
     Image {
         id: Needle
-        x: 95
-        y: 33
+        x: 95; y: 33
+        smooth: true
         source: "needle.png"
         transform: Rotation {
             id: NeedleRotation
