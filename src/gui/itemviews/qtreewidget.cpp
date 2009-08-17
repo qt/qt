@@ -1768,6 +1768,7 @@ QVariant QTreeWidgetItem::data(int column, int role) const
         // special case for check state in tristate
         if (children.count() && (itemFlags & Qt::ItemIsTristate))
             return childrenCheckState(column);
+        // fallthrough intended
    default:
         if (column >= 0 && column < values.size()) {
             const QVector<QWidgetItemData> &column_values = values.at(column);

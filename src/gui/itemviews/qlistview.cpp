@@ -1957,7 +1957,6 @@ bool QListView::event(QEvent *e)
 QListViewPrivate::QListViewPrivate()
     : QAbstractItemViewPrivate(),
       dynamicListView(0),
-      staticListView(0),
       wrap(false),
       space(0),
       flow(QListView::TopToBottom),

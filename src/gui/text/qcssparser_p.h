@@ -504,7 +504,7 @@ const int NumPseudos = 46;
 
 struct Pseudo
 {
-    Pseudo() : negated(false) { }
+    Pseudo() : type(0), negated(false) { }
     quint64 type;
     QString name;
     QString function;

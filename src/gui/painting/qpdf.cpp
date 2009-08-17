@@ -313,7 +313,7 @@ QByteArray QPdf::generatePath(const QPainterPath &path, const QTransform &matrix
 
     Qt::FillRule fillRule = path.fillRule();
 
-    const char *op = 0;
+    const char *op = "";
     switch (flags) {
     case ClipPath:
         op = (fillRule == Qt::WindingFill) ? "W n\n" : "W* n\n";
