@@ -133,7 +133,9 @@ public:
     }
 
     IDirectFB *dfb();
+#ifdef QT_NO_DIRECTFB_WM
     IDirectFBSurface *primarySurface();
+#endif
 #ifndef QT_NO_DIRECTFB_LAYER
     IDirectFBDisplayLayer *dfbDisplayLayer();
 #endif

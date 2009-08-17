@@ -92,11 +92,12 @@ private:
     IDirectFBWindow *dfbWindow;
 #endif
 
+#ifdef QT_NO_DIRECTFB_WM
     enum Mode {
         Primary,
-        Offscreen,
-        Window
+        Offscreen
     } mode;
+#endif
 
     QList<QImage*> bufferImages;
     DFBSurfaceFlipFlags flipFlags;
