@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,76 +39,36 @@
 **
 ****************************************************************************/
 
-#ifndef QTEXTOBJECT_P_H
-#define QTEXTOBJECT_P_H
+#ifndef TAPANDHOLDGESTURE_H
+#define TAPANDHOLDGESTURE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/QBasicTimer>
+#include <QtGui/QGesture>
+#include <QtGui/QWidget>
 
-#include "QtGui/qtextobject.h"
-#include "private/qobject_p.h"
-#include "QtGui/qtextdocument.h"
-
-QT_BEGIN_NAMESPACE
-
-class QTextDocumentPrivate;
-
-class QTextObjectPrivate : public QObjectPrivate
+class TapAndHoldGesture : public QGesture
 {
-    Q_DECLARE_PUBLIC(QTextObject)
+    Q_OBJECT
+    Q_PROPERTY(QPoint pos READ pos)
+
 public:
-    QTextObjectPrivate(QTextDocument *doc)
-        : pieceTable(doc->d_func()), objectIndex(-1)
-    {
-    }
-    QTextDocumentPrivate *pieceTable;
-    int objectIndex;
+    TapAndHoldGesture(QWidget *parent);
+
+    bool filterEvent(QEvent *event);
+    void reset();
+
+    QPoint pos() const;
+
+protected:
+    void timerEvent(QTimerEvent *event);
+
+private:
+    QBasicTimer timer;
+    int iteration;
+    QPoint position;
+    QPoint startPosition;
+    static const int iterationCount;
+    static const int iterationTimeout;
 };
 
-class QTextBlockGroupPrivate : public QTextObjectPrivate
-{
-    Q_DECLARE_PUBLIC(QTextBlockGroup)
-public:
-    QTextBlockGroupPrivate(QTextDocument *doc)
-        : QTextObjectPrivate(doc)
-    {
-    }
-    typedef QList<QTextBlock> BlockList;
-    BlockList blocks;
-    void markBlocksDirty();
-};
-
-class QTextFrameLayoutData;
-
-class QTextFramePrivate : public QTextObjectPrivate
-{
-    friend class QTextDocumentPrivate;
-    Q_DECLARE_PUBLIC(QTextFrame)
-public:
-    QTextFramePrivate(QTextDocument *doc)
-        : QTextObjectPrivate(doc), fragment_start(0), fragment_end(0), parentFrame(0), layoutData(0)
-    {
-    }
-    virtual void fragmentAdded(const QChar &type, uint fragment);
-    virtual void fragmentRemoved(const QChar &type, uint fragment);
-    void remove_me();
-
-    uint fragment_start;
-    uint fragment_end;
-
-    QTextFrame *parentFrame;
-    QList<QTextFrame *> childFrames;
-    QTextFrameLayoutData *layoutData;
-};
-
-QT_END_NAMESPACE
-
-#endif // QTEXTOBJECT_P_H
+#endif // TAPANDHOLDGESTURE_H

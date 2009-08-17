@@ -1022,9 +1022,6 @@ void QRasterPaintEnginePrivate::drawImage(const QPointF &pt,
     if (alpha == 0 || !clip.isValid())
         return;
 
-    if (alpha ==0)
-        return;
-
     Q_ASSERT(img.depth() >= 8);
 
     int srcBPL = img.bytesPerLine();

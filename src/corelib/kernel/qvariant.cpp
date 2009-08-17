@@ -2776,7 +2776,7 @@ bool QVariant::cmp(const QVariant &v) const
     if (d.type != v2.d.type) {
         if (qIsNumericType(d.type) && qIsNumericType(v.d.type)) {
             if (qIsFloatingPoint(d.type) || qIsFloatingPoint(v.d.type))
-                return qFuzzyCompare(toDouble(), v.toDouble());
+                return qFuzzyCompare(toReal(), v.toReal());
             else
                 return toLongLong() == v.toLongLong();
         }

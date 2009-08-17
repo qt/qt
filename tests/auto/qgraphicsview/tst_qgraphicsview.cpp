@@ -216,6 +216,7 @@ private slots:
     void task239047_fitInViewSmallViewport();
     void task245469_itemsAtPointWithClip();
     void task253415_reconnectUpdateSceneOnSceneChanged();
+    void task255529_transformationAnchorMouseAndViewportMargins();
 };
 
 void tst_QGraphicsView::initTestCase()
@@ -3616,6 +3617,42 @@ void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()
     bool wasConnected2 = QObject::disconnect(&scene2, SIGNAL(changed(QList<QRectF>)), &view, 0);
     QVERIFY(wasConnected2);
 }
+
+void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
+{
+    QGraphicsScene scene(-100, -100, 200, 200);
+    scene.addRect(QRectF(-50, -50, 100, 100), QPen(Qt::black), QBrush(Qt::blue));
+
+    class VpGraphicsView: public QGraphicsView
+    {
+    public:
+        VpGraphicsView(QGraphicsScene *scene)
+            : QGraphicsView(scene)
+        {
+            setViewportMargins(8, 16, 12, 20);
+            setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+            setMouseTracking(true);
+        }
+    };
+
+    VpGraphicsView view(&scene);
+    view.show();
+    QPoint mouseViewPos(20, 20);
+    sendMouseMove(view.viewport(), mouseViewPos);
+    QTest::qWait(125);
+
+    QPointF mouseScenePos = view.mapToScene(mouseViewPos);
+    view.setTransform(QTransform().scale(5, 5));
+    QTest::qWait(125);
+    view.setTransform(QTransform().rotate(5, Qt::ZAxis), true);
+    QTest::qWait(125);
+
+    QPointF newMouseScenePos = view.mapToScene(mouseViewPos);
+    qreal slack = 3;
+    QVERIFY(qAbs(newMouseScenePos.x() - mouseScenePos.x()) < slack);
+    QVERIFY(qAbs(newMouseScenePos.y() - mouseScenePos.y()) < slack);
+}
+
 
 QTEST_MAIN(tst_QGraphicsView)
 #include "tst_qgraphicsview.moc"

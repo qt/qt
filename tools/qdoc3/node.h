@@ -598,6 +598,7 @@ class PropertyNode : public LeafNode
 
     void setDataType(const QString& dataType) { dt = dataType; }
     void addFunction(FunctionNode *function, FunctionRole role);
+    void addSignal(FunctionNode *function, FunctionRole role);
     void setStored(bool stored) { sto = toTrool(stored); }
     void setDesignable(bool designable) { des = toTrool(designable); }
     void setOverriddenFrom(const PropertyNode *baseProperty);
@@ -639,6 +640,11 @@ inline void PropertyNode::addFunction(FunctionNode *function, FunctionRole role)
 {
     funcs[(int)role].append(function);
     function->setAssociatedProperty(this);
+}
+
+inline void PropertyNode::addSignal(FunctionNode *function, FunctionRole role)
+{
+    funcs[(int)role].append(function);
 }
 
 inline NodeList PropertyNode::functions() const

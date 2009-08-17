@@ -111,7 +111,7 @@ void EffectWidgetPrivate::autogenerateUi()
 #endif
 
         QWidget *control = 0;
-        switch (para.userType()) {
+        switch (para.type()) {
         case QVariant::String:
             {
                 QComboBox *cb = new QComboBox(q);
@@ -161,9 +161,9 @@ void EffectWidgetPrivate::autogenerateUi()
         case QVariant::Double:
             {
                 const qreal minValue = para.minimumValue().canConvert(QVariant::Double) ?
-                    para.minimumValue().toReal(&ok) : DEFAULT_MIN;
+                    para.minimumValue().toReal() : DEFAULT_MIN;
                 const qreal maxValue = para.maximumValue().canConvert(QVariant::Double) ?
-                    para.maximumValue().toReal(&ok) : DEFAULT_MAX;
+                    para.maximumValue().toReal() : DEFAULT_MAX;
 
                 if (minValue == -1. && maxValue == 1.) {
                     //Special case values between -1 and 1.0 to use a slider for improved usability

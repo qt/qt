@@ -57,34 +57,6 @@ QT_BEGIN_NAMESPACE
   Internal variables and functions
  *****************************************************************************/
 
-
-/*****************************************************************************
-  External functions
- *****************************************************************************/
-
-extern void qt_painter_removePaintDevice(QPaintDevice *); //qpainter.cpp
-
-/*****************************************************************************
-  QPaintDevice member functions
- *****************************************************************************/
-QPaintDevice::QPaintDevice()
-{
-    painters = 0;
-}
-
-QPaintDevice::~QPaintDevice()
-{
-    if(paintingActive())
-        qWarning("QPaintDevice: Cannot destroy paint device that is being "
-                 "painted, be sure to QPainter::end() painters");
-    qt_painter_removePaintDevice(this);
-}
-
-int QPaintDevice::metric(PaintDeviceMetric) const
-{
-    return 0;
-}
-
 /*! \internal */
 float qt_mac_defaultDpi_x()
 {

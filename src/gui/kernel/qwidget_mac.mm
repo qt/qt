@@ -72,7 +72,6 @@
 ** SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **
 ****************************************************************************/
-//#define QT_RASTER_PAINTENGINE
 
 #include <private/qt_mac_p.h>
 #include <private/qeventdispatcher_mac_p.h>
@@ -88,9 +87,6 @@
 #include "qlayout.h"
 #include "qmenubar.h"
 #include <private/qbackingstore_p.h>
-#ifdef QT_RASTER_PAINTENGINE
-# include <private/qpaintengine_raster_p.h>
-#endif
 #include <private/qwindowsurface_mac_p.h>
 #include <private/qpaintengine_mac_p.h>
 #include "qpainter.h"
@@ -1220,11 +1216,6 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                     QApplication::sendSpontaneousEvent(widget, &e);
                     if (!redirectionOffset.isNull())
                         widget->d_func()->restoreRedirected();
-#ifdef QT_RASTER_PAINTENGINE
-                    if(engine && engine->type() == QPaintEngine::Raster)
-                        static_cast<QRasterPaintEngine*>(engine)->flush(widget,
-                                                                        qrgn.boundingRect().topLeft());
-#endif
 
                     //cleanup
                     if (engine)
@@ -3101,7 +3092,7 @@ void QWidgetPrivate::update_sys(const QRegion &rgn)
     dirtyOnWidget += rgn;
 #ifndef QT_MAC_USE_COCOA
     RgnHandle rgnHandle = rgn.toQDRgnForUpdate_sys();
-    if (rgnHandle) 
+    if (rgnHandle)
         HIViewSetNeedsDisplayInRegion(qt_mac_nativeview_for(q), QMacSmartQuickDrawRegion(rgnHandle), true);
     else {
         HIViewSetNeedsDisplay(qt_mac_nativeview_for(q), true); // do a complete repaint on overflow.
@@ -4555,21 +4546,6 @@ Q_GLOBAL_STATIC(QPaintEngineCleanupHandler, engineHandler)
 QPaintEngine *QWidget::paintEngine() const
 {
     QPaintEngine *&pe = engineHandler()->engine;
-#ifdef QT_RASTER_PAINTENGINE
-    if (!pe) {
-        if(qgetenv("QT_MAC_USE_COREGRAPHICS").isNull())
-            pe = new QRasterPaintEngine();
-        else
-            pe = new QCoreGraphicsPaintEngine();
-    }
-    if (pe->isActive()) {
-        QPaintEngine *engine =
-            qgetenv("QT_MAC_USE_COREGRAPHICS").isNull()
-            ? (QPaintEngine*)new QRasterPaintEngine() : (QPaintEngine*)new QCoreGraphicsPaintEngine();
-        engine->setAutoDestruct(true);
-        return engine;
-    }
-#else
     if (!pe)
         pe = new QCoreGraphicsPaintEngine();
     if (pe->isActive()) {
@@ -4577,7 +4553,6 @@ QPaintEngine *QWidget::paintEngine() const
         engine->setAutoDestruct(true);
         return engine;
     }
-#endif
     return pe;
 }
 

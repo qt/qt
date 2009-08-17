@@ -1845,8 +1845,7 @@ QDomNodePrivate* QDomNodePrivate::removeChild(QDomNodePrivate* oldChild)
     oldChild->prev = 0;
 
     // We are no longer interested in the old node
-    if (oldChild)
-        oldChild->ref.deref();
+    oldChild->ref.deref();
 
     return oldChild;
 }
@@ -4355,7 +4354,7 @@ bool QDomAttr::specified() const
 QDomElement QDomAttr::ownerElement() const
 {
     Q_ASSERT(impl->parent());
-    if (!impl || !impl->parent()->isElement())
+    if (!impl->parent()->isElement())
         return QDomElement();
     return QDomElement((QDomElementPrivate*)(impl->parent()));
 }

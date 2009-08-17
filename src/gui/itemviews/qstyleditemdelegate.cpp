@@ -270,7 +270,7 @@ QString QStyledItemDelegate::displayText(const QVariant &value, const QLocale& l
     switch (value.userType()) {
     case QMetaType::Float:
     case QVariant::Double:
-        text = locale.toString(value.toDouble());
+        text = locale.toString(value.toReal());
         break;
     case QVariant::Int:
     case QVariant::LongLong:

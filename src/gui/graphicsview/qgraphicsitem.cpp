@@ -1183,6 +1183,9 @@ QGraphicsItem::QGraphicsItem(QGraphicsItemPrivate &dd, QGraphicsItem *parent,
     Destroys the QGraphicsItem and all its children. If this item is currently
     associated with a scene, the item will be removed from the scene before it
     is deleted.
+
+    \note It is more efficient to remove the item from the QGraphicsScene before
+    destroying the item.
 */
 QGraphicsItem::~QGraphicsItem()
 {
@@ -6828,11 +6831,12 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 
   By default, this property is true.
 
-  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled(), enabledChanged()
+  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled()
+  \sa QGraphicsObject::enabledChanged()
 */
 
 /*!
-  \fn QGraphicsObject::enabledChanged()
+  \fn void QGraphicsObject::enabledChanged()
 
   This signal gets emitted whenever the item get's enabled or disabled.
 
