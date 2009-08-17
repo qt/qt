@@ -736,6 +736,21 @@ void tst_QGraphicsAnchorLayout::setSpacing()
     QCOMPARE(a->geometry(), QRectF(0, 0, 20, 20));
     QCOMPARE(b->geometry(), QRectF(21, 0, 20, 20));
     QCOMPARE(c->geometry(), QRectF(0, 21, 41, 20));
+
+    l->setHorizontalSpacing(4);
+    QApplication::processEvents();
+    p->adjustSize();
+    QCOMPARE(a->geometry(), QRectF(0, 0, 20, 20));
+    QCOMPARE(b->geometry(), QRectF(24, 0, 20, 20));
+    QCOMPARE(c->geometry(), QRectF(0, 21, 44, 20));
+
+    l->setVerticalSpacing(0);
+    QApplication::processEvents();
+    p->adjustSize();
+    QCOMPARE(a->geometry(), QRectF(0, 0, 20, 20));
+    QCOMPARE(b->geometry(), QRectF(24, 0, 20, 20));
+    QCOMPARE(c->geometry(), QRectF(0, 20, 44, 20));
+
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)
