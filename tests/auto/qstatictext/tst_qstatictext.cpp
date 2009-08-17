@@ -45,6 +45,10 @@
 #include <QtGui/QStaticText>
 #include <QtGui/QImage>
 
+#include <private/qstatictext_p.h>
+
+// #define DEBUG_SAVE_IMAGE
+
 class tst_QStaticText: public QObject
 {
     Q_OBJECT
@@ -57,6 +61,13 @@ private slots:
     void drawToRect();
     void setFont();
     void setMaximumSize();
+
+    void translatedPainter();
+    void rotatedPainter();
+    void scaledPainter();
+    void rotatedScaledAndTranslatedPainter();
+    void transformationChanged();
+    void translationDoesntCauseRelayout();
 };
 
 void tst_QStaticText::init()
@@ -152,6 +163,179 @@ void tst_QStaticText::setMaximumSize()
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
 
+void tst_QStaticText::translatedPainter()
+{
+    QImage imageDrawText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawText);
+        p.translate(100, 200);
+
+        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+    }
+
+    QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawStaticText);
+        p.translate(100, 200);
+
+        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawStaticText(11, 12, text);
+    }
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+}
+
+void tst_QStaticText::rotatedPainter()
+{
+    QImage imageDrawText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawText);
+        p.rotate(30.0);
+
+        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+    }
+
+    QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawStaticText);
+        p.rotate(30.0);
+
+        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawStaticText(11, 12, text);
+    }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("rotatedPainter_imageDrawText.png");
+    imageDrawStaticText.save("rotatedPainter_imageDrawStaticText.png");
+#endif
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+
+}
+
+void tst_QStaticText::scaledPainter()
+{
+    QImage imageDrawText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawText);
+        p.scale(2.0, 0.2);
+
+        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+    }
+
+    QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawStaticText);
+        p.scale(2.0, 0.2);
+
+        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawStaticText(11, 12, text);
+    }
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+}
+
+void tst_QStaticText::rotatedScaledAndTranslatedPainter()
+{
+    QImage imageDrawText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawText);
+        p.rotate(45.0);
+        p.scale(0.2, 2.0);
+        p.translate(100, 200);
+
+        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+    }
+
+    QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawStaticText);
+        p.rotate(45.0);
+        p.scale(0.2, 2.0);
+        p.translate(100, 200);
+
+        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawStaticText(11, 12, text);
+    }
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+}
+
+void tst_QStaticText::transformationChanged()
+{
+    QImage imageDrawText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawText);
+        p.rotate(33.0);
+        p.scale(0.5, 0.7);
+
+        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+
+        p.rotate(77.0);
+        p.scale(0.7, 0.5);
+        p.drawText(100, 200, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+    }
+
+    QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawStaticText);
+        p.rotate(33.0);
+        p.scale(0.5, 0.7);
+
+        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawStaticText(11, 12, text);
+
+        p.rotate(77.0);
+        p.scale(0.7, 0.5);
+        p.drawStaticText(100, 200, text);
+    }
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+}
+
+void tst_QStaticText::translationDoesntCauseRelayout()
+{
+    QImage imageDrawText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawText);
+        p.rotate(33.0);
+        p.scale(0.5, 0.7);
+
+        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+
+        p.translate(100, 200);
+        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+    }
+
+    QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+    {
+        QPainter p(&imageDrawStaticText);
+        p.rotate(33.0);
+        p.scale(0.5, 0.7);
+
+        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+
+        QStaticTextPrivate *textd = QStaticTextPrivate::get(&text);
+        glyph_t *glyphPool = textd->glyphPool;
+        QFixedPoint *positionPool = textd->positionPool;
+        QStaticTextItem *items = textd->items;
+
+        p.drawStaticText(11, 12, text);
+
+        p.translate(100, 200);
+        p.drawStaticText(11, 12, text);
+
+        // ###
+        // If the layout is recalculated, the data is reallocated. Not a entirely deterministic
+        // test, since the memory can be reused.
+        QCOMPARE(textd->glyphPool, glyphPool);
+        QCOMPARE(textd->positionPool, positionPool);
+        QCOMPARE(textd->items, items);
+    }
+
+    QCOMPARE(imageDrawStaticText, imageDrawText);
+
+}
 
 
 QTEST_MAIN(tst_QStaticText)
