@@ -1773,6 +1773,9 @@ bool QPdfBaseEnginePrivate::openPrintDevice()
                 (void)execv("/bin/lpr", lprargs);
                 (void)execv("/usr/bin/lp", lpargs);
                 (void)execv("/usr/bin/lpr", lprargs);
+
+                delete []lpargs;
+                delete []lprargs;
             }
             // if we couldn't exec anything, close the fd,
             // wait for a second so the parent process (the
