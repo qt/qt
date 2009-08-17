@@ -71,11 +71,11 @@ void tst_QGraphicsAnchorLayout::diagonal()
     QSizeF pref(70, 100);
     QSizeF max(100, 100);
 
-    QGraphicsWidget *a = createItem(min, pref, max);
-    QGraphicsWidget *b = createItem(min, pref, max);
-    QGraphicsWidget *c = createItem(min, pref, max);
-    QGraphicsWidget *d = createItem(min, pref, max);
-    QGraphicsWidget *e = createItem(min, pref, max);
+    QGraphicsWidget *a = createItem(min, pref, max, "A");
+    QGraphicsWidget *b = createItem(min, pref, max, "B");
+    QGraphicsWidget *c = createItem(min, pref, max, "C");
+    QGraphicsWidget *d = createItem(min, pref, max, "D");
+    QGraphicsWidget *e = createItem(min, pref, max, "E");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -247,11 +247,11 @@ void tst_QGraphicsAnchorLayout::parallel2()
 {
     QGraphicsWidget *a = createItem(QSizeF(70.0, 100.0),
                                     QSizeF(100.0, 100.0),
-                                    QSizeF(200.0, 100.0));
+                                    QSizeF(200.0, 100.0), "A");
 
     QGraphicsWidget *b = createItem(QSizeF(100.0, 100.0),
                                     QSizeF(150.0, 100.0),
-                                    QSizeF(190.0, 100.0));
+                                    QSizeF(190.0, 100.0), "B");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -291,15 +291,15 @@ void tst_QGraphicsAnchorLayout::snake()
 {
     QGraphicsWidget *a = createItem(QSizeF(50.0, 100.0),
                                     QSizeF(70.0, 100.0),
-                                    QSizeF(100.0, 100.0));
+                                    QSizeF(100.0, 100.0), "A");
 
     QGraphicsWidget *b = createItem(QSizeF(10.0, 100.0),
                                     QSizeF(20.0, 100.0),
-                                    QSizeF(40.0, 100.0));
+                                    QSizeF(40.0, 100.0), "B");
 
     QGraphicsWidget *c = createItem(QSizeF(50.0, 100.0),
                                     QSizeF(70.0, 100.0),
-                                    QSizeF(100.0, 100.0));
+                                    QSizeF(100.0, 100.0), "C");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -350,15 +350,15 @@ void tst_QGraphicsAnchorLayout::snakeOppositeDirections()
 {
     QGraphicsWidget *a = createItem(QSizeF(50.0, 100.0),
                                     QSizeF(70.0, 100.0),
-                                    QSizeF(100.0, 100.0));
+                                    QSizeF(100.0, 100.0), "A");
 
     QGraphicsWidget *b = createItem(QSizeF(10.0, 100.0),
                                     QSizeF(20.0, 100.0),
-                                    QSizeF(40.0, 100.0));
+                                    QSizeF(40.0, 100.0), "B");
 
     QGraphicsWidget *c = createItem(QSizeF(50.0, 100.0),
                                     QSizeF(70.0, 100.0),
-                                    QSizeF(100.0, 100.0));
+                                    QSizeF(100.0, 100.0), "C");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -412,19 +412,19 @@ void tst_QGraphicsAnchorLayout::fairDistribution()
 {
     QGraphicsWidget *a = createItem(QSizeF(10.0, 100.0),
                                     QSizeF(50.0, 100.0),
-                                    QSizeF(100.0, 100.0));
+                                    QSizeF(100.0, 100.0), "A");
 
     QGraphicsWidget *b = createItem(QSizeF(10.0, 100.0),
                                     QSizeF(50.0, 100.0),
-                                    QSizeF(100.0, 100.0));
+                                    QSizeF(100.0, 100.0), "B");
 
     QGraphicsWidget *c = createItem(QSizeF(10.0, 100.0),
                                     QSizeF(50.0, 100.0),
-                                    QSizeF(100.0, 100.0));
+                                    QSizeF(100.0, 100.0), "C");
 
     QGraphicsWidget *d = createItem(QSizeF(60.0, 100.0),
                                     QSizeF(165.0, 100.0),
-                                    QSizeF(600.0, 100.0));
+                                    QSizeF(600.0, 100.0), "D");
 
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
@@ -482,23 +482,23 @@ void tst_QGraphicsAnchorLayout::fairDistributionOppositeDirections()
 {
     QGraphicsWidget *a = createItem(QSizeF(10.0, 100.0),
                                     QSizeF(50.0, 100.0),
-                                    QSizeF(100.0, 100.0));
+                                    QSizeF(100.0, 100.0), "A");
 
     QGraphicsWidget *b = createItem(QSizeF(10.0, 100.0),
                                     QSizeF(50.0, 100.0),
-                                    QSizeF(100.0, 100.0));
+                                    QSizeF(100.0, 100.0), "B");
 
     QGraphicsWidget *c = createItem(QSizeF(10.0, 100.0),
                                     QSizeF(50.0, 100.0),
-                                    QSizeF(100.0, 100.0));
+                                    QSizeF(100.0, 100.0), "C");
 
     QGraphicsWidget *d = createItem(QSizeF(10.0, 100.0),
                                     QSizeF(50.0, 100.0),
-                                    QSizeF(100.0, 100.0));
+                                    QSizeF(100.0, 100.0), "D");
 
     QGraphicsWidget *e = createItem(QSizeF(60.0, 100.0),
                                     QSizeF(220.0, 100.0),
-                                    QSizeF(600.0, 100.0));
+                                    QSizeF(600.0, 100.0), "E");
 
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
@@ -557,10 +557,10 @@ void tst_QGraphicsAnchorLayout::proportionalPreferred()
 {
     QSizeF min(0, 100);
 
-    QGraphicsWidget *a = createItem(min, QSizeF(10, 100), QSizeF(20, 100));
-    QGraphicsWidget *b = createItem(min, QSizeF(20, 100), QSizeF(30, 100));
-    QGraphicsWidget *c = createItem(min, QSizeF(14, 100), QSizeF(20, 100));
-    QGraphicsWidget *d = createItem(min, QSizeF(10, 100), QSizeF(20, 100));
+    QGraphicsWidget *a = createItem(min, QSizeF(10, 100), QSizeF(20, 100), "A");
+    QGraphicsWidget *b = createItem(min, QSizeF(20, 100), QSizeF(30, 100), "B");
+    QGraphicsWidget *c = createItem(min, QSizeF(14, 100), QSizeF(20, 100), "C");
+    QGraphicsWidget *d = createItem(min, QSizeF(10, 100), QSizeF(20, 100), "D");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
@@ -621,13 +621,13 @@ void tst_QGraphicsAnchorLayout::example()
     QSizeF pref(210, 100);
     QSizeF max(300, 100);
 
-    QGraphicsWidget *a = createItem(min, pref, max);
-    QGraphicsWidget *b = createItem(min, pref, max);
-    QGraphicsWidget *c = createItem(min, pref, max);
-    QGraphicsWidget *d = createItem(min, pref, max);
-    QGraphicsWidget *e = createItem(min, pref, max);
-    QGraphicsWidget *f = createItem(QSizeF(30, 50), QSizeF(150, 50), max);
-    QGraphicsWidget *g = createItem(QSizeF(30, 50), QSizeF(30, 100), max);
+    QGraphicsWidget *a = createItem(min, pref, max, "A");
+    QGraphicsWidget *b = createItem(min, pref, max, "B");
+    QGraphicsWidget *c = createItem(min, pref, max, "C");
+    QGraphicsWidget *d = createItem(min, pref, max, "D");
+    QGraphicsWidget *e = createItem(min, pref, max, "E");
+    QGraphicsWidget *f = createItem(QSizeF(30, 50), QSizeF(150, 50), max, "F");
+    QGraphicsWidget *g = createItem(QSizeF(30, 50), QSizeF(30, 100), max, "G");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
     l->setContentsMargins(0, 0, 0, 0);
