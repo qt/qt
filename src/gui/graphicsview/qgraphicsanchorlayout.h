@@ -103,8 +103,11 @@ public:
     inline void anchorGeometry(QGraphicsLayoutItem *item,
                                QGraphicsLayoutItem *relativeTo, qreal spacing);
 
-    void setSpacing(qreal spacing, Qt::Orientations orientations = Qt::Horizontal|Qt::Vertical);
-    qreal spacing(Qt::Orientation) const;
+    void setHorizontalSpacing(qreal spacing);
+    void setVerticalSpacing(qreal spacing);
+    void setSpacing(qreal spacing);
+    qreal horizontalSpacing() const;
+    qreal verticalSpacing() const;
 
     void removeAt(int index);
     void setGeometry(const QRectF &rect);

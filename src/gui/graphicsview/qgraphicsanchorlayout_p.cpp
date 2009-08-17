@@ -1181,6 +1181,7 @@ qreal QGraphicsAnchorLayoutPrivate::effectiveSpacing(Orientation orientation) co
     Q_Q(const QGraphicsAnchorLayout);
     qreal s = spacings[orientation];
     if (s < 0) {
+        // ### make sure behaviour is the same as in QGraphicsGridLayout
         QGraphicsLayoutItem *parent = q->parentLayoutItem();
         while (parent && parent->isLayout()) {
             parent = parent->parentLayoutItem();

@@ -79,6 +79,14 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
  *
  * \a firstItem and \a secondItem are automatically added to the layout if they are not part
  * of the layout. This means that count() can increase with up to 2.
+ *
+ * The spacing an anchor will get depends on the type of anchor. For instance, anchors from the
+ * Right edge of one item to the Left edge of another (or vice versa) will use the default
+ * horizontal spacing. The same behaviour applies to Bottom to Top anchors, (but they will use
+ * the default vertical spacing). For all other anchor combinations, the spacing will be 0.
+ * All anchoring functions will follow this rule.
+ *
+ * \sa removeAnchor, anchorCorner, anchorWidth, anchorHeight, anchorGeometry
  */
 void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
                                    Edge firstEdge,
@@ -203,19 +211,61 @@ void QGraphicsAnchorLayout::removeAnchor(QGraphicsLayoutItem *firstItem, Edge fi
     invalidate();
 }
 
-void QGraphicsAnchorLayout::setSpacing(qreal spacing, Qt::Orientations orientations /*= Qt::Horizontal|Qt::Vertical*/)
+/*!
+    Sets the default horizontal spacing for the anchor layout to \a spacing.
+
+    \sa horizontalSpacing, setVerticalSpacing, setSpacing
+*/
+void QGraphicsAnchorLayout::setHorizontalSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
-    if (orientations & Qt::Horizontal)
-        d->spacings[0] = spacing;
-    if (orientations & Qt::Vertical)
-        d->spacings[1] = spacing;
+    d->spacings[0] = spacing;
 }
 
-qreal QGraphicsAnchorLayout::spacing(Qt::Orientation orientation) const
+/*!
+    Sets the default vertical spacing for the anchor layout to \a spacing.
+
+    \sa verticalSpacing, setHorizontalSpacing, setSpacing
+*/
+void QGraphicsAnchorLayout::setVerticalSpacing(qreal spacing)
+{
+    Q_D(QGraphicsAnchorLayout);
+    d->spacings[1] = spacing;
+}
+
+/*!
+    Sets the default horizontal and the default vertical spacing for the anchor layout to \a spacing.
+
+    If an item is anchored with no spacing associated with the anchor, it will use the default
+    spacing.
+    \sa setHorizontalSpacing, setVerticalSpacing
+*/
+void QGraphicsAnchorLayout::setSpacing(qreal spacing)
+{
+    Q_D(QGraphicsAnchorLayout);
+    d->spacings[0] = d->spacings[1] = spacing;
+}
+
+/*!
+    Returns the default horizontal spacing for the anchor layout.
+
+    \sa verticalSpacing, setHorizontalSpacing
+*/
+qreal QGraphicsAnchorLayout::horizontalSpacing() const
 {
     Q_D(const QGraphicsAnchorLayout);
-    return d->effectiveSpacing(QGraphicsAnchorLayoutPrivate::Orientation(orientation - 1));
+    return d->effectiveSpacing(QGraphicsAnchorLayoutPrivate::Horizontal);
+}
+
+/*!
+    Returns the default vertical spacing for the anchor layout.
+
+    \sa horizontalSpacing, setVerticalSpacing
+*/
+qreal QGraphicsAnchorLayout::verticalSpacing() const
+{
+    Q_D(const QGraphicsAnchorLayout);
+    return d->effectiveSpacing(QGraphicsAnchorLayoutPrivate::Vertical);
 }
 
 void QGraphicsAnchorLayout::setGeometry(const QRectF &geom)
