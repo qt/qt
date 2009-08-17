@@ -91,9 +91,8 @@ public:
         int baseLineY;
     };
 
-    void populate(QFontEngine *fontEngine,
-                  const QVarLengthArray<glyph_t> &glyphs,
-                  const QVarLengthArray<QFixedPoint> &positions);
+    void populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
+                  const QFixedPoint *positions);
 
     virtual void createTextureData(int width, int height) = 0;
     virtual void resizeTextureData(int width, int height) = 0;

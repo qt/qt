@@ -5730,11 +5730,12 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     if (!d->engine || staticText.isEmpty() || pen().style() == Qt::NoPen)
         return;
 
-    const QStaticTextPrivate *staticText_d = QStaticTextPrivate::get(&staticText);
+    QStaticTextPrivate *staticText_d =
+            const_cast<QStaticTextPrivate *>(QStaticTextPrivate::get(&staticText));
 
     // If we don't have an extended paint engine, or if the painter is transformed,
     // we go through standard code path
-    if (d->extended == 0 || !d->state->matrix.isIdentity()) {
+    if (d->extended == 0) {
         if (staticText_d->size.isValid())
             drawText(QRectF(position, staticText_d->size), staticText_d->text);
         else
@@ -5742,14 +5743,33 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
         return;
     }
 
+    // Don't recalculate entire layout because of translation, rather add the dx and dy
+    // into the position to move each text item the correct distance.
+    QPointF translatedPosition = position;
+    QTransform matrix = d->state->transform();
+    if (matrix.isTranslating()) {
+        translatedPosition.rx() += matrix.dx();
+        translatedPosition.ry() += matrix.dy();
+        translate(-matrix.dx(), -matrix.dy());
+    }
+
+    // If the transform is not identical to the text transform,
+    // we have to relayout the text (for other transformations than plain translation)
+    if (staticText_d->matrix != d->state->transform()) {
+        staticText_d->matrix = d->state->transform();
+        staticText_d->init();
+    }
+
     bool restoreWhenFinished = false;
     if (staticText_d->size.isValid()) {
+        save();
         setClipRect(QRectF(position, staticText_d->size));
 
-        save();
         restoreWhenFinished = true;
     }
 
+    // ### Should we pick up the painter's font and recalculate the layout, like we do
+    // with the matrix?
     if (font() != staticText_d->font) {
         setFont(staticText_d->font);
 
@@ -5759,11 +5779,14 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
 
     for (int i=0; i<staticText_d->itemCount; ++i) {
         QStaticTextItem *item = staticText_d->items + i;
-        d->extended->drawStaticTextItem(position, item);
+        d->extended->drawStaticTextItem(translatedPosition, item);
     }
 
     if (restoreWhenFinished)
         restore();
+
+    if (matrix.isTranslating())
+        setTransform(matrix);
 }
 
 /*!

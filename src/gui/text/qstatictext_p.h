@@ -63,16 +63,18 @@ class QStaticTextItem
 public:    
     QStaticTextItem() : chars(0), numChars(0), fontEngine(0) {}
 
-    QVarLengthArray<QFixedPoint> glyphPositions; // 8 bytes per glyph
-    QVarLengthArray<glyph_t> glyphs;             // 4 bytes per glyph
+    // ### Use constant length arrays here to minimize memory consumption
+    QFixedPoint *glyphPositions;                 // 8 bytes per glyph
+    glyph_t *glyphs;                             // 4 bytes per glyph
     const QChar *chars;                          // 2 bytes per glyph
                                                  // =================
                                                  // 14 bytes per glyph
 
+    int numGlyphs;                               // 4 bytes per item
     int numChars;                                // 4 bytes per item
     QFontEngine *fontEngine;                     // 4 bytes per item
                                                  // ================
-                                                 // 8 bytes per item
+                                                 // 12 bytes per item
 };
 
 class QStaticText;
@@ -85,16 +87,19 @@ public:
 
     void init();
 
-    QAtomicInt ref;          // 4 bytes per text
+    QAtomicInt ref;            // 4 bytes per text
 
-    QString text;            // 4 bytes per text
-    QFont font;              // 8 bytes per text
-    QSizeF size;             // 16 bytes per text
+    QString text;              // 4 bytes per text
+    QFont font;                // 8 bytes per text
+    QSizeF size;               // 16 bytes per text
 
-    QStaticTextItem *items;  // 4 bytes per text
-    int itemCount;           // 4 bytes per text
-                             // ================
-                             // 40 bytes per text
+    QTransform matrix;         // 80 bytes per text
+    QStaticTextItem *items;    // 4 bytes per text
+    int itemCount;             // 4 bytes per text
+    glyph_t *glyphPool;        // 4 bytes per text
+    QFixedPoint *positionPool; // 4 bytes per text
+                               // ================
+                               // 128 bytes per text
 
     static QStaticTextPrivate *get(const QStaticText *q);
 };

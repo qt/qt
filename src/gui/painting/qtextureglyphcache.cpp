@@ -55,9 +55,8 @@ QT_BEGIN_NAMESPACE
 
 // #define CACHE_DEBUG
 
-void QTextureGlyphCache::populate(QFontEngine *fontEngine,
-                                  const QVarLengthArray<glyph_t> &glyphs,
-                                  const QVarLengthArray<QFixedPoint> &)
+void QTextureGlyphCache::populate(QFontEngine *fontEngine, int numGlyphs, const glyph_t *glyphs,
+                                  const QFixedPoint *)
 {
 #ifdef CACHE_DEBUG
     printf("Populating with '%s'\n", QString::fromRawData(ti.chars, ti.num_chars).toLatin1().data());
@@ -71,7 +70,7 @@ void QTextureGlyphCache::populate(QFontEngine *fontEngine,
     int rowHeight = 0;
 
     // check each glyph for its metrics and get the required rowHeight.
-    for (int i=0; i < glyphs.size(); ++i) {
+    for (int i=0; i < numGlyphs; ++i) {
         const glyph_t glyph = glyphs[i];
         if (coords.contains(glyph))
             continue;

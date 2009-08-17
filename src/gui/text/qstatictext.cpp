@@ -262,7 +262,7 @@ bool QStaticText::isEmpty() const
 }
 
 QStaticTextPrivate::QStaticTextPrivate()
-        : items(0), itemCount(0)
+        : items(0), itemCount(0), glyphPool(0), positionPool(0)
 {
     ref = 1;    
 }
@@ -279,6 +279,8 @@ QStaticTextPrivate::QStaticTextPrivate(const QStaticTextPrivate &other)
 QStaticTextPrivate::~QStaticTextPrivate()
 {
     delete[] items;    
+    delete[] glyphPool;
+    delete[] positionPool;
 }
 
 QStaticTextPrivate *QStaticTextPrivate::get(const QStaticText *q)
@@ -295,37 +297,58 @@ namespace {
     class DrawTextItemRecorder: public QPaintEngine
     {
     public:
-        DrawTextItemRecorder(int expectedItemCount, QStaticTextItem *items)
+        DrawTextItemRecorder(int expectedItemCount, QStaticTextItem *items,
+                             int expectedGlyphCount, QFixedPoint *positionPool, glyph_t *glyphPool)
                 : m_items(items),
                   m_expectedItemCount(expectedItemCount),
-                  m_itemCount(0)
+                  m_expectedGlyphCount(expectedGlyphCount),
+                  m_itemCount(0), m_glyphCount(0),
+                  m_positionPool(positionPool),
+                  m_glyphPool(glyphPool)
         {
         }
 
         virtual void drawTextItem(const QPointF &p, const QTextItem &textItem)
         {
             const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);          
-            
-            Q_ASSERT(m_expectedItemCount < 0 || m_itemCount < m_expectedItemCount);
-            m_itemCount++;
 
+            m_itemCount++;
+            m_glyphCount += ti.glyphs.numGlyphs;
             if (m_items == 0)
                 return;
+
+            Q_ASSERT(m_itemCount <= m_expectedItemCount);
+            Q_ASSERT(m_glyphCount <= m_expectedGlyphCount);
 
             QStaticTextItem *currentItem = (m_items + (m_itemCount - 1));
             currentItem->fontEngine = ti.fontEngine;
             currentItem->chars = ti.chars;
             currentItem->numChars = ti.num_chars;
-            ti.fontEngine->getGlyphPositions(ti.glyphs, QTransform(), ti.flags, currentItem->glyphs,
-                                             currentItem->glyphPositions);
+            currentItem->numGlyphs = ti.glyphs.numGlyphs;
+            currentItem->glyphs = m_glyphPool;
+            currentItem->glyphPositions = m_positionPool;
+
+            QVarLengthArray<glyph_t> glyphs;
+            QVarLengthArray<QFixedPoint> positions;
+            ti.fontEngine->getGlyphPositions(ti.glyphs, state->transform(), ti.flags,
+                                             glyphs, positions);
+
+            int size = glyphs.size();
+            Q_ASSERT(size == ti.glyphs.numGlyphs);
+            Q_ASSERT(size == positions.size());
+
+            memmove(currentItem->glyphs, glyphs.constData(), sizeof(glyph_t) * size);
+            memmove(currentItem->glyphPositions, positions.constData(), sizeof(QFixedPoint) * size);
 
             QFixed fx = QFixed::fromReal(p.x());
             QFixed fy = QFixed::fromReal(p.y());
-
-            for (int i=0; i<currentItem->glyphPositions.size(); ++i) {
+            for (int i=0; i<size; ++i) {
                 currentItem->glyphPositions[i].x += fx;
                 currentItem->glyphPositions[i].y += fy;
             }
+
+            m_glyphPool += size;
+            m_positionPool += size;
         }                
 
 
@@ -343,18 +366,31 @@ namespace {
             return m_itemCount;
         }
 
+        int glyphCount() const
+        {
+            return m_glyphCount;
+        }
+
     private:
         QStaticTextItem *m_items;
         int m_itemCount;
+        int m_glyphCount;
         int m_expectedItemCount;
+        int m_expectedGlyphCount;
+
+        glyph_t *m_glyphPool;
+        QFixedPoint *m_positionPool;
     };
 
     class DrawTextItemDevice: public QPaintDevice
     {
     public:
-        DrawTextItemDevice(int expectedItemCount = -1,  QStaticTextItem *items = 0)
+        DrawTextItemDevice(int expectedItemCount = -1,  QStaticTextItem *items = 0,
+                           int expectedGlyphCount = -1, QFixedPoint *positionPool = 0,
+                           glyph_t *glyphPool = 0)
         {
-            m_paintEngine = new DrawTextItemRecorder(expectedItemCount, items);
+            m_paintEngine = new DrawTextItemRecorder(expectedItemCount, items,
+                                                     expectedGlyphCount, positionPool, glyphPool);
         }
 
         ~DrawTextItemDevice()
@@ -403,7 +439,10 @@ namespace {
             return m_paintEngine->itemCount();
         }
 
-
+        int glyphCount() const
+        {
+            return m_paintEngine->glyphCount();
+        }
 
     private:
         DrawTextItemRecorder *m_paintEngine;
@@ -414,6 +453,8 @@ namespace {
 void QStaticTextPrivate::init()
 {
     delete[] items;
+    delete[] glyphPool;
+    delete[] positionPool;
 
     // Draw once to count number of items and glyphs, so that we can use as little memory
     // as possible to store the data
@@ -421,6 +462,7 @@ void QStaticTextPrivate::init()
     {
         QPainter painter(&counterDevice);
         painter.setFont(font);
+        painter.setTransform(matrix);
 
         if (size.isValid())
             painter.drawText(QRectF(QPointF(0, 0), size), text);
@@ -428,14 +470,19 @@ void QStaticTextPrivate::init()
             painter.drawText(0, 0, text);
     }
 
-    itemCount = counterDevice.itemCount();
+    itemCount = counterDevice.itemCount();    
     items = new QStaticTextItem[itemCount];
 
+    int glyphCount = counterDevice.glyphCount();
+    glyphPool = new glyph_t[glyphCount];
+    positionPool = new QFixedPoint[glyphCount];
+
     // Draw again to actually record the items and glyphs
-    DrawTextItemDevice recorderDevice(itemCount, items);
+    DrawTextItemDevice recorderDevice(itemCount, items, glyphCount, positionPool, glyphPool);
     {
         QPainter painter(&recorderDevice);
         painter.setFont(font);
+        painter.setTransform(matrix);
 
         if (size.isValid())
             painter.drawText(QRectF(QPointF(0, 0), size), text);
