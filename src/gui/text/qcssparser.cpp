@@ -793,7 +793,7 @@ static BrushData parseBrushValue(const Value &v, const QPalette &pal)
             if (attr.compare(QLatin1String("spread"), Qt::CaseInsensitive) == 0) {
                 spread = spreads.indexOf(value.variant.toString());
             } else {
-                vars[attr] = value.variant.toString().toDouble();
+                vars[attr] = value.variant.toReal();
             }
         }
         parser.skipSpace();

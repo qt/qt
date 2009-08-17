@@ -313,7 +313,7 @@ QByteArray QPdf::generatePath(const QPainterPath &path, const QTransform &matrix
 
     Qt::FillRule fillRule = path.fillRule();
 
-    const char *op = 0;
+    const char *op = "";
     switch (flags) {
     case ClipPath:
         op = (fillRule == Qt::WindingFill) ? "W n\n" : "W* n\n";
@@ -1773,6 +1773,9 @@ bool QPdfBaseEnginePrivate::openPrintDevice()
                 (void)execv("/bin/lpr", lprargs);
                 (void)execv("/usr/bin/lp", lpargs);
                 (void)execv("/usr/bin/lpr", lprargs);
+
+                delete []lpargs;
+                delete []lprargs;
             }
             // if we couldn't exec anything, close the fd,
             // wait for a second so the parent process (the

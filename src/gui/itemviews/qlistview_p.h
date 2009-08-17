@@ -351,9 +351,10 @@ public:
 
     QItemViewPaintPairs draggablePaintPairs(const QModelIndexList &indexes, QRect *r) const;
 
-    // ### FIXME: we only need one at a time
-    QDynamicListViewBase *dynamicListView;
-    QStaticListViewBase *staticListView;
+    union {
+        QDynamicListViewBase *dynamicListView;
+        QStaticListViewBase *staticListView;
+    };
 
     // ### FIXME: see if we can move the members into the dynamic/static classes
 
