@@ -1104,8 +1104,8 @@ void QFxGridView::keyPressEvent(QKeyEvent *event)
                 int index = currentIndex() - d->columns;
                 setCurrentIndex(index >= 0 ? index : d->model->count()-1);
                 event->accept();
+                return;
             }
-            return;
         } else if ((d->flow == QFxGridView::LeftToRight && event->key() == Qt::Key_Down)
                 || (d->flow == QFxGridView::TopToBottom && event->key() == Qt::Key_Right)) {
             if (currentIndex() < d->model->count() - d->columns || d->wrap) {
@@ -1113,8 +1113,8 @@ void QFxGridView::keyPressEvent(QKeyEvent *event)
                 int index = currentIndex()+d->columns;
                 setCurrentIndex(index < d->model->count() ? index : 0);
                 event->accept();
+                return;
             }
-            return;
         } else if ((d->flow == QFxGridView::LeftToRight && event->key() == Qt::Key_Left)
                 || (d->flow == QFxGridView::TopToBottom && event->key() == Qt::Key_Up)) {
             if (currentIndex() > 0 || d->wrap) {
@@ -1122,8 +1122,8 @@ void QFxGridView::keyPressEvent(QKeyEvent *event)
                 int index = currentIndex() - 1;
                 setCurrentIndex(index >= 0 ? index : d->model->count()-1);
                 event->accept();
+                return;
             }
-            return;
         } else if ((d->flow == QFxGridView::LeftToRight && event->key() == Qt::Key_Right)
                 || (d->flow == QFxGridView::TopToBottom && event->key() == Qt::Key_Down)) {
             if (currentIndex() < d->model->count() - 1 || d->wrap) {
@@ -1131,13 +1131,13 @@ void QFxGridView::keyPressEvent(QKeyEvent *event)
                 int index = currentIndex() + 1;
                 setCurrentIndex(index < d->model->count() ? index : 0);
                 event->accept();
+                return;
             }
-            return;
         }
     }
     d->moveReason = QFxGridViewPrivate::Other;
-    if (!event->isAccepted())
-        QFxFlickable::keyPressEvent(event);
+    event->ignore();
+    QFxFlickable::keyPressEvent(event);
 }
 
 /*!
