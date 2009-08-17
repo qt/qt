@@ -332,7 +332,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     if (desktop) {
         q->setAttribute(Qt::WA_WState_Visible);
-    } else if (topLevel) {
+    } else if (topLevel && !q->testAttribute(Qt::WA_DontShowOnScreen)) {
         RECT  cr;
         GetClientRect(id, &cr);
         // one cannot trust cr.left and cr.top, use a correction POINT instead
