@@ -6831,11 +6831,12 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 
   By default, this property is true.
 
-  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled(), enabledChanged()
+  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled()
+  \sa QGraphicsObject::enabledChanged()
 */
 
 /*!
-  \fn QGraphicsObject::enabledChanged()
+  \fn void QGraphicsObject::enabledChanged()
 
   This signal gets emitted whenever the item get's enabled or disabled.
 
