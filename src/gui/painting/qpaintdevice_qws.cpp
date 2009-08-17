@@ -48,39 +48,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QPaintDevice::QPaintDevice()
-{
-    painters = 0;
-}
-
-extern void qt_painter_removePaintDevice(QPaintDevice *); //qpainter.cpp
-
-
-QPaintDevice::~QPaintDevice()
-{
-    if (paintingActive())
-        qWarning("QPaintDevice: Cannot destroy paint device that is being "
-                  "painted");
-    qt_painter_removePaintDevice(this);
-}
-
-
-int QPaintDevice::metric(PaintDeviceMetric m) const
-{
-    qWarning("QPaintDevice::metrics: Device has no metric information");
-    if (m == PdmDpiX) {
-        return 72;
-    } else if (m == PdmDpiY) {
-        return 72;
-    } else if (m == PdmNumColors) {
-        // FIXME: does this need to be a real value?
-        return 256;
-    } else {
-        qDebug("Unrecognised metric %d!",m);
-        return 0;
-    }
-}
-
 QWSDisplay *QPaintDevice::qwsDisplay()
 {
     return qt_fbdpy;
