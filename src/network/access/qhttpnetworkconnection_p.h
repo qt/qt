@@ -155,6 +155,8 @@ class QHttpNetworkConnectionPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QHttpNetworkConnection)
 public:
     static const int defaultChannelCount;
+    static const int defaultPipelineLength;
+
     QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt);
     QHttpNetworkConnectionPrivate(quint16 channelCount, const QString &hostName, quint16 port, bool encrypt);
     ~QHttpNetworkConnectionPrivate();
@@ -169,9 +171,12 @@ public:
     bool isSocketReading(QAbstractSocket *socket) const;
 
     QHttpNetworkReply *queueRequest(const QHttpNetworkRequest &request);
-    void unqueueAndSendRequest(QAbstractSocket *socket);
+    void requeueRequest(const HttpMessagePair &pair); // e.g. after pipeline broke
+    void dequeueAndSendRequest(QAbstractSocket *socket);
     void prepareRequest(HttpMessagePair &request);
-    void resendCurrentRequest(QAbstractSocket *socket);
+
+    void fillPipeline(QAbstractSocket *socket);
+    bool fillPipeline(QList<HttpMessagePair> &queue, QHttpNetworkConnectionChannel &channel);
 
     void copyCredentials(int fromChannel, QAuthenticator *auth, bool isProxy);
 
@@ -212,6 +217,7 @@ public:
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy networkProxy;
+    void emitProxyAuthenticationRequired(const QHttpNetworkConnectionChannel *chan, const QNetworkProxy &proxy, QAuthenticator* auth);
 #endif
 
     //The request queues

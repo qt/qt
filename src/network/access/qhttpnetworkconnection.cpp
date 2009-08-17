@@ -67,6 +67,11 @@ QT_BEGIN_NAMESPACE
 
 const int QHttpNetworkConnectionPrivate::defaultChannelCount = 6;
 
+// the maximum amount of requests that might be pipelined into a socket
+// from what was suggested, 3 seems to be OK
+const int QHttpNetworkConnectionPrivate::defaultPipelineLength = 3;
+
+
 QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(const QString &hostName, quint16 port, bool encrypt)
 : hostName(hostName), port(port), encrypt(encrypt),
   channelCount(defaultChannelCount),
@@ -414,7 +419,24 @@ QHttpNetworkReply* QHttpNetworkConnectionPrivate::queueRequest(const QHttpNetwor
     return reply;
 }
 
-void QHttpNetworkConnectionPrivate::unqueueAndSendRequest(QAbstractSocket *socket)
+void QHttpNetworkConnectionPrivate::requeueRequest(const HttpMessagePair &pair)
+{
+    Q_Q(QHttpNetworkConnection);
+
+    QHttpNetworkRequest request = pair.first;
+    switch (request.priority()) {
+    case QHttpNetworkRequest::HighPriority:
+        highPriorityQueue.prepend(pair);
+        break;
+    case QHttpNetworkRequest::NormalPriority:
+    case QHttpNetworkRequest::LowPriority:
+        lowPriorityQueue.prepend(pair);
+        break;
+    }
+    QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
+}
+
+void QHttpNetworkConnectionPrivate::dequeueAndSendRequest(QAbstractSocket *socket)
 {
     Q_ASSERT(socket);
 
@@ -428,8 +450,9 @@ void QHttpNetworkConnectionPrivate::unqueueAndSendRequest(QAbstractSocket *socke
 
             channels[i].request = messagePair.first;
             channels[i].reply = messagePair.second;
-            channels[i].sendRequest();
+            // remove before sendRequest! else we might pipeline the same request again
             highPriorityQueue.removeAt(j);
+            channels[i].sendRequest();
             return;
         }
     }
@@ -441,22 +464,112 @@ void QHttpNetworkConnectionPrivate::unqueueAndSendRequest(QAbstractSocket *socke
                 prepareRequest(messagePair);
             channels[i].request = messagePair.first;
             channels[i].reply = messagePair.second;
-            channels[i].sendRequest();
+            // remove before sendRequest! else we might pipeline the same request again
             lowPriorityQueue.removeAt(j);
+            channels[i].sendRequest();
             return;
         }
     }
 }
 
-void QHttpNetworkConnectionPrivate::resendCurrentRequest(QAbstractSocket *socket)
+// this is called from _q_startNextRequest and when a request has been sent down a socket from the channel
+void QHttpNetworkConnectionPrivate::fillPipeline(QAbstractSocket *socket)
 {
-    Q_Q(QHttpNetworkConnection);
-    Q_ASSERT(socket);
+    // return fast if there is nothing to pipeline
+    if (highPriorityQueue.isEmpty() && lowPriorityQueue.isEmpty())
+        return;
+
     int i = indexOf(socket);
-    channels[i].close();
-    channels[i].resendCurrent = true;
-    QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
+
+    bool highPriorityQueueProcessingDone = false;
+    bool lowPriorityQueueProcessingDone = false;
+
+    while (!highPriorityQueueProcessingDone && !lowPriorityQueueProcessingDone) {
+        // this loop runs once per request we intend to pipeline in.
+
+        if (channels[i].pipeliningSupported != QHttpNetworkConnectionChannel::PipeliningProbablySupported)
+            return;
+
+        // the current request that is in must already support pipelining
+        if (!channels[i].request.isPipeliningAllowed())
+            return;
+
+        // the current request must be a idempotent (right now we only check GET)
+        if (channels[i].request.operation() != QHttpNetworkRequest::Get)
+            return;
+
+        // check if socket is connected
+        if (socket->state() != QAbstractSocket::ConnectedState)
+            return;
+
+        // check for resendCurrent
+        if (channels[i].resendCurrent)
+            return;
+
+        // we do not like authentication stuff
+        // ### make sure to be OK with this in later releases
+        if (!channels[i].authenticator.isNull() || !channels[i].authenticator.user().isEmpty())
+            return;
+        if (!channels[i].proxyAuthenticator.isNull() || !channels[i].proxyAuthenticator.user().isEmpty())
+            return;
+
+        // check for pipeline length
+        if (channels[i].alreadyPipelinedRequests.length() >= defaultPipelineLength)
+            return;
+
+        // must be in ReadingState or WaitingState
+        if (! (channels[i].state == QHttpNetworkConnectionChannel::WaitingState
+               || channels[i].state == QHttpNetworkConnectionChannel::ReadingState))
+            return;
+
+        highPriorityQueueProcessingDone = fillPipeline(highPriorityQueue, channels[i]);
+        // not finished with highPriorityQueue? then loop again
+        if (!highPriorityQueueProcessingDone)
+            continue;
+        // highPriorityQueue was processed, now deal with the lowPriorityQueue
+        lowPriorityQueueProcessingDone = fillPipeline(lowPriorityQueue, channels[i]);
+    }
 }
+
+// returns true when the processing of a queue has been done
+bool QHttpNetworkConnectionPrivate::fillPipeline(QList<HttpMessagePair> &queue, QHttpNetworkConnectionChannel &channel)
+{
+    if (queue.isEmpty())
+        return true;
+
+    for (int i = 0; i < queue.length(); i++) {
+        HttpMessagePair messagePair = queue.at(i);
+        const QHttpNetworkRequest &request = messagePair.first;
+
+        // we currently do not support pipelining if HTTP authentication is used
+        if (!request.url().userInfo().isEmpty())
+            continue;
+
+        // take only GET requests
+        if (request.operation() != QHttpNetworkRequest::Get)
+            continue;
+
+        if (!request.isPipeliningAllowed())
+            continue;
+
+        // remove it from the queue
+        queue.takeAt(i);
+        // we modify the queue we iterate over here, but since we return from the function
+        // afterwards this is fine.
+
+        // actually send it
+        if (!messagePair.second->d_func()->requestIsPrepared)
+            prepareRequest(messagePair);
+        channel.pipelineInto(messagePair);
+
+        // return false because we processed something and need to process again
+        return false;
+    }
+
+    // return true, the queue has been processed and not changed
+    return true;
+}
+
 
 QString QHttpNetworkConnectionPrivate::errorDetail(QNetworkReply::NetworkError errorCode, QAbstractSocket* socket)
 {
@@ -560,16 +673,29 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
             break;
         }
     }
-    if (!socket)
-        return; // this will be called after finishing current request.
-    unqueueAndSendRequest(socket);
+
+    // this socket is free,
+    if (socket)
+        dequeueAndSendRequest(socket);
+
+    // try to push more into all sockets
+    // ### FIXME we should move this to the beginning of the function
+    // as soon as QtWebkit is properly using the pipelining
+    // (e.g. not for XMLHttpRequest or the first page load)
+    // ### FIXME we should also divide the requests more even
+    // on the connected sockets
+    //tryToFillPipeline(socket);
+    // return fast if there is nothing to pipeline
+    if (highPriorityQueue.isEmpty() && lowPriorityQueue.isEmpty())
+        return;
+    for (int j = 0; j < channelCount; j++)
+        fillPipeline(channels[j].socket);
 }
 
 void QHttpNetworkConnectionPrivate::_q_restartAuthPendingRequests()
 {
     // send the request using the idle socket
     for (int i = 0 ; i < channelCount; ++i) {
-        QAbstractSocket *socket = channels[i].socket;
         if (channels[i].state ==  QHttpNetworkConnectionChannel::Wait4AuthState) {
             channels[i].state = QHttpNetworkConnectionChannel::IdleState;
             if (channels[i].reply)
@@ -738,6 +864,19 @@ void QHttpNetworkConnection::ignoreSslErrors(const QList<QSslError> &errors, int
 }
 
 #endif //QT_NO_OPENSSL
+
+#ifndef QT_NO_NETWORKPROXY
+// only called from QHttpNetworkConnectionChannel::_q_proxyAuthenticationRequired, not
+// from QHttpNetworkConnectionChannel::handleAuthenticationChallenge
+// e.g. it is for SOCKS proxies which require authentication.
+void QHttpNetworkConnectionPrivate::emitProxyAuthenticationRequired(const QHttpNetworkConnectionChannel *chan, const QNetworkProxy &proxy, QAuthenticator* auth)
+{
+    Q_Q(QHttpNetworkConnection);
+    emit q->proxyAuthenticationRequired(proxy, auth, q);
+    int i = indexOf(chan->socket);
+    copyCredentials(i, auth, true);
+}
+#endif
 
 
 QT_END_NAMESPACE

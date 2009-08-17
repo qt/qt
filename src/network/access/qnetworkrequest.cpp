@@ -167,6 +167,11 @@ QT_BEGIN_NAMESPACE
         When using this flag with sequential upload data, the ContentLengthHeader
         header must be set.
 
+     \value HttpPipeliningAllowed
+        Requests only, type: QVariant::Bool (default: false)
+        Indicates whether the QNetworkAccessManager code is
+        allowed to use HTTP pipelining with this request.
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default
