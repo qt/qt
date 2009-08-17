@@ -950,10 +950,12 @@ void QGraphicsAnchorLayoutPrivate::anchor(QGraphicsLayoutItem *firstItem,
 
     // Ensure that the internal anchors have been created for both items.
     if (firstItem != q && !items.contains(firstItem)) {
+        restoreSimplifiedGraph(edgeOrientation(firstEdge) == Horizontal ? Vertical : Horizontal);
         createItemEdges(firstItem);
         addChildLayoutItem(firstItem);
     }
     if (secondItem != q && !items.contains(secondItem)) {
+        restoreSimplifiedGraph(edgeOrientation(firstEdge) == Horizontal ? Vertical : Horizontal);
         createItemEdges(secondItem);
         addChildLayoutItem(secondItem);
     }
