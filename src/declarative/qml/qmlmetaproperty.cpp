@@ -218,9 +218,13 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
 
     if (name.at(0).isUpper()) {
         // Attached property
-        attachedFunc = QmlMetaType::attachedPropertiesFuncId(name.toLatin1());
-        if (attachedFunc != -1)
-            type  = QmlMetaProperty::Property | QmlMetaProperty::Attached;
+        // XXX name should be resolved with QmlEngine::resolveType(), not like this!
+        QmlType *t = QmlMetaType::qmlType("Qt/"+name.toLatin1(),-1,-1);
+        if (t && t->attachedPropertiesFunction()) {
+            attachedFunc = t->index();
+            if (attachedFunc != -1)
+                type  = QmlMetaProperty::Property | QmlMetaProperty::Attached;
+        }
         return;
 
     } else if (name.count() >= 3 && 

@@ -967,7 +967,7 @@ QByteArray QmlDomObject::customTypeData() const
 bool QmlDomObject::isComponent() const
 {
     return d->isVirtualComponent || 
-           (d->object && d->object->typeName == "Qt/4.6/Component");
+           (d->object && d->object->typeName == "Qt/Component");
 }
 
 /*!
