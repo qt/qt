@@ -2696,7 +2696,7 @@ void QFileDialogPrivate::_q_updateOkButton()
     if (lineEditText.startsWith(QLatin1String("//")) || lineEditText.startsWith(QLatin1Char('\\'))) {
         button->setEnabled(true);
         if (acceptMode == QFileDialog::AcceptSave)
-            button->setText(isOpenDirectory ? QFileDialog::tr("&Open") : acceptLabel);
+            button->setText(acceptLabel);
         return;
     }
 

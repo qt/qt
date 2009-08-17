@@ -1086,6 +1086,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
 
                 //hide cursor
                 d->edit->d_func()->setCursorVisible(false);
+                d->edit->d_func()->control->setCursorBlinkPeriod(0);
                 d->setSelected(0);
             }
         }
@@ -1106,9 +1107,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
 
             //hide cursor
             d->edit->d_func()->setCursorVisible(false);
-            if (d->edit->d_func()->cursorTimer > 0)
-                killTimer(d->edit->d_func()->cursorTimer);
-            d->edit->d_func()->cursorTimer = 0;
+            d->edit->d_func()->control->setCursorBlinkPeriod(0);
 
             d->setSelected(0);
             oldCurrent = 0;

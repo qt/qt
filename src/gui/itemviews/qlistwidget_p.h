@@ -163,7 +163,6 @@ class QListWidgetItemPrivate
 public:
     QListWidgetItemPrivate(QListWidgetItem *item) : q(item), theid(-1) {}
     QListWidgetItem *q;
-    int id;
     QVector<QWidgetItemData> values;
     int theid;
 };

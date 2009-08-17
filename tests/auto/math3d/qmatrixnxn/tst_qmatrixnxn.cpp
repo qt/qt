@@ -43,12 +43,12 @@
 #include <QtCore/qmath.h>
 #include "math3dincludes.h"
 
-class tst_QMatrix : public QObject
+class tst_QMatrixNxN : public QObject
 {
     Q_OBJECT
 public:
-    tst_QMatrix() {}
-    ~tst_QMatrix() {}
+    tst_QMatrixNxN() {}
+    ~tst_QMatrixNxN() {}
 
 private slots:
     void create2x2();
@@ -298,25 +298,25 @@ static qreal const transposedValues3x4[12] =
 
 // Set a matrix to a specified array of values, which are assumed
 // to be in row-major order.  This sets the values using floating-point.
-void tst_QMatrix::setMatrix(QMatrix2x2& m, const qreal *values)
+void tst_QMatrixNxN::setMatrix(QMatrix2x2& m, const qreal *values)
 {
     for (int row = 0; row < 2; ++row)
         for (int col = 0; col < 2; ++col)
             m(row, col) = values[row * 2 + col];
 }
-void tst_QMatrix::setMatrix(QMatrix3x3& m, const qreal *values)
+void tst_QMatrixNxN::setMatrix(QMatrix3x3& m, const qreal *values)
 {
     for (int row = 0; row < 3; ++row)
         for (int col = 0; col < 3; ++col)
             m(row, col) = values[row * 3 + col];
 }
-void tst_QMatrix::setMatrix(QMatrix4x4& m, const qreal *values)
+void tst_QMatrixNxN::setMatrix(QMatrix4x4& m, const qreal *values)
 {
     for (int row = 0; row < 4; ++row)
         for (int col = 0; col < 4; ++col)
             m(row, col) = values[row * 4 + col];
 }
-void tst_QMatrix::setMatrix(QMatrix4x3& m, const qreal *values)
+void tst_QMatrixNxN::setMatrix(QMatrix4x3& m, const qreal *values)
 {
     for (int row = 0; row < 3; ++row)
         for (int col = 0; col < 4; ++col)
@@ -326,7 +326,7 @@ void tst_QMatrix::setMatrix(QMatrix4x3& m, const qreal *values)
 // Set a matrix to a specified array of values, which are assumed
 // to be in row-major order.  This sets the values directly into
 // the internal data() array.
-void tst_QMatrix::setMatrixDirect(QMatrix2x2& m, const qreal *values)
+void tst_QMatrixNxN::setMatrixDirect(QMatrix2x2& m, const qreal *values)
 {
     float *data = m.data();
     for (int row = 0; row < 2; ++row) {
@@ -335,7 +335,7 @@ void tst_QMatrix::setMatrixDirect(QMatrix2x2& m, const qreal *values)
         }
     }
 }
-void tst_QMatrix::setMatrixDirect(QMatrix3x3& m, const qreal *values)
+void tst_QMatrixNxN::setMatrixDirect(QMatrix3x3& m, const qreal *values)
 {
     float *data = m.data();
     for (int row = 0; row < 3; ++row) {
@@ -344,7 +344,7 @@ void tst_QMatrix::setMatrixDirect(QMatrix3x3& m, const qreal *values)
         }
     }
 }
-void tst_QMatrix::setMatrixDirect(QMatrix4x4& m, const qreal *values)
+void tst_QMatrixNxN::setMatrixDirect(QMatrix4x4& m, const qreal *values)
 {
     float *data = m.data();
     for (int row = 0; row < 4; ++row) {
@@ -353,7 +353,7 @@ void tst_QMatrix::setMatrixDirect(QMatrix4x4& m, const qreal *values)
         }
     }
 }
-void tst_QMatrix::setMatrixDirect(QMatrix4x3& m, const qreal *values)
+void tst_QMatrixNxN::setMatrixDirect(QMatrix4x3& m, const qreal *values)
 {
     float *data = m.data();
     for (int row = 0; row < 3; ++row) {
@@ -398,7 +398,7 @@ static bool matrixFuzzyCompare(const QMatrix4x4 &m1, const QMatrix4x4 &m2)
 
 // Determine if a matrix is the same as a specified array of values.
 // The values are assumed to be specified in row-major order.
-bool tst_QMatrix::isSame(const QMatrix2x2& m, const qreal *values)
+bool tst_QMatrixNxN::isSame(const QMatrix2x2& m, const qreal *values)
 {
     const float *mv = m.constData();
     for (int row = 0; row < 2; ++row) {
@@ -419,7 +419,7 @@ bool tst_QMatrix::isSame(const QMatrix2x2& m, const qreal *values)
     }
     return true;
 }
-bool tst_QMatrix::isSame(const QMatrix3x3& m, const qreal *values)
+bool tst_QMatrixNxN::isSame(const QMatrix3x3& m, const qreal *values)
 {
     const float *mv = m.constData();
     for (int row = 0; row < 3; ++row) {
@@ -440,7 +440,7 @@ bool tst_QMatrix::isSame(const QMatrix3x3& m, const qreal *values)
     }
     return true;
 }
-bool tst_QMatrix::isSame(const QMatrix4x4& m, const qreal *values)
+bool tst_QMatrixNxN::isSame(const QMatrix4x4& m, const qreal *values)
 {
     const float *mv = m.constData();
     for (int row = 0; row < 4; ++row) {
@@ -461,7 +461,7 @@ bool tst_QMatrix::isSame(const QMatrix4x4& m, const qreal *values)
     }
     return true;
 }
-bool tst_QMatrix::isSame(const QMatrix4x3& m, const qreal *values)
+bool tst_QMatrixNxN::isSame(const QMatrix4x3& m, const qreal *values)
 {
     const float *mv = m.constData();
     for (int row = 0; row < 3; ++row) {
@@ -484,26 +484,26 @@ bool tst_QMatrix::isSame(const QMatrix4x3& m, const qreal *values)
 }
 
 // Determine if a matrix is the identity.
-bool tst_QMatrix::isIdentity(const QMatrix2x2& m)
+bool tst_QMatrixNxN::isIdentity(const QMatrix2x2& m)
 {
     return isSame(m, identityValues2);
 }
-bool tst_QMatrix::isIdentity(const QMatrix3x3& m)
+bool tst_QMatrixNxN::isIdentity(const QMatrix3x3& m)
 {
     return isSame(m, identityValues3);
 }
-bool tst_QMatrix::isIdentity(const QMatrix4x4& m)
+bool tst_QMatrixNxN::isIdentity(const QMatrix4x4& m)
 {
     return isSame(m, identityValues4);
 }
-bool tst_QMatrix::isIdentity(const QMatrix4x3& m)
+bool tst_QMatrixNxN::isIdentity(const QMatrix4x3& m)
 {
     return isSame(m, identityValues4x3);
 }
 
 // Test the creation of QMatrix2x2 objects in various ways:
 // construct, copy, and modify.
-void tst_QMatrix::create2x2()
+void tst_QMatrixNxN::create2x2()
 {
     QMatrix2x2 m1;
     QVERIFY(isIdentity(m1));
@@ -538,7 +538,7 @@ void tst_QMatrix::create2x2()
 
 // Test the creation of QMatrix3x3 objects in various ways:
 // construct, copy, and modify.
-void tst_QMatrix::create3x3()
+void tst_QMatrixNxN::create3x3()
 {
     QMatrix3x3 m1;
     QVERIFY(isIdentity(m1));
@@ -573,7 +573,7 @@ void tst_QMatrix::create3x3()
 
 // Test the creation of QMatrix4x4 objects in various ways:
 // construct, copy, and modify.
-void tst_QMatrix::create4x4()
+void tst_QMatrixNxN::create4x4()
 {
     QMatrix4x4 m1;
     QVERIFY(isIdentity(m1));
@@ -615,7 +615,7 @@ void tst_QMatrix::create4x4()
 
 // Test the creation of QMatrix4x3 objects in various ways:
 // construct, copy, and modify.
-void tst_QMatrix::create4x3()
+void tst_QMatrixNxN::create4x3()
 {
     QMatrix4x3 m1;
     QVERIFY(isIdentity(m1));
@@ -649,7 +649,7 @@ void tst_QMatrix::create4x3()
 }
 
 // Test isIdentity() for 2x2 matrices.
-void tst_QMatrix::isIdentity2x2()
+void tst_QMatrixNxN::isIdentity2x2()
 {
     for (int i = 0; i < 2 * 2; ++i) {
         QMatrix2x2 m;
@@ -660,7 +660,7 @@ void tst_QMatrix::isIdentity2x2()
 }
 
 // Test isIdentity() for 3x3 matrices.
-void tst_QMatrix::isIdentity3x3()
+void tst_QMatrixNxN::isIdentity3x3()
 {
     for (int i = 0; i < 3 * 3; ++i) {
         QMatrix3x3 m;
@@ -671,7 +671,7 @@ void tst_QMatrix::isIdentity3x3()
 }
 
 // Test isIdentity() for 4x4 matrices.
-void tst_QMatrix::isIdentity4x4()
+void tst_QMatrixNxN::isIdentity4x4()
 {
     for (int i = 0; i < 4 * 4; ++i) {
         QMatrix4x4 m;
@@ -687,7 +687,7 @@ void tst_QMatrix::isIdentity4x4()
 }
 
 // Test isIdentity() for 4x3 matrices.
-void tst_QMatrix::isIdentity4x3()
+void tst_QMatrixNxN::isIdentity4x3()
 {
     for (int i = 0; i < 4 * 3; ++i) {
         QMatrix4x3 m;
@@ -698,7 +698,7 @@ void tst_QMatrix::isIdentity4x3()
 }
 
 // Test 2x2 matrix comparisons.
-void tst_QMatrix::compare2x2()
+void tst_QMatrixNxN::compare2x2()
 {
     QMatrix2x2 m1(uniqueValues2);
     QMatrix2x2 m2(uniqueValues2);
@@ -711,7 +711,7 @@ void tst_QMatrix::compare2x2()
 }
 
 // Test 3x3 matrix comparisons.
-void tst_QMatrix::compare3x3()
+void tst_QMatrixNxN::compare3x3()
 {
     QMatrix3x3 m1(uniqueValues3);
     QMatrix3x3 m2(uniqueValues3);
@@ -724,7 +724,7 @@ void tst_QMatrix::compare3x3()
 }
 
 // Test 4x4 matrix comparisons.
-void tst_QMatrix::compare4x4()
+void tst_QMatrixNxN::compare4x4()
 {
     QMatrix4x4 m1(uniqueValues4);
     QMatrix4x4 m2(uniqueValues4);
@@ -737,7 +737,7 @@ void tst_QMatrix::compare4x4()
 }
 
 // Test 4x3 matrix comparisons.
-void tst_QMatrix::compare4x3()
+void tst_QMatrixNxN::compare4x3()
 {
     QMatrix4x3 m1(uniqueValues4x3);
     QMatrix4x3 m2(uniqueValues4x3);
@@ -750,7 +750,7 @@ void tst_QMatrix::compare4x3()
 }
 
 // Test matrix 2x2 transpose operations.
-void tst_QMatrix::transposed2x2()
+void tst_QMatrixNxN::transposed2x2()
 {
     // Transposing the identity should result in the identity.
     QMatrix2x2 m1;
@@ -769,7 +769,7 @@ void tst_QMatrix::transposed2x2()
 }
 
 // Test matrix 3x3 transpose operations.
-void tst_QMatrix::transposed3x3()
+void tst_QMatrixNxN::transposed3x3()
 {
     // Transposing the identity should result in the identity.
     QMatrix3x3 m1;
@@ -788,7 +788,7 @@ void tst_QMatrix::transposed3x3()
 }
 
 // Test matrix 4x4 transpose operations.
-void tst_QMatrix::transposed4x4()
+void tst_QMatrixNxN::transposed4x4()
 {
     // Transposing the identity should result in the identity.
     QMatrix4x4 m1;
@@ -807,7 +807,7 @@ void tst_QMatrix::transposed4x4()
 }
 
 // Test matrix 4x3 transpose operations.
-void tst_QMatrix::transposed4x3()
+void tst_QMatrixNxN::transposed4x3()
 {
     QMatrix4x3 m3(uniqueValues4x3);
     QMatrix3x4 m4 = m3.transposed();
@@ -818,7 +818,7 @@ void tst_QMatrix::transposed4x3()
 }
 
 // Test matrix addition for 2x2 matrices.
-void tst_QMatrix::add2x2_data()
+void tst_QMatrixNxN::add2x2_data()
 {
     QTest::addColumn<void *>("m1Values");
     QTest::addColumn<void *>("m2Values");
@@ -839,7 +839,7 @@ void tst_QMatrix::add2x2_data()
     QTest::newRow("unique")
         << (void *)uniqueValues2 << (void *)transposedValues2 << (void *)sumValues;
 }
-void tst_QMatrix::add2x2()
+void tst_QMatrixNxN::add2x2()
 {
     QFETCH(void *, m1Values);
     QFETCH(void *, m2Values);
@@ -858,7 +858,7 @@ void tst_QMatrix::add2x2()
 }
 
 // Test matrix addition for 3x3 matrices.
-void tst_QMatrix::add3x3_data()
+void tst_QMatrixNxN::add3x3_data()
 {
     QTest::addColumn<void *>("m1Values");
     QTest::addColumn<void *>("m2Values");
@@ -880,7 +880,7 @@ void tst_QMatrix::add3x3_data()
     QTest::newRow("unique")
         << (void *)uniqueValues3 << (void *)transposedValues3 << (void *)sumValues;
 }
-void tst_QMatrix::add3x3()
+void tst_QMatrixNxN::add3x3()
 {
     QFETCH(void *, m1Values);
     QFETCH(void *, m2Values);
@@ -899,7 +899,7 @@ void tst_QMatrix::add3x3()
 }
 
 // Test matrix addition for 4x4 matrices.
-void tst_QMatrix::add4x4_data()
+void tst_QMatrixNxN::add4x4_data()
 {
     QTest::addColumn<void *>("m1Values");
     QTest::addColumn<void *>("m2Values");
@@ -922,7 +922,7 @@ void tst_QMatrix::add4x4_data()
     QTest::newRow("unique")
         << (void *)uniqueValues4 << (void *)transposedValues4 << (void *)sumValues;
 }
-void tst_QMatrix::add4x4()
+void tst_QMatrixNxN::add4x4()
 {
     QFETCH(void *, m1Values);
     QFETCH(void *, m2Values);
@@ -941,7 +941,7 @@ void tst_QMatrix::add4x4()
 }
 
 // Test matrix addition for 4x3 matrices.
-void tst_QMatrix::add4x3_data()
+void tst_QMatrixNxN::add4x3_data()
 {
     QTest::addColumn<void *>("m1Values");
     QTest::addColumn<void *>("m2Values");
@@ -963,7 +963,7 @@ void tst_QMatrix::add4x3_data()
     QTest::newRow("unique")
         << (void *)uniqueValues4x3 << (void *)transposedValues3x4 << (void *)sumValues;
 }
-void tst_QMatrix::add4x3()
+void tst_QMatrixNxN::add4x3()
 {
     QFETCH(void *, m1Values);
     QFETCH(void *, m2Values);
@@ -982,12 +982,12 @@ void tst_QMatrix::add4x3()
 }
 
 // Test matrix subtraction for 2x2 matrices.
-void tst_QMatrix::subtract2x2_data()
+void tst_QMatrixNxN::subtract2x2_data()
 {
     // Use the same test cases as the add test.
     add2x2_data();
 }
-void tst_QMatrix::subtract2x2()
+void tst_QMatrixNxN::subtract2x2()
 {
     QFETCH(void *, m1Values);
     QFETCH(void *, m2Values);
@@ -1015,12 +1015,12 @@ void tst_QMatrix::subtract2x2()
 }
 
 // Test matrix subtraction for 3x3 matrices.
-void tst_QMatrix::subtract3x3_data()
+void tst_QMatrixNxN::subtract3x3_data()
 {
     // Use the same test cases as the add test.
     add3x3_data();
 }
-void tst_QMatrix::subtract3x3()
+void tst_QMatrixNxN::subtract3x3()
 {
     QFETCH(void *, m1Values);
     QFETCH(void *, m2Values);
@@ -1048,12 +1048,12 @@ void tst_QMatrix::subtract3x3()
 }
 
 // Test matrix subtraction for 4x4 matrices.
-void tst_QMatrix::subtract4x4_data()
+void tst_QMatrixNxN::subtract4x4_data()
 {
     // Use the same test cases as the add test.
     add4x4_data();
 }
-void tst_QMatrix::subtract4x4()
+void tst_QMatrixNxN::subtract4x4()
 {
     QFETCH(void *, m1Values);
     QFETCH(void *, m2Values);
@@ -1081,12 +1081,12 @@ void tst_QMatrix::subtract4x4()
 }
 
 // Test matrix subtraction for 4x3 matrices.
-void tst_QMatrix::subtract4x3_data()
+void tst_QMatrixNxN::subtract4x3_data()
 {
     // Use the same test cases as the add test.
     add4x3_data();
 }
-void tst_QMatrix::subtract4x3()
+void tst_QMatrixNxN::subtract4x3()
 {
     QFETCH(void *, m1Values);
     QFETCH(void *, m2Values);
@@ -1114,7 +1114,7 @@ void tst_QMatrix::subtract4x3()
 }
 
 // Test matrix multiplication for 2x2 matrices.
-void tst_QMatrix::multiply2x2_data()
+void tst_QMatrixNxN::multiply2x2_data()
 {
     QTest::addColumn<void *>("m1Values");
     QTest::addColumn<void *>("m2Values");
@@ -1148,7 +1148,7 @@ void tst_QMatrix::multiply2x2_data()
     QTest::newRow("unique/transposed")
         << (void *)uniqueValues2 << (void *)transposedValues2 << (void *)uniqueResult;
 }
-void tst_QMatrix::multiply2x2()
+void tst_QMatrixNxN::multiply2x2()
 {
     QFETCH(void *, m1Values);
     QFETCH(void *, m2Values);
@@ -1163,7 +1163,7 @@ void tst_QMatrix::multiply2x2()
 }
 
 // Test matrix multiplication for 3x3 matrices.
-void tst_QMatrix::multiply3x3_data()
+void tst_QMatrixNxN::multiply3x3_data()
 {
     QTest::addColumn<void *>("m1Values");
     QTest::addColumn<void *>("m2Values");
@@ -1197,7 +1197,7 @@ void tst_QMatrix::multiply3x3_data()
     QTest::newRow("unique/transposed")
         << (void *)uniqueValues3 << (void *)transposedValues3 << (void *)uniqueResult;
 }
-void tst_QMatrix::multiply3x3()
+void tst_QMatrixNxN::multiply3x3()
 {
     QFETCH(void *, m1Values);
     QFETCH(void *, m2Values);
@@ -1212,7 +1212,7 @@ void tst_QMatrix::multiply3x3()
 }
 
 // Test matrix multiplication for 4x4 matrices.
-void tst_QMatrix::multiply4x4_data()
+void tst_QMatrixNxN::multiply4x4_data()
 {
     QTest::addColumn<void *>("m1Values");
     QTest::addColumn<void *>("m2Values");
@@ -1246,7 +1246,7 @@ void tst_QMatrix::multiply4x4_data()
     QTest::newRow("unique/transposed")
         << (void *)uniqueValues4 << (void *)transposedValues4 << (void *)uniqueResult;
 }
-void tst_QMatrix::multiply4x4()
+void tst_QMatrixNxN::multiply4x4()
 {
     QFETCH(void *, m1Values);
     QFETCH(void *, m2Values);
@@ -1266,7 +1266,7 @@ void tst_QMatrix::multiply4x4()
 }
 
 // Test matrix multiplication for 4x3 matrices.
-void tst_QMatrix::multiply4x3_data()
+void tst_QMatrixNxN::multiply4x3_data()
 {
     QTest::addColumn<void *>("m1Values");
     QTest::addColumn<void *>("m2Values");
@@ -1294,7 +1294,7 @@ void tst_QMatrix::multiply4x3_data()
     QTest::newRow("unique/transposed")
         << (void *)uniqueValues4x3 << (void *)transposedValues3x4 << (void *)uniqueResult;
 }
-void tst_QMatrix::multiply4x3()
+void tst_QMatrixNxN::multiply4x3()
 {
     QFETCH(void *, m1Values);
     QFETCH(void *, m2Values);
@@ -1312,7 +1312,7 @@ void tst_QMatrix::multiply4x3()
 }
 
 // Test matrix multiplication by a factor for 2x2 matrices.
-void tst_QMatrix::multiplyFactor2x2_data()
+void tst_QMatrixNxN::multiplyFactor2x2_data()
 {
     QTest::addColumn<void *>("m1Values");
     QTest::addColumn<qreal>("factor");
@@ -1343,7 +1343,7 @@ void tst_QMatrix::multiplyFactor2x2_data()
     QTest::newRow("zero")
         << (void *)values << (qreal)0.0f << (void *)nullValues4;
 }
-void tst_QMatrix::multiplyFactor2x2()
+void tst_QMatrixNxN::multiplyFactor2x2()
 {
     QFETCH(void *, m1Values);
     QFETCH(qreal, factor);
@@ -1366,7 +1366,7 @@ void tst_QMatrix::multiplyFactor2x2()
 }
 
 // Test matrix multiplication by a factor for 3x3 matrices.
-void tst_QMatrix::multiplyFactor3x3_data()
+void tst_QMatrixNxN::multiplyFactor3x3_data()
 {
     QTest::addColumn<void *>("m1Values");
     QTest::addColumn<qreal>("factor");
@@ -1400,7 +1400,7 @@ void tst_QMatrix::multiplyFactor3x3_data()
     QTest::newRow("zero")
         << (void *)values << (qreal)0.0f << (void *)nullValues4;
 }
-void tst_QMatrix::multiplyFactor3x3()
+void tst_QMatrixNxN::multiplyFactor3x3()
 {
     QFETCH(void *, m1Values);
     QFETCH(qreal, factor);
@@ -1423,7 +1423,7 @@ void tst_QMatrix::multiplyFactor3x3()
 }
 
 // Test matrix multiplication by a factor for 4x4 matrices.
-void tst_QMatrix::multiplyFactor4x4_data()
+void tst_QMatrixNxN::multiplyFactor4x4_data()
 {
     QTest::addColumn<void *>("m1Values");
     QTest::addColumn<qreal>("factor");
@@ -1460,7 +1460,7 @@ void tst_QMatrix::multiplyFactor4x4_data()
     QTest::newRow("zero")
         << (void *)values << (qreal)0.0f << (void *)nullValues4;
 }
-void tst_QMatrix::multiplyFactor4x4()
+void tst_QMatrixNxN::multiplyFactor4x4()
 {
     QFETCH(void *, m1Values);
     QFETCH(qreal, factor);
@@ -1483,7 +1483,7 @@ void tst_QMatrix::multiplyFactor4x4()
 }
 
 // Test matrix multiplication by a factor for 4x3 matrices.
-void tst_QMatrix::multiplyFactor4x3_data()
+void tst_QMatrixNxN::multiplyFactor4x3_data()
 {
     QTest::addColumn<void *>("m1Values");
     QTest::addColumn<qreal>("factor");
@@ -1517,7 +1517,7 @@ void tst_QMatrix::multiplyFactor4x3_data()
     QTest::newRow("zero")
         << (void *)values << (qreal)0.0f << (void *)nullValues4x3;
 }
-void tst_QMatrix::multiplyFactor4x3()
+void tst_QMatrixNxN::multiplyFactor4x3()
 {
     QFETCH(void *, m1Values);
     QFETCH(qreal, factor);
@@ -1540,12 +1540,12 @@ void tst_QMatrix::multiplyFactor4x3()
 }
 
 // Test matrix division by a factor for 2x2 matrices.
-void tst_QMatrix::divideFactor2x2_data()
+void tst_QMatrixNxN::divideFactor2x2_data()
 {
     // Use the same test cases as the multiplyFactor test.
     multiplyFactor2x2_data();
 }
-void tst_QMatrix::divideFactor2x2()
+void tst_QMatrixNxN::divideFactor2x2()
 {
     QFETCH(void *, m1Values);
     QFETCH(qreal, factor);
@@ -1567,12 +1567,12 @@ void tst_QMatrix::divideFactor2x2()
 }
 
 // Test matrix division by a factor for 3x3 matrices.
-void tst_QMatrix::divideFactor3x3_data()
+void tst_QMatrixNxN::divideFactor3x3_data()
 {
     // Use the same test cases as the multiplyFactor test.
     multiplyFactor3x3_data();
 }
-void tst_QMatrix::divideFactor3x3()
+void tst_QMatrixNxN::divideFactor3x3()
 {
     QFETCH(void *, m1Values);
     QFETCH(qreal, factor);
@@ -1594,12 +1594,12 @@ void tst_QMatrix::divideFactor3x3()
 }
 
 // Test matrix division by a factor for 4x4 matrices.
-void tst_QMatrix::divideFactor4x4_data()
+void tst_QMatrixNxN::divideFactor4x4_data()
 {
     // Use the same test cases as the multiplyFactor test.
     multiplyFactor4x4_data();
 }
-void tst_QMatrix::divideFactor4x4()
+void tst_QMatrixNxN::divideFactor4x4()
 {
     QFETCH(void *, m1Values);
     QFETCH(qreal, factor);
@@ -1621,12 +1621,12 @@ void tst_QMatrix::divideFactor4x4()
 }
 
 // Test matrix division by a factor for 4x3 matrices.
-void tst_QMatrix::divideFactor4x3_data()
+void tst_QMatrixNxN::divideFactor4x3_data()
 {
     // Use the same test cases as the multiplyFactor test.
     multiplyFactor4x3_data();
 }
-void tst_QMatrix::divideFactor4x3()
+void tst_QMatrixNxN::divideFactor4x3()
 {
     QFETCH(void *, m1Values);
     QFETCH(qreal, factor);
@@ -1648,12 +1648,12 @@ void tst_QMatrix::divideFactor4x3()
 }
 
 // Test matrix negation for 2x2 matrices.
-void tst_QMatrix::negate2x2_data()
+void tst_QMatrixNxN::negate2x2_data()
 {
     // Use the same test cases as the multiplyFactor test.
     multiplyFactor2x2_data();
 }
-void tst_QMatrix::negate2x2()
+void tst_QMatrixNxN::negate2x2()
 {
     QFETCH(void *, m1Values);
 
@@ -1671,12 +1671,12 @@ void tst_QMatrix::negate2x2()
 }
 
 // Test matrix negation for 3x3 matrices.
-void tst_QMatrix::negate3x3_data()
+void tst_QMatrixNxN::negate3x3_data()
 {
     // Use the same test cases as the multiplyFactor test.
     multiplyFactor3x3_data();
 }
-void tst_QMatrix::negate3x3()
+void tst_QMatrixNxN::negate3x3()
 {
     QFETCH(void *, m1Values);
 
@@ -1694,12 +1694,12 @@ void tst_QMatrix::negate3x3()
 }
 
 // Test matrix negation for 4x4 matrices.
-void tst_QMatrix::negate4x4_data()
+void tst_QMatrixNxN::negate4x4_data()
 {
     // Use the same test cases as the multiplyFactor test.
     multiplyFactor4x4_data();
 }
-void tst_QMatrix::negate4x4()
+void tst_QMatrixNxN::negate4x4()
 {
     QFETCH(void *, m1Values);
 
@@ -1717,12 +1717,12 @@ void tst_QMatrix::negate4x4()
 }
 
 // Test matrix negation for 4x3 matrices.
-void tst_QMatrix::negate4x3_data()
+void tst_QMatrixNxN::negate4x3_data()
 {
     // Use the same test cases as the multiplyFactor test.
     multiplyFactor4x3_data();
 }
-void tst_QMatrix::negate4x3()
+void tst_QMatrixNxN::negate4x3()
 {
     QFETCH(void *, m1Values);
 
@@ -1823,7 +1823,7 @@ static void m4Inverse(const Matrix4& min, Matrix4& mout)
 }
 
 // Test matrix inverted for 4x4 matrices.
-void tst_QMatrix::inverted4x4_data()
+void tst_QMatrixNxN::inverted4x4_data()
 {
     QTest::addColumn<void *>("m1Values");
     QTest::addColumn<void *>("m2Values");
@@ -1866,7 +1866,7 @@ void tst_QMatrix::inverted4x4_data()
     QTest::newRow("translate")
         << (void *)translate.v << (void *)inverseTranslate.v << true;
 }
-void tst_QMatrix::inverted4x4()
+void tst_QMatrixNxN::inverted4x4()
 {
     QFETCH(void *, m1Values);
     QFETCH(void *, m2Values);
@@ -1914,7 +1914,7 @@ void tst_QMatrix::inverted4x4()
     QCOMPARE(inv, invertible);
 }
 
-void tst_QMatrix::orthonormalInverse4x4()
+void tst_QMatrixNxN::orthonormalInverse4x4()
 {
     QMatrix4x4 m1;
     QVERIFY(matrixFuzzyCompare(m1.inverted(), m1));
@@ -1949,7 +1949,7 @@ void tst_QMatrix::orthonormalInverse4x4()
 }
 
 // Test the generation and use of 4x4 scale matrices.
-void tst_QMatrix::scale4x4_data()
+void tst_QMatrixNxN::scale4x4_data()
 {
     QTest::addColumn<qreal>("x");
     QTest::addColumn<qreal>("y");
@@ -1991,7 +1991,7 @@ void tst_QMatrix::scale4x4_data()
     QTest::newRow("complex2D")
         << (qreal)2.0f << (qreal)-11.0f << (qreal)1.0f << (void *)complexScale2D;
 }
-void tst_QMatrix::scale4x4()
+void tst_QMatrixNxN::scale4x4()
 {
     QFETCH(qreal, x);
     QFETCH(qreal, y);
@@ -2103,7 +2103,7 @@ void tst_QMatrix::scale4x4()
 }
 
 // Test the generation and use of 4x4 translation matrices.
-void tst_QMatrix::translate4x4_data()
+void tst_QMatrixNxN::translate4x4_data()
 {
     QTest::addColumn<qreal>("x");
     QTest::addColumn<qreal>("y");
@@ -2137,7 +2137,7 @@ void tst_QMatrix::translate4x4_data()
     QTest::newRow("complex2D")
         << (qreal)2.0f << (qreal)-11.0f << (qreal)0.0f << (void *)complexTranslate2D;
 }
-void tst_QMatrix::translate4x4()
+void tst_QMatrixNxN::translate4x4()
 {
     QFETCH(qreal, x);
     QFETCH(qreal, y);
@@ -2203,7 +2203,7 @@ void tst_QMatrix::translate4x4()
 }
 
 // Test the generation and use of 4x4 rotation matrices.
-void tst_QMatrix::rotate4x4_data()
+void tst_QMatrixNxN::rotate4x4_data()
 {
     QTest::addColumn<qreal>("angle");
     QTest::addColumn<qreal>("x");
@@ -2326,7 +2326,7 @@ void tst_QMatrix::rotate4x4_data()
         << (qreal)x << (qreal)y << (qreal)z
         << (void *)complexRotate;
 }
-void tst_QMatrix::rotate4x4()
+void tst_QMatrixNxN::rotate4x4()
 {
     QFETCH(qreal, angle);
     QFETCH(qreal, x);
@@ -2441,7 +2441,7 @@ static bool isSame(const QMatrix3x3& m1, const Matrix3& m2)
 }
 
 // Test the computation of normal matrices from 4x4 transformation matrices.
-void tst_QMatrix::normalMatrix_data()
+void tst_QMatrixNxN::normalMatrix_data()
 {
     QTest::addColumn<void *>("mValues");
 
@@ -2488,7 +2488,7 @@ void tst_QMatrix::normalMatrix_data()
     QTest::newRow("null scale 2") << (void *)nullScaleValues2;
     QTest::newRow("null scale 3") << (void *)nullScaleValues3;
 }
-void tst_QMatrix::normalMatrix()
+void tst_QMatrixNxN::normalMatrix()
 {
     QFETCH(void *, mValues);
     const qreal *values = (const qreal *)mValues;
@@ -2529,7 +2529,7 @@ void tst_QMatrix::normalMatrix()
 }
 
 // Test optimized transformations on 4x4 matrices.
-void tst_QMatrix::optimizedTransforms()
+void tst_QMatrixNxN::optimizedTransforms()
 {
     static qreal const translateValues[16] =
         {1.0f, 0.0f, 0.0f, 4.0f,
@@ -2640,7 +2640,7 @@ void tst_QMatrix::optimizedTransforms()
 }
 
 // Test orthographic projections.
-void tst_QMatrix::ortho()
+void tst_QMatrixNxN::ortho()
 {
     QMatrix4x4 m1;
     m1.ortho(QRect(0, 0, 300, 150));
@@ -2729,7 +2729,7 @@ void tst_QMatrix::ortho()
 }
 
 // Test perspective frustum projections.
-void tst_QMatrix::frustum()
+void tst_QMatrixNxN::frustum()
 {
     QMatrix4x4 m1;
     m1.frustum(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
@@ -2765,7 +2765,7 @@ void tst_QMatrix::frustum()
 }
 
 // Test perspective field-of-view projections.
-void tst_QMatrix::perspective()
+void tst_QMatrixNxN::perspective()
 {
     QMatrix4x4 m1;
     m1.perspective(45.0f, 1.0f, -1.0f, 1.0f);
@@ -2801,7 +2801,7 @@ void tst_QMatrix::perspective()
 }
 
 // Test left-handed vs right-handed coordinate flipping.
-void tst_QMatrix::flipCoordinates()
+void tst_QMatrixNxN::flipCoordinates()
 {
     QMatrix4x4 m1;
     m1.flipCoordinates();
@@ -2828,7 +2828,7 @@ void tst_QMatrix::flipCoordinates()
 }
 
 // Test conversion of generic matrices to and from the non-generic types.
-void tst_QMatrix::convertGeneric()
+void tst_QMatrixNxN::convertGeneric()
 {
     QMatrix4x3 m1(uniqueValues4x3);
 
@@ -2860,7 +2860,7 @@ void tst_QMatrix::convertGeneric()
     QVERIFY(isSame(m11, conv4x4));
 }
 
-void tst_QMatrix::extractAxisRotation_data()
+void tst_QMatrixNxN::extractAxisRotation_data()
 {
     QTest::addColumn<float>("x");
     QTest::addColumn<float>("y");
@@ -2893,7 +2893,7 @@ void tst_QMatrix::extractAxisRotation_data()
     QTest::newRow("1, 1, 1, 300 deg") << 1.0f << 1.0f << 1.0f << 300.0f;
 }
 
-void tst_QMatrix::extractAxisRotation()
+void tst_QMatrixNxN::extractAxisRotation()
 {
     QFETCH(float, x);
     QFETCH(float, y);
@@ -2922,7 +2922,7 @@ void tst_QMatrix::extractAxisRotation()
     }
 }
 
-void tst_QMatrix::extractTranslation_data()
+void tst_QMatrixNxN::extractTranslation_data()
 {
     QTest::addColumn<QMatrix4x4>("rotation");
     QTest::addColumn<float>("x");
@@ -2948,7 +2948,7 @@ void tst_QMatrix::extractTranslation_data()
     QTest::newRow("rotZ 75, rotX 25, rotY 45, 100, 50, 25") << m1 << 100.0f << 50.0f << 25.0f;
 }
 
-void tst_QMatrix::extractTranslation()
+void tst_QMatrixNxN::extractTranslation()
 {
     QFETCH(QMatrix4x4, rotation);
     QFETCH(float, x);
@@ -2995,7 +2995,7 @@ struct Matrix4x4
 };
 
 // Test the inferring of special matrix types.
-void tst_QMatrix::inferSpecialType_data()
+void tst_QMatrixNxN::inferSpecialType_data()
 {
     QTest::addColumn<void *>("mValues");
     QTest::addColumn<int>("flagBits");
@@ -3043,7 +3043,7 @@ void tst_QMatrix::inferSpecialType_data()
     QTest::newRow("below")
         << (void *)belowValues << (int)General;
 }
-void tst_QMatrix::inferSpecialType()
+void tst_QMatrixNxN::inferSpecialType()
 {
     QFETCH(void *, mValues);
     QFETCH(int, flagBits);
@@ -3054,7 +3054,7 @@ void tst_QMatrix::inferSpecialType()
     QCOMPARE(reinterpret_cast<Matrix4x4 *>(&m)->flagBits, flagBits);
 }
 
-void tst_QMatrix::columnsAndRows()
+void tst_QMatrixNxN::columnsAndRows()
 {
     QMatrix4x4 m1(uniqueValues4);
 
@@ -3102,7 +3102,7 @@ void tst_QMatrix::columnsAndRows()
 // Test converting QMatrix objects into QMatrix4x4 and then
 // checking that transformations in the original perform the
 // equivalent transformations in the new matrix.
-void tst_QMatrix::convertQMatrix()
+void tst_QMatrixNxN::convertQMatrix()
 {
     QMatrix m1;
     m1.translate(-3.5, 2.0);
@@ -3149,7 +3149,7 @@ void tst_QMatrix::convertQMatrix()
 // Test converting QTransform objects into QMatrix4x4 and then
 // checking that transformations in the original perform the
 // equivalent transformations in the new matrix.
-void tst_QMatrix::convertQTransform()
+void tst_QMatrixNxN::convertQTransform()
 {
     QTransform m1;
     m1.translate(-3.5, 2.0);
@@ -3197,7 +3197,7 @@ void tst_QMatrix::convertQTransform()
 }
 
 // Test filling matrices with specific values.
-void tst_QMatrix::fill()
+void tst_QMatrixNxN::fill()
 {
     QMatrix4x4 m1;
     m1.fill(0.0f);
@@ -3224,7 +3224,7 @@ void tst_QMatrix::fill()
 }
 
 // Test the mapRect() function for QRect and QRectF.
-void tst_QMatrix::mapRect_data()
+void tst_QMatrixNxN::mapRect_data()
 {
     QTest::addColumn<qreal>("x");
     QTest::addColumn<qreal>("y");
@@ -3236,7 +3236,7 @@ void tst_QMatrix::mapRect_data()
     QTest::newRow("rect")
         << (qreal)1.0f << (qreal)-20.5f << (qreal)100.0f << (qreal)63.75f;
 }
-void tst_QMatrix::mapRect()
+void tst_QMatrixNxN::mapRect()
 {
     QFETCH(qreal, x);
     QFETCH(qreal, y);
@@ -3334,12 +3334,12 @@ void tst_QMatrix::mapRect()
     QVERIFY(mri == tri);
 }
 
-class tst_QMatrix4x4Properties : public QObject
+class tst_QMatrixNxN4x4Properties : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QMatrix4x4 matrix READ matrix WRITE setMatrix)
 public:
-    tst_QMatrix4x4Properties(QObject *parent = 0) : QObject(parent) {}
+    tst_QMatrixNxN4x4Properties(QObject *parent = 0) : QObject(parent) {}
 
     QMatrix4x4 matrix() const { return m; }
     void setMatrix(const QMatrix4x4& value) { m = value; }
@@ -3349,9 +3349,9 @@ private:
 };
 
 // Test getting and setting matrix properties via the metaobject system.
-void tst_QMatrix::properties()
+void tst_QMatrixNxN::properties()
 {
-    tst_QMatrix4x4Properties obj;
+    tst_QMatrixNxN4x4Properties obj;
 
     QMatrix4x4 m1(uniqueValues4);
     obj.setMatrix(m1);
@@ -3366,7 +3366,7 @@ void tst_QMatrix::properties()
     QVERIFY(isSame(m2, transposedValues4));
 }
 
-void tst_QMatrix::metaTypes()
+void tst_QMatrixNxN::metaTypes()
 {
     QVERIFY(QMetaType::type("QMatrix4x4") == QMetaType::QMatrix4x4);
 
@@ -3378,6 +3378,6 @@ void tst_QMatrix::metaTypes()
     QVERIFY(qMetaTypeId<QMatrix4x4>() == QMetaType::QMatrix4x4);
 }
 
-QTEST_APPLESS_MAIN(tst_QMatrix)
+QTEST_APPLESS_MAIN(tst_QMatrixNxN)
 
 #include "tst_qmatrixnxn.moc"

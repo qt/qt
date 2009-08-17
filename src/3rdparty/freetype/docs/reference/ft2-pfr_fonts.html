@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.6 API Reference</title>
+<title>FreeType-2.3.9 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -31,7 +31,11 @@
 </style>
 </head>
 <body>
-<center><h1>FreeType-2.3.6 API Reference</h1></center>
+
+<table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+<center><h1>FreeType-2.3.9 API Reference</h1></center>
 
 <center><h1>
 PFR Fonts
@@ -74,21 +78,21 @@ Defined in FT_PFR_H (freetype/ftpfr.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>aoutline_resolution</b></td><td>
-<p>Outline resolution. This is equivalent to &lsquo;face-&gt;units_per_EM&rsquo;. Optional (parameter can be NULL).</p>
+<p>Outline resolution. This is equivalent to &lsquo;face-&gt;units_per_EM&rsquo; for non-PFR fonts. Optional (parameter can be NULL).</p>
 </td></tr>
 <tr valign=top><td><b>ametrics_resolution</b></td><td>
 <p>Metrics resolution. This is equivalent to &lsquo;outline_resolution&rsquo; for non-PFR fonts. Optional (parameter can be NULL).</p>
 </td></tr>
 <tr valign=top><td><b>ametrics_x_scale</b></td><td>
-<p>A 16.16 fixed-point number used to scale distance expressed in metrics units to device sub-pixels. This is equivalent to &lsquo;face-&gt;size-&gt;x_scale&rsquo;, but for metrics only. Optional (parameter can be NULL)</p>
+<p>A 16.16 fixed-point number used to scale distance expressed in metrics units to device sub-pixels. This is equivalent to &lsquo;face-&gt;size-&gt;x_scale&rsquo;, but for metrics only. Optional (parameter can be NULL).</p>
 </td></tr>
 <tr valign=top><td><b>ametrics_y_scale</b></td><td>
-<p>Same as &lsquo;ametrics_x_scale&rsquo; but for the vertical direction. optional (parameter can be NULL)</p>
+<p>Same as &lsquo;ametrics_x_scale&rsquo; but for the vertical direction. optional (parameter can be NULL).</p>
 </td></tr>
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>If the input face is not a PFR, this function will return an error. However, in all cases, it will return valid values.</p>
@@ -139,7 +143,7 @@ Defined in FT_PFR_H (freetype/ftpfr.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>This function always return distances in original PFR metrics units. This is unlike <a href="ft2-base_interface.html#FT_Get_Kerning">FT_Get_Kerning</a> with the <a href="ft2-base_interface.html#FT_Kerning_Mode">FT_KERNING_UNSCALED</a> mode, which always returns distances converted to outline units.</p>
@@ -187,7 +191,7 @@ Defined in FT_PFR_H (freetype/ftpfr.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>You can use the &lsquo;x_scale&rsquo; or &lsquo;y_scale&rsquo; results of <a href="ft2-pfr_fonts.html#FT_Get_PFR_Metrics">FT_Get_PFR_Metrics</a> to convert the advance to device sub-pixels (i.e., 1/64th of pixels).</p>

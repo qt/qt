@@ -298,9 +298,9 @@ inline void QPainterPath::lineTo(qreal x, qreal y)
     lineTo(QPointF(x, y));
 }
 
-inline void QPainterPath::arcTo(qreal x, qreal y, qreal w, qreal h, qreal startAngle, qreal arcLenght)
+inline void QPainterPath::arcTo(qreal x, qreal y, qreal w, qreal h, qreal startAngle, qreal arcLength)
 {
-    arcTo(QRectF(x, y, w, h), startAngle, arcLenght);
+    arcTo(QRectF(x, y, w, h), startAngle, arcLength);
 }
 
 inline void QPainterPath::arcMoveTo(qreal x, qreal y, qreal w, qreal h, qreal angle)

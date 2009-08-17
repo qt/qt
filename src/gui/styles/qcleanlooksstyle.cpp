@@ -84,14 +84,9 @@ enum Direction {
 
 // from windows style
 static const int windowsItemFrame        =  2; // menu item frame width
-static const int windowsSepHeight        =  6; // separator item height
 static const int windowsItemHMargin      =  3; // menu item hor text margin
 static const int windowsItemVMargin      =  8; // menu item ver text margin
-static const int windowsArrowHMargin     =  6; // arrow horizontal margin
-static const int windowsTabSpacing       = 12; // space between text and tab
-static const int windowsCheckMarkHMargin =  2; // horiz. margins of check mark
 static const int windowsRightBorder      = 15; // right border on windows
-static const int windowsCheckMarkWidth   = 12; // checkmarks width on windows
 
 /* XPM */
 static const char * const dock_widget_close_xpm[] = {

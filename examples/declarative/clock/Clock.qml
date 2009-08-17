@@ -14,7 +14,7 @@ Item {
         seconds = date.getSeconds();
     }
     Timer {
-        interval: 500; running: true; repeat: true; triggeredOnStart: true
+        interval: 100; running: true; repeat: true; triggeredOnStart: true
         onTriggered: Clock.time = new Date()
     }
 

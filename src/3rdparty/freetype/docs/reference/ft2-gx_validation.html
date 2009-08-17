@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.6 API Reference</title>
+<title>FreeType-2.3.9 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -31,7 +31,11 @@
 </style>
 </head>
 <body>
-<center><h1>FreeType-2.3.6 API Reference</h1></center>
+
+<table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+<center><h1>FreeType-2.3.9 API Reference</h1></center>
 
 <center><h1>
 TrueTypeGX/AAT Validation
@@ -48,14 +52,6 @@ TrueTypeGX/AAT Validation
 </td></tr></table><br>
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_VALIDATE_GX_LENGTH">FT_VALIDATE_GX_LENGTH</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_GX_VALIDATE_H (freetype/ftgxval.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-#define <b>FT_VALIDATE_GX_LENGTH</b>     (FT_VALIDATE_GX_LAST_INDEX + 1)
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>The number of tables checked in this module. Use it as a parameter for the &lsquo;table-length&rsquo; argument of function <a href="ft2-gx_validation.html#FT_TrueTypeGX_Validate">FT_TrueTypeGX_Validate</a>.</p>
 </td></tr></table><br>
@@ -182,7 +178,7 @@ Defined in FT_GX_VALIDATE_H (freetype/ftgxval.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>This function only works with TrueTypeGX fonts, returning an error otherwise.</p>
@@ -279,8 +275,8 @@ Defined in FT_GX_VALIDATE_H (freetype/ftgxval.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Validate classic (16bit format) kern table to assure that the offsets and indices are valid. The idea is that a higher-level library which actually does the text layout can access those tables without error checking (which can be quite time consuming).</p>
-<p>The &lsquo;kern&rsquo; table validator in <a href="ft2-gx_validation.html#FT_TrueTypeGX_Validate">FT_TrueTypeGX_Validate</a> deals with both the new 32bit format and the classic 16bit format, while FT_ClassicKern_Validate only supports the classic 16bit format.</p>
+<p>Validate classic (16-bit format) kern table to assure that the offsets and indices are valid. The idea is that a higher-level library which actually does the text layout can access those tables without error checking (which can be quite time consuming).</p>
+<p>The &lsquo;kern&rsquo; table validator in <a href="ft2-gx_validation.html#FT_TrueTypeGX_Validate">FT_TrueTypeGX_Validate</a> deals with both the new 32-bit format and the classic 16-bit format, while FT_ClassicKern_Validate only supports the classic 16-bit format.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -302,7 +298,7 @@ Defined in FT_GX_VALIDATE_H (freetype/ftgxval.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>After use, the application should deallocate the buffers pointed to by &lsquo;ckern_table&rsquo;, by calling <a href="ft2-gx_validation.html#FT_ClassicKern_Free">FT_ClassicKern_Free</a>. A NULL value indicates that the table doesn't exist in the font.</p>

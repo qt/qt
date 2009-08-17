@@ -497,6 +497,40 @@ static bool IsMouseOrKeyEvent( NSEvent* event )
 }
 #endif
 
+static inline void qt_mac_waitForMoreEvents()
+{
+#ifndef QT_MAC_USE_COCOA
+    while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 1.0e20, true) == kCFRunLoopRunTimedOut);
+#else
+    // If no event exist in the cocoa event que, wait
+    // (and free up cpu time) until at least one event occur.
+    // This implementation is a bit on the edge, but seems to
+    // work fine:
+    NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+        untilDate:[NSDate distantFuture]
+        inMode:NSDefaultRunLoopMode
+        dequeue:YES];
+    if (event)
+        [NSApp postEvent:event atStart:YES];
+#endif
+}
+
+#ifdef QT_MAC_USE_COCOA
+static inline void qt_mac_waitForMoreModalSessionEvents()
+{
+    // If no event exist in the cocoa event que, wait
+    // (and free up cpu time) until at least one event occur.
+    // This implementation is a bit on the edge, but seems to
+    // work fine:
+    NSEvent* event = [NSApp nextEventMatchingMask:NSAnyEventMask
+        untilDate:[NSDate distantFuture]
+        inMode:NSModalPanelRunLoopMode
+        dequeue:YES];
+    if (event)
+        [NSApp postEvent:event atStart:YES];
+}
+#endif
+
 bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
 {
     Q_D(QEventDispatcherMac);
@@ -515,55 +549,42 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
         QMacCocoaAutoReleasePool pool;
         NSEvent* event = 0;
 
-        if (flags & QEventLoop::DialogExec || flags & QEventLoop::EventLoopExec) {
-            // The point of the CocoaRequestModal event is to make sure that a
-            // non-execed app modal window recurses into it's own dialog exec
-            // once cocoa is spinning the event loop for us (e.g on top of [NSApp run]).
-            // We expect only one event to notify us about this, regardless of how many
-            // widgets that are waiting to be modal. So we remove all other pending
-            // events, if any. And since cocoa will now take over event processing for us,
-            // we allow new app modal widgets to recurse on top of us, hence the release of
-            // the block:
-            QBoolBlocker block(d->blockCocoaRequestModal, false);
-            QCoreApplication::removePostedEvents(qApp, QEvent::CocoaRequestModal);
+        // If Qt is used as a plugin, or just added into a native cocoa
+        // application, we should not run or stop NSApplication;
+        // This will be done from outside Qt.
+        // And if processEvents is called manually (rather than from QEventLoop), we
+        // cannot enter a tight loop and block the call, but instead return after one flush:
+        bool canExec_3rdParty = d->nsAppRunCalledByQt || ![NSApp isRunning];
+        bool canExec_Qt = flags & QEventLoop::DialogExec || flags & QEventLoop::EventLoopExec;
 
-            if (NSModalSession session = d->activeModalSession())
-                while ([NSApp runModalSession:session] == NSRunContinuesResponse) {
-                    // runModalSession will not wait for events, so we do it
-                    // ourselves (otherwise we would spend 100% CPU inside this loop):
-                    event = [NSApp nextEventMatchingMask:NSAnyEventMask
-                        untilDate:[NSDate distantFuture] inMode:NSModalPanelRunLoopMode dequeue:YES];
-                    if (event)
-                        [NSApp postEvent:event atStart:YES];
-                }
-            else
+        if (canExec_Qt && canExec_3rdParty) {
+            // We can use exec-mode, meaning that we can stay in a tight loop until
+            // interrupted. This is mostly an optimization, but it also allow us
+            // to use [NSApp run], which is the recommended way of running applications
+            // in cocoa. [NSApp run] should be called at least once for any cocoa app.
+            if (NSModalSession session = d->currentModalSession()) {
+                QBoolBlocker execGuard(d->currentExecIsNSAppRun, false);
+                while (!d->interrupt && [NSApp runModalSession:session] == NSRunContinuesResponse)
+                    qt_mac_waitForMoreModalSessionEvents();
+            } else {
+                d->nsAppRunCalledByQt = true;
+                QBoolBlocker execGuard(d->currentExecIsNSAppRun, true);
                 [NSApp run];
-
-            d->rebuildModalSessionStack(false);
+            }
             retVal = true;
         } else do {
-            // Since we now are going to spin the event loop just _one_ round
-            // we need to block all incoming CocoaRequestModal events to ensure
-            // that we don't recurse into a new exec-ing event loop while doing
-            // so (and as such, 'hang' the thread inside the recursion):
-            QBoolBlocker block(d->blockCocoaRequestModal, true);
+            // INVARIANT: We cannot block the thread (and run in a tight loop).
+            // Instead we will process all current pending events and return.
             bool mustRelease = false;
 
             if (!(flags & QEventLoop::ExcludeUserInputEvents) && !d->queuedUserInputEvents.isEmpty()) {
-                // process a pending user input event
+                // Process a pending user input event
                 mustRelease = true;
                 event = static_cast<NSEvent *>(d->queuedUserInputEvents.takeFirst());
             } else {
-                if (NSModalSession session = d->activeModalSession()) {
-                    // There's s a modal widget showing, run it's session:
-                    if (flags & QEventLoop::WaitForMoreEvents) {
-                        // Wait for at least one event
-                        // before spinning the session:
-                        event = [NSApp nextEventMatchingMask:NSAnyEventMask
-                            untilDate:[NSDate distantFuture] inMode:NSModalPanelRunLoopMode dequeue:YES];
-                        if (event)
-                            [NSApp postEvent:event atStart:YES];
-                    }
+                if (NSModalSession session = d->currentModalSession()) {
+                    if (flags & QEventLoop::WaitForMoreEvents)
+                        qt_mac_waitForMoreModalSessionEvents();
                     [NSApp runModalSession:session];
                     retVal = true;
                     break;
@@ -634,41 +655,35 @@ bool QEventDispatcherMac::processEvents(QEventLoop::ProcessEventsFlags flags)
                 && (flags & QEventLoop::WaitForMoreEvents));
         if (canWait) {
             // INVARIANT: We haven't processed any events yet. And we're told
-            // to stay inside this function until at least one event is processed
-            // (WaitForMoreEvents). So we wait on the window server:
-#ifndef QT_MAC_USE_COCOA
-            while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 1.0e20, true) == kCFRunLoopRunTimedOut);
-#else
-            QMacCocoaAutoReleasePool pool;
-            NSEvent *manualEvent = [NSApp nextEventMatchingMask:NSAnyEventMask
-                untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode
-                dequeue:YES];
-            if (manualEvent)
-                [NSApp sendEvent:manualEvent];
-#endif
+            // to stay inside this function until at least one event is processed.
+            qt_mac_waitForMoreEvents();
             flags &= ~QEventLoop::WaitForMoreEvents;
         } else {
-            // Done with event processing for now. Leave the function:
+            // Done with event processing for now.
+            // Leave the function:
             break;
         }
     }
 
-    // Because pending deffered-delete events are only sendt after
-    // returning from the loop level they were posted in, we schedule
-    // an extra wakup to force the _current_ run loop to process them (in
-    // case the application stands idle waiting for the delete event):
-    wakeUp();
+#ifdef QT_MAC_USE_COCOA
+    // In case we _now_ process events using [NSApp run], we need to stop it to
+    // ensure that:
+    //    1. the QEventLoop that called us is still executing, or
+    //    2. we have a modal session that needs to be spun instead.
+    // In case this is a plain call to processEvents (perhaps from a loop) 
+    // from the application (rather than from a QEventLoop), we delay the
+    // interrupting until we/ actually enter a lower loop level (hence the
+    // deffered delete of the object below):
+    QtMacInterruptDispatcherHelp::interruptLater();
+#endif
 
-    if (d->interrupt){
-        // We restart NSApplication by first stopping it, and then call 'run'
-        // again (NSApplication is actually already stopped, hence the need
-        // for a restart, but calling stop again will also make the call
-        // return from the current recursion). When the call returns to
-        // QEventLoop (mind, not from this recursion, but from the one we're
-        // about to stop), it will just call QEventDispatcherMac::processEvents()
-        // again.
+    if (d->interrupt) {
+        // We should continue to leave all recursion to processEvents until
+        // processEvents is called again (e.g. from a QEventLoop that 
+        // was not yet told to quit:
         interrupt();
     }
+
     return retVal;
 }
 
@@ -700,104 +715,169 @@ bool QEventDispatcherMacPrivate::blockSendPostedEvents = false;
 
 #ifdef QT_MAC_USE_COCOA
 QStack<QCocoaModalSessionInfo> QEventDispatcherMacPrivate::cocoaModalSessionStack;
-bool QEventDispatcherMacPrivate::blockCocoaRequestModal = false;
+bool QEventDispatcherMacPrivate::currentExecIsNSAppRun = false;
+bool QEventDispatcherMacPrivate::nsAppRunCalledByQt = false;
+NSModalSession QEventDispatcherMacPrivate::currentModalSessionCached = 0;
 
-static void qt_mac_setChildDialogsResponsive(QWidget *widget, bool responsive)
+int QEventDispatcherMacPrivate::activeModalSessionCount()
 {
-    QList<QDialog *> dialogs = widget->findChildren<QDialog *>();
-    for (int i=0; i<dialogs.size(); ++i){
-        NSWindow *window = qt_mac_window_for(dialogs[i]);
-        if (window && [window isKindOfClass:[NSPanel class]]) {
-            [static_cast<NSPanel *>(window) setWorksWhenModal:responsive];
-            if (responsive && dialogs[i]->isVisible()){
-                [window orderFront:window];
-            }
-        }
+    // Returns the number of modal sessions created
+    // (and not just pushed onto the stack, pending to be created)
+    int count = 0;
+    for (int i=cocoaModalSessionStack.size()-1; i>=0; --i) {
+        QCocoaModalSessionInfo &info = cocoaModalSessionStack[i];
+        if (info.session)
+            ++count;
     }
+    return count;
 }
 
-NSModalSession QEventDispatcherMacPrivate::activeModalSession()
+void QEventDispatcherMacPrivate::temporarilyStopAllModalSessions()
 {
-    // Create (if needed) and return the modal session
-    // for the  top-most modal dialog, if any:
-    if (cocoaModalSessionStack.isEmpty())
-        return 0;
-    QCocoaModalSessionInfo &info = cocoaModalSessionStack.last();
-    if (!info.widget)
-        return 0;
-    if (info.widget->testAttribute(Qt::WA_DontShowOnScreen)){
-        // INVARIANT: We have a modal widget, but it's not visible on screen.
-        // This will e.g. be true for native dialogs. Make the dialog children
-        // of the previous modal dialog unresponsive, so that the current dialog
-        // (native or not) is the only reponsive dialog on screen:
-        int size = cocoaModalSessionStack.size();
-        if (size > 1){
-            if (QWidget *prevModal = cocoaModalSessionStack[size-2].widget)
-                qt_mac_setChildDialogsResponsive(prevModal, false);
-        }
-        return 0;
-    }
-
-    if (!info.session) {
-        QMacCocoaAutoReleasePool pool;
-        NSWindow *window = qt_mac_window_for(info.widget);
-        if (!window)
-            return 0;
-        // 'beginModalSessionForWindow' will give the event loop a spin, and as
-        // such, deliver Qt events. This might lead to inconsistent behaviour
-        // (especially if CocoaRequestModal is delivered), so we need to block:
-        QBoolBlocker block(blockSendPostedEvents, true);
-        info.session = [NSApp beginModalSessionForWindow:window];
-        // Make the dialog children of the current modal dialog
-        // responsive. And make the dialog children of
-        // the previous modal dialog unresponsive again:
-        qt_mac_setChildDialogsResponsive(info.widget, true);
-        int size = cocoaModalSessionStack.size();
-        if (size > 1){
-            if (QWidget *prevModal = cocoaModalSessionStack[size-2].widget)
-                qt_mac_setChildDialogsResponsive(prevModal, false);
-        }
-    }
-    return info.session;
-}
-
-void QEventDispatcherMacPrivate::rebuildModalSessionStack(bool pop)
-{
-    // Calling [NSApp stopModal], or [NSApp stop], will stop all modal dialogs
-    // in one go. So to to not confuse cocoa, we need to stop all our modal
-    // sessions as well. QMacEventDispatcher will make them modal again
-    // in the correct order as long as they are left on the cocoaModalSessionStack
-    // and a CocoaRequestModal is posted:
-    if (cocoaModalSessionStack.isEmpty())
-        return;
-
-    QMacCocoaAutoReleasePool pool;
-    [NSApp stopModal];
-    [NSApp postEvent:[NSEvent otherEventWithType:NSApplicationDefined location:NSZeroPoint
-        modifierFlags:0 timestamp:0. windowNumber:0 context:0
-        subtype:SHRT_MAX data1:0 data2:0] atStart:NO];
-
-    for (int i=0; i<cocoaModalSessionStack.size(); ++i){
+    // Stop all created modal session, and as such, make then
+    // pending again. The next call to currentModalSession will
+    // recreate the session on top again:
+    int stackSize = cocoaModalSessionStack.size();
+    for (int i=stackSize-1; i>=0; --i) {
         QCocoaModalSessionInfo &info = cocoaModalSessionStack[i];
         if (info.session) {
             [NSApp endModalSession:info.session];
             info.session = 0;
         }
     }
+    currentModalSessionCached = 0;
+}
 
-    if (pop) {
-        QCocoaModalSessionInfo info = cocoaModalSessionStack.pop();
+NSModalSession QEventDispatcherMacPrivate::currentModalSession()
+{
+    // If we have one or more modal windows, this function will create
+    // a session for each of those, and return the one for the top.
+    if (currentModalSessionCached)
+        return currentModalSessionCached;
+
+    if (cocoaModalSessionStack.isEmpty())
+        return 0;
+
+    // Since this code will end up calling our Qt event handler
+    // (also from beginModalSessionForWindow), we need to block
+    // that to avoid side effects of events beeing delivered:
+    QBoolBlocker block(blockSendPostedEvents, true);
+
+    if (![NSApp isRunning]) {
+        // Sadly, we need to introduce this little event flush
+        // to stop dialogs from blinking/poping in front if a 
+        // modal session restart was needed:
+        while (NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                untilDate:nil
+                inMode:NSDefaultRunLoopMode
+                dequeue: YES]) {
+            qt_mac_send_event(0, event, 0);
+        }
+    }
+
+    int sessionCount = cocoaModalSessionStack.size();
+    for (int i=0; i<sessionCount; ++i) {
+        QCocoaModalSessionInfo &info = cocoaModalSessionStack[i];
+        if (!info.widget)
+            continue;
+        if (info.widget->testAttribute(Qt::WA_DontShowOnScreen))
+            continue;
+        if (!info.session) {
+            QMacCocoaAutoReleasePool pool;
+            NSWindow *window = qt_mac_window_for(info.widget);
+            if (!window)
+                continue;
+            info.session = [NSApp beginModalSessionForWindow:window];
+        }
+        currentModalSessionCached = info.session;
+    }
+
+    return currentModalSessionCached;
+}
+
+static void setChildrenWorksWhenModal(QWidget *widget, bool worksWhenModal)
+{
+    // For NSPanels (but not NSWindows, sadly), we can set the flag
+    // worksWhenModal, so that they are active even when they are not modal. 
+    QList<QDialog *> dialogs = widget->findChildren<QDialog *>();
+    for (int i=0; i<dialogs.size(); ++i){
+        NSWindow *window = qt_mac_window_for(dialogs[i]);
+        if (window && [window isKindOfClass:[NSPanel class]]) {
+            [static_cast<NSPanel *>(window) setWorksWhenModal:worksWhenModal];
+            if (worksWhenModal && dialogs[i]->isVisible()){
+                [window orderFront:window];
+            }
+        }
+    }
+}
+
+void QEventDispatcherMacPrivate::updateChildrenWorksWhenModal()
+{
+    // Make the dialog children of the widget
+    // active. And make the dialog children of
+    // the previous modal dialog unactive again:
+    int size = cocoaModalSessionStack.size();
+    if (size > 0){
+        if (QWidget *prevModal = cocoaModalSessionStack[size-1].widget)
+            setChildrenWorksWhenModal(prevModal, true);
+        if (size > 1){
+            if (QWidget *prevModal = cocoaModalSessionStack[size-2].widget)
+                setChildrenWorksWhenModal(prevModal, false);
+        }
+    }
+}
+
+void QEventDispatcherMacPrivate::beginModalSession(QWidget *widget)
+{
+    // Add a new, empty (null), NSModalSession to the stack.
+    // It will become active the next time QEventDispatcher::processEvents is called.
+    // A QCocoaModalSessionInfo is considered pending to become active if the widget pointer 
+    // is non-zero, and the session pointer is zero (it will become active upon a call to
+    // currentModalSession). A QCocoaModalSessionInfo is considered pending to be stopped if
+    // the widget pointer is zero, and the session pointer is non-zero (it will be fully
+    // stopped in endModalSession().
+    QCocoaModalSessionInfo info = {widget, 0};
+    cocoaModalSessionStack.push(info);
+    updateChildrenWorksWhenModal();
+    currentModalSessionCached = 0;
+}
+
+void QEventDispatcherMacPrivate::endModalSession(QWidget *widget)
+{
+    // Mark all sessions attached to widget as pending to be stopped. We do this
+    // by setting the widget pointer to zero, but leave the session pointer.
+    // We don't tell cocoa to stop any sessions just yet, because cocoa only understands
+    // when we stop the _current_ modal session (which is the session on top of
+    // the stack, and might not belong to 'widget'). 
+    int stackSize = cocoaModalSessionStack.size();
+    for (int i=stackSize-1; i>=0; --i) {
+        QCocoaModalSessionInfo &info = cocoaModalSessionStack[i];
+        if (info.widget == widget)
+            info.widget = 0;
+    }
+
+    // Now we stop, and remove, all sessions marked as pending
+    // to be stopped on _top_ of the stack, if any:
+    bool needToInterruptEventDispatcher = false;
+    bool needToUpdateChildrenWorksWhenModal = false;
+
+    for (int i=stackSize-1; i>=0; --i) {
+        QCocoaModalSessionInfo &info = cocoaModalSessionStack[i];
         if (info.widget)
-            qt_mac_setChildDialogsResponsive(info.widget, false);
+            break;
+        cocoaModalSessionStack.remove(i);
+        needToUpdateChildrenWorksWhenModal = true;
+        currentModalSessionCached = 0;
+        if (info.session) {
+            [NSApp endModalSession:info.session];
+            needToInterruptEventDispatcher = true;
+        }
     }
 
-    if (!cocoaModalSessionStack.isEmpty()) {
-        // Since we now have pending modal sessions again, make
-        // sure that we enter modal for the one on the top later:
-        qApp->postEvent(qApp, new QEvent(QEvent::CocoaRequestModal));
-    } else {
-        QCoreApplication::removePostedEvents(qApp, QEvent::CocoaRequestModal);
-    }
+    if (needToUpdateChildrenWorksWhenModal)
+        updateChildrenWorksWhenModal();
+    if (needToInterruptEventDispatcher)
+        QEventDispatcherMac::instance()->interrupt();
 }
 
 #endif
@@ -858,27 +938,29 @@ void QEventDispatcherMacPrivate::postedEventsSourcePerformCallback(void *info)
     }
 }
 
-#ifdef QT_MAC_USE_COCOA
-static void stopNSApp()
-{
-    QMacCocoaAutoReleasePool pool;
-    static const short NSAppShouldStopForQt = SHRT_MAX;
-    [NSApp stop:NSApp];
-    [NSApp postEvent:[NSEvent otherEventWithType:NSApplicationDefined location:NSZeroPoint
-                                   modifierFlags:0 timestamp:0. windowNumber:0 context:0
-                                         subtype:NSAppShouldStopForQt data1:0 data2:0] atStart:NO];
-}
-#endif
-
 void QEventDispatcherMac::interrupt()
 {
     Q_D(QEventDispatcherMac);
     d->interrupt = true;
     wakeUp();
+
 #ifndef QT_MAC_USE_COCOA
     CFRunLoopStop(mainRunLoop());
 #else
-    stopNSApp();
+    QMacCocoaAutoReleasePool pool;
+    // In case we wait for more events inside
+    // processEvents (or NSApp run), post a dummy to wake it up:
+    static const short NSAppShouldStopForQt = SHRT_MAX;
+    [NSApp postEvent:[NSEvent otherEventWithType:NSApplicationDefined location:NSZeroPoint
+        modifierFlags:0 timestamp:0. windowNumber:0 context:0
+        subtype:NSAppShouldStopForQt data1:0 data2:0] atStart:NO];
+
+    if (d->activeModalSessionCount() == 0) {
+        // We should only stop NSApp if we actually started it (and
+        // not some 3rd party application, e.g. if we are a plugin).
+        if (d->nsAppRunCalledByQt)
+            [NSApp stop:NSApp];
+    }
 #endif
 }
 
@@ -916,5 +998,52 @@ QEventDispatcherMac::~QEventDispatcherMac()
     CFRelease(d->waitingObserver);
 }
 
+/////////////////////////////////////////////////////////////////////////////
+
+#ifdef QT_MAC_USE_COCOA
+
+QtMacInterruptDispatcherHelp* QtMacInterruptDispatcherHelp::instance = 0;
+
+QtMacInterruptDispatcherHelp::QtMacInterruptDispatcherHelp() : cancelled(false)
+{
+    // This is the whole point of encapsulation this code
+    // inside a class; we can make the code (inside destructor)
+    // execute on lower loop level:
+    deleteLater();
+}
+
+QtMacInterruptDispatcherHelp::~QtMacInterruptDispatcherHelp()
+{
+    if (cancelled)
+        return;
+
+    instance = 0;
+
+    if (QEventDispatcherMacPrivate::currentExecIsNSAppRun) {
+        int activeCount = QEventDispatcherMacPrivate::activeModalSessionCount();
+        if (activeCount > 0) {
+            // The problem we now have hit: [NSApp stop] will not stop NSApp
+            // if a session is active; it will stop the session instead.
+            // So to stop NSApp, we need to temporarily stop all the
+            // sessions, then stop NSApp, then restart the session on top again.
+            // We need to do this to ensure that we're not stuck inside
+            // [NSApp run] when we really should be running a modal session:
+            QEventDispatcherMacPrivate::temporarilyStopAllModalSessions();
+        }
+    }
+    // Always interrupt once more in case the modal session stack changed
+    // while processEvents was called manually from within the application:
+    QEventDispatcherMac::instance()->interrupt();
+}
+
+void QtMacInterruptDispatcherHelp::interruptLater() {
+    if (instance) {
+        instance->cancelled = true;
+        delete instance;
+    }
+    instance = new QtMacInterruptDispatcherHelp;
+}
+
+#endif
 
 QT_END_NAMESPACE

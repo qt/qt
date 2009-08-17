@@ -90,7 +90,7 @@
   FT_LOCAL_DEF( FT_Error )
   T1_Size_Init( T1_Size  size )
   {
-    FT_Error           error = 0;
+    FT_Error           error = T1_Err_Ok;
     PSH_Globals_Funcs  funcs = T1_Size_Get_Globals_Funcs( size );
 
 
@@ -191,72 +191,75 @@
   FT_LOCAL_DEF( void )
   T1_Face_Done( T1_Face  face )
   {
-    if ( face )
-    {
-      FT_Memory  memory = face->root.memory;
-      T1_Font    type1  = &face->type1;
+    FT_Memory  memory;
+    T1_Font    type1;
 
+
+    if ( !face )
+      return;
+
+    memory = face->root.memory;
+    type1  = &face->type1;
 
 #ifndef T1_CONFIG_OPTION_NO_MM_SUPPORT
-      /* release multiple masters information */
-      FT_ASSERT( ( face->len_buildchar == 0 ) == ( face->buildchar == NULL ) );
+    /* release multiple masters information */
+    FT_ASSERT( ( face->len_buildchar == 0 ) == ( face->buildchar == NULL ) );
 
-      if ( face->buildchar )
-      {
-        FT_FREE( face->buildchar );
+    if ( face->buildchar )
+    {
+      FT_FREE( face->buildchar );
 
-        face->buildchar     = NULL;
-        face->len_buildchar = 0;
-      }
+      face->buildchar     = NULL;
+      face->len_buildchar = 0;
+    }
 
-      T1_Done_Blend( face );
-      face->blend = 0;
+    T1_Done_Blend( face );
+    face->blend = 0;
 #endif
 
-      /* release font info strings */
-      {
-        PS_FontInfo  info = &type1->font_info;
+    /* release font info strings */
+    {
+      PS_FontInfo  info = &type1->font_info;
 
 
-        FT_FREE( info->version );
-        FT_FREE( info->notice );
-        FT_FREE( info->full_name );
-        FT_FREE( info->family_name );
-        FT_FREE( info->weight );
-      }
+      FT_FREE( info->version );
+      FT_FREE( info->notice );
+      FT_FREE( info->full_name );
+      FT_FREE( info->family_name );
+      FT_FREE( info->weight );
+    }
 
-      /* release top dictionary */
-      FT_FREE( type1->charstrings_len );
-      FT_FREE( type1->charstrings );
-      FT_FREE( type1->glyph_names );
+    /* release top dictionary */
+    FT_FREE( type1->charstrings_len );
+    FT_FREE( type1->charstrings );
+    FT_FREE( type1->glyph_names );
 
-      FT_FREE( type1->subrs );
-      FT_FREE( type1->subrs_len );
+    FT_FREE( type1->subrs );
+    FT_FREE( type1->subrs_len );
 
-      FT_FREE( type1->subrs_block );
-      FT_FREE( type1->charstrings_block );
-      FT_FREE( type1->glyph_names_block );
+    FT_FREE( type1->subrs_block );
+    FT_FREE( type1->charstrings_block );
+    FT_FREE( type1->glyph_names_block );
 
-      FT_FREE( type1->encoding.char_index );
-      FT_FREE( type1->encoding.char_name );
-      FT_FREE( type1->font_name );
+    FT_FREE( type1->encoding.char_index );
+    FT_FREE( type1->encoding.char_name );
+    FT_FREE( type1->font_name );
 
 #ifndef T1_CONFIG_OPTION_NO_AFM
-      /* release afm data if present */
-      if ( face->afm_data )
-        T1_Done_Metrics( memory, (AFM_FontInfo)face->afm_data );
+    /* release afm data if present */
+    if ( face->afm_data )
+      T1_Done_Metrics( memory, (AFM_FontInfo)face->afm_data );
 #endif
 
-      /* release unicode map, if any */
+    /* release unicode map, if any */
 #if 0
-      FT_FREE( face->unicode_map_rec.maps );
-      face->unicode_map_rec.num_maps = 0;
-      face->unicode_map              = NULL;
+    FT_FREE( face->unicode_map_rec.maps );
+    face->unicode_map_rec.num_maps = 0;
+    face->unicode_map              = NULL;
 #endif
 
-      face->root.family_name = 0;
-      face->root.style_name  = 0;
-    }
+    face->root.family_name = NULL;
+    face->root.style_name  = NULL;
   }
 
 
@@ -323,7 +326,7 @@
       goto Exit;
 
     /* check the face index */
-    if ( face_index != 0 )
+    if ( face_index > 0 )
     {
       FT_ERROR(( "T1_Face_Init: invalid face index\n" ));
       error = T1_Err_Invalid_Argument;
@@ -340,7 +343,7 @@
 
 
       root->num_glyphs = type1->num_glyphs;
-      root->face_index = face_index;
+      root->face_index = 0;
 
       root->face_flags = FT_FACE_FLAG_SCALABLE    |
                          FT_FACE_FLAG_HORIZONTAL  |
@@ -355,15 +358,19 @@
 
       /* XXX: TODO -- add kerning with .afm support */
 
+
+      /* The following code to extract the family and the style is very   */
+      /* simplistic and might get some things wrong.  For a full-featured */
+      /* algorithm you might have a look at the whitepaper given at       */
+      /*                                                                  */
+      /*   http://blogs.msdn.com/text/archive/2007/04/23/wpf-font-selection-model.aspx */
+
       /* get style name -- be careful, some broken fonts only */
       /* have a `/FontName' dictionary entry!                 */
       root->family_name = info->family_name;
-      /* assume "Regular" style if we don't know better */
-      root->style_name = (char *)"Regular";
+      root->style_name  = NULL;
 
-      if ( info->weight )
-        root->style_name = info->weight;
-      else if ( root->family_name )
+      if ( root->family_name )
       {
         char*  full   = info->full_name;
         char*  family = root->family_name;
@@ -371,6 +378,9 @@
 
         if ( full )
         {
+          FT_Bool  the_same = TRUE;
+
+
           while ( *full )
           {
             if ( *full == *family )
@@ -386,12 +396,17 @@
                 family++;
               else
               {
+                the_same = FALSE;
+
                 if ( !*family )
                   root->style_name = full;
                 break;
               }
             }
           }
+
+          if ( the_same )
+            root->style_name = (char *)"Regular";
         }
       }
       else
@@ -399,6 +414,15 @@
         /* do we have a `/FontName'? */
         if ( type1->font_name )
           root->family_name = type1->font_name;
+      }
+
+      if ( !root->style_name )
+      {
+        if ( info->weight )
+          root->style_name = info->weight;
+        else
+          /* assume `Regular' style because we don't know better */
+          root->style_name = (char *)"Regular";
       }
 
       /* compute style flags */
@@ -445,7 +469,7 @@
         if ( !error )
           root->max_advance_width = (FT_Short)max_advance;
         else
-          error = 0;   /* clear error */
+          error = T1_Err_Ok;   /* clear error */
       }
 
       root->max_advance_height = root->height;
@@ -467,7 +491,7 @@
 
         charmap.face = root;
 
-        /* first of all, try to synthetize a Unicode charmap */
+        /* first of all, try to synthesize a Unicode charmap */
         charmap.platform_id = 3;
         charmap.encoding_id = 1;
         charmap.encoding    = FT_ENCODING_UNICODE;

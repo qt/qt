@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.6 API Reference</title>
+<title>FreeType-2.3.9 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -31,7 +31,11 @@
 </style>
 </head>
 <body>
-<center><h1>FreeType-2.3.6 API Reference</h1></center>
+
+<table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+<center><h1>FreeType-2.3.9 API Reference</h1></center>
 
 <center><h1>
 Basic Data Types
@@ -55,18 +59,10 @@ Basic Data Types
 </table><br><br>
 
 <table align=center width="87%"><tr><td>
-<p>This section contains the basic data types defined by FreeType 2, ranging from simple scalar types to bitmap descriptors. More font-specific structures are defined in a different section.</p>
+<p>This section contains the basic data types defined by FreeType&nbsp;2, ranging from simple scalar types to bitmap descriptors. More font-specific structures are defined in a different section.</p>
 </td></tr></table><br>
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Byte">FT_Byte</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>  <b>FT_Byte</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A simple typedef for the <i>unsigned</i> char type.</p>
 </td></tr></table><br>
@@ -79,14 +75,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Bytes">FT_Bytes</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">const</span> <a href="ft2-basic_types.html#FT_Byte">FT_Byte</a>*  <b>FT_Bytes</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A typedef for constant memory areas.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -97,14 +85,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Char">FT_Char</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">signed</span> <span class="keyword">char</span>  <b>FT_Char</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A simple typedef for the <i>signed</i> char type.</p>
 </td></tr></table><br>
@@ -117,14 +97,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Int">FT_Int</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">signed</span> <span class="keyword">int</span>  <b>FT_Int</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A typedef for the int type.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -135,14 +107,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_UInt">FT_UInt</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">int</span>  <b>FT_UInt</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A typedef for the unsigned int type.</p>
 </td></tr></table><br>
@@ -155,14 +119,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Int16">FT_Int16</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_CONFIG_CONFIG_H (freetype/config/ftconfig.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">signed</span> <span class="keyword">short</span>  <b>FT_Int16</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A typedef for a 16bit signed integer type.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -173,14 +129,6 @@ Defined in FT_CONFIG_CONFIG_H (freetype/config/ftconfig.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_UInt16">FT_UInt16</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_CONFIG_CONFIG_H (freetype/config/ftconfig.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">short</span>  <b>FT_UInt16</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A typedef for a 16bit unsigned integer type.</p>
 </td></tr></table><br>
@@ -193,14 +141,6 @@ Defined in FT_CONFIG_CONFIG_H (freetype/config/ftconfig.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Int32">FT_Int32</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_CONFIG_CONFIG_H (freetype/config/ftconfig.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">signed</span> XXX  <b>FT_Int32</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A typedef for a 32bit signed integer type. The size depends on the configuration.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -211,14 +151,6 @@ Defined in FT_CONFIG_CONFIG_H (freetype/config/ftconfig.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_UInt32">FT_UInt32</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_CONFIG_CONFIG_H (freetype/config/ftconfig.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">unsigned</span> XXX  <b>FT_UInt32</b>;
-
-</pre></table><br>
 </td></tr></table>
 <hr width="75%">
 <table align=center width="75%"><tr><td><font size=-2>[<a href="ft2-index.html">Index</a>]</font></td>
@@ -227,14 +159,6 @@ Defined in FT_CONFIG_CONFIG_H (freetype/config/ftconfig.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Short">FT_Short</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">signed</span> <span class="keyword">short</span>  <b>FT_Short</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A typedef for signed short.</p>
 </td></tr></table><br>
@@ -247,14 +171,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_UShort">FT_UShort</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">short</span>  <b>FT_UShort</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A typedef for unsigned short.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -265,14 +181,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Long">FT_Long</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">signed</span> <span class="keyword">long</span>  <b>FT_Long</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A typedef for signed long.</p>
 </td></tr></table><br>
@@ -285,14 +193,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_ULong">FT_ULong</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">long</span>  <b>FT_ULong</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A typedef for unsigned long.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -304,15 +204,7 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Bool">FT_Bool</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">char</span>  <b>FT_Bool</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
-<p>A typedef of unsigned char, used for simple booleans. As usual, values 1 and 0 represent true and false, respectively.</p>
+<p>A typedef of unsigned char, used for simple booleans. As usual, values 1 and&nbsp;0 represent true and false, respectively.</p>
 </td></tr></table><br>
 </td></tr></table>
 <hr width="75%">
@@ -323,15 +215,7 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Offset">FT_Offset</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> size_t  <b>FT_Offset</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
-<p>This is equivalent to the ANSI C &lsquo;size_t&rsquo; type, i.e., the largest <i>unsigned</i> integer type used to express a file size or position, or a memory block size.</p>
+<p>This is equivalent to the ANSI&nbsp;C &lsquo;size_t&rsquo; type, i.e., the largest <i>unsigned</i> integer type used to express a file size or position, or a memory block size.</p>
 </td></tr></table><br>
 </td></tr></table>
 <hr width="75%">
@@ -342,15 +226,7 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_PtrDist">FT_PtrDist</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> ft_ptrdiff_t  <b>FT_PtrDist</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
-<p>This is equivalent to the ANSI C &lsquo;ptrdiff_t&rsquo; type, i.e., the largest <i>signed</i> integer type used to express the distance between two pointers.</p>
+<p>This is equivalent to the ANSI&nbsp;C &lsquo;ptrdiff_t&rsquo; type, i.e., the largest <i>signed</i> integer type used to express the distance between two pointers.</p>
 </td></tr></table><br>
 </td></tr></table>
 <hr width="75%">
@@ -360,14 +236,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_String">FT_String</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">char</span>  <b>FT_String</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A simple typedef for the char type, usually used for strings.</p>
 </td></tr></table><br>
@@ -380,15 +248,7 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Tag">FT_Tag</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <a href="ft2-basic_types.html#FT_UInt32">FT_UInt32</a>  <b>FT_Tag</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
-<p>A typedef for 32bit tags (as used in the SFNT format).</p>
+<p>A typedef for 32-bit tags (as used in the SFNT format).</p>
 </td></tr></table><br>
 </td></tr></table>
 <hr width="75%">
@@ -399,15 +259,7 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Error">FT_Error</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">int</span>  <b>FT_Error</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
-<p>The FreeType error code type. A value of 0 is always interpreted as a successful operation.</p>
+<p>The FreeType error code type. A value of&nbsp;0 is always interpreted as a successful operation.</p>
 </td></tr></table><br>
 </td></tr></table>
 <hr width="75%">
@@ -417,14 +269,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Fixed">FT_Fixed</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">signed</span> <span class="keyword">long</span>  <b>FT_Fixed</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>This type is used to store 16.16 fixed float values, like scaling values or matrix coefficients.</p>
 </td></tr></table><br>
@@ -437,14 +281,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Pointer">FT_Pointer</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">void</span>*  <b>FT_Pointer</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A simple typedef for a typeless pointer.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -456,15 +292,7 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Pos">FT_Pos</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_IMAGE_H (freetype/ftimage.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">signed</span> <span class="keyword">long</span>  <b>FT_Pos</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
-<p>The type FT_Pos is a 32-bit integer used to store vectorial coordinates. Depending on the context, these can represent distances in integer font units, or 16,16, or 26.6 fixed float pixel coordinates.</p>
+<p>The type FT_Pos is a 32-bit integer used to store vectorial coordinates. Depending on the context, these can represent distances in integer font units, or 16.16, or 26.6 fixed float pixel coordinates.</p>
 </td></tr></table><br>
 </td></tr></table>
 <hr width="75%">
@@ -596,14 +424,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_FWord">FT_FWord</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">signed</span> <span class="keyword">short</span>  <b>FT_FWord</b>;   /* distance in FUnits */
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A signed 16-bit integer used to store a distance in original font units.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -615,14 +435,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_UFWord">FT_UFWord</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">short</span>  <b>FT_UFWord</b>;  /* <span class="keyword">unsigned</span> distance */
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>An unsigned 16-bit integer used to store a distance in original font units.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -633,14 +445,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_F2Dot14">FT_F2Dot14</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">signed</span> <span class="keyword">short</span>  <b>FT_F2Dot14</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A signed 2.14 fixed float type used for unit vectors.</p>
 </td></tr></table><br>
@@ -688,14 +492,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_F26Dot6">FT_F26Dot6</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">signed</span> <span class="keyword">long</span>  <b>FT_F26Dot6</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A signed 26.6 fixed float type used for vectorial pixel coordinates.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -733,25 +529,25 @@ Defined in FT_IMAGE_H (freetype/ftimage.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>FT_PIXEL_MODE_NONE</b></td><td>
-<p>Value 0 is reserved.</p>
+<p>Value&nbsp;0 is reserved.</p>
 </td></tr>
 <tr valign=top><td><b>FT_PIXEL_MODE_MONO</b></td><td>
-<p>A monochrome bitmap, using 1 bit per pixel. Note that pixels are stored in most-significant order (MSB), which means that the left-most pixel in a byte has value 128.</p>
+<p>A monochrome bitmap, using 1&nbsp;bit per pixel. Note that pixels are stored in most-significant order (MSB), which means that the left-most pixel in a byte has value 128.</p>
 </td></tr>
 <tr valign=top><td><b>FT_PIXEL_MODE_GRAY</b></td><td>
-<p>An 8-bit bitmap, generally used to represent anti-aliased glyph images. Each pixel is stored in one byte. Note that the number of value &lsquo;gray&rsquo; levels is stored in the &lsquo;num_bytes&rsquo; field of the <a href="ft2-basic_types.html#FT_Bitmap">FT_Bitmap</a> structure (it generally is 256).</p>
+<p>An 8-bit bitmap, generally used to represent anti-aliased glyph images. Each pixel is stored in one byte. Note that the number of &lsquo;gray&rsquo; levels is stored in the &lsquo;num_grays&rsquo; field of the <a href="ft2-basic_types.html#FT_Bitmap">FT_Bitmap</a> structure (it generally is 256).</p>
 </td></tr>
 <tr valign=top><td><b>FT_PIXEL_MODE_GRAY2</b></td><td>
-<p>A 2-bit/pixel bitmap, used to represent embedded anti-aliased bitmaps in font files according to the OpenType specification. We haven't found a single font using this format, however.</p>
+<p>A 2-bit per pixel bitmap, used to represent embedded anti-aliased bitmaps in font files according to the OpenType specification. We haven't found a single font using this format, however.</p>
 </td></tr>
 <tr valign=top><td><b>FT_PIXEL_MODE_GRAY4</b></td><td>
-<p>A 4-bit/pixel bitmap, used to represent embedded anti-aliased bitmaps in font files according to the OpenType specification. We haven't found a single font using this format, however.</p>
+<p>A 4-bit per pixel bitmap, representing embedded anti-aliased bitmaps in font files according to the OpenType specification. We haven't found a single font using this format, however.</p>
 </td></tr>
 <tr valign=top><td><b>FT_PIXEL_MODE_LCD</b></td><td>
-<p>An 8-bit bitmap, used to represent RGB or BGR decimated glyph images used for display on LCD displays; the bitmap is three times wider than the original glyph image. See also <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_LCD</a>.</p>
+<p>An 8-bit bitmap, representing RGB or BGR decimated glyph images used for display on LCD displays; the bitmap is three times wider than the original glyph image. See also <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_LCD</a>.</p>
 </td></tr>
 <tr valign=top><td><b>FT_PIXEL_MODE_LCD_V</b></td><td>
-<p>An 8-bit bitmap, used to represent RGB or BGR decimated glyph images used for display on rotated LCD displays; the bitmap is three times taller than the original glyph image. See also <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_LCD_V</a>.</p>
+<p>An 8-bit bitmap, representing RGB or BGR decimated glyph images used for display on rotated LCD displays; the bitmap is three times taller than the original glyph image. See also <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_LCD_V</a>.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -829,10 +625,10 @@ Defined in FT_IMAGE_H (freetype/ftimage.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>ft_palette_mode_rgb</b></td><td>
-<p>The palette is an array of 3-bytes RGB records.</p>
+<p>The palette is an array of 3-byte RGB records.</p>
 </td></tr>
 <tr valign=top><td><b>ft_palette_mode_rgba</b></td><td>
-<p>The palette is an array of 4-bytes RGBA records.</p>
+<p>The palette is an array of 4-byte RGBA records.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -927,7 +723,7 @@ Defined in FT_IMAGE_H (freetype/ftimage.h).
 <p>This macro converts four-letter tags to an unsigned long type.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>Since many 16bit compilers don't like 32bit enumerations, you should redefine this macro in case of problems to something like this:</p>
+<p>Since many 16-bit compilers don't like 32-bit enumerations, you should redefine this macro in case of problems to something like this:</p>
 <pre class="colored">
   #define FT_IMAGE_TAG( value, _x1, _x2, _x3, _x4 )  value         
 </pre>
@@ -965,7 +761,7 @@ Defined in FT_IMAGE_H (freetype/ftimage.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>FT_GLYPH_FORMAT_NONE</b></td><td>
-<p>The value 0 is reserved.</p>
+<p>The value&nbsp;0 is reserved.</p>
 </td></tr>
 <tr valign=top><td colspan=0><b>FT_GLYPH_FORMAT_COMPOSITE</b></td></tr>
 <tr valign=top><td></td><td>
@@ -980,7 +776,7 @@ Defined in FT_IMAGE_H (freetype/ftimage.h).
 </td></tr>
 <tr valign=top><td colspan=0><b>FT_GLYPH_FORMAT_PLOTTER</b></td></tr>
 <tr valign=top><td></td><td>
-<p>The glyph image is a vectorial path with no inside and outside contours. Some Type 1 fonts, like those in the Hershey family, contain glyphs in this format. These are described as <a href="ft2-outline_processing.html#FT_Outline">FT_Outline</a>, but FreeType isn't currently capable of rendering them correctly.</p>
+<p>The glyph image is a vectorial path with no inside and outside contours. Some Type&nbsp;1 fonts, like those in the Hershey family, contain glyphs in this format. These are described as <a href="ft2-outline_processing.html#FT_Outline">FT_Outline</a>, but FreeType isn't currently capable of rendering them correctly.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -1074,15 +870,7 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Generic_Finalizer">FT_Generic_Finalizer</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">void</span>  (*<b>FT_Generic_Finalizer</b>)(<span class="keyword">void</span>*  object);
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
-<p>Describes a function used to destroy the &lsquo;client&rsquo; data of any FreeType object. See the description of the <a href="ft2-basic_types.html#FT_Generic">FT_Generic</a> type for details of usage.</p>
+<p>Describe a function used to destroy the &lsquo;client&rsquo; data of any FreeType object. See the description of the <a href="ft2-basic_types.html#FT_Generic">FT_Generic</a> type for details of usage.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p>The address of the FreeType object which is under finalization. Its client data is accessed through its &lsquo;generic&rsquo; field.</p>
@@ -1148,7 +936,7 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 <p>This macro converts four-letter tags which are used to label TrueType tables into an unsigned long to be used within FreeType.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>The produced values <b>must</b> be 32bit integers. Don't redefine this macro.</p>
+<p>The produced values <b>must</b> be 32-bit integers. Don't redefine this macro.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">

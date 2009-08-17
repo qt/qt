@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.6 API Reference</title>
+<title>FreeType-2.3.9 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -31,7 +31,11 @@
 </style>
 </head>
 <body>
-<center><h1>FreeType-2.3.6 API Reference</h1></center>
+
+<table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+<center><h1>FreeType-2.3.9 API Reference</h1></center>
 
 <center><h1>
 List Processing
@@ -51,14 +55,6 @@ List Processing
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_List">FT_List</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_ListRec_*  <b>FT_List</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A handle to a list record (see <a href="ft2-list_processing.html#FT_ListRec">FT_ListRec</a>).</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -69,14 +65,6 @@ Defined in FT_TYPES_H (freetype/fttypes.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_ListNode">FT_ListNode</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_TYPES_H (freetype/fttypes.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_ListNodeRec_*  <b>FT_ListNode</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>Many elements and objects in FreeType are listed through an <a href="ft2-list_processing.html#FT_List">FT_List</a> record (see <a href="ft2-list_processing.html#FT_ListRec">FT_ListRec</a>). As its name suggests, an FT_ListNode is a handle to a single list element.</p>
 </td></tr></table><br>
@@ -173,7 +161,7 @@ Defined in FT_LIST_H (freetype/ftlist.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Finds the list node for a given listed object.</p>
+<p>Find the list node for a given listed object.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -208,7 +196,7 @@ Defined in FT_LIST_H (freetype/ftlist.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Appends an element to the end of a list.</p>
+<p>Append an element to the end of a list.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>inout</b></em></td></tr><tr><td>
 <p></p>
@@ -240,7 +228,7 @@ Defined in FT_LIST_H (freetype/ftlist.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Inserts an element at the head of a list.</p>
+<p>Insert an element at the head of a list.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>inout</b></em></td></tr><tr><td>
 <p></p>
@@ -272,7 +260,7 @@ Defined in FT_LIST_H (freetype/ftlist.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Removes a node from a list. This function doesn't check whether the node is in the list!</p>
+<p>Remove a node from a list. This function doesn't check whether the node is in the list!</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -309,7 +297,7 @@ Defined in FT_LIST_H (freetype/ftlist.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Moves a node to the head/top of a list. Used to maintain LRU lists.</p>
+<p>Move a node to the head/top of a list. Used to maintain LRU lists.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>inout</b></em></td></tr><tr><td>
 <p></p>
@@ -374,7 +362,7 @@ Defined in FT_LIST_H (freetype/ftlist.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Parses a list and calls a given iterator function on each element. Note that parsing is stopped as soon as one of the iterator calls returns a non-zero value.</p>
+<p>Parse a list and calls a given iterator function on each element. Note that parsing is stopped as soon as one of the iterator calls returns a non-zero value.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -450,7 +438,7 @@ Defined in FT_LIST_H (freetype/ftlist.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Destroys all elements in the list as well as the list itself.</p>
+<p>Destroy all elements in the list as well as the list itself.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>

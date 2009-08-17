@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9,00"
 	Name="freetype"
 	ProjectGUID="{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -43,7 +44,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\..\include"
-				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;FT2_BUILD_LIBRARY"
+				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;_CRT_SECURE_NO_WARNINGS;FT2_BUILD_LIBRARY"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -69,7 +70,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\..\objs\freetype236.lib"
+				OutputFile="..\..\..\objs\win32\vc2008\freetype239.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -118,7 +119,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\..\include"
-				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;FT2_BUILD_LIBRARY"
+				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;_CRT_SECURE_NO_WARNINGS;FT2_BUILD_LIBRARY"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -144,7 +145,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\..\objs\freetype236MT.lib"
+				OutputFile="..\..\..\objs\win32\vc2008\freetype239MT.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -193,7 +194,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\..\include"
-				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;FT2_BUILD_LIBRARY"
+				PreprocessorDefinitions="NDEBUG;WIN32;_LIB;_CRT_SECURE_NO_WARNINGS;FT2_BUILD_LIBRARY"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -219,7 +220,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\..\objs\freetype236ST.lib"
+				OutputFile="..\..\..\objs\win32\vc2008\freetype239ST.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -266,7 +267,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\include"
-				PreprocessorDefinitions="_DEBUG;WIN32;_LIB;FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE;FT2_BUILD_LIBRARY"
+				PreprocessorDefinitions="_DEBUG;WIN32;_LIB;_CRT_SECURE_NO_WARNINGS;FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE;FT2_BUILD_LIBRARY"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				DisableLanguageExtensions="true"
@@ -291,7 +292,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\..\objs\freetype236_D.lib"
+				OutputFile="..\..\..\objs\win32\vc2008\freetype239_D.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -339,7 +340,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\include"
-				PreprocessorDefinitions="_DEBUG;WIN32;_LIB;FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE;FT2_BUILD_LIBRARY"
+				PreprocessorDefinitions="_DEBUG;WIN32;_LIB;_CRT_SECURE_NO_WARNINGS;FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE;FT2_BUILD_LIBRARY"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				DisableLanguageExtensions="true"
@@ -364,7 +365,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\..\objs\freetype236ST_D.lib"
+				OutputFile="..\..\..\objs\win32\vc2008\freetype239ST_D.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -412,7 +413,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\include"
-				PreprocessorDefinitions="_DEBUG;WIN32;_LIB;FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="_DEBUG;WIN32;_LIB;_CRT_SECURE_NO_WARNINGS;FT_DEBUG_LEVEL_ERROR;FT_DEBUG_LEVEL_TRACE;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_DEPRECATE"
 				GeneratePreprocessedFile="0"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -438,7 +439,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\..\..\objs\freetype236MT_D.lib"
+				OutputFile="..\..\..\objs\win32\vc2008\freetype239MT_D.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -675,10 +676,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\base\ftgasp.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\src\cache\ftcache.c"
 				>
 				<FileConfiguration
@@ -817,6 +814,14 @@
 						DisableLanguageExtensions="false"
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\..\src\base\ftfstype.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\base\ftgasp.c"
+				>
 			</File>
 			<File
 				RelativePath="..\..\..\src\base\ftglyph.c"

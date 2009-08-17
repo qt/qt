@@ -101,7 +101,7 @@
 
 
   /* CFF and Type 1 private dictionaries have slightly different      */
-  /* structures; we need to synthetize a Type 1 dictionary on the fly */
+  /* structures; we need to synthesize a Type 1 dictionary on the fly */
 
   static void
   cff_make_private_dict( CFF_SubFont  subfont,
@@ -437,7 +437,7 @@
     error = sfnt->init_face( stream, face, face_index, num_params, params );
     if ( !error )
     {
-      if ( face->format_tag != 0x4F54544FL )  /* `OTTO'; OpenType/CFF font */
+      if ( face->format_tag != TTAG_OTTO )  /* `OTTO'; OpenType/CFF font */
       {
         FT_TRACE2(( "[not a valid OpenType/CFF font]\n" ));
         goto Bad_Format;
@@ -465,8 +465,7 @@
         pure_cff = 0;
 
         /* load font directory */
-        error = sfnt->load_face( stream, face,
-                                 face_index, num_params, params );
+        error = sfnt->load_face( stream, face, 0, num_params, params );
         if ( error )
           goto Exit;
       }
@@ -508,12 +507,14 @@
         goto Exit;
 
       face->extra.data = cff;
-      error = cff_font_load( stream, face_index, cff );
+      error = cff_font_load( stream, face_index, cff, pure_cff );
       if ( error )
         goto Exit;
 
       cff->pshinter = pshinter;
       cff->psnames  = (void*)psnames;
+
+      cffface->face_index = face_index;
 
       /* Complement the root flags with some interesting information. */
       /* Note that this is only necessary for pure CFF and CEF fonts; */
@@ -532,6 +533,111 @@
         FT_ERROR(( "              " ));
         FT_ERROR(( " without the `PSNames' module\n" ));
         goto Bad_Format;
+      }
+
+      if ( !dict->units_per_em )
+        dict->units_per_em = pure_cff ? 1000 : face->root.units_per_EM;
+
+      /* Normalize the font matrix so that `matrix->xx' is 1; the */
+      /* scaling is done with `units_per_em' then (at this point, */
+      /* it already contains the scaling factor, but without      */
+      /* normalization of the matrix).                            */
+      /*                                                          */
+      /* Note that the offsets must be expressed in integer font  */
+      /* units.                                                   */
+
+      {
+        FT_Matrix*  matrix = &dict->font_matrix;
+        FT_Vector*  offset = &dict->font_offset;
+        FT_ULong*   upm    = &dict->units_per_em;
+        FT_Fixed    temp   = FT_ABS( matrix->yy );
+
+
+        if ( temp != 0x10000L )
+        {
+          *upm = FT_DivFix( *upm, temp );
+
+          matrix->xx = FT_DivFix( matrix->xx, temp );
+          matrix->yx = FT_DivFix( matrix->yx, temp );
+          matrix->xy = FT_DivFix( matrix->xy, temp );
+          matrix->yy = FT_DivFix( matrix->yy, temp );
+          offset->x  = FT_DivFix( offset->x,  temp );
+          offset->y  = FT_DivFix( offset->y,  temp );
+        }
+
+        offset->x >>= 16;
+        offset->y >>= 16;
+      }
+
+      for ( i = cff->num_subfonts; i > 0; i-- )
+      {
+        CFF_FontRecDict  sub = &cff->subfonts[i - 1]->font_dict;
+        CFF_FontRecDict  top = &cff->top_font.font_dict;
+
+        FT_Matrix*  matrix;
+        FT_Vector*  offset;
+        FT_ULong*   upm;
+        FT_Fixed    temp;
+
+
+        if ( sub->units_per_em )
+        {
+          FT_Int  scaling;
+
+
+          if ( top->units_per_em > 1 && sub->units_per_em > 1 )
+            scaling = FT_MIN( top->units_per_em, sub->units_per_em );
+          else
+            scaling = 1;
+
+          FT_Matrix_Multiply_Scaled( &top->font_matrix,
+                                     &sub->font_matrix,
+                                     scaling );
+          FT_Vector_Transform_Scaled( &sub->font_offset,
+                                      &top->font_matrix,
+                                      scaling );
+
+          sub->units_per_em = FT_MulDiv( sub->units_per_em,
+                                         top->units_per_em,
+                                         scaling );
+        }
+        else
+        {
+          sub->font_matrix = top->font_matrix;
+          sub->font_offset = top->font_offset;
+
+          sub->units_per_em = top->units_per_em;
+        }
+
+        matrix = &sub->font_matrix;
+        offset = &sub->font_offset;
+        upm    = &sub->units_per_em;
+        temp   = FT_ABS( matrix->yy );
+
+        if ( temp != 0x10000L )
+        {
+          *upm = FT_DivFix( *upm, temp );
+
+          /* if *upm is larger than 100*1000 we divide by 1000 --     */
+          /* this can happen if e.g. there is no top-font FontMatrix  */
+          /* and the subfont FontMatrix already contains the complete */
+          /* scaling for the subfont (see section 5.11 of the PLRM)   */
+
+          /* 100 is a heuristic value */
+
+          if ( *upm > 100L * 1000L )
+            *upm = ( *upm + 500 ) / 1000;
+
+          matrix->xx = FT_DivFix( matrix->xx, temp );
+          matrix->yx = FT_DivFix( matrix->yx, temp );
+          matrix->xy = FT_DivFix( matrix->xy, temp );
+          matrix->yy = FT_DivFix( matrix->yy, temp );
+          offset->x  = FT_DivFix( offset->x,  temp );
+          offset->y  = FT_DivFix( offset->y,  temp );
+        }
+
+        offset->x >>= 16;
+        offset->y >>= 16;
       }
 
       if ( pure_cff )
@@ -554,10 +660,7 @@
         cffface->bbox.xMax = ( dict->font_bbox.xMax + 0xFFFFU ) >> 16;
         cffface->bbox.yMax = ( dict->font_bbox.yMax + 0xFFFFU ) >> 16;
 
-        if ( !dict->units_per_em )
-          dict->units_per_em = 1000;
-
-        cffface->units_per_EM = dict->units_per_em;
+        cffface->units_per_EM = (FT_UShort)( dict->units_per_em );
 
         cffface->ascender  = (FT_Short)( cffface->bbox.yMax );
         cffface->descender = (FT_Short)( cffface->bbox.yMin );
@@ -711,113 +814,7 @@
 
         cffface->style_flags = flags;
       }
-      else
-      {
-        if ( !dict->units_per_em )
-          dict->units_per_em = face->root.units_per_EM;
-      }
 
-      /* Normalize the font matrix so that `matrix->xx' is 1; the */
-      /* scaling is done with `units_per_em' then (at this point, */
-      /* it already contains the scaling factor, but without      */
-      /* normalization of the matrix).                            */
-      /*                                                          */
-      /* Note that the offsets must be expressed in integer font  */
-      /* units.                                                   */
-
-      {
-        FT_Matrix*  matrix = &dict->font_matrix;
-        FT_Vector*  offset = &dict->font_offset;
-        FT_ULong*   upm    = &dict->units_per_em;
-        FT_Fixed    temp   = FT_ABS( matrix->yy );
-
-
-        if ( temp != 0x10000L )
-        {
-          *upm = FT_DivFix( *upm, temp );
-
-          matrix->xx = FT_DivFix( matrix->xx, temp );
-          matrix->yx = FT_DivFix( matrix->yx, temp );
-          matrix->xy = FT_DivFix( matrix->xy, temp );
-          matrix->yy = FT_DivFix( matrix->yy, temp );
-          offset->x  = FT_DivFix( offset->x,  temp );
-          offset->y  = FT_DivFix( offset->y,  temp );
-        }
-
-        offset->x >>= 16;
-        offset->y >>= 16;
-      }
-
-      for ( i = cff->num_subfonts; i > 0; i-- )
-      {
-        CFF_FontRecDict  sub = &cff->subfonts[i - 1]->font_dict;
-        CFF_FontRecDict  top = &cff->top_font.font_dict;
-
-        FT_Matrix*  matrix;
-        FT_Vector*  offset;
-        FT_ULong*   upm;
-        FT_Fixed    temp;
-
-
-        if ( sub->units_per_em )
-        {
-          FT_Int  scaling;
-
-
-          if ( top->units_per_em > 1 && sub->units_per_em > 1 )
-            scaling = FT_MIN( top->units_per_em, sub->units_per_em );
-          else
-            scaling = 1;
-
-          FT_Matrix_Multiply_Scaled( &top->font_matrix,
-                                     &sub->font_matrix,
-                                     scaling );
-          FT_Vector_Transform_Scaled( &sub->font_offset,
-                                      &top->font_matrix,
-                                      scaling );
-
-          sub->units_per_em = FT_MulDiv( sub->units_per_em,
-                                         top->units_per_em,
-                                         scaling );
-        }
-        else
-        {
-          sub->font_matrix = top->font_matrix;
-          sub->font_offset = top->font_offset;
-
-          sub->units_per_em = top->units_per_em;
-        }
-
-        matrix = &sub->font_matrix;
-        offset = &sub->font_offset;
-        upm    = &sub->units_per_em;
-        temp   = FT_ABS( matrix->yy );
-
-        if ( temp != 0x10000L )
-        {
-          *upm = FT_DivFix( *upm, temp );
-
-          /* if *upm is larger than 100*1000 we divide by 1000 --     */
-          /* this can happen if e.g. there is no top-font FontMatrix  */
-          /* and the subfont FontMatrix already contains the complete */
-          /* scaling for the subfont (see section 5.11 of the PLRM)   */
-
-          /* 100 is a heuristic value */
-
-          if ( *upm > 100L * 1000L )
-            *upm = ( *upm + 500 ) / 1000;
-
-          matrix->xx = FT_DivFix( matrix->xx, temp );
-          matrix->yx = FT_DivFix( matrix->yx, temp );
-          matrix->xy = FT_DivFix( matrix->xy, temp );
-          matrix->yy = FT_DivFix( matrix->yy, temp );
-          offset->x  = FT_DivFix( offset->x,  temp );
-          offset->y  = FT_DivFix( offset->y,  temp );
-        }
-
-        offset->x >>= 16;
-        offset->y >>= 16;
-      }
 
 #ifndef FT_CONFIG_OPTION_NO_GLYPH_NAMES
       /* CID-keyed CFF fonts don't have glyph names -- the SFNT loader */
@@ -826,7 +823,7 @@
         cffface->face_flags |= FT_FACE_FLAG_GLYPH_NAMES;
 #endif
 
-      if ( dict->cid_registry != 0xFFFFU )
+      if ( dict->cid_registry != 0xFFFFU && pure_cff )
         cffface->face_flags |= FT_FACE_FLAG_CID_KEYED;
 
 
@@ -835,7 +832,7 @@
       /* Compute char maps.                                              */
       /*                                                                 */
 
-      /* Try to synthetize a Unicode charmap if there is none available */
+      /* Try to synthesize a Unicode charmap if there is none available */
       /* already.  If an OpenType font contains a Unicode "cmap", we    */
       /* will use it, whatever be in the CFF part of the file.          */
       {
@@ -922,10 +919,16 @@
   FT_LOCAL_DEF( void )
   cff_face_done( FT_Face  cffface )         /* CFF_Face */
   {
-    CFF_Face      face   = (CFF_Face)cffface;
-    FT_Memory     memory = cffface->memory;
-    SFNT_Service  sfnt   = (SFNT_Service)face->sfnt;
+    CFF_Face      face = (CFF_Face)cffface;
+    FT_Memory     memory;
+    SFNT_Service  sfnt;
 
+
+    if ( !face )
+      return;
+
+    memory = cffface->memory;
+    sfnt   = (SFNT_Service)face->sfnt;
 
     if ( sfnt )
       sfnt->done_face( face );

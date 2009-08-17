@@ -15,5 +15,3 @@ CONFIG -= app_bundle
 
 SOURCES = main.cpp
 HEADERS = main.h
-
-include(../src/common.pri)
