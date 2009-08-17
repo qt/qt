@@ -20,7 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QTimer>
 #include <private/qcore_symbian_p.h>
 
-#include "mmf_videoplayer.h"
+#include "videoplayer.h"
 #include "audiooutput.h"
 #include "utils.h"
 

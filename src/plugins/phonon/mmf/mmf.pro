@@ -28,7 +28,7 @@ HEADERS +=                                      \
            $$PHONON_MMF_DIR/backend.h           \
            $$PHONON_MMF_DIR/mediaobject.h       \
            $$PHONON_MMF_DIR/utils.h             \
-           $$PHONON_MMF_DIR/mmf_videoplayer.h
+           $$PHONON_MMF_DIR/videoplayer.h
 
 SOURCES +=                                      \
            $$PHONON_MMF_DIR/audiooutput.cpp     \
@@ -36,7 +36,7 @@ SOURCES +=                                      \
            $$PHONON_MMF_DIR/backend.cpp         \
            $$PHONON_MMF_DIR/mediaobject.cpp     \
            $$PHONON_MMF_DIR/utils.cpp           \
-           $$PHONON_MMF_DIR/mmf_videoplayer.cpp
+           $$PHONON_MMF_DIR/videoplayer.cpp
 
 # This is needed for having the .qtplugin file properly created on Symbian.
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/phonon_backend

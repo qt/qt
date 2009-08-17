@@ -18,7 +18,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractplayer.h"
 #include "audioplayer.h"
-#include "mmf_videoplayer.h"
+#include "videoplayer.h"
 #include "mediaobject.h"
 
 using namespace Phonon;
