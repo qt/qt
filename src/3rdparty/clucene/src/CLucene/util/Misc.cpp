@@ -24,10 +24,15 @@
 # include <sys/timeb.h>
 #endif
 
+#ifdef UNDER_CE
+#include <QTime>
+#endif
+
 CL_NS_DEF(util)
 
 uint64_t Misc::currentTimeMillis()
 {
+#ifndef UNDER_CE
 #if defined(_CLCOMPILER_MSVC) || defined(__MINGW32__) || defined(__BORLANDC__)
     struct _timeb tstruct;
     _ftime(&tstruct);
@@ -41,6 +46,11 @@ uint64_t Misc::currentTimeMillis()
 
     return (((uint64_t) tstruct.tv_sec) * 1000) + tstruct.tv_usec / 1000;
 #endif
+#else //UNDER_CE
+    QT_USE_NAMESPACE
+    QTime t = QTime::currentTime();
+    return t.second() * 1000 + t.msec();
+#endif //UNDER_CE
 }
 
 // #pragma mark -- char related utils

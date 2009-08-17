@@ -848,6 +848,8 @@ typedef quint64 qulonglong;
       && sizeof(void *) == sizeof(qptrdiff)
 */
 template <int> struct QIntegerForSize;
+template <>    struct QIntegerForSize<1> { typedef quint8  Unsigned; typedef qint8  Signed; };
+template <>    struct QIntegerForSize<2> { typedef quint16 Unsigned; typedef qint16 Signed; };
 template <>    struct QIntegerForSize<4> { typedef quint32 Unsigned; typedef qint32 Signed; };
 template <>    struct QIntegerForSize<8> { typedef quint64 Unsigned; typedef qint64 Signed; };
 template <class T> struct QIntegerForSizeof: QIntegerForSize<sizeof(T)> { };
@@ -1912,6 +1914,14 @@ public: \
     static inline const char *name() { return #TYPE; } \
 }
 
+template <typename T>
+inline void qSwap(T &value1, T &value2)
+{
+    const T t = value1;
+    value1 = value2;
+    value2 = t;
+}
+
 /*
    Specialize a shared type with:
 
@@ -1921,33 +1931,12 @@ public: \
    types must declare a 'bool isDetached(void) const;' member for this
    to work.
 */
-#if defined Q_CC_MSVC && _MSC_VER < 1300
-template <typename T>
-inline void qSwap_helper(T &value1, T &value2, T*)
-{
-    T t = value1;
-    value1 = value2;
-    value2 = t;
-}
 #define Q_DECLARE_SHARED(TYPE)                                          \
 template <> inline bool qIsDetached<TYPE>(TYPE &t) { return t.isDetached(); } \
-template <> inline void qSwap_helper<TYPE>(TYPE &value1, TYPE &value2, TYPE*) \
-{ \
-    const TYPE::DataPtr t = value1.data_ptr(); \
-    value1.data_ptr() = value2.data_ptr(); \
-    value2.data_ptr() = t; \
-}
-#else
-#define Q_DECLARE_SHARED(TYPE)                                          \
-template <> inline bool qIsDetached<TYPE>(TYPE &t) { return t.isDetached(); } \
-template <typename T> inline void qSwap(T &, T &); \
 template <> inline void qSwap<TYPE>(TYPE &value1, TYPE &value2) \
 { \
-    const TYPE::DataPtr t = value1.data_ptr(); \
-    value1.data_ptr() = value2.data_ptr(); \
-    value2.data_ptr() = t; \
+    qSwap<TYPE::DataPtr>(value1.data_ptr(), value2.data_ptr()); \
 }
-#endif
 
 /*
    QTypeInfo primitive specializations

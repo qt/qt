@@ -138,6 +138,7 @@ void QLineEditPrivate::init(const QString& txt)
 {
     Q_Q(QLineEdit);
     control = new QLineControl(txt);
+    control->setFont(q->font());
     QObject::connect(control, SIGNAL(textChanged(const QString &)),
             q, SIGNAL(textChanged(const QString &)));
     QObject::connect(control, SIGNAL(textEdited(const QString &)),

@@ -62,6 +62,7 @@ class tst_QSharedPointer: public QObject
 private slots:
     void basics_data();
     void basics();
+    void swap();
     void forwardDeclaration1();
     void forwardDeclaration2();
     void memoryManagement();
@@ -261,6 +262,37 @@ void tst_QSharedPointer::basics()
     QVERIFY(!refCountData(ptr) || refCountData(ptr)->strongref == 1);
 
     // aData is deleted here
+}
+
+void tst_QSharedPointer::swap()
+{
+    QSharedPointer<int> p1, p2(new int(42)), control = p2;
+    QVERIFY(p1 != control);
+    QVERIFY(p1.isNull());
+    QVERIFY(p2 == control);
+    QVERIFY(!p2.isNull());
+    QVERIFY(*p2 == 42);
+
+    p1.swap(p2);
+    QVERIFY(p1 == control);
+    QVERIFY(!p1.isNull());
+    QVERIFY(p2 != control);
+    QVERIFY(p2.isNull());
+    QVERIFY(*p1 == 42);
+
+    p1.swap(p2);
+    QVERIFY(p1 != control);
+    QVERIFY(p1.isNull());
+    QVERIFY(p2 == control);
+    QVERIFY(!p2.isNull());
+    QVERIFY(*p2 == 42);
+
+    qSwap(p1, p2);
+    QVERIFY(p1 == control);
+    QVERIFY(!p1.isNull());
+    QVERIFY(p2 != control);
+    QVERIFY(p2.isNull());
+    QVERIFY(*p1 == 42);
 }
 
 class ForwardDeclared;

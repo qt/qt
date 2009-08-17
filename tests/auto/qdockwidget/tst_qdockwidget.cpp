@@ -598,7 +598,7 @@ void tst_QDockWidget::visibilityChanged()
     QCOMPARE(spy.count(), 0);
 
     mw.addDockWidget(Qt::RightDockWidgetArea, &dw2);
-    qApp->processEvents();
+	QTest::qWait(200);
     QCOMPARE(spy.count(), 1);
     QCOMPARE(spy.at(0).at(0).toBool(), true);
 }

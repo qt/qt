@@ -2311,10 +2311,6 @@ bool QApplication::event(QEvent *e)
         } else if (te->timerId() == d->toolTipFallAsleep.timerId()) {
             d->toolTipFallAsleep.stop();
         }
-#ifdef QT_MAC_USE_COCOA
-    } else if (e->type() == QEvent::CocoaRequestModal) {
-        d->_q_runAppModalWindow();
-#endif
     }
     return QCoreApplication::event(e);
 }

@@ -107,24 +107,15 @@ typedef DWORD (WINAPI *PtrGetNamedSecurityInfoW)(LPWSTR, SE_OBJECT_TYPE, SECURIT
 static PtrGetNamedSecurityInfoW ptrGetNamedSecurityInfoW = 0;
 typedef BOOL (WINAPI *PtrLookupAccountSidW)(LPCWSTR, PSID, LPWSTR, LPDWORD, LPWSTR, LPDWORD, PSID_NAME_USE);
 static PtrLookupAccountSidW ptrLookupAccountSidW = 0;
-typedef BOOL (WINAPI *PtrAllocateAndInitializeSid)(PSID_IDENTIFIER_AUTHORITY, BYTE, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, PSID*);
-static PtrAllocateAndInitializeSid ptrAllocateAndInitializeSid = 0;
 typedef VOID (WINAPI *PtrBuildTrusteeWithSidW)(PTRUSTEE_W, PSID);
 static PtrBuildTrusteeWithSidW ptrBuildTrusteeWithSidW = 0;
-typedef VOID (WINAPI *PtrBuildTrusteeWithNameW)(PTRUSTEE_W, unsigned short*);
-static PtrBuildTrusteeWithNameW ptrBuildTrusteeWithNameW = 0;
 typedef DWORD (WINAPI *PtrGetEffectiveRightsFromAclW)(PACL, PTRUSTEE_W, OUT PACCESS_MASK);
 static PtrGetEffectiveRightsFromAclW ptrGetEffectiveRightsFromAclW = 0;
-typedef PVOID (WINAPI *PtrFreeSid)(PSID);
-static PtrFreeSid ptrFreeSid = 0;
 static TRUSTEE_W currentUserTrusteeW;
+static TRUSTEE_W worldTrusteeW;
 
-typedef BOOL (WINAPI *PtrOpenProcessToken)(HANDLE, DWORD, PHANDLE );
-static PtrOpenProcessToken ptrOpenProcessToken = 0;
 typedef BOOL (WINAPI *PtrGetUserProfileDirectoryW)(HANDLE, LPWSTR, LPDWORD);
 static PtrGetUserProfileDirectoryW ptrGetUserProfileDirectoryW = 0;
-typedef BOOL (WINAPI *PtrSetFilePointerEx)(HANDLE, LARGE_INTEGER, PLARGE_INTEGER, DWORD);
-static PtrSetFilePointerEx ptrSetFilePointerEx = 0;
 QT_END_INCLUDE_NAMESPACE
 
 
@@ -152,67 +143,37 @@ void QFSFileEnginePrivate::resolveLibs()
         if (advapiHnd) {
             ptrGetNamedSecurityInfoW = (PtrGetNamedSecurityInfoW)GetProcAddress(advapiHnd, "GetNamedSecurityInfoW");
             ptrLookupAccountSidW = (PtrLookupAccountSidW)GetProcAddress(advapiHnd, "LookupAccountSidW");
-            ptrAllocateAndInitializeSid = (PtrAllocateAndInitializeSid)GetProcAddress(advapiHnd, "AllocateAndInitializeSid");
             ptrBuildTrusteeWithSidW = (PtrBuildTrusteeWithSidW)GetProcAddress(advapiHnd, "BuildTrusteeWithSidW");
-            ptrBuildTrusteeWithNameW = (PtrBuildTrusteeWithNameW)GetProcAddress(advapiHnd, "BuildTrusteeWithNameW");
             ptrGetEffectiveRightsFromAclW = (PtrGetEffectiveRightsFromAclW)GetProcAddress(advapiHnd, "GetEffectiveRightsFromAclW");
-            ptrFreeSid = (PtrFreeSid)GetProcAddress(advapiHnd, "FreeSid");
         }
-        if (ptrBuildTrusteeWithNameW) {
-            HINSTANCE versionHnd = LoadLibraryW(L"version");
-            if (versionHnd) {
-                typedef DWORD (WINAPI *PtrGetFileVersionInfoSizeW)(LPCWSTR lptstrFilename,LPDWORD lpdwHandle);
-                PtrGetFileVersionInfoSizeW ptrGetFileVersionInfoSizeW = (PtrGetFileVersionInfoSizeW)GetProcAddress(versionHnd, "GetFileVersionInfoSizeW");
-                typedef BOOL (WINAPI *PtrGetFileVersionInfoW)(LPCWSTR lptstrFilename,DWORD dwHandle,DWORD dwLen,LPVOID lpData);
-                PtrGetFileVersionInfoW ptrGetFileVersionInfoW = (PtrGetFileVersionInfoW)GetProcAddress(versionHnd, "GetFileVersionInfoW");
-                typedef BOOL (WINAPI *PtrVerQueryValueW)(const LPVOID pBlock,LPCWSTR lpSubBlock,LPVOID *lplpBuffer,PUINT puLen);
-                PtrVerQueryValueW ptrVerQueryValueW = (PtrVerQueryValueW)GetProcAddress(versionHnd, "VerQueryValueW");
-                if(ptrGetFileVersionInfoSizeW && ptrGetFileVersionInfoW && ptrVerQueryValueW) {
-                    DWORD fakeHandle;
-                    DWORD versionSize = ptrGetFileVersionInfoSizeW(L"secur32.dll", &fakeHandle);
-                    if(versionSize) {
-                        LPVOID versionData;
-                        versionData = malloc(versionSize);
-                        if(ptrGetFileVersionInfoW(L"secur32.dll", 0, versionSize, versionData)) {
-                            UINT puLen;
-                            VS_FIXEDFILEINFO *pLocalInfo;
-                            if(ptrVerQueryValueW(versionData, L"\\", (void**)&pLocalInfo, &puLen)) {
-                                WORD wVer1, wVer2, wVer3, wVer4;
-                                wVer1 = HIWORD(pLocalInfo->dwFileVersionMS);
-                                wVer2 = LOWORD(pLocalInfo->dwFileVersionMS);
-                                wVer3 = HIWORD(pLocalInfo->dwFileVersionLS);
-                                wVer4 = LOWORD(pLocalInfo->dwFileVersionLS);
-                                // It will not work with secur32.dll version 5.0.2195.2862
-                                if(!(wVer1 == 5 && wVer2 == 0 && wVer3 == 2195 && (wVer4 == 2862 || wVer4 == 4587))) {
-                                    HINSTANCE userHnd = LoadLibraryW(L"secur32");
-                                    if (userHnd) {
-                                        typedef BOOL (WINAPI *PtrGetUserNameExW)(EXTENDED_NAME_FORMAT nameFormat, ushort* lpBuffer, LPDWORD nSize);
-                                        PtrGetUserNameExW ptrGetUserNameExW = (PtrGetUserNameExW)GetProcAddress(userHnd, "GetUserNameExW");
-                                        if(ptrGetUserNameExW) {
-                                            static wchar_t buffer[258];
-                                            DWORD bufferSize = 257;
-                                            ptrGetUserNameExW(NameSamCompatible, (ushort*)buffer, &bufferSize);
-                                            ptrBuildTrusteeWithNameW(&currentUserTrusteeW, (ushort*)buffer);
-                                        }
-                                        FreeLibrary(userHnd);
-                                    }
-                                }
-                            }
-                        }
-                        free(versionData);
-                    }
-                }
-                FreeLibrary(versionHnd);
+        if (ptrBuildTrusteeWithSidW) {
+            // Create TRUSTEE for current user
+            HANDLE hnd = ::GetCurrentProcess();
+            HANDLE token = 0;
+            if (::OpenProcessToken(hnd, TOKEN_QUERY, &token)) {
+                TOKEN_USER tu;
+                DWORD retsize;
+                if (::GetTokenInformation(token, TokenUser, &tu, sizeof(tu), &retsize))
+                    ptrBuildTrusteeWithSidW(&currentUserTrusteeW, tu.User.Sid);
+                ::CloseHandle(token);
             }
-            ptrOpenProcessToken = (PtrOpenProcessToken)GetProcAddress(advapiHnd, "OpenProcessToken");
-                HINSTANCE userenvHnd = LoadLibraryW(L"userenv");
-            if (userenvHnd) {
-                ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
+
+            typedef BOOL (WINAPI *PtrAllocateAndInitializeSid)(PSID_IDENTIFIER_AUTHORITY, BYTE, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, DWORD, PSID*);
+            PtrAllocateAndInitializeSid ptrAllocateAndInitializeSid = (PtrAllocateAndInitializeSid)GetProcAddress(advapiHnd, "AllocateAndInitializeSid");
+            typedef PVOID (WINAPI *PtrFreeSid)(PSID);
+            PtrFreeSid ptrFreeSid = (PtrFreeSid)GetProcAddress(advapiHnd, "FreeSid");
+            if (ptrAllocateAndInitializeSid && ptrFreeSid) {
+                // Create TRUSTEE for Everyone (World)
+                SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
+                PSID pWorld = 0;
+                if (ptrAllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &pWorld))
+                    ptrBuildTrusteeWithSidW(&worldTrusteeW, pWorld);
+                ptrFreeSid(pWorld);
             }
-            HINSTANCE kernelHnd = LoadLibraryW(L"kernel32");
-            if (kernelHnd)
-                ptrSetFilePointerEx = (PtrSetFilePointerEx)GetProcAddress(kernelHnd, "SetFilePointerEx");
         }
+        HINSTANCE userenvHnd = LoadLibraryW(L"userenv");
+        if (userenvHnd)
+            ptrGetUserProfileDirectoryW = (PtrGetUserProfileDirectoryW)GetProcAddress(userenvHnd, "GetUserProfileDirectoryW");
 #endif
     }
 }
@@ -596,34 +557,27 @@ qint64 QFSFileEnginePrivate::nativePos() const
     if (fileHandle == INVALID_HANDLE_VALUE)
         return 0;
 
-#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
-    QFSFileEnginePrivate::resolveLibs();
-    if (!ptrSetFilePointerEx) {
-#endif
-        LARGE_INTEGER filepos;
-        filepos.HighPart = 0;
-        DWORD newFilePointer = SetFilePointer(fileHandle, 0, &filepos.HighPart, FILE_CURRENT);
-        if (newFilePointer == 0xFFFFFFFF && GetLastError() != NO_ERROR) {
-            thatQ->setError(QFile::UnspecifiedError, qt_error_string());
-            return 0;
-        }
-
-        // Note: This is the case for MOC, UIC, qmake and other
-        //       bootstrapped tools, and for Windows CE.
-        filepos.LowPart = newFilePointer;
-        return filepos.QuadPart;
-#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
-    }
-
+#if !defined(Q_OS_WINCE)
     LARGE_INTEGER currentFilePos;
     LARGE_INTEGER offset;
     offset.QuadPart = 0;
-    if (!ptrSetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_CURRENT)) {
+    if (!::SetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_CURRENT)) {
         thatQ->setError(QFile::UnspecifiedError, qt_error_string());
         return 0;
     }
 
     return qint64(currentFilePos.QuadPart);
+#else
+    LARGE_INTEGER filepos;
+    filepos.HighPart = 0;
+    DWORD newFilePointer = SetFilePointer(fileHandle, 0, &filepos.HighPart, FILE_CURRENT);
+    if (newFilePointer == 0xFFFFFFFF && GetLastError() != NO_ERROR) {
+        thatQ->setError(QFile::UnspecifiedError, qt_error_string());
+        return 0;
+    }
+
+    filepos.LowPart = newFilePointer;
+    return filepos.QuadPart;
 #endif
 }
 
@@ -632,39 +586,32 @@ qint64 QFSFileEnginePrivate::nativePos() const
 */
 bool QFSFileEnginePrivate::nativeSeek(qint64 pos)
 {
-    Q_Q(const QFSFileEngine);
-    QFSFileEngine *thatQ = const_cast<QFSFileEngine *>(q);
+    Q_Q(QFSFileEngine);
 
     if (fh || fd != -1) {
         // stdlib / stdio mode.
         return seekFdFh(pos);
     }
 
-#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
-    QFSFileEnginePrivate::resolveLibs();
-    if (!ptrSetFilePointerEx) {
-#endif
-        DWORD newFilePointer;
-        LARGE_INTEGER *li = reinterpret_cast<LARGE_INTEGER*>(&pos);
-        newFilePointer = SetFilePointer(fileHandle, li->LowPart, &li->HighPart, FILE_BEGIN);
-        if (newFilePointer == 0xFFFFFFFF && GetLastError() != NO_ERROR) {
-            thatQ->setError(QFile::PositionError, qt_error_string());
-            return false;
-        }
-
-        // Note: This is the case for MOC, UIC, qmake and other
-        //       bootstrapped tools, and for Windows CE.
-        return true;
-#if !defined(QT_NO_LIBRARY) && !defined(Q_OS_WINCE)
-    }
-
+#if !defined(Q_OS_WINCE)
     LARGE_INTEGER currentFilePos;
     LARGE_INTEGER offset;
     offset.QuadPart = pos;
-    if (ptrSetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_BEGIN) == 0) {
-        thatQ->setError(QFile::UnspecifiedError, qt_error_string());
+    if (!::SetFilePointerEx(fileHandle, offset, &currentFilePos, FILE_BEGIN)) {
+        q->setError(QFile::UnspecifiedError, qt_error_string());
         return false;
     }
+
+    return true;
+#else
+    DWORD newFilePointer;
+    LARGE_INTEGER *li = reinterpret_cast<LARGE_INTEGER*>(&pos);
+    newFilePointer = SetFilePointer(fileHandle, li->LowPart, &li->HighPart, FILE_BEGIN);
+    if (newFilePointer == 0xFFFFFFFF && GetLastError() != NO_ERROR) {
+        q->setError(QFile::PositionError, qt_error_string());
+        return false;
+    }
+
     return true;
 #endif
 }
@@ -1044,10 +991,10 @@ QString QFSFileEngine::homePath()
     QString ret;
 #if !defined(QT_NO_LIBRARY)
     QFSFileEnginePrivate::resolveLibs();
-    if (ptrOpenProcessToken && ptrGetUserProfileDirectoryW) {
+    if (ptrGetUserProfileDirectoryW) {
         HANDLE hnd = ::GetCurrentProcess();
         HANDLE token = 0;
-        BOOL ok = ::ptrOpenProcessToken(hnd, TOKEN_QUERY, &token);
+        BOOL ok = ::OpenProcessToken(hnd, TOKEN_QUERY, &token);
         if (ok) {
             DWORD dwBufferSize = 0;
             // First call, to determine size of the strings (with '\0').
@@ -1393,7 +1340,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
 
         enum { ReadMask = 0x00000001, WriteMask = 0x00000002, ExecMask = 0x00000020 };
         resolveLibs();
-        if(ptrGetNamedSecurityInfoW && ptrAllocateAndInitializeSid && ptrBuildTrusteeWithSidW && ptrGetEffectiveRightsFromAclW && ptrFreeSid) {
+        if(ptrGetNamedSecurityInfoW && ptrBuildTrusteeWithSidW && ptrGetEffectiveRightsFromAclW) {
 
             QString fname = filePath.endsWith(QLatin1String(".lnk")) ? readLink(filePath) : filePath;
             DWORD res = ptrGetNamedSecurityInfoW((wchar_t*)fname.utf16(), SE_FILE_OBJECT,
@@ -1435,21 +1382,14 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
                         ret |= QAbstractFileEngine::ExeGroupPerm;
                 }
                 { //other (world)
-                    // Create SID for Everyone (World)
-                    SID_IDENTIFIER_AUTHORITY worldAuth = { SECURITY_WORLD_SID_AUTHORITY };
-                    PSID pWorld = 0;
-                    if(ptrAllocateAndInitializeSid(&worldAuth, 1, SECURITY_WORLD_RID, 0,0,0,0,0,0,0, &pWorld)) {
-                        ptrBuildTrusteeWithSidW(&trustee, pWorld);
-                        if(ptrGetEffectiveRightsFromAclW(pDacl, &trustee, &access_mask) != ERROR_SUCCESS)
-                            access_mask = (ACCESS_MASK)-1; // ###
-                        if(access_mask & ReadMask)
-                            ret |= QAbstractFileEngine::ReadOtherPerm;
-                        if(access_mask & WriteMask)
-                            ret |= QAbstractFileEngine::WriteOtherPerm;
-                        if(access_mask & ExecMask)
-                            ret |= QAbstractFileEngine::ExeOtherPerm;
-                    }
-                    ptrFreeSid(pWorld);
+                    if(ptrGetEffectiveRightsFromAclW(pDacl, &worldTrusteeW, &access_mask) != ERROR_SUCCESS)
+                        access_mask = (ACCESS_MASK)-1; // ###
+                    if(access_mask & ReadMask)
+                        ret |= QAbstractFileEngine::ReadOtherPerm;
+                    if(access_mask & WriteMask)
+                        ret |= QAbstractFileEngine::WriteOtherPerm;
+                    if(access_mask & ExecMask)
+                        ret |= QAbstractFileEngine::ExeOtherPerm;
                 }
                 LocalFree(pSD);
             }
@@ -1703,12 +1643,8 @@ bool QFSFileEngine::setPermissions(uint perms)
     if (mode == 0) // not supported
         return false;
 
-#if !defined(Q_OS_WINCE)
-    ret = ::_wchmod((wchar_t*)d->filePath.utf16(), mode) == 0;
-#else
-    ret = ::_wchmod((wchar_t*)d->longFileName(d->filePath).utf16(), mode);
-#endif
-   return ret;
+    ret = ::_wchmod((wchar_t*)d->longFileName(d->filePath).utf16(), mode) == 0;
+    return ret;
 }
 
 bool QFSFileEngine::setSize(qint64 size)

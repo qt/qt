@@ -220,52 +220,39 @@ void QVariantAnimationPrivate::updateInterpolator()
 */
 void QVariantAnimationPrivate::recalculateCurrentInterval(bool force/*=false*/)
 {
-    // can't interpolate if we have only 1 key value
-    if ((keyValues.count() + (defaultStartValue.isValid() ? 1 : 0)) <=1)
+    // can't interpolate if we don't have at least 2 values
+    if ((keyValues.count() + (defaultStartEndValue.isValid() ? 1 : 0)) < 2)
         return;
 
     const qreal progress = easing.valueForProgress(((duration == 0) ? qreal(1) : qreal(currentTime) / qreal(duration)));
 
-    if (force || progress < currentInterval.start.first || progress > currentInterval.end.first) {
+    //0 and 1 are still the boundaries
+    if (force || (currentInterval.start.first > 0 && progress < currentInterval.start.first)
+        || (currentInterval.end.first < 1 && progress > currentInterval.end.first)) {
         //let's update currentInterval
         QVariantAnimation::KeyValues::const_iterator it = qLowerBound(keyValues.constBegin(),
-                                                                           keyValues.constEnd(),
-                                                                           qMakePair(progress, QVariant()),
-                                                                           animationValueLessThan);
-        if (it == keyValues.constEnd()) {
-            if (direction == QVariantAnimation::Backward && defaultStartValue.isValid()) {
-                --it;
-                if (it->first == 1) {
-                    //we have an end value (item with progress = 1)
-                    currentInterval.start = *(it-1);
-                    currentInterval.end = *it;
-                } else if (direction == QVariantAnimation::Backward && defaultStartValue.isValid()) {
-                    //the default start value should be used as the default end value
-                    currentInterval.start = *it;
-                    currentInterval.end = qMakePair(qreal(1), defaultStartValue);
-                } else {
-                    ///This should not happen
-                }
-            }
-        } else if (it == keyValues.constBegin()) {
-            if (it+1 != keyValues.constEnd() && (it->first == progress || it->first == 0)) {
-                //the item pointed to by it is the start element in the range
-                //we also test if the current element is for progress 0 (ie the real start) because
-                //some easing curves might get the progress below 0.
+                                                                      keyValues.constEnd(),
+                                                                      qMakePair(progress, QVariant()),
+                                                                      animationValueLessThan);
+        if (it == keyValues.constBegin()) {
+            //the item pointed to by it is the start element in the range    
+            if (it->first == 0 && keyValues.count() > 1) {
                 currentInterval.start = *it;
                 currentInterval.end = *(it+1);
-            } else if (defaultStartValue.isValid()) {
-                if (direction == QVariantAnimation::Forward) {
-                    //we should have an end value
-                    currentInterval.start = qMakePair(qreal(0), defaultStartValue);
-                    currentInterval.end = *it;
-                } else {
-                    //we should have a start value
-                    currentInterval.start = *it;
-                    currentInterval.end = qMakePair(qreal(1), defaultStartValue);
-                }
             } else {
-                ///this should not happen
+                currentInterval.start = qMakePair(qreal(0), defaultStartEndValue);
+                currentInterval.end = *it;
+            }
+        } else if (it == keyValues.constEnd()) {
+            --it; //position the iterator on the last item
+            if (it->first == 1 && keyValues.count() > 1) {
+                //we have an end value (item with progress = 1)
+                currentInterval.start = *(it-1);
+                currentInterval.end = *it;
+            } else {
+                //we use the default end value here
+                currentInterval.start = *it;
+                currentInterval.end = qMakePair(qreal(1), defaultStartEndValue);
             }
         } else {
             currentInterval.start = *(it-1);
@@ -329,9 +316,9 @@ void QVariantAnimationPrivate::setValueAt(qreal step, const QVariant &value)
     recalculateCurrentInterval(/*force=*/true);
 }
 
-void QVariantAnimationPrivate::setDefaultStartValue(const QVariant &value)
+void QVariantAnimationPrivate::setDefaultStartEndValue(const QVariant &value)
 {
-    defaultStartValue = value;
+    defaultStartEndValue = value;
     recalculateCurrentInterval(/*force=*/true);
 }
 

@@ -871,7 +871,7 @@ QList<QSize> QIcon::availableSizes(Mode mode, State state) const
     \since 4.6
 
     Sets the search paths for icon themes to \a paths.
-    \sa themeSearchPaths(), fromTheme()
+    \sa themeSearchPaths(), fromTheme(), setThemeName()
 */
 void QIcon::setThemeSearchPaths(const QStringList &paths)
 {
@@ -893,7 +893,7 @@ void QIcon::setThemeSearchPaths(const QStringList &paths)
     On Mac the default search path will search in the
     [Contents/Resources/icons] part of the application bundle.
 
-    \sa setThemeSearchPaths(), fromTheme()
+    \sa setThemeSearchPaths(), fromTheme(), setThemeName()
 */
 QStringList QIcon::themeSearchPaths()
 {
@@ -903,16 +903,17 @@ QStringList QIcon::themeSearchPaths()
 /*!
     \since 4.6
 
-    Sets the current icon theme.
+    Sets the current icon theme to \a name.
 
-    The name should correspond to a directory name in the
-    current \ themeSearchPath() containing an index.theme
-    file describing it's contents..
+    The \a name should correspond to a directory name in the
+    current themeSearchPath() containing an index.theme
+    file describing it's contents.
 
+    \sa themeSearchPaths(), themeName()
 */
-void QIcon::setThemeName(const QString &path)
+void QIcon::setThemeName(const QString &name)
 {
-    QIconLoader::instance()->setThemeName(path);
+    QIconLoader::instance()->setThemeName(name);
 }
 
 /*!
@@ -923,7 +924,8 @@ void QIcon::setThemeName(const QString &path)
     On X11, the current icon theme depends on your desktop
     settings. On other platforms it is not set by default.
 
-    \sa themeSearchPaths(), fromTheme(), hasThemeIcon()
+    \sa setThemeName(), themeSearchPaths(), fromTheme(),
+    hasThemeIcon()
 */
 QString QIcon::themeName()
 {
@@ -960,7 +962,7 @@ QString QIcon::themeName()
     compliant theme in one of your themeSearchPaths() and set the
     appropriate themeName().
 
-    \sa themeName(), themeSearchPaths()
+    \sa themeName(), setThemeName(), themeSearchPaths()
 */
 QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
 {
@@ -994,10 +996,10 @@ QIcon QIcon::fromTheme(const QString &name, const QIcon &fallback)
 /*!
     \since 4.6
 
-    Returns true if there is an icon available for a \a name in the current
-    icon theme, otherwise returns false.
+    Returns true if there is an icon available for \a name in the
+    current icon theme, otherwise returns false.
 
-    \sa themeSearchPaths(), fromTheme()
+    \sa themeSearchPaths(), fromTheme(), setThemeName()
 */
 bool QIcon::hasThemeIcon(const QString &name)
 {

@@ -76,14 +76,14 @@ public:
         return q->d_func();
     }
 
-    void setDefaultStartValue(const QVariant &value);
+    void setDefaultStartEndValue(const QVariant &value);
 
     int duration;
     QEasingCurve easing;
 
     QVariantAnimation::KeyValues keyValues;
     QVariant currentValue;
-    QVariant defaultStartValue;
+    QVariant defaultStartEndValue;
 
     //this is used to keep track of the KeyValue interval in which we currently are
     struct

@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.6 API Reference</title>
+<title>FreeType-2.3.9 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -31,7 +31,11 @@
 </style>
 </head>
 <body>
-<center><h1>FreeType-2.3.6 API Reference</h1></center>
+
+<table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+<center><h1>FreeType-2.3.9 API Reference</h1></center>
 
 <center><h1>
 Multiple Masters
@@ -48,7 +52,7 @@ Multiple Masters
 
 <table align=center width="87%"><tr><td>
 <p>The following types and functions are used to manage Multiple Master fonts, i.e., the selection of specific design instances by setting design axis coordinates.</p>
-<p>George Williams has extended this interface to make it work with both Type 1 Multiple Masters fonts and GX distortable (var) fonts. Some of these routines only work with MM fonts, others will work with both types. They are similar enough that a consistent interface makes sense.</p>
+<p>George Williams has extended this interface to make it work with both Type&nbsp;1 Multiple Masters fonts and GX distortable (var) fonts. Some of these routines only work with MM fonts, others will work with both types. They are similar enough that a consistent interface makes sense.</p>
 </td></tr></table><br>
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_MM_Axis">FT_MM_Axis</a></h4>
@@ -114,10 +118,10 @@ Defined in FT_MULTIPLE_MASTERS_H (freetype/ftmm.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>num_axis</b></td><td>
-<p>Number of axes. Cannot exceed 4.</p>
+<p>Number of axes. Cannot exceed&nbsp;4.</p>
 </td></tr>
 <tr valign=top><td><b>num_designs</b></td><td>
-<p>Number of designs; should be normally 2^num_axis even though the Type 1 specification strangely allows for intermediate designs to be present. This number cannot exceed 16.</p>
+<p>Number of designs; should be normally 2^num_axis even though the Type&nbsp;1 specification strangely allows for intermediate designs to be present. This number cannot exceed&nbsp;16.</p>
 </td></tr>
 <tr valign=top><td><b>axis</b></td><td>
 <p>A table of axis descriptors.</p>
@@ -245,7 +249,7 @@ Defined in FT_MULTIPLE_MASTERS_H (freetype/ftmm.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>num_axis</b></td><td>
-<p>The number of axes. The maximum value is 4 for MM; no limit in GX.</p>
+<p>The number of axes. The maximum value is&nbsp;4 for MM; no limit in GX.</p>
 </td></tr>
 <tr valign=top><td><b>num_designs</b></td><td>
 <p>The number of designs; should be normally 2^num_axis for MM fonts. Not meaningful for GX (where every glyph could have a different number of designs).</p>
@@ -280,7 +284,7 @@ Defined in FT_MULTIPLE_MASTERS_H (freetype/ftmm.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Retrieves the Multiple Master descriptor of a given font.</p>
+<p>Retrieve the Multiple Master descriptor of a given font.</p>
 <p>This function can't be used with GX fonts.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
@@ -300,7 +304,7 @@ Defined in FT_MULTIPLE_MASTERS_H (freetype/ftmm.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -321,7 +325,7 @@ Defined in FT_MULTIPLE_MASTERS_H (freetype/ftmm.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Retrieves the Multiple Master/GX var descriptor of a given font.</p>
+<p>Retrieve the Multiple Master/GX var descriptor of a given font.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -335,12 +339,12 @@ Defined in FT_MULTIPLE_MASTERS_H (freetype/ftmm.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>amaster</b></td><td>
-<p>The Multiple Masters descriptor. Allocates a data structure, which the user must free (a single call to FT_FREE will do it).</p>
+<p>The Multiple Masters/GX var descriptor. Allocates a data structure, which the user must free (a single call to FT_FREE will do it).</p>
 </td></tr>
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -385,7 +389,7 @@ Defined in FT_MULTIPLE_MASTERS_H (freetype/ftmm.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -429,7 +433,7 @@ Defined in FT_MULTIPLE_MASTERS_H (freetype/ftmm.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -473,7 +477,7 @@ Defined in FT_MULTIPLE_MASTERS_H (freetype/ftmm.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
