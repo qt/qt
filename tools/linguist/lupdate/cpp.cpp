@@ -58,9 +58,7 @@ QT_BEGIN_NAMESPACE
 
 static const char MagicComment[] = "TRANSLATOR ";
 
-#define STRINGIFY_INTERNAL(x) #x
-#define STRINGIFY(x) STRINGIFY_INTERNAL(x)
-#define STRING(s) static QString str##s(QLatin1String(STRINGIFY(s)))
+#define STRING(s) static QString str##s(QLatin1String(#s))
 
 //#define DIAGNOSE_RETRANSLATABILITY // FIXME: should make a runtime option of this
 
@@ -348,6 +346,30 @@ uint CppParser::getChar()
     }
 }
 
+STRING(Q_OBJECT);
+STRING(Q_DECLARE_TR_FUNCTIONS);
+STRING(QT_TR_NOOP);
+STRING(QT_TRID_NOOP);
+STRING(QT_TRANSLATE_NOOP);
+STRING(QT_TRANSLATE_NOOP3);
+STRING(QT_TR_NOOP_UTF8);
+STRING(QT_TRANSLATE_NOOP_UTF8);
+STRING(QT_TRANSLATE_NOOP3_UTF8);
+STRING(class);
+// QTranslator::findMessage() has the same parameters as QApplication::translate()
+STRING(findMessage);
+STRING(friend);
+STRING(namespace);
+STRING(qtTrId);
+STRING(return);
+STRING(struct);
+STRING(TR);
+STRING(Tr);
+STRING(tr);
+STRING(trUtf8);
+STRING(translate);
+STRING(using);
+
 uint CppParser::getToken()
 {
   restart:
@@ -547,35 +569,34 @@ uint CppParser::getToken()
 
             //qDebug() << "IDENT: " << yyIdent;
 
-            switch (yyIdent.at(0).unicode()) {
+            switch (yyIdent.unicode()[0].unicode()) {
             case 'Q':
-                if (yyIdent == QLatin1String("Q_OBJECT"))
+                if (yyIdent == strQ_OBJECT)
                     return Tok_Q_OBJECT;
-                if (yyIdent == QLatin1String("Q_DECLARE_TR_FUNCTIONS"))
+                if (yyIdent == strQ_DECLARE_TR_FUNCTIONS)
                     return Tok_Q_DECLARE_TR_FUNCTIONS;
-                if (yyIdent == QLatin1String("QT_TR_NOOP"))
+                if (yyIdent == strQT_TR_NOOP)
                     return Tok_tr;
-                if (yyIdent == QLatin1String("QT_TRID_NOOP"))
+                if (yyIdent == strQT_TRID_NOOP)
                     return Tok_trid;
-                if (yyIdent == QLatin1String("QT_TRANSLATE_NOOP"))
+                if (yyIdent == strQT_TRANSLATE_NOOP)
                     return Tok_translate;
-                if (yyIdent == QLatin1String("QT_TRANSLATE_NOOP3"))
+                if (yyIdent == strQT_TRANSLATE_NOOP3)
                     return Tok_translate;
-                if (yyIdent == QLatin1String("QT_TR_NOOP_UTF8"))
+                if (yyIdent == strQT_TR_NOOP_UTF8)
                     return Tok_trUtf8;
-                if (yyIdent == QLatin1String("QT_TRANSLATE_NOOP_UTF8"))
+                if (yyIdent == strQT_TRANSLATE_NOOP_UTF8)
                     return Tok_translateUtf8;
-                if (yyIdent == QLatin1String("QT_TRANSLATE_NOOP3_UTF8"))
+                if (yyIdent == strQT_TRANSLATE_NOOP3_UTF8)
                     return Tok_translateUtf8;
                 break;
             case 'T':
                 // TR() for when all else fails
-                if (yyIdent.compare(QLatin1String("TR"), Qt::CaseInsensitive) == 0) {
+                if (yyIdent == strTR || yyIdent == strTr)
                     return Tok_tr;
-                }
                 break;
             case 'c':
-                if (yyIdent == QLatin1String("class"))
+                if (yyIdent == strclass)
                     return Tok_class;
                 break;
             case 'f':
@@ -583,40 +604,37 @@ uint CppParser::getToken()
                   QTranslator::findMessage() has the same parameters as
                   QApplication::translate().
                 */
-                if (yyIdent == QLatin1String("findMessage"))
+                if (yyIdent == strfindMessage)
                     return Tok_translate;
-                if (yyIdent == QLatin1String("friend"))
+                if (yyIdent == strfriend)
                     return Tok_friend;
                 break;
             case 'n':
-                if (yyIdent == QLatin1String("namespace"))
+                if (yyIdent == strnamespace)
                     return Tok_namespace;
                 break;
             case 'q':
-                if (yyIdent == QLatin1String("qtTrId"))
+                if (yyIdent == strqtTrId)
                     return Tok_trid;
                 break;
             case 'r':
-                if (yyIdent == QLatin1String("return"))
+                if (yyIdent == strreturn)
                     return Tok_return;
                 break;
             case 's':
-                if (yyIdent == QLatin1String("struct"))
+                if (yyIdent == strstruct)
                     return Tok_class;
                 break;
             case 't':
-                if (yyIdent == QLatin1String("tr")) {
+                if (yyIdent == strtr)
                     return Tok_tr;
-                }
-                if (yyIdent == QLatin1String("trUtf8")) {
+                if (yyIdent == strtrUtf8)
                     return Tok_trUtf8;
-                }
-                if (yyIdent == QLatin1String("translate")) {
+                if (yyIdent == strtranslate)
                     return Tok_translate;
-                }
                 break;
             case 'u':
-                if (yyIdent == QLatin1String("using"))
+                if (yyIdent == strusing)
                     return Tok_using;
                 break;
             }
