@@ -42,6 +42,9 @@
 // INCLUDE FILES
 #include <exception>
 #include <eikstart.h>
+#include <apparc.h>
+#include <eikenv.h>
+
 #include "qts60mainapplication_p.h"
 
 /**
@@ -58,5 +61,17 @@ LOCAL_C CApaApplication* NewApplication()
  */
 GLDEF_C TInt E32Main()
 {
-    return EikStart::RunApplication(NewApplication);
+    TApaApplicationFactory factory(NewApplication);
+    CApaCommandLine* commandLine=NULL;
+    TInt err = CApaCommandLine::GetCommandLineFromProcessEnvironment(commandLine);
+    CEikonEnv* coe=new CEikonEnv;
+    TRAP(err, coe->ConstructAppFromCommandLineL(factory,*commandLine));
+    delete commandLine;
+
+    CActiveScheduler::Start();
+
+    coe->PrepareToExit();
+    coe->DestroyEnvironment();
+
+    return 0;
 }
