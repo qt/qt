@@ -328,6 +328,10 @@
     used for Asian languages.
     This flag was introduced in Qt 4.6.
 
+    \value ItemNegativeZStacksBehindParent The item automatically stacks behind
+    it's parent if it's z-value is negative. This flag enables setZValue() to
+    toggle ItemStacksBehindParent.
+
     \value ItemAutoDetectsFocusProxy The item will assign any child that
     gains input focus as its focus proxy. See also focusProxy().
     This flag was introduced in Qt 4.6.
@@ -1564,6 +1568,11 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         // Update input method sensitivity in any views.
         if (d_ptr->scene)
             d_ptr->scene->d_func()->updateInputMethodSensitivityInViews();
+    }
+
+    if ((flags & ItemNegativeZStacksBehindParent) != (oldFlags & ItemNegativeZStacksBehindParent)) {
+        // Update stack-behind.
+        setFlag(ItemStacksBehindParent, d_ptr->z < qreal(0.0));
     }
 
     if (d_ptr->scene) {
@@ -3718,6 +3727,9 @@ void QGraphicsItem::setZValue(qreal z)
         d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/true);
 
     itemChange(ItemZValueHasChanged, newZVariant);
+
+    if (d_ptr->flags & ItemNegativeZStacksBehindParent)
+        setFlag(QGraphicsItem::ItemStacksBehindParent, z < qreal(0.0));
 
     if (d_ptr->isObject)
         emit static_cast<QGraphicsObject *>(this)->zChanged();
@@ -10102,6 +10114,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemAcceptsInputMethod:
         str = "ItemAcceptsInputMethod";
+        break;
+    case QGraphicsItem::ItemNegativeZStacksBehindParent:
+        str = "ItemNegativeZStacksBehindParent";
         break;
     case QGraphicsItem::ItemAutoDetectsFocusProxy:
         str = "ItemAutoDetectsFocusProxy";

@@ -275,7 +275,6 @@ public:
     GLenum target;
     QSize size;
     QGLFramebufferObjectFormat format;
-    int samples;
     uint valid : 1;
     uint bound : 1;
     QGLFramebufferObject::Attachment fbo_attachment;
@@ -368,7 +367,6 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
         valid = checkFramebufferStatus();
 
         color_buffer = 0;
-        samples = 0;
     } else {
         GLint maxSamples;
         glGetIntegerv(GL_MAX_SAMPLES_EXT, &maxSamples);

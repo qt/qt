@@ -85,6 +85,8 @@ private:
     friend class QGraphicsWidget;
 };
 
+Q_DECLARE_INTERFACE(QGraphicsLayout, "com.trolltech.Qt.QGraphicsLayout")
+
 #endif
 
 QT_END_NAMESPACE
