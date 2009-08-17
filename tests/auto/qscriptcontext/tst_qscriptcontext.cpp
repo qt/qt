@@ -485,6 +485,9 @@ void tst_QScriptContext::pushAndPopContext()
     QCOMPARE(ctx->activationObject().isObject(), true);
     QCOMPARE(ctx->callee().isValid(), false);
     QCOMPARE(ctx->thisObject().strictlyEquals(eng.globalObject()), true);
+    QCOMPARE(ctx->scopeChain().size(), 2);
+    QVERIFY(ctx->scopeChain().at(0).equals(ctx->activationObject()));
+    QVERIFY(ctx->scopeChain().at(1).equals(eng.globalObject()));
 
     QScriptContext *ctx2 = eng.pushContext();
     QCOMPARE(ctx2->parentContext(), ctx);
