@@ -117,10 +117,6 @@ public:
     void invalidate();
     QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
 
-    ///////// DEBUG /////////
-    void dumpGraph();
-protected:
-
 private:
     Q_DISABLE_COPY(QGraphicsAnchorLayout)
     Q_DECLARE_PRIVATE(QGraphicsAnchorLayout)

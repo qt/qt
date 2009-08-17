@@ -1879,3 +1879,20 @@ void QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
     qDeleteAll(preferredConstraints);
     qDeleteAll(preferredVariables);
 }
+
+#ifdef QT_DEBUG
+#include <QFile>
+void QGraphicsAnchorLayoutPrivate::dumpGraph()
+{
+    QFile file(QString::fromAscii("anchorlayout.dot"));
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
+        qWarning("Could not write to %s", file.fileName().toLocal8Bit().constData());
+
+    QString str = QString::fromAscii("digraph anchorlayout {\nnode [shape=\"rect\"]\n%1}");
+    QString dotContents = graph[0].serializeToDot();
+    dotContents += graph[1].serializeToDot();
+    file.write(str.arg(dotContents).toLocal8Bit());
+
+    file.close();
+}
+#endif

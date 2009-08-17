@@ -350,21 +350,3 @@ QSizeF QGraphicsAnchorLayout::sizeHint(Qt::SizeHint which, const QSizeF &constra
 
     return engineSizeHint + QSizeF(left + right, top + bottom);
 }
-
-//////// DEBUG /////////
-#include <QFile>
-void QGraphicsAnchorLayout::dumpGraph()
-{
-    Q_D(QGraphicsAnchorLayout);
-
-    QFile file(QString::fromAscii("anchorlayout.dot"));
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate))
-        qWarning("Could not write to %s", file.fileName().toLocal8Bit().constData());
-
-    QString str = QString::fromAscii("digraph anchorlayout {\nnode [shape=\"rect\"]\n%1}");
-    QString dotContents = d->graph[0].serializeToDot();
-    dotContents += d->graph[1].serializeToDot();
-    file.write(str.arg(dotContents).toLocal8Bit());
-
-    file.close();
-}

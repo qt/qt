@@ -390,6 +390,11 @@ public:
                                     GraphPath path);
     void solvePreferred(QList<QSimplexConstraint *> constraints);
 
+#ifdef QT_DEBUG
+    void dumpGraph();
+#endif
+
+
     qreal spacings[NOrientations];
     // Size hints from simplex engine
     qreal sizeHints[2][3];
@@ -420,3 +425,4 @@ public:
 
     uint calculateGraphCacheDirty : 1;
 };
+

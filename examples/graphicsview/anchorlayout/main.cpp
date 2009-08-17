@@ -126,8 +126,6 @@ int main(int argc, char **argv)
     return 0;
 #endif
 
-    l->dumpGraph();
-
     scene->addItem(w);
     scene->setBackgroundBrush(Qt::darkGreen);
     QGraphicsView *view = new QGraphicsView(scene);
