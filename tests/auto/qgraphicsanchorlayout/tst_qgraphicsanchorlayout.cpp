@@ -18,6 +18,8 @@ private slots:
     void fairDistributionOppositeDirections();
     void proportionalPreferred();
     void example();
+    void setSpacing();
+
 };
 
 class RectWidget : public QGraphicsWidget
@@ -694,6 +696,46 @@ void tst_QGraphicsAnchorLayout::example()
     QCOMPARE(a->size(), e->size());
     QCOMPARE(b->size(), d->size());
     QCOMPARE(f->size(), g->size());
+}
+
+void tst_QGraphicsAnchorLayout::setSpacing()
+{
+    QSizeF min(10, 10);
+    QSizeF pref(20, 20);
+    QSizeF max(50, 50);
+
+    QGraphicsWidget *a = createItem(min, pref, max);
+    QGraphicsWidget *b = createItem(min, pref, max);
+    QGraphicsWidget *c = createItem(min, pref, max);
+
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    l->anchorCorner(l, Qt::TopLeftCorner, a, Qt::TopLeftCorner);
+    l->anchorCorner(b, Qt::TopRightCorner, l, Qt::TopRightCorner);
+    l->anchor(a, QGraphicsAnchorLayout::Right, b, QGraphicsAnchorLayout::Left);
+
+    l->anchorWidth(c);
+
+    l->anchor(a, QGraphicsAnchorLayout::Bottom, c, QGraphicsAnchorLayout::Top);
+    l->anchor(c, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom);
+
+    QGraphicsWidget *p = new QGraphicsWidget(0, Qt::Window);
+
+    p->setLayout(l);
+    l->setSpacing(1);
+
+    // don't let the style influence the test.
+    l->setContentsMargins(0, 0, 0, 0);
+
+    QGraphicsScene scene;
+    scene.addItem(p);
+    QGraphicsView *view = new QGraphicsView(&scene);
+    view->show();
+    p->show();
+
+    QApplication::processEvents();
+    QCOMPARE(a->geometry(), QRectF(0, 0, 20, 20));
+    QCOMPARE(b->geometry(), QRectF(21, 0, 20, 20));
+    QCOMPARE(c->geometry(), QRectF(0, 21, 41, 20));
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)
