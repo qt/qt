@@ -5719,8 +5719,10 @@ void QPainter::drawText(const QPointF &p, const QString &str)
 /*!
     Draws the given \a staticText beginning at the given \a position. 
 
-    This function can be used to optimize drawing text if the text and its layout is updated 
+    This function can be used to optimize drawing text if the text and its layout is updated     
     seldomly.
+
+    \sa QStaticText
 */
 void QPainter::drawStaticText(const QPointF &position, const QStaticText &staticText)
 {
@@ -5728,9 +5730,19 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     if (!d->engine || staticText.isEmpty() || pen().style() == Qt::NoPen)
         return;
 
-    const QStaticTextPrivate *staticText_d = QStaticTextPrivate::get(&staticText);        
-    bool restoreWhenFinished = false;
+    const QStaticTextPrivate *staticText_d = QStaticTextPrivate::get(&staticText);
 
+    // If we don't have an extended paint engine, or if the painter is transformed,
+    // we go through standard code path
+    if (d->extended == 0 || !d->state->matrix.isIdentity()) {
+        if (staticText_d->size.isValid())
+            drawText(QRectF(position, staticText_d->size), staticText_d->text);
+        else
+            drawText(position, staticText_d->text);
+        return;
+    }
+
+    bool restoreWhenFinished = false;
     if (staticText_d->size.isValid()) {
         setClipRect(QRectF(position, staticText_d->size));
 
@@ -5746,8 +5758,8 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
     }
 
     for (int i=0; i<staticText_d->itemCount; ++i) {
-        const QTextItemInt &gf = staticText_d->items[i];
-        d->engine->drawTextItem(staticText_d->itemPositions[i] + position, gf);
+        QStaticTextItem *item = staticText_d->items + i;
+        d->extended->drawStaticTextItem(position, item);
     }
 
     if (restoreWhenFinished)

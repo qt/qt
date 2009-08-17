@@ -1272,7 +1272,7 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
     }
 
     cache->setPaintEnginePrivate(this);
-    cache->populate(ti, glyphs, positions);
+    cache->populate(ti.fontEngine, glyphs, positions);
 
     if (cache->width() == 0 || cache->height() == 0)
         return;

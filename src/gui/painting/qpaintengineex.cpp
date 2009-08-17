@@ -44,6 +44,7 @@
 #include "qstroker_p.h"
 #include "qbezier_p.h"
 #include <private/qpainterpath_p.h>
+#include <private/qstatictext_p.h>
 
 #include <qvarlengtharray.h>
 #include <qdebug.h>
@@ -587,6 +588,11 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         state()->matrix = xform;
         transformChanged();
     }
+}
+
+void QPaintEngineEx::drawStaticTextItem(const QPointF &position, QStaticTextItem *item)
+{
+    // ### fall back (we need to recalculate the text item and call drawTextItem())
 }
 
 void QPaintEngineEx::draw(const QVectorPath &path)

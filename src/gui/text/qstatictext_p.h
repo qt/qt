@@ -54,8 +54,26 @@
 //
 
 #include <private/qtextengine_p.h>
+#include <private/qfontengine_p.h>
 
-QT_BEGIN_NAMESPACE              
+QT_BEGIN_NAMESPACE
+
+class QStaticTextItem
+{
+public:    
+    QStaticTextItem() : chars(0), numChars(0), fontEngine(0) {}
+
+    QVarLengthArray<QFixedPoint> glyphPositions; // 8 bytes per glyph
+    QVarLengthArray<glyph_t> glyphs;             // 4 bytes per glyph
+    const QChar *chars;                          // 2 bytes per glyph
+                                                 // =================
+                                                 // 14 bytes per glyph
+
+    int numChars;                                // 4 bytes per item
+    QFontEngine *fontEngine;                     // 4 bytes per item
+                                                 // ================
+                                                 // 8 bytes per item
+};
 
 class QStaticText;
 class QStaticTextPrivate
@@ -67,19 +85,17 @@ public:
 
     void init();
 
-    QAtomicInt ref;
+    QAtomicInt ref;          // 4 bytes per text
 
-    QString text;
-    QFont font;
-    QSizeF size;
+    QString text;            // 4 bytes per text
+    QFont font;              // 8 bytes per text
+    QSizeF size;             // 16 bytes per text
 
-    QTextItemInt *items;
-    QPointF *itemPositions;
-    int itemCount;
+    QStaticTextItem *items;  // 4 bytes per text
+    int itemCount;           // 4 bytes per text
+                             // ================
+                             // 40 bytes per text
 
-    char *glyphLayoutMemory;
-    unsigned short *logClusterMemory;
-    
     static QStaticTextPrivate *get(const QStaticText *q);
 };
 

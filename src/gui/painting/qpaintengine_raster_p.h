@@ -257,7 +257,12 @@ private:
     void fillRect(const QRectF &rect, QSpanData *data);
     void drawBitmap(const QPointF &pos, const QImage &image, QSpanData *fill);
 
-    void drawCachedGlyphs(const QPointF &p, const QTextItemInt &ti);
+    void drawCachedGlyphs(const QVarLengthArray<glyph_t> &glyphs,
+                          const QVarLengthArray<QFixedPoint> &positions,
+                          QFontEngine *fontEngine,
+                          const QTransform &matrix);
+
+    void drawStaticTextItem(const QPointF &p, QStaticTextItem *textItem);
 
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
     void drawGlyphsS60(const QPointF &p, const QTextItemInt &ti);

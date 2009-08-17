@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 // #define CACHE_DEBUG
 
-void QTextureGlyphCache::populate(const QTextItemInt &ti,
+void QTextureGlyphCache::populate(QFontEngine *fontEngine,
                                   const QVarLengthArray<glyph_t> &glyphs,
                                   const QVarLengthArray<QFixedPoint> &)
 {
@@ -64,7 +64,7 @@ void QTextureGlyphCache::populate(const QTextItemInt &ti,
     qDebug() << " -> current transformation: " << m_transform;
 #endif
 
-    m_current_textitem = &ti;
+    m_current_fontengine = fontEngine;
     const int margin = glyphMargin();
 
     QHash<glyph_t, Coord> listItemCoordinates;
@@ -77,7 +77,7 @@ void QTextureGlyphCache::populate(const QTextItemInt &ti,
             continue;
         if (listItemCoordinates.contains(glyph))
             continue;
-        glyph_metrics_t metrics = ti.fontEngine->boundingBox(glyph, m_transform);
+        glyph_metrics_t metrics = fontEngine->boundingBox(glyph, m_transform);
 
 #ifdef CACHE_DEBUG
         printf("'%c' (%4x): w=%.2f, h=%.2f, xoff=%.2f, yoff=%.2f, x=%.2f, y=%.2f, ti.ascent=%.2f, ti.descent=%.2f\n",
@@ -182,7 +182,7 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const
             break;
         };
 
-        QFontEngineFT *ft = static_cast<QFontEngineFT*> (m_current_textitem->fontEngine);
+        QFontEngineFT *ft = static_cast<QFontEngineFT*> (m_current_fontengine);
         QFontEngineFT::QGlyphSet *gset = ft->loadTransformedGlyphSet(m_transform);
 
         if (gset && ft->loadGlyphs(gset, &g, 1, format)) {
@@ -194,9 +194,9 @@ QImage QTextureGlyphCache::textureMapForGlyph(glyph_t g) const
     } else
 #endif
     if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
-        return m_current_textitem->fontEngine->alphaRGBMapForGlyph(g, glyphMargin(), m_transform);
+        return m_current_fontengine->alphaRGBMapForGlyph(g, glyphMargin(), m_transform);
     else
-        return m_current_textitem->fontEngine->alphaMapForGlyph(g, m_transform);
+        return m_current_fontengine->alphaMapForGlyph(g, m_transform);
 
     return QImage();
 }
@@ -321,13 +321,13 @@ void QImageTextureGlyphCache::fillTexture(const Coord &c, glyph_t g)
 #ifdef CACHE_DEBUG
 //     QPainter p(&m_image);
 //     p.drawLine(
-    QPoint base(c.x + glyphMargin(), c.y + glyphMargin() + c.baseLineY-1);
+    /*QPoint base(c.x + glyphMargin(), c.y + glyphMargin() + c.baseLineY-1);
     if (m_image.rect().contains(base))
         m_image.setPixel(base, 255);
     m_image.save(QString::fromLatin1("cache-%1-%2-%3.png")
                  .arg(m_current_textitem->font().family())
                  .arg(m_current_textitem->font().pointSize())
-                 .arg(m_transform.type()));
+                 .arg(m_transform.type()));*/
 #endif
 }
 
