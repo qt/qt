@@ -2615,7 +2615,7 @@ void QHeaderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bot
         int first = orientation() == Qt::Horizontal ? topLeft.column() : topLeft.row();
         int last = orientation() == Qt::Horizontal ? bottomRight.column() : bottomRight.row();
         for (int i = first; i <= last && !resizeRequired; ++i)
-            resizeRequired = (resizeRequired && resizeMode(i));
+            resizeRequired = (resizeMode(i) == ResizeToContents);
         if (resizeRequired)
             d->doDelayedResizeSections();
     }

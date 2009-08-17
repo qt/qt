@@ -789,7 +789,7 @@ static BrushData parseBrushValue(const Value &v, const QPalette &pal)
         } else {
             parser.next();
             Value value;
-            parser.parseTerm(&value);
+            (void)parser.parseTerm(&value);
             if (attr.compare(QLatin1String("spread"), Qt::CaseInsensitive) == 0) {
                 spread = spreads.indexOf(value.variant.toString());
             } else {
@@ -797,7 +797,7 @@ static BrushData parseBrushValue(const Value &v, const QPalette &pal)
             }
         }
         parser.skipSpace();
-        parser.test(COMMA);
+        (void)parser.test(COMMA);
     }
 
     if (gradType == 0) {
@@ -2458,7 +2458,7 @@ bool Parser::parseAttrib(AttributeSelector *attr)
 
 bool Parser::parsePseudo(Pseudo *pseudo)
 {
-    test(COLON);
+    (void)test(COLON);
     pseudo->negated = test(EXCLAMATION_SYM);
     if (test(IDENT)) {
         pseudo->name = lexem();

@@ -356,7 +356,7 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
                         reader = new QImageReader(device, format);
                     else
                         reader = new QImageReader(absoluteFilePath, format);
-                    reader->canRead(); // Provoke a device->open() call
+                    (void)reader->canRead(); // Provoke a device->open() call
                     reader->device()->seek(initialDevicePos);
                     reader->setBackgroundColor(bgColor);
                     reader->setScaledSize(scaledSize);
