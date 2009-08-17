@@ -226,7 +226,7 @@ QGraphicsAnchorLayoutPrivate::QGraphicsAnchorLayoutPrivate()
     : calculateGraphCacheDirty(1)
 {
     for (int i = 0; i < NOrientations; ++i) {
-        spacing[i] = -1;
+        spacings[i] = -1;
         graphSimplified[i] = false;
     }
 }
@@ -1179,7 +1179,7 @@ void QGraphicsAnchorLayoutPrivate::correctEdgeDirection(QGraphicsLayoutItem *&fi
 qreal QGraphicsAnchorLayoutPrivate::effectiveSpacing(Orientation orientation) const
 {
     Q_Q(const QGraphicsAnchorLayout);
-    qreal s = spacing[orientation];
+    qreal s = spacings[orientation];
     if (s < 0) {
         QGraphicsLayoutItem *parent = q->parentLayoutItem();
         while (parent && parent->isLayout()) {

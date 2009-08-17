@@ -207,9 +207,9 @@ void QGraphicsAnchorLayout::setSpacing(qreal spacing, Qt::Orientations orientati
 {
     Q_D(QGraphicsAnchorLayout);
     if (orientations & Qt::Horizontal)
-        d->spacing[0] = spacing;
+        d->spacings[0] = spacing;
     if (orientations & Qt::Vertical)
-        d->spacing[1] = spacing;
+        d->spacings[1] = spacing;
 }
 
 qreal QGraphicsAnchorLayout::spacing(Qt::Orientation orientation) const

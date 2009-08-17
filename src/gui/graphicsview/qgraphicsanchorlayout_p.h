@@ -390,7 +390,7 @@ public:
                                     GraphPath path);
     void solvePreferred(QList<QSimplexConstraint *> constraints);
 
-    qreal spacing[NOrientations];
+    qreal spacings[NOrientations];
     // Size hints from simplex engine
     qreal sizeHints[2][3];
 
