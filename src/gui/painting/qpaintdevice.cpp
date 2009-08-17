@@ -40,23 +40,27 @@
 ****************************************************************************/
 
 #include "qpaintdevice.h"
-#include "qpainter.h"
-#include "qwidget.h"
-#include "qbitmap.h"
-#include "qapplication.h"
-#include <private/qapplication_p.h>
-#include "qt_windows.h"
-#include "qprinter.h"
 
 QT_BEGIN_NAMESPACE
 
-HDC QPaintDevice::getDC() const
+extern void qt_painter_removePaintDevice(QPaintDevice *); //qpainter.cpp
+
+QPaintDevice::QPaintDevice()
 {
+    painters = 0;
+}
+
+QPaintDevice::~QPaintDevice()
+{
+    if (paintingActive())
+        qWarning("QPaintDevice: Cannot destroy paint device that is being "
+                  "painted");
+    qt_painter_removePaintDevice(this);
+}
+
+
+int QPaintDevice::metric(PaintDeviceMetric) const
+{
+    qWarning("QPaintDevice::metrics: Device has no metric information");
     return 0;
 }
-
-void QPaintDevice::releaseDC(HDC) const
-{
-}
-
-QT_END_NAMESPACE
