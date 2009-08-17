@@ -39,6 +39,46 @@
 **
 ****************************************************************************/
 
+/*!
+    \class QGraphicsAnchorLayout
+    \brief The QGraphicsAnchorLayout class provides a layout where one can anchor widgets
+    together in Graphics View.
+    \since 4.6
+    \ingroup appearance
+    \ingroup geomanagement
+    \ingroup graphicsview-api
+
+    The anchor layout is a layout where one can specify how widgets should be placed relative to
+    each other. The specification is called an anchor, and it is set up by calling anchor().
+    Anchors are always set up between edges of an item, where the "center" is also considered to
+    be an edge. Considering this example:
+    \code
+        QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+        QGraphicsWidget *a = new QGraphicsWidget;
+        QGraphicsWidget *b = new QGraphicsWidget;
+        l->anchor(a, QGraphicsAnchorLayout::Right, b, QGraphicsAnchorLayout::Left);
+    \endcode
+
+    Here is the right edge of item A anchored to the left edge of item B, with the result that
+    item B will be placed to the right of item A, with a spacing between A and B. If the
+    spacing is negative, the items will overlap to some extent. Items that are anchored are
+    automatically added to the layout, and if items are removed, all their anchors will be
+    automatically removed
+
+    \section1 Size Hints and Size Policies in QGraphicsLinearLayout
+    QGraphicsLinearLayout respects each item's size hints and size policies. However it does
+    not respect stretch factors currently. This might change in the future, so please refrain
+    from using stretch factors in anchor layout to avoid any future regressions.
+
+    \section1 Spacing within QGraphicsAnchorLayout
+
+    Between the items, the layout can distribute some space. If the spacing has not been
+    explicitly specified, the actual amount of space will usually be 0, but if the first edge
+    is the "opposite" of the second edge (i.e. Right is anchored to Left or vice-versa), the
+    size of the anchor will be queried from the style through the pixelMetric
+    PM_LayoutHorizontalSpacing (or PM_LayoutVerticalSpacing for vertical anchors).
+*/
+
 #include "qgraphicsanchorlayout_p.h"
 
 QGraphicsAnchorLayout::QGraphicsAnchorLayout(QGraphicsLayoutItem *parent)
@@ -130,7 +170,7 @@ void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
  * has the same effect as
  *
  * \code
- * layout->anchor(layout, Qt::TopLeft, b, Qt::TopLeft);
+ * layout->anchorCorner(layout, Qt::TopLeft, b, Qt::TopLeft);
  * \endcode
  *
  * If there is already an anchor between the edge pairs, it will be replaced by the anchors that
@@ -185,6 +225,68 @@ void QGraphicsAnchorLayout::anchorCorner(QGraphicsLayoutItem *firstItem,
     invalidate();
 }
 
+/*!
+    \fn QGraphicsAnchorLayout::anchorWidth(QGraphicsLayoutItem *item, QGraphicsLayoutItem *relativeTo = 0)
+
+    This convenience function is equivalent to calling
+    \code
+    if (!relativeTo)
+        relativeTo = lay;
+    lay->anchor(relativeTo, QGraphicsAnchorLayout::Left, item, QGraphicsAnchorLayout::Left);
+    lay->anchor(relativeTo, QGraphicsAnchorLayout::Right, item, QGraphicsAnchorLayout::Right);
+    \endcode
+*/
+
+/*!
+    \fn QGraphicsAnchorLayout::anchorWidth(QGraphicsLayoutItem *item, QGraphicsLayoutItem *relativeTo, qreal spacing)
+
+    \overload
+
+    By calling this function the caller can specify the magnitude of the anchor with \a spacing.
+*/
+
+/*!
+    \fn QGraphicsAnchorLayout::anchorHeight(QGraphicsLayoutItem *item, QGraphicsLayoutItem *relativeTo = 0)
+
+    This convenience function is equivalent to calling
+    \code
+    if (!relativeTo)
+        relativeTo = lay;
+    lay->anchor(relativeTo, QGraphicsAnchorLayout::Top, item, QGraphicsAnchorLayout::Top);
+    lay->anchor(relativeTo, QGraphicsAnchorLayout::Bottom, item, QGraphicsAnchorLayout::Bottom);
+    \endcode
+*/
+
+/*!
+    \fn QGraphicsAnchorLayout::anchorHeight(QGraphicsLayoutItem *item, QGraphicsLayoutItem *relativeTo, qreal spacing)
+
+    \overload
+
+    By calling this function the caller can specify the magnitude of the anchor with \a spacing.
+*/
+
+/*!
+    \fn QGraphicsAnchorLayout::anchorGeometry(QGraphicsLayoutItem *item, QGraphicsLayoutItem *relativeTo = 0)
+
+    This convenience function is equivalent to calling
+    \code
+    anchorWidth(item, relativeTo);
+    anchorHeight(item, relativeTo);
+    \endcode
+*/
+
+/*!
+    \fn QGraphicsAnchorLayout::anchorGeometry(QGraphicsLayoutItem *item, QGraphicsLayoutItem *relativeTo, qreal spacing)
+
+    \overload
+
+    By calling this function the caller can specify the magnitude of the anchor with \a spacing.
+*/
+
+/*!
+   Removes the anchor between the edge \a firstEdge of item \a firstItem and the edge \a secondEdge
+   of item \a secondItem. If such an anchor does not exist, the layout will be left unchanged.
+*/
 void QGraphicsAnchorLayout::removeAnchor(QGraphicsLayoutItem *firstItem, Edge firstEdge,
                                          QGraphicsLayoutItem *secondItem, Edge secondEdge)
 {
@@ -271,6 +373,9 @@ qreal QGraphicsAnchorLayout::verticalSpacing() const
     return d->effectiveSpacing(QGraphicsAnchorLayoutPrivate::Vertical);
 }
 
+/*!
+  \reimp
+*/
 void QGraphicsAnchorLayout::setGeometry(const QRectF &geom)
 {
     Q_D(QGraphicsAnchorLayout);
@@ -286,6 +391,9 @@ void QGraphicsAnchorLayout::setGeometry(const QRectF &geom)
     d->setItemsGeometries();
 }
 
+/*!
+    Removing an item will also remove any of the anchors associated with it.
+*/
 void QGraphicsAnchorLayout::removeAt(int index)
 {
     Q_D(QGraphicsAnchorLayout);
@@ -307,18 +415,27 @@ void QGraphicsAnchorLayout::removeAt(int index)
     invalidate();
 }
 
+/*!
+    \reimp
+*/
 int QGraphicsAnchorLayout::count() const
 {
     Q_D(const QGraphicsAnchorLayout);
     return d->items.size();
 }
 
+/*!
+    \reimp
+*/
 QGraphicsLayoutItem *QGraphicsAnchorLayout::itemAt(int index) const
 {
     Q_D(const QGraphicsAnchorLayout);
     return d->items.value(index);
 }
 
+/*!
+    \reimp
+*/
 void QGraphicsAnchorLayout::invalidate()
 {
     Q_D(QGraphicsAnchorLayout);
@@ -326,6 +443,9 @@ void QGraphicsAnchorLayout::invalidate()
     d->calculateGraphCacheDirty = 1;
 }
 
+/*!
+    \reimp
+*/
 QSizeF QGraphicsAnchorLayout::sizeHint(Qt::SizeHint which, const QSizeF &constraint) const
 {
     Q_UNUSED(which);
