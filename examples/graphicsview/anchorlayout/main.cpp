@@ -3,24 +3,6 @@
 #include <QGraphicsAnchorLayout>
 #include <QtGui>
 
-//#define BENCHMARK_RUN 1
-#define CALLGRIND_DEBUG 1
-
-#if defined(BENCHMARK_RUN)
-
-// Callgrind command line:
-//   valgrind --tool=callgrind --instr-atstart=no ./anchorlayout >/dev/null 2>&1
-
-#if defined(CALLGRIND_DEBUG)
-#include <valgrind/callgrind.h>
-#else
-#define CALLGRIND_START_INSTRUMENTATION do { } while (0)
-#define CALLGRIND_STOP_INSTRUMENTATION do { } while (0)
-#endif
-
-#endif
-
-
 static QGraphicsProxyWidget *createItem(const QSizeF &minimum = QSizeF(100.0, 100.0),
                                    const QSizeF &preferred = QSize(150.0, 100.0),
                                    const QSizeF &maximum = QSizeF(200.0, 100.0),
@@ -36,34 +18,12 @@ static QGraphicsProxyWidget *createItem(const QSizeF &minimum = QSizeF(100.0, 10
     return w;
 }
 
-class Test : public QObject
-{
-    Q_OBJECT;
-public:
-    Test(QGraphicsWidget *wi, QGraphicsLayout* la)
-        : QObject(), w(wi), l(la), first(true) {}
-
-    QGraphicsWidget *w;
-    QGraphicsLayout *l;
-    bool first;
-
-public slots:
-    void onTimer() {
-        if (first) {
-            first = false;
-            w->setContentsMargins(10, 10, 10, 10);
-        } else {
-            l->setContentsMargins(10, 10, 10, 10);
-        }
-    }
-};
-
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
 
-    QGraphicsScene *scene = new QGraphicsScene();
-    scene->setSceneRect(0, 0, 800, 480);
+    QGraphicsScene scene;
+    scene.setSceneRect(0, 0, 800, 480);
 
     QSizeF min(30, 100);
     QSizeF pref(210, 100);
@@ -116,32 +76,10 @@ int main(int argc, char **argv)
     l->anchor(l, QGraphicsAnchorLayout::Left, g, QGraphicsAnchorLayout::Left, 0);
     l->anchor(f, QGraphicsAnchorLayout::Right, g, QGraphicsAnchorLayout::Right, 0);
 
-#ifdef BENCHMARK_RUN
-    CALLGRIND_START_INSTRUMENTATION;
-    for (int i = 0; i < 100; i++) {
-        l->invalidate();
-        l->d_ptr->calculateGraphs();
-    }
-    CALLGRIND_STOP_INSTRUMENTATION;
-    return 0;
-#endif
-
-    scene->addItem(w);
-    scene->setBackgroundBrush(Qt::darkGreen);
-    QGraphicsView *view = new QGraphicsView(scene);
+    scene.addItem(w);
+    scene.setBackgroundBrush(Qt::darkGreen);
+    QGraphicsView *view = new QGraphicsView(&scene);
     view->show();
 
-    Test test(w, l);
-    QTimer timer;
-    test.connect(&timer, SIGNAL(timeout()), SLOT(onTimer()));
-    timer.start(5000);
-
-    int rc = app.exec();
-
-    delete scene;
-    delete view;
-
-    return rc;
+    return app.exec();
 }
-
-#include "main.moc"
