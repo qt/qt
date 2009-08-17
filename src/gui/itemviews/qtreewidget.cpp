@@ -1790,9 +1790,7 @@ bool QTreeWidgetItem::operator<(const QTreeWidgetItem &other) const
     int column = view ? view->sortColumn() : 0;
     const QVariant v1 = data(column, Qt::DisplayRole);
     const QVariant v2 = other.data(column, Qt::DisplayRole);
-    if (QAbstractItemModelPrivate::canConvertToDouble(v1) && QAbstractItemModelPrivate::canConvertToDouble(v2))
-        return v1.toDouble() < v2.toDouble();
-    return v1.toString() < v2.toString();
+    return QAbstractItemModelPrivate::variantLessThan(v1, v2);
 }
 
 #ifndef QT_NO_DATASTREAM

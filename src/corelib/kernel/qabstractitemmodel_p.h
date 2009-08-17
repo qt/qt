@@ -89,7 +89,7 @@ public:
     void columnsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
     void columnsRemoved(const QModelIndex &parent, int first, int last);
     static QAbstractItemModel *staticEmptyModel();
-    static bool canConvertToDouble(const QVariant &value);
+    static bool variantLessThan(const QVariant &v1, const QVariant &v2);
 
     inline QModelIndex createIndex(int row, int column, void *data = 0) const {
         return q_func()->createIndex(row, column, data);
