@@ -622,6 +622,55 @@ QXmlStreamReader::TokenType QXmlStreamReader::tokenType() const
     return d->type;
 }
 
+/*!
+  Reads until the next start element within the current element. Returns true
+  when a start element was reached. When the end element was reached, or when
+  an error occurred, false is returned.
+
+  The current element is the element matching the most recently parsed start
+  element of which a matching end element has not yet been reached. When the
+  parser has reached the end element, the current element becomes the parent
+  element.
+
+  This is a convenience function for when you're only concerned with parsing
+  XML elements. The \l{QXmlStream Bookmarks Example} makes extensive use of
+  this function.
+
+  \since 4.6
+ */
+bool QXmlStreamReader::readNextStartElement()
+{
+    while (readNext() != Invalid) {
+        if (isEndElement())
+            return false;
+        else if (isStartElement())
+            return true;
+    }
+    return false;
+}
+
+/*!
+  Reads until the end of the current element, skipping any child nodes.
+  This function is useful for skipping unknown elements.
+
+  The current element is the element matching the most recently parsed start
+  element of which a matching end element has not yet been reached. When the
+  parser has reached the end element, the current element becomes the parent
+  element.
+
+  \since 4.6
+ */
+void QXmlStreamReader::skipCurrentElement()
+{
+    int depth = 1;
+    while (depth && readNext() != Invalid) {
+        if (isEndElement())
+            --depth;
+        else if (isStartElement())
+            ++depth;
+    }
+}
+
 /*
  * Use the following Perl script to generate the error string index list:
 ===== PERL SCRIPT ====

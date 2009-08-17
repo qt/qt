@@ -321,6 +321,9 @@ public:
     bool atEnd() const;
     TokenType readNext();
 
+    bool readNextStartElement();
+    void skipCurrentElement();
+
     TokenType tokenType() const;
     QString tokenString() const;
 

@@ -550,6 +550,7 @@ private slots:
     void setEntityResolver();
     void readFromQBuffer() const;
     void readFromQBufferInvalid() const;
+    void readNextStartElement() const;
     void crashInUTF16Codec() const;
     void hasAttributeSignature() const;
     void hasAttribute() const;
@@ -1105,6 +1106,24 @@ void tst_QXmlStream::readFromQBufferInvalid() const
     }
 
     QVERIFY(reader.hasError());
+}
+
+void tst_QXmlStream::readNextStartElement() const
+{
+    QLatin1String in("<?xml version=\"1.0\"?><A><!-- blah --><B><C/></B><B attr=\"value\"/>text</A>");
+    QXmlStreamReader reader(in);
+
+    QVERIFY(reader.readNextStartElement());
+    QVERIFY(reader.isStartElement() && reader.name() == "A");
+
+    int amountOfB = 0;
+    while (reader.readNextStartElement()) {
+        QVERIFY(reader.isStartElement() && reader.name() == "B");
+        ++amountOfB;
+        reader.skipCurrentElement();
+    }
+
+    QCOMPARE(amountOfB, 2);
 }
 
 void tst_QXmlStream::crashInUTF16Codec() const
