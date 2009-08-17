@@ -220,6 +220,7 @@ void QGraphicsAnchorLayout::setHorizontalSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
     d->spacings[0] = spacing;
+    invalidate();
 }
 
 /*!
@@ -231,6 +232,7 @@ void QGraphicsAnchorLayout::setVerticalSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
     d->spacings[1] = spacing;
+    invalidate();
 }
 
 /*!
@@ -244,6 +246,7 @@ void QGraphicsAnchorLayout::setSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
     d->spacings[0] = d->spacings[1] = spacing;
+    invalidate();
 }
 
 /*!
