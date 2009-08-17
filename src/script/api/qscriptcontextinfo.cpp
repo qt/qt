@@ -172,7 +172,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
             JSC::CodeBlock *codeBlock = frame->codeBlock();
             if (returnPC && codeBlock) {
                 lineNumber = codeBlock->lineNumberForBytecodeOffset(const_cast<JSC::ExecState *>(frame),
-                                                                    returnPC - codeBlock->instructions().begin());
+                                                                    returnPC - codeBlock->instructions().begin() -1);
             }
         }
     }

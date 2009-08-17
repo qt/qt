@@ -574,7 +574,8 @@ void tst_QScriptContext::backtrace_data()
                  "function foo() {\n"
                  "  return bt(123);\n"
                  "}\n"
-                 "foo('hello', { })" );
+                 "foo('hello', { })\n"
+                 "var r = 0;");
 
         QTest::newRow("simple") << source << expected;
     }
@@ -585,12 +586,14 @@ void tst_QScriptContext::backtrace_data()
             "function foo(arg1 , arg2) {\n"
             "  return eval(\"%1\");\n"
             "}\n"
-            "foo('hello', 456)"
+            "foo('hello', 456)\n"
+            "var a = 0;"
            ).arg("\\n \\n bt('hey'); \\n");
 
            expected << "<native>('hey') at -1"
                     << "<eval>() at 3"
-                    << "foo(arg1 = 'hello', arg2 = 456) at testfile:-1" //### line number should be 2
+                    //### line number should be 2 but the line number information is not kept for eval call
+                    << "foo(arg1 = 'hello', arg2 = 456) at testfile:-1"
                     << "<global>() at testfile:4";
 
             QTest::newRow("eval") << source << expected;
