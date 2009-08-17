@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qfxpixmap.h"
+#include "qfxpixmapcache.h"
 #include <QImageReader>
 #include <QHash>
 #include <QNetworkReply>
@@ -116,22 +116,28 @@ static bool readImage(QIODevice *dev, QPixmap *pixmap)
 
 /*!
     \internal
-    \class QFxPixmap
-    \ingroup group_utility
+    \class QFxPixmapCache
     \brief Enacapsultes a pixmap for QFx items.
 
     This class is NOT reentrant.
-    The pixmap cache will grow indefinately.
  */
 
+/*!
+    Finds the cached pixmap corresponding to \a url.
+    A previous call to get() must have requested the URL,
+    and the QNetworkReply must have finished before calling
+    this function.
 
-bool QFxPixmap::find(const QUrl& url, QPixmap *pixmap)
+    Returns true if the image was loaded without error.
+*/
+bool QFxPixmapCache::find(const QUrl& url, QPixmap *pixmap)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::PixmapLoad> perf;
 #endif
 
     QString key = url.toString();
+    bool ok = true;
     if (!QPixmapCache::find(key,pixmap)) {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
         if (url.scheme()==QLatin1String("file")) {
@@ -140,42 +146,51 @@ bool QFxPixmap::find(const QUrl& url, QPixmap *pixmap)
                 if (!readImage(&f, pixmap)) {
                     qWarning() << "Format error loading" << url;
                     *pixmap = QPixmap();
+                    ok = false;
                 }
-            } else
+            } else {
                 *pixmap = QPixmap();
+                ok = false;
+            }
         } else
 #endif
         {
             QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
             if (iter == qfxActiveNetworkReplies.end()) {
                 // API usage error
-                qWarning() << "QFxPixmap: URL not loaded" << url;
+                qWarning() << "QFxPixmapCache: URL not loaded" << url;
+                ok = false;
             } else {
                 if ((*iter)->reply->error()) {
                     qWarning() << "Network error loading" << url << (*iter)->reply->errorString();
                     *pixmap = QPixmap();
-                } else
-                    if (!readImage((*iter)->reply, pixmap)) {
-                        qWarning() << "Format error loading" << url;
-                        *pixmap = QPixmap();
-                    }
+                    ok = false;
+                } else if (!readImage((*iter)->reply, pixmap)) {
+                    qWarning() << "Format error loading" << url;
+                    *pixmap = QPixmap();
+                    ok = false;
+                }
                 (*iter)->release();
             }
         }
         QPixmapCache::insert(key, *pixmap);
+    } else {
+        ok = !pixmap->isNull();
     }
-    return true;
+    return ok;
 }
 
 /*!
-    Starts a network request to load \a url. When the URL is loaded,
-    the given slot is invoked. Note that if the image is already cached,
-    the slot may be invoked immediately.
+    Starts a network request to load \a url.
 
     Returns a QNetworkReply if the image is not immediately available, otherwise
-    returns 0.  The QNetworkReply must not be stored - it may be destroyed at any time.
+    returns 0.  Caller should connect to QNetworkReply::finished() to then call
+    find() when the image is available.
+
+    The returned QNetworkReply will be deleted when all get() calls are
+    matched by a corresponding find() call.
 */
-QNetworkReply *QFxPixmap::get(QmlEngine *engine, const QUrl& url, QPixmap *pixmap)
+QNetworkReply *QFxPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *pixmap)
 {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     if (url.scheme()==QLatin1String("file")) {
@@ -214,19 +229,21 @@ QNetworkReply *QFxPixmap::get(QmlEngine *engine, const QUrl& url, QPixmap *pixma
 }
 
 /*!
-    Stops the given slot being invoked if the given url finishes loading.
+    Cancels a previous call to get().
+
     May also cancel loading (eg. if no other pending request).
 
-    Any connections to the QNetworkReply returned by get() will be
+    Any connections from the QNetworkReply returned by get() to \a obj will be
     disconnected.
 */
-void QFxPixmap::cancelGet(const QUrl& url, QObject* obj)
+void QFxPixmapCache::cancelGet(const QUrl& url, QObject* obj)
 {
     QString key = url.toString();
     QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
     if (iter == qfxActiveNetworkReplies.end())
         return;
-    QObject::disconnect((*iter)->reply, 0, obj, 0);
+    if (obj)
+        QObject::disconnect((*iter)->reply, 0, obj, 0);
     (*iter)->release();
 }
 

@@ -48,6 +48,7 @@
 #include <private/qmlparser_p.h>
 #include <QtDeclarative/qmlexpression.h>
 #include <QtDeclarative/qmlbinding.h>
+#include <QtDeclarative/qmlcontext.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -314,6 +315,11 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
 
         if (a.property.isValid()) {
             a.restore = restoreEntryValues();
+
+            if (a.property.propertyType() == QVariant::Url &&
+                (a.toValue.type() == QVariant::String || a.toValue.type() == QVariant::ByteArray) && !a.toValue.isNull())
+                a.toValue.setValue(qmlContext(this)->resolvedUrl(QUrl(a.toValue.toString())));  //### d->object's context?
+
             list << a;
         }
     }

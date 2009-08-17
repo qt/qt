@@ -206,6 +206,6 @@ Item {
         id: CategoryText;  anchors.horizontalCenter: parent.horizontalCenter; y: 15;
         text: "Flickr - " +
             (FeedModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + FeedModel.tags)
-        font.size: 20; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
+        font.pointSize: 20; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
     }
 }

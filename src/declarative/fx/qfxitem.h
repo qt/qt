@@ -43,7 +43,6 @@
 #define QFXITEM_H
 
 #include <QtCore/QObject>
-#include <QtScript/qscriptvalue.h>
 #include <QtCore/QList>
 #include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
@@ -217,9 +216,6 @@ protected:
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
 
-private Q_SLOTS:
-    void doUpdate();
-
 protected:
     QFxItem(QFxItemPrivate &dd, QFxItem *parent = 0);
 
@@ -235,8 +231,6 @@ private:
 
     void setKeyHandler(QFxKeysAttached *);
 
-    // ### move to d-pointer
-    void init(QFxItem *parent);
     friend class QmlStatePrivate;
     friend class QFxAnchors;
     friend class QFxKeysAttached;

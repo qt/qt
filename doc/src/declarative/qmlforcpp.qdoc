@@ -161,7 +161,7 @@
     \code
         Text {
             font.family: "helvetica"
-            font.size: 12
+            font.pointSize: 12
             font {
                 bold: true
                 italic: true

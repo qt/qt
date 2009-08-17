@@ -48,9 +48,9 @@ Rect {
                     VerticalPositioner {
                         height: recipePic.height; width: background.width-recipePic.width-20
                         spacing: 5
-                        Text { id: name; text: title; font.bold: true; font.size: 16 }
+                        Text { id: name; text: title; font.bold: true; font.pointSize: 16 }
                         Text {
-                            text: "Ingredients"; font.size: 12; font.bold: true
+                            text: "Ingredients"; font.pointSize: 12; font.bold: true
                             opacity: wrapper.detailsOpacity
                         }
                         Text {
@@ -67,7 +67,7 @@ Rect {
                     opacity: wrapper.detailsOpacity
                     Text {
                         id: methodTitle
-                        text: "Method"; font.size: 12; font.bold: true
+                        text: "Method"; font.pointSize: 12; font.bold: true
                         anchors.top: parent.top
                     }
                     Flickable {

@@ -212,6 +212,7 @@ protected:
     void timerEvent(QTimerEvent *event);
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
+    virtual void focusChanged(bool);
 
 private:
     void init();

@@ -39,110 +39,32 @@
 **
 ****************************************************************************/
 
-#include "private/qobject_p.h"
-#include "qfont.h"
-#include "qmlfont.h"
+#ifndef QFXPIXMAPCACHE_H
+#define QFXPIXMAPCACHE_H
+
+#include <QtCore/QString>
+#include <QtGui/QPixmap>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtCore/qurl.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlFontPrivate : public QObjectPrivate
+QT_MODULE(Declarative)
+class QmlEngine;
+class QNetworkReply;
+class Q_DECLARATIVE_EXPORT QFxPixmapCache
 {
 public:
-    QFont font;
+    static QNetworkReply *get(QmlEngine *, const QUrl& url, QPixmap *pixmap);
+    static void cancelGet(const QUrl& url, QObject* obj);
+
+    static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QFxPixmapCache::get, and finished. Or must be a local file.
 };
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Font,QmlFont)
-
-/*!
-    \internal
-    \class QmlFont
-    \ingroup group_utility
-    \brief The QmlFont class provides a font used for drawing text on a QFxView.
-*/
-QmlFont::QmlFont(QObject *parent)
-    : QObject(*(new QmlFontPrivate), parent)
-{
-}
-
-QmlFont::~QmlFont()
-{
-}
-
-/*!
-    \property QmlFont::family
-    \brief the family of the font.
-*/
-QString QmlFont::family() const
-{
-    Q_D(const QmlFont);
-    return d->font.family();
-}
-
-void QmlFont::setFamily(const QString &family)
-{
-    Q_D(QmlFont);
-    d->font.setFamily(family);
-    emit updated();
-}
-
-/*!
-    \property QmlFont::bold
-    \brief whether the font should be bold.
-*/
-bool QmlFont::bold() const
-{
-    Q_D(const QmlFont);
-    return d->font.bold();
-}
-
-void QmlFont::setBold(bool b)
-{
-    Q_D(QmlFont);
-    d->font.setBold(b);
-    emit updated();
-}
-
-/*!
-    \property QmlFont::italic
-    \brief whether the font should be italic.
-*/
-bool QmlFont::italic() const
-{
-    Q_D(const QmlFont);
-    return d->font.italic();
-}
-
-void QmlFont::setItalic(bool b)
-{
-    Q_D(QmlFont);
-    d->font.setItalic(b);
-    emit updated();
-}
-
-/*!
-    \property QmlFont::size
-    \brief the size of the font in points.
-*/
-qreal QmlFont::size() const
-{
-    Q_D(const QmlFont);
-    return d->font.pointSizeF();
-}
-
-void QmlFont::setSize(qreal size)
-{
-    Q_D(QmlFont);
-    d->font.setPointSizeF(size);
-    emit updated();
-}
-
-/*!
-    \brief Returns a QFont representation of the font.
-*/
-QFont QmlFont::font() const
-{
-    Q_D(const QmlFont);
-    return d->font;
-}
-
 QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QFXPIXMAPCACHE_H

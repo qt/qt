@@ -43,8 +43,6 @@
 #define QFXTEXT_H
 
 #include <QtDeclarative/qfxitem.h>
-#include <QtDeclarative/qmlfont.h>
-
 
 QT_BEGIN_HEADER
 
@@ -61,7 +59,7 @@ class Q_DECLARATIVE_EXPORT QFxText : public QFxItem
     Q_ENUMS(TextFormat)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
-    Q_PROPERTY(QmlFont *font READ font CONSTANT)
+    Q_PROPERTY(QFont font READ font WRITE setFont)
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(TextStyle style READ style WRITE setStyle)
     Q_PROPERTY(QColor styleColor READ styleColor WRITE setStyleColor)
@@ -93,7 +91,8 @@ public:
     QString text() const;
     void setText(const QString &);
 
-    QmlFont *font();
+    QFont font() const;
+    void setFont(const QFont &font);
 
     QColor color() const;
     void setColor(const QColor &c);
@@ -128,10 +127,6 @@ public:
 Q_SIGNALS:
     void textChanged(const QString &text);
     void linkActivated(const QString &link);
-
-private Q_SLOTS:
-    //### should be in QFxTextPrivate?
-    void fontChanged();
 
 protected:
     QFxText(QFxTextPrivate &dd, QFxItem *parent);

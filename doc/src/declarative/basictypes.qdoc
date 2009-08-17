@@ -214,12 +214,12 @@
     \o string font.family
     \o bool font.bold
     \o bool font.italic
-    \o real font.size
+    \o real font.pointSize
     \endlist
 
     Setting a font looks like this:
     \code
-    Text { font.family: "Helvetica"; font.size: 13; font.bold: true }
+    Text { font.family: "Helvetica"; font.pointSize: 13; font.bold: true }
     \endcode
 
     \target basicqmlaction

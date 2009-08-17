@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include <QTreeWidget>
 #include <QTableWidget>
+#include <QFile>
 #include <private/qmlenginedebug_p.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qfxitem.h>
@@ -38,10 +39,14 @@ EnginePane::EnginePane(QmlDebugConnection *client, QWidget *parent)
 
     setLayout(layout);
 
+    QFile enginesFile(":/engines.qml");
+    enginesFile.open(QFile::ReadOnly);
+    Q_ASSERT(enginesFile.isOpen());
+
     m_engineView = new QFxView(this);
     m_engineView->rootContext()->setContextProperty("engines", qVariantFromValue(&m_engineItems));
     m_engineView->setContentResizable(true);
-    m_engineView->setUrl(QUrl::fromLocalFile("engines.qml"));
+    m_engineView->setQml(enginesFile.readAll());
     m_engineView->execute();
     m_engineView->setFixedHeight(100);
     QObject::connect(m_engineView->root(), SIGNAL(engineClicked(int)),
@@ -136,6 +141,8 @@ void EnginePane::queryContext(int id)
 void EnginePane::contextChanged()
 {
     dump(m_context->rootContext(), 0);
+    foreach (const QmlDebugObjectReference &object, m_context->rootContext().objects())
+        fetchObject(object.debugId());
     delete m_context; m_context = 0;
 }
 
@@ -166,12 +173,19 @@ void EnginePane::dump(const QmlDebugObjectReference &obj, int ind)
 
 void EnginePane::buildTree(const QmlDebugObjectReference &obj, QTreeWidgetItem *parent)
 {
+    if (!parent)
+        m_objTree->clear();
+        m_objTree->expandAll();
+
     QTreeWidgetItem *item = parent ? new QTreeWidgetItem(parent) : new QTreeWidgetItem(m_objTree);
     item->setText(0, obj.className());
     item->setData(0, Qt::UserRole, obj.debugId());
 
     for (int ii = 0; ii < obj.children().count(); ++ii)
         buildTree(obj.children().at(ii), item);
+
+    if (!parent)
+        m_objTree->expandAll();
 }
 
 void EnginePane::queryEngines()

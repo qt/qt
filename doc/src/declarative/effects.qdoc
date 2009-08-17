@@ -8,7 +8,7 @@
 \list
 \o Scaling (\l Item \bold scale property)
 \o Opacity (\l Item \bold opacity property)
-\o Rotation (\l Item \bold rotation property, and Rotation3D)
+\o Rotation (\l Item \bold rotation property)
 \o Affine Transforms (\l Squish)
 \endlist
 

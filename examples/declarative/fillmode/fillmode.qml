@@ -28,7 +28,7 @@ Image {
     }
     Text {
         id: Label
-        font.size: 24
+        font.pointSize: 24
         color: "blue"
         style: "Outline"
         styleColor: "white"

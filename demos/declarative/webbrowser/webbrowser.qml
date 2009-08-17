@@ -6,7 +6,7 @@ import "fieldtext"
 Item {
     id: WebBrowser
 
-    property string urlString : "http://www.qtsoftware.com/"
+    property string urlString : "http://qt.nokia.com/"
 
     state: "Normal"
 
@@ -80,7 +80,6 @@ Item {
                     id: HeaderText
 
                     text: MyWebView.title!='' || MyWebView.progress == 1.0 ? MyWebView.title : 'Loading...'
-                    //text: MyWebView.url
                     elide: "ElideRight"
 
                     color: "white"
@@ -88,7 +87,7 @@ Item {
                     style: "Raised"
 
                     font.family: "Helvetica"
-                    font.size: 10
+                    font.pointSize: 10
                     font.bold: true
 
                     anchors.left: Header.left
@@ -137,7 +136,7 @@ Item {
                             /*<<<<<<< HEAD:demos/declarative/webbrowser/webbrowser.qml
                             text: MyWebView.url == '' ? ' ' : MyWebView.url
                             wrap: false
-                            font.size: 11
+                            font.pointSize: 11
                             color: "#555555"
                             focusOnPress: true
                             =======*/

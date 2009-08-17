@@ -64,7 +64,7 @@ class Q_DECLARATIVE_EXPORT QFxLineEdit : public QFxPaintedItem
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor)
     Q_PROPERTY(QColor highlightedTextColor READ highlightedTextColor WRITE setHighlightedTextColor)
-    Q_PROPERTY(QmlFont *font READ font CONSTANT)
+    Q_PROPERTY(QFont font READ font WRITE setFont)
     Q_PROPERTY(HAlignment hAlign READ hAlign WRITE setHAlign)
 
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
@@ -98,7 +98,8 @@ public:
     QString text() const;
     void setText(const QString &);
 
-    QmlFont *font();
+    QFont font() const;
+    void setFont(const QFont &font);
 
     QColor color() const;
     void setColor(const QColor &c);
@@ -169,7 +170,6 @@ protected:
 
 private Q_SLOTS:
     void updateSize();
-    void fontChanged();
     void q_textChanged();
     void selectionChanged();
     void updateAll();
