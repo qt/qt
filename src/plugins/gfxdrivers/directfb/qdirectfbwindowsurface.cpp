@@ -55,7 +55,6 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
-    , engineHeight(-1)
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
 {
@@ -76,7 +75,6 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
-    , engineHeight(-1)
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
 {
@@ -223,12 +221,13 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
             break; }
         }
 
+        if (size() != geometry().size()) {
+            delete engine;
+            engine = 0;
+        }
+
         if (result != DFB_OK)
             DirectFBErrorFatal("QDirectFBWindowSurface::setGeometry()", result);
-    }
-    if (engine) {
-        delete engine;
-        engine = 0;
     }
     QWSWindowSurface::setGeometry(rect);
 }
@@ -419,12 +418,8 @@ void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
 
 void QDirectFBWindowSurface::beginPaint(const QRegion &)
 {
-    const int h = height();
-    if (h > engineHeight) {
-        engineHeight = h;
-        delete engine;
+    if (!engine)
         engine = new QDirectFBPaintEngine(this);
-    }
 }
 
 void QDirectFBWindowSurface::endPaint(const QRegion &)

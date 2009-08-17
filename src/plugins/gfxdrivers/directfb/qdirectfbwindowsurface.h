@@ -91,7 +91,6 @@ private:
     void createWindow();
     IDirectFBWindow *dfbWindow;
 #endif
-    int engineHeight;
 
     enum Mode {
         Primary,
