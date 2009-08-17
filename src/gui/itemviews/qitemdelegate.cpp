@@ -722,8 +722,6 @@ void QItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &o
             //let's add the last line (after the last QChar::LineSeparator)
             elided += option.fontMetrics.elidedText(text.mid(start),
                                                     option.textElideMode, textRect.width());
-            if (end != -1)
-                elided += QChar::LineSeparator;
         }
         d->textLayout.setText(elided);
         textLayoutSize = d->doTextLayout(textRect.width());

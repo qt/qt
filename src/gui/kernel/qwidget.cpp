@@ -2747,7 +2747,7 @@ void QWidget::showNormal()
 bool QWidget::isEnabledTo(QWidget* ancestor) const
 {
     const QWidget * w = this;
-    while (w && !w->testAttribute(Qt::WA_ForceDisabled)
+    while (!w->testAttribute(Qt::WA_ForceDisabled)
             && !w->isWindow()
             && w->parentWidget()
             && w->parentWidget() != ancestor)
@@ -7239,8 +7239,7 @@ bool QWidget::isVisibleTo(QWidget* ancestor) const
     if (!ancestor)
         return isVisible();
     const QWidget * w = this;
-    while (w
-            && !w->isHidden()
+    while (!w->isHidden()
             && !w->isWindow()
             && w->parentWidget()
             && w->parentWidget() != ancestor)

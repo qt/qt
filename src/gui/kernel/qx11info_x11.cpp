@@ -179,6 +179,7 @@ QX11InfoData* QX11Info::getX11Data(bool def) const
     QX11InfoData* res = 0;
     if (def) {
         res = new QX11InfoData;
+        res->ref = 0;
         res->screen = appScreen();
         res->depth = appDepth();
         res->cells = appCells();
@@ -189,8 +190,8 @@ QX11InfoData* QX11Info::getX11Data(bool def) const
     } else if (x11data) {
         res = new QX11InfoData;
         *res = *x11data;
+        res->ref = 0;
     }
-    res->ref = 0;
     return res;
 }
 

@@ -102,7 +102,7 @@ static dndenum_mapper dnd_enums[] = {
     { NSDragOperationCopy,  Qt::CopyAction, true },
     { NSDragOperationGeneric,  Qt::CopyAction, false },
     { NSDragOperationEvery, Qt::ActionMask, false },
-    { NSDragOperationNone, Qt::IgnoreAction, false } 
+    { NSDragOperationNone, Qt::IgnoreAction, false }
 };
 
 static NSDragOperation qt_mac_mapDropAction(Qt::DropAction action)
@@ -228,14 +228,14 @@ extern "C" {
             currentCustomTypes = new QStringList();
         *currentCustomTypes = customTypes;
         const NSString* mimeTypeGeneric = @"com.trolltech.qt.MimeTypeName";
-	NSMutableArray *supportedTypes = [NSMutableArray arrayWithObjects:NSColorPboardType, 
-                                   NSFilenamesPboardType, NSStringPboardType, 
-                                   NSFilenamesPboardType, NSPostScriptPboardType, NSTIFFPboardType, 
-                                   NSRTFPboardType, NSTabularTextPboardType, NSFontPboardType, 
-                                   NSRulerPboardType, NSFileContentsPboardType, NSColorPboardType, 
-                                   NSRTFDPboardType, NSHTMLPboardType, NSPICTPboardType, 
+	NSMutableArray *supportedTypes = [NSMutableArray arrayWithObjects:NSColorPboardType,
+                                   NSFilenamesPboardType, NSStringPboardType,
+                                   NSFilenamesPboardType, NSPostScriptPboardType, NSTIFFPboardType,
+                                   NSRTFPboardType, NSTabularTextPboardType, NSFontPboardType,
+                                   NSRulerPboardType, NSFileContentsPboardType, NSColorPboardType,
+                                   NSRTFDPboardType, NSHTMLPboardType, NSPICTPboardType,
                                    NSURLPboardType, NSPDFPboardType, NSVCardPboardType,
-                                   NSFilesPromisePboardType, NSInkTextPboardType, 
+                                   NSFilesPromisePboardType, NSInkTextPboardType,
                                    NSMultipleTextSelectionPboardType, mimeTypeGeneric, nil];
         // Add custom types supported by the application.
         for (int i = 0; i < customTypes.size(); i++) {
@@ -280,16 +280,16 @@ extern "C" {
         dropData = 0;
     }
 }
- 
-- (void)addDropData:(id <NSDraggingInfo>)sender 
+
+- (void)addDropData:(id <NSDraggingInfo>)sender
 {
     [self removeDropData];
-    CFStringRef dropPasteboard = (CFStringRef) [[sender draggingPasteboard] name]; 
+    CFStringRef dropPasteboard = (CFStringRef) [[sender draggingPasteboard] name];
     dropData = new QCocoaDropData(dropPasteboard);
-} 
+}
 
-- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender 
-{ 
+- (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
+{
     if (qwidget->testAttribute(Qt::WA_DropSiteRegistered) == false)
         return NSDragOperationNone;
     NSPoint windowPoint = [sender draggingLocation];
@@ -307,7 +307,7 @@ extern "C" {
     NSPoint globalPoint = [[sender draggingDestinationWindow] convertBaseToScreen:windowPoint];
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     QPoint posDrag(localPoint.x, localPoint.y);
-    NSDragOperation nsActions = [sender draggingSourceOperationMask]; 
+    NSDragOperation nsActions = [sender draggingSourceOperationMask];
     Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations(nsActions);
     QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) = nsActions;
     Qt::KeyboardModifiers modifiers  = Qt::NoModifier;
@@ -336,8 +336,8 @@ extern "C" {
         qDMEvent.accept(); // accept by default, since enter event was accepted.
         QApplication::sendEvent(qwidget, &qDMEvent);
         if (!qDMEvent.isAccepted() || qDMEvent.dropAction() == Qt::IgnoreAction) {
-            // since we accepted the drag enter event, the widget expects 
-            // future drage move events.  
+            // since we accepted the drag enter event, the widget expects
+            // future drage move events.
             // ### check if we need to treat this like the drag enter event.
             nsActions = QT_PREPEND_NAMESPACE(qt_mac_mapDropAction)(qDEEvent.dropAction());
         } else {
@@ -345,7 +345,7 @@ extern "C" {
         }
         QT_PREPEND_NAMESPACE(qt_mac_copy_answer_rect)(qDMEvent);
         return nsActions;
-    } 
+    }
  }
 
 - (NSDragOperation)draggingUpdated:(id < NSDraggingInfo >)sender
@@ -373,7 +373,7 @@ extern "C" {
     if (qt_mac_mouse_inside_answer_rect(posDrag)
         && QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) == nsActions)
         return QT_PREPEND_NAMESPACE(qt_mac_mapDropActions)(QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastAction));
-    // send drag move event to the widget    
+    // send drag move event to the widget
     QT_PREPEND_NAMESPACE(qt_mac_dnd_answer_rec.lastOperation) = nsActions;
     Qt::DropActions qtAllowed = QT_PREPEND_NAMESPACE(qt_mac_mapNSDragOperations)(nsActions);
     Qt::KeyboardModifiers modifiers  = Qt::NoModifier;
@@ -436,7 +436,7 @@ extern "C" {
     NSPoint localPoint = [self convertPoint:windowPoint fromView:nil];
     QPoint posDrop(localPoint.x, localPoint.y);
 
-    NSDragOperation nsActions = [sender draggingSourceOperationMask]; 
+    NSDragOperation nsActions = [sender draggingSourceOperationMask];
     Qt::DropActions qtAllowed = qt_mac_mapNSDragOperations(nsActions);
     QMimeData *mimeData = dropData;
     if (QDragManager::self()->source())
@@ -563,11 +563,6 @@ extern "C" {
         qt_sendSpontaneousEvent(qwidget, &e);
         if (!redirectionOffset.isNull())
             QPainter::restoreRedirected(qwidget);
-#ifdef QT_RASTER_PAINTENGINE
-        if(engine && engine->type() == QPaintEngine::Raster)
-            static_cast<QRasterPaintEngine*>(engine)->flush(qwidget,
-                                                            qrgn.boundingRect().topLeft());
-#endif
         if (engine)
             engine->setSystemClip(QRegion());
         qwidget->setAttribute(Qt::WA_WState_InPaintEvent, false);
@@ -638,7 +633,7 @@ extern "C" {
             QHoverEvent he(QEvent::HoverEnter, QPoint(viewPoint.x, viewPoint.y), QPoint(-1, -1));
             QApplicationPrivate::instance()->notify_helper(qwidget, &he);
         }
-    }    
+    }
 }
 
 - (void)mouseExited:(NSEvent *)event
@@ -647,7 +642,7 @@ extern "C" {
     NSPoint globalPoint = [[event window] convertBaseToScreen:[event locationInWindow]];
     if (!qAppInstance()->activeModalWidget() || QApplicationPrivate::tryModalHelper(qwidget, 0)) {
         QApplication::sendEvent(qwidget, &leaveEvent);
-        
+
         // ### Think about if it is necessary to update the cursor, should only be for a few cases.
         qt_mac_update_cursor_at_global_pos(flipPoint(globalPoint).toPoint());
         if (qwidget->testAttribute(Qt::WA_Hover)
@@ -679,7 +674,7 @@ extern "C" {
 {
     qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseButtonPress, Qt::LeftButton);
     // Don't call super here. This prevents us from getting the mouseUp event,
-    // which we need to send even if the mouseDown event was not accepted. 
+    // which we need to send even if the mouseDown event was not accepted.
     // (this is standard Qt behavior.)
 }
 
@@ -843,7 +838,7 @@ extern "C" {
 }
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
-- (void)touchesBeganWithEvent:(NSEvent *)event; 
+- (void)touchesBeganWithEvent:(NSEvent *)event;
 {
     bool all = qwidget->testAttribute(Qt::WA_TouchPadAcceptSingleTouchEvents);
     qt_translateRawTouchEvent(qwidget, QTouchEvent::TouchPad, QCocoaTouch::getCurrentTouchPointList(event, all));
@@ -1128,7 +1123,7 @@ extern "C" {
         while (index < composingLength) {
             NSRange effectiveRange;
             NSRange range = NSMakeRange(index, composingLength-index);
-            NSDictionary *attributes = [aString attributesAtIndex:index 
+            NSDictionary *attributes = [aString attributesAtIndex:index
                                             longestEffectiveRange:&effectiveRange
                                                           inRange:range];
             NSNumber *underlineStyle = [attributes objectForKey:NSUnderlineStyleAttributeName];
@@ -1137,7 +1132,7 @@ extern "C" {
                 NSColor *color = [attributes objectForKey:NSUnderlineColorAttributeName];
                 if (color) {
                     clr = colorFrom(color);
-                } 
+                }
                 QTextCharFormat format;
                 format.setFontUnderline(true);
                 format.setUnderlineColor(clr);
@@ -1213,7 +1208,7 @@ extern "C" {
 
 - (NSRange) markedRange
 {
-    NSRange range; 
+    NSRange range;
     if (composing) {
         range.location = 0;
         range.length = composingLength;
@@ -1238,13 +1233,13 @@ extern "C" {
         selRange.length = 0;
     }
     return selRange;
-    
+
 }
 
 - (NSRect) firstRectForCharacterRange:(NSRange)theRange
 {
     Q_UNUSED(theRange);
-    // The returned rect is always based on the internal cursor. 
+    // The returned rect is always based on the internal cursor.
     QRect mr(qwidget->inputMethodQuery(Qt::ImMicroFocus).toRect());
     QPoint mp(qwidget->mapToGlobal(QPoint(mr.bottomLeft())));
     NSRect rect ;
@@ -1392,7 +1387,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     NSImage *image = (NSImage *)qt_mac_create_nsimage(pix);
     [image retain];
     DnDParams *dndParams = [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent];
-    // save supported actions 
+    // save supported actions
     [dndParams->view setSupportedActions: qt_mac_mapDropActions(dragPrivate()->possible_actions)];
     NSPoint imageLoc = {dndParams->localPoint.x - hotspot.x(),
                         dndParams->localPoint.y + pix.height() - hotspot.y()};
@@ -1416,7 +1411,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     Qt::DropAction performedAction(qt_mac_mapNSDragOperation(dndParams->performedAction));
     // do post drag processing, if required.
     if(performedAction != Qt::IgnoreAction) {
-        // check if the receiver points us to a file location. 
+        // check if the receiver points us to a file location.
         // if so, we need to do the file copy/move ourselves.
         QCFType<CFURLRef> pasteLocation = 0;
         PasteboardCopyPasteLocation(dragBoard.pasteBoard(), &pasteLocation);

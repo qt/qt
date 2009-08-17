@@ -104,6 +104,8 @@ private:
     QList<QUrl> indexableFiles(QHelpEngineCore *helpEngine,
         const QString &namespaceName, const QStringList &attributes) const;
 
+    void closeIndexWriter(QCLuceneIndexWriter *writer);
+
 private:
     QMutex mutex;
     QWaitCondition waitCondition;

@@ -103,7 +103,7 @@ unix {
             HEADERS += \
                 kernel/qeventdispatcher_glib_p.h
             QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
-            LIBS +=$$QT_LIBS_GLIB
+            LIBS_PRIVATE +=$$QT_LIBS_GLIB
         }
             SOURCES += \
                 kernel/qeventdispatcher_unix.cpp

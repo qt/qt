@@ -1392,9 +1392,7 @@ QVariant QTableWidgetItem::data(int role) const
 bool QTableWidgetItem::operator<(const QTableWidgetItem &other) const
 {
     const QVariant v1 = data(Qt::DisplayRole), v2 = other.data(Qt::DisplayRole);
-    if (QAbstractItemModelPrivate::canConvertToDouble(v1) && QAbstractItemModelPrivate::canConvertToDouble(v2))
-        return v1.toDouble() < v2.toDouble();
-    return v1.toString() < v2.toString();
+    return QAbstractItemModelPrivate::variantLessThan(v1, v2);
 }
 
 #ifndef QT_NO_DATASTREAM

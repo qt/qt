@@ -708,7 +708,7 @@ void Win32MakefileGenerator::writeLibsPart(QTextStream &t)
         if(!project->values("QMAKE_LIBDIR").isEmpty())
             writeLibDirPart(t);
         t << var("QMAKE_LFLAGS") << endl;
-        t << "LIBS          = " << var("QMAKE_LIBS") << endl;
+        t << "LIBS          = " << var("QMAKE_LIBS") << " " << var("QMAKE_LIBS_PRIVATE") << endl;
     }
 }
 

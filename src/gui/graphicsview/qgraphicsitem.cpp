@@ -328,6 +328,10 @@
     used for Asian languages.
     This flag was introduced in Qt 4.6.
 
+    \value ItemNegativeZStacksBehindParent The item automatically stacks behind
+    it's parent if it's z-value is negative. This flag enables setZValue() to
+    toggle ItemStacksBehindParent.
+
     \value ItemAutoDetectsFocusProxy The item will assign any child that
     gains input focus as its focus proxy. See also focusProxy().
     This flag was introduced in Qt 4.6.
@@ -1183,6 +1187,9 @@ QGraphicsItem::QGraphicsItem(QGraphicsItemPrivate &dd, QGraphicsItem *parent,
     Destroys the QGraphicsItem and all its children. If this item is currently
     associated with a scene, the item will be removed from the scene before it
     is deleted.
+
+    \note It is more efficient to remove the item from the QGraphicsScene before
+    destroying the item.
 */
 QGraphicsItem::~QGraphicsItem()
 {
@@ -1561,6 +1568,11 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         // Update input method sensitivity in any views.
         if (d_ptr->scene)
             d_ptr->scene->d_func()->updateInputMethodSensitivityInViews();
+    }
+
+    if ((flags & ItemNegativeZStacksBehindParent) != (oldFlags & ItemNegativeZStacksBehindParent)) {
+        // Update stack-behind.
+        setFlag(ItemStacksBehindParent, d_ptr->z < qreal(0.0));
     }
 
     if (d_ptr->scene) {
@@ -3715,6 +3727,9 @@ void QGraphicsItem::setZValue(qreal z)
         d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/true);
 
     itemChange(ItemZValueHasChanged, newZVariant);
+
+    if (d_ptr->flags & ItemNegativeZStacksBehindParent)
+        setFlag(QGraphicsItem::ItemStacksBehindParent, z < qreal(0.0));
 
     if (d_ptr->isObject)
         emit static_cast<QGraphicsObject *>(this)->zChanged();
@@ -6828,11 +6843,12 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 
   By default, this property is true.
 
-  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled(), enabledChanged()
+  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled()
+  \sa QGraphicsObject::enabledChanged()
 */
 
 /*!
-  \fn QGraphicsObject::enabledChanged()
+  \fn void QGraphicsObject::enabledChanged()
 
   This signal gets emitted whenever the item get's enabled or disabled.
 
@@ -10098,6 +10114,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemAcceptsInputMethod:
         str = "ItemAcceptsInputMethod";
+        break;
+    case QGraphicsItem::ItemNegativeZStacksBehindParent:
+        str = "ItemNegativeZStacksBehindParent";
         break;
     case QGraphicsItem::ItemAutoDetectsFocusProxy:
         str = "ItemAutoDetectsFocusProxy";

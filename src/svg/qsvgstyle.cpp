@@ -90,6 +90,7 @@ QSvgFillStyle::QSvgFillStyle(const QBrush &brush)
     , m_fillRule(Qt::WindingFill)
     , m_fillOpacitySet(false)
     , m_fillOpacity(1.0)
+    , m_oldOpacity(0)
     , m_gradientResolved(true)
     , m_fillSet(true)
 {
@@ -101,6 +102,7 @@ QSvgFillStyle::QSvgFillStyle(QSvgStyleProperty *style)
     , m_fillRule(Qt::WindingFill)
     , m_fillOpacitySet(false)
     , m_fillOpacity(1.0)
+    , m_oldOpacity(0)
     , m_gradientResolved(true)
     , m_fillSet(style != 0)
 {
@@ -858,7 +860,7 @@ QSvgStyleProperty::Type QSvgAnimateColor::type() const
 }
 
 QSvgOpacityStyle::QSvgOpacityStyle(qreal opacity)
-    : m_opacity(opacity)
+    : m_opacity(opacity), m_oldOpacity(0)
 {
 
 }

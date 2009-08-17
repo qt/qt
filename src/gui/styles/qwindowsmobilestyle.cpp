@@ -83,11 +83,6 @@ extern bool qt_wince_is_windows_mobile_65(); //defined in qguifunctions_wince.cp
 QT_BEGIN_NAMESPACE
 
 static const int windowsItemFrame        =  1; // menu item frame width
-static const int windowsItemHMargin      =  2; // menu item hor text margin
-static const int windowsItemVMargin      =  2; // menu item ver text margin
-static const int windowsArrowHMargin	 =  6; // arrow horizontal margin
-static const int windowsRightBorder      = 15; // right border on windows
-static const int windowsCheckMarkWidth   = 14; // checkmarks width on windows
 
 static const int windowsMobileitemViewCheckBoxSize   = 13;
 static const int windowsMobileFrameGroupBoxOffset    = 9;

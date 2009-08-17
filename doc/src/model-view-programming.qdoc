@@ -2148,6 +2148,8 @@
             need to supply data for Qt::DisplayRole and any application-specific user
             roles, but it is also good practice to provide data for Qt::ToolTipRole,
             Qt::AccessibleTextRole, and Qt::AccessibleDescriptionRole.
+            See the Qt::ItemDataRole enum documentation for information about the types
+            associated with each role.
     \row \o \l{QAbstractItemModel::headerData()}{headerData()}
          \o Provides views with information to show in their headers. The information is
             only retrieved by views that can display header information.
