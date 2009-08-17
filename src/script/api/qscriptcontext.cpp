@@ -273,9 +273,8 @@ QScriptValue QScriptContext::argument(int index) const
         return QScriptValue();
     if (index >= argumentCount())
         return QScriptValue(QScriptValue::UndefinedValue);
-    JSC::Register* thisRegister = frame->registers() - JSC::RegisterFile::CallFrameHeaderSize - frame->argumentCount();
-    ++index; //skip the 'this' object
-    return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(thisRegister[index].jsValue());
+    QScriptValue v = argumentsObject().property(index);
+    return v;
 }
 
 /*!
@@ -306,15 +305,23 @@ QScriptValue QScriptContext::callee() const
 QScriptValue QScriptContext::argumentsObject() const
 {
     JSC::CallFrame *frame = const_cast<JSC::ExecState*>(QScriptEnginePrivate::frameForContext(this));
-    if (frame == frame->lexicalGlobalObject()->globalExec()) {
-        //global context doesn't have any argument, return an empty object
+
+    if (frame == frame->lexicalGlobalObject()->globalExec() || frame->callerFrame()->hasHostCallFrameFlag()) {
+        // <global> or <eval> context doesn't have arguments.  return an empty object
         return QScriptEnginePrivate::get(QScript::scriptEngineFromExec(frame))->newObject();
     }
-    Q_ASSERT(frame->argumentCount() > 0); //we need at least 'this' otherwise we'll crash later
+
+    //for a js function
+    if (frame->codeBlock() && frame->callee()) {
+        JSC::JSValue result = frame->interpreter()->retrieveArguments(frame, JSC::asFunction(frame->callee()));
+        return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(result);
+    }
+
+    //for a native function
     if (!frame->optionalCalleeArguments()) {
+        Q_ASSERT(frame->argumentCount() > 0); //we need at least 'this' otherwise we'll crash later
         JSC::Arguments* arguments = new (&frame->globalData())JSC::Arguments(frame, JSC::Arguments::NoParameters);
         frame->setCalleeArguments(arguments);
-        frame[JSC::RegisterFile::ArgumentsRegister] = arguments;
     }
     return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(frame->optionalCalleeArguments());
 }

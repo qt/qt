@@ -565,17 +565,18 @@ void tst_QScriptContext::backtrace_data()
     QTest::addColumn<QStringList>("expectedbacktrace");
 
     {
-        QStringList expected;
-        expected << "<native>(123) at -1"
-                 << "foo([object Object], [object global]) at testfile:2" //### object instead of 'hello'
-                 << "<global>() at testfile:4";
-
         QString source(
                  "function foo() {\n"
                  "  return bt(123);\n"
                  "}\n"
                  "foo('hello', { })\n"
                  "var r = 0;");
+
+        QStringList expected;
+        expected << "<native>(123) at -1"
+                 << "foo('hello', [object Object]) at testfile:2"
+                 << "<global>() at testfile:4";
+
 
         QTest::newRow("simple") << source << expected;
     }
@@ -639,6 +640,48 @@ void tst_QScriptContext::backtrace_data()
 
         QTest::newRow("closure") << source << expected;
     }
+
+    {
+        QStringList expected;
+        QString source = QString(
+            "var o = new Object;\n"
+            "o.foo = function plop() {\n"
+            "  return eval(\"%1\");\n"
+            "}\n"
+            "o.foo('hello', 456)\n"
+           ).arg("\\n \\n bt('hey'); \\n");
+
+           expected << "<native>('hey') at -1"
+                    << "<eval>() at 3"
+                    //### line number should be 3 but the line number information is not kept for eval call
+                    << "plop('hello', 456) at testfile:-1"
+                    << "<global>() at testfile:5";
+
+            QTest::newRow("eval in member") << source << expected;
+    }
+
+    {
+        QString source(
+                 "function foo(a) {\n"
+                 "  return bt(123);\n"
+                 "}\n"
+                 "function bar() {\n"
+                 "  var v = foo('arg', 4);\n"
+                 "  return v;\n"
+                 "}\n"
+                 "bar('hello', { });\n");
+
+        QStringList expected;
+        expected << "<native>(123) at -1"
+                 << "foo(a = 'arg', 4) at testfile:2"
+                 << "bar('hello', [object Object]) at testfile:5"
+                 << "<global>() at testfile:8";
+
+
+        QTest::newRow("two function") << source << expected;
+    }
+
+
 }
 
 
