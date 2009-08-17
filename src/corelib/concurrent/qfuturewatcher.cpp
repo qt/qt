@@ -43,9 +43,9 @@
 
 #ifndef QT_NO_QFUTURE
 
-#include <QEvent>
-#include <QCoreApplication>
-#include <QThread>
+#include <QtCore/qcoreevent.h>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qthread.h>
 
 #include "qfuturewatcher_p.h"
 

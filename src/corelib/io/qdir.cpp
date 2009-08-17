@@ -58,7 +58,7 @@
 
 #include "qvarlengtharray.h"
 
-#include "../kernel/qcoreglobaldata_p.h"
+#include "private/qcoreglobaldata_p.h"
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE

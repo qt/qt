@@ -52,13 +52,13 @@
 
 #include "qxmlutils_p.h"
 #include <qdebug.h>
-#include <QFile>
+#include <qfile.h>
 #include <stdio.h>
 #include <qtextcodec.h>
 #include <qstack.h>
 #include <qbuffer.h>
 #ifndef QT_BOOTSTRAPPED
-#include <QCoreApplication>
+#include <qcoreapplication.h>
 #else
 // This specialization of Q_DECLARE_TR_FUNCTIONS is not in qcoreapplication.h,
 // because that header depends on QObject being available, which is not the
