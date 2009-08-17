@@ -1984,9 +1984,11 @@ Qt::SortOrder QSortFilterProxyModel::sortOrder() const
     \brief the QRegExp used to filter the contents of the source model
 
     Setting this property overwrites the current
-    \l{QSortFilterProxyModel::filterCaseSensitivity}
-    {filterCaseSensitivity}. By default, the QRegExp is an empty
-    string matching all contents.
+    \l{QSortFilterProxyModel::filterCaseSensitivity}{filterCaseSensitivity}.
+    By default, the QRegExp is an empty string matching all contents.
+
+    If no QRegExp or an empty string is set, everything in the source model
+    will be accepted.
 
     \sa filterCaseSensitivity, setFilterWildcard(), setFilterFixedString()
 */
