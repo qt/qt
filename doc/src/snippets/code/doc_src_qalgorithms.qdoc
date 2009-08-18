@@ -302,7 +302,7 @@ list.clear();
 QList<int> list;
 list << 33 << 12 << 68 << 6 << 12;
 qSort(list.begin(), list.end(), qLess<int>());
-// list: [ 68, 33, 12, 12, 6 ]
+// list: [ 6, 12, 12, 33, 68 ]
 //! [24]
 
 
