@@ -1210,7 +1210,7 @@
 #include <qmutex.h>
 
 #if !defined(QT_NO_QOBJECT)
-#include "../kernel/qobject_p.h"
+#include "private/qobject_p.h"
 
 QT_BEGIN_NAMESPACE
 

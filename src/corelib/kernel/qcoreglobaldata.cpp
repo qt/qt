@@ -41,8 +41,6 @@
 
 #include "qcoreglobaldata_p.h"
 
-#include <QtDebug>
-
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QCoreGlobalData, globalInstance)
