@@ -1867,6 +1867,7 @@ JSC::JSValue QMetaObjectWrapperObject::execute(JSC::ExecState *exec,
                                                const JSC::ArgList &args,
                                                bool calledAsConstructor)
 {
+    Q_UNUSED(calledAsConstructor);
     if (data->ctor) {
         QScriptEnginePrivate *eng_p = QScript::scriptEngineFromExec(exec);
         QScriptContext *ctx = eng_p->contextForFrame(exec);

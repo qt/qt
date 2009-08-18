@@ -95,24 +95,46 @@ public:
     };
 
     //exceptions
-    virtual void exception(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno) {};
+    virtual void exception(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno)
+    {
+        Q_UNUSED(frame);
+        Q_UNUSED(sourceID);
+        Q_UNUSED(lineno);
+    };
     virtual void exceptionThrow(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, bool hasHandler);
     virtual void exceptionCatch(const JSC::DebuggerCallFrame& frame, intptr_t sourceID);
 
     //statements
     virtual void atStatement(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno, int column);
-    virtual void callEvent(const JSC::DebuggerCallFrame&, intptr_t sourceID, int /*lineno*/)
+    virtual void callEvent(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno)
     {
+        Q_UNUSED(lineno);
         q_ptr->contextPush();
         q_ptr->functionEntry(sourceID);
     };
-    virtual void returnEvent(const JSC::DebuggerCallFrame&, intptr_t sourceID, int /*lineno*/) {}
-    virtual void willExecuteProgram(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno) {};
-    virtual void didExecuteProgram(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno) {};
+    virtual void returnEvent(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno)
+    {
+        Q_UNUSED(frame);
+        Q_UNUSED(sourceID);
+        Q_UNUSED(lineno);
+    }
+    virtual void willExecuteProgram(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno)
+    {
+        Q_UNUSED(frame);
+        Q_UNUSED(sourceID);
+        Q_UNUSED(lineno);
+    };
+    virtual void didExecuteProgram(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno)
+    {
+        Q_UNUSED(frame);
+        Q_UNUSED(sourceID);   
+        Q_UNUSED(lineno);
+    };
     virtual void functionExit(const JSC::JSValue& returnValue, intptr_t sourceID);
     //others
-    virtual void didReachBreakpoint(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno, int column)
+    virtual void didReachBreakpoint(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno, int column)
     {
+        Q_UNUSED(frame);
         QList<QVariant> args;
         args << qint64(sourceID) << lineno << column;
         if (q_ptr->supportsExtension(QScriptEngineAgent::DebuggerInvocationRequest))
