@@ -41,6 +41,7 @@
 
 #include "qmlmetaproperty.h"
 #include "qmlmetaproperty_p.h"
+#include "qmlcompositetypedata_p.h"
 #include <qml.h>
 #include <private/qfxperf_p.h>
 #include <QStringList>
@@ -216,14 +217,19 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
     if (name.isEmpty() || !obj)
         return;
 
-    if (name.at(0).isUpper()) {
+    if (enginePrivate && name.at(0).isUpper()) {
         // Attached property
-        // XXX name should be resolved with QmlEngine::resolveType(), not like this!
-        QmlType *t = QmlMetaType::qmlType("Qt/"+name.toLatin1(),-1,-1);
-        if (t && t->attachedPropertiesFunction()) {
-            attachedFunc = t->index();
-            if (attachedFunc != -1)
-                type  = QmlMetaProperty::Property | QmlMetaProperty::Attached;
+        QmlCompositeTypeData *typeData =
+            enginePrivate->typeManager.get(context->baseUrl());
+
+        if (typeData) {
+            QmlType *t = 0;
+            enginePrivate->resolveType(typeData->imports, name.toLatin1(), &t, 0);
+            if (t && t->attachedPropertiesFunction()) {
+                attachedFunc = t->index();
+                if (attachedFunc != -1)
+                    type  = QmlMetaProperty::Property | QmlMetaProperty::Attached;
+            }
         }
         return;
 

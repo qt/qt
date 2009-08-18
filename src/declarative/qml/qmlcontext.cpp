@@ -451,4 +451,22 @@ void QmlContext::setBaseUrl(const QUrl &baseUrl)
     d_func()->url = baseUrl;
 }
 
+/*!
+    Returns the base url of the component, or the containing component
+    if none is set.
+*/
+QUrl QmlContext::baseUrl() const
+{
+    Q_D(const QmlContext);
+    const QmlContext* p = this;
+    while (p && p->d_func()->url.isEmpty()) {
+        p = p->parentContext();
+    }
+    if (p)
+        return p->d_func()->url;
+    else
+        return QUrl();
+}
+
+
 QT_END_NAMESPACE
