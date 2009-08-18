@@ -578,6 +578,7 @@ QDirectFBScreenCursor::QDirectFBScreenCursor()
 
 void QDirectFBScreenCursor::move(int x, int y)
 {
+    pos = QPoint(x, y);
     layer->WarpCursor(layer, x, y);
 }
 
