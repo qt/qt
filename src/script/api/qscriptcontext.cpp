@@ -221,7 +221,7 @@ QScriptValue QScriptContext::throwError(Error error, const QString &text)
         jscError = JSC::URIError;
         break;
     }
-    JSC::JSObject *result = JSC::throwError(frame, jscError, QScript::qtStringToJSCUString(text));
+    JSC::JSObject *result = JSC::throwError(frame, jscError, text);
     return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(result);
 }
 
@@ -236,7 +236,7 @@ QScriptValue QScriptContext::throwError(Error error, const QString &text)
 QScriptValue QScriptContext::throwError(const QString &text)
 {
     JSC::CallFrame *frame = QScriptEnginePrivate::frameForContext(this);
-    JSC::JSObject *result = JSC::throwError(frame, JSC::GeneralError, QScript::qtStringToJSCUString(text));
+    JSC::JSObject *result = JSC::throwError(frame, JSC::GeneralError, text);
     return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(result);
 }
 

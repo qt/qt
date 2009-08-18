@@ -97,7 +97,7 @@ bool ClassObjectDelegate::getOwnPropertySlot(QScriptObject* object,
 
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
-    QString name = qtStringFromJSCUString(propertyName.ustring());
+    QString name(propertyName.ustring());
     QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
     uint id = 0;
     QScriptClass::QueryFlags flags = m_scriptClass->queryProperty(
@@ -116,7 +116,7 @@ void ClassObjectDelegate::put(QScriptObject* object, JSC::ExecState *exec,
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
-    QString name = qtStringFromJSCUString(propertyName.ustring());
+    QString name(propertyName.ustring());
     QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
     uint id = 0;
     QScriptClass::QueryFlags flags = m_scriptClass->queryProperty(
@@ -135,7 +135,7 @@ bool ClassObjectDelegate::deleteProperty(QScriptObject* object, JSC::ExecState *
     // ### avoid duplication of put()
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
-    QString name = qtStringFromJSCUString(propertyName.ustring());
+    QString name(propertyName.ustring());
     QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
     uint id = 0;
     QScriptClass::QueryFlags flags = m_scriptClass->queryProperty(
@@ -155,7 +155,7 @@ bool ClassObjectDelegate::getPropertyAttributes(const QScriptObject* object, JSC
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
-    QString name = qtStringFromJSCUString(propertyName.ustring());
+    QString name(propertyName.ustring());
     QScriptString scriptName = QScriptEnginePrivate::get(engine)->toStringHandle(name);
     uint id = 0;
     QScriptClass::QueryFlags flags = m_scriptClass->queryProperty(
@@ -190,7 +190,7 @@ void ClassObjectDelegate::getPropertyNames(QScriptObject* object, JSC::ExecState
         while (it->hasNext()) {
             it->next();
             QString name = it->name().toString();
-            propertyNames.add(JSC::Identifier(exec, qtStringToJSCUString(name)));
+            propertyNames.add(JSC::Identifier(exec, name));
         }
         delete it;
     }

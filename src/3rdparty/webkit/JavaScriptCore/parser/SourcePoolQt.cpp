@@ -33,7 +33,7 @@ namespace JSC {
     {
         int id = source.provider()->asID();
 
-        codes.insert(id,source.toString().toQString());
+        codes.insert(id,source.toString());
 
         currentScript.push(id);
         scriptRef.insert(id,ScriptActivCount());

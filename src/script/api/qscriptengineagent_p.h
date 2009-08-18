@@ -91,7 +91,7 @@ public:
     virtual void scriptLoad(qint64 id, const JSC::UString &program,
                          const JSC::UString &fileName, int baseLineNumber)
     {
-        q_ptr->scriptLoad(id,program.toQString(), fileName.toQString(), baseLineNumber);
+        q_ptr->scriptLoad(id,program, fileName, baseLineNumber);
     };
 
     //exceptions

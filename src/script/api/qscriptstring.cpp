@@ -46,10 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-namespace QScript
-{
-    QString qtStringFromJSCUString(const JSC::UString &str);
-}
 
 /*!
   \since 4.4
@@ -194,7 +190,7 @@ QString QScriptString::toString() const
     Q_D(const QScriptString);
     if (!d || !d->engine)
         return QString();
-    return QScript::qtStringFromJSCUString(d->identifier.ustring());
+    return d->identifier.ustring();
 }
 
 /*!

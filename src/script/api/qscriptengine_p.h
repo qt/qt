@@ -97,8 +97,6 @@ namespace QScript
     class TimeoutCheckerProxy;
 
     //some conversion helper functions
-    JSC::UString qtStringToJSCUString(const QString &str);
-    QString qtStringFromJSCUString(const JSC::UString &str);
     QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
     bool isFunction(const JSC::JSValue &value);
 }

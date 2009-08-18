@@ -78,17 +78,6 @@ namespace JSC {
 
     public:
 
-#if PLATFORM(QT)
-
-            QString toQString() const
-            {
-                // Not sure with method is better, 2nd is shorter
-                //UString string
-                //QString::fromUtf8(string.toString().UTF8String().c_str())
-
-                return QString(reinterpret_cast<const QChar*>(this->data()), this->size());
-            }
-#endif
         typedef CrossThreadRefCounted<OwnFastMallocPtr<UChar> > SharedUChar;
         struct BaseString;
         struct Rep : Noncopyable {
@@ -376,6 +365,19 @@ namespace JSC {
             return m_rep->reserveCapacity(capacity);
         }
 
+#if PLATFORM(QT)
+        operator QString() const
+        {
+            return QString(reinterpret_cast<const QChar*>(this->data()), this->size());
+        }
+
+        UString(const QString& str)
+        {
+            *this = JSC::UString(reinterpret_cast<const UChar*>(str.constData()), str.length());
+        }
+#endif
+
+
     private:
         void expandCapacity(int requiredLength);
         void expandPreCapacity(int requiredPreCap);
@@ -542,6 +544,20 @@ namespace JSC {
 
         return capacityDelta;
     }
+
+#if PLATFORM(QT)
+
+        inline UString operator+(const char* s1, const UString& s2)
+        {
+            return operator+(UString(s1), s2);
+        }
+
+        inline UString operator+(const UString& s1, const char* s2)
+        {
+            return operator+(s1, UString(s2));
+        }
+
+#endif
 
     struct IdentifierRepHash : PtrHash<RefPtr<JSC::UString::Rep> > {
         static unsigned hash(const RefPtr<JSC::UString::Rep>& key) { return key->computedHash(); }

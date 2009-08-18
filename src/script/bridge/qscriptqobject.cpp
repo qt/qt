@@ -867,7 +867,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                 QMetaMethod mtd = metaMethod(meta, callType, conversionFailed.at(i));
                 message += QString::fromLatin1("    %0").arg(QString::fromLatin1(mtd.signature()));
             }
-            result = JSC::throwError(exec, JSC::TypeError, qtStringToJSCUString(message));
+            result = JSC::throwError(exec, JSC::TypeError, message);
         } else if (!unresolved.isEmpty()) {
             QScriptMetaArguments argsInstance = unresolved.first();
             int unresolvedIndex = argsInstance.method.firstUnresolvedIndex();
@@ -884,7 +884,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                                .arg(unresolvedTypeName));
             }
             message.append(QString::fromLatin1(" (register the type with qScriptRegisterMetaType())"));
-            result = JSC::throwError(exec, JSC::TypeError, qtStringToJSCUString(message));
+            result = JSC::throwError(exec, JSC::TypeError, message);
         } else {
             QString message = QString::fromLatin1("too few arguments in call to %0(); candidates are\n")
                               .arg(QLatin1String(funName));
@@ -894,7 +894,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                 QMetaMethod mtd = metaMethod(meta, callType, tooFewArgs.at(i));
                 message += QString::fromLatin1("    %0").arg(QString::fromLatin1(mtd.signature()));
             }
-            result = JSC::throwError(exec, JSC::SyntaxError, qtStringToJSCUString(message));
+            result = JSC::throwError(exec, JSC::SyntaxError, message);
         }
     } else {
         if (chosenIndex == -1) {
@@ -911,7 +911,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                     QMetaMethod mtd = metaMethod(meta, callType, candidates.at(i).index);
                     message += QString::fromLatin1("    %0").arg(QString::fromLatin1(mtd.signature()));
                 }
-                result = JSC::throwError(exec, JSC::TypeError, qtStringToJSCUString(message));
+                result = JSC::throwError(exec, JSC::TypeError, message);
             } else {
                 chosenMethod = metaArgs.method;
                 chosenIndex = metaArgs.index;
@@ -1120,7 +1120,7 @@ JSC::JSValue QtPropertyFunction::execute(JSC::ExecState *exec,
             && !engine->hasDemarshalFunction(prop.userType())) {
             // give QMetaProperty::write() a chance to convert from
             // string to enum value
-            v = qtStringFromJSCUString(arg.toString(exec));
+            v = (QString)arg.toString(exec);
         } else {
             // ### don't go via QScriptValue
             QScriptValue tmp = engine->scriptValueFromJSCValue(arg);
@@ -1190,12 +1190,12 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
                                          const JSC::Identifier &propertyName,
                                          JSC::PropertySlot &slot)
 {
-    QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+    QByteArray name = QString(propertyName.ustring()).toLatin1();
     QObject *qobject = data->value;
     if (!qobject) {
         QString message = QString::fromLatin1("cannot access member `%0' of deleted QObject")
                           .arg(QString::fromLatin1(name));
-        slot.setValue(JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message)));
+        slot.setValue(JSC::throwError(exec, JSC::GeneralError, message));
         return true;
     }
 
@@ -1286,7 +1286,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
         QList<QObject*> children = qobject->children();
         for (index = 0; index < children.count(); ++index) {
             QObject *child = children.at(index);
-            if (child->objectName() == qtStringFromJSCUString(propertyName.ustring())) {
+            if (child->objectName() == QString(propertyName.ustring())) {
                 QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
                 QScriptValue tmp = QScriptEnginePrivate::get(eng)->newQObject(child, QScriptEngine::QtOwnership, opt);
                 slot.setValue(eng->scriptValueToJSCValue(tmp));
@@ -1302,12 +1302,12 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
                           const JSC::Identifier& propertyName,
                           JSC::JSValue value, JSC::PutPropertySlot &slot)
 {
-    QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+    QByteArray name = ((QString)propertyName.ustring()).toLatin1();
     QObject *qobject = data->value;
     if (!qobject) {
         QString message = QString::fromLatin1("cannot access member `%0' of deleted QObject")
                           .arg(QString::fromLatin1(name));
-        JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message));
+        JSC::throwError(exec, JSC::GeneralError, message);
         return;
     }
 
@@ -1362,7 +1362,7 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
                         && !eng->hasDemarshalFunction(prop.userType())) {
                         // give QMetaProperty::write() a chance to convert from
                         // string to enum value
-                        v = qtStringFromJSCUString(value.toString(exec));
+                        v = (QString)value.toString(exec);
                     } else {
                         v = eng->jscValueToVariant(value, prop.userType());
                     }
@@ -1398,12 +1398,12 @@ bool QObjectDelegate::deleteProperty(QScriptObject *object, JSC::ExecState *exec
                                      const JSC::Identifier& propertyName,
                                      bool checkDontDelete)
 {
-    QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+    QByteArray name = ((QString)propertyName.ustring()).toLatin1();
     QObject *qobject = data->value;
     if (!qobject) {
         QString message = QString::fromLatin1("cannot access member `%0' of deleted QObject")
                           .arg(QString::fromLatin1(name));
-        JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message));
+        JSC::throwError(exec, JSC::GeneralError, message);
         return false;
     }
 
@@ -1444,7 +1444,7 @@ bool QObjectDelegate::getPropertyAttributes(const QScriptObject *object,
                                             unsigned &attributes) const
 {
     // ### try to avoid duplicating logic from getOwnPropertySlot()
-    QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+    QByteArray name = ((QString)propertyName.ustring()).toLatin1();
     QObject *qobject = data->value;
     if (!qobject)
         return false;
@@ -1503,7 +1503,7 @@ bool QObjectDelegate::getPropertyAttributes(const QScriptObject *object,
         QList<QObject*> children = qobject->children();
         for (index = 0; index < children.count(); ++index) {
             QObject *child = children.at(index);
-            if (child->objectName() == qtStringFromJSCUString(propertyName.ustring())) {
+            if (child->objectName() == (QString)(propertyName.ustring())) {
                 attributes = JSC::ReadOnly | JSC::DontDelete | JSC::DontEnum;
                 return true;
             }
@@ -1520,7 +1520,7 @@ void QObjectDelegate::getPropertyNames(QScriptObject *object, JSC::ExecState *ex
     QObject *qobject = data->value;
     if (!qobject) {
         QString message = QString::fromLatin1("cannot get property names of deleted QObject");
-        JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message));
+        JSC::throwError(exec, JSC::GeneralError, message);
         return;
     }
 
@@ -1533,7 +1533,7 @@ void QObjectDelegate::getPropertyNames(QScriptObject *object, JSC::ExecState *ex
             QMetaProperty prop = meta->property(i);
             if (isEnumerableMetaProperty(prop, meta, i)) {
                 QString name = QString::fromLatin1(prop.name());
-                propertyNames.add(JSC::Identifier(exec, qtStringToJSCUString(name)));
+                propertyNames.add(JSC::Identifier(exec, name));
             }
         }
     }
@@ -1542,7 +1542,7 @@ void QObjectDelegate::getPropertyNames(QScriptObject *object, JSC::ExecState *ex
         QList<QByteArray> dpNames = qobject->dynamicPropertyNames();
         for (int i = 0; i < dpNames.size(); ++i) {
             QString name = QString::fromLatin1(dpNames.at(i));
-            propertyNames.add(JSC::Identifier(exec, qtStringToJSCUString(name)));
+            propertyNames.add(JSC::Identifier(exec, name));
         }
     }
 
@@ -1554,7 +1554,7 @@ void QObjectDelegate::getPropertyNames(QScriptObject *object, JSC::ExecState *ex
             if (hasMethodAccess(method, i, opt)) {
                 QMetaMethod method = meta->method(i);
                 QString sig = QString::fromLatin1(method.signature());
-                propertyNames.add(JSC::Identifier(exec, qtStringToJSCUString(sig)));
+                propertyNames.add(JSC::Identifier(exec, sig));
             }
         }
     }
@@ -1588,7 +1588,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChild(JSC::ExecState *exec
     QObject *obj = static_cast<QObjectDelegate*>(delegate)->value();
     QString name;
     if (args.size() != 0)
-        name = QScript::qtStringFromJSCUString(args.at(0).toString(exec));
+        name = args.at(0).toString(exec);
     QObject *child = qFindChild<QObject*>(obj, name);
     QScriptEngine::QObjectWrapOptions opt = QScriptEngine::PreferExistingWrapperObject;
     return engine->newQObject(child, QScriptEngine::QtOwnership, opt);
@@ -1620,7 +1620,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *e
             const int allChildrenCount = allChildren.size();
             for (int i = 0; i < allChildrenCount; ++i) {
                 QObject *const child = allChildren.at(i);
-                const JSC::UString childName = qtStringToJSCUString(child->objectName());
+                const JSC::UString childName = child->objectName();
                 JSC::RegExpConstructor* regExpConstructor = engine->originalGlobalObject()->regExpConstructor();
                 int position;
                 int length;
@@ -1629,7 +1629,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncFindChildren(JSC::ExecState *e
                     children.append(child);
             }
         } else {
-            const QString name = QScript::qtStringFromJSCUString(args.at(0).toString(exec));
+            const QString name(args.at(0).toString(exec));
             children = qFindChildren<QObject*>(obj, name);
         }
     } else {
@@ -1663,7 +1663,7 @@ static JSC::JSValue JSC_HOST_CALL qobjectProtoFuncToString(JSC::ExecState *exec,
     QString name = obj ? obj->objectName() : QString::fromUtf8("unnamed");
     QString str = QString::fromUtf8("%0(name = \"%1\")")
                   .arg(QLatin1String(meta->className())).arg(name);
-    return JSC::jsString(exec, qtStringToJSCUString(str));
+    return JSC::jsString(exec, str);
 }
 
 QObjectPrototype::QObjectPrototype(JSC::ExecState* exec, WTF::PassRefPtr<JSC::Structure> structure,
@@ -1713,7 +1713,7 @@ bool QMetaObjectWrapperObject::getOwnPropertySlot(
         return true;
     }
 
-    QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+    QByteArray name = QString(propertyName.ustring()).toLatin1();
 
     for (int i = 0; i < meta->enumeratorCount(); ++i) {
         QMetaEnum e = meta->enumerator(i);
@@ -1741,7 +1741,7 @@ void QMetaObjectWrapperObject::put(JSC::ExecState* exec, const JSC::Identifier& 
     }
     const QMetaObject *meta = data->value;
     if (meta) {
-        QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+        QByteArray name = QString(propertyName.ustring()).toLatin1();
         for (int i = 0; i < meta->enumeratorCount(); ++i) {
             QMetaEnum e = meta->enumerator(i);
             for (int j = 0; j < e.keyCount(); ++j) {
@@ -1761,7 +1761,7 @@ bool QMetaObjectWrapperObject::deleteProperty(
         return false;
     const QMetaObject *meta = data->value;
     if (meta) {
-        QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+        QByteArray name = QString(propertyName.ustring()).toLatin1();
         for (int i = 0; i < meta->enumeratorCount(); ++i) {
             QMetaEnum e = meta->enumerator(i);
             for (int j = 0; j < e.keyCount(); ++j) {
@@ -1783,7 +1783,7 @@ bool QMetaObjectWrapperObject::getPropertyAttributes(JSC::ExecState *exec,
     }
     const QMetaObject *meta = data->value;
     if (meta) {
-        QByteArray name = qtStringFromJSCUString(propertyName.ustring()).toLatin1();
+        QByteArray name = QString(propertyName.ustring()).toLatin1();
         for (int i = 0; i < meta->enumeratorCount(); ++i) {
             QMetaEnum e = meta->enumerator(i);
             for (int j = 0; j < e.keyCount(); ++j) {
@@ -1900,7 +1900,7 @@ JSC::JSValue QMetaObjectWrapperObject::execute(JSC::ExecState *exec,
         } else {
             QString message = QString::fromLatin1("no constructor for %0")
                               .arg(QLatin1String(meta->className()));
-            return JSC::throwError(exec, JSC::TypeError, qtStringToJSCUString(message));
+            return JSC::throwError(exec, JSC::TypeError, message);
         }
     }
 }

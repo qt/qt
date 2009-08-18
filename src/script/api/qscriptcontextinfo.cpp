@@ -97,11 +97,6 @@ QT_BEGIN_NAMESPACE
     \value NativeFunction The function is a built-in Qt Script function, or it was defined through a call to QScriptEngine::newFunction().
 */
 
-namespace QScript
-{
-QString qtStringFromJSCUString(const JSC::UString &str);
-}
-
 class QScriptContextInfoPrivate
 {
     Q_DECLARE_PUBLIC(QScriptContextInfo)
@@ -187,13 +182,13 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     if (codeBlock) {
            JSC::SourceProvider *source = codeBlock->source();
            scriptId = source->asID();
-           fileName = QScript::qtStringFromJSCUString(source->url());
+           fileName = source->url();
     }
 
     // Get the others informations:
     JSC::JSObject *callee = frame->callee();
     if (callee && callee->isObject(&JSC::InternalFunction::info))
-        functionName = QScript::qtStringFromJSCUString(JSC::asInternalFunction(callee)->name(&frame->globalData()));
+        functionName = JSC::asInternalFunction(callee)->name(&frame->globalData());
     if (callee && callee->isObject(&JSC::JSFunction::info)) {
         functionType = QScriptContextInfo::ScriptFunction;
         JSC::FunctionBodyNode *body = JSC::asFunction(callee)->body();
@@ -201,7 +196,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
         functionEndLineNumber = body->lastLine();
         const JSC::Identifier* params = body->parameters();
         for (size_t i = 0; i < body->parameterCount(); ++i)
-            parameterNames.append(QScript::qtStringFromJSCUString(params[i].ustring()));
+            parameterNames.append(params[i].ustring());
         // ### get the function name from the AST
     } else if (callee && callee->isObject(&QScript::QtFunction::info)) {
         functionType = QScriptContextInfo::QtFunction;

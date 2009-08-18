@@ -98,7 +98,7 @@ static JSC::JSValue JSC_HOST_CALL variantProtoFuncValueOf(JSC::ExecState *exec, 
     case QVariant::Invalid:
         return JSC::jsUndefined();
     case QVariant::String:
-        return JSC::jsString(exec, QScript::qtStringToJSCUString(v.toString()));
+        return JSC::jsString(exec, v.toString());
 
     case QVariant::Int:
         return JSC::jsNumber(exec, v.toInt());
@@ -135,7 +135,7 @@ static JSC::JSValue JSC_HOST_CALL variantProtoFuncToString(JSC::ExecState *exec,
     JSC::UString result;
     JSC::JSValue value = variantProtoFuncValueOf(exec, callee, thisValue, args);
     if (value.isObject()) {
-        result = QScript::qtStringToJSCUString(v.toString());
+        result = v.toString();
         if (result.isEmpty()) {
             result = "QVariant(";
             result += v.typeName();

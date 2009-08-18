@@ -265,7 +265,7 @@ QString QScriptValueIterator::name() const
     Q_D(const QScriptValueIterator);
     if (!d || !d->initialized)
         return QString();
-    return QScript::qtStringFromJSCUString(*d->current);
+    return *d->current;
 }
 
 /*!

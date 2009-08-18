@@ -452,16 +452,6 @@ qsreal integerFromString(const QString &str, int radix)
     return integerFromString(ba.constData(), ba.size(), radix);
 }
 
-JSC::UString qtStringToJSCUString(const QString &str)
-{
-    return JSC::UString(reinterpret_cast<const UChar*>(str.constData()), str.length());
-}
-
-QString qtStringFromJSCUString(const JSC::UString &str)
-{
-    return QString(reinterpret_cast<const QChar*>(str.data()), str.size());
-}
-
 QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec)
 {
     return static_cast<GlobalClientData*>(exec->globalData().clientData)->engine;
@@ -501,7 +491,7 @@ JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState *exec, JSC::JSObjec
         QString message = QString::fromLatin1("Function.prototype.disconnect: %0::%1 is not a signal")
                           .arg(QLatin1String(qtSignal->metaObject()->className()))
                           .arg(QLatin1String(sig.signature()));
-        return JSC::throwError(exec, JSC::TypeError, QScript::qtStringToJSCUString(message));
+        return JSC::throwError(exec, JSC::TypeError, message);
     }
 
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
@@ -519,7 +509,7 @@ JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState *exec, JSC::JSObjec
         else {
             // ### don't go via QScriptValue
             QScriptValue tmp = engine->scriptValueFromJSCValue(arg0);
-            QString propertyName = QScript::qtStringFromJSCUString(arg1.toString(exec));
+            QString propertyName(arg1.toString(exec));
             slot = engine->scriptValueToJSCValue(tmp.property(propertyName, QScriptValue::ResolvePrototype));
         }
     }
@@ -533,7 +523,7 @@ JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState *exec, JSC::JSObjec
         QString message = QString::fromLatin1("Function.prototype.disconnect: failed to disconnect from %0::%1")
                           .arg(QLatin1String(qtSignal->metaObject()->className()))
                           .arg(QLatin1String(sig.signature()));
-        return JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message));
+        return JSC::throwError(exec, JSC::GeneralError, message);
     }
     return JSC::jsUndefined();
 #else
@@ -566,7 +556,7 @@ JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState *exec, JSC::JSObject *
         QString message = QString::fromLatin1("Function.prototype.connect: %0::%1 is not a signal")
                           .arg(QLatin1String(qtSignal->metaObject()->className()))
                           .arg(QLatin1String(sig.signature()));
-        return JSC::throwError(exec, JSC::TypeError, QScript::qtStringToJSCUString(message));
+        return JSC::throwError(exec, JSC::TypeError, message);
     }
 
     {
@@ -583,7 +573,7 @@ JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState *exec, JSC::JSObject *
             }
             message.append(QString::fromLatin1("Use e.g. object['%0'].connect() to connect to a particular overload")
                            .arg(QLatin1String(signature)));
-            return JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message));
+            return JSC::throwError(exec, JSC::GeneralError, message);
         }
     }
 
@@ -602,7 +592,7 @@ JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState *exec, JSC::JSObject *
         else {
             // ### don't go via QScriptValue
             QScriptValue tmp = engine->scriptValueFromJSCValue(arg0);
-            QString propertyName = QScript::qtStringFromJSCUString(arg1.toString(exec));
+            QString propertyName = arg1.toString(exec);
             slot = engine->scriptValueToJSCValue(tmp.property(propertyName, QScriptValue::ResolvePrototype));
         }
     }
@@ -616,7 +606,7 @@ JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState *exec, JSC::JSObject *
         QString message = QString::fromLatin1("Function.prototype.connect: failed to connect to %0::%1")
                           .arg(QLatin1String(qtSignal->metaObject()->className()))
                           .arg(QLatin1String(sig.signature()));
-        return JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(message));
+        return JSC::throwError(exec, JSC::GeneralError, message);
     }
     return JSC::jsUndefined();
 #else
@@ -637,7 +627,7 @@ JSC::JSValue JSC_HOST_CALL functionPrint(JSC::ExecState* exec, JSC::JSObject*, J
     for (unsigned i = 0; i < args.size(); ++i) {
         if (i != 0)
             result.append(QLatin1Char(' '));
-        QString s = QScript::qtStringFromJSCUString(args.at(i).toString(exec));
+        QString s(args.at(i).toString(exec));
         if (exec->hadException())
             break;
         result.append(s);
@@ -680,22 +670,22 @@ JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState *exec, JSC::JSObje
     if ((args.size() > 4) && !args.at(4).isNumber())
         return JSC::throwError(exec, JSC::GeneralError, "qsTranslate(): fifth argument (n) must be a number");
 #ifndef QT_NO_QOBJECT
-    QString context = qtStringFromJSCUString(args.at(0).toString(exec));
+    QString context(args.at(0).toString(exec));
 #endif
-    QString text = qtStringFromJSCUString(args.at(1).toString(exec));
+    QString text(args.at(1).toString(exec));
 #ifndef QT_NO_QOBJECT
     QString comment;
     if (args.size() > 2)
-        comment = qtStringFromJSCUString(args.at(2).toString(exec));
+        comment = args.at(2).toString(exec);
     QCoreApplication::Encoding encoding = QCoreApplication::CodecForTr;
     if (args.size() > 3) {
-        QString encStr = qtStringFromJSCUString(args.at(3).toString(exec));
+        QString encStr(args.at(3).toString(exec));
         if (encStr == QLatin1String("CodecForTr"))
             encoding = QCoreApplication::CodecForTr;
         else if (encStr == QLatin1String("UnicodeUTF8"))
             encoding = QCoreApplication::UnicodeUTF8;
         else
-            return JSC::throwError(exec, JSC::GeneralError, qtStringToJSCUString(QString::fromLatin1("qsTranslate(): invalid encoding '%s'").arg(encStr)));
+            return JSC::throwError(exec, JSC::GeneralError, QString::fromLatin1("qsTranslate(): invalid encoding '%s'").arg(encStr));
     }
     int n = -1;
     if (args.size() > 4)
@@ -710,7 +700,7 @@ JSC::JSValue JSC_HOST_CALL functionQsTranslate(JSC::ExecState *exec, JSC::JSObje
 #else
     result = text;
 #endif
-    return JSC::jsString(exec, qtStringToJSCUString(result));
+    return JSC::jsString(exec, result);
 }
 
 JSC::JSValue JSC_HOST_CALL functionQsTranslateNoOp(JSC::ExecState *, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
@@ -736,11 +726,11 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
 //    if (ctx->parentContext())
 //        context = QFileInfo(ctx->parentContext()->fileName()).baseName();
 #endif
-    QString text = qtStringFromJSCUString(args.at(0).toString(exec));
+    QString text(args.at(0).toString(exec));
 #ifndef QT_NO_QOBJECT
     QString comment;
     if (args.size() > 1)
-        comment = qtStringFromJSCUString(args.at(1).toString(exec));
+        comment = args.at(1).toString(exec);
     int n = -1;
     if (args.size() > 2)
         n = args.at(2).toInt32(exec);
@@ -754,7 +744,7 @@ JSC::JSValue JSC_HOST_CALL functionQsTr(JSC::ExecState *exec, JSC::JSObject*, JS
 #else
     result = text;
 #endif
-    return JSC::jsString(exec, qtStringToJSCUString(result));
+    return JSC::jsString(exec, result);
 }
 
 JSC::JSValue JSC_HOST_CALL functionQsTrNoOp(JSC::ExecState *, JSC::JSObject*, JSC::JSValue, const JSC::ArgList &args)
@@ -768,14 +758,14 @@ static JSC::JSValue JSC_HOST_CALL stringProtoFuncArg(JSC::ExecState*, JSC::JSObj
 
 JSC::JSValue JSC_HOST_CALL stringProtoFuncArg(JSC::ExecState *exec, JSC::JSObject*, JSC::JSValue thisObject, const JSC::ArgList &args)
 {
-    QString value = qtStringFromJSCUString(thisObject.toString(exec));
+    QString value(thisObject.toString(exec));
     JSC::JSValue arg = (args.size() != 0) ? args.at(0) : JSC::jsUndefined();
     QString result;
     if (arg.isString())
-        result = value.arg(qtStringFromJSCUString(arg.toString(exec)));
+        result = value.arg(arg.toString(exec));
     else if (arg.isNumber())
         result = value.arg(arg.toNumber(exec));
-    return JSC::jsString(exec, qtStringToJSCUString(result));
+    return JSC::jsString(exec, result);
 }
 
 
@@ -874,7 +864,7 @@ JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptValue &val
         if (vv->type == QScriptValuePrivate::Number) {
             vv->initFromJSCValue(JSC::jsNumber(currentFrame, vv->numberValue));
         } else { //QScriptValuePrivate::String
-            vv->initFromJSCValue(JSC::jsString(currentFrame, QScript::qtStringToJSCUString(vv->stringValue)));
+            vv->initFromJSCValue(JSC::jsString(currentFrame, vv->stringValue));
         }
     }
     return vv->jscValue;
@@ -933,7 +923,7 @@ JSC::JSValue QScriptEnginePrivate::jscValueFromVariant(const QVariant &v)
     case QScriptValuePrivate::Number:
         return JSC::jsNumber(currentFrame, p->numberValue);
     case QScriptValuePrivate::String: {
-        JSC::UString str = QScript::qtStringToJSCUString(p->stringValue);
+        JSC::UString str = p->stringValue;
         return JSC::jsString(currentFrame, str);
       }
     }
@@ -1599,11 +1589,11 @@ QScriptValue QScriptEngine::newRegExp(const QRegExp &regexp)
         pattern = ecmaPattern;
     }
 
-    JSC::UString jscPattern = QScript::qtStringToJSCUString(pattern);
+    JSC::UString jscPattern = pattern;
     QString flags;
     if (regexp.caseSensitivity() == Qt::CaseInsensitive)
         flags.append(QLatin1Char('i'));
-    JSC::UString jscFlags = QScript::qtStringToJSCUString(flags);
+    JSC::UString jscFlags = flags;
     buf[0] = JSC::jsString(exec, jscPattern);
     buf[1] = JSC::jsString(exec, jscFlags);
     JSC::JSObject* result = JSC::constructRegExp(exec, args);
@@ -1916,7 +1906,7 @@ QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &fla
     JSC::ExecState* exec = d->currentFrame;
     JSC::JSValue buf[2];
     JSC::ArgList args(buf, sizeof(buf));
-    JSC::UString jscPattern = QScript::qtStringToJSCUString(pattern);
+    JSC::UString jscPattern = pattern;
     QString strippedFlags;
     if (flags.contains(QLatin1Char('i')))
         strippedFlags += QLatin1Char('i');
@@ -1924,7 +1914,7 @@ QScriptValue QScriptEngine::newRegExp(const QString &pattern, const QString &fla
         strippedFlags += QLatin1Char('m');
     if (flags.contains(QLatin1Char('g')))
         strippedFlags += QLatin1Char('g');
-    JSC::UString jscFlags = QScript::qtStringToJSCUString(strippedFlags);
+    JSC::UString jscFlags = strippedFlags;
     buf[0] = JSC::jsString(exec, jscPattern);
     buf[1] = JSC::jsString(exec, jscFlags);
     JSC::JSObject* result = JSC::constructRegExp(exec, args);
@@ -2153,8 +2143,8 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     JSC::JSLock lock(false); // ### hmmm
     currentContext()->activationObject(); //force the creation of a context for native function;
 
-    JSC::UString jscProgram = QScript::qtStringToJSCUString(program);
-    JSC::UString jscFileName = QScript::qtStringToJSCUString(fileName);
+    JSC::UString jscProgram = program;
+    JSC::UString jscFileName = fileName;
     JSC::ExecState* exec = d->currentFrame;
     JSC::SourceCode source = JSC::makeSource(jscProgram, jscFileName, lineNumber);
 
@@ -3648,7 +3638,7 @@ QScriptString QScriptEngine::toStringHandle(const QString &str)
 {
     Q_D(QScriptEngine);
     QScriptString ss;
-    QScriptStringPrivate::init(ss, this, JSC::Identifier(d->currentFrame, QScript::qtStringToJSCUString(str)));
+    QScriptStringPrivate::init(ss, this, JSC::Identifier(d->currentFrame, str));
     return ss;
 }
 
