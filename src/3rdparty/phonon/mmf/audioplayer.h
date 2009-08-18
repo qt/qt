@@ -16,37 +16,50 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef PHONON_MMF_MEDIAOBJECT_H
-#define PHONON_MMF_MEDIAOBJECT_H
+#ifndef PHONON_MMF_AUDIOPLAYER_H
+#define PHONON_MMF_AUDIOPLAYER_H
 
-#include <Phonon/MediaSource>
-#include <Phonon/MediaObjectInterface>
-#include <QScopedPointer>
-#include <QTimer>
+#include "abstractplayer.h"
 
-// For recognizer
-#include <apgcli.h>
+class CDrmPlayerUtility;
+class TTimeIntervalMicroSeconds;
+class QTimer;
+
+#ifdef QT_PHONON_MMF_AUDIO_DRM
+#include <drmaudiosampleplayer.h>
+typedef CDrmPlayerUtility CPlayerType;
+typedef MDrmAudioPlayerCallback MPlayerObserverType;
+#else
+#include <mdaaudiosampleplayer.h>
+typedef CMdaAudioPlayerUtility CPlayerType;
+typedef MMdaAudioPlayerCallback MPlayerObserverType;
+#endif
 
 namespace Phonon
 {
     namespace MMF
     {
-        class AbstractPlayer;
         class AudioOutput;
 
         /**
+         *
+         * See
+         * <a href="http://wiki.forum.nokia.com/index.php/How_to_play_a_video_file_using_CVideoPlayerUtility">How to
+         * play a video file using CVideoPlayerUtility</a>
          */
-        class MediaObject : public QObject
-                          , public MediaObjectInterface
+        class AudioPlayer : public AbstractPlayer
+                          , public MPlayerObserverType    // typedef
+#ifdef QT_PHONON_MMF_AUDIO_DRM
+                          ,    public MAudioLoadingObserver
+#endif
         {
             Q_OBJECT
-            Q_INTERFACES(Phonon::MediaObjectInterface)
 
         public:
-            MediaObject(QObject *parent);
-            virtual ~MediaObject();
+            AudioPlayer();
+            virtual ~AudioPlayer();
 
-            // MediaObjectInterface
+            // AbstractPlayer
             virtual void play();
             virtual void pause();
             virtual void stop();
@@ -61,12 +74,34 @@ namespace Phonon
             virtual Phonon::ErrorType errorType() const;
             virtual qint64 totalTime() const;
             virtual MediaSource source() const;
-            virtual void setSource(const MediaSource &);
+            
+            // This is a temporary hack to work around KErrInUse from MMF
+			// client utility OpenFileL calls
+			//virtual void setSource(const Phonon::MediaSource &) = 0;
+			virtual void setFileSource
+				(const Phonon::MediaSource&, RFile&);
+            
             virtual void setNextSource(const MediaSource &source);
             virtual qint32 prefinishMark() const;
             virtual void setPrefinishMark(qint32);
             virtual qint32 transitionTime() const;
             virtual void setTransitionTime(qint32);
+
+#ifdef QT_PHONON_MMF_AUDIO_DRM
+            // MDrmAudioPlayerCallback
+            virtual void MdapcInitComplete(TInt aError,
+                                           const TTimeIntervalMicroSeconds &aDuration);
+            virtual void MdapcPlayComplete(TInt aError);
+
+            // MAudioLoadingObserver
+            virtual void MaloLoadingStarted();
+            virtual void MaloLoadingComplete();
+#else
+            // MMdaAudioPlayerCallback
+            virtual void MapcInitComplete(TInt aError,
+                                                       const TTimeIntervalMicroSeconds &aDuration);
+            virtual void MapcPlayComplete(TInt aError);
+#endif
 
             qreal volume() const;
             bool setVolume(qreal volume);
@@ -80,13 +115,15 @@ namespace Phonon
             void finished();
             void tick(qint64 time);
 
+        private Q_SLOTS:
+            /**
+             * Receives signal from m_tickTimer
+             */
+            void tick();
+
         private:
             static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
 
-// The following has been moved into the AbstractPlayer-derived classes
-// This needs to be cleaned up - at present, there is no way for this class
-// to enter an error state, unless it has already constructed m_player
-#if 0
             /**
              * Defined private state enumeration in order to add GroundState
              */
@@ -110,34 +147,31 @@ namespace Phonon
              * Changes state and emits stateChanged()
              */
             void changeState(PrivateState newState);
-            
-			ErrorType           m_error;
-			PrivateState        m_state;
-#endif
 
-			RApaLsSession	m_recognizer;
-			RFs			m_fileServer;
-			enum MediaType { MediaTypeUnknown, MediaTypeAudio, MediaTypeVideo };
-			MediaType mimeTypeToMediaType(const TDesC& mimeType);
-			MediaType fileMediaType(const QString& fileName);
-			// TODO: urlMediaType function
+            /**
+             * Using CPlayerType typedef in order to be able to easily switch between
+             * CMdaAudioPlayerUtility and CDrmPlayerUtility
+             */
+            CPlayerType*         m_player;
 
-			// Storing the file handle here to work around KErrInUse error
-			// from MMF player utility OpenFileL functions
-			RFile				m_file;
-			
             AudioOutput*        m_audioOutput;
+
+            ErrorType           m_error;
+
+            /**
+             * Do not set this directly - call changeState() instead.
+             */
+            PrivateState        m_state;
 
             qint32                m_tickInterval;
 
             QTimer*                m_tickTimer;
 
+            MediaSource         m_mediaSource;
+            MediaSource         m_nextSource;
+
             qreal                m_volume;
             int                    m_maxVolume;
-
-            void loadPlayer(const MediaSource &source);
-
-            QScopedPointer<AbstractPlayer> m_player;
         };
     }
 }

@@ -16,37 +16,40 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef PHONON_MMF_MEDIAOBJECT_H
-#define PHONON_MMF_MEDIAOBJECT_H
+#ifndef PHONON_MMF_VIDEOPLAYER_H
+#define PHONON_MMF_VIDEOPLAYER_H
+
+/* We use the extra qualification include/ to avoid picking up the include
+ * Phonon has. */
+#include <include/videoplayer.h>
+#include "abstractplayer.h"
 
 #include <Phonon/MediaSource>
-#include <Phonon/MediaObjectInterface>
-#include <QScopedPointer>
-#include <QTimer>
 
-// For recognizer
-#include <apgcli.h>
+class CDrmPlayerUtility;
+class TTimeIntervalMicroSeconds;
+class QTimer;
 
 namespace Phonon
 {
     namespace MMF
     {
-        class AbstractPlayer;
         class AudioOutput;
 
         /**
+         *
+         * See
+         * <a href="http://wiki.forum.nokia.com/index.php/How_to_play_a_video_file_using_CVideoPlayerUtility">How to
+         * play a video file using CVideoPlayerUtility</a>
          */
-        class MediaObject : public QObject
-                          , public MediaObjectInterface
+        class VideoPlayer : public AbstractPlayer
         {
             Q_OBJECT
-            Q_INTERFACES(Phonon::MediaObjectInterface)
-
         public:
-            MediaObject(QObject *parent);
-            virtual ~MediaObject();
+            VideoPlayer();
+            virtual ~VideoPlayer();
 
-            // MediaObjectInterface
+            // AbstractPlayer
             virtual void play();
             virtual void pause();
             virtual void stop();
@@ -61,7 +64,13 @@ namespace Phonon
             virtual Phonon::ErrorType errorType() const;
             virtual qint64 totalTime() const;
             virtual MediaSource source() const;
-            virtual void setSource(const MediaSource &);
+            
+            // This is a temporary hack to work around KErrInUse from MMF
+            // client utility OpenFileL calls
+			//virtual void setSource(const Phonon::MediaSource &);
+			virtual void setFileSource
+				(const Phonon::MediaSource&, RFile&);
+            
             virtual void setNextSource(const MediaSource &source);
             virtual qint32 prefinishMark() const;
             virtual void setPrefinishMark(qint32);
@@ -80,13 +89,15 @@ namespace Phonon
             void finished();
             void tick(qint64 time);
 
+        private Q_SLOTS:
+            /**
+             * Receives signal from m_tickTimer
+             */
+            void tick();
+
         private:
             static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
 
-// The following has been moved into the AbstractPlayer-derived classes
-// This needs to be cleaned up - at present, there is no way for this class
-// to enter an error state, unless it has already constructed m_player
-#if 0
             /**
              * Defined private state enumeration in order to add GroundState
              */
@@ -110,34 +121,31 @@ namespace Phonon
              * Changes state and emits stateChanged()
              */
             void changeState(PrivateState newState);
-            
-			ErrorType           m_error;
-			PrivateState        m_state;
-#endif
 
-			RApaLsSession	m_recognizer;
-			RFs			m_fileServer;
-			enum MediaType { MediaTypeUnknown, MediaTypeAudio, MediaTypeVideo };
-			MediaType mimeTypeToMediaType(const TDesC& mimeType);
-			MediaType fileMediaType(const QString& fileName);
-			// TODO: urlMediaType function
+            /**
+             * Using CPlayerType typedef in order to be able to easily switch between
+             * CMdaVideoPlayerUtility and CDrmPlayerUtility
+             */
+            // CPlayerType*         m_player; TODO
 
-			// Storing the file handle here to work around KErrInUse error
-			// from MMF player utility OpenFileL functions
-			RFile				m_file;
-			
             AudioOutput*        m_audioOutput;
+
+            ErrorType           m_error;
+
+            /**
+             * Do not set this directly - call changeState() instead.
+             */
+            PrivateState        m_state;
 
             qint32                m_tickInterval;
 
             QTimer*                m_tickTimer;
 
+            MediaSource         m_mediaSource;
+            MediaSource         m_nextSource;
+
             qreal                m_volume;
             int                    m_maxVolume;
-
-            void loadPlayer(const MediaSource &source);
-
-            QScopedPointer<AbstractPlayer> m_player;
         };
     }
 }
