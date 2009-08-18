@@ -80,7 +80,6 @@ SOURCES += \
         painting/qtransform.cpp \
         painting/qwindowsurface.cpp \
 
-        symbian:DEFINES += QT_RASTER_PAINTENGINE
         SOURCES +=                                      \
                 painting/qpaintengine_raster.cpp        \
                 painting/qdrawhelper.cpp                \
@@ -177,7 +176,6 @@ embedded {
 
 symbian {
         SOURCES += \
-                painting/qpaintdevice_s60.cpp \
                 painting/qregion_s60.cpp \
                 painting/qcolormap_s60.cpp
 }
