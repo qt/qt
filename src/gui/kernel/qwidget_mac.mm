@@ -730,12 +730,14 @@ static EventTypeSpec window_events[] = {
     { kEventClassWindow, kEventWindowGetRegion },
     { kEventClassWindow, kEventWindowGetClickModality },
     { kEventClassWindow, kEventWindowTransitionCompleted },
-    { kEventClassMouse, kEventMouseDown },
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
     { kEventClassGesture, kEventGestureStarted },
     { kEventClassGesture, kEventGestureEnded },
     { kEventClassGesture, kEventGestureMagnify },
     { kEventClassGesture, kEventGestureSwipe },
-    { kEventClassGesture, kEventGestureRotate }
+    { kEventClassGesture, kEventGestureRotate },
+#endif
+    { kEventClassMouse, kEventMouseDown }
 };
 static EventHandlerUPP mac_win_eventUPP = 0;
 static void cleanup_win_eventUPP()
