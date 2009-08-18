@@ -736,16 +736,28 @@ bool QTextStreamPrivate::scan(const QChar **ptr, int *length, int maxlen, TokenD
             const QChar ch = *chPtr++;
             ++totalSize;
 
-            if (delimiter == Space && ch.isSpace()) {
-                foundToken = true;
-                delimSize = 1;
-            } else if (delimiter == NotSpace && !ch.isSpace()) {
-                foundToken = true;
-                delimSize = 1;
-            } else if (delimiter == EndOfLine && ch == QLatin1Char('\n')) {
-                foundToken = true;
-                delimSize = (lastChar == QLatin1Char('\r')) ? 2 : 1;
-                consumeDelimiter = true;
+            switch (delimiter) {
+            case Space:
+                if (ch.isSpace()) {
+                    foundToken = true;
+                    delimSize = 1;
+                }
+                break;
+            case NotSpace:
+                if (!ch.isSpace()) {
+                    foundToken = true;
+                    delimSize = 1;
+                }
+                break;
+            case EndOfLine:
+                if (ch == QLatin1Char('\n')) {
+                    foundToken = true;
+                    delimSize = (lastChar == QLatin1Char('\r')) ? 2 : 1;
+                    consumeDelimiter = true;
+                }
+                break;
+            default:
+                break;
             }
 
             lastChar = ch;
@@ -769,7 +781,7 @@ bool QTextStreamPrivate::scan(const QChar **ptr, int *length, int maxlen, TokenD
 
     // if we find a '\r' at the end of the data when reading lines,
     // don't make it part of the line.
-    if (totalSize > 0 && !foundToken && delimiter == EndOfLine) {
+    if (delimiter == EndOfLine && totalSize > 0 && !foundToken) {
         if (((string && stringOffset + totalSize == string->size()) || (device && device->atEnd()))
             && lastChar == QLatin1Char('\r')) {
             consumeDelimiter = true;
