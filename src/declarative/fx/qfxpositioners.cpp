@@ -311,10 +311,10 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VerticalPositioner,QFxVerticalPo
   \brief The VerticalPositioner item lines up its children vertically.
   \inherits Item
 
-  The VerticalPositioner item arranges its child items so that they are vertically
+  The VerticalPositioner item positions its child items so that they are vertically
     aligned and not overlapping. Spacing between items can be added.
 
-  The below example lays out differently shaped rectangles using a VerticalPositioner.
+  The below example positions differently shaped rectangles using a VerticalPositioner.
   \table
   \row
   \o \image verticalpositioner_example.png
@@ -353,7 +353,7 @@ VerticalPositioner {
 */
 /*!
     \qmlproperty Transition VerticalPositioner::remove
-    This property holds the transition to apply when removing an item from the positioner.
+    This property holds the transition to apply when removing an item from the positioner. The transition is only applied to the removed items.
 
     Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the positioner, or that the object has had its opacity set to zero, and thus is no longer visible.
 
@@ -365,10 +365,8 @@ VerticalPositioner {
     \o
     \qml
 VerticalPositioner {
-    id: positioner
     remove: Transition {
         NumberAnimation {
-            target: positioner.item
             properties: "opacity"
             from: 1
             to: 0
@@ -382,7 +380,7 @@ VerticalPositioner {
 */
 /*!
     \qmlproperty Transition VerticalPositioner::add
-    This property holds the transition to be applied when adding an item to the positioner.
+    This property holds the transition to be applied when adding an item to the positioner. The transition will only be applied to the added item(s).
 
     Added can mean that either the object has been created or reparented, and thus is now a child or the positioner, or that the object has had its opacity increased from zero, and thus is now visible.
 
@@ -392,10 +390,8 @@ VerticalPositioner {
     \o
     \qml
 VerticalPositioner {
-    id: positioner
     add: Transition {
         NumberAnimation {
-            target: positioner.item
             properties: "opacity"
             from: 0
             to: 1
@@ -419,7 +415,6 @@ VerticalPositioner {
     \o
     \qml
 VerticalPositioner {
-    id: positioner
     move: Transition {
         NumberAnimation {
             properties: "y"
@@ -431,28 +426,15 @@ VerticalPositioner {
     \endtable
 */
 /*!
-    \qmlproperty Item VerticalPositioner::item
-
-    The item that is currently being laid out. Used to target transitions that apply
-    only to the item being laid out, such as in the add transition.
-
-*/
-/*!
   \qmlproperty int VerticalPositioner::spacing
-  \qmlproperty int VerticalPositioner::margin
-
-  spacing and margin allow you to control the empty space surrounding
-  items in positioners.
 
   spacing is the amount in pixels left empty between each adjacent
-  item.  margin is the amount in pixels which will be left empty
-  around the inside edge of the positioner.  Both default to 0.
+  item, and defaults to 0.
 
   The below example places a GridPositioner containing a red, a blue and a
   green rectangle on a gray background. The area the grid positioner
-  occupies is colored white. The top positioner has a spacing of 2 and a
-  margin of 5, the bottom positioner has the defaults of no margin or
-  spacing.
+  occupies is colored white. The top positioner has the default of no spacing,
+  and the bottom positioner has its spacing set to 2.
 
   \image spacing_a.png
   \image spacing_b.png
@@ -511,7 +493,14 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,HorizontalPositioner,QFxHorizont
   \brief The HorizontalPositioner item lines up its children horizontally.
   \inherits Item
 
-  The HorizontalPositioner item arranges its child items so that they are horizontally aligned and not overlapping. Spacing can be added between the items, and a margin around all items can also be added. It also provides for transitions to be set when items are added, moved, or removed in the positioner. Adding and removing apply both to items which are deleted or have their position in the document changed so as to no longer be children of the positioner, as well as to items which have their opacity set to or from zero so as to appear or disappear.
+  The HorizontalPositioner item positions its child items so that they are
+  horizontally aligned and not overlapping. Spacing can be added between the
+  items, and a margin around all items can also be added. It also provides for
+  transitions to be set when items are added, moved, or removed in the
+  positioner. Adding and removing apply both to items which are deleted or have
+  their position in the document changed so as to no longer be children of the
+  positioner, as well as to items which have their opacity set to or from zero
+  so as to appear or disappear.
 
   The below example lays out differently shaped rectangles using a HorizontalPositioner.
   \qml
@@ -528,6 +517,7 @@ HorizontalPositioner {
 /*!
     \qmlproperty Transition HorizontalPositioner::remove
     This property holds the transition to apply when removing an item from the positioner.
+    The transition will only be applied to the removed item(s).
 
     Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the positioner, or that the object has had its opacity set to zero, and thus is no longer visible.
 
@@ -535,10 +525,8 @@ HorizontalPositioner {
 
     \qml
 HorizontalPositioner {
-    id: positioner
     remove: Transition {
         NumberAnimation {
-            target: positioner.item
             properties: "opacity"
             from: 1
             to: 0
@@ -552,15 +540,14 @@ HorizontalPositioner {
 /*!
     \qmlproperty Transition HorizontalPositioner::add
     This property holds the transition to apply when adding an item to the positioner.
+    The transition will only be applied to the added item(s).
 
     Added can mean that either the object has been created or reparented, and thus is now a child or the positioner, or that the object has had its opacity increased from zero, and thus is now visible.
 
     \qml
 HorizontalPositioner {
-    id: positioner
     add: Transition {
         NumberAnimation {
-            target: positioner.item
             properties: "opacity"
             from: 0
             to: 1
@@ -591,33 +578,15 @@ HorizontalPositioner {
 
 */
 /*!
-    \qmlproperty Item HorizontalPositioner::item
-
-    The item that is currently being laid out. Used to target transitions that apply
-    only to the item being laid out, such as in the add transition.
-
-*/
-/*!
   \qmlproperty int HorizontalPositioner::spacing
 
-  The spacing, in pixels, left empty between each adjacent item.
-*/
-/*!
-  \qmlproperty int HorizontalPositioner::margin
+  spacing is the amount in pixels left empty between each adjacent
+  item, and defaults to 0.
 
-  The margin size, in pixels, which will be left empty around the inside edge of the positioner.
-*/
-/*!
-  \qmlproperty int HorizontalPositioner::spacing
-  \qmlproperty int HorizontalPositioner::margin
-
-  spacing and margin allow you to control the empty space surrounding items in positioners.
-
-  spacing is the amount in pixels left empty between each adjacent item.
-  margin is the amount in pixels which will be left empty around the inside edge of the positioner.
-  Both default to 0.
-
-  The below example places a GridPositioner containing a red, a blue and a green rectangle on a gray background. The area the grid positioner occupies is colored white. The top positioner has a spacing of 2 and a margin of 5, the bottom positioner has the defaults of no margin or spacing.
+  The below example places a GridPositioner containing a red, a blue and a
+  green rectangle on a gray background. The area the grid positioner
+  occupies is colored white. The top positioner has the default of no spacing,
+  and the bottom positioner has its spacing set to 2.
 
   \image spacing_a.png
   \image spacing_b.png
@@ -676,10 +645,9 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GridPositioner,QFxGridPositioner
   \brief The GridPositioner item positions its children in a grid.
   \inherits Item
 
-  The GridPositioner item arranges its child items so that they are
+  The GridPositioner item positions its child items so that they are
   aligned in a grid and are not overlapping. Spacing can be added
-  between the items, and a margin around all the items can also be
-  defined. It also provides for transitions to be set when items are
+  between the items. It also provides for transitions to be set when items are
   added, moved, or removed in the positioner. Adding and removing apply
   both to items which are deleted or have their position in the
   document changed so as to no longer be children of the positioner, as
@@ -715,6 +683,7 @@ GridPositioner {
 /*!
     \qmlproperty Transition GridPositioner::remove
     This property holds the transition to apply when removing an item from the positioner.
+    The transition is only applied to the removed item(s).
 
     Removed can mean that either the object has been deleted or
     reparented, and thus is now longer a child of the positioner, or that
@@ -727,10 +696,8 @@ GridPositioner {
 
     \qml
 GridPositioner {
-    id: positioner
     remove: Transition {
         NumberAnimation {
-            target: positioner.item
             properties: "opacity"
             from: 1
             to: 0
@@ -744,6 +711,7 @@ GridPositioner {
 /*!
     \qmlproperty Transition GridPositioner::add
     This property holds the transition to apply when adding an item to the positioner.
+    The transition is only applied to the added item(s).
 
     Added can mean that either the object has been created or
     reparented, and thus is now a child or the positioner, or that the
@@ -752,10 +720,8 @@ GridPositioner {
 
     \qml
 GridPositioner {
-    id: positioner
     add: Transition {
         NumberAnimation {
-            target: positioner.item
             properties: "opacity"
             from: 0
             to: 1
@@ -775,7 +741,6 @@ GridPositioner {
 
     \qml
 GridPositioner {
-    id: positioner
     move: Transition {
         NumberAnimation {
             properties: "x,y"
@@ -787,29 +752,15 @@ GridPositioner {
 
 */
 /*!
-    \qmlproperty Item GridPositioner::item
-
-    The item that is currently being laid out. Used to target
-    transitions that apply only to the item being laid out, such as in
-    the add transition.
-
-*/
-/*!
   \qmlproperty int GridPositioner::spacing
-  \qmlproperty int GridPositioner::margin
-
-  spacing and margin allow you to control the empty space surrounding
-  items in positioners.
 
   spacing is the amount in pixels left empty between each adjacent
-  item.  margin is the amount in pixels which will be left empty
-  around the inside edge of the positioner.  Both default to 0.
+  item, and defaults to 0.
 
   The below example places a GridPositioner containing a red, a blue and a
   green rectangle on a gray background. The area the grid positioner
-  occupies is colored white. The top positioner has a spacing of 2 and a
-  margin of 5, the bottom positioner has the defaults of no margin or
-  spacing.
+  occupies is colored white. The top positioner has the default of no spacing,
+  and the bottom positioner has its spacing set to 2.
 
   \image spacing_a.png
   \image spacing_b.png
@@ -853,7 +804,7 @@ void QFxGridPositioner::doPositioning()
     int numVisible = items()->size() + newItems()->size();
     if (_columns==-1 && _rows==-1){
         c = 4;
-        r = (numVisible+2)/3;
+        r = (numVisible+3)/4;
     }else if (_rows==-1){
         r = (numVisible+(_columns-1))/_columns;
     }else if (_columns==-1){
