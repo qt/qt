@@ -26,7 +26,7 @@ Rect {
         Component {
             id: feedDelegate
             Item {
-                height: contents.height + 20
+                height: childrenRect.height + 20
                 Text {
                     x: 10
                     id: TitleText

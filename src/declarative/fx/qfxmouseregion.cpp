@@ -272,7 +272,10 @@ bool QFxMouseRegion::isEnabled() const
 void QFxMouseRegion::setEnabled(bool a)
 {
     Q_D(QFxMouseRegion);
-    d->absorb = a;
+    if (a != d->absorb) {
+        d->absorb = a;
+        emit enabledChanged();
+    }
 }
 
 void QFxMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -449,9 +452,9 @@ void QFxMouseRegion::timerEvent(QTimerEvent *event)
 
     \warning This property is only partially implemented -- it is only valid when the mouse is pressed, and not for hover events.
 */
-bool QFxMouseRegion::hovered()
+bool QFxMouseRegion::hovered() const
 {
-    Q_D(QFxMouseRegion);
+    Q_D(const QFxMouseRegion);
     return d->hovered;
 }
 
@@ -459,9 +462,9 @@ bool QFxMouseRegion::hovered()
     \qmlproperty bool MouseRegion::pressed
     This property holds whether the mouse region is currently pressed.
 */
-bool QFxMouseRegion::pressed()
+bool QFxMouseRegion::pressed() const
 {
-    Q_D(QFxMouseRegion);
+    Q_D(const QFxMouseRegion);
     return d->pressed;
 }
 
@@ -472,6 +475,39 @@ void QFxMouseRegion::setHovered(bool h)
         d->hovered = h;
         emit hoveredChanged();
         d->hovered ? emit entered() : emit exited();
+    }
+}
+
+/*!
+    \qmlproperty Qt::MouseButtons MouseRegion::acceptedButtons
+    This property holds the mouse buttons that the mouse region reacts to.
+
+    The available buttons are:
+    \list
+    \o Qt.LeftButton
+    \o Qt.RightButton
+    \o Qt.MiddleButton
+    \endlist
+
+    To accept more than one button the flags can be combined with the
+    "|" (or) operator:
+
+    \code
+    MouseRegion { acceptedButtons: Qt.LeftButton | Qt.RightButton }
+    \endcode
+
+    The default is to accept the Left button.
+*/
+Qt::MouseButtons QFxMouseRegion::acceptedButtons() const
+{
+    return acceptedMouseButtons();
+}
+
+void QFxMouseRegion::setAcceptedButtons(Qt::MouseButtons buttons)
+{
+    if (buttons != acceptedMouseButtons()) {
+        setAcceptedMouseButtons(buttons);
+        emit acceptedButtonsChanged();
     }
 }
 

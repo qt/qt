@@ -44,6 +44,7 @@ Rect {
         height: View.height-12
         anchors.right: View.right
     }
+           /*
     ScrollBar {
         id: SBH
         opacity: 0
@@ -54,4 +55,5 @@ Rect {
         width: View.width-12
         anchors.bottom: View.bottom
     }
+    */
 }

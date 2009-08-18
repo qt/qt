@@ -250,77 +250,75 @@ void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
     if (d->smooth)
         p->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform, d->smooth);
 
-    QPixmap pix = d->pix;
-
-    if (width() != pix.width() || height() != pix.height()) {
+    if (width() != d->pix.width() || height() != d->pix.height()) {
         if (d->fillMode >= Tile) {
             p->save();
             p->setClipRect(0, 0, width(), height(), Qt::IntersectClip);
 
             if (d->fillMode == Tile) {
-                const int pw = pix.width();
-                const int ph = pix.height();
+                const int pw = d->pix.width();
+                const int ph = d->pix.height();
                 int yy = 0;
 
                 while(yy < height()) {
                     int xx = 0;
                     while(xx < width()) {
-                        p->drawPixmap(xx, yy, pix);
+                        p->drawPixmap(xx, yy, d->pix);
                         xx += pw;
                     }
                     yy += ph;
                 }
             } else if (d->fillMode == TileVertically) {
-                const int ph = pix.height();
+                const int ph = d->pix.height();
                 int yy = 0;
 
                 while(yy < height()) {
-                    p->drawPixmap(QRect(0, yy, width(), ph), pix);
+                    p->drawPixmap(QRect(0, yy, width(), ph), d->pix);
                     yy += ph;
                 }
             } else {
-                const int pw = pix.width();
+                const int pw = d->pix.width();
                 int xx = 0;
 
                 while(xx < width()) {
-                    p->drawPixmap(QRect(xx, 0, pw, height()), pix);
+                    p->drawPixmap(QRect(xx, 0, pw, height()), d->pix);
                     xx += pw;
                 }
             }
 
             p->restore();
         } else {
-            qreal widthScale = width() / qreal(pix.width());
-            qreal heightScale = height() / qreal(pix.height());
+            qreal widthScale = width() / qreal(d->pix.width());
+            qreal heightScale = height() / qreal(d->pix.height());
 
             QTransform scale;
 
             if (d->fillMode == PreserveAspectFit) {
                 if (widthScale < heightScale) {
                     heightScale = widthScale;
-                    scale.translate(0, (height() - heightScale * pix.height()) / 2);
+                    scale.translate(0, (height() - heightScale * d->pix.height()) / 2);
                 } else if(heightScale < widthScale) {
                     widthScale = heightScale;
-                    scale.translate((width() - widthScale * pix.width()) / 2, 0);
+                    scale.translate((width() - widthScale * d->pix.width()) / 2, 0);
                 }
             } else if (d->fillMode == PreserveAspectCrop) {
                 if (widthScale < heightScale) {
                     widthScale = heightScale;
-                    scale.translate((width() - widthScale * pix.width()) / 2, 0);
+                    scale.translate((width() - widthScale * d->pix.width()) / 2, 0);
                 } else if(heightScale < widthScale) {
                     heightScale = widthScale;
-                    scale.translate(0, (height() - heightScale * pix.height()) / 2);
+                    scale.translate(0, (height() - heightScale * d->pix.height()) / 2);
                 }
             }
 
             scale.scale(widthScale, heightScale);
             QTransform old = p->transform();
             p->setWorldTransform(scale * old);
-            p->drawPixmap(0, 0, pix);
+            p->drawPixmap(0, 0, d->pix);
             p->setWorldTransform(old);
         }
     } else {
-        p->drawPixmap(0, 0, pix);
+        p->drawPixmap(0, 0, d->pix);
     }
 
     if (d->smooth) {
