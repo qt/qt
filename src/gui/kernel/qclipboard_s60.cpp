@@ -205,7 +205,6 @@ const QMimeData* QClipboard::mimeData(Mode mode) const
     QClipboardData *d = clipboardData();
     if (d)
     {
-        //###fixme when exceptions are added to Qt
         TRAPD(err,{
             RFs fs = d->fsSession();
             CClipboard* cb = CClipboard::NewForReadingLC(fs);
@@ -232,7 +231,6 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
     QClipboardData *d = clipboardData();
     if (d)
     {
-        //###fixme when exceptions are added to Qt
         TRAPD(err,{
             RFs fs = d->fsSession();
             CClipboard* cb = CClipboard::NewForWritingLC(fs);
