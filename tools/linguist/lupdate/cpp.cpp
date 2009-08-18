@@ -1174,16 +1174,18 @@ bool CppParser::match(uint t)
 
 bool CppParser::matchString(QString *s)
 {
-    bool matches = (yyTok == Tok_String);
+    bool matches = false;
     s->clear();
-    while (yyTok == Tok_String) {
+    forever {
+        while (yyTok == Tok_Comment)
+            yyTok = getToken();
+        if (yyTok != Tok_String)
+            return matches;
+        matches = true;
         *s += yyWord;
         s->detach();
-        do {
-            yyTok = getToken();
-        } while (yyTok == Tok_Comment);
+        yyTok = getToken();
     }
-    return matches;
 }
 
 bool CppParser::matchEncoding(bool *utf8)
