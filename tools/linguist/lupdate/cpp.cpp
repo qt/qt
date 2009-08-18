@@ -167,7 +167,6 @@ private:
     bool match(uint t);
     bool matchString(QString *s);
     bool matchEncoding(bool *utf8);
-    bool matchInteger(qlonglong *number);
     bool matchStringOrNull(QString *s);
     bool matchExpression();
 
@@ -202,7 +201,7 @@ private:
         Tok_Ident, Tok_Comment, Tok_String, Tok_Arrow, Tok_Colon, Tok_ColonColon,
         Tok_Equals,
         Tok_LeftBrace = 30, Tok_RightBrace, Tok_LeftParen, Tok_RightParen, Tok_Comma, Tok_Semicolon,
-        Tok_Integer = 40,
+        Tok_Null = 40, Tok_Integer,
         Tok_QuotedInclude = 50, Tok_AngledInclude,
         Tok_Other = 99
     };
@@ -796,6 +795,17 @@ uint CppParser::getToken()
                 yyCh = getChar();
                 return Tok_Semicolon;
             case '0':
+                yyCh = getChar();
+                if (yyCh == 'x') {
+                    do {
+                        yyCh = getChar();
+                    } while ((yyCh >= '0' && yyCh <= '9')
+                             || (yyCh >= 'a' && yyCh <= 'f') || (yyCh >= 'A' && yyCh <= 'F'));
+                    return Tok_Integer;
+                }
+                if (yyCh < '0' || yyCh > '9')
+                    return Tok_Null;
+                // Fallthrough
             case '1':
             case '2':
             case '3':
@@ -805,25 +815,10 @@ uint CppParser::getToken()
             case '7':
             case '8':
             case '9':
-                {
-                    QByteArray ba;
-                    ba += yyCh;
+                do {
                     yyCh = getChar();
-                    bool hex = yyCh == 'x';
-                    if (hex) {
-                        ba += yyCh;
-                        yyCh = getChar();
-                    }
-                    while (hex ? isxdigit(yyCh) : isdigit(yyCh)) {
-                        ba += yyCh;
-                        yyCh = getChar();
-                    }
-                    bool ok;
-                    yyInteger = ba.toLongLong(&ok);
-                    if (ok)
-                        return Tok_Integer;
-                    break;
-                }
+                } while (yyCh >= '0' && yyCh <= '9');
+                return Tok_Integer;
             default:
                 yyCh = getChar();
                 break;
@@ -1211,28 +1206,14 @@ bool CppParser::matchEncoding(bool *utf8)
     if (yyWord == strDefaultCodec || yyWord == strCodecForTr) {
         *utf8 = false;
         yyTok = getToken();
-    return true;
+        return true;
     }
     return false;
 }
 
-bool CppParser::matchInteger(qlonglong *number)
-{
-    bool matches = (yyTok == Tok_Integer);
-    if (matches) {
-        yyTok = getToken();
-        *number = yyInteger;
-    }
-    return matches;
-}
-
 bool CppParser::matchStringOrNull(QString *s)
 {
-    bool matches = matchString(s);
-    qlonglong num = 0;
-    if (!matches)
-        matches = matchInteger(&num);
-    return matches && num == 0;
+    return matchString(s) || match(Tok_Null);
 }
 
 /*
@@ -1251,7 +1232,7 @@ bool CppParser::matchStringOrNull(QString *s)
  */
 bool CppParser::matchExpression()
 {
-    if (match(Tok_Integer))
+    if (match(Tok_Null) || match(Tok_Integer))
         return true;
 
     int parenlevel = 0;
