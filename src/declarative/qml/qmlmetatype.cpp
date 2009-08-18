@@ -190,6 +190,21 @@ QmlType::~QmlType()
     delete d;
 }
 
+int QmlType::majorVersion() const
+{
+    return d->m_version_maj;
+}
+
+int QmlType::minMinorVersion() const
+{
+    return d->m_version_min_from;
+}
+
+int QmlType::maxMinorVersion() const
+{
+    return d->m_version_min_to;
+}
+
 bool QmlType::availableInVersion(int vmajor, int vminor) const
 {
     return vmajor == d->m_version_maj && vminor >= d->m_version_min_from && vminor <= d->m_version_min_to;
@@ -877,6 +892,14 @@ QList<QByteArray> QmlMetaType::qmlTypeNames()
     QmlMetaTypeData *data = metaTypeData();
 
     return data->nameToType.keys();
+}
+
+QList<QmlType*> QmlMetaType::qmlTypes()
+{
+    QReadLocker lock(metaTypeDataLock());
+    QmlMetaTypeData *data = metaTypeData();
+
+    return data->nameToType.values();
 }
 
 /*!
