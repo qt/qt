@@ -69,6 +69,32 @@ QT_BEGIN_NAMESPACE
 class QNetworkReply;
 class QFxKeysAttached;
 
+//### merge into private?
+class QFxContents : public QObject
+{
+    Q_OBJECT
+public:
+    QFxContents();
+
+    QRectF rectF() const;
+
+    void setItem(QFxItem *item);
+
+public Q_SLOTS:
+    void calcHeight();
+    void calcWidth();
+
+Q_SIGNALS:
+    void rectChanged();
+
+private:
+    QFxItem *m_item;
+    qreal m_x;
+    qreal m_y;
+    qreal m_width;
+    qreal m_height;
+};
+
 class QFxItemPrivate : public QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxItem)
@@ -200,4 +226,5 @@ public:
 };
 
 QT_END_NAMESPACE
+
 #endif // QFXITEM_P_H

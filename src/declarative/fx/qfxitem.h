@@ -57,37 +57,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QGraphicsTransform;
-
-class QFxItem;
-class Q_DECLARATIVE_EXPORT QFxContents : public QObject
-{
-    Q_OBJECT
-    Q_PROPERTY(qreal height READ height NOTIFY heightChanged)
-    Q_PROPERTY(qreal width READ width NOTIFY widthChanged)
-public:
-    QFxContents();
-
-    qreal height() const;
-
-    qreal width() const;
-
-    void setItem(QFxItem *item);
-
-public Q_SLOTS:
-    void calcHeight();
-    void calcWidth();
-
-Q_SIGNALS:
-    void heightChanged();
-    void widthChanged();
-
-private:
-    QFxItem *m_item;
-    qreal m_height;
-    qreal m_width;
-};
-
 class QmlState;
 class QFxAnchorLine;
 class QmlTransition;
@@ -109,7 +78,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(QString state READ state WRITE setState NOTIFY stateChanged)
     Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged FINAL)
     Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged FINAL)
-    Q_PROPERTY(QFxContents * contents READ contents DESIGNABLE false CONSTANT FINAL)
+    Q_PROPERTY(QRectF childrenRect READ childrenRect NOTIFY childrenRectChanged DESIGNABLE false FINAL)
     Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine left READ left CONSTANT FINAL)
     Q_PROPERTY(QFxAnchorLine right READ right CONSTANT FINAL)
@@ -147,7 +116,7 @@ public:
     QmlList<QObject *> *resources();
 
     QFxAnchors *anchors();
-    QFxContents *contents();
+    QRectF childrenRect();
 
     bool clip() const;
     void setClip(bool);
@@ -190,6 +159,7 @@ Q_SIGNALS:
     void yChanged();
     void widthChanged();
     void heightChanged();
+    void childrenRectChanged();
     void baselineOffsetChanged();
     void stateChanged(const QString &);
     void focusChanged();
@@ -251,7 +221,6 @@ QDebug Q_DECLARATIVE_EXPORT operator<<(QDebug debug, QFxItem *item);
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxContents)
 QML_DECLARE_TYPE(QFxItem)
 QML_DECLARE_TYPE(QGraphicsTransform)
 QML_DECLARE_TYPE(QGraphicsScale)
