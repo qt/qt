@@ -245,7 +245,7 @@ JSC::JSObject* ClassObjectDelegate::construct(JSC::ExecState *exec, JSC::JSObjec
     QScriptClass *scriptClass = static_cast<ClassObjectDelegate*>(delegate)->scriptClass();
 
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
-    JSC::ExecState *oldFrame = eng_p->currentFrame;
+    //JSC::ExecState *oldFrame = eng_p->currentFrame;
     eng_p->pushContext(exec, JSC::JSValue(), args, callee, true);
     QScriptContext *ctx = eng_p->contextForFrame(eng_p->currentFrame);
 
