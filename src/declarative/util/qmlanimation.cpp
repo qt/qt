@@ -823,35 +823,10 @@ void QmlRunScriptAction::setScript(const QString &script)
     emit scriptChanged(script);
 }
 
-/*!
-    \qmlproperty QString RunScript::script
-    This property holds the file containing the script to run.
-*/
-QString QmlRunScriptAction::file() const
-{
-    Q_D(const QmlRunScriptAction);
-    return d->file;
-}
-
-void QmlRunScriptAction::setFile(const QString &file)
-{
-    Q_D(QmlRunScriptAction);
-    if (file == d->file)
-        return;
-    d->file = file;
-    emit fileChanged(file);
-}
-
 void QmlRunScriptActionPrivate::execute()
 {
     Q_Q(QmlRunScriptAction);
     QString scriptStr = script;
-    if (!file.isEmpty()){
-        QFile scriptFile(file);
-        if (scriptFile.open(QIODevice::ReadOnly | QIODevice::Text)){
-            scriptStr = QString::fromUtf8(scriptFile.readAll());
-        }
-    }
 
     if (!scriptStr.isEmpty()) {
         QmlExpression expr(qmlContext(q), scriptStr, q);
@@ -932,20 +907,20 @@ void QmlSetPropertyAction::setProperties(const QString &p)
 }
 
 /*!
-    \qmlproperty list<Item> SetPropertyAction::filter
+    \qmlproperty list<Item> SetPropertyAction::targets
     This property holds the items selected to be affected by this animation (all if not set).
     \sa exclude
 */
-QList<QObject *> *QmlSetPropertyAction::filter()
+QList<QObject *> *QmlSetPropertyAction::targets()
 {
     Q_D(QmlSetPropertyAction);
-    return &d->filter;
+    return &d->targets;
 }
 
 /*!
     \qmlproperty list<Item> SetPropertyAction::exclude
     This property holds the items not to be affected by this animation.
-    \sa filter
+    \sa targets
 */
 QList<QObject *> *QmlSetPropertyAction::exclude()
 {
@@ -1040,7 +1015,7 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
         QString sPropertyName = action.specifiedProperty;
         bool same = (obj == sObj);
 
-        if ((d->filter.isEmpty() || d->filter.contains(obj) || (!same && d->filter.contains(sObj))) &&
+        if ((d->targets.isEmpty() || d->targets.contains(obj) || (!same && d->targets.contains(sObj))) &&
            (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
            (props.contains(propertyName) || (!same && props.contains(sPropertyName))) &&
            (!target() || target() == obj || (!same && target() == sObj))) {
@@ -1692,20 +1667,20 @@ void QmlPropertyAnimation::setProperties(const QString &prop)
 }
 
 /*!
-    \qmlproperty list<Item> PropertyAnimation::filter
+    \qmlproperty list<Item> PropertyAnimation::targets
     This property holds the items selected to be affected by this animation (all if not set).
     \sa exclude
 */
-QList<QObject *> *QmlPropertyAnimation::filter()
+QList<QObject *> *QmlPropertyAnimation::targets()
 {
     Q_D(QmlPropertyAnimation);
-    return &d->filter;
+    return &d->targets;
 }
 
 /*!
     \qmlproperty list<Item> PropertyAnimation::exclude
     This property holds the items not to be affected by this animation.
-    \sa filter
+    \sa targets
 */
 QList<QObject *> *QmlPropertyAnimation::exclude()
 {
@@ -1836,7 +1811,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
         QString sPropertyName = action.specifiedProperty;
         bool same = (obj == sObj);
 
-        if ((d->filter.isEmpty() || d->filter.contains(obj) || (!same && d->filter.contains(sObj))) &&
+        if ((d->targets.isEmpty() || d->targets.contains(obj) || (!same && d->targets.contains(sObj))) &&
            (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
            (props.contains(propertyName) || (!same && props.contains(sPropertyName))
                || (useType && action.property.propertyType() == d->interpolatorType)) &&
