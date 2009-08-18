@@ -15,11 +15,11 @@ Rect {
             GradientStop { position: 0.0; color: "steelblue" }
             GradientStop { position: 1.0; color: "lightsteelblue" }
         }
-        radius: 8; opacity: 0.7
+        radius: 8; opacity: 0.7; smooth: true
         Rect {
             id: Slider
             x: 2; y: 2; width: 30; height: 12
-            radius: 6
+            radius: 6; smooth: true
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "lightgray" }
                 GradientStop { position: 1.0; color: "gray" }

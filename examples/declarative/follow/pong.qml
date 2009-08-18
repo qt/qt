@@ -58,12 +58,12 @@ Rect {
     }
 
     // The rest, to make it look realistic, if neither ever scores...
-    Rect { color: "#00ee00"; x: 320-80; y: 0; width: 40; height: 60 }
-    Rect { color: "#000000"; x: 320-70; y: 10; width: 20; height: 40 }
-    Rect { color: "#00ee00"; x: 320+40; y: 0; width: 40; height: 60 }
-    Rect { color: "#000000"; x: 320+50; y: 10; width: 20; height: 40 }
+    Rect { color: "#00ee00"; x: Page.width/2-80; y: 0; width: 40; height: 60 }
+    Rect { color: "#000000"; x: Page.width/2-70; y: 10; width: 20; height: 40 }
+    Rect { color: "#00ee00"; x: Page.width/2+40; y: 0; width: 40; height: 60 }
+    Rect { color: "#000000"; x: Page.width/2+50; y: 10; width: 20; height: 40 }
     Repeater {
-        dataSource: 24
-        Rect { color: "#00ee00"; x: 320-5; y: index*20; width: 10; height: 10 }
+        dataSource: Page.height/20
+        Rect { color: "#00ee00"; x: Page.width/2-5; y: index*20; width: 10; height: 10 }
     }
 }
