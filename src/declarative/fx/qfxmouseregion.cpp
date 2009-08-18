@@ -79,12 +79,6 @@ void QFxDrag::setAxis(const QString &a)
     _axis = a;
 }
 
-/*!
-    \property QFxDrag::xmin
-    \brief the minimum x position for the target
-
-    If x-axis dragging is enabled, xmin limits how far to the left the target can be dragged. If x-axis dragging is not enabled, this property has no effect.
-*/
 qreal QFxDrag::xmin() const
 {
     return _xmin;
@@ -95,12 +89,6 @@ void QFxDrag::setXmin(qreal m)
     _xmin = m;
 }
 
-/*!
-    \property QFxDrag::xmax
-    \brief the maximum x position for the target
-
-    If x-axis dragging is enabled, xmax limits how far to the right the target can be dragged. If x-axis dragging is not enabled, this property has no effect.
-*/
 qreal QFxDrag::xmax() const
 {
     return _xmax;
@@ -111,12 +99,6 @@ void QFxDrag::setXmax(qreal m)
     _xmax = m;
 }
 
-/*!
-    \property QFxDrag::ymin
-    \brief the minimum y position for the target
-
-    If y-axis dragging is enabled, ymin limits how far up the target can be dragged. If y-axis dragging is not enabled, this property has no effect.
-*/
 qreal QFxDrag::ymin() const
 {
     return _ymin;
@@ -127,12 +109,6 @@ void QFxDrag::setYmin(qreal m)
     _ymin = m;
 }
 
-/*!
-    \property QFxDrag::ymax
-    \brief the maximum y position for the target
-
-    If y-axis dragging is enabled, ymax limits how far down the target can be dragged. If y-axis dragging is not enabled, this property has no effect.
-*/
 qreal QFxDrag::ymax() const
 {
     return _ymax;
@@ -296,7 +272,10 @@ bool QFxMouseRegion::isEnabled() const
 void QFxMouseRegion::setEnabled(bool a)
 {
     Q_D(QFxMouseRegion);
-    d->absorb = a;
+    if (a != d->absorb) {
+        d->absorb = a;
+        emit enabledChanged();
+    }
 }
 
 void QFxMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -473,9 +452,9 @@ void QFxMouseRegion::timerEvent(QTimerEvent *event)
 
     \warning This property is only partially implemented -- it is only valid when the mouse is pressed, and not for hover events.
 */
-bool QFxMouseRegion::hovered()
+bool QFxMouseRegion::hovered() const
 {
-    Q_D(QFxMouseRegion);
+    Q_D(const QFxMouseRegion);
     return d->hovered;
 }
 
@@ -483,9 +462,9 @@ bool QFxMouseRegion::hovered()
     \qmlproperty bool MouseRegion::pressed
     This property holds whether the mouse region is currently pressed.
 */
-bool QFxMouseRegion::pressed()
+bool QFxMouseRegion::pressed() const
 {
-    Q_D(QFxMouseRegion);
+    Q_D(const QFxMouseRegion);
     return d->pressed;
 }
 
@@ -496,6 +475,39 @@ void QFxMouseRegion::setHovered(bool h)
         d->hovered = h;
         emit hoveredChanged();
         d->hovered ? emit entered() : emit exited();
+    }
+}
+
+/*!
+    \qmlproperty Qt::MouseButtons MouseRegion::acceptedButtons
+    This property holds the mouse buttons that the mouse region reacts to.
+
+    The available buttons are:
+    \list
+    \o Qt.LeftButton
+    \o Qt.RightButton
+    \o Qt.MiddleButton
+    \endlist
+
+    To accept more than one button the flags can be combined with the
+    "|" (or) operator:
+
+    \code
+    MouseRegion { acceptedButtons: Qt.LeftButton | Qt.RightButton }
+    \endcode
+
+    The default is to accept the Left button.
+*/
+Qt::MouseButtons QFxMouseRegion::acceptedButtons() const
+{
+    return acceptedMouseButtons();
+}
+
+void QFxMouseRegion::setAcceptedButtons(Qt::MouseButtons buttons)
+{
+    if (buttons != acceptedMouseButtons()) {
+        setAcceptedMouseButtons(buttons);
+        emit acceptedButtonsChanged();
     }
 }
 
@@ -520,10 +532,6 @@ void QFxMouseRegion::setPressed(bool p)
     }
 }
 
-/*!
-    \property QFxMouseRegion::drag
-    \brief The current drag being performed on the Mouse Region.
-*/
 QFxDrag *QFxMouseRegion::drag()
 {
     Q_D(QFxMouseRegion);

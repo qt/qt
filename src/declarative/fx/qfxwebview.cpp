@@ -165,8 +165,8 @@ public:
     public:
         WindowObjectList(QFxWebViewPrivate *p)
             : priv(p) {}
-        virtual void append(QObject *v) { 
-            QmlConcreteList<QObject *>::append(v); 
+        virtual void append(QObject *v) {
+            QmlConcreteList<QObject *>::append(v);
             priv->updateWindowObjects();
         }
     private:
@@ -279,10 +279,6 @@ void QFxWebView::componentComplete()
     \qmlproperty real WebView::progress
     This property holds the progress of loading the current URL, from 0 to 1.
 */
-/*!
-    \property QFxWebView::progress
-    \brief the progress of loading the current URL, from 0 to 1.
-*/
 qreal QFxWebView::progress() const
 {
     Q_D(const QFxWebView);
@@ -320,18 +316,6 @@ void QFxWebView::doLoadFinished(bool ok)
     before the change is notified, as this only happens when
     loading of the URL successfully starts.
 */
-/*!
-    \property QFxWebView::url
-    \brief the URL to the page displayed in this item.
-
-    \sa urlChanged()
-*/
-/*!
-    \fn void QFxWebView::urlChanged()
-
-    Emitted when loading of the URL successfully starts after
-    setUrl() is called.
-*/
 QUrl QFxWebView::url() const
 {
     return page()->mainFrame()->url();
@@ -363,10 +347,6 @@ void QFxWebView::setUrl(const QUrl &url)
     \qmlproperty int WebView::idealWidth
     This property holds the ideal width for displaying the current URL.
 */
-/*!
-    \property QFxWebView::idealWidth
-    \brief the ideal width for displaying the current URL.
-*/
 int QFxWebView::idealWidth() const
 {
     Q_D(const QFxWebView);
@@ -386,10 +366,6 @@ void QFxWebView::setIdealWidth(int iw)
     \qmlproperty int WebView::idealHeight
     This property holds the ideal height for displaying the current URL.
 */
-/*!
-    \property QFxWebView::idealHeight
-    \brief the ideal height for displaying the current URL.
-*/
 int QFxWebView::idealHeight() const
 {
     Q_D(const QFxWebView);
@@ -408,14 +384,8 @@ void QFxWebView::setIdealHeight(int ih)
 /*!
   \qmlproperty bool WebView::interactive
 
-  This property holds controls whether the item responds to mouse and
+  This property controls whether the item responds to mouse and
   key events.
-*/
-
-/*!
-  \property QFxWebView::interactive
-
-  \brief controls whether the item responds to mouse and key events.
 */
 bool QFxWebView::interactive() const
 {
@@ -431,10 +401,10 @@ void QFxWebView::setInteractive(bool i)
     emit interactiveChanged();
 }
 
-/*! 
-    Evaluates the \a scriptSource JavaScript inside the main frame 
+/*!
+    Evaluates the \a scriptSource JavaScript inside the main frame
     context and returns the result of the last executed statement.
-*/  
+*/
 QVariant QFxWebView::evaluateJavaScript(const QString &scriptSource)
 {
     return this->page()->mainFrame()->evaluateJavaScript(scriptSource);
@@ -467,7 +437,7 @@ void QFxWebView::expandToWebPage()
     }
 }
 
-void QFxWebView::geometryChanged(const QRectF &newGeometry, 
+void QFxWebView::geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry)
 {
     if (newGeometry.size() != oldGeometry.size())
@@ -490,14 +460,6 @@ void QFxWebView::paintPage(const QRect& r)
   This property holds the maximum number of pixels of image cache to
   allow. The default is 0.1 megapixels. The cache will not be larger
   than the (unscaled) size of the WebView.
-*/
-
-/*!
-  \property QFxWebView::cacheSize
-
-  The maximum number of pixels of image cache to allow. The default
-  is 0.1 megapixels. The cache will not be larger than the (unscaled)
-  size of the QFxWebView.
 */
 int QFxWebView::cacheSize() const
 {
@@ -542,7 +504,7 @@ void QFxWebView::setCacheSize(int pixels)
 
     \qml
     WebView {
-        javaScriptWindowObjects: Object { 
+        javaScriptWindowObjects: Object {
             WebView.windowObjectName: "coordinates"
         }
     }
@@ -552,15 +514,6 @@ void QFxWebView::setCacheSize(int pixels)
     JavaScript methods.
 
     If Javascript is not enabled for this page, then this property does nothing.
-*/
-
-/*!
-    \property QFxWebView::javaScriptWindowObjects
-
-    The list of object that are available from within
-    the webview's JavaScript context.
-
-    \sa QWebFrame::addToJavaScriptWindowObject
 */
 QmlList<QObject *> *QFxWebView::javaScriptWindowObjects()
 {
@@ -870,14 +823,6 @@ QAction *QFxWebView::stopAction() const
 
     By default, this property contains an empty string.
 */
-/*!
-    \property QFxWebView::title
-    This property holds the title of the web page currently viewed
-
-    By default, this property contains an empty string.
-
-    \sa titleChanged()
-*/
 QString QFxWebView::title() const
 {
     return page()->mainFrame()->title();
@@ -889,14 +834,6 @@ QString QFxWebView::title() const
     \qmlproperty pixmap WebView::icon
     This property holds the icon associated with the web page currently viewed
 */
-/*!
-    \property QFxWebView::icon
-    \brief the icon associated with the web page currently viewed
-
-    By default, this property contains a null icon.
-
-    \sa iconChanged(), QWebSettings::iconForUrl()
-*/
 QPixmap QFxWebView::icon() const
 {
     return page()->mainFrame()->icon().pixmap(QSize(256,256));
@@ -907,18 +844,11 @@ QPixmap QFxWebView::icon() const
     \qmlproperty real WebView::textSizeMultiplier
     This property holds the multiplier used to scale the text in a Web page
 */
-/*!
-    Sets the value of the multiplier used to scale the text in a Web page to
-    the \a factor specified.
-*/
 void QFxWebView::setTextSizeMultiplier(qreal factor)
 {
     page()->mainFrame()->setTextSizeMultiplier(factor);
 }
 
-/*!
-    Returns the value of the multiplier used to scale the text in a Web page.
-*/
 qreal QFxWebView::textSizeMultiplier() const
 {
     return page()->mainFrame()->textSizeMultiplier();

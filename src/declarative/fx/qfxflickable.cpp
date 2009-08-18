@@ -264,7 +264,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Flickable,QFxFlickable)
     \ingroup group_widgets
 
     QFxFlickable allows its children to be dragged and flicked.
-    
+
 \code
 Flickable {
     width: 320; height: 480; viewportWidth: image.width; viewportHeight: image.height
@@ -304,13 +304,6 @@ QFxFlickable::~QFxFlickable()
     corner of the Flickable. For example, if you flick an image up 100 pixels,
     \c yPosition will be 100.
 */
-
-/*!
-    \property QFxFlickable::xPosition
-    \brief the x position of the view.
-
-    The xPosition represents the left-most visible coordinate in the view.
-*/
 qreal QFxFlickable::xPosition() const
 {
     Q_D(const QFxFlickable);
@@ -328,12 +321,6 @@ void QFxFlickable::setXPosition(qreal pos)
     }
 }
 
-/*!
-    \property QFxFlickable::yPosition
-    \brief the y position of the view.
-
-    The yPosition represents the top-most visible coordinate in the view.
-*/
 qreal QFxFlickable::yPosition() const
 {
     Q_D(const QFxFlickable);
@@ -357,15 +344,8 @@ void QFxFlickable::setYPosition(qreal pos)
     A user cannot drag or flick a Flickable that is locked.
 
     This property is useful for temporarily disabling flicking. This allows
-    special interaction with Flickable's children: for example, you might want to 
+    special interaction with Flickable's children: for example, you might want to
     freeze a flickable map while viewing detailed information on a location popup that is a child of the Flickable.
-*/
-
-/*!
-    \property QFxFlickable::locked
-    \brief determines whether the user can move the view.
-
-    If the Flickable is locked, the user cannot move the view.
 */
 bool QFxFlickable::isLocked() const
 {
@@ -382,17 +362,6 @@ void QFxFlickable::setLocked(bool lock)
 /*!
     \qmlproperty enumeration Flickable::dragMode
     This property contains the kind of 'physics' applied when dragging the surface.
-
-    Two modes are supported:
-    \list 
-    \i Hard - the view follows the user's input exactly.
-    \i Elastic - the view moves elastically in response to the user's input.
-    \endlist
-*/
-
-/*!
-    \property QFxFlickable::dragMode
-    \brief sets the kind of 'physics' applied when dragging the view.
 
     Two modes are supported:
     \list
@@ -418,21 +387,12 @@ void QFxFlickable::setDragMode(DragMode mode)
 
     The instantaneous velocity of movement along the x and y axes, in pixels/sec.
 */
-
-/*!
-    \property QFxFlickable::xVelocity
-    \brief provides the instantaneous velocity of movement in the x-axis (pixels/sec).
-*/
 qreal QFxFlickable::xVelocity() const
 {
     Q_D(const QFxFlickable);
     return d->xVelocity.value();
 }
 
-/*!
-    \property QFxFlickable::yVelocity
-    \brief provides the instantaneous velocity of movement in the y-axis (pixels/sec).
-*/
 qreal QFxFlickable::yVelocity() const
 {
     Q_D(const QFxFlickable);
@@ -868,16 +828,6 @@ QmlList<QFxItem *> *QFxFlickable::flickableChildren()
     the feeling that the edges of the view are soft, rather than a hard
     physical boundary.
 */
-
-/*!
-    \property QFxFlickable::overShoot
-    \brief the number of pixels the view may overshoot the boundaries when flicked.
-
-    If overShoot is non-zero the contents can be flicked beyond the boundary
-    of the view before being moved back to the boundary.  This provides
-    the feeling that the edges of the view are soft, rather than a hard
-    physical boundary.
-*/
 bool QFxFlickable::overShoot() const
 {
     Q_D(const QFxFlickable);
@@ -903,11 +853,6 @@ void QFxFlickable::setOverShoot(bool o)
         Image { id: image; source: "bigimage.png" }
     }
     \endcode
-*/
-
-/*!
-    \property QFxFlickable::viewportWidth
-    \brief the width of the view.
 */
 int QFxFlickable::viewportWidth() const
 {
@@ -957,10 +902,6 @@ void QFxFlickable::heightChange()
     }
 }
 
-/*!
-    \property QFxFlickable::viewportHeight
-    \brief the height of the view.
-*/
 int QFxFlickable::viewportHeight() const
 {
     Q_D(const QFxFlickable);
@@ -1069,7 +1010,7 @@ bool QFxFlickable::sceneEventFilter(QGraphicsItem *i, QEvent *e)
     switch (e->type()) {
     case QEvent::GraphicsSceneMousePress:
     case QEvent::GraphicsSceneMouseMove:
-    case QEvent::GraphicsSceneMouseRelease: 
+    case QEvent::GraphicsSceneMouseRelease:
         return sendMouseEvent(static_cast<QGraphicsSceneMouseEvent *>(e));
     default:
         break;
@@ -1081,11 +1022,6 @@ bool QFxFlickable::sceneEventFilter(QGraphicsItem *i, QEvent *e)
 /*!
     \qmlproperty int Flickable::maximumFlickVelocity
     This property holds the maximum velocity that the user can flick the view.
-*/
-
-/*!
-    \property QFxFlickable::maximumFlickVelocity
-    \brief the maximum velocity that the user can flick the view.
 */
 int QFxFlickable::maximumFlickVelocity() const
 {
