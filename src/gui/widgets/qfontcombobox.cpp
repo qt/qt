@@ -276,7 +276,6 @@ void QFontComboBoxPrivate::_q_currentChanged(const QString &text)
 
     \since 4.2
     \ingroup basicwidgets
-    \ingroup text
 
     The combobox is populated with an alphabetized list of font
     family names, such as Arial, Helvetica, and Times New Roman.

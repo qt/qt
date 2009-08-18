@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QSvgRenderer
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QSvgRenderer class is used to draw the contents of SVG files onto paint devices.
     \since 4.1

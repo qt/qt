@@ -42,7 +42,6 @@
 /*!
     \example script/calculator
     \title QtScript Calculator Example
-    \ingroup scripting
 
     In this simple QtScript example, we show how to implement the
     functionality of a calculator widget.

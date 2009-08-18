@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
   \brief The QScriptString class acts as a handle to "interned" strings in a QScriptEngine.
 
   \ingroup script
-  \mainclass
+
 
   QScriptString can be used to achieve faster (repeated)
   property getting/setting, and comparison of property names, of

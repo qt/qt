@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup model-view
     \ingroup advanced
-    \mainclass
+
 
     A QListView presents items stored in a model, either as a simple
     non-hierarchical list, or as a collection of icons. This class is used

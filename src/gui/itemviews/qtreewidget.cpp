@@ -75,7 +75,7 @@ public:
     \brief The QTreeModel class manages the items stored in a tree view.
 
     \ingroup model-view
-    \mainclass
+
 */
 
 /*!
@@ -2329,7 +2329,7 @@ void QTreeWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
   tree model.
 
   \ingroup model-view
-  \mainclass
+
 
   The QTreeWidget class is a convenience class that provides a standard
   tree widget with a classic item-based interface similar to that used by

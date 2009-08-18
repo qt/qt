@@ -91,13 +91,13 @@ private:
     void createWindow();
     IDirectFBWindow *dfbWindow;
 #endif
-    int engineHeight;
 
+#ifdef QT_NO_DIRECTFB_WM
     enum Mode {
         Primary,
-        Offscreen,
-        Window
+        Offscreen
     } mode;
+#endif
 
     QList<QImage*> bufferImages;
     DFBSurfaceFlipFlags flipFlags;

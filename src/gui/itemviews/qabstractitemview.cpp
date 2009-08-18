@@ -166,7 +166,7 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
     item view classes.
 
     \ingroup model-view
-    \mainclass
+
 
     QAbstractItemView class is the base class for every standard view
     that uses a QAbstractItemModel. QAbstractItemView is an abstract

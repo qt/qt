@@ -46,7 +46,7 @@ bootstrap { #Qt code
         qnumeric.cpp \
         qhash.cpp \
         qiodevice.cpp \
-        qlistdata.cpp \
+        qlist.cpp \
         qlinkedlist.cpp \
         qlocale.cpp \
         qmalloc.cpp \

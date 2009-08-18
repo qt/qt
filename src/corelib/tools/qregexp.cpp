@@ -83,9 +83,8 @@ int qFindString(const QChar *haystack, int haystackLen, int from,
     \brief The QRegExp class provides pattern matching using regular expressions.
 
     \ingroup tools
-    \ingroup misc
     \ingroup shared
-    \mainclass
+
     \keyword regular expression
 
     A regular expression, or "regexp", is a pattern for matching

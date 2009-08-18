@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
   \brief The QScriptContextInfo class provides additional information about a QScriptContext.
 
   \ingroup script
-  \mainclass
+
 
   QScriptContextInfo is typically used for debugging purposes. It can
   provide information about the code being executed, such as the type

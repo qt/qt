@@ -88,7 +88,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionSpan &span)
     item views.
 
     \ingroup model-view
-    \mainclass
+
 
     A QHeaderView displays the headers used in item views such as the
     QTableView and QTreeView classes. It takes the place of Qt3's \c QHeader
@@ -1195,7 +1195,8 @@ QHeaderView::ResizeMode QHeaderView::resizeMode(int logicalIndex) const
 {
     Q_D(const QHeaderView);
     int visual = visualIndex(logicalIndex);
-    Q_ASSERT(visual != -1);
+    if (visual == -1)
+        return Fixed; //the default value
     return d->headerSectionResizeMode(visual);
 }
 

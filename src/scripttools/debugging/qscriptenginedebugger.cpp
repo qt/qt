@@ -75,8 +75,8 @@ public:
 
   \brief The QScriptEngineDebugger class provides a QScriptEngine debugger.
 
-  \ingroup scripttools
-  \mainclass
+  \ingroup script
+
 
   The QScriptEngineDebugger class provides a debugger that can be
   embedded into Qt applications that use Qt Script. The debugger

@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
   \brief The QScriptEngineAgent class provides an interface to report events pertaining to QScriptEngine execution.
 
   \ingroup script
-  \mainclass
+
 
   The QScriptEngineAgent class is the basis of tools that monitor and/or control the execution of a
   QScriptEngine, such as debuggers and profilers.
