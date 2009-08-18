@@ -225,13 +225,9 @@ QVariant QmlExpressionPrivate::evalQtScript()
        ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount, me);
 
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
-    QScriptValueList oldScopeChain =
-        scriptEngine->currentContext()->scopeChain();
-
-    for (int i = 0; i < oldScopeChain.size(); ++i)
-        scriptEngine->currentContext()->popScope();
+    QScriptContext *scriptContext = scriptEngine->pushContext();
     for (int i = ctxtPriv->scopeChain.size() - 1; i > -1; --i)
-        scriptEngine->currentContext()->pushScope(ctxtPriv->scopeChain.at(i));
+        scriptContext->pushScope(ctxtPriv->scopeChain.at(i));
 
     if (!expressionFunctionValid) {
 
@@ -305,10 +301,7 @@ QVariant QmlExpressionPrivate::evalQtScript()
     if (rv.isNull())
         rv = svalue.toVariant();
 
-    for (int i = 0; i < ctxtPriv->scopeChain.size(); ++i)
-        scriptEngine->currentContext()->popScope();
-    for (int i = oldScopeChain.size() - 1; i > -1; --i)
-        scriptEngine->currentContext()->pushScope(oldScopeChain.at(i));
+    scriptEngine->popContext();
 
     return rv;
 }

@@ -9,7 +9,7 @@ Rect {
         id: layout
         columns: 2
         rows: 4
-        width: contents.width
+        width: childrenRect.width
         GroupBox {
             contents: "1/ContactField.qml"
             label: "Loading: simple"

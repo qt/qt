@@ -52,7 +52,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QIntValidator,QIntValidator);
 
 /*!
     \qmlclass LineEdit
-    \brief The LineEdit item allows you to add an editable line of text to a scene.
+    The LineEdit item allows you to add an editable line of text to a scene.
 */
 QFxLineEdit::QFxLineEdit(QFxItem* parent)
     : QFxPaintedItem(*(new QFxLineEditPrivate), parent)
@@ -145,11 +145,6 @@ void QFxLineEdit::setColor(const QColor &c)
 
     The text highlight color, used behind selections.
 */
-
-/*!
-    \property QFxLineEdit::highlightColor
-    \brief the line edit's default text highlight color
-*/
 QColor QFxLineEdit::highlightColor() const
 {
     Q_D(const QFxLineEdit);
@@ -170,11 +165,6 @@ void QFxLineEdit::setHighlightColor(const QColor &color)
     \qmlproperty color LineEdit::highlightedTextColor
 
     The highlighted text color, used in selections.
-*/
-
-/*!
-    \property QFxLineEdit::highlightedTextColor
-    \brief the line edit's default highlighted text color
 */
 QColor QFxLineEdit::highlightedTextColor() const
 {
@@ -229,8 +219,8 @@ void QFxLineEdit::setMaxLength(int ml)
 }
 
 /*!
-    \qmlproperty LineEdit::cursorVisible
-    \brief If true the text edit shows a cursor.
+    \qmlproperty bool LineEdit::cursorVisible
+    If true the text edit shows a cursor.
 
     This property is set and unset when the line edit gets focus, but it can also
     be set directly (useful, for example, if a KeyProxy might forward keys to it).
@@ -252,8 +242,8 @@ void QFxLineEdit::setCursorVisible(bool on)
 }
 
 /*!
-    \qmlproperty LineEdit::cursorPosition
-    \brief The position of the cursor in the LineEdit.
+    \qmlproperty int LineEdit::cursorPosition
+    The position of the cursor in the LineEdit.
 */
 int QFxLineEdit::cursorPosition() const
 {
@@ -380,8 +370,8 @@ void QFxLineEdit::setEchoMode(uint echo)
 }
 
 /*!
-    \qmlproperty LineEdit::cursorDelegate
-    \brief The delegate for the cursor in the LineEdit.
+    \qmlproperty Component LineEdit::cursorDelegate
+    The delegate for the cursor in the LineEdit.
 
     If you set a cursorDelegate for a LineEdit, this delegate will be used for
     drawing the cursor instead of the standard cursor. An instance of the

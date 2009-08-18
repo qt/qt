@@ -105,6 +105,9 @@ void QmlContextPrivate::init()
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     QScriptValue scopeObj =
         scriptEngine->newObject(QmlEnginePrivate::get(engine)->contextClass, scriptEngine->newVariant(QVariant::fromValue((QObject*)q)));
+    //### no longer need to push global object once we switch to JSC (test with objects added to globalObject)
+    //if (parent)
+    //    scopeChain = parent->d_func()->scopeChain;
     if (!parent)
         scopeChain.append(scriptEngine->globalObject());
     else

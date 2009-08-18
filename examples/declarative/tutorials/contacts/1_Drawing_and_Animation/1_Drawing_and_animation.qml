@@ -7,7 +7,7 @@ Rect {
     color: "white"
     VerticalPositioner {
         id: layout
-        width: contents.width
+        width: childrenRect.width
         GroupBox {
             contents: "1/RemoveButton.qml"
             label: "Rectangle Component"

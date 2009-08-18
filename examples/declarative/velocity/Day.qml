@@ -71,10 +71,10 @@ Rect {
                         anchors.fill: parent
                         drag.target: StickyPage
                         drag.axis: "xy"
-                        drag.ymin: 0
-                        drag.ymax: 500
-                        drag.xmin: 0
-                        drag.xmax: 400
+                        drag.minimumY: 0
+                        drag.maximumY: 500
+                        drag.minimumX: 0
+                        drag.maximumX: 400
                     }
                 }
             }

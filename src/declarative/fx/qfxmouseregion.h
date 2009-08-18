@@ -55,11 +55,12 @@ class Q_DECLARATIVE_EXPORT QFxDrag : public QObject
     Q_OBJECT
 
     Q_PROPERTY(QFxItem *target READ target WRITE setTarget)
-    Q_PROPERTY(QString axis READ axis WRITE setAxis)
-    Q_PROPERTY(qreal xmin READ xmin WRITE setXmin)
-    Q_PROPERTY(qreal xmax READ xmax WRITE setXmax)
-    Q_PROPERTY(qreal ymin READ ymin WRITE setYmin)
-    Q_PROPERTY(qreal ymax READ ymax WRITE setYmax)
+    Q_PROPERTY(QString axis READ axis WRITE setAxis) //### enum
+    Q_PROPERTY(qreal minimumX READ xmin WRITE setXmin)
+    Q_PROPERTY(qreal maximumX READ xmax WRITE setXmax)
+    Q_PROPERTY(qreal minimumY READ ymin WRITE setYmin)
+    Q_PROPERTY(qreal maximumY READ ymax WRITE setYmax)
+    //### consider drag and drop
 public:
     QFxDrag(QObject *parent=0);
     ~QFxDrag();
@@ -97,8 +98,10 @@ class Q_DECLARATIVE_EXPORT QFxMouseRegion : public QFxItem
     Q_PROPERTY(qreal mouseY READ mouseY NOTIFY positionChanged)
     Q_PROPERTY(bool containsMouse READ hovered NOTIFY hoveredChanged)
     Q_PROPERTY(bool pressed READ pressed NOTIFY pressedChanged)
-    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
-    Q_PROPERTY(QFxDrag *drag READ drag)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
+    Q_PROPERTY(Qt::MouseButtons acceptedButtons READ acceptedButtons WRITE setAcceptedButtons NOTIFY acceptedButtonsChanged)
+    Q_PROPERTY(QFxDrag *drag READ drag) //### add flicking to QFxDrag or add a QFxFlick ???
+    //### trackingEnabled?
 public:
     QFxMouseRegion(QFxItem *parent=0);
     ~QFxMouseRegion();
@@ -109,17 +112,22 @@ public:
     bool isEnabled() const;
     void setEnabled(bool);
 
-    bool hovered();
-    bool pressed();
+    bool hovered() const;
+    bool pressed() const;
 
     void setHovered(bool);
     void setPressed(bool);
+
+    Qt::MouseButtons acceptedButtons() const;
+    void setAcceptedButtons(Qt::MouseButtons buttons);
 
     QFxDrag *drag();
 
 Q_SIGNALS:
     void hoveredChanged();
     void pressedChanged();
+    void enabledChanged();
+    void acceptedButtonsChanged();
     void positionChanged(QFxMouseEvent *mouse);
 
     void pressed(QFxMouseEvent *mouse);

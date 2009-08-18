@@ -13,8 +13,8 @@ Rect {
     // component removes focus from any previous element
     GridPositioner {
         id: layout
-        width: contents.width
-        height: contents.height
+        width: childrenRect.width
+        height: childrenRect.height
         GroupBox {
             contents: "1/ContactView.qml"
             label: "list only"

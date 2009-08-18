@@ -56,9 +56,8 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-/*!
-WARNING: SHORT TERM CLASS.  INTENDED TO MERGE INTO QFxTextItem
-*/
+
+
 class QFxTextEditPrivate;
 class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
 {
@@ -69,12 +68,12 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor)
-    Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor)
-    Q_PROPERTY(QColor highlightedTextColor READ highlightedTextColor WRITE setHighlightedTextColor)
+    Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor) //### selectionColor
+    Q_PROPERTY(QColor highlightedTextColor READ highlightedTextColor WRITE setHighlightedTextColor) //### selectedTextColor
     Q_PROPERTY(QFont font READ font WRITE setFont)
-    Q_PROPERTY(HAlignment hAlign READ hAlign WRITE setHAlign)
-    Q_PROPERTY(VAlignment vAlign READ vAlign WRITE setVAlign)
-    Q_PROPERTY(bool wrap READ wrap WRITE setWrap)
+    Q_PROPERTY(HAlignment hAlign READ hAlign WRITE setHAlign) //### horizontalAlignment
+    Q_PROPERTY(VAlignment vAlign READ vAlign WRITE setVAlign) //### verticalAlignment
+    Q_PROPERTY(bool wrap READ wrap WRITE setWrap) //### other wrap modes
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
@@ -103,9 +102,9 @@ public:
     };
 
     enum TextFormat {
-        AutoText,
-        PlainText,
-        RichText,
+        PlainText = Qt::PlainText,
+        RichText = Qt::RichText,
+        AutoText = Qt::AutoText
     };
 
     QString text() const;
