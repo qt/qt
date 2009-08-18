@@ -673,9 +673,6 @@ bool QNativeSocketEnginePrivate::nativeListen(int backlog)
 int QNativeSocketEnginePrivate::nativeAccept()
 {
     int acceptedDescriptor = qt_safe_accept(socketDescriptor, 0, 0);
-#if defined (QNATIVESOCKETENGINE_DEBUG)
-    qDebug("QNativeSocketEnginePrivate::nativeAccept() == %i", acceptedDescriptor);
-#endif
 
     //check if we have vaild descriptor at all
     if(acceptedDescriptor > 0) {

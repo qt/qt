@@ -19,12 +19,6 @@ SOURCES += project.cpp property.cpp main.cpp generators/makefile.cpp \
            generators/symbian/symmake_sbsv2.cpp \
            generators/symbian/initprojectdeploy_symbian.cpp
 
-# MWC does not provide an implementation of popen() so fake it.
-win32-mwc {
-    SOURCES += qpopen.cpp \
-}
-
-
 HEADERS += project.h property.h generators/makefile.h \
            generators/unix/unixmake.h meta.h option.h cachekeys.h \
            generators/win32/winmakefile.h generators/projectgenerator.h \
@@ -132,7 +126,6 @@ bootstrap { #Qt code
     } else:win32 {
 	SOURCES += qfsfileengine_win.cpp qfsfileengine_iterator_win.cpp qsettings_win.cpp
         win32-msvc*:LIBS += ole32.lib advapi32.lib
-        win32-mwc:LIBS += -lole32.lib -ladvapi32.lib
     }
 
     qnx {

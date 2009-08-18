@@ -1705,9 +1705,9 @@ MakefileGenerator::writeExtraTargets(QTextStream &t)
             t << "\n\t" << cmd;
         t << endl << endl;
 
-		project->values(QLatin1String("QMAKE_ET_PARSED_TARGETS.") + (*it)) << escapeDependencyPath(targ);
-		project->values(QLatin1String("QMAKE_ET_PARSED_DEPS.") + (*it) + escapeDependencyPath(targ)) << deps.split(" ", QString::SkipEmptyParts);
-		project->values(QLatin1String("QMAKE_ET_PARSED_CMD.") + (*it) + escapeDependencyPath(targ)) << cmd;
+		project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_TARGETS.") + (*it)) << escapeDependencyPath(targ);
+		project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_DEPS.") + (*it) + escapeDependencyPath(targ)) << deps.split(" ", QString::SkipEmptyParts);
+		project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_CMD.") + (*it) + escapeDependencyPath(targ)) << cmd;
     }
 }
 
@@ -1855,17 +1855,6 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                     QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, (*input),
                                                                     tmp_out);
                     dep_cmd = fixEnvVariables(dep_cmd);
-#if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
-                    QPopen procPipe;
-                    if (procPipe.init(dep_cmd.toLatin1().constData(), "r")) {
-                        QString indeps;
-                        while(true) {
-                            int read_in = procPipe.fread(buff, 255);
-                            if(!read_in)
-                                break;
-                            indeps += QByteArray(buff, read_in);
-                        }
-#else
                     if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
                         QString indeps;
                         while(!feof(proc)) {
@@ -1875,7 +1864,6 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                             indeps += QByteArray(buff, read_in);
                         }
                         QT_PCLOSE(proc);
-#endif
                         if(!indeps.isEmpty()) {
                             QStringList dep_cmd_deps = indeps.replace('\n', ' ').simplified().split(' ');
                             for(int i = 0; i < dep_cmd_deps.count(); ++i) {
@@ -1926,17 +1914,17 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             }
 
             t << escapeDependencyPath(tmp_out) << ":";
-            project->values(QLatin1String("QMAKE_ET_PARSED_TARGETS.") + (*it)) << escapeDependencyPath(tmp_out);
+            project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_TARGETS.") + (*it)) << escapeDependencyPath(tmp_out);
             // compiler.CONFIG+=explicit_dependencies means that ONLY compiler.depends gets to cause Makefile dependencies
             if(project->values((*it) + ".CONFIG").indexOf("explicit_dependencies") != -1) {
                 t << " " << valList(escapeDependencyPaths(fileFixify(tmp_dep, Option::output_dir, Option::output_dir)));
-                project->values(QLatin1String("QMAKE_ET_PARSED_DEPS.") + (*it) + escapeDependencyPath(tmp_out)) << tmp_dep;
+                project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_DEPS.") + (*it) + escapeDependencyPath(tmp_out)) << tmp_dep;
             } else {
                 t << " " << valList(escapeDependencyPaths(inputs)) << " " << valList(escapeDependencyPaths(deps));
-                project->values(QLatin1String("QMAKE_ET_PARSED_DEPS.") + (*it) + escapeDependencyPath(tmp_out)) << inputs << deps;
+                project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_DEPS.") + (*it) + escapeDependencyPath(tmp_out)) << inputs << deps;
             }
             t << "\n\t" << cmd << endl << endl;
-            project->values(QLatin1String("QMAKE_ET_PARSED_CMD.") + (*it) + escapeDependencyPath(tmp_out)) << cmd;
+            project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_CMD.") + (*it) + escapeDependencyPath(tmp_out)) << cmd;
             continue;
         }
         for(QStringList::ConstIterator input = tmp_inputs.begin(); input != tmp_inputs.end(); ++input) {
@@ -1965,17 +1953,6 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                 char buff[256];
                 QString dep_cmd = replaceExtraCompilerVariables(tmp_dep_cmd, (*input), out);
                 dep_cmd = fixEnvVariables(dep_cmd);
-#if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
-                QPopen procPipe;
-                if (procPipe.init(dep_cmd.toLatin1().constData(), "r")) {
-                    QString indeps;
-                    while(true) {
-                        int read_in = procPipe.fread(buff, 255);
-                        if(!read_in)
-                            break;
-                        indeps += QByteArray(buff, read_in);
-                    }
-#else
                 if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
                     QString indeps;
                     while(!feof(proc)) {
@@ -1985,7 +1962,6 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
                         indeps += QByteArray(buff, read_in);
                     }
                     QT_PCLOSE(proc);
-#endif
                     if(!indeps.isEmpty()) {
                         QStringList dep_cmd_deps = indeps.replace('\n', ' ').simplified().split(' ');
                         for(int i = 0; i < dep_cmd_deps.count(); ++i) {
@@ -2060,9 +2036,9 @@ MakefileGenerator::writeExtraCompilerTargets(QTextStream &t)
             }
             t << escapeDependencyPath(out) << ": " << valList(escapeDependencyPaths(deps)) << "\n\t"
               << cmd << endl << endl;
-            project->values(QLatin1String("QMAKE_ET_PARSED_TARGETS.") + (*it)) << escapeDependencyPath(out);
-            project->values(QLatin1String("QMAKE_ET_PARSED_DEPS.") + (*it) + escapeDependencyPath(out)) << deps;
-            project->values(QLatin1String("QMAKE_ET_PARSED_CMD.") + (*it) + escapeDependencyPath(out)) << cmd;
+            project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_TARGETS.") + (*it)) << escapeDependencyPath(out);
+            project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_DEPS.") + (*it) + escapeDependencyPath(out)) << deps;
+            project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_CMD.") + (*it) + escapeDependencyPath(out)) << cmd;
         }
     }
     t << "compiler_clean: " << clean_targets << endl << endl;

@@ -1067,9 +1067,9 @@ void QAbstractSocketPrivate::_q_abortConnectionAttempt()
 #if defined(QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::_q_abortConnectionAttempt() (timed out)");
 #endif
-    if (socketEngine) {
+    if (socketEngine)
         socketEngine->setWriteNotificationEnabled(false);
-    }
+
     connectTimer->stop();
 
     if (addresses.isEmpty()) {
