@@ -52,20 +52,25 @@
 QT_BEGIN_NAMESPACE
 
 CNotifyChangeEvent* CNotifyChangeEvent::New(RFs &fs, const TDesC& file,
-        QSymbianFileSystemWatcherEngine* e)
+        QSymbianFileSystemWatcherEngine* e, bool aIsDir)
 {
-    CNotifyChangeEvent* self = new CNotifyChangeEvent(fs, file, e);
+    CNotifyChangeEvent* self = new CNotifyChangeEvent(fs, file, e, aIsDir);
     return self;
 }
 
 CNotifyChangeEvent::CNotifyChangeEvent(RFs &fs, const TDesC& file,
-    QSymbianFileSystemWatcherEngine* e, TInt aPriority) :
+    QSymbianFileSystemWatcherEngine* e, bool aIsDir, TInt aPriority) :
         CActive(aPriority),
+        isDir(aIsDir),
         fsSession(fs),
         watchedPath(file),
         engine(e)
 {
-    fsSession.NotifyChange(ENotifyAll, iStatus, file);
+    if(isDir) {
+        fsSession.NotifyChange(ENotifyEntry, iStatus, file);
+    } else {
+        fsSession.NotifyChange(ENotifyAll, iStatus, file);
+    }
     CActiveScheduler::Add(this);
     SetActive();
 }
@@ -77,8 +82,12 @@ CNotifyChangeEvent::~CNotifyChangeEvent()
 
 void CNotifyChangeEvent::RunL()
 {
-    if (iStatus.Int() == KErrNone){
-        fsSession.NotifyChange(ENotifyAll, iStatus, watchedPath);
+    if (iStatus.Int() == KErrNone) {
+        if(isDir) {
+            fsSession.NotifyChange(ENotifyEntry, iStatus, watchedPath);
+        } else {
+            fsSession.NotifyChange(ENotifyAll, iStatus, watchedPath);
+        }
         SetActive();
         QT_TRYCATCH_LEAVING(engine->emitPathChanged(this));
     } else {
@@ -88,7 +97,7 @@ void CNotifyChangeEvent::RunL()
 
 void CNotifyChangeEvent::DoCancel()
 {
-    fsSession.NotifyChangeCancel();
+    fsSession.NotifyChangeCancel(iStatus);
 }
 
 QSymbianFileSystemWatcherEngine::QSymbianFileSystemWatcherEngine() :
@@ -132,8 +141,8 @@ QStringList QSymbianFileSystemWatcherEngine::addPaths(const QStringList &paths,
 
         // Use absolute filepath as relative paths seem to have some issues.
         QString filePath = fi.absoluteFilePath();
-        if(isDir && filePath.at(filePath.size()-1) != QChar('/')) {
-            filePath += QChar('/');
+        if(isDir && filePath.at(filePath.size()-1) != QChar(L'/')) {
+            filePath += QChar(L'/');
         }
 
         currentEvent = NULL;
@@ -264,7 +273,7 @@ void QSymbianFileSystemWatcherEngine::addNativeListener(const QString &directory
     QMutexLocker locker(&mutex);
     QString nativeDir(QDir::toNativeSeparators(directoryPath));
     TPtrC ptr(qt_QString2TPtrC(nativeDir));
-    currentEvent = CNotifyChangeEvent::New(fsSession, ptr, this);
+    currentEvent = CNotifyChangeEvent::New(fsSession, ptr, this, directoryPath.endsWith(QChar(L'/'), Qt::CaseSensitive));
     syncCondition.wakeOne();
 }
 
