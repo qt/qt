@@ -69,7 +69,7 @@ QTOBJS= \
 	qhash.o \
 	qiodevice.o \
 	qlibraryinfo.o \
-	qlistdata.o \
+	qlist.o \
 	qlinkedlist.o \
 	qlocale.o \
 	qmalloc.o \
@@ -214,8 +214,8 @@ quuid.o: $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp
 qbuffer.o: $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp
 
-qlistdata.o: $(SOURCE_PATH)/src/corelib/tools/qlistdata.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlistdata.cpp
+qlist.o: $(SOURCE_PATH)/src/corelib/tools/qlist.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlist.cpp
 
 qlinkedlist.o: $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlinkedlist.cpp

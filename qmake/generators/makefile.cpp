@@ -969,6 +969,8 @@ MakefileGenerator::writePrlFile(QTextStream &t)
             libs = project->values("QMAKE_INTERNAL_PRL_LIBS");
         else
             libs << "QMAKE_LIBS"; //obvious one
+        if(project->isActiveConfig("staticlib"))
+            libs << "QMAKE_LIBS_PRIVATE";
         t << "QMAKE_PRL_LIBS = ";
         for(QStringList::Iterator it = libs.begin(); it != libs.end(); ++it)
             t << project->values((*it)).join(" ") << " ";

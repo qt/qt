@@ -1392,9 +1392,7 @@ QVariant QTableWidgetItem::data(int role) const
 bool QTableWidgetItem::operator<(const QTableWidgetItem &other) const
 {
     const QVariant v1 = data(Qt::DisplayRole), v2 = other.data(Qt::DisplayRole);
-    if (QAbstractItemModelPrivate::canConvertToDouble(v1) && QAbstractItemModelPrivate::canConvertToDouble(v2))
-        return v1.toDouble() < v2.toDouble();
-    return v1.toString() < v2.toString();
+    return QAbstractItemModelPrivate::variantLessThan(v1, v2);
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -1488,7 +1486,7 @@ QTableWidgetItem &QTableWidgetItem::operator=(const QTableWidgetItem &other)
     \brief The QTableWidget class provides an item-based table view with a default model.
 
     \ingroup model-view
-    \mainclass
+
 
     Table widgets provide standard table display facilities for applications.
     The items in a QTableWidget are provided by QTableWidgetItem.

@@ -253,7 +253,7 @@ QIcon QUndoModel::cleanIcon() const
     \class QUndoView
     \brief The QUndoView class displays the contents of a QUndoStack.
     \since 4.2
-    \ingroup misc
+
     \ingroup advanced
 
     QUndoView is a QListView which displays the list of commands pushed on an undo stack.

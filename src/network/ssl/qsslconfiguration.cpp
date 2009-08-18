@@ -66,7 +66,7 @@ template<> void QSharedDataPointer<QSslConfigurationPrivate>::detach()
 
     \reentrant
     \inmodule QtNetwork
-    \ingroup io
+    \ingroup network
     \ingroup ssl
 
     QSslConfiguration is used by Qt networking classes to relay

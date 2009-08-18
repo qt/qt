@@ -49,7 +49,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     reading and writing text.
 
     \ingroup io
-    \ingroup text
+    \ingroup string-processing
     \reentrant
 
     QTextStream can operate on a QIODevice, a QByteArray or a
@@ -3085,8 +3085,6 @@ QLocale QTextStream::locale() const
 
     \compat
     \reentrant
-    \ingroup io
-    \ingroup text
 
     Use QTextStream instead.
 */
@@ -3113,8 +3111,6 @@ QLocale QTextStream::locale() const
 
     \compat
     \reentrant
-    \ingroup io
-    \ingroup text
 
     Use QTextStream instead.
 */

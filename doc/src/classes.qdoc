@@ -40,6 +40,18 @@
 ****************************************************************************/
 
 /*!
+    \group classlists
+    \title Class and Function Indexes
+    \brief Collections of classes and functions grouped together into lists.
+
+    The following documents contain collections of classes, grouped by
+    subject area or related to particular functionality, or comprehensive
+    lists of classes and functions.
+
+    \generatelist{related}
+*/
+
+/*!
     \group groups
     \title Grouped Classes
     \ingroup classlists
@@ -56,11 +68,9 @@
     \title Qt's Classes
     \ingroup classlists
 
-    This is a list of all Qt classes. For a shorter list of the most
-    frequently used Qt classes, see \l{Qt's Main Classes}. For a list
-    of the classes provided for compatibility with Qt3, see \l{Qt 3
-    compatibility classes}. For classes that have been deprecated, see
-    the \l{Obsolete Classes} list.
+    This is a list of all Qt classes. For a list of the classes provided
+    for compatibility with Qt3, see \l{Qt 3 compatibility classes}. For
+    classes that have been deprecated, see the \l{Obsolete Classes} list.
 
     \generatelist classes
 
@@ -125,17 +135,6 @@
     classes in the Qt API.
 
     \generatelist classhierarchy
-*/
-
-/*!
-    \page mainclasses.html
-    \title Qt's Main Classes
-    \ingroup classlists
-
-    These are the most frequently used Qt classes. For the complete
-    list see \link classes.html Qt's Classes \endlink.
-
-    \generatelist mainclasses
 */
 
 /*!

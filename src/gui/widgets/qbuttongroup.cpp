@@ -48,8 +48,6 @@
 
     \ingroup organizers
     \ingroup geomanagement
-    \ingroup appearance
-    \mainclass
 
     QButtonGroup provides an abstract container into which button widgets can
     be placed. It does not provide a visual representation of this container

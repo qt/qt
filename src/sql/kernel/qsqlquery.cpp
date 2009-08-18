@@ -101,7 +101,7 @@ QSqlQueryPrivate::~QSqlQueryPrivate()
 
     \ingroup database
     \ingroup shared
-    \mainclass
+
     \inmodule QtSql
 
     QSqlQuery encapsulates the functionality involved in creating,

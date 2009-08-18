@@ -45,7 +45,7 @@
     QGLWidgets.
 
     \module OpenGL
-    \ingroup multimedia
+    \ingroup painting-3D
     \ingroup shared
 
     QGLColormap provides a platform independent way of specifying and

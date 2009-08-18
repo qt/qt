@@ -772,7 +772,7 @@ QList<QZipReader::FileInfo> QZipReader::fileInfoList() const
 {
     d->scanFiles();
     QList<QZipReader::FileInfo> files;
-    for (int i = 0; d && i < d->fileHeaders.size(); ++i) {
+    for (int i = 0; i < d->fileHeaders.size(); ++i) {
         QZipReader::FileInfo fi;
         d->fillFileInfo(i, fi);
         files.append(fi);

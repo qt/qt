@@ -139,8 +139,6 @@ QString QKde::kdeStyle()
         return QLatin1String("plastique");
     else
         return QLatin1String("windows");
-
-    return QString();
 }
 
 /*!\internal

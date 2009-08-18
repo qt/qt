@@ -46,7 +46,7 @@ HEADERS += \
 
 SOURCES += \
         painting/qbezier.cpp \
-	painting/qblendfunctions.cpp \
+        painting/qblendfunctions.cpp \
         painting/qbrush.cpp \
         painting/qcolor.cpp \
         painting/qcolor_p.cpp \
@@ -57,6 +57,7 @@ SOURCES += \
         painting/qmatrix.cpp \
         painting/qmemrotate.cpp \
         painting/qoutlinemapper.cpp \
+        painting/qpaintdevice.cpp \
         painting/qpaintengine.cpp \
         painting/qpaintengine_alpha.cpp \
         painting/qpaintengine_preview.cpp \
@@ -75,14 +76,10 @@ SOURCES += \
         painting/qstroker.cpp \
         painting/qstylepainter.cpp \
         painting/qtessellator.cpp \
-        painting/qwindowsurface.cpp \
         painting/qtextureglyphcache.cpp \
         painting/qtransform.cpp \
+        painting/qwindowsurface.cpp \
 
-        DEFINES += QT_RASTER_IMAGEENGINE
-        win32:DEFINES += QT_RASTER_PAINTENGINE
-        embedded:DEFINES += QT_RASTER_PAINTENGINE
-        symbian:DEFINES += QT_RASTER_PAINTENGINE
         SOURCES +=                                      \
                 painting/qpaintengine_raster.cpp        \
                 painting/qdrawhelper.cpp                \
@@ -179,7 +176,6 @@ embedded {
 
 symbian {
         SOURCES += \
-                painting/qpaintdevice_s60.cpp \
                 painting/qregion_s60.cpp \
                 painting/qcolormap_s60.cpp
 }
@@ -361,6 +357,7 @@ embedded {
 }
 
 
+
 symbian {
         HEADERS += painting/qwindowsurface_s60_p.h
         SOURCES += painting/qwindowsurface_s60.cpp
@@ -374,5 +371,12 @@ symbian {
 
         MMP_RULES += armccIfdefBlock
         QMAKE_CXXFLAGS.ARMCC *= -O3
+}
+
+contains(QT_CONFIG, zlib) {
+   INCLUDEPATH += ../3rdparty/zlib
+} else:!contains(QT_CONFIG, no-zlib) {
+   unix:LIBS_PRIVATE += -lz
+#  win32:LIBS += libz.lib
 }
 

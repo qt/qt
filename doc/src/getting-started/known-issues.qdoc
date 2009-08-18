@@ -1,0 +1,174 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at http://qt.nokia.com/contact.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page known-issues.html
+    \title Known Issues in %VERSION%
+    \ingroup platform-specific
+    \brief A summary of known issues in Qt %VERSION% at the time of release.
+
+    An up-to-date list of known issues with Qt %VERSION% can be found via the
+    \l{Task Tracker} on the Qt website which provides additional information
+    about known issues and tasks related to Qt.
+
+    \section1 General Issues
+
+    When running Qt applications on Windows or with \c{-graphicssystem raster},
+    any process that triggers a QWidget::update() from within a destructor
+    might result in a crash.
+
+
+    \section1 Issues with Third Party Software
+
+    \section2 X11 Hardware Support
+
+    \list
+    \o  There is a bug in the 169.xx NVIDIA drivers on certain GeForce 8 series
+        cards that is triggered by the OpenGL paint engine when using QPainter
+        on a QGLWidget to draw paths and polygons. Some other painting
+        operations that end up in the path fallback are affected as well. The
+        bug causes the whole X server to repeatedly hang for several seconds at
+        a time.
+    \o  There is an issue with NVIDIA's 9xxx driver series on X11 that causes a
+        crash in cases where there are several \l{QGLContext}s and the extended
+        composition modes are used (the composition modes between and including
+        QPainter::CompositionMode_Multiply and
+        QPainter::CompositionMode_Exclusion). This affects the composition mode
+        demo in Qt 4.5, for example. The crash does not occur in newer versions
+        of the drivers.
+    \endlist
+
+    \section2 Windows Hardware Support
+
+    \list
+    \o  When using version 6.14.11.6921 of the NVIDIA drivers for the GeForce
+        6600 GT under Windows XP, Qt applications which use drag and drop will
+        display reduced size drag and drop icons when run alongside
+        applications that use OpenGL. This problem can be worked around by
+        reducing the level of graphics acceleration provided by the driver, or
+        by disabling hardware acceleration completely.
+    \endlist
+
+    \section2 Windows Software Issues
+
+    \list
+
+    \o  When building Qt 4.5.0 with Windows 7, the build fails with an error
+        message regarding failing to embed manifest. This a known issue with
+        Windows 7, explained in the Windows 7 SDK Beta
+        \l{http://download.microsoft.com/download/8/8/0/8808A472-6450-4723-9C87-977069714B27/ReleaseNotes.Htm}
+        {release notes}. A workaround for this issue is to patch the
+        \bold{embed_manifest_exe.prf} file with the following:
+
+        \code
+        diff --git a/mkspecs/features/win32/embed_manifest_exe.prf b/mkspecs/features/win32/embed_manifest_exe.prf
+        index e1747f1..05f116e 100644
+        --- a/mkspecs/features/win32/embed_manifest_exe.prf
+        +++ b/mkspecs/features/win32/embed_manifest_exe.prf
+        @@ -8,4 +8,9 @@ if(win32-msvc2005|win32-msvc2008):!equals(TEMPLATE_PREFIX, "vc"):equals(TEMPLATE
+             QMAKE_POST_LINK = $$quote(mt.exe -nologo -manifest \"$$replace(OBJECTS_DIR,/,\\)\\$${NOPATH_TARGET}.intermediate.ma
+        nifest\" -outputresource:$(DESTDIR_TARGET);1$$escape_expand(\n\t))
+             QMAKE_POST_LINK += $$QMAKE_PREV_POST_LINK
+             QMAKE_CLEAN += \"$$replace(OBJECTS_DIR,/,\\)\\$${NOPATH_TARGET}.intermediate.manifest\"
+        +    isEmpty(RC_FILE) {
+        +        system("echo.>$$replace(OUT_PWD,/,\\)\\$$replace(OBJECTS_DIR,/,\\)\\Windows7WorkAround.rc")
+        +        RC_FILE = $$replace(OUT_PWD,/,\\)\\$$replace(OBJECTS_DIR,/,\\)\\Windows7WorkAround.rc
+        +       }
+        +
+         }
+        \endcode
+
+    \o  Under certain circumstances Visual Studio Integration v1.4.0 will not
+        be able to install the integration for Visual Studio 2005 on Windows
+        Vista. An error message states that .NET Framework v2.0 Service Pack 1
+        is not installed. This is due to a problem with the built-in
+        installation of this on Windows Vista. This issue can be fixed by
+        installing .NET Framework version 3.5.
+
+    \o  With NVIDIA GeForce 7950 GT (driver version 6.14.11.7824), a fullscreen
+        QGLWidget flickers when child widgets are shown/hidden. The workaround
+        for this is to use \l{QWidget::}{setGeometry()} with a width/height 1
+        pixel bigger than your geometry and call \l{QWidget::}{show()}.
+
+    \o  A bug in the Firebird database can cause an application to crash when
+        \c{fbembed.dll} is unloaded. The bug is fixed in version 2.5.
+
+    \endlist
+
+
+    \section2 Mac OS X Software Support
+
+    \list
+    \o  If a sheet is opened for a given window, clicking the title bar of that
+        window will cause it to flash. This behavior has been reported to Apple
+        (bug number 5827676).
+    \endlist
+
+
+    \section2 Installing source packages on Unix systems
+
+    \list
+    \o  If you download a Zip source package, you will need to convert
+        Windows-style line endings (CR/LF) to Unix-style line-endings (LF) when
+        you uncompress the package.  To do this, give the "-a" option when you
+        run the "unzip' command.
+    
+        If you fail to supply the "-a" option when unzipping the package, you
+        will see the following error message when you attempt to execute the
+        configure command:
+        "bash: ./configure: /bin/sh^M: bad interpreter: No such file or directory"
+    \endlist
+
+
+    \section2 Running evaluation packages on Windows XP
+
+    \list
+    \o  If running the qt-win-eval-%VERSION%-vs2008.exe package on a Windows XP
+        system, you may encounter the following error message:
+        "The application failed to start because the application configuration
+        is incorrect. Reinstalling the application may fix this problem.".
+
+        This error occurs because the version of the CRT component on the
+        system is incorrect.  Visual Studio 2008 requires CRT90 while Windows
+        XP comes with CRT80. To solve this problem, please install the 2008 CRT
+        redistributable package from Microsoft.
+    \endlist
+*/

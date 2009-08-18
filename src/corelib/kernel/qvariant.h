@@ -250,6 +250,8 @@ class Q_CORE_EXPORT QVariant
     qulonglong toULongLong(bool *ok = 0) const;
     bool toBool() const;
     double toDouble(bool *ok = 0) const;
+    float toFloat(bool *ok = 0) const;
+    qreal toReal(bool *ok = 0) const;
     QByteArray toByteArray() const;
     QBitArray toBitArray() const;
     QString toString() const;

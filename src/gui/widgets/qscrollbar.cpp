@@ -431,6 +431,12 @@ void QScrollBarPrivate::init()
     q->setSizePolicy(sp);
     q->setAttribute(Qt::WA_WState_OwnSizePolicy, false);
     q->setAttribute(Qt::WA_OpaquePaintEvent);
+
+#if !defined(QT_NO_CONTEXTMENU) && defined(Q_WS_WINCE)
+    if (!q->style()->styleHint(QStyle::SH_ScrollBar_ContextMenu, 0, q)) {
+        q->setContextMenuPolicy(Qt::PreventContextMenu);
+    }
+#endif
 }
 
 #ifndef QT_NO_CONTEXTMENU

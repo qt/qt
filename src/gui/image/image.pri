@@ -92,7 +92,7 @@ SOURCES += \
     SOURCES += image/qpnghandler.cpp
 
     contains(QT_CONFIG, system-png) {
-        unix:LIBS  += -lpng
+        unix:LIBS_PRIVATE  += -lpng
         win32:LIBS += libpng.lib
     } else {
         !isEqual(QT_ARCH, i386):!isEqual(QT_ARCH, x86_64):DEFINES += PNG_NO_ASSEMBLER_CODE

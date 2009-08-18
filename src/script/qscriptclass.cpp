@@ -69,7 +69,7 @@ QT_BEGIN_NAMESPACE
   \brief The QScriptClass class provides an interface for defining custom behavior of (a class of) Qt Script objects.
 
   \ingroup script
-  \mainclass
+
 
   The QScriptClass class defines an interface for handling various
   aspects of interaction with the Qt Script objects associated with

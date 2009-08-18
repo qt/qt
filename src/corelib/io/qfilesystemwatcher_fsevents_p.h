@@ -59,8 +59,8 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qwaitcondition.h>
 #include <QtCore/qthread.h>
-#include <QtCore/QHash>
-#include <QtCore/QLinkedList>
+#include <QtCore/qhash.h>
+#include <QtCore/qlinkedlist.h>
 #include <private/qcore_mac_p.h>
 #include <sys/stat.h>
 

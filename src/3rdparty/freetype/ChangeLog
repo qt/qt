@@ -1,3 +1,1590 @@
+2009-03-12  Werner Lemberg  <wl@gnu.org>
+
+	* Version 2.3.9 released.
+	=========================
+
+
+	Tag sources with `VER-2-3-9'.
+
+2009-03-12  Werner Lemberg  <wl@gnu.org>
+
+	* builds/unix/freetype2.in: Move @FT2_EXTRA_LIBS@ to `Libs.private'.
+
+2009-03-12  Werner Lemberg  <wl@gnu.org>
+
+	Fix some FreeType Coverity issues as reported for Ghostscript.
+
+	* src/base/ftobjs.c (FT_New_Face, FT_New_Memory_Face): Initialize
+	`args.stream' (#3874, #3875).
+	(open_face_PS_from_sfnt_stream): Improve error management (#3786).
+	* src/base/ftmm.c (ft_face_get_mm_service): Fix check of `aservice'
+	(#3870).
+	* src/base/ftstroke.c (ft_stroke_border_get_counts): Remove dead
+	code (#3790).
+	* src/base/ftrfork.c (raccess_guess_apple_generic): Check error
+	value of `FT_Stream_Skip' (#3784).
+
+	* src/type1/t1gload.c (T1_Load_Glyph): Check `size' before accessing
+	it (#3872)
+
+	* src/pcf/pcfdrivr.c (PCF_Glyph_Load): Check `face' before accessing
+	it (#3871).
+	* src/pcf/pcfread.c (pcf_get_metrics): Handle return value of
+	`pcf_get_metric' (#3789, #3782).
+	(pcf_get_properties): Use FT_STREAM_SKIP (#3783).
+
+	* src/cache/ftcmanag.c (FTC_Manager_RegisterCache): Fix check of
+	`acache' (#3797)
+
+	* src/cff/cffdrivr.c (cff_ps_get_font_info): Fix check of `cff'
+	(#3796).
+	* src/cff/cffgload.c (cff_decoder_prepare): Check `size' (#3795).
+	* src/cff/cffload.c (cff_index_get_pointers): Add comment (#3794).
+
+	* src/bdf/bdflib.c (_bdf_add_property): Check `fp->value.atom'
+	(#3793).
+	(_bdf_parse_start): Add comment (#3792).
+
+	* src/raster/ftraster.c (Finalize_Profile_Table): Check
+	`ras.fProfile' (#3791).
+
+	* src/sfnt/ttsbit.c (Load_SBit_Image): Use FT_STREAM_SKIP (#3785).
+
+	* src/gzip/ftgzip.c (ft_gzip_get_uncompressed_size): Properly ignore
+	seek error (#3781).
+
+2009-03-11  Michael Toftdal  <toftdal@gmail.com>
+
+	Extend CID service functions to handle CID-keyed CFFs as CID fonts.
+
+	* include/freetype/ftcid.h (FT_Get_CID_Is_Internally_CID_keyed,
+	FT_Get_CID_From_Glyph_Index): New functions.
+
+	* include/freetype/internal/services/svcid.h
+	(FT_CID_GetIsInternallyCIDKeyedFunc,
+	FT_CID_GetCIDFromGlyphIndexFunc): New function typedefs.
+	(CID Service): Use them.
+
+	* src/base/ftcid.c: Include FT_CID_H.
+	(FT_Get_CID_Is_Internally_CID_keyed, FT_Get_CID_From_Glyph_Index):
+	New functions.
+
+	* src/cff/cffdrivr.c (cff_get_is_cid, cff_get_cid_from_glyph_index):
+	New functions.
+	(cff_service_cid_info): Add them.
+	* src/cff/cffload.c (cff_font_load): Don't free `font->charset.sids'
+	-- it is needed for access as a CID-keyed font.  It gets deleted
+	later on.
+
+	* src/cid/cidriver.c (cid_get_is_cid, cid_get_cid_from_glyph_index):
+	New functions.
+	(cid_service_cid_info): Add them.
+
+	* docs/CHANGES: Updated.
+
+2009-03-11  Bram Tassyns  <bramt@enfocus.be>
+
+	Fix Savannah bug #25597.
+
+	* src/cff/cffparse.c (cff_parse_real): Don't allow fraction_length
+	to become larger than 9.
+
+2009-03-11  Werner Lemberg  <wl@gnu.org>
+
+	Fix Savannah bug #25814.
+
+	* builds/unix/freetype2.in: As suggested in the bug report, move
+	@LIBZ@ to `Libs.private'.
+
+2009-03-11  Werner Lemberg  <wl@gnu.org>
+
+	Fix Savannah bug #25781.
+	We now simply check for a valid `offset', no longer handling `delta
+	= 1' specially.
+
+	* src/sfnt/ttcmap.c (tt_cmap4_validate): Don't check `delta' for
+	last segment.
+	(tt_cmap4_set_range, tt_cmap4_char_map_linear,
+	tt_cmap4_char_map_binary): Check offset.
+
+2009-03-11  Werner Lemberg  <wl@gnu.org>
+
+	* src/base/Jamfile: Fix handling of ftadvanc.c.
+	Reported by Oran Agra <oran@monfort.co.il>.
+
+2009-03-10  Vincent Richomme  <richom.v@free.fr>
+
+	Restructure Win32 and Wince compiler support.
+
+	* src/builds/win32: Remove files for WinCE.
+	Move VC 2005 support to a separate directory.
+	Add directory for VC 2008 support.
+
+	* src/builds/wince: New directory hierarchy for WinCE compilers
+	(VC 2005 and VC 2008).
+
+2009-03-09  Werner Lemberg  <wl@gnu.org>
+
+	More preparations for 2.3.9 release.
+
+	* docs/CHANGES: Updated.
+
+	* Jamfile, README: s/2.3.8/2.3.9/, s/238/239/.
+
+2009-03-09  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/rules.mk (SFNT_DRV_H): Add ttsbit0.c.
+
+2009-03-09  Alexey Kryukov  <anagnost@yandex.ru>
+
+	Fix handling of EBDT formats 8 and 9 (part 2).
+
+	This patch fixes the following problems in ttsbit0.c:
+
+	. Bitmaps for compound glyphs were never allocated.
+
+	. `SBitDecoder' refused to load metrics if some other metrics have
+	  already been loaded.  This condition certainly makes no sense for
+	  recursive calls, so I've just disabled it.  Another possibility
+	  would be resetting `decoder->metrics_loaded' to false before
+	  loading each composite component.  However, we must restore the
+	  original metrics after finishing the recursion; otherwise we can
+	  get a misaligned glyph.
+
+	. `tt_sbit_decoder_load_bit_aligned' incorrectly handled `x_pos',
+	  causing some glyph components to be shifted too far to the right
+	  (especially noticeable for small sizes).
+
+	Note that support for grayscale bitmaps (not necessarily compound) is
+	completely broken in ttsbit0.c.
+
+	* src/sfnt/tt_sbit_decoder_load_metrics: Always load metrics.
+	(tt_sbit_decoder_load_bit_aligned): Handle `x_pos' correctly in case
+	of `h == height'.
+	(tt_sbit_decoder_load_compound): Reset metrics after loading
+	components.
+	Allocate bitmap.
+
+2009-03-09  Werner Lemberg  <wl@gnu.org>
+
+	* builds/unix/configure.raw (version_info): Set to 9:20:3.
+
+2009-03-03  David Turner  <david@freetype.org>
+
+	Protect SFNT kerning table parser against malformed tables.
+
+	This closes Savannah BUG #25750.
+
+	* src/sfnt/ttkern.c (tt_face_load_kern, tt_face_get_kerning): Fix a
+	bug where a malformed table would be successfully loaded but later
+	crash the engine during parsing.
+
+2009-03-03  David Turner  <david@freetype.org>
+
+	Update documentation and bump version number to 2.3.9.
+
+	* include/freetype/freetype.h: Bump patch version to 9.
+	* docs/CHANGES: Document the ABI break in 2.3.8.
+	* docs/VERSION.DLL: Update version numbers table for 2.3.9.
+
+2009-03-03  David Turner  <david@freetype.org>
+
+	Remove ABI-breaking field in public PS_InfoFontRec definition.
+
+	Instead, we define a new internal PS_FontExtraRec structure to
+	hold the additionnal field, then place it in various internal
+	positions of the corresponding FT_Face derived objects.
+
+	* include/freetype/t1tables.h (PS_FontInfoRec): Remove the
+	`fs_type' field from the public structure.
+	* include/freetype/internal/psaux.h (T1_FieldLocation): New
+	enumeration `T1_FIELD_LOCATION_FONT_EXTRA'.
+	* include/freetype/internal/t1types.h (PS_FontExtraRec): New
+	structure.
+	(T1_FontRec, CID_FaceRec): Add it.
+
+	* src/cid/cidload.c (cid_load_keyword): Handle
+	T1_FIELD_LOCATION_FONT_EXTRA.
+	* src/cid/cidtoken.h, src/type1/t1tokens.h, src/type42/t42parse.c:
+	Adjust FT_STRUCTURE and T1CODE properly to handle `FSType'.
+	* src/type1/t1load.c (t1_load_keyword): Handle
+	T1_FIELD_LOCATION_FONT_EXTRA.
+
+	* include/freetype/internal/services/svpsinfo.h (PsInfo service):
+	Add `PS_GetFontExtraFunc' function typedef.
+
+	* src/base/ftfstype.c: Include FT_INTERNAL_SERVICE_H and
+	FT_SERVICE_POSTSCRIPT_INFO_H.
+	(FT_Get_FSType_Flags): Use POSTSCRIPT_INFO service.
+
+	* src/cff/cffdrivr.c (cff_service_ps_info): Updated.
+	* src/cid/cidriver.c (cid_ps_get_font_extra): New function.
+	(cid_service_ps_info): Updated.
+	* src/type1/t1driver.c (t1_ps_get_font_extra): New function.
+	(t1_service_ps_info): Updated.
+	* src/type42/t42drivr.c (t42_ps_get_font_extra): New function.
+	(t42_service_ps_info): Updated.
+
+2009-03-02  Alexey Kryukov  <anagnost@yandex.ru>
+
+	Fix handling of EBDT formats 8 and 9.
+
+	The main cycle in `blit_sbit' makes too many iterations: it actually
+	needs the count of lines in the source bitmap rather than in the
+	target image.
+
+	* src/sfnt/ttsbit.c (blit_sbit) [FT_CONFIG_OPTION_OLD_INTERNALS]:
+	Add parameter `source_height' and use it for main loop.
+	(Load_SBit_Single) [FT_CONFIG_OPTION_OLD_INTERNALS]: Updated.
+
+2009-02-23  Werner Lemberg  <wl@gnu.org>
+
+	Fix Savannah bug #25669.
+
+	* src/base/ftadvanc.h (FT_Get_Advances): Fix serious typo.
+
+	* src/base/ftobjs.c (FT_Select_Metrics, FT_Request_Metrics): Fix
+	scaling factor for non-scalable fonts.
+
+	* src/cff/cffdrivr.c (cff_get_advances): Use correct advance width
+	value to prevent incorrect scaling.
+
+	* docs/CHANGES: Document it.
+
+2009-02-15  Matt Godbolt  <matt@godbolt.org>
+
+	Fix Savannah bug #25588.
+
+	* builds/unix/ftconfig.in (FT_MulFix_arm): Use correct syntax for
+	`orr' instruction.
+
+2009-02-11  Werner Lemberg  <wl@gnu.org>
+
+	* src/truetype/ttobjs.c (tt_check_trickyness): Add `DFKaiShu'.
+	Reported by David Bevan <dbevan@emtex.com>.
+
+2009-02-09  Werner Lemberg  <wl@gnu.org>
+
+	Fix Savannah bug #25495.
+
+	* src/sfnt/sfobjs.c (sfnt_load_face): Test for bitmap strikes before
+	setting metrics and bbox values.  This ensures that the check for a
+	font with neither a `glyf' table nor bitmap strikes can be performed
+	early enough to set metrics and bbox values too.
+
+2009-02-04  Werner Lemberg  <wl@gnu.org>
+
+	Fix Savannah bug #25480.
+
+	* builds/unix/freetype-config.in: For --ftversion, don't use $prefix
+	but $includedir.
+
+2009-01-31  Werner Lemberg  <wl@gnu.org>
+
+	Minor docmaker improvements.
+
+	* src/tools/docmaker/content.py (DocBlock::__init__): Ignore empty
+	code blocks.
+
+2009-01-25  Werner Lemberg  <wl@gnu.org>
+
+	Fix SCANCTRL handling in TTFs.
+	Problem reported by Alexey Kryukov <anagnost@yandex.ru>.
+
+	* src/truetype/ttinterp.c (Ins_SCANCTRL): Fix threshold handling.
+
+2009-01-23  Werner Lemberg  <wl@gnu.org>
+
+	Move FT_Get_FSType_Flags to a separate file.
+	Problem reported by Mickey Gabel <mickey@monfort.co.il>.
+
+	* src/base/ftobjs.c (FT_Get_FSType_Flags): Move to...
+	* src/base/ftfstype.c: This new file.
+
+	* modules.cfg (BASE_EXTENSION): Add ftfstype.c.
+
+	* docs/INSTALL.ANY: Updated.
+
+	* builds/mac/*.txt, builds/amiga/*makefile*,
+	builds/win32/{visualc,visualce}/freetype.*, builds/symbian/*:
+	Updated.
+
+2009-01-22  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* builds/unix/ftsystem.c (FT_Stream_Open): Fix 2 error
+	messages ending without "\n".
+
+2009-01-22  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	Fix Savannah bug #25347.
+
+	* src/base/ftobjs.c (open_face_PS_from_sfnt_stream): Rewind
+	the stream to the original position passed to this function,
+	when ft_lookup_PS_in_sfnt_stream() failed.
+	(Mac_Read_sfnt_Resource): Rewind the stream to the head of
+	sfnt resource body, when open_face_PS_from_sfnt_stream()
+	failed.
+
+2009-01-19  Michael Lotz  <mmlr@mlotz.ch>
+
+	Fix Savannah bug #25355.
+
+	* include/freetype/config/ftconfig.h (FT_MulFix_i386): Make
+	assembler code work with gcc 2.95.3 (as used by the Haiku project).
+	Add `cc' register to the clobber list.
+
+2009-01-18  Werner Lemberg  <wl@gnu.org>
+
+	Protect FT_Get_Next_Char.
+
+	* src/sfnt/ttcmap.c (tt_cmap4_set_range): Apply fix similar to
+	change from 2008-07-22.
+
+	Patch from Ronen Ghoshal <rghoshal@emtex.com>.
+
+2009-01-18  Werner Lemberg  <wl@gnu.org>
+
+	Implement FT_Get_Name_Index for SFNT driver.
+
+	* src/sfnt/sfdriver.c (sfnt_get_name_index): New function.
+	(sfnt_service_glyph_dict): Use it.
+
+	Problem reported by Truc Truong <tructv@necsv.com>.
+
+2009-01-18  Werner Lemberg  <wl@gnu.org>
+
+	* include/freetype/ftstroke.h (FT_Outline_GetInsideBorder): Fix
+	documentation.  Problem reported by Truc Truong <tructv@necsv.com>.
+
+	* docs/CHANGES: Updated.
+
+2009-01-14  Werner Lemberg  <wl@gnu.org>
+
+	* Version 2.3.8 released.
+	=========================
+
+
+	Tag sources with `VER-2-3-8'.
+
+	* docs/VERSION.DLL: Update documentation and bump version number to
+	2.3.8.
+
+	* README, Jamfile (RefDoc), builds/win32/visualc/index.html,
+	builds/win32/visualc/freetype.dsp,
+	builds/win32/visualc/freetype.vcproj,
+	builds/win32/visualce/index.html,
+	builds/win32/visualce/freetype.dsp,
+	builds/win32/visualce/freetype.vcproj: s/2.3.7/2.3.8/, s/237/238/.
+
+	* include/freetype/freetype.h (FREETYPE_PATCH): Set to 8.
+
+	* builds/unix/configure.raw (version_info): Set to 9:19:3.
+
+	* docs/release: Updated.
+
+2009-01-14  Werner Lemberg  <wl@gnu.org>
+
+	* builds/toplevel.mk (dist): Compress better.
+
+2009-01-13  Werner Lemberg  <wl@gnu.org>
+
+	* src/base/ftobjs.c (FT_Get_FSType_Flags): Cast for compilation
+	with C++.
+
+2009-01-13  Werner Lemberg  <wl@gnu.org>
+
+	Don't use stdlib.h and friends directly.
+	Reported by Mickey Gabel <mickey@monfort.co.il>.
+
+	* src/base/ftdbgmem.c: s/<stdlib.h>/FT_CONFIG_STANDARD_LIBRARY_H/.
+
+	* src/gzip/ftgzip.c, src/lzw/ftlzw.c, src/raster/ftmisc.h:
+	s/<string.h>/FT_CONFIG_STANDARD_LIBRARY_H/.
+
+	* src/autofit/aftypes.h, src/autofit/afhints.c,
+	src/pshinter/pshalgo.c: s/<stdio.h>/FT_CONFIG_STANDARD_LIBRARY_H/
+
+	* src/lzw/ftlzw.c, src/base/ftdbgmem.c: Don't include stdio.h.
+
+2009-01-12  Werner Lemberg  <wl@gnu.org>
+
+	Avoid compiler warnings.
+
+	* */*: s/do ; while ( 0 )/do { } while ( 0 )/.
+	Reported by Sean McBride <sean@rogue-research.com>.
+
+2009-01-12  Werner Lemberg  <wl@gnu.org>
+
+	Fix stdlib dependencies.
+
+	Problem reported by Mickey Gabel <mickey@monfort.co.il>.
+
+	* include/freetype/config/ftstdlib.h (ft_exit): Removed.  Unused.
+
+	* src/autofit/afhints.c, src/base/ftlcdfil.c, src/smooth/ftsmooth.c:
+	s/memcpy/ft_memcpy/.
+	* src/psaux/t1decode.c: s/memset/ft_memset/, s/memcpy/ft_memcpy/.
+
+2009-01-11  Werner Lemberg  <wl@gnu.org>
+
+	* docs/formats.txt: Add link to PCF specification.
+
+	* include/freetype/ftbdf.h (FT_Get_BDF_Property): Improve
+	documentation.
+
+2009-01-09  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/ftadvanc.c (_ft_face_scale_advances, FT_Get_Advance,
+	FT_Get_Advances): Change the type of load_flags from FT_UInt32 to
+	FT_Int32, to match with the flags for FT_Load_Glyph().
+	* src/cff/cffdrivr.c (cff_get_advances): Ditto.
+	* src/truetype/ttdriver.c (tt_get_advances): Ditto.
+	* include/freetype/ftadvanc.h (FT_Get_Advance, FT_Get_Advances):
+	Ditto.
+	* include/freetype/internal/ftdriver.h (FT_Face_GetAdvancesFunc):
+	Ditto.
+
+2009-01-09  Daniel Zimmermann  <netzimme@aol.com>
+
+	* src/gxvalid/gxvmort.c (gxv_mort_feature_validate): Fix wrong
+	length check.  From Savannah patch #6682.
+
+2009-01-09  Werner Lemberg  <wl@gnu.org>
+
+	Fix problem with T1_FIELD_{NUM,FIXED}_TABLE2.
+
+	* src/psaux/psobjs.c (ps_parser_load_field_table): Don't handle
+	`count_offset' if it is zero (i.e., unused).  Otherwise, the first
+	element of the structure which holds the data is erroneously
+	modified.  Problem reported by Chi Nguyen <chint@necsv.com>.
+
+2009-01-09  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/ftadvanc.c (_ft_face_scale_advances, FT_Get_Advance,
+	FT_Get_Advances): Extend the type of load_flags from FT_UInt to
+	FT_UInt32, to pass 32-bit flags on 16bit platforms.
+	* src/cff/cffdrivr.c (cff_get_advances): Ditto.
+	* src/truetype/ttdriver.c (tt_get_advances): Ditto.
+	* include/freetype/ftadvanc.h (FT_Get_Advance, FT_Get_Advances):
+	Ditto.
+	* include/freetype/internal/ftdriver.h (FT_Face_GetAdvancesFunc):
+	Ditto.
+
+2009-01-09  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/ftobjs.c (FT_Done_Library): Issue an error message when
+	FT_Done_Face() cannot free all faces. If the list of the opened
+	faces includes broken face which FT_Done_Face() cannot free,
+	FT_Done_Library() retries FT_Done_Face() and it can fall into
+	an endless loop. See the discussion:
+	http://lists.gnu.org/archive/html/freetype-devel/2008-09/msg00047.html
+	http://lists.gnu.org/archive/html/freetype-devel/2008-10/msg00000.html
+
+2009-01-07  Werner Lemberg  <wl@gnu.org>
+
+	* docs/CHANGES: Document new key `a' in ftdiff.
+
+2009-01-06  Werner Lemberg  <wl@gnu.org>
+
+	* autogen.sh: Don't use GNUisms while calling sed.  Problem reported
+	by Sean McBride.
+
+2009-01-06  Werner Lemberg  <wl@gnu.org>
+
+	* src/base/ftbitmap.c (FT_Bitmap_Convert): Handle FT_PIXEL_MODE_LCD
+	and FT_PIXEL_MODE_LCD_V.  Problem reported by Chi Nguyen
+	<chint@necsv.com>.
+
+2009-01-06  Diego Pettenò  <flameeyes@gmail.com>
+
+	* builds/unix/configure.raw: Don't call AC_CANONICAL_BUILD and
+	AC_CANONICAL_TARGET and use $host_os only.  A nice explanation for
+	this change can be found at
+	http://blog.flameeyes.eu/s/canonical-target.
+
+	From Savannah patch #6712.
+
+2009-01-06  Sean McBride  <sean@rogue-research.com>
+
+	* src/base/ftdbgmem.c (_debug_mem_dummy): Make it static.
+
+	* src/base/ftmac.c: Remove some #undefs.
+
+2008-12-26  Werner Lemberg  <wl@gnu.org>
+
+	Set `face_index' field in FT_Face for all font formats.
+
+	* cff/cffobjs.c (cff_face_init), winfonts/winfnt.c (FNT_Face_Init),
+	sfnt/sfobjs.c (sfnt_init_face): Do it.
+
+	* docs/CHANGES: Document it.
+
+2008-12-22  Steve Grubb
+
+	* builds/unix/ftsystem.c (FT_Stream_Open): Reject zero-length files.
+	Patch from Savannah bug #25151.
+
+2008-12-21  Werner Lemberg  <wl@gnu.org>
+
+	* src/pfr/pfrdrivr.c, src/winfonts/winfnt.c, src/cache/ftcmanag.c,
+	src/smooth/ftgrays.c, src/base/ftobjc.s, src/sfobjs.c:
+	s/_Err_Bad_Argument/_Err_Invalid_Argument/.  The former is for
+	errors in the bytecode interpreter only.
+
+2008-12-21  Werner Lemberg  <wl@gnu.org>
+
+	* src/base/ftpfr.c (FT_Get_PFR_Metrics): Protect against NULL
+	arguments.
+	Fix return value for non-PFR fonts.  Both problems reported by Chi
+	Nguyen <chint@necsv.com>.
+
+2008-12-21  anonymous
+
+	FT_USE_MODULE declares things as:
+
+	  extern const FT_Module_Class
+
+	(or similar for C++).  However, the actual types of the variables
+	being declared are often different, e.g., FT_Driver_ClassRec or
+	FT_Renderer_Class.  (Some are, indeed, FT_Module_Class.)
+
+	This works with most C compilers (since those structs begin with an
+	FT_Module_Class struct), but technically it's undefined behavior.
+
+	To quote the ISO/IEC 9899:TC2 final committee draft, section 6.2.7
+	paragraph 2:
+
+	  All declarations that refer to the same object or function shall
+	  have compatible type; otherwise, the behavior is undefined.
+
+	(And they are not compatible types.)
+
+	Most C compilers don't reject (or even detect!) code which has this
+	issue, but the GCC LTO development branch compiler does.  (It
+	outputs the types of the objects while generating .o files, along
+	with a bunch of other information, then compares them when doing the
+	final link-time code generation pass.)
+
+	Patch from Savannah bug #25133.
+
+	* src/base/ftinit.c (FT_USE_MODULE): Include variable type.
+
+	* builds/amiga/include/freetype/config/ftmodule.h,
+	include/freetype/config/ftmodule.h, */module.mk: Updated to declare
+	pass correct types to FT_USE_MODULE.
+
+2008-12-21  Hongbo Ni  <hongbo@njstar.com>
+
+	* src/autofit/aflatin.c (af_latin_hint_edges),
+	src/autofit/aflatin2.c (af_latin2_hint_edges), src/autofit/afcjk.c
+	(af_cjk_hint_edges): Protect against division by zero.  This fixes
+	Savannah bug #25124.
+
+2008-12-18  Werner Lemberg  <wl@gnu.org>
+
+	* docs/CHANGES: Updated.
+
+2008-12-18  Bevan, David  <dbevan@emtex.com>
+
+	Provide API for accessing embedding and subsetting restriction
+	information.
+
+	* include/freetype.h (FT_FSTYPE_INSTALLABLE_EMBEDDING,
+	FT_FSTYPE_RESTRICTED_LICENSE_EMBEDDING,
+	FT_FSTYPE_PREVIEW_AND_PRINT_EMBEDDING, FT_FSTYPE_EDITABLE_EMBEDDING,
+	FT_FSTYPE_NO_SUBSETTING, FT_FSTYPE_BITMAP_EMBEDDING_ONLY): New
+	macros.
+	(FT_Get_FSType_Flags): New function declaration.
+
+	* src/base/ftobjs.c (FT_Get_FSType_Flags): New function.
+
+	* src/cid/cidtoken.h, src/type1/t1tokens.h, src/type42/t42parse.c
+	(t42_keywords): Handle `FSType'.
+
+	* include/freetype/t1tables.h (PS_FontInfoRec): Add `fs_type' field.
+
+2008-12-17  Werner Lemberg  <wl@gnu.org>
+
+	* src/base/ftsynth.c (FT_GlyphSlot_Embolden): Don't use internal
+	macros so that copying the source code into an application works
+	out of the box.
+
+2008-12-17  Werner Lemberg  <wl@gnu.org>
+
+	* include/freetype/ftsynth.h, src/base/ftsynth.c: Move
+	FT_GlyphSlot_Own_Bitmap to...
+	* include/freetype/ftbitmap.h, src/base/ftbitmap.c: These files.
+
+	* docs/CHANGES: Document it.
+
+2008-12-10  Werner Lemberg  <wl@gnu.org>
+
+	Generalize the concept of `tricky' fonts by introducing
+	FT_FACE_FLAG_TRICKY to indicate that the font format's hinting
+	engine is necessary for correct rendering.
+
+	At the same time, slightly modify the behaviour of tricky fonts:
+	FT_LOAD_NO_HINTING is now ignored.  To really force raw loading
+	of tricky fonts (without hinting), both FT_LOAD_NO_HINTING and
+	FT_LOAD_NO_AUTOHINT must be used.
+
+	Finally, tricky TrueType fonts always use the bytecode interpreter
+	even if the patented code is used.
+
+	* include/freetype/freetype.h (FT_FACE_FLAG_TRICKY, FT_IS_TRICKY):
+	New macros.
+
+	* src/truetype/ttdriver.c (Load_Glyph): Handle new load flags
+	semantics as described above.
+
+	* src/truetype/ttobjs.c (tt_check_trickyness): New function, using
+	code of ...
+	(tt_face_init): This function, now simplified and updated to new
+	semantics.
+
+	* src/base/ftobjs.c (FT_Load_Glyph): Don't use autohinter for tricky
+	fonts.
+
+	* docs/CHANGES: Document it.
+
+2008-12-09  Werner Lemberg  <wl@gnu.org>
+
+	Really fix Savannah bug #25010: An SFNT font with neither outlines
+	nor bitmaps can be considered as containing space `glyphs' only.
+
+	* src/truetype/ttpload.c (tt_face_load_loca): Handle the case where
+	a `glyf' table is missing.
+
+	* src/truetype/ttgload.c (load_truetype_glyph): Abort if we have no
+	`glyf' table but a non-zero `loca' entry.
+	(tt_loader_init): Handle missing `glyf' table.
+
+	* src/base/ftobjs.c (FT_Load_Glyph): Undo change 2008-12-05.
+
+	* src/sfnt/sfobjs.c (sfnt_load_face): A font with neither outlines
+	nor bitmaps is scalable.
+
+2008-12-05  Werner Lemberg  <wl@nu.org>
+
+	* src/autofit/aflatin.c (af_latin_uniranges): Add more ranges.  This
+	fixes Savannah bug #21190 which also provides a basic patch.
+
+2008-12-05  Werner Lemberg  <wl@nu.org>
+
+	* include/freetype/freetype.h (FT_LOAD_ADVANCE_ONLY): Use value
+	0x100 instead of 0x10000; the latter value is already occupied by
+	FT_LOAD_TARGET_LIGHT.  Bug reported by James Cloos.
+
+
+	Handle SFNT with neither outlines nor bitmaps.  This fixes Savannah
+	bug #25010.
+
+	* src/base/ftobjs.c (FT_Load_Glyph): Reject fonts with neither
+	outlines nor bitmaps.
+
+	* src/sfnt/sfobjs.c (sfnt_load_face): Don't return an error if there
+	is no table with glyphs.
+
+
+	* src/sfnt/ttload.c (tt_face_lookup_table): Improve debugging
+	message.
+
+2008-12-01  Werner Lemberg  <wl@gnu.org>
+
+	GDEF tables need `glyph_count' too for validation.  Problem reported
+	by Chi Nguyen <chint@necsv.com>.
+
+	* src/otvalid/otvgdef.c (otv_GDEF_validate), src/otvalid/otvalid.h
+	(otv_GDEF_validate), src/otvalid/otvmod.c (otv_validate): Pass
+	`glyph_count'.
+
+2008-11-29  Werner Lemberg  <wl@gnu.org>
+
+	* src/autofit/afcjk.c, src/base/ftoutln.c, src/base/ftrfork.c,
+	src/bdf/bdfdrivr.c, src/gxvalid/gxvmorx.c, src/otvalid/otvmath.c,
+	src/pcf/pcfdrivr.c, src/psnames/pstables.h, src/smooth/ftgrays.c,
+	src/tools/glnames.py, src/truetype/ttinterp.c, src/type1/t1load.c,
+	src/type42/t42objs.c, src/winfonts/winfnt.c: Fix compiler warnings
+	(Atari PureC).
+
+2008-11-29  James Cloos  <cloos@jhcloos.com>
+
+	* src/type/t1load.c (mm_axis_unmap): Revert previous patch and fix
+	it correctly by using FT_INT_TO_FIXED (FreeType expects 16.16 values
+	in the /BlendDesignMap space).
+
+2008-11-29  James Cloos  <cloos@jhcloos.com>
+
+	* src/type1/t1load.c (mm_axis_unmap): `blend_points' is FT_Fixed*,
+	whereas `design_points' is FT_Long*.  Therefore, return blend rather
+	than design points.
+
+2008-11-27  Werner Lemberg  <wl@gnu.org>
+
+	* src/cff/cffparse.c (cff_parse_real): Handle more than nine
+	significant digits correctly.  This fixes Savannah bug #24953.
+
+2008-11-25  Daniel Zimmermann  <netzimme@aol.com>
+
+	* src/base/ftstream.c (FT_Stream_ReadFields): Don't access stream
+	before the NULL check.  From Savannah patch #6681.
+
+2008-11-24  Werner Lemberg  <wl@gnu.org>
+
+	Fixes from the gnuwin32 port.
+
+	* src/base/ftlcdfil.c: s/EXPORT/EXPORT_DEF/.
+
+	* src/base/ftotval.c: Include FT_OPENTYPE_VALIDATE_H.
+
+	* src/psaux/psobjs.c (ps_table_add): Check `length'.
+
+2008-11-15  Werner Lemberg  <wl@gnu.org>
+
+	* src/truetype/ttinterp.c (tt_default_graphics_state): The default
+	value for `scan_type' is zero, as confirmed by Greg Hitchcock from
+	Microsoft.  Problem reported by Michal Nowakowski
+	<miszka@limes.com.pl>.
+
+2008-11-12  Tor Andersson  <tor.andersson@gmail.com>
+
+	* src/cff/cffdrivr.c (cff_get_cmap_info): Initialize `format' field.
+	This fixes Savannah bug #24819.
+
+2008-11-08  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfobjs.c (sfnt_load_face): Remove #if 0/#endif guards
+	since OpenType version 1.5 has been released.
+
+	* include/ttnameid.h (TT_NAME_ID_WWS_FAMILY,
+	TT_NAME_ID_WWS_SUBFAMILY): New macros for OpenType 1.5.
+	(TT_URC_COPTIC, TT_URC_VAI, TT_URC_NKO, TT_URC_BALINESE,
+	TT_URC_PHAGSPA, TT_URC_NON_PLANE_0, TT_URC_PHOENICIAN,
+	TT_URC_TAI_LE, TT_URC_NEW_TAI_LUE, TT_URC_BUGINESE,
+	TT_URC_GLAGOLITIC, TT_URC_YIJING, TT_URC_SYLOTI_NAGRI,
+	TT_URC_LINEAR_B, TT_URC_ANCIENT_GREEK_NUMBERS, TT_URC_UGARITIC,
+	TT_URC_OLD_PERSIAN, TT_URC_SHAVIAN, TT_URC_OSMANYA,
+	TT_URC_CYPRIOT_SYLLABARY, TT_URC_KHAROSHTHI, TT_URC_TAI_XUAN_JING,
+	TT_URC_CUNEIFORM, TT_URC_COUNTING_ROD_NUMERALS, TT_URC_SUNDANESE,
+	TT_URC_LEPCHA, TT_URC_OL_CHIKI, TT_URC_SAURASHTRA, TT_URC_KAYAH_LI,
+	TT_URC_REJANG, TT_URC_CHAM, TT_URC_ANCIENT_SYMBOLS,
+	TT_URC_PHAISTOS_DISC, TT_URC_OLD_ANATOLIAN, TT_URC_GAME_TILES): New
+	macros for OpenType 1.5.
+
+2008-11-08  Wenlin Institute  <wenlin@wenlin.com>
+
+	* src/base/ftobjs.c (ft_glyphslot_free_bitmap): Protect against
+	slot->internal == NULL.  Reported by Graham Asher.
+
+2008-11-08  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfobjs.c (tt_face_get_name): Modified to return an error
+	code so that memory allocation problems can be distinguished from
+	missing table entries.  Reported by Graham Asher.
+	(GET_NAME): New macro.
+	(sfnt_load_face): Use it.
+
+2008-11-05  Werner Lemberg  <wl@gnu.org>
+
+	* devel/ftoption.h, include/freetype/config/ftoption.h
+	[TT_CONFIG_OPTION_BYTECODE_INTERPRETER]: Undefine
+	TT_CONFIG_OPTION_UNPATENTED_HINTING.  This fixes the return value of
+	`FT_Get_TrueType_Engine_Type' (and makes it work as documented).
+	Reported in bug #441638 of bugzilla.novell.com.
+
+	* docs/CHANGES: Document it.
+
+2008-11-03  Werner Lemberg  <wl@gnu.org>
+
+	* src/type1/t1load.c (parse_subrs): Use an endless loop.  There are
+	fonts (like HELVI.PFB version 003.001, used on OS/2) which define
+	some `subrs' elements more than once.  Problem reported by Peter
+	Weilbacher <mozilla@weilbacher.org>.
+
+2008-10-15  Graham Asher  <graham.asher@btinternet.com>
+
+	* src/sfnt/ttpost.c (tt_post_default_names): Add `const'.
+
+2008-10-15  David Turner  <david@freetype.org>
+
+	* src/truetype/ttgxvar.c (TT_Set_MM_Blend): Disambiguate for
+	meddlesome compilers' warning against `for ( ...; ...; ...) ;'.
+
+2008-10-14  Werner Lemberg  <wl@gnu.org>
+
+	* src/cff/cffobjs.c (cff_face_init): Remove compiler warning.
+	Suggested by Bram Tassyns in Savannah patch #6651.
+
+2008-10-12  Graham Asher  <graham.asher@btinternet.com>
+
+	* src/sfnt/sfobjs.c (sfnt_load_face): Fix computation of
+	`underline_position'.
+
+2008-10-12  Werner Lemberg  <wl@gnu.org>
+
+	* docs/CHANGES: Updated.
+
+2008-10-09  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	Fix Savannah bug #24468.
+
+	According to include/freetype/internal/ftobjs.h, the appropriate
+	type to interchange single character codepoint is FT_UInt32. It
+	should be distinguished from FT_UInt which can be 16bit integer.
+
+	* src/sfnt/ttcmap.c (tt_cmap4_char_map_linear): Change the type
+	of the second argument `pcharcode' from FT_UInt* to FT_UInt32*.
+	(tt_cmap4_char_map_binary): Ditto.
+	(tt_cmap14_get_nondef_chars): Change the type of return value
+	from FT_UInt* to FT_UInt32*.
+
+2008-10-08  John Tytgat  <John.Tytgat@esko.com>
+
+	Fix Savannah bug #24485.
+
+	* src/type1/t1load.c (parse_charstrings): Assure that we always have
+	a .notdef glyph.
+
+2008-10-05  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/ftmac.c: Include FT_TRUETYPE_TAGS_H for multi build.
+	* builds/mac/ftmac.c: Ditto.
+
+2008-10-05  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* include/freetype/tttags.h (TTAG_TYP1, TTAG_typ1): Fix definitions.
+	* src/base/ftobjs.c: Include FT_TRUETYPE_TAGS_H.
+
+2008-10-05  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/sfnt/sfobjs.c (sfnt_open_font): Allow `typ1' version tag in
+	the beginning of sfnt container.
+	* src/sfnt/ttload.c (check_table_dir): Return
+	`SFNT_Err_Table_Missing' when sfnt table directory structure is
+	correct but essential tables for TrueType fonts (`head', `bhed' or
+	`SING') are missing.  Other errors are returned by
+	SFNT_Err_Unknown_File_Format.
+
+	* src/base/ftobjs.c (FT_Open_Face): When TrueType driver returns
+	`FT_Err_Table_Missing', try `open_face_PS_from_sfnt_stream'.  It is
+	enabled only when old mac font support is configured.
+
+2008-10-04  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* include/freetype/tttags.h (TTAG_CID, TTAG_FOND, TTAG_LWFN,
+	TTAG_POST, TTAG_sfnt, TTAG_TYP1, TTAG_typ1): New tags to simplify
+	the repeated calculations of these values in ftobjs.c and ftmac.c.
+	* src/base/ftobjs.c: Replace all FT_MAKE_TAG by new tags.
+	* src/base/ftmac.c: Ditto.
+	* builds/mac/ftmac.c: Ditto.
+
+2008-10-04  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/ftobjs.c (ft_lookup_PS_in_sfnt_stream): Remove wrong
+	initialization of *is_sfnt_cid.
+
+2008-10-04  Werner Lemberg  <wl@gnu.org>
+
+	* src/base/ftobjs.c (open_face_PS_from_sfnt_stream): Remove compiler
+	warnings.
+
+2008-10-04  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/ftobjs.c (ft_lookup_PS_in_sfnt): Replaced by...
+	(ft_lookup_PS_in_sfnt_stream): This.
+	(open_face_PS_from_sfnt_stream): New function.  It checks whether
+	the stream is sfnt-wrapped Type1 PS font or sfnt-wrapped CID-keyed
+	font, then try to open a face for given face_index.
+	(Mac_Read_sfnt_Resource): Replace the combination of
+	`ft_lookup_PS_in_sfnt' and `open_face_from_buffer' by
+	`open_face_PS_from_sfnt_stream'.
+	* src/base/ftmac.c (FT_New_Face_From_SFNT): Ditto.
+	* builds/mac/ftmac.c (FT_New_Face_From_SFNT): Ditto.
+	* src/base/ftbase.h: Remove `ft_lookup_PS_in_sfnt' and add
+	`open_face_PS_from_sfnt_stream'.
+
+2008-10-03  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/ftobjs.c (ft_lookup_PS_in_sfnt): Set *is_sfnt_cid to
+	FALSE if neither `CID ' nor `TYP1' is found in the sfnt container.
+
+2008-10-03  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* include/freetype/config/ftconfig.h: Define FT_MACINTOSH when SC or
+	MrC compiler of MPW is used.  These compilers do not define the
+	macro __APPLE__ by themselves.
+	* builds/unix/ftconfig.in: Ditto.
+	* builds/vms/ftconfig.h: Ditto.
+	* src/base/ftbase.c: Use FT_MACINTOSH instead of __APPLE__, to
+	include ftmac.c if FreeType 2 is built by MPW.
+	* src/base/ftobjs.c: Use FT_MACINTOSH instead of __APPLE__, to
+	enable shared functions for ftmac.c if FreeType 2 is built by MPW.
+
+	* builds/mac/ftmac.c: Include ftbase.h.
+	(memory_stream_close): Removed.
+	(new_memory_stream): Ditto.
+	(open_face_from_buffer): Removed.  Use the implementation in
+	ftobjs.c.
+	(ft_lookup_PS_in_sfnt): Ditto.
+
+	* builds/mac/FreeType.m68k_far.make.txt: Build ftmac.c as an
+	included part of ftbase.c, to share the functions in ftobjs.c.  The
+	rule compiling ftmac.c separately is removed and the rule copying
+	ftbase.c from src/base/ftbase.c to builds/mac/ftbase.c is added.
+	* builds/mac/FreeType.m68k_cfm.make.txt: Ditto.
+	* builds/mac/FreeType.ppc_classic.make.txt: Ditto.
+	* builds/mac/FreeType.ppc_carbon.make.txt: Ditto.
+
+2008-10-02  Bram Tassyns  <bramt@enfocus.be>
+
+	* src/cff/cffgload.c (cff_slot_load): Map CID 0 to GID 0.  This
+	fixes Savannah bug #24430.
+
+2008-10-02  Werner Lemberg  <wl@gnu.org>
+
+	* builds/freetype.mk (BASE_H): Rename to...
+	(INTERNAL_H): This.
+	(FREETYPE_H): Updated.
+	* src/base/rules.mk: (BASE_OBJ_S, OBJ_DIR/%.$O): Add BASE_H.
+	* src/bdf/rules.mk (BDF_DRV_H): Add bdferror.h.
+	* src/cache/rules.mk (CACHE_DRV_H): Add ftccache.h and ftcsbits.h.
+	* src/pcf/rules.mk (PCF_DRV_H): Add pcfread.h.
+	* src/raster/rules.mk (RASTER_DRV_H): Add ftmisc.h.
+	* src/type42/rules.mk (T42_DRV_H): Add t42types.h.
+
+2008-10-02  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/ftbase.h: New file to declare the private utility
+	functions shared by the sources of base modules.  Currently,
+	`ft_lookup_PS_in_sfnt' and `open_face_from_buffer' are declared to
+	share between ftobjs.c and ftmac.c.
+
+	* src/base/rule.mk: Add ftbase.h.
+
+	* src/base/ftobjs.c: Include ftbase.h.
+	(memory_stream_close): Build on any platform when old MacOS font
+	support is enabled.
+	(new_memory_stream): Ditto.
+	(open_face_from_buffer): Build on any platform when old MacOS font
+	support is enabled.  The counting of the face in a font file is
+	slightly different between Carbon-dependent parser and Carbon-free
+	parser.  They are merged with the platform-specific conditional.
+	(ft_lookup_PS_in_sfnt): Ditto.
+
+	* src/base/ftmac.c: Include ftbase.h.
+	(memory_stream_close): Removed.
+	(new_memory_stream): Ditto.
+	(open_face_from_buffer): Removed.  Use the implementation in
+	ftobjs.c.
+	(ft_lookup_PS_in_sfnt): Ditto.
+
+2008-10-02  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfobjs.c (sfnt_load_face): `psnames_error' is only needed
+	if TT_CONFIG_OPTION_POSTSCRIPT_NAMES is defined.
+
+2008-10-01  Werner Lemberg  <wl@gnu.org>
+
+	* src/truetype/ttobjs.c (tt_face_done), src/cff/cffobjs.c
+	(cff_face_done), src/pfr/pfrobjs.c (pfr_face_done),
+	src/pcf/pcfdrivr.c (PCF_Face_Done), src/cid/cidobjs.c
+	(cid_face_done), src/bdf/bdfdrivr. (BDF_Face_Done),
+	src/sfnt/sfobjs.c (sfnt_face_done): Protect against face == 0.
+	Reported by Graham Asher.
+
+2008-09-30  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/rules.mk: Add conditional source to BASE_SRC, for `make
+	multi' on Mac OS X.  If the macro $(ftmac_c) is defined,
+	$(BASE_DIR)/$(ftmac_c) is added to BASE_SRC.  In a normal build, the
+	lack of ftmac.c in BASE_SRC is not serious because ftbase.c includes
+	ftmac.c.
+	* builds/unix/unix-def.in: Add a macro definition of $(ftmac_c).
+	* builds/unix/configure.raw: Add procedure to set up appropriate
+	value of $(ftmac_c) with the consideration of the availability of
+	Carbon framework.
+
+2008-09-30  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/Jamfile: Add target for multi build by jam on Mac OS X.
+	* src/base/ftobjs.c (FT_New_Face): Fix the condition to include this
+	function for MPW building.  It is synchronized the condition to
+	include ftmac.c source into ftbase.c.
+
+2008-09-22  Werner Lemberg  <wl@gnu.org>
+
+	* src/cff/cffgload.c (CFF_Operator, cff_argument_counts,
+	cff_decoder_parse_charstrings): Handle (invalid)
+	`callothersubr' and `pop' instructions.
+
+2008-09-22  John Tytgat  <John.Tytgat@esko.com>
+
+	Fix Savannah bug #24307.
+
+	* include/freetype/internal/t1types.h (CID_FaceRec),
+	src/type42/t42types.h (T42_FaceRec): Comment out `afm_data'.
+
+2008-09-21  Werner Lemberg  <wl@gnu.org>
+
+	* src/smooth/ftgrays.c (gray_raster_render): Don't dereference
+	`target_map' if FT_RASTER_FLAG_DIRECT is set.  Problem reported by
+	Stephan T. Lavavej <stl@nuwen.net>.
+
+2008-09-21  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/otvalid/Jamfile: Add missing target `otvmath' for multi build
+	by jam.
+	* src/sfnt/Jamfile: Add missing target `ttmtx' for multi build by
+	jam.
+
+2008-09-20  Werner Lemberg  <wl@gnu.org>
+
+	* src/smooth/ftgrays.c (gray_find_cell): Fix threshold.  The values
+	passed to this function are already `normalized'.  Problem reported
+	by Stephan T. Lavavej <stl@nuwen.net>.
+
+	* docs/CHANGES: Document it.
+
+2008-09-20  Werner Lemberg  <wl@gnu.org>
+
+	* src/base/ftoutln.c: Include FT_INTERNAL_DEBUG_H.
+	(FT_Outline_Decompose): Decorate with tracing messages.
+
+	* src/smooth/ftgrays.c [DEBUG_GRAYS]: Replace with
+	FT_DEBUG_LEVEL_TRACE.
+	[_STANDALONE_ && FT_DEBUG_LEVEL_TRACE]: Include stdio.h and
+	stdarg.h.
+
+	(FT_TRACE) [_STANDALONE_]: Remove.
+	(FT_Message) [_STANDALONE_ && FT_DEBUG_LEVEL_TRACE]: New function.
+	(FT_TRACE5, FT_TRACE7) [_STANDALONE_]: New macros.
+	(FT_ERROR) [_STANDALONE_]: Updated.
+
+	(gray_hline) [FT_DEBUG_LEVEL_TRACE]: Fix condition.
+	Use FT_TRACE7.
+	(gray_dump_cells): Make it `static void'.
+	(gray_convert_glyph): Use FT_TRACE7.
+
+	(FT_Outline_Decompose) [_STANDALONE_]: Synchronize with version in
+	ftoutln.c.
+
+	* src/base/ftadvanc.c (FT_Get_Advance, FT_Get_Advances): Use
+	FT_ERROR_BASE.
+
+	* docs/formats.txt: Updated.
+
+2008-09-19  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/ftmac.c: Import sfnt-wrapped Type1 and sfnt-wrapped
+	CID-keyed font support.
+	* builds/mac/ftmac.c: Ditto.
+
+2008-09-19  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/ftobjs.c (Mac_Read_sfnt_Resource): Fix double free bug in
+	sfnt-wrapped Type1 and sfnt-wrapped CID-keyed font support code.
+	`open_face_from_buffer' frees the passed buffer if it cannot open a
+	face from the buffer, so the caller must not free it.
+
+2008-09-19  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/ftobjs.c (Mac_Read_sfnt_Resource): Add initial support
+	for sfnt-wrapped Type1 and sfnt-wrapped CID-keyed font.
+	(ft_lookup_PS_in_sfnt): New function to look up `TYP1' or `CID '
+	table in sfnt table directory.  It is used before loading TrueType
+	font driver.
+
+	* docs/CHANGES: Add note about the current status of sfnt-wrapped
+	Type1 and sfnt-wrapped CID-keyed font support.
+
+2008-09-18  Werner Lemberg  <wl@gnu.org>
+
+	* src/base/ftsystem.c (FT_Done_Memory): Use ft_sfree directly for
+	orthogonality (ft_free and ft_sfree could belong to different memory
+	pools).  This fixes Savannah bug #24297.
+
+2008-09-18  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/cff/cffobjs.c (cff_face_init): Use TTAG_OTTO defined
+	in ttags.h instead of numerical value 0x4F54544FL.
+
+2008-09-16  Werner Lemberg  <wl@gnu.org>
+
+	* src/cff/cffgload.h, src/cff/cffgload.c
+	(cff_decoder_set_width_only): Eliminate function call.
+
+2008-09-15  George Williams  <gww@silcom.com>
+
+	Fix Savannah bug #24179, reported by Bram Tassyns.
+
+	* src/type1/t1load.c (mm_axis_unmap, T1_Get_MM_Var): Fix computation
+	of default values.
+
+2008-09-15  Werner Lemberg  <wl@gnu.org>
+
+	* src/tools/glnames.py (main): Surround `ft_get_adobe_glyph_index'
+	and `ft_adobe_glyph_list' with FT_CONFIG_OPTION_ADOBE_GLYPH_LIST to
+	prevent unconditional definition.  This fixes Savannah bug #24241.
+
+	* src/psnames/pstables.h: Regenerated.
+
+2008-09-13  Werner Lemberg  <wl@gnu.org>
+
+	* autogen.sh, builds/unix/configure.raw,
+	include/freetype/config/ftconfig.h, builds/unix/ftconfig.in: Minor
+	beautifying.
+
+	* include/freetype/ftadvanc.h, include/freetype/ftgasp.h,
+	include/freetype/ftlcdfil.h: Protect against FreeType 1.
+	Some other minor fixes.
+
+	* devel/ftoption.h: Synchronize with
+	include/freetype/config/ftoption.h.
+
+2008-09-11  Werner Lemberg  <wl@gnu.org>
+
+	* src/base/ftbase.c: Include ftadvanc.c.
+
+2008-09-11  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* builds/unix/ftconfig.in: Duplicate the cpp computation of
+	FT_SIZEOF_{INT|LONG} from include/freetype/config/ftconfig.h.
+	(FT_USE_AUTOCONF_SIZEOF_TYPES): New macro.  If defined, the cpp
+	computation is disabled and the statically configured sizes are
+	used.  This fixes Savannah bug #21250.
+
+	* builds/unix/configure.raw: Add the checks to compare the cpp
+	computation results of the bit length of int and long versus the
+	sizes detected by running `configure'.  If the results are
+	different, FT_USE_AUTOCONF_SIZEOF_TYPES is defined to prioritize the
+	results.
+	New option --{enable|disable}-biarch-config is added to define or
+	undefine FT_USE_AUTOCONF_SIZEOF_TYPES manually.
+
+2008-09-05  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* builds/unix/configure.raw: Clear FT2_EXTRA_LIBS when Carbon or
+	ApplicationService framework is missing.  Although this value is not
+	used in building of FreeType2, it is written in `freetype2.pc' and
+	`freetype-config'.
+
+2008-09-01  david turner  <david@freetype.org>
+
+	* src/cache/ftccmap.c (FTC_CMapCache_Lookup): Accept a negative cmap
+	index to mean `use default cached FT_Face's charmap'.  This fixes
+	Savannah bug #22625.
+	* include/freetype/ftcache.h: Document it.
+
+
+	Make FT_MulFix an inlined function.  This is done to speed up
+	FreeType a little (on x86 3% when loading+hinting, 10% when
+	rendering, ARM savings are more important though).  Disable this by
+	undefining FT_CONFIG_OPTION_INLINE_MULFIX.
+
+	Use of assembler code can now be controlled with
+	FT_CONFIG_OPTION_NO_ASSEMBLER.
+
+	* include/freetype/config/ftconfig.h, builds/unix/ftconfig.in
+	[!FT_CONFIG_OPTION_NO_ASSEMBLER] (FT_MulFix_arm): New assembler
+	implementation.
+	[!FT_CONFIG_OPTION_NO_ASSEMBLER] (FT_MulFix_i386): Assembler
+	implementation taken from `ftcalc.c'.
+	[!FT_CONFIG_OPTION_NO_ASSEMBLER] (FT_MULFIX_ASSEMBLER): New macro
+	which is defined to the platform-specific assembler implementation
+	of FT_MulFix.
+	[FT_CONFIG_OPTION_INLINE_MULFIX && FT_MULFIX_ASSEMBLER]
+	(FT_MULFIX_INLINED): New macro.
+
+	* include/freetype/config/ftoption.h (FT_CONFIG_OPTION_NO_ASSEMBLER,
+	FT_CONFIG_OPTION_INLINE_MULFIX): New macros.
+
+	* include/freetype/freetype.h: Updated to handle FT_MULFIX_INLINED.
+
+	* src/base/ftcalc.c: Updated to use FT_MULFIX_ASSEMBLER and
+	FT_MULFIX_INLINED.
+
+
+	Add a new header named FT_ADVANCES_H declaring some new APIs to
+	extract the advances of one or more glyphs without necessarily
+	loading their outlines.  Also provide `fast loaders' for the
+	TrueType, Type1, and CFF font drivers (more to come later).
+
+	* src/base/ftadvanc.c, include/freetype/ftadvanc.h: New files.
+
+	* include/freetype/config/ftheader.h (FT_ADVANCES_H): New macro.
+	* include/freetype/freetype.h (FT_LOAD_ADVANCE_ONLY): New macro.
+
+	* include/freetype/internal/ftdriver.h (FT_Face_GetAdvancesFunc):
+	`flags' and `advances' are now of type `FT_UInt' and `FT_Fixed',
+	respectively.
+
+	* src/base/Jamfile (_sources), src/base/rules.mk (BASE_SRC): Add
+	ftadvanc.c.
+
+	* src/cff/cffdrivr.c (cff_get_advances): New function.
+	(cff_driver_class): Register it.
+
+	* src/cff/cffgload.c (cff_decoder_set_width_only): New function.
+	(cff_decoder_parse_charstrings): Handle `width_only'.
+	(cff_slot_load): Handle FT_LOAD_ADVANCE_ONLY.
+
+	* src/cff/cffgload.h (cff_decoder): New element `width_only'.
+	(cff_decoder_set_width_only): New declaration.
+
+	* src/truetype/ttdriver.c (tt_get_advances): New function.
+	(tt_driver_class): Register it.
+
+	* src/truetype/ttgload.c (Get_HMetrics, Get_VMetrics): Renamed to...
+	(TT_Get_HMetrics, TT_Get_VMetrics): This.
+	Update callers.
+	* src/truetype/ttgload.h: Declare them.
+
+	* src/type1/t1gload.h, src/type1/t1gload.c (T1_Get_Advances): New
+	function.
+	* src/type1/t1driver.c (t1_driver_class): Register T1_Get_Advances.
+
+
+	Add checks for minimum version of the `autotools' stuff.
+
+	* autogen.sh: Implement it.
+	(get_major_version, get_minor_version, get_patch_version,
+	compare_to_minimum_version, check_tool_version): New auxiliary
+	functions.
+
+	* README.CVS: Document it.
+
+2008-08-29  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/sfnt/sfobjs.c (sfnt_open_font): Use TTAG_OTTO defined in
+	ttags.h instead of FT_MAKE_TAG( 'O', 'T', 'T', 'O' ).
+
+2008-08-28  Werner Lemberg  <wl@gnu.org>
+
+	* src/type1/t1load.c (parse_encoding): Protect against infinite
+	loop.  This fixes Savannah bug #24150 (where a patch has been posted
+	too).
+
+2008-08-23  Werner Lemberg  <wl@gnu.org>
+
+	* src/type/t1afm.c (compare_kern_pairs), src/pxaux/afmparse.c
+	(afm_compare_kern_pairs): Fix comparison.  This fixes Savannah bug
+	#24119.
+
+2008-08-19  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/ftobjs.c (FT_Stream_New): Initialize *astream always,
+	even if passed library or arguments are invalid.  This fixes a bug
+	that an uninitialized stream is freed when an invalid library handle
+	is passed.  Originally proposed by Mike Fabian, 2008/08/18 on
+	freetype-devel.
+	(FT_Open_Face): Ditto (stream).
+	(load_face_in_embedded_rfork): Ditto (stream2).
+
+2008-08-18  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/base/ftmac.c: Add a fallback to guess the availability of the
+	`ResourceIndex' type.  It is used when built without configure
+	(e.g., a build with Jam).
+	* builds/mac/ftmac.c: Ditto.
+	* builds/unix/configure.raw: Set HAVE_TYPE_RESOURCE_INDEX to 1 or 0
+	explicitly, even if `ResourceIndex' is unavailable.
+
+2008-08-18  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* builds/unix/configure.raw: In checking of Mac OS X features,
+	all-in-one header file `Carbon.h' is replaced by the minimum
+	header file `CoreServices.h', similar to current src/base/ftmac.c.
+
+2008-08-18  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* src/sfnt/ttcmap.c (tt_cmap2_validate): Skip the validation of
+	sub-header when its code_count is 0.  Many Japanese Dynalab fonts
+	include such an empty sub-header (code_count == 0, first_code == 0
+	delta == 0, but offset != 0) as the second sub-header in SJIS cmap.
+
+2008-08-04  Werner Lemberg  <wl@gnu.org>
+
+	* src/type1/t1tokens.h: Handle `ForceBold' keyword.  This fixes
+	Savannah bug #23995.
+
+	* src/cid/cidload.c (parse_expansion_factor): New callback function.
+	(cid_field_records): Use it for `ExpansionFactor'.
+	* src/cod/cidtoken.h: Handle `ForceBold' keyword.
+	Don't handle `ExpansionFactor'.
+
+2008-08-04  Bram Tassyns  <bramt@enfocus.be>
+
+	* src/cff/cffparse.c (cff_parse_fixed_scaled): Fix thinko which
+	resulted in incorrect scaling.  This fixes Savannah bug #23973.
+
+2008-08-04  Werner Lemberg  <wl@gnu.org>
+
+	Be more tolerant w.r.t. invalid entries in SFNT table directory.
+
+	* src/sfnt/ttload.c (check_table_dir): Ignore invalid entries and
+	adjust table count.
+	Add more trace messages.
+	(tt_face_load_font_dir): Updated.
+
+2008-07-30  Werner Lemberg  <wl@gnu.org>
+
+	* src/cff/cffgload.c (cff_decoder_parse_charstrings): No longer
+	assume that the first argument on the stack is the bottom-most
+	element.  Two reasons:
+
+	  o According to people from Adobe it is missing in the Type 2
+	    specification that pushing of additional, superfluous arguments
+	    on the stack is prohibited.
+
+	  o Acroread in general handles fonts differently, namely by popping
+	    the number of arguments needed for a particular operand (as a PS
+	    interpreter would do).  In case of buggy fonts this causes a
+	    different interpretation which of the elements on the stack are
+	    superfluous and which not.
+
+	Since there are CFF subfonts (embedded in PDFs) which rely on
+	Acroread's behaviour, FreeType now does the same.
+
+2008-07-27  Werner Lemberg  <wl@gnu.org>
+
+	Add extra mappings for `Tcommaaccent' and `tcommaaccent'.  This
+	fixes Savannah bug #23940.
+
+	* src/psnames/psmodule.c (WGL_EXTRA_LIST_SIZE): Rename to...
+	(EXTRA_GLYPH_LIST_SIZE): This.
+	Increase by 2.
+	(ft_wgl_extra_unicodes): Rename to...
+	(ft_extra_glyph_unicodes): This.
+	Add two code values.
+	(ft_wgl_extra_glyph_names): Rename to...
+	(ft_extra_glyph_names): This.
+	Add two glyphs.
+	(ft_wgl_extra_glyph_name_offsets): Rename to...
+	(ft_extra_glyph_name_offsets): This.
+	Add two offsets.
+
+	(ps_check_wgl_name, ps_check_wgl_unicode): Rename to...
+	(ps_check_extra_glyph_name, ps_check_extra_glyph_unicode): This.
+	Updated.
+	(ps_unicodes_init): Updated.
+
+2008-07-26  Werner Lemberg  <wl@gnu.org>
+
+	* src/cff/cffgload.c (cff_decoder_prepare,
+	cff_decoder_parse_charstrings): Improve debug output.
+
+2008-07-22  Martin McBride  <mmcbride@emtex.com>
+
+	* src/sfnt/ttcmap.c (tt_cmap4_validate, tt_cmap4_char_map_linear,
+	tt_cmap4_char_map_binary): Handle fonts which treat the last segment
+	specially.  According to the specification, such fonts would be
+	invalid but acroread accepts them.
+
+2008-07-16  Jon Foster  <Jon.Foster@cabot.co.uk>
+
+	* src/pfr/pfrdrivr.c (pfr_get_advance): Fix off-by-one error.
+
+	* src/base/ftcalc.c (FT_MulFix): Fix portability issue.
+
+	* src/sfnt/ttpost.c (MAC_NAME) [!FT_CONFIG_OPTION_POSTSCRIPT_NAMES]:
+	Fix compiler warning.
+
+2008-07-16  Werner Lemberg  <wl@gnu.org>
+
+	Handle CID-keyed fonts wrapped in an SFNT (with cmaps) correctly.
+
+	* src/cff/cffload.c (cff_font_load): Pass `pure_cff'.
+	Invert sids table only if `pure_cff' is set.
+	* src/cff/cffload.h: Udpated.
+
+	* src/cff/cffobjs.c (cff_face_init): Updated.
+	Set FT_FACE_FLAG_CID_KEYED only if pure_cff is set.
+
+	* docs/CHANGES: Updated.
+
+2008-07-09  Werner Lemberg  <wl@gnu.org>
+
+	* src/truetype/ttpload.c (tt_face_load_loca): Handle buggy fonts
+	where num_locations < num_glyphs.  Problem reported by Ding Li.
+
+2008-07-05  Werner Lemberg  <wl@gnu.org>
+
+	Since FreeType uses `$(value ...)', we now need GNU make 3.80 or
+	newer.  This fixes Savannah bug #23648.
+
+	* configure: zsh doesn't like ${1+"$@"}.
+	Update needed GNU make version.
+	* builds/toplevel.mk: Check for `$(eval ...)'.
+	* docs/INSTALL.GNU, docs/INSTALL.CROSS, docs/INSTALL.UNIX: Document
+	it.
+
+2008-07-04  Werner Lemberg  <wl@gnu.org>
+
+	* src/raster/ftraster.c (Draw_Sweep): If span is smaller than one
+	pixel, only check for dropouts if neither start nor end point lies
+	on a pixel center.  This fixes Savannah bug #23762.
+
+2008-06-29  Werner Lemberg  <wl@gnu.org>
+
+	* Version 2.3.7 released.
+	=========================
+
+
+	Tag sources with `VER-2-3-7'.
+
+	* docs/CHANGES, docs/VERSION.DLL: Update documentation and bump
+	version number to 2.3.7.
+
+	* README, Jamfile (RefDoc), builds/win32/visualc/index.html,
+	builds/win32/visualc/freetype.dsp,
+	builds/win32/visualc/freetype.vcproj,
+	builds/win32/visualce/index.html,
+	builds/win32/visualce/freetype.dsp,
+	builds/win32/visualce/freetype.vcproj: s/2.3.6/2.3.7/, s/236/237/.
+
+	* include/freetype/freetype.h (FREETYPE_PATCH): Set to 7.
+
+	* builds/unix/configure.raw (version_info): Set to 9:18:3.
+
+	* docs/release: Updated.
+
+2008-06-28  Werner Lemberg  <wl@gnu.org>
+
+	* src/ftglyph.c (FT_Matrix_Multiply, FT_Matrix_Invert): Move to...
+	* src/ftcalc.c: Here.  This fixes Savannah bug #23729.
+
+2008-06-27  Werner Lemberg  <wl@gnu.org>
+
+	* src/raster/ftraster.c (Vertical_Sweep_Drop, Horizontal_Sweep_Drop,
+	Horizontal_Gray_Sweep_Drop): Test for intersections which
+	degenerate to a single point can be ignored; this has been confirmed
+	by Greg Hitchcock from Microsoft.  (This was commented out code.)
+
+2008-06-26  Werner Lemberg  <wl@gnu.org>
+
+	Improve navigation in API reference.
+
+	* src/tools/docmaker/tohtml.py (html_header_3): Renamed to...
+	(html_header_6): This.
+	(html_header_3, html_header_3i, html_header_4, html_header_5,
+	html_header_5t): New strings.
+	(toc_footer_start, toc_footer_end): New strings.
+	(HtmlFormatter::html_header): Updated.
+	(HtmlFormatter::html_index_header, HtmlFormatter::html_toc_header):
+	New strings.
+	(HtmlFormatter::index_enter): Use `html_index_header'.
+	(HtmlFormatter::index_exit): Print `html_footer'.
+	(HtmlFormatter::toc_enter): Use `html_toc_header'.
+	(HtmlFormatter::toc_exit): Print proper footer.
+
+	Convert ~ to non-breakable space.
+
+	* src/tools/docmaker/tohtml.py (make_html_para): Implement it.
+	Update header files accordingly.
+
+2008-06-24  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* builds/unix/configure.raw: Check type `ResourceIndex' explicitly
+	and define HAVE_TYPE_RESOURCE_INDEX if it is defined.  Mac OS X 10.5
+	bundles 10.4u SDK with MAC_OS_X_VERSION_10_5 macro but without
+	ResourceIndex type definition.  The macro does not inform the type
+	availability.
+	* src/base/ftmac.c: More parentheses are inserted to clarify the
+	conditionals to disable legacy APIs in `10.5 and later' cases.  If
+	HAVE_TYPE_RESOURCE_INDEX is not defined, ResourceIndex is defined.
+
+2008-06-24  Werner Lemberg  <wl@gnu.org>
+
+	* src/truetype/ttinterp.c (Ins_SCANTYPE): Don't check rendering
+	mode.
+
+	* src/raster/ftraster.c (Render_Glyph, Render_Gray_Glyph,
+	Draw_Sweep): No-dropout mode is value 2, not value 0.
+	(Draw_Sweep): Really skip dropout handling for no-dropout mode.
+
+2008-06-24  Werner Lemberg  <wl@gnu.org>
+
+	* src/psaux/psobjs.c (t1_builder_close_contour): Don't add contour
+	if it consists of one point only.  Based on a patch from Savannah
+	bug #23683 (from John Tytgat).
+
+2008-06-22  Werner Lemberg  <wl@gnu.org>
+
+	* src/truetype/ttgload.c (TT_Load_Glyph): Protect bytecode stuff
+	with IS_HINTED.
+
+	* docs/CHANGES: Updated.
+
+2008-06-22  suzuki toshiya  <mpsuzuki@hiroshima-u.ac.jp>
+
+	* builds/unix/configure.raw: If CFLAGS has `-isysroot XXX' option
+	but LDFLAGS does not, import it to LDFLAGS.  The option is used to
+	specify non-default SDK on Mac OS X (e.g., universal binary SDK for
+	Mac OS X 10.4 on PowerPC platform).  Although Apple TechNote 2137
+	recommends to add the option only to CFLAGS, LDFLAGS should include
+	it because libfreetype.la is built with -no-undefined.  This fixes a
+	bug reported by Ryan Schmidt in MacPorts,
+	http://trac.macports.org/ticket/15331.
+
+2008-06-21  Werner Lemberg  <wl@gnu.org>
+
+	Enable access to the various dropout rules of the B&W rasterizer.
+	Pass dropout rules from the TT bytecode interpreter to the
+	rasterizer.
+
+	* include/freetype/ftimage.h (FT_OUTLINE_SMART_DROPOUTS,
+	FT_OUTLINE_EXCLUDE_STUBS): New flags for for FT_Outline.
+
+	* src/raster/ftraster.c (Vertical_Sweep_Drop, Horizontal_Sweep_Drop,
+	Horizontal_Gray_Sweep_Drop): Use same mode numbers as given in the
+	OpenType specification.
+	Fix mode 4 computation.
+	(Render_Glyph, Render_Gray_Glyph): Handle new outline flags.
+
+	* src/truetype/ttgload.c (TT_Load_Glyph) Convert scan conversion
+	mode to FT_OUTLINE_XXX flags.
+
+	* src/truetype/ttinterp.c (Ins_SCANCTRL): Enable ppem check.
+
+2008-06-19  Werner Lemberg  <wl@gnu.org>
+
+	* src/cff/cffobjs.c (cff_face_init): Compute final
+	`dict->units_per_em' value before assigning it to
+	`cffface->units_per_EM'.  Otherwise, CFFs without subfonts are
+	scaled incorrectly if the font matrix is non-standard.  This fixes
+	Savannah bug #23630.
+
+	* docs/CHANGES: Updated.
+
+2008-06-19  Werner Lemberg  <wl@gnu.org>
+
+	* src/type/t1objs.c (T1_Face_Init): Slightly improve algorithm fix
+	from 2008-06-19.
+
+2008-06-18  Werner Lemberg  <wl@gnu.org>
+
+	* src/type/t1objs.c (T1_Face_Init): Fix change from 2008-03-21.
+	Reported by Peter Weilbacher <mozilla@weilbacher.org>.
+
+	* docs/CHANGES: Updated.
+
+2008-06-15  George Williams  <gww@silcom.com>
+
+	* src/otvalid/otvgpos.c (otv_MarkBasePos_validate): Set
+	`valid->extra2' to 1.  This is undocumented in the OpenType 1.5
+	specification.
+
+2008-06-15  Werner Lemberg  <wl@gnu.org>
+
+	* src/base/ftcalc.c (FT_MulFix) <asm>: Protect registers correctly
+	from clobbering.  Patch from Savannah bug report #23556.
+
+	* docs/CHANGES: Document it.
+
+2008-06-10  Werner Lemberg  <wl@gnu.org>
+
+	* autogen.sh: Add option `--install' to libtoolize.
+
 2008-06-10  Werner Lemberg  <wl@gnu.org>
 
 	* Version 2.3.6 released.
@@ -159,7 +1746,7 @@
 
 	* docs/CHANGES: Updated.
 
-2008-05-18  David Turner <david@freetype.org>
+2008-05-18  David Turner  <david@freetype.org>
 
 	* src/psnames/psmodule.c (ft_wgl_extra_unicodes,
 	ft_wgl_extra_glyph_names, ft_wgl_extra_glyph_name_offsets,
@@ -343,7 +1930,7 @@
 
 2008-03-13  Derek Clegg  <dclegg@apple.com>
 
-	* src/truetype/ttgxvar.c (TT_Get_MM_Var): Fix named style loop. 
+	* src/truetype/ttgxvar.c (TT_Get_MM_Var): Fix named style loop.
 	Patch from Savannah bug #22541.
 
 2008-03-03  Masatoshi Kimura  <VYV03354@nifty.ne.jp>
@@ -599,13 +2186,14 @@
 	* doc/INSTALL.MAC: Comment on MACOSX_DEPLOYMENT_TARGET.
 
 	* include/freetype/ftmac.h: Deprecate FT_New_Face_From_FOND and
-	FT_GetFilePath_From_Mac_ATS_Name. Since Mac OS X 10.5, calling
+	FT_GetFilePath_From_Mac_ATS_Name.  Since Mac OS X 10.5, calling
 	Carbon functions from a forked process is classified as unsafe
-	by Apple. All Carbon-dependent functions should be deprecated.
+	by Apple.  All Carbon-dependent functions should be deprecated.
 
-	* src/base/ftmac.c: Use essential header files <Carbon/Carbon.h>
-	and <ApplicationServices/ApplicationServices.h> instead of
-	all-in-one header file <CoreServices/CoreServices.h>.
+	* src/base/ftmac.c: Use essential header files
+	<CoreServices/CoreServices.h> and
+	<ApplicationServices/ApplicationServices.h> instead of
+	all-in-one header file <Carbon/Carbon.h>.
 
 	Include <sys/syslimits.h> and replace HFS_MAXPATHLEN by Apple
 	genuine macro PATH_MAX.
@@ -645,7 +2233,7 @@
 2007-10-21  Werner Lemberg  <wl@gnu.org>
 
 	* src/sfnt/sfobjs.c (sfnt_load_face): Support bit 9 and prepare
-	support for bit 8 of the `fsSelection' field in the `OS/2' table. 
+	support for bit 8 of the `fsSelection' field in the `OS/2' table.
 	MS is already using this; hopefully, this becomes part of OpenType
 	1.5.
 	Prepare also support for `name' IDs 21 (WWS_FAMILY) and 22
@@ -1479,7 +3067,7 @@
 	* src/base/ftglyph.c (FT_Glyph_Copy): Always set second argument to
 	zero in case of error.  This fixes Savannah bug #19689.
 
-2007-04-25  Boris Letocha <b.letocha@cz.gmc.net>
+2007-04-25  Boris Letocha  <b.letocha@cz.gmc.net>
 
 	* src/truetype/ttobjs.c: Fix a typo that created a speed regression
 	in the TrueType bytecode loader.
@@ -2278,7 +3866,7 @@
 
 	* src/base/ftmac.c: Specialized for Mac OS X only.
 	* builds/unix/ftconfig.in: Fixed for ppc64 missing Carbon framework.
-	* builds/unix/configure.raw: Ditto. When explicit switches for
+	* builds/unix/configure.raw: Ditto.  When explicit switches for
 	FSSpec/FSRef/QuickDraw/ATS availability are given to configure,
 	builds/mac/ftmac.c is used instead of default src/base/ftmac.c.
 
@@ -2898,7 +4486,7 @@
 	buggy by design.  Always return -1.
 
 
-	Improvements to native TrueType hinting. This is a first try,
+	Improvements to native TrueType hinting.  This is a first try,
 	controlled by the FIX_BYTECODE macro in src/truetype/ttinterp.c.
 
 	* include/freetype/internal/ftgloadr.h (FT_GlyphLoadRec): Add member
@@ -2946,7 +4534,7 @@
 	Jens:
 	http://lists.nongnu.org/archive/html/freetype-devel/2006-08/msg00004.htm.
 
-	* src/otvalid/otvmod.c: Replace `ft_validator_run' by `ft_setjmp'. 
+	* src/otvalid/otvmod.c: Replace `ft_validator_run' by `ft_setjmp'.
 	It reverts the change introduced on 2005-08-20.
 
 	* src/gxvalid/gxvmod.c: Ditto.
@@ -2965,7 +4553,7 @@
 
 	* src/cid/cidtoken.h: Adjust invocations of T1_FIELD_XXX.
 
-	* src/psaux/psobjs.c: Add macro FT_COMPONENT for tracing. 
+	* src/psaux/psobjs.c: Add macro FT_COMPONENT for tracing.
 	(ps_parser_to_token): Report a PostScript key as T1_TOKEN_TYPE_KEY,
 	not T1_TOKEN_TYPE_ANY.
 	(ps_parser_load_field): Make sure a token that should be a string or
@@ -3048,8 +4636,8 @@
 	want to skip the array.
 
 	* src/psaux/t1decode.c (t1_decoder_parse_charstrings): Add support
-	for (partially commented out) othersubrs 19-25, 27, and 28. 
-	(t1_decoder_init): Initialize new fields `face' and `buildchar'. 
+	for (partially commented out) othersubrs 19-25, 27, and 28.
+	(t1_decoder_init): Initialize new fields `face' and `buildchar'.
 	(t1_decoder_done): Release new field `buildchar'.
 
 	* src/type1/t1load.c (parse_buildchar, parse_private): New
@@ -3352,7 +4940,7 @@
 
 ----------------------------------------------------------------------------
 
-Copyright 2006, 2007, 2008 by
+Copyright 2006, 2007, 2008, 2009 by
 David Turner, Robert Wilhelm, and Werner Lemberg.
 
 This file is part of the FreeType project, and may only be used, modified,

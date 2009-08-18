@@ -2288,7 +2288,7 @@ void QTextControl::print(QPrinter *printer) const
 {
 #ifndef QT_NO_PRINTER
     Q_D(const QTextControl);
-    if (printer && !printer->isValid())
+    if (!printer || !printer->isValid())
         return;
     QTextDocument *tempDoc = 0;
     const QTextDocument *doc = d->doc;

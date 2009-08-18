@@ -149,7 +149,7 @@ UnixMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "LINK          = " << var("QMAKE_LINK") << endl;
         t << "LFLAGS        = " << var("QMAKE_LFLAGS") << endl;
         t << "LIBS          = " << "$(SUBLIBS) " << var("QMAKE_FRAMEWORKDIR_FLAGS") << " "
-          << var("QMAKE_LIBDIR_FLAGS") << " " << var("QMAKE_LIBS") << endl;
+          << var("QMAKE_LIBDIR_FLAGS") << " " << var("QMAKE_LIBS") << " " << var("QMAKE_LIBS_PRIVATE") << endl;
     }
 
     t << "AR            = " << var("QMAKE_AR") << endl;
@@ -1424,13 +1424,6 @@ UnixMakefileGenerator::writePkgConfigFile()
     t << "Version: " << project->first("VERSION") << endl;
 
     // libs
-    QStringList libs;
-    if(!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS")) {
-        libs = project->values("QMAKE_INTERNAL_PRL_LIBS");
-    } else {
-        libs << "QMAKE_LIBS"; //obvious one
-    }
-    libs << "QMAKE_LFLAGS_THREAD"; //not sure about this one, but what about things like -pthread?
     t << "Libs: ";
     QString pkgConfiglibDir;
     QString pkgConfiglibName;
@@ -1450,6 +1443,15 @@ UnixMakefileGenerator::writePkgConfigFile()
         pkgConfiglibName = "-l" + lname.left(lname.length()-Option::libtool_ext.length());
     }
     t << pkgConfiglibDir << " " << pkgConfiglibName << " " << endl;
+
+    QStringList libs;
+    if(!project->isEmpty("QMAKE_INTERNAL_PRL_LIBS")) {
+        libs = project->values("QMAKE_INTERNAL_PRL_LIBS");
+    } else {
+        libs << "QMAKE_LIBS"; //obvious one
+    }
+    libs << "QMAKE_LIBS_PRIVATE";
+    libs << "QMAKE_LFLAGS_THREAD"; //not sure about this one, but what about things like -pthread?
     t << "Libs.private: ";
     for(QStringList::ConstIterator it = libs.begin(); it != libs.end(); ++it) {
         t << project->values((*it)).join(" ") << " ";

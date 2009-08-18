@@ -51,8 +51,7 @@ QT_BEGIN_NAMESPACE
 
     \brief The QPixmapCache class provides an application-wide cache for pixmaps.
 
-    \ingroup environment
-    \ingroup multimedia
+    \ingroup painting
 
     This class is a tool for optimized drawing with QPixmap. You can
     use it to store temporary pixmaps that are expensive to generate

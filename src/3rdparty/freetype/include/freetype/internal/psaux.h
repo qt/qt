@@ -5,7 +5,7 @@
 /*    Auxiliary functions and data structures related to PostScript fonts  */
 /*    (specification).                                                     */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002, 2003, 2004, 2006, 2008 by                   */
+/*  Copyright 1996-2001, 2002, 2003, 2004, 2006, 2008, 2009 by             */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -197,6 +197,7 @@ FT_BEGIN_HEADER
   {
     T1_FIELD_LOCATION_CID_INFO,
     T1_FIELD_LOCATION_FONT_DICT,
+    T1_FIELD_LOCATION_FONT_EXTRA,
     T1_FIELD_LOCATION_FONT_INFO,
     T1_FIELD_LOCATION_PRIVATE,
     T1_FIELD_LOCATION_BBOX,
@@ -227,7 +228,11 @@ FT_BEGIN_HEADER
     FT_UInt             array_max;    /* maximal number of elements for */
                                       /* array                          */
     FT_UInt             count_offset; /* offset of element count for    */
-                                      /* arrays                         */
+                                      /* arrays; must not be zero if in */
+                                      /* use -- in other words, a       */
+                                      /* `num_FOO' element must not     */
+                                      /* start the used structure if we */
+                                      /* parse a `FOO' array            */
     FT_UInt             dict;         /* where we expect it             */
   } T1_FieldRec;
 

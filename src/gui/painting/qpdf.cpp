@@ -313,7 +313,7 @@ QByteArray QPdf::generatePath(const QPainterPath &path, const QTransform &matrix
 
     Qt::FillRule fillRule = path.fillRule();
 
-    const char *op = 0;
+    const char *op = "";
     switch (flags) {
     case ClipPath:
         op = (fillRule == Qt::WindingFill) ? "W n\n" : "W* n\n";
@@ -1471,10 +1471,10 @@ void QPdfBaseEngine::setProperty(PrintEnginePropertyKey key, const QVariant &val
     {
         QList<QVariant> margins(value.toList());
         Q_ASSERT(margins.size() == 4);
-        d->leftMargin = margins.at(0).toDouble();
-        d->topMargin = margins.at(1).toDouble();
-        d->rightMargin = margins.at(2).toDouble();
-        d->bottomMargin = margins.at(3).toDouble();
+        d->leftMargin = margins.at(0).toReal();
+        d->topMargin = margins.at(1).toReal();
+        d->rightMargin = margins.at(2).toReal();
+        d->bottomMargin = margins.at(3).toReal();
         d->hasCustomPageMargins = true;
         break;
     }
@@ -1576,7 +1576,7 @@ QVariant QPdfBaseEngine::property(PrintEnginePropertyKey key) const
             margins << d->leftMargin << d->topMargin
                     << d->rightMargin << d->bottomMargin;
         } else {
-            const int defaultMargin = 10; // ~3.5 mm
+            const qreal defaultMargin = 10; // ~3.5 mm
             margins << defaultMargin << defaultMargin
                     << defaultMargin << defaultMargin;
         }
@@ -1773,6 +1773,9 @@ bool QPdfBaseEnginePrivate::openPrintDevice()
                 (void)execv("/bin/lpr", lprargs);
                 (void)execv("/usr/bin/lp", lpargs);
                 (void)execv("/usr/bin/lpr", lprargs);
+
+                delete []lpargs;
+                delete []lprargs;
             }
             // if we couldn't exec anything, close the fd,
             // wait for a second so the parent process (the

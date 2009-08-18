@@ -118,7 +118,7 @@ void QFocusFrame::initStyleOption(QStyleOption *option) const
     outside of a widget's normal paintable area.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     Normally an application will not need to create its own
     QFocusFrame as QStyle will handle this detail for

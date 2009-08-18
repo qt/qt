@@ -92,8 +92,8 @@ Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook 
 /*!
   \class QFileDialog
   \brief The QFileDialog class provides a dialog that allow users to select files or directories.
-  \ingroup dialogs
-  \mainclass
+  \ingroup standard-dialogs
+
 
   The QFileDialog class enables a user to traverse the file system in
   order to select one or many files or a directory.
@@ -2730,7 +2730,7 @@ void QFileDialogPrivate::_q_updateOkButton()
     if (lineEditText.startsWith(QLatin1String("//")) || lineEditText.startsWith(QLatin1Char('\\'))) {
         button->setEnabled(true);
         if (acceptMode == QFileDialog::AcceptSave)
-            button->setText(isOpenDirectory ? QFileDialog::tr("&Open") : acceptLabel);
+            button->setText(acceptLabel);
         return;
     }
 

@@ -49,7 +49,8 @@ QT_BEGIN_NAMESPACE
     \brief The QSsl namespace declares enums common to all SSL classes in QtNetwork.
     \since 4.3
 
-    \ingroup io
+    \ingroup network
+    \ingroup ssl
     \inmodule QtNetwork
 */
 

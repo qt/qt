@@ -145,7 +145,7 @@ unix:x11 {
             HEADERS += \
                 kernel/qguieventdispatcher_glib_p.h
             QMAKE_CXXFLAGS += $$QT_CFLAGS_GLIB
-	    LIBS +=$$QT_LIBS_GLIB
+	    LIBS_PRIVATE +=$$QT_LIBS_GLIB
 	}
             SOURCES += \
 		kernel/qeventdispatcher_x11.cpp
@@ -226,7 +226,7 @@ embedded {
         QMAKE_BUNDLE_DATA += MENU_NIB
         RESOURCES += mac/macresources.qrc
 
-        LIBS += -framework AppKit
+        LIBS_PRIVATE += -framework AppKit
 }
 
 wince*: {

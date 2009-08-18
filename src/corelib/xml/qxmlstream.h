@@ -42,13 +42,13 @@
 #ifndef QXMLSTREAM_H
 #define QXMLSTREAM_H
 
-#include <QtCore/QIODevice>
+#include <QtCore/qiodevice.h>
 
 #ifndef QT_NO_XMLSTREAM
 
-#include <QtCore/QString>
-#include <QtCore/QVector>
-#include <QtCore/QScopedPointer>
+#include <QtCore/qstring.h>
+#include <QtCore/qvector.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 

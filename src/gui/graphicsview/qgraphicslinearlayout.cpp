@@ -44,7 +44,6 @@
     \brief The QGraphicsLinearLayout class provides a horizontal or vertical
     layout for managing widgets in Graphics View.
     \since 4.4
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     The default orientation for a linear layout is Qt::Horizontal. You can

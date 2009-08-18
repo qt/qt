@@ -594,8 +594,8 @@ QByteArray::Data QByteArray::shared_empty = { Q_BASIC_ATOMIC_INITIALIZER(1),
 
     \ingroup tools
     \ingroup shared
-    \ingroup text
-    \mainclass
+    \ingroup string-processing
+
     \reentrant
 
     QByteArray can be used to store both raw bytes (including '\\0's)

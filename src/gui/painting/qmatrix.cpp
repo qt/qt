@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
     coordinate system.
     \obsolete
 
-    \ingroup multimedia
+    \ingroup painting
 
     A matrix specifies how to translate, scale, shear or rotate the
     coordinate system, and is typically used when rendering graphics.

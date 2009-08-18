@@ -383,10 +383,7 @@ LengthData ValueExtractor::lengthValue(const Value& v)
     if (data.unit != LengthData::None)
         s.chop(2);
 
-    bool ok;
-    data.number = s.toDouble(&ok);
-    if (!ok)
-        data.number = 0;
+    data.number = s.toDouble();
     return data;
 }
 
@@ -712,7 +709,7 @@ static ColorData parseColorValue(Value v)
 
     for (int i = 0; i < qMin(colorDigits.count(), 7); i += 2) {
         if (colorDigits.at(i).type == Value::Percentage) {
-            colorDigits[i].variant = colorDigits.at(i).variant.toDouble() * 255. / 100.;
+            colorDigits[i].variant = colorDigits.at(i).variant.toReal() * (255. / 100.);
             colorDigits[i].type = Value::Number;
         } else if (colorDigits.at(i).type != Value::Number) {
             return ColorData();
@@ -789,19 +786,19 @@ static BrushData parseBrushValue(const Value &v, const QPalette &pal)
             ColorData cd = parseColorValue(color);
             if(cd.type == ColorData::Role)
                 dependsOnThePalette = true;
-            stops.append(QGradientStop(stop.variant.toDouble(), colorFromData(cd, pal)));
+            stops.append(QGradientStop(stop.variant.toReal(), colorFromData(cd, pal)));
         } else {
             parser.next();
             Value value;
-            parser.parseTerm(&value);
+            (void)parser.parseTerm(&value);
             if (attr.compare(QLatin1String("spread"), Qt::CaseInsensitive) == 0) {
                 spread = spreads.indexOf(value.variant.toString());
             } else {
-                vars[attr] = value.variant.toString().toDouble();
+                vars[attr] = value.variant.toReal();
             }
         }
         parser.skipSpace();
-        parser.test(COMMA);
+        (void)parser.test(COMMA);
     }
 
     if (gradType == 0) {
@@ -1080,8 +1077,8 @@ static bool setFontSizeFromValue(Value value, QFont *font, int *fontSizeAdjustme
     if (s.endsWith(QLatin1String("pt"), Qt::CaseInsensitive)) {
         s.chop(2);
         value.variant = s;
-        if (value.variant.convert(QVariant::Double)) {
-            font->setPointSizeF(value.variant.toDouble());
+        if (value.variant.convert((QVariant::Type)qMetaTypeId<qreal>())) {
+            font->setPointSizeF(value.variant.toReal());
             valid = true;
         }
     } else if (s.endsWith(QLatin1String("px"), Qt::CaseInsensitive)) {
@@ -2462,7 +2459,7 @@ bool Parser::parseAttrib(AttributeSelector *attr)
 
 bool Parser::parsePseudo(Pseudo *pseudo)
 {
-    test(COLON);
+    (void)test(COLON);
     pseudo->negated = test(EXCLAMATION_SYM);
     if (test(IDENT)) {
         pseudo->name = lexem();

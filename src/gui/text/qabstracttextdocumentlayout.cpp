@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
     \brief The QAbstractTextDocumentLayout class is an abstract base
     class used to implement custom layouts for QTextDocuments.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     The standard layout provided by Qt can handle simple word processing
     including inline images, lists and tables.

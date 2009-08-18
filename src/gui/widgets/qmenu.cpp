@@ -1207,9 +1207,9 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     \brief The QMenu class provides a menu widget for use in menu
     bars, context menus, and other popup menus.
 
-    \ingroup application
+    \ingroup mainwindow-classes
     \ingroup basicwidgets
-    \mainclass
+
 
     A menu widget is a selection menu. It can be either a pull-down
     menu in a menu bar or a standalone context menu. Pull-down menus

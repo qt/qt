@@ -127,6 +127,7 @@ UnixMakefileGenerator::init()
     project->values("QMAKE_ORIG_TARGET") = project->values("TARGET");
     project->values("QMAKE_ORIG_DESTDIR") = project->values("DESTDIR");
     project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
+    project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
     if((!project->isEmpty("QMAKE_LIB_FLAG") && !project->isActiveConfig("staticlib")) ||
        (project->isActiveConfig("qt") &&  project->isActiveConfig("plugin"))) {
         if(configs.indexOf("dll") == -1) configs.append("dll");
@@ -261,7 +262,7 @@ UnixMakefileGenerator::init()
                     bundle += project->first("QMAKE_BUNDLE_EXTENSION");
                 else if(!bundle.endsWith(".plugin"))
                     bundle += ".plugin";
-                if(!project->isEmpty("QMAKE_BUNDLE_LOCATION"))
+                if(project->isEmpty("QMAKE_BUNDLE_LOCATION"))
                     project->values("QMAKE_BUNDLE_LOCATION").append("Contents/MacOS");
             } else {
                 if(!project->isEmpty("QMAKE_FRAMEWORK_BUNDLE_NAME"))
@@ -441,7 +442,7 @@ UnixMakefileGenerator::findLibraries()
     QList<QMakeLocalFileName> libdirs, frameworkdirs;
     frameworkdirs.append(QMakeLocalFileName("/System/Library/Frameworks"));
     frameworkdirs.append(QMakeLocalFileName("/Library/Frameworks"));
-    const QString lflags[] = { "QMAKE_LIBDIR_FLAGS", "QMAKE_FRAMEWORKPATH_FLAGS", "QMAKE_LFLAGS", "QMAKE_LIBS", QString() };
+    const QString lflags[] = { "QMAKE_LIBDIR_FLAGS", "QMAKE_FRAMEWORKPATH_FLAGS", "QMAKE_LFLAGS", "QMAKE_LIBS", "QMAKE_LIBS_PRIVATE", QString() };
     for(int i = 0; !lflags[i].isNull(); i++) {
         QStringList &l = project->values(lflags[i]);
         for(QStringList::Iterator it = l.begin(); it != l.end(); ++it) {

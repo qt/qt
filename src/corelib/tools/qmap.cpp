@@ -207,7 +207,7 @@ void QMapData::dump()
 
     \ingroup tools
     \ingroup shared
-    \mainclass
+
     \reentrant
 
     QMap\<Key, T\> is one of Qt's generic \l{container classes}. It
@@ -1330,7 +1330,7 @@ void QMapData::dump()
 
     \ingroup tools
     \ingroup shared
-    \mainclass
+
     \reentrant
 
     QMultiMap\<Key, T\> is one of Qt's generic \l{container classes}.

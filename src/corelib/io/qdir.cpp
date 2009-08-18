@@ -58,7 +58,7 @@
 
 #include "qvarlengtharray.h"
 
-#include "../kernel/qcoreglobaldata_p.h"
+#include "private/qcoreglobaldata_p.h"
 #include <stdlib.h>
 
 QT_BEGIN_NAMESPACE
@@ -346,7 +346,7 @@ void QDirPrivate::detach(bool createFileEngine)
     \ingroup io
     \ingroup shared
     \reentrant
-    \mainclass
+
 
     A QDir is used to manipulate path names, access information
     regarding paths and files, and manipulate the underlying file
