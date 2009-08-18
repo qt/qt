@@ -550,7 +550,11 @@ void tst_QMainWindow::menuBar()
         mw.setMenuBar(mb1);
         QVERIFY(mw.menuBar() != 0);
         QCOMPARE(mw.menuBar(), (QMenuBar *)mb1);
+#ifdef Q_OS_WINCE_WM
+        QCOMPARE(mb1->parentWidget(), (QWidget*)0);
+#else
         QCOMPARE(mb1->parentWidget(), (QWidget *)&mw);
+#endif
 
         mw.setMenuBar(0);
         QVERIFY(mw.menuBar() != 0);
@@ -561,7 +565,11 @@ void tst_QMainWindow::menuBar()
         mw.setMenuBar(mb2);
         QVERIFY(mw.menuBar() != 0);
         QCOMPARE(mw.menuBar(), (QMenuBar *)mb2);
+#ifdef Q_OS_WINCE_WM
+        QCOMPARE(mb2->parentWidget(), (QWidget*)0);
+#else
         QCOMPARE(mb2->parentWidget(), (QWidget *)&mw);
+#endif
 
         mw.setMenuBar(0);
         QVERIFY(mw.menuBar() != 0);
