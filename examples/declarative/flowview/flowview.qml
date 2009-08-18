@@ -25,8 +25,8 @@ Rect {
             fromState: "" ; toState: "rotated"
             reversible: true
             SequentialAnimation {
-                NumberAnimation { filter: [TopBar, BottomBar]; properties: "x,y"; easing: "easeInOutQuad" }
-                NumberAnimation { filter: [LeftBar, RightBar]; properties: "x,y"; easing: "easeInOutQuad"}
+                NumberAnimation { targets: [TopBar, BottomBar]; properties: "x,y"; easing: "easeInOutQuad" }
+                NumberAnimation { targets: [LeftBar, RightBar]; properties: "x,y"; easing: "easeInOutQuad"}
             }
         }
 
