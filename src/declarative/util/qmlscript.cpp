@@ -187,18 +187,11 @@ void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &s
     QmlContext *context = qmlContext(q);
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
-    QScriptContext *currentContext = scriptEngine->currentContext();
-    QScriptValueList oldScopeChain = currentContext->scopeChain();
-    QScriptValue oldact = currentContext->activationObject();
-
-    for (int i = 0; i < oldScopeChain.size(); ++i) {
-        currentContext->popScope();
-    }
+    QScriptContext *scriptContext = scriptEngine->pushContext();
     for (int i = context->d_func()->scopeChain.size() - 1; i > -1; --i) {
-        currentContext->pushScope(context->d_func()->scopeChain.at(i));
+        scriptContext->pushScope(context->d_func()->scopeChain.at(i));
     }
-
-    currentContext->setActivationObject(context->d_func()->scopeChain.at(0));
+    scriptContext->setActivationObject(context->d_func()->scopeChain.at(0));
 
     QScriptValue val = scriptEngine->evaluate(script, source);
     if (scriptEngine->hasUncaughtException()) {
@@ -215,13 +208,7 @@ void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &s
         }
     }
 
-    currentContext->setActivationObject(oldact);
-
-    for (int i = 0; i < context->d_func()->scopeChain.size(); ++i)
-        currentContext->popScope();
-
-    for (int i = oldScopeChain.size() - 1; i > -1; --i)
-        currentContext->pushScope(oldScopeChain.at(i));
+    scriptEngine->popContext();
 }
 
 QT_END_NAMESPACE
