@@ -2821,10 +2821,25 @@ void tst_QScriptValue::equals()
     QScriptValue qobj2 = eng.newQObject(this);
     QVERIFY(qobj1.equals(qobj2)); // compares the QObject pointers
 
+    QScriptValue compareFun = eng.evaluate("(function(a, b) { return a == b; })");
+    QVERIFY(compareFun.isFunction());
+    {
+        QScriptValue ret = compareFun.call(QScriptValue(), QScriptValueList() << qobj1 << qobj2);
+        QVERIFY(ret.isBool());
+        QEXPECT_FAIL("", "In JSC back-end, == on QObject wrappers doesn't work", Continue);
+        QVERIFY(ret.toBool());
+    }
+
     {
         QScriptValue var1 = eng.newVariant(QVariant(false));
         QScriptValue var2 = eng.newVariant(QVariant(false));
         QVERIFY(var1.equals(var2));
+        {
+            QScriptValue ret = compareFun.call(QScriptValue(), QScriptValueList() << var1 << var2);
+            QVERIFY(ret.isBool());
+            QEXPECT_FAIL("", "In JSC back-end, == on QVariant wrappers doesn't work", Continue);
+            QVERIFY(ret.toBool());
+        }
     }
     {
         QScriptValue var1 = eng.newVariant(QVariant(false));
