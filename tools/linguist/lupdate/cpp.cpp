@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 
 /* qmake ignore Q_OBJECT */
 
-static const char MagicComment[] = "TRANSLATOR ";
+static QString MagicComment(QLatin1String("TRANSLATOR"));
 
 #define STRING(s) static QString str##s(QLatin1String(#s))
 
@@ -1811,9 +1811,15 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 }
                 sourcetext.resize(ptr - (ushort *)sourcetext.data());
             } else {
-                comment = yyWord.simplified();
-                if (comment.startsWith(QLatin1String(MagicComment))) {
-                    comment.remove(0, sizeof(MagicComment) - 1);
+                const ushort *uc = (const ushort *)yyWord.unicode(); // Is zero-terminated
+                int idx = 0;
+                ushort c;
+                while ((c = uc[idx]) == ' ' || c == '\t' || c == '\n')
+                    ++idx;
+                if (!memcmp(uc + idx, MagicComment.unicode(), MagicComment.length() * 2)) {
+                    idx += MagicComment.length();
+                    comment = QString::fromRawData(yyWord.unicode() + idx,
+                                                   yyWord.length() - idx).simplified();
                     int k = comment.indexOf(QLatin1Char(' '));
                     if (k == -1) {
                         context = comment;
@@ -1826,8 +1832,6 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                         results->tor->setExtras(extra);
                         extra.clear();
                     }
-                } else {
-                    comment.detach();
                 }
             }
             yyTok = getToken();
