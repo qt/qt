@@ -81,14 +81,6 @@ qreal QFxImageBase::progress() const
     return d->progress;
 }
 
-
-/*!
-    \property QFxImage::source
-    \brief the url of the image to be displayed in this item.
-
-    The content specified can be of any image type loadable by QImage. Alternatively,
-    you can specify an sci format file, which specifies both an image and it's scale grid.
-*/
 QUrl QFxImageBase::source() const
 {
     Q_D(const QFxImageBase);

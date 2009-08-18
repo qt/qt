@@ -79,12 +79,6 @@ void QFxDrag::setAxis(const QString &a)
     _axis = a;
 }
 
-/*!
-    \property QFxDrag::xmin
-    \brief the minimum x position for the target
-
-    If x-axis dragging is enabled, xmin limits how far to the left the target can be dragged. If x-axis dragging is not enabled, this property has no effect.
-*/
 qreal QFxDrag::xmin() const
 {
     return _xmin;
@@ -95,12 +89,6 @@ void QFxDrag::setXmin(qreal m)
     _xmin = m;
 }
 
-/*!
-    \property QFxDrag::xmax
-    \brief the maximum x position for the target
-
-    If x-axis dragging is enabled, xmax limits how far to the right the target can be dragged. If x-axis dragging is not enabled, this property has no effect.
-*/
 qreal QFxDrag::xmax() const
 {
     return _xmax;
@@ -111,12 +99,6 @@ void QFxDrag::setXmax(qreal m)
     _xmax = m;
 }
 
-/*!
-    \property QFxDrag::ymin
-    \brief the minimum y position for the target
-
-    If y-axis dragging is enabled, ymin limits how far up the target can be dragged. If y-axis dragging is not enabled, this property has no effect.
-*/
 qreal QFxDrag::ymin() const
 {
     return _ymin;
@@ -127,12 +109,6 @@ void QFxDrag::setYmin(qreal m)
     _ymin = m;
 }
 
-/*!
-    \property QFxDrag::ymax
-    \brief the maximum y position for the target
-
-    If y-axis dragging is enabled, ymax limits how far down the target can be dragged. If y-axis dragging is not enabled, this property has no effect.
-*/
 qreal QFxDrag::ymax() const
 {
     return _ymax;
@@ -556,10 +532,6 @@ void QFxMouseRegion::setPressed(bool p)
     }
 }
 
-/*!
-    \property QFxMouseRegion::drag
-    \brief The current drag being performed on the Mouse Region.
-*/
 QFxDrag *QFxMouseRegion::drag()
 {
     Q_D(QFxMouseRegion);

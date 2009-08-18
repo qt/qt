@@ -69,7 +69,7 @@ public:
     Flipable allows you to specify a front and a back and then flip between those sides.
 
     \qml
-Flipable {
+    Flipable {
     id: flipable
     width: 40
     height: 40

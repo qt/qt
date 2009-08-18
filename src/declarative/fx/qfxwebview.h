@@ -92,6 +92,7 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
 
     Q_PROPERTY(int idealWidth READ idealWidth WRITE setIdealWidth NOTIFY idealWidthChanged)
     Q_PROPERTY(int idealHeight READ idealHeight WRITE setIdealHeight NOTIFY idealHeightChanged)
+    Q_PROPERTY(int cacheSize READ cacheSize WRITE setCacheSize)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
 
@@ -186,7 +187,7 @@ Q_SIGNALS:
     void doubleClick();
 
 public Q_SLOTS:
-    QVariant evaluateJavaScript (const QString&); 
+    QVariant evaluateJavaScript (const QString&);
 
 private Q_SLOTS:
     void expandToWebPage();
@@ -209,7 +210,7 @@ protected:
     void keyPressEvent(QKeyEvent* event);
     void keyReleaseEvent(QKeyEvent* event);
     void timerEvent(QTimerEvent *event);
-    virtual void geometryChanged(const QRectF &newGeometry, 
+    virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
     virtual void focusChanged(bool);
 

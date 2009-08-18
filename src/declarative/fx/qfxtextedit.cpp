@@ -136,18 +136,6 @@ QString QFxTextEdit::text() const
     automatically determine whether the text should be treated as
     rich text.  This determination is made using Qt::mightBeRichText().
 */
-
-/*!
-    \property QFxTextEdit::text
-    \brief the text edit's text
-
-    If the text format is set to AutoText the text edit will try to
-    automatically determine whether the text should be treated as
-    rich text.  This determination is made using Qt::mightBeRichText().
-
-    \sa textFormat
-*/
-
 void QFxTextEdit::setText(const QString &text)
 {
     Q_D(QFxTextEdit);
@@ -199,20 +187,6 @@ VerticalPositioner {
     \o \image declarative-textformat.png
     \endtable
 */
-
-/*!
-    \property QFxTextEdit::textFormat
-    \brief this property describes how the text set on the text edit
-    should be interpreted.
-
-    Valid values are \c AutoText, \c PlainText and \c RichText.  The
-    default value is \c AutoText, meaning the text edit will attempt
-    to guess how the text should be interpreted using the
-    Qt::mightBeRichText() function.
-
-    \sa text
-*/
-
 QFxTextEdit::TextFormat QFxTextEdit::textFormat() const
 {
     Q_D(const QFxTextEdit);
@@ -236,11 +210,6 @@ void QFxTextEdit::setTextFormat(TextFormat format)
     }
     d->format = format;
 }
-
-/*!
-    \property QFxTextEdit::font
-    \brief the text edit's default font
-*/
 
 QFont QFxTextEdit::font() const
 {
@@ -276,11 +245,6 @@ TextEdit { color: "#00FF00"; ...  }
 TextEdit { color: "steelblue"; ...  }
     \endqml
 */
-
-/*!
-    \property QFxTextEdit::color
-    \brief the text edit's default text color
-*/
 QColor QFxTextEdit::color() const
 {
     Q_D(const QFxTextEdit);
@@ -306,11 +270,6 @@ void QFxTextEdit::setColor(const QColor &color)
 
     The text highlight color, used behind selections.
 */
-
-/*!
-    \property QFxTextEdit::highlightColor
-    \brief the text edit's default text highlight color
-*/
 QColor QFxTextEdit::highlightColor() const
 {
     Q_D(const QFxTextEdit);
@@ -335,11 +294,6 @@ void QFxTextEdit::setHighlightColor(const QColor &color)
     \qmlproperty color TextEdit::highlightedTextColor
 
     The highlighted text color, used in selections.
-*/
-
-/*!
-    \property QFxTextEdit::highlightedTextColor
-    \brief the text edit's default highlighted text color
 */
 QColor QFxTextEdit::highlightedTextColor() const
 {
@@ -372,13 +326,6 @@ void QFxTextEdit::setHighlightedTextColor(const QColor &color)
     \c AlignHCenter.  The valid values for \c vAlign are \c AlignTop, \c AlignBottom
     and \c AlignVCenter.
 */
-
-/*!
-    \property QFxTextEdit::hAlign
-    \brief the horizontal alignment of the text.
-
-    Valid values are \c AlignLeft, \c AlignRight, and \c AlignHCenter. The default value is \c AlignLeft.
-*/
 QFxTextEdit::HAlignment QFxTextEdit::hAlign() const
 {
     Q_D(const QFxTextEdit);
@@ -395,12 +342,6 @@ void QFxTextEdit::setHAlign(QFxTextEdit::HAlignment alignment)
     updateSize();
 }
 
-/*!
-    \property QFxTextEdit::vAlign
-    \brief the vertical alignment of the text.
-
-    Valid values are \c AlignTop, \c AlignBottom, and \c AlignVCenter. The default value is \c AlignTop.
-*/
 QFxTextEdit::VAlignment QFxTextEdit::vAlign() const
 {
     Q_D(const QFxTextEdit);
@@ -431,12 +372,6 @@ bool QFxTextEdit::wrap() const
 
     Wrapping is done on word boundaries (i.e. it is a "word-wrap"). Wrapping is off by default.
 */
-
-/*!
-    \property QFxTextEdit::wrap
-    \brief If true the text edit wraps text based on the width of the
-    text edit.
-*/
 void QFxTextEdit::setWrap(bool w)
 {
     Q_D(QFxTextEdit);
@@ -448,8 +383,8 @@ void QFxTextEdit::setWrap(bool w)
 }
 
 /*!
-    \qmlproperty TextEdit::cursorVisible
-    \brief If true the text edit shows a cursor.
+    \qmlproperty bool TextEdit::cursorVisible
+    If true the text edit shows a cursor.
 
     This property is set and unset when the text edit gets focus, but it can also
     be set directly (useful, for example, if a KeyProxy might forward keys to it).
@@ -473,8 +408,8 @@ void QFxTextEdit::setCursorVisible(bool on)
 }
 
 /*!
-    \qmlproperty TextEdit::cursorPosition
-    \brief The position of the cursor in the TextEdit.
+    \qmlproperty int TextEdit::cursorPosition
+    The position of the cursor in the TextEdit.
 */
 int QFxTextEdit::cursorPosition() const
 {
@@ -493,8 +428,8 @@ void QFxTextEdit::setCursorPosition(int pos)
 }
 
 /*!
-    \qmlproperty TextEdit::cursorDelegate
-    \brief The delegate for the cursor in the TextEdit.
+    \qmlproperty Component TextEdit::cursorDelegate
+    The delegate for the cursor in the TextEdit.
 
     If you set a cursorDelegate for a TextEdit, this delegate will be used for
     drawing the cursor instead of the standard cursor. An instance of the
@@ -710,21 +645,10 @@ void QFxTextEdit::componentComplete()
 /*!
     \qmlproperty bool TextEdit::readOnly
 
-    Whether the user an interact with the TextEdit item.  If this
+    Whether the user an interact with the TextEdit item. If this
     property is set to true the text cannot be edited by user interaction.
 
     By default this property is false.
-*/
-
-/*!
-    \property QFxTextEdit::readOnly
-    \brief If this property is true the text can not be edited by user interaction.
-
-    Changing this property will modify the text interaction flags.  If
-    you require more specific control about how user interaction
-    with the text edit is handled, use setTextInteractionFlags() instead.
-
-    \sa setTextInteractionFlags()
 */
 void QFxTextEdit::setReadOnly(bool r)
 {

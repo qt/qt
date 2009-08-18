@@ -50,27 +50,6 @@ QT_BEGIN_NAMESPACE
     \internal
     \class QFxScaleGrid
     \brief The QFxScaleGrid class allows you to specify a 3x3 grid to use in scaling an image.
-
-    A scale grid uses 4 grid lines (2 horizontal and 2 vertical) to break an image into 9 sections, as shown below:
-    \image scalegrid.png
-
-    When the image is scaled:
-    \list
-    \i the corners (sections 1, 3, 7, and 9) are not scaled at all
-    \i the middle (section 5) is scaled both horizontally and vertically
-    \i sections 2 and 8 are scaled horizontally
-    \i sections 4 and 6 are scaled vertically
-    \endlist
-
-    A common way of specifying a scale grid is to create an sci file. An sci file uses a simple
-    text-based format that specifies each grid line, as well as the associated image file. An example of an sci file's contents:
-    \code
-    gridLeft: 10
-    gridTop: 10
-    gridBottom: 10
-    gridRight: 10
-    imageFile: picture.png
-    \endcode
 */
 QML_DEFINE_NOCREATE_TYPE(QFxScaleGrid)
 
@@ -87,10 +66,6 @@ bool QFxScaleGrid::isNull() const
     return !_left && !_top && !_right && !_bottom;
 }
 
-/*!
-    \property QFxScaleGrid::left
-    \brief the position of the left grid line as an offset from the left side of the image.
-*/
 void QFxScaleGrid::setLeft(int pos)
 {
     if (_left != pos) {
@@ -99,10 +74,6 @@ void QFxScaleGrid::setLeft(int pos)
     }
 }
 
-/*!
-    \property QFxScaleGrid::top
-    \brief the position of the top grid line as an offset from the top of the image.
-*/
 void QFxScaleGrid::setTop(int pos)
 {
     if (_top != pos) {
@@ -111,10 +82,6 @@ void QFxScaleGrid::setTop(int pos)
     }
 }
 
-/*!
-    \property QFxScaleGrid::right
-    \brief the position of the right grid line as an offset from the right side of the image.
-*/
 void QFxScaleGrid::setRight(int pos)
 {
     if (_right != pos) {
@@ -123,10 +90,6 @@ void QFxScaleGrid::setRight(int pos)
     }
 }
 
-/*!
-    \property QFxScaleGrid::bottom
-    \brief the position of the bottom grid line as an offset from the bottom of the image.
-*/
 void QFxScaleGrid::setBottom(int pos)
 {
     if (_bottom != pos) {
@@ -134,12 +97,6 @@ void QFxScaleGrid::setBottom(int pos)
         emit borderChanged();
     }
 }
-
-/*!
-    \fn void QFxScaleGrid::borderChanged()
-
-    This signal is emitted when one of the border properties is changed.
-*/
 
 QFxGridScaledImage::QFxGridScaledImage()
 : _l(-1), _r(-1), _t(-1), _b(-1),
