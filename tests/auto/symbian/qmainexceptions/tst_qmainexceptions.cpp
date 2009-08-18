@@ -186,8 +186,14 @@ void tst_qmainexceptions::testTranslateBadAlloc()
 
 void BigAlloc()
 {
-    int *x = new int[100000000];
-    delete [] x;
+    // allocate too much memory - it's expected that 100M ints is too much, but keep doubling if not.
+    int *x = 0;
+    int n = 100000000;
+    do {
+        x = new int[n];
+        delete [] x;
+        n = n * 2;
+    } while (x);
 }
 
 void TranslateBigAllocL()
@@ -216,7 +222,7 @@ void tst_qmainexceptions::TestStdRoundTrip(const std::exception& thrown, const s
 {
     bool ok = false;
     try {
-        QT_TRAP_THROWING(qt_exception2SymbianLeaveL(thrown));
+        QT_TRAP_THROWING(qt_symbian_exception2LeaveL(thrown));
     } catch (const std::exception& ex) {
         const std::type_info& exType = typeid(ex);
         const std::type_info& caughtType = typeid(caught);
@@ -243,7 +249,7 @@ void tst_qmainexceptions::testRoundTrip()
 void tst_qmainexceptions::testTrap()
 {
     // testing qt_exception2SymbianLeaveL
-    TRAPD(err, qt_exception2SymbianLeaveL(std::bad_alloc()));
+    TRAPD(err, qt_symbian_exception2LeaveL(std::bad_alloc()));
     QCOMPARE(err, KErrNoMemory);
 }
 
