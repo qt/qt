@@ -417,6 +417,50 @@ static bool simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
     return newAnchor != sequence;
 }
 
+/*!
+   \internal
+
+   The purpose of this function is to simplify the graph.
+   Simplification serves two purposes:
+   1. Reduce the number of edges in the graph, (thus the number of variables to the equation
+      solver is reduced, and the solver performs better).
+   2. Be able to do distribution of sequences of edges more intelligently (esp. with sequential
+      anchors)
+
+   It is essential that it must be possible to restore simplified anchors back to their "original"
+   form. This is done by restoreSimplifiedAnchor().
+
+   There are two types of simplification that can be done:
+   1. Sequential simplification
+      Sequential simplification means that all sequences of anchors will be merged into one single
+      anchor. Only anhcors that points in the same direction will be merged.
+   2. Parallel simplification
+      If a simplified sequential anchor is about to be inserted between two vertices in the graph
+      and there already exist an anchor between those two vertices, a parallel anchor will be
+      created that serves as a placeholder for the sequential anchor and the anchor that was
+      already between the two vertices.
+
+   The process of simplification can be described as:
+
+   1. Simplify all sequences of anchors into one anchor.
+      If no further simplification was done, go to (3)
+      - If there already exist an anchor where the sequential anchor is supposed to be inserted,
+        take that anchor out of the graph
+      - Then create a parallel anchor that holds the sequential anchor and the anchor just taken
+        out of the graph.
+   2. Go to (1)
+   3. Done
+
+
+   * Gathering sequential anchors *
+   The algorithm walks the graph in depth-first order, and only collects vertices that has two
+   edges connected to it. If the vertex does not have two edges or if it is a layout edge,
+   it will take all the previously collected vertices and try to create a simplified sequential
+   anchor representing all the previously collected vertices.
+   Once the simplified anchor is inserted, the collected list is cleared in order to find the next
+   sequence to simplify.
+   Note that there are some catches to this that are not covered by the above explanation.
+*/
 void QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
 {
     static bool noSimplification = !qgetenv("QT_ANCHORLAYOUT_NO_SIMPLIFICATION").isEmpty();
@@ -443,35 +487,6 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
     } while (dirty);
 }
 
-/*!
- * \internal
- *
- * The purpose of this function is to simplify the graph. The process of simplification can be
- * described as:
- *
- * 1. Simplify all sequences of anchors into one anchor.
- *    If not first iteration and no further simplification was done, go to (3)
- * 2. Simplify two parallel anchors into one anchor.
- *    If any simplification was done, go to (1)
- * 3. Done
- *
- *
- * The algorithm walks the graph in depth-first order, and only collects vertices that has two
- * edges connected to it. If the vertex does not have two edges or if it is a layout edge,
- * it will take all the previously collected vertices and try to create a simplified sequential
- * anchor representing all the previously collected vertices.
- * Once the simplified anchor is inserted, the collected list is cleared in order to find the next
- * sequence to simplify.
- * Note that there are some catches to this that are not covered by the above explanation.
- *
- *
- * Notes:
- *  * The algorithm should not make a sequence of the layout edge anchors.
- *      => Make sure those edges are not traversed
- *  * A generic algorithm will make a sequential simplification node of a Left-HCenter-Right
- *    sequence. This is ok, but that sequence should not be affected by stretch factors.
- *
- */
 bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutPrivate::Orientation orientation)
 {
     Q_Q(QGraphicsAnchorLayout);
