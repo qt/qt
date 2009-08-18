@@ -55,6 +55,7 @@ QT_MODULE(Declarative)
 
 class QFxLineEditPrivate;
 class QValidator;
+//### class QFxTextInput??
 class Q_DECLARATIVE_EXPORT QFxLineEdit : public QFxPaintedItem
 {
     Q_OBJECT
@@ -62,10 +63,10 @@ class Q_DECLARATIVE_EXPORT QFxLineEdit : public QFxPaintedItem
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor)
-    Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor)
-    Q_PROPERTY(QColor highlightedTextColor READ highlightedTextColor WRITE setHighlightedTextColor)
+    Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor) //### selectionColor
+    Q_PROPERTY(QColor highlightedTextColor READ highlightedTextColor WRITE setHighlightedTextColor) //### selectedTextColor
     Q_PROPERTY(QFont font READ font WRITE setFont)
-    Q_PROPERTY(HAlignment hAlign READ hAlign WRITE setHAlign)
+    Q_PROPERTY(HAlignment hAlign READ hAlign WRITE setHAlign) //### horizontalAlignment
 
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
@@ -75,11 +76,12 @@ class Q_DECLARATIVE_EXPORT QFxLineEdit : public QFxPaintedItem
     Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
     Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectedTextChanged)
 
-    Q_PROPERTY(int maxLength READ maxLength WRITE setMaxLength)
-    Q_PROPERTY(QObject* validator READ validator WRITE setValidator)
+    Q_PROPERTY(int maxLength READ maxLength WRITE setMaxLength) //### maximumLength
+    Q_PROPERTY(QObject* validator READ validator WRITE setValidator) //### QValidator *
     Q_PROPERTY(QString inputMask READ inputMask WRITE setInputMask)
     Q_PROPERTY(bool acceptableInput READ hasAcceptableInput NOTIFY acceptableInputChanged)
-    Q_PROPERTY(uint echoMode READ echoMode WRITE setEchoMode)
+    Q_PROPERTY(uint echoMode READ echoMode WRITE setEchoMode) //### enum
+    //### Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
 
 public:
     QFxLineEdit(QFxItem* parent=0);
