@@ -256,7 +256,7 @@ void QmlAbstractAnimation::setRunning(bool r)
             d->startOnCompletion = true;
         emit started();
     } else {
-        if (d->finishPlaying) {
+        if (d->alwaysRunToEnd) {
             if (d->repeat)
                 qtAnimation()->setLoopCount(qtAnimation()->currentLoop()+1);
         } else
@@ -321,8 +321,8 @@ void QmlAbstractAnimation::componentComplete()
 }
 
 /*!
-    \qmlproperty bool Animation::finishPlaying
-    This property holds whether the animation should finish playing when it is stopped.
+    \qmlproperty bool Animation::alwaysRunToEnd
+    This property holds whether the animation should run to completion when it is stopped.
 
     If this true the animation will complete its current iteration when it
     is stopped - either by setting the \c running property to false, or by
@@ -332,22 +332,22 @@ void QmlAbstractAnimation::componentComplete()
     This behaviour is most useful when the \c repeat property is set, as the
     animation will finish playing normally but not restart.
 
-    By default, the finishPlaying property is not set.
+    By default, the alwaysRunToEnd property is not set.
 */
-bool QmlAbstractAnimation::finishPlaying() const
+bool QmlAbstractAnimation::alwaysRunToEnd() const
 {
     Q_D(const QmlAbstractAnimation);
-    return d->finishPlaying;
+    return d->alwaysRunToEnd;
 }
 
-void QmlAbstractAnimation::setFinishPlaying(bool f)
+void QmlAbstractAnimation::setAlwaysRunToEnd(bool f)
 {
     Q_D(QmlAbstractAnimation);
-    if (d->finishPlaying == f)
+    if (d->alwaysRunToEnd == f)
         return;
 
-    d->finishPlaying = f;
-    emit finishPlayingChanged(f);
+    d->alwaysRunToEnd = f;
+    emit alwaysRunToEndChanged(f);
 }
 
 /*!
@@ -530,7 +530,7 @@ void QmlAbstractAnimation::resume()
     \endcode
     was stopped at time 250ms, the \c x property will have a value of 50.
 
-    However, if the \c finishPlaying property is set, the animation will
+    However, if the \c alwaysRunToEnd property is set, the animation will
     continue running until it completes and then stop.  The \c running property
     will still become false immediately.
 */
@@ -603,7 +603,7 @@ void QmlAbstractAnimation::timelineComplete()
 {
     Q_D(QmlAbstractAnimation);
     setRunning(false);
-    if (d->finishPlaying && d->repeat) {
+    if (d->alwaysRunToEnd && d->repeat) {
         qtAnimation()->setLoopCount(-1);
     }
 }

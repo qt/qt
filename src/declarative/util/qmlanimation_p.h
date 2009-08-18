@@ -183,13 +183,13 @@ class QmlAbstractAnimationPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlAbstractAnimation)
 public:
     QmlAbstractAnimationPrivate()
-    : running(false), paused(false), finishPlaying(false), repeat(false),
+    : running(false), paused(false), alwaysRunToEnd(false), repeat(false),
       connectedTimeLine(false), componentComplete(true), startOnCompletion(false),
       target(0), group(0) {}
 
     bool running;
     bool paused;
-    bool finishPlaying;
+    bool alwaysRunToEnd;
     bool repeat;
     bool connectedTimeLine;
 
