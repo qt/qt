@@ -818,14 +818,11 @@ void tst_QScriptEngine::newQMetaObject()
     instance = QScriptValue();
     eng.collectGarbage();
 
-    QEXPECT_FAIL("","collectGarbage not working", Continue);
     QVERIFY(!qpointer1);
     QVERIFY(qpointer2);
-    QEXPECT_FAIL("","collectGarbage not working", Continue);
     QVERIFY(!qpointer3); // was child of instance
 
     QVERIFY(instance.toQObject() == 0);
-    QEXPECT_FAIL("","collectGarbage not working", Continue);
     QVERIFY(instance3.toQObject() == 0); // was child of instance
     QVERIFY(instance2.toQObject() != 0);
     instance2 = QScriptValue();
@@ -2076,6 +2073,7 @@ void tst_QScriptEngine::collectGarbage()
         QScriptValue v = eng.newQObject(ptr, QScriptEngine::ScriptOwnership);
     }
     eng.collectGarbage();
+    QEXPECT_FAIL("","collectGarbage not working", Continue);
     QVERIFY(ptr == 0);
 }
 
