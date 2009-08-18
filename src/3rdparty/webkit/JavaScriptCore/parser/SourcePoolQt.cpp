@@ -46,7 +46,7 @@ namespace JSC {
     void SourcePool::stopEvaluating(const SourceCode& source)
     {
         int id = source.provider()->asID();
-        int cid = currentScript.pop();
+        currentScript.pop();
 
         if (scriptRef.contains(id)) {
             ScriptActivCount info = scriptRef.take(id);
