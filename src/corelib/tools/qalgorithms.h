@@ -141,23 +141,6 @@ inline void qCount(const Container &container, const T &value, Size &n)
     qCount(container.constBegin(), container.constEnd(), value, n);
 }
 
-
-#if defined Q_CC_MSVC && _MSC_VER < 1300
-template <typename T>
-inline void qSwap(T &value1, T &value2)
-{
-    qSwap_helper<T>(value1, value2, (T *)0);
-}
-#else
-template <typename T>
-inline void qSwap(T &value1, T &value2)
-{
-    T t = value1;
-    value1 = value2;
-    value2 = t;
-}
-#endif
-
 #ifdef qdoc
 template <typename T>
 LessThan qLess()

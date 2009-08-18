@@ -4024,6 +4024,29 @@ QString QUrlPrivate::createErrorString()
 }
 
 /*!
+    \macro QT_NO_URL_CAST_FROM_STRING
+    \relates QUrl
+
+    Disables automatic conversions from QString (or char *) to QUrl.
+
+    Compiling your code with this define is useful when you have a lot of
+    code that uses QString for file names and you wish to convert it to
+    use QUrl for network transparency. In any code that uses QUrl, it can
+    help avoid missing QUrl::resolved() calls, and other misuses of
+    QString to QUrl conversions.
+
+    \oldcode
+        url = filename; // probably not what you want
+    \newcode
+        url = QUrl::fromLocalFile(filename);
+        url = baseurl.resolved(QUrl(filename));
+    \endcode
+
+    \sa QT_NO_CAST_FROM_ASCII
+*/
+
+
+/*!
     Constructs a URL by parsing \a url. \a url is assumed to be in human
     readable representation, with no percent encoding. QUrl will automatically
     percent encode all characters that are not allowed in a URL.

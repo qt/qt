@@ -58,8 +58,10 @@ extern int _lucene_counter_break; //can set a watch on this
 #if defined(_CL_HAVE_UNISTD_H)
  #include <unistd.h>
 #elif defined(_CL_HAVE_IO_H) && defined(_CL_HAVE_DIRECT_H)
+#ifndef UNDER_CE 
  #include <io.h>
  #include <direct.h>
+#endif
 #else
  #error "Neither unistd.h or (io.h & direct.h) were available"
 #endif
@@ -75,7 +77,11 @@ extern int _lucene_counter_break; //can set a watch on this
 #if defined(_CL_STAT_MACROS_BROKEN)
  #error "Haven't implemented STAT_MACROS_BROKEN fix yet"
 #elif defined(_CL_HAVE_SYS_STAT_H)
+#ifdef UNDER_CE
+ #include <types.h>
+#else
  #include <sys/stat.h>
+#endif
 #else
  #error "Haven't implemented platforms with no sys/stat.h"
 #endif
@@ -179,13 +185,17 @@ extern int _lucene_counter_break; //can set a watch on this
 #include "CLucene/config/repl_tchar.h"
 
 #if defined(_CL_HAVE_ERRNO_H)
+#ifndef UNDER_CE
  #include <errno.h>
+#endif
 #else
  #error "Haven't implemented platforms with no errno.h"
 #endif
 
 #if defined(_CL_HAVE_FCNTL_H)
+#ifndef UNDER_CE
  #include <fcntl.h>
+#endif
 #else
  #error "Haven't implemented platforms with no fcntl.h"
 #endif

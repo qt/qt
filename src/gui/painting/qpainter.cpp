@@ -7487,8 +7487,8 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     QFontMetricsF fm(fnt);
     QString text = str;
     int offset = 0;
-start_lenghtVariant:
-    bool hasMoreLenghtVariants = false;
+start_lengthVariant:
+    bool hasMoreLengthVariants = false;
     // compatible behaviour to the old implementation. Replace
     // tabs by spaces
     bool has_tab = false;
@@ -7510,7 +7510,7 @@ start_lenghtVariant:
             has_tab = true;
         } else if (chr == QChar(ushort(0x9c))) {
             // string with multiple length variants
-            hasMoreLenghtVariants = true;
+            hasMoreLengthVariants = true;
             break;
         }
     }
@@ -7634,9 +7634,9 @@ start_lenghtVariant:
     }
     QRectF bounds = QRectF(r.x() + xoff, r.y() + yoff, width, height);
 
-    if (hasMoreLenghtVariants && !(tf & Qt::TextLongestVariant) && !r.contains(bounds)) {
+    if (hasMoreLengthVariants && !(tf & Qt::TextLongestVariant) && !r.contains(bounds)) {
         offset++;
-        goto start_lenghtVariant;
+        goto start_lengthVariant;
     }
     if (brect)
         *brect = bounds;

@@ -284,7 +284,11 @@ QFxBorderImage::TileMode QFxBorderImage::horizontalTileMode() const
 void QFxBorderImage::setHorizontalTileMode(TileMode t)
 {
     Q_D(QFxBorderImage);
-    d->horizontalTileMode = t;
+    if (t != d->horizontalTileMode) {
+        d->horizontalTileMode = t;
+        emit tileModeChanged();
+        update();
+    }
 }
 
 QFxBorderImage::TileMode QFxBorderImage::verticalTileMode() const
@@ -296,7 +300,11 @@ QFxBorderImage::TileMode QFxBorderImage::verticalTileMode() const
 void QFxBorderImage::setVerticalTileMode(TileMode t)
 {
     Q_D(QFxBorderImage);
-    d->verticalTileMode = t;
+    if (t != d->verticalTileMode) {
+        d->verticalTileMode = t;
+        emit tileModeChanged();
+        update();
+    }
 }
 
 void QFxBorderImage::setGridScaledImage(const QFxGridScaledImage& sci)

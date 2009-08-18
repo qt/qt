@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.6 API Reference</title>
+<title>FreeType-2.3.9 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -31,7 +31,11 @@
 </style>
 </head>
 <body>
-<center><h1>FreeType-2.3.6 API Reference</h1></center>
+
+<table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+<center><h1>FreeType-2.3.9 API Reference</h1></center>
 
 <center><h1>
 TrueType Tables
@@ -432,7 +436,7 @@ Defined in FT_TRUETYPE_IDS_H (freetype/ttnameid.h).
 <p>Adobe custom encoding.</p>
 </td></tr>
 <tr valign=top><td><b>TT_ADOBE_ID_LATIN_1</b></td><td>
-<p>Adobe Latin 1 encoding.</p>
+<p>Adobe Latin&nbsp;1 encoding.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -566,10 +570,10 @@ Defined in FT_TRUETYPE_TABLES_H (freetype/tttables.h).
 <p>The run coefficient of the cursor's slope.</p>
 </td></tr>
 <tr valign=top><td><b>Reserved</b></td><td>
-<p>8 reserved bytes.</p>
+<p>8&nbsp;reserved bytes.</p>
 </td></tr>
 <tr valign=top><td><b>metric_Data_Format</b></td><td>
-<p>Always 0.</p>
+<p>Always&nbsp;0.</p>
 </td></tr>
 <tr valign=top><td><b>number_Of_HMetrics</b></td><td>
 <p>Number of HMetrics entries in the &lsquo;hmtx&rsquo; table -- this value can be smaller than the total number of glyphs in the font.</p>
@@ -675,10 +679,10 @@ Defined in FT_TRUETYPE_TABLES_H (freetype/tttables.h).
 <p>The cursor's offset for slanted fonts. This value is &lsquo;reserved&rsquo; in vmtx version 1.0.</p>
 </td></tr>
 <tr valign=top><td><b>Reserved</b></td><td>
-<p>8 reserved bytes.</p>
+<p>8&nbsp;reserved bytes.</p>
 </td></tr>
 <tr valign=top><td><b>metric_Data_Format</b></td><td>
-<p>Always 0.</p>
+<p>Always&nbsp;0.</p>
 </td></tr>
 <tr valign=top><td><b>number_Of_HMetrics</b></td><td>
 <p>Number of VMetrics entries in the &lsquo;vmtx&rsquo; table -- this value can be smaller than the total number of glyphs in the font.</p>
@@ -797,7 +801,7 @@ Defined in FT_TRUETYPE_TABLES_H (freetype/tttables.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>A structure used to model a TrueType Postscript table. All fields comply to the TrueType specification. This structure does not reference the Postscript glyph names, which can be nevertheless accessed with the &lsquo;ttpost&rsquo; module.</p>
+<p>A structure used to model a TrueType PostScript table. All fields comply to the TrueType specification. This structure does not reference the PostScript glyph names, which can be nevertheless accessed with the &lsquo;ttpost&rsquo; module.</p>
 </td></tr></table><br>
 </td></tr></table>
 <hr width="75%">
@@ -976,7 +980,7 @@ Defined in FT_TRUETYPE_TABLES_H (freetype/tttables.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Returns a pointer to a given SFNT table within a face.</p>
+<p>Return a pointer to a given SFNT table within a face.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -990,7 +994,7 @@ Defined in FT_TRUETYPE_TABLES_H (freetype/tttables.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>A type-less pointer to the table. This will be 0 in case of error, or if the corresponding table was not found <b>OR</b> loaded from the file.</p>
+<p>A type-less pointer to the table. This will be&nbsp;0 in case of error, or if the corresponding table was not found <b>OR</b> loaded from the file.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The table is owned by the face object and disappears with it.</p>
@@ -1018,7 +1022,7 @@ Defined in FT_TRUETYPE_TABLES_H (freetype/tttables.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Loads any font table into client memory.</p>
+<p>Load any font table into client memory.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -1027,7 +1031,7 @@ Defined in FT_TRUETYPE_TABLES_H (freetype/tttables.h).
 <p>A handle to the source face.</p>
 </td></tr>
 <tr valign=top><td><b>tag</b></td><td>
-<p>The four-byte tag of the table to load. Use the value 0 if you want to access the whole font file. Otherwise, you can use one of the definitions found in the <a href="ft2-header_file_macros.html#FT_TRUETYPE_TAGS_H">FT_TRUETYPE_TAGS_H</a> file, or forge a new one with <a href="ft2-basic_types.html#FT_MAKE_TAG">FT_MAKE_TAG</a>.</p>
+<p>The four-byte tag of the table to load. Use the value&nbsp;0 if you want to access the whole font file. Otherwise, you can use one of the definitions found in the <a href="ft2-header_file_macros.html#FT_TRUETYPE_TAGS_H">FT_TRUETYPE_TAGS_H</a> file, or forge a new one with <a href="ft2-basic_types.html#FT_MAKE_TAG">FT_MAKE_TAG</a>.</p>
 </td></tr>
 <tr valign=top><td><b>offset</b></td><td>
 <p>The starting offset in the table (or file if tag == 0).</p>
@@ -1047,16 +1051,16 @@ Defined in FT_TRUETYPE_TABLES_H (freetype/tttables.h).
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>length</b></td><td>
 <p>If the &lsquo;length&rsquo; parameter is NULL, then try to load the whole table. Return an error code if it fails.</p>
-<p>Else, if &lsquo;*length&rsquo; is 0, exit immediately while returning the table's (or file) full size in it.</p>
+<p>Else, if &lsquo;*length&rsquo; is&nbsp;0, exit immediately while returning the table's (or file) full size in it.</p>
 <p>Else the number of bytes to read from the table or file, from the starting offset.</p>
 </td></tr>
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>If you need to determine the table's length you should first call this function with &lsquo;*length&rsquo; set to 0, as in the following example:</p>
+<p>If you need to determine the table's length you should first call this function with &lsquo;*length&rsquo; set to&nbsp;0, as in the following example:</p>
 <pre class="colored">
   FT_ULong  length = 0;
 
@@ -1092,7 +1096,7 @@ Defined in FT_TRUETYPE_TABLES_H (freetype/tttables.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Returns information on an SFNT table.</p>
+<p>Return information on an SFNT table.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -1117,10 +1121,10 @@ Defined in FT_TRUETYPE_TABLES_H (freetype/tttables.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>SFNT tables with length zero are treated as missing by Windows.</p>
+<p>SFNT tables with length zero are treated as missing.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -1151,7 +1155,7 @@ Defined in FT_TRUETYPE_TABLES_H (freetype/tttables.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>The language ID of &lsquo;charmap&rsquo;. If &lsquo;charmap&rsquo; doesn't belong to a TrueType/sfnt face, just return 0 as the default value.</p>
+<p>The language ID of &lsquo;charmap&rsquo;. If &lsquo;charmap&rsquo; doesn't belong to a TrueType/sfnt face, just return&nbsp;0 as the default value.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -1192,14 +1196,6 @@ Defined in FT_TRUETYPE_TABLES_H (freetype/tttables.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_PARAM_TAG_UNPATENTED_HINTING">FT_PARAM_TAG_UNPATENTED_HINTING</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_UNPATENTED_HINTING_H (freetype/ttunpat.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-#define <b>FT_PARAM_TAG_UNPATENTED_HINTING</b>  <a href="ft2-basic_types.html#FT_MAKE_TAG">FT_MAKE_TAG</a>( 'u', 'n', 'p', 'a' )
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A constant used as the tag of an <a href="ft2-base_interface.html#FT_Parameter">FT_Parameter</a> structure to indicate that unpatented methods only should be used by the TrueType bytecode interpreter for a typeface opened by <a href="ft2-base_interface.html#FT_Open_Face">FT_Open_Face</a>.</p>
 </td></tr></table><br>

@@ -98,6 +98,8 @@ void tst_QHelpEngineCore::init()
     // defined in profile
     m_path = QLatin1String(SRCDIR);
 
+    m_path = QFileInfo(m_path).absoluteFilePath();
+
     m_colFile = m_path + QLatin1String("/data/col.qhc");
     if (QFile::exists(m_colFile))
         QDir::current().remove(m_colFile);

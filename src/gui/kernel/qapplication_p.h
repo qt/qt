@@ -484,12 +484,6 @@ public:
     void _q_alertTimeOut();
     QHash<QWidget *, QTimer *> alertTimerHash;
 #endif
-#if defined(QT_MAC_USE_COCOA)
-    void _q_runAppModalWindow();
-#endif
-#if defined(QT_MAC_USE_COCOA)
-    void _q_runModalWindow();
-#endif
 #ifndef QT_NO_STYLE_STYLESHEET
     static QString styleSheet;
 #endif

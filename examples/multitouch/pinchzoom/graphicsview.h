@@ -49,5 +49,5 @@ class GraphicsView : public QGraphicsView
 public:
     GraphicsView(QGraphicsScene *scene = 0, QWidget *parent = 0);
 
-    bool event(QEvent *event);
+    bool viewportEvent(QEvent *event);
 };

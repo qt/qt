@@ -658,6 +658,7 @@ signals:
     void downPressed(QFxKeyEvent *event);
 
     void asteriskPressed(QFxKeyEvent *event);
+    void numberSignPressed(QFxKeyEvent *event);
     void escapePressed(QFxKeyEvent *event);
     void returnPressed(QFxKeyEvent *event);
     void enterPressed(QFxKeyEvent *event);
@@ -713,6 +714,7 @@ const QFxKeysAttached::SigMap QFxKeysAttached::sigMap[] = {
     { Qt::Key_Up, "upPressed" },
     { Qt::Key_Down, "downPressed" },
     { Qt::Key_Asterisk, "asteriskPressed" },
+    { Qt::Key_NumberSign, "numberSignPressed" },
     { Qt::Key_Escape, "escapePressed" },
     { Qt::Key_Return, "returnPressed" },
     { Qt::Key_Enter, "enterPressed" },

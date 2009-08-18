@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Type 1 Glyph Loader (body).                                          */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002, 2003, 2004, 2005, 2006 by                   */
+/*  Copyright 1996-2001, 2002, 2003, 2004, 2005, 2006, 2008, 2009 by       */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -203,6 +203,65 @@
 
 
   FT_LOCAL_DEF( FT_Error )
+  T1_Get_Advances( T1_Face    face,
+                   FT_UInt    first,
+                   FT_UInt    count,
+                   FT_ULong   load_flags,
+                   FT_Fixed*  advances )
+  {
+    T1_DecoderRec  decoder;
+    T1_Font        type1 = &face->type1;
+    PSAux_Service  psaux = (PSAux_Service)face->psaux;
+    FT_UInt        nn;
+    FT_Error       error;
+
+    FT_UNUSED( load_flags );
+
+
+    if ( load_flags & FT_LOAD_VERTICAL_LAYOUT )
+    {
+      for ( nn = 0; nn < count; nn++ )
+        advances[nn] = 0;
+
+      return T1_Err_Ok;
+    }
+
+    error = psaux->t1_decoder_funcs->init( &decoder,
+                                           (FT_Face)face,
+                                           0, /* size       */
+                                           0, /* glyph slot */
+                                           (FT_Byte**)type1->glyph_names,
+                                           face->blend,
+                                           0,
+                                           FT_RENDER_MODE_NORMAL,
+                                           T1_Parse_Glyph );
+    if ( error )
+      return error;
+
+    decoder.builder.metrics_only = 1;
+    decoder.builder.load_points  = 0;
+
+    decoder.num_subrs = type1->num_subrs;
+    decoder.subrs     = type1->subrs;
+    decoder.subrs_len = type1->subrs_len;
+
+    decoder.buildchar     = face->buildchar;
+    decoder.len_buildchar = face->len_buildchar;
+
+    for ( nn = 0; nn < count; nn++ )
+    {
+      error = T1_Parse_Glyph( &decoder, first + nn );
+      if ( !error )
+        advances[nn] = decoder.builder.advance.x;
+      else
+        advances[nn] = 0;
+    }
+
+    return T1_Err_Ok;
+  }
+
+
+  FT_LOCAL_DEF( FT_Error )
   T1_Load_Glyph( T1_GlyphSlot  glyph,
                  T1_Size       size,
                  FT_UInt       glyph_index,
@@ -236,8 +295,16 @@
     if ( load_flags & FT_LOAD_NO_RECURSE )
       load_flags |= FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
 
-    glyph->x_scale = size->root.metrics.x_scale;
-    glyph->y_scale = size->root.metrics.y_scale;
+    if ( size )
+    {
+      glyph->x_scale = size->root.metrics.x_scale;
+      glyph->y_scale = size->root.metrics.y_scale;
+    }
+    else
+    {
+      glyph->x_scale = 0x10000L;
+      glyph->y_scale = 0x10000L;
+    }
 
     glyph->root.outline.n_points   = 0;
     glyph->root.outline.n_contours = 0;
@@ -371,8 +438,8 @@
             }
 
           /* Then scale the metrics */
-          metrics->horiAdvance  = FT_MulFix( metrics->horiAdvance,  x_scale );
-          metrics->vertAdvance  = FT_MulFix( metrics->vertAdvance,  y_scale );
+          metrics->horiAdvance = FT_MulFix( metrics->horiAdvance, x_scale );
+          metrics->vertAdvance = FT_MulFix( metrics->vertAdvance, y_scale );
         }
 
         /* compute the other metrics */

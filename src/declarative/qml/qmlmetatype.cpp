@@ -110,6 +110,9 @@ public:
     bool m_isInterface : 1;
     const char *m_iid;
     QByteArray m_name;
+    int m_version_maj;
+    int m_version_min_from;
+    int m_version_min_to;
     int m_typeId; int m_listId; int m_qmlListId;
     QmlPrivate::Func m_opFunc;
     const QMetaObject *m_baseMetaObject;
@@ -146,10 +149,14 @@ QmlType::QmlType(int type, int listType, int qmlListType,
     d->m_opFunc = opFunc;
     d->m_index = index;
     d->m_isSetup = true;
+    d->m_version_maj = 0;
+    d->m_version_min_from = 0;
+    d->m_version_min_to = 0;
 }
 
 QmlType::QmlType(int type, int listType, int qmlListType,
                  QmlPrivate::Func opFunc, const char *qmlName,
+                 int version_maj, int version_min_from, int version_min_to,
                  const QMetaObject *metaObject,
                  QmlAttachedPropertiesFunc attachedPropertiesFunc,
                  const QMetaObject *attachedType,
@@ -159,6 +166,9 @@ QmlType::QmlType(int type, int listType, int qmlListType,
 : d(new QmlTypePrivate)
 {
     d->m_name = qmlName;
+    d->m_version_maj = version_maj;
+    d->m_version_min_from = version_min_from;
+    d->m_version_min_to = version_min_to;
     d->m_typeId = type;
     d->m_listId = listType;
     d->m_qmlListId = qmlListType;
@@ -178,6 +188,11 @@ QmlType::QmlType(int type, int listType, int qmlListType,
 QmlType::~QmlType()
 {
     delete d;
+}
+
+bool QmlType::availableInVersion(int vmajor, int vminor) const
+{
+    return vmajor == d->m_version_maj && vminor >= d->m_version_min_from && vminor <= d->m_version_min_to;
 }
 
 void QmlTypePrivate::init() const
@@ -401,6 +416,7 @@ int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
     data->idToType.insert(type->typeId(), type);
     data->idToType.insert(type->qListTypeId(), type);
     data->idToType.insert(type->qmlListTypeId(), type);
+    // XXX No insertMulti, so no multi-version interfaces?
     if (!type->qmlTypeName().isEmpty())
         data->nameToType.insert(type->qmlTypeName(), type);
 
@@ -422,48 +438,7 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
         const QMetaObject *mo, QmlAttachedPropertiesFunc attach, const QMetaObject *attachMo,
         int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
 {
-    QByteArray version;
-    if (uri && (version_maj || version_min_from || version_min_to)) {
-        if (version_min_from != version_min_to) {
-            int r=-1;
-            for (int min=version_min_from; min<=version_min_to; ++min) {
-                int e = registerType(id,func,uri,version_maj,min,min,cname,mo,attach,attachMo,pStatus,object,extFunc,extmo,parser);
-                if (e<0) return -1;
-                if (r<0) r = e;
-            }
-            return r; // returns index of FIRST version of type (not currently used anywhere though)
-        }
-        version = QByteArray::number(version_maj) + '.' + QByteArray::number(version_min_from);
-    } else {
-        // No URI? No version!
-        Q_ASSERT(!version_maj && !version_min_from && !version_min_to);
-    }
-    return registerType(id,func,uri,version,cname,mo,attach,attachMo,pStatus,object,extFunc,extmo,parser);
-}
-
-
-int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Func func,
-        const char *uri, const char *version, const char *cname,
-        const QMetaObject *mo, QmlAttachedPropertiesFunc attach, const QMetaObject *attachMo,
-        int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
-{
     Q_UNUSED(object);
-    QByteArray name;
-    if (uri) {
-        // Convert to path
-        name = uri;
-        name.replace('.','/');
-        if (version) {
-            name += '/';
-            name += version;
-        }
-        name += '/';
-        name += cname;
-    } else {
-        // No URI? No version!
-        name = cname;
-        Q_ASSERT(!version);
-    }
 
     if (cname) {
         for (int ii = 0; cname[ii]; ++ii) {
@@ -476,11 +451,16 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
 
     QWriteLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
-
     int index = data->types.count();
 
+    QByteArray name = uri;
+    if (uri)
+        name += "/";
+    name += cname;
+    name.replace('.','/');
+
     QmlType *type = new QmlType(id.typeId, id.listId, id.qmlListId,
-                                func, name, mo, attach, attachMo, pStatus, extFunc,
+                                func, name, version_maj, version_min_from, version_min_to, mo, attach, attachMo, pStatus, extFunc,
                                 extmo, index, parser);
 
     data->types.append(type);
@@ -489,7 +469,7 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
     data->idToType.insert(type->qmlListTypeId(), type);
 
     if (!type->qmlTypeName().isEmpty())
-        data->nameToType.insert(type->qmlTypeName(), type);
+        data->nameToType.insertMulti(type->qmlTypeName(), type);
 
     data->metaObjectToType.insert(type->baseMetaObject(), type);
 
@@ -503,7 +483,7 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
     data->qmllists.setBit(id.qmlListId, true);
     data->lists.setBit(id.listId, true);
 
-    return index; // Note: multi-version call only uses first.
+    return index;
 }
 
 int QmlMetaType::qmlParserStatusCast(int userType)
@@ -587,19 +567,6 @@ bool QmlMetaType::append(const QVariant &list, const QVariant &item)
     }
 }
 
-QObject *QmlMetaType::create(const QByteArray &name)
-{
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    lock.unlock();
-
-    QmlType *type = data->nameToType.value(name);
-    if (type)
-        return type->create();
-    else
-        return 0;
-}
-
 QVariant QmlMetaType::fromObject(QObject *obj, int typeId)
 {
     QReadLocker lock(metaTypeDataLock());
@@ -624,18 +591,6 @@ const QMetaObject *QmlMetaType::rawMetaObjectForType(int id)
         return 0;
 }
 
-const QMetaObject *QmlMetaType::rawMetaObjectForType(const QByteArray &name)
-{
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-
-    QmlType *type = data->nameToType.value(name);
-    if (type)
-        return type->baseMetaObject();
-    else
-        return 0;
-}
-
 const QMetaObject *QmlMetaType::metaObjectForType(int id)
 {
     QReadLocker lock(metaTypeDataLock());
@@ -647,43 +602,6 @@ const QMetaObject *QmlMetaType::metaObjectForType(int id)
         return type->metaObject();
     else
         return 0;
-}
-
-const QMetaObject *QmlMetaType::metaObjectForType(const QByteArray &name)
-{
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    QmlType *type = data->nameToType.value(name);
-    lock.unlock();
-
-    if (type)
-        return type->metaObject();
-    else
-        return 0;
-}
-
-int QmlMetaType::type(const QByteArray &name)
-{
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-
-    QmlType *type = data->nameToType.value(name);
-    if (type)
-        return type->typeId();
-    else
-        return 0;
-}
-
-int QmlMetaType::attachedPropertiesFuncId(const QByteArray &name)
-{
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-
-    QmlType *type = data->nameToType.value("Qt/4.6/"+name); // XXX Should not hard-code namespace
-    if (type && type->attachedPropertiesFunction())
-        return type->index();
-    else
-        return -1;
 }
 
 int QmlMetaType::attachedPropertiesFuncId(const QMetaObject *mo)
@@ -705,18 +623,6 @@ QmlAttachedPropertiesFunc QmlMetaType::attachedPropertiesFuncById(int id)
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
     return data->types.at(id)->attachedPropertiesFunction();
-}
-
-QmlAttachedPropertiesFunc
-QmlMetaType::attachedPropertiesFunc(const QByteArray &name)
-{
-    QReadLocker lock(metaTypeDataLock());
-    QmlMetaTypeData *data = metaTypeData();
-    QmlType *type = data->nameToType.value(name);
-    if (type)
-        return type->attachedPropertiesFunction();
-    else
-        return 0;
 }
 
 QMetaProperty QmlMetaType::defaultProperty(const QMetaObject *metaObject)
@@ -939,12 +845,22 @@ QmlMetaType::StringConverter QmlMetaType::customStringConverter(int type)
     return data->stringConverters.value(type);
 }
 
-QmlType *QmlMetaType::qmlType(const QByteArray &name)
+/*!
+    Returns the type (if any) of URI-qualified named \a name in version specified
+    by \a version_major and \a version_minor.
+*/
+QmlType *QmlMetaType::qmlType(const QByteArray &name, int version_major, int version_minor)
 {
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
 
-    return data->nameToType.value(name);
+    QList<QmlType*> types = data->nameToType.values(name);
+    foreach (QmlType *t, types) {
+        // XXX version_major<0 just a kludge for QmlMetaPropertyPrivate::initProperty
+        if (version_major<0 || t->availableInVersion(version_major,version_minor))
+            return t;
+    }
+    return 0;
 }
 
 QmlType *QmlMetaType::qmlType(const QMetaObject *metaObject)

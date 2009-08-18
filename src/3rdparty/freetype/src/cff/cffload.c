@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    OpenType and CFF data/program tables loader (body).                  */
 /*                                                                         */
-/*  Copyright 1996-2001, 2002, 2003, 2004, 2005, 2006, 2007 by             */
+/*  Copyright 1996-2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 by */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -319,7 +319,7 @@
   static FT_Error
   cff_index_load_offsets( CFF_Index  idx )
   {
-    FT_Error   error  = 0;
+    FT_Error   error  = CFF_Err_Ok;
     FT_Stream  stream = idx->stream;
     FT_Memory  memory = stream->memory;
 
@@ -402,6 +402,7 @@
       old_offset = 1;
       for ( n = 0; n <= idx->count; n++ )
       {
+        /* at this point, `idx->offsets' can't be NULL */
         offset = idx->offsets[n];
         if ( !offset )
           offset = old_offset;
@@ -1355,7 +1356,8 @@
   FT_LOCAL_DEF( FT_Error )
   cff_font_load( FT_Stream  stream,
                  FT_Int     face_index,
-                 CFF_Font   font )
+                 CFF_Font   font,
+                 FT_Bool    pure_cff )
   {
     static const FT_Frame_Field  cff_header_fields[] =
     {
@@ -1519,7 +1521,7 @@
     /* read the Charset and Encoding tables if available */
     if ( font->num_glyphs > 0 )
     {
-      FT_Bool  invert = FT_BOOL( dict->cid_registry != 0xFFFFU );
+      FT_Bool  invert = FT_BOOL( dict->cid_registry != 0xFFFFU && pure_cff );
 
 
       error = cff_charset_load( &font->charset, font->num_glyphs, stream,
@@ -1539,9 +1541,6 @@
         if ( error )
           goto Exit;
       }
-      else
-        /* CID-keyed fonts only need CIDs */
-        FT_FREE( font->charset.sids );
     }
 
     /* get the font name (/CIDFontName for CID-keyed fonts, */
