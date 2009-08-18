@@ -47,7 +47,7 @@
     \brief The QTcpSocket class provides a TCP socket.
 
     \reentrant
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     TCP (Transmission Control Protocol) is a reliable,

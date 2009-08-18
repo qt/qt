@@ -61,10 +61,12 @@
 QT_BEGIN_NAMESPACE
 
 QSvgTinyDocument::QSvgTinyDocument()
-    : QSvgStructureNode(0),
-      m_animated(false),
-      m_animationDuration(0),
-      m_fps(30)
+    : QSvgStructureNode(0)
+    , m_widthPercent(false)
+    , m_heightPercent(false)
+    , m_animated(false)
+    , m_animationDuration(0)
+    , m_fps(30)
 {
 }
 

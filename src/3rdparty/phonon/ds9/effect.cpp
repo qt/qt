@@ -138,8 +138,7 @@ namespace Phonon
                 ComPointer<IMediaParams> params(filter, IID_IMediaParams);
                 Q_ASSERT(params);
 
-                MP_DATA data = float(v.toDouble());
-                params->SetParam(p.id(), data);
+                params->SetParam(p.id(), v.toFloat());
             }
         }
 

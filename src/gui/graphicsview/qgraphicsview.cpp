@@ -48,9 +48,8 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
     \brief The QGraphicsView class provides a widget for displaying the
     contents of a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
-    \mainclass
+
 
     QGraphicsView visualizes the contents of a QGraphicsScene in a scrollable
     viewport. To create a scene with geometrical items, see QGraphicsScene's
@@ -493,8 +492,8 @@ void QGraphicsViewPrivate::centerView(QGraphicsView::ViewportAnchor anchor)
             // Last scene pos: lastMouseMoveScenePoint
             // Current mouse pos:
             QPointF transformationDiff = q->mapToScene(viewport->rect().center())
-                                         - q->mapToScene(q->mapFromGlobal(QCursor::pos()));
-            q->centerOn(lastMouseMoveScenePoint + transformationDiff);;
+                                         - q->mapToScene(viewport->mapFromGlobal(QCursor::pos()));
+            q->centerOn(lastMouseMoveScenePoint + transformationDiff);
         } else {
             q->centerOn(lastCenterPoint);
         }

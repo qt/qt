@@ -460,7 +460,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     \brief The QWidget class is the base class of all user interface objects.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     The widget is the atom of the user interface: it receives mouse, keyboard
     and other events from the window system, and paints a representation of
@@ -2785,7 +2785,7 @@ void QWidget::showFullScreen()
     Calling this function only affects \l{isWindow()}{windows}.
 
     On X11, this function may not work properly with certain window
-    managers. See \l{geometry.html}{Window Geometry} for an explanation.
+    managers. See the \l{Window Geometry} documentation for an explanation.
 
     \sa setWindowState(), showNormal(), showMinimized(), show(), hide(), isVisible()
 */
@@ -2840,7 +2840,7 @@ void QWidget::showNormal()
 bool QWidget::isEnabledTo(QWidget* ancestor) const
 {
     const QWidget * w = this;
-    while (w && !w->testAttribute(Qt::WA_ForceDisabled)
+    while (!w->testAttribute(Qt::WA_ForceDisabled)
             && !w->isWindow()
             && w->parentWidget()
             && w->parentWidget() != ancestor)
@@ -3134,8 +3134,8 @@ void QWidget::setDisabled(bool disable)
     \brief geometry of the widget relative to its parent including any
     window frame
 
-    See the \link geometry.html Window Geometry documentation\endlink
-    for an overview of geometry issues with windows.
+    See the \l{Window Geometry} documentation for an overview of geometry
+    issues with windows.
 
     By default, this property contains a value that depends on the user's
     platform and screen geometry.
@@ -3161,8 +3161,8 @@ QRect QWidget::frameGeometry() const
     \brief the x coordinate of the widget relative to its parent including
     any window frame
 
-    See the \link geometry.html Window Geometry documentation\endlink
-    for an overview of window geometry.
+    See the \l{Window Geometry} documentation for an overview of geometry
+    issues with windows.
 
     By default, this property has a value of 0.
 
@@ -3181,8 +3181,8 @@ int QWidget::x() const
     \brief the y coordinate of the widget relative to its parent and
     including any window frame
 
-    See the \link geometry.html Window Geometry documentation\endlink
-    for an overview of window geometry.
+    See the \l{Window Geometry} documentation for an overview of geometry
+    issues with windows.
 
     By default, this property has a value of 0.
 
@@ -3214,8 +3214,8 @@ int QWidget::y() const
     \warning Calling move() or setGeometry() inside moveEvent() can
     lead to infinite recursion.
 
-    See the \link geometry.html Window Geometry documentation\endlink
-    for an overview of window geometry.
+    See the \l{Window Geometry} documentation for an overview of geometry
+    issues with windows.
 
     \sa frameGeometry, size x(), y()
 */
@@ -3245,8 +3245,8 @@ QPoint QWidget::pos() const
     \warning Calling setGeometry() inside resizeEvent() or moveEvent()
     can lead to infinite recursion.
 
-    See the \link geometry.html Window Geometry documentation\endlink
-    for an overview of window geometry.
+    See the \l{Window Geometry} documentation for an overview of geometry
+    issues with windows.
 
     By default, this property contains a value that depends on the user's
     platform and screen geometry.
@@ -3295,8 +3295,8 @@ QPoint QWidget::pos() const
     \property QWidget::width
     \brief the width of the widget excluding any window frame
 
-    See the \link geometry.html Window Geometry documentation\endlink
-    for an overview of window geometry.
+    See the \l{Window Geometry} documentation for an overview of geometry
+    issues with windows.
 
     \note Do not use this function to find the width of a screen on
     a \l{QDesktopWidget}{multiple screen desktop}. Read
@@ -3312,8 +3312,8 @@ QPoint QWidget::pos() const
     \property QWidget::height
     \brief the height of the widget excluding any window frame
 
-    See the \link geometry.html Window Geometry documentation\endlink
-    for an overview of window geometry.
+    See the \l{Window Geometry} documentation for an overview of geometry
+    issues with windows.
 
     \note Do not use this function to find the height of a screen
     on a \l {QDesktopWidget} {multiple screen desktop}. Read
@@ -3332,8 +3332,8 @@ QPoint QWidget::pos() const
 
     The rect property equals QRect(0, 0, width(), height()).
 
-    See the \link geometry.html Window Geometry documentation\endlink
-    for an overview of window geometry.
+    See the \l{Window Geometry} documentation for an overview of geometry
+    issues with windows.
 
     By default, this property contains a value that depends on the user's
     platform and screen geometry.
@@ -6347,8 +6347,8 @@ void QWidget::setGeometry(const QRect &r)
 
     \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 11
 
-    See the \link geometry.html Window Geometry documentation\endlink
-    for an overview of geometry issues with windows.
+    See the \l{Window Geometry} documentation for an overview of geometry
+    issues with windows.
 
     Use QMainWindow::saveState() to save the geometry and the state of
     toolbars and dock widgets.
@@ -6389,8 +6389,8 @@ QByteArray QWidget::saveGeometry() const
 
     \snippet doc/src/snippets/code/src_gui_kernel_qwidget.cpp 12
 
-    See the \link geometry.html Window Geometry documentation\endlink
-    for an overview of geometry issues with windows.
+    See the \l{Window Geometry} documentation for an overview of geometry
+    issues with windows.
 
     Use QMainWindow::restoreState() to restore the geometry and the
     state of toolbars and dock widgets.
@@ -7358,8 +7358,7 @@ bool QWidget::isVisibleTo(QWidget* ancestor) const
     if (!ancestor)
         return isVisible();
     const QWidget * w = this;
-    while (w
-            && !w->isHidden()
+    while (!w->isHidden()
             && !w->isWindow()
             && w->parentWidget()
             && w->parentWidget() != ancestor)

@@ -66,8 +66,8 @@ public:
     \class QSignalMapper
     \brief The QSignalMapper class bundles signals from identifiable senders.
 
-    \ingroup io
-    \mainclass
+    \ingroup objectmodel
+
 
     This class collects a set of parameterless signals, and re-emits
     them with integer, string or widget parameters corresponding to

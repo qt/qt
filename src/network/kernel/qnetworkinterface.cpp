@@ -148,7 +148,7 @@ QString QNetworkInterfacePrivate::makeHwAddress(int len, uchar *data)
 
     \since 4.2
     \reentrant
-    \ingroup io
+    \ingroup network
 
     Each network interface can contain zero or more IP addresses, which
     in turn can be associated with a netmask and/or a broadcast
@@ -332,7 +332,7 @@ void QNetworkAddressEntry::setBroadcast(const QHostAddress &newBroadcast)
 
     \since 4.2
     \reentrant
-    \ingroup io
+    \ingroup network
 
     QNetworkInterface represents one network interface attached to the
     host where the program is being run. Each network interface may

@@ -172,9 +172,15 @@ public:
 #ifdef QT_MAC_USE_COCOA
     // The following variables help organizing modal sessions:
     static QStack<QCocoaModalSessionInfo> cocoaModalSessionStack;
-    static bool blockCocoaRequestModal;
-    static NSModalSession activeModalSession();
-    static void rebuildModalSessionStack(bool pop);
+    static bool currentExecIsNSAppRun;
+    static bool nsAppRunCalledByQt;
+    static NSModalSession currentModalSessionCached;
+    static void updateChildrenWorksWhenModal();
+    static NSModalSession currentModalSession();
+    static int activeModalSessionCount();
+    static void temporarilyStopAllModalSessions();
+    static void beginModalSession(QWidget *widget);
+    static void endModalSession(QWidget *widget);
 #endif
 
     MacSocketHash macSockets;
@@ -191,6 +197,20 @@ private:
     static void waitingObserverCallback(CFRunLoopObserverRef observer,
                                         CFRunLoopActivity activity, void *info);
 };
+
+#ifdef QT_MAC_USE_COCOA
+class QtMacInterruptDispatcherHelp : public QObject
+{
+    static QtMacInterruptDispatcherHelp *instance;
+    bool cancelled;
+
+    QtMacInterruptDispatcherHelp();
+    ~QtMacInterruptDispatcherHelp();
+
+    public:
+    static void interruptLater();
+};
+#endif
 
 QT_END_NAMESPACE
 

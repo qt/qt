@@ -40,10 +40,9 @@
 ****************************************************************************/
 
 #include "qnoncontiguousbytedevice_p.h"
-#include <QObject>
-#include <QBuffer>
-#include <QDebug>
-#include <QFile>
+#include <qbuffer.h>
+#include <qdebug.h>
+#include <qfile.h>
 
 QT_BEGIN_NAMESPACE
 

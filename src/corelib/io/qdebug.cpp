@@ -52,8 +52,7 @@
 
 /*!
     \class QDebug
-    \ingroup io
-    \mainclass
+
     \brief The QDebug class provides an output stream for debugging information.
 
     QDebug is used whenever the developer needs to write out debugging or tracing

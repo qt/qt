@@ -113,7 +113,7 @@ public:
     \brief The QSpinBox class provides a spin box widget.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     QSpinBox is designed to handle integers and discrete sets of
     values (e.g., month names); use QDoubleSpinBox for floating point
@@ -534,7 +534,7 @@ void QSpinBox::fixup(QString &input) const
     takes doubles.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     QDoubleSpinBox allows the user to choose a value by clicking the
     up and down buttons or by pressing Up or Down on the keyboard to

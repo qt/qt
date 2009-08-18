@@ -107,7 +107,7 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
     \since 4.4
     \ingroup tools
     \ingroup shared
-    \ingroup text
+    \ingroup string-processing
     \reentrant
 
     QTextBoundaryFinder allows to find Unicode text boundaries in a

@@ -57,7 +57,6 @@ QT_BEGIN_NAMESPACE
     \brief The QGraphicsLayout class provides the base class for all layouts
     in Graphics View.
     \since 4.4
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     QGraphicsLayout is an abstract class that defines a virtual API for

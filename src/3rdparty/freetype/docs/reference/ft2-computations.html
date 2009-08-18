@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.6 API Reference</title>
+<title>FreeType-2.3.9 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -31,7 +31,11 @@
 </style>
 </head>
 <body>
-<center><h1>FreeType-2.3.6 API Reference</h1></center>
+
+<table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+<center><h1>FreeType-2.3.9 API Reference</h1></center>
 
 <center><h1>
 Computations
@@ -160,7 +164,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>The result of &lsquo;(a*0x10000)/b&rsquo;.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>The optimization for FT_DivFix() is simple: If (a &lt;&lt; 16) fits in 32 bits, then the division is computed directly. Otherwise, we use a specialized version of <a href="ft2-computations.html#FT_MulDiv">FT_MulDiv</a>.</p>
+<p>The optimization for FT_DivFix() is simple: If (a&nbsp;&lt;&lt;&nbsp;16) fits in 32&nbsp;bits, then the division is computed directly. Otherwise, we use a specialized version of <a href="ft2-computations.html#FT_MulDiv">FT_MulDiv</a>.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -314,7 +318,7 @@ Defined in FT_GLYPH_H (freetype/ftglyph.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Performs the matrix operation &lsquo;b = a*b&rsquo;.</p>
+<p>Perform the matrix operation &lsquo;b = a*b&rsquo;.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -353,7 +357,7 @@ Defined in FT_GLYPH_H (freetype/ftglyph.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Inverts a 2x2 matrix. Returns an error if it can't be inverted.</p>
+<p>Invert a 2x2 matrix. Return an error if it can't be inverted.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>inout</b></em></td></tr><tr><td>
 <p></p>
@@ -364,7 +368,7 @@ Defined in FT_GLYPH_H (freetype/ftglyph.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -374,14 +378,6 @@ Defined in FT_GLYPH_H (freetype/ftglyph.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Angle">FT_Angle</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_TRIGONOMETRY_H (freetype/fttrigon.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <a href="ft2-basic_types.html#FT_Fixed">FT_Fixed</a>  <b>FT_Angle</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>This type is used to model angle values in FreeType. Note that the angle is a 16.16 fixed float value expressed in degrees.</p>
 </td></tr></table><br>
@@ -394,14 +390,6 @@ Defined in FT_TRIGONOMETRY_H (freetype/fttrigon.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_ANGLE_PI">FT_ANGLE_PI</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TRIGONOMETRY_H (freetype/fttrigon.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-#define <b>FT_ANGLE_PI</b>  ( 180L &lt;&lt; 16 )
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>The angle pi expressed in <a href="ft2-computations.html#FT_Angle">FT_Angle</a> units.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -412,14 +400,6 @@ Defined in FT_TRIGONOMETRY_H (freetype/fttrigon.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_ANGLE_2PI">FT_ANGLE_2PI</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_TRIGONOMETRY_H (freetype/fttrigon.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-#define <b>FT_ANGLE_2PI</b>  ( <a href="ft2-computations.html#FT_ANGLE_PI">FT_ANGLE_PI</a> * 2 )
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>The angle 2*pi expressed in <a href="ft2-computations.html#FT_Angle">FT_Angle</a> units.</p>
 </td></tr></table><br>
@@ -432,14 +412,6 @@ Defined in FT_TRIGONOMETRY_H (freetype/fttrigon.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_ANGLE_PI2">FT_ANGLE_PI2</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_TRIGONOMETRY_H (freetype/fttrigon.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-#define <b>FT_ANGLE_PI2</b>  ( <a href="ft2-computations.html#FT_ANGLE_PI">FT_ANGLE_PI</a> / 2 )
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>The angle pi/2 expressed in <a href="ft2-computations.html#FT_Angle">FT_Angle</a> units.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -450,14 +422,6 @@ Defined in FT_TRIGONOMETRY_H (freetype/fttrigon.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_ANGLE_PI4">FT_ANGLE_PI4</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_TRIGONOMETRY_H (freetype/fttrigon.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-#define <b>FT_ANGLE_PI4</b>  ( <a href="ft2-computations.html#FT_ANGLE_PI">FT_ANGLE_PI</a> / 4 )
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>The angle pi/4 expressed in <a href="ft2-computations.html#FT_Angle">FT_Angle</a> units.</p>
 </td></tr></table><br>

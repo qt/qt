@@ -516,7 +516,7 @@ public:
     \obsolete
     \brief The QHttpHeader class contains header information for HTTP.
 
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     In most cases you should use the more specialized derivatives of
@@ -1010,7 +1010,7 @@ public:
     \obsolete
     \brief The QHttpResponseHeader class contains response header information for HTTP.
 
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     This class is used by the QHttp class to report the header
@@ -1215,7 +1215,7 @@ public:
     \obsolete
     \brief The QHttpRequestHeader class contains request header information for HTTP.
 
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     This class is used in the QHttp class to report the header
@@ -1420,9 +1420,9 @@ QString QHttpRequestHeader::toString() const
 
     \brief The QHttp class provides an implementation of the HTTP protocol.
 
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
-    \mainclass
+
 
     This class provides a direct interface to HTTP that allows you to
     download and upload data with the HTTP protocol.

@@ -45,7 +45,7 @@
 
     \ingroup tools
     \ingroup shared
-    \mainclass
+
     \reentrant
 
     QQueue\<T\> is one of Qt's generic \l{container classes}. It

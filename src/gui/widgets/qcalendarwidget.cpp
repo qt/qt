@@ -332,10 +332,9 @@ QString QCalendarMonthValidator::text(const QDate &date, int repeat) const
         return str + QString::number(date.month());
     } else if (repeat == 3) {
         return m_locale.standaloneMonthName(date.month(), QLocale::ShortFormat);
-    } else if (repeat >= 4) {
+    } else /*if (repeat >= 4)*/ {
         return m_locale.standaloneMonthName(date.month(), QLocale::LongFormat);
     }
-    return QString();
 }
 
 //////////////////////////////////
@@ -1961,7 +1960,7 @@ void QCalendarWidgetPrivate::_q_editingFinished()
     \brief The QCalendarWidget class provides a monthly based
     calendar widget allowing the user to select a date.
     \since 4.2
-    \mainclass
+
     \ingroup advanced
 
     \image cleanlooks-calendarwidget.png

@@ -57,10 +57,9 @@ wince*::LIBS += libcmt.lib \
     commctrl.lib \
     coredll.lib \
     winsock.lib
-mac:LIBS += -framework \
-    IOKit \
-    -framework \
-    Security
+mac:LIBS += -framework IOKit \
+    -framework ApplicationServices \
+    -framework Security
 include(../qbase.pri)
 QMAKE_TARGET_PRODUCT = QTestLib
 QMAKE_TARGET_DESCRIPTION = Qt \

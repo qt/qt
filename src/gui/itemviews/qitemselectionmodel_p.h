@@ -65,7 +65,7 @@ public:
     QItemSelectionModelPrivate()
       : model(0),
         currentCommand(QItemSelectionModel::NoUpdate),
-        tableSelected(false) {}
+        tableSelected(false), tableColCount(0), tableRowCount(0) {}
 
     QItemSelection expandSelection(const QItemSelection &selection,
                                    QItemSelectionModel::SelectionFlags command) const;

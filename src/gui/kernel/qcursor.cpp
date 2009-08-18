@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup appearance
     \ingroup shared
-    \mainclass
+
 
     This class is mainly used to create mouse cursors that are
     associated with particular widgets and to get and set the position

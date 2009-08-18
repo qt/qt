@@ -133,8 +133,7 @@ QSize QErrorMessageTextView::sizeHint() const
 
     \brief The QErrorMessage class provides an error message display dialog.
 
-    \ingroup dialogs
-    \ingroup misc
+    \ingroup standard-dialog
 
     An error message widget consists of a text label and a checkbox. The
     checkbox lets the user control whether the same error message will be

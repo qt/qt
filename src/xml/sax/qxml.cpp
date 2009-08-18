@@ -3012,7 +3012,7 @@ void QXmlSimpleReaderPrivate::initIncrementalParsing()
 
     \inmodule QtXml
     \ingroup xml-tools
-    \mainclass
+
 
     This XML reader is suitable for a wide range of applications. It
     is able to parse well-formed XML and can report the namespaces of

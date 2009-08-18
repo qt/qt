@@ -1724,9 +1724,6 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
             value = "?";
         }
 
-        /*
-          Task 259071 requires work here. See gui/widgets/qdatetime.h, for example.
-         */
         if (key == "READ")
             tre->addPropertyFunction(property, value, PropertyNode::Getter);
         else if (key == "WRITE")
@@ -1737,9 +1734,11 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
             property->setDesignable(value.toLower() == "true");
         else if (key == "RESET")
             tre->addPropertyFunction(property, value, PropertyNode::Resetter);
+
         else if (key == "NOTIFY") {
             tre->addPropertyFunction(property, value, PropertyNode::Notifier);
         }
+
     }
     match(Tok_RightParen);
     return true;

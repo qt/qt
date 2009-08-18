@@ -145,7 +145,7 @@ QFont QTextItem::font() const
 
 /*!
   \class QPaintEngine
-  \ingroup multimedia
+  \ingroup painting
 
   \brief The QPaintEngine class provides an abstract definition of how
   QPainter draws to a given device on a given platform.

@@ -52,9 +52,9 @@ typedef QPenPrivate QPenData;
 
 /*!
     \class QPen
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \mainclass
+
 
     \brief The QPen class defines how a QPainter should draw lines and outlines
     of shapes.

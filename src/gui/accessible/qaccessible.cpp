@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     relating to accessibility.
 
     \ingroup accessibility
-    \mainclass
+
 
     Accessible applications can be used by people who are not able to
     use applications by conventional means.

@@ -47,7 +47,7 @@
     \brief The QNativeSocketEngine class provides low level access to a socket.
 
     \reentrant
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     QtSocketLayer provides basic socket functionality provided by the

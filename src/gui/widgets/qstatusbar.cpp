@@ -158,9 +158,9 @@ QRect QStatusBarPrivate::messageRect() const
     \brief The QStatusBar class provides a horizontal bar suitable for
     presenting status information.
 
-    \ingroup application
+    \ingroup mainwindow-classes
     \ingroup helpsystem
-    \mainclass
+
 
     Each status indicator falls into one of three categories:
 

@@ -1006,10 +1006,8 @@ QStyle* QFormLayoutPrivate::getStyle() const
     \since 4.4
     \brief The QFormLayout class manages forms of input widgets and their associated labels.
 
-    \ingroup appearance
     \ingroup geomanagement
 
-    \mainclass
 
     QFormLayout is a convenience layout class that lays out its
     children in a two-column form. The left column consists of labels
