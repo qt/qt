@@ -3637,18 +3637,18 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
 
     VpGraphicsView view(&scene);
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
     QPoint mouseViewPos(20, 20);
     sendMouseMove(view.viewport(), mouseViewPos);
-    QTest::qWait(125);
 
     QPointF mouseScenePos = view.mapToScene(mouseViewPos);
-    view.setTransform(QTransform().scale(5, 5));
-    QTest::qWait(125);
-    view.setTransform(QTransform().rotate(5, Qt::ZAxis), true);
-    QTest::qWait(125);
+    view.setTransform(QTransform().scale(5, 5).rotate(5, Qt::ZAxis), true);
 
     QPointF newMouseScenePos = view.mapToScene(mouseViewPos);
-    qreal slack = 3;
+
+    qreal slack = 1;
     QVERIFY(qAbs(newMouseScenePos.x() - mouseScenePos.x()) < slack);
     QVERIFY(qAbs(newMouseScenePos.y() - mouseScenePos.y()) < slack);
 }
