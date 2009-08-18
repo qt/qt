@@ -19,30 +19,24 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_VIDEOPLAYER_H
 #define PHONON_MMF_VIDEOPLAYER_H
 
-/* We use the extra qualification include/ to avoid picking up the include
- * Phonon has. */
 #include <include/videoplayer.h>
+
 #include "abstractmediaplayer.h"
 
-#include <Phonon/MediaSource>
-
-class CDrmPlayerUtility;
-class TTimeIntervalMicroSeconds;
-class QTimer;
+class CVideoPlayerUtility;
 
 namespace Phonon
 {
     namespace MMF
     {
-        class AudioOutput;
-
         /**
          *
          * See
          * <a href="http://wiki.forum.nokia.com/index.php/How_to_play_a_video_file_using_CVideoPlayerUtility">How to
          * play a video file using CVideoPlayerUtility</a>
          */
-        class VideoPlayer : public AbstractMediaPlayer
+        class VideoPlayer	:	public AbstractMediaPlayer
+							,	public MVideoPlayerUtilityObserver
         {
             Q_OBJECT
         public:
@@ -62,11 +56,21 @@ namespace Phonon
             virtual qint64 currentTime() const;
             virtual qint64 totalTime() const;
             
+            // MVideoPlayerUtilityObserver
+            virtual void MvpuoOpenComplete(TInt aError);
+            virtual void MvpuoPrepareComplete(TInt aError);
+            virtual void MvpuoFrameReady(CFbsBitmap &aFrame, TInt aError);
+            virtual void MvpuoPlayComplete(TInt aError);
+            virtual void MvpuoEvent(const TMMFEvent &aEvent);
+            
         Q_SIGNALS:
             void totalTimeChanged();
             void stateChanged(Phonon::State oldState,
                               Phonon::State newState);
             void finished();
+            
+        private:
+        	CVideoPlayerUtility*	m_player;
 
         };
     }

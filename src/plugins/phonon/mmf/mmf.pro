@@ -21,6 +21,10 @@ phonon_mmf_audio_drm {
     LIBS += -lmediaclientaudio.lib
 }
 
+LIBS += -lmediaclientvideo.lib		# For CVideoPlayerUtility
+LIBS += -lcone.lib			# For CCoeEnv
+LIBS += -lws32.lib			# For RWindow
+
 HEADERS +=                                           \
            $$PHONON_MMF_DIR/abstractplayer.h         \
            $$PHONON_MMF_DIR/abstractmediaplayer.h    \

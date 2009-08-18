@@ -23,7 +23,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 class CDrmPlayerUtility;
 class TTimeIntervalMicroSeconds;
-class QTimer;
 
 #ifdef QT_PHONON_MMF_AUDIO_DRM
 #include <drmaudiosampleplayer.h>
@@ -39,18 +38,16 @@ namespace Phonon
 {
     namespace MMF
     {
-        class AudioOutput;
-
         /**
          *
          * See
          * <a href="http://wiki.forum.nokia.com/index.php/How_to_play_a_video_file_using_CVideoPlayerUtility">How to
          * play a video file using CVideoPlayerUtility</a>
          */
-        class AudioPlayer : public AbstractMediaPlayer
-                          , public MPlayerObserverType    // typedef
+        class AudioPlayer	:	public AbstractMediaPlayer
+							,	public MPlayerObserverType    // typedef
 #ifdef QT_PHONON_MMF_AUDIO_DRM
-                          ,    public MAudioLoadingObserver
+							,	public MAudioLoadingObserver
 #endif
         {
             Q_OBJECT

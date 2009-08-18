@@ -33,11 +33,13 @@ MMF::AudioPlayer::AudioPlayer() : m_player(NULL)
     TRACE_CONTEXT(AudioPlayer::AudioPlayer, EAudioApi);
     TRACE_ENTRY_0();
 
-    Q_UNUSED(parent);
-
-    // TODO: should leaves be trapped in the constructor?
-    m_player = CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone);
-
+    // TODO: is this the correct way to handle errors in constructing Symbian objects?
+    TRAPD(err, m_player = CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone));
+    if(KErrNone != err)
+    {
+		changeState(ErrorState);
+    }
+    
     TRACE_EXIT_0();
 }
 
@@ -101,7 +103,7 @@ void MMF::AudioPlayer::close()
 void MMF::AudioPlayer::seek(qint64 ms)
 {
     TRACE_CONTEXT(AudioPlayer::seek, EAudioApi);
-    TRACE_ENTRY("state %d pos %Ld", m_state, ms);
+    TRACE_ENTRY("state %d pos %Ld", state(), ms);
 
     m_player->SetPosition(TTimeIntervalMicroSeconds(ms));
 
@@ -111,14 +113,14 @@ void MMF::AudioPlayer::seek(qint64 ms)
 bool MMF::AudioPlayer::hasVideo() const
 {
     TRACE_CONTEXT(AudioPlayer::hasVideo, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
+    TRACE_ENTRY("state %d", state());
     TRACE_RETURN("%d", false);
 }
 
 qint64 MMF::AudioPlayer::currentTime() const
 {
     TRACE_CONTEXT(AudioPlayer::currentTime, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
+    TRACE_ENTRY("state %d", state());
 
     TTimeIntervalMicroSeconds us;
     const TInt err = m_player->GetPosition(us);
@@ -135,7 +137,7 @@ qint64 MMF::AudioPlayer::currentTime() const
 qint64 MMF::AudioPlayer::totalTime() const
 {
     TRACE_CONTEXT(AudioPlayer::totalTime, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
+    TRACE_ENTRY("state %d", state());
 
     const qint64 result = toMilliSeconds(m_player->Duration());
 
@@ -156,9 +158,9 @@ void MMF::AudioPlayer::MapcInitComplete(TInt aError,
 #endif
 {
     TRACE_CONTEXT(AudioPlayer::MapcInitComplete, EAudioInternal);
-    TRACE_ENTRY("state %d error %d", m_state, aError);
+    TRACE_ENTRY("state %d error %d", state(), aError);
 
-    __ASSERT_ALWAYS(LoadingState == m_state, Utils::panic(InvalidStatePanic));
+    __ASSERT_ALWAYS(LoadingState == state(), Utils::panic(InvalidStatePanic));
 
     if(KErrNone == aError)
     {
@@ -175,8 +177,7 @@ void MMF::AudioPlayer::MapcInitComplete(TInt aError,
     else
     {
         // TODO: set different error states according to value of aError?
-        m_error = NormalError;
-        changeState(ErrorState);
+        setError(NormalError);
     }
 
     TRACE_EXIT_0();
@@ -189,7 +190,7 @@ void MMF::AudioPlayer::MapcPlayComplete(TInt aError)
 #endif
 {
     TRACE_CONTEXT(AudioPlayer::MapcPlayComplete, EAudioInternal);
-    TRACE_ENTRY("state %d error %d", m_state, aError);
+    TRACE_ENTRY("state %d error %d", state(), aError);
 
     stopTickTimer();
 
@@ -201,8 +202,7 @@ void MMF::AudioPlayer::MapcPlayComplete(TInt aError)
     else
     {
         // TODO: do something with aError?
-        m_error = NormalError;
-        changeState(ErrorState);
+        setError(NormalError);
     }
 
 /*

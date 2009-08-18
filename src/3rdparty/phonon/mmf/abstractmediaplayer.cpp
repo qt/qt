@@ -178,13 +178,8 @@ void MMF::AbstractMediaPlayer::setTickInterval(qint32 interval)
 
 Phonon::ErrorType MMF::AbstractMediaPlayer::errorType() const
 {
-    TRACE_CONTEXT(AbstractMediaPlayer::errorType, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
-
     const Phonon::ErrorType result = (ErrorState == m_state)
         ? m_error : NoError;
-
-    TRACE_RETURN("%d", result);
 }
 
 QString MMF::AbstractMediaPlayer::errorString() const
@@ -462,6 +457,17 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
     }
 
     m_state = newState;
+
+    TRACE_EXIT_0();
+}
+
+void MMF::AbstractMediaPlayer::setError(Phonon::ErrorType error)
+{
+    TRACE_CONTEXT(AbstractMediaPlayer::setError, EAudioInternal);
+    TRACE_ENTRY("state %d error %d", m_state, error);
+
+    m_error = error;
+    changeState(ErrorState);
 
     TRACE_EXIT_0();
 }

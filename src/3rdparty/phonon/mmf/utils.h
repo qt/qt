@@ -65,7 +65,17 @@ namespace Phonon
             /**
              * Internal functions in the audio implementation
              */
-            EAudioInternal        = 0x00000002
+            EAudioInternal       = 0x00000002,
+            
+            /**
+			 * Functions which map directly to the public Phonon video API
+			 */
+			EVideoApi            = 0x00010000,
+
+			/**
+			 * Internal functions in the video implementation
+			 */
+			EVideoInternal       = 0x00020000
             };
 
         /**

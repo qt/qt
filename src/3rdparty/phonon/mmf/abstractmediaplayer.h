@@ -111,6 +111,11 @@ namespace Phonon
 			 */
 			void changeState(PrivateState newState);
 			
+			/**
+			 * Records error and changes state to ErrorState
+			 */
+			void setError(Phonon::ErrorType error);
+			
             static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
         	
         Q_SIGNALS:
@@ -124,11 +129,10 @@ namespace Phonon
 			 */
 			void tick();
 
-        protected: // Temporary
+        private:
         	PrivateState				m_state;
         	Phonon::ErrorType			m_error;
         	
-        private:
         	qint32						m_tickInterval;
         	QScopedPointer<QTimer>		m_tickTimer;
             qreal						m_volume;

@@ -29,24 +29,13 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::MediaObject::MediaObject(QObject *parent) : QObject::QObject(parent)
+MMF::MediaObject::MediaObject(QObject *parent)	: 	QObject::QObject(parent)
+												,	m_recognizerOpened(false)
 {
     TRACE_CONTEXT(MediaObject::MediaObject, EAudioApi);
     TRACE_ENTRY_0();
 
     Q_UNUSED(parent);
-
-    TInt err = m_recognizer.Connect();
-    err = m_fileServer.Connect();
-    // TODO: handle this error
-    
-    // This must be called in order to be able to share file handles with
-    // the recognizer server (see fileMediaType function).
-    err = m_fileServer.ShareProtected();
-    // TODO: handle this error
-
-    m_tickTimer = new QTimer(this);
-    connect(m_tickTimer, SIGNAL(timeout()), this, SLOT(tick()));
 
     TRACE_EXIT_0();
 }
@@ -55,8 +44,6 @@ MMF::MediaObject::~MediaObject()
 {
     TRACE_CONTEXT(MediaObject::~MediaObject, EAudioApi);
     TRACE_ENTRY_0();
-
-    delete m_tickTimer;
 
     m_file.Close();
     m_fileServer.Close();
@@ -69,6 +56,36 @@ MMF::MediaObject::~MediaObject()
 //-----------------------------------------------------------------------------
 // Recognizer
 //-----------------------------------------------------------------------------
+
+bool MMF::MediaObject::openRecognizer()
+{
+	if(!m_recognizerOpened)
+	{
+		TInt err = m_recognizer.Connect();
+		if(KErrNone != err)
+		{	
+			return false;
+		}
+			
+	    err = m_fileServer.Connect();
+	    if(KErrNone != err)
+		{	
+			return false;
+		}
+	    
+	    // This must be called in order to be able to share file handles with
+	    // the recognizer server (see fileMediaType function).
+	    err = m_fileServer.ShareProtected();
+	    if(KErrNone != err)
+		{	
+			return false;
+		}
+	    
+	    m_recognizerOpened = true;
+	}
+	
+	return true;
+}
 
 const TInt KMimePrefixLength = 6; // either "audio/" or "video/"
 _LIT(KMimePrefixAudio, "audio/");
@@ -96,21 +113,25 @@ MMF::MediaObject::MediaType MMF::MediaObject::fileMediaType
 {
 	MediaType result = MediaTypeUnknown;
 	
-	QHBufC fileNameSymbian = Utils::symbianFilename(fileName);
+	if(openRecognizer())
+	{	
+		QHBufC fileNameSymbian = Utils::symbianFilename(fileName);
+		
+		m_file.Close();
+		TInt err = m_file.Open(m_fileServer, *fileNameSymbian, EFileRead|EFileShareReadersOnly);
 	
-	m_file.Close();
-	TInt err = m_file.Open(m_fileServer, *fileNameSymbian, EFileRead|EFileShareReadersOnly);
-
-	if(KErrNone == err)
-	{
-		TDataRecognitionResult recognizerResult;
-		err = m_recognizer.RecognizeData(m_file, recognizerResult);
 		if(KErrNone == err)
 		{
-			const TPtrC mimeType = recognizerResult.iDataType.Des();
-			result = mimeTypeToMediaType(mimeType);
+			TDataRecognitionResult recognizerResult;
+			err = m_recognizer.RecognizeData(m_file, recognizerResult);
+			if(KErrNone == err)
+			{
+				const TPtrC mimeType = recognizerResult.iDataType.Des();
+				result = mimeTypeToMediaType(mimeType);
+			}
 		}
 	}
+	
 	return result;
 }
 
@@ -251,7 +272,7 @@ MediaSource MMF::MediaObject::source() const
 
 void MMF::MediaObject::setSource(const MediaSource &source)
 {
-    loadPlayer(source);
+    createPlayer(source);
     if(!m_player.isNull())
     {
 		//m_player->setSource(source);
@@ -262,11 +283,10 @@ void MMF::MediaObject::setSource(const MediaSource &source)
     }
 }
 
-void MMF::MediaObject::loadPlayer(const MediaSource &source)
+void MMF::MediaObject::createPlayer(const MediaSource &source)
 {
-	TRACE_CONTEXT(AudioPlayer::loadPlayer, EAudioApi);
-    //TRACE_ENTRY("state %d source.type %d", m_state, source.type());
-	// TODO: log state
+	TRACE_CONTEXT(AudioPlayer::createPlayer, EAudioApi);
+    TRACE_ENTRY("state %d source.type %d", state(), source.type());
 	TRACE_ENTRY("source.type %d", source.type());
 	
     // Destroy old player object

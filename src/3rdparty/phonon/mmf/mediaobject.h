@@ -79,63 +79,28 @@ namespace Phonon
                               Phonon::State newState);
             void finished();
             void tick(qint64 time);
-
-        private:
-            static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
-
-// The following has been moved into the AbstractPlayer-derived classes
-// This needs to be cleaned up - at present, there is no way for this class
-// to enter an error state, unless it has already constructed m_player
-#if 0
-            /**
-             * Defined private state enumeration in order to add GroundState
-             */
-            enum PrivateState
-                {
-                LoadingState    = Phonon::LoadingState,
-                StoppedState    = Phonon::StoppedState,
-                PlayingState    = Phonon::PlayingState,
-                BufferingState    = Phonon::BufferingState,
-                PausedState        = Phonon::PausedState,
-                ErrorState        = Phonon::ErrorState,
-                GroundState
-                };
-
-            /**
-             * Converts PrivateState into the corresponding Phonon::State
-             */
-            static Phonon::State phononState(PrivateState state);
-
-            /**
-             * Changes state and emits stateChanged()
-             */
-            void changeState(PrivateState newState);
             
-			ErrorType           m_error;
-			PrivateState        m_state;
-#endif
+        private:
+        	void createPlayer(const MediaSource &source);
+        	bool openRecognizer();
 
-			RApaLsSession	m_recognizer;
-			RFs			m_fileServer;
-			enum MediaType { MediaTypeUnknown, MediaTypeAudio, MediaTypeVideo };
+        	// Audio / video media type recognition
+        	enum MediaType { MediaTypeUnknown, MediaTypeAudio, MediaTypeVideo };
 			MediaType mimeTypeToMediaType(const TDesC& mimeType);
 			MediaType fileMediaType(const QString& fileName);
 			// TODO: urlMediaType function
+        	
+			static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
+			
+        private:
+            // Audio / video media type recognition
+            bool				m_recognizerOpened;
+			RApaLsSession		m_recognizer;
+			RFs					m_fileServer;
 
 			// Storing the file handle here to work around KErrInUse error
 			// from MMF player utility OpenFileL functions
 			RFile				m_file;
-			
-            AudioOutput*        m_audioOutput;
-
-            qint32                m_tickInterval;
-
-            QTimer*                m_tickTimer;
-
-            qreal                m_volume;
-            int                    m_maxVolume;
-
-            void loadPlayer(const MediaSource &source);
 
             QScopedPointer<AbstractPlayer> m_player;
         };

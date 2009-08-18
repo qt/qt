@@ -19,6 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QUrl>
 #include <QTimer>
 
+#include <coemain.h>	// For CCoeEnv
+
 #include "videoplayer.h"
 #include "utils.h"
 
@@ -33,15 +35,44 @@ MMF::VideoPlayer::VideoPlayer()
 {
     TRACE_CONTEXT(VideoPlayer::VideoPlayer, EAudioApi);
     TRACE_ENTRY_0();
-
-	// TODO
+   
+    const TInt priority = 0;
+    const TMdaPriorityPreference preference = EMdaPriorityPreferenceNone;
+    CCoeEnv* coeEnv = CCoeEnv::Static();
+    RWsSession& wsSession = coeEnv->WsSession();
+    CWsScreenDevice& screenDevice = *(coeEnv->ScreenDevice());
+    /* DUMMY */ RWindow window;
+    /* DUMMY */ TRect screenRect;
+    /* DUMMY */ TRect clipRect;
+    
+    // TODO: is this the correct way to handle errors in constructing Symbian objects?
+    TRAPD(err,
+    	m_player = CVideoPlayerUtility::NewL
+			(
+			*this, 
+			priority, preference,
+			wsSession, screenDevice,
+			window,
+			screenRect, clipRect
+			)
+		);
+    
+	if(KErrNone != err)
+	{
+		changeState(ErrorState);
+	}
 
     TRACE_EXIT_0();
 }
 
 MMF::VideoPlayer::~VideoPlayer()
 {
-	// TODO
+	TRACE_CONTEXT(VideoPlayer::~VideoPlayer, EVideoApi);
+    TRACE_ENTRY_0();
+		
+	delete m_player;
+	
+	TRACE_EXIT_0();
 }
 
 //-----------------------------------------------------------------------------
@@ -107,10 +138,60 @@ qint64 MMF::VideoPlayer::totalTime() const
 
 
 //-----------------------------------------------------------------------------
-// Symbian multimedia client observer callbacks
+// MVideoPlayerUtilityObserver callbacks
 //-----------------------------------------------------------------------------
 
-// TODO
+void MMF::VideoPlayer::MvpuoOpenComplete(TInt aError)
+{
+	TRACE_CONTEXT(VideoPlayer::MvpuoOpenComplete, EVideoApi);
+    TRACE_ENTRY("state %d error %d", state(), aError);
+
+    // TODO
+    
+    TRACE_EXIT_0();
+}
+
+void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
+{
+	TRACE_CONTEXT(VideoPlayer::MvpuoPrepareComplete, EVideoApi);
+	TRACE_ENTRY("state %d error %d", state(), aError);
+
+	// TODO
+	
+	TRACE_EXIT_0();
+}
+
+void MMF::VideoPlayer::MvpuoFrameReady(CFbsBitmap &aFrame, TInt aError)
+{
+	TRACE_CONTEXT(VideoPlayer::MvpuoFrameReady, EVideoApi);
+	TRACE_ENTRY("state %d error %d", state(), aError);
+
+	// TODO
+	Q_UNUSED(aFrame);
+	
+	TRACE_EXIT_0();
+}
+
+void MMF::VideoPlayer::MvpuoPlayComplete(TInt aError)
+{
+	TRACE_CONTEXT(VideoPlayer::MvpuoPlayComplete, EVideoApi)
+	TRACE_ENTRY("state %d error %d", state(), aError);
+
+	// TODO
+	
+	TRACE_EXIT_0();
+}
+
+void MMF::VideoPlayer::MvpuoEvent(const TMMFEvent &aEvent)
+{
+	TRACE_CONTEXT(VideoPlayer::MvpuoEvent, EVideoApi);
+	TRACE_ENTRY("state %d", state());
+
+	// TODO
+	Q_UNUSED(aEvent);
+	
+	TRACE_EXIT_0();
+}
 
 
 
