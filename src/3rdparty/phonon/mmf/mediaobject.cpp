@@ -17,6 +17,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "audioplayer.h"
+#include "dummyplayer.h"
 #include "mediaobject.h"
 #include "utils.h"
 #include "videoplayer.h"
@@ -31,6 +32,8 @@ using namespace Phonon::MMF;
 
 MMF::MediaObject::MediaObject(QObject *parent) : QObject::QObject(parent)
 {
+    m_player.reset(new DummyPlayer());
+
     TRACE_CONTEXT(MediaObject::MediaObject, EAudioApi);
     TRACE_ENTRY_0();
 
@@ -121,145 +124,81 @@ MMF::MediaObject::MediaType MMF::MediaObject::fileMediaType
 
 void MMF::MediaObject::play()
 {
-	if(!m_player.isNull())
-	{
-		m_player->play();
-	}
+    m_player->play();
 }
 
 void MMF::MediaObject::pause()
 {
-	if(!m_player.isNull())
-	{
-		m_player->pause();
-	}
+    m_player->pause();
 }
 
 void MMF::MediaObject::stop()
 {
-	if(!m_player.isNull())
-	{
-		m_player->stop();
-	}
+    m_player->stop();
 }
 
 void MMF::MediaObject::seek(qint64 ms)
 {
-	if(!m_player.isNull())
-	{
-		m_player->seek(ms);
-	}   
+    m_player->seek(ms);
 }
 
 qint32 MMF::MediaObject::tickInterval() const
 {
-	qint32 result = 0;
-	if(!m_player.isNull())
-	{
-		result = m_player->tickInterval();
-	}
-	return result;
+    return m_player->tickInterval();
 }
 
 void MMF::MediaObject::setTickInterval(qint32 interval)
 {
-	if(!m_player.isNull())
-	{
-		m_player->setTickInterval(interval);
-	}
+    m_player->setTickInterval(interval);
 }
 
 bool MMF::MediaObject::hasVideo() const
 {
-	bool result = false;
-	if(!m_player.isNull())
-	{
-		result = m_player->hasVideo();
-	}
-	return result;
+    return m_player->hasVideo();
 }
 
 bool MMF::MediaObject::isSeekable() const
 {
-	bool result = false;
-	if(!m_player.isNull())
-	{
-		result = m_player->isSeekable();
-	}
-	return result;
+    return m_player->isSeekable();
 }
 
 Phonon::State MMF::MediaObject::state() const
 {
-	Phonon::State result = Phonon::StoppedState;
-	if(!m_player.isNull())
-	{
-		result = m_player->state();
-	}
-	return result;
+    return m_player->state();
 }
 
 qint64 MMF::MediaObject::currentTime() const
 {
-	qint64 result = 0;
-	if(!m_player.isNull())
-	{
-		result = m_player->currentTime();
-	}
-	return result;
+    return m_player->currentTime();
 }
 
 QString MMF::MediaObject::errorString() const
 {
-	QString result;
-	if(!m_player.isNull())
-	{
-		result = m_player->errorString();
-	}
-	return result;
+    return m_player->errorString();
 }
 
 Phonon::ErrorType MMF::MediaObject::errorType() const
 {
-	Phonon::ErrorType result = Phonon::NoError;
-	if(!m_player.isNull())
-	{
-		result = m_player->errorType();
-	}
-	return result;
+    return m_player->errorType();
 }
 
 qint64 MMF::MediaObject::totalTime() const
 {
-	qint64 result = 0;
-	if(!m_player.isNull())
-	{
-		result = m_player->totalTime();
-	}
-	return result;
+    return m_player->totalTime();
 }
 
 MediaSource MMF::MediaObject::source() const
 {
-	MediaSource result;
-	if(!m_player.isNull())
-	{
-		result = m_player->source();
-	}
-	return result;
+    return m_player->source();
 }
 
 void MMF::MediaObject::setSource(const MediaSource &source)
 {
     loadPlayer(source);
-    if(!m_player.isNull())
-    {
-		//m_player->setSource(source);
-    
-		// This is a hack to work around KErrInUse from MMF client utility
-		// OpenFileL calls
-		m_player->setFileSource(source, m_file);
-    }
+
+    // This is a hack to work around KErrInUse from MMF client utility
+    // OpenFileL calls
+    m_player->setFileSource(source, m_file);
 }
 
 void MMF::MediaObject::loadPlayer(const MediaSource &source)
@@ -273,7 +212,7 @@ void MMF::MediaObject::loadPlayer(const MediaSource &source)
 	if(!m_player.isNull())
 	{
 		disconnect(m_player.data(), 0, this, 0);
-		m_player.reset(NULL);
+		m_player.reset();
 	}
 	
 	MediaType mediaType = MediaTypeUnknown;
@@ -317,6 +256,7 @@ void MMF::MediaObject::loadPlayer(const MediaSource &source)
 	switch(mediaType)
 	{
 		case MediaTypeUnknown:
+			m_player.reset(new DummyPlayer());
 			TRACE_0("Media type could not be determined");
 		/*
 		 * TODO: handle error
@@ -346,46 +286,27 @@ void MMF::MediaObject::loadPlayer(const MediaSource &source)
 
 void MMF::MediaObject::setNextSource(const MediaSource &source)
 {
-	if(!m_player.isNull())
-	{
-		m_player->setNextSource(source);
-	}
+    m_player->setNextSource(source);
 }
 
 qint32 MMF::MediaObject::prefinishMark() const
 {
-	qint32 result = 0;
-	if(!m_player.isNull())
-	{
-		result = m_player->prefinishMark();
-	}
-	return result;
+    return m_player->prefinishMark();
 }
 
 void MMF::MediaObject::setPrefinishMark(qint32 mark)
 {
-	if(!m_player.isNull())
-	{
-		m_player->setPrefinishMark(mark);
-	}
+    m_player->setPrefinishMark(mark);
 }
 
 qint32 MMF::MediaObject::transitionTime() const
 {
-	qint32 result = 0;
-	if(!m_player.isNull())
-	{
-		result = m_player->transitionTime();
-	}
-	return result;
+    return m_player->transitionTime();
 }
 
 void MMF::MediaObject::setTransitionTime(qint32 time)
 {
-	if(!m_player.isNull())
-	{
-		m_player->setTransitionTime(time);
-	}
+    m_player->setTransitionTime(time);
 }
 
 //-----------------------------------------------------------------------------
@@ -394,29 +315,16 @@ void MMF::MediaObject::setTransitionTime(qint32 time)
 
 qreal MMF::MediaObject::volume() const
 {
-	qreal result = 0.0;
-	if(!m_player.isNull())
-	{
-		m_player->volume();
-	}
-	return result;
+    return m_player->volume();
 }
 
 bool MMF::MediaObject::setVolume(qreal volume)
 {
-	bool result = false;
-	if(!m_player.isNull())
-	{
-		result = m_player->setVolume(volume);
-	}
-	return result;
+    return m_player->setVolume(volume);
 }
 
 void MMF::MediaObject::setAudioOutput(AudioOutput* audioOutput)
 {
-	if(!m_player.isNull())
-	{
-		m_player->setAudioOutput(audioOutput);
-	}
+    m_player->setAudioOutput(audioOutput);
 }
 
