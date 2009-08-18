@@ -187,12 +187,6 @@ public:
 
     int socketDescriptor;
 
-#if !defined(QT_NO_IPV6)
-    struct sockaddr_storage aa;
-#else
-    struct sockaddr_in aa;
-#endif
-
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
 
 #ifdef Q_OS_WIN
