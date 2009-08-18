@@ -129,6 +129,21 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QXmlStreamReader::ReadElementTextBehaviour
+
+    This enum specifies the different behaviours of readElementText().
+
+    \value ErrorOnUnexpectedElement Raise an UnexpectedElementError and return
+    what was read so far when a child element is encountered.
+
+    \value IncludeChildElements Recursively include the text from child elements.
+
+    \value SkipChildElements Skip child elements.
+
+    \since 4.6
+*/
+
+/*!
     \enum QXmlStreamReader::Error
 
     This enum specifies different error cases
@@ -637,6 +652,7 @@ QXmlStreamReader::TokenType QXmlStreamReader::tokenType() const
   this function.
 
   \since 4.6
+  \sa readNext()
  */
 bool QXmlStreamReader::readNextStartElement()
 {
@@ -2070,12 +2086,17 @@ void QXmlStreamReader::addExtraNamespaceDeclarations(const QXmlStreamNamespaceDe
 
   The function concatenates text() when it reads either \l Characters
   or EntityReference tokens, but skips ProcessingInstruction and \l
-  Comment. In case anything else is read before reaching EndElement,
-  the function returns what it read so far and raises an
-  UnexpectedElementError. If the current token is not StartElement, an
-  empty string is returned.
+  Comment. If the current token is not StartElement, an empty string is
+  returned.
+
+  The \a behaviour defines what happens in case anything else is
+  read before reaching EndElement. The function can include the text from
+  child elements (useful for example for HTML), ignore child elements, or
+  raise an UnexpectedElementError and return what was read so far.
+
+  \since 4.6
  */
-QString QXmlStreamReader::readElementText()
+QString QXmlStreamReader::readElementText(ReadElementTextBehaviour behaviour)
 {
     Q_D(QXmlStreamReader);
     if (isStartElement()) {
@@ -2091,14 +2112,35 @@ QString QXmlStreamReader::readElementText()
             case ProcessingInstruction:
             case Comment:
                 break;
+            case StartElement:
+                if (behaviour == SkipChildElements) {
+                    skipCurrentElement();
+                    break;
+                } else if (behaviour == IncludeChildElements) {
+                    result += readElementText(behaviour);
+                    break;
+                }
+                // Fall through (for ErrorOnUnexpectedElement)
             default:
-                if (!d->error)
-                    d->raiseError(UnexpectedElementError, QXmlStream::tr("Expected character data."));
-                return result;
+                if (d->error || behaviour == ErrorOnUnexpectedElement) {
+                    if (!d->error)
+                        d->raiseError(UnexpectedElementError, QXmlStream::tr("Expected character data."));
+                    return result;
+                }
             }
         }
     }
     return QString();
+}
+
+/*!
+  \overload readElementText()
+
+  Calling this function is equivalent to calling readElementText(ErrorOnUnexpectedElement).
+ */
+QString QXmlStreamReader::readElementText()
+{
+    return readElementText(ErrorOnUnexpectedElement);
 }
 
 /*!  Raises a custom error with an optional error \a message.
