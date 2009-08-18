@@ -84,7 +84,8 @@ QTextCursorPrivate::QTextCursorPrivate(const QTextCursorPrivate &rhs)
 
 QTextCursorPrivate::~QTextCursorPrivate()
 {
-    priv->removeCursor(this);
+    if (priv)
+        priv->removeCursor(this);
 }
 
 QTextCursorPrivate::AdjustResult QTextCursorPrivate::adjustPosition(int positionOfChange, int charsAddedOrRemoved, QTextUndoCommand::Operation op)
