@@ -163,6 +163,7 @@ class QmlRunScriptAction : public QmlAbstractAnimation
     Q_DECLARE_PRIVATE(QmlRunScriptAction)
 
     Q_PROPERTY(QString script READ script WRITE setScript NOTIFY scriptChanged)
+    Q_PROPERTY(QString runScriptName READ runScriptName WRITE setRunScriptName)
 
 public:
     QmlRunScriptAction(QObject *parent=0);
@@ -171,10 +172,16 @@ public:
     QString script() const;
     void setScript(const QString &);
 
+    QString runScriptName() const;
+    void setRunScriptName(const QString &);
+
 Q_SIGNALS:
     void scriptChanged(const QString &);
 
 protected:
+    virtual void transition(QmlStateActions &actions,
+                            QmlMetaProperties &modified,
+                            TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
 };
 

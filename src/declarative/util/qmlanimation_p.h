@@ -230,6 +230,8 @@ public:
     void init();
 
     QString script;
+    QString name;
+    QString runScriptScript;
 
     void execute();
 

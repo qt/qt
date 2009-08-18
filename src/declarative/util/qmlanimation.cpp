@@ -55,6 +55,7 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
 #include <QtDeclarative/qmlexpression.h>
+#include <QtDeclarative/qmlstateoperations.h>
 #include <private/qmlstringconverters_p.h>
 #include <private/qvariantanimation_p.h>
 
@@ -782,9 +783,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ColorAnimation,QmlColorAnimation
 /*!
     \internal
     \class QmlRunScriptAction
-    \brief The QmlRunScriptAction class allows scripts to be run during transitions
-
-    \sa xmlRunScriptAction
 */
 QmlRunScriptAction::QmlRunScriptAction(QObject *parent)
     :QmlAbstractAnimation(*(new QmlRunScriptActionPrivate), parent)
@@ -805,7 +803,7 @@ void QmlRunScriptActionPrivate::init()
 }
 
 /*!
-    \qmlproperty QString RunScript::script
+    \qmlproperty QString RunScriptAction::script
     This property holds the script to run.
 */
 QString QmlRunScriptAction::script() const
@@ -823,15 +821,55 @@ void QmlRunScriptAction::setScript(const QString &script)
     emit scriptChanged(script);
 }
 
+/*!
+    \qmlproperty QString RunScriptAction::runScriptName
+    This property holds the the name of the RunScript to run.
+
+    This property is only valid when RunScriptAction is used as part of a transition.
+    If both script and runScriptName are set, runScriptName will be used.
+*/
+QString QmlRunScriptAction::runScriptName() const
+{
+    Q_D(const QmlRunScriptAction);
+    return d->script;
+}
+
+void QmlRunScriptAction::setRunScriptName(const QString &name)
+{
+    Q_D(QmlRunScriptAction);
+    d->name = name;
+}
+
 void QmlRunScriptActionPrivate::execute()
 {
     Q_Q(QmlRunScriptAction);
-    QString scriptStr = script;
+    QString scriptStr = runScriptScript.isEmpty() ? script : runScriptScript;
 
     if (!scriptStr.isEmpty()) {
         QmlExpression expr(qmlContext(q), scriptStr, q);
         expr.setTrackChange(false);
         expr.value();
+    }
+}
+
+void QmlRunScriptAction::transition(QmlStateActions &actions,
+                                    QmlMetaProperties &modified,
+                                    TransitionDirection direction)
+{
+    Q_D(QmlRunScriptAction);
+    Q_UNUSED(modified);
+    Q_UNUSED(direction);
+
+    d->runScriptScript.clear();
+    for (int ii = 0; ii < actions.count(); ++ii) {
+        Action &action = actions[ii];
+
+        if (action.event && action.event->typeName() == QLatin1String("RunScript")
+            && static_cast<QmlRunScript*>(action.event)->name() == d->name) {
+            d->runScriptScript = static_cast<QmlRunScript*>(action.event)->script();
+            action.actionDone = true;
+            break;  //assumes names are unique
+        }
     }
 }
 
