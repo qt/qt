@@ -46,7 +46,7 @@
     \reentrant
     \brief The QUdpSocket class provides a UDP socket.
 
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     UDP (User Datagram Protocol) is a lightweight, unreliable,

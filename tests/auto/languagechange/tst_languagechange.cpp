@@ -122,10 +122,7 @@ public slots:
     void install() {
         QCoreApplication::installTranslator(this);
         QTest::qWait(2500);
-        //### is there any better way to close a Qt dialog?
-        QThreadData *data = QThreadData::current();
-        if (!data->eventLoops.isEmpty())
-            data->eventLoops.top()->quit();
+        QApplication::closeAllWindows();
     }
 public:
     mutable QSet<QByteArray> m_translations;

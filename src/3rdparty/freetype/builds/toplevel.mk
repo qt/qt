@@ -3,7 +3,7 @@
 #
 
 
-# Copyright 1996-2000, 2001, 2003, 2006, 2008 by
+# Copyright 1996-2000, 2001, 2003, 2006, 2008, 2009 by
 # David Turner, Robert Wilhelm, and Werner Lemberg.
 #
 # This file is part of the FreeType project, and may only be used, modified,
@@ -32,6 +32,16 @@
 #
 # See the comments in `builds/detect.mk' and `builds/PROJECT.mk' for more
 # details on host platform detection and library builds.
+
+
+# First of all, check whether we have `$(value ...)'.  We do this by testing
+# for `$(eval ...)' which has been introduced in the same GNU make version.
+
+eval_available :=
+$(eval eval_available := T)
+ifneq ($(eval_available),T)
+  $(error FreeType's build system needs a Make program which supports $$(value))
+endif
 
 
 .PHONY: all dist distclean modules setup
@@ -209,12 +219,12 @@ dist:
 	mv tmp freetype-$(version)
 
 	tar cfh - freetype-$(version) \
-	| gzip -c > freetype-$(version).tar.gz
+	| gzip -9 -c > freetype-$(version).tar.gz
 	tar cfh - freetype-$(version) \
 	| bzip2 -c > freetype-$(version).tar.bz2
 
 	@# Use CR/LF for zip files.
-	zip -lr ft$(winversion).zip freetype-$(version)
+	zip -lr9 ft$(winversion).zip freetype-$(version)
 
 	rm -fr freetype-$(version)
 

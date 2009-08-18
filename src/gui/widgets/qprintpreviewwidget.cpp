@@ -452,7 +452,7 @@ void QPrintPreviewWidgetPrivate::setZoomFactor(qreal _zoomFactor)
     \brief The QPrintPreviewWidget class provides a widget for
     previewing page layouts for printer output.
 
-    \ingroup multimedia
+    \ingroup printing
 
     QPrintPreviewDialog uses a QPrintPreviewWidget internally, and the
     purpose of QPrintPreviewWidget is to make it possible to embed the

@@ -44,7 +44,6 @@
     \brief The QGraphicsItemAnimation class provides simple animation
     support for QGraphicsItem.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     The QGraphicsItemAnimation class animates a QGraphicsItem. You can

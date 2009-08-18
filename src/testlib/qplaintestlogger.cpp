@@ -170,16 +170,24 @@ namespace QTest {
         OutputDebugStringA(str);
         LeaveCriticalSection(&outputCriticalSection);
 #elif defined(Q_OS_SYMBIAN)
+        // RDebug::Print has a cap of 256 characters so break it up
         TPtrC8 ptr(reinterpret_cast<const TUint8*>(str));
-        HBufC* hbuffer = HBufC::New(ptr.Length());
-        if (hbuffer) {
-            hbuffer->Des().Copy(ptr);
-            RDebug::Print(_L("[QTestLib Message] %S"), hbuffer);
-            delete hbuffer;
-        } else {
-            TBuf<256> tmp;
-            tmp.Copy(ptr.Left(Min(256, ptr.Length())));
-            RDebug::Print(_L("[QTestLib Message] %S"), &tmp);
+        _LIT(format, "[QTestLib] %S");
+        const int maxBlockSize = 256 - ((const TDesC &)format).Length();
+        HBufC* hbuffer = HBufC::New(maxBlockSize);
+        if(hbuffer) {
+            for (int i = 0; i < ptr.Length(); i += maxBlockSize) {
+                int size = Min(maxBlockSize, ptr.Length() - i);
+                hbuffer->Des().Copy(ptr.Mid(i, size));
+                RDebug::Print(format, hbuffer);
+            }
+        }
+        else {
+            // fast, no allocations, but truncates silently
+            RDebug::RawPrint(format);
+            TPtrC8 ptr(reinterpret_cast<const TUint8*>(str));
+            RDebug::RawPrint(ptr);
+            RDebug::RawPrint(_L8("\n"));
         }
 #endif
         QAbstractTestLogger::outputString(str);
@@ -247,10 +255,10 @@ namespace QTest {
         QString beforeDecimalPoint = QString::number(qint64(number), 'f', 0);
         QString afterDecimalPoint = QString::number(number, 'f', 20);
         afterDecimalPoint.remove(0, beforeDecimalPoint.count() + 1);
-        
+
         int beforeUse = qMin(beforeDecimalPoint.count(), significantDigits);
         int beforeRemove = beforeDecimalPoint.count() - beforeUse;
-        
+
         // Replace insignificant digits before the decimal point with zeros.
         beforeDecimalPoint.chop(beforeRemove);
         for (int i = 0; i < beforeRemove; ++i) {
@@ -288,10 +296,10 @@ namespace QTest {
         print = beforeDecimalPoint;
         if (afterUse > 0)
             print.append(decimalPoint);
-         
+
         print += afterDecimalPoint;
 
-            
+
         return print;
     }
 
@@ -312,7 +320,7 @@ namespace QTest {
         char buf1[1024];
         QTest::qt_snprintf(
             buf1, sizeof(buf1), "%s: %s::%s",
-            bmtag, 
+            bmtag,
             QTestResult::currentTestObjectName(),
             result.context.slotName.toAscii().data());
 
@@ -323,7 +331,7 @@ namespace QTest {
         if (tag.isEmpty() == false) {
             QTest::qt_snprintf(bufTag, sizeof(bufTag), ":\"%s\"", tag.data());
         }
-        
+
 
         char fillFormat[8];
         int fillLength = 5;

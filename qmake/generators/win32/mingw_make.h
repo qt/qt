@@ -72,6 +72,7 @@ private:
     QString preCompHeaderOut;
 
     virtual bool findLibraries();
+    bool findLibraries(const QString &where);
     void fixTargetExt();
 
     bool init_flag;

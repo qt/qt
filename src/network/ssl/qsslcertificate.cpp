@@ -46,7 +46,7 @@
     \since 4.3
 
     \reentrant
-    \ingroup io
+    \ingroup network
     \ingroup ssl
     \inmodule QtNetwork
 
@@ -686,7 +686,7 @@ static bool matchLineFeed(const QByteArray &pem, int *offset)
         ch = pem.at(++*offset);
 
     if (ch == '\n') {
-        *offset++;
+        *offset += 1;
         return true;
     }
     if (ch == '\r' && pem.size() > (*offset + 1) && pem.at(*offset + 1) == '\n') {

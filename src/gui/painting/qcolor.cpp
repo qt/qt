@@ -66,9 +66,9 @@ QT_BEGIN_NAMESPACE
     \class QColor
     \brief The QColor class provides colors based on RGB, HSV or CMYK values.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup appearance
-    \mainclass
+
 
     A color is normally specified in terms of RGB (red, green, and
     blue) components, but it is also possible to specify it in terms

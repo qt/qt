@@ -219,7 +219,7 @@ void QSyntaxHighlighterPrivate::reformatBlock(QTextBlock block)
 
     \since 4.1
 
-    \ingroup text
+    \ingroup richtext-processing
 
     The QSyntaxHighlighter class is a base class for implementing
     QTextEdit syntax highlighters.  A syntax highligher automatically

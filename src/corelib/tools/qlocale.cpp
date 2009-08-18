@@ -1479,9 +1479,9 @@ QDataStream &operator>>(QDataStream &ds, QLocale &l)
 
     \reentrant
     \ingroup i18n
-    \ingroup text
+    \ingroup string-processing
     \ingroup shared
-    \mainclass
+
 
     QLocale is initialized with a language/country pair in its
     constructor and offers number-to-string and string-to-number

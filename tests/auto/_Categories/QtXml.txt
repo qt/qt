@@ -1,5 +1,0 @@
-qdom
-qxml
-qxmlinputsource
-qxmlsimplereader
-qxmlstream

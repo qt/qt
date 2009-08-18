@@ -46,3 +46,28 @@
 
     \generatelist overviews
 */
+
+/*!
+    \group frameworks-technologies
+    \title Frameworks and Technologies
+
+    \brief Documentation about the frameworks and technologies in Qt
+
+    These documents dive into the frameworks of classes that Qt provides,
+    and provide background information about the technical solutions used
+    in Qt's architecture.
+
+    \generatelist{related}
+*/
+
+/*!
+    \group best-practices
+    \title How-To's and Best Practices
+
+    \brief How-To Guides and Best Practices
+
+    These documents provide guidelines and best practices explaining
+    how to use Qt to solve specific technical problems.
+
+    \generatelist{related}
+*/

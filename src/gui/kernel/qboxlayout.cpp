@@ -452,7 +452,6 @@ void QBoxLayoutPrivate::calcHfw(int w)
     vertically.
 
     \ingroup geomanagement
-    \ingroup appearance
 
     QBoxLayout takes the space it gets (from its parent layout or from
     the parentWidget()), divides it up into a row of boxes, and makes
@@ -1290,8 +1289,6 @@ QBoxLayout::Direction QBoxLayout::direction() const
     \brief The QHBoxLayout class lines up widgets horizontally.
 
     \ingroup geomanagement
-    \ingroup appearance
-    \mainclass
 
     This class is used to construct horizontal box layout objects. See
     QBoxLayout for details.
@@ -1408,8 +1405,6 @@ QHBoxLayout::~QHBoxLayout()
     \brief The QVBoxLayout class lines up widgets vertically.
 
     \ingroup geomanagement
-    \ingroup appearance
-    \mainclass
 
     This class is used to construct vertical box layout objects. See
     QBoxLayout for details.

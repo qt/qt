@@ -91,18 +91,7 @@ void QScriptStdMessageHandler::message(QtMsgType type, const QString &text,
     }
     msg.append(text);
 
-    FILE *fp = 0;
-    switch (type) {
-    case QtDebugMsg:
-        fp = stdout;
-        break;
-    case QtWarningMsg:
-    case QtCriticalMsg:
-    case QtFatalMsg:
-        fp = stderr;
-        break;
-    }
-
+    FILE *fp = (type == QtDebugMsg) ? stdout : stderr;
     fprintf(fp, "%s\n", msg.toLatin1().constData());
     fflush(fp);
 }

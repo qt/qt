@@ -364,6 +364,8 @@ void QThreadPoolPrivate::stealRunnable(QRunnable *runnable)
     \since 4.4
     \threadsafe
 
+    \ingroup thread
+
     QThreadPool manages and recyles individual QThread objects to help reduce
     thread creation costs in programs that use threads. Each Qt application
     has one global QThreadPool object, which can be accessed by calling
@@ -404,7 +406,7 @@ void QThreadPoolPrivate::stealRunnable(QRunnable *runnable)
 
     Note that QThreadPool is a low-level class for managing threads, see
     QtConcurrent::run() or the other
-    \l {threads.html#qtconcurrent-intro}{Qt Concurrent} APIs for higher
+    \l {Concurrent Programming}{Qt Concurrent} APIs for higher
     level alternatives.
 
     \sa QRunnable

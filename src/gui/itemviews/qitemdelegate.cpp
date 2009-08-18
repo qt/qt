@@ -185,7 +185,7 @@ QSizeF QItemDelegatePrivate::doTextLayout(int lineWidth) const
     data items from a model.
 
     \ingroup model-view
-    \mainclass
+
 
     QItemDelegate can be used to provide custom display features and editor
     widgets for item views based on QAbstractItemView subclasses. Using a
@@ -352,7 +352,10 @@ void QItemDelegate::setClipping(bool clip)
 QString QItemDelegatePrivate::valueToText(const QVariant &value, const QStyleOptionViewItemV4 &option)
 {
     QString text;
-    switch (value.type()) {
+    switch (value.userType()) {
+        case QMetaType::Float:
+            text = option.locale.toString(value.toFloat(), 'g');
+            break;
         case QVariant::Double:
             text = option.locale.toString(value.toDouble(), 'g', DBL_DIG);
             break;
@@ -719,8 +722,6 @@ void QItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &o
             //let's add the last line (after the last QChar::LineSeparator)
             elided += option.fontMetrics.elidedText(text.mid(start),
                                                     option.textElideMode, textRect.width());
-            if (end != -1)
-                elided += QChar::LineSeparator;
         }
         d->textLayout.setText(elided);
         textLayoutSize = d->doTextLayout(textRect.width());

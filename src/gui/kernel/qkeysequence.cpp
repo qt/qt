@@ -152,9 +152,8 @@ void Q_AUTOTEST_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mn
     \brief The QKeySequence class encapsulates a key sequence as used
     by shortcuts.
 
-    \ingroup misc
     \ingroup shared
-    \mainclass
+
 
     In its most common form, a key sequence describes a combination of
     keys that must be used together to perform some action. Key sequences

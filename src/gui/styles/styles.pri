@@ -37,7 +37,7 @@ x11|embedded|!macx-*:styles -= mac
 
 x11{
     QMAKE_CXXFLAGS += $$QT_CFLAGS_QGTKSTYLE
-    LIBS += $$QT_LIBS_QGTKSTYLE
+    LIBS_PRIVATE += $$QT_LIBS_QGTKSTYLE
     styles += gtk
 }
 

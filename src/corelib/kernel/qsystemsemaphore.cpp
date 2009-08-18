@@ -49,7 +49,6 @@ QT_BEGIN_NAMESPACE
 
 /*!
   \class QSystemSemaphore
-  \ingroup ipc
   \since 4.4
 
   \brief The QSystemSemaphore class provides a general counting system semaphore.

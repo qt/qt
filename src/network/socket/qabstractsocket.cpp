@@ -48,7 +48,7 @@
     common to all socket types.
 
     \reentrant
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     QAbstractSocket is the base class for QTcpSocket and QUdpSocket
@@ -1067,9 +1067,9 @@ void QAbstractSocketPrivate::_q_abortConnectionAttempt()
 #if defined(QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::_q_abortConnectionAttempt() (timed out)");
 #endif
-    if (socketEngine) {
+    if (socketEngine)
         socketEngine->setWriteNotificationEnabled(false);
-    }
+
     connectTimer->stop();
 
     if (addresses.isEmpty()) {

@@ -539,7 +539,7 @@ void QHashData::checkSanity()
 
     \ingroup tools
     \ingroup shared
-    \mainclass
+
     \reentrant
 
     QHash\<Key, T\> is one of Qt's generic \l{container classes}. It
@@ -1672,7 +1672,7 @@ void QHashData::checkSanity()
 
     \ingroup tools
     \ingroup shared
-    \mainclass
+
     \reentrant
 
     QMultiHash\<Key, T\> is one of Qt's generic \l{container classes}.

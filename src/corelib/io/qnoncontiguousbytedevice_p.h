@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QObject>
+#include <QtCore/qobject.h>
 #include <QtCore/qbytearray.h>
 #include <QtCore/qbuffer.h>
 #include <QtCore/qiodevice.h>

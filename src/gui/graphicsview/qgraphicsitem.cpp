@@ -44,7 +44,7 @@
     \brief The QGraphicsItem class is the base class for all graphical
     items in a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
+
     \ingroup graphicsview-api
 
     It provides a light-weight foundation for writing your own custom items.
@@ -327,6 +327,10 @@
     \value ItemAcceptsInputMethod The item supports input methods typically
     used for Asian languages.
     This flag was introduced in Qt 4.6.
+
+    \value ItemNegativeZStacksBehindParent The item automatically stacks behind
+    it's parent if it's z-value is negative. This flag enables setZValue() to
+    toggle ItemStacksBehindParent.
 
     \value ItemAutoDetectsFocusProxy The item will assign any child that
     gains input focus as its focus proxy. See also focusProxy().
@@ -1196,6 +1200,9 @@ QGraphicsItem::QGraphicsItem(QGraphicsItemPrivate &dd, QGraphicsItem *parent,
     Destroys the QGraphicsItem and all its children. If this item is currently
     associated with a scene, the item will be removed from the scene before it
     is deleted.
+
+    \note It is more efficient to remove the item from the QGraphicsScene before
+    destroying the item.
 */
 QGraphicsItem::~QGraphicsItem()
 {
@@ -1209,10 +1216,12 @@ QGraphicsItem::~QGraphicsItem()
         Q_ASSERT(d_ptr->children.isEmpty());
     }
 
-    if (d_ptr->scene)
+    if (d_ptr->scene) {
         d_ptr->scene->d_func()->removeItemHelper(this);
-    else
+    } else {
+        d_ptr->resetFocusProxy();
         d_ptr->setParentItemHelper(0);
+    }
 
     if (d_ptr->transformData) {
         for(int i = 0; i < d_ptr->transformData->graphicsTransforms.size(); ++i) {
@@ -1571,6 +1580,11 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         // Update input method sensitivity in any views.
         if (d_ptr->scene)
             d_ptr->scene->d_func()->updateInputMethodSensitivityInViews();
+    }
+
+    if ((flags & ItemNegativeZStacksBehindParent) != (oldFlags & ItemNegativeZStacksBehindParent)) {
+        // Update stack-behind.
+        setFlag(ItemStacksBehindParent, d_ptr->z < qreal(0.0));
     }
 
     if (d_ptr->scene) {
@@ -2202,11 +2216,10 @@ qreal QGraphicsItem::effectiveOpacity() const
 void QGraphicsItem::setOpacity(qreal opacity)
 {
     // Notify change.
-    const QVariant newOpacityVariant(itemChange(ItemOpacityChange, double(opacity)));
-    qreal newOpacity = newOpacityVariant.toDouble();
+    const QVariant newOpacityVariant(itemChange(ItemOpacityChange, opacity));
 
-    // Normalize.
-    newOpacity = qBound<qreal>(0.0, newOpacity, 1.0);
+    // Normalized opacity
+    qreal newOpacity = qBound(qreal(0), newOpacityVariant.toReal(), qreal(1));
 
     // No change? Done.
     if (newOpacity == d_ptr->opacity)
@@ -2625,13 +2638,11 @@ void QGraphicsItem::setFocusProxy(QGraphicsItem *item)
     }
 
     QGraphicsItem *lastFocusProxy = d_ptr->focusProxy;
+    if (lastFocusProxy)
+        lastFocusProxy->d_ptr->focusProxyRefs.removeOne(&d_ptr->focusProxy);
     d_ptr->focusProxy = item;
-    if (d_ptr->scene) {
-        if (lastFocusProxy)
-            d_ptr->scene->d_func()->focusProxyReverseMap.remove(lastFocusProxy, this);
-        if (item)
-            d_ptr->scene->d_func()->focusProxyReverseMap.insert(item, this);
-    }
+    if (item)
+        item->d_ptr->focusProxyRefs << &d_ptr->focusProxy;
 }
 
 /*!
@@ -3708,8 +3719,8 @@ qreal QGraphicsItem::zValue() const
 */
 void QGraphicsItem::setZValue(qreal z)
 {
-    const QVariant newZVariant(itemChange(ItemZValueChange, double(z)));
-    qreal newZ = qreal(newZVariant.toDouble());
+    const QVariant newZVariant(itemChange(ItemZValueChange, z));
+    qreal newZ = newZVariant.toReal();
     if (newZ == d_ptr->z)
         return;
 
@@ -3728,6 +3739,9 @@ void QGraphicsItem::setZValue(qreal z)
         d_ptr->scene->d_func()->markDirty(this, QRectF(), /*invalidateChildren=*/true);
 
     itemChange(ItemZValueHasChanged, newZVariant);
+
+    if (d_ptr->flags & ItemNegativeZStacksBehindParent)
+        setFlag(QGraphicsItem::ItemStacksBehindParent, z < qreal(0.0));
 
     if (d_ptr->isObject)
         emit static_cast<QGraphicsObject *>(this)->zChanged();
@@ -4633,6 +4647,19 @@ void QGraphicsItemPrivate::clearSubFocus()
             break;
         parent->d_ptr->subFocusItem = 0;
     } while (!parent->isWindow() && (parent = parent->d_ptr->parent));
+}
+
+/*!
+    \internal
+
+    Sets the focusProxy pointer to 0 for all items that have this item as their
+    focusProxy. ### Qt 5: Use QPointer instead.
+*/
+void QGraphicsItemPrivate::resetFocusProxy()
+{
+    for (int i = 0; i < focusProxyRefs.size(); ++i)
+        *focusProxyRefs.at(i) = 0;
+    focusProxyRefs.clear();
 }
 
 /*!
@@ -6828,11 +6855,12 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 
   By default, this property is true.
 
-  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled(), enabledChanged()
+  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled()
+  \sa QGraphicsObject::enabledChanged()
 */
 
 /*!
-  \fn QGraphicsObject::enabledChanged()
+  \fn void QGraphicsObject::enabledChanged()
 
   This signal gets emitted whenever the item get's enabled or disabled.
 
@@ -6884,7 +6912,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
     \brief The QAbstractGraphicsShapeItem class provides a common base for
     all path items.
     \since 4.2
-    \ingroup multimedia
+    \ingroup graphicsview-api
 
     This class does not fully implement an item by itself; in particular, it
     does not implement boundingRect() and paint(), which are inherited by
@@ -7019,7 +7047,6 @@ QPainterPath QAbstractGraphicsShapeItem::opaqueArea() const
     \brief The QGraphicsPathItem class provides a path item that you
     can add to a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     To set the item's path, pass a QPainterPath to QGraphicsPathItem's
@@ -7222,7 +7249,6 @@ QVariant QGraphicsPathItem::extension(const QVariant &variant) const
     \brief The QGraphicsRectItem class provides a rectangle item that you
     can add to a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     To set the item's rectangle, pass a QRectF to QGraphicsRectItem's
@@ -7467,7 +7493,6 @@ QVariant QGraphicsRectItem::extension(const QVariant &variant) const
     \brief The QGraphicsEllipseItem class provides an ellipse item that you
     can add to a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     QGraphicsEllipseItem respresents an ellipse with a fill and an outline,
@@ -7784,7 +7809,6 @@ QVariant QGraphicsEllipseItem::extension(const QVariant &variant) const
     \brief The QGraphicsPolygonItem class provides a polygon item that you
     can add to a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     To set the item's polygon, pass a QPolygonF to
@@ -8018,7 +8042,6 @@ QVariant QGraphicsPolygonItem::extension(const QVariant &variant) const
     \brief The QGraphicsLineItem class provides a line item that you can add to a
     QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     To set the item's line, pass a QLineF to QGraphicsLineItem's
@@ -8280,7 +8303,6 @@ QVariant QGraphicsLineItem::extension(const QVariant &variant) const
     \brief The QGraphicsPixmapItem class provides a pixmap item that you can add to
     a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     To set the item's pixmap, pass a QPixmap to QGraphicsPixmapItem's
@@ -8644,7 +8666,6 @@ QVariant QGraphicsPixmapItem::extension(const QVariant &variant) const
     \brief The QGraphicsTextItem class provides a text item that you can add to
     a QGraphicsScene to display formatted text.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     If you only need to show plain text in an item, consider using QGraphicsSimpleTextItem
@@ -9557,7 +9578,6 @@ void QGraphicsSimpleTextItemPrivate::updateBoundingRect()
     \brief The QGraphicsSimpleTextItem class provides a simple text path item
     that you can add to a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     To set the item's text, you can either pass a QString to
@@ -9793,7 +9813,6 @@ QVariant QGraphicsSimpleTextItem::extension(const QVariant &variant) const
     \brief The QGraphicsItemGroup class provides treating a group of items as
     one.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     A QGraphicsItemGroup is a special type of compound item that
@@ -10146,6 +10165,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemAcceptsInputMethod:
         str = "ItemAcceptsInputMethod";
+        break;
+    case QGraphicsItem::ItemNegativeZStacksBehindParent:
+        str = "ItemNegativeZStacksBehindParent";
         break;
     case QGraphicsItem::ItemAutoDetectsFocusProxy:
         str = "ItemAutoDetectsFocusProxy";

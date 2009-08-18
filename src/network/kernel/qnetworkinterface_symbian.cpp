@@ -43,6 +43,7 @@
 
 #include "qnetworkinterface.h"
 #include "qnetworkinterface_p.h"
+#include "../corelib/kernel/qcore_symbian_p.h"
 
 #ifndef QT_NO_NETWORKINTERFACE
 
@@ -64,11 +65,6 @@ static QNetworkInterface::InterfaceFlags convertFlags(const TSoInetInterfaceInfo
     flags |= (aInfo.iFeatures & KIfIsPointToPoint) ? QNetworkInterface::IsPointToPoint : QNetworkInterface::InterfaceFlag(0);
     flags |= (aInfo.iFeatures & KIfCanMulticast) ? QNetworkInterface::CanMulticast : QNetworkInterface::InterfaceFlag(0);
     return flags;
-}
-
-QString qstringFromDesc(const TDesC& aData)
-{
-    return QString::fromUtf16(aData.Ptr(), aData.Length());
 }
 
 static QList<QNetworkInterfacePrivate *> interfaceListing()
@@ -111,7 +107,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
             iface = new QNetworkInterfacePrivate;
             iface->index = ifindex++;
             interfaces << iface;
-            iface->name = qstringFromDesc(info.iName);
+            iface->name = qt_TDesC2QString(info.iName);
             iface->flags = convertFlags(info);
 
             if (/*info.iFeatures&KIfHasHardwareAddr &&*/ info.iHwAddr.Family() != KAFUnspec) {
@@ -121,37 +117,37 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
                         address.Append(_L(":"));
                 }
                 address.UpperCase();
-                iface->hardwareAddress = qstringFromDesc(address);
+                iface->hardwareAddress = qt_TDesC2QString(address);
             }
 
             // Get the address of the interface
             info.iAddress.Output(address);
-            entry.setIp(QHostAddress(qstringFromDesc(address)));
+            entry.setIp(QHostAddress(qt_TDesC2QString(address)));
 
             // Get the interface netmask
             // For some reason netmask is always 0.0.0.0
             // info.iNetMask.Output(address);
-            // entry.setNetmask( QHostAddress( qstringFromDesc( address ) ) );
+            // entry.setNetmask( QHostAddress( qt_TDesC2QString( address ) ) );
 
             // Workaround: Let Symbian determine netmask based on IP address class
             // TODO: Works only for IPv4 - Task: 259128 Implement IPv6 support
             TInetAddr netmask;
             netmask.NetMask(info.iAddress);
             netmask.Output(address);
-            entry.setNetmask(QHostAddress(qstringFromDesc(address)));
+            entry.setNetmask(QHostAddress(qt_TDesC2QString(address)));
 
             // Get the interface broadcast address
             if (iface->flags & QNetworkInterface::CanBroadcast) {
                 // For some reason broadcast address is always 0.0.0.0
                 // info.iBrdAddr.Output(address);
-                // entry.setBroadcast( QHostAddress( qstringFromDesc( address ) ) );
+                // entry.setBroadcast( QHostAddress( qt_TDesC2QString( address ) ) );
 
                 // Workaround: Let Symbian determine broadcast address based on IP address
                 // TODO: Works only for IPv4 - Task: 259128 Implement IPv6 support
                 TInetAddr broadcast;
                 broadcast.NetBroadcast(info.iAddress);
                 broadcast.Output(address);
-                entry.setBroadcast(QHostAddress(qstringFromDesc(address)));
+                entry.setBroadcast(QHostAddress(qt_TDesC2QString(address)));
             }
 
             // Add new entry to interface address entries
@@ -193,12 +189,12 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
 
         // get interface address
         routeInfo.iIfAddr.Output(address);
-        QHostAddress ifAddr(qstringFromDesc(address));
+        QHostAddress ifAddr(qt_TDesC2QString(address));
         if (ifAddr.isNull())
             continue;
 
         routeInfo.iDstAddr.Output(address);
-        QHostAddress destination(qstringFromDesc(address));
+        QHostAddress destination(qt_TDesC2QString(address));
         if (destination.isNull() || destination != ifAddr)
             continue;
 
@@ -215,7 +211,7 @@ static QList<QNetworkInterfacePrivate *> interfaceListing()
                     continue;
                 } else {
                     routeInfo.iNetMask.Output(address);
-                    QHostAddress netmask(qstringFromDesc(address));
+                    QHostAddress netmask(qt_TDesC2QString(address));
                     entry.setNetmask(netmask);
                     // NULL boradcast address for
                     // ::postProcess to have effect

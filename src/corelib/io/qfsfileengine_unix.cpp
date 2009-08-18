@@ -803,20 +803,21 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
         if (!(ret & RootFlag) && !d->isSymlink())
             if(_q_isSymbianHidden(d->filePath, ret & DirectoryType))
                     ret |= HiddenFlag;
-#endif
+#else
         if (d->filePath == QLatin1String("/")) {
             ret |= RootFlag;
         } else {
             QString baseName = fileName(BaseName);
             if ((baseName.size() > 1
                  && baseName.at(0) == QLatin1Char('.') && baseName.at(1) != QLatin1Char('.'))
-#if !defined(QWS) && defined(Q_OS_MAC)
+#  if !defined(QWS) && defined(Q_OS_MAC)
                     || _q_isMacHidden(d->filePath)
-#endif
+#  endif
                ) {
                 ret |= HiddenFlag;
             }
         }
+#endif
     }
     return ret;
 }

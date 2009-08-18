@@ -43,9 +43,9 @@
 
 #ifndef QT_NO_QFUTURE
 
-#include <QEvent>
-#include <QCoreApplication>
-#include <QThread>
+#include <QtCore/qcoreevent.h>
+#include <QtCore/qcoreapplication.h>
+#include <QtCore/qthread.h>
 
 #include "qfuturewatcher_p.h"
 
@@ -54,6 +54,8 @@ QT_BEGIN_NAMESPACE
 /*! \class QFutureWatcher
     \reentrant
     \since 4.4
+
+    \ingroup thread
 
     \brief The QFutureWatcher class allows monitoring a QFuture using signals
     and slots.
@@ -94,7 +96,7 @@ QT_BEGIN_NAMESPACE
     QFutureWatcher<void> as well. This is useful if only status or progress
     information is needed; not the actual result data.
 
-    \sa QFuture, {threads.html#qtconcurrent-intro}{Qt Concurrent}
+    \sa QFuture, {Concurrent Programming}{Qt Concurrent}
 */
 
 /*! \fn QFutureWatcher::QFutureWatcher(QObject *parent)

@@ -54,6 +54,8 @@ QT_BEGIN_NAMESPACE
     for inserting custom widgets into action based containers, such
     as toolbars.
 
+    \ingroup mainwindow-classes
+
     Most actions in an application are represented as items in menus or
     buttons in toolbars. However sometimes more complex widgets are
     necessary. For example a zoom action in a word processor may be
@@ -99,9 +101,6 @@ QT_BEGIN_NAMESPACE
             by Apple), a workaround is to use a QueuedConnection instead of a
             DirectConnection.
     \endlist
-
-    \ingroup application
-    \mainclass
 
     \sa QAction, QActionGroup, QWidget
 */

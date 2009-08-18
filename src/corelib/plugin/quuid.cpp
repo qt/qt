@@ -50,7 +50,6 @@ QT_BEGIN_NAMESPACE
     \brief The QUuid class stores a Universally Unique Identifier (UUID).
 
     \reentrant
-    \ingroup misc
 
     Using \e{U}niversally \e{U}nique \e{ID}entifiers (UUID) is a
     standard way to uniquely identify entities in a distributed

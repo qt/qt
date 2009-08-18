@@ -91,7 +91,6 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
 
 /*!
   \class QSharedMemory
-  \ingroup ipc
   \since 4.4
 
   \brief The QSharedMemory class provides access to a shared memory segment.

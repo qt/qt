@@ -625,6 +625,9 @@ void QPrintPreviewDialogPrivate::_q_zoomFactorChanged()
     \brief The QPrintPreviewDialog class provides a dialog for
     previewing and configuring page layouts for printer output.
 
+    \ingroup standard-dialogs
+    \ingroup printing
+
     Using QPrintPreviewDialog in your existing application is
     straightforward:
 

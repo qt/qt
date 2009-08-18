@@ -93,6 +93,26 @@
 #endif
 #else //HAVE_TCHAR_H
  #include <tchar.h>
+
+#ifdef UNDER_CE
+#include <QString>
+#define _i64tot i64tot
+inline TCHAR* i64tot(__int64 value, TCHAR* str, int radix)
+{
+    QT_USE_NAMESPACE
+    _tcscpy(str, (TCHAR *) QString::number(value, radix).utf16());
+    return str;
+}
+
+#define _tcstoi64 tcstoi64
+inline __int64 tcstoi64(const TCHAR *nptr, TCHAR **endptr, int base)
+{
+    QT_USE_NAMESPACE
+    bool ok;
+    return QString::fromUtf16((ushort*) nptr).toInt(&ok, base);
+}
+
+#endif
  
  //some tchar headers miss these...
  #ifndef _tcstoi64

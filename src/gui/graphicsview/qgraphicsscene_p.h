@@ -59,6 +59,7 @@
 
 #include "qgraphicssceneevent.h"
 #include "qgraphicsview.h"
+#include "qgraphicsview_p.h"
 #include "qgraphicsitem_p.h"
 
 #include <private/qobject_p.h>
@@ -131,7 +132,6 @@ public:
     QGraphicsWidget *activeWindow;
     int activationRefCount;
     void setFocusItemHelper(QGraphicsItem *item, Qt::FocusReason focusReason);
-    QMultiHash<QGraphicsItem *, QGraphicsItem *> focusProxyReverseMap;
 
     QList<QGraphicsWidget *> popupWidgets;
     void addPopup(QGraphicsWidget *widget);

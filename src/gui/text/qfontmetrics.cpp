@@ -75,9 +75,8 @@ extern int qt_defaultDpi();
 
     \brief The QFontMetrics class provides font metrics information.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \ingroup text
 
     QFontMetrics functions calculate the size of characters and
     strings for a given font. There are three ways you can create a
@@ -859,24 +858,23 @@ QRect QFontMetrics::tightBoundingRect(const QString &text) const
     right-to-left layouts, and on the left side for right-to-left
     layouts. Note that this behavior is independent of the text
     language.
-
 */
-QString QFontMetrics::elidedText(const QString &_text, Qt::TextElideMode mode, int width, int flags) const
+QString QFontMetrics::elidedText(const QString &text, Qt::TextElideMode mode, int width, int flags) const
 {
-    QString text = _text;
+    QString _text = text;
     if (!(flags & Qt::TextLongestVariant)) {
         int posA = 0;
-        int posB = text.indexOf(QLatin1Char('\x9c'));
+        int posB = _text.indexOf(QLatin1Char('\x9c'));
         while (posB >= 0) {
-            QString portion = text.mid(posA, posB - posA);
+            QString portion = _text.mid(posA, posB - posA);
             if (size(flags, portion).width() <= width)
                 return portion;
             posA = posB + 1;
-            posB = text.indexOf(QLatin1Char('\x9c'), posA);
+            posB = _text.indexOf(QLatin1Char('\x9c'), posA);
         }
-        text = text.mid(posA);
+        _text = _text.mid(posA);
     }
-    QStackTextEngine engine(text, QFont(d));
+    QStackTextEngine engine(_text, QFont(d));
     return engine.elidedText(mode, width, flags);
 }
 
@@ -942,9 +940,8 @@ int QFontMetrics::lineWidth() const
 
     \brief The QFontMetricsF class provides font metrics information.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \ingroup text
 
     QFontMetricsF functions calculate the size of characters and
     strings for a given font. You can construct a QFontMetricsF object

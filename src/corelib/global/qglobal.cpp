@@ -108,7 +108,7 @@ QT_BEGIN_NAMESPACE
     \brief The QFlags class provides a type-safe way of storing
     OR-combinations of enum values.
 
-    \mainclass
+
     \ingroup tools
 
     The QFlags<Enum> class is a template class, where Enum is an enum
@@ -408,7 +408,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \headerfile <QtGlobal>
     \title Global Qt Declarations
-    \ingroup architecture
+    \ingroup classlists
 
     \brief The <QtGlobal> header provides basic declarations and
     is included by all other Qt headers.
@@ -1060,7 +1060,7 @@ bool qSharedBuild()
 */
 
 /*!
-    \fn QSysInfo::SymVersion QSysInfo::symbianVersion()
+    \fn QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 
     Returns the version of the Symbian operating system on which the
     application is run (Symbian only).
@@ -1129,7 +1129,7 @@ bool qSharedBuild()
     \value WV_NT_based  NT-based version of Windows
     \value WV_CE_based  CE-based version of Windows
 
-    \sa MacVersion, SymVersion
+    \sa MacVersion, SymbianVersion
 */
 
 /*!
@@ -1158,11 +1158,11 @@ bool qSharedBuild()
     \value MV_LEOPARD  Apple codename for MV_10_5
     \value MV_SNOWLEOPARD  Apple codename for MV_10_6
 
-    \sa WinVersion, SymVersion
+    \sa WinVersion, SymbianVersion
 */
 
 /*!
-    \enum QSysInfo::SymVersion
+    \enum QSysInfo::SymbianVersion
 
     This enum provides symbolic names for the various versions of the
     Symbian operating system. On Symbian, the
@@ -1190,7 +1190,7 @@ bool qSharedBuild()
     \value SV_S60_5_0 S60 5th Edition
     \value SV_S60_Unknown An unknown and currently unsupported platform
 
-    \sa SymVersion, WinVersion, MacVersion
+    \sa SymbianVersion, WinVersion, MacVersion
 */
 
 /*!
@@ -1812,7 +1812,7 @@ QSysInfo::S60Version QSysInfo::s60Version()
     return cachedS60Version = SV_S60_Unknown;
 #  endif
 }
-QSysInfo::SymVersion QSysInfo::symbianVersion()
+QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 {
     switch (s60Version()) {
     case SV_S60_3_1:
@@ -1831,7 +1831,7 @@ QSysInfo::S60Version QSysInfo::s60Version()
     return SV_S60_None;
 }
 
-QSysInfo::SymVersion QSysInfo::symbianVersion()
+QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 {
     return SV_Unknown;
 }

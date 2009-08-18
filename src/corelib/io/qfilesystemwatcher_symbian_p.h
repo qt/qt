@@ -71,10 +71,10 @@ class CNotifyChangeEvent : public CActive
 {
 public:
     CNotifyChangeEvent(RFs &fsSession, const TDesC& file, QSymbianFileSystemWatcherEngine* engine,
-            TInt aPriority = EPriorityStandard);
+            bool aIsDir, TInt aPriority = EPriorityStandard);
     ~CNotifyChangeEvent();
     static CNotifyChangeEvent* New(RFs &fsSession, const TDesC& file,
-            QSymbianFileSystemWatcherEngine* engine);
+            QSymbianFileSystemWatcherEngine* engine, bool aIsDir);
 
     bool isDir;
 

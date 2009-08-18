@@ -89,7 +89,6 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     \class QInputContextFactory
     \brief The QInputContextFactory class creates QInputContext objects.
 
-    \ingroup appearance
 
     The input context factory creates a QInputContext object for a
     given key with QInputContextFactory::create().

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <QRegExp>
-#include <QString>
+#include <qregexp.h>
+#include <qstring.h>
 
 #include "qxmlutils_p.h"
 

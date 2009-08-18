@@ -73,7 +73,8 @@ public:
     }
 
     QTreeWidgetItemIteratorPrivate(const QTreeWidgetItemIteratorPrivate& other)
-        : m_currentIndex(other.m_currentIndex), m_model(other.m_model), m_parentIndex(other.m_parentIndex)
+        : m_currentIndex(other.m_currentIndex), m_model(other.m_model),
+          m_parentIndex(other.m_parentIndex), q_ptr(other.q_ptr)
     {
 
     }

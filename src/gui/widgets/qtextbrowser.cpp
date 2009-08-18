@@ -580,7 +580,7 @@ void QTextBrowserPrivate::restoreHistoryEntry(const HistoryEntry entry)
     \class QTextBrowser
     \brief The QTextBrowser class provides a rich text browser with hypertext navigation.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     This class extends QTextEdit (in read-only mode), adding some navigation
     functionality so that users can follow links in hypertext documents.

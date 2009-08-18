@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
     \class QBitmap
     \brief The QBitmap class provides monochrome (1-bit depth) pixmaps.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
 
     The QBitmap class is a monochrome off-screen paint device used

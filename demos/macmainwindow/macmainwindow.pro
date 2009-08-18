@@ -12,7 +12,7 @@ build_all:!build_pass {
     CONFIG += release
 }
 
-LIBS += -framework Cocoa
+LIBS += -framework Cocoa -framework Carbon
 
 # install
 mac {

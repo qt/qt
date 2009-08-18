@@ -96,17 +96,17 @@
 
 QT_BEGIN_NAMESPACE
 
-class QLockedMutexUnlocker
+class QMutexUnlocker
 {
 public:
-    inline explicit QLockedMutexUnlocker(QMutex *m)
+    inline explicit QMutexUnlocker(QMutex *m)
         : mtx(m)
     { }
-    inline ~QLockedMutexUnlocker() { unlock(); }
+    inline ~QMutexUnlocker() { unlock(); }
     inline void unlock() { if (mtx) mtx->unlock(); mtx = 0; }
 
 private:
-    Q_DISABLE_COPY(QLockedMutexUnlocker)
+    Q_DISABLE_COPY(QMutexUnlocker)
 
     QMutex *mtx;
 };
@@ -381,9 +381,6 @@ QString qAppName()
     \class QCoreApplication
     \brief The QCoreApplication class provides an event loop for console Qt
     applications.
-
-    \ingroup application
-    \mainclass
 
     This class is used by non-GUI applications to provide their event
     loop. For non-GUI application that uses Qt, there should be exactly
@@ -1106,7 +1103,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         data->postEventList.mutex.lock();
     }
 
-    QLockedMutexUnlocker locker(&data->postEventList.mutex);
+    QMutexUnlocker locker(&data->postEventList.mutex);
 
     // if this is one of the compressible events, do compression
     if (receiver->d_func()->postedEvents

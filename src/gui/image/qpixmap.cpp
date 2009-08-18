@@ -854,14 +854,10 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
         return false;
 
     QPixmap pm;
-    QT_TRY {
-        if (data->pixelType() == QPixmapData::BitmapType)
-            pm = QBitmap::fromImage(image, flags);
-        else
-            pm = fromImage(image, flags);
-    } QT_CATCH (const std::bad_alloc &) {
-        // swallow bad allocs and leave pm a null pixmap
-    }
+    if (data->pixelType() == QPixmapData::BitmapType)
+        pm = QBitmap::fromImage(image, flags);
+    else
+        pm = fromImage(image, flags);
     if (!pm.isNull()) {
         *this = pm;
         QPixmapCache::insert(key, *this);
@@ -1569,9 +1565,9 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     \brief The QPixmap class is an off-screen image representation
     that can be used as a paint device.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \mainclass
+
 
     Qt provides four classes for handling image data: QImage, QPixmap,
     QBitmap and QPicture. QImage is designed and optimized for I/O,
@@ -1993,16 +1989,11 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
     if (image.isNull())
         return QPixmap();
 
-    QT_TRY {
-        QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
-        QScopedPointer<QPixmapData> data(gs ? gs->createPixmapData(QPixmapData::PixmapType)
-                               : QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixmapType));
-        data->fromImage(image, flags);
-        return QPixmap(data.take());
-    } QT_CATCH(const std::bad_alloc &) {
-        // we're out of memory - return a null Pixmap
-        return QPixmap();
-    }
+    QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
+    QScopedPointer<QPixmapData> data(gs ? gs->createPixmapData(QPixmapData::PixmapType)
+            : QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixmapType));
+    data->fromImage(image, flags);
+    return QPixmap(data.take());
 }
 
 /*!

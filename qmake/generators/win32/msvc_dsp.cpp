@@ -1123,20 +1123,6 @@ QString DspMakefileGenerator::writeBuildstepForFileForConfig(const QString &file
                     fileOut);
                 dep_cmd = Option::fixPathToLocalOS(dep_cmd, true, false);
                 if(config->canExecute(dep_cmd)) {
-#if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
-                    QPopen procPipe;
-                    if( procPipe.init(dep_cmd.toLatin1().constData(), "r") ) {
-                        QString indeps;
-                        while(true) {
-                            int read_in = procPipe.fread(buff, 255);
-                            if ( !read_in )
-                                break;
-                            indeps += QByteArray(buff, read_in);
-                        }
-                        if(!indeps.isEmpty())
-                            step.deps += config->fileFixify(indeps.replace('\n', ' ').simplified().split(' '));
-                    }
-#else
                     if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
                         QString indeps;
                         while(!feof(proc)) {
@@ -1149,7 +1135,6 @@ QString DspMakefileGenerator::writeBuildstepForFileForConfig(const QString &file
                         if(!indeps.isEmpty())
                             step.deps += config->fileFixify(indeps.replace('\n', ' ').simplified().split(' '));
                     }
-#endif
                 }
             }
 

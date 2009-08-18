@@ -57,7 +57,6 @@ QT_BEGIN_NAMESPACE
     \threadsafe
 
     \ingroup thread
-    \ingroup environment
 
     A read-write lock is a synchronization tool for protecting
     resources that can be accessed for reading and writing. This type
@@ -441,7 +440,6 @@ void QReadWriteLock::unlock()
     \threadsafe
 
     \ingroup thread
-    \ingroup environment
 
     The purpose of QReadLocker (and QWriteLocker) is to simplify
     QReadWriteLock locking and unlocking. Locking and unlocking
@@ -514,7 +512,6 @@ void QReadWriteLock::unlock()
     \threadsafe
 
     \ingroup thread
-    \ingroup environment
 
     The purpose of QWriteLocker (and QReadLocker is to simplify
     QReadWriteLock locking and unlocking. Locking and unlocking

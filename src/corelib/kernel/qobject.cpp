@@ -538,7 +538,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     \brief The QObject class is the base class of all Qt objects.
 
     \ingroup objectmodel
-    \mainclass
+
     \reentrant
 
     QObject is the heart of the \l{Qt object model}. The central

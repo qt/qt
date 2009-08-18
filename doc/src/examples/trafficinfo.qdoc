@@ -159,5 +159,5 @@
 
     The rest of the code in this example is just for representing the time and
     station information to the user, and uses techniques described in the
-    \l{Qt Examples#Widgets}{Widgets examples}.
+    \l{Widgets Examples}.
 */

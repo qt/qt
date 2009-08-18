@@ -1011,6 +1011,14 @@ void tst_QPixmap::fromSymbianCFbsBitmap()
     bitmapContext->Clear();
 
     __UHEAP_MARK;
+    { // Test the null case
+        CFbsBitmap *bitmap = 0;
+        QPixmap pixmap = QPixmap::fromSymbianCFbsBitmap(bitmap);
+        QVERIFY(pixmap.isNull());
+    }
+    __UHEAP_MARKEND;
+
+    __UHEAP_MARK;
     { // Test the normal case
         QPixmap pixmap = QPixmap::fromSymbianCFbsBitmap(nativeBitmap);
 //        QCOMPARE(pixmap.depth(), expectedDepth); // Depth is not preserved now

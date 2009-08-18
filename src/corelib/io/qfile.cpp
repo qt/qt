@@ -174,7 +174,7 @@ QFilePrivate::setError(QFile::FileError err, int errNum)
     \brief The QFile class provides an interface for reading from and writing to files.
 
     \ingroup io
-    \mainclass
+
     \reentrant
 
     QFile is an I/O device for reading and writing text and binary

@@ -1,5 +1,0 @@
-qhelpcontentmodel
-qhelpenginecore
-qhelpgenerator
-qhelpindexmodel
-qhelpprojectdata

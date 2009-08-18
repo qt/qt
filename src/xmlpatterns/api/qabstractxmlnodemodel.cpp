@@ -190,8 +190,7 @@ bool QAbstractXmlNodeModel::isIgnorableInDeepEqual(const QXmlNodeModelIndex &n)
 
   Because the node model can be accessed concurrently by threads in
   the QtXmlPatterns module, subclasses of QAbstractXmlNodeModel must
-  be written to be \l{Thread Support in Qt#Reentrancy and Thread-Safety}
-  {thread-safe}.
+  be written to be \l{Reentrancy and Thread-Safety}{thread-safe}.
   Classes that simplify implementing thread-safety include QReadLocker
   and QWriteLocker.
 

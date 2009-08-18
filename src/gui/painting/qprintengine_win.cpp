@@ -1360,10 +1360,10 @@ void QWin32PrintEngine::setProperty(PrintEnginePropertyKey key, const QVariant &
         Q_ASSERT(margins.size() == 4);
         int left, top, right, bottom;
         // specified in 1/100 mm
-        left = (margins.at(0).toDouble()*25.4/72.0) * 100;
-        top = (margins.at(1).toDouble()*25.4/72.0) * 100;
-        right = (margins.at(2).toDouble()*25.4/72.0) * 100;
-        bottom = (margins.at(3).toDouble()*25.4/72.0) * 100;
+        left = (margins.at(0).toReal()*25.4/72.0) * 100;
+        top = (margins.at(1).toReal()*25.4/72.0) * 100;
+        right = (margins.at(2).toReal()*25.4/72.0) * 100;
+        bottom = (margins.at(3).toReal()*25.4/72.0) * 100;
         d->setPageMargins(left, top, right, bottom);
         break;
     }

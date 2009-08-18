@@ -68,7 +68,7 @@ int QVectorData::grow(int sizeofTypedData, int size, int sizeofT, bool excessive
 
     \ingroup tools
     \ingroup shared
-    \mainclass
+
     \reentrant
 
     QVector\<T\> is one of Qt's generic \l{container classes}. It
