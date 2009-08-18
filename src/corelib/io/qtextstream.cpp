@@ -241,6 +241,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
 #include "private/qlocale_p.h"
 
 #include <stdlib.h>
+#include <limits.h>
 #include <new>
 
 #if defined QTEXTSTREAM_DEBUG
@@ -375,10 +376,10 @@ public:
     enum TokenDelimiter {
         Space,
         NotSpace,
-        EndOfLine,
-        EndOfFile
+        EndOfLine
     };
 
+    QString read(int maxlen);
     bool scan(const QChar **ptr, int *tokenLength,
               int maxlen, TokenDelimiter delimiter);
     inline const QChar *readPtr() const;
@@ -704,6 +705,25 @@ bool QTextStreamPrivate::flushWriteBuffer()
     return flushed && bytesWritten == qint64(data.size());
 }
 
+QString QTextStreamPrivate::read(int maxlen)
+{
+    QString ret;
+    if (string) {
+        lastTokenSize = qMin(maxlen, string->size() - stringOffset);
+        ret = string->mid(stringOffset, lastTokenSize);
+    } else {
+        while (readBuffer.size() - readBufferOffset < maxlen && fillReadBuffer()) ;
+        lastTokenSize = qMin(maxlen, readBuffer.size() - readBufferOffset);
+        ret = readBuffer.mid(readBufferOffset, lastTokenSize);
+    }
+    consumeLastToken();
+
+#if defined (QTEXTSTREAM_DEBUG)
+    qDebug("QTextStreamPrivate::read() maxlen = %d, token length = %d", maxlen, ret.length());
+#endif
+    return ret;
+}
+
 /*! \internal
 
     Scans no more than \a maxlen QChars in the current buffer for the
@@ -756,8 +776,6 @@ bool QTextStreamPrivate::scan(const QChar **ptr, int *length, int maxlen, TokenD
                     consumeDelimiter = true;
                 }
                 lastChar = ch;
-                break;
-            default:
                 break;
             }
         }
@@ -1614,14 +1632,7 @@ QString QTextStream::readAll()
     Q_D(QTextStream);
     CHECK_VALID_STREAM(QString());
 
-    const QChar *readPtr;
-    int length;
-    if (!d->scan(&readPtr, &length, /* maxlen = */ 0, QTextStreamPrivate::EndOfFile))
-        return QString();
-
-    QString tmp = QString(readPtr, length);
-    d->consumeLastToken();
-    return tmp;
+    return d->read(INT_MAX);
 }
 
 /*!
@@ -1673,14 +1684,7 @@ QString QTextStream::read(qint64 maxlen)
     if (maxlen <= 0)
         return QString::fromLatin1("");     // empty, not null
 
-    const QChar *readPtr;
-    int length;
-    if (!d->scan(&readPtr, &length, int(maxlen), QTextStreamPrivate::EndOfFile))
-        return QString();
-
-    QString tmp = QString(readPtr, length);
-    d->consumeLastToken();
-    return tmp;
+    return d->read(int(maxlen));
 }
 
 /*! \internal
