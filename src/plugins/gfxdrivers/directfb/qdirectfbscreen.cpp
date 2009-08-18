@@ -494,7 +494,15 @@ void QDirectFBScreen::setSurfaceColorTable(IDirectFBSurface *surface,
 
 #endif // QT_NO_DIRECTFB_PALETTE
 
-#if !defined(QT_NO_DIRECTFB_LAYER) && !defined(QT_NO_QWS_CURSOR)
+#ifndef QT_NO_QWS_CURSOR
+#if defined QT_DIRECTFB_WM && defined QT_DIRECTFB_WINDOW_AS_CURSOR
+#define QT_DIRECTFB_CURSOR
+#elif defined QT_DIRECTFB_LAYER
+#define QT_DIRECTFB_CURSOR
+#endif
+#endif
+
+#if defined QT_DIRECTFB_CURSOR
 class Q_GUI_EXPORT QDirectFBScreenCursor : public QScreenCursor
 {
 public:
@@ -504,6 +512,11 @@ public:
     virtual void show();
     virtual void hide();
 private:
+#ifdef QT_DIRECTFB_WINDOW_AS_CURSOR
+    ~QDirectFBScreenCursor();
+    bool createWindow();
+    IDirectFBWindow *window;
+#endif
     IDirectFBDisplayLayer *layer;
 };
 
@@ -519,12 +532,95 @@ QDirectFBScreenCursor::QDirectFBScreenCursor()
     enable = false;
     hwaccel = true;
     supportsAlpha = true;
+#ifdef QT_DIRECTFB_WINDOW_AS_CURSOR
+    window = 0;
+    DFBResult result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBScreenCursor::hide: "
+                      "Unable to set cooperative level", result);
+    }
+    result = layer->SetCursorOpacity(layer, 0);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBScreenCursor::hide: "
+                      "Unable to set cursor opacity", result);
+    }
+
+    result = layer->SetCooperativeLevel(layer, DLSCL_SHARED);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBScreenCursor::hide: "
+                      "Unable to set cooperative level", result);
+    }
+#endif
 }
+
+#ifdef QT_DIRECTFB_WINDOW_AS_CURSOR
+QDirectFBScreenCursor::~QDirectFBScreenCursor()
+{
+    if (window) {
+        window->Release(window);
+        window = 0;
+    }
+}
+
+bool QDirectFBScreenCursor::createWindow()
+{
+    Q_ASSERT(!window);
+    Q_ASSERT(!cursor.isNull());
+    DFBWindowDescription description;
+    memset(&description, 0, sizeof(DFBWindowDescription));
+    description.flags = DWDESC_POSX|DWDESC_POSY|DWDESC_WIDTH|DWDESC_HEIGHT|DWDESC_CAPS|DWDESC_OPTIONS|DWDESC_PIXELFORMAT|DWDESC_SURFACE_CAPS;
+    description.width = cursor.width();
+    description.height = cursor.height();
+    description.posx = pos.x() - hotspot.x();
+    description.posy = pos.y() - hotspot.y();
+    description.options = DWOP_GHOST|DWOP_ALPHACHANNEL;
+    description.caps = DWCAPS_NODECORATION|DWCAPS_DOUBLEBUFFER;
+    const QImage::Format format = QDirectFBScreen::instance()->alphaPixmapFormat();
+    description.pixelformat = QDirectFBScreen::getSurfacePixelFormat(format);
+    if (QDirectFBScreen::isPremultiplied(format))
+        description.surface_caps = DSCAPS_PREMULTIPLIED;
+
+    DFBResult result = layer->CreateWindow(layer, &description, &window);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBScreenCursor::createWindow: Unable to create window", result);
+        return false;
+    }
+    result = window->SetOpacity(window, 255);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBScreenCursor::createWindow: Unable to set opacity ", result);
+        return false;
+    }
+
+    result = window->SetStackingClass(window, DWSC_UPPER);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBScreenCursor::createWindow: Unable to set stacking class ", result);
+        return false;
+    }
+
+    result = window->RaiseToTop(window);
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBScreenCursor::createWindow: Unable to raise window ", result);
+        return false;
+    }
+
+    return true;
+}
+#endif
 
 void QDirectFBScreenCursor::move(int x, int y)
 {
     pos = QPoint(x, y);
+#ifdef QT_DIRECTFB_WINDOW_AS_CURSOR
+    if (window) {
+        const QPoint p = pos - hotspot;
+        DFBResult result = window->MoveTo(window, p.x(), p.y());
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::move: Unable to move window", result);
+        }
+    }
+#else
     layer->WarpCursor(layer, x, y);
+#endif
 }
 
 void QDirectFBScreenCursor::hide()
@@ -532,6 +628,7 @@ void QDirectFBScreenCursor::hide()
     if (enable) {
         enable = false;
         DFBResult result;
+#ifndef QT_DIRECTFB_WINDOW_AS_CURSOR
         result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
         if (result != DFB_OK) {
             DirectFBError("QDirectFBScreenCursor::hide: "
@@ -547,6 +644,15 @@ void QDirectFBScreenCursor::hide()
             DirectFBError("QDirectFBScreenCursor::hide: "
                           "Unable to set cooperative level", result);
         }
+#else
+        if (window) {
+            result = window->SetOpacity(window, 0);
+            if (result != DFB_OK) {
+                DirectFBError("QDirectFBScreenCursor::hide: "
+                              "Unable to set window opacity", result);
+            }
+        }
+#endif
     }
 }
 
@@ -560,7 +666,13 @@ void QDirectFBScreenCursor::show()
             DirectFBError("QDirectFBScreenCursor::show: "
                           "Unable to set cooperative level", result);
         }
-        result = layer->SetCursorOpacity(layer, 255);
+        result = layer->SetCursorOpacity(layer,
+#ifdef QT_DIRECTFB_WINDOW_AS_CURSOR
+                                         0
+#else
+                                         255
+#endif
+            );
         if (result != DFB_OK) {
             DirectFBError("QDirectFBScreenCursor::show: "
                           "Unable to set cursor shape", result);
@@ -570,6 +682,15 @@ void QDirectFBScreenCursor::show()
             DirectFBError("QDirectFBScreenCursor::show: "
                           "Unable to set cooperative level", result);
         }
+#ifdef QT_DIRECTFB_WINDOW_AS_CURSOR
+        if (window) {
+            DFBResult result = window->SetOpacity(window, 255);
+            if (result != DFB_OK) {
+                DirectFBError("QDirectFBScreenCursor::show: "
+                              "Unable to set window opacity", result);
+            }
+        }
+#endif
     }
 }
 
@@ -593,6 +714,7 @@ void QDirectFBScreenCursor::set(const QImage &image, int hotx, int hoty)
             DirectFBError("QDirectFBScreenCursor::set: Unable to create surface", result);
             return;
         }
+#ifndef QT_DIRECTFB_WINDOW_AS_CURSOR
         result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
         if (result != DFB_OK) {
             DirectFBError("QDirectFBScreenCursor::show: "
@@ -603,17 +725,53 @@ void QDirectFBScreenCursor::set(const QImage &image, int hotx, int hoty)
             DirectFBError("QDirectFBScreenCursor::show: "
                           "Unable to set cursor shape", result);
         }
-        surface->Release(surface);
         result = layer->SetCooperativeLevel(layer, DLSCL_SHARED);
         if (result != DFB_OK) {
             DirectFBError("QDirectFBScreenCursor::show: "
                           "Unable to set cooperative level", result);
         }
+#else
+        if (window || createWindow()) {
+            QSize windowSize;
+            result = window->GetSize(window, &windowSize.rwidth(), &windowSize.rheight());
+            if (result != DFB_OK) {
+                DirectFBError("QDirectFBScreenCursor::set: "
+                              "Unable to get window size", result);
+            }
+            result = window->Resize(window, size.width(), size.height());
+            if (result != DFB_OK) {
+                DirectFBError("QDirectFBScreenCursor::set: Unable to resize window", result);
+            }
+
+            IDirectFBSurface *windowSurface;
+            result = window->GetSurface(window, &windowSurface);
+            if (result != DFB_OK) {
+                DirectFBError("QDirectFBScreenCursor::set: Unable to get window surface", result);
+            } else {
+                result = windowSurface->Clear(windowSurface, 0, 0, 0, 0);
+                if (result != DFB_OK) {
+                    DirectFBError("QDirectFBScreenCursor::set: Unable to clear surface", result);
+                }
+
+                result = windowSurface->Blit(windowSurface, surface, 0, 0, 0);
+                if (result != DFB_OK) {
+                    DirectFBError("QDirectFBScreenCursor::set: Unable to blit to surface", result);
+                }
+            }
+            result = windowSurface->Flip(windowSurface, 0, DSFLIP_NONE);
+            if (result != DFB_OK) {
+                DirectFBError("QDirectFBScreenCursor::set: Unable to flip window", result);
+            }
+
+            windowSurface->Release(windowSurface);
+        }
+#endif
+        surface->Release(surface);
         show();
     }
 
 }
-#endif // QT_NO_DIRECTFB_LAYER
+#endif // QT_DIRECTFB_CURSOR
 
 QDirectFBScreen::QDirectFBScreen(int display_id)
     : QScreen(display_id, DirectFBClass), d_ptr(new QDirectFBScreenPrivate(this))

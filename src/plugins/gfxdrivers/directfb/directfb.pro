@@ -6,6 +6,7 @@ QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/gfxdrivers
 # These defines might be necessary if your DirectFB driver doesn't
 # support all of the DirectFB API.
 #
+#DEFINES += QT_DIRECTFB_WINDOW_AS_CURSOR
 #DEFINES += QT_DIRECTFB_IMAGEPROVIDER
 #DEFINES += QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
 #DEFINES += QT_DIRECTFB_IMAGECACHE
