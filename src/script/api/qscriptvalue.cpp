@@ -438,7 +438,6 @@ QScriptValue::~QScriptValue()
             eng_p->releaseJSCValue(d_ptr->jscValue);
         }
         delete d_ptr;
-        d_ptr = 0;
     }
 }
 
