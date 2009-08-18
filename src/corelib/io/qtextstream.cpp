@@ -755,12 +755,11 @@ bool QTextStreamPrivate::scan(const QChar **ptr, int *length, int maxlen, TokenD
                     delimSize = (lastChar == QLatin1Char('\r')) ? 2 : 1;
                     consumeDelimiter = true;
                 }
+                lastChar = ch;
                 break;
             default:
                 break;
             }
-
-            lastChar = ch;
         }
     } while (!foundToken
              && (!maxlen || totalSize < maxlen)
