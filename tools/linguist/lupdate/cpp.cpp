@@ -1186,14 +1186,14 @@ bool CppParser::matchString(QString *s)
     }
 }
 
+STRING(QApplication);
+STRING(QCoreApplication);
+STRING(UnicodeUTF8);
+STRING(DefaultCodec);
+STRING(CodecForTr);
+
 bool CppParser::matchEncoding(bool *utf8)
 {
-    STRING(QApplication);
-    STRING(QCoreApplication);
-    STRING(UnicodeUTF8);
-    STRING(DefaultCodec);
-    STRING(CodecForTr);
-
     if (yyTok != Tok_Ident)
         return false;
     if (yyWord == strQApplication || yyWord == strQCoreApplication) {
