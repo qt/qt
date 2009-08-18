@@ -60,8 +60,8 @@ MetaMakefileGenerator::~MetaMakefileGenerator()
 
 class BuildsMetaMakefileGenerator : public MetaMakefileGenerator
 {
-    bool init_flag;
 private:
+    bool init_flag;
     struct Build {
         QString name, build;
         MakefileGenerator *makefile;
@@ -264,7 +264,6 @@ MakefileGenerator
 class SubdirsMetaMakefileGenerator : public MetaMakefileGenerator
 {
 protected:
-
     bool init_flag;
     struct Subdir {
         Subdir() : makefile(0), indent(0) { }
