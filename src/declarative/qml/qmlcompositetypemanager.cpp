@@ -247,7 +247,9 @@ void QmlCompositeTypeManager::setData(QmlCompositeTypeData *unit,
         unit->errors << unit->data.errors();
     } else {
         foreach (QmlScriptParser::Import imp, unit->data.imports()) {
-            if (!QmlEnginePrivate::get(engine)->addToImport(&unit->imports, imp.uri, imp.qualifier, imp.version, imp.type)) {
+            int dot = imp.version.indexOf(QLatin1Char('.'));
+            if (dot < 0) dot = imp.version.length();
+            if (!QmlEnginePrivate::get(engine)->addToImport(&unit->imports, imp.uri, imp.qualifier, imp.version.left(dot).toInt(), imp.version.mid(dot+1).toInt(), imp.type)) {
                 QmlError error;
                 error.setUrl(url);
                 error.setDescription(tr("Import %1 unavailable").arg(imp.uri));

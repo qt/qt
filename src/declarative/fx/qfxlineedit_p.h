@@ -64,7 +64,7 @@ class QFxLineEditPrivate : public QFxPaintedItemPrivate
     Q_DECLARE_PUBLIC(QFxLineEdit);
 public:
     QFxLineEditPrivate() : control(new QLineControl(QString())),
-                 font(0), color((QRgb)0), style(QFxText::Normal),
+                 color((QRgb)0), style(QFxText::Normal),
                  styleColor((QRgb)0), hAlign(QFxLineEdit::AlignLeft),
                  hscroll(0), oldScroll(0), focused(false), cursorVisible(false)
     {
@@ -79,7 +79,7 @@ public:
 
     QLineControl* control;
 
-    QmlFont *font;
+    QFont font;
     QColor  color;
     QColor  highlightColor;
     QColor  highlightedTextColor;

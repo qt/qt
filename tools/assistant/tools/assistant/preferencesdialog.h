@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,6 +49,12 @@ QT_BEGIN_NAMESPACE
 
 class FontPanel;
 class QHelpEngineCore;
+
+enum {
+    ShowHomePage = 0,
+    ShowBlankPage = 1,
+    ShowLastPages = 2
+};
 
 class PreferencesDialog : public QDialog
 {
@@ -72,8 +78,10 @@ private slots:
     void appFontSettingChanged(int index);
     void browserFontSettingToggled(bool on);
     void browserFontSettingChanged(int index);
-    void restoreDefaultHomepage();
-    void currentHomepageChanged();
+    
+    void setBlankPage();
+    void setCurrentPage();
+    void setDefaultPage();
 
 signals:
     void updateBrowserFont();

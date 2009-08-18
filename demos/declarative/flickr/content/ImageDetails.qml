@@ -18,10 +18,10 @@ Flipable {
 
     signal closed
 
-    transform: Rotation3D {
+    transform: Rotation {
         id: Rotation
         origin.x: Container.width / 2;
-        axis.y: 1;
+        axis.y: 1; axis.z: 0
     }
 
     front: Item {
@@ -44,7 +44,7 @@ Flipable {
         }
 
         Text { id: TitleText; style: "Raised"; styleColor: "black"; color: "white"; elide: "ElideRight"
-               x: 220; y: 30; width: parent.width - 240; text: Container.photoTitle; font.size: 22 }
+               x: 220; y: 30; width: parent.width - 240; text: Container.photoTitle; font.pointSize: 22 }
 
         LikeOMeter { x: 40; y: 250; rating: Container.rating }
 

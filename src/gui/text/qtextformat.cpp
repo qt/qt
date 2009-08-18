@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -267,10 +267,11 @@ private:
 
 static uint variantHash(const QVariant &variant)
 {
-    switch (variant.type()) {
+    switch (variant.userType()) {
     case QVariant::Invalid: return 0;
     case QVariant::Bool: return variant.toBool();
     case QVariant::Int: return variant.toInt();
+    case QMetaType::Float: return static_cast<int>(variant.toFloat());
     case QVariant::Double: return static_cast<int>(variant.toDouble());
     case QVariant::String: return qHash(variant.toString());
     case QVariant::Color: return qHash(qvariant_cast<QColor>(variant).rgb());
@@ -325,7 +326,7 @@ void QTextFormatPrivate::recalcFont() const
                 f.setFamily(props.at(i).value.toString());
                 break;
             case QTextFormat::FontPointSize:
-                f.setPointSizeF(props.at(i).value.toDouble());
+                f.setPointSizeF(props.at(i).value.toReal());
                 break;
             case  QTextFormat::FontPixelSize:
                 f.setPixelSize(props.at(i).value.toInt());
@@ -352,10 +353,10 @@ void QTextFormatPrivate::recalcFont() const
                 f.setStrikeOut(props.at(i).value.toBool());
                 break;
             case QTextFormat::FontLetterSpacing:
-                f.setLetterSpacing(QFont::PercentageSpacing, props.at(i).value.toDouble());
+                f.setLetterSpacing(QFont::PercentageSpacing, props.at(i).value.toReal());
                 break;
             case QTextFormat::FontWordSpacing:
-                f.setWordSpacing(props.at(i).value.toDouble());
+                f.setWordSpacing(props.at(i).value.toReal());
                 break;
             case QTextFormat::FontCapitalization:
                 f.setCapitalization(static_cast<QFont::Capitalization> (props.at(i).value.toInt()));
@@ -852,7 +853,7 @@ bool QTextFormat::boolProperty(int propertyId) const
     if (!d)
         return false;
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Bool)
+    if (prop.userType() != QVariant::Bool)
         return false;
     return prop.toBool();
 }
@@ -868,14 +869,15 @@ int QTextFormat::intProperty(int propertyId) const
     if (!d)
         return 0;
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Int)
+    if (prop.userType() != QVariant::Int)
         return 0;
     return prop.toInt();
 }
 
 /*!
     Returns the value of the property specified by \a propertyId. If the
-    property isn't of QVariant::Double type, 0 is returned instead.
+    property isn't of QVariant::Double or QMetaType::Float type, 0 is
+    returned instead.
 
     \sa setProperty() boolProperty() intProperty() stringProperty() colorProperty() lengthProperty() lengthVectorProperty() Property
 */
@@ -884,9 +886,9 @@ qreal QTextFormat::doubleProperty(int propertyId) const
     if (!d)
         return 0.;
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Double)
+    if (prop.userType() != QVariant::Double && prop.userType() != QMetaType::Float)
         return 0.;
-    return prop.toDouble(); // ####
+    return qVariantValue<qreal>(prop);
 }
 
 /*!
@@ -901,7 +903,7 @@ QString QTextFormat::stringProperty(int propertyId) const
     if (!d)
         return QString();
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::String)
+    if (prop.userType() != QVariant::String)
         return QString();
     return prop.toString();
 }
@@ -919,7 +921,7 @@ QColor QTextFormat::colorProperty(int propertyId) const
     if (!d)
         return QColor();
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Color)
+    if (prop.userType() != QVariant::Color)
         return QColor();
     return qvariant_cast<QColor>(prop);
 }
@@ -936,7 +938,7 @@ QPen QTextFormat::penProperty(int propertyId) const
     if (!d)
         return QPen(Qt::NoPen);
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Pen)
+    if (prop.userType() != QVariant::Pen)
         return QPen(Qt::NoPen);
     return qvariant_cast<QPen>(prop);
 }
@@ -953,7 +955,7 @@ QBrush QTextFormat::brushProperty(int propertyId) const
     if (!d)
         return QBrush(Qt::NoBrush);
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::Brush)
+    if (prop.userType() != QVariant::Brush)
         return QBrush(Qt::NoBrush);
     return qvariant_cast<QBrush>(prop);
 }
@@ -983,13 +985,13 @@ QVector<QTextLength> QTextFormat::lengthVectorProperty(int propertyId) const
     if (!d)
         return vector;
     const QVariant prop = d->property(propertyId);
-    if (prop.type() != QVariant::List)
+    if (prop.userType() != QVariant::List)
         return vector;
 
     QList<QVariant> propertyList = prop.toList();
     for (int i=0; i<propertyList.size(); ++i) {
         QVariant var = propertyList.at(i);
-        if (var.type() == QVariant::TextLength)
+        if (var.userType() == QVariant::TextLength)
             vector.append(qvariant_cast<QTextLength>(var));
     }
 
@@ -1077,7 +1079,7 @@ int QTextFormat::objectIndex() const
     if (!d)
         return -1;
     const QVariant prop = d->property(ObjectIndex);
-    if (prop.type() != QVariant::Int) // ####
+    if (prop.userType() != QVariant::Int) // ####
         return -1;
     return prop.toInt();
 }
@@ -1603,7 +1605,7 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
     \fn void QTextCharFormat::setAnchorHref(const QString &value)
 
     Sets the hypertext link for the text format to the given \a value.
-    This is typically a URL like "http://qtsoftware.com/index.html".
+    This is typically a URL like "http://example.com/index.html".
 
     The anchor will be displayed with the \a value as its display text;
     if you want to display different text call setAnchorNames().
@@ -1653,9 +1655,9 @@ void QTextCharFormat::setUnderlineStyle(UnderlineStyle style)
 QString QTextCharFormat::anchorName() const
 {
     QVariant prop = property(AnchorName);
-    if (prop.type() == QVariant::StringList)
+    if (prop.userType() == QVariant::StringList)
         return prop.toStringList().value(0);
-    else if (prop.type() != QVariant::String)
+    else if (prop.userType() != QVariant::String)
         return QString();
     return prop.toString();
 }
@@ -1671,9 +1673,9 @@ QString QTextCharFormat::anchorName() const
 QStringList QTextCharFormat::anchorNames() const
 {
     QVariant prop = property(AnchorName);
-    if (prop.type() == QVariant::StringList)
+    if (prop.userType() == QVariant::StringList)
         return prop.toStringList();
-    else if (prop.type() != QVariant::String)
+    else if (prop.userType() != QVariant::String)
         return QStringList();
     return QStringList(prop.toString());
 }

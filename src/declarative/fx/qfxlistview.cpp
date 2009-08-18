@@ -1348,8 +1348,8 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
                 int index = currentIndex()-1;
                 d->updateCurrent(index >= 0 ? index : d->model->count()-1);
                 event->accept();
+                return;
             }
-            return;
         } else if ((d->orient == Qt::Horizontal && event->key() == Qt::Key_Right)
                     || (d->orient == Qt::Vertical && event->key() == Qt::Key_Down)) {
             if (currentIndex() < d->model->count() - 1 || d->wrap) {
@@ -1357,13 +1357,13 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
                 int index = currentIndex()+1;
                 d->updateCurrent(index < d->model->count() ? index : 0);
                 event->accept();
+                return;
             }
-            return;
         }
     }
     d->moveReason = QFxListViewPrivate::Other;
-    if (!event->isAccepted())
-        QFxFlickable::keyPressEvent(event);
+    event->ignore();
+    QFxFlickable::keyPressEvent(event);
 }
 
 void QFxListView::componentComplete()

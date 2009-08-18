@@ -69,19 +69,10 @@ class QFxTextPrivate : public QFxItemPrivate
     Q_DECLARE_PUBLIC(QFxText)
 public:
     QFxTextPrivate()
-      : _font(0), color((QRgb)0), style(QFxText::Normal), imgDirty(true),
+      : color((QRgb)0), style(QFxText::Normal), imgDirty(true),
         hAlign(QFxText::AlignLeft), vAlign(QFxText::AlignTop), elideMode(Qt::ElideNone),
         dirty(false), wrap(false), richText(false), singleline(false), control(0), doc(0),
         format(QFxText::AutoText)
-    {
-    }
-
-    ~QFxTextPrivate()
-    {
-        delete _font;
-    }
-
-    void init()
     {
     }
 
@@ -96,17 +87,7 @@ public:
     QSize setupTextLayout(QTextLayout *layout);
 
     QString text;
-    QmlFont *font()
-    {
-        if (!_font) {
-            Q_Q(QFxText);
-            _font = new QmlFont;
-            QObject::connect(_font, SIGNAL(updated()), q, SLOT(fontChanged()));
-        }
-        return _font;
-    }
-
-    QmlFont *_font;
+    QFont font;
     QColor  color;
     QFxText::TextStyle style;
     QColor  styleColor;

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1884,6 +1884,8 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
 }
 
 /*!
+  \since 4.6
+  
   Sets the model's role names to \a roleNames.
 
   This function is provided to allow mapping of role identifiers to
@@ -1900,9 +1902,11 @@ void QAbstractItemModel::setRoleNames(const QHash<int,QByteArray> &roleNames)
 }
 
 /*!
+  \since 4.6
+
   Returns the model's role names.
 
-  \sa setRoleNames
+  \sa setRoleNames()
 */
 const QHash<int,QByteArray> &QAbstractItemModel::roleNames() const
 {

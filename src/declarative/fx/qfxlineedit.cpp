@@ -101,26 +101,25 @@ void QFxLineEdit::setText(const QString &s)
 
     Set the LineEdit's font attributes.  \c font.size sets the font's point size.
 */
-QmlFont *QFxLineEdit::font()
+QFont QFxLineEdit::font() const
 {
-    Q_D(QFxLineEdit);
+    Q_D(const QFxLineEdit);
     return d->font;
 }
 
-/*!
-This signal is emitted when the font of the item changes.
-*/
-void QFxLineEdit::fontChanged()
+void QFxLineEdit::setFont(const QFont &font)
 {
     Q_D(QFxLineEdit);
-    d->control->setFont(d->font->font());
+    d->font = font;
+
+    d->control->setFont(d->font);
     if(d->cursorItem){
-        d->cursorItem->setHeight(QFontMetrics(d->font->font()).height());
+        d->cursorItem->setHeight(QFontMetrics(d->font).height());
         moveCursor();
     }
     //updateSize();
     updateAll();//TODO: Only necessary updates
-    emit update();
+    update();
 }
 
 /*!
@@ -467,6 +466,7 @@ void QFxLineEdit::focusChanged(bool hasFocus)
     Q_D(QFxLineEdit);
     d->focused = hasFocus;
     setCursorVisible(hasFocus);
+    QFxItem::focusChanged(hasFocus);
 }
 
 void QFxLineEdit::keyPressEvent(QKeyEvent* ev)
@@ -563,9 +563,6 @@ void QFxLineEditPrivate::init()
                 q, SLOT(updateAll()));
         q->connect(control, SIGNAL(selectionChanged()),
                 q, SLOT(updateAll()));
-        if(!font)
-            font = new QmlFont();
-        q->connect(font, SIGNAL(updated()), q, SLOT(fontChanged()));
         q->updateSize();
         oldValidity = control->hasAcceptableInput();
         lastSelectionStart = 0;
@@ -632,7 +629,7 @@ void QFxLineEdit::updateSize()
     Q_D(QFxLineEdit);
     setImplicitHeight(d->control->height());
     //d->control->width() is max width, not current width
-    QFontMetrics fm = QFontMetrics(d->font->font());
+    QFontMetrics fm = QFontMetrics(d->font);
     setImplicitWidth(fm.boundingRect(d->control->text()).width()+1);
     setContentsSize(QSize(width(), height()));
 }

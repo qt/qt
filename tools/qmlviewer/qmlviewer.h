@@ -44,6 +44,8 @@ public:
     void setNetworkCacheSize(int size);
     void addLibraryPath(const QString& lib);
 
+    QStringList builtinSkins() const;
+
     QMenuBar *menuBar() const;
 
 public slots:
@@ -56,6 +58,9 @@ public slots:
     void toggleRecordingWithSelection();
     void ffmpegFinished(int code);
     void setSkin(const QString& skinDirectory);
+    void showProxySettings ();
+    void proxySettingsChanged ();
+    void setScaleView();
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
@@ -63,13 +68,12 @@ protected:
     void createMenu(QMenuBar *menu, QMenu *flatmenu);
 
 private slots:
-    void setScaleSkin();
-    void setScaleView();
     void autoStartRecording();
     void autoStopRecording();
     void recordFrame();
     void chooseRecordingOptions();
     void pickRecordingFile();
+    void setScaleSkin();
 
 private:
     void setupProxy();

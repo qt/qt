@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,9 +73,8 @@ enum { indicatorSize = 2 };
 
 // Position an indicator horizontally over the rectangle, indicating
 // 'Insert before' (left or right according to layout direction)
-static inline QRect horizontalIndicatorRect(const QRect &rect)
+static inline QRect horizontalIndicatorRect(const QRect &rect, Qt::LayoutDirection layoutDirection)
 {
-    const Qt::LayoutDirection layoutDirection = QApplication::layoutDirection();
     // Position right?
     QRect rc = QRect(rect.x(), 0, indicatorSize, rect.height() - 1);
     if (layoutDirection == Qt::RightToLeft)
@@ -91,13 +90,13 @@ static inline QRect verticalIndicatorRect(const QRect &rect)
 
 // Determine the geometry of the indicator by retrieving
 // the action under mouse and positioning the bar within its geometry.
-QRect ActionProviderBase::indicatorGeometry(const QPoint &pos) const
+QRect ActionProviderBase::indicatorGeometry(const QPoint &pos, Qt::LayoutDirection layoutDirection) const
 {
     QAction *action = actionAt(pos);
     if (!action)
         return QRect();
     QRect rc = actionGeometry(action);
-    return orientation() == Qt::Horizontal ? horizontalIndicatorRect(rc) : verticalIndicatorRect(rc);
+    return orientation() == Qt::Horizontal ? horizontalIndicatorRect(rc, layoutDirection) : verticalIndicatorRect(rc);
 }
 
 // Adjust the indicator while dragging. (-1,1) is called to finish a DND operation
@@ -107,7 +106,7 @@ void ActionProviderBase::adjustIndicator(const QPoint &pos)
         m_indicator->hide();
         return;
     }
-    const QRect ig = indicatorGeometry(pos);
+    const QRect ig = indicatorGeometry(pos, m_indicator->layoutDirection());
     if (ig.isValid()) {
         m_indicator->setGeometry(ig);
         QPalette p = m_indicator->palette();
@@ -145,9 +144,9 @@ Qt::Orientation QToolBarActionProvider::orientation() const
     return m_widget->orientation();
 }
 
-QRect QToolBarActionProvider::indicatorGeometry(const QPoint &pos) const
+QRect QToolBarActionProvider::indicatorGeometry(const QPoint &pos, Qt::LayoutDirection layoutDirection) const
 {
-    const QRect actionRect = ActionProviderBase::indicatorGeometry(pos);
+    const QRect actionRect = ActionProviderBase::indicatorGeometry(pos, layoutDirection);
     if (actionRect.isValid())
         return actionRect;
     // Toolbar differs in that is has no dummy placeholder to 'insert before'
@@ -155,7 +154,7 @@ QRect QToolBarActionProvider::indicatorGeometry(const QPoint &pos) const
     const QRect freeArea = ToolBarEventFilter::freeArea(m_widget);
     if (!freeArea.contains(pos))
         return QRect();
-    return orientation() == Qt::Horizontal ? horizontalIndicatorRect(freeArea) : verticalIndicatorRect(freeArea);
+    return orientation() == Qt::Horizontal ? horizontalIndicatorRect(freeArea, layoutDirection) : verticalIndicatorRect(freeArea);
 }
 
 // ------------- QMenuBarActionProvider

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -153,34 +153,12 @@ QAbstractTransition::QAbstractTransition(QState *sourceState)
 }
 
 /*!
-  Constructs a new QAbstractTransition object with the given \a targets and \a
-  sourceState.
-*/
-QAbstractTransition::QAbstractTransition(const QList<QAbstractState*> &targets,
-                                         QState *sourceState)
-    : QObject(*new QAbstractTransitionPrivate, sourceState)
-{
-    setTargetStates(targets);
-}
-
-/*!
   \internal
 */
 QAbstractTransition::QAbstractTransition(QAbstractTransitionPrivate &dd,
                                          QState *parent)
     : QObject(dd, parent)
 {
-}
-
-/*!
-  \internal
-*/
-QAbstractTransition::QAbstractTransition(QAbstractTransitionPrivate &dd,
-                                         const QList<QAbstractState*> &targets,
-                                         QState *parent)
-    : QObject(dd, parent)
-{
-    setTargetStates(targets);
 }
 
 /*!

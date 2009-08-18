@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -128,8 +128,10 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_hslide(int))
     Q_PRIVATE_SLOT(d_func(), void _q_vslide(int))
     Q_PRIVATE_SLOT(d_func(), void _q_showOrHideScrollBars())
+    Q_PRIVATE_SLOT(d_func(), void _q_gestureTriggered())
 
     friend class QStyleSheetStyle;
+    friend class QWidgetPrivate;
 };
 
 #endif // QT_NO_SCROLLAREA

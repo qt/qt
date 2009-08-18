@@ -161,6 +161,7 @@ int main(int argc, char *argv[])
     QObject::connect(Logger::instance(), SIGNAL(textChanged()), launcher, SIGNAL(logUpdated()));
 
     canvas = new QFxView;
+    canvas->setFocusPolicy(Qt::StrongFocus);
     mw->setCentralWidget(canvas);
 
     QMenuBar *mb = mw->menuBar();

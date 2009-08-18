@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -126,6 +126,7 @@ public:
         depth(0),
         focusProxy(0),
         subFocusItem(0),
+        imHints(Qt::ImhNone),
         acceptedMouseButtons(0x1f),
         visible(1),
         explicitlyHidden(0),
@@ -398,6 +399,7 @@ public:
 
     void setSubFocus();
     void clearSubFocus();
+    void resetFocusProxy();
 
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
@@ -419,9 +421,11 @@ public:
     int siblingIndex;
     int depth;
     QGraphicsItem *focusProxy;
+    QList<QGraphicsItem **> focusProxyRefs;
     QGraphicsItem *subFocusItem;
+    Qt::InputMethodHints imHints;
 
-    // Packed 32 bytes
+    // Packed 32 bits
     quint32 acceptedMouseButtons : 5;
     quint32 visible : 1;
     quint32 explicitlyHidden : 1;

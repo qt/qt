@@ -118,7 +118,6 @@ protected:
 typedef QmlStateOperation::ActionList QmlStateActions;
 
 class QmlTransition;
-class QmlTransitionPrivate;
 class QmlStatePrivate;
 class Q_DECLARATIVE_EXPORT QmlState : public QObject
 {
@@ -161,7 +160,6 @@ Q_SIGNALS:
 private:
     Q_DECLARE_PRIVATE(QmlState)
     Q_DISABLE_COPY(QmlState)
-    friend class QmlTransitionPrivate;
 };
 
 QT_END_NAMESPACE

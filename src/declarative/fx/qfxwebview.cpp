@@ -247,6 +247,7 @@ void QFxWebView::init()
 {
     Q_D(QFxWebView);
 
+    setAcceptHoverEvents(true);
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 
@@ -437,6 +438,13 @@ void QFxWebView::setInteractive(bool i)
 QVariant QFxWebView::evaluateJavaScript(const QString &scriptSource)
 {
     return this->page()->mainFrame()->evaluateJavaScript(scriptSource);
+}
+
+void QFxWebView::focusChanged(bool hasFocus)
+{
+    QFocusEvent e(hasFocus ? QEvent::FocusIn : QEvent::FocusOut);
+    page()->event(&e);
+    QFxItem::focusChanged(hasFocus);
 }
 
 void QFxWebView::expandToWebPage()
@@ -632,6 +640,15 @@ static QMouseEvent *sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *e)
     return me;
 }
 
+static QMouseEvent *sceneHoverMoveEventToMouseEvent(QGraphicsSceneHoverEvent *e)
+{
+    QEvent::Type t = QEvent::MouseMove;
+
+    QMouseEvent *me = new QMouseEvent(t, e->pos().toPoint(), Qt::NoButton, Qt::NoButton, 0);
+
+    return me;
+}
+
 
 void QFxWebView::timerEvent(QTimerEvent *event)
 {
@@ -692,27 +709,57 @@ void QFxWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxWebView);
     if (d->interactive) {
-        d->lastPress = sceneMouseEventToMouseEvent(event);
-        event->setAccepted(true);
+        setFocus (true);
+        QMouseEvent *me = sceneMouseEventToMouseEvent(event);
+        if (d->lastPress) delete d->lastPress;
+        d->lastPress = me;
+        page()->event(me);
+        event->setAccepted(
+    /*
+      It is not correct to send the press event upwards, if it is not accepted by WebKit
+      e.g. push button does not work, if done so as QGraphicsScene will not send the release event at all to WebKit
+      Might be a bug in WebKit, though
+      */
+#if 1 //QT_VERSION <= 0x040500 // XXX see bug 230835
+            true
+#else
+            me->isAccepted()
+#endif
+            );
     } else {
         event->setAccepted(false);
     }
-    if (!event->isAccepted())
+    if (!event->isAccepted()) {
         QFxPaintedItem::mousePressEvent(event);
+    }
 }
 
 void QFxWebView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxWebView);
     if (d->interactive) {
-        d->lastRelease = sceneMouseEventToMouseEvent(event);
+        QMouseEvent *me = sceneMouseEventToMouseEvent(event);
+        if (d->lastRelease) delete d->lastRelease;
+        d->lastRelease = me;
+        page()->event(me);
         d->dcTimer.start(MAX_DOUBLECLICK_TIME,this);
-        event->setAccepted(true);
+        event->setAccepted(
+    /*
+      It is not correct to send the press event upwards, if it is not accepted by WebKit
+      e.g. push button does not work, if done so as QGraphicsScene will not send all the events to WebKit
+      */
+#if 1 //QT_VERSION <= 0x040500 // XXX see bug 230835
+            true
+#else
+            me->isAccepted()
+#endif
+            );
     } else {
         event->setAccepted(false);
     }
-    if (!event->isAccepted())
+    if (!event->isAccepted()) {
         QFxPaintedItem::mouseReleaseEvent(event);
+    }
 }
 
 void QFxWebView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -722,7 +769,12 @@ void QFxWebView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         QMouseEvent *me = sceneMouseEventToMouseEvent(event);
         page()->event(me);
         event->setAccepted(
-#if QT_VERSION <= 0x040500 // XXX see bug 230835
+    /*
+      It is not correct to send the press event upwards, if it is not accepted by WebKit
+      e.g. push button does not work, if done so as QGraphicsScene will not send the release event at all to WebKit
+      Might be a bug in WebKit, though
+      */
+#if 1 // QT_VERSION <= 0x040500 // XXX see bug 230835
             true
 #else
             me->isAccepted()
@@ -734,6 +786,28 @@ void QFxWebView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
     if (!event->isAccepted())
         QFxPaintedItem::mouseMoveEvent(event);
+
+}
+void QFxWebView::hoverMoveEvent (QGraphicsSceneHoverEvent * event)
+{
+    Q_D(const QFxWebView);
+    if (d->interactive) {
+        QMouseEvent *me = sceneHoverMoveEventToMouseEvent(event);
+        page()->event(me);
+        event->setAccepted(
+#if QT_VERSION <= 0x040500 // XXX see bug 230835
+            true
+#else
+            me->isAccepted()
+#endif
+        );
+        delete me;
+    }
+    else {
+        event->setAccepted(false);
+    }
+    if (!event->isAccepted())
+        QFxPaintedItem::hoverMoveEvent(event);
 }
 
 void QFxWebView::keyPressEvent(QKeyEvent* event)

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1086,10 +1086,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
 
                 //hide cursor
                 d->edit->d_func()->setCursorVisible(false);
-                if (d->edit->d_func()->cursorTimer > 0)
-                    killTimer(d->edit->d_func()->cursorTimer);
-                d->edit->d_func()->cursorTimer = 0;
-
+                d->edit->d_func()->control->setCursorBlinkPeriod(0);
                 d->setSelected(0);
             }
         }
@@ -1110,9 +1107,7 @@ void QDateTimeEdit::keyPressEvent(QKeyEvent *event)
 
             //hide cursor
             d->edit->d_func()->setCursorVisible(false);
-            if (d->edit->d_func()->cursorTimer > 0)
-                killTimer(d->edit->d_func()->cursorTimer);
-            d->edit->d_func()->cursorTimer = 0;
+            d->edit->d_func()->control->setCursorBlinkPeriod(0);
 
             d->setSelected(0);
             oldCurrent = 0;
@@ -2274,6 +2269,7 @@ void QDateTimeEdit::paintEvent(QPaintEvent *event)
 
     optCombo.init(this);
     optCombo.editable = true;
+	optCombo.frame = opt.frame;
     optCombo.subControls = opt.subControls;
     optCombo.activeSubControls = opt.activeSubControls;
     optCombo.state = opt.state;

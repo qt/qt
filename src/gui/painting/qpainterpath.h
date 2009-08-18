@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -298,9 +298,9 @@ inline void QPainterPath::lineTo(qreal x, qreal y)
     lineTo(QPointF(x, y));
 }
 
-inline void QPainterPath::arcTo(qreal x, qreal y, qreal w, qreal h, qreal startAngle, qreal arcLenght)
+inline void QPainterPath::arcTo(qreal x, qreal y, qreal w, qreal h, qreal startAngle, qreal arcLength)
 {
-    arcTo(QRectF(x, y, w, h), startAngle, arcLenght);
+    arcTo(QRectF(x, y, w, h), startAngle, arcLength);
 }
 
 inline void QPainterPath::arcMoveTo(qreal x, qreal y, qreal w, qreal h, qreal angle)

@@ -33,9 +33,9 @@ Item {
             id: Wrapper; width: 85; height: 85
             scale: Wrapper.PathView.scale; z: Wrapper.PathView.z
 
-            transform: Rotation3D {
+            transform: Rotation {
                 id: Rotation; origin.x: Wrapper.width/2; origin.y: Wrapper.height/2
-                axis.y: 1; angle: Wrapper.PathView.angle
+                axis.y: 1; axis.z: 0; angle: Wrapper.PathView.angle
             }
 
             Connection {
@@ -206,6 +206,6 @@ Item {
         id: CategoryText;  anchors.horizontalCenter: parent.horizontalCenter; y: 15;
         text: "Flickr - " +
             (FeedModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + FeedModel.tags)
-        font.size: 20; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
+        font.pointSize: 20; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
     }
 }

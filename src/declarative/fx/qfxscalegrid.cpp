@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 */
 QML_DEFINE_NOCREATE_TYPE(QFxScaleGrid)
 
-QFxScaleGrid::QFxScaleGrid() : QObject(), _left(0), _top(0), _right(0), _bottom(0)
+QFxScaleGrid::QFxScaleGrid(QObject *parent) : QObject(parent), _left(0), _top(0), _right(0), _bottom(0)
 {
 }
 

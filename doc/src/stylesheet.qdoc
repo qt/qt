@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1523,7 +1523,7 @@
 
            This property is supported by QAbstractItemView
            subclasses, QAbstractSpinBox subclasses, QCheckBox,
-           QComboBox, QDialog, QFrame, QGroupBox, QLabel, QLineEdit,
+           QComboBox, QFrame, QGroupBox, QLabel, QLineEdit,
            QMenu, QMenuBar, QPushButton, QRadioButton, QSplitter,
            QTextEdit, QToolTip, and plain \l{QWidget}s.
 
@@ -1569,7 +1569,7 @@
 
            This property is supported by QAbstractItemView
            subclasses, QAbstractSpinBox subclasses, QCheckBox,
-           QComboBox, QDialog, QFrame, QGroupBox, QLabel, QLineEdit,
+           QComboBox, QFrame, QGroupBox, QLabel, QLineEdit,
            QMenu, QMenuBar, QPushButton, QRadioButton, QSplitter,
            QTextEdit, QToolTip, and plain \l{QWidget}s.
 
@@ -1614,7 +1614,7 @@
 
            This property is supported by QAbstractItemView
            subclasses, QAbstractSpinBox subclasses, QCheckBox,
-           QComboBox, QDialog, QFrame, QGroupBox, QLabel, QLineEdit,
+           QComboBox, QFrame, QGroupBox, QLabel, QLineEdit,
            QMenu, QMenuBar, QPushButton, QRadioButton, QSplitter,
            QTextEdit and QToolTip.
 

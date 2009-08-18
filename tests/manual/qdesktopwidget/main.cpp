@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,8 +53,11 @@ public:
 
         QDesktopWidget *desktop = QApplication::desktop();
         connect(desktop, SIGNAL(resized(int)), this, SLOT(updateScene()));
+        connect(desktop, SIGNAL(resized(int)), this, SLOT(desktopResized(int)));
         connect(desktop, SIGNAL(workAreaResized(int)), this, SLOT(updateScene()));
+        connect(desktop, SIGNAL(workAreaResized(int)), this, SLOT(desktopWorkAreaResized(int)));
         connect(desktop, SIGNAL(screenCountChanged(int)), this, SLOT(updateScene()));
+        connect(desktop, SIGNAL(screenCountChanged(int)), this, SLOT(desktopScreenCountChanged(int)));
 
         updateScene();
 
@@ -63,6 +66,7 @@ public:
         setTransform(transform);
 
         setBackgroundBrush(Qt::darkGray);
+        desktopScreenCountChanged(-1);
     }
 
 protected:
@@ -167,6 +171,33 @@ private slots:
             rect.translate(thatRoot);
         }
         return rect;
+    }
+
+    void desktopResized(int screen)
+    {
+        qDebug() << "Screen was resized: " << screen
+                << ", new size =" << QApplication::desktop()->screenGeometry(screen);
+    }
+    void desktopWorkAreaResized(int screen)
+    {
+        qDebug() << "Screen workarea was resized: " << screen
+                << ", new size =" << QApplication::desktop()->availableGeometry(screen);
+    }
+    void desktopScreenCountChanged(int screenCount)
+    {
+        QDesktopWidget *desktop = QApplication::desktop();
+        qDebug() << "";
+        if (screenCount != -1) {
+            qDebug() << "Screen count was changed to " << screenCount;
+        } else {
+            screenCount = desktop->screenCount();
+            qDebug() << "Screen count: " << screenCount;
+        }
+        for (int i = 0; i < screenCount; ++i) {
+            qDebug() << "  #" << i << ": geometry =" << desktop->screenGeometry(i)
+                    << "; available geometry =" << desktop->availableGeometry(i);
+        }
+        qDebug() << "";
     }
 
 private:

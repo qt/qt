@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -352,7 +352,10 @@ void QItemDelegate::setClipping(bool clip)
 QString QItemDelegatePrivate::valueToText(const QVariant &value, const QStyleOptionViewItemV4 &option)
 {
     QString text;
-    switch (value.type()) {
+    switch (value.userType()) {
+        case QMetaType::Float:
+            text = option.locale.toString(value.toFloat(), 'g');
+            break;
         case QVariant::Double:
             text = option.locale.toString(value.toDouble(), 'g', DBL_DIG);
             break;
@@ -719,8 +722,6 @@ void QItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &o
             //let's add the last line (after the last QChar::LineSeparator)
             elided += option.fontMetrics.elidedText(text.mid(start),
                                                     option.textElideMode, textRect.width());
-            if (end != -1)
-                elided += QChar::LineSeparator;
         }
         d->textLayout.setText(elided);
         textLayoutSize = d->doTextLayout(textRect.width());
@@ -1226,21 +1227,19 @@ bool QItemDelegate::eventFilter(QObject *object, QEvent *event)
     } else if (event->type() == QEvent::FocusOut || (event->type() == QEvent::Hide && editor->isWindow())) {
         //the Hide event will take care of he editors that are in fact complete dialogs
         if (!editor->isActiveWindow() || (QApplication::focusWidget() != editor)) {
-            if (editor->isAncestorOf(QApplication::focusWidget()))
-                return false; // don't worry about focus changes internally in the editor
-
+            QWidget *w = QApplication::focusWidget();
+            while (w) { // don't worry about focus changes internally in the editor
+                if (w == editor)
+                    return false;
+                w = w->parentWidget();
+            }
 #ifndef QT_NO_DRAGANDDROP
             // The window may lose focus during an drag operation.
             // i.e when dragging involves the taskbar on Windows.
             if (QDragManager::self() && QDragManager::self()->object != 0)
                 return false;
 #endif
-            // Opening a modal dialog will start a new eventloop
-            // that will process the deleteLater event.
-            if (QApplication::activeModalWidget()
-                && !QApplication::activeModalWidget()->isAncestorOf(editor)
-                && qobject_cast<QDialog*>(QApplication::activeModalWidget()))
-                return false;
+
             emit commitData(editor);
             emit closeEditor(editor, NoHint);
         }
@@ -1298,8 +1297,14 @@ bool QItemDelegate::editorEvent(QEvent *event,
         return false;
     }
 
-    Qt::CheckState state = (static_cast<Qt::CheckState>(value.toInt()) == Qt::Checked
+    Qt::CheckState state;
+    if ( flags & Qt::ItemIsTristate ) {
+        state = static_cast<Qt::CheckState>( (value.toInt() + 1) % 3 );
+    } else {
+        state = (static_cast<Qt::CheckState>(value.toInt()) == Qt::Checked
                             ? Qt::Unchecked : Qt::Checked);
+    }
+
     return model->setData(index, state, Qt::CheckStateRole);
 }
 

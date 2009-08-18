@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,7 +73,7 @@ Q_DECLARE_METATYPE(AXUIElementRef);
 
 typedef QCFType<CFArrayRef> QCFArrayRef;
 
-class tst_accessibility_mac : public QObject
+class tst_qaccessibility_mac : public QObject
 {
 Q_OBJECT
 public slots:
@@ -665,7 +665,7 @@ void testAppAndForm(AXUIElementRef application)
     VERIFY_ELEMENT(form, application, "AXWindow");
 }
 
-void tst_accessibility_mac::printInfo()
+void tst_qaccessibility_mac::printInfo()
 {
     AXUIElementRef currentApplication = AXUIElementCreateApplication(getpid());
     printElementInfo(currentApplication);
@@ -674,7 +674,7 @@ void tst_accessibility_mac::printInfo()
 /*
     Tests for form.ui
 */
-void tst_accessibility_mac::testForm()
+void tst_qaccessibility_mac::testForm()
 {
     // Get reference to the current application.
     AXUIElementRef currentApplication = AXUIElementCreateApplication(getpid());
@@ -685,7 +685,7 @@ void tst_accessibility_mac::testForm()
 /*
     Tests for buttons.ui
 */
-void tst_accessibility_mac::testButtons()
+void tst_qaccessibility_mac::testButtons()
 {
     // Get reference to the current application.
     AXUIElementRef currentApplication = AXUIElementCreateApplication(getpid());
@@ -714,7 +714,7 @@ void tst_accessibility_mac::testButtons()
     VERIFY_ROLE_DESCRIPTION(brain, "button");
 }
 
-void tst_accessibility_mac::testLabel()
+void tst_qaccessibility_mac::testLabel()
 {
     // Get reference to the current application.
     AXUIElementRef currentApplication = AXUIElementCreateApplication(getpid());
@@ -731,7 +731,7 @@ void tst_accessibility_mac::testLabel()
 /*
     Tests for lineedit.ui
 */
-void tst_accessibility_mac::testLineEdit()
+void tst_qaccessibility_mac::testLineEdit()
 {
     // Get reference to the current application.
     AXUIElementRef currentApplication = AXUIElementCreateApplication(getpid());
@@ -746,7 +746,7 @@ void tst_accessibility_mac::testLineEdit()
 /*
     Tests for groups.ui
 */
-void tst_accessibility_mac::testGroups()
+void tst_qaccessibility_mac::testGroups()
 {
     // Get reference to the current application.
     AXUIElementRef currentApplication = AXUIElementCreateApplication(getpid());
@@ -769,7 +769,7 @@ void tst_accessibility_mac::testGroups()
 /*
     Tests for tabs.ui
 */
-void tst_accessibility_mac::testTabWidget()
+void tst_qaccessibility_mac::testTabWidget()
 {
     {   // Test that the QTabWidget hierarchy is what we expect it to be.
         QTabWidget tabWidget;
@@ -878,7 +878,7 @@ void tst_accessibility_mac::testTabWidget()
     }
 }
 
-void tst_accessibility_mac::testTabBar()
+void tst_qaccessibility_mac::testTabBar()
 {
     QTabBar tabBar;
     tabBar.addTab("Tab A");
@@ -929,7 +929,7 @@ void tst_accessibility_mac::testTabBar()
     }
 }
 
-void tst_accessibility_mac::testComboBox()
+void tst_qaccessibility_mac::testComboBox()
 {
     // Get reference to the current application.
     AXUIElementRef currentApplication = AXUIElementCreateApplication(getpid());
@@ -945,7 +945,7 @@ void tst_accessibility_mac::testComboBox()
     QVERIFY(performAction(comboBox, "AXPress"));
 }
 
-void tst_accessibility_mac::testDeleteWidget()
+void tst_qaccessibility_mac::testDeleteWidget()
 {
     const QString buttonTitle = "Hi there";
     QWidget *form = new QWidget(0, Qt::Window);
@@ -969,7 +969,7 @@ void tst_accessibility_mac::testDeleteWidget()
     delete form;
 }
 
-void tst_accessibility_mac::testDeleteWidgets()
+void tst_qaccessibility_mac::testDeleteWidgets()
 {
     const QString buttonTitle = "Hi there";
     const int repeats = 10;
@@ -1052,7 +1052,7 @@ void tst_accessibility_mac::testDeleteWidgets()
 
 }
 
-void tst_accessibility_mac::testMultipleWindows()
+void tst_qaccessibility_mac::testMultipleWindows()
 {
     const QString formATitle("FormA");
     const QString formBTitle("FormB");
@@ -1082,7 +1082,7 @@ void tst_accessibility_mac::testMultipleWindows()
     delete formA;
 }
 
-void tst_accessibility_mac::testHiddenWidgets()
+void tst_qaccessibility_mac::testHiddenWidgets()
 {
     const QString windowTitle ="a widget";
     QWidget * const window = new QWidget(0);
@@ -1113,7 +1113,7 @@ void tst_accessibility_mac::testHiddenWidgets()
     delete window;
 };
 
-void tst_accessibility_mac::testActions()
+void tst_qaccessibility_mac::testActions()
 {
     // create a window with a push button
     const QString windowTitle ="a widget";
@@ -1150,7 +1150,7 @@ void tst_accessibility_mac::testActions()
     delete window;
 };
 
-void tst_accessibility_mac::testChangeState()
+void tst_qaccessibility_mac::testChangeState()
 {
     const QString windowTitle ="a widget";
     QWidget * const window = new QWidget();
@@ -1220,7 +1220,7 @@ void tst_accessibility_mac::testChangeState()
     delete window;
 }
 
-void tst_accessibility_mac::testSlider()
+void tst_qaccessibility_mac::testSlider()
 {
     const QString windowTitle = "a widget";
     QWidget * const window = new QWidget();
@@ -1246,7 +1246,7 @@ void tst_accessibility_mac::testSlider()
     delete slider;
 }
 
-void tst_accessibility_mac::testScrollArea()
+void tst_qaccessibility_mac::testScrollArea()
 {
     QWidget window;
     const QString windowTitle = "window";
@@ -1373,7 +1373,7 @@ void tst_accessibility_mac::testScrollArea()
     }
 }
 
-void tst_accessibility_mac::testListView()
+void tst_qaccessibility_mac::testListView()
 {
     QWidget window;
     const QString windowTitle("window");
@@ -1457,7 +1457,7 @@ void tst_accessibility_mac::testListView()
     QVERIFY(contains(listElement, C));
 }
 
-void tst_accessibility_mac::testTableView()
+void tst_qaccessibility_mac::testTableView()
 {
     QWidget window;
     const QString windowTitle("window");
@@ -1653,7 +1653,7 @@ void tst_accessibility_mac::testTableView()
 //    QTest::qWait(1000000);
 }
 
-void tst_accessibility_mac::testScrollBar()
+void tst_qaccessibility_mac::testScrollBar()
 {
     {
         QScrollBar scrollBar;
@@ -1699,7 +1699,7 @@ void tst_accessibility_mac::testScrollBar()
     }
 }
 
-void tst_accessibility_mac::testSplitter()
+void tst_qaccessibility_mac::testSplitter()
 {
     const AXUIElementRef currentApplication = AXUIElementCreateApplication(getpid());
     testAppAndForm(currentApplication);
@@ -1736,7 +1736,7 @@ void tst_accessibility_mac::testSplitter()
     }
 }
 
-void tst_accessibility_mac::testTextEdit()
+void tst_qaccessibility_mac::testTextEdit()
 {
     QWidget window;
     const QString windowTitle("window");
@@ -1802,13 +1802,13 @@ void testModelLessItemView(QAbstractItemView *itemView, const QByteArray &role)
     delete itemView;
 }
 
-void tst_accessibility_mac::testItemViewsWithoutModel()
+void tst_qaccessibility_mac::testItemViewsWithoutModel()
 {
     testModelLessItemView(new QListView(), "AXList");
     testModelLessItemView(new QTableView(), "AXTable");
 }
 
-void tst_accessibility_mac::testQAElement()
+void tst_qaccessibility_mac::testQAElement()
 {
     {
         QAElement element;
@@ -1831,7 +1831,7 @@ void tst_accessibility_mac::testQAElement()
 
 }
 
-void tst_accessibility_mac::testQAInterface()
+void tst_qaccessibility_mac::testQAInterface()
 {
     {
         QAInterface interface;
@@ -1861,7 +1861,7 @@ void tst_accessibility_mac::testQAInterface()
     }
 }
 
-void tst_accessibility_mac::uitests_data()
+void tst_qaccessibility_mac::uitests_data()
 {
     QTest::addColumn<QString>("uiFilename");
     QTest::addColumn<QString>("testSlot");
@@ -1877,7 +1877,7 @@ void tst_accessibility_mac::uitests_data()
     QTest::newRow("splitters") << "splitters.ui" << SLOT(testSplitter());
 }
 
-void tst_accessibility_mac::uitests()
+void tst_qaccessibility_mac::uitests()
 {
     QFETCH(QString, uiFilename);
     QFETCH(QString, testSlot);
@@ -1907,7 +1907,7 @@ void tst_accessibility_mac::uitests()
     delete window;
 }
 
-void tst_accessibility_mac::tests_data()
+void tst_qaccessibility_mac::tests_data()
 {
     QTest::addColumn<QString>("testSlot");
     QTest::newRow("deleteWidget") << SLOT(testDeleteWidget());
@@ -1925,7 +1925,7 @@ void tst_accessibility_mac::tests_data()
     QTest::newRow("tabbar") << SLOT(testTabBar());
 }
 
-void tst_accessibility_mac::tests()
+void tst_qaccessibility_mac::tests()
 {
     QFETCH(QString, testSlot);
     runTest(testSlot);
@@ -1936,7 +1936,7 @@ void tst_accessibility_mac::tests()
     kAXErrorAPIDisabled error, indicating that the accessible API is disabled, which it isn't.)
     To work around this, we run the tests in a callback slot called from the main event loop.
 */
-void tst_accessibility_mac::runTest(const QString &testSlot)
+void tst_qaccessibility_mac::runTest(const QString &testSlot)
 {
     // The Accessibility interface must be enabled to run this test.
     if (!AXAPIEnabled())
@@ -1953,7 +1953,7 @@ void tst_accessibility_mac::runTest(const QString &testSlot)
 
 }
 
-QTEST_APPLESS_MAIN(tst_accessibility_mac)
+QTEST_APPLESS_MAIN(tst_qaccessibility_mac)
 
 #else // defined(Q_WS_MAC) && !defined (QT_MAC_USE_COCOA)
 

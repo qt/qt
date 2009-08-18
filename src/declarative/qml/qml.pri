@@ -82,7 +82,6 @@ HEADERS += qml/qmlparser_p.h \
 # for qtscript debugger
 contains(QT_CONFIG, scripttools):QT += scripttools
 
-include(script/script.pri)
 include(parser/parser.pri)
 include(rewriter/rewriter.pri)
 

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,8 +61,8 @@ QT_MODULE(Gui)
 class QDirectFBWindowSurface : public QWSWindowSurface, public QDirectFBPaintDevice
 {
 public:
-    QDirectFBWindowSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen* scr);
-    QDirectFBWindowSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen* scr, QWidget *widget);
+    QDirectFBWindowSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen *scr);
+    QDirectFBWindowSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen *scr, QWidget *widget);
     ~QDirectFBWindowSurface();
 
     bool isValid() const;
@@ -79,7 +79,6 @@ public:
 
     QImage image() const { return QImage(); }
     QPaintDevice *paintDevice() { return this; }
-    QPaintEngine *paintEngine() const;
 
     void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
 
@@ -92,7 +91,7 @@ private:
     void createWindow();
     IDirectFBWindow *dfbWindow;
 #endif
-    QDirectFBPaintEngine *engine;
+    int engineHeight;
 
     enum Mode {
         Primary,

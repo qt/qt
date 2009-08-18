@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
 **
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -126,10 +126,19 @@ void QLineEditPrivate::_q_cursorPositionChanged(int from, int to)
     emit q->cursorPositionChanged(from, to);
 }
 
+#ifdef QT_KEYPAD_NAVIGATION
+void QLineEditPrivate::_q_editFocusChange(bool e)
+{
+    Q_Q(QLineEdit);
+    q->setEditFocus(e);
+}
+#endif
+
 void QLineEditPrivate::init(const QString& txt)
 {
     Q_Q(QLineEdit);
     control = new QLineControl(txt);
+    control->setFont(q->font());
     QObject::connect(control, SIGNAL(textChanged(const QString &)),
             q, SIGNAL(textChanged(const QString &)));
     QObject::connect(control, SIGNAL(textEdited(const QString &)),
@@ -142,12 +151,19 @@ void QLineEditPrivate::init(const QString& txt)
             q, SIGNAL(returnPressed()));
     QObject::connect(control, SIGNAL(editingFinished()),
             q, SIGNAL(editingFinished()));
+#ifdef QT_KEYPAD_NAVIGATION
+    QObject::connect(control, SIGNAL(editFocusChange(bool)),
+            q, SLOT(_q_editFocusChange(bool)));
+#endif
 
     // for now, going completely overboard with updates.
     QObject::connect(control, SIGNAL(selectionChanged()),
             q, SLOT(update()));
 
     QObject::connect(control, SIGNAL(displayTextChanged(const QString &)),
+            q, SLOT(update()));
+
+    QObject::connect(control, SIGNAL(updateNeeded(const QRect &)),
             q, SLOT(update()));
     control->setPasswordCharacter(q->style()->styleHint(QStyle::SH_LineEdit_PasswordCharacter));
 #ifndef QT_NO_CURSOR

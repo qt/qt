@@ -128,7 +128,9 @@ void ParallelAnimationWrapper::updateState(QAbstractAnimation::State oldState, Q
 {
     QParallelAnimationGroup::updateState(oldState, newState);
     //XXX not 100% guaranteed to be at end (if there are many zero duration animations at the end)?
-    if (newState == Stopped && currentTime() == duration())
+    if (newState == Stopped &&
+        ((direction() == QAbstractAnimation::Forward && currentTime() == duration()) ||
+         (direction() == QAbstractAnimation::Backward && currentTime() == 0)))
     {
         trans->complete();
     }

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1968,7 +1968,8 @@ QListViewPrivate::QListViewPrivate()
       modeProperties(0),
       column(0),
       uniformItemSizes(false),
-      batchSize(100)
+      batchSize(100),
+      showElasticBand(false)
 {
 }
 

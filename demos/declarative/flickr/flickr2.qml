@@ -36,8 +36,8 @@ Item {
                     property real angle: 0 * 0
 
                     transform: [
-                        Rotation3D {
-                            id: Rotation; origin.x: 30; axis.x: 30; axis.y: 60
+                        Rotation {
+                            id: Rotation; origin.x: 30; axis.x: 30; axis.y: 60; axis.z: 0
                             angle: Wrapper.angle
                         }
                     ]
@@ -256,6 +256,6 @@ Item {
         id: CategoryText;  anchors.horizontalCenter: parent.horizontalCenter; y: 15;
         text: "Flickr - " +
             (FeedModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + FeedModel.tags)
-        font.size: 16; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
+        font.pointSize: 16; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
     }
 }

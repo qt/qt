@@ -20,3 +20,12 @@ void MyWidget::drawIcon(QPainter *painter, QPoint pos)
     painter->drawPixmap(pos, pixmap);
 }
 //! [2]
+
+//! [3]
+    QIcon undoicon = QIcon::fromTheme("edit-undo");
+//! [3]
+
+//! [4]
+    QIcon undoicon = QIcon::fromTheme("edit-undo", QIcon(":/undo.png"));
+//! [4]
+

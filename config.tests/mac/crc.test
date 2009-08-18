@@ -52,13 +52,13 @@ test -d "$OUTDIR/$TEST" || mkdir -p "$OUTDIR/$TEST"
 
 cd "$OUTDIR/$TEST"
 
-make distclean >/dev/null 2>&1
+$MAKE distclean >/dev/null 2>&1
 "$OUTDIR/bin/qmake" -nocache -spec "$QMKSPEC" "CONFIG+=$QMAKE_CONFIG" "LIBS*=$LFLAGS" "INCLUDEPATH*=$INCLUDEPATH" "QMAKE_CXXFLAGS*=$CXXFLAGS" "$SRCDIR/$TEST/$EXE.pro" -o "$OUTDIR/$TEST/Makefile"
 
 if [ "$VERBOSE" = "yes" ]; then
-    make
+    $MAKE
 else
-    make >/dev/null 2>&1
+    $MAKE >/dev/null 2>&1
 fi
 
 

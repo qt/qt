@@ -16,10 +16,11 @@ Item {
                 width: 40
                 height: 40
                 property int angle: 0;
-                transform: Rotation3D {
+                transform: Rotation {
                     origin.x: 20
                     origin.y: 20
                     axis.x: 1
+                    axis.z: 0
                     angle: flipable.angle;
                 }
                 front: Image {
@@ -102,7 +103,7 @@ Item {
                 ]
                 MouseRegion {
                     anchors.fill: parent
-                    onClicked: {
+                    onPressed: {
                         field.clickx = flipable.parent.x;
                         field.clicky = flipable.parent.y;
                         row = Math.floor(index/9);
@@ -147,7 +148,7 @@ Item {
         y: 380
         Text {
             color: "white"
-            font.size: 18
+            font.pointSize: 18
             x: 20
             y: 20
         }
@@ -179,7 +180,7 @@ Item {
             source: isPlaying ? 'pics/face-smile.png' : hasWon ? 'pics/face-smile-big.png': 'pics/face-sad.png'
             MouseRegion {
                 anchors.fill: parent
-                onClicked: { reset() }
+                onPressed: { reset() }
             }
         }
     }

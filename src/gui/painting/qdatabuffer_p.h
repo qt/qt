@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -112,23 +112,6 @@ public:
         qSwap(capacity, other.capacity);
         qSwap(siz, other.siz);
         qSwap(buffer, other.buffer);
-    }
-
-    inline void insertBlank(int pos, int count) {
-        Q_ASSERT(pos >= 0);
-        Q_ASSERT(pos < siz);
-        reserve(siz + count);
-        for (int i = siz - pos - 1; i >= 0; --i)
-            buffer[pos + count + i] = buffer[pos + i];
-        siz += count;
-    }
-
-    inline void removeAndShift(int pos, int count) {
-        Q_ASSERT(pos >= 0);
-        Q_ASSERT(pos < siz);
-        for (int i=pos; i<siz-count; ++i)
-            buffer[i] = buffer[i+count];
-        siz -= count;
     }
 
     inline QDataBuffer &operator<<(const Type &t) { add(t); return *this; }

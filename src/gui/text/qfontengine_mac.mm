@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -156,7 +156,7 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, con
     if (!kerning) {
         float zero = 0.0;
         QCFType<CFNumberRef> noKern = CFNumberCreate(kCFAllocatorDefault, kCFNumberFloatType, &zero);
-        CFDictionaryAddValue(attributeDict, kCTKernAttributeName, &noKern);
+        CFDictionaryAddValue(attributeDict, kCTKernAttributeName, noKern);
     }
 
     QCoreTextFontEngine *fe = new QCoreTextFontEngine(ctfont, fontDef, this);
@@ -1588,6 +1588,7 @@ QFontEngine::FaceId QFontEngineMac::faceId() const
 {
     FaceId ret;
 #if (MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
+if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5) {
     // CTFontGetPlatformFont
     FSRef ref;
     if (ATSFontGetFileReference(FMGetATSFontRefFromFont(fontID), &ref) != noErr)
@@ -1595,7 +1596,9 @@ QFontEngine::FaceId QFontEngineMac::faceId() const
     ret.filename = QByteArray(128, 0);
     ret.index = fontID;
     FSRefMakePath(&ref, (UInt8 *)ret.filename.data(), ret.filename.size());
-#else
+}else
+#endif
+{
     FSSpec spec;
     if (ATSFontGetFileSpecification(FMGetATSFontRefFromFont(fontID), &spec) != noErr)
         return ret;
@@ -1605,7 +1608,7 @@ QFontEngine::FaceId QFontEngineMac::faceId() const
     ret.filename = QByteArray(128, 0);
     ret.index = fontID;
     FSRefMakePath(&ref, (UInt8 *)ret.filename.data(), ret.filename.size());
-#endif
+}
     return ret;
 }
 

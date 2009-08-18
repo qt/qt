@@ -18,7 +18,7 @@ Rect {
     Text {
         id: HelloText
         text: "Hello world!"
-        font.size: 24
+        font.pointSize: 24
         font.bold: true
         y: 30
         anchors.horizontalCenter: Page.horizontalCenter
@@ -49,7 +49,7 @@ The \l Rect element contains many other properties (such as \c x and \c y), but 
 Text {
     id: HelloText
     text: "Hello world!"
-    font.size: 24
+    font.pointSize: 24
     font.bold: true
     y: 30
     anchors.horizontalCenter: Page.horizontalCenter
@@ -60,7 +60,7 @@ We add a text element as a child of our root element to display the text 'Hello 
 
 The \c y property is used to position the text vertically at 30 pixels from the top of its parent.
 
-The \c font.size and \c font.bold properties are related to fonts and use the \e 'dot' notation.
+The \c font.pointSize and \c font.bold properties are related to fonts and use the \e 'dot' notation.
 
 The \c anchors.horizontalCenter property refers to the horizontal center of an element. In this case, we specify that our text element should be horizontally centered in the \e Page element.
 

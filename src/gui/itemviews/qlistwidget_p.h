@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -163,7 +163,6 @@ class QListWidgetItemPrivate
 public:
     QListWidgetItemPrivate(QListWidgetItem *item) : q(item), theid(-1) {}
     QListWidgetItem *q;
-    int id;
     QVector<QWidgetItemData> values;
     int theid;
 };

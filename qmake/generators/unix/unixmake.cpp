@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
  **
  ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
@@ -261,7 +261,7 @@ UnixMakefileGenerator::init()
                     bundle += project->first("QMAKE_BUNDLE_EXTENSION");
                 else if(!bundle.endsWith(".plugin"))
                     bundle += ".plugin";
-                if(!project->isEmpty("QMAKE_BUNDLE_LOCATION"))
+                if(project->isEmpty("QMAKE_BUNDLE_LOCATION"))
                     project->values("QMAKE_BUNDLE_LOCATION").append("Contents/MacOS");
             } else {
                 if(!project->isEmpty("QMAKE_FRAMEWORK_BUNDLE_NAME"))

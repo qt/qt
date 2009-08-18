@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -198,8 +198,8 @@ public:
         if (v.isNull()) {
             return cellPadding;
         } else {
-            Q_ASSERT(v.type() == QVariant::Double);
-            return QFixed::fromReal(v.toDouble() * deviceScale);
+            Q_ASSERT(v.userType() == QVariant::Double || v.userType() == QMetaType::Float);
+            return QFixed::fromReal(v.toReal() * deviceScale);
         }
     }
 
@@ -2601,13 +2601,13 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
                 // float has been added in the meantime, redo
                 layoutStruct->pendingFloats.clear();
 
-                if (haveWordOrAnyWrapMode) {
-                    option.setWrapMode(QTextOption::WrapAnywhere);
-                    tl->setTextOption(option);
-                }
-
                 line.setLineWidth((right-left).toReal());
                 if (QFixed::fromReal(line.naturalTextWidth()) > right-left) {
+                    if (haveWordOrAnyWrapMode) {
+                        option.setWrapMode(QTextOption::WrapAnywhere);
+                        tl->setTextOption(option);
+                    }
+
                     layoutStruct->pendingFloats.clear();
                     // lines min width more than what we have
                     layoutStruct->y = findY(layoutStruct->y, layoutStruct, QFixed::fromReal(line.naturalTextWidth()));
@@ -2619,12 +2619,13 @@ void QTextDocumentLayoutPrivate::layoutBlock(const QTextBlock &bl, int blockPosi
                     else
                         right -= text_indent;
                     line.setLineWidth(qMax<qreal>(line.naturalTextWidth(), (right-left).toReal()));
+
+                    if (haveWordOrAnyWrapMode) {
+                        option.setWrapMode(QTextOption::WordWrap);
+                        tl->setTextOption(option);
+                    }
                 }
 
-                if (haveWordOrAnyWrapMode) {
-                    option.setWrapMode(QTextOption::WordWrap);
-                    tl->setTextOption(option);
-                }
             }
 
             QFixed lineHeight = QFixed::fromReal(line.height());

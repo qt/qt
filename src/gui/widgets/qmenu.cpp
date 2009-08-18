@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -204,6 +204,8 @@ void QMenuPrivate::updateActionRects() const
     Q_Q(const QMenu);
     if (!itemsDirty)
         return;
+		
+    q->ensurePolished();
 
     //let's reinitialize the buffer
     actionRects.resize(actions.count());
@@ -225,9 +227,17 @@ void QMenuPrivate::updateActionRects() const
         dh = popupGeometry(QApplication::desktop()->screenNumber(q)).height(),
         y = 0;
     QStyle *style = q->style();
-    const int hmargin = style->pixelMetric(QStyle::PM_MenuHMargin, 0, q),
-              vmargin = style->pixelMetric(QStyle::PM_MenuVMargin, 0, q),
-              icone = style->pixelMetric(QStyle::PM_SmallIconSize, 0, q);
+    QStyleOption opt;
+    opt.init(q);
+    const int hmargin = style->pixelMetric(QStyle::PM_MenuHMargin, &opt, q),
+              vmargin = style->pixelMetric(QStyle::PM_MenuVMargin, &opt, q),
+              icone = style->pixelMetric(QStyle::PM_SmallIconSize, &opt, q);
+    const int fw = style->pixelMetric(QStyle::PM_MenuPanelWidth, &opt, q);
+    const int deskFw = style->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, &opt, q);
+
+    const int sfcMargin = style->sizeFromContents(QStyle::CT_Menu, &opt, QApplication::globalStrut(), q).width() - QApplication::globalStrut().width();
+    const int min_column_width = q->minimumWidth() - (sfcMargin + leftmargin + rightmargin + 2 * (fw + hmargin));
+    const int tearoffHeight = tearoff ? style->pixelMetric(QStyle::PM_MenuTearoffHeight, &opt, q) : 0;
 
     //for compatability now - will have to refactor this away..
     tabWidth = 0;
@@ -300,10 +310,10 @@ void QMenuPrivate::updateActionRects() const
 
 
         if (!sz.isEmpty()) {
-            max_column_width = qMax(max_column_width, sz.width());
+            max_column_width = qMax(min_column_width, qMax(max_column_width, sz.width()));
             //wrapping
             if (!scroll &&
-               y+sz.height()+vmargin > dh - (style->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, q) * 2)) {
+               y+sz.height()+vmargin > dh - (deskFw * 2)) {
                 ncols++;
                 y = vmargin;
             }
@@ -316,10 +326,9 @@ void QMenuPrivate::updateActionRects() const
     max_column_width += tabWidth; //finally add in the tab width
 
     //calculate position
-    const int fw = style->pixelMetric(QStyle::PM_MenuPanelWidth, 0, q);
     const int base_y = vmargin + fw + topmargin +
         (scroll ? scroll->scrollOffset : 0) +
-        (tearoff ? style->pixelMetric(QStyle::PM_MenuTearoffHeight, 0, q) : 0);
+        tearoffHeight;
     int x = hmargin + fw + leftmargin;
     y = base_y;
 
@@ -328,7 +337,7 @@ void QMenuPrivate::updateActionRects() const
         if (rect.isNull())
             continue;
         if (!scroll &&
-           y+rect.height() > dh - (style->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, q) * 2)) {
+           y+rect.height() > dh - deskFw * 2) {
             x += max_column_width + hmargin;
             y = base_y;
         }
@@ -1698,14 +1707,9 @@ QRect QMenu::actionGeometry(QAction *act) const
 QSize QMenu::sizeHint() const
 {
     Q_D(const QMenu);
-    ensurePolished();
     d->updateActionRects();
 
     QSize s;
-    QStyleOption opt(0);
-    opt.rect = rect();
-    opt.palette = palette();
-    opt.state = QStyle::State_None;
     for (int i = 0; i < d->actionRects.count(); ++i) {
         const QRect &rect = d->actionRects.at(i);
         if (rect.isNull())
@@ -1718,15 +1722,11 @@ QSize QMenu::sizeHint() const
     // Note that the action rects calculated above already include
     // the top and left margins, so we only need to add margins for
     // the bottom and right.
-    if (const int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, &opt, this)) {
-        s.rwidth() += fw;
-        s.rheight() += fw;
-    }
-
-    s.rwidth() += style()->pixelMetric(QStyle::PM_MenuHMargin, &opt, this);
-    s.rheight() += style()->pixelMetric(QStyle::PM_MenuVMargin, &opt, this);
-
-    s += QSize(d->rightmargin, d->bottommargin);
+    QStyleOption opt(0);
+    opt.init(this);
+    const int fw = style()->pixelMetric(QStyle::PM_MenuPanelWidth, &opt, this);
+    s.rwidth() += style()->pixelMetric(QStyle::PM_MenuHMargin, &opt, this) + fw + d->rightmargin;
+    s.rheight() += style()->pixelMetric(QStyle::PM_MenuVMargin, &opt, this) + fw + d->bottommargin;
 
     return style()->sizeFromContents(QStyle::CT_Menu, &opt,
                                     s.expandedTo(QApplication::globalStrut()), this);
@@ -2721,7 +2721,7 @@ void QMenu::mouseMoveEvent(QMouseEvent *e)
 
     QAction *action = d->actionAt(e->pos());
     if (!action) {
-        if (d->hasHadMouse && !rect().contains(e->pos()))
+        if (d->hasHadMouse)
             d->setCurrentAction(0);
         return;
     } else if(e->buttons()) {

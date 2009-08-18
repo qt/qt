@@ -108,7 +108,6 @@ QFxText::QFxText(QFxItem *parent)
   : QFxItem(*(new QFxTextPrivate), parent)
 {
     Q_D(QFxText);
-    d->init();
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
@@ -117,7 +116,6 @@ QFxText::QFxText(QFxTextPrivate &dd, QFxItem *parent)
   : QFxItem(dd, parent)
 {
     Q_D(QFxText);
-    d->init();
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
@@ -142,10 +140,20 @@ QFxText::~QFxText()
     \brief the font used to display the text.
 */
 
-QmlFont *QFxText::font()
+QFont QFxText::font() const
+{
+    Q_D(const QFxText);
+    return d->font;
+}
+
+void QFxText::setFont(const QFont &font)
 {
     Q_D(QFxText);
-    return d->font();
+    d->font = font;
+
+    d->imgDirty = true;
+    d->updateSize();
+    update();
 }
 
 void QFxText::setText(const QString &n)
@@ -492,15 +500,6 @@ void QFxText::geometryChanged(const QRectF &newGeometry,
     QFxItem::geometryChanged(newGeometry, oldGeometry);
 }
 
-
-void QFxText::fontChanged()
-{
-    Q_D(QFxText);
-    d->imgDirty = true;
-    d->updateSize();
-    emit update();
-}
-
 void QFxTextPrivate::updateSize()
 {
     Q_Q(QFxText);
@@ -508,8 +507,7 @@ void QFxTextPrivate::updateSize()
         if (text.isEmpty()) {
             return;
         }
-        QFont f; if (_font) f = _font->font();
-        QFontMetrics fm(f);
+        QFontMetrics fm(font);
         int dy = q->height();
 
         QString tmp;
@@ -524,14 +522,14 @@ void QFxTextPrivate::updateSize()
                 if (singleline && elideMode != Qt::ElideNone && q->widthValid())
                     tmp = fm.elidedText(tmp,elideMode,q->width()); // XXX still worth layout...?
                 layout.clearLayout();
-                layout.setFont(f);
+                layout.setFont(font);
                 layout.setText(tmp);
                 size = setupTextLayout(&layout);
                 cachedLayoutSize = size;
             }
         if (richText) {
             singleline = false; // richtext can't elide or be optimized for single-line case
-            doc->setDefaultFont(f);
+            doc->setDefaultFont(font);
             QTextOption option((Qt::Alignment)int(hAlign | vAlign));
             if (wrap)
                 option.setWrapMode(QTextOption::WordWrap);
@@ -622,8 +620,7 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
     Q_Q(QFxText);
     layout->setCacheEnabled(true);
 
-    QFont f; if (_font) f = _font->font();
-    QFontMetrics fm = QFontMetrics(f);
+    QFontMetrics fm = QFontMetrics(font);
 
     int height = 0;
     qreal widthUsed = 0;
@@ -657,7 +654,6 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
 QPixmap QFxTextPrivate::wrappedTextImage(bool drawStyle)
 {
     //do layout
-    QFont f; if (_font) f = _font->font();
     QSize size = cachedLayoutSize;
 
     int x = 0;
@@ -682,7 +678,7 @@ QPixmap QFxTextPrivate::wrappedTextImage(bool drawStyle)
     }
     else
         p.setPen(color);
-    p.setFont(f);
+    p.setFont(font);
     layout.draw(&p, QPointF(0, 0));
     return img;
 }

@@ -43,6 +43,7 @@
 #include <QTimer>
 #include <QNetworkProxyFactory>
 #include <QKeyEvent>
+#include "proxysettings.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -300,7 +301,9 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 
     QAction *recordOptions = new QAction(tr("Video &Options..."), parent);
     connect(recordOptions, SIGNAL(triggered()), this, SLOT(chooseRecordingOptions()));
-    recordMenu->addAction(recordOptions);
+
+    if (flatmenu)
+        flatmenu->addAction(recordOptions);
 
     if (flatmenu) flatmenu->addSeparator();
 
@@ -336,22 +339,26 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
     connect(skinAction, SIGNAL(triggered()), mapper, SLOT(map()));
     skinMenu->addSeparator();
 
-    QDir dir(":/skins/","*.skin");
-    const QFileInfoList l = dir.entryInfoList();
-    for (QFileInfoList::const_iterator it = l.begin(); it != l.end(); ++it) {
-        QString name = (*it).baseName(); // should perhaps be in file
-        QString file = (*it).filePath();
+    foreach (QString name, builtinSkins()) {
         skinAction = new QAction(name, parent);
         skinActions->addAction(skinAction);
         skinMenu->addAction(skinAction);
         skinAction->setCheckable(true);
-        if (file == currentSkin)
+        if (":skin/"+name+".skin" == currentSkin)
             skinAction->setChecked(true);
-        mapper->setMapping(skinAction, file);
+        mapper->setMapping(skinAction, name);
         connect(skinAction, SIGNAL(triggered()), mapper, SLOT(map()));
     }
-    //connect(skinActions, SIGNAL(triggered(QAction*)), mapper, SLOT(map(QObject*))); // "incompatible"
     connect(mapper, SIGNAL(mapped(QString)), this, SLOT(setSkin(QString)));
+
+    if (flatmenu) flatmenu->addSeparator();
+
+    QMenu *settingsMenu = flatmenu ? flatmenu : menu->addMenu(tr("S&ettings"));
+    QAction *proxyAction = new QAction(tr("Http &proxy..."), parent);
+    connect(proxyAction, SIGNAL(triggered()), this, SLOT(showProxySettings()));
+    settingsMenu->addAction(proxyAction);
+    if (!flatmenu)
+        settingsMenu->addAction(recordOptions);
 
     if (flatmenu) flatmenu->addSeparator();
 
@@ -369,6 +376,21 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
         menu->setFixedHeight(menu->sizeHint().height());
         menu->setMinimumWidth(10);
     }
+}
+
+void QmlViewer::showProxySettings()
+{
+    ProxySettings settingsDlg (this);
+
+    connect (&settingsDlg, SIGNAL (accepted()), this, SLOT (proxySettingsChanged ()));
+
+    settingsDlg.exec();
+}
+
+void QmlViewer::proxySettingsChanged()
+{
+    setupProxy ();
+    reload ();
 }
 
 void QmlViewer::setScaleSkin()
@@ -581,16 +603,32 @@ void QmlViewer::openQml(const QString& fileName)
 #endif
 }
 
-void QmlViewer::setSkin(const QString& skinDirectory)
+QStringList QmlViewer::builtinSkins() const
 {
-    // XXX QWidget::setMask does not handle changes well, and we may
-    // XXX have been signalled from an item in a menu we're replacing,
-    // XXX hence some rather convoluted resetting here...
+    QDir dir(":/skins/","*.skin");
+    const QFileInfoList l = dir.entryInfoList();
+    QStringList r;
+    for (QFileInfoList::const_iterator it = l.begin(); it != l.end(); ++it) {
+        r += (*it).baseName();
+    }
+    return r;
+}
+
+void QmlViewer::setSkin(const QString& skinDirOrName)
+{
+    QString skinDirectory = skinDirOrName;
+
+    if (!QDir(skinDirOrName).exists() && QDir(":/skins/"+skinDirOrName+".skin").exists())
+        skinDirectory = ":/skins/"+skinDirOrName+".skin";
 
     if (currentSkin == skinDirectory)
         return;
 
     currentSkin = skinDirectory;
+
+    // XXX QWidget::setMask does not handle changes well, and we may
+    // XXX have been signalled from an item in a menu we're replacing,
+    // XXX hence some rather convoluted resetting here...
 
     QString err;
     if (skin) {
@@ -899,13 +937,36 @@ void QmlViewer::setupProxy()
     public:
         virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query)
         {
+            QString protocolTag = query.protocolTag();
+            if (httpProxyInUse && (protocolTag == "http" || protocolTag == "https")) {
+                QList<QNetworkProxy> ret;
+                ret << httpProxy;
+                return ret;
+            }
             return QNetworkProxyFactory::systemProxyForQuery(query);
         }
+        void setHttpProxy (QNetworkProxy proxy)
+        {
+            httpProxy = proxy;
+            httpProxyInUse = true;
+        }
+        void unsetHttpProxy ()
+        {
+            httpProxyInUse = false;
+        }
+    private:
+        bool httpProxyInUse;
+        QNetworkProxy httpProxy;
     };
 
     QNetworkAccessManager * nam = canvas->engine()->networkAccessManager();
-    nam->setProxyFactory(new SystemProxyFactory);
-}
+    SystemProxyFactory *proxyFactory = new SystemProxyFactory;
+    if (ProxySettings::httpProxyInUse())
+        proxyFactory->setHttpProxy(ProxySettings::httpProxy());
+    else
+        proxyFactory->unsetHttpProxy();
+    nam->setProxyFactory(proxyFactory);
+ }
 
 void QmlViewer::setNetworkCacheSize(int size)
 {

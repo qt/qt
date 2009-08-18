@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2245,7 +2245,7 @@ void QWidgetPrivate::createWindow_sys()
 
     OSWindowRef windowRef = qt_mac_create_window(q, topExtra->wclass, wattr, data.crect);
     if (windowRef == 0)
-        qWarning("QWidget: Internal error: %s:%d: If you reach this error please contact Trolltech and include the\n"
+        qWarning("QWidget: Internal error: %s:%d: If you reach this error please contact Qt Support and include the\n"
                 "      WidgetFlags used in creating the widget.", __FILE__, __LINE__);
 #ifndef QT_MAC_USE_COCOA
     finishCreateWindow_sys_Carbon(windowRef);
@@ -3176,6 +3176,12 @@ void QWidgetPrivate::show_sys()
 #ifndef QT_MAC_USE_COCOA
         SizeWindow(window, q->width(), q->height(), true);
 #endif
+
+#ifdef QT_MAC_USE_COCOA
+        // Make sure that we end up sending a repaint event to
+        // the widget if the window has been visible one before:
+        [qt_mac_get_contentview_for(window) setNeedsDisplay:YES];
+#endif
         if(qt_mac_is_macsheet(q)) {
             qt_event_request_showsheet(q);
         } else if(qt_mac_is_macdrawer(q)) {
@@ -3191,10 +3197,13 @@ void QWidgetPrivate::show_sys()
 #else
             // sync the opacity value back (in case of a fade).
             [window setAlphaValue:q->windowOpacity()];
-
             [window makeKeyAndOrderFront:window];
+
+            // If this window is app modal, we need to start spinning
+            // a modal session for it. Interrupting
+            // the event dispatcher will make this happend:
             if (data.window_modality == Qt::ApplicationModal)
-                QCoreApplication::postEvent(qApp, new QEvent(QEvent::CocoaRequestModal));
+                QEventDispatcherMac::instance()->interrupt();
 #endif
             if (q->windowType() == Qt::Popup) {
 			    if (q->focusWidget())
@@ -3212,13 +3221,6 @@ void QWidgetPrivate::show_sys()
 #endif
         } else if (!q->testAttribute(Qt::WA_ShowWithoutActivating)) {
             qt_event_request_activate(q);
-#ifdef QT_MAC_USE_COCOA
-            if (q->windowModality() == Qt::ApplicationModal) {
-                // We call 'activeModalSession' early to force creation of q's modal
-                // session. This seems neccessary for child dialogs to pop to front:
-                QEventDispatcherMacPrivate::activeModalSession();
-            }
-#endif
         }
     } else if(topData()->embedded || !q->parentWidget() || q->parentWidget()->isVisible()) {
 #ifndef QT_MAC_USE_COCOA
@@ -4589,6 +4591,7 @@ void QWidgetPrivate::setModal_sys()
     OSWindowRef windowRef = qt_mac_window_for(q);
 
 #ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
     bool alreadySheet = [windowRef styleMask] & NSDocModalWindowMask;
 
     if (windowParent && q->windowModality() == Qt::WindowModal){
@@ -4665,31 +4668,40 @@ void QWidgetPrivate::setModal_sys()
                 || (primaryWindow && primaryWindow->windowModality() == Qt::WindowModal)){
             // Window should be window-modal (which implies a sheet).
             if (old_wclass != kSheetWindowClass){
-                // We cannot convert a created window to a sheet. So we recreate the window:
+                // We cannot convert a created window to a sheet.
+                // So we recreate the window:
                 recreateMacWindow();
                 return;
             }
-        } else if (!(q->data->window_flags & Qt::CustomizeWindowHint)) {
-            if (old_wclass == kDocumentWindowClass || old_wclass == kFloatingWindowClass || old_wclass == kUtilityWindowClass){
-                // Only change the class to kMovableModalWindowClass if the no explicit jewels
-                // are set (kMovableModalWindowClass can't contain them), and the current window class
-                // can be converted to modal (according to carbon doc). Mind the order of
-                // HIWindowChangeClass and ChangeWindowAttributes.
-                WindowGroupRef group = GetWindowGroup(windowRef);
-                HIWindowChangeClass(windowRef, kMovableModalWindowClass);
-                quint32 tmpWattr = kWindowCloseBoxAttribute | kWindowHorizontalZoomAttribute;
-                ChangeWindowAttributes(windowRef, tmpWattr, kWindowNoAttributes);
-                ChangeWindowAttributes(windowRef, kWindowNoAttributes, tmpWattr);
-                // If the window belongs to a qt-created group, set that group once more:
-                if (data.window_flags & Qt::WindowStaysOnTopHint
-                        || q->windowType() == Qt::Popup
-                        || q->windowType() == Qt::ToolTip)
-                    SetWindowGroup(windowRef, group);
+        } else {
+            // Window should be application-modal (which implies NOT using a sheet).
+            if (old_wclass == kSheetWindowClass){
+                // We cannot convert a sheet to a window.
+                // So we recreate the window:
+                recreateMacWindow();
+                return;
+            } else if (!(q->data->window_flags & Qt::CustomizeWindowHint)) {
+                if (old_wclass == kDocumentWindowClass || old_wclass == kFloatingWindowClass || old_wclass == kUtilityWindowClass){
+                    // Only change the class to kMovableModalWindowClass if the no explicit jewels
+                    // are set (kMovableModalWindowClass can't contain them), and the current window class
+                    // can be converted to modal (according to carbon doc). Mind the order of
+                    // HIWindowChangeClass and ChangeWindowAttributes.
+                    WindowGroupRef group = GetWindowGroup(windowRef);
+                    HIWindowChangeClass(windowRef, kMovableModalWindowClass);
+                    quint32 tmpWattr = kWindowCloseBoxAttribute | kWindowHorizontalZoomAttribute;
+                    ChangeWindowAttributes(windowRef, tmpWattr, kWindowNoAttributes);
+                    ChangeWindowAttributes(windowRef, kWindowNoAttributes, tmpWattr);
+                    // If the window belongs to a qt-created group, set that group once more:
+                    if (data.window_flags & Qt::WindowStaysOnTopHint
+                            || q->windowType() == Qt::Popup
+                            || q->windowType() == Qt::ToolTip)
+                        SetWindowGroup(windowRef, group);
+                }
+                // Popups are usually handled "special" and are never modal.
+                Qt::WindowType winType = q->windowType();
+                if (winType != Qt::Popup && winType != Qt::ToolTip)
+                    SetWindowModality(windowRef, kWindowModalityAppModal, 0);
             }
-            // Popups are usually handled "special" and are never modal.
-            Qt::WindowType winType = q->windowType();
-            if (winType != Qt::Popup && winType != Qt::ToolTip)
-                SetWindowModality(windowRef, kWindowModalityAppModal, 0);
         }
     } else if (windowRef) {
         if (old_wclass == kSheetWindowClass){

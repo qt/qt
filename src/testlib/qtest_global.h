@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -82,7 +82,6 @@ namespace QTest
     enum TestFailMode { Abort = 1, Continue = 2 };
 
     int Q_TESTLIB_EXPORT qt_snprintf(char *str, int size, const char *format, ...);
-    int qt_asprintf(char **str, const char *format, ...);
 }
 
 QT_END_NAMESPACE

@@ -250,8 +250,9 @@ class EventTestTransition: public QAbstractTransition
 {
 public:
     EventTestTransition(QEvent::Type type, QState *targetState) 
-        : QAbstractTransition(QList<QAbstractState*>() << targetState), m_type(type)
-    {        
+        : QAbstractTransition(), m_type(type)
+    {
+        setTargetState(targetState);
     }
 
 protected:

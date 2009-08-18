@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1736,6 +1736,8 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         const QLineF *lines = reinterpret_cast<const QLineF *>(path.points());
 
         for (int i = 0; i < lineCount; ++i) {
+            if (path.shape() == QVectorPath::LinesHint)
+                dashOffset = s->lastPen.dashOffset();
             if (lines[i].p1() == lines[i].p2()) {
                 if (s->lastPen.capStyle() != Qt::FlatCap) {
                     QPointF p = lines[i].p1();
@@ -2539,6 +2541,9 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
 #ifdef QT_DEBUG_DRAW
     qDebug() << " - QRasterPaintEngine::drawImage(), r=" << r << " sr=" << sr << " image=" << img.size() << "depth=" << img.depth();
 #endif
+
+    if (r.isEmpty())
+        return;
 
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
@@ -3454,8 +3459,8 @@ void QRasterPaintEngine::drawLines(const QLine *lines, int lineCount)
         int m22 = int(s->matrix.m22());
         int dx = qFloor(s->matrix.dx() + aliasedCoordinateDelta);
         int dy = qFloor(s->matrix.dy() + aliasedCoordinateDelta);
-        int dashOffset = int(s->lastPen.dashOffset());
         for (int i=0; i<lineCount; ++i) {
+            int dashOffset = int(s->lastPen.dashOffset());
             if (s->flags.int_xform) {
                 const QLine &l = lines[i];
                 int x1 = l.x1() * m11 + dx;
@@ -3554,8 +3559,8 @@ void QRasterPaintEngine::drawLines(const QLineF *lines, int lineCount)
                             ? LineDrawNormal
                             : LineDrawIncludeLastPixel;
 
-        int dashOffset = int(s->lastPen.dashOffset());
         for (int i=0; i<lineCount; ++i) {
+            int dashOffset = int(s->lastPen.dashOffset());
             QLineF line = (lines[i] * s->matrix).translated(aliasedCoordinateDelta, aliasedCoordinateDelta);
             const QRectF brect(QPointF(line.x1(), line.y1()),
                                QPointF(line.x2(), line.y2()));

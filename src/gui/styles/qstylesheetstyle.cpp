@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1298,7 +1298,6 @@ void QRenderRule::unsetClip(QPainter *p)
 
 void QRenderRule::drawBackground(QPainter *p, const QRect& rect, const QPoint& off)
 {
-    setClip(p, borderRect(rect));
     QBrush brush = hasBackground() ? background()->brush : QBrush();
     if (brush.style() == Qt::NoBrush)
         brush = defaultBackground;
@@ -1306,11 +1305,19 @@ void QRenderRule::drawBackground(QPainter *p, const QRect& rect, const QPoint& o
     if (brush.style() != Qt::NoBrush) {
         Origin origin = hasBackground() ? background()->clip : Origin_Border;
         // ### fix for  gradients
-        p->fillRect(originRect(rect, origin), brush);
+        const QPainterPath &borderPath = borderClip(originRect(rect, origin));
+        if (!borderPath.isEmpty()) {
+            // Drawn intead of being used as clipping path for better visual quality
+            bool wasAntialiased = p->renderHints() & QPainter::Antialiasing;
+            p->setRenderHint(QPainter::Antialiasing);
+            p->fillPath(borderPath, brush);
+            p->setRenderHint(QPainter::Antialiasing, wasAntialiased);
+        } else {
+            p->fillRect(originRect(rect, origin), brush);
+        }
     }
 
     drawBackgroundImage(p, rect, off);
-    unsetClip(p);
 }
 
 void QRenderRule::drawFrame(QPainter *p, const QRect& rect)
@@ -2734,6 +2741,9 @@ void QStyleSheetStyle::polish(QWidget *w)
 #ifndef QT_NO_MDIAREA
               || qobject_cast<QMdiSubWindow *>(w)
 #endif
+#ifndef QT_NO_MENUBAR
+              || qobject_cast<QMenuBar *>(w)
+#endif
               || qobject_cast<QDialog *>(w)) {
             w->setAttribute(Qt::WA_StyledBackground, true);
         }
@@ -2891,8 +2901,8 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
             bool customUp = true, customDown = true;
             QRenderRule upRule = renderRule(w, opt, PseudoElement_SpinBoxUpButton);
             QRenderRule downRule = renderRule(w, opt, PseudoElement_SpinBoxDownButton);
-            bool upRuleMatch = upRule.hasGeometry();
-            bool downRuleMatch = downRule.hasGeometry();
+            bool upRuleMatch = upRule.hasGeometry() || upRule.hasPosition();
+            bool downRuleMatch = downRule.hasGeometry() || downRule.hasPosition();
             if (rule.hasNativeBorder() && !upRuleMatch && !downRuleMatch) {
                 rule.drawBackgroundImage(p, spinOpt.rect);
                 customUp = (opt->subControls & QStyle::SC_SpinBoxUp)
@@ -3456,6 +3466,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
     case CE_MenuEmptyArea:
     case CE_MenuBarEmptyArea:
         if (rule.hasDrawable()) {
+            // Drawn by PE_Widget
             return;
         }
         break;
@@ -3606,6 +3617,11 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 subRule.drawRule(p, opt->rect);
                 QCommonStyle::drawControl(ce, &mi, p, w);
             } else {
+                if (rule.hasDrawable() && !(opt->state & QStyle::State_Selected)) {
+                    // So that the menu bar background is not hidden by the items
+                    mi.palette.setColor(QPalette::Window, Qt::transparent);
+                    mi.palette.setColor(QPalette::Button, Qt::transparent);
+                }
                 baseStyle()->drawControl(ce, &mi, p, w);
             }
         }
@@ -4189,12 +4205,18 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
 #endif
     //fall tghought
     case PE_PanelMenu:
-    case PE_PanelMenuBar:
     case PE_PanelStatusBar:
         if(rule.hasDrawable()) {
             rule.drawRule(p, opt->rect);
             return;
         }
+    break;
+
+    case PE_PanelMenuBar:
+    if (rule.hasDrawable()) {
+        // Drawn by PE_Widget
+        return;
+    }
     break;
 
     case PE_IndicatorToolBarSeparator:
@@ -5167,8 +5189,8 @@ QRect QStyleSheetStyle::subControlRect(ComplexControl cc, const QStyleOptionComp
             QRenderRule upRule = renderRule(w, opt, PseudoElement_SpinBoxUpButton);
             QRenderRule downRule = renderRule(w, opt, PseudoElement_SpinBoxDownButton);
             bool ruleMatch = rule.hasBox() || !rule.hasNativeBorder();
-            bool upRuleMatch = upRule.hasGeometry();
-            bool downRuleMatch = downRule.hasGeometry();
+            bool upRuleMatch = upRule.hasGeometry() || upRule.hasPosition();
+            bool downRuleMatch = downRule.hasGeometry() || upRule.hasPosition();
             if (ruleMatch || upRuleMatch || downRuleMatch) {
                 switch (sc) {
                 case SC_SpinBoxFrame:

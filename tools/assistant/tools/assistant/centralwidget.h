@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -111,7 +111,7 @@ public:
     CentralWidget(QHelpEngine *engine, MainWindow *parent);
     ~CentralWidget();
 
-    void setLastShownPages();
+    void setupWidget();
     bool hasSelection() const;
     QUrl currentSource() const;
     QString currentTitle() const;
@@ -188,6 +188,7 @@ private:
     void initPrinter();
     QString quoteTabTitle(const QString &title) const;
     void highlightSearchTerms();
+    void setLastShownPages();
 
 private:
     int lastTabPage;

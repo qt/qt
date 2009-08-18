@@ -13,9 +13,9 @@ info1.size();               // returns 56201
 info1.symLinkTarget();      // returns "/opt/pretty++/bin/untabify"
 
 QFileInfo info2(info1.symLinkTarget());
-info1.isSymLink();          // returns false
-info1.absoluteFilePath();   // returns "/opt/pretty++/bin/untabify"
-info1.size();               // returns 56201
+info2.isSymLink();          // returns false
+info2.absoluteFilePath();   // returns "/opt/pretty++/bin/untabify"
+info2.size();               // returns 56201
 
 #endif
 //! [0]

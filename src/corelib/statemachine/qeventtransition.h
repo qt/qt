@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,8 +62,6 @@ class Q_CORE_EXPORT QEventTransition : public QAbstractTransition
 public:
     QEventTransition(QState *sourceState = 0);
     QEventTransition(QObject *object, QEvent::Type type, QState *sourceState = 0);
-    QEventTransition(QObject *object, QEvent::Type type,
-                     const QList<QAbstractState*> &targets, QState *sourceState = 0);
     ~QEventTransition();
 
     QObject *eventObject() const;
@@ -82,9 +80,6 @@ protected:
     QEventTransition(QEventTransitionPrivate &dd, QState *parent);
     QEventTransition(QEventTransitionPrivate &dd, QObject *object,
                      QEvent::Type type, QState *parent);
-    QEventTransition(QEventTransitionPrivate &dd, QObject *object,
-                     QEvent::Type type, const QList<QAbstractState*> &targets,
-                     QState *parent);
 
 private:
     Q_DISABLE_COPY(QEventTransition)

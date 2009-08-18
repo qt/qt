@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,10 +46,24 @@ QT_BEGIN_NAMESPACE
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
 
+#include "qegl_p.h"
+
+
 // Initialize a property block.
 QEglProperties::QEglProperties()
 {
     props.append(EGL_NONE);
+}
+
+QEglProperties::QEglProperties(EGLConfig cfg)
+{
+    props.append(EGL_NONE);
+    for (int name = 0x3020; name <= 0x304F; ++name) {
+        EGLint value;
+        if (name != EGL_NONE && eglGetConfigAttrib(QEglContext::defaultDisplay(0), cfg, name, &value))
+            setValue(name, value);
+    }
+    eglGetError();  // Clear the error state.
 }
 
 // Fetch the current value associated with a property.
@@ -215,12 +229,21 @@ bool QEglProperties::reduceConfiguration()
         removeValue(EGL_SAMPLES);
         return true;
     }
-    if (removeValue(EGL_ALPHA_SIZE))
+    if (removeValue(EGL_ALPHA_SIZE)) {
+#if defined(EGL_BIND_TO_TEXTURE_RGBA) && defined(EGL_BIND_TO_TEXTURE_RGB)
+        if (removeValue(EGL_BIND_TO_TEXTURE_RGBA))
+            setValue(EGL_BIND_TO_TEXTURE_RGB, TRUE);
+#endif
         return true;
+    }
     if (removeValue(EGL_STENCIL_SIZE))
         return true;
     if (removeValue(EGL_DEPTH_SIZE))
         return true;
+#if defined(EGL_BIND_TO_TEXTURE_RGB)
+    if (removeValue(EGL_BIND_TO_TEXTURE_RGB))
+        return true;
+#endif
     return false;
 }
 

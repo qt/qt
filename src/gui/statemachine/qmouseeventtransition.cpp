@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -106,21 +106,6 @@ QMouseEventTransition::QMouseEventTransition(QObject *object, QEvent::Type type,
                                              Qt::MouseButton button,
                                              QState *sourceState)
     : QEventTransition(*new QMouseEventTransitionPrivate, object, type, sourceState)
-{
-    Q_D(QMouseEventTransition);
-    d->transition = new QBasicMouseEventTransition(type, button);
-}
-
-/*!
-  Constructs a new mouse event transition for events of the given \a type for
-  the given \a object, with the given \a button, \a targets and \a
-  sourceState.
-*/
-QMouseEventTransition::QMouseEventTransition(QObject *object, QEvent::Type type,
-                                             Qt::MouseButton button,
-                                             const QList<QAbstractState*> &targets,
-                                             QState *sourceState)
-    : QEventTransition(*new QMouseEventTransitionPrivate, object, type, targets, sourceState)
 {
     Q_D(QMouseEventTransition);
     d->transition = new QBasicMouseEventTransition(type, button);

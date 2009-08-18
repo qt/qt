@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -930,13 +930,15 @@ void tst_QSqlRelationalTableModel::casing()
     QSqlQuery q(db);
     QVERIFY_SQL( q, exec("create table " + qTableName("CASETEST1", db.driver()).toUpper()  +
                 " (id int not null primary key, name varchar(20), title_key int, another_title_key int)"));
+
+    if( !q.exec("create table " + qTableName("casetest1", db.driver())  +
+                " (ident int not null primary key, name varchar(20), title_key int)"))
+        QSKIP("The casing test for this database is irrelevant since this database does not treat different cases as separate entities", SkipAll);
+
     QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db.driver()).toUpper() + " values(1, 'harry', 1, 2)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db.driver()).toUpper() + " values(2, 'trond', 2, 1)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db.driver()).toUpper() + " values(3, 'vohi', 1, 2)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("CASETEST1", db.driver()).toUpper() + " values(4, 'boris', 2, 2)"));
-
-    QVERIFY_SQL( q, exec("create table " + qTableName("casetest1", db.driver())  +
-                " (ident int not null primary key, name varchar(20), title_key int)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("casetest1", db.driver()) + " values(1, 'jerry', 1)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("casetest1", db.driver()) + " values(2, 'george', 2)"));
     QVERIFY_SQL( q, exec("insert into " + qTableName("casetest1", db.driver()) + " values(4, 'kramer', 2)"));

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -103,7 +103,7 @@
     \section1 Legal Notices
 
     Some source code in \QD is licensed under specific highly permissive
-    licenses from the original authors. Trolltech gratefully acknowledges
+    licenses from the original authors. The Qt team gratefully acknowledges
     these contributions to \QD and all uses of \QD should also acknowledge
     these contributions and quote the following license statements in an
     appendix to the documentation.

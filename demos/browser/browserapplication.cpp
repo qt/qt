@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -79,7 +79,7 @@ BrowserApplication::BrowserApplication(int &argc, char **argv)
     : QApplication(argc, argv)
     , m_localServer(0)
 {
-    QCoreApplication::setOrganizationName(QLatin1String("Trolltech"));
+    QCoreApplication::setOrganizationName(QLatin1String("Qt"));
     QCoreApplication::setApplicationName(QLatin1String("demobrowser"));
     QCoreApplication::setApplicationVersion(QLatin1String("0.1"));
 #ifdef Q_WS_QWS

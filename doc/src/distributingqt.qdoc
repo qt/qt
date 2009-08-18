@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -64,13 +64,13 @@ System-specific Notes\endlink.)
 \tableofcontents
 
 Also see the "deployment" articles in
-\e{\link http://doc.trolltech.com/qq/ Qt Quarterly\endlink}:
+\e{\link http://qt.nokia.com/doc/qq/ Qt Quarterly\endlink}:
 \list
-\i \link http://doc.trolltech.com/qq/qq09-mac-deployment.html
+\i \link http://qt.nokia.com/doc/qq/qq09-mac-deployment.html
 Deploying Applications on Mac OS X\endlink
-\i \link http://doc.trolltech.com/qq/qq10-windows-deployment.html
+\i \link http://qt.nokia.com/doc/qq/qq10-windows-deployment.html
 Deploying Applications on Windows\endlink
-\i \link http://doc.trolltech.com/qq/qq11-unix-deployment.html
+\i \link http://qt.nokia.com/doc/qq/qq11-unix-deployment.html
 Deploying Applications on X11\endlink
 \endlist
 

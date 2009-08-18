@@ -28,7 +28,7 @@ Rect {
         anchors.top: gameCanvas.bottom; anchors.topMargin: 4; anchors.left: gameCanvas.left;
     }
     Text { 
-        text: "Score: " + gameCanvas.score; width:100; font.size:14 
+        text: "Score: " + gameCanvas.score; width:100; font.pointSize:14 
         anchors.top: gameCanvas.bottom; anchors.topMargin: 4; anchors.right: gameCanvas.right;
     }
 }

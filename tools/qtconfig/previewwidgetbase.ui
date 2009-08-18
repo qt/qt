@@ -36,7 +36,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 *********************************************************************</comment>
@@ -306,7 +306,7 @@
                   </property>
                   <property name="text" >
                     <string>&lt;p>
-&lt;a href=&quot;http://qtsoftware.com&quot;>http://qtsoftware.com&lt;/a>
+&lt;a href=&quot;http://qt.nokia.com&quot;>http://qt.nokia.com&lt;/a>
 &lt;/p>
 &lt;p>
 &lt;a href=&quot;http://www.kde.org&quot;>http://www.kde.org&lt;/a>

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -155,10 +155,12 @@ protected:
 
     QAction *safeActionAt(int index) const;
 
-    bool swap(int a, int b);
+    bool swapActions(int a, int b);
 
 private:
     void updateCurrentAction(bool selectAction);
+    void movePrevious(bool ctrl);
+    void moveNext(bool ctrl);
 
     QAction *m_addMenu;
     QPointer<QMenu> m_activeMenu;

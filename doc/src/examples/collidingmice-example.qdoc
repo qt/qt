@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -95,11 +95,11 @@
     the global qrand() function which is a thread-safe version of the
     standard C++ rand() function.
 
-    Then we call the \l {QGraphicsItem::rotate()}{rotate()} function
+    Then we call the \l {QGraphicsItem::setRotation()}{setRotation()} function
     inherited from QGraphicsItem. Items live in their own local
     coordinate system. Their coordinates are usually centered around
     (0, 0), and this is also the center for all transformations. By
-    calling the item's \l {QGraphicsItem::rotate()}{rotate()} function
+    calling the item's \l {QGraphicsItem::setRotation()}{setRotation()} function
     we alter the direction in which the mouse will start moving.
 
 	When the QGraphicsScene decides to advance the scene a frame it will call 

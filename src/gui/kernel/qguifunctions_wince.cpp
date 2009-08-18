@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -254,6 +254,31 @@ bool qt_wince_is_platform(const QString &platformString) {
         if (0 == _tcsicmp(reinterpret_cast<const wchar_t *> (platformString.utf16()), tszPlatform))
             return true;
     return false;
+}
+
+int qt_wince_get_build()
+{
+    OSVERSIONINFO osvi;
+    osvi.dwOSVersionInfoSize = sizeof(osvi);
+    if (GetVersionEx(&osvi)) {
+        return osvi.dwBuildNumber;
+    } 
+    return 0;
+}
+
+int qt_wince_get_version()
+{
+    OSVERSIONINFO osvi;
+    osvi.dwOSVersionInfoSize = sizeof(osvi);
+    if (GetVersionEx(&osvi)) {
+        return (osvi.dwMajorVersion * 10 + osvi.dwMinorVersion);
+    } 
+    return 0;
+}
+
+bool qt_wince_is_windows_mobile_65()
+{
+    return ((qt_wince_get_version() == 52) && (qt_wince_get_build() > 2000));
 }
 
 bool qt_wince_is_pocket_pc() {

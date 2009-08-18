@@ -45,7 +45,7 @@
 #include <QtCore/QString>
 #include <QtCore/QObject>
 #include <QtDeclarative/qfxglobal.h>
-#include <QtDeclarative/qfxpixmap.h>
+#include <QtDeclarative/qfxpixmapcache.h>
 #include <QtDeclarative/qml.h>
 #include "qfxborderimage.h"
 
@@ -67,7 +67,7 @@ class Q_DECLARATIVE_EXPORT QFxScaleGrid : public QObject
     Q_PROPERTY(int bottom READ bottom WRITE setBottom NOTIFY borderChanged)
 
 public:
-    QFxScaleGrid();
+    QFxScaleGrid(QObject *parent=0);
     ~QFxScaleGrid();
 
     bool isNull() const;

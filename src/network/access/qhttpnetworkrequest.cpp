@@ -34,13 +34,15 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "qhttpnetworkrequest_p.h"
 #include "private/qnoncontiguousbytedevice_p.h"
+
+#ifndef QT_NO_HTTP
 
 QT_BEGIN_NAMESPACE
 
@@ -259,4 +261,6 @@ int QHttpNetworkRequest::minorVersion() const
 
 
 QT_END_NAMESPACE
+
+#endif
 

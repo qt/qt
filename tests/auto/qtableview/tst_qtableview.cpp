@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,6 +42,7 @@
 
 #include <QtGui/QtGui>
 #include <QtTest/QtTest>
+#include "../../shared/util.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -177,6 +178,7 @@ private slots:
     void task227953_setRootIndex();
     void task240266_veryBigColumn();
     void task248688_autoScrollNavigation();
+    void task259308_scrollVerticalHeaderSwappedSections();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -2542,7 +2544,7 @@ void tst_QTableView::span_data()
       << 2 << 1
       << false;
 
-  /* This makes no sens. 
+  /* This makes no sens.
     QTest::newRow("top left 2x0")
       << 10 << 10
       << -1 << -1
@@ -2631,7 +2633,7 @@ void tst_QTableView::span()
     view.hideRow(hiddenRow);
     view.hideColumn(hiddenColumn);
     view.show();
-    
+
     QCOMPARE(view.rowSpan(row, column), expectedRowSpan);
     QCOMPARE(view.columnSpan(row, column), expectedColumnSpan);
 
@@ -3110,14 +3112,14 @@ void tst_QTableView::task227953_setRootIndex()
     }
 
     tableView.setModel(&model);
-    
+
     //show the first 10 rows of the first table
     QModelIndex root = model.indexFromItem(&item1);
 	tableView.setRootIndex(root);
 	for (int i = 10; i != 40; ++i) {
 		tableView.setRowHidden(i, true);
 	}
-	
+
     QCOMPARE(tableView.verticalHeader()->count(), 40);
     QCOMPARE(tableView.verticalHeader()->hiddenSectionCount(), 30);
 
@@ -3139,16 +3141,13 @@ void tst_QTableView::task240266_veryBigColumn()
     table.setColumnWidth(1, 100); //normal column
     table.setColumnWidth(2, 9000); //very big column
     table.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
     QTest::qWait(100);
 
     QScrollBar *scroll = table.horizontalScrollBar();
     QCOMPARE(scroll->minimum(), 0);
     QCOMPARE(scroll->maximum(), model.columnCount() - 1);
     QCOMPARE(scroll->singleStep(), 1);
-    
+
     //1 is not always a very correct value for pageStep. Ideally this should be dynamic.
     //Maybe something for Qt 5 ;-)
     QCOMPARE(scroll->pageStep(), 1);
@@ -3256,6 +3255,37 @@ void tst_QTableView::addColumnWhileEditing()
     QCOMPARE(editor->geometry(), view.visualRect(last));
 }
 
+void tst_QTableView::task259308_scrollVerticalHeaderSwappedSections()
+{
+    QStandardItemModel model;
+    model.setRowCount(50);
+    model.setColumnCount(2);
+    for (int row = 0; row < model.rowCount(); ++row)
+        for (int col = 0; col < model.columnCount(); ++col) {
+            const QModelIndex &idx = model.index(row, col);
+            model.setData(idx, QVariant(row), Qt::EditRole);
+        }
+
+    QTableView tv;
+    tv.setModel(&model);
+    tv.show();
+    tv.verticalHeader()->swapSections(0, model.rowCount() - 1);
+
+    QTest::qWait(60);
+    QTest::keyClick(&tv, Qt::Key_PageUp);   // PageUp won't scroll when at top
+    QTRY_COMPARE(tv.rowAt(0), tv.verticalHeader()->logicalIndex(0));
+
+    int newRow = tv.rowAt(tv.viewport()->height());
+    if (newRow == tv.rowAt(tv.viewport()->height() - 1)) // Overlapping row
+        newRow++;
+    QTest::keyClick(&tv, Qt::Key_PageDown); // Scroll down and check current
+    QTRY_COMPARE(tv.currentIndex().row(), newRow);
+
+    tv.setCurrentIndex(model.index(0, 0));
+    QTest::qWait(60);
+    QTest::keyClick(&tv, Qt::Key_PageDown); // PageDown won't scroll when at the bottom
+    QTRY_COMPARE(tv.rowAt(tv.viewport()->height() - 1), tv.verticalHeader()->logicalIndex(model.rowCount() - 1));
+}
 
 QTEST_MAIN(tst_QTableView)
 #include "tst_qtableview.moc"

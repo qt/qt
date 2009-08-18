@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1375,10 +1375,9 @@ QWidget::~QWidget()
     // set all QPointers for this object to zero
     QObjectPrivate::clearGuards(this);
 
-    if(d->declarativeData) {
-        QDeclarativeData *dd = d->declarativeData;
-        d->declarativeData = 0;
-        dd->destroyed(this);
+    if (d->declarativeData) {
+        d->declarativeData->destroyed(this);
+        d->declarativeData = 0;                 // don't activate again in ~QObject
     }
 
     if (!d->children.isEmpty())
@@ -2748,7 +2747,7 @@ void QWidget::showNormal()
 bool QWidget::isEnabledTo(QWidget* ancestor) const
 {
     const QWidget * w = this;
-    while (w && !w->testAttribute(Qt::WA_ForceDisabled)
+    while (!w->testAttribute(Qt::WA_ForceDisabled)
             && !w->isWindow()
             && w->parentWidget()
             && w->parentWidget() != ancestor)
@@ -3481,27 +3480,27 @@ bool QWidgetPrivate::setMinimumSize_helper(int &minw, int &minh)
         }
     }
 #endif
-    if (minw > QWIDGETSIZE_MAX || minh > QWIDGETSIZE_MAX) {
-        qWarning("QWidget::setMinimumSize: (%s/%s) "
-                "The largest allowed size is (%d,%d)",
-                 q->objectName().toLocal8Bit().data(), q->metaObject()->className(), QWIDGETSIZE_MAX,
-                QWIDGETSIZE_MAX);
-        minw = qMin<int>(minw, QWIDGETSIZE_MAX);
-        minh = qMin<int>(minh, QWIDGETSIZE_MAX);
-    }
-    if (minw < 0 || minh < 0) {
-        qWarning("QWidget::setMinimumSize: (%s/%s) Negative sizes (%d,%d) "
-                "are not possible",
-                q->objectName().toLocal8Bit().data(), q->metaObject()->className(), minw, minh);
-        minw = qMax(minw, 0);
-        minh = qMax(minh, 0);
-    }
-    createExtra();
     int mw = minw, mh = minh;
     if (mw == QWIDGETSIZE_MAX)
         mw = 0;
     if (mh == QWIDGETSIZE_MAX)
         mh = 0;
+    if (minw > QWIDGETSIZE_MAX || minh > QWIDGETSIZE_MAX) {
+        qWarning("QWidget::setMinimumSize: (%s/%s) "
+                "The largest allowed size is (%d,%d)",
+                 q->objectName().toLocal8Bit().data(), q->metaObject()->className(), QWIDGETSIZE_MAX,
+                QWIDGETSIZE_MAX);
+        minw = mw = qMin<int>(minw, QWIDGETSIZE_MAX);
+        minh = mh = qMin<int>(minh, QWIDGETSIZE_MAX);
+    }
+    if (minw < 0 || minh < 0) {
+        qWarning("QWidget::setMinimumSize: (%s/%s) Negative sizes (%d,%d) "
+                "are not possible",
+                q->objectName().toLocal8Bit().data(), q->metaObject()->className(), minw, minh);
+        minw = mw = qMax(minw, 0);
+        minh = mh = qMax(minh, 0);
+    }
+    createExtra();
     if (extra->minw == mw && extra->minh == mh)
         return false;
     extra->minw = mw;
@@ -4178,7 +4177,7 @@ void QWidget::setForegroundRole(QPalette::ColorRole role)
     assigning roles to a widget's palette is not guaranteed to change the
     appearance of the widget. Instead, you may choose to apply a \l
     styleSheet. You can refer to our Knowledge Base article
-    \l{http://qtsoftware.com/developer/knowledgebase/22}{here} for more
+    \l{http://qt.nokia.com/developer/knowledgebase/22}{here} for more
     information.
 
     \warning Do not use this function in conjunction with \l{Qt Style Sheets}.
@@ -6864,9 +6863,12 @@ void QWidgetPrivate::hide_helper()
     widgets that are not visible.
 
 
-    Widgets are  hidden if they were created as independent
-    windows or as children of visible widgets, or if hide() or setVisible(false) was called.
-
+    Widgets are hidden if:
+    \list
+        \o they were created as independent windows,
+        \o they were created as children of visible widgets,
+        \o hide() or setVisible(false) was called.
+    \endlist
 */
 
 
@@ -7237,8 +7239,7 @@ bool QWidget::isVisibleTo(QWidget* ancestor) const
     if (!ancestor)
         return isVisible();
     const QWidget * w = this;
-    while (w
-            && !w->isHidden()
+    while (!w->isHidden()
             && !w->isWindow()
             && w->parentWidget()
             && w->parentWidget() != ancestor)
@@ -7940,59 +7941,6 @@ bool QWidget::event(QEvent *event)
         (void) QApplication::sendEvent(this, &mouseEvent);
         break;
     }
-#ifdef Q_WS_WIN
-    case QEvent::WinGesture: {
-        QWinGestureEvent *ev = static_cast<QWinGestureEvent*>(event);
-        QApplicationPrivate *qAppPriv = qApp->d_func();
-        QApplicationPrivate::WidgetStandardGesturesMap::iterator it;
-        it = qAppPriv->widgetGestures.find(this);
-        if (it != qAppPriv->widgetGestures.end()) {
-            Qt::GestureState state = Qt::GestureUpdated;
-            if (qAppPriv->lastGestureId == 0)
-                state = Qt::GestureStarted;
-            QWinGestureEvent::Type type = ev->gestureType;
-            if (ev->gestureType == QWinGestureEvent::GestureEnd) {
-                type = (QWinGestureEvent::Type)qAppPriv->lastGestureId;
-                state = Qt::GestureFinished;
-            }
-
-            QGesture *gesture = 0;
-            switch (type) {
-            case QWinGestureEvent::Pan: {
-                QPanGesture *pan = it.value().pan;
-                gesture = pan;
-                if (state == Qt::GestureStarted) {
-                    gesture->setStartPos(ev->position);
-                    gesture->setLastPos(ev->position);
-                } else {
-                    gesture->setLastPos(gesture->pos());
-                }
-                gesture->setPos(ev->position);
-                break;
-            }
-            case QWinGestureEvent::Pinch:
-                break;
-            default:
-                break;
-            }
-            if (gesture) {
-                gesture->setState(state);
-                if (state == Qt::GestureStarted)
-                    emit gesture->started();
-                emit gesture->triggered();
-                if (state == Qt::GestureFinished)
-                    emit gesture->finished();
-                event->accept();
-            }
-            if (ev->gestureType == QWinGestureEvent::GestureEnd) {
-                qAppPriv->lastGestureId = 0;
-            } else {
-                qAppPriv->lastGestureId = type;
-            }
-        }
-        break;
-    }
-#endif
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -8044,10 +7992,12 @@ void QWidget::changeEvent(QEvent * event)
 
     case QEvent::FontChange:
     case QEvent::StyleChange: {
+        Q_D(QWidget);
         update();
         updateGeometry();
+        if (d->layout)
+            d->layout->invalidate();
 #ifdef Q_WS_QWS
-        Q_D(QWidget);
         if (isWindow())
             d->data.fstrut_dirty = true;
 #endif
@@ -9865,6 +9815,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             data->window_modality = (w && w->testAttribute(Qt::WA_GroupLeader))
                                     ? Qt::WindowModal
                                     : Qt::ApplicationModal;
+            // Some window managers does not allow us to enter modal after the
+            // window is showing. Therefore, to be consistent, we cannot call
+            // QApplicationPrivate::enterModal(this) here. The window must be
+            // hidden before changing modality.
         }
         if (testAttribute(Qt::WA_WState_Created)) {
             // don't call setModal_sys() before create_sys()
@@ -11162,8 +11116,6 @@ Q_GUI_EXPORT QWidgetPrivate *qt_widget_private(QWidget *widget)
 {
     return widget->d_func();
 }
-
-
 
 
 #ifndef QT_NO_GRAPHICSVIEW

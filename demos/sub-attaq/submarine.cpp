@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -111,7 +111,7 @@ SubMarine::SubMarine(int type, const QString &name, int points, QGraphicsItem * 
     resize(pixmapItem->boundingRect().width(),pixmapItem->boundingRect().height());
     setTransformOriginPoint(boundingRect().center());
 
-    graphicsRotation = new QGraphicsRotation3D(this);
+    graphicsRotation = new QGraphicsRotation(this);
     graphicsRotation->setAxis(QVector3D(0, 1, 0));
     graphicsRotation->setOrigin(QPointF(size().width()/2, size().height()/2));
     QList<QGraphicsTransform *> r;

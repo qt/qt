@@ -70,6 +70,8 @@ public:
     static bool isDebuggingEnabled();
     static QString objectToString(QObject *obj);
 
+    static void waitForClients();
+
 protected:
     virtual void enabledChanged(bool);
     virtual void messageReceived(const QByteArray &);

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,7 +55,7 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
-    , engine(0)
+    , engineHeight(-1)
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
 {
@@ -76,7 +76,7 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
 #endif
-    , engine(0)
+    , engineHeight(-1)
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
 {
@@ -209,7 +209,6 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
             if (!dfbWindow)
                 createWindow();
             ::setGeometry(dfbWindow, oldRect, rect);
-            // ### do I need to release and get the surface again here?
 #endif
             break;
         case Offscreen: {
@@ -227,7 +226,10 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
         if (result != DFB_OK)
             DirectFBErrorFatal("QDirectFBWindowSurface::setGeometry()", result);
     }
-
+    if (engine) {
+        delete engine;
+        engine = 0;
+    }
     QWSWindowSurface::setGeometry(rect);
 }
 
@@ -291,16 +293,6 @@ bool QDirectFBWindowSurface::move(const QPoint &moveBy)
 {
     setGeometry(geometry().translated(moveBy));
     return true;
-}
-
-QPaintEngine *QDirectFBWindowSurface::paintEngine() const
-{
-    if (!engine) {
-        QDirectFBWindowSurface *that = const_cast<QDirectFBWindowSurface*>(this);
-        that->engine = new QDirectFBPaintEngine(that);
-        return that->engine;
-    }
-    return engine;
 }
 
 // hw: XXX: copied from QWidgetPrivate::isOpaque()
@@ -427,6 +419,12 @@ void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
 
 void QDirectFBWindowSurface::beginPaint(const QRegion &)
 {
+    const int h = height();
+    if (h > engineHeight) {
+        engineHeight = h;
+        delete engine;
+        engine = new QDirectFBPaintEngine(this);
+    }
 }
 
 void QDirectFBWindowSurface::endPaint(const QRegion &)

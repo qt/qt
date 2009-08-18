@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,7 +73,8 @@ public:
     }
 
     QTreeWidgetItemIteratorPrivate(const QTreeWidgetItemIteratorPrivate& other)
-        : m_currentIndex(other.m_currentIndex), m_model(other.m_model), m_parentIndex(other.m_parentIndex)
+        : m_currentIndex(other.m_currentIndex), m_model(other.m_model),
+          m_parentIndex(other.m_parentIndex), q_ptr(other.q_ptr)
     {
 
     }

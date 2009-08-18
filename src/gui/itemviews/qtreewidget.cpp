@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2074,6 +2074,8 @@ QList<QTreeWidgetItem*> QTreeWidgetItem::takeChildren()
 void QTreeWidgetItemPrivate::sortChildren(int column, Qt::SortOrder order, bool climb)
 {
     QTreeModel *model = (q->view ? qobject_cast<QTreeModel*>(q->view->model()) : 0);
+    if (!model)
+        return;   
     model->sortItems(&q->children, column, order);
     if (climb) {
         QList<QTreeWidgetItem*>::iterator it = q->children.begin();

@@ -1,15 +1,17 @@
 import Qt 4.6
 
 import "content"
+import "fieldtext"
 
 Item {
     id: WebBrowser
 
-    property var url : "http://www.qtsoftware.com"
+    property string urlString : "http://qt.nokia.com/"
+
+    state: "Normal"
 
     width: 640
     height: 480
-    state: "Normal"
 
     Script {
         function zoomOut() {
@@ -57,6 +59,13 @@ Item {
             height: 60
             z: 1
 
+            Rect {
+                id: HeaderSpaceTint
+                color: "black"
+                opacity: 0
+                anchors.fill: parent
+             }
+
             Image {
                 id: Header
                 source: "content/pics/header.png"
@@ -78,7 +87,7 @@ Item {
                     style: "Raised"
 
                     font.family: "Helvetica"
-                    font.size: 10
+                    font.pointSize: 10
                     font.bold: true
 
                     anchors.left: Header.left
@@ -104,11 +113,14 @@ Item {
                         anchors.rightMargin: 12
                         anchors.top: parent.top
                         clip: true
-                        Image {
+                        property bool mouseGrabbed: false
+
+                        BorderImage {
                             source: "content/pics/addressbar.sci"
                             anchors.fill: UrlBox
                         }
-                        Image {
+                                                
+                        BorderImage {
                             id: UrlBoxhl
                             source: "content/pics/addressbar-filled.sci"
                             width: parent.width*MyWebView.progress
@@ -116,27 +128,23 @@ Item {
                             opacity: 1-Header.progressOff
                             clip: true
                         }
-                        
-                        /*
-                        KeyProxy {
-                            id: proxy
-                            anchors.left: UrlBox.left
-                            anchors.fill: UrlBox
-                            targets: [keyActions,EditUrl]
-                        }
-                        KeyActions {
-                            id: keyActions
-                            keyReturn: "WebBrowser.url = EditUrl.text; proxy.focus=false;"
-                        }
-                        */
-                        TextEdit {
-                            id: EditUrl
 
+                        FieldText {
+                            id: EditUrl
+                            mouseGrabbed: parent.mouseGrabbed
+
+                            /*<<<<<<< HEAD:demos/declarative/webbrowser/webbrowser.qml
                             text: MyWebView.url == '' ? ' ' : MyWebView.url
                             wrap: false
-                            font.size: 11
+                            font.pointSize: 11
                             color: "#555555"
                             focusOnPress: true
+                            =======*/
+                            text: WebBrowser.urlString
+                            label: "url:"
+                            onConfirmed: { print ('OnConfirmed: '+EditUrl.text); WebBrowser.urlString = EditUrl.text; print (EditUrl.text); MyWebView.focus=true }
+                            onCancelled: { MyWebView.focus=true }
+                            onStartEdit: { print (EditUrl.text); MyWebView.focus=false }
 
                             anchors.left: UrlBox.left
                             anchors.right: UrlBox.right
@@ -189,16 +197,17 @@ Item {
                 id: MyWebView
                 cacheSize: 4000000
 
-                url: WebBrowser.url
+                url: WebBrowser.urlString
                 smooth: !Flick.moving
                 fillColor: "white"
                 focus: true
+                interactive: true
 
                 idealWidth: Flick.width
                 idealHeight: Flick.height/scale
                 scale: (width > 0) ? Flick.width/width*zoomedOut+(1-zoomedOut) : 1
 
-                onUrlChanged: { Flick.xPosition=0; Flick.yPosition=0; zoomOut() }
+                onUrlChanged: { print ('OnUrlChanged: '+url.toString()); WebBrowser.urlString = url.toString(); print ('Moved to url: ' + WebBrowser.urlString) }
                 onDoubleClick: { toggleZoom() }
 
                 property real zoomedOut : 1
@@ -208,13 +217,13 @@ Item {
                 color: "black"
                 opacity: 0
                 anchors.fill: MyWebView
-                MouseRegion {
+                /*MouseRegion {
                     anchors.fill: WebViewTint
                     onClicked: { proxy.focus=false }
-                }
+                }*/
             }
         }
-        Image {
+        BorderImage {
             id: Footer
             source: "content/pics/footer.sci"
             width: parent.width

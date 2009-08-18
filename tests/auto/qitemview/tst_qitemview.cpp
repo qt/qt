@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -173,8 +173,6 @@ public:
     }
 
     QModelIndex index( int row, int column, const QModelIndex & parent = QModelIndex() ) const {
-        Q_ASSERT(row >= 0 && row <= rowCount(parent));
-        Q_ASSERT(column >= 0 && column <= columnCount(parent));
         return QStandardItemModel::index(row, column, parent);
     };
 

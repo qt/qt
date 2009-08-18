@@ -17,9 +17,16 @@ Rect {
         id: FolderDelegate
         Rect {
             id: Wrapper
+            function launch() {
+                if (folders.isFolder(index)) {
+                    folders.folder = filePath;
+                } else {
+                    qmlLauncher.launch(filePath);
+                }
+            }
             width: Root.width
             height: 32
-            color: activePalette.base
+            color: "transparent"
             Rect {
                 id: Highlight; visible: false
                 anchors.fill: parent
@@ -36,19 +43,13 @@ Rect {
                 id: NameText
                 anchors.fill: parent; vAlign: "AlignVCenter"
                 text: fileName; anchors.leftMargin: 32
-                font.size: 10
+                font.pointSize: 10
                 color: activePalette.windowText
             }
             MouseRegion {
                 id: Mouse
                 anchors.fill: parent
-                onClicked: {
-                    if (folders.isFolder(index)) {
-                        folders.folder = filePath;
-                    } else {
-                        qmlLauncher.launch(filePath);
-                    }
-                }
+                onClicked: { launch() }
             }
             states: [
                 State {
@@ -69,13 +70,22 @@ Rect {
     }
 
     ListView {
+        id: View
         anchors.top: TitleBar.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
         model: folders
         delegate: FolderDelegate
+        highlight: Rect { color: "#FFFBAF" }
         clip: true
+        focus: true
+        Keys.onPressed: {
+            if (event.key == Qt.Key_Return || event.key == Qt.Key_Select) {
+                View.current.launch();
+                event.accepted = true;
+            }
+        }
     }
 
     Rect {

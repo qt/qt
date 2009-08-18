@@ -164,6 +164,8 @@ void QmlEnginePrivate::init()
         qmlEngineDebugServer();
         isDebugging = true;
         QmlEngineDebugServer::addEngine(q);
+
+        qmlEngineDebugServer()->waitForClients();
     }
 }
 
@@ -942,7 +944,7 @@ QScriptValue QmlObjectToString(QScriptContext *context, QScriptEngine *engine)
         ret += QLatin1String("\" ");
         ret += obj->metaObject()->className();
         ret += QLatin1String("(0x");
-        ret += QString::number((int)obj,16);
+        ret += QString::number((quintptr)obj,16);
         ret += QLatin1String(")");
     }else{
         ret += "null";
@@ -1039,19 +1041,22 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
 
 struct QmlEnginePrivate::ImportedNamespace {
     QStringList urls;
-    QStringList versions;
+    QList<int> majversions;
+    QList<int> minversions;
     QList<bool> isLibrary;
 
     QUrl find(const QString& type) const
     {
         for (int i=0; i<urls.count(); ++i) {
             QUrl url = QUrl(urls.at(i) + QLatin1String("/") + type + QLatin1String(".qml"));
-            QString version = versions.at(i);
+            int vmaj = majversions.at(i);
+            int vmin = minversions.at(i);
             // XXX search non-files too! (eg. zip files, see QT-524)
             QFileInfo f(url.toLocalFile());
             if (f.exists()) {
                 bool ok=true;
-                if (!version.isEmpty()) {
+                if (vmaj || vmin) {
+                    QString version = QString::number(vmaj) + QLatin1String(".") + QString::number(vmin);
                     ok=false;
                     // Check version file - XXX cache these in QmlEngine!
                     QFile qmldir(urls.at(i)+QLatin1String("/qmldir"));
@@ -1084,14 +1089,12 @@ struct QmlEnginePrivate::ImportedNamespace {
     QmlType *findBuiltin(const QByteArray& type, QByteArray* found=0) const
     {
         for (int i=0; i<urls.count(); ++i) {
-            QByteArray version = versions.at(i).toLatin1();
+            int vmaj = majversions.at(i);
+            int vmin = minversions.at(i);
             QByteArray qt = urls.at(i).toLatin1();
-            if (version.isEmpty())
-                qt += "/";
-            else
-                qt += "/" + version + "/";
+            qt += "/";
             qt += type;
-            QmlType *t = QmlMetaType::qmlType(qt);
+            QmlType *t = QmlMetaType::qmlType(qt,vmaj,vmin);
             if (found) *found = qt;
             if (t) return t;
         }
@@ -1101,11 +1104,11 @@ struct QmlEnginePrivate::ImportedNamespace {
 
 class QmlImportsPrivate {
 public:
-    bool add(const QUrl& base, const QString& uri, const QString& prefix, const QString& version, QmlScriptParser::Import::Type importType, const QStringList& importPath)
+    bool add(const QUrl& base, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType, const QStringList& importPath)
     {
         QmlEnginePrivate::ImportedNamespace *s;
         if (prefix.isEmpty()) {
-            if (importType == QmlScriptParser::Import::Library && version.isEmpty()) {
+            if (importType == QmlScriptParser::Import::Library && !vmaj && !vmin) {
                 // unversioned library imports are always qualified - if only by final URI component
                 int lastdot = uri.lastIndexOf(QLatin1Char('.'));
                 QString defaultprefix = uri.mid(lastdot+1);
@@ -1139,7 +1142,8 @@ public:
             url = base.resolved(QUrl(url)).toString();
         }
         s->urls.append(url);
-        s->versions.append(version);
+        s->majversions.append(vmaj);
+        s->minversions.append(vmin);
         s->isLibrary.append(importType == QmlScriptParser::Import::Library);
         return true;
     }
@@ -1250,11 +1254,11 @@ void QmlEngine::addImportPath(const QString& path)
 
   The base URL must already have been set with Import::setBaseUrl().
 */
-bool QmlEnginePrivate::addToImport(Imports* imports, const QString& uri, const QString& prefix, const QString& version, QmlScriptParser::Import::Type importType) const
+bool QmlEnginePrivate::addToImport(Imports* imports, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType) const
 {
-    bool ok = imports->d->add(imports->base,uri,prefix,version,importType,fileImportPath);
+    bool ok = imports->d->add(imports->base,uri,prefix,vmaj,vmin,importType,fileImportPath);
     if (qmlImportTrace())
-        qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << version << (importType==QmlScriptParser::Import::Library? "Library" : "File") << ": " << ok;
+        qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << vmaj << "." << vmin << (importType==QmlScriptParser::Import::Library? "Library" : "File") << ": " << ok;
     return ok;
 }
 
@@ -1279,7 +1283,7 @@ bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& typ
     }
     if (type_return) {
         QmlType* t = imports.d->findBuiltin(type);
-        if (!t) t = QmlMetaType::qmlType(type);
+        if (!t) t = QmlMetaType::qmlType(type,0,0); // Try global namespace
         if (t) {
             if (type_return) *type_return = t;
             if (qmlImportTrace())

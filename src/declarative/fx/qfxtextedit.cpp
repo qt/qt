@@ -242,10 +242,25 @@ void QFxTextEdit::setTextFormat(TextFormat format)
     \brief the text edit's default font
 */
 
-QmlFont *QFxTextEdit::font()
+QFont QFxTextEdit::font() const
+{
+    Q_D(const QFxTextEdit);
+    return d->font;
+}
+
+void QFxTextEdit::setFont(const QFont &font)
 {
     Q_D(QFxTextEdit);
-    return &(d->font);
+    d->font = font;
+
+    clearCache();
+    d->document->setDefaultFont(d->font);
+    if(d->cursor){
+        d->cursor->setHeight(QFontMetrics(d->font).height());
+        moveCursorDelegate();
+    }
+    updateSize();
+    update();
 }
 
 /*!
@@ -532,7 +547,7 @@ void QFxTextEdit::loadCursorDelegate()
         d->control->setCursorWidth(0);
         dirtyCache(cursorRect());
         d->cursor->setParentItem(this);
-        d->cursor->setHeight(QFontMetrics(d->font.font()).height());
+        d->cursor->setHeight(QFontMetrics(d->font).height());
         moveCursorDelegate();
     }else{
         qWarning() << QLatin1String("Error loading cursor delegate for TextEdit:") + objectName();
@@ -885,6 +900,7 @@ void QFxTextEdit::keyReleaseEvent(QKeyEvent *event)
 void QFxTextEdit::focusChanged(bool hasFocus)
 {
     setCursorVisible(hasFocus);
+    QFxItem::focusChanged(hasFocus);
 }
 
 /*!
@@ -979,22 +995,6 @@ void QFxTextEdit::drawContents(QPainter *painter, const QRect &bounds)
     d->control->drawContents(painter, bounds);
 }
 
-/*!
-This signal is emitted when the font of the item changes.
-*/
-void QFxTextEdit::fontChanged()
-{
-    Q_D(QFxTextEdit);
-    clearCache();
-    d->document->setDefaultFont(d->font.font());
-    if(d->cursor){
-        d->cursor->setHeight(QFontMetrics(d->font.font()).height());
-        moveCursorDelegate();
-    }
-    updateSize();
-    emit update();
-}
-
 void QFxTextEdit::updateImgCache(const QRectF &r)
 {
     dirtyCache(r.toRect());
@@ -1023,8 +1023,6 @@ void QFxTextEditPrivate::init()
     q->setFlag(QGraphicsItem::ItemHasNoContents, false);
     q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
 
-    QObject::connect(&font, SIGNAL(updated()), q, SLOT(fontChanged()));
-
     control = new QTextControl(q);
 
     QObject::connect(control, SIGNAL(updateRequest(QRectF)), q, SLOT(updateImgCache(QRectF)));
@@ -1036,7 +1034,7 @@ void QFxTextEditPrivate::init()
     QObject::connect(control, SIGNAL(cursorPositionChanged()), q, SIGNAL(cursorPositionChanged()));
 
     document = control->document();
-    document->setDefaultFont(font.font());
+    document->setDefaultFont(font);
     document->setDocumentMargin(textMargin);
     document->setUndoRedoEnabled(false); // flush undo buffer.
     document->setUndoRedoEnabled(true);
@@ -1101,7 +1099,7 @@ void QFxTextEdit::updateSize()
 {
     Q_D(QFxTextEdit);
     if (isComponentComplete()) {
-        QFontMetrics fm = QFontMetrics(d->font.font());
+        QFontMetrics fm = QFontMetrics(d->font);
         int dy = height();
         // ### assumes that if the width is set, the text will fill to edges
         // ### (unless wrap is false, then clipping will occur)

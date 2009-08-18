@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -359,7 +359,7 @@ bool loadPO(Translator &translator, QIODevice &dev, ConversionData &cd)
     const QChar quote = QLatin1Char('"');
     const QChar newline = QLatin1Char('\n');
     QTextStream in(&dev);
-    in.setCodec(cd.m_codecForSource.isEmpty() ? "UTF-8" : cd.m_codecForSource);
+    in.setCodec(cd.m_codecForSource.isEmpty() ? QByteArray("UTF-8") : cd.m_codecForSource);
     bool error = false;
 
     // format of a .po file entry:
@@ -555,7 +555,7 @@ bool savePO(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     bool ok = true;
     QTextStream out(&dev);
-    out.setCodec(cd.m_outputCodec.isEmpty() ? "UTF-8" : cd.m_outputCodec);
+    out.setCodec(cd.m_outputCodec.isEmpty() ? QByteArray("UTF-8") : cd.m_outputCodec);
 
     bool first = true;
     if (translator.messages().isEmpty() || !translator.messages().first().sourceText().isEmpty()) {

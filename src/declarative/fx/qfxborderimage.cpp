@@ -92,7 +92,7 @@ QFxBorderImage::~QFxBorderImage()
     if (d->sciReply)
         d->sciReply->deleteLater();
     if (!d->sciurl.isEmpty())
-        QFxPixmap::cancelGet(d->sciurl, this);
+        QFxPixmapCache::cancelGet(d->sciurl, this);
 }
 /*!
     \qmlproperty enum BorderImage::status
@@ -166,9 +166,9 @@ void QFxBorderImage::setSource(const QUrl &url)
     }
 
     if (!d->url.isEmpty())
-        QFxPixmap::cancelGet(d->url, this);
+        QFxPixmapCache::cancelGet(d->url, this);
     if (!d->sciurl.isEmpty())
-        QFxPixmap::cancelGet(d->sciurl, this);
+        QFxPixmapCache::cancelGet(d->sciurl, this);
 
     d->url = url;
     d->sciurl = QUrl();
@@ -205,10 +205,10 @@ void QFxBorderImage::setSource(const QUrl &url)
                                  this, SLOT(sciRequestFinished()));
             }
         } else {
-            d->reply = QFxPixmap::get(qmlEngine(this), d->url, &d->pix);
-            if (d->reply) {
-                connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
-                connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
+            QNetworkReply *reply = QFxPixmapCache::get(qmlEngine(this), d->url, &d->pix);
+            if (reply) {
+                connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+                connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
                         this, SLOT(requestProgress(qint64,qint64)));
             } else {
                 //### should be unified with requestFinished
@@ -284,7 +284,11 @@ QFxBorderImage::TileMode QFxBorderImage::horizontalTileMode() const
 void QFxBorderImage::setHorizontalTileMode(TileMode t)
 {
     Q_D(QFxBorderImage);
-    d->horizontalTileMode = t;
+    if (t != d->horizontalTileMode) {
+        d->horizontalTileMode = t;
+        emit tileModeChanged();
+        update();
+    }
 }
 
 QFxBorderImage::TileMode QFxBorderImage::verticalTileMode() const
@@ -296,7 +300,11 @@ QFxBorderImage::TileMode QFxBorderImage::verticalTileMode() const
 void QFxBorderImage::setVerticalTileMode(TileMode t)
 {
     Q_D(QFxBorderImage);
-    d->verticalTileMode = t;
+    if (t != d->verticalTileMode) {
+        d->verticalTileMode = t;
+        emit tileModeChanged();
+        update();
+    }
 }
 
 void QFxBorderImage::setGridScaledImage(const QFxGridScaledImage& sci)
@@ -315,10 +323,10 @@ void QFxBorderImage::setGridScaledImage(const QFxGridScaledImage& sci)
         d->verticalTileMode = sci.verticalTileRule();
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
-        d->reply = QFxPixmap::get(qmlEngine(this), d->sciurl, &d->pix);
-        if (d->reply) {
-            connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
-            connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
+        QNetworkReply *reply = QFxPixmapCache::get(qmlEngine(this), d->sciurl, &d->pix);
+        if (reply) {
+            connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+            connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
                     this, SLOT(requestProgress(qint64,qint64)));
         } else {
             //### should be unified with requestFinished
@@ -340,16 +348,10 @@ void QFxBorderImage::requestFinished()
 {
     Q_D(QFxBorderImage);
     if (d->url.path().endsWith(QLatin1String(".sci"))) {
-        QFxPixmap::find(d->sciurl, &d->pix);
+        QFxPixmapCache::find(d->sciurl, &d->pix);
     } else {
-        if (d->reply) {
-            //###disconnect really needed?
-            disconnect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),
-                       this, SLOT(requestProgress(qint64,qint64)));
-            if (d->reply->error() != QNetworkReply::NoError)
-                d->status = Error;
-        }
-        QFxPixmap::find(d->url, &d->pix);
+        if (!QFxPixmapCache::find(d->url, &d->pix))
+            d->status = Error;
     }
     setImplicitWidth(d->pix.width());
     setImplicitHeight(d->pix.height());

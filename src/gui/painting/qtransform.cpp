@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,8 @@
 #include "qpainterpath.h"
 #include "qvariant.h"
 #include <qmath.h>
+
+#include <private/qbezier_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -79,7 +81,7 @@ QT_BEGIN_NAMESPACE
             ny = affine._m12 * FX_ + affine._m22 * FY_ + affine._dy;        \
             if (t == TxProject) {                                       \
                 qreal w = (m_13 * FX_ + m_23 * FY_ + m_33);              \
-                if (w < Q_NEAR_CLIP) w = Q_NEAR_CLIP;                   \
+                if (w < qreal(Q_NEAR_CLIP)) w = qreal(Q_NEAR_CLIP);     \
                 w = 1./w;                                               \
                 nx *= w;                                                \
                 ny *= w;                                                \
@@ -1492,27 +1494,12 @@ static inline bool lineTo_clipped(QPainterPath &path, const QTransform &transfor
 
 static inline bool cubicTo_clipped(QPainterPath &path, const QTransform &transform, const QPointF &a, const QPointF &b, const QPointF &c, const QPointF &d, bool needsMoveTo)
 {
-    const QHomogeneousCoordinate ha = mapHomogeneous(transform, a);
-    const QHomogeneousCoordinate hb = mapHomogeneous(transform, b);
-    const QHomogeneousCoordinate hc = mapHomogeneous(transform, c);
-    const QHomogeneousCoordinate hd = mapHomogeneous(transform, d);
+    // Convert projective xformed curves to line
+    // segments so they can be transformed more accurately
+    QPolygonF segment = QBezier::fromPoints(a, b, c, d).toPolygon();
 
-    if (ha.w < Q_NEAR_CLIP && hb.w < Q_NEAR_CLIP && hc.w < Q_NEAR_CLIP && hd.w < Q_NEAR_CLIP)
-        return false;
-
-    if (ha.w >= Q_NEAR_CLIP && hb.w >= Q_NEAR_CLIP && hc.w >= Q_NEAR_CLIP && hd.w >= Q_NEAR_CLIP) {
-        if (needsMoveTo)
-            path.moveTo(ha.toPoint());
-
-        path.cubicTo(hb.toPoint(), hc.toPoint(), hd.toPoint());
-        return true;
-    }
-
-    if (lineTo_clipped(path, transform, a, b, needsMoveTo))
-            needsMoveTo = false;
-    if (lineTo_clipped(path, transform, b, c, needsMoveTo))
-            needsMoveTo = false;
-    if (lineTo_clipped(path, transform, c, d, needsMoveTo))
+    for (int i = 0; i < segment.size() - 1; ++i)
+        if (lineTo_clipped(path, transform, segment.at(i), segment.at(i+1), needsMoveTo))
             needsMoveTo = false;
 
     return !needsMoveTo;
@@ -1554,6 +1541,7 @@ static QPainterPath mapProjective(const QTransform &transform, const QPainterPat
     if (path.elementCount() > 0 && lastMoveTo != last)
         lineTo_clipped(result, transform, last, lastMoveTo, needsMoveTo, false);
 
+    result.setFillRule(path.fillRule());
     return result;
 }
 
@@ -1793,6 +1781,14 @@ void QTransform::setMatrix(qreal m11, qreal m12, qreal m13,
     m_dirty = TxProject;
 }
 
+static inline bool needsPerspectiveClipping(const QRectF &rect, const QTransform &transform)
+{
+    const qreal wx = qMin(transform.m13() * rect.left(), transform.m13() * rect.right());
+    const qreal wy = qMin(transform.m23() * rect.top(), transform.m23() * rect.bottom());
+
+    return wx + wy + transform.m33() < Q_NEAR_CLIP;
+}
+
 QRect QTransform::mapRect(const QRect &rect) const
 {
     TransformationType t = inline_type();
@@ -1813,7 +1809,7 @@ QRect QTransform::mapRect(const QRect &rect) const
             y -= h;
         }
         return QRect(x, y, w, h);
-    } else {
+    } else if (t < TxProject || !needsPerspectiveClipping(rect, *this)) {
         // see mapToPolygon for explanations of the algorithm.
         qreal x = 0, y = 0;
         MAP(rect.left(), rect.top(), x, y);
@@ -1837,6 +1833,10 @@ QRect QTransform::mapRect(const QRect &rect) const
         xmax = qMax(xmax, x);
         ymax = qMax(ymax, y);
         return QRect(qRound(xmin), qRound(ymin), qRound(xmax)-qRound(xmin), qRound(ymax)-qRound(ymin));
+    } else {
+        QPainterPath path;
+        path.addRect(rect);
+        return map(path).boundingRect().toRect();
     }
 }
 
@@ -1879,7 +1879,7 @@ QRectF QTransform::mapRect(const QRectF &rect) const
             y -= h;
         }
         return QRectF(x, y, w, h);
-    } else {
+    } else if (t < TxProject || !needsPerspectiveClipping(rect, *this)) {
         qreal x = 0, y = 0;
         MAP(rect.x(), rect.y(), x, y);
         qreal xmin = x;
@@ -1902,6 +1902,10 @@ QRectF QTransform::mapRect(const QRectF &rect) const
         xmax = qMax(xmax, x);
         ymax = qMax(ymax, y);
         return QRectF(xmin, ymin, xmax-xmin, ymax - ymin);
+    } else {
+        QPainterPath path;
+        path.addRect(rect);
+        return map(path).boundingRect();
     }
 }
 

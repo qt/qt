@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -4635,12 +4635,12 @@ void QMacStyle::drawComplexControl(ComplexControl cc, const QStyleOptionComplex 
             // no longer possible to move it, second the up/down buttons are removed when
             // there is not enough space for them.
             if (cc == CC_ScrollBar) {
-                const int scrollBarLenght = (slider->orientation == Qt::Horizontal)
+                const int scrollBarLength = (slider->orientation == Qt::Horizontal)
                     ? slider->rect.width() : slider->rect.height();
                 const QMacStyle::WidgetSizePolicy sizePolicy = widgetSizePolicy(widget);
-                if (scrollBarLenght < scrollButtonsCutoffSize(thumbIndicatorCutoff, sizePolicy))
+                if (scrollBarLength < scrollButtonsCutoffSize(thumbIndicatorCutoff, sizePolicy))
                     tdi.attributes &= ~kThemeTrackShowThumb;
-                if (scrollBarLenght < scrollButtonsCutoffSize(scrollButtonsCutoff, sizePolicy))
+                if (scrollBarLength < scrollButtonsCutoffSize(scrollButtonsCutoff, sizePolicy))
                     tdi.enableState = kThemeTrackNothingToScroll;
             }
 
@@ -5109,9 +5109,9 @@ QStyle::SubControl QMacStyle::hitTestComplexControl(ComplexControl cc,
 
             // The arrow buttons are not drawn if the scroll bar is to short,
             // exclude them from the hit test.
-            const int scrollBarLenght = (sb->orientation == Qt::Horizontal)
+            const int scrollBarLength = (sb->orientation == Qt::Horizontal)
                 ? sb->rect.width() : sb->rect.height();
-            if (scrollBarLenght < scrollButtonsCutoffSize(scrollButtonsCutoff, widgetSizePolicy(widget)))
+            if (scrollBarLength < scrollButtonsCutoffSize(scrollButtonsCutoff, widgetSizePolicy(widget)))
                 sbi.enableState = kThemeTrackNothingToScroll;
 
             sbi.viewsize = sb->pageStep;
@@ -5510,9 +5510,15 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                 break;
             }
             case SC_SpinBoxEditField:
-                ret.setRect(fw, fw,
-                            spin->rect.width() - spinner_w - fw * 2 - spinBoxSep,
-                            spin->rect.height() - fw * 2);
+                if (spin->buttonSymbols == QAbstractSpinBox::NoButtons) {
+                    ret.setRect(fw, fw,
+                                spin->rect.width() - fw * 2,
+                                spin->rect.height() - fw * 2);
+                } else {
+                    ret.setRect(fw, fw,
+                                spin->rect.width() - fw * 2 - spinBoxSep - spinner_w,
+                                spin->rect.height() - fw * 2);
+                }
                 ret = visualRect(spin->direction, spin->rect, ret);
                 break;
             default:

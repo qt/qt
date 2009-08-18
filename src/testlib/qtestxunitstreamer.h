@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,10 +58,10 @@ class QTestXunitStreamer: public QTestBasicStreamer
         QTestXunitStreamer();
         ~QTestXunitStreamer();
 
-        void formatStart(const QTestElement *element, char **formatted) const;
-        void formatEnd(const QTestElement *element, char **formatted) const;
-        void formatAfterAttributes(const QTestElement *element, char **formatted) const;
-        void formatAttributes(const QTestElement *element, const QTestElementAttribute *attribute, char **formatted) const;
+        void formatStart(const QTestElement *element, QTestCharBuffer *formatted) const;
+        void formatEnd(const QTestElement *element, QTestCharBuffer *formatted) const;
+        void formatAfterAttributes(const QTestElement *element, QTestCharBuffer *formatted) const;
+        void formatAttributes(const QTestElement *element, const QTestElementAttribute *attribute, QTestCharBuffer *formatted) const;
         void output(QTestElement *element) const;
         void outputElements(QTestElement *element, bool isChildElement = false) const;
 

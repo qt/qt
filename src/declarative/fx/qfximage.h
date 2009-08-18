@@ -57,7 +57,7 @@ class Q_DECLARATIVE_EXPORT QFxImage : public QFxImageBase
     Q_ENUMS(FillMode)
 
     Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap DESIGNABLE false)
-    Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged);
+    Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged)
 
 public:
     QFxImage(QFxItem *parent=0);

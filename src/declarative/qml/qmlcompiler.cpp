@@ -194,7 +194,7 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
     QString string = v->value.asScript();
 
     if (!prop.isWritable())
-        COMPILE_EXCEPTION(v, "Invalid property assignment: read-only property");
+        COMPILE_EXCEPTION(v, "Invalid property assignment:" << QLatin1String(prop.name()) << "is a read-only property");
 
     if (prop.isEnumType()) {
         int value;
@@ -576,6 +576,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
     Q_ASSERT(root);
 
     this->engine = engine;
+    this->unit = unit;
     compileTree(root);
 
     if (!isError()) {
@@ -1036,7 +1037,7 @@ bool QmlCompiler::buildSubObject(Object *obj, const BindingContext &ctxt)
 
 int QmlCompiler::componentTypeRef()
 {
-    QmlType *t = QmlMetaType::qmlType("Qt/4.6/Component");
+    QmlType *t = QmlMetaType::qmlType("Qt/Component",4,6);
     for (int ii = output->types.count() - 1; ii >= 0; --ii) {
         if (output->types.at(ii).type == t)
             return ii;
@@ -1148,7 +1149,9 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
             COMPILE_EXCEPTION(prop, "Attached properties cannot be used here");
         }
 
-        QmlType *type = QmlMetaType::qmlType("Qt/4.6/"+prop->name); // XXX Should not hard-code namespace
+        QmlType *type = 0;
+        QmlEnginePrivate::get(engine)->resolveType(unit->imports, prop->name, &type, 0);
+        // 0: attached properties not supported in QML component files
 
         if (!type || !type->attachedPropertiesType())
             COMPILE_EXCEPTION(prop, "Non-existant attached object");
@@ -1156,6 +1159,8 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
         if (!prop->value)
             COMPILE_EXCEPTION(prop, "Invalid attached object assignment");
 
+        Q_ASSERT(type->attachedPropertiesFunction());
+        prop->index = type->index();
         prop->value->metatype = type->attachedPropertiesType();
     } else {
         // Setup regular property data
@@ -1428,10 +1433,8 @@ bool QmlCompiler::buildAttachedProperty(QmlParser::Property *prop,
                                         const BindingContext &ctxt)
 {
     Q_ASSERT(prop->value);
-    int id = QmlMetaType::attachedPropertiesFuncId(prop->name);
-    Q_ASSERT(id != -1); // This is checked in compileProperty()
+    Q_ASSERT(prop->index != -1); // This is set in buildProperty()
 
-    prop->index = id;
     obj->addAttachedProperty(prop);
 
     COMPILE_CHECK(buildSubObject(prop->value, ctxt.incr()));
@@ -1490,7 +1493,7 @@ bool QmlCompiler::buildValueTypeProperty(QObject *type,
     foreach (Property *prop, obj->properties) {
         int idx = type->metaObject()->indexOfProperty(prop->name.constData());
         if (idx == -1)
-            COMPILE_EXCEPTION(prop, "Cannot assign to non-existant property");
+            COMPILE_EXCEPTION(prop, "Cannot assign to non-existant property" << prop->name);
         QMetaProperty p = type->metaObject()->property(idx);
         prop->index = idx;
         prop->type = p.userType();
@@ -1715,7 +1718,7 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
             QmlParser::Object *root = v->object;
             QmlParser::Object *component = new QmlParser::Object;
             component->type = componentTypeRef();
-            component->typeName = "Qt/4.6/Component";
+            component->typeName = "Qt/Component";
             component->metatype = &QmlComponent::staticMetaObject;
             component->location = root->location;
             QmlParser::Value *componentValue = new QmlParser::Value;
@@ -2042,7 +2045,7 @@ bool QmlCompiler::buildBinding(QmlParser::Value *value,
 
     QMetaProperty mp = prop->parent->metaObject()->property(prop->index);
     if (!mp.isWritable() && !QmlMetaType::isList(prop->type))
-        COMPILE_EXCEPTION(prop, "Invalid property assignment: read-only property");
+        COMPILE_EXCEPTION(prop, "Invalid property assignment:" << QString::fromLatin1(prop->name) << "is a read-only property");
 
     BindingReference reference;
     reference.expression = value->value;

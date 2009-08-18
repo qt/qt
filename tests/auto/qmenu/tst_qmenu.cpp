@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,6 +50,7 @@
 #include <QStatusBar>
 #include <QListWidget>
 #include <QWidgetAction>
+#include <QDesktopWidget>
 
 #include <qmenu.h>
 #include <qstyle.h>
@@ -95,6 +96,8 @@ private slots:
     void task250673_activeMultiColumnSubMenuPosition();
     void task256918_setFont();
     void menuSizeHint();
+    void task258920_mouseBorder();
+    void setFixedWidth();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
@@ -690,6 +693,12 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     };
 
     QMenu sub;
+	
+    if (sub.style()->styleHint(QStyle::SH_Menu_Scrollable, 0, &sub)) {
+        //the style prevents the menus from getting columns
+        QSKIP("the style doesn't support multiple columns, it makes the menu scrollable", SkipSingle);
+    }
+	
     sub.addAction("Sub-Item1");
     QAction *subAction = sub.addAction("Sub-Item2");
 
@@ -701,6 +710,7 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     uint i = 2;
     while (main.columnCount() < 2) {
         main.addAction(QString("Item %1").arg(i));
+        qDebug() << "adding action" << i;
         ++i;
         Q_ASSERT(i<1000);
     }
@@ -762,6 +772,52 @@ void tst_QMenu::menuSizeHint()
 
     QCOMPARE(resSize, menu.sizeHint());
 }
+
+class Menu258920 : public QMenu
+{
+    Q_OBJECT
+public slots:
+    void paintEvent(QPaintEvent *e)
+    {
+        QMenu::paintEvent(e);
+        painted = true;
+    }
+
+public:
+    bool painted;
+};
+
+void tst_QMenu::task258920_mouseBorder()
+{
+    Menu258920 menu;
+    QAction *action = menu.addAction("test");
+
+    menu.popup(QApplication::desktop()->availableGeometry().center());
+    QTest::qWait(100);
+    QRect actionRect = menu.actionGeometry(action);
+    QTest::mouseMove(&menu, actionRect.center());
+    QTest::qWait(30);
+    QTest::mouseMove(&menu, actionRect.center() + QPoint(10, 0));
+    QTest::qWait(30);
+    QCOMPARE(action, menu.activeAction());
+    menu.painted = false;
+    QTest::mouseMove(&menu, QPoint(actionRect.center().x(), actionRect.bottom() + 1));
+    QTest::qWait(30);
+    QCOMPARE(static_cast<QAction*>(0), menu.activeAction());
+    QVERIFY(menu.painted);
+}
+
+void tst_QMenu::setFixedWidth()
+{
+    QMenu menu;
+    menu.addAction("action");
+    menu.setFixedWidth(300);
+    //the sizehint should reflect the minimumwidth because the action will try to
+    //get as much space as possible
+    QCOMPARE(menu.sizeHint().width(), menu.minimumWidth());
+}
+
+
 
 QTEST_MAIN(tst_QMenu)
 #include "tst_qmenu.moc"

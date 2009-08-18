@@ -34,15 +34,26 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #define QT_SHAREDPOINTER_TRACK_POINTERS
 #include "qsharedpointer.h"
-#include "externaltests.h"
 #include <QtTest/QtTest>
+#include <QtCore/QThread>
+#include <QtCore/QVector>
+
+#include "externaltests.h"
+#include "wrapper.h"
+
+#include <stdlib.h>
+#include <time.h>
+
+namespace QtSharedPointer {
+    Q_CORE_EXPORT void internalSafetyCheckCleanCheck();
+}
 
 class tst_QSharedPointer: public QObject
 {
@@ -51,11 +62,15 @@ class tst_QSharedPointer: public QObject
 private slots:
     void basics_data();
     void basics();
+    void swap();
     void forwardDeclaration1();
     void forwardDeclaration2();
     void memoryManagement();
     void downCast();
     void upCast();
+    void qobjectWeakManagement();
+    void noSharedPointerFromWeakQObject();
+    void weakQObjectFromSharedPointer();
     void objectCast();
     void differentPointers();
     void virtualBaseDifferentPointers();
@@ -68,10 +83,35 @@ private slots:
     void constCorrectness();
     void customDeleter();
     void creating();
+    void creatingQObject();
+    void mixTrackingPointerCode();
+    void threadStressTest_data();
+    void threadStressTest();
     void validConstructs();
     void invalidConstructs_data();
     void invalidConstructs();
+
+public slots:
+    void cleanup() { check(); }
+
+public:
+    inline void check()
+    {
+#ifdef QT_BUILD_INTERNAL
+        QtSharedPointer::internalSafetyCheckCleanCheck();
+#endif
+    }
 };
+
+template <typename Base>
+class RefCountHack: public Base
+{
+public:
+    using Base::d;
+};
+template<typename Base> static inline
+QtSharedPointer::ExternalRefCountData *refCountData(const Base &b)
+{ return static_cast<const RefCountHack<Base> *>(&b)->d; }
 
 class Data
 {
@@ -156,8 +196,8 @@ void tst_QSharedPointer::basics()
         QVERIFY(! (ptr == otherData));
         QVERIFY(! (otherData == ptr));
     }
-    QVERIFY(!ptr.d || ptr.d->weakref == 1);
-    QVERIFY(!ptr.d || ptr.d->strongref == 1);
+    QVERIFY(!refCountData(ptr) || refCountData(ptr)->weakref == 1);
+    QVERIFY(!refCountData(ptr) || refCountData(ptr)->strongref == 1);
 
     {
         // create another object:
@@ -169,8 +209,8 @@ void tst_QSharedPointer::basics()
 
         // otherData is deleted here
     }
-    QVERIFY(!ptr.d || ptr.d->weakref == 1);
-    QVERIFY(!ptr.d || ptr.d->strongref == 1);
+    QVERIFY(!refCountData(ptr) || refCountData(ptr)->weakref == 1);
+    QVERIFY(!refCountData(ptr) || refCountData(ptr)->strongref == 1);
 
     {
         // create a copy:
@@ -186,8 +226,8 @@ void tst_QSharedPointer::basics()
         QCOMPARE(copy.data(), aData);
         QVERIFY(copy == aData);
     }
-    QVERIFY(!ptr.d || ptr.d->weakref == 1);
-    QVERIFY(!ptr.d || ptr.d->strongref == 1);
+    QVERIFY(!refCountData(ptr) || refCountData(ptr)->weakref == 1);
+    QVERIFY(!refCountData(ptr) || refCountData(ptr)->strongref == 1);
 
     {
         // create a weak reference:
@@ -218,10 +258,41 @@ void tst_QSharedPointer::basics()
         QVERIFY(strong == ptr);
         QCOMPARE(strong.data(), aData);
     }
-    QVERIFY(!ptr.d || ptr.d->weakref == 1);
-    QVERIFY(!ptr.d || ptr.d->strongref == 1);
+    QVERIFY(!refCountData(ptr) || refCountData(ptr)->weakref == 1);
+    QVERIFY(!refCountData(ptr) || refCountData(ptr)->strongref == 1);
 
     // aData is deleted here
+}
+
+void tst_QSharedPointer::swap()
+{
+    QSharedPointer<int> p1, p2(new int(42)), control = p2;
+    QVERIFY(p1 != control);
+    QVERIFY(p1.isNull());
+    QVERIFY(p2 == control);
+    QVERIFY(!p2.isNull());
+    QVERIFY(*p2 == 42);
+
+    p1.swap(p2);
+    QVERIFY(p1 == control);
+    QVERIFY(!p1.isNull());
+    QVERIFY(p2 != control);
+    QVERIFY(p2.isNull());
+    QVERIFY(*p1 == 42);
+
+    p1.swap(p2);
+    QVERIFY(p1 != control);
+    QVERIFY(p1.isNull());
+    QVERIFY(p2 == control);
+    QVERIFY(!p2.isNull());
+    QVERIFY(*p2 == 42);
+
+    qSwap(p1, p2);
+    QVERIFY(p1 == control);
+    QVERIFY(!p1.isNull());
+    QVERIFY(p2 != control);
+    QVERIFY(p2.isNull());
+    QVERIFY(*p1 == 42);
 }
 
 class ForwardDeclared;
@@ -435,15 +506,15 @@ void tst_QSharedPointer::upCast()
         QVERIFY(baseptr == derivedptr);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 
     {
         QWeakPointer<DerivedData> derivedptr = qWeakPointerCast<DerivedData>(baseptr);
         QVERIFY(baseptr == derivedptr);
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 
     {
         QWeakPointer<Data> weakptr = baseptr;
@@ -451,22 +522,138 @@ void tst_QSharedPointer::upCast()
         QVERIFY(baseptr == derivedptr);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 
     {
         QSharedPointer<DerivedData> derivedptr = baseptr.staticCast<DerivedData>();
         QVERIFY(baseptr == derivedptr);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 }
 
 class OtherObject: public QObject
 {
     Q_OBJECT
 };
+
+void tst_QSharedPointer::qobjectWeakManagement()
+{
+    {
+        QObject *obj = new QObject;
+        QWeakPointer<QObject> weak(obj);
+        QVERIFY(!weak.isNull());
+        QVERIFY(weak.data() == obj);
+
+        // now delete
+        delete obj;
+        QVERIFY(weak.isNull());
+    }
+    check();
+
+    {
+        // same, bit with operator=
+        QObject *obj = new QObject;
+        QWeakPointer<QObject> weak;
+        weak = obj;
+        QVERIFY(!weak.isNull());
+        QVERIFY(weak.data() == obj);
+
+        // now delete
+        delete obj;
+        QVERIFY(weak.isNull());
+    }
+    check();
+
+    {
+        // delete triggered by parent
+        QObject *obj, *parent;
+        parent = new QObject;
+        obj = new QObject(parent);
+        QWeakPointer<QObject> weak(obj);
+
+        // now delete the parent
+        delete parent;
+        QVERIFY(weak.isNull());
+    }
+    check();
+
+    {
+        // same as above, but set the parent after QWeakPointer is created
+        QObject *obj, *parent;
+        obj = new QObject;
+        QWeakPointer<QObject> weak(obj);
+
+        parent = new QObject;
+        obj->setParent(parent);
+
+        // now delete the parent
+        delete parent;
+        QVERIFY(weak.isNull());
+    }
+    check();
+
+    {
+        // with two QWeakPointers
+        QObject *obj = new QObject;
+        QWeakPointer<QObject> weak(obj);
+
+        {
+            QWeakPointer<QObject> weak2(obj);
+            QVERIFY(!weak2.isNull());
+            QVERIFY(weak == weak2);
+        }
+        QVERIFY(!weak.isNull());
+
+        delete obj;
+        QVERIFY(weak.isNull());
+    }
+    check();
+
+    {
+        // same, but delete the pointer while two QWeakPointers exist
+        QObject *obj = new QObject;
+        QWeakPointer<QObject> weak(obj);
+
+        {
+            QWeakPointer<QObject> weak2(obj);
+            QVERIFY(!weak2.isNull());
+
+            delete obj;
+            QVERIFY(weak.isNull());
+            QVERIFY(weak2.isNull());
+        }
+        QVERIFY(weak.isNull());
+    }
+    check();
+}
+
+void tst_QSharedPointer::noSharedPointerFromWeakQObject()
+{
+    // you're not allowed to create a QSharedPointer from an unmanaged QObject
+    QObject obj;
+    QWeakPointer<QObject> weak(&obj);
+
+    QSharedPointer<QObject> strong = weak.toStrongRef();
+    QVERIFY(strong.isNull());
+
+    // is something went wrong, we'll probably crash here
+}
+
+void tst_QSharedPointer::weakQObjectFromSharedPointer()
+{
+    // this is the inverse of the above: you're allowed to create a QWeakPointer
+    // from a managed QObject
+    QSharedPointer<QObject> shared(new QObject);
+    QWeakPointer<QObject> weak = shared.data();
+    QVERIFY(!weak.isNull());
+
+    // delete:
+    shared.clear();
+    QVERIFY(weak.isNull());
+}
 
 void tst_QSharedPointer::objectCast()
 {
@@ -496,6 +683,7 @@ void tst_QSharedPointer::objectCast()
         QVERIFY(ptr == data);
 #endif
     }
+    check();
 
     {
         const OtherObject *data = new OtherObject;
@@ -523,6 +711,7 @@ void tst_QSharedPointer::objectCast()
         QVERIFY(ptr == data);
 #endif
     }
+    check();
 
     {
         OtherObject *data = new OtherObject;
@@ -564,6 +753,7 @@ void tst_QSharedPointer::objectCast()
         QVERIFY(otherptr.isNull());
 #endif
     }
+    check();
 }
 
 void tst_QSharedPointer::differentPointers()
@@ -583,6 +773,7 @@ void tst_QSharedPointer::differentPointers()
         QVERIFY(baseptr == aData);
         QVERIFY(baseptr == aBase);
     }
+    check();
 
     {
         DiffPtrDerivedData *aData = new DiffPtrDerivedData;
@@ -597,6 +788,7 @@ void tst_QSharedPointer::differentPointers()
         QVERIFY(ptr == aBase);
         QVERIFY(baseptr == aData);
     }
+    check();
 
     {
         DiffPtrDerivedData *aData = new DiffPtrDerivedData;
@@ -613,6 +805,7 @@ void tst_QSharedPointer::differentPointers()
         QVERIFY(baseptr == aData);
         QVERIFY(baseptr == aBase);
     }
+    check();
 }
 
 void tst_QSharedPointer::virtualBaseDifferentPointers()
@@ -632,6 +825,7 @@ void tst_QSharedPointer::virtualBaseDifferentPointers()
         QVERIFY(baseptr == aData);
         QVERIFY(baseptr == aBase);
     }
+    check();
 
     {
         VirtualDerived *aData = new VirtualDerived;
@@ -648,6 +842,7 @@ void tst_QSharedPointer::virtualBaseDifferentPointers()
         QVERIFY(baseptr == aData);
         QVERIFY(baseptr == aBase);
     }
+    check();
 }
 
 #ifndef QTEST_NO_RTTI
@@ -662,8 +857,8 @@ void tst_QSharedPointer::dynamicCast()
         QCOMPARE(derivedptr.data(), aData);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 
     {
         QWeakPointer<Data> weakptr = baseptr;
@@ -672,8 +867,8 @@ void tst_QSharedPointer::dynamicCast()
         QCOMPARE(derivedptr.data(), aData);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 
     {
         QSharedPointer<DerivedData> derivedptr = baseptr.dynamicCast<DerivedData>();
@@ -681,8 +876,8 @@ void tst_QSharedPointer::dynamicCast()
         QCOMPARE(derivedptr.data(), aData);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 }
 
 void tst_QSharedPointer::dynamicCastDifferentPointers()
@@ -697,8 +892,8 @@ void tst_QSharedPointer::dynamicCastDifferentPointers()
         QCOMPARE(derivedptr.data(), aData);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 
     {
         QWeakPointer<Data> weakptr = baseptr;
@@ -707,8 +902,8 @@ void tst_QSharedPointer::dynamicCastDifferentPointers()
         QCOMPARE(derivedptr.data(), aData);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 
     {
         QSharedPointer<DiffPtrDerivedData> derivedptr = baseptr.dynamicCast<DiffPtrDerivedData>();
@@ -716,8 +911,8 @@ void tst_QSharedPointer::dynamicCastDifferentPointers()
         QCOMPARE(derivedptr.data(), aData);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 
     {
         Stuffing *nakedptr = dynamic_cast<Stuffing *>(baseptr.data());
@@ -742,8 +937,8 @@ void tst_QSharedPointer::dynamicCastVirtualBase()
         QCOMPARE(derivedptr.data(), aData);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 
     {
         QWeakPointer<Data> weakptr = baseptr;
@@ -752,8 +947,8 @@ void tst_QSharedPointer::dynamicCastVirtualBase()
         QCOMPARE(derivedptr.data(), aData);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 
     {
         QSharedPointer<VirtualDerived> derivedptr = baseptr.dynamicCast<VirtualDerived>();
@@ -761,8 +956,8 @@ void tst_QSharedPointer::dynamicCastVirtualBase()
         QCOMPARE(derivedptr.data(), aData);
         QCOMPARE(static_cast<Data *>(derivedptr.data()), baseptr.data());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 }
 
 void tst_QSharedPointer::dynamicCastFailure()
@@ -774,15 +969,15 @@ void tst_QSharedPointer::dynamicCastFailure()
         QSharedPointer<DerivedData> derivedptr = qSharedPointerDynamicCast<DerivedData>(baseptr);
         QVERIFY(derivedptr.isNull());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 
     {
         QSharedPointer<DerivedData> derivedptr = baseptr.dynamicCast<DerivedData>();
         QVERIFY(derivedptr.isNull());
     }
-    QCOMPARE(int(baseptr.d->weakref), 1);
-    QCOMPARE(int(baseptr.d->strongref), 1);
+    QCOMPARE(int(refCountData(baseptr)->weakref), 1);
+    QCOMPARE(int(refCountData(baseptr)->strongref), 1);
 }
 #endif
 
@@ -814,6 +1009,7 @@ void tst_QSharedPointer::constCorrectness()
         ptr = cvptr.constCast<Data>();
 #endif
     }
+    check();
 
     {
         Data *aData = new Data;
@@ -827,6 +1023,7 @@ void tst_QSharedPointer::constCorrectness()
         QCOMPARE(cptr.data(), aData);
         QCOMPARE(cptr.operator->(), aData);
     }
+    check();
 }
 
 static int customDeleterFnCallCount;
@@ -836,9 +1033,14 @@ void customDeleterFn(Data *ptr)
     delete ptr;
 }
 
+static int refcount;
+
 template <typename T>
 struct CustomDeleter
 {
+    CustomDeleter() { ++refcount; }
+    CustomDeleter(const CustomDeleter &) { ++refcount; }
+    ~CustomDeleter() { --refcount; }
     inline void operator()(T *ptr)
     {
         delete ptr;
@@ -855,11 +1057,13 @@ void tst_QSharedPointer::customDeleter()
         QSharedPointer<Data> ptr2(new Data, &Data::alsoDelete);
         QSharedPointer<Data> ptr3(new Data, &Data::virtualDelete);
     }
+    check();
     {
         QSharedPointer<DerivedData> ptr(new DerivedData, &Data::doDelete);
         QSharedPointer<DerivedData> ptr2(new DerivedData, &Data::alsoDelete);
         QSharedPointer<DerivedData> ptr3(new DerivedData, &Data::virtualDelete);
     }
+    check();
 
     customDeleterFnCallCount = 0;
     {
@@ -868,6 +1072,7 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(customDeleterFnCallCount, 0);
     }
     QCOMPARE(customDeleterFnCallCount, 1);
+    check();
 
     customDeleterFnCallCount = 0;
     {
@@ -877,6 +1082,7 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(customDeleterFnCallCount, 1);
     }
     QCOMPARE(customDeleterFnCallCount, 1);
+    check();
 
     customDeleterFnCallCount = 0;
     {
@@ -886,6 +1092,7 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(customDeleterFnCallCount, 1);
     }
     QCOMPARE(customDeleterFnCallCount, 1);
+    check();
 
     customDeleterFnCallCount = 0;
     {
@@ -894,6 +1101,7 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(customDeleterFnCallCount, 0);
     }
     QCOMPARE(customDeleterFnCallCount, 1);
+    check();
 
     customDeleterFnCallCount = 0;
     {
@@ -902,6 +1110,7 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(customDeleterFnCallCount, 0);
     }
     QCOMPARE(customDeleterFnCallCount, 1);
+    check();
 
     customDeleterFnCallCount = 0;
     {
@@ -914,6 +1123,7 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(customDeleterFnCallCount, 0);
     }
     QCOMPARE(customDeleterFnCallCount, 1);
+    check();
 
     customDeleterFnCallCount = 0;
     {
@@ -926,7 +1136,9 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(customDeleterFnCallCount, 0);
     }
     QCOMPARE(customDeleterFnCallCount, 1);
+    check();
 
+    refcount = 0;
     CustomDeleter<Data> dataDeleter;
     dataDeleter.callCount = 0;
     {
@@ -935,6 +1147,8 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(dataDeleter.callCount, 0);
     }
     QCOMPARE(dataDeleter.callCount, 1);
+    QCOMPARE(refcount, 1);
+    check();
 
     dataDeleter.callCount = 0;
     {
@@ -944,6 +1158,8 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(dataDeleter.callCount, 0);
     }
     QCOMPARE(dataDeleter.callCount, 1);
+    QCOMPARE(refcount, 1);
+    check();
 
     dataDeleter.callCount = 0;
     {
@@ -956,6 +1172,8 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(dataDeleter.callCount, 0);
     }
     QCOMPARE(dataDeleter.callCount, 1);
+    QCOMPARE(refcount, 1);
+    check();
 
     dataDeleter.callCount = 0;
     {
@@ -964,6 +1182,8 @@ void tst_QSharedPointer::customDeleter()
         QCOMPARE(dataDeleter.callCount, 0);
     }
     QCOMPARE(dataDeleter.callCount, 1);
+    QCOMPARE(refcount, 1);
+    check();
 
     CustomDeleter<DerivedData> derivedDataDeleter;
     derivedDataDeleter.callCount = 0;
@@ -976,6 +1196,8 @@ void tst_QSharedPointer::customDeleter()
     }
     QCOMPARE(dataDeleter.callCount, 0);
     QCOMPARE(derivedDataDeleter.callCount, 1);
+    QCOMPARE(refcount, 2);
+    check();
 
     derivedDataDeleter.callCount = 0;
     dataDeleter.callCount = 0;
@@ -992,6 +1214,8 @@ void tst_QSharedPointer::customDeleter()
     }
     QCOMPARE(dataDeleter.callCount, 1);
     QCOMPARE(derivedDataDeleter.callCount, 0);
+    QCOMPARE(refcount, 2);
+    check();
 
     derivedDataDeleter.callCount = 0;
     dataDeleter.callCount = 0;
@@ -1008,6 +1232,14 @@ void tst_QSharedPointer::customDeleter()
     }
     QCOMPARE(dataDeleter.callCount, 0);
     QCOMPARE(derivedDataDeleter.callCount, 1);
+    QCOMPARE(refcount, 2);
+    check();
+}
+
+void customQObjectDeleterFn(QObject *obj)
+{
+    ++customDeleterFnCallCount;
+    delete obj;
 }
 
 void tst_QSharedPointer::creating()
@@ -1025,12 +1257,13 @@ void tst_QSharedPointer::creating()
         ptr.clear();
         QCOMPARE(Data::destructorCounter, 1);
     }
+    check();
 
     Data::generationCounter = Data::destructorCounter = 0;
     {
         QSharedPointer<Data> ptr = QSharedPointer<Data>::create();
         QWeakPointer<Data> weakptr = ptr;
-        QtSharedPointer::ExternalRefCountData *d = ptr.d;
+        QtSharedPointer::ExternalRefCountData *d = refCountData(ptr);
 
         ptr.clear();
         QVERIFY(ptr.isNull());
@@ -1040,6 +1273,7 @@ void tst_QSharedPointer::creating()
         QVERIFY(d->weakref == 1);
         QVERIFY(d->strongref == 0);
     }
+    check();
 
     Data::generationCounter = Data::destructorCounter = 0;
     DerivedData::derivedDestructorCounter = 0;
@@ -1052,6 +1286,7 @@ void tst_QSharedPointer::creating()
         QCOMPARE(Data::destructorCounter, 1);
         QCOMPARE(DerivedData::derivedDestructorCounter, 1);
     }
+    check();
 
     {
         QSharedPointer<Data> ptr = QSharedPointer<DiffPtrDerivedData>::create();
@@ -1060,6 +1295,7 @@ void tst_QSharedPointer::creating()
         QCOMPARE(ptr.staticCast<DiffPtrDerivedData>()->buffer[3]+0, 16-3);
         QCOMPARE(ptr.staticCast<DiffPtrDerivedData>()->buffer[0]+0, 16);
     }
+    check();
 
     {
         QSharedPointer<VirtualDerived> ptr = QSharedPointer<VirtualDerived>::create();
@@ -1069,7 +1305,11 @@ void tst_QSharedPointer::creating()
         QSharedPointer<Data> baseptr = ptr;
         QCOMPARE(baseptr->classLevel(), 4);
     }
+    check();
+}
 
+void tst_QSharedPointer::creatingQObject()
+{
     {
         QSharedPointer<QObject> ptr = QSharedPointer<QObject>::create();
         QCOMPARE(ptr->metaObject(), &QObject::staticMetaObject);
@@ -1079,10 +1319,153 @@ void tst_QSharedPointer::creating()
 
         QVERIFY(qptr.isNull());
     }
+    check();
 
     {
         QSharedPointer<QObject> ptr = QSharedPointer<OtherObject>::create();
         QCOMPARE(ptr->metaObject(), &OtherObject::staticMetaObject);
+    }
+    check();
+}
+
+void tst_QSharedPointer::mixTrackingPointerCode()
+{
+    {
+        // pointer created with tracking
+        // deleted in code without tracking
+        QSharedPointer<int> ptr = QSharedPointer<int>(new int(42));
+        Wrapper w(ptr);
+        ptr.clear();
+    }
+    check();
+
+    {
+        // pointer created without tracking
+        // deleted in code with tracking
+        Wrapper w = Wrapper::create();
+        w.ptr.clear();
+    }
+}
+
+class ThreadData
+{
+    QAtomicInt * volatile ptr;
+public:
+    ThreadData(QAtomicInt *p) : ptr(p) { }
+    ~ThreadData() { ++ptr; }
+    void ref()
+    {
+        // if we're called after the destructor, we'll crash
+        ptr->ref();
+    }
+};
+
+class StrongThread: public QThread
+{
+protected:
+    void run()
+    {
+        usleep(rand() % 2000);
+        ptr->ref();
+        ptr.clear();
+    }
+public:
+    QSharedPointer<ThreadData> ptr;
+};
+
+class WeakThread: public QThread
+{
+protected:
+    void run()
+    {
+        usleep(rand() % 2000);
+        QSharedPointer<ThreadData> ptr = weak;
+        if (ptr)
+            ptr->ref();
+        ptr.clear();
+    }
+public:
+    QWeakPointer<ThreadData> weak;
+};
+
+void tst_QSharedPointer::threadStressTest_data()
+{
+    QTest::addColumn<int>("strongThreadCount");
+    QTest::addColumn<int>("weakThreadCount");
+
+    QTest::newRow("0+0") << 0 << 0;
+    QTest::newRow("1+0") << 1 << 0;
+    QTest::newRow("2+0") << 2 << 0;
+    QTest::newRow("10+0") << 10 << 0;
+
+    QTest::newRow("0+1") << 0 << 1;
+    QTest::newRow("1+1") << 1 << 1;
+
+    QTest::newRow("2+10") << 2 << 10;
+    QTest::newRow("5+10") << 5 << 10;
+    QTest::newRow("5+30") << 5 << 30;
+
+#ifndef Q_OS_WINCE
+    QTest::newRow("100+100") << 100 << 100;
+#endif
+}
+
+void tst_QSharedPointer::threadStressTest()
+{
+    QFETCH(int, strongThreadCount);
+    QFETCH(int, weakThreadCount);
+
+    int guard1[128];
+    QAtomicInt counter;
+    int guard2[128];
+
+    memset(guard1, 0, sizeof guard1);
+    memset(guard2, 0, sizeof guard2);
+
+    for (int r = 0; r < 5; ++r) {
+        QVector<QThread*> allThreads(6 * qMax(strongThreadCount, weakThreadCount) + 3, 0);
+        QSharedPointer<ThreadData> base = QSharedPointer<ThreadData>(new ThreadData(&counter));
+        counter = 0;
+
+        // set the pointers
+        for (int i = 0; i < strongThreadCount; ++i) {
+            StrongThread *t = new StrongThread;
+            t->ptr = base;
+            allThreads[2 * i] = t;
+        }
+        for (int i = 0; i < weakThreadCount; ++i) {
+            WeakThread *t = new WeakThread;
+            t->weak = base;
+            allThreads[6 * i + 3] = t;
+        }
+
+        base.clear();
+
+#ifdef Q_OS_WINCE
+        srand(QDateTime::currentDateTime().toTime_t());
+#else
+        srand(time(NULL));
+#endif
+        // start threads
+        for (int i = 0; i < allThreads.count(); ++i)
+            if (allThreads[i]) allThreads[i]->start();
+
+        // wait for them to finish
+        for (int i = 0; i < allThreads.count(); ++i)
+            if (allThreads[i]) allThreads[i]->wait();
+        qDeleteAll(allThreads);
+
+        // ensure the guards aren't touched
+        for (uint i = 0; i < sizeof guard1 / sizeof guard1[0]; ++i)
+            QVERIFY(!guard1[i]);
+        for (uint i = 0; i < sizeof guard2 / sizeof guard2[0]; ++i)
+            QVERIFY(!guard2[i]);
+
+        // verify that the count is the right range
+        int minValue = strongThreadCount;
+        int maxValue = strongThreadCount + weakThreadCount;
+        QVERIFY(counter >= minValue);
+        QVERIFY(counter <= maxValue);
     }
 }
 
@@ -1195,6 +1578,7 @@ void tst_QSharedPointer::invalidConstructs_data()
            "QSharedPointer<Data> b;\n"
            "if (a + b) return;";
 
+#if QT_VERSION >= 0x040600
     // two objects with the same pointer
     QTest::newRow("same-pointer")
         << &QTest::QExternalTest::tryRunFail
@@ -1208,6 +1592,7 @@ void tst_QSharedPointer::invalidConstructs_data()
         << "Data *aData = new Data;\n"
            "QSharedPointer<Data> ptr1 = QSharedPointer<Data>(aData);"
            "ptr1 = QSharedPointer<Data>(aData);";
+#endif
 
     // any type of cast for unrelated types:
     // (we have no reinterpret_cast)
@@ -1229,6 +1614,32 @@ void tst_QSharedPointer::invalidConstructs_data()
         << &QTest::QExternalTest::tryCompileFail
         << "QSharedPointer<Data> ptr1;\n"
            "QSharedPointer<int> ptr2 = qSharedPointerObjectCast<int>(ptr1);";
+
+    QTest::newRow("weak-pointer-from-regular-pointer")
+        << &QTest::QExternalTest::tryCompileFail
+        << "Data *ptr = 0;\n"
+           "QWeakPointer<Data> weakptr(ptr);\n";
+
+    QTest::newRow("shared-pointer-from-unmanaged-qobject")
+        << &QTest::QExternalTest::tryRunFail
+        << "QObject *ptr = new QObject;\n"
+           "QWeakPointer<QObject> weak = ptr;\n"    // this makes the object unmanaged
+           "QSharedPointer<QObject> shared(ptr);\n";
+
+#ifndef QT_NO_DEBUG
+    // this tests a Q_ASSERT, so it is only valid in debug mode
+    // the DerivedFromQObject destructor below creates a QWeakPointer from parent().
+    // parent() is not 0 in the current Qt implementation, but has started destruction,
+    // so the code should detect that issue
+    QTest::newRow("shared-pointer-from-qobject-in-destruction")
+        << &QTest::QExternalTest::tryRunFail
+        << "class DerivedFromQObject: public QObject { public:\n"
+           "    DerivedFromQObject(QObject *parent): QObject(parent) {}\n"
+           "    ~DerivedFromQObject() { QWeakPointer<QObject> weak = parent(); }\n"
+           "};\n"
+           "QObject obj;\n"
+           "new DerivedFromQObject(&obj);";
+#endif
 }
 
 void tst_QSharedPointer::invalidConstructs()

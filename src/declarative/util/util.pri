@@ -6,7 +6,6 @@ SOURCES += \
            util/qmlpackage.cpp \
            util/qmlscript.cpp \
            util/qmlanimation.cpp \
-           util/qmlfont.cpp \
            util/qmlpalette.cpp \
            util/qmlfollow.cpp \
            util/qmlstate.cpp\
@@ -32,7 +31,6 @@ HEADERS += \
            util/qmlscript.h \
            util/qmlanimation.h \
            util/qmlanimation_p.h \
-           util/qmlfont.h \
            util/qmlpalette.h \
            util/qmlfollow.h \
            util/qmlstate.h\

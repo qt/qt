@@ -25,7 +25,10 @@
  */
 #include "jstreamsconfig.h"
 #include "fileinputstream.h"
+
+#ifndef UNDER_CE
 #include <cerrno>
+#endif
 #include <cstring>
 namespace jstreams {
 
@@ -39,7 +42,9 @@ FileInputStream::FileInputStream(const char *filepath, int32_t buffersize) {
         error = "Could not read file '";
         error += filepath;
         error += "': ";
+#ifndef UNDER_CE
         error += strerror(errno);
+#endif
         status = Error;
         return;
     }

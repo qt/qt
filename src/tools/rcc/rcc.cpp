@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -894,10 +894,10 @@ bool RCCResourceLibrary::writeInitializer()
         if (m_useNameSpace)
             writeString("QT_BEGIN_NAMESPACE\n\n");
         if (m_root) {
-            writeString("extern bool qRegisterResourceData\n    "
+            writeString("extern Q_CORE_EXPORT bool qRegisterResourceData\n    "
                 "(int, const unsigned char *, "
                 "const unsigned char *, const unsigned char *);\n\n");
-            writeString("extern bool qUnregisterResourceData\n    "
+            writeString("extern Q_CORE_EXPORT bool qUnregisterResourceData\n    "
                 "(int, const unsigned char *, "
                 "const unsigned char *, const unsigned char *);\n\n");
         }
