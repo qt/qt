@@ -230,7 +230,6 @@ public:
     void init();
 
     QString script;
-    QString file;
 
     void execute();
 
@@ -249,7 +248,7 @@ public:
     void init();
 
     QString properties;
-    QList<QObject *> filter;
+    QList<QObject *> targets;
     QList<QObject *> exclude;
 
     QmlNullableValue<QVariant> value;
@@ -330,7 +329,7 @@ public:
     QString easing;
 
     QString properties;
-    QList<QObject *> filter;
+    QList<QObject *> targets;
     QList<QObject *> exclude;
 
     bool fromSourced;
