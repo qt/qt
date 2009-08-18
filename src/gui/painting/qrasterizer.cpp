@@ -691,14 +691,14 @@ static inline bool q16Dot16Compare(qreal p1, qreal p2)
     return FloatToQ16Dot16(p2 - p1) == 0;
 }
 
-static inline qreal qRoundF(qreal v)
+static inline qreal qFloorF(qreal v)
 {
 #ifdef QT_USE_MATH_H_FLOATS
     if (sizeof(qreal) == sizeof(float))
-        return floorf(v + 0.5);
+        return floorf(v);
     else
 #endif
-        return floor(v + 0.5);
+        return floor(v);
 }
 
 void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width, bool squareCap)
@@ -758,10 +758,10 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
         const qreal reciprocal = 1 / gridResolution;
 
         // snap to grid to prevent large slopes
-        pa.rx() = qRoundF(pa.rx() * gridResolution) * reciprocal;
-        pa.ry() = qRoundF(pa.ry() * gridResolution) * reciprocal;
-        pb.rx() = qRoundF(pb.rx() * gridResolution) * reciprocal;
-        pb.ry() = qRoundF(pb.ry() * gridResolution) * reciprocal;
+        pa.rx() = qFloorF(pa.rx() * gridResolution) * reciprocal;
+        pa.ry() = qFloorF(pa.ry() * gridResolution) * reciprocal;
+        pb.rx() = qFloorF(pb.rx() * gridResolution) * reciprocal;
+        pb.ry() = qFloorF(pb.ry() * gridResolution) * reciprocal;
 
         // old delta
         const QPointF d0 = a - b;
