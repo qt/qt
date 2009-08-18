@@ -47,7 +47,7 @@
 
 QDirectFBPaintDevice::QDirectFBPaintDevice(QDirectFBScreen *scr)
     : QCustomRasterPaintDevice(0), dfbSurface(0), lockedImage(0), screen(scr),
-      lock(DFBSurfaceLockFlags(0)), mem(0), engine(0)
+      lockFlgs(DFBSurfaceLockFlags(0)), mem(0), engine(0)
 {}
 
 QDirectFBPaintDevice::~QDirectFBPaintDevice()
@@ -65,15 +65,15 @@ IDirectFBSurface *QDirectFBPaintDevice::directFBSurface() const
 
 void QDirectFBPaintDevice::lockDirectFB(DFBSurfaceLockFlags flags)
 {
-    if (!(lock & flags)) {
-        if (lock)
+    if (!(lockFlgs & flags)) {
+        if (lockFlgs)
             unlockDirectFB();
         mem = QDirectFBScreen::lockSurface(dfbSurface, flags, &bpl);
         Q_ASSERT(mem);
         const QSize s = size();
         lockedImage = new QImage(mem, s.width(), s.height(), bpl,
                                  QDirectFBScreen::getImageFormat(dfbSurface));
-        lock = flags;
+        lockFlgs = flags;
     }
 }
 
@@ -87,7 +87,7 @@ void QDirectFBPaintDevice::unlockDirectFB()
     delete lockedImage;
     lockedImage = 0;
     mem = 0;
-    lock = DFBSurfaceLockFlags(0);
+    lockFlgs = DFBSurfaceLockFlags(0);
 }
 
 
