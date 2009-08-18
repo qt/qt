@@ -959,7 +959,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
                 Q_ASSERT(meta != 0);
                 meta->static_metacall(QMetaObject::CreateInstance, chosenIndex, params);
             } else {
-                thisQObject->qt_metacall(QMetaObject::InvokeMetaMethod, chosenIndex, params);
+                QMetaObject::metacall(thisQObject, QMetaObject::InvokeMetaMethod, chosenIndex, params);
             }
 
             if (scriptable)
