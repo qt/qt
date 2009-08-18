@@ -828,12 +828,14 @@ QScriptEnginePrivate::QScriptEnginePrivate() : idGenerator(1)
     currentFrame = exec;
 
     originalGlobalObjectProxy = 0;
-    agent = 0;
+    activeAgent = 0;
     processEventsInterval = -1;
 }
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
+    while (!ownedAgents.isEmpty())
+        delete ownedAgents.takeFirst();
     detachAllRegisteredScriptValues();
     qDeleteAll(m_qobjectData);
     qDeleteAll(m_typeInfos);
@@ -1187,6 +1189,15 @@ void QScriptEnginePrivate::collectGarbage()
 QScript::TimeoutCheckerProxy *QScriptEnginePrivate::timeoutChecker() const
 {
     return static_cast<QScript::TimeoutCheckerProxy*>(globalData->timeoutChecker);
+}
+
+void QScriptEnginePrivate::agentDeleted(QScriptEngineAgent *agent)
+{
+    ownedAgents.removeOne(agent);
+    if (activeAgent == agent) {
+        QScriptEngineAgentPrivate::get(agent)->detach();
+        activeAgent = 0;
+    }
 }
 
 #ifndef QT_NO_QOBJECT
@@ -3603,11 +3614,20 @@ QT_END_INCLUDE_NAMESPACE
 void QScriptEngine::setAgent(QScriptEngineAgent *agent)
 {
     Q_D(QScriptEngine);
-    if (d->agent)
-        QScriptEngineAgentPrivate::get(d->agent)->detach();
-    d->agent = agent;
-    if (agent)
-        QScriptEngineAgentPrivate::get(d->agent)->attach();
+    if (agent && (agent->engine() != this)) {
+        qWarning("QScriptEngine::setAgent(): "
+                 "cannot set agent belonging to different engine");
+        return;
+    }
+    if (d->activeAgent)
+        QScriptEngineAgentPrivate::get(d->activeAgent)->detach();
+    d->activeAgent = agent;
+    if (agent) {
+        int index = d->ownedAgents.indexOf(agent);
+        if (index == -1)
+            d->ownedAgents.append(agent);
+        QScriptEngineAgentPrivate::get(agent)->attach();
+    }
 }
 
 /*!
@@ -3621,7 +3641,7 @@ void QScriptEngine::setAgent(QScriptEngineAgent *agent)
 QScriptEngineAgent *QScriptEngine::agent() const
 {
     Q_D(const QScriptEngine);
-    return d->agent;
+    return d->activeAgent;
 }
 
 /*!

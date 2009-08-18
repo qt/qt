@@ -174,6 +174,8 @@ public:
 
     QScript::TimeoutCheckerProxy *timeoutChecker() const;
 
+    void agentDeleted(QScriptEngineAgent *agent);
+
 #ifndef QT_NO_QOBJECT
     JSC::JSValue newQObject(QObject *object,
         QScriptEngine::ValueOwnership ownership = QScriptEngine::QtOwnership,
@@ -235,7 +237,8 @@ public:
     QScript::QVariantPrototype *variantPrototype;
     WTF::RefPtr<JSC::Structure> variantWrapperObjectStructure;
 
-    QScriptEngineAgent *agent;
+    QList<QScriptEngineAgent*> ownedAgents;
+    QScriptEngineAgent *activeAgent;
     QHash<JSC::JSCell*, QBasicAtomicInt> keepAliveValues;
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;

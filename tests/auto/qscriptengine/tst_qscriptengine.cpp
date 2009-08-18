@@ -3649,13 +3649,35 @@ public:
 
 void tst_QScriptEngine::getSetAgent()
 {
-    QScriptEngine eng;
-    QCOMPARE(eng.agent(), (QScriptEngineAgent*)0);
-    TestAgent agent(&eng);
-    eng.setAgent(&agent);
-    QCOMPARE(eng.agent(), (QScriptEngineAgent*)&agent);
-    eng.setAgent(0);
-    QCOMPARE(eng.agent(), (QScriptEngineAgent*)0);
+    // case 1: engine deleted before agent --> agent deleted too
+    {
+        QScriptEngine *eng = new QScriptEngine;
+        QCOMPARE(eng->agent(), (QScriptEngineAgent*)0);
+        TestAgent *agent = new TestAgent(eng);
+        eng->setAgent(agent);
+        QCOMPARE(eng->agent(), (QScriptEngineAgent*)agent);
+        eng->setAgent(0); // the engine maintains ownership of the old agent
+        QCOMPARE(eng->agent(), (QScriptEngineAgent*)0);
+        delete eng;
+    }
+    // case 2: agent deleted before engine --> engine's agent should become 0
+    {
+        QScriptEngine *eng = new QScriptEngine;
+        TestAgent *agent = new TestAgent(eng);
+        eng->setAgent(agent);
+        QCOMPARE(eng->agent(), (QScriptEngineAgent*)agent);
+        delete agent;
+        QCOMPARE(eng->agent(), (QScriptEngineAgent*)0);
+        eng->evaluate("(function(){ return 123; })()");
+        delete eng;
+    }
+    {
+        QScriptEngine eng;
+        QScriptEngine eng2;
+        TestAgent *agent = new TestAgent(&eng);
+        QTest::ignoreMessage(QtWarningMsg, "QScriptEngine::setAgent(): cannot set agent belonging to different engine");
+        eng2.setAgent(agent);
+    }
 }
 
 void tst_QScriptEngine::reentrancy()

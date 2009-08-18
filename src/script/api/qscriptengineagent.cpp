@@ -205,6 +205,8 @@ QScriptEngineAgent::QScriptEngineAgent(QScriptEngineAgentPrivate &dd, QScriptEng
 */
 QScriptEngineAgent::~QScriptEngineAgent()
 {
+    QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine());
+    eng_p->agentDeleted(this);
     delete d_ptr;
     d_ptr = 0;
 }
