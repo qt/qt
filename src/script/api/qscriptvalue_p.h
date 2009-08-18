@@ -116,10 +116,6 @@ public:
     void initFrom(double value);
     void initFrom(const QString &value);
 
-    static void initFromJSCValue(QScriptValue &result,
-                                 QScriptEngine *engine,
-                                 JSC::JSValue value);
-
     bool isJSC() const;
 
     QVariant &variantValue() const;

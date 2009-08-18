@@ -333,17 +333,6 @@ void QScriptValuePrivate::initFrom(const QString &value)
     stringValue = value;
 }
 
-void QScriptValuePrivate::initFromJSCValue(QScriptValue &result,
-                                           QScriptEngine *engine,
-                                           JSC::JSValue value)
-{
-    Q_ASSERT(!result.isValid());
-    result.d_ptr = new QScriptValuePrivate();
-    result.d_ptr->engine = engine;
-    result.d_ptr->initFrom(value);
-    result.d_ptr->ref.ref();
-}
-
 bool QScriptValuePrivate::isJSC() const
 {
     return (type == JSC);
