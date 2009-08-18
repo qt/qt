@@ -67,8 +67,9 @@ struct AnchorVertex {
     AnchorVertex()
         : m_item(0), m_edge(QGraphicsAnchorLayout::Edge(0)) {}
 
+#ifdef QT_DEBUG
     inline QString toString() const;
-
+#endif
     QGraphicsLayoutItem *m_item;
     QGraphicsAnchorLayout::Edge m_edge;
 
@@ -77,6 +78,7 @@ struct AnchorVertex {
     qreal distance;
 };
 
+#ifdef QT_DEBUG
 inline QString AnchorVertex::toString() const
 {
     if (!this || !m_item) {
@@ -117,7 +119,7 @@ inline QString AnchorVertex::toString() const
     edge.insert(0, QLatin1String("%1_"));
     return edge.arg(itemName);
 }
-
+#endif
 
 /*!
   \internal
@@ -157,10 +159,11 @@ struct AnchorData : public QSimplexVariable {
 
     virtual ~AnchorData() {}
 
+#ifdef QT_DEBUG
     void dump(int indent = 2);
-
     inline QString toString() const;
     QString name;
+#endif
 
     // Anchor is semantically directed
     AnchorVertex *from;
@@ -195,19 +198,20 @@ protected:
           isLayoutAnchor(false) {}
 };
 
+#ifdef QT_DEBUG
 inline QString AnchorData::toString() const
 {
     return QString::fromAscii("Anchor(%1)").arg(name);
-    //return QString().sprintf("Anchor %%1 <Min %.1f  Pref %.1f  Max %.1f>",
-    //                         minSize, prefSize, maxSize).arg(name);
 }
-
+#endif
 
 struct SequentialAnchorData : public AnchorData
 {
     SequentialAnchorData() : AnchorData(AnchorData::Sequential)
     {
+#ifdef QT_DEBUG
         name = QLatin1String("SequentialAnchorData");
+#endif
     }
 
     virtual void updateChildrenSizes();
@@ -216,7 +220,9 @@ struct SequentialAnchorData : public AnchorData
     void setVertices(const QVector<AnchorVertex*> &vertices)
     {
         m_children = vertices;
+#ifdef QT_DEBUG
         name = QString::fromAscii("%1 -- %2").arg(vertices.first()->toString(), vertices.last()->toString());
+#endif
     }
 
     QVector<AnchorVertex*> m_children;          // list of vertices in the sequence
@@ -235,7 +241,9 @@ struct ParallelAnchorData : public AnchorData
         Q_ASSERT(first->to == second->to);
         from = first->from;
         to = first->to;
+#ifdef QT_DEBUG
         name = QString::fromAscii("%1 | %2").arg(first->toString(), second->toString());
+#endif
     }
 
     virtual void updateChildrenSizes();
@@ -262,9 +270,9 @@ public:
     GraphPath() {};
 
     QSimplexConstraint *constraint(const GraphPath &path) const;
-
+#ifdef QT_DEBUG
     QString toString() const;
-
+#endif
     QSet<AnchorData *> positives;
     QSet<AnchorData *> negatives;
 };

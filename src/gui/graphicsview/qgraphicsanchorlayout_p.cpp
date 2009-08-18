@@ -217,6 +217,7 @@ void SequentialAnchorData::refreshSizeHints(qreal effectiveSpacing)
     sizeAtMaximum = prefSize;
 }
 
+#ifdef QT_DEBUG
 void AnchorData::dump(int indent) {
     if (type == Parallel) {
         qDebug("%*s type: parallel:", indent, "");
@@ -234,6 +235,8 @@ void AnchorData::dump(int indent) {
         qDebug("%*s type: Normal:", indent, "");
     }
 }
+
+#endif
 
 QSimplexConstraint *GraphPath::constraint(const GraphPath &path) const
 {
@@ -262,6 +265,7 @@ QSimplexConstraint *GraphPath::constraint(const GraphPath &path) const
     return c;
 }
 
+#ifdef QT_DEBUG
 QString GraphPath::toString() const
 {
     QString string(QLatin1String("Path: "));
@@ -273,7 +277,7 @@ QString GraphPath::toString() const
 
     return string;
 }
-
+#endif
 
 QGraphicsAnchorLayoutPrivate::QGraphicsAnchorLayoutPrivate()
     : calculateGraphCacheDirty(1)
@@ -336,7 +340,7 @@ static bool simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
                                     AnchorVertex *after)
 {
     int i;
-#if 0
+#if defined(QT_DEBUG) && 0
     QString strVertices;
     for (i = 0; i < vertices.count(); ++i)
         strVertices += QString::fromAscii("%1 - ").arg(vertices.at(i)->toString());
@@ -536,7 +540,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
             // The complete path of the sequence to simplify is: beforeSequence, <candidates>, afterSequence
             // where beforeSequence and afterSequence are the endpoints where the anchor is inserted
             // between.
-#if 0
+#if defined(QT_DEBUG) && 0
             // ### DEBUG
             QString strCandidates;
             for (i = 0; i < candidates.count(); ++i)
@@ -1086,8 +1090,9 @@ void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
     // so we still know that the anchor direction is from 1 to 2.
     data->from = v1;
     data->to = v2;
+#ifdef QT_DEBUG
     data->name = QString::fromAscii("%1 --to--> %2").arg(v1->toString()).arg(v2->toString());
-
+#endif
     // Keep track of anchors that are connected to the layout 'edges'
     data->isLayoutAnchor = (v1->m_item == q || v2->m_item == q);
 

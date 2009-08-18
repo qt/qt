@@ -91,14 +91,16 @@ public:
     void createEdge(Vertex *first, Vertex *second, EdgeData *data)
     {
         // Creates a bidirectional edge
-#if 0
+#if defined(QT_DEBUG) && 0
         qDebug("Graph::createEdge(): %s",
                qPrintable(QString::fromAscii("%1-%2")
                           .arg(first->toString()).arg(second->toString())));
 #endif
         if (edgeData(first, second)) {
+#ifdef QT_DEBUG
             qWarning(qPrintable(QString::fromAscii("%1-%2 already has an edge")
                             .arg(first->toString()).arg(second->toString())));
+#endif
         }
         createDirectedEdge(first, second, data);
         createDirectedEdge(second, first, data);
@@ -107,7 +109,7 @@ public:
     void removeEdge(Vertex *first, Vertex *second)
     {
         // Removes a bidirectional edge
-#if 0
+#if defined(QT_DEBUG) && 0
         qDebug("Graph::removeEdge(): %s",
                qPrintable(QString::fromAscii("%1-%2")
                           .arg(first->toString()).arg(second->toString())));
@@ -120,7 +122,7 @@ public:
 
     EdgeData *takeEdge(Vertex* first, Vertex* second)
     {
-#if 0
+#if defined(QT_DEBUG) && 0
         qDebug("Graph::takeEdge(): %s",
                qPrintable(QString::fromAscii("%1-%2")
                           .arg(first->toString()).arg(second->toString())));
@@ -169,6 +171,7 @@ public:
         return conns;
     }
 
+#if defined(QT_DEBUG)
     QString serializeToDot() {   // traversal
         QString strVertices;
         QString edges;
@@ -195,6 +198,7 @@ public:
         }
         return QString::fromAscii("%1\n%2\n").arg(strVertices).arg(edges);
     }
+#endif
 
     Vertex *rootVertex() const
     {
