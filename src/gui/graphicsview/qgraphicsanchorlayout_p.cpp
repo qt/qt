@@ -438,7 +438,6 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
         return;
 
     bool dirty;
-    int count = 0;
     do {
         dirty = simplifyGraphIteration(orientation);
     } while (dirty);
@@ -676,7 +675,6 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientatio
            orientation == Horizontal ? "Horizontal" : "Vertical");
 #endif
 
-    Q_Q(QGraphicsAnchorLayout);
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
 
     QList<QPair<AnchorVertex*, AnchorVertex*> > connections = g.connections();
