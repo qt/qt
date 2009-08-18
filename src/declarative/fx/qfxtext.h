@@ -63,11 +63,11 @@ class Q_DECLARATIVE_EXPORT QFxText : public QFxItem
     Q_PROPERTY(QColor color READ color WRITE setColor)
     Q_PROPERTY(TextStyle style READ style WRITE setStyle)
     Q_PROPERTY(QColor styleColor READ styleColor WRITE setStyleColor)
-    Q_PROPERTY(HAlignment hAlign READ hAlign WRITE setHAlign)
-    Q_PROPERTY(VAlignment vAlign READ vAlign WRITE setVAlign)
-    Q_PROPERTY(bool wrap READ wrap WRITE setWrap)
+    Q_PROPERTY(HAlignment hAlign READ hAlign WRITE setHAlign) // ### horizontalAlignment?
+    Q_PROPERTY(VAlignment vAlign READ vAlign WRITE setVAlign) // ### verticalAlignment?
+    Q_PROPERTY(bool wrap READ wrap WRITE setWrap) //### there are several wrap modes in Qt
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
-    Q_PROPERTY(Qt::TextElideMode elide READ elideMode WRITE setElideMode)
+    Q_PROPERTY(Qt::TextElideMode elide READ elideMode WRITE setElideMode) //### elideMode?
 
 public:
     QFxText(QFxItem *parent=0);
@@ -85,7 +85,7 @@ public:
                       Sunken };
     enum TextFormat { PlainText = Qt::PlainText,
                       RichText = Qt::RichText,
-                      AutoText = Qt::AutoText};
+                      AutoText = Qt::AutoText };
 
     QString text() const;
     void setText(const QString &);

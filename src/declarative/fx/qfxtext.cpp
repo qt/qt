@@ -107,7 +107,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Text,QFxText)
 QFxText::QFxText(QFxItem *parent)
   : QFxItem(*(new QFxTextPrivate), parent)
 {
-    Q_D(QFxText);
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
@@ -115,7 +114,6 @@ QFxText::QFxText(QFxItem *parent)
 QFxText::QFxText(QFxTextPrivate &dd, QFxItem *parent)
   : QFxItem(dd, parent)
 {
-    Q_D(QFxText);
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
