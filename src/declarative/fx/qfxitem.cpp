@@ -69,7 +69,6 @@ QT_BEGIN_NAMESPACE
 #define FLT_MAX 1E+37
 #endif
 
-QML_DEFINE_NOCREATE_TYPE(QFxContents)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Item,QFxItem)
 
 QML_DEFINE_NOCREATE_TYPE(QGraphicsTransform);
@@ -210,40 +209,30 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 
 */
 
-QFxContents::QFxContents() : m_height(0), m_width(0)
+QFxContents::QFxContents() : m_x(0), m_y(0), m_width(0), m_height(0)
 {
 }
 
 /*!
-    \qmlproperty qreal Item::contents.width
-    \qmlproperty qreal Item::contents.height
+    \qmlproperty qreal Item::childrenRect.x
+    \qmlproperty qreal Item::childrenRect.y
+    \qmlproperty qreal Item::childrenRect.width
+    \qmlproperty qreal Item::childrenRect.height
 
-    The contents properties allow an item access to the size of its
+    The childrenRect properties allow an item access to the geometry of its
     children. This property is useful if you have an item that needs to be
     sized to fit its children.
 */
 
-/*!
-    \property QFxContents::height
-    \brief The height of the contents.
-*/
-qreal QFxContents::height() const
+QRectF QFxContents::rectF() const
 {
-    return m_height;
-}
-
-/*!
-    \property QFxContents::width
-    \brief The width of the contents.
-*/
-qreal QFxContents::width() const
-{
-    return m_width;
+    return QRectF(m_x, m_y, m_width, m_height);
 }
 
 //TODO: optimization: only check sender(), if there is one
 void QFxContents::calcHeight()
 {
+    qreal oldy = m_y;
     qreal oldheight = m_height;
 
     qreal top = FLT_MAX;
@@ -258,15 +247,18 @@ void QFxContents::calcHeight()
         if (y < top)
             top = y;
     }
+    if (!children.isEmpty())
+        m_y = top;
     m_height = qMax(bottom - top, qreal(0.0));
 
-    if (m_height != oldheight)
-        emit heightChanged();
+    if (m_height != oldheight || m_y != oldy)
+        emit rectChanged();
 }
 
 //TODO: optimization: only check sender(), if there is one
 void QFxContents::calcWidth()
 {
+    qreal oldx = m_x;
     qreal oldwidth = m_width;
 
     qreal left = FLT_MAX;
@@ -281,10 +273,12 @@ void QFxContents::calcWidth()
         if (x < left)
             left = x;
     }
+    if (!children.isEmpty())
+        m_x = left;
     m_width = qMax(right - left, qreal(0.0));
 
-    if (m_width != oldwidth)
-        emit widthChanged();
+    if (m_width != oldwidth || m_x != oldx)
+        emit rectChanged();
 }
 
 void QFxContents::setItem(QFxItem *item)
@@ -298,6 +292,7 @@ void QFxContents::setItem(QFxItem *item)
         connect(child, SIGNAL(yChanged()), this, SLOT(calcHeight()));
         connect(child, SIGNAL(widthChanged()), this, SLOT(calcWidth()));
         connect(child, SIGNAL(xChanged()), this, SLOT(calcWidth()));
+        connect(this, SIGNAL(rectChanged()), m_item, SIGNAL(childrenRectChanged()));
     }
 
     calcHeight();
@@ -1285,13 +1280,12 @@ QmlList<QObject *> *QFxItem::data()
 }
 
 /*!
-    \property QFxItem::contents
-    \brief An object that knows about the size of an item's children.
+    \property QFxItem::childrenRect
+    \brief The geometry of an item's children.
 
-    contents provides an easy way to access the (collective) width and
-    height of the item's children.
+    childrenRect provides an easy way to access the (collective) position and size of the item's children.
 */
-QFxContents *QFxItem::contents()
+QRectF QFxItem::childrenRect()
 {
     Q_D(QFxItem);
     if (!d->_contents) {
@@ -1299,7 +1293,7 @@ QFxContents *QFxItem::contents()
         d->_contents->setParent(this);
         d->_contents->setItem(this);
     }
-    return d->_contents;
+    return d->_contents->rectF();
 }
 
 bool QFxItem::clip() const
