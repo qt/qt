@@ -561,12 +561,13 @@ uint CppParser::getToken()
                 }
             } while (yyCh != '\n' && yyCh != EOF);
             yyCh = getChar();
-        } else if (isalpha(yyCh) || yyCh == '_') {
+        } else if ((yyCh >= 'A' && yyCh <= 'Z') || (yyCh >= 'a' && yyCh <= 'z') || yyCh == '_') {
             ushort *ptr = (ushort *)yyWord.unicode();
             do {
                 *ptr++ = yyCh;
                 yyCh = getChar();
-            } while (isalnum(yyCh) || yyCh == '_');
+            } while ((yyCh >= 'A' && yyCh <= 'Z') || (yyCh >= 'a' && yyCh <= 'z')
+                     || (yyCh >= '0' && yyCh <= '9') || yyCh == '_');
             yyWord.resize(ptr - (ushort *)yyWord.unicode());
 
             //qDebug() << "IDENT: " << yyWord;
