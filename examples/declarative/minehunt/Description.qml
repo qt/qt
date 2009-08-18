@@ -8,10 +8,10 @@ Item {
         anchors.fill: parent
         drag.target: Page
         drag.axis: "xy"
-        drag.xmin: 0
-        drag.xmax: 1000
-        drag.ymin: 0
-        drag.ymax: 1000
+        drag.minimumX: 0
+        drag.maximumX: 1000
+        drag.minimumY: 0
+        drag.maximumY: 1000
     }
     Rect {
         radius: 10

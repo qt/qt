@@ -73,7 +73,7 @@ public:
     void init()
     {
         Q_Q(QFxMouseRegion);
-        q->setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
+        q->setAcceptedMouseButtons(Qt::LeftButton);
         q->setAcceptHoverEvents(true);
     }
 

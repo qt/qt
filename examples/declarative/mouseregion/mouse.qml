@@ -25,8 +25,8 @@ Rect {
         MouseRegion {
             drag.target: parent
             drag.axis: "x"
-            drag.xmin: 0
-            drag.xmax: 150
+            drag.minimumX: 0
+            drag.maximumX: 150
             onPressed: { print('press') }
             onReleased: { print('release (isClick: ' + mouse.isClick + ') (wasHeld: ' + mouse.wasHeld + ')') }
             onClicked: { print('click' + '(wasHeld: ' + mouse.wasHeld + ')') }
