@@ -220,57 +220,57 @@ void tst_QNetworkCookieJar::cookiesForUrl_data()
     QNetworkCookie cookie;
     cookie.setName("a");
     cookie.setPath("/web");
-    cookie.setDomain(".trolltech.com");
+    cookie.setDomain(".nokia.com");
     allCookies += cookie;
 
     QTest::newRow("no-match-1") << allCookies << "http://foo.bar/" << result;
     QTest::newRow("no-match-2") << allCookies << "http://foo.bar/web" << result;
     QTest::newRow("no-match-3") << allCookies << "http://foo.bar/web/wiki" << result;
-    QTest::newRow("no-match-4") << allCookies << "http://trolltech.com" << result;
-    QTest::newRow("no-match-5") << allCookies << "http://www.trolltech.com" << result;
-    QTest::newRow("no-match-6") << allCookies << "http://trolltech.com/webinar" << result;
-    QTest::newRow("no-match-7") << allCookies << "http://www.trolltech.com/webinar" << result;
+    QTest::newRow("no-match-4") << allCookies << "http://nokia.com" << result;
+    QTest::newRow("no-match-5") << allCookies << "http://qt.nokia.com" << result;
+    QTest::newRow("no-match-6") << allCookies << "http://nokia.com/webinar" << result;
+    QTest::newRow("no-match-7") << allCookies << "http://qt.nokia.com/webinar" << result;
 
     result = allCookies;
-    QTest::newRow("match-1") << allCookies << "http://trolltech.com/web" << result;
-    QTest::newRow("match-2") << allCookies << "http://trolltech.com/web/" << result;
-    QTest::newRow("match-3") << allCookies << "http://trolltech.com/web/content" << result;
-    QTest::newRow("match-4") << allCookies << "http://www.trolltech.com/web" << result;
-    QTest::newRow("match-4") << allCookies << "http://www.trolltech.com/web/" << result;
-    QTest::newRow("match-6") << allCookies << "http://www.trolltech.com/web/content" << result;
+    QTest::newRow("match-1") << allCookies << "http://nokia.com/web" << result;
+    QTest::newRow("match-2") << allCookies << "http://nokia.com/web/" << result;
+    QTest::newRow("match-3") << allCookies << "http://nokia.com/web/content" << result;
+    QTest::newRow("match-4") << allCookies << "http://qt.nokia.com/web" << result;
+    QTest::newRow("match-4") << allCookies << "http://qt.nokia.com/web/" << result;
+    QTest::newRow("match-6") << allCookies << "http://qt.nokia.com/web/content" << result;
 
     cookie.setPath("/web/wiki");
     allCookies += cookie;
 
     // exact same results as before:
-    QTest::newRow("one-match-1") << allCookies << "http://trolltech.com/web" << result;
-    QTest::newRow("one-match-2") << allCookies << "http://trolltech.com/web/" << result;
-    QTest::newRow("one-match-3") << allCookies << "http://trolltech.com/web/content" << result;
-    QTest::newRow("one-match-4") << allCookies << "http://www.trolltech.com/web" << result;
-    QTest::newRow("one-match-4") << allCookies << "http://www.trolltech.com/web/" << result;
-    QTest::newRow("one-match-6") << allCookies << "http://www.trolltech.com/web/content" << result;
+    QTest::newRow("one-match-1") << allCookies << "http://nokia.com/web" << result;
+    QTest::newRow("one-match-2") << allCookies << "http://nokia.com/web/" << result;
+    QTest::newRow("one-match-3") << allCookies << "http://nokia.com/web/content" << result;
+    QTest::newRow("one-match-4") << allCookies << "http://qt.nokia.com/web" << result;
+    QTest::newRow("one-match-4") << allCookies << "http://qt.nokia.com/web/" << result;
+    QTest::newRow("one-match-6") << allCookies << "http://qt.nokia.com/web/content" << result;
 
     result.prepend(cookie);     // longer path, it must match first
-    QTest::newRow("two-matches-1") << allCookies << "http://trolltech.com/web/wiki" << result;
-    QTest::newRow("two-matches-2") << allCookies << "http://www.trolltech.com/web/wiki" << result;
+    QTest::newRow("two-matches-1") << allCookies << "http://nokia.com/web/wiki" << result;
+    QTest::newRow("two-matches-2") << allCookies << "http://qt.nokia.com/web/wiki" << result;
 
     // invert the order;
     allCookies.clear();
     allCookies << result.at(1) << result.at(0);
-    QTest::newRow("two-matches-3") << allCookies << "http://trolltech.com/web/wiki" << result;
-    QTest::newRow("two-matches-4") << allCookies << "http://www.trolltech.com/web/wiki" << result;
+    QTest::newRow("two-matches-3") << allCookies << "http://nokia.com/web/wiki" << result;
+    QTest::newRow("two-matches-4") << allCookies << "http://qt.nokia.com/web/wiki" << result;
 
     // expired cookie
     allCookies.clear();
     cookie.setExpirationDate(QDateTime::fromString("09-Nov-1999", "dd-MMM-yyyy"));
     allCookies += cookie;
     result.clear();
-    QTest::newRow("exp-match-1") << allCookies << "http://trolltech.com/web" << result;
-    QTest::newRow("exp-match-2") << allCookies << "http://trolltech.com/web/" << result;
-    QTest::newRow("exp-match-3") << allCookies << "http://trolltech.com/web/content" << result;
-    QTest::newRow("exp-match-4") << allCookies << "http://www.trolltech.com/web" << result;
-    QTest::newRow("exp-match-4") << allCookies << "http://www.trolltech.com/web/" << result;
-    QTest::newRow("exp-match-6") << allCookies << "http://www.trolltech.com/web/content" << result;
+    QTest::newRow("exp-match-1") << allCookies << "http://nokia.com/web" << result;
+    QTest::newRow("exp-match-2") << allCookies << "http://nokia.com/web/" << result;
+    QTest::newRow("exp-match-3") << allCookies << "http://nokia.com/web/content" << result;
+    QTest::newRow("exp-match-4") << allCookies << "http://qt.nokia.com/web" << result;
+    QTest::newRow("exp-match-4") << allCookies << "http://qt.nokia.com/web/" << result;
+    QTest::newRow("exp-match-6") << allCookies << "http://qt.nokia.com/web/content" << result;
 }
 
 void tst_QNetworkCookieJar::cookiesForUrl()
