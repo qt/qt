@@ -93,14 +93,9 @@ class QScriptValuePrivate
                 return ptr;
             }
 
-            bool operator==(const int i) const
+            QScriptEngine* operator->()
             {
-                return ptr == (void *)i;
-            }
-
-            bool operator!=(const int i) const
-            {
-                return ptr !=   (void *)i;
+                return ptr;
             }
 
         private:
