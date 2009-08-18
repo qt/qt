@@ -97,6 +97,7 @@
 #include <QtGui/qimage.h>
 #include <QtGui/qpainter.h>
 #include <QtCore/qrect.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -120,6 +121,11 @@ QRectF QGraphicsEffectSource::boundingRect(Qt::CoordinateSystem system) const
 const QGraphicsItem *QGraphicsEffectSource::graphicsItem() const
 {
     return d_func()->graphicsItem();
+}
+
+const QWidget *QGraphicsEffectSource::widget() const
+{
+    return d_func()->widget();
 }
 
 const QStyleOption *QGraphicsEffectSource::styleOption() const

@@ -65,6 +65,7 @@ class Q_GUI_EXPORT QGraphicsEffectSource : public QObject
 public:
     ~QGraphicsEffectSource();
     const QGraphicsItem *graphicsItem() const;
+    const QWidget *widget() const;
     const QStyleOption *styleOption() const;
 
     bool isPixmap() const;
@@ -85,6 +86,8 @@ private:
     friend class QGraphicsEffectPrivate;
     friend class QGraphicsScenePrivate;
     friend class QGraphicsItem;
+    friend class QWidget;
+    friend class QWidgetPrivate;
 };
 
 class QGraphicsEffectPrivate;
@@ -131,6 +134,8 @@ private:
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;
     friend class QGraphicsScenePrivate;
+    friend class QWidget;
+    friend class QWidgetPrivate;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsEffect::ChangeFlags);
 

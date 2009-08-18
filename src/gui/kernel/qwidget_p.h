@@ -61,6 +61,7 @@
 #include "QtGui/qregion.h"
 #include "QtGui/qsizepolicy.h"
 #include "QtGui/qstyle.h"
+#include <private/qgraphicseffect_p.h>
 
 #ifdef Q_WS_WIN
 #include "QtCore/qt_windows.h"
@@ -443,6 +444,13 @@ public:
         return extra ? extra->nativeChildrenForced : false;
     }
 
+    inline QRect effectiveRectFor(const QRect &rect) const
+    {
+        if (graphicsEffect && graphicsEffect->isEnabled())
+            return graphicsEffect->boundingRectFor(rect).toAlignedRect();
+        return rect;
+    }
+
     QSize adjustedSize() const;
 
 #ifndef Q_WS_QWS // Almost cross-platform :-)
@@ -473,6 +481,7 @@ public:
     QWidgetItemV2 *widgetItem;
     QPaintEngine *extraPaintEngine;
     mutable const QMetaObject *polished;
+    QGraphicsEffect *graphicsEffect;
     // All widgets are initially added into the uncreatedWidgets set. Once
     // they receive a window id they are removed and added to the mapper
     static QWidgetMapper *mapper;
@@ -640,6 +649,63 @@ public:
 #endif
     QScreen* getScreen() const;
 #endif
+};
+
+struct QWidgetPaintContext
+{
+    inline QWidgetPaintContext(QPaintDevice *d, const QRegion &r, const QPoint &o, int f,
+                               QPainter *p, QWidgetBackingStore *b)
+        : pdev(d), rgn(r), offset(o), flags(f), sharedPainter(p), backingStore(b), painter(0) {}
+
+    QPaintDevice *pdev;
+    QRegion rgn;
+    QPoint offset;
+    int flags;
+    QPainter *sharedPainter;
+    QWidgetBackingStore *backingStore;
+    QPainter *painter;
+};
+
+class QWidgetEffectSourcePrivate : public QGraphicsEffectSourcePrivate
+{
+public:
+    QWidgetEffectSourcePrivate(QWidget *widget)
+        : QGraphicsEffectSourcePrivate(), m_widget(widget), context(0)
+    {}
+
+    inline void detach()
+    { m_widget->setGraphicsEffect(0); }
+
+    inline const QGraphicsItem *graphicsItem() const
+    { return 0; }
+
+    inline const QWidget *widget() const
+    { return m_widget; }
+
+    inline void update()
+    { m_widget->update(); }
+
+    inline bool isPixmap() const
+    { return false; }
+
+    inline const QStyleOption *styleOption() const
+    { return 0; }
+
+    inline QRect deviceRect() const
+    { return m_widget->window()->rect(); }
+
+    inline QRectF boundingRect(Qt::CoordinateSystem system) const
+    {
+        if (system == Qt::LogicalCoordinates)
+            return m_widget->rect();
+        return m_widget->rect().translated(m_widget->mapTo(m_widget->window(), QPoint()));
+    }
+
+    void draw(QPainter *p);
+    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
+
+    QWidget *m_widget;
+    QWidgetPaintContext *context;
 };
 
 inline QWExtra *QWidgetPrivate::extraData() const

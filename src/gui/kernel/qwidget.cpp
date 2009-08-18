@@ -182,6 +182,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , widgetItem(0)
       , extraPaintEngine(0)
       , polished(0)
+      , graphicsEffect(0)
       , inheritedFontResolveMask(0)
       , inheritedPaletteResolveMask(0)
       , leftmargin(0)
@@ -237,6 +238,8 @@ QWidgetPrivate::~QWidgetPrivate()
 
     if (extra)
         deleteExtra();
+
+    delete graphicsEffect;
 }
 
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
@@ -1649,7 +1652,7 @@ QRect QWidgetPrivate::clipRect() const
     const QWidget * w = q;
     if (!w->isVisible())
         return QRect();
-    QRect r = q->rect();
+    QRect r = effectiveRectFor(q->rect());
     int ox = 0;
     int oy = 0;
     while (w
@@ -1890,6 +1893,12 @@ void QWidgetPrivate::updateIsOpaque()
 {
     // hw: todo: only needed if opacity actually changed
     setDirtyOpaqueRegion();
+
+    if (graphicsEffect) {
+        // ### We should probably add QGraphicsEffect::isOpaque at some point.
+        setOpaque(false);
+        return;
+    }
 
     Q_Q(QWidget);
 #ifdef Q_WS_X11
@@ -4847,6 +4856,43 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
     d->extra->inRenderWithPainter = false;
 }
 
+QGraphicsEffect *QWidget::graphicsEffect() const
+{
+    Q_D(const QWidget);
+    return d->graphicsEffect;
+}
+
+void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
+{
+    Q_D(QWidget);
+    if (d->graphicsEffect == effect)
+        return;
+
+    if (d->graphicsEffect && effect) {
+        // ### This seems wrong - the effect should automatically be deleted.
+        qWarning("already set");
+        return;
+    }
+
+    if (!effect) {
+        // Unset current effect.
+        QGraphicsEffectPrivate *oldEffectPrivate = d->graphicsEffect->d_func();
+        d->graphicsEffect = 0;
+        if (oldEffectPrivate) {
+            oldEffectPrivate->setGraphicsEffectSource(0); // deletes the current source.
+        }
+    } else {
+        // Set new effect.
+        QGraphicsEffectSourcePrivate *sourced = new QWidgetEffectSourcePrivate(this);
+        QGraphicsEffectSource *source = new QGraphicsEffectSource(*sourced);
+        d->graphicsEffect = effect;
+        effect->d_func()->setGraphicsEffectSource(source);
+    }
+
+    d->updateIsOpaque();
+    update();
+}
+
 bool QWidgetPrivate::isAboutToShow() const
 {
     if (data.in_show)
@@ -4991,6 +5037,30 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         return;
 
     Q_Q(QWidget);
+    if (graphicsEffect && graphicsEffect->isEnabled()) {
+        QGraphicsEffectSource *source = graphicsEffect->d_func()->source;
+        QWidgetEffectSourcePrivate *sourced = static_cast<QWidgetEffectSourcePrivate *>
+                                                         (source->d_func());
+        if (!sourced->context) {
+            QWidgetPaintContext context(pdev, rgn, offset, flags, sharedPainter, backingStore);
+            sourced->context = &context;
+            if (!sharedPainter) {
+                QPaintEngine *paintEngine = pdev->paintEngine();
+                paintEngine->d_func()->systemClip = clipRect().translated(offset);
+                QPainter p(pdev);
+                p.translate(offset);
+                context.painter = &p;
+                graphicsEffect->draw(&p, source);
+                paintEngine->d_func()->systemClip = QRegion();
+            } else {
+                context.painter = sharedPainter;
+                graphicsEffect->draw(sharedPainter, source);
+            }
+            sourced->context = 0;
+            return;
+        }
+    }
+
     const bool asRoot = flags & DrawAsRoot;
     const bool alsoOnScreen = flags & DrawPaintOnScreen;
     const bool recursive = flags & DrawRecursive;
@@ -5023,7 +5093,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 if (sharedPainter)
                     paintEngine->d_func()->systemClip = toBePainted;
                 else
-                    paintEngine->setSystemRect(q->data->crect);
+                    paintEngine->d_func()->systemRect = q->data->crect;
 
                 //paint the background
                 if ((asRoot || q->autoFillBackground() || onScreen || q->testAttribute(Qt::WA_StyledBackground))
@@ -5062,7 +5132,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             if (paintEngine) {
                 restoreRedirected();
                 if (!sharedPainter)
-                    paintEngine->setSystemRect(QRect());
+                    paintEngine->d_func()->systemRect = QRect();
                 else
                     paintEngine->d_func()->currentClipWidget = 0;
                 paintEngine->d_func()->systemClip = QRegion();
@@ -5164,6 +5234,39 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
             wRegion &= wd->extra->mask;
         wd->drawWidget(pdev, wRegion, offset + widgetPos, flags, sharedPainter, backingStore);
     }
+}
+
+void QWidgetEffectSourcePrivate::draw(QPainter *painter)
+{
+    if (!context || context->painter != painter) {
+        m_widget->render(painter);
+        return;
+    }
+
+    qt_widget_private(m_widget)->drawWidget(context->pdev, context->rgn, context->offset, context->flags,
+                                            context->sharedPainter, context->backingStore);
+}
+
+QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
+{
+    const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
+    QPoint pixmapOffset;
+
+    QRect sourceRect(m_widget->rect());
+    if (deviceCoordinates) {
+        pixmapOffset = m_widget->mapTo(m_widget->window(), QPoint());
+        sourceRect.translate(pixmapOffset);
+    }
+
+    QRect effectRect = m_widget->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
+    if (offset)
+        *offset = effectRect.topLeft();
+    pixmapOffset -= effectRect.topLeft();
+
+    QPixmap pixmap(effectRect.size());
+    pixmap.fill(Qt::transparent);
+    m_widget->render(&pixmap, pixmapOffset);
+    return pixmap;
 }
 
 /*!

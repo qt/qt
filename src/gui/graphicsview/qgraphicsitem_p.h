@@ -559,6 +559,9 @@ public:
     inline const QGraphicsItem *graphicsItem() const
     { return item; }
 
+    inline const QWidget *widget() const
+    { return 0; }
+
     inline void update()
     { item->update(); }
 
