@@ -81,6 +81,10 @@ public:
                                        unsigned&) const;
     virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&,
                                   unsigned listedAttributes = JSC::Structure::Prototype);
+    virtual void defineGetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction);
+    virtual void defineSetter(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction);
+    virtual JSC::JSValue lookupGetter(JSC::ExecState*, const JSC::Identifier& propertyName);
+    virtual JSC::JSValue lookupSetter(JSC::ExecState*, const JSC::Identifier& propertyName);
 
 public:
     JSC::JSObject *customGlobalObject;
@@ -120,6 +124,14 @@ public:
     virtual void getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray& propertyNames,
                                   unsigned listedAttributes = JSC::Structure::Prototype)
     { originalGlobalObject->JSC::JSGlobalObject::getPropertyNames(exec, propertyNames, listedAttributes); }
+    virtual void defineGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction)
+    { originalGlobalObject->JSC::JSGlobalObject::defineGetter(exec, propertyName, getterFunction); }
+    virtual void defineSetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction)
+    { originalGlobalObject->JSC::JSGlobalObject::defineSetter(exec, propertyName, setterFunction); }
+    virtual JSC::JSValue lookupGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName)
+    { return originalGlobalObject->JSC::JSGlobalObject::lookupGetter(exec, propertyName); }
+    virtual JSC::JSValue lookupSetter(JSC::ExecState* exec, const JSC::Identifier& propertyName)
+    { return originalGlobalObject->JSC::JSGlobalObject::lookupSetter(exec, propertyName); }
 private:
     JSC::JSGlobalObject *originalGlobalObject;
 };

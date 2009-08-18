@@ -136,6 +136,36 @@ bool QScriptActivationObject::deleteProperty(JSC::ExecState* exec, const JSC::Id
     return JSC::JSVariableObject::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
+void QScriptActivationObject::defineGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction)
+{
+    if (d_ptr()->delegate != 0)
+        d_ptr()->delegate->defineGetter(exec, propertyName, getterFunction);
+    else
+        JSC::JSVariableObject::defineGetter(exec, propertyName, getterFunction);
+}
+
+void QScriptActivationObject::defineSetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction)
+{
+    if (d_ptr()->delegate != 0)
+        d_ptr()->delegate->defineSetter(exec, propertyName, setterFunction);
+    else
+        JSC::JSVariableObject::defineSetter(exec, propertyName, setterFunction);
+}
+
+JSC::JSValue QScriptActivationObject::lookupGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName)
+{
+    if (d_ptr()->delegate != 0)
+        return d_ptr()->delegate->lookupGetter(exec, propertyName);
+    return JSC::JSVariableObject::lookupGetter(exec, propertyName);
+}
+
+JSC::JSValue QScriptActivationObject::lookupSetter(JSC::ExecState* exec, const JSC::Identifier& propertyName)
+{
+    if (d_ptr()->delegate != 0)
+        return d_ptr()->delegate->lookupSetter(exec, propertyName);
+    return JSC::JSVariableObject::lookupSetter(exec, propertyName);
+}
+
 } // namespace QScript
 
 QT_END_NAMESPACE

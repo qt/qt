@@ -123,6 +123,36 @@ void GlobalObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArray
         JSC::JSGlobalObject::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
+void GlobalObject::defineGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* getterFunction)
+{
+    if (customGlobalObject)
+        customGlobalObject->defineGetter(exec, propertyName, getterFunction);
+    else
+        JSC::JSGlobalObject::defineGetter(exec, propertyName, getterFunction);
+}
+
+void GlobalObject::defineSetter(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSObject* setterFunction)
+{
+    if (customGlobalObject)
+        customGlobalObject->defineSetter(exec, propertyName, setterFunction);
+    else
+        JSC::JSGlobalObject::defineSetter(exec, propertyName, setterFunction);
+}
+
+JSC::JSValue GlobalObject::lookupGetter(JSC::ExecState* exec, const JSC::Identifier& propertyName)
+{
+    if (customGlobalObject)
+        return customGlobalObject->lookupGetter(exec, propertyName);
+    return JSC::JSGlobalObject::lookupGetter(exec, propertyName);
+}
+
+JSC::JSValue GlobalObject::lookupSetter(JSC::ExecState* exec, const JSC::Identifier& propertyName)
+{
+    if (customGlobalObject)
+        return customGlobalObject->lookupSetter(exec, propertyName);
+    return JSC::JSGlobalObject::lookupSetter(exec, propertyName);
+}
+
 } // namespace QScript
 
 QT_END_NAMESPACE

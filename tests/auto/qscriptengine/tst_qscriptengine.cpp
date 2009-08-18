@@ -79,6 +79,7 @@ private slots:
     void newActivationObject();
     void getSetGlobalObject();
     void globalObjectProperties();
+    void globalObjectGetterSetterProperty();
     void checkSyntax_data();
     void checkSyntax();
     void canEvaluate_data();
@@ -955,6 +956,13 @@ void tst_QScriptEngine::getSetGlobalObject()
     }
 }
 
+static QScriptValue getSetFoo(QScriptContext *ctx, QScriptEngine *)
+{
+    if (ctx->argumentCount() > 0)
+        ctx->thisObject().setProperty("foo", ctx->argument(0));
+    return ctx->thisObject().property("foo");
+}
+
 void tst_QScriptEngine::globalObjectProperties()
 {
     QScriptEngine eng;
@@ -1092,6 +1100,23 @@ void tst_QScriptEngine::globalObjectProperties()
         }
     }
     QVERIFY(remainingNames.isEmpty());
+}
+
+void tst_QScriptEngine::globalObjectGetterSetterProperty()
+{
+    QScriptEngine engine;
+    QScriptValue global = engine.globalObject();
+    global.setProperty("bar", engine.newFunction(getSetFoo),
+                       QScriptValue::PropertySetter | QScriptValue::PropertyGetter);
+    global.setProperty("foo", 123);
+    QVERIFY(global.property("bar").equals(global.property("foo")));
+    QVERIFY(engine.evaluate("bar").equals(global.property("foo")));
+    global.setProperty("bar", 456);
+    QVERIFY(global.property("bar").equals(global.property("foo")));
+
+    engine.evaluate("__defineGetter__('baz', function() { return 789; })");
+    QVERIFY(engine.evaluate("baz").equals(789));
+    QVERIFY(global.property("baz").equals(789));
 }
 
 void tst_QScriptEngine::checkSyntax_data()
