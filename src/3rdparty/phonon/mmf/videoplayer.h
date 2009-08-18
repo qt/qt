@@ -22,7 +22,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 /* We use the extra qualification include/ to avoid picking up the include
  * Phonon has. */
 #include <include/videoplayer.h>
-#include "abstractplayer.h"
+#include "abstractmediaplayer.h"
 
 #include <Phonon/MediaSource>
 
@@ -42,7 +42,7 @@ namespace Phonon
          * <a href="http://wiki.forum.nokia.com/index.php/How_to_play_a_video_file_using_CVideoPlayerUtility">How to
          * play a video file using CVideoPlayerUtility</a>
          */
-        class VideoPlayer : public AbstractPlayer
+        class VideoPlayer : public AbstractMediaPlayer
         {
             Q_OBJECT
         public:
@@ -50,102 +50,24 @@ namespace Phonon
             virtual ~VideoPlayer();
 
             // AbstractPlayer
-            virtual void play();
-            virtual void pause();
-            virtual void stop();
+            virtual void doPlay();
+            virtual void doPause();
+            virtual void doStop();
+            virtual int doSetVolume(int mmfVolume);
+            virtual int openFile(RFile& file);
+            virtual void close();
+            
             virtual void seek(qint64 milliseconds);
-            virtual qint32 tickInterval() const;
-            virtual void setTickInterval(qint32 interval);
             virtual bool hasVideo() const;
-            virtual bool isSeekable() const;
             virtual qint64 currentTime() const;
-            virtual Phonon::State state() const;
-            virtual QString errorString() const;
-            virtual Phonon::ErrorType errorType() const;
             virtual qint64 totalTime() const;
-            virtual MediaSource source() const;
             
-            // This is a temporary hack to work around KErrInUse from MMF
-            // client utility OpenFileL calls
-			//virtual void setSource(const Phonon::MediaSource &);
-			virtual void setFileSource
-				(const Phonon::MediaSource&, RFile&);
-            
-            virtual void setNextSource(const MediaSource &source);
-            virtual qint32 prefinishMark() const;
-            virtual void setPrefinishMark(qint32);
-            virtual qint32 transitionTime() const;
-            virtual void setTransitionTime(qint32);
-
-            qreal volume() const;
-            bool setVolume(qreal volume);
-
-            void setAudioOutput(AudioOutput* audioOutput);
-
         Q_SIGNALS:
             void totalTimeChanged();
             void stateChanged(Phonon::State oldState,
                               Phonon::State newState);
             void finished();
-            void tick(qint64 time);
 
-        private Q_SLOTS:
-            /**
-             * Receives signal from m_tickTimer
-             */
-            void tick();
-
-        private:
-            static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
-
-            /**
-             * Defined private state enumeration in order to add GroundState
-             */
-            enum PrivateState
-                {
-                LoadingState    = Phonon::LoadingState,
-                StoppedState    = Phonon::StoppedState,
-                PlayingState    = Phonon::PlayingState,
-                BufferingState    = Phonon::BufferingState,
-                PausedState        = Phonon::PausedState,
-                ErrorState        = Phonon::ErrorState,
-                GroundState
-                };
-
-            /**
-             * Converts PrivateState into the corresponding Phonon::State
-             */
-            static Phonon::State phononState(PrivateState state);
-
-            /**
-             * Changes state and emits stateChanged()
-             */
-            void changeState(PrivateState newState);
-
-            /**
-             * Using CPlayerType typedef in order to be able to easily switch between
-             * CMdaVideoPlayerUtility and CDrmPlayerUtility
-             */
-            // CPlayerType*         m_player; TODO
-
-            AudioOutput*        m_audioOutput;
-
-            ErrorType           m_error;
-
-            /**
-             * Do not set this directly - call changeState() instead.
-             */
-            PrivateState        m_state;
-
-            qint32                m_tickInterval;
-
-            QTimer*                m_tickTimer;
-
-            MediaSource         m_mediaSource;
-            MediaSource         m_nextSource;
-
-            qreal                m_volume;
-            int                    m_maxVolume;
         };
     }
 }

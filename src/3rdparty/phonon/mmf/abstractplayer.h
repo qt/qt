@@ -33,6 +33,10 @@ namespace Phonon
 
         class AbstractPlayer : public QObject
         {
+			// Required although this class has no signals or slots
+			// Without this, qobject_cast will fail
+			Q_OBJECT
+        
         public:
             virtual void play() = 0;
             virtual void pause() = 0;

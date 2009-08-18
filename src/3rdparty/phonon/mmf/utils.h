@@ -20,6 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #define PHONON_MMF_UTILS_H
 
 #include <private/qcore_symbian_p.h>
+#include <e32debug.h>	// for RDebug
 
 namespace Phonon
 {

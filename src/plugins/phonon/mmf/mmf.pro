@@ -21,21 +21,23 @@ phonon_mmf_audio_drm {
     LIBS += -lmediaclientaudio.lib
 }
 
-HEADERS +=                                      \
-           $$PHONON_MMF_DIR/abstractplayer.h    \
-           $$PHONON_MMF_DIR/audiooutput.h       \
-           $$PHONON_MMF_DIR/audioplayer.h       \
-           $$PHONON_MMF_DIR/backend.h           \
-           $$PHONON_MMF_DIR/mediaobject.h       \
-           $$PHONON_MMF_DIR/utils.h             \
+HEADERS +=                                           \
+           $$PHONON_MMF_DIR/abstractplayer.h         \
+           $$PHONON_MMF_DIR/abstractmediaplayer.h    \
+           $$PHONON_MMF_DIR/audiooutput.h            \
+           $$PHONON_MMF_DIR/audioplayer.h            \
+           $$PHONON_MMF_DIR/backend.h                \
+           $$PHONON_MMF_DIR/mediaobject.h            \
+           $$PHONON_MMF_DIR/utils.h                  \
            $$PHONON_MMF_DIR/videoplayer.h
 
-SOURCES +=                                      \
-           $$PHONON_MMF_DIR/audiooutput.cpp     \
-           $$PHONON_MMF_DIR/audioplayer.cpp     \
-           $$PHONON_MMF_DIR/backend.cpp         \
-           $$PHONON_MMF_DIR/mediaobject.cpp     \
-           $$PHONON_MMF_DIR/utils.cpp           \
+SOURCES +=                                           \
+	   $$PHONON_MMF_DIR/abstractmediaplayer.cpp  \
+           $$PHONON_MMF_DIR/audiooutput.cpp          \
+           $$PHONON_MMF_DIR/audioplayer.cpp          \
+           $$PHONON_MMF_DIR/backend.cpp              \
+           $$PHONON_MMF_DIR/mediaobject.cpp          \
+           $$PHONON_MMF_DIR/utils.cpp                \
            $$PHONON_MMF_DIR/videoplayer.cpp
 
 LIBS += -lefsrv				# For file server
