@@ -47,7 +47,7 @@
 
 QDirectFBPaintDevice::QDirectFBPaintDevice(QDirectFBScreen *scr)
     : QCustomRasterPaintDevice(0), dfbSurface(0), lockedImage(0), screen(scr),
-      lockFlgs(DFBSurfaceLockFlags(0)), mem(0), engine(0)
+      bpl(-1), lockFlgs(DFBSurfaceLockFlags(0)), mem(0), engine(0)
 {}
 
 QDirectFBPaintDevice::~QDirectFBPaintDevice()
