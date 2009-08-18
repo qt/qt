@@ -13,4 +13,7 @@ wince*:|symbian*: {
     DEPLOYMENT = deploy res
 }
 
-symbian:TARGET.CAPABILITY=AllFiles
+symbian {
+    TARGET.CAPABILITY=AllFiles
+    LIBS *= -lefsrv
+    }

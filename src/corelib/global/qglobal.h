@@ -1472,13 +1472,13 @@ public:
     static const MacVersion MacintoshVersion;
 #endif
 #ifdef Q_OS_SYMBIAN
-    enum SymVersion {
+    enum SymbianVersion {
         SV_Unknown = 0x0000,
         SV_9_2 = 0x0001,
         SV_9_3 = 0x0002,
         SV_9_4 = 0x0004
     };
-    static SymVersion symbianVersion();
+    static SymbianVersion symbianVersion();
     enum S60Version {
         SV_S60_None = 0x0000,
         SV_S60_Unknown = 0x0001,

@@ -1636,7 +1636,9 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
             if (optionProgressBar->minimum == optionProgressBar->maximum && optionProgressBar->minimum == 0) {
                 // busy indicator
-                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWait, painter, progressRect,flags);
+                const QS60StylePrivate::SkinElementFlag orientationFlag = optionProgressBar->orientation == Qt::Horizontal ?
+                    QS60StylePrivate::SF_PointNorth : QS60StylePrivate::SF_PointWest;
+                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWait, painter, progressRect, flags | orientationFlag);
             } else {
                 const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? 1.0
                     : (qreal)optionProgressBar->progress / optionProgressBar->maximum;
@@ -1871,6 +1873,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 //todo: update to horizontal table graphic
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, option->rect, flags | QS60StylePrivate::SF_PointWest);
             }
+        } else if (qobject_cast<const QFrame *>(widget)) { 
+            QCommonStyle::drawControl(element, option, painter, widget); 
         }
         if (option->state & State_HasFocus)
             drawPrimitive(PE_FrameFocusRect, option, painter, widget);
@@ -2783,7 +2787,7 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
     QS60StyleEnums::SkinParts part;
     QS60StylePrivate::SkinElementFlags adjustedFlags;
     if (option)
-        adjustedFlags = (option->state & State_Enabled) ?
+        adjustedFlags = (option->state & State_Enabled || option->state == 0) ?
             QS60StylePrivate::SF_StateEnabled :
             QS60StylePrivate::SF_StateDisabled;
 
