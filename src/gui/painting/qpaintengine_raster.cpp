@@ -5198,6 +5198,13 @@ static void drawLine_midpoint_i(int x1, int y1, int x2, int y2, ProcessSpans spa
             dy = -dy;
         }
 
+        int x_lower_limit = - 128;
+        if (x1 < x_lower_limit) {
+            int cy = dy * (x_lower_limit - x1) / dx + y1;
+            drawLine_midpoint_i(x_lower_limit, cy, x2, y2, span_func, data, style, devRect);
+            return;
+        }
+
         if (style == LineDrawNormal)
             --x2;
 
@@ -5333,6 +5340,13 @@ static void drawLine_midpoint_i(int x1, int y1, int x2, int y2, ProcessSpans spa
 
             qt_swap_int(x1, x2);
             dx = -dx;
+        }
+
+        int y_lower_limit = - 128;
+        if (y1 < y_lower_limit) {
+            int cx = dx * (y_lower_limit - y1) / dy + x1;
+            drawLine_midpoint_i(cx, y_lower_limit, x2, y2, span_func, data, style, devRect);
+            return;
         }
 
         if (style == LineDrawNormal)
