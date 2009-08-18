@@ -226,7 +226,7 @@ private:
     QTextCodec *yySourceCodec;
     bool yySourceIsUnicode;
     QString yyInStr;
-    int yyInPos;
+    const ushort *yyInPtr;
 
     // Parser state
     uint yyTok;
@@ -254,7 +254,6 @@ CppParser::CppParser(ParseResults *_results)
         results = new ParseResults;
         directInclude = false;
     }
-    yyInPos = 0;
     yyBraceDepth = 0;
     yyParenDepth = 0;
     yyCurLineNo = 1;
@@ -307,28 +306,32 @@ void CppParser::setInput(QTextStream &ts, const QString &fileName)
 
 uint CppParser::getChar()
 {
-    const ushort *uc = (const ushort *)yyInStr.unicode();
+    const ushort *uc = yyInPtr;
     forever {
-        uint c = uc[yyInPos++];
-        if (!c)
+        ushort c = *uc;
+        if (!c) {
+            yyInPtr = uc;
             return EOF;
+        }
+        ++uc;
         if (c == '\\') {
-            if (uc[yyInPos] == '\n') {
+            ushort cc = *uc;
+            if (cc == '\n') {
                 ++yyCurLineNo;
-                ++yyInPos;
+                ++uc;
                 continue;
             }
-            if (uc[yyInPos] == '\r') {
+            if (cc == '\r') {
                 ++yyCurLineNo;
-                ++yyInPos;
-                if (uc[yyInPos] == '\n')
-                    ++yyInPos;
+                ++uc;
+                if (*uc == '\n')
+                    ++uc;
                 continue;
             }
         }
         if (c == '\r') {
-            if (uc[yyInPos] == '\n')
-                ++yyInPos;
+            if (*uc == '\n')
+                ++uc;
             c = '\n';
             ++yyCurLineNo;
             yyAtNewline = true;
@@ -338,6 +341,7 @@ uint CppParser::getChar()
         } else if (c != ' ' && c != '\t' && c != '#') {
             yyAtNewline = false;
         }
+        yyInPtr = uc;
         return c;
     }
 }
@@ -1355,6 +1359,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
     bool yyTokColonSeen = false; // Start of c'tor's initializer list
 
     yyWord.reserve(yyInStr.size()); // Rather insane. That's because we do no length checking.
+    yyInPtr = (const ushort *)yyInStr.unicode();
     yyCh = getChar();
     yyTok = getToken();
     while (yyTok != Tok_Eof) {
