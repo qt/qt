@@ -106,15 +106,16 @@ inline QString AnchorVertex::toString() const
         edge = QLatin1String("None");
         break;
     }
-    QString item;
+    QString itemName;
     if (m_item->isLayout()) {
-        item = QLatin1String("layout");
+        itemName = QLatin1String("layout");
     } else {
-        QGraphicsWidget *w = static_cast<QGraphicsWidget *>(m_item);
-        item = w->data(0).toString();
+        if (QGraphicsItem *item = m_item->graphicsItem()) {
+            itemName = item->data(0).toString();
+        }
     }
     edge.insert(0, QLatin1String("%1_"));
-    return edge.arg(item);
+    return edge.arg(itemName);
 }
 
 
