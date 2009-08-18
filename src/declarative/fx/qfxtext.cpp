@@ -480,13 +480,6 @@ void QFxText::setElideMode(Qt::TextElideMode mode)
     d->updateSize();
 }
 
-
-QString QFxText::activeLink() const
-{
-    Q_D(const QFxText);
-    return d->activeLink;
-}
-
 void QFxText::geometryChanged(const QRectF &newGeometry,
                               const QRectF &oldGeometry)
 {
@@ -852,6 +845,12 @@ void QFxText::mousePressEvent(QGraphicsSceneMouseEvent *event)
         QFxItem::mousePressEvent(event);
 
 }
+
+/*!
+    \qmlsignal Text::linkActivated(link)
+
+    This handler is called when the user clicks on a link embedded in the text.
+*/
 
 /*!
   \overload

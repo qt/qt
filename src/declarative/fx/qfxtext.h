@@ -68,7 +68,6 @@ class Q_DECLARATIVE_EXPORT QFxText : public QFxItem
     Q_PROPERTY(bool wrap READ wrap WRITE setWrap)
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
     Q_PROPERTY(Qt::TextElideMode elide READ elideMode WRITE setElideMode)
-    Q_PROPERTY(QString activeLink READ activeLink)
 
 public:
     QFxText(QFxItem *parent=0);
@@ -84,9 +83,9 @@ public:
                       Outline,
                       Raised,
                       Sunken };
-    enum TextFormat { AutoText,
-                      PlainText,
-                      RichText };
+    enum TextFormat { PlainText = Qt::PlainText,
+                      RichText = Qt::RichText,
+                      AutoText = Qt::AutoText};
 
     QString text() const;
     void setText(const QString &);
@@ -117,8 +116,6 @@ public:
 
     Qt::TextElideMode elideMode() const;
     void setElideMode(Qt::TextElideMode);
-
-    QString activeLink() const;
 
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 

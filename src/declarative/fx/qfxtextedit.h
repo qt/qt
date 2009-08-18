@@ -103,9 +103,9 @@ public:
     };
 
     enum TextFormat {
-        AutoText,
-        PlainText,
-        RichText,
+        PlainText = Qt::PlainText,
+        RichText = Qt::RichText,
+        AutoText = Qt::AutoText
     };
 
     QString text() const;
