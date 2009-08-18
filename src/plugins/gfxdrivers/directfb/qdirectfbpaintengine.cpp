@@ -586,7 +586,7 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
         QRasterPaintEngine::drawTiledPixmap(r, pix, offset);
     } else {
         d->unlock();
-        d->drawTiledPixmap(r, pixmap, offset);
+        CLIPPED_PAINT(d->drawTiledPixmap(r, pixmap, offset));
     }
 }
 
@@ -729,8 +729,7 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
         d->unlock();
         d->setDFBColor(color);
         const QRect r = state()->matrix.mapRect(rect).toRect();
-        d->surface->FillRectangle(d->surface, r.x(), r.y(),
-                                  r.width(), r.height());
+        CLIPPED_PAINT(d->surface->FillRectangle(d->surface, r.x(), r.y(), r.width(), r.height()));
     }
 }
 
