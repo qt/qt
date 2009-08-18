@@ -3270,6 +3270,7 @@ void tst_QTableView::task259308_scrollVerticalHeaderSwappedSections()
     tv.setModel(&model);
     tv.show();
     tv.verticalHeader()->swapSections(0, model.rowCount() - 1);
+    tv.setCurrentIndex(model.index(model.rowCount() - 1, 0));
 
     QTest::qWait(60);
     QTest::keyClick(&tv, Qt::Key_PageUp);   // PageUp won't scroll when at top
