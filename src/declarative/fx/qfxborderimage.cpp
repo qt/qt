@@ -52,32 +52,20 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,BorderImage,QFxBorderImage)
 
 /*!
     \qmlclass BorderImage QFxBorderImage
-    \brief The BorderImage element allows you use an image as a border.
+    \brief The BorderImage element provides an image that can be used as a border.
     \inherits Item
 
-    Example:
-    \qml
-    BorderImage { border.left: 20; border.right: 10
-            border.top: 14; border.bottom: 14
-            width: 160; height: 160
-            source: "pics/qtlogo.png"
-    }
-    \endqml
+    \snippet examples/declarative/border-image/example.qml 0
+
+    \image BorderImage.png
+
+    \sa examples/declarative/border-image
  */
 
 /*!
     \internal
     \class QFxBorderImage BorderImage
     \brief The QFxBorderImage class provides an image item that you can add to a QFxView.
-
-    \ingroup group_coreitems
-
-    Example:
-    \qml
-    BorderImage { source: "pics/star.png" }
-    \endqml
-
-    A QFxBorderImage object can be instantiated in Qml using the tag \l BorderImage.
 */
 
 QFxBorderImage::QFxBorderImage(QFxItem *parent)
@@ -272,8 +260,6 @@ QFxScaleGrid *QFxBorderImage::border()
     \o Repeat - Tile the image until there is no more space. May crop the last image.
     \o Round - Like Repeat, but scales the images down to ensure that the last image is not cropped.
     \endlist
-
-    \sa examples/declarative/border-image
 */
 QFxBorderImage::TileMode QFxBorderImage::horizontalTileMode() const
 {
