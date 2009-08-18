@@ -155,6 +155,8 @@ struct AnchorData : public QSimplexVariable {
     virtual void updateChildrenSizes() { };
     virtual void refreshSizeHints(qreal effectiveSpacing);
 
+    virtual ~AnchorData() {}
+
     void dump(int indent = 2);
 
     inline QString toString() const;

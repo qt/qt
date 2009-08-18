@@ -873,11 +873,9 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
     if (!center)
         return;
     AnchorVertex *first = internalVertex(item, firstEdge);
-    AnchorVertex *last = internalVertex(item, lastEdge);
 
     Q_ASSERT(first);
     Q_ASSERT(center);
-    Q_ASSERT(last);
 
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
 
