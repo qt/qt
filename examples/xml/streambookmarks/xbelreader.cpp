@@ -73,15 +73,6 @@ bool XbelReader::read(QIODevice *device)
 }
 //! [1]
 
-//! [2]
-void XbelReader::readUnknownElement()
-{
-    while (readNextStartElement()) {
-            readUnknownElement();
-    }
-}
-//! [2]
-
 //! [3]
 void XbelReader::readXBEL()
 {

@@ -62,7 +62,6 @@ public:
 
 private:
 //! [2]
-    void readUnknownElement();
     void readXBEL();
     void readTitle(QTreeWidgetItem *item);
     void readSeparator(QTreeWidgetItem *item);
