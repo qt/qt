@@ -101,6 +101,7 @@ public:
     virtual void setState(QPainterState *state);
 
     virtual void clip(const QVectorPath &path, Qt::ClipOperation op);
+    virtual void clip(const QRegion &region, Qt::ClipOperation op);
     virtual void clip(const QRect &rect, Qt::ClipOperation op);
 
     static void initImageCache(int size);

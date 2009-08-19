@@ -425,8 +425,8 @@ void QInputDialogPrivate::_q_currentRowChanged(const QModelIndex &newIndex,
     \class QInputDialog
     \brief The QInputDialog class provides a simple convenience dialog to get a
     single value from the user.
-    \ingroup dialogs
-    \mainclass
+    \ingroup standard-dialogs
+
 
     The input value can be a string, a number or an item from a list. A label
     must be set to tell the user what they should enter.

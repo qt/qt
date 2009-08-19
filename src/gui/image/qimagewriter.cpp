@@ -45,7 +45,7 @@
     for writing images to files or other devices.
 
     \reentrant
-    \ingroup multimedia
+    \ingroup painting
     \ingroup io
 
     QImageWriter supports setting format specific options, such as the

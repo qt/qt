@@ -708,9 +708,7 @@ QVariant QListWidgetItem::data(int role) const
 bool QListWidgetItem::operator<(const QListWidgetItem &other) const
 {
     const QVariant v1 = data(Qt::DisplayRole), v2 = other.data(Qt::DisplayRole);
-    if (QAbstractItemModelPrivate::canConvertToDouble(v1) && QAbstractItemModelPrivate::canConvertToDouble(v2))
-        return v1.toDouble() < v2.toDouble();
-    return v1.toString() < v2.toString();
+    return QAbstractItemModelPrivate::variantLessThan(v1, v2);
 }
 
 #ifndef QT_NO_DATASTREAM
@@ -1127,7 +1125,7 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     \brief The QListWidget class provides an item-based list widget.
 
     \ingroup model-view
-    \mainclass
+
 
     QListWidget is a convenience class that provides a list view similar to the
     one supplied by QListView, but with a classic item-based interface for

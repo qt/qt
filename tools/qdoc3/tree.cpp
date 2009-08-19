@@ -501,7 +501,7 @@ void Tree::resolveProperties()
                     } else if (function->name() == resetterName) {
                         property->addFunction(function, PropertyNode::Resetter);
                     } else if (function->name() == notifierName) {
-                        property->addFunction(function, PropertyNode::Notifier);
+                        property->addSignal(function, PropertyNode::Notifier);
                     }
                 }
             }

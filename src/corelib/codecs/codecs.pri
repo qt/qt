@@ -29,7 +29,7 @@ unix {
                 SOURCES += codecs/qiconvcodec.cpp
 
                 DEFINES += GNU_LIBICONV
-                !mac:LIBS *= -liconv
+                !mac:LIBS_PRIVATE *= -liconv
         } else {
                 # no iconv, so we put all plugins in the library
                 HEADERS += \

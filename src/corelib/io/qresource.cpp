@@ -169,7 +169,7 @@ Q_GLOBAL_STATIC(QStringList, resourceSearchPaths)
     \brief The QResource class provides an interface for reading directly from resources.
 
     \ingroup io
-    \mainclass
+
     \reentrant
     \since 4.2
 

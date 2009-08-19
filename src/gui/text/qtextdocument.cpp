@@ -247,8 +247,8 @@ QTextCodec *Qt::codecForHtml(const QByteArray &ba)
     \brief The QTextDocument class holds formatted text that can be
     viewed and edited using a QTextEdit.
 
-    \ingroup text
-    \mainclass
+    \ingroup richtext-processing
+
 
     QTextDocument is a container for structured rich text documents, providing
     support for styled text and various types of document elements, such as

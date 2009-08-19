@@ -363,7 +363,7 @@ void QSqlDatabasePrivate::disable()
     a database.
 
     \ingroup database
-    \mainclass
+
     \inmodule QtSql
 
     The QSqlDatabase class provides an interface for accessing a

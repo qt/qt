@@ -43,9 +43,8 @@
     \brief The QGraphicsSceneIndex class provides a base class to implement
     a custom indexing algorithm for discovering items in QGraphicsScene.
     \since 4.6
-    \ingroup multimedia
     \ingroup graphicsview-api
-    \mainclass
+
     \internal
 
     The QGraphicsSceneIndex class provides a base class to implement

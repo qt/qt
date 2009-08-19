@@ -189,8 +189,6 @@ void QThreadStorageData::finish(void **p)
     \threadsafe
 
     \ingroup thread
-    \ingroup environment
-    \mainclass
 
     QThreadStorage is a template class that provides per-thread data
     storage.

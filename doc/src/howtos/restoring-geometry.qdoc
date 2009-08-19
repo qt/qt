@@ -1,0 +1,87 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at http://qt.nokia.com/contact.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page restoring-geometry.html
+    \title Restoring a Window's Geometry
+
+    \ingroup best-practices
+
+	This document describes how to save and restore a window's
+    geometry using the geometry properties. On Windows, this is 
+    basically storing the result of QWidget::geometry() and calling
+    QWidget::setGeometry() in the next session before calling
+    \l{QWidget::show()}{show()}.
+
+    On X11, this won't work because an invisible window doesn't have
+    a frame yet. The window manager will decorate the window later.
+    When this happens, the window shifts towards the bottom/right
+    corner of the screen depending on the size of the decoration frame.
+    Although X provides a way to avoid this shift, most window managers
+    fail to implement this feature.
+
+    Since version 4.2, Qt provides functions that saves and restores a
+    window's geometry and state for you. QWidget::saveGeometry()
+    saves the window geometry and maximized/fullscreen state, while
+    QWidget::restoreGeometry() restores it. The restore function also
+    checks if the restored geometry is outside the available screen
+    geometry, and modifies it as appropriate if it is.
+
+    If those functions are not available or cannot be used, then a
+    workaround is to call \l{QWidget::setGeometry()}{setGeometry()}
+    after \l{QWidget::show()}{show()}. This has the two disadvantages
+    that the widget appears at a wrong place for a millisecond
+    (results in flashing) and that currently only every second window
+    manager gets it right. A safer solution is to store both
+    \l{QWidget::pos()}{pos()} and \l{QWidget::size()}{size()} and to
+    restore the geometry using \l{QWidget::resize()} and
+    \l{QWidget::move()}{move()} before calling
+    \l{QWidget::show()}{show()}, as demonstrated in the following
+    code snippets (from the \l{mainwindows/application}{Application}
+    example):
+
+    \snippet examples/mainwindows/application/mainwindow.cpp 35
+    \codeline
+    \snippet examples/mainwindows/application/mainwindow.cpp 38
+
+    This method works on Windows, Mac OS X, and most X11 window
+    managers.
+*/

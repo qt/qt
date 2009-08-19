@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup model-view
     \ingroup advanced
-    \mainclass
+
 
     A QListView presents items stored in a model, either as a simple
     non-hierarchical list, or as a collection of icons. This class is used
@@ -458,6 +458,8 @@ QSize QListView::gridSize() const
 void QListView::setViewMode(ViewMode mode)
 {
     Q_D(QListView);
+    if (d->viewMode == mode)
+        return;
     d->viewMode = mode;
 
     if (mode == ListMode) {
@@ -1957,14 +1959,13 @@ bool QListView::event(QEvent *e)
 QListViewPrivate::QListViewPrivate()
     : QAbstractItemViewPrivate(),
       dynamicListView(0),
-      staticListView(0),
       wrap(false),
       space(0),
       flow(QListView::TopToBottom),
       movement(QListView::Static),
       resizeMode(QListView::Fixed),
       layoutMode(QListView::SinglePass),
-      viewMode(QListView::ListMode),
+      viewMode(QListView::IconMode), //this will ensure the first initialization to ListView
       modeProperties(0),
       column(0),
       uniformItemSizes(false),
@@ -1975,8 +1976,10 @@ QListViewPrivate::QListViewPrivate()
 
 QListViewPrivate::~QListViewPrivate()
 {
-    delete staticListView;
-    delete dynamicListView;
+    if (viewMode == QListView::ListMode)
+        delete staticListView;
+    else
+        delete dynamicListView;
 }
 
 void QListViewPrivate::clear()

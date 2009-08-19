@@ -264,7 +264,6 @@ void QGraphicsLayoutItemPrivate::setSizeComponent(
     \brief The QGraphicsLayoutItem class can be inherited to allow your custom
     items to be managed by layouts.
     \since 4.4
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     QGraphicsLayoutItem is an abstract class that defines a set of virtual

@@ -47,9 +47,9 @@
 
     \reentrant
     \ingroup io
-    \ingroup misc
+    \ingroup network
     \ingroup shared
-    \mainclass
+
 
     It can parse and construct URLs in both encoded and unencoded
     form. QUrl also has support for internationalized domain names
@@ -5699,6 +5699,10 @@ QString QUrl::fromAce(const QByteArray &domain)
     Applications (IDNA) specification, which allows for domain names
     (like \c "example.com") to be written using international
     characters.
+
+    This function return an empty QByteArra if \a domain is not a valid
+    hostname. Note, in particular, that IPv6 literals are not valid domain
+    names.
 */
 QByteArray QUrl::toAce(const QString &domain)
 {

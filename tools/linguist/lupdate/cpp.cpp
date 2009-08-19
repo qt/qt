@@ -58,9 +58,7 @@ QT_BEGIN_NAMESPACE
 
 static const char MagicComment[] = "TRANSLATOR ";
 
-#define STRINGIFY_INTERNAL(x) #x
-#define STRINGIFY(x) STRINGIFY_INTERNAL(x)
-#define STRING(s) static QString str##s(QLatin1String(STRINGIFY(s)))
+#define STRING(s) static QString str##s(QLatin1String(#s))
 
 //#define DIAGNOSE_RETRANSLATABILITY // FIXME: should make a runtime option of this
 
@@ -215,9 +213,7 @@ private:
     bool yyAtNewline;
     bool yyCodecIsUtf8;
     bool yyForceUtf8;
-    QString yyIdent;
-    QString yyComment;
-    QString yyString;
+    QString yyWord;
     qlonglong yyInteger;
     QStack<IfdefState> yyIfdefStack;
     int yyBraceDepth;
@@ -312,26 +308,28 @@ void CppParser::setInput(QTextStream &ts, const QString &fileName)
 
 uint CppParser::getChar()
 {
+    int len = yyInStr.size();
+    const ushort *uc = (const ushort *)yyInStr.unicode();
     forever {
-        if (yyInPos >= yyInStr.size())
+        if (yyInPos >= len)
             return EOF;
-        uint c = yyInStr[yyInPos++].unicode();
-        if (c == '\\' && yyInPos < yyInStr.size()) {
-            if (yyInStr[yyInPos].unicode() == '\n') {
+        uint c = uc[yyInPos++];
+        if (c == '\\' && yyInPos < len) {
+            if (uc[yyInPos] == '\n') {
                 ++yyCurLineNo;
                 ++yyInPos;
                 continue;
             }
-            if (yyInStr[yyInPos].unicode() == '\r') {
+            if (uc[yyInPos] == '\r') {
                 ++yyCurLineNo;
                 ++yyInPos;
-                if (yyInPos < yyInStr.size() && yyInStr[yyInPos].unicode() == '\n')
+                if (yyInPos < len && uc[yyInPos] == '\n')
                     ++yyInPos;
                 continue;
             }
         }
         if (c == '\r') {
-            if (yyInPos < yyInStr.size() && yyInStr[yyInPos].unicode() == '\n')
+            if (yyInPos < len && uc[yyInPos] == '\n')
                 ++yyInPos;
             c = '\n';
             ++yyCurLineNo;
@@ -346,12 +344,36 @@ uint CppParser::getChar()
     }
 }
 
+STRING(Q_OBJECT);
+STRING(Q_DECLARE_TR_FUNCTIONS);
+STRING(QT_TR_NOOP);
+STRING(QT_TRID_NOOP);
+STRING(QT_TRANSLATE_NOOP);
+STRING(QT_TRANSLATE_NOOP3);
+STRING(QT_TR_NOOP_UTF8);
+STRING(QT_TRANSLATE_NOOP_UTF8);
+STRING(QT_TRANSLATE_NOOP3_UTF8);
+STRING(class);
+// QTranslator::findMessage() has the same parameters as QApplication::translate()
+STRING(findMessage);
+STRING(friend);
+STRING(namespace);
+STRING(qtTrId);
+STRING(return);
+STRING(struct);
+STRING(TR);
+STRING(Tr);
+STRING(tr);
+STRING(trUtf8);
+STRING(translate);
+STRING(using);
+
 uint CppParser::getToken()
 {
   restart:
-    yyIdent.clear();
-    yyComment.clear();
-    yyString.clear();
+    // Failing this assertion would mean losing the preallocated buffer.
+    Q_ASSERT(yyWord.isDetached());
+    yyWord.resize(0);
 
     while (yyCh != EOF) {
         yyLineNo = yyCurLineNo;
@@ -450,6 +472,7 @@ uint CppParser::getToken()
                         tChar = '>';
                     else
                         break;
+                    ushort *ptr = (ushort *)yyWord.unicode();
                     forever {
                         yyCh = getChar();
                         if (yyCh == EOF || yyCh == '\n')
@@ -458,8 +481,9 @@ uint CppParser::getToken()
                             yyCh = getChar();
                             break;
                         }
-                        yyString += yyCh;
+                        *ptr++ = yyCh;
                     }
+                    yyWord.resize(ptr - (ushort *)yyWord.unicode());
                     return (tChar == '"') ? Tok_QuotedInclude : Tok_AngledInclude;
                 }
                 break;
@@ -538,42 +562,43 @@ uint CppParser::getToken()
             } while (yyCh != '\n' && yyCh != EOF);
             yyCh = getChar();
         } else if (isalpha(yyCh) || yyCh == '_') {
+            ushort *ptr = (ushort *)yyWord.unicode();
             do {
-                yyIdent += yyCh;
+                *ptr++ = yyCh;
                 yyCh = getChar();
             } while (isalnum(yyCh) || yyCh == '_');
+            yyWord.resize(ptr - (ushort *)yyWord.unicode());
 
-            //qDebug() << "IDENT: " << yyIdent;
+            //qDebug() << "IDENT: " << yyWord;
 
-            switch (yyIdent.at(0).unicode()) {
+            switch (yyWord.unicode()[0].unicode()) {
             case 'Q':
-                if (yyIdent == QLatin1String("Q_OBJECT"))
+                if (yyWord == strQ_OBJECT)
                     return Tok_Q_OBJECT;
-                if (yyIdent == QLatin1String("Q_DECLARE_TR_FUNCTIONS"))
+                if (yyWord == strQ_DECLARE_TR_FUNCTIONS)
                     return Tok_Q_DECLARE_TR_FUNCTIONS;
-                if (yyIdent == QLatin1String("QT_TR_NOOP"))
+                if (yyWord == strQT_TR_NOOP)
                     return Tok_tr;
-                if (yyIdent == QLatin1String("QT_TRID_NOOP"))
+                if (yyWord == strQT_TRID_NOOP)
                     return Tok_trid;
-                if (yyIdent == QLatin1String("QT_TRANSLATE_NOOP"))
+                if (yyWord == strQT_TRANSLATE_NOOP)
                     return Tok_translate;
-                if (yyIdent == QLatin1String("QT_TRANSLATE_NOOP3"))
+                if (yyWord == strQT_TRANSLATE_NOOP3)
                     return Tok_translate;
-                if (yyIdent == QLatin1String("QT_TR_NOOP_UTF8"))
+                if (yyWord == strQT_TR_NOOP_UTF8)
                     return Tok_trUtf8;
-                if (yyIdent == QLatin1String("QT_TRANSLATE_NOOP_UTF8"))
+                if (yyWord == strQT_TRANSLATE_NOOP_UTF8)
                     return Tok_translateUtf8;
-                if (yyIdent == QLatin1String("QT_TRANSLATE_NOOP3_UTF8"))
+                if (yyWord == strQT_TRANSLATE_NOOP3_UTF8)
                     return Tok_translateUtf8;
                 break;
             case 'T':
                 // TR() for when all else fails
-                if (yyIdent.compare(QLatin1String("TR"), Qt::CaseInsensitive) == 0) {
+                if (yyWord == strTR || yyWord == strTr)
                     return Tok_tr;
-                }
                 break;
             case 'c':
-                if (yyIdent == QLatin1String("class"))
+                if (yyWord == strclass)
                     return Tok_class;
                 break;
             case 'f':
@@ -581,40 +606,37 @@ uint CppParser::getToken()
                   QTranslator::findMessage() has the same parameters as
                   QApplication::translate().
                 */
-                if (yyIdent == QLatin1String("findMessage"))
+                if (yyWord == strfindMessage)
                     return Tok_translate;
-                if (yyIdent == QLatin1String("friend"))
+                if (yyWord == strfriend)
                     return Tok_friend;
                 break;
             case 'n':
-                if (yyIdent == QLatin1String("namespace"))
+                if (yyWord == strnamespace)
                     return Tok_namespace;
                 break;
             case 'q':
-                if (yyIdent == QLatin1String("qtTrId"))
+                if (yyWord == strqtTrId)
                     return Tok_trid;
                 break;
             case 'r':
-                if (yyIdent == QLatin1String("return"))
+                if (yyWord == strreturn)
                     return Tok_return;
                 break;
             case 's':
-                if (yyIdent == QLatin1String("struct"))
+                if (yyWord == strstruct)
                     return Tok_class;
                 break;
             case 't':
-                if (yyIdent == QLatin1String("tr")) {
+                if (yyWord == strtr)
                     return Tok_tr;
-                }
-                if (yyIdent == QLatin1String("trUtf8")) {
+                if (yyWord == strtrUtf8)
                     return Tok_trUtf8;
-                }
-                if (yyIdent == QLatin1String("translate")) {
+                if (yyWord == strtranslate)
                     return Tok_translate;
-                }
                 break;
             case 'u':
-                if (yyIdent == QLatin1String("using"))
+                if (yyWord == strusing)
                     return Tok_using;
                 break;
             }
@@ -634,14 +656,17 @@ uint CppParser::getToken()
             case '/':
                 yyCh = getChar();
                 if (yyCh == '/') {
+                    ushort *ptr = (ushort *)yyWord.unicode() + yyWord.length();
                     do {
                         yyCh = getChar();
                         if (yyCh == EOF)
                             break;
-                        yyComment.append(yyCh);
+                        *ptr++ = yyCh;
                     } while (yyCh != '\n');
+                    yyWord.resize(ptr - (ushort *)yyWord.unicode());
                 } else if (yyCh == '*') {
                     bool metAster = false;
+                    ushort *ptr = (ushort *)yyWord.unicode() + yyWord.length();
 
                     forever {
                         yyCh = getChar();
@@ -650,7 +675,7 @@ uint CppParser::getToken()
                                      qPrintable(yyFileName), yyLineNo);
                             return Tok_Comment;
                         }
-                        yyComment.append(yyCh);
+                        *ptr++ = yyCh;
 
                         if (yyCh == '*')
                             metAster = true;
@@ -659,22 +684,25 @@ uint CppParser::getToken()
                         else
                             metAster = false;
                     }
+                    yyWord.resize(ptr - (ushort *)yyWord.unicode() - 2);
+
                     yyCh = getChar();
-                    yyComment.chop(2);
                 }
                 return Tok_Comment;
-            case '"':
+            case '"': {
+                ushort *ptr = (ushort *)yyWord.unicode() + yyWord.length();
                 yyCh = getChar();
                 while (yyCh != EOF && yyCh != '\n' && yyCh != '"') {
                     if (yyCh == '\\') {
                         yyCh = getChar();
                         if (yyCh == EOF || yyCh == '\n')
                             break;
-                        yyString.append(QLatin1Char('\\'));
+                        *ptr++ = '\\';
                     }
-                    yyString.append(yyCh);
+                    *ptr++ = yyCh;
                     yyCh = getChar();
                 }
+                yyWord.resize(ptr - (ushort *)yyWord.unicode());
 
                 if (yyCh != '"')
                     qWarning("%s:%d: Unterminated C++ string\n",
@@ -682,6 +710,7 @@ uint CppParser::getToken()
                 else
                     yyCh = getChar();
                 return Tok_String;
+            }
             case '-':
                 yyCh = getChar();
                 if (yyCh == '>') {
@@ -1150,7 +1179,8 @@ bool CppParser::matchString(QString *s)
     bool matches = (yyTok == Tok_String);
     s->clear();
     while (yyTok == Tok_String) {
-        *s += yyString;
+        *s += yyWord;
+        s->detach();
         do {
             yyTok = getToken();
         } while (yyTok == Tok_Comment);
@@ -1168,17 +1198,17 @@ bool CppParser::matchEncoding(bool *utf8)
 
     if (yyTok != Tok_Ident)
         return false;
-    if (yyIdent == strQApplication || yyIdent == strQCoreApplication) {
+    if (yyWord == strQApplication || yyWord == strQCoreApplication) {
         yyTok = getToken();
         if (yyTok == Tok_ColonColon)
             yyTok = getToken();
     }
-    if (yyIdent == strUnicodeUTF8) {
+    if (yyWord == strUnicodeUTF8) {
         *utf8 = true;
         yyTok = getToken();
         return true;
     }
-    if (yyIdent == strDefaultCodec || yyIdent == strCodecForTr) {
+    if (yyWord == strDefaultCodec || yyWord == strCodecForTr) {
         *utf8 = false;
         yyTok = getToken();
     return true;
@@ -1344,13 +1374,15 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
     bool utf8;
     bool yyTokColonSeen = false; // Start of c'tor's initializer list
 
+    yyWord.reserve(yyInStr.size()); // Rather insane. That's because we do no length checking.
     yyCh = getChar();
     yyTok = getToken();
     while (yyTok != Tok_Eof) {
         //qDebug() << "TOKEN: " << yyTok;
         switch (yyTok) {
         case Tok_QuotedInclude: {
-            text = QDir(QFileInfo(yyFileName).absolutePath()).absoluteFilePath(yyString);
+            text = QDir(QFileInfo(yyFileName).absolutePath()).absoluteFilePath(yyWord);
+            text.detach();
             if (QFileInfo(text).isFile()) {
                 processInclude(text, cd, inclusions);
                 yyTok = getToken();
@@ -1359,14 +1391,15 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
         }
         /* fall through */
         case Tok_AngledInclude: {
-            QStringList cSources = cd.m_allCSources.values(yyString);
+            QStringList cSources = cd.m_allCSources.values(yyWord);
             if (!cSources.isEmpty()) {
                 foreach (const QString &cSource, cSources)
                     processInclude(cSource, cd, inclusions);
                 goto incOk;
             }
             foreach (const QString &incPath, cd.m_includePath) {
-                text = QDir(incPath).absoluteFilePath(yyString);
+                text = QDir(incPath).absoluteFilePath(yyWord);
+                text.detach();
                 if (QFileInfo(text).isFile()) {
                     processInclude(text, cd, inclusions);
                     goto incOk;
@@ -1398,14 +1431,18 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                       'class Q_EXPORT QMessageBox', in which case
                       'QMessageBox' is the class name, not 'Q_EXPORT'.
                     */
-                    fct = QStringList(yyIdent);
+                    text = yyWord;
+                    text.detach();
+                    fct = QStringList(text);
                     yyTok = getToken();
                 } while (yyTok == Tok_Ident);
                 while (yyTok == Tok_ColonColon) {
                     yyTok = getToken();
                     if (yyTok != Tok_Ident)
                         break; // Oops ...
-                    fct += yyIdent;
+                    text = yyWord;
+                    text.detach();
+                    fct += text;
                     yyTok = getToken();
                 }
                 if (fct.count() > 1) {
@@ -1450,7 +1487,8 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             yyTokColonSeen = false;
             yyTok = getToken();
             if (yyTok == Tok_Ident) {
-                QString ns = yyIdent;
+                QString ns = yyWord;
+                ns.detach();
                 yyTok = getToken();
                 if (yyTok == Tok_LeftBrace) {
                     namespaceDepths.push(namespaces.count());
@@ -1463,8 +1501,11 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     if (yyTok == Tok_ColonColon)
                         fullName.append(QString());
                     while (yyTok == Tok_ColonColon || yyTok == Tok_Ident) {
-                        if (yyTok == Tok_Ident)
-                            fullName.append(yyIdent);
+                        if (yyTok == Tok_Ident) {
+                            text = yyWord;
+                            text.detach();
+                            fullName.append(text);
+                        }
                         yyTok = getToken();
                     }
                     if (fullName.isEmpty())
@@ -1489,8 +1530,11 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 if (yyTok == Tok_ColonColon)
                     fullName.append(QString());
                 while (yyTok == Tok_ColonColon || yyTok == Tok_Ident) {
-                    if (yyTok == Tok_Ident)
-                        fullName.append(yyIdent);
+                    if (yyTok == Tok_Ident) {
+                        text = yyWord;
+                        text.detach();
+                        fullName.append(text);
+                    }
                     yyTok = getToken();
                 }
                 NamespaceList nsl;
@@ -1504,8 +1548,11 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 if (yyTok == Tok_ColonColon)
                     fullName.append(QString());
                 while (yyTok == Tok_ColonColon || yyTok == Tok_Ident) {
-                    if (yyTok == Tok_Ident)
-                        fullName.append(yyIdent);
+                    if (yyTok == Tok_Ident) {
+                        text = yyWord;
+                        text.detach();
+                        fullName.append(text);
+                    }
                     yyTok = getToken();
                 }
                 if (fullName.isEmpty())
@@ -1702,7 +1749,8 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             yyTok = getToken();
             break;
         case Tok_Ident:
-            prefix += yyIdent;
+            prefix += yyWord;
+            prefix.detach();
             yyTok = getToken();
             if (yyTok != Tok_ColonColon) {
                 prefix.clear();
@@ -1713,24 +1761,29 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
         case Tok_Comment:
             if (!results->tor)
                 goto case_default;
-            if (yyComment.startsWith(QLatin1Char(':'))) {
-                yyComment.remove(0, 1);
-                extracomment.append(yyComment);
-            } else if (yyComment.startsWith(QLatin1Char('='))) {
-                yyComment.remove(0, 1);
-                msgid = yyComment.simplified();
-            } else if (yyComment.startsWith(QLatin1Char('~'))) {
-                yyComment.remove(0, 1);
-                yyComment = yyComment.trimmed();
-                int k = yyComment.indexOf(QLatin1Char(' '));
+            if (yyWord.startsWith(QLatin1Char(':'))) {
+                yyWord.remove(0, 1);
+                extracomment += yyWord;
+                extracomment.detach();
+            } else if (yyWord.startsWith(QLatin1Char('='))) {
+                yyWord.remove(0, 1);
+                msgid = yyWord.simplified();
+                msgid.detach();
+            } else if (yyWord.startsWith(QLatin1Char('~'))) {
+                yyWord.remove(0, 1);
+                text = yyWord.trimmed();
+                int k = text.indexOf(QLatin1Char(' '));
                 if (k > -1)
-                    extra.insert(yyComment.left(k), yyComment.mid(k + 1).trimmed());
-            } else if (yyComment.startsWith(QLatin1Char('%'))) {
+                    extra.insert(text.left(k), text.mid(k + 1).trimmed());
+                text.clear();
+            } else if (yyWord.startsWith(QLatin1Char('%'))) {
+                sourcetext.reserve(sourcetext.length() + yyWord.length());
+                ushort *ptr = (ushort *)sourcetext.data() + sourcetext.length();
                 int p = 1, c;
                 forever {
-                    if (p >= yyComment.length())
+                    if (p >= yyWord.length())
                         break;
-                    c = yyComment.unicode()[p++].unicode();
+                    c = yyWord.unicode()[p++].unicode();
                     if (isspace(c))
                         continue;
                     if (c != '"') {
@@ -1739,28 +1792,29 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                         break;
                     }
                     forever {
-                        if (p >= yyComment.length()) {
+                        if (p >= yyWord.length()) {
                           whoops:
                             qWarning("%s:%d: Unterminated meta string\n",
                                      qPrintable(yyFileName), yyLineNo);
                             break;
                         }
-                        c = yyComment.unicode()[p++].unicode();
+                        c = yyWord.unicode()[p++].unicode();
                         if (c == '"')
                             break;
                         if (c == '\\') {
-                            if (p >= yyComment.length())
+                            if (p >= yyWord.length())
                                 goto whoops;
-                            c = yyComment.unicode()[p++].unicode();
+                            c = yyWord.unicode()[p++].unicode();
                             if (c == '\n')
                                 goto whoops;
-                            sourcetext.append(QLatin1Char('\\'));
+                            *ptr++ = '\\';
                         }
-                        sourcetext.append(c);
+                        *ptr++ = c;
                     }
                 }
+                sourcetext.resize(ptr - (ushort *)sourcetext.data());
             } else {
-                comment = yyComment.simplified();
+                comment = yyWord.simplified();
                 if (comment.startsWith(QLatin1String(MagicComment))) {
                     comment.remove(0, sizeof(MagicComment) - 1);
                     int k = comment.indexOf(QLatin1Char(' '));
@@ -1775,6 +1829,8 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                         results->tor->setExtras(extra);
                         extra.clear();
                     }
+                } else {
+                    comment.detach();
                 }
             }
             yyTok = getToken();
@@ -1791,8 +1847,10 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             prefix += strColons;
             yyTok = getToken();
 #ifdef DIAGNOSE_RETRANSLATABILITY
-            if (yyTok == Tok_Ident && yyBraceDepth == namespaceDepths.count() && yyParenDepth == 0)
-                functionName = yyIdent;
+            if (yyTok == Tok_Ident && yyBraceDepth == namespaceDepths.count() && yyParenDepth == 0) {
+                functionName = yyWord;
+                functionName.detach();
+            }
 #endif
             break;
         case Tok_RightBrace:

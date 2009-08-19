@@ -249,8 +249,6 @@ public:
     output.
 
     \ingroup i18n
-    \ingroup environment
-    \mainclass
 
     An object of this class contains a set of translations from a
     source language to a target language. QTranslator provides

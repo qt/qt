@@ -128,7 +128,7 @@ static QFixed alignLine(QTextEngine *eng, const QScriptLine &line)
     \brief The QTextInlineObject class represents an inline object in
     a QTextLayout.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     This class is only used if the text layout is used to lay out
     parts of a QTextDocument.
@@ -285,7 +285,7 @@ Qt::LayoutDirection QTextInlineObject::textDirection() const
     \brief The QTextLayout class is used to lay out and paint a single
     paragraph of text.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     It offers most features expected from a modern text layout
     engine, including Unicode compliant rendering, line breaking and
@@ -1368,7 +1368,7 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
 
     \brief The QTextLine class represents a line of text inside a QTextLayout.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     A text line is usually created by QTextLayout::createLine().
 

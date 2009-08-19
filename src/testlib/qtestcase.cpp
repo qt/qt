@@ -808,12 +808,12 @@ namespace QTest
 {
     static QObject *currentTestObject = 0;
 
-    struct TestFunction {
+    static struct TestFunction {
         TestFunction():function(0), data(0) {}
         ~TestFunction() { delete [] data; }
         int function;
         char *data;
-    } testFuncs[512];
+    } *testFuncs;
 
     /**
      * Contains the count of test functions that was supplied
@@ -1120,6 +1120,11 @@ static void qParseArgs(int argc, char *argv[])
                 exit(1);
             }
             ++QTest::lastTestFuncIdx;
+            if (!QTest::testFuncs) {
+                struct Cleanup { ~Cleanup() { delete[] QTest::testFuncs; } };
+                static Cleanup cleanup;
+                QTest::testFuncs = new TestFunction[512];
+            }
             QTest::testFuncs[QTest::lastTestFuncIdx].function = idx;
             QTest::testFuncs[QTest::lastTestFuncIdx].data = data;
             QTEST_ASSERT(QTest::lastTestFuncIdx < 512);

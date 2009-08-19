@@ -55,7 +55,7 @@ SOURCES += \
 	tools/qhash.cpp \
         tools/qline.cpp \
 	tools/qlinkedlist.cpp \
-	tools/qlistdata.cpp \
+	tools/qlist.cpp \
 	tools/qlocale.cpp \
         tools/qpoint.cpp \
 	tools/qmap.cpp \
@@ -91,7 +91,7 @@ contains(QT_CONFIG, zlib) {
 	../3rdparty/zlib/uncompr.c \
 	../3rdparty/zlib/zutil.c
 } else:!contains(QT_CONFIG, no-zlib) {
-   unix:LIBS += -lz
+   unix:LIBS_PRIVATE += -lz
 #  win32:LIBS += libz.lib
 }
 
@@ -109,4 +109,5 @@ SOURCES += ../3rdparty/harfbuzz/src/harfbuzz-buffer.c \
            tools/qharfbuzz.cpp
 HEADERS += tools/qharfbuzz_p.h
 
-!macx-icc:!vxworks:unix:LIBS += -lm
+# Note: libm should be present by default becaue this is C++
+!macx-icc:!vxworks:unix:LIBS_PRIVATE += -lm

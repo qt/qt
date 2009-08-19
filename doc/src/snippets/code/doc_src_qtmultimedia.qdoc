@@ -1,0 +1,8 @@
+//! [0]
+QT += multimedia
+//! [0]
+
+
+//! [1]
+#include <QtMultimedia>
+//! [1]
