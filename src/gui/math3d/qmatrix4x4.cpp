@@ -1438,18 +1438,59 @@ QMatrix QMatrix4x4::toAffine() const
                    qreal(m[3][0]), qreal(m[3][1]));
 }
 
+static const qreal inv_dist_to_plane = 1. / 1024.;
+
 /*!
     Returns the conventional Qt 2D transformation matrix that
-    corresponds to this matrix.  It is assumed that this matrix
-    only contains 2D transformation elements.
+    corresponds to this matrix.
+
+    If \a distanceToPlane is non-zero, it indicates a projection
+    factor to use to adjust for the z co-ordinate.  The default
+    value of 1024 corresponds to the projection factor used
+    by QTransform::rotate() for the x and y axes.
+
+    If \a distToPlane is zero, then the returned QTransform
+    is formed by simply dropping the third row and third column
+    of the QMatrix4x4.  This is suitable for implementing
+    orthographic projections where the z co-ordinate should
+    be dropped rather than projected.
 
     \sa toAffine()
 */
-QTransform QMatrix4x4::toTransform() const
+QTransform QMatrix4x4::toTransform(qreal distanceToPlane) const
 {
-    return QTransform(qreal(m[0][0]), qreal(m[0][1]), qreal(m[0][3]),
-                      qreal(m[1][0]), qreal(m[1][1]), qreal(m[1][3]),
-                      qreal(m[3][0]), qreal(m[3][1]), qreal(m[3][3]));
+    if (distanceToPlane == 1024.0f) {
+        // Optimize the common case with constants.
+        return QTransform(qreal(m[0][0]), qreal(m[0][1]),
+                                qreal(m[0][3]) - qreal(m[0][2]) *
+                                                 inv_dist_to_plane,
+                          qreal(m[1][0]), qreal(m[1][1]),
+                                qreal(m[1][3]) - qreal(m[1][2]) *
+                                                 inv_dist_to_plane,
+                          qreal(m[3][0]), qreal(m[3][1]),
+                                qreal(m[3][3]) - qreal(m[3][2]) *
+                                                 inv_dist_to_plane);
+    } else if (distanceToPlane != 0.0f) {
+        // The following projection matrix is pre-multiplied with "matrix":
+        //      | 1 0 0 0 |
+        //      | 0 1 0 0 |
+        //      | 0 0 1 0 |
+        //      | 0 0 d 1 |
+        // where d = -1 / distanceToPlane.  After projection, row 3 and
+        // column 3 are dropped to form the final QTransform.
+        qreal d = 1.0f / distanceToPlane;
+        return QTransform(qreal(m[0][0]), qreal(m[0][1]),
+                                qreal(m[0][3]) - qreal(m[0][2]) * d,
+                          qreal(m[1][0]), qreal(m[1][1]),
+                                qreal(m[1][3]) - qreal(m[1][2]) * d,
+                          qreal(m[3][0]), qreal(m[3][1]),
+                                qreal(m[3][3]) - qreal(m[3][2]) * d);
+    } else {
+        // Orthographic projection: drop row 3 and column 3.
+        return QTransform(qreal(m[0][0]), qreal(m[0][1]), qreal(m[0][3]),
+                          qreal(m[1][0]), qreal(m[1][1]), qreal(m[1][3]),
+                          qreal(m[3][0]), qreal(m[3][1]), qreal(m[3][3]));
+    }
 }
 
 /*!
