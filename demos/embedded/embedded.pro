@@ -7,6 +7,10 @@ contains(QT_CONFIG, svg) {
     !vxworks:!qnx:SUBDIRS += fluidlauncher
 }
 
+contains(QT_CONFIG, network) {
+    SUBDIRS += lightmaps
+}
+
 contains(QT_CONFIG, webkit) {
     SUBDIRS += anomaly
 }
