@@ -94,8 +94,6 @@
 
 #include "qgraphicseffect_p.h"
 
-#ifndef QT_NO_GRAPHICSVIEW
-
 #include <QtGui/qimage.h>
 #include <QtGui/qpainter.h>
 #include <QtCore/qrect.h>
@@ -718,4 +716,3 @@ void QGraphicsShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *sourc
     painter->setWorldTransform(restoreTransform);
 }
 
-#endif

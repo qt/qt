@@ -51,8 +51,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
-
 class QGraphicsItem;
 class QStyleOption;
 class QColor;
@@ -154,7 +152,8 @@ private:
 };
 
 class QGraphicsColorizeEffectPrivate;
-class Q_GUI_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect {
+class Q_GUI_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect
+{
     Q_OBJECT
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 public:
@@ -178,7 +177,8 @@ private:
 };
 
 class QGraphicsPixelizeEffectPrivate;
-class Q_GUI_EXPORT QGraphicsPixelizeEffect: public QGraphicsEffect {
+class Q_GUI_EXPORT QGraphicsPixelizeEffect: public QGraphicsEffect
+{
     Q_OBJECT
     Q_PROPERTY(int pixelSize READ pixelSize WRITE setPixelSize NOTIFY pixelSizeChanged)
 public:
@@ -202,7 +202,8 @@ private:
 };
 
 class QGraphicsBlurEffectPrivate;
-class Q_GUI_EXPORT QGraphicsBlurEffect: public QGraphicsEffect {
+class Q_GUI_EXPORT QGraphicsBlurEffect: public QGraphicsEffect
+{
     Q_OBJECT
     Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
 public:
@@ -227,7 +228,8 @@ private:
 };
 
 class QGraphicsShadowEffectPrivate;
-class Q_GUI_EXPORT QGraphicsShadowEffect: public QGraphicsEffect {
+class Q_GUI_EXPORT QGraphicsShadowEffect: public QGraphicsEffect
+{
     Q_OBJECT
     Q_PROPERTY(QPointF shadowOffset READ shadowOffset WRITE setShadowOffset NOTIFY shadowOffsetChanged)
     Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
@@ -263,11 +265,9 @@ private:
     Q_DISABLE_COPY(QGraphicsShadowEffect)
 };
 
-#endif // QT_NO_GRAPHICSVIEW
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-
 #endif // QGRAPHICSEFFECT_H
+
