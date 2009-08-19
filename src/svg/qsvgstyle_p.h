@@ -547,22 +547,18 @@ public:
         return m_additive;
     }
 
-    bool animFinished(qreal totalTimeElapsed)
+    bool animActive(qreal totalTimeElapsed)
     {
-        qreal animationFrame = (totalTimeElapsed - m_from) / m_to;
-        if (m_repeatCount >= 0 && m_repeatCount < animationFrame)
+        if (totalTimeElapsed < m_from)
+            return false;
+        if (m_freeze || m_repeatCount < 0) // fill="freeze" or repeat="indefinite"
             return true;
-        return false;
-    }
-
-    qreal animStartTime() const
-    {
-        return m_from;
-    }
-
-    void setTransformApplied(bool apply)
-    {
-        m_transformApplied = apply;
+        if (m_totalRunningTime == 0)
+            return false;
+        qreal animationFrame = (totalTimeElapsed - m_from) / m_totalRunningTime;
+        if (animationFrame > m_repeatCount)
+            return false;
+        return true;
     }
 
     bool transformApplied() const
@@ -570,9 +566,10 @@ public:
         return m_transformApplied;
     }
 
-    bool frozen()
+    // Call this instead of revert if you know that revert is unnecessary.
+    void clearTransformApplied()
     {
-        return m_freeze;
+        m_transformApplied = false;
     }
 
 protected:
