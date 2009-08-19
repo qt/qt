@@ -243,10 +243,10 @@ void *QThreadPrivate::start(void *arg)
 #endif
     thr->run();
 
-#ifndef Q_OS_SYMBIAN
-    pthread_cleanup_pop(1);
-#else
+#ifdef Q_OS_SYMBIAN
     QThreadPrivate::finish(arg);
+#else
+    pthread_cleanup_pop(1);
 #endif
 
     return 0;
