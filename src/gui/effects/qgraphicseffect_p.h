@@ -156,27 +156,6 @@ public:
     int blurRadius;
 };
 
-class QGraphicsBloomEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsBlurEffect)
-public:
-    QGraphicsBloomEffectPrivate() : blurRadius(6), opacity(0.7) {}
-
-    int blurRadius;
-    qreal opacity;
-};
-
-class QGraphicsFrameEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsFrameEffect)
-public:
-    QGraphicsFrameEffectPrivate() : color(Qt::blue), width(5), alpha(0.6) {}
-
-    QColor color;
-    qreal width;
-    qreal alpha;
-};
-
 class QGraphicsShadowEffectPrivate : public QGraphicsEffectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsShadowEffect)

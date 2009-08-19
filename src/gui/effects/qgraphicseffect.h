@@ -205,53 +205,6 @@ private:
     Q_DISABLE_COPY(QGraphicsBlurEffect)
 };
 
-class QGraphicsBloomEffectPrivate;
-class Q_GUI_EXPORT QGraphicsBloomEffect: public QGraphicsEffect {
-    Q_OBJECT
-public:
-    QGraphicsBloomEffect();
-    ~QGraphicsBloomEffect();
-
-    int blurRadius() const;
-    void setBlurRadius(int blurRadius);
-
-    qreal opacity() const;
-    void setOpacity(qreal opacity);
-
-protected:
-    QRectF boundingRectFor(const QRectF &rect) const;
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
-
-private:
-    Q_DECLARE_PRIVATE(QGraphicsBloomEffect)
-    Q_DISABLE_COPY(QGraphicsBloomEffect)
-};
-
-class QGraphicsFrameEffectPrivate;
-class Q_GUI_EXPORT QGraphicsFrameEffect: public QGraphicsEffect {
-    Q_OBJECT
-public:
-    QGraphicsFrameEffect();
-    ~QGraphicsFrameEffect();
-
-    QColor frameColor() const;
-    void setFrameColor(const QColor &c);
-
-    qreal frameWidth() const;
-    void setFrameWidth(qreal frameWidth);
-
-    qreal frameOpacity() const;
-    void setFrameOpacity(qreal opacity);
-
-protected:
-    QRectF boundingRectFor(const QRectF &rect) const;
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
-
-private:
-    Q_DECLARE_PRIVATE(QGraphicsFrameEffect)
-    Q_DISABLE_COPY(QGraphicsFrameEffect)
-};
-
 class QGraphicsShadowEffectPrivate;
 class Q_GUI_EXPORT QGraphicsShadowEffect: public QGraphicsEffect {
     Q_OBJECT
