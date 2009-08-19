@@ -267,9 +267,12 @@ class QmlParentChangeActionPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlParentChangeAction)
 public:
     QmlParentChangeActionPrivate()
-    : QmlAbstractAnimationPrivate() {}
+    : QmlAbstractAnimationPrivate(), pcTarget(0), pcParent(0) {}
 
     void init();
+
+    QFxItem *pcTarget;
+    QFxItem *pcParent;
 
     void doAction();
     QActionAnimation *cpa;

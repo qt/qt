@@ -221,24 +221,31 @@ protected:
     virtual void prepare(QmlMetaProperty &);
 };
 
+class QFxItem;
 class QmlParentChangeActionPrivate;
 class QmlParentChangeAction : public QmlAbstractAnimation
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlParentChangeAction)
 
-    //XXX should have parent property as well for when it isn't part of a transition
+    Q_PROPERTY(QFxItem *target READ object WRITE setObject)
+    Q_PROPERTY(QFxItem *parent READ parent WRITE setParent)
 
 public:
     QmlParentChangeAction(QObject *parent=0);
     virtual ~QmlParentChangeAction();
+
+    QFxItem *object() const;
+    void setObject(QFxItem *);
+
+    QFxItem *parent() const;
+    void setParent(QFxItem *);
 
 protected:
     virtual void transition(QmlStateActions &actions,
                             QmlMetaProperties &modified,
                             TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
-    virtual void prepare(QmlMetaProperty &);
 };
 
 class QmlPropertyAnimationPrivate;

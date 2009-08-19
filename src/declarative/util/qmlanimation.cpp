@@ -866,6 +866,7 @@ void QmlRunScriptAction::transition(QmlStateActions &actions,
 
         if (action.event && action.event->typeName() == QLatin1String("RunScript")
             && static_cast<QmlRunScript*>(action.event)->name() == d->name) {
+            //### how should we handle reverse direction?
             d->runScriptScript = static_cast<QmlRunScript*>(action.event)->script();
             action.actionDone = true;
             break;  //assumes names are unique
@@ -1116,21 +1117,36 @@ void QmlParentChangeActionPrivate::init()
     QFx_setParent_noEvent(cpa, q);
 }
 
-void QmlParentChangeActionPrivate::doAction()
+QFxItem *QmlParentChangeAction::object() const
 {
-    //### property.write(value);
+    Q_D(const QmlParentChangeAction);
+    return d->pcTarget;
 }
 
-void QmlParentChangeAction::prepare(QmlMetaProperty &p)
+void QmlParentChangeAction::setObject(QFxItem *target)
 {
     Q_D(QmlParentChangeAction);
+    d->pcTarget = target;
+}
 
-    if (d->userProperty.isNull)
-        d->property = p;
-    else
-        d->property = d->userProperty;
+QFxItem *QmlParentChangeAction::parent() const
+{
+    Q_D(const QmlParentChangeAction);
+    return d->pcParent;
+}
 
-    //###
+void QmlParentChangeAction::setParent(QFxItem *parent)
+{
+    Q_D(QmlParentChangeAction);
+    d->pcParent = parent;
+}
+
+void QmlParentChangeActionPrivate::doAction()
+{
+    QmlParentChange pc;
+    pc.setObject(pcTarget);
+    pc.setParent(pcParent);
+    pc.execute();
 }
 
 QAbstractAnimation *QmlParentChangeAction::qtAnimation()
@@ -1149,8 +1165,12 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
 
     struct QmlParentChangeActionData : public QAbstractAnimationAction
     {
+        QmlParentChangeActionData(): pc(0) {}
+        ~QmlParentChangeActionData() { delete pc; }
+
         QmlStateActions actions;
         bool reverse;
+        QmlParentChange *pc;
         virtual void doAction()
         {
             for (int ii = 0; ii < actions.count(); ++ii) {
@@ -1168,14 +1188,22 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
     for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
-        //### should we still use target to filter?
-        //### still need type-specific matching
-        if (action.event
-            && action.event->typeName() == QLatin1String("ParentChange")) {
+        if (action.event && action.event->typeName() == QLatin1String("ParentChange")
+            && (!d->target || static_cast<QmlParentChange*>(action.event)->object() == d->target)) {
             Action myAction = action;
             data->reverse = action.reverseEvent;
-            data->actions << myAction;
-            action.actionDone = true;
+            if (d->pcParent) {
+                QmlParentChange *pc = new QmlParentChange;
+                pc->setObject(d->pcTarget);
+                pc->setParent(d->pcParent);
+                myAction.event = pc;
+                data->pc = pc;
+                data->actions << myAction;
+                break;  //only match one
+            } else {
+                action.actionDone = true;
+                data->actions << myAction;
+            }
         }
     }
 
