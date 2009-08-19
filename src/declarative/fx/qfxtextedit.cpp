@@ -316,14 +316,14 @@ void QFxTextEdit::setHighlightedTextColor(const QColor &color)
 }
 
 /*!
-    \qmlproperty enumeration TextEdit::hAlign
-    \qmlproperty enumeration TextEdit::vAlign
+    \qmlproperty enumeration TextEdit::horizontalAlignment
+    \qmlproperty enumeration TextEdit::verticalAlignment
 
     Sets the horizontal and vertical alignment of the text within the TextEdit items
     width and height.  By default, the text is top-left aligned.
 
-    The valid values for \c hAlign are \c AlignLeft, \c AlignRight and
-    \c AlignHCenter.  The valid values for \c vAlign are \c AlignTop, \c AlignBottom
+    The valid values for \c horizontalAlignment are \c AlignLeft, \c AlignRight and
+    \c AlignHCenter.  The valid values for \c verticalAlignment are \c AlignTop, \c AlignBottom
     and \c AlignVCenter.
 */
 QFxTextEdit::HAlignment QFxTextEdit::hAlign() const

@@ -623,7 +623,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         }
 
                         // Add all unknown libs to the deps
-                        QStringList where("QMAKE_LIBS");
+                        QStringList where = QStringList() << "QMAKE_LIBS" << "QMAKE_LIBS_PRIVATE";
                         if(!tmp_proj.isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
                             where = tmp_proj.variables()["QMAKE_INTERNAL_PRL_LIBS"];
                         for(QStringList::iterator wit = where.begin();
@@ -1556,6 +1556,7 @@ void VcprojGenerator::initOld()
     }
 
     project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
+    project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
 
      // Get filename w/o extension -----------------------------------
     QString msvcproj_project = "";
@@ -1599,6 +1600,7 @@ void VcprojGenerator::initOld()
 
     // $$QMAKE.. -> $$MSVCPROJ.. -------------------------------------
     project->values("MSVCPROJ_LIBS") += project->values("QMAKE_LIBS");
+    project->values("MSVCPROJ_LIBS") += project->values("QMAKE_LIBS_PRIVATE");
     project->values("MSVCPROJ_LFLAGS") += project->values("QMAKE_LFLAGS");
     if(!project->values("QMAKE_LIBDIR").isEmpty()) {
         QStringList strl = project->values("QMAKE_LIBDIR");

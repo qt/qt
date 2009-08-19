@@ -64,7 +64,7 @@ QT_BEGIN_NAMESPACE
   \brief The QScriptValue class acts as a container for the Qt Script data types.
 
   \ingroup script
-  \mainclass
+
 
   QScriptValue supports the types defined in the \l{ECMA-262}
   standard: The primitive types, which are Undefined, Null, Boolean,

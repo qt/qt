@@ -71,8 +71,8 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
     Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor) //### selectionColor
     Q_PROPERTY(QColor highlightedTextColor READ highlightedTextColor WRITE setHighlightedTextColor) //### selectedTextColor
     Q_PROPERTY(QFont font READ font WRITE setFont)
-    Q_PROPERTY(HAlignment hAlign READ hAlign WRITE setHAlign) //### horizontalAlignment
-    Q_PROPERTY(VAlignment vAlign READ vAlign WRITE setVAlign) //### verticalAlignment
+    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign)
+    Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign)
     Q_PROPERTY(bool wrap READ wrap WRITE setWrap) //### other wrap modes
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)

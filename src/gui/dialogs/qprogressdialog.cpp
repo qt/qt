@@ -196,8 +196,8 @@ void QProgressDialogPrivate::_q_disconnectOnClose()
 /*!
   \class QProgressDialog
   \brief The QProgressDialog class provides feedback on the progress of a slow operation.
-  \ingroup dialogs
-  \mainclass
+  \ingroup standard-dialogs
+
 
   A progress dialog is used to give the user an indication of how long
   an operation is going to take, and to demonstrate that the

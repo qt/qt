@@ -299,10 +299,19 @@ void tst_Utf8::invalidUtf8_data()
 void tst_Utf8::invalidUtf8()
 {
     QFETCH(QByteArray, utf8);
+    QFETCH_GLOBAL(bool, useLocale);
 
     QSharedPointer<QTextDecoder> decoder = QSharedPointer<QTextDecoder>(codec->makeDecoder());
     QString decoded = decoder->toUnicode(utf8);
-    QVERIFY(decoder->hasFailure());
+
+    // Only enforce correctness on our UTF-8 decoder
+    // The system's UTF-8 codec is sometimes buggy
+    //  GNU libc's iconv is known to accept U+FFFF and U+FFFE encoded as UTF-8
+    //  OS X's iconv is known to accept those, plus surrogates and codepoints above U+10FFFF
+    if (!useLocale)
+        QVERIFY(decoder->hasFailure());
+    else if (!decoder->hasFailure())
+        qWarning("System codec does not report failure when it should. Should report bug upstream.");
 }
 
 QTEST_MAIN(tst_Utf8)

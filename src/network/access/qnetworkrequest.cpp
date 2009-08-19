@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
     \brief The QNetworkRequest class holds one request to be sent with the Network Access API.
     \since 4.4
 
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     QNetworkRequest is part of the Network Access API and is the class

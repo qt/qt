@@ -50,27 +50,6 @@
 
 QT_BEGIN_NAMESPACE
 
-QPaintDevice::QPaintDevice()
-{
-    painters = 0;
-}
-
-extern void qt_painter_removePaintDevice(QPaintDevice *); //qpainter.cpp
-
-QPaintDevice::~QPaintDevice()
-{
-    if (paintingActive())
-        qWarning("QPaintDevice: Cannot destroy paint device that is being "
-                  "painted.  Be sure to QPainter::end() painters!");
-    qt_painter_removePaintDevice(this);
-}
-
-int QPaintDevice::metric(PaintDeviceMetric) const
-{
-    qWarning("QPaintDevice::metrics: Device has no metric information");
-    return 0;
-}
-
 HDC QPaintDevice::getDC() const
 {
     return 0;

@@ -113,6 +113,7 @@ private slots:
     void oneKeyValue();
     void updateOnSetKeyValues();
     void restart();
+    void valueChanged();
 };
 
 tst_QPropertyAnimation::tst_QPropertyAnimation()
@@ -1051,6 +1052,33 @@ void tst_QPropertyAnimation::restart()
     anim.setEndValue(MyErrorObject::ErrorValue);
     anim.start();
 }
+
+void tst_QPropertyAnimation::valueChanged()
+{
+    qRegisterMetaType<QVariant>("QVariant");
+
+    //we check that we receive the valueChanged signal
+    MyErrorObject o;
+    o.setOle(0);
+    QCOMPARE(o.property("ole").toInt(), 0);
+    QPropertyAnimation anim(&o, "ole");
+    anim.setEndValue(5);
+    anim.setDuration(1000);
+    QSignalSpy spy(&anim, SIGNAL(valueChanged(QVariant)));
+    anim.start();
+
+    QTest::qWait(anim.duration() + 50);
+
+    QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
+    QCOMPARE(anim.currentTime(), anim.duration());
+
+    //let's check that the values go forward
+    QCOMPARE(spy.count(), 6); //we should have got everything from 0 to 5
+    for (int i = 0; i < spy.count(); ++i) {
+        QCOMPARE(qvariant_cast<QVariant>(spy.at(i).first()).toInt(), i);
+    }
+}
+
 
 
 QTEST_MAIN(tst_QPropertyAnimation)

@@ -87,7 +87,6 @@ QSizePolicy::operator QVariant() const
     \brief The QLayoutItem class provides an abstract item that a
     QLayout manipulates.
 
-    \ingroup appearance
     \ingroup geomanagement
 
     This is used by custom layouts.
@@ -116,7 +115,6 @@ QSizePolicy::operator QVariant() const
 
 /*!
     \class QSpacerItem
-    \ingroup appearance
     \ingroup geomanagement
     \brief The QSpacerItem class provides blank space in a layout.
 
@@ -144,7 +142,6 @@ QSizePolicy::operator QVariant() const
 
 /*!
     \class QWidgetItem
-    \ingroup appearance
     \ingroup geomanagement
     \brief The QWidgetItem class is a layout item that represents a widget.
 

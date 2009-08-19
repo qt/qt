@@ -445,9 +445,9 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loaderV2,
   \brief The QIcon class provides scalable icons in different modes
   and states.
 
-  \ingroup multimedia
+  \ingroup painting
   \ingroup shared
-  \mainclass
+
 
   A QIcon can generate smaller, larger, active, and disabled pixmaps
   from the set of pixmaps it is given. Such pixmaps are used by Qt

@@ -134,16 +134,6 @@ QmlConnection::~QmlConnection()
 
     By default, the sender is assumed to be the parent of the Connection.
 */
-
-/*!
-    \property QmlConnection::sender
-    \brief the object that sends the signal.
-
-    By default, the sender is assumed to be the parent of the Connection.
-
-    Note that the set/get methods are setSignalSender() and signalSender(),
-    due to the pre-existence of QObject::sender().
-*/
 QObject *QmlConnection::signalSender() const
 {
     Q_D(const QmlConnection);
@@ -233,11 +223,6 @@ void QmlConnection::componentComplete()
 
     This is the default attribute of Connection.
 */
-
-/*!
-    \property QmlConnection::script
-    \brief the JavaScript executed whenever the signal is sent.
-*/
 QString QmlConnection::script() const
 {
     Q_D(const QmlConnection);
@@ -274,11 +259,6 @@ Connection {
     script: { ... }
 }
     \endqml
-*/
-
-/*!
-    \property QmlConnection::signal
-    \brief the signal from the sender to which the script is attached.
 */
 QString QmlConnection::signal() const
 {

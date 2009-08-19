@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     \brief The QTextTableCell class represents the properties of a
     cell in a QTextTable.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     Table cells are pieces of document structure that belong to a table.
     The table orders cells into particular rows and columns; cells can
@@ -492,7 +492,7 @@ void QTextTablePrivate::update() const
 
     \brief The QTextTable class represents a table in a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     A table is a group of cells ordered into rows and columns. Each table
     contains at least one row and one column. Each cell contains a block, and

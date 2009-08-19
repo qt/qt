@@ -46,7 +46,7 @@
     \since 4.3
 
     \reentrant
-    \ingroup io
+    \ingroup network
     \ingroup ssl
     \inmodule QtNetwork
 

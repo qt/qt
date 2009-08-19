@@ -77,8 +77,8 @@ QT_BEGIN_NAMESPACE
 
     \ingroup tools
     \ingroup shared
-    \ingroup text
-    \mainclass
+    \ingroup string-processing
+
     \reentrant
 
     QStringList inherits from QList<QString>. Like QList, QStringList is

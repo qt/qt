@@ -2004,8 +2004,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \brief The QSettings class provides persistent platform-independent application settings.
 
     \ingroup io
-    \ingroup misc
-    \mainclass
+
     \reentrant
 
     Users normally expect an application to remember its settings

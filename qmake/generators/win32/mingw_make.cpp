@@ -82,7 +82,12 @@ QString MingwMakefileGenerator::getLibTarget()
 
 bool MingwMakefileGenerator::findLibraries()
 {
-    QStringList &l = project->values("QMAKE_LIBS");
+    return findLibraries("QMAKE_LIBS") && findLibraries("QMAKE_LIBS_PRIVATE");
+}
+
+bool MingwMakefileGenerator::findLibraries(const QString &where)
+{
+    QStringList &l = project->values(where);
 
     QList<QMakeLocalFileName> dirs;
     {
@@ -258,6 +263,7 @@ void MingwMakefileGenerator::init()
 
     // LIBS defined in Profile comes first for gcc
     project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
+    project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
 
     QString targetfilename = project->values("TARGET").first();
     QStringList &configs = project->values("CONFIG");
@@ -344,7 +350,8 @@ void MingwMakefileGenerator::writeLibsPart(QTextStream &t)
         t << "LIBS        =        ";
         if(!project->values("QMAKE_LIBDIR").isEmpty())
             writeLibDirPart(t);
-        t << var("QMAKE_LIBS").replace(QRegExp("(\\slib|^lib)")," -l") << endl;
+        t << var("QMAKE_LIBS").replace(QRegExp("(\\slib|^lib)")," -l") << ' '
+          << var("QMAKE_LIBS_PRIVATE").replace(QRegExp("(\\slib|^lib)")," -l") << endl;
     }
 }
 

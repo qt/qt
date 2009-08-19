@@ -44,7 +44,7 @@
     \brief The QGraphicsItem class is the base class for all graphical
     items in a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
+
     \ingroup graphicsview-api
 
     It provides a light-weight foundation for writing your own custom items.
@@ -328,8 +328,9 @@
     used for Asian languages.
     This flag was introduced in Qt 4.6.
 
-    \value ItemNegativeZStacksBehindParent The item automatically stacks
-    it's parent if it's z-value is negative.
+    \value ItemNegativeZStacksBehindParent The item automatically stacks behind
+    it's parent if it's z-value is negative. This flag enables setZValue() to
+    toggle ItemStacksBehindParent.
 
     \value ItemAutoDetectsFocusProxy The item will assign any child that
     gains input focus as its focus proxy. See also focusProxy().
@@ -1186,6 +1187,9 @@ QGraphicsItem::QGraphicsItem(QGraphicsItemPrivate &dd, QGraphicsItem *parent,
     Destroys the QGraphicsItem and all its children. If this item is currently
     associated with a scene, the item will be removed from the scene before it
     is deleted.
+
+    \note It is more efficient to remove the item from the QGraphicsScene before
+    destroying the item.
 */
 QGraphicsItem::~QGraphicsItem()
 {
@@ -1564,6 +1568,11 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         // Update input method sensitivity in any views.
         if (d_ptr->scene)
             d_ptr->scene->d_func()->updateInputMethodSensitivityInViews();
+    }
+
+    if ((flags & ItemNegativeZStacksBehindParent) != (oldFlags & ItemNegativeZStacksBehindParent)) {
+        // Update stack-behind.
+        setFlag(ItemStacksBehindParent, d_ptr->z < qreal(0.0));
     }
 
     if (d_ptr->scene) {
@@ -3719,12 +3728,8 @@ void QGraphicsItem::setZValue(qreal z)
 
     itemChange(ItemZValueHasChanged, newZVariant);
 
-    if(d_ptr->flags & ItemNegativeZStacksBehindParent) {
-        if (z < 0)
-            setFlag(QGraphicsItem::ItemStacksBehindParent, true);
-        else
-            setFlag(QGraphicsItem::ItemStacksBehindParent, false);
-    }
+    if (d_ptr->flags & ItemNegativeZStacksBehindParent)
+        setFlag(QGraphicsItem::ItemStacksBehindParent, z < qreal(0.0));
 
     if (d_ptr->isObject)
         emit static_cast<QGraphicsObject *>(this)->zChanged();
@@ -6838,11 +6843,12 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 
   By default, this property is true.
 
-  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled(), enabledChanged()
+  \sa QGraphicsItem::isEnabled(), QGraphicsItem::setEnabled()
+  \sa QGraphicsObject::enabledChanged()
 */
 
 /*!
-  \fn QGraphicsObject::enabledChanged()
+  \fn void QGraphicsObject::enabledChanged()
 
   This signal gets emitted whenever the item get's enabled or disabled.
 
@@ -6894,7 +6900,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
     \brief The QAbstractGraphicsShapeItem class provides a common base for
     all path items.
     \since 4.2
-    \ingroup multimedia
+    \ingroup graphicsview-api
 
     This class does not fully implement an item by itself; in particular, it
     does not implement boundingRect() and paint(), which are inherited by
@@ -7029,7 +7035,6 @@ QPainterPath QAbstractGraphicsShapeItem::opaqueArea() const
     \brief The QGraphicsPathItem class provides a path item that you
     can add to a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     To set the item's path, pass a QPainterPath to QGraphicsPathItem's
@@ -7232,7 +7237,6 @@ QVariant QGraphicsPathItem::extension(const QVariant &variant) const
     \brief The QGraphicsRectItem class provides a rectangle item that you
     can add to a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     To set the item's rectangle, pass a QRectF to QGraphicsRectItem's
@@ -7477,7 +7481,6 @@ QVariant QGraphicsRectItem::extension(const QVariant &variant) const
     \brief The QGraphicsEllipseItem class provides an ellipse item that you
     can add to a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     QGraphicsEllipseItem respresents an ellipse with a fill and an outline,
@@ -7794,7 +7797,6 @@ QVariant QGraphicsEllipseItem::extension(const QVariant &variant) const
     \brief The QGraphicsPolygonItem class provides a polygon item that you
     can add to a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     To set the item's polygon, pass a QPolygonF to
@@ -8028,7 +8030,6 @@ QVariant QGraphicsPolygonItem::extension(const QVariant &variant) const
     \brief The QGraphicsLineItem class provides a line item that you can add to a
     QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     To set the item's line, pass a QLineF to QGraphicsLineItem's
@@ -8290,7 +8291,6 @@ QVariant QGraphicsLineItem::extension(const QVariant &variant) const
     \brief The QGraphicsPixmapItem class provides a pixmap item that you can add to
     a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     To set the item's pixmap, pass a QPixmap to QGraphicsPixmapItem's
@@ -8654,7 +8654,6 @@ QVariant QGraphicsPixmapItem::extension(const QVariant &variant) const
     \brief The QGraphicsTextItem class provides a text item that you can add to
     a QGraphicsScene to display formatted text.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     If you only need to show plain text in an item, consider using QGraphicsSimpleTextItem
@@ -9519,7 +9518,6 @@ void QGraphicsSimpleTextItemPrivate::updateBoundingRect()
     \brief The QGraphicsSimpleTextItem class provides a simple text path item
     that you can add to a QGraphicsScene.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     To set the item's text, you can either pass a QString to
@@ -9755,7 +9753,6 @@ QVariant QGraphicsSimpleTextItem::extension(const QVariant &variant) const
     \brief The QGraphicsItemGroup class provides treating a group of items as
     one.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     A QGraphicsItemGroup is a special type of compound item that

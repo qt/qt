@@ -61,11 +61,7 @@
 
 #include <qhash.h>
 
-#ifdef QT_RASTER_IMAGEENGINE
 #include <private/qpaintengine_raster_p.h>
-#else
-#include <qpaintengine.h>
-#endif
 
 #include <private/qimage_p.h>
 
@@ -337,9 +333,9 @@ bool QImageData::checkForAlphaPixels() const
 /*!
     \class QImage
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \mainclass
+
     \reentrant
 
     \brief The QImage class provides a hardware-independent image
@@ -5255,11 +5251,10 @@ QPaintEngine *QImage::paintEngine() const
     if (!d)
         return 0;
 
-#ifdef QT_RASTER_IMAGEENGINE
     if (!d->paintEngine) {
         d->paintEngine = new QRasterPaintEngine(const_cast<QImage *>(this));
     }
-#endif
+
     return d->paintEngine;
 }
 

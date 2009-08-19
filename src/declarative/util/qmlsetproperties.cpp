@@ -56,9 +56,8 @@ QT_BEGIN_NAMESPACE
     \qmlclass SetProperties QmlSetProperties
     \brief The SetProperties element describes new property values for a state.
 
-    SetProperties is a convenience element for changing many properties on a single
-    object. It allows you to specify the property names and values similar to how
-    you normally would specify them for the actual item:
+    SetProperties changes the properties of an item. It allows you to specify the property
+    names and values similar to how you normally would specify them for the actual item:
 
     \code
     SetProperties {
@@ -68,38 +67,12 @@ QT_BEGIN_NAMESPACE
         width: 48
     }
     \endcode
-
-    \c target is a property of \c SetProperties, so if the property you want to change
-    is named \e target you will have to use \l SetProperty instead. You should also 
-    use \l SetProperty if you want to update the binding for a property, 
-    as SetProperties does not support this.
 */
 
 /*!
     \internal
     \class QmlSetProperties
     \brief The QmlSetProperties class describes new property values for a state.
-
-    \ingroup group_states
-
-    QmlSetProperties is a convenience class for changing many properties on a single
-    object. It allows you to specify the property names and values similar to how
-    you normally would specify them for the actual item:
-
-    \code
-    SetProperties {
-        target: myRect
-        x: 52
-        y: 300
-        width: 48
-    }
-    \endcode
-
-    \c target is a property of \c SetProperties, so if the property you want to change
-    is named \e target you will have to use QmlSetProperty instead. You should also use QmlSetProperty
-    if you want to update the binding for a property, as QmlSetProperties does not support this.
-
-    \sa QmlSetProperty
 */
 
 /*!
@@ -107,15 +80,11 @@ QT_BEGIN_NAMESPACE
     This property holds the object that the properties to change belong to
 */
 
-/*!
-    \property QmlSetProperties::target
-    \brief the object that the properties to change belong to
-*/
 class QmlSetPropertiesPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlSetProperties)
 public:
-    QmlSetPropertiesPrivate() : object(0), decoded(true), restore(true), 
+    QmlSetPropertiesPrivate() : object(0), decoded(true), restore(true),
                                 isExplicit(false) {}
 
     QObject *object;
@@ -141,9 +110,9 @@ public:
     virtual void setCustomData(QObject *, const QByteArray &);
 };
 
-void 
-QmlSetPropertiesParser::compileList(QList<QPair<QByteArray, QVariant> > &list, 
-                                     const QByteArray &pre, 
+void
+QmlSetPropertiesParser::compileList(QList<QPair<QByteArray, QVariant> > &list,
+                                     const QByteArray &pre,
                                      const QmlCustomParserProperty &prop)
 {
     QByteArray propName = pre + prop.name();
@@ -156,7 +125,7 @@ QmlSetPropertiesParser::compileList(QList<QPair<QByteArray, QVariant> > &list,
             continue;
         } else if(value.userType() == qMetaTypeId<QmlCustomParserProperty>()) {
 
-            QmlCustomParserProperty prop = 
+            QmlCustomParserProperty prop =
                 qvariant_cast<QmlCustomParserProperty>(value);
             QByteArray pre = propName + ".";
             compileList(list, pre, prop);
@@ -167,8 +136,8 @@ QmlSetPropertiesParser::compileList(QList<QPair<QByteArray, QVariant> > &list,
     }
 }
 
-QByteArray 
-QmlSetPropertiesParser::compile(const QList<QmlCustomParserProperty> &props, 
+QByteArray
+QmlSetPropertiesParser::compile(const QList<QmlCustomParserProperty> &props,
                                 bool *ok)
 {
     *ok = true;
@@ -238,10 +207,10 @@ void QmlSetPropertiesPrivate::decode()
     data.clear();
 }
 
-void QmlSetPropertiesParser::setCustomData(QObject *object, 
+void QmlSetPropertiesParser::setCustomData(QObject *object,
                                             const QByteArray &data)
 {
-    QmlSetPropertiesPrivate *p = 
+    QmlSetPropertiesPrivate *p =
         static_cast<QmlSetPropertiesPrivate *>(QObjectPrivate::get(object));
     p->data = data;
     p->decoded = false;
@@ -310,7 +279,7 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
 
         QByteArray property = d->properties.at(ii).first;
 
-        Action a(d->object, QString::fromLatin1(property), 
+        Action a(d->object, QString::fromLatin1(property),
                  d->properties.at(ii).second);
 
         if (a.property.isValid()) {

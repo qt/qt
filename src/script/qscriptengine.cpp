@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
   \brief The QScriptEngine class provides an environment for evaluating Qt Script code.
 
   \ingroup script
-  \mainclass
+
 
   See the \l{QtScript} documentation for information about the Qt Script language,
   and how to get started with scripting your C++ application.
@@ -1342,7 +1342,7 @@ QStringList QScriptEngine::importedExtensions() const
 
     Additionally, the type of each element in the sequence should be suitable
     for conversion to a QScriptValue.
-    See \l{QtScript Module#Conversion Between QtScript and C++ Types}
+    See \l{Making Applications Scriptable#Conversion Between QtScript and C++ Types}
     {Conversion Between QtScript and C++ Types} for more information about the
     restrictions on types that can be used with QScriptValue.
 
@@ -1363,7 +1363,7 @@ QStringList QScriptEngine::importedExtensions() const
 
     Additionally, the type of each element in the sequence must be suitable
     for conversion to a C++ type from a QScriptValue.
-    See \l{QtScript Module#Conversion Between QtScript and C++ Types}
+    See \l{Making Applications Scriptable#Conversion Between QtScript and C++ Types}
     {Conversion Between QtScript and C++ Types} for more information about the
     restrictions on types that can be used with QScriptValue.
 
@@ -1758,7 +1758,7 @@ QScriptValue QScriptEngine::objectById(qint64 id) const
   \brief The QScriptSyntaxCheckResult class provides the result of a script syntax check.
 
   \ingroup script
-  \mainclass
+
 
   QScriptSyntaxCheckResult is returned by QScriptEngine::checkSyntax() to
   provide information about the syntactical (in)correctness of a script.
