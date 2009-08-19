@@ -1201,9 +1201,13 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
         // default property or to sub-objects (which are always in binding
         // sub-contexts)
         COMPILE_CHECK(buildIdProperty(prop, obj));
-        if (prop->type == QVariant::String &&
-            prop->values.at(0)->value.isString())
+        if (prop->type == QVariant::String){
+            if(!prop->values.at(0)->value.isString()){
+                //Need to convert to string to assign to the QString id property
+                prop->values.at(0)->value = Variant(prop->values.at(0)->value.asString());
+            }
             COMPILE_CHECK(buildPropertyAssignment(prop, obj, ctxt));
+        }
 
     } else if (isAttachedPropertyName(prop->name)) {
 
@@ -1629,7 +1633,7 @@ bool QmlCompiler::buildListProperty(QmlParser::Property *prop,
 //        children: [ Item {}, Item {} ]
 //    }
 //
-// We allow assignming multiple values to single value properties
+// We allow assigning multiple values to single value properties
 bool QmlCompiler::buildPropertyAssignment(QmlParser::Property *prop,
                                           QmlParser::Object *obj,
                                           const BindingContext &ctxt)
