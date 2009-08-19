@@ -180,6 +180,7 @@ Phonon::ErrorType MMF::AbstractMediaPlayer::errorType() const
 {
     const Phonon::ErrorType result = (ErrorState == m_state)
         ? m_error : NoError;
+    return result;
 }
 
 QString MMF::AbstractMediaPlayer::errorString() const
