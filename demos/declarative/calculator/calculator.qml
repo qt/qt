@@ -8,7 +8,7 @@ Rect {
     Script { source: "calculator.js" }
 
     VerticalPositioner {
-        x: 2; spacing: 10; margin: 2
+        x: 2; spacing: 10;
 
         Rect {
             id: Container

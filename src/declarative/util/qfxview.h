@@ -62,7 +62,8 @@ class QmlError;
 class QFxViewPrivate;
 class Q_DECLARATIVE_EXPORT QFxView : public QGraphicsView
 {
-Q_OBJECT
+    Q_OBJECT
+    Q_PROPERTY(bool contentResizable READ contentResizable WRITE setContentResizable)
 public:
     explicit QFxView(QWidget *parent = 0);
 

@@ -1,4 +1,4 @@
-/*! 
+/*!
 \page elements.html
 \target elements
 \title Qml Elements
@@ -71,11 +71,12 @@ The following table lists the Qml elements provided by the Qt Declarative module
 \o
 \list
 \o \l Item
-\o \l Image
-\o \l Text
-\o \l TextEdit
 \o \l Rect
-\o \l AnimatedImage
+\o \l Image
+\o \l BorderImage
+\o \l Text
+\o \l TextInput
+\o \l TextEdit
 \endlist
 
 \o
@@ -96,13 +97,14 @@ The following table lists the Qml elements provided by the Qt Declarative module
 \list
 \o \l Loader
 \o \l Repeater
+\o \l Palette
 \o \l ComponentInstance
 \o \l GraphicsObjectContainer
 \endlist
 
 \header
 \o \bold {Views}
-\o \bold {Layouts}
+\o \bold {Positioners}
 \o \bold {Transforms}
 \o \bold {Effects}
 
@@ -128,9 +130,9 @@ The following table lists the Qml elements provided by the Qt Declarative module
 
 \o
 \list
-\o \l VerticalLayout
-\o \l HorizontalLayout
-\o \l GridLayout
+\o \l VerticalPositioner
+\o \l HorizontalPositioner
+\o \l GridPositioner
 \endlist
 
 \o

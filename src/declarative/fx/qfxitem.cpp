@@ -331,7 +331,7 @@ void QFxContents::setItem(QFxItem *item)
     \code
     Item {
         focus: true
-        key.onLeftPressed: print("move left")
+        Keys.onLeftPressed: print("move left")
     }
     \endcode
 
@@ -893,18 +893,6 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 */
 
 /*!
-    \fn void QFxItem::hcenterChanged()
-
-    This signal is emitted when the horizontal center coordinate of the item changes.
-*/
-
-/*!
-    \fn void QFxItem::vcenterChanged()
-
-    This signal is emitted when the vertical center coordinate of the item changes.
-*/
-
-/*!
     \fn void QFxItem::stateChanged(const QString &state)
 
     This signal is emitted when the \a state of the item changes.
@@ -1332,27 +1320,6 @@ void QFxItem::setClip(bool c)
 
   Defines the item's height relative to its parent.
  */
-
-/*!
-  \property QFxItem::x
-
-  The x coordinate of the item relative to its parent.
-*/
-
-/*!
-  \property QFxItem::y
-
-  The y coordinate of the item relative to its parent.
-*/
-
-/*!
-  \property QFxItem::z
-
-  The z coordinate of the item relative to its parent.
-
-  A negative z coordinate means the item will be painted below its parent.
-*/
-
 
 /*!
   \qmlproperty real Item::z
@@ -1977,12 +1944,7 @@ QmlList<QmlTransition *>* QFxItem::transitions()
     return d->states()->transitionsProperty();
 }
 
-/*!
-  \internal
-  \property QFxItem::filter
-*/
-
-/*!
+/*
   \qmlproperty list<Filter> Item::filter
   This property holds a list of graphical filters to be applied to the item.
 
@@ -2205,11 +2167,17 @@ QPointF QFxItemPrivate::computeTransformOrigin() const
     }
 }
 
+/*!
+    \reimp
+*/
 bool QFxItem::sceneEvent(QEvent *event)
 {
     return QGraphicsItem::sceneEvent(event);
 }
 
+/*!
+    \reimp
+*/
 QVariant QFxItem::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
@@ -2220,6 +2188,9 @@ QVariant QFxItem::itemChange(GraphicsItemChange change,
     return QGraphicsItem::itemChange(change, value);
 }
 
+/*!
+    \reimp
+*/
 QRectF QFxItem::boundingRect() const
 {
     Q_D(const QFxItem);
@@ -2441,10 +2412,16 @@ bool QFxItem::hasActiveFocus() const
     return QGraphicsItem::hasFocus();
 }
 
+/*!
+    \reimp
+*/
 void QFxItem::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
 {
 }
 
+/*!
+    \reimp
+*/
 bool QFxItem::event(QEvent *ev)
 {
     return QGraphicsObject::event(ev);

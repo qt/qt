@@ -310,8 +310,8 @@ void QFxView::continueExecute()
   This signal is emitted when the view is resized to \a size.
  */
 
-/*! \fn void QFxView::error(const QList<QmlError> &errors)
-  This signal is emitted when the qml loaded contains errors.
+/*! \fn void QFxView::errors(const QList<QmlError> &errors)
+  This signal is emitted when the qml loaded contains \a errors.
  */
 
 /*!

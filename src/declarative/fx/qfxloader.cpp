@@ -85,13 +85,6 @@ QFxLoader::~QFxLoader()
 }
 
 /*!
-    \internal
-    \fn void QFxItem::sourceChanged()
-    This signal is emitted whenever the item's dynamic QML
-    source url changes.
- */
-
-/*!
     \qmlproperty url Loader::source
     This property holds the dynamic URL of the QML for the item.
 

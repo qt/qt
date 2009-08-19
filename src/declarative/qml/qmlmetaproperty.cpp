@@ -540,10 +540,10 @@ QmlAbstractBinding *QmlMetaProperty::binding() const
 }
 
 /*!
-    Set the binding associated with this property to \a binding.  Returns
+    Set the binding associated with this property to \a newBinding.  Returns
     the existing binding (if any), otherwise 0.
 
-    \a binding will be enabled, and the returned binding (if any) will be
+    \a newBinding will be enabled, and the returned binding (if any) will be
     disabled.
 */
 QmlAbstractBinding *

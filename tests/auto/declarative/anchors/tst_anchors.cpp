@@ -25,15 +25,15 @@ private slots:
    Find an item with the specified id.
 */
 template<typename T>
-T *tst_anchors::findItem(QFxItem *parent, const QString &id)
+T *tst_anchors::findItem(QFxItem *parent, const QString &objectName)
 {
     const QMetaObject &mo = T::staticMetaObject;
     for (int i = 0; i < parent->QSimpleCanvasItem::children().count(); ++i) {
         QFxItem *item = qobject_cast<QFxItem*>(parent->QSimpleCanvasItem::children().at(i));
-        if (mo.cast(item) && (id.isEmpty() || item->id() == id)) {
+        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             return static_cast<T*>(item);
         }
-        item = findItem<T>(item, id);
+        item = findItem<T>(item, objectName);
         if (item)
             return static_cast<T*>(item);
     }

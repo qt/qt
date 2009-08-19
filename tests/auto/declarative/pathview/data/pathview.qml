@@ -12,7 +12,7 @@ Rect {
                 height: 20
                 width: 60
                 color: "white"
-                pen.color: "black"
+                border.color: "black"
                 Text {
                     text: index
                 }
