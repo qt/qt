@@ -65,7 +65,12 @@ namespace JSC {
     };
 #endif
 
-    union CallData {
+#if defined(QT_BUILD_SCRIPT_LIB) && defined(Q_OS_SOLARIS)
+    struct
+#else
+    union
+#endif
+    CallData {
         struct {
 #ifndef QT_BUILD_SCRIPT_LIB
             NativeFunction function;

@@ -70,7 +70,12 @@ namespace JSC {
     };
 #endif
 
-    union ConstructData {
+#if defined(QT_BUILD_SCRIPT_LIB) && defined(Q_OS_SOLARIS)
+    struct
+#else
+    union
+#endif
+    ConstructData {
         struct {
 #ifndef QT_BUILD_SCRIPT_LIB
             NativeConstructor function;
