@@ -54,21 +54,26 @@ class Q_DECLARATIVE_EXPORT QFxDrag : public QObject
 {
     Q_OBJECT
 
+    Q_ENUMS(Axis)
     Q_PROPERTY(QFxItem *target READ target WRITE setTarget)
-    Q_PROPERTY(QString axis READ axis WRITE setAxis) //### enum
+    Q_PROPERTY(Axis axis READ axis WRITE setAxis)
     Q_PROPERTY(qreal minimumX READ xmin WRITE setXmin)
     Q_PROPERTY(qreal maximumX READ xmax WRITE setXmax)
     Q_PROPERTY(qreal minimumY READ ymin WRITE setYmin)
     Q_PROPERTY(qreal maximumY READ ymax WRITE setYmax)
     //### consider drag and drop
+
 public:
     QFxDrag(QObject *parent=0);
     ~QFxDrag();
 
     QFxItem *target() const;
     void setTarget(QFxItem *);
-    QString axis() const;
-    void setAxis(const QString &);
+
+    enum Axis { XAxis=0x01, YAxis=0x02, XandYAxis=0x03 };
+    Axis axis() const;
+    void setAxis(Axis);
+
     qreal xmin() const;
     void setXmin(qreal);
     qreal xmax() const;
@@ -80,7 +85,7 @@ public:
 
 private:
     QFxItem *_target;
-    QString _axis;
+    Axis _axis;
     qreal _xmin;
     qreal _xmax;
     qreal _ymin;
@@ -100,8 +105,9 @@ class Q_DECLARATIVE_EXPORT QFxMouseRegion : public QFxItem
     Q_PROPERTY(bool pressed READ pressed NOTIFY pressedChanged)
     Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(Qt::MouseButtons acceptedButtons READ acceptedButtons WRITE setAcceptedButtons NOTIFY acceptedButtonsChanged)
+    Q_PROPERTY(bool hoverEnabled READ acceptHoverEvents WRITE setAcceptHoverEvents)
     Q_PROPERTY(QFxDrag *drag READ drag) //### add flicking to QFxDrag or add a QFxFlick ???
-    //### trackingEnabled?
+
 public:
     QFxMouseRegion(QFxItem *parent=0);
     ~QFxMouseRegion();
