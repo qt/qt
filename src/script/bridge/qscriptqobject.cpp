@@ -1843,7 +1843,7 @@ JSC::JSValue JSC_HOST_CALL QMetaObjectWrapperObject::call(
     QMetaObjectWrapperObject *self =  static_cast<QMetaObjectWrapperObject*>(callee);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     eng_p->pushContext(exec, thisValue, args, callee);
-    JSC::JSValue result = self->execute(eng_p->currentFrame, args, /*calledAsConstructor=*/false);
+    JSC::JSValue result = self->execute(eng_p->currentFrame, args);
     eng_p->popContext();
     eng_p->currentFrame = previousFrame;
     return result;
@@ -1855,7 +1855,7 @@ JSC::JSObject* QMetaObjectWrapperObject::construct(JSC::ExecState *exec, JSC::JS
     QScriptEnginePrivate *eng_p = scriptEngineFromExec(exec);
     JSC::ExecState *previousFrame = eng_p->currentFrame;
     eng_p->pushContext(exec, JSC::JSValue(), args, callee, true);
-    JSC::JSValue result = self->execute(eng_p->currentFrame, args, /*calledAsConstructor=*/true);
+    JSC::JSValue result = self->execute(eng_p->currentFrame, args);
     eng_p->popContext();
     eng_p->currentFrame = previousFrame;
     if (!result || !result.isObject())
@@ -1864,10 +1864,8 @@ JSC::JSObject* QMetaObjectWrapperObject::construct(JSC::ExecState *exec, JSC::JS
 }
 
 JSC::JSValue QMetaObjectWrapperObject::execute(JSC::ExecState *exec,
-                                               const JSC::ArgList &args,
-                                               bool calledAsConstructor)
+                                               const JSC::ArgList &args)
 {
-    Q_UNUSED(calledAsConstructor);
     if (data->ctor) {
         QScriptEnginePrivate *eng_p = QScript::scriptEngineFromExec(exec);
         QScriptContext *ctx = eng_p->contextForFrame(exec);

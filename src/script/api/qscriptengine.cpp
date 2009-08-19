@@ -788,22 +788,6 @@ static QScriptValue __setupPackage__(QScriptContext *ctx, QScriptEngine *eng)
 }
 #endif
 
-// Helper class for stacking a script engine's inEval attribute.
-class InEval
-{
-public:
-    inline InEval(QScriptEnginePrivate *e)
-        : engine(e), was(e->inEval)
-    {
-        e->inEval = true;
-    }
-    inline ~InEval()
-    { engine->inEval = was; }
-private:
-    QScriptEnginePrivate *engine;
-    bool was;
-};
-
 } // namespace QScript
 
 QScriptEnginePrivate::QScriptEnginePrivate()
@@ -2170,7 +2154,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     Q_D(QScriptEngine);
 
     JSC::JSLock lock(false); // ### hmmm
-    QScript::InEval inEval(d);
+    QBoolBlocker inEval(d->inEval, true);
     currentContext()->activationObject(); //force the creation of a context for native function;
 
     JSC::UString jscProgram = program;

@@ -309,8 +309,7 @@ public:
                                            JSC::JSValue, const JSC::ArgList&);
     static JSC::JSObject* construct(JSC::ExecState *, JSC::JSObject *, const JSC::ArgList &);
 
-    JSC::JSValue execute(JSC::ExecState *exec, const JSC::ArgList &args,
-                         bool calledAsConstructor);
+    JSC::JSValue execute(JSC::ExecState *exec, const JSC::ArgList &args);
 
     inline const QMetaObject *value() const { return data->value; }
     inline void setValue(const QMetaObject* value) { data->value = value; }
