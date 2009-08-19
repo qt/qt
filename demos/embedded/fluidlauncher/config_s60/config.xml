@@ -19,6 +19,7 @@
     <example filename="flightinfo" name="Flight Info" image="screenshots/flightinfo_s60.png"/>
     <example filename="weatherinfo" name="Weather Info" image="screenshots/weatherinfo.png"/>
     <example filename="flickable" name="Kinetic Scrolling" image="screenshots/flickable.png"/>
+    <example filename="digiflip" name="Flipping Clock" image="screenshots/digiflip.png"/>
   </demos>
   <slideshow timeout="60000" interval="10000">
     <imagedir dir="slides"/>

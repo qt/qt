@@ -1,5 +1,5 @@
 TEMPLATE  = subdirs
-SUBDIRS   = styledemo raycasting flickable
+SUBDIRS   = styledemo raycasting flickable digiflip
 
 contains(QT_CONFIG, svg) {
     SUBDIRS += embeddedsvgviewer \
