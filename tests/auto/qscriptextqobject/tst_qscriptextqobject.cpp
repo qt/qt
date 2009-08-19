@@ -1889,9 +1889,7 @@ void tst_QScriptExtQObject::cppConnectAndDisconnect()
         QVERIFY(qScriptConnect(&edit, SIGNAL(textChanged(const QString &)), QScriptValue(), fun2));
         delete eng2;
         edit.setText("ciao");
-        QEXPECT_FAIL("", "Crashes", Continue);
-        QVERIFY(false);
-        // QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(const QString &)), QScriptValue(), fun2));
+        QVERIFY(!qScriptDisconnect(&edit, SIGNAL(textChanged(const QString &)), QScriptValue(), fun2));
     }
 
     // mixing script-side and C++-side connect

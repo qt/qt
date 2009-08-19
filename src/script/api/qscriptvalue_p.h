@@ -144,8 +144,11 @@ public:
     {
         // if type is not developed in js engine there is no
         // need to invalidate the object
-        if (isJSC()) valid=false;
-        engine=0;
+        if (isJSC()) {
+            valid = false;
+            jscValue = JSC::JSValue();
+        }
+        engine = 0;
     }
 
     qint64 objectId()
