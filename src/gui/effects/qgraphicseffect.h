@@ -95,7 +95,7 @@ class Q_GUI_EXPORT QGraphicsEffect : public QObject
 {
     Q_OBJECT
     Q_FLAGS(ChangeFlags)
-    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
 public:
     enum ChangeFlag {
         SourceAttached = 0x1,
@@ -115,6 +115,9 @@ public:
     QGraphicsEffectSource *source() const;
 
     bool isEnabled() const;
+
+Q_SIGNALS:
+    void enabledChanged(bool enabled);
 
 public Q_SLOTS:
     void setEnabled(bool enable);
@@ -153,12 +156,16 @@ private:
 class QGraphicsColorizeEffectPrivate;
 class Q_GUI_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect {
     Q_OBJECT
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 public:
     QGraphicsColorizeEffect();
     ~QGraphicsColorizeEffect();
 
     QColor color() const;
     void setColor(const QColor &c);
+
+Q_SIGNALS:
+    void colorChanged(const QColor &color);
 
 protected:
     void draw(QPainter *painter, QGraphicsEffectSource *source);
@@ -171,12 +178,16 @@ private:
 class QGraphicsPixelizeEffectPrivate;
 class Q_GUI_EXPORT QGraphicsPixelizeEffect: public QGraphicsEffect {
     Q_OBJECT
+    Q_PROPERTY(int pixelSize READ pixelSize WRITE setPixelSize NOTIFY pixelSizeChanged)
 public:
     QGraphicsPixelizeEffect();
     ~QGraphicsPixelizeEffect();
 
     int pixelSize() const;
     void setPixelSize(int pixelSize);
+
+Q_SIGNALS:
+    void pixelSizeChanged(int pixelSize);
 
 protected:
     void draw(QPainter *painter, QGraphicsEffectSource *source);
@@ -189,12 +200,16 @@ private:
 class QGraphicsBlurEffectPrivate;
 class Q_GUI_EXPORT QGraphicsBlurEffect: public QGraphicsEffect {
     Q_OBJECT
+    Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
 public:
     QGraphicsBlurEffect();
     ~QGraphicsBlurEffect();
 
     int blurRadius() const;
     void setBlurRadius(int blurRadius);
+
+Q_SIGNALS:
+    void blurRadiusChanged(int blurRadius);
 
 protected:
     QRectF boundingRectFor(const QRectF &rect) const;
@@ -208,6 +223,9 @@ private:
 class QGraphicsShadowEffectPrivate;
 class Q_GUI_EXPORT QGraphicsShadowEffect: public QGraphicsEffect {
     Q_OBJECT
+    Q_PROPERTY(QPointF shadowOffset READ shadowOffset WRITE setShadowOffset NOTIFY shadowOffsetChanged)
+    Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
+    Q_PROPERTY(int opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
 public:
     QGraphicsShadowEffect();
     ~QGraphicsShadowEffect();
@@ -224,6 +242,11 @@ public:
 
     qreal opacity() const;
     void setOpacity(qreal opacity);
+
+Q_SIGNALS:
+    void shadowOffsetChanged(const QPointF &offset);
+    void blurRadiusChanged(int blurRadius);
+    void opacityChanged(int opacity);
 
 protected:
     QRectF boundingRectFor(const QRectF &rect) const;

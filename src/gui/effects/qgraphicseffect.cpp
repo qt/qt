@@ -271,6 +271,7 @@ bool QGraphicsEffect::isEnabled() const
     Q_D(const QGraphicsEffect);
     return d->isEnabled;
 }
+
 void QGraphicsEffect::setEnabled(bool enable)
 {
     Q_D(QGraphicsEffect);
@@ -278,9 +279,9 @@ void QGraphicsEffect::setEnabled(bool enable)
         return;
 
     d->isEnabled = enable;
-
     if (d->source)
         d->source->update();
+    emit enabledChanged(enable);
 }
 
 /*!
@@ -367,7 +368,11 @@ QColor QGraphicsColorizeEffect::color() const
 void QGraphicsColorizeEffect::setColor(const QColor &c)
 {
     Q_D(QGraphicsColorizeEffect);
+    if (d->filter->color() == c)
+        return;
+
     d->filter->setColor(c);
+    emit colorChanged(c);
 }
 
 void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
@@ -407,7 +412,11 @@ int QGraphicsPixelizeEffect::pixelSize() const
 void QGraphicsPixelizeEffect::setPixelSize(int size)
 {
     Q_D(QGraphicsPixelizeEffect);
+    if (d->pixelSize == size)
+        return;
+
     d->pixelSize = size;
+    emit pixelSizeChanged(size);
 }
 
 static inline void pixelize(QImage *image, int pixelSize)
@@ -544,8 +553,12 @@ int QGraphicsBlurEffect::blurRadius() const
 void QGraphicsBlurEffect::setBlurRadius(int radius)
 {
     Q_D(QGraphicsBlurEffect);
+    if (d->filter->radius() == radius)
+        return;
+
     d->filter->setRadius(radius);
     updateBoundingRect();
+    emit blurRadiusChanged(radius);
 }
 
 QRectF QGraphicsBlurEffect::boundingRectFor(const QRectF &rect) const
@@ -596,8 +609,12 @@ QPointF QGraphicsShadowEffect::shadowOffset() const
 void QGraphicsShadowEffect::setShadowOffset(const QPointF &ofs)
 {
     Q_D(QGraphicsShadowEffect);
+    if (d->offset == ofs)
+        return;
+
     d->offset = ofs;
     updateBoundingRect();
+    emit shadowOffsetChanged(ofs);
 }
 
 int QGraphicsShadowEffect::blurRadius() const
@@ -609,8 +626,12 @@ int QGraphicsShadowEffect::blurRadius() const
 void QGraphicsShadowEffect::setBlurRadius(int blurRadius)
 {
     Q_D(QGraphicsShadowEffect);
+    if (d->radius == blurRadius)
+        return;
+
     d->radius = blurRadius;
     updateBoundingRect();
+    emit blurRadiusChanged(blurRadius);
 }
 
 qreal QGraphicsShadowEffect::opacity() const
@@ -622,7 +643,11 @@ qreal QGraphicsShadowEffect::opacity() const
 void QGraphicsShadowEffect::setOpacity(qreal opacity)
 {
     Q_D(QGraphicsShadowEffect);
+    if (qFuzzyCompare(d->alpha, opacity))
+        return;
+
     d->alpha = opacity;
+    emit opacityChanged(opacity);
 }
 
 QRectF QGraphicsShadowEffect::boundingRectFor(const QRectF &rect) const
