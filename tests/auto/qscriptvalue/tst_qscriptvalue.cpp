@@ -3304,6 +3304,16 @@ void tst_QScriptValue::objectId()
 
     QVERIFY(eng.objectById(o1.objectId()).strictlyEquals(o1));
     QVERIFY(eng.objectById(o2.objectId()).strictlyEquals(o2));
+
+    qint64 globalObjectId = -1;
+    {
+        QScriptValue global = eng.globalObject();
+        globalObjectId = global.objectId();
+        QVERIFY(globalObjectId != -1);
+        QVERIFY(eng.objectById(globalObjectId).strictlyEquals(global));
+    }
+    QEXPECT_FAIL("", "In JSC back-end, the Global Object's ID does not persist", Continue);
+    QVERIFY(eng.objectById(globalObjectId).strictlyEquals(eng.globalObject()));
 }
 
 QTEST_MAIN(tst_QScriptValue)
