@@ -610,7 +610,7 @@ qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
         // the data written to udpMessagePeekBuffer is discarded, so
         // this function is still reentrant although it might not look
         // so.
-        recvResult = qt_socket_recv(socketDescriptor, udpMessagePeekBuffer.data(),
+        recvResult = ::recv(socketDescriptor, udpMessagePeekBuffer.data(),
             udpMessagePeekBuffer.size(), MSG_PEEK);
         if (recvResult == -1 && errno == EINTR)
             continue;
