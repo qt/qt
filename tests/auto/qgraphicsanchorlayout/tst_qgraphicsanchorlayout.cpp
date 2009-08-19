@@ -730,6 +730,9 @@ void tst_QGraphicsAnchorLayout::setSpacing()
     p->show();
 
     QApplication::processEvents();
+#ifdef Q_WS_MAC
+    QTest::qWait(200);
+#endif
     QCOMPARE(a->geometry(), QRectF(0, 0, 20, 20));
     QCOMPARE(b->geometry(), QRectF(21, 0, 20, 20));
     QCOMPARE(c->geometry(), QRectF(0, 21, 41, 20));
