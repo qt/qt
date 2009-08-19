@@ -10,6 +10,9 @@ contains(QT_CONFIG, svg) {
 contains(QT_CONFIG, network) {
     SUBDIRS += lightmaps
     SUBDIRS += flightinfo
+    contains(QT_CONFIG, svg) {
+        SUBDIRS += weatherinfo
+    }
 }
 
 contains(QT_CONFIG, webkit) {
