@@ -1,5 +1,5 @@
 TEMPLATE  = subdirs
-SUBDIRS   = styledemo raycasting
+SUBDIRS   = styledemo raycasting flickable
 
 contains(QT_CONFIG, svg) {
     SUBDIRS += embeddedsvgviewer \

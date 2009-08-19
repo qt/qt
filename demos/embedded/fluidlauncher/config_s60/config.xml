@@ -18,6 +18,7 @@
     <example filename="lightmaps" name="OpenStreetMap" image="screenshots/lightmaps.png"/>
     <example filename="flightinfo" name="Flight Info" image="screenshots/flightinfo_s60.png"/>
     <example filename="weatherinfo" name="Weather Info" image="screenshots/weatherinfo.png"/>
+    <example filename="flickable" name="Kinetic Scrolling" image="screenshots/flickable.png"/>
   </demos>
   <slideshow timeout="60000" interval="10000">
     <imagedir dir="slides"/>
