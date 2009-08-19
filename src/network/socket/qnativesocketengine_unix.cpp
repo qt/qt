@@ -59,10 +59,6 @@
 #include <arpa/inet.h>
 #endif
 
-#ifdef Q_OS_SYMBIAN
-#include <private/qeventdispatcher_symbian_p.h>
-#endif
-
 #if defined QNATIVESOCKETENGINE_DEBUG
 #include <qstring.h>
 #include <ctype.h>
@@ -76,132 +72,6 @@
 #endif
 
 QT_BEGIN_NAMESPACE
-
-static inline int qt_socket_connect(int s, const struct sockaddr * addrptr, socklen_t namelen)
-{
-	return ::connect(s, addrptr, namelen);
-}
-#if defined(connect)
-# undef connect
-#endif
-
-static inline int qt_socket_bind(int s, const struct sockaddr * addrptr, socklen_t namelen)
-{
-	return ::bind(s, addrptr, namelen);
-}
-#if defined(bind)
-# undef bind
-#endif
-
-static inline int qt_socket_write(int socket, const char *data, qint64 len)
-{
-	return ::write(socket, data, len);
-}
-#if defined(write)
-# undef write
-#endif
-
-static inline int qt_socket_read(int socket, char *data, qint64 len)
-{
-	return ::read(socket, data, len);
-}
-#if defined(read)
-# undef read
-#endif
-
-static inline int qt_socket_recv(int socket, void *data, size_t length, int flags)
-{
-	return ::recv(socket, data, length, flags);
-}
-#if defined(recv)
-# undef recv
-#endif
-
-static inline int qt_socket_recvfrom(int socket, void *data, size_t length,
-	                                 int flags, struct sockaddr *address,
-	                                 socklen_t *address_length)
-{
-	return ::recvfrom(socket, data, length, flags, address, address_length);
-}
-#if defined(recvfrom)
-# undef recvfrom
-#endif
-
-static inline int qt_socket_sendto(int socket, const void *data, size_t length,
-	                               int flags, const struct sockaddr *dest_addr,
-	                               socklen_t dest_length)
-{
-	return ::sendto(socket, data, length, flags, dest_addr, dest_length);
-}
-#if defined(sendto)
-# undef sendto
-#endif
-static inline int qt_socket_close(int socket)
-{
-	return ::close(socket);
-}
-#if defined(close)
-# undef close
-#endif
-
-static inline int qt_socket_fcntl(int socket, int command, int option)
-{
-	return ::fcntl(socket, command, option);
-}
-#if defined(fcntl)
-# undef fcntl
-#endif
-
-static inline int qt_socket_ioctl(int socket, int command, char *option)
-{
-	return ::ioctl(socket, command, option);
-}
-#if defined(ioctl)
-# undef ioctl
-#endif
-
-static inline int qt_socket_getsockname(int socket, struct sockaddr *address, socklen_t *address_len)
-{
-	return ::getsockname(socket, address, address_len);
-}
-#if defined(getsockname)
-# undef getsockname
-#endif
-
-static inline int qt_socket_getpeername(int socket, struct sockaddr *address, socklen_t *address_len)
-{
-	return ::getpeername(socket, address, address_len);
-}
-#if defined(getpeername)
-# undef getpeername
-#endif
-
-static inline int qt_socket_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)
-{
-	return ::select(nfds, readfds, writefds, exceptfds, timeout);
-}
-
-#if defined(select)
-# undef select
-#endif
-
-static inline int qt_socket_getsockopt(int socket, int level, int optname, void *optval, socklen_t *optlen)
-{
-	return ::getsockopt(socket, level, optname, optval, optlen);
-}
-
-#if defined(getsockopt)
-# undef getsockopt
-#endif
-
-static inline int qt_socket_setsockopt(int socket, int level, int optname, void *optval, socklen_t optlen)
-{
-	return ::setsockopt(socket, level, optname, optval, optlen);
-}
-
-#if defined(setsockopt)
-# undef setsockopt
-#endif
 
 #if defined QNATIVESOCKETENGINE_DEBUG
 
@@ -329,7 +199,7 @@ bool QNativeSocketEnginePrivate::createNewSocket(QAbstractSocket::SocketType soc
     }
 
     // Ensure that the socket is closed on exec*().
-    qt_socket_fcntl(socket, F_SETFD, FD_CLOEXEC);
+    ::fcntl(socket, F_SETFD, FD_CLOEXEC);
 
     socketDescriptor = socket;
     return true;
@@ -377,7 +247,7 @@ int QNativeSocketEnginePrivate::option(QNativeSocketEngine::SocketOption opt) co
 
     int v = -1;
     QT_SOCKOPTLEN_T len = sizeof(v);
-    if (qt_socket_getsockopt(socketDescriptor, level, n, (char *) &v, &len) != -1)
+    if (::getsockopt(socketDescriptor, level, n, (char *) &v, &len) != -1)
         return v;
 
     return -1;
@@ -409,14 +279,14 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
     case QNativeSocketEngine::NonBlockingSocketOption: {
         // Make the socket nonblocking.
 #if !defined(Q_OS_VXWORKS)
-        int flags = qt_socket_fcntl(socketDescriptor, F_GETFL, 0);
+        int flags = ::fcntl(socketDescriptor, F_GETFL, 0);
         if (flags == -1) {
 #ifdef QNATIVESOCKETENGINE_DEBUG
             perror("QNativeSocketEnginePrivate::setOption(): fcntl(F_GETFL) failed");
 #endif
             return false;
         }
-        if (qt_socket_fcntl(socketDescriptor, F_SETFL, flags | O_NONBLOCK) == -1) {
+        if (::fcntl(socketDescriptor, F_SETFL, flags | O_NONBLOCK) == -1) {
 #ifdef QNATIVESOCKETENGINE_DEBUG
             perror("QNativeSocketEnginePrivate::setOption(): fcntl(F_SETFL) failed");
 #endif
@@ -434,9 +304,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         return true;
     }
     case QNativeSocketEngine::AddressReusable:
-#ifdef Q_OS_SYMBIAN
-        n = SO_REUSEADDR;
-#elif SO_REUSEPORT
+#ifdef SO_REUSEPORT
         n = SO_REUSEPORT;
 #else
         n = SO_REUSEADDR;
@@ -456,7 +324,7 @@ bool QNativeSocketEnginePrivate::setOption(QNativeSocketEngine::SocketOption opt
         break;
     }
 
-    return qt_socket_setsockopt(socketDescriptor, level, n, (char *) &v, sizeof(v)) == 0;
+    return ::setsockopt(socketDescriptor, level, n, (char *) &v, sizeof(v)) == 0;
 }
 
 bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16 port)
@@ -503,7 +371,7 @@ bool QNativeSocketEnginePrivate::nativeConnect(const QHostAddress &addr, quint16
         // unreachable
     }
 
-    int connectResult = qt_socket_connect(socketDescriptor, sockAddrPtr, sockAddrSize);
+    int connectResult = qt_safe_connect(socketDescriptor, sockAddrPtr, sockAddrSize);
 
     if (connectResult == -1) {
         switch (errno) {
@@ -607,7 +475,7 @@ bool QNativeSocketEnginePrivate::nativeBind(const QHostAddress &address, quint16
             // unreachable
         }
 
-    int bindResult = qt_socket_bind(socketDescriptor, sockAddrPtr, sockAddrSize);
+    int bindResult = QT_SOCKET_BIND(socketDescriptor, sockAddrPtr, sockAddrSize);
 
     if (bindResult < 0) {
         switch(errno) {
@@ -677,7 +545,7 @@ int QNativeSocketEnginePrivate::nativeAccept()
     //check if we have vaild descriptor at all
     if(acceptedDescriptor > 0) {
         // Ensure that the socket is closed on exec*()
-        qt_socket_fcntl(acceptedDescriptor, F_SETFD, FD_CLOEXEC);
+        ::fcntl(acceptedDescriptor, F_SETFD, FD_CLOEXEC);
     } else {
         qWarning("QNativeSocketEnginePrivate::nativeAccept() - acceptedDescriptor <= 0");
     }
@@ -711,7 +579,7 @@ bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
     ssize_t readBytes;
     do {
         char c;
-        readBytes = qt_socket_recvfrom(socketDescriptor, &c, 1, MSG_PEEK, &storage.a, &storageSize);
+        readBytes = ::recvfrom(socketDescriptor, &c, 1, MSG_PEEK, &storage.a, &storageSize);
     } while (readBytes == -1 && errno == EINTR);
 
     // If there's no error, or if our buffer was too small, there must be a
@@ -729,7 +597,7 @@ bool QNativeSocketEnginePrivate::nativeHasPendingDatagrams() const
 qint64 QNativeSocketEnginePrivate::nativePendingDatagramSize() const
 {
     size_t nbytes = 0;
-    qt_socket_ioctl(socketDescriptor, E32IONREAD, (char *) &nbytes);
+    ::ioctl(socketDescriptor, E32IONREAD, (char *) &nbytes);
     return qint64(nbytes-28);
 }
 #else
@@ -771,7 +639,7 @@ qint64 QNativeSocketEnginePrivate::nativeReceiveDatagram(char *data, qint64 maxS
     ssize_t recvFromResult = 0;
     do {
         char c;
-        recvFromResult = qt_socket_recvfrom(socketDescriptor, maxSize ? data : &c, maxSize ? maxSize : 1,
+        recvFromResult = ::recvfrom(socketDescriptor, maxSize ? data : &c, maxSize ? maxSize : 1,
                                     0, &aa.a, &sz);
     } while (recvFromResult == -1 && errno == EINTR);
 
@@ -859,7 +727,7 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
 
     // Determine local address
     memset(&sa, 0, sizeof(sa));
-    if (qt_socket_getsockname(socketDescriptor, &sa.a, &sockAddrSize) == 0) {
+    if (::getsockname(socketDescriptor, &sa.a, &sockAddrSize) == 0) {
         qt_socket_getPortAndAddress(&sa, &localPort, &localAddress);
 
         // Determine protocol family
@@ -883,13 +751,13 @@ bool QNativeSocketEnginePrivate::fetchConnectionParameters()
     }
 
     // Determine the remote address
-    if (!qt_socket_getpeername(socketDescriptor, &sa.a, &sockAddrSize))
+    if (!::getpeername(socketDescriptor, &sa.a, &sockAddrSize))
         qt_socket_getPortAndAddress(&sa, &peerPort, &peerAddress);
 
     // Determine the socket type (UDP/TCP)
     int value = 0;
     QT_SOCKOPTLEN_T valueSize = sizeof(int);
-    if (qt_socket_getsockopt(socketDescriptor, SOL_SOCKET, SO_TYPE, &value, &valueSize) == 0) {
+    if (::getsockopt(socketDescriptor, SOL_SOCKET, SO_TYPE, &value, &valueSize) == 0) {
         if (value == SOCK_STREAM)
             socketType = QAbstractSocket::TcpSocket;
         else if (value == SOCK_DGRAM)
@@ -920,7 +788,7 @@ void QNativeSocketEnginePrivate::nativeClose()
 #if defined (QNATIVESOCKETENGINE_DEBUG)
     qDebug("QNativeSocketEngine::nativeClose()");
 #endif
-    qt_socket_close(socketDescriptor);
+    qt_safe_close(socketDescriptor);
 }
 
 qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
@@ -934,7 +802,7 @@ qint64 QNativeSocketEnginePrivate::nativeWrite(const char *data, qint64 len)
     // of an interrupting signal.
     ssize_t writtenBytes;
     do {
-        writtenBytes = qt_socket_write(socketDescriptor, data, len);
+        writtenBytes = qt_safe_write(socketDescriptor, data, len);
         // writtenBytes = QT_WRITE(socketDescriptor, data, len); ### TODO S60: Should this line be removed or the one above it?
     } while (writtenBytes < 0 && errno == EINTR);
 
@@ -977,7 +845,7 @@ qint64 QNativeSocketEnginePrivate::nativeRead(char *data, qint64 maxSize)
 
     ssize_t r = 0;
     do {
-        r = qt_socket_read(socketDescriptor, data, maxSize);
+        r = qt_safe_read(socketDescriptor, data, maxSize);
     } while (r == -1 && errno == EINTR);
 
     if (r < 0) {
@@ -1039,13 +907,13 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
 #ifndef Q_OS_SYMBIAN
         retval = qt_safe_select(socketDescriptor + 1, &fds, 0, 0, timeout < 0 ? 0 : &tv);
 #else
-        retval = qt_socket_select(socketDescriptor + 1, &fds, 0, &fdexec, timeout < 0 ? 0 : &tv);
+        retval = qt_safe_select(socketDescriptor + 1, &fds, 0, &fdexec, timeout < 0 ? 0 : &tv);
 #endif
     else
 #ifndef Q_OS_SYMBIAN
         retval = qt_safe_select(socketDescriptor + 1, 0, &fds, 0, timeout < 0 ? 0 : &tv);
 #else
-        retval = qt_socket_select(socketDescriptor + 1, 0, &fds, &fdexec, timeout < 0 ? 0 : &tv);
+        retval = qt_safe_select(socketDescriptor + 1, 0, &fds, &fdexec, timeout < 0 ? 0 : &tv);
 #endif
 
 
@@ -1097,7 +965,7 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool checkRead, bool c
     timer.start();
 
     do {
-        ret = qt_socket_select(socketDescriptor + 1, &fdread, &fdwrite, &fdexec, timeout < 0 ? 0 : &tv);
+        ret = qt_safe_select(socketDescriptor + 1, &fdread, &fdwrite, &fdexec, timeout < 0 ? 0 : &tv);
         bool selectForExec = false;
         if(ret != 0) {
             if(ret < 0) {
