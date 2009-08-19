@@ -167,7 +167,7 @@ QTransform QGraphicsTransform::project(const QMatrix4x4& matrix)
     //      | 1 0 0 0 |
     //      | 0 1 0 0 |
     //      | 0 0 1 0 |
-    //      | 0 0 d 0 |
+    //      | 0 0 d 1 |
     // where d = -1 / 1024.  This projection is consistent with the
     // Qt::XAxis and Qt::YAxis rotations of QTransform::rotate().
     // After projection, row 3 and column 3 are dropped to form
