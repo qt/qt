@@ -311,7 +311,7 @@ namespace {
         {
         }
 
-        virtual void drawTextItem(const QPointF &p, const QTextItem &textItem)
+        virtual void drawTextItem(const QPointF &position, const QTextItem &textItem)
         {
             const QTextItemInt &ti = static_cast<const QTextItemInt &>(textItem);          
 
@@ -331,10 +331,12 @@ namespace {
             currentItem->glyphs = m_glyphPool;
             currentItem->glyphPositions = m_positionPool;
 
+            QTransform matrix = state->transform();
+            matrix.translate(position.x(), position.y());
+
             QVarLengthArray<glyph_t> glyphs;
             QVarLengthArray<QFixedPoint> positions;
-            ti.fontEngine->getGlyphPositions(ti.glyphs, state->transform(), ti.flags,
-                                             glyphs, positions);
+            ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
             int size = glyphs.size();
             Q_ASSERT(size == ti.glyphs.numGlyphs);
@@ -342,13 +344,6 @@ namespace {
 
             memmove(currentItem->glyphs, glyphs.constData(), sizeof(glyph_t) * size);
             memmove(currentItem->glyphPositions, positions.constData(), sizeof(QFixedPoint) * size);
-
-            QFixed fx = QFixed::fromReal(p.x());
-            QFixed fy = QFixed::fromReal(p.y());
-            for (int i=0; i<size; ++i) {
-                currentItem->glyphPositions[i].x += fx;
-                currentItem->glyphPositions[i].y += fy;
-            }
 
             m_glyphPool += size;
             m_positionPool += size;
