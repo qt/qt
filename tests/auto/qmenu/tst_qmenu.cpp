@@ -717,7 +717,6 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     uint i = 2;
     while (main.columnCount() < 2) {
         main.addAction(QString("Item %1").arg(i));
-        qDebug() << "adding action" << i;
         ++i;
         Q_ASSERT(i<1000);
     }

@@ -186,7 +186,6 @@ namespace QT_NAMESPACE {}
 #elif defined(__SYMBIAN32__) || defined(SYMBIAN)
 #  define Q_OS_SYMBIAN
 #  define Q_NO_POSIX_SIGNALS
-// TODO: should this be in qconfig.h
 #  define QT_NO_GETIFADDRS
 #elif defined(__CYGWIN__)
 #  define Q_OS_CYGWIN
@@ -303,7 +302,7 @@ namespace QT_NAMESPACE {}
 #  ifdef MAC_OS_X_VERSION_MIN_REQUIRED
 #    undef MAC_OS_X_VERSION_MIN_REQUIRED
 #  endif
-#  define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_3
+#  define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_4
 #  include <AvailabilityMacros.h>
 #  if !defined(MAC_OS_X_VERSION_10_3)
 #     define MAC_OS_X_VERSION_10_3 MAC_OS_X_VERSION_10_2 + 1
@@ -726,7 +725,6 @@ namespace QT_NAMESPACE {}
 
 #elif defined(__WINSCW__) && !defined(Q_CC_NOKIAX86)
 #  define Q_CC_NOKIAX86
-// #  define Q_CC_MWERKS // May be required
 
 
 #else
@@ -1156,9 +1154,7 @@ class QDataStream;
 #define QT_SUPPORTS(FEATURE) (!defined(QT_NO_##FEATURE))
 
 #ifndef Q_DECL_EXPORT
-#  ifdef Q_OS_WIN
-#    define Q_DECL_EXPORT __declspec(dllexport)
-#  elif  defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
+#  if defined(Q_OS_WIN) || defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
 #    define Q_DECL_EXPORT __declspec(dllexport)
 #  elif defined(QT_VISIBILITY_AVAILABLE)
 #    define Q_DECL_EXPORT __attribute__((visibility("default")))
@@ -1168,9 +1164,7 @@ class QDataStream;
 #  endif
 #endif
 #ifndef Q_DECL_IMPORT
-#  if defined(Q_OS_WIN)
-#    define Q_DECL_IMPORT __declspec(dllimport)
-#  elif defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
+#  if defined(Q_OS_WIN) || defined(Q_CC_NOKIAX86) || defined(Q_CC_RVCT)
 #    define Q_DECL_IMPORT __declspec(dllimport)
 #  else
 #    define Q_DECL_IMPORT
@@ -1178,7 +1172,7 @@ class QDataStream;
 #endif
 
 /*
-   Create Qt DLL if QT_DLL is defined (Windows only)
+   Create Qt DLL if QT_DLL is defined (Windows and Symbian only)
 */
 
 #if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
@@ -1546,6 +1540,11 @@ inline void qUnused(T &x) { (void)x; }
    Debugging and error handling
 */
 
+/*
+   On Symbian we do not know beforehand whether we are compiling in
+   release or debug mode, so check the Symbian build define here,
+   and set the QT_NO_DEBUG define appropriately.
+*/
 #if defined(Q_OS_SYMBIAN) && defined(NDEBUG) && !defined(QT_NO_DEBUG)
 #  define QT_NO_DEBUG
 #endif
@@ -2338,16 +2337,9 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
    classes contains a private copy constructor and assignment
    operator to disable copying (the compiler gives an error message).
 */
-
-#if !defined(Q_NO_DECLARED_NOT_DEFINED) || !defined(QT_MAKEDLL)
-# define Q_DISABLE_COPY(Class) \
-     Class(const Class &); \
-     Class &operator=(const Class &);
-#else
-# define Q_DISABLE_COPY(Class) \
-     Class(const Class &); \
-     Class &operator=(const Class &);
-#endif
+#define Q_DISABLE_COPY(Class) \
+    Class(const Class &); \
+    Class &operator=(const Class &);
 
 class QByteArray;
 Q_CORE_EXPORT QByteArray qgetenv(const char *varName);

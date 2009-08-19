@@ -41,7 +41,7 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/qmath.h>
-#include "math3dincludes.h"
+#include <QtGui/qmatrix4x4.h>
 
 class tst_QMatrixNxN : public QObject
 {

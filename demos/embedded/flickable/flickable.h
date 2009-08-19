@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,14 +39,42 @@
 **
 ****************************************************************************/
 
-#ifndef MATH3DINCLUDES_H
-#define MATH3DINCLUDES_H
+#ifndef FLICKABLE_H
+#define FLICKABLE_H
 
-#include <QtGui/qmatrix4x4.h>
-#include <QtGui/qgenericmatrix.h>
-#include <QtGui/qvector2d.h>
-#include <QtGui/qvector3d.h>
-#include <QtGui/qvector4d.h>
-#include <QtGui/qquaternion.h>
+class QMouseEvent;
+class QPoint;
+class QWidget;
 
-#endif
+class FlickableTicker;
+class FlickablePrivate;
+
+class Flickable
+{
+public:
+
+    Flickable();
+    virtual ~Flickable();
+
+    void setThreshold(int threshold);
+    int threshold() const;
+
+    void setAcceptMouseClick(QWidget *target);
+
+    void handleMousePress(QMouseEvent *event);
+    void handleMouseMove(QMouseEvent *event);
+    void handleMouseRelease(QMouseEvent *event);
+
+protected:
+    virtual QPoint scrollOffset() const = 0;
+    virtual void setScrollOffset(const QPoint &offset) = 0;
+
+private:
+    void tick();
+
+private:
+    FlickablePrivate *d;
+    friend class FlickableTicker;
+};
+
+#endif // FLICKABLE_H
