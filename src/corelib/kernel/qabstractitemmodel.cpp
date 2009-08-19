@@ -2189,6 +2189,9 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
             This appends the two new rows as rows 4 and 5.
     \endtable
 
+    \note This function emits the rowsAboutToBeInserted() signal which
+    connected views (or proxies) must handle before the data is inserted.
+    Otherwise, the views may end up in an invalid state.
     \sa endInsertRows()
 */
 void QAbstractItemModel::beginInsertRows(const QModelIndex &parent, int first, int last)
@@ -2238,6 +2241,10 @@ void QAbstractItemModel::endInsertRows()
 
             \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 2
     \endtable
+
+    \note This function emits the rowsAboutToBeRemoved() signal which connected
+    views (or proxies) must handle before the data is removed. Otherwise, the
+    views may end up in an invalid state.
 
     \sa endRemoveRows()
 */
@@ -2302,6 +2309,10 @@ void QAbstractItemModel::endRemoveRows()
             This appends the two new columns as columns 6, 7, and 8.
     \endtable
 
+    \note This function emits the columnsAboutToBeInserted() signal which
+    connected views (or proxies) must handle before the data is inserted.
+    Otherwise, the views may end up in an invalid state.
+
     \sa endInsertColumns()
 */
 void QAbstractItemModel::beginInsertColumns(const QModelIndex &parent, int first, int last)
@@ -2352,6 +2363,10 @@ void QAbstractItemModel::endInsertColumns()
 
             \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 5
     \endtable
+
+    \note This function emits the columnsAboutToBeRemoved() signal which
+    connected views (or proxies) must handle before the data is removed.
+    Otherwise, the views may end up in an invalid state.
 
     \sa endRemoveColumns()
 */
