@@ -88,7 +88,7 @@ static QTransform transform2D(const QGraphicsTransform& t)
 {
     QMatrix4x4 m;
     t.applyTo(&m);
-    return QGraphicsTransform::project(m);
+    return m.toTransform();
 }
 
 void tst_QGraphicsTransform::scale()
@@ -148,7 +148,7 @@ void tst_QGraphicsTransform::scale()
 
     // Because the origin has a non-zero z, mapping (4, 5) in 2D
     // will introduce a projective component into the result.
-    QTransform t3 = QGraphicsTransform::project(t2);
+    QTransform t3 = t2.toTransform();
     QCOMPARE(t3.map(QPointF(4, 5)), QPointF(31 / t3.m33(), 8 / t3.m33()));
 }
 

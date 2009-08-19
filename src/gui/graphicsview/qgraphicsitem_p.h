@@ -507,7 +507,7 @@ struct QGraphicsItemPrivate::TransformData
         x.rotate(rotation, 0, 0, 1);
         x.scale(scale);
         x.translate(-xOrigin, -yOrigin);
-        QTransform t = QGraphicsTransform::project(x);
+        QTransform t = x.toTransform(); // project the 3D matrix back to 2D.
         if (postmultiplyTransform)
             t *= *postmultiplyTransform;
         return t;

@@ -65,8 +65,6 @@ public:
 
     virtual void applyTo(QMatrix4x4 *matrix) const = 0;
 
-    static QTransform project(const QMatrix4x4& matrix);
-
 protected Q_SLOTS:
     void update();
 

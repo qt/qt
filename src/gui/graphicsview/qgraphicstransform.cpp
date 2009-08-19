@@ -149,37 +149,8 @@ QGraphicsTransform::QGraphicsTransform(QGraphicsTransformPrivate &p, QObject *pa
 
     It applies this transformation to \a matrix.
 
-    \sa QGraphicsItem::transform(), project()
+    \sa QGraphicsItem::transform(), QMatrix4x4::toTransform()
 */
-
-static const qreal inv_dist_to_plane = 1. / 1024.;
-
-/*!
-    Projects \a matrix into a 2D transformation that has the same
-    effect as applying \a matrix and then projecting the co-ordinates
-    to two dimensions.
-
-    \sa applyTo()
-*/
-QTransform QGraphicsTransform::project(const QMatrix4x4& matrix)
-{
-    // The following projection matrix is pre-multiplied with "matrix":
-    //      | 1 0 0 0 |
-    //      | 0 1 0 0 |
-    //      | 0 0 1 0 |
-    //      | 0 0 d 1 |
-    // where d = -1 / 1024.  This projection is consistent with the
-    // Qt::XAxis and Qt::YAxis rotations of QTransform::rotate().
-    // After projection, row 3 and column 3 are dropped to form
-    // the final QTransform.
-    return QTransform
-        (matrix(0, 0), matrix(1, 0),
-            matrix(3, 0) - matrix(2, 0) * inv_dist_to_plane,
-         matrix(0, 1), matrix(1, 1),
-            matrix(3, 1) - matrix(2, 1) * inv_dist_to_plane,
-         matrix(0, 3), matrix(1, 3),
-            matrix(3, 3) - matrix(2, 3) * inv_dist_to_plane);
-}
 
 /*!
     Notifies that this transform operation has changed its parameters in such a
