@@ -628,6 +628,10 @@ void tst_qmlparser::imports_data()
         << "import com.nokia.installedtest 1.0\n"
            "InstalledTest {}"
         << "QFxRect";
+    QTest::newRow("installed import")
+        << "import com.nokia.installedtest 1.4\n"
+           "InstalledTest {}"
+        << "QFxText";
 }
 
 void tst_qmlparser::imports()
