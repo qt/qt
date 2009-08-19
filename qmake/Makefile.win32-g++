@@ -18,7 +18,6 @@ CFLAGS	    =	-c -o$@ -O \
 		-I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore \
 		-I$(SOURCE_PATH)/include -I$(SOURCE_PATH)/include/QtCore \
 		-I$(BUILD_PATH)/src/corelib/global \
-	        -I$(BUILD_PATH)/include/QtScript \
 		-I$(SOURCE_PATH)/mkspecs/win32-g++  \
 		-DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NO_PCRE \
 	       	-DQT_NODLL -DQT_NO_STL -DQT_NO_COMPRESS -DUNICODE -DHAVE_QCONFIG_CPP \
