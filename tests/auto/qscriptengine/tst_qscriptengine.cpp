@@ -2898,7 +2898,6 @@ void tst_QScriptEngine::isEvaluating()
 
         eng.setProcessEventsInterval(100);
         eng.evaluate(script);
-        QEXPECT_FAIL("", "", Continue);
         QVERIFY(receiver.wasEvaluating);
     }
 }
