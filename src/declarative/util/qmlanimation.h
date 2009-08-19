@@ -163,7 +163,6 @@ class QmlRunScriptAction : public QmlAbstractAnimation
     Q_DECLARE_PRIVATE(QmlRunScriptAction)
 
     Q_PROPERTY(QString script READ script WRITE setScript NOTIFY scriptChanged)
-    Q_PROPERTY(QString file READ file WRITE setFile NOTIFY fileChanged)
 
 public:
     QmlRunScriptAction(QObject *parent=0);
@@ -172,11 +171,7 @@ public:
     QString script() const;
     void setScript(const QString &);
 
-    QString file() const;
-    void setFile(const QString &);
-
 Q_SIGNALS:
-    void fileChanged(const QString &);
     void scriptChanged(const QString &);
 
 protected:
@@ -190,7 +185,7 @@ class QmlSetPropertyAction : public QmlAbstractAnimation
     Q_DECLARE_PRIVATE(QmlSetPropertyAction)
 
     Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
-    Q_PROPERTY(QList<QObject *>* filter READ filter)
+    Q_PROPERTY(QList<QObject *>* targets READ targets)
     Q_PROPERTY(QList<QObject *>* exclude READ exclude)
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
 
@@ -201,7 +196,7 @@ public:
     QString properties() const;
     void setProperties(const QString &);
 
-    QList<QObject *> *filter();
+    QList<QObject *> *targets();
     QList<QObject *> *exclude();
 
     QVariant value() const;
@@ -250,7 +245,7 @@ class QmlPropertyAnimation : public QmlAbstractAnimation
     Q_PROPERTY(QVariant to READ to WRITE setTo NOTIFY toChanged)
     Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged)
     Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
-    Q_PROPERTY(QList<QObject *>* filter READ filter)
+    Q_PROPERTY(QList<QObject *>* targets READ targets)
     Q_PROPERTY(QList<QObject *>* exclude READ exclude)
 
 public:
@@ -272,7 +267,7 @@ public:
     QString properties() const;
     void setProperties(const QString &);
 
-    QList<QObject *> *filter();
+    QList<QObject *> *targets();
     QList<QObject *> *exclude();
 
 protected:

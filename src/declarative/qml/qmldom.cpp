@@ -761,9 +761,9 @@ QByteArray QmlDomObject::objectType() const
 }
 
 /*!
-    Returns the fully-qualified type name of this object.
+    Returns the type name as referenced in the qml file.
 
-    For example, the type of this object would be "Qt/4.6/Rect".
+    For example, the type of this object would be "Rect".
     \qml
 Rect { }
     \endqml
