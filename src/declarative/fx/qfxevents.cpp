@@ -143,6 +143,13 @@ Item {
 */
 
 /*!
+    \qmlproperty bool MouseEvent::wasHeld
+
+    This property is true if the mouse button has been held pressed longer the
+    threshold (800ms).
+*/
+
+/*!
     \qmlproperty int MouseEvent::buttons
 
     This property holds the mouse buttons pressed when the event was generated.
@@ -177,7 +184,7 @@ Item {
     For example, to react to a Shift key + Left mouse button click:
     \qml
 MouseRegion {
-    onClick: { if (mouse.button == Qt.LeftButton && mouse.modifiers & Qt.ShiftModifier) doSomething(); }
+    onClicked: { if (mouse.button == Qt.LeftButton && mouse.modifiers & Qt.ShiftModifier) doSomething(); }
 }
     \endqml
 */

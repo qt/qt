@@ -189,9 +189,9 @@ void QFxDrag::setYmax(qreal m)
     position and which button was pressed.
 
     The \e accepted property of the MouseEvent parameter determines whether this MouseRegion
-    will handle the press \b {and all future mouse events until release}.  The default is to accept
+    will handle the press and all future mouse events until release.  The default is to accept
     the event and not allow other MouseRegions beneath this one to handle the event.  If \e accepted
-    is set to false, \b {no further events will be sent to this MouseRegion} until the button is next
+    is set to false, no further events will be sent to this MouseRegion until the button is next
     pressed.
 */
 
