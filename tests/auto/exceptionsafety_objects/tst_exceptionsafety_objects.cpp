@@ -160,7 +160,6 @@ void tst_ExceptionSafetyObjects::objects_data()
     NEWROW(QFile);
     NEWROW(QProcess);
     NEWROW(QSettings);
-    // NEWROW(QSocketNotifier);
     NEWROW(QThread);
     NEWROW(QThreadPool);
     NEWROW(QTranslator);
