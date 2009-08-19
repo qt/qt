@@ -95,7 +95,7 @@ void XbelReader::readXBEL()
         else if (name() == "separator")
             readSeparator(0);
         else
-            readUnknownElement();
+            skipCurrentElement();
     }
 }
 //! [3]
