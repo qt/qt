@@ -101,7 +101,7 @@ tst_QFxPathView::tst_QFxPathView()
 
 void tst_QFxPathView::items()
 {
-    QFxView *canvas = createView(SRCDIR "/data/pathview.xml");
+    QFxView *canvas = createView(SRCDIR "/data/pathview.qml");
 
     TestModel model;
     model.addItem("Fred", "12345");
@@ -133,7 +133,7 @@ void tst_QFxPathView::items()
 
 void tst_QFxPathView::pathMoved()
 {
-    QFxView *canvas = createView(SRCDIR "/data/pathview.xml");
+    QFxView *canvas = createView(SRCDIR "/data/pathview.qml");
 
     TestModel model;
     model.addItem("Ben", "12345");
@@ -176,7 +176,7 @@ void tst_QFxPathView::pathMoved()
 
 void tst_QFxPathView::limitedItems()
 {
-    QFxView *canvas = createView(SRCDIR "/data/pathview.xml");
+    QFxView *canvas = createView(SRCDIR "/data/pathview.qml");
 
     TestModel model;
     for(int i=0; i<100; i++)
@@ -220,23 +220,23 @@ QFxView *tst_QFxPathView::createView(const QString &filename)
 
     QFile file(filename);
     file.open(QFile::ReadOnly);
-    QString xml = file.readAll();
-    canvas->setQml(xml, filename);
+    QString qml = file.readAll();
+    canvas->setQml(qml, filename);
 
     return canvas;
 }
 
 /*
-   Find an item with the specified id.  If index is supplied then the
+   Find an item with the specified objectName.  If index is supplied then the
    item must also evaluate the {index} expression equal to index
 */
 template<typename T>
-T *tst_QFxPathView::findItem(QFxItem *parent, const QString &id, int index)
+T *tst_QFxPathView::findItem(QFxItem *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
     for (int i = 0; i < parent->children()->count(); ++i) {
         QFxItem *item = parent->children()->at(i);
-        if (mo.cast(item) && (id.isEmpty() || item->id() == id)) {
+        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             if (index != -1) {
                 QmlExpression e(qmlContext(item), "index", item);
                 e.setTrackChange(false);
@@ -246,7 +246,7 @@ T *tst_QFxPathView::findItem(QFxItem *parent, const QString &id, int index)
                 return static_cast<T*>(item);
             }
         }
-        item = findItem<T>(item, id, index);
+        item = findItem<T>(item, objectName, index);
         if (item)
             return static_cast<T*>(item);
     }
