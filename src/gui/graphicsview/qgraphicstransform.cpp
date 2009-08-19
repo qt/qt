@@ -63,10 +63,17 @@
     independent transformation. The resulting operation is then combined into a
     single transform which is applied to QGraphicsItem.
 
+    Transformations are computed in true 3D space using QMatrix4x4.
+    When the transformation is applied to a QGraphicsItem, it will be
+    projected back to a 2D QTransform.  When multiple QGraphicsTransform
+    objects are applied to a QGraphicsItem, all of the transformations
+    are computed in true 3D space, with the projection back to 2D
+    only occurring after the last QGraphicsTransform is applied.
+
     If you want to create your own configurable transformation, you can create
     a subclass of QGraphicsTransform (or any or the existing subclasses), and
     reimplement the pure virtual applyTo() function, which takes a pointer to a
-    QTransform. Each operation you would like to apply should be exposed as
+    QMatrix4x4. Each operation you would like to apply should be exposed as
     properties (e.g., customTransform->setVerticalShear(2.5)). Inside you
     reimplementation of applyTo(), you can modify the provided transform
     respectively.
@@ -136,29 +143,43 @@ QGraphicsTransform::QGraphicsTransform(QGraphicsTransformPrivate &p, QObject *pa
 }
 
 /*!
-    Applies this transformation to an identity transform, and returns the
-    resulting transform.
-
-    This is equivalent to passing an identity transform to applyTo().
-
-    \sa applyTo()
-*/
-QTransform QGraphicsTransform::transform() const
-{
-    QTransform t;
-    applyTo(&t);
-    return t;
-}
-
-/*!
-    \fn void QGraphicsTransform::applyTo(QTransform *transform) const
+    \fn void QGraphicsTransform::applyTo(QMatrix4x4 *matrix) const
 
     This pure virtual method has to be reimplemented in derived classes.
 
-    It applies this transformation to \a transform.
+    It applies this transformation to \a matrix.
 
-    \sa QGraphicsItem::transform()
+    \sa QGraphicsItem::transform(), project()
 */
+
+static const qreal inv_dist_to_plane = 1. / 1024.;
+
+/*!
+    Projects \a matrix into a 2D transformation that has the same
+    effect as applying \a matrix and then projecting the co-ordinates
+    to two dimensions.
+
+    \sa applyTo()
+*/
+QTransform QGraphicsTransform::project(const QMatrix4x4& matrix)
+{
+    // The following projection matrix is pre-multiplied with "matrix":
+    //      | 1 0 0 0 |
+    //      | 0 1 0 0 |
+    //      | 0 0 1 0 |
+    //      | 0 0 d 0 |
+    // where d = -1 / 1024.  This projection is consistent with the
+    // Qt::XAxis and Qt::YAxis rotations of QTransform::rotate().
+    // After projection, row 3 and column 3 are dropped to form
+    // the final QTransform.
+    return QTransform
+        (matrix(0, 0), matrix(1, 0),
+            matrix(3, 0) - matrix(2, 0) * inv_dist_to_plane,
+         matrix(0, 1), matrix(1, 1),
+            matrix(3, 1) - matrix(2, 1) * inv_dist_to_plane,
+         matrix(0, 3), matrix(1, 3),
+            matrix(3, 3) - matrix(2, 3) * inv_dist_to_plane);
+}
 
 /*!
     Notifies that this transform operation has changed its parameters in such a
@@ -189,11 +210,12 @@ void QGraphicsTransform::update()
   relative to the parent as the rest of the item grows). By default the
   origin is QPointF(0, 0).
 
-  The two parameters xScale and yScale describe the scale factors to apply in
-  horizontal and vertical direction. They can take on any value, including 0
-  (to collapse the item to a point) or negativate value. A negative xScale
-  value will mirror the item horizontally. A negative yScale value will flip
-  the item vertically.
+  The parameters xScale, yScale, and zScale describe the scale factors to
+  apply in horizontal, vertical, and depth directions. They can take on any
+  value, including 0 (to collapse the item to a point) or negative value.
+  A negative xScale value will mirror the item horizontally. A negative yScale
+  value will flip the item vertically. A negative zScale will flip the
+  item end for end.
 
   \sa QGraphicsTransform, QGraphicsItem::setScale(), QTransform::scale()
 */
@@ -202,10 +224,11 @@ class QGraphicsScalePrivate : public QGraphicsTransformPrivate
 {
 public:
     QGraphicsScalePrivate()
-        : xScale(1), yScale(1) {}
-    QPointF origin;
+        : xScale(1), yScale(1), zScale(1) {}
+    QVector3D origin;
     qreal xScale;
     qreal yScale;
+    qreal zScale;
 };
 
 /*!
@@ -225,21 +248,23 @@ QGraphicsScale::~QGraphicsScale()
 
 /*!
     \property QGraphicsScale::origin
-    \brief The QGraphicsScene class provides the origin of the scale.
+    \brief the origin of the scale in 3D space.
 
     All scaling will be done relative to this point (i.e., this point
     will stay fixed, relative to the parent, when the item is scaled).
 
-    \sa xScale, yScale
+    \sa xScale, yScale, zScale
 */
-QPointF QGraphicsScale::origin() const
+QVector3D QGraphicsScale::origin() const
 {
     Q_D(const QGraphicsScale);
     return d->origin;
 }
-void QGraphicsScale::setOrigin(const QPointF &point)
+void QGraphicsScale::setOrigin(const QVector3D &point)
 {
     Q_D(QGraphicsScale);
+    if (d->origin == point)
+        return;
     d->origin = point;
     update();
     emit originChanged();
@@ -254,7 +279,7 @@ void QGraphicsScale::setOrigin(const QPointF &point)
     provide a negative value, the item will be mirrored horizontally around its
     origin.
 
-    \sa yScale, origin
+    \sa yScale, zScale, origin
 */
 qreal QGraphicsScale::xScale() const
 {
@@ -280,7 +305,7 @@ void QGraphicsScale::setXScale(qreal scale)
     provide a negative value, the item will be flipped vertically around its
     origin.
 
-    \sa xScale, origin
+    \sa xScale, zScale, origin
 */
 qreal QGraphicsScale::yScale() const
 {
@@ -298,14 +323,40 @@ void QGraphicsScale::setYScale(qreal scale)
 }
 
 /*!
-    \reimp
+    \property QGraphicsScale::zScale
+    \brief the depth scale factor.
+
+    The scale factor can be any real number; the default value is 1.0. If you
+    set the factor to 0.0, the item will be collapsed to a single point. If you
+    provide a negative value, the item will be flipped end for end around its
+    origin.
+
+    \sa xScale, yScale, origin
 */
-void QGraphicsScale::applyTo(QTransform *transform) const
+qreal QGraphicsScale::zScale() const
 {
     Q_D(const QGraphicsScale);
-    transform->translate(d->origin.x(), d->origin.y());
-    transform->scale(d->xScale, d->yScale);
-    transform->translate(-d->origin.x(), -d->origin.y());
+    return d->zScale;
+}
+void QGraphicsScale::setZScale(qreal scale)
+{
+    Q_D(QGraphicsScale);
+    if (d->zScale == scale)
+        return;
+    d->zScale = scale;
+    update();
+    emit scaleChanged();
+}
+
+/*!
+    \reimp
+*/
+void QGraphicsScale::applyTo(QMatrix4x4 *matrix) const
+{
+    Q_D(const QGraphicsScale);
+    matrix->translate(d->origin);
+    matrix->scale(d->xScale, d->yScale, d->zScale);
+    matrix->translate(-d->origin);
 }
 
 /*!
@@ -319,10 +370,11 @@ void QGraphicsScale::applyTo(QTransform *transform) const
 /*!
     \fn QGraphicsScale::scaleChanged()
 
-    This signal is emitted whenever the xScale or yScale of the object
-    changes.
+    This signal is emitted whenever the xScale, yScale, or zScale
+    of the object changes.
 
     \sa QGraphicsScale::xScale, QGraphicsScale::yScale
+    \sa QGraphicsScale::zScale
 */
 
 /*!
@@ -359,20 +411,14 @@ void QGraphicsScale::applyTo(QTransform *transform) const
     \sa QGraphicsTransform, QGraphicsItem::setRotation(), QTransform::rotate()
 */
 
-#define VECTOR_FOR_AXIS_X QVector3D(1, 0, 0)
-#define VECTOR_FOR_AXIS_Y QVector3D(0, 1, 0)
-#define VECTOR_FOR_AXIS_Z QVector3D(0, 0, 1)
-
-
 class QGraphicsRotationPrivate : public QGraphicsTransformPrivate
 {
 public:
     QGraphicsRotationPrivate()
-        : angle(0), axis(VECTOR_FOR_AXIS_Z), simpleAxis(Qt::ZAxis) {}
-    QPointF origin;
+        : angle(0), axis(0, 0, 1) {}
+    QVector3D origin;
     qreal angle;
     QVector3D axis;
-    int simpleAxis;
 };
 
 /*!
@@ -392,21 +438,23 @@ QGraphicsRotation::~QGraphicsRotation()
 
 /*!
     \property QGraphicsRotation::origin
-    \brief the origin of the rotation.
+    \brief the origin of the rotation in 3D space.
 
     All rotations will be done relative to this point (i.e., this point
     will stay fixed, relative to the parent, when the item is rotated).
 
     \sa angle
 */
-QPointF QGraphicsRotation::origin() const
+QVector3D QGraphicsRotation::origin() const
 {
     Q_D(const QGraphicsRotation);
     return d->origin;
 }
-void QGraphicsRotation::setOrigin(const QPointF &point)
+void QGraphicsRotation::setOrigin(const QVector3D &point)
 {
     Q_D(QGraphicsRotation);
+    if (d->origin == point)
+        return;
     d->origin = point;
     update();
     emit originChanged();
@@ -448,11 +496,11 @@ void QGraphicsRotation::setAngle(qreal angle)
 */
 
 /*!
-  \fn void QGraphicsRotation::angleChanged()
+    \fn void QGraphicsRotation::angleChanged()
 
-  This signal is emitted whenever the angle has changed.
+    This signal is emitted whenever the angle has changed.
 
-  \sa QGraphicsRotation::angle
+    \sa QGraphicsRotation::angle
 */
 
 /*!
@@ -475,18 +523,9 @@ QVector3D QGraphicsRotation::axis() const
 void QGraphicsRotation::setAxis(const QVector3D &axis)
 {
     Q_D(QGraphicsRotation);
-     if (d->axis == axis)
+    if (d->axis == axis)
          return;
-     d->axis = axis;
-    if (axis == VECTOR_FOR_AXIS_X) {
-        d->simpleAxis = Qt::XAxis;
-    } else if (axis == VECTOR_FOR_AXIS_Y) {
-        d->simpleAxis = Qt::YAxis;
-    } else if (axis == VECTOR_FOR_AXIS_Z) {
-        d->simpleAxis = Qt::ZAxis;
-    } else {
-        d->simpleAxis = -1; // no predefined axis
-    }
+    d->axis = axis;
     update();
     emit axisChanged();
 }
@@ -495,90 +534,58 @@ void QGraphicsRotation::setAxis(const QVector3D &axis)
     \fn void QGraphicsRotation::setAxis(Qt::Axis axis)
 
     Convenience function to set the axis to \a axis.
-*/
 
+    Note: the Qt::YAxis rotation for QTransform is inverted from the
+    correct mathematical rotation in 3D space.  The QGraphicsRotation
+    class implements a correct mathematical rotation.  The following
+    two sequences of code will perform the same transformation:
+
+    \code
+    QTransform t;
+    t.rotate(45, Qt::YAxis);
+
+    QGraphicsRotation r;
+    r.setAxis(Qt::YAxis);
+    r.setAngle(-45);
+    \endcode
+*/
 void QGraphicsRotation::setAxis(Qt::Axis axis)
 {
     switch (axis)
     {
     case Qt::XAxis:
-        setAxis(VECTOR_FOR_AXIS_X);
+        setAxis(QVector3D(1, 0, 0));
         break;
     case Qt::YAxis:
-        setAxis(VECTOR_FOR_AXIS_Y);
+        setAxis(QVector3D(0, 1, 0));
         break;
     case Qt::ZAxis:
-        setAxis(VECTOR_FOR_AXIS_Z);
+        setAxis(QVector3D(0, 0, 1));
         break;
     }
 }
 
-
-const qreal deg2rad = qreal(0.017453292519943295769);        // pi/180
-static const qreal inv_dist_to_plane = 1. / 1024.;
-
 /*!
     \reimp
 */
-void QGraphicsRotation::applyTo(QTransform *t) const
+void QGraphicsRotation::applyTo(QMatrix4x4 *matrix) const
 {
     Q_D(const QGraphicsRotation);
 
-    qreal a = d->angle;
-
-    if (a == 0.)
+    if (d->angle == 0. || d->axis.isNull())
         return;
 
-    if (d->simpleAxis != -1) {
-        //that's an optimization for simple axis
-        t->translate(d->origin.x(), d->origin.y());
-        t->rotate(a, Qt::Axis(d->simpleAxis));
-        t->translate(-d->origin.x(), -d->origin.y());
-        return;
-    }
-
-    qreal x = d->axis.x();
-    qreal y = d->axis.y();
-    qreal z = d->axis.z();
-
-    if (x == 0. && y == 0 && z == 0)
-        return;
-
-    qreal c, s;
-    if (a == 90. || a == -270.) {
-        s = 1.;
-        c = 0.;
-    } else if (a == 270. || a == -90.) {
-        s = -1.;
-        c = 0.;
-    } else if (a == 180.) {
-        s = 0.;
-        c = -1.;
-    } else {
-        qreal b = deg2rad*a;
-        s = qSin(b);
-        c = qCos(b);
-    }
-
-    qreal len = x * x + y * y + z * z;
-    if (len != 1.) {
-        len = 1. / qSqrt(len);
-        x *= len;
-        y *= len;
-        z *= len;
-    }
-
-    t->translate(d->origin.x(), d->origin.y());
-    *t = QTransform(x*x*(1-c)+c,   x*y*(1-c)+z*s, x*z*(1-c)-y*s*inv_dist_to_plane,
-                    y*x*(1-c)-z*s, y*y*(1-c)+c,   y*z*(1-c)-x*s*inv_dist_to_plane,
-                             0,    0,             1) * *t;
-    t->translate(-d->origin.x(), -d->origin.y());
+    matrix->translate(d->origin);
+    matrix->rotate(d->angle, d->axis.x(), d->axis.y(), d->axis.z());
+    matrix->translate(-d->origin);
 }
 
 /*!
     \fn void QGraphicsRotation::axisChanged()
 
     This signal is emitted whenever the axis of the object changes.
+
+    \sa QGraphicsRotation::axis
 */
 
 #include "moc_qgraphicstransform.cpp"

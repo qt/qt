@@ -43,8 +43,9 @@
 #define QGRAPHICSTRANSFORM_H
 
 #include <QtCore/QObject>
-#include <QtGui/QTransform>
 #include <QtGui/QVector3D>
+#include <QtGui/QTransform>
+#include <QtGui/QMatrix4x4>
 
 QT_BEGIN_HEADER
 
@@ -62,8 +63,9 @@ public:
     QGraphicsTransform(QObject *parent = 0);
     ~QGraphicsTransform();
 
-    QTransform transform() const;
-    virtual void applyTo(QTransform *transform) const = 0;
+    virtual void applyTo(QMatrix4x4 *matrix) const = 0;
+
+    static QTransform project(const QMatrix4x4& matrix);
 
 protected Q_SLOTS:
     void update();
@@ -83,15 +85,16 @@ class Q_GUI_EXPORT QGraphicsScale : public QGraphicsTransform
 {
     Q_OBJECT
 
-    Q_PROPERTY(QPointF origin READ origin WRITE setOrigin NOTIFY originChanged)
+    Q_PROPERTY(QVector3D origin READ origin WRITE setOrigin NOTIFY originChanged)
     Q_PROPERTY(qreal xScale READ xScale WRITE setXScale NOTIFY scaleChanged)
     Q_PROPERTY(qreal yScale READ yScale WRITE setYScale NOTIFY scaleChanged)
+    Q_PROPERTY(qreal zScale READ zScale WRITE setZScale NOTIFY scaleChanged)
 public:
     QGraphicsScale(QObject *parent = 0);
     ~QGraphicsScale();
 
-    QPointF origin() const;
-    void setOrigin(const QPointF &point);
+    QVector3D origin() const;
+    void setOrigin(const QVector3D &point);
 
     qreal xScale() const;
     void setXScale(qreal);
@@ -99,7 +102,10 @@ public:
     qreal yScale() const;
     void setYScale(qreal);
 
-    void applyTo(QTransform *transform) const;
+    qreal zScale() const;
+    void setZScale(qreal);
+
+    void applyTo(QMatrix4x4 *matrix) const;
 
 Q_SIGNALS:
     void originChanged();
@@ -115,15 +121,15 @@ class Q_GUI_EXPORT QGraphicsRotation : public QGraphicsTransform
 {
     Q_OBJECT
 
-    Q_PROPERTY(QPointF origin READ origin WRITE setOrigin NOTIFY originChanged)
+    Q_PROPERTY(QVector3D origin READ origin WRITE setOrigin NOTIFY originChanged)
     Q_PROPERTY(qreal angle READ angle WRITE setAngle NOTIFY angleChanged)
     Q_PROPERTY(QVector3D axis READ axis WRITE setAxis NOTIFY axisChanged)
 public:
     QGraphicsRotation(QObject *parent = 0);
     ~QGraphicsRotation();
 
-    QPointF origin() const;
-    void setOrigin(const QPointF &point);
+    QVector3D origin() const;
+    void setOrigin(const QVector3D &point);
 
     qreal angle() const;
     void setAngle(qreal);
@@ -132,7 +138,7 @@ public:
     void setAxis(const QVector3D &axis);
     void setAxis(Qt::Axis axis);
 
-    void applyTo(QTransform *transform) const;
+    void applyTo(QMatrix4x4 *matrix) const;
 
 Q_SIGNALS:
     void originChanged();
