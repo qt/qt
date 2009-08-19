@@ -228,19 +228,6 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
     TRACE_ENTRY("state %d source.type %d", state(), source.type());
 	TRACE_ENTRY("source.type %d", source.type());
 	
-	// Store old player object
-/*
-	AbstractPlayer* oldPlayer = m_player.take();
-
-	
-    // Destroy old player object
-	if(!m_player.isNull())
-	{
-		disconnect(m_player.data(), 0, this, 0);
-		m_player.reset();
-	}
-*/
-	
 	MediaType mediaType = MediaTypeUnknown;
 	
 	// Determine media type
