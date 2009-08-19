@@ -515,12 +515,7 @@ void Preprocessor::substituteMacro(const MacroName &macro, Symbols &substituted,
     Symbols saveSymbols = symbols;
     int saveIndex = index;
 
-    // This is a workaround for a compiler bug that did not like the QHash::value function that
-    // simply did: "return T();" This code should essentially do the same thing but declares the
-    // default instance outside and calls the other QHash::value() implementation that returns
-    // 'dummy' as the default value now.
-    Macro dummy;
-    symbols = macros.value(macro, dummy).symbols;
+    symbols = macros.value(macro).symbols;
     index = 0;
 
     safeset += macro;
