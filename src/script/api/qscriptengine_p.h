@@ -98,7 +98,7 @@ namespace QScript
 
     //some conversion helper functions
     QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
-    bool isFunction(const JSC::JSValue &value);
+    bool isFunction(JSC::JSValue value);
 }
 
 class QScriptEnginePrivate
@@ -155,7 +155,7 @@ public:
     JSC::JSValue toUsableValue(JSC::JSValue value);
     static JSC::JSValue thisForContext(JSC::ExecState *frame);
 
-    JSC::CallFrame *pushContext(JSC::CallFrame *exec, const JSC::JSValue &thisObject, const JSC::ArgList& args,
+    JSC::CallFrame *pushContext(JSC::CallFrame *exec, JSC::JSValue thisObject, const JSC::ArgList& args,
                                 JSC::JSObject *callee, bool calledAsConstructor = false);
     void popContext();
 

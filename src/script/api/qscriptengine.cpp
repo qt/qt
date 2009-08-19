@@ -457,7 +457,7 @@ QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec)
     return static_cast<GlobalClientData*>(exec->globalData().clientData)->engine;
 }
 
-bool isFunction(const JSC::JSValue &value)
+bool isFunction(JSC::JSValue value)
 {
     if (!value || !value.isObject())
         return false;
@@ -2284,7 +2284,7 @@ QScriptContext *QScriptEngine::pushContext()
 
    return the new top frame. (might be the same as exec if a new stackframe was not needed) or 0 if stack overflow
 */
-JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, const JSC::JSValue &_thisObject,
+JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSValue _thisObject,
                                                   const JSC::ArgList& args, JSC::JSObject *callee, bool calledAsConstructor)
 {
     JSC::JSValue thisObject = _thisObject;
