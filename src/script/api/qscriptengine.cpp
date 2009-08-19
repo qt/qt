@@ -849,9 +849,12 @@ QScriptValue QScriptEnginePrivate::scriptValueFromJSCValue(JSC::JSValue value)
     Q_Q(QScriptEngine);
     if (!value)
         return QScriptValue();
-    QScriptValue result;
-    QScriptValuePrivate::initFromJSCValue(result, q, value);
-    return result;
+
+    QScriptValuePrivate *p_value = new QScriptValuePrivate();
+    p_value->engine = q;
+    p_value->initFrom(value);
+    
+    return QScriptValuePrivate::get(p_value);
 }
 
 JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptValue &value)
@@ -864,9 +867,9 @@ JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptValue &val
         Q_ASSERT(!vv->engine || vv->engine == q);
         vv->engine = q;
         if (vv->type == QScriptValuePrivate::Number) {
-            vv->initFromJSCValue(JSC::jsNumber(currentFrame, vv->numberValue));
+            vv->initFrom(JSC::jsNumber(currentFrame, vv->numberValue));
         } else { //QScriptValuePrivate::String
-            vv->initFromJSCValue(JSC::jsString(currentFrame, vv->stringValue));
+            vv->initFrom(JSC::jsString(currentFrame, vv->stringValue));
         }
     }
     return vv->jscValue;
@@ -3706,7 +3709,7 @@ QScriptValue QScriptEngine::objectById(qint64 id) const
     QSet<QScriptValuePrivate*>::const_iterator i = d->attachedScriptValues.constBegin();
     while(i != d->attachedScriptValues.constEnd()) {
         if ( (*i)->id == id )
-            return (*i)->toPublic();
+            return QScriptValuePrivate::get(*i);
         i++;
     }
     return QScriptValue();

@@ -112,9 +112,9 @@ public:
     QScriptValuePrivate();
     ~QScriptValuePrivate();
 
-    void initFromJSCValue(JSC::JSValue value);
-    void initFromNumber(double value);
-    void initFromString(const QString &value);
+    void initFrom(JSC::JSValue value);
+    void initFrom(double value);
+    void initFrom(const QString &value);
 
     static void initFromJSCValue(QScriptValue &result,
                                  QScriptEngine *engine,
@@ -125,17 +125,22 @@ public:
     QVariant &variantValue() const;
     void setVariantValue(const QVariant &value);
 
-    static QScriptValuePrivate *get(const QScriptValue &q) { return q.d_ptr; }
+    static QScriptValuePrivate *get(const QScriptValue &q)
+    {
+        return q.d_ptr;
+    }
+
+    static QScriptValue get(QScriptValuePrivate *d)
+    {
+        QScriptValue tmp;
+        tmp.d_ptr = d;
+        d->ref.ref();
+        return tmp;
+    }
 
     QScriptValue property(const JSC::Identifier &id, int resolveMode) const;
-    QScriptValue property(const QString &, int resolveMode) const;
     QScriptValue property(quint32 index, int resolveMode) const;
-
-    QScriptValue toPublic() {
-        QScriptValue tmp;
-        tmp.d_ptr = this;
-        return tmp;
-    };
+    QScriptValue property(const QString &, int resolveMode) const;
 
     bool isValid() const {return valid;}
     void detachEngine()
