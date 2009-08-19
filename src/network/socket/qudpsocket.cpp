@@ -97,7 +97,7 @@
 
     \note On Symbian OS bind flags behaviour depends on process capabilties.
     If process has NetworkControl capability, the bind attempt with
-    ReuseAddressHint will always succeed even the address and port is already
+    ReuseAddressHint will always succeed even if the address and port is already
     bound by another socket with any flags. If process does not have
     NetworkControl capability, the bind attempt to address and port already
     bound by another socket will always fail.

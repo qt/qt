@@ -14,6 +14,8 @@
     <example filename="drilldown" name="Drilldown" image="screenshots/drilldown_s60.png"/>
     <example filename="softkeys" name="Softkeys" image="screenshots/softkeys_s60.png"/>
     <example filename="anomaly" name="Anomaly Browser" image="screenshots/anomaly_s60.png"/>
+    <example filename="raycasting" name="Ray casting" image="screenshots/raycasting.png"/>
+    <example filename="lightmaps" name="OpenStreetMap" image="screenshots/lightmaps.png"/>
   </demos>
   <slideshow timeout="60000" interval="10000">
     <imagedir dir="slides"/>

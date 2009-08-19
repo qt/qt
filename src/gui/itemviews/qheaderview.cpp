@@ -1195,7 +1195,8 @@ QHeaderView::ResizeMode QHeaderView::resizeMode(int logicalIndex) const
 {
     Q_D(const QHeaderView);
     int visual = visualIndex(logicalIndex);
-    Q_ASSERT(visual != -1);
+    if (visual == -1)
+        return Fixed; //the default value
     return d->headerSectionResizeMode(visual);
 }
 

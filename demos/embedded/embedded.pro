@@ -1,10 +1,14 @@
 TEMPLATE  = subdirs
-SUBDIRS   = styledemo
+SUBDIRS   = styledemo raycasting
 
 contains(QT_CONFIG, svg) {
     SUBDIRS += embeddedsvgviewer \
                desktopservices
     !vxworks:!qnx:SUBDIRS += fluidlauncher
+}
+
+contains(QT_CONFIG, network) {
+    SUBDIRS += lightmaps
 }
 
 contains(QT_CONFIG, webkit) {
