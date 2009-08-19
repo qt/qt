@@ -1055,7 +1055,6 @@ struct QmlEnginePrivate::ImportedNamespace {
             int vmaj = majversions.at(i);
             int vmin = minversions.at(i);
             if (vmaj || vmin) {
-                QString version = QString::number(vmaj) + QLatin1String(".") + QString::number(vmin);
                 // Check version file - XXX cache these in QmlEngine!
                 QFile qmldir(QUrl(urls.at(i)+QLatin1String("/qmldir")).toLocalFile());
                 if (qmldir.open(QIODevice::ReadOnly)) {
@@ -1066,23 +1065,29 @@ struct QmlEnginePrivate::ImportedNamespace {
                         int space1 = line.indexOf(QLatin1Char(' '));
                         int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
                         QStringRef maptype = line.leftRef(space1);
-                        QStringRef mapversion = line.midRef(space1+1,space2<0?line.length()-space1-2:space2-space1-1);
-                        QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-2);
-                        if (maptype==type && mapversion==version) {
-                            if (mapfile.isEmpty())
-                                return url;
-                            else
-                                return url.resolved(mapfile.toString());
+                        if (maptype==type) {
+                            // eg. 1.2-5
+                            QString mapversions = line.mid(space1+1,space2<0?line.length()-space1-2:space2-space1-1);
+                            int dot = mapversions.indexOf(QLatin1Char('.'));
+                            int dash = mapversions.indexOf(QLatin1Char('-'));
+                            int mapvmaj = mapversions.left(dot).toInt();
+                            if (mapvmaj==vmaj) {
+                                int mapvmin_from = (dash <= 0 ? mapversions.mid(dot+1) : mapversions.mid(dot+1,dash-dot-1)).toInt();
+                                int mapvmin_to = dash <= 0 ? mapvmin_from : mapversions.mid(dash+1).toInt();
+                                if (vmin >= mapvmin_from && vmin <= mapvmin_to) {
+                                    QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-2);
+                                    return url.resolved(mapfile.toString());
+                                }
+                            }
                         }
                     } while (!qmldir.atEnd());
                 }
-                return QUrl(); // no match for requested version
+            } else {
+                // XXX search non-files too! (eg. zip files, see QT-524)
+                QFileInfo f(url.toLocalFile());
+                if (f.exists())
+                    return url; // (unversioned) local import
             }
-
-            // XXX search non-files too! (eg. zip files, see QT-524)
-            QFileInfo f(url.toLocalFile());
-            if (f.exists())
-                return url; // (unversioned) local import
         }
         return QUrl();
     }
