@@ -42,12 +42,12 @@
 /*!
     \headerfile <QtConcurrentFilter>
     \title Concurrent Filter and Filter-Reduce
-    \ingroup threading
+    \ingroup thread
 
     \brief The <QtConcurrentFilter> header provides concurrent Filter and
     Filter-Reduce.
 
-    These functions are a part of the \l {threads.html#qtconcurrent-intro}{Qt Concurrent} framework.
+    These functions are a part of the \l {Concurrent Programming}{Qt Concurrent} framework.
 
     The QtConcurrent::filter(), QtConcurrent::filtered() and
     QtConcurrent::filteredReduced() functions filter items in a sequence such

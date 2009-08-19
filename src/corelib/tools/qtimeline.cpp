@@ -165,7 +165,7 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
     \class QTimeLine
     \brief The QTimeLine class provides a timeline for controlling animations.
     \since 4.2
-    \ingroup multimedia
+    \ingroup animation
 
     It's most commonly used to animate a GUI control by calling a slot
     periodically. You can construct a timeline by passing its duration in

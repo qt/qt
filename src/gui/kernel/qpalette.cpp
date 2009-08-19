@@ -399,8 +399,8 @@ void QPalette::setColorGroup(ColorGroup cg, const QColorGroup &g)
 
     \ingroup appearance
     \ingroup shared
-    \ingroup multimedia
-    \mainclass
+    \ingroup painting
+
 
     A palette consists of three color groups: \e Active, \e Disabled,
     and \e Inactive. All widgets in Qt contain a palette and

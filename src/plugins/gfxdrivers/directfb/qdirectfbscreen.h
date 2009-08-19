@@ -50,6 +50,31 @@ QT_BEGIN_HEADER
 
 QT_MODULE(Gui)
 
+#if !defined QT_NO_DIRECTFB_LAYER && !defined QT_DIRECTFB_LAYER
+#define QT_DIRECTFB_LAYER
+#endif
+#if !defined QT_NO_DIRECTFB_WM && !defined QT_DIRECTFB_WM
+#define QT_DIRECTFB_WM
+#endif
+#if !defined QT_DIRECTFB_IMAGECACHE && !defined QT_NO_DIRECTFB_IMAGECACHE
+#define QT_NO_DIRECTFB_IMAGECACHE
+#endif
+#if !defined QT_NO_DIRECTFB_PALETTE && !defined QT_DIRECTFB_PALETTE
+#define QT_DIRECTFB_PALETTE
+#endif
+#if !defined QT_NO_DIRECTFB_PREALLOCATED && !defined QT_DIRECTFB_PREALLOCATED
+#define QT_DIRECTFB_PREALLOCATED
+#endif
+#if !defined QT_NO_DIRECTFB_MOUSE && !defined QT_DIRECTFB_MOUSE
+#define QT_DIRECTFB_MOUSE
+#endif
+#if !defined QT_NO_DIRECTFB_KEYBOARD && !defined QT_DIRECTFB_KEYBOARD
+#define QT_DIRECTFB_KEYBOARD
+#endif
+#if !defined QT_NO_DIRECTFB_OPAQUE_DETECTION && !defined QT_DIRECTFB_OPAQUE_DETECTION
+#define QT_DIRECTFB_OPAQUE_DETECTION
+#endif
+
 #define Q_DIRECTFB_VERSION ((DIRECTFB_MAJOR_VERSION << 16) | (DIRECTFB_MINOR_VERION << 8) | DIRECTFB_MICRO_VERSION)
 
 #define DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(F)                         \
@@ -108,7 +133,9 @@ public:
     }
 
     IDirectFB *dfb();
-    IDirectFBSurface *dfbSurface();
+#ifdef QT_NO_DIRECTFB_WM
+    IDirectFBSurface *primarySurface();
+#endif
 #ifndef QT_NO_DIRECTFB_LAYER
     IDirectFBDisplayLayer *dfbDisplayLayer();
 #endif

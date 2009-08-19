@@ -467,7 +467,7 @@ public:
     quint32 filtersDescendantEvents : 1;
     quint32 sceneTransformTranslateOnly : 1;
     quint32 mouseSetsFocus : 1;
-    quint32 unused : 4; // feel free to use
+    quint32 unused : 3; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

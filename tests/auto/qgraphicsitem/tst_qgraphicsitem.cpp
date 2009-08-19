@@ -281,6 +281,7 @@ private slots:
     void subFocus();
     void reverseCreateAutoFocusProxy();
     void focusProxyDeletion();
+    void negativeZStacksBehindParent();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -7556,6 +7557,31 @@ void tst_QGraphicsItem::focusProxyDeletion()
     scene->addItem(rect2);
     rect->setFocusProxy(rect2);
     delete scene; // don't crash
+}
+
+void tst_QGraphicsItem::negativeZStacksBehindParent()
+{
+    QGraphicsRectItem rect;
+    QCOMPARE(rect.zValue(), qreal(0.0));
+    QVERIFY(!(rect.flags() & QGraphicsItem::ItemNegativeZStacksBehindParent));
+    QVERIFY(!(rect.flags() & QGraphicsItem::ItemStacksBehindParent));
+    rect.setZValue(-1);
+    QCOMPARE(rect.zValue(), qreal(-1.0));
+    QVERIFY(!(rect.flags() & QGraphicsItem::ItemStacksBehindParent));
+    rect.setZValue(0);
+    rect.setFlag(QGraphicsItem::ItemNegativeZStacksBehindParent);
+    QVERIFY(rect.flags() & QGraphicsItem::ItemNegativeZStacksBehindParent);
+    QVERIFY(!(rect.flags() & QGraphicsItem::ItemStacksBehindParent));
+    rect.setZValue(-1);
+    QVERIFY(rect.flags() & QGraphicsItem::ItemStacksBehindParent);
+    rect.setZValue(0);
+    QVERIFY(!(rect.flags() & QGraphicsItem::ItemStacksBehindParent));
+    rect.setFlag(QGraphicsItem::ItemNegativeZStacksBehindParent, false);
+    rect.setZValue(-1);
+    rect.setFlag(QGraphicsItem::ItemNegativeZStacksBehindParent, true);
+    QVERIFY(rect.flags() & QGraphicsItem::ItemStacksBehindParent);
+    rect.setFlag(QGraphicsItem::ItemNegativeZStacksBehindParent, false);
+    QVERIFY(rect.flags() & QGraphicsItem::ItemStacksBehindParent);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

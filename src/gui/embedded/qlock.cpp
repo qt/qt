@@ -128,7 +128,6 @@ public:
     \brief The QLock class is a wrapper for a System V shared semaphore.
 
     \ingroup qws
-    \ingroup io
 
     \internal
 

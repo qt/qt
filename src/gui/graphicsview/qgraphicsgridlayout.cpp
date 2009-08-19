@@ -44,7 +44,7 @@
     \brief The QGraphicsGridLayout class provides a grid layout for managing
     widgets in Graphics View.
     \since 4.4
-    \ingroup multimedia
+
     \ingroup graphicsview-api
 
     The most common way to use QGraphicsGridLayout is to construct an object

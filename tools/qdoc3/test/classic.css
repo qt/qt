@@ -45,9 +45,17 @@ table.indextable {
 	border-width: 1px 1px 1px 1px;
 	border-collapse: collapse;
 	background-color: #f0f0f0;
-    border-color:#555;    
+    border-color:#555;
+    font-size: 110%;
 }
 
+table td.largeindex {
+	border-width: 1px 1px 1px 1px;
+	border-collapse: collapse;
+	background-color: #f0f0f0;
+    border-color:#555;
+    font-size: 120%;
+}
 
 table.valuelist th {
 	border-width: 1px 1px 1px 2px;
@@ -65,6 +73,17 @@ th.titleheader  {
 	border-color: #444;
     color:white;
     background-color:#555555;
+    font-size: 110%;
+}
+
+th.largeheader {
+	border-width: 1px 0px 1px 0px;
+	padding: 4px;
+	border-style: solid;
+	border-color: #444;
+    color:white;
+    background-color:#555555;
+    font-size: 120%;
 }
 
 p {

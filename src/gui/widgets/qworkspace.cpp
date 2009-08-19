@@ -834,7 +834,6 @@ QSize QWorkspaceTitleBar::sizeHint() const
     \obsolete
     \brief The QWorkspace widget provides a workspace window that can be
     used in an MDI application.
-    \ingroup application
 
     This class is deprecated. Use QMdiArea instead.
 

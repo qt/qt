@@ -41,7 +41,7 @@ Rect {
             }
             Text {
                 id: NameText
-                anchors.fill: parent; vAlign: "AlignVCenter"
+                anchors.fill: parent; verticalAlignment: "AlignVCenter"
                 text: fileName; anchors.leftMargin: 32
                 font.pointSize: 10
                 color: activePalette.windowText
@@ -107,7 +107,7 @@ Rect {
             anchors.left: UpButton.right; anchors.right: parent.right; height: parent.height
             anchors.leftMargin: 4; anchors.rightMargin: 4
             text: folders.folder; color: activePalette.buttonText
-            elide: "ElideLeft"; hAlign: "AlignRight"; vAlign: "AlignVCenter"
+            elide: "ElideLeft"; horizontalAlignment: "AlignRight"; verticalAlignment: "AlignVCenter"
         }
     }
 }

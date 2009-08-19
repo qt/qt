@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QSvgWidget
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QSvgWidget class provides a widget that is used to display the contents of
     Scalable Vector Graphics (SVG) files.

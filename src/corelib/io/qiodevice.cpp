@@ -811,7 +811,7 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
 #endif
 
                 if (readFromDevice < bytesToBuffer)
-                    d->buffer.truncate(readFromDevice < 0 ? 0 : int(readFromDevice));
+                    d->buffer.truncate(int(readFromDevice));
                 if (!d->buffer.isEmpty()) {
                     lastReadChunkSize = d->buffer.read(data + readSoFar, maxSize - readSoFar);
                     readSoFar += lastReadChunkSize;

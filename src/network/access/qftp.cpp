@@ -1294,9 +1294,9 @@ int QFtpPrivate::addCommand(QFtpCommand *cmd)
     \class QFtp
     \brief The QFtp class provides an implementation of the client side of FTP protocol.
 
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
-    \mainclass
+
 
     This class provides a direct interface to FTP that allows you to
     have more control over the requests. However, for new

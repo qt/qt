@@ -51,7 +51,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QKeyMapper
     \since 4.2
-    \ingroup application
     \internal
 
     \sa QObject

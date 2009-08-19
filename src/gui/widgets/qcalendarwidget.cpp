@@ -1960,7 +1960,7 @@ void QCalendarWidgetPrivate::_q_editingFinished()
     \brief The QCalendarWidget class provides a monthly based
     calendar widget allowing the user to select a date.
     \since 4.2
-    \mainclass
+
     \ingroup advanced
 
     \image cleanlooks-calendarwidget.png

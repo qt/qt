@@ -28,7 +28,7 @@ Rect {
                 opacity: Wrapper.ListView.prevSection != Wrapper.ListView.section ? 1 : 0
                 Text {
                     text: Wrapper.ListView.section; font.bold: true
-                    x: 2; height: parent.height; vAlign: 'AlignVCenter'
+                    x: 2; height: parent.height; verticalAlignment: 'AlignVCenter'
                 }
             }
             Item {

@@ -1164,9 +1164,8 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     \brief The QVariant class acts like a union for the most common Qt data types.
 
     \ingroup objectmodel
-    \ingroup misc
     \ingroup shared
-    \mainclass
+
 
     Because C++ forbids unions from including types that have
     non-default constructors or destructors, most interesting Qt
@@ -2776,7 +2775,7 @@ bool QVariant::cmp(const QVariant &v) const
     if (d.type != v2.d.type) {
         if (qIsNumericType(d.type) && qIsNumericType(v.d.type)) {
             if (qIsFloatingPoint(d.type) || qIsFloatingPoint(v.d.type))
-                return qFuzzyCompare(toDouble(), v.toDouble());
+                return qFuzzyCompare(toReal(), v.toReal());
             else
                 return toLongLong() == v.toLongLong();
         }

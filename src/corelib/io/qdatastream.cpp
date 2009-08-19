@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
     to a QIODevice.
 
     \ingroup io
-    \mainclass
+
 
     A data stream is a binary stream of encoded information which is
     100% independent of the host computer's operating system, CPU or

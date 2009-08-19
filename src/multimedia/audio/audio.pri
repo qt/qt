@@ -31,7 +31,7 @@ mac {
                $$PWD/qaudioinput_mac_p.cpp \
                $$PWD/qaudio_mac.cpp
 
-    LIBS += -framework CoreAudio -framework AudioUnit -framework AudioToolbox
+    LIBS += -framework ApplicationServices -framework CoreAudio -framework AudioUnit -framework AudioToolbox
 
 } else:win32 {
 
@@ -50,7 +50,7 @@ mac {
             SOURCES += $$PWD/qaudiodeviceinfo_alsa_p.cpp \
                    $$PWD/qaudiooutput_alsa_p.cpp \
                    $$PWD/qaudioinput_alsa_p.cpp
-            LIBS += -lasound
+            LIBS_PRIVATE += -lasound
         }
     }
 }

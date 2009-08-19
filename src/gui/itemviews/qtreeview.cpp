@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup model-view
     \ingroup advanced
-    \mainclass
+
 
     A QTreeView implements a tree representation of items from a
     model. This class is used to provide standard hierarchical lists that

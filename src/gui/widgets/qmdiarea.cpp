@@ -43,8 +43,8 @@
     \class QMdiArea
     \brief The QMdiArea widget provides an area in which MDI windows are displayed.
     \since 4.3
-    \ingroup application
-    \mainclass
+    \ingroup mainwindow-classes
+
 
     QMdiArea functions, essentially, like a window manager for MDI
     windows. For instance, it draws the windows it manages on itself

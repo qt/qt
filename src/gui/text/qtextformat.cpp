@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
     \brief The QTextLength class encapsulates the different types of length
     used in a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     When we specify a value for the length of an element in a text document,
     we often need to provide some other information so that the length is
@@ -415,7 +415,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     \brief The QTextFormat class provides formatting information for a
     QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
     \ingroup shared
 
     A QTextFormat is a generic class used for describing the format of
@@ -448,7 +448,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextFormat &fmt)
     associate the format with a QTextObject. It is used to represent
     lists, frames, and tables inside the document.
 
-    \sa {Text Processing Classes}
+    \sa {Rich Text Processing}
 */
 
 /*!
@@ -1184,7 +1184,7 @@ bool QTextFormat::operator==(const QTextFormat &rhs) const
     \brief The QTextCharFormat class provides formatting information for
     characters in a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     The character format of text in a document specifies the visual properties
     of the text, as well as information about its role in a hypertext document.
@@ -1797,7 +1797,7 @@ QFont QTextCharFormat::font() const
     \brief The QTextBlockFormat class provides formatting information for
     blocks of text in a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     A document is composed of a list of blocks, represented by QTextBlock
     objects. Each block can contain an item of some kind, such as a
@@ -2088,7 +2088,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     \brief The QTextListFormat class provides formatting information for
     lists in a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     A list is composed of one or more items, represented as text blocks.
     The list's format specifies the appearance of items in the list.
@@ -2198,7 +2198,7 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
     \brief The QTextFrameFormat class provides formatting information for
     frames in a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     A text frame groups together one or more blocks of text, providing a layer
     of structure larger than the paragraph. The format of a frame specifies
@@ -2524,7 +2524,7 @@ qreal QTextFrameFormat::rightMargin() const
     \brief The QTextTableFormat class provides formatting information for
     tables in a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     A table is a group of cells ordered into rows and columns. Each table
     contains at least one row and one column. Each cell contains a block.
@@ -2730,7 +2730,7 @@ QTextTableFormat::QTextTableFormat(const QTextFormat &fmt)
     \brief The QTextImageFormat class provides formatting information for
     images in a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     Inline images are represented by an object replacement character
     (0xFFFC in Unicode) which has an associated QTextImageFormat. The
@@ -2999,7 +2999,7 @@ QTextTableCellFormat::QTextTableCellFormat(const QTextFormat &fmt)
     \brief The QTextTableCellFormat class provides formatting information for
     table cells in a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     The table cell format of a table cell in a document specifies the visual
     properties of the table cell.
