@@ -47,7 +47,7 @@
 
 #include <private/qstatictext_p.h>
 
-// #define DEBUG_SAVE_IMAGE
+#define DEBUG_SAVE_IMAGE
 
 class tst_QStaticText: public QObject
 {
@@ -191,17 +191,16 @@ void tst_QStaticText::rotatedPainter()
     {
         QPainter p(&imageDrawText);
         p.rotate(30.0);
-
-        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(0, 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
     }
 
     QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
     {
+        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+
         QPainter p(&imageDrawStaticText);
         p.rotate(30.0);
-
-        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        p.drawStaticText(11, 12, text);
+        p.drawStaticText(0, 0, text);
     }
 
 #if defined(DEBUG_SAVE_IMAGE)
@@ -210,7 +209,6 @@ void tst_QStaticText::rotatedPainter()
 #endif
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
-
 }
 
 void tst_QStaticText::scaledPainter()
@@ -264,16 +262,16 @@ void tst_QStaticText::rotatedScaledAndTranslatedPainter()
 void tst_QStaticText::transformationChanged()
 {
     QImage imageDrawText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
+
     {
         QPainter p(&imageDrawText);
         p.rotate(33.0);
         p.scale(0.5, 0.7);
 
-        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(0, 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
 
-        p.rotate(77.0);
-        p.scale(0.7, 0.5);
-        p.drawText(100, 200, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.scale(7.0, 5.0);
+        p.drawText(0, 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
     }
 
     QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
@@ -283,12 +281,16 @@ void tst_QStaticText::transformationChanged()
         p.scale(0.5, 0.7);
 
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        p.drawStaticText(11, 12, text);
+        p.drawStaticText(0, 0, text);
 
-        p.rotate(77.0);
-        p.scale(0.7, 0.5);
-        p.drawStaticText(100, 200, text);
+        p.scale(7.0, 5.0);
+        p.drawStaticText(0, 0, text);
     }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("transformationChanged_imageDrawText.png");
+    imageDrawStaticText.save("transformationChanged_imageDrawStaticText.png");
+#endif
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
