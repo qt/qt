@@ -40,10 +40,10 @@ symbian: {
 
     vendorinfo = \
         "; Localised Vendor name" \
-        "%{\"Nokia, Qt Software\"}" \
+        "%{\"Nokia, Qt\"}" \
         " " \
         "; Unique Vendor name" \
-        ":\"Nokia, Qt Software\"" \
+        ":\"Nokia, Qt\"" \
         " "
 
 
