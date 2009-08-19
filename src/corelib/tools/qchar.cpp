@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
 /*! \class QLatin1Char
     \brief The QLatin1Char class provides an 8-bit ASCII/Latin-1 character.
 
-    \ingroup text
+    \ingroup string-processing
 
     This class is only useful to avoid the codec for C strings business
     in the QChar(ch) constructor. You can avoid it by writing
@@ -104,7 +104,7 @@ QT_BEGIN_NAMESPACE
     \class QChar
     \brief The QChar class provides a 16-bit Unicode character.
 
-    \ingroup text
+    \ingroup string-processing
     \reentrant
 
     In Qt, Unicode characters are 16-bit entities without any markup

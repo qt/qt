@@ -44,8 +44,8 @@
     \brief The QMdiSubWindow class provides a subwindow class for
     QMdiArea.
     \since 4.3
-    \ingroup application
-    \mainclass
+    \ingroup mainwindow-classes
+
 
     QMdiSubWindow represents a top-level window in a QMdiArea, and consists
     of a title bar with window decorations, an internal widget, and

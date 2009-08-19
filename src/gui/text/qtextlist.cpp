@@ -63,7 +63,7 @@ public:
 
     \brief The QTextList class provides a decorated list of items in a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     A list contains a sequence of text blocks, each of which is marked with a
     bullet point or other symbol. Multiple levels of lists can be used, and

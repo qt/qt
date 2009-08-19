@@ -107,7 +107,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Text,QFxText)
 QFxText::QFxText(QFxItem *parent)
   : QFxItem(*(new QFxTextPrivate), parent)
 {
-    Q_D(QFxText);
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
@@ -115,7 +114,6 @@ QFxText::QFxText(QFxItem *parent)
 QFxText::QFxText(QFxTextPrivate &dd, QFxItem *parent)
   : QFxItem(dd, parent)
 {
-    Q_D(QFxText);
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
@@ -134,12 +132,6 @@ QFxText::~QFxText()
 
     \note \c font.size sets the font's point size (not pixel size).
 */
-
-/*!
-    \property QFxText::font
-    \brief the font used to display the text.
-*/
-
 QFont QFxText::font() const
 {
     Q_D(const QFxText);
@@ -247,16 +239,6 @@ QColor QFxText::color() const
 
     \image declarative-textstyle.png
 */
-
-/*!
-    \property QFxText::style
-    \brief an additional style of the text to display.
-
-    By default, the text style is Normal.
-
-    \note This property is used to support text styles not natively
-    handled by QFont or QPainter::drawText().
-*/
 QFxText::TextStyle QFxText::style() const
 {
     Q_D(const QFxText);
@@ -301,22 +283,15 @@ QColor QFxText::styleColor() const
 }
 
 /*!
-    \qmlproperty enumeration Text::hAlign
-    \qmlproperty enumeration Text::vAlign
+    \qmlproperty enumeration Text::horizontalAlignment
+    \qmlproperty enumeration Text::verticalAlignment
 
     Sets the horizontal and vertical alignment of the text within the Text items
     width and height.  By default, the text is top-left aligned.
 
-    The valid values for \c hAlign are \c AlignLeft, \c AlignRight and
-    \c AlignHCenter.  The valid values for \c vAlign are \c AlignTop, \c AlignBottom
+    The valid values for \c horizontalAlignment are \c AlignLeft, \c AlignRight and
+    \c AlignHCenter.  The valid values for \c verticalAlignment are \c AlignTop, \c AlignBottom
     and \c AlignVCenter.
-*/
-
-/*!
-    \property QFxText::hAlign
-    \brief the horizontal alignment of the text.
-
-    Valid values are \c AlignLeft, \c AlignRight, and \c AlignHCenter. The default value is \c AlignLeft.
 */
 QFxText::HAlignment QFxText::hAlign() const
 {
@@ -330,12 +305,6 @@ void QFxText::setHAlign(HAlignment align)
     d->hAlign = align;
 }
 
-/*!
-    \property QFxText::vAlign
-    \brief the vertical alignment of the text.
-
-    Valid values are \c AlignTop, \c AlignBottom, and \c AlignVCenter. The default value is \c AlignTop.
-*/
 QFxText::VAlignment QFxText::vAlign() const
 {
     Q_D(const QFxText);
@@ -478,13 +447,6 @@ void QFxText::setElideMode(Qt::TextElideMode mode)
 
     d->imgDirty = true;
     d->updateSize();
-}
-
-
-QString QFxText::activeLink() const
-{
-    Q_D(const QFxText);
-    return d->activeLink;
 }
 
 void QFxText::geometryChanged(const QRectF &newGeometry,
@@ -852,6 +814,12 @@ void QFxText::mousePressEvent(QGraphicsSceneMouseEvent *event)
         QFxItem::mousePressEvent(event);
 
 }
+
+/*!
+    \qmlsignal Text::linkActivated(link)
+
+    This handler is called when the user clicks on a link embedded in the text.
+*/
 
 /*!
   \overload

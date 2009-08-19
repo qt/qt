@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
     elements inside a widget.
 
     \ingroup appearance
-    \ingroup multimedia
+    \ingroup painting
 
     QStylePainter extends QPainter with a set of high-level \c
     draw...() functions implemented on top of QStyle's API. The

@@ -259,7 +259,7 @@ void QTextDocumentFragmentPrivate::insert(QTextCursor &_cursor) const
     \brief The QTextDocumentFragment class represents a piece of formatted text
     from a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
     \ingroup shared
 
     A QTextDocumentFragment is a fragment of rich text, that can be inserted into

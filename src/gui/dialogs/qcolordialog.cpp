@@ -1510,9 +1510,7 @@ static const Qt::WindowFlags DefaultWindowFlags =
     \class QColorDialog
     \brief The QColorDialog class provides a dialog widget for specifying colors.
 
-    \mainclass
-    \ingroup dialogs
-    \ingroup multimedia
+    \ingroup standard-dialogs
 
     The color dialog's function is to allow users to choose colors.
     For example, you might use this in a drawing program to allow the

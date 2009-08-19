@@ -197,7 +197,7 @@ QList<QTextOption::Tab> QTextOption::tabs() const
     \brief The QTextOption class provides a description of general rich text
     properties.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     QTextOption is used to encapsulate common rich text properties in a single
     object. It contains information about text alignment, layout direction,

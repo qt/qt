@@ -65,6 +65,9 @@ public:
     QDirectFBWindowSurface(DFBSurfaceFlipFlags flipFlags, QDirectFBScreen *scr, QWidget *widget);
     ~QDirectFBWindowSurface();
 
+#ifdef QT_DIRECTFB_WM
+    void raise();
+#endif
     bool isValid() const;
 
     void setGeometry(const QRect &rect);
@@ -87,17 +90,18 @@ public:
 
     QImage *buffer(const QWidget *widget);
 private:
-#ifndef QT_NO_DIRECTFB_WM
+#ifdef QT_DIRECTFB_WM
     void createWindow();
     IDirectFBWindow *dfbWindow;
+    QDirectFBWindowSurface *sibling;
 #endif
-    int engineHeight;
 
+#ifdef QT_NO_DIRECTFB_WM
     enum Mode {
         Primary,
-        Offscreen,
-        Window
+        Offscreen
     } mode;
+#endif
 
     QList<QImage*> bufferImages;
     DFBSurfaceFlipFlags flipFlags;

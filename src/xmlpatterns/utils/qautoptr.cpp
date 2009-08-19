@@ -44,7 +44,5 @@
   \brief A smart pointer very similar to std::auto_ptr.
   \internal
   \since 4.4
-  \ingroup misc
-
  */
 

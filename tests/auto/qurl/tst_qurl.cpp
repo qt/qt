@@ -2047,7 +2047,7 @@ void tst_QUrl::compat_decode_data()
     QTest::newRow("NormalStringEncoded") << QByteArray("file%20name") << QString("file name");
     QTest::newRow("JustEncoded") << QByteArray("%20") << QString(" ");
     QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QString("http://qt.nokia.com");
-    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://www%20trolltech%20com") << QString("http://qt.nokia.com");
+    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt%20nokia%20com") << QString("http://qt nokia com");
     QTest::newRow("EmptyString") << QByteArray("") << QString("");
     QTest::newRow("Task27166") << QByteArray("Fran%C3%A7aise") << QString("Française");
 }
@@ -2069,7 +2069,7 @@ void tst_QUrl::compat_encode_data()
     QTest::newRow("NormalStringEncoded") << QString("file name") << QByteArray("file%20name");
     QTest::newRow("JustEncoded") << QString(" ") << QByteArray("%20");
     QTest::newRow("HTTPUrl") << QString("http://qt.nokia.com") << QByteArray("http%3A//qt.nokia.com");
-    QTest::newRow("HTTPUrlEncoded") << QString("http://qt.nokia.com") << QByteArray("http%3A//www%20trolltech%20com");
+    QTest::newRow("HTTPUrlEncoded") << QString("http://qt nokia com") << QByteArray("http%3A//qt%20nokia%20com");
     QTest::newRow("EmptyString") << QString("") << QByteArray("");
     QTest::newRow("Task27166") << QString::fromLatin1("Française") << QByteArray("Fran%C3%A7aise");
 }

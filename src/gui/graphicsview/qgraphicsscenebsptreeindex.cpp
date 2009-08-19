@@ -44,9 +44,8 @@
     \brief The QGraphicsSceneBspTreeIndex class provides an implementation of
     a BSP indexing algorithm for discovering items in QGraphicsScene.
     \since 4.6
-    \ingroup multimedia
     \ingroup graphicsview-api
-    \mainclass
+
     \internal
 
     QGraphicsSceneBspTreeIndex index use a BSP(Binary Space Partitioning)

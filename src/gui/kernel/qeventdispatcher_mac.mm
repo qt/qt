@@ -500,7 +500,7 @@ static bool IsMouseOrKeyEvent( NSEvent* event )
 static inline void qt_mac_waitForMoreEvents()
 {
 #ifndef QT_MAC_USE_COCOA
-    while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 1.0e20, true) == kCFRunLoopRunTimedOut);
+    while (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 1.0e20, true) == kCFRunLoopRunTimedOut) ;
 #else
     // If no event exist in the cocoa event que, wait
     // (and free up cpu time) until at least one event occur.

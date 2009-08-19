@@ -55,6 +55,7 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
 #include <QtDeclarative/qmlexpression.h>
+#include <QtDeclarative/qmlstateoperations.h>
 #include <private/qmlstringconverters_p.h>
 #include <private/qvariantanimation_p.h>
 
@@ -256,7 +257,7 @@ void QmlAbstractAnimation::setRunning(bool r)
             d->startOnCompletion = true;
         emit started();
     } else {
-        if (d->finishPlaying) {
+        if (d->alwaysRunToEnd) {
             if (d->repeat)
                 qtAnimation()->setLoopCount(qtAnimation()->currentLoop()+1);
         } else
@@ -321,8 +322,8 @@ void QmlAbstractAnimation::componentComplete()
 }
 
 /*!
-    \qmlproperty bool Animation::finishPlaying
-    This property holds whether the animation should finish playing when it is stopped.
+    \qmlproperty bool Animation::alwaysRunToEnd
+    This property holds whether the animation should run to completion when it is stopped.
 
     If this true the animation will complete its current iteration when it
     is stopped - either by setting the \c running property to false, or by
@@ -332,22 +333,22 @@ void QmlAbstractAnimation::componentComplete()
     This behaviour is most useful when the \c repeat property is set, as the
     animation will finish playing normally but not restart.
 
-    By default, the finishPlaying property is not set.
+    By default, the alwaysRunToEnd property is not set.
 */
-bool QmlAbstractAnimation::finishPlaying() const
+bool QmlAbstractAnimation::alwaysRunToEnd() const
 {
     Q_D(const QmlAbstractAnimation);
-    return d->finishPlaying;
+    return d->alwaysRunToEnd;
 }
 
-void QmlAbstractAnimation::setFinishPlaying(bool f)
+void QmlAbstractAnimation::setAlwaysRunToEnd(bool f)
 {
     Q_D(QmlAbstractAnimation);
-    if (d->finishPlaying == f)
+    if (d->alwaysRunToEnd == f)
         return;
 
-    d->finishPlaying = f;
-    emit finishPlayingChanged(f);
+    d->alwaysRunToEnd = f;
+    emit alwaysRunToEndChanged(f);
 }
 
 /*!
@@ -421,7 +422,15 @@ void QmlAbstractAnimation::setGroup(QmlAnimationGroup *g)
 }
 
 /*!
-    \qmlproperty Object Animation::target
+    \qmlproperty Object SetPropertyAction::target
+    This property holds an explicit target object to animate.
+
+    The exact effect of the \c target property depends on how the animation
+    is being used.  Refer to the \l animation documentation for details.
+*/
+
+/*!
+    \qmlproperty Object PropertyAnimation::target
     This property holds an explicit target object to animate.
 
     The exact effect of the \c target property depends on how the animation
@@ -450,7 +459,15 @@ void QmlAbstractAnimation::setTarget(QObject *o)
 }
 
 /*!
-    \qmlproperty string Animation::property
+    \qmlproperty string SetPropertyAction::property
+    This property holds an explicit property to animated.
+
+    The exact effect of the \c property property depends on how the animation
+    is being used.  Refer to the \l animation documentation for details.
+*/
+
+/*!
+    \qmlproperty string PropertyAnimation::property
     This property holds an explicit property to animated.
 
     The exact effect of the \c property property depends on how the animation
@@ -530,7 +547,7 @@ void QmlAbstractAnimation::resume()
     \endcode
     was stopped at time 250ms, the \c x property will have a value of 50.
 
-    However, if the \c finishPlaying property is set, the animation will
+    However, if the \c alwaysRunToEnd property is set, the animation will
     continue running until it completes and then stop.  The \c running property
     will still become false immediately.
 */
@@ -603,7 +620,7 @@ void QmlAbstractAnimation::timelineComplete()
 {
     Q_D(QmlAbstractAnimation);
     setRunning(false);
-    if (d->finishPlaying && d->repeat) {
+    if (d->alwaysRunToEnd && d->repeat) {
         qtAnimation()->setLoopCount(-1);
     }
 }
@@ -628,15 +645,6 @@ void QmlAbstractAnimation::timelineComplete()
 /*!
     \internal
     \class QmlPauseAnimation
-    \ingroup group_animation
-    \ingroup group_states
-    \brief The QmlPauseAnimation class provides a pause for an animation.
-
-    When used in a QmlSequentialAnimation, QmlPauseAnimation is a step when
-    nothing happens, for a specified duration.
-
-    A QmlPauseAnimation object can be instantiated in Qml using the tag
-    \l{xmlPauseAnimation} {&lt;PauseAnimation&gt;}.
 */
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PauseAnimation,QmlPauseAnimation)
@@ -661,12 +669,6 @@ void QmlPauseAnimationPrivate::init()
 /*!
     \qmlproperty int PauseAnimation::duration
     This property holds the duration of the pause in milliseconds
-
-    The default value is 250.
-*/
-/*!
-    \property QmlPauseAnimation::duration
-    \brief the duration of the pause in milliseconds
 
     The default value is 250.
 */
@@ -712,12 +714,6 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
 /*!
     \internal
     \class QmlColorAnimation
-    \ingroup group_animation
-    \ingroup group_states
-    \brief The QmlColorAnimation class allows you to animate color changes.
-
-    A QmlColorAnimation object can be instantiated in Qml using the tag
-    \l{xmlColorAnimation} {&lt;ColorAnimation&gt;}.
 */
 
 QmlColorAnimation::QmlColorAnimation(QObject *parent)
@@ -737,10 +733,6 @@ QmlColorAnimation::~QmlColorAnimation()
     \qmlproperty color ColorAnimation::from
     This property holds the starting color.
 */
-/*!
-    \property QmlColorAnimation::from
-    \brief the starting color.
-*/
 QColor QmlColorAnimation::from() const
 {
     Q_D(const QmlPropertyAnimation);
@@ -755,10 +747,6 @@ void QmlColorAnimation::setFrom(const QColor &f)
 /*!
     \qmlproperty color ColorAnimation::from
     This property holds the ending color.
-*/
-/*!
-    \property QmlColorAnimation::to
-    \brief the ending color.
 */
 QColor QmlColorAnimation::to() const
 {
@@ -776,15 +764,12 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ColorAnimation,QmlColorAnimation
 /*!
     \qmlclass RunScriptAction QmlRunScriptAction
     \inherits Animation
-    \brief The RunScripAction allows scripts to be run during transitions.
+    \brief The RunScripAction allows scripts to be run during an animation.
 
 */
 /*!
     \internal
     \class QmlRunScriptAction
-    \brief The QmlRunScriptAction class allows scripts to be run during transitions
-
-    \sa xmlRunScriptAction
 */
 QmlRunScriptAction::QmlRunScriptAction(QObject *parent)
     :QmlAbstractAnimation(*(new QmlRunScriptActionPrivate), parent)
@@ -805,7 +790,7 @@ void QmlRunScriptActionPrivate::init()
 }
 
 /*!
-    \qmlproperty QString RunScript::script
+    \qmlproperty QString RunScriptAction::script
     This property holds the script to run.
 */
 QString QmlRunScriptAction::script() const
@@ -824,39 +809,55 @@ void QmlRunScriptAction::setScript(const QString &script)
 }
 
 /*!
-    \qmlproperty QString RunScript::script
-    This property holds the file containing the script to run.
+    \qmlproperty QString RunScriptAction::runScriptName
+    This property holds the the name of the RunScript to run.
+
+    This property is only valid when RunScriptAction is used as part of a transition.
+    If both script and runScriptName are set, runScriptName will be used.
 */
-QString QmlRunScriptAction::file() const
+QString QmlRunScriptAction::runScriptName() const
 {
     Q_D(const QmlRunScriptAction);
-    return d->file;
+    return d->script;
 }
 
-void QmlRunScriptAction::setFile(const QString &file)
+void QmlRunScriptAction::setRunScriptName(const QString &name)
 {
     Q_D(QmlRunScriptAction);
-    if (file == d->file)
-        return;
-    d->file = file;
-    emit fileChanged(file);
+    d->name = name;
 }
 
 void QmlRunScriptActionPrivate::execute()
 {
     Q_Q(QmlRunScriptAction);
-    QString scriptStr = script;
-    if (!file.isEmpty()){
-        QFile scriptFile(file);
-        if (scriptFile.open(QIODevice::ReadOnly | QIODevice::Text)){
-            scriptStr = QString::fromUtf8(scriptFile.readAll());
-        }
-    }
+    QString scriptStr = runScriptScript.isEmpty() ? script : runScriptScript;
 
     if (!scriptStr.isEmpty()) {
         QmlExpression expr(qmlContext(q), scriptStr, q);
         expr.setTrackChange(false);
         expr.value();
+    }
+}
+
+void QmlRunScriptAction::transition(QmlStateActions &actions,
+                                    QmlMetaProperties &modified,
+                                    TransitionDirection direction)
+{
+    Q_D(QmlRunScriptAction);
+    Q_UNUSED(modified);
+    Q_UNUSED(direction);
+
+    d->runScriptScript.clear();
+    for (int ii = 0; ii < actions.count(); ++ii) {
+        Action &action = actions[ii];
+
+        if (action.event && action.event->typeName() == QLatin1String("RunScript")
+            && static_cast<QmlRunScript*>(action.event)->name() == d->name) {
+            //### how should we handle reverse direction?
+            d->runScriptScript = static_cast<QmlRunScript*>(action.event)->script();
+            action.actionDone = true;
+            break;  //assumes names are unique
+        }
     }
 }
 
@@ -871,7 +872,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,RunScriptAction,QmlRunScriptActi
 /*!
     \qmlclass SetPropertyAction QmlSetPropertyAction
     \inherits Animation
-    \brief The SetPropertyAction allows property changes during transitions.
+    \brief The SetPropertyAction allows immediate property changes during animation.
 
     Explicitly set \c theimage.smooth=true during a transition:
     \code
@@ -889,10 +890,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,RunScriptAction,QmlRunScriptActi
 /*!
     \internal
     \class QmlSetPropertyAction
-    \brief The QmlSetPropertyAction class allows property changes during transitions.
-
-    A QmlSetPropertyAction object can be instantiated in Qml using the tag
-    \l{xmlSetPropertyAction} {&lt;SetPropertyAction&gt;}.
 */
 QmlSetPropertyAction::QmlSetPropertyAction(QObject *parent)
 : QmlAbstractAnimation(*(new QmlSetPropertyActionPrivate), parent)
@@ -932,20 +929,20 @@ void QmlSetPropertyAction::setProperties(const QString &p)
 }
 
 /*!
-    \qmlproperty list<Item> SetPropertyAction::filter
+    \qmlproperty list<Item> SetPropertyAction::targets
     This property holds the items selected to be affected by this animation (all if not set).
     \sa exclude
 */
-QList<QObject *> *QmlSetPropertyAction::filter()
+QList<QObject *> *QmlSetPropertyAction::targets()
 {
     Q_D(QmlSetPropertyAction);
-    return &d->filter;
+    return &d->targets;
 }
 
 /*!
     \qmlproperty list<Item> SetPropertyAction::exclude
     This property holds the items not to be affected by this animation.
-    \sa filter
+    \sa targets
 */
 QList<QObject *> *QmlSetPropertyAction::exclude()
 {
@@ -1040,7 +1037,7 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
         QString sPropertyName = action.specifiedProperty;
         bool same = (obj == sObj);
 
-        if ((d->filter.isEmpty() || d->filter.contains(obj) || (!same && d->filter.contains(sObj))) &&
+        if ((d->targets.isEmpty() || d->targets.contains(obj) || (!same && d->targets.contains(sObj))) &&
            (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
            (props.contains(propertyName) || (!same && props.contains(sPropertyName))) &&
            (!target() || target() == obj || (!same && target() == sObj))) {
@@ -1103,21 +1100,36 @@ void QmlParentChangeActionPrivate::init()
     QFx_setParent_noEvent(cpa, q);
 }
 
-void QmlParentChangeActionPrivate::doAction()
+QFxItem *QmlParentChangeAction::object() const
 {
-    //### property.write(value);
+    Q_D(const QmlParentChangeAction);
+    return d->pcTarget;
 }
 
-void QmlParentChangeAction::prepare(QmlMetaProperty &p)
+void QmlParentChangeAction::setObject(QFxItem *target)
 {
     Q_D(QmlParentChangeAction);
+    d->pcTarget = target;
+}
 
-    if (d->userProperty.isNull)
-        d->property = p;
-    else
-        d->property = d->userProperty;
+QFxItem *QmlParentChangeAction::parent() const
+{
+    Q_D(const QmlParentChangeAction);
+    return d->pcParent;
+}
 
-    //###
+void QmlParentChangeAction::setParent(QFxItem *parent)
+{
+    Q_D(QmlParentChangeAction);
+    d->pcParent = parent;
+}
+
+void QmlParentChangeActionPrivate::doAction()
+{
+    QmlParentChange pc;
+    pc.setObject(pcTarget);
+    pc.setParent(pcParent);
+    pc.execute();
 }
 
 QAbstractAnimation *QmlParentChangeAction::qtAnimation()
@@ -1136,8 +1148,12 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
 
     struct QmlParentChangeActionData : public QAbstractAnimationAction
     {
+        QmlParentChangeActionData(): pc(0) {}
+        ~QmlParentChangeActionData() { delete pc; }
+
         QmlStateActions actions;
         bool reverse;
+        QmlParentChange *pc;
         virtual void doAction()
         {
             for (int ii = 0; ii < actions.count(); ++ii) {
@@ -1155,14 +1171,22 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
     for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
-        //### should we still use target to filter?
-        //### still need type-specific matching
-        if (action.event
-            && action.event->typeName() == QLatin1String("ParentChange")) {
+        if (action.event && action.event->typeName() == QLatin1String("ParentChange")
+            && (!d->target || static_cast<QmlParentChange*>(action.event)->object() == d->target)) {
             Action myAction = action;
             data->reverse = action.reverseEvent;
-            data->actions << myAction;
-            action.actionDone = true;
+            if (d->pcParent) {
+                QmlParentChange *pc = new QmlParentChange;
+                pc->setObject(d->pcTarget);
+                pc->setParent(d->pcParent);
+                myAction.event = pc;
+                data->pc = pc;
+                data->actions << myAction;
+                break;  //only match one
+            } else {
+                action.actionDone = true;
+                data->actions << myAction;
+            }
         }
     }
 
@@ -1190,12 +1214,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParentChangeAction,QmlParentChan
 /*!
     \internal
     \class QmlNumberAnimation
-    \ingroup group_animation
-    \ingroup group_states
-    \brief The QmlNumberAnimation class allows you to animate changes in properties of type qreal.
-
-    A QmlNumberAnimation object can be instantiated in Qml using the tag
-    \l{xmlNumberAnimation} {&lt;NumberAnimation&gt;}.
 */
 
 QmlNumberAnimation::QmlNumberAnimation(QObject *parent)
@@ -1215,10 +1233,6 @@ QmlNumberAnimation::~QmlNumberAnimation()
     This property holds the starting value.
     If not set, then the value defined in the start state of the transition.
 */
-/*!
-    \property QmlNumberAnimation::from
-    \brief the starting value.
-*/
 qreal QmlNumberAnimation::from() const
 {
     Q_D(const QmlPropertyAnimation);
@@ -1234,10 +1248,6 @@ void QmlNumberAnimation::setFrom(qreal f)
     \qmlproperty real NumberAnimation::to
     This property holds the ending value.
     If not set, then the value defined in the end state of the transition.
-*/
-/*!
-    \property QmlNumberAnimation::to
-    \brief the ending value.
 */
 qreal QmlNumberAnimation::to() const
 {
@@ -1364,16 +1374,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,SequentialAnimation,QmlSequentia
 /*!
     \internal
     \class QmlParallelAnimation
-    \ingroup group_animation
-    \ingroup group_states
-    \brief The QmlParallelAnimation class allows you to run animations in parallel.
-
-    Animations controlled by QmlParallelAnimation will be run at the same time.
-
-    \sa QmlSequentialAnimation
-
-    A QmlParallelAnimation object can be instantiated in Qml using the tag
-    \l{xmlParallelAnimation} {&lt;ParallelAnimation&gt;}.
 */
 
 QmlParallelAnimation::QmlParallelAnimation(QObject *parent) :
@@ -1511,12 +1511,6 @@ void QmlPropertyAnimationPrivate::init()
 
     The default value is 250.
 */
-/*!
-    \property QmlPropertyAnimation::duration
-    \brief the duration of the transition, in milliseconds.
-
-    The default value is 250.
-*/
 int QmlPropertyAnimation::duration() const
 {
     Q_D(const QmlPropertyAnimation);
@@ -1542,10 +1536,6 @@ void QmlPropertyAnimation::setDuration(int duration)
     This property holds the starting value.
     If not set, then the value defined in the start state of the transition.
 */
-/*!
-    \property QmlPropertyAnimation::from
-    \brief the starting value.
-*/
 QVariant QmlPropertyAnimation::from() const
 {
     Q_D(const QmlPropertyAnimation);
@@ -1566,10 +1556,6 @@ void QmlPropertyAnimation::setFrom(const QVariant &f)
     \qmlproperty real PropertyAnimation::to
     This property holds the ending value.
     If not set, then the value defined in the end state of the transition.
-*/
-/*!
-    \property QmlPropertyAnimation::to
-    \brief the ending value.
 */
 QVariant QmlPropertyAnimation::to() const
 {
@@ -1637,13 +1623,6 @@ void QmlPropertyAnimation::setTo(const QVariant &t)
     \i \e easeOutInBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out/in: deceleration until halfway, then acceleration.
     \endlist
 */
-
-/*!
-    \property QmlPropertyAnimation::easing
-    \brief the easing curve to use.
-
-    \sa QEasingCurve
-*/
 QString QmlPropertyAnimation::easing() const
 {
     Q_D(const QmlPropertyAnimation);
@@ -1668,13 +1647,6 @@ void QmlPropertyAnimation::setEasing(const QString &e)
     This is a comma-separated list of properties that should use
     this animation when they change.
 */
-/*!
-    \property QmlPropertyAnimation::properties
-    \brief the properties this animation should be applied to
-
-    properties holds a copy separated list of properties that should use
-    this animation when they change.
-*/
 QString QmlPropertyAnimation::properties() const
 {
     Q_D(const QmlPropertyAnimation);
@@ -1692,20 +1664,20 @@ void QmlPropertyAnimation::setProperties(const QString &prop)
 }
 
 /*!
-    \qmlproperty list<Item> PropertyAnimation::filter
+    \qmlproperty list<Item> PropertyAnimation::targets
     This property holds the items selected to be affected by this animation (all if not set).
     \sa exclude
 */
-QList<QObject *> *QmlPropertyAnimation::filter()
+QList<QObject *> *QmlPropertyAnimation::targets()
 {
     Q_D(QmlPropertyAnimation);
-    return &d->filter;
+    return &d->targets;
 }
 
 /*!
     \qmlproperty list<Item> PropertyAnimation::exclude
     This property holds the items not to be affected by this animation.
-    \sa filter
+    \sa targets
 */
 QList<QObject *> *QmlPropertyAnimation::exclude()
 {
@@ -1836,7 +1808,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
         QString sPropertyName = action.specifiedProperty;
         bool same = (obj == sObj);
 
-        if ((d->filter.isEmpty() || d->filter.contains(obj) || (!same && d->filter.contains(sObj))) &&
+        if ((d->targets.isEmpty() || d->targets.contains(obj) || (!same && d->targets.contains(sObj))) &&
            (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
            (props.contains(propertyName) || (!same && props.contains(sPropertyName))
                || (useType && action.property.propertyType() == d->interpolatorType)) &&

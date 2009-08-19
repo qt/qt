@@ -183,13 +183,13 @@ class QmlAbstractAnimationPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlAbstractAnimation)
 public:
     QmlAbstractAnimationPrivate()
-    : running(false), paused(false), finishPlaying(false), repeat(false),
+    : running(false), paused(false), alwaysRunToEnd(false), repeat(false),
       connectedTimeLine(false), componentComplete(true), startOnCompletion(false),
       target(0), group(0) {}
 
     bool running;
     bool paused;
-    bool finishPlaying;
+    bool alwaysRunToEnd;
     bool repeat;
     bool connectedTimeLine;
 
@@ -230,7 +230,8 @@ public:
     void init();
 
     QString script;
-    QString file;
+    QString name;
+    QString runScriptScript;
 
     void execute();
 
@@ -249,7 +250,7 @@ public:
     void init();
 
     QString properties;
-    QList<QObject *> filter;
+    QList<QObject *> targets;
     QList<QObject *> exclude;
 
     QmlNullableValue<QVariant> value;
@@ -266,9 +267,12 @@ class QmlParentChangeActionPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlParentChangeAction)
 public:
     QmlParentChangeActionPrivate()
-    : QmlAbstractAnimationPrivate() {}
+    : QmlAbstractAnimationPrivate(), pcTarget(0), pcParent(0) {}
 
     void init();
+
+    QFxItem *pcTarget;
+    QFxItem *pcParent;
 
     void doAction();
     QActionAnimation *cpa;
@@ -330,7 +334,7 @@ public:
     QString easing;
 
     QString properties;
-    QList<QObject *> filter;
+    QList<QObject *> targets;
     QList<QObject *> exclude;
 
     bool fromSourced;

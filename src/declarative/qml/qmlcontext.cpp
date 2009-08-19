@@ -105,6 +105,9 @@ void QmlContextPrivate::init()
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
     QScriptValue scopeObj =
         scriptEngine->newObject(QmlEnginePrivate::get(engine)->contextClass, scriptEngine->newVariant(QVariant::fromValue((QObject*)q)));
+    //### no longer need to push global object once we switch to JSC (test with objects added to globalObject)
+    //if (parent)
+    //    scopeChain = parent->d_func()->scopeChain;
     if (!parent)
         scopeChain.append(scriptEngine->globalObject());
     else
@@ -450,5 +453,23 @@ void QmlContext::setBaseUrl(const QUrl &baseUrl)
 {
     d_func()->url = baseUrl;
 }
+
+/*!
+    Returns the base url of the component, or the containing component
+    if none is set.
+*/
+QUrl QmlContext::baseUrl() const
+{
+    Q_D(const QmlContext);
+    const QmlContext* p = this;
+    while (p && p->d_func()->url.isEmpty()) {
+        p = p->parentContext();
+    }
+    if (p)
+        return p->d_func()->url;
+    else
+        return QUrl();
+}
+
 
 QT_END_NAMESPACE

@@ -761,17 +761,46 @@ void tst_QSharedPointer::differentPointers()
     {
         DiffPtrDerivedData *aData = new DiffPtrDerivedData;
         Data *aBase = aData;
-        Q_ASSERT(aData == aBase);
-        Q_ASSERT(*reinterpret_cast<quintptr *>(&aData) != *reinterpret_cast<quintptr *>(&aBase));
+
+        // ensure that this compiler isn't broken
+        if (*reinterpret_cast<quintptr *>(&aData) == *reinterpret_cast<quintptr *>(&aBase))
+            qFatal("Something went very wrong -- we couldn't create two different pointers to the same object");
+        if (aData != aBase)
+            QSKIP("Broken compiler", SkipAll);
+        if (aBase != aData)
+            QSKIP("Broken compiler", SkipAll);
 
         QSharedPointer<DiffPtrDerivedData> ptr = QSharedPointer<DiffPtrDerivedData>(aData);
         QSharedPointer<Data> baseptr = qSharedPointerCast<Data>(ptr);
-        QVERIFY(ptr == baseptr);
+        qDebug("naked: orig: %p; base: %p (%s) -- QSharedPointer: orig: %p; base %p (%s) -- result: %s",
+               aData, aBase, aData == aBase ? "equal" : "not equal",
+               ptr.data(), baseptr.data(), ptr.data() == baseptr.data() ? "equal" : "not equal",
+               baseptr.data() == aData ? "equal" : "not equal");
+
         QVERIFY(ptr.data() == baseptr.data());
+        QVERIFY(baseptr.data() == ptr.data());
+        QVERIFY(ptr == baseptr);
+        QVERIFY(baseptr == ptr);
+
+        QVERIFY(ptr.data() == aBase);
+        QVERIFY(aBase == ptr.data());
+        QVERIFY(ptr.data() == aData);
+        QVERIFY(aData == ptr.data());
+
         QVERIFY(ptr == aBase);
+        QVERIFY(aBase == ptr);
         QVERIFY(ptr == aData);
-        QVERIFY(baseptr == aData);
+        QVERIFY(aData == ptr);
+
+        QVERIFY(baseptr.data() == aBase);
+        QVERIFY(aBase == baseptr.data());
         QVERIFY(baseptr == aBase);
+        QVERIFY(aBase == baseptr);
+
+        QVERIFY(baseptr.data() == aData);
+        QVERIFY(aData == baseptr.data());
+        QVERIFY(baseptr == aData);
+        QVERIFY(aData == baseptr);
     }
     check();
 

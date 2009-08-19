@@ -96,7 +96,7 @@ Item {
                     anchors.rightMargin: 4
                     anchors.top: Header.top
                     anchors.topMargin: 4
-                    hAlign: "AlignHCenter"
+                    horizontalAlignment: "AlignHCenter"
                 }
                 Item {
                     width: parent.width

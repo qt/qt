@@ -66,10 +66,10 @@ class QmlAbstractAnimation : public QmlPropertyValueSource, public QmlParserStat
     Q_INTERFACES(QmlParserStatus)
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
-    Q_PROPERTY(bool finishPlaying READ finishPlaying WRITE setFinishPlaying NOTIFY finishPlayingChanged())
+    Q_PROPERTY(bool alwaysRunToEnd READ alwaysRunToEnd WRITE setAlwaysRunToEnd NOTIFY alwaysRunToEndChanged())
     Q_PROPERTY(bool repeat READ repeat WRITE setRepeat NOTIFY repeatChanged)
-    Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
-    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
+    //Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
+    //Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
     Q_CLASSINFO("DefaultMethod", "start()")
     Q_INTERFACES(QmlParserStatus)
 
@@ -81,8 +81,8 @@ public:
     void setRunning(bool);
     bool isPaused() const;
     void setPaused(bool);
-    bool finishPlaying() const;
-    void setFinishPlaying(bool);
+    bool alwaysRunToEnd() const;
+    void setAlwaysRunToEnd(bool);
     bool repeat() const;
     void setRepeat(bool);
 
@@ -92,6 +92,7 @@ public:
     QmlAnimationGroup *group() const;
     void setGroup(QmlAnimationGroup *);
 
+    //### these belong at a lower level in the hierarchy
     QObject *target() const;
     void setTarget(QObject *);
     QString property() const;
@@ -109,7 +110,7 @@ Q_SIGNALS:
     void pausedChanged(bool);
     void repeatChanged(bool);
     void targetChanged(QObject *, const QString &);
-    void finishPlayingChanged(bool);
+    void alwaysRunToEndChanged(bool);
 
 public Q_SLOTS:
     void restart();
@@ -163,7 +164,7 @@ class QmlRunScriptAction : public QmlAbstractAnimation
     Q_DECLARE_PRIVATE(QmlRunScriptAction)
 
     Q_PROPERTY(QString script READ script WRITE setScript NOTIFY scriptChanged)
-    Q_PROPERTY(QString file READ file WRITE setFile NOTIFY fileChanged)
+    Q_PROPERTY(QString runScriptName READ runScriptName WRITE setRunScriptName)
 
 public:
     QmlRunScriptAction(QObject *parent=0);
@@ -172,14 +173,16 @@ public:
     QString script() const;
     void setScript(const QString &);
 
-    QString file() const;
-    void setFile(const QString &);
+    QString runScriptName() const;
+    void setRunScriptName(const QString &);
 
 Q_SIGNALS:
-    void fileChanged(const QString &);
     void scriptChanged(const QString &);
 
 protected:
+    virtual void transition(QmlStateActions &actions,
+                            QmlMetaProperties &modified,
+                            TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
 };
 
@@ -189,8 +192,10 @@ class QmlSetPropertyAction : public QmlAbstractAnimation
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlSetPropertyAction)
 
+    Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
     Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
-    Q_PROPERTY(QList<QObject *>* filter READ filter)
+    Q_PROPERTY(QList<QObject *>* targets READ targets)
     Q_PROPERTY(QList<QObject *>* exclude READ exclude)
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
 
@@ -201,7 +206,7 @@ public:
     QString properties() const;
     void setProperties(const QString &);
 
-    QList<QObject *> *filter();
+    QList<QObject *> *targets();
     QList<QObject *> *exclude();
 
     QVariant value() const;
@@ -219,24 +224,31 @@ protected:
     virtual void prepare(QmlMetaProperty &);
 };
 
+class QFxItem;
 class QmlParentChangeActionPrivate;
 class QmlParentChangeAction : public QmlAbstractAnimation
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlParentChangeAction)
 
-    //XXX should have parent property as well for when it isn't part of a transition
+    Q_PROPERTY(QFxItem *target READ object WRITE setObject)
+    Q_PROPERTY(QFxItem *parent READ parent WRITE setParent)
 
 public:
     QmlParentChangeAction(QObject *parent=0);
     virtual ~QmlParentChangeAction();
+
+    QFxItem *object() const;
+    void setObject(QFxItem *);
+
+    QFxItem *parent() const;
+    void setParent(QFxItem *);
 
 protected:
     virtual void transition(QmlStateActions &actions,
                             QmlMetaProperties &modified,
                             TransitionDirection direction);
     virtual QAbstractAnimation *qtAnimation();
-    virtual void prepare(QmlMetaProperty &);
 };
 
 class QmlPropertyAnimationPrivate;
@@ -249,8 +261,10 @@ class QmlPropertyAnimation : public QmlAbstractAnimation
     Q_PROPERTY(QVariant from READ from WRITE setFrom NOTIFY fromChanged)
     Q_PROPERTY(QVariant to READ to WRITE setTo NOTIFY toChanged)
     Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged)
+    Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
     Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
-    Q_PROPERTY(QList<QObject *>* filter READ filter)
+    Q_PROPERTY(QList<QObject *>* targets READ targets)
     Q_PROPERTY(QList<QObject *>* exclude READ exclude)
 
 public:
@@ -272,7 +286,7 @@ public:
     QString properties() const;
     void setProperties(const QString &);
 
-    QList<QObject *> *filter();
+    QList<QObject *> *targets();
     QList<QObject *> *exclude();
 
 protected:

@@ -75,7 +75,6 @@ static QAssistantClientPrivate *data( const QAssistantClient *client, bool creat
     \brief The QAssistantClient class provides a means of using Qt
     Assistant as an application's help tool.
 
-    \inmodule QtAssistant
     \ingroup helpsystem
 
     \bold{Note:} \e{This class is obsolete and only required when using

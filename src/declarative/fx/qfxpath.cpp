@@ -114,12 +114,6 @@ QFxPath::~QFxPath()
     \qmlproperty real Path::startY
     This property holds the starting position of the path.
 */
-
-/*!
-    \property QFxPath::startX
-    \brief the starting x position of the path.
-*/
-
 qreal QFxPath::startX() const
 {
     Q_D(const QFxPath);
@@ -131,12 +125,6 @@ void QFxPath::setStartX(qreal x)
     Q_D(QFxPath);
     d->startX = x;
 }
-
-
-/*!
-    \property QFxPath::startY
-    \brief the starting y position of the path.
-*/
 
 qreal QFxPath::startY() const
 {
@@ -292,7 +280,7 @@ void QFxPath::componentComplete()
     QSet<QString> attrs;
     // First gather up all the attributes
     foreach (QFxPathElement *pathElement, d->_pathElements) {
-        if (QFxPathAttribute *attribute = 
+        if (QFxPathAttribute *attribute =
             qobject_cast<QFxPathAttribute *>(pathElement))
             attrs.insert(attribute->name());
     }
@@ -304,7 +292,7 @@ void QFxPath::componentComplete()
         connect(pathElement, SIGNAL(changed()), this, SLOT(processPath()));
 }
 
-QPainterPath QFxPath::path() const 
+QPainterPath QFxPath::path() const
 {
     Q_D(const QFxPath);
     return d->_path;
@@ -431,9 +419,9 @@ qreal QFxPath::attributeAt(const QString &name, qreal percent) const
         if (point.percent == percent) {
             return point.values.value(name);
         } else if (point.percent > percent) {
-            qreal lastValue = 
+            qreal lastValue =
                 ii?(d->_attributePoints.at(ii - 1).values.value(name)):0;
-            qreal lastPercent = 
+            qreal lastPercent =
                 ii?(d->_attributePoints.at(ii - 1).percent):0;
             qreal curValue = point.values.value(name);
             qreal curPercent = point.percent;
@@ -723,11 +711,6 @@ void QFxPathQuad::addToPath(QPainterPath &path)
 
     Defines the position of the first control point.
 */
-
-/*!
-    \property QFxPathCubic::control1X
-    \brief the x position of the first control point.
-*/
 qreal QFxPathCubic::control1X() const
 {
     return _control1X;
@@ -741,10 +724,6 @@ void QFxPathCubic::setControl1X(qreal x)
     }
 }
 
-/*!
-    \property QFxPathCubic::control1Y
-    \brief the y position of the first control point.
-*/
 qreal QFxPathCubic::control1Y() const
 {
     return _control1Y;
@@ -764,11 +743,6 @@ void QFxPathCubic::setControl1Y(qreal y)
 
     Defines the position of the second control point.
 */
-
-/*!
-    \property QFxPathCubic::control2X
-    \brief the x position of the second control point.
-*/
 qreal QFxPathCubic::control2X() const
 {
     return _control2X;
@@ -782,10 +756,6 @@ void QFxPathCubic::setControl2X(qreal x)
     }
 }
 
-/*!
-    \property QFxPathCubic::control2Y
-    \brief the y position of the second control point.
-*/
 qreal QFxPathCubic::control2Y() const
 {
     return _control2Y;

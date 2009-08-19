@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QRect
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QRect class defines a rectangle in the plane using
     integer precision.
@@ -1324,7 +1324,7 @@ QDebug operator<<(QDebug dbg, const QRect &r) {
 
 /*!
     \class QRectF
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QRectF class defines a rectangle in the plane using floating
     point precision.

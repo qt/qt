@@ -1851,10 +1851,20 @@ void qt_init(QApplicationPrivate *priv, int,
             QX11InfoData *screen = X11->screens + s;
             screen->ref = 1; // ensures it doesn't get deleted
             screen->screen = s;
-            screen->dpiX = (DisplayWidth(X11->display, s) * 254 + DisplayWidthMM(X11->display, s)*5)
-                           / (DisplayWidthMM(X11->display, s)*10);
-            screen->dpiY = (DisplayHeight(X11->display, s) * 254 + DisplayHeightMM(X11->display, s)*5)
-                           / (DisplayHeightMM(X11->display, s)*10);
+
+            int widthMM = DisplayWidthMM(X11->display, s);
+            if (widthMM != 0) {
+                screen->dpiX = (DisplayWidth(X11->display, s) * 254 + widthMM * 5) / (widthMM * 10);
+            } else {
+                screen->dpiX = 72;
+            }
+
+            int heightMM = DisplayHeightMM(X11->display, s);
+            if (heightMM != 0) {
+                screen->dpiY = (DisplayHeight(X11->display, s) * 254 + heightMM * 5) / (heightMM * 10);
+            } else {
+                screen->dpiY = 72;
+            }
 
             X11->argbVisuals[s] = 0;
             X11->argbColormaps[s] = 0;

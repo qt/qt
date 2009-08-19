@@ -89,7 +89,7 @@ inline Win32MakefileGenerator::~Win32MakefileGenerator()
 { }
 
 inline bool Win32MakefileGenerator::findLibraries()
-{ return findLibraries("QMAKE_LIBS"); }
+{ return findLibraries("QMAKE_LIBS") && findLibraries("QMAKE_LIBS_PRIVATE"); }
 
 QT_END_NAMESPACE
 

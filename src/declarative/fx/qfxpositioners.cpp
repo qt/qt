@@ -56,6 +56,19 @@ QT_BEGIN_NAMESPACE
     \internal
     \class QFxBasePositioner
     \ingroup group_layouts
+    \brief The QFxBasePositioner class provides a base for QFx layouts.
+
+    To create a QFx Positioner, simply subclass QFxBasePositioner and implement
+    doLayout(), which is automatically called when the layout might need
+    updating.
+
+    It is strongly recommended that in your implementation of doLayout()
+    that you use the move, remove and add transitions when those conditions
+    arise. You can use the applyAdd, applyMove and applyRemove functions
+    to do this easily.
+
+    Note also that the subclass is responsible for adding the
+    spacing in between items.
 */
 QFxBasePositioner::QFxBasePositioner(AutoUpdateType at, QFxItem *parent)
     : QFxItem(*(new QFxBasePositionerPrivate), parent)
@@ -83,22 +96,7 @@ void QFxBasePositioner::setSpacing(int s)
     if (s==d->_spacing)
         return;
     d->_spacing = s;
-    preLayout();
-}
-
-int QFxBasePositioner::margin() const
-{
-    Q_D(const QFxBasePositioner);
-    return d->_margin;
-}
-
-void QFxBasePositioner::setMargin(int s)
-{
-    Q_D(QFxBasePositioner);
-    if (s==d->_margin)
-        return;
-    d->_margin = s;
-    preLayout();
+    prePositioning();
 }
 
 QmlTransition *QFxBasePositioner::move() const
@@ -137,31 +135,13 @@ void QFxBasePositioner::setRemove(QmlTransition *remove)
     d->removeTransition = remove;
 }
 
-QFxItem *QFxBasePositioner::layoutItem() const
-{
-    Q_D(const QFxBasePositioner);
-    return d->_layoutItem;
-}
-
-/*!
-    \internal
-*/
-void QFxBasePositioner::setLayoutItem(QFxItem *li)
-{
-    Q_D(QFxBasePositioner);
-    if (li == d->_layoutItem)
-        return;
-    d->_layoutItem = li;
-    emit layoutItemChanged();
-}
-
 void QFxBasePositioner::componentComplete()
 {
     QFxItem::componentComplete();
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::BaseLayoutComponentComplete> cc;
+    QFxPerfTimer<QFxPerf::BasepositionerComponentComplete> cc;
 #endif
-    preLayout();
+    prePositioning();
 }
 
 QVariant QFxBasePositioner::itemChange(GraphicsItemChange change,
@@ -169,7 +149,7 @@ QVariant QFxBasePositioner::itemChange(GraphicsItemChange change,
 {
     if (change == ItemChildAddedChange ||
                change == ItemChildRemovedChange) {
-        preLayout();
+        prePositioning();
     }
 
     return QFxItem::itemChange(change, value);
@@ -189,7 +169,7 @@ bool QFxBasePositioner::event(QEvent *e)
 }
 
 /*!
-  Items that have just been added to the layout. This includes invisible items
+  Items that have just been added to the positioner. This includes invisible items
   that have turned visible.
 */
 QSet<QFxItem *>* QFxBasePositioner::newItems()
@@ -199,7 +179,7 @@ QSet<QFxItem *>* QFxBasePositioner::newItems()
 }
 
 /*!
-  Items that are visible in the layout, not including ones that have just been added.
+  Items that are visible in the positioner, not including ones that have just been added.
 */
 QSet<QFxItem *>* QFxBasePositioner::items()
 {
@@ -208,7 +188,7 @@ QSet<QFxItem *>* QFxBasePositioner::items()
 }
 
 /*!
-  Items that have just left the layout. This includes visible items
+  Items that have just left the positioner. This includes visible items
   that have turned invisible.
 */
 QSet<QFxItem *>* QFxBasePositioner::leavingItems()
@@ -217,7 +197,7 @@ QSet<QFxItem *>* QFxBasePositioner::leavingItems()
     return &d->_leavingItems;
 }
 
-void QFxBasePositioner::preLayout()
+void QFxBasePositioner::prePositioning()
 {
     Q_D(QFxBasePositioner);
     if (!isComponentComplete() || d->_movingItem)
@@ -235,13 +215,13 @@ void QFxBasePositioner::preLayout()
             continue;
         if (!d->_items.contains(child)){
             QObject::connect(child, SIGNAL(visibleChanged()),
-                             this, SLOT(preLayout()));
+                             this, SLOT(prePositioning()));
             QObject::connect(child, SIGNAL(opacityChanged()),
-                             this, SLOT(preLayout()));
+                             this, SLOT(prePositioning()));
             QObject::connect(child, SIGNAL(heightChanged()),
-                             this, SLOT(preLayout()));
+                             this, SLOT(prePositioning()));
             QObject::connect(child, SIGNAL(widthChanged()),
-                             this, SLOT(preLayout()));
+                             this, SLOT(prePositioning()));
             d->_items += child;
         }
         if (child->opacity() == 0.0){
@@ -259,59 +239,18 @@ void QFxBasePositioner::preLayout()
         if (!allItems.contains(child)){
             if (!deletedItems.contains(child)) {
                 QObject::disconnect(child, SIGNAL(opacityChanged()),
-                                 this, SLOT(preLayout()));
+                                 this, SLOT(prePositioning()));
                 QObject::disconnect(child, SIGNAL(heightChanged()),
-                                 this, SLOT(preLayout()));
+                                 this, SLOT(prePositioning()));
                 QObject::disconnect(child, SIGNAL(widthChanged()),
-                                 this, SLOT(preLayout()));
+                                 this, SLOT(prePositioning()));
             }
             d->_items -= child;
         }
     }
     d->_animated.clear();
-    doLayout();
-    //Set the layout's size to be the rect containing all children
-    //d->aut determines whether a dimension is sum or max
-    //Also sets the margin
-    qreal width=0;
-    qreal height=0;
-    qreal maxWidth=0;
-    qreal maxHeight=0;
-    foreach(QFxItem *item, d->_items){
-        if (item->opacity() != 0.0){
-            if (!d->_animated.contains(item)){
-                setMovingItem(item);
-                QPointF p(item->x(), item->y());
-                if(d->aut & Horizontal)
-                    p.setX(p.x() + d->_margin);
-                if(d->aut & Vertical)
-                    p.setY(p.y() + d->_margin);
-                item->setPos(p);
-                setMovingItem(0);
-            }
-            maxWidth = qMax(maxWidth, item->width());
-            maxHeight = qMax(maxHeight, item->height());
-            width = qMax(width, item->x() + item->width());
-            height = qMax(height, item->y() + item->height());
-        }
-    }
-    width += d->_margin;
-    height+= d->_margin;
-
-    if(d->aut & Both){
-        setImplicitHeight(int(height));
-        setImplicitWidth(int(width));
-    }else if (d->aut & Horizontal){
-        setImplicitWidth(int(width));
-        setImplicitHeight(int(maxHeight));
-    } else if (d->aut & Vertical){
-        setImplicitHeight(int(height));
-        setImplicitWidth(int(maxWidth));
-    }else{
-        setImplicitHeight(int(maxHeight));
-        setImplicitWidth(int(maxWidth));
-    }
-    setLayoutItem(0);
+    doPositioning();
+    finishApplyTransitions();
 }
 
 void QFxBasePositioner::applyTransition(const QList<QPair<QString, QVariant> >& changes, QFxItem* target, QmlStateOperation::ActionList &actions)
@@ -319,17 +258,10 @@ void QFxBasePositioner::applyTransition(const QList<QPair<QString, QVariant> >& 
     Q_D(QFxBasePositioner);
     if (!target)
         return;
-    setLayoutItem(target);
 
     for (int ii=0; ii<changes.size(); ++ii){
 
         QVariant val = changes[ii].second;
-        if (d->_margin &&
-            (changes[ii].first == QLatin1String("x") ||
-             changes[ii].first == QLatin1String("y"))) {
-                val = QVariant(val.toInt() + d->_margin);
-        }
-
         actions << Action(target, changes[ii].first, val);
 
     }
@@ -340,6 +272,9 @@ void QFxBasePositioner::applyTransition(const QList<QPair<QString, QVariant> >& 
 void QFxBasePositioner::finishApplyTransitions()
 {
     Q_D(QFxBasePositioner);
+    // Note that if a transition is not set the transition manager will
+    // apply the changes directly, in the case someone uses applyAdd/Move/Remove
+    // without testing add()/move()/remove().
     d->addTransitionManager.transition(d->addActions, d->addTransition);
     d->moveTransitionManager.transition(d->moveActions, d->moveTransition);
     d->removeTransitionManager.transition(d->removeActions, d->removeTransition);
@@ -354,7 +289,7 @@ void QFxBasePositioner::setMovingItem(QFxItem *i)
 }
 
 /*!
-  Applies the layout's add transition to the \a target item.\a changes is a list of property,value
+  Applies the positioner's add transition to the \a target item.\a changes is a list of property,value
   pairs which will be changed on the target using the add transition.
 */
 void QFxBasePositioner::applyAdd(const QList<QPair<QString, QVariant> >& changes, QFxItem* target)
@@ -364,7 +299,7 @@ void QFxBasePositioner::applyAdd(const QList<QPair<QString, QVariant> >& changes
 }
 
 /*!
-  Applies the layout's move transition to the \a target.\a changes is a list of property,value pairs
+  Applies the positioner's move transition to the \a target.\a changes is a list of property,value pairs
   which will be changed on the target using the move transition.
 */
 void QFxBasePositioner::applyMove(const QList<QPair<QString, QVariant> >& changes, QFxItem* target)
@@ -374,7 +309,7 @@ void QFxBasePositioner::applyMove(const QList<QPair<QString, QVariant> >& change
 }
 
 /*!
-  Applies the layout's remove transition to the \a target item.\a changes is a list of
+  Applies the positioner's remove transition to the \a target item.\a changes is a list of
   property,value pairs which will be changed on the target using the remove transition.
 */
 void QFxBasePositioner::applyRemove(const QList<QPair<QString, QVariant> >& changes, QFxItem* target)
@@ -389,13 +324,13 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VerticalPositioner,QFxVerticalPo
   \brief The VerticalPositioner item lines up its children vertically.
   \inherits Item
 
-  The VerticalPositioner item arranges its child items so that they are vertically
-    aligned and not overlapping. Spacing between items can be added, as can a margin around all the items.
+  The VerticalPositioner item positions its child items so that they are vertically
+    aligned and not overlapping. Spacing between items can be added.
 
-  The below example lays out differently shaped rectangles using a VerticalPositioner.
+  The below example positions differently shaped rectangles using a VerticalPositioner.
   \table
   \row
-  \o \image verticalLayout_example.png
+  \o \image verticalpositioner_example.png
   \o
   \qml
 VerticalPositioner {
@@ -408,13 +343,13 @@ VerticalPositioner {
   \endtable
 
   VerticalPositioner also provides for transitions to be set when items are added, moved,
-  or removed in the layout. Adding and removing apply both to items which are deleted
-  or have their position in the document changed so as to no longer be children of the layout,
+  or removed in the positioner. Adding and removing apply both to items which are deleted
+  or have their position in the document changed so as to no longer be children of the positioner,
   as well as to items which have their opacity set to or from zero so as to appear or disappear.
 
   \table
   \row
-  \o \image verticalLayout_transition.gif
+  \o \image verticalpositioner_transition.gif
   \o
   \qml
 VerticalPositioner {
@@ -431,22 +366,20 @@ VerticalPositioner {
 */
 /*!
     \qmlproperty Transition VerticalPositioner::remove
-    This property holds the transition to apply when removing an item from the layout.
+    This property holds the transition to apply when removing an item from the positioner. The transition is only applied to the removed items.
 
-    Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the layout, or that the object has had its opacity set to zero, and thus is no longer visible.
+    Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the positioner, or that the object has had its opacity set to zero, and thus is no longer visible.
 
     Note that if the item counts as removed because its opacity is zero it will not be visible during the transition unless you set the opacity in the transition, like in the below example.
 
     \table
     \row
-    \o \image layout-remove.gif
+    \o \image positioner-remove.gif
     \o
     \qml
 VerticalPositioner {
-    id: layout
     remove: Transition {
         NumberAnimation {
-            target: layout.item
             properties: "opacity"
             from: 1
             to: 0
@@ -460,20 +393,18 @@ VerticalPositioner {
 */
 /*!
     \qmlproperty Transition VerticalPositioner::add
-    This property holds the transition to be applied when adding an item to the layout.
+    This property holds the transition to be applied when adding an item to the positioner. The transition will only be applied to the added item(s).
 
-    Added can mean that either the object has been created or reparented, and thus is now a child or the layout, or that the object has had its opacity increased from zero, and thus is now visible.
+    Added can mean that either the object has been created or reparented, and thus is now a child or the positioner, or that the object has had its opacity increased from zero, and thus is now visible.
 
     \table
     \row
-    \o \image layout-add.gif
+    \o \image positioner-add.gif
     \o
     \qml
 VerticalPositioner {
-    id: layout
     add: Transition {
         NumberAnimation {
-            target: layout.item
             properties: "opacity"
             from: 0
             to: 1
@@ -487,17 +418,16 @@ VerticalPositioner {
 */
 /*!
     \qmlproperty Transition VerticalPositioner::move
-    This property holds the transition to apply when moving an item within the layout.
+    This property holds the transition to apply when moving an item within the positioner.
 
-    This can happen when other items are added or removed from the layout, or when items resize themselves.
+    This can happen when other items are added or removed from the positioner, or when items resize themselves.
 
     \table
     \row
-    \o \image layout-move.gif
+    \o \image positioner-move.gif
     \o
     \qml
 VerticalPositioner {
-    id: layout
     move: Transition {
         NumberAnimation {
             properties: "y"
@@ -509,28 +439,15 @@ VerticalPositioner {
     \endtable
 */
 /*!
-    \qmlproperty Item VerticalPositioner::item
-
-    The item that is currently being laid out. Used to target transitions that apply
-    only to the item being laid out, such as in the add transition.
-
-*/
-/*!
   \qmlproperty int VerticalPositioner::spacing
-  \qmlproperty int VerticalPositioner::margin
-
-  spacing and margin allow you to control the empty space surrounding
-  items in layouts.
 
   spacing is the amount in pixels left empty between each adjacent
-  item.  margin is the amount in pixels which will be left empty
-  around the inside edge of the layout.  Both default to 0.
+  item, and defaults to 0.
 
   The below example places a GridPositioner containing a red, a blue and a
-  green rectangle on a gray background. The area the grid layout
-  occupies is colored white. The top layout has a spacing of 2 and a
-  margin of 5, the bottom layout has the defaults of no margin or
-  spacing.
+  green rectangle on a gray background. The area the grid positioner
+  occupies is colored white. The top positioner has the default of no spacing,
+  and the bottom positioner has its spacing set to 2.
 
   \image spacing_a.png
   \image spacing_b.png
@@ -540,14 +457,14 @@ VerticalPositioner {
     \internal
     \class QFxVerticalPositioner
     \brief The QFxVerticalPositioner class lines up items vertically.
-    \ingroup group_layouts
+    \ingroup group_positioners
 */
 QFxVerticalPositioner::QFxVerticalPositioner(QFxItem *parent)
 : QFxBasePositioner(Vertical, parent)
 {
 }
 
-void QFxVerticalPositioner::doLayout()
+void QFxVerticalPositioner::doPositioning()
 {
     int voffset = 0;
 
@@ -581,9 +498,6 @@ void QFxVerticalPositioner::doLayout()
         voffset += child->height();
         voffset += spacing();
     }
-    finishApplyTransitions();
-    setMovingItem(this);
-    setMovingItem(0);
 }
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,HorizontalPositioner,QFxHorizontalPositioner)
@@ -592,7 +506,14 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,HorizontalPositioner,QFxHorizont
   \brief The HorizontalPositioner item lines up its children horizontally.
   \inherits Item
 
-  The HorizontalPositioner item arranges its child items so that they are horizontally aligned and not overlapping. Spacing can be added between the items, and a margin around all items can also be added. It also provides for transitions to be set when items are added, moved, or removed in the layout. Adding and removing apply both to items which are deleted or have their position in the document changed so as to no longer be children of the layout, as well as to items which have their opacity set to or from zero so as to appear or disappear.
+  The HorizontalPositioner item positions its child items so that they are
+  horizontally aligned and not overlapping. Spacing can be added between the
+  items, and a margin around all items can also be added. It also provides for
+  transitions to be set when items are added, moved, or removed in the
+  positioner. Adding and removing apply both to items which are deleted or have
+  their position in the document changed so as to no longer be children of the
+  positioner, as well as to items which have their opacity set to or from zero
+  so as to appear or disappear.
 
   The below example lays out differently shaped rectangles using a HorizontalPositioner.
   \qml
@@ -603,23 +524,22 @@ HorizontalPositioner {
     Rect { color: "blue"; width: 50; height: 20 }
 }
   \endqml
-  \image horizontalLayout_example.png
+  \image horizontalpositioner_example.png
 
 */
 /*!
     \qmlproperty Transition HorizontalPositioner::remove
-    This property holds the transition to apply when removing an item from the layout.
+    This property holds the transition to apply when removing an item from the positioner.
+    The transition will only be applied to the removed item(s).
 
-    Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the layout, or that the object has had its opacity set to zero, and thus is no longer visible.
+    Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the positioner, or that the object has had its opacity set to zero, and thus is no longer visible.
 
     Note that if the item counts as removed because its opacity is zero it will not be visible during the transition unless you set the opacity in the transition, like in the below example.
 
     \qml
 HorizontalPositioner {
-    id: layout
     remove: Transition {
         NumberAnimation {
-            target: layout.item
             properties: "opacity"
             from: 1
             to: 0
@@ -632,16 +552,15 @@ HorizontalPositioner {
 */
 /*!
     \qmlproperty Transition HorizontalPositioner::add
-    This property holds the transition to apply when adding an item to the layout.
+    This property holds the transition to apply when adding an item to the positioner.
+    The transition will only be applied to the added item(s).
 
-    Added can mean that either the object has been created or reparented, and thus is now a child or the layout, or that the object has had its opacity increased from zero, and thus is now visible.
+    Added can mean that either the object has been created or reparented, and thus is now a child or the positioner, or that the object has had its opacity increased from zero, and thus is now visible.
 
     \qml
 HorizontalPositioner {
-    id: layout
     add: Transition {
         NumberAnimation {
-            target: layout.item
             properties: "opacity"
             from: 0
             to: 1
@@ -654,13 +573,13 @@ HorizontalPositioner {
 */
 /*!
     \qmlproperty Transition HorizontalPositioner::move
-    This property holds the transition to apply when moving an item within the layout.
+    This property holds the transition to apply when moving an item within the positioner.
 
-    This can happen when other items are added or removed from the layout, or when items resize themselves.
+    This can happen when other items are added or removed from the positioner, or when items resize themselves.
 
     \qml
 HorizontalPositioner {
-    id: layout
+    id: positioner
     move: Transition {
         NumberAnimation {
             properties: "x"
@@ -672,33 +591,15 @@ HorizontalPositioner {
 
 */
 /*!
-    \qmlproperty Item HorizontalPositioner::item
-
-    The item that is currently being laid out. Used to target transitions that apply
-    only to the item being laid out, such as in the add transition.
-
-*/
-/*!
   \qmlproperty int HorizontalPositioner::spacing
 
-  The spacing, in pixels, left empty between each adjacent item.
-*/
-/*!
-  \qmlproperty int HorizontalPositioner::margin
+  spacing is the amount in pixels left empty between each adjacent
+  item, and defaults to 0.
 
-  The margin size, in pixels, which will be left empty around the inside edge of the layout.
-*/
-/*!
-  \qmlproperty int HorizontalPositioner::spacing
-  \qmlproperty int HorizontalPositioner::margin
-
-  spacing and margin allow you to control the empty space surrounding items in layouts.
-
-  spacing is the amount in pixels left empty between each adjacent item.
-  margin is the amount in pixels which will be left empty around the inside edge of the layout.
-  Both default to 0.
-
-  The below example places a GridPositioner containing a red, a blue and a green rectangle on a gray background. The area the grid layout occupies is colored white. The top layout has a spacing of 2 and a margin of 5, the bottom layout has the defaults of no margin or spacing.
+  The below example places a GridPositioner containing a red, a blue and a
+  green rectangle on a gray background. The area the grid positioner
+  occupies is colored white. The top positioner has the default of no spacing,
+  and the bottom positioner has its spacing set to 2.
 
   \image spacing_a.png
   \image spacing_b.png
@@ -708,14 +609,14 @@ HorizontalPositioner {
     \internal
     \class QFxHorizontalPositioner
     \brief The QFxHorizontalPositioner class lines up items horizontally.
-    \ingroup group_layouts
+    \ingroup group_positioners
 */
 QFxHorizontalPositioner::QFxHorizontalPositioner(QFxItem *parent)
 : QFxBasePositioner(Horizontal, parent)
 {
 }
 
-void QFxHorizontalPositioner::doLayout()
+void QFxHorizontalPositioner::doPositioning()
 {
     int hoffset = 0;
 
@@ -748,7 +649,6 @@ void QFxHorizontalPositioner::doLayout()
         hoffset += child->width();
         hoffset += spacing();
     }
-    finishApplyTransitions();
 }
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GridPositioner,QFxGridPositioner)
@@ -758,20 +658,19 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GridPositioner,QFxGridPositioner
   \brief The GridPositioner item positions its children in a grid.
   \inherits Item
 
-  The GridPositioner item arranges its child items so that they are
+  The GridPositioner item positions its child items so that they are
   aligned in a grid and are not overlapping. Spacing can be added
-  between the items, and a margin around all the items can also be
-  defined. It also provides for transitions to be set when items are
-  added, moved, or removed in the layout. Adding and removing apply
+  between the items. It also provides for transitions to be set when items are
+  added, moved, or removed in the positioner. Adding and removing apply
   both to items which are deleted or have their position in the
-  document changed so as to no longer be children of the layout, as
+  document changed so as to no longer be children of the positioner, as
   well as to items which have their opacity set to or from zero so
   as to appear or disappear.
 
   The GridPositioner defaults to using four columns, and as many rows as
   are necessary to fit all the child items. The number of rows
   and/or the number of columns can be constrained by setting the rows
-  or columns properties. The grid layout calculates a grid with
+  or columns properties. The grid positioner calculates a grid with
   rectangular cells of sufficient size to hold all items, and then
   places the items in the cells, going across then down, and
   positioning each item at the (0,0) corner of the cell. The below
@@ -796,10 +695,11 @@ GridPositioner {
 */
 /*!
     \qmlproperty Transition GridPositioner::remove
-    This property holds the transition to apply when removing an item from the layout.
+    This property holds the transition to apply when removing an item from the positioner.
+    The transition is only applied to the removed item(s).
 
     Removed can mean that either the object has been deleted or
-    reparented, and thus is now longer a child of the layout, or that
+    reparented, and thus is now longer a child of the positioner, or that
     the object has had its opacity set to zero, and thus is no longer
     visible.
 
@@ -809,10 +709,8 @@ GridPositioner {
 
     \qml
 GridPositioner {
-    id: layout
     remove: Transition {
         NumberAnimation {
-            target: layout.item
             properties: "opacity"
             from: 1
             to: 0
@@ -825,19 +723,18 @@ GridPositioner {
 */
 /*!
     \qmlproperty Transition GridPositioner::add
-    This property holds the transition to apply when adding an item to the layout.
+    This property holds the transition to apply when adding an item to the positioner.
+    The transition is only applied to the added item(s).
 
     Added can mean that either the object has been created or
-    reparented, and thus is now a child or the layout, or that the
+    reparented, and thus is now a child or the positioner, or that the
     object has had its opacity increased from zero, and thus is now
     visible.
 
     \qml
 GridPositioner {
-    id: layout
     add: Transition {
         NumberAnimation {
-            target: layout.item
             properties: "opacity"
             from: 0
             to: 1
@@ -850,14 +747,13 @@ GridPositioner {
 */
 /*!
     \qmlproperty Transition GridPositioner::move
-    This property holds the transition to apply when moving an item within the layout.
+    This property holds the transition to apply when moving an item within the positioner.
 
-    This can happen when other items are added or removed from the layout, or
+    This can happen when other items are added or removed from the positioner, or
     when items resize themselves.
 
     \qml
 GridPositioner {
-    id: layout
     move: Transition {
         NumberAnimation {
             properties: "x,y"
@@ -869,29 +765,15 @@ GridPositioner {
 
 */
 /*!
-    \qmlproperty Item GridPositioner::item
-
-    The item that is currently being laid out. Used to target
-    transitions that apply only to the item being laid out, such as in
-    the add transition.
-
-*/
-/*!
   \qmlproperty int GridPositioner::spacing
-  \qmlproperty int GridPositioner::margin
-
-  spacing and margin allow you to control the empty space surrounding
-  items in layouts.
 
   spacing is the amount in pixels left empty between each adjacent
-  item.  margin is the amount in pixels which will be left empty
-  around the inside edge of the layout.  Both default to 0.
+  item, and defaults to 0.
 
   The below example places a GridPositioner containing a red, a blue and a
-  green rectangle on a gray background. The area the grid layout
-  occupies is colored white. The top layout has a spacing of 2 and a
-  margin of 5, the bottom layout has the defaults of no margin or
-  spacing.
+  green rectangle on a gray background. The area the grid positioner
+  occupies is colored white. The top positioner has the default of no spacing,
+  and the bottom positioner has its spacing set to 2.
 
   \image spacing_a.png
   \image spacing_b.png
@@ -929,13 +811,13 @@ QFxGridPositioner::QFxGridPositioner(QFxItem *parent) :
     many rows some rows will be of zero width.
 */
 
-void QFxGridPositioner::doLayout()
+void QFxGridPositioner::doPositioning()
 {
     int c=_columns,r=_rows;//Actual number of rows/columns
     int numVisible = items()->size() + newItems()->size();
     if (_columns==-1 && _rows==-1){
         c = 4;
-        r = (numVisible+2)/3;
+        r = (numVisible+3)/4;
     }else if (_rows==-1){
         r = (numVisible+(_columns-1))/_columns;
     }else if (_columns==-1){
@@ -1002,10 +884,9 @@ void QFxGridPositioner::doLayout()
             xoffset=0;
             curRow++;
             if (curRow>=r)
-                return;
+                break;
         }
     }
-    finishApplyTransitions();
 }
 
 QT_END_NAMESPACE

@@ -65,6 +65,7 @@ public:
     static bool copy(int type, void *data, const void *copy = 0);
 
     static QList<QByteArray> qmlTypeNames();
+    static QList<QmlType*> qmlTypes();
 
     static QmlType *qmlType(const QByteArray &, int, int);
     static QmlType *qmlType(const QMetaObject *);
@@ -111,6 +112,10 @@ class Q_DECLARATIVE_EXPORT QmlType
 public:
     QByteArray typeName() const;
     QByteArray qmlTypeName() const;
+
+    int majorVersion() const;
+    int minMinorVersion() const;
+    int maxMinorVersion() const;
     bool availableInVersion(int vmajor, int vminor) const;
 
     QByteArray hash() const;

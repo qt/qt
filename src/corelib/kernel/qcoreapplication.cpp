@@ -339,9 +339,6 @@ QString qAppName()
     \brief The QCoreApplication class provides an event loop for console Qt
     applications.
 
-    \ingroup application
-    \mainclass
-
     This class is used by non-GUI applications to provide their event
     loop. For non-GUI application that uses Qt, there should be exactly
     one QCoreApplication object. For GUI applications, see

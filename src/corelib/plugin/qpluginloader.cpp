@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
     \reentrant
     \brief The QPluginLoader class loads a plugin at run-time.
 
-    \mainclass
+
     \ingroup plugins
 
     QPluginLoader provides access to a \l{How to Create Qt

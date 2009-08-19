@@ -42,12 +42,12 @@
 #ifndef QXMLSTREAM_H
 #define QXMLSTREAM_H
 
-#include <QtCore/QIODevice>
+#include <QtCore/qiodevice.h>
 
 #ifndef QT_NO_XMLSTREAM
 
-#include <QtCore/QString>
-#include <QtCore/QVector>
+#include <QtCore/qstring.h>
+#include <QtCore/qvector.h>
 
 QT_BEGIN_HEADER
 
@@ -321,6 +321,9 @@ public:
     bool atEnd() const;
     TokenType readNext();
 
+    bool readNextStartElement();
+    void skipCurrentElement();
+
     TokenType tokenType() const;
     QString tokenString() const;
 
@@ -348,6 +351,13 @@ public:
     qint64 characterOffset() const;
 
     QXmlStreamAttributes attributes() const;
+
+    enum ReadElementTextBehaviour {
+        ErrorOnUnexpectedElement,
+        IncludeChildElements,
+        SkipChildElements
+    };
+    QString readElementText(ReadElementTextBehaviour behaviour);
     QString readElementText();
 
     QStringRef name() const;

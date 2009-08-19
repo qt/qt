@@ -56,6 +56,8 @@ class QString;
 class QmlEngine;
 class QmlRefCount;
 class QmlContextPrivate;
+class QmlCompositeTypeData;
+
 class Q_DECLARATIVE_EXPORT QmlContext : public QObject
 {
     Q_OBJECT
@@ -76,6 +78,7 @@ public:
     QUrl resolvedUrl(const QUrl &);
 
     void setBaseUrl(const QUrl &);
+    QUrl baseUrl() const;
 
 private:
     friend class QmlVME;

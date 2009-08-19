@@ -252,7 +252,7 @@ void QToolBoxButton::paintEvent(QPaintEvent *)
 
     \brief The QToolBox class provides a column of tabbed widget items.
 
-    \mainclass
+
     \ingroup basicwidgets
 
     A toolbox is a widget that displays a column of tabs one above the

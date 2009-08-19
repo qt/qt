@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
   \brief The QScriptValueIterator class provides a Java-style iterator for QScriptValue.
 
   \ingroup script
-  \mainclass
+
 
   The QScriptValueIterator constructor takes a QScriptValue as
   argument.  After construction, the iterator is located at the very

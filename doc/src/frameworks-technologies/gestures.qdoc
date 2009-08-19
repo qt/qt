@@ -1,0 +1,170 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at http://www.example.com/contact.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+/*!
+    \page gestures-overview.html
+    \startpage index.html Qt Reference Documentation
+
+    \title Gestures Programming
+    \ingroup howto
+    \brief An overview of the Qt support for Gesture programming.
+
+    The QGesture class provides the ability to form gestures from a series
+    of events independent of the input method. A gesture could be a particular
+    movement of a mouse, a touch screen action, or a series of events from
+    some other source. The nature of the input, the interpretation
+    of the gesture and the action taken are the choice of the implementing
+    developer.
+
+    \tableofcontents
+
+
+    \section1   Creating Your Own Gesture Recognizer
+
+    QGesture is a base class for a user defined gesture recognizer class. In
+    order to implement the recognizer you will need to subclass the
+    QGesture class and implement the pure virtual function \l{QGesture::filterEvent()}{filterEvent()}. Once
+    you have implemented the \l{QGesture::filterEvent()}{filterEvent()} function to
+    make your own recognizer you can process events. A sequence of events may,
+    according to your own rules, represent a gesture. The events can be singly
+    passed to the recognizer via the \l{QGesture::filterEvent()}{filterEvent()} function or as a stream of
+    events by specifying a parent source of events. The events can be from any
+    source and could result in any action as defined by the user. The source
+    and action need not be graphical though that would be the most likely
+    scenario. To find how to connect a source of events to automatically feed into the recognizer see QGesture.
+
+    Recognizers based on QGesture can emit any of the following signals:
+
+    \snippet doc/src/snippets/gestures/qgesture.h  qgesture-signals
+
+    These signals are emitted when the state changes with the call to
+    \l{QGesture::updateState()}{updateState()}, more than one signal may
+    be emitted when a change of state occurs. There are four GestureStates
+
+    \table
+    \header \o New State                \o Description              \o QGesture Actions on Entering this State
+    \row    \o Qt::NoGesture        \o Initial value            \o emit \l {QGesture::cancelled()}{cancelled()}
+    \row    \o Qt::GestureStarted   \o A continuous gesture has started \o emit \l{QGesture::started()}{started()} and emit \l{QGesture::triggered()}{triggered()}
+    \row    \o Qt::GestureUpdated   \o A gesture continues      \o emit \l{QGesture::triggered()}{triggered()}
+    \row    \o Qt::GestureFinished  \o A gesture has finished.  \o emit \l{QGesture::finished()}{finished()}
+    \endtable
+
+    \note \l{QGesture::started()}{started()} can be emitted if entering any
+    state greater than NoGesture if NoGesture was the previous state. This
+    means that your state machine does not need to explicitly use the
+    Qt::GestureStarted state, you can simply proceed from NoGesture to
+    Qt::GestureUpdated to emit a \l{QGesture::started()}{started()} signal
+    and a \l{QGesture::triggered()}{triggered()} signal.
+
+    You may use some or all of these states when implementing the pure
+    virtual function \l{QGesture::filterEvent()}{filterEvent()}.
+    \l{QGesture::filterEvent()}{filterEvent()} will usually implement a
+    state machine using the GestureState enums, but the details of which
+    states are used is up to the developer.
+
+    You may also need to reimplement the virtual function \l{QGesture::reset()}{reset()}
+    if internal data or objects need to be re-initialized. The function must
+    conclude with a call to \l{QGesture::updateState()}{updateState()} to
+    change the current state to Qt::NoGesture.
+
+    \section1   An Example, ImageViewer
+
+    To illustrate how to use QGesture we will look at the ImageViewer
+    example. This example uses QPanGesture, standard gesture, and an
+    implementation of TapAndHoldGesture. Note that TapAndHoldGesture is
+    platform dependent.
+
+    \snippet doc/src/snippets/gestures/imageviewer/tapandholdgesture.cpp tapandhold-reset
+
+    In ImageViewer we see that the ImageWidget class uses two gestures:
+    \l QPanGesture and TapAndHoldGesture. The
+    QPanGesture is a standard gesture which is part of Qt.
+    TapAndHoldGesture is defined and implemented as part of the example.
+    The ImageWidget listens for signals from the gestures, but is not
+    interested in the \l{QGesture::started()}{started()} signal.
+
+    \snippet doc/src/snippets/gestures/imageviewer/imagewidget.h imagewidget-slots
+
+    TapAndHoldGesture uses QTouchEvent events and mouse events to detect
+    start, update and end events that can be mapped onto the GestureState
+    changes. The implementation in this case uses a timer as well. If the
+    timeout event occurs a given number of times after the start of the gesture
+    then the gesture is considered to have finished whether or not the
+    appropriate touch or mouse event has occurred. Also if a large jump in
+    the position of the event occurs, as calculated by the \l {QPoint::manhattanLength()}{manhattanLength()}
+    call, then the gesture is cancelled by calling \l{QGesture::reset()}{reset()}
+    which tidies up  and uses \l{QGesture::updateState()}{updateState()} to
+    change state to NoGesture which will result in the \l{QGesture::cancelled()}{cancelled()}
+    signal being emitted by the recognizer.
+
+    ImageWidget handles the signals by connecting the slots to the signals,
+    although \c cancelled() is not connected here.
+
+    \snippet doc/src/snippets/gestures/imageviewer/imagewidget.cpp  imagewidget-connect
+
+    These functions in turn will have to be aware of which gesture
+    object was the source of the signal since we have more than one source
+    per slot. This is easily done by using the QObject::sender() function
+    as shown here
+
+    \snippet doc/src/snippets/gestures/imageviewer/imagewidget.cpp imagewidget-triggered-1
+
+    As \l{QGesture::triggered()}{triggered()} signals are handled by
+    gestureTriggered() there may be position updates invoking calls to,
+    for example, goNextImage(), this will cause a change in the image
+    handling logic of ImageWidget and a call to updateImage() to display
+    the changed state.
+
+    Following the logic of how the QEvent is processed we can summmarize
+    it as follows:
+    \list
+        \o filterEvent() becomes the event filter of the parent ImageWidget object for a QPanGesture object and a
+    TapAndHoldGesture object.
+        \o filterEvent() then calls updateState() to change states
+        \o updateState() emits the appropriate signal(s) for the state change.
+        \o The signals are caught by the defined slots in ImageWidget
+        \o The widget logic changes and an update() results in a paint event.
+    \endlist
+
+
+
+*/
+

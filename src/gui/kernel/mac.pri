@@ -1,4 +1,4 @@
 !x11:!embedded:mac {
-   LIBS += -framework Carbon -lz
+   LIBS_PRIVATE += -framework Carbon -lz
    *-mwerks:INCLUDEPATH += compat
 }

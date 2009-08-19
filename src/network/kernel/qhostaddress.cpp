@@ -419,7 +419,7 @@ void QNetmaskAddress::setPrefixLength(QAbstractSocket::NetworkLayerProtocol prot
 /*!
     \class QHostAddress
     \brief The QHostAddress class provides an IP address.
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     This class holds an IPv4 or IPv6 address in a platform- and

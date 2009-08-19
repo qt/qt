@@ -174,9 +174,6 @@ QApplicationPrivate::~QApplicationPrivate()
     \brief The QApplication class manages the GUI application's control
     flow and main settings.
 
-    \ingroup application
-    \mainclass
-
     QApplication contains the main event loop, where all events from the window
     system and other sources are processed and dispatched. It also handles the
     application's initialization, finalization, and provides session
@@ -4106,9 +4103,6 @@ bool QApplicationPrivate::notify_helper(QObject *receiver, QEvent * e)
 /*!
     \class QSessionManager
     \brief The QSessionManager class provides access to the session manager.
-
-    \ingroup application
-    \ingroup environment
 
     A session manager in a desktop environment (in which Qt GUI applications
     live) keeps track of a session, which is a group of running applications,
