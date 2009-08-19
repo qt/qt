@@ -1,5 +1,5 @@
 TEMPLATE  = subdirs
-SUBDIRS   = styledemo
+SUBDIRS   = styledemo raycasting
 
 contains(QT_CONFIG, svg) {
     SUBDIRS += embeddedsvgviewer \
