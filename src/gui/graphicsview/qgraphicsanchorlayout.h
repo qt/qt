@@ -59,49 +59,35 @@ class QGraphicsAnchorLayoutPrivate;
 class Q_GUI_EXPORT QGraphicsAnchorLayout : public QGraphicsLayout
 {
 public:
-    enum Edge {
-        Left = 0,
-        HCenter,
-        Right,
-        Top,
-        VCenter,
-        Bottom
-        };
-
     QGraphicsAnchorLayout(QGraphicsLayoutItem *parent = 0);
     virtual ~QGraphicsAnchorLayout();
 
-    void anchor(QGraphicsLayoutItem *firstItem, Edge firstEdge,
-                QGraphicsLayoutItem *secondItem, Edge secondEdge);
+    void addAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                   QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
 
-    void anchor(QGraphicsLayoutItem *firstItem, Edge firstEdge,
-                QGraphicsLayoutItem *secondItem, Edge secondEdge,
-                qreal spacing);
+    void setAnchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                          const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge,
+                          qreal spacing);
 
-    void anchorCorner(QGraphicsLayoutItem *firstItem, Qt::Corner firstCorner,
-                      QGraphicsLayoutItem *secondItem, Qt::Corner secondCorner);
+    void addCornerAnchors(QGraphicsLayoutItem *firstItem, Qt::Corner firstCorner,
+                          QGraphicsLayoutItem *secondItem, Qt::Corner secondCorner);
 
-    void anchorCorner(QGraphicsLayoutItem *firstItem, Qt::Corner firstCorner,
-                      QGraphicsLayoutItem *secondItem, Qt::Corner secondCorner,
-                      qreal spacing);
+    inline void addLeftAndRightAnchors(QGraphicsLayoutItem *firstItem,
+                                       QGraphicsLayoutItem *secondItem);
 
-    void removeAnchor(QGraphicsLayoutItem *firstItem, Edge firstEdge,
-                      QGraphicsLayoutItem *secondItem, Edge secondEdge);
+    inline void addTopAndBottomAnchors(QGraphicsLayoutItem *firstItem,
+                                       QGraphicsLayoutItem *secondItem);
 
-    inline void anchorWidth(QGraphicsLayoutItem *item,
-                            QGraphicsLayoutItem *relativeTo = 0);
-    inline void anchorWidth(QGraphicsLayoutItem *item,
-                            QGraphicsLayoutItem *relativeTo, qreal spacing);
+    inline void addAllAnchors(QGraphicsLayoutItem *firstItem,
+                              QGraphicsLayoutItem *secondItem);
 
-    inline void anchorHeight(QGraphicsLayoutItem *item,
-                             QGraphicsLayoutItem *relativeTo = 0);
-    inline void anchorHeight(QGraphicsLayoutItem *item,
-                             QGraphicsLayoutItem *relativeTo, qreal spacing);
+    qreal anchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                        const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge) const;
+    void unsetAnchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                            const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
 
-    inline void anchorGeometry(QGraphicsLayoutItem *item,
-                               QGraphicsLayoutItem *relativeTo = 0);
-    inline void anchorGeometry(QGraphicsLayoutItem *item,
-                               QGraphicsLayoutItem *relativeTo, qreal spacing);
+    void removeAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                      QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
 
     void setHorizontalSpacing(qreal spacing);
     void setVerticalSpacing(qreal spacing);
@@ -115,6 +101,7 @@ public:
     QGraphicsLayoutItem *itemAt(int index) const;
 
     void invalidate();
+protected:
     QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const;
 
 private:
@@ -122,58 +109,26 @@ private:
     Q_DECLARE_PRIVATE(QGraphicsAnchorLayout)
 };
 
-void QGraphicsAnchorLayout::anchorWidth(QGraphicsLayoutItem *item,
-                                        QGraphicsLayoutItem *relativeTo)
-{
-    if (!relativeTo)
-        relativeTo = this;
 
-    anchor(relativeTo, Left, item, Left);
-    anchor(item, Right, relativeTo, Right);
+void QGraphicsAnchorLayout::addLeftAndRightAnchors(QGraphicsLayoutItem *firstItem,
+                                                   QGraphicsLayoutItem *secondItem)
+{
+    addAnchor(secondItem, Qt::AnchorLeft, firstItem, Qt::AnchorLeft);
+    addAnchor(firstItem, Qt::AnchorRight, secondItem, Qt::AnchorRight);
 }
 
-void QGraphicsAnchorLayout::anchorWidth(QGraphicsLayoutItem *item,
-                                        QGraphicsLayoutItem *relativeTo,
-                                        qreal spacing)
+void QGraphicsAnchorLayout::addTopAndBottomAnchors(QGraphicsLayoutItem *firstItem,
+                                                   QGraphicsLayoutItem *secondItem)
 {
-    anchor(relativeTo, Left, item, Left, spacing);
-    anchor(item, Right, relativeTo, Right, spacing);
+    addAnchor(secondItem, Qt::AnchorTop, firstItem, Qt::AnchorTop);
+    addAnchor(firstItem, Qt::AnchorBottom, secondItem, Qt::AnchorBottom);
 }
 
-void QGraphicsAnchorLayout::anchorHeight(QGraphicsLayoutItem *item,
-                                         QGraphicsLayoutItem *relativeTo)
+void QGraphicsAnchorLayout::addAllAnchors(QGraphicsLayoutItem *firstItem,
+                                          QGraphicsLayoutItem *secondItem)
 {
-    if (!relativeTo)
-        relativeTo = this;
-
-    anchor(relativeTo, Top, item, Top);
-    anchor(item, Bottom, relativeTo, Bottom);
-}
-
-void QGraphicsAnchorLayout::anchorHeight(QGraphicsLayoutItem *item,
-                                         QGraphicsLayoutItem *relativeTo,
-                                         qreal spacing)
-{
-    anchor(relativeTo, Top, item, Top, spacing);
-    anchor(item, Bottom, relativeTo, Bottom, spacing);
-}
-
-void QGraphicsAnchorLayout::anchorGeometry(QGraphicsLayoutItem *item,
-                                           QGraphicsLayoutItem *relativeTo)
-{
-    if (!relativeTo)
-        relativeTo = this;
-
-    anchorWidth(item, relativeTo);
-    anchorHeight(item, relativeTo);
-}
-
-void QGraphicsAnchorLayout::anchorGeometry(QGraphicsLayoutItem *item,
-                                           QGraphicsLayoutItem *relativeTo,
-                                           qreal spacing)
-{
-    anchorWidth(item, relativeTo, spacing);
-    anchorHeight(item, relativeTo, spacing);
+    addLeftAndRightAnchors(firstItem, secondItem);
+    addTopAndBottomAnchors(firstItem, secondItem);
 }
 
 #endif

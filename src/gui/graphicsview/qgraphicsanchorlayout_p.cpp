@@ -56,14 +56,14 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
             minSize = item->minimumWidth();
             prefSize = item->preferredWidth();
             maxSize = item->maximumWidth();
-            hasCenter = (from->m_edge == QGraphicsAnchorLayout::HCenter
-                         || to->m_edge == QGraphicsAnchorLayout::HCenter);
+            hasCenter = (from->m_edge == Qt::AnchorHorizontalCenter
+                         || to->m_edge == Qt::AnchorHorizontalCenter);
         } else {
             minSize = item->minimumHeight();
             prefSize = item->preferredHeight();
             maxSize = item->maximumHeight();
-            hasCenter = (from->m_edge == QGraphicsAnchorLayout::VCenter
-                         || to->m_edge == QGraphicsAnchorLayout::VCenter);
+            hasCenter = (from->m_edge == Qt::AnchorVerticalCenter
+                         || to->m_edge == Qt::AnchorVerticalCenter);
         }
 
         if (hasCenter) {
@@ -288,21 +288,20 @@ QGraphicsAnchorLayoutPrivate::QGraphicsAnchorLayoutPrivate()
     }
 }
 
-QGraphicsAnchorLayout::Edge QGraphicsAnchorLayoutPrivate::oppositeEdge(
-    QGraphicsAnchorLayout::Edge edge)
+Qt::AnchorPoint QGraphicsAnchorLayoutPrivate::oppositeEdge(Qt::AnchorPoint edge)
 {
     switch (edge) {
-    case QGraphicsAnchorLayout::Left:
-        edge = QGraphicsAnchorLayout::Right;
+    case Qt::AnchorLeft:
+        edge = Qt::AnchorRight;
         break;
-    case QGraphicsAnchorLayout::Right:
-        edge = QGraphicsAnchorLayout::Left;
+    case Qt::AnchorRight:
+        edge = Qt::AnchorLeft;
         break;
-    case QGraphicsAnchorLayout::Top:
-        edge = QGraphicsAnchorLayout::Bottom;
+    case Qt::AnchorTop:
+        edge = Qt::AnchorBottom;
         break;
-    case QGraphicsAnchorLayout::Bottom:
-        edge = QGraphicsAnchorLayout::Top;
+    case Qt::AnchorBottom:
+        edge = Qt::AnchorTop;
         break;
     default:
         break;
@@ -502,8 +501,8 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
     stack.push(v);
     QVector<AnchorVertex*> candidates;
 
-    const QGraphicsAnchorLayout::Edge centerEdge = pickEdge(QGraphicsAnchorLayout::HCenter, orientation);
-    const QGraphicsAnchorLayout::Edge layoutEdge = oppositeEdge(v->m_edge);
+    const Qt::AnchorPoint centerEdge = pickEdge(Qt::AnchorHorizontalCenter, orientation);
+    const Qt::AnchorPoint layoutEdge = oppositeEdge(v->m_edge);
 
     bool dirty = false;
 
@@ -710,9 +709,9 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientatio
 }
 
 QGraphicsAnchorLayoutPrivate::Orientation
-QGraphicsAnchorLayoutPrivate::edgeOrientation(QGraphicsAnchorLayout::Edge edge)
+QGraphicsAnchorLayoutPrivate::edgeOrientation(Qt::AnchorPoint edge)
 {
-    return edge > QGraphicsAnchorLayout::Right ? Vertical : Horizontal;
+    return edge > Qt::AnchorRight ? Vertical : Horizontal;
 }
 
 /*!
@@ -731,22 +730,22 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
 
     // Horizontal
     AnchorData *data = new AnchorData(0, 0, QWIDGETSIZE_MAX);
-    addAnchor(layout, QGraphicsAnchorLayout::Left, layout,
-              QGraphicsAnchorLayout::Right, data);
+    addAnchor(layout, Qt::AnchorLeft, layout,
+              Qt::AnchorRight, data);
     data->skipInPreferred = 1;
 
     // Set the Layout Left edge as the root of the horizontal graph.
-    AnchorVertex *v = internalVertex(layout, QGraphicsAnchorLayout::Left);
+    AnchorVertex *v = internalVertex(layout, Qt::AnchorLeft);
     graph[Horizontal].setRootVertex(v);
 
     // Vertical
     data = new AnchorData(0, 0, QWIDGETSIZE_MAX);
-    addAnchor(layout, QGraphicsAnchorLayout::Top, layout,
-              QGraphicsAnchorLayout::Bottom, data);
+    addAnchor(layout, Qt::AnchorTop, layout,
+              Qt::AnchorBottom, data);
     data->skipInPreferred = 1;
 
     // Set the Layout Top edge as the root of the vertical graph.
-    v = internalVertex(layout, QGraphicsAnchorLayout::Top);
+    v = internalVertex(layout, Qt::AnchorTop);
     graph[Vertical].setRootVertex(v);
 }
 
@@ -754,11 +753,11 @@ void QGraphicsAnchorLayoutPrivate::deleteLayoutEdges()
 {
     Q_Q(QGraphicsAnchorLayout);
 
-    Q_ASSERT(internalVertex(q, QGraphicsAnchorLayout::HCenter) == NULL);
-    Q_ASSERT(internalVertex(q, QGraphicsAnchorLayout::VCenter) == NULL);
+    Q_ASSERT(internalVertex(q, Qt::AnchorHorizontalCenter) == NULL);
+    Q_ASSERT(internalVertex(q, Qt::AnchorVerticalCenter) == NULL);
 
-    removeAnchor(q, QGraphicsAnchorLayout::Left, q, QGraphicsAnchorLayout::Right);
-    removeAnchor(q, QGraphicsAnchorLayout::Top, q, QGraphicsAnchorLayout::Bottom);
+    removeAnchor(q, Qt::AnchorLeft, q, Qt::AnchorRight);
+    removeAnchor(q, Qt::AnchorTop, q, Qt::AnchorBottom);
 }
 
 void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
@@ -773,8 +772,8 @@ void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
     int maximumSize = item->maximumWidth();
 
     AnchorData *data = new AnchorData(minimumSize, preferredSize, maximumSize);
-    addAnchor(item, QGraphicsAnchorLayout::Left, item,
-              QGraphicsAnchorLayout::Right, data);
+    addAnchor(item, Qt::AnchorLeft, item,
+              Qt::AnchorRight, data);
 
     // Vertical
     minimumSize = item->minimumHeight();
@@ -782,8 +781,8 @@ void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
     maximumSize = item->maximumHeight();
 
     data = new AnchorData(minimumSize, preferredSize, maximumSize);
-    addAnchor(item, QGraphicsAnchorLayout::Top, item,
-              QGraphicsAnchorLayout::Bottom, data);
+    addAnchor(item, Qt::AnchorTop, item,
+              Qt::AnchorBottom, data);
 }
 
 /*!
@@ -798,14 +797,14 @@ void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
   these anchors must have the same time at all times.
 */
 void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
-    QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge centerEdge)
+    QGraphicsLayoutItem *item, Qt::AnchorPoint centerEdge)
 {
     Orientation orientation;
     switch (centerEdge) {
-    case QGraphicsAnchorLayout::HCenter:
+    case Qt::AnchorHorizontalCenter:
         orientation = Horizontal;
         break;
-    case QGraphicsAnchorLayout::VCenter:
+    case Qt::AnchorVerticalCenter:
         orientation = Vertical;
         break;
     default:
@@ -820,15 +819,15 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
         return;
 
     // Orientation code
-    QGraphicsAnchorLayout::Edge firstEdge;
-    QGraphicsAnchorLayout::Edge lastEdge;
+    Qt::AnchorPoint firstEdge;
+    Qt::AnchorPoint lastEdge;
 
     if (orientation == Horizontal) {
-        firstEdge = QGraphicsAnchorLayout::Left;
-        lastEdge = QGraphicsAnchorLayout::Right;
+        firstEdge = Qt::AnchorLeft;
+        lastEdge = Qt::AnchorRight;
     } else {
-        firstEdge = QGraphicsAnchorLayout::Top;
-        lastEdge = QGraphicsAnchorLayout::Bottom;
+        firstEdge = Qt::AnchorTop;
+        lastEdge = Qt::AnchorBottom;
     }
 
     AnchorVertex *first = internalVertex(item, firstEdge);
@@ -858,15 +857,15 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
 }
 
 void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
-    QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge centerEdge,
+    QGraphicsLayoutItem *item, Qt::AnchorPoint centerEdge,
     bool substitute)
 {
     Orientation orientation;
     switch (centerEdge) {
-    case QGraphicsAnchorLayout::HCenter:
+    case Qt::AnchorHorizontalCenter:
         orientation = Horizontal;
         break;
-    case QGraphicsAnchorLayout::VCenter:
+    case Qt::AnchorVerticalCenter:
         orientation = Vertical;
         break;
     default:
@@ -877,15 +876,15 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
     Q_ASSERT(!graphSimplified[orientation]);
 
     // Orientation code
-    QGraphicsAnchorLayout::Edge firstEdge;
-    QGraphicsAnchorLayout::Edge lastEdge;
+    Qt::AnchorPoint firstEdge;
+    Qt::AnchorPoint lastEdge;
 
     if (orientation == Horizontal) {
-        firstEdge = QGraphicsAnchorLayout::Left;
-        lastEdge = QGraphicsAnchorLayout::Right;
+        firstEdge = Qt::AnchorLeft;
+        lastEdge = Qt::AnchorRight;
     } else {
-        firstEdge = QGraphicsAnchorLayout::Top;
-        lastEdge = QGraphicsAnchorLayout::Bottom;
+        firstEdge = Qt::AnchorTop;
+        lastEdge = Qt::AnchorBottom;
     }
 
     AnchorVertex *center = internalVertex(item, centerEdge);
@@ -952,11 +951,11 @@ void QGraphicsAnchorLayoutPrivate::removeCenterConstraints(QGraphicsLayoutItem *
     // so that we can remove those easily
 
     AnchorVertex *first = internalVertex(item, orientation == Horizontal ?
-                                       QGraphicsAnchorLayout::Left :
-                                       QGraphicsAnchorLayout::Top);
+                                       Qt::AnchorLeft :
+                                       Qt::AnchorTop);
     AnchorVertex *center = internalVertex(item, orientation == Horizontal ?
-                                        QGraphicsAnchorLayout::HCenter :
-                                        QGraphicsAnchorLayout::VCenter);
+                                        Qt::AnchorHorizontalCenter :
+                                        Qt::AnchorVerticalCenter);
 
     // Skip if no center constraints exist
     if (!center)
@@ -981,26 +980,26 @@ void QGraphicsAnchorLayoutPrivate::removeCenterConstraints(QGraphicsLayoutItem *
  * If \a spacing is 0, it will pick up the spacing defined by the style.
  */
 void QGraphicsAnchorLayoutPrivate::anchor(QGraphicsLayoutItem *firstItem,
-                                          QGraphicsAnchorLayout::Edge firstEdge,
+                                          Qt::AnchorPoint firstEdge,
                                           QGraphicsLayoutItem *secondItem,
-                                          QGraphicsAnchorLayout::Edge secondEdge,
+                                          Qt::AnchorPoint secondEdge,
                                           qreal *spacing)
 {
     Q_Q(QGraphicsAnchorLayout);
     if ((firstItem == 0) || (secondItem == 0)) {
-        qWarning("QGraphicsAnchorLayout::anchor(): "
+        qWarning("QGraphicsAnchorLayout::addAnchor(): "
                  "Cannot anchor NULL items");
         return;
     }
 
     if (firstItem == secondItem) {
-        qWarning("QGraphicsAnchorLayout::anchor(): "
+        qWarning("QGraphicsAnchorLayout::addAnchor(): "
                  "Cannot anchor the item to itself");
         return;
     }
 
     if (edgeOrientation(secondEdge) != edgeOrientation(firstEdge)) {
-        qWarning("QGraphicsAnchorLayout::anchor(): "
+        qWarning("QGraphicsAnchorLayout::addAnchor(): "
                  "Cannot anchor edges of different orientations");
         return;
     }
@@ -1047,7 +1046,7 @@ void QGraphicsAnchorLayoutPrivate::anchor(QGraphicsLayoutItem *firstItem,
         //  Right   ?       0       0
         if (firstItem != q
             && secondItem != q
-            && pickEdge(firstEdge, Horizontal) != QGraphicsAnchorLayout::HCenter
+            && pickEdge(firstEdge, Horizontal) != Qt::AnchorHorizontalCenter
             && oppositeEdge(firstEdge) == secondEdge) {
             data = new AnchorData;      // ask the style later
         } else {
@@ -1064,9 +1063,9 @@ void QGraphicsAnchorLayoutPrivate::anchor(QGraphicsLayoutItem *firstItem,
 }
 
 void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
-                                             QGraphicsAnchorLayout::Edge firstEdge,
+                                             Qt::AnchorPoint firstEdge,
                                              QGraphicsLayoutItem *secondItem,
-                                             QGraphicsAnchorLayout::Edge secondEdge,
+                                             Qt::AnchorPoint secondEdge,
                                              AnchorData *data)
 {
     Q_Q(QGraphicsAnchorLayout);
@@ -1099,59 +1098,10 @@ void QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
     graph[edgeOrientation(firstEdge)].createEdge(v1, v2, data);
 }
 
-AnchorVertex *QGraphicsAnchorLayoutPrivate::addInternalVertex(QGraphicsLayoutItem *item,
-                                                              QGraphicsAnchorLayout::Edge edge)
-{
-    QPair<QGraphicsLayoutItem *, QGraphicsAnchorLayout::Edge> pair(item, edge);
-    QPair<AnchorVertex *, int> v = m_vertexList.value(pair);
-
-    if (!v.first) {
-        Q_ASSERT(v.second == 0);
-        v.first = new AnchorVertex(item, edge);
-    }
-    v.second++;
-    m_vertexList.insert(pair, v);
-    return v.first;
-}
-
-/**
- * \internal
- *
- * returns the AnchorVertex that was dereferenced, also when it was removed.
- * returns 0 if it did not exist.
- */
-void QGraphicsAnchorLayoutPrivate::removeInternalVertex(QGraphicsLayoutItem *item,
-                                                        QGraphicsAnchorLayout::Edge edge)
-{
-    QPair<QGraphicsLayoutItem *, QGraphicsAnchorLayout::Edge> pair(item, edge);
-    QPair<AnchorVertex *, int> v = m_vertexList.value(pair);
-
-    if (!v.first) {
-        qWarning("This item with this edge is not in the graph");
-        return;
-    }
-
-    v.second--;
-    if (v.second == 0) {
-        // Remove reference and delete vertex
-        m_vertexList.remove(pair);
-        delete v.first;
-    } else {
-        // Update reference count
-        m_vertexList.insert(pair, v);
-
-        if ((v.second == 2) &&
-            ((edge == QGraphicsAnchorLayout::HCenter) ||
-             (edge == QGraphicsAnchorLayout::VCenter))) {
-            removeCenterAnchors(item, edge, true);
-        }
-    }
-}
-
 void QGraphicsAnchorLayoutPrivate::removeAnchor(QGraphicsLayoutItem *firstItem,
-                                                QGraphicsAnchorLayout::Edge firstEdge,
+                                                Qt::AnchorPoint firstEdge,
                                                 QGraphicsLayoutItem *secondItem,
-                                                QGraphicsAnchorLayout::Edge secondEdge)
+                                                Qt::AnchorPoint secondEdge)
 {
     // Guarantee that the graph is no simplified when adding this anchor,
     // anchor manipulation always happen in the full graph
@@ -1171,7 +1121,74 @@ void QGraphicsAnchorLayoutPrivate::removeAnchor(QGraphicsLayoutItem *firstItem,
     removeInternalVertex(secondItem, secondEdge);
 }
 
-void QGraphicsAnchorLayoutPrivate::removeVertex(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge edge)
+bool QGraphicsAnchorLayoutPrivate::setAnchorSize(const QGraphicsLayoutItem *firstItem,
+                                                 Qt::AnchorPoint firstEdge,
+                                                 const QGraphicsLayoutItem *secondItem,
+                                                 Qt::AnchorPoint secondEdge,
+                                                 qreal anchorSize)
+{
+    // ### we can avoid restoration if we really want to
+    restoreSimplifiedGraph(edgeOrientation(firstEdge));
+    AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
+    AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
+
+    AnchorData *data = graph[edgeOrientation(firstEdge)].edgeData(v1, v2);
+    if (data)
+        data->setFixedSize(anchorSize);
+
+    return data;
+}
+
+AnchorVertex *QGraphicsAnchorLayoutPrivate::addInternalVertex(QGraphicsLayoutItem *item,
+                                                              Qt::AnchorPoint edge)
+{
+    QPair<QGraphicsLayoutItem *, Qt::AnchorPoint> pair(item, edge);
+    QPair<AnchorVertex *, int> v = m_vertexList.value(pair);
+
+    if (!v.first) {
+        Q_ASSERT(v.second == 0);
+        v.first = new AnchorVertex(item, edge);
+    }
+    v.second++;
+    m_vertexList.insert(pair, v);
+    return v.first;
+}
+
+/**
+ * \internal
+ *
+ * returns the AnchorVertex that was dereferenced, also when it was removed.
+ * returns 0 if it did not exist.
+ */
+void QGraphicsAnchorLayoutPrivate::removeInternalVertex(QGraphicsLayoutItem *item,
+                                                        Qt::AnchorPoint edge)
+{
+    QPair<QGraphicsLayoutItem *, Qt::AnchorPoint> pair(item, edge);
+    QPair<AnchorVertex *, int> v = m_vertexList.value(pair);
+
+    if (!v.first) {
+        qWarning("This item with this edge is not in the graph");
+        return;
+    }
+
+    v.second--;
+    if (v.second == 0) {
+        // Remove reference and delete vertex
+        m_vertexList.remove(pair);
+        delete v.first;
+    } else {
+        // Update reference count
+        m_vertexList.insert(pair, v);
+
+        if ((v.second == 2) &&
+            ((edge == Qt::AnchorHorizontalCenter) ||
+             (edge == Qt::AnchorVerticalCenter))) {
+            removeCenterAnchors(item, edge, true);
+        }
+    }
+}
+
+void QGraphicsAnchorLayoutPrivate::removeVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge)
 {
     if (AnchorVertex *v = internalVertex(item, edge)) {
         Graph<AnchorVertex, AnchorData> &g = graph[edgeOrientation(edge)];
@@ -1190,14 +1207,13 @@ void QGraphicsAnchorLayoutPrivate::removeAnchors(QGraphicsLayoutItem *item)
     Q_ASSERT(!graphSimplified[Horizontal] && !graphSimplified[Vertical]);
 
     // remove the center anchor first!!
-    removeCenterAnchors(item, QGraphicsAnchorLayout::HCenter, false);
-    removeVertex(item, QGraphicsAnchorLayout::Left);
-    removeVertex(item, QGraphicsAnchorLayout::Right);
+    removeCenterAnchors(item, Qt::AnchorHorizontalCenter, false);
+    removeVertex(item, Qt::AnchorLeft);
+    removeVertex(item, Qt::AnchorRight);
 
-    removeCenterAnchors(item, QGraphicsAnchorLayout::VCenter, false);
-    removeVertex(item, QGraphicsAnchorLayout::Top);
-    removeVertex(item, QGraphicsAnchorLayout::Bottom);
-
+    removeCenterAnchors(item, Qt::AnchorVerticalCenter, false);
+    removeVertex(item, Qt::AnchorTop);
+    removeVertex(item, Qt::AnchorBottom);
 }
 
 /*!
@@ -1225,14 +1241,14 @@ void QGraphicsAnchorLayoutPrivate::removeAnchors(QGraphicsLayoutItem *item)
   and Layout Right as another item's Left.
 */
 void QGraphicsAnchorLayoutPrivate::correctEdgeDirection(QGraphicsLayoutItem *&firstItem,
-                                                        QGraphicsAnchorLayout::Edge &firstEdge,
+                                                        Qt::AnchorPoint &firstEdge,
                                                         QGraphicsLayoutItem *&secondItem,
-                                                        QGraphicsAnchorLayout::Edge &secondEdge)
+                                                        Qt::AnchorPoint &secondEdge)
 {
     Q_Q(QGraphicsAnchorLayout);
 
-    QGraphicsAnchorLayout::Edge effectiveFirst = firstEdge;
-    QGraphicsAnchorLayout::Edge effectiveSecond = secondEdge;
+    Qt::AnchorPoint effectiveFirst = firstEdge;
+    Qt::AnchorPoint effectiveSecond = secondEdge;
 
     if (firstItem == q)
         effectiveFirst = QGraphicsAnchorLayoutPrivate::oppositeEdge(firstEdge);
@@ -1375,7 +1391,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     // objective function.
 
     // Retrieve that path
-    AnchorVertex *v = internalVertex(q, pickEdge(QGraphicsAnchorLayout::Right, orientation));
+    AnchorVertex *v = internalVertex(q, pickEdge(Qt::AnchorRight, orientation));
     GraphPath trunkPath = graphPaths[orientation].value(v);
 
     if (!trunkConstraints.isEmpty()) {
@@ -1607,13 +1623,13 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
 
     // Find layout vertices and edges for the current orientation.
     AnchorVertex *layoutFirstVertex = \
-        internalVertex(q, pickEdge(QGraphicsAnchorLayout::Left, orientation));
+        internalVertex(q, pickEdge(Qt::AnchorLeft, orientation));
 
     AnchorVertex *layoutCentralVertex = \
-        internalVertex(q, pickEdge(QGraphicsAnchorLayout::HCenter, orientation));
+        internalVertex(q, pickEdge(Qt::AnchorHorizontalCenter, orientation));
 
     AnchorVertex *layoutLastVertex = \
-        internalVertex(q, pickEdge(QGraphicsAnchorLayout::Right, orientation));
+        internalVertex(q, pickEdge(Qt::AnchorRight, orientation));
 
     Q_ASSERT(layoutFirstVertex && layoutLastVertex);
 
@@ -1710,10 +1726,10 @@ void QGraphicsAnchorLayoutPrivate::setItemsGeometries()
     AnchorVertex *firstH, *secondH, *firstV, *secondV;
 
     foreach (QGraphicsLayoutItem *item, items) {
-        firstH = internalVertex(item, QGraphicsAnchorLayout::Left);
-        secondH = internalVertex(item, QGraphicsAnchorLayout::Right);
-        firstV = internalVertex(item, QGraphicsAnchorLayout::Top);
-        secondV = internalVertex(item, QGraphicsAnchorLayout::Bottom);
+        firstH = internalVertex(item, Qt::AnchorLeft);
+        secondH = internalVertex(item, Qt::AnchorRight);
+        firstV = internalVertex(item, Qt::AnchorTop);
+        secondV = internalVertex(item, Qt::AnchorBottom);
 
         QPointF topLeft(firstH->distance, firstV->distance);
         QPointF bottomRight(secondH->distance, secondV->distance);

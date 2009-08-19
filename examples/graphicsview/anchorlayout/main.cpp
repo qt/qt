@@ -44,37 +44,60 @@ int main(int argc, char **argv)
     w->setLayout(l);
 
     // vertical
-    l->anchor(a, QGraphicsAnchorLayout::Top, l, QGraphicsAnchorLayout::Top, 0);
-    l->anchor(b, QGraphicsAnchorLayout::Top, l, QGraphicsAnchorLayout::Top, 0);
+    l->addAnchor(a, Qt::AnchorTop, l, Qt::AnchorTop);
+    l->setAnchorSpacing(a, Qt::AnchorTop, l, Qt::AnchorTop, 0);
+    l->addAnchor(b, Qt::AnchorTop, l, Qt::AnchorTop);
+    l->setAnchorSpacing(b, Qt::AnchorTop, l, Qt::AnchorTop, 0);
 
-    l->anchor(c, QGraphicsAnchorLayout::Top, a, QGraphicsAnchorLayout::Bottom, 0);
-    l->anchor(c, QGraphicsAnchorLayout::Top, b, QGraphicsAnchorLayout::Bottom, 0);
-    l->anchor(c, QGraphicsAnchorLayout::Bottom, d, QGraphicsAnchorLayout::Top, 0);
-    l->anchor(c, QGraphicsAnchorLayout::Bottom, e, QGraphicsAnchorLayout::Top, 0);
+    l->addAnchor(c, Qt::AnchorTop, a, Qt::AnchorBottom);
+    l->setAnchorSpacing(c, Qt::AnchorTop, a, Qt::AnchorBottom, 0);
+    l->addAnchor(c, Qt::AnchorTop, b, Qt::AnchorBottom);
+    l->setAnchorSpacing(c, Qt::AnchorTop, b, Qt::AnchorBottom, 0);
+    l->addAnchor(c, Qt::AnchorBottom, d, Qt::AnchorTop);
+    l->setAnchorSpacing(c, Qt::AnchorBottom, d, Qt::AnchorTop, 0);
+    l->addAnchor(c, Qt::AnchorBottom, e, Qt::AnchorTop);
+    l->setAnchorSpacing(c, Qt::AnchorBottom, e, Qt::AnchorTop, 0);
 
-    l->anchor(d, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom, 0);
-    l->anchor(e, QGraphicsAnchorLayout::Bottom, l, QGraphicsAnchorLayout::Bottom, 0);
+    l->addAnchor(d, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    l->setAnchorSpacing(d, Qt::AnchorBottom, l, Qt::AnchorBottom, 0);
+    l->addAnchor(e, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    l->setAnchorSpacing(e, Qt::AnchorBottom, l, Qt::AnchorBottom, 0);
 
-    l->anchor(c, QGraphicsAnchorLayout::Top, f, QGraphicsAnchorLayout::Top, 0);
-    l->anchor(c, QGraphicsAnchorLayout::VCenter, f, QGraphicsAnchorLayout::Bottom, 0);
-    l->anchor(f, QGraphicsAnchorLayout::Bottom, g, QGraphicsAnchorLayout::Top, 0);
-    l->anchor(c, QGraphicsAnchorLayout::Bottom, g, QGraphicsAnchorLayout::Bottom, 0);
+    l->addAnchor(c, Qt::AnchorTop, f, Qt::AnchorTop);
+    l->setAnchorSpacing(c, Qt::AnchorTop, f, Qt::AnchorTop, 0);
+    l->addAnchor(c, Qt::AnchorVerticalCenter, f, Qt::AnchorBottom);
+    l->setAnchorSpacing(c, Qt::AnchorVerticalCenter, f, Qt::AnchorBottom, 0);
+    l->addAnchor(f, Qt::AnchorBottom, g, Qt::AnchorTop);
+    l->setAnchorSpacing(f, Qt::AnchorBottom, g, Qt::AnchorTop, 0);
+    l->addAnchor(c, Qt::AnchorBottom, g, Qt::AnchorBottom);
+    l->setAnchorSpacing(c, Qt::AnchorBottom, g, Qt::AnchorBottom, 0);
 
     // horizontal
-    l->anchor(l, QGraphicsAnchorLayout::Left, a, QGraphicsAnchorLayout::Left, 0);
-    l->anchor(l, QGraphicsAnchorLayout::Left, d, QGraphicsAnchorLayout::Left, 0);
-    l->anchor(a, QGraphicsAnchorLayout::Right, b, QGraphicsAnchorLayout::Left, 0);
+    l->addAnchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
+    l->setAnchorSpacing(l, Qt::AnchorLeft, a, Qt::AnchorLeft, 0);
+    l->addAnchor(l, Qt::AnchorLeft, d, Qt::AnchorLeft);
+    l->setAnchorSpacing(l, Qt::AnchorLeft, d, Qt::AnchorLeft, 0);
+    l->addAnchor(a, Qt::AnchorRight, b, Qt::AnchorLeft);
+    l->setAnchorSpacing(a, Qt::AnchorRight, b, Qt::AnchorLeft, 0);
 
-    l->anchor(a, QGraphicsAnchorLayout::Right, c, QGraphicsAnchorLayout::Left, 0);
-    l->anchor(c, QGraphicsAnchorLayout::Right, e, QGraphicsAnchorLayout::Left, 0);
+    l->addAnchor(a, Qt::AnchorRight, c, Qt::AnchorLeft);
+    l->setAnchorSpacing(a, Qt::AnchorRight, c, Qt::AnchorLeft, 0);
+    l->addAnchor(c, Qt::AnchorRight, e, Qt::AnchorLeft);
+    l->setAnchorSpacing(c, Qt::AnchorRight, e, Qt::AnchorLeft, 0);
 
-    l->anchor(b, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right, 0);
-    l->anchor(e, QGraphicsAnchorLayout::Right, l, QGraphicsAnchorLayout::Right, 0);
-    l->anchor(d, QGraphicsAnchorLayout::Right, e, QGraphicsAnchorLayout::Left, 0);
+    l->addAnchor(b, Qt::AnchorRight, l, Qt::AnchorRight);
+    l->setAnchorSpacing(b, Qt::AnchorRight, l, Qt::AnchorRight, 0);
+    l->addAnchor(e, Qt::AnchorRight, l, Qt::AnchorRight);
+    l->setAnchorSpacing(e, Qt::AnchorRight, l, Qt::AnchorRight, 0);
+    l->addAnchor(d, Qt::AnchorRight, e, Qt::AnchorLeft);
+    l->setAnchorSpacing(d, Qt::AnchorRight, e, Qt::AnchorLeft, 0);
 
-    l->anchor(l, QGraphicsAnchorLayout::Left, f, QGraphicsAnchorLayout::Left, 0);
-    l->anchor(l, QGraphicsAnchorLayout::Left, g, QGraphicsAnchorLayout::Left, 0);
-    l->anchor(f, QGraphicsAnchorLayout::Right, g, QGraphicsAnchorLayout::Right, 0);
+    l->addAnchor(l, Qt::AnchorLeft, f, Qt::AnchorLeft);
+    l->setAnchorSpacing(l, Qt::AnchorLeft, f, Qt::AnchorLeft, 0);
+    l->addAnchor(l, Qt::AnchorLeft, g, Qt::AnchorLeft);
+    l->setAnchorSpacing(l, Qt::AnchorLeft, g, Qt::AnchorLeft, 0);
+    l->addAnchor(f, Qt::AnchorRight, g, Qt::AnchorRight);
+    l->setAnchorSpacing(f, Qt::AnchorRight, g, Qt::AnchorRight, 0);
 
     scene.addItem(w);
     scene.setBackgroundBrush(Qt::darkGreen);

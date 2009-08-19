@@ -36,8 +36,8 @@ private:
     void setItemData(const QString &name, const QSizeF &min, const QSizeF &pref, const QSizeF &max);
     QGraphicsLayoutItem *addItem(const QString &name = QString());
     void addAnchorRow();
-    void setAnchorData(QGraphicsLayoutItem *startItem, const QString &startName, QGraphicsAnchorLayout::Edge startEdge,
-                       QGraphicsLayoutItem *endItem, const QString &endName, QGraphicsAnchorLayout::Edge endEdge, int row = -1);
+    void setAnchorData(QGraphicsLayoutItem *startItem, const QString &startName, Qt::AnchorPoint startEdge,
+                       QGraphicsLayoutItem *endItem, const QString &endName, Qt::AnchorPoint endEdge, int row = -1);
 
     bool saveLayout(const QString& fileName);
     bool loadLayout(const QString& fileName, QGraphicsAnchorLayout *layout);

@@ -190,17 +190,17 @@ void Window::rebuildLayout()
         QGraphicsLayoutItem *startItem = layoutItemAt(m_ui.anchors->model(), i, 0);
         if (!startItem)
             continue;
-        QGraphicsAnchorLayout::Edge startEdge = (QGraphicsAnchorLayout::Edge)(m_ui.anchors->item(i, 1)->data(Qt::UserRole).toInt(&ok));
+        Qt::AnchorPoint startEdge = (Qt::AnchorPoint)(m_ui.anchors->item(i, 1)->data(Qt::UserRole).toInt(&ok));
         if (!ok)
             continue;
         QGraphicsLayoutItem *endItem = layoutItemAt(m_ui.anchors->model(), i, 2);
         if (!endItem)
             continue;
-        QGraphicsAnchorLayout::Edge endEdge = (QGraphicsAnchorLayout::Edge)(m_ui.anchors->item(i, 3)->data(Qt::UserRole).toInt(&ok));
+        Qt::AnchorPoint endEdge = (Qt::AnchorPoint)(m_ui.anchors->item(i, 3)->data(Qt::UserRole).toInt(&ok));
         if (!ok)
             continue;
 
-        m_layout->anchor(startItem, startEdge, endItem, endEdge);
+        m_layout->addAnchor(startItem, startEdge, endItem, endEdge);
     }
 }
 
@@ -232,8 +232,8 @@ static const char *strEdges[] = {"Left",
                                  "VCenter",
                                  "Bottom"};
 
-void Window::setAnchorData(QGraphicsLayoutItem *startItem, const QString &startName, QGraphicsAnchorLayout::Edge startEdge,
-                       QGraphicsLayoutItem *endItem, const QString &endName, QGraphicsAnchorLayout::Edge endEdge, int row /*= -1*/)
+void Window::setAnchorData(QGraphicsLayoutItem *startItem, const QString &startName, Qt::AnchorPoint startEdge,
+                       QGraphicsLayoutItem *endItem, const QString &endName, Qt::AnchorPoint endEdge, int row /*= -1*/)
 {
     if (row == -1) {
         row = m_ui.anchors->rowCount();
@@ -286,7 +286,7 @@ void Window::addAnchorRow()
         QString defaultName = defaultLayoutItem->isLayout() ?
                                 QLatin1String("layout") :
                                 defaultLayoutItem->graphicsItem()->data(0).toString();
-        setAnchorData(defaultLayoutItem, defaultName, QGraphicsAnchorLayout::Right, defaultLayoutItem, defaultName, QGraphicsAnchorLayout::Left, rc);
+        setAnchorData(defaultLayoutItem, defaultName, Qt::AnchorRight, defaultLayoutItem, defaultName, Qt::AnchorLeft, rc);
         rebuildLayout();
     }
 }
@@ -324,7 +324,6 @@ bool Window::saveLayout(const QString& fileName)
             xml.writeAttribute(QLatin1String("id"), name);
             for (int p = 0; p < 3; ++p) {
                 const char *propertyNames[] = {"minimumSize", "preferredSize", "maximumSize"};
-                int b;
                 typedef  QSizeF (QGraphicsLayoutItem::*QGLISizeGetter)(void) const;
                 QGLISizeGetter sizeGetters[] = { &QGraphicsLayoutItem::minimumSize,
                                                                         &QGraphicsLayoutItem::preferredSize,
@@ -353,13 +352,13 @@ bool Window::saveLayout(const QString& fileName)
             QGraphicsLayoutItem *startItem = layoutItemAt(m_ui.anchors->model(), i, 0);
             if (!startItem)
                 continue;
-            QGraphicsAnchorLayout::Edge startEdge = (QGraphicsAnchorLayout::Edge)(m_ui.anchors->item(i, 1)->data(Qt::UserRole).toInt(&ok));
+            Qt::AnchorPoint startEdge = (Qt::AnchorPoint)(m_ui.anchors->item(i, 1)->data(Qt::UserRole).toInt(&ok));
             if (!ok)
                 continue;
             QGraphicsLayoutItem *endItem = layoutItemAt(m_ui.anchors->model(), i, 2);
             if (!endItem)
                 continue;
-            QGraphicsAnchorLayout::Edge endEdge = (QGraphicsAnchorLayout::Edge)(m_ui.anchors->item(i, 3)->data(Qt::UserRole).toInt(&ok));
+            Qt::AnchorPoint endEdge = (Qt::AnchorPoint)(m_ui.anchors->item(i, 3)->data(Qt::UserRole).toInt(&ok));
             if (!ok)
                 continue;
 
@@ -416,24 +415,24 @@ static bool parseProperty(QXmlStreamReader *xml, QString *name, QSizeF *size)
     return false;
 }
 
-static bool parseEdge(const QString &itemEdge, QByteArray *id, QGraphicsAnchorLayout::Edge *edge)
+static bool parseEdge(const QString &itemEdge, QByteArray *id, Qt::AnchorPoint *edge)
 {
     QStringList item_edge = itemEdge.split(QLatin1Char('.'));
     bool ok = item_edge.count() == 2;
     if (ok) {
         QByteArray strEdge = item_edge.at(1).toAscii().toLower();
         if (strEdge == "left") {
-            *edge = QGraphicsAnchorLayout::Left;
+            *edge = Qt::AnchorLeft;
         } else if (strEdge == "hcenter") {
-            *edge = QGraphicsAnchorLayout::HCenter;
+            *edge = Qt::AnchorHorizontalCenter;
         } else if (strEdge == "right") {
-            *edge = QGraphicsAnchorLayout::Right;
+            *edge = Qt::AnchorRight;
         } else if (strEdge == "top") {
-            *edge = QGraphicsAnchorLayout::Top;
+            *edge = Qt::AnchorTop;
         } else if (strEdge == "vcenter") {
-            *edge = QGraphicsAnchorLayout::VCenter;
+            *edge = Qt::AnchorVerticalCenter;
         } else if (strEdge == "bottom") {
-            *edge = QGraphicsAnchorLayout::Bottom;
+            *edge = Qt::AnchorBottom;
         } else {
             ok = false;
         }
@@ -482,7 +481,7 @@ bool Window::loadLayout(const QString& fileName, QGraphicsAnchorLayout *layout)
                     QString first = attrs.value("first").toString();
                     QString second = attrs.value("second").toString();
                     QByteArray startID;
-                    QGraphicsAnchorLayout::Edge startEdge;
+                    Qt::AnchorPoint startEdge;
                     QGraphicsLayoutItem *startItem = 0;
                     if (parseEdge(first, &startID, &startEdge)) {
                         if (startID == "this") {
@@ -497,7 +496,7 @@ bool Window::loadLayout(const QString& fileName, QGraphicsAnchorLayout *layout)
                     }
 
                     QByteArray endID;
-                    QGraphicsAnchorLayout::Edge endEdge;
+                    Qt::AnchorPoint endEdge;
                     QGraphicsLayoutItem *endItem = 0;
                     if (parseEdge(second, &endID, &endEdge)) {
                         if (endID == "this") {

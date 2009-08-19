@@ -1419,6 +1419,17 @@ public:
         RightToLeft
     };
 
+    enum AnchorPoint {
+        AnchorLeft = 0,
+        AnchorHorizontalCenter,
+        AnchorRight,
+        AnchorTop,
+        AnchorVerticalCenter,
+        AnchorBottom
+    };
+
+
+
     enum DropAction {
         CopyAction = 0x1,
         MoveAction = 0x2,

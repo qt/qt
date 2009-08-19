@@ -48,7 +48,7 @@
 
 /*
   The public QGraphicsAnchorLayout interface represents an anchorage point
-  as a pair of a <QGraphicsLayoutItem *> and a <QGraphicsAnchorLayout::Edge>.
+  as a pair of a <QGraphicsLayoutItem *> and a <Qt::AnchorPoint>.
 
   Internally though, it has a graph of anchorage points (vertices) and
   anchors (edges), represented by the AnchorVertex and AnchorData structs
@@ -61,17 +61,17 @@
   Represents a vertex (anchorage point) in the internal graph
 */
 struct AnchorVertex {
-    AnchorVertex(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge edge)
+    AnchorVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge)
         : m_item(item), m_edge(edge) {}
 
     AnchorVertex()
-        : m_item(0), m_edge(QGraphicsAnchorLayout::Edge(0)) {}
+        : m_item(0), m_edge(Qt::AnchorPoint(0)) {}
 
 #ifdef QT_DEBUG
     inline QString toString() const;
 #endif
     QGraphicsLayoutItem *m_item;
-    QGraphicsAnchorLayout::Edge m_edge;
+    Qt::AnchorPoint m_edge;
 
     // Current distance from this vertex to the layout edge (Left or Top)
     // Value is calculated from the current anchors sizes.
@@ -86,22 +86,22 @@ inline QString AnchorVertex::toString() const
     }
     QString edge;
     switch (m_edge) {
-    case QGraphicsAnchorLayout::Left:
+    case Qt::AnchorLeft:
         edge = QLatin1String("Left");
         break;
-    case QGraphicsAnchorLayout::HCenter:
+    case Qt::AnchorHorizontalCenter:
         edge = QLatin1String("HorizontalCenter");
         break;
-    case QGraphicsAnchorLayout::Right:
+    case Qt::AnchorRight:
         edge = QLatin1String("Right");
         break;
-    case QGraphicsAnchorLayout::Top:
+    case Qt::AnchorTop:
         edge = QLatin1String("Top");
         break;
-    case QGraphicsAnchorLayout::VCenter:
+    case Qt::AnchorVerticalCenter:
         edge = QLatin1String("VerticalCenter");
         break;
-    case QGraphicsAnchorLayout::Bottom:
+    case Qt::AnchorBottom:
         edge = QLatin1String("Bottom");
         break;
     default:
@@ -164,6 +164,17 @@ struct AnchorData : public QSimplexVariable {
     inline QString toString() const;
     QString name;
 #endif
+
+    inline void setFixedSize(qreal size)
+    {
+        minSize = size;
+        prefSize = size;
+        maxSize = size;
+        sizeAtMinimum = size;
+        sizeAtPreferred = size;
+        sizeAtMaximum = size;
+        hasSize = true;
+    }
 
     // Anchor is semantically directed
     AnchorVertex *from;
@@ -310,17 +321,17 @@ public:
 
     QGraphicsAnchorLayoutPrivate();
 
-    static QGraphicsAnchorLayout::Edge oppositeEdge(
-        QGraphicsAnchorLayout::Edge edge);
+    static Qt::AnchorPoint oppositeEdge(
+        Qt::AnchorPoint edge);
 
-    static Orientation edgeOrientation(QGraphicsAnchorLayout::Edge edge);
+    static Orientation edgeOrientation(Qt::AnchorPoint edge);
 
-    static QGraphicsAnchorLayout::Edge pickEdge(QGraphicsAnchorLayout::Edge edge, Orientation orientation)
+    static Qt::AnchorPoint pickEdge(Qt::AnchorPoint edge, Orientation orientation)
     {
         if (orientation == Vertical && int(edge) <= 2)
-            return (QGraphicsAnchorLayout::Edge)(edge + 3);
+            return (Qt::AnchorPoint)(edge + 3);
         else if (orientation == Horizontal && int(edge) >= 3) {
-            return (QGraphicsAnchorLayout::Edge)(edge - 3);
+            return (Qt::AnchorPoint)(edge - 3);
         }
         return edge;
     }
@@ -329,37 +340,43 @@ public:
     void createLayoutEdges();
     void deleteLayoutEdges();
     void createItemEdges(QGraphicsLayoutItem *item);
-    void createCenterAnchors(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge centerEdge);
-    void removeCenterAnchors(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge centerEdge, bool substitute = true);
+    void createCenterAnchors(QGraphicsLayoutItem *item, Qt::AnchorPoint centerEdge);
+    void removeCenterAnchors(QGraphicsLayoutItem *item, Qt::AnchorPoint centerEdge, bool substitute = true);
     void removeCenterConstraints(QGraphicsLayoutItem *item, Orientation orientation);
 
     // helper function used by the 4 API functions
     void anchor(QGraphicsLayoutItem *firstItem,
-                QGraphicsAnchorLayout::Edge firstEdge,
+                Qt::AnchorPoint firstEdge,
                 QGraphicsLayoutItem *secondItem,
-                QGraphicsAnchorLayout::Edge secondEdge,
+                Qt::AnchorPoint secondEdge,
                 qreal *spacing = 0);
 
     // Anchor Manipulation methods
     void addAnchor(QGraphicsLayoutItem *firstItem,
-                   QGraphicsAnchorLayout::Edge firstEdge,
+                   Qt::AnchorPoint firstEdge,
                    QGraphicsLayoutItem *secondItem,
-                   QGraphicsAnchorLayout::Edge secondEdge,
+                   Qt::AnchorPoint secondEdge,
                    AnchorData *data);
 
     void removeAnchor(QGraphicsLayoutItem *firstItem,
-                      QGraphicsAnchorLayout::Edge firstEdge,
+                      Qt::AnchorPoint firstEdge,
                       QGraphicsLayoutItem *secondItem,
-                      QGraphicsAnchorLayout::Edge secondEdge);
+                      Qt::AnchorPoint secondEdge);
+
+    bool setAnchorSize(const QGraphicsLayoutItem *firstItem,
+                       Qt::AnchorPoint firstEdge,
+                       const QGraphicsLayoutItem *secondItem,
+                       Qt::AnchorPoint secondEdge,
+                       qreal anchorSize);
 
     void removeAnchors(QGraphicsLayoutItem *item);
 
-    void removeVertex(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge edge);
+    void removeVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge);
 
     void correctEdgeDirection(QGraphicsLayoutItem *&firstItem,
-                              QGraphicsAnchorLayout::Edge &firstEdge,
+                              Qt::AnchorPoint &firstEdge,
                               QGraphicsLayoutItem *&secondItem,
-                              QGraphicsAnchorLayout::Edge &secondEdge);
+                              Qt::AnchorPoint &secondEdge);
     // for getting the actual spacing (will query the style if the
     // spacing is not explicitly set).
     qreal effectiveSpacing(Orientation orientation) const;
@@ -377,18 +394,18 @@ public:
     QList<QSimplexConstraint *> constraintsFromSizeHints(const QList<AnchorData *> &anchors);
     QList<QList<QSimplexConstraint *> > getGraphParts(Orientation orientation);
 
-    inline AnchorVertex *internalVertex(const QPair<QGraphicsLayoutItem*, QGraphicsAnchorLayout::Edge> &itemEdge)
+    inline AnchorVertex *internalVertex(const QPair<QGraphicsLayoutItem*, Qt::AnchorPoint> &itemEdge)
     {
         return m_vertexList.value(itemEdge).first;
     }
 
-    inline AnchorVertex *internalVertex(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge edge)
+    inline AnchorVertex *internalVertex(const QGraphicsLayoutItem *item, Qt::AnchorPoint edge)
     {
-        return internalVertex(qMakePair(item, edge));
+        return internalVertex(qMakePair(const_cast<QGraphicsLayoutItem *>(item), edge));
     }
 
-    AnchorVertex *addInternalVertex(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge edge);
-    void removeInternalVertex(QGraphicsLayoutItem *item, QGraphicsAnchorLayout::Edge edge);
+    AnchorVertex *addInternalVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge);
+    void removeInternalVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge);
 
     // Geometry interpolation methods
     void setItemsGeometries();
@@ -421,7 +438,7 @@ public:
     // Mapping between high level anchorage points (Item, Edge) to low level
     // ones (Graph Vertices)
 
-    QHash<QPair<QGraphicsLayoutItem*, QGraphicsAnchorLayout::Edge>, QPair<AnchorVertex *, int> > m_vertexList;
+    QHash<QPair<QGraphicsLayoutItem*, Qt::AnchorPoint>, QPair<AnchorVertex *, int> > m_vertexList;
 
     // Internal graph of anchorage points and anchors, for both orientations
     Graph<AnchorVertex, AnchorData> graph[2];

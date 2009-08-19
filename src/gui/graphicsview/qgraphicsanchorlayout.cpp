@@ -56,7 +56,7 @@
         QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
         QGraphicsWidget *a = new QGraphicsWidget;
         QGraphicsWidget *b = new QGraphicsWidget;
-        l->anchor(a, QGraphicsAnchorLayout::Right, b, QGraphicsAnchorLayout::Left);
+        l->anchor(a, Qt::AnchorRight, b, Qt::AnchorLeft);
     \endcode
 
     Here is the right edge of item A anchored to the left edge of item B, with the result that
@@ -114,7 +114,7 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
 /*!
  * Creates an anchor between the edge \a firstEdge of item \a firstItem and the edge \a secondEdge
  * of item \a secondItem. The magnitude of the anchor is picked up from the style. Anchors
- * between  a layout edge and an item edge will have a size of 0.
+ * between a layout edge and an item edge will have a size of 0.
  * If there is already an anchor between the edges, the the new anchor will replace the old one.
  *
  * \a firstItem and \a secondItem are automatically added to the layout if they are not part
@@ -126,31 +126,27 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
  * the default vertical spacing). For all other anchor combinations, the spacing will be 0.
  * All anchoring functions will follow this rule.
  *
- * \sa removeAnchor, anchorCorner, anchorWidth, anchorHeight, anchorGeometry
+ * The spacing can also be set manually by using setAnchorSpacing() method.
+ *
+ * \sa removeAnchor, addCornerAnchors, addLeftAndRightAnchors, addTopAndBottomAnchors, addAllAnchors
  */
-void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
-                                   Edge firstEdge,
-                                   QGraphicsLayoutItem *secondItem,
-                                   Edge secondEdge)
+void QGraphicsAnchorLayout::addAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                                      QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge)
 {
     Q_D(QGraphicsAnchorLayout);
     d->anchor(firstItem, firstEdge, secondItem, secondEdge);
     invalidate();
 }
 
-/*!
- * \overload
- *
- * By calling this function the caller can specify the magnitude of the anchor with \a spacing.
- *
- */
-void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
-                                   Edge firstEdge,
-                                   QGraphicsLayoutItem *secondItem,
-                                   Edge secondEdge, qreal spacing)
+void QGraphicsAnchorLayout::setAnchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                                             const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge,
+                                             qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
-    d->anchor(firstItem, firstEdge, secondItem, secondEdge, &spacing);
+
+    if (!d->setAnchorSize(firstItem, firstEdge, secondItem, secondEdge, spacing)) {
+        qWarning("setAnchorSpacing: The anchor does not exist.");
+    }
     invalidate();
 }
 
@@ -163,14 +159,14 @@ void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
  * This is a convenience function, since anchoring corners can be expressed as anchoring two edges.
  * For instance,
  * \code
- *  layout->anchor(layout, QGraphicsAnchorLayout::Top, b, QGraphicsAnchorLayout::Top);
- *  layout->anchor(layout, QGraphicsAnchorLayout::Left, b, QGraphicsAnchorLayout::Left);
+ *  layout->addAnchor(layout, Qt::AnchorTop, b, Qt::AnchorTop);
+ *  layout->addAnchor(layout, Qt::AnchorLeft, b, Qt::AnchorLeft);
  * \endcode
  *
  * has the same effect as
  *
  * \code
- * layout->anchorCorner(layout, Qt::TopLeft, b, Qt::TopLeft);
+ * layout->addCornerAnchors(layout, Qt::TopLeft, b, Qt::TopLeft);
  * \endcode
  *
  * If there is already an anchor between the edge pairs, it will be replaced by the anchors that
@@ -179,116 +175,76 @@ void QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem,
  * \a firstItem and \a secondItem are automatically added to the layout if they are not part
  * of the layout. This means that count() can increase with up to 2.
  */
-void QGraphicsAnchorLayout::anchorCorner(QGraphicsLayoutItem *firstItem,
-                                         Qt::Corner firstCorner,
-                                         QGraphicsLayoutItem *secondItem,
-                                         Qt::Corner secondCorner)
+void QGraphicsAnchorLayout::addCornerAnchors(QGraphicsLayoutItem *firstItem,
+                                             Qt::Corner firstCorner,
+                                             QGraphicsLayoutItem *secondItem,
+                                             Qt::Corner secondCorner)
 {
     Q_D(QGraphicsAnchorLayout);
 
     // Horizontal anchor
-    QGraphicsAnchorLayout::Edge firstEdge = (firstCorner & 1 ? QGraphicsAnchorLayout::Right: QGraphicsAnchorLayout::Left);
-    QGraphicsAnchorLayout::Edge secondEdge = (secondCorner & 1 ? QGraphicsAnchorLayout::Right: QGraphicsAnchorLayout::Left);
+    Qt::AnchorPoint firstEdge = (firstCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
+    Qt::AnchorPoint secondEdge = (secondCorner & 1 ? Qt::AnchorRight: Qt::AnchorLeft);
     d->anchor(firstItem, firstEdge, secondItem, secondEdge);
 
     // Vertical anchor
-    firstEdge = (firstCorner & 2 ? QGraphicsAnchorLayout::Bottom: QGraphicsAnchorLayout::Top);
-    secondEdge = (secondCorner & 2 ? QGraphicsAnchorLayout::Bottom: QGraphicsAnchorLayout::Top);
+    firstEdge = (firstCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
+    secondEdge = (secondCorner & 2 ? Qt::AnchorBottom: Qt::AnchorTop);
     d->anchor(firstItem, firstEdge, secondItem, secondEdge);
 
     invalidate();
 }
 
 /*!
- * \overload
- *
- * By calling this function the caller can specify the magnitude of the anchor with \a spacing.
- *
- */
-void QGraphicsAnchorLayout::anchorCorner(QGraphicsLayoutItem *firstItem,
-                                         Qt::Corner firstCorner,
-                                         QGraphicsLayoutItem *secondItem,
-                                         Qt::Corner secondCorner, qreal spacing)
+    \fn QGraphicsAnchorLayout::addLeftAndRightAnchors(QGraphicsLayoutItem *firstEdge, QGraphicsLayoutItem *secondEdge)
+
+    This convenience function is equivalent to calling
+    \code
+    l->addAnchor(firstEdge, Qt::AnchorLeft, secondEdge, Qt::AnchorLeft);
+    l->addAnchor(firstEdge, Qt::AnchorRight, secondEdge, Qt::AnchorRight);
+    \endcode
+*/
+
+/*!
+    \fn QGraphicsAnchorLayout::addTopAndBottomAnchors(QGraphicsLayoutItem *firstEdge, QGraphicsLayoutItem *secondEdge)
+
+    This convenience function is equivalent to calling
+    \code
+    l->addAnchor(firstEdge, Qt::AnchorTop, secondEdge, Qt::AnchorTop);
+    l->addAnchor(firstEdge, Qt::AnchorBottom, secondEdge, Qt::AnchorBottom);
+    \endcode
+*/
+
+/*!
+    \fn QGraphicsAnchorLayout::addAllAnchors(QGraphicsLayoutItem *firstEdge, QGraphicsLayoutItem *secondEdge)
+
+    This convenience function is equivalent to calling
+    \code
+    l->addLeftAndRightAnchors(firstEdge, secondEdge);
+    l->addTopAndBottomAnchors(firstEdge, secondEdge);
+    \endcode
+*/
+
+qreal QGraphicsAnchorLayout::anchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                                           const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge) const
 {
-    Q_D(QGraphicsAnchorLayout);
-
-    // Horizontal anchor
-    QGraphicsAnchorLayout::Edge firstEdge = (firstCorner & 1 ? QGraphicsAnchorLayout::Right: QGraphicsAnchorLayout::Left);
-    QGraphicsAnchorLayout::Edge secondEdge = (secondCorner & 1 ? QGraphicsAnchorLayout::Right: QGraphicsAnchorLayout::Left);
-    d->anchor(firstItem, firstEdge, secondItem, secondEdge, &spacing);
-
-    // Vertical anchor
-    firstEdge = (firstCorner & 2 ? QGraphicsAnchorLayout::Bottom: QGraphicsAnchorLayout::Top);
-    secondEdge = (secondCorner & 2 ? QGraphicsAnchorLayout::Bottom: QGraphicsAnchorLayout::Top);
-    d->anchor(firstItem, firstEdge, secondItem, secondEdge, &spacing);
-
-    invalidate();
+    qWarning("// ### TO BE IMPLEMENTED");
+    return 0;
 }
 
-/*!
-    \fn QGraphicsAnchorLayout::anchorWidth(QGraphicsLayoutItem *item, QGraphicsLayoutItem *relativeTo = 0)
-
-    This convenience function is equivalent to calling
-    \code
-    if (!relativeTo)
-        relativeTo = lay;
-    lay->anchor(relativeTo, QGraphicsAnchorLayout::Left, item, QGraphicsAnchorLayout::Left);
-    lay->anchor(relativeTo, QGraphicsAnchorLayout::Right, item, QGraphicsAnchorLayout::Right);
-    \endcode
-*/
-
-/*!
-    \fn QGraphicsAnchorLayout::anchorWidth(QGraphicsLayoutItem *item, QGraphicsLayoutItem *relativeTo, qreal spacing)
-
-    \overload
-
-    By calling this function the caller can specify the magnitude of the anchor with \a spacing.
-*/
-
-/*!
-    \fn QGraphicsAnchorLayout::anchorHeight(QGraphicsLayoutItem *item, QGraphicsLayoutItem *relativeTo = 0)
-
-    This convenience function is equivalent to calling
-    \code
-    if (!relativeTo)
-        relativeTo = lay;
-    lay->anchor(relativeTo, QGraphicsAnchorLayout::Top, item, QGraphicsAnchorLayout::Top);
-    lay->anchor(relativeTo, QGraphicsAnchorLayout::Bottom, item, QGraphicsAnchorLayout::Bottom);
-    \endcode
-*/
-
-/*!
-    \fn QGraphicsAnchorLayout::anchorHeight(QGraphicsLayoutItem *item, QGraphicsLayoutItem *relativeTo, qreal spacing)
-
-    \overload
-
-    By calling this function the caller can specify the magnitude of the anchor with \a spacing.
-*/
-
-/*!
-    \fn QGraphicsAnchorLayout::anchorGeometry(QGraphicsLayoutItem *item, QGraphicsLayoutItem *relativeTo = 0)
-
-    This convenience function is equivalent to calling
-    \code
-    anchorWidth(item, relativeTo);
-    anchorHeight(item, relativeTo);
-    \endcode
-*/
-
-/*!
-    \fn QGraphicsAnchorLayout::anchorGeometry(QGraphicsLayoutItem *item, QGraphicsLayoutItem *relativeTo, qreal spacing)
-
-    \overload
-
-    By calling this function the caller can specify the magnitude of the anchor with \a spacing.
-*/
+void QGraphicsAnchorLayout::unsetAnchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                                               const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge)
+{
+    qWarning("// ### TO BE IMPLEMENTED");
+    invalidate();
+}
 
 /*!
    Removes the anchor between the edge \a firstEdge of item \a firstItem and the edge \a secondEdge
    of item \a secondItem. If such an anchor does not exist, the layout will be left unchanged.
 */
-void QGraphicsAnchorLayout::removeAnchor(QGraphicsLayoutItem *firstItem, Edge firstEdge,
-                                         QGraphicsLayoutItem *secondItem, Edge secondEdge)
+void QGraphicsAnchorLayout::removeAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                                         QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge)
 {
     Q_D(QGraphicsAnchorLayout);
     if ((firstItem == 0) || (secondItem == 0)) {
