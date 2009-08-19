@@ -302,7 +302,7 @@ namespace QT_NAMESPACE {}
 #  ifdef MAC_OS_X_VERSION_MIN_REQUIRED
 #    undef MAC_OS_X_VERSION_MIN_REQUIRED
 #  endif
-#  define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_3
+#  define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_4
 #  include <AvailabilityMacros.h>
 #  if !defined(MAC_OS_X_VERSION_10_3)
 #     define MAC_OS_X_VERSION_10_3 MAC_OS_X_VERSION_10_2 + 1

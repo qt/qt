@@ -194,6 +194,7 @@ SUBDIRS += \
            qmainwindow \
            qmake \
            qmap \
+           qmatrixnxn \
            qmdiarea \
            qmdisubwindow \
            qmenu \
@@ -240,7 +241,7 @@ SUBDIRS += \
            qprogressdialog \
            qpropertyanimation \
            qpushbutton \
-           qscopedpointer \
+           qquaternion \
            qqueue \
            qradiobutton \
            qreadlocker \
@@ -251,6 +252,7 @@ SUBDIRS += \
            qregion \
            qresourceengine \
            qringbuffer \
+           qscopedpointer \
            qscriptable \
            qscriptclass \
            qscriptcontext \
@@ -373,6 +375,7 @@ SUBDIRS += \
            qvariant \
            qvarlengtharray \
            qvector \
+           qvectornd \
            qwaitcondition \
            qwidget \
            qwidgetaction \
@@ -477,5 +480,3 @@ contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebhistoryinterface \
            qwebelement \
            qwebhistory
-
-SUBDIRS += math3d

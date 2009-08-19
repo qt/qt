@@ -872,7 +872,7 @@ extern "C" {
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
     qNGEvent.percentage = [event magnification];
-    qApp->sendEvent(qwidget, &qNGEvent);
+    qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
 
 - (void)rotateWithEvent:(NSEvent *)event;
@@ -885,7 +885,7 @@ extern "C" {
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
     qNGEvent.percentage = [event rotation];
-    qApp->sendEvent(qwidget, &qNGEvent);
+    qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
 
 - (void)swipeWithEvent:(NSEvent *)event;
@@ -898,7 +898,7 @@ extern "C" {
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
     qNGEvent.direction = QSize(-[event deltaX], -[event deltaY]);
-    qApp->sendEvent(qwidget, &qNGEvent);
+    qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
 
 - (void)beginGestureWithEvent:(NSEvent *)event;
@@ -910,7 +910,7 @@ extern "C" {
     qNGEvent.gestureType = QNativeGestureEvent::GestureBegin;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
-    qApp->sendEvent(qwidget, &qNGEvent);
+    qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
 
 - (void)endGestureWithEvent:(NSEvent *)event;
@@ -922,7 +922,7 @@ extern "C" {
     qNGEvent.gestureType = QNativeGestureEvent::GestureEnd;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
-    qApp->sendEvent(qwidget, &qNGEvent);
+    qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
 #endif // MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
 
