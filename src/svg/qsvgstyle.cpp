@@ -523,11 +523,14 @@ void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
     if (totalTimeElapsed < m_from || m_finished)
         return;
 
-    qreal animationFrame = (totalTimeElapsed - m_from) / m_to;
+    qreal animationFrame = 0;
+    if (m_totalRunningTime != 0) {
+        animationFrame = (totalTimeElapsed - m_from) / m_totalRunningTime;
 
-    if (m_repeatCount >= 0 && m_repeatCount < animationFrame) {
-        m_finished = true;
-        animationFrame = m_repeatCount;
+        if (m_repeatCount >= 0 && m_repeatCount < animationFrame) {
+            m_finished = true;
+            animationFrame = m_repeatCount;
+        }
     }
 
     qreal percentOfAnimation = animationFrame;
