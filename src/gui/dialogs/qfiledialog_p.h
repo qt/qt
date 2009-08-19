@@ -76,6 +76,8 @@
 #include <qdebug.h>
 #include "qsidebar_p.h"
 #include "qfscompleter_p.h"
+#include "../kernel/qguiplatformplugin_p.h"
+
 
 #if defined (Q_OS_UNIX)
 #include <unistd.h>
@@ -405,17 +407,17 @@ inline QString QFileDialogPrivate::rootPath() const {
 
 #ifndef Q_WS_MAC
     // Dummies for platforms that don't use native dialogs:
-    inline void QFileDialogPrivate::deleteNativeDialog_sys() {}
-    inline bool QFileDialogPrivate::setVisible_sys(bool) { return false; }
-    inline QDialog::DialogCode QFileDialogPrivate::dialogResultCode_sys(){ return QDialog::Rejected; }
-    inline void QFileDialogPrivate::setDirectory_sys(const QString &) {}
-    inline QString QFileDialogPrivate::directory_sys() const { return QString(); }
-    inline void QFileDialogPrivate::selectFile_sys(const QString &) {}
-    inline QStringList QFileDialogPrivate::selectedFiles_sys() const { return QStringList(); }
-    inline void QFileDialogPrivate::setFilter_sys() {}
-    inline void QFileDialogPrivate::setNameFilters_sys(const QStringList &) {}
-    inline void QFileDialogPrivate::selectNameFilter_sys(const QString &) {}
-    inline QString QFileDialogPrivate::selectedNameFilter_sys() const { return QString(); }
+    inline void QFileDialogPrivate::deleteNativeDialog_sys() { qt_guiPlatformPlugin()->fileDialogDelete(q_func()); }
+    inline bool QFileDialogPrivate::setVisible_sys(bool visible) { return qt_guiPlatformPlugin()->fileDialogSetVisible(q_func(), visible); }
+    inline QDialog::DialogCode QFileDialogPrivate::dialogResultCode_sys(){ return qt_guiPlatformPlugin()->fileDialogResultCode(q_func()); }
+    inline void QFileDialogPrivate::setDirectory_sys(const QString &directory) { qt_guiPlatformPlugin()->fileDialogSetDirectory(q_func(), directory); }
+    inline QString QFileDialogPrivate::directory_sys() const { return qt_guiPlatformPlugin()->fileDialogDirectory(q_func()); }
+    inline void QFileDialogPrivate::selectFile_sys(const QString &filename) { qt_guiPlatformPlugin()->fileDialogSelectFile(q_func(), filename); }
+    inline QStringList QFileDialogPrivate::selectedFiles_sys() const { return qt_guiPlatformPlugin()->fileDialogSelectedFiles(q_func()); }
+    inline void QFileDialogPrivate::setFilter_sys() { qt_guiPlatformPlugin()->fileDialogSetFilter(q_func()); }
+    inline void QFileDialogPrivate::setNameFilters_sys(const QStringList &filters) { qt_guiPlatformPlugin()->fileDialogSetNameFilters(q_func(), filters); }
+    inline void QFileDialogPrivate::selectNameFilter_sys(const QString &filter) { qt_guiPlatformPlugin()->fileDialogSelectNameFilter(q_func(), filter); }
+    inline QString QFileDialogPrivate::selectedNameFilter_sys() const { return qt_guiPlatformPlugin()->fileDialogSelectedNameFilter(q_func()); }
 #endif
 
 QT_END_NAMESPACE

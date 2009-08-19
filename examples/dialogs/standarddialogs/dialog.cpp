@@ -150,11 +150,6 @@ Dialog::Dialog(QWidget *parent)
     native = new QCheckBox(this);
     native->setText("Use native file dialog.");
     native->setChecked(true);
-#ifndef Q_WS_WIN
-#ifndef Q_OS_MAC
-    native->hide();
-#endif
-#endif
     QGridLayout *layout = new QGridLayout;
     layout->setColumnStretch(1, 1);
     layout->setColumnMinimumWidth(1, 250);

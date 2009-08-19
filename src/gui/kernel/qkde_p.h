@@ -61,12 +61,17 @@
 
 QT_BEGIN_NAMESPACE
 
-// This namespace contains helper function to help KDE integration
+/*!\internal
+   This namespace contains helper function to help KDE integration
+   They are only used if we detect the use of KDE and the KDE platform plugin is not found (old KDE version)
+   Or if the detected KDE version is KDE3
+*/
 namespace QKde {
     QString kdeHome();
     QString kdeStyle();
     QPalette kdePalette();
-    QIcon kdeIcon(const QString &name);
+    int kdeToolButtonStyle();
+    int kdeToolBarIconSize();
 }
 
 
