@@ -5745,18 +5745,17 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
 
     // Don't recalculate entire layout because of translation, rather add the dx and dy
     // into the position to move each text item the correct distance.
-    QPointF translatedPosition = position;
-    QTransform matrix = d->state->transform();
-    if (matrix.isTranslating()) {
-        translatedPosition.rx() += matrix.dx();
-        translatedPosition.ry() += matrix.dy();
-        translate(-matrix.dx(), -matrix.dy());
-    }
+    QPointF transformedPosition = position * d->state->matrix;
+    QTransform matrix = d->state->matrix;
+
+    // Already added in transformedPosition
+    if (d->state->matrix.isTranslating())
+        translate(-d->state->matrix.dx(), -d->state->matrix.dy());    
 
     // If the transform is not identical to the text transform,
     // we have to relayout the text (for other transformations than plain translation)
-    if (staticText_d->matrix != d->state->transform()) {
-        staticText_d->matrix = d->state->transform();
+    if (staticText_d->matrix != d->state->matrix) {
+        staticText_d->matrix = d->state->matrix;
         staticText_d->init();
     }
 
@@ -5779,7 +5778,7 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
 
     for (int i=0; i<staticText_d->itemCount; ++i) {
         QStaticTextItem *item = staticText_d->items + i;
-        d->extended->drawStaticTextItem(translatedPosition, item);
+        d->extended->drawStaticTextItem(transformedPosition, item);
     }
 
     if (restoreWhenFinished)
