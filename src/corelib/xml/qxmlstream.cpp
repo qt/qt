@@ -313,8 +313,8 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
   error handling described.
 
   The \l{QXmlStream Bookmarks Example} illustrates how to use the
-  recursive descent technique with a subclassed stream reader to read
-  an XML bookmark file (XBEL).
+  recursive descent technique to read an XML bookmark file (XBEL) with
+  a stream reader.
 
   \section1 Namespaces
 
@@ -2943,7 +2943,7 @@ QStringRef QXmlStreamReader::documentEncoding() const
   encodings can be enforced using setCodec().
 
   The \l{QXmlStream Bookmarks Example} illustrates how to use a
-  subclassed stream writer to write an XML bookmark file (XBEL) that
+  stream writer to write an XML bookmark file (XBEL) that
   was previously read in by a QXmlStreamReader.
 
 */
