@@ -862,7 +862,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     \fn bool QModelIndex::isValid() const
 
     Returns true if this model index is valid; otherwise returns false.
-    
+
     A valid index belongs to a model, and has non-negative row and column
     numbers.
 
@@ -1767,7 +1767,7 @@ void QAbstractItemModel::fetchMore(const QModelIndex &)
 /*!
     Returns true if there is more data available for \a parent; otherwise
     returns false.
-    
+
     The default implementation always returns false.
 
     If canFetchMore() returns true, QAbstractItemView will call fetchMore().
@@ -1840,7 +1840,7 @@ QModelIndex QAbstractItemModel::buddy(const QModelIndex &index) const
     By default, this function will perform a wrapping, string-based comparison
     on all items, searching for items that begin with the search term specified
     by \a value.
-    
+
     \note The default implementation of this function only searches columns.
     Reimplement this function to include a different search behavior.
 */
@@ -1931,7 +1931,7 @@ QSize QAbstractItemModel::span(const QModelIndex &) const
     Sets the model's role names to \a roleNames.
 
     This function allows mapping of role identifiers to role property names in
-    Declarative UI.  This function must be called before the model is used. 
+    Declarative UI.  This function must be called before the model is used.
     Modifying the role names after the model has been set may result in
     undefined behaviour.
 
@@ -2172,20 +2172,20 @@ bool QAbstractItemModel::decodeData(int row, int column, const QModelIndex &pare
 
             For example, as shown in the diagram, we insert three rows before
             row 2, so \a first is 2 and \a last is 4:
-            
+
             \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 0
-            
+
             This inserts the three new rows as rows 2, 3, and 4.
     \row
         \o  \inlineimage modelview-begin-append-rows.png Appending rows
         \o  To append rows, insert them after the last row.
-            
+
             For example, as shown in the diagram, we append two rows to a
             collection of 4 existing rows (ending in row 3), so \a first is 4
             and \a last is 5:
 
             \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 1
-    
+
             This appends the two new rows as rows 4 and 5.
     \endtable
 
@@ -2235,7 +2235,7 @@ void QAbstractItemModel::endInsertRows()
 
             For example, as shown in the diagram, we remove the two rows from
             row 2 to row 3, so \a first is 2 and \a last is 3:
-            
+
             \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 2
     \endtable
 
@@ -2287,7 +2287,7 @@ void QAbstractItemModel::endRemoveRows()
             before column 4, so \a first is 4 and \a last is 6:
 
             \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 3
-    
+
             This inserts the three new columns as columns 4, 5, and 6.
     \row
         \o  \inlineimage modelview-begin-append-columns.png Appending columns
@@ -2296,9 +2296,9 @@ void QAbstractItemModel::endRemoveRows()
             For example, as shown in the diagram, we append three columns to a
             collection of six existing columns (ending in column 5), so
             \a first is 6 and \a last is 8:
-    
+
             \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 4
-    
+
             This appends the two new columns as columns 6, 7, and 8.
     \endtable
 
@@ -2346,10 +2346,10 @@ void QAbstractItemModel::endInsertColumns()
         \o  \inlineimage modelview-begin-remove-columns.png Removing columns
         \o  Specify the first and last column numbers for the span of columns
             you want to remove from an item in a model.
-            
+
             For example, as shown in the diagram, we remove the three columns
             from column 4 to column 6, so \a first is 4 and \a last is 6:
-            
+
             \snippet doc/src/snippets/code/src_corelib_kernel_qabstractitemmodel.cpp 5
     \endtable
 
@@ -2546,7 +2546,7 @@ QModelIndexList QAbstractItemModel::persistentIndexList() const
     \note Some general guidelines for subclassing models are available in the
     \l{Model Subclassing Reference}.
 
-    \note 
+    \note
 
     \sa {Model Classes}, QAbstractItemModel, QAbstractListModel,
     {Pixelator Example}
