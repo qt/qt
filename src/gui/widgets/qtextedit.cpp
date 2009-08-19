@@ -333,8 +333,8 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     \brief The QTextEdit class provides a widget that is used to edit and display
     both plain and rich text.
 
-    \ingroup text
-    \mainclass
+    \ingroup richtext-processing
+
 
     \tableofcontents
 

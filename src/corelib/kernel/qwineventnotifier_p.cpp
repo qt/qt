@@ -52,8 +52,6 @@ QT_BEGIN_NAMESPACE
     \class QWinEventNotifier
     \brief The QWinEventNotifier class provides support for the Windows Wait functions.
 
-    \ingroup io
-
     The QWinEventNotifier class makes it possible to use the wait
     functions on windows in a asynchronous manner. With this class
     you can register a HANDLE to an event and get notification when

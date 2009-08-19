@@ -68,7 +68,7 @@ public:
     int bytesPerLine() const;
     QSize size() const;
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
-    DFBSurfaceLockFlags lockFlags() const { return lock; }
+    DFBSurfaceLockFlags lockFlags() const { return lockFlgs; }
     QPaintEngine *paintEngine() const;
 
 protected:
@@ -86,7 +86,7 @@ protected:
     QImage *lockedImage;
     QDirectFBScreen *screen;
     int bpl;
-    DFBSurfaceLockFlags lock;
+    DFBSurfaceLockFlags lockFlgs;
     uchar *mem;
     QDirectFBPaintEngine *engine;
 private:

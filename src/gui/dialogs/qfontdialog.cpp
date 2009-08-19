@@ -112,9 +112,8 @@ static const Qt::WindowFlags DefaultWindowFlags =
 
 /*!
   \class QFontDialog
-  \ingroup dialogs
-  \ingroup text
-  \mainclass
+  \ingroup standard-dialogs
+
   \brief The QFontDialog class provides a dialog widget for selecting a font.
 
     A font dialog is created through one of the static getFont()

@@ -301,7 +301,7 @@
 
 #ifndef QT_NO_DEBUG_STREAM
 #include <QtCore/qdebug.h>
-#include <QtCore/QString>
+#include <QtCore/qstring.h>
 #endif
 
 QT_BEGIN_NAMESPACE

@@ -79,13 +79,6 @@
     QAnimationGroup takes ownership of the animations it manages, and
     ensures that they are deleted when the animation group is deleted.
 
-    You can also use a \l{The State Machine Framework}{state machine}
-    to create complex animations. The framework provides a special
-    state, QAnimationState, that plays an animation upon entry and
-    transitions to a new state when the animation has finished
-    playing. This technique can also be combined with using animation
-    groups.
-
     \sa QAbstractAnimation, QVariantAnimation, {The Animation Framework}
 */
 

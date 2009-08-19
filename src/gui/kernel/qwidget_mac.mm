@@ -72,7 +72,6 @@
 ** SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **
 ****************************************************************************/
-//#define QT_RASTER_PAINTENGINE
 
 #include <private/qt_mac_p.h>
 #include <private/qeventdispatcher_mac_p.h>
@@ -88,9 +87,6 @@
 #include "qlayout.h"
 #include "qmenubar.h"
 #include <private/qbackingstore_p.h>
-#ifdef QT_RASTER_PAINTENGINE
-# include <private/qpaintengine_raster_p.h>
-#endif
 #include <private/qwindowsurface_mac_p.h>
 #include <private/qpaintengine_mac_p.h>
 #include "qpainter.h"
@@ -111,6 +107,7 @@
 #include <private/qcocoapanel_mac_p.h>
 
 #include "qwidget_p.h"
+#include "qevent_p.h"
 #include "qdnd_p.h"
 #include <QtGui/qgraphicsproxywidget.h>
 
@@ -733,6 +730,13 @@ static EventTypeSpec window_events[] = {
     { kEventClassWindow, kEventWindowGetRegion },
     { kEventClassWindow, kEventWindowGetClickModality },
     { kEventClassWindow, kEventWindowTransitionCompleted },
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    { kEventClassGesture, kEventGestureStarted },
+    { kEventClassGesture, kEventGestureEnded },
+    { kEventClassGesture, kEventGestureMagnify },
+    { kEventClassGesture, kEventGestureSwipe },
+    { kEventClassGesture, kEventGestureRotate },
+#endif
     { kEventClassMouse, kEventMouseDown }
 };
 static EventHandlerUPP mac_win_eventUPP = 0;
@@ -1017,6 +1021,69 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
             return SendEventToApplication(event);
         handled_event = false;
         break; }
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_6
+    case kEventClassGesture: {
+        // First, find the widget that was under
+        // the mouse when the gesture happened:
+        HIPoint screenLocation;
+        if (GetEventParameter(event, kEventParamMouseLocation, typeHIPoint, 0,
+                    sizeof(screenLocation), 0, &screenLocation) != noErr) {
+            handled_event = false;
+            break;
+        }
+        QWidget *widget = QApplication::widgetAt(screenLocation.x, screenLocation.y);
+        if (!widget) {
+            handled_event = false;
+            break;
+        }
+
+        QNativeGestureEvent qNGEvent;
+        qNGEvent.position = QPoint(screenLocation.x, screenLocation.y);
+
+        switch (ekind) {
+            case kEventGestureStarted:
+                qNGEvent.gestureType = QNativeGestureEvent::GestureBegin;
+                break;
+            case kEventGestureEnded:
+                qNGEvent.gestureType = QNativeGestureEvent::GestureEnd;
+                break;
+            case kEventGestureRotate: {
+                CGFloat amount;
+                if (GetEventParameter(event, kEventParamRotationAmount, typeCGFloat, 0,
+                            sizeof(amount), 0, &amount) != noErr) {
+                    handled_event = false;
+                    break;
+                }
+                qNGEvent.gestureType = QNativeGestureEvent::Zoom;
+                qNGEvent.percentage = float(amount);
+                break; }
+            case kEventGestureSwipe: {
+                HIPoint swipeDirection;
+                if (GetEventParameter(event, kEventParamSwipeDirection, typeHIPoint, 0,
+                            sizeof(swipeDirection), 0, &swipeDirection) != noErr) {
+                    handled_event = false;
+                    break;
+                }
+                qNGEvent.gestureType = QNativeGestureEvent::Swipe;
+                qNGEvent.direction = QSize(-swipeDirection.x, -swipeDirection.y);
+                break; }
+            case kEventGestureMagnify: {
+                CGFloat amount;
+                if (GetEventParameter(event, kEventParamMagnificationAmount, typeCGFloat, 0,
+                            sizeof(amount), 0, &amount) != noErr) {
+                    handled_event = false;
+                    break;
+                }
+                qNGEvent.gestureType = QNativeGestureEvent::Zoom;
+                qNGEvent.percentage = float(amount);
+                break; }
+        }
+
+        QApplication::sendSpontaneousEvent(widget, &qNGEvent);
+    break; }
+#endif // gestures
+
     default:
         handled_event = false;
     }
@@ -1220,11 +1287,6 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                     QApplication::sendSpontaneousEvent(widget, &e);
                     if (!redirectionOffset.isNull())
                         widget->d_func()->restoreRedirected();
-#ifdef QT_RASTER_PAINTENGINE
-                    if(engine && engine->type() == QPaintEngine::Raster)
-                        static_cast<QRasterPaintEngine*>(engine)->flush(widget,
-                                                                        qrgn.boundingRect().topLeft());
-#endif
 
                     //cleanup
                     if (engine)
@@ -3101,7 +3163,7 @@ void QWidgetPrivate::update_sys(const QRegion &rgn)
     dirtyOnWidget += rgn;
 #ifndef QT_MAC_USE_COCOA
     RgnHandle rgnHandle = rgn.toQDRgnForUpdate_sys();
-    if (rgnHandle) 
+    if (rgnHandle)
         HIViewSetNeedsDisplayInRegion(qt_mac_nativeview_for(q), QMacSmartQuickDrawRegion(rgnHandle), true);
     else {
         HIViewSetNeedsDisplay(qt_mac_nativeview_for(q), true); // do a complete repaint on overflow.
@@ -4555,21 +4617,6 @@ Q_GLOBAL_STATIC(QPaintEngineCleanupHandler, engineHandler)
 QPaintEngine *QWidget::paintEngine() const
 {
     QPaintEngine *&pe = engineHandler()->engine;
-#ifdef QT_RASTER_PAINTENGINE
-    if (!pe) {
-        if(qgetenv("QT_MAC_USE_COREGRAPHICS").isNull())
-            pe = new QRasterPaintEngine();
-        else
-            pe = new QCoreGraphicsPaintEngine();
-    }
-    if (pe->isActive()) {
-        QPaintEngine *engine =
-            qgetenv("QT_MAC_USE_COREGRAPHICS").isNull()
-            ? (QPaintEngine*)new QRasterPaintEngine() : (QPaintEngine*)new QCoreGraphicsPaintEngine();
-        engine->setAutoDestruct(true);
-        return engine;
-    }
-#else
     if (!pe)
         pe = new QCoreGraphicsPaintEngine();
     if (pe->isActive()) {
@@ -4577,7 +4624,6 @@ QPaintEngine *QWidget::paintEngine() const
         engine->setAutoDestruct(true);
         return engine;
     }
-#endif
     return pe;
 }
 

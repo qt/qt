@@ -47,6 +47,8 @@ QT_BEGIN_NAMESPACE
     \class QGenericMatrix
     \brief The QGenericMatrix class is a template class that represents a NxM transformation matrix with N columns and M rows.
     \since 4.6
+    \ingroup painting
+    \ingroup painting-3D
 
     The QGenericMatrix template has four parameters:
 

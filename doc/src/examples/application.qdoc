@@ -289,7 +289,7 @@
 
     When restoring the position and size of a window, it's important
     to call QWidget::resize() before QWidget::move(). The reason why
-    is given in the \l{geometry.html}{Window Geometry} overview.
+    is given in the \l{Window Geometry} overview.
 
     \snippet examples/mainwindows/application/mainwindow.cpp 37
     \snippet examples/mainwindows/application/mainwindow.cpp 39

@@ -18,14 +18,12 @@ if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
     mac:qclucene = $${qclucene}_debug
     win32:qclucene = $${qclucene}d
 }
-linux-lsb-g++:LIBS += --lsb-shared-libs=$$qclucene
+linux-lsb-g++:LIBS_PRIVATE += --lsb-shared-libs=$$qclucene
 unix:QMAKE_PKGCONFIG_REQUIRES += QtNetwork \
     QtSql \
     QtXml
-LIBS += -l$$qclucene
-unix:QMAKE_PKGCONFIG_REQUIRES += QtNetwork \
-    QtSql \
-    QtXml
+LIBS_PRIVATE += -l$$qclucene
+
 RESOURCES += helpsystem.qrc
 SOURCES += qhelpenginecore.cpp \
     qhelpengine.cpp \

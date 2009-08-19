@@ -55,6 +55,8 @@
 //TESTED_CLASS=QXmlStreamReader QXmlStreamWriter
 //TESTED_FILES=corelib/xml/stream/qxmlutils.cpp corelib/xml/stream/qxmlstream.cpp corelib/xml/stream/qxmlstream_p.h
 
+Q_DECLARE_METATYPE(QXmlStreamReader::ReadElementTextBehaviour)
+
 static const char *const catalogFile = "XML-Test-Suite/xmlconf/finalCatalog.xml";
 static const int expectedRunCount = 1646;
 static const int expectedSkipCount = 532;
@@ -550,6 +552,9 @@ private slots:
     void setEntityResolver();
     void readFromQBuffer() const;
     void readFromQBufferInvalid() const;
+    void readNextStartElement() const;
+    void readElementText() const;
+    void readElementText_data() const;
     void crashInUTF16Codec() const;
     void hasAttributeSignature() const;
     void hasAttribute() const;
@@ -1105,6 +1110,71 @@ void tst_QXmlStream::readFromQBufferInvalid() const
     }
 
     QVERIFY(reader.hasError());
+}
+
+void tst_QXmlStream::readNextStartElement() const
+{
+    QLatin1String in("<?xml version=\"1.0\"?><A><!-- blah --><B><C/></B><B attr=\"value\"/>text</A>");
+    QXmlStreamReader reader(in);
+
+    QVERIFY(reader.readNextStartElement());
+    QVERIFY(reader.isStartElement() && reader.name() == "A");
+
+    int amountOfB = 0;
+    while (reader.readNextStartElement()) {
+        QVERIFY(reader.isStartElement() && reader.name() == "B");
+        ++amountOfB;
+        reader.skipCurrentElement();
+    }
+
+    QCOMPARE(amountOfB, 2);
+}
+
+void tst_QXmlStream::readElementText() const
+{
+    QFETCH(QXmlStreamReader::ReadElementTextBehaviour, behaviour);
+    QFETCH(QString, input);
+    QFETCH(QString, expected);
+
+    QXmlStreamReader reader(input);
+
+    QVERIFY(reader.readNextStartElement());
+    QCOMPARE(reader.readElementText(behaviour), expected);
+}
+
+void tst_QXmlStream::readElementText_data() const
+{
+    QTest::addColumn<QXmlStreamReader::ReadElementTextBehaviour>("behaviour");
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<QString>("expected");
+
+    QString validInput("<p>He was <em>never</em> going to admit<!-- TODO: rephrase --> his mistake.</p>");
+    QString invalidInput("<p>invalid...<p>");
+    QString invalidOutput("invalid...");
+
+    QTest::newRow("ErrorOnUnexpectedElement")
+            << QXmlStreamReader::ErrorOnUnexpectedElement
+            << validInput << QString("He was ");
+
+    QTest::newRow("IncludeChildElements")
+            << QXmlStreamReader::IncludeChildElements
+            << validInput << QString("He was never going to admit his mistake.");
+
+    QTest::newRow("SkipChildElements")
+            << QXmlStreamReader::SkipChildElements
+            << validInput << QString("He was  going to admit his mistake.");
+
+    QTest::newRow("ErrorOnUnexpectedElement Invalid")
+            << QXmlStreamReader::ErrorOnUnexpectedElement
+            << invalidInput << invalidOutput;
+
+    QTest::newRow("IncludeChildElements Invalid")
+            << QXmlStreamReader::IncludeChildElements
+            << invalidInput << invalidOutput;
+
+    QTest::newRow("SkipChildElements Invalid")
+            << QXmlStreamReader::SkipChildElements
+            << invalidInput << invalidOutput;
 }
 
 void tst_QXmlStream::crashInUTF16Codec() const

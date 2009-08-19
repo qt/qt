@@ -1295,9 +1295,7 @@ QString QFontDatabase::styleString(const QFontInfo &fontInfo)
 
     \brief The QFontDatabase class provides information about the fonts available in the underlying window system.
 
-    \ingroup environment
-    \ingroup multimedia
-    \ingroup text
+    \ingroup appearance
 
     The most common uses of this class are to query the database for
     the list of font families() and for the pointSizes() and styles()
@@ -2427,7 +2425,7 @@ QStringList QFontDatabase::applicationFontFamilies(int id)
     means that all QPainter::drawText() calls outside the GUI thread
     will not produce readable output.
 
-    \sa threads.html#painting-in-threads
+    \sa {Thread-Support in Qt Modules#Painting In Threads}{Painting In Threads}
 */
 
 

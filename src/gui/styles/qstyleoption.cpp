@@ -712,7 +712,7 @@ QStyleOptionFrameV2 &QStyleOptionFrameV2::operator=(const QStyleOptionFrame &oth
     Constructs a QStyleOptionFrameV3 object.
 */
 QStyleOptionFrameV3::QStyleOptionFrameV3()
-    : QStyleOptionFrameV2(Version), frameShape(QFrame::NoFrame)
+    : QStyleOptionFrameV2(Version), frameShape(QFrame::NoFrame), unused(0)
 {
 }
 
@@ -726,7 +726,7 @@ QStyleOptionFrameV3::QStyleOptionFrameV3()
     \internal
 */
 QStyleOptionFrameV3::QStyleOptionFrameV3(int version)
-    : QStyleOptionFrameV2(version), frameShape(QFrame::NoFrame)
+    : QStyleOptionFrameV2(version), frameShape(QFrame::NoFrame), unused(0)
 {
 }
 
@@ -4845,7 +4845,7 @@ QStyleOptionTabBarBaseV2 &QStyleOptionTabBarBaseV2::operator = (const QStyleOpti
 
 /*! \internal */
 QStyleOptionTabBarBaseV2::QStyleOptionTabBarBaseV2(int version)
-    : QStyleOptionTabBarBase(version)
+    : QStyleOptionTabBarBase(version), documentMode(false)
 {
 }
 
@@ -4937,7 +4937,7 @@ QStyleOptionSizeGrip::QStyleOptionSizeGrip(int version)
     \brief The QStyleOptionGraphicsItem class is used to describe
     the parameters needed to draw a QGraphicsItem.
     \since 4.2
-    \ingroup multimedia
+    \ingroup graphicsview-api
 
     For performance reasons, the access to the member variables is
     direct (i.e., using the \c . or \c -> operator). This low-level feel

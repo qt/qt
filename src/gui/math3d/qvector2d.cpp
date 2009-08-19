@@ -53,6 +53,8 @@ QT_BEGIN_NAMESPACE
     \class QVector2D
     \brief The QVector2D class represents a vector or vertex in 2D space.
     \since 4.6
+    \ingroup painting
+    \ingroup painting-3D
 
     The QVector2D class can also be used to represent vertices in 2D space.
     We therefore do not need to provide a separate vertex class.

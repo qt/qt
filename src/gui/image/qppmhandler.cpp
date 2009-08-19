@@ -80,7 +80,7 @@ static int read_pbm_int(QIODevice *d)
         else if (isspace((uchar) c))
             continue;
         else if (c == '#')
-            d->readLine(buf, buflen);
+            (void)d->readLine(buf, buflen);
         else
             break;
     }

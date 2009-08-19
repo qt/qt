@@ -136,8 +136,8 @@ static bool scriptDebuggerEventCallback(void **data)
 
   \brief The QScriptDebugger class provides a Qt Script debugger.
 
-  \ingroup scripttools
-  \mainclass
+  \ingroup script
+
 */
 
 class QScriptDebuggerPrivate

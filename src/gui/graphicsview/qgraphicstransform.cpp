@@ -44,6 +44,7 @@
     \brief The QGraphicsTransform class is an abstract base class for building
     advanced transformations on QGraphicsItems.
     \since 4.6
+    \ingroup graphicsview-api
 
     As an alternative to QGraphicsItem::transform, QGraphicsTransform lets you
     create and control advanced transformations that can be configured
