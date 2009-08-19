@@ -2260,7 +2260,11 @@ void tst_QComboBox::setItemDelegate()
     QComboBox comboBox;
     QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
     comboBox.setItemDelegate(itemDelegate);
-    QCOMPARE(static_cast<QStyledItemDelegate*>(comboBox.itemDelegate()), itemDelegate);
+    QCOMPARE(
+#ifdef Q_CC_MWERKS
+            static_cast<QStyledItemDelegate *>
+#endif
+            (comboBox.itemDelegate()), itemDelegate);
 }
 
 void tst_QComboBox::task253944_itemDelegateIsReset()
@@ -2270,10 +2274,18 @@ void tst_QComboBox::task253944_itemDelegateIsReset()
     comboBox.setItemDelegate(itemDelegate);
 
     comboBox.setEditable(true);
-    QCOMPARE(static_cast<QStyledItemDelegate*>(comboBox.itemDelegate()), itemDelegate);
+    QCOMPARE(
+#ifdef Q_CC_MWERKS
+            static_cast<QStyledItemDelegate *>
+#endif
+            (comboBox.itemDelegate()), itemDelegate);
 
     comboBox.setStyleSheet("QComboBox { border: 1px solid gray; }");
-    QCOMPARE(static_cast<QStyledItemDelegate*>(comboBox.itemDelegate()), itemDelegate);
+    QCOMPARE(
+#ifdef Q_CC_MWERKS
+            static_cast<QStyledItemDelegate *>
+#endif
+            (comboBox.itemDelegate()), itemDelegate);
 }
 
 
