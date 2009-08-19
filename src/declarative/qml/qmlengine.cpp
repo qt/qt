@@ -532,15 +532,6 @@ void QmlDeclarativeData::destroyed(QObject *object)
     delete this;
 }
 
-/*! \internal */
-/*
-QScriptEngine *QmlEngine::scriptEngine()
-{
-    Q_D(QmlEngine);
-    return &d->scriptEngine;
-}
-*/
-
 /*!
     Creates a QScriptValue allowing you to use \a object in QML script.
     \a engine is the QmlEngine it is to be created in.
@@ -1054,36 +1045,39 @@ struct QmlEnginePrivate::ImportedNamespace {
             QUrl url = QUrl(urls.at(i) + QLatin1String("/") + type + QLatin1String(".qml"));
             int vmaj = majversions.at(i);
             int vmin = minversions.at(i);
-            // XXX search non-files too! (eg. zip files, see QT-524)
-            QFileInfo f(url.toLocalFile());
-            if (f.exists()) {
-                bool ok=true;
-                if (vmaj || vmin) {
-                    QString version = QString::number(vmaj) + QLatin1String(".") + QString::number(vmin);
-                    ok=false;
-                    // Check version file - XXX cache these in QmlEngine!
-                    QFile qmldir(urls.at(i)+QLatin1String("/qmldir"));
-                    if (qmldir.open(QIODevice::ReadOnly)) {
-                        do {
-                            QString line = QString::fromUtf8(qmldir.readLine());
-                            if (line.at(0) == QLatin1Char('#'))
-                                continue;
-                            int space1 = line.indexOf(QLatin1Char(' '));
-                            int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
-                            QStringRef maptype = line.leftRef(space1);
-                            QStringRef mapversion = line.midRef(space1+1,space2<0?line.length()-space1-2:space2-space1-1);
-                            QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-2);
-                            if (maptype==type && mapversion==version) {
-                                if (mapfile.isEmpty())
-                                    return url;
-                                else
+            if (vmaj || vmin) {
+                // Check version file - XXX cache these in QmlEngine!
+                QFile qmldir(QUrl(urls.at(i)+QLatin1String("/qmldir")).toLocalFile());
+                if (qmldir.open(QIODevice::ReadOnly)) {
+                    do {
+                        QString line = QString::fromUtf8(qmldir.readLine());
+                        if (line.at(0) == QLatin1Char('#'))
+                            continue;
+                        int space1 = line.indexOf(QLatin1Char(' '));
+                        int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
+                        QStringRef maptype = line.leftRef(space1);
+                        if (maptype==type) {
+                            // eg. 1.2-5
+                            QString mapversions = line.mid(space1+1,space2<0?line.length()-space1-2:space2-space1-1);
+                            int dot = mapversions.indexOf(QLatin1Char('.'));
+                            int dash = mapversions.indexOf(QLatin1Char('-'));
+                            int mapvmaj = mapversions.left(dot).toInt();
+                            if (mapvmaj==vmaj) {
+                                int mapvmin_from = (dash <= 0 ? mapversions.mid(dot+1) : mapversions.mid(dot+1,dash-dot-1)).toInt();
+                                int mapvmin_to = dash <= 0 ? mapvmin_from : mapversions.mid(dash+1).toInt();
+                                if (vmin >= mapvmin_from && vmin <= mapvmin_to) {
+                                    QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-2);
                                     return url.resolved(mapfile.toString());
+                                }
                             }
-                        } while (!qmldir.atEnd());
-                    }
+                        }
+                    } while (!qmldir.atEnd());
                 }
-                if (ok)
-                    return url;
+            } else {
+                // XXX search non-files too! (eg. zip files, see QT-524)
+                QFileInfo f(url.toLocalFile());
+                if (f.exists())
+                    return url; // (unversioned) local import
             }
         }
         return QUrl();
@@ -1133,7 +1127,7 @@ public:
             foreach (QString p, importPath) {
                 QString dir = p+QLatin1Char('/')+url;
                 if (QFile::exists(dir+QLatin1String("/qmldir"))) {
-                    url = dir;
+                    url = QLatin1String("file://")+dir;
                     found = true;
                     break;
                 }

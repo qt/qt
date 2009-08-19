@@ -1260,9 +1260,6 @@ void QFxListView::viewportMoved()
     }
 }
 
-/*!
-    \reimp
-*/
 qreal QFxListView::minYExtent() const
 {
     Q_D(const QFxListView);
@@ -1275,9 +1272,6 @@ qreal QFxListView::minYExtent() const
     return extent;
 }
 
-/*!
-    \reimp
-*/
 qreal QFxListView::maxYExtent() const
 {
     Q_D(const QFxListView);
@@ -1294,9 +1288,6 @@ qreal QFxListView::maxYExtent() const
     return extent;
 }
 
-/*!
-    \reimp
-*/
 qreal QFxListView::minXExtent() const
 {
     Q_D(const QFxListView);
@@ -1309,9 +1300,6 @@ qreal QFxListView::minXExtent() const
     return extent;
 }
 
-/*!
-    \reimp
-*/
 qreal QFxListView::maxXExtent() const
 {
     Q_D(const QFxListView);

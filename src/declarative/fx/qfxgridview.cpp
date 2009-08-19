@@ -1028,18 +1028,12 @@ void QFxGridView::sizeChange()
     }
 }
 
-/*!
-  \reimp
-*/
 void QFxGridView::viewportMoved()
 {
     QFxFlickable::viewportMoved();
     refill();
 }
 
-/*!
-  \reimp
-*/
 qreal QFxGridView::minYExtent() const
 {
     Q_D(const QFxGridView);
@@ -1048,9 +1042,6 @@ qreal QFxGridView::minYExtent() const
     return -d->startPosition();
 }
 
-/*!
-  \reimp
-*/
 qreal QFxGridView::maxYExtent() const
 {
     Q_D(const QFxGridView);
@@ -1059,9 +1050,6 @@ qreal QFxGridView::maxYExtent() const
     return -(d->endPosition() - height());
 }
 
-/*!
-  \reimp
-*/
 qreal QFxGridView::minXExtent() const
 {
     Q_D(const QFxGridView);
@@ -1070,9 +1058,6 @@ qreal QFxGridView::minXExtent() const
     return -d->startPosition();
 }
 
-/*!
-  \reimp
-*/
 qreal QFxGridView::maxXExtent() const
 {
     Q_D(const QFxGridView);
@@ -1081,9 +1066,6 @@ qreal QFxGridView::maxXExtent() const
     return -(d->endPosition() - height());
 }
 
-/*!
-  \reimp
-*/
 void QFxGridView::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QFxGridView);
@@ -1131,9 +1113,6 @@ void QFxGridView::keyPressEvent(QKeyEvent *event)
     QFxFlickable::keyPressEvent(event);
 }
 
-/*!
-  \reimp
-*/
 void QFxGridView::componentComplete()
 {
     Q_D(QFxGridView);

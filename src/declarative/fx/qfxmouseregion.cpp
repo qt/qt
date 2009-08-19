@@ -481,8 +481,8 @@ void QFxMouseRegion::timerEvent(QTimerEvent *event)
     \qmlproperty bool MouseRegion::containsMouse
     This property holds whether the mouse is currently inside the mouse region.
 
-    \warning This property is only partially implemented -- it is only valid when the mouse is moved over the
-    region.  If the region moves under the mouse, \e containsMouse will not change.
+    \warning This property is not updated if the region moves under the mouse: \e containsMouse will not change.
+    In addition, if hoverEnabled is false, containsMouse will only be valid when the mouse is pressed.
 */
 bool QFxMouseRegion::hovered() const
 {

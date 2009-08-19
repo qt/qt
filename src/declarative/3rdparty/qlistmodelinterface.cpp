@@ -44,6 +44,7 @@
 QT_BEGIN_NAMESPACE
 
 /*!
+  \internal
   \class QListModelInterface
   \brief The QListModelInterface class can be subclassed to provide C++ models to QFx Views
 

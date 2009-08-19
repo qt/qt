@@ -62,7 +62,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Palette,QmlPalette)
 
     Example:
     \code
-    Palette { id: MyPalette; colorGroup: "Active" }
+    Palette { id: MyPalette; colorGroup: Qt.Active }
 
     Rect {
         width: 640; height: 480
