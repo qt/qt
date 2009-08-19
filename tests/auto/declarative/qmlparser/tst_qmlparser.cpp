@@ -13,6 +13,8 @@ class tst_qmlparser : public QObject
 public:
     tst_qmlparser() {
         QmlMetaType::registerCustomStringConverter(qMetaTypeId<MyCustomVariantType>(), myCustomVariantTypeConverter);
+        QFileInfo fileInfo(__FILE__);
+        engine.addImportPath(fileInfo.absoluteDir().filePath(QLatin1String("lib")));
     }
 
 private slots:
@@ -512,6 +514,7 @@ void tst_qmlparser::imports_data()
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
 
+    // import built-ins
     QTest::newRow("missing import")
         << "Test {}"
         << "";
@@ -600,6 +603,8 @@ void tst_qmlparser::imports_data()
            "import com.nokia.Test 1.10 as T10\n"
            "T10.Test {}"
         << "";
+
+    // import locals
     QTest::newRow("local import")
         << "import \"subdir\"\n"
            "Test {}"
@@ -617,6 +622,12 @@ void tst_qmlparser::imports_data()
            "import com.nokia.Test 1.0\n"
            "Test {}"
         << "TestType";
+
+    // import installed
+    QTest::newRow("installed import")
+        << "import com.nokia.installedtest 1.0\n"
+           "InstalledTest {}"
+        << "QFxRect";
 }
 
 void tst_qmlparser::imports()
