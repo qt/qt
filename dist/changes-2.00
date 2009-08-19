@@ -5,7 +5,7 @@ been significally extended and improved.
 This file will only give an overview of the main changes since version
 1.44.  A complete list would simply be too large to be useful.  For
 more detail see the online documentation which is included in this
-distribution, and also available on http://doc.trolltech.com/
+distribution, and also available on http://qt.nokia.com/doc/
 
 The Qt version 2.x series is not binary compatible with the 1.x
 series.  This means programs compiled with Qt version 1.x must be
@@ -147,5 +147,5 @@ Unlike most toolkits, Qt lets a single executable work on all three.
 * QWindowsStyle
 * QWizard
 
-For details, see e.g http://doc.trolltech.com/qcdestyle.html (or any
+For details, see e.g http://qt.nokia.com/doc/qcdestyle.html (or any
 other class name, lowercased).

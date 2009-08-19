@@ -34,11 +34,10 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-//#define QT_RASTER_PAINTENGINE
 
 #include "qpixmap.h"
 #include "qimage.h"
@@ -52,9 +51,6 @@
 #include <private/qdrawhelper_p.h>
 #include <private/qpixmap_mac_p.h>
 #include <private/qpixmap_raster_p.h>
-#ifdef QT_RASTER_PAINTENGINE
-#  include <private/qpaintengine_raster_p.h>
-#endif
 #include <private/qpaintengine_mac_p.h>
 #include <private/qt_mac_p.h>
 #include <private/qt_cocoa_helpers_mac_p.h>
@@ -1098,14 +1094,7 @@ QPaintEngine* QMacPixmapData::paintEngine() const
 {
     if (!pengine) {
         QMacPixmapData *that = const_cast<QMacPixmapData*>(this);
-#ifdef QT_RASTER_PAINTENGINE
-        if (qgetenv("QT_MAC_USE_COREGRAPHICS").isNull())
-            that->pengine = new QRasterPaintEngine();
-        else
-            that->pengine = new QCoreGraphicsPaintEngine();
-#else
         that->pengine = new QCoreGraphicsPaintEngine();
-#endif
     }
     return pengine;
 }

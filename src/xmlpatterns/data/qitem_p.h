@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -70,7 +70,6 @@
 /**
  * @class QSharedData
  * @short Qt's base class for reference counting.
- * @author Trolltech
  */
 
 QT_BEGIN_HEADER
@@ -114,7 +113,7 @@ namespace QPatternist
      * only the fromValue() function exist, and fromLexical() is omitted.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class AtomicValue : public QSharedData
                       , public CppCastingHelper<AtomicValue>
@@ -178,7 +177,7 @@ namespace QPatternist
      * makes a very strong distinction between a sequence of items and an atomized sequence.
      *
      * @ingroup Patternist_xdm
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Item
     {

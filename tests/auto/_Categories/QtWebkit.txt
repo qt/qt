@@ -1,5 +1,0 @@
-qwebelement
-qwebframe
-qwebhistory
-qwebhistoryinterface
-qwebpage

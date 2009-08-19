@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,6 +75,7 @@
 #include <private/qfontengine_p.h>
 #include <private/qtextureglyphcache_p.h>
 #include <private/qpixmapdata_gl_p.h>
+#include <private/qdatabuffer_p.h>
 
 #include "qglgradientcache_p.h"
 #include "qglengineshadermanager_p.h"
@@ -175,7 +176,7 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
     m_height = height;
 
     QVarLengthArray<uchar> data(width * height);
-    for (int i = 0; i < width * height; ++i)
+    for (int i = 0; i < data.size(); ++i)
         data[i] = 0;
 
     if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
@@ -200,13 +201,18 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_fbo);
 
-    GLuint colorBuffer;
-    glGenRenderbuffers(1, &colorBuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER_EXT, colorBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_RGBA, oldWidth, oldHeight);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                              GL_RENDERBUFFER_EXT, colorBuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+    GLuint tmp_texture;
+    glGenTextures(1, &tmp_texture);
+    glBindTexture(GL_TEXTURE_2D, tmp_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, oldWidth, oldHeight, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                           GL_TEXTURE_2D, tmp_texture, 0);
 
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     glBindTexture(GL_TEXTURE_2D, oldTexture);
@@ -237,11 +243,24 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
 
     glBindTexture(GL_TEXTURE_2D, m_texture);
+
+#ifdef QT_OPENGL_ES_2
+    QDataBuffer<uchar> buffer(4*oldWidth*oldHeight);
+    glReadPixels(0, 0, oldWidth, oldHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
+
+    // do an in-place conversion from GL_RGBA to GL_ALPHA
+    for (int i=0; i<oldWidth*oldHeight; ++i)
+        buffer.data()[i] = buffer.at(4*i + 3);
+
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, oldWidth, oldHeight,
+                    GL_ALPHA, GL_UNSIGNED_BYTE, buffer.data());
+#else
     glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, oldWidth, oldHeight);
+#endif
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
                               GL_RENDERBUFFER_EXT, 0);
-    glDeleteRenderbuffers(1, &colorBuffer);
+    glDeleteTextures(1, &tmp_texture);
     glDeleteTextures(1, &oldTexture);
 
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
@@ -261,11 +280,21 @@ void QGLTextureGlyphCache::fillTexture(const Coord &c, glyph_t glyph)
     if (mask.format() == QImage::Format_RGB32) {
         glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, m_height - c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
     } else {
-        // If the width of the uploaded data is not a multiple of four bytes, we get some garbage
-        // in the glyph cache, probably because of a driver bug.
-        // Convert to ARGB32 to get a multiple of 4 bytes per line.
-        mask = mask.convertToFormat(QImage::Format_ARGB32);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_BGRA, GL_UNSIGNED_BYTE, mask.bits());
+#ifdef QT_OPENGL_ES2
+        glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y, maskWidth, maskHeight, GL_ALPHA, GL_UNSIGNED_BYTE, mask.bits());
+#else
+        // glTexSubImage2D() might cause some garbage to appear in the texture if the mask width is
+        // not a multiple of four bytes. The bug appeared on a computer with 32-bit Windows Vista
+        // and nVidia GeForce 8500GT. GL_UNPACK_ALIGNMENT is set to four bytes, 'mask' has a
+        // multiple of four bytes per line, and most of the glyph shows up correctly in the
+        // texture, which makes me think that this is a driver bug.
+        // One workaround is to make sure the mask width is a multiple of four bytes, for instance
+        // by converting it to a format with four bytes per pixel. Another is to copy one line at a
+        // time.
+
+        for (uint i = 0; i < maskHeight; ++i)
+            glTexSubImage2D(GL_TEXTURE_2D, 0, c.x, c.y + i, maskWidth, 1, GL_ALPHA, GL_UNSIGNED_BYTE, mask.scanLine(i));
+#endif
     }
 }
 

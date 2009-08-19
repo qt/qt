@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1006,10 +1006,8 @@ QStyle* QFormLayoutPrivate::getStyle() const
     \since 4.4
     \brief The QFormLayout class manages forms of input widgets and their associated labels.
 
-    \ingroup appearance
     \ingroup geomanagement
 
-    \mainclass
 
     QFormLayout is a convenience layout class that lays out its
     children in a two-column form. The left column consists of labels

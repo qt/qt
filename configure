@@ -400,7 +400,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             echo
             echo "You are not licensed for Qt for Embedded Linux."
             echo
-            echo "Please contact sales@trolltech.com to upgrade your license"
+            echo "Please contact qt-info@nokia.com to upgrade your license"
             echo "to include Qt for Embedded Linux, or install the"
             echo "Qt Open Source Edition if you intend to develop free software."
             exit 1
@@ -420,7 +420,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             echo
             echo "You are not licensed for the Qt/Mac platform."
             echo
-            echo "Please contact sales@trolltech.com to upgrade your license"
+            echo "Please contact qt-info@nokia.com to upgrade your license"
             echo "to include the Qt/Mac platform."
             exit 1
             ;;
@@ -439,7 +439,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
              echo
              echo "You are not licensed for the Qt/X11 platform."
              echo
-             echo "Please contact sales@trolltech.com to upgrade your license to"
+             echo "Please contact qt-info@nokia.com to upgrade your license to"
              echo "include the Qt/X11 platform, or install the Qt Open Source Edition"
              echo "if you intend to develop free software."
              exit 1
@@ -850,7 +850,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-webkit|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-webkit|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -2200,6 +2200,8 @@ if [ -z "$MAKE" ]; then
         echo >&2 "Cannot proceed."
         exit 1
     fi
+    # export MAKE, we need it later in the config.tests
+    export MAKE
 fi
 
 fi ### help
@@ -2968,7 +2970,7 @@ fi
 #prefix
 if [ -z "$QT_INSTALL_PREFIX" ]; then
     if [ "$CFG_DEV" = "yes" ]; then
-	QT_INSTALL_PREFIX="$outpath" # At Trolltech, we use sandboxed builds by default
+	QT_INSTALL_PREFIX="$outpath" # In Development, we use sandboxed builds by default
     elif [ "$PLATFORM_QWS" = "yes" ]; then
         QT_INSTALL_PREFIX="/usr/local/Trolltech/QtEmbedded-${QT_VERSION}"
         if [ "$PLATFORM" != "$XPLATFORM" ]; then
@@ -3879,7 +3881,7 @@ elif [ "$Edition" != "OpenSource" ]; then
                     echo "  Your support and upgrade period has expired."
                     echo
                     echo "  You are no longer licensed to use this version of Qt."
-                    echo "  Please contact sales@trolltech.com to renew your support"
+                    echo "  Please contact qt-info@nokia.com to renew your support"
                     echo "  and upgrades for this license."
                     echo
                     echo "NOTICE  NOTICE  NOTICE  NOTICE"
@@ -3897,7 +3899,7 @@ elif [ "$Edition" != "OpenSource" ]; then
                     echo "  support, nor are you entitled to use any more recent"
                     echo "  Qt releases."
                     echo
-                    echo "  Please contact sales@trolltech.com to renew your"
+                    echo "  Please contact qt-info@nokia.com to renew your"
                     echo "  support and upgrades for this license."
                     echo
                     echo "WARNING  WARNING  WARNING  WARNING"
@@ -3912,7 +3914,7 @@ elif [ "$Edition" != "OpenSource" ]; then
                 echo "  Your Evaluation license has expired."
                 echo
                 echo "  You are no longer licensed to use this software. Please"
-                echo "  contact sales@trolltech.com to purchase license, or install"
+                echo "  contact qt-info@nokia.com to purchase license, or install"
                 echo "  the Qt Open Source Edition if you intend to develop free"
                 echo "  software."
                 echo
@@ -5951,7 +5953,9 @@ fi
 if [ "$CFG_INOTIFY" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG inotify"
 fi
-if [ "$CFG_LIBJPEG" = "system" ]; then
+if [ "$CFG_LIBJPEG" = "no" ]; then
+    CFG_JPEG="no"
+elif [ "$CFG_LIBJPEG" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-jpeg"
 fi
 if [ "$CFG_JPEG" = "no" ]; then
@@ -5959,7 +5963,9 @@ if [ "$CFG_JPEG" = "no" ]; then
 elif [ "$CFG_JPEG" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG jpeg"
 fi
-if [ "$CFG_LIBMNG" = "system" ]; then
+if [ "$CFG_LIBMNG" = "no" ]; then
+    CFG_MNG="no"
+elif [ "$CFG_LIBMNG" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-mng"
 fi
 if [ "$CFG_MNG" = "no" ]; then
@@ -5983,7 +5989,9 @@ if [ "$CFG_GIF" = "no" ]; then
 elif [ "$CFG_GIF" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG gif"
 fi
-if [ "$CFG_LIBTIFF" = "system" ]; then
+if [ "$CFG_LIBTIFF" = "no" ]; then
+    CFG_TIFF="no"
+elif [ "$CFG_LIBTIFF" = "system" ]; then
     QT_CONFIG="$QT_CONFIG system-tiff"
 fi
 if [ "$CFG_TIFF" = "no" ]; then
@@ -7486,6 +7494,7 @@ for file in .projects .projects.3; do
 
         case $a in
         *winmain/winmain.pro) continue ;;
+        *s60main/s60main.pro) continue ;;
         */qmake/qmake.pro) continue ;;
         *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*) SPEC=$QMAKESPEC ;;
         *) SPEC=$XQMAKESPEC ;;

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,11 +61,7 @@
 
 #include <qhash.h>
 
-#ifdef QT_RASTER_IMAGEENGINE
 #include <private/qpaintengine_raster_p.h>
-#else
-#include <qpaintengine.h>
-#endif
 
 #include <private/qimage_p.h>
 
@@ -343,9 +339,9 @@ bool QImageData::checkForAlphaPixels() const
 /*!
     \class QImage
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \mainclass
+
     \reentrant
 
     \brief The QImage class provides a hardware-independent image
@@ -2374,8 +2370,9 @@ static void dither_to_Mono(QImageData *dst, const QImageData *src,
 
     switch (dithermode) {
     case Diffuse: {
-        int *line1 = new int[w];
-        int *line2 = new int[w];
+        QScopedArrayPointer<int> lineBuffer(new int[w * 2]);
+        int *line1 = lineBuffer.data();
+        int *line2 = lineBuffer.data() + w;
         int bmwidth = (w+7)/8;
 
         int *b1, *b2;
@@ -2455,8 +2452,6 @@ static void dither_to_Mono(QImageData *dst, const QImageData *src,
                 b2++;
             }
         }
-        delete [] line1;
-        delete [] line2;
     } break;
     case Ordered: {
 
@@ -2597,10 +2592,9 @@ static void convert_X_to_Mono(QImageData *dst, const QImageData *src, Qt::ImageC
 
 static void convert_ARGB_PM_to_Mono(QImageData *dst, const QImageData *src, Qt::ImageConversionFlags flags)
 {
-    QImageData *tmp = QImageData::create(QSize(src->width, src->height), QImage::Format_ARGB32);
-    convert_ARGB_PM_to_ARGB(tmp, src, flags);
-    dither_to_Mono(dst, tmp, flags, false);
-    delete tmp;
+    QScopedPointer<QImageData> tmp(QImageData::create(QSize(src->width, src->height), QImage::Format_ARGB32));
+    convert_ARGB_PM_to_ARGB(tmp.data(), src, flags);
+    dither_to_Mono(dst, tmp.data(), flags, false);
 }
 
 //
@@ -2749,15 +2743,16 @@ static void convert_RGB_to_Indexed8(QImageData *dst, const QImageData *src, Qt::
             int* line1[3];
             int* line2[3];
             int* pv[3];
-            line1[0] = new int[src->width];
-            line2[0] = new int[src->width];
-            line1[1] = new int[src->width];
-            line2[1] = new int[src->width];
-            line1[2] = new int[src->width];
-            line2[2] = new int[src->width];
-            pv[0] = new int[src->width];
-            pv[1] = new int[src->width];
-            pv[2] = new int[src->width];
+            QScopedArrayPointer<int> lineBuffer(new int[src->width * 9]);
+            line1[0] = lineBuffer.data();
+            line2[0] = lineBuffer.data() + src->width;
+            line1[1] = lineBuffer.data() + src->width * 2;
+            line2[1] = lineBuffer.data() + src->width * 3;
+            line1[2] = lineBuffer.data() + src->width * 4;
+            line2[2] = lineBuffer.data() + src->width * 5;
+            pv[0] = lineBuffer.data() + src->width * 6;
+            pv[1] = lineBuffer.data() + src->width * 7;
+            pv[2] = lineBuffer.data() + src->width * 8;
 
             int endian = (QSysInfo::ByteOrder == QSysInfo::BigEndian);
             for (int y = 0; y < src->height; y++) {
@@ -2820,15 +2815,6 @@ static void convert_RGB_to_Indexed8(QImageData *dst, const QImageData *src, Qt::
                 src_data += src->bytes_per_line;
                 dest_data += dst->bytes_per_line;
             }
-            delete [] line1[0];
-            delete [] line2[0];
-            delete [] line1[1];
-            delete [] line2[1];
-            delete [] line1[2];
-            delete [] line2[2];
-            delete [] pv[0];
-            delete [] pv[1];
-            delete [] pv[2];
         } else { // OrderedDither
             for (int y = 0; y < src->height; y++) {
                 const QRgb *p = (const QRgb *)src_data;
@@ -2861,8 +2847,8 @@ static void convert_RGB_to_Indexed8(QImageData *dst, const QImageData *src, Qt::
             const int trans = 216;
             Q_ASSERT(dst->colortable.size() > trans);
             dst->colortable[trans] = 0;
-            QImageData *mask = QImageData::create(QSize(src->width, src->height), QImage::Format_Mono);
-            dither_to_Mono(mask, src, flags, true);
+            QScopedPointer<QImageData> mask(QImageData::create(QSize(src->width, src->height), QImage::Format_Mono));
+            dither_to_Mono(mask.data(), src, flags, true);
             uchar *dst_data = dst->data;
             const uchar *mask_data = mask->data;
             for (int y = 0; y < src->height; y++) {
@@ -2874,7 +2860,6 @@ static void convert_RGB_to_Indexed8(QImageData *dst, const QImageData *src, Qt::
                 dst_data += dst->bytes_per_line;
             }
             dst->has_alpha_clut = true;
-            delete mask;
         }
 
 #undef MAX_R
@@ -2887,10 +2872,9 @@ static void convert_RGB_to_Indexed8(QImageData *dst, const QImageData *src, Qt::
 
 static void convert_ARGB_PM_to_Indexed8(QImageData *dst, const QImageData *src, Qt::ImageConversionFlags flags)
 {
-    QImageData *tmp = QImageData::create(QSize(src->width, src->height), QImage::Format_ARGB32);
-    convert_ARGB_PM_to_ARGB(tmp, src, flags);
-    convert_RGB_to_Indexed8(dst, tmp, flags);
-    delete tmp;
+    QScopedPointer<QImageData> tmp(QImageData::create(QSize(src->width, src->height), QImage::Format_ARGB32));
+    convert_ARGB_PM_to_ARGB(tmp.data(), src, flags);
+    convert_RGB_to_Indexed8(dst, tmp.data(), flags);
 }
 
 static void convert_ARGB_to_Indexed8(QImageData *dst, const QImageData *src, Qt::ImageConversionFlags flags)
@@ -5266,11 +5250,10 @@ QPaintEngine *QImage::paintEngine() const
     if (!d)
         return 0;
 
-#ifdef QT_RASTER_IMAGEENGINE
     if (!d->paintEngine) {
         d->paintEngine = new QRasterPaintEngine(const_cast<QImage *>(this));
     }
-#endif
+
     return d->paintEngine;
 }
 

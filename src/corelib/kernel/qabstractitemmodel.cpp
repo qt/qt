@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -488,35 +488,48 @@ const QHash<int,QByteArray> &QAbstractItemModelPrivate::defaultRoleNames()
     return *qDefaultRoleNames();
 }
 
-/*!
-    \internal
-    return true if \a value contains a numerical type
 
-    This function is used by our Q{Tree,Widget,Table}WidgetModel classes to sort.
-    We cannot rely on QVariant::canConvert because this would take strings as double
-    and then not sort strings correctly
-*/
-bool QAbstractItemModelPrivate::canConvertToDouble(const QVariant &value)
+static uint typeOfVariant(const QVariant &value)
 {
+    //return 0 for integer, 1 for floating point and 2 for other
     switch (value.userType()) {
         case QVariant::Bool:
         case QVariant::Int:
         case QVariant::UInt:
         case QVariant::LongLong:
         case QVariant::ULongLong:
-        case QVariant::Double:
         case QVariant::Char:
-        case QMetaType::Float:
         case QMetaType::Short:
         case QMetaType::UShort:
         case QMetaType::UChar:
         case QMetaType::ULong:
         case QMetaType::Long:
-            return true;
+            return 0;
+        case QVariant::Double:
+        case QMetaType::Float:
+            return 1;
         default:
-            return false;
+            return 2;
     }
-    return false;
+}
+
+/*!
+    \internal
+    return true if \a value contains a numerical type
+
+    This function is used by our Q{Tree,Widget,Table}WidgetModel classes to sort.
+*/
+bool QAbstractItemModelPrivate::variantLessThan(const QVariant &v1, const QVariant &v2)
+{
+    switch(qMax(typeOfVariant(v1), typeOfVariant(v2)))
+    {
+    case 0: //integer type
+        return v1.toLongLong() < v2.toLongLong();
+    case 1: //floating point
+        return v1.toReal() < v2.toReal();
+    default:
+        return v1.toString() < v2.toString();
+    }
 }
 
 void QAbstractItemModelPrivate::removePersistentIndexData(QPersistentModelIndexData *data)
@@ -740,7 +753,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     \brief The QModelIndex class is used to locate data in a data model.
 
     \ingroup model-view
-    \mainclass
+
 
     This class is used as an index into item models derived from
     QAbstractItemModel. The index is used by item views, delegates, and
@@ -928,7 +941,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     item model classes.
 
     \ingroup model-view
-    \mainclass
+
 
     The QAbstractItemModel class defines the standard interface that item
     models must use to be able to interoperate with other components in the

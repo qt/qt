@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -834,7 +834,6 @@ QSize QWorkspaceTitleBar::sizeHint() const
     \obsolete
     \brief The QWorkspace widget provides a workspace window that can be
     used in an MDI application.
-    \ingroup application
 
     This class is deprecated. Use QMdiArea instead.
 

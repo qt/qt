@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
   \brief The QScriptable class provides access to the Qt Script environment from Qt C++ member functions.
 
   \ingroup script
-  \mainclass
+
 
   With QScriptEngine::newQObject(), you can expose the signals and
   slots and properties of any QObject (or subclass) to script

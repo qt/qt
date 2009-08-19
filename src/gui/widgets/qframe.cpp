@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,7 +73,7 @@ inline void QFramePrivate::init()
     \brief The QFrame class is the base class of widgets that can have a frame.
 
     \ingroup abstractwidgets
-    \mainclass
+
 
     QMenu uses this to "raise" the menu above the surrounding
     screen. QProgressBar has a "sunken" look. QLabel has a flat look.

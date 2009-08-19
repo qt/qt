@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,8 +44,8 @@
     \brief The QMdiSubWindow class provides a subwindow class for
     QMdiArea.
     \since 4.3
-    \ingroup application
-    \mainclass
+    \ingroup mainwindow-classes
+
 
     QMdiSubWindow represents a top-level window in a QMdiArea, and consists
     of a title bar with window decorations, an internal widget, and

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,11 +43,10 @@
     \page tutorials-addressbook-fr.html
 
     \startpage {index.html}{Qt Reference Documentation}
+    \contentspage Tutorials
     \nextpage {tutorials/addressbook-fr/part1}{Chapitre 1}
 
     \title Tutoriel "Carnet d'adresses"
-    \ingroup howto
-    \ingroup tutorials
     \brief Une introduction à la programation d'interface graphique montrant comment construire une application simple avec Qt.
 
     Ce tutoriel est une introduction à la programmation de GUI (interface utilisateur)

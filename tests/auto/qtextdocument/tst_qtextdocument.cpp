@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,7 +55,12 @@
 #include <qtextlist.h>
 #include <qtextcodec.h>
 #include <qurl.h>
+#include <qpainter.h>
+#include <qfontmetrics.h>
+#include <qimage.h>
+#include <qtextlayout.h>
 #include "common.h"
+
 
 QT_FORWARD_DECLARE_CLASS(QTextDocument)
 
@@ -92,6 +97,8 @@ private slots:
     void noundo_isModified2();
     void noundo_isModified3();
     void mightBeRichText();
+
+    void task240325();
 
     void toHtml_data();
     void toHtml();
@@ -530,6 +537,38 @@ void tst_QTextDocument::noundo_basicIsModifiedChecks()
     doc->redo();
     QVERIFY(doc->isModified());
     QCOMPARE(spy.count(), 0);
+}
+
+void tst_QTextDocument::task240325()
+{
+    doc->setHtml("<html><img width=\"100\" height=\"100\" align=\"right\"/>Foobar Foobar Foobar Foobar</html>");
+
+    QImage img(1000, 7000, QImage::Format_ARGB32_Premultiplied);
+    QPainter p(&img);
+    QFontMetrics fm(p.font());
+
+    // Set page size to contain image and one "Foobar"
+    doc->setPageSize(QSize(100 + fm.width("Foobar")*2, 1000));
+
+    // Force layout
+    doc->drawContents(&p);
+
+    QCOMPARE(doc->blockCount(), 1);
+    for (QTextBlock block = doc->begin() ; block!=doc->end() ; block = block.next()) {
+        QTextLayout *layout = block.layout();
+        QCOMPARE(layout->lineCount(), 4);
+        for (int lineIdx=0;lineIdx<layout->lineCount();++lineIdx) {
+            QTextLine line = layout->lineAt(lineIdx);
+
+            QString text = block.text().mid(line.textStart(), line.textLength()).trimmed();
+
+            // Remove start token
+            if (lineIdx == 0)
+                text = text.mid(1);
+
+            QCOMPARE(text, QString::fromLatin1("Foobar"));
+        }
+    }
 }
 
 void tst_QTextDocument::noundo_moreIsModified()

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -78,6 +78,8 @@ void StdInListenerWin::run()
     bool ok = true;
     char chBuf[4096];
     DWORD dwRead;
+
+#ifndef Q_WS_WINCE
     HANDLE hStdin, hStdinDup;
 
     hStdin = GetStdHandle(STD_INPUT_HANDLE);
@@ -89,6 +91,10 @@ void StdInListenerWin::run()
         0, false, DUPLICATE_SAME_ACCESS);
 
     CloseHandle(hStdin);
+#else
+    HANDLE hStdinDup;
+    hStdinDup = stdin;
+#endif
 
     while (ok) {
         ok = ReadFile(hStdinDup, chBuf, 4096, &dwRead, NULL);

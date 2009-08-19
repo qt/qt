@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,11 +43,10 @@
     \page tutorials-addressbook.html
 
     \startpage {index.html}{Qt Reference Documentation}
+    \contentspage Tutorials
     \nextpage {tutorials/addressbook/part1}{Chapter 1}
 
     \title Address Book Tutorial
-    \ingroup howto
-    \ingroup tutorials
     \brief An introduction to GUI programming, showing how to put together a
     simple yet fully-functioning application.
 

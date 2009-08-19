@@ -34,14 +34,14 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 // Most of the code here was originally written by Hans Petter Bieker,
 // and is included in Qt with the author's permission, and the grateful
-// thanks of the Trolltech team.
+// thanks of the Qt team.
 
 /*
  * Copyright (C) 2000 Hans Petter Bieker. All rights reserved.

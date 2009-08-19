@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -74,6 +74,7 @@ QAbstractItemViewPrivate::QAbstractItemViewPrivate()
         currentlyCommittingEditor(0),
         pressedModifiers(Qt::NoModifier),
         pressedPosition(QPoint(-1, -1)),
+        pressedAlreadySelected(false),
         viewportEnteredNeeded(false),
         state(QAbstractItemView::NoState),
         editTriggers(QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed),
@@ -166,7 +167,7 @@ void QAbstractItemViewPrivate::checkMouseMove(const QPersistentModelIndex &index
     item view classes.
 
     \ingroup model-view
-    \mainclass
+
 
     QAbstractItemView class is the base class for every standard view
     that uses a QAbstractItemModel. QAbstractItemView is an abstract
@@ -584,7 +585,7 @@ void QAbstractItemView::setModel(QAbstractItemModel *model)
                "QAbstractItemView::setModel",
                "The parent of a top level index should be invalid");
 
-    if (d->model && d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
+    if (d->model != QAbstractItemModelPrivate::staticEmptyModel()) {
         connect(d->model, SIGNAL(destroyed()),
                 this, SLOT(_q_modelDestroyed()));
         connect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),

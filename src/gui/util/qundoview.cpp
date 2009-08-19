@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -253,7 +253,7 @@ QIcon QUndoModel::cleanIcon() const
     \class QUndoView
     \brief The QUndoView class displays the contents of a QUndoStack.
     \since 4.2
-    \ingroup misc
+
     \ingroup advanced
 
     QUndoView is a QListView which displays the list of commands pushed on an undo stack.

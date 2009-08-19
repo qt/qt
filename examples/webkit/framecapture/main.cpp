@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,7 +55,7 @@ int main(int argc, char * argv[])
         std::cout << "  'outputfile' is the prefix of the image files to be generated" << std::endl;
         std::cout << std::endl;
         std::cout << "Example: " << std::endl;
-        std::cout << "  framecapture www.trolltech.com trolltech.png" << std::endl;
+        std::cout << "  framecapture qt.nokia.com trolltech.png" << std::endl;
         std::cout << std::endl;
         std::cout << "Result:" << std::endl;
         std::cout << "  trolltech.png (full page)" << std::endl;

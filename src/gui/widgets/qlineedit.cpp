@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -128,7 +128,7 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
     \brief The QLineEdit widget is a one-line text editor.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     A line edit allows the user to enter and edit a single line of
     plain text with a useful collection of editing functions,
@@ -1494,11 +1494,7 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
     }
 #endif
 
-    if (e->button() == Qt::LeftButton && qApp->autoSipEnabled()
-            && (!d->clickCausedFocus || qApp->autoSipOnMouseFocus())) {
-        QEvent event(QEvent::RequestSoftwareInputPanel);
-        QApplication::sendEvent(this, &event);
-    }
+    d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
 

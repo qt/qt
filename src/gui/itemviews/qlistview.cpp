@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,7 +66,7 @@ QT_BEGIN_NAMESPACE
 
     \ingroup model-view
     \ingroup advanced
-    \mainclass
+
 
     A QListView presents items stored in a model, either as a simple
     non-hierarchical list, or as a collection of icons. This class is used
@@ -1957,7 +1957,6 @@ bool QListView::event(QEvent *e)
 QListViewPrivate::QListViewPrivate()
     : QAbstractItemViewPrivate(),
       dynamicListView(0),
-      staticListView(0),
       wrap(false),
       space(0),
       flow(QListView::TopToBottom),
@@ -1968,14 +1967,17 @@ QListViewPrivate::QListViewPrivate()
       modeProperties(0),
       column(0),
       uniformItemSizes(false),
-      batchSize(100)
+      batchSize(100),
+      showElasticBand(false)
 {
 }
 
 QListViewPrivate::~QListViewPrivate()
 {
-    delete staticListView;
-    delete dynamicListView;
+    if (viewMode == QListView::ListMode)
+        delete staticListView;
+    else
+        delete dynamicListView;
 }
 
 void QListViewPrivate::clear()

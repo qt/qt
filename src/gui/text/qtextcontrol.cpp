@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2288,7 +2288,7 @@ void QTextControl::print(QPrinter *printer) const
 {
 #ifndef QT_NO_PRINTER
     Q_D(const QTextControl);
-    if (printer && !printer->isValid())
+    if (!printer || !printer->isValid())
         return;
     QTextDocument *tempDoc = 0;
     const QTextDocument *doc = d->doc;

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -67,7 +67,6 @@ QT_BEGIN_NAMESPACE
     \brief The QGraphicsProxyWidget class provides a proxy layer for embedding
     a QWidget in a QGraphicsScene.
     \since 4.4
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     QGraphicsProxyWidget embeds QWidget-based widgets, for example, a

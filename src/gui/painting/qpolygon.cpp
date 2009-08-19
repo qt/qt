@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -91,7 +91,7 @@ static void qt_polygon_isect_line(const QPointF &p1, const QPointF &p2, const QP
 
     \reentrant
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
 
     A QPolygon object is a QVector<QPoint>.  The easiest way to add
@@ -489,7 +489,7 @@ QDebug operator<<(QDebug dbg, const QPolygon &a)
     floating point precision.
 
     \reentrant
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
 
     A QPolygonF is a QVector<QPointF>. The easiest way to add points

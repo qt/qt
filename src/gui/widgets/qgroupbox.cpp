@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -147,8 +147,6 @@ void QGroupBoxPrivate::click()
 
     \ingroup organizers
     \ingroup geomanagement
-    \ingroup appearance
-    \mainclass
 
     A group box provides a frame, a title and a keyboard shortcut, and
     displays various other widgets inside itself. The title is on top,

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,7 +62,7 @@ class QTextTablePrivate : public QTextFramePrivate
 {
     Q_DECLARE_PUBLIC(QTextTable)
 public:
-    QTextTablePrivate(QTextDocument *document) : QTextFramePrivate(document), grid(0), nRows(0), dirty(true), blockFragmentUpdates(false) {}
+    QTextTablePrivate(QTextDocument *document) : QTextFramePrivate(document), grid(0), nRows(0), nCols(0), dirty(true), blockFragmentUpdates(false) {}
     ~QTextTablePrivate();
 
     static QTextTable *createTable(QTextDocumentPrivate *, int pos, int rows, int cols, const QTextTableFormat &tableFormat);

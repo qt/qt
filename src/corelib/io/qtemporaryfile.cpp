@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -447,7 +447,7 @@ QTemporaryFilePrivate::~QTemporaryFilePrivate()
     \brief The QTemporaryFile class is an I/O device that operates on temporary files.
 
     \ingroup io
-    \mainclass
+
 
     QTemporaryFile is used to create unique temporary files safely.
     The file itself is created by calling open(). The name of the

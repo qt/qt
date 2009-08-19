@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -97,9 +97,6 @@ void QRubberBand::initStyleOption(QStyleOptionRubberBand *option) const
     \class QRubberBand
     \brief The QRubberBand class provides a rectangle or line that can
     indicate a selection or a boundary.
-
-    \ingroup misc
-    \mainclass
 
     A rubber band is often used to show a new bounding area (as in a
     QSplitter or a QDockWidget that is undocking). Historically this has

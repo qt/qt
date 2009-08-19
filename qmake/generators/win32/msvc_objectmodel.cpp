@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -484,7 +484,7 @@ bool VCCLCompilerTool::parseOption(const char* option)
             QString opt(option);
             if (opt.contains('a') && !opt.contains('s') && !opt.contains('c'))
                 ExceptionHandling = ehSEH;
-            else if (!opt.contains('a') && opt.contains("s-") && opt.contains("c-")) 
+            else if (!opt.contains('a') && opt.contains("s-") && opt.contains("c-"))
                 ExceptionHandling = ehNone;
             else if (!opt.contains('a') && opt.contains('s') && opt.contains('c'))
                 ExceptionHandling = ehNoSEH;
@@ -2215,26 +2215,6 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
 							             Option::fixPathToLocalOS(inFile, true, false),
                                                                      out);
             if(Project->canExecute(dep_cmd)) {
-#if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
-                QPopen procPipe;
-                if( procPipe.init(dep_cmd.toLatin1().constData(), "r") ) {
-                    QString indeps;
-                    while(true) {
-                        int read_in = procPipe.fread(buff, 255);
-                        if ( !read_in )
-                            break;
-                        indeps += QByteArray(buff, read_in);
-                    }
-                    if(!indeps.isEmpty()) {
-                        QStringList extradeps = indeps.split(QLatin1Char('\n'));
-                        for (int i = 0; i < extradeps.count(); ++i) {
-                            QString dd = extradeps.at(i).simplified();
-                            if (!dd.isEmpty())
-                                deps += Project->fileFixify(dd);
-                        }
-                    }
-                }
-#else
                 if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
                     QString indeps;
                     while(!feof(proc)) {
@@ -2253,7 +2233,6 @@ bool VCFilter::addExtraCompiler(const VCFilterFile &info)
                         }
                     }
                 }
-#endif
             }
         }
         for (int i = 0; i < deps.count(); ++i)

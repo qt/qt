@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
     \class QBitmap
     \brief The QBitmap class provides monochrome (1-bit depth) pixmaps.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
 
     The QBitmap class is a monochrome off-screen paint device used
@@ -265,15 +265,12 @@ QBitmap QBitmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
         img.setColor(1, c0);
     }
 
-    QPixmapData *d;
     QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
-    if (gs)
-        d = gs->createPixmapData(QPixmapData::BitmapType);
-    else
-        d = QGraphicsSystem::createDefaultPixmapData(QPixmapData::BitmapType);
+    QScopedPointer<QPixmapData> data(gs ? gs->createPixmapData(QPixmapData::BitmapType)
+                : QGraphicsSystem::createDefaultPixmapData(QPixmapData::BitmapType));
 
-    d->fromImage(img, flags | Qt::MonoOnly);
-    return QPixmap(d);
+    data->fromImage(img, flags | Qt::MonoOnly);
+    return QPixmap(data.take());
 }
 
 /*!

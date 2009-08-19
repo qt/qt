@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,9 +44,11 @@
 
 #include <QWidget>
 
+QT_BEGIN_NAMESPACE
 class QState;
 class QStateMachine;
 class QTransition;
+QT_END_NAMESPACE
 
 #define WIDTH 35
 #define HEIGHT 20

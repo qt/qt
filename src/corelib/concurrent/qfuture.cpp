@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,8 +44,10 @@
     \brief The QFuture class represents the result of an asynchronous computation.
     \since 4.4
 
+    \ingroup thread
+
     To start a computation, use one of the APIs in the
-    \l {threads.html#qtconcurrent-intro}{Qt Concurrent} framework.
+    \l {Concurrent Programming}{Qt Concurrent} framework.
 
     QFuture allows threads to be synchronized against one or more results
     which will be ready at a later point in time. The result can be of any type
@@ -90,7 +92,7 @@
 
     To interact with running tasks using signals and slots, use QFutureWatcher.
 
-    \sa QFutureWatcher, {threads.html#qtconcurrent-intro}{Qt Concurrent}
+    \sa QFutureWatcher, {Concurrent Programming}{Qt Concurrent}
 */
 
 /*! \fn QFuture::QFuture()

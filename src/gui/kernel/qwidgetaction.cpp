@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,6 +53,8 @@ QT_BEGIN_NAMESPACE
     \brief The QWidgetAction class extends QAction by an interface
     for inserting custom widgets into action based containers, such
     as toolbars.
+
+    \ingroup mainwindow-classes
 
     Most actions in an application are represented as items in menus or
     buttons in toolbars. However sometimes more complex widgets are
@@ -99,9 +101,6 @@ QT_BEGIN_NAMESPACE
             by Apple), a workaround is to use a QueuedConnection instead of a
             DirectConnection.
     \endlist
-
-    \ingroup application
-    \mainclass
 
     \sa QAction, QActionGroup, QWidget
 */

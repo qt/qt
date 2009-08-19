@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -168,7 +168,7 @@ int QDialPrivate::valueFromPoint(const QPoint &p) const
     \brief The QDial class provides a rounded range control (like a speedometer or potentiometer).
 
     \ingroup basicwidgets
-    \mainclass
+
 
     QDial is used when the user needs to control a value within a
     program-definable range, and the range either wraps around

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
   \brief The QScriptValueIterator class provides a Java-style iterator for QScriptValue.
 
   \ingroup script
-  \mainclass
+
 
   The QScriptValueIterator constructor takes a QScriptValue as
   argument.  After construction, the iterator is located at the very

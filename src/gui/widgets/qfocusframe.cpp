@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -118,7 +118,7 @@ void QFocusFrame::initStyleOption(QStyleOption *option) const
     outside of a widget's normal paintable area.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     Normally an application will not need to create its own
     QFocusFrame as QStyle will handle this detail for

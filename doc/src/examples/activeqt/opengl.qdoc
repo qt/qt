@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,7 +57,7 @@
     <p />
     An OpenGL scene:<br />
     <object ID="GLBox" CLASSID="CLSID:5fd9c22e-ed45-43fa-ba13-1530bb6b03e0"
-    CODEBASE="http://qtsoftware.com/demos/openglax.cab">
+    CODEBASE="http://qt.nokia.com/demos/openglax.cab">
     [Object not available! Did you forget to build and register the server?]
     </object><br />
 

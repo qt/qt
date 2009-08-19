@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -412,8 +412,8 @@ void QToolBarPrivate::plug(const QRect &r)
     \brief The QToolBar class provides a movable panel that contains a
     set of controls.
 
-    \ingroup application
-    \mainclass
+    \ingroup mainwindow-classes
+
 
     Toolbar buttons are added by adding \e actions, using addAction()
     or insertAction(). Groups of buttons can be separated using

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -582,17 +582,21 @@ QtResourceView::QtResourceView(QDesignerFormEditorInterface *core, QWidget *pare
 {
     d_ptr->q_ptr = this;
 
-    d_ptr->m_editResourcesAction = new QAction(qdesigner_internal::createIconSet(QLatin1String("edit.png")), tr("Edit Resources..."), this);
+    QIcon editIcon = QIcon::fromTheme("document-properties", qdesigner_internal::createIconSet(QLatin1String("edit.png")));
+    d_ptr->m_editResourcesAction = new QAction(editIcon, tr("Edit Resources..."), this);
     d_ptr->m_toolBar->addAction(d_ptr->m_editResourcesAction);
     connect(d_ptr->m_editResourcesAction, SIGNAL(triggered()), this, SLOT(slotEditResources()));
     d_ptr->m_editResourcesAction->setEnabled(false);
 
-    d_ptr->m_reloadResourcesAction = new QAction(qdesigner_internal::createIconSet(QLatin1String("reload.png")), tr("Reload"), this);
+    QIcon refreshIcon = QIcon::fromTheme("view-refresh", qdesigner_internal::createIconSet(QLatin1String("reload.png")));
+    d_ptr->m_reloadResourcesAction = new QAction(refreshIcon, tr("Reload"), this);
+
     d_ptr->m_toolBar->addAction(d_ptr->m_reloadResourcesAction);
     connect(d_ptr->m_reloadResourcesAction, SIGNAL(triggered()), this, SLOT(slotReloadResources()));
     d_ptr->m_reloadResourcesAction->setEnabled(false);
 
-    d_ptr->m_copyResourcePathAction = new QAction(qdesigner_internal::createIconSet(QLatin1String("editcopy.png")), tr("Copy Path"), this);
+    QIcon copyIcon = QIcon::fromTheme("edit-copy", qdesigner_internal::createIconSet(QLatin1String("editcopy.png")));
+    d_ptr->m_copyResourcePathAction = new QAction(copyIcon, tr("Copy Path"), this);
     connect(d_ptr->m_copyResourcePathAction, SIGNAL(triggered()), this, SLOT(slotCopyResourcePath()));
     d_ptr->m_copyResourcePathAction->setEnabled(false);
 

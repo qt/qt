@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -120,7 +120,7 @@ QT_BEGIN_NAMESPACE
 */
 
 QHistoryStatePrivate::QHistoryStatePrivate()
-    : defaultState(0)
+    : defaultState(0), historyType(QHistoryState::ShallowHistory)
 {
 }
 
@@ -135,8 +135,6 @@ QHistoryStatePrivate *QHistoryStatePrivate::get(QHistoryState *q)
 QHistoryState::QHistoryState(QState *parent)
     : QAbstractState(*new QHistoryStatePrivate, parent)
 {
-    Q_D(QHistoryState);
-    d->historyType = ShallowHistory;
 }
 /*!
   Constructs a new history state of the given \a type, with the given \a

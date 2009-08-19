@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,7 +73,7 @@ class QMainWindowPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QMainWindow)
 public:
     inline QMainWindowPrivate()
-        : layout(0), toolButtonStyle(Qt::ToolButtonIconOnly)
+        : layout(0), explicitIconSize(false), toolButtonStyle(Qt::ToolButtonIconOnly)
 #ifdef Q_WS_MAC
             , useHIToolBar(false)
 #endif
@@ -107,8 +107,6 @@ void QMainWindowPrivate::init()
     layout = new QMainWindowLayout(q);
     const int metric = q->style()->pixelMetric(QStyle::PM_ToolBarIconSize, 0, q);
     iconSize = QSize(metric, metric);
-    explicitIconSize = false;
-
     q->setAttribute(Qt::WA_Hover);
 }
 
@@ -148,8 +146,8 @@ void QMainWindowPrivate::init()
     \class QMainWindow
     \brief The QMainWindow class provides a main application
            window.
-    \ingroup application
-    \mainclass
+    \ingroup mainwindow-classes
+
 
     \tableofcontents
 

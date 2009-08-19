@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -174,7 +174,7 @@ QFilePrivate::setError(QFile::FileError err, int errNum)
     \brief The QFile class provides an interface for reading from and writing to files.
 
     \ingroup io
-    \mainclass
+
     \reentrant
 
     QFile is an I/O device for reading and writing text and binary

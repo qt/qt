@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -122,10 +122,7 @@ public slots:
     void install() {
         QCoreApplication::installTranslator(this);
         QTest::qWait(2500);
-        //### is there any better way to close a Qt dialog?
-        QThreadData *data = QThreadData::current();
-        if (!data->eventLoops.isEmpty())
-            data->eventLoops.top()->quit();
+        QApplication::closeAllWindows();
     }
 public:
     mutable QSet<QByteArray> m_translations;

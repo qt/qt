@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -219,9 +219,7 @@ Q_GLOBAL_STATIC(QWindowsMimeList, theMimeList);
 /*!
     \class QWindowsMime
     \brief The QWindowsMime class maps open-standard MIME to Window Clipboard formats.
-    \ingroup io
     \ingroup draganddrop
-    \ingroup misc
 
     Qt's drag-and-drop and clipboard facilities use the MIME standard.
     On X11, this maps trivially to the Xdnd protocol, but on Windows

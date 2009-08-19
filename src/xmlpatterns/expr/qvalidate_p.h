@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -69,7 +69,7 @@ namespace QPatternist
      * Query Language, 3.13 Validate Expressions</a>
      * @see <a href="http://www.w3.org/TR/xquery/#id-schema-validation-feature">XQuery 1.0: An
      * XML Query Language, 5.2.2 Schema Validation Feature</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class Validate

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -76,7 +76,7 @@ public:
 
     \brief The QTextDocumentWriter class provides a format-independent interface for writing a QTextDocument to files or other devices.
 
-    \ingroup text
+    \ingroup richtext-processing
     \ingroup io
 
     To write a document, construct a QTextDocumentWriter object with either a

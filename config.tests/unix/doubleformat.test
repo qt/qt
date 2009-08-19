@@ -14,7 +14,7 @@ test -d "$OUTDIR/config.tests/unix/doubleformat" || mkdir -p "$OUTDIR/config.tes
 cd "$OUTDIR/config.tests/unix/doubleformat"
 
 DOUBLEFORMAT="UNKNOWN"
-[ "$VERBOSE" = "yes" ] && make || make >/dev/null 2>&1
+[ "$VERBOSE" = "yes" ] && $MAKE || $MAKE >/dev/null 2>&1
 
 if [ -f ./doubleformattest ]; then
     : # nop

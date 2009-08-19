@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -74,7 +74,7 @@ public:
     \brief The QLCDNumber widget displays a number with LCD-like digits.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     It can display a number in just about any size. It can display
     decimal, hexadecimal, octal or binary numbers. It is easy to

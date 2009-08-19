@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,7 +50,6 @@ QT_BEGIN_NAMESPACE
     \brief The QUuid class stores a Universally Unique Identifier (UUID).
 
     \reentrant
-    \ingroup misc
 
     Using \e{U}niversally \e{U}nique \e{ID}entifiers (UUID) is a
     standard way to uniquely identify entities in a distributed

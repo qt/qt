@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
     \class QMatrix4x4
     \brief The QMatrix4x4 class represents a 4x4 transformation matrix in 3D space.
     \since 4.6
+    \ingroup painting-3D
 
     \sa QVector3D, QGenericMatrix
 */
@@ -1009,11 +1010,24 @@ QMatrix4x4& QMatrix4x4::rotate(qreal angle, const QVector3D& vector)
 */
 QMatrix4x4& QMatrix4x4::rotate(qreal angle, qreal x, qreal y, qreal z)
 {
+    if (angle == 0.0f)
+        return *this;
     QMatrix4x4 m(1); // The "1" says to not load the identity.
-    qreal a = angle * M_PI / 180.0f;
-    qreal c = qCos(a);
-    qreal s = qSin(a);
-    qreal ic;
+    qreal c, s, ic;
+    if (angle == 90.0f || angle == -270.0f) {
+        s = 1.0f;
+        c = 0.0f;
+    } else if (angle == -90.0f || angle == 270.0f) {
+        s = -1.0f;
+        c = 0.0f;
+    } else if (angle == 180.0f || angle == -180.0f) {
+        s = 0.0f;
+        c = -1.0f;
+    } else {
+        qreal a = angle * M_PI / 180.0f;
+        c = qCos(a);
+        s = qSin(a);
+    }
     bool quick = false;
     if (x == 0.0f) {
         if (y == 0.0f) {

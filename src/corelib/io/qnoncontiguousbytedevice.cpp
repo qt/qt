@@ -34,16 +34,15 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "qnoncontiguousbytedevice_p.h"
-#include <QObject>
-#include <QBuffer>
-#include <QDebug>
-#include <QFile>
+#include <qbuffer.h>
+#include <qdebug.h>
+#include <qfile.h>
 
 QT_BEGIN_NAMESPACE
 

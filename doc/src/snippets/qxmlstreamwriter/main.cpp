@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
     stream.writeAttribute("folded", "no");
 //! [write element]
     stream.writeStartElement("bookmark");
-    stream.writeAttribute("href", "http://www.qtsoftware.com/");
+    stream.writeAttribute("href", "http://qt.nokia.com/");
     stream.writeTextElement("title", "Qt Home");
     stream.writeEndElement(); // bookmark
 //! [write element]

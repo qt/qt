@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,8 +73,8 @@ static const char* const qglslMainVertexShader = "\
     }";
 
 static const char* const qglslMainWithTexCoordsVertexShader = "\
-    attribute lowp  vec2    textureCoordArray; \
-    varying   lowp  vec2    textureCoords; \
+    attribute mediump  vec2 textureCoordArray; \
+    varying   mediump  vec2 textureCoords; \
     uniform   highp float   depth;\
     void setPosition();\
     void main(void) \
@@ -284,7 +284,7 @@ static const char* const qglslSolidBrushSrcFragmentShader = "\
     }";
 
 static const char* const qglslImageSrcFragmentShader = "\
-    varying highp vec2      textureCoords; \
+    varying mediump vec2    textureCoords; \
     uniform       sampler2D imageTexture; \
     lowp vec4 srcPixel() { \
         return texture2D(imageTexture, textureCoords); \

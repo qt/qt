@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -67,6 +67,9 @@ public:
     QWindowsMobileStylePrivate();
     bool doubleControls;
     bool smartphone;
+#ifdef Q_WS_WINCE_WM
+    bool wm65;
+#endif
 
     QImage imageRadioButton;
     QImage imageRadioButtonChecked;
@@ -85,6 +88,42 @@ public:
     QImage imageMaximize;
     QImage imageNormalize;
     QImage imageMinimize;
+
+    void setupWindowsMobileStyle65();
+
+#ifdef Q_WS_WINCE_WM
+    //Windows Mobile 6.5 images
+    QImage imageScrollbarHandleUp;
+    QImage imageScrollbarHandleDown;
+    QImage imageScrollbarHandleUpHigh;
+    QImage imageScrollbarHandleDownHigh;
+    QImage imageScrollbarGripUp;
+    QImage imageScrollbarGripDown;
+    QImage imageScrollbarGripMiddle;
+    QImage imageListViewHighlightCornerLeft;
+    QImage imageListViewHighlightCornerRight;
+    QImage imageListViewHighlightMiddle;
+    QImage imageTabEnd;
+    QImage imageTabSelectedEnd;
+    QImage imageTabSelectedBegin;
+    QImage imageTabMiddle;
+
+    QColor currentTintHigh;
+    QColor currentTintButton;
+
+    void tintImagesHigh(QColor color);
+    void tintImagesButton(QColor color);
+    void tintListViewHighlight(QColor color);
+
+#endif //Q_WS_WINCE_WM
+
+    void drawScrollbarHandleUp(QPainter *p, QStyleOptionSlider *opt, bool completeFrame = false, bool secondScrollBar = false);
+    void drawScrollbarHandleDown(QPainter *p, QStyleOptionSlider *opt, bool completeFrame = false, bool secondScrollBar = false);
+    void drawScrollbarGroove(QPainter *p, const QStyleOptionSlider *opt);
+    void drawScrollbarGrip(QPainter *p, QStyleOptionSlider *newScrollbar, const QStyleOptionComplex *option, bool drawCompleteFrame);
+    void drawTabBarTab(QPainter *p, const QStyleOptionTab *tab);
+    void drawPanelItemViewSelected(QPainter *painter, const QStyleOptionViewItemV4 *option, QRect rect = QRect());
+
 };
 
 QT_END_NAMESPACE

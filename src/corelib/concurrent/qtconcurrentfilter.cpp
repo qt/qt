@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,12 +42,12 @@
 /*!
     \headerfile <QtConcurrentFilter>
     \title Concurrent Filter and Filter-Reduce
-    \ingroup threading
+    \ingroup thread
 
     \brief The <QtConcurrentFilter> header provides concurrent Filter and
     Filter-Reduce.
 
-    These functions are a part of the \l {threads.html#qtconcurrent-intro}{Qt Concurrent} framework.
+    These functions are a part of the \l {Concurrent Programming}{Qt Concurrent} framework.
 
     The QtConcurrent::filter(), QtConcurrent::filtered() and
     QtConcurrent::filteredReduced() functions filter items in a sequence such

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -372,32 +372,30 @@ void QProcessPrivate::startProcess()
     qDebug("   pass environment : %s", environment.isEmpty() ? "no" : "yes");
 #endif
 
-    DWORD dwCreationFlags = CREATE_NO_WINDOW;
-
 #if defined(Q_OS_WINCE)
-        QString fullPathProgram = program;
-        if (!QDir::isAbsolutePath(fullPathProgram))
-            fullPathProgram = QFileInfo(fullPathProgram).absoluteFilePath();
-        fullPathProgram.replace(QLatin1Char('/'), QLatin1Char('\\'));
-        success = CreateProcess((wchar_t*)fullPathProgram.utf16(),
-                                (wchar_t*)args.utf16(),
-                                0, 0, false, 0, 0, 0, 0, pid);
+    QString fullPathProgram = program;
+    if (!QDir::isAbsolutePath(fullPathProgram))
+        fullPathProgram = QFileInfo(fullPathProgram).absoluteFilePath();
+    fullPathProgram.replace(QLatin1Char('/'), QLatin1Char('\\'));
+    success = CreateProcess((wchar_t*)fullPathProgram.utf16(),
+                            (wchar_t*)args.utf16(),
+                            0, 0, false, 0, 0, 0, 0, pid);
 #else
-        dwCreationFlags |= CREATE_UNICODE_ENVIRONMENT;
-        STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
-	                                 (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                   (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
-                                   0, 0, 0,
-                                   STARTF_USESTDHANDLES,
-                                   0, 0, 0,
-                                   stdinChannel.pipe[0], stdoutChannel.pipe[1], stderrChannel.pipe[1]
-        };
-        success = CreateProcess(0, (wchar_t*)args.utf16(),
-                                0, 0, TRUE, dwCreationFlags,
-                                environment ? envlist.data() : 0,
-                                workingDirectory.isEmpty() ? 0
-                                    : (wchar_t*)QDir::toNativeSeparators(workingDirectory).utf16(),
-                                &startupInfo, pid);
+    DWORD dwCreationFlags = CREATE_NO_WINDOW;
+    dwCreationFlags |= CREATE_UNICODE_ENVIRONMENT;
+    STARTUPINFOW startupInfo = { sizeof( STARTUPINFO ), 0, 0, 0,
+                                 (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
+                                 (ulong)CW_USEDEFAULT, (ulong)CW_USEDEFAULT,
+                                 0, 0, 0,
+                                 STARTF_USESTDHANDLES,
+                                 0, 0, 0,
+                                 stdinChannel.pipe[0], stdoutChannel.pipe[1], stderrChannel.pipe[1]
+    };
+    success = CreateProcess(0, (wchar_t*)args.utf16(),
+                            0, 0, TRUE, dwCreationFlags,
+                            environment ? envlist.data() : 0,
+                            workingDirectory.isEmpty() ? 0 : (wchar_t*)QDir::toNativeSeparators(workingDirectory).utf16(),
+                            &startupInfo, pid);
 
     if (stdinChannel.pipe[0] != INVALID_Q_PIPE) {
         CloseHandle(stdinChannel.pipe[0]);

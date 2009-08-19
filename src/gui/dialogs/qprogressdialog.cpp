@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -196,8 +196,8 @@ void QProgressDialogPrivate::_q_disconnectOnClose()
 /*!
   \class QProgressDialog
   \brief The QProgressDialog class provides feedback on the progress of a slow operation.
-  \ingroup dialogs
-  \mainclass
+  \ingroup standard-dialogs
+
 
   A progress dialog is used to give the user an indication of how long
   an operation is going to take, and to demonstrate that the

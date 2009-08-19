@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -276,7 +276,6 @@ void QFontComboBoxPrivate::_q_currentChanged(const QString &text)
 
     \since 4.2
     \ingroup basicwidgets
-    \ingroup text
 
     The combobox is populated with an alphabetized list of font
     family names, such as Arial, Helvetica, and Times New Roman.

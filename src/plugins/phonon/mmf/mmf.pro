@@ -21,16 +21,13 @@ phonon_mmf_audio_drm {
     LIBS += -lmediaclientaudio.lib
 }
 
-LIBS += -lmediaclientvideo.lib		# For CVideoPlayerUtility
-LIBS += -lcone.lib			# For CCoeEnv
-LIBS += -lws32.lib			# For RWindow
-
 HEADERS +=                                           \
            $$PHONON_MMF_DIR/abstractplayer.h         \
            $$PHONON_MMF_DIR/abstractmediaplayer.h    \
            $$PHONON_MMF_DIR/audiooutput.h            \
            $$PHONON_MMF_DIR/audioplayer.h            \
            $$PHONON_MMF_DIR/backend.h                \
+           $$PHONON_MMF_DIR/dummyplayer.h            \
            $$PHONON_MMF_DIR/mediaobject.h            \
            $$PHONON_MMF_DIR/utils.h                  \
            $$PHONON_MMF_DIR/videoplayer.h
@@ -40,12 +37,16 @@ SOURCES +=                                           \
            $$PHONON_MMF_DIR/audiooutput.cpp          \
            $$PHONON_MMF_DIR/audioplayer.cpp          \
            $$PHONON_MMF_DIR/backend.cpp              \
+           $$PHONON_MMF_DIR/dummyplayer.cpp          \
            $$PHONON_MMF_DIR/mediaobject.cpp          \
            $$PHONON_MMF_DIR/utils.cpp                \
            $$PHONON_MMF_DIR/videoplayer.cpp
-
-LIBS += -lefsrv				# For file server
-LIBS += -lapgrfx.lib -lapmime.lib	# For recognizer
+	   
+LIBS += -lmediaclientvideo.lib		# For CVideoPlayerUtility
+LIBS += -lcone.lib			# For CCoeEnv
+LIBS += -lws32.lib			# For RWindow
+LIBS += -lefsrv                     	# For file server
+LIBS += -lapgrfx.lib -lapmime.lib   	# For recognizer
 
 # This is needed for having the .qtplugin file properly created on Symbian.
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/phonon_backend
@@ -62,3 +63,4 @@ INCLUDEPATH *= /epoc32
 # Temporary steal one of the reserved, until we know that this MMF plugin is
 # turning into something at all.
 symbian:TARGET.UID3=0x2001E627
+

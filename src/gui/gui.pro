@@ -47,7 +47,6 @@ contains(DEFINES,QT_EVAL):include($$QT_SOURCE_TREE/src/corelib/eval.pri)
 QMAKE_DYNAMIC_LIST_FILE = $$PWD/QtGui.dynlist
 
 DEFINES += Q_INTERNAL_QAPP_SRC
-
 symbian:TARGET.UID3=0x2001B2DD
 
 # ro-section in gui can exceed default allocated space, so more rw-section little further

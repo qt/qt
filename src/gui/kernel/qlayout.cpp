@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,7 +75,6 @@ static int menuBarHeightForWidth(QWidget *menubar, int w)
     \class QLayout
     \brief The QLayout class is the base class of geometry managers.
 
-    \ingroup appearance
     \ingroup geomanagement
 
     This is an abstract base class inherited by the concrete classes

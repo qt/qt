@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
     \class QQuaternion
     \brief The QQuaternion class represents a quaternion consisting of a vector and scalar.
     \since 4.6
+    \ingroup painting-3D
 
     Quaternions are used to represent rotations in 3D space, and
     consist of a 3D rotation axis specified by the x, y, and z

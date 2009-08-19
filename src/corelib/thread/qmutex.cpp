@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,8 +56,6 @@ QT_BEGIN_NAMESPACE
     \threadsafe
 
     \ingroup thread
-    \ingroup environment
-    \mainclass
 
     The purpose of a QMutex is to protect an object, data structure or
     section of code so that only one thread can access it at a time
@@ -416,7 +414,6 @@ void QMutex::unlock()
     \threadsafe
 
     \ingroup thread
-    \ingroup environment
 
     Locking and unlocking a QMutex in complex functions and
     statements or in exception handling code is error-prone and

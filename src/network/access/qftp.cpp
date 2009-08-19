@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1296,9 +1296,9 @@ int QFtpPrivate::addCommand(QFtpCommand *cmd)
     \class QFtp
     \brief The QFtp class provides an implementation of the client side of FTP protocol.
 
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
-    \mainclass
+
 
     This class provides a direct interface to FTP that allows you to
     have more control over the requests. However, for new
@@ -1345,7 +1345,7 @@ int QFtpPrivate::addCommand(QFtpCommand *cmd)
     Some commands, e.g. list(), emit additional signals to report
     their results.
 
-    Example: If you want to download the INSTALL file from Trolltech's
+    Example: If you want to download the INSTALL file from the Qt
     FTP server, you would write this:
 
     \snippet doc/src/snippets/code/src_network_access_qftp.cpp 1

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -278,7 +278,7 @@ namespace qdesigner_internal {
                 urlCompletions.push_back(QLatin1String("about:blank"));
                 urlCompletions.push_back(QLatin1String("http://"));
                 urlCompletions.push_back(QLatin1String("http://www."));
-                urlCompletions.push_back(QLatin1String("http://qtsoftware.com/"));
+                urlCompletions.push_back(QLatin1String("http://qt.nokia.com/"));
                 urlCompletions.push_back(QLatin1String("file://"));
                 urlCompletions.push_back(QLatin1String("ftp://"));
                 urlCompletions.push_back(QLatin1String("data:"));

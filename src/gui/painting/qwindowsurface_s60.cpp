@@ -76,7 +76,7 @@ QS60WindowSurface::QS60WindowSurface(QWidget* widget)
 
     // We create empty CFbsBitmap here -> it will be resized in setGeometry
     d_ptr->bitmap = q_check_ptr(new CFbsBitmap);	// CBase derived object needs check on new
-    qt_throwIfError( d_ptr->bitmap->Create(TSize(0, 0), mode ) );
+    qt_symbian_throwIfError( d_ptr->bitmap->Create(TSize(0, 0), mode ) );
 
     updatePaintDeviceOnBitmap();
 
@@ -180,7 +180,7 @@ void QS60WindowSurface::setGeometry(const QRect& rect)
     QWindowSurface::setGeometry(rect);
 
     TRect nativeRect(qt_QRect2TRect(rect));
-    qt_throwIfError(d_ptr->bitmap->Resize(nativeRect.Size()));
+    qt_symbian_throwIfError(d_ptr->bitmap->Resize(nativeRect.Size()));
 
     if (!rect.isNull())
         updatePaintDeviceOnBitmap();

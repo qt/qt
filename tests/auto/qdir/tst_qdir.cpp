@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,6 +59,12 @@
 #if defined(Q_OS_VXWORKS)
 #define Q_NO_SYMLINKS
 #endif
+
+#if defined(Q_OS_SYMBIAN)
+// Open C in Symbian doesn't support symbolic links to directories
+#define Q_NO_SYMLINKS_TO_DIRS
+#endif
+
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -183,11 +189,20 @@ void tst_QDir::getSetCheck()
 
 tst_QDir::tst_QDir()
 {
+#ifdef Q_OS_SYMBIAN
+    // Can't deploy empty test dir, so create it here
+    QDir dir(SRCDIR);
+    dir.mkdir("testData");
+#endif
 }
 
 tst_QDir::~tst_QDir()
 {
-
+#ifdef Q_OS_SYMBIAN
+    // Remove created test dir
+    QDir dir(SRCDIR);
+    dir.rmdir("testData");
+#endif
 }
 
 void tst_QDir::construction()
@@ -707,21 +722,23 @@ void tst_QDir::entryListSimple()
 void tst_QDir::entryListWithSymLinks()
 {
 #ifndef Q_NO_SYMLINKS
+#  ifndef Q_NO_SYMLINKS_TO_DIRS
     QFile::remove("myLinkToDir.lnk");
+#  endif
     QFile::remove("myLinkToFile.lnk");
     QFile::remove("testfile.cpp");
     QDir dir;
     dir.mkdir("myDir");
     QFile("testfile.cpp").open(QIODevice::WriteOnly);
-#if !defined(Q_OS_SYMBIAN)
+#  ifndef Q_NO_SYMLINKS_TO_DIRS
     QVERIFY(QFile::link("myDir", "myLinkToDir.lnk"));
-#endif
+#  endif
     QVERIFY(QFile::link("testfile.cpp", "myLinkToFile.lnk"));
 
     {
         QStringList entryList = QDir().entryList();
         QVERIFY(entryList.contains("myDir"));
-#if !defined(Q_OS_SYMBIAN)
+#  ifndef Q_NO_SYMLINKS_TO_DIRS
         QVERIFY(entryList.contains("myLinkToDir.lnk"));
 #endif
         QVERIFY(entryList.contains("myLinkToFile.lnk"));
@@ -729,7 +746,7 @@ void tst_QDir::entryListWithSymLinks()
     {
         QStringList entryList = QDir().entryList(QDir::Dirs);
         QVERIFY(entryList.contains("myDir"));
-#if !defined(Q_OS_SYMBIAN)
+#  ifndef Q_NO_SYMLINKS_TO_DIRS
         QVERIFY(entryList.contains("myLinkToDir.lnk"));
 #endif
 #if defined(Q_OS_SYMBIAN)

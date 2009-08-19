@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1510,9 +1510,7 @@ static const Qt::WindowFlags DefaultWindowFlags =
     \class QColorDialog
     \brief The QColorDialog class provides a dialog widget for specifying colors.
 
-    \mainclass
-    \ingroup dialogs
-    \ingroup multimedia
+    \ingroup standard-dialogs
 
     The color dialog's function is to allow users to choose colors.
     For example, you might use this in a drawing program to allow the

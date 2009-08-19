@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -452,7 +452,7 @@ void QPrintPreviewWidgetPrivate::setZoomFactor(qreal _zoomFactor)
     \brief The QPrintPreviewWidget class provides a widget for
     previewing page layouts for printer output.
 
-    \ingroup multimedia
+    \ingroup printing
 
     QPrintPreviewDialog uses a QPrintPreviewWidget internally, and the
     purpose of QPrintPreviewWidget is to make it possible to embed the

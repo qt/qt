@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -97,8 +97,6 @@ class Q_GUI_EXPORT QApplication : public QCoreApplication
     Q_PROPERTY(int cursorFlashTime READ cursorFlashTime WRITE setCursorFlashTime)
     Q_PROPERTY(int doubleClickInterval  READ doubleClickInterval WRITE setDoubleClickInterval)
     Q_PROPERTY(int keyboardInputInterval READ keyboardInputInterval WRITE setKeyboardInputInterval)
-    Q_PROPERTY(bool autoSipOnMouseFocus READ autoSipOnMouseFocus
-               WRITE setAutoSipOnMouseFocus)
 #ifndef QT_NO_WHEELEVENT
     Q_PROPERTY(int wheelScrollLines  READ wheelScrollLines WRITE setWheelScrollLines)
 #endif
@@ -299,8 +297,6 @@ public Q_SLOTS:
 #endif
     void setAutoSipEnabled(const bool enabled);
     bool autoSipEnabled() const;
-    void setAutoSipOnMouseFocus(bool);
-    bool autoSipOnMouseFocus();
     static void closeAllWindows();
     static void aboutQt();
 
@@ -387,10 +383,6 @@ private:
     friend class QWSDirectPainterSurface;
     friend class QDirectPainter;
     friend class QDirectPainterPrivate;
-#endif
-
-#if defined(Q_WS_WIN)
-    friend QApplicationPrivate* getQApplicationPrivateInternal();
 #endif
 
 #if defined(Q_WS_MAC) || defined(Q_WS_X11)

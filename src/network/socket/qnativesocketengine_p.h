@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -62,7 +62,7 @@
 
 #ifdef Q_OS_SYMBIAN
 #include <private/qeventdispatcher_symbian_p.h>
-#include<unistd.h>
+#include <unistd.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -186,12 +186,6 @@ public:
     ~QNativeSocketEnginePrivate();
 
     int socketDescriptor;
-
-#if !defined(QT_NO_IPV6)
-    struct sockaddr_storage aa;
-#else
-    struct sockaddr_in aa;
-#endif
 
     QSocketNotifier *readNotifier, *writeNotifier, *exceptNotifier;
 

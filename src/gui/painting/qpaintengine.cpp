@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -145,7 +145,7 @@ QFont QTextItem::font() const
 
 /*!
   \class QPaintEngine
-  \ingroup multimedia
+  \ingroup painting
 
   \brief The QPaintEngine class provides an abstract definition of how
   QPainter draws to a given device on a given platform.

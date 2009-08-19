@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,7 +56,6 @@
 QT_BEGIN_NAMESPACE
 
 static const int windowsItemFrame        =  2; // menu item frame width
-static const int windowsSepHeight        =  9; // separator item height
 static const int windowsItemHMargin      =  3; // menu item hor text margin
 static const int windowsItemVMargin      =  2; // menu item ver text margin
 static const int windowsArrowHMargin	 =  6; // arrow horizontal margin
@@ -1951,7 +1950,11 @@ QRect QWindowsCEStyle::subControlRect(ComplexControl control, const QStyleOption
                 rect = QRect(x, y , bs.width(), bs.height());
                 break;
           case SC_SpinBoxEditField:
-                rect = QRect(lx, fw, rx-2, spinbox->rect.height() - 2*fw);
+                if (spinbox->buttonSymbols == QAbstractSpinBox::NoButtons) {
+                    rect = QRect(lx, fw, spinbox->rect.width() - 2*fw - 2, spinbox->rect.height() - 2*fw);
+                } else {
+                    rect = QRect(lx, fw, rx-2, spinbox->rect.height() - 2*fw);
+                }
                 break;
           case SC_SpinBoxFrame:
                 rect = spinbox->rect;
@@ -2291,6 +2294,9 @@ int QWindowsCEStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QW
         break;
     case SH_EtchDisabledText:
         ret = false;
+    case SH_RequestSoftwareInputPanel:
+        ret = RSIP_OnMouseClick;
+        break;
     default:
         ret = QWindowsStyle::styleHint(hint, opt, widget, returnData);
         break;

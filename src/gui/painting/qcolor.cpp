@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,9 +66,9 @@ QT_BEGIN_NAMESPACE
     \class QColor
     \brief The QColor class provides colors based on RGB, HSV or CMYK values.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup appearance
-    \mainclass
+
 
     A color is normally specified in terms of RGB (red, green, and
     blue) components, but it is also possible to specify it in terms

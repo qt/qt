@@ -56,8 +56,7 @@ namespace Phonon
             // This is a temporary hack to work around KErrInUse from MMF
             // client utility OpenFileL calls
             //virtual void setSource(const Phonon::MediaSource &) = 0;
-            virtual void setFileSource
-				(const Phonon::MediaSource&, RFile&) = 0;
+            virtual void setFileSource(const Phonon::MediaSource&, RFile&) = 0;
             
             virtual void setNextSource(const Phonon::MediaSource &) = 0;
 

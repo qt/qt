@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1845,8 +1845,7 @@ QDomNodePrivate* QDomNodePrivate::removeChild(QDomNodePrivate* oldChild)
     oldChild->prev = 0;
 
     // We are no longer interested in the old node
-    if (oldChild)
-        oldChild->ref.deref();
+    oldChild->ref.deref();
 
     return oldChild;
 }
@@ -1939,7 +1938,7 @@ void QDomNodePrivate::setLocation(int lineNumber, int columnNumber)
 
     \inmodule QtXml
     \ingroup xml-tools
-    \mainclass
+
 
     Many functions in the DOM return a QDomNode.
 
@@ -4360,7 +4359,7 @@ bool QDomAttr::specified() const
 QDomElement QDomAttr::ownerElement() const
 {
     Q_ASSERT(impl->parent());
-    if (!impl || !impl->parent()->isElement())
+    if (!impl->parent()->isElement())
         return QDomElement();
     return QDomElement((QDomElementPrivate*)(impl->parent()));
 }
@@ -6515,7 +6514,7 @@ void QDomDocumentPrivate::saveDocument(QTextStream& s, const int indent, QDomNod
     \brief The QDomDocument class represents an XML document.
 
     \inmodule QtXml
-    \mainclass
+
     \ingroup xml-tools
 
     The QDomDocument class represents the entire XML document.

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -852,6 +852,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
     QImage image = QImageReader(fileName, format).read();
     if (image.isNull())
         return false;
+
     QPixmap pm;
     if (data->pixelType() == QPixmapData::BitmapType)
         pm = QBitmap::fromImage(image, flags);
@@ -1564,9 +1565,9 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     \brief The QPixmap class is an off-screen image representation
     that can be used as a paint device.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \mainclass
+
 
     Qt provides four classes for handling image data: QImage, QPixmap,
     QBitmap and QPicture. QImage is designed and optimized for I/O,
@@ -1988,15 +1989,11 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
     if (image.isNull())
         return QPixmap();
 
-    QPixmapData *data;
     QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
-    if (gs)
-        data = gs->createPixmapData(QPixmapData::PixmapType);
-    else
-        data = QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixmapType);
-
+    QScopedPointer<QPixmapData> data(gs ? gs->createPixmapData(QPixmapData::PixmapType)
+            : QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixmapType));
     data->fromImage(image, flags);
-    return QPixmap(data);
+    return QPixmap(data.take());
 }
 
 /*!

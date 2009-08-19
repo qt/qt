@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -258,11 +258,13 @@ bool QObjectPrivate::isSender(const QObject *receiver, const char *signal) const
     QMutexLocker locker(signalSlotLock(q));
     if (connectionLists) {
         if (signal_index < connectionLists->count()) {
-            const ConnectionList &connectionList = connectionLists->at(signal_index);
-            for (int i = 0; i < connectionList.count(); ++i) {
-                const QObjectPrivate::Connection *c = connectionList.at(i);
+            const QObjectPrivate::Connection *c = 
+                connectionLists->at(signal_index).first;
+
+            while (c) {
                 if (c->receiver == receiver)
                     return true;
+                c = c->nextConnectionList;
             }
         }
     }
@@ -280,11 +282,12 @@ QObjectList QObjectPrivate::receiverList(const char *signal) const
     QMutexLocker locker(signalSlotLock(q));
     if (connectionLists) {
         if (signal_index < connectionLists->count()) {
-            const ConnectionList &connectionList = connectionLists->at(signal_index);
-            for (int i = 0; i < connectionList.count(); ++i) {
-                const QObjectPrivate::Connection *c = connectionList.at(i);
+            const QObjectPrivate::Connection *c = connectionLists->at(signal_index).first;
+
+            while (c) {
                 if (c->receiver)
                     returnValue << c->receiver;
+                c = c->nextConnectionList;
             }
         }
     }
@@ -309,7 +312,13 @@ void QObjectPrivate::addConnection(int signal, Connection *c)
         connectionLists->resize(signal + 1);
 
     ConnectionList &connectionList = (*connectionLists)[signal];
-    connectionList.append(c);
+    if (connectionList.last) {
+        connectionList.last->nextConnectionList = c;
+    } else {
+        connectionList.first = c;
+    }
+    connectionList.last = c;
+
     cleanConnectionLists();
 }
 
@@ -318,14 +327,32 @@ void QObjectPrivate::cleanConnectionLists()
     if (connectionLists->dirty && !connectionLists->inUse) {
         // remove broken connections
         for (int signal = -1; signal < connectionLists->count(); ++signal) {
-            QObjectPrivate::ConnectionList &connectionList = (*connectionLists)[signal];
-            for (int i = 0; i < connectionList.count(); ++i) {
-                QObjectPrivate::Connection *c = connectionList.at(i);
-                if (!c->receiver) {
+            QObjectPrivate::ConnectionList &connectionList = 
+                (*connectionLists)[signal];
+
+            // Set to the last entry in the connection list that was *not*
+            // deleted.  This is needed to update the list's last pointer
+            // at the end of the cleanup.
+            QObjectPrivate::Connection *last = 0;
+
+            QObjectPrivate::Connection **prev = &connectionList.first;
+            QObjectPrivate::Connection *c = *prev;
+            while (c) {
+                if (c->receiver) {
+                    last = c;
+                    prev = &c->nextConnectionList;
+                    c = *prev;
+                } else {
+                    QObjectPrivate::Connection *next = c->nextConnectionList;
+                    *prev = next;
                     delete c;
-                    connectionList.removeAt(i--);
+                    c = next;
                 }
             }
+
+            // Correct the connection list's last pointer.  As 
+            // conectionList.last could equal last, this could be a noop
+            connectionList.last = last;
         }
         connectionLists->dirty = false;
     }
@@ -511,7 +538,7 @@ int QMetaCallEvent::placeMetaCall(QObject *object)
     \brief The QObject class is the base class of all Qt objects.
 
     \ingroup objectmodel
-    \mainclass
+
     \reentrant
 
     QObject is the heart of the \l{Qt object model}. The central
@@ -846,17 +873,19 @@ QObject::~QObject()
         if (d->connectionLists) {
             ++d->connectionLists->inUse;
             for (int signal = -1; signal < d->connectionLists->count(); ++signal) {
-                QObjectPrivate::ConnectionList &connectionList = (*d->connectionLists)[signal];
-                for (int i = 0; i < connectionList.count(); ++i) {
-                    QObjectPrivate::Connection *c = connectionList[i];
+                QObjectPrivate::ConnectionList &connectionList = 
+                    (*d->connectionLists)[signal];
+
+                while (QObjectPrivate::Connection *c = connectionList.first) {
                     if (!c->receiver) {
+                        connectionList.first = c->nextConnectionList;
                         delete c;
                         continue;
                     }
 
                     QMutex *m = signalSlotLock(c->receiver);
                     bool needToUnlock = QOrderedMutexLocker::relock(locker.mutex(), m);
-                    c = connectionList[i];
+
                     if (c->receiver) {
                         *c->prev = c->next;
                         if (c->next) c->next->prev = c->prev;
@@ -864,6 +893,7 @@ QObject::~QObject()
                     if (needToUnlock)
                         m->unlock();
 
+                    connectionList.first = c->nextConnectionList;
                     delete c;
                 }
             }
@@ -915,10 +945,7 @@ QObject::~QObject()
 
     qt_removeObject(this);
 
-    QMutexLocker locker2(&d->threadData->postEventList.mutex);
-    if (d->postedEvents > 0)
-        QCoreApplicationPrivate::removePostedEvents_unlocked(this, 0, d->threadData);
-    locker2.unlock();
+    QCoreApplication::removePostedEvents(this);
 
     if (d->parent)        // remove it from parent object
         d->setParent_helper(0);
@@ -2460,11 +2487,11 @@ int QObject::receivers(const char *signal) const
         QMutexLocker locker(signalSlotLock(this));
         if (d->connectionLists) {
             if (signal_index < d->connectionLists->count()) {
-                const QObjectPrivate::ConnectionList &connectionList =
-                    d->connectionLists->at(signal_index);
-                for (int i = 0; i < connectionList.count(); ++i) {
-                    const QObjectPrivate::Connection *c = connectionList.at(i);
+                const QObjectPrivate::Connection *c = 
+                    d->connectionLists->at(signal_index).first;
+                while (c) {
                     receivers += c->receiver ? 1 : 0;
+                    c = c->nextConnectionList;
                 }
             }
         }
@@ -2922,11 +2949,13 @@ bool QMetaObject::connect(const QObject *sender, int signal_index,
     if (type & Qt::UniqueConnection) {
         QObjectConnectionListVector *connectionLists = s->d_func()->connectionLists;
         if (connectionLists && connectionLists->count() > signal_index) {
-            QObjectPrivate::ConnectionList &connectionList = (*connectionLists)[signal_index];
-            for (int i = 0; i < connectionList.count(); ++i) {
-                QObjectPrivate::Connection *c2 = connectionList.at(i);
+            const QObjectPrivate::Connection *c2 = 
+                (*connectionLists)[signal_index].first;
+
+            while (c2) {
                 if (c2->receiver == receiver && c2->method == method_index)
                     return false;
+                c2 = c2->nextConnectionList;
             }
         }
         type &= Qt::UniqueConnection - 1;
@@ -2938,6 +2967,7 @@ bool QMetaObject::connect(const QObject *sender, int signal_index,
     c->method = method_index;
     c->connectionType = type;
     c->argumentTypes = types;
+    c->nextConnectionList = 0;
 
     QT_TRY {
         s->d_func()->addConnection(signal_index, c);
@@ -2993,9 +3023,9 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
     if (signal_index < 0) {
         // remove from all connection lists
         for (signal_index = -1; signal_index < connectionLists->count(); ++signal_index) {
-            QObjectPrivate::ConnectionList &connectionList = (*connectionLists)[signal_index];
-            for (int i = 0; i < connectionList.count(); ++i) {
-                QObjectPrivate::Connection *c = connectionList[i];
+            QObjectPrivate::Connection *c = 
+                (*connectionLists)[signal_index].first;
+            while (c) {
                 if (c->receiver
                     && (r == 0 || (c->receiver == r
                                    && (method_index < 0 || c->method == method_index)))) {
@@ -3004,7 +3034,6 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                     if (!receiverMutex && senderMutex != m) {
                         // need to relock this receiver and sender in the correct order
                         needToUnlock = QOrderedMutexLocker::relock(senderMutex, m);
-                        c = connectionList[i];
                     }
                     if (c->receiver) {
                         *c->prev = c->next;
@@ -3019,12 +3048,13 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                     success = true;
                     connectionLists->dirty = true;
                 }
+                c = c->nextConnectionList;
             }
         }
     } else if (signal_index < connectionLists->count()) {
-        QObjectPrivate::ConnectionList &connectionList = (*connectionLists)[signal_index];
-        for (int i = 0; i < connectionList.count(); ++i) {
-            QObjectPrivate::Connection *c = connectionList[i];
+        QObjectPrivate::Connection *c = 
+            (*connectionLists)[signal_index].first;
+        while (c) {
             if (c->receiver
                 && (r == 0 || (c->receiver == r
                                && (method_index < 0 || c->method == method_index)))) {
@@ -3033,7 +3063,6 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                 if (!receiverMutex && senderMutex != m) {
                     // need to relock this receiver and sender in the correct order
                     needToUnlock = QOrderedMutexLocker::relock(senderMutex, m);
-                    c = connectionList[i];
                 }
                 if (c->receiver) {
                     *c->prev = c->next;
@@ -3047,6 +3076,7 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                 success = true;
                 connectionLists->dirty = true;
             }
+            c = c->nextConnectionList;
         }
     }
 
@@ -3213,9 +3243,14 @@ void QMetaObject::activate(QObject *sender, int from_signal_index, int to_signal
             signal = to_signal_index;
             continue;
         }
-        int count = connectionLists->at(signal).count();
-        for (int i = 0; i < count; ++i) {
-            QObjectPrivate::Connection *c = connectionLists->at(signal)[i];
+        
+        QObjectPrivate::Connection *c = connectionLists->at(signal).first;
+        if (!c) continue;
+        // We need to check against last here to ensure that signals added
+        // during the signal emission are not emitted in this emission.
+        QObjectPrivate::Connection *last = connectionLists->at(signal).last;
+
+        do {
             if (!c->receiver)
                 continue;
 
@@ -3277,7 +3312,7 @@ void QMetaObject::activate(QObject *sender, int from_signal_index, int to_signal
 
             if (connectionLists->orphaned)
                 break;
-        }
+        } while (c != last && (c = c->nextConnectionList) != 0);
 
         if (connectionLists->orphaned)
             break;
@@ -3596,11 +3631,12 @@ void QObject::dumpObjectInfo()
             qDebug("        signal: %s", signal.signature());
 
             // receivers
-            const QObjectPrivate::ConnectionList &connectionList = d->connectionLists->at(signal_index);
-            for (int i = 0; i < connectionList.count(); ++i) {
-                const QObjectPrivate::Connection *c = connectionList.at(i);
+            const QObjectPrivate::Connection *c = 
+                d->connectionLists->at(signal_index).first;
+            while (c) {
                 if (!c->receiver) {
                     qDebug("          <Disconnected receiver>");
+                    c = c->nextConnectionList;
                     continue;
                 }
                 const QMetaObject *receiverMetaObject = c->receiver->metaObject();
@@ -3609,6 +3645,7 @@ void QObject::dumpObjectInfo()
                        receiverMetaObject->className(),
                        c->receiver->objectName().isEmpty() ? "unnamed" : qPrintable(c->receiver->objectName()),
                        method.signature());
+                c = c->nextConnectionList;
             }
         }
     } else {

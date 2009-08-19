@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,7 +48,7 @@
     \brief The QNetworkProxy class provides a network layer proxy.
 
     \reentrant
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     QNetworkProxy provides the method for configuring network layer
@@ -1118,7 +1118,7 @@ void QNetworkProxyQuery::setUrl(const QUrl &url)
     \brief The QNetworkProxyFactory class provides fine-grained proxy selection.
     \since 4.5
 
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     QNetworkProxyFactory is an extension to QNetworkProxy, allowing

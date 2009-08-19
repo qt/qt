@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,6 +53,8 @@ QT_BEGIN_NAMESPACE
     \class QVector2D
     \brief The QVector2D class represents a vector or vertex in 2D space.
     \since 4.6
+    \ingroup painting
+    \ingroup painting-3D
 
     The QVector2D class can also be used to represent vertices in 2D space.
     We therefore do not need to provide a separate vertex class.

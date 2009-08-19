@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,7 +44,7 @@
     \brief The QPointer class is a template class that provides guarded pointers to QObjects.
 
     \ingroup objectmodel
-    \mainclass
+
 
     A guarded pointer, QPointer<T>, behaves like a normal C++
     pointer \c{T *}, except that it is automatically set to 0 when the

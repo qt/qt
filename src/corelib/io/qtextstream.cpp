@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,7 +49,7 @@ static const int QTEXTSTREAM_BUFFERSIZE = 16384;
     reading and writing text.
 
     \ingroup io
-    \ingroup text
+    \ingroup string-processing
     \reentrant
 
     QTextStream can operate on a QIODevice, a QByteArray or a
@@ -3085,8 +3085,6 @@ QLocale QTextStream::locale() const
 
     \compat
     \reentrant
-    \ingroup io
-    \ingroup text
 
     Use QTextStream instead.
 */
@@ -3113,8 +3111,6 @@ QLocale QTextStream::locale() const
 
     \compat
     \reentrant
-    \ingroup io
-    \ingroup text
 
     Use QTextStream instead.
 */

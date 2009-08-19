@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -419,7 +419,7 @@ void QNetmaskAddress::setPrefixLength(QAbstractSocket::NetworkLayerProtocol prot
 /*!
     \class QHostAddress
     \brief The QHostAddress class provides an IP address.
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     This class holds an IPv4 or IPv6 address in a platform- and

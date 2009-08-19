@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -87,8 +87,8 @@
     \o \l{QtXmlPatterns Module}{XQuery and XPath} support, providing facilities for
     XML processing beyond that supported by the QtXml module.
     \o Support for embedded widgets in \l{Graphics View} scenes.
-    \o The \l{Threading and Concurrent Programming}{QtConcurrent framework} for
-    concurrent programming using Qt paradigms and threading features.
+    \o The \l{QtConcurrent} framework for concurrent programming using Qt paradigms and
+    threading features.
     \o An \l{QtHelp Module}{improved help system} that can be used in conjunction
     with Qt Assistant or as an independent help resource manager.
     \o Printing system improvements, including the QPrinterInfo, QPrintPreviewWidget
@@ -162,7 +162,7 @@
     \endlist
 
     For more information about improvements in each Qt release, see
-    the \l{http://www.qtsoftware.com/developer/changes/}
+    the \l{http://qt.nokia.com/developer/changes/}
     {detailed lists of changes}.
 
     \section1 Significant Improvements
@@ -444,13 +444,13 @@
 
     A comprehensive list of changes between Qt 4.4 and Qt 4.5 is included
     in the \c changes-4.5.0 file
-    \l{http://www.qtsoftware.com/developer/changes/changes-4.5.0}{available online}.
+    \l{http://qt.nokia.com/developer/changes/changes-4.5.0}{available online}.
     A \l{Known Issues in %VERSION%}{list of known issues} for this release is also
     available.
 
     Changes between this release and the previous release are provided
     in the \c{changes-%VERSION%} file (also
-    \l{http://www.qtsoftware.com/developer/changes/changes-%VERSION%}{available online}).
+    \l{http://qt.nokia.com/developer/changes/changes-%VERSION%}{available online}).
 
     A list of other Qt 4 features can be found on the
     \bold{\l{What's New in Qt 4}} page.
@@ -563,7 +563,7 @@
     \section1 Improved Network Proxy Support
 
     Qt's networking classes have been updated with
-    \l{QtNetwork Module#Support for Network Proxies}{improved proxy support}.
+    \l{Network Programming#Support for Network Proxies}{improved proxy support}.
     This includes improved integration with system proxy settings and the added
     ability to handle non-trivial proxy cases.
 

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1009,6 +1009,14 @@ void tst_QPixmap::fromSymbianCFbsBitmap()
     TRgb symbianColor = TRgb(color.red(), color.green(), color.blue(), color.alpha());
     bitmapContext->SetBrushColor(symbianColor);
     bitmapContext->Clear();
+
+    __UHEAP_MARK;
+    { // Test the null case
+        CFbsBitmap *bitmap = 0;
+        QPixmap pixmap = QPixmap::fromSymbianCFbsBitmap(bitmap);
+        QVERIFY(pixmap.isNull());
+    }
+    __UHEAP_MARKEND;
 
     __UHEAP_MARK;
     { // Test the normal case

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -81,11 +81,11 @@ public:
            CachedSize =0x08 };
     struct Data {
         inline Data()
-            : ref(1), fileEngine(0), cache_enabled(1)
+            : ref(1), fileEngine(0), cache_enabled(1), fileSize(0)
         { clear(); }
         inline Data(const Data &copy)
             : ref(1), fileEngine(QAbstractFileEngine::create(copy.fileName)),
-              fileName(copy.fileName), cache_enabled(copy.cache_enabled)
+              fileName(copy.fileName), cache_enabled(copy.cache_enabled), fileSize(copy.fileSize)
         { clear(); }
         inline ~Data() { delete fileEngine; }
         inline void clearFlags() {

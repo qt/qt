@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -268,8 +268,8 @@ void QPrinterPrivate::addToManualSetList(QPrintEngine::PrintEnginePropertyKey ke
 
   \brief The QPrinter class is a paint device that paints on a printer.
 
-  \ingroup multimedia
-  \mainclass
+  \ingroup printing
+
 
   This device represents a series of pages of printed output, and is
   used in almost exactly the same way as other paint devices such as
@@ -1664,10 +1664,10 @@ void QPrinter::getPageMargins(qreal *left, qreal *top, qreal *right, qreal *bott
     Q_ASSERT(left && top && right && bottom);
     const qreal multiplier = qt_multiplierForUnit(unit, resolution());
     QList<QVariant> margins(d->printEngine->property(QPrintEngine::PPK_PageMargins).toList());
-    *left = margins.at(0).toDouble() / multiplier;
-    *top = margins.at(1).toDouble() / multiplier;
-    *right = margins.at(2).toDouble() / multiplier;
-    *bottom = margins.at(3).toDouble() / multiplier;
+    *left = margins.at(0).toReal() / multiplier;
+    *top = margins.at(1).toReal() / multiplier;
+    *right = margins.at(2).toReal() / multiplier;
+    *bottom = margins.at(3).toReal() / multiplier;
 }
 
 /*!
@@ -2203,7 +2203,7 @@ bool QPrinter::isOptionEnabled( PrinterOption option ) const
     \class QPrintEngine
     \reentrant
 
-    \ingroup multimedia
+    \ingroup printing
 
     \brief The QPrintEngine class defines an interface for how QPrinter
     interacts with a given printing subsystem.

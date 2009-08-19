@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,7 +45,7 @@
     \brief The QMovie class is a convenience class for playing movies
     with QImageReader.
 
-    \ingroup multimedia
+    \ingroup painting
 
     First, create a QMovie object by passing either the name of a file or a
     pointer to a QIODevice containing an animated image format to QMovie's
@@ -356,7 +356,7 @@ QFrameInfo QMoviePrivate::infoForFrame(int frameNumber)
                         reader = new QImageReader(device, format);
                     else
                         reader = new QImageReader(absoluteFilePath, format);
-                    reader->canRead(); // Provoke a device->open() call
+                    (void)reader->canRead(); // Provoke a device->open() call
                     reader->device()->seek(initialDevicePos);
                     reader->setBackgroundColor(bgColor);
                     reader->setScaledSize(scaledSize);

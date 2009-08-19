@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,6 +60,7 @@
 #include <qthreadstorage.h>
 #include <private/qthread_p.h>
 #include <qlibraryinfo.h>
+#include <qvarlengtharray.h>
 #include <private/qfactoryloader_p.h>
 #include <private/qfunctions_p.h>
 
@@ -95,17 +96,17 @@
 
 QT_BEGIN_NAMESPACE
 
-class QLockedMutexUnlocker
+class QMutexUnlocker
 {
 public:
-    inline explicit QLockedMutexUnlocker(QMutex *m)
+    inline explicit QMutexUnlocker(QMutex *m)
         : mtx(m)
     { }
-    inline ~QLockedMutexUnlocker() { unlock(); }
+    inline ~QMutexUnlocker() { unlock(); }
     inline void unlock() { if (mtx) mtx->unlock(); mtx = 0; }
 
 private:
-    Q_DISABLE_COPY(QLockedMutexUnlocker)
+    Q_DISABLE_COPY(QMutexUnlocker)
 
     QMutex *mtx;
 };
@@ -380,9 +381,6 @@ QString qAppName()
     \class QCoreApplication
     \brief The QCoreApplication class provides an event loop for console Qt
     applications.
-
-    \ingroup application
-    \mainclass
 
     This class is used by non-GUI applications to provide their event
     loop. For non-GUI application that uses Qt, there should be exactly
@@ -1105,7 +1103,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         data->postEventList.mutex.lock();
     }
 
-    QLockedMutexUnlocker locker(&data->postEventList.mutex);
+    QMutexUnlocker locker(&data->postEventList.mutex);
 
     // if this is one of the compressible events, do compression
     if (receiver->d_func()->postedEvents
@@ -1411,13 +1409,10 @@ void QCoreApplication::removePostedEvents(QObject *receiver, int eventType)
     // for this object.
     if (receiver && !receiver->d_func()->postedEvents)
         return;
-    QCoreApplicationPrivate::removePostedEvents_unlocked(receiver, eventType, data);
-}
 
-void QCoreApplicationPrivate::removePostedEvents_unlocked(QObject *receiver,
-                                                          int eventType,
-                                                          QThreadData *data)
-{
+    //we will collect all the posted events for the QObject
+    //and we'll delete after the mutex was unlocked
+    QVarLengthArray<QEvent*> events;
     int n = data->postEventList.size();
     int j = 0;
 
@@ -1432,7 +1427,7 @@ void QCoreApplicationPrivate::removePostedEvents_unlocked(QObject *receiver,
                 pe.receiver->d_func()->removePendingChildInsertedEvents(0);
 #endif
             pe.event->posted = false;
-            delete pe.event;
+            events.append(pe.event);
             const_cast<QPostEvent &>(pe).event = 0;
         } else if (!data->postEventList.recursion) {
             if (i != j)
@@ -1451,8 +1446,12 @@ void QCoreApplicationPrivate::removePostedEvents_unlocked(QObject *receiver,
         // truncate list
         data->postEventList.erase(data->postEventList.begin() + j, data->postEventList.end());
     }
-}
 
+    locker.unlock();
+    for (int i = 0; i < events.count(); ++i) {
+        delete events[i];
+    }
+}
 
 /*!
   Removes \a event from the queue of posted events, and emits a

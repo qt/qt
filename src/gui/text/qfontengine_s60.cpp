@@ -132,9 +132,9 @@ QFontEngineS60::QFontEngineS60(const QFontDef &request, const QFontEngineS60Exte
     QS60WindowSurface::unlockBitmapHeap();
     m_textRenderBitmap = q_check_ptr(new CFbsBitmap());	// CBase derived object needs check on new
     const TSize bitmapSize(1, 1); // It is just a dummy bitmap that I need to keep the font alive (or maybe not)
-    qt_throwIfError(m_textRenderBitmap->Create(bitmapSize, EGray256));
+    qt_symbian_throwIfError(m_textRenderBitmap->Create(bitmapSize, EGray256));
     QT_TRAP_THROWING(m_textRenderBitmapDevice = CFbsBitmapDevice::NewL(m_textRenderBitmap));
-    qt_throwIfError(m_textRenderBitmapDevice->CreateContext(m_textRenderBitmapGc));
+    qt_symbian_throwIfError(m_textRenderBitmapDevice->CreateContext(m_textRenderBitmapGc));
     cache_cost = sizeof(QFontEngineS60) + bitmapSize.iHeight * bitmapSize.iWidth * 4;
 
     TFontSpec fontSpec(qt_QString2TPtrC(request.family), m_fontSizeInPixels);

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -83,7 +83,7 @@ namespace QPatternist
      * 1.0: An XML Query Language, 2.1.2 Dynamic Context</a>
      * @see <a href="http://www.w3.org/TR/xquery/#id-dynamic-evaluation">XQuery
      * 1.0: An XML Query Language, 2.2.3.2 Dynamic Evaluation Phase</a>
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DynamicContext : public ReportContext
     {

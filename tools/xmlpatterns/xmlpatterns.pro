@@ -27,5 +27,3 @@ HEADERS = main.h                            \
           qapplicationargumentparser.cpp    \
           qcoloringmessagehandler_p.h       \
           qcoloroutput_p.h
-
-include(../src/common.pri)

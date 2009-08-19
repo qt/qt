@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
     \brief The QSocketNotifier class provides support for monitoring
     activity on a file descriptor.
 
+    \ingroup network
     \ingroup io
 
     The QSocketNotifier makes it possible to integrate Qt's event

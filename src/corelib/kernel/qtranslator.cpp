@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -249,8 +249,6 @@ public:
     output.
 
     \ingroup i18n
-    \ingroup environment
-    \mainclass
 
     An object of this class contains a set of translations from a
     source language to a target language. QTranslator provides

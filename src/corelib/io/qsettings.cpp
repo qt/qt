@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2011,8 +2011,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     \brief The QSettings class provides persistent platform-independent application settings.
 
     \ingroup io
-    \ingroup misc
-    \mainclass
+
     \reentrant
 
     Users normally expect an application to remember its settings

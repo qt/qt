@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,8 +43,8 @@
     \class QMdiArea
     \brief The QMdiArea widget provides an area in which MDI windows are displayed.
     \since 4.3
-    \ingroup application
-    \mainclass
+    \ingroup mainwindow-classes
+
 
     QMdiArea functions, essentially, like a window manager for MDI
     windows. For instance, it draws the windows it manages on itself

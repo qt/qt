@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,7 +55,7 @@
 
 #include "qparallelanimationgroup.h"
 #include "private/qanimationgroup_p.h"
-#include <QtCore/QHash>
+#include <QtCore/qhash.h>
 
 #ifndef QT_NO_ANIMATION
 

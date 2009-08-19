@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -259,7 +259,7 @@ void QTextDocumentFragmentPrivate::insert(QTextCursor &_cursor) const
     \brief The QTextDocumentFragment class represents a piece of formatted text
     from a QTextDocument.
 
-    \ingroup text
+    \ingroup richtext-processing
     \ingroup shared
 
     A QTextDocumentFragment is a fragment of rich text, that can be inserted into

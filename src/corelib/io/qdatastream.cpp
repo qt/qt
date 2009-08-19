@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
     to a QIODevice.
 
     \ingroup io
-    \mainclass
+
 
     A data stream is a binary stream of encoded information which is
     100% independent of the host computer's operating system, CPU or

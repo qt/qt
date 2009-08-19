@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,7 +65,7 @@ public:
     QItemSelectionModelPrivate()
       : model(0),
         currentCommand(QItemSelectionModel::NoUpdate),
-        tableSelected(false) {}
+        tableSelected(false), tableColCount(0), tableRowCount(0) {}
 
     QItemSelection expandSelection(const QItemSelection &selection,
                                    QItemSelectionModel::SelectionFlags command) const;

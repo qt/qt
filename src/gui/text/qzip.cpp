@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -772,7 +772,7 @@ QList<QZipReader::FileInfo> QZipReader::fileInfoList() const
 {
     d->scanFiles();
     QList<QZipReader::FileInfo> files;
-    for (int i = 0; d && i < d->fileHeaders.size(); ++i) {
+    for (int i = 0; i < d->fileHeaders.size(); ++i) {
         QZipReader::FileInfo fi;
         d->fillFileInfo(i, fi);
         files.append(fi);

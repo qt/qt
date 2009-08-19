@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -270,7 +270,7 @@ int main(int argc, char **argv)
                 QString format = QString(argv[++i]).toLower();
 
                 imageFormat = QImage::Format_Invalid;
-                static const unsigned int formatCount =
+                static const int formatCount =
                     sizeof(imageFormats) / sizeof(imageFormats[0]);
                 for (int ff = 0; ff < formatCount; ++ff) {
                     if (QLatin1String(imageFormats[ff].name) == format) {

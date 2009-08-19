@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
     widget.
 
     \ingroup helpsystem
-    \mainclass
+
 
     The tip is a short piece of text reminding the user of the
     widget's function. It is drawn immediately below the given

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -78,7 +78,7 @@ struct QScriptStringPrivatePointerDeleter
   \brief The QScriptString class acts as a handle to "interned" strings in a QScriptEngine.
 
   \ingroup script
-  \mainclass
+
 
   QScriptString can be used to achieve faster (repeated)
   property getting/setting, and comparison of property names, of

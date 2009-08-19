@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -72,7 +72,6 @@
 ** SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 **
 ****************************************************************************/
-//#define QT_RASTER_PAINTENGINE
 
 #include <private/qt_mac_p.h>
 #include <private/qeventdispatcher_mac_p.h>
@@ -88,9 +87,6 @@
 #include "qlayout.h"
 #include "qmenubar.h"
 #include <private/qbackingstore_p.h>
-#ifdef QT_RASTER_PAINTENGINE
-# include <private/qpaintengine_raster_p.h>
-#endif
 #include <private/qwindowsurface_mac_p.h>
 #include <private/qpaintengine_mac_p.h>
 #include "qpainter.h"
@@ -1220,11 +1216,6 @@ OSStatus QWidgetPrivate::qt_widget_event(EventHandlerCallRef er, EventRef event,
                     QApplication::sendSpontaneousEvent(widget, &e);
                     if (!redirectionOffset.isNull())
                         widget->d_func()->restoreRedirected();
-#ifdef QT_RASTER_PAINTENGINE
-                    if(engine && engine->type() == QPaintEngine::Raster)
-                        static_cast<QRasterPaintEngine*>(engine)->flush(widget,
-                                                                        qrgn.boundingRect().topLeft());
-#endif
 
                     //cleanup
                     if (engine)
@@ -2245,7 +2236,7 @@ void QWidgetPrivate::createWindow_sys()
 
     OSWindowRef windowRef = qt_mac_create_window(q, topExtra->wclass, wattr, data.crect);
     if (windowRef == 0)
-        qWarning("QWidget: Internal error: %s:%d: If you reach this error please contact Trolltech and include the\n"
+        qWarning("QWidget: Internal error: %s:%d: If you reach this error please contact Qt Support and include the\n"
                 "      WidgetFlags used in creating the widget.", __FILE__, __LINE__);
 #ifndef QT_MAC_USE_COCOA
     finishCreateWindow_sys_Carbon(windowRef);
@@ -3105,7 +3096,7 @@ void QWidgetPrivate::update_sys(const QRegion &rgn)
     dirtyOnWidget += rgn;
 #ifndef QT_MAC_USE_COCOA
     RgnHandle rgnHandle = rgn.toQDRgnForUpdate_sys();
-    if (rgnHandle) 
+    if (rgnHandle)
         HIViewSetNeedsDisplayInRegion(qt_mac_nativeview_for(q), QMacSmartQuickDrawRegion(rgnHandle), true);
     else {
         HIViewSetNeedsDisplay(qt_mac_nativeview_for(q), true); // do a complete repaint on overflow.
@@ -3201,10 +3192,13 @@ void QWidgetPrivate::show_sys()
 #else
             // sync the opacity value back (in case of a fade).
             [window setAlphaValue:q->windowOpacity()];
-
             [window makeKeyAndOrderFront:window];
+
+            // If this window is app modal, we need to start spinning
+            // a modal session for it. Interrupting
+            // the event dispatcher will make this happend:
             if (data.window_modality == Qt::ApplicationModal)
-                QCoreApplication::postEvent(qApp, new QEvent(QEvent::CocoaRequestModal));
+                QEventDispatcherMac::instance()->interrupt();
 #endif
             if (q->windowType() == Qt::Popup) {
 			    if (q->focusWidget())
@@ -3222,13 +3216,6 @@ void QWidgetPrivate::show_sys()
 #endif
         } else if (!q->testAttribute(Qt::WA_ShowWithoutActivating)) {
             qt_event_request_activate(q);
-#ifdef QT_MAC_USE_COCOA
-            if (q->windowModality() == Qt::ApplicationModal) {
-                // We call 'activeModalSession' early to force creation of q's modal
-                // session. This seems neccessary for child dialogs to pop to front:
-                QEventDispatcherMacPrivate::activeModalSession();
-            }
-#endif
         }
     } else if(topData()->embedded || !q->parentWidget() || q->parentWidget()->isVisible()) {
 #ifndef QT_MAC_USE_COCOA
@@ -4563,21 +4550,6 @@ Q_GLOBAL_STATIC(QPaintEngineCleanupHandler, engineHandler)
 QPaintEngine *QWidget::paintEngine() const
 {
     QPaintEngine *&pe = engineHandler()->engine;
-#ifdef QT_RASTER_PAINTENGINE
-    if (!pe) {
-        if(qgetenv("QT_MAC_USE_COREGRAPHICS").isNull())
-            pe = new QRasterPaintEngine();
-        else
-            pe = new QCoreGraphicsPaintEngine();
-    }
-    if (pe->isActive()) {
-        QPaintEngine *engine =
-            qgetenv("QT_MAC_USE_COREGRAPHICS").isNull()
-            ? (QPaintEngine*)new QRasterPaintEngine() : (QPaintEngine*)new QCoreGraphicsPaintEngine();
-        engine->setAutoDestruct(true);
-        return engine;
-    }
-#else
     if (!pe)
         pe = new QCoreGraphicsPaintEngine();
     if (pe->isActive()) {
@@ -4585,7 +4557,6 @@ QPaintEngine *QWidget::paintEngine() const
         engine->setAutoDestruct(true);
         return engine;
     }
-#endif
     return pe;
 }
 

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -192,7 +192,7 @@ void QTabBar::initStyleOption(QStyleOptionTab *option, int tabIndex) const
     \brief The QTabBar class provides a tab bar, e.g. for use in tabbed dialogs.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     QTabBar is straightforward to use; it draws the tabs using one of
     the predefined \link QTabBar::Shape shapes\endlink, and emits a

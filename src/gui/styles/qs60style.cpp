@@ -1636,7 +1636,9 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
             if (optionProgressBar->minimum == optionProgressBar->maximum && optionProgressBar->minimum == 0) {
                 // busy indicator
-                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWait, painter, progressRect,flags);
+                const QS60StylePrivate::SkinElementFlag orientationFlag = optionProgressBar->orientation == Qt::Horizontal ?
+                    QS60StylePrivate::SF_PointNorth : QS60StylePrivate::SF_PointWest;
+                QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWait, painter, progressRect, flags | orientationFlag);
             } else {
                 const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? 1.0
                     : (qreal)optionProgressBar->progress / optionProgressBar->maximum;
@@ -1871,6 +1873,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 //todo: update to horizontal table graphic
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, option->rect, flags | QS60StylePrivate::SF_PointWest);
             }
+        } else if (qobject_cast<const QFrame *>(widget)) { 
+            QCommonStyle::drawControl(element, option, painter, widget); 
         }
         if (option->state & State_HasFocus)
             drawPrimitive(PE_FrameFocusRect, option, painter, widget);
@@ -2042,13 +2046,12 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 painter->save();
                 const int penWidth = QS60StylePrivate::focusRectPenWidth();
 #ifdef QT_KEYPAD_NAVIGATION
-                const Qt::PenStyle penStyle = widget->hasEditFocus() ? Qt::SolidLine :Qt::DotLine;
+                const Qt::PenStyle penStyle = widget->hasEditFocus() ? Qt::SolidLine :Qt::DashLine;
                 const qreal opacity = widget->hasEditFocus() ? 0.6 : 0.4;
 #else
                 const Qt::PenStyle penStyle = Qt::SolidLine;
                 const qreal opacity = 0.5;
 #endif
-                painter->setPen(QPen(option->palette.color(QPalette::Text), penWidth, penStyle));
                 painter->setRenderHint(QPainter::Antialiasing);
                 painter->setOpacity(opacity);
                 // Because of Qts coordinate system, we need to tweak the rect by .5 pixels, otherwise it gets blurred.
@@ -2059,7 +2062,15 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                         rectAdjustment + penWidth - 1,
                         -rectAdjustment - penWidth + 1,
                         -rectAdjustment - penWidth + 1);
-                painter->drawRoundedRect(adjustedRect, penWidth * 1.5, penWidth * 1.5);
+                const qreal roundRectRadius = penWidth * 1.5;
+#ifdef QT_KEYPAD_NAVIGATION
+                if (penStyle != Qt::SolidLine) {
+                    painter->setPen(QPen(option->palette.color(QPalette::HighlightedText), penWidth, Qt::SolidLine));					
+                    painter->drawRoundedRect(adjustedRect, roundRectRadius, roundRectRadius);
+                }
+#endif
+                painter->setPen(QPen((option->palette.color(QPalette::Text), penWidth, penStyle)));
+                painter->drawRoundedRect(adjustedRect, roundRectRadius, roundRectRadius);
                 painter->restore();
             }
         }
@@ -2311,6 +2322,9 @@ int QS60Style::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget *w
             break;
         case SH_UnderlineShortcut:
             retValue = 0;
+            break;
+        case SH_RequestSoftwareInputPanel:
+            retValue = RSIP_OnMouseClickAndAlreadyFocused;
             break;
         default:
             break;
@@ -2773,7 +2787,7 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
     QS60StyleEnums::SkinParts part;
     QS60StylePrivate::SkinElementFlags adjustedFlags;
     if (option)
-        adjustedFlags = (option->state & State_Enabled) ?
+        adjustedFlags = (option->state & State_Enabled || option->state == 0) ?
             QS60StylePrivate::SF_StateEnabled :
             QS60StylePrivate::SF_StateDisabled;
 

@@ -1,3 +1,0 @@
-qsvgdevice
-qsvggenerator
-qsvgrenderer

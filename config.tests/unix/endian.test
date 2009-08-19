@@ -15,7 +15,7 @@ cd "$OUTDIR/config.tests/unix/endian"
 
 
 ENDIAN="UNKNOWN"
-[ "$VERBOSE" = "yes" ] && make || make >/dev/null 2>&1
+[ "$VERBOSE" = "yes" ] && $MAKE || $MAKE >/dev/null 2>&1
 
 if [ -f ./endiantest.exe ]; then
     binary=./endiantest.exe
@@ -40,7 +40,7 @@ elif strings $binary | grep MostSignificantByteFirst >/dev/null 2>&1; then
 fi
 
 # make clean as this tests is compiled for both the host and the target
-make distclean
+$MAKE distclean
 
 # done
 if [ "$ENDIAN" = "LITTLE" ]; then

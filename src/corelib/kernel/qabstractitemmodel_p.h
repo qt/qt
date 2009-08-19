@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -89,7 +89,7 @@ public:
     void columnsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
     void columnsRemoved(const QModelIndex &parent, int first, int last);
     static QAbstractItemModel *staticEmptyModel();
-    static bool canConvertToDouble(const QVariant &value);
+    static bool variantLessThan(const QVariant &v1, const QVariant &v2);
 
     inline QModelIndex createIndex(int row, int column, void *data = 0) const {
         return q_func()->createIndex(row, column, data);

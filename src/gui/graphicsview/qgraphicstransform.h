@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -117,6 +117,7 @@ class Q_GUI_EXPORT QGraphicsRotation : public QGraphicsTransform
 
     Q_PROPERTY(QPointF origin READ origin WRITE setOrigin NOTIFY originChanged)
     Q_PROPERTY(qreal angle READ angle WRITE setAngle NOTIFY angleChanged)
+    Q_PROPERTY(QVector3D axis READ axis WRITE setAxis NOTIFY axisChanged)
 public:
     QGraphicsRotation(QObject *parent = 0);
     ~QGraphicsRotation();
@@ -127,39 +128,19 @@ public:
     qreal angle() const;
     void setAngle(qreal);
 
+    QVector3D axis() const;
+    void setAxis(const QVector3D &axis);
+    void setAxis(Qt::Axis axis);
+
     void applyTo(QTransform *transform) const;
 
 Q_SIGNALS:
     void originChanged();
     void angleChanged();
-
-protected:
-    QGraphicsRotation(QGraphicsRotationPrivate &p, QObject *parent);
-private:
-    Q_DECLARE_PRIVATE(QGraphicsRotation)
-};
-
-class QGraphicsRotation3DPrivate;
-
-class Q_GUI_EXPORT QGraphicsRotation3D : public QGraphicsRotation
-{
-    Q_OBJECT
-
-    Q_PROPERTY(QVector3D axis READ axis WRITE setAxis NOTIFY axisChanged)
-public:
-    QGraphicsRotation3D(QObject *parent = 0);
-    ~QGraphicsRotation3D();
-
-    QVector3D axis();
-    void setAxis(const QVector3D &axis);
-
-    void applyTo(QTransform *transform) const;
-
-Q_SIGNALS:
     void axisChanged();
 
 private:
-    Q_DECLARE_PRIVATE(QGraphicsRotation3D)
+    Q_DECLARE_PRIVATE(QGraphicsRotation)
 };
 
 QT_END_NAMESPACE

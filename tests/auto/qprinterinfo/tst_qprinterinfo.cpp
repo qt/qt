@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -301,7 +301,7 @@ void tst_QPrinterInfo::testForPrinters()
 void tst_QPrinterInfo::testForPaperSizes()
 {
 QSKIP("PaperSize feature doesn't work on Windows, fails on Mac, and is unstable on Linux", SkipAll);
-    // This test is based on common printers found at the Trolltech Oslo
+    // This test is based on common printers found at the Oslo
     // office. It is likely to be skipped or fail for other locations.
     QStringList hardPrinters;
     hardPrinters << "Finnmarka" << "Huldra";

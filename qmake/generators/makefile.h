@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -53,12 +53,8 @@
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_OS_WIN32
-#if defined(Q_CC_MWERKS)
-#include "qpopen.h"
-#else
 #define QT_POPEN _popen
 #define QT_PCLOSE _pclose
-#endif
 #else
 #define QT_POPEN popen
 #define QT_PCLOSE pclose
@@ -88,7 +84,6 @@ class MakefileGenerator : protected QMakeSourceFileInfo
     QString build_args(const QString &outdir=QString());
     void checkMultipleDefinition(const QString &, const QString &);
 
-protected:
     //internal caches
     mutable QHash<QString, QMakeLocalFileName> depHeuristicsCache;
     mutable QHash<QString, QStringList> dependsCache;

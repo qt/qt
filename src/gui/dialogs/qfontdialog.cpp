@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -112,9 +112,8 @@ static const Qt::WindowFlags DefaultWindowFlags =
 
 /*!
   \class QFontDialog
-  \ingroup dialogs
-  \ingroup text
-  \mainclass
+  \ingroup standard-dialogs
+
   \brief The QFontDialog class provides a dialog widget for selecting a font.
 
     A font dialog is created through one of the static getFont()

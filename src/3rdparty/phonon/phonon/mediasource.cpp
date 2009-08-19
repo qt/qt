@@ -140,8 +140,12 @@ MediaSourcePrivate::~MediaSourcePrivate()
 {
 #ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM
     if (autoDelete) {
-        delete stream;
-        delete ioDevice;
+        //here we use deleteLater because this object
+        //might be destroyed from another thread
+        if (stream)
+            stream->deleteLater();
+        if (ioDevice)
+            ioDevice->deleteLater();
     }
 #endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM
 }

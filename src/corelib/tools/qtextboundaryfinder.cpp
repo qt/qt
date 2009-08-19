@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -107,7 +107,7 @@ static void init(QTextBoundaryFinder::BoundaryType type, const QChar *chars, int
     \since 4.4
     \ingroup tools
     \ingroup shared
-    \ingroup text
+    \ingroup string-processing
     \reentrant
 
     QTextBoundaryFinder allows to find Unicode text boundaries in a

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
     \class QRegion
     \brief The QRegion class specifies a clip region for a painter.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
 
     QRegion is used with QPainter::setClipRegion() to limit the paint

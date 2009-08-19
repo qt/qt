@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
     \reentrant
     \brief The QPluginLoader class loads a plugin at run-time.
 
-    \mainclass
+
     \ingroup plugins
 
     QPluginLoader provides access to a \l{How to Create Qt

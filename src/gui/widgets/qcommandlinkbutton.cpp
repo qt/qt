@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
     \brief The QCommandLinkButton widget provides a Vista style command link button.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     The command link is a new control that was introduced by Windows Vista. It's
     intended use is similar to that of a radio button in that it is used to choose

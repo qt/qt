@@ -34,14 +34,14 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 // Most of the code here was originally written by Ming-Che Chuang and
 // is included in Qt with the author's permission, and the grateful
-// thanks of the Trolltech team.
+// thanks of the Qt team.
 
 #ifndef QBIG5CODEC_H
 #define QBIG5CODEC_H

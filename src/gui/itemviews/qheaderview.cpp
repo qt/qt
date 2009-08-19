@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -88,7 +88,7 @@ QDataStream &operator>>(QDataStream &in, QHeaderViewPrivate::SectionSpan &span)
     item views.
 
     \ingroup model-view
-    \mainclass
+
 
     A QHeaderView displays the headers used in item views such as the
     QTableView and QTreeView classes. It takes the place of Qt3's \c QHeader
@@ -2615,7 +2615,7 @@ void QHeaderView::dataChanged(const QModelIndex &topLeft, const QModelIndex &bot
         int first = orientation() == Qt::Horizontal ? topLeft.column() : topLeft.row();
         int last = orientation() == Qt::Horizontal ? bottomRight.column() : bottomRight.row();
         for (int i = first; i <= last && !resizeRequired; ++i)
-            resizeRequired = (resizeRequired && resizeMode(i));
+            resizeRequired = (resizeMode(i) == ResizeToContents);
         if (resizeRequired)
             d->doDelayedResizeSections();
     }
