@@ -138,18 +138,6 @@ void QGraphicsAnchorLayout::addAnchor(QGraphicsLayoutItem *firstItem, Qt::Anchor
     invalidate();
 }
 
-void QGraphicsAnchorLayout::setAnchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
-                                             const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge,
-                                             qreal spacing)
-{
-    Q_D(QGraphicsAnchorLayout);
-
-    if (!d->setAnchorSize(firstItem, firstEdge, secondItem, secondEdge, spacing)) {
-        qWarning("setAnchorSpacing: The anchor does not exist.");
-    }
-    invalidate();
-}
-
 /*!
  * Creates two anchors between \a firstItem and \a secondItem, where one is for the horizontal
  * edge and another one for the vertical edge that the corners \a firstCorner and \a
@@ -225,17 +213,52 @@ void QGraphicsAnchorLayout::addCornerAnchors(QGraphicsLayoutItem *firstItem,
     \endcode
 */
 
+/*!
+  Set the spacing between the anchor point defined by \a firstItem and \a firstEdge and
+  \a secondItem and \a secondEdge to be \a spacing.
+*/
+void QGraphicsAnchorLayout::setAnchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                                             const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge,
+                                             qreal spacing)
+{
+    Q_D(QGraphicsAnchorLayout);
+
+    if (!d->setAnchorSize(firstItem, firstEdge, secondItem, secondEdge, &spacing)) {
+        qWarning("setAnchorSpacing: The anchor does not exist.");
+    }
+    invalidate();
+}
+
+/*!
+  Returns the spacing between the anchor point defined by \a firstItem and \a firstEdge and
+  \a secondItem and \a secondEdge. The anchor must exist.
+*/
 qreal QGraphicsAnchorLayout::anchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
                                            const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge) const
 {
-    qWarning("// ### TO BE IMPLEMENTED");
-    return 0;
+    Q_D(const QGraphicsAnchorLayout);
+    qreal size = 0;
+    if (!d->anchorSize(firstItem, firstEdge, secondItem, secondEdge, 0, &size)) {
+        qWarning("anchorSpacing: The anchor does not exist.");
+    }
+    return size;
 }
 
+/*!
+  Resets the spacing between the anchor point defined by \a firstItem and \a firstEdge and
+  \a secondItem and \a secondEdge to be the default spacing. Depending on the anchor type, the
+  default spacing is either 0 or a value returned from the style.
+
+  \sa setAnchorSpacing, anchorSpacing, addAnchor
+*/
 void QGraphicsAnchorLayout::unsetAnchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
                                                const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge)
 {
-    qWarning("// ### TO BE IMPLEMENTED");
+    Q_D(QGraphicsAnchorLayout);
+
+    if (!d->setAnchorSize(firstItem, firstEdge, secondItem, secondEdge, 0)) {
+        qWarning("unsetAnchorSpacing: The anchor does not exist.");
+    }
     invalidate();
 }
 

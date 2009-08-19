@@ -65,10 +65,6 @@ public:
     void addAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
                    QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
 
-    void setAnchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
-                          const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge,
-                          qreal spacing);
-
     void addCornerAnchors(QGraphicsLayoutItem *firstItem, Qt::Corner firstCorner,
                           QGraphicsLayoutItem *secondItem, Qt::Corner secondCorner);
 
@@ -81,8 +77,13 @@ public:
     inline void addAllAnchors(QGraphicsLayoutItem *firstItem,
                               QGraphicsLayoutItem *secondItem);
 
+    void setAnchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
+                          const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge,
+                          qreal spacing);
+
     qreal anchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
                         const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge) const;
+
     void unsetAnchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
                             const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge);
 

@@ -1125,17 +1125,49 @@ bool QGraphicsAnchorLayoutPrivate::setAnchorSize(const QGraphicsLayoutItem *firs
                                                  Qt::AnchorPoint firstEdge,
                                                  const QGraphicsLayoutItem *secondItem,
                                                  Qt::AnchorPoint secondEdge,
-                                                 qreal anchorSize)
+                                                 const qreal *anchorSize)
 {
-    // ### we can avoid restoration if we really want to
+    // ### we can avoid restoration if we really want to, but we would have to
+    // search recursively through all composite anchors
     restoreSimplifiedGraph(edgeOrientation(firstEdge));
     AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
     AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
 
     AnchorData *data = graph[edgeOrientation(firstEdge)].edgeData(v1, v2);
-    if (data)
-        data->setFixedSize(anchorSize);
+    if (data) {
+        if (anchorSize) {
+            data->setFixedSize(*anchorSize);
+        } else {
+            data->unsetSize();
+        }
+    }
 
+    return data;
+}
+
+bool QGraphicsAnchorLayoutPrivate::anchorSize(const QGraphicsLayoutItem *firstItem,
+                                              Qt::AnchorPoint firstEdge,
+                                              const QGraphicsLayoutItem *secondItem,
+                                              Qt::AnchorPoint secondEdge,
+                                              qreal *minSize,
+                                              qreal *prefSize,
+                                              qreal *maxSize) const
+{
+    Q_ASSERT(minSize || prefSize || maxSize);
+    QGraphicsAnchorLayoutPrivate *that = const_cast<QGraphicsAnchorLayoutPrivate *>(this);
+    that->restoreSimplifiedGraph(edgeOrientation(firstEdge));
+    AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
+    AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
+
+    AnchorData *data = that->graph[edgeOrientation(firstEdge)].edgeData(v1, v2);
+    if (data) {
+        if (minSize)
+            *minSize = data->minSize;
+        if (prefSize)
+            *prefSize = data->prefSize;
+        if (maxSize)
+            *maxSize = data->maxSize;
+    }
     return data;
 }
 

@@ -176,6 +176,11 @@ struct AnchorData : public QSimplexVariable {
         hasSize = true;
     }
 
+    inline void unsetSize()
+    {
+        hasSize = false;
+    }
+
     // Anchor is semantically directed
     AnchorVertex *from;
     AnchorVertex *to;
@@ -367,7 +372,15 @@ public:
                        Qt::AnchorPoint firstEdge,
                        const QGraphicsLayoutItem *secondItem,
                        Qt::AnchorPoint secondEdge,
-                       qreal anchorSize);
+                       const qreal *anchorSize);
+
+    bool anchorSize(const QGraphicsLayoutItem *firstItem,
+                    Qt::AnchorPoint firstEdge,
+                    const QGraphicsLayoutItem *secondItem,
+                    Qt::AnchorPoint secondEdge,
+                    qreal *minSize = 0,
+                    qreal *prefSize = 0,
+                    qreal *maxSize = 0) const;
 
     void removeAnchors(QGraphicsLayoutItem *item);
 
@@ -394,12 +407,12 @@ public:
     QList<QSimplexConstraint *> constraintsFromSizeHints(const QList<AnchorData *> &anchors);
     QList<QList<QSimplexConstraint *> > getGraphParts(Orientation orientation);
 
-    inline AnchorVertex *internalVertex(const QPair<QGraphicsLayoutItem*, Qt::AnchorPoint> &itemEdge)
+    inline AnchorVertex *internalVertex(const QPair<QGraphicsLayoutItem*, Qt::AnchorPoint> &itemEdge) const
     {
         return m_vertexList.value(itemEdge).first;
     }
 
-    inline AnchorVertex *internalVertex(const QGraphicsLayoutItem *item, Qt::AnchorPoint edge)
+    inline AnchorVertex *internalVertex(const QGraphicsLayoutItem *item, Qt::AnchorPoint edge) const
     {
         return internalVertex(qMakePair(const_cast<QGraphicsLayoutItem *>(item), edge));
     }
