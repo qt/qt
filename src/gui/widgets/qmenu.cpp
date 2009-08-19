@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1207,9 +1207,9 @@ void QMenu::initStyleOption(QStyleOptionMenuItem *option, const QAction *action)
     \brief The QMenu class provides a menu widget for use in menu
     bars, context menus, and other popup menus.
 
-    \ingroup application
+    \ingroup mainwindow-classes
     \ingroup basicwidgets
-    \mainclass
+
 
     A menu widget is a selection menu. It can be either a pull-down
     menu in a menu bar or a standalone context menu. Pull-down menus

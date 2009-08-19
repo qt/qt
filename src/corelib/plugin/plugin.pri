@@ -22,3 +22,5 @@ win32 {
 unix {
 	SOURCES += plugin/qlibrary_unix.cpp
 }
+
+LIBS_PRIVATE += $$QMAKE_LIBS_DYNLOAD

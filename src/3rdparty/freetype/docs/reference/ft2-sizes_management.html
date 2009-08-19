@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.6 API Reference</title>
+<title>FreeType-2.3.9 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -31,7 +31,11 @@
 </style>
 </head>
 <body>
-<center><h1>FreeType-2.3.6 API Reference</h1></center>
+
+<table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+<center><h1>FreeType-2.3.9 API Reference</h1></center>
 
 <center><h1>
 Size Management
@@ -79,7 +83,7 @@ Defined in FT_SIZES_H (freetype/ftsizes.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>You need to call <a href="ft2-sizes_management.html#FT_Activate_Size">FT_Activate_Size</a> in order to select the new size for upcoming calls to <a href="ft2-base_interface.html#FT_Set_Pixel_Sizes">FT_Set_Pixel_Sizes</a>, <a href="ft2-base_interface.html#FT_Set_Char_Size">FT_Set_Char_Size</a>, <a href="ft2-base_interface.html#FT_Load_Glyph">FT_Load_Glyph</a>, <a href="ft2-base_interface.html#FT_Load_Char">FT_Load_Char</a>, etc.</p>
@@ -113,7 +117,7 @@ Defined in FT_SIZES_H (freetype/ftsizes.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -133,7 +137,7 @@ Defined in FT_SIZES_H (freetype/ftsizes.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Even though it is possible to create several size objects for a given face (see <a href="ft2-sizes_management.html#FT_New_Size">FT_New_Size</a> for details), functions like <a href="ft2-base_interface.html#FT_Load_Glyph">FT_Load_Glyph</a> or <a href="ft2-base_interface.html#FT_Load_Char">FT_Load_Char</a> only use the last-created one to determine the &lsquo;current character pixel size&rsquo;.</p>
+<p>Even though it is possible to create several size objects for a given face (see <a href="ft2-sizes_management.html#FT_New_Size">FT_New_Size</a> for details), functions like <a href="ft2-base_interface.html#FT_Load_Glyph">FT_Load_Glyph</a> or <a href="ft2-base_interface.html#FT_Load_Char">FT_Load_Char</a> only use the one which has been activated last to determine the &lsquo;current character pixel size&rsquo;.</p>
 <p>This function can be used to &lsquo;activate&rsquo; a previously created size object.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
@@ -145,7 +149,7 @@ Defined in FT_SIZES_H (freetype/ftsizes.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>If &lsquo;face&rsquo; is the size's parent face object, this function changes the value of &lsquo;face-&gt;size&rsquo; to the input size handle.</p>

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,34 +56,6 @@ QT_BEGIN_NAMESPACE
 /*****************************************************************************
   Internal variables and functions
  *****************************************************************************/
-
-
-/*****************************************************************************
-  External functions
- *****************************************************************************/
-
-extern void qt_painter_removePaintDevice(QPaintDevice *); //qpainter.cpp
-
-/*****************************************************************************
-  QPaintDevice member functions
- *****************************************************************************/
-QPaintDevice::QPaintDevice()
-{
-    painters = 0;
-}
-
-QPaintDevice::~QPaintDevice()
-{
-    if(paintingActive())
-        qWarning("QPaintDevice: Cannot destroy paint device that is being "
-                 "painted, be sure to QPainter::end() painters");
-    qt_painter_removePaintDevice(this);
-}
-
-int QPaintDevice::metric(PaintDeviceMetric) const
-{
-    return 0;
-}
 
 /*! \internal */
 float qt_mac_defaultDpi_x()

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -64,7 +64,7 @@ static QByteArray qNtlmPhase3(QAuthenticatorPrivate *ctx, const QByteArray& phas
   \since 4.3
 
   \reentrant
-  \ingroup io
+  \ingroup network
   \inmodule QtNetwork
 
   The QAuthenticator class is usually used in the

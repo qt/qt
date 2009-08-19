@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,7 +44,7 @@
     \brief The QGLPixelBuffer class encapsulates an OpenGL pbuffer.
     \since 4.1
 
-    \ingroup multimedia
+    \ingroup painting-3D
 
     Rendering into a pbuffer is normally done using full hardware
     acceleration. This can be significantly faster than rendering

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1209,7 +1209,7 @@ void tst_Moc::warnOnVirtualSignal()
 #endif
 }
 
-QTEST_MAIN(tst_Moc)
+QTEST_APPLESS_MAIN(tst_Moc)
 #include "tst_moc.moc"
 
 

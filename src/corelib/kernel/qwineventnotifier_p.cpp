@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,8 +51,6 @@ QT_BEGIN_NAMESPACE
 /*
     \class QWinEventNotifier
     \brief The QWinEventNotifier class provides support for the Windows Wait functions.
-
-    \ingroup io
 
     The QWinEventNotifier class makes it possible to use the wait
     functions on windows in a asynchronous manner. With this class

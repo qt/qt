@@ -869,8 +869,8 @@ Bitte überprüfen Sie, das dieser an der angegeben Stelle existiert.</translati
         <translation>Strg+E</translation>
     </message>
     <message>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/model&quot;&gt;qtsoftware.com/company/model&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">Sie benötigen eine kommerzielle Qt Lizenz für die Entwicklung von proprietären (geschlossenen) Anwendungen. Besuchen Sie &lt;a href=&quot;http://qtsoftware.com/company/about/businessmodel&quot;&gt;http://qtsoftware.com/company/about/businessmodel&lt;/a&gt; um sich einen Überblick über die Qt Lizenzvergabe zu verschaffen.</translation>
+        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/model&quot;&gt;qt.nokia.com/company/model&lt;/a&gt; for an overview of Qt licensing.</source>
+        <translation type="obsolete">Sie benötigen eine kommerzielle Qt Lizenz für die Entwicklung von proprietären (geschlossenen) Anwendungen. Besuchen Sie &lt;a href=&quot;http://qt.nokia.com/company/about/businessmodel&quot;&gt;http://qt.nokia.com/company/about/businessmodel&lt;/a&gt; um sich einen Überblick über die Qt Lizenzvergabe zu verschaffen.</translation>
     </message>
     <message>
         <source>This program is licensed to you under the terms of the Qt %1 License Agreement. For details, see the license file that came with this software distribution.</source>

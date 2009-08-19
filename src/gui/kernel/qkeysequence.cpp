@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -152,9 +152,8 @@ void Q_AUTOTEST_EXPORT qt_set_sequence_auto_mnemonic(bool b) { qt_sequence_no_mn
     \brief The QKeySequence class encapsulates a key sequence as used
     by shortcuts.
 
-    \ingroup misc
     \ingroup shared
-    \mainclass
+
 
     In its most common form, a key sequence describes a combination of
     keys that must be used together to perform some action. Key sequences

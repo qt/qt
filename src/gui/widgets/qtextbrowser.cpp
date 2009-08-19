@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -580,7 +580,7 @@ void QTextBrowserPrivate::restoreHistoryEntry(const HistoryEntry entry)
     \class QTextBrowser
     \brief The QTextBrowser class provides a rich text browser with hypertext navigation.
 
-    \ingroup text
+    \ingroup richtext-processing
 
     This class extends QTextEdit (in read-only mode), adding some navigation
     functionality so that users can follow links in hypertext documents.

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -112,7 +112,7 @@ public:
     data items from a model.
 
     \ingroup model-view
-    \mainclass
+
     \since 4.4
 
     When displaying data from models in Qt item views, e.g., a
@@ -267,9 +267,10 @@ QStyledItemDelegate::~QStyledItemDelegate()
 QString QStyledItemDelegate::displayText(const QVariant &value, const QLocale& locale) const
 {
     QString text;
-    switch (value.type()) {
+    switch (value.userType()) {
+    case QMetaType::Float:
     case QVariant::Double:
-        text = locale.toString(value.toDouble());
+        text = locale.toString(value.toReal());
         break;
     case QVariant::Int:
     case QVariant::LongLong:

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,7 +44,6 @@
     \brief The QGraphicsItemAnimation class provides simple animation
     support for QGraphicsItem.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     The QGraphicsItemAnimation class animates a QGraphicsItem. You can

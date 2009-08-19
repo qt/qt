@@ -34,21 +34,21 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 /*!
     \page widgets-tutorial.html
-    \startpage {index.html}{Qt Reference Documentation}
-    \nextpage {tutorials/widgets/toplevel}{Creating a Window}
-
     \title Widgets Tutorial
-    \ingroup tutorials
-
     \brief This tutorial covers basic usage of widgets and layouts, showing how
     they are used to build GUI applications.
+
+    \startpage {index.html}{Qt Reference Documentation}
+    \contentspage Tutorials
+    \nextpage {tutorials/widgets/toplevel}{Creating a Window}
+
 
     \section1 Introduction
 
@@ -94,7 +94,7 @@
     example. For example, the GUI for a main window may be set up in the
     constructor of a QMainWindow subclass.
 
-    The \l{Qt Examples#Widgets}{Widgets examples} are a good place to look for
+    The \l{Widgets examples} are a good place to look for
     more complex and complete examples and applications.
 
     \section1 Building Examples and Tutorials
@@ -279,6 +279,5 @@
     \snippet tutorials/widgets/nestedlayouts/main.cpp set up the model
 
     The use of models and views is covered in the
-    \l{Qt Examples#Item Views}{item view examples} and in the
-    \l{Model/View Programming} overview.
+    \l{Item Views Examples} and in the \l{Model/View Programming} overview.
 */

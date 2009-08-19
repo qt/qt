@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -97,6 +97,8 @@ void tst_QHelpEngineCore::init()
 {
     // defined in profile
     m_path = QLatin1String(SRCDIR);
+
+    m_path = QFileInfo(m_path).absoluteFilePath();
 
     m_colFile = m_path + QLatin1String("/data/col.qhc");
     if (QFile::exists(m_colFile))

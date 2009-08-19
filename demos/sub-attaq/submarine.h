@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -76,7 +76,7 @@ public:
 
     virtual int type() const;
 
-    QGraphicsRotation3D *rotation3d() const { return graphicsRotation; }
+    QGraphicsRotation *rotation() const { return graphicsRotation; }
 
 signals:
     void subMarineDestroyed();
@@ -90,7 +90,7 @@ private:
     int speed;
     Movement direction;
     PixmapItem *pixmapItem;
-    QGraphicsRotation3D *graphicsRotation;
+    QGraphicsRotation *graphicsRotation;
 };
 
 #endif //__SUBMARINE__H__

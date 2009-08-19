@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,12 +65,8 @@
 #include <stdlib.h>
 
 #ifdef Q_OS_WIN32
-#if defined(Q_CC_MWERKS)
-#include "qpopen.h"
-#else
 #define QT_POPEN _popen
 #define QT_PCLOSE _pclose
-#endif
 #else
 #define QT_POPEN popen
 #define QT_PCLOSE pclose
@@ -2250,28 +2246,6 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             if(args.count() > 1)
                 singleLine = (args[1].toLower() == "true");
             QString output;
-#if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
-            QPopen procPipe;
-            if( !procPipe.init(args[0].toLatin1(), "r") ) {
-                fprintf(stderr, "%s:%d system(%s) failed.\n",
-                        parser.file.toLatin1().constData(),
-                        parser.line_no,
-                        qPrintable(args[0]));
-            }
-
-            while(true) {
-                int read_in = procPipe.fread(buff, 255);
-                if ( !read_in )
-                    break;
-                for(int i = 0; i < read_in; ++i) {
-                    if((singleLine && buff[i] == '\n') || buff[i] == '\t')
-                        buff[i] = ' ';
-                }
-                buff[read_in] = '\0';
-                output += buff;
-            }
-            ret += split_value_list(output);
-#else
             FILE *proc = QT_POPEN(args[0].toLatin1(), "r");
             while(proc && !feof(proc)) {
                 int read_in = int(fread(buff, 1, 255, proc));
@@ -2287,7 +2261,6 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             ret += split_value_list(output);
             if(proc)
                 QT_PCLOSE(proc);
-#endif
         }
         break; }
     case E_UNIQUE: {

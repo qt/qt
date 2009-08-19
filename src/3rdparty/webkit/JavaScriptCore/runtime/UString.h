@@ -256,6 +256,9 @@ namespace JSC {
         }
 
         static UString from(int);
+#if PLATFORM(WIN_OS) && PLATFORM(X86_64) && COMPILER(MSVC)
+        static UString from(int64_t i);
+#endif
         static UString from(unsigned int);
         static UString from(long);
         static UString from(double);

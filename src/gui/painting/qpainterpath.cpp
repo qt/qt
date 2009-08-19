@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -164,7 +164,7 @@ static void qt_debug_path(const QPainterPath &path)
 
 /*!
     \class QPainterPath
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
 
     \brief The QPainterPath class provides a container for painting operations,
@@ -2399,7 +2399,7 @@ void qt_path_stroke_cubic_to(qfixed c1x, qfixed c1y,
 /*!
     \since 4.1
     \class QPainterPathStroker
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QPainterPathStroker class is used to generate fillable
     outlines for a given painter path.

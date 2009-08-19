@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,10 +61,12 @@
 QT_BEGIN_NAMESPACE
 
 QSvgTinyDocument::QSvgTinyDocument()
-    : QSvgStructureNode(0),
-      m_animated(false),
-      m_animationDuration(0),
-      m_fps(30)
+    : QSvgStructureNode(0)
+    , m_widthPercent(false)
+    , m_heightPercent(false)
+    , m_animated(false)
+    , m_animationDuration(0)
+    , m_fps(30)
 {
 }
 

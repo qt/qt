@@ -110,6 +110,7 @@ excluded_directories="$excluded_directories WebCore/platform/graphics/win"
 excluded_directories="$excluded_directories WebCore/platform/graphics/skia"
 excluded_directories="$excluded_directories WebCore/platform/graphics/chromium"
 excluded_directories="$excluded_directories WebCore/platform/graphics/wince"
+excluded_directories="$excluded_directories WebCore/platform/graphics/haiku"
 
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/bmp"
 excluded_directories="$excluded_directories WebCore/platform/image-decoders/gif"
@@ -133,12 +134,12 @@ excluded_directories="$excluded_directories WebCore/accessibility/win"
 excluded_directories="$excluded_directories WebCore/accessibility/wx"
 
 excluded_directories="$excluded_directories WebCore/storage/wince"
-excluded_directories="$excluded_directories WebCore/svg/graphics/wince"
 
 excluded_directories="$excluded_directories WebCore/platform/wx"
+excluded_directories="$excluded_directories WebCore/platform/wince"
+
 excluded_directories="$excluded_directories WebKit/gtk"
 excluded_directories="$excluded_directories WebKit/win"
-excluded_directories="$excluded_directories WebKit/mac"
 excluded_directories="$excluded_directories WebKit/wx"
 excluded_directories="$excluded_directories WebKit/cf"
 excluded_directories="$excluded_directories WebKit/haiku"
@@ -147,6 +148,33 @@ excluded_directories="$excluded_directories WebKit/English.lproj WebKit/WebKit.x
 excluded_directories="$excluded_directories WebCore/English.lproj"
 
 exclude_with_exceptions_list="WebCore/platform/win/:WebCore/platform/win/SystemTimeWin.cpp"
+
+excluded_directories="$excluded_directories WebKit/mac/Carbon"
+excluded_directories="$excluded_directories WebKit/mac/ChangeLog"
+excluded_directories="$excluded_directories WebKit/mac/ChangeLog-2002-12-03"
+excluded_directories="$excluded_directories WebKit/mac/ChangeLog-2006-02-09"
+excluded_directories="$excluded_directories WebKit/mac/ChangeLog-2007-10-14"
+excluded_directories="$excluded_directories WebKit/mac/DefaultDelegates"
+excluded_directories="$excluded_directories WebKit/mac/DOM"
+excluded_directories="$excluded_directories WebKit/mac/ForwardingHeaders"
+excluded_directories="$excluded_directories WebKit/mac/History"
+excluded_directories="$excluded_directories WebKit/mac/icu"
+excluded_directories="$excluded_directories WebKit/mac/Info.plist"
+excluded_directories="$excluded_directories WebKit/mac/MigrateHeaders.make"
+excluded_directories="$excluded_directories WebKit/mac/Misc"
+excluded_directories="$excluded_directories WebKit/mac/Panels"
+excluded_directories="$excluded_directories WebKit/mac/Plugins"
+excluded_directories="$excluded_directories WebKit/mac/PublicHeaderChangesFromTiger.txt"
+excluded_directories="$excluded_directories WebKit/mac/Resources"
+excluded_directories="$excluded_directories WebKit/mac/Storage"
+excluded_directories="$excluded_directories WebKit/mac/WebCoreSupport"
+excluded_directories="$excluded_directories WebKit/mac/WebInspector"
+excluded_directories="$excluded_directories WebKit/mac/WebKit.exp"
+excluded_directories="$excluded_directories WebKit/mac/WebKit.order"
+excluded_directories="$excluded_directories WebKit/mac/WebKitPrefix.h"
+excluded_directories="$excluded_directories WebKit/mac/WebView"
+
+exclude_with_exceptions_list="$exclude_with_exceptions_list WebKit/mac/Configurations/:WebKit/mac/Configurations/Version.xcconfig"
 
 files_to_remove=""
 files_to_remove="$files_to_remove WebKit/qt/Api/qwebnetworkinterface.cpp"
@@ -308,9 +336,9 @@ EOT
 
 if [ -d "$repository/.git" -a -n "$lastImportRevison" ]; then
     echo >>commitlog.txt
-    echo "Changes in WebKit since the last update:" >>commitlog.txt
+    echo "Changes in WebKit/qt since the last update:" >>commitlog.txt
     echo >>commitlog.txt
-    git --git-dir=$repository/.git ls-files | egrep "ChangeLog$" | xargs git --git-dir=$repository/.git diff $lastImportRevison $rev -- | sed -n -e "s,^\+\(.*\),\1,p" >>commitlog.txt
+    git --git-dir=$repository/.git diff $lastImportRevison $rev -- WebKit/qt/ChangeLog | sed -n -e "s,^\+\(.*\),\1,p" >>commitlog.txt
 fi
 
 echo "Changes:"

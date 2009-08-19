@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
     \brief The QShortcut class is used to create keyboard shortcuts.
 
     \ingroup events
-    \mainclass
+
 
     The QShortcut class provides a way of connecting keyboard
     shortcuts to Qt's \l{signals and slots} mechanism, so that

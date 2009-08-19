@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,9 +75,8 @@ extern int qt_defaultDpi();
 
     \brief The QFontMetrics class provides font metrics information.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \ingroup text
 
     QFontMetrics functions calculate the size of characters and
     strings for a given font. There are three ways you can create a
@@ -528,12 +527,14 @@ int QFontMetrics::rightBearing(QChar ch) const
 */
 int QFontMetrics::width(const QString &text, int len) const
 {
+    int pos = text.indexOf(QLatin1Char('\x9c'));
+    QString txt = (pos == -1) ? text : text.left(pos);
     if (len < 0)
-        len = text.length();
+        len = txt.length();
     if (len == 0)
         return 0;
 
-    QTextEngine layout(text, d);
+    QTextEngine layout(txt, d);
     layout.ignoreBidi = true;
     return qRound(layout.width(0, len));
 }
@@ -798,7 +799,7 @@ QRect QFontMetrics::boundingRect(const QRect &rect, int flags, const QString &te
 */
 QSize QFontMetrics::size(int flags, const QString &text, int tabStops, int *tabArray) const
 {
-    return boundingRect(QRect(0,0,0,0), flags, text, tabStops, tabArray).size();
+    return boundingRect(QRect(0,0,0,0), flags | Qt::TextLongestVariant, text, tabStops, tabArray).size();
 }
 
 /*!
@@ -857,11 +858,23 @@ QRect QFontMetrics::tightBoundingRect(const QString &text) const
     right-to-left layouts, and on the left side for right-to-left
     layouts. Note that this behavior is independent of the text
     language.
-
 */
 QString QFontMetrics::elidedText(const QString &text, Qt::TextElideMode mode, int width, int flags) const
 {
-    QStackTextEngine engine(text, QFont(d));
+    QString _text = text;
+    if (!(flags & Qt::TextLongestVariant)) {
+        int posA = 0;
+        int posB = _text.indexOf(QLatin1Char('\x9c'));
+        while (posB >= 0) {
+            QString portion = _text.mid(posA, posB - posA);
+            if (size(flags, portion).width() <= width)
+                return portion;
+            posA = posB + 1;
+            posB = _text.indexOf(QLatin1Char('\x9c'), posA);
+        }
+        _text = _text.mid(posA);
+    }
+    QStackTextEngine engine(_text, QFont(d));
     return engine.elidedText(mode, width, flags);
 }
 
@@ -927,9 +940,8 @@ int QFontMetrics::lineWidth() const
 
     \brief The QFontMetricsF class provides font metrics information.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \ingroup text
 
     QFontMetricsF functions calculate the size of characters and
     strings for a given font. You can construct a QFontMetricsF object

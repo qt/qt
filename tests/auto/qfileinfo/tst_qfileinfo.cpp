@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,7 +59,10 @@
 #endif
 #include <qplatformdefs.h>
 #include <qdebug.h>
-
+#ifdef Q_OS_SYMBIAN
+#include <f32file.h>
+#include <private/qcore_symbian_p.h>
+#endif
 #include "../network-settings.h"
 #include <private/qfileinfo_p.h>
 
@@ -147,6 +150,9 @@ private slots:
     void isBundle_data();
     void isBundle();
 
+    void isLocalFs_data();
+    void isLocalFs();
+
     void refresh();
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
@@ -169,6 +175,10 @@ tst_QFileInfo::~tst_QFileInfo()
     QFile::remove("link.lnk");
     QFile::remove("file1");
     QFile::remove("dummyfile");
+#ifdef Q_OS_SYMBIAN
+    QFile::remove("hidden.txt");
+    QFile::remove("nothidden.txt");
+#endif
 }
 
 // Testing get/set functions
@@ -997,10 +1007,65 @@ void tst_QFileInfo::isHidden_data()
     foreach (const QFileInfo& info, QDir::drives()) {
         QTest::newRow(qPrintable("drive." + info.path())) << info.path() << false;
     }
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    QTest::newRow("C:/RECYCLER") << QString::fromLatin1("C:/RECYCLER") << true;
+    QTest::newRow("C:/RECYCLER/.") << QString::fromLatin1("C:/RECYCLER/.") << false;
+    QTest::newRow("C:/RECYCLER/..") << QString::fromLatin1("C:/RECYCLER/..") << false;
+#endif
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
+    QTest::newRow("~/.qt") << QDir::homePath() + QString("/.qt") << true;
+    QTest::newRow("~/.qt/.") << QDir::homePath() + QString("/.qt/.") << false;
+    QTest::newRow("~/.qt/..") << QDir::homePath() + QString("/.qt/..") << false;
+#endif
+
+#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
+    QTest::newRow("/bin/") << QString::fromLatin1("/bin/") << false;
+#endif
+
 #ifdef Q_OS_MAC
     QTest::newRow("mac_etc") << QString::fromLatin1("/etc") << true;
     QTest::newRow("mac_private_etc") << QString::fromLatin1("/private/etc") << false;
     QTest::newRow("mac_Applications") << QString::fromLatin1("/Applications") << false;
+#endif
+
+#ifdef Q_OS_SYMBIAN
+    // No guaranteed hidden file knows to exist in Symbian filesystem, so make one.
+    QString hiddenFileName("hidden.txt");
+    QString notHiddenFileName("nothidden.txt");
+    QTest::newRow("hidden file") << hiddenFileName << true;
+    QTest::newRow("non-hidden file") << notHiddenFileName << false;
+
+    {
+        QFile file(hiddenFileName);
+        if (file.open(QIODevice::WriteOnly)) {
+            QTextStream t(&file);
+            t << "foobar";       
+        } else {
+            qWarning("Failed to create hidden file");
+        }
+        QFile file2(notHiddenFileName);
+        if (file2.open(QIODevice::WriteOnly)) {
+            QTextStream t(&file);
+            t << "foobar";       
+        } else {
+            qWarning("Failed to create non-hidden file");
+        }
+    }
+    
+    RFs rfs;
+    TInt err = rfs.Connect();
+    if (err == KErrNone) {
+        HBufC* symFile = qt_QString2HBufC(hiddenFileName);
+        err = rfs.SetAtt(*symFile, KEntryAttHidden, 0);
+        rfs.Close();
+        delete symFile;
+        if (err != KErrNone) {
+            qWarning("Failed to set hidden attribute for test file");
+        }
+    } else {
+        qWarning("Failed to open RFs session");
+    }
 #endif
 }
 
@@ -1029,6 +1094,29 @@ void tst_QFileInfo::isBundle()
     QFETCH(bool, isBundle);
     QFileInfo fi(path);
     QCOMPARE(fi.isBundle(), isBundle);
+}
+
+void tst_QFileInfo::isLocalFs_data()
+{
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("isLocalFs");
+
+    QTest::newRow("local root") << QString::fromLatin1("/") << true;
+    QTest::newRow("local non-existent file") << QString::fromLatin1("/abrakadabra.boo") << true;
+
+    QTest::newRow("qresource root") << QString::fromLatin1(":/") << false;
+}
+
+void tst_QFileInfo::isLocalFs()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, isLocalFs);
+
+    QFileInfo info(path);
+    QFileInfoPrivate *privateInfo = getPrivate(info);
+    QVERIFY(privateInfo->data->fileEngine);
+    QCOMPARE(bool(privateInfo->data->fileEngine->fileFlags(QAbstractFileEngine::LocalDiskFlag)
+                  & QAbstractFileEngine::LocalDiskFlag), isLocalFs);
 }
 
 void tst_QFileInfo::refresh()

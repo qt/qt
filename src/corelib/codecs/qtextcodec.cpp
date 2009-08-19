@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -92,10 +92,8 @@
 #  define QT_NO_SETLOCALE
 #endif
 
-#if 0 // ### TODO - remove me!
 // enabling this is not exception safe!
-#define Q_DEBUG_TEXTCODEC
-#endif
+// #define Q_DEBUG_TEXTCODEC
 
 QT_BEGIN_NAMESPACE
 

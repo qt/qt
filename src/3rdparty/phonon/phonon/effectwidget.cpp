@@ -157,19 +157,20 @@ void EffectWidgetPrivate::autogenerateUi()
                 QObject::connect(sb, SIGNAL(valueChanged(int)), q, SLOT(_k_setIntParameter(int)));
             }
             break;
+        case QMetaType::Float:
         case QVariant::Double:
             {
-                const double minValue = (para.minimumValue().type() == QVariant::Double ?
-                    para.minimumValue().toDouble() : DEFAULT_MIN);
-                const double maxValue = (para.maximumValue().type() == QVariant::Double ?
-                    para.maximumValue().toDouble() : DEFAULT_MAX);
+                const qreal minValue = para.minimumValue().canConvert(QVariant::Double) ?
+                    para.minimumValue().toReal() : DEFAULT_MIN;
+                const qreal maxValue = para.maximumValue().canConvert(QVariant::Double) ?
+                    para.maximumValue().toReal() : DEFAULT_MAX;
 
                 if (minValue == -1. && maxValue == 1.) {
                     //Special case values between -1 and 1.0 to use a slider for improved usability
                     QSlider *slider = new QSlider(Qt::Horizontal, q);
                     control = slider;
                     slider->setRange(-SLIDER_RANGE, +SLIDER_RANGE);
-                    slider->setValue(int(SLIDER_RANGE * value.toDouble()));
+                    slider->setValue(int(SLIDER_RANGE * value.toReal()));
                     slider->setTickPosition(QSlider::TicksBelow);
                     slider->setTickInterval(TICKINTERVAL);
                     QObject::connect(slider, SIGNAL(valueChanged(int)), q, SLOT(_k_setSliderParameter(int)));

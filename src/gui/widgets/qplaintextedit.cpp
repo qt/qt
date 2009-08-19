@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -116,8 +116,7 @@ public:
     \since 4.4
     \brief The QPlainTextDocumentLayout class implements a plain text layout for QTextDocument
 
-    \ingroup text
-
+    \ingroup richtext-processing
 
    A QPlainTextDocumentLayout is required for text documents that can
    be display or edited in a QPlainTextEdit. See
@@ -1013,8 +1012,8 @@ void QPlainTextEditPrivate::ensureViewportLayouted()
     \brief The QPlainTextEdit class provides a widget that is used to edit and display
     plain text.
 
-    \ingroup text
-    \mainclass
+    \ingroup richtext-processing
+
 
     \tableofcontents
 
@@ -1932,11 +1931,7 @@ void QPlainTextEdit::mouseReleaseEvent(QMouseEvent *e)
         d->ensureCursorVisible();
     }
 
-    if (e->button() == Qt::LeftButton && qApp->autoSipEnabled()
-            && (!d->clickCausedFocus || qApp->autoSipOnMouseFocus())) {
-        QEvent event(QEvent::RequestSoftwareInputPanel);
-        QApplication::sendEvent(this, &event);
-    }
+    d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
 

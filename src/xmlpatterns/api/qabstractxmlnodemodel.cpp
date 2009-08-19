@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -190,8 +190,7 @@ bool QAbstractXmlNodeModel::isIgnorableInDeepEqual(const QXmlNodeModelIndex &n)
 
   Because the node model can be accessed concurrently by threads in
   the QtXmlPatterns module, subclasses of QAbstractXmlNodeModel must
-  be written to be \l{Thread Support in Qt#Reentrancy and Thread-Safety}
-  {thread-safe}.
+  be written to be \l{Reentrancy and Thread-Safety}{thread-safe}.
   Classes that simplify implementing thread-safety include QReadLocker
   and QWriteLocker.
 

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -82,6 +82,31 @@ public:
 
 #if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
     int panFinishedTimer;
+#endif
+};
+
+class QPinchGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QPinchGesture)
+
+public:
+    QPinchGesturePrivate()
+        : scaleFactor(0), lastScaleFactor(0),
+          rotationAngle(0), lastRotationAngle(0)
+#ifdef Q_WS_WIN
+          ,initialDistance(0)
+#endif
+    {
+    }
+    qreal scaleFactor;
+    qreal lastScaleFactor;
+    qreal rotationAngle;
+    qreal lastRotationAngle;
+    QPoint startCenterPoint;
+    QPoint lastCenterPoint;
+    QPoint centerPoint;
+#ifdef Q_WS_WIN
+    int initialDistance;
 #endif
 };
 

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -415,11 +415,11 @@ QFontEngineData::~QFontEngineData()
 
     \brief The QFont class specifies a font used for drawing text.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup appearance
     \ingroup shared
-    \ingroup text
-    \mainclass
+    \ingroup richtext-processing
+
 
     When you create a QFont object you specify various attributes that
     you want the font to have. Qt will use the font with the specified
@@ -2276,9 +2276,8 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
 
     \brief The QFontInfo class provides general information about fonts.
 
-    \ingroup multimedia
+    \ingroup appearance
     \ingroup shared
-    \ingroup text
 
     The QFontInfo class provides the same access functions as QFont,
     e.g. family(), pointSize(), italic(), weight(), fixedPitch(),

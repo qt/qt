@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -203,7 +203,7 @@ QStyle::SubControl QSliderPrivate::newHoverControl(const QPoint &pos)
     \brief The QSlider widget provides a vertical or horizontal slider.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     The slider is the classic widget for controlling a bounded value.
     It lets the user move a slider handle along a horizontal or vertical

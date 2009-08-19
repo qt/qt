@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QLine
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QLine class provides a two-dimensional vector using
     integer precision.
@@ -309,7 +309,7 @@ QDataStream &operator>>(QDataStream &stream, QLine &line)
 
 /*!
     \class QLineF
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QLineF class provides a two-dimensional vector using
     floating point precision.

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -132,9 +132,6 @@ QSettings *QLibraryInfoPrivate::findConfiguration()
 /*!
     \class QLibraryInfo
     \brief The QLibraryInfo class provides information about the Qt library.
-
-    \ingroup misc
-    \mainclass
 
     Many pieces of information are established when Qt is configured.
     Installation paths, license information, and even a unique build

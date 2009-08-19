@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -106,7 +106,7 @@ public:
     \brief The QSound class provides access to the platform audio facilities.
 
     \ingroup multimedia
-    \mainclass
+
 
     Qt provides the most commonly required audio operation in GUI
     applications: asynchronously playing a sound file. This is most

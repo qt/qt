@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,7 +44,9 @@
 
     \brief The QFutureSynchronizer class is a convenience class that simplifies
     QFuture synchronization.
-    
+
+    \ingroup thread
+
     QFutureSynchronizer is a template class that simplifies synchronization of
     one or more QFuture objects. Futures are added using the addFuture() or
     setFuture() functions. The futures() function returns a list of futures.
@@ -63,7 +65,7 @@
     You can query the status of the cancel-on-wait feature using the
     cancelOnWait() function.
     
-    \sa QFuture, QFutureWatcher, {threads.html#qtconcurrent-intro}{Qt Concurrent}
+    \sa QFuture, QFutureWatcher, {Concurrent Programming}{Qt Concurrent}
 */
 
 /*!

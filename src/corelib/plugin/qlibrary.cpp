@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -85,7 +85,7 @@ Q_GLOBAL_STATIC(QMutex, qt_library_mutex)
     \reentrant
     \brief The QLibrary class loads shared libraries at runtime.
 
-    \mainclass
+
     \ingroup plugins
 
     An instance of a QLibrary object operates on a single shared

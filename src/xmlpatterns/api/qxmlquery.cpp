@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -151,7 +151,7 @@ QT_BEGIN_NAMESPACE
   \endcode
 
   \note For the current release, XSLT support should be considered
-        experimental. See section \l{QtXmlPatterns Module#XSLT
+        experimental. See section \l{Using XML technologies#XSLT
         2.0}{XSLT conformance} for details.
 
   Stylesheet parameters are bound using bindVariable().
@@ -291,7 +291,7 @@ QXmlQuery::QXmlQuery(const QXmlNamePool &np) : d(new QXmlQueryPrivate(np))
   create instances of QXmlQuery for running XQueries.
 
   \note The XSL-T support in this release is considered experimental.
-  See the \l{QtXmlPatterns Module#XSLT 2.0}{XSLT conformance} for
+  See the \l{Using XML technologies#XSLT 2.0}{XSLT conformance} for
   details.
 
  \since 4.5

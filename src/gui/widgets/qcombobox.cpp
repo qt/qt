@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -867,7 +867,7 @@ QComboBox::QComboBox(bool rw, QWidget *parent, const char *name)
     \brief The QComboBox widget is a combined button and popup list.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     A QComboBox provides a means of presenting a list of options to the user
     in a way that takes up the minimum amount of screen space.

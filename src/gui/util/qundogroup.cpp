@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -61,7 +61,6 @@ public:
     \class QUndoGroup
     \brief The QUndoGroup class is a group of QUndoStack objects.
     \since 4.2
-    \ingroup misc
 
     For an overview of the Qt's undo framework, see the
     \link qundo.html overview\endlink.

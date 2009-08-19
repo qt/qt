@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,6 +58,8 @@ class QPrintDialogPrivate : public QAbstractPrintDialogPrivate
     \class QAbstractPrintDialog
     \brief The QAbstractPrintDialog class provides a base implementation for
     print dialogs used to configure printers.
+
+    \ingroup printing
 
     This class implements getter and setter functions that are used to
     customize settings shown in print dialogs, but it is not used directly.
@@ -357,7 +359,8 @@ void QAbstractPrintDialogPrivate::setPrinter(QPrinter *newPrinter)
     \brief The QPrintDialog class provides a dialog for specifying
     the printer's configuration.
 
-    \ingroup dialogs
+    \ingroup standard-dialogs
+    \ingroup printing
 
     The dialog allows users to change document-related settings, such
     as the paper size and orientation, type of print (color or

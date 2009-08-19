@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -524,6 +524,9 @@ void tst_Q3SqlCursor::unicode()
     if ( !db.driver()->hasFeature( QSqlDriver::Unicode ) ) {
 	 QSKIP( "DBMS not Unicode capable", SkipSingle );
     }
+    // ascii in the data storage, can't transliterate properly. invalid test.
+    if(db.driverName().startsWith("QIBASE") && (db.databaseName() == "silence.nokia.troll.no:c:\\ibase\\testdb_ascii" || db.databaseName() == "/opt/interbase/qttest.gdb"))
+        QSKIP("Can't transliterate extended unicode to ascii", SkipSingle);
 
     Q3SqlCursor cur( qTableName( "qtest_unicode" ), true, db );
     QSqlRecord* irec = cur.primeInsert();

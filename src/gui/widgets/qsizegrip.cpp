@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -165,9 +165,8 @@ Qt::Corner QSizeGripPrivate::corner() const
 
     \brief The QSizeGrip class provides a resize handle for resizing top-level windows.
 
-    \ingroup application
+    \ingroup mainwindow-classes
     \ingroup basicwidgets
-    \ingroup appearance
 
     This widget works like the standard Windows resize handle. In the
     X11 version this resize handle generally works differently from

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -94,7 +94,7 @@ class QTextFramePrivate : public QTextObjectPrivate
     Q_DECLARE_PUBLIC(QTextFrame)
 public:
     QTextFramePrivate(QTextDocument *doc)
-        : QTextObjectPrivate(doc)
+        : QTextObjectPrivate(doc), fragment_start(0), fragment_end(0), parentFrame(0), layoutData(0)
     {
     }
     virtual void fragmentAdded(const QChar &type, uint fragment);

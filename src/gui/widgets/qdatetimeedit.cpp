@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,7 +75,7 @@ QT_BEGIN_NAMESPACE
   \brief The QDateTimeEdit class provides a widget for editing dates and times.
 
   \ingroup basicwidgets
-  \mainclass
+
 
   QDateTimeEdit allows the user to edit dates by using the keyboard or
   the arrow keys to increase and decrease date and time values. The
@@ -1506,7 +1506,7 @@ void QDateTimeEdit::mousePressEvent(QMouseEvent *event)
   the QDateTimeEdit widget.
 
   \ingroup basicwidgets
-  \mainclass
+
 
   Many of the properties and functions provided by QTimeEdit are implemented in
   QDateTimeEdit. The following properties are most relevant to users of this
@@ -1568,7 +1568,7 @@ QTimeEdit::QTimeEdit(const QTime &time, QWidget *parent)
   the QDateTimeEdit widget.
 
   \ingroup basicwidgets
-  \mainclass
+
 
   Many of the properties and functions provided by QDateEdit are implemented in
   QDateTimeEdit. The following properties are most relevant to users of this
@@ -2270,6 +2270,7 @@ void QDateTimeEdit::paintEvent(QPaintEvent *event)
 
     optCombo.init(this);
     optCombo.editable = true;
+	optCombo.frame = opt.frame;
     optCombo.subControls = opt.subControls;
     optCombo.activeSubControls = opt.activeSubControls;
     optCombo.state = opt.state;

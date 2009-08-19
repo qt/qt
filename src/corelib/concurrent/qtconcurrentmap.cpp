@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,7 +47,9 @@
     possible to write multi-threaded programs without using low-level
     threading primitives.
 
-    See the \l {threads.html#qtconcurrent-intro}{Qt Concurrent} section in the \l{threads.html}{threading} documentation.
+    See the \l {Concurrent Programming}{Qt Concurrent} chapter in
+    the \l{threads.html}{threading} documentation.
+
     \inheaderfile QtCore
     \ingroup thread
 */
@@ -58,8 +60,6 @@
 
     \brief The QtConcurrent::internal namespace contains QtConcurrent
     implementation details.
-
-    \ingroup thread
 */
 
 /*!
@@ -78,11 +78,11 @@
 /*!
     \headerfile <QtConcurrentMap>
     \title Concurrent Map and Map-Reduce
-    \ingroup threading
+    \ingroup thread
 
     \brief The <QtConcurrentMap> header provides concurrent Map and MapReduce.
 
-    These functions are a part of the \l {threads.html#qtconcurrent-intro}{Qt Concurrent} framework.
+    These functions are a part of the \l {Concurrent Programming}{Qt Concurrent} framework.
 
     The QtConcurrent::map(), QtConcurrent::mapped() and
     QtConcurrent::mappedReduced() functions run computations in parallel on

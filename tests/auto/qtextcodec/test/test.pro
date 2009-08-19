@@ -1,6 +1,21 @@
 load(qttest_p4)
-TARGET = ../tst_qtextcodec
+
 SOURCES  += ../tst_qtextcodec.cpp
+
+!wince*: {
+TARGET = ../tst_qtextcodec
+
+win32: {
+  CONFIG(debug, debug|release) {
+    TARGET = ../../debug/tst_qtextcodec
+} else {
+    TARGET = ../../release/tst_qtextcodec
+  }
+}
+} else {
+   TARGET = tst_qtextcodec
+}
+
 wince*|symbian {
    addFiles.sources = ../*.txt
    addFiles.path = .

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -108,7 +108,7 @@ QT_BEGIN_NAMESPACE
     \brief The QFlags class provides a type-safe way of storing
     OR-combinations of enum values.
 
-    \mainclass
+
     \ingroup tools
 
     The QFlags<Enum> class is a template class, where Enum is an enum
@@ -408,7 +408,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \headerfile <QtGlobal>
     \title Global Qt Declarations
-    \ingroup architecture
+    \ingroup classlists
 
     \brief The <QtGlobal> header provides basic declarations and
     is included by all other Qt headers.
@@ -1060,7 +1060,7 @@ bool qSharedBuild()
 */
 
 /*!
-    \fn QSysInfo::SymVersion QSysInfo::symbianVersion()
+    \fn QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 
     Returns the version of the Symbian operating system on which the
     application is run (Symbian only).
@@ -1129,7 +1129,7 @@ bool qSharedBuild()
     \value WV_NT_based  NT-based version of Windows
     \value WV_CE_based  CE-based version of Windows
 
-    \sa MacVersion, SymVersion
+    \sa MacVersion, SymbianVersion
 */
 
 /*!
@@ -1158,11 +1158,11 @@ bool qSharedBuild()
     \value MV_LEOPARD  Apple codename for MV_10_5
     \value MV_SNOWLEOPARD  Apple codename for MV_10_6
 
-    \sa WinVersion, SymVersion
+    \sa WinVersion, SymbianVersion
 */
 
 /*!
-    \enum QSysInfo::SymVersion
+    \enum QSysInfo::SymbianVersion
 
     This enum provides symbolic names for the various versions of the
     Symbian operating system. On Symbian, the
@@ -1190,7 +1190,7 @@ bool qSharedBuild()
     \value SV_S60_5_0 S60 5th Edition
     \value SV_S60_Unknown An unknown and currently unsupported platform
 
-    \sa SymVersion, WinVersion, MacVersion
+    \sa SymbianVersion, WinVersion, MacVersion
 */
 
 /*!
@@ -1812,7 +1812,7 @@ QSysInfo::S60Version QSysInfo::s60Version()
     return cachedS60Version = SV_S60_Unknown;
 #  endif
 }
-QSysInfo::SymVersion QSysInfo::symbianVersion()
+QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 {
     switch (s60Version()) {
     case SV_S60_3_1:
@@ -1831,7 +1831,7 @@ QSysInfo::S60Version QSysInfo::s60Version()
     return SV_S60_None;
 }
 
-QSysInfo::SymVersion QSysInfo::symbianVersion()
+QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 {
     return SV_Unknown;
 }
@@ -2202,7 +2202,7 @@ void qt_message_output(QtMsgType msgType, const char *buf)
 /*!
     \internal
     Uses a local buffer to output the message. Not locale safe + cuts off
-    everything after character 1023, but will work in out of memory situations.
+    everything after character 255, but will work in out of memory situations.
 */
 static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
 {
@@ -2461,7 +2461,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 #endif
 }
 
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
 
 #  if defined(Q_OS_INTEGRITY) && defined(__GHS_VERSION_NUMBER) && (__GHS_VERSION_NUMBER < 500)
 // older versions of INTEGRITY used a long instead of a uint for the seed.
@@ -2471,9 +2471,7 @@ typedef uint SeedStorageType;
 #  endif
 
 typedef QThreadStorage<SeedStorageType *> SeedStorage;
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
 Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
-#endif
 
 #endif
 
@@ -3385,9 +3383,9 @@ public:
 
     \warning This function is only available on Symbian.
 
-    \sa qt_exception2SymbianLeaveL(), qt_exception2SymbianError()
+    \sa qt_symbian_exception2LeaveL(), qt_symbian_exception2Error()
 */
-void qt_throwIfError(int error)
+void qt_symbian_throwIfError(int error)
 {
     if (error >= KErrNone)
         return;  // do nothing - not an exception
@@ -3412,11 +3410,11 @@ void qt_throwIfError(int error)
 
     \warning This function is only available on Symbian.
 
-    \sa qt_throwIfError(), qt_exception2SymbianError()
+    \sa qt_symbian_throwIfError(), qt_symbian_exception2Error()
 */
-void qt_exception2SymbianLeaveL(const std::exception& aThrow)
+void qt_symbian_exception2LeaveL(const std::exception& aThrow)
 {
-    User::Leave(qt_exception2SymbianError(aThrow));
+    User::Leave(qt_symbian_exception2Error(aThrow));
 }
 
 /*! \relates <QtGlobal>
@@ -3426,9 +3424,9 @@ void qt_exception2SymbianLeaveL(const std::exception& aThrow)
 
     \warning This function is only available on Symbian.
 
-    \sa qt_throwIfError(), qt_exception2SymbianLeaveL()
+    \sa qt_symbian_throwIfError(), qt_symbian_exception2LeaveL()
 */
-int qt_exception2SymbianError(const std::exception& aThrow)
+int qt_symbian_exception2Error(const std::exception& aThrow)
 {
     const std::type_info& atype = typeid(aThrow);
     int err = KErrGeneral;

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,8 +65,6 @@ public:
     only one widget is visible at a time.
 
     \ingroup geomanagement
-    \ingroup appearance
-    \mainclass
 
     QStackedLayout can be used to create a user interface similar to
     the one provided by QTabWidget. There is also a convenience

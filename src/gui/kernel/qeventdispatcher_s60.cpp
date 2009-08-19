@@ -76,7 +76,7 @@ bool QEventDispatcherS60::processEvents ( QEventLoop::ProcessEventsFlags flags )
         m_noInputEvents = oldNoInputEventsValue;
     } QT_CATCH (const std::exception& ex) {
 #ifndef QT_NO_EXCEPTIONS
-        CActiveScheduler::Current()->Error(qt_exception2SymbianError(ex));
+        CActiveScheduler::Current()->Error(qt_symbian_exception2Error(ex));
 #endif
     }
 

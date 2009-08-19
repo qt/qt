@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -811,7 +811,7 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
 #endif
 
                 if (readFromDevice < bytesToBuffer)
-                    d->buffer.truncate(readFromDevice < 0 ? 0 : int(readFromDevice));
+                    d->buffer.truncate(int(readFromDevice));
                 if (!d->buffer.isEmpty()) {
                     lastReadChunkSize = d->buffer.read(data + readSoFar, maxSize - readSoFar);
                     readSoFar += lastReadChunkSize;

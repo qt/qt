@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -111,6 +111,9 @@ public:
 
     inline bool operator!() const { return !d; }
 
+    inline void swap(QSharedDataPointer &other)
+    { qSwap(d, other.d); }
+
 protected:
     T *clone();
 
@@ -186,6 +189,9 @@ public:
 
     inline bool operator!() const { return !d; }
 
+    inline void swap(QExplicitlySharedDataPointer &other)
+    { qSwap(d, other.d); }
+
 protected:
     T *clone();
 
@@ -234,6 +240,14 @@ Q_OUTOFLINE_TEMPLATE void QExplicitlySharedDataPointer<T>::detach_helper()
 template <class T>
 Q_INLINE_TEMPLATE QExplicitlySharedDataPointer<T>::QExplicitlySharedDataPointer(T *adata) : d(adata)
 { if (d) d->ref.ref(); }
+
+template <class T>
+Q_INLINE_TEMPLATE void qSwap(QSharedDataPointer<T> &p1, QSharedDataPointer<T> &p2)
+{ p1.swap(p2); }
+
+template <class T>
+Q_INLINE_TEMPLATE void qSwap(QExplicitlySharedDataPointer<T> &p1, QExplicitlySharedDataPointer<T> &p2)
+{ p1.swap(p2); }
 
 QT_END_NAMESPACE
 

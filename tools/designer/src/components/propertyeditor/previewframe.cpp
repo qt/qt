@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,15 +42,17 @@
 #include "previewframe.h"
 #include "previewwidget.h"
 
+#include <QtCore/QCoreApplication>
+#include <QtCore/QDebug>
 #include <QtGui/QPainter>
 #include <QtGui/QMdiArea>
 #include <QtGui/QMdiSubWindow>
 #include <QtGui/QPaintEvent>
-#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
-namespace {
+namespace qdesigner_internal {
+
     class PreviewMdiArea: public QMdiArea {
     public:
         PreviewMdiArea(QWidget *parent = 0) : QMdiArea(parent) {}
@@ -65,13 +67,11 @@ namespace {
         QPainter p(paintWidget);
         p.fillRect(rect(), paintWidget->palette().color(backgroundRole()).dark());
         p.setPen(QPen(Qt::white));
+        //: Palette editor background
         p.drawText(0, height() / 2,  width(), height(), Qt::AlignHCenter,
-                   tr("The moose in the noose\nate the goose who was loose."));
+                   QCoreApplication::translate("qdesigner_internal::PreviewMdiArea", "The moose in the noose\nate the goose who was loose."));
         return true;
     }
-}
-
-namespace qdesigner_internal {
 
 PreviewFrame::PreviewFrame(QWidget *parent) :
     QFrame(parent),

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,6 +44,52 @@
 #ifndef QT_NO_PRINTDIALOG
 
 QT_BEGIN_NAMESPACE
+
+/*!
+    \class QPageSetupDialog
+
+    \brief The QPageSetupDialog class provides a configuration dialog
+    for the page-related options on a printer.
+
+    \ingroup standard-dialogs
+    \ingroup printing
+
+    On Windows and Mac OS X the page setup dialog is implemented using
+    the native page setup dialogs.
+
+    Note that on Windows and Mac OS X custom paper sizes won't be
+    reflected in the native page setup dialogs. Additionally, custom
+    page margins set on a QPrinter won't show in the native Mac OS X
+    page setup dialog.
+
+    \sa QPrinter, QPrintDialog
+*/
+
+
+/*!
+    \fn QPageSetupDialog::QPageSetupDialog(QPrinter *printer, QWidget *parent)
+
+    Constructs a page setup dialog that configures \a printer with \a
+    parent as the parent widget.
+*/
+
+/*!
+    \since 4.5
+
+    \fn QPageSetupDialog::QPageSetupDialog(QWidget *parent)
+
+    Constructs a page setup dialog that configures a default-constructed
+    QPrinter with \a parent as the parent widget.
+
+    \sa printer()
+*/
+
+/*!
+    \fn QPrinter *QPageSetupDialog::printer()
+
+    Returns the printer that was passed to the QPageSetupDialog
+    constructor.
+*/
 
 // hack
 class QPageSetupDialogPrivate : public QAbstractPageSetupDialogPrivate

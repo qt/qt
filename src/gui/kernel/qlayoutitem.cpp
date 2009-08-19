@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -87,7 +87,6 @@ QSizePolicy::operator QVariant() const
     \brief The QLayoutItem class provides an abstract item that a
     QLayout manipulates.
 
-    \ingroup appearance
     \ingroup geomanagement
 
     This is used by custom layouts.
@@ -108,7 +107,7 @@ QSizePolicy::operator QVariant() const
     be expressed using hasHeightForWidth(), heightForWidth(), and
     minimumHeightForWidth(). For more explanation see the \e{Qt
     Quarterly} article
-    \l{http://doc.trolltech.com/qq/qq04-height-for-width.html}{Trading
+    \l{http://qt.nokia.com/doc/qq/qq04-height-for-width.html}{Trading
     Height for Width}.
 
     \sa QLayout
@@ -116,7 +115,6 @@ QSizePolicy::operator QVariant() const
 
 /*!
     \class QSpacerItem
-    \ingroup appearance
     \ingroup geomanagement
     \brief The QSpacerItem class provides blank space in a layout.
 
@@ -144,7 +142,6 @@ QSizePolicy::operator QVariant() const
 
 /*!
     \class QWidgetItem
-    \ingroup appearance
     \ingroup geomanagement
     \brief The QWidgetItem class is a layout item that represents a widget.
 

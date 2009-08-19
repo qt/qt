@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.6 API Reference</title>
+<title>FreeType-2.3.9 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -31,7 +31,11 @@
 </style>
 </head>
 <body>
-<center><h1>FreeType-2.3.6 API Reference</h1></center>
+
+<table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+<center><h1>FreeType-2.3.9 API Reference</h1></center>
 
 <center><h1>
 SFNT Names
@@ -42,7 +46,7 @@ SFNT Names
 </table><br><br>
 
 <table align=center width="87%"><tr><td>
-<p>The TrueType and OpenType specification allow the inclusion of a special &lsquo;names table&rsquo; in font files. This table contains textual (and internationalized) information regarding the font, like family name, copyright, version, etc.</p>
+<p>The TrueType and OpenType specifications allow the inclusion of a special &lsquo;names table&rsquo; in font files. This table contains textual (and internationalized) information regarding the font, like family name, copyright, version, etc.</p>
 <p>The definitions below are used to access them if available.</p>
 <p>Note that this has nothing to do with glyph names!</p>
 </td></tr></table><br>
@@ -115,7 +119,7 @@ Defined in FT_SFNT_NAMES_H (freetype/ftsnames.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Retrieves the number of name strings in the SFNT &lsquo;name&rsquo; table.</p>
+<p>Retrieve the number of name strings in the SFNT &lsquo;name&rsquo; table.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -148,7 +152,7 @@ Defined in FT_SFNT_NAMES_H (freetype/ftsnames.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Retrieves a string of the SFNT &lsquo;name&rsquo; table for a given index.</p>
+<p>Retrieve a string of the SFNT &lsquo;name&rsquo; table for a given index.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -170,7 +174,7 @@ Defined in FT_SFNT_NAMES_H (freetype/ftsnames.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The &lsquo;string&rsquo; array returned in the &lsquo;aname&rsquo; structure is not null-terminated.</p>

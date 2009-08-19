@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -69,9 +69,9 @@ void qt_format_text(const QFont &fnt, const QRectF &_r,
     \brief The QPicture class is a paint device that records and
     replays QPainter commands.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup shared
-    \mainclass
+
 
     A picture serializes painter commands to an IO device in a
     platform-independent format. They are sometimes referred to as meta-files.
@@ -1303,7 +1303,7 @@ QList<QByteArray> QPicture::outputFormats()
     \brief The QPictureIO class contains parameters for loading and
     saving pictures.
 
-    \ingroup multimedia
+    \ingroup painting
     \ingroup io
 
     QPictureIO contains a QIODevice object that is used for picture data

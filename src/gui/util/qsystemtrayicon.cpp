@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,7 +65,6 @@ QT_BEGIN_NAMESPACE
     \class QSystemTrayIcon
     \brief The QSystemTrayIcon class provides an icon for an application in the system tray.
     \since 4.2
-    \ingroup application
     \ingroup desktop
 
     Modern operating systems usually provide a special area on the desktop,

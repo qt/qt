@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -980,8 +980,7 @@ QRect QGridLayoutPrivate::cellRect(int row, int col) const
     \brief The QGridLayout class lays out widgets in a grid.
 
     \ingroup geomanagement
-    \ingroup appearance
-    \mainclass
+
 
     QGridLayout takes the space made available to it (by its parent
     layout or by the parentWidget()), divides it up into rows and

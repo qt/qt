@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -90,7 +90,7 @@ public:
 
     \since 4.6
 
-    \ingroup multimedia
+    \ingroup painting-3D
 
     A framebuffer object has several characteristics:
     \list
@@ -275,7 +275,6 @@ public:
     GLenum target;
     QSize size;
     QGLFramebufferObjectFormat format;
-    int samples;
     uint valid : 1;
     uint bound : 1;
     QGLFramebufferObject::Attachment fbo_attachment;
@@ -368,7 +367,6 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
         valid = checkFramebufferStatus();
 
         color_buffer = 0;
-        samples = 0;
     } else {
         GLint maxSamples;
         glGetIntegerv(GL_MAX_SAMPLES_EXT, &maxSamples);
@@ -478,7 +476,7 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
     \brief The QGLFramebufferObject class encapsulates an OpenGL framebuffer object.
     \since 4.2
 
-    \ingroup multimedia
+    \ingroup painting-3D
 
     The QGLFramebufferObject class encapsulates an OpenGL framebuffer
     object, defined by the \c{GL_EXT_framebuffer_object} extension. In

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -165,7 +165,7 @@ void QTimeLinePrivate::setCurrentTime(int msecs)
     \class QTimeLine
     \brief The QTimeLine class provides a timeline for controlling animations.
     \since 4.2
-    \ingroup multimedia
+    \ingroup animation
 
     It's most commonly used to animate a GUI control by calling a slot
     periodically. You can construct a timeline by passing its duration in

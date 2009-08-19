@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -98,7 +98,6 @@ static const int windowsItemHMargin      =  3; // menu item hor text margin
 static const int windowsItemVMargin      =  2; // menu item ver text margin
 static const int windowsArrowHMargin     =  6; // arrow horizontal margin
 static const int windowsTabSpacing       = 12; // space between text and tab
-static const int windowsCheckMarkHMargin =  2; // horiz. margins of check mark
 static const int windowsRightBorder      = 15; // right border on windows
 static const int windowsCheckMarkWidth   = 12; // checkmarks width on windows
 

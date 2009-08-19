@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,41 +56,61 @@ public:
     tst_QAudioDeviceId(QObject* parent=0) : QObject(parent) {}
 
 private slots:
+    void initTestCase();
     void checkNull();
     void checkEquality();
+
+private:
+    bool available;
 };
+
+void tst_QAudioDeviceId::initTestCase()
+{
+    // Only perform tests if audio output device exists!
+    QList<QAudioDeviceId> devices = QAudioDeviceInfo::deviceList(QAudio::AudioOutput);
+    if(devices.size() > 0)
+        available = true;
+    else {
+        qWarning()<<"NOTE: no audio output device found, no test will be performed";
+        available = false;
+    }
+}
 
 void tst_QAudioDeviceId::checkNull()
 {
-    // Default constructed is null.
-    QAudioDeviceId deviceId0;
-    QVERIFY(deviceId0.isNull());
+    if(available) {
+        // Default constructed is null.
+        QAudioDeviceId deviceId0;
+        QVERIFY(deviceId0.isNull());
 
-    // Null is transferred
-    QAudioDeviceId deviceId1(deviceId0);
-    QVERIFY(deviceId1.isNull());
+        // Null is transferred
+        QAudioDeviceId deviceId1(deviceId0);
+        QVERIFY(deviceId1.isNull());
+    }
 }
 
 void tst_QAudioDeviceId::checkEquality()
 {
-    QAudioDeviceId  deviceId0;
-    QAudioDeviceId  deviceId1;
+    if(available) {
+        QAudioDeviceId  deviceId0;
+        QAudioDeviceId  deviceId1;
 
-    // Null ids are equivalent
-    QVERIFY(deviceId0 == deviceId1);
-    QVERIFY(!(deviceId0 != deviceId1));
+        // Null ids are equivalent
+        QVERIFY(deviceId0 == deviceId1);
+        QVERIFY(!(deviceId0 != deviceId1));
 
-    deviceId1 = QAudioDeviceInfo::defaultOutputDevice();
+        deviceId1 = QAudioDeviceInfo::defaultOutputDevice();
 
-    // Different
-    QVERIFY(deviceId0 != deviceId1);
-    QVERIFY(!(deviceId0 == deviceId1));
+        // Different
+        QVERIFY(deviceId0 != deviceId1);
+        QVERIFY(!(deviceId0 == deviceId1));
 
-    // Same
-    deviceId0 = deviceId1;
+        // Same
+        deviceId0 = deviceId1;
 
-    QVERIFY(deviceId0 == deviceId1);
-    QVERIFY(!(deviceId0 != deviceId1));
+        QVERIFY(deviceId0 == deviceId1);
+        QVERIFY(!(deviceId0 != deviceId1));
+    }
 }
 
 QTEST_MAIN(tst_QAudioDeviceId)

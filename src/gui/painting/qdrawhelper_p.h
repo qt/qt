@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -146,6 +146,14 @@ typedef void (*SrcOverScaleFunc)(uchar *destPixels, int dbpl,
                                  const QRect &clipRect,
                                  int const_alpha);
 
+typedef void (*SrcOverTransformFunc)(uchar *destPixels, int dbpl,
+                                     const uchar *src, int spbl,
+                                     const QRectF &targetRect,
+                                     const QRectF &sourceRect,
+                                     const QRect &clipRect,
+                                     const QTransform &targetRectTransform,
+                                     int const_alpha);
+
 
 struct DrawHelper {
     ProcessSpans blendColor;
@@ -158,6 +166,7 @@ struct DrawHelper {
 
 extern SrcOverBlendFunc qBlendFunctions[QImage::NImageFormats][QImage::NImageFormats];
 extern SrcOverScaleFunc qScaleFunctions[QImage::NImageFormats][QImage::NImageFormats];
+extern SrcOverTransformFunc qTransformFunctions[QImage::NImageFormats][QImage::NImageFormats];
 
 extern DrawHelper qDrawHelper[QImage::NImageFormats];
 

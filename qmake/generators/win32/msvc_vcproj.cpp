@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1261,8 +1261,8 @@ void VcprojGenerator::initDeploymentTool()
                 searchPath = info.absoluteFilePath();
             } else {
                 nameFilter = source.split('\\').last();
-                if (source.contains('*')) {                    
-                    source = source.split('*').first();                    
+                if (source.contains('*')) {
+                    source = source.split('*').first();
                     info = QFileInfo(source);
                  }
                  searchPath = info.absolutePath();
@@ -1424,20 +1424,6 @@ void VcprojGenerator::initResourceFiles()
 
                 dep_cmd = Option::fixPathToLocalOS(dep_cmd, true, false);
                 if(canExecute(dep_cmd)) {
-#if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
-                    QPopen procPipe;
-                    if( procPipe.init(dep_cmd.toLatin1().constData(), "r") ) {
-                        QString indeps;
-                        while(true) {
-                            int read_in = procPipe.fread(buff, 255);
-                            if ( !read_in )
-                                break;
-                            indeps += QByteArray(buff, read_in);
-                        }
-                        if(!indeps.isEmpty())
-                            deps += fileFixify(indeps.replace('\n', ' ').simplified().split(' '));
-                    }
-#else
                     if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
                         QString indeps;
                         while(!feof(proc)) {
@@ -1450,7 +1436,6 @@ void VcprojGenerator::initResourceFiles()
                         if(!indeps.isEmpty())
                             deps += fileFixify(indeps.replace('\n', ' ').simplified().split(' '));
                     }
-#endif
                 }
             }
             vcProject.ResourceFiles.addFiles(deps);

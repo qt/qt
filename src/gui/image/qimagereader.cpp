@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,7 +47,7 @@
     for reading images from files or other devices.
 
     \reentrant
-    \ingroup multimedia
+    \ingroup painting
     \ingroup io
 
     The most common way to read images is through QImage and QPixmap's

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -129,7 +129,7 @@ static inline int bm_find(const ushort *uc, uint l, int index, const ushort *puc
     can be quickly matched in a Unicode string.
 
     \ingroup tools
-    \ingroup text
+    \ingroup string-processing
 
     This class is useful when you have a sequence of \l{QChar}s that
     you want to repeatedly match against some strings (perhaps in a

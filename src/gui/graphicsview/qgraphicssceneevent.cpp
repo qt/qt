@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,7 +44,6 @@
     \brief The QGraphicsSceneEvent class provides a base class for all
     graphics view related events.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     When a QGraphicsView receives Qt mouse, keyboard, and drag and
@@ -86,7 +85,6 @@
     \brief The QGraphicsSceneMouseEvent class provides mouse events
            in the graphics view framework.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     When a QGraphicsView receives a QMouseEvent, it translates it to
@@ -111,7 +109,6 @@
     \brief The QGraphicsSceneWheelEvent class provides wheel events in the
     graphics view framework.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     \l{QWheelEvent}{QWheelEvent}s received by a QGraphicsView are translated
@@ -128,7 +125,6 @@
     \brief The QGraphicsSceneContextMenuEvent class provides context
            menu events in the graphics view framework.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     A QContextMenuEvent received by a QGraphicsView is translated
@@ -160,7 +156,6 @@
     \brief The QGraphicsSceneHoverEvent class provides hover events
            in the graphics view framework.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     When a QGraphicsView receives a QHoverEvent event, it translates
@@ -176,7 +171,6 @@
     \brief The QGraphicsSceneHelpEvent class provides events when a
            tooltip is requested.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     When a QGraphicsView receives a QEvent of type
@@ -201,7 +195,6 @@
     \brief The QGraphicsSceneDragDropEvent class provides events for
            drag and drop in the graphics view framework.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     QGraphicsView inherits the drag and drop functionality provided
@@ -226,7 +219,6 @@
     \brief The QGraphicsSceneResizeEvent class provides events for widget
     resizing in the graphics view framework.
     \since 4.4
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     A QGraphicsWidget sends itself a QGraphicsSceneResizeEvent immediately
@@ -243,7 +235,6 @@
     \brief The QGraphicsSceneMoveEvent class provides events for widget
     moving in the graphics view framework.
     \since 4.4
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     A QGraphicsWidget sends itself a QGraphicsSceneMoveEvent immediately when

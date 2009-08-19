@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QDirectPainter
-    \ingroup multimedia
+    \ingroup painting
     \ingroup qws
 
     \brief The QDirectPainter class provides direct access to the

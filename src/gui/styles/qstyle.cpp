@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1586,6 +1586,20 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
 */
 
 /*!
+    \enum QStyle::RequestSoftwareInputPanel
+
+    This enum describes under what circumstances a software input panel will be
+    requested by input capable widgets.
+
+    \value RSIP_OnMouseClickAndAlreadyFocused Requests an input panel if the user
+           clicks on the widget, but only if it is already focused.
+    \value RSIP_OnMouseClick Requests an input panel if the user clicks on the
+           widget.
+
+    \sa QEvent::RequestSoftwareInputPanel, QInputContext
+*/
+
+/*!
     \enum QStyle::StyleHint
 
     This enum describes the available style hints. A style hint is a general look
@@ -1867,6 +1881,9 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     \value SH_DockWidget_ButtonsHaveFrame Determines if dockwidget buttons should have frames. Default is true.
 
     \value SH_ToolButtonStyle Determines the default system style for tool buttons that uses Qt::ToolButtonFollowStyle.
+
+    \value SH_RequestSoftwareInputPanel Determines when a software input panel should
+           be requested by input widgets. Returns an enum of type QStyle::RequestSoftwareInputPanel.
 
     \omitvalue SH_UnderlineAccelerator
 

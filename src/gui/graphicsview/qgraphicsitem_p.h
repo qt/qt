@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -95,7 +95,7 @@ public:
     void purge();
 };
 
-class Q_AUTOTEST_EXPORT QGraphicsItemPrivate
+class Q_GUI_EXPORT QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsItem)
 public:
@@ -165,6 +165,7 @@ public:
         acceptedTouchBeginEvent(0),
         filtersDescendantEvents(0),
         sceneTransformTranslateOnly(0),
+        mouseSetsFocus(1),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -201,7 +202,7 @@ public:
     virtual QVariant inputMethodQueryHelper(Qt::InputMethodQuery query) const;
     static bool movableAncestorIsSelected(const QGraphicsItem *item);
 
-    void setPosHelper(const QPointF &pos);
+    virtual void setPosHelper(const QPointF &pos);
     void setTransformHelper(const QTransform &transform);
     void appendGraphicsTransform(QGraphicsTransform *t);
     void setVisibleHelper(bool newVisible, bool explicitly, bool update = true);
@@ -398,6 +399,7 @@ public:
 
     void setSubFocus();
     void clearSubFocus();
+    void resetFocusProxy();
 
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
@@ -419,6 +421,7 @@ public:
     int siblingIndex;
     int depth;
     QGraphicsItem *focusProxy;
+    QList<QGraphicsItem **> focusProxyRefs;
     QGraphicsItem *subFocusItem;
     Qt::InputMethodHints imHints;
 
@@ -450,7 +453,7 @@ public:
 
     // New 32 bits
     quint32 fullUpdatePending : 1;
-    quint32 flags : 14;
+    quint32 flags : 15;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
@@ -463,7 +466,8 @@ public:
     quint32 acceptedTouchBeginEvent : 1;
     quint32 filtersDescendantEvents : 1;
     quint32 sceneTransformTranslateOnly : 1;
-    quint32 unused : 5; // feel free to use
+    quint32 mouseSetsFocus : 1;
+    quint32 unused : 3; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

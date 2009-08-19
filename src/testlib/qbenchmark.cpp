@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -179,18 +179,31 @@ void QBenchmarkTestMethodData::setResult(qint64 value)
         QBenchmarkResult(QBenchmarkGlobalData::current->context, value, iterationCount);
 }
 
-/*! \internal
+/*!
+    \class QTest::QBenchmarkIterationController
+    \internal
+
     The QBenchmarkIterationController class is used by the QBENCHMARK macro to
     drive the benchmarking loop. It is repsonsible for starting and stopping
     the timing measurements as well as calling the result reporting functions.
 */
+
+/*! \internal
+*/
 QTest::QBenchmarkIterationController::QBenchmarkIterationController(RunMode runMode)
 {
-    QTest::beginBenchmarkMeasurement();
     i = 0;
     if (runMode == RunOnce)
         QBenchmarkTestMethodData::current->runOnce = true;    
+    QTest::beginBenchmarkMeasurement();
 }
+
+QTest::QBenchmarkIterationController::QBenchmarkIterationController()
+{
+    i = 0;
+    QTest::beginBenchmarkMeasurement();
+}
+
 /*! \internal
 */
 QTest::QBenchmarkIterationController::~QBenchmarkIterationController()

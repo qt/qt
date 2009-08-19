@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -119,6 +119,7 @@ private slots:
     void qobjectConstCast();
     void uniqConnection();
     void interfaceIid();
+    void deleteQObjectWhenDeletingEvent();
 protected:
 };
 
@@ -2909,6 +2910,23 @@ void tst_QObject::interfaceIid()
     QCOMPARE(QByteArray(qobject_interface_iid<FooObject *>()), 
              QByteArray());
 }
+
+void tst_QObject::deleteQObjectWhenDeletingEvent()
+{
+    //this is related to task 259514
+    //before the fix this used to dead lock when the QObject from the event was destroyed
+
+    struct MyEvent : public QEvent
+    {
+        MyEvent() : QEvent(QEvent::User) { }
+        QObject obj;
+    };
+
+    QObject o;
+    QApplication::postEvent(&o, new MyEvent);
+    QCoreApplication::removePostedEvents(&o); // here you would get a deadlock
+}
+
 
 QTEST_MAIN(tst_QObject)
 #include "tst_qobject.moc"

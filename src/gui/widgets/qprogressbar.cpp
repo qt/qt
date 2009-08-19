@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -172,7 +172,7 @@ bool QProgressBarPrivate::repaintRequired() const
     \brief The QProgressBar widget provides a horizontal or vertical progress bar.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     A progress bar is used to give the user an indication of the
     progress of an operation and to reassure them that the application

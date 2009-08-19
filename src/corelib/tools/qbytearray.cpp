@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -594,8 +594,8 @@ QByteArray::Data QByteArray::shared_empty = { Q_BASIC_ATOMIC_INITIALIZER(1),
 
     \ingroup tools
     \ingroup shared
-    \ingroup text
-    \mainclass
+    \ingroup string-processing
+
     \reentrant
 
     QByteArray can be used to store both raw bytes (including '\\0's)

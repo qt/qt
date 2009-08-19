@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -775,7 +775,7 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
     bool isNumpad = (msg.wParam >= VK_NUMPAD0 && msg.wParam <= VK_NUMPAD9);
     quint32 nModifiers = 0;
 
-#if defined(QT_OS_WINCE)
+#if defined(Q_OS_WINCE)
         nModifiers |= (GetKeyState(VK_SHIFT  ) < 0 ? ShiftAny : 0);
         nModifiers |= (GetKeyState(VK_CONTROL) < 0 ? ControlAny : 0);
         nModifiers |= (GetKeyState(VK_MENU   ) < 0 ? AltAny : 0);
@@ -795,7 +795,7 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
         nModifiers |= (GetKeyState(VK_CAPITAL ) & 0x01 ? CapsLock : 0);
         nModifiers |= (GetKeyState(VK_NUMLOCK ) & 0x01 ? NumLock : 0);
         nModifiers |= (GetKeyState(VK_SCROLL  ) & 0x01 ? ScrollLock : 0);
-#endif // QT_OS_WINCE
+#endif // Q_OS_WINCE
 
     if (msg.lParam & ExtendedKey)
         nModifiers |= msg.lParam & ExtendedKey;

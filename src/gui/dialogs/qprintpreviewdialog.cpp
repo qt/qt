@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -624,6 +624,9 @@ void QPrintPreviewDialogPrivate::_q_zoomFactorChanged()
 
     \brief The QPrintPreviewDialog class provides a dialog for
     previewing and configuring page layouts for printer output.
+
+    \ingroup standard-dialogs
+    \ingroup printing
 
     Using QPrintPreviewDialog in your existing application is
     straightforward:

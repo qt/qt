@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,7 +48,7 @@
     common to all socket types.
 
     \reentrant
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     QAbstractSocket is the base class for QTcpSocket and QUdpSocket
@@ -1067,9 +1067,9 @@ void QAbstractSocketPrivate::_q_abortConnectionAttempt()
 #if defined(QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::_q_abortConnectionAttempt() (timed out)");
 #endif
-    if (socketEngine) {
+    if (socketEngine)
         socketEngine->setWriteNotificationEnabled(false);
-    }
+
     connectTimer->stop();
 
     if (addresses.isEmpty()) {
@@ -1250,7 +1250,7 @@ bool QAbstractSocket::isValid() const
 
     \a hostName may be an IP address in string form (e.g.,
     "43.195.83.32"), or it may be a host name (e.g.,
-    "qtsoftware.com"). QAbstractSocket will do a lookup only if
+    "example.com"). QAbstractSocket will do a lookup only if
     required. \a port is in native byte order.
 
     \sa state(), peerName(), peerAddress(), peerPort(), waitForConnected()

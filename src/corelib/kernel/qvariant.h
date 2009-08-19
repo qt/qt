@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -250,6 +250,8 @@ class Q_CORE_EXPORT QVariant
     qulonglong toULongLong(bool *ok = 0) const;
     bool toBool() const;
     double toDouble(bool *ok = 0) const;
+    float toFloat(bool *ok = 0) const;
+    qreal toReal(bool *ok = 0) const;
     QByteArray toByteArray() const;
     QBitArray toBitArray() const;
     QString toString() const;

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QSize
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QSize class defines the size of a two-dimensional
     object using integer point precision.
@@ -432,7 +432,7 @@ QDebug operator<<(QDebug dbg, const QSize &s) {
     \brief The QSizeF class defines the size of a two-dimensional object
     using floating point precision.
 
-    \ingroup multimedia
+    \ingroup painting
 
     A size is specified by a width() and a height().  It can be set in
     the constructor and changed using the setWidth(), setHeight(), or

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -389,9 +389,7 @@
     the item's hover events, animating the item when the mouse cursor
     is hovering over the image (by default, no items accept hover
     events). Please see the \l{The Graphics View Framework}
-    documentation and the
-    \l{Qt Examples#Graphics View}{Graphics View examples} for more
-    details.
+    documentation and the \l{Graphics View Examples} for more details.
 
     \snippet examples/sql/drilldown/view.cpp 5
 

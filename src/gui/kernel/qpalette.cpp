@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -399,8 +399,8 @@ void QPalette::setColorGroup(ColorGroup cg, const QColorGroup &g)
 
     \ingroup appearance
     \ingroup shared
-    \ingroup multimedia
-    \mainclass
+    \ingroup painting
+
 
     A palette consists of three color groups: \e Active, \e Disabled,
     and \e Inactive. All widgets in Qt contain a palette and

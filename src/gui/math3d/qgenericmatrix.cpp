@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,8 @@ QT_BEGIN_NAMESPACE
     \class QGenericMatrix
     \brief The QGenericMatrix class is a template class that represents a NxM transformation matrix with N columns and M rows.
     \since 4.6
+    \ingroup painting
+    \ingroup painting-3D
 
     The QGenericMatrix template has four parameters:
 

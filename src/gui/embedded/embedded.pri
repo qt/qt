@@ -189,7 +189,7 @@ embedded {
 	}
 
 	contains( mouse-drivers, tslib ) {
-		LIBS += -lts
+		LIBS_PRIVATE += -lts
 		HEADERS +=embedded/qmousetslib_qws.h
 		SOURCES +=embedded/qmousetslib_qws.cpp
 	}

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
     \brief The QStringListModel class provides a model that supplies strings to views.
 
     \ingroup model-view
-    \mainclass
+
 
     QStringListModel is an editable model that can be used for simple
     cases where you need to display a number of strings in a view

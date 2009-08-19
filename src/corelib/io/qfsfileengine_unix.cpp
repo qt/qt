@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -90,16 +90,20 @@ static bool isRelativePathSymbian(const QString& fileName)
 
     Returns the stdlib open string corresponding to a QIODevice::OpenMode.
 */
-static QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QString &fileName = QString())
+static inline QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QString &fileName)
 {
     QByteArray mode;
     if ((flags & QIODevice::ReadOnly) && !(flags & QIODevice::Truncate)) {
         mode = "rb";
         if (flags & QIODevice::WriteOnly) {
-            if (!fileName.isEmpty() &&QFile::exists(fileName))
-                mode = "rb+";
-            else
+            QT_STATBUF statBuf;
+            if (!fileName.isEmpty()
+                && QT_STAT(QFile::encodeName(fileName), &statBuf) == 0
+                && (statBuf.st_mode & S_IFMT) == S_IFREG) {
+                mode += "+";
+            } else {
                 mode = "wb+";
+            }
         }
     } else if (flags & QIODevice::WriteOnly) {
         mode = "wb";
@@ -125,7 +129,7 @@ static QByteArray openModeToFopenMode(QIODevice::OpenMode flags, const QString &
 
     Returns the stdio open flags corresponding to a QIODevice::OpenMode.
 */
-static int openModeToOpenFlags(QIODevice::OpenMode mode)
+static inline int openModeToOpenFlags(QIODevice::OpenMode mode)
 {
     int oflags = QT_OPEN_RDONLY;
 #ifdef QT_LARGEFILE_SUPPORT
@@ -154,7 +158,7 @@ static int openModeToOpenFlags(QIODevice::OpenMode mode)
     Sets the file descriptor to close on exec. That is, the file
     descriptor is not inherited by child processes.
 */
-static bool setCloseOnExec(int fd)
+static inline bool setCloseOnExec(int fd)
 {
     return fd != -1 && fcntl(fd, F_SETFD, FD_CLOEXEC) != -1;
 }
@@ -465,15 +469,15 @@ bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) con
                     if ((st.st_mode & S_IFMT) != S_IFDIR)
                         return false;
                 } else if (QT_MKDIR(chunk, 0777) != 0) {
-                        return false;
+                    return false;
                 }
             }
         }
         return true;
     }
 #if defined(Q_OS_DARWIN)  // Mac X doesn't support trailing /'s
-    if (dirName[dirName.length() - 1] == QLatin1Char('/'))
-        dirName = dirName.left(dirName.length() - 1);
+    if (dirName.endsWith(QLatin1Char('/')))
+        dirName.chop(1);
 #endif
     return (QT_MKDIR(QFile::encodeName(dirName), 0777) == 0);
 }
@@ -630,18 +634,19 @@ QFileInfoList QFSFileEngine::drives()
 
 bool QFSFileEnginePrivate::doStat() const
 {
-    if (tried_stat == 0) {
-        QFSFileEnginePrivate *that = const_cast<QFSFileEnginePrivate*>(this);
+    if (!tried_stat) {
+        tried_stat = true;
+        could_stat = false;
+
         if (fh && nativeFilePath.isEmpty()) {
             // ### actually covers two cases: d->fh and when the file is not open
-            that->could_stat = (QT_FSTAT(fileno(fh), &st) == 0);
+            could_stat = (QT_FSTAT(QT_FILENO(fh), &st) == 0);
         } else if (fd == -1) {
             // ### actually covers two cases: d->fh and when the file is not open
-            that->could_stat = (QT_STAT(nativeFilePath.constData(), &st) == 0);
+            could_stat = (QT_STAT(nativeFilePath.constData(), &st) == 0);
         } else {
-            that->could_stat = (QT_FSTAT(fd, &st) == 0);
+            could_stat = (QT_FSTAT(fd, &st) == 0);
         }
-	that->tried_stat = 1;
     }
     return could_stat;
 }
@@ -649,10 +654,10 @@ bool QFSFileEnginePrivate::doStat() const
 bool QFSFileEnginePrivate::isSymlink() const
 {
     if (need_lstat) {
-        QFSFileEnginePrivate *that = const_cast<QFSFileEnginePrivate *>(this);
-        that->need_lstat = false;
+        need_lstat = false;
+
         QT_STATBUF st;          // don't clobber our main one
-        that->is_link = (QT_LSTAT(nativeFilePath.constData(), &st) == 0) ? S_ISLNK(st.st_mode) : false;
+        is_link = (QT_LSTAT(nativeFilePath.constData(), &st) == 0) ? S_ISLNK(st.st_mode) : false;
     }
     return is_link;
 }
@@ -713,7 +718,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
 {
     Q_D(const QFSFileEngine);
     // Force a stat, so that we're guaranteed to get up-to-date results
-    if (type & QAbstractFileEngine::FileFlag(QAbstractFileEngine::Refresh)) {
+    if (type & Refresh) {
         d->tried_stat = 0;
         d->need_lstat = 1;
     }
@@ -788,25 +793,30 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
         if (exists)
             ret |= ExistsFlag;
 #if defined(Q_OS_SYMBIAN)
-    if (d->filePath == QLatin1String("/") || (d->filePath.at(0).isLetter() && d->filePath.mid(1,d->filePath.length()) == QLatin1String(":/")))
-        ret |= RootFlag;
-
-    // In Symbian, all symlinks have hidden attribute for some reason;
-    // lets make them visible for better compatibility with other platforms.
-    // If somebody actually wants a hidden link, then they are out of luck.
-    if (!(ret & RootFlag) && !d->isSymlink())
-        if(_q_isSymbianHidden(d->filePath, ret & DirectoryType)
-#else
-        if (fileName(BaseName)[0] == QLatin1Char('.')
-# if !defined(QWS) && defined(Q_OS_MAC)
-            || _q_isMacHidden(d->filePath)
-# endif
-#endif
-        )
-            ret |= HiddenFlag;
-#if !defined(Q_OS_SYMBIAN)
-        if (d->filePath == QLatin1String("/"))
+        if (d->filePath == QLatin1String("/")
+            || (d->filePath.at(0).isLetter() && d->filePath.mid(1,d->filePath.length()) == QLatin1String(":/")))
             ret |= RootFlag;
+
+        // In Symbian, all symlinks have hidden attribute for some reason;
+        // lets make them visible for better compatibility with other platforms.
+        // If somebody actually wants a hidden link, then they are out of luck.
+        if (!(ret & RootFlag) && !d->isSymlink())
+            if(_q_isSymbianHidden(d->filePath, ret & DirectoryType))
+                    ret |= HiddenFlag;
+#else
+        if (d->filePath == QLatin1String("/")) {
+            ret |= RootFlag;
+        } else {
+            QString baseName = fileName(BaseName);
+            if ((baseName.size() > 1
+                 && baseName.at(0) == QLatin1Char('.') && baseName.at(1) != QLatin1Char('.'))
+#  if !defined(QWS) && defined(Q_OS_MAC)
+                    || _q_isMacHidden(d->filePath)
+#  endif
+               ) {
+                ret |= HiddenFlag;
+            }
+        }
 #endif
     }
     return ret;
@@ -1026,7 +1036,7 @@ QString QFSFileEngine::fileName(FileName file) const
                 s[len] = '\0';
                 ret += QFile::decodeName(QByteArray(s));
 #if defined(__GLIBC__) && !defined(PATH_MAX)
-		::free(s);
+                ::free(s);
 #endif
 
                 if (!ret.startsWith(QLatin1Char('/'))) {

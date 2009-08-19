@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QPoint
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QPoint class defines a point in the plane using integer
     precision.
@@ -380,7 +380,7 @@ QDebug operator<<(QDebug d, const QPointF &p)
 
 /*!
     \class QPointF
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QPointF class defines a point in the plane using
     floating point precision.

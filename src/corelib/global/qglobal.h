@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -877,6 +877,8 @@ typedef quint64 qulonglong;
       && sizeof(void *) == sizeof(qptrdiff)
 */
 template <int> struct QIntegerForSize;
+template <>    struct QIntegerForSize<1> { typedef quint8  Unsigned; typedef qint8  Signed; };
+template <>    struct QIntegerForSize<2> { typedef quint16 Unsigned; typedef qint16 Signed; };
 template <>    struct QIntegerForSize<4> { typedef quint32 Unsigned; typedef qint32 Signed; };
 template <>    struct QIntegerForSize<8> { typedef quint64 Unsigned; typedef qint64 Signed; };
 template <class T> struct QIntegerForSizeof: QIntegerForSize<sizeof(T)> { };
@@ -1336,7 +1338,7 @@ class QDataStream;
 
 /*
    No, this is not an evil backdoor. QT_BUILD_INTERNAL just exports more symbols
-   for Trolltech's internal unit tests. If you want slower loading times and more
+   for Qt's internal unit tests. If you want slower loading times and more
    symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.
 */
 #if defined(QT_BUILD_INTERNAL) && (defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)) && defined(QT_MAKEDLL)
@@ -1472,13 +1474,13 @@ public:
     static const MacVersion MacintoshVersion;
 #endif
 #ifdef Q_OS_SYMBIAN
-    enum SymVersion {
+    enum SymbianVersion {
         SV_Unknown = 0x0000,
         SV_9_2 = 0x0001,
         SV_9_3 = 0x0002,
         SV_9_4 = 0x0004
     };
-    static SymVersion symbianVersion();
+    static SymbianVersion symbianVersion();
     enum S60Version {
         SV_S60_None = 0x0000,
         SV_S60_Unknown = 0x0001,
@@ -2004,6 +2006,14 @@ public: \
     static inline const char *name() { return #TYPE; } \
 }
 
+template <typename T>
+inline void qSwap(T &value1, T &value2)
+{
+    const T t = value1;
+    value1 = value2;
+    value2 = t;
+}
+
 /*
    Specialize a shared type with:
 
@@ -2013,33 +2023,12 @@ public: \
    types must declare a 'bool isDetached(void) const;' member for this
    to work.
 */
-#if (defined Q_CC_MSVC && _MSC_VER < 1300) || defined(Q_CC_MWERKS)
-template <typename T>
-inline void qSwap_helper(T &value1, T &value2, T*)
-{
-    T t = value1;
-    value1 = value2;
-    value2 = t;
-}
 #define Q_DECLARE_SHARED(TYPE)                                          \
 template <> inline bool qIsDetached<TYPE>(TYPE &t) { return t.isDetached(); } \
-template <> inline void qSwap_helper<TYPE>(TYPE &value1, TYPE &value2, TYPE*) \
-{ \
-    const TYPE::DataPtr t = value1.data_ptr(); \
-    value1.data_ptr() = value2.data_ptr(); \
-    value2.data_ptr() = t; \
-}
-#else
-#define Q_DECLARE_SHARED(TYPE)                                          \
-template <> inline bool qIsDetached<TYPE>(TYPE &t) { return t.isDetached(); } \
-template <typename T> inline void qSwap(T &, T &); \
 template <> inline void qSwap<TYPE>(TYPE &value1, TYPE &value2) \
 { \
-    const TYPE::DataPtr t = value1.data_ptr(); \
-    value1.data_ptr() = value2.data_ptr(); \
-    value2.data_ptr() = t; \
+    qSwap<TYPE::DataPtr>(value1.data_ptr(), value2.data_ptr()); \
 }
-#endif
 
 /*
    QTypeInfo primitive specializations
@@ -2401,15 +2390,15 @@ QT_END_NAMESPACE
 namespace std { class exception; }
 #endif
 QT_BEGIN_NAMESPACE
-Q_CORE_EXPORT void qt_throwIfError(int error);
-Q_CORE_EXPORT void qt_exception2SymbianLeaveL(const std::exception& ex);
-Q_CORE_EXPORT int qt_exception2SymbianError(const std::exception& ex);
+Q_CORE_EXPORT void qt_symbian_throwIfError(int error);
+Q_CORE_EXPORT void qt_symbian_exception2LeaveL(const std::exception& ex);
+Q_CORE_EXPORT int qt_symbian_exception2Error(const std::exception& ex);
 
 #define QT_TRAP_THROWING(_f)                        \
     {                                               \
         TInt ____error;                             \
         TRAP(____error, _f);                        \
-        qt_throwIfError(____error);                 \
+        qt_symbian_throwIfError(____error);                 \
      }
 
 #define QT_TRYCATCH_ERROR(_err, _f)                         \
@@ -2418,7 +2407,7 @@ Q_CORE_EXPORT int qt_exception2SymbianError(const std::exception& ex);
         try {                                               \
             _f;                                             \
         } catch (const std::exception &____ex) {            \
-            _err = qt_exception2SymbianError(____ex);       \
+            _err = qt_symbian_exception2Error(____ex);       \
         }                                                   \
     }
 

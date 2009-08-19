@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -90,6 +90,7 @@ QSvgFillStyle::QSvgFillStyle(const QBrush &brush)
     , m_fillRule(Qt::WindingFill)
     , m_fillOpacitySet(false)
     , m_fillOpacity(1.0)
+    , m_oldOpacity(0)
     , m_gradientResolved(true)
     , m_fillSet(true)
 {
@@ -101,6 +102,7 @@ QSvgFillStyle::QSvgFillStyle(QSvgStyleProperty *style)
     , m_fillRule(Qt::WindingFill)
     , m_fillOpacitySet(false)
     , m_fillOpacity(1.0)
+    , m_oldOpacity(0)
     , m_gradientResolved(true)
     , m_fillSet(style != 0)
 {
@@ -858,7 +860,7 @@ QSvgStyleProperty::Type QSvgAnimateColor::type() const
 }
 
 QSvgOpacityStyle::QSvgOpacityStyle(qreal opacity)
-    : m_opacity(opacity)
+    : m_opacity(opacity), m_oldOpacity(0)
 {
 
 }

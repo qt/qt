@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -85,7 +85,7 @@ public:
     \brief The QUrlInfo class stores information about URLs.
 
     \ingroup io
-    \ingroup misc
+    \ingroup network
 
     The information about a URL that can be retrieved includes name(),
     permissions(), owner(), group(), size(), lastModified(),
@@ -215,7 +215,7 @@ QUrlInfo::QUrlInfo(const QUrl &url, int permissions, const QString &owner,
 
 /*!
     Sets the name of the URL to \a name. The name is the full text,
-    for example, "http://doc.trolltech.com/qurlinfo.html".
+    for example, "http://qt.nokia.com/doc/qurlinfo.html".
 
     If you call this function for an invalid URL info, this function
     turns it into a valid one.

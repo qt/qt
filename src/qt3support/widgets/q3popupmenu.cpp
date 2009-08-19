@@ -34,13 +34,50 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 #include "q3popupmenu.h"
 
 QT_BEGIN_NAMESPACE
+
+/*!
+    \class Q3PopupMenu
+    \brief The Q3PopupMenu class is a thin compatibility wrapper around QMenu.
+    \compat
+
+    Use QMenu in new applications. Note that the menu's actions must
+    be \l {Q3Action}s.
+*/
+
+/*!
+    \fn Q3PopupMenu::Q3PopupMenu(QWidget *parent, const char *name)
+
+    Constructs a menu with the given \a parent and \a name.
+*/
+
+/*!
+    \fn int Q3PopupMenu::exec()
+
+    Pops up the menu and returns the ID of the action that was
+    selected.
+
+    \sa QMenu::exec()
+*/
+
+/*!
+    \fn int Q3PopupMenu::exec(const QPoint & pos, int indexAtPoint)
+
+    Pops up the menu at coordinate \a pos and returns the ID of the
+    action that was selected.
+
+    If \a indexAtPoint is specified, the menu will pop up with the
+    item at index \a indexAtPoint under the mouse cursor.
+
+    \sa QMenu::exec()
+*/
+
 
 /*!
     \fn void Q3PopupMenu::setFrameRect(QRect)

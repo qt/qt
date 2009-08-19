@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -113,7 +113,7 @@ public:
     \brief The QSpinBox class provides a spin box widget.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     QSpinBox is designed to handle integers and discrete sets of
     values (e.g., month names); use QDoubleSpinBox for floating point
@@ -534,7 +534,7 @@ void QSpinBox::fixup(QString &input) const
     takes doubles.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     QDoubleSpinBox allows the user to choose a value by clicking the
     up and down buttons or by pressing Up or Down on the keyboard to

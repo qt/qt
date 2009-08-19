@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -264,7 +264,6 @@ void QGraphicsLayoutItemPrivate::setSizeComponent(
     \brief The QGraphicsLayoutItem class can be inherited to allow your custom
     items to be managed by layouts.
     \since 4.4
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     QGraphicsLayoutItem is an abstract class that defines a set of virtual

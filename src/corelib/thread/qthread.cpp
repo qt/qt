@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -202,8 +202,6 @@ QThreadPrivate::~QThreadPrivate()
     \brief The QThread class provides platform-independent threads.
 
     \ingroup thread
-    \ingroup environment
-    \mainclass
 
     A QThread represents a separate thread of control within the
     program; it shares data with all the other threads within the

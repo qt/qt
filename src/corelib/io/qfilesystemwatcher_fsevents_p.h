@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -59,8 +59,8 @@
 #include <QtCore/qmutex.h>
 #include <QtCore/qwaitcondition.h>
 #include <QtCore/qthread.h>
-#include <QtCore/QHash>
-#include <QtCore/QLinkedList>
+#include <QtCore/qhash.h>
+#include <QtCore/qlinkedlist.h>
 #include <private/qcore_mac_p.h>
 #include <sys/stat.h>
 

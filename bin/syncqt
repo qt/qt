@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 ######################################################################
 #
-# Synchronizes Qt header files - internal Trolltech tool.
+# Synchronizes Qt header files - internal development tool.
 #
 # Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 # Contact: Nokia Corporation (qt-info@nokia.com)

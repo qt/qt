@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,6 +43,8 @@
     \class QRunnable
     \since 4.4
     \brief The QRunnable class is the base class for all runnable objects.
+
+    \ingroup thread
 
     The QRunnable class is an interface for representing a task or
     piece of code that needs to be executed, represented by your

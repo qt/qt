@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,7 +43,7 @@
     \class QPropertyAnimation
     \brief The QPropertyAnimation class animates Qt properties
     \since 4.6
-    \mainclass
+
     \ingroup animation
 
     QPropertyAnimation interpolates over \l{Qt's Property System}{Qt
@@ -293,7 +293,12 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
             hash.insert(key, this);
             // update the default start value
             if (oldState == Stopped) {
-                d->setDefaultStartValue(d->target->property(d->propertyName.constData()));
+                d->setDefaultStartEndValue(d->target->property(d->propertyName.constData()));
+                //let's check if we have a start value and an end value
+                if (d->direction == Forward && !startValue().isValid() && !d->defaultStartEndValue.isValid())
+                    qWarning("QPropertyAnimation::updateState: starting an animation without start value");
+                if (d->direction == Backward && !endValue().isValid() && !d->defaultStartEndValue.isValid())
+                    qWarning("QPropertyAnimation::updateState: starting an animation without end value");
             }
         } else if (hash.value(key) == this) {
             hash.remove(key);

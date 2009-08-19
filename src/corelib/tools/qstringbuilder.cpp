@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,8 +52,8 @@
 
     \ingroup tools
     \ingroup shared
-    \ingroup text
-    \mainclass
+    \ingroup string-processing
+
 
     Unlike \c QLatin1String, a \c QLatin1Literal can retrieve its size
     without iterating over the literal.
@@ -92,8 +92,8 @@
 
     \ingroup tools
     \ingroup shared
-    \ingroup text
-    \mainclass
+    \ingroup string-processing
+
 
     To build a QString by multiple concatenations, QString::operator+()
     is typically used. This causes \e{n - 1} reallocations when building

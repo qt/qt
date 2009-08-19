@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,9 +43,8 @@
     \brief The QGraphicsSceneIndex class provides a base class to implement
     a custom indexing algorithm for discovering items in QGraphicsScene.
     \since 4.6
-    \ingroup multimedia
     \ingroup graphicsview-api
-    \mainclass
+
     \internal
 
     The QGraphicsSceneIndex class provides a base class to implement

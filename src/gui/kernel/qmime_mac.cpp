@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -126,9 +126,8 @@ CFStringRef qt_mac_mime_typeUTI = CFSTR("com.pasteboard.trolltech.marker");
   \l{http://developer.apple.com/macosx/uniformtypeidentifiers.html}{Uniform
   Type Identifier (UTI)} format.
   \since 4.2
-  \ingroup io
+
   \ingroup draganddrop
-  \ingroup misc
 
   Qt's drag and drop and clipboard facilities use the MIME
   standard. On X11, this maps trivially to the Xdnd protocol. On

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -57,8 +57,8 @@ QT_BEGIN_NAMESPACE
     \brief The QDialogButtonBox class is a widget that presents buttons in a
     layout that is appropriate to the current widget style.
 
-    \ingroup application
-    \mainclass
+    \ingroup dialog-classes
+
 
     Dialogs and message boxes typically present buttons in a layout that
     conforms to the interface guidelines for that platform. Invariably,

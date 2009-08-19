@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -434,8 +434,8 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     \brief The QMessageBox class provides a modal dialog for informing
     the user or for asking the user a question and receiving an answer.
 
-    \ingroup dialogs
-    \mainclass
+    \ingroup standard-dialogs
+
 
     A message box displays a primary \l{QMessageBox::text}{text} to
     alert the user to a situation, an \l{QMessageBox::informativeText}
@@ -1712,10 +1712,10 @@ void QMessageBox::aboutQt(QWidget *parent, const QString &title)
         "use such applications in combination with software subject to the "
         "terms of the GNU GPL version 3.0 or where you are otherwise willing "
         "to comply with the terms of the GNU GPL version 3.0.</p>"
-        "<p>Please see <a href=\"http://www.qtsoftware.com/products/licensing\">www.qtsoftware.com/products/licensing</a> "
+        "<p>Please see <a href=\"http://qt.nokia.com/products/licensing\">qt.nokia.com/products/licensing</a> "
         "for an overview of Qt licensing.</p>"
         "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>"
-        "<p>Qt is a Nokia product. See <a href=\"http://www.qtsoftware.com/qt/\">www.qtsoftware.com/qt</a> "
+        "<p>Qt is a Nokia product. See <a href=\"http://qt.nokia.com/\">qt.nokia.com</a> "
         "for more information.</p>"
         );
     QMessageBox *msgBox = new QMessageBox(parent);

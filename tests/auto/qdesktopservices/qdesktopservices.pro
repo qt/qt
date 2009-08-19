@@ -2,9 +2,6 @@ CONFIG += qttest_p4
 
 SOURCES		+= tst_qdesktopservices.cpp
 TARGET		= tst_qdesktopservices
-
-include(../src/qdesktopservices.pri)
-
 symbian: {
    dummy.sources = text\testfile.txt
    dummy.path = .
@@ -29,5 +26,4 @@ symbian: {
    # These are only needed for manual tests
    #DEPLOYMENT += dummy text
    }
-
 

@@ -860,8 +860,8 @@ Assistant will not work!</source>
         <translation>字体设置...</translation>
     </message>
     <message>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/model&quot;&gt;qtsoftware.com/company/model&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">开发商业（闭源）应用程序，你需要商业 Qt 许可。对于 Qt 许可的概览，请参考&lt;a href=&quot;http://qtsoftware.com/company/model&quot;&gt;qtsoftware.com/company/model&lt;/a&gt;。</translation>
+        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/model&quot;&gt;qt.nokia.com/company/model&lt;/a&gt; for an overview of Qt licensing.</source>
+        <translation type="obsolete">开发商业（闭源）应用程序，你需要商业 Qt 许可。对于 Qt 许可的概览，请参考&lt;a href=&quot;http://qt.nokia.com/company/model&quot;&gt;qt.nokia.com/company/model&lt;/a&gt;。</translation>
     </message>
     <message>
         <source>This program is licensed to you under the terms of the Qt %1 License Agreement. For details, see the license file that came with this software distribution.</source>

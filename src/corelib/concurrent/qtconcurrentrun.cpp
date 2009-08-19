@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,11 +42,13 @@
 /*!
     \headerfile <QtConcurrentRun>
     \title Asynchronous Run
-    
+
     \brief The <QtConcurrentRun> header provides a way to run a function in a
     separate thread.
+
+    \ingroup thread
     
-    This function is a part of the \l {threads.html#qtconcurrent-intro}{Qt Concurrent} framework.
+    This function is a part of the \l {Concurrent Programming}{Qt Concurrent} framework.
 
     The QtConcurrent::run() function runs a function in a separate thread.
     The return value of the function is made available through the QFuture API.

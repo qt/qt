@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -96,6 +96,43 @@ int qtiffMapProc(thandle_t /*fd*/, tdata_t* /*pbase*/, toff_t* /*psize*/)
 
 void qtiffUnmapProc(thandle_t /*fd*/, tdata_t /*base*/, toff_t /*size*/)
 {
+}
+
+// for 32 bits images
+inline void rotate_right_mirror_horizontal(QImage *const image)// rotate right->mirrored horizontal
+{
+    const int height = image->height();
+    const int width = image->width();
+    QImage generated(/* width = */ height, /* height = */ width, image->format());
+    const uint32 *originalPixel = reinterpret_cast<const uint32*>(image->bits());
+    uint32 *const generatedPixels = reinterpret_cast<uint32*>(generated.bits());
+    for (int row=0; row < height; ++row) {
+        for (int col=0; col < width; ++col) {
+            int idx = col * height + row;
+            generatedPixels[idx] = *originalPixel;
+            ++originalPixel;
+        }
+    }
+    *image = generated;
+}
+
+inline void rotate_right_mirror_vertical(QImage *const image) // rotate right->mirrored vertical
+{
+    const int height = image->height();
+    const int width = image->width();
+    QImage generated(/* width = */ height, /* height = */ width, image->format());
+    const int lastCol = width - 1;
+    const int lastRow = height - 1;
+    const uint32 *pixel = reinterpret_cast<const uint32*>(image->bits());
+    uint32 *const generatedBits = reinterpret_cast<uint32*>(generated.bits());
+    for (int row=0; row < height; ++row) {
+        for (int col=0; col < width; ++col) {
+            int idx = (lastCol - col) * height + (lastRow - row);
+            generatedBits[idx] = *pixel;
+            ++pixel;
+        }
+    }
+    *image = generated;
 }
 
 QTiffHandler::QTiffHandler() : QImageIOHandler()
@@ -223,7 +260,8 @@ bool QTiffHandler::read(QImage *image)
             if (image->size() != QSize(width, height) || image->format() != QImage::Format_ARGB32)
                 *image = QImage(width, height, QImage::Format_ARGB32);
             if (!image->isNull()) {
-                if (TIFFReadRGBAImageOriented(tiff, width, height, reinterpret_cast<uint32 *>(image->bits()), ORIENTATION_TOPLEFT, 0)) {
+                const int stopOnError = 1;
+                if (TIFFReadRGBAImageOriented(tiff, width, height, reinterpret_cast<uint32 *>(image->bits()), ORIENTATION_TOPLEFT, stopOnError)) {
                     for (uint32 y=0; y<height; ++y)
                         convert32BitOrder(image->scanLine(y), width);
                 } else {
@@ -261,6 +299,73 @@ bool QTiffHandler::read(QImage *image)
             break;
         }
     }
+
+    // rotate the image if the orientation is defined in the file
+    uint16 orientationTag;
+    if (TIFFGetField(tiff, TIFFTAG_ORIENTATION, &orientationTag)) {
+        if (image->format() == QImage::Format_ARGB32) {
+            // TIFFReadRGBAImageOriented() flip the image but does not rotate them
+            switch (orientationTag) {
+            case 5:
+                rotate_right_mirror_horizontal(image);
+                break;
+            case 6:
+                rotate_right_mirror_vertical(image);
+                break;
+            case 7:
+                rotate_right_mirror_horizontal(image);
+                break;
+            case 8:
+                rotate_right_mirror_vertical(image);
+                break;
+            }
+        } else {
+            switch (orientationTag) {
+            case 1: // default orientation
+                break;
+            case 2: // mirror horizontal
+                *image = image->mirrored(true, false);
+                break;
+            case 3: // mirror both
+                *image = image->mirrored(true, true);
+                break;
+            case 4: // mirror vertical
+                *image = image->mirrored(false, true);
+                break;
+            case 5: // rotate right mirror horizontal
+                {
+                    QMatrix transformation;
+                    transformation.rotate(90);
+                    *image = image->transformed(transformation);
+                    *image = image->mirrored(true, false);
+                    break;
+                }
+            case 6: // rotate right
+                {
+                    QMatrix transformation;
+                    transformation.rotate(90);
+                    *image = image->transformed(transformation);
+                    break;
+                }
+            case 7: // rotate right, mirror vertical
+                {
+                    QMatrix transformation;
+                    transformation.rotate(90);
+                    *image = image->transformed(transformation);
+                    *image = image->mirrored(false, true);
+                    break;
+                }
+            case 8: // rotate left
+                {
+                    QMatrix transformation;
+                    transformation.rotate(270);
+                    *image = image->transformed(transformation);
+                    break;
+                }
+            }
+        }
+    }
+
 
     TIFFClose(tiff);
     return true;

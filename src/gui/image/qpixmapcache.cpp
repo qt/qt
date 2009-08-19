@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,8 +51,7 @@ QT_BEGIN_NAMESPACE
 
     \brief The QPixmapCache class provides an application-wide cache for pixmaps.
 
-    \ingroup environment
-    \ingroup multimedia
+    \ingroup painting
 
     This class is a tool for optimized drawing with QPixmap. You can
     use it to store temporary pixmaps that are expensive to generate

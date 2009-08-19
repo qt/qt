@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -85,8 +85,8 @@ void Schema::loadFromData() const
     QByteArray data( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                      "<xsd:schema"
                      "        xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\""
-                     "        xmlns=\"http://www.qtsoftware.com/xmlschematest\""
-                     "        targetNamespace=\"http://www.qtsoftware.com/xmlschematest\""
+                     "        xmlns=\"http://qt.nokia.com/xmlschematest\""
+                     "        targetNamespace=\"http://qt.nokia.com/xmlschematest\""
                      "        version=\"1.0\""
                      "        elementFormDefault=\"qualified\">"
                      "</xsd:schema>" );

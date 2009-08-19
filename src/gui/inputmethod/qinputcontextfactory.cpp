@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -89,7 +89,6 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
     \class QInputContextFactory
     \brief The QInputContextFactory class creates QInputContext objects.
 
-    \ingroup appearance
 
     The input context factory creates a QInputContext object for a
     given key with QInputContextFactory::create().

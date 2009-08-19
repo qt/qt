@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -75,7 +75,6 @@ static QAssistantClientPrivate *data( const QAssistantClient *client, bool creat
     \brief The QAssistantClient class provides a means of using Qt
     Assistant as an application's help tool.
 
-    \inmodule QtAssistant
     \ingroup helpsystem
 
     \bold{Note:} \e{This class is obsolete and only required when using

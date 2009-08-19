@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,8 +66,8 @@ public:
     \class QSignalMapper
     \brief The QSignalMapper class bundles signals from identifiable senders.
 
-    \ingroup io
-    \mainclass
+    \ingroup objectmodel
+
 
     This class collects a set of parameterless signals, and re-emits
     them with integer, string or widget parameters corresponding to

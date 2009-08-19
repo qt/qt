@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -81,12 +81,17 @@ public:
     Q_DECLARE_FLAGS(FormattingOptions, FormattingOption)
 
     QUrl();
+#ifdef QT_NO_URL_CAST_FROM_STRING
+    explicit
+#endif
     QUrl(const QString &url);
     QUrl(const QString &url, ParsingMode mode);
     // ### Qt 5: merge the two constructors, with mode = TolerantMode
     QUrl(const QUrl &copy);
     QUrl &operator =(const QUrl &copy);
+#ifndef QT_NO_URL_CAST_FROM_STRING
     QUrl &operator =(const QString &url);
+#endif
     ~QUrl();
 
     void setUrl(const QString &url);

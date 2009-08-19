@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,9 +54,6 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QValidator
     \brief The QValidator class provides validation of input text.
-
-    \ingroup misc
-    \mainclass
 
     The class itself is abstract. Two subclasses, \l QIntValidator and
     \l QDoubleValidator, provide basic numeric-range checking, and \l
@@ -90,7 +87,7 @@ QT_BEGIN_NAMESPACE
     Intermediate, and "asdf" and 1114 is \l Invalid.
 
     \i For an editable combobox that accepts URLs, any well-formed URL
-    is \l Acceptable, "http://qtsoftware.com/," is \l Intermediate
+    is \l Acceptable, "http://example.com/," is \l Intermediate
     (it might be a cut and paste action that accidentally took in a
     comma at the end), the empty string is \l Intermediate (the user
     might select and delete all of the text in preparation for entering
@@ -98,7 +95,7 @@ QT_BEGIN_NAMESPACE
 
     \i For a spin box that accepts lengths, "11cm" and "1in" are \l
     Acceptable, "11" and the empty string are \l Intermediate, and
-    "http://qtsoftware.com" and "hour" are \l Invalid.
+    "http://example.com" and "hour" are \l Invalid.
 
     \endlist
 
@@ -245,8 +242,6 @@ void QValidator::fixup(QString &) const
     \class QIntValidator
     \brief The QIntValidator class provides a validator that ensures
     a string contains a valid integer within a specified range.
-
-    \ingroup misc
 
     Example of use:
 
@@ -496,8 +491,6 @@ public:
 
     \brief The QDoubleValidator class provides range checking of
     floating-point numbers.
-
-    \ingroup misc
 
     QDoubleValidator provides an upper bound, a lower bound, and a
     limit on the number of digits after the decimal point. It does not
@@ -766,8 +759,6 @@ QDoubleValidator::Notation QDoubleValidator::notation() const
     \class QRegExpValidator
     \brief The QRegExpValidator class is used to check a string
     against a regular expression.
-
-    \ingroup misc
 
     QRegExpValidator uses a regular expression (regexp) to
     determine whether an input string is \l Acceptable, \l

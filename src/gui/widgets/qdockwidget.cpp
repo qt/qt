@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1069,7 +1069,7 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
     inside a QMainWindow or floated as a top-level window on the
     desktop.
 
-    \ingroup application
+    \ingroup mainwindow-classes
 
     QDockWidget provides the concept of dock widgets, also know as
     tool palettes or utility windows.  Dock windows are secondary

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -79,7 +79,7 @@ namespace QPatternist
      *
      * @see EBVExtractor
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class BooleanFN : public FunctionCall
     {
@@ -99,7 +99,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:index-of()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class IndexOfFN : public FunctionCall,
                       public ComparisonPlatform<IndexOfFN, false>
@@ -126,7 +126,7 @@ namespace QPatternist
      * by instantiating it with either IDExistsFN or IDEmptyFN.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     template<const Expression::ID Id>
     class Existence : public FunctionCall
@@ -146,28 +146,20 @@ namespace QPatternist
          */
         virtual Expression::Ptr compress(const StaticContext::Ptr &context)
         {
-#if defined(Q_CC_RVCT) && !defined(QT_NO_DEBUG)
             // RVCT doesn't like using template parameter in trinary operator when the trinary operator result is
             // passed directly into another constructor. 
             bool tempAssert = (Id == IDExistsFN || Id == IDEmptyFN);
             Q_ASSERT(tempAssert);
-#else
-            Q_ASSERT(Id == IDExistsFN || Id == IDEmptyFN);
-#endif            
 
             const Expression::Ptr me(FunctionCall::compress(context));
 
             if(me != this)
                 return me;
 
-#if defined(Q_CC_RVCT)
             // RVCT doesn't like using template parameter in trinary operator when the trinary operator result is
             // passed directly into another constructor. 
             Expression::ID tempId = Id;
             const Cardinality myCard((tempId == IDExistsFN) ? Cardinality::oneOrMore() : Cardinality::empty());
-#else
-            const Cardinality myCard((Id == IDExistsFN) ? Cardinality::oneOrMore() : Cardinality::empty());
-#endif            
 
             const Cardinality card(m_operands.first()->staticType()->cardinality());
             if(myCard.isMatch(card))
@@ -194,7 +186,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:distinct-values()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class DistinctValuesFN : public FunctionCall,
                              public ComparisonPlatform<IndexOfFN, false>
@@ -234,7 +226,7 @@ namespace QPatternist
      * @todo docs, explain why evaluateSequence and evaluateSingleton is implemented
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class InsertBeforeFN : public FunctionCall
     {
@@ -258,7 +250,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:remove()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class RemoveFN : public FunctionCall
     {
@@ -285,7 +277,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:reverse()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ReverseFN : public FunctionCall
     {
@@ -313,7 +305,7 @@ statEnv |-  (FN-URI,"reverse")(Type) : prime(Type) * quantifier(Type)
      * @short Implements the function <tt>fn:subsequence()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @todo Type inference can be made stronger for this function
      */
     class SubsequenceFN : public FunctionCall

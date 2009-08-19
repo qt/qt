@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>FreeType-2.3.6 API Reference</title>
+<title>FreeType-2.3.9 API Reference</title>
 <style type="text/css">
   body { font-family: Verdana, Geneva, Arial, Helvetica, serif;
          color: #000000;
@@ -31,55 +31,52 @@
 </style>
 </head>
 <body>
-<center><h1>FreeType-2.3.6 API Reference</h1></center>
+
+<table align=center><tr><td><font size=-1>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-1>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+<center><h1>FreeType-2.3.9 API Reference</h1></center>
 
 <center><h1>
 Base Interface
 </h1></center>
 <h2>Synopsis</h2>
 <table align=center cellspacing=5 cellpadding=0 border=0>
-<tr><td></td><td><a href="#FT_Library">FT_Library</a></td><td></td><td><a href="#FT_IS_CID_KEYED">FT_IS_CID_KEYED</a></td><td></td><td><a href="#FT_Load_Char">FT_Load_Char</a></td></tr>
-<tr><td></td><td><a href="#FT_Face">FT_Face</a></td><td></td><td><a href="#FT_STYLE_FLAG_XXX">FT_STYLE_FLAG_XXX</a></td><td></td><td><a href="#FT_LOAD_XXX">FT_LOAD_XXX</a></td></tr>
-<tr><td></td><td><a href="#FT_Size">FT_Size</a></td><td></td><td><a href="#FT_Size_Internal">FT_Size_Internal</a></td><td></td><td><a href="#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_XXX</a></td></tr>
-<tr><td></td><td><a href="#FT_GlyphSlot">FT_GlyphSlot</a></td><td></td><td><a href="#FT_Size_Metrics">FT_Size_Metrics</a></td><td></td><td><a href="#FT_LOAD_TARGET_MODE">FT_LOAD_TARGET_MODE</a></td></tr>
-<tr><td></td><td><a href="#FT_CharMap">FT_CharMap</a></td><td></td><td><a href="#FT_SizeRec">FT_SizeRec</a></td><td></td><td><a href="#FT_Set_Transform">FT_Set_Transform</a></td></tr>
-<tr><td></td><td><a href="#FT_Encoding">FT_Encoding</a></td><td></td><td><a href="#FT_SubGlyph">FT_SubGlyph</a></td><td></td><td><a href="#FT_Render_Mode">FT_Render_Mode</a></td></tr>
-<tr><td></td><td><a href="#FT_Glyph_Metrics">FT_Glyph_Metrics</a></td><td></td><td><a href="#FT_Slot_Internal">FT_Slot_Internal</a></td><td></td><td><a href="#ft_render_mode_xxx">ft_render_mode_xxx</a></td></tr>
-<tr><td></td><td><a href="#FT_Bitmap_Size">FT_Bitmap_Size</a></td><td></td><td><a href="#FT_GlyphSlotRec">FT_GlyphSlotRec</a></td><td></td><td><a href="#FT_Render_Glyph">FT_Render_Glyph</a></td></tr>
-<tr><td></td><td><a href="#FT_Module">FT_Module</a></td><td></td><td><a href="#FT_Init_FreeType">FT_Init_FreeType</a></td><td></td><td><a href="#FT_Kerning_Mode">FT_Kerning_Mode</a></td></tr>
-<tr><td></td><td><a href="#FT_Driver">FT_Driver</a></td><td></td><td><a href="#FT_Done_FreeType">FT_Done_FreeType</a></td><td></td><td><a href="#ft_kerning_default">ft_kerning_default</a></td></tr>
-<tr><td></td><td><a href="#FT_Renderer">FT_Renderer</a></td><td></td><td><a href="#FT_OPEN_XXX">FT_OPEN_XXX</a></td><td></td><td><a href="#ft_kerning_unfitted">ft_kerning_unfitted</a></td></tr>
-<tr><td></td><td><a href="#FT_ENC_TAG">FT_ENC_TAG</a></td><td></td><td><a href="#FT_Parameter">FT_Parameter</a></td><td></td><td><a href="#ft_kerning_unscaled">ft_kerning_unscaled</a></td></tr>
-<tr><td></td><td><a href="#ft_encoding_xxx">ft_encoding_xxx</a></td><td></td><td><a href="#FT_Open_Args">FT_Open_Args</a></td><td></td><td><a href="#FT_Get_Kerning">FT_Get_Kerning</a></td></tr>
-<tr><td></td><td><a href="#FT_CharMapRec">FT_CharMapRec</a></td><td></td><td><a href="#FT_New_Face">FT_New_Face</a></td><td></td><td><a href="#FT_Get_Track_Kerning">FT_Get_Track_Kerning</a></td></tr>
-<tr><td></td><td><a href="#FT_Face_Internal">FT_Face_Internal</a></td><td></td><td><a href="#FT_New_Memory_Face">FT_New_Memory_Face</a></td><td></td><td><a href="#FT_Get_Glyph_Name">FT_Get_Glyph_Name</a></td></tr>
-<tr><td></td><td><a href="#FT_FaceRec">FT_FaceRec</a></td><td></td><td><a href="#FT_Open_Face">FT_Open_Face</a></td><td></td><td><a href="#FT_Get_Postscript_Name">FT_Get_Postscript_Name</a></td></tr>
-<tr><td></td><td><a href="#FT_FACE_FLAG_XXX">FT_FACE_FLAG_XXX</a></td><td></td><td><a href="#FT_Attach_File">FT_Attach_File</a></td><td></td><td><a href="#FT_Select_Charmap">FT_Select_Charmap</a></td></tr>
-<tr><td></td><td><a href="#FT_HAS_HORIZONTAL">FT_HAS_HORIZONTAL</a></td><td></td><td><a href="#FT_Attach_Stream">FT_Attach_Stream</a></td><td></td><td><a href="#FT_Set_Charmap">FT_Set_Charmap</a></td></tr>
-<tr><td></td><td><a href="#FT_HAS_VERTICAL">FT_HAS_VERTICAL</a></td><td></td><td><a href="#FT_Done_Face">FT_Done_Face</a></td><td></td><td><a href="#FT_Get_Charmap_Index">FT_Get_Charmap_Index</a></td></tr>
-<tr><td></td><td><a href="#FT_HAS_KERNING">FT_HAS_KERNING</a></td><td></td><td><a href="#FT_Select_Size">FT_Select_Size</a></td><td></td><td><a href="#FT_Get_Char_Index">FT_Get_Char_Index</a></td></tr>
-<tr><td></td><td><a href="#FT_IS_SCALABLE">FT_IS_SCALABLE</a></td><td></td><td><a href="#FT_Size_Request_Type">FT_Size_Request_Type</a></td><td></td><td><a href="#FT_Get_First_Char">FT_Get_First_Char</a></td></tr>
-<tr><td></td><td><a href="#FT_IS_SFNT">FT_IS_SFNT</a></td><td></td><td><a href="#FT_Size_RequestRec">FT_Size_RequestRec</a></td><td></td><td><a href="#FT_Get_Next_Char">FT_Get_Next_Char</a></td></tr>
-<tr><td></td><td><a href="#FT_IS_FIXED_WIDTH">FT_IS_FIXED_WIDTH</a></td><td></td><td><a href="#FT_Size_Request">FT_Size_Request</a></td><td></td><td><a href="#FT_Get_Name_Index">FT_Get_Name_Index</a></td></tr>
-<tr><td></td><td><a href="#FT_HAS_FIXED_SIZES">FT_HAS_FIXED_SIZES</a></td><td></td><td><a href="#FT_Request_Size">FT_Request_Size</a></td><td></td><td><a href="#FT_SUBGLYPH_FLAG_XXX">FT_SUBGLYPH_FLAG_XXX</a></td></tr>
-<tr><td></td><td><a href="#FT_HAS_FAST_GLYPHS">FT_HAS_FAST_GLYPHS</a></td><td></td><td><a href="#FT_Set_Char_Size">FT_Set_Char_Size</a></td><td></td><td><a href="#FT_Get_SubGlyph_Info">FT_Get_SubGlyph_Info</a></td></tr>
-<tr><td></td><td><a href="#FT_HAS_GLYPH_NAMES">FT_HAS_GLYPH_NAMES</a></td><td></td><td><a href="#FT_Set_Pixel_Sizes">FT_Set_Pixel_Sizes</a></td><td></td><td></td></tr>
+<tr><td></td><td><a href="#FT_Library">FT_Library</a></td><td></td><td><a href="#FT_IS_TRICKY">FT_IS_TRICKY</a></td><td></td><td><a href="#FT_LOAD_XXX">FT_LOAD_XXX</a></td></tr>
+<tr><td></td><td><a href="#FT_Face">FT_Face</a></td><td></td><td><a href="#FT_STYLE_FLAG_XXX">FT_STYLE_FLAG_XXX</a></td><td></td><td><a href="#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_XXX</a></td></tr>
+<tr><td></td><td><a href="#FT_Size">FT_Size</a></td><td></td><td><a href="#FT_Size_Internal">FT_Size_Internal</a></td><td></td><td><a href="#FT_LOAD_TARGET_MODE">FT_LOAD_TARGET_MODE</a></td></tr>
+<tr><td></td><td><a href="#FT_GlyphSlot">FT_GlyphSlot</a></td><td></td><td><a href="#FT_Size_Metrics">FT_Size_Metrics</a></td><td></td><td><a href="#FT_Set_Transform">FT_Set_Transform</a></td></tr>
+<tr><td></td><td><a href="#FT_CharMap">FT_CharMap</a></td><td></td><td><a href="#FT_SizeRec">FT_SizeRec</a></td><td></td><td><a href="#FT_Render_Mode">FT_Render_Mode</a></td></tr>
+<tr><td></td><td><a href="#FT_Encoding">FT_Encoding</a></td><td></td><td><a href="#FT_SubGlyph">FT_SubGlyph</a></td><td></td><td><a href="#ft_render_mode_xxx">ft_render_mode_xxx</a></td></tr>
+<tr><td></td><td><a href="#FT_Glyph_Metrics">FT_Glyph_Metrics</a></td><td></td><td><a href="#FT_Slot_Internal">FT_Slot_Internal</a></td><td></td><td><a href="#FT_Render_Glyph">FT_Render_Glyph</a></td></tr>
+<tr><td></td><td><a href="#FT_Bitmap_Size">FT_Bitmap_Size</a></td><td></td><td><a href="#FT_GlyphSlotRec">FT_GlyphSlotRec</a></td><td></td><td><a href="#FT_Kerning_Mode">FT_Kerning_Mode</a></td></tr>
+<tr><td></td><td><a href="#FT_Module">FT_Module</a></td><td></td><td><a href="#FT_Init_FreeType">FT_Init_FreeType</a></td><td></td><td><a href="#ft_kerning_default">ft_kerning_default</a></td></tr>
+<tr><td></td><td><a href="#FT_Driver">FT_Driver</a></td><td></td><td><a href="#FT_Done_FreeType">FT_Done_FreeType</a></td><td></td><td><a href="#ft_kerning_unfitted">ft_kerning_unfitted</a></td></tr>
+<tr><td></td><td><a href="#FT_Renderer">FT_Renderer</a></td><td></td><td><a href="#FT_OPEN_XXX">FT_OPEN_XXX</a></td><td></td><td><a href="#ft_kerning_unscaled">ft_kerning_unscaled</a></td></tr>
+<tr><td></td><td><a href="#FT_ENC_TAG">FT_ENC_TAG</a></td><td></td><td><a href="#FT_Parameter">FT_Parameter</a></td><td></td><td><a href="#FT_Get_Kerning">FT_Get_Kerning</a></td></tr>
+<tr><td></td><td><a href="#ft_encoding_xxx">ft_encoding_xxx</a></td><td></td><td><a href="#FT_Open_Args">FT_Open_Args</a></td><td></td><td><a href="#FT_Get_Track_Kerning">FT_Get_Track_Kerning</a></td></tr>
+<tr><td></td><td><a href="#FT_CharMapRec">FT_CharMapRec</a></td><td></td><td><a href="#FT_New_Face">FT_New_Face</a></td><td></td><td><a href="#FT_Get_Glyph_Name">FT_Get_Glyph_Name</a></td></tr>
+<tr><td></td><td><a href="#FT_Face_Internal">FT_Face_Internal</a></td><td></td><td><a href="#FT_New_Memory_Face">FT_New_Memory_Face</a></td><td></td><td><a href="#FT_Get_Postscript_Name">FT_Get_Postscript_Name</a></td></tr>
+<tr><td></td><td><a href="#FT_FaceRec">FT_FaceRec</a></td><td></td><td><a href="#FT_Open_Face">FT_Open_Face</a></td><td></td><td><a href="#FT_Select_Charmap">FT_Select_Charmap</a></td></tr>
+<tr><td></td><td><a href="#FT_FACE_FLAG_XXX">FT_FACE_FLAG_XXX</a></td><td></td><td><a href="#FT_Attach_File">FT_Attach_File</a></td><td></td><td><a href="#FT_Set_Charmap">FT_Set_Charmap</a></td></tr>
+<tr><td></td><td><a href="#FT_HAS_HORIZONTAL">FT_HAS_HORIZONTAL</a></td><td></td><td><a href="#FT_Attach_Stream">FT_Attach_Stream</a></td><td></td><td><a href="#FT_Get_Charmap_Index">FT_Get_Charmap_Index</a></td></tr>
+<tr><td></td><td><a href="#FT_HAS_VERTICAL">FT_HAS_VERTICAL</a></td><td></td><td><a href="#FT_Done_Face">FT_Done_Face</a></td><td></td><td><a href="#FT_Get_Char_Index">FT_Get_Char_Index</a></td></tr>
+<tr><td></td><td><a href="#FT_HAS_KERNING">FT_HAS_KERNING</a></td><td></td><td><a href="#FT_Select_Size">FT_Select_Size</a></td><td></td><td><a href="#FT_Get_First_Char">FT_Get_First_Char</a></td></tr>
+<tr><td></td><td><a href="#FT_IS_SCALABLE">FT_IS_SCALABLE</a></td><td></td><td><a href="#FT_Size_Request_Type">FT_Size_Request_Type</a></td><td></td><td><a href="#FT_Get_Next_Char">FT_Get_Next_Char</a></td></tr>
+<tr><td></td><td><a href="#FT_IS_SFNT">FT_IS_SFNT</a></td><td></td><td><a href="#FT_Size_RequestRec">FT_Size_RequestRec</a></td><td></td><td><a href="#FT_Get_Name_Index">FT_Get_Name_Index</a></td></tr>
+<tr><td></td><td><a href="#FT_IS_FIXED_WIDTH">FT_IS_FIXED_WIDTH</a></td><td></td><td><a href="#FT_Size_Request">FT_Size_Request</a></td><td></td><td><a href="#FT_SUBGLYPH_FLAG_XXX">FT_SUBGLYPH_FLAG_XXX</a></td></tr>
+<tr><td></td><td><a href="#FT_HAS_FIXED_SIZES">FT_HAS_FIXED_SIZES</a></td><td></td><td><a href="#FT_Request_Size">FT_Request_Size</a></td><td></td><td><a href="#FT_Get_SubGlyph_Info">FT_Get_SubGlyph_Info</a></td></tr>
+<tr><td></td><td><a href="#FT_HAS_FAST_GLYPHS">FT_HAS_FAST_GLYPHS</a></td><td></td><td><a href="#FT_Set_Char_Size">FT_Set_Char_Size</a></td><td></td><td><a href="#FT_FSTYPE_XXX">FT_FSTYPE_XXX</a></td></tr>
+<tr><td></td><td><a href="#FT_HAS_GLYPH_NAMES">FT_HAS_GLYPH_NAMES</a></td><td></td><td><a href="#FT_Set_Pixel_Sizes">FT_Set_Pixel_Sizes</a></td><td></td><td><a href="#FT_Get_FSType_Flags">FT_Get_FSType_Flags</a></td></tr>
 <tr><td></td><td><a href="#FT_HAS_MULTIPLE_MASTERS">FT_HAS_MULTIPLE_MASTERS</a></td><td></td><td><a href="#FT_Load_Glyph">FT_Load_Glyph</a></td><td></td><td></td></tr>
+<tr><td></td><td><a href="#FT_IS_CID_KEYED">FT_IS_CID_KEYED</a></td><td></td><td><a href="#FT_Load_Char">FT_Load_Char</a></td><td></td><td></td></tr>
 </table><br><br>
 
 <table align=center width="87%"><tr><td>
-<p>This section describes the public high-level API of FreeType 2.</p>
+<p>This section describes the public high-level API of FreeType&nbsp;2.</p>
 </td></tr></table><br>
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Library">FT_Library</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_LibraryRec_  *<b>FT_Library</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A handle to a FreeType library instance. Each &lsquo;library&rsquo; is completely independent from the others; it is the &lsquo;root&rsquo; of a set of objects like fonts, faces, sizes, etc.</p>
 <p>It also embeds a memory manager (see <a href="ft2-system_interface.html#FT_Memory">FT_Memory</a>), as well as a scan-line converter object (see <a href="ft2-raster.html#FT_Raster">FT_Raster</a>).</p>
@@ -97,14 +94,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Face">FT_Face</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_FaceRec_*  <b>FT_Face</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A handle to a given typographic face object. A face object models a given typeface, in a given style.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
@@ -113,7 +102,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>Use <a href="ft2-base_interface.html#FT_Done_Face">FT_Done_Face</a> to destroy it (along with its slot and sizes).</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>also</b></em></td></tr><tr><td>
-<p>The <a href="ft2-base_interface.html#FT_FaceRec">FT_FaceRec</a> details the publicly accessible fields of a given face object.</p>
+<p>See <a href="ft2-base_interface.html#FT_FaceRec">FT_FaceRec</a> for the publicly accessible fields of a given face object.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -124,14 +113,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Size">FT_Size</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_SizeRec_*  <b>FT_Size</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A handle to an object used to model a face scaled to a given character size.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
@@ -140,7 +121,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>You can use <a href="ft2-sizes_management.html#FT_New_Size">FT_New_Size</a> to create additional size objects for a given <a href="ft2-base_interface.html#FT_Face">FT_Face</a>, but they won't be used by other functions until you activate it through <a href="ft2-sizes_management.html#FT_Activate_Size">FT_Activate_Size</a>. Only one size can be activated at any given time per face.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>also</b></em></td></tr><tr><td>
-<p>The <a href="ft2-base_interface.html#FT_SizeRec">FT_SizeRec</a> structure details the publicly accessible fields of a given size object.</p>
+<p>See <a href="ft2-base_interface.html#FT_SizeRec">FT_SizeRec</a> for the publicly accessible fields of a given size object.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -151,19 +132,11 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_GlyphSlot">FT_GlyphSlot</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_GlyphSlotRec_*  <b>FT_GlyphSlot</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
-<p>A handle to a given &lsquo;glyph slot&rsquo;. A slot is a container where it is possible to load any one of the glyphs contained in its parent face.</p>
+<p>A handle to a given &lsquo;glyph slot&rsquo;. A slot is a container where it is possible to load any of the glyphs contained in its parent face.</p>
 <p>In other words, each time you call <a href="ft2-base_interface.html#FT_Load_Glyph">FT_Load_Glyph</a> or <a href="ft2-base_interface.html#FT_Load_Char">FT_Load_Char</a>, the slot's content is erased by the new glyph data, i.e., the glyph's metrics, its image (bitmap or outline), and other control information.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>also</b></em></td></tr><tr><td>
-<p><a href="ft2-base_interface.html#FT_GlyphSlotRec">FT_GlyphSlotRec</a> details the publicly accessible glyph fields.</p>
+<p>See <a href="ft2-base_interface.html#FT_GlyphSlotRec">FT_GlyphSlotRec</a> for the publicly accessible glyph fields.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -174,14 +147,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_CharMap">FT_CharMap</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_CharMapRec_*  <b>FT_CharMap</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A handle to a given character map. A charmap is used to translate character codes in a given encoding into glyph indexes for its parent's face. Some font formats may provide several charmaps per font.</p>
 <p>Each face object owns zero or more charmaps, but only one of them can be &lsquo;active&rsquo; and used by <a href="ft2-base_interface.html#FT_Get_Char_Index">FT_Get_Char_Index</a> or <a href="ft2-base_interface.html#FT_Load_Char">FT_Load_Char</a>.</p>
 <p>The list of available charmaps in a face is available through the &lsquo;face-&gt;num_charmaps&rsquo; and &lsquo;face-&gt;charmaps&rsquo; fields of <a href="ft2-base_interface.html#FT_FaceRec">FT_FaceRec</a>.</p>
@@ -191,7 +156,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>When a new face is created (either through <a href="ft2-base_interface.html#FT_New_Face">FT_New_Face</a> or <a href="ft2-base_interface.html#FT_Open_Face">FT_Open_Face</a>), the library looks for a Unicode charmap within the list and automatically activates it.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>also</b></em></td></tr><tr><td>
-<p>The <a href="ft2-base_interface.html#FT_CharMapRec">FT_CharMapRec</a> details the publicly accessible fields of a given character map.</p>
+<p>See <a href="ft2-base_interface.html#FT_CharMapRec">FT_CharMapRec</a> for the publicly accessible fields of a given character map.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -250,7 +215,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>FT_ENCODING_NONE</b></td><td>
-<p>The encoding value 0 is reserved.</p>
+<p>The encoding value&nbsp;0 is reserved.</p>
 </td></tr>
 <tr valign=top><td><b>FT_ENCODING_UNICODE</b></td><td>
 <p>Corresponds to the Unicode character set. This value covers all versions of the Unicode repertoire, including ASCII and Latin-1. Most fonts include a Unicode charmap, but not all of them.</p>
@@ -271,23 +236,23 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>Corresponds to the Korean encoding system known as Wansung. For more information see &lsquo;http://www.microsoft.com/typography/unicode/949.txt&rsquo;.</p>
 </td></tr>
 <tr valign=top><td><b>FT_ENCODING_JOHAB</b></td><td>
-<p>The Korean standard character set (KS C-5601-1992), which corresponds to MS Windows code page 1361. This character set includes all possible Hangeul character combinations.</p>
+<p>The Korean standard character set (KS&nbsp;C 5601-1992), which corresponds to MS Windows code page 1361. This character set includes all possible Hangeul character combinations.</p>
 </td></tr>
 <tr valign=top><td colspan=0><b>FT_ENCODING_ADOBE_LATIN_1</b></td></tr>
 <tr valign=top><td></td><td>
-<p>Corresponds to a Latin-1 encoding as defined in a Type 1 Postscript font. It is limited to 256 character codes.</p>
+<p>Corresponds to a Latin-1 encoding as defined in a Type&nbsp;1 PostScript font. It is limited to 256 character codes.</p>
 </td></tr>
 <tr valign=top><td colspan=0><b>FT_ENCODING_ADOBE_STANDARD</b></td></tr>
 <tr valign=top><td></td><td>
-<p>Corresponds to the Adobe Standard encoding, as found in Type 1, CFF, and OpenType/CFF fonts. It is limited to 256 character codes.</p>
+<p>Corresponds to the Adobe Standard encoding, as found in Type&nbsp;1, CFF, and OpenType/CFF fonts. It is limited to 256 character codes.</p>
 </td></tr>
 <tr valign=top><td colspan=0><b>FT_ENCODING_ADOBE_EXPERT</b></td></tr>
 <tr valign=top><td></td><td>
-<p>Corresponds to the Adobe Expert encoding, as found in Type 1, CFF, and OpenType/CFF fonts. It is limited to 256 character codes.</p>
+<p>Corresponds to the Adobe Expert encoding, as found in Type&nbsp;1, CFF, and OpenType/CFF fonts. It is limited to 256 character codes.</p>
 </td></tr>
 <tr valign=top><td colspan=0><b>FT_ENCODING_ADOBE_CUSTOM</b></td></tr>
 <tr valign=top><td></td><td>
-<p>Corresponds to a custom encoding, as found in Type 1, CFF, and OpenType/CFF fonts. It is limited to 256 character codes.</p>
+<p>Corresponds to a custom encoding, as found in Type&nbsp;1, CFF, and OpenType/CFF fonts. It is limited to 256 character codes.</p>
 </td></tr>
 <tr valign=top><td colspan=0><b>FT_ENCODING_APPLE_ROMAN</b></td></tr>
 <tr valign=top><td></td><td>
@@ -315,13 +280,13 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>By default, FreeType automatically synthetizes a Unicode charmap for Postscript fonts, using their glyph names dictionaries. However, it also reports the encodings defined explicitly in the font file, for the cases when they are needed, with the Adobe values as well.</p>
+<p>By default, FreeType automatically synthesizes a Unicode charmap for PostScript fonts, using their glyph names dictionaries. However, it also reports the encodings defined explicitly in the font file, for the cases when they are needed, with the Adobe values as well.</p>
 <p>FT_ENCODING_NONE is set by the BDF and PCF drivers if the charmap is neither Unicode nor ISO-8859-1 (otherwise it is set to FT_ENCODING_UNICODE). Use <a href="ft2-bdf_fonts.html#FT_Get_BDF_Charset_ID">FT_Get_BDF_Charset_ID</a> to find out which encoding is really present. If, for example, the &lsquo;cs_registry&rsquo; field is &lsquo;KOI8&rsquo; and the &lsquo;cs_encoding&rsquo; field is &lsquo;R&rsquo;, the font is encoded in KOI8-R.</p>
 <p>FT_ENCODING_NONE is always set (with a single exception) by the winfonts driver. Use <a href="ft2-winfnt_fonts.html#FT_Get_WinFNT_Header">FT_Get_WinFNT_Header</a> and examine the &lsquo;charset&rsquo; field of the <a href="ft2-winfnt_fonts.html#FT_WinFNT_HeaderRec">FT_WinFNT_HeaderRec</a> structure to find out which encoding is really present. For example, <a href="ft2-winfnt_fonts.html#FT_WinFNT_ID_XXX">FT_WinFNT_ID_CP1251</a> (204) means Windows code page 1251 (for Russian).</p>
 <p>FT_ENCODING_NONE is set if &lsquo;platform_id&rsquo; is <a href="ft2-truetype_tables.html#TT_PLATFORM_XXX">TT_PLATFORM_MACINTOSH</a> and &lsquo;encoding_id&rsquo; is not <a href="ft2-truetype_tables.html#TT_MAC_ID_XXX">TT_MAC_ID_ROMAN</a> (otherwise it is set to FT_ENCODING_APPLE_ROMAN).</p>
-<p>If &lsquo;platform_id&rsquo; is <a href="ft2-truetype_tables.html#TT_PLATFORM_XXX">TT_PLATFORM_MACINTOSH</a>, use the function c <a href="ft2-truetype_tables.html#FT_Get_CMap_Language_ID">FT_Get_CMap_Language_ID</a> to query the Mac language ID which may be needed to be able to distinguish Apple encoding variants. See</p>
+<p>If &lsquo;platform_id&rsquo; is <a href="ft2-truetype_tables.html#TT_PLATFORM_XXX">TT_PLATFORM_MACINTOSH</a>, use the function <a href="ft2-truetype_tables.html#FT_Get_CMap_Language_ID">FT_Get_CMap_Language_ID</a> to query the Mac language ID which may be needed to be able to distinguish Apple encoding variants. See</p>
 <p>http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/README.TXT</p>
-<p>to get an idea how to do that. Basically, if the language ID is 0, don't use it, otherwise subtract 1 from the language ID. Then examine &lsquo;encoding_id&rsquo;. If, for example, &lsquo;encoding_id&rsquo; is <a href="ft2-truetype_tables.html#TT_MAC_ID_XXX">TT_MAC_ID_ROMAN</a> and the language ID (minus 1) is &lsquo;TT_MAC_LANGID_GREEK&rsquo;, it is the Greek encoding, not Roman. <a href="ft2-truetype_tables.html#TT_MAC_ID_XXX">TT_MAC_ID_ARABIC</a> with &lsquo;TT_MAC_LANGID_FARSI&rsquo; means the Farsi variant the Arabic encoding.</p>
+<p>to get an idea how to do that. Basically, if the language ID is&nbsp;0, don't use it, otherwise subtract 1 from the language ID. Then examine &lsquo;encoding_id&rsquo;. If, for example, &lsquo;encoding_id&rsquo; is <a href="ft2-truetype_tables.html#TT_MAC_ID_XXX">TT_MAC_ID_ROMAN</a> and the language ID (minus&nbsp;1) is &lsquo;TT_MAC_LANGID_GREEK&rsquo;, it is the Greek encoding, not Roman. <a href="ft2-truetype_tables.html#TT_MAC_ID_XXX">TT_MAC_ID_ARABIC</a> with &lsquo;TT_MAC_LANGID_FARSI&rsquo; means the Farsi variant the Arabic encoding.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -446,14 +411,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Module">FT_Module</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_ModuleRec_*  <b>FT_Module</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A handle to a given FreeType module object. Each module can be a font driver, a renderer, or anything else that provides services to the formers.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -465,14 +422,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Driver">FT_Driver</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_DriverRec_*  <b>FT_Driver</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A handle to a given FreeType font driver object. Each font driver is a special module capable of creating faces from font files.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -483,14 +432,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Renderer">FT_Renderer</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_RendererRec_*  <b>FT_Renderer</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>A handle to a given FreeType renderer. A renderer is a special module in charge of converting a glyph image to a bitmap, when necessary. Each renderer supports a given glyph image format, and one or more target surface depths.</p>
 </td></tr></table><br>
@@ -521,7 +462,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>This macro converts four-letter tags into an unsigned long. It is used to define &lsquo;encoding&rsquo; identifiers (see <a href="ft2-base_interface.html#FT_Encoding">FT_Encoding</a>).</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>Since many 16bit compilers don't like 32bit enumerations, you should redefine this macro in case of problems to something like this:</p>
+<p>Since many 16-bit compilers don't like 32-bit enumerations, you should redefine this macro in case of problems to something like this:</p>
 <pre class="colored">
   #define FT_ENC_TAG( value, a, b, c, d )  value                   
 </pre>
@@ -612,16 +553,8 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Face_Internal">FT_Face_Internal</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_Face_InternalRec_*  <b>FT_Face_Internal</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>An opaque handle to an &lsquo;FT_Face_InternalRec&rsquo; structure, used to model private data of a given <a href="ft2-base_interface.html#FT_Face">FT_Face</a> object.</p>
-<p>This structure might change between releases of FreeType 2 and is not generally available to client applications.</p>
+<p>This structure might change between releases of FreeType&nbsp;2 and is not generally available to client applications.</p>
 </td></tr></table><br>
 </td></tr></table>
 <hr width="75%">
@@ -705,7 +638,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>The number of faces in the font file. Some font formats can have multiple faces in a font file.</p>
 </td></tr>
 <tr valign=top><td><b>face_index</b></td><td>
-<p>The index of the face in the font file. It is set to 0 if there is only one face in the font file.</p>
+<p>The index of the face in the font file. It is set to&nbsp;0 if there is only one face in the font file.</p>
 </td></tr>
 <tr valign=top><td><b>face_flags</b></td><td>
 <p>A set of bit flags that give important information about the face; see <a href="ft2-base_interface.html#FT_FACE_FLAG_XXX">FT_FACE_FLAG_XXX</a> for the details.</p>
@@ -715,6 +648,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </td></tr>
 <tr valign=top><td><b>num_glyphs</b></td><td>
 <p>The number of glyphs in the face. If the face is scalable and has sbits (see &lsquo;num_fixed_sizes&rsquo;), it is set to the number of outline glyphs.</p>
+<p>For CID-keyed fonts, this value gives the highest CID used in the font.</p>
 </td></tr>
 <tr valign=top><td><b>family_name</b></td><td>
 <p>The face's family name. This is an ASCII string, usually in English, which describes the typeface's family (like &lsquo;Times New Roman&rsquo;, &lsquo;Bodoni&rsquo;, &lsquo;Garamond&rsquo;, etc). This is a least common denominator used to list fonts. Some formats (TrueType &amp; OpenType) provide localized and Unicode versions of this string. Applications should use the format specific interface to access them. Can be NULL (e.g., in fonts embedded in a PDF file).</p>
@@ -739,9 +673,10 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </td></tr>
 <tr valign=top><td><b>bbox</b></td><td>
 <p>The font bounding box. Coordinates are expressed in font units (see &lsquo;units_per_EM&rsquo;). The box is large enough to contain any glyph from the font. Thus, &lsquo;bbox.yMax&rsquo; can be seen as the &lsquo;maximal ascender&rsquo;, and &lsquo;bbox.yMin&rsquo; as the &lsquo;minimal descender&rsquo;. Only relevant for scalable formats.</p>
+<p>Note that the bounding box might be off by (at least) one pixel for hinted fonts. See <a href="ft2-base_interface.html#FT_Size_Metrics">FT_Size_Metrics</a> for further discussion.</p>
 </td></tr>
 <tr valign=top><td><b>units_per_EM</b></td><td>
-<p>The number of font units per EM square for this face. This is typically 2048 for TrueType fonts, and 1000 for Type 1 fonts. Only relevant for scalable formats.</p>
+<p>The number of font units per EM square for this face. This is typically 2048 for TrueType fonts, and 1000 for Type&nbsp;1 fonts. Only relevant for scalable formats.</p>
 </td></tr>
 <tr valign=top><td><b>ascender</b></td><td>
 <p>The typographic ascender of the face, expressed in font units. For font formats not having this information, it is set to &lsquo;bbox.yMax&rsquo;. Only relevant for scalable formats.</p>
@@ -759,7 +694,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>The maximal advance height, in font units, for all glyphs in this face. This is only relevant for vertical layouts, and is set to &lsquo;height&rsquo; for fonts that do not provide vertical metrics. Only relevant for scalable formats.</p>
 </td></tr>
 <tr valign=top><td><b>underline_position</b></td><td>
-<p>The position, in font units, of the underline line for this face. It's the center of the underlining stem. Only relevant for scalable formats.</p>
+<p>The position, in font units, of the underline line for this face. It is the center of the underlining stem. Only relevant for scalable formats.</p>
 </td></tr>
 <tr valign=top><td><b>underline_thickness</b></td><td>
 <p>The thickness, in font units, of the underline for this face. Only relevant for scalable formats.</p>
@@ -804,6 +739,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 #define <a href="ft2-base_interface.html#FT_FACE_FLAG_XXX">FT_FACE_FLAG_EXTERNAL_STREAM</a>   ( 1L &lt;&lt; 10 )
 #define <a href="ft2-base_interface.html#FT_FACE_FLAG_XXX">FT_FACE_FLAG_HINTER</a>            ( 1L &lt;&lt; 11 )
 #define <a href="ft2-base_interface.html#FT_FACE_FLAG_XXX">FT_FACE_FLAG_CID_KEYED</a>         ( 1L &lt;&lt; 12 )
+#define <a href="ft2-base_interface.html#FT_FACE_FLAG_XXX">FT_FACE_FLAG_TRICKY</a>            ( 1L &lt;&lt; 13 )
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
@@ -857,6 +793,12 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </td></tr>
 <tr valign=top><td><b>FT_FACE_FLAG_CID_KEYED</b></td><td>
 <p>Set if the font is CID-keyed. In that case, the font is not accessed by glyph indices but by CID values. For subsetted CID-keyed fonts this has the consequence that not all index values are a valid argument to FT_Load_Glyph. Only the CID values for which corresponding glyphs in the subsetted font exist make FT_Load_Glyph return successfully; in all other cases you get an &lsquo;FT_Err_Invalid_Argument&rsquo; error.</p>
+<p>Note that CID-keyed fonts which are in an SFNT wrapper don't have this flag set since the glyphs are accessed in the normal way (using contiguous indices); the &lsquo;CID-ness&rsquo; isn't visible to the application.</p>
+</td></tr>
+<tr valign=top><td><b>FT_FACE_FLAG_TRICKY</b></td><td>
+<p>Set if the font is &lsquo;tricky&rsquo;, this is, it always needs the font format's native hinting engine to get a reasonable result. A typical example is the Chinese font &lsquo;mingli.ttf&rsquo; which uses TrueType bytecode instructions to move and scale all of its subglyphs.</p>
+<p>It is not possible to autohint such fonts using <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_FORCE_AUTOHINT</a>; it will also ignore <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_NO_HINTING</a>. You have to set both FT_LOAD_NO_HINTING and <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_NO_AUTOHINT</a> to really disable hinting; however, you probably never want this except for demonstration purposes.</p>
+<p>Currently, there are six TrueType fonts in the list of tricky fonts; they are hard-coded in file &lsquo;ttobjs.c&rsquo;.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -941,7 +883,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>A macro that returns true whenever a face object contains a scalable font face (true for TrueType, Type 1, Type 42, CID, OpenType/CFF, and PFR font formats.</p>
+<p>A macro that returns true whenever a face object contains a scalable font face (true for TrueType, Type&nbsp;1, Type&nbsp;42, CID, OpenType/CFF, and PFR font formats.</p>
 </td></tr></table><br>
 </td></tr></table>
 <hr width="75%">
@@ -1013,14 +955,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_HAS_FAST_GLYPHS">FT_HAS_FAST_GLYPHS</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-#define <b>FT_HAS_FAST_GLYPHS</b>( face )  0
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>Deprecated.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -1091,6 +1025,26 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <td><font size=-2>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
 
 <table align=center width="75%"><tr><td>
+<h4><a name="FT_IS_TRICKY">FT_IS_TRICKY</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+#define <b>FT_IS_TRICKY</b>( face ) \
+          ( face-&gt;face_flags &amp; <a href="ft2-base_interface.html#FT_FACE_FLAG_XXX">FT_FACE_FLAG_TRICKY</a> )
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
+<p>A macro that returns true whenever a face represents a &lsquo;tricky&rsquo; font. See the discussion of <a href="ft2-base_interface.html#FT_FACE_FLAG_XXX">FT_FACE_FLAG_TRICKY</a> for more details.</p>
+</td></tr></table><br>
+</td></tr></table>
+<hr width="75%">
+<table align=center width="75%"><tr><td><font size=-2>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-2>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+
+<table align=center width="75%"><tr><td>
 <h4><a name="FT_STYLE_FLAG_XXX">FT_STYLE_FLAG_XXX</a></h4>
 <table align=center width="87%"><tr><td>
 Defined in FT_FREETYPE_H (freetype/freetype.h).
@@ -1126,14 +1080,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Size_Internal">FT_Size_Internal</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_Size_InternalRec_*  <b>FT_Size_Internal</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>An opaque handle to an &lsquo;FT_Size_InternalRec&rsquo; structure, used to model private data of a given <a href="ft2-base_interface.html#FT_Size">FT_Size</a> object.</p>
 </td></tr></table><br>
@@ -1253,14 +1199,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_SubGlyph">FT_SubGlyph</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_SubGlyphRec_*  <b>FT_SubGlyph</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>The subglyph structure is an internal object used to describe subglyphs (for example, in the case of composites).</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
@@ -1275,14 +1213,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Slot_Internal">FT_Slot_Internal</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_Slot_InternalRec_*  <b>FT_Slot_Internal</b>;
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>An opaque handle to an &lsquo;FT_Slot_InternalRec&rsquo; structure, used to model private data of a given <a href="ft2-base_interface.html#FT_GlyphSlot">FT_GlyphSlot</a> object.</p>
 </td></tr></table><br>
@@ -1365,7 +1295,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>The advance height of the unhinted glyph. Its value is expressed in 16.16 fractional pixels, unless <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_LINEAR_DESIGN</a> is set when loading the glyph. This field can be important to perform correct WYSIWYG layout. Only relevant for outline glyphs.</p>
 </td></tr>
 <tr valign=top><td><b>advance</b></td><td>
-<p>This is the transformed advance width for the glyph.</p>
+<p>This is the transformed advance width for the glyph (in 26.6 fractional pixel format).</p>
 </td></tr>
 <tr valign=top><td><b>format</b></td><td>
 <p>This field indicates the format of the image contained in the glyph slot. Typically <a href="ft2-basic_types.html#FT_Glyph_Format">FT_GLYPH_FORMAT_BITMAP</a>, <a href="ft2-basic_types.html#FT_Glyph_Format">FT_GLYPH_FORMAT_OUTLINE</a>, or <a href="ft2-basic_types.html#FT_Glyph_Format">FT_GLYPH_FORMAT_COMPOSITE</a>, but others are possible.</p>
@@ -1377,7 +1307,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>This is the bitmap's left bearing expressed in integer pixels. Of course, this is only valid if the format is <a href="ft2-basic_types.html#FT_Glyph_Format">FT_GLYPH_FORMAT_BITMAP</a>.</p>
 </td></tr>
 <tr valign=top><td><b>bitmap_top</b></td><td>
-<p>This is the bitmap's top bearing expressed in integer pixels. Remember that this is the distance from the baseline to the top-most glyph scanline, upwards y-coordinates being <b>positive</b>.</p>
+<p>This is the bitmap's top bearing expressed in integer pixels. Remember that this is the distance from the baseline to the top-most glyph scanline, upwards y&nbsp;coordinates being <b>positive</b>.</p>
 </td></tr>
 <tr valign=top><td><b>outline</b></td><td>
 <p>The outline descriptor for the current glyph image if its format is <a href="ft2-basic_types.html#FT_Glyph_Format">FT_GLYPH_FORMAT_OUTLINE</a>. Once a glyph is loaded, &lsquo;outline&rsquo; can be transformed, distorted, embolded, etc. However, it must not be freed.</p>
@@ -1389,7 +1319,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>An array of subglyph descriptors for composite glyphs. There are &lsquo;num_subglyphs&rsquo; elements in there. Currently internal to FreeType.</p>
 </td></tr>
 <tr valign=top><td><b>control_data</b></td><td>
-<p>Certain font drivers can also return the control data for a given glyph image (e.g. TrueType bytecode, Type 1 charstrings, etc.). This field is a pointer to such data.</p>
+<p>Certain font drivers can also return the control data for a given glyph image (e.g. TrueType bytecode, Type&nbsp;1 charstrings, etc.). This field is a pointer to such data.</p>
 </td></tr>
 <tr valign=top><td><b>control_len</b></td><td>
 <p>This is the length in bytes of the control data.</p>
@@ -1406,9 +1336,9 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>If <a href="ft2-base_interface.html#FT_Load_Glyph">FT_Load_Glyph</a> is called with default flags (see <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_DEFAULT</a>) the glyph image is loaded in the glyph slot in its native format (e.g., an outline glyph for TrueType and Type 1 formats).</p>
-<p>This image can later be converted into a bitmap by calling <a href="ft2-base_interface.html#FT_Render_Glyph">FT_Render_Glyph</a>. This function finds the current renderer for the native image's format then invokes it.</p>
-<p>The renderer is in charge of transforming the native image through the slot's face transformation fields, then convert it into a bitmap that is returned in &lsquo;slot-&gt;bitmap&rsquo;.</p>
+<p>If <a href="ft2-base_interface.html#FT_Load_Glyph">FT_Load_Glyph</a> is called with default flags (see <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_DEFAULT</a>) the glyph image is loaded in the glyph slot in its native format (e.g., an outline glyph for TrueType and Type&nbsp;1 formats).</p>
+<p>This image can later be converted into a bitmap by calling <a href="ft2-base_interface.html#FT_Render_Glyph">FT_Render_Glyph</a>. This function finds the current renderer for the native image's format, then invokes it.</p>
+<p>The renderer is in charge of transforming the native image through the slot's face transformation fields, then converting it into a bitmap that is returned in &lsquo;slot-&gt;bitmap&rsquo;.</p>
 <p>Note that &lsquo;slot-&gt;bitmap_left&rsquo; and &lsquo;slot-&gt;bitmap_top&rsquo; are also used to specify the position of the bitmap relative to the current pen position (e.g., coordinates (0,0) on the baseline). Of course, &lsquo;slot-&gt;format&rsquo; is also changed to <a href="ft2-basic_types.html#FT_Glyph_Format">FT_GLYPH_FORMAT_BITMAP</a>.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
@@ -1466,7 +1396,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -1497,7 +1427,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -1538,7 +1468,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>Copy the stream from the &lsquo;stream&rsquo; field.</p>
 </td></tr>
 <tr valign=top><td><b>FT_OPEN_PATHNAME</b></td><td>
-<p>Create a new input stream from a C path name.</p>
+<p>Create a new input stream from a C&nbsp;path name.</p>
 </td></tr>
 <tr valign=top><td><b>FT_OPEN_DRIVER</b></td><td>
 <p>Use the &lsquo;driver&rsquo; field.</p>
@@ -1653,7 +1583,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>A handle to a source stream object.</p>
 </td></tr>
 <tr valign=top><td><b>driver</b></td><td>
-<p>This field is exclusively used by <a href="ft2-base_interface.html#FT_Open_Face">FT_Open_Face</a>; it simply specifies the font driver to use to open the face. If set to 0, FreeType tries to load the face with each one of the drivers in its list.</p>
+<p>This field is exclusively used by <a href="ft2-base_interface.html#FT_Open_Face">FT_Open_Face</a>; it simply specifies the font driver to use to open the face. If set to&nbsp;0, FreeType tries to load the face with each one of the drivers in its list.</p>
 </td></tr>
 <tr valign=top><td><b>num_params</b></td><td>
 <p>The number of extra parameters.</p>
@@ -1670,7 +1600,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>Otherwise, if the &lsquo;FT_OPEN_PATHNAME&rsquo; bit is set, assume that this is a normal file and use &lsquo;pathname&rsquo; to open it.</p>
 <p>If the &lsquo;FT_OPEN_DRIVER&rsquo; bit is set, <a href="ft2-base_interface.html#FT_Open_Face">FT_Open_Face</a> only tries to open the file with the driver whose handler is in &lsquo;driver&rsquo;.</p>
 <p>If the &lsquo;FT_OPEN_PARAMS&rsquo; bit is set, the parameters given by &lsquo;num_params&rsquo; and &lsquo;params&rsquo; is used. They are ignored otherwise.</p>
-<p>Ideally, both the &lsquo;pathname&rsquo; and &lsquo;params&rsquo; fields should be tagged as &lsquo;const&rsquo;; this is missing for API backwards compatibility. With other words, applications should treat them as read-only.</p>
+<p>Ideally, both the &lsquo;pathname&rsquo; and &lsquo;params&rsquo; fields should be tagged as &lsquo;const&rsquo;; this is missing for API backwards compatibility. In other words, applications should treat them as read-only.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -1710,7 +1640,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>A path to the font file.</p>
 </td></tr>
 <tr valign=top><td><b>face_index</b></td><td>
-<p>The index of the face within the font. The first face has index 0.</p>
+<p>The index of the face within the font. The first face has index&nbsp;0.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -1723,7 +1653,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -1767,7 +1697,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>The size of the memory chunk used by the font data.</p>
 </td></tr>
 <tr valign=top><td><b>face_index</b></td><td>
-<p>The index of the face within the font. The first face has index 0.</p>
+<p>The index of the face within the font. The first face has index&nbsp;0.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -1780,7 +1710,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>You must not deallocate the memory before calling <a href="ft2-base_interface.html#FT_Done_Face">FT_Done_Face</a>.</p>
@@ -1823,7 +1753,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>A pointer to an &lsquo;FT_Open_Args&rsquo; structure which must be filled by the caller.</p>
 </td></tr>
 <tr valign=top><td><b>face_index</b></td><td>
-<p>The index of the face within the font. The first face has index 0.</p>
+<p>The index of the face within the font. The first face has index&nbsp;0.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -1836,11 +1766,11 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>Unlike FreeType 1.x, this function automatically creates a glyph slot for the face object which can be accessed directly through &lsquo;face-&gt;glyph&rsquo;.</p>
-<p>FT_Open_Face can be used to quickly check whether the font format of a given font resource is supported by FreeType. If the &lsquo;face_index&rsquo; field is negative, the function's return value is 0 if the font format is recognized, or non-zero otherwise; the function returns a more or less empty face handle in &lsquo;*aface&rsquo; (if &lsquo;aface&rsquo; isn't NULL). The only useful field in this special case is &lsquo;face-&gt;num_faces&rsquo; which gives the number of faces within the font file. After examination, the returned <a href="ft2-base_interface.html#FT_Face">FT_Face</a> structure should be deallocated with a call to <a href="ft2-base_interface.html#FT_Done_Face">FT_Done_Face</a>.</p>
+<p>FT_Open_Face can be used to quickly check whether the font format of a given font resource is supported by FreeType. If the &lsquo;face_index&rsquo; field is negative, the function's return value is&nbsp;0 if the font format is recognized, or non-zero otherwise; the function returns a more or less empty face handle in &lsquo;*aface&rsquo; (if &lsquo;aface&rsquo; isn't NULL). The only useful field in this special case is &lsquo;face-&gt;num_faces&rsquo; which gives the number of faces within the font file. After examination, the returned <a href="ft2-base_interface.html#FT_Face">FT_Face</a> structure should be deallocated with a call to <a href="ft2-base_interface.html#FT_Done_Face">FT_Done_Face</a>.</p>
 <p>Each new face object created with this function also owns a default <a href="ft2-base_interface.html#FT_Size">FT_Size</a> object, accessible as &lsquo;face-&gt;size&rsquo;.</p>
 </td></tr></table>
 </td></tr></table>
@@ -1881,7 +1811,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -1902,7 +1832,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>&lsquo;Attach&rsquo; data to a face object. Normally, this is used to read additional information for the face object. For example, you can attach an AFM file that comes with a Type 1 font to get the kerning values and other metrics.</p>
+<p>&lsquo;Attach&rsquo; data to a face object. Normally, this is used to read additional information for the face object. For example, you can attach an AFM file that comes with a Type&nbsp;1 font to get the kerning values and other metrics.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>inout</b></em></td></tr><tr><td>
 <p></p>
@@ -1921,7 +1851,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The meaning of the &lsquo;attach&rsquo; (i.e., what really happens when the new file is read) is not fixed by FreeType itself. It really depends on the font format (and thus the font driver).</p>
@@ -1956,7 +1886,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -1996,7 +1926,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -2115,14 +2045,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_Size_Request">FT_Size_Request</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-  <span class="keyword">typedef</span> <span class="keyword">struct</span> FT_Size_RequestRec_  *<b>FT_Size_Request</b>;
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>A handle to a size request structure.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -2163,7 +2085,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>Although drivers may select the bitmap strike matching the request, you should not rely on this if you intend to select a particular bitmap strike. Use <a href="ft2-base_interface.html#FT_Select_Size">FT_Select_Size</a> instead in that case.</p>
@@ -2218,12 +2140,13 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>If either the character width or height is zero, it is set equal to the other value.</p>
 <p>If either the horizontal or vertical resolution is zero, it is set equal to the other value.</p>
 <p>A character width or height smaller than 1pt is set to 1pt; if both resolution values are zero, they are set to 72dpi.</p>
+<p>Don't use this function if you are using the FreeType cache API.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -2267,7 +2190,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -2311,7 +2234,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The loaded glyph may be transformed. See <a href="ft2-base_interface.html#FT_Set_Transform">FT_Set_Transform</a> for the details.</p>
@@ -2359,7 +2282,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>This function simply calls <a href="ft2-base_interface.html#FT_Get_Char_Index">FT_Get_Char_Index</a> and <a href="ft2-base_interface.html#FT_Load_Glyph">FT_Load_Glyph</a>.</p>
@@ -2391,7 +2314,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 #define <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_IGNORE_TRANSFORM</a>             0x800
 #define <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_MONOCHROME</a>                   0x1000
 #define <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_LINEAR_DESIGN</a>                0x2000
-#define FT_LOAD_SBITS_ONLY                   0x4000   /* temporary hack! */
 #define <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_NO_AUTOHINT</a>                  0x8000U
 
 </pre></table><br>
@@ -2402,7 +2324,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>FT_LOAD_DEFAULT</b></td><td>
-<p>Corresponding to 0, this value is used as the default glyph load operation. In this case, the following happens:</p>
+<p>Corresponding to&nbsp;0, this value is used as the default glyph load operation. In this case, the following happens:</p>
 <p>1. FreeType looks for a bitmap for the glyph corresponding to the face's current size. If one is found, the function returns. The bitmap data can be accessed from the glyph slot (see note below).</p>
 <p>2. If no embedded bitmap is searched or found, FreeType looks for a scalable outline. If one is found, it is loaded from the font file, scaled to device pixels, then &lsquo;hinted&rsquo; to the pixel grid in order to optimize it. The outline data can be accessed from the glyph slot (see note below).</p>
 <p>Note that by default, the glyph loader doesn't render outlines into bitmaps. The following flags are used to modify this default behaviour to more specific and useful cases.</p>
@@ -2451,8 +2373,8 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>Indicates that the transform matrix set by <a href="ft2-base_interface.html#FT_Set_Transform">FT_Set_Transform</a> should be ignored.</p>
 </td></tr>
 <tr valign=top><td><b>FT_LOAD_MONOCHROME</b></td><td>
-<p>This flag is used with <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_RENDER</a> to indicate that you want to render an outline glyph to a 1-bit monochrome bitmap glyph, with 8 pixels packed into each byte of the bitmap data.</p>
-<p>Note that this has no effect on the hinting algorithm used. You should use <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_MONO</a> instead so that the monochrome-optimized hinting algorithm is used.</p>
+<p>This flag is used with <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_RENDER</a> to indicate that you want to render an outline glyph to a 1-bit monochrome bitmap glyph, with 8&nbsp;pixels packed into each byte of the bitmap data.</p>
+<p>Note that this has no effect on the hinting algorithm used. You should rather use <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_MONO</a> so that the monochrome-optimized hinting algorithm is used.</p>
 </td></tr>
 <tr valign=top><td><b>FT_LOAD_LINEAR_DESIGN</b></td><td>
 <p>Indicates that the &lsquo;linearHoriAdvance&rsquo; and &lsquo;linearVertAdvance&rsquo; fields of <a href="ft2-base_interface.html#FT_GlyphSlotRec">FT_GlyphSlotRec</a> should be kept in font units. See <a href="ft2-base_interface.html#FT_GlyphSlotRec">FT_GlyphSlotRec</a> for details.</p>
@@ -2464,6 +2386,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>By default, hinting is enabled and the font's native hinter (see <a href="ft2-base_interface.html#FT_FACE_FLAG_XXX">FT_FACE_FLAG_HINTER</a>) is preferred over the auto-hinter. You can disable hinting by setting <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_NO_HINTING</a> or change the precedence by setting <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_FORCE_AUTOHINT</a>. You can also set <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_NO_AUTOHINT</a> in case you don't want the auto-hinter to be used at all.</p>
+<p>See the description of <a href="ft2-base_interface.html#FT_FACE_FLAG_XXX">FT_FACE_FLAG_TRICKY</a> for a special exception (affecting only a handful of Asian fonts).</p>
 <p>Besides deciding which hinter to use, you can also decide which hinting algorithm to use. See <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_XXX</a> for details.</p>
 </td></tr></table>
 </td></tr></table>
@@ -2479,13 +2402,13 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </td></tr></table><br>
 <table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
 
-#define FT_LOAD_TARGET_( x )      ( (<a href="ft2-basic_types.html#FT_Int32">FT_Int32</a>)( (x) &amp; 15 ) &lt;&lt; 16 )
+#define FT_LOAD_TARGET_( x )   ( (<a href="ft2-basic_types.html#FT_Int32">FT_Int32</a>)( (x) &amp; 15 ) &lt;&lt; 16 )
 
-#define <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_NORMAL</a>     FT_LOAD_TARGET_( <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_NORMAL</a> )
-#define <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_LIGHT</a>      FT_LOAD_TARGET_( <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_LIGHT</a>  )
-#define <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_MONO</a>       FT_LOAD_TARGET_( <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_MONO</a>   )
-#define <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_LCD</a>        FT_LOAD_TARGET_( <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_LCD</a>    )
-#define <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_LCD_V</a>      FT_LOAD_TARGET_( <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_LCD_V</a>  )
+#define <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_NORMAL</a>  FT_LOAD_TARGET_( <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_NORMAL</a> )
+#define <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_LIGHT</a>   FT_LOAD_TARGET_( <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_LIGHT</a>  )
+#define <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_MONO</a>    FT_LOAD_TARGET_( <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_MONO</a>   )
+#define <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_LCD</a>     FT_LOAD_TARGET_( <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_LCD</a>    )
+#define <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_LCD_V</a>   FT_LOAD_TARGET_( <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_LCD_V</a>  )
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
@@ -2500,7 +2423,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>This corresponds to the default hinting algorithm, optimized for standard gray-level rendering. For monochrome output, use <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_MONO</a> instead.</p>
 </td></tr>
 <tr valign=top><td><b>FT_LOAD_TARGET_LIGHT</b></td><td>
-<p>A lighter hinting algorithm for non-monochrome modes. Many generated glyphs are more fuzzy but better resemble its original shape. A bit like rendering on Mac OS X.</p>
+<p>A lighter hinting algorithm for non-monochrome modes. Many generated glyphs are more fuzzy but better resemble its original shape. A bit like rendering on Mac OS&nbsp;X.</p>
 <p>As a special exception, this target implies <a href="ft2-base_interface.html#FT_LOAD_XXX">FT_LOAD_FORCE_AUTOHINT</a>.</p>
 </td></tr>
 <tr valign=top><td><b>FT_LOAD_TARGET_MONO</b></td><td>
@@ -2533,14 +2456,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="FT_LOAD_TARGET_MODE">FT_LOAD_TARGET_MODE</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-#define <b>FT_LOAD_TARGET_MODE</b>( x )  ( (<a href="ft2-base_interface.html#FT_Render_Mode">FT_Render_Mode</a>)( ( (x) &gt;&gt; 16 ) &amp; 15 ) )
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>Return the <a href="ft2-base_interface.html#FT_Render_Mode">FT_Render_Mode</a> corresponding to a given <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_XXX</a> value.</p>
 </td></tr></table><br>
@@ -2578,10 +2493,10 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>matrix</b></td><td>
-<p>A pointer to the transformation's 2x2 matrix. Use 0 for the identity matrix.</p>
+<p>A pointer to the transformation's 2x2 matrix. Use&nbsp;0 for the identity matrix.</p>
 </td></tr>
 <tr valign=top><td><b>delta</b></td><td>
-<p>A pointer to the translation vector. Use 0 for the null vector.</p>
+<p>A pointer to the translation vector. Use&nbsp;0 for the null vector.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -2616,31 +2531,33 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>An enumeration type that lists the render modes supported by FreeType 2. Each mode corresponds to a specific type of scanline conversion performed on the outline.</p>
-<p>For bitmap fonts the &lsquo;bitmap-&gt;pixel_mode&rsquo; field in the <a href="ft2-base_interface.html#FT_GlyphSlotRec">FT_GlyphSlotRec</a> structure gives the format of the returned bitmap.</p>
+<p>An enumeration type that lists the render modes supported by FreeType&nbsp;2. Each mode corresponds to a specific type of scanline conversion performed on the outline.</p>
+<p>For bitmap fonts and embedded bitmaps the &lsquo;bitmap-&gt;pixel_mode&rsquo; field in the <a href="ft2-base_interface.html#FT_GlyphSlotRec">FT_GlyphSlotRec</a> structure gives the format of the returned bitmap.</p>
+<p>All modes except <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_MONO</a> use 256 levels of opacity.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>values</b></em></td></tr><tr><td>
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>FT_RENDER_MODE_NORMAL</b></td><td>
-<p>This is the default render mode; it corresponds to 8-bit anti-aliased bitmaps, using 256 levels of opacity.</p>
+<p>This is the default render mode; it corresponds to 8-bit anti-aliased bitmaps.</p>
 </td></tr>
 <tr valign=top><td><b>FT_RENDER_MODE_LIGHT</b></td><td>
 <p>This is equivalent to <a href="ft2-base_interface.html#FT_Render_Mode">FT_RENDER_MODE_NORMAL</a>. It is only defined as a separate value because render modes are also used indirectly to define hinting algorithm selectors. See <a href="ft2-base_interface.html#FT_LOAD_TARGET_XXX">FT_LOAD_TARGET_XXX</a> for details.</p>
 </td></tr>
 <tr valign=top><td><b>FT_RENDER_MODE_MONO</b></td><td>
-<p>This mode corresponds to 1-bit bitmaps.</p>
+<p>This mode corresponds to 1-bit bitmaps (with 2&nbsp;levels of opacity).</p>
 </td></tr>
 <tr valign=top><td><b>FT_RENDER_MODE_LCD</b></td><td>
-<p>This mode corresponds to horizontal RGB and BGR sub-pixel displays, like LCD-screens. It produces 8-bit bitmaps that are 3 times the width of the original glyph outline in pixels, and which use the <a href="ft2-basic_types.html#FT_Pixel_Mode">FT_PIXEL_MODE_LCD</a> mode.</p>
+<p>This mode corresponds to horizontal RGB and BGR sub-pixel displays like LCD screens. It produces 8-bit bitmaps that are 3&nbsp;times the width of the original glyph outline in pixels, and which use the <a href="ft2-basic_types.html#FT_Pixel_Mode">FT_PIXEL_MODE_LCD</a> mode.</p>
 </td></tr>
 <tr valign=top><td><b>FT_RENDER_MODE_LCD_V</b></td><td>
-<p>This mode corresponds to vertical RGB and BGR sub-pixel displays (like PDA screens, rotated LCD displays, etc.). It produces 8-bit bitmaps that are 3 times the height of the original glyph outline in pixels and use the <a href="ft2-basic_types.html#FT_Pixel_Mode">FT_PIXEL_MODE_LCD_V</a> mode.</p>
+<p>This mode corresponds to vertical RGB and BGR sub-pixel displays (like PDA screens, rotated LCD displays, etc.). It produces 8-bit bitmaps that are 3&nbsp;times the height of the original glyph outline in pixels and use the <a href="ft2-basic_types.html#FT_Pixel_Mode">FT_PIXEL_MODE_LCD_V</a> mode.</p>
 </td></tr>
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The LCD-optimized glyph bitmaps produced by FT_Render_Glyph can be filtered to reduce color-fringes by using <a href="ft2-lcd_filtering.html#FT_Library_SetLcdFilter">FT_Library_SetLcdFilter</a> (not active in the default builds). It is up to the caller to either call <a href="ft2-lcd_filtering.html#FT_Library_SetLcdFilter">FT_Library_SetLcdFilter</a> (if available) or do the filtering itself.</p>
+<p>The selected render mode only affects vector glyphs of a font. Embedded bitmaps often have a different pixel mode like <a href="ft2-basic_types.html#FT_Pixel_Mode">FT_PIXEL_MODE_MONO</a>. You can use <a href="ft2-bitmap_handling.html#FT_Bitmap_Convert">FT_Bitmap_Convert</a> to transform them into 8-bit pixmaps.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -2711,7 +2628,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -2742,7 +2659,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>FT_KERNING_DEFAULT</b></td><td>
-<p>Return scaled and grid-fitted kerning distances (value is 0).</p>
+<p>Return scaled and grid-fitted kerning distances (value is&nbsp;0).</p>
 </td></tr>
 <tr valign=top><td><b>FT_KERNING_UNFITTED</b></td><td>
 <p>Return scaled but un-grid-fitted kerning distances.</p>
@@ -2761,14 +2678,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="ft_kerning_default">ft_kerning_default</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-#define <b>ft_kerning_default</b>   <a href="ft2-base_interface.html#FT_Kerning_Mode">FT_KERNING_DEFAULT</a>
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>This constant is deprecated. Please use <a href="ft2-base_interface.html#FT_Kerning_Mode">FT_KERNING_DEFAULT</a> instead.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -2780,14 +2689,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <table align=center width="75%"><tr><td>
 <h4><a name="ft_kerning_unfitted">ft_kerning_unfitted</a></h4>
 <table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-#define <b>ft_kerning_unfitted</b>  <a href="ft2-base_interface.html#FT_Kerning_Mode">FT_KERNING_UNFITTED</a>
-
-</pre></table><br>
-<table align=center width="87%"><tr><td>
 <p>This constant is deprecated. Please use <a href="ft2-base_interface.html#FT_Kerning_Mode">FT_KERNING_UNFITTED</a> instead.</p>
 </td></tr></table><br>
 </td></tr></table>
@@ -2798,14 +2699,6 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 <table align=center width="75%"><tr><td>
 <h4><a name="ft_kerning_unscaled">ft_kerning_unscaled</a></h4>
-<table align=center width="87%"><tr><td>
-Defined in FT_FREETYPE_H (freetype/freetype.h).
-</td></tr></table><br>
-<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
-
-#define <b>ft_kerning_unscaled</b>  <a href="ft2-base_interface.html#FT_Kerning_Mode">FT_KERNING_UNSCALED</a>
-
-</pre></table><br>
 <table align=center width="87%"><tr><td>
 <p>This constant is deprecated. Please use <a href="ft2-base_interface.html#FT_Kerning_Mode">FT_KERNING_UNSCALED</a> instead.</p>
 </td></tr></table><br>
@@ -2859,7 +2752,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>Only horizontal layouts (left-to-right &amp; right-to-left) are supported by this method. Other layouts, or more sophisticated kernings, are out of the scope of this API function -- they can be implemented through format-specific interfaces.</p>
@@ -2910,7 +2803,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -2933,7 +2826,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Retrieve the ASCII name of a given glyph in a face. This only works for those faces where <a href="ft2-base_interface.html#FT_HAS_GLYPH_NAMES">FT_HAS_GLYPH_NAMES</a>(face) returns 1.</p>
+<p>Retrieve the ASCII name of a given glyph in a face. This only works for those faces where <a href="ft2-base_interface.html#FT_HAS_GLYPH_NAMES">FT_HAS_GLYPH_NAMES</a>(face) returns&nbsp;1.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -2958,10 +2851,10 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>An error is returned if the face doesn't provide glyph names or if the glyph index is invalid. In all cases of failure, the first byte of &lsquo;buffer&rsquo; is set to 0 to indicate an empty name.</p>
+<p>An error is returned if the face doesn't provide glyph names or if the glyph index is invalid. In all cases of failure, the first byte of &lsquo;buffer&rsquo; is set to&nbsp;0 to indicate an empty name.</p>
 <p>The glyph name is truncated to fit within the buffer if it is too long. The returned string is always zero-terminated.</p>
 <p>This function is not compiled within the library if the config macro &lsquo;FT_CONFIG_OPTION_NO_GLYPH_NAMES&rsquo; is defined in &lsquo;include/freetype/config/ftoptions.h&rsquo;.</p>
 </td></tr></table>
@@ -2983,7 +2876,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Retrieve the ASCII Postscript name of a given face, if available. This only works with Postscript and TrueType fonts.</p>
+<p>Retrieve the ASCII PostScript name of a given face, if available. This only works with PostScript and TrueType fonts.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -2994,7 +2887,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>A pointer to the face's Postscript name. NULL if unavailable.</p>
+<p>A pointer to the face's PostScript name. NULL if unavailable.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The returned pointer is owned by the face and is destroyed with it.</p>
@@ -3037,7 +2930,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>This function returns an error if no charmap in the face corresponds to the encoding queried here.</p>
@@ -3081,11 +2974,11 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>This function returns an error if the charmap is not part of the face (i.e., if it is not listed in the &lsquo;face-&gt;charmaps&rsquo; table).</p>
-<p>It also fails if a type 14 charmap is selected.</p>
+<p>It also fails if a type&nbsp;14 charmap is selected.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -3151,10 +3044,10 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>The glyph index. 0 means &lsquo;undefined character code&rsquo;.</p>
+<p>The glyph index. 0&nbsp;means &lsquo;undefined character code&rsquo;.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
-<p>If you use FreeType to manipulate the contents of font files directly, be aware that the glyph index returned by this function doesn't always correspond to the internal indices used within the file. This is done to ensure that value 0 always corresponds to the &lsquo;missing glyph&rsquo;.</p>
+<p>If you use FreeType to manipulate the contents of font files directly, be aware that the glyph index returned by this function doesn't always correspond to the internal indices used within the file. This is done to ensure that value&nbsp;0 always corresponds to the &lsquo;missing glyph&rsquo;.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -3189,7 +3082,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>agindex</b></td><td>
-<p>Glyph index of first character code. 0 if charmap is empty.</p>
+<p>Glyph index of first character code. 0&nbsp;if charmap is empty.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -3211,7 +3104,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
     charcode = FT_Get_Next_Char( face, charcode, &amp;gindex );        
   }                                                                
 </pre>
-<p>Note that &lsquo;*agindex&rsquo; is set to 0 if the charmap is empty. The result itself can be 0 in two cases: if the charmap is empty or when the value 0 is the first valid character code.</p>
+<p>Note that &lsquo;*agindex&rsquo; is set to&nbsp;0 if the charmap is empty. The result itself can be&nbsp;0 in two cases: if the charmap is empty or if the value&nbsp;0 is the first valid character code.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -3250,7 +3143,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p></p>
 <table cellpadding=3 border=0>
 <tr valign=top><td><b>agindex</b></td><td>
-<p>Glyph index of first character code. 0 if charmap is empty.</p>
+<p>Glyph index of next character code. 0&nbsp;if charmap is empty.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -3259,7 +3152,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>You should use this function with <a href="ft2-base_interface.html#FT_Get_First_Char">FT_Get_First_Char</a> to walk over all character codes available in a given charmap. See the note for this function for a simple code example.</p>
-<p>Note that &lsquo;*agindex&rsquo; is set to 0 when there are no more codes in the charmap.</p>
+<p>Note that &lsquo;*agindex&rsquo; is set to&nbsp;0 when there are no more codes in the charmap.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -3294,7 +3187,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>The glyph index. 0 means &lsquo;undefined character code&rsquo;.</p>
+<p>The glyph index. 0&nbsp;means &lsquo;undefined character code&rsquo;.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
@@ -3376,7 +3269,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 
 </pre></table><br>
 <table align=center width="87%"><tr><td>
-<p>Retrieve a description of a given subglyph. Only use it if &lsquo;glyph-&gt;format&rsquo; is <a href="ft2-basic_types.html#FT_Glyph_Format">FT_GLYPH_FORMAT_COMPOSITE</a>, or an error is returned.</p>
+<p>Retrieve a description of a given subglyph. Only use it if &lsquo;glyph-&gt;format&rsquo; is <a href="ft2-basic_types.html#FT_Glyph_Format">FT_GLYPH_FORMAT_COMPOSITE</a>; an error is returned otherwise.</p>
 </td></tr></table><br>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
 <p></p>
@@ -3385,7 +3278,7 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 <p>The source glyph slot.</p>
 </td></tr>
 <tr valign=top><td><b>sub_index</b></td><td>
-<p>The index of subglyph. Must be less than &lsquo;glyph-&gt;num_subglyphs&rsquo;.</p>
+<p>The index of the subglyph. Must be less than &lsquo;glyph-&gt;num_subglyphs&rsquo;.</p>
 </td></tr>
 </table>
 </td></tr></table>
@@ -3410,10 +3303,101 @@ Defined in FT_FREETYPE_H (freetype/freetype.h).
 </table>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
-<p>FreeType error code. 0 means success.</p>
+<p>FreeType error code. 0&nbsp;means success.</p>
 </td></tr></table>
 <table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
 <p>The values of &lsquo;*p_arg1&rsquo;, &lsquo;*p_arg2&rsquo;, and &lsquo;*p_transform&rsquo; must be interpreted depending on the flags returned in &lsquo;*p_flags&rsquo;. See the TrueType specification for details.</p>
+</td></tr></table>
+</td></tr></table>
+<hr width="75%">
+<table align=center width="75%"><tr><td><font size=-2>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-2>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+
+<table align=center width="75%"><tr><td>
+<h4><a name="FT_FSTYPE_XXX">FT_FSTYPE_XXX</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+#define <a href="ft2-base_interface.html#FT_FSTYPE_XXX">FT_FSTYPE_INSTALLABLE_EMBEDDING</a>         0x0000
+#define <a href="ft2-base_interface.html#FT_FSTYPE_XXX">FT_FSTYPE_RESTRICTED_LICENSE_EMBEDDING</a>  0x0002
+#define <a href="ft2-base_interface.html#FT_FSTYPE_XXX">FT_FSTYPE_PREVIEW_AND_PRINT_EMBEDDING</a>   0x0004
+#define <a href="ft2-base_interface.html#FT_FSTYPE_XXX">FT_FSTYPE_EDITABLE_EMBEDDING</a>            0x0008
+#define <a href="ft2-base_interface.html#FT_FSTYPE_XXX">FT_FSTYPE_NO_SUBSETTING</a>                 0x0100
+#define <a href="ft2-base_interface.html#FT_FSTYPE_XXX">FT_FSTYPE_BITMAP_EMBEDDING_ONLY</a>         0x0200
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
+<p>A list of bit flags used in the &lsquo;fsType&rsquo; field of the OS/2 table in a TrueType or OpenType font and the &lsquo;FSType&rsquo; entry in a PostScript font. These bit flags are returned by <a href="ft2-base_interface.html#FT_Get_FSType_Flags">FT_Get_FSType_Flags</a>; they inform client applications of embedding and subsetting restrictions associated with a font.</p>
+<p>See http://www.adobe.com/devnet/acrobat/pdfs/FontPolicies.pdf for more details.</p>
+</td></tr></table><br>
+<table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>values</b></em></td></tr><tr><td>
+<p></p>
+<table cellpadding=3 border=0>
+<tr valign=top><td colspan=0><b>FT_FSTYPE_INSTALLABLE_EMBEDDING</b></td></tr>
+<tr valign=top><td></td><td>
+<p>Fonts with no fsType bit set may be embedded and permanently installed on the remote system by an application.</p>
+</td></tr>
+<tr valign=top><td colspan=0><b>FT_FSTYPE_RESTRICTED_LICENSE_EMBEDDING</b></td></tr>
+<tr valign=top><td></td><td>
+<p>Fonts that have only this bit set must not be modified, embedded or exchanged in any manner without first obtaining permission of the font software copyright owner.</p>
+</td></tr>
+<tr valign=top><td colspan=0><b>FT_FSTYPE_PREVIEW_AND_PRINT_EMBEDDING</b></td></tr>
+<tr valign=top><td></td><td>
+<p>If this bit is set, the font may be embedded and temporarily loaded on the remote system. Documents containing Preview &amp; Print fonts must be opened &lsquo;read-only&rsquo;; no edits can be applied to the document.</p>
+</td></tr>
+<tr valign=top><td colspan=0><b>FT_FSTYPE_EDITABLE_EMBEDDING</b></td></tr>
+<tr valign=top><td></td><td>
+<p>If this bit is set, the font may be embedded but must only be installed temporarily on other systems. In contrast to Preview &amp; Print fonts, documents containing editable fonts may be opened for reading, editing is permitted, and changes may be saved.</p>
+</td></tr>
+<tr valign=top><td colspan=0><b>FT_FSTYPE_NO_SUBSETTING</b></td></tr>
+<tr valign=top><td></td><td>
+<p>If this bit is set, the font may not be subsetted prior to embedding.</p>
+</td></tr>
+<tr valign=top><td colspan=0><b>FT_FSTYPE_BITMAP_EMBEDDING_ONLY</b></td></tr>
+<tr valign=top><td></td><td>
+<p>If this bit is set, only bitmaps contained in the font may be embedded; no outline data may be embedded. If there are no bitmaps available in the font, then the font is unembeddable.</p>
+</td></tr>
+</table>
+</td></tr></table>
+<table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
+<p>While the fsType flags can indicate that a font may be embedded, a license with the font vendor may be separately required to use the font in this way.</p>
+</td></tr></table>
+</td></tr></table>
+<hr width="75%">
+<table align=center width="75%"><tr><td><font size=-2>[<a href="ft2-index.html">Index</a>]</font></td>
+<td width="100%"></td>
+<td><font size=-2>[<a href="ft2-toc.html">TOC</a>]</font></td></tr></table>
+
+<table align=center width="75%"><tr><td>
+<h4><a name="FT_Get_FSType_Flags">FT_Get_FSType_Flags</a></h4>
+<table align=center width="87%"><tr><td>
+Defined in FT_FREETYPE_H (freetype/freetype.h).
+</td></tr></table><br>
+<table align=center width="87%"><tr bgcolor="#D6E8FF"><td><pre>
+
+  FT_EXPORT( <a href="ft2-basic_types.html#FT_UShort">FT_UShort</a> )
+  <b>FT_Get_FSType_Flags</b>( <a href="ft2-base_interface.html#FT_Face">FT_Face</a>  face );
+
+</pre></table><br>
+<table align=center width="87%"><tr><td>
+<p>Return the fsType flags for a font.</p>
+</td></tr></table><br>
+<table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>input</b></em></td></tr><tr><td>
+<p></p>
+<table cellpadding=3 border=0>
+<tr valign=top><td><b>face</b></td><td>
+<p>A handle to the source face object.</p>
+</td></tr>
+</table>
+</td></tr></table>
+<table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>return</b></em></td></tr><tr><td>
+<p>The fsType flags, <a href="ft2-base_interface.html#FT_FSTYPE_XXX">FT_FSTYPE_XXX</a>.</p>
+</td></tr></table>
+<table align=center width="87%" cellpadding=5><tr bgcolor="#EEEEFF"><td><em><b>note</b></em></td></tr><tr><td>
+<p>Use this function rather than directly reading the &lsquo;fs_type&rsquo; field in the <a href="ft2-type1_tables.html#PS_FontInfoRec">PS_FontInfoRec</a> structure which is only guaranteed to return the correct results for Type&nbsp;1 fonts.</p>
 </td></tr></table>
 </td></tr></table>
 <hr width="75%">
