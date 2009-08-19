@@ -36,7 +36,7 @@ Item {
         anchors.fill: Knob
         onClicked: { toggle() }
         onReleased: { dorelease() }
-        drag.target: Knob; drag.axis: "x"; drag.minimumX: 1; drag.maximumX: 78
+        drag.target: Knob; drag.axis: "XAxis"; drag.minimumX: 1; drag.maximumX: 78
     }
     states: [
         State {

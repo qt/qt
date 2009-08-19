@@ -8,6 +8,7 @@ Rect {
         color: "red"
         Text { text: "Click"; anchors.centerIn: parent }
         MouseRegion {
+            hoverEnabled: true
             onPressed: { print('press (x: ' + mouse.x + ' y: ' + mouse.y + ' button: ' + (mouse.button == Qt.RightButton ? 'right' : 'left') + ' Shift: ' + (mouse.modifiers & Qt.ShiftModifier ? 'true' : 'false') + ')') }
             onReleased: { print('release (x: ' + mouse.x + ' y: ' + mouse.y + ' isClick: ' + mouse.isClick + ' wasHeld: ' + mouse.wasHeld + ')') }
             onClicked: { print('click (x: ' + mouse.x + ' y: ' + mouse.y + ' wasHeld: ' + mouse.wasHeld + ')') }
@@ -24,7 +25,7 @@ Rect {
         Text { text: "Drag"; anchors.centerIn: parent }
         MouseRegion {
             drag.target: parent
-            drag.axis: "x"
+            drag.axis: "XAxis"
             drag.minimumX: 0
             drag.maximumX: 150
             onPressed: { print('press') }

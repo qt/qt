@@ -51,7 +51,7 @@ static const int PressAndHoldDelay = 800;
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Drag,QFxDrag)
 QFxDrag::QFxDrag(QObject *parent)
-: QObject(parent), _target(0), _xmin(0), _xmax(0), _ymin(0), _ymax(0)
+: QObject(parent), _target(0), _axis(XandYAxis), _xmin(0), _xmax(0), _ymin(0), _ymax(0)
 {
 }
 
@@ -69,12 +69,12 @@ void QFxDrag::setTarget(QFxItem *t)
     _target = t;
 }
 
-QString QFxDrag::axis() const
+QFxDrag::Axis QFxDrag::axis() const
 {
     return _axis;
 }
 
-void QFxDrag::setAxis(const QString &a)
+void QFxDrag::setAxis(QFxDrag::Axis a)
 {
     _axis = a;
 }
@@ -138,7 +138,7 @@ void QFxDrag::setYmax(qreal m)
     example extended so as to give a different color when you right click.
     \snippet doc/src/snippets/declarative/mouseregion.qml 1
 
-    For basic key handling, see \l KeyActions.
+    For basic key handling, see the \l {Keys}{Keys attached property}.
 
     MouseRegion is an invisible item: it is never painted.
 
@@ -164,6 +164,8 @@ void QFxDrag::setYmax(qreal m)
 
     The \l {MouseEvent}{mouse} parameter provides information about the mouse, including the x and y
     position, and any buttons currently pressed.
+
+    The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
 
 /*!
@@ -175,6 +177,8 @@ void QFxDrag::setYmax(qreal m)
 
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
     position of the release of the click, and whether the click wasHeld.
+
+    The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
 
 /*!
@@ -183,6 +187,12 @@ void QFxDrag::setYmax(qreal m)
     This handler is called when there is a press.
     The \l {MouseEvent}{mouse} parameter provides information about the press, including the x and y
     position and which button was pressed.
+
+    The \e accepted property of the MouseEvent parameter determines whether this MouseRegion
+    will handle the press \b {and all future mouse events until release}.  The default is to accept
+    the event and not allow other MouseRegions beneath this one to handle the event.  If \e accepted
+    is set to false, \b {no further events will be sent to this MouseRegion} until the button is next
+    pressed.
 */
 
 /*!
@@ -191,6 +201,8 @@ void QFxDrag::setYmax(qreal m)
     This handler is called when there is a release.
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
     position of the release of the click, and whether the click wasHeld.
+
+    The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
 
 /*!
@@ -199,6 +211,8 @@ void QFxDrag::setYmax(qreal m)
     This handler is called when there is a long press (currently 800ms).
     The \l {MouseEvent}{mouse} parameter provides information about the press, including the x and y
     position of the press, and which button is pressed.
+
+    The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
 
 /*!
@@ -207,6 +221,8 @@ void QFxDrag::setYmax(qreal m)
     This handler is called when there is a double-click (a press followed by a release followed by a press).
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
     position of the release of the click, and whether the click wasHeld.
+
+    The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,MouseRegion,QFxMouseRegion)
@@ -287,16 +303,16 @@ void QFxMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
     else {
         d->longPress = false;
         d->saveEvent(event);
-        d->dragX = drag()->axis().contains(QLatin1String("x"));
-        d->dragY = drag()->axis().contains(QLatin1String("y"));
+        d->dragX = drag()->axis() & QFxDrag::XAxis;
+        d->dragY = drag()->axis() & QFxDrag::YAxis;
         d->dragged = false;
         d->start = event->pos();
         d->startScene = event->scenePos();
-        // ### we should only start timer if pressAndHold is connected to (but connectNotify doesn't work)
-        d->pressAndHoldTimer.start(PressAndHoldDelay, this);
+        // we should only start timer if pressAndHold is connected to.
+        if (d->isConnected("pressAndHold(QFxMouseEvent*)"))
+            d->pressAndHoldTimer.start(PressAndHoldDelay, this);
         setKeepMouseGrab(false);
-        setPressed(true);
-        event->accept();
+        event->setAccepted(setPressed(true));
     }
 }
 
@@ -366,7 +382,6 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     d->moved = true;
     QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
     emit positionChanged(&me);
-    event->accept();
 }
 
 
@@ -378,7 +393,6 @@ void QFxMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     else {
         d->saveEvent(event);
         setPressed(false);
-        event->accept();
     }
 }
 
@@ -388,11 +402,13 @@ void QFxMouseRegion::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     if (!d->absorb)
         QFxItem::mouseDoubleClickEvent(event);
     else {
-        d->saveEvent(event);
-        setPressed(true);
-        QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, true, false);
-        emit this->doubleClicked(&me);
-        event->accept();
+        QFxItem::mouseDoubleClickEvent(event);
+        if (event->isAccepted()) {
+            // Only deliver the event if we have accepted the press.
+            d->saveEvent(event);
+            QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, true, false);
+            emit this->doubleClicked(&me);
+        }
     }
 }
 
@@ -447,10 +463,22 @@ void QFxMouseRegion::timerEvent(QTimerEvent *event)
 }
 
 /*!
+    \qmlproperty bool hoverEnabled
+    This property holds whether hover events are handled.
+
+    By default, mouse events are only handled in response to a button event, or when a button is
+    pressed.  Hover enables handling of all mouse events even when no mouse button is
+    pressed.
+
+    This property affects the containsMouse property and the onEntered, onExited and onPositionChanged signals.
+*/
+
+/*!
     \qmlproperty bool MouseRegion::containsMouse
     This property holds whether the mouse is currently inside the mouse region.
 
-    \warning This property is only partially implemented -- it is only valid when the mouse is pressed, and not for hover events.
+    \warning This property is only partially implemented -- it is only valid when the mouse is moved over the
+    region.  If the region moves under the mouse, \e containsMouse will not change.
 */
 bool QFxMouseRegion::hovered() const
 {
@@ -511,7 +539,7 @@ void QFxMouseRegion::setAcceptedButtons(Qt::MouseButtons buttons)
     }
 }
 
-void QFxMouseRegion::setPressed(bool p)
+bool QFxMouseRegion::setPressed(bool p)
 {
     Q_D(QFxMouseRegion);
     bool isclick = d->pressed == true && p == false && d->dragged == false && d->hovered == true;
@@ -529,7 +557,9 @@ void QFxMouseRegion::setPressed(bool p)
         }
 
         emit pressedChanged();
+        return me.isAccepted();
     }
+    return false;
 }
 
 QFxDrag *QFxMouseRegion::drag()
@@ -540,18 +570,18 @@ QFxDrag *QFxMouseRegion::drag()
 
 /*!
     \qmlproperty Item MouseRegion::drag.target
-    \qmlproperty string MouseRegion::drag.axis
-    \qmlproperty real MouseRegion::drag.xmin
-    \qmlproperty real MouseRegion::drag.xmax
-    \qmlproperty real MouseRegion::drag.ymin
-    \qmlproperty real MouseRegion::drag.ymax
+    \qmlproperty Axis MouseRegion::drag.axis
+    \qmlproperty real MouseRegion::drag.minimumX
+    \qmlproperty real MouseRegion::drag.maximumX
+    \qmlproperty real MouseRegion::drag.minimumY
+    \qmlproperty real MouseRegion::drag.maximumY
 
     drag provides a convenient way to make an item draggable.
 
     \list
     \i \c target specifies the item to drag.
-    \i \c axis specifies whether dragging can be done horizontally (x), vertically (y), or both (x,y)
-    \i the min and max properties limit how far the target can be dragged along the corresponding axes.
+    \i \c axis specifies whether dragging can be done horizontally (XAxis), vertically (YAxis), or both (XandYAxis)
+    \i the minimum and maximum properties limit how far the target can be dragged along the corresponding axes.
     \endlist
 
     The following example uses drag to reduce the opacity of an image as it moves to the right:
