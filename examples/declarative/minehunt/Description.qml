@@ -7,7 +7,7 @@ Item {
     MouseRegion {
         anchors.fill: parent
         drag.target: Page
-        drag.axis: "xy"
+        drag.axis: "XandYAxis"
         drag.minimumX: 0
         drag.maximumX: 1000
         drag.minimumY: 0

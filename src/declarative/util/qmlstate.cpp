@@ -168,13 +168,6 @@ QmlState::~QmlState()
 
     Each state should have a unique name.
 */
-
-/*!
-    \property QmlState::name
-    \brief the name of the state
-
-    Each state should have a unique name.
-*/
 QString QmlState::name() const
 {
     Q_D(const QmlState);
@@ -200,14 +193,6 @@ bool QmlState::isWhenKnown() const
     This should be set to an expression that evaluates to true when you want the state to
     be applied.
 */
-
-/*!
-    \property QmlState::when
-    \brief when the state should be applied
-
-    This should be set to an expression that evaluates to true when you want the state to
-    be applied.
-*/
 QmlBinding *QmlState::when() const
 {
     Q_D(const QmlState);
@@ -229,16 +214,6 @@ void QmlState::setWhen(QmlBinding *when)
     The state being extended is treated as the base state in regards to
     the changes specified by the extending state.
 */
-
-/*!
-    \property QmlState::extends
-    \brief the state that this state extends
-
-    The state being extended is treated as the base state in regards to
-    the changes specified by the extending state.
-
-    \sa operations
-*/
 QString QmlState::extends() const
 {
     Q_D(const QmlState);
@@ -255,15 +230,6 @@ void QmlState::setExtends(const QString &extends)
     \qmlproperty list<StateOperation> State::operations
     This property holds the changes to apply for this state
     \default
-
-    By default these changes are applied against the default state. If the state
-    extends another state, then the changes are applied against the state being
-    extended.
-*/
-
-/*!
-    \property QmlState::operations
-    \brief the changes to apply for this state
 
     By default these changes are applied against the default state. If the state
     extends another state, then the changes are applied against the state being

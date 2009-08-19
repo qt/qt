@@ -86,7 +86,7 @@ Item {
         text: Container.label + "..."
     }
 
-    TextEdit {
+    TextInput {
         id: Editor
         font.bold: true
         color: "white"

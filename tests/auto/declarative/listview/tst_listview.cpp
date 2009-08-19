@@ -456,14 +456,14 @@ QFxView *tst_QFxListView::createView(const QString &filename)
    item must also evaluate the {index} expression equal to index
 */
 template<typename T>
-T *tst_QFxListView::findItem(QFxItem *parent, const QString &id, int index)
+T *tst_QFxListView::findItem(QFxItem *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
     qDebug() << parent->children()->count() << "children";
     for (int i = 0; i < parent->children()->count(); ++i) {
         QFxItem *item = parent->children()->at(i);
         qDebug() << "try" << item;
-        if (mo.cast(item) && (id.isEmpty() || item->id() == id)) {
+        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             if (index != -1) {
                 QmlExpression e(qmlContext(item), "index", item);
                 e.setTrackChange(false);
@@ -473,7 +473,7 @@ T *tst_QFxListView::findItem(QFxItem *parent, const QString &id, int index)
                 return static_cast<T*>(item);
             }
         }
-        item = findItem<T>(item, id, index);
+        item = findItem<T>(item, objectName, index);
         if (item)
             return static_cast<T*>(item);
     }

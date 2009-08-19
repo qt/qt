@@ -105,7 +105,7 @@ public:
     QFxMouseEvent(int x, int y, Qt::MouseButton button, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers
                   , bool isClick=false, bool wasHeld=false)
         : _x(x), _y(y), _button(button), _buttons(buttons), _modifiers(modifiers)
-          , _wasHeld(wasHeld), _isClick(isClick), _accepted(false) {}
+          , _wasHeld(wasHeld), _isClick(isClick), _accepted(true) {}
 
     int x() const { return _x; }
     int y() const { return _y; }

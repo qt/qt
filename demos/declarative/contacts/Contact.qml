@@ -82,9 +82,10 @@ Item {
     }
     VerticalPositioner {
         id: layout
-        anchors.fill: parent
+        width: contents.width
+        height:contents.height
+        anchors.centerIn: parent
         spacing: 5
-        margin: 5
         ContactField {
             id: labelField
             anchors.left: layout.left
