@@ -2337,16 +2337,9 @@ Q_CORE_EXPORT QString qtTrId(const char *id, int n = -1);
    classes contains a private copy constructor and assignment
    operator to disable copying (the compiler gives an error message).
 */
-
-#if !defined(Q_NO_DECLARED_NOT_DEFINED) || !defined(QT_MAKEDLL)
-# define Q_DISABLE_COPY(Class) \
-     Class(const Class &); \
-     Class &operator=(const Class &);
-#else
-# define Q_DISABLE_COPY(Class) \
-     Class(const Class &); \
-     Class &operator=(const Class &);
-#endif
+#define Q_DISABLE_COPY(Class) \
+    Class(const Class &); \
+    Class &operator=(const Class &);
 
 class QByteArray;
 Q_CORE_EXPORT QByteArray qgetenv(const char *varName);
