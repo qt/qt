@@ -121,9 +121,6 @@ public:
     bool hovered() const;
     bool pressed() const;
 
-    void setHovered(bool);
-    void setPressed(bool);
-
     Qt::MouseButtons acceptedButtons() const;
     void setAcceptedButtons(Qt::MouseButtons buttons);
 
@@ -145,6 +142,9 @@ Q_SIGNALS:
     void exited();
 
 protected:
+    void setHovered(bool);
+    bool setPressed(bool);
+
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);

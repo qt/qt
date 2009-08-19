@@ -164,6 +164,8 @@ void QFxDrag::setYmax(qreal m)
 
     The \l {MouseEvent}{mouse} parameter provides information about the mouse, including the x and y
     position, and any buttons currently pressed.
+
+    The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
 
 /*!
@@ -175,6 +177,8 @@ void QFxDrag::setYmax(qreal m)
 
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
     position of the release of the click, and whether the click wasHeld.
+
+    The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
 
 /*!
@@ -183,6 +187,12 @@ void QFxDrag::setYmax(qreal m)
     This handler is called when there is a press.
     The \l {MouseEvent}{mouse} parameter provides information about the press, including the x and y
     position and which button was pressed.
+
+    The \e accepted property of the MouseEvent parameter determines whether this MouseRegion
+    will handle the press \b {and all future mouse events until release}.  The default is to accept
+    the event and not allow other MouseRegions beneath this one to handle the event.  If \e accepted
+    is set to false, \b {no further events will be sent to this MouseRegion} until the button is next
+    pressed.
 */
 
 /*!
@@ -191,6 +201,8 @@ void QFxDrag::setYmax(qreal m)
     This handler is called when there is a release.
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
     position of the release of the click, and whether the click wasHeld.
+
+    The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
 
 /*!
@@ -199,6 +211,8 @@ void QFxDrag::setYmax(qreal m)
     This handler is called when there is a long press (currently 800ms).
     The \l {MouseEvent}{mouse} parameter provides information about the press, including the x and y
     position of the press, and which button is pressed.
+
+    The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
 
 /*!
@@ -207,6 +221,8 @@ void QFxDrag::setYmax(qreal m)
     This handler is called when there is a double-click (a press followed by a release followed by a press).
     The \l {MouseEvent}{mouse} parameter provides information about the click, including the x and y
     position of the release of the click, and whether the click wasHeld.
+
+    The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,MouseRegion,QFxMouseRegion)
@@ -292,11 +308,11 @@ void QFxMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
         d->dragged = false;
         d->start = event->pos();
         d->startScene = event->scenePos();
-        // ### we should only start timer if pressAndHold is connected to (but connectNotify doesn't work)
-        d->pressAndHoldTimer.start(PressAndHoldDelay, this);
+        // we should only start timer if pressAndHold is connected to.
+        if (d->isConnected("pressAndHold(QFxMouseEvent*)"))
+            d->pressAndHoldTimer.start(PressAndHoldDelay, this);
         setKeepMouseGrab(false);
-        setPressed(true);
-        event->accept();
+        event->setAccepted(setPressed(true));
     }
 }
 
@@ -366,7 +382,6 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     d->moved = true;
     QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
     emit positionChanged(&me);
-    event->accept();
 }
 
 
@@ -378,7 +393,6 @@ void QFxMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     else {
         d->saveEvent(event);
         setPressed(false);
-        event->accept();
     }
 }
 
@@ -388,11 +402,13 @@ void QFxMouseRegion::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     if (!d->absorb)
         QFxItem::mouseDoubleClickEvent(event);
     else {
-        d->saveEvent(event);
-        setPressed(true);
-        QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, true, false);
-        emit this->doubleClicked(&me);
-        event->accept();
+        QFxItem::mouseDoubleClickEvent(event);
+        if (event->isAccepted()) {
+            // Only deliver the event if we have accepted the press.
+            d->saveEvent(event);
+            QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, true, false);
+            emit this->doubleClicked(&me);
+        }
     }
 }
 
@@ -523,7 +539,7 @@ void QFxMouseRegion::setAcceptedButtons(Qt::MouseButtons buttons)
     }
 }
 
-void QFxMouseRegion::setPressed(bool p)
+bool QFxMouseRegion::setPressed(bool p)
 {
     Q_D(QFxMouseRegion);
     bool isclick = d->pressed == true && p == false && d->dragged == false && d->hovered == true;
@@ -541,7 +557,9 @@ void QFxMouseRegion::setPressed(bool p)
         }
 
         emit pressedChanged();
+        return me.isAccepted();
     }
+    return false;
 }
 
 QFxDrag *QFxMouseRegion::drag()
