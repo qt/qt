@@ -1958,8 +1958,26 @@ void tst_QScriptEngine::valueConversion()
         QRegExp in = QRegExp("foo");
         QScriptValue val = qScriptValueFromValue(&eng, in);
         QVERIFY(val.isRegExp());
-        QEXPECT_FAIL("", "RegExp <--> ScriptValue RegExp conversion is buggy", Continue);
+        QRegExp out = val.toRegExp();
+        QEXPECT_FAIL("", "JSC-based back-end doesn't preserve QRegExp::patternSyntax (always uses RegExp2)", Continue);
+        QCOMPARE(out.patternSyntax(), in.patternSyntax());
+        QCOMPARE(out.pattern(), in.pattern());
+        QCOMPARE(out.caseSensitivity(), in.caseSensitivity());
+        QCOMPARE(out.isMinimal(), in.isMinimal());
+    }
+    {
+        QRegExp in = QRegExp("foo", Qt::CaseSensitive, QRegExp::RegExp2);
+        QScriptValue val = qScriptValueFromValue(&eng, in);
+        QVERIFY(val.isRegExp());
         QCOMPARE(val.toRegExp(), in);
+    }
+    {
+        QRegExp in = QRegExp("foo");
+        in.setMinimal(true);
+        QScriptValue val = qScriptValueFromValue(&eng, in);
+        QVERIFY(val.isRegExp());
+        QEXPECT_FAIL("", "JSC-based back-end doesn't preserve QRegExp::minimal (always false)", Continue);
+        QCOMPARE(val.toRegExp().isMinimal(), in.isMinimal());
     }
 }
 
