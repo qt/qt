@@ -74,7 +74,6 @@ public:
 
     void clearComponentCache();
 
-
     void addImportPath(const QString& dir);
 
     void setNetworkAccessManager(QNetworkAccessManager *);

@@ -532,15 +532,6 @@ void QmlDeclarativeData::destroyed(QObject *object)
     delete this;
 }
 
-/*! \internal */
-/*
-QScriptEngine *QmlEngine::scriptEngine()
-{
-    Q_D(QmlEngine);
-    return &d->scriptEngine;
-}
-*/
-
 /*!
     Creates a QScriptValue allowing you to use \a object in QML script.
     \a engine is the QmlEngine it is to be created in.
