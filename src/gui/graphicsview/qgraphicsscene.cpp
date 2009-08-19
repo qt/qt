@@ -207,7 +207,6 @@
 
 #ifndef QT_NO_GRAPHICSVIEW
 
-#include "qgraphicseffect_p.h"
 #include "qgraphicsitem.h"
 #include "qgraphicsitem_p.h"
 #include "qgraphicslayout.h"
@@ -250,6 +249,7 @@
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
+#include <private/qgraphicseffect_p.h>
 
 QT_BEGIN_NAMESPACE
 

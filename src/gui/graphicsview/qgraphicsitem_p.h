@@ -57,9 +57,10 @@
 #include "qset.h"
 #include "qpixmapcache.h"
 #include "qgraphicsview_p.h"
-#include "qgraphicseffect_p.h"
 #include "qgraphicstransform.h"
 #include "qgraphicstransform_p.h"
+
+#include <private/qgraphicseffect_p.h>
 
 #include <QtCore/qpoint.h>
 

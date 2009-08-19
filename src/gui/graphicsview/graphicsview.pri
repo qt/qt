@@ -22,8 +22,6 @@ HEADERS += graphicsview/qgraphicsgridlayout.h \
     graphicsview/qgraphicsview_p.h \
     graphicsview/qgraphicswidget.h \
     graphicsview/qgraphicswidget_p.h \
-    graphicsview/qgraphicseffect.h \
-    graphicsview/qgraphicseffect_p.h \
     graphicsview/qgridlayoutengine_p.h
 
 SOURCES += graphicsview/qgraphicsgridlayout.cpp \
@@ -44,5 +42,4 @@ SOURCES += graphicsview/qgraphicsgridlayout.cpp \
     graphicsview/qgraphicsview.cpp \
     graphicsview/qgraphicswidget.cpp \
     graphicsview/qgraphicswidget_p.cpp \
-    graphicsview/qgridlayoutengine.cpp \
-    graphicsview/qgraphicseffect.cpp
+    graphicsview/qgridlayoutengine.cpp
