@@ -102,6 +102,7 @@ class QScriptValuePrivate
             QScriptValueAutoRegister(QScriptValueAutoRegister &/*enigne*/){}; //block it
     };
 
+    Q_DISABLE_COPY(QScriptValuePrivate);
 public:
     enum Type {
         JSC,
