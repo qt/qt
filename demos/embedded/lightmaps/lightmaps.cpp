@@ -269,6 +269,7 @@ public:
         m_normalMap->latitude = lat;
         m_normalMap->longitude = lng;
         m_normalMap->invalidate();
+        m_largeMap->invalidate();
     }
 
 public slots:
@@ -300,6 +301,9 @@ protected:
         m_normalMap->width = width();
         m_normalMap->height = height();
         m_normalMap->invalidate();
+        m_largeMap->width = m_normalMap->width * 2;
+        m_largeMap->height = m_normalMap->height * 2;
+        m_largeMap->invalidate();
     }
 
     void paintEvent(QPaintEvent *event) {
