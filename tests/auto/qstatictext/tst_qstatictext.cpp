@@ -47,7 +47,7 @@
 
 #include <private/qstatictext_p.h>
 
-#define DEBUG_SAVE_IMAGE
+// #define DEBUG_SAVE_IMAGE
 
 class tst_QStaticText: public QObject
 {
