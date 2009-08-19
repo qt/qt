@@ -16,6 +16,7 @@
     <example filename="anomaly" name="Anomaly Browser" image="screenshots/anomaly_s60.png"/>
     <example filename="raycasting" name="Ray casting" image="screenshots/raycasting.png"/>
     <example filename="lightmaps" name="OpenStreetMap" image="screenshots/lightmaps.png"/>
+    <example filename="flightinfo" name="Flight Info" image="screenshots/flightinfo_s60.png"/>
   </demos>
   <slideshow timeout="60000" interval="10000">
     <imagedir dir="slides"/>
