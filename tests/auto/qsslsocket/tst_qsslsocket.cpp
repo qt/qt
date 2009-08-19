@@ -538,7 +538,6 @@ void tst_QSslSocket::sslErrors()
 
     SslErrorList output;
     foreach (QSslError error, socket->sslErrors()) {
-        //printf("error = %s\n", error.errorString().toAscii().data());
         output << error.error();
     }
 
