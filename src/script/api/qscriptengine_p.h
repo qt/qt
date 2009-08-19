@@ -250,8 +250,6 @@ public:
 
     QSet<QScriptValuePrivate*> attachedScriptValues;  //keep trace to all QScriptValue evalueted
 
-    QAtomicInt idGenerator;  //generate id for QScriptValue
-
 #ifndef QT_NO_QOBJECT
     QHash<QObject*, QScript::QObjectData*> m_qobjectData;
 #endif

@@ -275,7 +275,7 @@ qsreal ToInteger(qsreal n)
 
 } // namespace QScript
 
-QScriptValuePrivate::QScriptValuePrivate() : engine(this), valid(true), id(-1)
+QScriptValuePrivate::QScriptValuePrivate() : engine(this), valid(true)
 {
     ref = 0;
 }
@@ -2547,6 +2547,6 @@ void QScriptValue::setScriptClass(QScriptClass *scriptClass)
 */
 qint64 QScriptValue::objectId() const
 {
-    return d_ptr?d_ptr->id:-1;
+    return d_ptr?d_ptr->objectId():-1;
 }
 QT_END_NAMESPACE

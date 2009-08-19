@@ -807,7 +807,7 @@ private:
 } // namespace QScript
 
 QScriptEnginePrivate::QScriptEnginePrivate()
-    : inEval(false), idGenerator(1)
+    : inEval(false)
 {
     qMetaTypeId<QScriptValue>();
 
@@ -1392,7 +1392,6 @@ bool QScriptEnginePrivate::scriptDisconnect(JSC::JSValue signal, JSC::JSValue re
 #endif
 void QScriptEnginePrivate::registerScriptValue(QScriptValuePrivate *value)
 {
-    value->id=idGenerator.fetchAndAddRelaxed(1);
     attachedScriptValues.insert(value);
 }
 
@@ -3725,7 +3724,7 @@ QScriptValue QScriptEngine::objectById(qint64 id) const
     Q_D(const QScriptEngine);
     QSet<QScriptValuePrivate*>::const_iterator i = d->attachedScriptValues.constBegin();
     while(i != d->attachedScriptValues.constEnd()) {
-        if ( (*i)->id == id )
+        if ( (*i)->objectId() == id )
             return QScriptValuePrivate::get(*i);
         i++;
     }

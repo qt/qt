@@ -148,6 +148,14 @@ public:
         engine=0;
     }
 
+    qint64 objectId()
+    {
+        if ( (type == JSC) && (valid) && (engine) )
+            return (qint64)jscValue.asCell();
+        else
+            return -1;
+    }
+
     static void saveException(JSC::ExecState*, JSC::JSValue*);
     static void restoreException(JSC::ExecState*, JSC::JSValue);
 
@@ -160,7 +168,6 @@ public:
     QBasicAtomicInt ref;
     bool valid; //object is valid ?
 
-    qint64 id;  //object unique id number
 };
 
 
