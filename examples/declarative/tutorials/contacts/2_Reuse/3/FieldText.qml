@@ -67,7 +67,7 @@ Rect {
         x: 5
         width: parent.width-10
         anchors.verticalCenter: parent.verticalCenter
-        hAlign: "AlignHCenter"
+        horizontalAlignment: "AlignHCenter"
         color: "#505050"
         font.italic: true
         text: fieldText.label

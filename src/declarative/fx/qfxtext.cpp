@@ -299,14 +299,14 @@ QColor QFxText::styleColor() const
 }
 
 /*!
-    \qmlproperty enumeration Text::hAlign
-    \qmlproperty enumeration Text::vAlign
+    \qmlproperty enumeration Text::horizontalAlignment
+    \qmlproperty enumeration Text::verticalAlignment
 
     Sets the horizontal and vertical alignment of the text within the Text items
     width and height.  By default, the text is top-left aligned.
 
-    The valid values for \c hAlign are \c AlignLeft, \c AlignRight and
-    \c AlignHCenter.  The valid values for \c vAlign are \c AlignTop, \c AlignBottom
+    The valid values for \c horizontalAlignment are \c AlignLeft, \c AlignRight and
+    \c AlignHCenter.  The valid values for \c verticalAlignment are \c AlignTop, \c AlignBottom
     and \c AlignVCenter.
 */
 

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QFXLINEEDIT_H
-#define QFXLINEEDIT_H
+#ifndef QFXTEXTINPUT_H
+#define QFXTEXTINPUT_H
 
 #include "qfxtext.h"
 #include "qfxpainteditem.h"
@@ -53,10 +53,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxLineEditPrivate;
+class QFxTextInputPrivate;
 class QValidator;
-//### class QFxTextInput??
-class Q_DECLARATIVE_EXPORT QFxLineEdit : public QFxPaintedItem
+class Q_DECLARATIVE_EXPORT QFxTextInput : public QFxPaintedItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)
@@ -66,7 +65,7 @@ class Q_DECLARATIVE_EXPORT QFxLineEdit : public QFxPaintedItem
     Q_PROPERTY(QColor highlightColor READ highlightColor WRITE setHighlightColor) //### selectionColor
     Q_PROPERTY(QColor highlightedTextColor READ highlightedTextColor WRITE setHighlightedTextColor) //### selectedTextColor
     Q_PROPERTY(QFont font READ font WRITE setFont)
-    Q_PROPERTY(HAlignment hAlign READ hAlign WRITE setHAlign) //### horizontalAlignment
+    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign)
 
     Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
     Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
@@ -76,16 +75,16 @@ class Q_DECLARATIVE_EXPORT QFxLineEdit : public QFxPaintedItem
     Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
     Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectedTextChanged)
 
-    Q_PROPERTY(int maxLength READ maxLength WRITE setMaxLength) //### maximumLength
-    Q_PROPERTY(QObject* validator READ validator WRITE setValidator) //### QValidator *
+    Q_PROPERTY(int maximumLength READ maxLength WRITE setMaxLength)
+    Q_PROPERTY(QValidator* validator READ validator WRITE setValidator)
     Q_PROPERTY(QString inputMask READ inputMask WRITE setInputMask)
     Q_PROPERTY(bool acceptableInput READ hasAcceptableInput NOTIFY acceptableInputChanged)
     Q_PROPERTY(uint echoMode READ echoMode WRITE setEchoMode) //### enum
     //### Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
 
 public:
-    QFxLineEdit(QFxItem* parent=0);
-    ~QFxLineEdit();
+    QFxTextInput(QFxItem* parent=0);
+    ~QFxTextInput();
 
     enum HAlignment {
         AlignLeft = Qt::AlignLeft,
@@ -135,8 +134,8 @@ public:
     int maxLength() const;
     void setMaxLength(int ml);
 
-    QObject * validator() const;
-    void setValidator(QObject* v);
+    QValidator * validator() const;
+    void setValidator(QValidator* v);
 
     QString inputMask() const;
     void setInputMask(const QString &im);
@@ -160,7 +159,7 @@ Q_SIGNALS:
     void acceptableInputChanged();
 
 protected:
-    QFxLineEdit(QFxLineEditPrivate &dd, QFxItem *parent);
+    QFxTextInput(QFxTextInputPrivate &dd, QFxItem *parent);
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
 
@@ -180,13 +179,15 @@ private Q_SLOTS:
     void cursorPosChanged();
 
 private:
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxLineEdit);
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxTextInput);
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxLineEdit)
+QML_DECLARE_TYPE(QFxTextInput)
+QML_DECLARE_TYPE(QValidator)
 QML_DECLARE_TYPE(QIntValidator)
 
 QT_END_HEADER
-#endif // QFXLINEEDIT_H
+
+#endif // QFXTEXTINPUT_H

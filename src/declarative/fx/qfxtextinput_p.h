@@ -39,10 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QFXLINEEDIT_P_H
-#define QFXLINEEDIT_P_H
+#ifndef QFXTEXTINPUT_P_H
+#define QFXTEXTINPUT_P_H
 
-#include "qfxlineedit.h"
+#include "qfxtextinput.h"
 #include "qml.h"
 #include "qfxpainteditem_p.h"
 #include "private/qlinecontrol_p.h"
@@ -59,18 +59,18 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxLineEditPrivate : public QFxPaintedItemPrivate
+class QFxTextInputPrivate : public QFxPaintedItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxLineEdit);
+    Q_DECLARE_PUBLIC(QFxTextInput);
 public:
-    QFxLineEditPrivate() : control(new QLineControl(QString())),
+    QFxTextInputPrivate() : control(new QLineControl(QString())),
                  color((QRgb)0), style(QFxText::Normal),
-                 styleColor((QRgb)0), hAlign(QFxLineEdit::AlignLeft),
+                 styleColor((QRgb)0), hAlign(QFxTextInput::AlignLeft),
                  hscroll(0), oldScroll(0), focused(false), cursorVisible(false)
     {
     }
 
-    ~QFxLineEditPrivate()
+    ~QFxTextInputPrivate()
     {
     }
 
@@ -85,7 +85,7 @@ public:
     QColor  highlightedTextColor;
     QFxText::TextStyle style;
     QColor  styleColor;
-    QFxLineEdit::HAlignment hAlign;
+    QFxTextInput::HAlignment hAlign;
     QPointer<QmlComponent> cursorComponent;
     QPointer<QFxItem> cursorItem;
 

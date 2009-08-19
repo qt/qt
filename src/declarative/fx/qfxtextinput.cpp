@@ -39,39 +39,41 @@
 **
 ****************************************************************************/
 
-#include "qfxlineedit.h"
-#include "qfxlineedit_p.h"
+#include "qfxtextinput.h"
+#include "qfxtextinput_p.h"
 #include <QValidator>
 #include <QApplication>
 #include <QFontMetrics>
 #include <QPainter>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,LineEdit,QFxLineEdit);
+
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,TextInput,QFxTextInput);
+QML_DEFINE_NOCREATE_TYPE(QValidator);
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QIntValidator,QIntValidator);
 
 /*!
     \qmlclass LineEdit
     The LineEdit item allows you to add an editable line of text to a scene.
 */
-QFxLineEdit::QFxLineEdit(QFxItem* parent)
-    : QFxPaintedItem(*(new QFxLineEditPrivate), parent)
+QFxTextInput::QFxTextInput(QFxItem* parent)
+    : QFxPaintedItem(*(new QFxTextInputPrivate), parent)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     d->init();
 }
 
 /*
    \internal
 */
-QFxLineEdit::QFxLineEdit(QFxLineEditPrivate &dd, QFxItem* parent)
+QFxTextInput::QFxTextInput(QFxTextInputPrivate &dd, QFxItem* parent)
     : QFxPaintedItem(dd, parent)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     d->init();
 }
 
-QFxLineEdit::~QFxLineEdit()
+QFxTextInput::~QFxTextInput()
 {
 }
 
@@ -81,15 +83,15 @@ QFxLineEdit::~QFxLineEdit()
     The text in the LineEdit.
 */
 
-QString QFxLineEdit::text() const
+QString QFxTextInput::text() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->control->text();
 }
 
-void QFxLineEdit::setText(const QString &s)
+void QFxTextInput::setText(const QString &s)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     if(s == text())
         return;
     d->control->setText(s);
@@ -101,15 +103,15 @@ void QFxLineEdit::setText(const QString &s)
 
     Set the LineEdit's font attributes.  \c font.size sets the font's point size.
 */
-QFont QFxLineEdit::font() const
+QFont QFxTextInput::font() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->font;
 }
 
-void QFxLineEdit::setFont(const QFont &font)
+void QFxTextInput::setFont(const QFont &font)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     d->font = font;
 
     d->control->setFont(d->font);
@@ -127,15 +129,15 @@ void QFxLineEdit::setFont(const QFont &font)
 
     The text color.
 */
-QColor QFxLineEdit::color() const
+QColor QFxTextInput::color() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->color;
 }
 
-void QFxLineEdit::setColor(const QColor &c)
+void QFxTextInput::setColor(const QColor &c)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     d->color = c;
 }
 
@@ -145,15 +147,15 @@ void QFxLineEdit::setColor(const QColor &c)
 
     The text highlight color, used behind selections.
 */
-QColor QFxLineEdit::highlightColor() const
+QColor QFxTextInput::highlightColor() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->highlightColor;
 }
 
-void QFxLineEdit::setHighlightColor(const QColor &color)
+void QFxTextInput::setHighlightColor(const QColor &color)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     if (d->highlightColor == color)
         return;
 
@@ -166,15 +168,15 @@ void QFxLineEdit::setHighlightColor(const QColor &color)
 
     The highlighted text color, used in selections.
 */
-QColor QFxLineEdit::highlightedTextColor() const
+QColor QFxTextInput::highlightedTextColor() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->highlightedTextColor;
 }
 
-void QFxLineEdit::setHighlightedTextColor(const QColor &color)
+void QFxTextInput::setHighlightedTextColor(const QColor &color)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     if (d->highlightedTextColor == color)
         return;
 
@@ -182,39 +184,39 @@ void QFxLineEdit::setHighlightedTextColor(const QColor &color)
     //TODO: implement
 }
 
-QFxLineEdit::HAlignment QFxLineEdit::hAlign() const
+QFxTextInput::HAlignment QFxTextInput::hAlign() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->hAlign;
 }
 
-void QFxLineEdit::setHAlign(HAlignment align)
+void QFxTextInput::setHAlign(HAlignment align)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     d->hAlign = align;
 }
 
-bool QFxLineEdit::isReadOnly() const
+bool QFxTextInput::isReadOnly() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->control->isReadOnly();
 }
 
-void QFxLineEdit::setReadOnly(bool ro)
+void QFxTextInput::setReadOnly(bool ro)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     d->control->setReadOnly(ro);
 }
 
-int QFxLineEdit::maxLength() const
+int QFxTextInput::maxLength() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->control->maxLength();
 }
 
-void QFxLineEdit::setMaxLength(int ml)
+void QFxTextInput::setMaxLength(int ml)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     d->control->setMaxLength(ml);
 }
 
@@ -225,15 +227,15 @@ void QFxLineEdit::setMaxLength(int ml)
     This property is set and unset when the line edit gets focus, but it can also
     be set directly (useful, for example, if a KeyProxy might forward keys to it).
 */
-bool QFxLineEdit::isCursorVisible() const
+bool QFxTextInput::isCursorVisible() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->cursorVisible;
 }
 
-void QFxLineEdit::setCursorVisible(bool on)
+void QFxTextInput::setCursorVisible(bool on)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     if (d->cursorVisible == on)
         return;
     d->cursorVisible = on;
@@ -245,14 +247,14 @@ void QFxLineEdit::setCursorVisible(bool on)
     \qmlproperty int LineEdit::cursorPosition
     The position of the cursor in the LineEdit.
 */
-int QFxLineEdit::cursorPosition() const
+int QFxTextInput::cursorPosition() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->control->cursor();
 }
-void QFxLineEdit::setCursorPosition(int cp)
+void QFxTextInput::setCursorPosition(int cp)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     d->control->moveCursor(cp);
 }
 
@@ -269,15 +271,15 @@ void QFxLineEdit::setCursorPosition(int cp)
 
     \sa selectionEnd, cursorPosition, selectedText
 */
-int QFxLineEdit::selectionStart() const
+int QFxTextInput::selectionStart() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->lastSelectionStart;
 }
 
-void QFxLineEdit::setSelectionStart(int s)
+void QFxTextInput::setSelectionStart(int s)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     if(d->lastSelectionStart == s || s < 0 || s > text().length())
         return;
     d->lastSelectionStart = s;
@@ -297,75 +299,71 @@ void QFxLineEdit::setSelectionStart(int s)
 
     \sa selectionStart, cursorPosition, selectedText
 */
-int QFxLineEdit::selectionEnd() const
+int QFxTextInput::selectionEnd() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->lastSelectionEnd;
 }
 
-void QFxLineEdit::setSelectionEnd(int s)
+void QFxTextInput::setSelectionEnd(int s)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     if(d->lastSelectionEnd == s || s < 0 || s > text().length())
         return;
     d->lastSelectionEnd = s;
     d->control->setSelection(d->lastSelectionStart, s - d->lastSelectionStart);
 }
 
-QString QFxLineEdit::selectedText() const
+QString QFxTextInput::selectedText() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->control->selectedText();
 }
 
-QObject* QFxLineEdit::validator() const
+QValidator* QFxTextInput::validator() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     //###const cast isn't good, but needed for property system?
-    //###same should be said about using QObject* as the property type
     return const_cast<QValidator*>(d->control->validator());
 }
 
-void QFxLineEdit::setValidator(QObject* v)
+void QFxTextInput::setValidator(QValidator* v)
 {
-    Q_D(QFxLineEdit);
-    QValidator* valid = qobject_cast<QValidator*>(v);
-    if(!valid)
-        return;
-    d->control->setValidator(valid);
+    Q_D(QFxTextInput);
+    d->control->setValidator(v);
     if(!d->control->hasAcceptableInput()){
         d->oldValidity = false;
         emit acceptableInputChanged();
     }
 }
 
-QString QFxLineEdit::inputMask() const
+QString QFxTextInput::inputMask() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->control->inputMask();
 }
 
-void QFxLineEdit::setInputMask(const QString &im)
+void QFxTextInput::setInputMask(const QString &im)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     d->control->setInputMask(im);
 }
 
-bool QFxLineEdit::hasAcceptableInput() const
+bool QFxTextInput::hasAcceptableInput() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->control->hasAcceptableInput();
 }
 
-uint QFxLineEdit::echoMode() const
+uint QFxTextInput::echoMode() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->control->echoMode();
 }
 
-void QFxLineEdit::setEchoMode(uint echo)
+void QFxTextInput::setEchoMode(uint echo)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     d->control->setEchoMode(echo);
 }
 
@@ -382,24 +380,24 @@ void QFxLineEdit::setEchoMode(uint echo)
     Note that the root item of the delegate component must be a QFxItem or
     QFxItem derived item.
 */
-QmlComponent* QFxLineEdit::cursorDelegate() const
+QmlComponent* QFxTextInput::cursorDelegate() const
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->cursorComponent;
 }
 
-void QFxLineEdit::setCursorDelegate(QmlComponent* c)
+void QFxTextInput::setCursorDelegate(QmlComponent* c)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     if(d->cursorComponent)
         delete d->cursorComponent;
     d->cursorComponent = c;
     d->startCreatingCursor();
 }
 
-void QFxLineEditPrivate::startCreatingCursor()
+void QFxTextInputPrivate::startCreatingCursor()
 {
-    Q_Q(QFxLineEdit);
+    Q_Q(QFxTextInput);
     if(!cursorComponent){
         q->disconnect(control, SIGNAL(cursorPositionChanged(int, int)),
                 q, SLOT(moveCursor()));
@@ -413,13 +411,13 @@ void QFxLineEditPrivate::startCreatingCursor()
         q->connect(cursorComponent, SIGNAL(statusChanged(int)),
                 q, SLOT(createCursor()));
     }else{//isError
-        qWarning() << "You could really use the error checking for QFxLineEdit. We'll implement it soon.";
+        qWarning() << "You could really use the error checking for QFxTextInput. We'll implement it soon.";
     }
 }
 
-void QFxLineEdit::createCursor()
+void QFxTextInput::createCursor()
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     //Handle isError too
     if(!d->cursorComponent->isReady())
         return;
@@ -428,7 +426,7 @@ void QFxLineEdit::createCursor()
         delete d->cursorItem;
     d->cursorItem = qobject_cast<QFxItem*>(d->cursorComponent->create());
     if(!d->cursorItem){
-        qWarning() << "You could really use the error reporting for QFxLineEdit. We'll implement it soon.";
+        qWarning() << "You could really use the error reporting for QFxTextInput. We'll implement it soon.";
         return;
     }
 
@@ -437,39 +435,39 @@ void QFxLineEdit::createCursor()
     d->cursorItem->setHeight(d->control->height());
 }
 
-void QFxLineEdit::moveCursor()
+void QFxTextInput::moveCursor()
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     if(!d->cursorItem)
         return;
     d->cursorItem->setX(d->control->cursorToX() - d->hscroll);
 }
 
-int QFxLineEdit::xToPos(int x)
+int QFxTextInput::xToPos(int x)
 {
-    Q_D(const QFxLineEdit);
+    Q_D(const QFxTextInput);
     return d->control->xToPos(x - d->hscroll);
 }
 
-void QFxLineEdit::focusChanged(bool hasFocus)
+void QFxTextInput::focusChanged(bool hasFocus)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     d->focused = hasFocus;
     setCursorVisible(hasFocus);
     QFxItem::focusChanged(hasFocus);
 }
 
-void QFxLineEdit::keyPressEvent(QKeyEvent* ev)
+void QFxTextInput::keyPressEvent(QKeyEvent* ev)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     d->control->processKeyEvent(ev);
     if (!ev->isAccepted())
         QFxPaintedItem::keyPressEvent(ev);
 }
 
-void QFxLineEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void QFxTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     setFocus(true);//###Should we make 'focusOnPress' be optional like TextEdit?
     setCursorVisible(true);
     d->focused = true;
@@ -477,9 +475,9 @@ void QFxLineEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
     //event->accept();
 }
 
-bool QFxLineEdit::event(QEvent* ev)
+bool QFxTextInput::event(QEvent* ev)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     //Anything we don't deal with ourselves, pass to the control
     switch(ev->type()){
         case QEvent::GraphicsSceneMousePress:
@@ -490,7 +488,7 @@ bool QFxLineEdit::event(QEvent* ev)
     return false;
 }
 
-void QFxLineEdit::geometryChanged(const QRectF &newGeometry,
+void QFxTextInput::geometryChanged(const QRectF &newGeometry,
                                   const QRectF &oldGeometry)
 {
     if (newGeometry.width() != oldGeometry.width())
@@ -498,9 +496,9 @@ void QFxLineEdit::geometryChanged(const QRectF &newGeometry,
     QFxPaintedItem::geometryChanged(newGeometry, oldGeometry);
 }
 
-void QFxLineEdit::drawContents(QPainter *p, const QRect &r)
+void QFxTextInput::drawContents(QPainter *p, const QRect &r)
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     p->setRenderHint(QPainter::TextAntialiasing, true);
     p->save();
     p->setPen(QPen(d->color));
@@ -528,9 +526,9 @@ void QFxLineEdit::drawContents(QPainter *p, const QRect &r)
     filtering at the beginning of the animation and reenable it at the conclusion.
 */
 
-void QFxLineEditPrivate::init()
+void QFxTextInputPrivate::init()
 {
-        Q_Q(QFxLineEdit);
+        Q_Q(QFxTextInput);
         control->setCursorWidth(1);
         control->setPasswordCharacter(QLatin1Char('*'));
         control->setLayoutDirection(Qt::LeftToRight);
@@ -559,9 +557,9 @@ void QFxLineEditPrivate::init()
         lastSelectionEnd = 0;
 }
 
-void QFxLineEdit::cursorPosChanged()
+void QFxTextInput::cursorPosChanged()
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     emit cursorPositionChanged();
 
     if(!d->control->hasSelectedText()){
@@ -576,9 +574,9 @@ void QFxLineEdit::cursorPosChanged()
     }
 }
 
-void QFxLineEdit::selectionChanged()
+void QFxTextInput::selectionChanged()
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     emit selectedTextChanged();
 
     if(d->lastSelectionStart != d->control->selectionStart()){
@@ -595,9 +593,9 @@ void QFxLineEdit::selectionChanged()
     }
 }
 
-void QFxLineEdit::q_textChanged()
+void QFxTextInput::q_textChanged()
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     updateAll();
     emit textChanged();
     if(hasAcceptableInput() != d->oldValidity){
@@ -607,16 +605,16 @@ void QFxLineEdit::q_textChanged()
 }
 
 //### Please replace this function with proper updating
-void QFxLineEdit::updateAll()
+void QFxTextInput::updateAll()
 {
     clearCache();
     updateSize();
     update();
 }
 
-void QFxLineEdit::updateSize()
+void QFxTextInput::updateSize()
 {
-    Q_D(QFxLineEdit);
+    Q_D(QFxTextInput);
     setImplicitHeight(d->control->height());
     //d->control->width() is max width, not current width
     QFontMetrics fm = QFontMetrics(d->font);
