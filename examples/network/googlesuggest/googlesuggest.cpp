@@ -134,7 +134,6 @@ bool GSuggestCompletion::eventFilter(QObject *obj, QEvent *ev)
 
 void GSuggestCompletion::showCompletion(const QStringList &choices, const QStringList &hits)
 {
-
     if (choices.isEmpty() || choices.count() != hits.count())
         return;
 
@@ -204,16 +203,16 @@ void GSuggestCompletion::handleNetworkData(QNetworkReply *networkReply)
         QXmlStreamReader xml(response);
         while (!xml.atEnd()) {
             xml.readNext();
-            if (xml.tokenType() == QXmlStreamReader::StartElement)
+            if (xml.isStartElement()) {
                 if (xml.name() == "suggestion") {
                     QStringRef str = xml.attributes().value("data");
                     choices << str.toString();
                 }
-            if (xml.tokenType() == QXmlStreamReader::StartElement)
-                if (xml.name() == "num_queries") {
+                else if (xml.name() == "num_queries") {
                     QStringRef str = xml.attributes().value("int");
                     hits << str.toString();
                 }
+            }
         }
 
         showCompletion(choices, hits);

@@ -54,6 +54,7 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
     : QDirectFBPaintDevice(scr)
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
+    , sibling(0)
 #endif
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
@@ -72,6 +73,7 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
     : QWSWindowSurface(widget), QDirectFBPaintDevice(scr)
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
+    , sibling(0)
 #endif
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
@@ -97,6 +99,17 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 QDirectFBWindowSurface::~QDirectFBWindowSurface()
 {
 }
+
+#ifdef QT_DIRECTFB_WM
+void QDirectFBWindowSurface::raise()
+{
+    if (dfbWindow) {
+        dfbWindow->RaiseToTop(dfbWindow);
+    } else if (sibling && (!sibling->sibling || sibling->dfbWindow)) {
+        sibling->raise();
+    }
+}
+#endif
 
 bool QDirectFBWindowSurface::isValid() const
 {
@@ -126,6 +139,7 @@ void QDirectFBWindowSurface::createWindow()
         description.surface_caps = DSCAPS_PREMULTIPLIED;
 
     DFBResult result = layer->CreateWindow(layer, &description, &dfbWindow);
+
     if (result != DFB_OK)
         DirectFBErrorFatal("QDirectFBWindowSurface::createWindow", result);
 
@@ -231,34 +245,25 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
 
 QByteArray QDirectFBWindowSurface::permanentState() const
 {
-    QByteArray array;
-#ifdef QT_NO_DIRECTFB_WM
-    array.resize(sizeof(SurfaceFlags) + sizeof(IDirectFBSurface*));
-#else
-    array.resize(sizeof(SurfaceFlags));
+    QByteArray state;
+#ifdef QT_DIRECTFB_WM
+    QDataStream ds(&state, QIODevice::WriteOnly);
+    ds << reinterpret_cast<quintptr>(this);
 #endif
-    char *ptr = array.data();
-
-    *reinterpret_cast<SurfaceFlags*>(ptr) = surfaceFlags();
-    ptr += sizeof(SurfaceFlags);
-
-#ifdef QT_NO_DIRECTFB_WM
-    *reinterpret_cast<IDirectFBSurface**>(ptr) = dfbSurface;
-#endif
-    return array;
+    return state;
 }
 
 void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 {
-    SurfaceFlags flags;
-    const char *ptr = state.constData();
-
-    flags = *reinterpret_cast<const SurfaceFlags*>(ptr);
-    setSurfaceFlags(flags);
-
-#ifdef QT_NO_DIRECTFB_WM
-    ptr += sizeof(SurfaceFlags);
-    dfbSurface = *reinterpret_cast<IDirectFBSurface* const*>(ptr);
+#ifdef QT_DIRECTFB_WM
+    if (state.size() == sizeof(quintptr)) {
+        QDataStream ds(state);
+        quintptr ptr;
+        ds >> ptr;
+        sibling = reinterpret_cast<QDirectFBWindowSurface*>(ptr);
+    }
+#else
+    Q_UNUSED(state);
 #endif
 }
 

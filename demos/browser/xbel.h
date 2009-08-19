@@ -87,7 +87,6 @@ public:
     BookmarkNode *read(QIODevice *device);
 
 private:
-    void skipUnknownElement();
     void readXBEL(BookmarkNode *parent);
     void readTitle(BookmarkNode *parent);
     void readDescription(BookmarkNode *parent);

@@ -41,7 +41,9 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/qmath.h>
-#include "math3dincludes.h"
+#include <QtGui/qvector2d.h>
+#include <QtGui/qvector3d.h>
+#include <QtGui/qvector4d.h>
 
 class tst_QVector : public QObject
 {

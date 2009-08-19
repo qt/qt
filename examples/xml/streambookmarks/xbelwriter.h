@@ -50,7 +50,7 @@ class QTreeWidgetItem;
 QT_END_NAMESPACE
 
 //! [0]
-class XbelWriter : public QXmlStreamWriter
+class XbelWriter
 {
 public:
     XbelWriter(QTreeWidget *treeWidget);
@@ -58,6 +58,7 @@ public:
 
 private:
     void writeItem(QTreeWidgetItem *item);
+    QXmlStreamWriter xml;
     QTreeWidget *treeWidget;
 };
 //! [0]
