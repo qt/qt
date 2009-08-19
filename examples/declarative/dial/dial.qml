@@ -26,7 +26,7 @@ Rect {
             }
             MouseRegion {
                 anchors.fill: parent
-                drag.target: parent; drag.axis: "x"; drag.minimumX: 2; drag.maximumX: 128
+                drag.target: parent; drag.axis: "XAxis"; drag.minimumX: 2; drag.maximumX: 128
             }
         }
     }

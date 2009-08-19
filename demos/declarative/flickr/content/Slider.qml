@@ -29,7 +29,7 @@ Item {
 
         MouseRegion {
             anchors.fill: parent; drag.target: parent
-            drag.axis: "x"; drag.minimumX: 2; drag.maximumX: Slider.xMax+2
+            drag.axis: "XAxis"; drag.minimumX: 2; drag.maximumX: Slider.xMax+2
             onPositionChanged: { value = (maximum - minimum) * (Handle.x-2) / Slider.xMax + minimum; }
         }
     }

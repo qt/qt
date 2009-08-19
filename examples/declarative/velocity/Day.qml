@@ -70,7 +70,7 @@ Rect {
                         onClicked: { MyText.focus = true }
                         anchors.fill: parent
                         drag.target: StickyPage
-                        drag.axis: "xy"
+                        drag.axis: "XandYAxis"
                         drag.minimumY: 0
                         drag.maximumY: 500
                         drag.minimumX: 0

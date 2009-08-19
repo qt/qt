@@ -331,7 +331,7 @@ void QFxContents::setItem(QFxItem *item)
     \code
     Item {
         focus: true
-        key.onLeftPressed: print("move left")
+        Keys.onLeftPressed: print("move left")
     }
     \endcode
 

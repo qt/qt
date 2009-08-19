@@ -9,9 +9,9 @@ Rect {
         MouseRegion {
             anchors.fill: parent
             drag.target: pic
-            drag.axis: "x"
-            drag.xmin: 0
-            drag.xmax: blurtest.width-pic.width
+            drag.axis: "XAxis"
+            drag.minimumX: 0
+            drag.maximumX: blurtest.width-pic.width
         }
     }
 }

@@ -74,7 +74,6 @@ public:
     {
         Q_Q(QFxMouseRegion);
         q->setAcceptedMouseButtons(Qt::LeftButton);
-        q->setAcceptHoverEvents(true);
     }
 
     void saveEvent(QGraphicsSceneMouseEvent *event) {
@@ -82,6 +81,19 @@ public:
         lastButton = event->button();
         lastButtons = event->buttons();
         lastModifiers = event->modifiers();
+    }
+
+    bool isConnected(const char *signal) {
+        Q_Q(QFxMouseRegion);
+        int idx = QFxMouseRegion::staticMetaObject.indexOfSignal(signal);
+        if (idx < 32) {
+            quint32 mask = 1 << idx;
+            return QObjectPrivate::get(q)->connectedSignals[0] & mask;
+        } else if (idx < 64) {
+            quint32 mask = 1 << (idx-32);
+            return QObjectPrivate::get(q)->connectedSignals[1] & mask;
+        }
+        return false;
     }
 
     bool absorb : 1;
