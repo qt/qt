@@ -3,7 +3,7 @@ import Qt 4.6
 Item {
     width: 640
     height: 480
-    VerticalLayout {
+    VerticalPositioner {
         spacing: 10
         Rect {
             id: one
