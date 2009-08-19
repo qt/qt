@@ -133,11 +133,42 @@
 
     \endlist
 
+
     \section2 Mac OS X Software Support
 
     \list
     \o  If a sheet is opened for a given window, clicking the title bar of that
         window will cause it to flash. This behavior has been reported to Apple
         (bug number 5827676).
+    \endlist
+
+
+    \section2 Installing source packages on Unix systems
+
+    \list
+    \o  If you download a Zip source package, you will need to convert
+        Windows-style line endings (CR/LF) to Unix-style line-endings (LF) when
+        you uncompress the package.  To do this, give the "-a" option when you
+        run the "unzip' command.
+    
+        If you fail to supply the "-a" option when unzipping the package, you
+        will see the following error message when you attempt to execute the
+        configure command:
+        "bash: ./configure: /bin/sh^M: bad interpreter: No such file or directory"
+    \endlist
+
+
+    \section2 Running evaluation packages on Windows XP
+
+    \list
+    \o  If running the qt-win-eval-%VERSION%-vs2008.exe package on a Windows XP
+        system, you may encounter the following error message:
+        "The application failed to start because the application configuration
+        is incorrect. Reinstalling the application may fix this problem.".
+
+        This error occurs because the version of the CRT component on the
+        system is incorrect.  Visual Studio 2008 requires CRT90 while Windows
+        XP comes with CRT80. To solve this problem, please install the 2008 CRT
+        redistributable package from Microsoft.
     \endlist
 */

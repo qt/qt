@@ -11,8 +11,6 @@ SUBDIRS += \
            compilerwarnings \
            exceptionsafety \
            linguist \
-           macgui \
-           macplist \
            mediaobject \
 #           mediaobject_wince_ds9 \   This is Windows CE only (we test the second phonon backend ds9 here)
            moc \
@@ -74,7 +72,6 @@ SUBDIRS += \
            qabstractspinbox \
            qabstracttextdocumentlayout \
            qaccessibility \
-           qaccessibility_mac \
            qaction \
            qactiongroup \
            qalgorithms \
@@ -97,7 +94,6 @@ SUBDIRS += \
            qcombobox \
            qcompleter \
            qcomplextext \
-           qcopchannel \
            qcoreapplication \
            qcryptographichash \
            qcssparser \
@@ -113,7 +109,6 @@ SUBDIRS += \
            qdialog \
            qdialogbuttonbox \
            qdir \
-           qdirectpainter \
            qdirmodel \
            qdockwidget \
            qdom \
@@ -199,6 +194,7 @@ SUBDIRS += \
            qmainwindow \
            qmake \
            qmap \
+           qmatrixnxn \
            qmdiarea \
            qmdisubwindow \
            qmenu \
@@ -209,7 +205,6 @@ SUBDIRS += \
            qmouseevent \
            qmouseevent_modal \
            qmovie \
-           qmultiscreen \
            qmutex \
            qmutexlocker \
            qnativesocketengine \
@@ -246,6 +241,7 @@ SUBDIRS += \
            qprogressdialog \
            qpropertyanimation \
            qpushbutton \
+           qquaternion \
            qqueue \
            qradiobutton \
            qreadlocker \
@@ -349,7 +345,6 @@ SUBDIRS += \
            qtextlayout \
            qtextlist \
            qtextobject \
-           qtextpiecetable \
            qtextscriptengine \
            qtextstream \
            qtexttable \
@@ -379,6 +374,7 @@ SUBDIRS += \
            qvariant \
            qvarlengtharray \
            qvector \
+           qvectornd \
            qwaitcondition \
            qwidget \
            qwidgetaction \
@@ -404,6 +400,19 @@ SUBDIRS += \
            utf8
 
 contains(QT_CONFIG, OdfWriter):SUBDIRS += qzip qtextodfwriter
+mac: {
+    SUBDIRS += macgui \
+               macplist \
+               qaccessibility_mac
+}
+embedded: {
+    SUBDIRS += qcopchannel \
+               qdirectpainter \
+               qmultiscreen
+}
+!win32: {
+    SUBDIRS += qtextpiecetable
+}
 
 # Enable the tests specific to QtXmlPatterns. If you add a test, remember to
 # update runQtXmlPatternsTests.sh too. Remember that this file, auto.pro, is
@@ -470,5 +479,3 @@ contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebhistoryinterface \
            qwebelement \
            qwebhistory
-
-SUBDIRS += math3d

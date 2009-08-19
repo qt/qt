@@ -56,13 +56,18 @@
 
 class QDirectFBScreenPrivate : public QObject, public QWSGraphicsSystem
 {
+    Q_OBJECT
 public:
     QDirectFBScreenPrivate(QDirectFBScreen *qptr);
     ~QDirectFBScreenPrivate();
 
     void setFlipFlags(const QStringList &args);
     QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
-
+public slots:
+#ifdef QT_DIRECTFB_WM
+    void onWindowEvent(QWSWindow *window, QWSServer::WindowEvent event);
+#endif
+public:
     IDirectFB *dfb;
     DFBSurfaceFlipFlags flipFlags;
     QDirectFBScreen::DirectFBFlags directFBFlags;
@@ -86,6 +91,8 @@ public:
     QDirectFBScreen *q;
 };
 
+#include "qdirectfbscreen.moc"
+
 QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *qptr)
     : QWSGraphicsSystem(qptr), dfb(0), flipFlags(DSFLIP_NONE),
       directFBFlags(QDirectFBScreen::NoFlags), alphaPixmapFormat(QImage::Format_Invalid),
@@ -106,6 +113,10 @@ QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *qptr)
 {
 #ifndef QT_NO_QWS_SIGNALHANDLER
     QWSSignalHandler::instance()->addObject(this);
+#endif
+#ifdef QT_DIRECTFB_WM
+    connect(QWSServer::instance(), SIGNAL(windowEvent(QWSWindow*, QWSServer::WindowEvent)),
+            this, SLOT(onWindowEvent(QWSWindow*, QWSServer::WindowEvent)));
 #endif
 }
 
@@ -578,6 +589,7 @@ QDirectFBScreenCursor::QDirectFBScreenCursor()
 
 void QDirectFBScreenCursor::move(int x, int y)
 {
+    pos = QPoint(x, y);
     layer->WarpCursor(layer, x, y);
 }
 
@@ -745,6 +757,18 @@ void QDirectFBScreenPrivate::setFlipFlags(const QStringList &args)
         flipFlags = DSFLIP_BLIT;
     }
 }
+
+#ifdef QT_DIRECTFB_WM
+void QDirectFBScreenPrivate::onWindowEvent(QWSWindow *window, QWSServer::WindowEvent event)
+{
+    if (event == QWSServer::Raise) {
+        QWSWindowSurface *windowSurface = window->windowSurface();
+        if (windowSurface && windowSurface->key() == QLatin1String("directfb")) {
+            static_cast<QDirectFBWindowSurface*>(windowSurface)->raise();
+        }
+    }
+}
+#endif
 
 QPixmapData *QDirectFBScreenPrivate::createPixmapData(QPixmapData::PixelType type) const
 {
