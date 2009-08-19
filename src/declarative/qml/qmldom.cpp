@@ -76,14 +76,14 @@ QmlDomDocumentPrivate::~QmlDomDocumentPrivate()
     \brief The QmlDomDocument class represents the root of a QML document
 
     A QML document is a self-contained snippet of QML, usually contained in a
-    single file.  Each document has a version number, accessible through 
-    QmlDomDocument::version(),  and a root object, accessible through 
+    single file.  Each document has a version number, accessible through
+    QmlDomDocument::version(),  and a root object, accessible through
     QmlDomDocument::rootObject().
 
     The QmlDomDocument class allows the programmer to load a QML document, by
     calling QmlDomDocument::load(), manipulate it and save it to textual form
     by calling QmlDomDocument::save().  By using the QML DOM API, editors can
-    non-destructively modify a QML document even if they only understand a 
+    non-destructively modify a QML document even if they only understand a
     subset of the total QML functionality.
 
     The following example loads a QML file from disk, and prints out its root
@@ -179,7 +179,7 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
         d->errors << error;
         td->release();
         return false;
-    } 
+    }
 
     compiler.compile(engine, td, &component);
 
@@ -213,7 +213,7 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
 }
 
 /*!
-    Returns the last load errors.  The load errors will be reset after a 
+    Returns the last load errors.  The load errors will be reset after a
     successful call to load().
 
     \sa load()
@@ -292,7 +292,7 @@ QmlDomDynamicPropertyPrivate::~QmlDomDynamicPropertyPrivate()
 /*!
     \class QmlDomProperty
     \internal
-    \brief The QmlDomProperty class represents one property assignment in the 
+    \brief The QmlDomProperty class represents one property assignment in the
     QML DOM tree
 
     Properties in QML can be assigned QML \l {QmlDomValue}{values}.
@@ -627,7 +627,7 @@ QmlDomObjectPrivate::properties() const
 {
     Properties rv;
 
-    for (QHash<QByteArray, QmlParser::Property *>::ConstIterator iter = 
+    for (QHash<QByteArray, QmlParser::Property *>::ConstIterator iter =
             object->properties.begin();
             iter != object->properties.end();
             ++iter) {
@@ -645,7 +645,7 @@ QmlDomObjectPrivate::properties(QmlParser::Property *property) const
 
     if (property->value) {
 
-        for (QHash<QByteArray, QmlParser::Property *>::ConstIterator iter = 
+        for (QHash<QByteArray, QmlParser::Property *>::ConstIterator iter =
                 property->value->properties.begin();
                 iter != property->value->properties.end();
                 ++iter) {
@@ -655,7 +655,7 @@ QmlDomObjectPrivate::properties(QmlParser::Property *property) const
         }
 
         QByteArray name(property->name + ".");
-        for (Properties::Iterator iter = rv.begin(); iter != rv.end(); ++iter) 
+        for (Properties::Iterator iter = rv.begin(); iter != rv.end(); ++iter)
             iter->second.prepend(name);
 
     } else {
@@ -672,8 +672,8 @@ QmlDomObjectPrivate::properties(QmlParser::Property *property) const
 
     Each object instantiated in a QML file has a corresponding QmlDomObject
     node in the QML DOM.
-    
-    In addition to the type information that determines the object to 
+
+    In addition to the type information that determines the object to
     instantiate, QmlDomObject's also have a set of associated QmlDomProperty's.
     Each QmlDomProperty represents a QML property assignment on the instantiated
     object.  For example,
@@ -687,12 +687,12 @@ QGraphicsWidget {
 
     describes a single QmlDomObject - "QGraphicsWidget" - with two properties,
     "opacity" and "size".  Obviously QGraphicsWidget has many more properties than just
-    these two, but the QML DOM representation only contains those assigned 
+    these two, but the QML DOM representation only contains those assigned
     values (or bindings) in the QML file.
 
     The DOM tree can be modified to include new property assignments by calling
     QmlDomObject::addProperty().  Existing property assignments can be modified
-    through the QmlDomProperty::setValue() method, or removed entirely by 
+    through the QmlDomProperty::setValue() method, or removed entirely by
     calling QmlDomObject::removeProperty().
 */
 
@@ -749,9 +749,9 @@ bool QmlDomObject::isValid() const
 /*!
     Returns the fully-qualified type name of this object.
 
-    For example, the type of this object would be "Qt/4.6/Rect".
+    For example, the type of this object would be "Qt/4.6/Rectangle".
     \qml
-Rect { }
+Rectangle { }
     \endqml
 */
 QByteArray QmlDomObject::objectType() const
@@ -763,9 +763,9 @@ QByteArray QmlDomObject::objectType() const
 /*!
     Returns the type name as referenced in the qml file.
 
-    For example, the type of this object would be "Rect".
+    For example, the type of this object would be "Rectangle".
     \qml
-Rect { }
+Rectangle { }
     \endqml
 */
 QByteArray QmlDomObject::objectClassName() const
@@ -804,7 +804,7 @@ void QmlDomObject::setObjectId(const QByteArray &id)
 
 
 /*!
-    Returns the list of assigned properties on this object. 
+    Returns the list of assigned properties on this object.
 
     In the following example, "text" and "x" properties would be returned.
     \qml
@@ -920,8 +920,8 @@ QmlDomDynamicProperty QmlDomObject::dynamicProperty(const QByteArray &name) cons
 }
 
 /*!
-    Returns true if this object is a custom type.  Custom types are special 
-    types that allow embeddeding non-QML data, such as SVG or HTML data, 
+    Returns true if this object is a custom type.  Custom types are special
+    types that allow embeddeding non-QML data, such as SVG or HTML data,
     directly into QML files.
 
     \note Currently this method will always return false, and is a placekeeper
@@ -935,7 +935,7 @@ bool QmlDomObject::isCustomType() const
 }
 
 /*!
-    Sets the custom type \a data.  If this type is not a custom type, this 
+    Sets the custom type \a data.  If this type is not a custom type, this
     method does nothing.
 
     \sa QmlDomObject::isCustomType() QmlDomObject::customTypeData()
@@ -947,8 +947,8 @@ void QmlDomObject::setCustomTypeData(const QByteArray &data)
 }
 
 /*!
-    If this object represents a custom type, returns the data associated with 
-    the custom type, otherwise returns an empty QByteArray().  
+    If this object represents a custom type, returns the data associated with
+    the custom type, otherwise returns an empty QByteArray().
     QmlDomObject::isCustomType() can be used to check if this object represents
     a custom type.
 */
@@ -958,20 +958,20 @@ QByteArray QmlDomObject::customTypeData() const
 }
 
 /*!
-    Returns true if this object is a sub-component object.  Sub-component 
-    objects can be converted into QmlDomComponent instances by calling 
+    Returns true if this object is a sub-component object.  Sub-component
+    objects can be converted into QmlDomComponent instances by calling
     QmlDomObject::toComponent().
 
     \sa QmlDomObject::toComponent()
 */
 bool QmlDomObject::isComponent() const
 {
-    return d->isVirtualComponent || 
+    return d->isVirtualComponent ||
            (d->object && d->object->typeName == "Qt/Component");
 }
 
 /*!
-    Returns a QmlDomComponent for this object if it is a sub-component, or 
+    Returns a QmlDomComponent for this object if it is a sub-component, or
     an invalid QmlDomComponent if not.  QmlDomObject::isComponent() can be used
     to check if this object represents a sub-component.
 
@@ -1046,7 +1046,7 @@ QmlDomBasicValuePrivate::~QmlDomBasicValuePrivate()
     literal values.
 
     \qml
-Rect {
+Rectangle {
     x: 10
     y: 10
     color: "red"
@@ -1062,7 +1062,7 @@ QmlDomValueLiteral::QmlDomValueLiteral():
 {
 }
 
-/*! 
+/*!
     Create a copy of \a other QmlDomValueLiteral.
 */
 QmlDomValueLiteral::QmlDomValueLiteral(const QmlDomValueLiteral &other)
@@ -1091,7 +1091,7 @@ QmlDomValueLiteral &QmlDomValueLiteral::operator=(const QmlDomValueLiteral &othe
 
     In the example below, the literal value will be the string "10".
     \qml
-Rect { x: 10 }
+Rectangle { x: 10 }
     \endqml
 */
 QString QmlDomValueLiteral::literal() const
@@ -1118,7 +1118,7 @@ void QmlDomValueLiteral::setLiteral(const QString &value)
     the example below, the "x" property is being assigned a property binding.
 
     \qml
-Rect { x: Other.x }
+Rectangle { x: Other.x }
     \endqml
 */
 
@@ -1159,14 +1159,14 @@ QmlDomValueBinding &QmlDomValueBinding::operator=(const QmlDomValueBinding &othe
 
     In the example below, the string "Other.x" will be returned.
     \qml
-Rect { x: Other.x }
+Rectangle { x: Other.x }
     \endqml
 */
 QString QmlDomValueBinding::binding() const
 {
-    if (d->value) 
+    if (d->value)
         return d->value->value.asScript();
-    else 
+    else
         return QString();
 }
 
@@ -1184,13 +1184,13 @@ void QmlDomValueBinding::setBinding(const QString &expression)
     \internal
     \brief The QmlDomValueValueSource class represents a value source assignment value.
 
-    In QML, value sources are special value generating types that may be 
+    In QML, value sources are special value generating types that may be
     assigned to properties.  Value sources inherit the QmlPropertyValueSource
-    class.  In the example below, the "x" property is being assigned the 
+    class.  In the example below, the "x" property is being assigned the
     NumberAnimation value source.
 
     \qml
-Rect {
+Rectangle {
     x: NumberAnimation {
         from: 0
         to: 100
@@ -1239,7 +1239,7 @@ QmlDomValueValueSource &QmlDomValueValueSource::operator=(const QmlDomValueValue
     In the example below, an object representing the NumberAnimation will be
     returned.
     \qml
-Rect {
+Rectangle {
     x: NumberAnimation {
         from: 0
         to: 100
@@ -1255,7 +1255,7 @@ QmlDomObject QmlDomValueValueSource::object() const
     if (d->value) {
         rv.d->object = d->value->object;
         rv.d->object->addref();
-    } 
+    }
     return rv;
 }
 
@@ -1293,11 +1293,11 @@ QmlDomValuePrivate::~QmlDomValuePrivate()
     \internal
     \brief The QmlDomValue class represents a generic Qml value.
 
-    QmlDomValue's can be assigned to QML \l {QmlDomProperty}{properties}.  In 
+    QmlDomValue's can be assigned to QML \l {QmlDomProperty}{properties}.  In
     QML, properties can be assigned various different values, including basic
     literals, property bindings, property value sources, objects and lists of
     values.  The QmlDomValue class allows a programmer to determine the specific
-    value type being assigned and access more detailed information through a 
+    value type being assigned and access more detailed information through a
     corresponding value type class.
 
     For example, in the following example,
@@ -1382,7 +1382,7 @@ QmlDomValue &QmlDomValue::operator=(const QmlDomValue &other)
 QmlDomValue::Type QmlDomValue::type() const
 {
     if (d->property)
-        if (QmlMetaType::isList(d->property->type) || 
+        if (QmlMetaType::isList(d->property->type) ||
            QmlMetaType::isQmlList(d->property->type) ||
            (d->property && d->property->values.count() > 1))
             return List;
@@ -1477,7 +1477,7 @@ QmlDomValueLiteral QmlDomValue::toLiteral() const
 }
 
 /*!
-    Returns a QmlDomValueBinding if this value is a property binding type, 
+    Returns a QmlDomValueBinding if this value is a property binding type,
     otherwise returns an invalid QmlDomValueBinding.
 
     \sa QmlDomValue::type()
@@ -1525,7 +1525,7 @@ QmlDomObject QmlDomValue::toObject() const
 }
 
 /*!
-    Returns a QmlDomList if this value is a list type, otherwise returns an 
+    Returns a QmlDomList if this value is a list type, otherwise returns an
     invalid QmlDomList.
 
     \sa QmlDomValue::type()
@@ -1574,12 +1574,12 @@ int QmlDomValue::length() const
 Item {
     children: [
         Text { },
-        Rect { }
+        Rectangle { }
     ]
 }
     \endqml
 
-    Lists can also be implicitly created by assigning multiple 
+    Lists can also be implicitly created by assigning multiple
     \l {QmlDomValueValueSource}{value sources} or constants to a property.
     \qml
 Item {
@@ -1643,7 +1643,7 @@ QList<QmlDomValue> QmlDomList::values() const
     return rv;
 }
 
-/*! 
+/*!
     Set the list of QmlDomValue's to \a values.
 */
 void QmlDomList::setValues(const QList<QmlDomValue> &values)
@@ -1692,8 +1692,8 @@ QList<int> QmlDomList:: commaPositions() const
     \internal
     \brief The QmlDomComponent class represents sub-component within a QML document.
 
-    Sub-components are QmlComponents defined within a QML document.  The 
-    following example shows the definition of a sub-component with the id 
+    Sub-components are QmlComponents defined within a QML document.  The
+    following example shows the definition of a sub-component with the id
     "ListDelegate".
 
     \qml
@@ -1764,7 +1764,7 @@ QmlDomObject QmlDomComponent::componentRoot() const
         rv.d->object->addref();
     } else if (d->object) {
         QmlParser::Object *obj = 0;
-        if (d->object->defaultProperty && 
+        if (d->object->defaultProperty &&
            d->object->defaultProperty->values.count() == 1 &&
            d->object->defaultProperty->values.at(0)->object)
             obj = d->object->defaultProperty->values.at(0)->object;

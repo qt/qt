@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     property string operation
     property bool toggable : false
     property bool toggled : false

@@ -69,7 +69,7 @@ Item {
         }
     }
 
-    Rect {
+    Rectangle {
         x: 93
         y: 94
         width: 11

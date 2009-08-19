@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: Root
     width: parent.width
     height: parent.height
@@ -15,7 +15,7 @@ Rect {
 
     Component {
         id: FolderDelegate
-        Rect {
+        Rectangle {
             id: Wrapper
             function launch() {
                 if (folders.isFolder(index)) {
@@ -27,7 +27,7 @@ Rect {
             width: Root.width
             height: 32
             color: "transparent"
-            Rect {
+            Rectangle {
                 id: Highlight; visible: false
                 anchors.fill: parent
                 gradient: Gradient {
@@ -77,7 +77,7 @@ Rect {
         anchors.bottom: parent.bottom
         model: folders
         delegate: FolderDelegate
-        highlight: Rect { color: "#FFFBAF" }
+        highlight: Rectangle { color: "#FFFBAF" }
         clip: true
         focus: true
         Keys.onPressed: {
@@ -88,13 +88,13 @@ Rect {
         }
     }
 
-    Rect {
+    Rectangle {
         id: TitleBar
         width: parent.width
         height: 32
         color: activePalette.button; border.color: activePalette.mid
 
-        Rect {
+        Rectangle {
             id: UpButton
             width: 30
             height: TitleBar.height

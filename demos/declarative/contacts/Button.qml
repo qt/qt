@@ -6,7 +6,7 @@ Item {
     height: 30
     property var icon: ""
     signal clicked
-    Rect {
+    Rectangle {
         id: buttonRect
         anchors.fill: parent
         color: "lightgreen"

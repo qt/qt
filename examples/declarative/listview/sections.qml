@@ -1,7 +1,7 @@
 import Qt 4.6
 
 //! [0]
-Rect {
+Rectangle {
     width: 200
     height: 240
     color: "white"
@@ -18,7 +18,7 @@ Rect {
             width: 200
             // My height is the combined height of the description and the section separator
             height: Separator.height + Desc.height
-            Rect {
+            Rectangle {
                 id: Separator
                 color: "lightsteelblue"
                 width: parent.width
@@ -50,7 +50,7 @@ Rect {
     // by each ListView and placed behind the current item.
     Component {
         id: PetHighlight
-        Rect {
+        Rectangle {
             color: "#FFFF88"
         }
     }

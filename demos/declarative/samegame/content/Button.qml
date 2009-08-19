@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect { 
+Rectangle { 
     id: page; color: activePalette.button; width: txtItem.width+20; height: txtItem.height+4
     border.width: 1; border.color: activePalette.mid; radius: 10;
     signal clicked

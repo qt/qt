@@ -1,9 +1,9 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     color: "white"
     width: 200; height: 200
-    Rect {
+    Rectangle {
         width: 50; height: 50
         color: "red"
         Text { text: "Click"; anchors.centerIn: parent }
@@ -19,7 +19,7 @@ Rect {
             anchors.fill: parent
         }
     }
-    Rect {
+    Rectangle {
         y: 100; width: 50; height: 50
         color: "blue"
         Text { text: "Drag"; anchors.centerIn: parent }

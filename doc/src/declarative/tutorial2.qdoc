@@ -19,7 +19,7 @@ Item {
     width: 40
     height: 25
 
-    Rect {
+    Rectangle {
         anchors.fill: parent
         color: CellContainer.color
     }
@@ -33,7 +33,7 @@ Item {
 Then, we use our \c Cell component to create the color picker in the QML code for the application:
 
 \code
-Rect {
+Rectangle {
     id: Page
     width: 480
     height: 200
@@ -83,7 +83,7 @@ property var color
 We declare a \c color property. This property is accessible from  \e outside our component, this allows us to instantiate the cells with different colors.
 
 \code
-Rect {
+Rectangle {
     anchors.fill: parent
     color: CellContainer.color
 }

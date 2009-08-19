@@ -50,7 +50,7 @@
     \brief An introduction to using Qt Declarative UI to put together a
     simple animated application.
 
-    \omit 
+    \omit
     At the time of writing the tutorial Declarative UI was still under
     development.  It is extremely likely that an update will be required
     prior to 4.6 release.
@@ -124,8 +124,8 @@
     This is one of the simplest of QML components.  It describes a rectangle with
     some simple properties.  In QML all components start with a capital
     letter, and their properties with lower case letters.
-    
-    Apart from the properties all QML components share, the \l{Rect}{Rect} component has the properties
+
+    Apart from the properties all QML components share, the \l{Rectangle}{Rectangle} component has the properties
 
     \list
     \o color - The background color of the rectangle
@@ -152,11 +152,11 @@
 
     The next step of the tutorial adds an image over the rectangle.  We
     will do this by adding an \l{Image}{Image} component as a child of the
-    \l{Rect}{Rect} component.  All QML components have a list of children which
+    \l{Rectangle}{Rectangle} component.  All QML components have a list of children which
     are drawn in order after the parent component has been drawn.
     By having the \l{Image}{Image}
-    component as a child of the \l{Rect}{Rect} component we ensure it is drawn
-    over the \l{Rect}{Rect} component.  Children also are affected by the opacity
+    component as a child of the \l{Rectangle}{Rectangle} component we ensure it is drawn
+    over the \l{Rectangle}{Rectangle} component.  Children also are affected by the opacity
     of the parent component and calculate their position in within the bounds of
     the parent component.
 
@@ -166,7 +166,7 @@
 
     The trashIcon image is added as a child of the Rectangle.  In this case
     the children property isn't explicitly used because the default property
-    of the \l{Rect}{Rect} component is its children.  Some elements often don't have children
+    of the \l{Rectangle}{Rectangle} component is its children.  Some elements often don't have children
     and use some other default component.  When this is the case its possible
     to explicitly list the sub component as a child as follows:
 
@@ -184,7 +184,7 @@
     position to align to the right of its parent and for its vertical center
     to align with the vertical center of its parent.  Setting a property
     by the identifier of a separate property binds them.  This means
-    that if while running the example the position of the \l{Rect}{Rect} component's
+    that if while running the example the position of the \l{Rectangle}{Rectangle} component's
     vertical center changed, so to would the vertical center of
     the \l{Image}{Image} component.
 
@@ -239,12 +239,12 @@
     might look like.
 
     \code
-    Rect {
+    Rectangle {
         id: removeButton
         width: 30
         height: 30
-        color: "red"                                                                
-        radius: 5                                                                   
+        color: "red"
+        radius: 5
         Image {
             id: trashIcon
             width: 22
@@ -360,7 +360,7 @@
     \tableofcontents
 
     The second part of this tutorial covers how to reuse QML components and
-    have them interact with each other.  The RemoveButton developed in the 
+    have them interact with each other.  The RemoveButton developed in the
     previous chapter is intended to be part of a more complex control for
     editing a field of our contact.  This ContactField in turn is intended
     to be used in a contact editing control.
@@ -395,7 +395,7 @@
     can be reused from within the same QML file using Component and ComponentInstance
     elements.  The next code snippet produces three red rounded rectangles
     within a large blue rectangle.
-    
+
     \image declarative-reuse-bluerect.png
 
     \snippet declarative/tutorials/contacts/2_Reuse/1b/BlueRect.qml all
@@ -467,7 +467,7 @@
 
     Apart from accessing the fieldText.state, the above code also uses the when
     attribute of its own editingText state.  This is an alternative to using
-    a signal to change state.  When the value of the expression for the 
+    a signal to change state.  When the value of the expression for the
     when attribute changes, Qt will detect if the contactField needs to enter
     that state.  In the FieldText element a similar approach is used to fade
     out the label of the FieldText when the user enters some text of their own.
@@ -500,7 +500,7 @@
         to receive focus
     \endlist
 
-    The read-only property activeFocus can be used to determine whether a 
+    The read-only property activeFocus can be used to determine whether a
     component will receive key input.  Any un-handled keys will be passed to
     the components parent, which in turn will pass keys it doesn't handle up to its
     own ancestors.
@@ -573,7 +573,7 @@
     When the query is a select statement, the component also acts as a model
     allowing it to provide data to a ListView component.  The query above
     retrieves the fields recid, label, email and phone from a contacts table,
-    and orders the results by the label of the contact first, and then by 
+    and orders the results by the label of the contact first, and then by
     the recid for any contacts with equivalent labels.
 
     The ListView component is suitable for displaying models and is declared
@@ -638,7 +638,7 @@
     Something worth noting at this point is that every delegate created has this connection.
     It is important to check whether the delegate is the one in the open state, and
     taking some effort to ensure only one is, before acting on the signal from the button.
-    
+
     \section1 Performance Considerations
 
     We have now made a contact application that can view a list of contacts, open one,

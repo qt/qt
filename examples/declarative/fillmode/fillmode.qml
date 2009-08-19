@@ -34,7 +34,7 @@ Image {
         styleColor: "white"
         anchors { centerIn: parent }
     }
-    Rect {
+    Rectangle {
         border.color: "black"
         color: "transparent"
         anchors { fill: parent; rightMargin: 1; bottomMargin: 1}

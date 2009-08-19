@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     radius: 15
     border.color: "black"
     width: 100

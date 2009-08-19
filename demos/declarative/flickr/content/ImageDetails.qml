@@ -27,7 +27,7 @@ Flipable {
     front: Item {
         id: ContainerFront; anchors.fill: Container
 
-        Rect {
+        Rectangle {
             anchors.fill: parent
             color: "black"; opacity: 0.4
             border.color: "white"; border.width: 2
@@ -77,7 +77,7 @@ Flipable {
     back: Item {
         anchors.fill: Container
 
-        Rect { anchors.fill: parent; color: "black"; opacity: 0.4; border.color: "white"; border.width: 2 }
+        Rectangle { anchors.fill: parent; color: "black"; opacity: 0.4; border.color: "white"; border.width: 2 }
 
         Progress { anchors.centerIn: parent; width: 200; height: 18; progress: BigImage.progress; visible: BigImage.status!=1 }
         Flickable {

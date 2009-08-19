@@ -52,7 +52,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Gradient,QFxGradient)
 /*!
     \internal
     \class QFxPen
-    \brief The QFxPen class provides a pen used for drawing rect borders on a QFxView.
+    \brief The QFxPen class provides a pen used for drawing rectangle borders on a QFxView.
 
     By default, the pen is invalid and nothing is drawn. You must either set a color (then the default
     width is 1) or a width (then the default color is black).
@@ -61,7 +61,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Gradient,QFxGradient)
 
     Example:
     \qml
-    Rect { border.width: 2; border.color: "red" ... }
+    Rectangle { border.width: 2; border.color: "red" ... }
     \endqml
 */
 
@@ -107,8 +107,8 @@ void QFxGradientStop::updateGradient()
     A gradient is defined by two or more colors, which will be blended seemlessly.  The
     colors are specified at their position in the range 0.0 - 1.0 via
     the GradientStop item.  For example, the following code paints a
-    Rect with a gradient starting with red, blending to yellow at 1/3 of the
-    size of the Rect, and ending with Green:
+    rectangle with a gradient starting with red, blending to yellow at 1/3 of the
+    size of the rectangle, and ending with Green:
 
     \table
     \row
@@ -145,18 +145,18 @@ void QFxGradient::doUpdate()
     emit updated();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rect,QFxRect)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rectangle,QFxRect)
 
 /*!
-    \qmlclass Rect QFxRect
-    \brief The Rect item allows you to add rectangles to a scene.
+    \qmlclass Rectangle QFxRect
+    \brief The Rectangle item allows you to add rectangles to a scene.
     \inherits Item
 
-    A Rect is painted having a solid fill (color) and an optional border (pen).
+    A Rectangle is painted having a solid fill (color) and an optional border.
     You can also create rounded rectangles using the radius property.
 
     \qml
-    Rect {
+    Rectangle {
         width: 100
         height: 100
         color: "red"
@@ -172,7 +172,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rect,QFxRect)
 /*!
     \internal
     \class QFxRect
-    \brief The QFxRect class provides a rect item that you can add to a QFxView.
+    \brief The QFxRect class provides a rectangle item that you can add to a QFxView.
 */
 QFxRect::QFxRect(QFxItem *parent)
   : QFxItem(*(new QFxRectPrivate), parent)
@@ -200,14 +200,14 @@ void QFxRect::doUpdate()
 }
 
 /*!
-    \qmlproperty int Rect::border.width
-    \qmlproperty color Rect::border.color
+    \qmlproperty int Rectangle::border.width
+    \qmlproperty color Rectangle::border.color
 
-    The width and color used to draw the border of the rect.
+    The width and color used to draw the border of the rectangle.
 
     A width of 1 creates a thin line. For no line, use a width of 0 or a transparent color.
 
-    To keep the border smooth (rather than blurry), odd widths cause the rect to be painted at
+    To keep the border smooth (rather than blurry), odd widths cause the rectangle to be painted at
     a half-pixel offset;
 */
 QFxPen *QFxRect::border()
@@ -217,26 +217,26 @@ QFxPen *QFxRect::border()
 }
 
 /*!
-    \qmlproperty Gradient Rect::gradient
+    \qmlproperty Gradient Rectangle::gradient
 
-    The gradient to use to fill the rect.
+    The gradient to use to fill the rectangle.
 
     This property allows for the construction of simple vertical gradients.
-    Other gradients may by formed by adding rotation to the rect.
+    Other gradients may by formed by adding rotation to the rectangle.
 
     \table
     \row
     \o \image declarative-rect_gradient.png
     \o
     \qml
-    Rect { y: 0; width: 80; height: 80; color: "lightsteelblue" }
-    Rect { y: 100; width: 80; height: 80
+    Rectangle { y: 0; width: 80; height: 80; color: "lightsteelblue" }
+    Rectangle { y: 100; width: 80; height: 80
         gradient: Gradient {
             GradientStop { position: 0.0; color: "lightsteelblue" }
             GradientStop { position: 1.0; color: "blue" }
         }
     }
-    Rect { rotation: 90; x: 80; y: 200; width: 80; height: 80
+    Rectangle { rotation: 90; x: 80; y: 200; width: 80; height: 80
         gradient: Gradient {
             GradientStop { position: 0.0; color: "lightsteelblue" }
             GradientStop { position: 1.0; color: "blue" }
@@ -271,10 +271,10 @@ void QFxRect::setGradient(QFxGradient *gradient)
 
 
 /*!
-    \qmlproperty real Rect::radius
-    This property holds the corner radius used to draw a rounded rect.
+    \qmlproperty real Rectangle::radius
+    This property holds the corner radius used to draw a rounded rectangle.
 
-    If radius is non-zero, the rect will be painted as a rounded rectangle, otherwise it will be
+    If radius is non-zero, the rectangle will be painted as a rounded rectangle, otherwise it will be
     painted as a normal rectangle. The same radius is used by all 4 corners; there is currently
     no way to specify different radii for different corners.
 */
@@ -296,15 +296,15 @@ void QFxRect::setRadius(qreal radius)
 }
 
 /*!
-    \qmlproperty color Rect::color
-    This property holds the color used to fill the rect.
+    \qmlproperty color Rectangle::color
+    This property holds the color used to fill the rectangle.
 
     \qml
-    // green rect using hexidecimal notation
-    Rect { color: "#00FF00" }
+    // green rectangle using hexidecimal notation
+    Rectangle { color: "#00FF00" }
 
-    // steelblue rect using SVG color name
-    Rect { color: "steelblue" }
+    // steelblue rectangle using SVG color name
+    Rectangle { color: "steelblue" }
     \endqml
 
     The default color is white.
@@ -329,14 +329,14 @@ void QFxRect::setColor(const QColor &c)
 }
 
 /*!
-    \qmlproperty color Rect::tintColor
+    \qmlproperty color Rectangle::tintColor
     This property holds The color to tint the rectangle.
 
-    This color will be drawn over the rect's color when the rect is painted. The tint color should usually be mostly transparent, or you will not be able to see the underlying color. The below example provides a slight red tint by having the tint color be pure red which is only 1/16th opaque.
+    This color will be drawn over the rectangle's color when the rectangle is painted. The tint color should usually be mostly transparent, or you will not be able to see the underlying color. The below example provides a slight red tint by having the tint color be pure red which is only 1/16th opaque.
 
     \qml
-    Rect { x: 0; width: 80; height: 80; color: "lightsteelblue" }
-    Rect { x: 100; width: 80; height: 80; color: "lightsteelblue"; tintColor: "#10FF0000" }
+    Rectangle { x: 0; width: 80; height: 80; color: "lightsteelblue" }
+    Rectangle { x: 100; width: 80; height: 80; color: "lightsteelblue"; tintColor: "#10FF0000" }
     \endqml
     \image declarative-rect_tint.png
 
@@ -553,7 +553,7 @@ void QFxRect::drawRect(QPainter &p)
 }
 
 /*!
-    \qmlproperty bool Rect::smooth
+    \qmlproperty bool Rectangle::smooth
 
     Set this property if you want the item to be smoothly scaled or
     transformed.  Smooth filtering gives better visual quality, but is slower.  If

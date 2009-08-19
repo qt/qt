@@ -1,7 +1,7 @@
 import Qt 4.6
 
 //! [value change]
-Rect {
+Rectangle {
     id: fieldText
     height: 30
     radius: 5

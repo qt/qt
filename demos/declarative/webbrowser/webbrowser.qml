@@ -32,7 +32,7 @@ Item {
         id: WebPanel
         anchors.fill: parent
         clip: true
-        Rect {
+        Rectangle {
             color: "#555555"
             anchors.fill: parent
         }
@@ -59,7 +59,7 @@ Item {
             height: 60
             z: 1
 
-            Rect {
+            Rectangle {
                 id: HeaderSpaceTint
                 color: "black"
                 opacity: 0
@@ -212,7 +212,7 @@ Item {
 
                 property real zoomedOut : 1
             }
-            Rect {
+            Rectangle {
                 id: WebViewTint
                 color: "black"
                 opacity: 0
@@ -229,7 +229,7 @@ Item {
             width: parent.width
             height: 43
             anchors.bottom: parent.bottom
-            Rect {
+            Rectangle {
                 y: -1
                 width: parent.width
                 height: 1

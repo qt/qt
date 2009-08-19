@@ -63,7 +63,7 @@ Item {
                         }
                     }
 
-                    Rect {
+                    Rectangle {
                         id: WhiteRect; anchors.fill: parent; color: "white"; radius: 5
 
                         Loading { x: 26; y: 26; visible: Thumb.status!=1 }

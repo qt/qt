@@ -3,7 +3,7 @@ import Qt 4.6
 // Here, we implement "Scale to Fit" behaviour "manually", rather
 // than using the preserveAspect property.
 //
-Rect {
+Rectangle {
     // default size: whole image, unscaled
     width: Image.width
     height: Image.height

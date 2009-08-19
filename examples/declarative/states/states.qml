@@ -1,28 +1,28 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: Page
     width: 300; height: 300; color: "white"
     // A target region.  Clicking in here sets the state to '' - the default state
-    Rect {
+    Rectangle {
         x: 0; y: 0; width: 50; height: 50
         color: "transparent"; border.color: "black"
         MouseRegion { anchors.fill: parent; onClicked: { Page.state='' } }
     }
     // Another target region.  Clicking in here sets the state to 'Position1'
-    Rect {
+    Rectangle {
         x: 150; y: 50; width: 50; height: 50
         color: "transparent"; border.color: "black"
         MouseRegion { anchors.fill: parent; onClicked: { Page.state='Position1' } }
     }
     // Another target region.  Clicking in here sets the state to 'Position2'
-    Rect {
+    Rectangle {
         x: 0; y: 200; width: 50; height: 50
         color: "transparent"; border.color: "black"
         MouseRegion { anchors.fill: parent; onClicked: { Page.state='Position2' } }
     }
     // Rect which will be moved when my state changes
-    Rect { id: myrect; width: 50; height: 50; color: "red" }
+    Rectangle { id: myrect; width: 50; height: 50; color: "red" }
 
     states: [
         // In state 'Position1', change the 'myrect' item x, y to 150, 50.

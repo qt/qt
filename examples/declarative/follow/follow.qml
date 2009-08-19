@@ -1,9 +1,9 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     color: "#ffffff"
     width: 320; height: 240
-    Rect {
+    Rectangle {
         id: Rect
         color: "#00ff00"
         y: 200; width: 60; height: 20
@@ -22,7 +22,7 @@ Rect {
     }
 
     // Velocity
-    Rect {
+    Rectangle {
         color: "#ff0000"
         x: Rect.width; width: Rect.width; height: 20
         y: 200
@@ -31,13 +31,13 @@ Rect {
     Text { x: Rect.width; y: 220; text: "Velocity" }
 
     // Spring
-    Rect {
+    Rectangle {
         color: "#ff0000"
         x: Rect.width * 2; width: Rect.width/2; height: 20
         y: 200
         y: Follow { source: Rect.y; spring: 1.0; damping: 0.2 }
     }
-    Rect {
+    Rectangle {
         color: "#880000"
         x: Rect.width * 2.5; width: Rect.width/2; height: 20
         y: 200
@@ -49,7 +49,7 @@ Rect {
     MouseRegion {
         id: Mouse
         anchors.fill: parent
-        Rect {
+        Rectangle {
             id: "Ball"
             width: 20; height: 20
             radius: 10

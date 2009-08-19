@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     gradient: Gradient {
         GradientStop { position: 0; color: "black" }
         GradientStop { position: 1.0; color: "#AAAAAA" }
@@ -35,7 +35,7 @@ Rect {
                     onPressed: { Delegate.ListView.list.currentIndex = index; }
                     onClicked: { if (Wrapper.state == 'Details') { Wrapper.state = '';} else {Wrapper.state = 'Details';} }
                 }
-                Rect {
+                Rectangle {
                     id: Wrapper
                     y: 5
                     height: TitleText.height + 10

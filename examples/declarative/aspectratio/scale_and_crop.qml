@@ -2,7 +2,7 @@ import Qt 4.6
 
 // Here, we implement "Scale and Crop" behaviour.
 //
-Rect {
+Rectangle {
     // default size: whole image, unscaled
     width: Image.width
     height: Image.height

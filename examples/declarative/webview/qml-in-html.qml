@@ -1,7 +1,7 @@
 import Qt 4.6
 
 // The WebView supports QML data through the HTML OBJECT tag
-Rect {
+Rectangle {
     color:"blue"
     Flickable {
         width: parent.width

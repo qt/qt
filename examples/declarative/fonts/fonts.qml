@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     property string myText: "Lorem ipsum dolor sit amet, consectetur adipisicing elit"
 
     width: 800; height: 600

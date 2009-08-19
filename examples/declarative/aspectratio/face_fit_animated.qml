@@ -4,7 +4,7 @@ import Qt 4.6
 // diverse and usage-specific behaviours are made possible by NOT putting a
 // hard-coded aspect ratio feature into the Image primitive.
 //
-Rect {
+Rectangle {
     // default size: whole image, unscaled
     width: Image.width
     height: Image.height

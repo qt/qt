@@ -1,14 +1,14 @@
 import Qt 4.6
 
 import "DialLibrary"
-Rect {
+Rectangle {
     color: "white"
     width: 210; height: 240
 
     // Dial with a slider to adjust it
     Dial { id: Dial; value: Slider.x-2 }
 
-    Rect {
+    Rectangle {
         anchors.top: Dial.bottom
         x: 20; width: 160; height: 16
         gradient: Gradient {
@@ -16,7 +16,7 @@ Rect {
             GradientStop { position: 1.0; color: "lightsteelblue" }
         }
         radius: 8; opacity: 0.7; smooth: true
-        Rect {
+        Rectangle {
             id: Slider
             x: 2; y: 2; width: 30; height: 12
             radius: 6; smooth: true

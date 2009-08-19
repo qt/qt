@@ -878,7 +878,7 @@ void QFxGridView::setHighlight(QmlComponent *highlight)
   \code
   Component {
       id: Highlight
-      Rect {
+      Rectangle {
           id: Wrapper; color: "lightsteelblue"; radius: 4; width: 320; height: 60 >
           y: Follow { source: Wrapper.GridView.view.current.y; spring: 3; damping: 0.2 }
           x: Follow { source: Wrapper.GridView.view.current.x; spring: 3; damping: 0.2 }

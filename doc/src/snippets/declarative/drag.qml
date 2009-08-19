@@ -1,7 +1,7 @@
 import Qt 4.6
 
 //! [0]
-Rect {
+Rectangle {
     id: blurtest; width: 600; height: 200; color: "white"
     Image {
         id: pic; source: "qtlogo-64.png"; anchors.verticalCenter: parent.verticalCenter

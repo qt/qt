@@ -63,7 +63,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ComponentInstance,QFxComponentIn
     Item {
         Component {
             id: RedSquare
-            Rect { color: "red"; width: 10; height: 10 }
+            Rectangle { color: "red"; width: 10; height: 10 }
         }
 
         ComponentInstance { component: RedSquare }

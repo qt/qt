@@ -126,8 +126,8 @@ void QFxDrag::setYmax(qreal m)
 
     A MouseRegion is typically used in conjunction with a visible item,
     where the MouseRegion effectively 'proxies' mouse handling for that
-    item. For example, we can put a MouseRegion in a Rect that changes
-    the Rect color to red when clicked:
+    item. For example, we can put a MouseRegion in a Rectangle that changes
+    the Rectangle color to red when clicked:
     \snippet doc/src/snippets/declarative/mouseregion.qml 0
 
     Many MouseRegion signals pass a \l {MouseEvent}{mouse} parameter that contains

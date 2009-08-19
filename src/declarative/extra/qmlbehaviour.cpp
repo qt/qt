@@ -107,7 +107,7 @@ public:
 
     In example below, the rect will use a bounce easing curve over 200 millisecond for any changes to its y property:
     \code
-    Rect {
+    Rectangle {
         width: 20; height: 20
         color: "#00ff00"
         y: 200  //initial value

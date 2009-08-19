@@ -90,7 +90,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 
     The following example scales the X axis of the Rect, relative to its interior point 25, 25:
     \qml
-    Rect {
+    Rectangle {
         width: 100; height: 100
         color: "blue"
         transform: Scale { origin.x: 25; origin.y: 25; xScale: 3}
@@ -123,7 +123,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 
     The following example rotates a Rect around its interior point 25, 25:
     \qml
-    Rect {
+    Rectangle {
         width: 100; height: 100
         color: "blue"
         transform: Rotation { origin.x: 25; origin.y: 25; angle: 45}
@@ -1026,7 +1026,7 @@ QFxItem *QFxItem::parentItem() const
     Item {
         children: [
             Text {},
-            Rect {}
+            Rectangle {}
         ]
         resources: [
             Component {
@@ -1230,7 +1230,7 @@ void QFxItemPrivate::transform_clear()
     \qml
     Item {
         Text {}
-        Rect {}
+        Rectangle {}
         Script {}
     }
     \endqml
@@ -1240,7 +1240,7 @@ void QFxItemPrivate::transform_clear()
     Item {
         children: [
             Text {},
-            Rect {}
+            Rectangle {}
         ]
         resources: [
             Script {}
@@ -1339,11 +1339,11 @@ void QFxItem::setClip(bool c)
   \o Same \c z - later children above earlier children:
   \qml
   Item {
-      Rect {
+      Rectangle {
           color: "red"
           width: 100; height: 100
       }
-      Rect {
+      Rectangle {
           color: "blue"
           x: 50; y: 50; width: 100; height: 100
       }
@@ -1354,12 +1354,12 @@ void QFxItem::setClip(bool c)
   \o Higher \c z on top:
   \qml
   Item {
-      Rect {
+      Rectangle {
           z: 1
           color: "red"
           width: 100; height: 100
       }
-      Rect {
+      Rectangle {
           color: "blue"
           x: 50; y: 50; width: 100; height: 100
       }
@@ -1370,10 +1370,10 @@ void QFxItem::setClip(bool c)
   \o Same \c z - children above parents:
   \qml
   Item {
-      Rect {
+      Rectangle {
           color: "red"
           width: 100; height: 100
-          Rect {
+          Rectangle {
               color: "blue"
               x: 50; y: 50; width: 100; height: 100
           }
@@ -1385,10 +1385,10 @@ void QFxItem::setClip(bool c)
   \o Lower \c z below:
   \qml
   Item {
-      Rect {
+      Rectangle {
           color: "red"
           width: 100; height: 100
-          Rect {
+          Rectangle {
               z: -1
               color: "blue"
               x: 50; y: 50; width: 100; height: 100
@@ -1717,14 +1717,14 @@ void QFxItem::setBaselineOffset(qreal offset)
   \o \image declarative-rotation.png
   \o
   \qml
-  Rect {
+  Rectangle {
       color: "blue"
       width: 100; height: 100
-      Rect {
+      Rectangle {
           color: "green"
           width: 25; height: 25
       }
-      Rect {
+      Rectangle {
           color: "red"
           x: 25; y: 25; width: 50; height: 50
           rotation: 30
@@ -1753,14 +1753,14 @@ void QFxItem::setBaselineOffset(qreal offset)
   \o \image declarative-scale.png
   \o
   \qml
-  Rect {
+  Rectangle {
       color: "blue"
       width: 100; height: 100
-      Rect {
+      Rectangle {
           color: "green"
           width: 25; height: 25
       }
-      Rect {
+      Rectangle {
           color: "red"
           x: 25; y: 25; width: 50; height: 50
           scale: 1.4
@@ -1787,10 +1787,10 @@ void QFxItem::setBaselineOffset(qreal offset)
   \o
   \qml
     Item {
-        Rect {
+        Rectangle {
             color: "red"
             width: 100; height: 100
-            Rect {
+            Rectangle {
                 color: "blue"
                 x: 50; y: 50; width: 100; height: 100
             }
@@ -1802,11 +1802,11 @@ void QFxItem::setBaselineOffset(qreal offset)
   \o
   \qml
     Item {
-        Rect {
+        Rectangle {
             opacity: 0.5
             color: "red"
             width: 100; height: 100
-            Rect {
+            Rectangle {
                 color: "blue"
                 x: 50; y: 50; width: 100; height: 100
             }

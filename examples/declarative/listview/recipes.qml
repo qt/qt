@@ -2,7 +2,7 @@ import Qt 4.6
 
 import "content"
 // This example illustrates expanding a list item to show a more detailed view
-Rect {
+Rectangle {
     id: page
     width: 400; height: 240; color: "black"
     resources: [
@@ -21,7 +21,7 @@ Rect {
                 property real detailsOpacity : 0
 
                 // A simple rounded rectangle for the background
-                Rect {
+                Rectangle {
                     id: background
                     x: 1; y: 2; width: parent.width-2; height: parent.height-4
                     color: "#FEFFEE"; border.color: "#FFBE4F"; radius: 5

@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     width: 360; height: 80
     color: "white"
 //! [0]

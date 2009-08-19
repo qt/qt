@@ -23,7 +23,7 @@ technologies like HTML and CSS, but not required.
 Qml looks like this:
 
 \code
-Rect {
+Rectangle {
     width: 200
     height: 200
     color: "white"
@@ -36,7 +36,7 @@ Rect {
 
 Objects are specified by their type, followed by a pair of braces. Object
 types always begin with a capital letter. In the above example, there are
-two objects, a \l Rect, and an \l Image. Between the braces, we can specify
+two objects, a \l Rectangle, and an \l Image. Between the braces, we can specify
 information about the object, such as its properties.
 
 Properties are specified as \c {property: value} (much like CSS). In the above
@@ -47,7 +47,7 @@ separated by a colon.
 Properties can be specified one-per-line:
 
 \code
-Rect {
+Rectangle {
     width: 100
     height: 100
 }
@@ -56,7 +56,7 @@ Rect {
 or you can put multiple properties on a single line:
 
 \code
-Rect { width: 100; height: 100 }
+Rectangle { width: 100; height: 100 }
 \endcode
 
 When multiple property/value pairs are specified on a single line, they
@@ -189,7 +189,7 @@ list, you can omit the square brackets:
 
 \code
 Image {
-    children: Rect {}
+    children: Rectangle {}
 }
 \endcode
 

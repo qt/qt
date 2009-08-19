@@ -1,4 +1,4 @@
-/*! 
+/*!
 \page tutorial1.html
 \title Tutorial 1 - Hello World!
 \target tutorial1
@@ -10,7 +10,7 @@ This first program is a simple "Hello world" example. The picture below is a scr
 Here is the QML code for the application:
 
 \code
-Rect {
+Rectangle {
     id: Page
     width: 480
     height: 200
@@ -28,10 +28,10 @@ Rect {
 
 \section1 Walkthrough
 
-\section2 Rect element
+\section2 Rectangle element
 
 \code
-Rect {
+Rectangle {
     id: Page
     width: 480
     height: 200
@@ -39,9 +39,9 @@ Rect {
 }
 \endcode
 
-First, we declare a root element of type \l Rect. It is one of the basic building blocks you can use to create an application in QML.
-We give it an id to be able to refer to it later. In this case, we call it \e Page. We also set the \c width, \c height and \c color properties. 
-The \l Rect element contains many other properties (such as \c x and \c y), but these are left at their default values.
+First, we declare a root element of type \l Rectangle. It is one of the basic building blocks you can use to create an application in QML.
+We give it an id to be able to refer to it later. In this case, we call it \e Page. We also set the \c width, \c height and \c color properties.
+The \l Rectangle element contains many other properties (such as \c x and \c y), but these are left at their default values.
 
 \section2 Text element
 

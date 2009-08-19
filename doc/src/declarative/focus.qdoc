@@ -23,7 +23,7 @@ If the \c {Rect} element in the following example has active focus and the \e A 
 Item {
     KeyActions {
         keyA: "print('Key A was pressed')"
-        Rect {}
+        Rectangle {}
     }
 }
 \endcode
@@ -56,7 +56,7 @@ the \c {KeyActions} element has \e {active focus} and pressing the
 \table
 \row
 \o \code
-    Rect {
+    Rectangle {
         color: "lightsteelblue"; width: 240; height: 25
         Text { id: MyText }
         KeyActions {
@@ -81,16 +81,16 @@ reponds accordingly.
 \table
 \row
 \o \code
-Rect {
+Rectangle {
     color: "red"; width: 240; height: 55
     MyWidget {}
     MyWidget { y: 30; focus: true }
 }
 \endcode
 \o \code
-Rect {
+Rectangle {
     color: "red"; width: 240; height: 55
-    Rect {
+    Rectangle {
         color: "lightsteelblue"; width: 240; height: 25
         Text { id: MyText }
         KeyActions {
@@ -100,7 +100,7 @@ Rect {
             keyC: "MyText.text = 'Key C was pressed'"
         }
     }
-    Rect {
+    Rectangle {
         y: 30; focus: true
         color: "lightsteelblue"; width: 240; height: 25
         Text { id: MyText }
@@ -147,7 +147,7 @@ result shown.
 \o \code
 FocusScope {
     width: 240; height: 25
-    Rect {
+    Rectangle {
         color: "lightsteelblue"; width: 240; height: 25
         Text { id: MyText }
         KeyActions {
@@ -178,7 +178,7 @@ then on clicking the either one gives it focus.
 \table
 \row 
 \o \code
-Rect {
+Rectangle {
     color: "red"; width: 240; height: 55
     MyClickableWidget {}
     MyClickableWidget { y: 30; focus: true }
@@ -217,7 +217,7 @@ print the name of the current list item.
 \table
 \row
 \o \code
-Rect {
+Rectangle {
     color: "lightsteelblue"; width: 240; height: 320
 
     ListView {

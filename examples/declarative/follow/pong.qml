@@ -1,12 +1,12 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: Page
     width: 640; height: 480
     color: "#000000"
 
     // Make a ball to bounce
-    Rect {
+    Rectangle {
         // Add a property for the target y coordinate
         property var targetY : Page.height-10
         property var direction : "right"
@@ -38,7 +38,7 @@ Rect {
 
     // Place bats to the left and right of the view, following the y
     // coordinates of the ball.
-    Rect {
+    Rectangle {
         id: LeftBat
         color: "#00ee00"
         x: 2; width: 20; height: 90
@@ -47,7 +47,7 @@ Rect {
             enabled: Ball.direction == 'left'
         }
     }
-    Rect {
+    Rectangle {
         id: RightBat
         color: "#00ee00"
         x: Page.width-22; width: 20; height: 90
@@ -58,12 +58,12 @@ Rect {
     }
 
     // The rest, to make it look realistic, if neither ever scores...
-    Rect { color: "#00ee00"; x: Page.width/2-80; y: 0; width: 40; height: 60 }
-    Rect { color: "#000000"; x: Page.width/2-70; y: 10; width: 20; height: 40 }
-    Rect { color: "#00ee00"; x: Page.width/2+40; y: 0; width: 40; height: 60 }
-    Rect { color: "#000000"; x: Page.width/2+50; y: 10; width: 20; height: 40 }
+    Rectangle { color: "#00ee00"; x: Page.width/2-80; y: 0; width: 40; height: 60 }
+    Rectangle { color: "#000000"; x: Page.width/2-70; y: 10; width: 20; height: 40 }
+    Rectangle { color: "#00ee00"; x: Page.width/2+40; y: 0; width: 40; height: 60 }
+    Rectangle { color: "#000000"; x: Page.width/2+50; y: 10; width: 20; height: 40 }
     Repeater {
         dataSource: Page.height/20
-        Rect { color: "#00ee00"; x: Page.width/2-5; y: index*20; width: 10; height: 10 }
+        Rectangle { color: "#00ee00"; x: Page.width/2-5; y: index*20; width: 10; height: 10 }
     }
 }

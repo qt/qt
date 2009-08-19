@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: page
     color: "white"; border.width: 1; width: 200; height: 60;
     property string text: "Hello World!"
