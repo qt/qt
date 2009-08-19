@@ -153,7 +153,7 @@ private:
     void HandlePointerEvent(const TPointerEvent& aPointerEvent);
     TKeyResponse OfferKeyEvent(const TKeyEvent& aKeyEvent,TEventCode aType);
     TKeyResponse sendKeyEvent(QWidget *widget, QKeyEvent *keyEvent);
-    void sendMouseEvent(QWidget *widget, QMouseEvent *mEvent);
+    bool sendMouseEvent(QWidget *widget, QMouseEvent *mEvent);
     void HandleLongTapEventL( const TPoint& aPenEventLocation, const TPoint& aPenEventScreenLocation );
 
 private:

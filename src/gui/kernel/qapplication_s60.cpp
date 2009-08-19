@@ -347,7 +347,13 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons | Qt::RightButton;
     QMouseEvent mEvent(QEvent::MouseButtonPress, alienWidget->mapFrom(qwidget, widgetPos), globalPos,
         Qt::RightButton, QApplicationPrivate::mouse_buttons, Qt::NoModifier);
-    sendMouseEvent(alienWidget, &mEvent);
+    
+    bool res = sendMouseEvent(alienWidget, &mEvent);
+
+#if !defined(QT_NO_CONTEXTMENU)
+    QContextMenuEvent e2(QContextMenuEvent::Mouse, widgetPos, globalPos, mEvent.modifiers());
+#endif     
+    
     m_previousEventLongTap = true;
 }
 
@@ -444,9 +450,9 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
     }
 }
 
-void QSymbianControl::sendMouseEvent(QWidget *widget, QMouseEvent *mEvent)
+bool QSymbianControl::sendMouseEvent(QWidget *widget, QMouseEvent *mEvent)
 {
-    qt_sendSpontaneousEvent(widget, mEvent);
+    return qt_sendSpontaneousEvent(widget, mEvent);
 }
 
 TKeyResponse QSymbianControl::OfferKeyEventL(const TKeyEvent& keyEvent, TEventCode type)
