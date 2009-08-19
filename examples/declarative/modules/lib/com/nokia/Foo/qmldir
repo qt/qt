@@ -1,0 +1,6 @@
+# Baz was introduced in Foo 1.6
+# Bar 1.5 and 1.6 are the same, but in 1.7 it is reimplemented.
+Bar 1.5 Bar.qml
+Bar 1.6 Bar.qml
+Bar 1.7 Bar17.qml
+Baz 1.6 Baz.qml
