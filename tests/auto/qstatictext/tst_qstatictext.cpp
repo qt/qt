@@ -300,21 +300,15 @@ void tst_QStaticText::translationDoesntCauseRelayout()
     QImage imageDrawText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
     {
         QPainter p(&imageDrawText);
-        p.rotate(33.0);
-        p.scale(0.5, 0.7);
-
-        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(0, 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
 
         p.translate(100, 200);
-        p.drawText(11, 12, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawText(0, 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
     }
 
     QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
     {
         QPainter p(&imageDrawStaticText);
-        p.rotate(33.0);
-        p.scale(0.5, 0.7);
-
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
 
         QStaticTextPrivate *textd = QStaticTextPrivate::get(&text);
@@ -322,10 +316,10 @@ void tst_QStaticText::translationDoesntCauseRelayout()
         QFixedPoint *positionPool = textd->positionPool;
         QStaticTextItem *items = textd->items;
 
-        p.drawStaticText(11, 12, text);
+        p.drawStaticText(0, 0, text);
 
         p.translate(100, 200);
-        p.drawStaticText(11, 12, text);
+        p.drawStaticText(0, 0, text);
 
         // ###
         // If the layout is recalculated, the data is reallocated. Not a entirely deterministic
@@ -336,7 +330,6 @@ void tst_QStaticText::translationDoesntCauseRelayout()
     }
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
-
 }
 
 
