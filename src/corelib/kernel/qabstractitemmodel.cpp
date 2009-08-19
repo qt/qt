@@ -753,7 +753,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     \brief The QModelIndex class is used to locate data in a data model.
 
     \ingroup model-view
-    \mainclass
+
 
     This class is used as an index into item models derived from
     QAbstractItemModel. The index is used by item views, delegates, and
@@ -941,7 +941,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     item model classes.
 
     \ingroup model-view
-    \mainclass
+
 
     The QAbstractItemModel class defines the standard interface that item
     models must use to be able to interoperate with other components in the

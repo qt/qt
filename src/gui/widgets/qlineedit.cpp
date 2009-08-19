@@ -128,7 +128,7 @@ void QLineEdit::initStyleOption(QStyleOptionFrame *option) const
     \brief The QLineEdit widget is a one-line text editor.
 
     \ingroup basicwidgets
-    \mainclass
+
 
     A line edit allows the user to enter and edit a single line of
     plain text with a useful collection of editing functions,
@@ -1388,6 +1388,7 @@ bool QLineEdit::event(QEvent * e)
     if (QApplication::keypadNavigationEnabled()) {
         if (e->type() == QEvent::EnterEditFocus) {
             end(false);
+            d->setCursorVisible(true);
             int cft = QApplication::cursorFlashTime();
             d->control->setCursorBlinkPeriod(cft/2);
         } else if (e->type() == QEvent::LeaveEditFocus) {
@@ -1396,7 +1397,6 @@ bool QLineEdit::event(QEvent * e)
             if (d->control->hasAcceptableInput() || d->control->fixup())
                 emit editingFinished();
         }
-        return true;
     }
 #endif
     return QWidget::event(e);

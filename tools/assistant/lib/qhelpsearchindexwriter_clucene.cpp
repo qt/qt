@@ -590,15 +590,24 @@ void QHelpSearchIndexWriter::updateIndex(const QString &collectionFile,
 
 void QHelpSearchIndexWriter::optimizeIndex()
 {
-    if (QCLuceneIndexReader::indexExists(m_indexFilesFolder)) {
-        if (QCLuceneIndexReader::isLocked(m_indexFilesFolder))
-            return;
+#if !defined(QT_NO_EXCEPTIONS)
+    try {
+#endif
+        if (QCLuceneIndexReader::indexExists(m_indexFilesFolder)) {
+            if (QCLuceneIndexReader::isLocked(m_indexFilesFolder))
+                return;
 
-        QCLuceneStandardAnalyzer analyzer;
-        QCLuceneIndexWriter writer(m_indexFilesFolder, analyzer, false);
-        writer.optimize();
-        writer.close();
+            QCLuceneStandardAnalyzer analyzer;
+            QCLuceneIndexWriter writer(m_indexFilesFolder, analyzer, false);
+            writer.optimize();
+            writer.close();
+        }
+#if !defined(QT_NO_EXCEPTIONS)
+    } catch (...) {
+        qWarning("Full Text Search, could not optimize index.");
+        return;
     }
+#endif
 }
 
 void QHelpSearchIndexWriter::run()
@@ -720,21 +729,30 @@ void QHelpSearchIndexWriter::run()
         }
 #if !defined(QT_NO_EXCEPTIONS)
     } catch (...) {
-        qWarning("Full Text Search, could not create index writer in '%s'.", qPrintable(indexPath));
+        qWarning("Full Text Search, could not create index writer in '%s'.",
+            qPrintable(indexPath));
         return;
     }
 #endif
 
-    writer->setMergeFactor(100);
-    writer->setMinMergeDocs(1000);
-    writer->setMaxFieldLength(QCLuceneIndexWriter::DEFAULT_MAX_FIELD_LENGTH);
+#if !defined(QT_NO_EXCEPTIONS)
+    try {
+#endif
+        writer->setMergeFactor(100);
+        writer->setMinMergeDocs(1000);
+        writer->setMaxFieldLength(QCLuceneIndexWriter::DEFAULT_MAX_FIELD_LENGTH);
+#if !defined(QT_NO_EXCEPTIONS)
+    } catch (...) {
+        qWarning("Full Text Search, could not set writer properties.");
+        return;
+    }
+#endif
 
     QStringList namespaces;
     foreach(const QString &namespaceName, registeredDocs) {
         mutexLocker.relock();
         if (m_cancel) {
-            writer->close();
-            delete writer;
+            closeIndexWriter(writer);
             emit indexingFinished();
             return;
         }
@@ -777,8 +795,7 @@ void QHelpSearchIndexWriter::run()
         mutexLocker.unlock();
     }
 
-    writer->close();
-    delete writer;
+    closeIndexWriter(writer);
 
     mutexLocker.relock();
     if (!m_cancel) {
@@ -813,15 +830,23 @@ bool QHelpSearchIndexWriter::addDocuments(const QList<QUrl> docFiles,
     foreach(const QUrl &url, docFiles) {
         QCLuceneDocument document;
         DocumentHelper helper(url.toString(), engine.fileData(url));
-        if (helper.addFieldsToDocument(&document, namespaceName, attrList))
-            writer->addDocument(document, analyzer);
-
+        if (helper.addFieldsToDocument(&document, namespaceName, attrList)) {
+#if !defined(QT_NO_EXCEPTIONS)
+            try {
+#endif
+                writer->addDocument(document, analyzer);
+#if !defined(QT_NO_EXCEPTIONS)
+            } catch (...) {
+                qWarning("Full Text Search, could not properly add documents.");
+                return false;
+            }
+#endif
+        }
         locker.relock();
         if (m_cancel)
             return false;
         locker.unlock();
     }
-
     return true;
 }
 
@@ -861,6 +886,19 @@ QList<QUrl> QHelpSearchIndexWriter::indexableFiles(QHelpEngineCore *helpEngine,
     return docFiles;
 }
 
+void QHelpSearchIndexWriter::closeIndexWriter(QCLuceneIndexWriter *writer)
+{
+#if !defined(QT_NO_EXCEPTIONS)
+    try {
+#endif
+        writer->close();
+        delete writer;
+#if !defined(QT_NO_EXCEPTIONS)
+    } catch (...) {
+        qWarning("Full Text Search, could not properly close index writer.");
+    }
+#endif
+}
 
         }   // namespace clucene
     }   // namespace fulltextsearch

@@ -75,6 +75,7 @@
 #include <private/qfontengine_p.h>
 #include <private/qtextureglyphcache_p.h>
 #include <private/qpixmapdata_gl_p.h>
+#include <private/qdatabuffer_p.h>
 
 #include "qglgradientcache_p.h"
 #include "qglengineshadermanager_p.h"
@@ -175,7 +176,7 @@ void QGLTextureGlyphCache::createTextureData(int width, int height)
     m_height = height;
 
     QVarLengthArray<uchar> data(width * height);
-    for (int i = 0; i < width * height; ++i)
+    for (int i = 0; i < data.size(); ++i)
         data[i] = 0;
 
     if (m_type == QFontEngineGlyphCache::Raster_RGBMask)
@@ -200,13 +201,18 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_fbo);
 
-    GLuint colorBuffer;
-    glGenRenderbuffers(1, &colorBuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER_EXT, colorBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_RGBA, oldWidth, oldHeight);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                              GL_RENDERBUFFER_EXT, colorBuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+    GLuint tmp_texture;
+    glGenTextures(1, &tmp_texture);
+    glBindTexture(GL_TEXTURE_2D, tmp_texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, oldWidth, oldHeight, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                           GL_TEXTURE_2D, tmp_texture, 0);
 
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     glBindTexture(GL_TEXTURE_2D, oldTexture);
@@ -237,11 +243,24 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     glDisableVertexAttribArray(QT_TEXTURE_COORDS_ATTR);
 
     glBindTexture(GL_TEXTURE_2D, m_texture);
+
+#ifdef QT_OPENGL_ES_2
+    QDataBuffer<uchar> buffer(4*oldWidth*oldHeight);
+    glReadPixels(0, 0, oldWidth, oldHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
+
+    // do an in-place conversion from GL_RGBA to GL_ALPHA
+    for (int i=0; i<oldWidth*oldHeight; ++i)
+        buffer.data()[i] = buffer.at(4*i + 3);
+
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, oldWidth, oldHeight,
+                    GL_ALPHA, GL_UNSIGNED_BYTE, buffer.data());
+#else
     glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, oldWidth, oldHeight);
+#endif
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
                               GL_RENDERBUFFER_EXT, 0);
-    glDeleteRenderbuffers(1, &colorBuffer);
+    glDeleteTextures(1, &tmp_texture);
     glDeleteTextures(1, &oldTexture);
 
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);

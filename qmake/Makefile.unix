@@ -13,7 +13,7 @@ OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
 
 #qt code
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
-      qbytearray.o qbytearraymatcher.o qdatastream.o qbuffer.o qlistdata.o qfile.o \
+      qbytearray.o qbytearraymatcher.o qdatastream.o qbuffer.o qlist.o qfile.o \
       qfsfileengine_unix.o qfsfileengine_iterator_unix.o qfsfileengine.o \
       qfsfileengine_iterator.o qregexp.o qvector.o qbitarray.o qdir.o qdiriterator.o quuid.o qhash.o \
       qfileinfo.o qdatetime.o qstringlist.o qabstractfileengine.o qtemporaryfile.o \
@@ -53,7 +53,7 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_unix.cpp $(SOURCE_PATH)/src/corelib/io/qabstractfileengine.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator_unix.cpp $(SOURCE_PATH)/src/corelib/io/qfsfileengine_iterator.cpp \
-	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp $(SOURCE_PATH)/src/corelib/tools/qlistdata.cpp \
+	   $(SOURCE_PATH)/src/corelib/io/qfsfileengine.cpp $(SOURCE_PATH)/src/corelib/tools/qlist.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qvector.cpp $(SOURCE_PATH)/src/corelib/tools/qbitarray.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qdiriterator.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qdir.cpp $(SOURCE_PATH)/src/corelib/plugin/quuid.cpp \
@@ -179,8 +179,8 @@ qdatastream.o: $(SOURCE_PATH)/src/corelib/io/qdatastream.cpp
 qbuffer.o: $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qbuffer.cpp
 
-qlistdata.o: $(SOURCE_PATH)/src/corelib/tools/qlistdata.cpp
-	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlistdata.cpp
+qlist.o: $(SOURCE_PATH)/src/corelib/tools/qlist.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/tools/qlist.cpp
 
 qfile.o: $(SOURCE_PATH)/src/corelib/io/qfile.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/io/qfile.cpp

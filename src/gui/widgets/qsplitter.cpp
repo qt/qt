@@ -931,7 +931,7 @@ QSplitterLayoutStruct *QSplitterPrivate::insertWidget(int index, QWidget *w)
     \brief The QSplitter class implements a splitter widget.
 
     \ingroup organizers
-    \mainclass
+
 
     A splitter lets the user control the size of child widgets by dragging the
     boundary between the children. Any number of widgets may be controlled by a

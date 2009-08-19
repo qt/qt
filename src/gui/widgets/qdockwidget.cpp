@@ -1069,7 +1069,7 @@ void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect 
     inside a QMainWindow or floated as a top-level window on the
     desktop.
 
-    \ingroup application
+    \ingroup mainwindow-classes
 
     QDockWidget provides the concept of dock widgets, also know as
     tool palettes or utility windows.  Dock windows are secondary

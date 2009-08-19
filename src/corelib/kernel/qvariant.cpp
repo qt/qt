@@ -1164,9 +1164,8 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     \brief The QVariant class acts like a union for the most common Qt data types.
 
     \ingroup objectmodel
-    \ingroup misc
     \ingroup shared
-    \mainclass
+
 
     Because C++ forbids unions from including types that have
     non-default constructors or destructors, most interesting Qt

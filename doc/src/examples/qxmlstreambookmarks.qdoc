@@ -106,19 +106,18 @@
     of reading only takes place if the file is a valid XBEL 1.0 file. 
     Note that the XML input needs to be well-formed to be accepted by 
     QXmlStreamReader. Otherwise, the \l{QXmlStreamReader::raiseError()}
-    {raiseError()} function is used to display an error message.
+    {raiseError()} function is used to display an error message. Since the
+    XBEL reader is only concerned with reading XML elements, it makes
+    extensive use of the \l{QXmlStreamReader::readNextStartElement()}
+    convenience function.
 
     \snippet examples/xml/streambookmarks/xbelreader.cpp 1
-
-    The \c readUnknownElement() function reads an unknown element. The
-    Q_ASSERT() macro is used to provide a pre-condition for the function.
-
-    \snippet examples/xml/streambookmarks/xbelreader.cpp 2
 
     The \c readXBEL() function reads the name of a startElement and calls
     the appropriate function to read it, depending on whether if its a
     "folder", "bookmark" or "separator". Otherwise, it calls
-    \c readUnknownElement().
+    \l{QXmlStreamReader::skipCurrentElement()}. The Q_ASSERT() macro is used
+    to provide a pre-condition for the function.
 
     \snippet examples/xml/streambookmarks/xbelreader.cpp 3
 

@@ -434,8 +434,8 @@ void QMessageBoxPrivate::_q_buttonClicked(QAbstractButton *button)
     \brief The QMessageBox class provides a modal dialog for informing
     the user or for asking the user a question and receiving an answer.
 
-    \ingroup dialogs
-    \mainclass
+    \ingroup standard-dialogs
+
 
     A message box displays a primary \l{QMessageBox::text}{text} to
     alert the user to a situation, an \l{QMessageBox::informativeText}

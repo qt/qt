@@ -43,11 +43,10 @@
     \page tutorials-addressbook-fr.html
 
     \startpage {index.html}{Qt Reference Documentation}
+    \contentspage Tutorials
     \nextpage {tutorials/addressbook-fr/part1}{Chapitre 1}
 
     \title Tutoriel "Carnet d'adresses"
-    \ingroup howto
-    \ingroup tutorials
     \brief Une introduction à la programation d'interface graphique montrant comment construire une application simple avec Qt.
 
     Ce tutoriel est une introduction à la programmation de GUI (interface utilisateur)

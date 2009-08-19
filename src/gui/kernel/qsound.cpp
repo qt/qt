@@ -106,7 +106,7 @@ public:
     \brief The QSound class provides access to the platform audio facilities.
 
     \ingroup multimedia
-    \mainclass
+
 
     Qt provides the most commonly required audio operation in GUI
     applications: asynchronously playing a sound file. This is most

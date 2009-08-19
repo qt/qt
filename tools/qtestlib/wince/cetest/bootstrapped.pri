@@ -24,7 +24,7 @@ SOURCES += \
            $$QT_SOURCE_TREE/src/corelib/tools/qbytearraymatcher.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qvector.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qvsnprintf.cpp \
-           $$QT_SOURCE_TREE/src/corelib/tools/qlistdata.cpp \
+           $$QT_SOURCE_TREE/src/corelib/tools/qlist.cpp \
            $$QT_SOURCE_TREE/src/corelib/tools/qhash.cpp \
            $$QT_SOURCE_TREE/src/corelib/global/qglobal.cpp \
            $$QT_BUILD_TREE/src/corelib/global/qconfig.cpp \

@@ -447,7 +447,7 @@ QTemporaryFilePrivate::~QTemporaryFilePrivate()
     \brief The QTemporaryFile class is an I/O device that operates on temporary files.
 
     \ingroup io
-    \mainclass
+
 
     QTemporaryFile is used to create unique temporary files safely.
     The file itself is created by calling open(). The name of the

@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
   \brief The QScriptable class provides access to the Qt Script environment from Qt C++ member functions.
 
   \ingroup script
-  \mainclass
+
 
   With QScriptEngine::newQObject(), you can expose the signals and
   slots and properties of any QObject (or subclass) to script

@@ -87,8 +87,8 @@
     \o \l{QtXmlPatterns Module}{XQuery and XPath} support, providing facilities for
     XML processing beyond that supported by the QtXml module.
     \o Support for embedded widgets in \l{Graphics View} scenes.
-    \o The \l{Threading and Concurrent Programming}{QtConcurrent framework} for
-    concurrent programming using Qt paradigms and threading features.
+    \o The \l{QtConcurrent} framework for concurrent programming using Qt paradigms and
+    threading features.
     \o An \l{QtHelp Module}{improved help system} that can be used in conjunction
     with Qt Assistant or as an independent help resource manager.
     \o Printing system improvements, including the QPrinterInfo, QPrintPreviewWidget
@@ -563,7 +563,7 @@
     \section1 Improved Network Proxy Support
 
     Qt's networking classes have been updated with
-    \l{QtNetwork Module#Support for Network Proxies}{improved proxy support}.
+    \l{Network Programming#Support for Network Proxies}{improved proxy support}.
     This includes improved integration with system proxy settings and the added
     ability to handle non-trivial proxy cases.
 

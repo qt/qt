@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 
   \brief The QIconEngine class provides an abstract base class for QIcon renderers.
 
-  \ingroup multimedia
+  \ingroup painting
 
   \bold {Use QIconEngineV2 instead.}
 
@@ -144,7 +144,7 @@ void QIconEngine::addFile(const QString &/*fileName*/, const QSize &/*size*/, QI
 
     \brief The QIconEngineV2 class provides an abstract base class for QIcon renderers.
 
-    \ingroup multimedia
+    \ingroup painting
     \since 4.3
 
     An icon engine renders \l{QIcon}s. With icon engines, you can

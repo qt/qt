@@ -52,13 +52,13 @@
 
 #include "qxmlutils_p.h"
 #include <qdebug.h>
-#include <QFile>
+#include <qfile.h>
 #include <stdio.h>
 #include <qtextcodec.h>
 #include <qstack.h>
 #include <qbuffer.h>
 #ifndef QT_BOOTSTRAPPED
-#include <QCoreApplication>
+#include <qcoreapplication.h>
 #else
 // This specialization of Q_DECLARE_TR_FUNCTIONS is not in qcoreapplication.h,
 // because that header depends on QObject being available, which is not the
@@ -126,6 +126,21 @@ QT_BEGIN_NAMESPACE
     \value ProcessingInstruction The reader reports a processing
     instruction in processingInstructionTarget() and
     processingInstructionData().
+*/
+
+/*!
+    \enum QXmlStreamReader::ReadElementTextBehaviour
+
+    This enum specifies the different behaviours of readElementText().
+
+    \value ErrorOnUnexpectedElement Raise an UnexpectedElementError and return
+    what was read so far when a child element is encountered.
+
+    \value IncludeChildElements Recursively include the text from child elements.
+
+    \value SkipChildElements Skip child elements.
+
+    \since 4.6
 */
 
 /*!
@@ -244,7 +259,7 @@ QXmlStreamEntityResolver *QXmlStreamReader::entityResolver() const
   \brief The QXmlStreamReader class provides a fast parser for reading
   well-formed XML via a simple streaming API.
 
-  \mainclass
+
   \ingroup xml-tools
 
   QXmlStreamReader is a faster and more convenient replacement for
@@ -620,6 +635,56 @@ QXmlStreamReader::TokenType QXmlStreamReader::tokenType() const
 {
     Q_D(const QXmlStreamReader);
     return d->type;
+}
+
+/*!
+  Reads until the next start element within the current element. Returns true
+  when a start element was reached. When the end element was reached, or when
+  an error occurred, false is returned.
+
+  The current element is the element matching the most recently parsed start
+  element of which a matching end element has not yet been reached. When the
+  parser has reached the end element, the current element becomes the parent
+  element.
+
+  This is a convenience function for when you're only concerned with parsing
+  XML elements. The \l{QXmlStream Bookmarks Example} makes extensive use of
+  this function.
+
+  \since 4.6
+  \sa readNext()
+ */
+bool QXmlStreamReader::readNextStartElement()
+{
+    while (readNext() != Invalid) {
+        if (isEndElement())
+            return false;
+        else if (isStartElement())
+            return true;
+    }
+    return false;
+}
+
+/*!
+  Reads until the end of the current element, skipping any child nodes.
+  This function is useful for skipping unknown elements.
+
+  The current element is the element matching the most recently parsed start
+  element of which a matching end element has not yet been reached. When the
+  parser has reached the end element, the current element becomes the parent
+  element.
+
+  \since 4.6
+ */
+void QXmlStreamReader::skipCurrentElement()
+{
+    int depth = 1;
+    while (depth && readNext() != Invalid) {
+        if (isEndElement())
+            --depth;
+        else if (isStartElement())
+            ++depth;
+    }
 }
 
 /*
@@ -2021,12 +2086,17 @@ void QXmlStreamReader::addExtraNamespaceDeclarations(const QXmlStreamNamespaceDe
 
   The function concatenates text() when it reads either \l Characters
   or EntityReference tokens, but skips ProcessingInstruction and \l
-  Comment. In case anything else is read before reaching EndElement,
-  the function returns what it read so far and raises an
-  UnexpectedElementError. If the current token is not StartElement, an
-  empty string is returned.
+  Comment. If the current token is not StartElement, an empty string is
+  returned.
+
+  The \a behaviour defines what happens in case anything else is
+  read before reaching EndElement. The function can include the text from
+  child elements (useful for example for HTML), ignore child elements, or
+  raise an UnexpectedElementError and return what was read so far.
+
+  \since 4.6
  */
-QString QXmlStreamReader::readElementText()
+QString QXmlStreamReader::readElementText(ReadElementTextBehaviour behaviour)
 {
     Q_D(QXmlStreamReader);
     if (isStartElement()) {
@@ -2042,14 +2112,35 @@ QString QXmlStreamReader::readElementText()
             case ProcessingInstruction:
             case Comment:
                 break;
+            case StartElement:
+                if (behaviour == SkipChildElements) {
+                    skipCurrentElement();
+                    break;
+                } else if (behaviour == IncludeChildElements) {
+                    result += readElementText(behaviour);
+                    break;
+                }
+                // Fall through (for ErrorOnUnexpectedElement)
             default:
-                if (!d->error)
-                    d->raiseError(UnexpectedElementError, QXmlStream::tr("Expected character data."));
-                return result;
+                if (d->error || behaviour == ErrorOnUnexpectedElement) {
+                    if (!d->error)
+                        d->raiseError(UnexpectedElementError, QXmlStream::tr("Expected character data."));
+                    return result;
+                }
             }
         }
     }
     return QString();
+}
+
+/*!
+  \overload readElementText()
+
+  Calling this function is equivalent to calling readElementText(ErrorOnUnexpectedElement).
+ */
+QString QXmlStreamReader::readElementText()
+{
+    return readElementText(ErrorOnUnexpectedElement);
 }
 
 /*!  Raises a custom error with an optional error \a message.
@@ -2792,7 +2883,7 @@ QStringRef QXmlStreamReader::documentEncoding() const
   \brief The QXmlStreamWriter class provides an XML writer with a
   simple streaming API.
 
-  \mainclass
+
   \inmodule QtXml
   \ingroup xml-tools
 

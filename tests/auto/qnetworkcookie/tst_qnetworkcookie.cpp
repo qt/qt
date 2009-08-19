@@ -234,17 +234,17 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     QTest::newRow("path-with-utf8-2") << "a=b;path=/R%C3%A9sum%C3%A9" << cookie;
 
     cookie.setPath(QString());
-    cookie.setDomain(".trolltech.com");
-    QTest::newRow("plain-domain1") << "a=b;domain=trolltech.com" << cookie;
-    QTest::newRow("plain-domain2") << "a=b; domain=trolltech.com " << cookie;
-    QTest::newRow("plain-domain3") << "a=b;domain=TROLLTECH.COM" << cookie;
-    QTest::newRow("plain-domain4") << "a=b;DOMAIN = TROLLTECH.COM" << cookie;
+    cookie.setDomain(".qt.nokia.com");
+    QTest::newRow("plain-domain1") << "a=b;domain=qt.nokia.com" << cookie;
+    QTest::newRow("plain-domain2") << "a=b; domain=qt.nokia.com " << cookie;
+    QTest::newRow("plain-domain3") << "a=b;domain=QT.NOKIA.COM" << cookie;
+    QTest::newRow("plain-domain4") << "a=b;DOMAIN = QT.NOKIA.COM" << cookie;
 
-    cookie.setDomain(".trolltech.com");
-    QTest::newRow("dot-domain1") << "a=b;domain=.trolltech.com" << cookie;
-    QTest::newRow("dot-domain2") << "a=b; domain=.trolltech.com" << cookie;
-    QTest::newRow("dot-domain3") << "a=b; domain=.TROLLTECH.COM" << cookie;
-    QTest::newRow("dot-domain4") << "a=b; Domain = .TROLLTECH.COM" << cookie;
+    cookie.setDomain(".qt.nokia.com");
+    QTest::newRow("dot-domain1") << "a=b;domain=.qt.nokia.com" << cookie;
+    QTest::newRow("dot-domain2") << "a=b; domain=.qt.nokia.com" << cookie;
+    QTest::newRow("dot-domain3") << "a=b; domain=.QT.NOKIA.COM" << cookie;
+    QTest::newRow("dot-domain4") << "a=b; Domain = .QT.NOKIA.COM" << cookie;
 
     cookie.setDomain(QString::fromUtf8(".d\303\270gn\303\245pent.troll.no"));
     QTest::newRow("idn-domain1") << "a=b;domain=xn--dgnpent-gxa2o.troll.no" << cookie;
@@ -259,20 +259,20 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     QTest::newRow("dot-idn-domain3") << "a=b;domain=.XN--DGNPENT-GXA2O.TROLL.NO" << cookie;
     QTest::newRow("dot-idn-domain4") << "a=b;domain=.D\303\230GN\303\205PENT.troll.NO" << cookie;
 
-    cookie.setDomain(".trolltech.com");
+    cookie.setDomain(".qt.nokia.com");
     cookie.setPath("/");
-    QTest::newRow("two-fields") << "a=b;domain=trolltech.com;path=/" << cookie;
-    QTest::newRow("two-fields2") << "a=b; domain=trolltech.com; path=/" << cookie;
-    QTest::newRow("two-fields3") << "a=b;   domain=trolltech.com ; path=/ " << cookie;
-    QTest::newRow("two-fields4") << "a=b;path=/; domain=trolltech.com" << cookie;
-    QTest::newRow("two-fields5") << "a=b; path=/  ;   domain=trolltech.com" << cookie;
-    QTest::newRow("two-fields6") << "a=b; path= /  ;   domain =trolltech.com" << cookie;
+    QTest::newRow("two-fields") << "a=b;domain=qt.nokia.com;path=/" << cookie;
+    QTest::newRow("two-fields2") << "a=b; domain=qt.nokia.com; path=/" << cookie;
+    QTest::newRow("two-fields3") << "a=b;   domain=qt.nokia.com ; path=/ " << cookie;
+    QTest::newRow("two-fields4") << "a=b;path=/; domain=qt.nokia.com" << cookie;
+    QTest::newRow("two-fields5") << "a=b; path=/  ;   domain=qt.nokia.com" << cookie;
+    QTest::newRow("two-fields6") << "a=b; path= /  ;   domain =qt.nokia.com" << cookie;
 
     cookie.setSecure(true);
-    QTest::newRow("three-fields") << "a=b;domain=trolltech.com;path=/;secure" << cookie;
-    QTest::newRow("three-fields2") << "a=b;secure;path=/;domain=trolltech.com" << cookie;
-    QTest::newRow("three-fields3") << "a=b;secure;domain=trolltech.com; path=/" << cookie;
-    QTest::newRow("three-fields4") << "a = b;secure;domain=trolltech.com; path=/" << cookie;
+    QTest::newRow("three-fields") << "a=b;domain=qt.nokia.com;path=/;secure" << cookie;
+    QTest::newRow("three-fields2") << "a=b;secure;path=/;domain=qt.nokia.com" << cookie;
+    QTest::newRow("three-fields3") << "a=b;secure;domain=qt.nokia.com; path=/" << cookie;
+    QTest::newRow("three-fields4") << "a = b;secure;domain=qt.nokia.com; path=/" << cookie;
 
     cookie = QNetworkCookie();
     cookie.setName("a");
@@ -560,9 +560,9 @@ void tst_QNetworkCookie::parseSingleCookie_data()
     QTest::newRow("expires+path") << "a=b; expires=Wed, 09-Nov-1999 23:12:40 GMT; path=/" << cookie;
     QTest::newRow("path+expires") << "a=b; path=/;expires=Wed, 09-Nov-1999 23:12:40 GMT " << cookie;
 
-    cookie.setDomain(".trolltech.com");
-    QTest::newRow("full") << "a=b; domain=.trolltech.com;expires=Wed, 09-Nov-1999 23:12:40 GMT;path=/" << cookie;
-    QTest::newRow("full2") << "a=b;path=/; expires=Wed, 09-Nov-1999 23:12:40 GMT ;domain=.trolltech.com" << cookie;
+    cookie.setDomain(".qt.nokia.com");
+    QTest::newRow("full") << "a=b; domain=.qt.nokia.com;expires=Wed, 09-Nov-1999 23:12:40 GMT;path=/" << cookie;
+    QTest::newRow("full2") << "a=b;path=/; expires=Wed, 09-Nov-1999 23:12:40 GMT ;domain=.qt.nokia.com" << cookie;
 
     // cookies obtained from the network:
     cookie = QNetworkCookie("__siteid", "1");
@@ -662,9 +662,9 @@ void tst_QNetworkCookie::parseMultipleCookies_data()
     QTest::newRow("complex-1") << "c=d, a=, foo=bar; path=/" << list;
 
     cookie.setName("baz");
-    cookie.setDomain(".trolltech.com");
+    cookie.setDomain(".qt.nokia.com");
     list.prepend(cookie);
-    QTest::newRow("complex-2") << "baz=bar; path=/; domain=trolltech.com, c=d,a=,foo=bar; path=/" << list;
+    QTest::newRow("complex-2") << "baz=bar; path=/; domain=qt.nokia.com, c=d,a=,foo=bar; path=/" << list;
 
     // cookies obtained from the network:
     cookie = QNetworkCookie("id", "51706646077999719");

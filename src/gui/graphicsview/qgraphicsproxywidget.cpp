@@ -67,7 +67,6 @@ QT_BEGIN_NAMESPACE
     \brief The QGraphicsProxyWidget class provides a proxy layer for embedding
     a QWidget in a QGraphicsScene.
     \since 4.4
-    \ingroup multimedia
     \ingroup graphicsview-api
 
     QGraphicsProxyWidget embeds QWidget-based widgets, for example, a

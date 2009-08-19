@@ -44,9 +44,8 @@
     \brief The QGraphicsScene class provides a surface for managing a large
     number of 2D graphical items.
     \since 4.2
-    \ingroup multimedia
     \ingroup graphicsview-api
-    \mainclass
+
 
     The class serves as a container for QGraphicsItems. It is used together
     with QGraphicsView for visualizing graphical items, such as lines,
@@ -1080,7 +1079,7 @@ void QGraphicsScenePrivate::mousePressEventHandler(QGraphicsSceneMouseEvent *mou
     // Set focus on the topmost enabled item that can take focus.
     bool setFocus = false;
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
-        if (item->isEnabled() && (item->flags() & QGraphicsItem::ItemIsFocusable)) {
+        if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
             if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
                 setFocus = true;
                 if (item != q->focusItem())
@@ -3803,7 +3802,8 @@ void QGraphicsScene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
 
     bool hasSetFocus = false;
     foreach (QGraphicsItem *item, wheelCandidates) {
-        if (!hasSetFocus && item->isEnabled() && (item->flags() & QGraphicsItem::ItemIsFocusable)) {
+        if (!hasSetFocus && item->isEnabled()
+            && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
             if (item->isWidget() && static_cast<QGraphicsWidget *>(item)->focusPolicy() == Qt::WheelFocus) {
                 hasSetFocus = true;
                 if (item != focusItem())
@@ -5345,7 +5345,7 @@ bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEve
     // Set focus on the topmost enabled item that can take focus.
     bool setFocus = false;
     foreach (QGraphicsItem *item, cachedItemsUnderMouse) {
-        if (item->isEnabled() && (item->flags() & QGraphicsItem::ItemIsFocusable)) {
+        if (item->isEnabled() && ((item->flags() & QGraphicsItem::ItemIsFocusable) && item->d_ptr->mouseSetsFocus)) {
             if (!item->isWidget() || ((QGraphicsWidget *)item)->focusPolicy() & Qt::ClickFocus) {
                 setFocus = true;
                 if (item != q->focusItem())

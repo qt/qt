@@ -1486,7 +1486,7 @@ QTableWidgetItem &QTableWidgetItem::operator=(const QTableWidgetItem &other)
     \brief The QTableWidget class provides an item-based table view with a default model.
 
     \ingroup model-view
-    \mainclass
+
 
     Table widgets provide standard table display facilities for applications.
     The items in a QTableWidget are provided by QTableWidgetItem.

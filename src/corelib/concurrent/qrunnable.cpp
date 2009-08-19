@@ -44,6 +44,8 @@
     \since 4.4
     \brief The QRunnable class is the base class for all runnable objects.
 
+    \ingroup thread
+
     The QRunnable class is an interface for representing a task or
     piece of code that needs to be executed, represented by your
     reimplementation of the run() function.

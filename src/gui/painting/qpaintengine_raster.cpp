@@ -2495,10 +2495,7 @@ void QRasterPaintEngine::drawImage(const QPointF &p, const QImage &img)
         const QClipData *clip = d->clip();
         QPointF pt(p.x() + s->matrix.dx(), p.y() + s->matrix.dy());
 
-        // ### TODO: remove this eventually...
-        static bool NO_BLEND_FUNC = !qgetenv("QT_NO_BLEND_FUNCTIONS").isNull();
-
-        if (s->flags.fast_images && !NO_BLEND_FUNC) {
+        if (s->flags.fast_images) {
             SrcOverBlendFunc func = qBlendFunctions[d->rasterBuffer->format][img.format()];
             if (func) {
                 if (!clip) {
@@ -2510,6 +2507,8 @@ void QRasterPaintEngine::drawImage(const QPointF &p, const QImage &img)
                 }
             }
         }
+
+
 
         d->image_filler.clip = clip;
         d->image_filler.initTexture(&img, s->intOpacity, QTextureData::Plain, img.rect());
@@ -2545,12 +2544,44 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     Q_D(QRasterPaintEngine);
     QRasterPaintEngineState *s = state();
     const bool aa = s->flags.antialiased || s->flags.bilinear;
-    if (!aa && sr.size() == QSize(1, 1)) {
+    int sr_l = qFloor(sr.left());
+    int sr_r = qCeil(sr.right()) - 1;
+    int sr_t = qFloor(sr.top());
+    int sr_b = qCeil(sr.bottom()) - 1;
+
+    if (!aa && sr_l == sr_r && sr_t == sr_b) {
         // as fillRect will apply the aliased coordinate delta we need to
         // subtract it here as we don't use it for image drawing
         QTransform old = s->matrix;
         s->matrix = s->matrix * QTransform::fromTranslate(-aliasedCoordinateDelta, -aliasedCoordinateDelta);
-        fillRect(r, QColor::fromRgba(img.pixel(sr.x(), sr.y())));
+
+        // Do whatever fillRect() does, but without premultiplying the color if it's already premultiplied.
+        QRgb color = img.pixel(sr_l, sr_t);
+        switch (img.format()) {
+        case QImage::Format_ARGB32_Premultiplied:
+        case QImage::Format_ARGB8565_Premultiplied:
+        case QImage::Format_ARGB6666_Premultiplied:
+        case QImage::Format_ARGB8555_Premultiplied:
+        case QImage::Format_ARGB4444_Premultiplied:
+            // Combine premultiplied color with the opacity set on the painter.
+            d->solid_color_filler.solid.color =
+                ((((color & 0x00ff00ff) * s->intOpacity) >> 8) & 0x00ff00ff)
+                | ((((color & 0xff00ff00) >> 8) * s->intOpacity) & 0xff00ff00);
+            break;
+        default:
+            d->solid_color_filler.solid.color = PREMUL(ARGB_COMBINE_ALPHA(color, s->intOpacity));
+            break;
+        }
+
+        if ((d->solid_color_filler.solid.color & 0xff000000) == 0
+            && s->composition_mode == QPainter::CompositionMode_SourceOver) {
+            return;
+        }
+
+        d->solid_color_filler.clip = d->clip();
+        d->solid_color_filler.adjustSpanMethods();
+        fillRect(r, &d->solid_color_filler);
+
         s->matrix = old;
         return;
     }
@@ -2562,14 +2593,24 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     if (s->matrix.type() > QTransform::TxTranslate || stretch_sr) {
 
         if (s->flags.fast_images) {
-            SrcOverScaleFunc func = qScaleFunctions[d->rasterBuffer->format][img.format()];
-            if (func && (!clip || clip->hasRectClip)) {
-                func(d->rasterBuffer->buffer(), d->rasterBuffer->bytesPerLine(),
-                     img.bits(), img.bytesPerLine(),
-                     qt_mapRect_non_normalizing(r, s->matrix), sr,
-                     !clip ? d->deviceRect : clip->clipRect,
-                     s->intOpacity);
-                return;
+            if (s->matrix.type() > QTransform::TxScale) {
+                SrcOverTransformFunc func = qTransformFunctions[d->rasterBuffer->format][img.format()];
+                if (func && (!clip || clip->hasRectClip)) {
+                    func(d->rasterBuffer->buffer(), d->rasterBuffer->bytesPerLine(), img.bits(),
+                         img.bytesPerLine(), r, sr, !clip ? d->deviceRect : clip->clipRect,
+                         s->matrix, s->intOpacity);
+                    return;
+                }
+            } else {
+                SrcOverScaleFunc func = qScaleFunctions[d->rasterBuffer->format][img.format()];
+                if (func && (!clip || clip->hasRectClip)) {
+                    func(d->rasterBuffer->buffer(), d->rasterBuffer->bytesPerLine(),
+                         img.bits(), img.bytesPerLine(),
+                         qt_mapRect_non_normalizing(r, s->matrix), sr,
+                         !clip ? d->deviceRect : clip->clipRect,
+                         s->intOpacity);
+                    return;
+                }
             }
         }
 
@@ -4056,7 +4097,7 @@ void QRasterPaintEnginePrivate::recalculateFastImages()
 
     s->flags.fast_images = !(s->renderHints & QPainter::SmoothPixmapTransform)
                            && rasterBuffer->compositionMode == QPainter::CompositionMode_SourceOver
-                           && s->matrix.type() <= QTransform::TxScale;
+                           && s->matrix.type() <= QTransform::TxShear;
 }
 
 
@@ -5189,6 +5230,13 @@ static void drawLine_midpoint_i(int x1, int y1, int x2, int y2, ProcessSpans spa
             dy = -dy;
         }
 
+        int x_lower_limit = - 128;
+        if (x1 < x_lower_limit) {
+            int cy = dy * (x_lower_limit - x1) / dx + y1;
+            drawLine_midpoint_i(x_lower_limit, cy, x2, y2, span_func, data, style, devRect);
+            return;
+        }
+
         if (style == LineDrawNormal)
             --x2;
 
@@ -5324,6 +5372,13 @@ static void drawLine_midpoint_i(int x1, int y1, int x2, int y2, ProcessSpans spa
 
             qt_swap_int(x1, x2);
             dx = -dx;
+        }
+
+        int y_lower_limit = - 128;
+        if (y1 < y_lower_limit) {
+            int cx = dx * (y_lower_limit - y1) / dy + x1;
+            drawLine_midpoint_i(cx, y_lower_limit, x2, y2, span_func, data, style, devRect);
+            return;
         }
 
         if (style == LineDrawNormal)

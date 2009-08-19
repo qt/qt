@@ -924,8 +924,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
     \brief The QPainter class performs low-level painting on widgets and
     other paint devices.
 
-    \ingroup multimedia
-    \mainclass
+    \ingroup painting
+
     \reentrant
 
     QPainter provides highly optimized functions to do most of the

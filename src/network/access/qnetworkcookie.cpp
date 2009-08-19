@@ -504,7 +504,12 @@ QByteArray QNetworkCookie::toRawForm(RawForm form) const
         }
         if (!d->domain.isEmpty()) {
             result += "; domain=";
-            result += QUrl::toAce(d->domain);
+            QString domainNoDot = d->domain;
+            if (domainNoDot.startsWith(QLatin1Char('.'))) {
+                result += '.';
+                domainNoDot = domainNoDot.mid(1);
+            }
+            result += QUrl::toAce(domainNoDot);
         }
         if (!d->path.isEmpty()) {
             result += "; path=";

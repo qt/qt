@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'qtresourceeditordialog.ui'
 **
-** Created: Mon Jun 16 17:45:38 2008
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Tue Aug 18 19:03:32 2009
+**      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/

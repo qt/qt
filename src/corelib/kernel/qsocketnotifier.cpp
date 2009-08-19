@@ -56,6 +56,7 @@ QT_BEGIN_NAMESPACE
     \brief The QSocketNotifier class provides support for monitoring
     activity on a file descriptor.
 
+    \ingroup network
     \ingroup io
 
     The QSocketNotifier makes it possible to integrate Qt's event

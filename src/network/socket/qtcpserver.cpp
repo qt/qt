@@ -46,7 +46,7 @@
     \brief The QTcpServer class provides a TCP-based server.
 
     \reentrant
-    \ingroup io
+    \ingroup network
     \inmodule QtNetwork
 
     This class makes it possible to accept incoming TCP connections.

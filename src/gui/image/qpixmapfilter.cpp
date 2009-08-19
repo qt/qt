@@ -65,7 +65,7 @@ public:
 /*!
     \class QPixmapFilter
     \since 4.5
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QPixmapFilter class provides the basic functionality for
     pixmap filter classes. Pixmap filter can be for example colorize or blur.
@@ -175,7 +175,7 @@ QRectF QPixmapFilter::boundingRectFor(const QRectF &rect) const
 /*!
     \class QPixmapConvolutionFilter
     \since 4.5
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QPixmapConvolutionFilter class provides convolution
     filtering for pixmaps.
@@ -741,7 +741,7 @@ static void grayscale(const QImage &image, QImage &dest, const QRect& rect = QRe
 /*!
     \class QPixmapColorizeFilter
     \since 4.5
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QPixmapColorizeFilter class provides colorizing
     filtering for pixmaps.
@@ -865,7 +865,7 @@ public:
 /*!
     \class QPixmapDropShadowFilter
     \since 4.5
-    \ingroup multimedia
+    \ingroup painting
 
     \brief The QPixmapDropShadowFilter class is a convenience class
     for drawing pixmaps with drop shadows.

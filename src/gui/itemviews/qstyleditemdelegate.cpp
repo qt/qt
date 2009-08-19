@@ -112,7 +112,7 @@ public:
     data items from a model.
 
     \ingroup model-view
-    \mainclass
+
     \since 4.4
 
     When displaying data from models in Qt item views, e.g., a

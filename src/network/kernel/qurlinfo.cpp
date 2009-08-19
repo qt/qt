@@ -85,7 +85,7 @@ public:
     \brief The QUrlInfo class stores information about URLs.
 
     \ingroup io
-    \ingroup misc
+    \ingroup network
 
     The information about a URL that can be retrieved includes name(),
     permissions(), owner(), group(), size(), lastModified(),

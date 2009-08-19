@@ -69,7 +69,7 @@ SOURCES += \
            ../../corelib/tools/qbytearraymatcher.cpp \
            ../../corelib/tools/qdatetime.cpp \
            ../../corelib/tools/qhash.cpp \
-           ../../corelib/tools/qlistdata.cpp \
+           ../../corelib/tools/qlist.cpp \
            ../../corelib/tools/qlocale.cpp \
            ../../corelib/tools/qmap.cpp \
            ../../corelib/tools/qregexp.cpp \

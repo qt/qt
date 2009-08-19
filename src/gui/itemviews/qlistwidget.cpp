@@ -1125,7 +1125,7 @@ void QListWidgetPrivate::_q_dataChanged(const QModelIndex &topLeft,
     \brief The QListWidget class provides an item-based list widget.
 
     \ingroup model-view
-    \mainclass
+
 
     QListWidget is a convenience class that provides a list view similar to the
     one supplied by QListView, but with a classic item-based interface for
