@@ -69,8 +69,8 @@ class QFxBasePositionerPrivate : public QFxItemPrivate
 public:
     QFxBasePositionerPrivate()
         : _ep(false), _componentComplete(false), _spacing(0),
-        _margin(0), aut(QFxBasePositioner::None), moveTransition(0), addTransition(0),
-        removeTransition(0), _layoutItem(0), _movingItem(0)
+        aut(QFxBasePositioner::None), moveTransition(0), addTransition(0),
+        removeTransition(0), _movingItem(0)
     {
     }
 
@@ -82,7 +82,6 @@ public:
     bool _ep;
     bool _componentComplete;
     int _spacing;
-    int _margin;
     QFxBasePositioner::AutoUpdateType aut;
     QmlTransition *moveTransition;
     QmlTransition *addTransition;
@@ -92,7 +91,6 @@ public:
     QSet<QFxItem *> _stableItems;
     QSet<QFxItem *> _newItems;
     QSet<QFxItem *> _animated;
-    QFxItem *_layoutItem;
     QmlStateOperation::ActionList addActions;
     QmlStateOperation::ActionList moveActions;
     QmlStateOperation::ActionList removeActions;

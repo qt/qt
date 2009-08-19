@@ -70,9 +70,9 @@ public:
         QFxPathView::attachedProperties.remove(parent());
     }
 
-    QVariant value(const QByteArray &name) const 
-    { 
-        return mo->value(name); 
+    QVariant value(const QByteArray &name) const
+    {
+        return mo->value(name);
     }
     void setValue(const QByteArray &name, const QVariant &val)
     {
@@ -137,14 +137,6 @@ QFxPathView::~QFxPathView()
     The model provides a set of data that is used to create the items for the view.
     For large or dynamic datasets the model is usually provided by a C++ model object.
     Models can also be created directly in XML, using the ListModel element.
-*/
-
-/*!
-    \property QFxPathView::model
-    \brief the model providing data for the view.
-
-    The model must be either a \l QListModelInterface or
-    \l QFxVisualModel subclass.
 */
 QVariant QFxPathView::model() const
 {
@@ -282,14 +274,8 @@ void QFxPathViewPrivate::setOffset(qreal o)
 
 /*!
     \qmlproperty real PathView::snapPosition
-    This property holds the position (0-100) the current item snaps to.
-*/
 
-/*!
-    \property QFxPathView::snapPosition
-    \brief sets the position (0-100) the current item snaps to.
-
-    This property determines the position the nearest item will snap to.
+    This property determines the position (0-100) the nearest item will snap to.
 */
 qreal QFxPathView::snapPosition() const
 {
@@ -332,15 +318,6 @@ void QFxPathView::setDragMargin(qreal dragMargin)
     Here is an example delegate:
     \snippet doc/src/snippets/declarative/pathview/pathview.qml 1
 */
-
-/*!
-    \property QFxPathView::delegate
-    \brief the component to use to render the items.
-
-    The delegate is a component that the view will instantiate and destroy
-    as needed to display the items.
-
-*/
 QmlComponent *QFxPathView::delegate() const
 {
     Q_D(const QFxPathView);
@@ -365,10 +342,6 @@ void QFxPathView::setDelegate(QmlComponent *c)
     }
 }
 
-/*!
-  \property QFxPathView::pathItemCount
-  \brief the number of items visible on the path at any one time
-  */
 /*!
   \qmlproperty int PathView::pathItemCount
   This property holds the number of items visible on the path at any one time

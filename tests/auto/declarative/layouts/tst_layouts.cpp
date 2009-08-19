@@ -13,16 +13,10 @@ public:
 private slots:
     void test_horizontal();
     void test_horizontal_spacing();
-    void test_horizontal_margin();
-    void test_horizontal_spacing_margin();
     void test_vertical();
     void test_vertical_spacing();
-    void test_vertical_margin();
-    void test_vertical_spacing_margin();
     void test_grid();
     void test_grid_spacing();
-    void test_grid_margin();
-    void test_grid_spacing_margin();
 
 private:
     QFxView *createView(const QString &filename);
@@ -82,54 +76,6 @@ void tst_QFxLayouts::test_horizontal_spacing()
     QCOMPARE(three->y(), 0.0);
 }
 
-void tst_QFxLayouts::test_horizontal_margin()
-{
-    QFxView *canvas = createView(SRCDIR "/data/horizontal-margin.qml");
-
-    canvas->execute();
-    qApp->processEvents();
-
-    QFxRect *one = findItem<QFxRect>(canvas->root(), "one");
-    QVERIFY(one != 0);
-
-    QFxRect *two = findItem<QFxRect>(canvas->root(), "two");
-    QVERIFY(two != 0);
-
-    QFxRect *three = findItem<QFxRect>(canvas->root(), "three");
-    QVERIFY(three != 0);
-
-    QCOMPARE(one->x(), 10.0);
-    QCOMPARE(one->y(), 10.0);
-    QCOMPARE(two->x(), 60.0);
-    QCOMPARE(two->y(), 10.0);
-    QCOMPARE(three->x(), 80.0);
-    QCOMPARE(three->y(), 10.0);
-}
-
-void tst_QFxLayouts::test_horizontal_spacing_margin()
-{
-    QFxView *canvas = createView(SRCDIR "/data/horizontal-spacing-margin.qml");
-
-    canvas->execute();
-    qApp->processEvents();
-
-    QFxRect *one = findItem<QFxRect>(canvas->root(), "one");
-    QVERIFY(one != 0);
-
-    QFxRect *two = findItem<QFxRect>(canvas->root(), "two");
-    QVERIFY(two != 0);
-
-    QFxRect *three = findItem<QFxRect>(canvas->root(), "three");
-    QVERIFY(three != 0);
-
-    QCOMPARE(one->x(), 10.0);
-    QCOMPARE(one->y(), 10.0);
-    QCOMPARE(two->x(), 65.0);
-    QCOMPARE(two->y(), 10.0);
-    QCOMPARE(three->x(), 90.0);
-    QCOMPARE(three->y(), 10.0);
-}
-
 void tst_QFxLayouts::test_vertical()
 {
     QFxView *canvas = createView(SRCDIR "/data/vertical.qml");
@@ -175,54 +121,6 @@ void tst_QFxLayouts::test_vertical_spacing()
     QCOMPARE(two->x(), 0.0);
     QCOMPARE(two->y(), 60.0);
     QCOMPARE(three->x(), 0.0);
-    QCOMPARE(three->y(), 80.0);
-}
-
-void tst_QFxLayouts::test_vertical_margin()
-{
-    QFxView *canvas = createView(SRCDIR "/data/vertical-margin.qml");
-
-    canvas->execute();
-    qApp->processEvents();
-
-    QFxRect *one = findItem<QFxRect>(canvas->root(), "one");
-    QVERIFY(one != 0);
-
-    QFxRect *two = findItem<QFxRect>(canvas->root(), "two");
-    QVERIFY(two != 0);
-
-    QFxRect *three = findItem<QFxRect>(canvas->root(), "three");
-    QVERIFY(three != 0);
-
-    QCOMPARE(one->x(), 10.0);
-    QCOMPARE(one->y(), 10.0);
-    QCOMPARE(two->x(), 10.0);
-    QCOMPARE(two->y(), 60.0);
-    QCOMPARE(three->x(), 10.0);
-    QCOMPARE(three->y(), 70.0);
-}
-
-void tst_QFxLayouts::test_vertical_spacing_margin()
-{
-    QFxView *canvas = createView(SRCDIR "/data/vertical-spacing-margin.qml");
-
-    canvas->execute();
-    qApp->processEvents();
-
-    QFxRect *one = findItem<QFxRect>(canvas->root(), "one");
-    QVERIFY(one != 0);
-
-    QFxRect *two = findItem<QFxRect>(canvas->root(), "two");
-    QVERIFY(two != 0);
-
-    QFxRect *three = findItem<QFxRect>(canvas->root(), "three");
-    QVERIFY(three != 0);
-
-    QCOMPARE(one->x(), 10.0);
-    QCOMPARE(one->y(), 10.0);
-    QCOMPARE(two->x(), 10.0);
-    QCOMPARE(two->y(), 65.0);
-    QCOMPARE(three->x(), 10.0);
     QCOMPARE(three->y(), 80.0);
 }
 
@@ -284,67 +182,6 @@ void tst_QFxLayouts::test_grid_spacing()
     QCOMPARE(four->y(), 54.0);
     QCOMPARE(five->x(), 54.0);
     QCOMPARE(five->y(), 54.0);
-}
-
-void tst_QFxLayouts::test_grid_margin()
-{
-    QFxView *canvas = createView("data/grid-margin.qml");
-
-    canvas->execute();
-    qApp->processEvents();
-
-    QFxRect *one = findItem<QFxRect>(canvas->root(), "one");
-    QVERIFY(one != 0);
-    QFxRect *two = findItem<QFxRect>(canvas->root(), "two");
-    QVERIFY(two != 0);
-    QFxRect *three = findItem<QFxRect>(canvas->root(), "three");
-    QVERIFY(three != 0);
-    QFxRect *four = findItem<QFxRect>(canvas->root(), "four");
-    QVERIFY(four != 0);
-    QFxRect *five = findItem<QFxRect>(canvas->root(), "five");
-    QVERIFY(five != 0);
-
-    QCOMPARE(one->x(), 8.0);
-    QCOMPARE(one->y(), 8.0);
-    QCOMPARE(two->x(), 58.0);
-    QCOMPARE(two->y(), 8.0);
-    QCOMPARE(three->x(), 78.0);
-    QCOMPARE(three->y(), 8.0);
-    QCOMPARE(four->x(), 8.0);
-    QCOMPARE(four->y(), 58.0);
-    QCOMPARE(five->x(), 58.0);
-    QCOMPARE(five->y(), 58.0);
-}
-
-
-void tst_QFxLayouts::test_grid_spacing_margin()
-{
-    QFxView *canvas = createView("data/grid-spacing-margin.qml");
-
-    canvas->execute();
-    qApp->processEvents();
-
-    QFxRect *one = findItem<QFxRect>(canvas->root(), "one");
-    QVERIFY(one != 0);
-    QFxRect *two = findItem<QFxRect>(canvas->root(), "two");
-    QVERIFY(two != 0);
-    QFxRect *three = findItem<QFxRect>(canvas->root(), "three");
-    QVERIFY(three != 0);
-    QFxRect *four = findItem<QFxRect>(canvas->root(), "four");
-    QVERIFY(four != 0);
-    QFxRect *five = findItem<QFxRect>(canvas->root(), "five");
-    QVERIFY(five != 0);
-
-    QCOMPARE(one->x(), 8.0);
-    QCOMPARE(one->y(), 8.0);
-    QCOMPARE(two->x(), 62.0);
-    QCOMPARE(two->y(), 8.0);
-    QCOMPARE(three->x(), 86.0);
-    QCOMPARE(three->y(), 8.0);
-    QCOMPARE(four->x(), 8.0);
-    QCOMPARE(four->y(), 62.0);
-    QCOMPARE(five->x(), 62.0);
-    QCOMPARE(five->y(), 62.0);
 }
 
 QFxView *tst_QFxLayouts::createView(const QString &filename)

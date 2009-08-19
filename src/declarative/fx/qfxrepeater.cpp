@@ -80,7 +80,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QFxRepeater)
 
     \brief The Repeater item allows you to repeat a component based on a data source.
 
-    The Repeater item is used when you want to create a large number of 
+    The Repeater item is used when you want to create a large number of
     similar items.  For each entry in the data source, an item is instantiated
     in a context seeded with data from the data source.  If the repeater will
     be instantiating a large number of instances, it may be more efficient to
@@ -93,11 +93,11 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QFxRepeater)
     or object) is available as the \c modelData property.  In the case of a Qt model,
     all roles are available as named properties just like in the view classes.
 
-    Items instantiated by the Repeater are inserted, in order, as 
+    Items instantiated by the Repeater are inserted, in order, as
     children of the Repeater's parent.  The insertion starts immediately after
     the repeater's position in its parent stacking list.  This is to allow
     you to use a Repeater inside a layout.  The following QML example shows how
-    the instantiated items would visually appear stacked between the red and 
+    the instantiated items would visually appear stacked between the red and
     blue rectangles.
 
     \snippet doc/src/snippets/declarative/repeater.qml 0
@@ -115,10 +115,10 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QFxRepeater)
     \ingroup group_utility
     \qmlclass Repeater
 
-    \brief The QFxRepeater class allows you to repeat a component based on a 
+    \brief The QFxRepeater class allows you to repeat a component based on a
            data source.
 
-    The QFxRepeater class is used when you want to create a large number of 
+    The QFxRepeater class is used when you want to create a large number of
     similar items.  For each entry in the data source, an item is instantiated
     in a context seeded with data from the data source.
 
@@ -133,11 +133,11 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QFxRepeater)
     create that many instances of the component. They will also be assigned an index
     based on the order they are created.
 
-    Items instantiated by the QFxRepeater class are inserted, in order, as 
+    Items instantiated by the QFxRepeater class are inserted, in order, as
     children of the repeater's parent.  The insertion starts immediately after
     the repeater's position in its parent stacking list.  This is to allow
     you to use a repeater inside a layout.  The following QML example shows how
-    the instantiated items would visually appear stacked between the red and 
+    the instantiated items would visually appear stacked between the red and
     blue rectangles.
 
     \snippet doc/src/snippets/declarative/repeater.qml 0
@@ -161,7 +161,7 @@ QFxRepeater::QFxRepeater(QFxItem *parent)
 }
 
 /*!
-    \internal 
+    \internal
  */
 QFxRepeater::QFxRepeater(QFxRepeaterPrivate &dd, QFxItem *parent)
   : QFxItem(dd, parent)
@@ -169,7 +169,7 @@ QFxRepeater::QFxRepeater(QFxRepeaterPrivate &dd, QFxItem *parent)
 }
 
 /*!
-    Destroy the repeater instance.  All items it instantiated are also 
+    Destroy the repeater instance.  All items it instantiated are also
     destroyed.
  */
 QFxRepeater::~QFxRepeater()
@@ -192,11 +192,6 @@ QFxRepeater::~QFxRepeater()
     create that many instances of the component. They will also be assigned an index
     based on the order they are created.
 */
-
-/*!
-    \property QFxRepeater::dataSource
-    \brief The source of data for the repeater.
- */
 QVariant QFxRepeater::dataSource() const
 {
     return QVariant();
@@ -214,10 +209,6 @@ void QFxRepeater::setDataSource(const QVariant &v)
     \default
 
     The component to repeat.
- */
-/*!
-    \property QFxRepeater::component
-    \brief The component to repeat.
  */
 QmlComponent *QFxRepeater::component() const
 {
@@ -261,8 +252,8 @@ QVariant QFxRepeater::itemChange(GraphicsItemChange change,
 void QFxRepeater::regenerate()
 {
     Q_D(QFxRepeater);
-    
-    qDeleteAll(d->deletables); 
+
+    qDeleteAll(d->deletables);
     d->deletables.clear();
     if (!d->component || !parentItem() || !isComponentComplete())
         return;
