@@ -512,32 +512,124 @@ void tst_qmlparser::imports_data()
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
 
-    QTest::newRow("missing import") << "Test {}" << "";
-    QTest::newRow("not in version 0.0") << "import com.nokia.Test 0.0\nTest {}" << "";
-    QTest::newRow("in version 1.0") << "import com.nokia.Test 1.0\nTest {}" << "TestType";
-    QTest::newRow("in version 1.1") << "import com.nokia.Test 1.1\nTest {}" << "TestType";
-    QTest::newRow("in version 1.3") << "import com.nokia.Test 1.3\nTest {}" << "TestType";
-    QTest::newRow("not in version 1.4") << "import com.nokia.Test 1.4\nTest {}" << "";
-    QTest::newRow("in version 1.5") << "import com.nokia.Test 1.5\nTest {}" << "TestType";
-    QTest::newRow("changed in version 1.8") << "import com.nokia.Test 1.8\nTest {}" << "TestType2";
-    QTest::newRow("not in version 1.10") << "import com.nokia.Test 1.10\nTest {}" << "";
-    QTest::newRow("back in version 1.12") << "import com.nokia.Test 1.12\nTest {}" << "TestType2";
-    QTest::newRow("old in version 1.9") << "import com.nokia.Test 1.9\nOldTest {}" << "TestType";
-    QTest::newRow("old in version 1.11") << "import com.nokia.Test 1.11\nOldTest {}" << "TestType";
-    QTest::newRow("no old in version 1.12") << "import com.nokia.Test 1.12\nOldTest {}" << "";
+    QTest::newRow("missing import")
+        << "Test {}"
+        << "";
+    QTest::newRow("not in version 0.0")
+        << "import com.nokia.Test 0.0\n"
+           "Test {}"
+        << "";
+    QTest::newRow("in version 1.0")
+        << "import com.nokia.Test 1.0\n"
+           "Test {}"
+        << "TestType";
+    QTest::newRow("qualified wrong")
+        << "import com.nokia.Test 1.0 as T\n"
+           "Test {}"
+        << "";
+    QTest::newRow("qualified right")
+        << "import com.nokia.Test 1.0 as T\n"
+           "T.Test {}"
+        << "TestType";
+    QTest::newRow("qualified right but not in version 0.0")
+        << "import com.nokia.Test 0.0 as T\n"
+           "T.Test {}"
+        << "";
+    QTest::newRow("in version 1.1")
+        << "import com.nokia.Test 1.1\n"
+           "Test {}"
+        << "TestType";
+    QTest::newRow("in version 1.3")
+        << "import com.nokia.Test 1.3\n"
+           "Test {}"
+        << "TestType";
+    QTest::newRow("not in version 1.4")
+        << "import com.nokia.Test 1.4\n"
+           "Test {}"
+        << "";
+    QTest::newRow("in version 1.5")
+        << "import com.nokia.Test 1.5\n"
+           "Test {}"
+        << "TestType";
+    QTest::newRow("changed in version 1.8")
+        << "import com.nokia.Test 1.8\n"
+           "Test {}"
+        << "TestType2";
+    QTest::newRow("not in version 1.10")
+        << "import com.nokia.Test 1.10\n"
+           "Test {}"
+        << "";
+    QTest::newRow("back in version 1.12")
+        << "import com.nokia.Test 1.12\n"
+           "Test {}"
+        << "TestType2";
+    QTest::newRow("old in version 1.9")
+        << "import com.nokia.Test 1.9\n"
+           "OldTest {}"
+        << "TestType";
+    QTest::newRow("old in version 1.11")
+        << "import com.nokia.Test 1.11\n"
+           "OldTest {}"
+        << "TestType";
+    QTest::newRow("no old in version 1.12")
+        << "import com.nokia.Test 1.12\n"
+           "OldTest {}"
+        << "";
+    QTest::newRow("multiversion 1")
+        << "import com.nokia.Test 1.11\n"
+           "import com.nokia.Test 1.12\n"
+           "Test {}"
+        << "TestType2";
+    QTest::newRow("multiversion 2")
+        << "import com.nokia.Test 1.11\n"
+           "import com.nokia.Test 1.12\n"
+           "OldTest {}"
+        << "TestType";
+    QTest::newRow("qualified multiversion 3")
+        << "import com.nokia.Test 1.0 as T0\n"
+           "import com.nokia.Test 1.8 as T8\n"
+           "T0.Test {}"
+        << "TestType";
+    QTest::newRow("qualified multiversion 4")
+        << "import com.nokia.Test 1.0 as T0\n"
+           "import com.nokia.Test 1.8 as T8\n"
+           "T8.Test {}"
+        << "TestType2";
+    QTest::newRow("qualified multiversion 5")
+        << "import com.nokia.Test 1.0 as T0\n"
+           "import com.nokia.Test 1.10 as T10\n"
+           "T10.Test {}"
+        << "";
+    QTest::newRow("local import")
+        << "import \"subdir\"\n"
+           "Test {}"
+        << "QFxRect";
+    QTest::newRow("local import as")
+        << "import \"subdir\" as T\n"
+           "T.Test {}"
+        << "QFxRect";
+    QTest::newRow("wrong local import as")
+        << "import \"subdir\" as T\n"
+           "Test {}"
+        << "";
+    QTest::newRow("library precedence over local import")
+        << "import \"subdir\"\n"
+           "import com.nokia.Test 1.0\n"
+           "Test {}"
+        << "TestType";
 }
 
-// Tests the registration of custom variant string converters
 void tst_qmlparser::imports()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);
 
-    QmlComponent component(&engine, qml.toUtf8(), TEST_FILE("empty.txt"));
+    QmlComponent component(&engine, qml.toUtf8(), TEST_FILE("empty.txt")); // just a file for relative local imports
 
     if (type.isEmpty()) {
         QVERIFY(component.isError());
     } else {
+        VERIFY_ERRORS(0);
         QObject *object = component.create();
         QVERIFY(object != 0);
         QCOMPARE(QString(object->metaObject()->className()), type);
