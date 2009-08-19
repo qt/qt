@@ -2066,7 +2066,11 @@ void QWidgetPrivate::winSetupGestures()
     bool needh = false;
     bool needv = false;
     bool singleFingerPanEnabled = false;
-    QStandardGestures gestures = qAppPriv->widgetGestures[q];
+    QApplicationPrivate::WidgetStandardGesturesMap::const_iterator it =
+            qAppPriv->widgetGestures.find(q);
+    if (it == qAppPriv->widgetGestures.end())
+        return;
+    const QStandardGestures &gestures = it.value();
     WId winid = 0;
 
     if (QAbstractScrollArea *asa = qobject_cast<QAbstractScrollArea*>(q)) {
