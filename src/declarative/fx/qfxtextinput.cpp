@@ -53,8 +53,8 @@ QML_DEFINE_NOCREATE_TYPE(QValidator);
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QIntValidator,QIntValidator);
 
 /*!
-    \qmlclass LineEdit
-    The LineEdit item allows you to add an editable line of text to a scene.
+    \qmlclass TextInput
+    The TextInput item allows you to add an editable line of text to a scene.
 */
 QFxTextInput::QFxTextInput(QFxItem* parent)
     : QFxPaintedItem(*(new QFxTextInputPrivate), parent)
@@ -78,9 +78,9 @@ QFxTextInput::~QFxTextInput()
 }
 
 /*!
-    \qmlproperty string LineEdit::text
+    \qmlproperty string TextInput::text
 
-    The text in the LineEdit.
+    The text in the TextInput.
 */
 
 QString QFxTextInput::text() const
@@ -99,9 +99,9 @@ void QFxTextInput::setText(const QString &s)
 }
 
 /*!
-    \qmlproperty font LineEdit::font
+    \qmlproperty font TextInput::font
 
-    Set the LineEdit's font attributes.  \c font.size sets the font's point size.
+    Set the TextInput's font attributes.  \c font.size sets the font's point size.
 */
 QFont QFxTextInput::font() const
 {
@@ -125,7 +125,7 @@ void QFxTextInput::setFont(const QFont &font)
 }
 
 /*!
-    \qmlproperty color LineEdit::color
+    \qmlproperty color TextInput::color
 
     The text color.
 */
@@ -143,7 +143,7 @@ void QFxTextInput::setColor(const QColor &c)
 
 
 /*!
-    \qmlproperty color LineEdit::highlightColor
+    \qmlproperty color TextInput::highlightColor
 
     The text highlight color, used behind selections.
 */
@@ -164,7 +164,7 @@ void QFxTextInput::setHighlightColor(const QColor &color)
 }
 
 /*!
-    \qmlproperty color LineEdit::highlightedTextColor
+    \qmlproperty color TextInput::highlightedTextColor
 
     The highlighted text color, used in selections.
 */
@@ -222,7 +222,7 @@ void QFxTextInput::setMaxLength(int ml)
 }
 
 /*!
-    \qmlproperty bool LineEdit::cursorVisible
+    \qmlproperty bool TextInput::cursorVisible
     If true the text edit shows a cursor.
 
     This property is set and unset when the line edit gets focus, but it can also
@@ -245,8 +245,8 @@ void QFxTextInput::setCursorVisible(bool on)
 }
 
 /*!
-    \qmlproperty int LineEdit::cursorPosition
-    The position of the cursor in the LineEdit.
+    \qmlproperty int TextInput::cursorPosition
+    The position of the cursor in the TextInput.
 */
 int QFxTextInput::cursorPosition() const
 {
@@ -260,7 +260,7 @@ void QFxTextInput::setCursorPosition(int cp)
 }
 
 /*!
-    \qmlproperty int LineEdit::selectionStart
+    \qmlproperty int TextInput::selectionStart
 
     The cursor position before the first character in the current selection.
     Setting this and selectionEnd allows you to specify a selection in the
@@ -288,7 +288,7 @@ void QFxTextInput::setSelectionStart(int s)
 }
 
 /*!
-    \qmlproperty int LineEdit::selectionEnd
+    \qmlproperty int TextInput::selectionEnd
 
     The cursor position after the last character in the current selection.
     Setting this and selectionStart allows you to specify a selection in the
@@ -369,12 +369,12 @@ void QFxTextInput::setEchoMode(uint echo)
 }
 
 /*!
-    \qmlproperty Component LineEdit::cursorDelegate
-    The delegate for the cursor in the LineEdit.
+    \qmlproperty Component TextInput::cursorDelegate
+    The delegate for the cursor in the TextInput.
 
-    If you set a cursorDelegate for a LineEdit, this delegate will be used for
+    If you set a cursorDelegate for a TextInput, this delegate will be used for
     drawing the cursor instead of the standard cursor. An instance of the
-    delegate will be created and managed by the LineEdit when a cursor is
+    delegate will be created and managed by the TextInput when a cursor is
     needed, and the x property of delegate instance will be set so as
     to be one pixel before the top left of the current character.
 
@@ -522,7 +522,7 @@ void QFxTextInput::selectAll()
 
 
 /*!
-    \qmlproperty bool LineEdit::smooth
+    \qmlproperty bool TextInput::smooth
 
     Set this property if you want the text to be smoothly scaled or
     transformed.  Smooth filtering gives better visual quality, but is slower.  If
