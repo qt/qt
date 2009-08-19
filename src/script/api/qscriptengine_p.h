@@ -243,6 +243,7 @@ public:
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;
     QScriptValue abortResult;
+    bool inEval;
 
     QSet<QString> importedExtensions;
     QSet<QString> extensionsBeingImported;

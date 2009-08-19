@@ -103,6 +103,7 @@ private slots:
     void syntaxError();
     void extension_invoctaion();
     void extension();
+    void isEvaluatingInExtension();
 
 private:
     double m_testProperty;
@@ -2124,6 +2125,29 @@ void tst_QScriptEngineAgent::extension()
         QVERIFY(ret.isUndefined());
     }
     delete spy;
+}
+
+class TestIsEvaluatingAgent : public QScriptEngineAgent
+{
+public:
+    TestIsEvaluatingAgent(QScriptEngine *engine)
+        : QScriptEngineAgent(engine), wasEvaluating(false)
+    { engine->setAgent(this); }
+    bool supportsExtension(Extension ext) const
+    { return ext == DebuggerInvocationRequest; }
+    QVariant extension(Extension, const QVariant &)
+    { wasEvaluating = engine()->isEvaluating(); return QVariant(); }
+
+    bool wasEvaluating;
+};
+
+void tst_QScriptEngineAgent::isEvaluatingInExtension()
+{
+    QScriptEngine eng;
+    TestIsEvaluatingAgent *spy = new TestIsEvaluatingAgent(&eng);
+    QVERIFY(!spy->wasEvaluating);
+    eng.evaluate("debugger");
+    QVERIFY(spy->wasEvaluating);
 }
 
 QTEST_MAIN(tst_QScriptEngineAgent)
