@@ -516,6 +516,7 @@ class Q_GUI_EXPORT QGraphicsObject : public QObject, public QGraphicsItem
     Q_PROPERTY(qreal rotation READ rotation WRITE setRotation NOTIFY rotationChanged)
     Q_PROPERTY(qreal scale READ scale WRITE setScale NOTIFY scaleChanged)
     Q_PROPERTY(QPointF transformOriginPoint READ transformOriginPoint WRITE setTransformOriginPoint)
+    Q_INTERFACES(QGraphicsItem)
 public:
     QGraphicsObject(QGraphicsItem *parent = 0);
 

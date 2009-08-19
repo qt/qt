@@ -321,6 +321,9 @@ public:
     bool atEnd() const;
     TokenType readNext();
 
+    bool readNextStartElement();
+    void skipCurrentElement();
+
     TokenType tokenType() const;
     QString tokenString() const;
 
@@ -348,6 +351,13 @@ public:
     qint64 characterOffset() const;
 
     QXmlStreamAttributes attributes() const;
+
+    enum ReadElementTextBehaviour {
+        ErrorOnUnexpectedElement,
+        IncludeChildElements,
+        SkipChildElements
+    };
+    QString readElementText(ReadElementTextBehaviour behaviour);
     QString readElementText();
 
     QStringRef name() const;

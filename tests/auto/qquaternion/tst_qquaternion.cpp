@@ -41,7 +41,7 @@
 
 #include <QtTest/QtTest>
 #include <QtCore/qmath.h>
-#include "math3dincludes.h"
+#include <QtGui/qquaternion.h>
 
 class tst_QQuaternion : public QObject
 {

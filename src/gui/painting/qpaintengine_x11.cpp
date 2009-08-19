@@ -2459,15 +2459,23 @@ void QX11PaintEngine::drawFreetype(const QPointF &p, const QTextItemInt &ti)
     XRectangle rects[rectcount];
     int num_rects = 0;
 
+    QPoint delta(qRound(d->matrix.dx()), qRound(d->matrix.dy()));
+    QRect clip(d->polygonClipper.boundingRect());
     for (int i=0; i < path.elementCount(); i+=5) {
         int x = qRound(path.elementAt(i).x);
         int y = qRound(path.elementAt(i).y);
         int w = qRound(path.elementAt(i+1).x) - x;
         int h = qRound(path.elementAt(i+2).y) - y;
-        rects[num_rects].x = x + qRound(d->matrix.dx());
-        rects[num_rects].y = y + qRound(d->matrix.dy());
-        rects[num_rects].width = w;
-        rects[num_rects].height = h;
+
+        QRect rect = QRect(x + delta.x(), y + delta.y(), w, h);
+        rect = rect.intersected(clip);
+        if (rect.isEmpty())
+            continue;
+
+        rects[num_rects].x = short(rect.x());
+        rects[num_rects].y = short(rect.y());
+        rects[num_rects].width = ushort(rect.width());
+        rects[num_rects].height = ushort(rect.height());
         ++num_rects;
         if (num_rects == rectcount) {
             XFillRectangles(d->dpy, d->hd, d->gc, rects, num_rects);
