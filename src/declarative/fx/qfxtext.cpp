@@ -132,12 +132,6 @@ QFxText::~QFxText()
 
     \note \c font.size sets the font's point size (not pixel size).
 */
-
-/*!
-    \property QFxText::font
-    \brief the font used to display the text.
-*/
-
 QFont QFxText::font() const
 {
     Q_D(const QFxText);
@@ -245,16 +239,6 @@ QColor QFxText::color() const
 
     \image declarative-textstyle.png
 */
-
-/*!
-    \property QFxText::style
-    \brief an additional style of the text to display.
-
-    By default, the text style is Normal.
-
-    \note This property is used to support text styles not natively
-    handled by QFont or QPainter::drawText().
-*/
 QFxText::TextStyle QFxText::style() const
 {
     Q_D(const QFxText);
@@ -309,13 +293,6 @@ QColor QFxText::styleColor() const
     \c AlignHCenter.  The valid values for \c verticalAlignment are \c AlignTop, \c AlignBottom
     and \c AlignVCenter.
 */
-
-/*!
-    \property QFxText::hAlign
-    \brief the horizontal alignment of the text.
-
-    Valid values are \c AlignLeft, \c AlignRight, and \c AlignHCenter. The default value is \c AlignLeft.
-*/
 QFxText::HAlignment QFxText::hAlign() const
 {
     Q_D(const QFxText);
@@ -328,12 +305,6 @@ void QFxText::setHAlign(HAlignment align)
     d->hAlign = align;
 }
 
-/*!
-    \property QFxText::vAlign
-    \brief the vertical alignment of the text.
-
-    Valid values are \c AlignTop, \c AlignBottom, and \c AlignVCenter. The default value is \c AlignTop.
-*/
 QFxText::VAlignment QFxText::vAlign() const
 {
     Q_D(const QFxText);

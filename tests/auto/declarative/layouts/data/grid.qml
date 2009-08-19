@@ -3,7 +3,7 @@ import Qt 4.6
 Item {
     width: 640
     height: 480
-    GridLayout {
+    GridPositioner {
         columns: 3
         Rect {
             id: one
