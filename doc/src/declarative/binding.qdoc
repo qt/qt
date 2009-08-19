@@ -1,17 +1,17 @@
-/*! 
+/*!
 \page binding.html
 \title Data Binding
 \target binding
 
 Data binding provides a declarative way of specifying the data associated with objects, as well as the relationship between data of different objects. For example, you could bind the text of a label to the value of a slider: as the value of the slider changed, the label would be automatically updated with the new value.
 
-Bindings are created in Qml when an expression is assigned to a property. For example, the following produces two Rects of equal size (\c rect2 is bound to the size of \c rect1):
+Bindings are created in QML when an expression is assigned to a property. For example, the following produces two rectangles of equal size (\c rect2 is bound to the size of \c rect1):
 \code
 Rectangle { id: rect1; width: 100; height: 100 }
 Rectangle { id: rect2; width: rect1.width; height: rect1.height }
 \endcode
 
-There is also a special \l Bind element, which is typically used to bind from the UI to the underlying UI model (see \l {Passing Data Between C++ and Qml} for an example of this). The bindings above could be expressed using the \l Bind element as:
+There is also a special \l Bind element, which is typically used to bind from the UI to the underlying UI model (see \l {Passing Data Between C++ and QML} for an example of this). The bindings above could be expressed using the \l Bind element as:
 
 \code
 Bind { target: rect2; property: "width";  value: rect1.width }
@@ -29,8 +29,8 @@ Relevant items can also be bound to the contents of a model - see \l ListView fo
 Data can be bound to C++ objects - see \l {C++ Data Binding}.
 */
 
-/*! 
-\page qtbinding.html 
+/*!
+\page qtbinding.html
 \target qtbinding
 \title C++ Data Binding
 
@@ -41,11 +41,11 @@ The data binding framework is based on Qt's property system (see the Qt document
 Relevant items can also be bound to the contents of a Qt model. For example, ListView can make use of data from a QListModelInterface-derived model. (QListModelInterface is part of the next generation Model/View architecture being developed for Qt.)
 
 
-\section1 Passing Data Between C++ and Qml
+\section1 Passing Data Between C++ and QML
 
-Data binding provides one method of data transfer between C++ and Qml.
+Data binding provides one method of data transfer between C++ and QML.
 
-For example, lets say you want to implement a slider in Qml that changes the screen brightness of the device it is running on. You would start by declaring a brightness property on your QObject-derived class:
+For example, lets say you want to implement a slider in QML that changes the screen brightness of the device it is running on. You would start by declaring a brightness property on your QObject-derived class:
 \code
 class MyScreen : public QObject
 {
@@ -84,7 +84,7 @@ void setBrightness(int b)
 
 \note One important thing to keep in mind is that the changed signal should only be emitted when there is a real change ( \c b \c != \c m_brightness ), or you may get an infinite loop.
 
-Next, make an instance of this class visible to the Qml bind engine:
+Next, make an instance of this class visible to the QML bind engine:
 \code
 QFxView *view = new QFxView;
 view->setUrl("MyUI.qml");
@@ -98,7 +98,7 @@ view->execute();
 
 \note Bindings must be made after setUrl() but before execute().
 
-Finally, in Qml you can make the appropriate bindings, so in \c "MyUI.qml":
+Finally, in QML you can make the appropriate bindings, so in \c "MyUI.qml":
 
 \code
 Slider { value: screen.brightness }
