@@ -68,8 +68,8 @@ class QmlAbstractAnimation : public QmlPropertyValueSource, public QmlParserStat
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
     Q_PROPERTY(bool alwaysRunToEnd READ alwaysRunToEnd WRITE setAlwaysRunToEnd NOTIFY alwaysRunToEndChanged())
     Q_PROPERTY(bool repeat READ repeat WRITE setRepeat NOTIFY repeatChanged)
-    Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
-    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
+    //Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
+    //Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
     Q_CLASSINFO("DefaultMethod", "start()")
     Q_INTERFACES(QmlParserStatus)
 
@@ -92,6 +92,7 @@ public:
     QmlAnimationGroup *group() const;
     void setGroup(QmlAnimationGroup *);
 
+    //### these belong at a lower level in the hierarchy
     QObject *target() const;
     void setTarget(QObject *);
     QString property() const;
@@ -191,6 +192,8 @@ class QmlSetPropertyAction : public QmlAbstractAnimation
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlSetPropertyAction)
 
+    Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
     Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
     Q_PROPERTY(QList<QObject *>* targets READ targets)
     Q_PROPERTY(QList<QObject *>* exclude READ exclude)
@@ -258,6 +261,8 @@ class QmlPropertyAnimation : public QmlAbstractAnimation
     Q_PROPERTY(QVariant from READ from WRITE setFrom NOTIFY fromChanged)
     Q_PROPERTY(QVariant to READ to WRITE setTo NOTIFY toChanged)
     Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged)
+    Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
     Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
     Q_PROPERTY(QList<QObject *>* targets READ targets)
     Q_PROPERTY(QList<QObject *>* exclude READ exclude)

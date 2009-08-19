@@ -422,7 +422,15 @@ void QmlAbstractAnimation::setGroup(QmlAnimationGroup *g)
 }
 
 /*!
-    \qmlproperty Object Animation::target
+    \qmlproperty Object SetPropertyAction::target
+    This property holds an explicit target object to animate.
+
+    The exact effect of the \c target property depends on how the animation
+    is being used.  Refer to the \l animation documentation for details.
+*/
+
+/*!
+    \qmlproperty Object PropertyAnimation::target
     This property holds an explicit target object to animate.
 
     The exact effect of the \c target property depends on how the animation
@@ -451,7 +459,15 @@ void QmlAbstractAnimation::setTarget(QObject *o)
 }
 
 /*!
-    \qmlproperty string Animation::property
+    \qmlproperty string SetPropertyAction::property
+    This property holds an explicit property to animated.
+
+    The exact effect of the \c property property depends on how the animation
+    is being used.  Refer to the \l animation documentation for details.
+*/
+
+/*!
+    \qmlproperty string PropertyAnimation::property
     This property holds an explicit property to animated.
 
     The exact effect of the \c property property depends on how the animation
@@ -629,15 +645,6 @@ void QmlAbstractAnimation::timelineComplete()
 /*!
     \internal
     \class QmlPauseAnimation
-    \ingroup group_animation
-    \ingroup group_states
-    \brief The QmlPauseAnimation class provides a pause for an animation.
-
-    When used in a QmlSequentialAnimation, QmlPauseAnimation is a step when
-    nothing happens, for a specified duration.
-
-    A QmlPauseAnimation object can be instantiated in Qml using the tag
-    \l{xmlPauseAnimation} {&lt;PauseAnimation&gt;}.
 */
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PauseAnimation,QmlPauseAnimation)
@@ -662,12 +669,6 @@ void QmlPauseAnimationPrivate::init()
 /*!
     \qmlproperty int PauseAnimation::duration
     This property holds the duration of the pause in milliseconds
-
-    The default value is 250.
-*/
-/*!
-    \property QmlPauseAnimation::duration
-    \brief the duration of the pause in milliseconds
 
     The default value is 250.
 */
@@ -713,12 +714,6 @@ QAbstractAnimation *QmlPauseAnimation::qtAnimation()
 /*!
     \internal
     \class QmlColorAnimation
-    \ingroup group_animation
-    \ingroup group_states
-    \brief The QmlColorAnimation class allows you to animate color changes.
-
-    A QmlColorAnimation object can be instantiated in Qml using the tag
-    \l{xmlColorAnimation} {&lt;ColorAnimation&gt;}.
 */
 
 QmlColorAnimation::QmlColorAnimation(QObject *parent)
@@ -738,10 +733,6 @@ QmlColorAnimation::~QmlColorAnimation()
     \qmlproperty color ColorAnimation::from
     This property holds the starting color.
 */
-/*!
-    \property QmlColorAnimation::from
-    \brief the starting color.
-*/
 QColor QmlColorAnimation::from() const
 {
     Q_D(const QmlPropertyAnimation);
@@ -756,10 +747,6 @@ void QmlColorAnimation::setFrom(const QColor &f)
 /*!
     \qmlproperty color ColorAnimation::from
     This property holds the ending color.
-*/
-/*!
-    \property QmlColorAnimation::to
-    \brief the ending color.
 */
 QColor QmlColorAnimation::to() const
 {
@@ -777,7 +764,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ColorAnimation,QmlColorAnimation
 /*!
     \qmlclass RunScriptAction QmlRunScriptAction
     \inherits Animation
-    \brief The RunScripAction allows scripts to be run during transitions.
+    \brief The RunScripAction allows scripts to be run during an animation.
 
 */
 /*!
@@ -885,7 +872,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,RunScriptAction,QmlRunScriptActi
 /*!
     \qmlclass SetPropertyAction QmlSetPropertyAction
     \inherits Animation
-    \brief The SetPropertyAction allows property changes during transitions.
+    \brief The SetPropertyAction allows immediate property changes during animation.
 
     Explicitly set \c theimage.smooth=true during a transition:
     \code
@@ -903,10 +890,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,RunScriptAction,QmlRunScriptActi
 /*!
     \internal
     \class QmlSetPropertyAction
-    \brief The QmlSetPropertyAction class allows property changes during transitions.
-
-    A QmlSetPropertyAction object can be instantiated in Qml using the tag
-    \l{xmlSetPropertyAction} {&lt;SetPropertyAction&gt;}.
 */
 QmlSetPropertyAction::QmlSetPropertyAction(QObject *parent)
 : QmlAbstractAnimation(*(new QmlSetPropertyActionPrivate), parent)
@@ -1231,12 +1214,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParentChangeAction,QmlParentChan
 /*!
     \internal
     \class QmlNumberAnimation
-    \ingroup group_animation
-    \ingroup group_states
-    \brief The QmlNumberAnimation class allows you to animate changes in properties of type qreal.
-
-    A QmlNumberAnimation object can be instantiated in Qml using the tag
-    \l{xmlNumberAnimation} {&lt;NumberAnimation&gt;}.
 */
 
 QmlNumberAnimation::QmlNumberAnimation(QObject *parent)
@@ -1256,10 +1233,6 @@ QmlNumberAnimation::~QmlNumberAnimation()
     This property holds the starting value.
     If not set, then the value defined in the start state of the transition.
 */
-/*!
-    \property QmlNumberAnimation::from
-    \brief the starting value.
-*/
 qreal QmlNumberAnimation::from() const
 {
     Q_D(const QmlPropertyAnimation);
@@ -1275,10 +1248,6 @@ void QmlNumberAnimation::setFrom(qreal f)
     \qmlproperty real NumberAnimation::to
     This property holds the ending value.
     If not set, then the value defined in the end state of the transition.
-*/
-/*!
-    \property QmlNumberAnimation::to
-    \brief the ending value.
 */
 qreal QmlNumberAnimation::to() const
 {
@@ -1405,16 +1374,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,SequentialAnimation,QmlSequentia
 /*!
     \internal
     \class QmlParallelAnimation
-    \ingroup group_animation
-    \ingroup group_states
-    \brief The QmlParallelAnimation class allows you to run animations in parallel.
-
-    Animations controlled by QmlParallelAnimation will be run at the same time.
-
-    \sa QmlSequentialAnimation
-
-    A QmlParallelAnimation object can be instantiated in Qml using the tag
-    \l{xmlParallelAnimation} {&lt;ParallelAnimation&gt;}.
 */
 
 QmlParallelAnimation::QmlParallelAnimation(QObject *parent) :
@@ -1552,12 +1511,6 @@ void QmlPropertyAnimationPrivate::init()
 
     The default value is 250.
 */
-/*!
-    \property QmlPropertyAnimation::duration
-    \brief the duration of the transition, in milliseconds.
-
-    The default value is 250.
-*/
 int QmlPropertyAnimation::duration() const
 {
     Q_D(const QmlPropertyAnimation);
@@ -1583,10 +1536,6 @@ void QmlPropertyAnimation::setDuration(int duration)
     This property holds the starting value.
     If not set, then the value defined in the start state of the transition.
 */
-/*!
-    \property QmlPropertyAnimation::from
-    \brief the starting value.
-*/
 QVariant QmlPropertyAnimation::from() const
 {
     Q_D(const QmlPropertyAnimation);
@@ -1607,10 +1556,6 @@ void QmlPropertyAnimation::setFrom(const QVariant &f)
     \qmlproperty real PropertyAnimation::to
     This property holds the ending value.
     If not set, then the value defined in the end state of the transition.
-*/
-/*!
-    \property QmlPropertyAnimation::to
-    \brief the ending value.
 */
 QVariant QmlPropertyAnimation::to() const
 {
@@ -1678,13 +1623,6 @@ void QmlPropertyAnimation::setTo(const QVariant &t)
     \i \e easeOutInBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out/in: deceleration until halfway, then acceleration.
     \endlist
 */
-
-/*!
-    \property QmlPropertyAnimation::easing
-    \brief the easing curve to use.
-
-    \sa QEasingCurve
-*/
 QString QmlPropertyAnimation::easing() const
 {
     Q_D(const QmlPropertyAnimation);
@@ -1707,13 +1645,6 @@ void QmlPropertyAnimation::setEasing(const QString &e)
     This property holds the properties this animation should be applied to.
 
     This is a comma-separated list of properties that should use
-    this animation when they change.
-*/
-/*!
-    \property QmlPropertyAnimation::properties
-    \brief the properties this animation should be applied to
-
-    properties holds a copy separated list of properties that should use
     this animation when they change.
 */
 QString QmlPropertyAnimation::properties() const
