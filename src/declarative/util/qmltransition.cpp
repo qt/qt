@@ -198,14 +198,6 @@ void QmlTransition::prepare(QmlStateOperation::ActionList &actions,
     }
     \endcode
 */
-
-/*!
-    \property QmlTransition::fromState
-    \brief a selector indicating which states, when left, should trigger the transition.
-
-    fromState is used in conjunction with toState to determine when a transition should
-    be applied. The default value is "*" (any state).
-*/
 QString QmlTransition::fromState() const
 {
     Q_D(const QmlTransition);
@@ -224,14 +216,6 @@ void QmlTransition::setFromState(const QString &f)
 
     The default value is false.
 */
-
-
-/*!
-    \property QmlTransition::reversible
-    \brief whether the transition should be automatically reversed when the conditions that triggered this transition are reversed.
-
-    The default value is false.
-*/
 bool QmlTransition::reversible() const
 {
     Q_D(const QmlTransition);
@@ -244,13 +228,6 @@ void QmlTransition::setReversible(bool r)
     d->reversible = r;
 }
 
-/*!
-    \property QmlTransition::toState
-    \brief a selector indicating which states, when entered, should trigger the transition.
-
-    toState is used in conjunction with fromState to determine when a transition should
-    be applied. The default value is "*" (any state).
-*/
 QString QmlTransition::toState() const
 {
     Q_D(const QmlTransition);
@@ -271,11 +248,6 @@ void QmlTransition::setToState(const QString &t)
     To run them sequentially, you can create a single SequentialAnimation
     which contains all the animations, and assign that to operations.
     \default
-*/
-
-/*!
-    \property QmlTransition::operations
-    \brief a list of the transition animations to be run.
 */
 QmlList<QmlAbstractAnimation *>* QmlTransition::operations()
 {

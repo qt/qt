@@ -72,13 +72,13 @@ QFxView *tst_QFxRepeater::createView(const QString &filename)
 }
 
 template<typename T>
-T *tst_QFxRepeater::findItem(QFxItem *parent, const QString &id)
+T *tst_QFxRepeater::findItem(QFxItem *parent, const QString &objectName)
 {
     const QMetaObject &mo = T::staticMetaObject;
-    if (mo.cast(parent) && (id.isEmpty() || parent->id() == id))
+    if (mo.cast(parent) && (objectName.isEmpty() || parent->objectName() == objectName))
         return static_cast<T*>(parent);
     for (int i = 0; i < parent->children()->count(); ++i) {
-        QFxItem *item = findItem<T>(parent->children()->at(i), id);
+        QFxItem *item = findItem<T>(parent->children()->at(i), objectName);
         if (item)
             return static_cast<T*>(item);
     }

@@ -109,10 +109,6 @@ QmlScript::QmlScript(QObject *parent) : QObject(*(new QmlScriptPrivate), parent)
     \default
     JavaScript code to execute.
 */
-/*!
-    \property QmlScript::script
-    \brief a script snippet.
-*/
 QString QmlScript::script() const
 {
     Q_D(const QmlScript);
@@ -131,10 +127,6 @@ void QmlScript::setScript(const QString &script)
 
     Setting this property causes the Script element to read JavaScript code from
     the file specified.
- */
-/*!
-    \property QmlScript::source
-    \brief the path to a script file.
 */
 QUrl QmlScript::source() const
 {
@@ -148,7 +140,7 @@ void QmlScript::setSource(const QUrl &source)
     if (d->url == source)
         return;
     d->url = qmlContext(this)->resolvedUrl(source);
-    
+
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     if (d->url.scheme() == QLatin1String("file")) {
         QFile file(d->url.toLocalFile());
@@ -198,7 +190,7 @@ void QmlScriptPrivate::addScriptToEngine(const QString &script, const QString &s
         if (scriptEngine->uncaughtException().isError()){
             QScriptValue exception = scriptEngine->uncaughtException();
             if (!exception.property(QLatin1String("fileName")).toString().isEmpty()){
-                qWarning() << exception.property(QLatin1String("fileName")).toString() 
+                qWarning() << exception.property(QLatin1String("fileName")).toString()
                            << scriptEngine->uncaughtExceptionLineNumber()
                            << exception.toString();
 

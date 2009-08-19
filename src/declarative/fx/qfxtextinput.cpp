@@ -194,6 +194,7 @@ void QFxTextInput::setHAlign(HAlignment align)
 {
     Q_D(QFxTextInput);
     d->hAlign = align;
+    //TODO: implement
 }
 
 bool QFxTextInput::isReadOnly() const
@@ -512,6 +513,13 @@ void QFxTextInput::drawContents(QPainter *p, const QRect &r)
 
     p->restore();
 }
+
+void QFxTextInput::selectAll()
+{
+    Q_D(QFxTextInput);
+    d->control->setSelection(0, d->control->text().length());
+}
+
 
 /*!
     \qmlproperty bool LineEdit::smooth

@@ -169,6 +169,9 @@ protected:
 
     void focusChanged(bool hasFocus);
 
+public Q_SLOTS:
+    void selectAll();
+
 private Q_SLOTS:
     void updateSize();
     void q_textChanged();

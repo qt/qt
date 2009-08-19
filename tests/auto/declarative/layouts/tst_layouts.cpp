@@ -21,7 +21,7 @@ private slots:
 private:
     QFxView *createView(const QString &filename);
     template<typename T>
-    T *findItem(QFxItem *parent, const QString &id, int index=0);
+    T *findItem(QFxItem *parent, const QString &id, int index=-1);
 };
 
 tst_QFxLayouts::tst_QFxLayouts()
@@ -197,16 +197,19 @@ QFxView *tst_QFxLayouts::createView(const QString &filename)
 }
 
 /*
-   Find an item with the specified id.  If index is supplied then the
+   Find an item with the specified objectName.  If index is supplied then the
    item must also evaluate the {index} expression equal to index
 */
 template<typename T>
-T *tst_QFxLayouts::findItem(QFxItem *parent, const QString &id, int index)
+T *tst_QFxLayouts::findItem(QFxItem *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
-    for (int i = 0; i < parent->children()->count(); ++i) {
-        QFxItem *item = parent->children()->at(i);
-        if (mo.cast(item) && (id.isEmpty() || item->id() == id)) {
+    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
+        QFxItem *item = qobject_cast<QFxItem*>(parent->QGraphicsObject::children().at(i));
+        if(!item)
+            continue;
+        //qDebug() << item << item->objectName();
+        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
             if (index != -1) {
                 QmlExpression e(qmlContext(item), "index", item);
                 e.setTrackChange(false);
@@ -216,7 +219,7 @@ T *tst_QFxLayouts::findItem(QFxItem *parent, const QString &id, int index)
                 return static_cast<T*>(item);
             }
         }
-        item = findItem<T>(item, id, index);
+        item = findItem<T>(item, objectName, index);
         if (item)
             return static_cast<T*>(item);
     }
