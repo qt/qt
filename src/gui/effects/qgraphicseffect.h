@@ -116,12 +116,12 @@ public:
 
     bool isEnabled() const;
 
-Q_SIGNALS:
-    void enabledChanged(bool enabled);
-
 public Q_SLOTS:
     void setEnabled(bool enable);
     // ### add update() slot
+
+Q_SIGNALS:
+    void enabledChanged(bool enabled);
 
 protected:
     QGraphicsEffect(QGraphicsEffectPrivate &d);
@@ -162,6 +162,8 @@ public:
     ~QGraphicsColorizeEffect();
 
     QColor color() const;
+
+public Q_SLOTS:
     void setColor(const QColor &c);
 
 Q_SIGNALS:
@@ -184,6 +186,8 @@ public:
     ~QGraphicsPixelizeEffect();
 
     int pixelSize() const;
+
+public Q_SLOTS:
     void setPixelSize(int pixelSize);
 
 Q_SIGNALS:
@@ -206,6 +210,8 @@ public:
     ~QGraphicsBlurEffect();
 
     int blurRadius() const;
+
+public Q_SLOTS:
     void setBlurRadius(int blurRadius);
 
 Q_SIGNALS:
@@ -231,16 +237,16 @@ public:
     ~QGraphicsShadowEffect();
 
     QPointF shadowOffset() const;
+    int blurRadius() const;
+    qreal opacity() const;
+
+public Q_SLOTS:
     void setShadowOffset(const QPointF &ofs);
     inline void setShadowOffset(qreal dx, qreal dy)
     { setShadowOffset(QPointF(dx, dy)); }
     inline void setShadowOffset(qreal d)
     { setShadowOffset(QPointF(d, d)); }
-
-    int blurRadius() const;
     void setBlurRadius(int blurRadius);
-
-    qreal opacity() const;
     void setOpacity(qreal opacity);
 
 Q_SIGNALS:
