@@ -24,6 +24,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "abstractmediaplayer.h"
 
 class CVideoPlayerUtility;
+class QSymbianControl;
 
 namespace Phonon
 {
@@ -70,7 +71,8 @@ namespace Phonon
             void finished();
             
         private:
-        	CVideoPlayerUtility*	m_player;
+        	CVideoPlayerUtility*				m_player;
+        	QScopedPointer<QWidget>				m_widget;
 
         };
     }

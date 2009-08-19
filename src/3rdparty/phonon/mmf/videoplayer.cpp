@@ -18,8 +18,10 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QUrl>
 #include <QTimer>
+#include <QWidget>
 
 #include <coemain.h>	// For CCoeEnv
+#include <coecntrl.h>
 
 #include "videoplayer.h"
 #include "utils.h"
@@ -31,19 +33,21 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::VideoPlayer::VideoPlayer()
+MMF::VideoPlayer::VideoPlayer() : m_widget(new QWidget())
 {
     TRACE_CONTEXT(VideoPlayer::VideoPlayer, EAudioApi);
     TRACE_ENTRY_0();
+    
+    CCoeControl* control = m_widget->winId();
+    CCoeEnv* coeEnv = control->ControlEnv();
    
     const TInt priority = 0;
     const TMdaPriorityPreference preference = EMdaPriorityPreferenceNone;
-    CCoeEnv* coeEnv = CCoeEnv::Static();
     RWsSession& wsSession = coeEnv->WsSession();
     CWsScreenDevice& screenDevice = *(coeEnv->ScreenDevice());
-    /* DUMMY */ RWindow window;
-    /* DUMMY */ TRect screenRect;
-    /* DUMMY */ TRect clipRect;
+    RDrawableWindow& window = *(control->DrawableWindow());
+    const TRect screenRect = control->Rect();
+    const TRect clipRect = control->Rect();
     
     // TODO: is this the correct way to handle errors in constructing Symbian objects?
     TRAPD(err,
