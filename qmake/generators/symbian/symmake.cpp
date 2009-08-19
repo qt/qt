@@ -486,7 +486,7 @@ void SymbianMakefileGenerator::init()
     // .mmp
     initMmpVariables();
 
-    // Check TARGET.UID2 and TARGET.UID3 presence
+    // Check TARGET.UID3 presence
     if (0 != project->values("TARGET.UID3").size()) {
         uid3 = project->first("TARGET.UID3");
     } else {
@@ -1687,3 +1687,4 @@ void SymbianMakefileGenerator::generateDistcleanTargets(QTextStream& t)
     t << "distclean: clean dodistclean" << endl;
     t << endl;
 }
+

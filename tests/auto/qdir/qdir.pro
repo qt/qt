@@ -16,6 +16,7 @@ wince*:{
   QT = core
   TARGET.CAPABILITY += AllFiles
 
+  TARGET.UID3 = 0xE0340002
   DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
 } else {
   QT = core

@@ -39,37 +39,13 @@
 **
 ****************************************************************************/
 
-#ifndef INITPROJECTDEPLOYSYMBIAN_H
-#define INITPROJECTDEPLOYSYMBIAN_H
+#ifndef EPOCROOT_H
+#define EPOCROOT_H
 
 #include <qstring.h>
-#include <qstringlist.h>
-#include <qdatetime.h>
-#include <option.h>
-#include <qdir.h>
-#include <qfile.h>
-#include <stdlib.h>
 
-#include "epocroot.h"
+// Implementation of epocRoot method is in initprojectdeploy_symbian.cpp
+// Defined in separate header for inclusion clarity
+extern QString epocRoot();
 
-struct CopyItem
-{
-    CopyItem(const QString& f, const QString& t) : from(f) , to(t) { }
-    QString from;
-    QString to;
-};
-typedef QList<CopyItem> DeploymentList;
-
-extern QString generate_uid(const QString& target);
-extern QString generate_test_uid(const QString& target);
-
-extern void initProjectDeploySymbian(QMakeProject* project,
-                              DeploymentList &deploymentList,
-                              const QString &testPath,
-                              bool deployBinaries,
-                              const QString &platform,
-                              const QString &build,
-                              QStringList& generatedDirs,
-                              QStringList& generatedFiles);
-
-#endif // INITPROJECTDEPLOYSYMBIAN_H
+#endif // EPOCROOT_H
