@@ -306,6 +306,7 @@ void QFxMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
         d->dragX = drag()->axis() & QFxDrag::XAxis;
         d->dragY = drag()->axis() & QFxDrag::YAxis;
         d->dragged = false;
+        setHovered(true);
         d->start = event->pos();
         d->startScene = event->scenePos();
         // we should only start timer if pressAndHold is connected to.
@@ -393,6 +394,9 @@ void QFxMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     else {
         d->saveEvent(event);
         setPressed(false);
+        // If we don't accept hover, we need to reset containsMouse.
+        if (!acceptHoverEvents())
+            setHovered(false);
     }
 }
 
