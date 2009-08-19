@@ -102,7 +102,7 @@ The following table lists the Qml elements provided by the Qt Declarative module
 
 \header
 \o \bold {Views}
-\o \bold {Layouts}
+\o \bold {Positioners}
 \o \bold {Transforms}
 \o \bold {Effects}
 
@@ -128,9 +128,9 @@ The following table lists the Qml elements provided by the Qt Declarative module
 
 \o
 \list
-\o \l VerticalLayout
-\o \l HorizontalLayout
-\o \l GridLayout
+\o \l VerticalPositioner
+\o \l HorizontalPositioner
+\o \l GridPositioner
 \endlist
 
 \o

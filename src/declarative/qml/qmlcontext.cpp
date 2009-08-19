@@ -339,7 +339,7 @@ QmlContext *QmlContext::parentContext() const
 }
 
 /*!
-    Add a default \a object to this context.  The object will be added after
+    Add \a defaultObject to this context.  The object will be added after
     any existing default objects.
 */
 void QmlContext::addDefaultObject(QObject *defaultObject)
@@ -417,7 +417,7 @@ void QmlContext::setContextProperty(const QString &name, QObject *value)
     Resolves the URL \a src relative to the URL of the
     containing component.
 
-    \sa QmlEngine::componentUrl(), setBaseUrl()
+    \sa QmlEngine::baseUrl(), setBaseUrl()
 */
 QUrl QmlContext::resolvedUrl(const QUrl &src)
 {
@@ -441,13 +441,12 @@ QUrl QmlContext::resolvedUrl(const QUrl &src)
 }
 
 /*!
-    Explicitly sets the url both resolveUri() and resolveUrl() will
-    use for relative references to \a baseUrl.
+    Explicitly sets the url resolveUrl() will use for relative references to \a baseUrl.
 
     Calling this function will override the url of the containing
     component used by default.
 
-    \sa resolvedUrl(), resolvedUri()
+    \sa resolvedUrl()
 */
 void QmlContext::setBaseUrl(const QUrl &baseUrl)
 {

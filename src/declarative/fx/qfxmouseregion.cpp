@@ -138,7 +138,7 @@ void QFxDrag::setYmax(qreal m)
     example extended so as to give a different color when you right click.
     \snippet doc/src/snippets/declarative/mouseregion.qml 1
 
-    For basic key handling, see \l KeyActions.
+    For basic key handling, see \l Keys.
 
     MouseRegion is an invisible item: it is never painted.
 
