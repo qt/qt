@@ -56,6 +56,19 @@ QT_BEGIN_NAMESPACE
     \internal
     \class QFxBasePositioner
     \ingroup group_layouts
+    \brief The QFxBasePositioner class provides a base for QFx layouts.
+
+    To create a QFx Positioner, simply subclass QFxBasePositioner and implement
+    doLayout(), which is automatically called when the layout might need
+    updating.
+
+    It is strongly recommended that in your implementation of doLayout()
+    that you use the move, remove and add transitions when those conditions
+    arise. You can use the applyAdd, applyMove and applyRemove functions
+    to do this easily.
+
+    Note also that the subclass is responsible for adding the
+    spacing in between items.
 */
 QFxBasePositioner::QFxBasePositioner(AutoUpdateType at, QFxItem *parent)
     : QFxItem(*(new QFxBasePositionerPrivate), parent)
