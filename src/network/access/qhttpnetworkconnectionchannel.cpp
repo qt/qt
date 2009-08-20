@@ -539,7 +539,7 @@ void QHttpNetworkConnectionChannel::allDone()
 
     // move next from pipeline to current request
     if (!alreadyPipelinedRequests.isEmpty()) {
-        if (resendCurrent || reply->d_func()->connectionCloseEnabled() || socket->state() != QAbstractSocket::Connected) {
+        if (resendCurrent || reply->d_func()->connectionCloseEnabled() || socket->state() != QAbstractSocket::ConnectedState) {
             // move the pipelined ones back to the main queue
             requeueCurrentlyPipelinedRequests();
         } else {
@@ -586,7 +586,7 @@ void QHttpNetworkConnectionChannel::detectPipeliningSupport()
             // check for not having connection close
             && (!reply->d_func()->connectionCloseEnabled())
             // check if it is still connected
-            && (socket->state() == QAbstractSocket::Connected)
+            && (socket->state() == QAbstractSocket::ConnectedState)
             ) {
         pipeliningSupported = QHttpNetworkConnectionChannel::PipeliningProbablySupported;
     } else {
