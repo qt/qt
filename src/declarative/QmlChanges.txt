@@ -7,6 +7,12 @@ file documents the changes.
 API Changes
 ===========
 
+Renamed Elements:
+LineEdit         -> TextInput
+VerticalLayout   -> VerticalPositioner
+HorizontalLayout -> HorizontalPositioner
+GridLayout       -> GridPositioner
+
 Renamed properties:
 MouseRegion: xmin    -> minimumX
 MouseRegion: xmax    -> maximumX
@@ -16,6 +22,11 @@ MouseRegion: ymin    -> maximumY
 Additions:
 MouseRegion: add "acceptedButtons" property
 MouseRegion: add "hoverEnabled" property
+
+Deletions:
+VerticalPositioner: lost "margins" property
+HorizontalPositioner: lost "margins" property
+GridPositioner: lost "margins" property
 
 Other Changes:
 Drag: axis becomes an enum with values "XAxis", "YAxis", "XandYAxis"
