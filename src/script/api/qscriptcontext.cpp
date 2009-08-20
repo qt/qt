@@ -268,7 +268,6 @@ QScriptEngine *QScriptContext::engine() const
 */
 QScriptValue QScriptContext::argument(int index) const
 {
-    JSC::CallFrame *frame = const_cast<JSC::ExecState*>(QScriptEnginePrivate::frameForContext(this));
     if (index < 0)
         return QScriptValue();
     if (index >= argumentCount())
