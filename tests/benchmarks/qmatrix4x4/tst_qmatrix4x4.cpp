@@ -67,6 +67,33 @@ private slots:
 
     void mapVectorDirect_data();
     void mapVectorDirect();
+
+    void compareTranslate_data();
+    void compareTranslate();
+
+    void compareTranslateAfterScale_data();
+    void compareTranslateAfterScale();
+
+    void compareTranslateAfterRotate_data();
+    void compareTranslateAfterRotate();
+
+    void compareScale_data();
+    void compareScale();
+
+    void compareScaleAfterTranslate_data();
+    void compareScaleAfterTranslate();
+
+    void compareScaleAfterRotate_data();
+    void compareScaleAfterRotate();
+
+    void compareRotate_data();
+    void compareRotate();
+
+    void compareRotateAfterTranslate_data();
+    void compareRotateAfterTranslate();
+
+    void compareRotateAfterScale_data();
+    void compareRotateAfterScale();
 };
 
 static qreal const generalValues[16] =
@@ -253,6 +280,390 @@ void tst_QMatrix4x4::mapVectorDirect()
         result[0] /= result[3];
         result[1] /= result[3];
         result[2] /= result[3];
+    }
+}
+
+// Compare the performance of QTransform::translate() to
+// QMatrix4x4::translate().
+void tst_QMatrix4x4::compareTranslate_data()
+{
+    QTest::addColumn<bool>("useQTransform");
+    QTest::addColumn<QVector3D>("translation");
+
+    QTest::newRow("QTransform::translate(0, 0, 0)")
+        << true << QVector3D(0, 0, 0);
+    QTest::newRow("QMatrix4x4::translate(0, 0, 0)")
+        << false << QVector3D(0, 0, 0);
+
+    QTest::newRow("QTransform::translate(1, 2, 0)")
+        << true << QVector3D(1, 2, 0);
+    QTest::newRow("QMatrix4x4::translate(1, 2, 0)")
+        << false << QVector3D(1, 2, 0);
+
+    QTest::newRow("QTransform::translate(1, 2, 4)")
+        << true << QVector3D(1, 2, 4);
+    QTest::newRow("QMatrix4x4::translate(1, 2, 4)")
+        << false << QVector3D(1, 2, 4);
+}
+void tst_QMatrix4x4::compareTranslate()
+{
+    QFETCH(bool, useQTransform);
+    QFETCH(QVector3D, translation);
+
+    qreal x = translation.x();
+    qreal y = translation.y();
+    qreal z = translation.z();
+
+    if (useQTransform) {
+        QTransform t;
+        QBENCHMARK {
+            t.translate(x, y);
+        }
+    } else if (z == 0.0f) {
+        QMatrix4x4 m;
+        QBENCHMARK {
+            m.translate(x, y);
+        }
+    } else {
+        QMatrix4x4 m;
+        QBENCHMARK {
+            m.translate(x, y, z);
+        }
+    }
+}
+
+// Compare the performance of QTransform::translate() to
+// QMatrix4x4::translate() after priming the matrix with a scale().
+void tst_QMatrix4x4::compareTranslateAfterScale_data()
+{
+    compareTranslate_data();
+}
+void tst_QMatrix4x4::compareTranslateAfterScale()
+{
+    QFETCH(bool, useQTransform);
+    QFETCH(QVector3D, translation);
+
+    qreal x = translation.x();
+    qreal y = translation.y();
+    qreal z = translation.z();
+
+    if (useQTransform) {
+        QTransform t;
+        t.scale(3, 4);
+        QBENCHMARK {
+            t.translate(x, y);
+        }
+    } else if (z == 0.0f) {
+        QMatrix4x4 m;
+        m.scale(3, 4);
+        QBENCHMARK {
+            m.translate(x, y);
+        }
+    } else {
+        QMatrix4x4 m;
+        m.scale(3, 4, 5);
+        QBENCHMARK {
+            m.translate(x, y, z);
+        }
+    }
+}
+
+// Compare the performance of QTransform::translate() to
+// QMatrix4x4::translate() after priming the matrix with a rotate().
+void tst_QMatrix4x4::compareTranslateAfterRotate_data()
+{
+    compareTranslate_data();
+}
+void tst_QMatrix4x4::compareTranslateAfterRotate()
+{
+    QFETCH(bool, useQTransform);
+    QFETCH(QVector3D, translation);
+
+    qreal x = translation.x();
+    qreal y = translation.y();
+    qreal z = translation.z();
+
+    if (useQTransform) {
+        QTransform t;
+        t.rotate(45.0f);
+        QBENCHMARK {
+            t.translate(x, y);
+        }
+    } else if (z == 0.0f) {
+        QMatrix4x4 m;
+        m.rotate(45.0f, 0, 0, 1);
+        QBENCHMARK {
+            m.translate(x, y);
+        }
+    } else {
+        QMatrix4x4 m;
+        m.rotate(45.0f, 0, 0, 1);
+        QBENCHMARK {
+            m.translate(x, y, z);
+        }
+    }
+}
+
+// Compare the performance of QTransform::scale() to
+// QMatrix4x4::scale().
+void tst_QMatrix4x4::compareScale_data()
+{
+    QTest::addColumn<bool>("useQTransform");
+    QTest::addColumn<QVector3D>("scale");
+
+    QTest::newRow("QTransform::scale(1, 1, 1)")
+        << true << QVector3D(1, 1, 1);
+    QTest::newRow("QMatrix4x4::scale(1, 1, 1)")
+        << false << QVector3D(1, 1, 1);
+
+    QTest::newRow("QTransform::scale(3, 6, 1)")
+        << true << QVector3D(3, 6, 1);
+    QTest::newRow("QMatrix4x4::scale(3, 6, 1)")
+        << false << QVector3D(3, 6, 1);
+
+    QTest::newRow("QTransform::scale(3, 6, 4)")
+        << true << QVector3D(3, 6, 4);
+    QTest::newRow("QMatrix4x4::scale(3, 6, 4)")
+        << false << QVector3D(3, 6, 4);
+}
+void tst_QMatrix4x4::compareScale()
+{
+    QFETCH(bool, useQTransform);
+    QFETCH(QVector3D, scale);
+
+    qreal x = scale.x();
+    qreal y = scale.y();
+    qreal z = scale.z();
+
+    if (useQTransform) {
+        QTransform t;
+        QBENCHMARK {
+            t.scale(x, y);
+        }
+    } else if (z == 1.0f) {
+        QMatrix4x4 m;
+        QBENCHMARK {
+            m.scale(x, y);
+        }
+    } else {
+        QMatrix4x4 m;
+        QBENCHMARK {
+            m.scale(x, y, z);
+        }
+    }
+}
+
+// Compare the performance of QTransform::scale() to
+// QMatrix4x4::scale() after priming the matrix with a translate().
+void tst_QMatrix4x4::compareScaleAfterTranslate_data()
+{
+    compareScale_data();
+}
+void tst_QMatrix4x4::compareScaleAfterTranslate()
+{
+    QFETCH(bool, useQTransform);
+    QFETCH(QVector3D, scale);
+
+    qreal x = scale.x();
+    qreal y = scale.y();
+    qreal z = scale.z();
+
+    if (useQTransform) {
+        QTransform t;
+        t.translate(20, 34);
+        QBENCHMARK {
+            t.scale(x, y);
+        }
+    } else if (z == 1.0f) {
+        QMatrix4x4 m;
+        m.translate(20, 34);
+        QBENCHMARK {
+            m.scale(x, y);
+        }
+    } else {
+        QMatrix4x4 m;
+        m.translate(20, 34, 42);
+        QBENCHMARK {
+            m.scale(x, y, z);
+        }
+    }
+}
+
+// Compare the performance of QTransform::scale() to
+// QMatrix4x4::scale() after priming the matrix with a rotate().
+void tst_QMatrix4x4::compareScaleAfterRotate_data()
+{
+    compareScale_data();
+}
+void tst_QMatrix4x4::compareScaleAfterRotate()
+{
+    QFETCH(bool, useQTransform);
+    QFETCH(QVector3D, scale);
+
+    qreal x = scale.x();
+    qreal y = scale.y();
+    qreal z = scale.z();
+
+    if (useQTransform) {
+        QTransform t;
+        t.rotate(45.0f);
+        QBENCHMARK {
+            t.scale(x, y);
+        }
+    } else if (z == 1.0f) {
+        QMatrix4x4 m;
+        m.rotate(45.0f, 0, 0, 1);
+        QBENCHMARK {
+            m.scale(x, y);
+        }
+    } else {
+        QMatrix4x4 m;
+        m.rotate(45.0f, 0, 0, 1);
+        QBENCHMARK {
+            m.scale(x, y, z);
+        }
+    }
+}
+
+// Compare the performance of QTransform::rotate() to
+// QMatrix4x4::rotate().
+void tst_QMatrix4x4::compareRotate_data()
+{
+    QTest::addColumn<bool>("useQTransform");
+    QTest::addColumn<qreal>("angle");
+    QTest::addColumn<QVector3D>("rotation");
+    QTest::addColumn<int>("axis");
+
+    QTest::newRow("QTransform::rotate(0, ZAxis)")
+        << true << qreal(0.0f) << QVector3D(0, 0, 1) << int(Qt::ZAxis);
+    QTest::newRow("QMatrix4x4::rotate(0, ZAxis)")
+        << false << qreal(0.0f) << QVector3D(0, 0, 1) << int(Qt::ZAxis);
+
+    QTest::newRow("QTransform::rotate(45, ZAxis)")
+        << true << qreal(45.0f) << QVector3D(0, 0, 1) << int(Qt::ZAxis);
+    QTest::newRow("QMatrix4x4::rotate(45, ZAxis)")
+        << false << qreal(45.0f) << QVector3D(0, 0, 1) << int(Qt::ZAxis);
+
+    QTest::newRow("QTransform::rotate(90, ZAxis)")
+        << true << qreal(90.0f) << QVector3D(0, 0, 1) << int(Qt::ZAxis);
+    QTest::newRow("QMatrix4x4::rotate(90, ZAxis)")
+        << false << qreal(90.0f) << QVector3D(0, 0, 1) << int(Qt::ZAxis);
+
+    QTest::newRow("QTransform::rotate(0, YAxis)")
+        << true << qreal(0.0f) << QVector3D(0, 1, 0) << int(Qt::YAxis);
+    QTest::newRow("QMatrix4x4::rotate(0, YAxis)")
+        << false << qreal(0.0f) << QVector3D(0, 1, 0) << int(Qt::YAxis);
+
+    QTest::newRow("QTransform::rotate(45, YAxis)")
+        << true << qreal(45.0f) << QVector3D(0, 1, 0) << int(Qt::YAxis);
+    QTest::newRow("QMatrix4x4::rotate(45, YAxis)")
+        << false << qreal(45.0f) << QVector3D(0, 1, 0) << int(Qt::YAxis);
+
+    QTest::newRow("QTransform::rotate(90, YAxis)")
+        << true << qreal(90.0f) << QVector3D(0, 1, 0) << int(Qt::YAxis);
+    QTest::newRow("QMatrix4x4::rotate(90, YAxis)")
+        << false << qreal(90.0f) << QVector3D(0, 1, 0) << int(Qt::YAxis);
+
+    QTest::newRow("QTransform::rotate(0, XAxis)")
+        << true << qreal(0.0f) << QVector3D(0, 1, 0) << int(Qt::XAxis);
+    QTest::newRow("QMatrix4x4::rotate(0, XAxis)")
+        << false << qreal(0.0f) << QVector3D(0, 1, 0) << int(Qt::XAxis);
+
+    QTest::newRow("QTransform::rotate(45, XAxis)")
+        << true << qreal(45.0f) << QVector3D(1, 0, 0) << int(Qt::XAxis);
+    QTest::newRow("QMatrix4x4::rotate(45, XAxis)")
+        << false << qreal(45.0f) << QVector3D(1, 0, 0) << int(Qt::XAxis);
+
+    QTest::newRow("QTransform::rotate(90, XAxis)")
+        << true << qreal(90.0f) << QVector3D(1, 0, 0) << int(Qt::XAxis);
+    QTest::newRow("QMatrix4x4::rotate(90, XAxis)")
+        << false << qreal(90.0f) << QVector3D(1, 0, 0) << int(Qt::XAxis);
+}
+void tst_QMatrix4x4::compareRotate()
+{
+    QFETCH(bool, useQTransform);
+    QFETCH(qreal, angle);
+    QFETCH(QVector3D, rotation);
+    QFETCH(int, axis);
+
+    qreal x = rotation.x();
+    qreal y = rotation.y();
+    qreal z = rotation.z();
+
+    if (useQTransform) {
+        QTransform t;
+        QBENCHMARK {
+            t.rotate(angle, Qt::Axis(axis));
+        }
+    } else {
+        QMatrix4x4 m;
+        QBENCHMARK {
+            m.rotate(angle, x, y, z);
+        }
+    }
+}
+
+// Compare the performance of QTransform::rotate() to
+// QMatrix4x4::rotate() after priming the matrix with a translate().
+void tst_QMatrix4x4::compareRotateAfterTranslate_data()
+{
+    compareRotate_data();
+}
+void tst_QMatrix4x4::compareRotateAfterTranslate()
+{
+    QFETCH(bool, useQTransform);
+    QFETCH(qreal, angle);
+    QFETCH(QVector3D, rotation);
+    QFETCH(int, axis);
+
+    qreal x = rotation.x();
+    qreal y = rotation.y();
+    qreal z = rotation.z();
+
+    if (useQTransform) {
+        QTransform t;
+        t.translate(3, 4);
+        QBENCHMARK {
+            t.rotate(angle, Qt::Axis(axis));
+        }
+    } else {
+        QMatrix4x4 m;
+        m.translate(3, 4, 5);
+        QBENCHMARK {
+            m.rotate(angle, x, y, z);
+        }
+    }
+}
+
+// Compare the performance of QTransform::rotate() to
+// QMatrix4x4::rotate() after priming the matrix with a scale().
+void tst_QMatrix4x4::compareRotateAfterScale_data()
+{
+    compareRotate_data();
+}
+void tst_QMatrix4x4::compareRotateAfterScale()
+{
+    QFETCH(bool, useQTransform);
+    QFETCH(qreal, angle);
+    QFETCH(QVector3D, rotation);
+    QFETCH(int, axis);
+
+    qreal x = rotation.x();
+    qreal y = rotation.y();
+    qreal z = rotation.z();
+
+    if (useQTransform) {
+        QTransform t;
+        t.scale(3, 4);
+        QBENCHMARK {
+            t.rotate(angle, Qt::Axis(axis));
+        }
+    } else {
+        QMatrix4x4 m;
+        m.scale(3, 4, 5);
+        QBENCHMARK {
+            m.rotate(angle, x, y, z);
+        }
     }
 }
 
