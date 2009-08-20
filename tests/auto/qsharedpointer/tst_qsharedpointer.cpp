@@ -799,6 +799,7 @@ void tst_QSharedPointer::differentPointers()
 
         QVERIFY(baseptr.data() == aData);
         QVERIFY(aData == baseptr.data());
+        QVERIFY(bool(operator==<Data,DiffPtrDerivedData>(baseptr, aData)));
         QVERIFY(baseptr == aData);
         QVERIFY(aData == baseptr);
     }
