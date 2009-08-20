@@ -42,6 +42,7 @@ namespace Phonon
         
         protected:
         	AbstractMediaPlayer();
+        	explicit AbstractMediaPlayer(const AbstractPlayer& player);
         	~AbstractMediaPlayer();
         	
         public:
@@ -50,28 +51,23 @@ namespace Phonon
         	virtual void pause();
         	virtual void stop();
         	virtual bool isSeekable() const;
-            virtual qint32 tickInterval() const;
-            virtual void setTickInterval(qint32 interval);
             virtual Phonon::ErrorType errorType() const;
             virtual QString errorString() const;
             virtual Phonon::State state() const;
-            virtual qint32 prefinishMark() const;
-            virtual void setPrefinishMark(qint32);
-            virtual qint32 transitionTime() const;
-            virtual void setTransitionTime(qint32);
             virtual MediaSource source() const;
             virtual void setFileSource(const Phonon::MediaSource&, RFile&);
             virtual void setNextSource(const MediaSource &source);
 
-            // VolumeControlInterface
-            qreal volume() const;
-            bool setVolume(qreal volume);        
+        protected:
+        	// AbstractPlayer
+        	virtual void doSetTickInterval(qint32 interval);
+        	virtual bool doSetVolume(qreal volume);
         	
         protected:
         	virtual void doPlay() = 0;
         	virtual void doPause() = 0;
         	virtual void doStop() = 0;
-        	virtual int doSetVolume(int mmfVolume) = 0;
+        	virtual int doSetMmfVolume(int mmfVolume) = 0;
         	virtual int openFile(RFile& file) = 0;
         	virtual void close() = 0;
         	
@@ -131,9 +127,7 @@ namespace Phonon
         	PrivateState				m_state;
         	Phonon::ErrorType			m_error;
         	
-        	qint32						m_tickInterval;
         	QScopedPointer<QTimer>		m_tickTimer;
-            qreal						m_volume;
             int							m_mmfMaxVolume;
             
             MediaSource					m_source;

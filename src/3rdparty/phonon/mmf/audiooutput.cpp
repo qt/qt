@@ -18,20 +18,13 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <e32debug.h>
 
-#include "mediaobject.h"
 #include "audiooutput.h"
+#include "defs.h"
 #include "utils.h"
 #include "volumecontrolinterface.h"
 
 using namespace Phonon;
 using namespace Phonon::MMF;
-
-
-//-----------------------------------------------------------------------------
-// Constants
-//-----------------------------------------------------------------------------
-
-static const qreal InitialVolume = 0.5;
 
 
 //-----------------------------------------------------------------------------

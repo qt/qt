@@ -27,6 +27,7 @@ HEADERS +=                                           \
            $$PHONON_MMF_DIR/audiooutput.h            \
            $$PHONON_MMF_DIR/audioplayer.h            \
            $$PHONON_MMF_DIR/backend.h                \
+           $$PHONON_MMF_DIR/defs.h                   \
            $$PHONON_MMF_DIR/dummyplayer.h            \
            $$PHONON_MMF_DIR/mediaobject.h            \
            $$PHONON_MMF_DIR/utils.h                  \
@@ -34,6 +35,7 @@ HEADERS +=                                           \
 	   $$PHONON_MMF_DIR/volumecontrolinterface.h
 
 SOURCES +=                                           \
+           $$PHONON_MMF_DIR/abstractplayer.cpp       \
 	   $$PHONON_MMF_DIR/abstractmediaplayer.cpp  \
            $$PHONON_MMF_DIR/audiooutput.cpp          \
            $$PHONON_MMF_DIR/audioplayer.cpp          \

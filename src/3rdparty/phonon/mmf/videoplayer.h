@@ -31,6 +31,7 @@ namespace Phonon
     namespace MMF
     {
         /**
+         * @short Wrapper over MMF video client utility
          *
          * See
          * <a href="http://wiki.forum.nokia.com/index.php/How_to_play_a_video_file_using_CVideoPlayerUtility">How to
@@ -42,16 +43,18 @@ namespace Phonon
             Q_OBJECT
         public:
             VideoPlayer();
+            explicit VideoPlayer(const AbstractPlayer& player);
             virtual ~VideoPlayer();
 
             // AbstractPlayer
             virtual void doPlay();
             virtual void doPause();
             virtual void doStop();
-            virtual int doSetVolume(int mmfVolume);
+            virtual int doSetMmfVolume(int mmfVolume);
             virtual int openFile(RFile& file);
             virtual void close();
             
+            // MediaObjectInterface
             virtual void seek(qint64 milliseconds);
             virtual bool hasVideo() const;
             virtual qint64 currentTime() const;
@@ -69,6 +72,9 @@ namespace Phonon
             void stateChanged(Phonon::State oldState,
                               Phonon::State newState);
             void finished();
+            
+        private:
+        	void construct();
             
         private:
         	CVideoPlayerUtility*				m_player;

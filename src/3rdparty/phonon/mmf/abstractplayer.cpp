@@ -16,116 +16,92 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "dummyplayer.h"
+#include "abstractplayer.h"
+#include "defs.h"
 
 using namespace Phonon;
 using namespace Phonon::MMF;
+
 
 //-----------------------------------------------------------------------------
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::DummyPlayer::DummyPlayer()
+MMF::AbstractPlayer::AbstractPlayer() :
+							m_tickInterval(DefaultTickInterval)
+						,	m_volume(InitialVolume)
+						,	m_transitionTime(0)
+						,	m_prefinishMark(0)
 {
-	
+
 }
 
-MMF::DummyPlayer::DummyPlayer(const AbstractPlayer& player)
-								:	AbstractPlayer(player)
+MMF::AbstractPlayer::AbstractPlayer(const AbstractPlayer& player) :
+							m_tickInterval(player.tickInterval())
+						,	m_volume(player.volume())
+						,	m_transitionTime(player.transitionTime())
+						,	m_prefinishMark(player.prefinishMark())
 {
-	
-}
 
+}
 
 //-----------------------------------------------------------------------------
 // MediaObjectInterface
 //-----------------------------------------------------------------------------
 
-void MMF::DummyPlayer::play()
+qint32 MMF::AbstractPlayer::tickInterval() const
 {
-
+    return m_tickInterval;
 }
 
-void MMF::DummyPlayer::pause()
+void MMF::AbstractPlayer::setTickInterval(qint32 interval)
 {
-
+    m_tickInterval = interval;
+    doSetTickInterval(interval);
 }
 
-void MMF::DummyPlayer::stop()
+qint32 MMF::AbstractPlayer::prefinishMark() const
 {
-
+	return m_prefinishMark;
 }
 
-void MMF::DummyPlayer::seek(qint64)
+void MMF::AbstractPlayer::setPrefinishMark(qint32 mark)
 {
-
+	m_prefinishMark = mark;
 }
 
-bool MMF::DummyPlayer::hasVideo() const
+qint32 MMF::AbstractPlayer::transitionTime() const
 {
-    return false;
+	return m_transitionTime;
 }
 
-bool MMF::DummyPlayer::isSeekable() const
+void MMF::AbstractPlayer::setTransitionTime(qint32 time)
 {
-    return false;
-}
-
-Phonon::State MMF::DummyPlayer::state() const
-{
-    return Phonon::StoppedState;
-}
-
-qint64 MMF::DummyPlayer::currentTime() const
-{
-    return 0;
-}
-
-QString MMF::DummyPlayer::errorString() const
-{
-    return QString();
-}
-
-Phonon::ErrorType MMF::DummyPlayer::errorType() const
-{
-    return Phonon::NoError;
-}
-
-qint64 MMF::DummyPlayer::totalTime() const
-{
-    return 0;
-}
-
-MediaSource MMF::DummyPlayer::source() const
-{
-    return MediaSource();
-}
-
-void MMF::DummyPlayer::setFileSource(const Phonon::MediaSource &, RFile &)
-{
-
-}
-
-void MMF::DummyPlayer::setNextSource(const MediaSource &)
-{
-
+    m_transitionTime = time;
 }
 
 
 //-----------------------------------------------------------------------------
-// AbstractPlayer
+// VolumeControlInterface
 //-----------------------------------------------------------------------------
 
-void MMF::DummyPlayer::doSetTickInterval(qint32)
+qreal MMF::AbstractPlayer::volume() const
 {
-
+    return m_volume;
 }
 
-bool MMF::DummyPlayer::doSetVolume(qreal)
+bool MMF::AbstractPlayer::setVolume(qreal volume)
 {
-	return true;
+	bool result = false;
+	if(volume != m_volume)
+		{
+		result = doSetVolume(volume);
+		if(result)
+			{
+			m_volume = volume;
+			}
+		}
+	return result;
 }
-
-
 
 

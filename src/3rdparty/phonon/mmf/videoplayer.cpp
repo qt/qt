@@ -35,23 +35,35 @@ using namespace Phonon::MMF;
 
 MMF::VideoPlayer::VideoPlayer() : m_widget(new QWidget())
 {
-    TRACE_CONTEXT(VideoPlayer::VideoPlayer, EAudioApi);
-    TRACE_ENTRY_0();
-    
-    CCoeControl* control = m_widget->winId();
-    CCoeEnv* coeEnv = control->ControlEnv();
-   
-    const TInt priority = 0;
-    const TMdaPriorityPreference preference = EMdaPriorityPreferenceNone;
-    RWsSession& wsSession = coeEnv->WsSession();
-    CWsScreenDevice& screenDevice = *(coeEnv->ScreenDevice());
-    RDrawableWindow& window = *(control->DrawableWindow());
-    const TRect screenRect = control->Rect();
-    const TRect clipRect = control->Rect();
-    
-    // TODO: is this the correct way to handle errors in constructing Symbian objects?
-    TRAPD(err,
-    	m_player = CVideoPlayerUtility::NewL
+	construct();
+}
+
+MMF::VideoPlayer::VideoPlayer(const AbstractPlayer& player)
+								: AbstractMediaPlayer(player)
+								, m_widget(new QWidget())
+{
+	construct();
+}
+
+void MMF::VideoPlayer::construct()
+{
+	TRACE_CONTEXT(VideoPlayer::VideoPlayer, EAudioApi);
+	TRACE_ENTRY_0();
+	
+	CCoeControl* control = m_widget->winId();
+	CCoeEnv* coeEnv = control->ControlEnv();
+	
+	const TInt priority = 0;
+	const TMdaPriorityPreference preference = EMdaPriorityPreferenceNone;
+	RWsSession& wsSession = coeEnv->WsSession();
+	CWsScreenDevice& screenDevice = *(coeEnv->ScreenDevice());
+	RDrawableWindow& window = *(control->DrawableWindow());
+	const TRect screenRect = control->Rect();
+	const TRect clipRect = control->Rect();
+	
+	// TODO: is this the correct way to handle errors in constructing Symbian objects?
+	TRAPD(err,
+		m_player = CVideoPlayerUtility::NewL
 			(
 			*this, 
 			priority, preference,
@@ -60,13 +72,13 @@ MMF::VideoPlayer::VideoPlayer() : m_widget(new QWidget())
 			screenRect, clipRect
 			)
 		);
-    
+	
 	if(KErrNone != err)
 	{
 		changeState(ErrorState);
 	}
-
-    TRACE_EXIT_0();
+	
+	TRACE_EXIT_0();
 }
 
 MMF::VideoPlayer::~VideoPlayer()
@@ -98,7 +110,7 @@ void MMF::VideoPlayer::doStop()
 	// TODO
 }
 
-int MMF::VideoPlayer::doSetVolume(int mmfVolume)
+int MMF::VideoPlayer::doSetMmfVolume(int mmfVolume)
 {
 	// TODO
 	Q_UNUSED(mmfVolume);

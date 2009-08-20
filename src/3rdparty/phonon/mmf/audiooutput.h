@@ -32,7 +32,8 @@ namespace Phonon
          * @short AudioOutputInterface implementation for MMF.
          *
          * Forwards volume commands to the VolumeControlInterface instance, 
-         * provided by the backend.
+         * which is provided by the backend when MediaNode objects are 
+         * connected.
          *
          * \section volume Volume
          *

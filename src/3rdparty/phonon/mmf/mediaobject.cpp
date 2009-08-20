@@ -230,6 +230,8 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
 	
 	MediaType mediaType = MediaTypeUnknown;
 	
+	AbstractPlayer* oldPlayer = m_player.data();
+	
 	// Determine media type
 	switch(source.type())
 	{
@@ -265,13 +267,26 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
 			break;
 	}
 	
+	AbstractPlayer* newPlayer = NULL;
+	
+	// Construct newPlayer using oldPlayer (if not NULL) in order to copy
+	// parameters (volume, prefinishMark, transitionTime) which may have
+	// been set on oldPlayer.
+	
 	switch(mediaType)
 	{
 		case MediaTypeUnknown:
 			TRACE_0("Media type could not be determined");
-			m_player.reset(new DummyPlayer());
+			if(oldPlayer)
+				{
+				newPlayer = new DummyPlayer(*oldPlayer);
+				}
+			else
+				{
+				newPlayer = new DummyPlayer();
+				}
 		/*
-		 * TODO: handle error
+		 * TODO: handle error?
 		 * 
 			m_error = NormalError;
 			changeState(ErrorState);
@@ -279,13 +294,29 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
 			break;
 			
 		case MediaTypeAudio:
-			m_player.reset(new AudioPlayer());
+			if(oldPlayer)
+				{
+				newPlayer = new AudioPlayer(*oldPlayer);
+				}
+			else
+				{
+				newPlayer = new AudioPlayer();
+				}
 			break;
 			
 		case MediaTypeVideo:
-			m_player.reset(new VideoPlayer());
+			if(oldPlayer)
+				{
+				newPlayer = new VideoPlayer(*oldPlayer);
+				}
+			else
+				{
+				newPlayer = new VideoPlayer();
+				}
 			break;
 	}
+	
+	m_player.reset(newPlayer);
 		
 	connect(m_player.data(), SIGNAL(totalTimeChanged()), SIGNAL(totalTimeChanged()));
 	connect(m_player.data(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), SIGNAL(stateChanged(Phonon::State, Phonon::State)));

@@ -17,7 +17,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "abstractmediaplayer.h"
-#include "audiooutput.h"
 #include "utils.h"
 
 using namespace Phonon;
@@ -27,11 +26,7 @@ using namespace Phonon::MMF;
 // Constants
 //-----------------------------------------------------------------------------
 
-const qint32	DefaultTickInterval = 20;
 const int		NullMaxVolume = -1;
-
-// TODO: consolidate this with constant used in AudioOutput
-const qreal		InitialVolume = 0.5;
 
 
 //-----------------------------------------------------------------------------
@@ -41,9 +36,17 @@ const qreal		InitialVolume = 0.5;
 MMF::AbstractMediaPlayer::AbstractMediaPlayer() :
 							m_state(GroundState)
 						,	m_error(NoError)
-						,	m_tickInterval(DefaultTickInterval)
 						,	m_tickTimer(new QTimer(this))
-						,	m_volume(InitialVolume)
+						,	m_mmfMaxVolume(NullMaxVolume)
+{
+	connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
+}
+
+MMF::AbstractMediaPlayer::AbstractMediaPlayer(const AbstractPlayer& player) :
+							AbstractPlayer(player)
+						,	m_state(GroundState)
+						,	m_error(NoError)
+						,	m_tickTimer(new QTimer(this))
 						,	m_mmfMaxVolume(NullMaxVolume)
 {
 	connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
@@ -159,20 +162,11 @@ bool MMF::AbstractMediaPlayer::isSeekable() const
 	return true;
 }
 
-qint32 MMF::AbstractMediaPlayer::tickInterval() const
+void MMF::AbstractMediaPlayer::doSetTickInterval(qint32 interval)
 {
-    TRACE_CONTEXT(AbstractMediaPlayer::tickInterval, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
+    TRACE_CONTEXT(AbstractMediaPlayer::doSetTickInterval, EAudioApi);
+    TRACE_ENTRY("state %d m_interval %d interval %d", m_state, tickInterval(), interval);
 
-    TRACE_RETURN("%d", m_tickInterval);
-}
-
-void MMF::AbstractMediaPlayer::setTickInterval(qint32 interval)
-{
-    TRACE_CONTEXT(AbstractMediaPlayer::setTickInterval, EAudioApi);
-    TRACE_ENTRY("state %d m_interval %d interval %d", m_state, m_tickInterval, interval);
-
-    m_tickInterval = interval;
     m_tickTimer->setInterval(interval);
 
     TRACE_EXIT_0();
@@ -206,64 +200,9 @@ Phonon::State MMF::AbstractMediaPlayer::state() const
     TRACE_RETURN("%d", result);
 }
 
-qint32 MMF::AbstractMediaPlayer::prefinishMark() const
-{
-    TRACE_CONTEXT(AbstractMediaPlayer::prefinishMark, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
-
-    // TODO: implement prefinish mark
-    const qint32 result = 0;
-    TRACE_RETURN("%d", result);
-}
-
-void MMF::AbstractMediaPlayer::setPrefinishMark(qint32 mark)
-{
-    TRACE_CONTEXT(AbstractMediaPlayer::setPrefinishMark, EAudioApi);
-    TRACE_ENTRY("state %d mark %d", m_state, mark);
-    Q_UNUSED(mark); // to silence warnings in release builds
-
-    // TODO: implement prefinish mark
-
-    TRACE_EXIT_0();
-}
-
-qint32 MMF::AbstractMediaPlayer::transitionTime() const
-{
-    TRACE_CONTEXT(AbstractMediaPlayer::transitionTime, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
-
-    // TODO: implement transition time
-    const qint32 result = 0;
-    TRACE_RETURN("%d", result);
-}
-
-void MMF::AbstractMediaPlayer::setTransitionTime(qint32 time)
-{
-    TRACE_CONTEXT(AbstractMediaPlayer::setTransitionTime, EAudioApi);
-    TRACE_ENTRY("state %d time %d", m_state, time);
-    Q_UNUSED(time); // to silence warnings in release builds
-
-    // TODO: implement transition time
-
-    TRACE_EXIT_0();
-}
-
 MediaSource MMF::AbstractMediaPlayer::source() const
 {
     return m_source;
-}
-
-void MMF::AbstractMediaPlayer::setNextSource(const MediaSource &source)
-{
-    TRACE_CONTEXT(AbstractMediaPlayer::setNextSource, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
-
-    // TODO: handle 'next source'
-
-    m_nextSource = source;
-    Q_UNUSED(source);
-
-    TRACE_EXIT_0();
 }
 
 void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& file)
@@ -335,29 +274,37 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
     TRACE_EXIT_0();
 }
 
+void MMF::AbstractMediaPlayer::setNextSource(const MediaSource &source)
+{
+    TRACE_CONTEXT(AbstractMediaPlayer::setNextSource, EAudioApi);
+    TRACE_ENTRY("state %d", m_state);
+
+    // TODO: handle 'next source'
+
+    m_nextSource = source;
+    Q_UNUSED(source);
+
+    TRACE_EXIT_0();
+}
+
 
 //-----------------------------------------------------------------------------
 // VolumeControlInterface
 //-----------------------------------------------------------------------------
 
-qreal MMF::AbstractMediaPlayer::volume() const
+bool MMF::AbstractMediaPlayer::doSetVolume(qreal volume)
 {
-    return m_volume;
-}
-
-bool MMF::AbstractMediaPlayer::setVolume(qreal volume)
-{
-    TRACE_CONTEXT(AbstractMediaPlayer::setVolume, EAudioInternal);
+    TRACE_CONTEXT(AbstractMediaPlayer::doSetVolume, EAudioInternal);
     TRACE_ENTRY("state %d", m_state);
 
-    bool volumeChanged = false;
-
+    bool result = true;
+    
     switch(m_state)
     {
         case GroundState:
         case LoadingState:
         case ErrorState:
-        	m_volume = volume;
+			// Do nothing
             break;
 
         case StoppedState:
@@ -365,20 +312,13 @@ bool MMF::AbstractMediaPlayer::setVolume(qreal volume)
         case PlayingState:
         case BufferingState:
         {
-            if(volume != m_volume)
-            {
-				const int err = doSetVolume(volume * m_mmfMaxVolume);
+			const int err = doSetMmfVolume(volume * m_mmfMaxVolume);
             
-                if(KErrNone == err)
-                {
-                    m_volume = volume;
-                    volumeChanged = true;
-                }
-                else
-                {
-                    m_error = NormalError;
-                    changeState(ErrorState);
-                }
+            if(KErrNone != err)
+            {
+				m_error = NormalError;
+				changeState(ErrorState);
+				result = false;
             }
             break;
         }
@@ -388,8 +328,8 @@ bool MMF::AbstractMediaPlayer::setVolume(qreal volume)
         default:
             TRACE_PANIC(InvalidStatePanic);
     }
-
-    TRACE_RETURN("%d", volumeChanged);
+    
+    return result;
 }
 
 
@@ -399,7 +339,7 @@ bool MMF::AbstractMediaPlayer::setVolume(qreal volume)
 
 void MMF::AbstractMediaPlayer::startTickTimer()
 {
-	m_tickTimer->start(m_tickInterval);
+	m_tickTimer->start(tickInterval());
 }
 
 void MMF::AbstractMediaPlayer::stopTickTimer()
@@ -410,7 +350,7 @@ void MMF::AbstractMediaPlayer::stopTickTimer()
 void MMF::AbstractMediaPlayer::initVolume(int mmfMaxVolume)
 {
 	m_mmfMaxVolume = mmfMaxVolume;
-	doSetVolume(m_volume * m_mmfMaxVolume);
+	doSetVolume(volume() * m_mmfMaxVolume);
 }
 
 Phonon::State MMF::AbstractMediaPlayer::phononState() const

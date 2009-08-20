@@ -37,6 +37,7 @@ namespace Phonon
         class AudioOutput;
 
         /**
+         * @short Facade class which wraps MMF client utility instance
          */
         class MediaObject : public QObject
                           , public MediaObjectInterface

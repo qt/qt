@@ -28,19 +28,31 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AudioPlayer::AudioPlayer() : m_player(NULL)                             
+MMF::AudioPlayer::AudioPlayer()	: m_player(NULL)                             
 {
-    TRACE_CONTEXT(AudioPlayer::AudioPlayer, EAudioApi);
-    TRACE_ENTRY_0();
+	construct();
+}
 
-    // TODO: is this the correct way to handle errors in constructing Symbian objects?
-    TRAPD(err, m_player = CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone));
-    if(KErrNone != err)
-    {
+MMF::AudioPlayer::AudioPlayer(const AbstractPlayer& player)
+								: AbstractMediaPlayer(player)
+								, m_player(NULL)                             
+{
+	construct();
+}
+
+void MMF::AudioPlayer::construct()
+{
+	TRACE_CONTEXT(AudioPlayer::AudioPlayer, EAudioApi);
+	TRACE_ENTRY_0();
+	
+	// TODO: is this the correct way to handle errors in constructing Symbian objects?
+	TRAPD(err, m_player = CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone));
+	if(KErrNone != err)
+	{
 		changeState(ErrorState);
-    }
-    
-    TRACE_EXIT_0();
+	}
+	
+	TRACE_EXIT_0();
 }
 
 MMF::AudioPlayer::~AudioPlayer()
@@ -72,7 +84,7 @@ void MMF::AudioPlayer::doStop()
 	m_player->Stop();
 }
 
-int MMF::AudioPlayer::doSetVolume(int mmfVolume)
+int MMF::AudioPlayer::doSetMmfVolume(int mmfVolume)
 {
 	return m_player->SetVolume(mmfVolume);
 }
@@ -164,22 +176,10 @@ void MMF::AudioPlayer::MapcInitComplete(TInt aError,
 
     if(KErrNone == aError)
     {
-// TODO: CLEANUP
-/*
-        TInt volume = 0;
-        aError = m_player->GetVolume(volume);
-        if(KErrNone == aError)
-        {
-*/
-            initVolume(m_player->MaxVolume());
+		initVolume(m_player->MaxVolume());
 
-            emit totalTimeChanged();
-            changeState(StoppedState);
-
-// TODO: CLEANUP
-/*
-        }
-*/
+		emit totalTimeChanged();
+		changeState(StoppedState);
     }
     else
     {

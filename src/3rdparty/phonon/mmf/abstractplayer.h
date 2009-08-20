@@ -34,9 +34,11 @@ namespace Phonon
         class AudioOutput;
 
         /**
-         * Interface which abstracts from MediaObject the current media type.
+         * @short Interface which abstracts from MediaObject the current
+         * media type
+         * 
          * This may be:
-         * 	-	Nothing, in which case this interface is implemented by 
+         * 	-	Nothing, in which case this interface is implemented by
          * 		DummyPlayer
          *  -	Audio, in which case the implementation is AudioPlayer
          *  -	Video, in which case the implementation is VideoPlayer
@@ -49,13 +51,22 @@ namespace Phonon
 			Q_OBJECT
         
         public:
-        	// Mirror of Phonon::MediaObjectInterfac
+        	AbstractPlayer();
+        	explicit AbstractPlayer(const AbstractPlayer& player);
+        	
+        	// MediaObjectInterface (implemented)
+        	qint32 tickInterval() const;
+        	void setTickInterval(qint32);
+            void setTransitionTime(qint32);
+            qint32 transitionTime() const;
+            void setPrefinishMark(qint32);
+            qint32 prefinishMark() const;
+        	
+        	// MediaObjectInterface (abstract)
             virtual void play() = 0;
             virtual void pause() = 0;
             virtual void stop() = 0;
             virtual void seek(qint64 milliseconds) = 0;
-            virtual qint32 tickInterval() const = 0;
-            virtual void setTickInterval(qint32) = 0;
             virtual bool hasVideo() const = 0;
             virtual bool isSeekable() const = 0;
             virtual qint64 currentTime() const = 0;
@@ -69,10 +80,20 @@ namespace Phonon
             //virtual void setSource(const Phonon::MediaSource &) = 0;
             virtual void setFileSource(const Phonon::MediaSource&, RFile&) = 0;
             virtual void setNextSource(const Phonon::MediaSource &) = 0;
-            virtual void setTransitionTime(qint32) = 0;
-            virtual qint32 transitionTime() const = 0;
-            virtual qint32 prefinishMark() const = 0;
-            virtual void setPrefinishMark(qint32) = 0;
+            
+            // VolumeControlInterface
+            qreal volume() const;
+            bool setVolume(qreal volume);
+            
+        private:
+        	virtual void doSetTickInterval(qint32 interval) = 0;
+            virtual bool doSetVolume(qreal volume) = 0;
+        	
+        private:
+        	qint32		m_tickInterval;
+        	qreal		m_volume;
+        	qint32		m_transitionTime;
+        	qint32		m_prefinishMark;
 
         };
     }
