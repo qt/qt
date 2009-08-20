@@ -175,6 +175,9 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
                                                                     returnPC - codeBlock->instructions().begin() -1);
             }
         }
+    } else {
+        // An agent might have provided the line number.
+        lineNumber = QScript::scriptEngineFromExec(frame)->agentLineNumber;
     }
 
     // Get the filename and the scriptId:

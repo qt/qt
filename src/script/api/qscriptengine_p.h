@@ -239,6 +239,7 @@ public:
 
     QList<QScriptEngineAgent*> ownedAgents;
     QScriptEngineAgent *activeAgent;
+    int agentLineNumber;
     QHash<JSC::JSCell*, QBasicAtomicInt> keepAliveValues;
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;

@@ -163,9 +163,12 @@ void QScriptEngineAgentPrivate::exceptionCatch(const JSC::DebuggerCallFrame& fra
 void QScriptEngineAgentPrivate::atStatement(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno, int column)
 {
     JSC::CallFrame *oldFrame = engine->currentFrame;
+    int oldAgentLineNumber = engine->agentLineNumber;
     engine->currentFrame = frame.callFrame();
+    engine->agentLineNumber = lineno;
     q_ptr->positionChange(sourceID, lineno, column);
     engine->currentFrame = oldFrame;
+    engine->agentLineNumber = oldAgentLineNumber;
 }
 
 void QScriptEngineAgentPrivate::functionExit(const JSC::JSValue& returnValue, intptr_t sourceID)
@@ -186,11 +189,14 @@ void QScriptEngineAgentPrivate::didReachBreakpoint(const JSC::DebuggerCallFrame&
 {
     if (q_ptr->supportsExtension(QScriptEngineAgent::DebuggerInvocationRequest)) {
         JSC::CallFrame *oldFrame = engine->currentFrame;
+        int oldAgentLineNumber = engine->agentLineNumber;
         engine->currentFrame = frame.callFrame();
+        engine->agentLineNumber = lineno;
         QList<QVariant> args;
         args << qint64(sourceID) << lineno << column;
         q_ptr->extension(QScriptEngineAgent::DebuggerInvocationRequest, args);
         engine->currentFrame = oldFrame;
+        engine->agentLineNumber = oldAgentLineNumber;
     }
 };
 

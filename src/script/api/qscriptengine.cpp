@@ -830,6 +830,7 @@ QScriptEnginePrivate::QScriptEnginePrivate()
 
     originalGlobalObjectProxy = 0;
     activeAgent = 0;
+    agentLineNumber = -1;
     processEventsInterval = -1;
 }
 
