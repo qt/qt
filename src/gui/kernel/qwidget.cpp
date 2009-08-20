@@ -4870,6 +4870,18 @@ QGraphicsEffect *QWidget::graphicsEffect() const
     return d->graphicsEffect;
 }
 
+/*!
+    Sets \a effect as the widget's effect. If there already is an effect installed
+    on this widget, QWidget will delete the existing effect before installing
+    the new \a effect.
+
+    If \a effect is the installed on a different widget, setGraphicsEffect() will remove
+    the effect from the widget and install it on this widget.
+
+    \note This function will apply the effect on itself and all its children.
+
+    \since 4.6
+*/
 void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
 {
     Q_D(QWidget);
@@ -4877,9 +4889,8 @@ void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
         return;
 
     if (d->graphicsEffect && effect) {
-        // ### This seems wrong - the effect should automatically be deleted.
-        qWarning("already set");
-        return;
+        delete d->graphicsEffect;
+        d->graphicsEffect = 0;
     }
 
     if (!effect) {

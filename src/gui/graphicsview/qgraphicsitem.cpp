@@ -2240,9 +2240,8 @@ QGraphicsEffect *QGraphicsItem::graphicsEffect() const
 
 /*!
     Sets \a effect as the item's effect. If there already is an effect installed
-    on this item, QGraphicsItem won't let you install another. You must first
-    delete the existing effect (returned by graphicsEffect()) before you can call
-    setGraphicsEffect() with the new effect.
+    on this item, QGraphicsItem will delete the existing effect before installing
+    the new \a effect.
 
     If \a effect is the installed on a different item, setGraphicsEffect() will remove
     the effect from the item and install it on this item.
@@ -2257,10 +2256,8 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
         return;
 
     if (d_ptr->graphicsEffect && effect) {
-        // ### This seems wrong - the effect should automatically be deleted.
-        qWarning("QGraphicsItem::setGraphicsEffect: Attempting to set QGraphicsEffect "
-                 "%p on %p, which already has an effect installed", effect, this);
-        return;
+        delete d_ptr->graphicsEffect;
+        d_ptr->graphicsEffect = 0;
     }
 
     if (!effect) {
