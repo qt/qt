@@ -899,9 +899,8 @@ doneString:
     // Fall through into returnToken.
 
 returnToken: {
-    int lineNumber = m_lineNumber;
-    llocp->first_line = lineNumber;
-    llocp->last_line = lineNumber;
+    llocp->first_line = m_lineNumber;
+    llocp->last_line = m_lineNumber;
 
     llocp->first_column = startOffset - m_startColumnNumberCorrection;
     llocp->last_column = currentOffset() - m_startColumnNumberCorrection;
