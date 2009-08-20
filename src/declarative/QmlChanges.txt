@@ -1,0 +1,49 @@
+QML API Review
+==============
+
+The QML API is being reviewed from 17 to 28 August 2009.  This
+file documents the changes.
+
+API Changes
+===========
+
+Renamed properties:
+MouseRegion: xmin    -> minimumX
+MouseRegion: xmax    -> maximumX
+MouseRegion: ymin    -> minimumY
+MouseRegion: ymin    -> maximumY
+
+Additions:
+MouseRegion: add "acceptedButtons" property
+MouseRegion: add "hoverEnabled" property
+
+Other Changes:
+Drag: axis becomes an enum with values "XAxis", "YAxis", "XandYAxis"
+
+Pending Changes
+===============
+
+Renamed elements:
+RunScriptAction    -> ScriptAction
+ParentChangeAction -> ParentAction
+Bind               -> Binding
+Palette            -> SystemPalette
+SetProperties      -> PropertyChanges
+RunScript          -> StateChangeScript
+SetAnchors         -> AnchorChanges
+
+Renamed properties:
+Follow: followValue    -> value
+State: operations      -> changes
+Transition: fromState  -> from
+Trnasition: toState    -> to
+Transition: operations -> animations
+
+Removed Properties:
+PropertyAction::property
+PropertyAction::target (if possible)
+
+Additions:
+MouseRegion: add "pressedButtons" property
+Connection: add "slot" property
+Timer: add start() and stop() slots
