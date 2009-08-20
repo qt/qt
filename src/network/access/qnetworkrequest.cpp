@@ -167,7 +167,7 @@ QT_BEGIN_NAMESPACE
         When using this flag with sequential upload data, the ContentLengthHeader
         header must be set.
 
-     \value HttpPipeliningAllowed
+     \value HttpPipeliningAllowedAttribute
         Requests only, type: QVariant::Bool (default: false)
         Indicates whether the QNetworkAccessManager code is
         allowed to use HTTP pipelining with this request.
