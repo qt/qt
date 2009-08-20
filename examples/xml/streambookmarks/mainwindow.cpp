@@ -91,10 +91,8 @@ void MainWindow::open()
     XbelReader reader(treeWidget);
     if (!reader.read(&file)) {
         QMessageBox::warning(this, tr("QXmlStream Bookmarks"),
-                             tr("Parse error in file %1 at line %2, column %3:\n%4")
+                             tr("Parse error in file %1:\n\n%2")
                              .arg(fileName)
-                             .arg(reader.lineNumber())
-                             .arg(reader.columnNumber())
                              .arg(reader.errorString()));
     } else {
         statusBar()->showMessage(tr("File loaded"), 2000);

@@ -81,14 +81,14 @@ static void swapPixel01(QImage *image)        // 1-bpp: swap 0 and 1 pixels
 
 const int BMP_FILEHDR_SIZE = 14;                // size of BMP_FILEHDR data
 
-QDataStream &operator>>(QDataStream &s, BMP_FILEHDR &bf)
+static QDataStream &operator>>(QDataStream &s, BMP_FILEHDR &bf)
 {                                                // read file header
     s.readRawData(bf.bfType, 2);
     s >> bf.bfSize >> bf.bfReserved1 >> bf.bfReserved2 >> bf.bfOffBits;
     return s;
 }
 
-QDataStream &operator<<(QDataStream &s, const BMP_FILEHDR &bf)
+static QDataStream &operator<<(QDataStream &s, const BMP_FILEHDR &bf)
 {                                                // write file header
     s.writeRawData(bf.bfType, 2);
     s << bf.bfSize << bf.bfReserved1 << bf.bfReserved2 << bf.bfOffBits;
@@ -106,7 +106,7 @@ const int BMP_RLE4 = 2;                                // run-length encoded, 4 
 const int BMP_BITFIELDS = 3;                        // RGB values encoded in data as bit-fields
 
 
-QDataStream &operator>>(QDataStream &s, BMP_INFOHDR &bi)
+static QDataStream &operator>>(QDataStream &s, BMP_INFOHDR &bi)
 {
     s >> bi.biSize;
     if (bi.biSize == BMP_WIN || bi.biSize == BMP_OS2) {
@@ -128,7 +128,7 @@ QDataStream &operator>>(QDataStream &s, BMP_INFOHDR &bi)
     return s;
 }
 
-QDataStream &operator<<(QDataStream &s, const BMP_INFOHDR &bi)
+static QDataStream &operator<<(QDataStream &s, const BMP_INFOHDR &bi)
 {
     s << bi.biSize;
     s << bi.biWidth << bi.biHeight;

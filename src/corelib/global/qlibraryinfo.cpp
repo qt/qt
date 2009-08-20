@@ -473,7 +473,7 @@ QT_END_NAMESPACE
 extern const char qt_core_interpreter[] __attribute__((section(".interp")))
     = ELF_INTERPRETER;
 
-extern "C"
+extern "C" void qt_core_boilerplate();
 void qt_core_boilerplate()
 {
     printf("This is the QtCore library version " QT_VERSION_STR "\n"

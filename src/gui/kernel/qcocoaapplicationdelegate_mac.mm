@@ -197,11 +197,19 @@ static void cleanupCocoaApplicationDelegate()
         }
     }
 
-    // Prevent Cocoa from terminating the application, since this simply
-    // exits the program whithout allowing QApplication::exec() to return.
-    // The call to QApplication::quit() above will instead quit the
-    // application from the Qt side.
-    return NSTerminateCancel;
+    if (qtPrivate->threadData->eventLoops.size() == 0) {
+        // INVARIANT: No event loop is executing. This probably
+        // means that Qt is used as a plugin, or as a part of a native
+        // Cocoa application. In any case it should be fine to 
+        // terminate now:
+        return NSTerminateNow;
+    } else {
+        // Prevent Cocoa from terminating the application, since this simply
+        // exits the program whithout allowing QApplication::exec() to return.
+        // The call to QApplication::quit() above will instead quit the
+        // application from the Qt side.
+        return NSTerminateCancel;
+    }
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification

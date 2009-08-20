@@ -803,6 +803,7 @@ void tst_QSharedPointer::differentPointers()
 
         QVERIFY(baseptr.data() == aData);
         QVERIFY(aData == baseptr.data());
+        QVERIFY(bool(operator==<Data,DiffPtrDerivedData>(baseptr, aData)));
         QVERIFY(baseptr == aData);
         QVERIFY(aData == baseptr);
     }
@@ -1658,21 +1659,6 @@ void tst_QSharedPointer::invalidConstructs_data()
         << "QObject *ptr = new QObject;\n"
            "QWeakPointer<QObject> weak = ptr;\n"    // this makes the object unmanaged
            "QSharedPointer<QObject> shared(ptr);\n";
-
-#ifndef QT_NO_DEBUG
-    // this tests a Q_ASSERT, so it is only valid in debug mode
-    // the DerivedFromQObject destructor below creates a QWeakPointer from parent().
-    // parent() is not 0 in the current Qt implementation, but has started destruction,
-    // so the code should detect that issue
-    QTest::newRow("shared-pointer-from-qobject-in-destruction")
-        << &QTest::QExternalTest::tryRunFail
-        << "class DerivedFromQObject: public QObject { public:\n"
-           "    DerivedFromQObject(QObject *parent): QObject(parent) {}\n"
-           "    ~DerivedFromQObject() { QWeakPointer<QObject> weak = parent(); }\n"
-           "};\n"
-           "QObject obj;\n"
-           "new DerivedFromQObject(&obj);";
-#endif
 }
 
 void tst_QSharedPointer::invalidConstructs()

@@ -106,6 +106,9 @@ public:
     Priority priority() const;
     void setPriority(Priority priority);
 
+    bool isPipeliningAllowed() const;
+    void setPipeliningAllowed(bool b);
+
     void setUploadByteDevice(QNonContiguousByteDevice *bd);
     QNonContiguousByteDevice* uploadByteDevice() const;
 
@@ -113,6 +116,7 @@ private:
     QSharedDataPointer<QHttpNetworkRequestPrivate> d;
     friend class QHttpNetworkRequestPrivate;
     friend class QHttpNetworkConnectionPrivate;
+    friend class QHttpNetworkConnectionChannel;
 };
 
 class QHttpNetworkRequestPrivate : public QHttpNetworkHeaderPrivate
@@ -132,6 +136,7 @@ public:
     QHttpNetworkRequest::Priority priority;
     mutable QNonContiguousByteDevice* uploadByteDevice;
     bool autoDecompress;
+    bool pipeliningAllowed;
 };
 
 

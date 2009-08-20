@@ -707,7 +707,7 @@ QDBusMessage::MessageType QDBusMessage::type() const
     \sa QDBusConnection::send()
 */
 #ifndef QT_NO_DEBUG_STREAM
-QDebug operator<<(QDebug dbg, QDBusMessage::MessageType t)
+static QDebug operator<<(QDebug dbg, QDBusMessage::MessageType t)
 {
     switch (t)
     {
