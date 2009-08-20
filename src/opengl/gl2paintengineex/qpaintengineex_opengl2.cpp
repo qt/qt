@@ -246,6 +246,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
 #ifdef QT_OPENGL_ES_2
     QDataBuffer<uchar> buffer(4*oldWidth*oldHeight);
+    buffer.resize(4*oldWidth*oldHeight);
     glReadPixels(0, 0, oldWidth, oldHeight, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
 
     // do an in-place conversion from GL_RGBA to GL_ALPHA
