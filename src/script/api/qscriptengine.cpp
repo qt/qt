@@ -848,12 +848,11 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
 
 QScriptValue QScriptEnginePrivate::scriptValueFromJSCValue(JSC::JSValue value)
 {
-    Q_Q(QScriptEngine);
     if (!value)
         return QScriptValue();
 
     QScriptValuePrivate *p_value = new QScriptValuePrivate();
-    p_value->engine = q;
+    p_value->engine = this;
     p_value->initFrom(value);
     return QScriptValuePrivate::get(p_value);
 }
@@ -864,9 +863,8 @@ JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptValue &val
     if (!vv)
         return JSC::JSValue();
     if (vv->type != QScriptValuePrivate::JSC) {
-        Q_Q(QScriptEngine);
-        Q_ASSERT(!vv->engine || vv->engine == q);
-        vv->engine = q;
+        Q_ASSERT(!vv->engine || vv->engine == this);
+        vv->engine = this;
         if (vv->type == QScriptValuePrivate::Number) {
             vv->initFrom(JSC::jsNumber(currentFrame, vv->numberValue));
         } else { //QScriptValuePrivate::String

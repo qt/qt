@@ -59,12 +59,11 @@ QT_BEGIN_NAMESPACE
 
 #include "wtf/Platform.h"
 #include "JSValue.h"
-#include "qscriptengine.h"
 
 class QString;
+class QScriptEnginePrivate;
+
 class QScriptValue;
-
-
 class QScriptValuePrivate
 {
     /** Helper class used only in QScriptValuePrivate. Supports atomatic invalidation of all script
@@ -75,31 +74,31 @@ class QScriptValuePrivate
     class QScriptValueAutoRegister
     {
         QScriptValuePrivate *val;
-        QScriptEngine *ptr;
-        public:
-            QScriptValueAutoRegister(QScriptValuePrivate *value) : val(value), ptr(0) {};
-            QScriptValueAutoRegister(QScriptValuePrivate *value, const QScriptEngine *engine);
-            ~QScriptValueAutoRegister();
+        QScriptEnginePrivate *ptr;
+    public:
+        QScriptValueAutoRegister(QScriptValuePrivate *value) : val(value), ptr(0) {};
+        QScriptValueAutoRegister(QScriptValuePrivate *value, const QScriptEnginePrivate *engine);
+        ~QScriptValueAutoRegister();
 
-            QScriptValueAutoRegister& operator=(const QScriptEngine* pointer);
+        QScriptValueAutoRegister& operator=(const QScriptEnginePrivate* pointer);
 
-            operator QScriptEngine*() const
-            {
-                return ptr;
-            }
+        operator QScriptEnginePrivate*() const
+        {
+            return ptr;
+        }
 
-            operator bool() const
-            {
-                return ptr;
-            }
+        operator bool() const
+        {
+            return ptr;
+        }
 
-            QScriptEngine* operator->()
-            {
-                return ptr;
-            }
+        QScriptEnginePrivate* operator->() const
+        {
+            return ptr;
+        }
 
-        private:
-            QScriptValueAutoRegister(QScriptValueAutoRegister &/*enigne*/){}; //block it
+    private:
+        QScriptValueAutoRegister(QScriptValueAutoRegister &/*engine*/){}; //block it
     };
 
     Q_DISABLE_COPY(QScriptValuePrivate);
