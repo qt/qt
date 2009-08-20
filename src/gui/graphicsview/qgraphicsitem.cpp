@@ -2284,6 +2284,7 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 }
 
 /*!
+    \internal
     \since 4.6
     Returns the effective bounding rect of the item.
     If the item has no effect, this is the same as the item's bounding rect.
@@ -2292,14 +2293,14 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 
     \sa boundingRect()
 */
-QRectF QGraphicsItem::effectiveBoundingRect() const
+QRectF QGraphicsItemPrivate::effectiveBoundingRect() const
 {
-    QGraphicsEffect *effect = d_ptr->graphicsEffect;
-    QRectF brect = effect && effect->isEnabled() ? effect->boundingRect() : boundingRect();
-    if (d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
+    QGraphicsEffect *effect = graphicsEffect;
+    QRectF brect = effect && effect->isEnabled() ? effect->boundingRect() : q_ptr->boundingRect();
+    if (ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
         return brect;
 
-    const QGraphicsItem *effectParent = d_ptr->parent;
+    const QGraphicsItem *effectParent = parent;
     while (effectParent) {
         effect = effectParent->d_ptr->graphicsEffect;
         if (effect && effect->isEnabled())
@@ -2313,6 +2314,7 @@ QRectF QGraphicsItem::effectiveBoundingRect() const
 }
 
 /*!
+    \internal
     \since 4.6
     Returns the effective bounding rect of this item in scene coordinates,
     by combining sceneTransform() with boundingRect(), taking into account
@@ -2322,12 +2324,12 @@ QRectF QGraphicsItem::effectiveBoundingRect() const
 
     \sa effectiveBoundingRect(), sceneBoundingRect()
 */
-QRectF QGraphicsItem::sceneEffectiveBoundingRect() const
+QRectF QGraphicsItemPrivate::sceneEffectiveBoundingRect() const
 {
     // Find translate-only offset
     // COMBINE
     QPointF offset;
-    const QGraphicsItem *parentItem = this;
+    const QGraphicsItem *parentItem = q_ptr;
     const QGraphicsItemPrivate *itemd;
     do {
         itemd = parentItem->d_ptr;

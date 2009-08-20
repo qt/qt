@@ -222,6 +222,8 @@ public:
     void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
     void initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
                          const QRegion &exposedRegion, bool allItems = false) const;
+    QRectF effectiveBoundingRect() const;
+    QRectF sceneEffectiveBoundingRect() const;
 
     virtual void resolveFont(uint inheritedMask)
     {

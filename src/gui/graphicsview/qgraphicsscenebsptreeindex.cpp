@@ -172,7 +172,7 @@ void QGraphicsSceneBspTreeIndexPrivate::_q_updateIndex()
             if (item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
                 continue;
 
-            bsp.insertItem(item, item->sceneEffectiveBoundingRect());
+            bsp.insertItem(item, item->d_ptr->sceneEffectiveBoundingRect());
         }
     }
     unindexedItems.clear();
@@ -352,7 +352,7 @@ void QGraphicsSceneBspTreeIndexPrivate::removeItem(QGraphicsItem *item, bool rec
             purgePending = true;
             removedItems << item;
         } else if (!(item->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)) {
-            bsp.removeItem(item, item->sceneEffectiveBoundingRect());
+            bsp.removeItem(item, item->d_ptr->sceneEffectiveBoundingRect());
         }
     } else {
         unindexedItems.removeOne(item);

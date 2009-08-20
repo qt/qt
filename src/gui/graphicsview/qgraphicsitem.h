@@ -213,8 +213,6 @@ public:
     // Effect
     QGraphicsEffect *graphicsEffect() const;
     void setGraphicsEffect(QGraphicsEffect *effect);
-    QRectF effectiveBoundingRect() const;
-    QRectF sceneEffectiveBoundingRect() const;
 
     Qt::MouseButtons acceptedMouseButtons() const;
     void setAcceptedMouseButtons(Qt::MouseButtons buttons);

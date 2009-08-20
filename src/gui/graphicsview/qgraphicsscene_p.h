@@ -298,7 +298,7 @@ static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)
 static inline QRectF adjustedItemEffectiveBoundingRect(const QGraphicsItem *item)
 {
     Q_ASSERT(item);
-    QRectF boundingRect(item->effectiveBoundingRect());
+    QRectF boundingRect(QGraphicsItemPrivate::get(item)->effectiveBoundingRect());
     _q_adjustRect(&boundingRect);
     return boundingRect;
 }
