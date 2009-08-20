@@ -172,8 +172,6 @@ bool QPanGesture::eventFilter(QObject *receiver, QEvent *event)
 bool QPanGesture::filterEvent(QEvent *event)
 {
     Q_D(QPanGesture);
-    if (!event->spontaneous())
-        return false;
     const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
     if (event->type() == QEvent::TouchBegin) {
         QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
@@ -329,10 +327,11 @@ bool QPinchGesture::event(QEvent *event)
 
 bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
 {
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
     Q_D(QPinchGesture);
     if (receiver->isWidgetType() && event->type() == QEvent::NativeGesture) {
         QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
+#if defined(Q_WS_WIN)
         QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
         QApplicationPrivate::WidgetStandardGesturesMap::iterator it;
         it = qAppPriv->widgetGestures.find(static_cast<QWidget*>(receiver));
@@ -340,7 +339,9 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
             return false;
         if (this != it.value().pinch)
             return false;
+#endif
         Qt::GestureState nextState = Qt::NoGesture;
+
         switch(ev->gestureType) {
         case QNativeGestureEvent::GestureBegin:
             // next we might receive the first gesture update event, so we
@@ -349,15 +350,22 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
             d->scaleFactor = d->lastScaleFactor = 1;
             d->rotationAngle = d->lastRotationAngle = 0;
             d->startCenterPoint = d->centerPoint = d->lastCenterPoint = QPoint();
+#if defined(Q_WS_WIN)
             d->initialDistance = 0;
+#endif
             return false;
         case QNativeGestureEvent::Rotate:
             d->lastRotationAngle = d->rotationAngle;
+#if defined(Q_WS_WIN)
             d->rotationAngle = -1 * GID_ROTATE_ANGLE_FROM_ARGUMENT(ev->argument);
+#elif defined(Q_WS_MAC)
+            d->rotationAngle = ev->percentage;
+#endif
             nextState = Qt::GestureUpdated;
             event->accept();
             break;
         case QNativeGestureEvent::Zoom:
+#if defined(Q_WS_WIN)
             if (d->initialDistance != 0) {
                 d->lastScaleFactor = d->scaleFactor;
                 int distance = int(qint64(ev->argument));
@@ -365,6 +373,10 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
             } else {
                 d->initialDistance = int(qint64(ev->argument));
             }
+#elif defined(Q_WS_MAC)
+            d->lastScaleFactor = d->scaleFactor;
+            d->scaleFactor = ev->percentage;
+#endif
             nextState = Qt::GestureUpdated;
             event->accept();
             break;

@@ -920,7 +920,8 @@ void QSvgPaintEngine::drawImage(const QRectF &r, const QImage &image,
     stream() << "x=\""<<r.x()<<"\" "
                 "y=\""<<r.y()<<"\" "
                 "width=\""<<r.width()<<"\" "
-                "height=\""<<r.height()<<"\" ";
+                "height=\""<<r.height()<<"\" "
+                "preserveAspectRatio=\"none\" ";
 
     QByteArray data;
     QBuffer buffer(&data);

@@ -2231,9 +2231,8 @@ QDateTime::QDateTime(const QDate &date, const QTime &time, Qt::TimeSpec spec)
 */
 
 QDateTime::QDateTime(const QDateTime &other)
-    : d(other.d.data())
+    : d(other.d)
 {
-    d->ref.ref();
 }
 
 /*!
@@ -2250,7 +2249,7 @@ QDateTime::~QDateTime()
 
 QDateTime &QDateTime::operator=(const QDateTime &other)
 {
-    d.assign(other.d.data());
+    d = other.d;
     return *this;
 }
 

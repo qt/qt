@@ -103,6 +103,9 @@ private Q_SLOTS:
     void get401_data();
     void get401();
 
+    void getMultiple_data();
+    void getMultiple();
+    void getMultipleWithPipeliningAndMultiplePriorities();
 };
 
 tst_QHttpNetworkConnection::tst_QHttpNetworkConnection()
@@ -780,6 +783,124 @@ void tst_QHttpNetworkConnection::nossl()
     delete reply;
 }
 #endif
+
+
+void tst_QHttpNetworkConnection::getMultiple_data()
+{
+    QTest::addColumn<quint16>("connectionCount");
+    QTest::addColumn<bool>("pipeliningAllowed");
+    // send 100 requests. apache will usually force-close after 100 requests in a single tcp connection
+    QTest::addColumn<int>("requestCount");
+
+    QTest::newRow("6 connections, no pipelining, 100 requests")  << quint16(6) << false << 100;
+    QTest::newRow("1 connection, no pipelining, 100 requests")  << quint16(1) << false << 100;
+    QTest::newRow("6 connections, pipelining allowed, 100 requests")  << quint16(2) << true << 100;
+    QTest::newRow("1 connection, pipelining allowed, 100 requests")  << quint16(1) << true << 100;
+}
+
+void tst_QHttpNetworkConnection::getMultiple()
+{
+    QFETCH(quint16, connectionCount);
+    QFETCH(bool, pipeliningAllowed);
+    QFETCH(int, requestCount);
+
+    QHttpNetworkConnection connection(connectionCount, QtNetworkSettings::serverName());
+
+    QList<QHttpNetworkRequest*> requests;
+    QList<QHttpNetworkReply*> replies;
+
+    for (int i = 0; i < requestCount; i++) {
+        // depending on what you use the results will vary.
+        // for the "real" results, use a URL that has "internet latency" for you. Then (6 connections, pipelining) will win.
+        // for LAN latency, you will possibly get that (1 connection, no pipelining) is the fastest
+        QHttpNetworkRequest *request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+        // located in Berlin:
+        //QHttpNetworkRequest *request = new QHttpNetworkRequest(QUrl("http://klinsmann.nokia.trolltech.de/~berlin/qtcreatorad.gif"));
+        if (pipeliningAllowed)
+            request->setPipeliningAllowed(true);
+        requests.append(request);
+        QHttpNetworkReply *reply = connection.sendRequest(*request);
+        replies.append(reply);
+    }
+
+    QTime stopWatch;
+    stopWatch.start();
+    int finishedCount = 0;
+    do {
+        QCoreApplication::instance()->processEvents();
+        if (stopWatch.elapsed() >= 60000)
+            break;
+
+        finishedCount = 0;
+        for (int i = 0; i < replies.length(); i++)
+            if (replies.at(i)->isFinished())
+                finishedCount++;
+
+    } while (finishedCount != replies.length());
+
+    // redundant
+    for (int i = 0; i < replies.length(); i++)
+        QVERIFY(replies.at(i)->isFinished());
+
+    qDebug() << "===" << stopWatch.elapsed() << "msec ===";
+
+    qDeleteAll(requests);
+    qDeleteAll(replies);
+}
+
+void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities()
+{
+    quint16 requestCount = 100;
+
+    // use 2 connections.
+    QHttpNetworkConnection connection(2, QtNetworkSettings::serverName());
+
+    QList<QHttpNetworkRequest*> requests;
+    QList<QHttpNetworkReply*> replies;
+
+    for (int i = 0; i < requestCount; i++) {
+
+        QHttpNetworkRequest *request = new QHttpNetworkRequest("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+        
+        if (i % 2 || i % 3)
+            request->setPipeliningAllowed(true);
+        
+        if (i % 3)
+            request->setPriority(QHttpNetworkRequest::HighPriority);
+        else if (i % 5)
+            request->setPriority(QHttpNetworkRequest::NormalPriority);
+        else if (i % 7)
+            request->setPriority(QHttpNetworkRequest::LowPriority);
+        
+        requests.append(request);
+        QHttpNetworkReply *reply = connection.sendRequest(*request);
+        replies.append(reply);
+    }
+
+    QTime stopWatch;
+    stopWatch.start();
+    int finishedCount = 0;
+    do {
+        QCoreApplication::instance()->processEvents();
+        if (stopWatch.elapsed() >= 60000)
+            break;
+
+        finishedCount = 0;
+        for (int i = 0; i < replies.length(); i++)
+            if (replies.at(i)->isFinished())
+                finishedCount++;
+
+    } while (finishedCount != replies.length());
+
+    // redundant
+    for (int i = 0; i < replies.length(); i++)
+        QVERIFY(replies.at(i)->isFinished());
+
+    qDebug() << "===" << stopWatch.elapsed() << "msec ===";
+
+    qDeleteAll(requests);
+    qDeleteAll(replies);
+}
 
 QTEST_MAIN(tst_QHttpNetworkConnection)
 #include "tst_qhttpnetworkconnection.moc"

@@ -183,30 +183,46 @@ GLuint GLWidget::makeObject()
 
     glBegin(GL_QUADS);
 
+    GLdouble x1 = +0.06;
+    GLdouble y1 = -0.14;
+    GLdouble x2 = +0.14;
+    GLdouble y2 = -0.06;
+    GLdouble x3 = +0.08;
+    GLdouble y3 = +0.00;
+    GLdouble x4 = +0.30;
+    GLdouble y4 = +0.22;
+
+    quad(x1, y1, x2, y2, y2, x2, y1, x1);
+    quad(x3, y3, x4, y4, y4, x4, y3, x3);
+
+    extrude(x1, y1, x2, y2);
+    extrude(x2, y2, y2, x2);
+    extrude(y2, x2, y1, x1);
+    extrude(y1, x1, x1, y1);
+    extrude(x3, y3, x4, y4);
+    extrude(x4, y4, y4, x4);
+    extrude(y4, x4, y3, x3);
+
     const double Pi = 3.14159265358979323846;
     const int NumSectors = 200;
 
-    for (int j = 0; j < 2; ++j) {
-        double r = 0.1 + (j * 0.2);
+    for (int i = 0; i < NumSectors; ++i) {
+        double angle1 = (i * 2 * Pi) / NumSectors;
+        GLdouble x5 = 0.30 * sin(angle1);
+        GLdouble y5 = 0.30 * cos(angle1);
+        GLdouble x6 = 0.20 * sin(angle1);
+        GLdouble y6 = 0.20 * cos(angle1);
 
-        for (int i = 0; i < NumSectors; ++i) {
-            double angle1 = (i * 2 * Pi) / NumSectors;
-            GLdouble x5 = (r + 0.1) * sin(angle1);
-            GLdouble y5 = (r + 0.1) * cos(angle1);
-            GLdouble x6 = r * sin(angle1);
-            GLdouble y6 = r * cos(angle1);
+        double angle2 = ((i + 1) * 2 * Pi) / NumSectors;
+        GLdouble x7 = 0.20 * sin(angle2);
+        GLdouble y7 = 0.20 * cos(angle2);
+        GLdouble x8 = 0.30 * sin(angle2);
+        GLdouble y8 = 0.30 * cos(angle2);
 
-            double angle2 = ((i + 1) * 2 * Pi) / NumSectors;
-            GLdouble x7 = r * sin(angle2);
-            GLdouble y7 = r * cos(angle2);
-            GLdouble x8 = (r + 0.1) * sin(angle2);
-            GLdouble y8 = (r + 0.1) * cos(angle2);
+        quad(x5, y5, x6, y6, x7, y7, x8, y8);
 
-            quad(x5, y5, x6, y6, x7, y7, x8, y8);
-
-            extrude(x6, y6, x7, y7);
-            extrude(x8, y8, x5, y5);
-        }
+        extrude(x6, y6, x7, y7);
+        extrude(x8, y8, x5, y5);
     }
 
     glEnd();

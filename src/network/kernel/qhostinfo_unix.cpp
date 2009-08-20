@@ -122,7 +122,6 @@ static void resolveLibrary()
 QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 {
     QHostInfo results;
-    results.setHostName(hostName);
 
 #if defined(QHOSTINFO_DEBUG)
     qDebug("QHostInfoAgent::fromName(%s) looking up...",
@@ -192,6 +191,22 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 #endif
     }
 
+    // IDN support
+    QByteArray aceHostname;
+    if (results.hostName().isEmpty()) {
+        // it's a hostname resolution
+        aceHostname = QUrl::toAce(hostName);
+        results.setHostName(hostName);
+        if (aceHostname.isEmpty()) {
+            results.setError(QHostInfo::HostNotFound);
+            results.setErrorString(hostName.isEmpty() ? QObject::tr("No host name given") : QObject::tr("Invalid hostname"));
+            return results;
+        }
+    } else {
+        // it's an IP reverse resolution
+        aceHostname = results.hostName().toLatin1();
+    }
+
 #if !defined (QT_NO_GETADDRINFO)
     // Call getaddrinfo, and place all IPv4 addresses at the start and
     // the IPv6 addresses at the end of the address list in results.
@@ -203,12 +218,12 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     hints.ai_flags = Q_ADDRCONFIG;
 #endif
 
-    int result = getaddrinfo(hostName.toLatin1().constData(), 0, &hints, &res);
+    int result = getaddrinfo(aceHostname.constData(), 0, &hints, &res);
 # ifdef Q_ADDRCONFIG
     if (result == EAI_BADFLAGS) {
         // if the lookup failed with AI_ADDRCONFIG set, try again without it
         hints.ai_flags = 0;
-        result = getaddrinfo(hostName.toLatin1().constData(), 0, &hints, &res);
+        result = getaddrinfo(aceHostname.constData(), 0, &hints, &res);
     }
 # endif
 
@@ -262,7 +277,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     // use one QHostInfoAgent, but if more agents are introduced, locking
     // must be provided.
     QMutexLocker locker(::getHostByNameMutex());
-    hostent *result = gethostbyname(hostName.toLatin1().constData());
+    hostent *result = gethostbyname(aceHostname.constData());
     if (result) {
         if (result->h_addrtype == AF_INET) {
             QList<QHostAddress> addresses;

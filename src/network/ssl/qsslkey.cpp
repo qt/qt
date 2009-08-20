@@ -269,9 +269,8 @@ QSslKey::QSslKey(QIODevice *device, QSsl::KeyAlgorithm algorithm, QSsl::Encoding
 /*!
     Constructs an identical copy of \a other.
 */
-QSslKey::QSslKey(const QSslKey &other) : d(other.d.data())
+QSslKey::QSslKey(const QSslKey &other) : d(other.d)
 {
-    d->ref.ref();
 }
 
 /*!
@@ -289,7 +288,7 @@ QSslKey::~QSslKey()
 */
 QSslKey &QSslKey::operator=(const QSslKey &other)
 {
-    d.assign(other.d.data());
+    d = other.d;
     return *this;
 }
 
@@ -310,13 +309,7 @@ bool QSslKey::isNull() const
 */
 void QSslKey::clear()
 {
-    d.reset(new QSslKeyPrivate);
-
-    //### old code: is this really correct???
-    //if (!d->ref.deref()) {
-    //    delete d;
-    //    d = new QSslKeyPrivate;
-    //}
+    d = new QSslKeyPrivate;
 }
 
 /*!

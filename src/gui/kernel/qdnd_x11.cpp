@@ -1073,12 +1073,14 @@ void qt_xdnd_send_leave()
     if (!qt_xdnd_current_target)
         return;
 
+    QDragManager *manager = QDragManager::self();
+
     XClientMessageEvent leave;
     leave.type = ClientMessage;
     leave.window = qt_xdnd_current_target;
     leave.format = 32;
     leave.message_type = ATOM(XdndLeave);
-    leave.data.l[0] = qt_xdnd_dragsource_xid;
+    leave.data.l[0] = manager->dragPrivate()->source->effectiveWinId();
     leave.data.l[1] = 0; // flags
     leave.data.l[2] = 0; // x, y
     leave.data.l[3] = 0; // w, h
@@ -1094,8 +1096,8 @@ void qt_xdnd_send_leave()
     else
         XSendEvent(X11->display, qt_xdnd_current_proxy_target, False,
                     NoEventMask, (XEvent*)&leave);
+
     // reset the drag manager state
-    QDragManager *manager = QDragManager::self();
     manager->willDrop = false;
     if (global_accepted_action != Qt::IgnoreAction)
         manager->emitActionChanged(Qt::IgnoreAction);

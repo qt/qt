@@ -46,6 +46,7 @@
 #include <QtGui/qcolor.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h> // char*->QString conversion
+#include <QtCore/qsharedpointer.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qtransform.h>
 
@@ -227,7 +228,7 @@ public:
 #endif
 
 private:
-    QPixmapData *data;
+    QExplicitlySharedDataPointer<QPixmapData> data;
 
     bool doImageIO(QImageWriter *io, int quality) const;
 
@@ -272,7 +273,7 @@ public:
     QPixmapData* pixmapData() const;
 
 public:
-    typedef QPixmapData * DataPtr;
+    typedef QExplicitlySharedDataPointer<QPixmapData> DataPtr;
     inline DataPtr &data_ptr() { return data; }
 };
 

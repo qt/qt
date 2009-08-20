@@ -2368,7 +2368,7 @@ void QRasterPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pixmap)
 #endif
 
     if (pixmap.data->classId() == QPixmapData::RasterClass) {
-        const QImage &image = ((QRasterPixmapData *) pixmap.data)->image;
+        const QImage &image = static_cast<QRasterPixmapData *>(pixmap.data.data())->image;
         if (image.depth() == 1) {
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
@@ -2406,7 +2406,7 @@ void QRasterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap, cons
 #endif
 
     if (pixmap.data->classId() == QPixmapData::RasterClass) {
-        const QImage &image = ((QRasterPixmapData *) pixmap.data)->image;
+        const QImage &image = static_cast<QRasterPixmapData *>(pixmap.data.data())->image;
         if (image.depth() == 1) {
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
@@ -2716,7 +2716,7 @@ void QRasterPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap,
     QImage image;
 
     if (pixmap.data->classId() == QPixmapData::RasterClass) {
-        image = ((QRasterPixmapData *) pixmap.data)->image;
+        image = static_cast<QRasterPixmapData *>(pixmap.data.data())->image;
     } else {
         image = pixmap.toImage();
     }
