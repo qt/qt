@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     width: 100; height: 100
     gradient: Gradient {
         GradientStop { position: 0.0; color: "red" }

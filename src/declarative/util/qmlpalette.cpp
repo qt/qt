@@ -64,7 +64,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Palette,QmlPalette)
     \code
     Palette { id: MyPalette; colorGroup: Qt.Active }
 
-    Rect {
+    Rectangle {
         width: 640; height: 480
         color: MyPalette.window
         Text {

@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     color: "lightsteelblue"
     width: 800
     height: 600
@@ -49,7 +49,7 @@ Rect {
         x: 400
         y: 0
     }
-    Rect {
+    Rectangle {
         color: "blue"
         x: 0
         y: 0

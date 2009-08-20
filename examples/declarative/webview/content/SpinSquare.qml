@@ -8,7 +8,7 @@ Item {
     Item {
         x: Root.width/2
         y: Root.height/2
-        Rect {
+        Rectangle {
             color: Root.color
             x: -width/2
             y: -height/2

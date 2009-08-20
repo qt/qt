@@ -238,7 +238,7 @@ void QFxParticleMotionGravity::advance(QFxParticle &p, int interval)
     The code below produces an effect similar to falling snow.
 
     \qml
-Rect {
+Rectangle {
     width: 240
     height: 320
     color: "black"
@@ -546,7 +546,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Particles,QFxParticles)
     the lower one has particles expelled up like a fountain.
 
     \qml
-Rect {
+Rectangle {
     width: 240
     height: 320
     color: "black"

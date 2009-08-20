@@ -1,7 +1,7 @@
 import Qt 4.6
 
 //! [3]
-Rect {
+Rectangle {
     width: 240; height: 180; color: "white"
     // ContactModel model is defined in dummydata/ContactModel.qml
     // The viewer automatically loads files in dummydata/* to assist
@@ -27,7 +27,7 @@ Rect {
 //! [1]
     Component {
         id: Highlight
-        Rect {
+        Rectangle {
             color: "lightsteelblue"
             radius: 5
         }

@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: MainWindow;
     width: 320; height: 270; color: Palette.window
 
@@ -10,7 +10,7 @@ Rect {
     VerticalPositioner {
         x: 2; spacing: 10;
 
-        Rect {
+        Rectangle {
             id: Container
             width: 316; height: 50; z: 2
             border.color: Palette.dark; color: Palette.base

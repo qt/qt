@@ -1,10 +1,10 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     width: 400
     height: 200
     color: "white"
-    Rect {
+    Rectangle {
         width: 40
         height: 40
         y: 80

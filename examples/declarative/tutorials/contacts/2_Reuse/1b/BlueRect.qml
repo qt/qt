@@ -1,14 +1,14 @@
 import Qt 4.6
 
 //! [all]
-Rect {
+Rectangle {
     width: 100
     height: 100
     color: "blue"
     resources: [
         Component {
             id: redRectangle
-            Rect {
+            Rectangle {
                 width: 30
                 height: 30
                 color: "red"

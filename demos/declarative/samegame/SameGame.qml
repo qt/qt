@@ -2,11 +2,11 @@ import Qt 4.6
 
 import "content"
 
-Rect {
+Rectangle {
     id: page; width: 460; height: 700; color: activePalette.window
     Script { source: "content/samegame.js" }
     Palette { id: activePalette; colorGroup: "Active" }
-    Rect {
+    Rectangle {
         id: gameCanvas
         property int score: 0
         z:20; y:20; color: "white"; border.width: 1

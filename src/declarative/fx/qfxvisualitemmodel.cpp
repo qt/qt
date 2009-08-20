@@ -139,9 +139,9 @@ public:
     Item {
         VisualItemModel {
             id: ItemModel
-            Rect { height: 30; width: 80; color: "red" }
-            Rect { height: 30; width: 80; color: "green" }
-            Rect { height: 30; width: 80; color: "blue" }
+            Rectangle { height: 30; width: 80; color: "red" }
+            Rectangle { height: 30; width: 80; color: "green" }
+            Rectangle { height: 30; width: 80; color: "blue" }
         }
 
         ListView {

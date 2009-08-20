@@ -212,7 +212,7 @@ void QmlFollowPrivate::stop()
 
     In example below, Rect2 will follow Rect1 moving with a velocity of up to 200:
     \code
-    Rect {
+    Rectangle {
         id: Rect1
         width: 20; height: 20
         color: "#00ff00"
@@ -228,7 +228,7 @@ void QmlFollowPrivate::stop()
             PauseAnimation { duration: 1000 }
         }
     }
-    Rect {
+    Rectangle {
         id: Rect2
         x: Rect1.width
         width: 20; height: 20

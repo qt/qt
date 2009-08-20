@@ -13,7 +13,7 @@ Item {
         drag.minimumY: 0
         drag.maximumY: 1000
     }
-    Rect {
+    Rectangle {
         radius: 10
         anchors.fill: parent
         color: "lightsteelblue"

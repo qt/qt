@@ -1,9 +1,9 @@
 /*!
 \page elements.html
 \target elements
-\title Qml Elements
+\title QML Elements
 
-The following table lists the Qml elements provided by the Qt Declarative module.
+The following table lists the QML elements provided by the Qt Declarative module.
 
 \bold {Standard Qt Declarative Elements}
 
@@ -71,7 +71,7 @@ The following table lists the Qml elements provided by the Qt Declarative module
 \o
 \list
 \o \l Item
-\o \l Rect
+\o \l Rectangle
 \o \l Image
 \o \l BorderImage
 \o \l Text

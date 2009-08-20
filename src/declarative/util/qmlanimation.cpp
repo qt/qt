@@ -176,7 +176,7 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
     whenever the \l MouseRegion is pressed.
 
     \code
-    Rect {
+    Rectangle {
         width: 100; height: 100
         x: NumberAnimation {
             running: MyMouse.pressed
@@ -362,7 +362,7 @@ void QmlAbstractAnimation::setAlwaysRunToEnd(bool f)
     In the following example, the rectangle will spin indefinately.
 
     \code
-    Rect {
+    Rectangle {
         rotation: NumberAnimation { running: true; repeat: true; from: 0 to: 360 }
     }
     \endcode
@@ -541,7 +541,7 @@ void QmlAbstractAnimation::resume()
     Normally \c stop() stops the animation immediately, and the animation has
     no further influence on property values.  In this example animation
     \code
-    Rect {
+    Rectangle {
         x: NumberAnimation { from: 0; to: 100; duration: 500 }
     }
     \endcode
@@ -579,7 +579,7 @@ void QmlAbstractAnimation::restart()
     Unlike \c stop(), \c complete() immediately fast-forwards the animation to
     its end.  In the following example,
     \code
-    Rect {
+    Rectangle {
         x: NumberAnimation { from: 0; to: 100; duration: 500 }
     }
     \endcode

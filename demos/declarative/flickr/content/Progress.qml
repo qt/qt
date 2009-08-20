@@ -5,7 +5,7 @@ Item {
 
     property var progress: 0
 
-    Rect {
+    Rectangle {
         id: Container; anchors.fill: parent; smooth: true
         border.color: "white"; border.width: 0; radius: height/2 - 2
         gradient: Gradient {
@@ -14,7 +14,7 @@ Item {
         }
     }
 
-    Rect {
+    Rectangle {
         id: Fill
         y: 2; height: parent.height-4;
         x: 2; width: Math.max(parent.width * progress - 4, 0);

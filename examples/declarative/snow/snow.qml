@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: ImagePanel
     width: 1024
     height: 768

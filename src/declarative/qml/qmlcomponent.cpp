@@ -85,7 +85,7 @@ int statusId = qRegisterMetaType<QmlComponent::Status>("QmlComponent::Status");
 Item {
     Component {
         id: RedSquare
-        Rect {
+        Rectangle {
             color: "red"
             width: 10
             height: 10

@@ -1,7 +1,7 @@
 import Qt 4.6
 
 //! [0]
-Rect {
+Rectangle {
     id: removeButton
     width: 230
     height: 30

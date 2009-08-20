@@ -3,7 +3,7 @@ import Qt 4.6
 ContentWrapper {
     id: Container; width: parent.width; height: contents.height
     children: [
-        Rect {
+        Rectangle {
             width: parent.width; height: contents.height
             color: "white"; pen.width: 2; pen.color: "#adaeb0"; radius: 10
             VerticalLayout {

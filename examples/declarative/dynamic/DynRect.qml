@@ -5,5 +5,5 @@ Item {
     transitions: Transition{ 
         NumberAnimation{ properties: "opacity"; target: newRect; duration:500 } 
     }
-    Rect {color: "steelblue"; width: 100; height: 100; id: newRect }
+    Rectangle {color: "steelblue"; width: 100; height: 100; id: newRect }
 }

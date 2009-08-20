@@ -6,7 +6,7 @@ import Qt 4.6
 // when the edges of the image contain less vital information than the
 // center - such as a face.
 //
-Rect {
+Rectangle {
     // default size: whole image, unscaled
     width: Image.width
     height: Image.height

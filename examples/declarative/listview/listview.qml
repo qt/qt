@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     width: 600; height: 300; color: "white"
 
     // MyPets model is defined in dummydata/MyPetsModel.qml
@@ -26,7 +26,7 @@ Rect {
     // by each ListView and placed behind the current item.
     Component {
         id: PetHighlight
-        Rect { color: "#FFFF88" }
+        Rectangle { color: "#FFFF88" }
     }
 
     // Show the model in three lists, with different currentItemPositioning.
@@ -73,7 +73,7 @@ Rect {
             // the item under the highlight will always be the current item.
             // Note that we specify the 'children' property.  This is because
             // the default property of a ListView is 'delegate'.
-            Rect {
+            Rectangle {
                 y: 125; width: 200; height: 50
                 color: "#FFFF88"; z: -1
             }

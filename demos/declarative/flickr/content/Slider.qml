@@ -10,7 +10,7 @@ Item {
     property real minimum: 1
     property int xMax: Slider.width - Handle.width - 4
 
-    Rect {
+    Rectangle {
         id: Container; anchors.fill: parent
         border.color: "white"; border.width: 0; radius: 8
         gradient: Gradient {
@@ -19,7 +19,7 @@ Item {
         }
     }
 
-    Rect {
+    Rectangle {
         id: Handle; smooth: true
         x: Slider.width / 2 - Handle.width / 2; y: 2; width: 30; height: Slider.height-4; radius: 6
         gradient: Gradient {

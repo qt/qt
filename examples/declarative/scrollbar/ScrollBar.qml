@@ -12,14 +12,14 @@ Item {
     property var orientation : "Vertical"
 
     // A light, semi-transparent background
-    Rect {
+    Rectangle {
         id: Background
         radius: orientation == 'Vertical' ? (width/2 - 1) : (height/2 - 1)
         color: "white"; opacity: 0.3
         anchors.fill: parent
     }
     // Size the bar to the required size, depending upon the orientation.
-    Rect {
+    Rectangle {
         opacity: 0.7
         color: "black"
         radius: orientation == 'Vertical' ? (width/2 - 1) : (height/2 - 1)

@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     width: childrenRect.width
     height: childrenRect.height
     Clock { id: Clock }

@@ -12,7 +12,7 @@ Item {
     width: 80; height: 80
     Item {
         anchors.centerIn: parent; rotation: MyRect.rotation;
-        Rect {
+        Rectangle {
             anchors.centerIn: parent; width: 80; height: 80
             color: MyRect.color; border.color: MyRect.border; border.width: MyRect.border != "" ? 2 : 0
             radius: MyRect.radius; smooth: MyRect.smooth

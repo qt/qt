@@ -1,10 +1,10 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     width: 900; height: 500
     color: "white"
 
-    Rect {
+    Rectangle {
         anchors.top: parent.verticalCenter
         anchors.left: parent.left
         anchors.right: parent.right

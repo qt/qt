@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: contacts
     width: 240
     height: 320
@@ -211,7 +211,7 @@ Rect {
         model: contactList
         delegate: contactDelegate
         highlight: [
-            Rect {
+            Rectangle {
                 id: contactHighlight
                 border.width: 0
                 color: 'white'

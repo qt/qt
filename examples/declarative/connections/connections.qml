@@ -1,11 +1,11 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: rect
     color: "blue"
     width: 40
     height: 30
-    Rect {
+    Rectangle {
         id: dot
         color: "red"
         width: 3

@@ -1,5 +1,5 @@
 import Qt 4.6
-Rect { border.color: "black"; color: "steelblue"; radius: 5; width: pix.width + text.width + 13; height: pix.height + 10; id: page
+Rectangle { border.color: "black"; color: "steelblue"; radius: 5; width: pix.width + text.width + 13; height: pix.height + 10; id: page
     property string text
     property string icon
     signal clicked

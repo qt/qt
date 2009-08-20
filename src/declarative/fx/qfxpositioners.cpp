@@ -335,9 +335,9 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VerticalPositioner,QFxVerticalPo
   \qml
 VerticalPositioner {
     spacing: 2
-    Rect { color: "red"; width: 50; height: 50 }
-    Rect { color: "green"; width: 20; height: 50 }
-    Rect { color: "blue"; width: 50; height: 20 }
+    Rectangle { color: "red"; width: 50; height: 50 }
+    Rectangle { color: "green"; width: 20; height: 50 }
+    Rectangle { color: "blue"; width: 50; height: 20 }
 }
   \endqml
   \endtable
@@ -519,9 +519,9 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,HorizontalPositioner,QFxHorizont
   \qml
 HorizontalPositioner {
     spacing: 2
-    Rect { color: "red"; width: 50; height: 50 }
-    Rect { color: "green"; width: 20; height: 50 }
-    Rect { color: "blue"; width: 50; height: 20 }
+    Rectangle { color: "red"; width: 50; height: 50 }
+    Rectangle { color: "green"; width: 20; height: 50 }
+    Rectangle { color: "blue"; width: 50; height: 20 }
 }
   \endqml
   \image horizontalpositioner_example.png
@@ -684,11 +684,11 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GridPositioner,QFxGridPositioner
 GridPositioner {
     columns: 3
     spacing: 2
-    Rect { color: "red"; width: 50; height: 50 }
-    Rect { color: "green"; width: 20; height: 50 }
-    Rect { color: "blue"; width: 50; height: 20 }
-    Rect { color: "cyan"; width: 50; height: 50 }
-    Rect { color: "magenta"; width: 10; height: 10 }
+    Rectangle { color: "red"; width: 50; height: 50 }
+    Rectangle { color: "green"; width: 20; height: 50 }
+    Rectangle { color: "blue"; width: 50; height: 20 }
+    Rectangle { color: "cyan"; width: 50; height: 50 }
+    Rectangle { color: "magenta"; width: 10; height: 10 }
 }
   \endqml
   \endtable

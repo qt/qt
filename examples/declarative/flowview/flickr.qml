@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect { 
+Rectangle { 
     radius: 5; 
     border.width: 1; 
     width:400; 
@@ -34,7 +34,7 @@ Rect {
         model: FeedModel
         delegate: 
             Item { width: 90; height: 86 
-                Rect {
+                Rectangle {
                     anchors.centerIn: parent
                     width: 86; height: 86; 
                     color: "white"; radius: 5

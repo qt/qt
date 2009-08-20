@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: searchBar
     color: "white"
     property var text: searchEdit.text

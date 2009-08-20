@@ -1,6 +1,6 @@
 /*!
     \page qmlreference.html
-    \title Qml Reference
+    \title QML Reference
 
     \target qtdeclarativemainpage
 
@@ -12,7 +12,7 @@
 
     Building fluid applications is done declaratively, rather than procedurally.
     That is, you specify \e what the UI should look like and how it should behave
-    rather than specifying step-by-step \e how to build it.  Specifying a UI declaratively
+    rather than specifying step-by-step \e how to build it. Specifying a UI declaratively
     does not just include the layout of the interface items, but also the way each
     individual item looks and behaves and the overall flow of the application.
 
@@ -21,7 +21,7 @@
     \o \l {qmlexamples}{Examples}
     \o \l {tutorial}{Tutorial: 'Hello World'}
     \o \l {tutorials-declarative-contacts.html}{Tutorial: 'Introduction to QML'}
-    \o \l {Introduction to the Qml language} (in progress)
+    \o \l {Introduction to the QML language} (in progress)
     \endlist
 
     Core Features:
@@ -36,6 +36,6 @@
 
     QML Reference:
     \list
-    \o \l {elements}{Qml Elements}
+    \o \l {elements}{QML Elements}
     \endlist
 */

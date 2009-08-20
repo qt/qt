@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: Page
     color: "white"
     width: 1030; height: 540

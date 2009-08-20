@@ -12,7 +12,7 @@ We want our text to jump at the bottom of the screen and become red when clicked
 Here is the QML code:
 
 \code
-Rect {
+Rectangle {
     id: Page
     width: 480
     height: 200

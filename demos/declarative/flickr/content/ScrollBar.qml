@@ -5,7 +5,7 @@ Item {
 
     property var flickableArea
 
-    Rect {
+    Rectangle {
         radius: 5
         color: "black"
         opacity: 0.3

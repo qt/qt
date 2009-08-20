@@ -8,7 +8,7 @@ FocusScope {
     property var contents
     property var label
 
-    Rect {
+    Rectangle {
         id: wrapper
         x: 5
         y: 10
@@ -28,7 +28,7 @@ FocusScope {
             height: item.height
         }
     }
-    Rect {
+    Rectangle {
         x: 20
         y: 0
         height: text.height
@@ -41,7 +41,7 @@ FocusScope {
             font.bold: true
         }
     }
-    Rect {
+    Rectangle {
         color: "black"
         anchors.fill: parent
         opacity: parent.focus ? 0 : 0.3

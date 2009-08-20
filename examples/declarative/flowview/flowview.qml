@@ -1,11 +1,11 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     width: 800
     height: 800
     color: "black"
 
-    Rect {
+    Rectangle {
         id: MyPhone
         transformOrigin: "Center"
         anchors.centerIn: parent
@@ -107,24 +107,24 @@ Rect {
             }
         }
 
-        Rect {
+        Rectangle {
             id: TopBar
             width: 800
             height: 30
         }
-        Rect {
+        Rectangle {
             id: BottomBar
             width: 800
             height: 30
             y: 450
         }
-        Rect {
+        Rectangle {
             id: LeftBar
             x: -30
             width: 30
             height: 480
         }
-        Rect {
+        Rectangle {
             id: RightBar
             x: 800
             width: 30
@@ -132,7 +132,7 @@ Rect {
         }
     }
 
-    Rect {
+    Rectangle {
         width: 80
         height: 80
         anchors.right: parent.right

@@ -10,8 +10,8 @@ In additional to the more traditional Fx layouts GridLayout, HorizontalLayout, a
 The Fx anchoring system allows you to define relationships between the anchor lines of different items. For example, you can write:
 
 \code
-Rect { id: rect1; ... }
-Rect { id: rect2; anchors.left: rect1.right; ... }
+Rectangle { id: rect1; ... }
+Rectangle { id: rect2; anchors.left: rect1.right; ... }
 \endcode
 
 In this case, the left edge of \e rect2 is bound to the right edge of rect1, producing the following:
@@ -25,8 +25,8 @@ The anchoring system also allows you to specify margins and offsets. Margins spe
 The following example specifies a left margin:
 
 \code
-Rect { id: rect1; ... }
-Rect { id: rect2; anchors.left: rect1.right; anchors.leftMargin: 5; ... }
+Rectangle { id: rect1; ... }
+Rectangle { id: rect2; anchors.left: rect1.right; anchors.leftMargin: 5; ... }
 \endcode
 
 In this case, a margin of 5 pixels is reserved to the left of \e rect2, producing the following:
@@ -36,8 +36,8 @@ In this case, a margin of 5 pixels is reserved to the left of \e rect2, producin
 You can specify multiple anchors. For example:
 
 \code
-Rect { id: rect1; ... }
-Rect { id: rect2; anchors.left: rect1.right; anchors.top: rect1.bottom; ... }
+Rectangle { id: rect1; ... }
+Rectangle { id: rect2; anchors.left: rect1.right; anchors.top: rect1.bottom; ... }
 \endcode
 
 \image edge3.png
@@ -45,9 +45,9 @@ Rect { id: rect2; anchors.left: rect1.right; anchors.top: rect1.bottom; ... }
 By specifying multiple horizontal or vertical anchors you can control the size of an item. For example:
 
 \code
-Rect { id: rect1; x: 0; ... }
-Rect { id: rect2; anchors.left: rect1.right; anchors.right: rect3.left; ... }
-Rect { id: rect3; x: 150; ... }
+Rectangle { id: rect1; x: 0; ... }
+Rectangle { id: rect2; anchors.left: rect1.right; anchors.right: rect3.left; ... }
+Rectangle { id: rect3; x: 150; ... }
 \endcode
 
 \image edge4.png
@@ -58,10 +58,10 @@ For performance reasons, you can only anchor an item to its siblings and direct 
 
 \code
 Item { id: group1 }
-    Rect { id: rect1; ... }
+    Rectangle { id: rect1; ... }
 }
 Item id: group2">
-    Rect { id: rect2; anchors.left: rect1.right; ... }    // invalid anchor!
+    Rectangle { id: rect2; anchors.left: rect1.right; ... }    // invalid anchor!
 }
 \endcode
 

@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     property string day
     property var stickies
 

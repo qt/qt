@@ -121,9 +121,9 @@
 
     Setting a color looks like this:
     \code
-    Rect { color: "steelblue" }
-    Rect { color: "#FF0000" }
-    Rect { color: "#800000FF" }
+    Rectangle { color: "steelblue" }
+    Rectangle { color: "#FF0000" }
+    Rectangle { color: "#800000FF" }
     \endcode
 
     \target basicqmlpoint
@@ -275,7 +275,7 @@
     Item {
         children [
             Item { id: child1 },
-            Rect { id: child2 },
+            Rectangle { id: child2 },
             Text { id: child3 }
         ]
     }

@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     width: 400; height: 300; color: "white"
 
     // MyPets model is defined in dummydata/MyPetsModel.qml
@@ -42,7 +42,7 @@ Rect {
     // highlight moves to the current item.
     Component {
         id: PetHighlight
-        Rect {
+        Rectangle {
             width: 200; height: 50; color: "#FFFF88"
             y: Follow { source: List1.current.y; spring: 3; damping: 0.1 }
         }

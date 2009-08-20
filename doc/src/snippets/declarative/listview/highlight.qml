@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     width: 180; height: 200; color: "white"
 
     // ContactModel model is defined in dummydata/ContactModel.qml
@@ -29,7 +29,7 @@ Rect {
 //! [1]
     Component {
         id: Highlight
-        Rect {
+        Rectangle {
             width: 180; height: 40
             color: "lightsteelblue"; radius: 5
             y: Follow {

@@ -6,7 +6,7 @@ Item {
     id: CellContainer
     width: 40
     height: 25
-    Rect {
+    Rectangle {
         anchors.fill: parent
         color: CellContainer.color
     }

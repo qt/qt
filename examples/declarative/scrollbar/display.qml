@@ -1,6 +1,6 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     width: 640
     height: 480
     // Create a flickable to view a large image.

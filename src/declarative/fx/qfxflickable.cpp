@@ -445,7 +445,7 @@ bool QFxFlickable::isAtYBeginning() const
 
     These properties are typically used to draw a scrollbar, for example:
     \code
-    Rect {
+    Rectangle {
         opacity: 0.5; anchors.right: MyListView.right-2; width: 6
         y: MyListView.pageYPosition * MyListView.height
         height: MyListView.pageHeight * MyListView.height
