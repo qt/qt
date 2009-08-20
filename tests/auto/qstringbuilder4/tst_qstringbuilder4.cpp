@@ -39,4 +39,4 @@
 **
 ****************************************************************************/
 
-#include "tst_qstringbuilder.cpp"
+#include "../qstringbuilder1/stringbuilder.cpp"

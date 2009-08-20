@@ -419,8 +419,8 @@ bool QGraphicsSceneBspTreeIndexPrivate::closestItemFirst_withoutCache(const QGra
 
     // Find common ancestor, and each item's ancestor closest to the common
     // ancestor.
-    int item1Depth = d1->depth;
-    int item2Depth = d2->depth;
+    int item1Depth = d1->depth();
+    int item2Depth = d2->depth();
     const QGraphicsItem *p = item1;
     const QGraphicsItem *t1 = item1;
     while (item1Depth > item2Depth && (p = p->d_ptr->parent)) {

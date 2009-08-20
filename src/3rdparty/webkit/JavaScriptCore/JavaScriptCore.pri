@@ -128,7 +128,7 @@ SOURCES += \
     yarr/RegexJIT.cpp \
     interpreter/RegisterFile.cpp
 
-win*: SOURCES += jit/ExecutableAllocatorWin.cpp
+win32-*|wince*: SOURCES += jit/ExecutableAllocatorWin.cpp
 else: SOURCES += jit/ExecutableAllocatorPosix.cpp
 
 # AllInOneFile.cpp helps gcc analize and optimize code
