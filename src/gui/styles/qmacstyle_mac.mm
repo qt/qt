@@ -5695,6 +5695,7 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
                     ret.setRect(fw, fw,
                                 spin->rect.width() - spinner_w - fw * 2 - spinBoxSep,
                                 spin->rect.height() - fw * 2);
+                }
                 ret = visualRect(spin->direction, spin->rect, ret);
                 break;
             default:
