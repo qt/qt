@@ -81,7 +81,7 @@
 #include <QTimer>
 #include <QDebug>
 #ifndef TEST_QNETWORK_PROXY
-//#define TEST_QNETWORK_PROXY
+#define TEST_QNETWORK_PROXY
 #endif
 // RVCT compiles also unused inline methods
 # include <QNetworkProxy>
@@ -2231,7 +2231,6 @@ void tst_QTcpSocket::invalidProxy_data()
                                        << "this-host-will-never-exist.troll.no" << 3128 << false
                                        << int(QAbstractSocket::ProxyNotFoundError);
 #if !defined(Q_OS_SYMBIAN)
-    //QSKIP("On Symbian Emulator not clear what to expect + server settings", SkipAll);
     QTest::newRow("http-on-socks5") << int(QNetworkProxy::HttpProxy) << fluke << 1080 << false
                                     << int(QAbstractSocket::ProxyConnectionClosedError);
     QTest::newRow("socks5-on-http") << int(QNetworkProxy::Socks5Proxy) << fluke << 3128 << false
