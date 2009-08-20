@@ -3312,7 +3312,9 @@ void tst_QScriptValue::objectId()
         QVERIFY(globalObjectId != -1);
         QVERIFY(eng.objectById(globalObjectId).strictlyEquals(global));
     }
-    QVERIFY(eng.objectById(globalObjectId).strictlyEquals(eng.globalObject()));
+    QScriptValue obj = eng.objectById(globalObjectId);
+    QVERIFY(obj.isObject());
+    QVERIFY(obj.strictlyEquals(eng.globalObject()));
 }
 
 QTEST_MAIN(tst_QScriptValue)

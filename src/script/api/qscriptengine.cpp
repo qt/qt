@@ -3706,13 +3706,8 @@ QScriptValue QScriptEngine::toObject(const QScriptValue &value)
 QScriptValue QScriptEngine::objectById(qint64 id) const
 {
     Q_D(const QScriptEngine);
-    QSet<QScriptValuePrivate*>::const_iterator i = d->attachedScriptValues.constBegin();
-    while(i != d->attachedScriptValues.constEnd()) {
-        if ( (*i)->objectId() == id )
-            return QScriptValuePrivate::get(*i);
-        i++;
-    }
-    return QScriptValue();
+    // Assumes that the cell was not been garbage collected
+    return const_cast<QScriptEnginePrivate*>(d)->scriptValueFromJSCValue((JSC::JSCell*)id);
 }
 
 /*!
