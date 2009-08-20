@@ -139,7 +139,9 @@ public:
         MoveCursor = 1
     };
     quint16 command;
-    quint8 block; ///< All undo commands that have this set to true are combined with the preceding command on undo/redo.
+    uint block_part : 1; // all commands that are part of an undo block (including the first and the last one) have this set to 1
+    uint block_end : 1; // the last command in an undo block has this set to 1.
+    uint block_padding : 6; // padding since block used to be a quint8
     quint8 operation;
     int format;
     quint32 strPos;
