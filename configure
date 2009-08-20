@@ -6313,7 +6313,7 @@ else
 fi
 
 if [ "$CFG_SCRIPT" = "auto" ]; then
-    CFG_SCRIPT="yes"
+    CFG_SCRIPT="$canBuildWebKit"
 fi
 
 if [ "$CFG_SCRIPT" = "yes" ]; then
