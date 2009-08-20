@@ -32,6 +32,7 @@ HEADERS +=                                           \
            $$PHONON_MMF_DIR/mediaobject.h            \
            $$PHONON_MMF_DIR/utils.h                  \
            $$PHONON_MMF_DIR/videoplayer.h            \
+           $$PHONON_MMF_DIR/videowidget.h            \
 	   $$PHONON_MMF_DIR/volumecontrolinterface.h
 
 SOURCES +=                                           \
@@ -43,7 +44,8 @@ SOURCES +=                                           \
            $$PHONON_MMF_DIR/dummyplayer.cpp          \
            $$PHONON_MMF_DIR/mediaobject.cpp          \
            $$PHONON_MMF_DIR/utils.cpp                \
-           $$PHONON_MMF_DIR/videoplayer.cpp
+           $$PHONON_MMF_DIR/videoplayer.cpp          \
+           $$PHONON_MMF_DIR/videowidget.cpp
 	   
 LIBS += -lmediaclientvideo.lib		# For CVideoPlayerUtility
 LIBS += -lcone.lib			# For CCoeEnv

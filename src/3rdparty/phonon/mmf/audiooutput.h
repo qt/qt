@@ -67,13 +67,10 @@ namespace Phonon
              */
             virtual bool setOutputDevice(const Phonon::AudioOutputDevice &);
 
-            void setVolumeControl(VolumeControlInterface *volumeControl);
-
             /**
-             * Called by MediaObject to pass initial volume when clip has been
-             * successfully opened
+             * Called by backend when nodes are connected.
              */
-            //void triggerVolumeChanged(qreal volume);
+            void setVolumeControl(VolumeControlInterface *volumeControl);
 
         Q_SIGNALS:
             void volumeChanged(qreal volume);

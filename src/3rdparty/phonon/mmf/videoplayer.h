@@ -37,10 +37,11 @@ namespace Phonon
          * <a href="http://wiki.forum.nokia.com/index.php/How_to_play_a_video_file_using_CVideoPlayerUtility">How to
          * play a video file using CVideoPlayerUtility</a>
          */
-        class VideoPlayer	:	public AbstractMediaPlayer
-							,	public MVideoPlayerUtilityObserver
+        class VideoPlayer		:	public AbstractMediaPlayer
+								,	public MVideoPlayerUtilityObserver
         {
             Q_OBJECT
+            
         public:
             VideoPlayer();
             explicit VideoPlayer(const AbstractPlayer& player);
