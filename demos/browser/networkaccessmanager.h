@@ -43,6 +43,7 @@
 #define NETWORKACCESSMANAGER_H
 
 #include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkRequest>
 
 class NetworkAccessManager : public QNetworkAccessManager
 {
@@ -51,11 +52,18 @@ class NetworkAccessManager : public QNetworkAccessManager
 public:
     NetworkAccessManager(QObject *parent = 0);
 
+    virtual QNetworkReply* createRequest ( Operation op, const QNetworkRequest & req, QIODevice * outgoingData = 0 );
+
 private:
     QList<QString> sslTrustedHostList;
+    qint64 requestFinishedCount;
+    qint64 requestFinishedFromCacheCount;
+    qint64 requestFinishedPipelinedCount;
+    qint64 requestFinishedSecureCount;
 
 public slots:
     void loadSettings();
+    void requestFinished(QNetworkReply *reply);
 
 private slots:
     void authenticationRequired(QNetworkReply *reply, QAuthenticator *auth);

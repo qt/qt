@@ -123,7 +123,7 @@ public:
         transformData(0),
         index(-1),
         siblingIndex(-1),
-        depth(0),
+        itemDepth(-1),
         focusProxy(0),
         subFocusItem(0),
         imHints(Qt::ImhNone),
@@ -209,7 +209,9 @@ public:
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
-    void resolveDepth(int parentDepth);
+    int depth() const;
+    void invalidateDepthRecursively();
+    void resolveDepth();
     void addChild(QGraphicsItem *child);
     void removeChild(QGraphicsItem *child);
     void setParentItemHelper(QGraphicsItem *parent);
@@ -419,7 +421,7 @@ public:
     QTransform sceneTransform;
     int index;
     int siblingIndex;
-    int depth;
+    int itemDepth;  // Lazily calculated when calling depth().
     QGraphicsItem *focusProxy;
     QList<QGraphicsItem **> focusProxyRefs;
     QGraphicsItem *subFocusItem;

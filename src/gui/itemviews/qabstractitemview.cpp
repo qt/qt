@@ -3382,11 +3382,7 @@ QPoint QAbstractItemView::dirtyRegionOffset() const
 */
 void QAbstractItemView::startAutoScroll()
 {
-    Q_D(QAbstractItemView);
-    // ### it would be nice to make this into a style hint one day
-    int scrollInterval = (verticalScrollMode() == QAbstractItemView::ScrollPerItem) ? 150 : 50;
-    d->autoScrollTimer.start(scrollInterval, this);
-    d->autoScrollCount = 0;
+    d_func()->startAutoScroll();
 }
 
 /*!
@@ -3394,9 +3390,7 @@ void QAbstractItemView::startAutoScroll()
 */
 void QAbstractItemView::stopAutoScroll()
 {
-    Q_D(QAbstractItemView);
-    d->autoScrollTimer.stop();
-    d->autoScrollCount = 0;
+    d_func()->stopAutoScroll();
 }
 
 /*!

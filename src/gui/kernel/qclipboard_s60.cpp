@@ -49,6 +49,7 @@
 #include "qbuffer.h"
 #include "qwidget.h"
 #include "qevent.h"
+#include "private/qapplication_p.h"
 #include <QtDebug>
 
 // Symbian's clipboard
@@ -83,23 +84,16 @@ public:
 
 private:
     QMimeData* src;
-    RFs iFs;
     bool connection;
 };
 
 QClipboardData::QClipboardData():src(0),connection(true)
 {
     clear();
-    if (KErrNone != iFs.Connect())
-    {
-        qWarning("QClipboardData::fileserver connnect failed");
-        connection = false;
-    }
 }
 
 QClipboardData::~QClipboardData()
 {
-    iFs.Close();
     connection = false;
     delete src;
 }
@@ -109,10 +103,6 @@ void QClipboardData::clear()
     QMimeData* newSrc = new QMimeData;
     delete src;
     src = newSrc;
-}
-RFs QClipboardData::fsSession()
-{
-    return iFs;
 }
 
 static QClipboardData *internalCbData = 0;
@@ -206,7 +196,7 @@ const QMimeData* QClipboard::mimeData(Mode mode) const
     if (d)
     {
         TRAPD(err,{
-            RFs fs = d->fsSession();
+            RFs& fs = QCoreApplicationPrivate::fsSession();
             CClipboard* cb = CClipboard::NewForReadingLC(fs);
             Q_ASSERT(cb);
             RStoreReadStream stream;

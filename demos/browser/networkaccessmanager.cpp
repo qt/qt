@@ -57,16 +57,21 @@
 #include <QtNetwork/QAuthenticator>
 #include <QtNetwork/QNetworkDiskCache>
 #include <QtNetwork/QNetworkProxy>
+#include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QSslError>
 
 NetworkAccessManager::NetworkAccessManager(QObject *parent)
-    : QNetworkAccessManager(parent)
+    : QNetworkAccessManager(parent),
+    requestFinishedCount(0), requestFinishedFromCacheCount(0), requestFinishedPipelinedCount(0),
+    requestFinishedSecureCount(0)
 {
     connect(this, SIGNAL(authenticationRequired(QNetworkReply*, QAuthenticator*)),
             SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     connect(this, SIGNAL(proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*)),
             SLOT(proxyAuthenticationRequired(const QNetworkProxy&, QAuthenticator*)));
+    connect(this, SIGNAL(finished(QNetworkReply *)),
+            SLOT(requestFinished(QNetworkReply *)));
 #ifndef QT_NO_OPENSSL
     connect(this, SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError>&)),
             SLOT(sslErrors(QNetworkReply*, const QList<QSslError>&)));
@@ -77,6 +82,35 @@ NetworkAccessManager::NetworkAccessManager(QObject *parent)
     QString location = QDesktopServices::storageLocation(QDesktopServices::CacheLocation);
     diskCache->setCacheDirectory(location);
     setCache(diskCache);
+}
+
+QNetworkReply* NetworkAccessManager::createRequest(Operation op, const QNetworkRequest & req, QIODevice * outgoingData)
+{
+    QNetworkRequest request = req; // copy so we can modify
+    // this is a temporary hack until we properly use the pipelining flags from QtWebkit
+    // pipeline everything! :)
+    request.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
+    return QNetworkAccessManager::createRequest(op, request, outgoingData);
+}
+
+void NetworkAccessManager::requestFinished(QNetworkReply *reply)
+{
+    requestFinishedCount++;
+
+    if (reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true)
+        requestFinishedFromCacheCount++;
+
+    if (reply->attribute(QNetworkRequest::HttpPipeliningWasUsedAttribute).toBool() == true)
+        requestFinishedPipelinedCount++;
+
+    if (reply->attribute(QNetworkRequest::ConnectionEncryptedAttribute).toBool() == true)
+        requestFinishedSecureCount++;
+
+    double pctCached = (double(requestFinishedFromCacheCount) * 100.0/ double(requestFinishedCount));
+    double pctPipelined = (double(requestFinishedPipelinedCount) * 100.0/ double(requestFinishedCount));
+    double pctSecure = (double(requestFinishedSecureCount) * 100.0/ double(requestFinishedCount));
+    qDebug("%lli requests [%3.2f%% from cache] [%3.2f%% pipelined] [%3.2f%% SSL/TLS]", requestFinishedCount, pctCached, pctPipelined, pctSecure);
+
 }
 
 void NetworkAccessManager::loadSettings()
