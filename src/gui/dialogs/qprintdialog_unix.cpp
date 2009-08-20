@@ -48,7 +48,7 @@
 #include "qprintdialog.h"
 #include "qfiledialog.h"
 #include <QtCore/qdir.h>
-#include <QtCore/qevent.h>
+#include <QtGui/qevent.h>
 #include <QtGui/qfilesystemmodel.h>
 #include <QtGui/qstyleditemdelegate.h>
 #include <QtGui/qprinter.h>
