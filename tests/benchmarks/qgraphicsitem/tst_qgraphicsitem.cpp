@@ -61,6 +61,7 @@ public slots:
 private slots:
     void setParentItem();
     void setParentItem_deep();
+    void setParentItem_deep_reversed();
     void deleteItemWithManyChildren();
     void setPos_data();
     void setPos();
@@ -110,6 +111,19 @@ void tst_QGraphicsItem::setParentItem_deep()
         }
         QGraphicsItem *first = rect.children().first();
         first->setParentItem(0);
+    }
+}
+
+void tst_QGraphicsItem::setParentItem_deep_reversed()
+{
+    QBENCHMARK {
+        QGraphicsRectItem *lastRect = new QGraphicsRectItem;
+        for (int i = 0; i < 100; ++i) {
+            QGraphicsRectItem *parentRect = new QGraphicsRectItem;
+            lastRect->setParentItem(parentRect);
+            lastRect = parentRect;
+        }
+        delete lastRect;
     }
 }
 
