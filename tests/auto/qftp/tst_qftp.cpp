@@ -1556,16 +1556,10 @@ void tst_QFtp::binaryAscii()
     ResMapIt it2 = resultMap.find(QFtp::Get);
     QVERIFY(it2 != resultMap.end());
     QVERIFY(it2.value().success);
-/*
-#ifdef Q_OS_SYMBIAN
-    QVERIFY(getData.size() == putData.size());
-#else
-*/
     // most modern ftp servers leave the file as it is by default
     // (and do not remove the windows line ending), the -1 below could be
     // deleted in the future
     QVERIFY(getData.size() == putData.size()-1);
-//#endi
     //////////////////////////////////////////////////////////////////
     // cleanup (i.e. remove the file) -- this also tests the remove command
     init();
