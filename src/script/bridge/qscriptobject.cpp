@@ -41,6 +41,7 @@
 
 #include "config.h"
 #include "qscriptobject_p.h"
+#include "private/qobject_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -144,6 +145,11 @@ void QScriptObject::getPropertyNames(JSC::ExecState* exec, JSC::PropertyNameArra
 void QScriptObject::mark()
 {
     Q_ASSERT(!marked());
+    if (!d)
+        d = new Data();
+    if (d->isMarking)
+        return;
+    QBoolBlocker markBlocker(d->isMarking, true);
     if (d && d->data && !d->data.marked())
         d->data.mark();
     if (!d || !d->delegate) {

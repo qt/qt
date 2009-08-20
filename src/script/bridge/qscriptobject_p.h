@@ -69,8 +69,9 @@ public:
     {
         JSC::JSValue data; // QScriptValue::data
         QScriptObjectDelegate *delegate;
+        bool isMarking; // recursion guard
 
-        Data() : delegate(0) {}
+        Data() : delegate(0), isMarking(false) {}
         ~Data();
     };
 

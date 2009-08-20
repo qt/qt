@@ -266,9 +266,8 @@ JSC::CallType QtFunction::getCallData(JSC::CallData &callData)
 void QtFunction::mark()
 {
     Q_ASSERT(!marked());
-    if (data->object && !data->object.marked()) {
-        JSC::asObject(data->object)->JSC::JSObject::mark();
-    }
+    if (data->object && !data->object.marked())
+        data->object.mark();
     JSC::InternalFunction::mark();
 }
 
