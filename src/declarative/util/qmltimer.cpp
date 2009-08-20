@@ -188,6 +188,32 @@ void QmlTimer::setTriggeredOnStart(bool triggeredOnStart)
     }
 }
 
+/*!
+    \qmlmethod Timer::start()
+    \brief Starts the timer.
+
+    If the timer is already running, calling this method has no effect.  The
+    \c running property will be true following a call to \c start().
+*/
+void QmlTimer::start()
+{
+    Q_D(QmlTimer);
+    d->pause.start();
+}
+
+/*!
+    \qmlmethod Timer::stop()
+    \brief stops the timer.
+
+    If the timer is not running, calling this method has no effect.  The
+    \c running property will be false following a call to \c stop().
+*/
+void QmlTimer::stop()
+{
+    Q_D(QmlTimer);
+    d->pause.stop();
+}
+
 void QmlTimer::update()
 {
     Q_D(QmlTimer);
