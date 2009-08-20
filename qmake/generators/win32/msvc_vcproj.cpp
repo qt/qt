@@ -623,7 +623,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                         }
 
                         // Add all unknown libs to the deps
-                        QStringList where("QMAKE_LIBS");
+                        QStringList where = QStringList() << "QMAKE_LIBS" << "QMAKE_LIBS_PRIVATE";
                         if(!tmp_proj.isEmpty("QMAKE_INTERNAL_PRL_LIBS"))
                             where = tmp_proj.variables()["QMAKE_INTERNAL_PRL_LIBS"];
                         for(QStringList::iterator wit = where.begin();
@@ -1261,8 +1261,8 @@ void VcprojGenerator::initDeploymentTool()
                 searchPath = info.absoluteFilePath();
             } else {
                 nameFilter = source.split('\\').last();
-                if (source.contains('*')) {                    
-                    source = source.split('*').first();                    
+                if (source.contains('*')) {
+                    source = source.split('*').first();
                     info = QFileInfo(source);
                  }
                  searchPath = info.absolutePath();
@@ -1424,20 +1424,6 @@ void VcprojGenerator::initResourceFiles()
 
                 dep_cmd = Option::fixPathToLocalOS(dep_cmd, true, false);
                 if(canExecute(dep_cmd)) {
-#if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
-                    QPopen procPipe;
-                    if( procPipe.init(dep_cmd.toLatin1().constData(), "r") ) {
-                        QString indeps;
-                        while(true) {
-                            int read_in = procPipe.fread(buff, 255);
-                            if ( !read_in )
-                                break;
-                            indeps += QByteArray(buff, read_in);
-                        }
-                        if(!indeps.isEmpty())
-                            deps += fileFixify(indeps.replace('\n', ' ').simplified().split(' '));
-                    }
-#else
                     if(FILE *proc = QT_POPEN(dep_cmd.toLatin1().constData(), "r")) {
                         QString indeps;
                         while(!feof(proc)) {
@@ -1450,7 +1436,6 @@ void VcprojGenerator::initResourceFiles()
                         if(!indeps.isEmpty())
                             deps += fileFixify(indeps.replace('\n', ' ').simplified().split(' '));
                     }
-#endif
                 }
             }
             vcProject.ResourceFiles.addFiles(deps);
@@ -1571,6 +1556,7 @@ void VcprojGenerator::initOld()
     }
 
     project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
+    project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
 
      // Get filename w/o extension -----------------------------------
     QString msvcproj_project = "";
@@ -1614,6 +1600,7 @@ void VcprojGenerator::initOld()
 
     // $$QMAKE.. -> $$MSVCPROJ.. -------------------------------------
     project->values("MSVCPROJ_LIBS") += project->values("QMAKE_LIBS");
+    project->values("MSVCPROJ_LIBS") += project->values("QMAKE_LIBS_PRIVATE");
     project->values("MSVCPROJ_LFLAGS") += project->values("QMAKE_LFLAGS");
     if(!project->values("QMAKE_LIBDIR").isEmpty()) {
         QStringList strl = project->values("QMAKE_LIBDIR");

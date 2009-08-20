@@ -14,6 +14,7 @@ wince*|symbian: {
 wince*: {
     DEFINES += SRCDIR=\\\"./\\\"
 } symbian: {
+    TARGET.UID3 = 0xE0340003
     DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
 } else {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"

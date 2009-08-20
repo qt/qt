@@ -10,6 +10,7 @@ wince*|symbian*: {
 }
 
 symbian: {
+   TARGET.UID3 = 0xE0340006
    DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
    TARGET.EPOCHEAPSIZE="0x100000 0x1000000 // Min 1Mb, max 16Mb"
 }

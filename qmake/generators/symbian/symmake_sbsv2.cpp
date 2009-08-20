@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -291,12 +291,12 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     QStringList extraTargets;
     extraTargets << project->values("QMAKE_EXTRA_TARGETS") <<  project->values("QMAKE_EXTRA_COMPILERS");
     foreach(QString item, extraTargets) {
-        foreach(QString targetItem, project->values(QLatin1String("QMAKE_ET_PARSED_TARGETS.") + item)) {
+        foreach(QString targetItem, project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_TARGETS.") + item)) {
             // Make sure targetpath is absolute
             QString absoluteTarget = fileInfo(targetItem).absoluteFilePath();
             if (allPreDeps.contains(absoluteTarget)) {
-                QStringList deps = project->values(QLatin1String("QMAKE_ET_PARSED_DEPS.") + item + targetItem);
-                QString commandItem =  project->values(QLatin1String("QMAKE_ET_PARSED_CMD.") + item + targetItem).join(" ");
+                QStringList deps = project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_DEPS.") + item + targetItem);
+                QString commandItem =  project->values(QLatin1String("QMAKE_INTERNAL_ET_PARSED_CMD.") + item + targetItem).join(" ");
 
 
                 // Make sure all deps paths are absolute
@@ -365,7 +365,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     if (icons.size()) {
         QString icon = icons.first();
         if (icons.size() > 1)
-            fprintf(stderr, "Warning: Only first icon specified in ICON variable is used: '%s'.", icon);
+            fprintf(stderr, "Warning: Only first icon specified in ICON variable is used: '%s'.", qPrintable(icon));
 
         t << "START EXTENSION s60/mifconv" << endl;
 

@@ -1169,9 +1169,9 @@ bool qSharedBuild()
     QSysInfo::symbianVersion() function gives the version of the
     system on which the application is run.
 
-    \value SV_9_2 Symbian OS 9.2
-    \value SV_9_3 Symbian OS 9.3
-    \value SV_9_4 Symbian OS 9.4
+    \value SV_9_2 Symbian OS v9.2
+    \value SV_9_3 Symbian OS v9.3
+    \value SV_9_4 Symbian OS v9.4
     \value SV_Unknown An unknown and currently unsupported platform
 
     \sa S60Version, WinVersion, MacVersion
@@ -2189,7 +2189,8 @@ void qt_message_output(QtMsgType msgType, const char *buf)
         TPtrC8 ptr(reinterpret_cast<const TUint8*>(buf));
         TInt len = Min(tmp.MaxLength(), ptr.Length());
         tmp.Copy(ptr.Left(len));
-        User::Panic(tmp, 0); // Panic the current thread
+        // Panic the current thread. We don't use real panic codes, so 0 has no special meaning.
+        User::Panic(tmp, 0);
 #elif (defined(Q_OS_UNIX) || defined(Q_CC_MINGW))
         abort(); // trap; generates core dump
 #else

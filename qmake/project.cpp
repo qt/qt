@@ -44,6 +44,8 @@
 #include "option.h"
 #include "cachekeys.h"
 
+#include "epocroot.h"
+
 #include <qdatetime.h>
 #include <qfile.h>
 #include <qfileinfo.h>
@@ -52,8 +54,6 @@
 #include <qtextstream.h>
 #include <qstack.h>
 #include <qhash.h>
-#include <qxmlstream.h>
-#include <qsettings.h>
 #include <qdebug.h>
 #ifdef Q_OS_UNIX
 #include <unistd.h>
@@ -65,12 +65,8 @@
 #include <stdlib.h>
 
 #ifdef Q_OS_WIN32
-#if defined(Q_CC_MWERKS)
-#include "qpopen.h"
-#else
 #define QT_POPEN _popen
 #define QT_PCLOSE _pclose
-#endif
 #else
 #define QT_POPEN popen
 #define QT_PCLOSE pclose
@@ -83,7 +79,7 @@ enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST
                   E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
                   E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_REPLACE,
-                  E_GENERATE_TEST_UID, E_SIZE };
+                  E_SIZE };
 QMap<QString, ExpandFunc> qmake_expandFunctions()
 {
     static QMap<QString, ExpandFunc> *qmake_expand_functions = 0;
@@ -114,7 +110,6 @@ QMap<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("files", E_FILES);
         qmake_expand_functions->insert("prompt", E_PROMPT);
         qmake_expand_functions->insert("replace", E_REPLACE);
-        qmake_expand_functions->insert("generate_test_uid", E_GENERATE_TEST_UID);
         qmake_expand_functions->insert("size", E_SIZE);
     }
     return *qmake_expand_functions;
@@ -2250,28 +2245,6 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             if(args.count() > 1)
                 singleLine = (args[1].toLower() == "true");
             QString output;
-#if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
-            QPopen procPipe;
-            if( !procPipe.init(args[0].toLatin1(), "r") ) {
-                fprintf(stderr, "%s:%d system(%s) failed.\n",
-                        parser.file.toLatin1().constData(),
-                        parser.line_no,
-                        qPrintable(args[0]));
-            }
-
-            while(true) {
-                int read_in = procPipe.fread(buff, 255);
-                if ( !read_in )
-                    break;
-                for(int i = 0; i < read_in; ++i) {
-                    if((singleLine && buff[i] == '\n') || buff[i] == '\t')
-                        buff[i] = ' ';
-                }
-                buff[read_in] = '\0';
-                output += buff;
-            }
-            ret += split_value_list(output);
-#else
             FILE *proc = QT_POPEN(args[0].toLatin1(), "r");
             while(proc && !feof(proc)) {
                 int read_in = int(fread(buff, 1, 255, proc));
@@ -2287,7 +2260,6 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             ret += split_value_list(output);
             if(proc)
                 QT_PCLOSE(proc);
-#endif
         }
         break; }
     case E_UNIQUE: {
@@ -2420,22 +2392,6 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
             QStringList var = values(args.first(), place);
             for(QStringList::Iterator it = var.begin(); it != var.end(); ++it)
                 ret += it->replace(before, after);
-        }
-        break; }
-    case E_GENERATE_TEST_UID: {
-        if(args.count() != 1) {
-            fprintf(stderr, "%s:%d: generate_test_uid(targetname) requires one argument.\n",
-                    parser.file.toLatin1().constData(), parser.line_no);
-        } else {
-            QString target = args[0];
-
-            QString currPath = qmake_getpwd();
-            target.prepend("/").prepend(currPath);
-
-
-            QString tmp = generate_test_uid(target);
-
-            ret += tmp;
         }
         break; }
     case E_SIZE: {
@@ -3333,152 +3289,6 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
     }
     //qDebug("REPLACE [%s]->[%s]", qPrintable(var), qPrintable(place[var].join("::")));
     return place[var];
-}
-
-
-// UIDs starting with 0xE are test UIDs in symbian
-QString generate_test_uid(const QString& target)
-{
-    QString tmp = generate_uid(target);
-    tmp.replace(0, 1, "E");
-    tmp.prepend("0x");
-
-    return tmp;
-}
-
-
-// UIDs starting with 0xE are test UIDs in symbian
-QString generate_uid(const QString& target)
-{
-    static QMap<QString, QString> targetToUid;
-
-    QString tmp = targetToUid[target];
-
-    if (!tmp.isEmpty()) {
-        return tmp;
-    }
-
-    unsigned long hash = 5381;
-    int c;
-
-    for (int i = 0; i < target.size(); ++i) {
-        c = target.at(i).toAscii();
-        hash ^= c + ((c - i) << i % 20) + ((c + i) << (i + 5) % 20) + ((c - 2 * i) << (i + 10) % 20) + ((c + 2 * i) << (i + 15) % 20);
-    }
-
-    tmp.setNum(hash, 16);
-    for (int i = tmp.size(); i < 8; ++i)
-        tmp.prepend("0");
-
-#if 0
-    static QMap<QString, QString> uidConflictCheckList;
-    QString testStr = tmp;
-    testStr.replace(0, 1, "E"); // Simulate actual UID generation
-    if (uidConflictCheckList.contains(testStr)) {
-        printf("\n\n!!!! generated duplicate uid for %s is %s <-> %s !!!!\n\n\n",
-               qPrintable(target),
-               qPrintable(testStr),
-               qPrintable(uidConflictCheckList.value(testStr)));
-    }
-    uidConflictCheckList.insert(testStr, target);
-    printf("generate_uid for %s is %s \n", qPrintable(target), qPrintable(tmp));
-#endif
-
-    targetToUid[target] = tmp;
-
-    return tmp;
-}
-
-static void fixEpocRootStr(QString& path)
-{
-    path.replace("\\", "/");
-
-    if (path.size() > 1 && path[1] == QChar(':')) {
-        path = path.mid(2);
-    }
-
-    if (!path.size() || path[path.size()-1] != QChar('/')) {
-        path += QChar('/');
-    }
-}
-
-#define SYMBIAN_SDKS_KEY "HKEY_LOCAL_MACHINE\\Software\\Symbian\\EPOC SDKs"
-
-static QString epocRootStr;
-
-QString epocRoot()
-{
-    if (!epocRootStr.isEmpty()) {
-        return epocRootStr;
-    }
-
-    // First, check the env variable
-    epocRootStr = qgetenv("EPOCROOT");
-
-    if (epocRootStr.isEmpty()) {
-        // No EPOCROOT set, check the default device
-        // First check EPOCDEVICE env variable
-        QString defaultDevice = qgetenv("EPOCDEVICE");
-
-        // Check the windows registry via QSettings for devices.xml path
-        QSettings settings(SYMBIAN_SDKS_KEY, QSettings::NativeFormat);
-        QString devicesXmlPath = settings.value("CommonPath").toString();
-
-        if (!devicesXmlPath.isEmpty()) {
-            // Parse xml for correct device
-            devicesXmlPath += "/devices.xml";
-            QFile devicesFile(devicesXmlPath);
-            if (devicesFile.open(QIODevice::ReadOnly)) {
-                QXmlStreamReader xml(&devicesFile);
-                while (!xml.atEnd()) {
-                    xml.readNext();
-                    if (xml.isStartElement() && xml.name() == "devices") {
-                        if (xml.attributes().value("version") == "1.0") {
-                            // Look for correct device
-                            while (!(xml.isEndElement() && xml.name() == "devices") && !xml.atEnd()) {
-                                xml.readNext();
-                                if (xml.isStartElement() && xml.name() == "device") {
-                                    if ((defaultDevice.isEmpty() && xml.attributes().value("default") == "yes") ||
-                                        (!defaultDevice.isEmpty() && (xml.attributes().value("id").toString() + QString(":") + xml.attributes().value("name").toString()) == defaultDevice)) {
-                                        // Found the correct device
-                                        while (!(xml.isEndElement() && xml.name() == "device") && !xml.atEnd()) {
-                                            xml.readNext();
-                                            if (xml.isStartElement() && xml.name() == "epocroot") {
-                                                epocRootStr = xml.readElementText();
-                                                fixEpocRootStr(epocRootStr);
-                                                return epocRootStr;
-                                            }
-                                        }
-                                        xml.raiseError("No epocroot element found");
-                                    }
-                                }
-                            }
-                        } else {
-                            xml.raiseError("Invalid 'devices' element version");
-                        }
-                    }
-                }
-                if (xml.hasError()) {
-                    fprintf(stderr, "ERROR: \"%s\" when parsing devices.xml\n", qPrintable(xml.errorString()));
-                }
-            } else {
-                fprintf(stderr, "Could not open devices.xml (%s)\n", qPrintable(devicesXmlPath));
-            }
-        } else {
-            fprintf(stderr, "Could not retrieve " SYMBIAN_SDKS_KEY " setting\n");
-        }
-
-        fprintf(stderr, "Failed to determine epoc root.\n");
-        if (!defaultDevice.isEmpty())
-            fprintf(stderr, "The device indicated by EPOCDEVICE environment variable (%s) could not be found.\n", qPrintable(defaultDevice));
-        fprintf(stderr, "Either set EPOCROOT or EPOCDEVICE environment variable to a valid value, or provide a default Symbian device.\n");
-
-        // No valid device found; set epocroot to "/"
-        epocRootStr = QLatin1String("/");
-    }
-
-    fixEpocRootStr(epocRootStr);
-    return epocRootStr;
 }
 
 QT_END_NAMESPACE

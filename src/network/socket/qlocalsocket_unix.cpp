@@ -306,7 +306,6 @@ void QLocalSocketPrivate::_q_connectToSocket()
         case ETIMEDOUT:
             errorOccurred(QLocalSocket::SocketTimeoutError, function);
             break;
-        case EINPROGRESS:
         case EAGAIN:
             // Try again later, all of the sockets listening are full
             if (!delayConnect) {

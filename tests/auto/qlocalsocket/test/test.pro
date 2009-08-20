@@ -35,6 +35,7 @@ wince* {
 symbian {
     additionalFiles.sources = lackey.exe
     additionalFiles.path = \sys\bin
+    TARGET.UID3 = 0xE0340005
     DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
 }
 

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -479,6 +479,7 @@ void SymbianMakefileGenerator::init()
         project->values("QMAKESPEC").append(qgetenv("QMAKESPEC"));
 
     project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
+    project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
 
     // bld.inf
     project->values("MAKEFILE") += BLD_INF_FILENAME;
@@ -486,7 +487,7 @@ void SymbianMakefileGenerator::init()
     // .mmp
     initMmpVariables();
 
-    // Check TARGET.UID2 and TARGET.UID3 presence
+    // Check TARGET.UID3 presence
     if (0 != project->values("TARGET.UID3").size()) {
         uid3 = project->first("TARGET.UID3");
     } else {
@@ -878,7 +879,7 @@ void SymbianMakefileGenerator::writeMmpFileIncludePart(QTextStream& t)
 void SymbianMakefileGenerator::writeMmpFileLibraryPart(QTextStream& t)
 {
     QStringList &libs = project->values("LIBS");
-    libs << project->values("QMAKE_LIBS");
+    libs << project->values("QMAKE_LIBS") << project->values("QMAKE_LIBS_PRIVATE");
 
     removeDuplicatedStrings(libs);
 
@@ -1687,3 +1688,4 @@ void SymbianMakefileGenerator::generateDistcleanTargets(QTextStream& t)
     t << "distclean: clean dodistclean" << endl;
     t << endl;
 }
+

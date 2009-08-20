@@ -203,10 +203,7 @@ inline QString QMakeProject::first(const QString &v)
 inline QMap<QString, QStringList> &QMakeProject::variables()
 { return vars; }
 
-// Helper functions needed for Symbian .mmp files and deployment
-QString generate_test_uid(const QString& target);
-QString generate_uid(const QString& target);
-QString epocRoot();
+// Helper functions needed for Symbian
 bool isForSymbian();
 bool isForSymbianSbsv2();
 

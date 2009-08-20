@@ -573,6 +573,7 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
                                                          int start, int end)
 {
     Q_Q(QItemSelectionModel);
+    finalize();
 
     // update current index
     if (currentIndex.isValid() && parent == currentIndex.parent()
@@ -591,8 +592,8 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
     }
 
     QItemSelection deselected;
-    QItemSelection::iterator it = currentSelection.begin();
-    while (it != currentSelection.end()) {
+    QItemSelection::iterator it = ranges.begin();
+    while (it != ranges.end()) {
         if (it->topLeft().parent() != parent) {  // Check parents until reaching root or contained in range
             QModelIndex itParent = it->topLeft().parent();
             while (itParent.isValid() && itParent.parent() != parent)
@@ -600,24 +601,22 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
 
             if (parent.isValid() && start <= itParent.row() && itParent.row() <= end) {
                 deselected.append(*it);
-                it = currentSelection.erase(it);
+                it = ranges.erase(it);
             } else {
                 ++it;
             }
         } else if (start <= it->bottom() && it->bottom() <= end    // Full inclusion
                    && start <= it->top() && it->top() <= end) {
             deselected.append(*it);
-            it = currentSelection.erase(it);
+            it = ranges.erase(it);
         } else if (start <= it->top() && it->top() <= end) {      // Top intersection
             deselected.append(QItemSelectionRange(it->topLeft(), model->index(end, it->left(), it->parent())));
-            it = currentSelection.insert(it, QItemSelectionRange(model->index(end + 1, it->left(), it->parent()),
-                                                                 it->bottomRight()));
-            it = currentSelection.erase(++it);
+            *it = QItemSelectionRange(model->index(end + 1, it->left(), it->parent()), it->bottomRight());
+            ++it;
         } else if (start <= it->bottom() && it->bottom() <= end) {    // Bottom intersection
             deselected.append(QItemSelectionRange(model->index(start, it->right(), it->parent()), it->bottomRight()));
-            it = currentSelection.insert(it, QItemSelectionRange(it->topLeft(),
-                                                                 model->index(start - 1, it->right(), it->parent())));
-            it = currentSelection.erase(++it);
+            *it = QItemSelectionRange(it->topLeft(), model->index(start - 1, it->right(), it->parent()));
+            ++it;
         } else {
             if (it->top() < start && end < it->bottom())  // Middle intersection (do nothing)
                 deselected.append(QItemSelectionRange(model->index(start, it->right(), it->parent()),
@@ -626,7 +625,8 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
        }
     }
 
-    emit q->selectionChanged(QItemSelection(), deselected);
+    if (!deselected.isEmpty())
+        emit q->selectionChanged(QItemSelection(), deselected);
 }
 
 /*!

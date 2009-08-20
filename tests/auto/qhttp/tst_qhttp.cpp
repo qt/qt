@@ -1242,11 +1242,7 @@ void tst_QHttp::unexpectedRemoteClose()
     QCoreApplication::instance()->processEvents();
 
     QEventLoop loop;
-#ifndef Q_OS_SYMBIAN
     QTimer::singleShot(3000, &loop, SLOT(quit()));
-#else
-    QTimer::singleShot(30000, &loop, SLOT(quit()));
-#endif
 
     QHttp http;
     QObject::connect(&http, SIGNAL(done(bool)), &loop, SLOT(quit()));

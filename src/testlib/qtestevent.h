@@ -71,6 +71,7 @@ public:
     virtual ~QTestEvent() {}
 };
 
+#ifdef QT_GUI_LIB
 class QTestKeyEvent: public QTestEvent
 {
 public:
@@ -135,6 +136,8 @@ private:
     QPoint _pos;
     int _delay;
 };
+#endif //QT_GUI_LIB
+
 
 class QTestDelayEvent: public QTestEvent
 {
@@ -159,6 +162,7 @@ public:
     inline void clear()
     { qDeleteAll(*this); QList<QTestEvent *>::clear(); }
 
+#ifdef QT_GUI_LIB
     inline void addKeyClick(Qt::Key qtKey, Qt::KeyboardModifiers modifiers = Qt::NoModifier, int msecs = -1)
     { addKeyEvent(QTest::Click, qtKey, modifiers, msecs); }
     inline void addKeyPress(Qt::Key qtKey, Qt::KeyboardModifiers modifiers = Qt::NoModifier, int msecs = -1)
@@ -194,6 +198,7 @@ public:
     { append(new QTestMouseEvent(QTest::MouseDClick, button, stateKey, pos, delay)); }
     inline void addMouseMove(QPoint pos = QPoint(), int delay=-1)
     { append(new QTestMouseEvent(QTest::MouseMove, Qt::NoButton, 0, pos, delay)); }
+#endif //QT_GUI_LIB
 
     inline void addDelay(int msecs)
     { append(new QTestDelayEvent(msecs)); }

@@ -1,14 +1,15 @@
 CONFIG -= stl_off
 
-# STL usage in S60 requires the following mmp variables to be uses
+# STL usage in S60 requires the following mmp variables to be used.
+# These are added via $$STLLIB_USAGE_CW_FLAGS and $$STLLIB_USAGE_DEFINES
+# variables below.
 # OPTION CW -wchar_t on
 # MACRO  _WCHAR_T_DECLARED
 
 QMAKE_CXXFLAGS.CW *= $$STLLIB_USAGE_CW_FLAGS 
 DEFINES *= $$STLLIB_USAGE_DEFINES
 
-# Legacy support requires some hardcoded stdapis paths.
-# Note: Also the new header is used from STL when it is enabled
+# Path to stlport headers
 INCLUDEPATH += $$OS_LAYER_STDCPP_SYSTEMINCLUDE 
 
 # Remove mkspecs/common/symbian/stl-off from beginning of includepath 

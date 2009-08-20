@@ -6,10 +6,7 @@ CONFIG   -= moc qt
 DEFINES  = UNICODE QT_NODLL QT_NO_CODECS QT_NO_TEXTCODEC QT_NO_UNICODETABLES QT_LITE_COMPONENT QT_NO_STL QT_NO_COMPRESS QT_BUILD_QMAKE QT_NO_THREAD QT_NO_QOBJECT _CRT_SECURE_NO_DEPRECATE
 
 
-win32 : !win32-mwc : LIBS += -lole32 -ladvapi32
-win32-mwc {
-    LIBS += -ladvapi32.lib -luuid.lib
-}
+win32 : LIBS += -lole32 -ladvapi32
 win32-msvc.net | win32-msvc2* : QMAKE_CXXFLAGS += /EHsc
 win32-g++ : LIBS += -luuid
 

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,7 +49,8 @@ QT_USE_NAMESPACE
 // this test only works with
 //   * GLIBC
 //   * MSVC - only debug builds (we need the crtdbg.h helpers)
-#if (defined(QT_NO_EXCEPTIONS) || (!defined(__GLIBC__) && !defined(Q_CC_MSVC) && !defined(Q_OS_SYMBIAN))) && !defined(Q_MOC_RUN)
+//   * SYMBIAN - only when __UHEAP_BURSTFAILNEXT is available
+#if (defined(QT_NO_EXCEPTIONS) || (!defined(__GLIBC__) && !defined(Q_CC_MSVC) && (!defined(Q_OS_SYMBIAN) || !defined(__UHEAP_BURSTFAILNEXT)))) && !defined(Q_MOC_RUN)
     QTEST_NOOP_MAIN
 #else
 
@@ -159,7 +160,6 @@ void tst_ExceptionSafetyObjects::objects_data()
     NEWROW(QFile);
     NEWROW(QProcess);
     NEWROW(QSettings);
-    // NEWROW(QSocketNotifier);
     NEWROW(QThread);
     NEWROW(QThreadPool);
     NEWROW(QTranslator);

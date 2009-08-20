@@ -208,6 +208,7 @@ void QThreadPrivate::createEventDispatcher(QThreadData *data)
 
 void *QThreadPrivate::start(void *arg)
 {
+    // Symbian Open C supports neither thread cancellation nor cleanup_push.
 #ifndef Q_OS_SYMBIAN
     pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
     pthread_cleanup_push(QThreadPrivate::finish, arg);
@@ -242,10 +243,10 @@ void *QThreadPrivate::start(void *arg)
 #endif
     thr->run();
 
-#ifndef Q_OS_SYMBIAN
-    pthread_cleanup_pop(1);
-#else
+#ifdef Q_OS_SYMBIAN
     QThreadPrivate::finish(arg);
+#else
+    pthread_cleanup_pop(1);
 #endif
 
     return 0;
@@ -584,6 +585,11 @@ void QThread::terminate()
     }
 
     d->terminated = true;
+    // "false, false" meaning:
+    // 1. lockAnyway = false. Don't lock the mutex because it's already locked
+    //    (see above).
+    // 2. closeNativeSymbianHandle = false. We don't want to close the thread handle,
+    //    because we need it here to terminate the thread.
     QThreadPrivate::finish(this, false, false);
     d->data->symbian_thread_handle.Terminate(KErrNone);
     d->data->symbian_thread_handle.Close();
@@ -627,6 +633,9 @@ void QThread::setTerminationEnabled(bool enabled)
     d->terminationEnabled = enabled;
     if (enabled && d->terminatePending) {
         d->terminated = true;
+        // "false" meaning:
+        // -  lockAnyway = false. Don't lock the mutex because it's already locked
+        //    (see above).
         QThreadPrivate::finish(thr, false);
         locker.unlock(); // don't leave the mutex locked!
         pthread_exit(NULL);

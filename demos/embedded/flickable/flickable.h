@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the qmake application of the Qt Toolkit.
+** This file is part of the demonstration applications of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,40 +34,47 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#ifndef QPOPEN_H
-#define QPOPEN_H
+#ifndef FLICKABLE_H
+#define FLICKABLE_H
 
-#include <windows.h>
-#include <tchar.h>
-#include <stdio.h>
-#include <string.h>
+class QMouseEvent;
+class QPoint;
+class QWidget;
 
-class QPopen
+class FlickableTicker;
+class FlickablePrivate;
+
+class Flickable
 {
 public:
-    QPopen();
-    ~QPopen();
-    int fread(char* buffer, int maxBytes);
-    int fwrite(char* buffer, int maxBytes);
-    bool init(const char* command, const char* mode);
+
+    Flickable();
+    virtual ~Flickable();
+
+    void setThreshold(int threshold);
+    int threshold() const;
+
+    void setAcceptMouseClick(QWidget *target);
+
+    void handleMousePress(QMouseEvent *event);
+    void handleMouseMove(QMouseEvent *event);
+    void handleMouseRelease(QMouseEvent *event);
+
+protected:
+    virtual QPoint scrollOffset() const = 0;
+    virtual void setScrollOffset(const QPoint &offset) = 0;
 
 private:
-    // This pair of handles represent the "Write" pipe
-    // ie: Parent -> Child
-    HANDLE childStdInR;
-    HANDLE childStdInW;
+    void tick();
 
-    // This pair of handles represent the "Read" pipe
-    // ie: Child -> Parent
-    HANDLE childStdOutR;
-    HANDLE childStdOutW;
-    PROCESS_INFORMATION processInfo;
-    STARTUPINFO siStartInfo;
+private:
+    FlickablePrivate *d;
+    friend class FlickableTicker;
 };
 
-#endif
+#endif // FLICKABLE_H

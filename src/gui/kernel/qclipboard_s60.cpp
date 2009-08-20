@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
 
 //###  Mime Type mapping to UIDs
 
-const TUid KQtCbDataStream = {0x666777};
+const TUid KQtCbDataStream = {0x2001B2DD};
 
 
 class QClipboardData
@@ -195,7 +195,6 @@ const QMimeData* QClipboard::mimeData(Mode mode) const
     QClipboardData *d = clipboardData();
     if (d)
     {
-        //###fixme when exceptions are added to Qt
         TRAPD(err,{
             RFs& fs = QCoreApplicationPrivate::fsSession();
             CClipboard* cb = CClipboard::NewForReadingLC(fs);
@@ -222,7 +221,6 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
     QClipboardData *d = clipboardData();
     if (d)
     {
-        //###fixme when exceptions are added to Qt
         TRAPD(err,{
             RFs fs = d->fsSession();
             CClipboard* cb = CClipboard::NewForWritingLC(fs);
