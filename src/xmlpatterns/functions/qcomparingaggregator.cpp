@@ -204,12 +204,8 @@ ComparingAggregator<oper, result>::typeCheck(const StaticContext::Ptr &context,
     if(!m_operands.first()->staticType()->cardinality().allowsMany())
         return m_operands.first();
     
-#if defined(Q_CC_RVCT)
     // explicit scope needed in RVCT
     ComparingAggregator<oper, result>::prepareComparison(fetchComparator(t1, t1, context));
-#else
-    prepareComparison(fetchComparator(t1, t1, context));
-#endif
 
     return me;
 }

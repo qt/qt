@@ -6,6 +6,9 @@ CONFIG += qtmain
 
 load(qt)
 
+# Add dependency to QtLibs package to all other projects besides QtLibs.
+# Note: QtLibs with full capabilities has UID3 of 0x2001E61C, 
+#       while self-signed version typically has temporary UID3 of 0xE001E61C. 
 contains(CONFIG, qt):!contains(TARGET.UID3, 0x2001E61C):!contains(TARGET.UID3, 0xE001E61C) {
     default_deployment.pkg_prerules += \
         "; Default dependency to Qt libraries" \

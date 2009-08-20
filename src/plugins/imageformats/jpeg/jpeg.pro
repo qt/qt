@@ -14,7 +14,9 @@ wince*: {
 }
 
 symbian: {
-	QMAKE_CXXFLAGS.CW += -W nounusedarg
+        #Disable warnings in 3rdparty code due to unused arguments
+        QMAKE_CXXFLAGS.CW += -W nounusedarg
+        TARGET.UID3=0x2001E61B
 }
 
 contains(QT_CONFIG, system-jpeg) {
@@ -76,4 +78,3 @@ QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/imageformats
 target.path += $$[QT_INSTALL_PLUGINS]/imageformats
 INSTALLS += target
 
-symbian:TARGET.UID3=0x2001E61B

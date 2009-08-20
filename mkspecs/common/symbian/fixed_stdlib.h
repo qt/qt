@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -49,16 +49,16 @@
 // If _WCHAR_T_DECLARED is defined, undef it and store information that we
 // need to revert the _WCHAR_T_DECLARED define after include
 #   ifdef _WCHAR_T_DECLARED
-#       define REVERT_WCHAR_T_DECLARED
+#       define QT_REVERT_WCHAR_T_DECLARED
 #       undef _WCHAR_T_DECLARED
 #   endif //_WCHAR_T_DECLARED
 
 #include <stdlib.h>
 
 // Revert _WCHAR_T_DECLARED if necessary
-#   ifdef REVERT_WCHAR_T_DECLARED
+#   ifdef QT_REVERT_WCHAR_T_DECLARED
 #       define _WCHAR_T_DECLARED
-#       undef REVERT_WCHAR_T_DECLARED
-#   endif //REVERT_WCHAR_T_DECLARED
+#       undef QT_REVERT_WCHAR_T_DECLARED
+#   endif //QT_REVERT_WCHAR_T_DECLARED
 
 #endif

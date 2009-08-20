@@ -552,8 +552,6 @@ void tst_QUdpSocket::bindMode()
     QUdpSocket socket2;
     QVERIFY(!socket2.bind(socket.localPort()));
 #if defined(Q_OS_SYMBIAN)
-
-    //RPRocess me;
     if(RProcess().HasCapability(ECapabilityNetworkControl)) {
         qDebug("Test executed *with* NetworkControl capability");
         // In Symbian OS ReuseAddressHint together with NetworkControl capability

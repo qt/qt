@@ -6,7 +6,6 @@ qtAddLibrary(QtTest)
 symbian:{
 # qt.prf sets TARGET.EPOCSTACKSIZE and TARGET.EPOCHEAPSIZE
 #    DEFINES += QTEST_NO_SPECIALIZATIONS
-    TARGET.UID3 = $$generate_test_uid($$TARGET)
     TARGET.CAPABILITY="ALL -TCB"
     RSS_RULES ="group_name=\"QtTests\";" 
 }

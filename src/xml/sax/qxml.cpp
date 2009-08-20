@@ -2767,7 +2767,7 @@ QXmlSimpleReaderPrivate::~QXmlSimpleReaderPrivate()
 
 void QXmlSimpleReaderPrivate::initIncrementalParsing()
 {
-    if( parseStack )
+    if(parseStack)
         parseStack->clear();
     else
         parseStack = new QStack<ParseState>;

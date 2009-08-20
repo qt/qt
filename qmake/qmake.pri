@@ -29,6 +29,7 @@ HEADERS += project.h property.h generators/makefile.h \
            generators/symbian/symmake.h \
            generators/symbian/symmake_abld.h \
            generators/symbian/symmake_sbsv2.h \
+           generators/symbian/epocroot.h \
            generators/symbian/initprojectdeploy_symbian.h
 
 contains(QT_EDITION, OpenSource) {

@@ -13,8 +13,8 @@ contains( CONFIG, no_icon ) {
             message("ICON keyword must have one or the same amout of items as in TRANSLATIONS keyword")
         }
 
-        # MIF files will have UID in their names, if TARGET.UID3 is not set we need to generate it
-        isEmpty(TARGET.UID3):TARGET.UID3 = $$generate_test_uid($$TARGET)
+        # MIF files will have UID in their names, if TARGET.UID3 is not set, remind the user
+        isEmpty(TARGET.UID3):error("TARGET.UID3 must be explicitly defined for ICON generation")
 
         # Note: symbian-sbsv2 builds can't utilize extra compiler for mifconv, so ICON handling is done in code
         symbian-abld {        
