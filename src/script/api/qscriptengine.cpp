@@ -854,7 +854,7 @@ QScriptValue QScriptEnginePrivate::scriptValueFromJSCValue(JSC::JSValue value)
     QScriptValuePrivate *p_value = new QScriptValuePrivate();
     p_value->engine = this;
     p_value->initFrom(value);
-    return QScriptValuePrivate::get(p_value);
+    return QScriptValuePrivate::toPublic(p_value);
 }
 
 JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptValue &value)
@@ -872,17 +872,6 @@ JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptValue &val
         }
     }
     return vv->jscValue;
-}
-
-void QScriptEnginePrivate::releaseJSCValue(JSC::JSValue value)
-{
-// ### Q_ASSERT(!JSC::JSImmediate::isImmediate(value));
-    Q_ASSERT(value.isCell());
-    JSC::JSCell *cell = value.asCell();
-    if (!keepAliveValues.contains(cell))
-        qWarning("QScriptEnginePrivate::releaseJSCValue(): cell %p doesn't need releasing", cell);
-    if (!keepAliveValues[cell].deref())
-        keepAliveValues.remove(cell);
 }
 
 QScriptValue QScriptEnginePrivate::scriptValueFromVariant(const QVariant &v)
@@ -1150,11 +1139,11 @@ void QScriptEnginePrivate::mark()
         variantPrototype->mark();
 
     {
-        QHash<JSC::JSCell*,QBasicAtomicInt>::const_iterator it;
-        for (it = keepAliveValues.constBegin(); it != keepAliveValues.constEnd(); ++it) {
-            JSC::JSCell *cell = it.key();
-            if (!cell->marked())
-                cell->mark();
+        QList<QScriptValuePrivate*>::const_iterator it;
+        for (it = registeredScriptValues.constBegin(); it != registeredScriptValues.constEnd(); ++it) {
+            QScriptValuePrivate *val = *it;
+            if (val->isJSC() && !val->jscValue.marked())
+                val->jscValue.mark();
         }
     }
 
@@ -1373,21 +1362,22 @@ bool QScriptEnginePrivate::scriptDisconnect(JSC::JSValue signal, JSC::JSValue re
 }
 
 #endif
+
 void QScriptEnginePrivate::registerScriptValue(QScriptValuePrivate *value)
 {
-    attachedScriptValues.insert(value);
+    registeredScriptValues.append(value);
+}
+
+void QScriptEnginePrivate::unregisterScriptValue(QScriptValuePrivate *value)
+{
+    registeredScriptValues.removeOne(value);
 }
 
 void QScriptEnginePrivate::detachAllRegisteredScriptValues()
 {
-    //make copy of attachedScriptValues (orignal set will be modified)
-    QSet<QScriptValuePrivate*> tmpSet(attachedScriptValues);
-    QSet<QScriptValuePrivate*>::const_iterator i = tmpSet.begin();
-    while (i != tmpSet.end()) {
-        //this will autmagicly remove *i from attachedScriptValues
-        (*i)->detachEngine();
-        i++;
-    }
+    for (int i = 0; i < registeredScriptValues.size(); ++i)
+        registeredScriptValues.at(i)->detachFromEngine();
+    registeredScriptValues.clear();
 }
 
 #ifdef QT_NO_QOBJECT

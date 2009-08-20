@@ -66,41 +66,6 @@ class QScriptEnginePrivate;
 class QScriptValue;
 class QScriptValuePrivate
 {
-    /** Helper class used only in QScriptValuePrivate. Supports atomatic invalidation of all script
-        values evaluated and contained by QScriptEngine when the engine is above to be deleted.
-        On change it call QScriptEnginePrivate to unregister old and register new pointer value.
-        It should behave as pointer to QScriptEngine.
-        */
-    class QScriptValueAutoRegister
-    {
-        QScriptValuePrivate *val;
-        QScriptEnginePrivate *ptr;
-    public:
-        QScriptValueAutoRegister(QScriptValuePrivate *value) : val(value), ptr(0) {};
-        QScriptValueAutoRegister(QScriptValuePrivate *value, const QScriptEnginePrivate *engine);
-        ~QScriptValueAutoRegister();
-
-        QScriptValueAutoRegister& operator=(const QScriptEnginePrivate* pointer);
-
-        operator QScriptEnginePrivate*() const
-        {
-            return ptr;
-        }
-
-        operator bool() const
-        {
-            return ptr;
-        }
-
-        QScriptEnginePrivate* operator->() const
-        {
-            return ptr;
-        }
-
-    private:
-        QScriptValueAutoRegister(QScriptValueAutoRegister &/*engine*/){}; //block it
-    };
-
     Q_DISABLE_COPY(QScriptValuePrivate);
 public:
     enum Type {
@@ -126,7 +91,7 @@ public:
         return q.d_ptr;
     }
 
-    static QScriptValue get(QScriptValuePrivate *d)
+    static QScriptValue toPublic(QScriptValuePrivate *d)
     {
         QScriptValue tmp;
         tmp.d_ptr = d;
@@ -138,15 +103,7 @@ public:
     QScriptValue property(quint32 index, int resolveMode) const;
     QScriptValue property(const QString &, int resolveMode) const;
 
-    void detachEngine()
-    {
-        // if type is not developed in js engine there is no
-        // need to invalidate the object
-        if (isJSC()) {
-            jscValue = JSC::JSValue();
-        }
-        engine = 0;
-    }
+    void detachFromEngine();
 
     qint64 objectId()
     {
@@ -159,7 +116,7 @@ public:
     static void saveException(JSC::ExecState*, JSC::JSValue*);
     static void restoreException(JSC::ExecState*, JSC::JSValue);
 
-    QScriptValueAutoRegister engine;
+    QScriptEnginePrivate *engine;
     Type type;
     JSC::JSValue jscValue;
     double numberValue;

@@ -3239,8 +3239,6 @@ void tst_QScriptValue::prettyPrinter()
 
 void tst_QScriptValue::engineDeleted()
 {
-    //QFAIL("Crashes (need to invalidate scriptvalues when engine is deleted)");
-
     QScriptEngine *eng = new QScriptEngine;
     QScriptValue v1(eng, 123);
     QVERIFY(v1.isNumber());

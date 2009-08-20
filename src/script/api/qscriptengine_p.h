@@ -122,7 +122,6 @@ public:
 
     QScriptValue scriptValueFromJSCValue(JSC::JSValue value);
     JSC::JSValue scriptValueToJSCValue(const QScriptValue &value);
-    void releaseJSCValue(JSC::JSValue value);
 
     QScriptValue scriptValueFromVariant(const QVariant &value);
     QVariant scriptValueToVariant(const QScriptValue &value, int targetType);
@@ -212,10 +211,7 @@ public:
                           JSC::JSValue function);
 
     void registerScriptValue(QScriptValuePrivate *value);
-    void unregisterScriptValue(QScriptValuePrivate *value)
-    {
-        attachedScriptValues.remove(value);
-    }
+    void unregisterScriptValue(QScriptValuePrivate *value);
     void detachAllRegisteredScriptValues();
 
     // private slots
@@ -240,7 +236,7 @@ public:
     QList<QScriptEngineAgent*> ownedAgents;
     QScriptEngineAgent *activeAgent;
     int agentLineNumber;
-    QHash<JSC::JSCell*, QBasicAtomicInt> keepAliveValues;
+    QList<QScriptValuePrivate*> registeredScriptValues;
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;
     QScriptValue abortResult;
@@ -248,8 +244,6 @@ public:
 
     QSet<QString> importedExtensions;
     QSet<QString> extensionsBeingImported;
-
-    QSet<QScriptValuePrivate*> attachedScriptValues;  //keep trace to all QScriptValue evalueted
 
 #ifndef QT_NO_QOBJECT
     QHash<QObject*, QScript::QObjectData*> m_qobjectData;

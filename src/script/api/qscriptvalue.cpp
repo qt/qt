@@ -275,7 +275,7 @@ qsreal ToInteger(qsreal n)
 
 } // namespace QScript
 
-QScriptValuePrivate::QScriptValuePrivate() : engine(this)
+QScriptValuePrivate::QScriptValuePrivate() : engine(0)
 {
     ref = 0;
 }
@@ -284,28 +284,6 @@ QScriptValuePrivate::~QScriptValuePrivate()
 {
 }
 
-QScriptValuePrivate::QScriptValueAutoRegister::QScriptValueAutoRegister(QScriptValuePrivate *value,const QScriptEnginePrivate *engine):
-    val(value), ptr(const_cast<QScriptEnginePrivate*>(engine))
-{
-    ptr->registerScriptValue(val);
-}
-
-QScriptValuePrivate::QScriptValueAutoRegister::~QScriptValueAutoRegister()
-{
-    if (ptr)
-        ptr->unregisterScriptValue(val);
-}
-
-QScriptValuePrivate::QScriptValueAutoRegister& QScriptValuePrivate::QScriptValueAutoRegister::operator=(const QScriptEnginePrivate *pointer)
-{
-    if (ptr)
-        ptr->unregisterScriptValue(val);
-    ptr = const_cast<QScriptEnginePrivate*> (pointer);
-    if (ptr)
-        ptr->registerScriptValue(val);
-    return *this;
-};
-
 void QScriptValuePrivate::initFrom(JSC::JSValue value)
 {
     if (value.isCell()) {
@@ -313,24 +291,27 @@ void QScriptValuePrivate::initFrom(JSC::JSValue value)
         value = engine->toUsableValue(value);
         JSC::JSCell *cell = JSC::asCell(value);
         Q_ASSERT(cell != engine->originalGlobalObject());
-        if (!engine->keepAliveValues.contains(cell))
-            engine->keepAliveValues[cell] = 0;
-        engine->keepAliveValues[cell].ref();
     }
     type = JSC;
     jscValue = value;
+    if (engine)
+        engine->registerScriptValue(this);
 }
 
 void QScriptValuePrivate::initFrom(double value)
 {
     type = Number;
     numberValue = value;
+    if (engine)
+        engine->registerScriptValue(this);
 }
 
 void QScriptValuePrivate::initFrom(const QString &value)
 {
     type = String;
     stringValue = value;
+    if (engine)
+        engine->registerScriptValue(this);
 }
 
 bool QScriptValuePrivate::isJSC() const
@@ -346,7 +327,7 @@ QScriptValue QScriptValuePrivate::property(const QString &name, int resolveMode)
 
 QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolveMode) const
 {
-    Q_ASSERT(type == JSC);
+    Q_ASSERT(isJSC());
     JSC::ExecState *exec = engine->currentFrame;
     JSC::JSObject *object = jscValue.getObject();
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
@@ -369,7 +350,7 @@ QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolv
 
 QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
 {
-    Q_ASSERT(type == JSC);
+    Q_ASSERT(isJSC());
     JSC::ExecState *exec = engine->currentFrame;
     JSC::JSObject *object = jscValue.getObject();
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
@@ -415,6 +396,13 @@ void QScriptValuePrivate::restoreException(JSC::ExecState *exec, JSC::JSValue va
         exec->setException(val);
 }
 
+void QScriptValuePrivate::detachFromEngine()
+{
+    if (isJSC())
+        jscValue = JSC::JSValue();
+    engine = 0;
+}
+
 /*!
   Constructs an invalid QScriptValue.
 */
@@ -429,10 +417,8 @@ QScriptValue::QScriptValue()
 QScriptValue::~QScriptValue()
 {
     if (d_ptr && !d_ptr->ref.deref()) {
-        if (d_ptr->engine && d_ptr->isJSC()
-            && !JSC::JSImmediate::isImmediate(d_ptr->jscValue)) {
-            d_ptr->engine->releaseJSCValue(d_ptr->jscValue);
-        }
+        if (d_ptr->engine)
+            d_ptr->engine->unregisterScriptValue(d_ptr);
         delete d_ptr;
     }
 }
@@ -741,10 +727,8 @@ QScriptValue &QScriptValue::operator=(const QScriptValue &other)
     if (d_ptr == other.d_ptr)
         return *this;
     if (d_ptr && !d_ptr->ref.deref()) {
-        if (d_ptr->engine && d_ptr->isJSC()
-            && !JSC::JSImmediate::isImmediate(d_ptr->jscValue)) {
-            d_ptr->engine->releaseJSCValue(d_ptr->jscValue);
-        }
+        if (d_ptr->engine)
+            d_ptr->engine->unregisterScriptValue(d_ptr);
         delete d_ptr;
     }
     d_ptr = other.d_ptr;
