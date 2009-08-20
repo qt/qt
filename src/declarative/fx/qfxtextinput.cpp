@@ -99,7 +99,12 @@ void QFxTextInput::setText(const QString &s)
 }
 
 /*!
-    \qmlproperty font TextInput::font
+    \qmlproperty string TextInput::font.family
+    \qmlproperty bool TextInput::font.bold
+    \qmlproperty bool TextInput::font.italic
+    \qmlproperty bool TextInput::font.underline
+    \qmlproperty real TextInput::font.pointSize
+    \qmlproperty int TextInput::font.pixelSize
 
     Set the TextInput's font attributes.
 */
