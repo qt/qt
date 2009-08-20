@@ -479,6 +479,7 @@ void SymbianMakefileGenerator::init()
         project->values("QMAKESPEC").append(qgetenv("QMAKESPEC"));
 
     project->values("QMAKE_LIBS") += escapeFilePaths(project->values("LIBS"));
+    project->values("QMAKE_LIBS_PRIVATE") += escapeFilePaths(project->values("LIBS_PRIVATE"));
 
     // bld.inf
     project->values("MAKEFILE") += BLD_INF_FILENAME;
@@ -878,7 +879,7 @@ void SymbianMakefileGenerator::writeMmpFileIncludePart(QTextStream& t)
 void SymbianMakefileGenerator::writeMmpFileLibraryPart(QTextStream& t)
 {
     QStringList &libs = project->values("LIBS");
-    libs << project->values("QMAKE_LIBS");
+    libs << project->values("QMAKE_LIBS") << project->values("QMAKE_LIBS_PRIVATE");
 
     removeDuplicatedStrings(libs);
 
