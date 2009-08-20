@@ -55,14 +55,8 @@
 
 #include "qgraphicseffect.h"
 
-#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
-
 #include <private/qobject_p.h>
 #include <private/qpixmapfilter_p.h>
-
-#include <QtCore/qrect.h>
-#include <QtCore/qpoint.h>
-#include <QtGui/qcolor.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -169,6 +163,5 @@ public:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_GRAPHICSVIEW
-
 #endif // QGRAPHICSEFFECT_P_H
+
