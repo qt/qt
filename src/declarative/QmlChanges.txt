@@ -12,6 +12,8 @@ LineEdit         -> TextInput
 VerticalLayout   -> VerticalPositioner
 HorizontalLayout -> HorizontalPositioner
 GridLayout       -> GridPositioner
+Rect             -> Rectangle
+FocusRealm       -> FocusScope
 
 Renamed properties:
 MouseRegion: xmin    -> minimumX
