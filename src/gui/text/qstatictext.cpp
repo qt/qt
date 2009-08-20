@@ -116,11 +116,10 @@ QStaticText::QStaticText()
     \a font and bounded by the given \a maximumSize. If an invalid size is passed for \a maximumSize
     the text will be unbounded.         
 */
-QStaticText::QStaticText(const QString &text, const QFont &font, const QSizeF &size)
+QStaticText::QStaticText(const QString &text, const QSizeF &size)
     : d_ptr(new QStaticTextPrivate) 
 {    
     d_ptr->text = text;
-    d_ptr->font = font;
     d_ptr->size = size;
     d_ptr->init();
 }
@@ -223,7 +222,7 @@ void QStaticText::setMaximumSize(const QSizeF &size)
 /*!
     Returns the maximum size of the QStaticText.
 
-    \sa setMaximumSize
+    \sa setMaximumSize()
 */
 QSizeF QStaticText::maximumSize() const
 {
@@ -231,34 +230,10 @@ QSizeF QStaticText::maximumSize() const
 }
 
 /*!
-    Sets the font of the QStaticText to \a font.
+   Returns true if the text of the QStaticText is empty, and false if not.
 
-    \note This function will cause the layout of the text to be recalculated.
-
-    \sa font()
+   \sa text()
 */
-void QStaticText::setFont(const QFont &font)
-{
-    detach();
-    d_ptr->font = font;
-    d_ptr->init();
-}
-
-/*!
-    Returns the font of the QStaticText.
-
-    \sa setFont()
-*/
-QFont QStaticText::font() const
-{
-    return d_ptr->font;
-}
-
-QString QStaticText::toString() const
-{
-    return text();
-}
-
 bool QStaticText::isEmpty() const
 {
     return d_ptr->text.isEmpty();

@@ -112,7 +112,7 @@ void tst_QStaticText::drawToRect()
     QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
     {
         QPainter p(&imageDrawStaticText);
-        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.", QFont(), QSizeF(10, 500));
+        QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.", QSizeF(10, 500));
         p.drawStaticText(11, 12, text);
     }
 
@@ -128,6 +128,8 @@ void tst_QStaticText::setFont()
     QImage imageDrawText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
     {
         QPainter p(&imageDrawText);
+        p.drawText(0, 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+
         p.setFont(font);
         p.drawText(11, 120, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
     }
@@ -135,9 +137,12 @@ void tst_QStaticText::setFont()
     QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
     {
         QPainter p(&imageDrawStaticText);
+
         QStaticText text;
         text.setText("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
-        text.setFont(font);
+
+        p.drawStaticText(0, 0, text);
+        p.setFont(font);
         p.drawStaticText(11, 120, text);
     }
 
@@ -300,6 +305,7 @@ void tst_QStaticText::translationDoesntCauseRelayout()
     QImage imageDrawText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
     {
         QPainter p(&imageDrawText);
+        p.scale(2.0, 2.0);
         p.drawText(0, 0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
 
         p.translate(100, 200);
@@ -309,14 +315,14 @@ void tst_QStaticText::translationDoesntCauseRelayout()
     QImage imageDrawStaticText(1000, 1000, QImage::Format_ARGB32_Premultiplied);
     {
         QPainter p(&imageDrawStaticText);
+        p.scale(2.0, 2.0);
         QStaticText text("Lorem ipsum dolor sit amet, consectetur adipiscing elit.");
+        p.drawStaticText(0, 0, text);
 
         QStaticTextPrivate *textd = QStaticTextPrivate::get(&text);
         glyph_t *glyphPool = textd->glyphPool;
         QFixedPoint *positionPool = textd->positionPool;
         QStaticTextItem *items = textd->items;
-
-        p.drawStaticText(0, 0, text);
 
         p.translate(100, 200);
         p.drawStaticText(0, 0, text);
@@ -328,6 +334,11 @@ void tst_QStaticText::translationDoesntCauseRelayout()
         QCOMPARE(textd->positionPool, positionPool);
         QCOMPARE(textd->items, items);
     }
+
+#if defined(DEBUG_SAVE_IMAGE)
+    imageDrawText.save("translationDoesntCauseRelayout_imageDrawText.png");
+    imageDrawStaticText.save("translationDoesntCauseRelayout_imageDrawStaticText.png");
+#endif
 
     QCOMPARE(imageDrawStaticText, imageDrawText);
 }
