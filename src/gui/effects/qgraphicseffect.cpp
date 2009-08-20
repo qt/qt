@@ -98,6 +98,8 @@
 #include <QtGui/qpainter.h>
 #include <QtCore/qrect.h>
 
+QT_BEGIN_NAMESPACE
+
 /*
 
   List of known drawbacks which are being discussed:
@@ -715,4 +717,6 @@ void QGraphicsShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *sourc
     painter->drawPixmap(effectRect.topLeft(), pixmap);
     painter->setWorldTransform(restoreTransform);
 }
+
+QT_END_NAMESPACE
 
