@@ -57,7 +57,7 @@ QT_BEGIN_NAMESPACE
 
 //###  Mime Type mapping to UIDs
 
-const TUid KQtCbDataStream = {0x666777};
+const TUid KQtCbDataStream = {0x2001B2DD};
 
 
 class QClipboardData
