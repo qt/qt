@@ -456,15 +456,17 @@ static bool compare(const QVariant::Private *a, const QVariant::Private *b)
     if (!QMetaType::isRegistered(a->type))
         qFatal("QVariant::compare: type %d unknown to QVariant.", a->type);
 
+    const void *a_ptr = a->is_shared ? a->data.shared->ptr : &(a->data.ptr);
+    const void *b_ptr = b->is_shared ? b->data.shared->ptr : &(b->data.ptr);
+
     /* The reason we cannot place this test in a case branch above for the types
      * QMetaType::VoidStar, QMetaType::QObjectStar and so forth, is that it wouldn't include
      * user defined pointer types. */
     const char *const typeName = QMetaType::typeName(a->type);
     if (typeName[qstrlen(typeName) - 1] == '*')
-        return *static_cast<void **>(a->data.shared->ptr) ==
-               *static_cast<void **>(b->data.shared->ptr);
+        return *static_cast<void *const *>(a_ptr) == *static_cast<void *const *>(b_ptr);
 
-    return a->data.shared->ptr == b->data.shared->ptr;
+    return a_ptr == b_ptr;
 }
 
 /*!
@@ -1371,7 +1373,7 @@ void QVariant::create(int type, const void *copy)
 
 QVariant::~QVariant()
 {
-    if (d.type > Char && d.type != QMetaType::Float && d.type != QMetaType::QObjectStar && (!d.is_shared || !d.data.shared->ref.deref()))
+    if ((d.is_shared && !d.data.shared->ref.deref()) || (!d.is_shared && d.type > Char && d.type < UserType))
         handler->clear(&d);
 }
 
@@ -1387,7 +1389,7 @@ QVariant::QVariant(const QVariant &p)
 {
     if (d.is_shared) {
         d.data.shared->ref.ref();
-    } else if (p.d.type > Char && p.d.type != QMetaType::Float && p.d.type != QMetaType::QObjectStar) {
+    } else if (p.d.type > Char && p.d.type < QVariant::UserType) {
         handler->construct(&d, p.constData());
         d.is_null = p.d.is_null;
     }
@@ -1627,6 +1629,22 @@ QVariant::QVariant(Type type)
 { create(type, 0); }
 QVariant::QVariant(int typeOrUserType, const void *copy)
 { create(typeOrUserType, copy); d.is_null = false; }
+
+/*! \internal
+    flags is true if it is a pointer type
+ */
+QVariant::QVariant(int typeOrUserType, const void *copy, uint flags)
+{
+    if (flags) { //type is a pointer type
+        d.type = typeOrUserType;
+        d.data.ptr = *reinterpret_cast<void *const*>(copy);
+        d.is_null = false;
+    } else {
+        create(typeOrUserType, copy);
+        d.is_null = false;
+    }
+}
+
 QVariant::QVariant(int val)
 { d.is_null = false; d.type = Int; d.data.i = val; }
 QVariant::QVariant(uint val)
@@ -1743,7 +1761,7 @@ QVariant& QVariant::operator=(const QVariant &variant)
     if (variant.d.is_shared) {
         variant.d.data.shared->ref.ref();
         d = variant.d;
-    } else if (variant.d.type > Char && variant.d.type != QMetaType::Float && variant.d.type != QMetaType::QObjectStar) {
+    } else if (variant.d.type > Char && variant.d.type < UserType) {
         d.type = variant.d.type;
         handler->construct(&d, variant.constData());
         d.is_null = variant.d.is_null;
@@ -1797,7 +1815,7 @@ const char *QVariant::typeName() const
 */
 void QVariant::clear()
 {
-    if (!d.is_shared || !d.data.shared->ref.deref())
+    if ((d.is_shared && !d.data.shared->ref.deref()) || (!d.is_shared && d.type < UserType && d.type > Char))
         handler->clear(&d);
     d.type = Invalid;
     d.is_null = true;

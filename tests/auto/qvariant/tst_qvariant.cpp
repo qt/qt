@@ -2747,6 +2747,7 @@ void tst_QVariant::dataStar() const
 
     v2 = qVariantFromValue(p1);
     QVERIFY(v1 == v2);
+    delete p1;
 }
 
 void tst_QVariant::canConvertQStringList() const
