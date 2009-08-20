@@ -275,7 +275,7 @@ qsreal ToInteger(qsreal n)
 
 } // namespace QScript
 
-QScriptValuePrivate::QScriptValuePrivate() : engine(this), valid(true)
+QScriptValuePrivate::QScriptValuePrivate() : engine(this)
 {
     ref = 0;
 }
@@ -2430,10 +2430,7 @@ bool QScriptValue::isQMetaObject() const
 bool QScriptValue::isValid() const
 {
     Q_D(const QScriptValue);
-    if (d)
-        return d->isValid();
-    else
-        return false;
+    return d && (!d->isJSC() || !!d->jscValue);
 }
 
 /*!

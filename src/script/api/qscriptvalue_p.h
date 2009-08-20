@@ -139,13 +139,11 @@ public:
     QScriptValue property(quint32 index, int resolveMode) const;
     QScriptValue property(const QString &, int resolveMode) const;
 
-    bool isValid() const {return valid;}
     void detachEngine()
     {
         // if type is not developed in js engine there is no
         // need to invalidate the object
         if (isJSC()) {
-            valid = false;
             jscValue = JSC::JSValue();
         }
         engine = 0;
@@ -153,7 +151,7 @@ public:
 
     qint64 objectId()
     {
-        if ( (type == JSC) && (valid) && (engine) )
+        if ( (type == JSC) && (engine) )
             return (qint64)jscValue.asCell();
         else
             return -1;
@@ -169,8 +167,6 @@ public:
     QString stringValue;
 
     QBasicAtomicInt ref;
-    bool valid; //object is valid ?
-
 };
 
 
