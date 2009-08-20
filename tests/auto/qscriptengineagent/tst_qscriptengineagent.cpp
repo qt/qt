@@ -89,7 +89,8 @@ private slots:
     void functionEntryAndExit_functionReturn_construct();
     void functionEntryAndExit_functionReturn_call();
     void functionEntryAndExit_objectCall();
-    void positionChange();
+    void positionChange_1();
+    void positionChange_2();
     void exceptionThrowAndCatch();
     void eventOrder_assigment();
     void eventOrder_functionDefinition();
@@ -1127,7 +1128,7 @@ void tst_QScriptEngineAgent::functionEntryAndExit_objectCall()
     delete spy;
 }
 
-void tst_QScriptEngineAgent::positionChange()
+void tst_QScriptEngineAgent::positionChange_1()
 {
     QScriptEngine eng;
     ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnorePositionChange));
@@ -1194,10 +1195,15 @@ void tst_QScriptEngineAgent::positionChange()
         QCOMPARE(spy->at(2).type, ScriptEngineEvent::PositionChange);
         QCOMPARE(spy->at(2).scriptId, spy->at(0).scriptId);
         QCOMPARE(spy->at(2).lineNumber, lineNumber + 1);
-        QEXPECT_FAIL("","JSC do not take \\n as new line in source code", Continue);
         QCOMPARE(spy->at(2).columnNumber, 1);
     }
+    delete spy;
+}
 
+void tst_QScriptEngineAgent::positionChange_2()
+{
+    QScriptEngine eng;
+    ScriptEngineSpy *spy = new ScriptEngineSpy(&eng, ~(ScriptEngineSpy::IgnorePositionChange));
     {
         spy->clear();
         int lineNumber = 789;
@@ -1534,6 +1540,7 @@ void tst_QScriptEngineAgent::positionChange()
         QCOMPARE(spy->at(1).lineNumber, 1);
         QCOMPARE(spy->at(1).columnNumber, 20);
     }
+    delete spy;
 }
 
 void tst_QScriptEngineAgent::exceptionThrowAndCatch()
