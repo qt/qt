@@ -63,7 +63,7 @@
     \o QGraphicsColorizeEffect - renders the item in shades of any given color
     \o QGraphicsPixelizeEffect - pixelizes the item with any pixel size
     \o QGraphicsBlurEffect - blurs the item by a given radius
-    \o QGraphicsShadowEffect - renders a dropshadow behind the item
+    \o QGraphicsDropShadowEffect - renders a dropshadow behind the item
     \endlist
 
     If all you want is to add an effect to an item, you should visit the
@@ -538,24 +538,24 @@ void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
     painter->setWorldTransform(restoreTransform);
 }
 
-QGraphicsShadowEffect::QGraphicsShadowEffect(QObject *parent)
-    : QGraphicsEffect(*new QGraphicsShadowEffectPrivate, parent)
+QGraphicsDropShadowEffect::QGraphicsDropShadowEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsDropShadowEffectPrivate, parent)
 {
 }
 
-QGraphicsShadowEffect::~QGraphicsShadowEffect()
+QGraphicsDropShadowEffect::~QGraphicsDropShadowEffect()
 {
 }
 
-QPointF QGraphicsShadowEffect::shadowOffset() const
+QPointF QGraphicsDropShadowEffect::shadowOffset() const
 {
-    Q_D(const QGraphicsShadowEffect);
+    Q_D(const QGraphicsDropShadowEffect);
     return d->offset;
 }
 
-void QGraphicsShadowEffect::setShadowOffset(const QPointF &ofs)
+void QGraphicsDropShadowEffect::setShadowOffset(const QPointF &ofs)
 {
-    Q_D(QGraphicsShadowEffect);
+    Q_D(QGraphicsDropShadowEffect);
     if (d->offset == ofs)
         return;
 
@@ -564,15 +564,15 @@ void QGraphicsShadowEffect::setShadowOffset(const QPointF &ofs)
     emit shadowOffsetChanged(ofs);
 }
 
-int QGraphicsShadowEffect::blurRadius() const
+int QGraphicsDropShadowEffect::blurRadius() const
 {
-    Q_D(const QGraphicsShadowEffect);
+    Q_D(const QGraphicsDropShadowEffect);
     return d->radius;
 }
 
-void QGraphicsShadowEffect::setBlurRadius(int blurRadius)
+void QGraphicsDropShadowEffect::setBlurRadius(int blurRadius)
 {
-    Q_D(QGraphicsShadowEffect);
+    Q_D(QGraphicsDropShadowEffect);
     if (d->radius == blurRadius)
         return;
 
@@ -581,15 +581,15 @@ void QGraphicsShadowEffect::setBlurRadius(int blurRadius)
     emit blurRadiusChanged(blurRadius);
 }
 
-qreal QGraphicsShadowEffect::opacity() const
+qreal QGraphicsDropShadowEffect::opacity() const
 {
-    Q_D(const QGraphicsShadowEffect);
+    Q_D(const QGraphicsDropShadowEffect);
     return d->alpha;
 }
 
-void QGraphicsShadowEffect::setOpacity(qreal opacity)
+void QGraphicsDropShadowEffect::setOpacity(qreal opacity)
 {
-    Q_D(QGraphicsShadowEffect);
+    Q_D(QGraphicsDropShadowEffect);
     if (qFuzzyCompare(d->alpha, opacity))
         return;
 
@@ -597,9 +597,9 @@ void QGraphicsShadowEffect::setOpacity(qreal opacity)
     emit opacityChanged(opacity);
 }
 
-QRectF QGraphicsShadowEffect::boundingRectFor(const QRectF &rect) const
+QRectF QGraphicsDropShadowEffect::boundingRectFor(const QRectF &rect) const
 {
-    Q_D(const QGraphicsShadowEffect);
+    Q_D(const QGraphicsDropShadowEffect);
     QRectF shadowRect = rect.translated(d->offset);
     QRectF blurRect = shadowRect;
     qreal delta = d->radius * 3;
@@ -608,9 +608,9 @@ QRectF QGraphicsShadowEffect::boundingRectFor(const QRectF &rect) const
     return blurRect;
 }
 
-void QGraphicsShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
+void QGraphicsDropShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
-    Q_D(QGraphicsShadowEffect);
+    Q_D(QGraphicsDropShadowEffect);
     if (d->radius <= 0 && d->offset.isNull()) {
         source->draw(painter);
         return;

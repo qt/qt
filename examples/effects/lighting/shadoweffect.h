@@ -45,7 +45,7 @@
 #include <QGraphicsEffect>
 #include <QGraphicsItem>
 
-class ShadowEffect: public QGraphicsShadowEffect
+class ShadowEffect: public QGraphicsDropShadowEffect
 {
 public:
     ShadowEffect(QGraphicsItem *item, QGraphicsItem *source);

@@ -226,16 +226,16 @@ private:
     Q_DISABLE_COPY(QGraphicsBlurEffect)
 };
 
-class QGraphicsShadowEffectPrivate;
-class Q_GUI_EXPORT QGraphicsShadowEffect: public QGraphicsEffect
+class QGraphicsDropShadowEffectPrivate;
+class Q_GUI_EXPORT QGraphicsDropShadowEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_PROPERTY(QPointF shadowOffset READ shadowOffset WRITE setShadowOffset NOTIFY shadowOffsetChanged)
     Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
     Q_PROPERTY(int opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
 public:
-    QGraphicsShadowEffect(QObject *parent = 0);
-    ~QGraphicsShadowEffect();
+    QGraphicsDropShadowEffect(QObject *parent = 0);
+    ~QGraphicsDropShadowEffect();
 
     QRectF boundingRectFor(const QRectF &rect) const;
     QPointF shadowOffset() const;
@@ -260,8 +260,8 @@ protected:
     void draw(QPainter *painter, QGraphicsEffectSource *source);
 
 private:
-    Q_DECLARE_PRIVATE(QGraphicsShadowEffect)
-    Q_DISABLE_COPY(QGraphicsShadowEffect)
+    Q_DECLARE_PRIVATE(QGraphicsDropShadowEffect)
+    Q_DISABLE_COPY(QGraphicsDropShadowEffect)
 };
 
 QT_END_NAMESPACE

@@ -44,7 +44,7 @@
 #include <math.h>
 
 ShadowEffect::ShadowEffect(QGraphicsItem *item, QGraphicsItem *source)
-    : QGraphicsShadowEffect()
+    : QGraphicsDropShadowEffect()
     , item(item), m_lightSource(source)
 {
     setBlurRadius(8);
@@ -64,11 +64,11 @@ void ShadowEffect::adjustForItem()
 QRectF ShadowEffect::boundingRectFor(const QRectF &rect) const
 {
     const_cast<ShadowEffect *>(this)->adjustForItem();
-    return QGraphicsShadowEffect::boundingRectFor(rect);
+    return QGraphicsDropShadowEffect::boundingRectFor(rect);
 }
 
 void ShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     adjustForItem();
-    QGraphicsShadowEffect::draw(painter, source);
+    QGraphicsDropShadowEffect::draw(painter, source);
 }

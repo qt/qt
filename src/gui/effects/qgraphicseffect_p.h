@@ -150,11 +150,11 @@ public:
     int blurRadius;
 };
 
-class QGraphicsShadowEffectPrivate : public QGraphicsEffectPrivate
+class QGraphicsDropShadowEffectPrivate : public QGraphicsEffectPrivate
 {
-    Q_DECLARE_PUBLIC(QGraphicsShadowEffect)
+    Q_DECLARE_PUBLIC(QGraphicsDropShadowEffect)
 public:
-    QGraphicsShadowEffectPrivate() : offset(4, 4), radius(8), alpha(0.7) {}
+    QGraphicsDropShadowEffectPrivate() : offset(4, 4), radius(8), alpha(0.7) {}
 
     QPointF offset;
     int radius;
