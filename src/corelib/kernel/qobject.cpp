@@ -3219,12 +3219,11 @@ static void blocking_activate(QObject *sender, int signal, QObjectPrivate::Conne
 
 /*!\internal
    \obsolete.
-   Used to be called from QMetaObject::activate(QObject *, QMetaObject *, int, int, void **)
+   Used to be called from QMetaObject::activate(QObject *, QMetaObject *, int, int, void **) before Qt 4.6
  */
 void QMetaObject::activate(QObject *sender, int from_signal_index, int to_signal_index, void **argv)
 {
-    int offset = sender->metaObject()->methodOffset();
-    activate(sender, from_signal_index - offset, to_signal_index - offset, argv);
+    activate(sender, from_signal_index, argv);
 }
 
 /*!\internal
