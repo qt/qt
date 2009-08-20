@@ -17,10 +17,14 @@ FocusRealm       -> FocusScope
 FontFamily       -> FontLoader
 
 Renamed properties:
-MouseRegion: xmin    -> minimumX
-MouseRegion: xmax    -> maximumX
-MouseRegion: ymin    -> minimumY
-MouseRegion: ymin    -> maximumY
+MouseRegion: xmin      -> minimumX
+MouseRegion: xmax      -> maximumX
+MouseRegion: ymin      -> minimumY
+MouseRegion: ymin      -> maximumY
+Text elements: hAlign  -> horizontalAlignment
+Text elements: vAlign  -> verticalAlignment
+State: operations      -> changes
+Transition: operations -> animations
 
 Additions:
 MouseRegion: add "acceptedButtons" property
@@ -49,10 +53,8 @@ SetAnchors         -> AnchorChanges
 
 Renamed properties:
 Follow: followValue    -> value
-State: operations      -> changes
 Transition: fromState  -> from
 Trnasition: toState    -> to
-Transition: operations -> animations
 
 Removed Properties:
 PropertyAction::property

@@ -200,7 +200,7 @@ If a list property has been the default property, it means the property tag can 
 
 \code
 State {
-    operations: [
+    changes: [
         SetProperties {},
         SetProperties {}
     ]

@@ -100,6 +100,7 @@ public:
     virtual bool override(ActionEvent*other);
 };
 
+//### rename to QmlStateChange?
 class QmlStateGroup;
 class Q_DECLARATIVE_EXPORT QmlStateOperation : public QObject
 {
@@ -126,8 +127,8 @@ class Q_DECLARATIVE_EXPORT QmlState : public QObject
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QmlBinding *when READ when WRITE setWhen)
     Q_PROPERTY(QString extends READ extends WRITE setExtends)
-    Q_PROPERTY(QmlList<QmlStateOperation *>* operations READ operations)
-    Q_CLASSINFO("DefaultProperty", "operations")
+    Q_PROPERTY(QmlList<QmlStateOperation *>* changes READ changes)
+    Q_CLASSINFO("DefaultProperty", "changes")
 
 public:
     QmlState(QObject *parent=0);
@@ -145,7 +146,7 @@ public:
     QString extends() const;
     void setExtends(const QString &);
 
-    QmlList<QmlStateOperation *> *operations();
+    QmlList<QmlStateOperation *> *changes();
     QmlState &operator<<(QmlStateOperation *);
 
     void apply(QmlStateGroup *, QmlTransition *, QmlState *revert);
