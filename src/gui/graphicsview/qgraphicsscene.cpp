@@ -244,6 +244,7 @@
 #include <QtGui/qtransform.h>
 #include <QtGui/qgesture.h>
 #include <QtGui/qinputcontext.h>
+#include <QtGui/qgraphicseffect.h>
 #include <private/qapplication_p.h>
 #include <private/qobject_p.h>
 #ifdef Q_WS_X11

@@ -581,6 +581,7 @@
 #include <QtGui/qpixmapcache.h>
 #include <QtGui/qstyleoption.h>
 #include <QtGui/qevent.h>
+#include <QtGui/qgraphicseffect.h>
 
 #include <private/qgraphicsitem_p.h>
 #include <private/qgraphicswidget_p.h>
