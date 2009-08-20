@@ -227,7 +227,7 @@ void QmlState::setExtends(const QString &extends)
 }
 
 /*!
-    \qmlproperty list<StateOperation> State::operations
+    \qmlproperty list<Change> State::changes
     This property holds the changes to apply for this state
     \default
 
@@ -235,7 +235,7 @@ void QmlState::setExtends(const QString &extends)
     extends another state, then the changes are applied against the state being
     extended.
 */
-QmlList<QmlStateOperation *> *QmlState::operations()
+QmlList<QmlStateOperation *> *QmlState::changes()
 {
     Q_D(QmlState);
     return &d->operations;

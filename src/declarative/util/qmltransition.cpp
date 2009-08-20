@@ -241,15 +241,16 @@ void QmlTransition::setToState(const QString &t)
 }
 
 /*!
-    \qmlproperty list<Animation> Transition::operations
+    \qmlproperty list<Animation> Transition::animations
+    \default
     This property holds a list of the animations to be run for this transition.
 
-    The top-level animations in operations are run in parallel.
-    To run them sequentially, you can create a single SequentialAnimation
-    which contains all the animations, and assign that to operations.
+    The top-level animations are run in parallel. To run them sequentially,
+    you can create a single SequentialAnimation which contains all the animations,
+    and assign that to animations the animations property.
     \default
 */
-QmlList<QmlAbstractAnimation *>* QmlTransition::operations()
+QmlList<QmlAbstractAnimation *>* QmlTransition::animations()
 {
     Q_D(QmlTransition);
     return &d->operations;
