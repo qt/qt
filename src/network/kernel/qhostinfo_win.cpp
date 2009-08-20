@@ -52,6 +52,7 @@
 #include <qlibrary.h>
 #include <qtimer.h>
 #include <qmutex.h>
+#include <qurl.h>
 #include <private/qmutexpool_p.h>
 
 QT_BEGIN_NAMESPACE
