@@ -30,7 +30,8 @@ HEADERS +=                                           \
            $$PHONON_MMF_DIR/dummyplayer.h            \
            $$PHONON_MMF_DIR/mediaobject.h            \
            $$PHONON_MMF_DIR/utils.h                  \
-           $$PHONON_MMF_DIR/videoplayer.h
+           $$PHONON_MMF_DIR/videoplayer.h            \
+	   $$PHONON_MMF_DIR/volumecontrolinterface.h
 
 SOURCES +=                                           \
 	   $$PHONON_MMF_DIR/abstractmediaplayer.cpp  \

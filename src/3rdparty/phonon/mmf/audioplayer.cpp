@@ -164,15 +164,22 @@ void MMF::AudioPlayer::MapcInitComplete(TInt aError,
 
     if(KErrNone == aError)
     {
+// TODO: CLEANUP
+/*
         TInt volume = 0;
         aError = m_player->GetVolume(volume);
         if(KErrNone == aError)
         {
-            initVolume(volume, m_player->MaxVolume());
+*/
+            initVolume(m_player->MaxVolume());
 
             emit totalTimeChanged();
             changeState(StoppedState);
+
+// TODO: CLEANUP
+/*
         }
+*/
     }
     else
     {

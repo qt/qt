@@ -28,13 +28,19 @@ namespace Phonon
         class AudioOutput;
 
         /**
-         * @short In order to make the implementation of MediaObject simpler,
-         * we have this class.
+         * @short Stub implementation of AbstractPlayer.
+         * 
+         * The functions of this class are:
+         * -	Allow MediaObject to call a subset of the MediaObjectInterface
+         * 		API, before SetSource has been called.
+         * -	Cache any parameters which are set in this state (e.g.
+         * 		prefinish mark), so that they can be copied into the 'real'
+         * 		AbstractPlayer implementation once a source has been loaded.
          */
         class DummyPlayer : public AbstractPlayer
         {
         public:
-            // AbstractPlayer
+            // MediaObjectInterface
             virtual void play();
             virtual void pause();
             virtual void stop();
@@ -49,18 +55,18 @@ namespace Phonon
             virtual Phonon::ErrorType errorType() const;
             virtual qint64 totalTime() const;
             virtual MediaSource source() const;
-            virtual void setSource(const MediaSource &);
+           // virtual void setSource(const MediaSource &);
+            virtual void setFileSource(const Phonon::MediaSource&, RFile&);
             virtual void setNextSource(const MediaSource &source);
             virtual qint32 prefinishMark() const;
             virtual void setPrefinishMark(qint32);
             virtual qint32 transitionTime() const;
             virtual void setTransitionTime(qint32);
+            
+            // VolumeControlInterface
             virtual qreal volume() const;
             virtual bool setVolume(qreal volume);
-
-            virtual void setAudioOutput(AudioOutput* audioOutput);
-            virtual void setFileSource(const Phonon::MediaSource&, RFile&);
-
+            
         Q_SIGNALS:
             void totalTimeChanged();
             void stateChanged(Phonon::State oldState,

@@ -27,6 +27,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 // For recognizer
 #include <apgcli.h>
 
+#include "volumecontrolinterface.h"
+
 namespace Phonon
 {
     namespace MMF
@@ -38,6 +40,7 @@ namespace Phonon
          */
         class MediaObject : public QObject
                           , public MediaObjectInterface
+                          , public VolumeControlInterface
         {
             Q_OBJECT
             Q_INTERFACES(Phonon::MediaObjectInterface)
@@ -68,10 +71,9 @@ namespace Phonon
             virtual qint32 transitionTime() const;
             virtual void setTransitionTime(qint32);
 
+            // VolumeControlInterface
             qreal volume() const;
             bool setVolume(qreal volume);
-
-            void setAudioOutput(AudioOutput* audioOutput);
 
         Q_SIGNALS:
             void totalTimeChanged();

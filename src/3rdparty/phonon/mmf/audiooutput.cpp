@@ -21,21 +21,41 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "mediaobject.h"
 #include "audiooutput.h"
 #include "utils.h"
+#include "volumecontrolinterface.h"
 
 using namespace Phonon;
 using namespace Phonon::MMF;
 
-MMF::AudioOutput::AudioOutput(Backend *, QObject *parent) : m_mediaObject(NULL)
+
+//-----------------------------------------------------------------------------
+// Constants
+//-----------------------------------------------------------------------------
+
+static const qreal InitialVolume = 0.5;
+
+
+//-----------------------------------------------------------------------------
+// Constructor / destructor
+//-----------------------------------------------------------------------------
+
+MMF::AudioOutput::AudioOutput(Backend *, QObject *parent)	: QObject(parent)
+															, m_volume(InitialVolume)
+															, m_volumeControl(NULL)
 {
-    setParent(parent);
+
 }
+
+
+//-----------------------------------------------------------------------------
+// Public API
+//-----------------------------------------------------------------------------
 
 qreal MMF::AudioOutput::volume() const
 {
     TRACE_CONTEXT(AudioOutput::volume, EAudioApi);
-    TRACE_ENTRY("m_mediaObject 0x%08x", m_mediaObject);
+    TRACE_ENTRY("control 0x%08x ", m_volumeControl);
 
-    const qreal result = m_mediaObject ? m_mediaObject->volume() : 0.0;
+    const qreal result = m_volumeControl ? m_volumeControl->volume() : m_volume;
 
     TRACE_RETURN("%f", result);
 }
@@ -43,20 +63,22 @@ qreal MMF::AudioOutput::volume() const
 void MMF::AudioOutput::setVolume(qreal volume)
 {
     TRACE_CONTEXT(AudioOutput::setVolume, EAudioApi);
-    TRACE_ENTRY("volume %f", volume);
+    TRACE_ENTRY("control 0x%08x volume %f", m_volumeControl, volume);
 
-    if(m_mediaObject and m_mediaObject->setVolume(volume))
+    if(m_volumeControl)
     {
-        TRACE("emit volumeChanged(%f)", volume)
-        emit volumeChanged(volume);
+		if(m_volumeControl->setVolume(volume))
+		{
+			TRACE("emit volumeChanged(%f)", volume)
+			emit volumeChanged(volume);
+		}
+    }
+    else
+    {
+		m_volume = volume;
     }
 
     TRACE_EXIT_0();
-}
-
-void MMF::AudioOutput::triggerVolumeChanged(qreal volume)
-{
-    emit volumeChanged(volume);
 }
 
 int MMF::AudioOutput::outputDevice() const
@@ -74,9 +96,10 @@ bool MMF::AudioOutput::setOutputDevice(const Phonon::AudioOutputDevice &)
     return true;
 }
 
-void MMF::AudioOutput::setMediaObject(MediaObject *mo)
+void MMF::AudioOutput::setVolumeControl(VolumeControlInterface *volumeControl)
 {
-    Q_ASSERT(!m_mediaObject);
-    m_mediaObject = mo;
+    Q_ASSERT(!m_volumeControl);
+    m_volumeControl = volumeControl;
+    m_volumeControl->setVolume(m_volume);
 }
 

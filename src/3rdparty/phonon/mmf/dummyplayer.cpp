@@ -21,6 +21,10 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+//-----------------------------------------------------------------------------
+// Public functions (AbstractPlayer interface)
+//-----------------------------------------------------------------------------
+
 void MMF::DummyPlayer::play()
 {
 }
@@ -86,9 +90,11 @@ MediaSource MMF::DummyPlayer::source() const
     return MediaSource();
 }
 
+/*
 void MMF::DummyPlayer::setSource(const MediaSource &)
 {
 }
+*/
 
 void MMF::DummyPlayer::setNextSource(const MediaSource &)
 {
@@ -116,10 +122,6 @@ void MMF::DummyPlayer::setFileSource(const Phonon::MediaSource &, RFile &)
 {
 }
 
-//-----------------------------------------------------------------------------
-// Volume
-//-----------------------------------------------------------------------------
-
 qreal MMF::DummyPlayer::volume() const
 {
     return 0;
@@ -130,8 +132,6 @@ bool MMF::DummyPlayer::setVolume(qreal)
     return true;
 }
 
-void MMF::DummyPlayer::setAudioOutput(AudioOutput *)
-{
-}
+
 
 

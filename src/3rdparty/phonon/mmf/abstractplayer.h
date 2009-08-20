@@ -23,6 +23,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <Phonon/phononnamespace.h>
 #include <Phonon/MediaSource.h>
 
+#include "volumecontrolinterface.h"
+
 class RFile;
 
 namespace Phonon
@@ -31,13 +33,23 @@ namespace Phonon
     {
         class AudioOutput;
 
-        class AbstractPlayer : public QObject
+        /**
+         * Interface which abstracts from MediaObject the current media type.
+         * This may be:
+         * 	-	Nothing, in which case this interface is implemented by 
+         * 		DummyPlayer
+         *  -	Audio, in which case the implementation is AudioPlayer
+         *  -	Video, in which case the implementation is VideoPlayer
+         */
+        class AbstractPlayer	: public QObject
+								, public VolumeControlInterface
         {
 			// Required although this class has no signals or slots
 			// Without this, qobject_cast will fail
 			Q_OBJECT
         
         public:
+        	// Mirror of Phonon::MediaObjectInterfac
             virtual void play() = 0;
             virtual void pause() = 0;
             virtual void stop() = 0;
@@ -51,22 +63,17 @@ namespace Phonon
             virtual QString errorString() const = 0;
             virtual Phonon::ErrorType errorType() const = 0;
             virtual qint64 totalTime() const = 0;
-            virtual Phonon::MediaSource source() const = 0;
-            
+            virtual Phonon::MediaSource source() const = 0;           
             // This is a temporary hack to work around KErrInUse from MMF
             // client utility OpenFileL calls
             //virtual void setSource(const Phonon::MediaSource &) = 0;
             virtual void setFileSource(const Phonon::MediaSource&, RFile&) = 0;
-            
             virtual void setNextSource(const Phonon::MediaSource &) = 0;
-
             virtual void setTransitionTime(qint32) = 0;
             virtual qint32 transitionTime() const = 0;
             virtual qint32 prefinishMark() const = 0;
             virtual void setPrefinishMark(qint32) = 0;
-            virtual bool setVolume(qreal) = 0;
-            virtual qreal volume() const = 0;
-            virtual void setAudioOutput(AudioOutput *) = 0;
+
         };
     }
 }

@@ -32,6 +32,10 @@ namespace Phonon
     {
 		class AudioOutput;
     
+		/**
+		 * Interface via which MMF client APIs for both audio and video can be
+		 * accessed.
+		 */
         class AbstractMediaPlayer : public AbstractPlayer
         {
 			Q_OBJECT
@@ -41,7 +45,7 @@ namespace Phonon
         	~AbstractMediaPlayer();
         	
         public:
-        	// AbstractPlayer
+        	// MediaObjectInterface
         	virtual void play();
         	virtual void pause();
         	virtual void stop();
@@ -56,18 +60,12 @@ namespace Phonon
             virtual qint32 transitionTime() const;
             virtual void setTransitionTime(qint32);
             virtual MediaSource source() const;
+            virtual void setFileSource(const Phonon::MediaSource&, RFile&);
             virtual void setNextSource(const MediaSource &source);
-            
-            // This is a temporary hack to work around KErrInUse from MMF
-			// client utility OpenFileL calls
-			//virtual void setSource(const Phonon::MediaSource &) = 0;
-			virtual void setFileSource
-				(const Phonon::MediaSource&, RFile&);
-            
+
+            // VolumeControlInterface
             qreal volume() const;
-            bool setVolume(qreal volume);
-            
-            void setAudioOutput(AudioOutput* audioOutput);
+            bool setVolume(qreal volume);        
         	
         protected:
         	virtual void doPlay() = 0;
@@ -80,7 +78,7 @@ namespace Phonon
         protected:
         	void startTickTimer();
         	void stopTickTimer();
-        	void initVolume(int initialVolume, int maxVolume);
+        	void initVolume(int maxVolume);
         	
         	/**
 			 * Defined private state enumeration in order to add GroundState
@@ -137,9 +135,6 @@ namespace Phonon
         	QScopedPointer<QTimer>		m_tickTimer;
             qreal						m_volume;
             int							m_mmfMaxVolume;
-            
-            // Not owned
-            AudioOutput*				m_audioOutput;
             
             MediaSource					m_source;
             MediaSource					m_nextSource;

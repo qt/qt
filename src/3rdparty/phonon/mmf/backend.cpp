@@ -26,10 +26,10 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 using namespace Phonon;
 using namespace Phonon::MMF;
 
-Backend::Backend(QObject *parent)
+Backend::Backend(QObject *parent)	: QObject(parent)
 {
+	// TODO: replace this with logging macros as per rest of the module
     qDebug() << Q_FUNC_INFO;
-    setParent(parent);
 
     setProperty("identifier",     QLatin1String("phonon_mmf"));
     setProperty("backendName",    QLatin1String("MMF"));
@@ -40,12 +40,20 @@ Backend::Backend(QObject *parent)
 
 QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const QList<QVariant> &)
 {
+	// TODO: add trace
+
+	QObject* result = NULL;
+
     switch(c)
     {
         case AudioOutputClass:
-            return new AudioOutput(this, parent);
+        	result = new AudioOutput(this, parent);
+        	break;
+        	
         case MediaObjectClass:
-            return new MediaObject(parent);
+        	result =  new MediaObject(parent);
+        	break;
+        	
         case VolumeFaderEffectClass:
         /* Fallthrough. */
         case VisualizationClass:
@@ -55,12 +63,14 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
         case EffectClass:
         /* Fallthrough. */
         case VideoWidgetClass:
-            return 0;
+        	result = NULL;
+        	break;
+        	
+        default:
+        	Q_ASSERT_X(false, Q_FUNC_INFO, "This line should never be reached.");
     }
 
-    Q_ASSERT_X(false, Q_FUNC_INFO,
-               "This line should never be reached.");
-    return 0;
+    return result;
 }
 
 QList<int> Backend::objectDescriptionIndexes(ObjectDescriptionType) const
@@ -80,20 +90,25 @@ bool Backend::startConnectionChange(QSet<QObject *>)
 
 bool Backend::connectNodes(QObject *source, QObject *target)
 {
-    MediaObject *const mo = qobject_cast<MediaObject *>(source);
-    AudioOutput *const ao = qobject_cast<AudioOutput *>(target);
+	// TODO: add trace
 
-    if(!mo || !ao)
-        return false;
+	MediaObject *const mediaObject = qobject_cast<MediaObject *>(source);
+    AudioOutput *const audioOutput = qobject_cast<AudioOutput *>(target);
 
-    ao->setMediaObject(mo);
-    mo->setAudioOutput(ao);
-
-    return true;
+    if(mediaObject and audioOutput)
+    {
+		audioOutput->setVolumeControl(mediaObject);
+		return true;
+    }
+    
+    // Node types not recognised
+    return false;
 }
 
 bool Backend::disconnectNodes(QObject *, QObject *)
 {
+	// TODO: add trace
+
     return true;
 }
 
@@ -104,6 +119,8 @@ bool Backend::endConnectionChange(QSet<QObject *>)
 
 QStringList Backend::availableMimeTypes() const
 {
+	// TODO: query MMF for available MIME types
+
     return QStringList();
 }
 

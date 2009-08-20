@@ -26,16 +26,13 @@ namespace Phonon
     namespace MMF
     {
         class Backend;
-        class MediaObject;
+        class VolumeControlInterface;
 
         /**
          * @short AudioOutputInterface implementation for MMF.
          *
-         * Implements the AudioOutputInterface for Symbian/S60's MMF
-         * framework.
-         *
-         * This class has a very small role, we simply access CDrmPlayerUtility
-         * in MediaObject::m_player and forward everything there.
+         * Forwards volume commands to the VolumeControlInterface instance, 
+         * provided by the backend.
          *
          * \section volume Volume
          *
@@ -69,20 +66,25 @@ namespace Phonon
              */
             virtual bool setOutputDevice(const Phonon::AudioOutputDevice &);
 
-            void setMediaObject(MediaObject *mo);
+            void setVolumeControl(VolumeControlInterface *volumeControl);
 
             /**
              * Called by MediaObject to pass initial volume when clip has been
              * successfully opened
              */
-            void triggerVolumeChanged(qreal volume);
+            //void triggerVolumeChanged(qreal volume);
 
         Q_SIGNALS:
             void volumeChanged(qreal volume);
             void audioDeviceFailed();
 
         private:
-            MediaObject *   m_mediaObject;
+        	/**
+        	 * This value is used when m_volumeControl is NULL.
+        	 */
+        	qreal						m_volume;
+        	
+        	VolumeControlInterface *	m_volumeControl;
         };
     }
 }

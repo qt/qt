@@ -30,6 +30,9 @@ using namespace Phonon::MMF;
 const qint32	DefaultTickInterval = 20;
 const int		NullMaxVolume = -1;
 
+// TODO: consolidate this with constant used in AudioOutput
+const qreal		InitialVolume = 0.5;
+
 
 //-----------------------------------------------------------------------------
 // Constructor / destructor
@@ -40,9 +43,8 @@ MMF::AbstractMediaPlayer::AbstractMediaPlayer() :
 						,	m_error(NoError)
 						,	m_tickInterval(DefaultTickInterval)
 						,	m_tickTimer(new QTimer(this))
-						,	m_volume(0.0)
+						,	m_volume(InitialVolume)
 						,	m_mmfMaxVolume(NullMaxVolume)
-						,	m_audioOutput(NULL)
 {
 	connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
 }
@@ -54,7 +56,7 @@ MMF::AbstractMediaPlayer::~AbstractMediaPlayer()
 
 
 //-----------------------------------------------------------------------------
-// Public functions (AbstractPlayer interface)
+// MediaObjectInterface
 //-----------------------------------------------------------------------------
 
 void MMF::AbstractMediaPlayer::play()
@@ -335,7 +337,7 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
 
 
 //-----------------------------------------------------------------------------
-// Volume
+// VolumeControlInterface
 //-----------------------------------------------------------------------------
 
 qreal MMF::AbstractMediaPlayer::volume() const
@@ -355,7 +357,7 @@ bool MMF::AbstractMediaPlayer::setVolume(qreal volume)
         case GroundState:
         case LoadingState:
         case ErrorState:
-            // Do nothing
+        	m_volume = volume;
             break;
 
         case StoppedState:
@@ -371,12 +373,6 @@ bool MMF::AbstractMediaPlayer::setVolume(qreal volume)
                 {
                     m_volume = volume;
                     volumeChanged = true;
-                    
-                    if(m_audioOutput)
-                    {
-						// Trigger AudioOutput signal
-						m_audioOutput->triggerVolumeChanged(m_volume);
-                    }
                 }
                 else
                 {
@@ -398,16 +394,6 @@ bool MMF::AbstractMediaPlayer::setVolume(qreal volume)
 
 
 //-----------------------------------------------------------------------------
-// Proxies
-//-----------------------------------------------------------------------------
-
-void MMF::AbstractMediaPlayer::setAudioOutput(AudioOutput* audioOutput)
-{
-    m_audioOutput = audioOutput;
-}
-
-
-//-----------------------------------------------------------------------------
 // Protected functions
 //-----------------------------------------------------------------------------
 
@@ -421,10 +407,10 @@ void MMF::AbstractMediaPlayer::stopTickTimer()
 	m_tickTimer->stop();
 }
 
-void MMF::AbstractMediaPlayer::initVolume(int initialVolume, int mmfMaxVolume)
+void MMF::AbstractMediaPlayer::initVolume(int mmfMaxVolume)
 {
-	m_volume = static_cast<qreal>(initialVolume) / mmfMaxVolume;
 	m_mmfMaxVolume = mmfMaxVolume;
+	doSetVolume(m_volume * m_mmfMaxVolume);
 }
 
 Phonon::State MMF::AbstractMediaPlayer::phononState() const

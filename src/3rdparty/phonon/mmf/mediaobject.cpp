@@ -319,7 +319,7 @@ void MMF::MediaObject::setTransitionTime(qint32 time)
 }
 
 //-----------------------------------------------------------------------------
-// Volume
+// VolumeControlInterface
 //-----------------------------------------------------------------------------
 
 qreal MMF::MediaObject::volume() const
@@ -332,8 +332,4 @@ bool MMF::MediaObject::setVolume(qreal volume)
     return m_player->setVolume(volume);
 }
 
-void MMF::MediaObject::setAudioOutput(AudioOutput* audioOutput)
-{
-    m_player->setAudioOutput(audioOutput);
-}
 
