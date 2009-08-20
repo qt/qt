@@ -15,6 +15,7 @@ GridLayout       -> GridPositioner
 Rect             -> Rectangle
 FocusRealm       -> FocusScope
 FontFamily       -> FontLoader
+Palette          -> SystemPalette
 
 Renamed properties:
 MouseRegion: xmin      -> minimumX
@@ -49,7 +50,6 @@ Renamed elements:
 RunScriptAction    -> ScriptAction
 ParentChangeAction -> ParentAction
 Bind               -> Binding
-Palette            -> SystemPalette
 SetProperties      -> PropertyChanges
 RunScript          -> StateChangeScript
 SetAnchors         -> AnchorChanges
