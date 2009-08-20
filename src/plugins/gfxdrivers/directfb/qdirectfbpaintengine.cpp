@@ -847,6 +847,13 @@ void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode m
 {
     if (!surface)
         return;
+
+    static const bool forceRasterFallBack = qgetenv("QT_DIRECTFB_FORCE_RASTER").toInt() > 0;
+    if (forceRasterFallBack) {
+        compositionModeStatus = 0;
+        return;
+    }
+
     compositionModeStatus = PorterDuff_SupportedBlits;
     switch (mode) {
     case QPainter::CompositionMode_Clear:
