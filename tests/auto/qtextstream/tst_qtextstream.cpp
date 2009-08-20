@@ -1254,6 +1254,8 @@ void tst_QTextStream::stillOpenWhenAtEnd()
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
 #if defined(Q_OS_SYMBIAN)
+    // This number is determined in an arbitrary way; whatever it takes
+    // to make the test pass.
     QVERIFY(socket.waitForReadyRead(30000));
 #else
     QVERIFY(socket.waitForReadyRead(5000));
