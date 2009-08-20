@@ -21,6 +21,8 @@ MouseRegion: xmin    -> minimumX
 MouseRegion: xmax    -> maximumX
 MouseRegion: ymin    -> minimumY
 MouseRegion: ymin    -> maximumY
+Text: hAlign         -> horizontalAlignment
+Text: vAlign         -> verticalAlignment
 
 Additions:
 MouseRegion: add "acceptedButtons" property
