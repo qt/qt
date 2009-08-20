@@ -47,23 +47,23 @@
 XbelWriter::XbelWriter(QTreeWidget *treeWidget)
     : treeWidget(treeWidget)
 {
-    setAutoFormatting(true);
+    xml.setAutoFormatting(true);
 }
 //! [0]
 
 //! [1]
 bool XbelWriter::writeFile(QIODevice *device)
 {
-    setDevice(device);
+    xml.setDevice(device);
 
-    writeStartDocument();
-    writeDTD("<!DOCTYPE xbel>");
-    writeStartElement("xbel");
-    writeAttribute("version", "1.0");
+    xml.writeStartDocument();
+    xml.writeDTD("<!DOCTYPE xbel>");
+    xml.writeStartElement("xbel");
+    xml.writeAttribute("version", "1.0");
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
         writeItem(treeWidget->topLevelItem(i));
 
-    writeEndDocument();
+    xml.writeEndDocument();
     return true;
 }
 //! [1]
@@ -74,20 +74,20 @@ void XbelWriter::writeItem(QTreeWidgetItem *item)
     QString tagName = item->data(0, Qt::UserRole).toString();
     if (tagName == "folder") {
         bool folded = !treeWidget->isItemExpanded(item);
-        writeStartElement(tagName);
-        writeAttribute("folded", folded ? "yes" : "no");
-        writeTextElement("title", item->text(0));
+        xml.writeStartElement(tagName);
+        xml.writeAttribute("folded", folded ? "yes" : "no");
+        xml.writeTextElement("title", item->text(0));
         for (int i = 0; i < item->childCount(); ++i)
             writeItem(item->child(i));
-        writeEndElement();
+        xml.writeEndElement();
     } else if (tagName == "bookmark") {
-        writeStartElement(tagName);
+        xml.writeStartElement(tagName);
         if (!item->text(1).isEmpty())
-            writeAttribute("href", item->text(1));
-        writeTextElement("title", item->text(0));
-        writeEndElement();
+            xml.writeAttribute("href", item->text(1));
+        xml.writeTextElement("title", item->text(0));
+        xml.writeEndElement();
     } else if (tagName == "separator") {
-        writeEmptyElement(tagName);
+        xml.writeEmptyElement(tagName);
     }
 }
 //! [2]
