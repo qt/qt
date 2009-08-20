@@ -209,6 +209,7 @@ public:
     QGraphicsBlurEffect(QObject *parent = 0);
     ~QGraphicsBlurEffect();
 
+    QRectF boundingRectFor(const QRectF &rect) const;
     int blurRadius() const;
 
 public Q_SLOTS:
@@ -218,7 +219,6 @@ Q_SIGNALS:
     void blurRadiusChanged(int blurRadius);
 
 protected:
-    QRectF boundingRectFor(const QRectF &rect) const;
     void draw(QPainter *painter, QGraphicsEffectSource *source);
 
 private:
@@ -237,6 +237,7 @@ public:
     QGraphicsShadowEffect(QObject *parent = 0);
     ~QGraphicsShadowEffect();
 
+    QRectF boundingRectFor(const QRectF &rect) const;
     QPointF shadowOffset() const;
     int blurRadius() const;
     qreal opacity() const;
@@ -256,7 +257,6 @@ Q_SIGNALS:
     void opacityChanged(int opacity);
 
 protected:
-    QRectF boundingRectFor(const QRectF &rect) const;
     void draw(QPainter *painter, QGraphicsEffectSource *source);
 
 private:
