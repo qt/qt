@@ -120,7 +120,6 @@ void QPixmap::init(int w, int h, int type)
         data = QGraphicsSystem::createDefaultPixmapData(static_cast<QPixmapData::PixelType>(type));
 
     data->resize(w, h);
-    data->ref.ref();
 }
 
 /*!
@@ -222,7 +221,6 @@ QPixmap::QPixmap(const QSize &s, int type)
 QPixmap::QPixmap(QPixmapData *d)
     : QPaintDevice(), data(d)
 {
-    data->ref.ref();
 }
 
 /*!
@@ -261,12 +259,7 @@ QPixmap::QPixmap(const QString& fileName, const char *format, Qt::ImageConversio
     if (!qt_pixmap_thread_test())
         return;
 
-    QT_TRY {
-        load(fileName, format, flags);
-    } QT_CATCH(...) {
-        deref();
-        QT_RETHROW;
-    }
+    load(fileName, format, flags);
 }
 
 /*!
@@ -283,11 +276,9 @@ QPixmap::QPixmap(const QPixmap &pixmap)
         return;
     }
     if (pixmap.paintingActive()) {                // make a deep copy
-        data = 0;
         operator=(pixmap.copy());
     } else {
         data = pixmap.data;
-        data->ref.ref();
     }
 }
 
@@ -314,17 +305,12 @@ QPixmap::QPixmap(const char * const xpm[])
     if (!xpm)
         return;
 
-    QT_TRY {
-        QImage image(xpm);
-        if (!image.isNull()) {
-            if (data->pixelType() == QPixmapData::BitmapType)
-                *this = QBitmap::fromImage(image);
-            else
-                *this = fromImage(image);
-        }
-    } QT_CATCH(...) {
-        deref();
-        QT_RETHROW;
+    QImage image(xpm);
+    if (!image.isNull()) {
+        if (data->pixelType() == QPixmapData::BitmapType)
+            *this = QBitmap::fromImage(image);
+        else
+            *this = fromImage(image);
     }
 }
 #endif
@@ -336,7 +322,6 @@ QPixmap::QPixmap(const char * const xpm[])
 
 QPixmap::~QPixmap()
 {
-    deref();
 }
 
 /*!
@@ -381,7 +366,7 @@ QPixmap QPixmap::copy(const QRect &rect) const
     else
         d = QGraphicsSystem::createDefaultPixmapData(data->pixelType());
 
-    d->copy(data, r);
+    d->copy(data.data(), r);
     return QPixmap(d);
 }
 
@@ -454,8 +439,6 @@ QPixmap &QPixmap::operator=(const QPixmap &pixmap)
     if (pixmap.paintingActive()) {                // make a deep copy
         *this = pixmap.copy();
     } else {
-        pixmap.data->ref.ref();                                // avoid 'x = x'
-        deref();
         data = pixmap.data;
     }
     return *this;
@@ -1362,14 +1345,12 @@ bool QPixmap::isDetached() const
     return data->ref == 1;
 }
 
+/*! \internal
+  ### Qt5 - remove me.
+*/
 void QPixmap::deref()
 {
-    if (data && !data->ref.deref()) { // Destroy image if last ref
-        if (data->is_cached)
-            QImagePixmapCleanupHooks::executePixmapHooks(this);
-        delete data;
-        data = 0;
-    }
+    Q_ASSERT_X(false, "QPixmap::deref()", "Do not call this function anymore!");
 }
 
 /*!
@@ -1928,7 +1909,7 @@ void QPixmap::detach()
 {
     QPixmapData::ClassId id = data->classId();
     if (id == QPixmapData::RasterClass) {
-        QRasterPixmapData *rasterData = static_cast<QRasterPixmapData*>(data);
+        QRasterPixmapData *rasterData = static_cast<QRasterPixmapData*>(data.data());
         rasterData->image.detach();
     }
 
@@ -2038,7 +2019,7 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
 */
 QPixmapData* QPixmap::pixmapData() const
 {
-    return data;
+    return data.data();
 }
 
 /*!

@@ -217,7 +217,6 @@ QFontPrivate::QFontPrivate()
       rawMode(false), underline(false), overline(false), strikeOut(false), kerning(true),
       capital(0), letterSpacingIsAbsolute(false), scFont(0)
 {
-    ref = 1;
 #ifdef Q_WS_X11
     if (QX11Info::display())
         screen = QX11Info::appScreen();
@@ -237,7 +236,6 @@ QFontPrivate::QFontPrivate(const QFontPrivate &other)
       letterSpacing(other.letterSpacing), wordSpacing(other.wordSpacing),
       scFont(other.scFont)
 {
-    ref = 1;
 #ifdef Q_WS_WIN
     hdc = other.hdc;
 #endif
@@ -721,11 +719,11 @@ QFont::QFont(const QFont &font, QPaintDevice *pd)
     const int screen = 0;
 #endif
     if (font.d->dpi != dpi || font.d->screen != screen ) {
-        d.reset(new QFontPrivate(*font.d));
+        d = new QFontPrivate(*font.d);
         d->dpi = dpi;
         d->screen = screen;
     } else {
-        d.assign(font.d.data());
+        d = font.d.data();
     }
 #ifdef Q_WS_WIN
     if (pd->devType() == QInternal::Printer && pd->getDC())
@@ -737,9 +735,8 @@ QFont::QFont(const QFont &font, QPaintDevice *pd)
   \internal
 */
 QFont::QFont(QFontPrivate *data)
-    : resolve_mask(QFont::AllPropertiesResolved)
+    : d(data), resolve_mask(QFont::AllPropertiesResolved)
 {
-    d.assign(data);
 }
 
 /*! \internal
@@ -766,9 +763,8 @@ void QFont::detach()
     \sa QApplication::setFont(), QApplication::font()
 */
 QFont::QFont()
-    :resolve_mask(0)
+    : d(QApplication::font().d.data()), resolve_mask(0)
 {
-    d.assign(QApplication::font().d.data());
 }
 
 /*!
@@ -790,10 +786,8 @@ QFont::QFont()
     setStyleHint() QApplication::font()
 */
 QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
+    : d(new QFontPrivate()), resolve_mask(QFont::FamilyResolved)
 {
-    d.reset(new QFontPrivate());
-    resolve_mask = QFont::FamilyResolved;
-
     if (pointSize <= 0) {
 #ifdef Q_OS_SYMBIAN
         pointSize = 7;
@@ -821,9 +815,8 @@ QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
     Constructs a font that is a copy of \a font.
 */
 QFont::QFont(const QFont &font)
+    : d(font.d.data()), resolve_mask(font.resolve_mask)
 {
-    d.assign(font.d.data());
-    resolve_mask = font.resolve_mask;
 }
 
 /*!
@@ -838,7 +831,7 @@ QFont::~QFont()
 */
 QFont &QFont::operator=(const QFont &font)
 {
-    d.assign(font.d.data());
+    d = font.d.data();
     resolve_mask = font.resolve_mask;
     return *this;
 }
@@ -2197,8 +2190,7 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
 */
 QDataStream &operator>>(QDataStream &s, QFont &font)
 {
-    font.d.assign(0);
-    font.d.reset(new QFontPrivate);
+    font.d = new QFontPrivate;
     font.resolve_mask = QFont::AllPropertiesResolved;
 
     quint8 styleHint, styleStrategy = QFont::PreferDefault, charSet, weight, bits;
