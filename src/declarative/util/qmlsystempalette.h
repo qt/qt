@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLPALETTE_H
-#define QMLPALETTE_H
+#ifndef QMLSYSTEMPALETTE_H
+#define QMLSYSTEMPALETTE_H
 
 #include <QtCore/qobject.h>
 #include <QtDeclarative/qml.h>
@@ -52,11 +52,11 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlPalettePrivate;
-class Q_DECLARATIVE_EXPORT QmlPalette : public QObject
+class QmlSystemPalettePrivate;
+class Q_DECLARATIVE_EXPORT QmlSystemPalette : public QObject
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlPalette)
+    Q_DECLARE_PRIVATE(QmlSystemPalette)
 
     Q_PROPERTY(QPalette::ColorGroup colorGroup READ colorGroup WRITE setColorGroup NOTIFY paletteChanged)
     Q_PROPERTY(QColor window READ window NOTIFY paletteChanged)
@@ -75,8 +75,8 @@ class Q_DECLARATIVE_EXPORT QmlPalette : public QObject
     Q_PROPERTY(QColor highlightedText READ highlightedText NOTIFY paletteChanged)
 
 public:
-    QmlPalette(QObject *parent=0);
-    ~QmlPalette();
+    QmlSystemPalette(QObject *parent=0);
+    ~QmlSystemPalette();
 
     QColor window() const;
     QColor windowText() const;
@@ -115,8 +115,8 @@ private:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlPalette)
+QML_DECLARE_TYPE(QmlSystemPalette)
 
 QT_END_HEADER
 
-#endif // QMLPALETTE_H
+#endif // QMLSYSTEMPALETTE_H

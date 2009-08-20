@@ -4,7 +4,7 @@ Rectangle {
     id: MainWindow;
     width: 320; height: 270; color: Palette.window
 
-    Palette { id: Palette }
+    SystemPalette { id: Palette; colorGroup: Qt.Active }
     Script { source: "calculator.js" }
 
     VerticalPositioner {

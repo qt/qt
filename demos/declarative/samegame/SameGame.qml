@@ -5,13 +5,13 @@ import "content"
 Rectangle {
     id: page; width: 460; height: 700; color: activePalette.window
     Script { source: "content/samegame.js" }
-    Palette { id: activePalette; colorGroup: "Active" }
+    SystemPalette { id: activePalette; colorGroup: Qt.Active }
     Rectangle {
         id: gameCanvas
         property int score: 0
         z:20; y:20; color: "white"; border.width: 1
-        width:parent.width - tileSize - (parent.width % tileSize); 
-        height:parent.height - tileSize - (parent.height % tileSize); 
+        width:parent.width - tileSize - (parent.width % tileSize);
+        height:parent.height - tileSize - (parent.height % tileSize);
         anchors.horizontalCenter: parent.horizontalCenter
         Image { id:background;
             source: "content/pics/background.png"
@@ -23,12 +23,12 @@ Rectangle {
     }
 
     Dialog { id: dialog; anchors.centerIn: parent; z: 21}
-    Button { 
-        id: btnA; text: "New Game"; onClicked: {initBoard();} 
+    Button {
+        id: btnA; text: "New Game"; onClicked: {initBoard();}
         anchors.top: gameCanvas.bottom; anchors.topMargin: 4; anchors.left: gameCanvas.left;
     }
-    Text { 
-        text: "Score: " + gameCanvas.score; width:100; font.pointSize:14 
+    Text {
+        text: "Score: " + gameCanvas.score; width:100; font.pointSize:14
         anchors.top: gameCanvas.bottom; anchors.topMargin: 4; anchors.right: gameCanvas.right;
     }
 }
