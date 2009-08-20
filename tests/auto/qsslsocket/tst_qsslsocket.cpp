@@ -249,13 +249,13 @@ void tst_QSslSocket::initTestCase_data()
     QTest::addColumn<bool>("setProxy");
     QTest::addColumn<int>("proxyType");
 
-    //QTest::newRow("WithoutProxy") << false << 0;
+    QTest::newRow("WithoutProxy") << false << 0;
 #ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(Socks5Proxy);
-    //QTest::newRow("WithSocks5ProxyAuth") << true << int(Socks5Proxy | AuthBasic);
+    QTest::newRow("WithSocks5ProxyAuth") << true << int(Socks5Proxy | AuthBasic);
 
-    //QTest::newRow("WithHttpProxy") << true << int(HttpProxy);
-    //QTest::newRow("WithHttpProxyBasicAuth") << true << int(HttpProxy | AuthBasic);
+    QTest::newRow("WithHttpProxy") << true << int(HttpProxy);
+    QTest::newRow("WithHttpProxyBasicAuth") << true << int(HttpProxy | AuthBasic);
     // uncomment the line below when NTLM works
 //    QTest::newRow("WithHttpProxyNtlmAuth") << true << int(HttpProxy | AuthNtlm);
 #endif
