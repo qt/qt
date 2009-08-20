@@ -83,6 +83,10 @@ protected:
     void classBegin();
     void componentComplete();
 
+public Q_SLOTS:
+    void start();
+    void stop();
+
 Q_SIGNALS:
     void triggered();
     void runningChanged();
