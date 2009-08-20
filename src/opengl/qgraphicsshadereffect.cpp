@@ -182,8 +182,8 @@ public:
 /*!
     Constructs a shader effect and attaches it to \a parent.
 */
-QGraphicsShaderEffect::QGraphicsShaderEffect()
-    : QGraphicsEffect(*new QGraphicsShaderEffectPrivate())
+QGraphicsShaderEffect::QGraphicsShaderEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsShaderEffectPrivate(), parent)
 {
 }
 
