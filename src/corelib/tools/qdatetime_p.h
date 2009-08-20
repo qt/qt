@@ -81,9 +81,9 @@ class QDateTimePrivate
 public:
     enum Spec { LocalUnknown = -1, LocalStandard = 0, LocalDST = 1, UTC = 2, OffsetFromUTC = 3};
 
-    QDateTimePrivate() : ref(1), spec(LocalUnknown), utcOffset(0) {}
+    QDateTimePrivate() : spec(LocalUnknown), utcOffset(0) {}
     QDateTimePrivate(const QDateTimePrivate &other)
-        : ref(1), date(other.date), time(other.time), spec(other.spec), utcOffset(other.utcOffset)
+        : date(other.date), time(other.time), spec(other.spec), utcOffset(other.utcOffset)
     {}
 
     QAtomicInt ref;
