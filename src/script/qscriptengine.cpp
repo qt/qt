@@ -1774,10 +1774,8 @@ QScriptValue QScriptEngine::objectById(qint64 id) const
   Constructs a new QScriptSyntaxCheckResult from the \a other result.
 */
 QScriptSyntaxCheckResult::QScriptSyntaxCheckResult(const QScriptSyntaxCheckResult &other)
-    : d_ptr(other.d_ptr.data())
+    : d_ptr(other.d_ptr)
 {
-    if (d_ptr)
-        d_ptr->ref.ref();
 }
 
 /*!
@@ -1786,8 +1784,6 @@ QScriptSyntaxCheckResult::QScriptSyntaxCheckResult(const QScriptSyntaxCheckResul
 QScriptSyntaxCheckResult::QScriptSyntaxCheckResult(QScriptSyntaxCheckResultPrivate *d)
     : d_ptr(d)
 {
-    if (d_ptr)
-        d_ptr->ref.ref();
 }
 
 /*!
@@ -1856,7 +1852,7 @@ QString QScriptSyntaxCheckResult::errorMessage() const
 */
 QScriptSyntaxCheckResult &QScriptSyntaxCheckResult::operator=(const QScriptSyntaxCheckResult &other)
 {
-    d_ptr.assign(other.d_ptr.data());
+    d_ptr = other.d_ptr;
     return *this;
 }
 
