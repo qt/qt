@@ -128,7 +128,7 @@ QFxText::~QFxText()
     \qmlproperty bool Text::font.italic
     \qmlproperty bool Text::font.underline
     \qmlproperty real Text::font.pointSize
-    \qmlproperty real Text::font.pixelSize
+    \qmlproperty int Text::font.pixelSize
 
     Set the Text's font attributes.
 */

@@ -124,7 +124,12 @@ QString QFxTextEdit::text() const
 }
 
 /*!
-    \qmlproperty font TextEdit::font
+    \qmlproperty string TextEdit::font.family
+    \qmlproperty bool TextEdit::font.bold
+    \qmlproperty bool TextEdit::font.italic
+    \qmlproperty bool TextEdit::font.underline
+    \qmlproperty real TextEdit::font.pointSize
+    \qmlproperty int TextEdit::font.pixelSize
 
     Set the TextEdit's font attributes.
 */
