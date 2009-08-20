@@ -82,7 +82,7 @@ public:
     QDetachedPixmap(const QPixmap &pix) : QPixmap(pix)
     {
         if (data && data->classId() == QPixmapData::RasterClass) {
-            QRasterPixmapData *d = static_cast<QRasterPixmapData*>(data);
+            QRasterPixmapData *d = static_cast<QRasterPixmapData*>(data.data());
             if (!d->image.isNull() && d->image.d->paintEngine
                 && !d->image.d->paintEngine->isActive())
             {

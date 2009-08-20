@@ -44,7 +44,7 @@
 
 #include <QtCore/qstring.h>
 #include <QtCore/qnamespace.h>
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -285,7 +285,7 @@ public:
 private:
     friend class QDateTimePrivate;
     void detach();
-    QScopedSharedPointer<QDateTimePrivate> d;
+    QExplicitlySharedDataPointer<QDateTimePrivate> d;
 
 #ifndef QT_NO_DATASTREAM
     friend Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QDateTime &);
