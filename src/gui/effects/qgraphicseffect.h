@@ -105,7 +105,6 @@ public:
     QGraphicsEffect(QObject *parent = 0);
     virtual ~QGraphicsEffect();
 
-    // ### make protected?
     virtual QRectF boundingRectFor(const QRectF &rect) const;
     QRectF boundingRect() const;
 

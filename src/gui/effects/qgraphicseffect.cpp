@@ -100,60 +100,6 @@
 
 QT_BEGIN_NAMESPACE
 
-/*
-
-  List of known drawbacks which are being discussed:
-
-  * No d-pointer yet.
-
-  * No auto test yet.
-
-  * No API documentation yet.
-
-  * The API is far from being finalized.
-
-  * Most of the effect implementation is not efficient,
-    as this is still a proof of concept only.
-
-  * Painting artifacts occasionally occur when e.g. moving
-    an item over another item that has a large effective
-    bounding rect.
-
-  * Item transformation is not taken into account.
-    For example, the effective bounding rect is calculated at
-    item coordinate (fast), but the painting is mostly
-    done at device coordinate.
-
-  * Coordinate mode: item vs device. Most effects make sense only
-    in device coordinate. Should we keep both options open?
-    See also above transformation issue.
-
-  * Right now the pixmap for effect drawing is stored in each item.
-    There can be problems with coordinates, see above.
-
-  * There is a lot of duplication in drawItems() for each effect.
-
-  * Port to use the new layer feature in QGraphicsView.
-    This should solve the above pixmap problem.
-
-  * Frame effect is likely useless. However it is very useful
-    to check than the effective bounding rect is handled properly.
-
-  * Proper exposed region and rect for style option are missing.
-
-  * Pixelize effect is using raster only, because there is no
-    pixmap filter for it. We need to implement the missing pixmap filter.
-
-  * Blur effect is using raster only, with exponential blur algorithm.
-    Perhaps use stack blur (better approximate Gaussian blur) instead?
-    QPixmapConvolutionFilter is too slow for this simple blur effect.
-
-  * Bloom and shadow effect are also raster only. Same reason as above.
-
-  * Make it work with widgets (QGraphicsWidget).
-
-*/
-
 QGraphicsEffectSource::QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {}
@@ -207,7 +153,6 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
 QGraphicsEffect::QGraphicsEffect(QObject *parent)
     : QObject(*new QGraphicsEffectPrivate, parent)
 {
-    // ### parent?
 }
 
 /*!
@@ -354,10 +299,12 @@ void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *so
 
 QGraphicsColorizeEffect::QGraphicsColorizeEffect(QObject *parent)
     : QGraphicsEffect(*new QGraphicsColorizeEffectPrivate, parent)
-{}
+{
+}
 
 QGraphicsColorizeEffect::~QGraphicsColorizeEffect()
-{}
+{
+}
 
 QColor QGraphicsColorizeEffect::color() const
 {
