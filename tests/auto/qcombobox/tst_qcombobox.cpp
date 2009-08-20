@@ -2260,11 +2260,11 @@ void tst_QComboBox::setItemDelegate()
     QComboBox comboBox;
     QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
     comboBox.setItemDelegate(itemDelegate);
-    QCOMPARE(
 #ifdef Q_CC_MWERKS
-            static_cast<QStyledItemDelegate *>
+    QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
+#else
+    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
 #endif
-            (comboBox.itemDelegate()), itemDelegate);
 }
 
 void tst_QComboBox::task253944_itemDelegateIsReset()
@@ -2274,18 +2274,18 @@ void tst_QComboBox::task253944_itemDelegateIsReset()
     comboBox.setItemDelegate(itemDelegate);
 
     comboBox.setEditable(true);
-    QCOMPARE(
 #ifdef Q_CC_MWERKS
-            static_cast<QStyledItemDelegate *>
+    QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
+#else
+    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
 #endif
-            (comboBox.itemDelegate()), itemDelegate);
 
     comboBox.setStyleSheet("QComboBox { border: 1px solid gray; }");
-    QCOMPARE(
 #ifdef Q_CC_MWERKS
-            static_cast<QStyledItemDelegate *>
+    QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
+#else
+    QCOMPARE(comboBox.itemDelegate(), itemDelegate);
 #endif
-            (comboBox.itemDelegate()), itemDelegate);
 }
 
 
