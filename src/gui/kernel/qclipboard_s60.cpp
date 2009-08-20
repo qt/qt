@@ -79,8 +79,6 @@ public:
     bool connected()
     { return connection; }
     void clear();
-    RFs fsSession();
-
 
 private:
     QMimeData* src;
@@ -222,7 +220,7 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
     if (d)
     {
         TRAPD(err,{
-            RFs fs = d->fsSession();
+            RFs& fs = QCoreApplicationPrivate::fsSession();
             CClipboard* cb = CClipboard::NewForWritingLC(fs);
             RStoreWriteStream  stream;
             TStreamId stid = stream.CreateLC(cb->Store());

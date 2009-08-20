@@ -284,7 +284,9 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv)
 
 QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
+#ifdef Q_OS_SYMBIAN
     fileServerSession.Close();
+#endif
     if (threadData) {
 #ifndef QT_NO_THREAD
         void *data = &threadData->tls;
