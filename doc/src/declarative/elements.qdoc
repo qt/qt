@@ -97,7 +97,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 \list
 \o \l Loader
 \o \l Repeater
-\o \l Palette
+\o \l SystemPalette
 \o \l ComponentInstance
 \o \l GraphicsObjectContainer
 \endlist
