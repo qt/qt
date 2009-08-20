@@ -67,7 +67,7 @@ TextEdit {
     text: "<b>Hello</b> <i>World!</i>"
     focus: true
     font.family: "Helvetica"
-    font.size: 20
+    font.pointSize: 20
     color: "blue"
     width: 240
 }
@@ -126,7 +126,7 @@ QString QFxTextEdit::text() const
 /*!
     \qmlproperty font TextEdit::font
 
-    Set the TextEdit's font attributes.  \c font.size sets the font's point size.
+    Set the TextEdit's font attributes.
 */
 
 /*!
@@ -169,16 +169,16 @@ void QFxTextEdit::setText(const QString &text)
     \qml
 VerticalPositioner {
     TextEdit {
-        font.size: 24
+        font.pointSize: 24
         text: "<b>Hello</b> <i>World!</i>"
     }
     TextEdit {
-        font.size: 24
+        font.pointSize: 24
         textFormat: "RichText"
         text: "<b>Hello</b> <i>World!</i>"
     }
     TextEdit {
-        font.size: 24
+        font.pointSize: 24
         textFormat: "PlainText"
         text: "<b>Hello</b> <i>World!</i>"
     }

@@ -11,7 +11,7 @@ Rectangle {
             width: 80; height: 80
             VerticalLayout {
                 Image { anchors.horizontalCenter: Name.horizontalCenter; width: 64; height: 64; source: icon }
-                Text { id: Name; text: name; font.size: 16}
+                Text { id: Name; text: name; font.pointSize: 16}
             }
         }
     }
