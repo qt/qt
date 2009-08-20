@@ -131,11 +131,14 @@ QVariant QScriptDebuggerStackModel::data(const QModelIndex &index, int role) con
                 name = QString::fromLatin1("<anonymous>");
             return name;
         } else if (index.column() == 2) {
-            if (info.lineNumber() == -1)
-                return QString::fromLatin1("<native>");
             QString fn = QFileInfo(info.fileName()).fileName();
-            if (fn.isEmpty())
-                fn = QString::fromLatin1("<anonymous script, id=%0>").arg(info.scriptId());
+            if (fn.isEmpty()) {
+                if (info.functionType() == QScriptContextInfo::ScriptFunction)
+                    fn = QString::fromLatin1("<anonymous script, id=%0>").arg(info.scriptId());
+                else
+                    fn = QString::fromLatin1("<native>");
+
+            }
             return QString::fromLatin1("%0:%1").arg(fn).arg(info.lineNumber());
         }
     } else if (role == Qt::ToolTipRole) {
