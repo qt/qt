@@ -65,7 +65,7 @@ namespace JSC {
     };
 #endif
 
-#if defined(QT_BUILD_SCRIPT_LIB) && defined(Q_OS_SOLARIS)
+#if defined(QT_BUILD_SCRIPT_LIB) && PLATFORM(SOLARIS)
     struct
 #else
     union
