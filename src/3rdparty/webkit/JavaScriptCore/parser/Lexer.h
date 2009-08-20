@@ -87,6 +87,10 @@ namespace JSC {
         static const size_t initialIdentifierTableCapacity = 64;
 
         int m_lineNumber;
+        // this variable is supposed to keep index of last new line character ('\n' or '\r\n'or '\n\r'...)
+        // it is importent to calculate correct first_column in parser
+        int m_startColumnNumberCorrection;
+
 
         Vector<char> m_buffer8;
         Vector<UChar> m_buffer16;
