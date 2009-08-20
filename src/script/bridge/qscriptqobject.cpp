@@ -267,9 +267,7 @@ void QtFunction::mark()
 {
     Q_ASSERT(!marked());
     if (data->object && !data->object.marked()) {
-        // FIXME: Causes infinite recursion because the object will mark this function,
-        // which will again mark the object, and so on. Need an "is marking" flag.
-//        data->object.mark();
+        JSC::asObject(data->object)->JSC::JSObject::mark();
     }
     JSC::InternalFunction::mark();
 }
