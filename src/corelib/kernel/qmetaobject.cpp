@@ -140,63 +140,6 @@ QT_BEGIN_NAMESPACE
     \value Public
 */
 
-// do not touch without touching the moc as well
-enum PropertyFlags  {
-    Invalid = 0x00000000,
-    Readable = 0x00000001,
-    Writable = 0x00000002,
-    Resettable = 0x00000004,
-    EnumOrFlag = 0x00000008,
-    StdCppSet = 0x00000100,
-//     Override = 0x00000200,
-    Constant = 0x00000400,
-    Final = 0x00000800,
-    Designable = 0x00001000,
-    ResolveDesignable = 0x00002000,
-    Scriptable = 0x00004000,
-    ResolveScriptable = 0x00008000,
-    Stored = 0x00010000,
-    ResolveStored = 0x00020000,
-    Editable = 0x00040000,
-    ResolveEditable = 0x00080000,
-    User = 0x00100000,
-    ResolveUser = 0x00200000,
-    Notify = 0x00400000
-};
-
-enum MethodFlags  {
-    AccessPrivate = 0x00,
-    AccessProtected = 0x01,
-    AccessPublic = 0x02,
-    AccessMask = 0x03, //mask
-
-    MethodMethod = 0x00,
-    MethodSignal = 0x04,
-    MethodSlot = 0x08,
-    MethodConstructor = 0x0c,
-    MethodTypeMask = 0x0c,
-
-    MethodCompatibility = 0x10,
-    MethodCloned = 0x20,
-    MethodScriptable = 0x40
-};
-
-enum MetaObjectFlags {
-    DynamicMetaObject = 0x01
-};
-
-struct QMetaObjectPrivate
-{
-    int revision;
-    int className;
-    int classInfoCount, classInfoData;
-    int methodCount, methodData;
-    int propertyCount, propertyData;
-    int enumeratorCount, enumeratorData;
-    int constructorCount, constructorData;
-    int flags;
-};
-
 static inline const QMetaObjectPrivate *priv(const uint* data)
 { return reinterpret_cast<const QMetaObjectPrivate*>(data); }
 
@@ -599,28 +542,45 @@ int QMetaObject::indexOfMethod(const char *method) const
 */
 int QMetaObject::indexOfSignal(const char *signal) const
 {
-    int i = -1;
     const QMetaObject *m = this;
-    while (m && i < 0) {
+    int i = QMetaObjectPrivate::indexOfSignalRelative(&m, signal);
+    if (i >= 0)
+        i += m->methodOffset();
+    return i;
+}
+
+/*! \internal
+    Same as QMetaObject::indexOfSignal, but the result is the local offset to the base object.
+
+    \a baseObject will be adjusted to the enclosing QMetaObject, or 0 if the signal is not found
+*/
+int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject, const char *signal)
+{
+    int i = -1;
+    while (*baseObject) {
+        const QMetaObject *const m = *baseObject;
         for (i = priv(m->d.data)->methodCount-1; i >= 0; --i)
             if ((m->d.data[priv(m->d.data)->methodData + 5*i + 4] & MethodTypeMask) == MethodSignal
                 && strcmp(signal, m->d.stringdata
-                          + m->d.data[priv(m->d.data)->methodData + 5*i]) == 0) {
-                i += m->methodOffset();
+                + m->d.data[priv(m->d.data)->methodData + 5*i]) == 0) {
                 break;
             }
-        m = m->d.superdata;
+        if (i >= 0)
+            break;
+        *baseObject = m->d.superdata;
     }
 #ifndef QT_NO_DEBUG
+    const QMetaObject *m = *baseObject;
     if (i >= 0 && m && m->d.superdata) {
         int conflict = m->d.superdata->indexOfMethod(signal);
         if (conflict >= 0)
             qWarning("QMetaObject::indexOfSignal:%s: Conflict with %s::%s",
-                      m->d.stringdata, m->d.superdata->d.stringdata, signal);
+                     m->d.stringdata, m->d.superdata->d.stringdata, signal);
     }
 #endif
     return i;
 }
+
 
 /*!
     Finds \a slot and returns its index; otherwise returns -1.
@@ -2668,5 +2628,21 @@ const char* QMetaClassInfo::value() const
     Constructs a QGenericReturnArgument object with the given \a name
     and \a data.
 */
+
+/*! \internal
+    If the local_method_index is a cloned method, return the index of the original.
+
+    Example: if the index of "destroyed()" is passed, the index of "destroyed(QObject*)" is returned
+ */
+int QMetaObjectPrivate::originalClone(const QMetaObject *mobj, int local_method_index)
+{
+    int handle = get(mobj)->methodData + 5 * local_method_index;
+    while (mobj->d.data[handle + 4] & MethodCloned) {
+        Q_ASSERT(local_method_index > 0);
+        handle -= 5;
+        local_method_index--;
+    }
+    return local_method_index;
+}
 
 QT_END_NAMESPACE

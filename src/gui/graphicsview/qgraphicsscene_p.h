@@ -87,7 +87,7 @@ public:
 
     static QGraphicsScenePrivate *get(QGraphicsScene *q);
 
-    quint32 changedSignalMask;
+    static int changedSignalIndex;
 
     QGraphicsScene::ItemIndexMethod indexMethod;
     QGraphicsSceneIndex *index;

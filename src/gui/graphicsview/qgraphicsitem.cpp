@@ -6707,7 +6707,7 @@ void QGraphicsItem::prepareGeometryChange()
         // if someone is connected to the changed signal or the scene has no views.
         // Note that this has to be done *after* markDirty to ensure that
         // _q_processDirtyItems is called before _q_emitUpdated.
-	if ((scenePrivate->connectedSignals[0] & scenePrivate->changedSignalMask)
+	if (scenePrivate->isSignalConnected(scenePrivate->changedSignalIndex)
             || scenePrivate->views.isEmpty()) {
             if (d_ptr->hasTranslateOnlySceneTransform()) {
                 d_ptr->scene->update(boundingRect().translated(d_ptr->sceneTransform.dx(),
