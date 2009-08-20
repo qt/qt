@@ -40,8 +40,9 @@ static const qreal DefaultSaturation = 1.0;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::VideoWidget::VideoWidget()
-					:	m_aspectRatio(DefaultAspectRatio)
+MMF::VideoWidget::VideoWidget(QWidget* parent)
+					:	QWidget(parent)
+					,	m_aspectRatio(DefaultAspectRatio)
 					,	m_brightness(DefaultBrightness)
 					,	m_scaleMode(DefaultScaleMode)
 					,	m_contrast(DefaultContrast)

@@ -97,42 +97,53 @@ MMF::VideoPlayer::~VideoPlayer()
 
 void MMF::VideoPlayer::doPlay()
 {
-	// TODO
+	m_player->Play();
 }
 
 void MMF::VideoPlayer::doPause()
 {
-	// TODO
+	TRAPD(err, m_player->PauseL());
+	if(KErrNone != err)
+	{
+		setError(NormalError);
+	}
 }
 
 void MMF::VideoPlayer::doStop()
 {
-	// TODO
+	m_player->Stop();
 }
 
 int MMF::VideoPlayer::doSetMmfVolume(int mmfVolume)
 {
-	// TODO
-	Q_UNUSED(mmfVolume);
-	return KErrNotSupported;
+	TRAPD(err, m_player->SetVolumeL(mmfVolume));
+	return err;
 }
 
 int MMF::VideoPlayer::openFile(RFile& file)
 {
-	// TODO
-	Q_UNUSED(file);
-	return KErrNotSupported;
+	TRAPD(err, m_player->OpenFileL(file));
+	return err;
 }
 
 void MMF::VideoPlayer::close()
 {
-
+	m_player->Close();
 }
 
 void MMF::VideoPlayer::seek(qint64 ms)
 {
-	// TODO
-	Q_UNUSED(ms);
+	TRACE_CONTEXT(VideoPlayer::seek, EAudioApi);
+    TRACE_ENTRY("state %d pos %Ld", state(), ms);
+
+    TRAPD(err, m_player->SetPositionL(TTimeIntervalMicroSeconds(ms)));
+
+    if(KErrNone != err)
+	{
+		setError(NormalError);
+	}
+    
+    TRACE_EXIT_0();
 }
 
 bool MMF::VideoPlayer::hasVideo() const
@@ -142,14 +153,32 @@ bool MMF::VideoPlayer::hasVideo() const
 
 qint64 MMF::VideoPlayer::currentTime() const
 {
-	// TODO 
-	return 0;
+	TTimeIntervalMicroSeconds us;
+    TRAPD(err, us = m_player->PositionL())
+
+    qint64 result = 0;
+
+    if(KErrNone == err)
+    {
+        result = toMilliSeconds(us);
+    }
+    
+    return result;
 }
 
 qint64 MMF::VideoPlayer::totalTime() const
 {
-	// TODO 
-	return 0;
+	qint64 result = 0;
+	TRAPD(err, result = toMilliSeconds(m_player->DurationL()));
+	
+	if(KErrNone != err)
+	{
+		// If we don't cast away constness here, we simply have to ignore 
+		// the error.
+		const_cast<VideoPlayer*>(this)->setError(NormalError);
+	}
+	
+	return result;
 }
 
 
@@ -162,7 +191,17 @@ void MMF::VideoPlayer::MvpuoOpenComplete(TInt aError)
 	TRACE_CONTEXT(VideoPlayer::MvpuoOpenComplete, EVideoApi);
     TRACE_ENTRY("state %d error %d", state(), aError);
 
-    // TODO
+    __ASSERT_ALWAYS(LoadingState == state(), Utils::panic(InvalidStatePanic));
+
+	if(KErrNone == aError)
+	{
+		m_player->Prepare();
+	}
+	else
+	{
+		// TODO: set different error states according to value of aError?
+		setError(NormalError);
+	}
     
     TRACE_EXIT_0();
 }
@@ -172,7 +211,20 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
 	TRACE_CONTEXT(VideoPlayer::MvpuoPrepareComplete, EVideoApi);
 	TRACE_ENTRY("state %d error %d", state(), aError);
 
-	// TODO
+    __ASSERT_ALWAYS(LoadingState == state(), Utils::panic(InvalidStatePanic));
+
+	if(KErrNone == aError)
+	{
+		initVolume(m_player->MaxVolume());
+
+		emit totalTimeChanged();
+		changeState(StoppedState);
+	}
+	else
+	{
+		// TODO: set different error states according to value of aError?
+		setError(NormalError);
+	}
 	
 	TRACE_EXIT_0();
 }

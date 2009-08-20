@@ -127,6 +127,13 @@ namespace Phonon
         	PrivateState				m_state;
         	Phonon::ErrorType			m_error;
         	
+        	/**
+        	 * This flag is set to true if play is called when the object is
+        	 * in a Loading state.  Once loading is complete, playback will 
+        	 * be started.
+        	 */
+        	bool						m_playPending;
+        	
         	QScopedPointer<QTimer>		m_tickTimer;
             int							m_mmfMaxVolume;
             

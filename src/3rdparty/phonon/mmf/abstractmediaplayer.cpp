@@ -70,12 +70,15 @@ void MMF::AbstractMediaPlayer::play()
     switch(m_state)
     {
         case GroundState:
-        case LoadingState:
             // Is this the correct error?  Really we want 'NotReadyError'
             m_error = NormalError;
             changeState(ErrorState);
             break;
-
+            
+        case LoadingState:
+			m_playPending = true;
+			break;
+        	
         case StoppedState:
         case PausedState:
             doPlay();
@@ -102,6 +105,8 @@ void MMF::AbstractMediaPlayer::pause()
     TRACE_CONTEXT(AbstractMediaPlayer::pause, EAudioApi);
     TRACE_ENTRY("state %d", m_state);
 
+    m_playPending = false;
+    
     switch(m_state)
     {
         case GroundState:
@@ -132,6 +137,8 @@ void MMF::AbstractMediaPlayer::stop()
     TRACE_CONTEXT(AbstractMediaPlayer::stop, EAudioApi);
     TRACE_ENTRY("state %d", m_state);
 
+    m_playPending = false;
+    
     switch(m_state)
     {
         case GroundState:
@@ -375,16 +382,29 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
 
     // TODO: add some invariants to check that the transition is valid
 
-    const Phonon::State currentPhononState = phononState(m_state);
+    const Phonon::State oldPhononState = phononState(m_state);
     const Phonon::State newPhononState = phononState(newState);
-    if(currentPhononState != newPhononState)
+    if(oldPhononState != newPhononState)
     {
-        TRACE("emit stateChanged(%d, %d)", newPhononState, currentPhononState);
-        emit stateChanged(newPhononState, currentPhononState);
+        TRACE("emit stateChanged(%d, %d)", newPhononState, oldPhononState);
+        emit stateChanged(newPhononState, oldPhononState);
     }
 
     m_state = newState;
-
+    
+    // Check whether play() was called while clip was being loaded.  If so,
+    // playback should be started now
+    if(
+    		LoadingState == oldPhononState
+    	and	StoppedState == newPhononState
+    	and m_playPending
+    )
+    {
+		TRACE("Play was called while loading; starting playback now");
+		m_playPending = false;
+		play();
+    }
+    
     TRACE_EXIT_0();
 }
 

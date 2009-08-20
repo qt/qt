@@ -30,7 +30,7 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::MediaObject::MediaObject(QObject *parent)	: 	QObject::QObject(parent)
+MMF::MediaObject::MediaObject(QObject *parent)	: 	QObject(parent)
 												,	m_recognizerOpened(false)
 {
     m_player.reset(new DummyPlayer());
@@ -224,7 +224,7 @@ void MMF::MediaObject::setSource(const MediaSource &source)
 
 void MMF::MediaObject::createPlayer(const MediaSource &source)
 {
-	TRACE_CONTEXT(AudioPlayer::createPlayer, EAudioApi);
+	TRACE_CONTEXT(MediaObject::createPlayer, EAudioApi);
     TRACE_ENTRY("state %d source.type %d", state(), source.type());
 	TRACE_ENTRY("source.type %d", source.type());
 	

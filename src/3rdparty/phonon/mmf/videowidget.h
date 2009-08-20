@@ -34,7 +34,7 @@ namespace Phonon
             Q_INTERFACES(Phonon::VideoWidgetInterface)
             
         public:
-        	VideoWidget();      
+        	VideoWidget(QWidget* parent);      
         	~VideoWidget();
 
 			// VideoWidgetInterface

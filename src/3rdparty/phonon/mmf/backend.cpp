@@ -22,6 +22,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "backend.h"
 #include "audiooutput.h"
 #include "mediaobject.h"
+#include "videowidget.h"
 
 using namespace Phonon;
 using namespace Phonon::MMF;
@@ -55,15 +56,13 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
         	break;
         	
         case VolumeFaderEffectClass:
-        /* Fallthrough. */
         case VisualizationClass:
-        /* Fallthrough. */
         case VideoDataOutputClass:
-        /* Fallthrough. */
         case EffectClass:
-        /* Fallthrough. */
+        	break;
+        	
         case VideoWidgetClass:
-        	result = NULL;
+        	result = new VideoWidget(qobject_cast<QWidget *>(parent));
         	break;
         	
         default:

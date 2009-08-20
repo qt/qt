@@ -124,9 +124,7 @@ void MMF::AudioPlayer::seek(qint64 ms)
 
 bool MMF::AudioPlayer::hasVideo() const
 {
-    TRACE_CONTEXT(AudioPlayer::hasVideo, EAudioApi);
-    TRACE_ENTRY("state %d", state());
-    TRACE_RETURN("%d", false);
+    return false;
 }
 
 qint64 MMF::AudioPlayer::currentTime() const
@@ -137,9 +135,10 @@ qint64 MMF::AudioPlayer::currentTime() const
     TTimeIntervalMicroSeconds us;
     const TInt err = m_player->GetPosition(us);
 
-    qint64 result = -1;
+    qint64 result = 0;
 
-    if(KErrNone == err) {
+    if(KErrNone == err)
+    {
         result = toMilliSeconds(us);
     }
 
