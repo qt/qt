@@ -275,7 +275,7 @@ qsreal ToInteger(qsreal n)
 
 } // namespace QScript
 
-QScriptValuePrivate::QScriptValuePrivate() : engine(0)
+QScriptValuePrivate::QScriptValuePrivate() : engine(0), prev(0), next(0)
 {
     ref = 0;
 }

@@ -122,6 +122,10 @@ public:
     double numberValue;
     QString stringValue;
 
+    // linked list of engine's script values
+    QScriptValuePrivate *prev;
+    QScriptValuePrivate *next;
+
     QBasicAtomicInt ref;
 };
 

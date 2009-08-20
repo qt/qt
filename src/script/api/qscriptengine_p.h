@@ -236,7 +236,7 @@ public:
     QList<QScriptEngineAgent*> ownedAgents;
     QScriptEngineAgent *activeAgent;
     int agentLineNumber;
-    QList<QScriptValuePrivate*> registeredScriptValues;
+    QScriptValuePrivate *registeredScriptValues;
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;
     QScriptValue abortResult;

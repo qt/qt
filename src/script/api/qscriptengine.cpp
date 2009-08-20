@@ -791,7 +791,7 @@ static QScriptValue __setupPackage__(QScriptContext *ctx, QScriptEngine *eng)
 } // namespace QScript
 
 QScriptEnginePrivate::QScriptEnginePrivate()
-    : inEval(false)
+    : registeredScriptValues(0), inEval(false)
 {
     qMetaTypeId<QScriptValue>();
 
@@ -1139,11 +1139,10 @@ void QScriptEnginePrivate::mark()
         variantPrototype->mark();
 
     {
-        QList<QScriptValuePrivate*>::const_iterator it;
-        for (it = registeredScriptValues.constBegin(); it != registeredScriptValues.constEnd(); ++it) {
-            QScriptValuePrivate *val = *it;
-            if (val->isJSC() && !val->jscValue.marked())
-                val->jscValue.mark();
+        QScriptValuePrivate *it;
+        for (it = registeredScriptValues; it != 0; it = it->next) {
+            if (it->isJSC() && !it->jscValue.marked())
+                it->jscValue.mark();
         }
     }
 
@@ -1365,19 +1364,36 @@ bool QScriptEnginePrivate::scriptDisconnect(JSC::JSValue signal, JSC::JSValue re
 
 void QScriptEnginePrivate::registerScriptValue(QScriptValuePrivate *value)
 {
-    registeredScriptValues.append(value);
+    value->prev = 0;
+    value->next = registeredScriptValues;
+    if (registeredScriptValues)
+        registeredScriptValues->prev = value;
+    registeredScriptValues = value;
 }
 
 void QScriptEnginePrivate::unregisterScriptValue(QScriptValuePrivate *value)
 {
-    registeredScriptValues.removeOne(value);
+    if (value->prev)
+        value->prev->next = value->next;
+    if (value->next)
+        value->next->prev = value->prev;
+    if (value == registeredScriptValues)
+        registeredScriptValues = value->next;
+    value->prev = 0;
+    value->next = 0;
 }
 
 void QScriptEnginePrivate::detachAllRegisteredScriptValues()
 {
-    for (int i = 0; i < registeredScriptValues.size(); ++i)
-        registeredScriptValues.at(i)->detachFromEngine();
-    registeredScriptValues.clear();
+    QScriptValuePrivate *it;
+    QScriptValuePrivate *next;
+    for (it = registeredScriptValues; it != 0; it = next) {
+        it->detachFromEngine();
+        next = it->next;
+        it->prev = 0;
+        it->next = 0;
+    }
+    registeredScriptValues = 0;
 }
 
 #ifdef QT_NO_QOBJECT
