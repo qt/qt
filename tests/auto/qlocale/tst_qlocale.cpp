@@ -2008,37 +2008,6 @@ void tst_QLocale::symbianSystemLocale()
     TPtrC s60DateFormat = s60Locale.GetShortDateFormatSpec();
     QString dateFormat = locale.query(QSystemLocale::DateFormatShort, QVariant()).toString();
 
-#if 0
-    QTime nowTime = QTime::currentTime();
-    QDateTime nowDateTime = QDateTime::currentDateTime();
-    qDebug() << "locale.query(QSystemLocale::LanguageId)" << locale.query(QSystemLocale::LanguageId, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::CountryId)" << locale.query(QSystemLocale::CountryId, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::DecimalPoint)" << locale.query(QSystemLocale::DecimalPoint, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::GroupSeparator)" << locale.query(QSystemLocale::GroupSeparator, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::ZeroDigit)" << locale.query(QSystemLocale::ZeroDigit, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::NegativeSign)" << locale.query(QSystemLocale::NegativeSign, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::PositiveSign)" << locale.query(QSystemLocale::PositiveSign, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::DateFormatLong)" << locale.query(QSystemLocale::DateFormatLong, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::DateFormatShort)" << locale.query(QSystemLocale::DateFormatShort, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::TimeFormatLong)" << locale.query(QSystemLocale::TimeFormatLong, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::TimeFormatShort)" << locale.query(QSystemLocale::TimeFormatShort, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::DayNameLong)" << locale.query(QSystemLocale::DayNameLong, QVariant(1)).toString();
-    qDebug() << "locale.query(QSystemLocale::DayNameShort)" << locale.query(QSystemLocale::DayNameShort, QVariant(1)).toString();
-    qDebug() << "locale.query(QSystemLocale::MonthNameLong)" << locale.query(QSystemLocale::MonthNameLong, QVariant(2)).toString();
-    qDebug() << "locale.query(QSystemLocale::MonthNameShort)" << locale.query(QSystemLocale::MonthNameShort, QVariant(2)).toString();
-    qDebug() << "locale.query(QSystemLocale::DateToStringLong)" << locale.query(QSystemLocale::DateToStringLong, QVariant(date)).toString();
-    qDebug() << "locale.query(QSystemLocale::DateToStringShort)" << locale.query(QSystemLocale::DateToStringShort, QVariant(date)).toString();
-    qDebug() << "locale.query(QSystemLocale::TimeToStringLong)" << locale.query(QSystemLocale::TimeToStringLong, QVariant(nowTime)).toString();
-    qDebug() << "locale.query(QSystemLocale::TimeToStringShort)" << locale.query(QSystemLocale::TimeToStringShort, QVariant(nowTime)).toString();
-    qDebug() << "locale.query(QSystemLocale::DateTimeFormatLong)" << locale.query(QSystemLocale::DateTimeFormatLong, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::DateTimeFormatShort)" << locale.query(QSystemLocale::DateTimeFormatShort, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::DateTimeToStringLong)" << locale.query(QSystemLocale::DateTimeToStringLong, QVariant(nowDateTime)).toString();
-    qDebug() << "locale.query(QSystemLocale::DateTimeToStringShort)" << locale.query(QSystemLocale::DateTimeToStringShort, QVariant(nowDateTime)).toString();
-    qDebug() << "locale.query(QSystemLocale::MeasurementSystem)" << locale.query(QSystemLocale::MeasurementSystem, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::AMText)" << locale.query(QSystemLocale::AMText, QVariant()).toString();
-    qDebug() << "locale.query(QSystemLocale::PMText)" << locale.query(QSystemLocale::PMText, QVariant()).toString();
-#endif
-
     TBuf<50> s60FormattedDate;
     TRAPD(err, s60Date.FormatL(s60FormattedDate, s60DateFormat));
     QVERIFY(err == KErrNone);
