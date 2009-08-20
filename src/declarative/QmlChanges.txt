@@ -12,6 +12,9 @@ LineEdit         -> TextInput
 VerticalLayout   -> VerticalPositioner
 HorizontalLayout -> HorizontalPositioner
 GridLayout       -> GridPositioner
+Rect             -> Rectangle
+FocusRealm       -> FocusScope
+FontFamily       -> FontLoader
 
 Renamed properties:
 MouseRegion: xmin    -> minimumX
@@ -31,6 +34,7 @@ GridPositioner: lost "margins" property
 
 Other Changes:
 Drag: axis becomes an enum with values "XAxis", "YAxis", "XandYAxis"
+Image: scaleGrid property removed. New item called BorderImage instead.
 
 Pending Changes
 ===============

@@ -467,7 +467,7 @@ void QFxMouseRegion::timerEvent(QTimerEvent *event)
 }
 
 /*!
-    \qmlproperty bool hoverEnabled
+    \qmlproperty bool MouseRegion::hoverEnabled
     This property holds whether hover events are handled.
 
     By default, mouse events are only handled in response to a button event, or when a button is

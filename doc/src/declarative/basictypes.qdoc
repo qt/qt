@@ -7,279 +7,189 @@
     exactly what you would expect.
 
     \target basicqmlint
-    \raw HTML
-    <table>
-    <tr><td><div class="qmltype">int</div></td></tr>
-    </table>
-    \endraw
+    \section1 int
 
-    ints are whole numbers - things like 0, 10 and -20.  The possible int 
+    An integer or \c int is a whole numbers like 0, 10 or -20.  The possible \c int
     values range from around -2000000000 to around 2000000000, although most
     elements will only accept a reduced range (which they mention in their
     documentation).
 
-    int's must be specified using the plain old syntax you learned at school -
-    none of that scientific notation nonsense is supported.
-
-    Setting ints looks like this:
-    \code
-    Item { width: 100; height:200 }
-    \endcode
+    Example:
+    \qml
+    Item { width: 100; height: 200 }
+    \endqml
 
     \target basicqmlbool
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">bool</div></td></tr>
-    </table>
-    \endraw
+    \section1 bool
 
-    bools are a binary true/false value, represented by the strings
-    "true" and "false" in QML.
+    A boolean or \c bool is a binary true/false value.
 
-    Setting bools looks like this:
-    \code
+    Example:
+    \qml
     Item { focus: true; clip: false }
-    \endcode
-
-    \note Technically bool treats an empty string, "false" and "0" as false and
-    everything else as true.  Seriously, though, use "true" and "false".
+    \endqml
 
     \target basicqmlreal
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">real</div></td></tr>
-    </table>
-    \endraw
+    \section1 real
 
-    reals are numbers - either whole numbers like ints, or fractional numbers
-    like 1.2 and -29.8.  
+    A \c real is a number - either a whole number like an \c int, or a fractional number
+    like 1.2 or -29.8.
 
-    Setting reals looks like this:
-    \code
-    Item { x: -10; y: 100.8 }
-    \endcode
+    Example:
+    \qml
+    Item { width: 100.45; height: 150.82 }
+    \endqml
 
     \note In QML all reals are stored in single precision, \l {http://en.wikipedia.org/wiki/IEEE_754}{IEEE floating point} format.
 
     \target basicqmlstring
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">string</div></td></tr>
-    </table>
-    \endraw
+    \section1 string
 
-    strings are free form text, like "hello world", "QML is cool" and
-    anything else you can think of.
+    A string is a free form text, like "Hello world!".
 
-    Setting a string looks like this:
-    \code
+    Example:
+    \qml
     Text { text: "Hello world!" }
-    \endcode
-
-    \raw HTML
-    \endraw
+    \endqml
 
     \target basicqmlurl
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">url</div></td></tr>
-    </table>
-    \endraw
+    \section1 url
 
-    URLs are resource locators, such as file names. They can be either absolute, like "http://qtsoftware.com",
-    or relative, like "pics/logo.png". Relative URLs are resolved relative to the URL of the component where
+    A URL is a resource locator, like a file name. It can be either absolute, like "http://qtsoftware.com",
+    or relative, like "pics/logo.png". A relative URL is resolved relative to the URL of the component where
     the URL is converted from a JavaScript string expression to a url property value.
 
-    Setting a url looks like this:
-    \code
+    Example:
+    \qml
     Image { source: "pics/logo.png" }
-    \endcode
+    \endqml
 
     \raw HTML
     \endraw
 
     \target basicqmlcolor
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">color</div></td></tr>
-    </table>
-    \endraw
+    \section1 color
 
-    Colors are most commonly specified as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color name}.  These names include colors like
+    A \c color is most commonly specified as an \l {http://www.w3.org/TR/SVG/types.html#ColorKeywords}{SVG color name}.  These names include colors like
     "red", "green" and "lightsteelblue".
 
     If the color you want isn't part of this list, colors can also be specified
-    in hexidecimal triplets or quads that take the form \c "#RRGGBB" and 
+    in hexidecimal triplets or quads that take the form \c "#RRGGBB" and
     \c "#AARRGGBB" respectively.  For example, the color red corresponds to a
-    triplet of \c "#FF0000" and a slightly transparent blue to a quad of 
+    triplet of \c "#FF0000" and a slightly transparent blue to a quad of
     \c "#800000FF".
 
-    Setting a color looks like this:
-    \code
+    Example:
+    \qml
     Rectangle { color: "steelblue" }
     Rectangle { color: "#FF0000" }
     Rectangle { color: "#800000FF" }
-    \endcode
+    \endqml
 
     \target basicqmlpoint
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">point</div></td></tr>
-    </table>
-    \endraw
+    \section1 point
 
-    Points are specified in \c "x,y" format.
+    A \c point is specified in \c "x,y" format.
 
-    Setting a point looks like this:
-    \code
-    Widget { pos: "50,50" }
-    \endcode
+    Example:
+    \qml
+    Widget { pos: "0,20" }
+    \endqml
 
     \target basicqmlsize
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">size</div></td></tr>
-    </table>
-    \endraw
+    \section1 size
 
-    Sizes are specified in \c "widthxheight" format.
+    A \c size is specified in \c "widthxheight" format.
 
-    Setting a size looks like this:
-    \code
-    Widget { size: "50x50" }
-    \endcode
+    Example:
+    \qml
+    Widget { size: "150x50" }
+    \endqml
 
     \target basicqmlrectangle
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">rectangle</div></td></tr>
-    </table>
-    \endraw
+    \section1 rect
 
-    Rectangles are specified in \c "x,y,widthxheight" format.
+    A \c rect is specified in \c "x,y,widthxheight" format.
 
-    Setting a rectangle looks like this:
-    \code
+    Example:
+    \qml
     Widget { geometry: "50,50,100x100" }
-    \endcode
+    \endqml
 
     \target basicqmldate
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">date</div></td></tr>
-    </table>
-    \endraw
+    \section1 date
 
-    Dates are specified in \c "YYYY-MM-DD" format.
+    A \c date is specified in \c "YYYY-MM-DD" format.
 
-    Setting a date looks like this:
-    \code
+    Example:
+    \qml
     DatePicker { minDate: "2000-01-01"; maxDate: "2020-12-31" }
-    \endcode
+    \endqml
 
     \target basicqmltime
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">time</div></td></tr>
-    </table>
-    \endraw
+    \section1 time
 
-    Times are specified in \c "hh:mm:ss" format.
+    A \c time is specified in \c "hh:mm:ss" format.
 
-    Setting a time looks like this:
-    \code
+    Example:
+    \qml
     TimePicker { time: "14:22:15" }
-    \endcode
+    \endqml
 
     \target basicqmlfont
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">font</div></td></tr>
-    </table>
-    \endraw
-    
-    The font type has components:
+    \section1 font
+
+    The \c font type has the following properties of a QFont:
     \list
-    \o string font.family
-    \o bool font.bold
-    \o bool font.italic
-    \o real font.pointSize
+    \o \c string font.family
+    \o \c bool font.bold
+    \o \c bool font.italic
+    \o \c bool font.underline
+    \o \c real font.pointSize
+    \o \c int font.pixelSize
     \endlist
 
-    Setting a font looks like this:
-    \code
+    Example:
+    \qml
     Text { font.family: "Helvetica"; font.pointSize: 13; font.bold: true }
-    \endcode
+    \endqml
 
     \target basicqmlaction
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">action</div></td></tr>
-    </table>
-    \endraw
-    
+    \section1 action
+
     The action type has all the properties of QAction, in particular:
     \list
-    \o slot action.trigger - invoke the action
-    \o bool action.enabled - true if the action is enabled
-    \o string action.text - the text associated with the action
+    \o \c slot action.trigger - invoke the action
+    \o \c bool action.enabled - true if the action is enabled
+    \o \c string action.text - the text associated with the action
     \endlist
 
     Actions are used like this:
 
-    \code
-    MouseRegion { onClicked: someitem.someaction.trigger() }
-    State { name: "enabled"; when: someitem.someaction.enabled=='true' }
-    Text { text: someitem.someaction.text }
-    \endcode
-
-    \target basicqmlany
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">any</div></td></tr>
-    </table>
-    \endraw
-    
-    The any type can accept any basic type, object or list.  Generally this
-    is only used in very special cases.  The documentation for elements that
-    use the any type will explain the constraints in that particular case.
+    \qml
+    MouseRegion { onClicked: MyItem.myaction.trigger() }
+    State { name: "enabled"; when: MyItem.myaction.enabled == true }
+    Text { text: MyItem.someaction.text }
+    \endqml
 
     \target basicqmllist
-    \raw HTML
-    <br>
-    <table>
-    <tr><td><div class="qmltype">Lists</div></td></tr>
-    </table>
-    \endraw
-    
+    \section1 list
+
     While not technically a basic type, QML also supports lists of object
-    types.  When used from QML, the engine  automatically appends each value to the
-    list.  
-    
+    types. When used from QML, the engine  automatically appends each value to the
+    list.
+
     For example, the \l Item class has a children list property
     that can be used like this:
-    \code
+    \qml
     Item {
-        children [
-            Item { id: child1 },
-            Rectangle { id: child2 },
-            Text { id: child3 }
+        children: [
+            Item { id: Child1 },
+            Rectangle { id: Child2 },
+            Text { id: Child3 }
         ]
     }
-    \endcode
-    \c child1, \c child2 and \c child3 will all be added to the children list
+    \endqml
+    \c Child1, \c Child2 and \c Child3 will all be added to the children list
     in the order in which they appear.
 */

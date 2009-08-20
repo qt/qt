@@ -26,13 +26,13 @@ Image { source: if (contact.gender == "female") {"pics/female.png"} else {"pics/
 
 Relevant items can also be bound to the contents of a model - see \l ListView for an example of this.
 
-Data can be bound to C++ objects - see \l {C++ Data Binding}.
+Data can be bound to C++ objects - see \l {QML/C++ Data Binding}.
 */
 
 /*!
 \page qtbinding.html
 \target qtbinding
-\title C++ Data Binding
+\title QML/C++ Data Binding
 
 The QML mechanisms of \l {Data Binding} can also be used to bind Qt C++ objects.
 
