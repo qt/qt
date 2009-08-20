@@ -202,8 +202,8 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
 /*!
     Constructs a new QGraphicsEffect instance.
 */
-QGraphicsEffect::QGraphicsEffect()
-    : QObject(*new QGraphicsEffectPrivate, 0)
+QGraphicsEffect::QGraphicsEffect(QObject *parent)
+    : QObject(*new QGraphicsEffectPrivate, parent)
 {
     // ### parent?
 }
@@ -211,8 +211,8 @@ QGraphicsEffect::QGraphicsEffect()
 /*!
     \internal
 */
-QGraphicsEffect::QGraphicsEffect(QGraphicsEffectPrivate &dd)
-    : QObject(dd, 0)
+QGraphicsEffect::QGraphicsEffect(QGraphicsEffectPrivate &dd, QObject *parent)
+    : QObject(dd, parent)
 {
 }
 
@@ -321,8 +321,8 @@ void QGraphicsEffect::sourceChanged(ChangeFlags flags)
     Q_UNUSED(flags);
 }
 
-QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect()
-    : QGraphicsEffect(*new QGraphicsGrayscaleEffectPrivate)
+QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsGrayscaleEffectPrivate, parent)
 {
 }
 
@@ -350,8 +350,8 @@ void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *so
 
 }
 
-QGraphicsColorizeEffect::QGraphicsColorizeEffect()
-    : QGraphicsEffect(*new QGraphicsColorizeEffectPrivate)
+QGraphicsColorizeEffect::QGraphicsColorizeEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsColorizeEffectPrivate, parent)
 {}
 
 QGraphicsColorizeEffect::~QGraphicsColorizeEffect()
@@ -392,8 +392,8 @@ void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
     painter->setWorldTransform(restoreTransform);
 }
 
-QGraphicsPixelizeEffect::QGraphicsPixelizeEffect()
-    : QGraphicsEffect(*new QGraphicsPixelizeEffectPrivate)
+QGraphicsPixelizeEffect::QGraphicsPixelizeEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsPixelizeEffectPrivate, parent)
 {
 }
 
@@ -468,8 +468,8 @@ void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
     painter->setWorldTransform(restoreTransform);
 }
 
-QGraphicsBlurEffect::QGraphicsBlurEffect()
-    : QGraphicsEffect(*new QGraphicsBlurEffectPrivate)
+QGraphicsBlurEffect::QGraphicsBlurEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsBlurEffectPrivate, parent)
 {
 }
 
@@ -589,8 +589,8 @@ void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
     painter->setWorldTransform(restoreTransform);
 }
 
-QGraphicsShadowEffect::QGraphicsShadowEffect()
-    : QGraphicsEffect(*new QGraphicsShadowEffectPrivate)
+QGraphicsShadowEffect::QGraphicsShadowEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsShadowEffectPrivate, parent)
 {
 }
 

@@ -103,7 +103,7 @@ public:
     };
     Q_DECLARE_FLAGS(ChangeFlags, ChangeFlag);
 
-    QGraphicsEffect();
+    QGraphicsEffect(QObject *parent = 0);
     virtual ~QGraphicsEffect();
 
     // ### make protected?
@@ -122,7 +122,7 @@ Q_SIGNALS:
     void enabledChanged(bool enabled);
 
 protected:
-    QGraphicsEffect(QGraphicsEffectPrivate &d);
+    QGraphicsEffect(QGraphicsEffectPrivate &d, QObject *parent = 0);
     virtual void draw(QPainter *painter, QGraphicsEffectSource *source) = 0;
     virtual void sourceChanged(ChangeFlags flags);
     void updateBoundingRect();
@@ -140,7 +140,7 @@ class Q_GUI_EXPORT QGraphicsGrayscaleEffect: public QGraphicsEffect
 {
     Q_OBJECT
 public:
-    QGraphicsGrayscaleEffect();
+    QGraphicsGrayscaleEffect(QObject *parent = 0);
     ~QGraphicsGrayscaleEffect();
 
 protected:
@@ -157,7 +157,7 @@ class Q_GUI_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect
     Q_OBJECT
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 public:
-    QGraphicsColorizeEffect();
+    QGraphicsColorizeEffect(QObject *parent = 0);
     ~QGraphicsColorizeEffect();
 
     QColor color() const;
@@ -182,7 +182,7 @@ class Q_GUI_EXPORT QGraphicsPixelizeEffect: public QGraphicsEffect
     Q_OBJECT
     Q_PROPERTY(int pixelSize READ pixelSize WRITE setPixelSize NOTIFY pixelSizeChanged)
 public:
-    QGraphicsPixelizeEffect();
+    QGraphicsPixelizeEffect(QObject *parent = 0);
     ~QGraphicsPixelizeEffect();
 
     int pixelSize() const;
@@ -207,7 +207,7 @@ class Q_GUI_EXPORT QGraphicsBlurEffect: public QGraphicsEffect
     Q_OBJECT
     Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
 public:
-    QGraphicsBlurEffect();
+    QGraphicsBlurEffect(QObject *parent = 0);
     ~QGraphicsBlurEffect();
 
     int blurRadius() const;
@@ -235,7 +235,7 @@ class Q_GUI_EXPORT QGraphicsShadowEffect: public QGraphicsEffect
     Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
     Q_PROPERTY(int opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
 public:
-    QGraphicsShadowEffect();
+    QGraphicsShadowEffect(QObject *parent = 0);
     ~QGraphicsShadowEffect();
 
     QPointF shadowOffset() const;
