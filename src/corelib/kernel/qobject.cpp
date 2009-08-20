@@ -836,8 +836,6 @@ QObject::~QObject()
 
     QT_TRY {
         emit destroyed(this);
-        if (d->declarativeData)
-            d->declarativeData->destroyed(this);  // ### TODO: Can this throw?
     } QT_CATCH(...) {
         // all the signal/slots connections are still in place - if we don't
         // quit now, we will crash pretty soon.
@@ -854,6 +852,8 @@ QObject::~QObject()
 #endif
     }
 
+    if (d->declarativeData)
+        d->declarativeData->destroyed(this);
 
     {
         QMutex *signalSlotMutex = 0;

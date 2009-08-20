@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -67,7 +67,7 @@ void LinkTab::populateListWidget()
 QUrl LinkTab::itemUrl(QListWidgetItem *item)
 {
     if (m_WebItem == item) {
-        return QUrl(tr("http://www.qtsoftware.com"));
+        return QUrl(tr("http://qt.nokia.com"));
     } else if (m_MailToItem == item) {
         return QUrl(tr("mailto:qts60-feedback@trolltech.com?subject=QtS60 feedback&body=Hello"));
     } else {

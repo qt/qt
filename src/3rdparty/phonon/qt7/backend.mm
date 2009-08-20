@@ -59,7 +59,7 @@ Backend::Backend(QObject *parent, const QStringList &) : QObject(parent)
     setProperty("backendComment", QLatin1String("Developed by Trolltech"));
     setProperty("backendVersion", QLatin1String("0.1"));
     setProperty("backendIcon",    QLatin1String(""));
-    setProperty("backendWebsite", QLatin1String("http://qtsoftware.com/"));
+    setProperty("backendWebsite", QLatin1String("http://qt.nokia.com/"));
 }
 
 Backend::~Backend()

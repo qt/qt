@@ -1231,17 +1231,14 @@ static const uint L2CacheLineLengthInInts = L2CacheLineLength/sizeof(uint);
 // Two consecutive preloads stall, so space them out a bit by using different modulus.
 #    define PRELOAD_COND2(x,y) if (((uint)&x[i])%L2CacheLineLength == 0) preload(&x[i] + L2CacheLineLengthInInts); \
          if (((uint)&y[i])%L2CacheLineLength == 16) preload(&y[i] + L2CacheLineLengthInInts);
-#  else
+#  endif // QT_HAVE_ARMV6
+#endif // Q_CC_RVCT
+
+#if !defined(Q_CC_RVCT) || !defined(QT_HAVE_ARMV6)
 #    define PRELOAD_INIT(x)
 #    define PRELOAD_INIT2(x,y)
 #    define PRELOAD_COND(x)
 #    define PRELOAD_COND2(x,y)
-#  endif
-#else
-#  define PRELOAD_INIT(x)
-#  define PRELOAD_INIT2(x,y)
-#  define PRELOAD_COND(x)
-#  define PRELOAD_COND2(x,y)
 #endif
 
 /* The constant alpha factor describes an alpha factor that gets applied

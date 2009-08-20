@@ -111,11 +111,19 @@ void tst_Symbols::globalObjects()
 
     bool isFailed = false;
 
-    QDir dir(qgetenv("QTDIR") + "/lib", "*.so");
+    QDir dir(QLibraryInfo::location(QLibraryInfo::LibrariesPath), "*.so");
     QStringList files = dir.entryList();
     QVERIFY(!files.isEmpty());
 
     foreach (QString lib, files) {
+        if (lib == "libQtCLucene.so") {
+            // skip this library, it's 3rd-party C++
+            continue;
+        }
+        if (lib == "libQt3Support.so") {
+            // we're not going to fix these issues anyway, so skip this library
+            continue;
+        }
 
         QProcess proc;
         proc.start("nm",

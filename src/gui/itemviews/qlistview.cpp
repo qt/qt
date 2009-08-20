@@ -458,6 +458,8 @@ QSize QListView::gridSize() const
 void QListView::setViewMode(ViewMode mode)
 {
     Q_D(QListView);
+    if (d->viewMode == mode)
+        return;
     d->viewMode = mode;
 
     if (mode == ListMode) {
@@ -1963,7 +1965,7 @@ QListViewPrivate::QListViewPrivate()
       movement(QListView::Static),
       resizeMode(QListView::Fixed),
       layoutMode(QListView::SinglePass),
-      viewMode(QListView::ListMode),
+      viewMode(QListView::IconMode), //this will ensure the first initialization to ListView
       modeProperties(0),
       column(0),
       uniformItemSizes(false),

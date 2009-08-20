@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -50,6 +50,8 @@
 #include <qfile.h>
 #include <stdlib.h>
 
+#include "epocroot.h"
+
 struct CopyItem
 {
     CopyItem(const QString& f, const QString& t) : from(f) , to(t) { }
@@ -57,6 +59,9 @@ struct CopyItem
     QString to;
 };
 typedef QList<CopyItem> DeploymentList;
+
+extern QString generate_uid(const QString& target);
+extern QString generate_test_uid(const QString& target);
 
 extern void initProjectDeploySymbian(QMakeProject* project,
                               DeploymentList &deploymentList,

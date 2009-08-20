@@ -14,7 +14,7 @@
 ** http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 **
 ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
@@ -36,10 +36,10 @@ BookmarksView::BookmarksView(QWidget *parent)
     layout->addWidget(m_iconView);
 
     m_iconView->addItem("www.google.com");
-    m_iconView->addItem("doc.trolltech.com/4.5");
+    m_iconView->addItem("qt.nokia.com/doc/4.5");
     m_iconView->addItem("news.bbc.co.uk/text_only.stm");
     m_iconView->addItem("mobile.wikipedia.org");
-    m_iconView->addItem("www.qtsoftware.com");
+    m_iconView->addItem("qt.nokia.com");
     m_iconView->addItem("en.wikipedia.org");
 
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

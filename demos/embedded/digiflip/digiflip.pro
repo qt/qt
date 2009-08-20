@@ -1,0 +1,1 @@
+SOURCES = digiflip.cpp

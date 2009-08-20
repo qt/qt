@@ -9,12 +9,12 @@ Up to and including change: b7621555cb1d1c97967dd40d63dd7e85a418407c
 
 Lists just S60 fixes, for general 4.5.0 changes go to:
 
-  http://www.qtsoftware.com/developer/changes/changes-4.5.0
+  http://qt.nokia.com/developer/changes/changes-4.5.0
 
 Some of the changes listed in this file include issue tracking numbers
 corresponding to tasks in the Task Tracker:
 
-  http://qtsoftware.com/developer/task-tracker
+  http://qt.nokia.com/developer/task-tracker
 
 Each of these identifiers can be entered in the task tracker to obtain
 more information about a particular change. Sometimes the task is internal
