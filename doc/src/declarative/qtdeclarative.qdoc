@@ -87,7 +87,7 @@
     C++ Reference:
     \list
     \o \l {Extending QML}
-    \o \l {qtbinding}{C++ Data Binding}
+    \o \l {qtbinding}{QML/C++ Data Binding}
     \o \l {cppitem}{C++ Components}
     \endlist
 */
