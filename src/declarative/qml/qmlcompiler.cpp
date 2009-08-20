@@ -1449,7 +1449,7 @@ bool QmlCompiler::buildAttachedProperty(QmlParser::Property *prop,
 
 // Build "grouped" properties. In this example:
 // Text {
-//     font.size: 12
+//     font.pointSize: 12
 //     font.family: "Helvetica"
 // }
 // font is a nested property.  size and family are not.

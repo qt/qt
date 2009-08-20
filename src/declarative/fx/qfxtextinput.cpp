@@ -101,7 +101,7 @@ void QFxTextInput::setText(const QString &s)
 /*!
     \qmlproperty font TextInput::font
 
-    Set the TextInput's font attributes.  \c font.size sets the font's point size.
+    Set the TextInput's font attributes.
 */
 QFont QFxTextInput::font() const
 {

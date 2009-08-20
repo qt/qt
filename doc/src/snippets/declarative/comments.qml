@@ -7,5 +7,5 @@ Text {
         we give it a large size and different font.
      */
     font.family: "Helvetica"
-    font.size: 24
+    font.pointSize: 24
 }
