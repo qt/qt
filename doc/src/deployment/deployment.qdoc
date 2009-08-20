@@ -913,6 +913,16 @@
     The \l{How to Create Qt Plugins} document outlines the issues you
     need to pay attention to when building and deploying plugins for
     Qt applications.
+
+    \section1 Related Third Party Resources
+
+    \list
+    \o \l{http://silmor.de/29}{Cross compiling Qt/Win Apps on Linux} covers the
+    process of cross-compiling Windows applications on Linux.
+    \o \l{http://divided-mind.blogspot.com/2007/09/cross-compiling-qt4win-on-linux.html}
+    {Cross-compiling Qt4/Win on Linux} provides another Linux-to-Windows
+    cross-compilation guide.
+    \endlist
 */
 
 /*!
