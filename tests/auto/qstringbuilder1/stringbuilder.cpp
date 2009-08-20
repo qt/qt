@@ -86,7 +86,7 @@
 #endif
 
 #include <QtTest/QtTest>
-#include "tst_qstringbuilder.h"
+#include "stringbuilder.h"
 
 //TESTED_CLASS=QStringBuilder
 //TESTED_FILES=qstringbuilder.cpp
