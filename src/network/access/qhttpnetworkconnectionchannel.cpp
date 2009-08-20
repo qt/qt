@@ -154,8 +154,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
         QByteArray header = QHttpNetworkRequestPrivate::header(request,
             (connection->d_func()->networkProxy.type() != QNetworkProxy::NoProxy));
 #else
-        QByteArray header = QHttpNetworkRequestPrivate::header(channels[i].request,
-            false);
+        QByteArray header = QHttpNetworkRequestPrivate::header(request, false);
 #endif
         socket->write(header);
         QNonContiguousByteDevice* uploadByteDevice = request.uploadByteDevice();
@@ -455,7 +454,7 @@ bool QHttpNetworkConnectionChannel::ensureConnection()
                 sslSocket->ignoreSslErrors();
             sslSocket->ignoreSslErrors(ignoreSslErrorsList);
 #else
-            emitReplyError(socket, channels[index].reply, QNetworkReply::ProtocolUnknownError);
+            connection->d_func()->emitReplyError(socket, reply, QNetworkReply::ProtocolUnknownError);
 #endif
         } else {
             socket->connectToHost(connectHost, connectPort);
@@ -689,8 +688,7 @@ void  QHttpNetworkConnectionChannel::pipelineInto(HttpMessagePair &pair)
     QByteArray header = QHttpNetworkRequestPrivate::header(request,
                                                            (connection->d_func()->networkProxy.type() != QNetworkProxy::NoProxy));
 #else
-    QByteArray header = QHttpNetworkRequestPrivate::header(channels[i].request,
-                                                           false);
+    QByteArray header = QHttpNetworkRequestPrivate::header(request, false);
 #endif
     socket->write(header);
 
