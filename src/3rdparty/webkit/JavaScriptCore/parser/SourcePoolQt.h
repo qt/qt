@@ -24,6 +24,7 @@
 #include "qhash.h"
 #include "qstack.h"
 #include "qdebug.h"
+#include <stdint.h>
 
 namespace JSC {
 
