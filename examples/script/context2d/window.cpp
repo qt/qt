@@ -66,7 +66,8 @@ static QString scriptsDir()
 
 //! [0]
 Window::Window(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent),
+      m_debugger(0), m_debugWindow(0)
 {
     m_env = new Environment(this);
     QObject::connect(m_env, SIGNAL(scriptError(QScriptValue)),
@@ -106,14 +107,6 @@ Window::Window(QWidget *parent)
     connect(m_view, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)),
             this, SLOT(selectScript(QListWidgetItem*)));
 //! [1]
-
-#ifndef QT_NO_SCRIPTTOOLS
-    m_debugger = new QScriptEngineDebugger(this);
-    m_debugger->attachTo(m_env->engine());
-    m_debugWindow = m_debugger->standardWindow();
-    m_debugWindow->setWindowModality(Qt::ApplicationModal);
-    m_debugWindow->resize(1280, 704);
-#endif
 
     setWindowTitle(tr("Context 2D"));
 }
@@ -156,8 +149,19 @@ void Window::runScript(const QString &fileName, bool debug)
     m_env->reset();
 
 #ifndef QT_NO_SCRIPTTOOLS
-    if (debug)
+    if (debug) {
+        if (!m_debugger) {
+            m_debugger = new QScriptEngineDebugger(this);
+            m_debugWindow = m_debugger->standardWindow();
+            m_debugWindow->setWindowModality(Qt::ApplicationModal);
+            m_debugWindow->resize(1280, 704);
+        }
+        m_debugger->attachTo(m_env->engine());
         m_debugger->action(QScriptEngineDebugger::InterruptAction)->trigger();
+    } else {
+        if (m_debugger)
+            m_debugger->detach();
+    }
 #else
     Q_UNUSED(debug);
 #endif
@@ -165,7 +169,8 @@ void Window::runScript(const QString &fileName, bool debug)
     QScriptValue ret = m_env->evaluate(contents, fileName);
 
 #ifndef QT_NO_SCRIPTTOOLS
-    m_debugWindow->hide();
+    if (m_debugWindow)
+        m_debugWindow->hide();
 #endif
 
     if (ret.isError())
