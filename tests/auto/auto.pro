@@ -142,6 +142,7 @@ SUBDIRS += _networkselftest \
            qglobal \
            qgraphicsitem \
            qgraphicsitemanimation \
+           qgraphicsanchorlayout \
            qgraphicslayout \
            qgraphicslayoutitem \
            qgraphicslinearlayout \
@@ -190,7 +191,7 @@ SUBDIRS += _networkselftest \
            qlibrary \
            qline \
            qlineedit \
-           qlist \           
+           qlist \
            q3listbox \
            qlistview \
            qlistwidget \
