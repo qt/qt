@@ -56,8 +56,6 @@
 #include <QtCore/qobjectdefs.h>
 #include "Debugger.h"
 #include "qscriptengineagent.h"
-#include "qscriptengine.h"
-#include "qscriptengine_p.h"
 
 #include "CallFrame.h"
 #include "SourceCode.h"
@@ -66,7 +64,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QScriptEngine;
+class QScriptEnginePrivate;
 
 class QScriptEngineAgent;
 class Q_SCRIPT_EXPORT QScriptEngineAgentPrivate : public JSC::Debugger
@@ -132,14 +130,7 @@ public:
     };
     virtual void functionExit(const JSC::JSValue& returnValue, intptr_t sourceID);
     //others
-    virtual void didReachBreakpoint(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno, int column)
-    {
-        Q_UNUSED(frame);
-        QList<QVariant> args;
-        args << qint64(sourceID) << lineno << column;
-        if (q_ptr->supportsExtension(QScriptEngineAgent::DebuggerInvocationRequest))
-            q_ptr->extension(QScriptEngineAgent::DebuggerInvocationRequest, args);
-    };
+    virtual void didReachBreakpoint(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno, int column);
 
     virtual void evaluateStart(intptr_t sourceID)
     {
@@ -147,7 +138,7 @@ public:
     }
     virtual void evaluateStop(const JSC::JSValue& returnValue, intptr_t sourceID);
 
-    QScriptEngine *engine;
+    QScriptEnginePrivate *engine;
     QScriptEngineAgent *q_ptr;
 };
 

@@ -42,6 +42,8 @@
 #include "config.h"
 #include "qscriptengineagent.h"
 #include "qscriptengineagent_p.h"
+#include "qscriptengine.h"
+#include "qscriptengine_p.h"
 
 #include "CodeBlock.h"
 #include "Instruction.h"
@@ -130,47 +132,67 @@ QT_BEGIN_NAMESPACE
 
 void QScriptEngineAgentPrivate::attach()
 {
-    QScriptEnginePrivate *d = QScriptEnginePrivate::get(engine);
-    if (d->originalGlobalObject()->debugger())
-        d->originalGlobalObject()->setDebugger(0);
-    JSC::Debugger::attach(d->originalGlobalObject());
+    if (engine->originalGlobalObject()->debugger())
+        engine->originalGlobalObject()->setDebugger(0);
+    JSC::Debugger::attach(engine->originalGlobalObject());
 }
 
 void QScriptEngineAgentPrivate::detach()
 {
-    JSC::Debugger::detach(QScriptEnginePrivate::get(engine)->originalGlobalObject());
+    JSC::Debugger::detach(engine->originalGlobalObject());
 }
 
 void QScriptEngineAgentPrivate::exceptionThrow(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, bool hasHandler)
 {
-    QScriptValue value(QScriptEnginePrivate::get(engine)->scriptValueFromJSCValue(frame.exception()));
+    JSC::CallFrame *oldFrame = engine->currentFrame;
+    engine->currentFrame = frame.callFrame();
+    QScriptValue value(engine->scriptValueFromJSCValue(frame.exception()));
     q_ptr->exceptionThrow(sourceID, value, hasHandler);
+    engine->currentFrame = oldFrame;
 };
 
 void QScriptEngineAgentPrivate::exceptionCatch(const JSC::DebuggerCallFrame& frame, intptr_t sourceID)
 {
-    QScriptValue value(QScriptEnginePrivate::get(engine)->scriptValueFromJSCValue(frame.exception()));
+    JSC::CallFrame *oldFrame = engine->currentFrame;
+    engine->currentFrame = frame.callFrame();
+    QScriptValue value(engine->scriptValueFromJSCValue(frame.exception()));
     q_ptr->exceptionCatch(sourceID, value);
+    engine->currentFrame = oldFrame;
 }
 
-void QScriptEngineAgentPrivate::atStatement(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno, int column)
+void QScriptEngineAgentPrivate::atStatement(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno, int column)
 {
+    JSC::CallFrame *oldFrame = engine->currentFrame;
+    engine->currentFrame = frame.callFrame();
     q_ptr->positionChange(sourceID, lineno, column);
+    engine->currentFrame = oldFrame;
 }
 
 void QScriptEngineAgentPrivate::functionExit(const JSC::JSValue& returnValue, intptr_t sourceID)
 {
-    QScriptValue result = QScriptEnginePrivate::get(engine)->scriptValueFromJSCValue(returnValue);
+    QScriptValue result = engine->scriptValueFromJSCValue(returnValue);
     q_ptr->functionExit(sourceID, result);
     q_ptr->contextPop();
 }
 
 void QScriptEngineAgentPrivate::evaluateStop(const JSC::JSValue& returnValue, intptr_t sourceID)
 {
-    QScriptValue result = QScriptEnginePrivate::get(engine)->scriptValueFromJSCValue(returnValue);
+    QScriptValue result = engine->scriptValueFromJSCValue(returnValue);
     q_ptr->functionExit(sourceID, result);
 }
 
+void QScriptEngineAgentPrivate::didReachBreakpoint(const JSC::DebuggerCallFrame& frame,
+                                                   intptr_t sourceID, int lineno, int column)
+{
+    if (q_ptr->supportsExtension(QScriptEngineAgent::DebuggerInvocationRequest)) {
+        JSC::CallFrame *oldFrame = engine->currentFrame;
+        engine->currentFrame = frame.callFrame();
+        QList<QVariant> args;
+        args << qint64(sourceID) << lineno << column;
+        q_ptr->extension(QScriptEngineAgent::DebuggerInvocationRequest, args);
+        engine->currentFrame = oldFrame;
+    }
+};
 
 /*!
     Constructs a QScriptEngineAgent object for the given \a engine.
@@ -183,11 +205,8 @@ void QScriptEngineAgentPrivate::evaluateStop(const JSC::JSValue& returnValue, in
 QScriptEngineAgent::QScriptEngineAgent(QScriptEngine *engine)
         : d_ptr(new QScriptEngineAgentPrivate())
 {
-    d_ptr->engine = engine;
     d_ptr->q_ptr = this;
-    if (engine) {
-        d_ptr->engine->setAgent(this);
-    }
+    d_ptr->engine = QScriptEnginePrivate::get(engine);
 }
 
 /*!
@@ -197,7 +216,7 @@ QScriptEngineAgent::QScriptEngineAgent(QScriptEngineAgentPrivate &dd, QScriptEng
     : d_ptr(&dd)
 {
     d_ptr->q_ptr = this;
-    d_ptr->engine = engine;
+    d_ptr->engine = QScriptEnginePrivate::get(engine);
 }
 
 /*!
@@ -205,8 +224,7 @@ QScriptEngineAgent::QScriptEngineAgent(QScriptEngineAgentPrivate &dd, QScriptEng
 */
 QScriptEngineAgent::~QScriptEngineAgent()
 {
-    QScriptEnginePrivate *eng_p = QScriptEnginePrivate::get(engine());
-    eng_p->agentDeleted(this);
+    d_ptr->engine->agentDeleted(this);
     delete d_ptr;
     d_ptr = 0;
 }
@@ -470,7 +488,7 @@ QVariant QScriptEngineAgent::extension(Extension extension,
 QScriptEngine *QScriptEngineAgent::engine() const
 {
     Q_D(const QScriptEngineAgent);
-    return d->engine;
+    return QScriptEnginePrivate::get(d->engine);
 }
 
 QT_END_NAMESPACE
