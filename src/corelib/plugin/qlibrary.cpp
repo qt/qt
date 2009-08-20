@@ -499,9 +499,12 @@ bool QLibraryPrivate::loadPlugin()
     if (load()) {
         instance = (QtPluginInstanceFunction)resolve("qt_plugin_instance");
 #if defined(Q_OS_SYMBIAN)
-        // If resolving with function name failed (i.e. not STDDLL), try resolving using known ordinal
-        if (!instance)
+        if (!instance) {
+            // If resolving with function name failed (i.e. not STDDLL),
+            // try resolving using known ordinal, which for
+            // qt_plugin_instance function is always "2".
             instance = (QtPluginInstanceFunction)resolve("2");
+        }
 #endif
         return instance;
     }
