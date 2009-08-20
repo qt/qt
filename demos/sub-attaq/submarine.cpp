@@ -113,7 +113,7 @@ SubMarine::SubMarine(int type, const QString &name, int points, QGraphicsItem * 
 
     graphicsRotation = new QGraphicsRotation(this);
     graphicsRotation->setAxis(QVector3D(0, 1, 0));
-    graphicsRotation->setOrigin(QPointF(size().width()/2, size().height()/2));
+    graphicsRotation->setOrigin(QVector3D(size().width()/2, size().height()/2, 0));
     QList<QGraphicsTransform *> r;
     r.append(graphicsRotation);
     setTransformations(r);
