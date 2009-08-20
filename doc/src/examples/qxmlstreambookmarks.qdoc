@@ -51,10 +51,10 @@
 
     \section1 XbelWriter Class Definition
 
-    The \c XbelWriter class is a subclass of QXmlStreamReader, which provides
-    an XML parser with a streaming API. \c XbelWriter also contains a private
-    instance of QTreeWidget in order to display the bookmarks according to
-    hierarchies.
+    The \c XbelWriter class contains a private instance of QXmlStreamWriter,
+    which provides an XML writer with a streaming API. \c XbelWriter also
+    has a reference to the QTreeWidget instance where the bookmark hierarchy
+    is stored.
 
     \snippet examples/xml/streambookmarks/xbelwriter.h 0
 
@@ -75,7 +75,7 @@
 
     \snippet examples/xml/streambookmarks/xbelwriter.cpp 1
 
-    The \c writeItem() function accepts a QTreeWidget object and writes it
+    The \c writeItem() function accepts a QTreeWidgetItem object and writes it
     to the stream, depending on its \c tagName, which can either be a "folder",
     "bookmark", or "separator".
 
@@ -83,9 +83,10 @@
 
     \section1 XbelReader Class Definition
 
-    The \c XbelReader class is a subclass of QXmlStreamReader, the pendent
-    class for QXmlStreamWriter. \c XbelReader contains a private instance
-    of QTreeWidget to group bookmarks according to their hierarchies.
+    The \c XbelReader contains a private instance of QXmlStreamReader, the
+    companion class to QXmlStreamWriter. \c XbelReader also contains a
+    reference to the QTreeWidget that is used to group the bookmarks according
+    to their hierarchy.
 
     \snippet examples/xml/streambookmarks/xbelreader.h 0
 
@@ -102,21 +103,26 @@
     \snippet examples/xml/streambookmarks/xbelreader.cpp 0
 
     The \c read() function accepts a QIODevice and sets it using
-    \l{QXmlStreamReader::setDevice()}{setDevice()}. The actual process
-    of reading only takes place if the file is a valid XBEL 1.0 file. 
-    Note that the XML input needs to be well-formed to be accepted by 
-    QXmlStreamReader. Otherwise, the \l{QXmlStreamReader::raiseError()}
-    {raiseError()} function is used to display an error message. Since the
-    XBEL reader is only concerned with reading XML elements, it makes
-    extensive use of the \l{QXmlStreamReader::readNextStartElement()}
+    \l{QXmlStreamReader::}{setDevice()}. The actual process of reading only
+    takes place if the file is a valid XBEL 1.0 file. Note that the XML input
+    needs to be well-formed to be accepted by QXmlStreamReader. Otherwise, the
+    \l{QXmlStreamReader::}{raiseError()} function is used to display an error
+    message. Since the XBEL reader is only concerned with reading XML elements,
+    it makes extensive use of the \l{QXmlStreamReader::}{readNextStartElement()}
     convenience function.
 
     \snippet examples/xml/streambookmarks/xbelreader.cpp 1
 
+    The \c errorString() function is used if an error occurred, in order to
+    obtain a description of the error complete with line and column number
+    information.
+
+    \snippet examples/xml/streambookmarks/xbelreader.cpp 2
+
     The \c readXBEL() function reads the name of a startElement and calls
     the appropriate function to read it, depending on whether if its a
     "folder", "bookmark" or "separator". Otherwise, it calls
-    \l{QXmlStreamReader::skipCurrentElement()}. The Q_ASSERT() macro is used
+    \l{QXmlStreamReader::}{skipCurrentElement()}. The Q_ASSERT() macro is used
     to provide a pre-condition for the function.
 
     \snippet examples/xml/streambookmarks/xbelreader.cpp 3
@@ -126,8 +132,8 @@
     \snippet examples/xml/streambookmarks/xbelreader.cpp 4
 
     The \c readSeparator() function creates a separator and sets its flags.
-    The text is set to 30 "0xB7", the HEX equivalent for period, and then
-    read using \c readElementText().
+    The text is set to 30 "0xB7", the HEX equivalent for period. The element
+    is then skipped using \l{QXmlStreamReader::}{skipCurrentElement()}.
 
     \snippet examples/xml/streambookmarks/xbelreader.cpp 5
 

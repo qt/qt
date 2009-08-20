@@ -217,6 +217,8 @@ public:
     static const Handler *handler;
 };
 
+Q_CORE_EXPORT const QStateMachinePrivate::Handler *qcoreStateMachineHandler();
+
 QT_END_NAMESPACE
 
 #endif

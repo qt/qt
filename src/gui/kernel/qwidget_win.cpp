@@ -2060,8 +2060,6 @@ void QWidgetPrivate::winSetupGestures()
     Q_Q(QWidget);
     if (!q)
         return;
-    q->setAttribute(Qt::WA_DontCreateNativeAncestors);
-    q->setAttribute(Qt::WA_NativeWindow);
     if (!q->isVisible())
         return;
     QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();

@@ -2467,7 +2467,7 @@ double QVariant::toDouble(bool *ok) const
 */
 float QVariant::toFloat(bool *ok) const
 {
-    return qNumVariantToHelper<float>(d, handler, ok, d.data.d);
+    return qNumVariantToHelper<float>(d, handler, ok, d.data.f);
 }
 
 /*!
@@ -2484,7 +2484,7 @@ float QVariant::toFloat(bool *ok) const
 */
 qreal QVariant::toReal(bool *ok) const
 {
-    return qNumVariantToHelper<qreal>(d, handler, ok, d.data.d);
+    return qNumVariantToHelper<qreal>(d, handler, ok, d.data.real);
 }
 
 /*!

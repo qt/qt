@@ -696,6 +696,7 @@ static void setup()
     (void)new QJisCodec;
     (void)new QSjisCodec;
     (void)new QEucKrCodec;
+    (void)new QCP949Codec;
     (void)new QBig5Codec;
     (void)new QBig5hkscsCodec;
 #  endif // QT_NO_ICONV && !QT_BOOTSTRAPPED

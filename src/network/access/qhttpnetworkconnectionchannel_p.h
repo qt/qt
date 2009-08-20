@@ -82,10 +82,14 @@ class QHttpNetworkReply;
 class QByteArray;
 class QHttpNetworkConnection;
 
+#ifndef HttpMessagePair
+typedef QPair<QHttpNetworkRequest, QHttpNetworkReply*> HttpMessagePair;
+#endif
+
 class QHttpNetworkConnectionChannel : public QObject {
     Q_OBJECT
 public:
-        enum ChannelState {
+    enum ChannelState {
         IdleState = 0,          // ready to send request
         ConnectingState = 1,    // connecting to host
         WritingState = 2,       // writing the data
@@ -112,12 +116,24 @@ public:
     bool ignoreAllSslErrors;
     QList<QSslError> ignoreSslErrorsList;
 #endif
+
+    // HTTP pipelining -> http://en.wikipedia.org/wiki/Http_pipelining
+    enum PipeliningSupport {
+        PipeliningSupportUnknown, // default for a new connection
+        PipeliningProbablySupported, // after having received a server response that indicates support
+        PipeliningNotSupported // currently not used
+    };
+    PipeliningSupport pipeliningSupported;
+    QList<HttpMessagePair> alreadyPipelinedRequests;
+
+
     QHttpNetworkConnectionChannel() : socket(0), state(IdleState), reply(0), written(0), bytesTotal(0), resendCurrent(false),
     lastStatus(0), pendingEncrypt(false), reconnectAttempts(2),
     authMehtod(QAuthenticatorPrivate::None), proxyAuthMehtod(QAuthenticatorPrivate::None)
 #ifndef QT_NO_OPENSSL
     , ignoreAllSslErrors(false)
 #endif
+    , pipeliningSupported(PipeliningSupportUnknown)
     , connection(0)
     {}
 
@@ -126,6 +142,23 @@ public:
 
     void init();
     void close();
+
+    bool sendRequest();
+    void receiveReply();
+
+    bool ensureConnection();
+
+    bool expand(bool dataComplete);
+    void allDone(); // reply header + body have been read
+    void handleStatus(); // called from allDone()
+
+    void pipelineInto(HttpMessagePair &pair);
+    void requeueCurrentlyPipelinedRequests();
+    void detectPipeliningSupport();
+
+    void closeAndResendCurrentRequest();
+
+    void eatWhitespace();
 
     protected slots:
     void _q_bytesWritten(qint64 bytes); // proceed sending

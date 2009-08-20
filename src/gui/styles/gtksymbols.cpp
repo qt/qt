@@ -642,7 +642,7 @@ GtkStyle* QGtk::gtkStyle(const QString &path)
     return 0;
 }
 
-static void update_toolbar_style(GtkWidget *gtkToolBar, GParamSpec *pspec, gpointer user_data)
+static void update_toolbar_style(GtkWidget *gtkToolBar, GParamSpec *, gpointer)
 {
     GtkToolbarStyle toolbar_style = GTK_TOOLBAR_ICONS;
     g_object_get(gtkToolBar, "toolbar-style", &toolbar_style, NULL);

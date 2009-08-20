@@ -1027,6 +1027,8 @@ void QMainWindow::addDockWidget(Qt::DockWidgetArea area, QDockWidget *dockwidget
     Restores the state of \a dockwidget if it is created after the call
     to restoreState(). Returns true if the state was restored; otherwise
     returns false.
+
+    \sa restoreState(), saveState()
 */
 
 bool QMainWindow::restoreDockWidget(QDockWidget *dockwidget)
@@ -1158,6 +1160,11 @@ Qt::DockWidgetArea QMainWindow::dockWidgetArea(QDockWidget *dockwidget) const
     To restore the saved state, pass the return value and \a version
     number to restoreState().
 
+    To save the geometry when the window closes, you can
+    implement a close event like this:
+
+    \snippet doc/src/snippets/code/src_gui_widgets_qmainwindow.cpp 0
+
     \sa restoreState(), QWidget::saveGeometry(), QWidget::restoreGeometry()
 */
 QByteArray QMainWindow::saveState(int version) const
@@ -1177,7 +1184,13 @@ QByteArray QMainWindow::saveState(int version) const
     unchanged, and this function returns \c false; otherwise, the state
     is restored, and this function returns \c true.
 
-    \sa saveState(), QWidget::saveGeometry(), QWidget::restoreGeometry()
+    To restore geometry saved using QSettings, you can use code like
+    this:
+
+    \snippet doc/src/snippets/code/src_gui_widgets_qmainwindow.cpp 1
+
+    \sa saveState(), QWidget::saveGeometry(),
+    QWidget::restoreGeometry(), restoreDockWidget()
 */
 bool QMainWindow::restoreState(const QByteArray &state, int version)
 {

@@ -466,6 +466,15 @@ void tst_QQuaternion::multiply_data()
     QTest::newRow("complex")
         << (qreal)1.0f << (qreal)2.0f << (qreal)3.0f << (qreal)7.0f
         << (qreal)4.0f << (qreal)5.0f << (qreal)6.0f << (qreal)8.0f;
+
+    for (qreal w = -1.0f; w <= 1.0f; w += 0.5f)
+        for (qreal x = -1.0f; x <= 1.0f; x += 0.5f)
+            for (qreal y = -1.0f; y <= 1.0f; y += 0.5f)
+                for (qreal z = -1.0f; z <= 1.0f; z += 0.5f) {
+                    QTest::newRow("exhaustive")
+                        << x << y << z << w
+                        << z << w << y << x;
+                }
 }
 void tst_QQuaternion::multiply()
 {

@@ -101,6 +101,10 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 
 #include "qdatetime.h"
 
+#ifdef QT_MAC_USE_COCOA
+#include <private/qt_cocoa_helpers_mac_p.h>
+#endif
+
 //#define ALIEN_DEBUG
 
 static void initResources()
@@ -3477,6 +3481,15 @@ void QApplication::changeOverrideCursor(const QCursor &cursor)
     if (qApp->d_func()->cursor_list.isEmpty())
         return;
     qApp->d_func()->cursor_list.removeFirst();
+#ifdef QT_MAC_USE_COCOA
+    // We use native NSCursor stacks in Cocoa. The currentCursor is the
+    // top of this stack. So to avoid flickering of cursor, we have to
+    // change the cusor instead of pop-ing the existing OverrideCursor
+    // and pushing the new one.
+    qApp->d_func()->cursor_list.prepend(cursor);
+    qt_cocoaChangeOverrideCursor(cursor);
+    return;
+#endif
     setOverrideCursor(cursor);
 }
 #endif
