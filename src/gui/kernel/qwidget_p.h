@@ -694,13 +694,7 @@ public:
     inline QRect deviceRect() const
     { return m_widget->window()->rect(); }
 
-    inline QRectF boundingRect(Qt::CoordinateSystem system) const
-    {
-        if (system == Qt::LogicalCoordinates)
-            return m_widget->rect();
-        return m_widget->rect().translated(m_widget->mapTo(m_widget->window(), QPoint()));
-    }
-
+    QRectF boundingRect(Qt::CoordinateSystem system) const;
     void draw(QPainter *p);
     QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
 

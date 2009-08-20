@@ -1551,9 +1551,9 @@ bool QWidgetPrivate::isOverlapped(const QRect &rect) const
                 continue;
             }
 
-            if (qRectIntersects(sibling->data->crect, r)) {
+            if (qRectIntersects(sibling->d_func()->effectiveRectFor(sibling->data->crect), r)) {
                 const QWExtra *siblingExtra = sibling->d_func()->extra;
-                if (siblingExtra && siblingExtra->hasMask
+                if (siblingExtra && siblingExtra->hasMask && !sibling->d_func()->graphicsEffect
                     && !siblingExtra->mask.translated(sibling->data->crect.topLeft()).intersects(r)) {
                     continue;
                 }
@@ -1794,12 +1794,14 @@ void QWidgetPrivate::subtractOpaqueSiblings(QRegion &sourceRegion, bool *hasDirt
             break;
         QWidgetPrivate *pd = w->parentWidget()->d_func();
         const int myIndex = pd->children.indexOf(const_cast<QWidget *>(w));
+        const QRect widgetGeometry = w->d_func()->effectiveRectFor(w->data->crect);
         for (int i = myIndex + 1; i < pd->children.size(); ++i) {
             QWidget *sibling = qobject_cast<QWidget *>(pd->children.at(i));
             if (!sibling || !sibling->isVisible() || sibling->isWindow())
                 continue;
 
-            if (!qRectIntersects(sibling->data->crect, w->data->crect))
+            const QRect siblingGeometry = sibling->d_func()->effectiveRectFor(sibling->data->crect);
+            if (!qRectIntersects(siblingGeometry, widgetGeometry))
                 continue;
 
             if (dirtyClipBoundingRect) {
@@ -1807,7 +1809,7 @@ void QWidgetPrivate::subtractOpaqueSiblings(QRegion &sourceRegion, bool *hasDirt
                 dirtyClipBoundingRect = false;
             }
 
-            if (!qRectIntersects(sibling->data->crect, clipBoundingRect.translated(parentOffset)))
+            if (!qRectIntersects(siblingGeometry, clipBoundingRect.translated(parentOffset)))
                 continue;
 
             if (dirtyParentClip) {
@@ -1819,7 +1821,8 @@ void QWidgetPrivate::subtractOpaqueSiblings(QRegion &sourceRegion, bool *hasDirt
             const QRect siblingClipRect(sibling->d_func()->clipRect());
             QRegion siblingDirty(parentClip);
             siblingDirty &= (siblingClipRect.translated(siblingPos));
-            const bool hasMask = sibling->d_func()->extra && sibling->d_func()->extra->hasMask;
+            const bool hasMask = sibling->d_func()->extra && sibling->d_func()->extra->hasMask
+                                 && !sibling->d_func()->graphicsEffect;
             if (hasMask)
                 siblingDirty &= sibling->d_func()->extra->mask.translated(siblingPos);
             if (siblingDirty.isEmpty())
@@ -1830,7 +1833,7 @@ void QWidgetPrivate::subtractOpaqueSiblings(QRegion &sourceRegion, bool *hasDirt
                     siblingDirty.translate(-parentOffset);
                     sourceRegion -= siblingDirty;
                 } else {
-                    sourceRegion -= sibling->data->crect.translated(-parentOffset);
+                    sourceRegion -= siblingGeometry.translated(-parentOffset);
                 }
             } else {
                 if (hasDirtySiblingsAbove)
@@ -1860,6 +1863,11 @@ void QWidgetPrivate::clipToEffectiveMask(QRegion &region) const
 
     const QWidget *w = q;
     QPoint offset;
+
+    if (graphicsEffect) {
+        w = q->parentWidget();
+        offset -= data.crect.topLeft();
+    }
 
     while (w) {
         const QWidgetPrivate *wd = w->d_func();
@@ -5046,7 +5054,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             sourced->context = &context;
             if (!sharedPainter) {
                 QPaintEngine *paintEngine = pdev->paintEngine();
-                paintEngine->d_func()->systemClip = clipRect().translated(offset);
+                paintEngine->d_func()->systemClip = rgn.translated(offset);
                 QPainter p(pdev);
                 p.translate(offset);
                 context.painter = &p;
@@ -5054,7 +5062,10 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 paintEngine->d_func()->systemClip = QRegion();
             } else {
                 context.painter = sharedPainter;
+                sharedPainter->save();
+                sharedPainter->translate(offset);
                 graphicsEffect->draw(sharedPainter, source);
+                sharedPainter->restore();
             }
             sourced->context = 0;
             return;
@@ -5195,7 +5206,7 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
                 dirtyBoundingRect = false;
             }
 
-            if (qRectIntersects(boundingRect, x->data->crect)) {
+            if (qRectIntersects(boundingRect, x->d_func()->effectiveRectFor(x->data->crect))) {
 #ifdef Q_BACKINGSTORE_SUBSURFACES
                 if (x->windowSurface() == currentSurface)
 #endif
@@ -5213,7 +5224,7 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
 
     QWidgetPrivate *wd = w->d_func();
     const QPoint widgetPos(w->data->crect.topLeft());
-    const bool hasMask = wd->extra && wd->extra->hasMask;
+    const bool hasMask = wd->extra && wd->extra->hasMask && !wd->graphicsEffect;
 
     if (index > 0) {
         QRegion wr(rgn);
@@ -5228,12 +5239,26 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
 
     if (w->updatesEnabled() && (!w->d_func()->extra || !w->d_func()->extra->proxyWidget)) {
         QRegion wRegion(rgn);
-        wRegion &= w->data->crect;
+        wRegion &= wd->effectiveRectFor(w->data->crect);
         wRegion.translate(-widgetPos);
         if (hasMask)
             wRegion &= wd->extra->mask;
         wd->drawWidget(pdev, wRegion, offset + widgetPos, flags, sharedPainter, backingStore);
     }
+}
+
+QRectF QWidgetEffectSourcePrivate::boundingRect(Qt::CoordinateSystem system) const
+{
+    if (system != Qt::DeviceCoordinates)
+        return m_widget->rect();
+
+    if (!context) {
+        // Device coordinates without context not yet supported.
+        qWarning("QGraphicsEffectSource::boundingRect: Not yet implemented, lacking device context");
+        return QRectF();
+    }
+
+    return context->painter->worldTransform().mapRect(m_widget->rect());
 }
 
 void QWidgetEffectSourcePrivate::draw(QPainter *painter)
@@ -5243,24 +5268,64 @@ void QWidgetEffectSourcePrivate::draw(QPainter *painter)
         return;
     }
 
-    qt_widget_private(m_widget)->drawWidget(context->pdev, context->rgn, context->offset, context->flags,
-                                            context->sharedPainter, context->backingStore);
+    // The region saved in the context is neither clipped to the rect
+    // nor the mask, so we have to clip it here before calling drawWidget.
+    QRegion toBePainted = context->rgn;
+    toBePainted &= m_widget->rect();
+    QWidgetPrivate *wd = qt_widget_private(m_widget);
+    if (wd->extra && wd->extra->hasMask)
+        toBePainted &= wd->extra->mask;
+
+    wd->drawWidget(context->pdev, toBePainted, context->offset, context->flags,
+                   context->sharedPainter, context->backingStore);
 }
 
 QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
-    QPoint pixmapOffset;
+    if (!context && deviceCoordinates) {
+        // Device coordinates without context not yet supported.
+        qWarning("QGraphicsEffectSource::pixmap: Not yet implemented, lacking device context");
+        return QPixmap();
+    }
 
-    QRect sourceRect(m_widget->rect());
+    QPoint pixmapOffset;
+    QRectF sourceRect = m_widget->rect();
+
     if (deviceCoordinates) {
-        pixmapOffset = m_widget->mapTo(m_widget->window(), QPoint());
-        sourceRect.translate(pixmapOffset);
+        const QTransform &painterTransform = context->painter->worldTransform();
+        sourceRect = painterTransform.mapRect(sourceRect);
+        pixmapOffset = painterTransform.map(pixmapOffset);
     }
 
     QRect effectRect = m_widget->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
     if (offset)
         *offset = effectRect.topLeft();
+
+    if (deviceCoordinates) {
+        // Clip to device rect.
+        int left, top, right, bottom;
+        effectRect.getCoords(&left, &top, &right, &bottom);
+        if (left < 0) {
+            if (offset)
+                offset->rx() += -left;
+            effectRect.setX(0);
+        }
+        if (top < 0) {
+            if (offset)
+                offset->ry() += -top;
+            effectRect.setY(0);
+        }
+        // NB! We use +-1 for historical reasons (see QRect documentation).
+        QPaintDevice *device = context->painter->device();
+        const int deviceWidth = device->width();
+        const int deviceHeight = device->height();
+        if (right + 1 > deviceWidth)
+            effectRect.setRight(deviceWidth - 1);
+        if (bottom + 1 > deviceHeight)
+            effectRect.setBottom(deviceHeight -1);
+    }
+
     pixmapOffset -= effectRect.topLeft();
 
     QPixmap pixmap(effectRect.size());
