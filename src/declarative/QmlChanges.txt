@@ -39,6 +39,7 @@ GridPositioner: lost "margins" property
 Other Changes:
 Drag: axis becomes an enum with values "XAxis", "YAxis", "XandYAxis"
 Image: scaleGrid property removed. New item called BorderImage instead.
+KeyActions: changed to a Keys attached property on any item.
 
 Pending Changes
 ===============
