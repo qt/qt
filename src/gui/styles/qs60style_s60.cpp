@@ -1358,6 +1358,7 @@ QS60Style::QS60Style()
 {
 }
 
+#ifdef Q_WS_S60
 void QS60StylePrivate::handleDynamicLayoutVariantSwitch()
 {
     clearCaches(QS60StylePrivate::CC_LayoutChange);
@@ -1379,6 +1380,7 @@ void QS60StylePrivate::handleSkinChange()
         topLevelWidget->ensurePolished();
     }
 }
+#endif // Q_WS_S60
 
 QT_END_NAMESPACE
 
