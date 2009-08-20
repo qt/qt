@@ -410,7 +410,7 @@ void QmlFollow::setMass(qreal mass)
 }
 
 /*!
-    \qmlproperty qreal Follow::followValue
+    \qmlproperty qreal Follow::value
     The current value.
 */
 

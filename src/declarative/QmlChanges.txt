@@ -25,6 +25,7 @@ Text elements: hAlign  -> horizontalAlignment
 Text elements: vAlign  -> verticalAlignment
 State: operations      -> changes
 Transition: operations -> animations
+Follow: followValue    -> value
 
 Additions:
 MouseRegion: add "acceptedButtons" property
@@ -54,7 +55,6 @@ RunScript          -> StateChangeScript
 SetAnchors         -> AnchorChanges
 
 Renamed properties:
-Follow: followValue    -> value
 Transition: fromState  -> from
 Trnasition: toState    -> to
 
