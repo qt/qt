@@ -22,6 +22,7 @@ MouseRegion: ymin    -> maximumY
 Additions:
 MouseRegion: add "acceptedButtons" property
 MouseRegion: add "hoverEnabled" property
+Timer: add start() and stop() slots
 
 Deletions:
 VerticalPositioner: lost "margins" property
@@ -57,4 +58,3 @@ PropertyAction::target (if possible)
 Additions:
 MouseRegion: add "pressedButtons" property
 Connection: add "slot" property
-Timer: add start() and stop() slots
