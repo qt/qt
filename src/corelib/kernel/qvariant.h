@@ -358,6 +358,7 @@ class Q_CORE_EXPORT QVariant
             bool b;
             double d;
             float f;
+            qreal real;
             qlonglong ll;
             qulonglong ull;
             QObject *o;

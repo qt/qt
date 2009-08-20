@@ -418,20 +418,26 @@ qint64 QHttpNetworkReplyPrivate::readStatus(QAbstractSocket *socket)
             }
             bool ok = parseStatus(fragment);
             state = ReadingHeaderState;
-            fragment.clear(); // next fragment
-
-            if (!ok)
+            fragment.clear();
+            if (!ok) {
                 return -1;
+            }
             break;
         } else {
             c = 0;
-            bytes += socket->read(&c, 1);
+            int haveRead = socket->read(&c, 1);
+            if (haveRead == -1)
+                return -1;
+            bytes += haveRead;
             fragment.append(c);
         }
 
         // is this a valid reply?
         if (fragment.length() >= 5 && !fragment.startsWith("HTTP/"))
+        {
+            fragment.clear();
             return -1;
+        }
 
     }
 
@@ -568,7 +574,6 @@ qint64 QHttpNetworkReplyPrivate::readBodyFast(QAbstractSocket *socket, QByteData
 
     if (contentRead + haveRead == bodyLength) {
         state = AllDoneState;
-        socket->readAll(); // Read the rest to clean (CRLF) ### will break pipelining
     }
 
     contentRead += haveRead;
@@ -588,8 +593,6 @@ qint64 QHttpNetworkReplyPrivate::readBody(QAbstractSocket *socket, QByteDataBuff
     } else {
         bytes += readReplyBodyRaw(socket, out, socket->bytesAvailable());
     }
-    if (state == AllDoneState)
-        socket->readAll(); // Read the rest to clean (CRLF) ### will break pipelining
     contentRead += bytes;
     return bytes;
 }
@@ -714,6 +717,33 @@ void QHttpNetworkReplyPrivate::appendCompressedReplyData(QByteDataBuffer &data)
         compressedData.append(byteData.constData(), byteData.size());
     }
     data.clear();
+}
+
+
+bool QHttpNetworkReplyPrivate::shouldEmitSignals()
+{
+    // for 401 & 407 don't emit the data signals. Content along with these
+    // responses are send only if the authentication fails.
+    return (statusCode != 401 && statusCode != 407);
+}
+
+bool QHttpNetworkReplyPrivate::expectContent()
+{
+    // check whether we can expect content after the headers (rfc 2616, sec4.4)
+    if ((statusCode >= 100 && statusCode < 200)
+        || statusCode == 204 || statusCode == 304)
+        return false;
+    if (request.operation() == QHttpNetworkRequest::Head)
+        return !shouldEmitSignals();
+    if (contentLength() == 0)
+        return false;
+    return true;
+}
+
+void QHttpNetworkReplyPrivate::eraseData()
+{
+    compressedData.clear();
+    responseData.clear();
 }
 
 

@@ -1010,7 +1010,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     }
 
     // Resolve depth.
-    resolveDepth(parent ? parent->d_ptr->depth : -1);
+    invalidateDepthRecursively();
     dirtySceneTransform = 1;
 
     // Restore the sub focus chain.
@@ -4401,14 +4401,42 @@ bool QGraphicsItemPrivate::discardUpdateRequest(bool ignoreClipping, bool ignore
 
 /*!
     \internal
-
-    Resolves the stacking depth of this object and all its children.
 */
-void QGraphicsItemPrivate::resolveDepth(int parentDepth)
+int QGraphicsItemPrivate::depth() const
 {
-    depth = parentDepth + 1;
+    if (itemDepth == -1)
+        const_cast<QGraphicsItemPrivate *>(this)->resolveDepth();
+
+    return itemDepth;
+}
+
+/*!
+    \internal
+*/
+void QGraphicsItemPrivate::invalidateDepthRecursively()
+{
+    if (itemDepth == -1)
+        return;
+
+    itemDepth = -1;
     for (int i = 0; i < children.size(); ++i)
-        children.at(i)->d_ptr->resolveDepth(depth);
+        children.at(i)->d_ptr->invalidateDepthRecursively();
+}
+
+/*!
+    \internal
+
+    Resolves the stacking depth of this object and all its ancestors.
+*/
+void QGraphicsItemPrivate::resolveDepth()
+{
+    if (!parent)
+        itemDepth = 0;
+    else {
+        if (parent->d_ptr->itemDepth == -1)
+            parent->d_ptr->resolveDepth();
+        itemDepth = parent->d_ptr->itemDepth + 1;
+    }
 }
 
 /*!
@@ -5578,8 +5606,8 @@ QGraphicsItem *QGraphicsItem::commonAncestorItem(const QGraphicsItem *other) con
         return const_cast<QGraphicsItem *>(this);
     const QGraphicsItem *thisw = this;
     const QGraphicsItem *otherw = other;
-    int thisDepth = d_ptr->depth;
-    int otherDepth = other->d_ptr->depth;
+    int thisDepth = d_ptr->depth();
+    int otherDepth = other->d_ptr->depth();
     while (thisDepth > otherDepth) {
         thisw = thisw->d_ptr->parent;
         --thisDepth;
@@ -6589,7 +6617,7 @@ void QGraphicsItem::prepareGeometryChange()
         // if someone is connected to the changed signal or the scene has no views.
         // Note that this has to be done *after* markDirty to ensure that
         // _q_processDirtyItems is called before _q_emitUpdated.
-	if ((scenePrivate->connectedSignals[0] & scenePrivate->changedSignalMask)
+	if (scenePrivate->isSignalConnected(scenePrivate->changedSignalIndex)
             || scenePrivate->views.isEmpty()) {
             if (d_ptr->hasTranslateOnlySceneTransform()) {
                 d_ptr->scene->update(boundingRect().translated(d_ptr->sceneTransform.dx(),

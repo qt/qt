@@ -52,6 +52,7 @@
 #include <qlibrary.h>
 #include <qtimer.h>
 #include <qmutex.h>
+#include <qurl.h>
 #include <private/qmutexpool_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -129,7 +130,6 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     }
 
     QHostInfo results;
-    results.setHostName(hostName);
 
 #if defined(QHOSTINFO_DEBUG)
     qDebug("QHostInfoAgent::fromName(%p): looking up \"%s\" (IPv6 support is %s)",
@@ -178,12 +178,28 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         }
     }
 
+    // IDN support
+    QByteArray aceHostname;
+    if (results.hostName().isEmpty()) {
+        // it's a hostname resolution
+        aceHostname = QUrl::toAce(hostName);
+        results.setHostName(hostName);
+        if (aceHostname.isEmpty()) {
+            results.setError(QHostInfo::HostNotFound);
+            results.setErrorString(hostName.isEmpty() ? QObject::tr("No host name given") : QObject::tr("Invalid hostname"));
+            return results;
+        }
+    } else {
+        // it's an IP reverse resolution
+        aceHostname = results.hostName().toLatin1();
+    }
+
     if (local_getaddrinfo && local_freeaddrinfo) {
         // Call getaddrinfo, and place all IPv4 addresses at the start
         // and the IPv6 addresses at the end of the address list in
         // results.
         qt_addrinfo *res;
-        int err = local_getaddrinfo(hostName.toLatin1().constData(), 0, 0, &res);
+        int err = local_getaddrinfo(aceHostname.constData(), 0, 0, &res);
         if (err == 0) {
             QList<QHostAddress> addresses;
             for (qt_addrinfo *p = res; p != 0; p = p->ai_next) {
@@ -218,7 +234,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
         }
     } else {
         // Fall back to gethostbyname, which only supports IPv4.
-        hostent *ent = gethostbyname(hostName.toLatin1().constData());
+        hostent *ent = gethostbyname(aceHostname.constData());
         if (ent) {
             char **p;
             QList<QHostAddress> addresses;

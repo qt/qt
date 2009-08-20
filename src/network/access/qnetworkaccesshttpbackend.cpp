@@ -516,6 +516,9 @@ void QNetworkAccessHttpBackend::postRequest()
         return;    // no need to send the request! :)
     }
 
+    if (request().attribute(QNetworkRequest::HttpPipeliningAllowedAttribute).toBool() == true)
+        httpRequest.setPipeliningAllowed(true);
+
     httpReply = http->sendRequest(httpRequest);
     httpReply->setParent(this);
 #ifndef QT_NO_OPENSSL

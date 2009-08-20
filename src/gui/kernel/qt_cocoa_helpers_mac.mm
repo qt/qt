@@ -1238,4 +1238,12 @@ void qt_mac_menu_collapseSeparators(void */*NSMenu **/ theMenu, bool collapse)
     }
 }
 
+#ifdef QT_MAC_USE_COCOA
+void qt_cocoaChangeOverrideCursor(const QCursor &cursor)
+{
+    QMacCocoaAutoReleasePool pool;
+    [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursor)) set];
+}
+#endif
+
 QT_END_NAMESPACE

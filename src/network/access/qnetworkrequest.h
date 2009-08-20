@@ -76,6 +76,7 @@ public:
         CacheSaveControlAttribute,
         SourceIsFromCacheAttribute,
         DoNotBufferUploadDataAttribute,
+        HttpPipeliningAllowedAttribute,
 
         User = 1000,
         UserMax = 32767
