@@ -172,6 +172,11 @@ QT_BEGIN_NAMESPACE
         Indicates whether the QNetworkAccessManager code is
         allowed to use HTTP pipelining with this request.
 
+     \value HttpPipeliningWasUsedAttribute
+        Replies only, type: QVariant::Bool
+        Indicates whether the HTTP pipelining was used for receiving
+        this reply.
+
     \value User
         Special type. Additional information can be passed in
         QVariants with types ranging from User to UserMax. The default

@@ -716,6 +716,8 @@ void QNetworkAccessHttpBackend::checkForRedirect(const int statusCode)
 
 void QNetworkAccessHttpBackend::replyHeaderChanged()
 {
+    setAttribute(QNetworkRequest::HttpPipeliningWasUsedAttribute, httpReply->isPipeliningUsed());
+
     // reconstruct the HTTP header
     QList<QPair<QByteArray, QByteArray> > headerMap = httpReply->header();
     QList<QPair<QByteArray, QByteArray> >::ConstIterator it = headerMap.constBegin(),

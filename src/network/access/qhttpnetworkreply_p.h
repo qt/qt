@@ -128,6 +128,8 @@ public:
 
     bool isFinished() const;
 
+    bool isPipeliningUsed() const;
+
 #ifndef QT_NO_OPENSSL
     QSslConfiguration sslConfiguration() const;
     void setSslConfiguration(const QSslConfiguration &config);
@@ -223,6 +225,8 @@ public:
     QByteDataBuffer responseData; // uncompressed body
     QByteArray compressedData; // compressed body (temporary)
     bool requestIsPrepared;
+
+    bool pipeliningUsed;
 };
 
 

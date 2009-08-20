@@ -187,6 +187,10 @@ bool QHttpNetworkReply::isFinished() const
     return d_func()->state == QHttpNetworkReplyPrivate::AllDoneState;
 }
 
+bool QHttpNetworkReply::isPipeliningUsed() const
+{
+    return d_func()->pipeliningUsed;
+}
 
 
 QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
@@ -195,6 +199,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
       chunkedTransferEncoding(0),
       currentChunkSize(0), currentChunkRead(0), connection(0), initInflate(false),
       autoDecompress(false), responseData(), requestIsPrepared(false)
+      ,pipeliningUsed(false)
 {
 }
 
