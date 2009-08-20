@@ -44,6 +44,8 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qpoint.h>
+#include <QtCore/qrect.h>
+#include <QtGui/qcolor.h>
 
 QT_BEGIN_HEADER
 
@@ -53,10 +55,7 @@ QT_MODULE(Gui)
 
 class QGraphicsItem;
 class QStyleOption;
-class QColor;
 class QPainter;
-class QRectF;
-class QRect;
 class QPixmap;
 
 class QGraphicsEffectSourcePrivate;
