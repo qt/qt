@@ -1033,7 +1033,7 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
 {
     Q_D(const QPixmapDropShadowFilter);
 
-    QImage tmp = src.isNull() ? px : px.copy(src.toRect()).toImage();
+    QImage tmp = src.isNull() ? px.toImage() : px.copy(src.toRect()).toImage();
     QPainter tmpPainter(&tmp);
 
     // blacken the image...
