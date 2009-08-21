@@ -850,16 +850,11 @@ class QPixmapDropShadowFilterPrivate : public QPixmapFilterPrivate
 {
 public:
     QPixmapDropShadowFilterPrivate()
-            : offset(8, 8),
-            radius(1),
-            color(63, 63, 63, 180) {
-    }
+        : offset(8, 8), color(63, 63, 63, 180), blurFilter(new QPixmapBlurFilter) {}
 
     QPointF offset;
-    qreal radius;
     QColor color;
-
-    QPixmapConvolutionFilter *convolution;
+    QPixmapBlurFilter *blurFilter;
 };
 
 /*!
@@ -904,9 +899,7 @@ QPixmapDropShadowFilter::QPixmapDropShadowFilter(QObject *parent)
     : QPixmapFilter(*new QPixmapDropShadowFilterPrivate, DropShadowFilter, parent)
 {
     Q_D(QPixmapDropShadowFilter);
-    d->convolution = new QPixmapConvolutionFilter;
-
-    setBlurRadius(1);
+    d->blurFilter->setRadius(1);
 }
 
 /*!
@@ -917,7 +910,7 @@ QPixmapDropShadowFilter::QPixmapDropShadowFilter(QObject *parent)
 QPixmapDropShadowFilter::~QPixmapDropShadowFilter()
 {
     Q_D(QPixmapDropShadowFilter);
-    delete d->convolution;
+    delete d->blurFilter;
 }
 
 /*!
@@ -929,10 +922,10 @@ QPixmapDropShadowFilter::~QPixmapDropShadowFilter()
 
     \internal
 */
-qreal QPixmapDropShadowFilter::blurRadius() const
+int QPixmapDropShadowFilter::blurRadius() const
 {
     Q_D(const QPixmapDropShadowFilter);
-    return d->radius;
+    return d->blurFilter->radius();
 }
 
 /*!
@@ -944,18 +937,10 @@ qreal QPixmapDropShadowFilter::blurRadius() const
 
     \internal
 */
-void QPixmapDropShadowFilter::setBlurRadius(qreal radius)
+void QPixmapDropShadowFilter::setBlurRadius(int radius)
 {
     Q_D(QPixmapDropShadowFilter);
-
-    d->radius = radius;
-
-    int dim = 2 * qRound(radius) + 1;
-    QVarLengthArray<qreal> arr(dim * dim);
-    qreal f = 1 / qreal(dim * dim);
-    for (int i = 0; i < dim * dim; ++i)
-        arr[i] = f;
-    d->convolution->setConvolutionKernel(arr.data(), dim, dim);
+    d->blurFilter->setRadius(radius);
 }
 
 /*!
@@ -1029,10 +1014,11 @@ QRectF QPixmapDropShadowFilter::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QPixmapDropShadowFilter);
 
-    qreal x1 = qMin(rect.left(), rect.left() + d->offset.x() - d->radius);
-    qreal y1 = qMin(rect.top(), rect.top() + d->offset.y() - d->radius);
-    qreal x2 = qMax(rect.right(), rect.right() + d->offset.x() + d->radius);
-    qreal y2 = qMax(rect.bottom(), rect.bottom() + d->offset.y() + d->radius);
+    const qreal delta = qreal(d->blurFilter->radius() * 2);
+    qreal x1 = qMin(rect.left(), rect.left() + d->offset.x() - delta);
+    qreal y1 = qMin(rect.top(), rect.top() + d->offset.y() - delta);
+    qreal x2 = qMax(rect.right(), rect.right() + d->offset.x() + delta);
+    qreal y2 = qMax(rect.bottom(), rect.bottom() + d->offset.y() + delta);
 
     return QRectF(x1, y1, x2 - x1, y2 - y1);
 }
@@ -1058,7 +1044,7 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
     const QPixmap pixTmp = QPixmap::fromImage(tmp);
 
     // draw the blurred drop shadow...
-    d->convolution->draw(p, pos + d->offset, pixTmp);
+    d->blurFilter->draw(p, pos + d->offset, pixTmp);
 
     // Draw the actual pixmap...
     p->drawPixmap(pos, px, src);

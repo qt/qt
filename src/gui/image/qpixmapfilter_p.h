@@ -172,8 +172,8 @@ public:
     QRectF boundingRectFor(const QRectF &rect) const;
     void draw(QPainter *p, const QPointF &pos, const QPixmap &px, const QRectF &src = QRectF()) const;
 
-    qreal blurRadius() const;
-    void setBlurRadius(qreal radius);
+    int blurRadius() const;
+    void setBlurRadius(int radius);
 
     QColor color() const;
     void setColor(const QColor &color);
