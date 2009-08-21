@@ -1467,7 +1467,7 @@ bool QFile::seek(qint64 off)
         d->setError(err, fileEngine()->errorString());
         return false;
     }
-    d->error = NoError;
+    unsetError();
     return true;
 }
 
@@ -1495,7 +1495,7 @@ qint64 QFile::readLineData(char *data, qint64 maxlen)
 qint64 QFile::readData(char *data, qint64 len)
 {
     Q_D(QFile);
-    d->error = NoError;
+    unsetError();
     if (!d->ensureFlushed())
         return -1;
 
@@ -1577,7 +1577,7 @@ qint64
 QFile::writeData(const char *data, qint64 len)
 {
     Q_D(QFile);
-    d->error = NoError;
+    unsetError();
     d->lastWasWrite = true;
     bool buffered = !(d->openMode & Unbuffered);
 
