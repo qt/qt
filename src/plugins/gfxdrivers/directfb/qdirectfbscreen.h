@@ -142,11 +142,13 @@ public:
 
     // Track surface creation/release so we can release all on exit
     enum SurfaceCreationOption {
-        DontTrackSurface = 0,
-        TrackSurface = 1
+        DontTrackSurface = 0x1,
+        TrackSurface = 0x2,
+        NoPreallocated = 0x4
     };
     Q_DECLARE_FLAGS(SurfaceCreationOptions, SurfaceCreationOption);
     IDirectFBSurface *createDFBSurface(const QImage &image,
+                                       QImage::Format format,
                                        SurfaceCreationOptions options);
     IDirectFBSurface *createDFBSurface(const QSize &size,
                                        QImage::Format format,
@@ -154,9 +156,6 @@ public:
     IDirectFBSurface *copyDFBSurface(IDirectFBSurface *src,
                                      QImage::Format format,
                                      SurfaceCreationOptions options);
-    IDirectFBSurface *copyToDFBSurface(const QImage &image,
-                                       QImage::Format format,
-                                       SurfaceCreationOptions options);
     void flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags flipFlags,
                      const QRegion &region, const QPoint &offset);
     void releaseDFBSurface(IDirectFBSurface *surface);
@@ -166,7 +165,6 @@ public:
     static int depth(DFBSurfacePixelFormat format);
 
     static DFBSurfacePixelFormat getSurfacePixelFormat(QImage::Format format);
-    static DFBSurfaceDescription getSurfaceDescription(const QImage &image);
     static DFBSurfaceDescription getSurfaceDescription(const uint *buffer,
                                                        int length);
     static QImage::Format getImageFormat(IDirectFBSurface *surface);

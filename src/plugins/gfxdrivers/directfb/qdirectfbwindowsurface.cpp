@@ -392,7 +392,7 @@ void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
             && region.intersects(cursorRectangle.translated(-(offset + windowGeometry.topLeft())))) {
             const QImage image = cursor->image();
 
-            IDirectFBSurface *surface = screen->createDFBSurface(image, QDirectFBScreen::DontTrackSurface);
+            IDirectFBSurface *surface = screen->createDFBSurface(image, image.format(), QDirectFBScreen::DontTrackSurface);
             primarySurface->SetBlittingFlags(primarySurface, DSBLIT_BLEND_ALPHACHANNEL);
             primarySurface->Blit(primarySurface, surface, 0, cursorRectangle.x(), cursorRectangle.y());
             surface->Release(surface);

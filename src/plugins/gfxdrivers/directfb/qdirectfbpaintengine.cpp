@@ -939,9 +939,9 @@ void QDirectFBPaintEnginePrivate::setDFBColor(const QColor &color)
 
 IDirectFBSurface *QDirectFBPaintEnginePrivate::getSurface(const QImage &img, bool *release)
 {
-#ifndef QT_DIRECTFB_IMAGECACHE
+#ifdef QT_NO_DIRECTFB_IMAGECACHE
     *release = true;
-    return QDirectFBScreen::instance()->createDFBSurface(img, QDirectFBScreen::DontTrackSurface);
+    return QDirectFBScreen::instance()->createDFBSurface(img, img.format(), QDirectFBScreen::DontTrackSurface);
 #else
     const qint64 key = img.cacheKey();
     *release = false;
@@ -955,7 +955,7 @@ IDirectFBSurface *QDirectFBPaintEnginePrivate::getSurface(const QImage &img, boo
     const QImage::Format format = (img.format() == screen->alphaPixmapFormat() || QDirectFBPixmapData::hasAlphaChannel(img)
                                    ? screen->alphaPixmapFormat() : screen->pixelFormat());
 
-    IDirectFBSurface *surface = screen->copyToDFBSurface(img, format,
+    IDirectFBSurface *surface = screen->createDFBSurface(img, format,
                                                          cache
                                                          ? QDirectFBScreen::TrackSurface
                                                          : QDirectFBScreen::DontTrackSurface);
