@@ -144,9 +144,13 @@ private:
     inline void addDirtyWidget(QWidget *widget, const QRegion &rgn)
     {
         if (widget && !widget->d_func()->inDirtyList && !widget->data->in_destructor) {
-            widget->d_func()->dirty = rgn;
+            QWidgetPrivate *widgetPrivate = widget->d_func();
+            if (widgetPrivate->graphicsEffect)
+                widgetPrivate->dirty = widgetPrivate->effectiveRectFor(rgn.boundingRect());
+            else
+                widgetPrivate->dirty = rgn;
             dirtyWidgets.append(widget);
-            widget->d_func()->inDirtyList = true;
+            widgetPrivate->inDirtyList = true;
         }
     }
 

@@ -355,6 +355,7 @@ private slots:
 
     void focusWidget_task254563();
     void rectOutsideCoordinatesLimit_task144779();
+    void setGraphicsEffect();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -9167,6 +9168,37 @@ void tst_QWidget::inputFocus_task257832()
       widget->setReadOnly(true);
       QVERIFY(!context->focusWidget());
       delete widget;
+}
+
+void tst_QWidget::setGraphicsEffect()
+{
+    // Check that we don't have any effect by default.
+    QWidget *widget = new QWidget;
+    QVERIFY(!widget->graphicsEffect());
+
+    // SetGet check.
+    QPointer<QGraphicsEffect> blurEffect = new QGraphicsBlurEffect;
+    widget->setGraphicsEffect(blurEffect);
+    QCOMPARE(widget->graphicsEffect(), static_cast<QGraphicsEffect *>(blurEffect));
+
+    // Ensure the existing effect is deleted when setting a new one.
+    QPointer<QGraphicsEffect> shadowEffect = new QGraphicsDropShadowEffect;
+    widget->setGraphicsEffect(shadowEffect);
+    QVERIFY(!blurEffect);
+    QCOMPARE(widget->graphicsEffect(), static_cast<QGraphicsEffect *>(shadowEffect));
+    blurEffect = new QGraphicsBlurEffect;
+
+    // Ensure the effect is uninstalled when setting it on a new target.
+    QWidget *anotherWidget = new QWidget;
+    anotherWidget->setGraphicsEffect(blurEffect);
+    widget->setGraphicsEffect(blurEffect);
+    QVERIFY(!anotherWidget->graphicsEffect());
+    QVERIFY(!shadowEffect);
+
+    // Ensure the existing effect is deleted when deleting the widget.
+    delete widget;
+    QVERIFY(!blurEffect);
+    delete anotherWidget;
 }
 
 QTEST_MAIN(tst_QWidget)

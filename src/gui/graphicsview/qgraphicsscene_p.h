@@ -202,7 +202,11 @@ public:
                    QRegion *exposedRegion, QWidget *widget);
 
     void drawSubtreeRecursive(QGraphicsItem *item, QPainter *painter, const QTransform *const,
-                              QRegion *exposedRegion, QWidget *widget, qreal parentOpacity = qreal(1.0));
+                              QRegion *exposedRegion, QWidget *widget, qreal parentOpacity = qreal(1.0),
+                              const QTransform *const effectTransform = 0);
+    void draw(QGraphicsItem *, QPainter *, const QTransform *const, const QTransform *const,
+              QRegion *, QWidget *, qreal, const QTransform *const, bool, bool);
+
     void markDirty(QGraphicsItem *item, const QRectF &rect = QRectF(), bool invalidateChildren = false,
                    bool maybeDirtyClipPath = false, bool force = false, bool ignoreOpacity = false,
                    bool removingItemFromScene = false);
@@ -223,10 +227,21 @@ public:
         item->d_ptr->fullUpdatePending = 0;
         item->d_ptr->ignoreVisible = 0;
         item->d_ptr->ignoreOpacity = 0;
+        QGraphicsEffect::ChangeFlags flags;
+        if (item->d_ptr->notifyBoundingRectChanged) {
+            flags |= QGraphicsEffect::SourceBoundingRectChanged;
+            item->d_ptr->notifyBoundingRectChanged = 0;
+        }
+        if (item->d_ptr->notifyInvalidated) {
+            flags |= QGraphicsEffect::SourceInvalidated;
+            item->d_ptr->notifyInvalidated = 0;
+        }
         if (recursive) {
             for (int i = 0; i < item->d_ptr->children.size(); ++i)
                 resetDirtyItem(item->d_ptr->children.at(i), recursive);
         }
+        if (flags && item->d_ptr->graphicsEffect)
+            item->d_ptr->graphicsEffect->sourceChanged(flags);
     }
 
     inline void ensureSortedTopLevelItems()
@@ -276,6 +291,14 @@ static inline QRectF adjustedItemBoundingRect(const QGraphicsItem *item)
 {
     Q_ASSERT(item);
     QRectF boundingRect(item->boundingRect());
+    _q_adjustRect(&boundingRect);
+    return boundingRect;
+}
+
+static inline QRectF adjustedItemEffectiveBoundingRect(const QGraphicsItem *item)
+{
+    Q_ASSERT(item);
+    QRectF boundingRect(QGraphicsItemPrivate::get(item)->effectiveBoundingRect());
     _q_adjustRect(&boundingRect);
     return boundingRect;
 }

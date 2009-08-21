@@ -4,6 +4,7 @@ SUBDIRS       = \
                 desktop \
                 dialogs \
                 draganddrop \
+                effects \
                 graphicsview \
                 ipc \
                 itemviews \
