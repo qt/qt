@@ -1047,7 +1047,7 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
 {
     Q_D(const QPixmapDropShadowFilter);
 
-    QPixmap tmp = src.isNull() ? px : px.copy(src.toRect());
+    QImage tmp = src.isNull() ? px : px.copy(src.toRect()).toImage();
     QPainter tmpPainter(&tmp);
 
     // blacken the image...
@@ -1055,8 +1055,10 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
     tmpPainter.fillRect(0, 0, tmp.width(), tmp.height(), d->color);
     tmpPainter.end();
 
+    const QPixmap pixTmp = QPixmap::fromImage(tmp);
+
     // draw the blurred drop shadow...
-    d->convolution->draw(p, pos + d->offset, tmp);
+    d->convolution->draw(p, pos + d->offset, pixTmp);
 
     // Draw the actual pixmap...
     p->drawPixmap(pos, px, src);
