@@ -944,15 +944,15 @@ int QNativeSocketEnginePrivate::nativeSelect(int timeout, bool selectForRead) co
     int retval;
     if (selectForRead)
 #ifdef Q_OS_SYMBIAN
-        retval = ::select(socketDescriptor + 1, &fds, 0, 0, timeout < 0 ? 0 : &tv);
+        retval = ::select(socketDescriptor + 1, &fds, 0, &fdexception, timeout < 0 ? 0 : &tv);
 #else
-        retval = qt_safe_select(socketDescriptor + 1, &fds, 0, &fdexception, timeout < 0 ? 0 : &tv);
+        retval = qt_safe_select(socketDescriptor + 1, &fds, 0, 0, timeout < 0 ? 0 : &tv);
 #endif
     else
 #ifdef Q_OS_SYMBIAN
-        retval = ::select(socketDescriptor + 1, 0, &fds, 0, timeout < 0 ? 0 : &tv);
+        retval = ::select(socketDescriptor + 1, 0, &fds, &fdexception, timeout < 0 ? 0 : &tv);
 #else
-        retval = qt_safe_select(socketDescriptor + 1, 0, &fds, &fdexception, timeout < 0 ? 0 : &tv);
+        retval = qt_safe_select(socketDescriptor + 1, 0, &fds, 0, timeout < 0 ? 0 : &tv);
 #endif
 
 
