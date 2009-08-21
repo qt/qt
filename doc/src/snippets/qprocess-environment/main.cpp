@@ -57,10 +57,10 @@ process.start("myapp");
     {
 //! [1]
 QProcess process;
-QHash<QString, QString> env = QProcess::systemEnvironmentHash();
+QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
 env.insert("TMPDIR", "C:\\MyApp\\temp"); // Add an environment variable
-env["PATH"] += ";C:\\Bin";
-process.setEnvironment(env);
+env.insert("PATH", env.value("Path") + ";C:\\Bin");
+process.setProcessEnvironment(env);
 process.start("myapp");
 //! [1]
     }

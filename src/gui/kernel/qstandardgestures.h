@@ -63,7 +63,7 @@ class Q_GUI_EXPORT QPanGesture : public QGesture
     Q_PROPERTY(QSize lastOffset READ lastOffset)
 
 public:
-    QPanGesture(QWidget *parent);
+    QPanGesture(QWidget *gestureTarget, QObject *parent = 0);
 
     bool filterEvent(QEvent *event);
 
@@ -97,7 +97,7 @@ class Q_GUI_EXPORT QPinchGesture : public QGesture
     Q_PROPERTY(QPoint centerPoint READ centerPoint)
 
 public:
-    QPinchGesture(QWidget *parent);
+    QPinchGesture(QWidget *gestureTarget, QObject *parent = 0);
 
     bool filterEvent(QEvent *event);
     void reset();

@@ -103,7 +103,7 @@ EOF
     "$TEST_COMPILER" "$@" -o /dev/null conftest.cpp
     ret=$?
     rm -f conftest.cpp conftest.o
-    return $?
+    return $ret
 }
 
 # relies on $TEST_COMPILER being set correctly

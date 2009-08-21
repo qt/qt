@@ -63,12 +63,16 @@ class Q_GUI_EXPORT QGesture : public QObject
     Q_DECLARE_PRIVATE(QGesture)
 
     Q_PROPERTY(Qt::GestureState state READ state)
+    Q_PROPERTY(QObject* gestureTarget READ gestureTarget WRITE setGestureTarget)
 
 public:
-    explicit QGesture(QObject *parent = 0);
+    explicit QGesture(QObject *gestureTarget = 0, QObject *parent = 0);
     ~QGesture();
 
     virtual bool filterEvent(QEvent *event) = 0;
+
+    void setGestureTarget(QObject *object);
+    QObject* gestureTarget() const;
 
     void setGraphicsItem(QGraphicsItem *);
     QGraphicsItem *graphicsItem() const;
@@ -76,7 +80,7 @@ public:
     Qt::GestureState state() const;
 
 protected:
-    QGesture(QGesturePrivate &dd, QObject *parent);
+    QGesture(QGesturePrivate &dd, QObject *gestureTarget, QObject *parent);
     bool eventFilter(QObject*, QEvent*);
 
     virtual void reset();
