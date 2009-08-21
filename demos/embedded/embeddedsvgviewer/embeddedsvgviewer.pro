@@ -15,6 +15,7 @@ wince* {
    DEPLOYMENT_PLUGIN += qsvg
 }
 
-include($$QT_SOURCE_TREE/demos/demobase.pri)
-
-symbian:TARGET.UID3 = 0xA000A640
+symbian {
+    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000A640
+}

@@ -7,7 +7,7 @@ OBJECTS_DIR = .obj
 MOC_DIR = .moc
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/demos/demobase.pri)
+
 QT += xml network
 
 contains(QT_CONFIG, opengl) {
@@ -68,6 +68,8 @@ mac {
 ICON = qtdemo.icns
 QMAKE_INFO_PLIST = Info_mac.plist
 }
+
+symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
 
 # install
 target.path = $$[QT_INSTALL_BINS]
