@@ -652,11 +652,11 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
             else if (exists && (d->st.st_mode & S_IFMT) == S_IFDIR)
                 ret |= DirectoryType;
 #if !defined(QWS) && defined(Q_OS_MAC)
-            if((ret & DirectoryType) && (type & BundleType)) {
+            if ((ret & DirectoryType) && (type & BundleType)) {
                 QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(d->filePath),
                                                                       kCFURLPOSIXPathStyle, true);
                 UInt32 type, creator;
-                if(CFBundleGetPackageInfoInDirectory(url, &type, &creator))
+                if (CFBundleGetPackageInfoInDirectory(url, &type, &creator))
                     ret |= BundleType;
             }
 #endif
@@ -690,9 +690,9 @@ QString QFSFileEngine::fileName(FileName file) const
 #if !defined(QWS) && defined(Q_OS_MAC)
         QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(d->filePath),
                                                               kCFURLPOSIXPathStyle, true);
-        if(CFDictionaryRef dict = CFBundleCopyInfoDictionaryForURL(url)) {
-            if(CFTypeRef name = (CFTypeRef)CFDictionaryGetValue(dict, kCFBundleNameKey)) {
-                if(CFGetTypeID(name) == CFStringGetTypeID())
+        if (CFDictionaryRef dict = CFBundleCopyInfoDictionaryForURL(url)) {
+            if (CFTypeRef name = (CFTypeRef)CFDictionaryGetValue(dict, kCFBundleNameKey)) {
+                if (CFGetTypeID(name) == CFStringGetTypeID())
                     return QCFString::toQString((CFStringRef)name);
             }
         }
