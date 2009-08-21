@@ -971,7 +971,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
     if (!isWindow() && parentWidget())
-        parentWidget()->d_func()->invalidateBuffer(geometry());
+        parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
     if (testAttribute(Qt::WA_WState_Created)) {
         setAttribute(Qt::WA_WState_Created, false);
@@ -1054,7 +1054,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     QTLWExtra *topData = maybeTopData();
     bool wasCreated = q->testAttribute(Qt::WA_WState_Created);
     if (q->isVisible() && q->parentWidget() && parent != q->parentWidget())
-        q->parentWidget()->d_func()->invalidateBuffer(q->geometry());
+        q->parentWidget()->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
     extern void qPRCreate(const QWidget *, Window);
 #ifndef QT_NO_CURSOR
     QCursor oldcurs;

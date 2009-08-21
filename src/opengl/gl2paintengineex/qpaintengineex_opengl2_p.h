@@ -90,8 +90,7 @@ public:
     bool hasRectangleClip;
 };
 
-
-class QGL2PaintEngineEx : public QPaintEngineEx
+class Q_OPENGL_EXPORT QGL2PaintEngineEx : public QPaintEngineEx
 {
     Q_DECLARE_PRIVATE(QGL2PaintEngineEx)
 public:
@@ -118,12 +117,13 @@ public:
 
 
     virtual void drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr);
-
     virtual void drawImage(const QRectF &r, const QImage &pm, const QRectF &sr,
                            Qt::ImageConversionFlags flags = Qt::AutoColor);
+    virtual void drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
+
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
 
-    Type type() const { return OpenGL; }
+    Type type() const { return OpenGL2; }
 
     void setState(QPainterState *s);
     QPainterState *createState(QPainterState *orig) const;
@@ -135,9 +135,14 @@ public:
     }
     virtual void sync();
 
+    const QGLContext* context();
+
+    QPixmapFilter *createPixmapFilter(int type) const;
+
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
 };
+
 
 class QGL2PaintEngineExPrivate : public QPaintEngineExPrivate
 {
@@ -147,7 +152,7 @@ public:
             q(q_ptr),
             width(0), height(0),
             ctx(0),
-            currentBrush( &(q->state()->brush) ),
+            currentBrush(0),
             inverseScale(1),
             shaderManager(0)
     { }

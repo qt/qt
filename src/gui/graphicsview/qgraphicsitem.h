@@ -63,6 +63,7 @@ QT_MODULE(Gui)
 class QBrush;
 class QCursor;
 class QFocusEvent;
+class QGraphicsEffect;
 class QGraphicsItemGroup;
 class QGraphicsObject;
 class QGraphicsSceneContextMenuEvent;
@@ -209,6 +210,10 @@ public:
     qreal opacity() const;
     qreal effectiveOpacity() const;
     void setOpacity(qreal opacity);
+
+    // Effect
+    QGraphicsEffect *graphicsEffect() const;
+    void setGraphicsEffect(QGraphicsEffect *effect);
 
     Qt::MouseButtons acceptedMouseButtons() const;
     void setAcceptedMouseButtons(Qt::MouseButtons buttons);
@@ -447,6 +452,7 @@ private:
     friend class QGraphicsSceneIndexPrivate;
     friend class QGraphicsSceneBspTreeIndex;
     friend class QGraphicsSceneBspTreeIndexPrivate;
+    friend class QGraphicsItemEffectSourcePrivate;
     friend class QGraphicsTransformPrivate;
     friend class ::tst_QGraphicsItem;
     friend bool qt_closestLeaf(const QGraphicsItem *, const QGraphicsItem *);

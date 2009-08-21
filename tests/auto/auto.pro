@@ -135,6 +135,8 @@ SUBDIRS += \
            qgetputenv \
            qgl \
            qglobal \
+           qgraphicseffect \
+           qgraphicseffectsource \
            qgraphicsgridlayout \
            qgraphicsitem \
            qgraphicsitemanimation \
