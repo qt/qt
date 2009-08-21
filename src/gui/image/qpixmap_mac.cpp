@@ -1106,7 +1106,7 @@ void QMacPixmapData::copy(const QPixmapData *data, const QRect &rect)
         return;
     }
 
-    const QMacPixmapData *macData = static_cast<const QMacPixmapData*>(data.constData());
+    const QMacPixmapData *macData = static_cast<const QMacPixmapData*>(data);
 
     resize(rect.width(), rect.height());
 
