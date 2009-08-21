@@ -1047,7 +1047,7 @@ QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItemV4 *option, in
                 widthUsed = qMax(widthUsed, line.naturalTextWidth());
             }
             textLayout.endLayout();
-            const QSize size = QSizeF(widthUsed, height).toSize();
+            const QSize size(qCeil(widthUsed), qCeil(height));
             return QSize(size.width() + 2 * textMargin, size.height());
         }
         break;
