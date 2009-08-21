@@ -913,18 +913,18 @@ bool QFSFileEngine::setPermissions(uint perms)
     if (perms & ExeOtherPerm)
         mode |= S_IXOTH;
     if (d->fd != -1)
-        return !fchmod(d->fd, mode);
-    return !::chmod(d->nativeFilePath.constData(), mode);
+        return fchmod(d->fd, mode) == 0;
+    return ::chmod(d->nativeFilePath.constData(), mode) == 0;
 }
 
 bool QFSFileEngine::setSize(qint64 size)
 {
     Q_D(QFSFileEngine);
     if (d->fd != -1)
-        return !QT_FTRUNCATE(d->fd, size);
+        return QT_FTRUNCATE(d->fd, size) == 0;
     if (d->fh)
-        return !QT_FTRUNCATE(QT_FILENO(d->fh), size);
-    return !QT_TRUNCATE(d->nativeFilePath.constData(), size);
+        return QT_FTRUNCATE(QT_FILENO(d->fh), size) == 0;
+    return QT_TRUNCATE(d->nativeFilePath.constData(), size) == 0;
 }
 
 QDateTime QFSFileEngine::fileTime(FileTime time) const
