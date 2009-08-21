@@ -106,8 +106,7 @@ public:
         ExtraCursor,
         ExtraCacheData,
         ExtraMaxDeviceCoordCacheSize,
-        ExtraBoundingRegionGranularity,
-        ExtraGestures
+        ExtraBoundingRegionGranularity
     };
 
     enum AncestorFlag {
