@@ -94,6 +94,20 @@
 #define WTF_PLATFORM_SOLARIS 1
 #endif
 
+/* PLATFORM(AIX) */
+/* Operating system level dependencies for AIX that should be used */
+/* regardless of operating environment */
+#if defined(_AIX)
+#define WTF_PLATFORM_AIX 1
+#endif
+
+/* PLATFORM(HPUX) */
+/* Operating system level dependencies for HP-UX that should be used */
+/* regardless of operating environment */
+#if defined(hpux) || defined(__hpux)
+#define WTF_PLATFORM_HPUX 1
+#endif
+
 #if defined (__SYMBIAN32__)
 /* we are cross-compiling, it is not really windows */
 #undef WTF_PLATFORM_WIN_OS
@@ -123,10 +137,12 @@
    || PLATFORM(FREEBSD)    \
    || PLATFORM(SYMBIAN)    \
    || PLATFORM(NETBSD)     \
+   || PLATFORM(SOLARIS)    \
+   || PLATFORM(HPUX)       \
    || defined(unix)        \
    || defined(__unix)      \
    || defined(__unix__)    \
-   || defined(_AIX)        \
+   || PLATFORM(AIX)        \
    || defined(__QNXNTO__)
 #define WTF_PLATFORM_UNIX 1
 #endif
@@ -341,6 +357,24 @@
 /* COMPILER(WINSCW) */
 #if defined(__WINSCW__)
 #define WTF_COMPILER_WINSCW 1
+#endif
+
+/* COMPILER(SUNCC) */
+/* This is the Sun CC compiler, also known as Sun Studio or Sun Pro */
+#if defined(__SUNPRO_CC) || defined(__SUNPRO_C)
+#define WTF_COMPILER_SUNCC 1
+#endif
+
+/* COMPILER(XLC) */
+/* IBM Visual Age C/C++ compiler, a.k.a. xlC */
+#if defined(__xlC__)
+#define WTF_COMPILER_XLC 1
+#endif
+
+/* COMPILER(ACC) */
+/* HP's aC++/ANSI C compiler, a.k.a. aCC */
+#if defined(__HP_aCC)
+#define WTF_COMPILER_ACC
 #endif
 
 #if (PLATFORM(IPHONE) || PLATFORM(MAC) || PLATFORM(WIN)) && !defined(ENABLE_JSC_MULTIPLE_THREADS)

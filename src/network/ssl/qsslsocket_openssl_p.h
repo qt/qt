@@ -77,10 +77,8 @@
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 #include <openssl/x509_vfy.h>
-#ifdef Q_OS_SYMBIAN
 #include <openssl/dsa.h>
 #include <openssl/rsa.h>
-#endif
 
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
 typedef _STACK STACK;

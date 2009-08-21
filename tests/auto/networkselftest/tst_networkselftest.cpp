@@ -43,10 +43,6 @@
 #include <QtNetwork/QtNetwork>
 #include "../network-settings.h"
 
-#if defined(Q_OS_SYMBIAN)
-#define SRCDIR ""
-#endif
-
 class tst_NetworkSelfTest: public QObject
 {
     Q_OBJECT

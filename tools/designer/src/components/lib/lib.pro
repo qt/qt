@@ -64,7 +64,10 @@ PRECOMPILED_HEADER= lib_pch.h
 include(../../sharedcomponents.pri)
 include(../component.pri)
 
-unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtDesigner QtGui QtScript QtXml
+unix {
+    QMAKE_PKGCONFIG_REQUIRES = QtCore QtDesigner QtGui QtXml
+    contains(QT_CONFIG, script): QMAKE_PKGCONFIG_REQUIRES += QtScript
+}
 
 target.path=$$[QT_INSTALL_LIBS]
 INSTALLS        += target

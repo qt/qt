@@ -123,7 +123,7 @@ Q_GUI_EXPORT CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
         // It would make sense to put this into a mac #ifdef'ed
         // virtual function in the QPixmapData at some point
         if (pm->data->classId() == QPixmapData::MacClass) {
-            const QMacPixmapData *pmData = static_cast<const QMacPixmapData*>(pm->data);
+            const QMacPixmapData *pmData = static_cast<const QMacPixmapData*>(pm->data.data());
             ret = CGBitmapContextCreate(pmData->pixels, pmData->w, pmData->h,
                                                      8, pmData->bytesPerRow, colorspace,
                                                      flags);

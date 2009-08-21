@@ -271,15 +271,13 @@ bool QLinuxFbScreen::connect(const QString &displaySpec)
         QScreen::setFrameBufferLittleEndian(true);
 #endif
 
-    // Check for explicitly specified device
-    const int len = 8; // "/dev/fbx"
-    int m = displaySpec.indexOf(QLatin1String("/dev/fb"));
-
-    QString dev;
-    if (m > 0)
-        dev = displaySpec.mid(m, len);
-    else
-        dev = QLatin1String("/dev/fb0");
+    QString dev = QLatin1String("/dev/fb0");
+    foreach(QString d, args) {
+	if (d.startsWith(QLatin1Char('/'))) {
+	    dev = d;
+	    break;
+	}
+    }
 
     if (access(dev.toLatin1().constData(), R_OK|W_OK) == 0)
         d_ptr->fd = QT_OPEN(dev.toLatin1().constData(), O_RDWR);

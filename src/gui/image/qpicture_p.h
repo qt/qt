@@ -71,7 +71,6 @@ extern const char  *qt_mfhdr_tag;
 
 class QPicturePrivate
 {
-    Q_DECLARE_PUBLIC(QPicture)
     friend class QPicturePaintEngine;
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &s, const QPicture &r);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &s, QPicture &r);
@@ -144,6 +143,7 @@ public:
     };
 
     QPicturePrivate();
+    QPicturePrivate(const QPicturePrivate &other);
     QAtomicInt ref;
 
     bool checkFormat();
@@ -162,8 +162,6 @@ public:
     QList<QPixmap> pixmap_list;
     QList<QBrush> brush_list;
     QList<QPen> pen_list;
-
-    QPicture *q_ptr;
 };
 
 QT_END_NAMESPACE

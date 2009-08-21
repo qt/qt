@@ -45,7 +45,7 @@ namespace WTF {
         #define WTF_ALIGN_OF(type) __alignof(type)
         #define WTF_ALIGNED(variable_type, variable, n) __declspec(align(n)) variable_type variable
     #else
-        #error WTF_ALIGN macros need alignment control.
+        #define WTF_ALIGN_OF(type)   0
     #endif
 
     #if COMPILER(GCC) && (((__GNUC__ * 100) + __GNUC_MINOR__) >= 303)
@@ -54,6 +54,7 @@ namespace WTF {
         typedef char AlignedBufferChar; 
     #endif
 
+    #ifdef WTF_ALIGNED
     template <size_t size, size_t alignment> struct AlignedBuffer;
     template <size_t size> struct AlignedBuffer<size, 1> { AlignedBufferChar buffer[size]; };
     template <size_t size> struct AlignedBuffer<size, 2> { WTF_ALIGNED(AlignedBufferChar, buffer[size], 2);  };
@@ -62,6 +63,17 @@ namespace WTF {
     template <size_t size> struct AlignedBuffer<size, 16> { WTF_ALIGNED(AlignedBufferChar, buffer[size], 16); };
     template <size_t size> struct AlignedBuffer<size, 32> { WTF_ALIGNED(AlignedBufferChar, buffer[size], 32); };
     template <size_t size> struct AlignedBuffer<size, 64> { WTF_ALIGNED(AlignedBufferChar, buffer[size], 64); };
+    #else
+    template <size_t size, size_t> struct AlignedBuffer
+    {
+        AlignedBufferChar oversizebuffer[size + 64];
+        AlignedBufferChar *buffer;
+        inline AlignedBuffer() : buffer(oversizebuffer)
+        {
+            buffer += 64 - (reinterpret_cast<size_t>(buffer) & 0x3f);
+        }
+    };
+    #endif
 
     template <bool needsDestruction, typename T>
     class VectorDestructor;

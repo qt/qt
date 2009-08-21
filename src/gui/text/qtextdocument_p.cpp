@@ -63,10 +63,10 @@ QT_BEGIN_NAMESPACE
 // The VxWorks DIAB compiler crashes when initializing the anonymouse union with { a7 }
 #if !defined(Q_CC_DIAB)
 #  define QT_INIT_TEXTUNDOCOMMAND(c, a1, a2, a3, a4, a5, a6, a7, a8) \
-          QTextUndoCommand c = { a1, a2, a3, a4, a5, a6, { a7 }, a8 }
+          QTextUndoCommand c = { a1, a2, 0, 0, a3, a4, a5, a6, { a7 }, a8 }
 #else
 #  define QT_INIT_TEXTUNDOCOMMAND(c, a1, a2, a3, a4, a5, a6, a7, a8) \
-          QTextUndoCommand c = { a1, a2, a3, a4, a5, a6 }; c.blockFormat = a7; c.revision = a8
+          QTextUndoCommand c = { a1, a2, 0, 0, a3, a4, a5, a6 }; c.blockFormat = a7; c.revision = a8
 #endif
 
 /*
@@ -967,14 +967,18 @@ int QTextDocumentPrivate::undoRedo(bool undo)
             B->revision = c.revision;
         }
 
-        if (undo) {
-            if (undoState == 0 || !undoStack[undoState-1].block)
-                break;
-        } else {
+        if (!undo)
             ++undoState;
-            if (undoState == undoStack.size() || !undoStack[undoState-1].block)
-                break;
-        }
+
+        bool inBlock = (
+                undoState > 0
+                && undoState < undoStack.size()
+                && undoStack[undoState].block_part
+                && undoStack[undoState-1].block_part
+                && !undoStack[undoState-1].block_end
+                );
+        if (!inBlock)
+            break;
     }
     undoEnabled = true;
     int editPos = -1;
@@ -999,7 +1003,8 @@ void QTextDocumentPrivate::appendUndoItem(QAbstractUndoItem *item)
 
     QTextUndoCommand c;
     c.command = QTextUndoCommand::Custom;
-    c.block = editBlock != 0;
+    c.block_part = editBlock != 0;
+    c.block_end = 0;
     c.operation = QTextUndoCommand::MoveCursor;
     c.format = 0;
     c.strPos = 0;
@@ -1020,9 +1025,10 @@ void QTextDocumentPrivate::appendUndoItem(const QTextUndoCommand &c)
 
     if (!undoStack.isEmpty() && modified) {
         QTextUndoCommand &last = undoStack[undoState - 1];
-        if ( (last.block && c.block) // part of the same block => can merge
-            || (!c.block && !last.block  // two single undo items => can merge
-                && (undoState < 2 || !undoStack[undoState-2].block))) {
+
+        if ( (last.block_part && c.block_part && !last.block_end) // part of the same block => can merge
+            || (!c.block_part && !last.block_part)) {  // two single undo items => can merge
+
             if (last.tryMerge(c))
                 return;
         }
@@ -1034,7 +1040,7 @@ void QTextDocumentPrivate::appendUndoItem(const QTextUndoCommand &c)
     emitUndoAvailable(true);
     emitRedoAvailable(false);
 
-    if (!c.block)
+    if (!c.block_part)
         emit document()->undoCommandAdded();
 }
 
@@ -1100,7 +1106,7 @@ void QTextDocumentPrivate::joinPreviousEditBlock()
     beginEditBlock();
 
     if (undoEnabled && undoState)
-        undoStack[undoState - 1].block = true;
+        undoStack[undoState - 1].block_end = false;
 }
 
 void QTextDocumentPrivate::endEditBlock()
@@ -1109,10 +1115,10 @@ void QTextDocumentPrivate::endEditBlock()
         return;
 
     if (undoEnabled && undoState > 0) {
-        const bool wasBlocking = undoStack[undoState - 1].block;
-        undoStack[undoState - 1].block = false;
-        if (wasBlocking)
+        if (undoStack[undoState - 1].block_part) {
+            undoStack[undoState - 1].block_end = true;
             emit document()->undoCommandAdded();
+        }
     }
 
     finishEdit();

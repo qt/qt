@@ -27,8 +27,31 @@
 #include "CallData.h"
 
 #include "JSFunction.h"
+#include "JSGlobalObject.h"
+
+#ifdef QT_BUILD_SCRIPT_LIB
+#include "Debugger.h"
+#include "DebuggerCallFrame.h"
+#endif
 
 namespace JSC {
+
+#ifdef QT_BUILD_SCRIPT_LIB
+JSValue JSC::NativeFuncWrapper::operator() (ExecState* exec, JSObject* jsobj, JSValue thisValue, const ArgList& argList) const
+{
+    Debugger* debugger = exec->lexicalGlobalObject()->debugger();
+    if (debugger)
+        debugger->callEvent(DebuggerCallFrame(exec), -1, -1);
+
+    JSValue returnValue = ptr(exec, jsobj, thisValue, argList);
+
+    if (debugger)
+        debugger->functionExit(returnValue, -1);
+
+    return returnValue;
+}
+#endif
+
 
 JSValue call(ExecState* exec, JSValue functionObject, CallType callType, const CallData& callData, JSValue thisValue, const ArgList& args)
 {

@@ -57,6 +57,10 @@
 #include "QtCore/qtranslator.h"
 #include "private/qobject_p.h"
 
+#ifdef Q_OS_SYMBIAN
+#include <f32file.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 typedef QList<QTranslator*> QTranslatorList;
@@ -84,6 +88,10 @@ public:
 
 #ifdef Q_OS_MAC
     static QString macMenuBarName();
+#endif
+
+#ifdef Q_OS_SYMBIAN
+    static RFs& fsSession();
 #endif
 
     static QThread *theMainThread;
@@ -118,6 +126,9 @@ public:
 
     static uint attribs;
     static inline bool testAttribute(uint flag) { return attribs & (1 << flag); }
+#ifdef Q_OS_SYMBIAN
+    static RFs fileServerSession; //this should be moved into a symbian file engine if/when one is written
+#endif
 };
 
 QT_END_NAMESPACE

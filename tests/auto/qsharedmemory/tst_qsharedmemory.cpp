@@ -674,7 +674,14 @@ void tst_QSharedMemory::simpleThreadedProducerConsumer()
 
     Producer p;
 #if defined(Q_OS_SYMBIAN)
-    p.setStackSize(0x14000);
+    enum
+    {
+        /**
+         * The maximum stack size.
+         */
+        SymbianStackSize = 0x14000
+    };
+    p.setStackSize(SymbianStackSize);
 #endif
     if (producerIsThread)
         p.start();
@@ -683,7 +690,7 @@ void tst_QSharedMemory::simpleThreadedProducerConsumer()
     for (int i = 0; i < threads; ++i) {
         consumers.append(new Consumer());
 #if defined(Q_OS_SYMBIAN)
-        consumers.last()->setStackSize(0x14000);
+        consumers.last()->setStackSize(SymbianStackSize);
 #endif
         consumers.last()->start();
     }

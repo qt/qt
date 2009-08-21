@@ -394,7 +394,7 @@ Stringifier::StringifyResult Stringifier::appendStringifiedValue(StringBuilder& 
         return StringifySucceeded;
 
     // If this is the outermost call, then loop to handle everything on the holder stack.
-    TimeoutChecker localTimeoutChecker(m_exec->globalData().timeoutChecker);
+    TimeoutChecker localTimeoutChecker(*m_exec->globalData().timeoutChecker);
     localTimeoutChecker.reset();
     unsigned tickCount = localTimeoutChecker.ticksUntilNextCheck();
     do {

@@ -82,12 +82,12 @@ bool JSCustomSQLStatementErrorCallback::handleEvent(SQLTransaction* transaction,
     args.append(toJS(exec, deprecatedGlobalObjectForPrototype(exec), error));
         
     JSValue result;
-    globalObject->globalData()->timeoutChecker.start();
+    globalObject->globalData()->timeoutChecker->start();
     if (handleEventCallType != CallTypeNone)
         result = call(exec, handleEventFunction, handleEventCallType, handleEventCallData, m_callback, args);
     else
         result = call(exec, m_callback, callbackCallType, callbackCallData, m_callback, args);
-    globalObject->globalData()->timeoutChecker.stop();
+    globalObject->globalData()->timeoutChecker->stop();
         
     if (exec->hadException()) {
         reportCurrentException(exec);

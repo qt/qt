@@ -354,11 +354,11 @@ void setJSHTMLSelectElementSize(ExecState* exec, JSObject* thisObject, JSValue v
     imp->setSize(value.toInt32(exec));
 }
 
-void JSHTMLSelectElement::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSHTMLSelectElement::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     for (unsigned i = 0; i < static_cast<HTMLSelectElement*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames);
+     Base::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 JSValue JSHTMLSelectElement::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

@@ -667,7 +667,15 @@ extern "C" {
 
 - (void)mouseMoved:(NSEvent *)theEvent
 {
-    qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
+    // We always enable mouse tracking for all QCocoaView-s. In cases where we have
+    // child views, we will receive mouseMoved for both parent & the child (if
+    // mouse is over the child). We need to ignore the parent mouseMoved in such
+    // cases.
+    NSPoint windowPoint = [theEvent locationInWindow];
+    NSView *candidateView = [[[self window] contentView] hitTest:windowPoint];
+    if (candidateView && candidateView == self) {
+        qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
+    }
 }
 
 - (void)mouseDown:(NSEvent *)theEvent

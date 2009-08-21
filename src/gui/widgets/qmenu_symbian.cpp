@@ -238,6 +238,7 @@ static void rebuildMenu()
     }
 }
 
+#ifdef Q_WS_S60
 Q_GUI_EXPORT void qt_symbian_show_toplevel( CEikMenuPane* menuPane)
 {
     if (!menuExists())
@@ -255,6 +256,7 @@ Q_GUI_EXPORT void qt_symbian_show_submenu( CEikMenuPane* menuPane, int id)
             QT_TRAP_THROWING(menuPane->AddMenuItemL(menu->children.at(i)->menuItemData));
     }
 }
+#endif // Q_WS_S60
 
 void QMenuBarPrivate::symbianCommands(int command)
 {

@@ -53,8 +53,6 @@
 // We mean it.
 //
 
-#include <private/qscriptengineagent_p.h>
-
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/qdatetime.h>
 #include <QtCore/qhash.h>
@@ -68,9 +66,7 @@ QT_BEGIN_NAMESPACE
 
 class QScriptDebuggerAgent;
 class QScriptDebuggerAgentPrivate
-    : public QScriptEngineAgentPrivate
 {
-    Q_DECLARE_PUBLIC(QScriptDebuggerAgent)
 public:
     enum State {
         NoState,

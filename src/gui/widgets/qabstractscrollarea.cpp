@@ -934,6 +934,10 @@ bool QAbstractScrollArea::event(QEvent *e)
     case QEvent::DragMove:
     case QEvent::DragLeave:
 #endif
+        // ignore touch events in case they have been propagated from the viewport
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
         return false;
     case QEvent::StyleChange:
     case QEvent::LayoutDirectionChange:
@@ -974,6 +978,9 @@ bool QAbstractScrollArea::viewportEvent(QEvent *e)
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
     case QEvent::MouseMove:
     case QEvent::ContextMenu:
 #ifndef QT_NO_WHEELEVENT

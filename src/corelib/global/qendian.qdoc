@@ -42,7 +42,7 @@
 /*!
     \headerfile <QtEndian>
     \title Endian Conversion Functions
-    \ingroup classlists
+    \ingroup funclists
     \brief The <QtEndian> header provides functions to convert between
     little and big endian representations of numbers.
 */

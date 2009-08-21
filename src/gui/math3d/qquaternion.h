@@ -54,6 +54,7 @@ QT_MODULE(Gui)
 #ifndef QT_NO_QUATERNION
 
 class QMatrix4x4;
+class QVariant;
 
 class Q_GUI_EXPORT QQuaternion
 {
@@ -117,6 +118,8 @@ public:
 #ifndef QT_NO_VECTOR4D
     QVector4D toVector4D() const;
 #endif
+
+    operator QVariant() const;
 
 #ifndef QT_NO_VECTOR3D
     static QQuaternion fromAxisAndAngle(const QVector3D& axis, qreal angle);

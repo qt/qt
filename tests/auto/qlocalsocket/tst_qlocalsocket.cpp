@@ -368,7 +368,7 @@ void tst_QLocalSocket::listenAndConnect()
         QSignalSpy spyReadyRead(socket, SIGNAL(readyRead()));
 
         socket->connectToServer(name);
-#if defined(QT_LOCALSOCKET_TCP) || defined (Q_OS_SYMBIAN)
+#if defined(QT_LOCALSOCKET_TCP)
         QTest::qWait(250);
 #endif
 
@@ -494,7 +494,7 @@ void tst_QLocalSocket::sendData()
 
     QCOMPARE(server.waitForNewConnection(3000, &timedOut), canListen);
 
-#if defined(QT_LOCALSOCKET_TCP) || defined(Q_OS_SYMBIAN)
+#if defined(QT_LOCALSOCKET_TCP)
     QTest::qWait(250);
 #endif
     QVERIFY(!timedOut);
@@ -570,9 +570,6 @@ void tst_QLocalSocket::fullPath()
 
     LocalSocket socket;
     socket.connectToServer(serverName);
-#if defined (Q_OS_SYMBIAN)
-    QTest::qWait(250);
-#endif
 
     QCOMPARE(socket.serverName(), serverName);
     QCOMPARE(socket.fullServerName(), serverName);
@@ -736,7 +733,7 @@ void tst_QLocalSocket::threadedConnection()
 
     server.wait();
     while (!clients.isEmpty()) {
-        QVERIFY(clients.first()->wait(30000));
+        QVERIFY(clients.first()->wait(3000));
         Client *client =clients.takeFirst();
 	client->terminate();
 	delete client;

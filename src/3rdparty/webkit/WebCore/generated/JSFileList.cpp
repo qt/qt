@@ -173,11 +173,11 @@ JSValue jsFileListConstructor(ExecState* exec, const Identifier&, const Property
     JSFileList* domObject = static_cast<JSFileList*>(asObject(slot.slotBase()));
     return JSFileList::getConstructor(exec, domObject->globalObject());
 }
-void JSFileList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSFileList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     for (unsigned i = 0; i < static_cast<FileList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames);
+     Base::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 JSValue JSFileList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

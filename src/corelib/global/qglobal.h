@@ -2032,7 +2032,7 @@ inline void qSwap(T &value1, T &value2)
 template <> inline bool qIsDetached<TYPE>(TYPE &t) { return t.isDetached(); } \
 template <> inline void qSwap<TYPE>(TYPE &value1, TYPE &value2) \
 { \
-    qSwap<TYPE::DataPtr>(value1.data_ptr(), value2.data_ptr()); \
+    qSwap(value1.data_ptr(), value2.data_ptr()); \
 }
 
 /*

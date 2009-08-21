@@ -459,7 +459,7 @@ void JavaScriptDebugServer::callEvent(const DebuggerCallFrame& debuggerCallFrame
     pauseIfNeeded(toPage(debuggerCallFrame.dynamicGlobalObject()));
 }
 
-void JavaScriptDebugServer::atStatement(const DebuggerCallFrame& debuggerCallFrame, intptr_t sourceID, int lineNumber)
+void JavaScriptDebugServer::atStatement(const DebuggerCallFrame& debuggerCallFrame, intptr_t sourceID, int lineNumber, int column)
 {
     if (m_paused)
         return;
@@ -533,7 +533,7 @@ void JavaScriptDebugServer::didExecuteProgram(const DebuggerCallFrame& debuggerC
     m_currentCallFrame = m_currentCallFrame->caller();
 }
 
-void JavaScriptDebugServer::didReachBreakpoint(const DebuggerCallFrame& debuggerCallFrame, intptr_t sourceID, int lineNumber)
+void JavaScriptDebugServer::didReachBreakpoint(const DebuggerCallFrame& debuggerCallFrame, intptr_t sourceID, int lineNumber, int /*column*/)
 {
     if (m_paused)
         return;

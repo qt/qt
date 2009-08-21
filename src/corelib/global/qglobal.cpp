@@ -408,13 +408,13 @@ QT_BEGIN_NAMESPACE
 /*!
     \headerfile <QtGlobal>
     \title Global Qt Declarations
-    \ingroup classlists
+    \ingroup funclists
 
-    \brief The <QtGlobal> header provides basic declarations and
-    is included by all other Qt headers.
+    \brief The <QtGlobal> header file includes the fundamental global
+    declarations. It is included by most other Qt header files.
 
-    The declarations include \l {types}, \l functions and
-    \l macros.
+    The global declarations include \l{types}, \l{functions} and
+    \l{macros}.
 
     The type definitions are partly convenience definitions for basic
     types (some of which guarantee certain bit-sizes on all platforms
