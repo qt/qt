@@ -9,8 +9,8 @@ Rectangle { border.color: "black"; color: "steelblue"; radius: 5; width: pix.wid
 
     states:
         State{ name:"pressed"; when:mr.pressed
-            SetProperties {target:text; x: 5}
-            SetProperties {target:pix; x:text.x+text.width + 3}
+            PropertyChanges {target:text; x: 5}
+            PropertyChanges {target:pix; x:text.x+text.width + 3}
         }
 
     transitions:

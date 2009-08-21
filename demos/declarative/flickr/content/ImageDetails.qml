@@ -136,7 +136,7 @@ Flipable {
     states: [
         State {
             name: "Back"
-            SetProperties { target: Rotation; angle: 180 }
+            PropertyChanges { target: Rotation; angle: 180 }
         }
     ]
 

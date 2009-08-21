@@ -114,8 +114,6 @@ Connection {
     \class QmlConnection
     \brief The QmlConnection class describes generalized connections to signals.
 
-    QmlSetProperties is a mechanism for connecting a script to be run when
-    some object sends a signal.
 */
 QmlConnection::QmlConnection(QObject *parent) :
     QObject(*(new QmlConnectionPrivate), parent)

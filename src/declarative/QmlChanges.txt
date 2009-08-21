@@ -17,6 +17,9 @@ FocusRealm       -> FocusScope
 FontFamily       -> FontLoader
 Palette          -> SystemPalette
 Bind             -> Binding
+SetProperties    -> PropertyChanges
+RunScript        -> StateChangeScript
+SetAnchors       -> AnchorChanges
 
 Renamed properties:
 MouseRegion: xmin      -> minimumX
@@ -51,9 +54,6 @@ Pending Changes
 Renamed elements:
 RunScriptAction    -> ScriptAction
 ParentChangeAction -> ParentAction
-SetProperties      -> PropertyChanges
-RunScript          -> StateChangeScript
-SetAnchors         -> AnchorChanges
 
 Renamed properties:
 Transition: fromState  -> from

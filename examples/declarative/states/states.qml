@@ -28,7 +28,7 @@ Rectangle {
         // In state 'Position1', change the 'myrect' item x, y to 150, 50.
         State {
             name: "Position1"
-            SetProperties {
+            PropertyChanges {
                 target: myrect
                 x: 150
                 y: 50
@@ -39,7 +39,7 @@ Rectangle {
         // had been changed.
         State {
             name: "Position2"
-            SetProperties {
+            PropertyChanges {
                 target: myrect
                 y: 200
             }

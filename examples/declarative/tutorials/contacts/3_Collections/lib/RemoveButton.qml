@@ -82,24 +82,24 @@ Rectangle {
     states: [
         State {
             name: "opened"
-            SetProperties {
+            PropertyChanges {
                 target: removeButton
                 explicit: true
                 width: removeButton.expandedWidth
             }
-            SetProperties {
+            PropertyChanges {
                 target: text
                 opacity: 1
             }
-            SetProperties {
+            PropertyChanges {
                 target: confirmIcon
                 opacity: 1
             }
-            SetProperties {
+            PropertyChanges {
                 target: cancelIcon
                 opacity: 1
             }
-            SetProperties {
+            PropertyChanges {
                 target: trashIcon
                 opacity: 0
             }

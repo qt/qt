@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLSETPROPERTIES_H
-#define QMLSETPROPERTIES_H
+#ifndef QMLPROPERTYCHANGES_H
+#define QMLPROPERTYCHANGES_H
 
 #include <QtDeclarative/qmlstateoperations.h>
 
@@ -50,18 +50,18 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
     
-class QmlSetPropertiesPrivate;
-class Q_DECLARATIVE_EXPORT QmlSetProperties : public QmlStateOperation
+class QmlPropertyChangesPrivate;
+class Q_DECLARATIVE_EXPORT QmlPropertyChanges : public QmlStateOperation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlSetProperties)
+    Q_DECLARE_PRIVATE(QmlPropertyChanges)
 
     Q_PROPERTY(QObject *target READ object WRITE setObject)
     Q_PROPERTY(bool restoreEntryValues READ restoreEntryValues WRITE setRestoreEntryValues)
     Q_PROPERTY(bool explicit READ isExplicit WRITE setIsExplicit); 
 public:
-    QmlSetProperties();
-    ~QmlSetProperties();
+    QmlPropertyChanges();
+    ~QmlPropertyChanges();
 
     QObject *object() const;
     void setObject(QObject *);
@@ -77,8 +77,8 @@ public:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlSetProperties)
+QML_DECLARE_TYPE(QmlPropertyChanges)
 
 QT_END_HEADER
 
-#endif // QMLSETPROPERTIES_H
+#endif // QMLPROPERTYCHANGES_H

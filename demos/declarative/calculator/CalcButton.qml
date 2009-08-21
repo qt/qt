@@ -29,13 +29,13 @@ Rectangle {
     states: [
         State {
             name: "Pressed"; when: MouseRegion.pressed == true
-            SetProperties { target: G1; color: Palette.dark }
-            SetProperties { target: G2; color: Palette.button }
+            PropertyChanges { target: G1; color: Palette.dark }
+            PropertyChanges { target: G2; color: Palette.button }
         },
         State {
             name: "Toggled"; when: Button.toggled == true
-            SetProperties { target: G1; color: Palette.dark }
-            SetProperties { target: G2; color: Palette.button }
+            PropertyChanges { target: G1; color: Palette.dark }
+            PropertyChanges { target: G2; color: Palette.button }
         }
     ]
 }

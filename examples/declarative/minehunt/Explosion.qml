@@ -20,9 +20,9 @@ Item {
         streamIn: false
     }
     states: [ State { name: "exploding"; when: explode == true
-            SetProperties { target: particles; count: 200 }
-            SetProperties { target: particles; opacity: 1 }
-            SetProperties { target: particles; emitting: false } // i.e. emit only once
+            PropertyChanges { target: particles; count: 200 }
+            PropertyChanges { target: particles; opacity: 1 }
+            PropertyChanges { target: particles; emitting: false } // i.e. emit only once
         }
     ]
 

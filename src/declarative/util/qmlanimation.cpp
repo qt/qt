@@ -851,10 +851,10 @@ void QmlRunScriptAction::transition(QmlStateActions &actions,
     for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
-        if (action.event && action.event->typeName() == QLatin1String("RunScript")
-            && static_cast<QmlRunScript*>(action.event)->name() == d->name) {
+        if (action.event && action.event->typeName() == QLatin1String("StateChangeScript")
+            && static_cast<QmlStateChangeScript*>(action.event)->name() == d->name) {
             //### how should we handle reverse direction?
-            d->runScriptScript = static_cast<QmlRunScript*>(action.event)->script();
+            d->runScriptScript = static_cast<QmlStateChangeScript*>(action.event)->script();
             action.actionDone = true;
             break;  //assumes names are unique
         }

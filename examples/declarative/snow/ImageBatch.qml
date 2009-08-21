@@ -18,7 +18,7 @@ GridView {
 
     states: State {
         name: "selected"; when: MyGrid.isSelected
-        SetProperties { target: MyGrid; z: 150 }
+        PropertyChanges { target: MyGrid; z: 150 }
     }
     transitions: Transition { 
         SequentialAnimation {
@@ -48,7 +48,7 @@ GridView {
         states: State {
             name: "selected"
             when: Root.isSelected
-            SetProperties { target: Root; scale: 3; z: 100 }
+            PropertyChanges { target: Root; scale: 3; z: 100 }
         }
         transitions: [
             Transition {

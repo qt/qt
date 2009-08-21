@@ -88,12 +88,12 @@ Rectangle {
                 State {
                     name: "pressed"
                     when: Mouse.pressed
-                    SetProperties {
+                    PropertyChanges {
                         target: Sticky
                         rotation: 8
                         scale: 1
                     }
-                    SetProperties {
+                    PropertyChanges {
                         target: Page
                         z: 8
                     }

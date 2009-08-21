@@ -52,7 +52,7 @@ Rectangle {
                         State {
                             name: "currentItem"
                             when: wrapper.ListView.isCurrentItem
-                            SetProperties {
+                            PropertyChanges {
                                 target: label
                                 color: "black"
                             }
@@ -95,23 +95,23 @@ Rectangle {
                 states: [
                     State {
                         name: "opened"
-                        SetProperties {
+                        PropertyChanges {
                             target: wrapper
                             height: contactListView.height
                         }
-                        SetProperties {
+                        PropertyChanges {
                             target: contactListView
                             yPosition: wrapper.y
                         }
-                        SetProperties {
+                        PropertyChanges {
                             target: contactListView
                             locked: 1
                         }
-                        SetProperties {
+                        PropertyChanges {
                             target: label
                             opacity: 0
                         }
-                        SetProperties {
+                        PropertyChanges {
                             target: Details
                             opacity: 1
                         }
@@ -273,7 +273,7 @@ Rectangle {
             State {
                 name: "searchHidden"
                 when: searchBar.text == '' || contacts.mode != 'list'
-                SetProperties {
+                PropertyChanges {
                     target: searchBarWrapper.anchors
                     bottomMargin: -30
                 }
@@ -298,11 +298,11 @@ Rectangle {
         State {
             name: "editNewState"
             when: contacts.mode == 'new'
-            SetProperties {
+            PropertyChanges {
                 target: contactListView
                 opacity: 0
             }
-            SetProperties {
+            PropertyChanges {
                 target: newContactWrapper
                 opacity: 1
             }

@@ -25,7 +25,7 @@ Rectangle {
                 State {
                     name: "Current"
                     when: Wrapper.ListView.isCurrentItem
-                    SetProperties { target: Wrapper; x: 10 }
+                    PropertyChanges { target: Wrapper; x: 10 }
                 }
             ]
             transitions: [

@@ -69,7 +69,7 @@ Item {
                     State {
                         name: "back"
                         when: modelData.flipped
-                        SetProperties { target: flipable; angle: 180 }
+                        PropertyChanges { target: flipable; angle: 180 }
                     }
                 ]
                 transitions: [

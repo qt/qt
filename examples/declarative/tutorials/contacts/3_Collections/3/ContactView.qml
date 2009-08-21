@@ -91,24 +91,24 @@ Item {
                 states: [
                     State {
                         name: "opened"
-                        SetProperties {
+                        PropertyChanges {
                             target: wrapper
                             height: contactListView.height
                         }
-                        SetProperties {
+                        PropertyChanges {
                             target: contactListView
                             explicit: true
                             yPosition: wrapper.y
                         }
-                        SetProperties {
+                        PropertyChanges {
                             target: contactListView
                             locked: 1
                         }
-                        SetProperties {
+                        PropertyChanges {
                             target: label
                             opacity: 0
                         }
-                        SetProperties {
+                        PropertyChanges {
                             target: Details
                             opacity: 1
                         }

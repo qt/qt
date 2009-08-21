@@ -55,8 +55,8 @@ Rectangle {
                 State {
                     name: "pressed"
                     when: Mouse.pressed
-                    SetProperties { target: Highlight; visible: true }
-                    SetProperties { target: NameText; color: Palette.highlightedText }
+                    PropertyChanges { target: Highlight; visible: true }
+                    PropertyChanges { target: NameText; color: Palette.highlightedText }
                 }
             ]
         }
