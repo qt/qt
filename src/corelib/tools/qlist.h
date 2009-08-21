@@ -381,9 +381,6 @@ Q_INLINE_TEMPLATE void QList<T>::node_copy(Node *from, Node *to, Node *src)
                 (reinterpret_cast<T*>(current--))->~T();
             QT_RETHROW;
         }
-    } else {
-        if (src != from && to - from > 0)
-            memcpy(from, src, (to - from) * sizeof(Node *));
     }
 }
 
