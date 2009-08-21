@@ -28,7 +28,8 @@ private:
 
 void tst_qmldom::loadSimple()
 {
-    QByteArray qml = "Item {}";
+    QByteArray qml = "import Qt 4.6\n"
+                      "Item {}";
     //QByteArray qml = "<Item/>";
 
     QmlDomDocument document;
@@ -39,12 +40,13 @@ void tst_qmldom::loadSimple()
     QVERIFY(rootObject.isValid());
     QVERIFY(!rootObject.isComponent());
     QVERIFY(!rootObject.isCustomType());
-    QVERIFY(rootObject.objectType() == "Item");
+    QVERIFY(rootObject.objectType() == "Qt/Item");
 }
 
 void tst_qmldom::loadProperties()
 {
-    QByteArray qml = "Item { id : item; x : 300; visible : true }";
+    QByteArray qml = "import Qt 4.6\n"
+                     "Item { id : item; x : 300; visible : true }";
     //QByteArray qml = "<Item id='item' x='300' visible='true'/>";
 
     QmlDomDocument document;
@@ -68,7 +70,8 @@ void tst_qmldom::loadProperties()
 
 void tst_qmldom::loadChildObject()
 {
-    QByteArray qml = "Item { Item {} }";
+    QByteArray qml = "import Qt 4.6\n"
+                     "Item { Item {} }";
     //QByteArray qml = "<Item> <Item/> </Item>";
 
     QmlDomDocument document;
@@ -87,7 +90,7 @@ void tst_qmldom::loadChildObject()
 
     QmlDomObject childItem = list.values().first().toObject();
     QVERIFY(childItem.isValid());
-    QVERIFY(childItem.objectType() == "Item");
+    QVERIFY(childItem.objectType() == "Qt/Item");
 }
 
 void tst_qmldom::loadComposite()
@@ -113,7 +116,8 @@ void tst_qmldom::loadComposite()
 
 void tst_qmldom::testValueSource()
 {
-    QByteArray qml = "Rect { height: Follow { spring: 1.4; damping: .15; source: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
+    QByteArray qml = "import Qt 4.6\n"
+                     "Rectangle { height: Follow { spring: 1.4; damping: .15; source: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
 
     QmlEngine freshEngine;
     QmlDomDocument document;
@@ -129,7 +133,7 @@ void tst_qmldom::testValueSource()
     QmlDomObject valueSourceObject = valueSource.object();
     QVERIFY(valueSourceObject.isValid());
 
-    QVERIFY(valueSourceObject.objectType() == "Follow");
+    QVERIFY(valueSourceObject.objectType() == "Qt/Follow");
     
     const QmlDomValue springValue = valueSourceObject.property("spring").value();
     QVERIFY(!springValue.isInvalid());
@@ -144,7 +148,8 @@ void tst_qmldom::testValueSource()
 
 void tst_qmldom::loadImports()
 {
-    QByteArray qml = "import importlib.sublib 4.7\n"
+    QByteArray qml = "import Qt 4.6\n"
+                     "import importlib.sublib 4.7\n"
                      "import importlib.sublib 4.6 as NewFoo\n"
                      "import 'import'\n"
                      "import 'import' as X\n"
@@ -155,31 +160,37 @@ void tst_qmldom::loadImports()
     QmlDomDocument document;
     QVERIFY(document.load(&engine, qml));
 
-    QCOMPARE(document.imports().size(), 4);
+    QCOMPARE(document.imports().size(), 5);
 
-    QmlDomImport import1 = document.imports().at(0);
-    QCOMPARE(import1.type(), QmlDomImport::Library);
-    QCOMPARE(import1.uri(), QLatin1String("importlib.sublib"));
-    QCOMPARE(import1.qualifier(), QString());
-    QCOMPARE(import1.version(), QLatin1String("4.7"));
+    QmlDomImport import = document.imports().at(0);
+    QCOMPARE(import.type(), QmlDomImport::Library);
+    QCOMPARE(import.uri(), QLatin1String("Qt"));
+    QCOMPARE(import.qualifier(), QString());
+    QCOMPARE(import.version(), QLatin1String("4.6"));
 
-    QmlDomImport import2 = document.imports().at(1);
-    QCOMPARE(import2.type(), QmlDomImport::Library);
-    QCOMPARE(import2.uri(), QLatin1String("importlib.sublib"));
-    QCOMPARE(import2.qualifier(), QLatin1String("NewFoo"));
-    QCOMPARE(import2.version(), QLatin1String("4.6"));
+    import = document.imports().at(1);
+    QCOMPARE(import.type(), QmlDomImport::Library);
+    QCOMPARE(import.uri(), QLatin1String("importlib.sublib"));
+    QCOMPARE(import.qualifier(), QString());
+    QCOMPARE(import.version(), QLatin1String("4.7"));
 
-    QmlDomImport import3 = document.imports().at(2);
-    QCOMPARE(import3.type(), QmlDomImport::File);
-    QCOMPARE(import3.uri(), QLatin1String("import"));
-    QCOMPARE(import3.qualifier(), QLatin1String(""));
-    QCOMPARE(import3.version(), QLatin1String(""));
+    import = document.imports().at(2);
+    QCOMPARE(import.type(), QmlDomImport::Library);
+    QCOMPARE(import.uri(), QLatin1String("importlib.sublib"));
+    QCOMPARE(import.qualifier(), QLatin1String("NewFoo"));
+    QCOMPARE(import.version(), QLatin1String("4.6"));
 
-    QmlDomImport import4 = document.imports().at(3);
-    QCOMPARE(import4.type(), QmlDomImport::File);
-    QCOMPARE(import4.uri(), QLatin1String("import"));
-    QCOMPARE(import4.qualifier(), QLatin1String("X"));
-    QCOMPARE(import4.version(), QLatin1String(""));
+    import = document.imports().at(3);
+    QCOMPARE(import.type(), QmlDomImport::File);
+    QCOMPARE(import.uri(), QLatin1String("import"));
+    QCOMPARE(import.qualifier(), QLatin1String(""));
+    QCOMPARE(import.version(), QLatin1String(""));
+
+    import = document.imports().at(4);
+    QCOMPARE(import.type(), QmlDomImport::File);
+    QCOMPARE(import.uri(), QLatin1String("import"));
+    QCOMPARE(import.qualifier(), QLatin1String("X"));
+    QCOMPARE(import.version(), QLatin1String(""));
 }
 
 
