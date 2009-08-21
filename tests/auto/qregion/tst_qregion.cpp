@@ -965,10 +965,15 @@ void tst_QRegion::regionToPath_data()
     }
 }
 
+#ifdef QT_BUILD_INTERNAL
+QT_BEGIN_NAMESPACE
+extern QPainterPath qt_regionToPath(const QRegion &region);
+QT_END_NAMESPACE
+#endif
+
 void tst_QRegion::regionToPath()
 {
 #ifdef QT_BUILD_INTERNAL
-    extern QPainterPath qt_regionToPath(const QRegion &region);
 
     QFETCH(QPainterPath, path);
 
