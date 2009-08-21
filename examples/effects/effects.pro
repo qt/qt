@@ -2,7 +2,8 @@ TEMPLATE      = \
               subdirs
 SUBDIRS       = \
               blurpicker \
-              lighting
+              lighting \
+              customshader
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/effects

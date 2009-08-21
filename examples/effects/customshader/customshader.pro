@@ -4,7 +4,7 @@ RESOURCES += blurpicker.qrc
 QT += opengl
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/blurpicker
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS blurpicker.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/blurpicker
+target.path = $$[QT_INSTALL_EXAMPLES]/effects/customshader
+sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS customshader.pro
+sources.path = $$[QT_INSTALL_EXAMPLES]/effects/customshader
 INSTALLS += target sources
