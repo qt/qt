@@ -436,7 +436,8 @@ Q_GLOBAL_STATIC(LibraryData, libraryData)
 
 static LibraryMap *libraryMap()
 {
-    return &(libraryData()->libraryMap);
+    LibraryData *data = libraryData();
+    return data ? &data->libraryMap : 0;
 }
 
 QLibraryPrivate::QLibraryPrivate(const QString &canonicalFileName, const QString &version)
