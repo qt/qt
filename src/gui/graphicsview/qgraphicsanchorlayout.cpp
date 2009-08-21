@@ -130,7 +130,8 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
  *
  * The spacing can also be set manually by using setAnchorSpacing() method.
  *
- * \sa removeAnchor, addCornerAnchors, addLeftAndRightAnchors, addTopAndBottomAnchors, addAllAnchors
+ * \sa removeAnchor(), addCornerAnchors(), addLeftAndRightAnchors(), addTopAndBottomAnchors(),
+ *     addAllAnchors()
  */
 void QGraphicsAnchorLayout::addAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
                                       QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge)
