@@ -818,7 +818,7 @@ namespace Phonon
 
                 WCHAR buffer[MAX_ERROR_TEXT_LEN];
                 if (getErrorText && getErrorText(hr, buffer, MAX_ERROR_TEXT_LEN)) {
-                    m_errorString = QString::fromUtf16(buffer);
+                    m_errorString = QString::fromWCharArray(buffer);
                 } else {
                     m_errorString = QString::fromLatin1("Unknown error");
                 }

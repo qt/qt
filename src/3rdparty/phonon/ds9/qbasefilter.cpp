@@ -358,7 +358,7 @@ namespace Phonon
         {
             QMutexLocker locker(&m_mutex);
             m_graph = graph;
-            m_name = QString::fromUtf16((const unsigned short*)name);
+            m_name = QString::fromWCharArray(name);
             return S_OK;
         }
 

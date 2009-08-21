@@ -1008,27 +1008,27 @@ namespace Phonon
                 BSTR str;
                 HRESULT hr = mediaContent->get_AuthorName(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("ARTIST"), QString::fromUtf16((const unsigned short*)str));
+                    ret.insert(QLatin1String("ARTIST"), QString::fromWCharArray(str));
                     SysFreeString(str);
                 }
                 hr = mediaContent->get_Title(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("TITLE"), QString::fromUtf16((const unsigned short*)str));
+                    ret.insert(QLatin1String("TITLE"), QString::fromWCharArray(str));
                     SysFreeString(str);
                 }
                 hr = mediaContent->get_Description(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("DESCRIPTION"), QString::fromUtf16((const unsigned short*)str));
+                    ret.insert(QLatin1String("DESCRIPTION"), QString::fromWCharArray(str));
                     SysFreeString(str);
                 }
                 hr = mediaContent->get_Copyright(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("COPYRIGHT"), QString::fromUtf16((const unsigned short*)str));
+                    ret.insert(QLatin1String("COPYRIGHT"), QString::fromWCharArray(str));
                     SysFreeString(str);
                 }
                 hr = mediaContent->get_MoreInfoText(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("MOREINFO"), QString::fromUtf16((const unsigned short*)str));
+                    ret.insert(QLatin1String("MOREINFO"), QString::fromWCharArray(str));
                     SysFreeString(str);
                 }
             }
