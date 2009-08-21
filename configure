@@ -7039,8 +7039,6 @@ EOF
 # Ensure we can link to uninistalled libraries
 if linkerSupportsFlag -rpath-link "$outpath/lib"; then
     echo "QMAKE_LFLAGS    += -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib" >> "$CACHEFILE.tmp"
-elif linkerSupportsFlag -rpath "$outpath/lib"; then
-    echo "QMAKE_LFLAGS    += -Wl,-rpath,\$\$QT_BUILD_TREE/lib" >> "$CACHEFILE.tmp"
 fi
 
 if [ -n "$QT_CFLAGS_PSQL" ]; then
