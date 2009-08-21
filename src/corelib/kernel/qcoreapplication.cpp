@@ -1768,9 +1768,8 @@ bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
     function also assumes that the current directory has not been
     changed by the application.
 
-    In Symbian this function will return the application private directory
-    in C-drive, not the path to executable itself, as those are always in
-    /sys/bin.
+    In Symbian this function will return the application private directory,
+    not the path to executable itself, as those are always in \c {/sys/bin}.
 
     \sa applicationFilePath()
 */
