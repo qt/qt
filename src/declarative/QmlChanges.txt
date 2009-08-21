@@ -32,6 +32,7 @@ Follow: followValue    -> value
 Additions:
 MouseRegion: add "acceptedButtons" property
 MouseRegion: add "hoverEnabled" property
+MouseRegion: add "pressedButtons" property
 Timer: add start() and stop() slots
 
 Deletions:
@@ -63,5 +64,4 @@ PropertyAction::property
 PropertyAction::target (if possible)
 
 Additions:
-MouseRegion: add "pressedButtons" property
 Connection: add "slot" property

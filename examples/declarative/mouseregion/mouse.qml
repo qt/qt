@@ -9,6 +9,7 @@ Rectangle {
         Text { text: "Click"; anchors.centerIn: parent }
         MouseRegion {
             hoverEnabled: true
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
             onPressed: { print('press (x: ' + mouse.x + ' y: ' + mouse.y + ' button: ' + (mouse.button == Qt.RightButton ? 'right' : 'left') + ' Shift: ' + (mouse.modifiers & Qt.ShiftModifier ? 'true' : 'false') + ')') }
             onReleased: { print('release (x: ' + mouse.x + ' y: ' + mouse.y + ' isClick: ' + mouse.isClick + ' wasHeld: ' + mouse.wasHeld + ')') }
             onClicked: { print('click (x: ' + mouse.x + ' y: ' + mouse.y + ' wasHeld: ' + mouse.wasHeld + ')') }
