@@ -84,7 +84,7 @@ namespace Phonon
                     conn->BeginFlush();
                 }
             }
-            QWriteLocker locker(&m_lock);
+            QMutexLocker locker(&m_mutex);
             m_flushing = true;
             return S_OK;
         }
@@ -98,7 +98,7 @@ namespace Phonon
                     conn->EndFlush();
                 }
             }
-            QWriteLocker locker(&m_lock);
+            QMutexLocker locker(&m_mutex);
             m_flushing = false;
             return S_OK;
         }
@@ -152,7 +152,7 @@ namespace Phonon
             }
 
             {
-                QWriteLocker locker(&m_lock);
+                QMutexLocker locker(&m_mutex);
                 m_shouldDuplicateSamples = m_transform && readonly;
             }
 
@@ -266,19 +266,19 @@ namespace Phonon
 
         void QMemInputPin::addOutput(QPin *output)
         {
-            QWriteLocker locker(&m_lock);
+            QMutexLocker locker(&m_mutex);
             m_outputs += output;
         }
 
         void QMemInputPin::removeOutput(QPin *output)
         {
-            QWriteLocker locker(&m_lock);
+            QMutexLocker locker(&m_mutex);
             m_outputs.removeOne(output);
         }
 
         QList<QPin*> QMemInputPin::outputs() const
         {
-            QReadLocker locker(&m_lock);
+            QMutexLocker locker(&m_mutex);
             return m_outputs;
         }
 
