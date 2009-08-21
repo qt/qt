@@ -383,7 +383,8 @@ namespace Phonon
 #endif
             if (info.pGraph) {
                 info.pGraph->Release();
-                return m_graph->RemoveFilter(filter);
+                if (info.pGraph == m_graph)
+                    return m_graph->RemoveFilter(filter);
             }
 
             //already removed
@@ -681,7 +682,6 @@ namespace Phonon
  #ifndef QT_NO_PHONON_MEDIACONTROLLER
                } else if (source.discType() == Phonon::Cd) {
                     m_realSource = Filter(new QAudioCDPlayer);
-                    m_result = m_graph->AddFilter(m_realSource, 0);
 
 #endif //QT_NO_PHONON_MEDIACONTROLLER
                 } else {
