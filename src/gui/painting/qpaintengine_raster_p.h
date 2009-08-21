@@ -373,7 +373,7 @@ public:
 };
 
 
-class QClipData {
+class Q_GUI_EXPORT QClipData {
 public:
     QClipData(int height);
     ~QClipData();
@@ -480,7 +480,7 @@ private:
 /*******************************************************************************
  * QRasterBuffer
  */
-class QRasterBuffer
+class Q_GUI_EXPORT QRasterBuffer
 {
 public:
     QRasterBuffer() : m_width(0), m_height(0), m_buffer(0) { init(); }
