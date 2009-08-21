@@ -1652,7 +1652,7 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
 }
 
 /*!
-  \Internal
+  \internal
 */
 QList< QList<QSimplexConstraint *> >
 QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)

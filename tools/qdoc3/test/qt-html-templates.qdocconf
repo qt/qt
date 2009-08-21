@@ -22,12 +22,6 @@ HTML.postheader         = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0
                           "<input type=\"submit\" name=\"sa\" value=\"Search\" />" \
                           "</div>" \
                           "</form>" \
-                          \
-                          "<script type=\"text/javascript\" src=\"http://www.google.com/jsapi\"></script>" \
-                          "<script type=\"text/javascript\">google.load(\"elements\", \"1\", {packages: \"transliteration\"});</script>" \
-                          "<script type=\"text/javascript\" src=\"http://www.google.com/coop/cse/t13n?form=cse-search-box&t13n_langs=en\"></script>" \
-                          \
-                          "<script type=\"text/javascript\" src=\"http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en\"></script>"\
                           "</td>\n" \
                           "</tr></table>"
 
@@ -36,4 +30,10 @@ HTML.footer             = "<p /><address><hr /><div align=\"center\">\n" \
                           "<td width=\"40%\" align=\"left\">Copyright &copy; 2009 Nokia Corporation and/or its subsidiary(-ies)</td>\n" \
                           "<td width=\"20%\" align=\"center\"><a href=\"trademarks.html\">Trademarks</a></td>\n" \
                           "<td width=\"40%\" align=\"right\"><div align=\"right\">Qt \\version</div></td>\n" \
+                          \
+                          "<script type=\"text/javascript\" src=\"http://www.google.com/jsapi\"></script>" \
+                          "<script type=\"text/javascript\">google.load(\"elements\", \"1\", {packages: \"transliteration\"});</script>" \
+                          "<script type=\"text/javascript\" src=\"http://www.google.com/coop/cse/t13n?form=cse-search-box&t13n_langs=en\"></script>" \
+                          \
+                          "<script type=\"text/javascript\" src=\"http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en\"></script>"\
                           "</tr></table></div></address>"
