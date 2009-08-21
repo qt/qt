@@ -422,7 +422,7 @@ void QmlAbstractAnimation::setGroup(QmlAnimationGroup *g)
 }
 
 /*!
-    \qmlproperty Object SetPropertyAction::target
+    \qmlproperty Object PropertyAction::target
     This property holds an explicit target object to animate.
 
     The exact effect of the \c target property depends on how the animation
@@ -459,7 +459,7 @@ void QmlAbstractAnimation::setTarget(QObject *o)
 }
 
 /*!
-    \qmlproperty string SetPropertyAction::property
+    \qmlproperty string PropertyAction::property
     This property holds an explicit property to animated.
 
     The exact effect of the \c property property depends on how the animation
@@ -870,58 +870,58 @@ QAbstractAnimation *QmlScriptAction::qtAnimation()
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ScriptAction,QmlScriptAction)
 
 /*!
-    \qmlclass SetPropertyAction QmlSetPropertyAction
+    \qmlclass PropertyAction QmlPropertyAction
     \inherits Animation
-    \brief The SetPropertyAction allows immediate property changes during animation.
+    \brief The PropertyAction allows immediate property changes during animation.
 
     Explicitly set \c theimage.smooth=true during a transition:
     \code
-    SetPropertyAction { target: theimage; property: "smooth"; value: true }
+    PropertyAction { target: theimage; property: "smooth"; value: true }
     \endcode
 
     Set \c thewebview.url to the value set for the destination state:
     \code
-    SetPropertyAction { target: thewebview; property: "url" }
+    PropertyAction { target: thewebview; property: "url" }
     \endcode
 
-    The SetPropertyAction is immediate -
+    The PropertyAction is immediate -
     the target property is not animated to the selected value in any way.
 */
 /*!
     \internal
-    \class QmlSetPropertyAction
+    \class QmlPropertyAction
 */
-QmlSetPropertyAction::QmlSetPropertyAction(QObject *parent)
-: QmlAbstractAnimation(*(new QmlSetPropertyActionPrivate), parent)
+QmlPropertyAction::QmlPropertyAction(QObject *parent)
+: QmlAbstractAnimation(*(new QmlPropertyActionPrivate), parent)
 {
-    Q_D(QmlSetPropertyAction);
+    Q_D(QmlPropertyAction);
     d->init();
 }
 
-QmlSetPropertyAction::~QmlSetPropertyAction()
+QmlPropertyAction::~QmlPropertyAction()
 {
 }
 
-void QmlSetPropertyActionPrivate::init()
+void QmlPropertyActionPrivate::init()
 {
-    Q_Q(QmlSetPropertyAction);
+    Q_Q(QmlPropertyAction);
     spa = new QActionAnimation;
     QFx_setParent_noEvent(spa, q);
 }
 
 /*!
-    \qmlproperty string SetPropertyAction::properties
+    \qmlproperty string PropertyAction::properties
     This property holds the properties to be immediately set, comma-separated.
 */
-QString QmlSetPropertyAction::properties() const
+QString QmlPropertyAction::properties() const
 {
-    Q_D(const QmlSetPropertyAction);
+    Q_D(const QmlPropertyAction);
     return d->properties;
 }
 
-void QmlSetPropertyAction::setProperties(const QString &p)
+void QmlPropertyAction::setProperties(const QString &p)
 {
-    Q_D(QmlSetPropertyAction);
+    Q_D(QmlPropertyAction);
     if (d->properties == p)
         return;
     d->properties = p;
@@ -929,61 +929,61 @@ void QmlSetPropertyAction::setProperties(const QString &p)
 }
 
 /*!
-    \qmlproperty list<Item> SetPropertyAction::targets
+    \qmlproperty list<Item> PropertyAction::targets
     This property holds the items selected to be affected by this animation (all if not set).
     \sa exclude
 */
-QList<QObject *> *QmlSetPropertyAction::targets()
+QList<QObject *> *QmlPropertyAction::targets()
 {
-    Q_D(QmlSetPropertyAction);
+    Q_D(QmlPropertyAction);
     return &d->targets;
 }
 
 /*!
-    \qmlproperty list<Item> SetPropertyAction::exclude
+    \qmlproperty list<Item> PropertyAction::exclude
     This property holds the items not to be affected by this animation.
     \sa targets
 */
-QList<QObject *> *QmlSetPropertyAction::exclude()
+QList<QObject *> *QmlPropertyAction::exclude()
 {
-    Q_D(QmlSetPropertyAction);
+    Q_D(QmlPropertyAction);
     return &d->exclude;
 }
 
 /*!
-    \qmlproperty any SetPropertyAction::value
+    \qmlproperty any PropertyAction::value
     This property holds the value to be set on the property.
     If not set, then the value defined for the end state of the transition.
 */
-QVariant QmlSetPropertyAction::value() const
+QVariant QmlPropertyAction::value() const
 {
-    Q_D(const QmlSetPropertyAction);
+    Q_D(const QmlPropertyAction);
     return d->value;
 }
 
-void QmlSetPropertyAction::setValue(const QVariant &v)
+void QmlPropertyAction::setValue(const QVariant &v)
 {
-    Q_D(QmlSetPropertyAction);
+    Q_D(QmlPropertyAction);
     if (d->value.isNull || d->value != v) {
         d->value = v;
         emit valueChanged(v);
     }
 }
 
-void QmlSetPropertyActionPrivate::doAction()
+void QmlPropertyActionPrivate::doAction()
 {
     property.write(value);
 }
 
-QAbstractAnimation *QmlSetPropertyAction::qtAnimation()
+QAbstractAnimation *QmlPropertyAction::qtAnimation()
 {
-    Q_D(QmlSetPropertyAction);
+    Q_D(QmlPropertyAction);
     return d->spa;
 }
 
-void QmlSetPropertyAction::prepare(QmlMetaProperty &p)
+void QmlPropertyAction::prepare(QmlMetaProperty &p)
 {
-    Q_D(QmlSetPropertyAction);
+    Q_D(QmlPropertyAction);
 
     if (d->userProperty.isNull)
         d->property = p;
@@ -993,11 +993,11 @@ void QmlSetPropertyAction::prepare(QmlMetaProperty &p)
     d->spa->setAnimAction(&d->proxy, QAbstractAnimation::KeepWhenStopped);
 }
 
-void QmlSetPropertyAction::transition(QmlStateActions &actions,
+void QmlPropertyAction::transition(QmlStateActions &actions,
                                       QmlMetaProperties &modified,
                                       TransitionDirection direction)
 {
-    Q_D(QmlSetPropertyAction);
+    Q_D(QmlPropertyAction);
     Q_UNUSED(direction);
 
     struct QmlSetPropertyAnimationAction : public QAbstractAnimationAction
@@ -1072,7 +1072,7 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,SetPropertyAction,QmlSetPropertyAction)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PropertyAction,QmlPropertyAction)
 
 /*!
     \qmlclass ParentAction QmlParentAction

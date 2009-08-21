@@ -240,11 +240,11 @@ public:
     QActionAnimation *rsa;
 };
 
-class QmlSetPropertyActionPrivate : public QmlAbstractAnimationPrivate
+class QmlPropertyActionPrivate : public QmlAbstractAnimationPrivate
 {
-    Q_DECLARE_PUBLIC(QmlSetPropertyAction)
+    Q_DECLARE_PUBLIC(QmlPropertyAction)
 public:
-    QmlSetPropertyActionPrivate()
+    QmlPropertyActionPrivate()
     : QmlAbstractAnimationPrivate(), proxy(this), spa(0) {}
 
     void init();
@@ -257,8 +257,8 @@ public:
 
     void doAction();
 
-    QAnimationActionProxy<QmlSetPropertyActionPrivate,
-                  &QmlSetPropertyActionPrivate::doAction> proxy;
+    QAnimationActionProxy<QmlPropertyActionPrivate,
+                  &QmlPropertyActionPrivate::doAction> proxy;
     QActionAnimation *spa;
 };
 

@@ -143,13 +143,13 @@ Flipable {
     transitions: [
         Transition {
             SequentialAnimation {
-                SetPropertyAction {
+                PropertyAction {
                     target: BigImage
                     property: "smooth"
                     value: false
                 }
                 NumberAnimation { easing: "easeInOutQuad"; properties: "angle"; duration: 500 }
-                SetPropertyAction {
+                PropertyAction {
                     target: BigImage
                     property: "smooth"
                     value: !Flick.moving

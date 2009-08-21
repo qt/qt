@@ -85,7 +85,7 @@ Rectangle {
                     to: 0
                     duration: 150
                 }
-                SetPropertyAction {}
+                PropertyAction {}
                 NumberAnimation {
                     target: bluerect
                     properties: "opacity"

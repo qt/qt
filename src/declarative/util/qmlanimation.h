@@ -186,11 +186,11 @@ protected:
     virtual QAbstractAnimation *qtAnimation();
 };
 
-class QmlSetPropertyActionPrivate;
-class QmlSetPropertyAction : public QmlAbstractAnimation
+class QmlPropertyActionPrivate;
+class QmlPropertyAction : public QmlAbstractAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlSetPropertyAction)
+    Q_DECLARE_PRIVATE(QmlPropertyAction)
 
     Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
     Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
@@ -200,8 +200,8 @@ class QmlSetPropertyAction : public QmlAbstractAnimation
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
 
 public:
-    QmlSetPropertyAction(QObject *parent=0);
-    virtual ~QmlSetPropertyAction();
+    QmlPropertyAction(QObject *parent=0);
+    virtual ~QmlPropertyAction();
 
     QString properties() const;
     void setProperties(const QString &);
@@ -396,7 +396,7 @@ QT_END_NAMESPACE
 QML_DECLARE_TYPE(QmlAbstractAnimation)
 QML_DECLARE_TYPE(QmlPauseAnimation)
 QML_DECLARE_TYPE(QmlScriptAction)
-QML_DECLARE_TYPE(QmlSetPropertyAction)
+QML_DECLARE_TYPE(QmlPropertyAction)
 QML_DECLARE_TYPE(QmlParentAction)
 QML_DECLARE_TYPE(QmlPropertyAnimation)
 QML_DECLARE_TYPE(QmlColorAnimation)

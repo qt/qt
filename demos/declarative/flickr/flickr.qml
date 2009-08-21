@@ -109,7 +109,7 @@ Item {
                     SequentialAnimation {
                         ParentAction { }
                         NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
-                        SetPropertyAction { target: Wrapper; properties: "z" }
+                        PropertyAction { target: Wrapper; properties: "z" }
                     }
                 }
             ]

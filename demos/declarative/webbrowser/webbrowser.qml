@@ -353,7 +353,7 @@ Item {
     transitions: [
         Transition {
             SequentialAnimation {
-                SetPropertyAction {
+                PropertyAction {
                     target: MyWebView
                     property: "smooth"
                     value: false
@@ -372,7 +372,7 @@ Item {
                         duration: 200
                     }
                 }
-                SetPropertyAction {
+                PropertyAction {
                     target: MyWebView
                     property: "smooth"
                     value: !Flick.moving

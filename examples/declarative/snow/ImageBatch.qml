@@ -23,7 +23,7 @@ GridView {
     transitions: Transition { 
         SequentialAnimation {
             PauseAnimation { duration: 150 }
-            SetPropertyAction { properties: "z" }
+            PropertyAction { properties: "z" }
         }
     }
     model: XmlListModel {
@@ -55,7 +55,7 @@ GridView {
                 toState: "selected"
                 SequentialAnimation {
                     PauseAnimation { duration: 150 }
-                    SetPropertyAction { properties: "z" }
+                    PropertyAction { properties: "z" }
                     NumberAnimation { properties: "scale"; duration: 150; }
                 }
             },
@@ -63,7 +63,7 @@ GridView {
                 fromState: "selected"
                 SequentialAnimation {
                     NumberAnimation { properties: "scale"; duration: 150 }
-                    SetPropertyAction { properties: "z" }
+                    PropertyAction { properties: "z" }
                 }
             }
         ]

@@ -108,7 +108,7 @@ Item {
                             SequentialAnimation {
                                 ParentAction { }
                                 NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
-                                SetPropertyAction { target: Wrapper; properties: "z" }
+                                PropertyAction { target: Wrapper; properties: "z" }
                             }
                         }
                     ]
@@ -142,7 +142,7 @@ Item {
                         Transition {
                             toState: "pathView"
                             SequentialAnimation {
-                                SetPropertyAction { target: Wrapper; property: "moveToParent" }
+                                PropertyAction { target: Wrapper; property: "moveToParent" }
                                 ParallelAnimation {
                                     NumberAnimation {
                                         target: Wrapper
@@ -159,7 +159,7 @@ Item {
                             toState: "gridView"
                             SequentialAnimation {
                                 PauseAnimation { duration: Math.floor(index/7)*100 }
-                                SetPropertyAction { target: Wrapper; property: "moveToParent" }
+                                PropertyAction { target: Wrapper; property: "moveToParent" }
                                 ParallelAnimation {
                                     NumberAnimation {
                                         target: Wrapper
