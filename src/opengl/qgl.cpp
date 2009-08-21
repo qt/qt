@@ -1494,7 +1494,7 @@ void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
             instance()->remove(cacheKey);
     }
 #if defined(Q_WS_X11)
-    QPixmapData *pd = pixmap->data_ptr();
+    QPixmapData *pd = pixmap->data_ptr().data();
     // Only need to delete the gl surface if the pixmap is about to be deleted
     if (pd->ref == 0)
         QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
