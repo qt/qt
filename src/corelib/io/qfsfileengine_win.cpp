@@ -1252,7 +1252,7 @@ bool QFSFileEnginePrivate::doStat() const
 static QString readSymLink(const QString &link)
 {
     QString result;
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE) && defined(FSCTL_GET_REPARSE_POINT) && defined(IO_REPARSE_TAG_MOUNT_POINT)
     HANDLE handle = CreateFile((wchar_t*)QFSFileEnginePrivate::longFileName(link).utf16(),
                                FILE_READ_EA,
                                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
