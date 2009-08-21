@@ -8,7 +8,6 @@ SUBDIRS       = \
 !symbian: SUBDIRS += \
               diagramscene \
               dragdroprobot \
-              basicgraphicslayouts \
               anchorlayout
 
 contains(QT_CONFIG, qt3support):SUBDIRS += portedcanvas portedasteroids
