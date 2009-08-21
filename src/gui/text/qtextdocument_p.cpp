@@ -421,7 +421,7 @@ int QTextDocumentPrivate::insertBlock(const QChar &blockSeparator,
     int b = blocks.findNode(pos);
     QTextBlockData *B = blocks.fragment(b);
 
-    QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::BlockInserted, editBlock != 0,
+    QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::BlockInserted, (editBlock != 0),
                             op, charFormat, strPos, pos, blockFormat,
                             B->revision);
 
@@ -462,7 +462,7 @@ void QTextDocumentPrivate::insert(int pos, int strPos, int strLength, int format
         int b = blocks.findNode(pos);
         QTextBlockData *B = blocks.fragment(b);
 
-        QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::Inserted, editBlock != 0,
+        QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::Inserted, (editBlock != 0),
                                 QTextUndoCommand::MoveCursor, format, strPos, pos, strLength,
                                 B->revision);
         appendUndoItem(c);
@@ -621,10 +621,10 @@ void QTextDocumentPrivate::move(int pos, int to, int length, QTextUndoCommand::O
         int blockRevision = B->revision;
 
         QTextFragmentData *X = fragments.fragment(x);
-        QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::Removed, editBlock != 0,
+        QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::Removed, (editBlock != 0),
                                 op, X->format, X->stringPosition, key, X->size_array[0],
                                 blockRevision);
-        QT_INIT_TEXTUNDOCOMMAND(cInsert, QTextUndoCommand::Inserted, editBlock != 0,
+        QT_INIT_TEXTUNDOCOMMAND(cInsert, QTextUndoCommand::Inserted, (editBlock != 0),
                                 op, X->format, X->stringPosition, dstKey, X->size_array[0],
                                 blockRevision);
 
@@ -1319,7 +1319,7 @@ void QTextDocumentPrivate::changeObjectFormat(QTextObject *obj, int format)
     if (f)
         documentChange(f->firstPosition(), f->lastPosition() - f->firstPosition());
 
-    QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::GroupFormatChange, editBlock != 0, QTextUndoCommand::MoveCursor, oldFormatIndex,
+    QT_INIT_TEXTUNDOCOMMAND(c, QTextUndoCommand::GroupFormatChange, (editBlock != 0), QTextUndoCommand::MoveCursor, oldFormatIndex,
                             0, 0, obj->d_func()->objectIndex, 0);
     appendUndoItem(c);
 
