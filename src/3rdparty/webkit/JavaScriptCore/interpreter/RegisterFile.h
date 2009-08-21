@@ -204,8 +204,8 @@ namespace JSC {
             CRASH();
         }
         m_commitEnd = reinterpret_cast<Register*>(reinterpret_cast<char*>(m_buffer) + committedSize);
-    #else
-        #error "Don't know how to reserve virtual memory on this platform."
+    #else // Neither MMAP nor VIRTUALALLOC - use fastMalloc instead
+        m_buffer = static_cast<Register*>(fastMalloc(bufferLength));
     #endif
         m_start = m_buffer + maxGlobals;
         m_end = m_start;

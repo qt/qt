@@ -127,6 +127,8 @@ public:
     QPoint toPoint() const;
     QPointF toPointF() const;
 
+    operator QVariant() const;
+
 private:
     float xp, yp, zp;
 

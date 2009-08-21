@@ -502,16 +502,17 @@ struct QGraphicsItemPrivate::TransformData
             return transform * *postmultiplyTransform;
         }
 
-        QTransform x(transform);
+        QMatrix4x4 x(transform);
         for (int i = 0; i < graphicsTransforms.size(); ++i)
             graphicsTransforms.at(i)->applyTo(&x);
         x.translate(xOrigin, yOrigin);
-        x.rotate(rotation, Qt::ZAxis);
-        x.scale(scale, scale);
+        x.rotate(rotation, 0, 0, 1);
+        x.scale(scale);
         x.translate(-xOrigin, -yOrigin);
+        QTransform t = x.toTransform(); // project the 3D matrix back to 2D.
         if (postmultiplyTransform)
-            x *= *postmultiplyTransform;
-        return x;
+            t *= *postmultiplyTransform;
+        return t;
     }
 };
 

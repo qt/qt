@@ -62,7 +62,7 @@ namespace WebCore {
         virtual void put(JSC::ExecState*, const JSC::Identifier&, JSC::JSValue, JSC::PutPropertySlot&);
         virtual void put(JSC::ExecState*, unsigned, JSC::JSValue);
 
-        virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
+        virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&, bool checkDontDelete = true);
         virtual bool deleteProperty(JSC::ExecState*, unsigned);
 
         virtual JSC::CallType getCallData(JSC::CallData&);
@@ -70,7 +70,7 @@ namespace WebCore {
 
         virtual bool hasInstance(JSC::ExecState*, JSC::JSValue, JSC::JSValue proto);
 
-        virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+        virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
 
         virtual JSC::UString className() const { return m_unwrappedObject->className(); }
 

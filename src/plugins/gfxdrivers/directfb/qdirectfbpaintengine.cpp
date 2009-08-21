@@ -559,7 +559,9 @@ void QDirectFBPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap,
         QRasterPaintEngine::drawPixmap(r, pixmap, sr);
     } else if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
                || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
-               || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip) {
+               || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
+               || (state()->renderHints & QPainter::SmoothPixmapTransform
+                   && state()->matrix.mapRect(r).size() != sr.size())) {
         RASTERFALLBACK(DRAW_PIXMAP, r, pixmap.size(), sr);
         const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer(DSLF_READ);
         d->lock();
@@ -593,7 +595,8 @@ void QDirectFBPaintEngine::drawTiledPixmap(const QRectF &r,
         QRasterPaintEngine::drawTiledPixmap(r, pixmap, offset);
     } else if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
                || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
-               || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip) {
+               || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
+               || (state()->renderHints & QPainter::SmoothPixmapTransform && state()->matrix.isScaling())) {
         RASTERFALLBACK(DRAW_TILED_PIXMAP, r, pixmap.size(), offset);
         const QImage *img = static_cast<QDirectFBPixmapData*>(pixmap.pixmapData())->buffer(DSLF_READ);
         d->lock();
@@ -709,7 +712,8 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
 
         case Qt::TexturePattern: {
             if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedBlits)
-                || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)) {
+                || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_BlitsUnsupported)
+                || (state()->renderHints & QPainter::SmoothPixmapTransform && state()->matrix.isScaling())) {
                 break;
             }
 
@@ -843,6 +847,13 @@ void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode m
 {
     if (!surface)
         return;
+
+    static const bool forceRasterFallBack = qgetenv("QT_DIRECTFB_FORCE_RASTER").toInt() > 0;
+    if (forceRasterFallBack) {
+        compositionModeStatus = 0;
+        return;
+    }
+
     compositionModeStatus = PorterDuff_SupportedBlits;
     switch (mode) {
     case QPainter::CompositionMode_Clear:

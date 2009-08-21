@@ -110,7 +110,7 @@ namespace JSC {
 
         NEVER_INLINE JSValue callEval(CallFrame*, RegisterFile*, Register* argv, int argc, int registerOffset, JSValue& exceptionValue);
         NEVER_INLINE HandlerInfo* throwException(CallFrame*&, JSValue&, unsigned bytecodeOffset, bool);
-        NEVER_INLINE void debug(CallFrame*, DebugHookID, int firstLine, int lastLine);
+        NEVER_INLINE void debug(CallFrame*, DebugHookID, int firstLine, int lastLine, int column);
 
     private:
         enum ExecutionFlag { Normal, InitializeAndReturn };

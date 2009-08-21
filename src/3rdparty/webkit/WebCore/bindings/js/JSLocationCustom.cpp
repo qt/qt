@@ -120,20 +120,20 @@ bool JSLocation::putDelegate(ExecState* exec, const Identifier& propertyName, JS
     return false;
 }
 
-bool JSLocation::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool JSLocation::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
     // Only allow deleting by frames in the same origin.
     if (!allowsAccessFromFrame(exec, impl()->frame()))
         return false;
-    return Base::deleteProperty(exec, propertyName);
+    return Base::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
-void JSLocation::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSLocation::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     // Only allow the location object to enumerated by frames in the same origin.
     if (!allowsAccessFromFrame(exec, impl()->frame()))
         return;
-    Base::getPropertyNames(exec, propertyNames);
+    Base::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 void JSLocation::defineGetter(ExecState* exec, const Identifier& propertyName, JSObject* getterFunction)
