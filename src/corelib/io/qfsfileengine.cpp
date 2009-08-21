@@ -109,7 +109,7 @@ void QFSFileEnginePrivate::init()
 {
     is_sequential = 0;
     tried_stat = 0;
-#ifdef Q_OS_UNIX
+#if !defined(Q_OS_WINCE)
     need_lstat = 1;
     is_link = 0;
 #endif
