@@ -2012,6 +2012,14 @@ static bool parseAimateMotionNode(QSvgNode *parent,
     return true;
 }
 
+static void parseNumberTriplet(QVector<qreal> &values, const QChar *&s)
+{
+    QVector<qreal> list = parseNumbersList(s);
+    values << list;
+    for (int i = 3 - list.size(); i > 0; --i)
+        values.append(0.0);
+}
+
 static bool parseAnimateTransformNode(QSvgNode *parent,
                                       const QXmlStreamAttributes &attributes,
                                       QSvgHandler *handler)
@@ -2025,28 +2033,47 @@ static bool parseAnimateTransformNode(QSvgNode *parent,
     QString fillStr    = attributes.value(QLatin1String("fill")).toString();
     QString fromStr    = attributes.value(QLatin1String("from")).toString();
     QString toStr      = attributes.value(QLatin1String("to")).toString();
+    QString byStr      = attributes.value(QLatin1String("by")).toString();
+    QString addtv      = attributes.value(QLatin1String("additive")).toString();
+
+    QSvgAnimateTransform::Additive additive = QSvgAnimateTransform::Replace;
+    if (addtv == QLatin1String("sum"))
+        additive = QSvgAnimateTransform::Sum;
 
     QVector<qreal> vals;
     if (values.isEmpty()) {
-        const QChar *s = fromStr.constData();
-        QVector<qreal> lst = parseNumbersList(s);
-        while (lst.count() < 3)
-            lst.append(0.0);
-        vals << lst;
-
-        s = toStr.constData();
-        lst = parseNumbersList(s);
-        while (lst.count() < 3)
-            lst.append(0.0);
-        vals << lst;
+        const QChar *s;
+        if (fromStr.isEmpty()) {
+            if (!byStr.isEmpty()) {
+                // By-animation.
+                additive = QSvgAnimateTransform::Sum;
+                vals.append(0.0);
+                vals.append(0.0);
+                vals.append(0.0);
+                parseNumberTriplet(vals, s = byStr.constData());
+            } else {
+                // To-animation not defined.
+                return false;
+            }
+        } else {
+            if (!toStr.isEmpty()) {
+                // From-to-animation.
+                parseNumberTriplet(vals, s = fromStr.constData());
+                parseNumberTriplet(vals, s = toStr.constData());
+            } else if (!byStr.isEmpty()) {
+                // From-by-animation.
+                parseNumberTriplet(vals, s = fromStr.constData());
+                parseNumberTriplet(vals, s = byStr.constData());
+                for (int i = vals.size() - 3; i < vals.size(); ++i)
+                    vals[i] += vals[i - 3];
+            } else {
+                return false;
+            }
+        }
     } else {
         const QChar *s = values.constData();
         while (s && *s != QLatin1Char(0)) {
-            QVector<qreal> tmpVals = parseNumbersList(s);
-            while (tmpVals.count() < 3)
-                tmpVals.append(0.0);
-
-            vals << tmpVals;
+            parseNumberTriplet(vals, s);
             if (*s == QLatin1Char(0))
                 break;
             ++s;
@@ -2088,7 +2115,7 @@ static bool parseAnimateTransformNode(QSvgNode *parent,
     }
 
     QSvgAnimateTransform *anim = new QSvgAnimateTransform(begin, end, 0);
-    anim->setArgs(type, vals);
+    anim->setArgs(type, additive, vals);
     anim->setFreeze(fillStr == QLatin1String("freeze"));
     anim->setRepeatCount(
             (repeatStr == QLatin1String("indefinite"))? -1 :

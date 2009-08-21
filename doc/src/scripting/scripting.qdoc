@@ -1224,44 +1224,6 @@
   for it, evaluate the script, and finally restore the old context.
   \endlist
 
-  \section2 Nested Functions and the Scope Chain
-
-  This is an advanced topic; feel free to skip it.
-
-  A nested function can be used to "capture" the execution context in which a
-  nested function object is created; this is typically referred to as creating
-  a \e closure. When, at some later time, the nested function is invoked, it
-  can access the variables that were created when the enclosing function was
-  invoked. This can perhaps best be illustrated through a small example:
-
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 70
-
-  The \c{counter()} function initializes a local variable to zero,
-  and returns a nested function. The nested function increments
-  the "outer" variable and returns its new value. The variable
-  persists over function calls, as shown in the following example:
-
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 71
-
-  The \c{counter()} function can be implemented as a native function, too
-  \mdash or rather, as a pair of native functions: One for the outer and
-  one for the inner. The definition of the outer function is as follows:
-
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 72
-
-  The function creates a local variable and initializes it to zero.
-  Then it wraps the inner native function, and sets the scope of
-  the resulting function object to be the activation object associated
-  with this (the outer) function call. The inner function accesses
-  the "outer" activation through the scope of the callee:
-
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 73
-
-  It is also possible to have a hybrid approach, where the outer function
-  is a native function and the inner function is defined by a script:
-
-    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 74
-
   \section2 Property Getters and Setters
 
   A script object property can be defined in terms of a getter/setter

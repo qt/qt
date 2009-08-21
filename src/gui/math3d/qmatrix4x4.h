@@ -58,6 +58,7 @@ QT_MODULE(Gui)
 
 class QMatrix;
 class QTransform;
+class QVariant;
 
 class Q_GUI_EXPORT QMatrix4x4
 {
@@ -158,7 +159,7 @@ public:
     void toValueArray(qreal *values) const;
 
     QMatrix toAffine() const;
-    QTransform toTransform() const;
+    QTransform toTransform(qreal distanceToPlane = 1024.0f) const;
 
     QPoint map(const QPoint& point) const;
     QPointF map(const QPointF& point) const;
@@ -181,6 +182,8 @@ public:
     inline const float *constData() const { return m[0]; }
 
     void inferSpecialType();
+
+    operator QVariant() const;
 
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QMatrix4x4 &m);

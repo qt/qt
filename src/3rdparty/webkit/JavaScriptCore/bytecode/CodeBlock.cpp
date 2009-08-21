@@ -1087,7 +1087,8 @@ void CodeBlock::dump(ExecState* exec, const Vector<Instruction>::const_iterator&
             int debugHookID = (++it)->u.operand;
             int firstLine = (++it)->u.operand;
             int lastLine = (++it)->u.operand;
-            printf("[%4d] debug\t\t %s, %d, %d\n", location, debugHookName(debugHookID), firstLine, lastLine);
+            int column = (++it)->u.operand;
+            printf("[%4d] debug\t\t %s, %d, %d, %d\n", location, debugHookName(debugHookID), firstLine, lastLine, column);
             break;
         }
         case op_profile_will_call: {

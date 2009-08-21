@@ -162,16 +162,13 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
     QWindowsSockInit bust; // makes sure WSAStartup was callled
 #endif
 
-    // Support for IDNA
-    QString lookup = QString::fromLatin1(QUrl::toAce(name));
-
     QHostInfoResult *result = new QHostInfoResult;
     result->autoDelete = false;
     QObject::connect(result, SIGNAL(resultsReady(QHostInfo)),
                      receiver, member);
     int id = result->lookupId = theIdCounter.fetchAndAddRelaxed(1);
 
-    if (lookup.isEmpty()) {
+    if (name.isEmpty()) {
         QHostInfo info(id);
         info.setError(QHostInfo::HostNotFound);
         info.setErrorString(QObject::tr("No host name given"));
@@ -182,7 +179,7 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
     }
 
     QHostInfoAgent *agent = theAgent();
-    agent->addHostName(lookup, result);
+    agent->addHostName(name, result);
 
 #if !defined QT_NO_THREAD
     if (!agent->isRunning())
@@ -226,13 +223,7 @@ QHostInfo QHostInfo::fromName(const QString &name)
     qDebug("QHostInfo::fromName(\"%s\")",name.toLatin1().constData());
 #endif
 
-    if (!name.isEmpty())
-        return QHostInfoAgent::fromName(QLatin1String(QUrl::toAce(name)));
-
-    QHostInfo retval;
-    retval.d->err = HostNotFound;
-    retval.d->errorStr = QObject::tr("No host name given");
-    return retval;
+    return QHostInfoAgent::fromName(name);
 }
 
 /*!

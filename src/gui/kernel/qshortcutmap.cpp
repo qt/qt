@@ -99,11 +99,11 @@ struct QShortcutEntry
     QObject *owner;
 };
 
-#ifndef QT_NO_DEBUG_STREAM
+#if 0 //ndef QT_NO_DEBUG_STREAM
 /*! \internal
     QDebug operator<< for easy debug output of the shortcut entries.
 */
-QDebug &operator<<(QDebug &dbg, const QShortcutEntry *se) {
+static QDebug &operator<<(QDebug &dbg, const QShortcutEntry *se) {
     if (!se)
         return dbg << "QShortcutEntry(0x0)";
     dbg.nospace()

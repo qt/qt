@@ -75,6 +75,7 @@ public:
     int executionLineNumber() const;
     void setExecutionLineNumber(int lineNumber, bool error);
     void setExecutableLineNumbers(const QSet<int> &lineNumbers);
+    bool isExecutableLine(int lineNumber) const;
 
     int currentLineNumber() const;
     void gotoLine(int lineNumber);

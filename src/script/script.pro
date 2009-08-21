@@ -9,4 +9,59 @@ DEFINES   += QLALR_NO_QSCRIPTGRAMMAR_DEBUG_INFO
 unix:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 include(../qbase.pri)
+
+# disable JIT for now
+DEFINES += ENABLE_JIT=0
+# FIXME: shared the statically built JavaScriptCore
+
+# Fetch the base WebKit directory from the WEBKITDIR environment variable;
+# fall back to src/3rdparty otherwise
+WEBKITDIR = $$(WEBKITDIR)
+isEmpty(WEBKITDIR) {
+    WEBKITDIR = $$PWD/../3rdparty/webkit
+
+    # FIXME: not needed once JSCBISON works
+    # TODO: or leave it like this since the generated file is available anyway?
+    SOURCES += $$WEBKITDIR/JavaScriptCore/generated/Grammar.cpp
+} else {
+    CONFIG += building-libs
+    CONFIG -= QTDIR_build
+    include($$WEBKITDIR/WebKit.pri)
+}
+
+# Windows CE-specific stuff copied from WebCore.pro
+# ### Should rather be in JavaScriptCore.pri?
+wince* {
+    INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/os-wince
+    INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/os-win32
+    LIBS += -lmmtimer
+}
+
+include($$WEBKITDIR/JavaScriptCore/JavaScriptCore.pri)
+
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/parser
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/bytecompiler
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/debugger
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/runtime
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/wtf
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/unicode
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/interpreter
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/jit
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/profiler
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/wrec
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/API
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/bytecode
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/assembler
+INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/generated
+
+DEFINES += BUILDING_QT__=1
+DEFINES += USE_SYSTEM_MALLOC
+DEFINES += WTF_USE_JAVASCRIPTCORE_BINDINGS=1
+DEFINES += WTF_CHANGES=1
+DEFINES += NDEBUG
+
+INCLUDEPATH += $$PWD
+
 include(script.pri)
+

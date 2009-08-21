@@ -241,7 +241,8 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "CE_CRT" ]          = "no";
     dictionary[ "CETEST" ]          = "auto";
     dictionary[ "CE_SIGNATURE" ]    = "no";
-    dictionary[ "SCRIPTTOOLS" ]     = "yes";
+    dictionary[ "SCRIPT" ]          = "auto";
+    dictionary[ "SCRIPTTOOLS" ]     = "auto";
     dictionary[ "XMLPATTERNS" ]     = "auto";
     dictionary[ "PHONON" ]          = "auto";
     dictionary[ "PHONON_BACKEND" ]  = "yes";
@@ -836,6 +837,10 @@ void Configure::parseCmdLine()
             dictionary[ "DBUS" ] = "yes";
         } else if( configCmdLine.at(i) == "-dbus-linked" ) {
             dictionary[ "DBUS" ] = "linked";
+        } else if( configCmdLine.at(i) == "-no-script" ) {
+            dictionary[ "SCRIPT" ] = "no";
+        } else if( configCmdLine.at(i) == "-script" ) {
+            dictionary[ "SCRIPT" ] = "yes";
         } else if( configCmdLine.at(i) == "-no-scripttools" ) {
             dictionary[ "SCRIPTTOOLS" ] = "no";
         } else if( configCmdLine.at(i) == "-scripttools" ) {
@@ -1430,9 +1435,8 @@ bool Configure::displayHelp()
                     "[-no-openssl] [-no-dbus] [-dbus] [-dbus-linked] [-platform <spec>]\n"
                     "[-qtnamespace <namespace>] [-qtlibinfix <infix>] [-no-phonon]\n"
                     "[-phonon] [-no-phonon-backend] [-phonon-backend]\n"
-                    "[-no-multimedia] [-multimedia]\n"
-                    "[-no-webkit] [-webkit]\n"
-                    "[-no-scripttools] [-scripttools]\n"
+                    "[-no-multimedia] [-multimedia] [-no-webkit] [-webkit]\n"
+                    "[-no-script] [-script] [-no-scripttools] [-scripttools]\n"
                     "[-graphicssystem raster|opengl]\n\n", 0, 7);
 
         desc("Installation options:\n\n");
@@ -1609,6 +1613,8 @@ bool Configure::displayHelp()
         desc("MULTIMEDIA", "yes","-multimedia",         "Compile in multimedia module");
         desc("WEBKIT", "no",    "-no-webkit",           "Do not compile in the WebKit module");
         desc("WEBKIT", "yes",   "-webkit",              "Compile in the WebKit module (WebKit is built if a decent C++ compiler is used.)");
+        desc("SCRIPT", "no",    "-no-script",           "Do not build the QtScript module.");
+        desc("SCRIPT", "yes",   "-script",              "Build the QtScript module.");
         desc("SCRIPTTOOLS", "no", "-no-scripttools",    "Do not build the QtScriptTools module.");
         desc("SCRIPTTOOLS", "yes", "-scripttools",      "Build the QtScriptTools module.");
 
@@ -1877,10 +1883,8 @@ bool Configure::checkAvailability(const QString &part)
         }
     } else if (part == "MULTIMEDIA") {
         available = true;
-    } else if (part == "WEBKIT") {
+    } else if (part == "WEBKIT" || part == "SCRIPT" || part == "SCRIPTTOOLS") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
-    } else if (part == "SCRIPTTOOLS") {
-        available = true;
     }
 
     return available;
@@ -1957,6 +1961,8 @@ void Configure::autoDetection()
         dictionary["OPENSSL"] = checkAvailability("OPENSSL") ? "yes" : "no";
     if (dictionary["DBUS"] == "auto")
         dictionary["DBUS"] = checkAvailability("DBUS") ? "yes" : "no";
+    if (dictionary["SCRIPT"] == "auto")
+        dictionary["SCRIPT"] = checkAvailability("SCRIPT") ? "yes" : "no";
     if (dictionary["SCRIPTTOOLS"] == "auto")
         dictionary["SCRIPTTOOLS"] = checkAvailability("SCRIPTTOOLS") ? "yes" : "no";
     if (dictionary["XMLPATTERNS"] == "auto")
@@ -2300,8 +2306,17 @@ void Configure::generateOutputVars()
     if (dictionary[ "CETEST" ] == "yes")
         qtConfig += "cetest";
 
-    if (dictionary[ "SCRIPTTOOLS" ] == "yes")
+    if (dictionary[ "SCRIPT" ] == "yes")
+        qtConfig += "script";
+
+    if (dictionary[ "SCRIPTTOOLS" ] == "yes") {
+        if (dictionary[ "SCRIPT" ] == "no") {
+            cout << "QtScriptTools was requested, but it can't be built due to QtScript being "
+                    "disabled." << endl;
+            dictionary[ "DONE" ] = "error";
+        }
         qtConfig += "scripttools";
+    }
 
     if (dictionary[ "XMLPATTERNS" ] == "yes")
         qtConfig += "xmlpatterns";
@@ -2677,6 +2692,7 @@ void Configure::generateConfigfiles()
         if(dictionary["PHONON"] == "no")            qconfigList += "QT_NO_PHONON";
         if(dictionary["MULTIMEDIA"] == "no")        qconfigList += "QT_NO_MULTIMEDIA";
         if(dictionary["XMLPATTERNS"] == "no")       qconfigList += "QT_NO_XMLPATTERNS";
+        if(dictionary["SCRIPT"] == "no")            qconfigList += "QT_NO_SCRIPT";
         if(dictionary["SCRIPTTOOLS"] == "no")       qconfigList += "QT_NO_SCRIPTTOOLS";
 
         if(dictionary["OPENGL_ES_CM"] == "yes" ||
@@ -2936,6 +2952,7 @@ void Configure::displayConfig()
     cout << "Phonon support.............." << dictionary[ "PHONON" ] << endl;
     cout << "Multimedia support.........." << dictionary[ "MULTIMEDIA" ] << endl;
     cout << "WebKit support.............." << dictionary[ "WEBKIT" ] << endl;
+    cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
     cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;
     cout << "Qt3 compatibility..........." << dictionary[ "QT3SUPPORT" ] << endl << endl;

@@ -2254,8 +2254,11 @@ void tst_QNetworkReply::ioGetFromHttpBrokenServer_data()
     QTest::addColumn<bool>("doDisconnect");
 
     QTest::newRow("no-newline") << QByteArray("Hello World") << false;
-    QTest::newRow("just-newline") << QByteArray("\r\n") << false;
-    QTest::newRow("just-2newline") << QByteArray("\r\n\r\n") << false;
+
+    // these are OK now, we just eat the lonely newlines
+    //QTest::newRow("just-newline") << QByteArray("\r\n") << false;
+    //QTest::newRow("just-2newline") << QByteArray("\r\n\r\n") << false;
+
     QTest::newRow("with-newlines") << QByteArray("Long first line\r\nLong second line") << false;
     QTest::newRow("with-newlines2") << QByteArray("\r\nSecond line") << false;
     QTest::newRow("with-newlines3") << QByteArray("ICY\r\nSecond line") << false;
@@ -2931,7 +2934,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
     QSignalSpy authenticationRequiredSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     QSignalSpy proxyAuthenticationRequiredSpy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
-    QTestEventLoop::instance().enterLoop(1);
+    QTestEventLoop::instance().enterLoop(3);
 
     disconnect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
