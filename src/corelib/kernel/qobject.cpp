@@ -2981,12 +2981,16 @@ void QObject::disconnectNotify(const char *)
 bool QMetaObject::connect(const QObject *sender, int signal_index,
                           const QObject *receiver, int method_index, int type, int *types)
 {
-    const QMetaObject *mo = sender->metaObject();
-    while (mo && mo->methodOffset() > signal_index)
-        mo = mo->superClass();
-    int signalOffset, methodOffset;
-    computeOffsets(mo, &signalOffset, &methodOffset);
-    signal_index = QMetaObjectPrivate::originalClone(mo, signal_index - methodOffset) + signalOffset;
+    if (signal_index > 0) {
+        const QMetaObject *mo = sender->metaObject();
+        while (mo && mo->methodOffset() > signal_index)
+            mo = mo->superClass();
+        if (mo) {
+            int signalOffset, methodOffset;
+            computeOffsets(mo, &signalOffset, &methodOffset);
+            signal_index = QMetaObjectPrivate::originalClone(mo, signal_index - methodOffset) + signalOffset;
+        }
+    }
     return QMetaObjectPrivate::connect(sender, signal_index,
                                        receiver, method_index, type, types);
 }
@@ -3059,12 +3063,16 @@ bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
 bool QMetaObject::disconnect(const QObject *sender, int signal_index,
                              const QObject *receiver, int method_index)
 {
-    const QMetaObject *mo = sender->metaObject();
-    while (mo && mo->methodOffset() > signal_index)
-        mo = mo->superClass();
-    int signalOffset, methodOffset;
-    computeOffsets(mo, &signalOffset, &methodOffset);
-    signal_index = QMetaObjectPrivate::originalClone(mo, signal_index - methodOffset) + signalOffset;
+    if (signal_index > 0) {
+        const QMetaObject *mo = sender->metaObject();
+        while (mo && mo->methodOffset() > signal_index)
+            mo = mo->superClass();
+        if (mo) {
+            int signalOffset, methodOffset;
+            computeOffsets(mo, &signalOffset, &methodOffset);
+            signal_index = QMetaObjectPrivate::originalClone(mo, signal_index - methodOffset) + signalOffset;
+        }
+    }
     return QMetaObjectPrivate::disconnect(sender, signal_index,
                                           receiver, method_index);
 }

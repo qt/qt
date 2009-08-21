@@ -94,7 +94,6 @@ QListData::Data *QListData::detach()
 /*!
  *  Detaches the QListData by reallocating new memory.
  *  Returns the old (shared) data, it is up to the caller to deref() and free()
- *  For the new data node_copy needs to be called.
  *
  *  \internal
  */
@@ -104,6 +103,7 @@ QListData::Data *QListData::detach2()
     Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + x->alloc * sizeof(void *)));
     Q_CHECK_PTR(t);
 
+    ::memcpy(t, x, DataHeaderSize + x->alloc * sizeof(void *));
     t->ref = 1;
     t->sharable = true;
     t->alloc = x->alloc;
