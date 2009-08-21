@@ -184,7 +184,7 @@ QWakeUpActiveObject::~QWakeUpActiveObject()
 
 void QWakeUpActiveObject::DoCancel()
 {
-    if (iStatus.Int() & KRequestPending) {
+    if (iStatus.Int() == KRequestPending) {
         TRequestStatus *status = &iStatus;
         QEventDispatcherSymbian::RequestComplete(status, KErrNone);
     }
@@ -214,7 +214,7 @@ void QTimerActiveObject::DoCancel()
         m_rTimer.Cancel();
         m_rTimer.Close();
     } else {
-        if (iStatus.Int() & KRequestPending) {
+        if (iStatus.Int() == KRequestPending) {
             TRequestStatus *status = &iStatus;
             QEventDispatcherSymbian::RequestComplete(status, KErrNone);
         }
@@ -301,7 +301,7 @@ QCompleteDeferredAOs::~QCompleteDeferredAOs()
 
 void QCompleteDeferredAOs::complete()
 {
-    if (iStatus.Int() & KRequestPending) {
+    if (iStatus.Int() == KRequestPending) {
         TRequestStatus *status = &iStatus;
         QEventDispatcherSymbian::RequestComplete(status, KErrNone);
     }
@@ -309,7 +309,7 @@ void QCompleteDeferredAOs::complete()
 
 void QCompleteDeferredAOs::DoCancel()
 {
-    if (iStatus.Int() & KRequestPending) {
+    if (iStatus.Int() == KRequestPending) {
         TRequestStatus *status = &iStatus;
         QEventDispatcherSymbian::RequestComplete(status, KErrNone);
     }
@@ -578,7 +578,7 @@ QSocketActiveObject::~QSocketActiveObject()
 
 void QSocketActiveObject::DoCancel()
 {
-    if (iStatus.Int() & KRequestPending) {
+    if (iStatus.Int() == KRequestPending) {
         TRequestStatus *status = &iStatus;
         QEventDispatcherSymbian::RequestComplete(status, KErrNone);
     }
