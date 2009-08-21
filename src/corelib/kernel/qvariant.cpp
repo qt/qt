@@ -174,10 +174,13 @@ static void construct(QVariant::Private *x, const void *copy)
     case QVariant::UserType:
         break;
     default:
-        x->is_shared = true;
-        x->data.shared = new QVariant::PrivateShared(QMetaType::construct(x->type, copy));
-        if (!x->data.shared->ptr)
+        void *ptr = QMetaType::construct(x->type, copy);
+        if (!ptr) {
             x->type = QVariant::Invalid;
+        } else {
+            x->is_shared = true;
+            x->data.shared = new QVariant::PrivateShared(ptr);
+        }
         break;
     }
     x->is_null = !copy;
