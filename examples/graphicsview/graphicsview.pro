@@ -6,7 +6,8 @@ SUBDIRS       = \
               diagramscene \
               dragdroprobot \
               padnavigator \
-              basicgraphicslayouts
+              basicgraphicslayouts \
+              anchorlayout
 
 contains(QT_CONFIG, qt3support):SUBDIRS += portedcanvas portedasteroids
 contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= dragdroprobot
