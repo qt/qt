@@ -46,23 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-/*! \internal */
-struct QScriptStringPrivatePointerDeleter
-{
-    static inline void cleanup(QScriptStringPrivate *d)
-    {
-        if (!d || d->ref.deref())
-            return;
-
-        if (d->nameId) {
-            d->engine->uninternString(d);
-        } else {
-            // the engine has already been deleted
-            delete d;
-        }
-    }
-};
-
 /*!
   \since 4.4
   \class QScriptString
@@ -107,10 +90,9 @@ QScriptStringPrivate::~QScriptStringPrivate()
 void QScriptStringPrivate::init(QScriptString &q, QScriptEngine *engine, const JSC::Identifier &value)
 {
     Q_ASSERT(!q.isValid());
-    q.d_ptr.data_ptr() = new QScriptStringPrivate();
+    q.d_ptr = new QScriptStringPrivate();
     q.d_ptr->identifier = value;
     q.d_ptr->engine = engine;
-    q.d_ptr->ref.ref();
 }
 
 /*!
@@ -125,10 +107,8 @@ QScriptString::QScriptString()
   Constructs a new QScriptString that is a copy of \a other.
 */
 QScriptString::QScriptString(const QScriptString &other)
-    : d_ptr(other.d_ptr.data())
+    : d_ptr(other.d_ptr)
 {
-    if (d_ptr)
-        d_ptr->ref.ref();
 }
 
 /*!
@@ -143,14 +123,7 @@ QScriptString::~QScriptString()
 */
 QScriptString &QScriptString::operator=(const QScriptString &other)
 {
-    if (d_ptr == other.d_ptr)
-        return *this;
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-    }
-    d_ptr.reset(other.d_ptr);
-    if (d_ptr)
-        d_ptr->ref.ref();
+    d_ptr = other.d_ptr;
     return *this;
 }
 
