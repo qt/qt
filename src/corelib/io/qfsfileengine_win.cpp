@@ -1798,11 +1798,11 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
     Q_Q(QFSFileEngine);
     Q_UNUSED(flags);
     if (openMode == QFile::NotOpen) {
-        q->setError(QFile::PermissionsError, qt_error_string());
+        q->setError(QFile::PermissionsError, qt_error_string(ERROR_ACCESS_DENIED));
         return 0;
     }
     if (offset == 0 && size == 0) {
-        q->setError(QFile::UnspecifiedError, qt_error_string());
+        q->setError(QFile::UnspecifiedError, qt_error_string(ERROR_INVALID_PARAMETER));
         return 0;
     }
 
@@ -1884,7 +1884,7 @@ bool QFSFileEnginePrivate::unmap(uchar *ptr)
 {
     Q_Q(QFSFileEngine);
     if (!maps.contains(ptr)) {
-        q->setError(QFile::PermissionsError, qt_error_string());
+        q->setError(QFile::PermissionsError, qt_error_string(ERROR_ACCESS_DENIED));
         return false;
     }
     uchar *start = ptr - maps[ptr].first;

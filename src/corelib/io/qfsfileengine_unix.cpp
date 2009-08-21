@@ -966,12 +966,12 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
 {
     Q_Q(QFSFileEngine);
     Q_UNUSED(flags);
-    if (offset < 0) {
-        q->setError(QFile::UnspecifiedError, qt_error_string(int(EINVAL)));
-        return 0;
-    }
     if (openMode == QIODevice::NotOpen) {
         q->setError(QFile::PermissionsError, qt_error_string(int(EACCES)));
+        return 0;
+    }
+    if (offset < 0) {
+        q->setError(QFile::UnspecifiedError, qt_error_string(int(EINVAL)));
         return 0;
     }
     int access = 0;

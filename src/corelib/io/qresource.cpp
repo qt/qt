@@ -1488,11 +1488,7 @@ uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::Memory
 {
     Q_Q(QResourceFileEngine);
     Q_UNUSED(flags);
-    if (!resource.isValid()
-        || offset < 0
-        || size < 0
-        || offset + size > resource.size()
-        || (size == 0)) {
+    if (offset < 0 || size <= 0 || !resource.isValid() || offset + size > resource.size()) {
         q->setError(QFile::UnspecifiedError, QString());
         return 0;
     }
