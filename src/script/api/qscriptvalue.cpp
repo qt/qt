@@ -282,6 +282,8 @@ QScriptValuePrivate::QScriptValuePrivate() : engine(0), prev(0), next(0)
 
 QScriptValuePrivate::~QScriptValuePrivate()
 {
+    if (engine)
+        engine->unregisterScriptValue(this);
 }
 
 void QScriptValuePrivate::initFrom(JSC::JSValue value)
@@ -416,11 +418,6 @@ QScriptValue::QScriptValue()
 */
 QScriptValue::~QScriptValue()
 {
-    if (d_ptr && !d_ptr->ref.deref()) {
-        if (d_ptr->engine)
-            d_ptr->engine->unregisterScriptValue(d_ptr);
-        delete d_ptr;
-    }
 }
 
 /*!
@@ -433,8 +430,6 @@ QScriptValue::~QScriptValue()
 QScriptValue::QScriptValue(const QScriptValue &other)
     : d_ptr(other.d_ptr)
 {
-    if (d_ptr)
-        d_ptr->ref.ref();
 }
 
 /*!
@@ -455,7 +450,6 @@ QScriptValue::QScriptValue(QScriptEngine *engine, QScriptValue::SpecialValue val
         d_ptr->initFrom(JSC::jsUndefined());
         break;
     }
-    d_ptr->ref.ref();
 }
 
 /*!
@@ -471,7 +465,6 @@ QScriptValue::QScriptValue(QScriptEngine *engine, bool val)
 {
     d_ptr->engine = QScriptEnginePrivate::get(engine);
     d_ptr->initFrom(JSC::jsBoolean(val));
-    d_ptr->ref.ref();
 }
 
 /*!
@@ -495,7 +488,6 @@ QScriptValue::QScriptValue(QScriptEngine *engine, int val)
         else
             d_ptr->initFrom(val);
     }
-    d_ptr->ref.ref();
 }
 
 /*!
@@ -519,7 +511,6 @@ QScriptValue::QScriptValue(QScriptEngine *engine, uint val)
         else
             d_ptr->initFrom(val);
     }
-    d_ptr->ref.ref();
 }
 
 /*!
@@ -543,7 +534,6 @@ QScriptValue::QScriptValue(QScriptEngine *engine, qsreal val)
         else
             d_ptr->initFrom(val);
     }
-    d_ptr->ref.ref();
 }
 
 /*!
@@ -563,7 +553,6 @@ QScriptValue::QScriptValue(QScriptEngine *engine, const QString &val)
     } else {
         d_ptr->initFrom(val);
     }
-    d_ptr->ref.ref();
 }
 
 /*!
@@ -585,7 +574,6 @@ QScriptValue::QScriptValue(QScriptEngine *engine, const char *val)
     } else {
         d_ptr->initFrom(QString::fromAscii(val));
     }
-    d_ptr->ref.ref();
 }
 #endif
 
@@ -606,7 +594,6 @@ QScriptValue::QScriptValue(SpecialValue value)
         d_ptr->initFrom(JSC::jsUndefined());
         break;
     }
-    d_ptr->ref.ref();
 }
 
 /*!
@@ -619,7 +606,6 @@ QScriptValue::QScriptValue(bool value)
 {
     d_ptr->engine = 0;
     d_ptr->initFrom(JSC::jsBoolean(value));
-    d_ptr->ref.ref();
 }
 
 /*!
@@ -636,7 +622,6 @@ QScriptValue::QScriptValue(int value)
         d_ptr->initFrom(immediate);
     else
         d_ptr->initFrom(value);
-    d_ptr->ref.ref();
 }
 
 /*!
@@ -653,7 +638,6 @@ QScriptValue::QScriptValue(uint value)
         d_ptr->initFrom(immediate);
     else
         d_ptr->initFrom(value);
-    d_ptr->ref.ref();
 }
 
 /*!
@@ -670,7 +654,6 @@ QScriptValue::QScriptValue(qsreal value)
         d_ptr->initFrom(immediate);
     else
         d_ptr->initFrom(value);
-    d_ptr->ref.ref();
 }
 
 /*!
@@ -683,7 +666,6 @@ QScriptValue::QScriptValue(const QString &value)
 {
     d_ptr->engine = 0;
     d_ptr->initFrom(value);
-    d_ptr->ref.ref();
 }
 
 /*!
@@ -696,7 +678,6 @@ QScriptValue::QScriptValue(const QLatin1String &value)
 {
     d_ptr->engine = 0;
     d_ptr->initFrom(value);
-    d_ptr->ref.ref();
 }
 
 /*!
@@ -711,7 +692,6 @@ QScriptValue::QScriptValue(const char *value)
 {
     d_ptr->engine = 0;
     d_ptr->initFrom(QString::fromAscii(value));
-    d_ptr->ref.ref();
 }
 #endif
 
@@ -724,16 +704,7 @@ QScriptValue::QScriptValue(const char *value)
 */
 QScriptValue &QScriptValue::operator=(const QScriptValue &other)
 {
-    if (d_ptr == other.d_ptr)
-        return *this;
-    if (d_ptr && !d_ptr->ref.deref()) {
-        if (d_ptr->engine)
-            d_ptr->engine->unregisterScriptValue(d_ptr);
-        delete d_ptr;
-    }
     d_ptr = other.d_ptr;
-    if (d_ptr)
-        d_ptr->ref.ref();
     return *this;
 }
 
@@ -1125,7 +1096,7 @@ bool QScriptValue::equals(const QScriptValue &other) const
 {
     Q_D(const QScriptValue);
     if (!d || !other.d_ptr)
-        return (d == other.d_ptr);
+        return (d_ptr == other.d_ptr);
     if (other.engine() && engine() && (other.engine() != engine())) {
         qWarning("QScriptValue::equals: "
                  "cannot compare to a value created in "
@@ -1179,7 +1150,7 @@ bool QScriptValue::strictlyEquals(const QScriptValue &other) const
 {
     Q_D(const QScriptValue);
     if (!d || !other.d_ptr)
-        return (d == other.d_ptr);
+        return (d_ptr == other.d_ptr);
     if (other.engine() && engine() && (other.engine() != engine())) {
         qWarning("QScriptValue::strictlyEquals: "
                  "cannot compare to a value created in "

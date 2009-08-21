@@ -45,7 +45,7 @@
 #include <QtCore/qstring.h>
 
 #include <QtCore/qlist.h>
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -221,7 +221,7 @@ private:
     inline QScriptValue(QScriptEngine *, void *);
 
 private:
-    QCustomScopedPointer<QScriptValuePrivate, QScriptValuePrivatePointerDeleter> d_ptr;
+    QExplicitlySharedDataPointer<QScriptValuePrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptValue)
 };

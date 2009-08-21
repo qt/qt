@@ -44,7 +44,7 @@
 
 #include <QtCore/qstring.h>
 
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -74,7 +74,7 @@ public:
     operator QString() const;
 
 private:
-    QCustomScopedPointer<QScriptStringPrivate, QScriptStringPrivatePointerDeleter> d_ptr;
+    QExplicitlySharedDataPointer<QScriptStringPrivate> d_ptr;
     friend class QScriptValue;
     Q_DECLARE_PRIVATE(QScriptString)
 };
