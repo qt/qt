@@ -142,6 +142,7 @@ private slots:
     void fileTimes();
     void fileTimes_oldFile();
 
+    void isSymLink_data();
     void isSymLink();
 
     void isHidden_data();
@@ -168,6 +169,10 @@ private slots:
     void equalOperatorWithDifferentSlashes() const;
     void notEqualOperator() const;
 };
+
+tst_QFileInfo::tst_QFileInfo()
+{
+}
 
 tst_QFileInfo::~tst_QFileInfo()
 {
@@ -241,12 +246,6 @@ void tst_QFileInfo::copy()
     QVERIFY(privateInfo->data != privateInfo3->data);
     QVERIFY(privateInfo2->data != privateInfo3->data);
     QCOMPARE(privateInfo->data, privateInfo2->data);
-
-
-}
-
-tst_QFileInfo::tst_QFileInfo()
-{
 }
 
 void tst_QFileInfo::isFile_data()
@@ -532,7 +531,6 @@ void tst_QFileInfo::canonicalFilePath()
     }
 #  endif
 #endif
-
 }
 
 void tst_QFileInfo::fileName_data()
@@ -732,7 +730,6 @@ void tst_QFileInfo::permission_data()
     QTest::newRow("resource1") << ":/tst_qfileinfo/resources/file1.ext1" << int(QFile::ReadUser) << true;
     QTest::newRow("resource2") << ":/tst_qfileinfo/resources/file1.ext1" << int(QFile::WriteUser) << false;
     QTest::newRow("resource3") << ":/tst_qfileinfo/resources/file1.ext1" << int(QFile::ExeUser) << false;
-
 }
 
 void tst_QFileInfo::permission()
@@ -799,8 +796,8 @@ void tst_QFileInfo::compare_data()
 #else
                         << false;
 #endif
-
 }
+
 void tst_QFileInfo::compare()
 {
     QFETCH(QString, file1);
@@ -973,31 +970,46 @@ void tst_QFileInfo::fileTimes_oldFile()
 #endif
 }
 
-void tst_QFileInfo::isSymLink()
+void tst_QFileInfo::isSymLink_data()
 {
     QFile::remove("link.lnk");
     QFile::remove("brokenlink.lnk");
     QFile::remove("dummyfile");
 
-    QFileInfo info1("tst_qfileinfo.cpp");
-    QVERIFY( !info1.isSymLink() );
+    QFile file1("tst_qfileinfo.cpp");
+    QVERIFY(file1.link("link.lnk"));
 
-    QFile file2("tst_qfileinfo.cpp");
-    if (file2.link("link.lnk")) {
-        QFileInfo info2("link.lnk");
-        QVERIFY( info2.isSymLink() );
-    }
+    QFile file2("dummyfile");
+    file2.open(QIODevice::WriteOnly);
+    QVERIFY(file2.link("brokenlink.lnk"));
+    file2.remove();
 
-    QFile file3("dummyfile");
-    file3.open(QIODevice::WriteOnly);
-    if (file3.link("brokenlink.lnk")) {
-        // In Symbian ARMV5 builds, this will panic with KERN-EXEC 3 inside OpenC fclose() call
-        // in QFSFileEnginePrivate::closeFdFh(), if "dummyfile" exists prior calling to isSymLink
-        // and is not deleted at the beginning of isSymLink.
-        file3.remove();
-        QFileInfo info3("brokenlink.lnk");
-        QVERIFY( info3.isSymLink() );
+    QTest::addColumn<QString>("path");
+    QTest::addColumn<bool>("isSymLink");
+    QTest::addColumn<QString>("linkTarget");
+
+    QTest::newRow("existent file") << "tst_qfileinfo.cpp" << false << "";
+    QTest::newRow("link") << "link.lnk" << true << QFileInfo("tst_qfileinfo.cpp").absoluteFilePath();
+    QTest::newRow("broken link") << "brokenlink.lnk" << true << QFileInfo("dummyfile").absoluteFilePath();
+
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+    if (QSysInfo::WindowsVersion & QSysInfo::WV_VISTA) {
+        QTest::newRow("Documents and Settings") << "C:/Documents and Settings" << true << "C:/Users";
+        QTest::newRow("All Users") << "C:/Users/All Users" << true << "C:/ProgramData";
+        QTest::newRow("Default User") << "C:/Users/Default User" << true << "C:/Users/Default";
     }
+#endif
+}
+
+void tst_QFileInfo::isSymLink()
+{
+    QFETCH(QString, path);
+    QFETCH(bool, isSymLink);
+    QFETCH(QString, linkTarget);
+
+    QFileInfo fi(path);
+    QCOMPARE(fi.isSymLink(), isSymLink);
+    QCOMPARE(fi.symLinkTarget(), linkTarget);
 }
 
 void tst_QFileInfo::isHidden_data()

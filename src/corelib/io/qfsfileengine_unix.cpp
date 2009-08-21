@@ -594,21 +594,21 @@ QString QFSFileEngine::homePath()
 QString QFSFileEngine::rootPath()
 {
 #if defined(Q_OS_SYMBIAN)
-    return QString::fromLatin1("C:/");
+    return QLatin1String("C:/");
 #else
-    return QString::fromLatin1("/");
+    return QLatin1String("/");
 #endif
 }
 
 QString QFSFileEngine::tempPath()
 {
 #ifdef Q_OS_SYMBIAN
-        QString temp = QDir::currentPath().left(2);
-        temp += QString::fromLatin1( "/system/temp/");
+    QString temp = QDir::currentPath().left(2);
+    temp += QLatin1String("/system/temp/");
 #else
-        QString temp = QFile::decodeName(qgetenv("TMPDIR"));
-        if (temp.isEmpty())
-            temp = QString::fromLatin1("/tmp/");
+    QString temp = QFile::decodeName(qgetenv("TMPDIR"));
+    if (temp.isEmpty())
+        temp = QLatin1String("/tmp/");
 #endif
     return temp;
 }
@@ -631,7 +631,7 @@ QFileInfoList QFSFileEngine::drives()
         qWarning("QDir::drives: Getting drives failed");
     }
 #else
-    ret.append(rootPath());
+    ret.append(QFileInfo(rootPath()));
 #endif
     return ret;
 }
@@ -778,11 +778,11 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
             else if (exists && (d->st.st_mode & S_IFMT) == S_IFDIR)
                 ret |= DirectoryType;
 #if !defined(QWS) && defined(Q_OS_MAC)
-            if((ret & DirectoryType) && (type & BundleType)) {
+            if ((ret & DirectoryType) && (type & BundleType)) {
                 QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(d->filePath),
                                                                       kCFURLPOSIXPathStyle, true);
                 UInt32 type, creator;
-                if(CFBundleGetPackageInfoInDirectory(url, &type, &creator))
+                if (CFBundleGetPackageInfoInDirectory(url, &type, &creator))
                     ret |= BundleType;
             }
 #endif
@@ -943,9 +943,9 @@ QString QFSFileEngine::fileName(FileName file) const
 #if !defined(QWS) && defined(Q_OS_MAC)
         QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(d->filePath),
                                                               kCFURLPOSIXPathStyle, true);
-        if(CFDictionaryRef dict = CFBundleCopyInfoDictionaryForURL(url)) {
-            if(CFTypeRef name = (CFTypeRef)CFDictionaryGetValue(dict, kCFBundleNameKey)) {
-                if(CFGetTypeID(name) == CFStringGetTypeID())
+        if (CFDictionaryRef dict = CFBundleCopyInfoDictionaryForURL(url)) {
+            if (CFTypeRef name = (CFTypeRef)CFDictionaryGetValue(dict, kCFBundleNameKey)) {
+                if (CFGetTypeID(name) == CFStringGetTypeID())
                     return QCFString::toQString((CFStringRef)name);
             }
         }
