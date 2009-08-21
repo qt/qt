@@ -260,8 +260,19 @@ QFxMouseRegion::~QFxMouseRegion()
 /*!
     \qmlproperty real MouseRegion::mouseX
     \qmlproperty real MouseRegion::mouseY
+    These properties hold the coordinates of the mouse.
 
-    The coordinates of the mouse while pressed. The coordinates are relative to the item that was pressed.
+    If the hoverEnabled property is false then these properties will only be valid
+    while a button is pressed, and will remain valid as long as the button is held
+    even if the mouse is moved outside the region.
+
+    If hoverEnabled is true then these properties will be valid:
+    \list
+        \i when no button is pressed, but the mouse is within the MouseRegion (containsMouse is true).
+        \i if a button is pressed and held, even if it has since moved out of the region.
+    \endlist
+
+    The coordinates are relative to the MouseRegion.
 */
 qreal QFxMouseRegion::mouseX() const
 {
@@ -292,6 +303,38 @@ void QFxMouseRegion::setEnabled(bool a)
         d->absorb = a;
         emit enabledChanged();
     }
+}
+/*!
+    \qmlproperty MouseButtons MouseRegion::pressedButtons
+    This property holds the mouse buttons currently pressed.
+
+    It contains a bitwise combination of:
+    \list
+    \o Qt.LeftButton
+    \o Qt.RightButton
+    \o Qt.MidButton
+    \endlist
+
+    The code below displays "right" when the right mouse buttons is pressed:
+    \code
+    Text {
+        text: mr.pressedButtons & Qt.RightButton ? "right" : ""
+        horizontalAlignment: "AlignHCenter"
+        verticalAlignment: "AlignVCenter"
+        MouseRegion {
+            id: mr
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            anchors.fill: parent
+        }
+    }
+    \endcode
+
+    \sa acceptedButtons
+*/
+Qt::MouseButtons QFxMouseRegion::pressedButtons() const
+{
+    Q_D(const QFxMouseRegion);
+    return d->lastButtons;
 }
 
 void QFxMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -389,9 +432,9 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void QFxMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxMouseRegion);
-    if (!d->absorb)
+    if (!d->absorb) {
         QFxItem::mouseReleaseEvent(event);
-    else {
+    } else {
         d->saveEvent(event);
         setPressed(false);
         // If we don't accept hover, we need to reset containsMouse.
@@ -403,9 +446,9 @@ void QFxMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 void QFxMouseRegion::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxMouseRegion);
-    if (!d->absorb)
+    if (!d->absorb) {
         QFxItem::mouseDoubleClickEvent(event);
-    else {
+    } else {
         QFxItem::mouseDoubleClickEvent(event);
         if (event->isAccepted()) {
             // Only deliver the event if we have accepted the press.
@@ -421,8 +464,19 @@ void QFxMouseRegion::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
     Q_D(QFxMouseRegion);
     if (!d->absorb)
         QFxItem::hoverEnterEvent(event);
-    else {
+    else
         setHovered(true);
+}
+
+void QFxMouseRegion::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+{
+    Q_D(QFxMouseRegion);
+    if (!d->absorb) {
+        QFxItem::hoverEnterEvent(event);
+    } else {
+        d->lastPos = event->pos();
+        QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, d->lastButtons, d->lastModifiers, false, d->longPress);
+        emit positionChanged(&me);
     }
 }
 
@@ -431,9 +485,8 @@ void QFxMouseRegion::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     Q_D(QFxMouseRegion);
     if (!d->absorb)
         QFxItem::hoverLeaveEvent(event);
-    else {
+    else
         setHovered(false);
-    }
 }
 
 bool QFxMouseRegion::sceneEvent(QEvent *event)
