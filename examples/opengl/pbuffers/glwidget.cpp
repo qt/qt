@@ -154,7 +154,7 @@ void GLWidget::paintGL()
     for (int y = 0; y < 5; ++y) {
         for (int x = 0; x < 5; ++x) {
             glTranslatef(2.0f, 0, 0);
-            glColor4f(0.8, 0.8, 0.8, 1.0);
+            glColor4f(0.8f, 0.8f, 0.8f, 1.0f);
             glDrawArrays(GL_QUADS, 0, 4);
         }
         glTranslatef(-10.0f, 2.0f, 0);
