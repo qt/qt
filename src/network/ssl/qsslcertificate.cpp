@@ -159,9 +159,8 @@ QSslCertificate::QSslCertificate(const QByteArray &data, QSsl::EncodingFormat fo
 /*!
     Constructs an identical copy of \a other.
 */
-QSslCertificate::QSslCertificate(const QSslCertificate &other) : d(other.d.data())
+QSslCertificate::QSslCertificate(const QSslCertificate &other) : d(other.d)
 {
-    d->ref.ref();
 }
 
 /*!
@@ -177,7 +176,7 @@ QSslCertificate::~QSslCertificate()
 */
 QSslCertificate &QSslCertificate::operator=(const QSslCertificate &other)
 {
-    d.assign(other.d.data());
+    d = other.d;
     return *this;
 }
 
@@ -243,7 +242,7 @@ void QSslCertificate::clear()
 {
     if (isNull())
         return;
-    d.reset(new QSslCertificatePrivate);
+    d = new QSslCertificatePrivate;
 }
 
 /*!

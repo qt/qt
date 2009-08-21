@@ -271,6 +271,12 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv)
     qt_application_thread_id = QThread::currentThreadId();
 #endif
 
+#ifdef Q_OS_SYMBIAN
+    if(KErrNone != fileServerSession.Connect())
+        qFatal("FATAL: QCoreApplicationPrivate can't connect to file server");
+    fileServerSession.ShareProtected(); //makes the handle ok for multithreading and IPC
+#endif
+
     // note: this call to QThread::currentThread() may end up setting theMainThread!
     if (QThread::currentThread() != theMainThread)
         qWarning("WARNING: QApplication was not created in the main() thread.");
@@ -278,6 +284,9 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv)
 
 QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
+#ifdef Q_OS_SYMBIAN
+    fileServerSession.Close();
+#endif
     if (threadData) {
 #ifndef QT_NO_THREAD
         void *data = &threadData->tls;
@@ -490,7 +499,7 @@ QCoreApplication::QCoreApplication(int &argc, char **argv)
 {
     init();
     QCoreApplicationPrivate::eventDispatcher->startingUp();
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS) && defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     // Refresh factoryloader, as text codecs are requested during lib path
     // resolving process and won't be therefore properly loaded.
     // Unknown if this is symbian specific issue.
@@ -816,6 +825,18 @@ bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
     return receiver->event(event);
 }
 
+#ifdef Q_OS_SYMBIAN
+/*!\internal
+
+  Accessor for shared global file server session
+ */
+RFs QCoreApplicationPrivate::fileServerSession;
+RFs& QCoreApplicationPrivate::fsSession()
+{
+    return fileServerSession;
+}
+#endif
+
 /*!
   Returns true if an application object has not been created yet;
   otherwise returns false.
@@ -1117,7 +1138,7 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         event->d = reinterpret_cast<QEventPrivate *>(quintptr(data->loopLevel));
     }
 
-    // delete the event on exceptions to protect against memory leaks till the event is 
+    // delete the event on exceptions to protect against memory leaks till the event is
     // properly owned in the postEventList
     QScopedPointer<QEvent> eventDeleter(event);
     if (data->postEventList.isEmpty() || data->postEventList.last().priority >= priority) {
@@ -1768,9 +1789,8 @@ bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
     function also assumes that the current directory has not been
     changed by the application.
 
-    In Symbian this function will return the application private directory
-    in C-drive, not the path to executable itself, as those are always in
-    /sys/bin.
+    In Symbian this function will return the application private directory,
+    not the path to executable itself, as those are always in \c {/sys/bin}.
 
     \sa applicationFilePath()
 */
@@ -2169,23 +2189,19 @@ QStringList QCoreApplication::libraryPaths()
         // Add existing path on all drives for relative PluginsPath in Symbian
         if (installPathPlugins.at(1) != QChar(':')) {
             QString tempPath = installPathPlugins;
-            if (tempPath.at(tempPath.length()-1) != QChar('\\')) {
+            if (tempPath.at(tempPath.length() - 1) != QChar('\\')) {
                 tempPath += QChar('\\');
             }
-            RFs fs;
-            TInt err = fs.Connect();
-            if (err == KErrNone) {
-                TPtrC tempPathPtr(reinterpret_cast<const TText*>(tempPath.constData()));
-                TFindFile finder(fs);
-                err = finder.FindByDir(tempPathPtr, tempPathPtr);
-                while (err == KErrNone) {
-                    QString foundDir = QString::fromUtf16(finder.File().Ptr(), finder.File().Length());
-                    foundDir = QDir(foundDir).canonicalPath();
-                    if (!app_libpaths->contains(foundDir))
-                        app_libpaths->append(foundDir);
-                    err = finder.Find();
-                }
-                fs.Close();
+            RFs& fs = QCoreApplicationPrivate::fsSession();
+            TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));
+            TFindFile finder(fs);
+            TInt err = finder.FindByDir(tempPathPtr, tempPathPtr);
+            while (err == KErrNone) {
+                QString foundDir = QString::fromUtf16(finder.File().Ptr(), finder.File().Length());
+                foundDir = QDir(foundDir).canonicalPath();
+                if (!app_libpaths->contains(foundDir))
+                    app_libpaths->append(foundDir);
+                err = finder.Find();
             }
         }
 #else
@@ -2329,7 +2345,7 @@ void QCoreApplication::removeLibraryPath(const QString &path)
 
     By default, no event filter function is set (i.e., this function
     returns a null EventFilter the first time it is called).
-    
+
     \note The filter function set here receives native messages,
     i.e. MSG or XEvent structs, that are going to Qt objects. It is
     called by QCoreApplication::filterEvent(). If the filter function

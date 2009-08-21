@@ -115,7 +115,6 @@ private:
 
     bool startWatcher();
 
-    RFs fsSession;
     QHash<QNotifyChangeEvent*, QString> activeObjectToPath;
     QMutex mutex;
     QWaitCondition syncCondition;

@@ -62,6 +62,7 @@
 # include <f32file.h>
 # include <pathinfo.h>
 # include "private/qcore_symbian_p.h"
+# include "private/qcoreapplication_p.h"
 #endif
 #include <errno.h>
 #if !defined(QWS) && defined(Q_OS_MAC)
@@ -401,28 +402,24 @@ bool QFSFileEngine::copy(const QString &newName)
 {
 #if defined(Q_OS_SYMBIAN)
     Q_D(QFSFileEngine);
-    RFs rfs;
-    TInt err = rfs.Connect();
-    if (err == KErrNone) {
-        CFileMan* fm = NULL;
-        QString oldNative(QDir::toNativeSeparators(d->filePath));
-        TPtrC oldPtr(qt_QString2TPtrC(oldNative));
-        QFileInfo fi(newName);
-        QString absoluteNewName = fi.absolutePath() + QDir::separator() + fi.fileName();
-        QString newNative(QDir::toNativeSeparators(absoluteNewName));
-        TPtrC newPtr(qt_QString2TPtrC(newNative));
-        TRAP (err,
-            fm = CFileMan::NewL(rfs);
-            RFile rfile;
-            err = rfile.Open(rfs, oldPtr, EFileShareReadersOrWriters);
-            if (err == KErrNone) {
-                err = fm->Copy(rfile, newPtr);
-                rfile.Close();
-            }
-        ) // End TRAP
-        delete fm;
-        rfs.Close();
-    }
+    RFs& rfs = QCoreApplicationPrivate::fsSession();
+    CFileMan* fm = NULL;
+    QString oldNative(QDir::toNativeSeparators(d->filePath));
+    TPtrC oldPtr(qt_QString2TPtrC(oldNative));
+    QFileInfo fi(newName);
+    QString absoluteNewName = fi.absolutePath() + QDir::separator() + fi.fileName();
+    QString newNative(QDir::toNativeSeparators(absoluteNewName));
+    TPtrC newPtr(qt_QString2TPtrC(newNative));
+    TRAPD (err,
+        fm = CFileMan::NewL(rfs);
+        RFile rfile;
+        err = rfile.Open(rfs, oldPtr, EFileShareReadersOrWriters);
+        if (err == KErrNone) {
+            err = fm->Copy(rfile, newPtr);
+            rfile.Close();
+        }
+    ) // End TRAP
+    delete fm;
     return (err == KErrNone);
 #else
     // ### Add copy code for Unix here
@@ -623,20 +620,17 @@ QFileInfoList QFSFileEngine::drives()
     QFileInfoList ret;
 #if defined(Q_OS_SYMBIAN)
     TDriveList driveList;
-    RFs rfs;
-    TInt err = rfs.Connect();
+    RFs &rfs = QCoreApplicationPrivate::fsSession();
+    TInt err = rfs.DriveList(driveList);
     if (err == KErrNone) {
-        err = rfs.DriveList(driveList);
-        if (err == KErrNone) {
-            for(char i=0; i < KMaxDrives; i++) {
-                if (driveList[i]) {
-                    ret.append(QString("%1:/").arg(QChar('A'+i)));
-                }
+        for (char i = 0; i < KMaxDrives; i++) {
+            if (driveList[i]) {
+                ret.append(QString("%1:/").arg(QChar('A' + i)));
             }
-        } else {
-            qWarning("QDir::drives: Getting drives failed");
         }
-        rfs.Close();
+    }
+    else {
+        qWarning("QDir::drives: Getting drives failed");
     }
 #else
     ret.append(rootPath());
@@ -678,22 +672,18 @@ bool QFSFileEnginePrivate::isSymlink() const
 static bool _q_isSymbianHidden(const QString &path, bool isDir)
 {
     bool retval = false;
-    RFs rfs;
-    TInt err = rfs.Connect();
-    if (err == KErrNone) {
-        QFileInfo fi(path);
-        QString absPath = fi.absoluteFilePath();
-        if (isDir && absPath.at(absPath.size()-1) != QChar('/')) {
-            absPath += QChar('/');
-        }
-        QString native(QDir::toNativeSeparators(absPath));
-        TPtrC ptr(qt_QString2TPtrC(native));
-        TUint attributes;
-        err = rfs.Att(ptr, attributes);
-        rfs.Close();
-        if (err == KErrNone && (attributes & KEntryAttHidden)) {
-            retval = true;
-        }
+    RFs rfs = QCoreApplicationPrivate::fsSession();
+    QFileInfo fi(path);
+    QString absPath = fi.absoluteFilePath();
+    if (isDir && absPath.at(absPath.size()-1) != QChar('/')) {
+        absPath += QChar('/');
+    }
+    QString native(QDir::toNativeSeparators(absPath));
+    TPtrC ptr(qt_QString2TPtrC(native));
+    TUint attributes;
+    TInt err = rfs.Att(ptr, attributes);
+    if (err == KErrNone && (attributes & KEntryAttHidden)) {
+        retval = true;
     }
 
     return retval;

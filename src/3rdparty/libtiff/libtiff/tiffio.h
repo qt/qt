@@ -71,10 +71,7 @@ typedef	uint32 toff_t;		/* file offset */
 #define __WIN32__
 #endif
 
-// Bug in stdlib.h, see more information from fixed_stdlib.h
-#if (defined __SYMBIAN32__ && !defined __cplusplus)
-#include <fixed_stdlib.h>
-#endif  // defined __SYMBIAN32__ && !defined __cplusplus
+#include <stdlib.h>
 
 /*
  * On windows you should define USE_WIN32_FILEIO if you are using tif_win32.c

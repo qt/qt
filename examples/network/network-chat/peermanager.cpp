@@ -165,10 +165,6 @@ void PeerManager::updateAddresses()
         foreach (QNetworkAddressEntry entry, interface.addressEntries()) {
             QHostAddress broadcastAddress = entry.broadcast();
             if (broadcastAddress != QHostAddress::Null && entry.ip() != QHostAddress::LocalHost) {
-                //printf("entry.ip: %s\n", entry.ip().toString().toLatin1().data());
-                //printf("entry.netmask: %s\n", entry.netmask().toString().toLatin1().data());
-                //printf("entry.prefixLength: %i\n", entry.prefixLength());
-                //printf("entry.broadcast %s \n", broadcastAddress.toString().toLatin1().data());
                 broadcastAddresses << broadcastAddress;
                 ipAddresses << entry.ip();
             }

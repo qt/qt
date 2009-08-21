@@ -281,13 +281,9 @@ private:
 };
 
 #ifdef QT_DEBUG
-// EActive is defined to 1 and ERequestPending to 2, but they are both private.
-// A little dangerous to rely on, but it is only for debugging.
-# define REQUEST_STATUS_ACTIVE_AND_PENDING 3
 # define VERIFY_PENDING_REQUEST_STATUS \
-    Q_ASSERT(status->Int() & REQUEST_STATUS_ACTIVE_AND_PENDING == REQUEST_STATUS_ACTIVE_AND_PENDING);
+    Q_ASSERT(status->Int() == KRequestPending);
 #else
-# define REQUEST_STATUS_ACTIVE_AND_PENDING
 # define VERIFY_PENDING_REQUEST_STATUS
 #endif
 
@@ -304,7 +300,6 @@ inline void QEventDispatcherSymbian::RequestComplete(RThread &threadHandle, TReq
     threadHandle.RequestComplete(status, reason);
 }
 
-#undef REQUEST_STATUS_ACTIVE_AND_PENDING
 #undef VERIFY_PENDING_REQUEST_STATUS
 
 QT_END_NAMESPACE

@@ -581,6 +581,15 @@ void QWidgetPrivate::show_sys()
 
     if (q->isWindow()) {
 
+
+        if (!q->testAttribute(Qt::WA_ShowWithoutActivating)
+            && q->windowType() != Qt::Popup
+            && q->windowType() != Qt::Tool
+            && q->windowType() != Qt::ToolTip) {
+            QWidget::qwsDisplay()->requestFocus(data.winid,true);
+        }
+
+
         if (QWindowSurface *surface = q->windowSurface()) {
             const QRect frameRect = q->frameGeometry();
             if (surface->geometry() != frameRect)
@@ -597,12 +606,6 @@ void QWidgetPrivate::show_sys()
 #endif
         data.fstrut_dirty = true;
         invalidateBuffer(r);
-        if (!q->testAttribute(Qt::WA_ShowWithoutActivating)
-            && q->windowType() != Qt::Popup
-            && q->windowType() != Qt::Tool
-            && q->windowType() != Qt::ToolTip) {
-            QWidget::qwsDisplay()->requestFocus(data.winid,true);
-        }
 	bool staysontop =
             (q->windowFlags() & Qt::WindowStaysOnTopHint)
             || q->windowType() == Qt::Popup;

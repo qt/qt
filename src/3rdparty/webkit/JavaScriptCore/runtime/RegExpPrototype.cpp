@@ -106,6 +106,10 @@ JSValue JSC_HOST_CALL regExpProtoFuncToString(ExecState* exec, JSObject*, JSValu
     }
 
     UString result = "/" + asRegExpObject(thisValue)->get(exec, exec->propertyNames().source).toString(exec);
+#ifdef QT_BUILD_SCRIPT_LIB
+    if (result.size() == 1)
+        result.append("(?:)");
+#endif
     result.append('/');
     if (asRegExpObject(thisValue)->get(exec, exec->propertyNames().global).toBoolean(exec))
         result.append('g');

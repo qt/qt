@@ -1602,7 +1602,7 @@ void BytecodeGenerator::emitPopScope()
     m_dynamicScopeDepth--;
 }
 
-void BytecodeGenerator::emitDebugHook(DebugHookID debugHookID, int firstLine, int lastLine)
+void BytecodeGenerator::emitDebugHook(DebugHookID debugHookID, int firstLine, int lastLine, int column)
 {
     if (!m_shouldEmitDebugHooks)
         return;
@@ -1610,6 +1610,7 @@ void BytecodeGenerator::emitDebugHook(DebugHookID debugHookID, int firstLine, in
     instructions().append(debugHookID);
     instructions().append(firstLine);
     instructions().append(lastLine);
+    instructions().append(column);
 }
 
 void BytecodeGenerator::pushFinallyContext(Label* target, RegisterID* retAddrDst)

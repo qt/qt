@@ -2446,7 +2446,7 @@ QDebug operator<<(QDebug debug, QDir::Filters filters)
     return debug;
 }
 
-QDebug operator<<(QDebug debug, QDir::SortFlags sorting)
+static QDebug operator<<(QDebug debug, QDir::SortFlags sorting)
 {
     if (sorting == QDir::NoSort) {
         debug << "QDir::SortFlags(NoSort)";

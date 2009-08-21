@@ -138,6 +138,7 @@ SUBDIRS += \
            qgraphicsgridlayout \
            qgraphicsitem \
            qgraphicsitemanimation \
+           qgraphicsanchorlayout \
            qgraphicslayout \
            qgraphicslayoutitem \
            qgraphicslinearlayout \
@@ -253,19 +254,6 @@ SUBDIRS += \
            qresourceengine \
            qringbuffer \
            qscopedpointer \
-           qscriptable \
-           qscriptclass \
-           qscriptcontext \
-           qscriptcontextinfo \
-           qscriptengine \
-           qscriptengineagent \
-           qscriptextqobject \
-           qscriptjstestsuite \
-           qscriptv8testsuite \
-           qscriptstring \
-           qscriptvalue \
-           qscriptvalueiterator \
-           qscriptenginedebugger \
            qscrollarea \
            qsemaphore \
            qsharedpointer \
@@ -473,6 +461,21 @@ unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
            qdbusreply \
            qdbusthreading \
            qdbusxmlparser
+
+contains(QT_CONFIG, script): SUBDIRS += \
+           qscriptable \
+           qscriptclass \
+           qscriptcontext \
+           qscriptcontextinfo \
+           qscriptengine \
+           qscriptengineagent \
+           qscriptextqobject \
+           qscriptjstestsuite \
+           qscriptv8testsuite \
+           qscriptstring \
+           qscriptvalue \
+           qscriptvalueiterator \
+           qscriptenginedebugger
 
 contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebframe \

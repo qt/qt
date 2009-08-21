@@ -160,12 +160,7 @@
 #include <private/qrasterdefs_p.h>
 #include <private/qgrayraster_p.h>
 
-// Bug in stdlib.h, see more information from fixed_stdlib.h
-#if (defined __SYMBIAN32__ && !defined __cplusplus)
-#include <fixed_stdlib.h>
-#else
 #include <stdlib.h>
-#endif  // defined __SYMBIAN32__ && !defined __cplusplus
 #include <stdio.h>
 
   /* This macro is used to indicate that a function parameter is unused. */

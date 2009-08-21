@@ -555,10 +555,12 @@ public:
     inline QWeakPointer() : d(0), value(0) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
 
+#ifndef QT_NO_QOBJECT
     // special constructor that is enabled only if X derives from QObject
     template <class X>
     inline QWeakPointer(X *ptr) : d(ptr ? d->getAndRef(ptr) : 0), value(ptr)
     { }
+#endif
     template <class X>
     inline QWeakPointer &operator=(X *ptr)
     { return *this = QWeakPointer(ptr); }

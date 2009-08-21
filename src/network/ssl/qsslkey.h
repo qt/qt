@@ -45,7 +45,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qbytearray.h>
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtNetwork/qssl.h>
 
 QT_BEGIN_HEADER
@@ -59,7 +59,7 @@ QT_MODULE(Network)
 template <typename A, typename B> struct QPair;
 
 class QIODevice;
-    
+
 class QSslKeyPrivate;
 class Q_NETWORK_EXPORT QSslKey
 {
@@ -93,7 +93,7 @@ public:
     inline bool operator!=(const QSslKey &key) const { return !operator==(key); }
 
 private:
-    QScopedSharedPointer<QSslKeyPrivate> d;
+    QExplicitlySharedDataPointer<QSslKeyPrivate> d;
     friend class QSslCertificate;
 };
 

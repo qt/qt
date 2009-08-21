@@ -222,7 +222,7 @@ void QtInstance::end()
     // Do nothing.
 }
 
-void QtInstance::getPropertyNames(ExecState* exec, PropertyNameArray& array)
+void QtInstance::getPropertyNames(ExecState* exec, PropertyNameArray& array, unsigned listedAttributes)
 {
     // This is the enumerable properties, so put:
     // properties

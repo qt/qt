@@ -265,12 +265,13 @@ static void _q_hoverFromMouseEvent(QGraphicsSceneHoverEvent *hover, const QGraph
     hover->setAccepted(mouseEvent->isAccepted());
 }
 
+int QGraphicsScenePrivate::changedSignalIndex;
+
 /*!
     \internal
 */
 QGraphicsScenePrivate::QGraphicsScenePrivate()
-    : changedSignalMask(0),
-      indexMethod(QGraphicsScene::BspTreeIndex),
+    : indexMethod(QGraphicsScene::BspTreeIndex),
       index(0),
       lastItemCount(0),
       hasSceneRect(false),
@@ -311,7 +312,9 @@ void QGraphicsScenePrivate::init()
     index = new QGraphicsSceneBspTreeIndex(q);
 
     // Keep this index so we can check for connected slots later on.
-    changedSignalMask = (1 << q->metaObject()->indexOfSignal("changed(QList<QRectF>)"));
+    if (!changedSignalIndex) {
+        changedSignalIndex = signalIndex("changed(QList<QRectF>)");
+    }
     qApp->d_func()->scene_list.append(q);
     q->update();
 }
@@ -343,7 +346,7 @@ void QGraphicsScenePrivate::_q_emitUpdated()
     // the optimization that items send updates directly to the views, but it
     // needs to happen in order to keep compatibility with the behavior from
     // Qt 4.4 and backward.
-    if (connectedSignals[0] & changedSignalMask) {
+    if (isSignalConnected(changedSignalIndex)) {
         for (int i = 0; i < views.size(); ++i) {
             QGraphicsView *view = views.at(i);
             if (!view->d_func()->connectedToScene) {
@@ -2894,7 +2897,7 @@ void QGraphicsScene::update(const QRectF &rect)
 
     // Check if anyone's connected; if not, we can send updates directly to
     // the views. Otherwise or if there are no views, use old behavior.
-    bool directUpdates = !(d->connectedSignals[0] & d->changedSignalMask) && !d->views.isEmpty();
+    bool directUpdates = !(d->isSignalConnected(d->changedSignalIndex)) && !d->views.isEmpty();
     if (rect.isNull()) {
         d->updateAll = true;
         d->updatedRects.clear();
@@ -4473,7 +4476,7 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     if (removingItemFromScene) {
         // Note that this function can be called from the item's destructor, so
         // do NOT call any virtual functions on it within this block.
-        if ((connectedSignals[0] & changedSignalMask) || views.isEmpty()) {
+        if (isSignalConnected(changedSignalIndex) || views.isEmpty()) {
             // This block of code is kept for compatibility. Since 4.5, by default
             // QGraphicsView does not connect the signal and we use the below
             // method of delivering updates.
@@ -4619,7 +4622,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
 
     // Process item.
     if (item->d_ptr->dirty || item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
-        const bool useCompatUpdate = views.isEmpty() || (connectedSignals[0] & changedSignalMask);
+        const bool useCompatUpdate = views.isEmpty() || isSignalConnected(changedSignalIndex);
         const QRectF itemBoundingRect = adjustedItemBoundingRect(item);
 
         if (useCompatUpdate && !itemIsUntransformable && qFuzzyIsNull(item->boundingRegionGranularity())) {

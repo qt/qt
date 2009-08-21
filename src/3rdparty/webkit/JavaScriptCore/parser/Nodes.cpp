@@ -83,10 +83,11 @@ RegisterID* ThrowableExpressionData::emitThrowError(BytecodeGenerator& generator
 
 // ------------------------------ StatementNode --------------------------------
 
-void StatementNode::setLoc(int firstLine, int lastLine)
+void StatementNode::setLoc(int firstLine, int lastLine, int column)
 {
     m_line = firstLine;
     m_lastLine = lastLine;
+    m_column = column;
 }
 
 // ------------------------------ SourceElements --------------------------------
@@ -1225,7 +1226,7 @@ RegisterID* ConstDeclNode::emitBytecode(BytecodeGenerator& generator, RegisterID
 
 RegisterID* ConstStatementNode::emitBytecode(BytecodeGenerator& generator, RegisterID*)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
     return generator.emitNode(m_next);
 }
 
@@ -1250,7 +1251,7 @@ RegisterID* BlockNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
 RegisterID* EmptyStatementNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
     return dst;
 }
 
@@ -1258,7 +1259,7 @@ RegisterID* EmptyStatementNode::emitBytecode(BytecodeGenerator& generator, Regis
 
 RegisterID* DebuggerStatementNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(DidReachBreakpoint, firstLine(), lastLine());
+    generator.emitDebugHook(DidReachBreakpoint, firstLine(), lastLine(), column());
     return dst;
 }
 
@@ -1267,7 +1268,7 @@ RegisterID* DebuggerStatementNode::emitBytecode(BytecodeGenerator& generator, Re
 RegisterID* ExprStatementNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
     ASSERT(m_expr);
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine()); 
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column()); 
     return generator.emitNode(dst, m_expr);
 }
 
@@ -1276,7 +1277,7 @@ RegisterID* ExprStatementNode::emitBytecode(BytecodeGenerator& generator, Regist
 RegisterID* VarStatementNode::emitBytecode(BytecodeGenerator& generator, RegisterID*)
 {
     ASSERT(m_expr);
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
     return generator.emitNode(m_expr);
 }
 
@@ -1284,7 +1285,7 @@ RegisterID* VarStatementNode::emitBytecode(BytecodeGenerator& generator, Registe
 
 RegisterID* IfNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
     
     RefPtr<Label> afterThen = generator.newLabel();
 
@@ -1302,7 +1303,7 @@ RegisterID* IfNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 
 RegisterID* IfElseNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
     
     RefPtr<Label> beforeElse = generator.newLabel();
     RefPtr<Label> afterElse = generator.newLabel();
@@ -1332,12 +1333,14 @@ RegisterID* DoWhileNode::emitBytecode(BytecodeGenerator& generator, RegisterID* 
     RefPtr<Label> topOfLoop = generator.newLabel();
     generator.emitLabel(topOfLoop.get());
 
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
    
     RefPtr<RegisterID> result = generator.emitNode(dst, m_statement);
 
     generator.emitLabel(scope->continueTarget());
-    generator.emitDebugHook(WillExecuteStatement, m_expr->lineNo(), m_expr->lineNo());
+#ifndef QT_BUILD_SCRIPT_LIB
+    generator.emitDebugHook(WillExecuteStatement, m_expr->lineNo(), m_expr->lineNo(), column());
+#endif
     RegisterID* cond = generator.emitNode(m_expr);
     generator.emitJumpIfTrue(cond, topOfLoop.get());
 
@@ -1350,7 +1353,9 @@ RegisterID* DoWhileNode::emitBytecode(BytecodeGenerator& generator, RegisterID* 
 RegisterID* WhileNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
     RefPtr<LabelScope> scope = generator.newLabelScope(LabelScope::Loop);
-
+#ifdef QT_BUILD_SCRIPT_LIB
+    generator.emitDebugHook(WillExecuteStatement, m_expr->lineNo(), m_expr->lineNo(), column());
+#endif
     generator.emitJump(scope->continueTarget());
 
     RefPtr<Label> topOfLoop = generator.newLabel();
@@ -1359,7 +1364,9 @@ RegisterID* WhileNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
     generator.emitNode(dst, m_statement);
 
     generator.emitLabel(scope->continueTarget());
-    generator.emitDebugHook(WillExecuteStatement, m_expr->lineNo(), m_expr->lineNo());
+#ifndef QT_BUILD_SCRIPT_LIB
+    generator.emitDebugHook(WillExecuteStatement, m_expr->lineNo(), m_expr->lineNo(), column());
+#endif
     RegisterID* cond = generator.emitNode(m_expr);
     generator.emitJumpIfTrue(cond, topOfLoop.get());
 
@@ -1378,7 +1385,7 @@ RegisterID* ForNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 
     RefPtr<LabelScope> scope = generator.newLabelScope(LabelScope::Loop);
 
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
 
     if (m_expr1)
         generator.emitNode(generator.ignoredResult(), m_expr1);
@@ -1392,7 +1399,9 @@ RegisterID* ForNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
     RefPtr<RegisterID> result = generator.emitNode(dst, m_statement);
 
     generator.emitLabel(scope->continueTarget());
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+#ifndef QT_BUILD_SCRIPT_LIB
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+#endif
     if (m_expr3)
         generator.emitNode(generator.ignoredResult(), m_expr3);
 
@@ -1418,7 +1427,7 @@ RegisterID* ForInNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
     RefPtr<Label> continueTarget = generator.newLabel(); 
 
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
 
     if (m_init)
         generator.emitNode(generator.ignoredResult(), m_init);
@@ -1466,7 +1475,9 @@ RegisterID* ForInNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
     generator.emitLabel(scope->continueTarget());
     generator.emitNextPropertyName(propertyName, iter.get(), loopStart.get());
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+#ifndef QT_BUILD_SCRIPT_LIB
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+#endif
     generator.emitLabel(scope->breakTarget());
     return dst;
 }
@@ -1476,7 +1487,7 @@ RegisterID* ForInNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 // ECMA 12.7
 RegisterID* ContinueNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
     
     LabelScope* scope = generator.continueTarget(m_ident);
 
@@ -1494,7 +1505,7 @@ RegisterID* ContinueNode::emitBytecode(BytecodeGenerator& generator, RegisterID*
 // ECMA 12.8
 RegisterID* BreakNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
     
     LabelScope* scope = generator.breakTarget(m_ident);
     
@@ -1511,7 +1522,7 @@ RegisterID* BreakNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
 RegisterID* ReturnNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
     if (generator.codeType() != FunctionCode)
         return emitThrowError(generator, SyntaxError, "Invalid return statement.");
 
@@ -1528,7 +1539,7 @@ RegisterID* ReturnNode::emitBytecode(BytecodeGenerator& generator, RegisterID* d
         generator.emitJumpScopes(l0.get(), 0);
         generator.emitLabel(l0.get());
     }
-    generator.emitDebugHook(WillLeaveCallFrame, firstLine(), lastLine());
+    generator.emitDebugHook(WillLeaveCallFrame, firstLine(), lastLine(), column());
     return generator.emitReturn(r0);
 }
 
@@ -1536,7 +1547,7 @@ RegisterID* ReturnNode::emitBytecode(BytecodeGenerator& generator, RegisterID* d
 
 RegisterID* WithNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
     
     RefPtr<RegisterID> scope = generator.newTemporary();
     generator.emitNode(scope.get(), m_expr); // scope must be protected until popped
@@ -1695,7 +1706,7 @@ RegisterID* CaseBlockNode::emitBytecodeForBlock(BytecodeGenerator& generator, Re
 
 RegisterID* SwitchNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
     
     RefPtr<LabelScope> scope = generator.newLabelScope(LabelScope::Switch);
 
@@ -1710,7 +1721,7 @@ RegisterID* SwitchNode::emitBytecode(BytecodeGenerator& generator, RegisterID* d
 
 RegisterID* LabelNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
 
     if (generator.breakTarget(m_name))
         return emitThrowError(generator, SyntaxError, "Duplicate label: %s.", m_name);
@@ -1726,7 +1737,7 @@ RegisterID* LabelNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
 RegisterID* ThrowNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
 
     if (dst == generator.ignoredResult())
         dst = 0;
@@ -1740,7 +1751,9 @@ RegisterID* ThrowNode::emitBytecode(BytecodeGenerator& generator, RegisterID* ds
 
 RegisterID* TryNode::emitBytecode(BytecodeGenerator& generator, RegisterID* dst)
 {
-    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine());
+#ifndef QT_BUILD_SCRIPT_LIB
+    generator.emitDebugHook(WillExecuteStatement, firstLine(), lastLine(), column());
+#endif
 
     RefPtr<Label> tryStartLabel = generator.newLabel();
     RefPtr<Label> tryEndLabel = generator.newLabel();
@@ -1875,13 +1888,13 @@ PassRefPtr<ProgramNode> ProgramNode::create(JSGlobalData* globalData, SourceElem
 
 RegisterID* ProgramNode::emitBytecode(BytecodeGenerator& generator, RegisterID*)
 {
-    generator.emitDebugHook(WillExecuteProgram, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteProgram, firstLine(), lastLine(), column());
 
     RefPtr<RegisterID> dstRegister = generator.newTemporary();
     generator.emitLoad(dstRegister.get(), jsUndefined());
     statementListEmitCode(children(), generator, dstRegister.get());
 
-    generator.emitDebugHook(DidExecuteProgram, firstLine(), lastLine());
+    generator.emitDebugHook(DidExecuteProgram, firstLine(), lastLine(), column());
     generator.emitEnd(dstRegister.get());
     return 0;
 }
@@ -1930,13 +1943,13 @@ PassRefPtr<EvalNode> EvalNode::create(JSGlobalData* globalData, SourceElements* 
 
 RegisterID* EvalNode::emitBytecode(BytecodeGenerator& generator, RegisterID*)
 {
-    generator.emitDebugHook(WillExecuteProgram, firstLine(), lastLine());
+    generator.emitDebugHook(WillExecuteProgram, firstLine(), lastLine(), column());
 
     RefPtr<RegisterID> dstRegister = generator.newTemporary();
     generator.emitLoad(dstRegister.get(), jsUndefined());
     statementListEmitCode(children(), generator, dstRegister.get());
 
-    generator.emitDebugHook(DidExecuteProgram, firstLine(), lastLine());
+    generator.emitDebugHook(DidExecuteProgram, firstLine(), lastLine(), column());
     generator.emitEnd(dstRegister.get());
     return 0;
 }
@@ -1996,6 +2009,9 @@ inline FunctionBodyNode::FunctionBodyNode(JSGlobalData* globalData)
     , m_parameters(0)
     , m_parameterCount(0)
 {
+#ifdef QT_BUILD_SCRIPT_LIB
+    sourceToken = globalData->scriptpool->objectRegister();
+#endif
 }
 
 inline FunctionBodyNode::FunctionBodyNode(JSGlobalData* globalData, SourceElements* children, VarStack* varStack, FunctionStack* funcStack, const SourceCode& sourceCode, CodeFeatures features, int numConstants)
@@ -2003,10 +2019,16 @@ inline FunctionBodyNode::FunctionBodyNode(JSGlobalData* globalData, SourceElemen
     , m_parameters(0)
     , m_parameterCount(0)
 {
+#ifdef QT_BUILD_SCRIPT_LIB
+    sourceToken = globalData->scriptpool->objectRegister();
+#endif
 }
 
 FunctionBodyNode::~FunctionBodyNode()
 {
+#ifdef QT_BUILD_SCRIPT_LIB
+    if (sourceToken) delete sourceToken;
+#endif
     for (size_t i = 0; i < m_parameterCount; ++i)
         m_parameters[i].~Identifier();
     fastFree(m_parameters);
@@ -2116,7 +2138,7 @@ CodeBlock& FunctionBodyNode::bytecodeForExceptionInfoReparse(ScopeChainNode* sco
 
 RegisterID* FunctionBodyNode::emitBytecode(BytecodeGenerator& generator, RegisterID*)
 {
-    generator.emitDebugHook(DidEnterCallFrame, firstLine(), lastLine());
+    generator.emitDebugHook(DidEnterCallFrame, firstLine(), lastLine(), column());
     statementListEmitCode(children(), generator, generator.ignoredResult());
     if (children().size() && children().last()->isBlock()) {
         BlockNode* blockNode = static_cast<BlockNode*>(children().last());
@@ -2125,7 +2147,7 @@ RegisterID* FunctionBodyNode::emitBytecode(BytecodeGenerator& generator, Registe
     }
 
     RegisterID* r0 = generator.emitLoad(0, jsUndefined());
-    generator.emitDebugHook(WillLeaveCallFrame, firstLine(), lastLine());
+    generator.emitDebugHook(WillLeaveCallFrame, firstLine(), lastLine(), column());
     generator.emitReturn(r0);
     return 0;
 }

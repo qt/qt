@@ -128,7 +128,7 @@ SOURCES += \
     yarr/RegexJIT.cpp \
     interpreter/RegisterFile.cpp
 
-win32-*: SOURCES += jit/ExecutableAllocatorWin.cpp
+win32-*|wince*: SOURCES += jit/ExecutableAllocatorWin.cpp
 else: SOURCES += jit/ExecutableAllocatorPosix.cpp
 
 # AllInOneFile.cpp helps gcc analize and optimize code
@@ -216,7 +216,8 @@ SOURCES += \
     wtf/DateMath.cpp \
     wtf/FastMalloc.cpp \
     wtf/Threading.cpp \
-    wtf/qt/MainThreadQt.cpp
+    wtf/qt/MainThreadQt.cpp \
+    parser/SourcePoolQt.cpp
 
 !contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
     SOURCES += wtf/qt/ThreadingQt.cpp

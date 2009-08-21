@@ -59,7 +59,7 @@ JSValue JSClipboard::types(ExecState* exec) const
     MarkedArgumentBuffer list;
     HashSet<String>::const_iterator end = types.end();
     for (HashSet<String>::const_iterator it = types.begin(); it != end; ++it)
-        list.append(jsString(exec, UString(*it)));
+        list.append(jsString(exec, it->operator UString()));
     return constructArray(exec, list);
 }
 

@@ -47,7 +47,7 @@ JSValue JSStorage::nameGetter(ExecState* exec, const Identifier& propertyName, c
     return jsStringOrNull(exec, thisObj->impl()->getItem(propertyName));
 }
 
-bool JSStorage::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool JSStorage::deleteProperty(ExecState* exec, const Identifier& propertyName, bool /*checkDontDelete*/)
 {
     // Only perform the custom delete if the object doesn't have a native property by this name.
     // Since hasProperty() would end up calling canGetItemsForName() and be fooled, we need to check
@@ -64,14 +64,14 @@ bool JSStorage::deleteProperty(ExecState* exec, const Identifier& propertyName)
     return true;
 }
 
-void JSStorage::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSStorage::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     ExceptionCode ec;
     unsigned length = m_impl->length();
     for (unsigned i = 0; i < length; ++i)
         propertyNames.add(Identifier(exec, m_impl->key(i, ec)));
         
-    Base::getPropertyNames(exec, propertyNames);
+    Base::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 bool JSStorage::putDelegate(ExecState* exec, const Identifier& propertyName, JSValue value, PutPropertySlot&)

@@ -17,7 +17,6 @@ symbian: {
         QtXml.dll \
         QtGui.dll \
         QtNetwork.dll \
-        QtScript.dll \
         QtTest.dll \
         QtSql.dll \
         qts60plugin_3_1.dll \

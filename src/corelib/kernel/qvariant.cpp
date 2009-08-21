@@ -156,16 +156,7 @@ static void construct(QVariant::Private *x, const void *copy)
         x->data.b = copy ? *static_cast<const bool *>(copy) : false;
         break;
     case QVariant::Double:
-#if defined(Q_CC_RVCT)
-        // Using trinary operator with 64bit constants crashes when ran on Symbian device
-        if (copy){
-            x->data.d = *static_cast<const double*>(copy);
-        } else {
-            x->data.d = 0.0;
-        }
-#else
         x->data.d = copy ? *static_cast<const double*>(copy) : 0.0;
-#endif
         break;
     case QMetaType::Float:
         x->data.f = copy ? *static_cast<const float*>(copy) : 0.0f;
@@ -174,28 +165,10 @@ static void construct(QVariant::Private *x, const void *copy)
         x->data.o = copy ? *static_cast<QObject *const*>(copy) : 0;
         break;
     case QVariant::LongLong:
-#if defined(Q_CC_RVCT)
-        // Using trinary operator with 64bit constants crashes when ran on Symbian device
-        if (copy){
-            x->data.ll = *static_cast<const qlonglong *>(copy);
-        } else {
-            x->data.ll = Q_INT64_C(0);
-        }
-#else
         x->data.ll = copy ? *static_cast<const qlonglong *>(copy) : Q_INT64_C(0);
-#endif
         break;
     case QVariant::ULongLong:
-#if defined(Q_CC_RVCT)
-        // Using trinary operator with 64bit constants crashes when ran on Symbian device
-        if (copy){
-            x->data.ull = *static_cast<const qulonglong *>(copy);
-        } else {
-            x->data.ull = Q_UINT64_C(0);
-        }
-#else
         x->data.ull = copy ? *static_cast<const qulonglong *>(copy) : Q_UINT64_C(0);
-#endif
         break;
     case QVariant::Invalid:
     case QVariant::UserType:
@@ -2494,7 +2467,7 @@ double QVariant::toDouble(bool *ok) const
 */
 float QVariant::toFloat(bool *ok) const
 {
-    return qNumVariantToHelper<float>(d, handler, ok, d.data.d);
+    return qNumVariantToHelper<float>(d, handler, ok, d.data.f);
 }
 
 /*!
@@ -2511,7 +2484,7 @@ float QVariant::toFloat(bool *ok) const
 */
 qreal QVariant::toReal(bool *ok) const
 {
-    return qNumVariantToHelper<qreal>(d, handler, ok, d.data.d);
+    return qNumVariantToHelper<qreal>(d, handler, ok, d.data.real);
 }
 
 /*!

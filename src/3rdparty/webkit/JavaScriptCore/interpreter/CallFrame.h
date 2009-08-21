@@ -37,7 +37,7 @@ namespace JSC  {
     // Passed as the first argument to most functions.
     class ExecState : private Register {
     public:
-        JSFunction* callee() const { return this[RegisterFile::Callee].function(); }
+        JSObject* callee() const { return this[RegisterFile::Callee].object(); }
         CodeBlock* codeBlock() const { return this[RegisterFile::CodeBlock].Register::codeBlock(); }
         ScopeChainNode* scopeChain() const { return this[RegisterFile::ScopeChain].Register::scopeChain(); }
         int argumentCount() const { return this[RegisterFile::ArgumentCount].i(); }
@@ -110,7 +110,7 @@ namespace JSC  {
         void setScopeChain(ScopeChainNode* scopeChain) { this[RegisterFile::ScopeChain] = scopeChain; }
 
         ALWAYS_INLINE void init(CodeBlock* codeBlock, Instruction* vPC, ScopeChainNode* scopeChain,
-            CallFrame* callerFrame, int returnValueRegister, int argc, JSFunction* function)
+            CallFrame* callerFrame, int returnValueRegister, int argc, JSObject* callee)
         {
             ASSERT(callerFrame); // Use noCaller() rather than 0 for the outer host call frame caller.
 
@@ -120,7 +120,7 @@ namespace JSC  {
             this[RegisterFile::ReturnPC] = vPC; // This is either an Instruction* or a pointer into JIT generated code stored as an Instruction*.
             this[RegisterFile::ReturnValueRegister] = returnValueRegister;
             setArgumentCount(argc); // original argument count (for the sake of the "arguments" object)
-            setCallee(function);
+            setCallee(callee);
             setCalleeArguments(0);
         }
 
@@ -136,7 +136,7 @@ namespace JSC  {
 
     private:
         void setArgumentCount(int count) { this[RegisterFile::ArgumentCount] = count; }
-        void setCallee(JSFunction* callee) { this[RegisterFile::Callee] = callee; }
+        void setCallee(JSObject* callee) { this[RegisterFile::Callee] = callee; }
         void setCodeBlock(CodeBlock* codeBlock) { this[RegisterFile::CodeBlock] = codeBlock; }
 
         static const intptr_t HostCallFrameFlag = 1;

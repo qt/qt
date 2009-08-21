@@ -58,25 +58,25 @@ namespace JSC {
             JSArray::put(exec, propertyName, v);
         }
 
-        virtual bool deleteProperty(ExecState* exec, const Identifier& propertyName)
+        virtual bool deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete = true)
         {
             if (lazyCreationData())
                 fillArrayInstance(exec);
-            return JSArray::deleteProperty(exec, propertyName);
+            return JSArray::deleteProperty(exec, propertyName, checkDontDelete);
         }
 
-        virtual bool deleteProperty(ExecState* exec, unsigned propertyName)
+        virtual bool deleteProperty(ExecState* exec, unsigned propertyName, bool checkDontDelete = true)
         {
             if (lazyCreationData())
                 fillArrayInstance(exec);
-            return JSArray::deleteProperty(exec, propertyName);
+            return JSArray::deleteProperty(exec, propertyName, checkDontDelete);
         }
 
-        virtual void getPropertyNames(ExecState* exec, PropertyNameArray& arr)
+        virtual void getPropertyNames(ExecState* exec, PropertyNameArray& arr, unsigned listedAttributes)
         {
             if (lazyCreationData())
                 fillArrayInstance(exec);
-            JSArray::getPropertyNames(exec, arr);
+            JSArray::getPropertyNames(exec, arr, listedAttributes);
         }
 
         void fillArrayInstance(ExecState*);

@@ -110,9 +110,9 @@ ScriptValue ScriptController::evaluate(const ScriptSourceCode& sourceCode)
 
     RefPtr<Frame> protect = m_frame;
 
-    m_windowShell->window()->globalData()->timeoutChecker.start();
+    m_windowShell->window()->globalData()->timeoutChecker->start();
     Completion comp = JSC::evaluate(exec, exec->dynamicGlobalObject()->globalScopeChain(), jsSourceCode, m_windowShell);
-    m_windowShell->window()->globalData()->timeoutChecker.stop();
+    m_windowShell->window()->globalData()->timeoutChecker->stop();
 
     // Evaluating the JavaScript could cause the frame to be deallocated
     // so we start the keep alive timer here.
