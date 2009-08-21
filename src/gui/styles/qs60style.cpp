@@ -426,13 +426,12 @@ QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
         Q_ASSERT(2*frameCornerHeight<32);
 
         const QImage frameImage = QS60StylePrivate::frame(frame, QSize(32,32)).toImage();
+        Q_ASSERT(frameImage.bytesPerLine() > 0);
         if (frameImage.isNull())
             return Qt::black;
 
         const QRgb *pixelRgb = (const QRgb*)frameImage.bits();
         const int pixels = frameImage.numBytes()/sizeof(QRgb);
-        const int bytesPerLine = frameImage.bytesPerLine();
-        Q_ASSERT(bytesPerLine);
 
         int estimatedRed = 0;
         int estimatedGreen = 0;
