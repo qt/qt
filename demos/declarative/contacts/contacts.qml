@@ -71,22 +71,22 @@ Rectangle {
                     id: Details
                     anchors.fill: wrapper
                     opacity: 0
-                    Bind {
+                    Binding {
                         target: Details.item
                         property: "contactId"
                         value: model.recid
                     }
-                    Bind {
+                    Binding {
                         target: Details.item
                         property: "label"
                         value: model.label
                     }
-                    Bind {
+                    Binding {
                         target: Details.item
                         property: "phone"
                         value: model.phone
                     }
-                    Bind {
+                    Binding {
                         target: Details.item
                         property: "email"
                         value: model.email

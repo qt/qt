@@ -63,27 +63,27 @@ public:
     QmlNullableValue<QVariant> value;
 };
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Bind,QmlBind)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Binding,QmlBind)
 /*!
-    \qmlclass Bind QmlBind
-    \brief The Bind element allows arbitrary property bindings to be created.
+    \qmlclass Binding QmlBind
+    \brief The Binding element allows arbitrary property bindings to be created.
 
     Sometimes it is necessary to bind to a property of an object that wasn't
     directly instantiated by QML - generally a property of a class exported
-    to QML by C++.  In these cases, regular property binding doesn't work.  Bind
+    to QML by C++. In these cases, regular property binding doesn't work. Binding
     allows you to bind any value to any property.
 
     For example, imagine a C++ application that maps an "app.enteredText"
-    property into QML.  You could use Bind to update the enteredText property
+    property into QML. You could use Binding to update the enteredText property
     like this.
     \code
     TextEdit { id: myTextField; text: "Please type here..." }
-    Bind { target: app; property: "enteredText"; value: myTextField.text />
+    Binding { target: app; property: "enteredText"; value: myTextField.text }
     \endcode
     Whenever the text in the TextEdit is updated, the C++ property will be
     updated also.
 
-    If the bind target or bind property is changed, the bound value is
+    If the binding target or binding property is changed, the bound value is
     immediately pushed onto the new target.
 
     \sa {qmlforcpp}{Qt Declarative Markup Language For C++ Programmers}
@@ -123,7 +123,7 @@ void QmlBind::setWhen(bool v)
 }
 
 /*!
-    \qmlproperty Object Bind::target
+    \qmlproperty Object Binding::target
 
     The object to be updated.
 */
@@ -141,7 +141,7 @@ void QmlBind::setObject(QObject *obj)
 }
 
 /*!
-    \qmlproperty string Bind::property
+    \qmlproperty string Binding::property
 
     The property to be updated.
 */
@@ -159,7 +159,7 @@ void QmlBind::setProperty(const QString &p)
 }
 
 /*!
-    \qmlproperty any Bind::value
+    \qmlproperty any Binding::value
 
     The value to be set on the target object and property.  This can be a
     constant (which isn't very useful), or a bound expression.

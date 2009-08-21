@@ -40,7 +40,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 
 \o
 \list
-\o \l Bind
+\o \l Binding
 \o \l ListModel
 \o \l VisualItemModel
 \o \l XmlListModel and XmlRole
