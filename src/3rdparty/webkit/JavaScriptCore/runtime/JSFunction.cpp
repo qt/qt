@@ -176,13 +176,13 @@ void JSFunction::put(ExecState* exec, const Identifier& propertyName, JSValue va
     Base::put(exec, propertyName, value, slot);
 }
 
-bool JSFunction::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool JSFunction::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
     if (isHostFunction())
-        return Base::deleteProperty(exec, propertyName);
+        return Base::deleteProperty(exec, propertyName, checkDontDelete);
     if (propertyName == exec->propertyNames().arguments || propertyName == exec->propertyNames().length)
         return false;
-    return Base::deleteProperty(exec, propertyName);
+    return Base::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
 // ECMA 13.2.2 [[Construct]]

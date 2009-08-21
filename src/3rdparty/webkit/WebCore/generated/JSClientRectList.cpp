@@ -173,11 +173,11 @@ JSValue jsClientRectListConstructor(ExecState* exec, const Identifier&, const Pr
     JSClientRectList* domObject = static_cast<JSClientRectList*>(asObject(slot.slotBase()));
     return JSClientRectList::getConstructor(exec, domObject->globalObject());
 }
-void JSClientRectList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSClientRectList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     for (unsigned i = 0; i < static_cast<ClientRectList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames);
+     Base::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 JSValue JSClientRectList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

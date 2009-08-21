@@ -59,6 +59,7 @@ static const UChar byteOrderMark = 0xFEFF;
 Lexer::Lexer(JSGlobalData* globalData)
     : m_isReparsing(false)
     , m_globalData(globalData)
+    , m_startColumnNumberCorrection(0)
     , m_keywordTable(JSC::mainTable)
 {
     m_buffer8.reserveInitialCapacity(initialReadBufferCapacity);
@@ -201,6 +202,7 @@ void Lexer::shiftLineTerminator()
     else
         shift1();
 
+    m_startColumnNumberCorrection = currentOffset();
     ++m_lineNumber;
 }
 
@@ -293,11 +295,15 @@ start:
     int startOffset = currentOffset();
 
     if (m_current == -1) {
+#ifndef QT_BUILD_SCRIPT_LIB /* the parser takes cate about automatic semicolon.
+                              this might add incorrect semicolons */
+        //m_delimited and m_isReparsing are now useless
         if (!m_terminator && !m_delimited && !m_isReparsing) {
             // automatic semicolon insertion if program incomplete
             token = ';';
             goto doneSemicolon;
         }
+#endif
         return 0;
     }
 
@@ -893,11 +899,11 @@ doneString:
     // Fall through into returnToken.
 
 returnToken: {
-    int lineNumber = m_lineNumber;
-    llocp->first_line = lineNumber;
-    llocp->last_line = lineNumber;
-    llocp->first_column = startOffset;
-    llocp->last_column = currentOffset();
+    llocp->first_line = m_lineNumber;
+    llocp->last_line = m_lineNumber;
+
+    llocp->first_column = startOffset - m_startColumnNumberCorrection;
+    llocp->last_column = currentOffset() - m_startColumnNumberCorrection;
 
     m_lastToken = token;
     return token;

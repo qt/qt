@@ -2490,6 +2490,25 @@ void tst_QTextDocument::testUndoBlocks()
     QCOMPARE(doc->toPlainText(), QString("Hello WorldOne\nTwo\nThree"));
     doc->undo();
     QCOMPARE(doc->toPlainText(), QString("Hello World"));
+    cursor.insertText("One\nTwo\nThree");
+    cursor.insertText("Trailing text");
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString("Hello WorldOne\nTwo\nThree"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString("Hello World"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString(""));
+
+    cursor.insertText("quod");
+    cursor.beginEditBlock();
+    cursor.insertText(" erat");
+    cursor.endEditBlock();
+    cursor.insertText(" demonstrandum");
+    QCOMPARE(doc->toPlainText(), QString("quod erat demonstrandum"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString("quod erat"));
+    doc->undo();
+    QCOMPARE(doc->toPlainText(), QString("quod"));
     doc->undo();
     QCOMPARE(doc->toPlainText(), QString(""));
 }

@@ -9,4 +9,5 @@ unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtScript
 
 include(../qbase.pri)
 
+
 include(debugging/debugging.pri)

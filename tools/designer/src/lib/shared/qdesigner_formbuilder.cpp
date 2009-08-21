@@ -83,6 +83,7 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_FORMBUILDER_NO_SCRIPT
 static QString summarizeScriptErrors(const QFormScriptRunner::Errors &errors)
 {
     QString rc =  QCoreApplication::translate("QDesignerFormBuilder", "Script errors occurred:");
@@ -92,6 +93,7 @@ static QString summarizeScriptErrors(const QFormScriptRunner::Errors &errors)
     }
     return rc;
 }
+#endif
 
 namespace qdesigner_internal {
 
@@ -108,6 +110,7 @@ QDesignerFormBuilder::QDesignerFormBuilder(QDesignerFormEditorInterface *core,
     m_mainWidget(true)
 {
     Q_ASSERT(m_core);
+#ifndef QT_FORMBUILDER_NO_SCRIPT
     // Disable scripting in the editors.
     QFormScriptRunner::Options options = formScriptRunner()->options();
     switch (m_mode) {
@@ -120,6 +123,7 @@ QDesignerFormBuilder::QDesignerFormBuilder(QDesignerFormEditorInterface *core,
         break;
     }
     formScriptRunner()-> setOptions(options);
+#endif
 }
 
 QString QDesignerFormBuilder::systemStyle() const
@@ -400,6 +404,7 @@ QWidget *QDesignerFormBuilder::createPreview(const QDesignerFormWindowInterface 
                 WidgetFactory::applyStyleToTopLevel(wf->getStyle(styleToUse), widget);
         }
     }
+#ifndef QT_FORMBUILDER_NO_SCRIPT
     // Check for script errors
     *scriptErrors = builder.formScriptRunner()->errors();
     if (!scriptErrors->empty()) {
@@ -407,6 +412,7 @@ QWidget *QDesignerFormBuilder::createPreview(const QDesignerFormWindowInterface 
         delete widget;
         return  0;
     }
+#endif
     // Fake application style sheet by prepending. (If this doesn't work, fake by nesting
     // into parent widget).
     if (!appStyleSheet.isEmpty()) {

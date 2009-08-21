@@ -30,6 +30,10 @@
 #include <wtf/HashSet.h>
 #include <wtf/OwnPtr.h>
 
+#ifdef QT_BUILD_SCRIPT_LIB
+#include "SourcePoolQt.h"
+#endif
+
 namespace JSC {
 
     class ArrayPrototype;
@@ -226,7 +230,13 @@ namespace JSC {
         unsigned profileGroup() const { return d()->profileGroup; }
 
         Debugger* debugger() const { return d()->debugger; }
-        void setDebugger(Debugger* debugger) { d()->debugger = debugger; }
+        void setDebugger(Debugger* debugger)
+        {
+#ifdef QT_BUILD_SCRIPT_LIB
+            globalData()->scriptpool->setDebugger(debugger);
+#endif
+            d()->debugger = debugger;
+        }
         
         virtual bool supportsProfiling() const { return false; }
         

@@ -52,6 +52,7 @@ bin/lconvert*
 bin/moc*
 bin/pixeltool*
 bin/qmake*
+bin/qdoc3*
 bin/qt3to4*
 bin/qtdemo*
 bin/rcc*

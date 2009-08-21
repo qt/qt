@@ -58,6 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
+Q_CORE_EXPORT uint qGlobalPostedEventsCount();
+
 class Q_CORE_EXPORT QAbstractEventDispatcherPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QAbstractEventDispatcher)

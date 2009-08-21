@@ -57,15 +57,15 @@ class QEventTransitionPrivate;
 class Q_CORE_EXPORT QEventTransition : public QAbstractTransition
 {
     Q_OBJECT
-    Q_PROPERTY(QObject* eventObject READ eventObject WRITE setEventObject)
+    Q_PROPERTY(QObject* eventSource READ eventSource WRITE setEventSource)
     Q_PROPERTY(QEvent::Type eventType READ eventType WRITE setEventType)
 public:
     QEventTransition(QState *sourceState = 0);
     QEventTransition(QObject *object, QEvent::Type type, QState *sourceState = 0);
     ~QEventTransition();
 
-    QObject *eventObject() const;
-    void setEventObject(QObject *object);
+    QObject *eventSource() const;
+    void setEventSource(QObject *object);
 
     QEvent::Type eventType() const;
     void setEventType(QEvent::Type type);

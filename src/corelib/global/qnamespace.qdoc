@@ -2422,6 +2422,24 @@
 */
 
 /*!
+    \enum Qt::AnchorPoint
+
+    Specifies a side of a layout item that can be anchored. This is used by
+    QGraphicsAnchorLayout.
+
+    \value AnchorLeft               The left side of a layout item.
+    \value AnchorHorizontalCenter   A "virtual" side that is centered between the left and the
+                                    right side of a layout item.
+    \value AnchorRight              The right side of a layout item.
+    \value AnchorTop                The top side of a layout item.
+    \value AnchorVerticalCenter     A "virtual" side that is centered between the top and the
+                                    bottom side of a layout item.
+    \value AnchorBottom             The bottom side of a layout item.
+
+    \sa QGraphicsAnchorLayout
+*/
+
+/*!
     \enum Qt::InputMethodHint
 
     \value ImhNone                   No hints.

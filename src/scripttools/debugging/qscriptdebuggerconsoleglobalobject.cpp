@@ -361,6 +361,7 @@ void QScriptDebuggerConsoleGlobalObject::warning(const QString &text,
                                                  int lineNumber, int columnNumber)
 {
     Q_D(QScriptDebuggerConsoleGlobalObject);
+    Q_ASSERT(d->messageHandler != 0);
     d->messageHandler->message(QtWarningMsg, text, fileName, lineNumber, columnNumber);
 }
 
@@ -369,6 +370,7 @@ void QScriptDebuggerConsoleGlobalObject::message(const QString &text,
                                                  int lineNumber, int columnNumber)
 {
     Q_D(QScriptDebuggerConsoleGlobalObject);
+    Q_ASSERT(d->messageHandler != 0);
     d->messageHandler->message(QtDebugMsg, text, fileName, lineNumber, columnNumber);
 }
 
@@ -377,6 +379,7 @@ void QScriptDebuggerConsoleGlobalObject::error(const QString &text,
                                                int lineNumber, int columnNumber)
 {
     Q_D(QScriptDebuggerConsoleGlobalObject);
+    Q_ASSERT(d->messageHandler != 0);
     d->messageHandler->message(QtCriticalMsg, text, fileName, lineNumber, columnNumber);
 }
 

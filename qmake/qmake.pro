@@ -17,10 +17,8 @@ VPATH += $$QT_SOURCE_TREE/src/corelib/global \
          $$QT_SOURCE_TREE/src/corelib/kernel \
          $$QT_SOURCE_TREE/src/corelib/codecs \
          $$QT_SOURCE_TREE/src/corelib/plugin \
-	 $$QT_SOURCE_TREE/src/corelib/io \
-	 $$QT_SOURCE_TREE/src/script
+	 $$QT_SOURCE_TREE/src/corelib/io
 INCPATH += generators generators/unix generators/win32 generators/mac \
-           $$QT_SOURCE_TREE/include $$QT_SOURCE_TREE/include/QtCore \
-           $$QT_SOURCE_TREE/qmake $$QT_SOURCE_TREE/include/QtScript
+           $$QT_SOURCE_TREE/include $$QT_SOURCE_TREE/include/QtCore
 include(qmake.pri)
 

@@ -105,12 +105,12 @@ namespace WebCore {
 
         virtual void sourceParsed(JSC::ExecState*, const JSC::SourceCode&, int errorLine, const JSC::UString& errorMsg);
         virtual void callEvent(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineNumber);
-        virtual void atStatement(const JSC::DebuggerCallFrame&, intptr_t sourceID, int firstLine);
+        virtual void atStatement(const JSC::DebuggerCallFrame&, intptr_t sourceID, int firstLine, int column);
         virtual void returnEvent(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineNumber);
         virtual void exception(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineNumber);
         virtual void willExecuteProgram(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno);
         virtual void didExecuteProgram(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno);
-        virtual void didReachBreakpoint(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno);
+        virtual void didReachBreakpoint(const JSC::DebuggerCallFrame&, intptr_t sourceID, int lineno, int column);
         
         void didAddListener(Page*);
         void didRemoveListener(Page*);

@@ -257,6 +257,20 @@ static void addTag(QString& str, const QString& tag)
     str += tag;
 }
 
+void QEglProperties::dumpAllConfigs()
+{
+    EGLint count = 0;
+    eglGetConfigs(QEglContext::defaultDisplay(0), 0, 0, &count);
+    if (count < 1)
+        return;
+
+    EGLConfig *configs = new EGLConfig [count];
+    eglGetConfigs(QEglContext::defaultDisplay(0), configs, count, &count);
+    for (EGLint index = 0; index < count; ++index)
+        qWarning() << QEglProperties(configs[index]).toString();
+    delete [] configs;
+}
+
 // Convert a property list to a string suitable for debug output.
 QString QEglProperties::toString() const
 {

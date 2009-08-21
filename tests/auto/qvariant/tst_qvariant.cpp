@@ -267,6 +267,8 @@ private slots:
     void convertByteArrayToBool_data() const;
     void toIntFromQString() const;
     void task256984_setValue();
+
+    void numericalConvert();
 };
 
 Q_DECLARE_METATYPE(QDate)
@@ -2620,7 +2622,7 @@ void tst_QVariant::qvariant_cast_QObject_data() {
 
     QTest::addColumn<QVariant>("data");
     QTest::addColumn<bool>("success");
-    QTest::newRow("from QObject") << QVariant(QMetaType::QObjectStar, new QObject) << true;
+    QTest::newRow("from QObject") << QVariant(QMetaType::QObjectStar, new QObject(this)) << true;
     QTest::newRow("from String") << QVariant(QLatin1String("1, 2, 3")) << false;
     QTest::newRow("from int") << QVariant((int) 123) << false;
 }
@@ -2745,6 +2747,7 @@ void tst_QVariant::dataStar() const
 
     v2 = qVariantFromValue(p1);
     QVERIFY(v1 == v2);
+    delete p1;
 }
 
 void tst_QVariant::canConvertQStringList() const
@@ -3060,10 +3063,44 @@ void tst_QVariant::task256984_setValue()
     QVERIFY( !v2.isDetached() );
 
     qVariantSetValue(v2, 3); //set an integer value
-    
+
     QVERIFY( v1.isDetached() );
     QVERIFY( v2.isDetached() );
 }
+
+void tst_QVariant::numericalConvert()
+{
+    QVariant vfloat(float(5.3));
+    QVariant vdouble(double(5.3));
+    QVariant vreal(qreal(5.3));
+    QVariant vint(int(5));
+    QVariant vuint(uint(5));
+    QVariant vshort(short(5));
+    QVariant vlonglong(quint64(5));
+    QVariant vstringint(QString::fromLatin1("5"));
+    QVariant vstring(QString::fromLatin1("5.3"));
+
+    QVector<QVariant *> vect;
+    vect << &vfloat << &vdouble << &vreal << &vint << &vuint << &vshort<< &vlonglong << &vstringint << &vstring;
+
+    for(int i = 0; i < vect.size(); i++) {
+        double num = 5.3;
+        if (i >= 3 && i <= 7)
+            num = 5;
+        QVariant *v = vect.at(i);
+        QCOMPARE(v->toFloat() , float(num));
+        QCOMPARE(float(v->toReal()) , float(num));
+        QCOMPARE(float(v->toDouble()) , float(num));
+        if(i != 8) {
+            QCOMPARE(v->toInt() , int(num));
+            QCOMPARE(v->toUInt() , uint(num));
+            QCOMPARE(v->toULongLong() , quint64(num));
+        }
+        QCOMPARE(v->toString() , QString::number(num));
+    }
+}
+
+
 
 
 QTEST_MAIN(tst_QVariant)

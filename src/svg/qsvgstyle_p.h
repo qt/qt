@@ -250,7 +250,7 @@ public:
     {
         return m_style;
     }
-	
+
     void setGradientId(const QString &Id)
     {
         m_gradientId = Id;
@@ -529,20 +529,56 @@ public:
         SkewX,
         SkewY
     };
+    enum Additive
+    {
+        Sum,
+        Replace
+    };
 public:
     QSvgAnimateTransform(int startMs, int endMs, int by = 0);
-    void setArgs(TransformType type, const QVector<qreal> &args);
+    void setArgs(TransformType type, Additive additive, const QVector<qreal> &args);
     void setFreeze(bool freeze);
     void setRepeatCount(qreal repeatCount);
     virtual void apply(QPainter *p, const QRectF &, QSvgNode *node, QSvgExtraStates &states);
     virtual void revert(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
+    QSvgAnimateTransform::Additive additiveType() const
+    {
+        return m_additive;
+    }
+
+    bool animActive(qreal totalTimeElapsed)
+    {
+        if (totalTimeElapsed < m_from)
+            return false;
+        if (m_freeze || m_repeatCount < 0) // fill="freeze" or repeat="indefinite"
+            return true;
+        if (m_totalRunningTime == 0)
+            return false;
+        qreal animationFrame = (totalTimeElapsed - m_from) / m_totalRunningTime;
+        if (animationFrame > m_repeatCount)
+            return false;
+        return true;
+    }
+
+    bool transformApplied() const
+    {
+        return m_transformApplied;
+    }
+
+    // Call this instead of revert if you know that revert is unnecessary.
+    void clearTransformApplied()
+    {
+        m_transformApplied = false;
+    }
+
 protected:
     void resolveMatrix(QSvgNode *node);
 private:
     qreal m_from, m_to, m_by;
     qreal m_totalRunningTime;
     TransformType m_type;
+    Additive m_additive;
     QVector<qreal> m_args;
     int m_count;
     QTransform m_transform;
@@ -550,6 +586,7 @@ private:
     bool m_finished;
     bool m_freeze;
     qreal m_repeatCount;
+    bool m_transformApplied;
 };
 
 

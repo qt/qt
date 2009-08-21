@@ -127,7 +127,7 @@ public:
         graphicsEffect(0),
         index(-1),
         siblingIndex(-1),
-        depth(0),
+        itemDepth(-1),
         focusProxy(0),
         subFocusItem(0),
         imHints(Qt::ImhNone),
@@ -215,7 +215,9 @@ public:
     void setEnabledHelper(bool newEnabled, bool explicitly, bool update = true);
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
-    void resolveDepth(int parentDepth);
+    int depth() const;
+    void invalidateDepthRecursively();
+    void resolveDepth();
     void addChild(QGraphicsItem *child);
     void removeChild(QGraphicsItem *child);
     void setParentItemHelper(QGraphicsItem *parent);
@@ -428,7 +430,7 @@ public:
     QTransform sceneTransform;
     int index;
     int siblingIndex;
-    int depth;
+    int itemDepth;  // Lazily calculated when calling depth().
     QGraphicsItem *focusProxy;
     QList<QGraphicsItem **> focusProxyRefs;
     QGraphicsItem *subFocusItem;
@@ -511,16 +513,17 @@ struct QGraphicsItemPrivate::TransformData
             return transform * *postmultiplyTransform;
         }
 
-        QTransform x(transform);
+        QMatrix4x4 x(transform);
         for (int i = 0; i < graphicsTransforms.size(); ++i)
             graphicsTransforms.at(i)->applyTo(&x);
         x.translate(xOrigin, yOrigin);
-        x.rotate(rotation, Qt::ZAxis);
-        x.scale(scale, scale);
+        x.rotate(rotation, 0, 0, 1);
+        x.scale(scale);
         x.translate(-xOrigin, -yOrigin);
+        QTransform t = x.toTransform(); // project the 3D matrix back to 2D.
         if (postmultiplyTransform)
-            x *= *postmultiplyTransform;
-        return x;
+            t *= *postmultiplyTransform;
+        return t;
     }
 };
 
