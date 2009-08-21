@@ -2074,7 +2074,13 @@ void QWidgetPrivate::winSetupGestures()
     WId winid = 0;
 
     if (QAbstractScrollArea *asa = qobject_cast<QAbstractScrollArea*>(q)) {
-        winid = asa->viewport()->winId();
+        winid = asa->viewport()->internalWinId();
+        if (!winid) {
+            QWidget *nativeParent = asa->viewport()->nativeParentWidget();
+            if (!nativeParent)
+                return;
+            winid = nativeParent->internalWinId();
+        }
         QScrollBar *hbar = asa->horizontalScrollBar();
         QScrollBar *vbar = asa->verticalScrollBar();
         Qt::ScrollBarPolicy hbarpolicy = asa->horizontalScrollBarPolicy();
@@ -2085,9 +2091,13 @@ void QWidgetPrivate::winSetupGestures()
                  (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
         singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
     } else {
-        winid = q->winId();
+        winid = q->internalWinId();
+        if (!winid) {
+            if (QWidget *nativeParent = q->nativeParentWidget())
+                winid = nativeParent->internalWinId();
+        }
     }
-    if (qAppPriv->SetGestureConfig) {
+    if (winid && qAppPriv->SetGestureConfig) {
         GESTURECONFIG gc[3];
         memset(gc, 0, sizeof(gc));
         gc[0].dwID = GID_PAN;
@@ -2116,7 +2126,6 @@ void QWidgetPrivate::winSetupGestures()
         else
             gc[2].dwBlock = GC_ROTATE;
 
-        Q_ASSERT(winid);
         qAppPriv->SetGestureConfig(winid, 0, sizeof(gc)/sizeof(gc[0]), gc, sizeof(gc[0]));
     }
 }
