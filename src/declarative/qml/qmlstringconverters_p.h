@@ -60,6 +60,7 @@ class QSizeF;
 class QRectF;
 class QString;
 class QByteArray;
+class QVector3D;
 
 QT_BEGIN_NAMESPACE
 
@@ -72,6 +73,7 @@ namespace QmlStringConverters
     QSizeF Q_DECLARATIVE_EXPORT sizeFFromString(const QString &, bool *ok = 0);
     QRectF Q_DECLARATIVE_EXPORT rectFFromString(const QString &, bool *ok = 0);
     bool Q_DECLARATIVE_EXPORT boolFromString(const QString &, bool *ok = 0);
+    QVector3D Q_DECLARATIVE_EXPORT vector3DFromString(const QString &, bool *ok = 0);
 };
 
 QT_END_NAMESPACE

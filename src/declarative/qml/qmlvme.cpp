@@ -439,6 +439,19 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
             }
             break;
 
+        case QmlInstruction::StoreVector3D:
+            {
+                QObject *target = stack.top();
+                void *a[1];
+                QVector3D p(floatData.at(instr.storeVector3D.valueIndex),
+                            floatData.at(instr.storeVector3D.valueIndex+1),
+                            floatData.at(instr.storeVector3D.valueIndex+2));
+                a[0] = (void *)&p;
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeVector3D.propertyIndex, a);
+            }
+            break;
+
         case QmlInstruction::StoreObject:
             {
                 QObject *assignObj = stack.pop();

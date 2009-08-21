@@ -75,6 +75,7 @@
 # include <qpoint.h>
 # include <qrect.h>
 # include <qline.h>
+# include <qvector3d.h>
 #endif
 #define NS(x) QT_PREPEND_NAMESPACE(x)
 
@@ -1028,6 +1029,9 @@ bool QmlMetaType::copy(int type, void *data, const void *copy)
         case QMetaType::QPointF:
             *static_cast<NS(QPointF) *>(data) = *static_cast<const NS(QPointF)*>(copy);
             return true;
+        case QMetaType::QVector3D:
+            *static_cast<NS(QVector3D) *>(data) = *static_cast<const NS(QVector3D)*>(copy);
+            return true;
 #endif
 #ifndef QT_NO_REGEXP
         case QMetaType::QRegExp:
@@ -1154,6 +1158,9 @@ bool QmlMetaType::copy(int type, void *data, const void *copy)
             return true;
         case QMetaType::QPointF:
             *static_cast<NS(QPointF) *>(data) = NS(QPointF)();
+            return true;
+        case QMetaType::QVector3D:
+            *static_cast<NS(QVector3D) *>(data) = NS(QVector3D)();
             return true;
 #endif
 #ifndef QT_NO_REGEXP

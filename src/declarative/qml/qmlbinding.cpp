@@ -49,6 +49,7 @@
 #include <QtCore/qdebug.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmldeclarativedata_p.h>
+#include <private/qmlstringconverters_p.h>
 
 Q_DECLARE_METATYPE(QList<QObject *>);
 
@@ -128,6 +129,11 @@ void QmlBinding::update()
             if (d->property.propertyType() == QVariant::Url && 
                 (value.type() == QVariant::String || value.type() == QVariant::ByteArray) && !value.isNull()) 
                 value.setValue(context()->resolvedUrl(QUrl(value.toString())));
+
+            if (d->property.propertyType() == QVariant::Vector3D &&
+                value.type() == QVariant::String) {
+                value = qVariantFromValue(QmlStringConverters::vector3DFromString(value.toString()));
+            }
 
             d->property.write(value);
         }
