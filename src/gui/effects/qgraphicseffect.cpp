@@ -64,6 +64,7 @@
     \o QGraphicsPixelizeEffect - pixelizes the item with any pixel size
     \o QGraphicsBlurEffect - blurs the item by a given radius
     \o QGraphicsDropShadowEffect - renders a dropshadow behind the item
+    \o QGraphicsBlurEffect - renders the item with an opacity
     \endlist
 
     If all you want is to add an effect to an item, you should visit the
@@ -566,6 +567,62 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *s
     painter->setWorldTransform(QTransform());
     d->filter->draw(painter, offset, pixmap);
     painter->setWorldTransform(restoreTransform);
+}
+
+QGraphicsOpacityEffect::QGraphicsOpacityEffect(QObject *parent)
+    : QGraphicsEffect(*new QGraphicsOpacityEffectPrivate, parent)
+{
+}
+
+QGraphicsOpacityEffect::~QGraphicsOpacityEffect()
+{
+}
+
+qreal QGraphicsOpacityEffect::opacity() const
+{
+    Q_D(const QGraphicsOpacityEffect);
+    return d->opacity;
+}
+
+void QGraphicsOpacityEffect::setOpacity(qreal opacity)
+{
+    Q_D(QGraphicsOpacityEffect);
+    if (qFuzzyCompare(d->opacity, opacity))
+        return;
+    d->opacity = opacity;
+    emit opacityChanged(opacity);
+}
+
+void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
+{
+    Q_D(QGraphicsOpacityEffect);
+
+    // Transparent; nothing to draw.
+    if (qFuzzyIsNull(d->opacity))
+        return;
+
+    // Opaque; draw directly without going through a pixmap.
+    if (qFuzzyIsNull(d->opacity - 1)) {
+        source->draw(painter);
+        return;
+    }
+
+    painter->save();
+    painter->setOpacity(d->opacity);
+
+    QPoint offset;
+    if (source->isPixmap()) {
+        // No point in drawing in device coordinates (pixmap will be scaled anyways).
+        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+        painter->drawPixmap(offset, pixmap);
+    } else {
+        // Draw pixmap in device coordinates to avoid pixmap scaling;
+        const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+        painter->setWorldTransform(QTransform());
+        painter->drawPixmap(offset, pixmap);
+    }
+
+    painter->restore();
 }
 
 QT_END_NAMESPACE
