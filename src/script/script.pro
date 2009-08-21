@@ -37,6 +37,15 @@ wince* {
     LIBS += -lmmtimer
 }
 
+# avoid warnings when parsing JavaScriptCore.pri
+# (we don't care about generating files, we already have them generated)
+defineTest(addExtraCompiler) {
+    return(true)
+}
+defineTest(addExtraCompilerWithHeader) {
+    return(true)
+}
+
 include($$WEBKITDIR/JavaScriptCore/JavaScriptCore.pri)
 
 INCLUDEPATH += $$WEBKITDIR/JavaScriptCore
