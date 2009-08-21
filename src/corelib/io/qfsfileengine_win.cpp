@@ -1440,6 +1440,41 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
 }
 
 /*!
+    \internal
+*/
+bool QFSFileEnginePrivate::isSymlink() const
+{
+#if !defined(Q_OS_WINCE)
+    if (need_lstat) {
+        need_lstat = false;
+        is_link = false;
+
+        if (fileAttrib & FILE_ATTRIBUTE_REPARSE_POINT) {
+            QString path = QDir::toNativeSeparators(filePath);
+            // path for the FindFirstFile should not end with a trailing slash
+            while (path.endsWith(QLatin1Char('\\')))
+                path.chop(1);
+
+            WIN32_FIND_DATA findData;
+            HANDLE hFind = ::FindFirstFile((wchar_t*)QFSFileEnginePrivate::longFileName(path).utf16(),
+                                           &findData);
+            if (hFind != INVALID_HANDLE_VALUE) {
+                ::FindClose(hFind);
+                if ((findData.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+                    && (findData.dwReserved0 == IO_REPARSE_TAG_MOUNT_POINT
+                        || findData.dwReserved0 == IO_REPARSE_TAG_SYMLINK)) {
+                    is_link = true;
+                }
+            }
+        }
+    }
+    return is_link;
+#else
+    return false;
+#endif // Q_OS_WINCE
+}
+
+/*!
     \reimp
 */
 QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::FileFlags type) const
@@ -1449,6 +1484,9 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
     // Force a stat, so that we're guaranteed to get up-to-date results
     if (type & Refresh) {
         d->tried_stat = 0;
+#if !defined(Q_OS_WINCE)
+        d->need_lstat = 1;
+#endif
     }
 
     if (type & PermsMask) {
@@ -1472,7 +1510,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(QAbstractFileEngine::Fil
                     ret |= FileType;
             }
         } else if (d->doStat()) {
-            if (d->fileAttrib & FILE_ATTRIBUTE_REPARSE_POINT)
+            if ((type & LinkType) && d->isSymlink())
                 ret |= LinkType;
             if (d->fileAttrib & FILE_ATTRIBUTE_DIRECTORY) {
                 ret |= DirectoryType;
