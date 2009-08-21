@@ -260,7 +260,7 @@ private:
     void drawCachedGlyphs(int numGlyphs, const glyph_t *glyphs, const QFixedPoint *positions,
                           QFontEngine *fontEngine);
 
-    void drawStaticTextItem(const QPointF &p, QStaticTextItem *textItem);
+    void drawStaticTextItem(QStaticTextItem *textItem);
 
 #if defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
     void drawGlyphsS60(const QPointF &p, const QTextItemInt &ti);

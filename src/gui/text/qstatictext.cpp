@@ -429,6 +429,8 @@ void QStaticTextPrivate::init()
     delete[] glyphPool;
     delete[] positionPool;
 
+    position = QPointF(0, 0);
+
     // Draw once to count number of items and glyphs, so that we can use as little memory
     // as possible to store the data
     DrawTextItemDevice counterDevice;

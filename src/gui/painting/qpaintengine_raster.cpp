@@ -3212,18 +3212,10 @@ QRasterPaintEnginePrivate::getPenFunc(const QRectF &rect,
     return isUnclipped(rect, penWidth) ? data->unclipped_blend : data->blend;
 }
 
-void QRasterPaintEngine::drawStaticTextItem(const QPointF &p, QStaticTextItem *textItem)
+void QRasterPaintEngine::drawStaticTextItem(QStaticTextItem *textItem)
 {
     ensurePen();
     ensureState();
-
-    // Translate to actual position
-    QFixed fx = QFixed::fromReal(p.x());
-    QFixed fy = QFixed::fromReal(p.y());
-    for (int i=0; i<textItem->numGlyphs; ++i) {
-        textItem->glyphPositions[i].x += fx;
-        textItem->glyphPositions[i].y += fy;
-    }
 
     drawCachedGlyphs(textItem->numGlyphs, textItem->glyphs, textItem->glyphPositions,
                      textItem->fontEngine);

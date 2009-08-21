@@ -5787,11 +5787,27 @@ void QPainter::drawStaticText(const QPointF &position, const QStaticText &static
 
     // Recreate the layout of the static text because the matrix or font has changed
     if (staticTextNeedsReinit)
-        staticText_d->init();
+        staticText_d->init();    
+
+    if (transformedPosition != staticText_d->position) { // Translate to actual position
+        QFixed fx = QFixed::fromReal(transformedPosition.x());
+        QFixed fy = QFixed::fromReal(transformedPosition.y());
+        QFixed oldX = QFixed::fromReal(staticText_d->position.x());
+        QFixed oldY = QFixed::fromReal(staticText_d->position.y());
+        for (int item=0; item<staticText_d->itemCount;++item) {
+            QStaticTextItem *textItem = staticText_d->items + item;
+            for (int i=0; i<textItem->numGlyphs; ++i) {
+                textItem->glyphPositions[i].x += fx - oldX;
+                textItem->glyphPositions[i].y += fy - oldY;
+            }
+        }
+
+        staticText_d->position = transformedPosition;
+    }
 
     for (int i=0; i<staticText_d->itemCount; ++i) {
         QStaticTextItem *item = staticText_d->items + i;
-        d->extended->drawStaticTextItem(transformedPosition, item);
+        d->extended->drawStaticTextItem(item);
     }
 
     if (restoreWhenFinished)

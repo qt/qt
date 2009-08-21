@@ -77,6 +77,7 @@
 #include <private/qfontengine_p.h>
 #include <private/qpixmapdata_gl_p.h>
 #include <private/qdatabuffer_p.h>
+#include <private/qstatictext_p.h>
 
 #include "qglgradientcache_p.h"
 #include "qglengineshadermanager_p.h"
@@ -1212,6 +1213,17 @@ void QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const 
     d->drawTexture(dest, srcRect, size, false);
 }
 
+void QGL2PaintEngineEx::drawStaticTextItem(QStaticTextItem *textItem)
+{
+    Q_D(QGL2PaintEngineEx);
+
+    ensureActive();
+
+    // ### What about transformations and huge fonts? These are not passed through cache
+    // in drawTextItem().
+    d->drawCachedGlyphs(textItem);
+}
+
 void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem)
 {
     Q_D(QGL2PaintEngineEx);
@@ -1246,33 +1258,46 @@ void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem
     }
 
     if (drawCached) {
-        d->drawCachedGlyphs(p, glyphType, ti);
+        QVarLengthArray<QFixedPoint> positions;
+        QVarLengthArray<glyph_t> glyphs;
+        QTransform matrix = QTransform::fromTranslate(p.x(), p.y());
+        ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+
+        {
+            QStaticTextItem staticTextItem;
+            staticTextItem.chars = ti.chars;
+            staticTextItem.fontEngine = ti.fontEngine;
+            staticTextItem.glyphs = glyphs.data();
+            staticTextItem.numChars = ti.num_chars;
+            staticTextItem.numGlyphs = glyphs.size();
+            staticTextItem.glyphPositions = positions.data();
+
+            d->drawCachedGlyphs(&staticTextItem);
+        }
         return;
     }
 
     QPaintEngineEx::drawTextItem(p, ti);
 }
 
-void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGlyphCache::Type glyphType,
-                                                const QTextItemInt &ti)
+void QGL2PaintEngineExPrivate::drawCachedGlyphs(QStaticTextItem *staticTextItem)
 {
     Q_Q(QGL2PaintEngineEx);
 
-    QVarLengthArray<QFixedPoint> positions;
-    QVarLengthArray<glyph_t> glyphs;
-    QTransform matrix = QTransform::fromTranslate(p.x(), p.y());
-    ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
+    QFontEngineGlyphCache::Type glyphType = staticTextItem->fontEngine->glyphFormat >= 0
+        ? QFontEngineGlyphCache::Type(staticTextItem->fontEngine->glyphFormat)
+        : QFontEngineGlyphCache::Raster_A8;
 
     QGLTextureGlyphCache *cache =
-            (QGLTextureGlyphCache *) ti.fontEngine->glyphCache(ctx, glyphType, QTransform());
-
+        (QGLTextureGlyphCache *) staticTextItem->fontEngine->glyphCache(ctx, glyphType, QTransform());
     if (!cache || cache->cacheType() != glyphType) {
         cache = new QGLTextureGlyphCache(ctx, glyphType, QTransform());
-        ti.fontEngine->setGlyphCache(ctx, cache);
+        staticTextItem->fontEngine->setGlyphCache(ctx, cache);
     }
 
     cache->setPaintEnginePrivate(this);
-    cache->populate(ti.fontEngine, glyphs.size(), glyphs.constData(), positions.constData());
+    cache->populate(staticTextItem->fontEngine, staticTextItem->numGlyphs, staticTextItem->glyphs,
+                    staticTextItem->glyphPositions);
 
     if (cache->width() == 0 || cache->height() == 0)
         return;
@@ -1287,10 +1312,10 @@ void QGL2PaintEngineExPrivate::drawCachedGlyphs(const QPointF &p, QFontEngineGly
     vertexCoordinateArray.clear();
     textureCoordinateArray.clear();
 
-    for (int i=0; i<glyphs.size(); ++i) {
-        const QTextureGlyphCache::Coord &c = cache->coords.value(glyphs[i]);
-        int x = positions[i].x.toInt() + c.baseLineX - margin;
-        int y = positions[i].y.toInt() - c.baseLineY - margin;
+    for (int i=0; i<staticTextItem->numGlyphs; ++i) {
+        const QTextureGlyphCache::Coord &c = cache->coords.value(staticTextItem->glyphs[i]);
+        int x = staticTextItem->glyphPositions[i].x.toInt() + c.baseLineX - margin;
+        int y = staticTextItem->glyphPositions[i].y.toInt() - c.baseLineY - margin;
 
         vertexCoordinateArray.addRect(QRectF(x, y, c.w, c.h));
         textureCoordinateArray.addRect(QRectF(c.x*dx, c.y*dy, c.w * dx, c.h * dy));

@@ -57,7 +57,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_AUTOTEST_EXPORT QStaticTextItem
+class Q_GUI_EXPORT QStaticTextItem
 {
 public:    
     QStaticTextItem() : chars(0), numChars(0), fontEngine(0) {}
@@ -91,6 +91,7 @@ public:
     QString text;              // 4 bytes per text
     QFont font;                // 8 bytes per text
     QSizeF size;               // 16 bytes per text
+    QPointF position;          // 16 bytes per text
 
     QTransform matrix;         // 80 bytes per text
     QStaticTextItem *items;    // 4 bytes per text
@@ -98,7 +99,7 @@ public:
     glyph_t *glyphPool;        // 4 bytes per text
     QFixedPoint *positionPool; // 4 bytes per text
                                // ================
-                               // 128 bytes per text
+                               // 144 bytes per text
 
     static QStaticTextPrivate *get(const QStaticText *q);
 };

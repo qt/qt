@@ -590,10 +590,12 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
     }
 }
 
+/*
 void QPaintEngineEx::drawStaticTextItem(const QPointF &position, QStaticTextItem *item)
 {
     // ### Make this pure virtual after implementing in all subclasses
 }
+*/
 
 void QPaintEngineEx::draw(const QVectorPath &path)
 {
