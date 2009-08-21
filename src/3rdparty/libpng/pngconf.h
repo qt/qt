@@ -353,12 +353,7 @@
 /* Other defines for things like memory and the like can go here.  */
 #ifdef PNG_INTERNAL
 
-// Bug in stdlib.h, see more information from fixed_stdlib.h
-#if (defined __SYMBIAN32__ && !defined __cplusplus)
-#include <fixed_stdlib.h>
-#else
 #include <stdlib.h>
-#endif  // defined __SYMBIAN32__ && !defined __cplusplus
 
 /* The functions exported by PNG_EXTERN are PNG_INTERNAL functions, which
  * aren't usually used outside the library (as far as I know), so it is
