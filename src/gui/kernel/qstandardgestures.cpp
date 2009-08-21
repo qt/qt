@@ -179,27 +179,29 @@ bool QPanGesture::filterEvent(QEvent *event)
         d->lastOffset = d->totalOffset = QSize();
     } else if (event->type() == QEvent::TouchEnd) {
         if (state() != Qt::NoGesture) {
-            if (!ev->touchPoints().isEmpty()) {
-                QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
-                const QPoint pos = p.pos().toPoint();
-                const QPoint lastPos = p.lastPos().toPoint();
-                const QPoint startPos = p.startPos().toPoint();
-                d->lastOffset = QSize(pos.x() - lastPos.x(), pos.y() - lastPos.y());
-                d->totalOffset = QSize(pos.x() - startPos.x(), pos.y() - startPos.y());
+            if (ev->touchPoints().size() == 2) {
+                QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
+                QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
+                d->lastOffset =
+                        QSize(p1.pos().x() - p1.lastPos().x() + p2.pos().x() - p2.lastPos().x(),
+                              p1.pos().y() - p1.lastPos().y() + p2.pos().y() - p2.lastPos().y()) / 2;
+                d->totalOffset += d->lastOffset;
             }
             updateState(Qt::GestureFinished);
         }
         reset();
     } else if (event->type() == QEvent::TouchUpdate) {
-        QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
-        const QPoint pos = p.pos().toPoint();
-        const QPoint lastPos = p.lastPos().toPoint();
-        const QPoint startPos = p.startPos().toPoint();
-        d->lastOffset = QSize(pos.x() - lastPos.x(), pos.y() - lastPos.y());
-        d->totalOffset = QSize(pos.x() - startPos.x(), pos.y() - startPos.y());
-        if (d->totalOffset.width() > 10  || d->totalOffset.height() > 10 ||
-            d->totalOffset.width() < -10 || d->totalOffset.height() < -10) {
-            updateState(Qt::GestureUpdated);
+        if (ev->touchPoints().size() == 2) {
+            QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
+            QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
+            d->lastOffset =
+                    QSize(p1.pos().x() - p1.lastPos().x() + p2.pos().x() - p2.lastPos().x(),
+                          p1.pos().y() - p1.lastPos().y() + p2.pos().y() - p2.lastPos().y()) / 2;
+            d->totalOffset += d->lastOffset;
+            if (d->totalOffset.width() > 10  || d->totalOffset.height() > 10 ||
+                d->totalOffset.width() < -10 || d->totalOffset.height() < -10) {
+                updateState(Qt::GestureUpdated);
+            }
         }
     }
 #ifdef Q_OS_MAC
