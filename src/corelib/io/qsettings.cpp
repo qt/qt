@@ -223,7 +223,8 @@ QConfFile::QConfFile(const QString &fileName, bool _userPerms)
 
 QConfFile::~QConfFile()
 {
-    usedHashFunc()->remove(name);
+    if (usedHashFunc())
+        usedHashFunc()->remove(name);
 }
 
 ParsedSettingsMap QConfFile::mergedKeyMap() const
