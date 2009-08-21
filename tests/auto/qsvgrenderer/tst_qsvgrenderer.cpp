@@ -756,7 +756,7 @@ static void opacity_drawSvgAndVerify(const QByteArray &data)
 
 void tst_QSvgRenderer::opacity()
 {
-    static const char *opacities[] = {"-1,4641", "0", "0.5", "1", "1.337"};
+    static const char *opacities[] = {"-1.4641", "0", "0.5", "1", "1.337"};
     static const char *firstColors[] = {"#7f7f7f", "#7f7f7f", "#402051", "blue", "#123456"};
     static const char *secondColors[] = {"red", "#bad", "#bedead", "#7f7f7f", "#7f7f7f"};
 
@@ -796,8 +796,6 @@ void tst_QSvgRenderer::opacity()
         data.append("\"/></svg>");
         opacity_drawSvgAndVerify(data);
     }
-    // When support for gradients on strokes has been implemented, add the code below.
-    /*
     // Stroke-opacity
     for (int i = 0; i < 5; ++i) {
         QByteArray data("<svg viewBox=\"0 0 10 10\"><defs><linearGradient id=\"grad\"><stop offset=\"0\" stop-color=\"");
@@ -811,7 +809,6 @@ void tst_QSvgRenderer::opacity()
         data.append("\" /></svg>");
         opacity_drawSvgAndVerify(data);
     }
-    */
 }
 
 void tst_QSvgRenderer::paths()
