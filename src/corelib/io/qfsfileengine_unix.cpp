@@ -373,25 +373,35 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
 bool QFSFileEngine::remove()
 {
     Q_D(QFSFileEngine);
-    return unlink(d->nativeFilePath.constData()) == 0;
+    bool ret = unlink(d->nativeFilePath.constData()) == 0;
+    if (!ret)
+        setError(QFile::RemoveError, qt_error_string(errno));
+    return ret;
 }
 
 bool QFSFileEngine::copy(const QString &)
 {
     // ### Add copy code for Unix here
+    setError(QFile::UnspecifiedError, QLatin1String("Not implemented!"));
     return false;
 }
 
 bool QFSFileEngine::rename(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    return ::rename(d->nativeFilePath.constData(), QFile::encodeName(newName).constData()) == 0;
+    bool ret = ::rename(d->nativeFilePath.constData(), QFile::encodeName(newName).constData()) == 0;
+    if (!ret)
+        setError(QFile::RenameError, qt_error_string(errno));
+    return ret;
 }
 
 bool QFSFileEngine::link(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    return ::symlink(d->nativeFilePath.constData(), QFile::encodeName(newName).constData()) == 0;
+    bool ret = ::symlink(d->nativeFilePath.constData(), QFile::encodeName(newName).constData()) == 0;
+    if (!ret)
+        setError(QFile::RenameError, qt_error_string(errno));
+    return ret;
 }
 
 qint64 QFSFileEnginePrivate::nativeSize() const
@@ -887,6 +897,7 @@ QString QFSFileEngine::owner(FileOwner own) const
 bool QFSFileEngine::setPermissions(uint perms)
 {
     Q_D(QFSFileEngine);
+    bool ret = false;
     mode_t mode = 0;
     if (perms & ReadOwnerPerm)
         mode |= S_IRUSR;
@@ -913,18 +924,27 @@ bool QFSFileEngine::setPermissions(uint perms)
     if (perms & ExeOtherPerm)
         mode |= S_IXOTH;
     if (d->fd != -1)
-        return fchmod(d->fd, mode) == 0;
-    return ::chmod(d->nativeFilePath.constData(), mode) == 0;
+        ret = fchmod(d->fd, mode) == 0;
+    else
+        ret = ::chmod(d->nativeFilePath.constData(), mode) == 0;
+    if (!ret)
+        setError(QFile::PermissionsError, qt_error_string(errno));
+    return ret;
 }
 
 bool QFSFileEngine::setSize(qint64 size)
 {
     Q_D(QFSFileEngine);
+    bool ret = false;
     if (d->fd != -1)
-        return QT_FTRUNCATE(d->fd, size) == 0;
-    if (d->fh)
-        return QT_FTRUNCATE(QT_FILENO(d->fh), size) == 0;
-    return QT_TRUNCATE(d->nativeFilePath.constData(), size) == 0;
+        ret = QT_FTRUNCATE(d->fd, size) == 0;
+    else if (d->fh)
+        ret = QT_FTRUNCATE(QT_FILENO(d->fh), size) == 0;
+    else
+        ret = QT_TRUNCATE(d->nativeFilePath.constData(), size) == 0;
+    if (!ret)
+        setError(QFile::ResizeError, qt_error_string(errno));
+    return ret;
 }
 
 QDateTime QFSFileEngine::fileTime(FileTime time) const

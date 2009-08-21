@@ -780,21 +780,30 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
 bool QFSFileEngine::remove()
 {
     Q_D(QFSFileEngine);
-    return ::DeleteFile((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16()) != 0;
+    bool ret = ::DeleteFile((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16()) != 0;
+    if (!ret)
+        setError(QFile::RemoveError, qt_error_string());
+    return ret;
 }
 
 bool QFSFileEngine::copy(const QString &copyName)
 {
     Q_D(QFSFileEngine);
-    return ::CopyFile((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(),
-                      (wchar_t*)QFSFileEnginePrivate::longFileName(copyName).utf16(), true) != 0;
+    bool ret = ::CopyFile((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(),
+                          (wchar_t*)QFSFileEnginePrivate::longFileName(copyName).utf16(), true) != 0;
+    if (!ret)
+        setError(QFile::CopyError, qt_error_string());
+    return ret;
 }
 
 bool QFSFileEngine::rename(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    return ::MoveFile((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(),
-                      (wchar_t*)QFSFileEnginePrivate::longFileName(newName).utf16()) != 0;
+    bool ret = ::MoveFile((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(),
+                          (wchar_t*)QFSFileEnginePrivate::longFileName(newName).utf16()) != 0;
+    if (!ret)
+        setError(QFile::RenameError, qt_error_string());
+    return ret;
 }
 
 static inline bool mkDir(const QString &path)
@@ -1303,6 +1312,9 @@ bool QFSFileEngine::link(const QString &newName)
         }
         psl->Release();
     }
+    if (!ret)
+        setError(QFile::RenameError, qt_error_string());
+
     if(neededCoInit)
             CoUninitialize();
 
@@ -1319,7 +1331,10 @@ bool QFSFileEngine::link(const QString &newName)
     // Need to append on our own
     orgName.prepend(QLatin1Char('"'));
     orgName.append(QLatin1Char('"'));
-    return SUCCEEDED(SHCreateShortcut((wchar_t*)linkName.utf16(), (wchar_t*)orgName.utf16()));
+    bool ret = SUCCEEDED(SHCreateShortcut((wchar_t*)linkName.utf16(), (wchar_t*)orgName.utf16()));
+    if (!ret)
+        setError(QFile::RenameError, qt_error_string());
+    return ret;
 #endif // Q_OS_WINCE
 }
 
@@ -1643,7 +1658,9 @@ bool QFSFileEngine::setPermissions(uint perms)
     if (mode == 0) // not supported
         return false;
 
-    ret = ::_wchmod((wchar_t*)d->longFileName(d->filePath).utf16(), mode) == 0;
+    ret = ::_wchmod((wchar_t*)QFSFileEnginePrivate::longFileName(d->filePath).utf16(), mode) == 0;
+    if (!ret)
+        setError(QFile::PermissionsError, qt_error_string(errno));
     return ret;
 }
 
@@ -1675,7 +1692,10 @@ bool QFSFileEngine::setSize(qint64 size)
         // resize file on disk
         QFile file(d->filePath);
         if (file.open(QFile::ReadWrite)) {
-            return file.resize(size);
+            bool ret = file.resize(size);
+            if (!ret)
+                setError(QFile::ResizeError, file.errorString());
+            return ret;
         }
     }
     return false;

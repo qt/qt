@@ -52,10 +52,6 @@
 # include "qcoreapplication.h"
 #endif
 
-#if !defined(Q_OS_WINCE)
-#include <errno.h>
-#endif
-
 #ifdef QT_NO_QOBJECT
 #define tr(X) QString::fromLatin1(X)
 #endif
@@ -654,11 +650,7 @@ QFile::remove()
             unsetError();
             return true;
         }
-#if defined(Q_OS_WIN)
-        d->setError(QFile::RemoveError, GetLastError());
-#else
-        d->setError(QFile::RemoveError, errno);
-#endif
+        d->setError(QFile::RemoveError, fileEngine()->errorString());
     }
     return false;
 }
@@ -809,7 +801,7 @@ QFile::link(const QString &linkName)
         unsetError();
         return true;
     }
-    d->setError(QFile::RenameError, errno);
+    d->setError(QFile::RenameError, fileEngine()->errorString());
     return false;
 }
 
@@ -1255,7 +1247,7 @@ QFile::resize(qint64 sz)
         unsetError();
         return true;
     }
-    d->setError(QFile::ResizeError, errno);
+    d->setError(QFile::ResizeError, fileEngine()->errorString());
     return false;
 }
 
@@ -1319,7 +1311,7 @@ QFile::setPermissions(Permissions permissions)
         unsetError();
         return true;
     }
-    d->setError(QFile::PermissionsError, errno);
+    d->setError(QFile::PermissionsError, fileEngine()->errorString());
     return false;
 }
 
