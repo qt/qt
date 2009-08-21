@@ -113,6 +113,16 @@ void MMF::DummyPlayer::setNextSource(const MediaSource &)
 
 
 //-----------------------------------------------------------------------------
+// VolumeObserver
+//-----------------------------------------------------------------------------
+
+void MMF::DummyPlayer::volumeChanged(qreal)
+{
+
+}
+
+
+//-----------------------------------------------------------------------------
 // AbstractPlayer
 //-----------------------------------------------------------------------------
 
@@ -121,10 +131,6 @@ void MMF::DummyPlayer::doSetTickInterval(qint32)
 
 }
 
-bool MMF::DummyPlayer::doSetVolume(qreal)
-{
-	return true;
-}
 
 
 

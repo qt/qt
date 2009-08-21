@@ -21,7 +21,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "audiooutput.h"
 #include "defs.h"
 #include "utils.h"
-#include "volumecontrolinterface.h"
+#include "volumeobserver.h"
 
 using namespace Phonon;
 using namespace Phonon::MMF;
@@ -33,7 +33,7 @@ using namespace Phonon::MMF;
 
 MMF::AudioOutput::AudioOutput(Backend *, QObject *parent)	: QObject(parent)
 															, m_volume(InitialVolume)
-															, m_volumeControl(NULL)
+															, m_observer(NULL)
 {
 
 }
@@ -45,32 +45,26 @@ MMF::AudioOutput::AudioOutput(Backend *, QObject *parent)	: QObject(parent)
 
 qreal MMF::AudioOutput::volume() const
 {
-    TRACE_CONTEXT(AudioOutput::volume, EAudioApi);
-    TRACE_ENTRY("control 0x%08x ", m_volumeControl);
-
-    const qreal result = m_volumeControl ? m_volumeControl->volume() : m_volume;
-
-    TRACE_RETURN("%f", result);
+	return m_volume;
 }
 
 void MMF::AudioOutput::setVolume(qreal volume)
 {
     TRACE_CONTEXT(AudioOutput::setVolume, EAudioApi);
-    TRACE_ENTRY("control 0x%08x volume %f", m_volumeControl, volume);
+    TRACE_ENTRY("observer 0x%08x volume %f", m_observer, volume);
 
-    if(m_volumeControl)
+    if(volume != m_volume)
     {
-		if(m_volumeControl->setVolume(volume))
+		if(m_observer)
 		{
-			TRACE("emit volumeChanged(%f)", volume)
-			emit volumeChanged(volume);
+			m_observer->volumeChanged(volume);
 		}
-    }
-    else
-    {
+		
 		m_volume = volume;
+		TRACE("emit volumeChanged(%f)", volume)
+		emit volumeChanged(volume);
     }
-
+    
     TRACE_EXIT_0();
 }
 
@@ -89,10 +83,10 @@ bool MMF::AudioOutput::setOutputDevice(const Phonon::AudioOutputDevice &)
     return true;
 }
 
-void MMF::AudioOutput::setVolumeControl(VolumeControlInterface *volumeControl)
+void MMF::AudioOutput::setVolumeObserver(VolumeObserver& observer)
 {
-    Q_ASSERT(!m_volumeControl);
-    m_volumeControl = volumeControl;
-    m_volumeControl->setVolume(m_volume);
+    Q_ASSERT(!m_observer);
+    m_observer = &observer;
+    m_observer->volumeChanged(m_volume);
 }
 

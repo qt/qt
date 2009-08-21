@@ -22,9 +22,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <include/videoplayer.h>
 
 #include "abstractmediaplayer.h"
+#include "videooutput.h"
 
 class CVideoPlayerUtility;
-class QSymbianControl;
 
 namespace Phonon
 {
@@ -51,7 +51,7 @@ namespace Phonon
             virtual void doPlay();
             virtual void doPause();
             virtual void doStop();
-            virtual int doSetMmfVolume(int mmfVolume);
+            virtual int setDeviceVolume(int mmfVolume);
             virtual int openFile(RFile& file);
             virtual void close();
             
@@ -79,7 +79,7 @@ namespace Phonon
             
         private:
         	CVideoPlayerUtility*				m_player;
-        	QScopedPointer<QWidget>				m_widget;
+        	QScopedPointer<VideoOutput>			m_widget;
 
         };
     }

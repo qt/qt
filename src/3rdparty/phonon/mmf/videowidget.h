@@ -22,12 +22,13 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtGui/QWidget>
 #include <phonon/videowidget.h>
 #include <phonon/videowidgetinterface.h>
+#include "videooutput.h"
 
 namespace Phonon
 {
     namespace MMF
     {
-        class VideoWidget		:	public QWidget
+        class VideoWidget		:	public QObject
 								,	public Phonon::VideoWidgetInterface
         {
             Q_OBJECT
@@ -53,6 +54,8 @@ namespace Phonon
 			virtual QWidget *widget();
 			
         private:
+        	QScopedPointer<VideoOutput>				m_widget;
+        	
         	Phonon::VideoWidget::AspectRatio		m_aspectRatio;
         	qreal									m_brightness;
         	Phonon::VideoWidget::ScaleMode			m_scaleMode;

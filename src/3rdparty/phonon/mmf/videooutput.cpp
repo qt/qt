@@ -16,8 +16,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "abstractplayer.h"
-#include "defs.h"
+#include "utils.h"
+#include "videooutput.h"
 
 using namespace Phonon;
 using namespace Phonon::MMF;
@@ -27,55 +27,19 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AbstractPlayer::AbstractPlayer()
-						:	m_tickInterval(DefaultTickInterval)
-						,	m_transitionTime(0)
-						,	m_prefinishMark(0)
+MMF::VideoOutput::VideoOutput(QWidget* parent)
+					:	QWidget(parent)
 {
 
 }
 
-MMF::AbstractPlayer::AbstractPlayer(const AbstractPlayer& player)
-						:	m_tickInterval(player.tickInterval())
-						,	m_transitionTime(player.transitionTime())
-						,	m_prefinishMark(player.prefinishMark())
+MMF::VideoOutput::~VideoOutput()
 {
 
 }
+
 
 //-----------------------------------------------------------------------------
-// MediaObjectInterface
+// Public API
 //-----------------------------------------------------------------------------
-
-qint32 MMF::AbstractPlayer::tickInterval() const
-{
-    return m_tickInterval;
-}
-
-void MMF::AbstractPlayer::setTickInterval(qint32 interval)
-{
-    m_tickInterval = interval;
-    doSetTickInterval(interval);
-}
-
-qint32 MMF::AbstractPlayer::prefinishMark() const
-{
-	return m_prefinishMark;
-}
-
-void MMF::AbstractPlayer::setPrefinishMark(qint32 mark)
-{
-	m_prefinishMark = mark;
-}
-
-qint32 MMF::AbstractPlayer::transitionTime() const
-{
-	return m_transitionTime;
-}
-
-void MMF::AbstractPlayer::setTransitionTime(qint32 time)
-{
-    m_transitionTime = time;
-}
-
 

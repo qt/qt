@@ -84,7 +84,7 @@ void MMF::AudioPlayer::doStop()
 	m_player->Stop();
 }
 
-int MMF::AudioPlayer::doSetMmfVolume(int mmfVolume)
+int MMF::AudioPlayer::setDeviceVolume(int mmfVolume)
 {
 	return m_player->SetVolume(mmfVolume);
 }
@@ -177,7 +177,7 @@ void MMF::AudioPlayer::MapcInitComplete(TInt aError,
 
     if(KErrNone == aError)
     {
-		initVolume(m_player->MaxVolume());
+		maxVolumeChanged(m_player->MaxVolume());
 
 		emit totalTimeChanged();
 		changeState(StoppedState);

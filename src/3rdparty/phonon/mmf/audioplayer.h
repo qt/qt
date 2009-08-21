@@ -58,7 +58,7 @@ namespace Phonon
             virtual void doPlay();
             virtual void doPause();
             virtual void doStop();
-            virtual int doSetMmfVolume(int mmfVolume);
+            virtual int setDeviceVolume(int mmfVolume);
             virtual int openFile(RFile& file);
             virtual void close();
             

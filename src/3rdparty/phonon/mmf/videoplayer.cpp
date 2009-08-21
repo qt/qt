@@ -33,14 +33,14 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::VideoPlayer::VideoPlayer() : m_widget(new QWidget())
+MMF::VideoPlayer::VideoPlayer() : m_widget(new VideoOutput(NULL))
 {
 	construct();
 }
 
 MMF::VideoPlayer::VideoPlayer(const AbstractPlayer& player)
 								: AbstractMediaPlayer(player)
-								, m_widget(new QWidget())
+								, m_widget(new VideoOutput(NULL))		// TODO: copy??
 {
 	construct();
 }
@@ -117,7 +117,7 @@ void MMF::VideoPlayer::doStop()
 	m_player->Stop();
 }
 
-int MMF::VideoPlayer::doSetMmfVolume(int mmfVolume)
+int MMF::VideoPlayer::setDeviceVolume(int mmfVolume)
 {
 	TRAPD(err, m_player->SetVolumeL(mmfVolume));
 	return err;
@@ -233,7 +233,7 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
 
 	if(KErrNone == aError)
 	{
-		initVolume(m_player->MaxVolume());
+		maxVolumeChanged(m_player->MaxVolume());
 
 		emit totalTimeChanged();
 		changeState(StoppedState);

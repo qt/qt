@@ -57,24 +57,26 @@ namespace Phonon
             virtual MediaSource source() const;
             virtual void setFileSource(const Phonon::MediaSource&, RFile&);
             virtual void setNextSource(const MediaSource &source);
+            
+        	// VolumeObserver
+        	virtual void volumeChanged(qreal volume);
 
         protected:
         	// AbstractPlayer
         	virtual void doSetTickInterval(qint32 interval);
-        	virtual bool doSetVolume(qreal volume);
         	
         protected:
         	virtual void doPlay() = 0;
         	virtual void doPause() = 0;
         	virtual void doStop() = 0;
-        	virtual int doSetMmfVolume(int mmfVolume) = 0;
+        	virtual int setDeviceVolume(int mmfVolume) = 0;
         	virtual int openFile(RFile& file) = 0;
         	virtual void close() = 0;
         	
         protected:
         	void startTickTimer();
         	void stopTickTimer();
-        	void initVolume(int maxVolume);
+        	void maxVolumeChanged(int maxVolume);
         	
         	/**
 			 * Defined private state enumeration in order to add GroundState
@@ -111,6 +113,9 @@ namespace Phonon
 			void setError(Phonon::ErrorType error);
 			
             static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
+            
+        private:
+        	void doVolumeChanged();
         	
         Q_SIGNALS:
 			void tick(qint64 time);
@@ -135,6 +140,8 @@ namespace Phonon
         	bool						m_playPending;
         	
         	QScopedPointer<QTimer>		m_tickTimer;
+        	
+        	qreal						m_volume;
             int							m_mmfMaxVolume;
             
             MediaSource					m_source;

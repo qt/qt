@@ -16,8 +16,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef PHONON_MMF_VOLUMECONTROLINTERFACE_H
-#define PHONON_MMF_VOLUMECONTROLINTERFACE_H
+#ifndef PHONON_MMF_VOLUMEOBSERVER_H
+#define PHONON_MMF_VOLUMEOBSERVER_H
 
 #include <QtGlobal>
 
@@ -29,18 +29,10 @@ namespace Phonon
          * Interface used by AudioOutput to pass volume control commands
          * back along the audio path to the MediaObject.
          */
-        class VolumeControlInterface
+        class VolumeObserver
         {
-        public:
-			virtual qreal volume() const = 0;
-			
-			/**
-			 * Returns true if the volume of the underlying audio stack is
-			 * changed as a result of this call.  The return value is used
-			 * by the AudioDevice to determine whether to emit a 
-			 * volumeChanged signal.
-			 */
-			virtual bool setVolume(qreal volume) = 0;
+        public:		
+			virtual void volumeChanged(qreal volume) = 0;
         };
     }
 }

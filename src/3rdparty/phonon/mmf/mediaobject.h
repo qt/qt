@@ -27,7 +27,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 // For recognizer
 #include <apgcli.h>
 
-#include "volumecontrolinterface.h"
+#include "volumeobserver.h"
 
 namespace Phonon
 {
@@ -35,13 +35,13 @@ namespace Phonon
     {
         class AbstractPlayer;
         class AudioOutput;
-
+        
         /**
          * @short Facade class which wraps MMF client utility instance
          */
         class MediaObject : public QObject
                           , public MediaObjectInterface
-                          , public VolumeControlInterface
+                          , public VolumeObserver
         {
             Q_OBJECT
             Q_INTERFACES(Phonon::MediaObjectInterface)
@@ -71,10 +71,9 @@ namespace Phonon
             virtual void setPrefinishMark(qint32);
             virtual qint32 transitionTime() const;
             virtual void setTransitionTime(qint32);
-
-            // VolumeControlInterface
-            qreal volume() const;
-            bool setVolume(qreal volume);
+            
+            // VolumeObserver
+            void volumeChanged(qreal volume);       
 
         Q_SIGNALS:
             void totalTimeChanged();
@@ -97,15 +96,16 @@ namespace Phonon
 			
         private:
             // Audio / video media type recognition
-            bool				m_recognizerOpened;
-			RApaLsSession		m_recognizer;
-			RFs					m_fileServer;
+            bool								m_recognizerOpened;
+			RApaLsSession						m_recognizer;
+			RFs									m_fileServer;
 
 			// Storing the file handle here to work around KErrInUse error
 			// from MMF player utility OpenFileL functions
-			RFile				m_file;
+			RFile								m_file;
 
-            QScopedPointer<AbstractPlayer> m_player;
+            QScopedPointer<AbstractPlayer>		m_player;
+            
         };
     }
 }

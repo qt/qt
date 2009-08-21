@@ -23,7 +23,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <Phonon/phononnamespace.h>
 #include <Phonon/MediaSource.h>
 
-#include "volumecontrolinterface.h"
+#include "volumeobserver.h"
 
 class RFile;
 
@@ -44,7 +44,7 @@ namespace Phonon
          *  -	Video, in which case the implementation is VideoPlayer
          */
         class AbstractPlayer	: public QObject
-								, public VolumeControlInterface
+								, public VolumeObserver
         {
 			// Required although this class has no signals or slots
 			// Without this, qobject_cast will fail
@@ -81,19 +81,13 @@ namespace Phonon
             virtual void setFileSource(const Phonon::MediaSource&, RFile&) = 0;
             virtual void setNextSource(const Phonon::MediaSource &) = 0;
             
-            // VolumeControlInterface
-            qreal volume() const;
-            bool setVolume(qreal volume);
-            
         private:
         	virtual void doSetTickInterval(qint32 interval) = 0;
-            virtual bool doSetVolume(qreal volume) = 0;
         	
-        private:
-        	qint32		m_tickInterval;
-        	qreal		m_volume;
-        	qint32		m_transitionTime;
-        	qint32		m_prefinishMark;
+        private:       	
+        	qint32						m_tickInterval;
+        	qint32						m_transitionTime;
+        	qint32						m_prefinishMark;
 
         };
     }

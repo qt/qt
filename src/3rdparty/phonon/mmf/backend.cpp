@@ -98,16 +98,23 @@ bool Backend::connectNodes(QObject *source, QObject *target)
 
 	MediaObject *const mediaObject = qobject_cast<MediaObject *>(source);
     AudioOutput *const audioOutput = qobject_cast<AudioOutput *>(target);
-
+    VideoWidget *const videoWidget = qobject_cast<VideoWidget *>(target);
+    
     bool result = false;
     
     if(mediaObject and audioOutput)
     {
 		TRACE("mediaObject 0x%08x -> audioOutput 0x%08x", mediaObject, audioOutput);
-    
-		audioOutput->setVolumeControl(mediaObject);
+		audioOutput->setVolumeObserver(*mediaObject);
 		result = true;
     }
+    
+    if(mediaObject and videoWidget)
+	{
+		TRACE("mediaObject 0x%08x -> videoWidget 0x%08x", mediaObject, videoWidget);
+		// TODO: the actual connection :)
+		result = true;
+	}
     
     TRACE_RETURN("%d", result);
 }

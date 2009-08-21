@@ -19,19 +19,19 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_AUDIOOUTPUT_H
 #define PHONON_MMF_AUDIOOUTPUT_H
 
-#include <Phonon/audiooutputinterface.h>
+#include <phonon/audiooutputinterface.h>
 
 namespace Phonon
 {
     namespace MMF
     {
         class Backend;
-        class VolumeControlInterface;
+        class VolumeObserver;
 
         /**
          * @short AudioOutputInterface implementation for MMF.
          *
-         * Forwards volume commands to the VolumeControlInterface instance, 
+         * Forwards volume commands to the VolumeObserver instance, 
          * which is provided by the backend when MediaNode objects are 
          * connected.
          *
@@ -70,19 +70,17 @@ namespace Phonon
             /**
              * Called by backend when nodes are connected.
              */
-            void setVolumeControl(VolumeControlInterface *volumeControl);
+            void setVolumeObserver(VolumeObserver& observer);
 
         Q_SIGNALS:
             void volumeChanged(qreal volume);
             void audioDeviceFailed();
 
         private:
-        	/**
-        	 * This value is used when m_volumeControl is NULL.
-        	 */
-        	qreal						m_volume;
+        	qreal							m_volume;
         	
-        	VolumeControlInterface *	m_volumeControl;
+        	// Not owned
+        	VolumeObserver*					m_observer;
         };
     }
 }

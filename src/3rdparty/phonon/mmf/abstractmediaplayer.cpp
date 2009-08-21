@@ -17,6 +17,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "abstractmediaplayer.h"
+#include "defs.h"
 #include "utils.h"
 
 using namespace Phonon;
@@ -36,7 +37,9 @@ const int		NullMaxVolume = -1;
 MMF::AbstractMediaPlayer::AbstractMediaPlayer() :
 							m_state(GroundState)
 						,	m_error(NoError)
+						,	m_playPending(false)
 						,	m_tickTimer(new QTimer(this))
+						,	m_volume(InitialVolume)
 						,	m_mmfMaxVolume(NullMaxVolume)
 {
 	connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
@@ -46,7 +49,9 @@ MMF::AbstractMediaPlayer::AbstractMediaPlayer(const AbstractPlayer& player) :
 							AbstractPlayer(player)
 						,	m_state(GroundState)
 						,	m_error(NoError)
+						,	m_playPending(false)
 						,	m_tickTimer(new QTimer(this))
+						,	m_volume(InitialVolume)
 						,	m_mmfMaxVolume(NullMaxVolume)
 {
 	connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
@@ -292,47 +297,51 @@ void MMF::AbstractMediaPlayer::setNextSource(const MediaSource &source)
 
 
 //-----------------------------------------------------------------------------
-// VolumeControlInterface
+// VolumeObserver
 //-----------------------------------------------------------------------------
 
-bool MMF::AbstractMediaPlayer::doSetVolume(qreal volume)
+void MMF::AbstractMediaPlayer::volumeChanged(qreal volume)
 {
-    TRACE_CONTEXT(AbstractMediaPlayer::doSetVolume, EAudioInternal);
+    TRACE_CONTEXT(AbstractMediaPlayer::volumeChanged, EAudioInternal);
     TRACE_ENTRY("state %d", m_state);
-
-    bool result = true;
     
-    switch(m_state)
-    {
-        case GroundState:
-        case LoadingState:
-        case ErrorState:
-			// Do nothing
-            break;
+    m_volume = volume;
+    doVolumeChanged();
+    
+    TRACE_EXIT_0();
+}
 
-        case StoppedState:
-        case PausedState:
-        case PlayingState:
-        case BufferingState:
-        {
-			const int err = doSetMmfVolume(volume * m_mmfMaxVolume);
-            
-            if(KErrNone != err)
-            {
+
+void MMF::AbstractMediaPlayer::doVolumeChanged()
+{
+	switch(m_state)
+	{
+		case GroundState:
+		case LoadingState:
+		case ErrorState:
+			// Do nothing
+			break;
+
+		case StoppedState:
+		case PausedState:
+		case PlayingState:
+		case BufferingState:
+		{
+			const int err = setDeviceVolume(m_volume * m_mmfMaxVolume);
+			
+			if(KErrNone != err)
+			{
 				m_error = NormalError;
 				changeState(ErrorState);
-				result = false;
-            }
-            break;
-        }
+			}
+			break;
+		}
 
-        // Protection against adding new states and forgetting to update this
-        // switch
-        default:
-            TRACE_PANIC(InvalidStatePanic);
-    }
-    
-    TRACE_RETURN("%d", result);
+		// Protection against adding new states and forgetting to update this
+		// switch
+		default:
+			Utils::panic(InvalidStatePanic);
+	}
 }
 
 
@@ -350,10 +359,10 @@ void MMF::AbstractMediaPlayer::stopTickTimer()
 	m_tickTimer->stop();
 }
 
-void MMF::AbstractMediaPlayer::initVolume(int mmfMaxVolume)
+void MMF::AbstractMediaPlayer::maxVolumeChanged(int mmfMaxVolume)
 {
 	m_mmfMaxVolume = mmfMaxVolume;
-	doSetVolume(volume() * m_mmfMaxVolume);
+	doVolumeChanged();
 }
 
 Phonon::State MMF::AbstractMediaPlayer::phononState() const
