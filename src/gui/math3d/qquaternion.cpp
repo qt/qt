@@ -41,6 +41,7 @@
 
 #include "qquaternion.h"
 #include <QtCore/qmath.h>
+#include <QtCore/qvariant.h>
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -558,6 +559,14 @@ QQuaternion QQuaternion::nlerp
 
     // Perform the linear interpolation.
     return (q1 * (1.0f - t) + q2b * t).normalized();
+}
+
+/*!
+    Returns the quaternion as a QVariant.
+*/
+QQuaternion::operator QVariant() const
+{
+    return QVariant(QVariant::Quaternion, this);
 }
 
 #ifndef QT_NO_DEBUG_STREAM
