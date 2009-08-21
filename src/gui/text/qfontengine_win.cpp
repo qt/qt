@@ -1098,6 +1098,7 @@ extern bool qt_cleartype_enabled;
 QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin,
                                            const QTransform &t, QImage::Format mask_format)
 {
+    Q_UNUSED(mask_format)
     glyph_metrics_t gm = boundingBox(glyph);
 
 //     printf(" -> for glyph %4x\n", glyph);
