@@ -225,6 +225,7 @@ void QTimerActiveObject::RunL()
 {
     int error;
     QT_TRYCATCH_ERROR(error, Run());
+    // All Symbian error codes are negative.
     if (error < 0) {
         CActiveScheduler::Current()->Error(error);  // stop and report here, as this timer will be deleted on scope exit
     }
@@ -275,7 +276,7 @@ void QTimerActiveObject::Start()
 }
 
 SymbianTimerInfo::SymbianTimerInfo()
-: timerAO(0)
+    : timerAO(0)
 {
 }
 
@@ -369,10 +370,8 @@ void QSelectThread::run()
 
         int ret;
         int savedSelectErrno;
-        //do {
-            ret = qt_socket_select(maxfd, &readfds, &writefds, &exceptionfds, 0);
-            savedSelectErrno = errno;
-        //} while (ret == 0);
+        ret = qt_socket_select(maxfd, &readfds, &writefds, &exceptionfds, 0);
+        savedSelectErrno = errno;
 
         char buffer;
 
@@ -405,7 +404,6 @@ void QSelectThread::run()
                 FD_ZERO(&readfds);
                 FD_ZERO(&writefds);
                 FD_ZERO(&exceptionfds);
-                {
                 for (QHash<QSocketNotifier *, TRequestStatus *>::const_iterator i = m_AOStatuses.begin();
                         i != m_AOStatuses.end(); ++i) {
 
@@ -434,7 +432,6 @@ void QSelectThread::run()
                     }
 
                 } // end for
-                }
 
                 // traversed all, so update
                 updateActivatedNotifiers(QSocketNotifier::Read, &readfds);
