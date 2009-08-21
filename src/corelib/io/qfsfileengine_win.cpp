@@ -55,6 +55,7 @@
 #if !defined(Q_OS_WINCE)
 #  include <sys/types.h>
 #  include <direct.h>
+#  include <winioctl.h>
 #else
 #  include <types.h>
 #endif
@@ -86,6 +87,37 @@ typedef INT_PTR intptr_t;
 
 #ifndef INVALID_FILE_ATTRIBUTES
 #  define INVALID_FILE_ATTRIBUTES (DWORD (-1))
+#endif
+
+#if !defined(REPARSE_DATA_BUFFER_HEADER_SIZE) && !defined(Q_OS_WINCE)
+typedef struct _REPARSE_DATA_BUFFER {
+    ULONG  ReparseTag;
+    USHORT ReparseDataLength;
+    USHORT Reserved;
+    union {
+        struct {
+            USHORT SubstituteNameOffset;
+            USHORT SubstituteNameLength;
+            USHORT PrintNameOffset;
+            USHORT PrintNameLength;
+            ULONG  Flags;
+            WCHAR  PathBuffer[1];
+        } SymbolicLinkReparseBuffer;
+        struct {
+            USHORT SubstituteNameOffset;
+            USHORT SubstituteNameLength;
+            USHORT PrintNameOffset;
+            USHORT PrintNameLength;
+            WCHAR  PathBuffer[1];
+        } MountPointReparseBuffer;
+        struct {
+            UCHAR  DataBuffer[1];
+        } GenericReparseBuffer;
+    };
+} REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
+
+#  define REPARSE_DATA_BUFFER_HEADER_SIZE  FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
+#  define MAXIMUM_REPARSE_DATA_BUFFER_SIZE 16384
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1210,6 +1242,44 @@ bool QFSFileEnginePrivate::doStat() const
 }
 
 
+static QString readSymLink(const QString &link)
+{
+    QString result;
+#if !defined(Q_OS_WINCE)
+    HANDLE handle = CreateFile((wchar_t*)QFSFileEnginePrivate::longFileName(link).utf16(),
+                               FILE_READ_EA,
+                               FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                               0,
+                               OPEN_EXISTING,
+                               FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+                               0);
+    if (handle != INVALID_HANDLE_VALUE) {
+        DWORD bufsize = MAXIMUM_REPARSE_DATA_BUFFER_SIZE;
+        REPARSE_DATA_BUFFER *rdb = (REPARSE_DATA_BUFFER*)qMalloc(bufsize);
+        DWORD retsize = 0;
+        if (::DeviceIoControl(handle, FSCTL_GET_REPARSE_POINT, 0, 0, rdb, bufsize, &retsize, 0)) {
+            if (rdb->ReparseTag == IO_REPARSE_TAG_MOUNT_POINT) {
+                int length = rdb->MountPointReparseBuffer.SubstituteNameLength / sizeof(wchar_t);
+                int offset = rdb->MountPointReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
+                const wchar_t* PathBuffer = &rdb->MountPointReparseBuffer.PathBuffer[offset];
+                result = QString::fromWCharArray(PathBuffer, length);
+            } else {
+                int length = rdb->SymbolicLinkReparseBuffer.SubstituteNameLength / sizeof(wchar_t);
+                int offset = rdb->SymbolicLinkReparseBuffer.SubstituteNameOffset / sizeof(wchar_t);
+                const wchar_t* PathBuffer = &rdb->SymbolicLinkReparseBuffer.PathBuffer[offset];
+                result = QString::fromWCharArray(PathBuffer, length);
+            }
+            // cut-off "//?/" and "/??/"
+            if (result.size() > 4 && result.at(0) == QLatin1Char('\\') && result.at(2) == QLatin1Char('?') && result.at(3) == QLatin1Char('\\'))
+                result = result.mid(4);
+        }
+        qFree(rdb);
+        CloseHandle(handle);
+    }
+#endif // Q_OS_WINCE
+    return result;
+}
+
 static QString readLink(const QString &link)
 {
 #if !defined(Q_OS_WINCE)
@@ -1265,14 +1335,6 @@ static QString readLink(const QString &link)
     }
     return result;
 #endif // Q_OS_WINCE
-}
-
-/*!
-    \internal
-*/
-QString QFSFileEnginePrivate::getLink() const
-{
-    return readLink(filePath);
 }
 
 bool QFSFileEngine::link(const QString &newName)
@@ -1621,7 +1683,12 @@ QString QFSFileEngine::fileName(FileName file) const
         }
         return ret;
     } else if(file == LinkName) {
-        return QDir::fromNativeSeparators(d->getLink());
+        QString ret;
+        if (d->filePath.endsWith(QLatin1String(".lnk")))
+            ret = readLink(d->filePath);
+        else if (d->doStat() && d->isSymlink())
+            ret = readSymLink(d->filePath);
+        return QDir::fromNativeSeparators(ret);
     } else if(file == BundleName) {
         return QString();
     }

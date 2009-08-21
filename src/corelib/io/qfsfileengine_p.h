@@ -162,7 +162,6 @@ protected:
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     QAbstractFileEngine::FileFlags getPermissions() const;
-    QString getLink() const;
 #endif
 };
 
