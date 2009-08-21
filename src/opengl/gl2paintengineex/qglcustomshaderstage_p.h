@@ -34,10 +34,13 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#ifndef QGL_CUSTOM_SHADER_STAGE_H
+#define QGL_CUSTOM_SHADER_STAGE_H
 
 //
 //  W A R N I N G
@@ -49,9 +52,6 @@
 //
 // We mean it.
 //
-
-#ifndef QGL_CUSTOM_SHADER_STAGE_H
-#define QGL_CUSTOM_SHADER_STAGE_H
 
 #include <QGLShaderProgram>
 
