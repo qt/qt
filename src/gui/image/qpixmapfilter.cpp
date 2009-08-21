@@ -852,7 +852,7 @@ public:
     QPixmapDropShadowFilterPrivate()
             : offset(8, 8),
             radius(1),
-            color(63, 63, 63, 255) {
+            color(63, 63, 63, 180) {
     }
 
     QPointF offset;
