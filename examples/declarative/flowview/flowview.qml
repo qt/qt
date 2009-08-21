@@ -66,7 +66,7 @@ Rectangle {
                     Transition {
                         fromState: "*"; toState: "InGrid"
                         SequentialAnimation { 
-                            ParentChangeAction{} 
+                            ParentAction{} 
                             PauseAnimation { duration: 50 * List.FlowView.column }
                             NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
                         } 
@@ -74,7 +74,7 @@ Rectangle {
                     Transition {
                         fromState: "*"; toState: "InList"
                         SequentialAnimation { 
-                            ParentChangeAction{} 
+                            ParentAction{} 
                             PauseAnimation { duration: 50 * (Grid.FlowView.row * 2 + Grid.FlowView.column) }
                             NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
                         } 

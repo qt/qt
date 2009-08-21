@@ -94,7 +94,7 @@ Item {
                                 easing: "easeInOutQuad"
                                 properties: "angle"
                             }
-                            RunScriptAction{
+                            ScriptAction{
                                 script: if(modelData.hasMine && modelData.flipped)
                                             {expl.explode = true;}
                             }

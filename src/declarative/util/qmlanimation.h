@@ -157,18 +157,18 @@ protected:
     virtual QAbstractAnimation *qtAnimation();
 };
 
-class QmlRunScriptActionPrivate;
-class QmlRunScriptAction : public QmlAbstractAnimation
+class QmlScriptActionPrivate;
+class QmlScriptAction : public QmlAbstractAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlRunScriptAction)
+    Q_DECLARE_PRIVATE(QmlScriptAction)
 
     Q_PROPERTY(QString script READ script WRITE setScript NOTIFY scriptChanged)
     Q_PROPERTY(QString runScriptName READ runScriptName WRITE setRunScriptName)
 
 public:
-    QmlRunScriptAction(QObject *parent=0);
-    virtual ~QmlRunScriptAction();
+    QmlScriptAction(QObject *parent=0);
+    virtual ~QmlScriptAction();
 
     QString script() const;
     void setScript(const QString &);
@@ -225,18 +225,18 @@ protected:
 };
 
 class QFxItem;
-class QmlParentChangeActionPrivate;
-class QmlParentChangeAction : public QmlAbstractAnimation
+class QmlParentActionPrivate;
+class QmlParentAction : public QmlAbstractAnimation
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlParentChangeAction)
+    Q_DECLARE_PRIVATE(QmlParentAction)
 
     Q_PROPERTY(QFxItem *target READ object WRITE setObject)
     Q_PROPERTY(QFxItem *parent READ parent WRITE setParent)
 
 public:
-    QmlParentChangeAction(QObject *parent=0);
-    virtual ~QmlParentChangeAction();
+    QmlParentAction(QObject *parent=0);
+    virtual ~QmlParentAction();
 
     QFxItem *object() const;
     void setObject(QFxItem *);
@@ -395,9 +395,9 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlAbstractAnimation)
 QML_DECLARE_TYPE(QmlPauseAnimation)
-QML_DECLARE_TYPE(QmlRunScriptAction)
+QML_DECLARE_TYPE(QmlScriptAction)
 QML_DECLARE_TYPE(QmlSetPropertyAction)
-QML_DECLARE_TYPE(QmlParentChangeAction)
+QML_DECLARE_TYPE(QmlParentAction)
 QML_DECLARE_TYPE(QmlPropertyAnimation)
 QML_DECLARE_TYPE(QmlColorAnimation)
 QML_DECLARE_TYPE(QmlNumberAnimation)

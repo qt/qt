@@ -220,11 +220,11 @@ public:
     QPauseAnimation *pa;
 };
 
-class QmlRunScriptActionPrivate : public QmlAbstractAnimationPrivate
+class QmlScriptActionPrivate : public QmlAbstractAnimationPrivate
 {
-    Q_DECLARE_PUBLIC(QmlRunScriptAction)
+    Q_DECLARE_PUBLIC(QmlScriptAction)
 public:
-    QmlRunScriptActionPrivate()
+    QmlScriptActionPrivate()
         : QmlAbstractAnimationPrivate(), proxy(this), rsa(0) {}
 
     void init();
@@ -235,8 +235,8 @@ public:
 
     void execute();
 
-    QAnimationActionProxy<QmlRunScriptActionPrivate,
-                  &QmlRunScriptActionPrivate::execute> proxy;
+    QAnimationActionProxy<QmlScriptActionPrivate,
+                  &QmlScriptActionPrivate::execute> proxy;
     QActionAnimation *rsa;
 };
 
@@ -262,11 +262,11 @@ public:
     QActionAnimation *spa;
 };
 
-class QmlParentChangeActionPrivate : public QmlAbstractAnimationPrivate
+class QmlParentActionPrivate : public QmlAbstractAnimationPrivate
 {
-    Q_DECLARE_PUBLIC(QmlParentChangeAction)
+    Q_DECLARE_PUBLIC(QmlParentAction)
 public:
-    QmlParentChangeActionPrivate()
+    QmlParentActionPrivate()
     : QmlAbstractAnimationPrivate(), pcTarget(0), pcParent(0) {}
 
     void init();

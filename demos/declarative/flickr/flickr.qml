@@ -101,13 +101,13 @@ Item {
             transitions: [
                 Transition {
                     fromState: "*"; toState: "Details"
-                    ParentChangeAction { }
+                    ParentAction { }
                     NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                 },
                 Transition {
                     fromState: "Details"; toState: "*"
                     SequentialAnimation {
-                        ParentChangeAction { }
+                        ParentAction { }
                         NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                         SetPropertyAction { target: Wrapper; properties: "z" }
                     }

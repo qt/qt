@@ -762,46 +762,46 @@ void QmlColorAnimation::setTo(const QColor &t)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ColorAnimation,QmlColorAnimation)
 
 /*!
-    \qmlclass RunScriptAction QmlRunScriptAction
+    \qmlclass ScriptAction QmlScriptAction
     \inherits Animation
-    \brief The RunScripAction allows scripts to be run during an animation.
+    \brief The ScriptAction allows scripts to be run during an animation.
 
 */
 /*!
     \internal
-    \class QmlRunScriptAction
+    \class QmlScriptAction
 */
-QmlRunScriptAction::QmlRunScriptAction(QObject *parent)
-    :QmlAbstractAnimation(*(new QmlRunScriptActionPrivate), parent)
+QmlScriptAction::QmlScriptAction(QObject *parent)
+    :QmlAbstractAnimation(*(new QmlScriptActionPrivate), parent)
 {
-    Q_D(QmlRunScriptAction);
+    Q_D(QmlScriptAction);
     d->init();
 }
 
-QmlRunScriptAction::~QmlRunScriptAction()
+QmlScriptAction::~QmlScriptAction()
 {
 }
 
-void QmlRunScriptActionPrivate::init()
+void QmlScriptActionPrivate::init()
 {
-    Q_Q(QmlRunScriptAction);
+    Q_Q(QmlScriptAction);
     rsa = new QActionAnimation(&proxy);
     QFx_setParent_noEvent(rsa, q);
 }
 
 /*!
-    \qmlproperty QString RunScriptAction::script
+    \qmlproperty QString ScriptAction::script
     This property holds the script to run.
 */
-QString QmlRunScriptAction::script() const
+QString QmlScriptAction::script() const
 {
-    Q_D(const QmlRunScriptAction);
+    Q_D(const QmlScriptAction);
     return d->script;
 }
 
-void QmlRunScriptAction::setScript(const QString &script)
+void QmlScriptAction::setScript(const QString &script)
 {
-    Q_D(QmlRunScriptAction);
+    Q_D(QmlScriptAction);
     if (script == d->script)
         return;
     d->script = script;
@@ -809,27 +809,27 @@ void QmlRunScriptAction::setScript(const QString &script)
 }
 
 /*!
-    \qmlproperty QString RunScriptAction::runScriptName
-    This property holds the the name of the RunScript to run.
+    \qmlproperty QString ScriptAction::runScriptName
+    This property holds the the name of the StateChangeScript to run.
 
-    This property is only valid when RunScriptAction is used as part of a transition.
+    This property is only valid when ScriptAction is used as part of a transition.
     If both script and runScriptName are set, runScriptName will be used.
 */
-QString QmlRunScriptAction::runScriptName() const
+QString QmlScriptAction::runScriptName() const
 {
-    Q_D(const QmlRunScriptAction);
+    Q_D(const QmlScriptAction);
     return d->script;
 }
 
-void QmlRunScriptAction::setRunScriptName(const QString &name)
+void QmlScriptAction::setRunScriptName(const QString &name)
 {
-    Q_D(QmlRunScriptAction);
+    Q_D(QmlScriptAction);
     d->name = name;
 }
 
-void QmlRunScriptActionPrivate::execute()
+void QmlScriptActionPrivate::execute()
 {
-    Q_Q(QmlRunScriptAction);
+    Q_Q(QmlScriptAction);
     QString scriptStr = runScriptScript.isEmpty() ? script : runScriptScript;
 
     if (!scriptStr.isEmpty()) {
@@ -839,11 +839,11 @@ void QmlRunScriptActionPrivate::execute()
     }
 }
 
-void QmlRunScriptAction::transition(QmlStateActions &actions,
+void QmlScriptAction::transition(QmlStateActions &actions,
                                     QmlMetaProperties &modified,
                                     TransitionDirection direction)
 {
-    Q_D(QmlRunScriptAction);
+    Q_D(QmlScriptAction);
     Q_UNUSED(modified);
     Q_UNUSED(direction);
 
@@ -861,13 +861,13 @@ void QmlRunScriptAction::transition(QmlStateActions &actions,
     }
 }
 
-QAbstractAnimation *QmlRunScriptAction::qtAnimation()
+QAbstractAnimation *QmlScriptAction::qtAnimation()
 {
-    Q_D(QmlRunScriptAction);
+    Q_D(QmlScriptAction);
     return d->rsa;
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,RunScriptAction,QmlRunScriptAction)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ScriptAction,QmlScriptAction)
 
 /*!
     \qmlclass SetPropertyAction QmlSetPropertyAction
@@ -1075,56 +1075,56 @@ void QmlSetPropertyAction::transition(QmlStateActions &actions,
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,SetPropertyAction,QmlSetPropertyAction)
 
 /*!
-    \qmlclass ParentChangeAction QmlParentChangeAction
+    \qmlclass ParentAction QmlParentAction
     \inherits Animation
-    \brief The ParentChangeAction allows parent changes during transitions.
+    \brief The ParentAction allows parent changes during transitions.
 
-    The ParentChangeAction is immediate - it is not animated in any way.
+    The ParentAction is immediate - it is not animated in any way.
 */
 
-QmlParentChangeAction::QmlParentChangeAction(QObject *parent)
-: QmlAbstractAnimation(*(new QmlParentChangeActionPrivate), parent)
+QmlParentAction::QmlParentAction(QObject *parent)
+: QmlAbstractAnimation(*(new QmlParentActionPrivate), parent)
 {
-    Q_D(QmlParentChangeAction);
+    Q_D(QmlParentAction);
     d->init();
 }
 
-QmlParentChangeAction::~QmlParentChangeAction()
+QmlParentAction::~QmlParentAction()
 {
 }
 
-void QmlParentChangeActionPrivate::init()
+void QmlParentActionPrivate::init()
 {
-    Q_Q(QmlParentChangeAction);
+    Q_Q(QmlParentAction);
     cpa = new QActionAnimation;
     QFx_setParent_noEvent(cpa, q);
 }
 
-QFxItem *QmlParentChangeAction::object() const
+QFxItem *QmlParentAction::object() const
 {
-    Q_D(const QmlParentChangeAction);
+    Q_D(const QmlParentAction);
     return d->pcTarget;
 }
 
-void QmlParentChangeAction::setObject(QFxItem *target)
+void QmlParentAction::setObject(QFxItem *target)
 {
-    Q_D(QmlParentChangeAction);
+    Q_D(QmlParentAction);
     d->pcTarget = target;
 }
 
-QFxItem *QmlParentChangeAction::parent() const
+QFxItem *QmlParentAction::parent() const
 {
-    Q_D(const QmlParentChangeAction);
+    Q_D(const QmlParentAction);
     return d->pcParent;
 }
 
-void QmlParentChangeAction::setParent(QFxItem *parent)
+void QmlParentAction::setParent(QFxItem *parent)
 {
-    Q_D(QmlParentChangeAction);
+    Q_D(QmlParentAction);
     d->pcParent = parent;
 }
 
-void QmlParentChangeActionPrivate::doAction()
+void QmlParentActionPrivate::doAction()
 {
     QmlParentChange pc;
     pc.setObject(pcTarget);
@@ -1132,24 +1132,24 @@ void QmlParentChangeActionPrivate::doAction()
     pc.execute();
 }
 
-QAbstractAnimation *QmlParentChangeAction::qtAnimation()
+QAbstractAnimation *QmlParentAction::qtAnimation()
 {
-    Q_D(QmlParentChangeAction);
+    Q_D(QmlParentAction);
     return d->cpa;
 }
 
-void QmlParentChangeAction::transition(QmlStateActions &actions,
+void QmlParentAction::transition(QmlStateActions &actions,
                                        QmlMetaProperties &modified,
                                        TransitionDirection direction)
 {
-    Q_D(QmlParentChangeAction);
+    Q_D(QmlParentAction);
     Q_UNUSED(modified);
     Q_UNUSED(direction);
 
-    struct QmlParentChangeActionData : public QAbstractAnimationAction
+    struct QmlParentActionData : public QAbstractAnimationAction
     {
-        QmlParentChangeActionData(): pc(0) {}
-        ~QmlParentChangeActionData() { delete pc; }
+        QmlParentActionData(): pc(0) {}
+        ~QmlParentActionData() { delete pc; }
 
         QmlStateActions actions;
         bool reverse;
@@ -1166,7 +1166,7 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
         }
     };
 
-    QmlParentChangeActionData *data = new QmlParentChangeActionData;
+    QmlParentActionData *data = new QmlParentActionData;
 
     for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
@@ -1197,7 +1197,7 @@ void QmlParentChangeAction::transition(QmlStateActions &actions,
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParentChangeAction,QmlParentChangeAction)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParentAction,QmlParentAction)
 
 /*!
     \qmlclass NumberAnimation QmlNumberAnimation
