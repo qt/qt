@@ -16,4 +16,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS stylewindow.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/tools/styleplugin/stylewindow
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

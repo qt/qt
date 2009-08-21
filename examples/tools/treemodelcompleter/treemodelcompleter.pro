@@ -11,4 +11,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS treemodelcompleter.pro r
 sources.path = $$[QT_INSTALL_EXAMPLES]/tools/treemodelcompleter
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

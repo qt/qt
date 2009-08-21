@@ -14,6 +14,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.cht
 sources.path = $$[QT_INSTALL_EXAMPLES]/itemviews/chart
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
-
-symbian:TARGET.UID3 = 0xA000A647
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000A647
+}

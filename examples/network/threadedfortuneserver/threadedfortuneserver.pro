@@ -13,4 +13,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS threadedfortuneserver.pr
 sources.path = $$[QT_INSTALL_EXAMPLES]/network/threadedfortuneserver
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

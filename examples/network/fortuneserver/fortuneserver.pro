@@ -9,9 +9,8 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS fortuneserver.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/network/fortuneserver
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
-
 symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     HEADERS += $$QT_SOURCE_TREE/examples/network/ftp/sym_iap_util.h
     LIBS += -lesock
     TARGET.UID3 = 0xA000CF71

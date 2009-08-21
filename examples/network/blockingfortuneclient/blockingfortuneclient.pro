@@ -11,4 +11,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS blockingfortuneclient.pr
 sources.path = $$[QT_INSTALL_EXAMPLES]/network/blockingfortuneclient
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

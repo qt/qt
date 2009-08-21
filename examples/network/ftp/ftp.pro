@@ -10,9 +10,8 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS ftp.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/network/ftp
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
-
 symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     HEADERS +=  sym_iap_util.h
     INCLUDEPATH += $$APP_LAYER_SYSTEMINCLUDE
     TARGET.CAPABILITY="NetworkServices ReadUserData WriteUserData"

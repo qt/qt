@@ -10,6 +10,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS calculator.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/calculator
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
-
-symbian:TARGET.UID3 = 0xA000C602
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000C602
+}

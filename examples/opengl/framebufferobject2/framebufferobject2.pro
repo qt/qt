@@ -10,4 +10,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES framebufferobject2.pro *.png
 sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/framebufferobject2
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

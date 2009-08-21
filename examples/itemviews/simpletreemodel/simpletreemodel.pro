@@ -12,4 +12,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.txt
 sources.path = $$[QT_INSTALL_EXAMPLES]/itemviews/simpletreemodel
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

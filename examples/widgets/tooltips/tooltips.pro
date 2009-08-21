@@ -11,4 +11,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS tooltips.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/tooltips
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

@@ -12,4 +12,4 @@ sources.files = $$SOURCES *.h $$RESOURCES $$FORMS querymodel.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/sql/querymodel
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

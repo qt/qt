@@ -8,6 +8,7 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS calendarwidget.pro resou
 sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/calendarwidget
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
-
-symbian:TARGET.UID3 = 0xA000C603
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000C603
+}

@@ -10,4 +10,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES pbuffers.pro *.png
 sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/pbuffers
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

@@ -15,4 +15,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS portedcanvas.pro *.png *
 sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/portedcanvas
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

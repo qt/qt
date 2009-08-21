@@ -10,6 +10,10 @@ target.path = $$[QT_INSTALL_EXAMPLES]/draganddrop/fridgemagnets
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.txt
 sources.path = $$[QT_INSTALL_EXAMPLES]/draganddrop/fridgemagnets
 INSTALLS += target sources
-TARGET.UID3 = 0xA000C610
 
-include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000C610
+}
+
+
