@@ -109,28 +109,37 @@ void GLWidget::makeObject()
     QColor qtGreen(QColor::fromCmykF(0.40, 0.0, 1.0, 0.0));
     const double Pi = 3.14159265358979323846;
     const int NumSectors = 15;
+    GLdouble x1 = +0.06;
+    GLdouble y1 = -0.14;
+    GLdouble x2 = +0.14;
+    GLdouble y2 = -0.06;
+    GLdouble x3 = +0.08;
+    GLdouble y3 = +0.00;
+    GLdouble x4 = +0.30;
+    GLdouble y4 = +0.22;
 
     list = glGenLists(1);
     glNewList(list, GL_COMPILE);
     {
         for (int i = 0; i < NumSectors; ++i) {
             double angle1 = (i * 2 * Pi) / NumSectors;
-            GLdouble x1 = 0.30 * sin(angle1);
-            GLdouble y1 = 0.30 * cos(angle1);
-            GLdouble x2 = 0.20 * sin(angle1);
-            GLdouble y2 = 0.20 * cos(angle1);
+            GLdouble x5 = 0.30 * sin(angle1);
+            GLdouble y5 = 0.30 * cos(angle1);
+            GLdouble x6 = 0.20 * sin(angle1);
+            GLdouble y6 = 0.20 * cos(angle1);
 
             double angle2 = ((i + 1) * 2 * Pi) / NumSectors;
-            GLdouble x3 = 0.20 * sin(angle2);
-            GLdouble y3 = 0.20 * cos(angle2);
-            GLdouble x4 = 0.30 * sin(angle2);
-            GLdouble y4 = 0.30 * cos(angle2);
+            GLdouble x7 = 0.20 * sin(angle2);
+            GLdouble y7 = 0.20 * cos(angle2);
+            GLdouble x8 = 0.30 * sin(angle2);
+            GLdouble y8 = 0.30 * cos(angle2);
 
             qglColor(qtGreen);
-            quad(GL_QUADS, x1, y1, x2, y2, x3, y3, x4, y4);
+            quad(GL_QUADS, x5, y5, x6, y6, x7, y7, x8, y8);
             qglColor(Qt::black);
-            quad(GL_LINE_LOOP, x1, y1, x2, y2, x3, y3, x4, y4);
+            quad(GL_LINE_LOOP, x5, y5, x6, y6, x7, y7, x8, y8);
         }
+
         qglColor(qtGreen);
         quad(GL_QUADS, x1, y1, x2, y2, y2, x2, y1, x1);
         quad(GL_QUADS, x3, y3, x4, y4, y4, x4, y3, x3);

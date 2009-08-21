@@ -42,8 +42,9 @@
 #ifndef QPICTURE_H
 #define QPICTURE_H
 
-#include <QtGui/qpaintdevice.h>
 #include <QtCore/qstringlist.h>
+#include <QtCore/qsharedpointer.h>
+#include <QtGui/qpaintdevice.h>
 
 QT_BEGIN_HEADER
 
@@ -106,15 +107,15 @@ private:
     bool exec(QPainter *p, QDataStream &ds, int i);
     void detach_helper();
 
-    QScopedSharedPointer<QPicturePrivate> d_ptr;
+    QExplicitlySharedDataPointer<QPicturePrivate> d_ptr;
     friend class QPicturePaintEngine;
     friend class Q3Picture;
     friend class QAlphaPaintEngine;
     friend class QPreviewPaintEngine;
 
 public:
-    typedef QPicturePrivate* DataPtr;
-    inline DataPtr &data_ptr() { return d_ptr.data_ptr(); }
+    typedef QExplicitlySharedDataPointer<QPicturePrivate> DataPtr;
+    inline DataPtr &data_ptr() { return d_ptr; }
 };
 
 Q_DECLARE_SHARED(QPicture)

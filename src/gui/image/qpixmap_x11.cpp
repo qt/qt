@@ -1875,7 +1875,7 @@ QPixmap QX11PixmapData::transformed(const QTransform &transform,
         return bm;
     } else {                                        // color pixmap
         QPixmap pm;
-        QX11PixmapData *x11Data = static_cast<QX11PixmapData*>(pm.data);
+        QX11PixmapData *x11Data = static_cast<QX11PixmapData*>(pm.data.data());
         x11Data->flags &= ~QX11PixmapData::Uninitialized;
         x11Data->xinfo = xinfo;
         x11Data->d = d;
@@ -1940,7 +1940,7 @@ void QPixmap::x11SetScreen(int screen)
     if (screen < 0)
         screen = QX11Info::appScreen();
 
-    QX11PixmapData *x11Data = static_cast<QX11PixmapData*>(data);
+    QX11PixmapData *x11Data = static_cast<QX11PixmapData*>(data.data());
     if (screen == x11Data->xinfo.screen())
         return; // nothing to do
 
@@ -2037,7 +2037,7 @@ bool QX11PixmapData::hasAlphaChannel() const
 const QX11Info &QPixmap::x11Info() const
 {
     if (data->classId() == QPixmapData::X11Class)
-        return static_cast<QX11PixmapData*>(data)->xinfo;
+        return static_cast<QX11PixmapData*>(data.data())->xinfo;
     else {
         static QX11Info nullX11Info;
         return nullX11Info;

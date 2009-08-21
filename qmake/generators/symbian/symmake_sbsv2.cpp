@@ -365,7 +365,7 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
     if (icons.size()) {
         QString icon = icons.first();
         if (icons.size() > 1)
-            fprintf(stderr, "Warning: Only first icon specified in ICON variable is used: '%s'.", icon);
+            fprintf(stderr, "Warning: Only first icon specified in ICON variable is used: '%s'.", qPrintable(icon));
 
         t << "START EXTENSION s60/mifconv" << endl;
 

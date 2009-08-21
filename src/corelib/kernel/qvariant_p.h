@@ -57,6 +57,7 @@
 // to a pointer of the input type
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -144,6 +145,8 @@ inline void v_clear(QVariant::Private *d, T* = 0)
     }
 
 }
+
+Q_CORE_EXPORT const QVariant::Handler *qcoreVariantHandler();
 
 QT_END_NAMESPACE
 

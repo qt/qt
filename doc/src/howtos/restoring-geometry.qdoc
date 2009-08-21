@@ -45,25 +45,28 @@
 
     \ingroup best-practices
 
-	This document describes how to save and restore a window's
-    geometry using the geometry properties. On Windows, this is 
-    basically storing the result of QWidget::geometry() and calling
-    QWidget::setGeometry() in the next session before calling
-    \l{QWidget::show()}{show()}.
+    This document describes how to save and restore a \l{Window
+    Geometry}{window's geometry} using the geometry properties. On
+    Windows, this is basically storing the result of
+    QWidget::geometry() and calling QWidget::setGeometry() in the next
+    session before calling \l{QWidget::show()}{show()}.
 
-    On X11, this won't work because an invisible window doesn't have
-    a frame yet. The window manager will decorate the window later.
-    When this happens, the window shifts towards the bottom/right
-    corner of the screen depending on the size of the decoration frame.
-    Although X provides a way to avoid this shift, most window managers
-    fail to implement this feature.
+    On X11, this might not work because an invisible window does not
+    have a frame yet. The window manager will decorate the window
+    later.  When this happens, the window shifts towards the
+    bottom/right corner of the screen depending on the size of the
+    decoration frame.  Although X provides a way to avoid this shift,
+    some window managers fail to implement this feature.
 
     Since version 4.2, Qt provides functions that saves and restores a
     window's geometry and state for you. QWidget::saveGeometry()
     saves the window geometry and maximized/fullscreen state, while
     QWidget::restoreGeometry() restores it. The restore function also
     checks if the restored geometry is outside the available screen
-    geometry, and modifies it as appropriate if it is.
+    geometry, and modifies it as appropriate if it is:
+
+    \snippet doc/src/snippets/code/src_gui_widgets_qmainwindow.cpp 0
+    \snippet doc/src/snippets/code/src_gui_widgets_qmainwindow.cpp 1
 
     If those functions are not available or cannot be used, then a
     workaround is to call \l{QWidget::setGeometry()}{setGeometry()}
@@ -74,14 +77,6 @@
     \l{QWidget::pos()}{pos()} and \l{QWidget::size()}{size()} and to
     restore the geometry using \l{QWidget::resize()} and
     \l{QWidget::move()}{move()} before calling
-    \l{QWidget::show()}{show()}, as demonstrated in the following
-    code snippets (from the \l{mainwindows/application}{Application}
-    example):
-
-    \snippet examples/mainwindows/application/mainwindow.cpp 35
-    \codeline
-    \snippet examples/mainwindows/application/mainwindow.cpp 38
-
-    This method works on Windows, Mac OS X, and most X11 window
-    managers.
+    \l{QWidget::show()}{show()}, as demonstrated in the
+    \l{mainwindows/application}{Application} example.
 */

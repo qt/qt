@@ -509,10 +509,25 @@ void QSvgStyle::apply(QPainter *p, const QRectF &rect, QSvgNode *node, QSvgExtra
     //animated transforms have to be applied
     //_after_ the original object transformations
     if (!animateTransforms.isEmpty()) {
-        QList<QSvgRefCounter<QSvgAnimateTransform> >::const_iterator itr;
-        for (itr = animateTransforms.constBegin(); itr != animateTransforms.constEnd();
-             ++itr) {
-            (*itr)->apply(p, rect, node, states);
+        qreal totalTimeElapsed = node->document()->currentElapsed();
+        // Find the last animateTransform with additive="replace", since this will override all
+        // previous animateTransforms.
+        QList<QSvgRefCounter<QSvgAnimateTransform> >::const_iterator itr = animateTransforms.constEnd();
+        do {
+            --itr;
+            if ((*itr)->animActive(totalTimeElapsed)
+                && (*itr)->additiveType() == QSvgAnimateTransform::Replace) {
+                // An animateTransform with additive="replace" will replace the transform attribute.
+                if (transform)
+                    transform->revert(p, states);
+                break;
+            }
+        } while (itr != animateTransforms.constBegin());
+
+        // Apply the animateTransforms after and including the last one with additive="replace".
+        for (; itr != animateTransforms.constEnd(); ++itr) {
+            if ((*itr)->animActive(totalTimeElapsed))
+                (*itr)->apply(p, rect, node, states);
         }
     }
 
@@ -558,13 +573,15 @@ void QSvgStyle::revert(QPainter *p, QSvgExtraStates &states)
     //animated transforms need to be reverted _before_
     //the native transforms
     if (!animateTransforms.isEmpty()) {
-        QList<QSvgRefCounter<QSvgAnimateTransform> >::const_iterator itr;
-        itr = animateTransforms.constBegin();
-        //only need to rever the first one because that
-        //one has the original world matrix for the primitve
-        if (itr != animateTransforms.constEnd()) {
-            (*itr)->revert(p, states);
+        QList<QSvgRefCounter<QSvgAnimateTransform> >::const_iterator itr = animateTransforms.constBegin();
+        for (; itr != animateTransforms.constEnd(); ++itr) {
+            if ((*itr)->transformApplied()) {
+                (*itr)->revert(p, states);
+                break;
+            }
         }
+        for (; itr != animateTransforms.constEnd(); ++itr)
+            (*itr)->clearTransformApplied();
     }
 
     if (transform) {
@@ -587,15 +604,16 @@ void QSvgStyle::revert(QPainter *p, QSvgExtraStates &states)
 QSvgAnimateTransform::QSvgAnimateTransform(int startMs, int endMs, int byMs )
     : QSvgStyleProperty(),
       m_from(startMs), m_to(endMs), m_by(byMs),
-      m_type(Empty), m_count(0), m_finished(false)
+      m_type(Empty), m_count(0), m_finished(false), m_additive(Replace), m_transformApplied(false)
 {
     m_totalRunningTime = m_to - m_from;
 }
 
-void QSvgAnimateTransform::setArgs(TransformType type, const QVector<qreal> &args)
+void QSvgAnimateTransform::setArgs(TransformType type, Additive additive, const QVector<qreal> &args)
 {
     m_type = type;
     m_args = args;
+    m_additive = additive;
     Q_ASSERT(!(args.count()%3));
     m_count = args.count() / 3;
 }
@@ -604,15 +622,14 @@ void QSvgAnimateTransform::apply(QPainter *p, const QRectF &, QSvgNode *node, QS
 {
     m_oldWorldTransform = p->worldTransform();
     resolveMatrix(node);
-    if (!m_finished || m_freeze)
-        p->setWorldTransform(m_transform, true);
+    p->setWorldTransform(m_transform, true);
+    m_transformApplied = true;
 }
 
 void QSvgAnimateTransform::revert(QPainter *p, QSvgExtraStates &)
 {
-    if (!m_finished || m_freeze) {
-        p->setWorldTransform(m_oldWorldTransform, false /* don't combine */);
-    }
+    p->setWorldTransform(m_oldWorldTransform, false /* don't combine */);
+    m_transformApplied = false;
 }
 
 void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
@@ -622,11 +639,14 @@ void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
     if (totalTimeElapsed < m_from || m_finished)
         return;
 
-    qreal animationFrame = (totalTimeElapsed - m_from) / m_to;
+    qreal animationFrame = 0;
+    if (m_totalRunningTime != 0) {
+        animationFrame = (totalTimeElapsed - m_from) / m_totalRunningTime;
 
-    if (m_repeatCount >= 0 && m_repeatCount < animationFrame) {
-        m_finished = true;
-        animationFrame = m_repeatCount;
+        if (m_repeatCount >= 0 && m_repeatCount < animationFrame) {
+            m_finished = true;
+            animationFrame = m_repeatCount;
+        }
     }
 
     qreal percentOfAnimation = animationFrame;

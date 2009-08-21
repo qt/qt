@@ -1113,7 +1113,7 @@ void AddToolBoxPageCommand::init(QToolBox *toolBox, InsertionMode mode)
     m_widget = new QDesignerWidget(formWindow(), m_toolBox);
     m_itemText = QApplication::translate("Command", "Page");
     m_itemIcon = QIcon();
-    m_widget->setObjectName(QApplication::translate("Command", "page"));
+    m_widget->setObjectName(QLatin1String("page"));
     formWindow()->ensureUniqueObjectName(m_widget);
 
     setText(QApplication::translate("Command", "Insert Page"));
@@ -1236,7 +1236,7 @@ void AddTabPageCommand::init(QTabWidget *tabWidget, InsertionMode mode)
     m_widget = new QDesignerWidget(formWindow(), m_tabWidget);
     m_itemText = QApplication::translate("Command", "Page");
     m_itemIcon = QIcon();
-    m_widget->setObjectName(QApplication::translate("Command", "tab"));
+    m_widget->setObjectName(QLatin1String("tab"));
     formWindow()->ensureUniqueObjectName(m_widget);
 
     setText(QApplication::translate("Command", "Insert Page"));
@@ -1422,7 +1422,7 @@ void AddStackedWidgetPageCommand::init(QStackedWidget *stackedWidget, InsertionM
     if (mode == InsertAfter)
         m_index++;
     m_widget = new QDesignerWidget(formWindow(), m_stackedWidget);
-    m_widget->setObjectName(QApplication::translate("Command", "page"));
+    m_widget->setObjectName(QLatin1String("page"));
     formWindow()->ensureUniqueObjectName(m_widget);
 
     setText(QApplication::translate("Command", "Insert Page"));

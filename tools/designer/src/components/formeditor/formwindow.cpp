@@ -2238,12 +2238,12 @@ QMenu *FormWindow::createPopupMenu(QWidget *w)
     layoutMenu->addAction(manager->actionAdjustSize());
     layoutMenu->addAction(manager->actionHorizontalLayout());
     layoutMenu->addAction(manager->actionVerticalLayout());
-    layoutMenu->addAction(manager->actionGridLayout());
-    layoutMenu->addAction(manager->actionFormLayout());
     if (!isFormWindow) {
         layoutMenu->addAction(manager->actionSplitHorizontal());
         layoutMenu->addAction(manager->actionSplitVertical());
     }
+    layoutMenu->addAction(manager->actionGridLayout());
+    layoutMenu->addAction(manager->actionFormLayout());
     layoutMenu->addAction(manager->actionBreakLayout());
     layoutMenu->addAction(manager->actionSimplifyLayout());
 

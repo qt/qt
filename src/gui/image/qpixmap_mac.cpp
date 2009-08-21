@@ -73,12 +73,12 @@ static int qt_pixmap_serial = 0;
 
 Q_GUI_EXPORT quint32 *qt_mac_pixmap_get_base(const QPixmap *pix)
 {
-    return static_cast<QMacPixmapData*>(pix->data)->pixels;
+    return static_cast<QMacPixmapData*>(pix->data.data())->pixels;
 }
 
 Q_GUI_EXPORT int qt_mac_pixmap_get_bytes_per_line(const QPixmap *pix)
 {
-    return static_cast<QMacPixmapData*>(pix->data)->bytesPerRow;
+    return static_cast<QMacPixmapData*>(pix->data.data())->bytesPerRow;
 }
 
 void qt_mac_cgimage_data_free(void *info, const void *memoryToFree, size_t)
@@ -421,7 +421,7 @@ QPixmap QMacPixmapData::alphaChannel() const
 void QMacPixmapData::setAlphaChannel(const QPixmap &alpha)
 {
     has_mask = true;
-    QMacPixmapData *alphaData = static_cast<QMacPixmapData*>(alpha.data);
+    QMacPixmapData *alphaData = static_cast<QMacPixmapData*>(alpha.data.data());
     macSetAlphaChannel(alphaData, false);
 }
 
@@ -449,7 +449,7 @@ void QMacPixmapData::setMask(const QBitmap &mask)
 
     has_alpha = false;
     has_mask = true;
-    QMacPixmapData *maskData = static_cast<QMacPixmapData*>(mask.data);
+    QMacPixmapData *maskData = static_cast<QMacPixmapData*>(mask.data.data());
     macSetAlphaChannel(maskData, true);
 }
 
@@ -961,14 +961,14 @@ Qt::HANDLE QPixmap::macQDAlphaHandle() const
 Qt::HANDLE QPixmap::macCGHandle() const
 {
     if (data->classId() == QPixmapData::MacClass) {
-        QMacPixmapData *d = static_cast<QMacPixmapData *>(data);
+        QMacPixmapData *d = static_cast<QMacPixmapData *>(data.data());
         if (!d->cg_data)
             d->macCreateCGImageRef();
         CGImageRef ret = d->cg_data;
         CGImageRetain(ret);
         return ret;
     } else if (data->classId() == QPixmapData::RasterClass) {
-        return qt_mac_image_to_cgimage(static_cast<QRasterPixmapData *>(data)->image);
+        return qt_mac_image_to_cgimage(static_cast<QRasterPixmapData *>(data.data())->image);
     }
     return 0;
 }
@@ -980,7 +980,7 @@ bool QMacPixmapData::hasAlphaChannel() const
 
 CGImageRef qt_mac_create_imagemask(const QPixmap &pixmap, const QRectF &sr)
 {
-    QMacPixmapData *px = static_cast<QMacPixmapData*>(pixmap.data);
+    QMacPixmapData *px = static_cast<QMacPixmapData*>(pixmap.data.data());
     if (px->cg_mask) {
         if (px->cg_mask_rect == sr) {
             CGImageRetain(px->cg_mask); //reference for the caller
@@ -1106,7 +1106,7 @@ void QMacPixmapData::copy(const QPixmapData *data, const QRect &rect)
         return;
     }
 
-    const QMacPixmapData *macData = static_cast<const QMacPixmapData*>(data);
+    const QMacPixmapData *macData = static_cast<const QMacPixmapData*>(data.constData());
 
     resize(rect.width(), rect.height());
 

@@ -44,7 +44,7 @@
 
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/qstring.h>
-#include <QtCore/qscopedpointer.h>
+#include <QtCore/qsharedpointer.h>
 
 #if defined(Q_WS_X11) || defined(Q_WS_QWS)
 typedef struct FT_FaceRec_* FT_Face;
@@ -313,7 +313,7 @@ private:
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QFont &);
 #endif
 
-    QScopedSharedPointer<QFontPrivate> d;
+    QExplicitlySharedDataPointer<QFontPrivate> d;
     uint resolve_mask;
 };
 

@@ -4572,6 +4572,7 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
     int deviceType = QTabletEvent::NoDevice;
     int pointerType = QTabletEvent::UnknownPointer;
     XEvent mouseMotionEvent;
+    XEvent dummy;
     const XDeviceMotionEvent *motion = 0;
     XDeviceButtonEvent *button = 0;
     const XProximityNotifyEvent *proximity = 0;
@@ -4589,7 +4590,6 @@ bool QETWidget::translateXinputEvent(const XEvent *ev, QTabletDeviceData *tablet
         // Do event compression.  Skip over tablet+mouse move events if there are newer ones.
         qt_tablet_motion_data tabletMotionData;
         tabletMotionData.tabletMotionType = tablet->xinput_motion;
-        XEvent dummy;
         while (true) {
             // Find first mouse event since we expect them in pairs inside Qt
             tabletMotionData.error =false;

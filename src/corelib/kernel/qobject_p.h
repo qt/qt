@@ -169,6 +169,9 @@ public:
         return o->d_func();
     }
 
+    int signalIndex(const char *signalName) const;
+    bool isSignalConnected(int signalIdx) const;
+
 public:
     QString objectName;
     ExtraData *extraData;    // extra data set by the user
