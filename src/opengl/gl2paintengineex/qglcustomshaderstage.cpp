@@ -44,6 +44,8 @@
 #include "qpaintengineex_opengl2_p.h"
 #include <private/qpainter_p.h>
 
+QT_BEGIN_NAMESPACE
+
 class QGLCustomShaderStagePrivate
 {
 public:
@@ -121,3 +123,5 @@ void QGLCustomShaderStage::setSource(const QByteArray& s)
     Q_D(QGLCustomShaderStage);
     d->m_source = s;
 }
+
+QT_END_NAMESPACE
