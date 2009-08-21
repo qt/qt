@@ -160,6 +160,16 @@ public:
     QPixmapDropShadowFilter *filter;
 };
 
+class QGraphicsOpacityEffectPrivate : public QGraphicsEffectPrivate
+{
+    Q_DECLARE_PUBLIC(QGraphicsOpacityEffect)
+public:
+    QGraphicsOpacityEffectPrivate() : opacity(0.7) {}
+    ~QGraphicsOpacityEffectPrivate() {}
+
+    qreal opacity;
+};
+
 QT_END_NAMESPACE
 
 #endif // QGRAPHICSEFFECT_P_H

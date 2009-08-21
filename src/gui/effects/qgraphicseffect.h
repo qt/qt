@@ -269,6 +269,31 @@ private:
     Q_DISABLE_COPY(QGraphicsDropShadowEffect)
 };
 
+class QGraphicsOpacityEffectPrivate;
+class Q_GUI_EXPORT QGraphicsOpacityEffect: public QGraphicsEffect
+{
+    Q_OBJECT
+    Q_PROPERTY(int opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
+public:
+    QGraphicsOpacityEffect(QObject *parent = 0);
+    ~QGraphicsOpacityEffect();
+
+    qreal opacity() const;
+
+public Q_SLOTS:
+    void setOpacity(qreal opacity);
+
+Q_SIGNALS:
+    void opacityChanged(qreal opacity);
+
+protected:
+    void draw(QPainter *painter, QGraphicsEffectSource *source);
+
+private:
+    Q_DECLARE_PRIVATE(QGraphicsOpacityEffect)
+    Q_DISABLE_COPY(QGraphicsOpacityEffect)
+};
+
 QT_END_NAMESPACE
 
 QT_END_HEADER
