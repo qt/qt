@@ -252,7 +252,7 @@ qreal QGraphicsAnchorLayout::anchorSpacing(const QGraphicsLayoutItem *firstItem,
   \a secondItem and \a secondEdge to be the default spacing. Depending on the anchor type, the
   default spacing is either 0 or a value returned from the style.
 
-  \sa setAnchorSpacing, anchorSpacing, addAnchor
+  \sa setAnchorSpacing(), anchorSpacing(), addAnchor()
 */
 void QGraphicsAnchorLayout::unsetAnchorSpacing(const QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
                                                const QGraphicsLayoutItem *secondItem, Qt::AnchorPoint secondEdge)
@@ -298,7 +298,7 @@ void QGraphicsAnchorLayout::removeAnchor(QGraphicsLayoutItem *firstItem, Qt::Anc
 /*!
     Sets the default horizontal spacing for the anchor layout to \a spacing.
 
-    \sa horizontalSpacing, setVerticalSpacing, setSpacing
+    \sa horizontalSpacing(), setVerticalSpacing(), setSpacing()
 */
 void QGraphicsAnchorLayout::setHorizontalSpacing(qreal spacing)
 {
@@ -310,7 +310,7 @@ void QGraphicsAnchorLayout::setHorizontalSpacing(qreal spacing)
 /*!
     Sets the default vertical spacing for the anchor layout to \a spacing.
 
-    \sa verticalSpacing, setHorizontalSpacing, setSpacing
+    \sa verticalSpacing(), setHorizontalSpacing(), setSpacing()
 */
 void QGraphicsAnchorLayout::setVerticalSpacing(qreal spacing)
 {
@@ -324,7 +324,7 @@ void QGraphicsAnchorLayout::setVerticalSpacing(qreal spacing)
 
     If an item is anchored with no spacing associated with the anchor, it will use the default
     spacing.
-    \sa setHorizontalSpacing, setVerticalSpacing
+    \sa setHorizontalSpacing(), setVerticalSpacing()
 */
 void QGraphicsAnchorLayout::setSpacing(qreal spacing)
 {
@@ -336,7 +336,7 @@ void QGraphicsAnchorLayout::setSpacing(qreal spacing)
 /*!
     Returns the default horizontal spacing for the anchor layout.
 
-    \sa verticalSpacing, setHorizontalSpacing
+    \sa verticalSpacing(), setHorizontalSpacing()
 */
 qreal QGraphicsAnchorLayout::horizontalSpacing() const
 {
@@ -347,7 +347,7 @@ qreal QGraphicsAnchorLayout::horizontalSpacing() const
 /*!
     Returns the default vertical spacing for the anchor layout.
 
-    \sa horizontalSpacing, setVerticalSpacing
+    \sa horizontalSpacing(), setVerticalSpacing()
 */
 qreal QGraphicsAnchorLayout::verticalSpacing() const
 {
