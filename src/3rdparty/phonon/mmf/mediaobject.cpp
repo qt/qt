@@ -377,3 +377,13 @@ void MMF::MediaObject::volumeChanged(qreal volume)
 }
 
 
+//-----------------------------------------------------------------------------
+// Video output
+//-----------------------------------------------------------------------------
+
+void MMF::MediaObject::setVideoOutput(VideoOutput* videoOutput)
+{
+    m_player->setVideoOutput(videoOutput);
+}
+
+

@@ -24,7 +24,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "abstractmediaplayer.h"
 #include "videooutput.h"
 
-class CVideoPlayerUtility;
 
 namespace Phonon
 {
@@ -76,11 +75,24 @@ namespace Phonon
             
         private:
         	void construct();
+        	VideoOutput& videoOutput();
+        	
+        	// AbstractPlayer
+        	virtual void videoOutputChanged();
+        	
+        	void getNativeWindowSystemHandles();
             
         private:
         	CVideoPlayerUtility*				m_player;
-        	QScopedPointer<VideoOutput>			m_widget;
+        	QScopedPointer<VideoOutput>			m_dummyVideoOutput;
 
+        	// Not owned
+        	RWsSession*							m_wsSession;
+        	CWsScreenDevice*					m_screenDevice;
+        	RWindowBase*						m_window;
+        	TRect								m_windowRect;
+        	TRect								m_clipRect;
+        	
         };
     }
 }

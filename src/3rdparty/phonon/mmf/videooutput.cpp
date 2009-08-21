@@ -30,12 +30,18 @@ using namespace Phonon::MMF;
 MMF::VideoOutput::VideoOutput(QWidget* parent)
 					:	QWidget(parent)
 {
-
+	TRACE_CONTEXT(VideoOutput::VideoOutput, EVideoInternal);
+	TRACE_ENTRY("parent 0x%08x", parent);
+	
+	TRACE_EXIT_0();
 }
 
 MMF::VideoOutput::~VideoOutput()
 {
-
+	TRACE_CONTEXT(VideoOutput::~VideoOutput, EVideoInternal);
+	TRACE_ENTRY_0();
+	
+	TRACE_EXIT_0();
 }
 
 

@@ -28,7 +28,8 @@ using namespace Phonon::MMF;
 //-----------------------------------------------------------------------------
 
 MMF::AbstractPlayer::AbstractPlayer()
-						:	m_tickInterval(DefaultTickInterval)
+						:	m_videoOutput(NULL)
+						,	m_tickInterval(DefaultTickInterval)
 						,	m_transitionTime(0)
 						,	m_prefinishMark(0)
 {
@@ -36,7 +37,8 @@ MMF::AbstractPlayer::AbstractPlayer()
 }
 
 MMF::AbstractPlayer::AbstractPlayer(const AbstractPlayer& player)
-						:	m_tickInterval(player.tickInterval())
+						:	m_videoOutput(player.m_videoOutput)
+						,	m_tickInterval(player.tickInterval())
 						,	m_transitionTime(player.transitionTime())
 						,	m_prefinishMark(player.prefinishMark())
 {
@@ -78,4 +80,19 @@ void MMF::AbstractPlayer::setTransitionTime(qint32 time)
     m_transitionTime = time;
 }
 
+
+//-----------------------------------------------------------------------------
+// Video output
+//-----------------------------------------------------------------------------
+
+void MMF::AbstractPlayer::setVideoOutput(VideoOutput* videoOutput)
+{
+    m_videoOutput = videoOutput;
+    videoOutputChanged();
+}
+
+void MMF::AbstractPlayer::videoOutputChanged()
+{
+	// Default behaviour is empty - overridden by VideoPlayer
+}
 

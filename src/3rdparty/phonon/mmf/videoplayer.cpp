@@ -33,14 +33,19 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::VideoPlayer::VideoPlayer() : m_widget(new VideoOutput(NULL))
+MMF::VideoPlayer::VideoPlayer()
+								:	m_wsSession(NULL)
+								,	m_screenDevice(NULL)
+								,	m_window(NULL)
 {
 	construct();
 }
 
 MMF::VideoPlayer::VideoPlayer(const AbstractPlayer& player)
-								: AbstractMediaPlayer(player)
-								, m_widget(new VideoOutput(NULL))		// TODO: copy??
+								:	AbstractMediaPlayer(player)
+								,	m_wsSession(NULL)
+								,	m_screenDevice(NULL)
+								,	m_window(NULL)
 {
 	construct();
 }
@@ -50,26 +55,26 @@ void MMF::VideoPlayer::construct()
 	TRACE_CONTEXT(VideoPlayer::VideoPlayer, EVideoApi);
 	TRACE_ENTRY_0();
 	
-	CCoeControl* control = m_widget->winId();
-	CCoeEnv* coeEnv = control->ControlEnv();
+	if(!m_videoOutput)
+	{
+		m_dummyVideoOutput.reset(new VideoOutput(NULL));
+	}
 	
 	const TInt priority = 0;
 	const TMdaPriorityPreference preference = EMdaPriorityPreferenceNone;
-	RWsSession& wsSession = coeEnv->WsSession();
-	CWsScreenDevice& screenDevice = *(coeEnv->ScreenDevice());
-	RDrawableWindow& window = *(control->DrawableWindow());
-	const TRect screenRect = control->Rect();
-	const TRect clipRect = control->Rect();
 	
-	// TODO: is this the correct way to handle errors in constructing Symbian objects?
+	getNativeWindowSystemHandles();
+	
+	// TODO: is this the correct way to handle errors which occur when
+	// creating a Symbian object in the constructor of a Qt object?
 	TRAPD(err,
 		m_player = CVideoPlayerUtility::NewL
 			(
 			*this, 
 			priority, preference,
-			wsSession, screenDevice,
-			window,
-			screenRect, clipRect
+			*m_wsSession, *m_screenDevice,
+			*m_window,
+			m_windowRect, m_clipRect
 			)
 		);
 	
@@ -282,4 +287,83 @@ void MMF::VideoPlayer::MvpuoEvent(const TMMFEvent &aEvent)
 }
 
 
+//-----------------------------------------------------------------------------
+// Private functions
+//-----------------------------------------------------------------------------
 
+VideoOutput& MMF::VideoPlayer::videoOutput()
+{
+	TRACE_CONTEXT(VideoPlayer::videoOutput, EVideoInternal);
+	TRACE("videoOutput 0x%08x dummy 0x%08x", m_videoOutput, m_dummyVideoOutput.data());
+
+	return m_videoOutput ? *m_videoOutput : *m_dummyVideoOutput;
+}
+
+void MMF::VideoPlayer::videoOutputChanged()
+{
+	TRACE_CONTEXT(VideoPlayer::videoOutputChanged, EVideoInternal);
+	TRACE_ENTRY_0();
+	
+	// Lazily construct a dummy output if needed here
+	if(!m_videoOutput and m_dummyVideoOutput.isNull())
+	{
+		m_dummyVideoOutput.reset(new VideoOutput(NULL));
+	}
+	
+	getNativeWindowSystemHandles();
+	
+	TRAPD(err,
+		m_player->SetDisplayWindowL
+			(
+			*m_wsSession, *m_screenDevice,
+			*m_window,
+			m_windowRect, m_clipRect
+			)
+		);
+	
+	if(KErrNone != err)
+	{
+		TRACE("SetDisplayWindowL error %d", err);
+		setError(NormalError);
+	}
+	
+	TRACE_EXIT_0();
+}
+
+void MMF::VideoPlayer::getNativeWindowSystemHandles()
+{
+	TRACE_CONTEXT(VideoPlayer::getNativeWindowSystemHandles, EVideoInternal);
+
+	CCoeControl* const control = videoOutput().winId();
+	
+	TRACE("control 0x%08x", control);
+	TRACE("control isVisible %d", control->IsVisible());
+	TRACE("control isDimmed  %d", control->IsDimmed());
+	TRACE("control hasBorder %d", control->HasBorder());
+	TRACE("control position  %d %d",
+		control->Position().iX, control->Position().iY);
+	TRACE("control rect      %d %d - %d %d",
+		control->Rect().iTl.iX, control->Rect().iTl.iY,
+		control->Rect().iBr.iX, control->Rect().iBr.iY);
+	
+	CCoeEnv* const coeEnv = control->ControlEnv();
+	
+	m_wsSession = &(coeEnv->WsSession());
+	
+	TRACE("session handle    %d", m_wsSession->Handle());
+	
+	m_screenDevice = coeEnv->ScreenDevice();
+	
+	TRACE("device srv handle %d", m_screenDevice->WsHandle());
+	
+	m_window = control->DrawableWindow();
+	
+	TRACE("window cli handle %d", m_window->ClientHandle());
+	TRACE("window srv handle %d", m_window->WsHandle());
+	TRACE("window group      %d", m_window->WindowGroupId());
+	TRACE("window position   %d %d",
+		m_window->Position().iX, m_window->Position().iY);
+	
+	m_windowRect = control->Rect();
+	m_clipRect = control->Rect();
+}

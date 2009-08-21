@@ -33,8 +33,8 @@ namespace Phonon
 {
     namespace MMF
     {
-        class AbstractPlayer;
-        class AudioOutput;
+		class AbstractPlayer;
+        class VideoOutput;
         
         /**
          * @short Facade class which wraps MMF client utility instance
@@ -73,7 +73,9 @@ namespace Phonon
             virtual void setTransitionTime(qint32);
             
             // VolumeObserver
-            void volumeChanged(qreal volume);       
+            void volumeChanged(qreal volume);     
+            
+            void setVideoOutput(VideoOutput* videoOutput);
 
         Q_SIGNALS:
             void totalTimeChanged();

@@ -83,10 +83,12 @@ bool MMF::AudioOutput::setOutputDevice(const Phonon::AudioOutputDevice &)
     return true;
 }
 
-void MMF::AudioOutput::setVolumeObserver(VolumeObserver& observer)
+void MMF::AudioOutput::setVolumeObserver(VolumeObserver* observer)
 {
-    Q_ASSERT(!m_observer);
-    m_observer = &observer;
-    m_observer->volumeChanged(m_volume);
+    m_observer = observer;
+    if(m_observer)
+    {
+		m_observer->volumeChanged(m_volume);
+    }
 }
 

@@ -45,7 +45,8 @@ void MMF::AudioPlayer::construct()
 	TRACE_CONTEXT(AudioPlayer::AudioPlayer, EAudioApi);
 	TRACE_ENTRY_0();
 	
-	// TODO: is this the correct way to handle errors in constructing Symbian objects?
+	// TODO: is this the correct way to handle errors which occur when
+	// creating a Symbian object in the constructor of a Qt object?
 	TRAPD(err, m_player = CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone));
 	if(KErrNone != err)
 	{

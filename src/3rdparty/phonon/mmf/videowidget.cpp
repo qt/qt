@@ -17,6 +17,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "utils.h"
+#include "videooutput.h"
 #include "videowidget.h"
 
 using namespace Phonon;
@@ -41,7 +42,7 @@ static const qreal DefaultSaturation = 1.0;
 //-----------------------------------------------------------------------------
 
 MMF::VideoWidget::VideoWidget(QWidget* parent)
-					:	m_widget(new VideoOutput(parent))
+					:	m_videoOutput(new VideoOutput(parent))
 					,	m_aspectRatio(DefaultAspectRatio)
 					,	m_brightness(DefaultBrightness)
 					,	m_scaleMode(DefaultScaleMode)
@@ -149,6 +150,11 @@ void MMF::VideoWidget::setSaturation(qreal saturation)
 
 QWidget* MMF::VideoWidget::widget()
 {
-	return m_widget.data();
+	return m_videoOutput.data();
+}
+
+VideoOutput& MMF::VideoWidget::videoOutput()
+{
+	return *m_videoOutput; 
 }
 

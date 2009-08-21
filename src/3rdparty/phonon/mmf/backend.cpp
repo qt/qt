@@ -105,14 +105,14 @@ bool Backend::connectNodes(QObject *source, QObject *target)
     if(mediaObject and audioOutput)
     {
 		TRACE("mediaObject 0x%08x -> audioOutput 0x%08x", mediaObject, audioOutput);
-		audioOutput->setVolumeObserver(*mediaObject);
+		audioOutput->setVolumeObserver(mediaObject);
 		result = true;
     }
     
     if(mediaObject and videoWidget)
 	{
 		TRACE("mediaObject 0x%08x -> videoWidget 0x%08x", mediaObject, videoWidget);
-		// TODO: the actual connection :)
+		mediaObject->setVideoOutput(&videoWidget->videoOutput());
 		result = true;
 	}
     
@@ -124,10 +124,13 @@ bool Backend::disconnectNodes(QObject *source, QObject *target)
 	TRACE_CONTEXT(Backend::disconnectNodes, EBackend);
 	TRACE_ENTRY("source 0x%08x target 0x%08x", source, target);
 
-	Q_UNUSED(source);	// silence warnings in release builds
-	Q_UNUSED(target);	// silence warnings in release builds
+	MediaObject *const mediaObject = qobject_cast<MediaObject *>(source);
+	AudioOutput *const audioOutput = qobject_cast<AudioOutput *>(target);
+	VideoWidget *const videoWidget = qobject_cast<VideoWidget *>(target);
 	
 	bool result = true;
+	
+	// TODO: disconnection
 	
 	TRACE_RETURN("%d", result);
 }

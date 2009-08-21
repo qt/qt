@@ -19,11 +19,14 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_ABSTRACTPLAYER_H
 #define PHONON_MMF_ABSTRACTPLAYER_H
 
-#include <QObject>
 #include <Phonon/phononnamespace.h>
 #include <Phonon/MediaSource.h>
 
+#include <QObject>
+
 #include "volumeobserver.h"
+
+#include "videooutput.h"
 
 class RFile;
 
@@ -31,7 +34,7 @@ namespace Phonon
 {
     namespace MMF
     {
-        class AudioOutput;
+        class VideoOutput;
 
         /**
          * @short Interface which abstracts from MediaObject the current
@@ -81,10 +84,19 @@ namespace Phonon
             virtual void setFileSource(const Phonon::MediaSource&, RFile&) = 0;
             virtual void setNextSource(const Phonon::MediaSource &) = 0;
             
+            void setVideoOutput(VideoOutput* videoOutput);
+            
+        protected:
+        	virtual void videoOutputChanged();
+            
         private:
         	virtual void doSetTickInterval(qint32 interval) = 0;
         	
-        private:       	
+        protected:       	
+        	// Not owned
+        	VideoOutput*				m_videoOutput;
+        	
+        private:
         	qint32						m_tickInterval;
         	qint32						m_transitionTime;
         	qint32						m_prefinishMark;

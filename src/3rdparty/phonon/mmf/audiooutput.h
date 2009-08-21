@@ -70,7 +70,7 @@ namespace Phonon
             /**
              * Called by backend when nodes are connected.
              */
-            void setVolumeObserver(VolumeObserver& observer);
+            void setVolumeObserver(VolumeObserver* observer);
 
         Q_SIGNALS:
             void volumeChanged(qreal volume);
