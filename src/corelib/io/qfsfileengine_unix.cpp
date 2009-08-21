@@ -514,21 +514,21 @@ QString QFSFileEngine::homePath()
 
 QString QFSFileEngine::rootPath()
 {
-    return QString::fromLatin1("/");
+    return QLatin1String("/");
 }
 
 QString QFSFileEngine::tempPath()
 {
     QString temp = QFile::decodeName(qgetenv("TMPDIR"));
     if (temp.isEmpty())
-        temp = QString::fromLatin1("/tmp/");
+        temp = QLatin1String("/tmp/");
     return temp;
 }
 
 QFileInfoList QFSFileEngine::drives()
 {
     QFileInfoList ret;
-    ret.append(rootPath());
+    ret.append(QFileInfo(rootPath()));
     return ret;
 }
 
