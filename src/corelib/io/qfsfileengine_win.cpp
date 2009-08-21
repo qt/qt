@@ -1513,7 +1513,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
 */
 bool QFSFileEnginePrivate::isSymlink() const
 {
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE) && defined(IO_REPARSE_TAG_SYMLINK)
     if (need_lstat) {
         need_lstat = false;
         is_link = false;
