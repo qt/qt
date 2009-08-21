@@ -285,6 +285,7 @@ private slots:
     void reverseCreateAutoFocusProxy();
     void focusProxyDeletion();
     void negativeZStacksBehindParent();
+    void setGraphicsEffect();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -7706,6 +7707,37 @@ void tst_QGraphicsItem::negativeZStacksBehindParent()
     QVERIFY(rect.flags() & QGraphicsItem::ItemStacksBehindParent);
     rect.setFlag(QGraphicsItem::ItemNegativeZStacksBehindParent, false);
     QVERIFY(rect.flags() & QGraphicsItem::ItemStacksBehindParent);
+}
+
+void tst_QGraphicsItem::setGraphicsEffect()
+{
+    // Check that we don't have any effect by default.
+    QGraphicsItem *item = new QGraphicsRectItem(0, 0, 10, 10);
+    QVERIFY(!item->graphicsEffect());
+
+    // SetGet check.
+    QPointer<QGraphicsEffect> blurEffect = new QGraphicsBlurEffect;
+    item->setGraphicsEffect(blurEffect);
+    QCOMPARE(item->graphicsEffect(), static_cast<QGraphicsEffect *>(blurEffect));
+
+    // Ensure the existing effect is deleted when setting a new one.
+    QPointer<QGraphicsEffect> shadowEffect = new QGraphicsDropShadowEffect;
+    item->setGraphicsEffect(shadowEffect);
+    QVERIFY(!blurEffect);
+    QCOMPARE(item->graphicsEffect(), static_cast<QGraphicsEffect *>(shadowEffect));
+    blurEffect = new QGraphicsBlurEffect;
+
+    // Ensure the effect is uninstalled when setting it on a new target.
+    QGraphicsItem *anotherItem = new QGraphicsRectItem(0, 0, 10, 10);
+    anotherItem->setGraphicsEffect(blurEffect);
+    item->setGraphicsEffect(blurEffect);
+    QVERIFY(!anotherItem->graphicsEffect());
+    QVERIFY(!shadowEffect);
+
+    // Ensure the existing effect is deleted when deleting the item.
+    delete item;
+    QVERIFY(!blurEffect);
+    delete anotherItem;
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
