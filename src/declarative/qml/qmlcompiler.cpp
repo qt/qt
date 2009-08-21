@@ -297,6 +297,13 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
             if (!v->value.isBoolean()) COMPILE_EXCEPTION(v, "Invalid property assignment: boolean expected");
             }
             break;
+        case QVariant::Vector3D:
+            {
+            bool ok;
+            QVector3D point = QmlStringConverters::vector3DFromString(string, &ok);
+            if (!ok) COMPILE_EXCEPTION(v, "Invalid property assignment: 3D vector expected");
+            }
+            break;
         default:
             {
             int t = prop.type();
@@ -485,6 +492,18 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
             instr.type = QmlInstruction::StoreBool;
             instr.storeBool.propertyIndex = prop.propertyIndex();
             instr.storeBool.value = b;
+            }
+            break;
+        case QVariant::Vector3D:
+            {
+            bool ok;
+            QVector3D vector =
+                QmlStringConverters::vector3DFromString(string, &ok);
+            float data[] = { vector.x(), vector.y(), vector.z() };
+            int index = output->indexForFloat(data, 3);
+            instr.type = QmlInstruction::StoreVector3D;
+            instr.storeRealPair.propertyIndex = prop.propertyIndex();
+            instr.storeRealPair.valueIndex = index;
             }
             break;
         default:

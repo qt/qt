@@ -158,6 +158,8 @@ void QmlEnginePrivate::init()
             scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
             scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
+    scriptEngine.globalObject().setProperty(QLatin1String("vector"),
+            scriptEngine.newFunction(QmlEnginePrivate::vector, 1));
 
     if (QCoreApplication::instance()->thread() == q->thread() &&
         QmlEngineDebugServer::isDebuggingEnabled()) {
@@ -690,6 +692,45 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
         return qmlScriptObject(obj, activeEngine);
     }
     return engine->nullValue();
+}
+
+/*!
+    This function is intended for use inside QML only. In C++ just create a
+    QVector3D as usual.
+
+    This function takes three numeric components and combines them into a
+    QMLJS string that can be used with any property that takes a
+    QVector3D argument.  The following QML code:
+
+    \code
+    transform: Rotation {
+        id: Rotation
+        origin.x: Container.width / 2;
+        axis: vector(0, 1, 1)
+    }
+    \endcode
+
+    is equivalent to:
+
+    \code
+    transform: Rotation {
+        id: Rotation
+        origin.x: Container.width / 2;
+        axis.x: 0; axis.y: 1; axis.z: 0
+    }
+    \endcode
+*/
+QScriptValue QmlEnginePrivate::vector(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    if(ctxt->argumentCount() < 3)
+        return engine->nullValue();
+    qsreal x = ctxt->argument(0).toNumber();
+    qsreal y = ctxt->argument(1).toNumber();
+    qsreal z = ctxt->argument(2).toNumber();
+    QString s = QString::number(x) + QLatin1Char(',') +
+                QString::number(y) + QLatin1Char(',') +
+                QString::number(z);
+    return QScriptValue(s);
 }
 
 QmlScriptClass::QmlScriptClass(QmlEngine *bindengine)

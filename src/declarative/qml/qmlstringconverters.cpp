@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtGui/qcolor.h>
+#include <QtGui/qvector3d.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qsize.h>
@@ -94,6 +95,8 @@ QVariant QmlStringConverters::variantFromString(const QString &s)
     if (ok) return QVariant(sz);
     bool b = boolFromString(s, &ok);
     if (ok) return QVariant(b);
+    QVector3D v = vector3DFromString(s, &ok);
+    if (ok) return qVariantFromValue(v);
 
     return QVariant(s);
 }
@@ -207,6 +210,32 @@ bool QmlStringConverters::boolFromString(const QString &str, bool *ok)
     if (ok)
         *ok = false;
     return true;
+}
+
+//expects input of "x,y,z"
+QVector3D QmlStringConverters::vector3DFromString(const QString &s, bool *ok)
+{
+    if (s.count(QLatin1Char(',')) != 2) {
+        if (ok)
+            *ok = false;
+        return QVector3D();
+    }
+
+    bool xGood, yGood, zGood;
+    int index = s.indexOf(QLatin1Char(','));
+    int index2 = s.indexOf(QLatin1Char(','), index+1);
+    qreal xCoord = s.left(index).toDouble(&xGood);
+    qreal yCoord = s.mid(index+1, index2-index-1).toDouble(&yGood);
+    qreal zCoord = s.mid(index2+1).toDouble(&zGood);
+    if (!xGood || !yGood || !zGood) {
+        if (ok)
+            *ok = false;
+        return QVector3D();
+    }
+
+    if (ok)
+        *ok = true;
+    return QVector3D(xCoord, yCoord, zCoord);
 }
 
 QT_END_NAMESPACE

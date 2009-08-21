@@ -1462,6 +1462,10 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
         variant.setValue(QmlStringConverters::colorFromString(variant.toString()));
         break;
     }
+    case QVariant::Vector3D: {
+        variant.setValue(QmlStringConverters::vector3DFromString(variant.toString()));
+        break;
+    }
     default:
         if ((uint)type >= QVariant::UserType) {
             QmlMetaType::StringConverter converter = QmlMetaType::customStringConverter(type);

@@ -119,6 +119,9 @@ void QmlCompiledData::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::StoreRectF:
         qWarning() << idx << "\t" << line << "\t" << "STORE_RECTF\t\t" << instr->storeRect.propertyIndex << "\t" << instr->storeRect.valueIndex;
         break;
+    case QmlInstruction::StoreVector3D:
+        qWarning() << idx << "\t" << line << "\t" << "STORE_VECTOR3D\t\t" << instr->storeVector3D.propertyIndex << "\t" << instr->storeVector3D.valueIndex;
+        break;
     case QmlInstruction::StoreVariant:
         qWarning() << idx << "\t" << line << "\t" << "STORE_VARIANT\t\t" << instr->storeString.propertyIndex << "\t" << instr->storeString.value << "\t\t" << primitives.at(instr->storeString.value);
         break;
