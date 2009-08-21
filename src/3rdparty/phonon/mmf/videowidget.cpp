@@ -16,8 +16,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include "utils.h"
 #include "videowidget.h"
-
 
 using namespace Phonon;
 using namespace Phonon::MMF;
@@ -49,12 +49,18 @@ MMF::VideoWidget::VideoWidget(QWidget* parent)
 					,	m_hue(DefaultHue)
 					,	m_saturation(DefaultSaturation)
 {
-
+	TRACE_CONTEXT(VideoWidget::VideoWidget, EVideoApi);
+	TRACE_ENTRY_0();
+	
+	TRACE_EXIT_0();
 }
 
 MMF::VideoWidget::~VideoWidget()
 {
-
+	TRACE_CONTEXT(VideoWidget::~VideoWidget, EVideoApi);
+	TRACE_ENTRY_0();
+	
+	TRACE_EXIT_0();
 }
 
 
@@ -70,6 +76,9 @@ Phonon::VideoWidget::AspectRatio MMF::VideoWidget::aspectRatio() const
 void MMF::VideoWidget::setAspectRatio
 	(Phonon::VideoWidget::AspectRatio aspectRatio)
 {
+	TRACE_CONTEXT(VideoWidget::setAspectRatio, EVideoApi);
+	TRACE("aspectRatio %d", aspectRatio);
+
 	m_aspectRatio = aspectRatio;
 }
 
@@ -80,6 +89,9 @@ qreal MMF::VideoWidget::brightness() const
 
 void MMF::VideoWidget::setBrightness(qreal brightness)
 {
+	TRACE_CONTEXT(VideoWidget::setBrightness, EVideoApi);
+	TRACE("brightness %f", brightness);
+
 	m_brightness = brightness;
 }
 
@@ -90,6 +102,9 @@ Phonon::VideoWidget::ScaleMode MMF::VideoWidget::scaleMode() const
 
 void MMF::VideoWidget::setScaleMode(Phonon::VideoWidget::ScaleMode scaleMode)
 {
+	TRACE_CONTEXT(VideoWidget::setScaleMode, EVideoApi);
+	TRACE("setScaleMode %d", setScaleMode);
+
 	m_scaleMode = scaleMode;
 }
 
@@ -100,6 +115,9 @@ qreal MMF::VideoWidget::contrast() const
 
 void MMF::VideoWidget::setContrast(qreal contrast)
 {
+	TRACE_CONTEXT(VideoWidget::setContrast, EVideoApi);
+	TRACE("contrast %f", contrast);
+
 	m_contrast = contrast;
 }
 
@@ -110,6 +128,9 @@ qreal MMF::VideoWidget::hue() const
 
 void MMF::VideoWidget::setHue(qreal hue)
 {
+	TRACE_CONTEXT(VideoWidget::setHue, EVideoApi);
+	TRACE("hue %f", hue);
+
 	m_hue = hue;
 }
 
@@ -120,6 +141,9 @@ qreal MMF::VideoWidget::saturation() const
 
 void MMF::VideoWidget::setSaturation(qreal saturation)
 {
+	TRACE_CONTEXT(VideoWidget::setSaturation, EVideoApi);
+	TRACE("saturation %f", saturation);
+
 	m_saturation = saturation;
 }
 

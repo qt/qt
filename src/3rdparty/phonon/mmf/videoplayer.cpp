@@ -47,7 +47,7 @@ MMF::VideoPlayer::VideoPlayer(const AbstractPlayer& player)
 
 void MMF::VideoPlayer::construct()
 {
-	TRACE_CONTEXT(VideoPlayer::VideoPlayer, EAudioApi);
+	TRACE_CONTEXT(VideoPlayer::VideoPlayer, EVideoApi);
 	TRACE_ENTRY_0();
 	
 	CCoeControl* control = m_widget->winId();
@@ -102,9 +102,12 @@ void MMF::VideoPlayer::doPlay()
 
 void MMF::VideoPlayer::doPause()
 {
+	TRACE_CONTEXT(VideoPlayer::doPause, EVideoApi);
+
 	TRAPD(err, m_player->PauseL());
 	if(KErrNone != err)
 	{
+		TRACE("PauseL error %d", err);
 		setError(NormalError);
 	}
 }
@@ -133,13 +136,14 @@ void MMF::VideoPlayer::close()
 
 void MMF::VideoPlayer::seek(qint64 ms)
 {
-	TRACE_CONTEXT(VideoPlayer::seek, EAudioApi);
+	TRACE_CONTEXT(VideoPlayer::seek, EVideoApi);
     TRACE_ENTRY("state %d pos %Ld", state(), ms);
 
     TRAPD(err, m_player->SetPositionL(TTimeIntervalMicroSeconds(ms)));
 
     if(KErrNone != err)
 	{
+		TRACE("SetPositionL error %d", err);
 		setError(NormalError);
 	}
     
@@ -153,6 +157,8 @@ bool MMF::VideoPlayer::hasVideo() const
 
 qint64 MMF::VideoPlayer::currentTime() const
 {
+	TRACE_CONTEXT(VideoPlayer::currentTime, EVideoApi);
+
 	TTimeIntervalMicroSeconds us;
     TRAPD(err, us = m_player->PositionL())
 
@@ -162,17 +168,29 @@ qint64 MMF::VideoPlayer::currentTime() const
     {
         result = toMilliSeconds(us);
     }
+    else
+    {
+		TRACE("PositionL error %d", err);
+		
+		// If we don't cast away constness here, we simply have to ignore 
+		// the error.
+    	const_cast<VideoPlayer*>(this)->setError(NormalError);
+    }
     
     return result;
 }
 
 qint64 MMF::VideoPlayer::totalTime() const
 {
+	TRACE_CONTEXT(VideoPlayer::totalTime, EVideoApi);
+
 	qint64 result = 0;
 	TRAPD(err, result = toMilliSeconds(m_player->DurationL()));
 	
 	if(KErrNone != err)
 	{
+		TRACE("DurationL error %d", err);
+	
 		// If we don't cast away constness here, we simply have to ignore 
 		// the error.
 		const_cast<VideoPlayer*>(this)->setError(NormalError);
@@ -198,7 +216,7 @@ void MMF::VideoPlayer::MvpuoOpenComplete(TInt aError)
 		m_player->Prepare();
 	}
 	else
-	{
+	{	
 		// TODO: set different error states according to value of aError?
 		setError(NormalError);
 	}
@@ -236,6 +254,7 @@ void MMF::VideoPlayer::MvpuoFrameReady(CFbsBitmap &aFrame, TInt aError)
 
 	// TODO
 	Q_UNUSED(aFrame);
+	Q_UNUSED(aError);	// suppress warnings in release builds
 	
 	TRACE_EXIT_0();
 }
@@ -246,6 +265,7 @@ void MMF::VideoPlayer::MvpuoPlayComplete(TInt aError)
 	TRACE_ENTRY("state %d error %d", state(), aError);
 
 	// TODO
+	Q_UNUSED(aError);	// suppress warnings in release builds
 	
 	TRACE_EXIT_0();
 }

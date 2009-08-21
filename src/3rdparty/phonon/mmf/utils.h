@@ -31,8 +31,9 @@ namespace Phonon
          */
         enum PanicCode
             {
-            InvalidStatePanic,
-            InvalidMediaTypePanic
+            InvalidStatePanic				= 1,
+            InvalidMediaTypePanic			= 2,
+            InvalidBackendInterfaceClass	= 3
             };
 
         namespace Utils
@@ -58,14 +59,19 @@ namespace Phonon
         enum TTraceCategory
             {
             /**
+             * Backend
+             */
+            EBackend			 = 0x00000001,
+            
+            /**
              * Functions which map directly to the public Phonon audio API
              */
-            EAudioApi            = 0x00000001,
+            EAudioApi            = 0x00000010,
 
             /**
              * Internal functions in the audio implementation
              */
-            EAudioInternal       = 0x00000002,
+            EAudioInternal       = 0x00000020,
             
             /**
 			 * Functions which map directly to the public Phonon video API

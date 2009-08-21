@@ -188,10 +188,6 @@ Phonon::ErrorType MMF::AbstractMediaPlayer::errorType() const
 
 QString MMF::AbstractMediaPlayer::errorString() const
 {
-    TRACE_CONTEXT(AbstractMediaPlayer::errorString, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
-
-    TRACE_EXIT_0();
     // TODO: put in proper error strings
     QString result;
     return result;
@@ -199,12 +195,7 @@ QString MMF::AbstractMediaPlayer::errorString() const
 
 Phonon::State MMF::AbstractMediaPlayer::state() const
 {
-    TRACE_CONTEXT(AbstractMediaPlayer::state, EAudioApi);
-    TRACE_ENTRY("state %d", m_state);
-
-    const Phonon::State result = phononState(m_state);
-
-    TRACE_RETURN("%d", result);
+    return phononState(m_state);
 }
 
 MediaSource MMF::AbstractMediaPlayer::source() const
@@ -214,7 +205,7 @@ MediaSource MMF::AbstractMediaPlayer::source() const
 
 void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& file)
 {
-    TRACE_CONTEXT(AudioPlayer::setSource, EAudioApi);
+    TRACE_CONTEXT(AbstractMediaPlayer::setFileSource, EAudioApi);
     TRACE_ENTRY("state %d source.type %d", m_state, source.type());
 
     close();
@@ -247,6 +238,7 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
 
         case MediaSource::Url:
         {
+			TRACE_0("Source type not supported");
 			// TODO: support opening URLs
 			symbianErr = KErrNotSupported;
 			break;
@@ -255,10 +247,12 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
         case MediaSource::Invalid:
         case MediaSource::Disc:
         case MediaSource::Stream:
+        	TRACE_0("Source type not supported");
             symbianErr = KErrNotSupported;
             break;
 
         case MediaSource::Empty:
+        	TRACE_0("Empty source - doing nothing");
             TRACE_EXIT_0();
             return;
 
@@ -273,6 +267,8 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
     }
     else
     {
+		TRACE("error %d", symbianErr)
+    
         // TODO: do something with the value of symbianErr?
         m_error = NormalError;
         changeState(ErrorState);
@@ -336,7 +332,7 @@ bool MMF::AbstractMediaPlayer::doSetVolume(qreal volume)
             TRACE_PANIC(InvalidStatePanic);
     }
     
-    return result;
+    TRACE_RETURN("%d", result);
 }
 
 
@@ -400,7 +396,7 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
     	and m_playPending
     )
     {
-		TRACE("Play was called while loading; starting playback now");
+		TRACE_0("Play was called while loading; starting playback now");
 		m_playPending = false;
 		play();
     }
@@ -431,12 +427,7 @@ qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds 
 
 void MMF::AbstractMediaPlayer::tick()
 {
-    TRACE_CONTEXT(AbstractMediaPlayer::tick, EAudioInternal);
-    TRACE_ENTRY("state %d", m_state);
-
     emit tick(currentTime());
-
-    TRACE_EXIT_0();
 }
 
 

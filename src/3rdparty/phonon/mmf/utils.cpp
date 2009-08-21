@@ -25,9 +25,9 @@ using namespace Phonon::MMF;
 _LIT(PanicCategory, "Phonon::MMF");
 
 void MMF::Utils::panic(PanicCode code)
-    {
+{
     User::Panic(PanicCategory, code);
-    }
+}
 
 QHBufC MMF::Utils::symbianFilename(const QString& qtFilename)
 {

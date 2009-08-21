@@ -130,7 +130,6 @@ bool MMF::AudioPlayer::hasVideo() const
 qint64 MMF::AudioPlayer::currentTime() const
 {
     TRACE_CONTEXT(AudioPlayer::currentTime, EAudioApi);
-    TRACE_ENTRY("state %d", state());
 
     TTimeIntervalMicroSeconds us;
     const TInt err = m_player->GetPosition(us);
@@ -141,18 +140,21 @@ qint64 MMF::AudioPlayer::currentTime() const
     {
         result = toMilliSeconds(us);
     }
+    else
+    {
+		TRACE("GetPosition err %d", err);
+		
+		// If we don't cast away constness here, we simply have to ignore 
+		// the error.
+		const_cast<AudioPlayer*>(this)->setError(NormalError);
+    }
 
-    TRACE_RETURN("%Ld", result);
+    return result;
 }
 
 qint64 MMF::AudioPlayer::totalTime() const
 {
-    TRACE_CONTEXT(AudioPlayer::totalTime, EAudioApi);
-    TRACE_ENTRY("state %d", state());
-
-    const qint64 result = toMilliSeconds(m_player->Duration());
-
-    TRACE_RETURN("%Ld", result);
+    return toMilliSeconds(m_player->Duration());
 }
 
 

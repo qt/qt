@@ -22,6 +22,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "backend.h"
 #include "audiooutput.h"
 #include "mediaobject.h"
+#include "utils.h"
 #include "videowidget.h"
 
 using namespace Phonon;
@@ -29,19 +30,22 @@ using namespace Phonon::MMF;
 
 Backend::Backend(QObject *parent)	: QObject(parent)
 {
-	// TODO: replace this with logging macros as per rest of the module
-    qDebug() << Q_FUNC_INFO;
+	TRACE_CONTEXT(Backend::Backend, EBackend);
+	TRACE_ENTRY_0();
 
     setProperty("identifier",     QLatin1String("phonon_mmf"));
     setProperty("backendName",    QLatin1String("MMF"));
     setProperty("backendComment", QLatin1String("Backend using Symbian Multimedia Framework (MMF)"));
     setProperty("backendVersion", QLatin1String("0.1"));
     setProperty("backendWebsite", QLatin1String("http://www.qtsoftware.com/"));
+    
+    TRACE_EXIT_0();
 }
 
 QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const QList<QVariant> &)
 {
-	// TODO: add trace
+	TRACE_CONTEXT(Backend::createObject, EBackend);
+	TRACE_ENTRY("class %d", c);
 
 	QObject* result = NULL;
 
@@ -66,10 +70,10 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
         	break;
         	
         default:
-        	Q_ASSERT_X(false, Q_FUNC_INFO, "This line should never be reached.");
+        	TRACE_PANIC(InvalidBackendInterfaceClass);
     }
 
-    return result;
+    TRACE_RETURN("0x%08x", result);
 }
 
 QList<int> Backend::objectDescriptionIndexes(ObjectDescriptionType) const
@@ -89,26 +93,36 @@ bool Backend::startConnectionChange(QSet<QObject *>)
 
 bool Backend::connectNodes(QObject *source, QObject *target)
 {
-	// TODO: add trace
+	TRACE_CONTEXT(Backend::connectNodes, EBackend);
+	TRACE_ENTRY("source 0x%08x target 0x%08x", source, target);
 
 	MediaObject *const mediaObject = qobject_cast<MediaObject *>(source);
     AudioOutput *const audioOutput = qobject_cast<AudioOutput *>(target);
 
+    bool result = false;
+    
     if(mediaObject and audioOutput)
     {
+		TRACE("mediaObject 0x%08x -> audioOutput 0x%08x", mediaObject, audioOutput);
+    
 		audioOutput->setVolumeControl(mediaObject);
-		return true;
+		result = true;
     }
     
-    // Node types not recognised
-    return false;
+    TRACE_RETURN("%d", result);
 }
 
-bool Backend::disconnectNodes(QObject *, QObject *)
+bool Backend::disconnectNodes(QObject *source, QObject *target)
 {
-	// TODO: add trace
+	TRACE_CONTEXT(Backend::disconnectNodes, EBackend);
+	TRACE_ENTRY("source 0x%08x target 0x%08x", source, target);
 
-    return true;
+	Q_UNUSED(source);	// silence warnings in release builds
+	Q_UNUSED(target);	// silence warnings in release builds
+	
+	bool result = true;
+	
+	TRACE_RETURN("%d", result);
 }
 
 bool Backend::endConnectionChange(QSet<QObject *>)

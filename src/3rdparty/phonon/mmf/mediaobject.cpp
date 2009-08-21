@@ -62,17 +62,21 @@ MMF::MediaObject::~MediaObject()
 
 bool MMF::MediaObject::openRecognizer()
 {
+	TRACE_CONTEXT(MediaObject::openRecognizer, EAudioInternal);
+
 	if(!m_recognizerOpened)
 	{
 		TInt err = m_recognizer.Connect();
 		if(KErrNone != err)
 		{	
+			TRACE("RApaLsSession::Connect error %d", err);
 			return false;
 		}
 			
 	    err = m_fileServer.Connect();
 	    if(KErrNone != err)
 		{	
+			TRACE("RFs::Connect error %d", err);
 			return false;
 		}
 	    
@@ -81,6 +85,7 @@ bool MMF::MediaObject::openRecognizer()
 	    err = m_fileServer.ShareProtected();
 	    if(KErrNone != err)
 		{	
+			TRACE("RFs::ShareProtected error %d", err);
 			return false;
 		}
 	    
@@ -114,6 +119,8 @@ MMF::MediaObject::MediaType MMF::MediaObject::mimeTypeToMediaType(const TDesC& m
 MMF::MediaObject::MediaType MMF::MediaObject::fileMediaType
 	(const QString& fileName)
 {
+	TRACE_CONTEXT(MediaObject::fileMediaType, EAudioInternal);
+
 	MediaType result = MediaTypeUnknown;
 	
 	if(openRecognizer())
@@ -132,6 +139,14 @@ MMF::MediaObject::MediaType MMF::MediaObject::fileMediaType
 				const TPtrC mimeType = recognizerResult.iDataType.Des();
 				result = mimeTypeToMediaType(mimeType);
 			}
+			else
+			{
+				TRACE("RApaLsSession::RecognizeData filename %S error %d", fileNameSymbian.data(), err);
+			}
+		}
+		else
+		{
+			TRACE("RFile::Open filename %S error %d", fileNameSymbian.data(), err);
 		}
 	}
 	
@@ -322,6 +337,8 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
 	connect(m_player.data(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), SIGNAL(stateChanged(Phonon::State, Phonon::State)));
 	connect(m_player.data(), SIGNAL(finished()), SIGNAL(finished()));
 	connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
+	
+	TRACE_EXIT_0();
 }
 
 void MMF::MediaObject::setNextSource(const MediaSource &source)
