@@ -7,3 +7,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/script/helloscript
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS helloscript.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/script/helloscript
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

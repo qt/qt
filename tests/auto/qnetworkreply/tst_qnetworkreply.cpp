@@ -68,7 +68,15 @@
 
 #include "private/qnetworkaccessmanager_p.h"
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+// Current path (C:\private\<UID>) contains only ascii chars
+//#define SRCDIR QDir::currentPath()
+#define SRCDIR "."
+#endif
+
 #include "../network-settings.h"
+
 
 Q_DECLARE_METATYPE(QNetworkReply*)
 Q_DECLARE_METATYPE(QAuthenticator*)
@@ -119,6 +127,7 @@ class tst_QNetworkReply: public QObject
 
 public:
     tst_QNetworkReply();
+    ~tst_QNetworkReply();
     QString runSimpleRequest(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                              QNetworkReplyPtr &reply, const QByteArray &data = QByteArray());
 
@@ -513,11 +522,22 @@ public:
 
         QTcpSocket *active = new QTcpSocket(this);
         active->connectToHost("127.0.0.1", server.serverPort());
+#ifndef Q_OS_SYMBIAN
+        // need more time as working with embedded
+		// device and testing from emualtor
+		// things tend to get slower
+        if (!active->waitForConnected(1000))
+            return false;
+
+        if (!server.waitForNewConnection(1000))
+            return false;
+#else
         if (!active->waitForConnected(100))
             return false;
 
         if (!server.waitForNewConnection(100))
             return false;
+#endif
         QTcpSocket *passive = server.nextPendingConnection();
         passive->setParent(this);
 
@@ -926,6 +946,8 @@ public slots:
 
 tst_QNetworkReply::tst_QNetworkReply()
 {
+    Q_SET_DEFAULT_IAP
+
     testFileName = QDir::currentPath() + "/testfile";
 #ifndef Q_OS_WINCE
     uniqueExtension = QString("%1%2%3").arg((qulonglong)this).arg(rand()).arg((qulonglong)time(0));
@@ -954,6 +976,9 @@ tst_QNetworkReply::tst_QNetworkReply()
     }
 }
 
+tst_QNetworkReply::~tst_QNetworkReply()
+{
+}
 
 
 void tst_QNetworkReply::authenticationRequired(QNetworkReply*, QAuthenticator* auth)
@@ -1121,7 +1146,7 @@ void tst_QNetworkReply::invalidProtocol()
 
 void tst_QNetworkReply::getFromData_data()
 {
-    QTest::addColumn<QString>("request");
+	QTest::addColumn<QString>("request");
     QTest::addColumn<QByteArray>("expected");
     QTest::addColumn<QString>("mimeType");
 
@@ -1217,7 +1242,7 @@ void tst_QNetworkReply::getFromData()
 
 void tst_QNetworkReply::getFromFile()
 {
-    // create the file:
+	// create the file:
     QTemporaryFile file(QDir::currentPath() + "/temp-XXXXXX");
     file.setAutoRemove(true);
     QVERIFY(file.open());
@@ -1269,7 +1294,7 @@ void tst_QNetworkReply::getFromFileSpecial_data()
 
 void tst_QNetworkReply::getFromFileSpecial()
 {
-    QFETCH(QString, fileName);
+	QFETCH(QString, fileName);
     QFETCH(QString, url);
 
     // open the resource so we can find out its size
@@ -1299,7 +1324,7 @@ void tst_QNetworkReply::getFromFtp_data()
 
 void tst_QNetworkReply::getFromFtp()
 {
-    QFETCH(QString, referenceName);
+	QFETCH(QString, referenceName);
     QFETCH(QString, url);
 
     QFile reference(referenceName);
@@ -1328,7 +1353,7 @@ void tst_QNetworkReply::getFromHttp_data()
 
 void tst_QNetworkReply::getFromHttp()
 {
-    QFETCH(QString, referenceName);
+	QFETCH(QString, referenceName);
     QFETCH(QString, url);
 
     QFile reference(referenceName);
@@ -1366,7 +1391,7 @@ void tst_QNetworkReply::getErrors_data()
                                  << int(QNetworkReply::ContentOperationNotPermittedError) << 0 << true;
     QTest::newRow("file-exist") << QUrl::fromLocalFile(QDir::currentPath() + "/this-file-doesnt-exist.txt").toString()
                                 << int(QNetworkReply::ContentNotFoundError) << 0 << true;
-#if !defined Q_OS_WIN
+#if !defined Q_OS_WIN && !defined(Q_OS_SYMBIAN)
     QTest::newRow("file-is-wronly") << QUrl::fromLocalFile(wronlyFileName).toString()
                                     << int(QNetworkReply::ContentAccessDenied) << 0 << true;
 #endif
@@ -2526,7 +2551,6 @@ void tst_QNetworkReply::ioGetWithManyProxies()
     connect(&manager, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)),
             SLOT(sslErrors(QNetworkReply*,QList<QSslError>)));
 #endif
-
     QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
@@ -2693,18 +2717,19 @@ void tst_QNetworkReply::ioPutToFileFromProcess_data()
 
 void tst_QNetworkReply::ioPutToFileFromProcess()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Currently no stdin/out supported for Windows CE", SkipAll);
+#if defined(Q_OS_WINCE) || defined (Q_OS_SYMBIAN)
+    QSKIP("Currently no stdin/out supported for Windows CE / Symbian OS", SkipAll);
 #endif
+
 #ifdef Q_OS_WIN
     if (qstrcmp(QTest::currentDataTag(), "small") == 0)
         QSKIP("When passing a CR-LF-LF sequence through Windows stdio, it gets converted, "
               "so this test fails. Disabled on Windows", SkipSingle);
 #endif
+
 #if defined(QT_NO_PROCESS)
     QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
 #else
-
     QFile file(testFileName);
 
     QUrl url = QUrl::fromLocalFile(file.fileName());
@@ -2934,7 +2959,11 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
     QSignalSpy authenticationRequiredSpy(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)));
     QSignalSpy proxyAuthenticationRequiredSpy(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
 
+#ifdef Q_OS_SYMBIAN
+    QTestEventLoop::instance().enterLoop(6);
+#else
     QTestEventLoop::instance().enterLoop(3);
+#endif
 
     disconnect(&manager, SIGNAL(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)),
                this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
@@ -3234,7 +3263,6 @@ void tst_QNetworkReply::downloadPerformance()
 {
     // unlike the above function, this one tries to send as fast as possible
     // and measures how fast it was.
-
     TimedSender sender(5000);
     QNetworkRequest request("debugpipe://127.0.0.1:" + QString::number(sender.serverPort()) + "/?bare=1");
     QNetworkReplyPtr reply = manager.get(request);
@@ -3270,7 +3298,12 @@ void tst_QNetworkReply::uploadPerformance()
 
 void tst_QNetworkReply::httpUploadPerformance()
 {
+#ifdef Q_OS_SYMBIAN
+      // SHow some mercy for non-desktop platform/s
+      enum {UploadSize = 4*1024*1024}; // 4 MB
+#else
       enum {UploadSize = 128*1024*1024}; // 128 MB
+#endif
       ThreadedDataReaderHttpServer reader;
       FixedSizeDataGenerator generator(UploadSize);
 
@@ -3335,8 +3368,12 @@ void tst_QNetworkReply::httpDownloadPerformance()
 {
     QFETCH(bool, serverSendsContentLength);
     QFETCH(bool, chunkedEncoding);
-
+#ifdef Q_OS_SYMBIAN
+    // Show some mercy to non-desktop platform/s
+    enum {UploadSize = 4*1024*1024}; // 4 MB
+#else
     enum {UploadSize = 128*1024*1024}; // 128 MB
+#endif
     HttpDownloadPerformanceServer server(UploadSize, serverSendsContentLength, chunkedEncoding);
 
     QNetworkRequest request(QUrl("http://127.0.0.1:" + QString::number(server.serverPort()) + "/?bare=1"));
@@ -3361,7 +3398,14 @@ void tst_QNetworkReply::downloadProgress_data()
 
     QTest::newRow("empty") << 0;
     QTest::newRow("small") << 4;
+#ifndef Q_OS_SYMBIAN
     QTest::newRow("big") << 4096;
+#else
+    // it can run even with 4096
+	// but it takes lot time
+	//especially on emulator
+    QTest::newRow("big") << 1024;
+#endif
 }
 
 void tst_QNetworkReply::downloadProgress()
@@ -3544,7 +3588,7 @@ void tst_QNetworkReply::receiveCookiesFromHttp_data()
 
 void tst_QNetworkReply::receiveCookiesFromHttp()
 {
-    QFETCH(QString, cookieString);
+	QFETCH(QString, cookieString);
 
     QByteArray data = cookieString.toLatin1() + '\n';
     QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/cgi-bin/set-cookie.cgi");
@@ -3697,7 +3741,9 @@ void tst_QNetworkReply::httpProxyCommands()
 
     // wait for the finished signal
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+
     QTestEventLoop::instance().enterLoop(1);
+
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     //qDebug() << reply->error() << reply->errorString();
@@ -3727,7 +3773,15 @@ void tst_QNetworkReply::proxyChange()
     QNetworkReplyPtr reply2 = manager.get(req);
 
     connect(reply2, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
+#ifdef Q_OS_SYMBIAN
+    // we need more time as:
+    // 1. running from the emulator
+    // 2. not perfect POSIX implementation
+    // 3. embedded device
+    QTestEventLoop::instance().enterLoop(20);
+#else
     QTestEventLoop::instance().enterLoop(10);
+#endif
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     if (finishedspy.count() == 0) {

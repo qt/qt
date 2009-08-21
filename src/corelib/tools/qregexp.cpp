@@ -52,6 +52,7 @@
 #include "qstringlist.h"
 #include "qstringmatcher.h"
 #include "qvector.h"
+#include "private/qfunctions_p.h"
 
 #include <limits.h>
 
@@ -832,7 +833,7 @@ struct QRegExpEngineKey
     }
 };
 
-static bool operator==(const QRegExpEngineKey &key1, const QRegExpEngineKey &key2)
+Q_STATIC_GLOBAL_OPERATOR bool operator==(const QRegExpEngineKey &key1, const QRegExpEngineKey &key2)
 {
     return key1.pattern == key2.pattern && key1.patternSyntax == key2.patternSyntax
            && key1.cs == key2.cs;
@@ -1224,7 +1225,7 @@ private:
     int yyPos; // the position of the next character to read
     int yyLen; // the length of yyIn
     int yyCh; // the last character read
-    QRegExpCharClass *yyCharClass; // attribute for Tok_CharClass tokens
+    QScopedPointer<QRegExpCharClass> yyCharClass; // attribute for Tok_CharClass tokens
     int yyMinRep; // attribute for Tok_Quantifier
     int yyMaxRep; // ditto
     QString yyError; // syntax error or overflow during parsing?
@@ -1316,14 +1317,19 @@ void QRegExpMatchState::prepareForMatch(QRegExpEngine *eng)
     int ns = eng->s.size(); // number of states
     int ncap = eng->ncap;
 #ifndef QT_NO_REGEXP_OPTIM
-    slideTabSize = qMax(eng->minl + 1, 16);
+    int newSlideTabSize = qMax(eng->minl + 1, 16);
 #else
-    slideTabSize = 0;
+    int newSlideTabSize = 0;
 #endif
     int numCaptures = eng->numCaptures();
-    capturedSize = 2 + 2 * numCaptures;
-    bigArray = (int *)realloc(bigArray, ((3 + 4 * ncap) * ns + 4 * ncap + slideTabSize + capturedSize)*sizeof(int));
+    int newCapturedSize = 2 + 2 * numCaptures;
+    bigArray = q_check_ptr((int *)realloc(bigArray, ((3 + 4 * ncap) * ns + 4 * ncap + newSlideTabSize + newCapturedSize)*sizeof(int)));
 
+    // set all internal variables only _after_ bigArray is realloc'ed
+    // to prevent a broken regexp in oom case
+
+    slideTabSize = newSlideTabSize;
+    capturedSize = newCapturedSize;
     inNextStack = bigArray;
     memset(inNextStack, -1, ns * sizeof(int));
     curStack = inNextStack + ns;
@@ -3124,7 +3130,7 @@ void QRegExpEngine::startTokenizer(const QChar *rx, int len)
     yyPos = 0;
     yyLen = len;
     yyCh = getChar();
-    yyCharClass = new QRegExpCharClass;
+    yyCharClass.reset(new QRegExpCharClass);
     yyMinRep = 0;
     yyMaxRep = 0;
     yyError = QString();
@@ -3318,8 +3324,7 @@ int QRegExpEngine::parse(const QChar *pattern, int len)
 #endif
     box.cat(middleBox);
     box.cat(rightBox);
-    delete yyCharClass;
-    yyCharClass = 0;
+    yyCharClass.reset(0);
 
 #ifndef QT_NO_REGEXP_CAPTURE
     for (int i = 0; i < nf; ++i) {
@@ -3616,10 +3621,15 @@ static void derefEngine(QRegExpEngine *eng, const QRegExpEngineKey &key)
 #if !defined(QT_NO_REGEXP_OPTIM)
         if (globalEngineCache()) {
             QMutexLocker locker(mutex());
-            globalEngineCache()->insert(key, eng, 4 + key.pattern.length() / 4);
-        }
-        else
+            QT_TRY {
+                globalEngineCache()->insert(key, eng, 4 + key.pattern.length() / 4);
+            } QT_CATCH(const std::bad_alloc &) {
+                // in case of an exception (e.g. oom), just delete the engine
+                delete eng;
+            }
+        } else {
             delete eng;
+        }
 #else
         Q_UNUSED(key);
         delete eng;

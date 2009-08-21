@@ -74,6 +74,11 @@
 
 QT_BEGIN_NAMESPACE
 
+static inline bool shouldEnableInputMethod(QPlainTextEdit *plaintextedit)
+{
+    return !plaintextedit->isReadOnly();
+}
+
 class QPlainTextDocumentLayoutPrivate : public QAbstractTextDocumentLayoutPrivate
 {
     Q_DECLARE_PUBLIC(QPlainTextDocumentLayout)
@@ -720,7 +725,8 @@ QPlainTextEditPrivate::QPlainTextEditPrivate()
       tabChangesFocus(false),
       lineWrap(QPlainTextEdit::WidgetWidth),
       wordWrap(QTextOption::WrapAtWordBoundaryOrAnywhere),
-      topLine(0), pageUpDownLastCursorYIsValid(false)
+      clickCausedFocus(0),topLine(0), 
+      pageUpDownLastCursorYIsValid(false)
 {
     showCursorOnInitialShow = true;
     backgroundVisible = false;
@@ -1924,6 +1930,9 @@ void QPlainTextEdit::mouseReleaseEvent(QMouseEvent *e)
         d->autoScrollTimer.stop();
         d->ensureCursorVisible();
     }
+
+    d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
+    d->clickCausedFocus = 0;
 }
 
 /*! \reimp
@@ -2058,6 +2067,9 @@ QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 void QPlainTextEdit::focusInEvent(QFocusEvent *e)
 {
     Q_D(QPlainTextEdit);
+    if (e->reason() == Qt::MouseFocusReason) {
+        d->clickCausedFocus = 1;
+    }
     QAbstractScrollArea::focusInEvent(e);
     d->sendControlEvent(e);
 }
@@ -2324,7 +2336,7 @@ void QPlainTextEdit::setReadOnly(bool ro)
     } else {
         flags = Qt::TextEditorInteraction;
     }
-    setAttribute(Qt::WA_InputMethodEnabled, !ro);
+    setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod(this));
     d->control->setTextInteractionFlags(flags);
 }
 

@@ -44,6 +44,8 @@
 
 #include <QtCore/qstring.h>
 
+#include <QtCore/qsharedpointer.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -52,6 +54,7 @@ QT_MODULE(Script)
 
 class QScriptEngine;
 class QScriptStringPrivate;
+struct QScriptStringPrivatePointerDeleter;
 
 class Q_SCRIPT_EXPORT QScriptString
 {
@@ -71,7 +74,7 @@ public:
     operator QString() const;
 
 private:
-    QScriptStringPrivate *d_ptr;
+    QExplicitlySharedDataPointer<QScriptStringPrivate> d_ptr;
     friend class QScriptValue;
     Q_DECLARE_PRIVATE(QScriptString)
 };

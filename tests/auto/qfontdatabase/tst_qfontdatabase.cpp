@@ -45,9 +45,9 @@
 
 #include <qfontdatabase.h>
 
-
-
-
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR "."
+#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -191,6 +191,9 @@ void tst_QFontDatabase::addAppFont_data()
 
 void tst_QFontDatabase::addAppFont()
 {
+#ifdef Q_OS_SYMBIAN
+    QSKIP( "Symbian: Application fonts are not yet supported", SkipAll );
+#else
     QFETCH(bool, useMemoryFont);
     QSignalSpy fontDbChangedSpy(QApplication::instance(), SIGNAL(fontDatabaseChanged()));
 
@@ -240,6 +243,7 @@ void tst_QFontDatabase::addAppFont()
     QCOMPARE(fontDbChangedSpy.count(), 2);
 
     QVERIFY(db.families() == oldFamilies);
+#endif
 }
 
 QTEST_MAIN(tst_QFontDatabase)

@@ -8,3 +8,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/mainwindows/dockwidgets
 sources.files = $$SOURCES $$HEADERS $$RESOURCES dockwidgets.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/mainwindows/dockwidgets
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

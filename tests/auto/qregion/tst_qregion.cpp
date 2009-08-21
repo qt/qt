@@ -279,7 +279,7 @@ void tst_QRegion::emptyPolygonRegion_data()
     QPolygon pa;
 
 
-    QTest::newRow("no points") << pa << TRUE << 0 << QVector<QRect>();
+    QTest::newRow("no points") << pa << true << 0 << QVector<QRect>();
     pa = QPolygon() << QPoint(10,10);
     QTest::newRow("one point") << pa << true << 0 << QVector<QRect>();
     pa = QPolygon() << QPoint(10,10) << QPoint(10,20);
@@ -381,7 +381,7 @@ void tst_QRegion::intersected_data()
     QPolygon ps2(8);
     ps1.putPoints(0,8, 20,20, 50,20, 50,100, 70,100, 70,20, 120,20, 120,200, 20, 200);
     ps2.putPoints(0,8, 100,150, 140,150, 140,160, 160,160, 160,150, 200,150, 200,180, 100,180);
-    QTest::newRow("task30716") << QRegion(ps1) << QRegion(ps2) << TRUE;
+    QTest::newRow("task30716") << QRegion(ps1) << QRegion(ps2) << true;
 }
 
 void tst_QRegion::intersected()

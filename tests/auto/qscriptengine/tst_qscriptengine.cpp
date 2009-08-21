@@ -55,6 +55,11 @@ Q_DECLARE_METATYPE(QObjectList)
 //TESTED_CLASS=
 //TESTED_FILES=
 
+#if defined(Q_OS_SYMBIAN)
+# define STRINGIFY(x) #x
+# define TOSTRING(x) STRINGIFY(x)
+# define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID)
+#endif
 class tst_QScriptEngine : public QObject
 {
     Q_OBJECT

@@ -12,3 +12,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/qtconcurrent/progressdialog
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro *.png
 sources.path = $$[QT_INSTALL_EXAMPLES]/qtconcurrent/progressdialog
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

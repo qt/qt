@@ -47,6 +47,13 @@
 #endif
 #include <QtSvg/QtSvg>
 
+#if defined(Q_OS_SYMBIAN)
+# define STRINGIFY(x) #x
+# define TOSTRING(x) STRINGIFY(x)
+# define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
+#define SVGFILE "tests2.svg"
+#endif
+
 Q_DECLARE_METATYPE(QBitArray)
 Q_DECLARE_METATYPE(qint64)
 
@@ -2056,7 +2063,7 @@ static QRegion qRegionData(int index)
 	case 4: return QRegion(100, -100, 2048, 4096, QRegion::Rectangle);
 	case 5: return QRegion(-100, 100, 4096, 2048, QRegion::Rectangle);
         case 6: return QRegion(0, 0, 0, 0, QRegion::Ellipse);
-#if !defined(Q_OS_UNIX) && !defined(Q_OS_WINCE) // all our Unix platforms use X regions.
+#if defined(Q_OS_SYMBIAN) || (!defined(Q_OS_UNIX) && !defined(Q_OS_WINCE)) // all our Unix platforms use X regions.
         case 7: return QRegion(1, 2, 300, 400, QRegion::Ellipse);
 	case 8: return QRegion(100, 100, 1024, 768, QRegion::Ellipse);
 	case 9: return QRegion(-100, -100, 1024, 1024, QRegion::Ellipse);
@@ -2707,7 +2714,7 @@ void tst_QDataStream::status_charptr_QByteArray_data()
     QTest::addColumn<int>("expectedStatus");
     QTest::addColumn<QByteArray>("expectedString");
 
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
 #ifdef QT3_SUPPORT
     QByteArray oneMbMinus1(1024 * 1024 - 1);
 #else
@@ -2725,7 +2732,7 @@ void tst_QDataStream::status_charptr_QByteArray_data()
     QTest::newRow("size 3") << QByteArray("\x00\x00\x00\x03jkl", 7) << (int) QDataStream::Ok << QByteArray("jkl");
     QTest::newRow("size 4") << QByteArray("\x00\x00\x00\x04jklm", 8) << (int) QDataStream::Ok << QByteArray("jklm");
     QTest::newRow("size 4j") << QByteArray("\x00\x00\x00\x04jklmj", 8) << (int) QDataStream::Ok << QByteArray("jklm");
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QTest::newRow("size 1MB-1") << QByteArray("\x00\x0f\xff\xff", 4) + oneMbMinus1 + QByteArray("j") << (int) QDataStream::Ok << oneMbMinus1;
     QTest::newRow("size 1MB") << QByteArray("\x00\x10\x00\x00", 4) + oneMbMinus1 + QByteArray("jkl") << (int) QDataStream::Ok << oneMbMinus1 + "j";
     QTest::newRow("size 1MB+1") << QByteArray("\x00\x10\x00\x01", 4) + oneMbMinus1 + QByteArray("jkl") << (int) QDataStream::Ok << oneMbMinus1 + "jk";
@@ -2745,7 +2752,7 @@ void tst_QDataStream::status_charptr_QByteArray_data()
     QTest::newRow("badsize 2") << QByteArray("\x00\x00\x00\x02j", 5) << (int) QDataStream::ReadPastEnd << QByteArray();
     QTest::newRow("badsize 3") << QByteArray("\x00\x00\x00\x03jk", 6) << (int) QDataStream::ReadPastEnd << QByteArray();
     QTest::newRow("badsize 4") << QByteArray("\x00\x00\x00\x04jkl", 7) << (int) QDataStream::ReadPastEnd << QByteArray();
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QTest::newRow("badsize 1MB") << QByteArray("\x00\x10\x00\x00", 4) + oneMbMinus1 << (int) QDataStream::ReadPastEnd << QByteArray();
     QTest::newRow("badsize 1MB+1") << QByteArray("\x00\x10\x00\x01", 4) + oneMbMinus1 + QByteArray("j") << (int) QDataStream::ReadPastEnd << QByteArray();
     QTest::newRow("badsize 3MB") << QByteArray("\x00\x30\x00\x00", 4) + threeMbMinus1 << (int) QDataStream::ReadPastEnd << QByteArray();
@@ -2819,7 +2826,7 @@ void tst_QDataStream::status_QString_data()
     QTest::addColumn<int>("expectedStatus");
     QTest::addColumn<QString>("expectedString");
 
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QString oneMbMinus1;
     oneMbMinus1.resize(1024 * 1024 - 1);
     for (int i = 0; i < oneMbMinus1.size(); ++i)
@@ -2837,7 +2844,7 @@ void tst_QDataStream::status_QString_data()
     QTest::newRow("size 3") << QByteArray("\x00\x00\x00\x06\x00j\x00k\x00l", 10) << (int) QDataStream::Ok << QString("jkl");
     QTest::newRow("size 4") << QByteArray("\x00\x00\x00\x08\x00j\x00k\x00l\x00m", 12) << (int) QDataStream::Ok << QString("jklm");
     QTest::newRow("size 4j") << QByteArray("\x00\x00\x00\x08\x00j\x00k\x00l\x00mjj", 14) << (int) QDataStream::Ok << QString("jklm");
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QTest::newRow("size 1MB-1") << QByteArray("\x00\x1f\xff\xfe", 4) + oneMbMinus1Data + QByteArray("jj") << (int) QDataStream::Ok << oneMbMinus1;
     QTest::newRow("size 1MB") << QByteArray("\x00\x20\x00\x00", 4) + oneMbMinus1Data + QByteArray("\x00j\x00k\x00l", 6) << (int) QDataStream::Ok << oneMbMinus1 + "j";
     QTest::newRow("size 1MB+1") << QByteArray("\x00\x20\x00\x02", 4) + oneMbMinus1Data + QByteArray("\x00j\x00k\x00l", 6) << (int) QDataStream::Ok << oneMbMinus1 + "jk";
@@ -2857,7 +2864,7 @@ void tst_QDataStream::status_QString_data()
     QTest::newRow("badsize 2") << QByteArray("\x00\x00\x00\x04jj", 6) << (int) QDataStream::ReadPastEnd << QString();
     QTest::newRow("badsize 3") << QByteArray("\x00\x00\x00\x06jjkk", 8) << (int) QDataStream::ReadPastEnd << QString();
     QTest::newRow("badsize 4") << QByteArray("\x00\x00\x00\x08jjkkll", 10) << (int) QDataStream::ReadPastEnd << QString();
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QTest::newRow("badsize 1MB") << QByteArray("\x00\x20\x00\x00", 4) + oneMbMinus1Data << (int) QDataStream::ReadPastEnd << QString();
     QTest::newRow("badsize 1MB+1") << QByteArray("\x00\x20\x00\x02", 4) + oneMbMinus1Data + QByteArray("j") << (int) QDataStream::ReadPastEnd << QString();
     QTest::newRow("badsize 3MB") << QByteArray("\x00\x60\x00\x00", 4) + threeMbMinus1Data << (int) QDataStream::ReadPastEnd << QString();
@@ -3086,9 +3093,22 @@ void tst_QDataStream::streamToAndFromQByteArray()
 
 void tst_QDataStream::streamRealDataTypes()
 {
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE)
+    // Note: Probably actually same 'qreal being typedeffed as float instead of double' issue as in Symbian
+    // instead of what CE skip message says.
     QSKIP("Skipped on CE as it demands too much memory and fragments", SkipAll);
+#elif defined(Q_OS_SYMBIAN)
+    // qreal is typedeffed float in symbian instead of double like in most platforms, so reference stream
+    // gets corrupted. Basically this test is flawed, as one shouldn't use naked typedeffed types in
+    // streams that are meant to work cross-platform.
+    // As this test also tests other floating point using classes, we do not simply skip it, but work around
+    // the qreal issue by redefining qreal as double for the duration of this function.
+    // Note that streaming classes works because they do explicitly use double instead of qreal when
+    // writing/reading to/from stream.
+#   define qreal double
+    qWarning("Note: streamRealDataTypes test redefines qreal as double in symbian!!!");
 #endif
+
     // Generate QPicture from SVG.
     QSvgRenderer renderer(svgFile);
     QVERIFY(renderer.isValid());
@@ -3206,6 +3226,9 @@ void tst_QDataStream::streamRealDataTypes()
         QCOMPARE(cGrad, conicalBrush);
         QCOMPARE(pen.widthF(), qreal(1.5));
     }
+#if defined(Q_OS_SYMBIAN)
+    #undef qreal
+#endif
 }
 
 #ifdef QT3_SUPPORT

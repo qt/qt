@@ -88,7 +88,7 @@ public:
 
     static QScriptValuePrivate *get(const QScriptValue &q)
     {
-        return q.d_ptr;
+        return q.d_ptr.data();
     }
 
     static QScriptValue toPublic(QScriptValuePrivate *d)

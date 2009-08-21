@@ -7,3 +7,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/layouts/basiclayouts
 sources.files = $$SOURCES $$HEADERS *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/layouts/basiclayouts
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

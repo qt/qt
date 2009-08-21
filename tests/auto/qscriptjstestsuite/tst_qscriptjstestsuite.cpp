@@ -44,6 +44,10 @@
 
 #include <QtScript>
 
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -842,7 +846,7 @@ bool tst_Suite::isExcludedFile(const QString &fileName, QString *message) const
             if (message)
                 *message = fileExclusions.at(i).second;
             return true;
-        }
+    }
     }
     return false;
 }

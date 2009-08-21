@@ -19,3 +19,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/dbus/remotecontrolledcar/controller
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro *.xml
 sources.path = $$[QT_INSTALL_EXAMPLES]/dbus/remotecontrolledcar/controller
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

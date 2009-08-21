@@ -2213,21 +2213,16 @@ void tst_QDateTimeEdit::mousePress()
     testWidget->setDate(QDate(2004, 6, 23));
     testWidget->setCurrentSection(QDateTimeEdit::YearSection);
     QCOMPARE(testWidget->currentSection(), QDateTimeEdit::YearSection);
-    int offset = 10;
-#if defined(Q_OS_WINCE)
-    offset = 20;
-    if (qt_wince_is_pocket_pc()) {
-        // depending on wether the display is double-pixeld, we need
-        // to click at a different position
-        bool doubledSize = false;
-        int dpi = GetDeviceCaps(GetDC(0), LOGPIXELSX);
-        if ((dpi < 1000) && (dpi > 0))
-            doubledSize = true;
-        offset = doubledSize ? 50 : 25; // On CE buttons are aligned horizontal
-    }
-#endif
-    QTest::mouseClick(testWidget, Qt::LeftButton, 0, QPoint(testWidget->width() - offset, 5));
+
+    // Ask the SC_SpinBoxUp button location from style
+    QStyleOptionSpinBox so;
+    so.rect = testWidget->rect();
+    QRect rectUp = testWidget->style()->subControlRect(QStyle::CC_SpinBox, &so, QStyle::SC_SpinBoxUp, testWidget);
+
+    // Send mouseClick to center of SC_SpinBoxUp
+    QTest::mouseClick(testWidget, Qt::LeftButton, 0, rectUp.center());
     QCOMPARE(testWidget->date().year(), 2005);
+
 }
 
 void tst_QDateTimeEdit::stepHourAMPM_data()

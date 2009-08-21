@@ -10,3 +10,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/script/calculator
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro *.js *.ui
 sources.path = $$[QT_INSTALL_EXAMPLES]/script/calculator
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

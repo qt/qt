@@ -3989,7 +3989,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
                                            const QStyleOptionGraphicsItem *option, QWidget *widget,
                                            bool painterStateProtection)
 {
-    QGraphicsItemPrivate *itemd = item->d_ptr;
+    QGraphicsItemPrivate *itemd = item->d_ptr.data();
     QGraphicsItem::CacheMode cacheMode = QGraphicsItem::CacheMode(itemd->cacheMode);
 
     // Render directly, using no cache.
@@ -4727,7 +4727,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                 if (dirtyRect.isEmpty())
                     continue; // Discard updates outside the bounding rect.
 
-                if (!updateHelper(viewPrivate, item->d_ptr, dirtyRect, itemIsUntransformable)
+                if (!updateHelper(viewPrivate, item->d_ptr.data(), dirtyRect, itemIsUntransformable)
                     && item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
                     paintedViewBoundingRect = QRect(-1, -1, -1, -1); // Outside viewport.
                 }

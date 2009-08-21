@@ -82,6 +82,8 @@ public:
     QT3_SUPPORT_CONSTRUCTOR QBitmap(const QImage &image) { *this = fromImage(image); }
     QT3_SUPPORT QBitmap &operator=(const QImage &image) { *this = fromImage(image); return *this; }
 #endif
+
+    typedef QExplicitlySharedDataPointer<QPixmapData> DataPtr;
 };
 Q_DECLARE_SHARED(QBitmap)
 

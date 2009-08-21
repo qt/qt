@@ -13,8 +13,17 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS saxbookmarks.pro *.xbel
 sources.path = $$[QT_INSTALL_EXAMPLES]/xml/saxbookmarks
 INSTALLS += target sources
 
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
 wince*: {
      addFiles.sources = frank.xbel jennifer.xbel
      addFiles.path = \My Documents
+     DEPLOYMENT += addFiles
+}
+
+symbian: {
+     TARGET.UID3 = 0xA000C60A
+     addFiles.sources = frank.xbel jennifer.xbel
+     addFiles.path = /data/qt/saxbookmarks
      DEPLOYMENT += addFiles
 }

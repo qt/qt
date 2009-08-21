@@ -16,8 +16,17 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES svgviewer.pro files
 sources.path = $$[QT_INSTALL_EXAMPLES]/painting/svgviewer
 INSTALLS += target sources
 
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
 wince*: {
      addFiles.sources = files\*.svg
      addFiles.path = \My Documents
+     DEPLOYMENT += addFiles
+}
+
+symbian: {
+     TARGET.UID3 = 0xA000A64E
+     addFiles.sources = files\*.svg
+     addFiles.path = .
      DEPLOYMENT += addFiles
 }

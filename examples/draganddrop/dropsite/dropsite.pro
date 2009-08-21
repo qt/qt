@@ -10,3 +10,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/draganddrop/dropsite
 INSTALLS += target sources
 
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

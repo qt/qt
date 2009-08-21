@@ -509,7 +509,13 @@ void QLineEdit::setEchoMode(EchoMode mode)
     Q_D(QLineEdit);
     if (mode == (EchoMode)d->control->echoMode())
         return;
-    setAttribute(Qt::WA_InputMethodEnabled, d->shouldEnableInputMethod());
+    Qt::InputMethodHints imHints = inputMethodHints();
+    if (mode == Password) {
+        imHints |= Qt::ImhHiddenText;
+    } else {
+        imHints &= ~Qt::ImhHiddenText;
+    }
+    setInputMethodHints(imHints);
     d->control->setEchoMode(mode);
     update();
 #ifdef Q_WS_MAC
@@ -1487,6 +1493,9 @@ void QLineEdit::mouseReleaseEvent(QMouseEvent* e)
         }
     }
 #endif
+
+    d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
+    d->clickCausedFocus = 0;
 }
 
 /*! \reimp
@@ -1644,11 +1653,20 @@ QVariant QLineEdit::inputMethodQuery(Qt::InputMethodQuery property) const
     case Qt::ImFont:
         return font();
     case Qt::ImCursorPosition:
-        return QVariant(d->control->hasSelectedText() ? d->control->selectionEnd() : d->control->cursor());
+        return QVariant(d->control->cursor());
     case Qt::ImSurroundingText:
         return QVariant(text());
     case Qt::ImCurrentSelection:
         return QVariant(selectedText());
+    case Qt::ImMaximumTextLength:
+        return QVariant(maxLength());
+    case Qt::ImAnchorPosition:
+        if (d->control->selectionStart() == d->control->selectionEnd())
+            return QVariant(d->control->cursor());
+        else if (d->control->selectionStart() == d->control->cursor())
+            return QVariant(d->control->selectionEnd());
+        else
+            return QVariant(d->control->selectionStart());
     default:
         return QVariant();
     }
@@ -1667,6 +1685,8 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
             d->control->moveCursor(d->control->nextMaskBlank(0));
         else if (!d->control->hasSelectedText())
             selectAll();
+    } else if (e->reason() == Qt::MouseFocusReason) {
+        d->clickCausedFocus = 1;
     }
 #ifdef QT_KEYPAD_NAVIGATION
     if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && e->reason() == Qt::PopupFocusReason)){

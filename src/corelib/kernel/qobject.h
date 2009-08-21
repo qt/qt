@@ -51,6 +51,7 @@
 #ifdef QT_INCLUDE_COMPAT
 #include <QtCore/qcoreevent.h>
 #endif
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -288,7 +289,7 @@ protected:
     QObject(QObjectPrivate &dd, QObject *parent = 0);
 
 protected:
-    QObjectData *d_ptr;
+    QScopedPointer<QObjectData> d_ptr;
 
     static const QMetaObject staticQtMetaObject;
 

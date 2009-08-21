@@ -85,7 +85,9 @@ QT_BEGIN_NAMESPACE
     \sa QCache, QPixmap
 */
 
-#if defined(Q_WS_QWS) || defined(Q_WS_WINCE)
+#if defined(Q_OS_SYMBIAN)
+static int cache_limit = 1024; // 1048 KB cache limit for symbian
+#elif defined(Q_WS_QWS) || defined(Q_WS_WINCE)
 static int cache_limit = 2048; // 2048 KB cache limit for embedded
 #else
 static int cache_limit = 10240; // 10 MB cache limit for desktop
@@ -365,7 +367,8 @@ void QPMCache::resizeKeyArray(int size)
 {
     if (size <= keyArraySize || size == 0)
         return;
-    keyArray = reinterpret_cast<int *>(realloc(keyArray, size * sizeof(int)));
+    keyArray = q_check_ptr(reinterpret_cast<int *>(realloc(keyArray,
+                    size * sizeof(int))));
     for (int i = keyArraySize; i != size; ++i)
         keyArray[i] = i + 1;
     keyArraySize = size;
@@ -607,7 +610,12 @@ void QPixmapCache::remove(const Key &key)
 
 void QPixmapCache::clear()
 {
-    pm_cache()->clear();
+    QT_TRY {
+        pm_cache()->clear();
+    } QT_CATCH(const std::bad_alloc &) {
+        // if we ran out of memory during pm_cache(), it's no leak,
+        // so just ignore it.
+    }
 }
 
 QT_END_NAMESPACE

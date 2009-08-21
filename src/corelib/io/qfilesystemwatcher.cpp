@@ -62,6 +62,8 @@
 #  include "qfilesystemwatcher_fsevents_p.h"
 #  endif //MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5)
 #  include "qfilesystemwatcher_kqueue_p.h"
+#elif defined(Q_OS_SYMBIAN)
+#  include "qfilesystemwatcher_symbian_p.h"
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -252,6 +254,8 @@ QFileSystemWatcherEngine *QFileSystemWatcherPrivate::createNativeEngine()
     else
 #  endif
         return QKqueueFileSystemWatcherEngine::create();
+#elif defined(Q_OS_SYMBIAN)
+    return new QSymbianFileSystemWatcherEngine;
 #else
     return 0;
 #endif

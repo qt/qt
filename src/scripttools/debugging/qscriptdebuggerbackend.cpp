@@ -385,7 +385,6 @@ QScriptDebuggerBackend::QScriptDebuggerBackend()
 QScriptDebuggerBackend::~QScriptDebuggerBackend()
 {
     detach();
-    delete d_ptr;
 }
 
 /*!

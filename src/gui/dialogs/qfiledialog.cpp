@@ -58,11 +58,14 @@
 #include <qdebug.h>
 #include <qapplication.h>
 #include <qstylepainter.h>
-#ifndef Q_WS_WINCE
+#if !defined(Q_WS_WINCE) && !defined(Q_OS_SYMBIAN)
 #include "ui_qfiledialog.h"
 #else
-#include "ui_qfiledialog_wince.h"
+#define Q_EMBEDDED_SMALLSCREEN
+#include "ui_qfiledialog_embedded.h"
+#if defined(Q_OS_WINCE)
 extern bool qt_priv_ptr_valid;
+#endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -358,7 +361,6 @@ QFileDialog::~QFileDialog()
     settings.beginGroup(QLatin1String("Qt"));
     settings.setValue(QLatin1String("filedialog"), saveState());
 #endif
-    delete d->qFileDialogUi;
     d->deleteNativeDialog_sys();
 }
 
@@ -491,6 +493,38 @@ void QFileDialog::changeEvent(QEvent *e)
         d->retranslateStrings();
     }
     QDialog::changeEvent(e);
+}
+
+QFileDialogPrivate::QFileDialogPrivate()
+    :
+#ifndef QT_NO_PROXYMODEL
+        proxyModel(0),
+#endif
+        model(0),
+        fileMode(QFileDialog::AnyFile),
+        acceptMode(QFileDialog::AcceptOpen),
+        currentHistoryLocation(-1),
+        renameAction(0),
+        deleteAction(0),
+        showHiddenAction(0),
+        useDefaultCaption(true),
+        defaultFileTypes(true),
+        fileNameLabelExplicitlySat(false),
+        nativeDialogInUse(false),
+#ifdef Q_WS_MAC
+        mDelegate(0),
+#ifndef QT_MAC_USE_COCOA
+        mDialog(0),
+        mDialogStarted(false),
+        mDialogClosed(true),
+#endif
+#endif
+        qFileDialogUi(0)
+{
+}
+
+QFileDialogPrivate::~QFileDialogPrivate()
+{
 }
 
 void QFileDialogPrivate::retranslateWindowTitle()
@@ -2076,7 +2110,7 @@ void QFileDialogPrivate::init(const QString &directory, const QString &nameFilte
     q->restoreState(settings.value(QLatin1String("filedialog")).toByteArray());
 #endif
 
-#ifdef Q_WS_WINCE
+#if defined(Q_EMBEDDED_SMALLSCREEN)
     qFileDialogUi->lookInLabel->setVisible(false);
     qFileDialogUi->fileNameLabel->setVisible(false);
     qFileDialogUi->fileTypeLabel->setVisible(false);
@@ -2116,7 +2150,7 @@ void QFileDialogPrivate::createWidgets()
             q, SLOT(_q_rowsInserted(const QModelIndex &)));
     model->setReadOnly(false);
 
-    qFileDialogUi = new Ui_QFileDialog();
+    qFileDialogUi.reset(new Ui_QFileDialog());
     qFileDialogUi->setupUi(q);
 
     QList<QUrl> initialBookmarks;
@@ -2142,7 +2176,7 @@ void QFileDialogPrivate::createWidgets()
     qFileDialogUi->fileNameLabel->setBuddy(qFileDialogUi->fileNameEdit);
 #endif
 #ifndef QT_NO_COMPLETER
-    completer = new QFSCompletor(model, q);
+    completer = new QFSCompleter(model, q);
     qFileDialogUi->fileNameEdit->setCompleter(completer);
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
             q, SLOT(_q_autoCompleteFileName(QString)));
@@ -2200,9 +2234,9 @@ void QFileDialogPrivate::createWidgets()
         treeHeader->addAction(showHeader);
     }
 
-    QItemSelectionModel *selModel = qFileDialogUi->treeView->selectionModel();
+    QScopedPointer<QItemSelectionModel> selModel(qFileDialogUi->treeView->selectionModel());
     qFileDialogUi->treeView->setSelectionModel(qFileDialogUi->listView->selectionModel());
-    delete selModel;
+
     QObject::connect(qFileDialogUi->treeView, SIGNAL(activated(QModelIndex)),
                      q, SLOT(_q_enterDirectory(QModelIndex)));
     QObject::connect(qFileDialogUi->treeView, SIGNAL(customContextMenuRequested(QPoint)),
@@ -2284,9 +2318,9 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         connect(d->model, SIGNAL(rowsInserted(const QModelIndex &, int, int)),
             this, SLOT(_q_rowsInserted(const QModelIndex &)));
     }
-    QItemSelectionModel *selModel = d->qFileDialogUi->treeView->selectionModel();
+    QScopedPointer<QItemSelectionModel> selModel(d->qFileDialogUi->treeView->selectionModel());
     d->qFileDialogUi->treeView->setSelectionModel(d->qFileDialogUi->listView->selectionModel());
-    delete selModel;
+
     d->setRootIndex(idx);
 
     // reconnect selection
@@ -3164,7 +3198,7 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
 
 #ifndef QT_NO_COMPLETER
 
-QString QFSCompletor::pathFromIndex(const QModelIndex &index) const
+QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
 {
     const QFileSystemModel *dirModel;
     if (proxyModel)
@@ -3179,14 +3213,17 @@ QString QFSCompletor::pathFromIndex(const QModelIndex &index) const
     return index.data(QFileSystemModel::FilePathRole).toString();
 }
 
-QStringList QFSCompletor::splitPath(const QString &path) const
+QStringList QFSCompleter::splitPath(const QString &path) const
 {
     if (path.isEmpty())
         return QStringList(completionPrefix());
 
     QString pathCopy = QDir::toNativeSeparators(path);
     QString sep = QDir::separator();
-#ifdef Q_OS_WIN
+#if defined(Q_OS_SYMBIAN)
+    if (pathCopy == QLatin1String("\\"))
+        return QStringList(pathCopy);
+#elif defined(Q_OS_WIN)
     if (pathCopy == QLatin1String("\\") || pathCopy == QLatin1String("\\\\"))
         return QStringList(pathCopy);
     QString doubleSlash(QLatin1String("\\\\"));
@@ -3198,7 +3235,11 @@ QStringList QFSCompletor::splitPath(const QString &path) const
 
     QRegExp re(QLatin1Char('[') + QRegExp::escape(sep) + QLatin1Char(']'));
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_SYMBIAN)
+    QStringList parts = pathCopy.split(re, QString::SkipEmptyParts);
+    if (pathCopy.endsWith(sep))
+        parts.append(QString());
+#elif defined(Q_OS_WIN)
     QStringList parts = pathCopy.split(re, QString::SkipEmptyParts);
     if (!doubleSlash.isEmpty() && !parts.isEmpty())
         parts[0].prepend(doubleSlash);
@@ -3210,7 +3251,7 @@ QStringList QFSCompletor::splitPath(const QString &path) const
         parts[0] = sep[0];
 #endif
 
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     bool startsFromRoot = !parts.isEmpty() && parts[0].endsWith(QLatin1Char(':'));
 #else
     bool startsFromRoot = path[0] == sep[0];

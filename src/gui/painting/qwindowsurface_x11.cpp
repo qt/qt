@@ -96,7 +96,7 @@ void QX11WindowSurface::beginPaint(const QRegion &rgn)
 #ifndef QT_NO_XRENDER
     if (d_ptr->translucentBackground) {
         if (d_ptr->device.depth() != 32)
-            static_cast<QX11PixmapData *>(d_ptr->device.data_ptr())->convertToARGB32();
+            static_cast<QX11PixmapData *>(d_ptr->device.data_ptr().data())->convertToARGB32();
         ::Picture src = X11->getSolidFill(d_ptr->device.x11Info().screen(), Qt::transparent);
         ::Picture dst = d_ptr->device.x11PictureHandle();
         const QVector<QRect> rects = rgn.rects();

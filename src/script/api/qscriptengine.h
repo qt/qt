@@ -45,6 +45,7 @@
 #include <QtCore/qmetatype.h>
 
 #include <QtCore/qvariant.h>
+#include <QtCore/qsharedpointer.h>
 
 #ifndef QT_NO_QOBJECT
 #include <QtCore/qobject.h>
@@ -112,7 +113,7 @@ public:
 private:
     QScriptSyntaxCheckResult();
     QScriptSyntaxCheckResult(QScriptSyntaxCheckResultPrivate *d);
-    QScriptSyntaxCheckResultPrivate *d_ptr;
+    QExplicitlySharedDataPointer<QScriptSyntaxCheckResultPrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptSyntaxCheckResult)
     friend class QScriptEngine;
@@ -281,7 +282,7 @@ private:
 
 protected:
 #ifdef QT_NO_QOBJECT
-    QScriptEnginePrivate *d_ptr;
+    QScopedPointer<QScriptEnginePrivate> d_ptr;
 
     QScriptEngine(QScriptEnginePrivate &dd);
 #else

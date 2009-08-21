@@ -7,3 +7,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/script/marshal
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS marshal.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/script/marshal
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

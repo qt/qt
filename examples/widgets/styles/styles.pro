@@ -12,3 +12,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/widgets/styles
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS styles.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/styles
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

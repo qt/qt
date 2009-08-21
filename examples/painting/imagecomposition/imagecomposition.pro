@@ -9,3 +9,6 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES images *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/painting/imagecomposition
 INSTALLS += target sources
 
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
+symbian:TARGET.UID3 = 0xA000A64B

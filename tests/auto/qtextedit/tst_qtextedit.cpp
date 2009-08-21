@@ -73,6 +73,11 @@ Q_DECLARE_METATYPE(QList<bool>);
 #include <Carbon/Carbon.h>
 #endif
 
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#undef QT3_SUPPORT
+#endif
+
 
 bool nativeClipboardWorking()
 {
@@ -110,13 +115,17 @@ private slots:
     void autoBulletList1();
     void autoBulletList2();
     void preserveCharFormatAfterNewline();
+#ifndef QT_NO_CLIPBOARD
     void clearMustNotChangeClipboard();
+#endif
     void clearMustNotResetRootFrameMarginToDefault();
     void clearShouldPreserveTheCurrentCharFormat();
     void clearShouldClearExtraSelections();
     void paragSeparatorOnPlaintextAppend();
     void layoutingLoop();
+#ifndef QT_NO_CLIPBOARD
     void selectAllSetsNotSelection();
+#endif
     void asciiTab();
     void setDocument();
     void setDocument_shared();
@@ -129,7 +138,9 @@ private slots:
 #endif
     void cursorPositionChanged();
     void setTextCursor();
+#ifndef QT_NO_CLIPBOARD
     void undoAvailableAfterPaste();
+#endif
     void undoRedoAvailableRepetition();
     void appendShouldUseCurrentFormat();
     void appendShouldNotTouchTheSelection();
@@ -137,7 +148,9 @@ private slots:
     void shiftBackspace();
     void undoRedo();
     void preserveCharFormatInAppend();
+#ifndef QT_NO_CLIPBOARD
     void copyAndSelectAllInReadonly();
+#endif
     void ctrlAltInput();
     void noPropertiesOnDefaultTextEditCharFormat();
     void setPlainTextShouldUseCurrentCharFormat();
@@ -152,14 +165,18 @@ private slots:
     void undoRedoAfterSetContent();
     void numPadKeyNavigation();
     void moveCursor();
+#ifndef QT_NO_CLIPBOARD
     void mimeDataReimplementations();
+#endif
     void ctrlEnterShouldInsertLineSeparator_NOT();
     void shiftEnterShouldInsertLineSeparator();
     void selectWordsFromStringsContainingSeparators_data();
     void selectWordsFromStringsContainingSeparators();
+#ifndef QT_NO_CLIPBOARD
     void canPaste();
     void copyAvailable_data();
     void copyAvailable();
+#endif
     void ensureCursorVisibleOnInitialShow();
     void setHtmlInsideResizeEvent();
     void colorfulAppend();
@@ -471,6 +488,7 @@ void tst_QTextEdit::createSelection()
     QCOMPARE(ed->textCursor().position(), 11);
 }
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QTextEdit::clearMustNotChangeClipboard()
 {
     if (!nativeClipboardWorking())
@@ -481,6 +499,7 @@ void tst_QTextEdit::clearMustNotChangeClipboard()
     ed->clear();
     QCOMPARE(QApplication::clipboard()->text(), txt);
 }
+#endif
 
 void tst_QTextEdit::clearMustNotResetRootFrameMarginToDefault()
 {
@@ -544,6 +563,7 @@ void tst_QTextEdit::layoutingLoop()
     QVERIFY(callsToSetPageSize < 10);
 }
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QTextEdit::selectAllSetsNotSelection()
 {
     if (!QApplication::clipboard()->supportsSelection()) {
@@ -559,7 +579,7 @@ void tst_QTextEdit::selectAllSetsNotSelection()
 
     QCOMPARE(QApplication::clipboard()->text(QClipboard::Selection), QString::fromAscii("foobar"));
 }
-
+#endif
 void tst_QTextEdit::asciiTab()
 {
     QTextEdit edit;
@@ -568,6 +588,7 @@ void tst_QTextEdit::asciiTab()
     qApp->processEvents();
     QCOMPARE(edit.toPlainText().at(0), QChar('\t'));
 }
+
 
 void tst_QTextEdit::setDocument()
 {
@@ -769,6 +790,7 @@ void tst_QTextEdit::setTextCursor()
     QCOMPARE(spy.count(), 1);
 }
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QTextEdit::undoAvailableAfterPaste()
 {
     if (!nativeClipboardWorking())
@@ -782,6 +804,7 @@ void tst_QTextEdit::undoAvailableAfterPaste()
     QVERIFY(spy.count() >= 1);
     QCOMPARE(ed->toPlainText(), txt);
 }
+#endif
 
 class UndoRedoRecorder : public QObject
 {
@@ -988,6 +1011,7 @@ void tst_QTextEdit::preserveCharFormatInAppend()
     QCOMPARE(cursor.block().text(), QString("third para"));
 }
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QTextEdit::copyAndSelectAllInReadonly()
 {
     if (!nativeClipboardWorking())
@@ -1018,6 +1042,7 @@ void tst_QTextEdit::copyAndSelectAllInReadonly()
     QTest::keyClick(ed, Qt::Key_C, Qt::ControlModifier);
     QCOMPARE(QApplication::clipboard()->text(), QString("Hello World"));
 }
+#endif
 
 void tst_QTextEdit::ctrlAltInput()
 {
@@ -1257,6 +1282,7 @@ void tst_QTextEdit::implicitClear()
     QVERIFY(ed->toPlainText().isEmpty());
 }
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QTextEdit::copyAvailable_data()
 {
     QTest::addColumn<pairListType>("keystrokes");
@@ -1374,6 +1400,7 @@ void tst_QTextEdit::copyAvailable()
         QVERIFY2(variantSpyCopyAvailable.toBool() == copyAvailable.at(i), QString("Spied singnal: %1").arg(i).toLatin1());
     }
 }
+#endif
 
 void tst_QTextEdit::undoRedoAfterSetContent()
 {
@@ -1439,6 +1466,7 @@ public:
 
 };
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QTextEdit::mimeDataReimplementations()
 {
     MyTextEdit ed;
@@ -1477,6 +1505,7 @@ void tst_QTextEdit::mimeDataReimplementations()
     QCOMPARE(ed.insertCallCount, 1);
 #endif
 }
+#endif
 
 void tst_QTextEdit::ctrlEnterShouldInsertLineSeparator_NOT()
 {
@@ -1528,6 +1557,7 @@ void tst_QTextEdit::selectWordsFromStringsContainingSeparators()
     cursor.clearSelection();
 }
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QTextEdit::canPaste()
 {
     if (!nativeClipboardWorking())
@@ -1540,6 +1570,7 @@ void tst_QTextEdit::canPaste()
     ed->setTextInteractionFlags(Qt::NoTextInteraction);
     QVERIFY(!ed->canPaste());
 }
+#endif
 
 void tst_QTextEdit::ensureCursorVisibleOnInitialShow()
 {
@@ -1886,7 +1917,7 @@ void tst_QTextEdit::setText()
 }
 
 QT_BEGIN_NAMESPACE
-extern Q_GUI_EXPORT bool qt_enable_test_font;
+extern void qt_setQtEnableTestFont(bool value);
 QT_END_NAMESPACE
 
 void tst_QTextEdit::fullWidthSelection_data()
@@ -1933,7 +1964,7 @@ void tst_QTextEdit::fullWidthSelection()
     cursor.setBlockFormat(bf1);
 
     // use the test font so we always know where stuff will end up.
-    qt_enable_test_font = true;
+    qt_setQtEnableTestFont(true);
     QFont testFont;
     testFont.setFamily("__Qt__Box__Engine__");
     testFont.setPixelSize(12);
@@ -1981,7 +2012,7 @@ void tst_QTextEdit::fullWidthSelection2()
     QTextCursor cursor = widget.textCursor();
 
     // use the test font so we always know where stuff will end up.
-    qt_enable_test_font = true;
+    qt_setQtEnableTestFont(true);
     QFont testFont;
     testFont.setFamily("__Qt__Box__Engine__");
     testFont.setPixelSize(12);

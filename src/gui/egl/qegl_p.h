@@ -56,7 +56,7 @@
 #include <QtCore/qsize.h>
 #include <QtGui/qimage.h>
 
-#include "qeglproperties_p.h"
+#include <private/qeglproperties_p.h>
 
 QT_BEGIN_INCLUDE_NAMESPACE
 

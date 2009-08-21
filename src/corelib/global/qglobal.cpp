@@ -44,6 +44,8 @@
 #include "qvector.h"
 #include "qlist.h"
 #include "qthreadstorage.h"
+#include "qdir.h"
+#include "qstringlist.h"
 
 #ifndef QT_NO_QOBJECT
 #include <private/qthread_p.h>
@@ -66,8 +68,13 @@
 #  include <envLib.h>
 #endif
 
-#ifdef Q_CC_MWERKS
+#if defined(Q_CC_MWERKS) && defined(Q_OS_MACX)
 #include <CoreServices/CoreServices.h>
+#endif
+
+#if defined(Q_OS_SYMBIAN)
+#include <e32def.h>
+#include <e32debug.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1053,6 +1060,20 @@ bool qSharedBuild()
 */
 
 /*!
+    \fn QSysInfo::SymbianVersion QSysInfo::symbianVersion()
+
+    Returns the version of the Symbian operating system on which the
+    application is run (Symbian only).
+*/
+
+/*!
+    \fn QSysInfo::S60Version QSysInfo::s60Version()
+
+    Returns the version of the S60 SDK system on which the
+    application is run (S60 only).
+*/
+
+/*!
     \enum QSysInfo::Endian
 
     \value BigEndian  Big-endian byte order (also called Network byte order)
@@ -1108,7 +1129,7 @@ bool qSharedBuild()
     \value WV_NT_based  NT-based version of Windows
     \value WV_CE_based  CE-based version of Windows
 
-    \sa MacVersion
+    \sa MacVersion, SymbianVersion
 */
 
 /*!
@@ -1137,7 +1158,39 @@ bool qSharedBuild()
     \value MV_LEOPARD  Apple codename for MV_10_5
     \value MV_SNOWLEOPARD  Apple codename for MV_10_6
 
-    \sa WinVersion
+    \sa WinVersion, SymbianVersion
+*/
+
+/*!
+    \enum QSysInfo::SymbianVersion
+
+    This enum provides symbolic names for the various versions of the
+    Symbian operating system. On Symbian, the
+    QSysInfo::symbianVersion() function gives the version of the
+    system on which the application is run.
+
+    \value SV_9_2 Symbian OS v9.2
+    \value SV_9_3 Symbian OS v9.3
+    \value SV_9_4 Symbian OS v9.4
+    \value SV_Unknown An unknown and currently unsupported platform
+
+    \sa S60Version, WinVersion, MacVersion
+*/
+
+/*!
+    \enum QSysInfo::S60Version
+
+    This enum provides symbolic names for the various versions of the
+    S60 SDK. On S60, the
+    QSysInfo::s60Version() function gives the version of the
+    SDK on which the application is run.
+
+    \value SV_S60_3_1 S60 3rd Edition Feature Pack 1
+    \value SV_S60_3_2 S60 3rd Edition Feature Pack 2
+    \value SV_S60_5_0 S60 5th Edition
+    \value SV_S60_Unknown An unknown and currently unsupported platform
+
+    \sa SymbianVersion, WinVersion, MacVersion
 */
 
 /*!
@@ -1704,6 +1757,87 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 
 #endif
 
+#ifdef Q_OS_SYMBIAN
+# ifdef Q_WS_S60
+static QSysInfo::S60Version cachedS60Version = QSysInfo::S60Version(-1);
+
+QSysInfo::S60Version QSysInfo::s60Version()
+{
+#  ifdef Q_CC_NOKIAX86
+    // For emulator builds. Emulators don't support the trick we use to figure
+    // out which SDK we are running under, so simply hardcode it there.
+#   if defined(__SERIES60_31__)
+    return SV_S60_3_1;
+
+#   elif defined(__S60_32__)
+    return SV_S60_3_2;
+
+#   elif defined(__S60_50__)
+    return SV_S60_5_0;
+
+#   else
+    return SV_S60_Unknown;
+
+#   endif
+
+#  else
+    // For hardware builds.
+    if (cachedS60Version != -1)
+        return cachedS60Version;
+
+    QDir dir(QLatin1String("z:\\system\\install"));
+    QStringList filters;
+    filters << QLatin1String("Series60v?.*.sis");
+    dir.setNameFilters(filters);
+
+    QStringList names = dir.entryList(QDir::NoFilter, QDir::Name | QDir::Reversed | QDir::IgnoreCase);
+    if (names.size() == 0)
+        return cachedS60Version = SV_S60_Unknown;
+
+    int major, minor;
+    major = names[0][9].toAscii() - '0';
+    minor = names[0][11].toAscii() - '0';
+    if (major == 3) {
+        if (minor == 1) {
+            return cachedS60Version = SV_S60_3_1;
+        } else if (minor == 2) {
+            return cachedS60Version = SV_S60_3_2;
+        }
+    } else if (major == 5) {
+        if (minor == 0) {
+            return cachedS60Version = SV_S60_5_0;
+        }
+    }
+
+    return cachedS60Version = SV_S60_Unknown;
+#  endif
+}
+QSysInfo::SymbianVersion QSysInfo::symbianVersion()
+{
+    switch (s60Version()) {
+    case SV_S60_3_1:
+        return SV_9_2;
+    case SV_S60_3_2:
+        return SV_9_3;
+    case SV_S60_5_0:
+        return SV_9_4;
+    default:
+        return SV_Unknown;
+    }
+}
+#else
+QSysInfo::S60Version QSysInfo::s60Version()
+{
+    return SV_S60_None;
+}
+
+QSysInfo::SymbianVersion QSysInfo::symbianVersion()
+{
+    return SV_Unknown;
+}
+# endif // ifdef Q_WS_S60
+#endif // ifdef Q_OS_SYMBIAN
+
 /*!
     \macro void Q_ASSERT(bool test)
     \relates <QtGlobal>
@@ -1769,6 +1903,15 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 */
 
 /*!
+    T *q_check_ptr(T *pointer)
+    \relates <QtGlobal>
+
+	Users Q_CHECK_PTR on \a pointer, then returns \a pointer.
+
+	This can be used as an inline version of Q_CHECK_PTR.
+*/
+
+/*!
     \macro const char* Q_FUNC_INFO()
     \relates <QtGlobal>
 
@@ -1795,6 +1938,17 @@ void qt_check_pointer(const char *n, int l)
 {
     qWarning("In file %s, line %d: Out of memory", n, l);
 }
+
+#ifndef QT_NO_EXCEPTIONS
+/* \internal
+   Allows you to throw an exception without including <new>
+   Called internally from Q_CHECK_PTR on certain OS combinations
+*/
+void qBadAlloc()
+{
+    QT_THROW(std::bad_alloc());
+}
+#endif
 
 /*
   The Q_ASSERT macro calls this function when the test fails.
@@ -1853,7 +2007,7 @@ void *qMemSet(void *dest, int c, size_t n) { return memset(dest, c, n); }
 
 static QtMsgHandler handler = 0;                // pointer to debug handler
 
-#ifdef Q_CC_MWERKS
+#if defined(Q_CC_MWERKS) && defined(Q_OS_MACX)
 extern bool qt_is_gui_used;
 static void mac_default_handler(const char *msg)
 {
@@ -1865,7 +2019,7 @@ static void mac_default_handler(const char *msg)
         fprintf(stderr, msg);
     }
 }
-#endif // Q_CC_MWERKS
+#endif // Q_CC_MWERKS && Q_OS_MACX
 
 
 
@@ -1941,8 +2095,8 @@ QString qt_error_string(int errorCode)
     warnings, critical and fatal error messages. The Qt library (debug
     mode) contains hundreds of warning messages that are printed
     when internal errors (usually invalid function arguments)
-    occur. Qt built in release mode also contains such warnings unless 
-    QT_NO_WARNING_OUTPUT and/or QT_NO_DEBUG_OUTPUT have been set during 
+    occur. Qt built in release mode also contains such warnings unless
+    QT_NO_WARNING_OUTPUT and/or QT_NO_DEBUG_OUTPUT have been set during
     compilation. If you implement your own message handler, you get total
     control of these messages.
 
@@ -1986,12 +2140,23 @@ void qt_message_output(QtMsgType msgType, const char *buf)
     if (handler) {
         (*handler)(msgType, buf);
     } else {
-#if defined(Q_CC_MWERKS)
+#if defined(Q_CC_MWERKS) && defined(Q_OS_MACX)
         mac_default_handler(buf);
 #elif defined(Q_OS_WINCE)
         QString fstr = QString::fromLatin1(buf);
         fstr += QLatin1Char('\n');
         OutputDebugString(reinterpret_cast<const wchar_t *> (fstr.utf16()));
+#elif defined(Q_OS_SYMBIAN)
+        // RDebug::Print has a cap of 256 characters so break it up
+        _LIT(format, "[Qt Message] %S");
+        const int maxBlockSize = 256 - ((const TDesC &)format).Length();
+        const TPtrC8 ptr(reinterpret_cast<const TUint8*>(buf));
+        HBufC* hbuffer = q_check_ptr(HBufC::New(qMin(maxBlockSize, ptr.Length())));
+        for (int i = 0; i < ptr.Length(); i += hbuffer->Length()) {
+            hbuffer->Des().Copy(ptr.Mid(i, qMin(maxBlockSize, ptr.Length()-i)));
+            RDebug::Print(format, hbuffer);
+        }
+        delete hbuffer;
 #else
         fprintf(stderr, "%s\n", buf);
         fflush(stderr);
@@ -2018,12 +2183,62 @@ void qt_message_output(QtMsgType msgType, const char *buf)
             _CrtDbgBreak();
 #endif
 
-#if (defined(Q_OS_UNIX) || defined(Q_CC_MINGW))
+#if defined(Q_OS_SYMBIAN)
+        __DEBUGGER(); // on the emulator, get the debugger to kick in if there's one around
+        TBuf<256> tmp;
+        TPtrC8 ptr(reinterpret_cast<const TUint8*>(buf));
+        TInt len = Min(tmp.MaxLength(), ptr.Length());
+        tmp.Copy(ptr.Left(len));
+        // Panic the current thread. We don't use real panic codes, so 0 has no special meaning.
+        User::Panic(tmp, 0);
+#elif (defined(Q_OS_UNIX) || defined(Q_CC_MINGW))
         abort(); // trap; generates core dump
 #else
         exit(1); // goodbye cruel world
 #endif
     }
+}
+
+#if !defined(QT_NO_EXCEPTIONS)
+/*!
+    \internal
+    Uses a local buffer to output the message. Not locale safe + cuts off
+    everything after character 255, but will work in out of memory situations.
+*/
+static void qEmergencyOut(QtMsgType msgType, const char *msg, va_list ap)
+{
+    char emergency_buf[256] = { '\0' };
+    emergency_buf[255] = '\0';
+    if (msg)
+        qvsnprintf(emergency_buf, 255, msg, ap);
+    qt_message_output(msgType, emergency_buf);
+}
+#endif
+
+/*!
+    \internal
+*/
+static void qt_message(QtMsgType msgType, const char *msg, va_list ap)
+{
+#if !defined(QT_NO_EXCEPTIONS)
+    if (std::uncaught_exception()) {
+        qEmergencyOut(msgType, msg, ap);
+        return;
+    }
+#endif
+    QByteArray buf;
+    if (msg) {
+        QT_TRY {
+            buf = QString().vsprintf(msg, ap).toLocal8Bit();
+        } QT_CATCH(const std::bad_alloc &) {
+#if !defined(QT_NO_EXCEPTIONS)
+            qEmergencyOut(msgType, msg, ap);
+            // don't rethrow - we use qWarning and friends in destructors.
+            return;
+#endif
+        }
+    }
+    qt_message_output(msgType, buf.constData());
 }
 
 #undef qDebug
@@ -2063,14 +2278,10 @@ void qt_message_output(QtMsgType msgType, const char *buf)
 */
 void qDebug(const char *msg, ...)
 {
-    QString buf;
     va_list ap;
-    va_start(ap, msg);                        // use variable arg list
-    if (msg)
-        buf.vsprintf(msg, ap);
+    va_start(ap, msg); // use variable arg list
+    qt_message(QtDebugMsg, msg, ap);
     va_end(ap);
-
-    qt_message_output(QtDebugMsg, buf.toLocal8Bit().constData());
 }
 
 #undef qWarning
@@ -2107,14 +2318,10 @@ void qDebug(const char *msg, ...)
 */
 void qWarning(const char *msg, ...)
 {
-    QString buf;
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    if (msg)
-        buf.vsprintf(msg, ap);
+    qt_message(QtWarningMsg, msg, ap);
     va_end(ap);
-
-    qt_message_output(QtWarningMsg, buf.toLocal8Bit().constData());
 }
 
 /*!
@@ -2147,15 +2354,12 @@ void qWarning(const char *msg, ...)
 */
 void qCritical(const char *msg, ...)
 {
-    QString buf;
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    if (msg)
-        buf.vsprintf(msg, ap);
+    qt_message(QtCriticalMsg, msg, ap);
     va_end(ap);
-
-    qt_message_output(QtCriticalMsg, buf.toLocal8Bit().constData());
 }
+
 #ifdef QT3_SUPPORT
 void qSystemWarning(const char *msg, int code)
    { qCritical("%s (%s)", msg, qt_error_string(code).toLocal8Bit().constData()); }
@@ -2163,6 +2367,8 @@ void qSystemWarning(const char *msg, int code)
 
 void qErrnoWarning(const char *msg, ...)
 {
+    // qt_error_string() will allocate anyway, so we don't have
+    // to be careful here (like we do in plain qWarning())
     QString buf;
     va_list ap;
     va_start(ap, msg);
@@ -2175,6 +2381,8 @@ void qErrnoWarning(const char *msg, ...)
 
 void qErrnoWarning(int code, const char *msg, ...)
 {
+    // qt_error_string() will allocate anyway, so we don't have
+    // to be careful here (like we do in plain qWarning())
     QString buf;
     va_list ap;
     va_start(ap, msg);
@@ -2211,14 +2419,10 @@ void qErrnoWarning(int code, const char *msg, ...)
 */
 void qFatal(const char *msg, ...)
 {
-    QString buf;
     va_list ap;
     va_start(ap, msg); // use variable arg list
-    if (msg)
-        buf.vsprintf(msg, ap);
+    qt_message(QtFatalMsg, msg, ap);
     va_end(ap);
-
-    qt_message_output(QtFatalMsg, buf.toLocal8Bit().constData());
 }
 
 // getenv is declared as deprecated in VS2005. This function
@@ -2250,11 +2454,15 @@ bool qputenv(const char *varName, const QByteArray& value)
     QByteArray buffer(varName);
     buffer += '=';
     buffer += value;
-    return putenv(qstrdup(buffer.constData())) == 0;
+    char* envVar = qstrdup(buffer.constData());
+    int result = putenv(envVar);
+    if (result != 0) // error. we have to delete the string.
+        delete[] envVar;
+    return result == 0;
 #endif
 }
 
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
 
 #  if defined(Q_OS_INTEGRITY) && defined(__GHS_VERSION_NUMBER) && (__GHS_VERSION_NUMBER < 500)
 // older versions of INTEGRITY used a long instead of a uint for the seed.
@@ -2287,7 +2495,7 @@ Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 */
 void qsrand(uint seed)
 {
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
     SeedStorageType *pseed = randTLS()->localData();
     if (!pseed)
         randTLS()->setLocalData(pseed = new SeedStorageType);
@@ -2316,7 +2524,7 @@ void qsrand(uint seed)
 */
 int qrand()
 {
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD)
+#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
     SeedStorageType *pseed = randTLS()->localData();
     if (!pseed) {
         randTLS()->setLocalData(pseed = new SeedStorageType);
@@ -3006,7 +3214,7 @@ bool QInternal::callFunction(InternalFunction func, void **args)
  Compares the floating point value \a p1 and \a p2 and
  returns \c true if they are considered equal, otherwise \c false.
 
- Note that comparing values where either \a p1 or \a p2 is 0.0 will not work. 
+ Note that comparing values where either \a p1 or \a p2 is 0.0 will not work.
  The solution to this is to compare against values greater than or equal to 1.0.
 
  \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 46
@@ -3066,5 +3274,186 @@ bool QInternal::callFunction(InternalFunction func, void **args)
 
     \sa Q_DECL_EXPORT
 */
+
+#if defined(Q_OS_SYMBIAN)
+
+#include <typeinfo>
+
+/*! \macro QT_TRAP_THROWING(function)
+    \relates <QtGlobal>
+    \ingroup qts60
+
+    TRAP leaves from Symbian \a function and throws an appropriate
+    standard C++ exception instead.
+    This must be used when calling Symbian OS leaving functions
+    from inside Qt or standard C++ code, so that the code can respond
+    correctly to the exception.
+
+    \warning This macro is only available on Symbian.
+
+    Example:
+
+    \code
+    // A Symbian leaving function is being called within a Qt function.
+    // Any leave must be converted to an exception
+    CAknTitlePane* titlePane = S60->titlePane();
+    if (titlePane) {
+        TPtrC captionPtr(qt_QString2TPtrC(caption));
+        QT_TRAP_THROWING(titlePane->SetTextL(captionPtr));
+    }
+    \endcode
+
+    \sa QT_TRYCATCH_ERROR(), QT_TRYCATCH_LEAVING()
+*/
+
+/*! \macro QT_TRYCATCH_ERROR(error, function)
+    \relates <QtGlobal>
+    \ingroup qts60
+
+    Catch standard C++ exceptions from a \a function and convert them to a Symbian OS
+    \a error code, or \c KErrNone if there is no exception.
+    This must be used inside Qt or standard C++ code when using exception throwing
+    code (practically anything) and returning an error code to Symbian OS.
+
+    \warning This macro is only available on Symbian.
+
+    Example:
+
+    \code
+    // An exception might be thrown in this Symbian TInt error returning function.
+    // It is caught and translated to an error code
+    TInt QServerApp::Connect(const QString &serverName)
+    {
+        TPtrC name;
+        TInt err;
+        QT_TRYCATCH_ERROR(err, name.Set(qt_QString2TPtrC(serverName)));
+        if (err != KErrNone)
+            return err;
+        return iServer.Connect(name);
+    }
+    \endcode
+}
+
+    \sa QT_TRYCATCH_LEAVING(), QT_TRAP_THROWING()
+*/
+
+/*! \macro QT_TRYCATCH_LEAVING(function)
+    \relates <QtGlobal>
+    \ingroup qts60
+
+    Catch standard C++ exceptions from \a function and convert them to Symbian OS
+    leaves. This must be used inside Qt or standard C++ code when using exception
+    throwing code (practically anything) and returning to Symbian OS from a leaving function.
+    For example inside a Symbian active object's \c RunL function implemented with Qt code.
+
+    \warning This macro is only available on Symbian.
+
+    Example:
+
+    \code
+    // This active object signals Qt code
+    // Exceptions from the Qt code must be converted to Symbian OS leaves for the active scheduler
+    void QWakeUpActiveObject::RunL()
+    {
+        iStatus = KRequestPending;
+        SetActive();
+        QT_TRYCATCH_LEAVING(m_dispatcher->wakeUpWasCalled());
+    }
+    \endcode
+
+    \sa QT_TRAP_THROWING(), QT_TRYCATCH_ERROR()
+*/
+
+#include <stdexcept>
+
+class QSymbianLeaveException : public std::exception
+{
+public:
+    inline QSymbianLeaveException(int err) : error(err) {}
+    inline const char* what() const throw() { return "Symbian leave exception"; }
+
+public:
+    int error;
+};
+
+/*! \relates <QtGlobal>
+    \ingroup qts60
+
+    Throws an exception if the \a error parameter is a symbian error code.
+    This is the exception throwing equivalent of Symbian's User::LeaveIfError.
+
+    \warning This function is only available on Symbian.
+
+    \sa qt_symbian_exception2LeaveL(), qt_symbian_exception2Error()
+*/
+void qt_symbian_throwIfError(int error)
+{
+    if (error >= KErrNone)
+        return;  // do nothing - not an exception
+    switch (error) {
+    case KErrNoMemory:
+        throw std::bad_alloc();
+    case KErrArgument:
+        throw std::invalid_argument("from Symbian error");
+    case KErrOverflow:
+        throw std::overflow_error("from Symbian error");
+    case KErrUnderflow:
+        throw std::underflow_error("from Symbian error");
+    default:
+        throw QSymbianLeaveException(error);
+    }
+}
+
+/*! \relates <QtGlobal>
+    \ingroup qts60
+
+    Convert a caught standard C++ exception \a aThrow to a Symbian leave
+
+    \warning This function is only available on Symbian.
+
+    \sa qt_symbian_throwIfError(), qt_symbian_exception2Error()
+*/
+void qt_symbian_exception2LeaveL(const std::exception& aThrow)
+{
+    User::Leave(qt_symbian_exception2Error(aThrow));
+}
+
+/*! \relates <QtGlobal>
+    \ingroup qts60
+
+    Convert a caught standard C++ exception \a aThrow to a Symbian error code
+
+    \warning This function is only available on Symbian.
+
+    \sa qt_symbian_throwIfError(), qt_symbian_exception2LeaveL()
+*/
+int qt_symbian_exception2Error(const std::exception& aThrow)
+{
+    const std::type_info& atype = typeid(aThrow);
+    int err = KErrGeneral;
+
+    if(atype == typeid (std::bad_alloc))
+        err = KErrNoMemory;
+    else if(atype == typeid(QSymbianLeaveException))
+        err = static_cast<const QSymbianLeaveException&>(aThrow).error;
+    else {
+        if(atype == typeid(std::invalid_argument))
+            err =  KErrArgument;
+        else if(atype == typeid(std::out_of_range))
+            // std::out_of_range is of type logic_error which by definition means that it is
+            // "presumably detectable before the program executes".
+            // std::out_of_range is used to report an argument is not within the expected range.
+            // The description of KErrArgument says an argument is out of range. Hence the mapping.
+            err =  KErrArgument;
+        else if(atype == typeid(std::overflow_error))
+            err =  KErrOverflow;
+        else if(atype == typeid(std::underflow_error))
+            err =  KErrUnderflow;
+        qWarning("translation from std exception \"%s\" to %d", aThrow.what(), err);
+    }
+
+    return err;
+}
+#endif
 
 QT_END_NAMESPACE

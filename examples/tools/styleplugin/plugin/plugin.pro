@@ -19,3 +19,7 @@ target.path = $$[QT_INSTALL_EXAMPLES]/tools/styleplugin/styles
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS plugin.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/tools/styleplugin/plugin
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
+symbian:TARGET.EPOCALLOWDLLDATA = 1

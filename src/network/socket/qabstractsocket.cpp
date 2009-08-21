@@ -1069,6 +1069,7 @@ void QAbstractSocketPrivate::_q_abortConnectionAttempt()
 #endif
     if (socketEngine)
         socketEngine->setWriteNotificationEnabled(false);
+
     connectTimer->stop();
 
     if (addresses.isEmpty()) {

@@ -197,7 +197,7 @@ public:
     QWinEventNotifier *processFinishedNotifier;
 
     void startProcess();
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     void execChild(const char *workingDirectory, char **path, char **argv, char **envp);
 #endif
     bool processStarted();
@@ -237,6 +237,11 @@ public:
     void cleanup();
 #ifdef Q_OS_UNIX
     static void initializeProcessManager();
+#endif
+
+#ifdef Q_OS_SYMBIAN
+    bool processLaunched;
+    RProcess* symbianProcess;
 #endif
 };
 

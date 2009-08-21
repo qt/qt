@@ -52,13 +52,17 @@
 //
 // We mean it.
 //
-
 #include "QtNetwork/qhostaddress.h"
 #include "private/qabstractsocketengine_p.h"
 #ifndef Q_OS_WIN
 #  include "qplatformdefs.h"
 #else
 #  include <winsock2.h>
+#endif
+
+#ifdef Q_OS_SYMBIAN
+#include <private/qeventdispatcher_symbian_p.h>
+#include <unistd.h>
 #endif
 
 QT_BEGIN_NAMESPACE

@@ -78,7 +78,7 @@ class Q_CORE_EXPORT QSettings
 #ifndef QT_NO_QOBJECT
     Q_OBJECT
 #else
-    QSettingsPrivate *d_ptr;
+    QScopedPointer<QSettingsPrivate> d_ptr;
 #endif
     Q_DECLARE_PRIVATE(QSettings)
 

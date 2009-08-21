@@ -15,7 +15,7 @@ win32 {
     DESTDIR = ../
 }
 
-wince*: {
+wince*|symbian*: {
     addApp.sources = ../clientserver/clientserver.exe
     addApp.path = clientserver
     DEPLOYMENT += addApp

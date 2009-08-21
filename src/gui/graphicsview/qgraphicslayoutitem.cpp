@@ -368,7 +368,6 @@ QGraphicsLayoutItem::~QGraphicsLayoutItem()
             }
         }
     }
-    delete d_ptr;
 }
 
 /*!

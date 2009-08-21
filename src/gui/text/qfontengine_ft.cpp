@@ -191,6 +191,9 @@ HB_Error QFreetypeFace::getPointInOutline(HB_Glyph glyph, int flags, hb_uint32 p
 /*
  * One font file can contain more than one font (bold/italic for example)
  * find the right one and return it.
+ *
+ * Returns the freetype face or 0 in case of an empty file or any other problems
+ * (like not being able to open the file)
  */
 QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id)
 {
@@ -202,8 +205,10 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id)
         FT_Init_FreeType(&freetypeData->library);
 
     QFreetypeFace *freetype = freetypeData->faces.value(face_id, 0);
-    if (!freetype) {
-        freetype = new QFreetypeFace;
+    if (freetype) {
+        freetype->ref.ref();
+    } else {
+        QScopedPointer<QFreetypeFace> newFreetype(new QFreetypeFace);
         FT_Face face;
         QFile file(QString::fromUtf8(face_id.filename));
         if (face_id.filename.startsWith(":qmemoryfonts/")) {
@@ -212,86 +217,90 @@ QFreetypeFace *QFreetypeFace::getFace(const QFontEngine::FaceId &face_id)
             QByteArray idx = face_id.filename;
             idx.remove(0, 14); // remove ':qmemoryfonts/'
             bool ok = false;
-            freetype->fontData = qt_fontdata_from_index(idx.toInt(&ok));
+            newFreetype->fontData = qt_fontdata_from_index(idx.toInt(&ok));
             if (!ok)
-                freetype->fontData = QByteArray();
+                newFreetype->fontData = QByteArray();
         } else if (!(file.fileEngine()->fileFlags(QAbstractFileEngine::FlagsMask) & QAbstractFileEngine::LocalDiskFlag)) {
             if (!file.open(QIODevice::ReadOnly)) {
-                delete freetype;
                 return 0;
             }
-            freetype->fontData = file.readAll();
+            newFreetype->fontData = file.readAll();
         }
-        if (!freetype->fontData.isEmpty()) {
-            if (FT_New_Memory_Face(freetypeData->library, (const FT_Byte *)freetype->fontData.constData(), freetype->fontData.size(), face_id.index, &face)) {
-                delete freetype;
+        if (!newFreetype->fontData.isEmpty()) {
+            if (FT_New_Memory_Face(freetypeData->library, (const FT_Byte *)newFreetype->fontData.constData(), newFreetype->fontData.size(), face_id.index, &face)) {
                 return 0;
             }
         } else if (FT_New_Face(freetypeData->library, face_id.filename, face_id.index, &face)) {
-            delete freetype;
             return 0;
         }
-        freetype->face = face;
+        newFreetype->face = face;
 
-        freetype->hbFace = qHBNewFace(face, hb_getSFntTable);
-        freetype->ref = 0;
-        freetype->xsize = 0;
-        freetype->ysize = 0;
-        freetype->matrix.xx = 0x10000;
-        freetype->matrix.yy = 0x10000;
-        freetype->matrix.xy = 0;
-        freetype->matrix.yx = 0;
-        freetype->unicode_map = 0;
-        freetype->symbol_map = 0;
+        newFreetype->hbFace = qHBNewFace(face, hb_getSFntTable);
+        Q_CHECK_PTR(newFreetype->hbFace);
+        newFreetype->ref = 1;
+        newFreetype->xsize = 0;
+        newFreetype->ysize = 0;
+        newFreetype->matrix.xx = 0x10000;
+        newFreetype->matrix.yy = 0x10000;
+        newFreetype->matrix.xy = 0;
+        newFreetype->matrix.yx = 0;
+        newFreetype->unicode_map = 0;
+        newFreetype->symbol_map = 0;
 #ifndef QT_NO_FONTCONFIG
-        freetype->charset = 0;
+        newFreetype->charset = 0;
 #endif
 
-        memset(freetype->cmapCache, 0, sizeof(freetype->cmapCache));
+        memset(newFreetype->cmapCache, 0, sizeof(newFreetype->cmapCache));
 
-        for (int i = 0; i < freetype->face->num_charmaps; ++i) {
-            FT_CharMap cm = freetype->face->charmaps[i];
+        for (int i = 0; i < newFreetype->face->num_charmaps; ++i) {
+            FT_CharMap cm = newFreetype->face->charmaps[i];
             switch(cm->encoding) {
             case FT_ENCODING_UNICODE:
-                freetype->unicode_map = cm;
+                newFreetype->unicode_map = cm;
                 break;
             case FT_ENCODING_APPLE_ROMAN:
             case FT_ENCODING_ADOBE_LATIN_1:
-                if (!freetype->unicode_map || freetype->unicode_map->encoding != FT_ENCODING_UNICODE)
-                    freetype->unicode_map = cm;
+                if (!newFreetype->unicode_map || newFreetype->unicode_map->encoding != FT_ENCODING_UNICODE)
+                    newFreetype->unicode_map = cm;
                 break;
             case FT_ENCODING_ADOBE_CUSTOM:
             case FT_ENCODING_MS_SYMBOL:
-                if (!freetype->symbol_map)
-                    freetype->symbol_map = cm;
+                if (!newFreetype->symbol_map)
+                    newFreetype->symbol_map = cm;
                 break;
             default:
                 break;
             }
         }
 
-        if (!FT_IS_SCALABLE(freetype->face) && freetype->face->num_fixed_sizes == 1)
-            FT_Set_Char_Size (face, X_SIZE(freetype->face, 0), Y_SIZE(freetype->face, 0), 0, 0);
+        if (!FT_IS_SCALABLE(newFreetype->face) && newFreetype->face->num_fixed_sizes == 1)
+            FT_Set_Char_Size (face, X_SIZE(newFreetype->face, 0), Y_SIZE(newFreetype->face, 0), 0, 0);
 # if 0
         FcChar8 *name;
         FcPatternGetString(pattern, FC_FAMILY, 0, &name);
         qDebug("%s: using maps: default: %x unicode: %x, symbol: %x", name,
-               freetype->face->charmap ? freetype->face->charmap->encoding : 0,
-               freetype->unicode_map ? freetype->unicode_map->encoding : 0,
-               freetype->symbol_map ? freetype->symbol_map->encoding : 0);
+               newFreetype->face->charmap ? newFreetype->face->charmap->encoding : 0,
+               newFreetype->unicode_map ? newFreetype->unicode_map->encoding : 0,
+               newFreetype->symbol_map ? newFreetype->symbol_map->encoding : 0);
 
         for (int i = 0; i < 256; i += 8)
             qDebug("    %x: %d %d %d %d %d %d %d %d", i,
-                   FcCharSetHasChar(freetype->charset, i), FcCharSetHasChar(freetype->charset, i),
-                   FcCharSetHasChar(freetype->charset, i), FcCharSetHasChar(freetype->charset, i),
-                   FcCharSetHasChar(freetype->charset, i), FcCharSetHasChar(freetype->charset, i),
-                   FcCharSetHasChar(freetype->charset, i), FcCharSetHasChar(freetype->charset, i));
+                   FcCharSetHasChar(newFreetype->charset, i), FcCharSetHasChar(newFreetype->charset, i),
+                   FcCharSetHasChar(newFreetype->charset, i), FcCharSetHasChar(newFreetype->charset, i),
+                   FcCharSetHasChar(newFreetype->charset, i), FcCharSetHasChar(newFreetype->charset, i),
+                   FcCharSetHasChar(newFreetype->charset, i), FcCharSetHasChar(newFreetype->charset, i));
 #endif
 
-        FT_Set_Charmap(freetype->face, freetype->unicode_map);
-        freetypeData->faces.insert(face_id, freetype);
+        FT_Set_Charmap(newFreetype->face, newFreetype->unicode_map);
+        QT_TRY {
+            freetypeData->faces.insert(face_id, newFreetype.data());
+        } QT_CATCH(...) {
+            newFreetype.take()->release(face_id);
+            // we could return null in principle instead of throwing
+            QT_RETHROW;
+        }
+        freetype = newFreetype.take();
     }
-    freetype->ref.ref();
     return freetype;
 }
 
@@ -305,7 +314,8 @@ void QFreetypeFace::release(const QFontEngine::FaceId &face_id)
         if (charset)
             FcCharSetDestroy(charset);
 #endif
-        freetypeData->faces.take(face_id);
+        if(freetypeData->faces.contains(face_id))
+            freetypeData->faces.take(face_id);
         delete this;
     }
     if (freetypeData->faces.isEmpty()) {
@@ -606,6 +616,7 @@ QFontEngineFT::QFontEngineFT(const QFontDef &fd)
     kerning_pairs_loaded = false;
     transform = false;
     antialias = true;
+    freetype = 0;
     default_load_flags = 0;
     default_hint_style = HintNone;
     subpixelType = Subpixel_None;

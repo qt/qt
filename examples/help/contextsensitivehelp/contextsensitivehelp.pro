@@ -16,3 +16,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/help/contextsensitivehelp
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro *.png *.doc doc
 sources.path = $$[QT_INSTALL_EXAMPLES]/help/contextsensitivehelp
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

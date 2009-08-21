@@ -1,3 +1,4 @@
+QT = core
 TEMPLATE = subdirs
 
 # Directories
@@ -181,7 +182,6 @@ SUBDIRS += \
            qitemmodel \
            qitemselectionmodel \
            qitemview \
-           qkeyevent \
            qkeysequence \
            qlabel \
            qlayout \
@@ -255,6 +255,7 @@ SUBDIRS += \
            qregion \
            qresourceengine \
            qringbuffer \
+           qscopedpointer \
            qscrollarea \
            qsemaphore \
            qsharedpointer \

@@ -14,3 +14,5 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES documentation *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/assistant/simpletextviewer
 INSTALLS += target sources
 
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+

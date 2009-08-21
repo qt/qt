@@ -55,6 +55,10 @@ namespace QtSharedPointer {
     Q_CORE_EXPORT void internalSafetyCheckCleanCheck();
 }
 
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR "."
+#endif
+
 class tst_QSharedPointer: public QObject
 {
     Q_OBJECT

@@ -16,7 +16,6 @@ QPushButton, QToolButton {
     padding: 3px;
     /* min-width: 96px; */
     /* min-height: 48px; */
-	qproperty-focusPolicy: NoFocus
 }
 
 QPushButton:hover, QToolButton:hover {
@@ -30,7 +29,7 @@ QPushButton:pressed, QToolButton:pressed {
 }
 
 QLabel, QAbstractButton {
-    font: italic 11pt "Times New Roman";
+    font: italic "Times New Roman";
 }
 
 QFrame, QLabel#title {

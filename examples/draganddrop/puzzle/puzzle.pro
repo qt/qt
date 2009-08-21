@@ -13,6 +13,14 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.jpg
 sources.path = $$[QT_INSTALL_EXAMPLES]/draganddrop/puzzle
 INSTALLS += target sources
 
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
+symbian:{
+   addFile.sources = example.jpg
+   addFile.path = .
+   DEPLOYMENT += addFile
+   TARGET.UID3 = 0xA000CF65
+}
 wince*: {
    addFile.sources = example.jpg
    addFile.path = .

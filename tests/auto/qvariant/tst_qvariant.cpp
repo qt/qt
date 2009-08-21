@@ -266,6 +266,7 @@ private slots:
     void convertByteArrayToBool() const;
     void convertByteArrayToBool_data() const;
     void toIntFromQString() const;
+    void toIntFromDouble() const;
     void task256984_setValue();
 
     void numericalConvert();
@@ -3051,6 +3052,31 @@ void tst_QVariant::toIntFromQString() const
     QVariant v(9.9);
     QCOMPARE(v.toInt(&ok), 10);
     QVERIFY(ok);
+}
+
+/*!
+  We verify that:
+    1. Conversion from (64 bit) double to int works (no overflow).
+    2. Same conversion works for QVariant::convert.
+
+  Rationale: if 2147483630 is set in float and then converted to int,
+  there will be overflow and the result will be -2147483648.
+
+  See task 250267.
+ */
+void tst_QVariant::toIntFromDouble() const
+{
+    double d = 2147483630;  // max int 2147483647
+    QVERIFY((int)d == 2147483630);
+
+    QVariant var(d);
+    QVERIFY( var.canConvert( QVariant::Int ) );
+
+    bool ok;
+    int result = var.toInt(&ok);
+
+    QVERIFY( ok == true );
+    QCOMPARE(result, 2147483630);
 }
 
 void tst_QVariant::task256984_setValue()

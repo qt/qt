@@ -55,6 +55,10 @@
 #include <QTcpServer>
 #include <QTimer>
 
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR "."
+#endif
+
 typedef QMap<QString, QString> QStringMap;
 typedef QList<int> QIntList;
 Q_DECLARE_METATYPE(QImage)
@@ -793,7 +797,9 @@ void tst_QImageReader::readFromDevice()
 {
     QFETCH(QString, fileName);
     QFETCH(QByteArray, format);
-
+    #ifdef Q_OS_SYMBIAN
+    QSKIP("Symbian local sockets are not working", SkipAll);
+    #endif
     QImage expectedImage(prefix + fileName, format);
 
     QFile file(prefix + fileName);

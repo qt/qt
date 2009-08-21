@@ -73,7 +73,7 @@ public:
     QPixmap brushPixmap(const QBrush &brush) const;
 
 private:
-    QtBrushManagerPrivate *d_ptr;
+    QScopedPointer<QtBrushManagerPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtBrushManager)
     Q_DISABLE_COPY(QtBrushManager)
 };

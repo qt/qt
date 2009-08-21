@@ -47,6 +47,7 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qline.h>
 #include <QtCore/qvector.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -56,6 +57,7 @@ QT_MODULE(Gui)
 
 class QFont;
 class QPainterPathPrivate;
+struct QPainterPathPrivateDeleter;
 class QPainterPathData;
 class QPainterPathStrokerPrivate;
 class QPolygonF;
@@ -201,7 +203,7 @@ public:
     QPainterPath &operator-=(const QPainterPath &other);
 
 private:
-    QPainterPathPrivate *d_ptr;
+    QScopedPointer<QPainterPathPrivate, QPainterPathPrivateDeleter> d_ptr;
 
     inline void ensureData() { if (!d_ptr) ensureData_helper(); }
     void ensureData_helper();
@@ -211,7 +213,7 @@ private:
     void computeBoundingRect() const;
     void computeControlPointRect() const;
 
-    QPainterPathData *d_func() const { return reinterpret_cast<QPainterPathData *>(d_ptr); }
+    QPainterPathData *d_func() const { return reinterpret_cast<QPainterPathData *>(d_ptr.data()); }
 
     friend class QPainterPathData;
     friend class QPainterPathStroker;
@@ -235,6 +237,7 @@ public:
     friend class QPainterPathStrokerPrivate;
     friend class QMatrix;
     friend class QTransform;
+    friend struct QPainterPathPrivateDeleter;
 #ifndef QT_NO_DATASTREAM
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QPainterPath &);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QPainterPath &);
@@ -285,7 +288,7 @@ public:
 private:
     friend class QX11PaintEngine;
 
-    QPainterPathStrokerPrivate *d_ptr;
+    QScopedPointer<QPainterPathStrokerPrivate> d_ptr;
 };
 
 inline void QPainterPath::moveTo(qreal x, qreal y)

@@ -14,3 +14,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/portedcanvas
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS portedcanvas.pro *.png *.xpm *.doc
 sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/portedcanvas
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

@@ -125,6 +125,7 @@ namespace QTest
         return 0;
     }
 
+
     Q_TESTLIB_EXPORT char *toHexRepresentation(const char *ba, int length);
     Q_TESTLIB_EXPORT char *toString(const char *);
     Q_TESTLIB_EXPORT char *toString(const void *);
@@ -177,6 +178,7 @@ namespace QTest
             : compare_helper(false, "Compared values are not the same",
                              toString<T>(t1), toString<T>(t2), actual, expected, file, line);
     }
+
 
     template <>
     Q_TESTLIB_EXPORT bool qCompare<float>(float const &t1, float const &t2,
@@ -233,7 +235,7 @@ namespace QTest
         return qCompare<qreal>(qreal(t1), t2, actual, expected, file, line);
     }
 
-#elif defined(QT_COORD_TYPE) || defined(QT_ARCH_ARM) || defined(QT_NO_FPU) || defined(QT_ARCH_WINDOWSCE)
+#elif defined(QT_COORD_TYPE) || defined(QT_ARCH_ARM) || defined(QT_NO_FPU) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
     template <>
     inline bool qCompare<qreal, double>(qreal const &t1, double const &t2, const char *actual,
                                  const char *expected, const char *file, int line)
@@ -289,6 +291,28 @@ namespace QTest
         return compare_string_helper(t1, t2, actual, expected, file, line);
     }
 #else  /* QTEST_NO_SPECIALIZATIONS */
+
+// In Symbian we have QTEST_NO_SPECIALIZATIONS defined, but still float related specialization
+// should be used. If QTEST_NO_SPECIALIZATIONS is enabled we get ambiguous overload errors.
+#if defined(QT_ARCH_SYMBIAN)
+    template <typename T1, typename T2>
+    bool qCompare(T1 const &, T2 const &, const char *, const char *, const char *, int);
+
+    template <>
+    inline bool qCompare<qreal, double>(qreal const &t1, double const &t2, const char *actual,
+                                 const char *expected, const char *file, int line)
+    {
+        return qCompare<float>(float(t1), float(t2), actual, expected, file, line);
+    }
+
+    template <>
+    inline bool qCompare<double, qreal>(double const &t1, qreal const &t2, const char *actual,
+                                 const char *expected, const char *file, int line)
+    {
+        return qCompare<float>(float(t1), float(t2), actual, expected, file, line);
+    }
+#endif
+
     inline bool qCompare(const char *t1, const char *t2, const char *actual,
                          const char *expected, const char *file, int line)
     {
@@ -321,6 +345,17 @@ namespace QTest
     {
         return compare_string_helper(t1, t2, actual, expected, file, line);
     }
+
+    // NokiaX86 and RVCT do not like implicitly comparing bool with int
+#ifndef QTEST_NO_SPECIALIZATIONS
+    template <>
+#endif
+    inline bool qCompare(bool const &t1, int const &t2,
+                    const char *actual, const char *expected, const char *file, int line)
+    {
+        return qCompare<int>(int(t1), t2, actual, expected, file, line);
+    }
+
 
     template <class T>
     inline bool qTest(const T& actual, const char *elementName, const char *actualStr,

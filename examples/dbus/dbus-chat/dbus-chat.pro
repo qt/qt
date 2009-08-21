@@ -17,3 +17,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/dbus/chat
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro *.xml
 sources.path = $$[QT_INSTALL_EXAMPLES]/dbus/chat
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

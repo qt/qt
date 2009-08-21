@@ -44,6 +44,8 @@
 
 #include <QtScript/qscriptvalue.h>
 
+#include <QtCore/qscopedpointer.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -82,7 +84,7 @@ public:
     QScriptValueIterator& operator=(QScriptValue &value);
 
 private:
-    QScriptValueIteratorPrivate *d_ptr;
+    QScopedPointer<QScriptValueIteratorPrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptValueIterator)
     Q_DISABLE_COPY(QScriptValueIterator)

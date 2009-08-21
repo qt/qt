@@ -6,7 +6,7 @@ QWidget#StyleWidget
 
 QLabel, QAbstractButton 
 {
-	font: 18px bold;
+	font: bold;
 	color: beige;
 }
 

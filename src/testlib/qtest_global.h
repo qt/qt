@@ -52,7 +52,7 @@ QT_MODULE(Test)
 
 #ifdef QTEST_EMBED
 # define Q_TESTLIB_EXPORT
-#elif !defined(QT_SHARED)
+#elif !defined(QT_SHARED) && !(defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT))
 # define Q_TESTLIB_EXPORT
 #else
 # ifdef QTESTLIB_MAKEDLL
@@ -62,9 +62,10 @@ QT_MODULE(Test)
 # endif
 #endif
 
-#if (defined (Q_CC_MSVC) && _MSC_VER < 1310) || defined (Q_CC_SUN) || defined (Q_CC_XLC) || (defined (Q_CC_GNU) && (__GNUC__ - 0 < 3))
+#if (defined (Q_CC_MSVC) && _MSC_VER < 1310) || defined (Q_CC_SUN) || defined (Q_CC_XLC) || (defined (Q_CC_GNU) && (__GNUC__ - 0 < 3)) || defined (Q_CC_NOKIAX86)
 # define QTEST_NO_SPECIALIZATIONS
 #endif
+
 
 #if (defined Q_CC_HPACC) && (defined __ia64)
 # ifdef Q_TESTLIB_EXPORT

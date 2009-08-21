@@ -3,11 +3,14 @@ SOURCES  += tst_qlabel.cpp
 
 wince*:{
     DEFINES += SRCDIR=\\\"\\\"
+} !symbian {
+    DEFINES += SRCDIR=\\\"$$PWD/\\\"
+}
+
+wince*|symbian {
     addFiles.sources = *.png testdata
     addFiles.path = .
     DEPLOYMENT += addFiles
-} else {
-    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
 

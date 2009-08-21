@@ -146,9 +146,8 @@ public:
     QShortcutMap constructor.
 */
 QShortcutMap::QShortcutMap()
+    : d_ptr(new QShortcutMapPrivate(this))
 {
-    d_ptr = new QShortcutMapPrivate(this);
-    Q_ASSERT(d_ptr != 0);
     resetState();
 }
 
@@ -157,8 +156,6 @@ QShortcutMap::QShortcutMap()
 */
 QShortcutMap::~QShortcutMap()
 {
-    delete d_ptr;
-    d_ptr = 0;
 }
 
 /*! \internal

@@ -692,7 +692,7 @@ void tst_QHash::operator_eq()
 
         QVERIFY(a == b);
         QVERIFY(!(a != b));
-        
+
         a.insert(1,1);
         b.insert(1,1);
         QVERIFY(a == b);
@@ -714,7 +714,7 @@ void tst_QHash::operator_eq()
 
         b.insert(-1, -1);
         QVERIFY(a != b);
-        QVERIFY(!(a == b));                
+        QVERIFY(!(a == b));
     }
 
     {
@@ -760,7 +760,7 @@ void tst_QHash::operator_eq()
         b.insert("willy", 1);
         QVERIFY(a != b);
         QVERIFY(!(a == b));
-    }   
+    }
 }
 
 void tst_QHash::compare()
@@ -974,7 +974,7 @@ void tst_QHash::rehash_isnt_quadratic()
     // this test should be incredibly slow if rehash() is quadratic
     for (int j = 0; j < 5; ++j) {
         QHash<int, int> testHash;
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN) // mobiles do not have infinite mem...
         for (int i = 0; i < 50000; ++i)
 #else
         for (int i = 0; i < 500000; ++i)

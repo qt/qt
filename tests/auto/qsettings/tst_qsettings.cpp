@@ -52,7 +52,9 @@
 #include <QtCore/QtDebug>
 #include <QtCore/QString>
 
-#include <cctype>
+#if !defined(Q_OS_SYMBIAN)
+# include <cctype>
+#endif
 #if defined(Q_OS_WIN) && defined(Q_CC_GNU)
 // need for unlink on mingw
 #include <io.h>
@@ -122,7 +124,7 @@ private slots:
     void setPath();
     void setDefaultFormat();
     void dontCreateNeedlessPaths();
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
     void dontReorderIniKeysNeedlessly();
 #endif
 
@@ -209,7 +211,7 @@ void tst_QSettings::getSetCheck()
 
 Q_DECLARE_METATYPE(QSettings::Format)
 
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
 static void removePath(const QString& _path)
 {
     QString path = _path;
@@ -356,9 +358,11 @@ void tst_QSettings::init()
     QSettings(QSettings::SystemScope, "software.org").clear();
     QSettings(QSettings::UserScope, "other.software.org").clear();
     QSettings(QSettings::SystemScope, "other.software.org").clear();
+#elif defined(Q_OS_SYMBIAN)
+    removePath(settingsPath());
 #endif
 
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
     system(QString("chmod -R u+rw %1 2> /dev/null").arg(settingsPath()).toLatin1());
     system(QString("rm -fr %1 2> /dev/null").arg(settingsPath()).toLatin1());
 #endif
@@ -540,13 +544,13 @@ void tst_QSettings::ctor()
         */
         QSettings settings5(format, QSettings::UserScope, "SoftWare.ORG", "killerApp");
         if (format == QSettings::NativeFormat) {
-#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN)
+#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_SYMBIAN)
             QCOMPARE(settings5.value("key 1").toString(), QString("gurgle"));
 #else
             QVERIFY(!settings5.contains("key 1"));
 #endif
         } else {
-#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN)
+#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_SYMBIAN)
             QCOMPARE(settings5.value("key 1").toString(), QString("gurgle"));
 #else
             QVERIFY(!settings5.contains("key 1"));
@@ -716,6 +720,8 @@ void tst_QSettings::testErrorHandling()
 #ifdef QT_BUILD_INTERNAL
 #ifdef Q_OS_WIN
     QSKIP("Windows doesn't support most file modes, including read-only directories, so this test is moot.", SkipAll);
+#elif defined(Q_OS_SYMBIAN)
+    QSKIP("Symbian/Open C doesn't support execute or write only file modes, or directory permissions, so this test is mostly moot.", SkipAll);
 #elif defined(Q_OS_UNIX)
     if (::getuid() == 0)
         QSKIP("Running this test as root doesn't work, since file perms do not bother him", SkipAll);
@@ -1499,7 +1505,7 @@ void tst_QSettings::sync()
 
     // Now "some other app" will change other.software.org.ini
     QString userConfDir = settingsPath("__user__") + QDir::separator();
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     unlink((userConfDir + "other.software.org.ini").toLatin1());
     rename((userConfDir + "software.org.ini").toLatin1(),
            (userConfDir + "other.software.org.ini").toLatin1());
@@ -3679,7 +3685,7 @@ void tst_QSettings::dontCreateNeedlessPaths()
     QVERIFY(!fileInfo.dir().exists());
 }
 
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
 void tst_QSettings::dontReorderIniKeysNeedlessly()
 {
 #ifdef  QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER

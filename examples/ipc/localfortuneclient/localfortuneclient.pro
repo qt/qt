@@ -9,4 +9,6 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS localfortuneclient.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/ipc/localfortuneclient
 INSTALLS += target sources
 
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
 

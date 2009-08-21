@@ -303,10 +303,15 @@ QT_BEGIN_NAMESPACE
     the \a TestClass, and executes all tests in the order they were defined.
     Use this macro to build stand-alone executables.
 
+    \bold {Note:} On platforms that have keypad navigation enabled by default (eg: Symbian),
+    this macro will forcfully disable it to simplify the usage of key events when writing
+    autotests. If you wish to write a test case that uses keypad navigation, you should
+    enable it either in the \c {initTestCase()} or \c {init()} functions of your test case.
+
     Example:
     \snippet doc/src/snippets/code/src_qtestlib_qtestcase.cpp 11
 
-    \sa QTEST_APPLESS_MAIN(), QTest::qExec()
+    \sa QTEST_APPLESS_MAIN(), QTest::qExec(), QApplication::setKeypadNavigationEnabled()
 */
 
 /*! \macro QTEST_APPLESS_MAIN(TestClass)
@@ -1458,7 +1463,7 @@ static void qInvokeTestMethods(QObject *testObject)
     QTestLog::stopLogging();
 }
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
 class FatalSignalHandler
 {
 public:
@@ -1607,6 +1612,11 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     }
 #endif
 
+#ifdef Q_OS_SYMBIAN
+//### FIX THIS temporary hack to delay execution of symbian os tests. Used to get emulator to stable state before running testcase
+    qSleep(3000);
+#endif
+
     QTestResult::reset();
 
     QTEST_ASSERT(testObject);
@@ -1629,13 +1639,13 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
     } else
 #endif
     {
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
         FatalSignalHandler handler;
 #endif
         qInvokeTestMethods(testObject);
     }
 
- #ifndef QT_NO_EXCEPTIONS
+#ifndef QT_NO_EXCEPTIONS
      } catch (...) {
          QTestResult::addFailure("Caught unhandled exception", __FILE__, __LINE__);
          if (QTestResult::currentTestFunction()) {
@@ -1649,13 +1659,13 @@ int QTest::qExec(QObject *testObject, int argc, char **argv)
              IOPMAssertionRelease(powerID);
          }
 #endif
- #ifdef Q_OS_WIN
+//#  ifdef Q_OS_WIN
          // rethrow exception to make debugging easier
          throw;
- #endif
-         return -1;
+//#  endif
+         return 1;
      }
- #endif
+#  endif
 
     currentTestObject = 0;
 #ifdef QT_MAC_USE_COCOA
@@ -1958,7 +1968,7 @@ bool QTest::compare_helper(bool success, const char *msg, char *val1, char *val2
 \internal
  */
 template <>
-bool QTest::qCompare<float>(float const &t1, float const &t2, const char *actual, const char *expected,
+Q_TESTLIB_EXPORT bool QTest::qCompare<float>(float const &t1, float const &t2, const char *actual, const char *expected,
                     const char *file, int line)
 {
     return qFuzzyCompare(t1, t2)
@@ -1971,7 +1981,7 @@ bool QTest::qCompare<float>(float const &t1, float const &t2, const char *actual
 \internal
  */
 template <>
-bool QTest::qCompare<double>(double const &t1, double const &t2, const char *actual, const char *expected,
+Q_TESTLIB_EXPORT bool QTest::qCompare<double>(double const &t1, double const &t2, const char *actual, const char *expected,
                     const char *file, int line)
 {
     return qFuzzyCompare(t1, t2)
@@ -1981,7 +1991,7 @@ bool QTest::qCompare<double>(double const &t1, double const &t2, const char *act
 }
 
 #define COMPARE_IMPL2(TYPE, FORMAT) \
-template <> char *QTest::toString<TYPE >(const TYPE &t) \
+template <> Q_TESTLIB_EXPORT char *QTest::toString<TYPE >(const TYPE &t) \
 { \
     char *msg = new char[128]; \
     qt_snprintf(msg, 128, #FORMAT, t); \

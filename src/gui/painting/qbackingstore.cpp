@@ -841,6 +841,10 @@ QWidgetBackingStore::QWidgetBackingStore(QWidget *topLevel)
 
 QWidgetBackingStore::~QWidgetBackingStore()
 {
+    for (int c = 0; c < dirtyWidgets.size(); ++c) {
+        resetWidget(dirtyWidgets.at(c));
+    }
+
     delete windowSurface;
     windowSurface = 0;
     delete dirtyOnScreenWidgets;
@@ -852,7 +856,7 @@ QWidgetBackingStore::~QWidgetBackingStore()
 void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
 {
     Q_Q(QWidget);
-    if (!q->isVisible())
+    if (!q->isVisible() || (dx == 0 && dy == 0))
         return;
 
     QWidget *tlw = q->window();

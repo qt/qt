@@ -205,7 +205,7 @@ void tst_QMouseEvent::checkMousePressEvent()
     int buttons = button;
     int modifiers = keyPressed;
 
-    QTest::mousePress(testMouseWidget, (Qt::MouseButton)buttonPressed, (Qt::KeyboardModifiers)keyPressed);
+    QTest::mousePress(testMouseWidget, Qt::MouseButton(buttonPressed), Qt::KeyboardModifiers(keyPressed));
     QVERIFY(testMouseWidget->mousePressEventRecieved);
     QCOMPARE(testMouseWidget->mousePressButton, button);
     QCOMPARE(testMouseWidget->mousePressButtons, buttons);
@@ -218,7 +218,7 @@ void tst_QMouseEvent::checkMousePressEvent()
     QCOMPARE(testMouseWidget->mousePressStateAfter, stateAfter);
 #endif
 
-    QTest::mouseRelease(testMouseWidget, (Qt::MouseButton)buttonPressed, (Qt::KeyboardModifiers)keyPressed);
+    QTest::mouseRelease(testMouseWidget, Qt::MouseButton(buttonPressed), Qt::KeyboardModifiers(keyPressed));
 }
 
 void tst_QMouseEvent::checkMouseReleaseEvent_data()
@@ -251,7 +251,7 @@ void tst_QMouseEvent::checkMouseReleaseEvent()
     int buttons = 0;
     int modifiers = keyPressed;
 
-    QTest::mouseClick(testMouseWidget, (Qt::MouseButton)buttonReleased, (Qt::KeyboardModifiers)keyPressed);
+    QTest::mouseClick(testMouseWidget, Qt::MouseButton(buttonReleased), Qt::KeyboardModifiers(keyPressed));
     QVERIFY(testMouseWidget->mouseReleaseEventRecieved);
     QCOMPARE(testMouseWidget->mouseReleaseButton, button);
     QCOMPARE(testMouseWidget->mouseReleaseButtons, buttons);

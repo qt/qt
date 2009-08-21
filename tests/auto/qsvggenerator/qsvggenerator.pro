@@ -7,11 +7,14 @@ QT += svg xml
 
 SOURCES += tst_qsvggenerator.cpp
 
-wince*: {
+wince*|symbian {
     addFiles.sources = referenceSvgs
     addFiles.path = .
     DEPLOYMENT += addFiles
+}
+
+wince* {
     DEFINES += SRCDIR=\\\"\\\"
-} else {
+} !symbian {
     DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

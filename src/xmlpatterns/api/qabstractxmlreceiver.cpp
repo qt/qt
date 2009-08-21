@@ -224,7 +224,6 @@ QAbstractXmlReceiver::QAbstractXmlReceiver() : d_ptr(0)
  */
 QAbstractXmlReceiver::~QAbstractXmlReceiver()
 {
-    delete d_ptr;
 }
 
 /*!

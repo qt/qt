@@ -64,7 +64,7 @@
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
 #include <qdebug.h>
-
+#include <private/qactiontokeyeventmapper_p.h>
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
@@ -629,6 +629,9 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Select:
 #endif
             if (view->currentIndex().isValid() && (view->currentIndex().flags() & Qt::ItemIsEnabled) ) {
+#ifdef QT_KEYPAD_NAVIGATION
+                QActionToKeyEventMapper::removeSoftkey(this);
+#endif
                 combo->hidePopup();
                 emit itemSelected(view->currentIndex());
             }
@@ -641,6 +644,7 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Escape:
 #ifdef QT_KEYPAD_NAVIGATION
         case Qt::Key_Back:
+            QActionToKeyEventMapper::removeSoftkey(this);
 #endif
             combo->hidePopup();
             return true;
@@ -1247,8 +1251,12 @@ QComboBox::~QComboBox()
     // ### check delegateparent and delete delegate if us?
     Q_D(QComboBox);
 
-    disconnect(d->model, SIGNAL(destroyed()),
-               this, SLOT(_q_modelDestroyed()));
+    QT_TRY {
+        disconnect(d->model, SIGNAL(destroyed()),
+                this, SLOT(_q_modelDestroyed()));
+    } QT_CATCH(...) {
+        ; // objects can't throw in destructor
+    }
 }
 
 /*!
@@ -2454,6 +2462,11 @@ void QComboBox::showPopup()
 
     container->setUpdatesEnabled(updatesEnabled);
     container->update();
+#ifdef QT_KEYPAD_NAVIGATION
+    if (QApplication::keypadNavigationEnabled())
+        view()->setEditFocus(true);
+    QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, view());
+#endif
 }
 
 /*!

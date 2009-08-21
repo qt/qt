@@ -221,7 +221,7 @@ bool Q_GUI_EXPORT qHasPixmapTexture(const QBrush& brush)
 {
     if (brush.style() != Qt::TexturePattern)
         return false;
-    QTexturedBrushData *tx_data = static_cast<QTexturedBrushData *>(brush.d);
+    QTexturedBrushData *tx_data = static_cast<QTexturedBrushData *>(brush.d.data());
     return tx_data->m_has_pixmap_texture;
 }
 
@@ -230,6 +230,31 @@ struct QGradientBrushData : public QBrushData
     QGradient gradient;
 };
 
+struct QBrushDataPointerDeleter
+{
+    static inline void deleteData(QBrushData *d)
+    {
+        switch (d->style) {
+        case Qt::TexturePattern:
+            delete static_cast<QTexturedBrushData*>(d);
+            break;
+        case Qt::LinearGradientPattern:
+        case Qt::RadialGradientPattern:
+        case Qt::ConicalGradientPattern:
+            delete static_cast<QGradientBrushData*>(d);
+            break;
+        default:
+            delete d;
+        }
+    }
+
+    static inline void cleanup(QBrushData *d)
+    {
+        if (d && !d->ref.deref()) {
+            deleteData(d);
+        }
+    }
+};
 
 /*!
     \class QBrush
@@ -364,20 +389,20 @@ void QBrush::init(const QColor &color, Qt::BrushStyle style)
 {
     switch(style) {
     case Qt::NoBrush:
-        d = nullBrushInstance();
+        d.data_ptr() = nullBrushInstance();
         d->ref.ref();
         if (d->color != color) setColor(color);
         return;
     case Qt::TexturePattern:
-        d = new QTexturedBrushData;
+        d.data_ptr() = new QTexturedBrushData;
         break;
     case Qt::LinearGradientPattern:
     case Qt::RadialGradientPattern:
     case Qt::ConicalGradientPattern:
-        d = new QGradientBrushData;
+        d.data_ptr() = new QGradientBrushData;
         break;
     default:
-        d = new QBrushData;
+        d.data_ptr() = new QBrushData;
         break;
     }
     d->ref = 1;
@@ -391,8 +416,8 @@ void QBrush::init(const QColor &color, Qt::BrushStyle style)
 */
 
 QBrush::QBrush()
+    : d(nullBrushInstance())
 {
-    d = nullBrushInstance();
     Q_ASSERT(d);
     d->ref.ref();
 }
@@ -435,7 +460,7 @@ QBrush::QBrush(Qt::BrushStyle style)
     if (qbrush_check_type(style))
         init(Qt::black, style);
     else {
-        d = nullBrushInstance();
+        d.data_ptr() = nullBrushInstance();
         d->ref.ref();
     }
 }
@@ -451,7 +476,7 @@ QBrush::QBrush(const QColor &color, Qt::BrushStyle style)
     if (qbrush_check_type(style))
         init(color, style);
     else {
-        d = nullBrushInstance();
+        d.data_ptr() = nullBrushInstance();
         d->ref.ref();
     }
 }
@@ -468,7 +493,7 @@ QBrush::QBrush(Qt::GlobalColor color, Qt::BrushStyle style)
     if (qbrush_check_type(style))
         init(color, style);
     else {
-        d = nullBrushInstance();
+        d.data_ptr() = nullBrushInstance();
         d->ref.ref();
     }
 }
@@ -510,8 +535,8 @@ QBrush::QBrush(Qt::GlobalColor color, const QPixmap &pixmap)
 */
 
 QBrush::QBrush(const QBrush &other)
+    : d(other.d.data())
 {
-    d = other.d;
     d->ref.ref();
 }
 
@@ -535,7 +560,7 @@ QBrush::QBrush(const QGradient &gradient)
     };
 
     init(QColor(), enum_table[gradient.type()]);
-    QGradientBrushData *grad = static_cast<QGradientBrushData *>(d);
+    QGradientBrushData *grad = static_cast<QGradientBrushData *>(d.data());
     grad->gradient = gradient;
 }
 
@@ -545,24 +570,11 @@ QBrush::QBrush(const QGradient &gradient)
 
 QBrush::~QBrush()
 {
-    if (!d->ref.deref())
-        cleanUp(d);
 }
 
 void QBrush::cleanUp(QBrushData *x)
 {
-    switch (x->style) {
-    case Qt::TexturePattern:
-        delete static_cast<QTexturedBrushData*>(x);
-        break;
-    case Qt::LinearGradientPattern:
-    case Qt::RadialGradientPattern:
-    case Qt::ConicalGradientPattern:
-        delete static_cast<QGradientBrushData*>(x);
-        break;
-    default:
-        delete x;
-    }
+    QBrushDataPointerDeleter::deleteData(x);
 }
 
 
@@ -571,38 +583,36 @@ void QBrush::detach(Qt::BrushStyle newStyle)
     if (newStyle == d->style && d->ref == 1)
         return;
 
-    QBrushData *x;
+    QScopedPointer<QBrushData> x;
     switch(newStyle) {
     case Qt::TexturePattern: {
         QTexturedBrushData *tbd = new QTexturedBrushData;
         if (d->style == Qt::TexturePattern) {
-            QTexturedBrushData *data = static_cast<QTexturedBrushData *>(d);
+            QTexturedBrushData *data = static_cast<QTexturedBrushData *>(d.data());
             if (data->m_has_pixmap_texture)
                 tbd->setPixmap(data->pixmap());
             else
                 tbd->setImage(data->image());
         }
-        x = tbd;
+        x.reset(tbd);
         break;
         }
     case Qt::LinearGradientPattern:
     case Qt::RadialGradientPattern:
     case Qt::ConicalGradientPattern:
-        x = new QGradientBrushData;
-        static_cast<QGradientBrushData *>(x)->gradient =
-            static_cast<QGradientBrushData *>(d)->gradient;
+        x.reset(new QGradientBrushData);
+        static_cast<QGradientBrushData *>(x.data())->gradient =
+            static_cast<QGradientBrushData *>(d.data())->gradient;
         break;
     default:
-        x = new QBrushData;
+        x.reset(new QBrushData);
         break;
     }
     x->ref = 1;
     x->style = newStyle;
     x->color = d->color;
     x->transform = d->transform;
-    if (!d->ref.deref())
-        cleanUp(d);
-    d = x;
+    d.reset(x.take());
 }
 
 
@@ -615,10 +625,11 @@ void QBrush::detach(Qt::BrushStyle newStyle)
 
 QBrush &QBrush::operator=(const QBrush &b)
 {
+    if (this == &b)
+        return *this;
+
     b.d->ref.ref();
-    if (!d->ref.deref())
-        cleanUp(d);
-    d = b.d;
+    d.reset(b.d.data());
     return *this;
 }
 
@@ -713,7 +724,7 @@ QPixmap *QBrush::pixmap() const
 {
     if (d->style != Qt::TexturePattern)
         return 0;
-    QTexturedBrushData *data  = static_cast<QTexturedBrushData*>(d);
+    QTexturedBrushData *data  = static_cast<QTexturedBrushData*>(d.data());
     QPixmap &pixmap = data->pixmap();
     return pixmap.isNull() ? 0 : &pixmap;
 }
@@ -730,7 +741,7 @@ QPixmap *QBrush::pixmap() const
 QPixmap QBrush::texture() const
 {
     return d->style == Qt::TexturePattern
-                     ? ((QTexturedBrushData*) d)->pixmap()
+                     ? (static_cast<QTexturedBrushData *>(d.data()))->pixmap()
                      : QPixmap();
 }
 
@@ -748,7 +759,7 @@ void QBrush::setTexture(const QPixmap &pixmap)
 {
     if (!pixmap.isNull()) {
         detach(Qt::TexturePattern);
-        QTexturedBrushData *data = static_cast<QTexturedBrushData *>(d);
+        QTexturedBrushData *data = static_cast<QTexturedBrushData *>(d.data());
         data->setPixmap(pixmap);
     } else {
         detach(Qt::NoBrush);
@@ -771,7 +782,7 @@ void QBrush::setTexture(const QPixmap &pixmap)
 QImage QBrush::textureImage() const
 {
     return d->style == Qt::TexturePattern
-                     ? ((QTexturedBrushData *) d)->image()
+                     ? (static_cast<QTexturedBrushData *>(d.data()))->image()
                      : QImage();
 }
 
@@ -796,7 +807,7 @@ void QBrush::setTextureImage(const QImage &image)
 {
     if (!image.isNull()) {
         detach(Qt::TexturePattern);
-        QTexturedBrushData *data = static_cast<QTexturedBrushData *>(d);
+        QTexturedBrushData *data = static_cast<QTexturedBrushData *>(d.data());
         data->setImage(image);
     } else {
         detach(Qt::NoBrush);
@@ -812,7 +823,7 @@ const QGradient *QBrush::gradient() const
     if (d->style == Qt::LinearGradientPattern
         || d->style == Qt::RadialGradientPattern
         || d->style == Qt::ConicalGradientPattern) {
-        return &static_cast<const QGradientBrushData *>(d)->gradient;
+        return &static_cast<const QGradientBrushData *>(d.data())->gradient;
     }
     return 0;
 }
@@ -925,16 +936,16 @@ bool QBrush::operator==(const QBrush &b) const
     if (b.d->style == d->style && b.d->color == d->color) {
         switch (d->style) {
         case Qt::TexturePattern: {
-            QPixmap &us = ((QTexturedBrushData *) d)->pixmap();
-            QPixmap &them = ((QTexturedBrushData *) b.d)->pixmap();
+            QPixmap &us = (static_cast<QTexturedBrushData *>(d.data()))->pixmap();
+            QPixmap &them = (static_cast<QTexturedBrushData *>(b.d.data()))->pixmap();
             return ((us.isNull() && them.isNull()) || us.cacheKey() == them.cacheKey());
         }
         case Qt::LinearGradientPattern:
         case Qt::RadialGradientPattern:
         case Qt::ConicalGradientPattern:
             {
-                QGradientBrushData *d1 = static_cast<QGradientBrushData *>(d);
-                QGradientBrushData *d2 = static_cast<QGradientBrushData *>(b.d);
+                QGradientBrushData *d1 = static_cast<QGradientBrushData *>(d.data());
+                QGradientBrushData *d2 = static_cast<QGradientBrushData *>(b.d.data());
                 return d1->gradient == d2->gradient;
             }
         default:

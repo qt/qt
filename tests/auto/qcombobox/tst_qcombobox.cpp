@@ -1234,7 +1234,6 @@ void tst_QComboBox::insertItem()
     testWidget->setEditable(true);
     if (editable)
         testWidget->setEditText("FOO");
-
 #if defined (QT3_SUPPORT)
     if (testQt3Support)
         testWidget->insertItem(itemLabel, insertIndex);
@@ -1895,10 +1894,10 @@ void tst_QComboBox::itemListPosition()
     //tests that the list is not out of the screen boundaries
 
     //put the QApplication layout back
-    qApp->setLayoutDirection(Qt::LeftToRight);
+    QApplication::setLayoutDirection(Qt::LeftToRight);
 
     //we test QFontComboBox because it has the specific behaviour to set a fixed size
-    //the the list view
+    //to the list view
     QFontComboBox combo;
 
     //the code to get the avaialbe screen space is copied from QComboBox code
@@ -1915,13 +1914,17 @@ void tst_QComboBox::itemListPosition()
     screen = QApplication::desktop()->availableGeometry(scrNumber);
 #endif
 
-    combo.move(screen.width()-combo.sizeHint().width(), 0); //puts the combo the the top-right corner
+    combo.move(screen.width()-combo.sizeHint().width(), 0); //puts the combo to the top-right corner
 
     combo.show();
     QTest::qWait(100); //wait because the window manager can move the window if there is a right panel
     combo.showPopup();
     QTest::qWait(100);
 
+#if defined(Q_WS_S60)
+    // Assuming that QtS60 style is used, here. But other ones would certainly also fail
+    QEXPECT_FAIL("", "QtS60Style does not yet position the combobox popup correctly", Continue);
+#endif
     QVERIFY( combo.view()->window()->x() + combo.view()->window()->width() <= screen.x() + screen.width() );
 
 }
@@ -2257,7 +2260,11 @@ void tst_QComboBox::setItemDelegate()
     QComboBox comboBox;
     QStyledItemDelegate *itemDelegate = new QStyledItemDelegate;
     comboBox.setItemDelegate(itemDelegate);
+#ifdef Q_CC_MWERKS
+    QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
+#else
     QCOMPARE(comboBox.itemDelegate(), itemDelegate);
+#endif
 }
 
 void tst_QComboBox::task253944_itemDelegateIsReset()
@@ -2267,10 +2274,18 @@ void tst_QComboBox::task253944_itemDelegateIsReset()
     comboBox.setItemDelegate(itemDelegate);
 
     comboBox.setEditable(true);
+#ifdef Q_CC_MWERKS
+    QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
+#else
     QCOMPARE(comboBox.itemDelegate(), itemDelegate);
+#endif
 
     comboBox.setStyleSheet("QComboBox { border: 1px solid gray; }");
+#ifdef Q_CC_MWERKS
+    QCOMPARE(static_cast<QStyledItemDelegate *>(comboBox.itemDelegate()), itemDelegate);
+#else
     QCOMPARE(comboBox.itemDelegate(), itemDelegate);
+#endif
 }
 
 

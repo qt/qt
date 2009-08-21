@@ -9,3 +9,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/linguist/hellotr
 sources.files = $$SOURCES *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/linguist/hellotr
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

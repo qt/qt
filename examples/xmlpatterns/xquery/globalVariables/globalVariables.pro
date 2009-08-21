@@ -7,3 +7,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/xmlpatterns/xquery/globalVariables
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.cpp *.pro *.xq *.html globals.gccxml
 sources.path = $$[QT_INSTALL_EXAMPLES]/xmlpatterns/xquery/globalVariables
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

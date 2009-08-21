@@ -150,14 +150,14 @@ unix:x11 {
                 painting/qprintengine_mac.mm \
 }
 
-unix:!mac {
+unix:!mac:!symbian {
         HEADERS += \
                 painting/qprinterinfo_unix_p.h
         SOURCES += \
                 painting/qprinterinfo_unix.cpp
 }
 
-win32|x11|mac|embedded {
+win32|x11|mac|embedded|symbian {
         SOURCES += painting/qbackingstore.cpp
         HEADERS += painting/qbackingstore_p.h
 }
@@ -172,6 +172,12 @@ embedded {
         SOURCES += \
                 painting/qcolormap_qws.cpp \
                 painting/qpaintdevice_qws.cpp
+}
+
+symbian {
+        SOURCES += \
+                painting/qregion_s60.cpp \
+                painting/qcolormap_s60.cpp
 }
 
 x11|embedded {
@@ -219,7 +225,7 @@ contains(QMAKE_MAC_XARCH, no) {
 
     win32-g++|!win32:!*-icc* {
         mmx {
-            mmx_compiler.commands = $$QMAKE_CXX -c -Winline 
+            mmx_compiler.commands = $$QMAKE_CXX -c -Winline
 
             mac {
                 mmx_compiler.commands += -Xarch_i386 -mmmx
@@ -350,9 +356,27 @@ embedded {
         SOURCES += painting/qwindowsurface_qws.cpp
 }
 
+
+
+symbian {
+        HEADERS += painting/qwindowsurface_s60_p.h
+        SOURCES += painting/qwindowsurface_s60.cpp
+        armccIfdefBlock = \
+        "$${LITERAL_HASH}if defined(ARMV6)" \
+        "MACRO QT_HAVE_ARMV6" \
+        "SOURCEPATH 	painting" \
+        "SOURCE			qblendfunctions_armv6_rvct.s" \
+        "SOURCE			qdrawhelper_armv6_rvct.s" \
+        "$${LITERAL_HASH}endif"
+
+        MMP_RULES += armccIfdefBlock
+        QMAKE_CXXFLAGS.ARMCC *= -O3
+}
+
 contains(QT_CONFIG, zlib) {
    INCLUDEPATH += ../3rdparty/zlib
 } else:!contains(QT_CONFIG, no-zlib) {
    unix:LIBS_PRIVATE += -lz
 #  win32:LIBS += libz.lib
 }
+

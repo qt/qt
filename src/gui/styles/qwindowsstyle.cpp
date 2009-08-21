@@ -2483,7 +2483,6 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
 
             bool floating = false;
             bool active = dwOpt->state & State_Active;
-            int menuOffset = 0; //used to center text when floated
             QColor inactiveCaptionTextColor = d->inactiveCaptionText;
             if (dwOpt->movable) {
                 QColor left, right;
@@ -2498,7 +2497,6 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                         left = d->inactiveCaptionColor;
                         right = d->inactiveGradientCaptionColor;
                     }
-                    menuOffset = 2;
                     QBrush fillBrush(left);
                     if (left != right) {
                         QPoint p1(r.x(), r.top() + r.height()/2);

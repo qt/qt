@@ -21,3 +21,12 @@ target.path = $$[QT_INSTALL_EXAMPLES]/script/context2d
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS context2d.pro scripts
 sources.path = $$[QT_INSTALL_EXAMPLES]/script/context2d
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+symbian:{
+    TARGET.UID3 = 0xA000C608
+    TARGET.EPOCHEAPSIZE = 0x200000 0xA00000
+    contextScripts.path = .
+    contextScripts.sources = scripts
+    DEPLOYMENT += contextScripts
+}

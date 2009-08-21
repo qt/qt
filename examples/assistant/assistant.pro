@@ -6,3 +6,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/assistant
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS assistant.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/assistant
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

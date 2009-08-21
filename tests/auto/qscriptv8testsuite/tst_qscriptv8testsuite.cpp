@@ -45,6 +45,10 @@
 
 #include <QtScript>
 
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -248,6 +252,10 @@ tst_Suite::tst_Suite()
     addTestExclusion("mul-exhaustive", "Demands too much memory on WinCE");
 #endif
 
+#ifdef Q_OS_SYMBIAN
+    addTestExclusion("nested-repetition-count-overflow", "Demands too much memory on Symbian");
+    addTestExclusion("unicode-test", "Demands too much memory on Symbian");
+#endif
     // Failures due to switch to JSC as back-end
     addExpectedFailure("date-parse", "NaN", "946713600000", willFixInNextReleaseMessage);
     addExpectedFailure("delete-global-properties", "true", "false", willFixInNextReleaseMessage);

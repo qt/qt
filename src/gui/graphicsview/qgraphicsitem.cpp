@@ -581,6 +581,7 @@
 #include <QtGui/qpixmapcache.h>
 #include <QtGui/qstyleoption.h>
 #include <QtGui/qevent.h>
+#include <QtGui/qinputcontext.h>
 #include <QtGui/qgraphicseffect.h>
 
 #include <private/qgraphicsitem_p.h>
@@ -588,6 +589,7 @@
 #include <private/qtextcontrol_p.h>
 #include <private/qtextdocumentlayout_p.h>
 #include <private/qtextengine_p.h>
+#include <private/qwidget_p.h>
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
@@ -942,6 +944,17 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         parent->itemChange(QGraphicsItem::ItemChildRemovedChange, thisPointerVariant);
     }
 
+    // Auto-update focus proxy. Any ancestor that has this as focus proxy 
+    //needs to be nulled.
+    QGraphicsItem *p = parent;
+    while (p) {
+        if ((p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) &&
+            (p->focusProxy() == q)) {
+            p->setFocusProxy(0);
+        }
+        p = p->d_ptr->parent;
+    }
+
     // Update toplevelitem list. If this item is being deleted, its parent
     // will be 0 but we don't want to register/unregister it in the TLI list.
     if (scene && !inDestructor) {
@@ -1020,7 +1033,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 
     // Auto-update focus proxy. The closest parent that detects
     // focus proxies is updated as the proxy gains or loses focus.
-    QGraphicsItem *p = newParent;
+    p = newParent;
     while (p) {
         if (p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) {
             p->setFocusProxy(q);
@@ -1045,7 +1058,7 @@ void QGraphicsItemPrivate::childrenBoundingRectHelper(QTransform *x, QRectF *rec
 {
     for (int i = 0; i < children.size(); ++i) {
         QGraphicsItem *child = children.at(i);
-        QGraphicsItemPrivate *childd = child->d_ptr;
+        QGraphicsItemPrivate *childd = child->d_ptr.data();
         bool hasPos = !childd->pos.isNull();
         if (hasPos || childd->transformData) {
             // COMBINE
@@ -1211,12 +1224,11 @@ QGraphicsItem::~QGraphicsItem()
     if (d_ptr->transformData) {
         for(int i = 0; i < d_ptr->transformData->graphicsTransforms.size(); ++i) {
             QGraphicsTransform *t = d_ptr->transformData->graphicsTransforms.at(i);
-            static_cast<QGraphicsTransformPrivate *>(t->d_ptr)->item = 0;
+            static_cast<QGraphicsTransformPrivate *>(t->d_ptr.data())->item = 0;
             delete t;
         }
     }
     delete d_ptr->transformData;
-    delete d_ptr;
 
     qt_dataStore()->data.remove(this);
 }
@@ -2329,7 +2341,7 @@ QRectF QGraphicsItemPrivate::sceneEffectiveBoundingRect() const
     const QGraphicsItem *parentItem = q_ptr;
     const QGraphicsItemPrivate *itemd;
     do {
-        itemd = parentItem->d_ptr;
+        itemd = parentItem->d_ptr.data();
         if (itemd->transformData)
             break;
         offset += itemd->pos;
@@ -3534,7 +3546,7 @@ QTransform QGraphicsItem::itemTransform(const QGraphicsItem *other, bool *ok) co
     QTransform x;
     const QGraphicsItem *p = child;
     do {
-        p->d_ptr->combineTransformToParent(&x);
+        p->d_ptr.data()->combineTransformToParent(&x);
     } while ((p = p->d_ptr->parent) && p != root);
     if (parentOfOther)
         return x.inverted(ok);
@@ -3920,7 +3932,7 @@ QRectF QGraphicsItem::sceneBoundingRect() const
     const QGraphicsItem *parentItem = this;
     const QGraphicsItemPrivate *itemd;
     do {
-        itemd = parentItem->d_ptr;
+        itemd = parentItem->d_ptr.data();
         if (itemd->transformData)
             break;
         offset += itemd->pos;
@@ -8837,7 +8849,7 @@ class QGraphicsTextItemPrivate
 {
 public:
     QGraphicsTextItemPrivate()
-        : control(0), pageNumber(0), useDefaultImpl(false), tabChangesFocus(false)
+        : control(0), pageNumber(0), useDefaultImpl(false), tabChangesFocus(false), clickCausedFocus(0)
     { }
 
     mutable QTextControl *control;
@@ -8857,6 +8869,8 @@ public:
     int pageNumber;
     bool useDefaultImpl;
     bool tabChangesFocus;
+
+    uint clickCausedFocus : 1;
 
     QGraphicsTextItem *qq;
 };
@@ -9163,7 +9177,42 @@ bool QGraphicsTextItem::sceneEvent(QEvent *event)
             return true;
         }
     }
-    return QGraphicsItem::sceneEvent(event);
+    bool result = QGraphicsItem::sceneEvent(event);
+
+    // Ensure input context is updated.
+    switch (event->type()) {
+    case QEvent::ContextMenu:
+    case QEvent::FocusIn:
+    case QEvent::FocusOut:
+    case QEvent::GraphicsSceneDragEnter:
+    case QEvent::GraphicsSceneDragLeave:
+    case QEvent::GraphicsSceneDragMove:
+    case QEvent::GraphicsSceneDrop:
+    case QEvent::GraphicsSceneHoverEnter:
+    case QEvent::GraphicsSceneHoverLeave:
+    case QEvent::GraphicsSceneHoverMove:
+    case QEvent::GraphicsSceneMouseDoubleClick:
+    case QEvent::GraphicsSceneMousePress:
+    case QEvent::GraphicsSceneMouseMove:
+    case QEvent::GraphicsSceneMouseRelease:
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease:
+        // Reset the focus widget's input context, regardless
+        // of how this item gained or lost focus.
+        if (QWidget *fw = qApp->focusWidget()) {
+            if (QInputContext *qic = fw->inputContext()) {
+                if (event->type() == QEvent::FocusIn || event->type() == QEvent::FocusOut)
+                    qic->reset();
+                else
+                    qic->update();
+            }
+        }
+        break;
+    default:
+        break;
+    }
+
+    return result;
 }
 
 /*!
@@ -9187,6 +9236,7 @@ void QGraphicsTextItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
             dd->useDefaultImpl = false;
         return;
     }
+
     dd->sendControlEvent(event);
 }
 
@@ -9199,6 +9249,7 @@ void QGraphicsTextItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         QGraphicsItem::mouseMoveEvent(event);
         return;
     }
+
     dd->sendControlEvent(event);
 }
 
@@ -9219,6 +9270,12 @@ void QGraphicsTextItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         }
         return;
     }
+
+    QWidget *widget = event->widget();
+    if (widget) {
+        qt_widget_private(widget)->handleSoftwareInputPanel(event->button(), dd->clickCausedFocus);
+    }
+    dd->clickCausedFocus = 0;
     dd->sendControlEvent(event);
 }
 
@@ -9270,6 +9327,9 @@ void QGraphicsTextItem::keyReleaseEvent(QKeyEvent *event)
 void QGraphicsTextItem::focusInEvent(QFocusEvent *event)
 {
     dd->sendControlEvent(event);
+    if (event->reason() == Qt::MouseFocusReason) {
+        dd->clickCausedFocus = 1;
+    }
     update();
 }
 

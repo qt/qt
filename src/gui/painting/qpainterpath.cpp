@@ -73,6 +73,17 @@
 
 QT_BEGIN_NAMESPACE
 
+struct QPainterPathPrivateDeleter
+{
+    static inline void cleanup(QPainterPathPrivate *d)
+    {
+        // note - we must up-cast to QPainterPathData since QPainterPathPrivate
+        // has a non-virtual destructor!
+        if (d && !d->ref.deref())
+            delete static_cast<QPainterPathData *>(d);
+    }
+};
+
 // This value is used to determine the length of control point vectors
 // when approximating arc segments as curves. The factor is multiplied
 // with the radius of the circle.
@@ -506,10 +517,10 @@ QPainterPath::QPainterPath()
     \sa operator=()
 */
 QPainterPath::QPainterPath(const QPainterPath &other)
-    : d_ptr(other.d_ptr)
+    : d_ptr(other.d_ptr.data())
 {
-    if (d_func())
-        d_func()->ref.ref();
+    if (d_ptr)
+        d_ptr->ref.ref();
 }
 
 /*!
@@ -530,9 +541,7 @@ QPainterPath::QPainterPath(const QPointF &startPoint)
 void QPainterPath::detach_helper()
 {
     QPainterPathPrivate *data = new QPainterPathData(*d_func());
-    if (d_ptr && !d_ptr->ref.deref())
-        delete d_ptr;
-    d_ptr = data;
+    d_ptr.reset(data);
 }
 
 /*!
@@ -544,9 +553,7 @@ void QPainterPath::ensureData_helper()
     data->elements.reserve(16);
     QPainterPath::Element e = { 0, 0, QPainterPath::MoveToElement };
     data->elements << e;
-    if (d_ptr && !d_ptr->ref.deref())
-        delete d_ptr;
-    d_ptr = data;
+    d_ptr.reset(data);
     Q_ASSERT(d_ptr != 0);
 }
 
@@ -563,9 +570,7 @@ QPainterPath &QPainterPath::operator=(const QPainterPath &other)
         QPainterPathPrivate *data = other.d_func();
         if (data)
             data->ref.ref();
-        if (d_ptr && !d_ptr->ref.deref())
-            delete d_ptr;
-        d_ptr = data;
+        d_ptr.reset(data);
     }
     return *this;
 }
@@ -575,8 +580,6 @@ QPainterPath &QPainterPath::operator=(const QPainterPath &other)
 */
 QPainterPath::~QPainterPath()
 {
-    if (d_func() && !d_func()->ref.deref())
-        delete d_func();
 }
 
 /*!
@@ -2464,7 +2467,6 @@ QPainterPathStroker::QPainterPathStroker()
 */
 QPainterPathStroker::~QPainterPathStroker()
 {
-    delete d_ptr;
 }
 
 

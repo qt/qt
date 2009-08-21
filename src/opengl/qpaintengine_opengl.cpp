@@ -5420,7 +5420,7 @@ void QOpenGLPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
         QPainter *p = painter();
         QBrush oldBrush = p->brush();
         p->setBrush(brush);
-        qt_draw_helper(p->d_ptr, painterPathFromVectorPath(path), QPainterPrivate::FillDraw);
+        qt_draw_helper(p->d_ptr.data(), painterPathFromVectorPath(path), QPainterPrivate::FillDraw);
         p->setBrush(oldBrush);
         return;
     }

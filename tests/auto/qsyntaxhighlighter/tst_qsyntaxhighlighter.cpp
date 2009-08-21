@@ -147,7 +147,7 @@ public:
 };
 
 QT_BEGIN_NAMESPACE
-static bool operator==(const QTextLayout::FormatRange &lhs, const QTextLayout::FormatRange &rhs)
+bool operator==(const QTextLayout::FormatRange &lhs, const QTextLayout::FormatRange &rhs)
 {
     return lhs.start == rhs.start
         && lhs.length == rhs.length

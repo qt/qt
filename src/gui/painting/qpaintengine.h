@@ -44,6 +44,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qobjectdefs.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtGui/qpainter.h>
 
 QT_BEGIN_HEADER
@@ -240,7 +241,7 @@ protected:
     uint selfDestruct : 1;
     uint extended : 1;
 
-    QPaintEnginePrivate *d_ptr;
+    QScopedPointer<QPaintEnginePrivate> d_ptr;
 
 private:
     void setAutoDestruct(bool autoDestr) { selfDestruct = autoDestr; }

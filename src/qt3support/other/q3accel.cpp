@@ -206,7 +206,7 @@ bool Q_COMPAT_EXPORT qt_tryComposeUnicode(QWidget* w, QKeyEvent*  e){
 void Q3AccelManager::setFuncPtr() {
     if (qApp->d_func()->qt_compat_used)
         return;
-    QApplicationPrivate *data = static_cast<QApplicationPrivate*>(qApp->d_ptr);
+    QApplicationPrivate *data = static_cast<QApplicationPrivate*>(qApp->d_ptr.data());
     data->qt_tryAccelEvent = qt_tryAccelEvent;
     data->qt_tryComposeUnicode = qt_tryComposeUnicode;
     data->qt_dispatchAccelEvent = qt_dispatchAccelEvent;

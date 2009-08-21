@@ -110,8 +110,6 @@ QScriptable::QScriptable()
 */
 QScriptable::~QScriptable()
 {
-    delete d_ptr;
-    d_ptr = 0;
 }
 
 /*!

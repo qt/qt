@@ -44,6 +44,7 @@
 
 #include <QtCore/qstring.h>
 
+#include <QtCore/qscopedpointer.h>
 #include <QtScript/qscriptvalue.h>
 
 QT_BEGIN_HEADER
@@ -78,7 +79,7 @@ public:
 
 protected:
     QScriptClassPropertyIterator(const QScriptValue &object, QScriptClassPropertyIteratorPrivate &dd);
-    QScriptClassPropertyIteratorPrivate *d_ptr;
+    QScopedPointer<QScriptClassPropertyIteratorPrivate> d_ptr;
 
 private:
     Q_DECLARE_PRIVATE(QScriptClassPropertyIterator)

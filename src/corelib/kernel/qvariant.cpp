@@ -603,7 +603,7 @@ static bool convert(const QVariant::Private *d, QVariant::Type t, void *result, 
         ok = &dummy;
 
     switch (uint(t)) {
-    case QVariant::Url: 
+    case QVariant::Url:
         switch (d->type) {
         case QVariant::String:
             *static_cast<QUrl *>(result) = QUrl(*v_cast<QString>(d));
@@ -1202,8 +1202,8 @@ const QVariant::Handler *QVariant::handler = &qt_kernel_variant_handler;
     and versatile, but may prove less memory and speed efficient than
     storing specific types in standard data structures.
 
-    QVariant also supports the notion of null values, where you can 
-    have a defined type with no value set. However, note that QVariant 
+    QVariant also supports the notion of null values, where you can
+    have a defined type with no value set. However, note that QVariant
     types can only be cast when they have had a value set.
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qvariant.cpp 1

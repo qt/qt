@@ -8,3 +8,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/script/defaultprototypes
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.js defaultprototypes.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/script/defaultprototypes
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

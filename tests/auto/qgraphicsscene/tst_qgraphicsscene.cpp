@@ -58,6 +58,12 @@
 #define Q_CHECK_PAINTEVENTS
 #endif
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+// Current path (C:\private\<UID>) contains only ascii chars
+#define SRCDIR QDir::currentPath().append("\\").toAscii()
+#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -228,9 +234,11 @@ private slots:
     void mouseEventPropagation_focus();
     void mouseEventPropagation_doubleclick();
     void mouseEventPropagation_mouseMove();
+#ifndef QT_NO_DRAGANDDROP
     void dragAndDrop_simple();
     void dragAndDrop_disabledOrInvisible();
     void dragAndDrop_propagate();
+#endif
     void render_data();
     void render();
     void contextMenuEvent();
@@ -2232,6 +2240,7 @@ private:
     }
 };
 
+#ifndef QT_NO_DRAGANDDROP
 void tst_QGraphicsScene::dragAndDrop_simple()
 {
     DndTester *item = new DndTester(QRectF(-10, -10, 20, 20));
@@ -2521,6 +2530,7 @@ void tst_QGraphicsScene::dragAndDrop_propagate()
     QDropEvent dropEvent(QPoint(0, 0), Qt::CopyAction, &mimeData, Qt::LeftButton, 0);
     QApplication::sendEvent(view.viewport(), &dropEvent);
 }
+#endif
 
 void tst_QGraphicsScene::render_data()
 {

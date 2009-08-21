@@ -10,3 +10,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/dbus
 sources.files = *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/dbus
 INSTALLS += sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

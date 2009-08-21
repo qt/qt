@@ -5,7 +5,7 @@ SUBDIRS       = basicdrawing \
                 painterpaths \
                 transformations
 
-!wince*: SUBDIRS += fontsampler
+!wince*:!symbian: SUBDIRS += fontsampler
 
 contains(QT_CONFIG, svg): SUBDIRS += svggenerator svgviewer
 
@@ -14,3 +14,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/painting
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS painting.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/painting
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

@@ -314,8 +314,10 @@ void QFtpDTP::connectToHost(const QString & host, quint16 port)
 {
     bytesFromSocket.clear();
 
-    if (socket)
+    if (socket) {
         delete socket;
+        socket = 0;
+    }
     socket = new QTcpSocket(this);
     socket->setObjectName(QLatin1String("QFtpDTP Passive state socket"));
     connect(socket, SIGNAL(connected()), SLOT(socketConnected()));
@@ -1661,11 +1663,12 @@ QFtp::QFtp(QObject *parent, const char *name)
 */
 int QFtp::connectToHost(const QString &host, quint16 port)
 {
-    d_func()->pi.transferConnectionExtended = true;
     QStringList cmds;
     cmds << host;
     cmds << QString::number((uint)port);
-    return d_func()->addCommand(new QFtpCommand(ConnectToHost, cmds));
+    int id = d_func()->addCommand(new QFtpCommand(ConnectToHost, cmds));
+    d_func()->pi.transferConnectionExtended = true;
+    return id;
 }
 
 /*!
@@ -1724,9 +1727,10 @@ int QFtp::close()
 */
 int QFtp::setTransferMode(TransferMode mode)
 {
+    int id = d_func()->addCommand(new QFtpCommand(SetTransferMode, QStringList()));
     d_func()->pi.transferConnectionExtended = true;
     d_func()->transferMode = mode;
-    return d_func()->addCommand(new QFtpCommand(SetTransferMode, QStringList()));
+    return id;
 }
 
 /*!

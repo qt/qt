@@ -12,3 +12,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/activeqt/menus
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS menus.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/activeqt/menus
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

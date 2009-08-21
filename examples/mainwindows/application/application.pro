@@ -10,3 +10,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/mainwindows/application
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS application.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/mainwindows/application
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

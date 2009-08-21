@@ -92,7 +92,10 @@ public:
         return r;
     }
     inline QRectF cursorRect() { return cursorRect(textCursor()); }
-    void ensureCursorVisible() { textEdit->ensureCursorVisible(); }
+    void ensureCursorVisible() {
+        textEdit->ensureCursorVisible();
+        emit microFocusChanged();
+    }
 
 
     QPlainTextEdit *textEdit;
@@ -149,6 +152,7 @@ public:
     uint backgroundVisible : 1;
     uint centerOnScroll : 1;
     uint inDrag : 1;
+    uint clickCausedFocus : 1;
 
     int topLine;
 

@@ -161,7 +161,6 @@ QSslCertificate::QSslCertificate(const QByteArray &data, QSsl::EncodingFormat fo
 */
 QSslCertificate::QSslCertificate(const QSslCertificate &other) : d(other.d)
 {
-    d->ref.ref();
 }
 
 /*!
@@ -169,8 +168,6 @@ QSslCertificate::QSslCertificate(const QSslCertificate &other) : d(other.d)
 */
 QSslCertificate::~QSslCertificate()
 {
-    if (!d->ref.deref())
-        delete d;
 }
 
 /*!
@@ -179,7 +176,7 @@ QSslCertificate::~QSslCertificate()
 */
 QSslCertificate &QSslCertificate::operator=(const QSslCertificate &other)
 {
-    qAtomicAssign(d, other.d);
+    d = other.d;
     return *this;
 }
 
@@ -245,11 +242,6 @@ void QSslCertificate::clear()
 {
     if (isNull())
         return;
-    if (d->ref == 1)
-        delete d;
-    else
-        d->ref.deref();
-
     d = new QSslCertificatePrivate;
 }
 

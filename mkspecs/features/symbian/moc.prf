@@ -1,0 +1,16 @@
+load(moc)
+
+RET = $$find(MOC_DIR, "\.[a-z]")
+!isEmpty(RET):{
+    error("Symbian does not support directories starting with a dot. Please set MOC_DIR to a different value in your profile.")
+}
+
+RET = $$find(RCC_DIR, "\.[a-z]")
+!isEmpty(RET):{
+    error("Symbian does not support directories starting with a dot. Please set RCC_DIR to a different value in your profile.")
+}
+
+RET = $$find(OBJECTS_DIR, "\.[a-z]")
+!isEmpty(RET):{
+    error("Symbian does not support directories starting with a dot. Please set OBJECTS_DIR to a different value in your profile.")
+}

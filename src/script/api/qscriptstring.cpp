@@ -46,7 +46,6 @@
 
 QT_BEGIN_NAMESPACE
 
-
 /*!
   \since 4.4
   \class QScriptString
@@ -94,7 +93,6 @@ void QScriptStringPrivate::init(QScriptString &q, QScriptEngine *engine, const J
     q.d_ptr = new QScriptStringPrivate();
     q.d_ptr->identifier = value;
     q.d_ptr->engine = engine;
-    q.d_ptr->ref.ref();
 }
 
 /*!
@@ -111,8 +109,6 @@ QScriptString::QScriptString()
 QScriptString::QScriptString(const QScriptString &other)
     : d_ptr(other.d_ptr)
 {
-    if (d_ptr)
-        d_ptr->ref.ref();
 }
 
 /*!
@@ -120,10 +116,6 @@ QScriptString::QScriptString(const QScriptString &other)
 */
 QScriptString::~QScriptString()
 {
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
 }
 
 /*!
@@ -131,14 +123,7 @@ QScriptString::~QScriptString()
 */
 QScriptString &QScriptString::operator=(const QScriptString &other)
 {
-    if (d_ptr == other.d_ptr)
-        return *this;
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-    }
     d_ptr = other.d_ptr;
-    if (d_ptr)
-        d_ptr->ref.ref();
     return *this;
 }
 

@@ -52,6 +52,10 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
+
 class TestBrowser : public QTextBrowser
 {
 public:
@@ -545,6 +549,9 @@ void tst_QTextBrowser::focusIndicator()
     QVERIFY(browser->textCursor().hasSelection());
     QCOMPARE(browser->textCursor().selectedText(), QString("Link to second page"));
 
+#ifdef QT_KEYPAD_NAVIGATION
+    browser->setEditFocus(true);
+#endif
     QTest::keyClick(browser, Qt::Key_Enter);
     QVERIFY(!browser->textCursor().hasSelection());
 
@@ -594,6 +601,9 @@ void tst_QTextBrowser::focusHistory()
     QVERIFY(browser->textCursor().hasSelection());
     QCOMPARE(browser->textCursor().selectedText(), QString("Link to second page"));
 
+#ifdef QT_KEYPAD_NAVIGATION
+    browser->setEditFocus(true);
+#endif
     QTest::keyClick(browser, Qt::Key_Enter);
     QVERIFY(!browser->textCursor().hasSelection());
 
@@ -650,6 +660,9 @@ void tst_QTextBrowser::urlEncoding()
 
     QSignalSpy spy(browser, SIGNAL(anchorClicked(const QUrl &)));
 
+#ifdef QT_KEYPAD_NAVIGATION
+    browser->setEditFocus(true);
+#endif
     QTest::keyClick(browser, Qt::Key_Enter);
     QCOMPARE(spy.count(), 1);
 

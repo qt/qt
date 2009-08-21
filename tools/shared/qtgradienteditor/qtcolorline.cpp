@@ -999,9 +999,8 @@ void QtColorLinePrivate::mouseDoubleClickEvent(QMouseEvent *event)
 ////////////////////////////////////////////////////
 
 QtColorLine::QtColorLine(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), d_ptr(new QtColorLinePrivate)
 {
-    d_ptr = new QtColorLinePrivate;
     d_ptr->q_ptr = this;
 
     setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
@@ -1009,7 +1008,6 @@ QtColorLine::QtColorLine(QWidget *parent)
 
 QtColorLine::~QtColorLine()
 {
-    delete d_ptr;
 }
 
 QSize QtColorLine::minimumSizeHint() const

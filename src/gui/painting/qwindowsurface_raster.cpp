@@ -105,8 +105,6 @@ QRasterWindowSurface::~QRasterWindowSurface()
 #endif
     if (d_ptr->image)
         delete d_ptr->image;
-
-    delete d_ptr;
 }
 
 
@@ -283,6 +281,12 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 #else
     CGContextFlush(context);
 #endif
+#endif
+
+#ifdef Q_OS_SYMBIAN
+    Q_UNUSED(widget);
+    Q_UNUSED(rgn);
+    Q_UNUSED(offset);
 #endif
 }
 

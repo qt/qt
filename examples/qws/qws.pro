@@ -7,3 +7,5 @@ SUBDIRS      += mousecalibration simpledecoration
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS README *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/qws
 INSTALLS += sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

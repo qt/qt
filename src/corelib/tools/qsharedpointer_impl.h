@@ -121,7 +121,9 @@ namespace QtSharedPointer {
     template <class T>
     class Basic
     {
+#ifndef Q_CC_NOKIAX86
         typedef T *Basic:: *RestrictedBool;
+#endif
     public:
         typedef T Type;
         typedef T element_type;
@@ -134,7 +136,11 @@ namespace QtSharedPointer {
 
         inline T *data() const { return value; }
         inline bool isNull() const { return !data(); }
+#ifndef Q_CC_NOKIAX86
         inline operator RestrictedBool() const { return isNull() ? 0 : &Basic::value; }
+#else
+        inline operator bool() const { return isNull() ? 0 : &Basic::value; }
+#endif
         inline bool operator !() const { return isNull(); }
         inline T &operator*() const { return *data(); }
         inline T *operator->() const { return data(); }
@@ -439,15 +445,15 @@ public:
     // inline ~QSharedPointer() { }
 
     inline explicit QSharedPointer(T *ptr) : BaseClass(Qt::Uninitialized)
-    { internalConstruct(ptr); }
+    { BaseClass::internalConstruct(ptr); }
 
     template <typename Deleter>
-    inline QSharedPointer(T *ptr, Deleter d) { internalConstruct(ptr, d); }
+    inline QSharedPointer(T *ptr, Deleter d) { BaseClass::internalConstruct(ptr, d); }
 
     inline QSharedPointer(const QSharedPointer<T> &other) : BaseClass(other) { }
     inline QSharedPointer<T> &operator=(const QSharedPointer<T> &other)
     {
-        internalCopy(other);
+        BaseClass::internalCopy(other);
         return *this;
     }
 
@@ -459,7 +465,7 @@ public:
     inline QSharedPointer<T> &operator=(const QSharedPointer<X> &other)
     {
         QSHAREDPOINTER_VERIFY_AUTO_CAST(T, X); // if you get an error in this line, the cast is invalid
-        internalCopy(other);
+        BaseClass::internalCopy(other);
         return *this;
     }
 
@@ -469,7 +475,7 @@ public:
 
     template <class X>
     inline QSharedPointer<T> &operator=(const QWeakPointer<X> &other)
-    { internalSet(other.d, other.value); return *this; }
+    { BaseClass::internalSet(other.d, other.value); return *this; }
 
     inline void swap(QSharedPointer &other)
     { internalSwap(other); }
@@ -523,7 +529,9 @@ public:
 template <class T>
 class QWeakPointer
 {
+#ifndef Q_CC_NOKIAX86
     typedef T *QWeakPointer:: *RestrictedBool;
+#endif
     typedef QtSharedPointer::ExternalRefCountData Data;
 
 public:
@@ -536,17 +544,23 @@ public:
     typedef ptrdiff_t difference_type;
 
     inline bool isNull() const { return d == 0 || d->strongref == 0 || value == 0; }
+#ifndef Q_CC_NOKIAX86
     inline operator RestrictedBool() const { return isNull() ? 0 : &QWeakPointer::value; }
+#else
+    inline operator bool() const { return isNull() ? 0 : &QWeakPointer::value; }
+#endif
     inline bool operator !() const { return isNull(); }
     inline T *data() const { return d == 0 || d->strongref == 0 ? 0 : value; }
 
     inline QWeakPointer() : d(0), value(0) { }
     inline ~QWeakPointer() { if (d && !d->weakref.deref()) delete d; }
 
+#ifndef QT_NO_QOBJECT
     // special constructor that is enabled only if X derives from QObject
     template <class X>
     inline QWeakPointer(X *ptr) : d(ptr ? d->getAndRef(ptr) : 0), value(ptr)
     { }
+#endif
     template <class X>
     inline QWeakPointer &operator=(X *ptr)
     { return *this = QWeakPointer(ptr); }

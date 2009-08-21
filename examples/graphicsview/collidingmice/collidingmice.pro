@@ -12,3 +12,7 @@ target.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/collidingmice
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS collidingmice.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/collidingmice
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
+symbian:TARGET.UID3 = 0xA000A643

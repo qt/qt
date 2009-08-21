@@ -105,6 +105,7 @@ QFilePrivate::openExternalFile(int flags, int fd)
     return false;
 #else
     delete fileEngine;
+    fileEngine = 0;
     QFSFileEngine *fe = new QFSFileEngine;
     fe->setFileName(fileName);
     fileEngine = fe;
@@ -121,6 +122,7 @@ QFilePrivate::openExternalFile(int flags, FILE *fh)
     return false;
 #else
     delete fileEngine;
+    fileEngine = 0;
     QFSFileEngine *fe = new QFSFileEngine;
     fe->setFileName(fileName);
     fileEngine = fe;
@@ -404,9 +406,6 @@ QFile::QFile(QFilePrivate &dd, QObject *parent)
 QFile::~QFile()
 {
     close();
-#ifdef QT_NO_QOBJECT
-    delete d_ptr;
-#endif
 }
 
 /*!
@@ -737,9 +736,10 @@ QFile::rename(const QString &newName)
                         error = true;
                     }
                 }
-                if (error)
+                if (error) {
                     out.remove();
-                else {
+                } else {
+					fileEngine()->setFileName(newName);
                     setPermissions(permissions());
                     unsetError();
                     setFileName(newName);
@@ -784,6 +784,9 @@ QFile::rename(const QString &oldName, const QString &newName)
     return \l{QFile::}{RenameError}.
 
     \note To create a valid link on Windows, \a linkName must have a \c{.lnk} file extension.
+
+    \note On Symbian, no link is created and false is returned if fileName()
+    currently specifies a directory.
 
     \sa setFileName()
 */

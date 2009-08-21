@@ -7,3 +7,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/mainwindows/recentfiles
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS recentfiles.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/mainwindows/recentfiles
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

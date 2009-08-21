@@ -51,7 +51,9 @@
 //TESTED_FILES=
 
 Q_DECLARE_METATYPE(QModelIndex)
+#ifndef QT_NO_DRAGANDDROP
 Q_DECLARE_METATYPE(QAbstractItemView::DragDropMode)
+#endif
 Q_DECLARE_METATYPE(QAbstractItemView::EditTriggers)
 Q_DECLARE_METATYPE(QAbstractItemView::EditTrigger)
 
@@ -137,11 +139,13 @@ private slots:
     void alternatingRowColors();
     void currentIndex_data();
     void currentIndex();
+#ifndef QT_NO_DRAGANDDROP
     void dragDropMode_data();
     void dragDropMode();
     void dragDropModeFromDragEnabledAndAcceptDrops_data();
     void dragDropModeFromDragEnabledAndAcceptDrops();
     void dragDropOverwriteMode();
+#endif
     void editTriggers_data();
     void editTriggers();
     void hasAutoScroll();
@@ -468,9 +472,11 @@ void tst_QTreeView::construction()
     // QAbstractItemView properties
     QVERIFY(!view.alternatingRowColors());
     QCOMPARE(view.currentIndex(), QModelIndex());
+#ifndef QT_NO_DRAGANDDROP
     QCOMPARE(view.dragDropMode(), QAbstractItemView::NoDragDrop);
     QVERIFY(!view.dragDropOverwriteMode());
     QVERIFY(!view.dragEnabled());
+#endif
     QCOMPARE(view.editTriggers(), QAbstractItemView::EditKeyPressed | QAbstractItemView::DoubleClicked);
     QVERIFY(view.hasAutoScroll());
     QCOMPARE(view.horizontalScrollMode(), QAbstractItemView::ScrollPerPixel);
@@ -489,7 +495,9 @@ void tst_QTreeView::construction()
     QCOMPARE(view.selectionBehavior(), QAbstractItemView::SelectRows);
     QCOMPARE(view.selectionMode(), QAbstractItemView::SingleSelection);
     QVERIFY(!view.selectionModel());
+#ifndef QT_NO_DRAGANDDROP
     QVERIFY(view.showDropIndicator());
+#endif
     QCOMPARE(view.QAbstractItemView::sizeHintForColumn(-1), -1); // <- protected in QTreeView
     QCOMPARE(view.QAbstractItemView::sizeHintForColumn(0), -1); // <- protected in QTreeView
     QCOMPARE(view.QAbstractItemView::sizeHintForColumn(1), -1); // <- protected in QTreeView
@@ -596,12 +604,13 @@ void tst_QTreeView::currentIndex()
     // ### Test child and grandChild indexes.
 }
 
+#ifndef QT_NO_DRAGANDDROP
+
 void tst_QTreeView::dragDropMode_data()
 {
     QTest::addColumn<QAbstractItemView::DragDropMode>("dragDropMode");
     QTest::addColumn<bool>("acceptDrops");
     QTest::addColumn<bool>("dragEnabled");
-
     QTest::newRow("NoDragDrop") << QAbstractItemView::NoDragDrop << false << false;
     QTest::newRow("DragOnly") << QAbstractItemView::DragOnly << false << true;
     QTest::newRow("DropOnly") << QAbstractItemView::DropOnly << true << false;
@@ -696,6 +705,7 @@ void tst_QTreeView::dragDropOverwriteMode()
     // QTableWidget, from their reimplementations of dropMimeData(). Hard to
     // test.
 }
+#endif
 
 void tst_QTreeView::editTriggers_data()
 {

@@ -3189,7 +3189,7 @@ void tst_QGraphicsProxyWidget::windowFlags()
     QVERIFY((widget->windowFlags() & widgetWFlags) == widgetWFlags);
 
     proxy.setWidget(widget);
- 
+
     if (resultingProxyFlags == 0)
         QVERIFY(!proxy.windowFlags());
     else

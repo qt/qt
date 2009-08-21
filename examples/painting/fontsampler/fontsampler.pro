@@ -8,3 +8,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/painting/fontsampler
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS fontsampler.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/painting/fontsampler
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

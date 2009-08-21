@@ -91,7 +91,7 @@ protected:
 #endif
 
 private:
-    QtGradientStopsWidgetPrivate *d_ptr;
+    QScopedPointer<QtGradientStopsWidgetPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtGradientStopsWidget)
     Q_DISABLE_COPY(QtGradientStopsWidget)
     Q_PRIVATE_SLOT(d_func(), void slotStopAdded(QtGradientStop *stop))

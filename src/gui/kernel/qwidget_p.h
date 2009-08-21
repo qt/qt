@@ -61,6 +61,7 @@
 #include "QtGui/qregion.h"
 #include "QtGui/qsizepolicy.h"
 #include "QtGui/qstyle.h"
+#include "QtGui/qapplication.h"
 #include <private/qgraphicseffect_p.h>
 
 #ifdef Q_WS_WIN
@@ -79,6 +80,14 @@
 #if defined(Q_WS_QWS)
 #include "QtGui/qinputcontext.h"
 #include "QtGui/qscreen_qws.h"
+#endif
+
+#if defined(Q_OS_SYMBIAN)
+class RDrawableWindow;
+class CCoeControl;
+// The following 2 defines may only be needed for s60. To be seen.
+const int SOFTKEYSTART=5000;
+const int SOFTKEYEND=5004;
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -163,6 +172,9 @@ struct QTLWExtra {
 #ifndef QT_NO_QWS_MANAGER
     QWSManager *qwsManager;
 #endif
+#elif defined(Q_OS_SYMBIAN) // <--------------------------------------------------------- SYMBIAN
+    uint activated : 1; // RWindowBase::Activated has been called
+    RDrawableWindow *rwindow;
 #endif
 };
 
@@ -244,6 +256,7 @@ public:
     explicit QWidgetPrivate(int version = QObjectPrivateVersion);
     ~QWidgetPrivate();
 
+    void setSoftKeys_sys(const QList<QAction*> &softkeys);
     QWExtra *extraData() const;
     QTLWExtra *topData() const;
     QTLWExtra *maybeTopData() const;
@@ -270,6 +283,10 @@ public:
     QPalette naturalWidgetPalette(uint inheritedMask) const;
 
     void setMask_sys(const QRegion &);
+#ifdef Q_OS_SYMBIAN
+    void handleSymbianDeferredFocusChanged();
+#endif
+
     void raise_sys();
     void lower_sys();
     void stackUnder_sys(QWidget *);
@@ -453,6 +470,19 @@ public:
 
     QSize adjustedSize() const;
 
+    inline void handleSoftwareInputPanel(Qt::MouseButton button, bool clickCausedFocus)
+    {
+        Q_Q(QWidget);
+        if (button == Qt::LeftButton && qApp->autoSipEnabled()) {
+            QStyle::RequestSoftwareInputPanel behavior = QStyle::RequestSoftwareInputPanel(
+                    q->style()->styleHint(QStyle::SH_RequestSoftwareInputPanel));
+            if (!clickCausedFocus || behavior == QStyle::RSIP_OnMouseClick) {
+                QEvent event(QEvent::RequestSoftwareInputPanel);
+                QApplication::sendEvent(q, &event);
+            }
+        }
+    }
+
 #ifndef Q_WS_QWS // Almost cross-platform :-)
     void setWSGeometry(bool dontShow=false, const QRect &oldRect = QRect());
 
@@ -475,6 +505,7 @@ public:
     QWidget *focus_next;
     QWidget *focus_prev;
     QWidget *focus_child;
+    QList<QAction*> softKeys;
     QLayout *layout;
     QRegion *needsFlush;
     QPaintDevice *redirectDev;
@@ -482,12 +513,14 @@ public:
     QPaintEngine *extraPaintEngine;
     mutable const QMetaObject *polished;
     QGraphicsEffect *graphicsEffect;
-    // All widgets are initially added into the uncreatedWidgets set. Once
-    // they receive a window id they are removed and added to the mapper
+    // All widgets are added into the allWidgets set. Once
+    // they receive a window id they are also added to the mapper.
+    // This should just ensure that all widgets are deleted by QApplication
     static QWidgetMapper *mapper;
-    static QWidgetSet *uncreatedWidgets;
+    static QWidgetSet *allWidgets;
 #if !defined(QT_NO_IM)
     QPointer<QInputContext> ic;
+    Qt::InputMethodHints imHints;
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
     static QPointer<QWidget> editingWidget;
@@ -648,7 +681,13 @@ public:
     void updateCursor() const;
 #endif
     QScreen* getScreen() const;
+#elif defined(Q_OS_SYMBIAN) // <--------------------------------------------------------- SYMBIAN
+    static QWidget *mouseGrabber;
+    static QWidget *keyboardGrabber;
+    void s60UpdateIsOpaque();
+    void reparentChildren();
 #endif
+
 };
 
 struct QWidgetPaintContext

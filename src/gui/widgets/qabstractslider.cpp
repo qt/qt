@@ -687,8 +687,9 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
     Q_D(QAbstractSlider);
     e->ignore();
     if (e->orientation() != d->orientation && !rect().contains(e->pos()))
+    {
         return;
-
+    }
     static qreal offset = 0;
     static QAbstractSlider *offset_owner = 0;
     if (offset_owner != this){

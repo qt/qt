@@ -634,7 +634,7 @@ JSC::JSValue JSC_HOST_CALL functionPrint(JSC::ExecState* exec, JSC::JSObject*, J
     }
     if (exec->hadException())
         return exec->exception();
-    qDebug(qPrintable(result));
+    qDebug("%s", qPrintable(result));
     return JSC::jsUndefined();
 }
 
@@ -3744,8 +3744,6 @@ QScriptValue QScriptEngine::objectById(qint64 id) const
 QScriptSyntaxCheckResult::QScriptSyntaxCheckResult(const QScriptSyntaxCheckResult &other)
     : d_ptr(other.d_ptr)
 {
-    if (d_ptr)
-        d_ptr->ref.ref();
 }
 
 /*!
@@ -3754,8 +3752,6 @@ QScriptSyntaxCheckResult::QScriptSyntaxCheckResult(const QScriptSyntaxCheckResul
 QScriptSyntaxCheckResult::QScriptSyntaxCheckResult(QScriptSyntaxCheckResultPrivate *d)
     : d_ptr(d)
 {
-    if (d_ptr)
-        d_ptr->ref.ref();
 }
 
 /*!
@@ -3771,10 +3767,6 @@ QScriptSyntaxCheckResult::QScriptSyntaxCheckResult()
 */
 QScriptSyntaxCheckResult::~QScriptSyntaxCheckResult()
 {
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
 }
 
 /*!
@@ -3836,15 +3828,7 @@ QString QScriptSyntaxCheckResult::errorMessage() const
 */
 QScriptSyntaxCheckResult &QScriptSyntaxCheckResult::operator=(const QScriptSyntaxCheckResult &other)
 {
-    if (d_ptr == other.d_ptr)
-        return *this;
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
     d_ptr = other.d_ptr;
-    if (d_ptr)
-        d_ptr->ref.ref();
     return *this;
 }
 

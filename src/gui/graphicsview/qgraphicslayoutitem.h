@@ -42,6 +42,7 @@
 #ifndef QGRAPHICSLAYOUTITEM_H
 #define QGRAPHICSLAYOUTITEM_H
 
+#include <QtCore/qscopedpointer.h>
 #include <QtGui/qsizepolicy.h>
 #include <QtGui/qevent.h>
 
@@ -112,7 +113,7 @@ protected:
     QGraphicsLayoutItem(QGraphicsLayoutItemPrivate &dd);
 
     virtual QSizeF sizeHint(Qt::SizeHint which, const QSizeF &constraint = QSizeF()) const = 0;
-    QGraphicsLayoutItemPrivate *d_ptr;
+    QScopedPointer<QGraphicsLayoutItemPrivate> d_ptr;
 
 private:
     QSizeF *effectiveSizeHints(const QSizeF &constraint) const;

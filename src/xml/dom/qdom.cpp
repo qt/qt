@@ -512,8 +512,8 @@ public:
     bool setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg, int *errorLine, int *errorColumn);
 
     // Attributes
-    QDomDocumentTypePrivate* doctype() { return type; };
-    QDomImplementationPrivate* implementation() { return impl; };
+    QDomDocumentTypePrivate* doctype() { return type.data(); };
+    QDomImplementationPrivate* implementation() { return impl.data(); };
     QDomElementPrivate* documentElement();
 
     // Factories
@@ -537,8 +537,8 @@ public:
     void clear();
 
     // Variables
-    QDomImplementationPrivate* impl;
-    QDomDocumentTypePrivate* type;
+    QScopedSharedPointer<QDomImplementationPrivate> impl;
+    QScopedSharedPointer<QDomDocumentTypePrivate> type;
 
     void saveDocument(QTextStream& stream, const int indent, QDomNode::EncodingPolicy encUsed) const;
 
@@ -3059,7 +3059,7 @@ QDomNamedNodeMapPrivate::~QDomNamedNodeMapPrivate()
 
 QDomNamedNodeMapPrivate* QDomNamedNodeMapPrivate::clone(QDomNodePrivate* p)
 {
-    QDomNamedNodeMapPrivate* m = new QDomNamedNodeMapPrivate(p);
+    QScopedPointer<QDomNamedNodeMapPrivate> m(new QDomNamedNodeMapPrivate(p));
     m->readonly = readonly;
     m->appendToParent = appendToParent;
 
@@ -3072,7 +3072,7 @@ QDomNamedNodeMapPrivate* QDomNamedNodeMapPrivate::clone(QDomNodePrivate* p)
 
     // we are no longer interested in ownership
     m->ref.deref();
-    return m;
+    return m.take();
 }
 
 void QDomNamedNodeMapPrivate::clearMap()
@@ -3498,13 +3498,18 @@ QDomDocumentTypePrivate::~QDomDocumentTypePrivate()
 void QDomDocumentTypePrivate::init()
 {
     entities = new QDomNamedNodeMapPrivate(this);
-    notations = new QDomNamedNodeMapPrivate(this);
-    publicId.clear();
-    systemId.clear();
-    internalSubset.clear();
+    QT_TRY {
+        notations = new QDomNamedNodeMapPrivate(this);
+        publicId.clear();
+        systemId.clear();
+        internalSubset.clear();
 
-    entities->setAppendToParent(true);
-    notations->setAppendToParent(true);
+        entities->setAppendToParent(true);
+        notations->setAppendToParent(true);
+    } QT_CATCH(...) {
+        delete entities;
+        QT_RETHROW;
+    }
 }
 
 QDomNodePrivate* QDomDocumentTypePrivate::cloneNode(bool deep)
@@ -6146,8 +6151,8 @@ QDomDocumentPrivate::QDomDocumentPrivate()
     : QDomNodePrivate(0),
       nodeListTime(1)
 {
-    impl = new QDomImplementationPrivate;
-    type = new QDomDocumentTypePrivate(this, this);
+    impl.reset(new QDomImplementationPrivate);
+    type.reset(new QDomDocumentTypePrivate(this, this));
 
     name = QLatin1String("#document");
 }
@@ -6156,8 +6161,8 @@ QDomDocumentPrivate::QDomDocumentPrivate(const QString& aname)
     : QDomNodePrivate(0),
       nodeListTime(1)
 {
-    impl = new QDomImplementationPrivate;
-    type = new QDomDocumentTypePrivate(this, this);
+    impl.reset(new QDomImplementationPrivate);
+    type.reset(new QDomDocumentTypePrivate(this, this));
     type->name = aname;
 
     name = QLatin1String("#document");
@@ -6167,12 +6172,11 @@ QDomDocumentPrivate::QDomDocumentPrivate(QDomDocumentTypePrivate* dt)
     : QDomNodePrivate(0),
       nodeListTime(1)
 {
-    impl = new QDomImplementationPrivate;
+    impl.reset(new QDomImplementationPrivate);
     if (dt != 0) {
-        type = dt;
-        type->ref.ref();
+        type.assign(dt);
     } else {
-        type = new QDomDocumentTypePrivate(this, this);
+        type.reset(new QDomDocumentTypePrivate(this, this));
     }
 
     name = QLatin1String("#document");
@@ -6182,31 +6186,19 @@ QDomDocumentPrivate::QDomDocumentPrivate(QDomDocumentPrivate* n, bool deep)
     : QDomNodePrivate(n, deep),
       nodeListTime(1)
 {
-    impl = n->impl->clone();
-    // Reference count is down to 0, so we set it to 1 here.
-    impl->ref.ref();
-    type = (QDomDocumentTypePrivate*)n->type->cloneNode();
+    impl.assign(n->impl->clone());
+    type.assign((QDomDocumentTypePrivate*)n->type->cloneNode());
     type->setParent(this);
-    // Reference count is down to 0, so we set it to 1 here.
-    type->ref.ref();
 }
 
 QDomDocumentPrivate::~QDomDocumentPrivate()
 {
-    if (!impl->ref.deref())
-        delete impl;
-    if (!type->ref.deref())
-        delete type;
 }
 
 void QDomDocumentPrivate::clear()
 {
-    if (!impl->ref.deref())
-        delete impl;
-    if (!type->ref.deref())
-        delete type;
-    impl = 0;
-    type = 0;
+    impl.assign(0);
+    type.assign(0);
     QDomNodePrivate::clear();
 }
 
@@ -6227,8 +6219,8 @@ bool QDomDocumentPrivate::setContent(QXmlInputSource *source, bool namespaceProc
 bool QDomDocumentPrivate::setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg, int *errorLine, int *errorColumn)
 {
     clear();
-    impl = new QDomImplementationPrivate;
-    type = new QDomDocumentTypePrivate(this, this);
+    impl.reset(new QDomImplementationPrivate);
+    type.reset(new QDomDocumentTypePrivate(this, this));
 
     bool namespaceProcessing = reader->feature(QLatin1String("http://xml.org/sax/features/namespaces"))
         && !reader->feature(QLatin1String("http://xml.org/sax/features/namespace-prefixes"));
@@ -7446,20 +7438,22 @@ bool QDomHandler::characters(const QString&  ch)
     if (node == doc)
         return false;
 
-    QDomNodePrivate *n;
+    QScopedPointer<QDomNodePrivate> n;
     if (cdata) {
-        n = doc->createCDATASection(ch);
+        n.reset(doc->createCDATASection(ch));
     } else if (!entityName.isEmpty()) {
-        QDomEntityPrivate* e = new QDomEntityPrivate(doc, 0, entityName,
-                QString(), QString(), QString());
+        QScopedPointer<QDomEntityPrivate> e(new QDomEntityPrivate(doc, 0, entityName,
+                QString(), QString(), QString()));
         e->value = ch;
-        doc->doctype()->appendChild(e);
-        n = doc->createEntityReference(entityName);
+        doc->doctype()->appendChild(e.data());
+        e.take();
+        n.reset(doc->createEntityReference(entityName));
     } else {
-        n = doc->createTextNode(ch);
+        n.reset(doc->createTextNode(ch));
     }
     n->setLocation(locator->lineNumber(), locator->columnNumber());
-    node->appendChild(n);
+    node->appendChild(n.data());
+    n.take();
 
     return true;
 }

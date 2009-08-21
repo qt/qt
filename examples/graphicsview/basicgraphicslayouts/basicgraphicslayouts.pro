@@ -10,3 +10,7 @@ target.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/basicgraphicslayouts
 sources.files = $$SOURCES $$HEADERS $$RESOURCES basicgraphicslayouts.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/basicgraphicslayouts
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
+symbian:TARGET.UID3 = 0xA000A645

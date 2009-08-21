@@ -87,10 +87,13 @@
 # endif
 #endif
 
+#include "../network-settings.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
 const char * const lupinellaIp = "10.3.4.6";
+
 
 class tst_QHostInfo : public QObject
 {
@@ -160,6 +163,7 @@ void tst_QHostInfo::staticInformation()
 
 tst_QHostInfo::tst_QHostInfo()
 {
+    Q_SET_DEFAULT_IAP
 }
 
 tst_QHostInfo::~tst_QHostInfo()
@@ -212,11 +216,18 @@ void tst_QHostInfo::lookupIPv4_data()
     QTest::addColumn<QString>("addresses");
     QTest::addColumn<int>("err");
 
+#ifdef Q_OS_SYMBIAN
+    // Test server lookup
+    QTest::newRow("lookup_01") << QtNetworkSettings::serverName() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
+    QTest::newRow("literal_ip4") << QtNetworkSettings::serverIP().toString() << QtNetworkSettings::serverIP().toString() << int(QHostInfo::NoError);
+    QTest::newRow("multiple_ip4") << "multi.dev.troll.no" << "1.2.3.4 1.2.3.5 10.3.3.31" << int(QHostInfo::NoError);
+#else
     QTest::newRow("empty") << "" << "" << int(QHostInfo::HostNotFound);
 
     QTest::newRow("single_ip4") << "lupinella.troll.no" << lupinellaIp << int(QHostInfo::NoError);
     QTest::newRow("multiple_ip4") << "multi.dev.troll.no" << "1.2.3.4 1.2.3.5 10.3.3.31" << int(QHostInfo::NoError);
     QTest::newRow("literal_ip4") << lupinellaIp << lupinellaIp << int(QHostInfo::NoError);
+#endif
     QTest::newRow("notfound") << "this-name-does-not-exist-hopefully." << "" << int(QHostInfo::HostNotFound);
 
     QTest::newRow("idn-ace") << "xn--alqualond-34a.troll.no" << "10.3.3.55" << int(QHostInfo::NoError);
@@ -302,7 +313,7 @@ void tst_QHostInfo::reverseLookup_data()
 
     // ### Use internal DNS instead. Discussed with Andreas.
     //QTest::newRow("classical.hexago.com") << QString("2001:5c0:0:2::24") << QStringList(QString("classical.hexago.com")) << 0;
-    QTest::newRow("www.cisco.com") << QString("198.133.219.25") << QStringList(QString("origin-www.cisco.com")) << 0;
+    QTest::newRow("origin.cisco.com") << QString("12.159.148.94") << QStringList(QString("origin.cisco.com")) << 0;
     QTest::newRow("bogus-name") << QString("1::2::3::4") << QStringList() << 1;
 }
 
@@ -380,10 +391,10 @@ protected:
 void tst_QHostInfo::threadSafety()
 {
     const int nattempts = 5;
-#if !defined(Q_OS_WINCE)
-    const int runs = 100;
-#else
+#if defined(Q_OS_WINCE)
     const int runs = 10;
+#else
+    const int runs = 100;
 #endif
     LookupThread thr[nattempts];
     for (int j = 0; j < runs; ++j) {

@@ -214,6 +214,7 @@ class Q_GUI_EXPORT QWidget : public QObject, public QPaintDevice
 #endif
     Q_PROPERTY(QLocale locale READ locale WRITE setLocale RESET unsetLocale)
     Q_PROPERTY(QString windowFilePath READ windowFilePath WRITE setWindowFilePath DESIGNABLE isWindow)
+    Q_PROPERTY(Qt::InputMethodHints inputMethodHints READ inputMethodHints WRITE setInputMethodHints)
 
 public:
     enum RenderFlag {
@@ -559,6 +560,9 @@ public:
     void removeAction(QAction *action);
     QList<QAction*> actions() const;
 #endif
+    const QList<QAction*>& softKeys() const;
+    void setSoftKey(QAction *softKey);
+    void setSoftKeys(const QList<QAction*> &softKeys);
 
     QWidget *parentWidget() const;
 
@@ -679,6 +683,10 @@ protected:
     virtual void inputMethodEvent(QInputMethodEvent *);
 public:
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery) const;
+
+    Qt::InputMethodHints inputMethodHints() const;
+    void setInputMethodHints(Qt::InputMethodHints hints);
+
 protected:
     void resetInputContext();
 protected Q_SLOTS:
@@ -729,6 +737,7 @@ private:
     friend class QGraphicsProxyWidget;
     friend class QGraphicsProxyWidgetPrivate;
     friend class QStyleSheetStyle;
+    friend struct QWidgetExceptionCleaner;
 
 #ifdef Q_WS_MAC
     friend class QCoreGraphicsPaintEnginePrivate;
@@ -749,6 +758,10 @@ private:
     friend class QVNCScreen;
     friend bool isWidgetOpaque(const QWidget *);
     friend class QGLWidgetPrivate;
+#endif
+#ifdef Q_OS_SYMBIAN
+    friend class QSymbianControl;
+    friend class QS60WindowSurface;
 #endif
 #ifdef Q_WS_X11
     friend void qt_net_update_user_time(QWidget *tlw, unsigned long timestamp);

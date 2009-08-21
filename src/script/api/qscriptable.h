@@ -44,6 +44,8 @@
 
 #include <QtCore/qobjectdefs.h>
 
+#include <QtCore/qscopedpointer.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -71,7 +73,7 @@ public:
     QScriptValue argument(int index) const;
 
 private:
-    QScriptablePrivate *d_ptr;
+    QScopedPointer<QScriptablePrivate> d_ptr;
 
     Q_DISABLE_COPY(QScriptable)
     Q_DECLARE_PRIVATE(QScriptable)

@@ -1290,7 +1290,7 @@ static QString readSymLink(const QString &link)
 static QString readLink(const QString &link)
 {
 #if !defined(Q_OS_WINCE)
-#if !defined(QT_NO_LIBRARY)
+#if !defined(QT_NO_LIBRARY) && !defined(Q_CC_MWERKS)
     QString ret;
 
     bool neededCoInit = false;
@@ -1347,7 +1347,7 @@ static QString readLink(const QString &link)
 bool QFSFileEngine::link(const QString &newName)
 {
 #if !defined(Q_OS_WINCE)
-#if !defined(QT_NO_LIBRARY)
+#if !defined(QT_NO_LIBRARY) && !defined(Q_CC_MWERKS)
     bool ret = false;
 
     QString linkName = newName;

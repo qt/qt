@@ -158,6 +158,7 @@ private:
     WidgetEngineWidget *m_widget;
 };
 
+#ifndef QT_NO_PRINTER
 class PDFEngine : public QEngine
 {
 public:
@@ -218,7 +219,7 @@ private:
     QString   m_tempFile;
 };
 #endif
-
+#endif //QT_NO_PRINTER
 
 class RSVGEngine : public QEngine
 {

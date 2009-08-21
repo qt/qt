@@ -7,7 +7,11 @@ SOURCES        = main.cpp \
                  mainwindow.cpp \
                  paintarea.cpp \
                  plugindialog.cpp
-LIBS           = -L$${QT_BUILD_TREE}/examples/tools/plugandpaint/plugins -lpnp_basictools
+symbian {
+    LIBS           = -lpnp_basictools.lib
+} else {
+    LIBS           = -L$${QT_BUILD_TREE}/examples/tools/plugandpaint/plugins -lpnp_basictools
+}
 
 if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
    mac:LIBS = $$member(LIBS, 0) $$member(LIBS, 1)_debug
@@ -20,3 +24,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/tools/plugandpaint
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS plugandpaint.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/tools/plugandpaint
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

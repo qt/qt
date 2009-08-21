@@ -54,7 +54,7 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-
+#include <QtCore/qscopedpointer.h>
 #include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
@@ -103,7 +103,7 @@ public:
     bool operator!=(const QScriptDebuggerValue &other) const;
 
 private:
-    QScriptDebuggerValuePrivate *d_ptr;
+    QScopedSharedPointer<QScriptDebuggerValuePrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptDebuggerValue)
 };

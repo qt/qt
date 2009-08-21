@@ -1,4 +1,4 @@
 load(qttest_p4)
 SOURCES += tst_qautoptr.cpp
-QT -= gui
+QT = core
 include(../xmlpatterns.pri)

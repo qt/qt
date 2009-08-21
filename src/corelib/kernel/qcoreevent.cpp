@@ -107,6 +107,7 @@ QT_BEGIN_NAMESPACE
     \value ApplicationLayoutDirectionChange The default application layout direction has changed.
     \value ApplicationPaletteChange         The default application palette has changed.
     \value ApplicationWindowIconChange      The application's icon has changed.
+    \value CloseSoftwareInputPanel          A widget wants to close the software input panel (SIP).
     \value ChildAdded                       An object gets a child (QChildEvent).
     \value ChildInserted                    An object gets a child (QChildEvent). Qt3Support only, use ChildAdded instead.
     \value ChildPolished                    A widget child gets polished (QChildEvent).
@@ -185,6 +186,7 @@ QT_BEGIN_NAMESPACE
     \value Polish                           The widget is polished.
     \value PolishRequest                    The widget should be polished.
     \value QueryWhatsThis                   The widget should accept the event if it has "What's This?" help.
+    \value RequestSoftwareInputPanel        A widget wants to open a software input panel (SIP).
     \value Resize                           Widget's size changed (QResizeEvent).
     \value Shortcut                         Key press in child for shortcut key handling (QShortcutEvent).
     \value ShortcutOverride                 Key press in child, for overriding shortcut key handling (QKeyEvent).
@@ -268,6 +270,7 @@ QT_BEGIN_NAMESPACE
     \omitvalue FutureCallOut
     \omitvalue CocoaRequestModal
     \omitvalue Signal
+    \omitvalue SymbianDeferredFocusChanged
     \omitvalue NativeGesture
 */
 

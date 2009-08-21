@@ -14,3 +14,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/dbus/complexpingpong
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/dbus/complexpingpong
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

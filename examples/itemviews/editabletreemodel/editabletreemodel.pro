@@ -14,3 +14,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/itemviews/editabletreemodel
 sources.files = $$FORMS $$HEADERS $$RESOURCES $$SOURCES *.pro *.txt
 sources.path = $$[QT_INSTALL_EXAMPLES]/itemviews/editabletreemodel
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

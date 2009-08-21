@@ -50,6 +50,8 @@ private slots:
     void qInternalCallbacks();
     void for_each();
     void qassert();
+    void qtry();
+    void checkptr();
 };
 
 void tst_QGlobal::qIsNull()
@@ -188,6 +190,76 @@ void tst_QGlobal::qassert()
     else
         passed = true;
     QVERIFY(passed);
+}
+
+void tst_QGlobal::qtry()
+{
+    int i = 0;
+    QT_TRY {
+        i = 1;
+        QT_THROW(42);
+        i = 2;
+    } QT_CATCH(int) {
+        QCOMPARE(i, 1);
+        i = 7;
+    }
+#ifdef QT_NO_EXCEPTIONS
+    QCOMPARE(i, 2);
+#else
+    QCOMPARE(i, 7);
+#endif
+
+    // check propper if/else scoping
+    i = 0;
+    if (true)
+        QT_TRY {
+            i = 2;
+            QT_THROW(42);
+            i = 4;
+        } QT_CATCH(int) {
+            QCOMPARE(i, 2);
+            i = 4;
+        }
+    else
+        QCOMPARE(i, 0);
+    QCOMPARE(i, 4);
+
+    i = 0;
+    if (false)
+        QT_TRY {
+            i = 2;
+            QT_THROW(42);
+            i = 4;
+        } QT_CATCH(int) {
+            QCOMPARE(i, 2);
+            i = 2;
+        }
+    else
+        i = 8;
+    QCOMPARE(i, 8);
+
+    i = 0;
+    if (false)
+        i = 42;
+    else
+        QT_TRY {
+            i = 2;
+            QT_THROW(42);
+            i = 4;
+        } QT_CATCH(int) {
+            QCOMPARE(i, 2);
+            i = 4;
+        }
+    QCOMPARE(i, 4);
+}
+
+void tst_QGlobal::checkptr()
+{
+    int i;
+    QCOMPARE(q_check_ptr(&i), &i);
+
+    const char *c = "hello";
+    QCOMPARE(q_check_ptr(c), c);
 }
 
 QTEST_MAIN(tst_QGlobal)

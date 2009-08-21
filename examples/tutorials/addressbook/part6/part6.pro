@@ -9,3 +9,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/tutorials/addressbook/part6
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS part6.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/tutorials/addressbook/part6
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

@@ -42,7 +42,7 @@
 #include <QCoreApplication>
 #include <QList>
 #include <QLinkedList>
-#include <QTest>
+#include <QtTest/QtTest>
 
 #include "../qtconcurrentmap/functions.h"
 #include "../qfuture/versioncheck.h"

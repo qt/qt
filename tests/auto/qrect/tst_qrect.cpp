@@ -321,17 +321,17 @@ void tst_QRect::isNull_data()
     QTest::addColumn<QRect>("r");
     QTest::addColumn<bool>("isNull");
 
-    QTest::newRow( "InvalidQRect" ) << getQRectCase( InvalidQRect ) << TRUE;
-    QTest::newRow( "SmallestQRect" ) << getQRectCase( SmallestQRect ) << FALSE;
-    QTest::newRow( "MiddleQRect" ) << getQRectCase( MiddleQRect ) << FALSE;
-    QTest::newRow( "LargestQRect" ) << getQRectCase( LargestQRect ) << FALSE;
-    QTest::newRow( "SmallestCoordQRect" ) << getQRectCase( SmallestCoordQRect ) << FALSE;
-    QTest::newRow( "LargestCoordQRect" ) << getQRectCase( LargestCoordQRect ) << TRUE; // Due to overflow
-    QTest::newRow( "RandomQRect" ) << getQRectCase( RandomQRect ) << FALSE;
-    QTest::newRow( "NegativeSizeQRect" ) << getQRectCase( NegativeSizeQRect ) << FALSE;
-    QTest::newRow( "NegativePointQRect" ) << getQRectCase( NegativePointQRect ) << FALSE;
-    QTest::newRow( "NullQRect" ) << getQRectCase( NullQRect ) << TRUE;
-    QTest::newRow( "EmptyQRect" ) << getQRectCase( EmptyQRect ) << TRUE;
+    QTest::newRow( "InvalidQRect" ) << getQRectCase( InvalidQRect ) << true;
+    QTest::newRow( "SmallestQRect" ) << getQRectCase( SmallestQRect ) << false;
+    QTest::newRow( "MiddleQRect" ) << getQRectCase( MiddleQRect ) << false;
+    QTest::newRow( "LargestQRect" ) << getQRectCase( LargestQRect ) << false;
+    QTest::newRow( "SmallestCoordQRect" ) << getQRectCase( SmallestCoordQRect ) << false;
+    QTest::newRow( "LargestCoordQRect" ) << getQRectCase( LargestCoordQRect ) << true; // Due to overflow
+    QTest::newRow( "RandomQRect" ) << getQRectCase( RandomQRect ) << false;
+    QTest::newRow( "NegativeSizeQRect" ) << getQRectCase( NegativeSizeQRect ) << false;
+    QTest::newRow( "NegativePointQRect" ) << getQRectCase( NegativePointQRect ) << false;
+    QTest::newRow( "NullQRect" ) << getQRectCase( NullQRect ) << true;
+    QTest::newRow( "EmptyQRect" ) << getQRectCase( EmptyQRect ) << true;
 }
 
 void tst_QRect::isNull()
@@ -350,17 +350,17 @@ void tst_QRect::newIsEmpty_data()
     QTest::addColumn<QRect>("r");
     QTest::addColumn<bool>("isEmpty");
 
-    QTest::newRow( "InvalidQRect" ) << getQRectCase( InvalidQRect ) << TRUE;
-    QTest::newRow( "SmallestQRect" ) << getQRectCase( SmallestQRect ) << FALSE;
-    QTest::newRow( "MiddleQRect" ) << getQRectCase( MiddleQRect ) << FALSE;
-    QTest::newRow( "LargestQRect" ) << getQRectCase( LargestQRect ) << FALSE;
-    QTest::newRow( "SmallestCoordQRect" ) << getQRectCase( SmallestCoordQRect ) << FALSE;
-    QTest::newRow( "LargestCoordQRect" ) << getQRectCase( LargestCoordQRect ) << FALSE;
-    QTest::newRow( "RandomQRect" ) << getQRectCase( RandomQRect ) << FALSE;
-    QTest::newRow( "NegativeSizeQRect" ) << getQRectCase( NegativeSizeQRect ) << TRUE;
-    QTest::newRow( "NegativePointQRect" ) << getQRectCase( NegativePointQRect ) << FALSE;
-    QTest::newRow( "NullQRect" ) << getQRectCase( NullQRect ) << TRUE;
-    QTest::newRow( "EmptyQRect" ) << getQRectCase( EmptyQRect ) << TRUE;
+    QTest::newRow( "InvalidQRect" ) << getQRectCase( InvalidQRect ) << true;
+    QTest::newRow( "SmallestQRect" ) << getQRectCase( SmallestQRect ) << false;
+    QTest::newRow( "MiddleQRect" ) << getQRectCase( MiddleQRect ) << false;
+    QTest::newRow( "LargestQRect" ) << getQRectCase( LargestQRect ) << false;
+    QTest::newRow( "SmallestCoordQRect" ) << getQRectCase( SmallestCoordQRect ) << false;
+    QTest::newRow( "LargestCoordQRect" ) << getQRectCase( LargestCoordQRect ) << false;
+    QTest::newRow( "RandomQRect" ) << getQRectCase( RandomQRect ) << false;
+    QTest::newRow( "NegativeSizeQRect" ) << getQRectCase( NegativeSizeQRect ) << true;
+    QTest::newRow( "NegativePointQRect" ) << getQRectCase( NegativePointQRect ) << false;
+    QTest::newRow( "NullQRect" ) << getQRectCase( NullQRect ) << true;
+    QTest::newRow( "EmptyQRect" ) << getQRectCase( EmptyQRect ) << true;
 }
 
 void tst_QRect::newIsEmpty()
@@ -383,17 +383,17 @@ void tst_QRect::newIsValid_data()
     QTest::addColumn<QRect>("r");
     QTest::addColumn<bool>("isValid");
 
-    QTest::newRow( "InvalidQRect" ) << getQRectCase( InvalidQRect ) << FALSE;
-    QTest::newRow( "SmallestQRect" ) << getQRectCase( SmallestQRect ) << TRUE;
-    QTest::newRow( "MiddleQRect" ) << getQRectCase( MiddleQRect ) << TRUE;
-    QTest::newRow( "LargestQRect" ) << getQRectCase( LargestQRect ) << TRUE;
-    QTest::newRow( "SmallestCoordQRect" ) << getQRectCase( SmallestCoordQRect ) << TRUE;
-    QTest::newRow( "LargestCoordQRect" ) << getQRectCase( LargestCoordQRect ) << TRUE;
-    QTest::newRow( "RandomQRect" ) << getQRectCase( RandomQRect ) << TRUE;
-    QTest::newRow( "NegativeSizeQRect" ) << getQRectCase( NegativeSizeQRect ) << FALSE;
-    QTest::newRow( "NegativePointQRect" ) << getQRectCase( NegativePointQRect ) << TRUE;
-    QTest::newRow( "NullQRect" ) << getQRectCase( NullQRect ) << FALSE;
-    QTest::newRow( "EmptyQRect" ) << getQRectCase( EmptyQRect ) << FALSE;
+    QTest::newRow( "InvalidQRect" ) << getQRectCase( InvalidQRect ) << false;
+    QTest::newRow( "SmallestQRect" ) << getQRectCase( SmallestQRect ) << true;
+    QTest::newRow( "MiddleQRect" ) << getQRectCase( MiddleQRect ) << true;
+    QTest::newRow( "LargestQRect" ) << getQRectCase( LargestQRect ) << true;
+    QTest::newRow( "SmallestCoordQRect" ) << getQRectCase( SmallestCoordQRect ) << true;
+    QTest::newRow( "LargestCoordQRect" ) << getQRectCase( LargestCoordQRect ) << true;
+    QTest::newRow( "RandomQRect" ) << getQRectCase( RandomQRect ) << true;
+    QTest::newRow( "NegativeSizeQRect" ) << getQRectCase( NegativeSizeQRect ) << false;
+    QTest::newRow( "NegativePointQRect" ) << getQRectCase( NegativePointQRect ) << true;
+    QTest::newRow( "NullQRect" ) << getQRectCase( NullQRect ) << false;
+    QTest::newRow( "EmptyQRect" ) << getQRectCase( EmptyQRect ) << false;
 }
 
 void tst_QRect::newIsValid()
@@ -4179,28 +4179,28 @@ void tst_QRect::intersectsRect_data()
     QTest::addColumn<QRect>("rect2");
     QTest::addColumn<bool>("intersects");
 
-    QTest::newRow("test 01") << QRect(0, 0, 10, 10) << QRect( 2,  2,  6,  6) << TRUE;
-    QTest::newRow("test 02") << QRect(0, 0, 10, 10) << QRect( 0,  0, 10, 10) << TRUE;
-    QTest::newRow("test 03") << QRect(0, 0, 10, 10) << QRect( 2,  2, 10, 10) << TRUE;
-    QTest::newRow("test 04") << QRect(0, 0, 10, 10) << QRect(20, 20, 10, 10) << FALSE;
+    QTest::newRow("test 01") << QRect(0, 0, 10, 10) << QRect( 2,  2,  6,  6) << true;
+    QTest::newRow("test 02") << QRect(0, 0, 10, 10) << QRect( 0,  0, 10, 10) << true;
+    QTest::newRow("test 03") << QRect(0, 0, 10, 10) << QRect( 2,  2, 10, 10) << true;
+    QTest::newRow("test 04") << QRect(0, 0, 10, 10) << QRect(20, 20, 10, 10) << false;
 
-    QTest::newRow("test 05") << QRect(9, 9, -8, -8) << QRect( 2,  2,  6,  6) << TRUE;
-    QTest::newRow("test 06") << QRect(9, 9, -8, -8) << QRect( 0,  0, 10, 10) << TRUE;
-    QTest::newRow("test 07") << QRect(9, 9, -8, -8) << QRect( 2,  2, 10, 10) << TRUE;
-    QTest::newRow("test 08") << QRect(9, 9, -8, -8) << QRect(20, 20, 10, 10) << FALSE;
+    QTest::newRow("test 05") << QRect(9, 9, -8, -8) << QRect( 2,  2,  6,  6) << true;
+    QTest::newRow("test 06") << QRect(9, 9, -8, -8) << QRect( 0,  0, 10, 10) << true;
+    QTest::newRow("test 07") << QRect(9, 9, -8, -8) << QRect( 2,  2, 10, 10) << true;
+    QTest::newRow("test 08") << QRect(9, 9, -8, -8) << QRect(20, 20, 10, 10) << false;
 
-    QTest::newRow("test 09") << QRect(0, 0, 10, 10) << QRect( 7,  7,  -4,  -4) << TRUE;
-    QTest::newRow("test 10") << QRect(0, 0, 10, 10) << QRect( 9,  9, -8, -8) << TRUE;
-    QTest::newRow("test 11") << QRect(0, 0, 10, 10) << QRect(11, 11, -8, -8) << TRUE;
-    QTest::newRow("test 12") << QRect(0, 0, 10, 10) << QRect(29, 29, -8, -8) << FALSE;
+    QTest::newRow("test 09") << QRect(0, 0, 10, 10) << QRect( 7,  7,  -4,  -4) << true;
+    QTest::newRow("test 10") << QRect(0, 0, 10, 10) << QRect( 9,  9, -8, -8) << true;
+    QTest::newRow("test 11") << QRect(0, 0, 10, 10) << QRect(11, 11, -8, -8) << true;
+    QTest::newRow("test 12") << QRect(0, 0, 10, 10) << QRect(29, 29, -8, -8) << false;
 
-    QTest::newRow("test 13") << QRect() << QRect(10, 10, 10, 10) << FALSE;
-    QTest::newRow("test 14") << QRect(10, 10, 10, 10) << QRect() << FALSE;
-    QTest::newRow("test 15") << QRect() << QRect() << FALSE;
-    QTest::newRow("test 16") << QRect(10, 10, 10, 10) << QRect(19, 15, 1, 5) << TRUE;
+    QTest::newRow("test 13") << QRect() << QRect(10, 10, 10, 10) << false;
+    QTest::newRow("test 14") << QRect(10, 10, 10, 10) << QRect() << false;
+    QTest::newRow("test 15") << QRect() << QRect() << false;
+    QTest::newRow("test 16") << QRect(10, 10, 10, 10) << QRect(19, 15, 1, 5) << true;
 
-    QTest::newRow("test 17") << QRect(10, 10, 10, 10) << QRect(15, 19, 5, 1) << TRUE;
-    QTest::newRow("test 18") << QRect(2, 0, 1, 652) << QRect(2, 0, 1, 652) << TRUE;
+    QTest::newRow("test 17") << QRect(10, 10, 10, 10) << QRect(15, 19, 5, 1) << true;
+    QTest::newRow("test 18") << QRect(2, 0, 1, 652) << QRect(2, 0, 1, 652) << true;
 }
 
 void tst_QRect::intersectsRect()
@@ -4218,28 +4218,28 @@ void tst_QRect::intersectsRectF_data()
     QTest::addColumn<QRectF>("rect2");
     QTest::addColumn<bool>("intersects");
 
-    QTest::newRow("test 01") << QRectF(0, 0, 10, 10) << QRectF( 2,  2,  6,  6) << TRUE;
-    QTest::newRow("test 02") << QRectF(0, 0, 10, 10) << QRectF( 0,  0, 10, 10) << TRUE;
-    QTest::newRow("test 03") << QRectF(0, 0, 10, 10) << QRectF( 2,  2, 10, 10) << TRUE;
-    QTest::newRow("test 04") << QRectF(0, 0, 10, 10) << QRectF(20, 20, 10, 10) << FALSE;
+    QTest::newRow("test 01") << QRectF(0, 0, 10, 10) << QRectF( 2,  2,  6,  6) << true;
+    QTest::newRow("test 02") << QRectF(0, 0, 10, 10) << QRectF( 0,  0, 10, 10) << true;
+    QTest::newRow("test 03") << QRectF(0, 0, 10, 10) << QRectF( 2,  2, 10, 10) << true;
+    QTest::newRow("test 04") << QRectF(0, 0, 10, 10) << QRectF(20, 20, 10, 10) << false;
 
-    QTest::newRow("test 05") << QRectF(10, 10, -10, -10) << QRectF( 2,  2,  6,  6) << TRUE;
-    QTest::newRow("test 06") << QRectF(10, 10, -10, -10) << QRectF( 0,  0, 10, 10) << TRUE;
-    QTest::newRow("test 07") << QRectF(10, 10, -10, -10) << QRectF( 2,  2, 10, 10) << TRUE;
-    QTest::newRow("test 08") << QRectF(10, 10, -10, -10) << QRectF(20, 20, 10, 10) << FALSE;
+    QTest::newRow("test 05") << QRectF(10, 10, -10, -10) << QRectF( 2,  2,  6,  6) << true;
+    QTest::newRow("test 06") << QRectF(10, 10, -10, -10) << QRectF( 0,  0, 10, 10) << true;
+    QTest::newRow("test 07") << QRectF(10, 10, -10, -10) << QRectF( 2,  2, 10, 10) << true;
+    QTest::newRow("test 08") << QRectF(10, 10, -10, -10) << QRectF(20, 20, 10, 10) << false;
 
-    QTest::newRow("test 09") << QRectF(0, 0, 10, 10) << QRectF( 8,  8,  -6,  -6) << TRUE;
-    QTest::newRow("test 10") << QRectF(0, 0, 10, 10) << QRectF(10, 10, -10, -10) << TRUE;
-    QTest::newRow("test 11") << QRectF(0, 0, 10, 10) << QRectF(12, 12, -10, -10) << TRUE;
-    QTest::newRow("test 12") << QRectF(0, 0, 10, 10) << QRectF(30, 30, -10, -10) << FALSE;
+    QTest::newRow("test 09") << QRectF(0, 0, 10, 10) << QRectF( 8,  8,  -6,  -6) << true;
+    QTest::newRow("test 10") << QRectF(0, 0, 10, 10) << QRectF(10, 10, -10, -10) << true;
+    QTest::newRow("test 11") << QRectF(0, 0, 10, 10) << QRectF(12, 12, -10, -10) << true;
+    QTest::newRow("test 12") << QRectF(0, 0, 10, 10) << QRectF(30, 30, -10, -10) << false;
 
-    QTest::newRow("test 13") << QRectF() << QRectF(10, 10, 10, 10) << FALSE;
-    QTest::newRow("test 14") << QRectF(10, 10, 10, 10) << QRectF() << FALSE;
-    QTest::newRow("test 15") << QRectF() << QRectF() << FALSE;
+    QTest::newRow("test 13") << QRectF() << QRectF(10, 10, 10, 10) << false;
+    QTest::newRow("test 14") << QRectF(10, 10, 10, 10) << QRectF() << false;
+    QTest::newRow("test 15") << QRectF() << QRectF() << false;
 
-    QTest::newRow("test 16") << QRectF(0, 0, 10, 10) << QRectF(10, 10, 10, 10) << FALSE;
-    QTest::newRow("test 17") << QRectF(0, 0, 10, 10) << QRectF(0, 10, 10, 10) << FALSE;
-    QTest::newRow("test 18") << QRectF(0, 0, 10, 10) << QRectF(10, 0, 10, 10) << FALSE;
+    QTest::newRow("test 16") << QRectF(0, 0, 10, 10) << QRectF(10, 10, 10, 10) << false;
+    QTest::newRow("test 17") << QRectF(0, 0, 10, 10) << QRectF(0, 10, 10, 10) << false;
+    QTest::newRow("test 18") << QRectF(0, 0, 10, 10) << QRectF(10, 0, 10, 10) << false;
 }
 
 void tst_QRect::intersectsRectF()
@@ -4257,24 +4257,24 @@ void tst_QRect::containsRect_data()
     QTest::addColumn<QRect>("rect2");
     QTest::addColumn<bool>("contains");
 
-    QTest::newRow("test 01") << QRect(0, 0, 10, 10) << QRect( 2,  2,  6,  6) << TRUE;
-    QTest::newRow("test 02") << QRect(0, 0, 10, 10) << QRect( 0,  0, 10, 10) << TRUE;
-    QTest::newRow("test 03") << QRect(0, 0, 10, 10) << QRect( 2,  2, 10, 10) << FALSE;
-    QTest::newRow("test 04") << QRect(0, 0, 10, 10) << QRect(20, 20, 10, 10) << FALSE;
+    QTest::newRow("test 01") << QRect(0, 0, 10, 10) << QRect( 2,  2,  6,  6) << true;
+    QTest::newRow("test 02") << QRect(0, 0, 10, 10) << QRect( 0,  0, 10, 10) << true;
+    QTest::newRow("test 03") << QRect(0, 0, 10, 10) << QRect( 2,  2, 10, 10) << false;
+    QTest::newRow("test 04") << QRect(0, 0, 10, 10) << QRect(20, 20, 10, 10) << false;
 
-    QTest::newRow("test 05") << QRect(9, 9, -8, -8) << QRect( 2,  2,  6,  6) << TRUE;
-    QTest::newRow("test 06") << QRect(9, 9, -8, -8) << QRect( 0,  0, 10, 10) << TRUE;
-    QTest::newRow("test 07") << QRect(9, 9, -8, -8) << QRect( 2,  2, 10, 10) << FALSE;
-    QTest::newRow("test 08") << QRect(9, 9, -8, -8) << QRect(20, 20, 10, 10) << FALSE;
+    QTest::newRow("test 05") << QRect(9, 9, -8, -8) << QRect( 2,  2,  6,  6) << true;
+    QTest::newRow("test 06") << QRect(9, 9, -8, -8) << QRect( 0,  0, 10, 10) << true;
+    QTest::newRow("test 07") << QRect(9, 9, -8, -8) << QRect( 2,  2, 10, 10) << false;
+    QTest::newRow("test 08") << QRect(9, 9, -8, -8) << QRect(20, 20, 10, 10) << false;
 
-    QTest::newRow("test 09") << QRect(0, 0, 10, 10) << QRect( 7,  7,  -4,  -4) << TRUE;
-    QTest::newRow("test 10") << QRect(0, 0, 10, 10) << QRect( 9,  9, -8, -8) << TRUE;
-    QTest::newRow("test 11") << QRect(0, 0, 10, 10) << QRect(11, 11, -8, -8) << FALSE;
-    QTest::newRow("test 12") << QRect(0, 0, 10, 10) << QRect(29, 29, -8, -8) << FALSE;
+    QTest::newRow("test 09") << QRect(0, 0, 10, 10) << QRect( 7,  7,  -4,  -4) << true;
+    QTest::newRow("test 10") << QRect(0, 0, 10, 10) << QRect( 9,  9, -8, -8) << true;
+    QTest::newRow("test 11") << QRect(0, 0, 10, 10) << QRect(11, 11, -8, -8) << false;
+    QTest::newRow("test 12") << QRect(0, 0, 10, 10) << QRect(29, 29, -8, -8) << false;
 
-    QTest::newRow("test 13") << QRect(-1, 1, 10, 10) << QRect() << FALSE;
-    QTest::newRow("test 14") << QRect() << QRect(0, 0, 10, 10) << FALSE;
-    QTest::newRow("test 15") << QRect() << QRect() << FALSE;
+    QTest::newRow("test 13") << QRect(-1, 1, 10, 10) << QRect() << false;
+    QTest::newRow("test 14") << QRect() << QRect(0, 0, 10, 10) << false;
+    QTest::newRow("test 15") << QRect() << QRect() << false;
 }
 
 void tst_QRect::containsRect()
@@ -4292,24 +4292,24 @@ void tst_QRect::containsRectF_data()
     QTest::addColumn<QRectF>("rect2");
     QTest::addColumn<bool>("contains");
 
-    QTest::newRow("test 01") << QRectF(0, 0, 10, 10) << QRectF( 2,  2,  6,  6) << TRUE;
-    QTest::newRow("test 02") << QRectF(0, 0, 10, 10) << QRectF( 0,  0, 10, 10) << TRUE;
-    QTest::newRow("test 03") << QRectF(0, 0, 10, 10) << QRectF( 2,  2, 10, 10) << FALSE;
-    QTest::newRow("test 04") << QRectF(0, 0, 10, 10) << QRectF(20, 20, 10, 10) << FALSE;
+    QTest::newRow("test 01") << QRectF(0, 0, 10, 10) << QRectF( 2,  2,  6,  6) << true;
+    QTest::newRow("test 02") << QRectF(0, 0, 10, 10) << QRectF( 0,  0, 10, 10) << true;
+    QTest::newRow("test 03") << QRectF(0, 0, 10, 10) << QRectF( 2,  2, 10, 10) << false;
+    QTest::newRow("test 04") << QRectF(0, 0, 10, 10) << QRectF(20, 20, 10, 10) << false;
 
-    QTest::newRow("test 05") << QRectF(10, 10, -10, -10) << QRectF( 2,  2,  6,  6) << TRUE;
-    QTest::newRow("test 06") << QRectF(10, 10, -10, -10) << QRectF( 0,  0, 10, 10) << TRUE;
-    QTest::newRow("test 07") << QRectF(10, 10, -10, -10) << QRectF( 2,  2, 10, 10) << FALSE;
-    QTest::newRow("test 08") << QRectF(10, 10, -10, -10) << QRectF(20, 20, 10, 10) << FALSE;
+    QTest::newRow("test 05") << QRectF(10, 10, -10, -10) << QRectF( 2,  2,  6,  6) << true;
+    QTest::newRow("test 06") << QRectF(10, 10, -10, -10) << QRectF( 0,  0, 10, 10) << true;
+    QTest::newRow("test 07") << QRectF(10, 10, -10, -10) << QRectF( 2,  2, 10, 10) << false;
+    QTest::newRow("test 08") << QRectF(10, 10, -10, -10) << QRectF(20, 20, 10, 10) << false;
 
-    QTest::newRow("test 09") << QRectF(0, 0, 10, 10) << QRectF( 8,  8,  -6,  -6) << TRUE;
-    QTest::newRow("test 10") << QRectF(0, 0, 10, 10) << QRectF(10, 10, -10, -10) << TRUE;
-    QTest::newRow("test 11") << QRectF(0, 0, 10, 10) << QRectF(12, 12, -10, -10) << FALSE;
-    QTest::newRow("test 12") << QRectF(0, 0, 10, 10) << QRectF(30, 30, -10, -10) << FALSE;
+    QTest::newRow("test 09") << QRectF(0, 0, 10, 10) << QRectF( 8,  8,  -6,  -6) << true;
+    QTest::newRow("test 10") << QRectF(0, 0, 10, 10) << QRectF(10, 10, -10, -10) << true;
+    QTest::newRow("test 11") << QRectF(0, 0, 10, 10) << QRectF(12, 12, -10, -10) << false;
+    QTest::newRow("test 12") << QRectF(0, 0, 10, 10) << QRectF(30, 30, -10, -10) << false;
 
-    QTest::newRow("test 13") << QRectF(-1, 1, 10, 10) << QRectF() << FALSE;
-    QTest::newRow("test 14") << QRectF() << QRectF(0, 0, 10, 10) << FALSE;
-    QTest::newRow("test 15") << QRectF() << QRectF() << FALSE;
+    QTest::newRow("test 13") << QRectF(-1, 1, 10, 10) << QRectF() << false;
+    QTest::newRow("test 14") << QRectF() << QRectF(0, 0, 10, 10) << false;
+    QTest::newRow("test 15") << QRectF() << QRectF() << false;
 }
 
 void tst_QRect::containsRectF()
@@ -4328,35 +4328,35 @@ void tst_QRect::containsPoint_data()
     QTest::addColumn<bool>("contains");
     QTest::addColumn<bool>("containsProper");
 
-    QTest::newRow("test 01") << QRect(0, 0, 10, 10) << QPoint( 0,  0) << TRUE  << FALSE;
-    QTest::newRow("test 02") << QRect(0, 0, 10, 10) << QPoint( 0, 10) << FALSE << FALSE;
-    QTest::newRow("test 03") << QRect(0, 0, 10, 10) << QPoint(10,  0) << FALSE << FALSE;
-    QTest::newRow("test 04") << QRect(0, 0, 10, 10) << QPoint(10, 10) << FALSE << FALSE;
-    QTest::newRow("test 05") << QRect(0, 0, 10, 10) << QPoint( 0,  9) << TRUE  << FALSE;
-    QTest::newRow("test 06") << QRect(0, 0, 10, 10) << QPoint( 9,  0) << TRUE  << FALSE;
-    QTest::newRow("test 07") << QRect(0, 0, 10, 10) << QPoint( 9,  9) << TRUE  << FALSE;
-    QTest::newRow("test 08") << QRect(0, 0, 10, 10) << QPoint( 1,  0) << TRUE  << FALSE;
-    QTest::newRow("test 09") << QRect(0, 0, 10, 10) << QPoint( 9,  1) << TRUE  << FALSE;
-    QTest::newRow("test 10") << QRect(0, 0, 10, 10) << QPoint( 1,  1) << TRUE  << TRUE;
-    QTest::newRow("test 11") << QRect(0, 0, 10, 10) << QPoint( 1,  8) << TRUE  << TRUE;
-    QTest::newRow("test 12") << QRect(0, 0, 10, 10) << QPoint( 8,  8) << TRUE  << TRUE;
+    QTest::newRow("test 01") << QRect(0, 0, 10, 10) << QPoint( 0,  0) << true  << false;
+    QTest::newRow("test 02") << QRect(0, 0, 10, 10) << QPoint( 0, 10) << false << false;
+    QTest::newRow("test 03") << QRect(0, 0, 10, 10) << QPoint(10,  0) << false << false;
+    QTest::newRow("test 04") << QRect(0, 0, 10, 10) << QPoint(10, 10) << false << false;
+    QTest::newRow("test 05") << QRect(0, 0, 10, 10) << QPoint( 0,  9) << true  << false;
+    QTest::newRow("test 06") << QRect(0, 0, 10, 10) << QPoint( 9,  0) << true  << false;
+    QTest::newRow("test 07") << QRect(0, 0, 10, 10) << QPoint( 9,  9) << true  << false;
+    QTest::newRow("test 08") << QRect(0, 0, 10, 10) << QPoint( 1,  0) << true  << false;
+    QTest::newRow("test 09") << QRect(0, 0, 10, 10) << QPoint( 9,  1) << true  << false;
+    QTest::newRow("test 10") << QRect(0, 0, 10, 10) << QPoint( 1,  1) << true  << true;
+    QTest::newRow("test 11") << QRect(0, 0, 10, 10) << QPoint( 1,  8) << true  << true;
+    QTest::newRow("test 12") << QRect(0, 0, 10, 10) << QPoint( 8,  8) << true  << true;
 
-    QTest::newRow("test 13") << QRect(9, 9, -8, -8) << QPoint( 0,  0) << TRUE  << FALSE;
-    QTest::newRow("test 14") << QRect(9, 9, -8, -8) << QPoint( 0, 10) << FALSE << FALSE;
-    QTest::newRow("test 15") << QRect(9, 9, -8, -8) << QPoint(10,  0) << FALSE << FALSE;
-    QTest::newRow("test 16") << QRect(9, 9, -8, -8) << QPoint(10, 10) << FALSE << FALSE;
-    QTest::newRow("test 17") << QRect(9, 9, -8, -8) << QPoint( 0,  9) << TRUE  << FALSE;
-    QTest::newRow("test 18") << QRect(9, 9, -8, -8) << QPoint( 9,  0) << TRUE  << FALSE;
-    QTest::newRow("test 19") << QRect(9, 9, -8, -8) << QPoint( 9,  9) << TRUE  << FALSE;
-    QTest::newRow("test 20") << QRect(9, 9, -8, -8) << QPoint( 1,  0) << TRUE  << FALSE;
-    QTest::newRow("test 21") << QRect(9, 9, -8, -8) << QPoint( 9,  1) << TRUE  << FALSE;
-    QTest::newRow("test 22") << QRect(9, 9, -8, -8) << QPoint( 1,  1) << TRUE  << TRUE;
-    QTest::newRow("test 23") << QRect(9, 9, -8, -8) << QPoint( 1,  8) << TRUE  << TRUE;
-    QTest::newRow("test 24") << QRect(9, 9, -8, -8) << QPoint( 8,  8) << TRUE  << TRUE;
+    QTest::newRow("test 13") << QRect(9, 9, -8, -8) << QPoint( 0,  0) << true  << false;
+    QTest::newRow("test 14") << QRect(9, 9, -8, -8) << QPoint( 0, 10) << false << false;
+    QTest::newRow("test 15") << QRect(9, 9, -8, -8) << QPoint(10,  0) << false << false;
+    QTest::newRow("test 16") << QRect(9, 9, -8, -8) << QPoint(10, 10) << false << false;
+    QTest::newRow("test 17") << QRect(9, 9, -8, -8) << QPoint( 0,  9) << true  << false;
+    QTest::newRow("test 18") << QRect(9, 9, -8, -8) << QPoint( 9,  0) << true  << false;
+    QTest::newRow("test 19") << QRect(9, 9, -8, -8) << QPoint( 9,  9) << true  << false;
+    QTest::newRow("test 20") << QRect(9, 9, -8, -8) << QPoint( 1,  0) << true  << false;
+    QTest::newRow("test 21") << QRect(9, 9, -8, -8) << QPoint( 9,  1) << true  << false;
+    QTest::newRow("test 22") << QRect(9, 9, -8, -8) << QPoint( 1,  1) << true  << true;
+    QTest::newRow("test 23") << QRect(9, 9, -8, -8) << QPoint( 1,  8) << true  << true;
+    QTest::newRow("test 24") << QRect(9, 9, -8, -8) << QPoint( 8,  8) << true  << true;
 
-    QTest::newRow("test 25") << QRect(-1, 1, 10, 10) << QPoint() << FALSE << FALSE;
-    QTest::newRow("test 26") << QRect() << QPoint(1, 1) << FALSE << FALSE;
-    QTest::newRow("test 27") << QRect() << QPoint() << FALSE << FALSE;
+    QTest::newRow("test 25") << QRect(-1, 1, 10, 10) << QPoint() << false << false;
+    QTest::newRow("test 26") << QRect() << QPoint(1, 1) << false << false;
+    QTest::newRow("test 27") << QRect() << QPoint() << false << false;
 }
 
 void tst_QRect::containsPoint()
@@ -4367,7 +4367,7 @@ void tst_QRect::containsPoint()
     QFETCH(bool, containsProper);
 
     QVERIFY(rect.contains(point) == contains);
-    QVERIFY(rect.contains(point, TRUE) == containsProper);
+    QVERIFY(rect.contains(point, true) == containsProper);
 }
 
 void tst_QRect::containsPointF_data()
@@ -4376,37 +4376,37 @@ void tst_QRect::containsPointF_data()
     QTest::addColumn<QPointF>("point");
     QTest::addColumn<bool>("contains");
 
-    QTest::newRow("test 27") << QRectF() << QPointF() << FALSE;
+    QTest::newRow("test 27") << QRectF() << QPointF() << false;
 
-    QTest::newRow("test 01") << QRectF(0, 0, 10, 10) << QPointF( 0,  0) << TRUE;
-    QTest::newRow("test 02") << QRectF(0, 0, 10, 10) << QPointF( 0, 10) << TRUE;
-    QTest::newRow("test 03") << QRectF(0, 0, 10, 10) << QPointF(10,  0) << TRUE;
-    QTest::newRow("test 04") << QRectF(0, 0, 10, 10) << QPointF(10, 10) << TRUE;
-    QTest::newRow("test 05") << QRectF(0, 0, 10, 10) << QPointF( 0,  9) << TRUE;
-    QTest::newRow("test 06") << QRectF(0, 0, 10, 10) << QPointF( 9,  0) << TRUE;
-    QTest::newRow("test 07") << QRectF(0, 0, 10, 10) << QPointF( 9,  9) << TRUE;
-    QTest::newRow("test 08") << QRectF(0, 0, 10, 10) << QPointF( 1,  0) << TRUE;
-    QTest::newRow("test 09") << QRectF(0, 0, 10, 10) << QPointF( 9,  1) << TRUE;
-    QTest::newRow("test 10") << QRectF(0, 0, 10, 10) << QPointF( 1,  1) << TRUE;
-    QTest::newRow("test 11") << QRectF(0, 0, 10, 10) << QPointF( 1,  8) << TRUE;
-    QTest::newRow("test 12") << QRectF(0, 0, 10, 10) << QPointF( 8,  8) << TRUE;
+    QTest::newRow("test 01") << QRectF(0, 0, 10, 10) << QPointF( 0,  0) << true;
+    QTest::newRow("test 02") << QRectF(0, 0, 10, 10) << QPointF( 0, 10) << true;
+    QTest::newRow("test 03") << QRectF(0, 0, 10, 10) << QPointF(10,  0) << true;
+    QTest::newRow("test 04") << QRectF(0, 0, 10, 10) << QPointF(10, 10) << true;
+    QTest::newRow("test 05") << QRectF(0, 0, 10, 10) << QPointF( 0,  9) << true;
+    QTest::newRow("test 06") << QRectF(0, 0, 10, 10) << QPointF( 9,  0) << true;
+    QTest::newRow("test 07") << QRectF(0, 0, 10, 10) << QPointF( 9,  9) << true;
+    QTest::newRow("test 08") << QRectF(0, 0, 10, 10) << QPointF( 1,  0) << true;
+    QTest::newRow("test 09") << QRectF(0, 0, 10, 10) << QPointF( 9,  1) << true;
+    QTest::newRow("test 10") << QRectF(0, 0, 10, 10) << QPointF( 1,  1) << true;
+    QTest::newRow("test 11") << QRectF(0, 0, 10, 10) << QPointF( 1,  8) << true;
+    QTest::newRow("test 12") << QRectF(0, 0, 10, 10) << QPointF( 8,  8) << true;
 
-    QTest::newRow("test 13") << QRectF(10, 10, -10, -10) << QPointF( 0,  0) << TRUE;
-    QTest::newRow("test 14") << QRectF(10, 10, -10, -10) << QPointF( 0, 10) << TRUE;
-    QTest::newRow("test 15") << QRectF(10, 10, -10, -10) << QPointF(10,  0) << TRUE;
-    QTest::newRow("test 16") << QRectF(10, 10, -10, -10) << QPointF(10, 10) << TRUE;
-    QTest::newRow("test 17") << QRectF(10, 10, -10, -10) << QPointF( 0,  9) << TRUE;
-    QTest::newRow("test 18") << QRectF(10, 10, -10, -10) << QPointF( 9,  0) << TRUE;
-    QTest::newRow("test 19") << QRectF(10, 10, -10, -10) << QPointF( 9,  9) << TRUE;
-    QTest::newRow("test 20") << QRectF(10, 10, -10, -10) << QPointF( 1,  0) << TRUE;
-    QTest::newRow("test 21") << QRectF(10, 10, -10, -10) << QPointF( 9,  1) << TRUE;
-    QTest::newRow("test 22") << QRectF(10, 10, -10, -10) << QPointF( 1,  1) << TRUE;
-    QTest::newRow("test 23") << QRectF(10, 10, -10, -10) << QPointF( 1,  8) << TRUE;
-    QTest::newRow("test 24") << QRectF(10, 10, -10, -10) << QPointF( 8,  8) << TRUE;
+    QTest::newRow("test 13") << QRectF(10, 10, -10, -10) << QPointF( 0,  0) << true;
+    QTest::newRow("test 14") << QRectF(10, 10, -10, -10) << QPointF( 0, 10) << true;
+    QTest::newRow("test 15") << QRectF(10, 10, -10, -10) << QPointF(10,  0) << true;
+    QTest::newRow("test 16") << QRectF(10, 10, -10, -10) << QPointF(10, 10) << true;
+    QTest::newRow("test 17") << QRectF(10, 10, -10, -10) << QPointF( 0,  9) << true;
+    QTest::newRow("test 18") << QRectF(10, 10, -10, -10) << QPointF( 9,  0) << true;
+    QTest::newRow("test 19") << QRectF(10, 10, -10, -10) << QPointF( 9,  9) << true;
+    QTest::newRow("test 20") << QRectF(10, 10, -10, -10) << QPointF( 1,  0) << true;
+    QTest::newRow("test 21") << QRectF(10, 10, -10, -10) << QPointF( 9,  1) << true;
+    QTest::newRow("test 22") << QRectF(10, 10, -10, -10) << QPointF( 1,  1) << true;
+    QTest::newRow("test 23") << QRectF(10, 10, -10, -10) << QPointF( 1,  8) << true;
+    QTest::newRow("test 24") << QRectF(10, 10, -10, -10) << QPointF( 8,  8) << true;
 
-    QTest::newRow("test 25") << QRectF(-1, 1, 10, 10) << QPointF() << FALSE;
-    QTest::newRow("test 26") << QRectF() << QPointF(1, 1) << FALSE;
-    QTest::newRow("test 27") << QRectF() << QPointF() << FALSE;
+    QTest::newRow("test 25") << QRectF(-1, 1, 10, 10) << QPointF() << false;
+    QTest::newRow("test 26") << QRectF() << QPointF(1, 1) << false;
+    QTest::newRow("test 27") << QRectF() << QPointF() << false;
 }
 
 void tst_QRect::containsPointF()

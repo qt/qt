@@ -7,3 +7,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/widgets/spinboxes
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS spinboxes.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/spinboxes
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

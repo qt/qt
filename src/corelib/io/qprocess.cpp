@@ -450,7 +450,8 @@ void QProcessPrivate::Channel::clear()
     used as an input source for QXmlReader, or for generating data to
     be uploaded using QFtp.
 
-    \note On Windows CE, reading and writing to a process is not supported.
+    \note On Windows CE and Symbian, reading and writing to a process
+    is not supported.
 
     When the process exits, QProcess reenters the \l NotRunning state
     (the initial state), and emits finished().
@@ -499,6 +500,10 @@ void QProcessPrivate::Channel::clear()
     calling setEnvironment(). To set a working directory, call
     setWorkingDirectory(). By default, processes are run in the
     current working directory of the calling process.
+
+    \note On Symbian, setting environment or working directory
+    is not supported. The working directory will always be the private
+    directory of the running process.
 
     \section1 Synchronous Process API
 
@@ -733,6 +738,10 @@ QProcessPrivate::QProcessPrivate()
 #ifdef Q_OS_UNIX
     serial = 0;
 #endif
+#ifdef Q_OS_SYMBIAN
+    symbianProcess = NULL;
+    processLaunched = false;
+#endif
 }
 
 /*! \internal
@@ -804,6 +813,13 @@ void QProcessPrivate::cleanup()
     destroyPipe(deathPipe);
 #ifdef Q_OS_UNIX
     serial = 0;
+#endif
+#ifdef Q_OS_SYMBIAN
+    if (symbianProcess) {
+        symbianProcess->Close();
+        delete symbianProcess;
+        symbianProcess = NULL;
+    }
 #endif
 }
 
@@ -1062,7 +1078,7 @@ void QProcessPrivate::closeWriteChannel()
         if (stdinChannel.notifier) {
             qDeleteInEventHandler(stdinChannel.notifier);
             stdinChannel.notifier = 0;
-        } 
+        }
     }
 #ifdef Q_OS_WIN
     // ### Find a better fix, feeding the process little by little
@@ -1361,6 +1377,10 @@ QString QProcess::workingDirectory() const
     process in this directory. The default behavior is to start the
     process in the working directory of the calling process.
 
+    \note The working directory setting is ignored on Symbian;
+    the private directory of the process is considered its working
+    directory.
+
     \sa workingDirectory(), start()
 */
 void QProcess::setWorkingDirectory(const QString &dir)
@@ -1506,7 +1526,7 @@ void QProcess::setEnvironment(const QStringList &environment)
     using setEnvironment() or setEnvironmentHash(). If no environment
     has been set, the environment of the calling process will be used.
 
-    \note The environment settings are ignored on Windows CE,
+    \note The environment settings are ignored on Windows CE and Symbian,
     as there is no concept of an environment.
 
     \sa processEnvironment(), setEnvironment(), systemEnvironment()
@@ -1975,6 +1995,9 @@ void QProcess::start(const QString &program, OpenMode mode)
     event loop does not handle the WM_CLOSE message, can only be terminated by
     calling kill().
 
+    \note Terminating running processes from other processes will typically
+    cause a panic in Symbian due to platform security.
+
     \sa kill()
 */
 void QProcess::terminate()
@@ -1988,6 +2011,9 @@ void QProcess::terminate()
 
     On Windows, kill() uses TerminateProcess, and on Unix and Mac OS X, the
     SIGKILL signal is sent to the process.
+
+    \note Killing running processes from other processes will typically
+    cause a panic in Symbian due to platform security.
 
     \sa terminate()
 */
@@ -2135,9 +2161,9 @@ QT_BEGIN_INCLUDE_NAMESPACE
 #ifdef Q_OS_MAC
 # include <crt_externs.h>
 # define environ (*_NSGetEnviron())
-#elif defined(Q_OS_WINCE)
-  static char *qt_wince_environ[] = { 0 };
-#define environ qt_wince_environ
+#elif defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+  static char *qt_empty_environ[] = { 0 };
+#define environ qt_empty_environ
 #elif !defined(Q_OS_WIN)
   extern char **environ;
 #endif

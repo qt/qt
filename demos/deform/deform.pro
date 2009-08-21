@@ -17,3 +17,8 @@ target.path = $$[QT_INSTALL_DEMOS]/deform
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html
 sources.path = $$[QT_INSTALL_DEMOS]/deform
 INSTALLS += target sources
+
+symbian {
+    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000A63D
+}

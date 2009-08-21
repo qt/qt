@@ -14,3 +14,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/sql/masterdetail
 sources.files = $$SOURCES *.h $$RESOURCES $$FORMS masterdetail.pro *.xml images
 sources.path = $$[QT_INSTALL_EXAMPLES]/sql/masterdetail
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

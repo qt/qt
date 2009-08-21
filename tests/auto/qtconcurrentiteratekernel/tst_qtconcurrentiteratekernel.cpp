@@ -65,7 +65,7 @@ struct TestIterator
     int i;
 };
 
-#include <iterator>
+#include <qiterator.h>
 namespace std {
 template <>
 struct iterator_traits<TestIterator>

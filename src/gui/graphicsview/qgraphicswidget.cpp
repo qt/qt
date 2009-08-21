@@ -334,7 +334,7 @@ void QGraphicsWidget::resize(const QSizeF &size)
 void QGraphicsWidget::setGeometry(const QRectF &rect)
 {
     QGraphicsWidgetPrivate *wd = QGraphicsWidget::d_func();
-    QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr;
+    QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr.data();
     QRectF newGeom;
     QPointF oldPos = d->geom.topLeft();
     if (!wd->inSetPos) {

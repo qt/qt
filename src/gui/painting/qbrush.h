@@ -45,6 +45,7 @@
 #include <QtCore/qpair.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qvector.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qmatrix.h>
 #include <QtGui/qtransform.h>
@@ -70,6 +71,7 @@ struct QBrushData;
 class QPixmap;
 class QGradient;
 class QVariant;
+struct QBrushDataPointerDeleter;
 
 class Q_GUI_EXPORT QBrush
 {
@@ -135,13 +137,13 @@ private:
     friend bool Q_GUI_EXPORT qHasPixmapTexture(const QBrush& brush);
     void detach(Qt::BrushStyle newStyle);
     void init(const QColor &color, Qt::BrushStyle bs);
-    QBrushData *d;
+    QCustomScopedPointer<QBrushData, QBrushDataPointerDeleter> d;
     void cleanUp(QBrushData *x);
 
 public:
     inline bool isDetached() const;
     typedef QBrushData * DataPtr;
-    inline DataPtr &data_ptr() { return d; }
+    inline DataPtr &data_ptr() { return d.data_ptr(); }
 };
 
 inline void QBrush::setColor(Qt::GlobalColor acolor)

@@ -28,10 +28,11 @@ CFLAGS      = /Zc:wchar_t-
 
 CFLAGS	     = -c -Fo$@ \
               -W3 -nologo -O2 \
-              -I. -Igenerators -Igenerators\unix -Igenerators\win32 -Igenerators\mac \
+              -I. -Igenerators -Igenerators\unix -Igenerators\win32 -Igenerators\mac -Igenerators\symbian \
               -I$(BUILD_PATH)\include -I$(BUILD_PATH)\include\QtCore \
               -I$(SOURCE_PATH)\include -I$(SOURCE_PATH)\include\QtCore \
               -I$(BUILD_PATH)\src\corelib\global \
+              -I$(BUILD_PATH)\src\corelib\xml \
               -I$(SOURCE_PATH)\mkspecs\$(QMAKESPEC)  \
               -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NODLL -DQT_NO_STL \
               -DQT_NO_COMPRESS -DUNICODE -DHAVE_QCONFIG_CPP -DQT_BUILD_QMAKE -DQT_NO_THREAD \
@@ -53,7 +54,7 @@ BCB = $(MAKEDIR)\..
 CXX	    = bcc32
 CFLAGS	    = -c -o$@ \
 	-tWR -w -w-hid -w-use -O1 \
-	-I. -Igenerators -Igenerators\unix -Igenerators\win32 -Igenerators\mac \
+	-I. -Igenerators -Igenerators\unix -Igenerators\win32 -Igenerators\mac -Igenerators\symbian \
 	-I$(BUILD_PATH)\include -I$(BUILD_PATH)\include\QtCore \
 	-I$(SOURCE_PATH)\include -I$(SOURCE_PATH)\include\QtCore \
 	-I$(BUILD_PATH)\src\corelib\global \
@@ -73,7 +74,8 @@ OBJS        = project.obj main.obj makefile.obj unixmake.obj unixmake2.obj mingw
               option.obj winmakefile.obj projectgenerator.obj property.obj meta.obj \
               makefiledeps.obj metamakefile.obj xmloutput.obj pbuilder_pbx.obj \
               borland_bmake.obj msvc_nmake.obj msvc_dsp.obj msvc_vcproj.obj \
-              msvc_objectmodel.obj
+              msvc_objectmodel.obj symmake.obj initprojectdeploy_symbian.obj \
+              symmake_abld.obj symmake_sbsv2.obj
 
 !IFDEF QMAKE_OPENSOURCE_EDITION
 CFLAGS      = $(CFLAGS) -DQMAKE_OPENSOURCE_EDITION
@@ -83,11 +85,11 @@ CFLAGS      = $(CFLAGS) -DQMAKE_OPENSOURCE_EDITION
 QTOBJS= \
 	qbitarray.obj \
 	qbuffer.obj \
-        qcryptographichash.obj \
+	qcryptographichash.obj \
 	qfsfileengine.obj \
 	qfsfileengine_iterator.obj \
 	qbytearray.obj \
-        qvsnprintf.obj \
+	qvsnprintf.obj \
 	qbytearraymatcher.obj \
 	qdatetime.obj \
 	qdir.obj \
@@ -104,7 +106,7 @@ QTOBJS= \
 	qlist.obj \
 	qlinkedlist.obj \
 	qlocale.obj \
-        qmalloc.obj \
+	qmalloc.obj \
 	qmap.obj \
 	qregexp.obj \
 	qtextcodec.obj \
@@ -118,9 +120,11 @@ QTOBJS= \
 	qsettings.obj \
 	qlibraryinfo.obj \
 	qvariant.obj \
-        qurl.obj \
+	qurl.obj \
 	qsettings_win.obj \
-        qmetatype.obj \
+	qmetatype.obj \
+	qxmlstream.obj \
+	qxmlutils.obj \
 	qnumeric.obj
 
 
@@ -138,7 +142,7 @@ clean::
 	-del qfsfileengine.obj
 	-del qfsfileengine_iterator.obj
 	-del qbytearray.obj
-        -del qvsnprintf.obj
+	-del qvsnprintf.obj
 	-del qbytearraymatcher.obj
 	-del qdatetime.obj
 	-del qdir.obj
@@ -168,9 +172,9 @@ clean::
 	-del qsettings.obj
 	-del qlibraryinfo.obj
 	-del qvariant.obj
-        -del qurl.obj
+	-del qurl.obj
 	-del qsettings_win.obj
-        -del qmetatype.obj
+	-del qmetatype.obj
 	-del project.obj
 	-del main.obj
 	-del makefile.obj
@@ -190,7 +194,13 @@ clean::
 	-del msvc_dsp.obj
 	-del msvc_vcproj.obj
 	-del msvc_objectmodel.obj
+	-del symmake.obj
+	-del symmake_abld.obj
+	-del symmake_sbsv2.obj
+	-del initprojectdeploy_symbian.obj
 	-del pbuilder_pbx.obj
+	-del qxmlstream.obj
+	-del qxmlutils.obj
 	-del qnumeric.obj
 	-del vc60.pdb
 	-del vc70.pdb
@@ -344,6 +354,7 @@ qmap.obj: $(SOURCE_PATH)\src\corelib\tools\qmap.cpp
 
 qunicodetables.obj: $(SOURCE_PATH)\src\corelib\tools\qunicodetables.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\tools\qunicodetables.cpp
+
 makefile.obj: $(SOURCE_PATH)/qmake/generators\makefile.cpp
 	$(CXX) $(CXXFLAGS) generators\makefile.cpp
 
@@ -374,8 +385,21 @@ msvc_vcproj.obj: $(SOURCE_PATH)/qmake/generators/win32/msvc_vcproj.cpp
 msvc_objectmodel.obj: $(SOURCE_PATH)/qmake/generators/win32/msvc_objectmodel.cpp
 	$(CXX) $(CXXFLAGS) generators/win32/msvc_objectmodel.cpp
 
+symmake.obj: $(SOURCE_PATH)/qmake/generators/symbian/symmake.cpp
+	$(CXX) $(CXXFLAGS) generators/symbian/symmake.cpp
+
+symmake_abld.obj: $(SOURCE_PATH)/qmake/generators/symbian/symmake_abld.cpp
+	$(CXX) $(CXXFLAGS) generators/symbian/symmake_abld.cpp
+
+symmake_sbsv2.obj: $(SOURCE_PATH)/qmake/generators/symbian/symmake_sbsv2.cpp
+	$(CXX) $(CXXFLAGS) generators/symbian/symmake_sbsv2.cpp
+
+initprojectdeploy_symbian.obj: $(SOURCE_PATH)/qmake/generators/symbian/initprojectdeploy_symbian.cpp
+	$(CXX) $(CXXFLAGS) generators/symbian/initprojectdeploy_symbian.cpp
+
 md5.obj: $(SOURCE_PATH)\src\3rdparty\md5\md5.cpp
 	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\3rdparty\md5\md5.cpp
+
 project.obj: $(SOURCE_PATH)/qmake/project.cpp $(SOURCE_PATH)/qmake/project.h $(SOURCE_PATH)/qmake/option.h
 	$(CXX) $(CXXFLAGS) project.cpp
 
@@ -405,3 +429,9 @@ metamakefile.obj: $(SOURCE_PATH)/qmake/generators/metamakefile.cpp
 
 xmloutput.obj: $(SOURCE_PATH)/qmake/generators/xmloutput.cpp
 	$(CXX) $(CXXFLAGS) generators/xmloutput.cpp
+
+qxmlstream.obj: $(SOURCE_PATH)\src\corelib\xml\qxmlstream.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\xml\qxmlstream.cpp
+
+qxmlutils.obj: $(SOURCE_PATH)\src\corelib\xml\qxmlutils.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\corelib\xml\qxmlutils.cpp

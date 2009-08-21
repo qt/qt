@@ -62,6 +62,10 @@
 #   include <sys/types.h>
 #endif
 
+#ifdef Q_OS_SYMBIAN
+class RSemaphore;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QSystemSemaphorePrivate
@@ -77,10 +81,14 @@ public:
 
 #ifdef Q_OS_WIN
     HANDLE handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
+    void setErrorString(const QString &function);
+#elif defined(Q_OS_SYMBIAN)
+    int handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
+    void setErrorString(const QString &function,int err = 0);
 #else
     key_t handle(QSystemSemaphore::AccessMode mode = QSystemSemaphore::Open);
-#endif
     void setErrorString(const QString &function);
+#endif
     void cleanHandle();
     bool modifySemaphore(int count);
 
@@ -90,13 +98,14 @@ public:
 #ifdef Q_OS_WIN
     HANDLE semaphore;
     HANDLE semaphoreLock;
+#elif defined(Q_OS_SYMBIAN)
+    RSemaphore semaphore;
 #else
     int semaphore;
     bool createdFile;
     bool createdSemaphore;
     key_t unix_key;
 #endif
-
     QString errorString;
     QSystemSemaphore::SystemSemaphoreError error;
 };

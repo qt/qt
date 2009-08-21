@@ -89,6 +89,13 @@ win32 {
     INCLUDEPATH += tmp
     !static: DEFINES+=QT_MAKEDLL
 }
+symbian {
+    !static {
+        DEFINES+=QT_MAKEDLL
+        TARGET.CAPABILITY = All -Tcb        
+    }
+    load(armcc_warnings)
+}
 win32-borland:INCLUDEPATH += kernel
 
 aix-g++* {
@@ -110,7 +117,7 @@ embedded:DEPENDPATH += ;$$EMBEDDED_H
 #install directives
 include(qt_install.pri)
 
-unix {
+unix:!symbian {
    CONFIG     += create_libtool create_pc explicitlib
    QMAKE_LIBTOOL_LIBDIR = $$[QT_INSTALL_LIBS]
    QMAKE_PRL_LIBDIR = $$[QT_INSTALL_LIBS]
@@ -130,7 +137,7 @@ unix {
 }
 
 contains(QT_PRODUCT, OpenSource.*):DEFINES *= QT_OPENSOURCE
-DEFINES += QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
+DEFINES *= QT_NO_CAST_TO_ASCII QT_ASCII_CAST_WARNINGS
 contains(QT_CONFIG, qt3support):DEFINES *= QT3_SUPPORT
 DEFINES *= QT_MOC_COMPAT #we don't need warnings from calling moc code in our generated code
 

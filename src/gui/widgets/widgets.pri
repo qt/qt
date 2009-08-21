@@ -81,8 +81,8 @@ HEADERS += \
         widgets/qtoolbararealayout_p.h \
         widgets/qplaintextedit.h \
         widgets/qplaintextedit_p.h \
-        widgets/qprintpreviewwidget.h
-
+        widgets/qprintpreviewwidget.h \
+        widgets/qactiontokeyeventmapper_p.h
 SOURCES += \
         widgets/qabstractbutton.cpp \
         widgets/qabstractslider.cpp \
@@ -143,8 +143,8 @@ SOURCES += \
         widgets/qwidgetanimator.cpp \
         widgets/qtoolbararealayout.cpp \
         widgets/qplaintextedit.cpp \
-        widgets/qprintpreviewwidget.cpp
-
+        widgets/qprintpreviewwidget.cpp \
+        widgets/qactiontokeyeventmapper.cpp
 
 !embedded:mac {
     HEADERS += widgets/qmacnativewidget_mac.h \
@@ -164,4 +164,8 @@ wince*: {
     HEADERS += widgets/qmenu_wince_resource_p.h
     RC_FILE = widgets/qmenu_wince.rc
     !static: QMAKE_WRITE_DEFAULT_RC = 1
+}
+
+symbian*: {
+    SOURCES += widgets/qmenu_symbian.cpp
 }

@@ -133,11 +133,10 @@ public:
   first property).
 */
 QScriptValueIterator::QScriptValueIterator(const QScriptValue &object)
+    : d_ptr(0)
 {
-    if (!object.isObject()) {
-        d_ptr = 0;
-    } else {
-        d_ptr = new QScriptValueIteratorPrivate();
+    if (object.isObject()) {
+        d_ptr.reset(new QScriptValueIteratorPrivate());
         d_ptr->object = object;
     }
 }
@@ -147,10 +146,6 @@ QScriptValueIterator::QScriptValueIterator(const QScriptValue &object)
 */
 QScriptValueIterator::~QScriptValueIterator()
 {
-    if (d_ptr) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
 }
 
 /*!
@@ -346,12 +341,9 @@ void QScriptValueIterator::remove()
 */
 QScriptValueIterator& QScriptValueIterator::operator=(QScriptValue &object)
 {
-    if (d_ptr) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
+    d_ptr.reset();
     if (object.isObject()) {
-        d_ptr = new QScriptValueIteratorPrivate();
+        d_ptr.reset(new QScriptValueIteratorPrivate());
         d_ptr->object = object;
     }
     return *this;

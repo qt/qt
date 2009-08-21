@@ -10,6 +10,8 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS syntaxhighlighter.pro ex
 sources.path = $$[QT_INSTALL_EXAMPLES]/richtext/syntaxhighlighter
 INSTALLS += target sources
 
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
 wince*: {
    addFiles.sources = main.cpp mainwindow.cpp
    addFiles.path = .

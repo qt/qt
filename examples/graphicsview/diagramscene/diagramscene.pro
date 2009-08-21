@@ -18,3 +18,5 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS diagramscene.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/diagramscene
 INSTALLS += target sources
 
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+

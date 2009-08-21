@@ -10,6 +10,8 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS systray.pro resources im
 sources.path = $$[QT_INSTALL_EXAMPLES]/desktop/systray
 INSTALLS += target sources
 
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
 wince* {
 	CONFIG(debug, release|debug) {
 		addPlugins.sources = $$QT_BUILD_TREE/plugins/imageformats/qsvgd4.dll

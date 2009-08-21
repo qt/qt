@@ -45,6 +45,7 @@
 #include <QtCore/qstring.h>
 
 #include <QtCore/qvariant.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtScript/qscriptvalue.h>
 
 QT_BEGIN_HEADER
@@ -101,7 +102,7 @@ public:
 
 protected:
     QScriptClass(QScriptEngine *engine, QScriptClassPrivate &dd);
-    QScriptClassPrivate *d_ptr;
+    QScopedPointer<QScriptClassPrivate> d_ptr;
 
 private:
     Q_DECLARE_PRIVATE(QScriptClass)

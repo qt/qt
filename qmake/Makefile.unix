@@ -9,7 +9,8 @@ LFLAGS = @QMAKE_LFLAGS@
 OBJS=project.o property.o main.o makefile.o unixmake2.o unixmake.o  \
      mingw_make.o option.o winmakefile.o projectgenerator.o \
      meta.o makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
-     borland_bmake.o msvc_dsp.o msvc_vcproj.o msvc_nmake.o msvc_objectmodel.o
+     borland_bmake.o msvc_dsp.o msvc_vcproj.o msvc_nmake.o msvc_objectmodel.o \
+     symmake.o initprojectdeploy_symbian.o symmake_abld.o symmake_sbsv2.o
 
 #qt code
 QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qglobal.o \
@@ -18,7 +19,7 @@ QOBJS=qtextcodec.o qutfcodec.o qstring.o qtextstream.o qiodevice.o qmalloc.o qgl
       qfsfileengine_iterator.o qregexp.o qvector.o qbitarray.o qdir.o qdiriterator.o quuid.o qhash.o \
       qfileinfo.o qdatetime.o qstringlist.o qabstractfileengine.o qtemporaryfile.o \
       qmap.o qmetatype.o qsettings.o qlibraryinfo.o qvariant.o qvsnprintf.o \
-      qlocale.o qlinkedlist.o qurl.o qnumeric.o qcryptographichash.o \
+      qlocale.o qlinkedlist.o qurl.o qnumeric.o qcryptographichash.o qxmlstream.o qxmlutils.o \
       $(QTOBJS)
 
 
@@ -30,6 +31,8 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   generators/mac/pbuilder_pbx.cpp generators/mac/xmloutput.cpp generators/metamakefile.cpp \
 	   generators/makefiledeps.cpp option.cpp generators/win32/mingw_make.cpp generators/makefile.cpp \
 	   generators/win32/msvc_objectmodel.cpp generators/win32/msvc_nmake.cpp generators/win32/borland_bmake.cpp \
+	   generators/symbian/symmake.cpp generators/symbian/initprojectdeploy_symbian.cpp \
+	   generators/symbian/symmake_abld.cpp generators/symbian/symmake_sbsv2.cpp \
 	   $(SOURCE_PATH)/src/corelib/codecs/qtextcodec.cpp $(SOURCE_PATH)/src/corelib/codecs/qutfcodec.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qstring.cpp $(SOURCE_PATH)/src/corelib/io/qfile.cpp \
 	   $(SOURCE_PATH)/src/corelib/io/qtextstream.cpp $(SOURCE_PATH)/src/corelib/io/qiodevice.cpp \
@@ -52,11 +55,13 @@ DEPEND_SRC=project.cpp property.cpp meta.cpp main.cpp generators/makefile.cpp ge
 	   $(SOURCE_PATH)/src/corelib/io/qsettings.cpp $(SOURCE_PATH)/src/corelib/kernel/qvariant.cpp \
 	   $(SOURCE_PATH)/src/corelib/global/qlibraryinfo.cpp $(SOURCE_PATH)/src/corelib/tools/qcryptographichash.cpp \
 	   $(SOURCE_PATH)/src/corelib/tools/qvsnprintf.cpp $(SOURCE_PATH)/src/corelib/global/qnumeric.cpp \
+	   $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp \
+	   $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp \
 	   $(QTSRCS)
 
-CPPFLAGS = -I. -Igenerators -Igenerators/unix -Igenerators/win32 -Igenerators/mac \
+CPPFLAGS = -I. -Igenerators -Igenerators/unix -Igenerators/win32 -Igenerators/mac -Igenerators/symbian \
 	   -I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore \
-	   -I$(BUILD_PATH)/src/corelib/global \
+	   -I$(BUILD_PATH)/src/corelib/global -I$(BUILD_PATH)/src/corelib/xml \
 	   -DQT_NO_PCRE \
 	   -DQT_BUILD_QMAKE -DQT_BOOTSTRAPPED \
 	   -DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_NO_COMPONENT -DQT_NO_STL \
@@ -264,9 +269,26 @@ pbuilder_pbx.o: generators/mac/pbuilder_pbx.cpp
 msvc_dsp.o: generators/win32/msvc_dsp.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/win32/msvc_dsp.cpp
 
+symmake.o: generators/symbian/symmake.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) generators/symbian/symmake.cpp
+
+symmake_abld.o: generators/symbian/symmake_abld.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) generators/symbian/symmake_abld.cpp
+
+symmake_sbsv2.o: generators/symbian/symmake_sbsv2.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) generators/symbian/symmake_sbsv2.cpp
+
+initprojectdeploy_symbian.o: generators/symbian/initprojectdeploy_symbian.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) generators/symbian/initprojectdeploy_symbian.cpp
+
 projectgenerator.o: generators/projectgenerator.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) generators/projectgenerator.cpp
 
+qxmlstream.o: $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp
+
+qxmlutils.o: $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp
+	$(CXX) -c -o $@ $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp
 #default rules
 .cpp.o:
 	$(CXX) -c -o $@ $(CXXFLAGS) $<

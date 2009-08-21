@@ -99,7 +99,7 @@ public:
 
     inline bool viewportEvent(QEvent *event)
     { return q_func()->viewportEvent(event); }
-    QObject *viewportFilter;
+    QScopedPointer<QObject> viewportFilter;
 
     virtual void _q_gestureTriggered();
     QPanGesture *panGesture;

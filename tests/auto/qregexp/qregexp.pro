@@ -6,6 +6,3 @@ QT = core
 QT = core
 
 SOURCES  += tst_qregexp.cpp
-QT -= gui
-
-

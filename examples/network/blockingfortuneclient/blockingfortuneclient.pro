@@ -10,3 +10,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/network/blockingfortuneclient
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS blockingfortuneclient.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/network/blockingfortuneclient
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

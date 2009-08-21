@@ -43,6 +43,7 @@
 #define QSYSTEMSEMAPHORE_H
 
 #include <QtCore/qstring.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -89,7 +90,7 @@ public:
 
 private:
     Q_DISABLE_COPY(QSystemSemaphore)
-    QSystemSemaphorePrivate *d;
+    QScopedPointer<QSystemSemaphorePrivate> d;
 };
 
 #endif // QT_NO_SYSTEMSEMAPHORE

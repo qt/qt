@@ -46,6 +46,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qrect.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtGui/qpainterpath.h>
 #include <QtGui/qpixmap.h>
 
@@ -428,7 +429,7 @@ protected:
 protected:
     QGraphicsItem(QGraphicsItemPrivate &dd,
                   QGraphicsItem *parent, QGraphicsScene *scene);
-    QGraphicsItemPrivate *d_ptr;
+    QScopedPointer<QGraphicsItemPrivate> d_ptr;
 
     void addToIndex();
     void removeFromIndex();

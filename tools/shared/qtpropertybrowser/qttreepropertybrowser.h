@@ -118,7 +118,7 @@ protected:
 
 private:
 
-    QtTreePropertyBrowserPrivate *d_ptr;
+    QScopedPointer<QtTreePropertyBrowserPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtTreePropertyBrowser)
     Q_DISABLE_COPY(QtTreePropertyBrowser)
 

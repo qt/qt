@@ -221,6 +221,11 @@ QConfFile::QConfFile(const QString &fileName, bool _userPerms)
     usedHashFunc()->insert(name, this);
 }
 
+QConfFile::~QConfFile()
+{
+    usedHashFunc()->remove(name);
+}
+
 ParsedSettingsMap QConfFile::mergedKeyMap() const
 {
     ParsedSettingsMap result = originalKeys;
@@ -267,7 +272,7 @@ QConfFile *QConfFile::fromName(const QString &fileName, bool _userPerms)
     ConfFileHash *usedHash = usedHashFunc();
     ConfFileCache *unusedCache = unusedCacheFunc();
 
-    QConfFile *confFile;
+    QConfFile *confFile = 0;
     QMutexLocker locker(globalMutex());
 
     if (!(confFile = usedHash->value(absPath))) {
@@ -1093,10 +1098,10 @@ static QString getPath(QSettings::Format format, QSettings::Scope scope)
     QString homePath = QDir::homePath();
     QString systemPath;
 
-    globalMutex()->lock();
+    QMutexLocker locker(globalMutex());
     PathHash *pathHash = pathHashFunc();
     bool loadSystemPath = pathHash->isEmpty();
-    globalMutex()->unlock();
+    locker.unlock();
 
     if (loadSystemPath) {
         /*
@@ -1108,7 +1113,7 @@ static QString getPath(QSettings::Format format, QSettings::Scope scope)
         systemPath += QLatin1Char('/');
     }
 
-    QMutexLocker locker(globalMutex());
+    locker.relock();
     if (pathHash->isEmpty()) {
         /*
            Lazy initialization of pathHash. We initialize the
@@ -1168,9 +1173,6 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(QSettings::Format format,
     int i;
     initFormat();
 
-    for (i = 0; i < NumConfFiles; ++i)
-        confFiles[i] = 0;
-
     QString org = organization;
     if (org.isEmpty()) {
         setStatus(QSettings::AccessError);
@@ -1183,14 +1185,14 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(QSettings::Format format,
     if (scope == QSettings::UserScope) {
         QString userPath = getPath(format, QSettings::UserScope);
         if (!application.isEmpty())
-            confFiles[F_User | F_Application] = QConfFile::fromName(userPath + appFile, true);
-        confFiles[F_User | F_Organization] = QConfFile::fromName(userPath + orgFile, true);
+            confFiles[F_User | F_Application].reset(QConfFile::fromName(userPath + appFile, true));
+        confFiles[F_User | F_Organization].reset(QConfFile::fromName(userPath + orgFile, true));
     }
 
     QString systemPath = getPath(format, QSettings::SystemScope);
     if (!application.isEmpty())
-        confFiles[F_System | F_Application] = QConfFile::fromName(systemPath + appFile, false);
-    confFiles[F_System | F_Organization] = QConfFile::fromName(systemPath + orgFile, false);
+        confFiles[F_System | F_Application].reset(QConfFile::fromName(systemPath + appFile, false));
+    confFiles[F_System | F_Organization].reset(QConfFile::fromName(systemPath + orgFile, false));
 
     for (i = 0; i < NumConfFiles; ++i) {
         if (confFiles[i]) {
@@ -1209,9 +1211,7 @@ QConfFileSettingsPrivate::QConfFileSettingsPrivate(const QString &fileName,
 {
     initFormat();
 
-    confFiles[0] = QConfFile::fromName(fileName, true);
-    for (int i = 1; i < NumConfFiles; ++i)
-        confFiles[i] = 0;
+    confFiles[0].reset(QConfFile::fromName(fileName, true));
 
     initAccess();
 }
@@ -1224,23 +1224,30 @@ QConfFileSettingsPrivate::~QConfFileSettingsPrivate()
 
     for (int i = 0; i < NumConfFiles; ++i) {
         if (confFiles[i] && !confFiles[i]->ref.deref()) {
-            if (usedHash)
-                usedHash->remove(confFiles[i]->name);
-
             if (confFiles[i]->size == 0) {
-                delete confFiles[i];
+                delete confFiles[i].take();
             } else if (unusedCache) {
-                // compute a better size?
-                unusedCache->insert(confFiles[i]->name, confFiles[i],
+                if (usedHash)
+                    usedHash->remove(confFiles[i]->name);
+                QT_TRY {
+                    // compute a better size?
+                    unusedCache->insert(confFiles[i]->name, confFiles[i].data(),
                                     10 + (confFiles[i]->originalKeys.size() / 4));
+                    confFiles[i].take();
+                } QT_CATCH(...) {
+                    // out of memory. Do not cache the file.
+                    delete confFiles[i].take();
+                }
             }
         }
+        // prevent the ScopedPointer to deref it again.
+        confFiles[i].take();
     }
 }
 
 void QConfFileSettingsPrivate::remove(const QString &key)
 {
-    QConfFile *confFile = confFiles[spec];
+    QConfFile *confFile = confFiles[spec].data();
     if (!confFile)
         return;
 
@@ -1267,7 +1274,7 @@ void QConfFileSettingsPrivate::remove(const QString &key)
 
 void QConfFileSettingsPrivate::set(const QString &key, const QVariant &value)
 {
-    QConfFile *confFile = confFiles[spec];
+    QConfFile *confFile = confFiles[spec].data();
     if (!confFile)
         return;
 
@@ -1284,7 +1291,7 @@ bool QConfFileSettingsPrivate::get(const QString &key, QVariant *value) const
     bool found = false;
 
     for (int i = 0; i < NumConfFiles; ++i) {
-        if (QConfFile *confFile = confFiles[i]) {
+        if (QConfFile *confFile = confFiles[i].data()) {
             QMutexLocker locker(&confFile->mutex);
 
             if (!confFile->addedKeys.isEmpty()) {
@@ -1319,7 +1326,7 @@ QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec 
     int startPos = prefix.size();
 
     for (int i = 0; i < NumConfFiles; ++i) {
-        if (QConfFile *confFile = confFiles[i]) {
+        if (QConfFile *confFile = confFiles[i].data()) {
             QMutexLocker locker(&confFile->mutex);
 
             if (thePrefix.isEmpty()) {
@@ -1352,7 +1359,7 @@ QStringList QConfFileSettingsPrivate::children(const QString &prefix, ChildSpec 
 
 void QConfFileSettingsPrivate::clear()
 {
-    QConfFile *confFile = confFiles[spec];
+    QConfFile *confFile = confFiles[spec].data();
     if (!confFile)
         return;
 
@@ -1368,7 +1375,7 @@ void QConfFileSettingsPrivate::sync()
     // error we just try to go on and make the best of it
 
     for (int i = 0; i < NumConfFiles; ++i) {
-        QConfFile *confFile = confFiles[i];
+        QConfFile *confFile = confFiles[i].data();
         if (confFile) {
             QMutexLocker locker(&confFile->mutex);
             syncConfFile(i);
@@ -1383,7 +1390,7 @@ void QConfFileSettingsPrivate::flush()
 
 QString QConfFileSettingsPrivate::fileName() const
 {
-    QConfFile *confFile = confFiles[spec];
+    QConfFile *confFile = confFiles[spec].data();
     if (!confFile)
         return QString();
     return confFile->name;
@@ -1394,7 +1401,7 @@ bool QConfFileSettingsPrivate::isWritable() const
     if (format > QSettings::IniFormat && !writeFunc)
         return false;
 
-    QConfFile *confFile = confFiles[spec];
+    QConfFile *confFile = confFiles[spec].data();
     if (!confFile)
         return false;
 
@@ -1403,7 +1410,7 @@ bool QConfFileSettingsPrivate::isWritable() const
 
 void QConfFileSettingsPrivate::syncConfFile(int confFileNo)
 {
-    QConfFile *confFile = confFiles[confFileNo];
+    QConfFile *confFile = confFiles[confFileNo].data();
     bool readOnly = confFile->addedKeys.isEmpty() && confFile->removedKeys.isEmpty();
     bool ok;
 
@@ -2737,11 +2744,13 @@ QSettings::QSettings(const QString &fileName, Format format)
 QSettings::~QSettings()
 {
     Q_D(QSettings);
-    if (d->pendingChanges)
-        d->flush();
-#ifdef QT_NO_QOBJECT
-    delete d;
-#endif
+    if (d->pendingChanges) {
+        QT_TRY {
+            d->flush();
+        } QT_CATCH(...) {
+            ; // ok. then don't flush but at least don't throw in the destructor
+        }
+    }
 }
 
 /*!
@@ -3544,8 +3553,7 @@ void QSettings::setPath_helper(Scope scope, const QString &organization, const Q
     QSettingsPrivate *oldPriv = d;
     QSettingsPrivate *newPriv = QSettingsPrivate::create(oldPriv->format, scope, organization, application);
     static_cast<QObjectPrivate &>(*newPriv) = static_cast<QObjectPrivate &>(*oldPriv);  // copy the QObject stuff over (hack)
-    delete oldPriv;
-    d_ptr = newPriv;
+    d_ptr.reset(newPriv);
 }
 
 /*! \fn bool QSettings::writeEntry(const QString &key, bool value)

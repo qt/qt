@@ -8,3 +8,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/opengl/samplebuffers
 sources.files = $$SOURCES $$HEADERS samplebuffers.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/samplebuffers
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

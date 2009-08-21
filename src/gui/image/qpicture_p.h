@@ -71,7 +71,6 @@ extern const char  *qt_mfhdr_tag;
 
 class QPicturePrivate
 {
-    Q_DECLARE_PUBLIC(QPicture)
     friend class QPicturePaintEngine;
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &s, const QPicture &r);
     friend Q_GUI_EXPORT QDataStream &operator>>(QDataStream &s, QPicture &r);
@@ -143,7 +142,8 @@ public:
         PdcReservedStop = 199 //   for Qt
     };
 
-    inline QPicturePrivate() : in_memory_only(false), q_ptr(0) { ref = 1; }
+    QPicturePrivate();
+    QPicturePrivate(const QPicturePrivate &other);
     QAtomicInt ref;
 
     bool checkFormat();
@@ -156,14 +156,12 @@ public:
     int formatMinor;
     QRect brect;
     QRect override_rect;
-    QPaintEngine *paintEngine;
+    QScopedPointer<QPaintEngine> paintEngine;
     bool in_memory_only;
     QList<QImage> image_list;
     QList<QPixmap> pixmap_list;
     QList<QBrush> brush_list;
     QList<QPen> pen_list;
-
-    QPicture *q_ptr;
 };
 
 QT_END_NAMESPACE

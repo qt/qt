@@ -209,6 +209,8 @@ void QBitArray::resize(int size)
         uchar* c = reinterpret_cast<uchar*>(d.data());
         if (size > (s << 3))
             memset(c + s, 0, d.size() - s);
+        else if ( size % 8)
+            *(c+1+size/8) &= (1 << (size%8)) - 1;
         *c = d.size()*8 - size;
     }
 }

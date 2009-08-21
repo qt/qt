@@ -1015,7 +1015,11 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             if (destroyWindow)
                 qt_XDestroyWindow(this, X11->display, data->winid);
         }
-        d->setWinId(0);
+        QT_TRY {
+            d->setWinId(0);
+        } QT_CATCH (const std::bad_alloc &) {
+            // swallow - destructors must not throw
+        }
 
         extern void qPRCleanup(QWidget *widget); // from qapplication_x11.cpp
         if (testAttribute(Qt::WA_WState_Reparented))
@@ -1276,7 +1280,7 @@ void QWidgetPrivate::updateSystemBackground()
     else if (brush.style() == Qt::TexturePattern) {
         extern QPixmap qt_toX11Pixmap(const QPixmap &pixmap); // qpixmap_x11.cpp
         XSetWindowBackgroundPixmap(X11->display, q->internalWinId(),
-                                   static_cast<QX11PixmapData*>(qt_toX11Pixmap(brush.texture()).data)->x11ConvertToDefaultDepth());
+                                   static_cast<QX11PixmapData*>(qt_toX11Pixmap(brush.texture()).data.data())->x11ConvertToDefaultDepth());
     } else
         XSetWindowBackground(X11->display, q->internalWinId(),
                              QColormap::instance(xinfo.screen()).pixel(brush.color()));
@@ -1422,7 +1426,7 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 // violates the ICCCM), since this works on all DEs known to Qt
                 if (!forceReset || !topData->iconPixmap)
                     topData->iconPixmap = new QPixmap(qt_toX11Pixmap(icon.pixmap(QSize(64,64))));
-                pixmap_handle = static_cast<QX11PixmapData*>(topData->iconPixmap->data)->x11ConvertToDefaultDepth();
+                pixmap_handle = static_cast<QX11PixmapData*>(topData->iconPixmap->data.data())->x11ConvertToDefaultDepth();
             }
         }
     }

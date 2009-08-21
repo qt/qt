@@ -74,6 +74,7 @@ static int DIRECT_CONNECTION_ONLY = 0;
 static int *queuedConnectionTypes(const QList<QByteArray> &typeNames)
 {
     int *types = new int [typeNames.count() + 1];
+    Q_CHECK_PTR(types);
     for (int i = 0; i < typeNames.count(); ++i) {
         const QByteArray typeName = typeNames.at(i);
         if (typeName.endsWith('*'))
@@ -436,7 +437,9 @@ void QMetaObject::removeGuard(QObject **ptr)
     if (!*ptr)
         return;
     GuardHash *hash = guardHash();
-    if (!hash)
+    /* check that the hash is empty - otherwise we might detach
+       the shared_null hash, which will alloc, which is not nice */
+    if (!hash || hash->isEmpty())
         return;
     QMutexLocker locker(guardHashLock());
     GuardHash::iterator it = hash->find(*ptr);
@@ -464,6 +467,10 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
         return;
     }
     QMutexLocker locker(guardHashLock());
+    if (o) {
+        hash->insert(o, ptr);
+        QObjectPrivate::get(o)->hasGuards = true;
+    }
     if (*ptr) {
         bool more = false; //if the QObject has more pointer attached to it.
         GuardHash::iterator it = hash->find(*ptr);
@@ -480,10 +487,6 @@ void QMetaObject::changeGuard(QObject **ptr, QObject *o)
             QObjectPrivate::get(*ptr)->hasGuards = false;
     }
     *ptr = o;
-    if (*ptr) {
-        hash->insert(*ptr, ptr);
-        QObjectPrivate::get(*ptr)->hasGuards = true;
-    }
 }
 
 /*! \internal
@@ -507,9 +510,20 @@ void QObjectPrivate::clearGuards(QObject *object)
 
     if (!priv->hasGuards)
         return;
-    GuardHash *hash = guardHash();
-    if (hash) {
-        QMutexLocker locker(guardHashLock());
+
+    GuardHash *hash = 0;
+    QMutex *mutex = 0;
+    QT_TRY {
+        hash = guardHash();
+        mutex = guardHashLock();
+    } QT_CATCH(const std::bad_alloc &) {
+        // do nothing in case of OOM - code below is safe
+    }
+
+    /* check that the hash is empty - otherwise we might detach
+       the shared_null hash, which will alloc, which is not nice */
+    if (hash && !hash->isEmpty()) {
+        QMutexLocker locker(mutex);
         GuardHash::iterator it = hash->find(object);
         const GuardHash::iterator end = hash->end();
         while (it.key() == object && it != end) {
@@ -733,12 +747,18 @@ QObject::QObject(QObject *parent)
     : d_ptr(new QObjectPrivate)
 {
     Q_D(QObject);
-    qt_addObject(d_ptr->q_ptr = this);
+    d_ptr->q_ptr = this;
     d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
     d->threadData->ref();
-    if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
-        parent = 0;
-    setParent(parent);
+    QT_TRY {
+        if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
+            parent = 0;
+        setParent(parent);
+    } QT_CATCH(...) {
+        d->threadData->deref();
+        QT_RETHROW;
+    }
+    qt_addObject(this);
 }
 
 #ifdef QT3_SUPPORT
@@ -768,20 +788,26 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
     : d_ptr(&dd)
 {
     Q_D(QObject);
-    qt_addObject(d_ptr->q_ptr = this);
+    d_ptr->q_ptr = this;
     d->threadData = (parent && !parent->thread()) ? parent->d_func()->threadData : QThreadData::current();
     d->threadData->ref();
-    if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
-        parent = 0;
-    if (d->isWidget) {
-        if (parent) {
-            d->parent = parent;
-            d->parent->d_func()->children.append(this);
+    QT_TRY {
+        if (!check_parent_thread(parent, parent ? parent->d_func()->threadData : 0, d->threadData))
+            parent = 0;
+        if (d->isWidget) {
+            if (parent) {
+                d->parent = parent;
+                d->parent->d_func()->children.append(this);
+            }
+            // no events sent here, this is done at the end of the QWidget constructor
+        } else {
+            setParent(parent);
         }
-        // no events sent here, this is done at the end of the QWidget constructor
-    } else {
-        setParent(parent);
+    } QT_CATCH(...) {
+        d->threadData->deref();
+        QT_RETHROW;
     }
+    qt_addObject(this);
 }
 
 /*!
@@ -839,12 +865,35 @@ QObject::~QObject()
             delete d->sharedRefcount;
     }
 
-    emit destroyed(this);
+    QT_TRY {
+        emit destroyed(this);
+    } QT_CATCH(...) {
+        // all the signal/slots connections are still in place - if we don't
+        // quit now, we will crash pretty soon.
+        qWarning("Detected an unexpected exception in ~QObject while emitting destroyed().");
+#if defined(Q_AUTOTEST_EXPORT) && !defined(QT_NO_EXCEPTIONS)
+        struct AutotestException : public std::exception
+        {
+            const char *what() const throw() { return "autotest swallow"; }
+        } autotestException;
+        // throw autotestException;
+
+#else
+        QT_RETHROW;
+#endif
+    }
+
     if (d->declarativeData)
         d->declarativeData->destroyed(this);
 
     {
-        QMutexLocker locker(signalSlotLock(this));
+        QMutex *signalSlotMutex = 0;
+        QT_TRY {
+            signalSlotMutex = signalSlotLock(this);
+        } QT_CATCH(const std::bad_alloc &) {
+            // out of memory - swallow to prevent a crash
+        }
+        QMutexLocker locker(signalSlotMutex);
 
         // set ref to zero to indicate that this object has been deleted
         if (d->currentSender != 0)
@@ -940,9 +989,6 @@ QObject::~QObject()
                  objectName().isNull() ? "unnamed" : qPrintable(objectName()));
     }
 #endif
-
-    delete d;
-    d_ptr = 0;
 }
 
 QObjectPrivate::Connection::~Connection()
@@ -1191,11 +1237,11 @@ bool QObject::event(QEvent *e)
 #if defined(QT_NO_EXCEPTIONS)
             mce->placeMetaCall(this);
 #else
-            try {
+            QT_TRY {
                 mce->placeMetaCall(this);
-            } catch (...) {
+            } QT_CATCH(...) {
                 QObjectPrivate::resetCurrentSender(this, &currentSender, previousSender);
-                throw;
+                QT_RETHROW;
             }
 #endif
             QObjectPrivate::resetCurrentSender(this, &currentSender, previousSender);
@@ -1488,8 +1534,10 @@ void QObjectPrivate::setThreadData_helper(QThreadData *currentData, QThreadData 
             ++eventsMoved;
         }
     }
-    if (eventsMoved > 0 && targetData->eventDispatcher)
+    if (eventsMoved > 0 && targetData->eventDispatcher) {
+        targetData->canWait = false;
         targetData->eventDispatcher->wakeUp();
+    }
 
     // the current emitting thread shouldn't restore currentSender after calling moveToThread()
     if (currentSender)
@@ -2769,8 +2817,14 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     QByteArray signal_name;
     bool signal_found = false;
     if (signal) {
-        signal_name = QMetaObject::normalizedSignature(signal);
-        signal = signal_name;
+        QT_TRY {
+            signal_name = QMetaObject::normalizedSignature(signal);
+            signal = signal_name.constData();
+        } QT_CATCH (const std::bad_alloc &) {
+            // if the signal is already normalized, we can continue.
+            if (sender->metaObject()->indexOfSignal(signal + 1) == -1)
+                QT_RETHROW;
+        }
 
         if (!check_signal_macro(sender, signal, "disconnect", "unbind"))
             return false;
@@ -2782,8 +2836,15 @@ bool QObject::disconnect(const QObject *sender, const char *signal,
     int membcode = -1;
     bool method_found = false;
     if (method) {
-        method_name = QMetaObject::normalizedSignature(method);
-        method = method_name;
+        QT_TRY {
+            method_name = QMetaObject::normalizedSignature(method);
+            method = method_name.constData();
+        } QT_CATCH(const std::bad_alloc &) {
+            // if the method is already normalized, we can continue.
+            if (receiver->metaObject()->indexOfMethod(method + 1) == -1)
+                QT_RETHROW;
+        }
+
         membcode = extract_code(method);
         if (!check_method_code(membcode, receiver, method, "disconnect"))
             return false;
@@ -2964,13 +3025,19 @@ bool QMetaObjectPrivate::connect(const QObject *sender, int signal_index,
     c->connectionType = type;
     c->argumentTypes = types;
     c->nextConnectionList = 0;
+
+    QT_TRY {
+        QObjectPrivate::get(s)->addConnection(signal_index, c);
+    } QT_CATCH(...) {
+        delete c;
+        QT_RETHROW;
+    }
+
     c->prev = &(QObjectPrivate::get(r)->senders);
     c->next = *c->prev;
     *c->prev = c;
     if (c->next)
         c->next->prev = &c->next;
-
-    QObjectPrivate::get(s)->addConnection(signal_index, c);
 
     QObjectPrivate *const sender_d = QObjectPrivate::get(s);
     if (signal_index < 0) {
@@ -3182,7 +3249,9 @@ static void queued_activate(QObject *sender, int signal, QObjectPrivate::Connect
     while (c->argumentTypes[nargs-1])
         ++nargs;
     int *types = (int *) qMalloc(nargs*sizeof(int));
+    Q_CHECK_PTR(types);
     void **args = (void **) qMalloc(nargs*sizeof(void *));
+    Q_CHECK_PTR(args);
     types[0] = 0; // return type
     args[0] = 0; // return value
     for (int n = 1; n < nargs; ++n)
@@ -3317,9 +3386,9 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
 #if defined(QT_NO_EXCEPTIONS)
             metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
 #else
-            try {
+            QT_TRY {
                 metacall(receiver, QMetaObject::InvokeMetaMethod, method, argv ? argv : empty_argv);
-            } catch (...) {
+            } QT_CATCH(...) {
                 locker.relock();
 
                 QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
@@ -3328,7 +3397,7 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                 Q_ASSERT(connectionLists->inUse >= 0);
                 if (connectionLists->orphaned && !connectionLists->inUse)
                     delete connectionLists;
-                throw;
+                QT_RETHROW;
             }
 #endif
 

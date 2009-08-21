@@ -17,3 +17,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/network/download
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro *.png
 sources.path = $$[QT_INSTALL_EXAMPLES]/network/download
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

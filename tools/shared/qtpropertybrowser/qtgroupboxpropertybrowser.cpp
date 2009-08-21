@@ -476,9 +476,8 @@ void QtGroupBoxPropertyBrowserPrivate::updateItem(WidgetItem *item)
     Creates a property browser with the given \a parent.
 */
 QtGroupBoxPropertyBrowser::QtGroupBoxPropertyBrowser(QWidget *parent)
-    : QtAbstractPropertyBrowser(parent)
+    : QtAbstractPropertyBrowser(parent), d_ptr(new QtGroupBoxPropertyBrowserPrivate)
 {
-    d_ptr = new QtGroupBoxPropertyBrowserPrivate;
     d_ptr->q_ptr = this;
 
     d_ptr->init(this);
@@ -499,7 +498,6 @@ QtGroupBoxPropertyBrowser::~QtGroupBoxPropertyBrowser()
     const QMap<QtGroupBoxPropertyBrowserPrivate::WidgetItem *, QtBrowserItem *>::ConstIterator icend = d_ptr->m_itemToIndex.constEnd();
     for (QMap<QtGroupBoxPropertyBrowserPrivate::WidgetItem *, QtBrowserItem *>::ConstIterator it = d_ptr->m_itemToIndex.constBegin(); it != icend; ++it)
         delete it.key();
-    delete d_ptr;
 }
 
 /*!

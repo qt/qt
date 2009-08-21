@@ -35,3 +35,5 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES torrent.pro *.torrent
 sources.files += icons forms 3rdparty
 sources.path = $$[QT_INSTALL_EXAMPLES]/network/torrent
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

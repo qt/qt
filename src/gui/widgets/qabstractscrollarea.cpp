@@ -287,8 +287,8 @@ void QAbstractScrollAreaPrivate::init()
     scrollBarContainers[Qt::Vertical]->setVisible(false);
     QObject::connect(vbar, SIGNAL(valueChanged(int)), q, SLOT(_q_vslide(int)));
     QObject::connect(vbar, SIGNAL(rangeChanged(int,int)), q, SLOT(_q_showOrHideScrollBars()), Qt::QueuedConnection);
-    viewportFilter = new QAbstractScrollAreaFilter(this);
-    viewport->installEventFilter(viewportFilter);
+    viewportFilter.reset(new QAbstractScrollAreaFilter(this));
+    viewport->installEventFilter(viewportFilter.data());
     viewport->setFocusProxy(q);
     q->setFocusPolicy(Qt::WheelFocus);
     q->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
@@ -485,7 +485,12 @@ QAbstractScrollArea::QAbstractScrollArea(QAbstractScrollAreaPrivate &dd, QWidget
     :QFrame(dd, parent)
 {
     Q_D(QAbstractScrollArea);
-    d->init();
+    QT_TRY {
+        d->init();
+    } QT_CATCH(...) {
+        d->viewportFilter.reset();
+        QT_RETHROW;
+    }
 }
 
 /*!
@@ -497,7 +502,12 @@ QAbstractScrollArea::QAbstractScrollArea(QWidget *parent)
     :QFrame(*new QAbstractScrollAreaPrivate, parent)
 {
     Q_D(QAbstractScrollArea);
-    d->init();
+    QT_TRY {
+        d->init();
+    } QT_CATCH(...) {
+        d->viewportFilter.reset();
+        QT_RETHROW;
+    }
 }
 
 
@@ -507,7 +517,8 @@ QAbstractScrollArea::QAbstractScrollArea(QWidget *parent)
 QAbstractScrollArea::~QAbstractScrollArea()
 {
     Q_D(QAbstractScrollArea);
-    delete d->viewportFilter;
+    // reset it here, otherwise we'll have a dangling pointer in ~QWidget
+    d->viewportFilter.reset();
 }
 
 
@@ -531,7 +542,7 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
         d->viewport = widget;
         d->viewport->setParent(this);
         d->viewport->setFocusProxy(this);
-        d->viewport->installEventFilter(d->viewportFilter);
+        d->viewport->installEventFilter(d->viewportFilter.data());
         d->layoutChildren();
         if (isVisible())
             d->viewport->show();

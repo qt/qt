@@ -726,9 +726,8 @@ void QtTreePropertyBrowserPrivate::editItem(QtBrowserItem *browserItem)
     Creates a property browser with the given \a parent.
 */
 QtTreePropertyBrowser::QtTreePropertyBrowser(QWidget *parent)
-    : QtAbstractPropertyBrowser(parent)
+    : QtAbstractPropertyBrowser(parent), d_ptr(new QtTreePropertyBrowserPrivate)
 {
-    d_ptr = new QtTreePropertyBrowserPrivate;
     d_ptr->q_ptr = this;
 
     d_ptr->init(this);
@@ -747,7 +746,6 @@ QtTreePropertyBrowser::QtTreePropertyBrowser(QWidget *parent)
 */
 QtTreePropertyBrowser::~QtTreePropertyBrowser()
 {
-    delete d_ptr;
 }
 
 /*!

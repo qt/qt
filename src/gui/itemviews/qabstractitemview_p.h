@@ -321,7 +321,7 @@ public:
      */
     inline bool isPersistent(const QModelIndex &index) const
     {
-        return static_cast<QAbstractItemModelPrivate *>(model->d_ptr)->persistent.indexes.contains(index);
+        return static_cast<QAbstractItemModelPrivate *>(model->d_ptr.data())->persistent.indexes.contains(index);
     }
 
     QModelIndexList selectedDraggableIndexes() const;

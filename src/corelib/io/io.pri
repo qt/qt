@@ -64,7 +64,8 @@ win32 {
 } else:unix {
         SOURCES += io/qfsfileengine_unix.cpp
         SOURCES += io/qfsfileengine_iterator_unix.cpp
-        SOURCES += io/qprocess_unix.cpp
+        symbian:SOURCES += io/qprocess_symbian.cpp
+        else:SOURCES += io/qprocess_unix.cpp
         macx-*: {
             HEADERS += io/qfilesystemwatcher_fsevents_p.h
             SOURCES += io/qsettings_mac.cpp io/qfilesystemwatcher_fsevents.cpp
@@ -83,5 +84,10 @@ win32 {
         freebsd-*|macx-*|darwin-*|openbsd-*:{
             SOURCES += io/qfilesystemwatcher_kqueue.cpp
             HEADERS += io/qfilesystemwatcher_kqueue_p.h
+        }
+
+        symbian {
+            SOURCES += io/qfilesystemwatcher_symbian.cpp
+            HEADERS += io/qfilesystemwatcher_symbian_p.h
         }
 }
