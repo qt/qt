@@ -91,7 +91,8 @@ Qt {
     Q_FLAGS(MatchFlags)
     Q_FLAGS(KeyboardModifiers MouseButtons)
     Q_ENUMS(WindowType WindowState WindowModality WidgetAttribute ApplicationAttribute)
-    Q_FLAGS(WindowFlags WindowStates)
+    Q_ENUMS(InputMethodHint)
+    Q_FLAGS(WindowFlags WindowStates InputMethodHints)
     Q_ENUMS(ConnectionType)
 #endif // (defined(Q_MOC_RUN) || defined(QT_JAMBI_RUN))
 
