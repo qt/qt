@@ -2341,7 +2341,7 @@ QRectF QGraphicsItemPrivate::sceneEffectiveBoundingRect() const
     const QGraphicsItem *parentItem = q_ptr;
     const QGraphicsItemPrivate *itemd;
     do {
-        itemd = parentItem->d_ptr;
+        itemd = parentItem->d_ptr.data();
         if (itemd->transformData)
             break;
         offset += itemd->pos;
