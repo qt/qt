@@ -204,6 +204,7 @@ public:
     static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
     static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
+    static QScriptValue vector(QScriptContext*, QScriptEngine*);
 
     static QScriptEngine *getScriptEngine(QmlEngine *e) { return &e->d_func()->scriptEngine; }
     static QmlEnginePrivate *get(QmlEngine *e) { return e->d_func(); }
