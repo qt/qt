@@ -2094,7 +2094,7 @@ Qt::HANDLE QPixmap::x11PictureHandle() const
 {
 #ifndef QT_NO_XRENDER
     if (data->classId() == QPixmapData::X11Class)
-        return static_cast<QX11PixmapData*>(data)->picture;
+        return static_cast<const QX11PixmapData*>(data.data())->picture;
     else
         return 0;
 #else
