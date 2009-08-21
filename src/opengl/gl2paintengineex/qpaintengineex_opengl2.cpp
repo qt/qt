@@ -410,6 +410,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         const QPixmap& texPixmap = currentBrush->texture();
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
+        // TODO: Support y-inverted pixmaps as brushes
         ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA, true);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, true);
     }
