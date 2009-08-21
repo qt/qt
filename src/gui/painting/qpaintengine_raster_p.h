@@ -62,6 +62,7 @@
 #include "private/qstroker_p.h"
 #include "private/qpainter_p.h"
 #include "private/qtextureglyphcache_p.h"
+#include "private/qoutlinemapper_p.h"
 
 #include <stdlib.h>
 
