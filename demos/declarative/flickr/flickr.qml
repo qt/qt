@@ -83,33 +83,33 @@ Item {
             states: [
                 State {
                     name: "Details"
-                    SetProperties { target: ImageDetails; z: 2 }
+                    PropertyChanges { target: ImageDetails; z: 2 }
                     ParentChange { target: Wrapper; parent: ImageDetails.frontContainer }
-                    SetProperties { target: Wrapper; x: 45; y: 35; scale: 1; z: 1000 }
-                    SetProperties { target: Rotation; angle: 0 }
-                    SetProperties { target: Shadows; opacity: 0 }
-                    SetProperties { target: ImageDetails; y: 20 }
-                    SetProperties { target: PhotoGridView; y: "-480" }
-                    SetProperties { target: PhotoPathView; y: "-480" }
-                    SetProperties { target: ViewModeButton; opacity: 0 }
-                    SetProperties { target: TagsEdit; opacity: 0 }
-                    SetProperties { target: FetchButton; opacity: 0 }
-                    SetProperties { target: CategoryText; y: "-50" }
+                    PropertyChanges { target: Wrapper; x: 45; y: 35; scale: 1; z: 1000 }
+                    PropertyChanges { target: Rotation; angle: 0 }
+                    PropertyChanges { target: Shadows; opacity: 0 }
+                    PropertyChanges { target: ImageDetails; y: 20 }
+                    PropertyChanges { target: PhotoGridView; y: "-480" }
+                    PropertyChanges { target: PhotoPathView; y: "-480" }
+                    PropertyChanges { target: ViewModeButton; opacity: 0 }
+                    PropertyChanges { target: TagsEdit; opacity: 0 }
+                    PropertyChanges { target: FetchButton; opacity: 0 }
+                    PropertyChanges { target: CategoryText; y: "-50" }
                 }
             ]
 
             transitions: [
                 Transition {
                     fromState: "*"; toState: "Details"
-                    ParentChangeAction { }
+                    ParentAction { }
                     NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                 },
                 Transition {
                     fromState: "Details"; toState: "*"
                     SequentialAnimation {
-                        ParentChangeAction { }
+                        ParentAction { }
                         NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
-                        SetPropertyAction { target: Wrapper; properties: "z" }
+                        PropertyAction { target: Wrapper; properties: "z" }
                     }
                 }
             ]
@@ -189,8 +189,8 @@ Item {
             State {
                 name: "PathView"
                 when: MainWindow.showPathView == true
-                SetProperties { target: PhotoPathView; y: 80 }
-                SetProperties { target: PhotoGridView; y: -380 }
+                PropertyChanges { target: PhotoPathView; y: 80 }
+                PropertyChanges { target: PhotoGridView; y: -380 }
             }
         ]
 

@@ -18,6 +18,13 @@ Rect             -> Rectangle
 FocusRealm       -> FocusScope
 FontFamily       -> FontLoader
 Palette          -> SystemPalette
+Bind             -> Binding
+SetProperties    -> PropertyChanges
+RunScript        -> StateChangeScript
+SetAnchors       -> AnchorChanges
+SetPropertyAction  -> PropertyAction
+RunScriptAction    -> ScriptAction
+ParentChangeAction -> ParentAction
 
 Renamed properties:
 MouseRegion: xmin      -> minimumX
@@ -33,6 +40,7 @@ Follow: followValue    -> value
 Additions:
 MouseRegion: add "acceptedButtons" property
 MouseRegion: add "hoverEnabled" property
+MouseRegion: add "pressedButtons" property
 Timer: add start() and stop() slots
 
 Deletions:
@@ -49,12 +57,6 @@ Pending Changes
 ===============
 
 Renamed elements:
-RunScriptAction    -> ScriptAction
-ParentChangeAction -> ParentAction
-Bind               -> Binding
-SetProperties      -> PropertyChanges
-RunScript          -> StateChangeScript
-SetAnchors         -> AnchorChanges
 
 Renamed properties:
 Transition: fromState  -> from
@@ -65,5 +67,4 @@ PropertyAction::property
 PropertyAction::target (if possible)
 
 Additions:
-MouseRegion: add "pressedButtons" property
 Connection: add "slot" property

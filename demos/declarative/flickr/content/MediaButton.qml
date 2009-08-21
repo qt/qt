@@ -32,7 +32,7 @@ Item {
         State {
             name: "Pressed"
             when: MouseRegion.pressed == true
-            SetProperties {
+            PropertyChanges {
                 target: Pressed
                 opacity: 1
             }

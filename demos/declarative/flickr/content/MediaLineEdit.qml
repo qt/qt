@@ -12,30 +12,30 @@ Item {
     states: [
         State {
             name: "Edit"
-            SetProperties {
+            PropertyChanges {
                 target: Label
                 text: Container.label + ": "
             }
-            SetProperties {
+            PropertyChanges {
                 target: Label
                 x: 10
             }
-            SetProperties {
+            PropertyChanges {
                 target: Editor
                 cursorVisible: true
                 width: 100
             }
-            SetProperties {
+            PropertyChanges {
                 target: Proxy
                 focus: true
             }
-            RunScript {
+            StateChangeScript {
                 script:"Editor.selectAll()"
             }
         },
         State {
             // When returning to default state, typed text is propagated
-            RunScript {
+            StateChangeScript {
                 script: "Container.text = Editor.text"
             }
         }
@@ -69,7 +69,7 @@ Item {
         states: [
             State {
                 when: MouseRegion.pressed == true
-                SetProperties {
+                PropertyChanges {
                     target: Pressed
                     opacity: 1
                 }

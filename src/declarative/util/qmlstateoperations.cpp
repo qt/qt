@@ -213,60 +213,60 @@ bool QmlParentChange::override(ActionEvent*other)
     return false;
 }
 
-class QmlRunScriptPrivate : public QObjectPrivate
+class QmlStateChangeScriptPrivate : public QObjectPrivate
 {
 public:
-    QmlRunScriptPrivate() {}
+    QmlStateChangeScriptPrivate() {}
 
     QString script;
     QString name;
 };
 
 /*!
-    \qmlclass RunScript QmlRunScript
-    \brief The RunScript element allows you to run a script in a state.
+    \qmlclass StateChangeScript QmlStateChangeScript
+    \brief The StateChangeScript element allows you to run a script in a state.
 */
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,RunScript,QmlRunScript)
-QmlRunScript::QmlRunScript(QObject *parent)
-: QmlStateOperation(*(new QmlRunScriptPrivate), parent)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,StateChangeScript,QmlStateChangeScript)
+QmlStateChangeScript::QmlStateChangeScript(QObject *parent)
+: QmlStateOperation(*(new QmlStateChangeScriptPrivate), parent)
 {
 }
 
-QmlRunScript::~QmlRunScript()
+QmlStateChangeScript::~QmlStateChangeScript()
 {
 }
 
 /*!
-    \qmlproperty string RunScript::script
+    \qmlproperty string StateChangeScript::script
     This property holds the script to run when the state is current.
 */
-QString QmlRunScript::script() const
+QString QmlStateChangeScript::script() const
 {
-    Q_D(const QmlRunScript);
+    Q_D(const QmlStateChangeScript);
     return d->script;
 }
 
-void QmlRunScript::setScript(const QString &s)
+void QmlStateChangeScript::setScript(const QString &s)
 {
-    Q_D(QmlRunScript);
+    Q_D(QmlStateChangeScript);
     d->script = s;
 }
 
-QString QmlRunScript::name() const
+QString QmlStateChangeScript::name() const
 {
-    Q_D(const QmlRunScript);
+    Q_D(const QmlStateChangeScript);
     return d->name;
 }
 
-void QmlRunScript::setName(const QString &n)
+void QmlStateChangeScript::setName(const QString &n)
 {
-    Q_D(QmlRunScript);
+    Q_D(QmlStateChangeScript);
     d->name = n;
 }
 
-void QmlRunScript::execute()
+void QmlStateChangeScript::execute()
 {
-    Q_D(QmlRunScript);
+    Q_D(QmlStateChangeScript);
     if (!d->script.isEmpty()) {
         QmlExpression expr(qmlContext(this), d->script, this);
         expr.setTrackChange(false);
@@ -274,7 +274,7 @@ void QmlRunScript::execute()
     }
 }
 
-QmlRunScript::ActionList QmlRunScript::actions()
+QmlStateChangeScript::ActionList QmlStateChangeScript::actions()
 {
     ActionList rv;
     Action a;
@@ -284,16 +284,16 @@ QmlRunScript::ActionList QmlRunScript::actions()
 }
 
 /*!
-    \qmlclass SetAnchors
-    \brief The SetAnchors element allows you to change anchors in a state.
+    \qmlclass AnchorChanges
+    \brief The AnchorChanges element allows you to change anchors in a state.
 */
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,SetAnchors,QmlSetAnchors)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,AnchorChanges,QmlAnchorChanges)
 
-class QmlSetAnchorsPrivate : public QObjectPrivate
+class QmlAnchorChangesPrivate : public QObjectPrivate
 {
 public:
-    QmlSetAnchorsPrivate() : target(0) {}
+    QmlAnchorChangesPrivate() : target(0) {}
 
     QString name;
     QFxItem *target;
@@ -313,98 +313,98 @@ public:
     qreal origHeight;
 };
 
-QmlSetAnchors::QmlSetAnchors(QObject *parent)
- : QmlStateOperation(*(new QmlSetAnchorsPrivate), parent)
+QmlAnchorChanges::QmlAnchorChanges(QObject *parent)
+ : QmlStateOperation(*(new QmlAnchorChangesPrivate), parent)
 {
 }
 
-QmlSetAnchors::~QmlSetAnchors()
+QmlAnchorChanges::~QmlAnchorChanges()
 {
 }
 
-QmlSetAnchors::ActionList QmlSetAnchors::actions()
+QmlAnchorChanges::ActionList QmlAnchorChanges::actions()
 {
     Action a;
     a.event = this;
     return ActionList() << a;
 }
 
-QFxItem *QmlSetAnchors::object() const
+QFxItem *QmlAnchorChanges::object() const
 {
-    Q_D(const QmlSetAnchors);
+    Q_D(const QmlAnchorChanges);
     return d->target;
 }
 
-void QmlSetAnchors::setObject(QFxItem *target)
+void QmlAnchorChanges::setObject(QFxItem *target)
 {
-    Q_D(QmlSetAnchors);
+    Q_D(QmlAnchorChanges);
     d->target = target;
 }
 
-QString QmlSetAnchors::reset() const
+QString QmlAnchorChanges::reset() const
 {
-    Q_D(const QmlSetAnchors);
+    Q_D(const QmlAnchorChanges);
     return d->resetString;
 }
 
-void QmlSetAnchors::setReset(const QString &reset)
+void QmlAnchorChanges::setReset(const QString &reset)
 {
-    Q_D(QmlSetAnchors);
+    Q_D(QmlAnchorChanges);
     d->resetString = reset;
     d->resetList = d->resetString.split(QLatin1Char(','));
 }
 
-QFxAnchorLine QmlSetAnchors::left() const
+QFxAnchorLine QmlAnchorChanges::left() const
 {
-    Q_D(const QmlSetAnchors);
+    Q_D(const QmlAnchorChanges);
     return d->left;
 }
 
-void QmlSetAnchors::setLeft(const QFxAnchorLine &edge)
+void QmlAnchorChanges::setLeft(const QFxAnchorLine &edge)
 {
-    Q_D(QmlSetAnchors);
+    Q_D(QmlAnchorChanges);
     d->left = edge;
 }
 
-QFxAnchorLine QmlSetAnchors::right() const
+QFxAnchorLine QmlAnchorChanges::right() const
 {
-    Q_D(const QmlSetAnchors);
+    Q_D(const QmlAnchorChanges);
     return d->right;
 }
 
-void QmlSetAnchors::setRight(const QFxAnchorLine &edge)
+void QmlAnchorChanges::setRight(const QFxAnchorLine &edge)
 {
-    Q_D(QmlSetAnchors);
+    Q_D(QmlAnchorChanges);
     d->right = edge;
 }
 
-QFxAnchorLine QmlSetAnchors::top() const
+QFxAnchorLine QmlAnchorChanges::top() const
 {
-    Q_D(const QmlSetAnchors);
+    Q_D(const QmlAnchorChanges);
     return d->top;
 }
 
-void QmlSetAnchors::setTop(const QFxAnchorLine &edge)
+void QmlAnchorChanges::setTop(const QFxAnchorLine &edge)
 {
-    Q_D(QmlSetAnchors);
+    Q_D(QmlAnchorChanges);
     d->top = edge;
 }
 
-QFxAnchorLine QmlSetAnchors::bottom() const
+QFxAnchorLine QmlAnchorChanges::bottom() const
 {
-    Q_D(const QmlSetAnchors);
+    Q_D(const QmlAnchorChanges);
     return d->bottom;
 }
 
-void QmlSetAnchors::setBottom(const QFxAnchorLine &edge)
+void QmlAnchorChanges::setBottom(const QFxAnchorLine &edge)
 {
-    Q_D(QmlSetAnchors);
+    Q_D(QmlAnchorChanges);
     d->bottom = edge;
 }
 
-void QmlSetAnchors::execute()
+void QmlAnchorChanges::execute()
 {
-    Q_D(QmlSetAnchors);
+    Q_D(QmlAnchorChanges);
     if (!d->target)
         return;
 
@@ -419,14 +419,14 @@ void QmlSetAnchors::execute()
         d->target->anchors()->setBottom(d->bottom);
 }
 
-bool QmlSetAnchors::isReversable()
+bool QmlAnchorChanges::isReversable()
 {
     return true;
 }
 
-void QmlSetAnchors::reverse()
+void QmlAnchorChanges::reverse()
 {
-    Q_D(QmlSetAnchors);
+    Q_D(QmlAnchorChanges);
     if (!d->target)
         return;
 
@@ -442,14 +442,14 @@ void QmlSetAnchors::reverse()
 
 }
 
-QString QmlSetAnchors::typeName() const
+QString QmlAnchorChanges::typeName() const
 {
-    return QLatin1String("SetAnchors");
+    return QLatin1String("AnchorChanges");
 }
 
-QList<Action> QmlSetAnchors::extraActions()
+QList<Action> QmlAnchorChanges::extraActions()
 {
-    Q_D(QmlSetAnchors);
+    Q_D(QmlAnchorChanges);
     QList<Action> extra;
 
     //### try to be smarter about which ones we add.
@@ -477,14 +477,14 @@ QList<Action> QmlSetAnchors::extraActions()
     return extra;
 }
 
-bool QmlSetAnchors::changesBindings()
+bool QmlAnchorChanges::changesBindings()
 {
     return true;
 }
 
-void QmlSetAnchors::clearForwardBindings()
+void QmlAnchorChanges::clearForwardBindings()
 {
-    Q_D(QmlSetAnchors);
+    Q_D(QmlAnchorChanges);
     d->origLeft = d->target->anchors()->left();
     d->origRight = d->target->anchors()->right();
     d->origTop = d->target->anchors()->top();
@@ -505,9 +505,9 @@ void QmlSetAnchors::clearForwardBindings()
         d->target->anchors()->resetBottom();
 }
 
-void QmlSetAnchors::clearReverseBindings()
+void QmlAnchorChanges::clearReverseBindings()
 {
-    Q_D(QmlSetAnchors);
+    Q_D(QmlAnchorChanges);
     d->origX = d->target->x();
     d->origY = d->target->y();
     d->origWidth = d->target->width();

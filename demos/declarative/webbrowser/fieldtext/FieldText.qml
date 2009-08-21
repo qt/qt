@@ -115,15 +115,15 @@ Item {
     states: [
     State {
         name: "editing"
-        SetProperties {
+        PropertyChanges {
             target: confirmIcon
             opacity: 1
         }
-        SetProperties {
+        PropertyChanges {
             target: cancelIcon
             opacity: 1
         }
-        SetProperties {
+        PropertyChanges {
             target: textEdit
             color: "black"
             readOnly: false
@@ -131,15 +131,15 @@ Item {
             selectionStart: 0
             selectionEnd: -1
         }
-        SetProperties {
+        PropertyChanges {
             target: editRegion
             opacity: 0
         }
-        SetProperties {
+        PropertyChanges {
             target: textEdit.anchors
             leftMargin: 34
         }
-        SetProperties {
+        PropertyChanges {
             target: textEdit.anchors
             rightMargin: 34
         }

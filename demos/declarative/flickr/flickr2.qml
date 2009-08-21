@@ -82,33 +82,33 @@ Item {
                     states: [
                         State {
                             name: "Details"
-                            SetProperties { target: Background.imageDetails; z: 2 }
+                            PropertyChanges { target: Background.imageDetails; z: 2 }
                             ParentChange { target: Wrapper; parent: Background.imageDetails.frontContainer }
-                            SetProperties { target: Wrapper; x: 45; y: 35; scale: 1; z: 1000 }
-                            SetProperties { target: Rotation; angle: 0 }
-                            SetProperties { target: Shadows; opacity: 0 }
-                            SetProperties { target: Background.imageDetails; y: 20 }
-                            SetProperties { target: PhotoGridView; y: "-480" }
-                            SetProperties { target: PhotoPathView; y: "-480" }
-                            SetProperties { target: ViewModeButton; opacity: 0 }
-                            SetProperties { target: TagsEdit; opacity: 0 }
-                            SetProperties { target: FetchButton; opacity: 0 }
-                            SetProperties { target: CategoryText; y: "-50" }
+                            PropertyChanges { target: Wrapper; x: 45; y: 35; scale: 1; z: 1000 }
+                            PropertyChanges { target: Rotation; angle: 0 }
+                            PropertyChanges { target: Shadows; opacity: 0 }
+                            PropertyChanges { target: Background.imageDetails; y: 20 }
+                            PropertyChanges { target: PhotoGridView; y: "-480" }
+                            PropertyChanges { target: PhotoPathView; y: "-480" }
+                            PropertyChanges { target: ViewModeButton; opacity: 0 }
+                            PropertyChanges { target: TagsEdit; opacity: 0 }
+                            PropertyChanges { target: FetchButton; opacity: 0 }
+                            PropertyChanges { target: CategoryText; y: "-50" }
                         }
                     ]
 
                     transitions: [
                         Transition {
                             fromState: "*"; toState: "Details"
-                            ParentChangeAction { }
+                            ParentAction { }
                             NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                         },
                         Transition {
                             fromState: "Details"; toState: "*"
                             SequentialAnimation {
-                                ParentChangeAction { }
+                                ParentAction { }
                                 NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
-                                SetPropertyAction { target: Wrapper; properties: "z" }
+                                PropertyAction { target: Wrapper; properties: "z" }
                             }
                         }
                     ]
@@ -130,19 +130,19 @@ Item {
                     states: [
                         State {
                             name: "gridView"
-                            SetProperties { target: Wrapper; explicit: true; property: "moveToParent"; value: GridViewPackage }
+                            PropertyChanges { target: Wrapper; explicit: true; property: "moveToParent"; value: GridViewPackage }
                         },
                         State {
                             name: "pathView"
-                            SetProperties { target: Wrapper; scale: PathViewPackage.PathView.scale; angle: PathViewPackage.PathView.angle; }
-                            SetProperties { target: Wrapper; explicit: true; moveToParent: PathViewPackage }
+                            PropertyChanges { target: Wrapper; scale: PathViewPackage.PathView.scale; angle: PathViewPackage.PathView.angle; }
+                            PropertyChanges { target: Wrapper; explicit: true; moveToParent: PathViewPackage }
                         }
                     ]
                     transitions: [
                         Transition {
                             toState: "pathView"
                             SequentialAnimation {
-                                SetPropertyAction { target: Wrapper; property: "moveToParent" }
+                                PropertyAction { target: Wrapper; property: "moveToParent" }
                                 ParallelAnimation {
                                     NumberAnimation {
                                         target: Wrapper
@@ -159,7 +159,7 @@ Item {
                             toState: "gridView"
                             SequentialAnimation {
                                 PauseAnimation { duration: Math.floor(index/7)*100 }
-                                SetPropertyAction { target: Wrapper; property: "moveToParent" }
+                                PropertyAction { target: Wrapper; property: "moveToParent" }
                                 ParallelAnimation {
                                     NumberAnimation {
                                         target: Wrapper

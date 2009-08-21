@@ -41,13 +41,13 @@ Item {
     states: [
         State {
             name: "On"
-            SetProperties { target: Knob; x: 78 }
-            SetProperties { target: Switch; on: true }
+            PropertyChanges { target: Knob; x: 78 }
+            PropertyChanges { target: Switch; on: true }
         },
         State {
             name: "Off"
-            SetProperties { target: Knob; x: 1 }
-            SetProperties { target: Switch; on: false }
+            PropertyChanges { target: Knob; x: 1 }
+            PropertyChanges { target: Switch; on: false }
         }
     ]
     transitions: [

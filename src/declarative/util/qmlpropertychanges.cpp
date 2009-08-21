@@ -41,7 +41,7 @@
 
 #include "private/qobject_p.h"
 #include "qmlopenmetaobject.h"
-#include "qmlsetproperties.h"
+#include "qmlpropertychanges.h"
 #include <QtCore/qdebug.h>
 #include <QtDeclarative/qmlinfo.h>
 #include <private/qmlcustomparser_p.h>
@@ -53,14 +53,14 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \qmlclass SetProperties QmlSetProperties
-    \brief The SetProperties element describes new property values for a state.
+    \qmlclass PropertyChanges QmlPropertyChanges
+    \brief The PropertyChanges element describes new property values for a state.
 
-    SetProperties changes the properties of an item. It allows you to specify the property
+    PropertyChanges changes the properties of an item. It allows you to specify the property
     names and values similar to how you normally would specify them for the actual item:
 
     \code
-    SetProperties {
+    PropertyChanges {
         target: myRect
         x: 52
         y: 300
@@ -71,20 +71,20 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \internal
-    \class QmlSetProperties
-    \brief The QmlSetProperties class describes new property values for a state.
+    \class QmlPropertyChanges
+    \brief The QmlPropertyChanges class describes new property values for a state.
 */
 
 /*!
-    \qmlproperty Object SetProperties::target
+    \qmlproperty Object PropertyChanges::target
     This property holds the object that the properties to change belong to
 */
 
-class QmlSetPropertiesPrivate : public QObjectPrivate
+class QmlPropertyChangesPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QmlSetProperties)
+    Q_DECLARE_PUBLIC(QmlPropertyChanges)
 public:
-    QmlSetPropertiesPrivate() : object(0), decoded(true), restore(true),
+    QmlPropertyChangesPrivate() : object(0), decoded(true), restore(true),
                                 isExplicit(false) {}
 
     QObject *object;
@@ -101,7 +101,7 @@ public:
     QmlMetaProperty property(const QByteArray &);
 };
 
-class QmlSetPropertiesParser : public QmlCustomParser
+class QmlPropertyChangesParser : public QmlCustomParser
 {
 public:
     void compileList(QList<QPair<QByteArray, QVariant> > &list, const QByteArray &pre, const QmlCustomParserProperty &prop);
@@ -111,7 +111,7 @@ public:
 };
 
 void
-QmlSetPropertiesParser::compileList(QList<QPair<QByteArray, QVariant> > &list,
+QmlPropertyChangesParser::compileList(QList<QPair<QByteArray, QVariant> > &list,
                                      const QByteArray &pre,
                                      const QmlCustomParserProperty &prop)
 {
@@ -137,7 +137,7 @@ QmlSetPropertiesParser::compileList(QList<QPair<QByteArray, QVariant> > &list,
 }
 
 QByteArray
-QmlSetPropertiesParser::compile(const QList<QmlCustomParserProperty> &props,
+QmlPropertyChangesParser::compile(const QList<QmlCustomParserProperty> &props,
                                 bool *ok)
 {
     *ok = true;
@@ -176,9 +176,9 @@ QmlSetPropertiesParser::compile(const QList<QmlCustomParserProperty> &props,
     return rv;
 }
 
-void QmlSetPropertiesPrivate::decode()
+void QmlPropertyChangesPrivate::decode()
 {
-    Q_Q(QmlSetProperties);
+    Q_Q(QmlPropertyChanges);
     if (decoded)
         return;
 
@@ -207,55 +207,55 @@ void QmlSetPropertiesPrivate::decode()
     data.clear();
 }
 
-void QmlSetPropertiesParser::setCustomData(QObject *object,
+void QmlPropertyChangesParser::setCustomData(QObject *object,
                                             const QByteArray &data)
 {
-    QmlSetPropertiesPrivate *p =
-        static_cast<QmlSetPropertiesPrivate *>(QObjectPrivate::get(object));
+    QmlPropertyChangesPrivate *p =
+        static_cast<QmlPropertyChangesPrivate *>(QObjectPrivate::get(object));
     p->data = data;
     p->decoded = false;
 }
 
-QmlSetProperties::QmlSetProperties()
-: QmlStateOperation(*(new QmlSetPropertiesPrivate))
+QmlPropertyChanges::QmlPropertyChanges()
+: QmlStateOperation(*(new QmlPropertyChangesPrivate))
 {
 }
 
-QmlSetProperties::~QmlSetProperties()
+QmlPropertyChanges::~QmlPropertyChanges()
 {
-    Q_D(QmlSetProperties);
+    Q_D(QmlPropertyChanges);
     for(int ii = 0; ii < d->expressions.count(); ++ii)
         delete d->expressions.at(ii).second;
 }
 
-QObject *QmlSetProperties::object() const
+QObject *QmlPropertyChanges::object() const
 {
-    Q_D(const QmlSetProperties);
+    Q_D(const QmlPropertyChanges);
     return d->object;
 }
 
-void QmlSetProperties::setObject(QObject *o)
+void QmlPropertyChanges::setObject(QObject *o)
 {
-    Q_D(QmlSetProperties);
+    Q_D(QmlPropertyChanges);
     d->object = o;
 }
 
-bool QmlSetProperties::restoreEntryValues() const
+bool QmlPropertyChanges::restoreEntryValues() const
 {
-    Q_D(const QmlSetProperties);
+    Q_D(const QmlPropertyChanges);
     return d->restore;
 }
 
-void QmlSetProperties::setRestoreEntryValues(bool v)
+void QmlPropertyChanges::setRestoreEntryValues(bool v)
 {
-    Q_D(QmlSetProperties);
+    Q_D(QmlPropertyChanges);
     d->restore = v;
 }
 
 QmlMetaProperty
-QmlSetPropertiesPrivate::property(const QByteArray &property)
+QmlPropertyChangesPrivate::property(const QByteArray &property)
 {
-    Q_Q(QmlSetProperties);
+    Q_Q(QmlPropertyChanges);
     QmlMetaProperty prop = QmlMetaProperty::createProperty(object, QString::fromLatin1(property));
     if (!prop.isValid()) {
         qmlInfo(q) << "Cannot assign to non-existant property" << property;
@@ -267,9 +267,9 @@ QmlSetPropertiesPrivate::property(const QByteArray &property)
     return prop;
 }
 
-QmlSetProperties::ActionList QmlSetProperties::actions()
+QmlPropertyChanges::ActionList QmlPropertyChanges::actions()
 {
-    Q_D(QmlSetProperties);
+    Q_D(QmlPropertyChanges);
 
     d->decode();
 
@@ -322,18 +322,18 @@ QmlSetProperties::ActionList QmlSetProperties::actions()
     return list;
 }
 
-bool QmlSetProperties::isExplicit() const
+bool QmlPropertyChanges::isExplicit() const
 {
-    Q_D(const QmlSetProperties);
+    Q_D(const QmlPropertyChanges);
     return d->isExplicit;
 }
 
-void QmlSetProperties::setIsExplicit(bool e)
+void QmlPropertyChanges::setIsExplicit(bool e)
 {
-    Q_D(QmlSetProperties);
+    Q_D(QmlPropertyChanges);
     d->isExplicit = e;
 }
 
-QML_DEFINE_CUSTOM_TYPE(Qt, 4,6, (QT_VERSION&0x00ff00)>>8, SetProperties, QmlSetProperties, QmlSetPropertiesParser)
+QML_DEFINE_CUSTOM_TYPE(Qt, 4,6, (QT_VERSION&0x00ff00)>>8, PropertyChanges, QmlPropertyChanges, QmlPropertyChangesParser)
 
 QT_END_NAMESPACE

@@ -5,17 +5,17 @@
 
 Data binding provides a declarative way of specifying the data associated with objects, as well as the relationship between data of different objects. For example, you could bind the text of a label to the value of a slider: as the value of the slider changed, the label would be automatically updated with the new value.
 
-Bindings are created in QML when an expression is assigned to a property. For example, the following produces two rectangles of equal size (\c rect2 is bound to the size of \c rect1):
+Bindings are created in QML when an expression is assigned to a property. For example, the following produces two rectangles of equal size (\c Rect2 is bound to the size of \c Rect1):
 \code
-Rectangle { id: rect1; width: 100; height: 100 }
-Rectangle { id: rect2; width: rect1.width; height: rect1.height }
+Rectangle { id: Rect1; width: 100; height: 100 }
+Rectangle { id: Rect2; width: Rect1.width; height: Rect1.height }
 \endcode
 
-There is also a special \l Bind element, which is typically used to bind from the UI to the underlying UI model (see \l {Passing Data Between C++ and QML} for an example of this). The bindings above could be expressed using the \l Bind element as:
+There is also a special \l Binding element, which is typically used to bind from the UI to the underlying UI model (see \l {Passing Data Between C++ and QML} for an example of this). The bindings above could be expressed using the \l Binding element as:
 
 \code
-Bind { target: rect2; property: "width";  value: rect1.width }
-Bind { target: rect2; property: "height"; value: rect1.height }
+Binding { target: Rect2; property: "width";  value: Rect1.width }
+Binding { target: Rect2; property: "height"; value: Rect1.height }
 \endcode
 
 In addition to binding directly to a property, you can also bind to the results of expressions involving properties. For example:
@@ -102,7 +102,7 @@ Finally, in QML you can make the appropriate bindings, so in \c "MyUI.qml":
 
 \code
 Slider { value: screen.brightness }
-Bind { target: screen; property: "brightness"; value: slider.value }
+Binding { target: screen; property: "brightness"; value: slider.value }
 \endcode
 
 The \l QBindableMap class provides a convenient way to make data visible to the bind engine.

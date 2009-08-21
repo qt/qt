@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Item {
-    states: State{ name: "dying"; SetProperties{ target: newRect; opacity: 0 } }
+    states: State{ name: "dying"; PropertyChanges{ target: newRect; opacity: 0 } }
     transitions: Transition{ 
         NumberAnimation{ properties: "opacity"; target: newRect; duration:500 } 
     }

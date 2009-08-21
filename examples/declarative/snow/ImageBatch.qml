@@ -18,12 +18,12 @@ GridView {
 
     states: State {
         name: "selected"; when: MyGrid.isSelected
-        SetProperties { target: MyGrid; z: 150 }
+        PropertyChanges { target: MyGrid; z: 150 }
     }
     transitions: Transition { 
         SequentialAnimation {
             PauseAnimation { duration: 150 }
-            SetPropertyAction { properties: "z" }
+            PropertyAction { properties: "z" }
         }
     }
     model: XmlListModel {
@@ -48,14 +48,14 @@ GridView {
         states: State {
             name: "selected"
             when: Root.isSelected
-            SetProperties { target: Root; scale: 3; z: 100 }
+            PropertyChanges { target: Root; scale: 3; z: 100 }
         }
         transitions: [
             Transition {
                 toState: "selected"
                 SequentialAnimation {
                     PauseAnimation { duration: 150 }
-                    SetPropertyAction { properties: "z" }
+                    PropertyAction { properties: "z" }
                     NumberAnimation { properties: "scale"; duration: 150; }
                 }
             },
@@ -63,7 +63,7 @@ GridView {
                 fromState: "selected"
                 SequentialAnimation {
                     NumberAnimation { properties: "scale"; duration: 150 }
-                    SetPropertyAction { properties: "z" }
+                    PropertyAction { properties: "z" }
                 }
             }
         ]

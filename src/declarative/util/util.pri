@@ -11,7 +11,7 @@ SOURCES += \
            util/qmlstate.cpp\
            util/qmltransitionmanager.cpp \
            util/qmlstateoperations.cpp \
-           util/qmlsetproperties.cpp \
+           util/qmlpropertychanges.cpp \
            util/qmlstategroup.cpp \
            util/qmltransition.cpp \
            util/qmllistmodel.cpp\
@@ -35,7 +35,7 @@ HEADERS += \
            util/qmlfollow.h \
            util/qmlstate.h\
            util/qmlstateoperations.h \
-           util/qmlsetproperties.h \
+           util/qmlpropertychanges.h \
            util/qmlstate_p.h\
            util/qmltransitionmanager_p.h \
            util/qmlstategroup.h \

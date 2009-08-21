@@ -184,7 +184,7 @@ private:
 
     QMutex mutex;
     QWaitCondition condition;
-    bool abort;
+    volatile bool abort;
 
     QStack<QString> path;
     QStack<QStringList> files;

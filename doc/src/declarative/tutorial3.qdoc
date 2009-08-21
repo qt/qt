@@ -28,8 +28,7 @@ Rectangle {
             State {
                 name: "down"
                 when: MouseRegion.pressed == true
-                SetProperties { target: HelloText; y: 160 }
-                SetProperties { target: HelloText color: "red" }
+                PropertyChanges { target: HelloText; y: 160; color: "red" }
             }
         ]
         transitions: [
@@ -72,8 +71,7 @@ states: [
     State {
         name: "down"
         when: MouseRegion.pressed == true
-        SetProperties { target: HelloText; y: 160 }
-        SetProperties { target: HelloText; color: "red" }
+        PropertyChanges { target: HelloText; y: 160; color: "red" }
     }
 ]
 \endcode

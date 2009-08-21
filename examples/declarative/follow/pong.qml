@@ -19,9 +19,9 @@ Rectangle {
         x: SequentialAnimation {
             running: true; repeat: true
             NumberAnimation { to: Page.width-40; duration: 2000 }
-            SetPropertyAction { target: Ball; property: "direction"; value: "left" }
+            PropertyAction { target: Ball; property: "direction"; value: "left" }
             NumberAnimation { to: 20; duration: 2000 }
-            SetPropertyAction { target: Ball; property: "direction"; value: "right" }
+            PropertyAction { target: Ball; property: "direction"; value: "right" }
         }
 
         // Make y follow the target y coordinate, with a velocity of 200

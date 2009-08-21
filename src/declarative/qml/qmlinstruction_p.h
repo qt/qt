@@ -111,6 +111,7 @@ public:
         StoreSizeF,               /* storeRealPair */
         StoreRect,                /* storeRect */
         StoreRectF,               /* storeRect */
+        StoreVector3D,            /* storeVector3D */
         StoreVariant,             /* storeString */
         StoreObject,              /* storeObject */
         StoreVariantObject,       /* storeObject */
@@ -261,6 +262,10 @@ public:
             int propertyIndex;
             int valueIndex;
         } storeRect;
+        struct {
+            int propertyIndex;
+            int valueIndex;
+        } storeVector3D;
         struct {
             int propertyIndex;
         } storeObject;

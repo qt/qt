@@ -93,8 +93,6 @@ public:
 
     QVariantAnimation::Interpolator interpolator;
 
-    const quint32 changedSignalMask;
-
     void setCurrentValueForProgress(const qreal progress);
     void recalculateCurrentInterval(bool force=false);
     void setValueAt(qreal, const QVariant &);

@@ -60,7 +60,7 @@ Rectangle {
                 State {
                     name: "following"
                     when: !F1.inSync || !F2.inSync
-                    SetProperties { target: Ball; color: "#ff0000" }
+                    PropertyChanges { target: Ball; color: "#ff0000" }
                 }
             ]
             transitions: [

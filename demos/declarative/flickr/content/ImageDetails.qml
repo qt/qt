@@ -136,20 +136,20 @@ Flipable {
     states: [
         State {
             name: "Back"
-            SetProperties { target: Rotation; angle: 180 }
+            PropertyChanges { target: Rotation; angle: 180 }
         }
     ]
 
     transitions: [
         Transition {
             SequentialAnimation {
-                SetPropertyAction {
+                PropertyAction {
                     target: BigImage
                     property: "smooth"
                     value: false
                 }
                 NumberAnimation { easing: "easeInOutQuad"; properties: "angle"; duration: 500 }
-                SetPropertyAction {
+                PropertyAction {
                     target: BigImage
                     property: "smooth"
                     value: !Flick.moving

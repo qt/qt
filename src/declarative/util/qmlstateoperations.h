@@ -79,18 +79,18 @@ public:
     virtual bool override(ActionEvent*other);
 };
 
-class QmlRunScriptPrivate;
-class Q_DECLARATIVE_EXPORT QmlRunScript : public QmlStateOperation, public ActionEvent
+class QmlStateChangeScriptPrivate;
+class Q_DECLARATIVE_EXPORT QmlStateChangeScript : public QmlStateOperation, public ActionEvent
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlRunScript)
+    Q_DECLARE_PRIVATE(QmlStateChangeScript)
 
     Q_PROPERTY(QString script READ script WRITE setScript)
     Q_PROPERTY(QString name READ name WRITE setName)
 
 public:
-    QmlRunScript(QObject *parent=0);
-    ~QmlRunScript();
+    QmlStateChangeScript(QObject *parent=0);
+    ~QmlStateChangeScript();
 
     virtual ActionList actions();
 
@@ -103,11 +103,11 @@ public:
     virtual void execute();
 };
 
-class QmlSetAnchorsPrivate;
-class Q_DECLARATIVE_EXPORT QmlSetAnchors : public QmlStateOperation, public ActionEvent
+class QmlAnchorChangesPrivate;
+class Q_DECLARATIVE_EXPORT QmlAnchorChanges : public QmlStateOperation, public ActionEvent
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlSetAnchors)
+    Q_DECLARE_PRIVATE(QmlAnchorChanges)
 
     Q_PROPERTY(QFxItem *target READ object WRITE setObject)
     Q_PROPERTY(QString reset READ reset WRITE setReset)
@@ -117,8 +117,8 @@ class Q_DECLARATIVE_EXPORT QmlSetAnchors : public QmlStateOperation, public Acti
     Q_PROPERTY(QFxAnchorLine bottom READ bottom WRITE setBottom)
 
 public:
-    QmlSetAnchors(QObject *parent=0);
-    ~QmlSetAnchors();
+    QmlAnchorChanges(QObject *parent=0);
+    ~QmlAnchorChanges();
 
     virtual ActionList actions();
 
@@ -153,8 +153,8 @@ public:
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlParentChange)
-QML_DECLARE_TYPE(QmlRunScript)
-QML_DECLARE_TYPE(QmlSetAnchors)
+QML_DECLARE_TYPE(QmlStateChangeScript)
+QML_DECLARE_TYPE(QmlAnchorChanges)
 
 QT_END_HEADER
 

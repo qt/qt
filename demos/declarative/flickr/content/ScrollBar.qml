@@ -20,7 +20,7 @@ Item {
         State {
             name: "show"
             when: flickableArea.moving
-            SetProperties {
+            PropertyChanges {
                 target: Container
                 opacity: 1
             }

@@ -26,7 +26,7 @@ Item {
         State {
             name: "on"
             when: Container.on == true
-            SetProperties {
+            PropertyChanges {
                 target: Image
                 opacity: 1
                 scale: 1
