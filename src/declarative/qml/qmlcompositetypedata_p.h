@@ -91,7 +91,7 @@ struct QmlCompositeTypeData : public QmlRefCount
     // occurs
     QmlCompiledData *toCompiledComponent(QmlEngine *);
 
-    struct TypeReference 
+    struct TypeReference
     {
         TypeReference();
 

@@ -569,6 +569,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
     for (int ii = 0; ii < unit->types.count(); ++ii) {
         QmlCompositeTypeData::TypeReference &tref = unit->types[ii];
         QmlCompiledData::TypeReference ref;
+        QmlScriptParser::TypeReference *parserRef = unit->data.referencedTypes().at(ii);
         if (tref.type)
             ref.type = tref.type;
         else if (tref.unit) {
@@ -578,7 +579,13 @@ bool QmlCompiler::compile(QmlEngine *engine,
                 QmlError error;
                 error.setUrl(output->url);
                 error.setDescription(QLatin1String("Unable to create type ") +
-                                     unit->data.types().at(ii));
+                                     parserRef->name);
+                if (!parserRef->refObjects.isEmpty()) {
+                    QmlParser::Object *parserObject = parserRef->refObjects.first();
+                    error.setLine(parserObject->location.start.line);
+                    error.setColumn(parserObject->location.start.column);
+                }
+
                 exceptions << error;
                 exceptions << ref.component->errors();
                 reset(out);
@@ -587,7 +594,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
             ref.ref = tref.unit;
             ref.ref->addref();
         }
-        ref.className = unit->data.types().at(ii).toLatin1();
+        ref.className = parserRef->name.toLatin1();
         out->types << ref;
     }
 
