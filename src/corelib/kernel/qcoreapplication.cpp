@@ -499,7 +499,7 @@ QCoreApplication::QCoreApplication(int &argc, char **argv)
 {
     init();
     QCoreApplicationPrivate::eventDispatcher->startingUp();
-#if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS) && defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     // Refresh factoryloader, as text codecs are requested during lib path
     // resolving process and won't be therefore properly loaded.
     // Unknown if this is symbian specific issue.
@@ -1789,9 +1789,8 @@ bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
     function also assumes that the current directory has not been
     changed by the application.
 
-    In Symbian this function will return the application private directory
-    in C-drive, not the path to executable itself, as those are always in
-    /sys/bin.
+    In Symbian this function will return the application private directory,
+    not the path to executable itself, as those are always in \c {/sys/bin}.
 
     \sa applicationFilePath()
 */
