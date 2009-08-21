@@ -46,6 +46,8 @@
 #include "qgraph_p.h"
 #include "qsimplex_p.h"
 
+QT_BEGIN_NAMESPACE
+
 /*
   The public QGraphicsAnchorLayout interface represents an anchorage point
   as a pair of a <QGraphicsLayoutItem *> and a <Qt::AnchorPoint>.
@@ -472,3 +474,4 @@ public:
     uint calculateGraphCacheDirty : 1;
 };
 
+QT_END_NAMESPACE

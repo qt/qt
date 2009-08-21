@@ -5,6 +5,8 @@
 
 #include <float.h>
 
+QT_BEGIN_NAMESPACE
+
 template <typename Vertex, typename EdgeData>
 class Graph
 {
@@ -234,3 +236,5 @@ private:
 
     QHash<Vertex *, QHash<Vertex *, EdgeData *> *> m_graph;
 };
+
+QT_END_NAMESPACE

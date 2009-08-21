@@ -5,9 +5,10 @@
 
 #include <stdlib.h>
 
+QT_BEGIN_NAMESPACE
+
 QSimplex::QSimplex() : objective(0), rows(0), columns(0), firstArtificial(0), matrix(0)
 {
-
 }
 
 QSimplex::~QSimplex()
@@ -366,3 +367,5 @@ void QSimplex::collectResults()
             variables[index]->result = valueAt(i, columns - 1);
     }
 }
+
+QT_END_NAMESPACE

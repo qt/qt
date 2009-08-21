@@ -39,11 +39,17 @@
 **
 ****************************************************************************/
 
-#include <QWidget>
-#include <QLinkedList>
+#include <QtGui/qwidget.h>
+#include <QtCore/qlinkedlist.h>
 #include <QtCore/qstack.h>
 
+#ifdef QT_DEBUG
+#include <QtCore/qfile.h>
+#endif
+
 #include "qgraphicsanchorlayout_p.h"
+
+QT_BEGIN_NAMESPACE
 
 void AnchorData::refreshSizeHints(qreal effectiveSpacing)
 {
@@ -2080,7 +2086,6 @@ void QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
 }
 
 #ifdef QT_DEBUG
-#include <QFile>
 void QGraphicsAnchorLayoutPrivate::dumpGraph()
 {
     QFile file(QString::fromAscii("anchorlayout.dot"));
@@ -2095,3 +2100,5 @@ void QGraphicsAnchorLayoutPrivate::dumpGraph()
     file.close();
 }
 #endif
+
+QT_END_NAMESPACE

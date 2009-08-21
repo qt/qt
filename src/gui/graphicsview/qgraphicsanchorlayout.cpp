@@ -81,6 +81,8 @@
 
 #include "qgraphicsanchorlayout_p.h"
 
+QT_BEGIN_NAMESPACE
+
 QGraphicsAnchorLayout::QGraphicsAnchorLayout(QGraphicsLayoutItem *parent)
     : QGraphicsLayout(*new QGraphicsAnchorLayoutPrivate(), parent)
 {
@@ -447,3 +449,5 @@ QSizeF QGraphicsAnchorLayout::sizeHint(Qt::SizeHint which, const QSizeF &constra
 
     return engineSizeHint + QSizeF(left + right, top + bottom);
 }
+
+QT_END_NAMESPACE
