@@ -2672,11 +2672,8 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                     // Draw gripper if there is enough space
                     if (!gripperBounds.isEmpty()) {
                         p->save();
-                        XPThemeData grippBackground = theme;
-                        grippBackground.partId = flags & State_Horizontal ? SBP_LOWERTRACKHORZ : SBP_LOWERTRACKVERT;
                         theme.rect = gripperBounds;
                         p->setClipRegion(d->region(theme));// Only change inside the region of the gripper
-                        d->drawBackground(grippBackground);// The gutter is the grippers background
                         d->drawBackground(theme);          // Transparent gripper ontop of background
                         p->restore();
                     }
