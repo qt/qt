@@ -7420,7 +7420,7 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
 
     // Apply shadow effect to the entire sub-tree.
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect;
-    shadow->setShadowOffset(-20, -20);
+    shadow->setOffset(-20, -20);
     item1->setGraphicsEffect(shadow);
     QTest::qWait(50);
 

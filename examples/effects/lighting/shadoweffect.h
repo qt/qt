@@ -58,6 +58,7 @@ private:
     void adjustForItem();
 
 private:
+    QColor m_color;
     QGraphicsItem *item;
     QGraphicsItem *m_lightSource;
 };

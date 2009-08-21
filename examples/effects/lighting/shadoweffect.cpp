@@ -48,17 +48,19 @@ ShadowEffect::ShadowEffect(QGraphicsItem *item, QGraphicsItem *source)
     , item(item), m_lightSource(source)
 {
     setBlurRadius(8);
+    m_color = color();
 }
 
 void ShadowEffect::adjustForItem()
 {
     QPointF delta = item->pos() - m_lightSource->pos();
-    setShadowOffset(delta.toPoint() / 30);
+    setOffset(delta.toPoint() / 30);
 
     qreal dx = delta.x();
     qreal dy = delta.y();
     qreal dd = sqrt(dx * dx + dy * dy);
-    setOpacity(qBound(0.4, 1 - dd / 200.0, 0.7));
+    m_color.setAlphaF(qBound(0.4, 1 - dd / 200.0, 0.7));
+    setColor(m_color);
 }
 
 QRectF ShadowEffect::boundingRectFor(const QRectF &rect) const

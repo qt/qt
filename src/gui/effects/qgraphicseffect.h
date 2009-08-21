@@ -235,31 +235,31 @@ class QGraphicsDropShadowEffectPrivate;
 class Q_GUI_EXPORT QGraphicsDropShadowEffect: public QGraphicsEffect
 {
     Q_OBJECT
-    Q_PROPERTY(QPointF shadowOffset READ shadowOffset WRITE setShadowOffset NOTIFY shadowOffsetChanged)
+    Q_PROPERTY(QPointF offset READ offset WRITE setOffset NOTIFY offsetChanged)
     Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
-    Q_PROPERTY(int opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 public:
     QGraphicsDropShadowEffect(QObject *parent = 0);
     ~QGraphicsDropShadowEffect();
 
     QRectF boundingRectFor(const QRectF &rect) const;
-    QPointF shadowOffset() const;
+    QPointF offset() const;
     int blurRadius() const;
-    qreal opacity() const;
+    QColor color() const;
 
 public Q_SLOTS:
-    void setShadowOffset(const QPointF &ofs);
-    inline void setShadowOffset(qreal dx, qreal dy)
-    { setShadowOffset(QPointF(dx, dy)); }
-    inline void setShadowOffset(qreal d)
-    { setShadowOffset(QPointF(d, d)); }
+    void setOffset(const QPointF &ofs);
+    inline void setOffset(qreal dx, qreal dy)
+    { setOffset(QPointF(dx, dy)); }
+    inline void setOffset(qreal d)
+    { setOffset(QPointF(d, d)); }
     void setBlurRadius(int blurRadius);
-    void setOpacity(qreal opacity);
+    void setColor(const QColor &color);
 
 Q_SIGNALS:
-    void shadowOffsetChanged(const QPointF &offset);
+    void offsetChanged(const QPointF &offset);
     void blurRadiusChanged(int blurRadius);
-    void opacityChanged(int opacity);
+    void colorChanged(const QColor &color);
 
 protected:
     void draw(QPainter *painter, QGraphicsEffectSource *source);

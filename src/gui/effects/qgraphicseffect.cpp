@@ -432,71 +432,6 @@ QGraphicsBlurEffect::~QGraphicsBlurEffect()
 {
 }
 
-// Blur the image according to the blur radius
-// Based on exponential blur algorithm by Jani Huhtanen
-// (maximum radius is set to 16)
-static QImage blurred(const QImage& image, const QRect& rect, int radius)
-{
-    int tab[] = { 14, 10, 8, 6, 5, 5, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2 };
-    int alpha = (radius < 1)  ? 16 : (radius > 17) ? 1 : tab[radius-1];
-
-    QImage result = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-    int r1 = rect.top();
-    int r2 = rect.bottom();
-    int c1 = rect.left();
-    int c2 = rect.right();
-
-    int bpl = result.bytesPerLine();
-    int rgba[4];
-    unsigned char* p;
-
-    for (int col = c1; col <= c2; col++) {
-        p = result.scanLine(r1) + col * 4;
-        for (int i = 0; i < 4; i++)
-            rgba[i] = p[i] << 4;
-
-        p += bpl;
-        for (int j = r1; j < r2; j++, p += bpl)
-            for (int i = 0; i < 4; i++)
-                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
-    }
-
-    for (int row = r1; row <= r2; row++) {
-        p = result.scanLine(row) + c1 * 4;
-        for (int i = 0; i < 4; i++)
-            rgba[i] = p[i] << 4;
-
-        p += 4;
-        for (int j = c1; j < c2; j++, p += 4)
-            for (int i = 0; i < 4; i++)
-                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
-    }
-
-    for (int col = c1; col <= c2; col++) {
-        p = result.scanLine(r2) + col * 4;
-        for (int i = 0; i < 4; i++)
-            rgba[i] = p[i] << 4;
-
-        p -= bpl;
-        for (int j = r1; j < r2; j++, p -= bpl)
-            for (int i = 0; i < 4; i++)
-                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
-    }
-
-    for (int row = r1; row <= r2; row++) {
-        p = result.scanLine(row) + c2 * 4;
-        for (int i = 0; i < 4; i++)
-            rgba[i] = p[i] << 4;
-
-        p -= 4;
-        for (int j = c1; j < c2; j++, p -= 4)
-            for (int i = 0; i < 4; i++)
-                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
-    }
-
-    return result;
-}
-
 int QGraphicsBlurEffect::blurRadius() const
 {
     Q_D(const QGraphicsBlurEffect);
@@ -553,121 +488,83 @@ QGraphicsDropShadowEffect::~QGraphicsDropShadowEffect()
 {
 }
 
-QPointF QGraphicsDropShadowEffect::shadowOffset() const
+QPointF QGraphicsDropShadowEffect::offset() const
 {
     Q_D(const QGraphicsDropShadowEffect);
-    return d->offset;
+    return d->filter->offset();
 }
 
-void QGraphicsDropShadowEffect::setShadowOffset(const QPointF &ofs)
+void QGraphicsDropShadowEffect::setOffset(const QPointF &ofs)
 {
     Q_D(QGraphicsDropShadowEffect);
-    if (d->offset == ofs)
+    if (d->filter->offset() == ofs)
         return;
 
-    d->offset = ofs;
+    d->filter->setOffset(ofs);
     updateBoundingRect();
-    emit shadowOffsetChanged(ofs);
+    emit offsetChanged(ofs);
 }
 
 int QGraphicsDropShadowEffect::blurRadius() const
 {
     Q_D(const QGraphicsDropShadowEffect);
-    return d->radius;
+    return d->filter->blurRadius();
 }
 
 void QGraphicsDropShadowEffect::setBlurRadius(int blurRadius)
 {
     Q_D(QGraphicsDropShadowEffect);
-    if (d->radius == blurRadius)
+    if (d->filter->blurRadius() == blurRadius)
         return;
 
-    d->radius = blurRadius;
+    d->filter->setBlurRadius(blurRadius);
     updateBoundingRect();
     emit blurRadiusChanged(blurRadius);
 }
 
-qreal QGraphicsDropShadowEffect::opacity() const
+QColor QGraphicsDropShadowEffect::color() const
 {
     Q_D(const QGraphicsDropShadowEffect);
-    return d->alpha;
+    return d->filter->color();
 }
 
-void QGraphicsDropShadowEffect::setOpacity(qreal opacity)
+void QGraphicsDropShadowEffect::setColor(const QColor &color)
 {
     Q_D(QGraphicsDropShadowEffect);
-    if (qFuzzyCompare(d->alpha, opacity))
+    if (d->filter->color() == color)
         return;
 
-    d->alpha = opacity;
-    emit opacityChanged(opacity);
+    d->filter->setColor(color);
+    emit colorChanged(color);
 }
 
 QRectF QGraphicsDropShadowEffect::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QGraphicsDropShadowEffect);
-    QRectF shadowRect = rect.translated(d->offset);
-    QRectF blurRect = shadowRect;
-    qreal delta = d->radius * 3;
-    blurRect.adjust(-delta, -delta, delta, delta);
-    blurRect |= rect;
-    return blurRect;
+    return d->filter->boundingRectFor(rect);
 }
 
 void QGraphicsDropShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 {
     Q_D(QGraphicsDropShadowEffect);
-    if (d->radius <= 0 && d->offset.isNull()) {
+    if (d->filter->blurRadius() <= 0 && d->filter->offset().isNull()) {
         source->draw(painter);
         return;
     }
 
-    const QTransform &transform = painter->worldTransform();
-    const QPointF offset(d->offset.x() * transform.m11(), d->offset.y() * transform.m22());
-    const QPoint shadowOffset = offset.toPoint();
-    const QRectF sourceRect = source->boundingRect(Qt::DeviceCoordinates);
-    const QRectF shadowRect = sourceRect.translated(offset);
-
-    QRectF blurRect = shadowRect;
-    qreal delta = d->radius * 3;
-    blurRect.adjust(-delta, -delta, delta, delta);
-    blurRect |= sourceRect;
-
-    QRect effectRect = blurRect.toAlignedRect();
-    const QRect deviceRect = source->deviceRect();
-    const bool fullyInsideDeviceRect = effectRect.x() >= deviceRect.x()
-                                    && effectRect.right() <= deviceRect.right()
-                                    && effectRect.y() >= deviceRect.y()
-                                    && effectRect.bottom() <= deviceRect.bottom();
-    if (!fullyInsideDeviceRect) {
-        // Clip to device rect to avoid huge pixmaps.
-        effectRect &= source->deviceRect();
-        effectRect |= effectRect.translated(-shadowOffset);
-        if (effectRect.isEmpty())
-            return; // nothing to paint;
+    QPoint offset;
+    if (source->isPixmap()) {
+        // No point in drawing in device coordinates (pixmap will be scaled anyways).
+        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+        d->filter->draw(painter, offset, pixmap);
+        return;
     }
 
-    QPixmap pixmap(effectRect.size());
-    pixmap.fill(Qt::transparent);
-    QPainter pixmapPainter(&pixmap);
-    pixmapPainter.setRenderHints(painter->renderHints());
-    pixmapPainter.setWorldTransform(painter->worldTransform());
-    if (effectRect.x() != 0 || effectRect.y() != 0)
-        pixmapPainter.translate(-effectRect.topLeft());
-    source->draw(&pixmapPainter);
-    pixmapPainter.end();
-
-    QImage img = pixmap.toImage();
-    QImage shadowImage(img.size(), QImage::Format_ARGB32);
-    shadowImage.fill(qRgba(0, 0, 0, d->alpha * 255));
-    shadowImage.setAlphaChannel(img.alphaChannel());
-    shadowImage = blurred(shadowImage, shadowImage.rect(), d->radius);
-
-    // Draw using an untransformed painter.
+    // Draw pixmap in device coordinates to avoid pixmap scaling.
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    painter->drawImage(effectRect.topLeft() + shadowOffset, shadowImage);
-    painter->drawPixmap(effectRect.topLeft(), pixmap);
+    d->filter->draw(painter, offset, pixmap);
     painter->setWorldTransform(restoreTransform);
 }
 

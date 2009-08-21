@@ -144,22 +144,20 @@ class QGraphicsBlurEffectPrivate : public QGraphicsEffectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsBlurEffect)
 public:
-    QGraphicsBlurEffectPrivate() : filter(new QPixmapBlurFilter), blurRadius(4) {}
+    QGraphicsBlurEffectPrivate() : filter(new QPixmapBlurFilter) {}
     ~QGraphicsBlurEffectPrivate() { delete filter; }
 
     QPixmapBlurFilter *filter;
-    int blurRadius;
 };
 
 class QGraphicsDropShadowEffectPrivate : public QGraphicsEffectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsDropShadowEffect)
 public:
-    QGraphicsDropShadowEffectPrivate() : offset(4, 4), radius(8), alpha(0.7) {}
+    QGraphicsDropShadowEffectPrivate() : filter(new QPixmapDropShadowFilter) {}
+    ~QGraphicsDropShadowEffectPrivate() { delete filter; }
 
-    QPointF offset;
-    int radius;
-    qreal alpha;
+    QPixmapDropShadowFilter *filter;
 };
 
 QT_END_NAMESPACE
