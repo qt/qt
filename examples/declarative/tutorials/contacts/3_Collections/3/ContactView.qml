@@ -66,22 +66,22 @@ Item {
                     opacity: 0
 //! [setting qml]
 //! [binding]
-                    Bind {
+                    Binding {
                         target: Details.item
                         property: "contactId"
                         value: model.recid
                     }
-                    Bind {
+                    Binding {
                         target: Details.item
                         property: "label"
                         value: model.label
                     }
-                    Bind {
+                    Binding {
                         target: Details.item
                         property: "phone"
                         value: model.phone
                     }
-                    Bind {
+                    Binding {
                         target: Details.item
                         property: "email"
                         value: model.email
