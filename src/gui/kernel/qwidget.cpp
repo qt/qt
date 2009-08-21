@@ -5964,8 +5964,6 @@ bool QWidget::hasFocus() const
 
 void QWidget::setFocus(Qt::FocusReason reason)
 {
-    Q_D(QWidget);
-
     if (!isEnabled())
         return;
 
