@@ -418,52 +418,52 @@ EXPORTS
 	_ZNK8QDomNodeeqERKS_ @ 417 NONAME
 	_ZNK8QDomNodeneERKS_ @ 418 NONAME
 	_ZTI10QXmlReader @ 419 NONAME
-	_ZTI11QDomHandler @ 420 NONAME
+	_ZTI11QDomHandler @ 420 NONAME ABSENT
 	_ZTI11QXmlLocator @ 421 NONAME
 	_ZTI14QXmlAttributes @ 422 NONAME
 	_ZTI14QXmlDTDHandler @ 423 NONAME
-	_ZTI15QDomAttrPrivate @ 424 NONAME
-	_ZTI15QDomNodePrivate @ 425 NONAME
-	_ZTI15QDomTextPrivate @ 426 NONAME
+	_ZTI15QDomAttrPrivate @ 424 NONAME ABSENT
+	_ZTI15QDomNodePrivate @ 425 NONAME ABSENT
+	_ZTI15QDomTextPrivate @ 426 NONAME ABSENT
 	_ZTI15QXmlDeclHandler @ 427 NONAME
 	_ZTI15QXmlInputSource @ 428 NONAME
 	_ZTI16QXmlErrorHandler @ 429 NONAME
 	_ZTI16QXmlSimpleReader @ 430 NONAME
-	_ZTI17QDomEntityPrivate @ 431 NONAME
-	_ZTI18QDomCommentPrivate @ 432 NONAME
-	_ZTI18QDomElementPrivate @ 433 NONAME
+	_ZTI17QDomEntityPrivate @ 431 NONAME ABSENT
+	_ZTI18QDomCommentPrivate @ 432 NONAME ABSENT
+	_ZTI18QDomElementPrivate @ 433 NONAME ABSENT
 	_ZTI18QXmlContentHandler @ 434 NONAME
 	_ZTI18QXmlDefaultHandler @ 435 NONAME
 	_ZTI18QXmlEntityResolver @ 436 NONAME
 	_ZTI18QXmlLexicalHandler @ 437 NONAME
-	_ZTI19QDomDocumentPrivate @ 438 NONAME
-	_ZTI19QDomNotationPrivate @ 439 NONAME
-	_ZTI23QDomCDATASectionPrivate @ 440 NONAME
-	_ZTI23QDomDocumentTypePrivate @ 441 NONAME
-	_ZTI24QDomCharacterDataPrivate @ 442 NONAME
-	_ZTI26QDomEntityReferencePrivate @ 443 NONAME
-	_ZTI27QDomDocumentFragmentPrivate @ 444 NONAME
-	_ZTI32QDomProcessingInstructionPrivate @ 445 NONAME
-	_ZTV11QDomHandler @ 446 NONAME
+	_ZTI19QDomDocumentPrivate @ 438 NONAME ABSENT
+	_ZTI19QDomNotationPrivate @ 439 NONAME ABSENT
+	_ZTI23QDomCDATASectionPrivate @ 440 NONAME ABSENT
+	_ZTI23QDomDocumentTypePrivate @ 441 NONAME ABSENT
+	_ZTI24QDomCharacterDataPrivate @ 442 NONAME ABSENT
+	_ZTI26QDomEntityReferencePrivate @ 443 NONAME ABSENT
+	_ZTI27QDomDocumentFragmentPrivate @ 444 NONAME ABSENT
+	_ZTI32QDomProcessingInstructionPrivate @ 445 NONAME ABSENT
+	_ZTV11QDomHandler @ 446 NONAME ABSENT
 	_ZTV11QXmlLocator @ 447 NONAME
 	_ZTV14QXmlAttributes @ 448 NONAME
-	_ZTV15QDomAttrPrivate @ 449 NONAME
-	_ZTV15QDomNodePrivate @ 450 NONAME
-	_ZTV15QDomTextPrivate @ 451 NONAME
+	_ZTV15QDomAttrPrivate @ 449 NONAME ABSENT
+	_ZTV15QDomNodePrivate @ 450 NONAME ABSENT
+	_ZTV15QDomTextPrivate @ 451 NONAME ABSENT
 	_ZTV15QXmlInputSource @ 452 NONAME
 	_ZTV16QXmlSimpleReader @ 453 NONAME
-	_ZTV17QDomEntityPrivate @ 454 NONAME
-	_ZTV18QDomCommentPrivate @ 455 NONAME
-	_ZTV18QDomElementPrivate @ 456 NONAME
+	_ZTV17QDomEntityPrivate @ 454 NONAME ABSENT
+	_ZTV18QDomCommentPrivate @ 455 NONAME ABSENT
+	_ZTV18QDomElementPrivate @ 456 NONAME ABSENT
 	_ZTV18QXmlDefaultHandler @ 457 NONAME
-	_ZTV19QDomDocumentPrivate @ 458 NONAME
-	_ZTV19QDomNotationPrivate @ 459 NONAME
-	_ZTV23QDomCDATASectionPrivate @ 460 NONAME
-	_ZTV23QDomDocumentTypePrivate @ 461 NONAME
-	_ZTV24QDomCharacterDataPrivate @ 462 NONAME
-	_ZTV26QDomEntityReferencePrivate @ 463 NONAME
-	_ZTV27QDomDocumentFragmentPrivate @ 464 NONAME
-	_ZTV32QDomProcessingInstructionPrivate @ 465 NONAME
+	_ZTV19QDomDocumentPrivate @ 458 NONAME ABSENT
+	_ZTV19QDomNotationPrivate @ 459 NONAME ABSENT
+	_ZTV23QDomCDATASectionPrivate @ 460 NONAME ABSENT
+	_ZTV23QDomDocumentTypePrivate @ 461 NONAME ABSENT
+	_ZTV24QDomCharacterDataPrivate @ 462 NONAME ABSENT
+	_ZTV26QDomEntityReferencePrivate @ 463 NONAME ABSENT
+	_ZTV27QDomDocumentFragmentPrivate @ 464 NONAME ABSENT
+	_ZTV32QDomProcessingInstructionPrivate @ 465 NONAME ABSENT
 	_ZThn12_N18QXmlDefaultHandler13resolveEntityERK7QStringS2_RP15QXmlInputSource @ 466 NONAME
 	_ZThn12_NK18QXmlDefaultHandler11errorStringEv @ 467 NONAME
 	_ZThn16_N18QXmlDefaultHandler10startCDATAEv @ 468 NONAME
@@ -486,4 +486,6 @@ EXPORTS
 	_ZThn8_N18QXmlDefaultHandler18unparsedEntityDeclERK7QStringS2_S2_S2_ @ 485 NONAME
 	_ZThn8_NK18QXmlDefaultHandler11errorStringEv @ 486 NONAME
 	_ZlsR11QTextStreamRK8QDomNode @ 487 NONAME
+	_ZN18QXmlParseExceptionC1ERKS_ @ 488 NONAME
+	_ZN18QXmlParseExceptionC2ERKS_ @ 489 NONAME
 

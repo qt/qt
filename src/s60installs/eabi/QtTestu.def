@@ -65,17 +65,19 @@ EXPORTS
 	_ZNK9QTestData7dataTagEv @ 64 NONAME
 	_ZNK9QTestData9dataCountEv @ 65 NONAME
 	_ZTI14QTestEventLoop @ 66 NONAME
-	_ZTI14QXmlTestLogger @ 67 NONAME
-	_ZTI15QBenchmarkEvent @ 68 NONAME
-	_ZTI16QPlainTestLogger @ 69 NONAME
-	_ZTI19QAbstractTestLogger @ 70 NONAME
-	_ZTI22QBenchmarkTickMeasurer @ 71 NONAME
-	_ZTI22QBenchmarkTimeMeasurer @ 72 NONAME
+	_ZTI14QXmlTestLogger @ 67 NONAME ABSENT
+	_ZTI15QBenchmarkEvent @ 68 NONAME ABSENT
+	_ZTI16QPlainTestLogger @ 69 NONAME ABSENT
+	_ZTI19QAbstractTestLogger @ 70 NONAME ABSENT
+	_ZTI22QBenchmarkTickMeasurer @ 71 NONAME ABSENT
+	_ZTI22QBenchmarkTimeMeasurer @ 72 NONAME ABSENT
 	_ZTV14QTestEventLoop @ 73 NONAME
-	_ZTV14QXmlTestLogger @ 74 NONAME
-	_ZTV15QBenchmarkEvent @ 75 NONAME
-	_ZTV16QPlainTestLogger @ 76 NONAME
-	_ZTV19QAbstractTestLogger @ 77 NONAME
-	_ZTV22QBenchmarkTickMeasurer @ 78 NONAME
-	_ZTV22QBenchmarkTimeMeasurer @ 79 NONAME
+	_ZTV14QXmlTestLogger @ 74 NONAME ABSENT
+	_ZTV15QBenchmarkEvent @ 75 NONAME ABSENT
+	_ZTV16QPlainTestLogger @ 76 NONAME ABSENT
+	_ZTV19QAbstractTestLogger @ 77 NONAME ABSENT
+	_ZTV22QBenchmarkTickMeasurer @ 78 NONAME ABSENT
+	_ZTV22QBenchmarkTimeMeasurer @ 79 NONAME ABSENT
+	_ZN5QTest29QBenchmarkIterationControllerC1ENS0_7RunModeE @ 80 NONAME
+	_ZN5QTest29QBenchmarkIterationControllerC2ENS0_7RunModeE @ 81 NONAME
 

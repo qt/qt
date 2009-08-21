@@ -473,76 +473,76 @@ EXPORTS
 	_ZTIN6Phonon10SeekSliderE @ 472 NONAME
 	_ZTIN6Phonon11AudioOutputE @ 473 NONAME
 	_ZTIN6Phonon11MediaObjectE @ 474 NONAME
-	_ZTIN6Phonon11PathPrivateE @ 475 NONAME
+	_ZTIN6Phonon11PathPrivateE @ 475 NONAME ABSENT
 	_ZTIN6Phonon11VideoPlayerE @ 476 NONAME
 	_ZTIN6Phonon11VideoWidgetE @ 477 NONAME
 	_ZTIN6Phonon12EffectWidgetE @ 478 NONAME
 	_ZTIN6Phonon12GlobalConfigE @ 479 NONAME
 	_ZTIN6Phonon12VolumeSliderE @ 480 NONAME
-	_ZTIN6Phonon13EffectPrivateE @ 481 NONAME
-	_ZTIN6Phonon14FactoryPrivateE @ 482 NONAME
-	_ZTIN6Phonon14IODeviceStreamE @ 483 NONAME
+	_ZTIN6Phonon13EffectPrivateE @ 481 NONAME ABSENT
+	_ZTIN6Phonon14FactoryPrivateE @ 482 NONAME ABSENT
+	_ZTIN6Phonon14IODeviceStreamE @ 483 NONAME ABSENT
 	_ZTIN6Phonon15MediaControllerE @ 484 NONAME
 	_ZTIN6Phonon15StreamInterfaceE @ 485 NONAME
 	_ZTIN6Phonon16MediaNodePrivateE @ 486 NONAME
 	_ZTIN6Phonon17VolumeFaderEffectE @ 487 NONAME
-	_ZTIN6Phonon18AudioOutputPrivateE @ 488 NONAME
-	_ZTIN6Phonon18MediaObjectPrivateE @ 489 NONAME
+	_ZTIN6Phonon18AudioOutputPrivateE @ 488 NONAME ABSENT
+	_ZTIN6Phonon18MediaObjectPrivateE @ 489 NONAME ABSENT
 	_ZTIN6Phonon18MediaSourcePrivateE @ 490 NONAME
-	_ZTIN6Phonon18VideoWidgetPrivateE @ 491 NONAME
+	_ZTIN6Phonon18VideoWidgetPrivateE @ 491 NONAME ABSENT
 	_ZTIN6Phonon19AbstractAudioOutputE @ 492 NONAME
 	_ZTIN6Phonon19AbstractMediaStreamE @ 493 NONAME
 	_ZTIN6Phonon19AbstractVideoOutputE @ 494 NONAME
-	_ZTIN6Phonon19BackendCapabilities8NotifierE @ 495 NONAME
-	_ZTIN6Phonon22MediaControllerPrivateE @ 496 NONAME
-	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE0EEE @ 497 NONAME
-	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE1EEE @ 498 NONAME
-	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE2EEE @ 499 NONAME
-	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE3EEE @ 500 NONAME
-	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE4EEE @ 501 NONAME
-	_ZTIN6Phonon24VolumeFaderEffectPrivateE @ 502 NONAME
-	_ZTIN6Phonon26AbstractAudioOutputPrivateE @ 503 NONAME
+	_ZTIN6Phonon19BackendCapabilities8NotifierE @ 495 NONAME ABSENT
+	_ZTIN6Phonon22MediaControllerPrivateE @ 496 NONAME ABSENT
+	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE0EEE @ 497 NONAME ABSENT
+	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE1EEE @ 498 NONAME ABSENT
+	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE2EEE @ 499 NONAME ABSENT
+	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE3EEE @ 500 NONAME ABSENT
+	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE4EEE @ 501 NONAME ABSENT
+	_ZTIN6Phonon24VolumeFaderEffectPrivateE @ 502 NONAME ABSENT
+	_ZTIN6Phonon26AbstractAudioOutputPrivateE @ 503 NONAME ABSENT
 	_ZTIN6Phonon26AbstractMediaStreamPrivateE @ 504 NONAME
-	_ZTIN6Phonon26AbstractVideoOutputPrivateE @ 505 NONAME
+	_ZTIN6Phonon26AbstractVideoOutputPrivateE @ 505 NONAME ABSENT
 	_ZTIN6Phonon6EffectE @ 506 NONAME
-	_ZTIN6Phonon7Factory6SenderE @ 507 NONAME
+	_ZTIN6Phonon7Factory6SenderE @ 507 NONAME ABSENT
 	_ZTIN6Phonon9MediaNodeE @ 508 NONAME
 	_ZTVN6Phonon10SeekSliderE @ 509 NONAME
 	_ZTVN6Phonon11AudioOutputE @ 510 NONAME
 	_ZTVN6Phonon11MediaObjectE @ 511 NONAME
-	_ZTVN6Phonon11PathPrivateE @ 512 NONAME
+	_ZTVN6Phonon11PathPrivateE @ 512 NONAME ABSENT
 	_ZTVN6Phonon11VideoPlayerE @ 513 NONAME
 	_ZTVN6Phonon11VideoWidgetE @ 514 NONAME
 	_ZTVN6Phonon12EffectWidgetE @ 515 NONAME
 	_ZTVN6Phonon12GlobalConfigE @ 516 NONAME
 	_ZTVN6Phonon12VolumeSliderE @ 517 NONAME
-	_ZTVN6Phonon13EffectPrivateE @ 518 NONAME
-	_ZTVN6Phonon14FactoryPrivateE @ 519 NONAME
-	_ZTVN6Phonon14IODeviceStreamE @ 520 NONAME
+	_ZTVN6Phonon13EffectPrivateE @ 518 NONAME ABSENT
+	_ZTVN6Phonon14FactoryPrivateE @ 519 NONAME ABSENT
+	_ZTVN6Phonon14IODeviceStreamE @ 520 NONAME ABSENT
 	_ZTVN6Phonon15MediaControllerE @ 521 NONAME
 	_ZTVN6Phonon15StreamInterfaceE @ 522 NONAME
 	_ZTVN6Phonon16MediaNodePrivateE @ 523 NONAME
 	_ZTVN6Phonon17VolumeFaderEffectE @ 524 NONAME
-	_ZTVN6Phonon18AudioOutputPrivateE @ 525 NONAME
-	_ZTVN6Phonon18MediaObjectPrivateE @ 526 NONAME
+	_ZTVN6Phonon18AudioOutputPrivateE @ 525 NONAME ABSENT
+	_ZTVN6Phonon18MediaObjectPrivateE @ 526 NONAME ABSENT
 	_ZTVN6Phonon18MediaSourcePrivateE @ 527 NONAME
-	_ZTVN6Phonon18VideoWidgetPrivateE @ 528 NONAME
+	_ZTVN6Phonon18VideoWidgetPrivateE @ 528 NONAME ABSENT
 	_ZTVN6Phonon19AbstractAudioOutputE @ 529 NONAME
 	_ZTVN6Phonon19AbstractMediaStreamE @ 530 NONAME
 	_ZTVN6Phonon19AbstractVideoOutputE @ 531 NONAME
-	_ZTVN6Phonon19BackendCapabilities8NotifierE @ 532 NONAME
-	_ZTVN6Phonon22MediaControllerPrivateE @ 533 NONAME
-	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE0EEE @ 534 NONAME
-	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE1EEE @ 535 NONAME
-	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE2EEE @ 536 NONAME
-	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE3EEE @ 537 NONAME
-	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE4EEE @ 538 NONAME
-	_ZTVN6Phonon24VolumeFaderEffectPrivateE @ 539 NONAME
-	_ZTVN6Phonon26AbstractAudioOutputPrivateE @ 540 NONAME
+	_ZTVN6Phonon19BackendCapabilities8NotifierE @ 532 NONAME ABSENT
+	_ZTVN6Phonon22MediaControllerPrivateE @ 533 NONAME ABSENT
+	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE0EEE @ 534 NONAME ABSENT
+	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE1EEE @ 535 NONAME ABSENT
+	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE2EEE @ 536 NONAME ABSENT
+	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE3EEE @ 537 NONAME ABSENT
+	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE4EEE @ 538 NONAME ABSENT
+	_ZTVN6Phonon24VolumeFaderEffectPrivateE @ 539 NONAME ABSENT
+	_ZTVN6Phonon26AbstractAudioOutputPrivateE @ 540 NONAME ABSENT
 	_ZTVN6Phonon26AbstractMediaStreamPrivateE @ 541 NONAME
-	_ZTVN6Phonon26AbstractVideoOutputPrivateE @ 542 NONAME
+	_ZTVN6Phonon26AbstractVideoOutputPrivateE @ 542 NONAME ABSENT
 	_ZTVN6Phonon6EffectE @ 543 NONAME
-	_ZTVN6Phonon7Factory6SenderE @ 544 NONAME
+	_ZTVN6Phonon7Factory6SenderE @ 544 NONAME ABSENT
 	_ZTVN6Phonon9MediaNodeE @ 545 NONAME
 	_ZThn8_N6Phonon10SeekSliderD0Ev @ 546 NONAME
 	_ZThn8_N6Phonon10SeekSliderD1Ev @ 547 NONAME

@@ -38,7 +38,7 @@ EXPORTS
 	_Z23qt_symbian_show_submenuP12CEikMenuPanei @ 37 NONAME
 	_Z24qt_qscrollbarStyleOptionP10QScrollBar @ 38 NONAME
 	_Z24qt_symbian_show_toplevelP12CEikMenuPane @ 39 NONAME
-	_Z25qt_keymapper_possibleKeysP9QKeyEvent @ 40 NONAME
+	_Z25qt_keymapper_possibleKeysP9QKeyEvent @ 40 NONAME ABSENT
 	_Z29qt_set_sequence_auto_mnemonicb @ 41 NONAME
 	_Z9qGeomCalcR7QVectorI13QLayoutStructEiiiii @ 42 NONAME
 	_ZN10QBoxLayout10addSpacingEi @ 43 NONAME
@@ -671,8 +671,8 @@ EXPORTS
 	_ZN11QFontDialogD2Ev @ 670 NONAME
 	_ZN11QFontEngine11boundingBoxEjRK10QTransform @ 671 NONAME
 	_ZN11QFontEngine11grayPaletteEv @ 672 NONAME
-	_ZN11QFontEngine11qt_metacallEN11QMetaObject4CallEiPPv @ 673 NONAME
-	_ZN11QFontEngine11qt_metacastEPKc @ 674 NONAME
+	_ZN11QFontEngine11qt_metacallEN11QMetaObject4CallEiPPv @ 673 NONAME ABSENT
+	_ZN11QFontEngine11qt_metacastEPKc @ 674 NONAME ABSENT
 	_ZN11QFontEngine13setGlyphCacheEN21QFontEngineGlyphCache4TypeEPS0_ @ 675 NONAME
 	_ZN11QFontEngine13setGlyphCacheEPvP21QFontEngineGlyphCache @ 676 NONAME
 	_ZN11QFontEngine15addGlyphsToPathEPjP11QFixedPointiP12QPainterPath6QFlagsIN9QTextItem10RenderFlagEE @ 677 NONAME
@@ -682,7 +682,7 @@ EXPORTS
 	_ZN11QFontEngine16expireGlyphCacheEv @ 681 NONAME
 	_ZN11QFontEngine16getUnscaledGlyphEjP12QPainterPathP15glyph_metrics_t @ 682 NONAME
 	_ZN11QFontEngine16loadKerningPairsE6QFixed @ 683 NONAME
-	_ZN11QFontEngine16staticMetaObjectE @ 684 NONAME DATA 16
+	_ZN11QFontEngine16staticMetaObjectE @ 684 NONAME DATA 16 ABSENT
 	_ZN11QFontEngine16tightBoundingBoxERK12QGlyphLayout @ 685 NONAME
 	_ZN11QFontEngine17getGlyphPositionsERK12QGlyphLayoutRK10QTransform6QFlagsIN9QTextItem10RenderFlagEER15QVarLengthArrayIjLi256EERSA_I11QFixedPointLi256EE @ 686 NONAME
 	_ZN11QFontEngine17getPointInOutlineEjijPiS0_Pj @ 687 NONAME
@@ -857,13 +857,13 @@ EXPORTS
 	_ZN11QInputEventD0Ev @ 856 NONAME
 	_ZN11QInputEventD1Ev @ 857 NONAME
 	_ZN11QInputEventD2Ev @ 858 NONAME
-	_ZN11QKeyEventExC1EN6QEvent4TypeEi6QFlagsIN2Qt16KeyboardModifierEERK7QStringbtjjj @ 859 NONAME
-	_ZN11QKeyEventExC1ERKS_ @ 860 NONAME
-	_ZN11QKeyEventExC2EN6QEvent4TypeEi6QFlagsIN2Qt16KeyboardModifierEERK7QStringbtjjj @ 861 NONAME
-	_ZN11QKeyEventExC2ERKS_ @ 862 NONAME
-	_ZN11QKeyEventExD0Ev @ 863 NONAME
-	_ZN11QKeyEventExD1Ev @ 864 NONAME
-	_ZN11QKeyEventExD2Ev @ 865 NONAME
+	_ZN11QKeyEventExC1EN6QEvent4TypeEi6QFlagsIN2Qt16KeyboardModifierEERK7QStringbtjjj @ 859 NONAME ABSENT
+	_ZN11QKeyEventExC1ERKS_ @ 860 NONAME ABSENT
+	_ZN11QKeyEventExC2EN6QEvent4TypeEi6QFlagsIN2Qt16KeyboardModifierEERK7QStringbtjjj @ 861 NONAME ABSENT
+	_ZN11QKeyEventExC2ERKS_ @ 862 NONAME ABSENT
+	_ZN11QKeyEventExD0Ev @ 863 NONAME ABSENT
+	_ZN11QKeyEventExD1Ev @ 864 NONAME ABSENT
+	_ZN11QKeyEventExD2Ev @ 865 NONAME ABSENT
 	_ZN11QLayoutItem10invalidateEv @ 866 NONAME
 	_ZN11QLayoutItem10spacerItemEv @ 867 NONAME
 	_ZN11QLayoutItem12setAlignmentE6QFlagsIN2Qt13AlignmentFlagEE @ 868 NONAME
@@ -1446,7 +1446,7 @@ EXPORTS
 	_ZN12QApplication17startDragDistanceEv @ 1445 NONAME
 	_ZN12QApplication18setCursorFlashTimeEi @ 1446 NONAME
 	_ZN12QApplication18setLayoutDirectionEN2Qt15LayoutDirectionE @ 1447 NONAME
-	_ZN12QApplication19autoSipOnMouseFocusEv @ 1448 NONAME
+	_ZN12QApplication19autoSipOnMouseFocusEv @ 1448 NONAME ABSENT
 	_ZN12QApplication19doubleClickIntervalEv @ 1449 NONAME
 	_ZN12QApplication19fontDatabaseChangedEv @ 1450 NONAME
 	_ZN12QApplication19keyboardInputLocaleEv @ 1451 NONAME
@@ -1458,7 +1458,7 @@ EXPORTS
 	_ZN12QApplication21symbianResourceChangeEi @ 1457 NONAME
 	_ZN12QApplication22keyboardInputDirectionEv @ 1458 NONAME
 	_ZN12QApplication22quitOnLastWindowClosedEv @ 1459 NONAME
-	_ZN12QApplication22setAutoSipOnMouseFocusEb @ 1460 NONAME
+	_ZN12QApplication22setAutoSipOnMouseFocusEb @ 1460 NONAME ABSENT
 	_ZN12QApplication22setDoubleClickIntervalEi @ 1461 NONAME
 	_ZN12QApplication23keypadNavigationEnabledEv @ 1462 NONAME
 	_ZN12QApplication23setDesktopSettingsAwareEb @ 1463 NONAME
@@ -1567,26 +1567,26 @@ EXPORTS
 	_ZN12QDashStroker21processCurrentSubpathEv @ 1566 NONAME
 	_ZN12QDashStrokerC1EP8QStroker @ 1567 NONAME
 	_ZN12QDashStrokerC2EP8QStroker @ 1568 NONAME
-	_ZN12QDragManager10timerEventEP11QTimerEvent @ 1569 NONAME
-	_ZN12QDragManager11eventFilterEP7QObjectP6QEvent @ 1570 NONAME
-	_ZN12QDragManager11qt_metacallEN11QMetaObject4CallEiPPv @ 1571 NONAME
-	_ZN12QDragManager11qt_metacastEPKc @ 1572 NONAME
-	_ZN12QDragManager12updateCursorEv @ 1573 NONAME
-	_ZN12QDragManager12updatePixmapEv @ 1574 NONAME
-	_ZN12QDragManager13currentTargetEv @ 1575 NONAME
-	_ZN12QDragManager16setCurrentTargetEP7QWidgetb @ 1576 NONAME
-	_ZN12QDragManager16staticMetaObjectE @ 1577 NONAME DATA 16
-	_ZN12QDragManager4dragEP5QDrag @ 1578 NONAME
-	_ZN12QDragManager4dropEv @ 1579 NONAME
-	_ZN12QDragManager4moveERK6QPoint @ 1580 NONAME
-	_ZN12QDragManager4selfEv @ 1581 NONAME
-	_ZN12QDragManager6cancelEb @ 1582 NONAME
-	_ZN12QDragManager8instanceE @ 1583 NONAME DATA 4
-	_ZN12QDragManagerC1Ev @ 1584 NONAME
-	_ZN12QDragManagerC2Ev @ 1585 NONAME
-	_ZN12QDragManagerD0Ev @ 1586 NONAME
-	_ZN12QDragManagerD1Ev @ 1587 NONAME
-	_ZN12QDragManagerD2Ev @ 1588 NONAME
+	_ZN12QDragManager10timerEventEP11QTimerEvent @ 1569 NONAME ABSENT
+	_ZN12QDragManager11eventFilterEP7QObjectP6QEvent @ 1570 NONAME ABSENT
+	_ZN12QDragManager11qt_metacallEN11QMetaObject4CallEiPPv @ 1571 NONAME ABSENT
+	_ZN12QDragManager11qt_metacastEPKc @ 1572 NONAME ABSENT
+	_ZN12QDragManager12updateCursorEv @ 1573 NONAME ABSENT
+	_ZN12QDragManager12updatePixmapEv @ 1574 NONAME ABSENT
+	_ZN12QDragManager13currentTargetEv @ 1575 NONAME ABSENT
+	_ZN12QDragManager16setCurrentTargetEP7QWidgetb @ 1576 NONAME ABSENT
+	_ZN12QDragManager16staticMetaObjectE @ 1577 NONAME DATA 16 ABSENT
+	_ZN12QDragManager4dragEP5QDrag @ 1578 NONAME ABSENT
+	_ZN12QDragManager4dropEv @ 1579 NONAME ABSENT
+	_ZN12QDragManager4moveERK6QPoint @ 1580 NONAME ABSENT
+	_ZN12QDragManager4selfEv @ 1581 NONAME ABSENT
+	_ZN12QDragManager6cancelEb @ 1582 NONAME ABSENT
+	_ZN12QDragManager8instanceE @ 1583 NONAME DATA 4 ABSENT
+	_ZN12QDragManagerC1Ev @ 1584 NONAME ABSENT
+	_ZN12QDragManagerC2Ev @ 1585 NONAME ABSENT
+	_ZN12QDragManagerD0Ev @ 1586 NONAME ABSENT
+	_ZN12QDragManagerD1Ev @ 1587 NONAME ABSENT
+	_ZN12QDragManagerD2Ev @ 1588 NONAME ABSENT
 	_ZN12QFontMetricsC1ERK5QFont @ 1589 NONAME
 	_ZN12QFontMetricsC1ERK5QFontP12QPaintDevice @ 1590 NONAME
 	_ZN12QFontMetricsC1ERKS_ @ 1591 NONAME
@@ -1708,11 +1708,11 @@ EXPORTS
 	_ZN12QKeySequenceD1Ev @ 1707 NONAME
 	_ZN12QKeySequenceD2Ev @ 1708 NONAME
 	_ZN12QKeySequenceaSERKS_ @ 1709 NONAME
-	_ZN12QNativeImage12systemFormatEv @ 1710 NONAME
-	_ZN12QNativeImageC1EiiN6QImage6FormatEbP7QWidget @ 1711 NONAME
-	_ZN12QNativeImageC2EiiN6QImage6FormatEbP7QWidget @ 1712 NONAME
-	_ZN12QNativeImageD1Ev @ 1713 NONAME
-	_ZN12QNativeImageD2Ev @ 1714 NONAME
+	_ZN12QNativeImage12systemFormatEv @ 1710 NONAME ABSENT
+	_ZN12QNativeImageC1EiiN6QImage6FormatEbP7QWidget @ 1711 NONAME ABSENT
+	_ZN12QNativeImageC2EiiN6QImage6FormatEbP7QWidget @ 1712 NONAME ABSENT
+	_ZN12QNativeImageD1Ev @ 1713 NONAME ABSENT
+	_ZN12QNativeImageD2Ev @ 1714 NONAME ABSENT
 	_ZN12QPaintDeviceC2Ev @ 1715 NONAME
 	_ZN12QPaintDeviceD0Ev @ 1716 NONAME
 	_ZN12QPaintDeviceD1Ev @ 1717 NONAME
@@ -2014,8 +2014,8 @@ EXPORTS
 	_ZN12QTextControlD0Ev @ 2013 NONAME
 	_ZN12QTextControlD1Ev @ 2014 NONAME
 	_ZN12QTextControlD2Ev @ 2015 NONAME
-	_ZN12QToolBarItemC1EP7QWidget @ 2016 NONAME
-	_ZN12QToolBarItemC2EP7QWidget @ 2017 NONAME
+	_ZN12QToolBarItemC1EP7QWidget @ 2016 NONAME ABSENT
+	_ZN12QToolBarItemC2EP7QWidget @ 2017 NONAME ABSENT
 	_ZN12QUndoCommand4redoEv @ 2018 NONAME
 	_ZN12QUndoCommand4undoEv @ 2019 NONAME
 	_ZN12QUndoCommand7setTextERK7QString @ 2020 NONAME
@@ -2134,10 +2134,10 @@ EXPORTS
 	_ZN13QFontMetricsFaSERK12QFontMetrics @ 2133 NONAME
 	_ZN13QFontMetricsFaSERKS_ @ 2134 NONAME
 	_ZN13QFontMetricsFeqERKS_ @ 2135 NONAME
-	_ZN13QFramePrivate16updateFrameWidthEv @ 2136 NONAME
-	_ZN13QFramePrivate23updateStyledFrameWidthsEv @ 2137 NONAME
-	_ZN13QFramePrivateC1Ev @ 2138 NONAME
-	_ZN13QFramePrivateC2Ev @ 2139 NONAME
+	_ZN13QFramePrivate16updateFrameWidthEv @ 2136 NONAME ABSENT
+	_ZN13QFramePrivate23updateStyledFrameWidthsEv @ 2137 NONAME ABSENT
+	_ZN13QFramePrivateC1Ev @ 2138 NONAME ABSENT
+	_ZN13QFramePrivateC2Ev @ 2139 NONAME ABSENT
 	_ZN13QGraphicsItem10addToIndexEv @ 2140 NONAME
 	_ZN13QGraphicsItem10clearFocusEv @ 2141 NONAME
 	_ZN13QGraphicsItem10itemChangeENS_18GraphicsItemChangeERK8QVariant @ 2142 NONAME
@@ -2360,11 +2360,11 @@ EXPORTS
 	_ZN13QMdiSubWindowD0Ev @ 2359 NONAME
 	_ZN13QMdiSubWindowD1Ev @ 2360 NONAME
 	_ZN13QMdiSubWindowD2Ev @ 2361 NONAME
-	_ZN13QMouseEventExC1EN6QEvent4TypeERK7QPointFRK6QPointN2Qt11MouseButtonE6QFlagsIS9_ESA_INS8_16KeyboardModifierEE @ 2362 NONAME
-	_ZN13QMouseEventExC2EN6QEvent4TypeERK7QPointFRK6QPointN2Qt11MouseButtonE6QFlagsIS9_ESA_INS8_16KeyboardModifierEE @ 2363 NONAME
-	_ZN13QMouseEventExD0Ev @ 2364 NONAME
-	_ZN13QMouseEventExD1Ev @ 2365 NONAME
-	_ZN13QMouseEventExD2Ev @ 2366 NONAME
+	_ZN13QMouseEventExC1EN6QEvent4TypeERK7QPointFRK6QPointN2Qt11MouseButtonE6QFlagsIS9_ESA_INS8_16KeyboardModifierEE @ 2362 NONAME ABSENT
+	_ZN13QMouseEventExC2EN6QEvent4TypeERK7QPointFRK6QPointN2Qt11MouseButtonE6QFlagsIS9_ESA_INS8_16KeyboardModifierEE @ 2363 NONAME ABSENT
+	_ZN13QMouseEventExD0Ev @ 2364 NONAME ABSENT
+	_ZN13QMouseEventExD1Ev @ 2365 NONAME ABSENT
+	_ZN13QMouseEventExD2Ev @ 2366 NONAME ABSENT
 	_ZN13QPainterState4initEP8QPainter @ 2367 NONAME
 	_ZN13QPainterStateC1EPKS_ @ 2368 NONAME
 	_ZN13QPainterStateC1Ev @ 2369 NONAME
@@ -2584,7 +2584,7 @@ EXPORTS
 	_ZN14QGraphicsScene10setPaletteERK8QPalette @ 2583 NONAME
 	_ZN14QGraphicsScene10wheelEventEP24QGraphicsSceneWheelEvent @ 2584 NONAME
 	_ZN14QGraphicsScene11eventFilterEP7QObjectP6QEvent @ 2585 NONAME
-	_ZN14QGraphicsScene11itemUpdatedEP13QGraphicsItemRK6QRectF @ 2586 NONAME
+	_ZN14QGraphicsScene11itemUpdatedEP13QGraphicsItemRK6QRectF @ 2586 NONAME ABSENT
 	_ZN14QGraphicsScene11qt_metacallEN11QMetaObject4CallEiPPv @ 2587 NONAME
 	_ZN14QGraphicsScene11qt_metacastEPKc @ 2588 NONAME
 	_ZN14QGraphicsScene12focusInEventEP11QFocusEvent @ 2589 NONAME
@@ -2824,25 +2824,25 @@ EXPORTS
 	_ZN14QTextOdfWriterC1ERK13QTextDocumentP9QIODevice @ 2823 NONAME
 	_ZN14QTextOdfWriterC2ERK13QTextDocumentP9QIODevice @ 2824 NONAME
 	_ZN14QTextTableCell9setFormatERK15QTextCharFormat @ 2825 NONAME
-	_ZN14QToolBarLayout10createItemEP7QAction @ 2826 NONAME
-	_ZN14QToolBarLayout10invalidateEv @ 2827 NONAME
-	_ZN14QToolBarLayout11qt_metacallEN11QMetaObject4CallEiPPv @ 2828 NONAME
-	_ZN14QToolBarLayout11qt_metacastEPKc @ 2829 NONAME
-	_ZN14QToolBarLayout11setExpandedEb @ 2830 NONAME
-	_ZN14QToolBarLayout11setGeometryERK5QRect @ 2831 NONAME
-	_ZN14QToolBarLayout12insertActionEiP7QAction @ 2832 NONAME
-	_ZN14QToolBarLayout13layoutActionsERK5QSize @ 2833 NONAME
-	_ZN14QToolBarLayout15setUsePopupMenuEb @ 2834 NONAME
-	_ZN14QToolBarLayout16staticMetaObjectE @ 2835 NONAME DATA 16
-	_ZN14QToolBarLayout17checkUsePopupMenuEv @ 2836 NONAME
-	_ZN14QToolBarLayout22updateMarginAndSpacingEv @ 2837 NONAME
-	_ZN14QToolBarLayout6takeAtEi @ 2838 NONAME
-	_ZN14QToolBarLayout7addItemEP11QLayoutItem @ 2839 NONAME
-	_ZN14QToolBarLayoutC1EP7QWidget @ 2840 NONAME
-	_ZN14QToolBarLayoutC2EP7QWidget @ 2841 NONAME
-	_ZN14QToolBarLayoutD0Ev @ 2842 NONAME
-	_ZN14QToolBarLayoutD1Ev @ 2843 NONAME
-	_ZN14QToolBarLayoutD2Ev @ 2844 NONAME
+	_ZN14QToolBarLayout10createItemEP7QAction @ 2826 NONAME ABSENT
+	_ZN14QToolBarLayout10invalidateEv @ 2827 NONAME ABSENT
+	_ZN14QToolBarLayout11qt_metacallEN11QMetaObject4CallEiPPv @ 2828 NONAME ABSENT
+	_ZN14QToolBarLayout11qt_metacastEPKc @ 2829 NONAME ABSENT
+	_ZN14QToolBarLayout11setExpandedEb @ 2830 NONAME ABSENT
+	_ZN14QToolBarLayout11setGeometryERK5QRect @ 2831 NONAME ABSENT
+	_ZN14QToolBarLayout12insertActionEiP7QAction @ 2832 NONAME ABSENT
+	_ZN14QToolBarLayout13layoutActionsERK5QSize @ 2833 NONAME ABSENT
+	_ZN14QToolBarLayout15setUsePopupMenuEb @ 2834 NONAME ABSENT
+	_ZN14QToolBarLayout16staticMetaObjectE @ 2835 NONAME DATA 16 ABSENT
+	_ZN14QToolBarLayout17checkUsePopupMenuEv @ 2836 NONAME ABSENT
+	_ZN14QToolBarLayout22updateMarginAndSpacingEv @ 2837 NONAME ABSENT
+	_ZN14QToolBarLayout6takeAtEi @ 2838 NONAME ABSENT
+	_ZN14QToolBarLayout7addItemEP11QLayoutItem @ 2839 NONAME ABSENT
+	_ZN14QToolBarLayoutC1EP7QWidget @ 2840 NONAME ABSENT
+	_ZN14QToolBarLayoutC2EP7QWidget @ 2841 NONAME ABSENT
+	_ZN14QToolBarLayoutD0Ev @ 2842 NONAME ABSENT
+	_ZN14QToolBarLayoutD1Ev @ 2843 NONAME ABSENT
+	_ZN14QToolBarLayoutD2Ev @ 2844 NONAME ABSENT
 	_ZN14QWidgetPrivate10create_sysEP11CCoeControlbb @ 2845 NONAME
 	_ZN14QWidgetPrivate10drawWidgetEP12QPaintDeviceRK7QRegionRK6QPointiP8QPainterP19QWidgetBackingStore @ 2846 NONAME
 	_ZN14QWidgetPrivate10scrollRectERK5QRectii @ 2847 NONAME
@@ -2872,7 +2872,7 @@ EXPORTS
 	_ZN14QWidgetPrivate13render_helperEP8QPainterRK6QPointRK7QRegion6QFlagsIN7QWidget10RenderFlagEE @ 2871 NONAME
 	_ZN14QWidgetPrivate13resolveLocaleEv @ 2872 NONAME
 	_ZN14QWidgetPrivate13setParent_sysEP7QWidget6QFlagsIN2Qt10WindowTypeEE @ 2873 NONAME
-	_ZN14QWidgetPrivate13setWSGeometryEb @ 2874 NONAME
+	_ZN14QWidgetPrivate13setWSGeometryEb @ 2874 NONAME ABSENT
 	_ZN14QWidgetPrivate14createSysExtraEv @ 2875 NONAME
 	_ZN14QWidgetPrivate14deleteSysExtraEv @ 2876 NONAME
 	_ZN14QWidgetPrivate14resolvePaletteEv @ 2877 NONAME
@@ -2895,7 +2895,7 @@ EXPORTS
 	_ZN14QWidgetPrivate16setLocale_helperERK7QLocaleb @ 2894 NONAME
 	_ZN14QWidgetPrivate16syncBackingStoreERK7QRegion @ 2895 NONAME
 	_ZN14QWidgetPrivate16syncBackingStoreEv @ 2896 NONAME
-	_ZN14QWidgetPrivate16uncreatedWidgetsE @ 2897 NONAME DATA 4
+	_ZN14QWidgetPrivate16uncreatedWidgetsE @ 2897 NONAME DATA 4 ABSENT
 	_ZN14QWidgetPrivate16updateFrameStrutEv @ 2898 NONAME
 	_ZN14QWidgetPrivate17createRecursivelyEv @ 2899 NONAME
 	_ZN14QWidgetPrivate17s60UpdateIsOpaqueEv @ 2900 NONAME
@@ -3098,25 +3098,25 @@ EXPORTS
 	_ZN15QColumnViewGripD2Ev @ 3097 NONAME
 	_ZN15QDockAreaLayout12restoreStateER11QDataStreamRK5QListIP11QDockWidgetEb @ 3098 NONAME
 	_ZN15QDockAreaLayout13addDockWidgetEN9QInternal12DockPositionEP11QDockWidgetN2Qt11OrientationE @ 3099 NONAME
-	_ZN15QDockAreaLayout13separatorMoveE5QListIiERK6QPointS4_P7QVectorI13QLayoutStructE @ 3100 NONAME
+	_ZN15QDockAreaLayout13separatorMoveE5QListIiERK6QPointS4_P7QVectorI13QLayoutStructE @ 3100 NONAME ABSENT
 	_ZN15QDockAreaLayout15splitDockWidgetEP11QDockWidgetS1_N2Qt11OrientationE @ 3101 NONAME
 	_ZN15QDockAreaLayout16tabifyDockWidgetEP11QDockWidgetS1_ @ 3102 NONAME
 	_ZN15QDockAreaLayout17restoreDockWidgetEP11QDockWidget @ 3103 NONAME
 	_ZN15QDockAreaLayout20deleteAllLayoutItemsEv @ 3104 NONAME
-	_ZN15QDockAreaLayout4infoE5QListIiE @ 3105 NONAME
+	_ZN15QDockAreaLayout4infoE5QListIiE @ 3105 NONAME ABSENT
 	_ZN15QDockAreaLayout4infoEP7QWidget @ 3106 NONAME
-	_ZN15QDockAreaLayout4itemE5QListIiE @ 3107 NONAME
-	_ZN15QDockAreaLayout4plugE5QListIiE @ 3108 NONAME
+	_ZN15QDockAreaLayout4itemE5QListIiE @ 3107 NONAME ABSENT
+	_ZN15QDockAreaLayout4plugE5QListIiE @ 3108 NONAME ABSENT
 	_ZN15QDockAreaLayout5applyEb @ 3109 NONAME
 	_ZN15QDockAreaLayout5clearEv @ 3110 NONAME
-	_ZN15QDockAreaLayout6removeE5QListIiE @ 3111 NONAME
+	_ZN15QDockAreaLayout6removeE5QListIiE @ 3111 NONAME ABSENT
 	_ZN15QDockAreaLayout6takeAtEPii @ 3112 NONAME
-	_ZN15QDockAreaLayout6unplugE5QListIiE @ 3113 NONAME
+	_ZN15QDockAreaLayout6unplugE5QListIiE @ 3113 NONAME ABSENT
 	_ZN15QDockAreaLayout7getGridEP7QVectorI13QLayoutStructES3_ @ 3114 NONAME
 	_ZN15QDockAreaLayout7setGridEP7QVectorI13QLayoutStructES3_ @ 3115 NONAME
 	_ZN15QDockAreaLayout8keepSizeEP11QDockWidget @ 3116 NONAME
 	_ZN15QDockAreaLayout9fitLayoutEv @ 3117 NONAME
-	_ZN15QDockAreaLayout9insertGapE5QListIiEP11QLayoutItem @ 3118 NONAME
+	_ZN15QDockAreaLayout9insertGapE5QListIiEP11QLayoutItem @ 3118 NONAME ABSENT
 	_ZN15QDockAreaLayoutC1EP11QMainWindow @ 3119 NONAME
 	_ZN15QDockAreaLayoutC2EP11QMainWindow @ 3120 NONAME
 	_ZN15QDragEnterEventC1ERK6QPoint6QFlagsIN2Qt10DropActionEEPK9QMimeDataS3_INS4_11MouseButtonEES3_INS4_16KeyboardModifierEE @ 3121 NONAME
@@ -3238,10 +3238,10 @@ EXPORTS
 	_ZN15QListWidgetItemD1Ev @ 3237 NONAME
 	_ZN15QListWidgetItemD2Ev @ 3238 NONAME
 	_ZN15QListWidgetItemaSERKS_ @ 3239 NONAME
-	_ZN15QPicturePrivate11checkFormatEv @ 3240 NONAME
-	_ZN15QPicturePrivate11resetFormatEv @ 3241 NONAME
-	_ZN15QPicturePrivateC1Ev @ 3242 NONAME
-	_ZN15QPicturePrivateC2Ev @ 3243 NONAME
+	_ZN15QPicturePrivate11checkFormatEv @ 3240 NONAME ABSENT
+	_ZN15QPicturePrivate11resetFormatEv @ 3241 NONAME ABSENT
+	_ZN15QPicturePrivateC1Ev @ 3242 NONAME ABSENT
+	_ZN15QPicturePrivateC2Ev @ 3243 NONAME ABSENT
 	_ZN15QProgressDialog10closeEventEP11QCloseEvent @ 3244 NONAME
 	_ZN15QProgressDialog10setMaximumEi @ 3245 NONAME
 	_ZN15QProgressDialog10setMinimumEi @ 3246 NONAME
@@ -3501,15 +3501,15 @@ EXPORTS
 	_ZN16QFileSystemModelD0Ev @ 3500 NONAME
 	_ZN16QFileSystemModelD1Ev @ 3501 NONAME
 	_ZN16QFileSystemModelD2Ev @ 3502 NONAME
-	_ZN16QFontEngineMulti11boundingBoxERK12QGlyphLayout @ 3503 NONAME
-	_ZN16QFontEngineMulti11boundingBoxEj @ 3504 NONAME
-	_ZN16QFontEngineMulti16addOutlineToPathEffRK12QGlyphLayoutP12QPainterPath6QFlagsIN9QTextItem10RenderFlagEE @ 3505 NONAME
-	_ZN16QFontEngineMulti16alphaMapForGlyphEj @ 3506 NONAME
-	_ZN16QFontEngineMulti9canRenderEPK5QChari @ 3507 NONAME
-	_ZN16QFontEngineMultiC2Ei @ 3508 NONAME
-	_ZN16QFontEngineMultiD0Ev @ 3509 NONAME
-	_ZN16QFontEngineMultiD1Ev @ 3510 NONAME
-	_ZN16QFontEngineMultiD2Ev @ 3511 NONAME
+	_ZN16QFontEngineMulti11boundingBoxERK12QGlyphLayout @ 3503 NONAME ABSENT
+	_ZN16QFontEngineMulti11boundingBoxEj @ 3504 NONAME ABSENT
+	_ZN16QFontEngineMulti16addOutlineToPathEffRK12QGlyphLayoutP12QPainterPath6QFlagsIN9QTextItem10RenderFlagEE @ 3505 NONAME ABSENT
+	_ZN16QFontEngineMulti16alphaMapForGlyphEj @ 3506 NONAME ABSENT
+	_ZN16QFontEngineMulti9canRenderEPK5QChari @ 3507 NONAME ABSENT
+	_ZN16QFontEngineMultiC2Ei @ 3508 NONAME ABSENT
+	_ZN16QFontEngineMultiD0Ev @ 3509 NONAME ABSENT
+	_ZN16QFontEngineMultiD1Ev @ 3510 NONAME ABSENT
+	_ZN16QFontEngineMultiD2Ev @ 3511 NONAME ABSENT
 	_ZN16QPlaceHolderItemC1EP7QWidget @ 3512 NONAME
 	_ZN16QPlaceHolderItemC2EP7QWidget @ 3513 NONAME
 	_ZN16QRegExpValidator11qt_metacallEN11QMetaObject4CallEiPPv @ 3514 NONAME
@@ -3543,7 +3543,7 @@ EXPORTS
 	_ZN16QStyleSheetStyle11qt_metacallEN11QMetaObject4CallEiPPv @ 3542 NONAME
 	_ZN16QStyleSheetStyle11qt_metacastEPKc @ 3543 NONAME
 	_ZN16QStyleSheetStyle11setGeometryEP7QWidget @ 3544 NONAME
-	_ZN16QStyleSheetStyle12focusPaletteEPK7QWidgetPK12QStyleOptionP8QPalette @ 3545 NONAME
+	_ZN16QStyleSheetStyle12focusPaletteEPK7QWidgetPK12QStyleOptionP8QPalette @ 3545 NONAME ABSENT
 	_ZN16QStyleSheetStyle12numinstancesE @ 3546 NONAME DATA 4
 	_ZN16QStyleSheetStyle12unsetPaletteEP7QWidget @ 3547 NONAME
 	_ZN16QStyleSheetStyle13setPropertiesEP7QWidget @ 3548 NONAME
@@ -3873,7 +3873,7 @@ EXPORTS
 	_ZN17QMainWindowLayout14setDockOptionsE6QFlagsIN11QMainWindow10DockOptionEE @ 3872 NONAME
 	_ZN17QMainWindowLayout14setTabPositionE6QFlagsIN2Qt14DockWidgetAreaEEN10QTabWidget11TabPositionE @ 3873 NONAME
 	_ZN17QMainWindowLayout15addToolBarBreakEN2Qt11ToolBarAreaE @ 3874 NONAME
-	_ZN17QMainWindowLayout15doSeparatorMoveEv @ 3875 NONAME
+	_ZN17QMainWindowLayout15doSeparatorMoveEv @ 3875 NONAME ABSENT
 	_ZN17QMainWindowLayout15setDocumentModeEb @ 3876 NONAME
 	_ZN17QMainWindowLayout15splitDockWidgetEP11QDockWidgetS1_N2Qt11OrientationE @ 3877 NONAME
 	_ZN17QMainWindowLayout16endSeparatorMoveERK6QPoint @ 3878 NONAME
@@ -3888,7 +3888,7 @@ EXPORTS
 	_ZN17QMainWindowLayout18startSeparatorMoveERK6QPoint @ 3887 NONAME
 	_ZN17QMainWindowLayout18updateGapIndicatorEv @ 3888 NONAME
 	_ZN17QMainWindowLayout18updateTabBarShapesEv @ 3889 NONAME
-	_ZN17QMainWindowLayout21allAnimationsFinishedEv @ 3890 NONAME
+	_ZN17QMainWindowLayout21allAnimationsFinishedEv @ 3890 NONAME ABSENT
 	_ZN17QMainWindowLayout21toggleToolBarsVisibleEv @ 3891 NONAME
 	_ZN17QMainWindowLayout22setVerticalTabsEnabledEb @ 3892 NONAME
 	_ZN17QMainWindowLayout4plugEP11QLayoutItem @ 3893 NONAME
@@ -3936,14 +3936,14 @@ EXPORTS
 	_ZN17QStyleOptionTabV3C2Ei @ 3935 NONAME
 	_ZN17QStyleOptionTabV3C2Ev @ 3936 NONAME
 	_ZN17QStyleOptionTabV3aSERK15QStyleOptionTab @ 3937 NONAME
-	_ZN17QTextImageHandler10drawObjectEP8QPainterRK6QRectFP13QTextDocumentiRK11QTextFormat @ 3938 NONAME
-	_ZN17QTextImageHandler11qt_metacallEN11QMetaObject4CallEiPPv @ 3939 NONAME
-	_ZN17QTextImageHandler11qt_metacastEPKc @ 3940 NONAME
-	_ZN17QTextImageHandler13intrinsicSizeEP13QTextDocumentiRK11QTextFormat @ 3941 NONAME
+	_ZN17QTextImageHandler10drawObjectEP8QPainterRK6QRectFP13QTextDocumentiRK11QTextFormat @ 3938 NONAME ABSENT
+	_ZN17QTextImageHandler11qt_metacallEN11QMetaObject4CallEiPPv @ 3939 NONAME ABSENT
+	_ZN17QTextImageHandler11qt_metacastEPKc @ 3940 NONAME ABSENT
+	_ZN17QTextImageHandler13intrinsicSizeEP13QTextDocumentiRK11QTextFormat @ 3941 NONAME ABSENT
 	_ZN17QTextImageHandler14externalLoaderE @ 3942 NONAME DATA 4
-	_ZN17QTextImageHandler16staticMetaObjectE @ 3943 NONAME DATA 16
-	_ZN17QTextImageHandlerC1EP7QObject @ 3944 NONAME
-	_ZN17QTextImageHandlerC2EP7QObject @ 3945 NONAME
+	_ZN17QTextImageHandler16staticMetaObjectE @ 3943 NONAME DATA 16 ABSENT
+	_ZN17QTextImageHandlerC1EP7QObject @ 3944 NONAME ABSENT
+	_ZN17QTextImageHandlerC2EP7QObject @ 3945 NONAME ABSENT
 	_ZN17QTextInlineObject10setDescentEf @ 3946 NONAME
 	_ZN17QTextInlineObject8setWidthEf @ 3947 NONAME
 	_ZN17QTextInlineObject9setAscentEf @ 3948 NONAME
@@ -4034,10 +4034,10 @@ EXPORTS
 	_ZN18QItemEditorFactoryD0Ev @ 4033 NONAME
 	_ZN18QItemEditorFactoryD1Ev @ 4034 NONAME
 	_ZN18QItemEditorFactoryD2Ev @ 4035 NONAME
-	_ZN18QPixmapDataFactory8instanceEi @ 4036 NONAME
-	_ZN18QPixmapDataFactoryD0Ev @ 4037 NONAME
-	_ZN18QPixmapDataFactoryD1Ev @ 4038 NONAME
-	_ZN18QPixmapDataFactoryD2Ev @ 4039 NONAME
+	_ZN18QPixmapDataFactory8instanceEi @ 4036 NONAME ABSENT
+	_ZN18QPixmapDataFactoryD0Ev @ 4037 NONAME ABSENT
+	_ZN18QPixmapDataFactoryD1Ev @ 4038 NONAME ABSENT
+	_ZN18QPixmapDataFactoryD2Ev @ 4039 NONAME ABSENT
 	_ZN18QStandardItemModel10insertRowsEiiRK11QModelIndex @ 4040 NONAME
 	_ZN18QStandardItemModel10removeRowsEiiRK11QModelIndex @ 4041 NONAME
 	_ZN18QStandardItemModel10takeColumnEi @ 4042 NONAME
@@ -4185,7 +4185,7 @@ EXPORTS
 	_ZN19QApplicationPrivate14autoSipEnabledE @ 4184 NONAME DATA 1
 	_ZN19QApplicationPrivate14enterModal_sysEP7QWidget @ 4185 NONAME
 	_ZN19QApplicationPrivate14leaveModal_sysEP7QWidget @ 4186 NONAME
-	_ZN19QApplicationPrivate14sendMouseEventEP7QWidgetP11QMouseEventS1_S1_PS1_R8QPointerIS0_E @ 4187 NONAME
+	_ZN19QApplicationPrivate14sendMouseEventEP7QWidgetP11QMouseEventS1_S1_PS1_R8QPointerIS0_E @ 4187 NONAME ABSENT
 	_ZN19QApplicationPrivate14setFocusWidgetEP7QWidgetN2Qt11FocusReasonE @ 4188 NONAME
 	_ZN19QApplicationPrivate14shouldSetFocusEP7QWidgetN2Qt11FocusPolicyE @ 4189 NONAME
 	_ZN19QApplicationPrivate14tryModalHelperEP7QWidgetPS1_ @ 4190 NONAME
@@ -4213,7 +4213,7 @@ EXPORTS
 	_ZN19QApplicationPrivate21createEventDispatcherEv @ 4212 NONAME
 	_ZN19QApplicationPrivate21obey_desktop_settingsE @ 4213 NONAME DATA 1
 	_ZN19QApplicationPrivate22quitOnLastWindowClosedE @ 4214 NONAME DATA 1
-	_ZN19QApplicationPrivate23auto_sip_on_mouse_focusE @ 4215 NONAME DATA 1
+	_ZN19QApplicationPrivate23auto_sip_on_mouse_focusE @ 4215 NONAME DATA 1 ABSENT
 	_ZN19QApplicationPrivate23mouse_double_click_timeE @ 4216 NONAME DATA 4
 	_ZN19QApplicationPrivate25focusNextPrevChild_helperEP7QWidgetb @ 4217 NONAME
 	_ZN19QApplicationPrivate27initializeWidgetPaletteHashEv @ 4218 NONAME
@@ -4242,7 +4242,7 @@ EXPORTS
 	_ZN19QCoeFepInputContext11filterEventEPK6QEvent @ 4241 NONAME
 	_ZN19QCoeFepInputContext11qt_metacallEN11QMetaObject4CallEiPPv @ 4242 NONAME
 	_ZN19QCoeFepInputContext11qt_metacastEPKc @ 4243 NONAME
-	_ZN19QCoeFepInputContext11updateHintsEv @ 4244 NONAME
+	_ZN19QCoeFepInputContext11updateHintsEv @ 4244 NONAME ABSENT
 	_ZN19QCoeFepInputContext12mouseHandlerEiP11QMouseEvent @ 4245 NONAME
 	_ZN19QCoeFepInputContext14setFocusWidgetEP7QWidget @ 4246 NONAME
 	_ZN19QCoeFepInputContext15MopSupplyObjectE8TTypeUid @ 4247 NONAME
@@ -4267,25 +4267,25 @@ EXPORTS
 	_ZN19QCoeFepInputContextD1Ev @ 4266 NONAME
 	_ZN19QCoeFepInputContextD2Ev @ 4267 NONAME
 	_ZN19QDockAreaLayoutInfo12restoreStateER11QDataStreamR5QListIP11QDockWidgetEb @ 4268 NONAME
-	_ZN19QDockAreaLayoutInfo13separatorMoveEiiP7QVectorI13QLayoutStructE @ 4269 NONAME
+	_ZN19QDockAreaLayoutInfo13separatorMoveEiiP7QVectorI13QLayoutStructE @ 4269 NONAME ABSENT
 	_ZN19QDockAreaLayoutInfo13setCurrentTabEP7QWidget @ 4270 NONAME
 	_ZN19QDockAreaLayoutInfo14setTabBarShapeEi @ 4271 NONAME
 	_ZN19QDockAreaLayoutInfo15setCurrentTabIdEj @ 4272 NONAME
 	_ZN19QDockAreaLayoutInfo20deleteAllLayoutItemsEv @ 4273 NONAME
 	_ZN19QDockAreaLayoutInfo3tabEiP11QLayoutItem @ 4274 NONAME
-	_ZN19QDockAreaLayoutInfo4infoE5QListIiE @ 4275 NONAME
+	_ZN19QDockAreaLayoutInfo4infoE5QListIiE @ 4275 NONAME ABSENT
 	_ZN19QDockAreaLayoutInfo4infoEP7QWidget @ 4276 NONAME
-	_ZN19QDockAreaLayoutInfo4itemE5QListIiE @ 4277 NONAME
-	_ZN19QDockAreaLayoutInfo4plugE5QListIiE @ 4278 NONAME
+	_ZN19QDockAreaLayoutInfo4itemE5QListIiE @ 4277 NONAME ABSENT
+	_ZN19QDockAreaLayoutInfo4plugE5QListIiE @ 4278 NONAME ABSENT
 	_ZN19QDockAreaLayoutInfo5applyEb @ 4279 NONAME
 	_ZN19QDockAreaLayoutInfo5clearEv @ 4280 NONAME
 	_ZN19QDockAreaLayoutInfo5splitEiN2Qt11OrientationEP11QLayoutItem @ 4281 NONAME
-	_ZN19QDockAreaLayoutInfo6removeE5QListIiE @ 4282 NONAME
+	_ZN19QDockAreaLayoutInfo6removeE5QListIiE @ 4282 NONAME ABSENT
 	_ZN19QDockAreaLayoutInfo6takeAtEPii @ 4283 NONAME
 	_ZN19QDockAreaLayoutInfo6unnestEi @ 4284 NONAME
-	_ZN19QDockAreaLayoutInfo6unplugE5QListIiE @ 4285 NONAME
+	_ZN19QDockAreaLayoutInfo6unplugE5QListIiE @ 4285 NONAME ABSENT
 	_ZN19QDockAreaLayoutInfo8fitItemsEv @ 4286 NONAME
-	_ZN19QDockAreaLayoutInfo9insertGapE5QListIiEP11QLayoutItem @ 4287 NONAME
+	_ZN19QDockAreaLayoutInfo9insertGapE5QListIiEP11QLayoutItem @ 4287 NONAME ABSENT
 	_ZN19QDockAreaLayoutInfoC1EiN9QInternal12DockPositionEN2Qt11OrientationEiP11QMainWindow @ 4288 NONAME
 	_ZN19QDockAreaLayoutInfoC1Ev @ 4289 NONAME
 	_ZN19QDockAreaLayoutInfoC2EiN9QInternal12DockPositionEN2Qt11OrientationEiP11QMainWindow @ 4290 NONAME
@@ -4534,17 +4534,17 @@ EXPORTS
 	_ZN20QGraphicsItemPrivate12remapItemPosEP6QEventP13QGraphicsItem @ 4533 NONAME
 	_ZN20QGraphicsItemPrivate12resolveDepthEi @ 4534 NONAME
 	_ZN20QGraphicsItemPrivate12setPosHelperERK7QPointF @ 4535 NONAME
-	_ZN20QGraphicsItemPrivate12updateHelperERK6QRectFbb @ 4536 NONAME
-	_ZN20QGraphicsItemPrivate16fullUpdateHelperEbbb @ 4537 NONAME
+	_ZN20QGraphicsItemPrivate12updateHelperERK6QRectFbb @ 4536 NONAME ABSENT
+	_ZN20QGraphicsItemPrivate16fullUpdateHelperEbbb @ 4537 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate16setEnabledHelperEbbb @ 4538 NONAME
 	_ZN20QGraphicsItemPrivate16setVisibleHelperEbbb @ 4539 NONAME
 	_ZN20QGraphicsItemPrivate18setIsMemberOfGroupEb @ 4540 NONAME
 	_ZN20QGraphicsItemPrivate18updateAncestorFlagEN13QGraphicsItem16GraphicsItemFlagENS_12AncestorFlagEbb @ 4541 NONAME
 	_ZN20QGraphicsItemPrivate20removeExtraItemCacheEv @ 4542 NONAME
-	_ZN20QGraphicsItemPrivate22updateEffectiveOpacityEv @ 4543 NONAME
-	_ZN20QGraphicsItemPrivate23resolveEffectiveOpacityEf @ 4544 NONAME
+	_ZN20QGraphicsItemPrivate22updateEffectiveOpacityEv @ 4543 NONAME ABSENT
+	_ZN20QGraphicsItemPrivate23resolveEffectiveOpacityEf @ 4544 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate25movableAncestorIsSelectedEPK13QGraphicsItem @ 4545 NONAME
-	_ZN20QGraphicsItemPrivate29invalidateSceneTransformCacheEv @ 4546 NONAME
+	_ZN20QGraphicsItemPrivate29invalidateSceneTransformCacheEv @ 4546 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate33setEmptyCachedClipPathRecursivelyERK6QRectF @ 4547 NONAME
 	_ZN20QGraphicsItemPrivate35invalidateCachedClipPathRecursivelyEbRK6QRectF @ 4548 NONAME
 	_ZN20QGraphicsItemPrivate36updateCachedClipPathFromSetPosHelperERK7QPointF @ 4549 NONAME
@@ -4600,12 +4600,12 @@ EXPORTS
 	_ZN20QGraphicsProxyWidgetD2Ev @ 4599 NONAME
 	_ZN20QGraphicsViewPrivate10centerViewEN13QGraphicsView14ViewportAnchorE @ 4600 NONAME
 	_ZN20QGraphicsViewPrivate10updateRectERK5QRect @ 4601 NONAME
-	_ZN20QGraphicsViewPrivate11itemUpdatedEP13QGraphicsItemRK6QRectF @ 4602 NONAME
-	_ZN20QGraphicsViewPrivate11updateLaterEv @ 4603 NONAME
+	_ZN20QGraphicsViewPrivate11itemUpdatedEP13QGraphicsItemRK6QRectF @ 4602 NONAME ABSENT
+	_ZN20QGraphicsViewPrivate11updateLaterEv @ 4603 NONAME ABSENT
 	_ZN20QGraphicsViewPrivate12updateRegionERK7QRegion @ 4604 NONAME
 	_ZN20QGraphicsViewPrivate12updateScrollEv @ 4605 NONAME
 	_ZN20QGraphicsViewPrivate15storeMouseEventEP11QMouseEvent @ 4606 NONAME
-	_ZN20QGraphicsViewPrivate18_q_updateLaterSlotEv @ 4607 NONAME
+	_ZN20QGraphicsViewPrivate18_q_updateLaterSlotEv @ 4607 NONAME ABSENT
 	_ZN20QGraphicsViewPrivate18storeDragDropEventEPK27QGraphicsSceneDragDropEvent @ 4608 NONAME
 	_ZN20QGraphicsViewPrivate20replayLastMouseEventEv @ 4609 NONAME
 	_ZN20QGraphicsViewPrivate21freeStyleOptionsArrayEP24QStyleOptionGraphicsItem @ 4610 NONAME
@@ -4614,7 +4614,7 @@ EXPORTS
 	_ZN20QGraphicsViewPrivate22allocStyleOptionsArrayEi @ 4613 NONAME
 	_ZN20QGraphicsViewPrivate22recalculateContentSizeEv @ 4614 NONAME
 	_ZN20QGraphicsViewPrivate26populateSceneDragDropEventEP27QGraphicsSceneDragDropEventP10QDropEvent @ 4615 NONAME
-	_ZN20QGraphicsViewPrivate9updateAllEv @ 4616 NONAME
+	_ZN20QGraphicsViewPrivate9updateAllEv @ 4616 NONAME ABSENT
 	_ZN20QGraphicsViewPrivateC1Ev @ 4617 NONAME
 	_ZN20QGraphicsViewPrivateC2Ev @ 4618 NONAME
 	_ZN20QInputContextFactory11descriptionERK7QString @ 4619 NONAME
@@ -4749,9 +4749,9 @@ EXPORTS
 	_ZN21QAbstractItemDelegateD0Ev @ 4748 NONAME
 	_ZN21QAbstractItemDelegateD1Ev @ 4749 NONAME
 	_ZN21QAbstractItemDelegateD2Ev @ 4750 NONAME
-	_ZN21QFontEngineGlyphCacheD0Ev @ 4751 NONAME
-	_ZN21QFontEngineGlyphCacheD1Ev @ 4752 NONAME
-	_ZN21QFontEngineGlyphCacheD2Ev @ 4753 NONAME
+	_ZN21QFontEngineGlyphCacheD0Ev @ 4751 NONAME ABSENT
+	_ZN21QFontEngineGlyphCacheD1Ev @ 4752 NONAME ABSENT
+	_ZN21QFontEngineGlyphCacheD2Ev @ 4753 NONAME ABSENT
 	_ZN21QGraphicsLinearLayout10insertItemEiP19QGraphicsLayoutItem @ 4754 NONAME
 	_ZN21QGraphicsLinearLayout10invalidateEv @ 4755 NONAME
 	_ZN21QGraphicsLinearLayout10removeItemEP19QGraphicsLayoutItem @ 4756 NONAME
@@ -4879,30 +4879,30 @@ EXPORTS
 	_ZN22QGraphicsLayoutPrivate17activateRecursiveEP19QGraphicsLayoutItem @ 4878 NONAME
 	_ZN22QGraphicsLayoutPrivate18addChildLayoutItemEP19QGraphicsLayoutItem @ 4879 NONAME
 	_ZN22QGraphicsLayoutPrivate18reparentChildItemsEP13QGraphicsItem @ 4880 NONAME
-	_ZN22QGraphicsSystemFactory4keysEv @ 4881 NONAME
-	_ZN22QGraphicsSystemFactory6createERK7QString @ 4882 NONAME
-	_ZN22QGraphicsWidgetPrivate10updateFontERK5QFont @ 4883 NONAME
-	_ZN22QGraphicsWidgetPrivate11resolveFontEj @ 4884 NONAME
-	_ZN22QGraphicsWidgetPrivate13updatePaletteERK8QPalette @ 4885 NONAME
-	_ZN22QGraphicsWidgetPrivate14resolvePaletteEj @ 4886 NONAME
-	_ZN22QGraphicsWidgetPrivate14setFocusWidgetEv @ 4887 NONAME
-	_ZN22QGraphicsWidgetPrivate14setFont_helperERK5QFont @ 4888 NONAME
-	_ZN22QGraphicsWidgetPrivate16clearFocusWidgetEv @ 4889 NONAME
-	_ZN22QGraphicsWidgetPrivate16setLayout_helperEP15QGraphicsLayout @ 4890 NONAME
-	_ZN22QGraphicsWidgetPrivate17adjustWindowFlagsEP6QFlagsIN2Qt10WindowTypeEE @ 4891 NONAME
-	_ZN22QGraphicsWidgetPrivate17setPalette_helperERK8QPalette @ 4892 NONAME
-	_ZN22QGraphicsWidgetPrivate20setLayoutItemMarginsEN6QStyle10SubElementEPK12QStyleOption @ 4893 NONAME
-	_ZN22QGraphicsWidgetPrivate20setLayoutItemMarginsEffff @ 4894 NONAME
-	_ZN22QGraphicsWidgetPrivate22resolveLayoutDirectionEv @ 4895 NONAME
-	_ZN22QGraphicsWidgetPrivate23initStyleOptionTitleBarEP20QStyleOptionTitleBar @ 4896 NONAME
-	_ZN22QGraphicsWidgetPrivate25setLayoutDirection_helperEN2Qt15LayoutDirectionE @ 4897 NONAME
-	_ZN22QGraphicsWidgetPrivate25windowFrameHoverMoveEventEP24QGraphicsSceneHoverEvent @ 4898 NONAME
-	_ZN22QGraphicsWidgetPrivate25windowFrameMouseMoveEventEP24QGraphicsSceneMouseEvent @ 4899 NONAME
-	_ZN22QGraphicsWidgetPrivate26windowFrameHoverLeaveEventEP24QGraphicsSceneHoverEvent @ 4900 NONAME
-	_ZN22QGraphicsWidgetPrivate26windowFrameMousePressEventEP24QGraphicsSceneMouseEvent @ 4901 NONAME
-	_ZN22QGraphicsWidgetPrivate28windowFrameMouseReleaseEventEP24QGraphicsSceneMouseEvent @ 4902 NONAME
-	_ZN22QGraphicsWidgetPrivate30fixFocusChainBeforeReparentingEP15QGraphicsWidgetP14QGraphicsScene @ 4903 NONAME
-	_ZN22QGraphicsWidgetPrivate4initEP13QGraphicsItem6QFlagsIN2Qt10WindowTypeEE @ 4904 NONAME
+	_ZN22QGraphicsSystemFactory4keysEv @ 4881 NONAME ABSENT
+	_ZN22QGraphicsSystemFactory6createERK7QString @ 4882 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate10updateFontERK5QFont @ 4883 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate11resolveFontEj @ 4884 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate13updatePaletteERK8QPalette @ 4885 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate14resolvePaletteEj @ 4886 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate14setFocusWidgetEv @ 4887 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate14setFont_helperERK5QFont @ 4888 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate16clearFocusWidgetEv @ 4889 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate16setLayout_helperEP15QGraphicsLayout @ 4890 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate17adjustWindowFlagsEP6QFlagsIN2Qt10WindowTypeEE @ 4891 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate17setPalette_helperERK8QPalette @ 4892 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate20setLayoutItemMarginsEN6QStyle10SubElementEPK12QStyleOption @ 4893 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate20setLayoutItemMarginsEffff @ 4894 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate22resolveLayoutDirectionEv @ 4895 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate23initStyleOptionTitleBarEP20QStyleOptionTitleBar @ 4896 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate25setLayoutDirection_helperEN2Qt15LayoutDirectionE @ 4897 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate25windowFrameHoverMoveEventEP24QGraphicsSceneHoverEvent @ 4898 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate25windowFrameMouseMoveEventEP24QGraphicsSceneMouseEvent @ 4899 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate26windowFrameHoverLeaveEventEP24QGraphicsSceneHoverEvent @ 4900 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate26windowFrameMousePressEventEP24QGraphicsSceneMouseEvent @ 4901 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate28windowFrameMouseReleaseEventEP24QGraphicsSceneMouseEvent @ 4902 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate30fixFocusChainBeforeReparentingEP15QGraphicsWidgetP14QGraphicsScene @ 4903 NONAME ABSENT
+	_ZN22QGraphicsWidgetPrivate4initEP13QGraphicsItem6QFlagsIN2Qt10WindowTypeEE @ 4904 NONAME ABSENT
 	_ZN22QStyleOptionDockWidgetC1Ei @ 4905 NONAME
 	_ZN22QStyleOptionDockWidgetC1Ev @ 4906 NONAME
 	_ZN22QStyleOptionDockWidgetC2Ei @ 4907 NONAME
@@ -4986,9 +4986,9 @@ EXPORTS
 	_ZN23QGraphicsSimpleTextItemD0Ev @ 4985 NONAME
 	_ZN23QGraphicsSimpleTextItemD1Ev @ 4986 NONAME
 	_ZN23QGraphicsSimpleTextItemD2Ev @ 4987 NONAME
-	_ZN23QImageTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj @ 4988 NONAME
-	_ZN23QImageTextureGlyphCache17createTextureDataEii @ 4989 NONAME
-	_ZN23QImageTextureGlyphCache17resizeTextureDataEii @ 4990 NONAME
+	_ZN23QImageTextureGlyphCache11fillTextureERKN18QTextureGlyphCache5CoordEj @ 4988 NONAME ABSENT
+	_ZN23QImageTextureGlyphCache17createTextureDataEii @ 4989 NONAME ABSENT
+	_ZN23QImageTextureGlyphCache17resizeTextureDataEii @ 4990 NONAME ABSENT
 	_ZN23QPixmapDropShadowFilter11qt_metacallEN11QMetaObject4CallEiPPv @ 4991 NONAME
 	_ZN23QPixmapDropShadowFilter11qt_metacastEPKc @ 4992 NONAME
 	_ZN23QPixmapDropShadowFilter13setBlurRadiusEf @ 4993 NONAME
@@ -5025,7 +5025,7 @@ EXPORTS
 	_ZN23QWindowStateChangeEventD1Ev @ 5024 NONAME
 	_ZN23QWindowStateChangeEventD2Ev @ 5025 NONAME
 	_ZN24QAbstractItemViewPrivate10openEditorERK11QModelIndexP6QEvent @ 5026 NONAME
-	_ZN24QAbstractItemViewPrivate12_q_fetchMoreEv @ 5027 NONAME
+	_ZN24QAbstractItemViewPrivate12_q_fetchMoreEv @ 5027 NONAME ABSENT
 	_ZN24QAbstractItemViewPrivate12removeEditorEP7QWidget @ 5028 NONAME
 	_ZN24QAbstractItemViewPrivate13clearOrRemoveEv @ 5029 NONAME
 	_ZN24QAbstractItemViewPrivate14_q_rowsRemovedERK11QModelIndexii @ 5030 NONAME
@@ -5186,7 +5186,7 @@ EXPORTS
 	_ZN26QAbstractGraphicsShapeItemD2Ev @ 5185 NONAME
 	_ZN26QAbstractScrollAreaPrivate14layoutChildrenEv @ 5186 NONAME
 	_ZN26QAbstractScrollAreaPrivate16replaceScrollBarEP10QScrollBarN2Qt11OrientationE @ 5187 NONAME
-	_ZN26QAbstractScrollAreaPrivate22scrollBarPolicyChangedEN2Qt11OrientationENS0_15ScrollBarPolicyE @ 5188 NONAME
+	_ZN26QAbstractScrollAreaPrivate22scrollBarPolicyChangedEN2Qt11OrientationENS0_15ScrollBarPolicyE @ 5188 NONAME ABSENT
 	_ZN26QAbstractScrollAreaPrivate23_q_showOrHideScrollBarsEv @ 5189 NONAME
 	_ZN26QAbstractScrollAreaPrivate4initEv @ 5190 NONAME
 	_ZN26QAbstractScrollAreaPrivate9_q_hslideEi @ 5191 NONAME
@@ -5261,7 +5261,7 @@ EXPORTS
 	_ZN30QGraphicsSceneContextMenuEventD0Ev @ 5260 NONAME
 	_ZN30QGraphicsSceneContextMenuEventD1Ev @ 5261 NONAME
 	_ZN30QGraphicsSceneContextMenuEventD2Ev @ 5262 NONAME
-	_ZN4QCss10StyleSheet12buildIndexesEN2Qt15CaseSensitivityE @ 5263 NONAME
+	_ZN4QCss10StyleSheet12buildIndexesEN2Qt15CaseSensitivityE @ 5263 NONAME ABSENT
 	_ZN4QCss13StyleSelector15selectorMatchesERKNS_8SelectorENS0_7NodePtrE @ 5264 NONAME
 	_ZN4QCss13StyleSelector17styleRulesForNodeENS0_7NodePtrE @ 5265 NONAME
 	_ZN4QCss13StyleSelector19declarationsForNodeENS0_7NodePtrEPKc @ 5266 NONAME
@@ -5328,7 +5328,7 @@ EXPORTS
 	_ZN4QCss6ParserC2Ev @ 5327 NONAME
 	_ZN4QCss7Scanner10preprocessERK7QStringPb @ 5328 NONAME
 	_ZN4QCss7Scanner4scanERK7QStringP7QVectorINS_6SymbolEE @ 5329 NONAME
-	_ZN4QCss7Scanner9tokenNameENS_9TokenTypeE @ 5330 NONAME
+	_ZN4QCss7Scanner9tokenNameENS_9TokenTypeE @ 5330 NONAME ABSENT
 	_ZN4QPen10isDetachedEv @ 5331 NONAME
 	_ZN4QPen11setCapStyleEN2Qt11PenCapStyleE @ 5332 NONAME
 	_ZN4QPen11setCosmeticEb @ 5333 NONAME
@@ -6846,10 +6846,10 @@ EXPORTS
 	_ZN9QPolygonFC2ERK8QPolygon @ 6845 NONAME
 	_ZN9QS60Style11qt_metacallEN11QMetaObject4CallEiPPv @ 6846 NONAME
 	_ZN9QS60Style11qt_metacastEPKc @ 6847 NONAME
-	_ZN9QS60Style16handleSkinChangeEv @ 6848 NONAME
+	_ZN9QS60Style16handleSkinChangeEv @ 6848 NONAME ABSENT
 	_ZN9QS60Style16setStylePropertyEPKcRK8QVariant @ 6849 NONAME
 	_ZN9QS60Style16staticMetaObjectE @ 6850 NONAME DATA 16
-	_ZN9QS60Style32handleDynamicLayoutVariantSwitchEv @ 6851 NONAME
+	_ZN9QS60Style32handleDynamicLayoutVariantSwitchEv @ 6851 NONAME ABSENT
 	_ZN9QS60Style6polishEP12QApplication @ 6852 NONAME
 	_ZN9QS60Style6polishEP7QWidget @ 6853 NONAME
 	_ZN9QS60Style8unpolishEP12QApplication @ 6854 NONAME
@@ -7435,7 +7435,7 @@ EXPORTS
 	_ZNK11QFontEngine10glyphCacheEN21QFontEngineGlyphCache4TypeERK10QTransform @ 7434 NONAME
 	_ZNK11QFontEngine10glyphCacheEPvRK10QTransform @ 7435 NONAME
 	_ZNK11QFontEngine10glyphCountEv @ 7436 NONAME
-	_ZNK11QFontEngine10metaObjectEv @ 7437 NONAME
+	_ZNK11QFontEngine10metaObjectEv @ 7437 NONAME ABSENT
 	_ZNK11QFontEngine10propertiesEv @ 7438 NONAME
 	_ZNK11QFontEngine12getSfntTableEj @ 7439 NONAME
 	_ZNK11QFontEngine12harfbuzzFaceEv @ 7440 NONAME
@@ -7852,10 +7852,10 @@ EXPORTS
 	_ZNK12QCommonStyle21hitTestComplexControlEN6QStyle14ComplexControlEPK19QStyleOptionComplexRK6QPointPK7QWidget @ 7851 NONAME
 	_ZNK12QCommonStyle26standardIconImplementationEN6QStyle14StandardPixmapEPK12QStyleOptionPK7QWidget @ 7852 NONAME
 	_ZNK12QCommonStyle9styleHintEN6QStyle9StyleHintEPK12QStyleOptionPK7QWidgetP16QStyleHintReturn @ 7853 NONAME
-	_ZNK12QDragManager10dragCursorEN2Qt10DropActionE @ 7854 NONAME
-	_ZNK12QDragManager10metaObjectEv @ 7855 NONAME
-	_ZNK12QDragManager13defaultActionE6QFlagsIN2Qt10DropActionEES0_INS1_16KeyboardModifierEE @ 7856 NONAME
-	_ZNK12QDragManager20hasCustomDragCursorsEv @ 7857 NONAME
+	_ZNK12QDragManager10dragCursorEN2Qt10DropActionE @ 7854 NONAME ABSENT
+	_ZNK12QDragManager10metaObjectEv @ 7855 NONAME ABSENT
+	_ZNK12QDragManager13defaultActionE6QFlagsIN2Qt10DropActionEES0_INS1_16KeyboardModifierEE @ 7856 NONAME ABSENT
+	_ZNK12QDragManager20hasCustomDragCursorsEv @ 7857 NONAME ABSENT
 	_ZNK12QFontMetrics10elidedTextERK7QStringN2Qt13TextElideModeEii @ 7858 NONAME
 	_ZNK12QFontMetrics11leftBearingE5QChar @ 7859 NONAME
 	_ZNK12QFontMetrics11lineSpacingEv @ 7860 NONAME
@@ -8076,7 +8076,7 @@ EXPORTS
 	_ZNK12QTextControl8canPasteEv @ 8075 NONAME
 	_ZNK12QTextControl8documentEv @ 8076 NONAME
 	_ZNK12QTextControl9textWidthEv @ 8077 NONAME
-	_ZNK12QToolBarItem7isEmptyEv @ 8078 NONAME
+	_ZNK12QToolBarItem7isEmptyEv @ 8078 NONAME ABSENT
 	_ZNK12QUndoCommand10childCountEv @ 8079 NONAME
 	_ZNK12QUndoCommand2idEv @ 8080 NONAME
 	_ZNK12QUndoCommand4textEv @ 8081 NONAME
@@ -8521,37 +8521,37 @@ EXPORTS
 	_ZNK14QTextTableCell6columnEv @ 8520 NONAME
 	_ZNK14QTextTableCell6formatEv @ 8521 NONAME
 	_ZNK14QTextTableCell7rowSpanEv @ 8522 NONAME
-	_ZNK14QToolBarLayout10handleRectEv @ 8523 NONAME
-	_ZNK14QToolBarLayout10metaObjectEv @ 8524 NONAME
-	_ZNK14QToolBarLayout11minimumSizeEv @ 8525 NONAME
-	_ZNK14QToolBarLayout12expandedSizeERK5QSize @ 8526 NONAME
-	_ZNK14QToolBarLayout13hasExpandFlagEv @ 8527 NONAME
-	_ZNK14QToolBarLayout15updateGeomArrayEv @ 8528 NONAME
-	_ZNK14QToolBarLayout19expandingDirectionsEv @ 8529 NONAME
-	_ZNK14QToolBarLayout5countEv @ 8530 NONAME
-	_ZNK14QToolBarLayout6itemAtEi @ 8531 NONAME
-	_ZNK14QToolBarLayout7indexOfEP7QAction @ 8532 NONAME
-	_ZNK14QToolBarLayout7isEmptyEv @ 8533 NONAME
-	_ZNK14QToolBarLayout7movableEv @ 8534 NONAME
-	_ZNK14QToolBarLayout8sizeHintEv @ 8535 NONAME
+	_ZNK14QToolBarLayout10handleRectEv @ 8523 NONAME ABSENT
+	_ZNK14QToolBarLayout10metaObjectEv @ 8524 NONAME ABSENT
+	_ZNK14QToolBarLayout11minimumSizeEv @ 8525 NONAME ABSENT
+	_ZNK14QToolBarLayout12expandedSizeERK5QSize @ 8526 NONAME ABSENT
+	_ZNK14QToolBarLayout13hasExpandFlagEv @ 8527 NONAME ABSENT
+	_ZNK14QToolBarLayout15updateGeomArrayEv @ 8528 NONAME ABSENT
+	_ZNK14QToolBarLayout19expandingDirectionsEv @ 8529 NONAME ABSENT
+	_ZNK14QToolBarLayout5countEv @ 8530 NONAME ABSENT
+	_ZNK14QToolBarLayout6itemAtEi @ 8531 NONAME ABSENT
+	_ZNK14QToolBarLayout7indexOfEP7QAction @ 8532 NONAME ABSENT
+	_ZNK14QToolBarLayout7isEmptyEv @ 8533 NONAME ABSENT
+	_ZNK14QToolBarLayout7movableEv @ 8534 NONAME ABSENT
+	_ZNK14QToolBarLayout8sizeHintEv @ 8535 NONAME ABSENT
 	_ZNK14QWidgetPrivate10clipRegionEv @ 8536 NONAME
 	_ZNK14QWidgetPrivate10frameStrutEv @ 8537 NONAME
 	_ZNK14QWidgetPrivate12adjustedSizeEv @ 8538 NONAME
 	_ZNK14QWidgetPrivate12inputContextEv @ 8539 NONAME
 	_ZNK14QWidgetPrivate12isOverlappedERK5QRect @ 8540 NONAME
-	_ZNK14QWidgetPrivate13hasBackgroundEv @ 8541 NONAME
+	_ZNK14QWidgetPrivate13hasBackgroundEv @ 8541 NONAME ABSENT
 	_ZNK14QWidgetPrivate13isAboutToShowEv @ 8542 NONAME
 	_ZNK14QWidgetPrivate13paintOnScreenEv @ 8543 NONAME
 	_ZNK14QWidgetPrivate14childAt_helperERK6QPointb @ 8544 NONAME
 	_ZNK14QWidgetPrivate15getOpaqueRegionEv @ 8545 NONAME
-	_ZNK14QWidgetPrivate15paintBackgroundEP8QPainterRK7QRegionRK6QPointi @ 8546 NONAME
+	_ZNK14QWidgetPrivate15paintBackgroundEP8QPainterRK7QRegionRK6QPointi @ 8546 NONAME ABSENT
 	_ZNK14QWidgetPrivate17getOpaqueChildrenEv @ 8547 NONAME
 	_ZNK14QWidgetPrivate17naturalWidgetFontEj @ 8548 NONAME
 	_ZNK14QWidgetPrivate19clipToEffectiveMaskER7QRegion @ 8549 NONAME
 	_ZNK14QWidgetPrivate20getLayoutItemMarginsEPiS0_S0_S0_ @ 8550 NONAME
 	_ZNK14QWidgetPrivate20naturalWidgetPaletteEj @ 8551 NONAME
-	_ZNK14QWidgetPrivate21isBackgroundInheritedEv @ 8552 NONAME
-	_ZNK14QWidgetPrivate22fromOrToLayoutItemRectERK5QRecti @ 8553 NONAME
+	_ZNK14QWidgetPrivate21isBackgroundInheritedEv @ 8552 NONAME ABSENT
+	_ZNK14QWidgetPrivate22fromOrToLayoutItemRectERK5QRecti @ 8553 NONAME ABSENT
 	_ZNK14QWidgetPrivate22subtractOpaqueChildrenER7QRegionRK5QRect @ 8554 NONAME
 	_ZNK14QWidgetPrivate22subtractOpaqueSiblingsER7QRegionPbb @ 8555 NONAME
 	_ZNK14QWidgetPrivate8clipRectEv @ 8556 NONAME
@@ -8614,20 +8614,20 @@ EXPORTS
 	_ZNK15QDockAreaLayout11minimumSizeEv @ 8613 NONAME
 	_ZNK15QDockAreaLayout11usedTabBarsEv @ 8614 NONAME
 	_ZNK15QDockAreaLayout13findSeparatorERK6QPoint @ 8615 NONAME
-	_ZNK15QDockAreaLayout13separatorRectE5QListIiE @ 8616 NONAME
+	_ZNK15QDockAreaLayout13separatorRectE5QListIiE @ 8616 NONAME ABSENT
 	_ZNK15QDockAreaLayout13separatorRectEi @ 8617 NONAME
 	_ZNK15QDockAreaLayout15paintSeparatorsEP8QPainterP7QWidgetRK7QRegionRK6QPoint @ 8618 NONAME
 	_ZNK15QDockAreaLayout15separatorRegionEv @ 8619 NONAME
 	_ZNK15QDockAreaLayout18indexOfPlaceHolderERK7QString @ 8620 NONAME
 	_ZNK15QDockAreaLayout20usedSeparatorWidgetsEv @ 8621 NONAME
 	_ZNK15QDockAreaLayout22updateSeparatorWidgetsEv @ 8622 NONAME
-	_ZNK15QDockAreaLayout4infoE5QListIiE @ 8623 NONAME
+	_ZNK15QDockAreaLayout4infoE5QListIiE @ 8623 NONAME ABSENT
 	_ZNK15QDockAreaLayout6itemAtEPii @ 8624 NONAME
-	_ZNK15QDockAreaLayout7gapRectE5QListIiE @ 8625 NONAME
+	_ZNK15QDockAreaLayout7gapRectE5QListIiE @ 8625 NONAME ABSENT
 	_ZNK15QDockAreaLayout7indexOfEP7QWidget @ 8626 NONAME
 	_ZNK15QDockAreaLayout7isValidEv @ 8627 NONAME
 	_ZNK15QDockAreaLayout8gapIndexERK6QPoint @ 8628 NONAME
-	_ZNK15QDockAreaLayout8itemRectE5QListIiE @ 8629 NONAME
+	_ZNK15QDockAreaLayout8itemRectE5QListIiE @ 8629 NONAME ABSENT
 	_ZNK15QDockAreaLayout8sizeHintEv @ 8630 NONAME
 	_ZNK15QDockAreaLayout9saveStateER11QDataStream @ 8631 NONAME
 	_ZNK15QGraphicsLayout11isActivatedEv @ 8632 NONAME
@@ -8770,20 +8770,20 @@ EXPORTS
 	_ZNK16QFileSystemModel8rootPathEv @ 8769 NONAME
 	_ZNK16QFileSystemModel8rowCountERK11QModelIndex @ 8770 NONAME
 	_ZNK16QFileSystemModel9mimeTypesEv @ 8771 NONAME
-	_ZNK16QFontEngineMulti12maxCharWidthEv @ 8772 NONAME
-	_ZNK16QFontEngineMulti12stringToCMapEPK5QChariP12QGlyphLayoutPi6QFlagsIN11QTextEngine10ShaperFlagEE @ 8773 NONAME
-	_ZNK16QFontEngineMulti13lineThicknessEv @ 8774 NONAME
-	_ZNK16QFontEngineMulti14minLeftBearingEv @ 8775 NONAME
-	_ZNK16QFontEngineMulti14recalcAdvancesEP12QGlyphLayout6QFlagsIN11QTextEngine10ShaperFlagEE @ 8776 NONAME
-	_ZNK16QFontEngineMulti15minRightBearingEv @ 8777 NONAME
-	_ZNK16QFontEngineMulti16averageCharWidthEv @ 8778 NONAME
-	_ZNK16QFontEngineMulti17underlinePositionEv @ 8779 NONAME
-	_ZNK16QFontEngineMulti6ascentEv @ 8780 NONAME
-	_ZNK16QFontEngineMulti6engineEi @ 8781 NONAME
-	_ZNK16QFontEngineMulti7descentEv @ 8782 NONAME
-	_ZNK16QFontEngineMulti7leadingEv @ 8783 NONAME
-	_ZNK16QFontEngineMulti7xHeightEv @ 8784 NONAME
-	_ZNK16QFontEngineMulti9doKerningEP12QGlyphLayout6QFlagsIN11QTextEngine10ShaperFlagEE @ 8785 NONAME
+	_ZNK16QFontEngineMulti12maxCharWidthEv @ 8772 NONAME ABSENT
+	_ZNK16QFontEngineMulti12stringToCMapEPK5QChariP12QGlyphLayoutPi6QFlagsIN11QTextEngine10ShaperFlagEE @ 8773 NONAME ABSENT
+	_ZNK16QFontEngineMulti13lineThicknessEv @ 8774 NONAME ABSENT
+	_ZNK16QFontEngineMulti14minLeftBearingEv @ 8775 NONAME ABSENT
+	_ZNK16QFontEngineMulti14recalcAdvancesEP12QGlyphLayout6QFlagsIN11QTextEngine10ShaperFlagEE @ 8776 NONAME ABSENT
+	_ZNK16QFontEngineMulti15minRightBearingEv @ 8777 NONAME ABSENT
+	_ZNK16QFontEngineMulti16averageCharWidthEv @ 8778 NONAME ABSENT
+	_ZNK16QFontEngineMulti17underlinePositionEv @ 8779 NONAME ABSENT
+	_ZNK16QFontEngineMulti6ascentEv @ 8780 NONAME ABSENT
+	_ZNK16QFontEngineMulti6engineEi @ 8781 NONAME ABSENT
+	_ZNK16QFontEngineMulti7descentEv @ 8782 NONAME ABSENT
+	_ZNK16QFontEngineMulti7leadingEv @ 8783 NONAME ABSENT
+	_ZNK16QFontEngineMulti7xHeightEv @ 8784 NONAME ABSENT
+	_ZNK16QFontEngineMulti9doKerningEP12QGlyphLayout6QFlagsIN11QTextEngine10ShaperFlagEE @ 8785 NONAME ABSENT
 	_ZNK16QRegExpValidator10metaObjectEv @ 8786 NONAME
 	_ZNK16QRegExpValidator8validateER7QStringRi @ 8787 NONAME
 	_ZNK16QStringListModel10metaObjectEv @ 8788 NONAME
@@ -8994,7 +8994,7 @@ EXPORTS
 	_ZNK17QRasterPixmapData15hasAlphaChannelEv @ 8993 NONAME
 	_ZNK17QRasterPixmapData6metricEN12QPaintDevice17PaintDeviceMetricE @ 8994 NONAME
 	_ZNK17QRasterPixmapData7toImageEv @ 8995 NONAME
-	_ZNK17QTextImageHandler10metaObjectEv @ 8996 NONAME
+	_ZNK17QTextImageHandler10metaObjectEv @ 8996 NONAME ABSENT
 	_ZNK17QTextInlineObject11formatIndexEv @ 8997 NONAME
 	_ZNK17QTextInlineObject12textPositionEv @ 8998 NONAME
 	_ZNK17QTextInlineObject13textDirectionEv @ 8999 NONAME
@@ -9081,7 +9081,7 @@ EXPORTS
 	_ZNK19QDockAreaLayoutInfo12currentTabIdEv @ 9080 NONAME
 	_ZNK19QDockAreaLayoutInfo12updateTabBarEv @ 9081 NONAME
 	_ZNK19QDockAreaLayoutInfo13findSeparatorERK6QPoint @ 9082 NONAME
-	_ZNK19QDockAreaLayoutInfo13separatorRectE5QListIiE @ 9083 NONAME
+	_ZNK19QDockAreaLayoutInfo13separatorRectE5QListIiE @ 9083 NONAME ABSENT
 	_ZNK19QDockAreaLayoutInfo13separatorRectEi @ 9084 NONAME
 	_ZNK19QDockAreaLayoutInfo14tabBarSizeHintEv @ 9085 NONAME
 	_ZNK19QDockAreaLayoutInfo14tabContentRectEv @ 9086 NONAME
@@ -9099,7 +9099,7 @@ EXPORTS
 	_ZNK19QDockAreaLayoutInfo7indexOfEP7QWidget @ 9098 NONAME
 	_ZNK19QDockAreaLayoutInfo7isEmptyEv @ 9099 NONAME
 	_ZNK19QDockAreaLayoutInfo8gapIndexERK6QPointbNS_7TabModeE @ 9100 NONAME
-	_ZNK19QDockAreaLayoutInfo8itemRectE5QListIiE @ 9101 NONAME
+	_ZNK19QDockAreaLayoutInfo8itemRectE5QListIiE @ 9101 NONAME ABSENT
 	_ZNK19QDockAreaLayoutInfo8itemRectEi @ 9102 NONAME
 	_ZNK19QDockAreaLayoutInfo8sizeHintEv @ 9103 NONAME
 	_ZNK19QDockAreaLayoutInfo9expansiveEN2Qt11OrientationE @ 9104 NONAME
@@ -9220,7 +9220,7 @@ EXPORTS
 	_ZNK20QGraphicsItemPrivate14extraItemCacheEv @ 9219 NONAME
 	_ZNK20QGraphicsItemPrivate19genericMapFromSceneERK7QPointFPK7QWidget @ 9220 NONAME
 	_ZNK20QGraphicsItemPrivate20discardUpdateRequestEbbbb @ 9221 NONAME
-	_ZNK20QGraphicsItemPrivate21itemIsUntransformableEv @ 9222 NONAME
+	_ZNK20QGraphicsItemPrivate21itemIsUntransformableEv @ 9222 NONAME ABSENT
 	_ZNK20QGraphicsItemPrivate22inputMethodQueryHelperEN2Qt16InputMethodQueryE @ 9223 NONAME
 	_ZNK20QGraphicsPolygonItem10opaqueAreaEv @ 9224 NONAME
 	_ZNK20QGraphicsPolygonItem12boundingRectEv @ 9225 NONAME
@@ -9237,14 +9237,14 @@ EXPORTS
 	_ZNK20QGraphicsProxyWidget4typeEv @ 9236 NONAME
 	_ZNK20QGraphicsProxyWidget6widgetEv @ 9237 NONAME
 	_ZNK20QGraphicsProxyWidget8sizeHintEN2Qt8SizeHintERK6QSizeF @ 9238 NONAME
-	_ZNK20QGraphicsViewPrivate11itemsInAreaERK12QPainterPathN2Qt17ItemSelectionModeENS3_9SortOrderE @ 9239 NONAME
+	_ZNK20QGraphicsViewPrivate11itemsInAreaERK12QPainterPathN2Qt17ItemSelectionModeENS3_9SortOrderE @ 9239 NONAME ABSENT
 	_ZNK20QGraphicsViewPrivate13mapToViewRectEPK13QGraphicsItemRK6QRectF @ 9240 NONAME
 	_ZNK20QGraphicsViewPrivate14verticalScrollEv @ 9241 NONAME
 	_ZNK20QGraphicsViewPrivate15mapToViewRegionEPK13QGraphicsItemRK6QRectF @ 9242 NONAME
 	_ZNK20QGraphicsViewPrivate16horizontalScrollEv @ 9243 NONAME
 	_ZNK20QGraphicsViewPrivate16rubberBandRegionEPK7QWidgetRK5QRect @ 9244 NONAME
-	_ZNK20QGraphicsViewPrivate20generateStyleOptionsERK5QListIP13QGraphicsItemEPS2_P24QStyleOptionGraphicsItemRK10QTransformbRK7QRegion @ 9245 NONAME
-	_ZNK20QGraphicsViewPrivate9findItemsERK7QRegionPb @ 9246 NONAME
+	_ZNK20QGraphicsViewPrivate20generateStyleOptionsERK5QListIP13QGraphicsItemEPS2_P24QStyleOptionGraphicsItemRK10QTransformbRK7QRegion @ 9245 NONAME ABSENT
+	_ZNK20QGraphicsViewPrivate9findItemsERK7QRegionPb @ 9246 NONAME ABSENT
 	_ZNK20QPictureFormatPlugin10metaObjectEv @ 9247 NONAME
 	_ZNK20QTextDocumentPrivate14objectForIndexEi @ 9248 NONAME
 	_ZNK20QTextDocumentPrivate15objectForFormatERK11QTextFormat @ 9249 NONAME
@@ -9334,11 +9334,11 @@ EXPORTS
 	_ZNK22QGraphicsItemAnimation9shearListEv @ 9333 NONAME
 	_ZNK22QGraphicsLayoutPrivate15visualDirectionEv @ 9334 NONAME
 	_ZNK22QGraphicsLayoutPrivate9getMarginEPffN6QStyle11PixelMetricE @ 9335 NONAME
-	_ZNK22QGraphicsWidgetPrivate13hasDecorationEv @ 9336 NONAME
-	_ZNK22QGraphicsWidgetPrivate14titleBarHeightERK20QStyleOptionTitleBar @ 9337 NONAME
-	_ZNK22QGraphicsWidgetPrivate17naturalWidgetFontEv @ 9338 NONAME
-	_ZNK22QGraphicsWidgetPrivate20getLayoutItemMarginsEPfS0_S0_S0_ @ 9339 NONAME
-	_ZNK22QGraphicsWidgetPrivate20naturalWidgetPaletteEv @ 9340 NONAME
+	_ZNK22QGraphicsWidgetPrivate13hasDecorationEv @ 9336 NONAME ABSENT
+	_ZNK22QGraphicsWidgetPrivate14titleBarHeightERK20QStyleOptionTitleBar @ 9337 NONAME ABSENT
+	_ZNK22QGraphicsWidgetPrivate17naturalWidgetFontEv @ 9338 NONAME ABSENT
+	_ZNK22QGraphicsWidgetPrivate20getLayoutItemMarginsEPfS0_S0_S0_ @ 9339 NONAME ABSENT
+	_ZNK22QGraphicsWidgetPrivate20naturalWidgetPaletteEv @ 9340 NONAME ABSENT
 	_ZNK23QFileSystemModelPrivate15passNameFiltersEPKNS_15QFileSystemNodeE @ 9341 NONAME
 	_ZNK23QFileSystemModelPrivate18filtersAcceptsNodeEPKNS_15QFileSystemNodeE @ 9342 NONAME
 	_ZNK23QFileSystemModelPrivate4iconERK11QModelIndex @ 9343 NONAME
@@ -9364,7 +9364,7 @@ EXPORTS
 	_ZNK23QGraphicsSimpleTextItem5shapeEv @ 9363 NONAME
 	_ZNK23QGraphicsSimpleTextItem8containsERK7QPointF @ 9364 NONAME
 	_ZNK23QGraphicsSimpleTextItem9extensionERK8QVariant @ 9365 NONAME
-	_ZNK23QImageTextureGlyphCache11glyphMarginEv @ 9366 NONAME
+	_ZNK23QImageTextureGlyphCache11glyphMarginEv @ 9366 NONAME ABSENT
 	_ZNK23QPixmapDropShadowFilter10blurRadiusEv @ 9367 NONAME
 	_ZNK23QPixmapDropShadowFilter10metaObjectEv @ 9368 NONAME
 	_ZNK23QPixmapDropShadowFilter15boundingRectForERK6QRectF @ 9369 NONAME
@@ -10421,15 +10421,15 @@ EXPORTS
 	_ZNK9QUrlModel9mimeTypesEv @ 10420 NONAME
 	_ZTI10QBoxLayout @ 10421 NONAME
 	_ZTI10QClipboard @ 10422 NONAME
-	_ZTI10QColorWell @ 10423 NONAME
+	_ZTI10QColorWell @ 10423 NONAME ABSENT
 	_ZTI10QCompleter @ 10424 NONAME
 	_ZTI10QDropEvent @ 10425 NONAME
-	_ZTI10QFontCache @ 10426 NONAME
+	_ZTI10QFontCache @ 10426 NONAME ABSENT
 	_ZTI10QHelpEvent @ 10427 NONAME
 	_ZTI10QHideEvent @ 10428 NONAME
-	_ZTI10QKeyMapper @ 10429 NONAME
+	_ZTI10QKeyMapper @ 10429 NONAME ABSENT
 	_ZTI10QLCDNumber @ 10430 NONAME
-	_ZTI10QListModel @ 10431 NONAME
+	_ZTI10QListModel @ 10431 NONAME ABSENT
 	_ZTI10QMoveEvent @ 10432 NONAME
 	_ZTI10QScrollBar @ 10433 NONAME
 	_ZTI10QShowEvent @ 10434 NONAME
@@ -10438,16 +10438,16 @@ EXPORTS
 	_ZTI10QTableView @ 10437 NONAME
 	_ZTI10QTextFrame @ 10438 NONAME
 	_ZTI10QTextTable @ 10439 NONAME
-	_ZTI10QTreeModel @ 10440 NONAME
+	_ZTI10QTreeModel @ 10440 NONAME ABSENT
 	_ZTI10QUndoGroup @ 10441 NONAME
-	_ZTI10QUndoModel @ 10442 NONAME
+	_ZTI10QUndoModel @ 10442 NONAME ABSENT
 	_ZTI10QUndoStack @ 10443 NONAME
 	_ZTI10QValidator @ 10444 NONAME
-	_ZTI10QWellArray @ 10445 NONAME
-	_ZTI10QWhatsThat @ 10446 NONAME
+	_ZTI10QWellArray @ 10445 NONAME ABSENT
+	_ZTI10QWhatsThat @ 10446 NONAME ABSENT
 	_ZTI10QWorkspace @ 10447 NONAME
-	_ZTI11CloseButton @ 10448 NONAME
-	_ZTI11QBmpHandler @ 10449 NONAME
+	_ZTI11CloseButton @ 10448 NONAME ABSENT
+	_ZTI11QBmpHandler @ 10449 NONAME ABSENT
 	_ZTI11QCloseEvent @ 10450 NONAME
 	_ZTI11QColumnView @ 10451 NONAME
 	_ZTI11QDockWidget @ 10452 NONAME
@@ -10463,51 +10463,51 @@ EXPORTS
 	_ZTI11QHoverEvent @ 10462 NONAME
 	_ZTI11QIconEngine @ 10463 NONAME
 	_ZTI11QInputEvent @ 10464 NONAME
-	_ZTI11QKeyEventEx @ 10465 NONAME
+	_ZTI11QKeyEventEx @ 10465 NONAME ABSENT
 	_ZTI11QLayoutItem @ 10466 NONAME
 	_ZTI11QListWidget @ 10467 NONAME
-	_ZTI11QMDIControl @ 10468 NONAME
+	_ZTI11QMDIControl @ 10468 NONAME ABSENT
 	_ZTI11QMainWindow @ 10469 NONAME
 	_ZTI11QMessageBox @ 10470 NONAME
 	_ZTI11QMimeSource @ 10471 NONAME
 	_ZTI11QMouseEvent @ 10472 NONAME
 	_ZTI11QPaintEvent @ 10473 NONAME
 	_ZTI11QPixmapData @ 10474 NONAME
-	_ZTI11QPngHandler @ 10475 NONAME
-	_ZTI11QPpmHandler @ 10476 NONAME
+	_ZTI11QPngHandler @ 10475 NONAME ABSENT
+	_ZTI11QPpmHandler @ 10476 NONAME ABSENT
 	_ZTI11QProxyModel @ 10477 NONAME
 	_ZTI11QPushButton @ 10478 NONAME
-	_ZTI11QRollEffect @ 10479 NONAME
+	_ZTI11QRollEffect @ 10479 NONAME ABSENT
 	_ZTI11QRubberBand @ 10480 NONAME
 	_ZTI11QScrollArea @ 10481 NONAME
 	_ZTI11QSpacerItem @ 10482 NONAME
 	_ZTI11QStrokerOps @ 10483 NONAME
-	_ZTI11QTableModel @ 10484 NONAME
+	_ZTI11QTableModel @ 10484 NONAME ABSENT
 	_ZTI11QTextObject @ 10485 NONAME
 	_ZTI11QToolButton @ 10486 NONAME
 	_ZTI11QTreeWidget @ 10487 NONAME
-	_ZTI11QUndoAction @ 10488 NONAME
+	_ZTI11QUndoAction @ 10488 NONAME ABSENT
 	_ZTI11QVBoxLayout @ 10489 NONAME
 	_ZTI11QWheelEvent @ 10490 NONAME
 	_ZTI11QWidgetItem @ 10491 NONAME
 	_ZTI11QWizardPage @ 10492 NONAME
-	_ZTI11QXbmHandler @ 10493 NONAME
-	_ZTI11QXpmHandler @ 10494 NONAME
+	_ZTI11QXbmHandler @ 10493 NONAME ABSENT
+	_ZTI11QXpmHandler @ 10494 NONAME ABSENT
 	_ZTI12QActionEvent @ 10495 NONAME
 	_ZTI12QActionGroup @ 10496 NONAME
-	_ZTI12QAlphaWidget @ 10497 NONAME
+	_ZTI12QAlphaWidget @ 10497 NONAME ABSENT
 	_ZTI12QApplication @ 10498 NONAME
-	_ZTI12QAuBucketS60 @ 10499 NONAME
+	_ZTI12QAuBucketS60 @ 10499 NONAME ABSENT
 	_ZTI12QButtonGroup @ 10500 NONAME
 	_ZTI12QColorDialog @ 10501 NONAME
-	_ZTI12QColorPicker @ 10502 NONAME
-	_ZTI12QColorShower @ 10503 NONAME
+	_ZTI12QColorPicker @ 10502 NONAME ABSENT
+	_ZTI12QColorShower @ 10503 NONAME ABSENT
 	_ZTI12QCommonStyle @ 10504 NONAME
 	_ZTI12QDashStroker @ 10505 NONAME
-	_ZTI12QDragManager @ 10506 NONAME
-	_ZTI12QFSCompleter @ 10507 NONAME
+	_ZTI12QDragManager @ 10506 NONAME ABSENT
+	_ZTI12QFSCompleter @ 10507 NONAME ABSENT
 	_ZTI12QInputDialog @ 10508 NONAME
-	_ZTI12QMenuPrivate @ 10509 NONAME
+	_ZTI12QMenuPrivate @ 10509 NONAME ABSENT
 	_ZTI12QPaintDevice @ 10510 NONAME
 	_ZTI12QPaintEngine @ 10511 NONAME
 	_ZTI12QProgressBar @ 10512 NONAME
@@ -10519,24 +10519,24 @@ EXPORTS
 	_ZTI12QTessellator @ 10518 NONAME
 	_ZTI12QTextBrowser @ 10519 NONAME
 	_ZTI12QTextControl @ 10520 NONAME
-	_ZTI12QToolBarItem @ 10521 NONAME
-	_ZTI12QTornOffMenu @ 10522 NONAME
+	_ZTI12QToolBarItem @ 10521 NONAME ABSENT
+	_ZTI12QTornOffMenu @ 10522 NONAME ABSENT
 	_ZTI12QUndoCommand @ 10523 NONAME
-	_ZTI13QCalendarView @ 10524 NONAME
+	_ZTI13QCalendarView @ 10524 NONAME ABSENT
 	_ZTI13QDateTimeEdit @ 10525 NONAME
 	_ZTI13QErrorMessage @ 10526 NONAME
 	_ZTI13QFontComboBox @ 10527 NONAME
-	_ZTI13QFontListView @ 10528 NONAME
-	_ZTI13QFramePrivate @ 10529 NONAME
+	_ZTI13QFontListView @ 10528 NONAME ABSENT
+	_ZTI13QFramePrivate @ 10529 NONAME ABSENT
 	_ZTI13QGraphicsItem @ 10530 NONAME
 	_ZTI13QGraphicsView @ 10531 NONAME
 	_ZTI13QIconEngineV2 @ 10532 NONAME
 	_ZTI13QInputContext @ 10533 NONAME
 	_ZTI13QIntValidator @ 10534 NONAME
 	_ZTI13QItemDelegate @ 10535 NONAME
-	_ZTI13QLongTapTimer @ 10536 NONAME
+	_ZTI13QLongTapTimer @ 10536 NONAME ABSENT
 	_ZTI13QMdiSubWindow @ 10537 NONAME
-	_ZTI13QMouseEventEx @ 10538 NONAME
+	_ZTI13QMouseEventEx @ 10538 NONAME ABSENT
 	_ZTI13QPainterState @ 10539 NONAME
 	_ZTI13QPixmapFilter @ 10540 NONAME
 	_ZTI13QSplashScreen @ 10541 NONAME
@@ -10545,37 +10545,37 @@ EXPORTS
 	_ZTI13QWidgetAction @ 10544 NONAME
 	_ZTI13QWidgetItemV2 @ 10545 NONAME
 	_ZTI13QWindowsStyle @ 10546 NONAME
-	_ZTI13QWizardHeader @ 10547 NONAME
+	_ZTI13QWizardHeader @ 10547 NONAME ABSENT
 	_ZTI14QActionPrivate @ 10548 NONAME
-	_ZTI14QCalendarModel @ 10549 NONAME
-	_ZTI14QCalendarPopup @ 10550 NONAME
+	_ZTI14QCalendarModel @ 10549 NONAME ABSENT
+	_ZTI14QCalendarPopup @ 10550 NONAME ABSENT
 	_ZTI14QDesktopWidget @ 10551 NONAME
 	_ZTI14QDoubleSpinBox @ 10552 NONAME
 	_ZTI14QDragMoveEvent @ 10553 NONAME
 	_ZTI14QFileOpenEvent @ 10554 NONAME
-	_ZTI14QFontEngineBox @ 10555 NONAME
-	_ZTI14QFontEngineS60 @ 10556 NONAME
+	_ZTI14QFontEngineBox @ 10555 NONAME ABSENT
+	_ZTI14QFontEngineS60 @ 10556 NONAME ABSENT
 	_ZTI14QGraphicsScene @ 10557 NONAME
 	_ZTI14QIconDragEvent @ 10558 NONAME
 	_ZTI14QImageIOPlugin @ 10559 NONAME
 	_ZTI14QLayoutPrivate @ 10560 NONAME
-	_ZTI14QMdiAreaTabBar @ 10561 NONAME
+	_ZTI14QMdiAreaTabBar @ 10561 NONAME ABSENT
 	_ZTI14QPaintEngineEx @ 10562 NONAME
 	_ZTI14QPlainTextEdit @ 10563 NONAME
 	_ZTI14QShortcutEvent @ 10564 NONAME
 	_ZTI14QStackedLayout @ 10565 NONAME
 	_ZTI14QStackedWidget @ 10566 NONAME
-	_ZTI14QToolBarLayout @ 10567 NONAME
-	_ZTI14QToolBoxButton @ 10568 NONAME
+	_ZTI14QToolBarLayout @ 10567 NONAME ABSENT
+	_ZTI14QToolBoxButton @ 10568 NONAME ABSENT
 	_ZTI14QWidgetPrivate @ 10569 NONAME
 	_ZTI14QWindowSurface @ 10570 NONAME
 	_ZTI15QAbstractButton @ 10571 NONAME
 	_ZTI15QAbstractSlider @ 10572 NONAME
 	_ZTI15QCalendarWidget @ 10573 NONAME
 	_ZTI15QClipboardEvent @ 10574 NONAME
-	_ZTI15QColorShowLabel @ 10575 NONAME
+	_ZTI15QColorShowLabel @ 10575 NONAME ABSENT
 	_ZTI15QColumnViewGrip @ 10576 NONAME
-	_ZTI15QDockWidgetItem @ 10577 NONAME
+	_ZTI15QDockWidgetItem @ 10577 NONAME ABSENT
 	_ZTI15QDragEnterEvent @ 10578 NONAME
 	_ZTI15QDragLeaveEvent @ 10579 NONAME
 	_ZTI15QGraphicsLayout @ 10580 NONAME
@@ -10583,37 +10583,37 @@ EXPORTS
 	_ZTI15QGraphicsWidget @ 10582 NONAME
 	_ZTI15QImageIOHandler @ 10583 NONAME
 	_ZTI15QListWidgetItem @ 10584 NONAME
-	_ZTI15QMdiAreaPrivate @ 10585 NONAME
+	_ZTI15QMdiAreaPrivate @ 10585 NONAME ABSENT
 	_ZTI15QProgressDialog @ 10586 NONAME
 	_ZTI15QSessionManager @ 10587 NONAME
-	_ZTI15QSpinBoxPrivate @ 10588 NONAME
+	_ZTI15QSpinBoxPrivate @ 10588 NONAME ABSENT
 	_ZTI15QSplitterHandle @ 10589 NONAME
 	_ZTI15QStatusTipEvent @ 10590 NONAME
-	_ZTI15QSymbianControl @ 10591 NONAME
+	_ZTI15QSymbianControl @ 10591 NONAME ABSENT
 	_ZTI15QTextBlockGroup @ 10592 NONAME
 	_ZTI15QTreeWidgetItem @ 10593 NONAME
-	_ZTI15QWidgetAnimator @ 10594 NONAME
-	_ZTI15QWorkspaceChild @ 10595 NONAME
+	_ZTI15QWidgetAnimator @ 10594 NONAME ABSENT
+	_ZTI15QWorkspaceChild @ 10595 NONAME ABSENT
 	_ZTI16QAbstractSpinBox @ 10596 NONAME
-	_ZTI16QBooleanComboBox @ 10597 NONAME
-	_ZTI16QCompletionModel @ 10598 NONAME
+	_ZTI16QBooleanComboBox @ 10597 NONAME ABSENT
+	_ZTI16QCompletionModel @ 10598 NONAME ABSENT
 	_ZTI16QDialogButtonBox @ 10599 NONAME
 	_ZTI16QDoubleValidator @ 10600 NONAME
 	_ZTI16QFileSystemModel @ 10601 NONAME
-	_ZTI16QFontEngineMulti @ 10602 NONAME
-	_ZTI16QListViewPrivate @ 10603 NONAME
-	_ZTI16QMimeDataWrapper @ 10604 NONAME
+	_ZTI16QFontEngineMulti @ 10602 NONAME ABSENT
+	_ZTI16QListViewPrivate @ 10603 NONAME ABSENT
+	_ZTI16QMimeDataWrapper @ 10604 NONAME ABSENT
 	_ZTI16QRegExpValidator @ 10605 NONAME
-	_ZTI16QSideBarDelegate @ 10606 NONAME
+	_ZTI16QSideBarDelegate @ 10606 NONAME ABSENT
 	_ZTI16QStringListModel @ 10607 NONAME
 	_ZTI16QStyleSheetStyle @ 10608 NONAME
 	_ZTI16QTableWidgetItem @ 10609 NONAME
-	_ZTI16QWhatsThisAction @ 10610 NONAME
+	_ZTI16QWhatsThisAction @ 10610 NONAME ABSENT
 	_ZTI17QAbstractItemView @ 10611 NONAME
-	_ZTI17QBoxLayoutPrivate @ 10612 NONAME
-	_ZTI17QCalendarDelegate @ 10613 NONAME
-	_ZTI17QComboBoxDelegate @ 10614 NONAME
-	_ZTI17QComboBoxListView @ 10615 NONAME
+	_ZTI17QBoxLayoutPrivate @ 10612 NONAME ABSENT
+	_ZTI17QCalendarDelegate @ 10613 NONAME ABSENT
+	_ZTI17QComboBoxDelegate @ 10614 NONAME ABSENT
+	_ZTI17QComboBoxListView @ 10615 NONAME ABSENT
 	_ZTI17QContextMenuEvent @ 10616 NONAME
 	_ZTI17QDataWidgetMapper @ 10617 NONAME
 	_ZTI17QDockWidgetLayout @ 10618 NONAME
@@ -10625,71 +10625,71 @@ EXPORTS
 	_ZTI17QGraphicsTextItem @ 10624 NONAME
 	_ZTI17QIconEnginePlugin @ 10625 NONAME
 	_ZTI17QInputMethodEvent @ 10626 NONAME
-	_ZTI17QInternalMimeData @ 10627 NONAME
-	_ZTI17QKeyMapperPrivate @ 10628 NONAME
+	_ZTI17QInternalMimeData @ 10627 NONAME ABSENT
+	_ZTI17QKeyMapperPrivate @ 10628 NONAME ABSENT
 	_ZTI17QMainWindowLayout @ 10629 NONAME
-	_ZTI17QMainWindowTabBar @ 10630 NONAME
-	_ZTI17QMenuBarExtension @ 10631 NONAME
+	_ZTI17QMainWindowTabBar @ 10630 NONAME ABSENT
+	_ZTI17QMenuBarExtension @ 10631 NONAME ABSENT
 	_ZTI17QPaintEngineState @ 10632 NONAME
-	_ZTI17QPixmapIconEngine @ 10633 NONAME
+	_ZTI17QPixmapIconEngine @ 10633 NONAME ABSENT
 	_ZTI17QRasterPixmapData @ 10634 NONAME
-	_ZTI17QS60WindowSurface @ 10635 NONAME
-	_ZTI17QSpinBoxValidator @ 10636 NONAME
-	_ZTI17QTabWidgetPrivate @ 10637 NONAME
-	_ZTI17QTextEditMimeData @ 10638 NONAME
-	_ZTI17QTextFramePrivate @ 10639 NONAME
-	_ZTI17QTextImageHandler @ 10640 NONAME
-	_ZTI17QTextTablePrivate @ 10641 NONAME
-	_ZTI17QToolBarExtension @ 10642 NONAME
-	_ZTI17QToolBarSeparator @ 10643 NONAME
-	_ZTI17QUpdateLaterEvent @ 10644 NONAME
-	_ZTI17QWhatsThisPrivate @ 10645 NONAME
+	_ZTI17QS60WindowSurface @ 10635 NONAME ABSENT
+	_ZTI17QSpinBoxValidator @ 10636 NONAME ABSENT
+	_ZTI17QTabWidgetPrivate @ 10637 NONAME ABSENT
+	_ZTI17QTextEditMimeData @ 10638 NONAME ABSENT
+	_ZTI17QTextFramePrivate @ 10639 NONAME ABSENT
+	_ZTI17QTextImageHandler @ 10640 NONAME ABSENT
+	_ZTI17QTextTablePrivate @ 10641 NONAME ABSENT
+	_ZTI17QToolBarExtension @ 10642 NONAME ABSENT
+	_ZTI17QToolBarSeparator @ 10643 NONAME ABSENT
+	_ZTI17QUpdateLaterEvent @ 10644 NONAME ABSENT
+	_ZTI17QWhatsThisPrivate @ 10645 NONAME ABSENT
 	_ZTI18QColumnViewPrivate @ 10646 NONAME
-	_ZTI18QComboMenuDelegate @ 10647 NONAME
+	_ZTI18QComboMenuDelegate @ 10647 NONAME ABSENT
 	_ZTI18QCommandLinkButton @ 10648 NONAME
 	_ZTI18QDragResponseEvent @ 10649 NONAME
-	_ZTI18QExpandingLineEdit @ 10650 NONAME
+	_ZTI18QExpandingLineEdit @ 10650 NONAME ABSENT
 	_ZTI18QFileDialogPrivate @ 10651 NONAME
 	_ZTI18QGraphicsItemGroup @ 10652 NONAME
 	_ZTI18QItemEditorFactory @ 10653 NONAME
-	_ZTI18QMimeSourceWrapper @ 10654 NONAME
-	_ZTI18QPixmapDataFactory @ 10655 NONAME
-	_ZTI18QPrevNextCalButton @ 10656 NONAME
-	_ZTI18QRasterPaintEngine @ 10657 NONAME
-	_ZTI18QSortedModelEngine @ 10658 NONAME
+	_ZTI18QMimeSourceWrapper @ 10654 NONAME ABSENT
+	_ZTI18QPixmapDataFactory @ 10655 NONAME ABSENT
+	_ZTI18QPrevNextCalButton @ 10656 NONAME ABSENT
+	_ZTI18QRasterPaintEngine @ 10657 NONAME ABSENT
+	_ZTI18QSortedModelEngine @ 10658 NONAME ABSENT
 	_ZTI18QStandardItemModel @ 10659 NONAME
 	_ZTI18QSyntaxHighlighter @ 10660 NONAME
-	_ZTI18QTableCornerButton @ 10661 NONAME
+	_ZTI18QTableCornerButton @ 10661 NONAME ABSENT
 	_ZTI18QTextBlockUserData @ 10662 NONAME
 	_ZTI18QTextureGlyphCache @ 10663 NONAME
-	_ZTI18QWorkspaceTitleBar @ 10664 NONAME
+	_ZTI18QWorkspaceTitleBar @ 10664 NONAME ABSENT
 	_ZTI19QAbstractProxyModel @ 10665 NONAME
 	_ZTI19QAbstractScrollArea @ 10666 NONAME
 	_ZTI19QApplicationPrivate @ 10667 NONAME
 	_ZTI19QCoeFepInputContext @ 10668 NONAME
-	_ZTI19QColumnViewDelegate @ 10669 NONAME
+	_ZTI19QColumnViewDelegate @ 10669 NONAME ABSENT
 	_ZTI19QEventDispatcherS60 @ 10670 NONAME
-	_ZTI19QFileDialogComboBox @ 10671 NONAME
-	_ZTI19QFileDialogLineEdit @ 10672 NONAME
-	_ZTI19QFileDialogListView @ 10673 NONAME
-	_ZTI19QFileDialogTreeView @ 10674 NONAME
-	_ZTI19QFontEngineMultiS60 @ 10675 NONAME
-	_ZTI19QFontFamilyDelegate @ 10676 NONAME
+	_ZTI19QFileDialogComboBox @ 10671 NONAME ABSENT
+	_ZTI19QFileDialogLineEdit @ 10672 NONAME ABSENT
+	_ZTI19QFileDialogListView @ 10673 NONAME ABSENT
+	_ZTI19QFileDialogTreeView @ 10674 NONAME ABSENT
+	_ZTI19QFontEngineMultiS60 @ 10675 NONAME ABSENT
+	_ZTI19QFontFamilyDelegate @ 10676 NONAME ABSENT
 	_ZTI19QGraphicsGridLayout @ 10677 NONAME
 	_ZTI19QGraphicsLayoutItem @ 10678 NONAME
 	_ZTI19QGraphicsPixmapItem @ 10679 NONAME
 	_ZTI19QGraphicsSceneEvent @ 10680 NONAME
 	_ZTI19QIconEnginePluginV2 @ 10681 NONAME
 	_ZTI19QInputContextPlugin @ 10682 NONAME
-	_ZTI19QInputDialogSpinBox @ 10683 NONAME
+	_ZTI19QInputDialogSpinBox @ 10683 NONAME ABSENT
 	_ZTI19QItemSelectionModel @ 10684 NONAME
-	_ZTI19QListWidgetMimeData @ 10685 NONAME
-	_ZTI19QPicturePaintEngine @ 10686 NONAME
+	_ZTI19QListWidgetMimeData @ 10685 NONAME ABSENT
+	_ZTI19QPicturePaintEngine @ 10686 NONAME ABSENT
 	_ZTI19QStyledItemDelegate @ 10687 NONAME
-	_ZTI19QTextBrowserPrivate @ 10688 NONAME
+	_ZTI19QTextBrowserPrivate @ 10688 NONAME ABSENT
 	_ZTI19QTextDocumentLayout @ 10689 NONAME
 	_ZTI19QToolBarChangeEvent @ 10690 NONAME
-	_ZTI20QDateTimeEditPrivate @ 10691 NONAME
+	_ZTI20QDateTimeEditPrivate @ 10691 NONAME ABSENT
 	_ZTI20QGraphicsEllipseItem @ 10692 NONAME
 	_ZTI20QGraphicsItemPrivate @ 10693 NONAME
 	_ZTI20QGraphicsPolygonItem @ 10694 NONAME
@@ -10697,51 +10697,51 @@ EXPORTS
 	_ZTI20QGraphicsViewPrivate @ 10696 NONAME
 	_ZTI20QPictureFormatPlugin @ 10697 NONAME
 	_ZTI20QRasterWindowSurface @ 10698 NONAME
-	_ZTI20QStandardItemPrivate @ 10699 NONAME
-	_ZTI20QTableWidgetMimeData @ 10700 NONAME
+	_ZTI20QStandardItemPrivate @ 10699 NONAME ABSENT
+	_ZTI20QTableWidgetMimeData @ 10700 NONAME ABSENT
 	_ZTI20QTextDocumentPrivate @ 10701 NONAME
 	_ZTI20QTextFrameLayoutData @ 10702 NONAME
 	_ZTI20QTextObjectInterface @ 10703 NONAME
-	_ZTI20QUnsortedModelEngine @ 10704 NONAME
+	_ZTI20QUnsortedModelEngine @ 10704 NONAME ABSENT
 	_ZTI20QWidgetResizeHandler @ 10705 NONAME
 	_ZTI21QAbstractItemDelegate @ 10706 NONAME
-	_ZTI21QCalendarDayValidator @ 10707 NONAME
-	_ZTI21QColorLuminancePicker @ 10708 NONAME
-	_ZTI21QDesktopWidgetPrivate @ 10709 NONAME
-	_ZTI21QDoubleSpinBoxPrivate @ 10710 NONAME
-	_ZTI21QEmulationPaintEngine @ 10711 NONAME
-	_ZTI21QErrorMessageTextView @ 10712 NONAME
-	_ZTI21QFontEngineGlyphCache @ 10713 NONAME
+	_ZTI21QCalendarDayValidator @ 10707 NONAME ABSENT
+	_ZTI21QColorLuminancePicker @ 10708 NONAME ABSENT
+	_ZTI21QDesktopWidgetPrivate @ 10709 NONAME ABSENT
+	_ZTI21QDoubleSpinBoxPrivate @ 10710 NONAME ABSENT
+	_ZTI21QEmulationPaintEngine @ 10711 NONAME ABSENT
+	_ZTI21QErrorMessageTextView @ 10712 NONAME ABSENT
+	_ZTI21QFontEngineGlyphCache @ 10713 NONAME ABSENT
 	_ZTI21QGraphicsLinearLayout @ 10714 NONAME
 	_ZTI21QGraphicsSystemPlugin @ 10715 NONAME
 	_ZTI21QPaintEngineExPrivate @ 10716 NONAME
 	_ZTI21QPixmapColorizeFilter @ 10717 NONAME
-	_ZTI21QPlainTextEditControl @ 10718 NONAME
-	_ZTI21QRasterGraphicsSystem @ 10719 NONAME
+	_ZTI21QPlainTextEditControl @ 10718 NONAME ABSENT
+	_ZTI21QRasterGraphicsSystem @ 10719 NONAME ABSENT
 	_ZTI21QSortFilterProxyModel @ 10720 NONAME
-	_ZTI22QAbstractSliderPrivate @ 10721 NONAME
-	_ZTI22QCalendarTextNavigator @ 10722 NONAME
-	_ZTI22QCalendarYearValidator @ 10723 NONAME
-	_ZTI22QDockWidgetTitleButton @ 10724 NONAME
+	_ZTI22QAbstractSliderPrivate @ 10721 NONAME ABSENT
+	_ZTI22QCalendarTextNavigator @ 10722 NONAME ABSENT
+	_ZTI22QCalendarYearValidator @ 10723 NONAME ABSENT
+	_ZTI22QDockWidgetTitleButton @ 10724 NONAME ABSENT
 	_ZTI22QGraphicsItemAnimation @ 10725 NONAME
 	_ZTI22QGraphicsLayoutPrivate @ 10726 NONAME
-	_ZTI22QGraphicsWidgetPrivate @ 10727 NONAME
-	_ZTI22QImageIOHandlerPrivate @ 10728 NONAME
+	_ZTI22QGraphicsWidgetPrivate @ 10727 NONAME ABSENT
+	_ZTI22QImageIOHandlerPrivate @ 10728 NONAME ABSENT
 	_ZTI22QStyleFactoryInterface @ 10729 NONAME
-	_ZTI22QTextHtmlStyleSelector @ 10730 NONAME
+	_ZTI22QTextHtmlStyleSelector @ 10730 NONAME ABSENT
 	_ZTI22QWhatsThisClickedEvent @ 10731 NONAME
-	_ZTI23QAbstractSpinBoxPrivate @ 10732 NONAME
-	_ZTI23QActionToKeyEventMapper @ 10733 NONAME
-	_ZTI23QCalendarMonthValidator @ 10734 NONAME
+	_ZTI23QAbstractSpinBoxPrivate @ 10732 NONAME ABSENT
+	_ZTI23QActionToKeyEventMapper @ 10733 NONAME ABSENT
+	_ZTI23QCalendarMonthValidator @ 10734 NONAME ABSENT
 	_ZTI23QFileSystemModelPrivate @ 10735 NONAME
 	_ZTI23QGraphicsSceneHelpEvent @ 10736 NONAME
 	_ZTI23QGraphicsSceneMoveEvent @ 10737 NONAME
 	_ZTI23QGraphicsSimpleTextItem @ 10738 NONAME
-	_ZTI23QImageTextureGlyphCache @ 10739 NONAME
-	_ZTI23QOpenUrlHandlerRegistry @ 10740 NONAME
+	_ZTI23QImageTextureGlyphCache @ 10739 NONAME ABSENT
+	_ZTI23QOpenUrlHandlerRegistry @ 10740 NONAME ABSENT
 	_ZTI23QPictureFormatInterface @ 10741 NONAME
 	_ZTI23QPixmapDropShadowFilter @ 10742 NONAME
-	_ZTI23QRasterPaintEngineState @ 10743 NONAME
+	_ZTI23QRasterPaintEngineState @ 10743 NONAME ABSENT
 	_ZTI23QWindowStateChangeEvent @ 10744 NONAME
 	_ZTI24QAbstractItemViewPrivate @ 10745 NONAME
 	_ZTI24QComboBoxPrivateScroller @ 10746 NONAME
@@ -10750,30 +10750,30 @@ EXPORTS
 	_ZTI24QGraphicsSceneWheelEvent @ 10749 NONAME
 	_ZTI24QPixmapConvolutionFilter @ 10750 NONAME
 	_ZTI24QPlainTextDocumentLayout @ 10751 NONAME
-	_ZTI24QSimplePixmapDataFactory @ 10752 NONAME
-	_ZTI25QAbstractScrollAreaFilter @ 10753 NONAME
+	_ZTI24QSimplePixmapDataFactory @ 10752 NONAME ABSENT
+	_ZTI25QAbstractScrollAreaFilter @ 10753 NONAME ABSENT
 	_ZTI25QComboBoxPrivateContainer @ 10754 NONAME
-	_ZTI25QDefaultItemEditorFactory @ 10755 NONAME
+	_ZTI25QDefaultItemEditorFactory @ 10755 NONAME ABSENT
 	_ZTI25QGraphicsSceneResizeEvent @ 10756 NONAME
-	_ZTI25QInputDialogDoubleSpinBox @ 10757 NONAME
-	_ZTI25QRasterPaintEnginePrivate @ 10758 NONAME
-	_ZTI25QStandardItemModelPrivate @ 10759 NONAME
+	_ZTI25QInputDialogDoubleSpinBox @ 10757 NONAME ABSENT
+	_ZTI25QRasterPaintEnginePrivate @ 10758 NONAME ABSENT
+	_ZTI25QStandardItemModelPrivate @ 10759 NONAME ABSENT
 	_ZTI26QAbstractGraphicsShapeItem @ 10760 NONAME
-	_ZTI26QAbstractProxyModelPrivate @ 10761 NONAME
+	_ZTI26QAbstractProxyModelPrivate @ 10761 NONAME ABSENT
 	_ZTI26QAbstractScrollAreaPrivate @ 10762 NONAME
 	_ZTI26QGraphicsLayoutItemPrivate @ 10763 NONAME
 	_ZTI27QAbstractTextDocumentLayout @ 10764 NONAME
-	_ZTI27QGraphicsProxyWidgetPrivate @ 10765 NONAME
+	_ZTI27QGraphicsProxyWidgetPrivate @ 10765 NONAME ABSENT
 	_ZTI27QGraphicsSceneDragDropEvent @ 10766 NONAME
 	_ZTI27QIconEngineFactoryInterface @ 10767 NONAME
-	_ZTI28QSortFilterProxyModelPrivate @ 10768 NONAME
-	_ZTI28QUnicodeControlCharacterMenu @ 10769 NONAME
+	_ZTI28QSortFilterProxyModelPrivate @ 10768 NONAME ABSENT
+	_ZTI28QUnicodeControlCharacterMenu @ 10769 NONAME ABSENT
 	_ZTI29QIconEngineFactoryInterfaceV2 @ 10770 NONAME
 	_ZTI29QInputContextFactoryInterface @ 10771 NONAME
 	_ZTI30QGraphicsSceneContextMenuEvent @ 10772 NONAME
-	_ZTI31QGraphicsSystemFactoryInterface @ 10773 NONAME
+	_ZTI31QGraphicsSystemFactoryInterface @ 10773 NONAME ABSENT
 	_ZTI31QImageIOHandlerFactoryInterface @ 10774 NONAME
-	_ZTI35QFontDatabaseS60StoreImplementation @ 10775 NONAME
+	_ZTI35QFontDatabaseS60StoreImplementation @ 10775 NONAME ABSENT
 	_ZTI5QDial @ 10776 NONAME
 	_ZTI5QDrag @ 10777 NONAME
 	_ZTI5QMenu @ 10778 NONAME
@@ -10794,21 +10794,21 @@ EXPORTS
 	_ZTI7QWizard @ 10793 NONAME
 	_ZTI8QMdiArea @ 10794 NONAME
 	_ZTI8QMenuBar @ 10795 NONAME
-	_ZTI8QPMCache @ 10796 NONAME
+	_ZTI8QPMCache @ 10796 NONAME ABSENT
 	_ZTI8QPicture @ 10797 NONAME
-	_ZTI8QS60Beep @ 10798 NONAME
+	_ZTI8QS60Beep @ 10798 NONAME ABSENT
 	_ZTI8QSidebar @ 10799 NONAME
 	_ZTI8QSpinBox @ 10800 NONAME
 	_ZTI8QStroker @ 10801 NONAME
 	_ZTI8QToolBar @ 10802 NONAME
 	_ZTI8QToolBox @ 10803 NONAME
-	_ZTI9QAuBucket @ 10804 NONAME
-	_ZTI9QAuServer @ 10805 NONAME
+	_ZTI9QAuBucket @ 10804 NONAME ABSENT
+	_ZTI9QAuServer @ 10805 NONAME ABSENT
 	_ZTI9QCheckBox @ 10806 NONAME
 	_ZTI9QComboBox @ 10807 NONAME
 	_ZTI9QDateEdit @ 10808 NONAME
 	_ZTI9QDirModel @ 10809 NONAME
-	_ZTI9QDropData @ 10810 NONAME
+	_ZTI9QDropData @ 10810 NONAME ABSENT
 	_ZTI9QGroupBox @ 10811 NONAME
 	_ZTI9QKeyEvent @ 10812 NONAME
 	_ZTI9QLineEdit @ 10813 NONAME
@@ -10820,29 +10820,29 @@ EXPORTS
 	_ZTI9QTextEdit @ 10819 NONAME
 	_ZTI9QTextList @ 10820 NONAME
 	_ZTI9QTimeEdit @ 10821 NONAME
-	_ZTI9QTipLabel @ 10822 NONAME
+	_ZTI9QTipLabel @ 10822 NONAME ABSENT
 	_ZTI9QTreeView @ 10823 NONAME
 	_ZTI9QUndoView @ 10824 NONAME
 	_ZTI9QUrlModel @ 10825 NONAME
 	_ZTIN4QCss13StyleSelectorE @ 10826 NONAME
-	_ZTIN4QMdi12ControlLabelE @ 10827 NONAME
-	_ZTIN4QMdi12RegularTilerE @ 10828 NONAME
-	_ZTIN4QMdi14SimpleCascaderE @ 10829 NONAME
-	_ZTIN4QMdi16ControlContainerE @ 10830 NONAME
-	_ZTIN4QMdi16ControllerWidgetE @ 10831 NONAME
-	_ZTIN4QMdi16MinOverlapPlacerE @ 10832 NONAME
-	_ZTIN4QMdi9IconTilerE @ 10833 NONAME
+	_ZTIN4QMdi12ControlLabelE @ 10827 NONAME ABSENT
+	_ZTIN4QMdi12RegularTilerE @ 10828 NONAME ABSENT
+	_ZTIN4QMdi14SimpleCascaderE @ 10829 NONAME ABSENT
+	_ZTIN4QMdi16ControlContainerE @ 10830 NONAME ABSENT
+	_ZTIN4QMdi16ControllerWidgetE @ 10831 NONAME ABSENT
+	_ZTIN4QMdi16MinOverlapPlacerE @ 10832 NONAME ABSENT
+	_ZTIN4QMdi9IconTilerE @ 10833 NONAME ABSENT
 	_ZTV10QBoxLayout @ 10834 NONAME
 	_ZTV10QClipboard @ 10835 NONAME
-	_ZTV10QColorWell @ 10836 NONAME
+	_ZTV10QColorWell @ 10836 NONAME ABSENT
 	_ZTV10QCompleter @ 10837 NONAME
 	_ZTV10QDropEvent @ 10838 NONAME
-	_ZTV10QFontCache @ 10839 NONAME
+	_ZTV10QFontCache @ 10839 NONAME ABSENT
 	_ZTV10QHelpEvent @ 10840 NONAME
 	_ZTV10QHideEvent @ 10841 NONAME
-	_ZTV10QKeyMapper @ 10842 NONAME
+	_ZTV10QKeyMapper @ 10842 NONAME ABSENT
 	_ZTV10QLCDNumber @ 10843 NONAME
-	_ZTV10QListModel @ 10844 NONAME
+	_ZTV10QListModel @ 10844 NONAME ABSENT
 	_ZTV10QMoveEvent @ 10845 NONAME
 	_ZTV10QScrollBar @ 10846 NONAME
 	_ZTV10QShowEvent @ 10847 NONAME
@@ -10851,16 +10851,16 @@ EXPORTS
 	_ZTV10QTableView @ 10850 NONAME
 	_ZTV10QTextFrame @ 10851 NONAME
 	_ZTV10QTextTable @ 10852 NONAME
-	_ZTV10QTreeModel @ 10853 NONAME
+	_ZTV10QTreeModel @ 10853 NONAME ABSENT
 	_ZTV10QUndoGroup @ 10854 NONAME
-	_ZTV10QUndoModel @ 10855 NONAME
+	_ZTV10QUndoModel @ 10855 NONAME ABSENT
 	_ZTV10QUndoStack @ 10856 NONAME
 	_ZTV10QValidator @ 10857 NONAME
-	_ZTV10QWellArray @ 10858 NONAME
-	_ZTV10QWhatsThat @ 10859 NONAME
+	_ZTV10QWellArray @ 10858 NONAME ABSENT
+	_ZTV10QWhatsThat @ 10859 NONAME ABSENT
 	_ZTV10QWorkspace @ 10860 NONAME
-	_ZTV11CloseButton @ 10861 NONAME
-	_ZTV11QBmpHandler @ 10862 NONAME
+	_ZTV11CloseButton @ 10861 NONAME ABSENT
+	_ZTV11QBmpHandler @ 10862 NONAME ABSENT
 	_ZTV11QCloseEvent @ 10863 NONAME
 	_ZTV11QColumnView @ 10864 NONAME
 	_ZTV11QDockWidget @ 10865 NONAME
@@ -10876,51 +10876,51 @@ EXPORTS
 	_ZTV11QHoverEvent @ 10875 NONAME
 	_ZTV11QIconEngine @ 10876 NONAME
 	_ZTV11QInputEvent @ 10877 NONAME
-	_ZTV11QKeyEventEx @ 10878 NONAME
+	_ZTV11QKeyEventEx @ 10878 NONAME ABSENT
 	_ZTV11QLayoutItem @ 10879 NONAME
 	_ZTV11QListWidget @ 10880 NONAME
-	_ZTV11QMDIControl @ 10881 NONAME
+	_ZTV11QMDIControl @ 10881 NONAME ABSENT
 	_ZTV11QMainWindow @ 10882 NONAME
 	_ZTV11QMessageBox @ 10883 NONAME
 	_ZTV11QMimeSource @ 10884 NONAME
 	_ZTV11QMouseEvent @ 10885 NONAME
 	_ZTV11QPaintEvent @ 10886 NONAME
 	_ZTV11QPixmapData @ 10887 NONAME
-	_ZTV11QPngHandler @ 10888 NONAME
-	_ZTV11QPpmHandler @ 10889 NONAME
+	_ZTV11QPngHandler @ 10888 NONAME ABSENT
+	_ZTV11QPpmHandler @ 10889 NONAME ABSENT
 	_ZTV11QProxyModel @ 10890 NONAME
 	_ZTV11QPushButton @ 10891 NONAME
-	_ZTV11QRollEffect @ 10892 NONAME
+	_ZTV11QRollEffect @ 10892 NONAME ABSENT
 	_ZTV11QRubberBand @ 10893 NONAME
 	_ZTV11QScrollArea @ 10894 NONAME
 	_ZTV11QSpacerItem @ 10895 NONAME
 	_ZTV11QStrokerOps @ 10896 NONAME
-	_ZTV11QTableModel @ 10897 NONAME
+	_ZTV11QTableModel @ 10897 NONAME ABSENT
 	_ZTV11QTextObject @ 10898 NONAME
 	_ZTV11QToolButton @ 10899 NONAME
 	_ZTV11QTreeWidget @ 10900 NONAME
-	_ZTV11QUndoAction @ 10901 NONAME
+	_ZTV11QUndoAction @ 10901 NONAME ABSENT
 	_ZTV11QVBoxLayout @ 10902 NONAME
 	_ZTV11QWheelEvent @ 10903 NONAME
 	_ZTV11QWidgetItem @ 10904 NONAME
 	_ZTV11QWizardPage @ 10905 NONAME
-	_ZTV11QXbmHandler @ 10906 NONAME
-	_ZTV11QXpmHandler @ 10907 NONAME
+	_ZTV11QXbmHandler @ 10906 NONAME ABSENT
+	_ZTV11QXpmHandler @ 10907 NONAME ABSENT
 	_ZTV12QActionEvent @ 10908 NONAME
 	_ZTV12QActionGroup @ 10909 NONAME
-	_ZTV12QAlphaWidget @ 10910 NONAME
+	_ZTV12QAlphaWidget @ 10910 NONAME ABSENT
 	_ZTV12QApplication @ 10911 NONAME
-	_ZTV12QAuBucketS60 @ 10912 NONAME
+	_ZTV12QAuBucketS60 @ 10912 NONAME ABSENT
 	_ZTV12QButtonGroup @ 10913 NONAME
 	_ZTV12QColorDialog @ 10914 NONAME
-	_ZTV12QColorPicker @ 10915 NONAME
-	_ZTV12QColorShower @ 10916 NONAME
+	_ZTV12QColorPicker @ 10915 NONAME ABSENT
+	_ZTV12QColorShower @ 10916 NONAME ABSENT
 	_ZTV12QCommonStyle @ 10917 NONAME
 	_ZTV12QDashStroker @ 10918 NONAME
-	_ZTV12QDragManager @ 10919 NONAME
-	_ZTV12QFSCompleter @ 10920 NONAME
+	_ZTV12QDragManager @ 10919 NONAME ABSENT
+	_ZTV12QFSCompleter @ 10920 NONAME ABSENT
 	_ZTV12QInputDialog @ 10921 NONAME
-	_ZTV12QMenuPrivate @ 10922 NONAME
+	_ZTV12QMenuPrivate @ 10922 NONAME ABSENT
 	_ZTV12QPaintDevice @ 10923 NONAME
 	_ZTV12QPaintEngine @ 10924 NONAME
 	_ZTV12QProgressBar @ 10925 NONAME
@@ -10932,24 +10932,24 @@ EXPORTS
 	_ZTV12QTessellator @ 10931 NONAME
 	_ZTV12QTextBrowser @ 10932 NONAME
 	_ZTV12QTextControl @ 10933 NONAME
-	_ZTV12QToolBarItem @ 10934 NONAME
-	_ZTV12QTornOffMenu @ 10935 NONAME
+	_ZTV12QToolBarItem @ 10934 NONAME ABSENT
+	_ZTV12QTornOffMenu @ 10935 NONAME ABSENT
 	_ZTV12QUndoCommand @ 10936 NONAME
-	_ZTV13QCalendarView @ 10937 NONAME
+	_ZTV13QCalendarView @ 10937 NONAME ABSENT
 	_ZTV13QDateTimeEdit @ 10938 NONAME
 	_ZTV13QErrorMessage @ 10939 NONAME
 	_ZTV13QFontComboBox @ 10940 NONAME
-	_ZTV13QFontListView @ 10941 NONAME
-	_ZTV13QFramePrivate @ 10942 NONAME
+	_ZTV13QFontListView @ 10941 NONAME ABSENT
+	_ZTV13QFramePrivate @ 10942 NONAME ABSENT
 	_ZTV13QGraphicsItem @ 10943 NONAME
 	_ZTV13QGraphicsView @ 10944 NONAME
 	_ZTV13QIconEngineV2 @ 10945 NONAME
 	_ZTV13QInputContext @ 10946 NONAME
 	_ZTV13QIntValidator @ 10947 NONAME
 	_ZTV13QItemDelegate @ 10948 NONAME
-	_ZTV13QLongTapTimer @ 10949 NONAME
+	_ZTV13QLongTapTimer @ 10949 NONAME ABSENT
 	_ZTV13QMdiSubWindow @ 10950 NONAME
-	_ZTV13QMouseEventEx @ 10951 NONAME
+	_ZTV13QMouseEventEx @ 10951 NONAME ABSENT
 	_ZTV13QPainterState @ 10952 NONAME
 	_ZTV13QPixmapFilter @ 10953 NONAME
 	_ZTV13QSplashScreen @ 10954 NONAME
@@ -10958,74 +10958,74 @@ EXPORTS
 	_ZTV13QWidgetAction @ 10957 NONAME
 	_ZTV13QWidgetItemV2 @ 10958 NONAME
 	_ZTV13QWindowsStyle @ 10959 NONAME
-	_ZTV13QWizardHeader @ 10960 NONAME
+	_ZTV13QWizardHeader @ 10960 NONAME ABSENT
 	_ZTV14QActionPrivate @ 10961 NONAME
-	_ZTV14QCalendarModel @ 10962 NONAME
-	_ZTV14QCalendarPopup @ 10963 NONAME
+	_ZTV14QCalendarModel @ 10962 NONAME ABSENT
+	_ZTV14QCalendarPopup @ 10963 NONAME ABSENT
 	_ZTV14QDesktopWidget @ 10964 NONAME
 	_ZTV14QDoubleSpinBox @ 10965 NONAME
 	_ZTV14QDragMoveEvent @ 10966 NONAME
 	_ZTV14QFileOpenEvent @ 10967 NONAME
-	_ZTV14QFontEngineBox @ 10968 NONAME
-	_ZTV14QFontEngineS60 @ 10969 NONAME
+	_ZTV14QFontEngineBox @ 10968 NONAME ABSENT
+	_ZTV14QFontEngineS60 @ 10969 NONAME ABSENT
 	_ZTV14QGraphicsScene @ 10970 NONAME
 	_ZTV14QIconDragEvent @ 10971 NONAME
 	_ZTV14QImageIOPlugin @ 10972 NONAME
 	_ZTV14QLayoutPrivate @ 10973 NONAME
-	_ZTV14QMdiAreaTabBar @ 10974 NONAME
+	_ZTV14QMdiAreaTabBar @ 10974 NONAME ABSENT
 	_ZTV14QPaintEngineEx @ 10975 NONAME
 	_ZTV14QPlainTextEdit @ 10976 NONAME
 	_ZTV14QShortcutEvent @ 10977 NONAME
 	_ZTV14QStackedLayout @ 10978 NONAME
 	_ZTV14QStackedWidget @ 10979 NONAME
-	_ZTV14QToolBarLayout @ 10980 NONAME
-	_ZTV14QToolBoxButton @ 10981 NONAME
+	_ZTV14QToolBarLayout @ 10980 NONAME ABSENT
+	_ZTV14QToolBoxButton @ 10981 NONAME ABSENT
 	_ZTV14QWidgetPrivate @ 10982 NONAME
 	_ZTV14QWindowSurface @ 10983 NONAME
 	_ZTV15QAbstractButton @ 10984 NONAME
 	_ZTV15QAbstractSlider @ 10985 NONAME
 	_ZTV15QCalendarWidget @ 10986 NONAME
 	_ZTV15QClipboardEvent @ 10987 NONAME
-	_ZTV15QColorShowLabel @ 10988 NONAME
+	_ZTV15QColorShowLabel @ 10988 NONAME ABSENT
 	_ZTV15QColumnViewGrip @ 10989 NONAME
-	_ZTV15QDockWidgetItem @ 10990 NONAME
+	_ZTV15QDockWidgetItem @ 10990 NONAME ABSENT
 	_ZTV15QDragEnterEvent @ 10991 NONAME
 	_ZTV15QDragLeaveEvent @ 10992 NONAME
 	_ZTV15QGraphicsLayout @ 10993 NONAME
 	_ZTV15QGraphicsWidget @ 10994 NONAME
 	_ZTV15QImageIOHandler @ 10995 NONAME
 	_ZTV15QListWidgetItem @ 10996 NONAME
-	_ZTV15QMdiAreaPrivate @ 10997 NONAME
+	_ZTV15QMdiAreaPrivate @ 10997 NONAME ABSENT
 	_ZTV15QProgressDialog @ 10998 NONAME
 	_ZTV15QSessionManager @ 10999 NONAME
-	_ZTV15QSpinBoxPrivate @ 11000 NONAME
+	_ZTV15QSpinBoxPrivate @ 11000 NONAME ABSENT
 	_ZTV15QSplitterHandle @ 11001 NONAME
 	_ZTV15QStatusTipEvent @ 11002 NONAME
-	_ZTV15QSymbianControl @ 11003 NONAME
+	_ZTV15QSymbianControl @ 11003 NONAME ABSENT
 	_ZTV15QTextBlockGroup @ 11004 NONAME
 	_ZTV15QTreeWidgetItem @ 11005 NONAME
-	_ZTV15QWidgetAnimator @ 11006 NONAME
-	_ZTV15QWorkspaceChild @ 11007 NONAME
+	_ZTV15QWidgetAnimator @ 11006 NONAME ABSENT
+	_ZTV15QWorkspaceChild @ 11007 NONAME ABSENT
 	_ZTV16QAbstractSpinBox @ 11008 NONAME
-	_ZTV16QBooleanComboBox @ 11009 NONAME
-	_ZTV16QCompletionModel @ 11010 NONAME
+	_ZTV16QBooleanComboBox @ 11009 NONAME ABSENT
+	_ZTV16QCompletionModel @ 11010 NONAME ABSENT
 	_ZTV16QDialogButtonBox @ 11011 NONAME
 	_ZTV16QDoubleValidator @ 11012 NONAME
 	_ZTV16QFileSystemModel @ 11013 NONAME
-	_ZTV16QFontEngineMulti @ 11014 NONAME
-	_ZTV16QListViewPrivate @ 11015 NONAME
-	_ZTV16QMimeDataWrapper @ 11016 NONAME
+	_ZTV16QFontEngineMulti @ 11014 NONAME ABSENT
+	_ZTV16QListViewPrivate @ 11015 NONAME ABSENT
+	_ZTV16QMimeDataWrapper @ 11016 NONAME ABSENT
 	_ZTV16QRegExpValidator @ 11017 NONAME
-	_ZTV16QSideBarDelegate @ 11018 NONAME
+	_ZTV16QSideBarDelegate @ 11018 NONAME ABSENT
 	_ZTV16QStringListModel @ 11019 NONAME
 	_ZTV16QStyleSheetStyle @ 11020 NONAME
 	_ZTV16QTableWidgetItem @ 11021 NONAME
-	_ZTV16QWhatsThisAction @ 11022 NONAME
+	_ZTV16QWhatsThisAction @ 11022 NONAME ABSENT
 	_ZTV17QAbstractItemView @ 11023 NONAME
-	_ZTV17QBoxLayoutPrivate @ 11024 NONAME
-	_ZTV17QCalendarDelegate @ 11025 NONAME
-	_ZTV17QComboBoxDelegate @ 11026 NONAME
-	_ZTV17QComboBoxListView @ 11027 NONAME
+	_ZTV17QBoxLayoutPrivate @ 11024 NONAME ABSENT
+	_ZTV17QCalendarDelegate @ 11025 NONAME ABSENT
+	_ZTV17QComboBoxDelegate @ 11026 NONAME ABSENT
+	_ZTV17QComboBoxListView @ 11027 NONAME ABSENT
 	_ZTV17QContextMenuEvent @ 11028 NONAME
 	_ZTV17QDataWidgetMapper @ 11029 NONAME
 	_ZTV17QDockWidgetLayout @ 11030 NONAME
@@ -11037,70 +11037,70 @@ EXPORTS
 	_ZTV17QGraphicsTextItem @ 11036 NONAME
 	_ZTV17QIconEnginePlugin @ 11037 NONAME
 	_ZTV17QInputMethodEvent @ 11038 NONAME
-	_ZTV17QInternalMimeData @ 11039 NONAME
-	_ZTV17QKeyMapperPrivate @ 11040 NONAME
+	_ZTV17QInternalMimeData @ 11039 NONAME ABSENT
+	_ZTV17QKeyMapperPrivate @ 11040 NONAME ABSENT
 	_ZTV17QMainWindowLayout @ 11041 NONAME
-	_ZTV17QMainWindowTabBar @ 11042 NONAME
-	_ZTV17QMenuBarExtension @ 11043 NONAME
-	_ZTV17QPixmapIconEngine @ 11044 NONAME
+	_ZTV17QMainWindowTabBar @ 11042 NONAME ABSENT
+	_ZTV17QMenuBarExtension @ 11043 NONAME ABSENT
+	_ZTV17QPixmapIconEngine @ 11044 NONAME ABSENT
 	_ZTV17QRasterPixmapData @ 11045 NONAME
-	_ZTV17QS60WindowSurface @ 11046 NONAME
-	_ZTV17QSpinBoxValidator @ 11047 NONAME
-	_ZTV17QTabWidgetPrivate @ 11048 NONAME
-	_ZTV17QTextEditMimeData @ 11049 NONAME
-	_ZTV17QTextFramePrivate @ 11050 NONAME
-	_ZTV17QTextImageHandler @ 11051 NONAME
-	_ZTV17QTextTablePrivate @ 11052 NONAME
-	_ZTV17QToolBarExtension @ 11053 NONAME
-	_ZTV17QToolBarSeparator @ 11054 NONAME
-	_ZTV17QUpdateLaterEvent @ 11055 NONAME
-	_ZTV17QWhatsThisPrivate @ 11056 NONAME
+	_ZTV17QS60WindowSurface @ 11046 NONAME ABSENT
+	_ZTV17QSpinBoxValidator @ 11047 NONAME ABSENT
+	_ZTV17QTabWidgetPrivate @ 11048 NONAME ABSENT
+	_ZTV17QTextEditMimeData @ 11049 NONAME ABSENT
+	_ZTV17QTextFramePrivate @ 11050 NONAME ABSENT
+	_ZTV17QTextImageHandler @ 11051 NONAME ABSENT
+	_ZTV17QTextTablePrivate @ 11052 NONAME ABSENT
+	_ZTV17QToolBarExtension @ 11053 NONAME ABSENT
+	_ZTV17QToolBarSeparator @ 11054 NONAME ABSENT
+	_ZTV17QUpdateLaterEvent @ 11055 NONAME ABSENT
+	_ZTV17QWhatsThisPrivate @ 11056 NONAME ABSENT
 	_ZTV18QColumnViewPrivate @ 11057 NONAME
-	_ZTV18QComboMenuDelegate @ 11058 NONAME
+	_ZTV18QComboMenuDelegate @ 11058 NONAME ABSENT
 	_ZTV18QCommandLinkButton @ 11059 NONAME
 	_ZTV18QDragResponseEvent @ 11060 NONAME
-	_ZTV18QExpandingLineEdit @ 11061 NONAME
+	_ZTV18QExpandingLineEdit @ 11061 NONAME ABSENT
 	_ZTV18QFileDialogPrivate @ 11062 NONAME
 	_ZTV18QGraphicsItemGroup @ 11063 NONAME
 	_ZTV18QItemEditorFactory @ 11064 NONAME
-	_ZTV18QMimeSourceWrapper @ 11065 NONAME
-	_ZTV18QPixmapDataFactory @ 11066 NONAME
-	_ZTV18QPrevNextCalButton @ 11067 NONAME
-	_ZTV18QRasterPaintEngine @ 11068 NONAME
-	_ZTV18QSortedModelEngine @ 11069 NONAME
+	_ZTV18QMimeSourceWrapper @ 11065 NONAME ABSENT
+	_ZTV18QPixmapDataFactory @ 11066 NONAME ABSENT
+	_ZTV18QPrevNextCalButton @ 11067 NONAME ABSENT
+	_ZTV18QRasterPaintEngine @ 11068 NONAME ABSENT
+	_ZTV18QSortedModelEngine @ 11069 NONAME ABSENT
 	_ZTV18QStandardItemModel @ 11070 NONAME
 	_ZTV18QSyntaxHighlighter @ 11071 NONAME
-	_ZTV18QTableCornerButton @ 11072 NONAME
+	_ZTV18QTableCornerButton @ 11072 NONAME ABSENT
 	_ZTV18QTextBlockUserData @ 11073 NONAME
 	_ZTV18QTextureGlyphCache @ 11074 NONAME
-	_ZTV18QWorkspaceTitleBar @ 11075 NONAME
+	_ZTV18QWorkspaceTitleBar @ 11075 NONAME ABSENT
 	_ZTV19QAbstractProxyModel @ 11076 NONAME
 	_ZTV19QAbstractScrollArea @ 11077 NONAME
 	_ZTV19QApplicationPrivate @ 11078 NONAME
 	_ZTV19QCoeFepInputContext @ 11079 NONAME
-	_ZTV19QColumnViewDelegate @ 11080 NONAME
+	_ZTV19QColumnViewDelegate @ 11080 NONAME ABSENT
 	_ZTV19QEventDispatcherS60 @ 11081 NONAME
-	_ZTV19QFileDialogComboBox @ 11082 NONAME
-	_ZTV19QFileDialogLineEdit @ 11083 NONAME
-	_ZTV19QFileDialogListView @ 11084 NONAME
-	_ZTV19QFileDialogTreeView @ 11085 NONAME
-	_ZTV19QFontEngineMultiS60 @ 11086 NONAME
-	_ZTV19QFontFamilyDelegate @ 11087 NONAME
+	_ZTV19QFileDialogComboBox @ 11082 NONAME ABSENT
+	_ZTV19QFileDialogLineEdit @ 11083 NONAME ABSENT
+	_ZTV19QFileDialogListView @ 11084 NONAME ABSENT
+	_ZTV19QFileDialogTreeView @ 11085 NONAME ABSENT
+	_ZTV19QFontEngineMultiS60 @ 11086 NONAME ABSENT
+	_ZTV19QFontFamilyDelegate @ 11087 NONAME ABSENT
 	_ZTV19QGraphicsGridLayout @ 11088 NONAME
 	_ZTV19QGraphicsLayoutItem @ 11089 NONAME
 	_ZTV19QGraphicsPixmapItem @ 11090 NONAME
 	_ZTV19QGraphicsSceneEvent @ 11091 NONAME
 	_ZTV19QIconEnginePluginV2 @ 11092 NONAME
 	_ZTV19QInputContextPlugin @ 11093 NONAME
-	_ZTV19QInputDialogSpinBox @ 11094 NONAME
+	_ZTV19QInputDialogSpinBox @ 11094 NONAME ABSENT
 	_ZTV19QItemSelectionModel @ 11095 NONAME
-	_ZTV19QListWidgetMimeData @ 11096 NONAME
-	_ZTV19QPicturePaintEngine @ 11097 NONAME
+	_ZTV19QListWidgetMimeData @ 11096 NONAME ABSENT
+	_ZTV19QPicturePaintEngine @ 11097 NONAME ABSENT
 	_ZTV19QStyledItemDelegate @ 11098 NONAME
-	_ZTV19QTextBrowserPrivate @ 11099 NONAME
+	_ZTV19QTextBrowserPrivate @ 11099 NONAME ABSENT
 	_ZTV19QTextDocumentLayout @ 11100 NONAME
 	_ZTV19QToolBarChangeEvent @ 11101 NONAME
-	_ZTV20QDateTimeEditPrivate @ 11102 NONAME
+	_ZTV20QDateTimeEditPrivate @ 11102 NONAME ABSENT
 	_ZTV20QGraphicsEllipseItem @ 11103 NONAME
 	_ZTV20QGraphicsItemPrivate @ 11104 NONAME
 	_ZTV20QGraphicsPolygonItem @ 11105 NONAME
@@ -11108,48 +11108,48 @@ EXPORTS
 	_ZTV20QGraphicsViewPrivate @ 11107 NONAME
 	_ZTV20QPictureFormatPlugin @ 11108 NONAME
 	_ZTV20QRasterWindowSurface @ 11109 NONAME
-	_ZTV20QStandardItemPrivate @ 11110 NONAME
-	_ZTV20QTableWidgetMimeData @ 11111 NONAME
+	_ZTV20QStandardItemPrivate @ 11110 NONAME ABSENT
+	_ZTV20QTableWidgetMimeData @ 11111 NONAME ABSENT
 	_ZTV20QTextDocumentPrivate @ 11112 NONAME
 	_ZTV20QTextFrameLayoutData @ 11113 NONAME
-	_ZTV20QUnsortedModelEngine @ 11114 NONAME
+	_ZTV20QUnsortedModelEngine @ 11114 NONAME ABSENT
 	_ZTV20QWidgetResizeHandler @ 11115 NONAME
 	_ZTV21QAbstractItemDelegate @ 11116 NONAME
-	_ZTV21QCalendarDayValidator @ 11117 NONAME
-	_ZTV21QColorLuminancePicker @ 11118 NONAME
-	_ZTV21QDesktopWidgetPrivate @ 11119 NONAME
-	_ZTV21QDoubleSpinBoxPrivate @ 11120 NONAME
-	_ZTV21QEmulationPaintEngine @ 11121 NONAME
-	_ZTV21QErrorMessageTextView @ 11122 NONAME
-	_ZTV21QFontEngineGlyphCache @ 11123 NONAME
+	_ZTV21QCalendarDayValidator @ 11117 NONAME ABSENT
+	_ZTV21QColorLuminancePicker @ 11118 NONAME ABSENT
+	_ZTV21QDesktopWidgetPrivate @ 11119 NONAME ABSENT
+	_ZTV21QDoubleSpinBoxPrivate @ 11120 NONAME ABSENT
+	_ZTV21QEmulationPaintEngine @ 11121 NONAME ABSENT
+	_ZTV21QErrorMessageTextView @ 11122 NONAME ABSENT
+	_ZTV21QFontEngineGlyphCache @ 11123 NONAME ABSENT
 	_ZTV21QGraphicsLinearLayout @ 11124 NONAME
 	_ZTV21QGraphicsSystemPlugin @ 11125 NONAME
 	_ZTV21QPaintEngineExPrivate @ 11126 NONAME
 	_ZTV21QPixmapColorizeFilter @ 11127 NONAME
-	_ZTV21QPlainTextEditControl @ 11128 NONAME
-	_ZTV21QRasterGraphicsSystem @ 11129 NONAME
+	_ZTV21QPlainTextEditControl @ 11128 NONAME ABSENT
+	_ZTV21QRasterGraphicsSystem @ 11129 NONAME ABSENT
 	_ZTV21QSortFilterProxyModel @ 11130 NONAME
-	_ZTV22QAbstractSliderPrivate @ 11131 NONAME
-	_ZTV22QCalendarTextNavigator @ 11132 NONAME
-	_ZTV22QCalendarYearValidator @ 11133 NONAME
-	_ZTV22QDockWidgetTitleButton @ 11134 NONAME
+	_ZTV22QAbstractSliderPrivate @ 11131 NONAME ABSENT
+	_ZTV22QCalendarTextNavigator @ 11132 NONAME ABSENT
+	_ZTV22QCalendarYearValidator @ 11133 NONAME ABSENT
+	_ZTV22QDockWidgetTitleButton @ 11134 NONAME ABSENT
 	_ZTV22QGraphicsItemAnimation @ 11135 NONAME
 	_ZTV22QGraphicsLayoutPrivate @ 11136 NONAME
-	_ZTV22QGraphicsWidgetPrivate @ 11137 NONAME
-	_ZTV22QImageIOHandlerPrivate @ 11138 NONAME
-	_ZTV22QTextHtmlStyleSelector @ 11139 NONAME
+	_ZTV22QGraphicsWidgetPrivate @ 11137 NONAME ABSENT
+	_ZTV22QImageIOHandlerPrivate @ 11138 NONAME ABSENT
+	_ZTV22QTextHtmlStyleSelector @ 11139 NONAME ABSENT
 	_ZTV22QWhatsThisClickedEvent @ 11140 NONAME
-	_ZTV23QAbstractSpinBoxPrivate @ 11141 NONAME
-	_ZTV23QActionToKeyEventMapper @ 11142 NONAME
-	_ZTV23QCalendarMonthValidator @ 11143 NONAME
+	_ZTV23QAbstractSpinBoxPrivate @ 11141 NONAME ABSENT
+	_ZTV23QActionToKeyEventMapper @ 11142 NONAME ABSENT
+	_ZTV23QCalendarMonthValidator @ 11143 NONAME ABSENT
 	_ZTV23QFileSystemModelPrivate @ 11144 NONAME
 	_ZTV23QGraphicsSceneHelpEvent @ 11145 NONAME
 	_ZTV23QGraphicsSceneMoveEvent @ 11146 NONAME
 	_ZTV23QGraphicsSimpleTextItem @ 11147 NONAME
-	_ZTV23QImageTextureGlyphCache @ 11148 NONAME
-	_ZTV23QOpenUrlHandlerRegistry @ 11149 NONAME
+	_ZTV23QImageTextureGlyphCache @ 11148 NONAME ABSENT
+	_ZTV23QOpenUrlHandlerRegistry @ 11149 NONAME ABSENT
 	_ZTV23QPixmapDropShadowFilter @ 11150 NONAME
-	_ZTV23QRasterPaintEngineState @ 11151 NONAME
+	_ZTV23QRasterPaintEngineState @ 11151 NONAME ABSENT
 	_ZTV23QWindowStateChangeEvent @ 11152 NONAME
 	_ZTV24QAbstractItemViewPrivate @ 11153 NONAME
 	_ZTV24QComboBoxPrivateScroller @ 11154 NONAME
@@ -11158,25 +11158,25 @@ EXPORTS
 	_ZTV24QGraphicsSceneWheelEvent @ 11157 NONAME
 	_ZTV24QPixmapConvolutionFilter @ 11158 NONAME
 	_ZTV24QPlainTextDocumentLayout @ 11159 NONAME
-	_ZTV24QSimplePixmapDataFactory @ 11160 NONAME
-	_ZTV25QAbstractScrollAreaFilter @ 11161 NONAME
+	_ZTV24QSimplePixmapDataFactory @ 11160 NONAME ABSENT
+	_ZTV25QAbstractScrollAreaFilter @ 11161 NONAME ABSENT
 	_ZTV25QComboBoxPrivateContainer @ 11162 NONAME
-	_ZTV25QDefaultItemEditorFactory @ 11163 NONAME
+	_ZTV25QDefaultItemEditorFactory @ 11163 NONAME ABSENT
 	_ZTV25QGraphicsSceneResizeEvent @ 11164 NONAME
-	_ZTV25QInputDialogDoubleSpinBox @ 11165 NONAME
-	_ZTV25QRasterPaintEnginePrivate @ 11166 NONAME
-	_ZTV25QStandardItemModelPrivate @ 11167 NONAME
+	_ZTV25QInputDialogDoubleSpinBox @ 11165 NONAME ABSENT
+	_ZTV25QRasterPaintEnginePrivate @ 11166 NONAME ABSENT
+	_ZTV25QStandardItemModelPrivate @ 11167 NONAME ABSENT
 	_ZTV26QAbstractGraphicsShapeItem @ 11168 NONAME
-	_ZTV26QAbstractProxyModelPrivate @ 11169 NONAME
+	_ZTV26QAbstractProxyModelPrivate @ 11169 NONAME ABSENT
 	_ZTV26QAbstractScrollAreaPrivate @ 11170 NONAME
 	_ZTV26QGraphicsLayoutItemPrivate @ 11171 NONAME
 	_ZTV27QAbstractTextDocumentLayout @ 11172 NONAME
-	_ZTV27QGraphicsProxyWidgetPrivate @ 11173 NONAME
+	_ZTV27QGraphicsProxyWidgetPrivate @ 11173 NONAME ABSENT
 	_ZTV27QGraphicsSceneDragDropEvent @ 11174 NONAME
-	_ZTV28QSortFilterProxyModelPrivate @ 11175 NONAME
-	_ZTV28QUnicodeControlCharacterMenu @ 11176 NONAME
+	_ZTV28QSortFilterProxyModelPrivate @ 11175 NONAME ABSENT
+	_ZTV28QUnicodeControlCharacterMenu @ 11176 NONAME ABSENT
 	_ZTV30QGraphicsSceneContextMenuEvent @ 11177 NONAME
-	_ZTV35QFontDatabaseS60StoreImplementation @ 11178 NONAME
+	_ZTV35QFontDatabaseS60StoreImplementation @ 11178 NONAME ABSENT
 	_ZTV5QDial @ 11179 NONAME
 	_ZTV5QDrag @ 11180 NONAME
 	_ZTV5QMenu @ 11181 NONAME
@@ -11197,21 +11197,21 @@ EXPORTS
 	_ZTV7QWizard @ 11196 NONAME
 	_ZTV8QMdiArea @ 11197 NONAME
 	_ZTV8QMenuBar @ 11198 NONAME
-	_ZTV8QPMCache @ 11199 NONAME
+	_ZTV8QPMCache @ 11199 NONAME ABSENT
 	_ZTV8QPicture @ 11200 NONAME
-	_ZTV8QS60Beep @ 11201 NONAME
+	_ZTV8QS60Beep @ 11201 NONAME ABSENT
 	_ZTV8QSidebar @ 11202 NONAME
 	_ZTV8QSpinBox @ 11203 NONAME
 	_ZTV8QStroker @ 11204 NONAME
 	_ZTV8QToolBar @ 11205 NONAME
 	_ZTV8QToolBox @ 11206 NONAME
-	_ZTV9QAuBucket @ 11207 NONAME
-	_ZTV9QAuServer @ 11208 NONAME
+	_ZTV9QAuBucket @ 11207 NONAME ABSENT
+	_ZTV9QAuServer @ 11208 NONAME ABSENT
 	_ZTV9QCheckBox @ 11209 NONAME
 	_ZTV9QComboBox @ 11210 NONAME
 	_ZTV9QDateEdit @ 11211 NONAME
 	_ZTV9QDirModel @ 11212 NONAME
-	_ZTV9QDropData @ 11213 NONAME
+	_ZTV9QDropData @ 11213 NONAME ABSENT
 	_ZTV9QGroupBox @ 11214 NONAME
 	_ZTV9QKeyEvent @ 11215 NONAME
 	_ZTV9QLineEdit @ 11216 NONAME
@@ -11223,18 +11223,18 @@ EXPORTS
 	_ZTV9QTextEdit @ 11222 NONAME
 	_ZTV9QTextList @ 11223 NONAME
 	_ZTV9QTimeEdit @ 11224 NONAME
-	_ZTV9QTipLabel @ 11225 NONAME
+	_ZTV9QTipLabel @ 11225 NONAME ABSENT
 	_ZTV9QTreeView @ 11226 NONAME
 	_ZTV9QUndoView @ 11227 NONAME
 	_ZTV9QUrlModel @ 11228 NONAME
 	_ZTVN4QCss13StyleSelectorE @ 11229 NONAME
-	_ZTVN4QMdi12ControlLabelE @ 11230 NONAME
-	_ZTVN4QMdi12RegularTilerE @ 11231 NONAME
-	_ZTVN4QMdi14SimpleCascaderE @ 11232 NONAME
-	_ZTVN4QMdi16ControlContainerE @ 11233 NONAME
-	_ZTVN4QMdi16ControllerWidgetE @ 11234 NONAME
-	_ZTVN4QMdi16MinOverlapPlacerE @ 11235 NONAME
-	_ZTVN4QMdi9IconTilerE @ 11236 NONAME
+	_ZTVN4QMdi12ControlLabelE @ 11230 NONAME ABSENT
+	_ZTVN4QMdi12RegularTilerE @ 11231 NONAME ABSENT
+	_ZTVN4QMdi14SimpleCascaderE @ 11232 NONAME ABSENT
+	_ZTVN4QMdi16ControlContainerE @ 11233 NONAME ABSENT
+	_ZTVN4QMdi16ControllerWidgetE @ 11234 NONAME ABSENT
+	_ZTVN4QMdi16MinOverlapPlacerE @ 11235 NONAME ABSENT
+	_ZTVN4QMdi9IconTilerE @ 11236 NONAME ABSENT
 	_ZThn12_N10QDropEventD0Ev @ 11237 NONAME
 	_ZThn12_N10QDropEventD1Ev @ 11238 NONAME
 	_ZThn12_N14QDragMoveEventD0Ev @ 11239 NONAME
@@ -11344,10 +11344,10 @@ EXPORTS
 	_ZThn8_N14QStackedLayoutD1Ev @ 11343 NONAME
 	_ZThn8_N14QStackedWidgetD0Ev @ 11344 NONAME
 	_ZThn8_N14QStackedWidgetD1Ev @ 11345 NONAME
-	_ZThn8_N14QToolBarLayout10invalidateEv @ 11346 NONAME
-	_ZThn8_N14QToolBarLayout11setGeometryERK5QRect @ 11347 NONAME
-	_ZThn8_N14QToolBarLayoutD0Ev @ 11348 NONAME
-	_ZThn8_N14QToolBarLayoutD1Ev @ 11349 NONAME
+	_ZThn8_N14QToolBarLayout10invalidateEv @ 11346 NONAME ABSENT
+	_ZThn8_N14QToolBarLayout11setGeometryERK5QRect @ 11347 NONAME ABSENT
+	_ZThn8_N14QToolBarLayoutD0Ev @ 11348 NONAME ABSENT
+	_ZThn8_N14QToolBarLayoutD1Ev @ 11349 NONAME ABSENT
 	_ZThn8_N15QAbstractButtonD0Ev @ 11350 NONAME
 	_ZThn8_N15QAbstractButtonD1Ev @ 11351 NONAME
 	_ZThn8_N15QAbstractSliderD0Ev @ 11352 NONAME
@@ -11404,8 +11404,8 @@ EXPORTS
 	_ZThn8_N17QMainWindowLayout11setGeometryERK5QRect @ 11403 NONAME
 	_ZThn8_N17QMainWindowLayoutD0Ev @ 11404 NONAME
 	_ZThn8_N17QMainWindowLayoutD1Ev @ 11405 NONAME
-	_ZThn8_N17QTextImageHandler10drawObjectEP8QPainterRK6QRectFP13QTextDocumentiRK11QTextFormat @ 11406 NONAME
-	_ZThn8_N17QTextImageHandler13intrinsicSizeEP13QTextDocumentiRK11QTextFormat @ 11407 NONAME
+	_ZThn8_N17QTextImageHandler10drawObjectEP8QPainterRK6QRectFP13QTextDocumentiRK11QTextFormat @ 11406 NONAME ABSENT
+	_ZThn8_N17QTextImageHandler13intrinsicSizeEP13QTextDocumentiRK11QTextFormat @ 11407 NONAME ABSENT
 	_ZThn8_N19QAbstractScrollAreaD0Ev @ 11408 NONAME
 	_ZThn8_N19QAbstractScrollAreaD1Ev @ 11409 NONAME
 	_ZThn8_N19QCoeFepInputContext10Extension1ERi @ 11410 NONAME
@@ -11518,10 +11518,10 @@ EXPORTS
 	_ZThn8_NK11QGridLayout8sizeHintEv @ 11517 NONAME
 	_ZThn8_NK14QStackedLayout11minimumSizeEv @ 11518 NONAME
 	_ZThn8_NK14QStackedLayout8sizeHintEv @ 11519 NONAME
-	_ZThn8_NK14QToolBarLayout11minimumSizeEv @ 11520 NONAME
-	_ZThn8_NK14QToolBarLayout19expandingDirectionsEv @ 11521 NONAME
-	_ZThn8_NK14QToolBarLayout7isEmptyEv @ 11522 NONAME
-	_ZThn8_NK14QToolBarLayout8sizeHintEv @ 11523 NONAME
+	_ZThn8_NK14QToolBarLayout11minimumSizeEv @ 11520 NONAME ABSENT
+	_ZThn8_NK14QToolBarLayout19expandingDirectionsEv @ 11521 NONAME ABSENT
+	_ZThn8_NK14QToolBarLayout7isEmptyEv @ 11522 NONAME ABSENT
+	_ZThn8_NK14QToolBarLayout8sizeHintEv @ 11523 NONAME ABSENT
 	_ZThn8_NK15QGraphicsWidget12boundingRectEv @ 11524 NONAME
 	_ZThn8_NK15QGraphicsWidget4typeEv @ 11525 NONAME
 	_ZThn8_NK15QGraphicsWidget5shapeEv @ 11526 NONAME
@@ -11621,7 +11621,7 @@ EXPORTS
 	_ZrsR11QDataStreamR8QPolygon @ 11620 NONAME
 	_ZrsR11QDataStreamR9QPolygonF @ 11621 NONAME
 	_ZrsR11QTextStreamR9QSplitter @ 11622 NONAME
-	qt_enable_test_font @ 11623 NONAME DATA 1
+	qt_enable_test_font @ 11623 NONAME DATA 1 ABSENT
 	qt_filedialog_existing_directory_hook @ 11624 NONAME DATA 4
 	qt_filedialog_open_filename_hook @ 11625 NONAME DATA 4
 	qt_filedialog_open_filenames_hook @ 11626 NONAME DATA 4
@@ -11631,4 +11631,691 @@ EXPORTS
 	qt_pixmap_cleanup_hook @ 11630 NONAME DATA 4
 	qt_pixmap_cleanup_hook_64 @ 11631 NONAME DATA 4
 	qt_tab_all_widgets @ 11632 NONAME DATA 1
+	_Z17qDrawBorderPixmapP8QPainterRK5QRectRK8QMarginsRK7QPixmapS3_S6_RK10QTileRules @ 11633 NONAME
+	_Z17qHasPixmapTextureRK6QBrush @ 11634 NONAME
+	_Z22qt_setQtEnableTestFontb @ 11635 NONAME
+	_Z25qt_translateRawTouchEventP7QWidgetN11QTouchEvent10DeviceTypeERK5QListINS1_10TouchPointEE @ 11636 NONAME
+	_ZN10QCompleter18setMaxVisibleItemsEi @ 11637 NONAME
+	_ZN10QMatrix4x411perspectiveEffff @ 11638 NONAME
+	_ZN10QMatrix4x415flipCoordinatesEv @ 11639 NONAME
+	_ZN10QMatrix4x416inferSpecialTypeEv @ 11640 NONAME
+	_ZN10QMatrix4x45orthoERK5QRect @ 11641 NONAME
+	_ZN10QMatrix4x45orthoERK6QRectF @ 11642 NONAME
+	_ZN10QMatrix4x45orthoEffffff @ 11643 NONAME
+	_ZN10QMatrix4x45scaleERK9QVector3D @ 11644 NONAME
+	_ZN10QMatrix4x45scaleEf @ 11645 NONAME
+	_ZN10QMatrix4x45scaleEff @ 11646 NONAME
+	_ZN10QMatrix4x45scaleEfff @ 11647 NONAME
+	_ZN10QMatrix4x46lookAtERK9QVector3DS2_S2_ @ 11648 NONAME
+	_ZN10QMatrix4x46rotateERK11QQuaternion @ 11649 NONAME
+	_ZN10QMatrix4x46rotateEfRK9QVector3D @ 11650 NONAME
+	_ZN10QMatrix4x46rotateEffff @ 11651 NONAME
+	_ZN10QMatrix4x47frustumEffffff @ 11652 NONAME
+	_ZN10QMatrix4x49translateERK9QVector3D @ 11653 NONAME
+	_ZN10QMatrix4x49translateEff @ 11654 NONAME
+	_ZN10QMatrix4x49translateEfff @ 11655 NONAME
+	_ZN10QMatrix4x4C1EPKf @ 11656 NONAME
+	_ZN10QMatrix4x4C1EPKfii @ 11657 NONAME
+	_ZN10QMatrix4x4C1ERK10QTransform @ 11658 NONAME
+	_ZN10QMatrix4x4C1ERK7QMatrix @ 11659 NONAME
+	_ZN10QMatrix4x4C2EPKf @ 11660 NONAME
+	_ZN10QMatrix4x4C2EPKfii @ 11661 NONAME
+	_ZN10QMatrix4x4C2ERK10QTransform @ 11662 NONAME
+	_ZN10QMatrix4x4C2ERK7QMatrix @ 11663 NONAME
+	_ZN10QMatrix4x4dVEf @ 11664 NONAME
+	_ZN11QColumnView12rowsInsertedERK11QModelIndexii @ 11665 NONAME
+	_ZN11QPanGesture11eventFilterEP7QObjectP6QEvent @ 11666 NONAME
+	_ZN11QPanGesture11filterEventEP6QEvent @ 11667 NONAME
+	_ZN11QPanGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 11668 NONAME
+	_ZN11QPanGesture11qt_metacastEPKc @ 11669 NONAME
+	_ZN11QPanGesture16staticMetaObjectE @ 11670 NONAME DATA 16
+	_ZN11QPanGesture5eventEP6QEvent @ 11671 NONAME
+	_ZN11QPanGesture5resetEv @ 11672 NONAME
+	_ZN11QPanGestureC1EP7QWidget @ 11673 NONAME
+	_ZN11QPanGestureC2EP7QWidget @ 11674 NONAME
+	_ZN11QPixmapData6scrollEiiRK5QRect @ 11675 NONAME
+	_ZN11QProxyStyle11qt_metacallEN11QMetaObject4CallEiPPv @ 11676 NONAME
+	_ZN11QProxyStyle11qt_metacastEPKc @ 11677 NONAME
+	_ZN11QProxyStyle12setBaseStyleEP6QStyle @ 11678 NONAME
+	_ZN11QProxyStyle16staticMetaObjectE @ 11679 NONAME DATA 16
+	_ZN11QProxyStyle5eventEP6QEvent @ 11680 NONAME
+	_ZN11QProxyStyle6polishEP12QApplication @ 11681 NONAME
+	_ZN11QProxyStyle6polishEP7QWidget @ 11682 NONAME
+	_ZN11QProxyStyle6polishER8QPalette @ 11683 NONAME
+	_ZN11QProxyStyle8unpolishEP12QApplication @ 11684 NONAME
+	_ZN11QProxyStyle8unpolishEP7QWidget @ 11685 NONAME
+	_ZN11QProxyStyleC1EP6QStyle @ 11686 NONAME
+	_ZN11QProxyStyleC2EP6QStyle @ 11687 NONAME
+	_ZN11QProxyStyleD0Ev @ 11688 NONAME
+	_ZN11QProxyStyleD1Ev @ 11689 NONAME
+	_ZN11QProxyStyleD2Ev @ 11690 NONAME
+	_ZN11QQuaternion16fromAxisAndAngleERK9QVector3Df @ 11691 NONAME
+	_ZN11QQuaternion16fromAxisAndAngleEffff @ 11692 NONAME
+	_ZN11QQuaternion5nlerpERKS_S1_f @ 11693 NONAME
+	_ZN11QQuaternion5slerpERKS_S1_f @ 11694 NONAME
+	_ZN11QQuaternion9normalizeEv @ 11695 NONAME
+	_ZN11QTouchEvent10TouchPoint10setLastPosERK7QPointF @ 11696 NONAME
+	_ZN11QTouchEvent10TouchPoint11setPressureEf @ 11697 NONAME
+	_ZN11QTouchEvent10TouchPoint11setScenePosERK7QPointF @ 11698 NONAME
+	_ZN11QTouchEvent10TouchPoint11setStartPosERK7QPointF @ 11699 NONAME
+	_ZN11QTouchEvent10TouchPoint12setSceneRectERK6QRectF @ 11700 NONAME
+	_ZN11QTouchEvent10TouchPoint12setScreenPosERK7QPointF @ 11701 NONAME
+	_ZN11QTouchEvent10TouchPoint13setScreenRectERK6QRectF @ 11702 NONAME
+	_ZN11QTouchEvent10TouchPoint15setLastScenePosERK7QPointF @ 11703 NONAME
+	_ZN11QTouchEvent10TouchPoint16setLastScreenPosERK7QPointF @ 11704 NONAME
+	_ZN11QTouchEvent10TouchPoint16setNormalizedPosERK7QPointF @ 11705 NONAME
+	_ZN11QTouchEvent10TouchPoint16setStartScenePosERK7QPointF @ 11706 NONAME
+	_ZN11QTouchEvent10TouchPoint17setStartScreenPosERK7QPointF @ 11707 NONAME
+	_ZN11QTouchEvent10TouchPoint20setLastNormalizedPosERK7QPointF @ 11708 NONAME
+	_ZN11QTouchEvent10TouchPoint21setStartNormalizedPosERK7QPointF @ 11709 NONAME
+	_ZN11QTouchEvent10TouchPoint5setIdEi @ 11710 NONAME
+	_ZN11QTouchEvent10TouchPoint6setPosERK7QPointF @ 11711 NONAME
+	_ZN11QTouchEvent10TouchPoint7setRectERK6QRectF @ 11712 NONAME
+	_ZN11QTouchEvent10TouchPoint8setStateE6QFlagsIN2Qt15TouchPointStateEE @ 11713 NONAME
+	_ZN11QTouchEvent10TouchPointC1ERKS0_ @ 11714 NONAME
+	_ZN11QTouchEvent10TouchPointC1Ei @ 11715 NONAME
+	_ZN11QTouchEvent10TouchPointC2ERKS0_ @ 11716 NONAME
+	_ZN11QTouchEvent10TouchPointC2Ei @ 11717 NONAME
+	_ZN11QTouchEvent10TouchPointD1Ev @ 11718 NONAME
+	_ZN11QTouchEvent10TouchPointD2Ev @ 11719 NONAME
+	_ZN11QTouchEvent10TouchPointaSERKS0_ @ 11720 NONAME
+	_ZN11QTouchEventC1EN6QEvent4TypeENS_10DeviceTypeE6QFlagsIN2Qt16KeyboardModifierEES3_INS4_15TouchPointStateEERK5QListINS_10TouchPointEE @ 11721 NONAME
+	_ZN11QTouchEventC2EN6QEvent4TypeENS_10DeviceTypeE6QFlagsIN2Qt16KeyboardModifierEES3_INS4_15TouchPointStateEERK5QListINS_10TouchPointEE @ 11722 NONAME
+	_ZN11QTouchEventD0Ev @ 11723 NONAME
+	_ZN11QTouchEventD1Ev @ 11724 NONAME
+	_ZN11QTouchEventD2Ev @ 11725 NONAME
+	_ZN12QLineControl10addCommandERKNS_7CommandE @ 11726 NONAME
+	_ZN12QLineControl10moveCursorEib @ 11727 NONAME
+	_ZN12QLineControl10textEditedERK7QString @ 11728 NONAME
+	_ZN12QLineControl10timerEventEP11QTimerEvent @ 11729 NONAME
+	_ZN12QLineControl11qt_metacallEN11QMetaObject4CallEiPPv @ 11730 NONAME
+	_ZN12QLineControl11qt_metacastEPKc @ 11731 NONAME
+	_ZN12QLineControl11textChangedERK7QString @ 11732 NONAME
+	_ZN12QLineControl12finishChangeEibb @ 11733 NONAME
+	_ZN12QLineControl12internalRedoEv @ 11734 NONAME
+	_ZN12QLineControl12internalUndoEi @ 11735 NONAME
+	_ZN12QLineControl12processEventEP6QEvent @ 11736 NONAME
+	_ZN12QLineControl12setSelectionEii @ 11737 NONAME
+	_ZN12QLineControl12updateNeededERK5QRect @ 11738 NONAME
+	_ZN12QLineControl14internalDeleteEb @ 11739 NONAME
+	_ZN12QLineControl14internalInsertERK7QString @ 11740 NONAME
+	_ZN12QLineControl14parseInputMaskERK7QString @ 11741 NONAME
+	_ZN12QLineControl15editFocusChangeEb @ 11742 NONAME
+	_ZN12QLineControl15editingFinishedEv @ 11743 NONAME
+	_ZN12QLineControl15internalSetTextERK7QStringib @ 11744 NONAME
+	_ZN12QLineControl15processKeyEventEP9QKeyEvent @ 11745 NONAME
+	_ZN12QLineControl15selectWordAtPosEi @ 11746 NONAME
+	_ZN12QLineControl16selectionChangedEv @ 11747 NONAME
+	_ZN12QLineControl16staticMetaObjectE @ 11748 NONAME DATA 16
+	_ZN12QLineControl17_q_deleteSelectedEv @ 11749 NONAME
+	_ZN12QLineControl17processMouseEventEP11QMouseEvent @ 11750 NONAME
+	_ZN12QLineControl17resetInputContextEv @ 11751 NONAME
+	_ZN12QLineControl17updateDisplayTextEv @ 11752 NONAME
+	_ZN12QLineControl18displayTextChangedERK7QString @ 11753 NONAME
+	_ZN12QLineControl18removeSelectedTextEv @ 11754 NONAME
+	_ZN12QLineControl19_q_clipboardChangedEv @ 11755 NONAME
+	_ZN12QLineControl20advanceToEnabledItemEi @ 11756 NONAME
+	_ZN12QLineControl20setCursorBlinkPeriodEi @ 11757 NONAME
+	_ZN12QLineControl21cursorPositionChangedEii @ 11758 NONAME
+	_ZN12QLineControl23processInputMethodEventEP17QInputMethodEvent @ 11759 NONAME
+	_ZN12QLineControl25emitCursorPositionChangedEv @ 11760 NONAME
+	_ZN12QLineControl25updatePasswordEchoEditingEb @ 11761 NONAME
+	_ZN12QLineControl3delEv @ 11762 NONAME
+	_ZN12QLineControl4drawEP8QPainterRK6QPointRK5QRecti @ 11763 NONAME
+	_ZN12QLineControl4initERK7QString @ 11764 NONAME
+	_ZN12QLineControl5clearEv @ 11765 NONAME
+	_ZN12QLineControl5fixupEv @ 11766 NONAME
+	_ZN12QLineControl5pasteEv @ 11767 NONAME
+	_ZN12QLineControl6insertERK7QString @ 11768 NONAME
+	_ZN12QLineControl8acceptedEv @ 11769 NONAME
+	_ZN12QLineControl8completeEi @ 11770 NONAME
+	_ZN12QLineControl9backspaceEv @ 11771 NONAME
+	_ZN12QPainterPath9translateEff @ 11772 NONAME
+	_ZN12QPixmapCache3KeyC1ERKS0_ @ 11773 NONAME
+	_ZN12QPixmapCache3KeyC1Ev @ 11774 NONAME
+	_ZN12QPixmapCache3KeyC2ERKS0_ @ 11775 NONAME
+	_ZN12QPixmapCache3KeyC2Ev @ 11776 NONAME
+	_ZN12QPixmapCache3KeyD1Ev @ 11777 NONAME
+	_ZN12QPixmapCache3KeyD2Ev @ 11778 NONAME
+	_ZN12QPixmapCache3KeyaSERKS0_ @ 11779 NONAME
+	_ZN12QPixmapCache4findERK7QStringP7QPixmap @ 11780 NONAME
+	_ZN12QPixmapCache4findERKNS_3KeyEP7QPixmap @ 11781 NONAME
+	_ZN12QPixmapCache6insertERK7QPixmap @ 11782 NONAME
+	_ZN12QPixmapCache6removeERKNS_3KeyE @ 11783 NONAME
+	_ZN12QPixmapCache7replaceERKNS_3KeyERK7QPixmap @ 11784 NONAME
+	_ZN13QFontDatabase21removeApplicationFontEi @ 11785 NONAME
+	_ZN13QGraphicsItem11setRotationEf @ 11786 NONAME
+	_ZN13QGraphicsItem13setFocusProxyEPS_ @ 11787 NONAME
+	_ZN13QGraphicsItem16toGraphicsObjectEv @ 11788 NONAME
+	_ZN13QGraphicsItem18setTransformationsERK5QListIP18QGraphicsTransformE @ 11789 NONAME
+	_ZN13QGraphicsItem19setInputMethodHintsE6QFlagsIN2Qt15InputMethodHintEE @ 11790 NONAME
+	_ZN13QGraphicsItem20setAcceptTouchEventsEb @ 11791 NONAME
+	_ZN13QGraphicsItem21setFiltersChildEventsEb @ 11792 NONAME
+	_ZN13QGraphicsItem23setTransformOriginPointERK7QPointF @ 11793 NONAME
+	_ZN13QGraphicsItem4setXEf @ 11794 NONAME
+	_ZN13QGraphicsItem4setYEf @ 11795 NONAME
+	_ZN13QGraphicsItem8setScaleEf @ 11796 NONAME
+	_ZN13QPinchGesture11eventFilterEP7QObjectP6QEvent @ 11797 NONAME
+	_ZN13QPinchGesture11filterEventEP6QEvent @ 11798 NONAME
+	_ZN13QPinchGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 11799 NONAME
+	_ZN13QPinchGesture11qt_metacastEPKc @ 11800 NONAME
+	_ZN13QPinchGesture16staticMetaObjectE @ 11801 NONAME DATA 16
+	_ZN13QPinchGesture5eventEP6QEvent @ 11802 NONAME
+	_ZN13QPinchGesture5resetEv @ 11803 NONAME
+	_ZN13QPinchGestureC1EP7QWidget @ 11804 NONAME
+	_ZN13QPinchGestureC2EP7QWidget @ 11805 NONAME
+	_ZN14QDesktopWidget18screenCountChangedEi @ 11806 NONAME
+	_ZN14QGraphicsScale11qt_metacallEN11QMetaObject4CallEiPPv @ 11807 NONAME
+	_ZN14QGraphicsScale11qt_metacastEPKc @ 11808 NONAME
+	_ZN14QGraphicsScale12scaleChangedEv @ 11809 NONAME
+	_ZN14QGraphicsScale13originChangedEv @ 11810 NONAME
+	_ZN14QGraphicsScale16staticMetaObjectE @ 11811 NONAME DATA 16
+	_ZN14QGraphicsScale9setOriginERK7QPointF @ 11812 NONAME
+	_ZN14QGraphicsScale9setXScaleEf @ 11813 NONAME
+	_ZN14QGraphicsScale9setYScaleEf @ 11814 NONAME
+	_ZN14QGraphicsScaleC1EP7QObject @ 11815 NONAME
+	_ZN14QGraphicsScaleC2EP7QObject @ 11816 NONAME
+	_ZN14QGraphicsScaleD0Ev @ 11817 NONAME
+	_ZN14QGraphicsScaleD1Ev @ 11818 NONAME
+	_ZN14QGraphicsScaleD2Ev @ 11819 NONAME
+	_ZN14QGraphicsScene16setSelectionAreaERK12QPainterPathN2Qt17ItemSelectionModeERK10QTransform @ 11820 NONAME
+	_ZN14QGraphicsScene16setSelectionAreaERK12QPainterPathRK10QTransform @ 11821 NONAME
+	_ZN14QGraphicsScene9sendEventEP13QGraphicsItemP6QEvent @ 11822 NONAME
+	_ZN14QPaintEngineExC2Ev @ 11823 NONAME
+	_ZN14QWidgetPrivate10allWidgetsE @ 11824 NONAME DATA 4
+	_ZN14QWidgetPrivate13setWSGeometryEbRK5QRect @ 11825 NONAME
+	_ZN14QWidgetPrivate33handleSymbianDeferredFocusChangedEv @ 11826 NONAME
+	_ZN15QDockAreaLayout13separatorMoveERK5QListIiERK6QPointS6_ @ 11827 NONAME
+	_ZN15QDockAreaLayout4infoERK5QListIiE @ 11828 NONAME
+	_ZN15QDockAreaLayout4itemERK5QListIiE @ 11829 NONAME
+	_ZN15QDockAreaLayout4plugERK5QListIiE @ 11830 NONAME
+	_ZN15QDockAreaLayout6removeERK5QListIiE @ 11831 NONAME
+	_ZN15QDockAreaLayout6unplugERK5QListIiE @ 11832 NONAME
+	_ZN15QDockAreaLayout9insertGapERK5QListIiEP11QLayoutItem @ 11833 NONAME
+	_ZN15QGraphicsObject11qt_metacallEN11QMetaObject4CallEiPPv @ 11834 NONAME
+	_ZN15QGraphicsObject11qt_metacastEPKc @ 11835 NONAME
+	_ZN15QGraphicsObject12scaleChangedEv @ 11836 NONAME
+	_ZN15QGraphicsObject13parentChangedEv @ 11837 NONAME
+	_ZN15QGraphicsObject14enabledChangedEv @ 11838 NONAME
+	_ZN15QGraphicsObject14opacityChangedEv @ 11839 NONAME
+	_ZN15QGraphicsObject14visibleChangedEv @ 11840 NONAME
+	_ZN15QGraphicsObject15rotationChangedEv @ 11841 NONAME
+	_ZN15QGraphicsObject16staticMetaObjectE @ 11842 NONAME DATA 16
+	_ZN15QGraphicsObject8xChangedEv @ 11843 NONAME
+	_ZN15QGraphicsObject8yChangedEv @ 11844 NONAME
+	_ZN15QGraphicsObject8zChangedEv @ 11845 NONAME
+	_ZN15QGraphicsObjectC2EP13QGraphicsItem @ 11846 NONAME
+	_ZN15QGraphicsObjectC2ER20QGraphicsItemPrivateP13QGraphicsItemP14QGraphicsScene @ 11847 NONAME
+	_ZN16QStyleSheetStyle17styleSheetPaletteEPK7QWidgetPK12QStyleOptionP8QPalette @ 11848 NONAME
+	_ZN17QGraphicsRotation11axisChangedEv @ 11849 NONAME
+	_ZN17QGraphicsRotation11qt_metacallEN11QMetaObject4CallEiPPv @ 11850 NONAME
+	_ZN17QGraphicsRotation11qt_metacastEPKc @ 11851 NONAME
+	_ZN17QGraphicsRotation12angleChangedEv @ 11852 NONAME
+	_ZN17QGraphicsRotation13originChangedEv @ 11853 NONAME
+	_ZN17QGraphicsRotation16staticMetaObjectE @ 11854 NONAME DATA 16
+	_ZN17QGraphicsRotation7setAxisEN2Qt4AxisE @ 11855 NONAME
+	_ZN17QGraphicsRotation7setAxisERK9QVector3D @ 11856 NONAME
+	_ZN17QGraphicsRotation8setAngleEf @ 11857 NONAME
+	_ZN17QGraphicsRotation9setOriginERK7QPointF @ 11858 NONAME
+	_ZN17QGraphicsRotationC1EP7QObject @ 11859 NONAME
+	_ZN17QGraphicsRotationC2EP7QObject @ 11860 NONAME
+	_ZN17QGraphicsRotationD0Ev @ 11861 NONAME
+	_ZN17QGraphicsRotationD1Ev @ 11862 NONAME
+	_ZN17QGraphicsRotationD2Ev @ 11863 NONAME
+	_ZN17QMainWindowLayout10timerEventEP11QTimerEvent @ 11864 NONAME
+	_ZN17QRasterPixmapData6scrollEiiRK5QRect @ 11865 NONAME
+	_ZN18QColumnViewPrivate18_q_columnsInsertedERK11QModelIndexii @ 11866 NONAME
+	_ZN18QColumnViewPrivate19checkColumnCreationERK11QModelIndex @ 11867 NONAME
+	_ZN18QGraphicsTransform11qt_metacallEN11QMetaObject4CallEiPPv @ 11868 NONAME
+	_ZN18QGraphicsTransform11qt_metacastEPKc @ 11869 NONAME
+	_ZN18QGraphicsTransform16staticMetaObjectE @ 11870 NONAME DATA 16
+	_ZN18QGraphicsTransform6updateEv @ 11871 NONAME
+	_ZN18QGraphicsTransformC2EP7QObject @ 11872 NONAME
+	_ZN18QGraphicsTransformC2ER25QGraphicsTransformPrivateP7QObject @ 11873 NONAME
+	_ZN18QGraphicsTransformD0Ev @ 11874 NONAME
+	_ZN18QGraphicsTransformD1Ev @ 11875 NONAME
+	_ZN18QGraphicsTransformD2Ev @ 11876 NONAME
+	_ZN18QSyntaxHighlighter16rehighlightBlockERK10QTextBlock @ 11877 NONAME
+	_ZN19QApplicationPrivate14sendMouseEventEP7QWidgetP11QMouseEventS1_S1_PS1_R8QPointerIS0_Eb @ 11878 NONAME
+	_ZN19QApplicationPrivate15desktopStyleKeyEv @ 11879 NONAME
+	_ZN19QApplicationPrivate17cleanupMultitouchEv @ 11880 NONAME
+	_ZN19QApplicationPrivate20initializeMultitouchEv @ 11881 NONAME
+	_ZN19QApplicationPrivate21cleanupMultitouch_sysEv @ 11882 NONAME
+	_ZN19QApplicationPrivate22translateRawTouchEventEP7QWidgetN11QTouchEvent10DeviceTypeERK5QListINS2_10TouchPointEE @ 11883 NONAME
+	_ZN19QApplicationPrivate23findClosestTouchPointIdERK7QPointF @ 11884 NONAME
+	_ZN19QApplicationPrivate24initializeMultitouch_sysEv @ 11885 NONAME
+	_ZN19QApplicationPrivate26updateTouchPointsForWidgetEP7QWidgetP11QTouchEvent @ 11886 NONAME
+	_ZN19QApplicationPrivate31giveFocusAccordingToFocusPolicyEP7QWidgetN2Qt11FocusPolicyENS2_11FocusReasonE @ 11887 NONAME
+	_ZN19QCoeFepInputContext11updateHintsEb @ 11888 NONAME
+	_ZN19QCoeFepInputContext21ReportAknEdStateEventEN19MAknEdStateObserver19EAknEdwinStateEventE @ 11889 NONAME
+	_ZN19QCoeFepInputContext29queueInputCapabilitiesChangedEv @ 11890 NONAME
+	_ZN19QCoeFepInputContext30ensureInputCapabilitiesChangedEv @ 11891 NONAME
+	_ZN19QDockAreaLayoutInfo13separatorMoveEii @ 11892 NONAME
+	_ZN19QDockAreaLayoutInfo4infoERK5QListIiE @ 11893 NONAME
+	_ZN19QDockAreaLayoutInfo4itemERK5QListIiE @ 11894 NONAME
+	_ZN19QDockAreaLayoutInfo4plugERK5QListIiE @ 11895 NONAME
+	_ZN19QDockAreaLayoutInfo6removeERK5QListIiE @ 11896 NONAME
+	_ZN19QDockAreaLayoutInfo6unplugERK5QListIiE @ 11897 NONAME
+	_ZN19QDockAreaLayoutInfo9insertGapERK5QListIiEP11QLayoutItem @ 11898 NONAME
+	_ZN19QGraphicsSceneIndex10deleteItemEP13QGraphicsItem @ 11899 NONAME
+	_ZN19QGraphicsSceneIndex10itemChangeEPK13QGraphicsItemNS0_18GraphicsItemChangeERK8QVariant @ 11900 NONAME
+	_ZN19QGraphicsSceneIndex11qt_metacallEN11QMetaObject4CallEiPPv @ 11901 NONAME
+	_ZN19QGraphicsSceneIndex11qt_metacastEPKc @ 11902 NONAME
+	_ZN19QGraphicsSceneIndex15updateSceneRectERK6QRectF @ 11903 NONAME
+	_ZN19QGraphicsSceneIndex16staticMetaObjectE @ 11904 NONAME DATA 16
+	_ZN19QGraphicsSceneIndex25prepareBoundingRectChangeEPK13QGraphicsItem @ 11905 NONAME
+	_ZN19QGraphicsSceneIndex5clearEv @ 11906 NONAME
+	_ZN19QGraphicsSceneIndexC2EP14QGraphicsScene @ 11907 NONAME
+	_ZN19QGraphicsSceneIndexC2ER26QGraphicsSceneIndexPrivateP14QGraphicsScene @ 11908 NONAME
+	_ZN19QGraphicsSceneIndexD0Ev @ 11909 NONAME
+	_ZN19QGraphicsSceneIndexD1Ev @ 11910 NONAME
+	_ZN19QGraphicsSceneIndexD2Ev @ 11911 NONAME
+	_ZN19QKeyEventTransition11qt_metacallEN11QMetaObject4CallEiPPv @ 11912 NONAME
+	_ZN19QKeyEventTransition11qt_metacastEPKc @ 11913 NONAME
+	_ZN19QKeyEventTransition12onTransitionEP6QEvent @ 11914 NONAME
+	_ZN19QKeyEventTransition16setModifiersMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 11915 NONAME
+	_ZN19QKeyEventTransition16staticMetaObjectE @ 11916 NONAME DATA 16
+	_ZN19QKeyEventTransition6setKeyEi @ 11917 NONAME
+	_ZN19QKeyEventTransition9eventTestEP6QEvent @ 11918 NONAME
+	_ZN19QKeyEventTransitionC1EP6QState @ 11919 NONAME
+	_ZN19QKeyEventTransitionC1EP7QObjectN6QEvent4TypeEiP6QState @ 11920 NONAME
+	_ZN19QKeyEventTransitionC2EP6QState @ 11921 NONAME
+	_ZN19QKeyEventTransitionC2EP7QObjectN6QEvent4TypeEiP6QState @ 11922 NONAME
+	_ZN19QKeyEventTransitionD0Ev @ 11923 NONAME
+	_ZN19QKeyEventTransitionD1Ev @ 11924 NONAME
+	_ZN19QKeyEventTransitionD2Ev @ 11925 NONAME
+	_ZN20QGraphicsItemPrivate11removeChildEP13QGraphicsItem @ 11926 NONAME
+	_ZN20QGraphicsItemPrivate11setSubFocusEv @ 11927 NONAME
+	_ZN20QGraphicsItemPrivate13clearSubFocusEv @ 11928 NONAME
+	_ZN20QGraphicsItemPrivate15resetFocusProxyEv @ 11929 NONAME
+	_ZN20QGraphicsItemPrivate18setTransformHelperERK10QTransform @ 11930 NONAME
+	_ZN20QGraphicsItemPrivate19setParentItemHelperEP13QGraphicsItem @ 11931 NONAME
+	_ZN20QGraphicsItemPrivate20ensureSceneTransformEv @ 11932 NONAME
+	_ZN20QGraphicsItemPrivate23appendGraphicsTransformEP18QGraphicsTransform @ 11933 NONAME
+	_ZN20QGraphicsItemPrivate26childrenBoundingRectHelperEP10QTransformP6QRectF @ 11934 NONAME
+	_ZN20QGraphicsItemPrivate29ensureSceneTransformRecursiveEPP13QGraphicsItem @ 11935 NONAME
+	_ZN20QGraphicsItemPrivate30updateSceneTransformFromParentEv @ 11936 NONAME
+	_ZN20QGraphicsItemPrivate8addChildEP13QGraphicsItem @ 11937 NONAME
+	_ZN20QGraphicsViewPrivate19translateTouchEventEPS_P11QTouchEvent @ 11938 NONAME
+	_ZN20QGraphicsViewPrivate21processPendingUpdatesEv @ 11939 NONAME
+	_ZN20QGraphicsViewPrivate28updateInputMethodSensitivityEv @ 11940 NONAME
+	_ZN20QTextDocumentPrivate10finishEditEv @ 11941 NONAME
+	_ZN21QMouseEventTransition11qt_metacallEN11QMetaObject4CallEiPPv @ 11942 NONAME
+	_ZN21QMouseEventTransition11qt_metacastEPKc @ 11943 NONAME
+	_ZN21QMouseEventTransition12onTransitionEP6QEvent @ 11944 NONAME
+	_ZN21QMouseEventTransition16setModifiersMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 11945 NONAME
+	_ZN21QMouseEventTransition16staticMetaObjectE @ 11946 NONAME DATA 16
+	_ZN21QMouseEventTransition7setPathERK12QPainterPath @ 11947 NONAME
+	_ZN21QMouseEventTransition9eventTestEP6QEvent @ 11948 NONAME
+	_ZN21QMouseEventTransition9setButtonEN2Qt11MouseButtonE @ 11949 NONAME
+	_ZN21QMouseEventTransitionC1EP6QState @ 11950 NONAME
+	_ZN21QMouseEventTransitionC1EP7QObjectN6QEvent4TypeEN2Qt11MouseButtonEP6QState @ 11951 NONAME
+	_ZN21QMouseEventTransitionC2EP6QState @ 11952 NONAME
+	_ZN21QMouseEventTransitionC2EP7QObjectN6QEvent4TypeEN2Qt11MouseButtonEP6QState @ 11953 NONAME
+	_ZN21QMouseEventTransitionD0Ev @ 11954 NONAME
+	_ZN21QMouseEventTransitionD1Ev @ 11955 NONAME
+	_ZN21QMouseEventTransitionD2Ev @ 11956 NONAME
+	_ZN21QPaintEngineExPrivate20replayClipOperationsEv @ 11957 NONAME
+	_ZN24QAbstractItemViewPrivate14checkMouseMoveERK21QPersistentModelIndex @ 11958 NONAME
+	_ZN24QAbstractItemViewPrivate9fetchMoreEv @ 11959 NONAME
+	_ZN24QBasicKeyEventTransition11qt_metacallEN11QMetaObject4CallEiPPv @ 11960 NONAME
+	_ZN24QBasicKeyEventTransition11qt_metacastEPKc @ 11961 NONAME
+	_ZN24QBasicKeyEventTransition12onTransitionEP6QEvent @ 11962 NONAME
+	_ZN24QBasicKeyEventTransition12setEventTypeEN6QEvent4TypeE @ 11963 NONAME
+	_ZN24QBasicKeyEventTransition16setModifiersMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 11964 NONAME
+	_ZN24QBasicKeyEventTransition16staticMetaObjectE @ 11965 NONAME DATA 16
+	_ZN24QBasicKeyEventTransition6setKeyEi @ 11966 NONAME
+	_ZN24QBasicKeyEventTransition9eventTestEP6QEvent @ 11967 NONAME
+	_ZN24QBasicKeyEventTransitionC1EN6QEvent4TypeEi6QFlagsIN2Qt16KeyboardModifierEEP6QState @ 11968 NONAME
+	_ZN24QBasicKeyEventTransitionC1EN6QEvent4TypeEiP6QState @ 11969 NONAME
+	_ZN24QBasicKeyEventTransitionC1EP6QState @ 11970 NONAME
+	_ZN24QBasicKeyEventTransitionC2EN6QEvent4TypeEi6QFlagsIN2Qt16KeyboardModifierEEP6QState @ 11971 NONAME
+	_ZN24QBasicKeyEventTransitionC2EN6QEvent4TypeEiP6QState @ 11972 NONAME
+	_ZN24QBasicKeyEventTransitionC2EP6QState @ 11973 NONAME
+	_ZN24QBasicKeyEventTransitionD0Ev @ 11974 NONAME
+	_ZN24QBasicKeyEventTransitionD1Ev @ 11975 NONAME
+	_ZN24QBasicKeyEventTransitionD2Ev @ 11976 NONAME
+	_ZN24QImagePixmapCleanupHooks12addImageHookEPFvxE @ 11977 NONAME
+	_ZN24QImagePixmapCleanupHooks13addPixmapHookEPFvP7QPixmapE @ 11978 NONAME
+	_ZN24QImagePixmapCleanupHooks15removeImageHookEPFvxE @ 11979 NONAME
+	_ZN24QImagePixmapCleanupHooks16removePixmapHookEPFvP7QPixmapE @ 11980 NONAME
+	_ZN24QImagePixmapCleanupHooks17executeImageHooksEx @ 11981 NONAME
+	_ZN24QImagePixmapCleanupHooks18executePixmapHooksEP7QPixmap @ 11982 NONAME
+	_ZN24QImagePixmapCleanupHooks8instanceEv @ 11983 NONAME
+	_ZN24QImagePixmapCleanupHooksC1Ev @ 11984 NONAME
+	_ZN24QImagePixmapCleanupHooksC2Ev @ 11985 NONAME
+	_ZN24QStyleOptionGraphicsItem26levelOfDetailFromTransformERK10QTransform @ 11986 NONAME
+	_ZN25QGraphicsSceneLinearIndex11qt_metacallEN11QMetaObject4CallEiPPv @ 11987 NONAME
+	_ZN25QGraphicsSceneLinearIndex11qt_metacastEPKc @ 11988 NONAME
+	_ZN25QGraphicsSceneLinearIndex16staticMetaObjectE @ 11989 NONAME DATA 16
+	_ZN26QAbstractScrollAreaPrivate19_q_gestureTriggeredEv @ 11990 NONAME
+	_ZN26QBasicMouseEventTransition11qt_metacallEN11QMetaObject4CallEiPPv @ 11991 NONAME
+	_ZN26QBasicMouseEventTransition11qt_metacastEPKc @ 11992 NONAME
+	_ZN26QBasicMouseEventTransition12onTransitionEP6QEvent @ 11993 NONAME
+	_ZN26QBasicMouseEventTransition12setEventTypeEN6QEvent4TypeE @ 11994 NONAME
+	_ZN26QBasicMouseEventTransition16setModifiersMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 11995 NONAME
+	_ZN26QBasicMouseEventTransition16staticMetaObjectE @ 11996 NONAME DATA 16
+	_ZN26QBasicMouseEventTransition7setPathERK12QPainterPath @ 11997 NONAME
+	_ZN26QBasicMouseEventTransition9eventTestEP6QEvent @ 11998 NONAME
+	_ZN26QBasicMouseEventTransition9setButtonEN2Qt11MouseButtonE @ 11999 NONAME
+	_ZN26QBasicMouseEventTransitionC1EN6QEvent4TypeEN2Qt11MouseButtonEP6QState @ 12000 NONAME
+	_ZN26QBasicMouseEventTransitionC1EP6QState @ 12001 NONAME
+	_ZN26QBasicMouseEventTransitionC2EN6QEvent4TypeEN2Qt11MouseButtonEP6QState @ 12002 NONAME
+	_ZN26QBasicMouseEventTransitionC2EP6QState @ 12003 NONAME
+	_ZN26QBasicMouseEventTransitionD0Ev @ 12004 NONAME
+	_ZN26QBasicMouseEventTransitionD1Ev @ 12005 NONAME
+	_ZN26QBasicMouseEventTransitionD2Ev @ 12006 NONAME
+	_ZN26QGraphicsLayoutItemPrivate16setSizeComponentEN2Qt8SizeHintENS_13SizeComponentEf @ 12007 NONAME
+	_ZN26QGraphicsLayoutItemPrivate19ensureUserSizeHintsEv @ 12008 NONAME
+	_ZN26QGraphicsLayoutItemPrivate7setSizeEN2Qt8SizeHintERK6QSizeF @ 12009 NONAME
+	_ZN26QGraphicsLayoutItemPrivateD0Ev @ 12010 NONAME
+	_ZN26QGraphicsLayoutItemPrivateD1Ev @ 12011 NONAME
+	_ZN26QGraphicsLayoutItemPrivateD2Ev @ 12012 NONAME
+	_ZN26QGraphicsSceneBspTreeIndex10itemChangeEPK13QGraphicsItemNS0_18GraphicsItemChangeERK8QVariant @ 12013 NONAME
+	_ZN26QGraphicsSceneBspTreeIndex10removeItemEP13QGraphicsItem @ 12014 NONAME
+	_ZN26QGraphicsSceneBspTreeIndex11qt_metacallEN11QMetaObject4CallEiPPv @ 12015 NONAME
+	_ZN26QGraphicsSceneBspTreeIndex11qt_metacastEPKc @ 12016 NONAME
+	_ZN26QGraphicsSceneBspTreeIndex12bspTreeDepthEv @ 12017 NONAME
+	_ZN26QGraphicsSceneBspTreeIndex15setBspTreeDepthEi @ 12018 NONAME
+	_ZN26QGraphicsSceneBspTreeIndex15updateSceneRectERK6QRectF @ 12019 NONAME
+	_ZN26QGraphicsSceneBspTreeIndex16staticMetaObjectE @ 12020 NONAME DATA 16
+	_ZN26QGraphicsSceneBspTreeIndex25prepareBoundingRectChangeEPK13QGraphicsItem @ 12021 NONAME
+	_ZN26QGraphicsSceneBspTreeIndex5clearEv @ 12022 NONAME
+	_ZN26QGraphicsSceneBspTreeIndex5eventEP6QEvent @ 12023 NONAME
+	_ZN26QGraphicsSceneBspTreeIndex7addItemEP13QGraphicsItem @ 12024 NONAME
+	_ZN26QGraphicsSceneBspTreeIndexC1EP14QGraphicsScene @ 12025 NONAME
+	_ZN26QGraphicsSceneBspTreeIndexC2EP14QGraphicsScene @ 12026 NONAME
+	_ZN26QGraphicsSceneBspTreeIndexD0Ev @ 12027 NONAME
+	_ZN26QGraphicsSceneBspTreeIndexD1Ev @ 12028 NONAME
+	_ZN26QGraphicsSceneBspTreeIndexD2Ev @ 12029 NONAME
+	_ZN5QIcon12hasThemeIconERK7QString @ 12030 NONAME
+	_ZN5QIcon12setThemeNameERK7QString @ 12031 NONAME
+	_ZN5QIcon16themeSearchPathsEv @ 12032 NONAME
+	_ZN5QIcon19setThemeSearchPathsERK11QStringList @ 12033 NONAME
+	_ZN5QIcon9fromThemeERK7QStringRKS_ @ 12034 NONAME
+	_ZN5QIcon9themeNameEv @ 12035 NONAME
+	_ZN6QStyle8setProxyEPS_ @ 12036 NONAME
+	_ZN7QAction11setPriorityENS_8PriorityE @ 12037 NONAME
+	_ZN7QPixmap6scrollEiiRK5QRectP7QRegion @ 12038 NONAME
+	_ZN8QGesture11eventFilterEP7QObjectP6QEvent @ 12039 NONAME
+	_ZN8QGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 12040 NONAME
+	_ZN8QGesture11qt_metacastEPKc @ 12041 NONAME
+	_ZN8QGesture11updateStateEN2Qt12GestureStateE @ 12042 NONAME
+	_ZN8QGesture15setGraphicsItemEP13QGraphicsItem @ 12043 NONAME
+	_ZN8QGesture16staticMetaObjectE @ 12044 NONAME DATA 16
+	_ZN8QGesture5resetEv @ 12045 NONAME
+	_ZN8QGesture7startedEv @ 12046 NONAME
+	_ZN8QGesture8finishedEv @ 12047 NONAME
+	_ZN8QGesture9cancelledEv @ 12048 NONAME
+	_ZN8QGesture9triggeredEv @ 12049 NONAME
+	_ZN8QGestureC2EP7QObject @ 12050 NONAME
+	_ZN8QGestureC2ER15QGesturePrivateP7QObject @ 12051 NONAME
+	_ZN8QGestureD0Ev @ 12052 NONAME
+	_ZN8QGestureD1Ev @ 12053 NONAME
+	_ZN8QGestureD2Ev @ 12054 NONAME
+	_ZN8QMenuBar16setNativeMenuBarEb @ 12055 NONAME
+	_ZN9QVector2D10dotProductERKS_S1_ @ 12056 NONAME
+	_ZN9QVector2D9normalizeEv @ 12057 NONAME
+	_ZN9QVector2DC1ERK9QVector3D @ 12058 NONAME
+	_ZN9QVector2DC1ERK9QVector4D @ 12059 NONAME
+	_ZN9QVector2DC2ERK9QVector3D @ 12060 NONAME
+	_ZN9QVector2DC2ERK9QVector4D @ 12061 NONAME
+	_ZN9QVector3D10dotProductERKS_S1_ @ 12062 NONAME
+	_ZN9QVector3D12crossProductERKS_S1_ @ 12063 NONAME
+	_ZN9QVector3D6normalERKS_S1_ @ 12064 NONAME
+	_ZN9QVector3D6normalERKS_S1_S1_ @ 12065 NONAME
+	_ZN9QVector3D9normalizeEv @ 12066 NONAME
+	_ZN9QVector3DC1ERK9QVector2D @ 12067 NONAME
+	_ZN9QVector3DC1ERK9QVector2Df @ 12068 NONAME
+	_ZN9QVector3DC1ERK9QVector4D @ 12069 NONAME
+	_ZN9QVector3DC2ERK9QVector2D @ 12070 NONAME
+	_ZN9QVector3DC2ERK9QVector2Df @ 12071 NONAME
+	_ZN9QVector3DC2ERK9QVector4D @ 12072 NONAME
+	_ZN9QVector4D10dotProductERKS_S1_ @ 12073 NONAME
+	_ZN9QVector4D9normalizeEv @ 12074 NONAME
+	_ZN9QVector4DC1ERK9QVector2D @ 12075 NONAME
+	_ZN9QVector4DC1ERK9QVector2Dff @ 12076 NONAME
+	_ZN9QVector4DC1ERK9QVector3D @ 12077 NONAME
+	_ZN9QVector4DC1ERK9QVector3Df @ 12078 NONAME
+	_ZN9QVector4DC2ERK9QVector2D @ 12079 NONAME
+	_ZN9QVector4DC2ERK9QVector2Dff @ 12080 NONAME
+	_ZN9QVector4DC2ERK9QVector3D @ 12081 NONAME
+	_ZN9QVector4DC2ERK9QVector3Df @ 12082 NONAME
+	_ZNK10QCompleter15maxVisibleItemsEv @ 12083 NONAME
+	_ZNK10QMatrix4x410transposedEv @ 12084 NONAME
+	_ZNK10QMatrix4x411determinantEv @ 12085 NONAME
+	_ZNK10QMatrix4x411toTransformEv @ 12086 NONAME
+	_ZNK10QMatrix4x412normalMatrixEv @ 12087 NONAME
+	_ZNK10QMatrix4x412toValueArrayEPf @ 12088 NONAME
+	_ZNK10QMatrix4x418extractTranslationEv @ 12089 NONAME
+	_ZNK10QMatrix4x418orthonormalInverseEv @ 12090 NONAME
+	_ZNK10QMatrix4x419extractAxisRotationERfR9QVector3D @ 12091 NONAME
+	_ZNK10QMatrix4x47mapRectERK5QRect @ 12092 NONAME
+	_ZNK10QMatrix4x47mapRectERK6QRectF @ 12093 NONAME
+	_ZNK10QMatrix4x48invertedEPb @ 12094 NONAME
+	_ZNK10QMatrix4x48toAffineEv @ 12095 NONAME
+	_ZNK11QPanGesture10lastOffsetEv @ 12096 NONAME
+	_ZNK11QPanGesture10metaObjectEv @ 12097 NONAME
+	_ZNK11QPanGesture11totalOffsetEv @ 12098 NONAME
+	_ZNK11QProxyStyle10metaObjectEv @ 12099 NONAME
+	_ZNK11QProxyStyle11drawControlEN6QStyle14ControlElementEPK12QStyleOptionP8QPainterPK7QWidget @ 12100 NONAME
+	_ZNK11QProxyStyle11pixelMetricEN6QStyle11PixelMetricEPK12QStyleOptionPK7QWidget @ 12101 NONAME
+	_ZNK11QProxyStyle12drawItemTextEP8QPainterRK5QRectiRK8QPalettebRK7QStringNS5_9ColorRoleE @ 12102 NONAME
+	_ZNK11QProxyStyle12itemTextRectERK12QFontMetricsRK5QRectibRK7QString @ 12103 NONAME
+	_ZNK11QProxyStyle13drawPrimitiveEN6QStyle16PrimitiveElementEPK12QStyleOptionP8QPainterPK7QWidget @ 12104 NONAME
+	_ZNK11QProxyStyle14drawItemPixmapEP8QPainterRK5QRectiRK7QPixmap @ 12105 NONAME
+	_ZNK11QProxyStyle14itemPixmapRectERK5QRectiRK7QPixmap @ 12106 NONAME
+	_ZNK11QProxyStyle14standardPixmapEN6QStyle14StandardPixmapEPK12QStyleOptionPK7QWidget @ 12107 NONAME
+	_ZNK11QProxyStyle14subControlRectEN6QStyle14ComplexControlEPK19QStyleOptionComplexNS0_10SubControlEPK7QWidget @ 12108 NONAME
+	_ZNK11QProxyStyle14subElementRectEN6QStyle10SubElementEPK12QStyleOptionPK7QWidget @ 12109 NONAME
+	_ZNK11QProxyStyle15standardPaletteEv @ 12110 NONAME
+	_ZNK11QProxyStyle16sizeFromContentsEN6QStyle12ContentsTypeEPK12QStyleOptionRK5QSizePK7QWidget @ 12111 NONAME
+	_ZNK11QProxyStyle18drawComplexControlEN6QStyle14ComplexControlEPK19QStyleOptionComplexP8QPainterPK7QWidget @ 12112 NONAME
+	_ZNK11QProxyStyle19generatedIconPixmapEN5QIcon4ModeERK7QPixmapPK12QStyleOption @ 12113 NONAME
+	_ZNK11QProxyStyle21hitTestComplexControlEN6QStyle14ComplexControlEPK19QStyleOptionComplexRK6QPointPK7QWidget @ 12114 NONAME
+	_ZNK11QProxyStyle26standardIconImplementationEN6QStyle14StandardPixmapEPK12QStyleOptionPK7QWidget @ 12115 NONAME
+	_ZNK11QProxyStyle27layoutSpacingImplementationEN11QSizePolicy11ControlTypeES1_N2Qt11OrientationEPK12QStyleOptionPK7QWidget @ 12116 NONAME
+	_ZNK11QProxyStyle9baseStyleEv @ 12117 NONAME
+	_ZNK11QProxyStyle9styleHintEN6QStyle9StyleHintEPK12QStyleOptionPK7QWidgetP16QStyleHintReturn @ 12118 NONAME
+	_ZNK11QQuaternion10normalizedEv @ 12119 NONAME
+	_ZNK11QQuaternion12rotateVectorERK9QVector3D @ 12120 NONAME
+	_ZNK11QQuaternion13lengthSquaredEv @ 12121 NONAME
+	_ZNK11QQuaternion6lengthEv @ 12122 NONAME
+	_ZNK11QTouchEvent10TouchPoint10screenRectEv @ 12123 NONAME
+	_ZNK11QTouchEvent10TouchPoint12lastScenePosEv @ 12124 NONAME
+	_ZNK11QTouchEvent10TouchPoint13lastScreenPosEv @ 12125 NONAME
+	_ZNK11QTouchEvent10TouchPoint13normalizedPosEv @ 12126 NONAME
+	_ZNK11QTouchEvent10TouchPoint13startScenePosEv @ 12127 NONAME
+	_ZNK11QTouchEvent10TouchPoint14startScreenPosEv @ 12128 NONAME
+	_ZNK11QTouchEvent10TouchPoint17lastNormalizedPosEv @ 12129 NONAME
+	_ZNK11QTouchEvent10TouchPoint18startNormalizedPosEv @ 12130 NONAME
+	_ZNK11QTouchEvent10TouchPoint2idEv @ 12131 NONAME
+	_ZNK11QTouchEvent10TouchPoint3posEv @ 12132 NONAME
+	_ZNK11QTouchEvent10TouchPoint4rectEv @ 12133 NONAME
+	_ZNK11QTouchEvent10TouchPoint5stateEv @ 12134 NONAME
+	_ZNK11QTouchEvent10TouchPoint7lastPosEv @ 12135 NONAME
+	_ZNK11QTouchEvent10TouchPoint8pressureEv @ 12136 NONAME
+	_ZNK11QTouchEvent10TouchPoint8scenePosEv @ 12137 NONAME
+	_ZNK11QTouchEvent10TouchPoint8startPosEv @ 12138 NONAME
+	_ZNK11QTouchEvent10TouchPoint9isPrimaryEv @ 12139 NONAME
+	_ZNK11QTouchEvent10TouchPoint9sceneRectEv @ 12140 NONAME
+	_ZNK11QTouchEvent10TouchPoint9screenPosEv @ 12141 NONAME
+	_ZNK11QVectorPath20convertToPainterPathEv @ 12142 NONAME
+	_ZNK12QLineControl10cursorRectEv @ 12143 NONAME
+	_ZNK12QLineControl10findInMaskEibb5QChar @ 12144 NONAME
+	_ZNK12QLineControl10maskStringEjRK7QStringb @ 12145 NONAME
+	_ZNK12QLineControl10metaObjectEv @ 12146 NONAME
+	_ZNK12QLineControl11clearStringEjj @ 12147 NONAME
+	_ZNK12QLineControl11stripStringERK7QString @ 12148 NONAME
+	_ZNK12QLineControl12isValidInputE5QCharS0_ @ 12149 NONAME
+	_ZNK12QLineControl18hasAcceptableInputERK7QString @ 12150 NONAME
+	_ZNK12QLineControl4copyEN10QClipboard4ModeE @ 12151 NONAME
+	_ZNK12QLineControl6xToPosEiN9QTextLine14CursorPositionE @ 12152 NONAME
+	_ZNK12QPainterPath10translatedEff @ 12153 NONAME
+	_ZNK12QPixmapCache3KeyeqERKS0_ @ 12154 NONAME
+	_ZNK13QGraphicsItem10focusProxyEv @ 12155 NONAME
+	_ZNK13QGraphicsItem12parentObjectEv @ 12156 NONAME
+	_ZNK13QGraphicsItem15transformationsEv @ 12157 NONAME
+	_ZNK13QGraphicsItem16inputMethodHintsEv @ 12158 NONAME
+	_ZNK13QGraphicsItem16toGraphicsObjectEv @ 12159 NONAME
+	_ZNK13QGraphicsItem17acceptTouchEventsEv @ 12160 NONAME
+	_ZNK13QGraphicsItem18filtersChildEventsEv @ 12161 NONAME
+	_ZNK13QGraphicsItem20transformOriginPointEv @ 12162 NONAME
+	_ZNK13QGraphicsItem5scaleEv @ 12163 NONAME
+	_ZNK13QGraphicsItem8rotationEv @ 12164 NONAME
+	_ZNK13QGraphicsItem9focusItemEv @ 12165 NONAME
+	_ZNK13QGraphicsView13isTransformedEv @ 12166 NONAME
+	_ZNK13QPinchGesture10metaObjectEv @ 12167 NONAME
+	_ZNK13QPinchGesture11centerPointEv @ 12168 NONAME
+	_ZNK13QPinchGesture11scaleFactorEv @ 12169 NONAME
+	_ZNK13QPinchGesture13rotationAngleEv @ 12170 NONAME
+	_ZNK13QPinchGesture15lastCenterPointEv @ 12171 NONAME
+	_ZNK13QPinchGesture15lastScaleFactorEv @ 12172 NONAME
+	_ZNK13QPinchGesture16startCenterPointEv @ 12173 NONAME
+	_ZNK13QPinchGesture17lastRotationAngleEv @ 12174 NONAME
+	_ZNK14QGraphicsScale10metaObjectEv @ 12175 NONAME
+	_ZNK14QGraphicsScale6originEv @ 12176 NONAME
+	_ZNK14QGraphicsScale6xScaleEv @ 12177 NONAME
+	_ZNK14QGraphicsScale6yScaleEv @ 12178 NONAME
+	_ZNK14QGraphicsScale7applyToEP10QTransform @ 12179 NONAME
+	_ZNK14QGraphicsScene5itemsEN2Qt9SortOrderE @ 12180 NONAME
+	_ZNK14QGraphicsScene5itemsERK12QPainterPathN2Qt17ItemSelectionModeENS3_9SortOrderERK10QTransform @ 12181 NONAME
+	_ZNK14QGraphicsScene5itemsERK6QRectFN2Qt17ItemSelectionModeENS3_9SortOrderERK10QTransform @ 12182 NONAME
+	_ZNK14QGraphicsScene5itemsERK7QPointFN2Qt17ItemSelectionModeENS3_9SortOrderERK10QTransform @ 12183 NONAME
+	_ZNK14QGraphicsScene5itemsERK9QPolygonFN2Qt17ItemSelectionModeENS3_9SortOrderERK10QTransform @ 12184 NONAME
+	_ZNK14QGraphicsScene6itemAtERK7QPointFRK10QTransform @ 12185 NONAME
+	_ZNK14QWidgetPrivate15paintBackgroundEP8QPainterRK7QRegioni @ 12186 NONAME
+	_ZNK15QDockAreaLayout13separatorRectERK5QListIiE @ 12187 NONAME
+	_ZNK15QDockAreaLayout4infoERK5QListIiE @ 12188 NONAME
+	_ZNK15QDockAreaLayout7gapRectERK5QListIiE @ 12189 NONAME
+	_ZNK15QDockAreaLayout8itemRectERK5QListIiE @ 12190 NONAME
+	_ZNK15QGraphicsObject10metaObjectEv @ 12191 NONAME
+	_ZNK17QGraphicsRotation10metaObjectEv @ 12192 NONAME
+	_ZNK17QGraphicsRotation4axisEv @ 12193 NONAME
+	_ZNK17QGraphicsRotation5angleEv @ 12194 NONAME
+	_ZNK17QGraphicsRotation6originEv @ 12195 NONAME
+	_ZNK17QGraphicsRotation7applyToEP10QTransform @ 12196 NONAME
+	_ZNK18QGraphicsTransform10metaObjectEv @ 12197 NONAME
+	_ZNK18QGraphicsTransform9transformEv @ 12198 NONAME
+	_ZNK18QTextureGlyphCache18textureMapForGlyphEj @ 12199 NONAME
+	_ZNK19QDockAreaLayoutInfo12hasFixedSizeEv @ 12200 NONAME
+	_ZNK19QDockAreaLayoutInfo13separatorRectERK5QListIiE @ 12201 NONAME
+	_ZNK19QDockAreaLayoutInfo8itemRectERK5QListIiE @ 12202 NONAME
+	_ZNK19QGraphicsSceneIndex10metaObjectEv @ 12203 NONAME
+	_ZNK19QGraphicsSceneIndex13estimateItemsERK7QPointFN2Qt9SortOrderE @ 12204 NONAME
+	_ZNK19QGraphicsSceneIndex21estimateTopLevelItemsERK6QRectFN2Qt9SortOrderE @ 12205 NONAME
+	_ZNK19QGraphicsSceneIndex5itemsERK12QPainterPathN2Qt17ItemSelectionModeENS3_9SortOrderERK10QTransform @ 12206 NONAME
+	_ZNK19QGraphicsSceneIndex5itemsERK6QRectFN2Qt17ItemSelectionModeENS3_9SortOrderERK10QTransform @ 12207 NONAME
+	_ZNK19QGraphicsSceneIndex5itemsERK7QPointFN2Qt17ItemSelectionModeENS3_9SortOrderERK10QTransform @ 12208 NONAME
+	_ZNK19QGraphicsSceneIndex5itemsERK9QPolygonFN2Qt17ItemSelectionModeENS3_9SortOrderERK10QTransform @ 12209 NONAME
+	_ZNK19QGraphicsSceneIndex5sceneEv @ 12210 NONAME
+	_ZNK19QKeyEventTransition10metaObjectEv @ 12211 NONAME
+	_ZNK19QKeyEventTransition13modifiersMaskEv @ 12212 NONAME
+	_ZNK19QKeyEventTransition3keyEv @ 12213 NONAME
+	_ZNK20QGraphicsItemPrivate15initStyleOptionEP24QStyleOptionGraphicsItemRK10QTransformRK7QRegionb @ 12214 NONAME
+	_ZNK20QGraphicsItemPrivate19maybeExtraItemCacheEv @ 12215 NONAME
+	_ZNK20QGraphicsItemPrivate24combineTransformToParentEP10QTransformPKS0_ @ 12216 NONAME
+	_ZNK20QGraphicsItemPrivate26combineTransformFromParentEP10QTransformPKS0_ @ 12217 NONAME
+	_ZNK20QGraphicsViewPrivate10mapToSceneERK6QRectF @ 12218 NONAME
+	_ZNK20QGraphicsViewPrivate10mapToSceneERK7QPointF @ 12219 NONAME
+	_ZNK20QGraphicsViewPrivate9findItemsERK7QRegionPbRK10QTransform @ 12220 NONAME
+	_ZNK21QMouseEventTransition10metaObjectEv @ 12221 NONAME
+	_ZNK21QMouseEventTransition13modifiersMaskEv @ 12222 NONAME
+	_ZNK21QMouseEventTransition4pathEv @ 12223 NONAME
+	_ZNK21QMouseEventTransition6buttonEv @ 12224 NONAME
+	_ZNK21QPaintEngineExPrivate17hasClipOperationsEv @ 12225 NONAME
+	_ZNK24QAbstractItemViewPrivate19draggablePaintPairsERK5QListI11QModelIndexEP5QRect @ 12226 NONAME
+	_ZNK24QBasicKeyEventTransition10metaObjectEv @ 12227 NONAME
+	_ZNK24QBasicKeyEventTransition13modifiersMaskEv @ 12228 NONAME
+	_ZNK24QBasicKeyEventTransition3keyEv @ 12229 NONAME
+	_ZNK24QBasicKeyEventTransition9eventTypeEv @ 12230 NONAME
+	_ZNK25QGraphicsSceneLinearIndex10metaObjectEv @ 12231 NONAME
+	_ZNK26QBasicMouseEventTransition10metaObjectEv @ 12232 NONAME
+	_ZNK26QBasicMouseEventTransition13modifiersMaskEv @ 12233 NONAME
+	_ZNK26QBasicMouseEventTransition4pathEv @ 12234 NONAME
+	_ZNK26QBasicMouseEventTransition6buttonEv @ 12235 NONAME
+	_ZNK26QBasicMouseEventTransition9eventTypeEv @ 12236 NONAME
+	_ZNK26QGraphicsSceneBspTreeIndex10metaObjectEv @ 12237 NONAME
+	_ZNK26QGraphicsSceneBspTreeIndex13estimateItemsERK6QRectFN2Qt9SortOrderE @ 12238 NONAME
+	_ZNK26QGraphicsSceneBspTreeIndex21estimateTopLevelItemsERK6QRectFN2Qt9SortOrderE @ 12239 NONAME
+	_ZNK26QGraphicsSceneBspTreeIndex5itemsEN2Qt9SortOrderE @ 12240 NONAME
+	_ZNK6QStyle5proxyEv @ 12241 NONAME
+	_ZNK7QAction8priorityEv @ 12242 NONAME
+	_ZNK7QWidget20previousInFocusChainEv @ 12243 NONAME
+	_ZNK8QGesture10metaObjectEv @ 12244 NONAME
+	_ZNK8QGesture12graphicsItemEv @ 12245 NONAME
+	_ZNK8QGesture5stateEv @ 12246 NONAME
+	_ZNK8QMenuBar15isNativeMenuBarEv @ 12247 NONAME
+	_ZNK8QPolygon10translatedEii @ 12248 NONAME
+	_ZNK9QPolygonF10translatedERK7QPointF @ 12249 NONAME
+	_ZNK9QVector2D10normalizedEv @ 12250 NONAME
+	_ZNK9QVector2D10toVector3DEv @ 12251 NONAME
+	_ZNK9QVector2D10toVector4DEv @ 12252 NONAME
+	_ZNK9QVector2D13lengthSquaredEv @ 12253 NONAME
+	_ZNK9QVector2D6lengthEv @ 12254 NONAME
+	_ZNK9QVector3D10normalizedEv @ 12255 NONAME
+	_ZNK9QVector3D10toVector2DEv @ 12256 NONAME
+	_ZNK9QVector3D10toVector4DEv @ 12257 NONAME
+	_ZNK9QVector3D13lengthSquaredEv @ 12258 NONAME
+	_ZNK9QVector3D14distanceToLineERKS_S1_ @ 12259 NONAME
+	_ZNK9QVector3D15distanceToPlaneERKS_S1_ @ 12260 NONAME
+	_ZNK9QVector3D15distanceToPlaneERKS_S1_S1_ @ 12261 NONAME
+	_ZNK9QVector3D6lengthEv @ 12262 NONAME
+	_ZNK9QVector4D10normalizedEv @ 12263 NONAME
+	_ZNK9QVector4D10toVector2DEv @ 12264 NONAME
+	_ZNK9QVector4D10toVector3DEv @ 12265 NONAME
+	_ZNK9QVector4D13lengthSquaredEv @ 12266 NONAME
+	_ZNK9QVector4D16toVector2DAffineEv @ 12267 NONAME
+	_ZNK9QVector4D16toVector3DAffineEv @ 12268 NONAME
+	_ZNK9QVector4D6lengthEv @ 12269 NONAME
+	_ZTI11QPanGesture @ 12270 NONAME
+	_ZTI11QProxyStyle @ 12271 NONAME
+	_ZTI11QTouchEvent @ 12272 NONAME
+	_ZTI12QLineControl @ 12273 NONAME
+	_ZTI13QPinchGesture @ 12274 NONAME
+	_ZTI14QGraphicsScale @ 12275 NONAME
+	_ZTI15QGraphicsObject @ 12276 NONAME
+	_ZTI17QGraphicsRotation @ 12277 NONAME
+	_ZTI18QGraphicsTransform @ 12278 NONAME
+	_ZTI19QGraphicsSceneIndex @ 12279 NONAME
+	_ZTI19QKeyEventTransition @ 12280 NONAME
+	_ZTI21QMouseEventTransition @ 12281 NONAME
+	_ZTI24QBasicKeyEventTransition @ 12282 NONAME
+	_ZTI25QGraphicsSceneLinearIndex @ 12283 NONAME
+	_ZTI26QBasicMouseEventTransition @ 12284 NONAME
+	_ZTI26QGraphicsSceneBspTreeIndex @ 12285 NONAME
+	_ZTI8QGesture @ 12286 NONAME
+	_ZTV11QPanGesture @ 12287 NONAME
+	_ZTV11QProxyStyle @ 12288 NONAME
+	_ZTV11QTouchEvent @ 12289 NONAME
+	_ZTV12QLineControl @ 12290 NONAME
+	_ZTV13QPinchGesture @ 12291 NONAME
+	_ZTV14QGraphicsScale @ 12292 NONAME
+	_ZTV15QGraphicsObject @ 12293 NONAME
+	_ZTV17QGraphicsRotation @ 12294 NONAME
+	_ZTV18QGraphicsTransform @ 12295 NONAME
+	_ZTV19QGraphicsSceneIndex @ 12296 NONAME
+	_ZTV19QKeyEventTransition @ 12297 NONAME
+	_ZTV21QMouseEventTransition @ 12298 NONAME
+	_ZTV24QBasicKeyEventTransition @ 12299 NONAME
+	_ZTV25QGraphicsSceneLinearIndex @ 12300 NONAME
+	_ZTV26QBasicMouseEventTransition @ 12301 NONAME
+	_ZTV26QGraphicsSceneBspTreeIndex @ 12302 NONAME
+	_ZTV8QGesture @ 12303 NONAME
+	_ZdvRK10QMatrix4x4f @ 12304 NONAME
+	_Zls6QDebugRK10QMatrix4x4 @ 12305 NONAME
+	_Zls6QDebugRK11QQuaternion @ 12306 NONAME
+	_Zls6QDebugRK9QVector2D @ 12307 NONAME
+	_Zls6QDebugRK9QVector3D @ 12308 NONAME
+	_Zls6QDebugRK9QVector4D @ 12309 NONAME
+	_ZlsR11QDataStreamRK10QMatrix4x4 @ 12310 NONAME
+	_ZlsR11QDataStreamRK11QQuaternion @ 12311 NONAME
+	_ZlsR11QDataStreamRK9QVector2D @ 12312 NONAME
+	_ZlsR11QDataStreamRK9QVector3D @ 12313 NONAME
+	_ZlsR11QDataStreamRK9QVector4D @ 12314 NONAME
+	_ZrsR11QDataStreamR10QMatrix4x4 @ 12315 NONAME
+	_ZrsR11QDataStreamR11QQuaternion @ 12316 NONAME
+	_ZrsR11QDataStreamR9QVector2D @ 12317 NONAME
+	_ZrsR11QDataStreamR9QVector3D @ 12318 NONAME
+	_ZrsR11QDataStreamR9QVector4D @ 12319 NONAME
 

@@ -231,14 +231,14 @@ EXPORTS
 	_ZN9QSqlField7setTypeEN8QVariant4TypeE @ 230 NONAME
 	_ZN9QSqlField8setValueERK8QVariant @ 231 NONAME
 	_ZN9QSqlField9setLengthEi @ 232 NONAME
-	_ZN9QSqlFieldC1ERK7QString @ 233 NONAME
-	_ZN9QSqlFieldC1ERK7QStringN8QVariant4TypeE @ 234 NONAME
+	_ZN9QSqlFieldC1ERK7QString @ 233 NONAME ABSENT
+	_ZN9QSqlFieldC1ERK7QStringN8QVariant4TypeE @ 234 NONAME ABSENT
 	_ZN9QSqlFieldC1ERKS_ @ 235 NONAME
-	_ZN9QSqlFieldC1Ev @ 236 NONAME
-	_ZN9QSqlFieldC2ERK7QString @ 237 NONAME
-	_ZN9QSqlFieldC2ERK7QStringN8QVariant4TypeE @ 238 NONAME
+	_ZN9QSqlFieldC1Ev @ 236 NONAME ABSENT
+	_ZN9QSqlFieldC2ERK7QString @ 237 NONAME ABSENT
+	_ZN9QSqlFieldC2ERK7QStringN8QVariant4TypeE @ 238 NONAME ABSENT
 	_ZN9QSqlFieldC2ERKS_ @ 239 NONAME
-	_ZN9QSqlFieldC2Ev @ 240 NONAME
+	_ZN9QSqlFieldC2Ev @ 240 NONAME ABSENT
 	_ZN9QSqlFieldD1Ev @ 241 NONAME
 	_ZN9QSqlFieldD2Ev @ 242 NONAME
 	_ZN9QSqlFieldaSERKS_ @ 243 NONAME
@@ -437,34 +437,40 @@ EXPORTS
 	_ZTI10QSqlDriver @ 436 NONAME
 	_ZTI10QSqlResult @ 437 NONAME
 	_ZTI13QSQLiteDriver @ 438 NONAME
-	_ZTI13QSQLiteResult @ 439 NONAME
+	_ZTI13QSQLiteResult @ 439 NONAME ABSENT
 	_ZTI14QSqlQueryModel @ 440 NONAME
 	_ZTI14QSqlTableModel @ 441 NONAME
 	_ZTI16QSqlCachedResult @ 442 NONAME
 	_ZTI16QSqlDriverPlugin @ 443 NONAME
-	_ZTI17QSqlDriverPrivate @ 444 NONAME
-	_ZTI21QSqlQueryModelPrivate @ 445 NONAME
-	_ZTI21QSqlTableModelPrivate @ 446 NONAME
+	_ZTI17QSqlDriverPrivate @ 444 NONAME ABSENT
+	_ZTI21QSqlQueryModelPrivate @ 445 NONAME ABSENT
+	_ZTI21QSqlTableModelPrivate @ 446 NONAME ABSENT
 	_ZTI24QSqlRelationalTableModel @ 447 NONAME
 	_ZTI26QSqlDriverFactoryInterface @ 448 NONAME
-	_ZTI31QSqlRelationalTableModelPrivate @ 449 NONAME
+	_ZTI31QSqlRelationalTableModelPrivate @ 449 NONAME ABSENT
 	_ZTV10QSqlDriver @ 450 NONAME
 	_ZTV10QSqlResult @ 451 NONAME
 	_ZTV13QSQLiteDriver @ 452 NONAME
-	_ZTV13QSQLiteResult @ 453 NONAME
+	_ZTV13QSQLiteResult @ 453 NONAME ABSENT
 	_ZTV14QSqlQueryModel @ 454 NONAME
 	_ZTV14QSqlTableModel @ 455 NONAME
 	_ZTV16QSqlCachedResult @ 456 NONAME
 	_ZTV16QSqlDriverPlugin @ 457 NONAME
-	_ZTV17QSqlDriverPrivate @ 458 NONAME
-	_ZTV21QSqlQueryModelPrivate @ 459 NONAME
-	_ZTV21QSqlTableModelPrivate @ 460 NONAME
+	_ZTV17QSqlDriverPrivate @ 458 NONAME ABSENT
+	_ZTV21QSqlQueryModelPrivate @ 459 NONAME ABSENT
+	_ZTV21QSqlTableModelPrivate @ 460 NONAME ABSENT
 	_ZTV24QSqlRelationalTableModel @ 461 NONAME
-	_ZTV31QSqlRelationalTableModelPrivate @ 462 NONAME
+	_ZTV31QSqlRelationalTableModelPrivate @ 462 NONAME ABSENT
 	_ZThn8_N16QSqlDriverPluginD0Ev @ 463 NONAME
 	_ZThn8_N16QSqlDriverPluginD1Ev @ 464 NONAME
 	_Zls6QDebugRK10QSqlRecord @ 465 NONAME
 	_Zls6QDebugRK12QSqlDatabase @ 466 NONAME
 	_Zls6QDebugRK9QSqlError @ 467 NONAME
 	_Zls6QDebugRK9QSqlField @ 468 NONAME
+	_ZN10QSqlDriver27setNumericalPrecisionPolicyEN4QSql24NumericalPrecisionPolicyE @ 469 NONAME
+	_ZN12QSqlDatabase27setNumericalPrecisionPolicyEN4QSql24NumericalPrecisionPolicyE @ 470 NONAME
+	_ZN16QSqlCachedResult12virtual_hookEiPv @ 471 NONAME
+	_ZNK10QSqlDriver24numericalPrecisionPolicyEv @ 472 NONAME
+	_ZNK10QSqlResult24numericalPrecisionPolicyEv @ 473 NONAME
+	_ZNK12QSqlDatabase24numericalPrecisionPolicyEv @ 474 NONAME
 
