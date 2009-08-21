@@ -69,42 +69,35 @@ QWidgetPrivate *qt_widget_private(QWidget *widget);
     On some platform like Windows it's necessary to provide a non-null widget
     as \a parent to get native gesture support.
 */
-QPanGesture::QPanGesture(QWidget *parent)
-    : QGesture(*new QPanGesturePrivate, parent)
+QPanGesture::QPanGesture(QWidget *gestureTarget, QObject *parent)
+    : QGesture(*new QPanGesturePrivate, gestureTarget, parent)
 {
-    if (parent) {
-        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-        qAppPriv->widgetGestures[parent].pan = this;
+}
+
+void QPanGesturePrivate::setupGestureTarget(QObject *newGestureTarget)
+{
+    Q_Q(QPanGesture);
+    if (gestureTarget && gestureTarget->isWidgetType()) {
+        QWidget *w = static_cast<QWidget*>(gestureTarget.data());
+        QApplicationPrivate::instance()->widgetGestures[w].pan = 0;
 #ifdef Q_WS_WIN
-        qt_widget_private(parent)->winSetupGestures();
+        qt_widget_private(w)->winSetupGestures();
 #endif
     }
+
+    if (newGestureTarget && newGestureTarget->isWidgetType()) {
+        QWidget *w = static_cast<QWidget*>(newGestureTarget);
+        QApplicationPrivate::instance()->widgetGestures[w].pan = q;
+#ifdef Q_WS_WIN
+        qt_widget_private(w)->winSetupGestures();
+#endif
+    }
+    QGesturePrivate::setupGestureTarget(newGestureTarget);
 }
 
 /*! \internal */
 bool QPanGesture::event(QEvent *event)
 {
-    switch (event->type()) {
-    case QEvent::ParentAboutToChange:
-        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
-            QApplicationPrivate::instance()->widgetGestures[w].pan = 0;
-#ifdef Q_WS_WIN
-            qt_widget_private(w)->winSetupGestures();
-#endif
-        }
-        break;
-    case QEvent::ParentChange:
-        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
-            QApplicationPrivate::instance()->widgetGestures[w].pan = this;
-#ifdef Q_WS_WIN
-            qt_widget_private(w)->winSetupGestures();
-#endif
-        }
-        break;
-    default:
-        break;
-    }
-
 #if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
     Q_D(QPanGesture);
     if (event->type() == QEvent::Timer) {
@@ -289,41 +282,35 @@ QSize QPanGesture::lastOffset() const
     On some platform like Windows it's necessary to provide a non-null widget
     as \a parent to get native gesture support.
 */
-QPinchGesture::QPinchGesture(QWidget *parent)
-    : QGesture(*new QPinchGesturePrivate, parent)
+QPinchGesture::QPinchGesture(QWidget *gestureTarget, QObject *parent)
+    : QGesture(*new QPinchGesturePrivate, gestureTarget, parent)
 {
-    if (parent) {
-        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-        qAppPriv->widgetGestures[parent].pinch = this;
+}
+
+void QPinchGesturePrivate::setupGestureTarget(QObject *newGestureTarget)
+{
+    Q_Q(QPinchGesture);
+    if (gestureTarget && gestureTarget->isWidgetType()) {
+        QWidget *w = static_cast<QWidget*>(gestureTarget.data());
+        QApplicationPrivate::instance()->widgetGestures[w].pinch = 0;
 #ifdef Q_WS_WIN
-        qt_widget_private(parent)->winSetupGestures();
+        qt_widget_private(w)->winSetupGestures();
 #endif
     }
+
+    if (newGestureTarget && newGestureTarget->isWidgetType()) {
+        QWidget *w = static_cast<QWidget*>(newGestureTarget);
+        QApplicationPrivate::instance()->widgetGestures[w].pinch = q;
+#ifdef Q_WS_WIN
+        qt_widget_private(w)->winSetupGestures();
+#endif
+    }
+    QGesturePrivate::setupGestureTarget(newGestureTarget);
 }
 
 /*! \internal */
 bool QPinchGesture::event(QEvent *event)
 {
-    switch (event->type()) {
-    case QEvent::ParentAboutToChange:
-        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
-            QApplicationPrivate::instance()->widgetGestures[w].pinch = 0;
-#ifdef Q_WS_WIN
-            qt_widget_private(w)->winSetupGestures();
-#endif
-        }
-        break;
-    case QEvent::ParentChange:
-        if (QWidget *w = qobject_cast<QWidget*>(parent())) {
-            QApplicationPrivate::instance()->widgetGestures[w].pinch = this;
-#ifdef Q_WS_WIN
-            qt_widget_private(w)->winSetupGestures();
-#endif
-        }
-        break;
-    default:
-        break;
-    }
     return QObject::event(event);
 }
 
@@ -400,6 +387,7 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
 #endif
     return QGesture::eventFilter(receiver, event);
 }
+
 
 /*! \internal */
 bool QPinchGesture::filterEvent(QEvent *event)
