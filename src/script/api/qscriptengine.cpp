@@ -791,7 +791,7 @@ static QScriptValue __setupPackage__(QScriptContext *ctx, QScriptEngine *eng)
 } // namespace QScript
 
 QScriptEnginePrivate::QScriptEnginePrivate()
-    : registeredScriptValues(0), inEval(false)
+    : registeredScriptValues(0), freeScriptValues(0), inEval(false)
 {
     qMetaTypeId<QScriptValue>();
 
@@ -836,6 +836,11 @@ QScriptEnginePrivate::QScriptEnginePrivate()
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
+    while (freeScriptValues) {
+        QScriptValuePrivate *p = freeScriptValues;
+        freeScriptValues = p->next;
+        qFree(p);
+    }
     while (!ownedAgents.isEmpty())
         delete ownedAgents.takeFirst();
     detachAllRegisteredScriptValues();
@@ -851,7 +856,7 @@ QScriptValue QScriptEnginePrivate::scriptValueFromJSCValue(JSC::JSValue value)
     if (!value)
         return QScriptValue();
 
-    QScriptValuePrivate *p_value = new QScriptValuePrivate();
+    QScriptValuePrivate *p_value = new (this)QScriptValuePrivate();
     p_value->engine = this;
     p_value->initFrom(value);
     return QScriptValuePrivate::toPublic(p_value);
@@ -1361,6 +1366,22 @@ bool QScriptEnginePrivate::scriptDisconnect(JSC::JSValue signal, JSC::JSValue re
 }
 
 #endif
+
+QScriptValuePrivate *QScriptEnginePrivate::allocateScriptValuePrivate(size_t size)
+{
+    if (freeScriptValues) {
+        QScriptValuePrivate *p = freeScriptValues;
+        freeScriptValues = p->next;
+        return p;
+    }
+    return reinterpret_cast<QScriptValuePrivate*>(qMalloc(size));
+}
+
+void QScriptEnginePrivate::freeScriptValuePrivate(QScriptValuePrivate *p)
+{
+    p->next = freeScriptValues;
+    freeScriptValues = p;
+}
 
 void QScriptEnginePrivate::registerScriptValue(QScriptValuePrivate *value)
 {

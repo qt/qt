@@ -210,6 +210,9 @@ public:
     bool scriptDisconnect(JSC::JSValue signal, JSC::JSValue receiver,
                           JSC::JSValue function);
 
+    QScriptValuePrivate *allocateScriptValuePrivate(size_t);
+    void freeScriptValuePrivate(QScriptValuePrivate *p);
+
     void registerScriptValue(QScriptValuePrivate *value);
     void unregisterScriptValue(QScriptValuePrivate *value);
     void detachAllRegisteredScriptValues();
@@ -237,6 +240,7 @@ public:
     QScriptEngineAgent *activeAgent;
     int agentLineNumber;
     QScriptValuePrivate *registeredScriptValues;
+    QScriptValuePrivate *freeScriptValues;
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;
     QScriptValue abortResult;

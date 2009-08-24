@@ -406,6 +406,22 @@ void QScriptValuePrivate::detachFromEngine()
     engine = 0;
 }
 
+void* QScriptValuePrivate::operator new(size_t size, QScriptEnginePrivate *engine)
+{
+    if (engine)
+        return engine->allocateScriptValuePrivate(size);
+    return qMalloc(size);
+}
+
+void QScriptValuePrivate::operator delete(void *ptr)
+{
+    QScriptValuePrivate *d = reinterpret_cast<QScriptValuePrivate*>(ptr);
+    if (d->engine)
+        d->engine->freeScriptValuePrivate(d);
+    else
+        qFree(d);
+}
+
 /*!
   Constructs an invalid QScriptValue.
 */
@@ -440,7 +456,7 @@ QScriptValue::QScriptValue(const QScriptValue &other)
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, QScriptValue::SpecialValue value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate)
 {
     d_ptr->engine = QScriptEnginePrivate::get(engine);
     switch (value) {
@@ -462,7 +478,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, QScriptValue::SpecialValue val
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, bool val)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate)
 {
     d_ptr->engine = QScriptEnginePrivate::get(engine);
     d_ptr->initFrom(JSC::jsBoolean(val));
@@ -476,7 +492,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, bool val)
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, int val)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate)
 {
     d_ptr->engine = QScriptEnginePrivate::get(engine);
     if (engine) {
@@ -499,7 +515,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, int val)
   registers it with the script \a engine.
  */
 QScriptValue::QScriptValue(QScriptEngine *engine, uint val)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate)
 {
     d_ptr->engine = QScriptEnginePrivate::get(engine);
     if (engine) {
@@ -522,7 +538,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, uint val)
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, qsreal val)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate)
 {
     d_ptr->engine = QScriptEnginePrivate::get(engine);
     if (engine) {
@@ -545,7 +561,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, qsreal val)
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, const QString &val)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate)
 {
     d_ptr->engine = QScriptEnginePrivate::get(engine);
     if (engine) {
@@ -566,7 +582,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, const QString &val)
 
 #ifndef QT_NO_CAST_FROM_ASCII
 QScriptValue::QScriptValue(QScriptEngine *engine, const char *val)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate)
 {
     d_ptr->engine = QScriptEnginePrivate::get(engine);
     if (engine) {
@@ -584,7 +600,7 @@ QScriptValue::QScriptValue(QScriptEngine *engine, const char *val)
   Constructs a new QScriptValue with a special \a value.
 */
 QScriptValue::QScriptValue(SpecialValue value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate)
 {
     d_ptr->engine = 0;
     switch (value) {
@@ -603,7 +619,7 @@ QScriptValue::QScriptValue(SpecialValue value)
   Constructs a new QScriptValue with a boolean \a value.
 */
 QScriptValue::QScriptValue(bool value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate)
 {
     d_ptr->engine = 0;
     d_ptr->initFrom(JSC::jsBoolean(value));
@@ -615,7 +631,7 @@ QScriptValue::QScriptValue(bool value)
   Constructs a new QScriptValue with a number \a value.
 */
 QScriptValue::QScriptValue(int value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate)
 {
     d_ptr->engine = 0;
     JSC::JSValue immediate = JSC::JSImmediate::from(value);
@@ -631,7 +647,7 @@ QScriptValue::QScriptValue(int value)
   Constructs a new QScriptValue with a number \a value.
 */
 QScriptValue::QScriptValue(uint value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate)
 {
     d_ptr->engine = 0;
     JSC::JSValue immediate = JSC::JSImmediate::from(value);
@@ -647,7 +663,7 @@ QScriptValue::QScriptValue(uint value)
   Constructs a new QScriptValue with a number \a value.
 */
 QScriptValue::QScriptValue(qsreal value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate)
 {
     d_ptr->engine = 0;
     JSC::JSValue immediate = JSC::JSImmediate::from(value);
@@ -663,7 +679,7 @@ QScriptValue::QScriptValue(qsreal value)
   Constructs a new QScriptValue with a string \a value.
 */
 QScriptValue::QScriptValue(const QString &value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate)
 {
     d_ptr->engine = 0;
     d_ptr->initFrom(value);
@@ -675,7 +691,7 @@ QScriptValue::QScriptValue(const QString &value)
   Constructs a new QScriptValue with a string \a value.
 */
 QScriptValue::QScriptValue(const QLatin1String &value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate)
 {
     d_ptr->engine = 0;
     d_ptr->initFrom(value);
@@ -689,7 +705,7 @@ QScriptValue::QScriptValue(const QLatin1String &value)
 
 #ifndef QT_NO_CAST_FROM_ASCII
 QScriptValue::QScriptValue(const char *value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate)
 {
     d_ptr->engine = 0;
     d_ptr->initFrom(QString::fromAscii(value));
