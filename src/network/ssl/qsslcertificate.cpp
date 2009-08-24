@@ -381,7 +381,7 @@ QMultiMap<QSsl::AlternateNameEntryType, QString> QSslCertificate::alternateSubje
             }
 
             const char *altNameStr = reinterpret_cast<const char *>(q_ASN1_STRING_data(genName->d.ia5));
-            const QString altName = QLatin1String(QByteArray(altNameStr, len));
+            const QString altName = QString::fromLatin1(altNameStr, len);
             if (genName->type == GEN_DNS)
                 result.insert(QSsl::DnsEntry, altName);
             else if (genName->type == GEN_EMAIL)

@@ -107,7 +107,7 @@ QListData::Data *QListData::detach2()
     Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + x->alloc * sizeof(void *)));
     Q_CHECK_PTR(t);
 
-    ::memcpy(x, d, DataHeaderSize + d->alloc * sizeof(void *));
+    ::memcpy(t, d, DataHeaderSize + d->alloc * sizeof(void *));
 
     t->ref = 1;
     t->sharable = true;
