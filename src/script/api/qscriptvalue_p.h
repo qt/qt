@@ -77,24 +77,24 @@ public:
         String
     };
 
-    QScriptValuePrivate(QScriptEnginePrivate*);
-    ~QScriptValuePrivate();
+    inline QScriptValuePrivate(QScriptEnginePrivate*);
+    inline ~QScriptValuePrivate();
 
-    void initFrom(JSC::JSValue value);
-    void initFrom(double value);
-    void initFrom(const QString &value);
+    inline void initFrom(JSC::JSValue value);
+    inline void initFrom(double value);
+    inline void initFrom(const QString &value);
 
-    bool isJSC() const;
+    inline bool isJSC() const;
 
     QVariant &variantValue() const;
     void setVariantValue(const QVariant &value);
 
-    static QScriptValuePrivate *get(const QScriptValue &q)
+    static inline QScriptValuePrivate *get(const QScriptValue &q)
     {
         return q.d_ptr.data();
     }
 
-    static QScriptValue toPublic(QScriptValuePrivate *d)
+    static inline QScriptValue toPublic(QScriptValuePrivate *d)
     {
         QScriptValue tmp;
         tmp.d_ptr = d;
@@ -103,7 +103,7 @@ public:
 
     QScriptValue property(const JSC::Identifier &id, int resolveMode) const;
     QScriptValue property(quint32 index, int resolveMode) const;
-    QScriptValue property(const QString &, int resolveMode) const;
+    inline QScriptValue property(const QString &, int resolveMode) const;
 
     void detachFromEngine();
 
@@ -131,6 +131,18 @@ public:
     QBasicAtomicInt ref;
 };
 
+inline QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate *e)
+    : engine(e), prev(0), next(0)
+{
+    ref = 0;
+}
+
+inline bool QScriptValuePrivate::isJSC() const
+{
+    return (type == JSC);
+}
+
+// Rest of inline functions implemented in qscriptengine_p.h
 
 QT_END_NAMESPACE
 

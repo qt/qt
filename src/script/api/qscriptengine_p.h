@@ -57,6 +57,7 @@
 
 #include <QtCore/qhash.h>
 #include <QtCore/qset.h>
+#include "qscriptvalue_p.h"
 
 #include "RefPtr.h"
 #include "Structure.h"
@@ -79,7 +80,6 @@ class QString;
 class QStringList;
 class QScriptContext;
 class QScriptValue;
-class QScriptValuePrivate;
 class QScriptTypeInfo;
 class QScriptEngineAgent;
 class QScriptEnginePrivate;
@@ -120,8 +120,8 @@ public:
     QScriptValue create(int type, const void *ptr);
     bool hasDemarshalFunction(int type) const;
 
-    QScriptValue scriptValueFromJSCValue(JSC::JSValue value);
-    JSC::JSValue scriptValueToJSCValue(const QScriptValue &value);
+    inline QScriptValue scriptValueFromJSCValue(JSC::JSValue value);
+    inline JSC::JSValue scriptValueToJSCValue(const QScriptValue &value);
 
     QScriptValue scriptValueFromVariant(const QVariant &value);
     QVariant scriptValueToVariant(const QScriptValue &value, int targetType);
@@ -210,11 +210,11 @@ public:
     bool scriptDisconnect(JSC::JSValue signal, JSC::JSValue receiver,
                           JSC::JSValue function);
 
-    QScriptValuePrivate *allocateScriptValuePrivate(size_t);
-    void freeScriptValuePrivate(QScriptValuePrivate *p);
+    inline QScriptValuePrivate *allocateScriptValuePrivate(size_t);
+    inline void freeScriptValuePrivate(QScriptValuePrivate *p);
 
-    void registerScriptValue(QScriptValuePrivate *value);
-    void unregisterScriptValue(QScriptValuePrivate *value);
+    inline void registerScriptValue(QScriptValuePrivate *value);
+    inline void unregisterScriptValue(QScriptValuePrivate *value);
     void detachAllRegisteredScriptValues();
 
     // private slots
@@ -257,6 +257,110 @@ public:
     QScriptEngine *q_ptr;
 #endif
 };
+
+inline QScriptValuePrivate *QScriptEnginePrivate::allocateScriptValuePrivate(size_t size)
+{
+    if (freeScriptValues) {
+        QScriptValuePrivate *p = freeScriptValues;
+        freeScriptValues = p->next;
+        return p;
+    }
+    return reinterpret_cast<QScriptValuePrivate*>(qMalloc(size));
+}
+
+inline void QScriptEnginePrivate::freeScriptValuePrivate(QScriptValuePrivate *p)
+{
+    p->next = freeScriptValues;
+    freeScriptValues = p;
+}
+
+inline void QScriptEnginePrivate::registerScriptValue(QScriptValuePrivate *value)
+{
+    value->prev = 0;
+    value->next = registeredScriptValues;
+    if (registeredScriptValues)
+        registeredScriptValues->prev = value;
+    registeredScriptValues = value;
+}
+
+inline void QScriptEnginePrivate::unregisterScriptValue(QScriptValuePrivate *value)
+{
+    if (value->prev)
+        value->prev->next = value->next;
+    if (value->next)
+        value->next->prev = value->prev;
+    if (value == registeredScriptValues)
+        registeredScriptValues = value->next;
+    value->prev = 0;
+    value->next = 0;
+}
+
+inline QScriptValue QScriptEnginePrivate::scriptValueFromJSCValue(JSC::JSValue value)
+{
+    if (!value)
+        return QScriptValue();
+
+    QScriptValuePrivate *p_value = new (this)QScriptValuePrivate(this);
+    p_value->initFrom(value);
+    return QScriptValuePrivate::toPublic(p_value);
+}
+
+inline JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptValue &value)
+{
+    QScriptValuePrivate *vv = QScriptValuePrivate::get(value);
+    if (!vv)
+        return JSC::JSValue();
+    if (vv->type != QScriptValuePrivate::JSC) {
+        Q_ASSERT(!vv->engine || vv->engine == this);
+        vv->engine = this;
+        if (vv->type == QScriptValuePrivate::Number) {
+            vv->initFrom(JSC::jsNumber(currentFrame, vv->numberValue));
+        } else { //QScriptValuePrivate::String
+            vv->initFrom(JSC::jsString(currentFrame, vv->stringValue));
+        }
+    }
+    return vv->jscValue;
+}
+
+inline QScriptValuePrivate::~QScriptValuePrivate()
+{
+    if (engine)
+        engine->unregisterScriptValue(this);
+}
+
+inline void QScriptValuePrivate::initFrom(JSC::JSValue value)
+{
+    if (value.isCell()) {
+        Q_ASSERT(engine != 0);
+        value = engine->toUsableValue(value);
+    }
+    type = JSC;
+    jscValue = value;
+    if (engine)
+        engine->registerScriptValue(this);
+}
+
+inline void QScriptValuePrivate::initFrom(double value)
+{
+    type = Number;
+    numberValue = value;
+    if (engine)
+        engine->registerScriptValue(this);
+}
+
+inline void QScriptValuePrivate::initFrom(const QString &value)
+{
+    type = String;
+    stringValue = value;
+    if (engine)
+        engine->registerScriptValue(this);
+}
+
+inline QScriptValue QScriptValuePrivate::property(const QString &name, int resolveMode) const
+{
+    JSC::ExecState *exec = engine->currentFrame;
+    return property(JSC::Identifier(exec, name), resolveMode);
+}
 
 QT_END_NAMESPACE
 

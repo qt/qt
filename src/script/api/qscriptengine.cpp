@@ -851,33 +851,6 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     globalData->deref();
 }
 
-QScriptValue QScriptEnginePrivate::scriptValueFromJSCValue(JSC::JSValue value)
-{
-    if (!value)
-        return QScriptValue();
-
-    QScriptValuePrivate *p_value = new (this)QScriptValuePrivate(this);
-    p_value->initFrom(value);
-    return QScriptValuePrivate::toPublic(p_value);
-}
-
-JSC::JSValue QScriptEnginePrivate::scriptValueToJSCValue(const QScriptValue &value)
-{
-    QScriptValuePrivate *vv = QScriptValuePrivate::get(value);
-    if (!vv)
-        return JSC::JSValue();
-    if (vv->type != QScriptValuePrivate::JSC) {
-        Q_ASSERT(!vv->engine || vv->engine == this);
-        vv->engine = this;
-        if (vv->type == QScriptValuePrivate::Number) {
-            vv->initFrom(JSC::jsNumber(currentFrame, vv->numberValue));
-        } else { //QScriptValuePrivate::String
-            vv->initFrom(JSC::jsString(currentFrame, vv->stringValue));
-        }
-    }
-    return vv->jscValue;
-}
-
 QScriptValue QScriptEnginePrivate::scriptValueFromVariant(const QVariant &v)
 {
     Q_Q(QScriptEngine);
@@ -1365,43 +1338,6 @@ bool QScriptEnginePrivate::scriptDisconnect(JSC::JSValue signal, JSC::JSValue re
 }
 
 #endif
-
-QScriptValuePrivate *QScriptEnginePrivate::allocateScriptValuePrivate(size_t size)
-{
-    if (freeScriptValues) {
-        QScriptValuePrivate *p = freeScriptValues;
-        freeScriptValues = p->next;
-        return p;
-    }
-    return reinterpret_cast<QScriptValuePrivate*>(qMalloc(size));
-}
-
-void QScriptEnginePrivate::freeScriptValuePrivate(QScriptValuePrivate *p)
-{
-    p->next = freeScriptValues;
-    freeScriptValues = p;
-}
-
-void QScriptEnginePrivate::registerScriptValue(QScriptValuePrivate *value)
-{
-    value->prev = 0;
-    value->next = registeredScriptValues;
-    if (registeredScriptValues)
-        registeredScriptValues->prev = value;
-    registeredScriptValues = value;
-}
-
-void QScriptEnginePrivate::unregisterScriptValue(QScriptValuePrivate *value)
-{
-    if (value->prev)
-        value->prev->next = value->next;
-    if (value->next)
-        value->next->prev = value->prev;
-    if (value == registeredScriptValues)
-        registeredScriptValues = value->next;
-    value->prev = 0;
-    value->next = 0;
-}
 
 void QScriptEnginePrivate::detachAllRegisteredScriptValues()
 {

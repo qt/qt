@@ -276,59 +276,6 @@ qsreal ToInteger(qsreal n)
 
 } // namespace QScript
 
-QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate *e)
-    : engine(e), prev(0), next(0)
-{
-    ref = 0;
-}
-
-QScriptValuePrivate::~QScriptValuePrivate()
-{
-    if (engine)
-        engine->unregisterScriptValue(this);
-}
-
-void QScriptValuePrivate::initFrom(JSC::JSValue value)
-{
-    if (value.isCell()) {
-        Q_ASSERT(engine != 0);
-        value = engine->toUsableValue(value);
-        JSC::JSCell *cell = JSC::asCell(value);
-        Q_ASSERT(cell != engine->originalGlobalObject());
-    }
-    type = JSC;
-    jscValue = value;
-    if (engine)
-        engine->registerScriptValue(this);
-}
-
-void QScriptValuePrivate::initFrom(double value)
-{
-    type = Number;
-    numberValue = value;
-    if (engine)
-        engine->registerScriptValue(this);
-}
-
-void QScriptValuePrivate::initFrom(const QString &value)
-{
-    type = String;
-    stringValue = value;
-    if (engine)
-        engine->registerScriptValue(this);
-}
-
-bool QScriptValuePrivate::isJSC() const
-{
-    return (type == JSC);
-}
-
-QScriptValue QScriptValuePrivate::property(const QString &name, int resolveMode) const
-{
-    JSC::ExecState *exec = engine->currentFrame;
-    return property(JSC::Identifier(exec, name), resolveMode);
-}
-
 QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolveMode) const
 {
     Q_ASSERT(isJSC());
