@@ -72,7 +72,8 @@ QT_BEGIN_NAMESPACE
 /*!
   \internal
 */
-QScriptStringPrivate::QScriptStringPrivate()
+QScriptStringPrivate::QScriptStringPrivate(QScriptEngine *e, const JSC::Identifier &id)
+    : engine(e), identifier(id)
 {
     ref = 0;
 }
@@ -87,12 +88,11 @@ QScriptStringPrivate::~QScriptStringPrivate()
 /*!
   \internal
 */
-void QScriptStringPrivate::init(QScriptString &q, QScriptEngine *engine, const JSC::Identifier &value)
+void QScriptStringPrivate::init(QScriptString &q, QScriptEngine *engine,
+                                const JSC::Identifier &value)
 {
     Q_ASSERT(!q.isValid());
-    q.d_ptr = new QScriptStringPrivate();
-    q.d_ptr->identifier = value;
-    q.d_ptr->engine = engine;
+    q.d_ptr = new QScriptStringPrivate(engine, value);
 }
 
 /*!

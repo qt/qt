@@ -69,10 +69,10 @@ class QScriptEngine;
 class QScriptStringPrivate
 {
 public:
-    QScriptStringPrivate();
+    QScriptStringPrivate(QScriptEngine *engine, const JSC::Identifier &id);
     ~QScriptStringPrivate();
 
-    static void init(QScriptString &q, QScriptEngine *engine, const JSC::Identifier &value);
+    static void init(QScriptString &q, QScriptEngine *engine, const JSC::Identifier &id);
 
     QBasicAtomicInt ref;
 #ifndef QT_NO_QOBJECT
