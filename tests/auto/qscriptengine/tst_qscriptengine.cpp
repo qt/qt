@@ -1518,15 +1518,29 @@ static QScriptValue eval_nested(QScriptContext *ctx, QScriptEngine *eng)
 void tst_QScriptEngine::nestedEvaluate()
 {
     QScriptEngine eng;
-    eng.globalObject().setProperty("fun", eng.newFunction(eval_nested));
-    QScriptValue result = eng.evaluate("o = { id:'foo'}; o.fun = fun; o.fun()");
-    QCOMPARE(result.property("local_bar").toString(), QString("local"));
-    QCOMPARE(result.property("thisObjectIdBefore").toString(), QString("foo"));
-    QCOMPARE(result.property("thisObjectIdAfter").toString(), QString("foo"));
-    QCOMPARE(result.property("evaluatedThisObjectId").toString(), QString("foo"));
-    QScriptValue bar = eng.evaluate("bar");
-    QVERIFY(bar.isError());
-    QCOMPARE(bar.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bar"));
+    QScriptValue fun = eng.newFunction(eval_nested);
+    eng.globalObject().setProperty("fun", fun);
+    {
+        QScriptValue result = eng.evaluate("o = { id:'foo'}; o.fun = fun; o.fun()");
+        QCOMPARE(result.property("local_bar").toString(), QString("local"));
+        QCOMPARE(result.property("thisObjectIdBefore").toString(), QString("foo"));
+        QCOMPARE(result.property("thisObjectIdAfter").toString(), QString("foo"));
+        QCOMPARE(result.property("evaluatedThisObjectId").toString(), QString("foo"));
+        QScriptValue bar = eng.evaluate("bar");
+        QVERIFY(bar.isError());
+        QCOMPARE(bar.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bar"));
+    }
+
+    {
+        QScriptValue result = fun.call(eng.evaluate("p = { id:'foo' }") , QScriptValueList() );
+        QCOMPARE(result.property("local_bar").toString(), QString("local"));
+        QCOMPARE(result.property("thisObjectIdBefore").toString(), QString("foo"));
+        QCOMPARE(result.property("thisObjectIdAfter").toString(), QString("foo"));
+        QCOMPARE(result.property("evaluatedThisObjectId").toString(), QString("foo"));
+        QScriptValue bar = eng.evaluate("bar");
+        QVERIFY(bar.isError());
+        QCOMPARE(bar.toString(), QString::fromLatin1("ReferenceError: Can't find variable: bar"));
+    }
 }
 
 void tst_QScriptEngine::uncaughtException()

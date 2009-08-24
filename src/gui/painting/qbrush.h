@@ -137,13 +137,13 @@ private:
     friend bool Q_GUI_EXPORT qHasPixmapTexture(const QBrush& brush);
     void detach(Qt::BrushStyle newStyle);
     void init(const QColor &color, Qt::BrushStyle bs);
-    QCustomScopedPointer<QBrushData, QBrushDataPointerDeleter> d;
+    QScopedPointer<QBrushData, QBrushDataPointerDeleter> d;
     void cleanUp(QBrushData *x);
 
 public:
     inline bool isDetached() const;
-    typedef QBrushData * DataPtr;
-    inline DataPtr &data_ptr() { return d.data_ptr(); }
+    typedef QScopedPointer<QBrushData, QBrushDataPointerDeleter> DataPtr;
+    inline DataPtr &data_ptr() { return d; }
 };
 
 inline void QBrush::setColor(Qt::GlobalColor acolor)

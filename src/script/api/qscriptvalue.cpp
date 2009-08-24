@@ -1936,7 +1936,6 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
                  "a different engine");
         return QScriptValue();
     }
-    engine()->currentContext()->activationObject(); //force the creation of a context for native function;
 
     JSC::ExecState *exec = d->engine->currentFrame;
 
@@ -2011,7 +2010,6 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
                  "a different engine");
         return QScriptValue();
     }
-    engine()->currentContext()->activationObject(); //force the creation of a context for native function;
 
     JSC::ExecState *exec = d->engine->currentFrame;
 
@@ -2077,7 +2075,6 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
     Q_D(const QScriptValue);
     if (!isFunction())
         return QScriptValue();
-    engine()->currentContext()->activationObject(); //force the creation of a context for native function;
     JSC::ExecState *exec = d->engine->currentFrame;
 
     QVector<JSC::JSValue> argsVector;
@@ -2125,7 +2122,6 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
     Q_D(QScriptValue);
     if (!isFunction())
         return QScriptValue();
-    engine()->currentContext()->activationObject(); //force the creation of a context for native function;
     JSC::ExecState *exec = d->engine->currentFrame;
 
     JSC::JSValue array = d->engine->scriptValueToJSCValue(arguments);
