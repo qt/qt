@@ -128,8 +128,8 @@ namespace QPatternist
         class BasicNodeData
         {
         public:
+            /* No need to initialize the members. See AccelTreeBuilder. */
             inline BasicNodeData()
-                : m_parent(0), m_size(0), m_depth(0), m_kind(0)
             {
             }
 
