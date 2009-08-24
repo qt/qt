@@ -76,7 +76,7 @@ namespace Phonon
         class VolumeMemInputPin : public QMemInputPin
         {
         public:
-            VolumeMemInputPin(QBaseFilter *parent, const QVector<AM_MEDIA_TYPE> &mt) : QMemInputPin(parent, mt, true /*transform*/)
+            VolumeMemInputPin(QBaseFilter *parent, const QVector<AM_MEDIA_TYPE> &mt, QPin *output) : QMemInputPin(parent, mt, true /*transform*/, output)
             {
             }
 
@@ -139,8 +139,7 @@ namespace Phonon
 
             //then creating the input
             mt << audioMediaType();
-            m_input = new VolumeMemInputPin(this, mt);
-            m_input->addOutput(m_output); //make the connection here
+            m_input = new VolumeMemInputPin(this, mt, m_output);
         }
 
         void VolumeEffectFilter::treatOneSamplePerChannel(BYTE **buffer, int sampleSize, int channelCount, int frequency)

@@ -86,7 +86,7 @@ namespace Phonon
         protected:
             //this can be used by sub-classes
             mutable QMutex m_mutex;
-            QBaseFilter *m_parent;
+            QBaseFilter * const m_parent;
             bool m_flushing;
 
         private:
