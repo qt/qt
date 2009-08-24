@@ -81,7 +81,7 @@ public:
     void deleteFromBinding();
 };
 
-class ActionEvent 
+class ActionEvent
 {
 public:
     virtual ~ActionEvent();
@@ -126,7 +126,7 @@ class Q_DECLARATIVE_EXPORT QmlState : public QObject
 
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(QmlBinding *when READ when WRITE setWhen)
-    Q_PROPERTY(QString extends READ extends WRITE setExtends)
+    Q_PROPERTY(QString extend READ extends WRITE setExtends)
     Q_PROPERTY(QmlList<QmlStateOperation *>* changes READ changes)
     Q_CLASSINFO("DefaultProperty", "changes")
 
@@ -137,7 +137,7 @@ public:
     QString name() const;
     void setName(const QString &);
 
-    /*'when' is a QmlBinding to limit state changes oscillation 
+    /*'when' is a QmlBinding to limit state changes oscillation
      due to the unpredictable order of evaluation of bound expressions*/
     bool isWhenKnown() const;
     QmlBinding *when() const;
