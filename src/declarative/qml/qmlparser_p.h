@@ -115,6 +115,11 @@ namespace QmlParser
         int type;
         // The url of this object if it is an external type.  Used by the DOM
         QUrl url;
+
+        // version information if type is defined in library or C++
+        int majorVersion;
+        int minorVersion;
+
         // The fully-qualified name of this type
         QByteArray typeName;
         // The class name

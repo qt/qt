@@ -1,5 +1,5 @@
-import Test 1.0
-MyContainer {
-    FailingComponent {}
-}
+import Qt 4.6
 
+Object {
+    a: 10
+}

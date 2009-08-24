@@ -1,6 +1,7 @@
 import Qt 4.6
 
 Item {
+    id: Root
     property real value : 0
 
     width: 210; height: 210
@@ -26,9 +27,10 @@ Item {
             origin.x: 7; origin.y: 65
             angle: -130
             angle: Follow {
+id: MyFollow
                 spring: 1.4
                 damping: .15
-                source: Math.min(Math.max(-130, value*2.2 - 130), 133)
+                source: Math.min(Math.max(-130, Root.value*2.2 - 130), 133)
             }
         }
     }
