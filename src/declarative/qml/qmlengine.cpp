@@ -71,6 +71,7 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdir.h>
+#include <QtGui/qvector3d.h>
 #include <qmlcomponent.h>
 #include "private/qmlcomponentjs_p.h"
 #include "private/qmlmetaproperty_p.h"
@@ -727,10 +728,7 @@ QScriptValue QmlEnginePrivate::vector(QScriptContext *ctxt, QScriptEngine *engin
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
     qsreal z = ctxt->argument(2).toNumber();
-    QString s = QString::number(x) + QLatin1Char(',') +
-                QString::number(y) + QLatin1Char(',') +
-                QString::number(z);
-    return QScriptValue(s);
+    return engine->newVariant(qVariantFromValue(QVector3D(x, y, z)));
 }
 
 QmlScriptClass::QmlScriptClass(QmlEngine *bindengine)
