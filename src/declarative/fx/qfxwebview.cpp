@@ -783,6 +783,27 @@ void QFxWebView::keyReleaseEvent(QKeyEvent* event)
         QFxPaintedItem::keyReleaseEvent(event);
 }
 
+bool QFxWebView::sceneEvent(QEvent *event) 
+{ 
+    Q_D(const QFxWebView); 
+
+    if (d->interactive) { 
+        if (event->type() == QEvent::KeyPress) { 
+            QKeyEvent *k = static_cast<QKeyEvent *>(event); 
+            if (k->key() == Qt::Key_Tab || k->key() == Qt::Key_Backtab) { 
+                if (!(k->modifiers() & (Qt::ControlModifier | Qt::AltModifier))) { //### Add MetaModifier? 
+                    page()->event(event); 
+                    if (event->isAccepted()) 
+                        return true; 
+                } 
+            } 
+        } 
+    }
+    return QFxPaintedItem::sceneEvent(event); 
+} 
+
+
+
 /*!
     \qmlproperty action WebView::back
     This property holds the action for causing the previous URL in the history to be displayed.
