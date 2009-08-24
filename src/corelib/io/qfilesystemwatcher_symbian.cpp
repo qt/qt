@@ -51,22 +51,17 @@
 
 QT_BEGIN_NAMESPACE
 
-CNotifyChangeEvent* CNotifyChangeEvent::New(RFs &fs, const TDesC& file,
-        QSymbianFileSystemWatcherEngine* e, bool aIsDir)
-{
-    CNotifyChangeEvent* self = new CNotifyChangeEvent(fs, file, e, aIsDir);
-    return self;
-}
-
-CNotifyChangeEvent::CNotifyChangeEvent(RFs &fs, const TDesC& file,
-    QSymbianFileSystemWatcherEngine* e, bool aIsDir, TInt aPriority) :
+QNotifyChangeEvent::QNotifyChangeEvent(RFs &fs, const TDesC &file,
+                                       QSymbianFileSystemWatcherEngine *e, bool aIsDir,
+									   TInt aPriority) :
         CActive(aPriority),
         isDir(aIsDir),
         fsSession(fs),
         watchedPath(file),
-        engine(e)
+        engine(e),
+        failureCount(0)
 {
-    if(isDir) {
+    if (isDir) {
         fsSession.NotifyChange(ENotifyEntry, iStatus, file);
     } else {
         fsSession.NotifyChange(ENotifyAll, iStatus, file);
@@ -75,33 +70,43 @@ CNotifyChangeEvent::CNotifyChangeEvent(RFs &fs, const TDesC& file,
     SetActive();
 }
 
-CNotifyChangeEvent::~CNotifyChangeEvent()
+QNotifyChangeEvent::~QNotifyChangeEvent()
 {
     Cancel();
 }
 
-void CNotifyChangeEvent::RunL()
+void QNotifyChangeEvent::RunL()
 {
-    if (iStatus.Int() == KErrNone) {
-        if(isDir) {
+    if(iStatus.Int() == KErrNone) {
+        failureCount = 0;
+    } else {
+        qWarning("QNotifyChangeEvent::RunL() - Failed to order change notifications: %d", iStatus.Int());
+        failureCount++;
+    }
+
+    // Re-request failed notification once, but if it won't start working,
+    // we can't do much besides just not request any more notifications.
+    if (failureCount < 2) {
+        if (isDir) {
             fsSession.NotifyChange(ENotifyEntry, iStatus, watchedPath);
         } else {
             fsSession.NotifyChange(ENotifyAll, iStatus, watchedPath);
         }
         SetActive();
-        QT_TRYCATCH_LEAVING(engine->emitPathChanged(this));
-    } else {
-        qWarning("CNotifyChangeEvent::RunL() - Failed to order change notifications: %d", iStatus.Int());
+
+        if (!failureCount) {
+            QT_TRYCATCH_LEAVING(engine->emitPathChanged(this));
+        }
     }
 }
 
-void CNotifyChangeEvent::DoCancel()
+void QNotifyChangeEvent::DoCancel()
 {
     fsSession.NotifyChangeCancel(iStatus);
 }
 
 QSymbianFileSystemWatcherEngine::QSymbianFileSystemWatcherEngine() :
-    watcherStarted(false)
+        watcherStarted(false)
 {
     moveToThread(this);
 }
@@ -111,8 +116,8 @@ QSymbianFileSystemWatcherEngine::~QSymbianFileSystemWatcherEngine()
     stop();
 }
 
-QStringList QSymbianFileSystemWatcherEngine::addPaths(const QStringList &paths,
-        QStringList *files, QStringList *directories)
+QStringList QSymbianFileSystemWatcherEngine::addPaths(const QStringList &paths, QStringList *files,
+        QStringList *directories)
 {
     QMutexLocker locker(&mutex);
     QStringList p = paths;
@@ -141,15 +146,15 @@ QStringList QSymbianFileSystemWatcherEngine::addPaths(const QStringList &paths,
 
         // Use absolute filepath as relative paths seem to have some issues.
         QString filePath = fi.absoluteFilePath();
-        if(isDir && filePath.at(filePath.size()-1) != QChar(L'/')) {
+        if (isDir && filePath.at(filePath.size() - 1) != QChar(L'/')) {
             filePath += QChar(L'/');
         }
 
         currentEvent = NULL;
         QMetaObject::invokeMethod(this,
-                "addNativeListener",
-                Qt::QueuedConnection,
-                Q_ARG(QString, filePath));
+                                  "addNativeListener",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(QString, filePath));
 
         syncCondition.wait(&mutex);
 
@@ -160,9 +165,9 @@ QStringList QSymbianFileSystemWatcherEngine::addPaths(const QStringList &paths,
             it.remove();
 
             if (isDir)
-                 directories->append(path);
-             else
-                 files->append(path);
+                directories->append(path);
+            else
+                files->append(path);
         }
     }
 
@@ -170,7 +175,8 @@ QStringList QSymbianFileSystemWatcherEngine::addPaths(const QStringList &paths,
 }
 
 QStringList QSymbianFileSystemWatcherEngine::removePaths(const QStringList &paths,
-        QStringList *files, QStringList *directories)
+                                                         QStringList *files,
+                                                         QStringList *directories)
 {
     QMutexLocker locker(&mutex);
 
@@ -185,8 +191,8 @@ QStringList QSymbianFileSystemWatcherEngine::removePaths(const QStringList &path
         activeObjectToPath.remove(currentEvent);
 
         QMetaObject::invokeMethod(this,
-                "removeNativeListener",
-                Qt::QueuedConnection);
+                                  "removeNativeListener",
+                                  Qt::QueuedConnection);
 
         syncCondition.wait(&mutex);
 
@@ -202,18 +208,17 @@ QStringList QSymbianFileSystemWatcherEngine::removePaths(const QStringList &path
     return p;
 }
 
-void QSymbianFileSystemWatcherEngine::emitPathChanged(CNotifyChangeEvent *e)
+void QSymbianFileSystemWatcherEngine::emitPathChanged(QNotifyChangeEvent *e)
 {
     QMutexLocker locker(&mutex);
 
     QString path = activeObjectToPath.value(e);
     QFileInfo fi(path);
 
-    if (e->isDir) {
+    if (e->isDir)
         emit directoryChanged(path, !fi.exists());
-    } else {
+    else
         emit fileChanged(path, !fi.exists());
-    }
 }
 
 void QSymbianFileSystemWatcherEngine::stop()
@@ -228,9 +233,7 @@ bool QSymbianFileSystemWatcherEngine::startWatcher()
     bool retval = true;
 
     if (!watcherStarted) {
-#if defined(Q_OS_SYMBIAN)
         setStackSize(0x5000);
-#endif
         start();
         syncCondition.wait(&mutex);
 
@@ -255,7 +258,7 @@ void QSymbianFileSystemWatcherEngine::run()
     if (errorCode == KErrNone) {
         exec();
 
-        foreach(CNotifyChangeEvent* e, activeObjectToPath.keys()) {
+        foreach(QNotifyChangeEvent *e, activeObjectToPath.keys()) {
             e->Cancel();
             delete e;
         }
@@ -270,7 +273,7 @@ void QSymbianFileSystemWatcherEngine::addNativeListener(const QString &directory
     QMutexLocker locker(&mutex);
     QString nativeDir(QDir::toNativeSeparators(directoryPath));
     TPtrC ptr(qt_QString2TPtrC(nativeDir));
-    currentEvent = CNotifyChangeEvent::New(qt_s60GetRFs(), ptr, this, directoryPath.endsWith(QChar(L'/'), Qt::CaseSensitive));
+    currentEvent = new QNotifyChangeEvent(qt_s60GetRFs(), ptr, this, directoryPath.endsWith(QChar(L'/'), Qt::CaseSensitive));
     syncCondition.wakeOne();
 }
 

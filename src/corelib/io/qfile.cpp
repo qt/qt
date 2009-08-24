@@ -739,7 +739,7 @@ QFile::rename(const QString &newName)
                 if (error) {
                     out.remove();
                 } else {
-					fileEngine()->setFileName(newName);
+                    fileEngine()->setFileName(newName);
                     setPermissions(permissions());
                     unsetError();
                     setFileName(newName);

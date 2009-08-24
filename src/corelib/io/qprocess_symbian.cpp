@@ -100,15 +100,15 @@ class QProcessManager;
 
 
 // Active object to listen for child process death
-class CProcessActive : public CActive
+class QProcessActive : public CActive
 {
 public:
-    static CProcessActive* construct(QProcess* process,
-                               RProcess** proc,
-                               int serial,
-                               int deathPipe);
+    static QProcessActive *construct(QProcess *process,
+                                     RProcess **proc,
+                                     int serial,
+                                     int deathPipe);
 
-    virtual ~CProcessActive();
+    virtual ~QProcessActive();
 
     void start();
     void stop();
@@ -117,32 +117,32 @@ public:
 
 protected:
 
-    // From CActive
+    // Inherited from CActive
     void RunL();
     TInt RunError(TInt aError);
     void DoCancel();
 
-    CProcessActive();
+    QProcessActive();
 
 private:
 
-    QProcess* process;
-    RProcess** pproc;
+    QProcess *process;
+    RProcess **pproc;
     int serial;
     int deathPipe;
     bool errorValue;
 };
 
 // Active object to communicate synchronously with process manager thread
-class CProcessManagerMediator : public CActive
+class QProcessManagerMediator : public CActive
 {
 public:
-    static CProcessManagerMediator* construct();
+    static QProcessManagerMediator *construct();
 
-    virtual ~CProcessManagerMediator();
+    virtual ~QProcessManagerMediator();
 
-    bool add(CProcessActive* processObserver);
-    void remove(CProcessActive* processObserver);
+    bool add(QProcessActive *processObserver);
+    void remove(QProcessActive *processObserver);
     void terminate();
 
 protected:
@@ -154,23 +154,28 @@ protected:
         ETerminate
     };
 
-    // From CActive
+    // Inherited from CActive
     void RunL();
     TInt RunError(TInt aError);
     void DoCancel();
 
-    CProcessManagerMediator();
+    QProcessManagerMediator();
 
-    bool notify(CProcessActive* processObserver, Commands command);
+    bool notify(QProcessActive *processObserver, Commands command);
 
 private:
-    CProcessActive* currentObserver;
+    QProcessActive *currentObserver;
     Commands currentCommand;
 
     RThread processManagerThread;
 };
 
-// Process manager manages child process death listeners
+// Process manager manages child process death listeners.
+//
+// Note: Because QProcess can be used outside event loop, we cannot be guaranteed
+// an active scheduler exists for us to add our process death listener objects.
+// We can't just install active scheduler on the calling thread, as that would block it
+// if we want to actually use it, so a separate manager thread is required.
 class QProcessManager
 {
 public:
@@ -179,50 +184,55 @@ public:
 
     void startThread();
 
-    TInt run(void* param);
+    TInt run(void *param);
     bool add(QProcess *process);
     void remove(QProcess *process);
 
-    inline void setMediator(CProcessManagerMediator* newMediator) {mediator = newMediator;};
+    inline void setMediator(QProcessManagerMediator *newMediator) {
+        mediator = newMediator;
+    };
 
 private:
-    inline void lock() {managerMutex.Wait();};
-    inline void unlock() {managerMutex.Signal();};
+    inline void lock() {
+        managerMutex.Wait();
+    };
+    inline void unlock() {
+        managerMutex.Signal();
+    };
 
-    QMap<int, CProcessActive *> children;
-    CProcessManagerMediator* mediator;
+    QMap<int, QProcessActive *> children;
+    QProcessManagerMediator *mediator;
     RMutex managerMutex;
     bool threadStarted;
     RThread managerThread;
 };
 
-static bool qt_rprocess_running(RProcess* proc)
+static bool qt_rprocess_running(RProcess *proc)
 {
-    if(proc && proc->Handle()) {
+    if (proc && proc->Handle()) {
         TExitType et = proc->ExitType();
-        if (et == EExitPending) {
+        if (et == EExitPending)
             return true;
-        }
     }
 
     return false;
 }
 
-static void qt_create_symbian_commandline(const QStringList &arguments, QString& commandLine)
+static void qt_create_symbian_commandline(const QStringList &arguments, QString &commandLine)
 {
-    for (int i=0; i<arguments.size(); ++i) {
+    for (int i = 0; i < arguments.size(); ++i) {
         QString tmp = arguments.at(i);
         // in the case of \" already being in the string the \ must also be escaped
-        tmp.replace( QLatin1String("\\\""), QLatin1String("\\\\\"") );
+        tmp.replace(QLatin1String("\\\""), QLatin1String("\\\\\""));
         // escape a single " because the arguments will be parsed
-        tmp.replace( QLatin1String("\""), QLatin1String("\\\"") );
+        tmp.replace(QLatin1String("\""), QLatin1String("\\\""));
         if (tmp.isEmpty() || tmp.contains(QLatin1Char(' ')) || tmp.contains(QLatin1Char('\t'))) {
             // The argument must not end with a \ since this would be interpreted
             // as escaping the quote -- rather put the \ behind the quote: e.g.
             // rather use "foo"\ than "foo\"
             QString endQuote(QLatin1String("\""));
             int i = tmp.length();
-            while (i>0 && tmp.at(i-1) == QLatin1Char('\\')) {
+            while (i > 0 && tmp.at(i - 1) == QLatin1Char('\\')) {
                 --i;
                 endQuote += QLatin1String("\\");
             }
@@ -235,12 +245,11 @@ static void qt_create_symbian_commandline(const QStringList &arguments, QString&
 
 static TInt qt_create_symbian_process(RProcess **proc, const QString &programName, const QStringList &arguments)
 {
-    RProcess* newProc = NULL;
+    RProcess *newProc = NULL;
     newProc = new RProcess();
 
-    if (!newProc) {
+    if (!newProc)
         return KErrNoMemory;
-    }
 
     QString commandLine;
     qt_create_symbian_commandline(arguments, commandLine);
@@ -250,31 +259,32 @@ static TInt qt_create_symbian_process(RProcess **proc, const QString &programNam
 
     TInt err = newProc->Create(program_ptr, cmdline_ptr);
 
-    if (err == KErrNotFound){
+    if (err == KErrNotFound) {
         // Strip path from program name and try again (i.e. try from default location "\sys\bin")
         int index = programName.lastIndexOf(QChar('\\'));
         int index2 = programName.lastIndexOf(QChar('/'));
         index = qMax(index, index2);
 
-        if(index != -1 && programName.length() >= index){
+        if (index != -1 && programName.length() >= index) {
             QString strippedName;
-            strippedName = programName.mid(index+1);
-            QPROCESS_DEBUG_PRINT("qt_create_symbian_process() Process '%s' not found, try stripped version '%s'", qPrintable(programName), qPrintable(strippedName));
+            strippedName = programName.mid(index + 1);
+            QPROCESS_DEBUG_PRINT("qt_create_symbian_process() Executable '%s' not found, trying stripped version '%s'",
+                                 qPrintable(programName), qPrintable(strippedName));
 
             TPtrC stripped_ptr(reinterpret_cast<const TText*>(strippedName.constData()));
             err = newProc->Create(stripped_ptr, cmdline_ptr);
 
             if (err != KErrNone) {
-                QPROCESS_DEBUG_PRINT("qt_create_symbian_process() Unable to create process '%s': %d", qPrintable(strippedName), err);
+                QPROCESS_DEBUG_PRINT("qt_create_symbian_process() Unable to create process '%s': %d",
+                                     qPrintable(strippedName), err);
             }
         }
     }
 
-    if (err == KErrNone) {
+    if (err == KErrNone)
         *proc = newProc;
-    } else {
+    else
         delete newProc;
-    }
 
     return err;
 }
@@ -326,19 +336,19 @@ static void qt_create_pipe(int *pipe)
 }
 
 // Called from ProcessManagerThread
-CProcessActive* CProcessActive::construct(QProcess* process,
-                                          RProcess** proc,
+QProcessActive *QProcessActive::construct(QProcess *process,
+                                          RProcess **proc,
                                           int serial,
                                           int deathPipe)
 {
     QPROCESS_ASSERT((process || proc || *proc),
-        EProcessActiveNullParameter,
-        "CProcessActive::construct(): process (0x%x), proc (0x%x) or *proc == NULL, not creating an instance", process, proc)
+                    EProcessActiveNullParameter,
+                    "QProcessActive::construct(): process (0x%x), proc (0x%x) or *proc == NULL, not creating an instance", process, proc)
 
-    CProcessActive*  newInstance = new CProcessActive();
+    QProcessActive *newInstance = new QProcessActive();
 
     if (!newInstance) {
-        QPROCESS_DEBUG_PRINT("CProcessActive::construct(): Failed to create new instance");
+        QPROCESS_DEBUG_PRINT("QProcessActive::construct(): Failed to create new instance");
     } else {
         newInstance->process = process;
         newInstance->pproc = proc;
@@ -351,29 +361,29 @@ CProcessActive* CProcessActive::construct(QProcess* process,
 }
 
 // Called from ProcessManagerThread
-CProcessActive::CProcessActive()
-    : CActive(CActive::EPriorityStandard)
+QProcessActive::QProcessActive()
+        : CActive(CActive::EPriorityStandard)
 {
     // Nothing to do
 }
 
 // Called from ProcessManagerThread
-CProcessActive::~CProcessActive()
+QProcessActive::~QProcessActive()
 {
     process = NULL;
     pproc = NULL;
 }
 
 // Called from ProcessManagerThread
-void CProcessActive::start()
+void QProcessActive::start()
 {
     if (qt_rprocess_running(*pproc)) {
         CActiveScheduler::Add(this);
         (*pproc)->Logon(iStatus);
         SetActive();
-        QPROCESS_DEBUG_PRINT("CProcessActive::start(): Started monitoring for process exit.");
+        QPROCESS_DEBUG_PRINT("QProcessActive::start(): Started monitoring for process exit.");
     } else {
-        QPROCESS_DEBUG_PRINT("CProcessActive::start(): Process doesn't exist or is already dead");
+        QPROCESS_DEBUG_PRINT("QProcessActive::start(): Process doesn't exist or is already dead");
         // Assume process has already died
         qt_native_write(deathPipe, "", 1);
         errorValue = true;
@@ -381,56 +391,56 @@ void CProcessActive::start()
 }
 
 // Called from ProcessManagerThread
-void CProcessActive::stop()
+void QProcessActive::stop()
 {
-    QPROCESS_DEBUG_PRINT("CProcessActive::stop()");
+    QPROCESS_DEBUG_PRINT("QProcessActive::stop()");
 
     // Remove this from scheduler (also cancels the request)
     Deque();
 }
 
-bool CProcessActive::error()
+bool QProcessActive::error()
 {
     return errorValue;
 }
 
 // Called from ProcessManagerThread
-void CProcessActive::RunL()
+void QProcessActive::RunL()
 {
     // If this method gets executed, the monitored process has died
 
     // Notify main thread
     qt_native_write(deathPipe, "", 1);
-    QPROCESS_DEBUG_PRINT("CProcessActive::RunL() sending death notice to %d", deathPipe);
+    QPROCESS_DEBUG_PRINT("QProcessActive::RunL() sending death notice to %d", deathPipe);
 }
 
 // Called from ProcessManagerThread
-TInt CProcessActive::RunError(TInt aError)
+TInt QProcessActive::RunError(TInt aError)
 {
     Q_UNUSED(aError);
     // Handle RunL leave (should never happen)
-    QPROCESS_ASSERT(0, EProcessActiveRunError, "CProcessActive::RunError(): Should never get here!")
+    QPROCESS_ASSERT(0, EProcessActiveRunError, "QProcessActive::RunError(): Should never get here!")
     return 0;
 }
 
 // Called from ProcessManagerThread
-void CProcessActive::DoCancel()
+void QProcessActive::DoCancel()
 {
-    QPROCESS_DEBUG_PRINT("CProcessActive::DoCancel()");
+    QPROCESS_DEBUG_PRINT("QProcessActive::DoCancel()");
 
     if (qt_rprocess_running(*pproc)) {
         (*pproc)->LogonCancel(iStatus);
-        QPROCESS_DEBUG_PRINT("CProcessActive::DoCancel(): Stopped monitoring for process exit.");
+        QPROCESS_DEBUG_PRINT("QProcessActive::DoCancel(): Stopped monitoring for process exit.");
     } else {
-        QPROCESS_DEBUG_PRINT("CProcessActive::DoCancel(): Process doesn't exist");
+        QPROCESS_DEBUG_PRINT("QProcessActive::DoCancel(): Process doesn't exist");
     }
 }
 
 
 // Called from ProcessManagerThread
-CProcessManagerMediator* CProcessManagerMediator::construct()
+QProcessManagerMediator *QProcessManagerMediator::construct()
 {
-    CProcessManagerMediator*  newInstance = new CProcessManagerMediator;
+    QProcessManagerMediator *newInstance = new QProcessManagerMediator;
     TInt err(KErrNone);
 
     newInstance->currentCommand = ENoCommand;
@@ -439,77 +449,77 @@ CProcessManagerMediator* CProcessManagerMediator::construct()
     if (newInstance) {
         err = newInstance->processManagerThread.Open(newInstance->processManagerThread.Id());
         QPROCESS_ASSERT((err == KErrNone),
-            EProcessManagerMediatorThreadOpenFailed,
-            "CProcessManagerMediator::construct(): Failed to open processManagerThread (err:%d)", err)
+                        EProcessManagerMediatorThreadOpenFailed,
+                        "QProcessManagerMediator::construct(): Failed to open processManagerThread (err:%d)", err)
     } else {
         QPROCESS_ASSERT(0,
-            EProcessManagerMediatorCreationFailed,
-            "CProcessManagerMediator::construct(): Failed to open construct mediator")
+                        EProcessManagerMediatorCreationFailed,
+                        "QProcessManagerMediator::construct(): Failed to open construct mediator")
     }
 
     // Activate mediator
     CActiveScheduler::Add(newInstance);
     newInstance->iStatus = KRequestPending;
     newInstance->SetActive();
-    QPROCESS_DEBUG_PRINT("CProcessManagerMediator::construct(): new instance successfully created and activated");
+    QPROCESS_DEBUG_PRINT("QProcessManagerMediator::construct(): new instance successfully created and activated");
 
     return newInstance;
 }
 
 // Called from ProcessManagerThread
-CProcessManagerMediator::CProcessManagerMediator()
-    : CActive(CActive::EPriorityStandard)
+QProcessManagerMediator::QProcessManagerMediator()
+        : CActive(CActive::EPriorityStandard)
 {
     // Nothing to do
 }
 
 // Called from ProcessManagerThread
-CProcessManagerMediator::~CProcessManagerMediator()
+QProcessManagerMediator::~QProcessManagerMediator()
 {
     processManagerThread.Close();
-	currentCommand = ENoCommand;
+    currentCommand = ENoCommand;
     currentObserver = NULL;
 }
 
 // Called from main thread
-bool CProcessManagerMediator::add(CProcessActive* processObserver)
+bool QProcessManagerMediator::add(QProcessActive *processObserver)
 {
-    QPROCESS_DEBUG_PRINT("CProcessManagerMediator::add()");
+    QPROCESS_DEBUG_PRINT("QProcessManagerMediator::add()");
     return notify(processObserver, EAdd);
 }
 
 // Called from main thread
-void CProcessManagerMediator::remove(CProcessActive* processObserver)
+void QProcessManagerMediator::remove(QProcessActive *processObserver)
 {
-    QPROCESS_DEBUG_PRINT("CProcessManagerMediator::remove()");
+    QPROCESS_DEBUG_PRINT("QProcessManagerMediator::remove()");
     notify(processObserver, ERemove);
 }
 
 // Called from main thread
-void CProcessManagerMediator::terminate()
+void QProcessManagerMediator::terminate()
 {
-    QPROCESS_DEBUG_PRINT("CProcessManagerMediator::terminate()");
+    QPROCESS_DEBUG_PRINT("QProcessManagerMediator::terminate()");
     notify(NULL, ETerminate);
 }
 
 // Called from main thread
-bool CProcessManagerMediator::notify(CProcessActive* processObserver, Commands command)
+bool QProcessManagerMediator::notify(QProcessActive *processObserver, Commands command)
 {
     bool success(true);
 
-    QPROCESS_DEBUG_PRINT("CProcessManagerMediator::Notify(): Command: %d, processObserver: 0x%x", command, processObserver);
+    QPROCESS_DEBUG_PRINT("QProcessManagerMediator::Notify(): Command: %d, processObserver: 0x%x", command, processObserver);
 
     QPROCESS_ASSERT((command == ETerminate || processObserver),
-        EProcessManagerMediatorNullObserver,
-        "CProcessManagerMediator::Notify(): NULL processObserver not allowed for command: %d", command)
+                    EProcessManagerMediatorNullObserver,
+                    "QProcessManagerMediator::Notify(): NULL processObserver not allowed for command: %d", command)
 
     QPROCESS_ASSERT(IsActive(),
-        EProcessManagerMediatorInactive,
-        "CProcessManagerMediator::Notify(): Mediator is not active!")
+                    EProcessManagerMediatorInactive,
+                    "QProcessManagerMediator::Notify(): Mediator is not active!")
 
-    QPROCESS_ASSERT(iStatus==KRequestPending,
-        EProcessManagerMediatorNotPending,
-        "CProcessManagerMediator::Notify(): Mediator request not pending!")
+    QPROCESS_ASSERT(iStatus == KRequestPending,
+                    EProcessManagerMediatorNotPending,
+                    "QProcessManagerMediator::Notify(): Mediator request not pending!")
 
     currentObserver = processObserver;
     currentCommand = command;
@@ -519,16 +529,16 @@ bool CProcessManagerMediator::notify(CProcessActive* processObserver, Commands c
     processManagerThread.Rendezvous(pmStatus);
 
     // Complete request -> RunL will run in the process manager thread
-    TRequestStatus* status = &iStatus;
+    TRequestStatus *status = &iStatus;
     processManagerThread.RequestComplete(status, command);
 
-    QPROCESS_DEBUG_PRINT("CProcessManagerMediator::Notify(): Waiting process manager to complete...");
+    QPROCESS_DEBUG_PRINT("QProcessManagerMediator::Notify(): Waiting process manager to complete...");
     User::WaitForRequest(pmStatus);
-    QPROCESS_DEBUG_PRINT("CProcessManagerMediator::Notify(): Wait over");
+    QPROCESS_DEBUG_PRINT("QProcessManagerMediator::Notify(): Wait over");
 
     if (currentObserver) {
         success = !(currentObserver->error());
-        QPROCESS_DEBUG_PRINT("CProcessManagerMediator::Notify(): success = %d", success);
+        QPROCESS_DEBUG_PRINT("QProcessManagerMediator::Notify(): success = %d", success);
     }
 
     currentObserver = NULL;
@@ -538,25 +548,25 @@ bool CProcessManagerMediator::notify(CProcessActive* processObserver, Commands c
 }
 
 // Called from ProcessManagerThread
-void CProcessManagerMediator::RunL()
+void QProcessManagerMediator::RunL()
 {
-    QPROCESS_DEBUG_PRINT("CProcessManagerMediator::RunL(): currentCommand: %d, iStatus: %d", currentCommand, iStatus.Int());
+    QPROCESS_DEBUG_PRINT("QProcessManagerMediator::RunL(): currentCommand: %d, iStatus: %d", currentCommand, iStatus.Int());
     switch (currentCommand) {
-        case EAdd:
-            currentObserver->start();
-            break;
-        case ERemove:
-            currentObserver->stop();
-            break;
-        case ETerminate:
-            Deque();
-            CActiveScheduler::Stop();
-            return;
-        default:
-            QPROCESS_ASSERT(0,
-                EProcessManagerMediatorInvalidCmd,
-                "CProcessManagerMediator::RunL(): Invalid command!")
-            break;
+    case EAdd:
+        currentObserver->start();
+        break;
+    case ERemove:
+        currentObserver->stop();
+        break;
+    case ETerminate:
+        Deque();
+        CActiveScheduler::Stop();
+        return;
+    default:
+        QPROCESS_ASSERT(0,
+                        EProcessManagerMediatorInvalidCmd,
+                        "QProcessManagerMediator::RunL(): Invalid command!")
+        break;
     }
 
     iStatus = KRequestPending;
@@ -567,44 +577,44 @@ void CProcessManagerMediator::RunL()
 }
 
 // Called from ProcessManagerThread
-TInt CProcessManagerMediator::RunError(TInt aError)
+TInt QProcessManagerMediator::RunError(TInt aError)
 {
     Q_UNUSED(aError);
     // Handle RunL leave (should never happen)
     QPROCESS_ASSERT(0,
-        EProcessManagerMediatorRunError,
-        "CProcessManagerMediator::RunError(): Should never get here!")
+                    EProcessManagerMediatorRunError,
+                    "QProcessManagerMediator::RunError(): Should never get here!")
     return 0;
 }
 
 // Called from ProcessManagerThread
-void CProcessManagerMediator::DoCancel()
+void QProcessManagerMediator::DoCancel()
 {
-    QPROCESS_DEBUG_PRINT("CProcessManagerMediator::DoCancel()");
-    TRequestStatus* status = &iStatus;
+    QPROCESS_DEBUG_PRINT("QProcessManagerMediator::DoCancel()");
+    TRequestStatus *status = &iStatus;
     processManagerThread.RequestComplete(status, KErrCancel);
 }
 
 Q_GLOBAL_STATIC(QProcessManager, processManager)
 
-TInt processManagerThreadFunction(TAny* param)
+TInt processManagerThreadFunction(TAny *param)
 {
     QPROCESS_ASSERT(param,
-        EProcessManagerNullParam,
-        "processManagerThreadFunction(): NULL param")
+                    EProcessManagerNullParam,
+                    "processManagerThreadFunction(): NULL param")
 
-    QProcessManager* manager = reinterpret_cast<QProcessManager*>(param);
+    QProcessManager *manager = reinterpret_cast<QProcessManager*>(param);
 
-    CActiveScheduler* scheduler = new CQtActiveScheduler();
+    CActiveScheduler *scheduler = new CQtActiveScheduler();
 
     QPROCESS_ASSERT(scheduler,
-        EProcessManagerSchedulerCreationFail,
-        "processManagerThreadFunction(): Scheduler creation failed")
+                    EProcessManagerSchedulerCreationFail,
+                    "processManagerThreadFunction(): Scheduler creation failed")
 
     CActiveScheduler::Install(scheduler);
 
     //Creating mediator also adds it to scheduler and activates it. Failure will panic.
-    manager->setMediator(CProcessManagerMediator::construct());
+    manager->setMediator(QProcessManagerMediator::construct());
     RThread::Rendezvous(KErrNone);
 
     CActiveScheduler::Start();
@@ -616,13 +626,13 @@ TInt processManagerThreadFunction(TAny* param)
 }
 
 QProcessManager::QProcessManager()
-    : mediator(NULL), threadStarted(false)
+        : mediator(NULL), threadStarted(false)
 {
     TInt err = managerMutex.CreateLocal();
 
     QPROCESS_ASSERT(err == KErrNone,
-        EProcessManagerMutexCreationFail,
-        "QProcessManager::QProcessManager(): Failed to create new managerMutex (err: %d)", err)
+                    EProcessManagerMutexCreationFail,
+                    "QProcessManager::QProcessManager(): Failed to create new managerMutex (err: %d)", err)
 }
 
 QProcessManager::~QProcessManager()
@@ -630,10 +640,10 @@ QProcessManager::~QProcessManager()
     QPROCESS_DEBUG_PRINT("QProcessManager::~QProcessManager()");
     // Cancel death listening for all child processes
     if (mediator) {
-        QMap<int, CProcessActive *>::Iterator it = children.begin();
+        QMap<int, QProcessActive *>::Iterator it = children.begin();
         while (it != children.end()) {
             // Remove all monitors
-            CProcessActive *active = it.value();
+            QProcessActive *active = it.value();
             mediator->remove(active);
 
             QPROCESS_DEBUG_PRINT("QProcessManager::~QProcessManager() removed listening for a process");
@@ -647,7 +657,7 @@ QProcessManager::~QProcessManager()
 
     qDeleteAll(children.values());
     children.clear();
-	managerThread.Close();
+    managerThread.Close();
     managerMutex.Close();
 }
 
@@ -664,8 +674,8 @@ void QProcessManager::startThread()
                                         EOwnerProcess);
 
         QPROCESS_ASSERT(err == KErrNone,
-            EProcessManagerThreadCreationFail,
-            "QProcessManager::startThread(): Failed to create new managerThread (err:%d)", err)
+                        EProcessManagerThreadCreationFail,
+                        "QProcessManager::startThread(): Failed to create new managerThread (err:%d)", err)
 
         threadStarted = true;
 
@@ -684,8 +694,8 @@ static QBasicAtomicInt idCounter = Q_BASIC_ATOMIC_INITIALIZER(1);
 bool QProcessManager::add(QProcess *process)
 {
     QPROCESS_ASSERT(process,
-        EProcessManagerNullParam,
-        "QProcessManager::add(): Failed to add CProcessActive to ProcessManager - NULL process")
+                    EProcessManagerNullParam,
+                    "QProcessManager::add(): Failed to add QProcessActive to ProcessManager - NULL process")
 
     lock();
 
@@ -694,19 +704,19 @@ bool QProcessManager::add(QProcess *process)
 
     QPROCESS_DEBUG_PRINT("QProcessManager::add(): serial: %d, deathPipe: %d - %d, symbianProcess: 0x%x", serial, process->d_func()->deathPipe[0], process->d_func()->deathPipe[1], process->d_func()->symbianProcess);
 
-    CProcessActive* newActive =
-        CProcessActive::construct(process,
+    QProcessActive *newActive =
+        QProcessActive::construct(process,
                                   &(process->d_func()->symbianProcess),
                                   serial,
                                   process->d_func()->deathPipe[1]);
 
-    if (newActive){
+    if (newActive) {
         if (mediator->add(newActive)) {
             children.insert(serial, newActive);
             unlock();
             return true;
         } else {
-            QPROCESS_DEBUG_PRINT("QProcessManager::add(): Failed to add CProcessActive to ProcessManager");
+            QPROCESS_DEBUG_PRINT("QProcessManager::add(): Failed to add QProcessActive to ProcessManager");
             delete newActive;
         }
     }
@@ -719,13 +729,13 @@ bool QProcessManager::add(QProcess *process)
 void QProcessManager::remove(QProcess *process)
 {
     QPROCESS_ASSERT(process,
-        EProcessManagerNullParam,
-        "QProcessManager::remove(): Failed to remove CProcessActive from ProcessManager - NULL process")
+                    EProcessManagerNullParam,
+                    "QProcessManager::remove(): Failed to remove QProcessActive from ProcessManager - NULL process")
 
     lock();
 
     int serial = process->d_func()->serial;
-    CProcessActive *active = children.value(serial);
+    QProcessActive *active = children.value(serial);
     if (!active) {
         unlock();
         return;
@@ -825,13 +835,13 @@ bool QProcessPrivate::processStarted()
 
 qint64 QProcessPrivate::bytesAvailableFromStdout() const
 {
-    // In Symbian, zero bytes are always available
+    // In Symbian, stdout is not supported
     return 0;
 }
 
 qint64 QProcessPrivate::bytesAvailableFromStderr() const
 {
-    // In Symbian, zero bytes are always available
+    // In Symbian, stderr is not supported
     return 0;
 }
 
@@ -839,7 +849,7 @@ qint64 QProcessPrivate::readFromStdout(char *data, qint64 maxlen)
 {
     Q_UNUSED(data);
     Q_UNUSED(maxlen);
-    // In Symbian, zero bytes are always read
+    // In Symbian, stdout is not supported
     return 0;
 }
 
@@ -847,7 +857,7 @@ qint64 QProcessPrivate::readFromStderr(char *data, qint64 maxlen)
 {
     Q_UNUSED(data);
     Q_UNUSED(maxlen);
-    // In Symbian, zero bytes are always read
+    // In Symbian, stderr is not supported
     return 0;
 }
 
@@ -855,14 +865,14 @@ qint64 QProcessPrivate::writeToStdin(const char *data, qint64 maxlen)
 {
     Q_UNUSED(data);
     Q_UNUSED(maxlen);
-    // In Symbian, zero bytes are always written
+    // In Symbian, stdin is not supported
     return 0;
 }
 
 void QProcessPrivate::terminateProcess()
 {
-    // Not allowed by platform security - will panic kern-exec 46 if process has been started.
-    // Works if process is not yet started.
+    // Needs PowerMgmt capability if process has been started; will panic kern-exec 46 otherwise.
+    // Always works if process is not yet started.
     if (qt_rprocess_running(symbianProcess)) {
         symbianProcess->Terminate(0);
     } else {
@@ -872,8 +882,8 @@ void QProcessPrivate::terminateProcess()
 
 void QProcessPrivate::killProcess()
 {
-    // Not allowed by platform security - will panic kern-exec 46 if process has been started.
-    // Works if process is not yet started.
+    // Needs PowerMgmt capability if process has been started; will panic kern-exec 46 otherwise.
+    // Always works if process is not yet started.
     if (qt_rprocess_running(symbianProcess)) {
         symbianProcess->Kill(0);
     } else {
@@ -926,9 +936,8 @@ bool QProcessPrivate::waitForFinished(int msecs)
         User::WaitForRequest(logonStatus, timerStatus);
         QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForFinished() - Wait completed");
 
-        if (timerStatus == KErrNone) {
+        if (timerStatus == KErrNone)
             timeoutOccurred = true;
-        }
 
         timer.Cancel();
         timer.Close();
@@ -941,11 +950,11 @@ bool QProcessPrivate::waitForFinished(int msecs)
         QPROCESS_DEBUG_PRINT("QProcessPrivate::waitForFinished(), qt_rprocess_running returned false");
     }
 
-	if (timeoutOccurred) {
-	    processError = QProcess::Timedout;
-	    q->setErrorString(QLatin1String(QT_TRANSLATE_NOOP(QProcess, "Process operation timed out")));
-	    return false;
-	}
+    if (timeoutOccurred) {
+        processError = QProcess::Timedout;
+        q->setErrorString(QLatin1String(QT_TRANSLATE_NOOP(QProcess, "Process operation timed out")));
+        return false;
+    }
 
     _q_processDied();
 
@@ -1007,14 +1016,13 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
     QPROCESS_DEBUG_PRINT("QProcessPrivate::startDetached()");
     Q_UNUSED(workingDirectory);
 
-    RProcess* newProc = NULL;
+    RProcess *newProc = NULL;
 
     TInt err = qt_create_symbian_process(&newProc, program, arguments);
 
     if (err == KErrNone) {
-        if (pid) {
+        if (pid)
             *pid = (qint64)newProc->Id();
-        }
 
         newProc->Resume();
         newProc->Close();

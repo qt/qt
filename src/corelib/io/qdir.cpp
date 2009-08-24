@@ -1930,8 +1930,7 @@ QString QDir::currentPath()
 
     Under non-Windows operating systems the \c HOME environment
     variable is used if it exists, otherwise the path returned by the
-    rootPath() function is used, except in Symbian, where c:\\data is
-    returned.
+    rootPath().
 
     \sa home(), currentPath(), rootPath(), tempPath()
 */

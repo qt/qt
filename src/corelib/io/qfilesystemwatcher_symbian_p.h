@@ -54,11 +54,12 @@
 //
 
 #include "qfilesystemwatcher_p.h"
+
+#ifndef QT_NO_FILESYSTEMWATCHER
+
 #include "qhash.h"
 #include "qmutex.h"
 #include "qwaitcondition.h"
-
-#ifndef QT_NO_FILESYSTEMWATCHER
 
 #include <e32base.h>
 #include <f32file.h>
@@ -67,14 +68,12 @@ QT_BEGIN_NAMESPACE
 
 class QSymbianFileSystemWatcherEngine;
 
-class CNotifyChangeEvent : public CActive
+class QNotifyChangeEvent : public CActive
 {
 public:
-    CNotifyChangeEvent(RFs &fsSession, const TDesC& file, QSymbianFileSystemWatcherEngine* engine,
-            bool aIsDir, TInt aPriority = EPriorityStandard);
-    ~CNotifyChangeEvent();
-    static CNotifyChangeEvent* New(RFs &fsSession, const TDesC& file,
-            QSymbianFileSystemWatcherEngine* engine, bool aIsDir);
+    QNotifyChangeEvent(RFs &fsSession, const TDesC &file, QSymbianFileSystemWatcherEngine *engine,
+                       bool aIsDir, TInt aPriority = EPriorityStandard);
+    ~QNotifyChangeEvent();
 
     bool isDir;
 
@@ -85,6 +84,8 @@ private:
     RFs &fsSession;
     TPath watchedPath;
     QSymbianFileSystemWatcherEngine *engine;
+
+    int failureCount;
 };
 
 class QSymbianFileSystemWatcherEngine : public QFileSystemWatcherEngine
@@ -95,10 +96,9 @@ public:
     QSymbianFileSystemWatcherEngine();
     ~QSymbianFileSystemWatcherEngine();
 
-    QStringList addPaths(const QStringList &paths, QStringList *files,
-            QStringList *directories);
+    QStringList addPaths(const QStringList &paths, QStringList *files, QStringList *directories);
     QStringList removePaths(const QStringList &paths, QStringList *files,
-            QStringList *directories);
+                            QStringList *directories);
 
     void stop();
 
@@ -110,17 +110,17 @@ public Q_SLOTS:
     void removeNativeListener();
 
 private:
-    friend class CNotifyChangeEvent;
-    void emitPathChanged(CNotifyChangeEvent *e);
+    friend class QNotifyChangeEvent;
+    void emitPathChanged(QNotifyChangeEvent *e);
 
     bool startWatcher();
 
-    QHash<CNotifyChangeEvent*, QString> activeObjectToPath;
+    QHash<QNotifyChangeEvent*, QString> activeObjectToPath;
     QMutex mutex;
     QWaitCondition syncCondition;
     int errorCode;
     bool watcherStarted;
-    CNotifyChangeEvent *currentEvent;
+    QNotifyChangeEvent *currentEvent;
 };
 
 #endif // QT_NO_FILESYSTEMWATCHER
