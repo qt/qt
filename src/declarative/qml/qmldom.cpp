@@ -776,6 +776,21 @@ QByteArray QmlDomObject::objectClassName() const
         return QByteArray();
 }
 
+int QmlDomObject::objectTypeMajorVersion() const
+{
+    if (d->object)
+        return d->object->majorVersion;
+    else
+        return -1;
+}
+
+int QmlDomObject::objectTypeMinorVersion() const
+{
+    if (d->object)
+        return d->object->minorVersion;
+    else
+        return -1;
+}
 
 /*!
     Returns the QML id assigned to this object, or an empty QByteArray if no id

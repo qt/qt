@@ -831,6 +831,7 @@ void QmlScriptParser::clear()
         root->release();
         root = 0;
     }
+    _imports.clear();
     qDeleteAll(_refTypes);
     _refTypes.clear();
     _errors.clear();
