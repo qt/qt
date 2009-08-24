@@ -543,7 +543,6 @@ namespace Phonon
 
         FILTER_STATE QPin::filterState() const
         {
-            QMutexLocker locker(&m_mutex);
             FILTER_STATE fstate = State_Stopped;
             m_parent->GetState(0, &fstate);
             return fstate;
