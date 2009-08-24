@@ -110,7 +110,8 @@ EOF
 linkerSupportsFlag()
 {
     lflags=-Wl
-    for flag; do
+    for flag
+    do
 	safe_flag=`shellEscape "$flag"`
 	lflags=$lflags,$safe_flag
     done
