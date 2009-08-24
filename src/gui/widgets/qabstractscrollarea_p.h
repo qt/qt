@@ -102,8 +102,8 @@ public:
     QScopedPointer<QObject> viewportFilter;
 
     virtual void _q_gestureTriggered();
-    QPanGesture *panGesture;
 #ifdef Q_WS_WIN
+    QPanGesture *panGesture;
     bool singleFingerPanEnabled;
     void setSingleFingerPanEnabled(bool on = true);
 #endif

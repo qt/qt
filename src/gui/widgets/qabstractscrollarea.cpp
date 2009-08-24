@@ -159,9 +159,9 @@ QT_BEGIN_NAMESPACE
 QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate()
     :hbar(0), vbar(0), vbarpolicy(Qt::ScrollBarAsNeeded), hbarpolicy(Qt::ScrollBarAsNeeded),
      viewport(0), cornerWidget(0), left(0), top(0), right(0), bottom(0),
-     xoffset(0), yoffset(0), viewportFilter(0), panGesture(0)
+     xoffset(0), yoffset(0), viewportFilter(0)
 #ifdef Q_WS_WIN
-     , singleFingerPanEnabled(false)
+     , panGesture(0), singleFingerPanEnabled(false)
 #endif
 {
 }
@@ -295,8 +295,10 @@ void QAbstractScrollAreaPrivate::init()
     q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layoutChildren();
 
-    panGesture = new QPanGesture(q);
+#ifdef Q_WS_WIN
+    panGesture = new QPanGesture(viewport);
     QObject::connect(panGesture, SIGNAL(triggered()), q, SLOT(_q_gestureTriggered()));
+#endif // Q_WS_WIN
 }
 
 #ifdef Q_WS_WIN
@@ -547,6 +549,9 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
         if (isVisible())
             d->viewport->show();
         QMetaObject::invokeMethod(this, "setupViewport", Q_ARG(QWidget *, widget));
+#ifdef Q_WS_WIN
+        d->panGesture->setGestureTarget(widget);
+#endif
         delete oldViewport;
     }
 }
