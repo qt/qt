@@ -76,7 +76,8 @@ public:
 };
 
 QScriptCompletionTaskPrivate::QScriptCompletionTaskPrivate()
-    : cursorPosition(0), frameIndex(0), frontend(0), console(0)
+    : cursorPosition(0), frameIndex(0), commandScheduler(0),
+      jobScheduler(0), console(0)
 {
 }
 
