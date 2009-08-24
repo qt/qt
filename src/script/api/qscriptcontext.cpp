@@ -305,8 +305,8 @@ QScriptValue QScriptContext::argumentsObject() const
 {
     JSC::CallFrame *frame = const_cast<JSC::ExecState*>(QScriptEnginePrivate::frameForContext(this));
 
-    if (frame == frame->lexicalGlobalObject()->globalExec() || frame->callerFrame()->hasHostCallFrameFlag()) {
-        // <global> or <eval> context doesn't have arguments.  return an empty object
+    if (frame == frame->lexicalGlobalObject()->globalExec()) {
+        // <global> context doesn't have arguments. return an empty object
         return QScriptEnginePrivate::get(QScript::scriptEngineFromExec(frame))->newObject();
     }
 
@@ -314,6 +314,11 @@ QScriptValue QScriptContext::argumentsObject() const
     if (frame->codeBlock() && frame->callee()) {
         JSC::JSValue result = frame->interpreter()->retrieveArguments(frame, JSC::asFunction(frame->callee()));
         return QScript::scriptEngineFromExec(frame)->scriptValueFromJSCValue(result);
+    }
+
+    if (frame->callerFrame()->hasHostCallFrameFlag()) {
+        // <eval> context doesn't have arguments. return an empty object
+        return QScriptEnginePrivate::get(QScript::scriptEngineFromExec(frame))->newObject();
     }
 
     //for a native function
