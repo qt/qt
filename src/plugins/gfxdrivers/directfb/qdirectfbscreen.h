@@ -62,6 +62,9 @@ QT_MODULE(Gui)
 #if !defined QT_DIRECTFB_IMAGEPROVIDER && !defined QT_NO_DIRECTFB_IMAGEPROVIDER
 #define QT_NO_DIRECTFB_IMAGEPROVIDER
 #endif
+#if !defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE && !defined QT_NO_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+#define QT_NO_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+#endif
 #if !defined QT_NO_DIRECTFB_PALETTE && !defined QT_DIRECTFB_PALETTE
 #define QT_DIRECTFB_PALETTE
 #endif
@@ -79,6 +82,9 @@ QT_MODULE(Gui)
 #endif
 #if defined QT_NO_DIRECTFB_LAYER && defined QT_DIRECTFB_WM
 #error QT_NO_DIRECTFB_LAYER requires QT_NO_DIRECTFB_WM
+#endif
+#if defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE && defined QT_NO_DIRECTFB_IMAGEPROVIDER
+#error QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE requires QT_DIRECTFB_IMAGEPROVIDER to be defined
 #endif
 
 #define Q_DIRECTFB_VERSION ((DIRECTFB_MAJOR_VERSION << 16) | (DIRECTFB_MINOR_VERION << 8) | DIRECTFB_MICRO_VERSION)
@@ -194,6 +200,9 @@ public:
 #endif
 
     static uchar *lockSurface(IDirectFBSurface *surface, uint flags, int *bpl = 0);
+#if defined QT_DIRECTFB_IMAGEPROVIDER && defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+    void setDirectFBImageProvider(IDirectFBImageProvider *provider);
+#endif
 private:
     QDirectFBScreenPrivate *d_ptr;
 };

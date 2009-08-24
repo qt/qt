@@ -87,6 +87,9 @@ public:
 #ifndef QT_NO_DIRECTFB_KEYBOARD
     QDirectFBKeyboardHandler *keyboard;
 #endif
+#if defined QT_DIRECTFB_IMAGEPROVIDER && defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+    IDirectFBImageProvider *imageProvider;
+#endif
     QColor backgroundColor;
     QDirectFBScreen *q;
 };
@@ -109,6 +112,9 @@ QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *qptr)
 #ifndef QT_NO_DIRECTFB_KEYBOARD
     , keyboard(0)
 #endif
+#if defined QT_DIRECTFB_IMAGEPROVIDER && defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+    , imageProvider(0)
+#endif
     , q(qptr)
 {
 #ifndef QT_NO_QWS_SIGNALHANDLER
@@ -127,6 +133,10 @@ QDirectFBScreenPrivate::~QDirectFBScreenPrivate()
 #endif
 #ifndef QT_NO_DIRECTFB_KEYBOARD
     delete keyboard;
+#endif
+#if defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+    if (imageProvider)
+        imageProvider->Release(imageProvider);
 #endif
 
     for (QSet<IDirectFBSurface*>::const_iterator it = allocatedSurfaces.begin(); it != allocatedSurfaces.end(); ++it) {
@@ -1097,6 +1107,10 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 
 void QDirectFBScreen::disconnect()
 {
+#if defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+    if (d_ptr->imageProvider)
+        d_ptr->imageProvider->Release(d_ptr->imageProvider);
+#endif
 #ifdef QT_NO_DIRECTFB_WM
     d_ptr->primarySurface->Release(d_ptr->primarySurface);
     d_ptr->primarySurface = 0;
@@ -1374,5 +1388,16 @@ void QDirectFBScreen::flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags
         }
     }
 }
+
+#if defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+void QDirectFBScreen::setDirectFBImageProvider(IDirectFBImageProvider *provider)
+{
+    Q_ASSERT(provider);
+    if (d_ptr->imageProvider)
+        d_ptr->imageProvider->Release(d_ptr->imageProvider);
+    d_ptr->imageProvider = provider;
+}
+#endif
+
 
 

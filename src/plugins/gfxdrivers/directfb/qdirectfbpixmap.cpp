@@ -237,12 +237,18 @@ bool QDirectFBPixmapData::fromDataBufferDescription(const DFBDataBufferDescripti
         return false;
     }
 
+#if defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+    IDirectFBImageProvider *provider = 0;
+#else
     QDirectFBPointer<IDirectFBImageProvider> provider;
+#endif
     if ((result = dataBuffer->CreateImageProvider(dataBuffer, &provider)) != DFB_OK) {
         DirectFBError("QDirectFBPixmapData::fromDataBufferDescription(): Can't create image provider", result);
         return false;
     }
-
+#if defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+    screen->setDirectFBImageProvider(provider);
+#endif
     DFBSurfaceDescription surfaceDescription;
     if ((result = provider->GetSurfaceDescription(provider, &surfaceDescription)) != DFB_OK) {
         DirectFBError("QDirectFBPixmapData::fromDataBufferDescription(): Can't get surface description", result);
