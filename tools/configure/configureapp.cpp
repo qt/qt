@@ -3154,7 +3154,7 @@ void Configure::displayConfig()
     cout << "QtDBus support.............." << dictionary[ "DBUS" ] << endl;
     cout << "QtXmlPatterns support......." << dictionary[ "XMLPATTERNS" ] << endl;
     cout << "Phonon support.............." << dictionary[ "PHONON" ] << endl;
-    cout << "Multimedia support.........." << dictionary[ "MULTIMEDIA" ] << endl;
+    cout << "QtMultimedia support........" << dictionary[ "MULTIMEDIA" ] << endl;
     cout << "WebKit support.............." << dictionary[ "WEBKIT" ] << endl;
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;

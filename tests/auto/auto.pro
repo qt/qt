@@ -72,6 +72,8 @@ SUBDIRS += \
            qabstractsocket \
            qabstractspinbox \
            qabstracttextdocumentlayout \
+           qabstractvideobuffer \
+           qabstractvideosurface \
            qaccessibility \
            qaction \
            qactiongroup \
@@ -368,6 +370,8 @@ SUBDIRS += \
            qvariant \
            qvarlengtharray \
            qvector \
+           qvideoframe \
+           qvideosurfaceformat \
            qvectornd \
            qwaitcondition \
            qwidget \

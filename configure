@@ -1216,7 +1216,7 @@ while [ "$#" -gt 0 ]; do
             fi
         fi
 	;;
-	    
+
     qvfb) # left for commandline compatibility, not documented
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             if [ "$VAL" = "yes" ]; then
@@ -3202,9 +3202,8 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
-        [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
+        [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
         [-no-openssl] [-openssl] [-openssl-linked]
-        [-no-multimedia] [-multimedia]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit]
         [-no-script] [-script] [-no-scripttools] [-scripttools]
 
@@ -3339,14 +3338,14 @@ fi
                          QtXmlPatterns is built if a decent C++ compiler
                          is used and exceptions are enabled.
 
+    -no-multimedia ..... Do not build the QtMultimedia module.
+ +  -multimedia ........ Build the QtMultimedia module.
+
     -no-phonon ......... Do not build the Phonon module.
  +  -phonon ............ Build the Phonon module.
                          Phonon is built if a decent C++ compiler is used.
     -no-phonon-backend.. Do not build the platform phonon plugin.
  +  -phonon-backend..... Build the platform phonon plugin.
-
-    -no-multimedia ..... Do not build the multimedia module.
- *  -multimedia ........ Build the multimedia module.
 
     -no-svg ............ Do not build the SVG module.
  +  -svg ............... Build the SVG module.
@@ -5817,7 +5816,7 @@ else
     fi
 fi;
 
-# set the global Mac deployment target. This is overridden on an arch-by-arch basis 
+# set the global Mac deployment target. This is overridden on an arch-by-arch basis
 # in some cases, see code further down
 case "$PLATFORM,$CFG_MAC_COCOA" in
     macx*,yes)
@@ -6322,6 +6321,12 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XMLPATTERNS"
 fi
 
+if [ "$CFG_MULTIMEDIA" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
+else
+    QT_CONFIG="$QT_CONFIG multimedia"
+fi
+
 if [ "$CFG_SVG" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG svg"
 else
@@ -6365,12 +6370,6 @@ if [ "$CFG_SCRIPTTOOLS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG scripttools"
 else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPTTOOLS"
-fi
-
-if [ "$CFG_MULTIMEDIA" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG multimedia"
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
 fi
 
 if [ "$CFG_EXCEPTIONS" = "no" ]; then
