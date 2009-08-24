@@ -175,5 +175,36 @@ Q_CORE_EXPORT TLibraryFunction qt_resolveS60PluginFunc(int ordinal)
     return qt_s60_plugin_resolver()->resolve(ordinal);
 }
 
+/*!
+\internal
+Provides global access to a shared RFs.
+*/
+class QS60RFsSession
+{
+public:
+    QS60RFsSession() {
+        qt_symbian_throwIfError(iFs.Connect());
+        qt_symbian_throwIfError(iFs.ShareProtected());
+    }
+
+    ~QS60RFsSession() {
+        iFs.Close();
+    }
+
+    RFs& GetRFs() {
+        return iFs;
+    }
+
+private:
+
+    RFs iFs;
+};
+
+Q_GLOBAL_STATIC(QS60RFsSession, qt_s60_RFsSession);
+
+Q_CORE_EXPORT RFs& qt_s60GetRFs()
+{
+    return qt_s60_RFsSession()->GetRFs();
+}
 
 QT_END_NAMESPACE

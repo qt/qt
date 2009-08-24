@@ -62,7 +62,6 @@
 # include <f32file.h>
 # include <pathinfo.h>
 # include "private/qcore_symbian_p.h"
-# include "private/qcoreapplication_p.h"
 #endif
 #include <errno.h>
 #if !defined(QWS) && defined(Q_OS_MAC)
@@ -405,7 +404,7 @@ bool QFSFileEngine::copy(const QString &newName)
 {
 #if defined(Q_OS_SYMBIAN)
     Q_D(QFSFileEngine);
-    RFs& rfs = QCoreApplicationPrivate::fsSession();
+    RFs rfs = qt_s60GetRFs();
     CFileMan* fm = NULL;
     QString oldNative(QDir::toNativeSeparators(d->filePath));
     TPtrC oldPtr(qt_QString2TPtrC(oldNative));
@@ -630,7 +629,7 @@ QFileInfoList QFSFileEngine::drives()
     QFileInfoList ret;
 #if defined(Q_OS_SYMBIAN)
     TDriveList driveList;
-    RFs &rfs = QCoreApplicationPrivate::fsSession();
+    RFs rfs = qt_s60GetRFs();
     TInt err = rfs.DriveList(driveList);
     if (err == KErrNone) {
         for (char i = 0; i < KMaxDrives; i++) {
@@ -682,7 +681,7 @@ bool QFSFileEnginePrivate::isSymlink() const
 static bool _q_isSymbianHidden(const QString &path, bool isDir)
 {
     bool retval = false;
-    RFs rfs = QCoreApplicationPrivate::fsSession();
+    RFs rfs = qt_s60GetRFs();
     QFileInfo fi(path);
     QString absPath = fi.absoluteFilePath();
     if (isDir && absPath.at(absPath.size()-1) != QChar('/')) {

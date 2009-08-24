@@ -90,10 +90,6 @@ public:
     static QString macMenuBarName();
 #endif
 
-#ifdef Q_OS_SYMBIAN
-    static RFs& fsSession();
-#endif
-
     static QThread *theMainThread;
     static QThread *mainThread();
     static bool checkInstance(const char *method);
@@ -126,9 +122,6 @@ public:
 
     static uint attribs;
     static inline bool testAttribute(uint flag) { return attribs & (1 << flag); }
-#ifdef Q_OS_SYMBIAN
-    static RFs fileServerSession; //this should be moved into a symbian file engine if/when one is written
-#endif
 };
 
 QT_END_NAMESPACE

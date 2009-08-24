@@ -44,7 +44,6 @@
 #include "qfileinfo.h"
 #include "qdebug.h"
 #include "private/qcore_symbian_p.h"
-#include "private/qcoreapplication_p.h"
 #include <QDir>
 
 #ifndef QT_NO_FILESYSTEMWATCHER
@@ -274,7 +273,7 @@ void QSymbianFileSystemWatcherEngine::addNativeListener(const QString &directory
     QMutexLocker locker(&mutex);
     QString nativeDir(QDir::toNativeSeparators(directoryPath));
     TPtrC ptr(qt_QString2TPtrC(nativeDir));
-    currentEvent = new QNotifyChangeEvent(QCoreApplicationPrivate::fsSession(), ptr, this, directoryPath.endsWith(QChar(L'/'), Qt::CaseSensitive));
+    currentEvent = new QNotifyChangeEvent(qt_s60GetRFs(), ptr, this, directoryPath.endsWith(QChar(L'/'), Qt::CaseSensitive));
     syncCondition.wakeOne();
 }
 

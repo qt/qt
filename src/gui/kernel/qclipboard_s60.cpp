@@ -49,7 +49,7 @@
 #include "qbuffer.h"
 #include "qwidget.h"
 #include "qevent.h"
-#include "private/qapplication_p.h"
+#include "private/qcore_symbian_p.h"
 #include <QtDebug>
 
 // Symbian's clipboard
@@ -194,7 +194,7 @@ const QMimeData* QClipboard::mimeData(Mode mode) const
     if (d)
     {
         TRAPD(err,{
-            RFs& fs = QCoreApplicationPrivate::fsSession();
+            RFs fs = qt_s60GetRFs();
             CClipboard* cb = CClipboard::NewForReadingLC(fs);
             Q_ASSERT(cb);
             RStoreReadStream stream;
@@ -220,7 +220,7 @@ void QClipboard::setMimeData(QMimeData* src, Mode mode)
     if (d)
     {
         TRAPD(err,{
-            RFs& fs = QCoreApplicationPrivate::fsSession();
+            RFs fs = qt_s60GetRFs();
             CClipboard* cb = CClipboard::NewForWritingLC(fs);
             RStoreWriteStream  stream;
             TStreamId stid = stream.CreateLC(cb->Store());
