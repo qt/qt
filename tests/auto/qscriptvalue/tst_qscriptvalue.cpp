@@ -2504,6 +2504,13 @@ void tst_QScriptValue::call()
         QScriptValue ret5 = fun.call(QScriptValue(), QScriptValue(&eng, 123.0));
         QCOMPARE(ret5.isError(), true);
     }
+
+    // calling things that are not functions
+    QVERIFY(!QScriptValue(false).call().isValid());
+    QVERIFY(!QScriptValue(123).call().isValid());
+    QVERIFY(!QScriptValue(QString::fromLatin1("ciao")).call().isValid());
+    QVERIFY(!QScriptValue(QScriptValue::UndefinedValue).call().isValid());
+    QVERIFY(!QScriptValue(QScriptValue::NullValue).call().isValid());
 }
 
 static QScriptValue ctorReturningUndefined(QScriptContext *ctx, QScriptEngine *)
@@ -2629,6 +2636,13 @@ void tst_QScriptValue::construct()
         QScriptValue ret5 = fun.construct(QScriptValue(&eng, 123.0));
         QCOMPARE(ret5.isError(), true);
     }
+
+    // construct on things that are not functions
+    QVERIFY(!QScriptValue(false).construct().isValid());
+    QVERIFY(!QScriptValue(123).construct().isValid());
+    QVERIFY(!QScriptValue(QString::fromLatin1("ciao")).construct().isValid());
+    QVERIFY(!QScriptValue(QScriptValue::UndefinedValue).construct().isValid());
+    QVERIFY(!QScriptValue(QScriptValue::NullValue).construct().isValid());
 }
 
 void tst_QScriptValue::lessThan()

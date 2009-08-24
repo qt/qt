@@ -1928,7 +1928,12 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
                                 const QScriptValueList &args)
 {
     Q_D(const QScriptValue);
-    if (!isFunction())
+    if (!d || !d->isJSC())
+        return QScriptValue();
+    JSC::JSValue callee = d->jscValue;
+    JSC::CallData callData;
+    JSC::CallType callType = callee.getCallData(callData);
+    if (callType == JSC::CallTypeNone)
         return QScriptValue();
 
     if (thisObject.engine() && (thisObject.engine() != engine())) {
@@ -1960,9 +1965,6 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     }
     JSC::ArgList jscArgs(argsVector.data(), argsVector.size());
 
-    JSC::JSValue callee = d->jscValue;
-    JSC::CallData callData;
-    JSC::CallType callType = callee.getCallData(callData);
     JSC::JSValue savedException;
     QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSValue result = JSC::call(exec, callee, callType, callData, jscThisObject, jscArgs);
@@ -2001,7 +2003,12 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
                                 const QScriptValue &arguments)
 {
     Q_D(QScriptValue);
-    if (!isFunction())
+    if (!d || !d->isJSC())
+        return QScriptValue();
+    JSC::JSValue callee = d->jscValue;
+    JSC::CallData callData;
+    JSC::CallType callType = callee.getCallData(callData);
+    if (callType == JSC::CallTypeNone)
         return QScriptValue();
 
     if (thisObject.engine() && (thisObject.engine() != engine())) {
@@ -2038,9 +2045,6 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
         }
     }
 
-    JSC::JSValue callee = d->jscValue;
-    JSC::CallData callData;
-    JSC::CallType callType = callee.getCallData(callData);
     JSC::JSValue savedException;
     QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSValue result = JSC::call(exec, callee, callType, callData, jscThisObject, applyArgs);
@@ -2073,8 +2077,14 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
 QScriptValue QScriptValue::construct(const QScriptValueList &args)
 {
     Q_D(const QScriptValue);
-    if (!isFunction())
+    if (!d || !d->isJSC())
         return QScriptValue();
+    JSC::JSValue callee = d->jscValue;
+    JSC::ConstructData constructData;
+    JSC::ConstructType constructType = callee.getConstructData(constructData);
+    if (constructType == JSC::ConstructTypeNone)
+        return QScriptValue();
+
     JSC::ExecState *exec = d->engine->currentFrame;
 
     QVarLengthArray<JSC::JSValue, 8> argsVector(args.size());
@@ -2087,9 +2097,6 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
 
     JSC::ArgList jscArgs(argsVector.data(), argsVector.size());
 
-    JSC::JSValue callee = d->jscValue;
-    JSC::ConstructData constructData;
-    JSC::ConstructType constructType = callee.getConstructData(constructData);
     JSC::JSValue savedException;
     QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSObject *result = JSC::construct(exec, callee, constructType, constructData, jscArgs);
@@ -2119,8 +2126,14 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
 QScriptValue QScriptValue::construct(const QScriptValue &arguments)
 {
     Q_D(QScriptValue);
-    if (!isFunction())
+    if (!d || !d->isJSC())
         return QScriptValue();
+    JSC::JSValue callee = d->jscValue;
+    JSC::ConstructData constructData;
+    JSC::ConstructType constructType = callee.getConstructData(constructData);
+    if (constructType == JSC::ConstructTypeNone)
+        return QScriptValue();
+
     JSC::ExecState *exec = d->engine->currentFrame;
 
     JSC::JSValue array = d->engine->scriptValueToJSCValue(arguments);
@@ -2143,9 +2156,6 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
         }
     }
 
-    JSC::JSValue callee = d->jscValue;
-    JSC::ConstructData constructData;
-    JSC::ConstructType constructType = callee.getConstructData(constructData);
     JSC::JSValue savedException;
     QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSObject *result = JSC::construct(exec, callee, constructType, constructData, applyArgs);
