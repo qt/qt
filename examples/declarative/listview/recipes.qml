@@ -37,7 +37,7 @@ Rectangle {
                 // Layout the page.  Picture, title and ingredients at the top, method at the
                 // bottom.  Note that elements that should not be visible in the list
                 // mode have their opacity set to wrapper.detailsOpacity.
-                HorizontalPositioner {
+                Row {
                     id: topLayout
                     x: 10; y: 10; height: recipePic.height; width: parent.width
                     spacing: 10
@@ -45,7 +45,7 @@ Rectangle {
                         id: recipePic
                         source: picture; width: 48; height: 48
                     }
-                    VerticalPositioner {
+                    Column {
                         height: recipePic.height; width: background.width-recipePic.width-20
                         spacing: 5
                         Text { id: name; text: title; font.bold: true; font.pointSize: 16 }

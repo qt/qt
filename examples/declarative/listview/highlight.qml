@@ -14,7 +14,7 @@ Rectangle {
         Item {
             id: Wrapper
             width: 200; height: 50
-            VerticalPositioner {
+            Column {
                 Text { text: 'Name: ' + name }
                 Text { text: 'Type: ' + type }
                 Text { text: 'Age: ' + age }

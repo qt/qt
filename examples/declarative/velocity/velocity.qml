@@ -98,7 +98,7 @@ Rectangle {
         id: Flick
         anchors.fill: parent
         viewportWidth: Lay.width
-        HorizontalPositioner {
+        Row {
             id: Lay
             Repeater {
                 dataSource: List

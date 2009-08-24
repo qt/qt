@@ -51,7 +51,7 @@ Rectangle {
         ListElement { type: "easeOutInBounce" }
     }
     
-    VerticalPositioner {
+    Column {
         id: Layout
         anchors.left: Window.left
         anchors.right: Window.right

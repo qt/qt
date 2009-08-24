@@ -5,7 +5,7 @@ Rectangle {
     width: layout.width
     height: layout.height
     color: "white"
-    GridPositioner {
+    Grid {
         id: layout
         columns: 2
         rows: 4

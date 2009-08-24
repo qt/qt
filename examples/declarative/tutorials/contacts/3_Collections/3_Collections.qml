@@ -11,7 +11,7 @@ Rectangle {
     }
     // relies on the current focus behavior whereby setting focus=true on a
     // component removes focus from any previous element
-    GridPositioner {
+    Grid {
         id: layout
         width: childrenRect.width
         height: childrenRect.height
