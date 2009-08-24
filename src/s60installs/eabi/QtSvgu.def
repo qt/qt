@@ -1,0 +1,205 @@
+EXPORTS
+	_Z22qt_inflateGZipDataFromP9QIODevice @ 1 NONAME
+	_ZN10QSvgWidget10paintEventEP11QPaintEvent @ 2 NONAME
+	_ZN10QSvgWidget11qt_metacallEN11QMetaObject4CallEiPPv @ 3 NONAME
+	_ZN10QSvgWidget11qt_metacastEPKc @ 4 NONAME
+	_ZN10QSvgWidget16staticMetaObjectE @ 5 NONAME DATA 16
+	_ZN10QSvgWidget4loadERK10QByteArray @ 6 NONAME
+	_ZN10QSvgWidget4loadERK7QString @ 7 NONAME
+	_ZN10QSvgWidgetC1EP7QWidget @ 8 NONAME
+	_ZN10QSvgWidgetC1ERK7QStringP7QWidget @ 9 NONAME
+	_ZN10QSvgWidgetC2EP7QWidget @ 10 NONAME
+	_ZN10QSvgWidgetC2ERK7QStringP7QWidget @ 11 NONAME
+	_ZN10QSvgWidgetD0Ev @ 12 NONAME
+	_ZN10QSvgWidgetD1Ev @ 13 NONAME
+	_ZN10QSvgWidgetD2Ev @ 14 NONAME
+	_ZN12QSvgRenderer10setViewBoxERK5QRect @ 15 NONAME
+	_ZN12QSvgRenderer10setViewBoxERK6QRectF @ 16 NONAME
+	_ZN12QSvgRenderer11qt_metacallEN11QMetaObject4CallEiPPv @ 17 NONAME
+	_ZN12QSvgRenderer11qt_metacastEPKc @ 18 NONAME
+	_ZN12QSvgRenderer13repaintNeededEv @ 19 NONAME
+	_ZN12QSvgRenderer15setCurrentFrameEi @ 20 NONAME
+	_ZN12QSvgRenderer16staticMetaObjectE @ 21 NONAME DATA 16
+	_ZN12QSvgRenderer18setFramesPerSecondEi @ 22 NONAME
+	_ZN12QSvgRenderer4loadEP16QXmlStreamReader @ 23 NONAME
+	_ZN12QSvgRenderer4loadERK10QByteArray @ 24 NONAME
+	_ZN12QSvgRenderer4loadERK7QString @ 25 NONAME
+	_ZN12QSvgRenderer6renderEP8QPainter @ 26 NONAME
+	_ZN12QSvgRenderer6renderEP8QPainterRK6QRectF @ 27 NONAME
+	_ZN12QSvgRenderer6renderEP8QPainterRK7QStringRK6QRectF @ 28 NONAME
+	_ZN12QSvgRendererC1EP16QXmlStreamReaderP7QObject @ 29 NONAME
+	_ZN12QSvgRendererC1EP7QObject @ 30 NONAME
+	_ZN12QSvgRendererC1ERK10QByteArrayP7QObject @ 31 NONAME
+	_ZN12QSvgRendererC1ERK7QStringP7QObject @ 32 NONAME
+	_ZN12QSvgRendererC2EP16QXmlStreamReaderP7QObject @ 33 NONAME
+	_ZN12QSvgRendererC2EP7QObject @ 34 NONAME
+	_ZN12QSvgRendererC2ERK10QByteArrayP7QObject @ 35 NONAME
+	_ZN12QSvgRendererC2ERK7QStringP7QObject @ 36 NONAME
+	_ZN12QSvgRendererD0Ev @ 37 NONAME
+	_ZN12QSvgRendererD1Ev @ 38 NONAME
+	_ZN12QSvgRendererD2Ev @ 39 NONAME
+	_ZN13QSvgGenerator10setViewBoxERK5QRect @ 40 NONAME
+	_ZN13QSvgGenerator10setViewBoxERK6QRectF @ 41 NONAME
+	_ZN13QSvgGenerator11setFileNameERK7QString @ 42 NONAME
+	_ZN13QSvgGenerator13setResolutionEi @ 43 NONAME
+	_ZN13QSvgGenerator14setDescriptionERK7QString @ 44 NONAME
+	_ZN13QSvgGenerator15setOutputDeviceEP9QIODevice @ 45 NONAME
+	_ZN13QSvgGenerator7setSizeERK5QSize @ 46 NONAME
+	_ZN13QSvgGenerator8setTitleERK7QString @ 47 NONAME
+	_ZN13QSvgGeneratorC1Ev @ 48 NONAME
+	_ZN13QSvgGeneratorC2Ev @ 49 NONAME
+	_ZN13QSvgGeneratorD0Ev @ 50 NONAME
+	_ZN13QSvgGeneratorD1Ev @ 51 NONAME
+	_ZN13QSvgGeneratorD2Ev @ 52 NONAME
+	_ZN16QGraphicsSvgItem11qt_metacallEN11QMetaObject4CallEiPPv @ 53 NONAME
+	_ZN16QGraphicsSvgItem11qt_metacastEPKc @ 54 NONAME
+	_ZN16QGraphicsSvgItem12setElementIdERK7QString @ 55 NONAME
+	_ZN16QGraphicsSvgItem16staticMetaObjectE @ 56 NONAME DATA 16
+	_ZN16QGraphicsSvgItem17setCachingEnabledEb @ 57 NONAME
+	_ZN16QGraphicsSvgItem17setSharedRendererEP12QSvgRenderer @ 58 NONAME
+	_ZN16QGraphicsSvgItem19setMaximumCacheSizeERK5QSize @ 59 NONAME
+	_ZN16QGraphicsSvgItem5paintEP8QPainterPK24QStyleOptionGraphicsItemP7QWidget @ 60 NONAME
+	_ZN16QGraphicsSvgItemC1EP13QGraphicsItem @ 61 NONAME
+	_ZN16QGraphicsSvgItemC1ERK7QStringP13QGraphicsItem @ 62 NONAME
+	_ZN16QGraphicsSvgItemC2EP13QGraphicsItem @ 63 NONAME
+	_ZN16QGraphicsSvgItemC2ERK7QStringP13QGraphicsItem @ 64 NONAME
+	_ZN16QSvgTinyDocument10addSvgFontEP8QSvgFont @ 65 NONAME
+	_ZN16QSvgTinyDocument10setViewBoxERK6QRectF @ 66 NONAME
+	_ZN16QSvgTinyDocument11setAnimatedEb @ 67 NONAME
+	_ZN16QSvgTinyDocument15setCurrentFrameEi @ 68 NONAME
+	_ZN16QSvgTinyDocument16restartAnimationEv @ 69 NONAME
+	_ZN16QSvgTinyDocument17mapSourceToTargetEP8QPainterRK6QRectFS4_ @ 70 NONAME
+	_ZN16QSvgTinyDocument18setFramesPerSecondEi @ 71 NONAME
+	_ZN16QSvgTinyDocument4drawEP8QPainter @ 72 NONAME
+	_ZN16QSvgTinyDocument4drawEP8QPainterR15QSvgExtraStates @ 73 NONAME
+	_ZN16QSvgTinyDocument4drawEP8QPainterRK6QRectF @ 74 NONAME
+	_ZN16QSvgTinyDocument4drawEP8QPainterRK7QStringRK6QRectF @ 75 NONAME
+	_ZN16QSvgTinyDocument4loadEP16QXmlStreamReader @ 76 NONAME
+	_ZN16QSvgTinyDocument4loadERK10QByteArray @ 77 NONAME
+	_ZN16QSvgTinyDocument4loadERK7QString @ 78 NONAME
+	_ZN16QSvgTinyDocument8setWidthEib @ 79 NONAME
+	_ZN16QSvgTinyDocument9setHeightEib @ 80 NONAME
+	_ZN16QSvgTinyDocumentC1Ev @ 81 NONAME
+	_ZN16QSvgTinyDocumentC2Ev @ 82 NONAME
+	_ZN16QSvgTinyDocumentD0Ev @ 83 NONAME
+	_ZN16QSvgTinyDocumentD1Ev @ 84 NONAME
+	_ZN16QSvgTinyDocumentD2Ev @ 85 NONAME
+	_ZNK10QSvgWidget10metaObjectEv @ 86 NONAME
+	_ZNK10QSvgWidget8rendererEv @ 87 NONAME
+	_ZNK10QSvgWidget8sizeHintEv @ 88 NONAME
+	_ZNK12QSvgRenderer10metaObjectEv @ 89 NONAME
+	_ZNK12QSvgRenderer11defaultSizeEv @ 90 NONAME
+	_ZNK12QSvgRenderer12currentFrameEv @ 91 NONAME
+	_ZNK12QSvgRenderer13elementExistsERK7QString @ 92 NONAME
+	_ZNK12QSvgRenderer15boundsOnElementERK7QString @ 93 NONAME
+	_ZNK12QSvgRenderer15framesPerSecondEv @ 94 NONAME
+	_ZNK12QSvgRenderer16matrixForElementERK7QString @ 95 NONAME
+	_ZNK12QSvgRenderer17animationDurationEv @ 96 NONAME
+	_ZNK12QSvgRenderer7isValidEv @ 97 NONAME
+	_ZNK12QSvgRenderer7viewBoxEv @ 98 NONAME
+	_ZNK12QSvgRenderer8animatedEv @ 99 NONAME
+	_ZNK12QSvgRenderer8viewBoxFEv @ 100 NONAME
+	_ZNK13QSvgGenerator10resolutionEv @ 101 NONAME
+	_ZNK13QSvgGenerator11descriptionEv @ 102 NONAME
+	_ZNK13QSvgGenerator11paintEngineEv @ 103 NONAME
+	_ZNK13QSvgGenerator12outputDeviceEv @ 104 NONAME
+	_ZNK13QSvgGenerator4sizeEv @ 105 NONAME
+	_ZNK13QSvgGenerator5titleEv @ 106 NONAME
+	_ZNK13QSvgGenerator6metricEN12QPaintDevice17PaintDeviceMetricE @ 107 NONAME
+	_ZNK13QSvgGenerator7viewBoxEv @ 108 NONAME
+	_ZNK13QSvgGenerator8fileNameEv @ 109 NONAME
+	_ZNK13QSvgGenerator8viewBoxFEv @ 110 NONAME
+	_ZNK16QGraphicsSvgItem10metaObjectEv @ 111 NONAME
+	_ZNK16QGraphicsSvgItem12boundingRectEv @ 112 NONAME
+	_ZNK16QGraphicsSvgItem16isCachingEnabledEv @ 113 NONAME
+	_ZNK16QGraphicsSvgItem16maximumCacheSizeEv @ 114 NONAME
+	_ZNK16QGraphicsSvgItem4typeEv @ 115 NONAME
+	_ZNK16QGraphicsSvgItem8rendererEv @ 116 NONAME
+	_ZNK16QGraphicsSvgItem9elementIdEv @ 117 NONAME
+	_ZNK16QSvgTinyDocument12currentFrameEv @ 118 NONAME
+	_ZNK16QSvgTinyDocument13elementExistsERK7QString @ 119 NONAME
+	_ZNK16QSvgTinyDocument15boundsOnElementERK7QString @ 120 NONAME
+	_ZNK16QSvgTinyDocument16matrixForElementERK7QString @ 121 NONAME
+	_ZNK16QSvgTinyDocument4typeEv @ 122 NONAME
+	_ZNK16QSvgTinyDocument7svgFontERK7QString @ 123 NONAME
+	_ZNK16QSvgTinyDocument8animatedEv @ 124 NONAME
+	_ZTI10QSvgCircle @ 125 NONAME ABSENT
+	_ZTI10QSvgSwitch @ 126 NONAME ABSENT
+	_ZTI10QSvgWidget @ 127 NONAME
+	_ZTI11QSvgEllipse @ 128 NONAME ABSENT
+	_ZTI11QSvgPolygon @ 129 NONAME ABSENT
+	_ZTI12QSvgPolyline @ 130 NONAME ABSENT
+	_ZTI12QSvgRenderer @ 131 NONAME
+	_ZTI13QSvgAnimation @ 132 NONAME ABSENT
+	_ZTI13QSvgFillStyle @ 133 NONAME ABSENT
+	_ZTI13QSvgFontStyle @ 134 NONAME ABSENT
+	_ZTI13QSvgGenerator @ 135 NONAME
+	_ZTI15QSvgCompOpStyle @ 136 NONAME ABSENT
+	_ZTI15QSvgPaintEngine @ 137 NONAME ABSENT
+	_ZTI15QSvgStrokeStyle @ 138 NONAME ABSENT
+	_ZTI16QGraphicsSvgItem @ 139 NONAME
+	_ZTI16QSvgAnimateColor @ 140 NONAME ABSENT
+	_ZTI16QSvgOpacityStyle @ 141 NONAME ABSENT
+	_ZTI16QSvgQualityStyle @ 142 NONAME ABSENT
+	_ZTI16QSvgTinyDocument @ 143 NONAME
+	_ZTI17QSvgGradientStyle @ 144 NONAME ABSENT
+	_ZTI17QSvgStructureNode @ 145 NONAME ABSENT
+	_ZTI17QSvgStyleProperty @ 146 NONAME ABSENT
+	_ZTI18QSvgTransformStyle @ 147 NONAME ABSENT
+	_ZTI19QSvgSolidColorStyle @ 148 NONAME ABSENT
+	_ZTI20QSvgAnimateTransform @ 149 NONAME ABSENT
+	_ZTI21QSvgViewportFillStyle @ 150 NONAME ABSENT
+	_ZTI5QSvgG @ 151 NONAME ABSENT
+	_ZTI7QSvgArc @ 152 NONAME ABSENT
+	_ZTI7QSvgUse @ 153 NONAME ABSENT
+	_ZTI8QSvgDefs @ 154 NONAME ABSENT
+	_ZTI8QSvgLine @ 155 NONAME ABSENT
+	_ZTI8QSvgNode @ 156 NONAME ABSENT
+	_ZTI8QSvgPath @ 157 NONAME ABSENT
+	_ZTI8QSvgRect @ 158 NONAME ABSENT
+	_ZTI8QSvgText @ 159 NONAME ABSENT
+	_ZTI9QSvgImage @ 160 NONAME ABSENT
+	_ZTI9QSvgVideo @ 161 NONAME ABSENT
+	_ZTV10QSvgCircle @ 162 NONAME ABSENT
+	_ZTV10QSvgSwitch @ 163 NONAME ABSENT
+	_ZTV10QSvgWidget @ 164 NONAME
+	_ZTV11QSvgEllipse @ 165 NONAME ABSENT
+	_ZTV11QSvgPolygon @ 166 NONAME ABSENT
+	_ZTV12QSvgPolyline @ 167 NONAME ABSENT
+	_ZTV12QSvgRenderer @ 168 NONAME
+	_ZTV13QSvgAnimation @ 169 NONAME ABSENT
+	_ZTV13QSvgFillStyle @ 170 NONAME ABSENT
+	_ZTV13QSvgFontStyle @ 171 NONAME ABSENT
+	_ZTV13QSvgGenerator @ 172 NONAME
+	_ZTV15QSvgCompOpStyle @ 173 NONAME ABSENT
+	_ZTV15QSvgPaintEngine @ 174 NONAME ABSENT
+	_ZTV15QSvgStrokeStyle @ 175 NONAME ABSENT
+	_ZTV16QGraphicsSvgItem @ 176 NONAME
+	_ZTV16QSvgAnimateColor @ 177 NONAME ABSENT
+	_ZTV16QSvgOpacityStyle @ 178 NONAME ABSENT
+	_ZTV16QSvgQualityStyle @ 179 NONAME ABSENT
+	_ZTV16QSvgTinyDocument @ 180 NONAME
+	_ZTV17QSvgGradientStyle @ 181 NONAME ABSENT
+	_ZTV17QSvgStructureNode @ 182 NONAME ABSENT
+	_ZTV17QSvgStyleProperty @ 183 NONAME ABSENT
+	_ZTV18QSvgTransformStyle @ 184 NONAME ABSENT
+	_ZTV19QSvgSolidColorStyle @ 185 NONAME ABSENT
+	_ZTV20QSvgAnimateTransform @ 186 NONAME ABSENT
+	_ZTV21QSvgViewportFillStyle @ 187 NONAME ABSENT
+	_ZTV5QSvgG @ 188 NONAME ABSENT
+	_ZTV7QSvgArc @ 189 NONAME ABSENT
+	_ZTV7QSvgUse @ 190 NONAME ABSENT
+	_ZTV8QSvgDefs @ 191 NONAME ABSENT
+	_ZTV8QSvgLine @ 192 NONAME ABSENT
+	_ZTV8QSvgNode @ 193 NONAME ABSENT
+	_ZTV8QSvgPath @ 194 NONAME ABSENT
+	_ZTV8QSvgRect @ 195 NONAME ABSENT
+	_ZTV8QSvgText @ 196 NONAME ABSENT
+	_ZTV9QSvgImage @ 197 NONAME ABSENT
+	_ZTV9QSvgVideo @ 198 NONAME ABSENT
+	_ZThn8_N10QSvgWidgetD0Ev @ 199 NONAME
+	_ZThn8_N10QSvgWidgetD1Ev @ 200 NONAME
+	_ZThn8_N16QGraphicsSvgItem5paintEP8QPainterPK24QStyleOptionGraphicsItemP7QWidget @ 201 NONAME
+	_ZThn8_NK16QGraphicsSvgItem12boundingRectEv @ 202 NONAME
+	_ZThn8_NK16QGraphicsSvgItem4typeEv @ 203 NONAME
+
