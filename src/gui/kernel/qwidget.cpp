@@ -6231,6 +6231,10 @@ bool QWidget::isActiveWindow() const
     if(qt_mac_is_macdrawer(tlw) &&
        tlw->parentWidget() && tlw->parentWidget()->isActiveWindow())
         return true;
+
+    extern bool qt_mac_insideKeyWindow(const QWidget *); //qwidget_mac.cpp
+    if (QApplication::testAttribute(Qt::AA_MacPluginApplication) && qt_mac_insideKeyWindow(tlw))
+        return true;
 #endif
     if(style()->styleHint(QStyle::SH_Widget_ShareActivation, 0, this)) {
         if(tlw->windowType() == Qt::Tool &&
