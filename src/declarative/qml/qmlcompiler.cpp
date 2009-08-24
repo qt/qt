@@ -1176,7 +1176,7 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
         }
 
         QmlType *type = 0;
-        QmlEnginePrivate::get(engine)->resolveType(unit->imports, prop->name, &type, 0);
+        QmlEnginePrivate::get(engine)->resolveType(unit->imports, prop->name, &type, 0, 0, 0);
         // 0: attached properties not supported in QML component files
 
         if (!type || !type->attachedPropertiesType())
