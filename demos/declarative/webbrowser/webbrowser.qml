@@ -6,8 +6,7 @@ import "fieldtext"
 Item {
     id: WebBrowser
 
-    //property string urlString : "http://qt.nokia.com/"
-    property string urlString : "http://www.nymphmania.com/maptest/gshow_map.php?lat=61.4979&lon=23.7635"
+    property string urlString : "http://qt.nokia.com/"
 
     state: "Normal"
 
