@@ -237,6 +237,15 @@ QT_BEGIN_NAMESPACE
     alpha-channel to feature \l {QColor#Alpha-Blended
     Drawing}{alpha-blended drawing}.
 
+    \section1 The HSL Color Model
+
+    HSL is similar to HSV. Instead of value parameter from HSV,
+    HSL has the lightness parameter.
+    The lightness parameter goes from black to color and from color to white.
+    If you go outside at the night its black or dark gray. At day its colorful but
+    if you look in a really strong light a things they are going to white and
+    wash out.
+
     \section1 The CMYK Color Model
 
     While the RGB and HSV color models are used for display on
@@ -436,6 +445,9 @@ QColor::QColor(Spec spec)
         break;
     case Cmyk:
         setCmyk(0, 0, 0, 0);
+        break;
+    case Hsl:
+        setHsl(0, 0, 0, 0);
         break;
     }
 }
@@ -675,6 +687,113 @@ void QColor::setHsv(int h, int s, int v, int a)
     ct.ahsv.saturation = s * 0x101;
     ct.ahsv.value      = v * 0x101;
     ct.ahsv.pad        = 0;
+}
+
+/*!
+    Sets the contents pointed to by \a h, \a s, \a l, and \a a, to the hue,
+    saturation, lightness, and alpha-channel (transparency) components of the
+    color's HSL value.
+
+    These components can be retrieved individually using the hueHslF(),
+    saturationHslF(), lightnessF() and alphaF() functions.
+
+    \sa setHsl()
+*/
+void QColor::getHslF(qreal *h, qreal *s, qreal *l, qreal *a) const
+{
+        if (!h || !s || !l)
+        return;
+
+    if (cspec != Invalid && cspec != Hsl) {
+        toHsl().getHslF(h, s, l, a);
+        return;
+    }
+
+    *h = ct.ahsl.hue == USHRT_MAX ? -1.0 : ct.ahsl.hue / 36000.0;
+    *s = ct.ahsl.saturation / qreal(USHRT_MAX);
+    *l = ct.ahsl.lightness / qreal(USHRT_MAX);
+
+    if (a)
+        *a = ct.ahsl.alpha / qreal(USHRT_MAX);
+}
+
+/*!
+    Sets the contents pointed to by \a h, \a s, \a l, and \a a, to the hue,
+    saturation, lightness, and alpha-channel (transparency) components of the
+    color's HSL value.
+
+    These components can be retrieved individually using the hueHsl(),
+    saturationHsl(), lightness() and alpha() functions.
+
+    \sa setHsl()
+*/
+void QColor::getHsl(int *h, int *s, int *l, int *a) const
+{
+    if (!h || !s || !l)
+        return;
+
+    if (cspec != Invalid && cspec != Hsl) {
+        toHsl().getHsl(h, s, l, a);
+        return;
+    }
+
+    *h = ct.ahsl.hue == USHRT_MAX ? -1 : ct.ahsl.hue / 100;
+    *s = ct.ahsl.saturation >> 8;
+    *l = ct.ahsl.lightness  >> 8;
+
+    if (a)
+        *a = ct.ahsl.alpha >> 8;
+}
+
+/*!
+    Sets a HSL color lightness; \a h is the hue, \a s is the saturation, \a l is
+    the lightness and \a a is the alpha component of the HSL color.
+
+    All the values must be in the range 0.0-1.0.
+
+    \sa getHslF(), setHsl()
+*/
+void QColor::setHslF(qreal h, qreal s, qreal l, qreal a)
+{
+    if (((h < 0.0 || h > 1.0) && h != -1.0)
+        || (s < 0.0 || s > 1.0)
+        || (l < 0.0 || l > 1.0)
+        || (a < 0.0 || a > 1.0)) {
+        qWarning("QColor::setHsvF: HSV parameters out of range");
+        return;
+    }
+
+    cspec = Hsl;
+    ct.ahsl.alpha      = qRound(a * USHRT_MAX);
+    ct.ahsl.hue        = h == -1.0 ? USHRT_MAX : qRound(h * 36000);
+    ct.ahsl.saturation = qRound(s * USHRT_MAX);
+    ct.ahsl.lightness  = qRound(l * USHRT_MAX);
+    ct.ahsl.pad        = 0;
+}
+
+/*!
+    Sets a HSL color value; \a h is the hue, \a s is the saturation, \a l is
+    the lightness and \a a is the alpha component of the HSL color.
+
+    The saturation, value and alpha-channel values must be in the range 0-255,
+    and the hue value must be greater than -1.
+
+    \sa getHsl(), setHslF()
+*/
+void QColor::setHsl(int h, int s, int l, int a)
+{
+    if (h < -1 || (uint)s > 255 || (uint)l > 255 || (uint)a > 255) {
+        qWarning("QColor::setHsv: HSV parameters out of range");
+        invalidate();
+        return;
+    }
+
+    cspec = Hsl;
+    ct.ahsl.alpha      = a * 0x101;
+    ct.ahsl.hue        = h == -1 ? USHRT_MAX : (h % 360) * 100;
+    ct.ahsl.saturation = s * 0x101;
+    ct.ahsl.lightness  = l * 0x101;
+    ct.ahsl.pad        = 0;
 }
 
 /*!
@@ -1082,10 +1201,24 @@ void QColor::setBlueF(qreal blue)
 /*!
     Returns the hue color component of this color.
 
+    The color is implicitly converted to HSV.
+
+    \sa hsvHue(), hueF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color
+    Model}
+*/
+
+int QColor::hue() const
+{
+    return hsvHue();
+}
+
+/*!
+    Returns the hue color component of this color.
+
     \sa hueF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color
     Model}
 */
-int QColor::hue() const
+int QColor::hsvHue() const
 {
     if (cspec != Invalid && cspec != Hsv)
         return toHsv().hue();
@@ -1095,10 +1228,24 @@ int QColor::hue() const
 /*!
     Returns the saturation color component of this color.
 
+    The color is implicitly converted to HSV.
+
+    \sa hsvSaturation(), saturationF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color
+    Model}
+*/
+
+int QColor::saturation() const
+{
+    return hsvSaturation();
+}
+
+/*!
+    Returns the saturation color component of this color.
+
     \sa saturationF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color
     Model}
 */
-int QColor::saturation() const
+int QColor::hsvSaturation() const
 {
     if (cspec != Invalid && cspec != Hsv)
         return toHsv().saturation();
@@ -1121,10 +1268,23 @@ int QColor::value() const
 /*!
     Returns the hue color component of this color.
 
-    \sa hue(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color
+    The color is implicitly converted to HSV.
+
+    \sa hsvHueF(), hue(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color
     Model}
 */
 qreal QColor::hueF() const
+{
+    return hsvHueF();
+}
+
+/*!
+    Returns the hue color component of this color.
+
+    \sa hue(), getHsvF(), {QColor#The HSV Color Model}{The HSV Color
+    Model}
+*/
+qreal QColor::hsvHueF() const
 {
     if (cspec != Invalid && cspec != Hsv)
         return toHsv().hueF();
@@ -1134,10 +1294,23 @@ qreal QColor::hueF() const
 /*!
     Returns the saturation color component of this color.
 
-    \sa saturation() getHsvF(), {QColor#The HSV Color Model}{The HSV Color
+     The color is implicitly converted to HSV.
+
+    \sa hsvSaturationF(), saturation() getHsvF(), {QColor#The HSV Color Model}{The HSV Color
     Model}
 */
 qreal QColor::saturationF() const
+{
+    return hsvSaturationF();
+}
+
+/*!
+    Returns the saturation color component of this color.
+
+    \sa saturation() getHsvF(), {QColor#The HSV Color Model}{The HSV Color
+    Model}
+*/
+qreal QColor::hsvSaturationF() const
 {
     if (cspec != Invalid && cspec != Hsv)
         return toHsv().saturationF();
@@ -1155,6 +1328,79 @@ qreal QColor::valueF() const
     if (cspec != Invalid && cspec != Hsv)
         return toHsv().valueF();
     return ct.ahsv.value / qreal(USHRT_MAX);
+}
+
+/*!
+    Returns the hue color component of this color.
+
+    \sa hueHslF(), getHsl()
+*/
+int QColor::hslHue() const
+{
+    if (cspec != Invalid && cspec != Hsl)
+        return toHsl().hslHue();
+    return ct.ahsl.hue == USHRT_MAX ? -1 : ct.ahsl.hue / 100;
+}
+
+/*!
+    Returns the saturation color component of this color.
+
+    \sa saturationF(), getHsv(), {QColor#The HSV Color Model}{The HSV Color
+    Model}
+*/
+int QColor::hslSaturation() const
+{
+    if (cspec != Invalid && cspec != Hsl)
+        return toHsl().hslSaturation();
+    return ct.ahsl.saturation >> 8;
+}
+
+/*!
+    Returns the lightness color component of this color.
+
+    \sa lightnessF(), getHsl()
+*/
+int QColor::lightness() const
+{
+    if (cspec != Invalid && cspec != Hsl)
+        return toHsl().lightness();
+    return ct.ahsl.lightness >> 8;
+}
+
+/*!
+    Returns the hue color component of this color.
+
+    \sa hue(), getHslF()
+*/
+qreal QColor::hslHueF() const
+{
+    if (cspec != Invalid && cspec != Hsl)
+        return toHsl().hslHueF();
+    return ct.ahsl.hue == USHRT_MAX ? -1.0 : ct.ahsl.hue / 36000.0;
+}
+
+/*!
+    Returns the saturation color component of this color.
+
+    \sa saturationHsl() getHslF()
+*/
+qreal QColor::hslSaturationF() const
+{
+    if (cspec != Invalid && cspec != Hsl)
+        return toHsl().hslSaturationF();
+    return ct.ahsl.saturation / qreal(USHRT_MAX);
+}
+
+/*!
+    Returns the lightness color component of this color.
+
+    \sa value() getHslF()
+*/
+qreal QColor::lightnessF() const
+{
+    if (cspec != Invalid && cspec != Hsl)
+        return toHsl().lightnessF();
+    return ct.ahsl.lightness / qreal(USHRT_MAX);
 }
 
 /*!
@@ -1337,6 +1583,53 @@ QColor QColor::toRgb() const
             }
             break;
         }
+    case Hsl:
+        {
+            if (ct.ahsl.saturation == 0 || ct.ahsl.hue == USHRT_MAX) {
+                // achromatic case
+                color.ct.argb.red = color.ct.argb.green = color.ct.argb.blue = ct.ahsl.lightness;
+            } else if (ct.ahsl.lightness == 0) {
+                // lightness 0 
+                color.ct.argb.red = color.ct.argb.green = color.ct.argb.blue = 0;
+            } else {
+                // chromatic case
+                const qreal h = ct.ahsl.hue == 36000 ? 0 : ct.ahsl.hue / 36000.;
+                const qreal s = ct.ahsl.saturation / qreal(USHRT_MAX);
+                const qreal l = ct.ahsl.lightness / qreal(USHRT_MAX);
+
+                qreal temp2;
+                if (l < qreal(0.5))
+                    temp2 = l * (qreal(1.0) + s);
+                else
+                    temp2 = l + s - (l * s);
+
+                const qreal temp1 = (qreal(2.0) * l) - temp2;
+                qreal temp3[3] = { h + (qreal(1.0) / qreal(3.0)),
+                                   h,
+                                   h - (qreal(1.0) / qreal(3.0)) };
+
+                for (int i = 0; i != 3; ++i) {
+                    if (temp3[i] < qreal(0.0))
+                        temp3[i] += qreal(1.0);
+                    else if (temp3[i] > qreal(1.0))
+                        temp3[i] -= qreal(1.0);
+
+                    const qreal sixtemp3 = temp3[i] * qreal(6.0);
+                    if (sixtemp3 < qreal(1.0))
+                        color.ct.array[i+1] = qRound((temp1 + (temp2 - temp1) * sixtemp3) * USHRT_MAX);
+                    else if ((temp3[i] * qreal(2.0)) < qreal(1.0))
+                        color.ct.array[i+1] = qRound(temp2 * USHRT_MAX);
+                    else if ((temp3[i] * qreal(3.0)) < qreal(2.0))
+                        color.ct.array[i+1] = qRound((temp1 + (temp2 -temp1) * (qreal(2.0) /qreal(3.0) - temp3[i]) * qreal(6.0)) * USHRT_MAX);
+                    else
+                        color.ct.array[i+1] = qRound(temp1 * USHRT_MAX);
+                }
+                color.ct.argb.red = color.ct.argb.red == 1 ? 0 : color.ct.argb.red;
+                color.ct.argb.green = color.ct.argb.green == 1 ? 0 : color.ct.argb.green;
+                color.ct.argb.blue = color.ct.argb.blue == 1 ? 0 : color.ct.argb.blue;
+            }
+            break;
+        }
     case Cmyk:
         {
             const qreal c = ct.acmyk.cyan / qreal(USHRT_MAX);
@@ -1414,6 +1707,62 @@ QColor QColor::toHsv() const
 }
 
 /*!
+    Creates and returns an HSL QColor based on this color.
+
+    \sa fromHsl(), convertTo(), isValid()
+*/
+QColor QColor::toHsl() const
+{
+    if (!isValid() || cspec == Hsl)
+        return *this;
+
+    if (cspec != Rgb)
+        return toRgb().toHsl();
+
+    QColor color;
+    color.cspec = Hsl;
+    color.ct.ahsl.alpha = ct.argb.alpha;
+    color.ct.ahsl.pad = 0;
+
+    const qreal r = ct.argb.red   / qreal(USHRT_MAX);
+    const qreal g = ct.argb.green / qreal(USHRT_MAX);
+    const qreal b = ct.argb.blue  / qreal(USHRT_MAX);
+    const qreal max = Q_MAX_3(r, g, b);
+    const qreal min = Q_MIN_3(r, g, b);
+    const qreal delta = max - min;
+    const qreal delta2 = max + min;
+    const qreal lightness = qreal(0.5) * delta2;
+    color.ct.ahsl.lightness = qRound(lightness * USHRT_MAX);
+    if (qFuzzyIsNull(delta)) {
+        // achromatic case, hue is undefined
+        color.ct.ahsl.hue = 0;
+        color.ct.ahsl.saturation = 0;
+    } else {
+        // chromatic case
+        qreal hue = 0;
+        if (lightness < qreal(0.5))
+            color.ct.ahsl.saturation = qRound((delta / delta2) * USHRT_MAX);
+        else
+            color.ct.ahsl.saturation = qRound((delta / (qreal(2.0) - delta2)) * USHRT_MAX);
+        if (qFuzzyCompare(r, max)) {
+            hue = ((g - b) /delta);
+        } else if (qFuzzyCompare(g, max)) {
+            hue = (2.0 + (b - r) / delta);
+        } else if (qFuzzyCompare(b, max)) {
+            hue = (4.0 + (r - g) / delta);
+        } else {
+            Q_ASSERT_X(false, "QColor::toHsv", "internal error");
+        }
+        hue *= 60.0;
+        if (hue < 0.0)
+            hue += 360.0;
+        color.ct.ahsl.hue = qRound(hue * 100);
+    }
+
+    return color;
+}
+
+/*!
     Creates and returns a CMYK QColor based on this color.
 
     \sa fromCmyk(), convertTo(), isValid(), {QColor#The CMYK Color
@@ -1466,6 +1815,8 @@ QColor QColor::convertTo(QColor::Spec colorSpec) const
         return toHsv();
     case Cmyk:
         return toCmyk();
+    case Hsl:
+        return toHsl();
     case Invalid:
         break;
     }
@@ -1625,6 +1976,70 @@ QColor QColor::fromHsvF(qreal h, qreal s, qreal v, qreal a)
     color.ct.ahsv.pad        = 0;
     return color;
 }
+
+/*!
+    Static convenience function that returns a QColor constructed from the HSV
+    color values, \a h (hue), \a s (saturation), \a l (lightness), and \a a
+    (alpha-channel, i.e. transparency).
+
+    The value of \a s, \a l, and \a a must all be in the range 0-255; the value
+    of \a h must be in the range 0-359.
+
+    \sa toHsl(), fromHslF(), isValid()
+*/
+QColor QColor::fromHsl(int h, int s, int l, int a)
+{
+    if (((h < 0 || h >= 360) && h != -1)
+        || s < 0 || s > 255
+        || l < 0 || l > 255
+        || a < 0 || a > 255) {
+        qWarning("QColor::fromHsv: HSV parameters out of range");
+        return QColor();
+    }
+
+    QColor color;
+    color.cspec = Hsl;
+    color.ct.ahsl.alpha      = a * 0x101;
+    color.ct.ahsl.hue        = h == -1 ? USHRT_MAX : (h % 360) * 100;
+    color.ct.ahsl.saturation = s * 0x101;
+    color.ct.ahsl.lightness  = l * 0x101;
+    color.ct.ahsl.pad        = 0;
+    return color;
+}
+
+/*!
+    \overload
+
+    Static convenience function that returns a QColor constructed from the HSV
+    color values, \a h (hue), \a s (saturation), \a l (lightness), and \a a
+    (alpha-channel, i.e. transparency).
+
+    All the values must be in the range 0.0-1.0.
+
+    \sa toHsl(), fromHsl(), isValid()
+*/
+QColor QColor::fromHslF(qreal h, qreal s, qreal l, qreal a)
+{
+    if (((h < 0.0 || h > 1.0) && h != -1.0)
+        || (s < 0.0 || s > 1.0)
+        || (l < 0.0 || l > 1.0)
+        || (a < 0.0 || a > 1.0)) {
+        qWarning("QColor::fromHsvF: HSV parameters out of range");
+        return QColor();
+    }
+
+    QColor color;
+    color.cspec = Hsl;
+    color.ct.ahsl.alpha      = qRound(a * USHRT_MAX);
+    color.ct.ahsl.hue        = (h == -1.0) ? USHRT_MAX : qRound(h * 36000);
+    if (color.ct.ahsl.hue == 36000)
+        color.ct.ahsl.hue = 0;
+    color.ct.ahsl.saturation = qRound(s * USHRT_MAX);
+    color.ct.ahsl.lightness  = qRound(l * USHRT_MAX);
+    color.ct.ahsl.pad        = 0;
+    return color;
+}
+
 
 /*!
     Sets the contents pointed to by \a c, \a m, \a y, \a k, and \a a, to the
@@ -1917,14 +2332,26 @@ QColor &QColor::operator=(Qt::GlobalColor color)
 */
 bool QColor::operator==(const QColor &color) const
 {
-    return (cspec == color.cspec
-            && ct.argb.alpha == color.ct.argb.alpha
-            && ((cspec == QColor::Hsv
-                 && ((ct.argb.red % 36000) == (color.ct.argb.red % 36000)))
-                || (ct.argb.red == color.ct.argb.red))
-            && ct.argb.green == color.ct.argb.green
-            && ct.argb.blue  == color.ct.argb.blue
-            && ct.argb.pad   == color.ct.argb.pad);
+    if (cspec == Hsl && cspec == color.cspec) {
+        return (ct.argb.alpha == color.ct.argb.alpha
+                && ((((ct.ahsl.hue % 36000) == (color.ct.ahsl.hue % 36000)))
+                    || (ct.ahsl.hue == color.ct.ahsl.hue))
+                && (qAbs(ct.ahsl.saturation - color.ct.ahsl.saturation) < 50
+                    || ct.ahsl.lightness == 0
+                    || color.ct.ahsl.lightness == 0
+                    || ct.ahsl.lightness == USHRT_MAX
+                    || color.ct.ahsl.lightness == USHRT_MAX)
+                && (qAbs(ct.ahsl.lightness - color.ct.ahsl.lightness)) < 50);
+    } else {
+        return (cspec == color.cspec
+                && ct.argb.alpha == color.ct.argb.alpha
+                && (((cspec == QColor::Hsv)
+                     && ((ct.ahsv.hue % 36000) == (color.ct.ahsv.hue % 36000)))
+                    || (ct.ahsv.hue == color.ct.ahsv.hue))
+                && ct.argb.green == color.ct.argb.green
+                && ct.argb.blue  == color.ct.argb.blue
+                && ct.argb.pad   == color.ct.argb.pad);
+    }
 }
 
 /*!
@@ -2028,6 +2455,8 @@ QDebug operator<<(QDebug dbg, const QColor &c)
     else if (c.spec() == QColor::Cmyk)
         dbg.nospace() << "QColor(ACMYK " << c.alphaF() << ", " << c.cyanF() << ", " << c.magentaF() << ", " << c.yellowF() << ", "
                       << c.blackF()<< ')';
+    else if (c.spec() == QColor::Hsl)
+        dbg.nospace() << "QColor(AHSL " << c.alphaF() << ", " << c.hslHueF() << ", " << c.hslSaturationF() << ", " << c.lightnessF() << ')';
 
     return dbg.space();
 #else
