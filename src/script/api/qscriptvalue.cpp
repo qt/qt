@@ -371,6 +371,14 @@ void QScriptValuePrivate::operator delete(void *ptr)
 }
 
 /*!
+  \internal
+*/
+QScriptValue::QScriptValue(QScriptValuePrivate *d)
+    : d_ptr(d)
+{
+}
+
+/*!
   Constructs an invalid QScriptValue.
 */
 QScriptValue::QScriptValue()

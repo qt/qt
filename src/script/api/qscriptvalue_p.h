@@ -96,9 +96,7 @@ public:
 
     static inline QScriptValue toPublic(QScriptValuePrivate *d)
     {
-        QScriptValue tmp;
-        tmp.d_ptr = d;
-        return tmp;
+        return QScriptValue(d);
     }
 
     QScriptValue property(const JSC::Identifier &id, int resolveMode) const;
