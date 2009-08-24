@@ -625,7 +625,7 @@ void QBrush::detach(Qt::BrushStyle newStyle)
 
 QBrush &QBrush::operator=(const QBrush &b)
 {
-    if (this == &b)
+    if (d == b.d)
         return *this;
 
     b.d->ref.ref();
