@@ -121,8 +121,8 @@ QML transitions can use selectors to determine which state changes a transition 
 
 \code
 Transition {
-    fromState: "*"
-    toState: "Details"
+    from: "*"
+    to: "Details"
     ...
 }
 \endcode
@@ -131,8 +131,8 @@ Transitions can happen in parallel, in sequence, or in any combination of the tw
 
 \code
 Transition {
-    fromState: "*"
-    toState: "MyState"
+    from: "*"
+    to: "MyState"
     reversible: true
     SequentialAnimation {
         ColorAnimation {

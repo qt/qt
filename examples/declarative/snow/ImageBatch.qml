@@ -52,7 +52,7 @@ GridView {
         }
         transitions: [
             Transition {
-                toState: "selected"
+                to: "selected"
                 SequentialAnimation {
                     PauseAnimation { duration: 150 }
                     PropertyAction { properties: "z" }
@@ -60,7 +60,7 @@ GridView {
                 }
             },
             Transition {
-                fromState: "selected"
+                from: "selected"
                 SequentialAnimation {
                     NumberAnimation { properties: "scale"; duration: 150 }
                     PropertyAction { properties: "z" }

@@ -22,7 +22,7 @@ Rectangle {
             PropertyChanges { target: RightBar; x: 770 }
         }
         transitions: Transition {
-            fromState: "" ; toState: "rotated"
+            from: "" ; to: "rotated"
             reversible: true
             SequentialAnimation {
                 NumberAnimation { targets: [TopBar, BottomBar]; properties: "x,y"; easing: "easeInOutQuad" }
@@ -64,7 +64,7 @@ Rectangle {
                     ]
                     transitions: [
                     Transition {
-                        fromState: "*"; toState: "InGrid"
+                        from: "*"; to: "InGrid"
                         SequentialAnimation { 
                             ParentAction{} 
                             PauseAnimation { duration: 50 * List.FlowView.column }
@@ -72,7 +72,7 @@ Rectangle {
                         } 
                     },
                     Transition {
-                        fromState: "*"; toState: "InList"
+                        from: "*"; to: "InList"
                         SequentialAnimation { 
                             ParentAction{} 
                             PauseAnimation { duration: 50 * (Grid.FlowView.row * 2 + Grid.FlowView.column) }
