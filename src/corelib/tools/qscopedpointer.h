@@ -166,6 +166,11 @@ public:
         return oldD;
     }
 
+    inline void swap(QScopedPointer<T, Cleanup> &other)
+    {
+        qSwap(d, other.d);
+    }
+
     typedef T *pointer;
 
 protected:
@@ -174,6 +179,10 @@ protected:
 private:
     Q_DISABLE_COPY(QScopedPointer)
 };
+
+template <class T, class Cleanup>
+Q_INLINE_TEMPLATE void qSwap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2)
+{ p1.swap(p2); }
 
 template <typename T, typename Cleanup = QScopedPointerArrayDeleter<T> >
 class QScopedArrayPointer : public QScopedPointer<T, Cleanup>
