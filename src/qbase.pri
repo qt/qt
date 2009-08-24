@@ -101,7 +101,8 @@ symbian {
         "DEFFILE ../s60installs/eabi/$${TARGET}.def" \
         "$${LITERAL_HASH}endif"
 
-        MMP_RULES += defBlock
+        #MMP_RULES += defBlock
+        MMP_RULES += EXPORTUNFROZEN
     }
     load(armcc_warnings)
 }
