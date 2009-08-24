@@ -76,8 +76,7 @@ QmlDomDocumentPrivate::~QmlDomDocumentPrivate()
     \brief The QmlDomDocument class represents the root of a QML document
 
     A QML document is a self-contained snippet of QML, usually contained in a
-    single file.  Each document has a version number, accessible through
-    QmlDomDocument::version(),  and a root object, accessible through
+    single file. Each document has a root object, accessible through
     QmlDomDocument::rootObject().
 
     The QmlDomDocument class allows the programmer to inspect a QML document by
@@ -130,15 +129,6 @@ QmlDomDocument &QmlDomDocument::operator=(const QmlDomDocument &other)
 {
     d = other.d;
     return *this;
-}
-
-/*!
-    Return the version number of the Qml document.  Currently only version
-    1 exists.
-*/
-int QmlDomDocument::version() const
-{
-    return 1;
 }
 
 /*!

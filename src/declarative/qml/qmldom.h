@@ -72,7 +72,6 @@ public:
     ~QmlDomDocument();
     QmlDomDocument &operator=(const QmlDomDocument &);
 
-    int version() const;
     QList<QmlDomImport> imports() const;
 
     QList<QmlError> errors() const;
