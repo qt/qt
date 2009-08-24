@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,7 +56,7 @@ static QString targetName( BuildType buildMode, const QString& target, const QSt
         targetName.append(".exe");
         break;
     case Dll: // dll
-        if (!version.empty())
+        if (!version.isEmpty())
             targetName.append(version.section(".", 0, 0));
         targetName.append(".dll");
         break;

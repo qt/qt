@@ -1114,6 +1114,11 @@
     \note Sequential devices can also be used, but MediaObject::isSeekable() will
     return false as a result.
 
+    \warning On Windows, we only support \l{QIODevice}s containing the
+    \c avi, \c mp3, or \c mpg formats. Use the constructor that takes
+    a file name to open files (the Qt backend does not use a QFile
+    internally).
+
     \sa setAutoDelete()
 */
 
@@ -1863,7 +1868,7 @@
 
     \snippet doc/src/snippets/code/doc_src_phonon-api.qdoc 14
 
-    \sa currentSource()
+    \sa currentSource(), MediaSource
 */
 
 /*!

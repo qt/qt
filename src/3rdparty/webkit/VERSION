@@ -1,6 +1,6 @@
 This is a snapshot of the Qt port of WebKit from
 
-        git://code.staikos.net/webkit
+        git://gitorious.org/qtwebkit/qtwebkit.git
 
 The commit imported was from the
 
@@ -8,4 +8,4 @@ The commit imported was from the
 
 and has the sha1 checksum
 
-        4552f381497b5adc18714d7f6e33eba678e3a9b2
+        eb3afcbfb4006de4015047555cb256fcde93b954

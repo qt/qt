@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -693,8 +693,8 @@ bool saveTS(const Translator &translator, QIODevice &dev, ConversionData &cd, in
                     t << " type=\"obsolete\"";
                 if (msg.isPlural()) {
                     t << ">";
-                    QStringList translns = translator.normalizedTranslations(msg, cd, &result);
-                    for (int j = 0; j < qMax(1, translns.count()); ++j) {
+                    const QStringList &translns = msg.translations();
+                    for (int j = 0; j < translns.count(); ++j) {
                         t << "\n            <numerusform";
                         writeVariants(t, "            ", translns[j]);
                         t << "</numerusform>";

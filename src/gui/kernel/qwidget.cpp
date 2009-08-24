@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -4194,7 +4194,7 @@ void QWidget::setForegroundRole(QPalette::ColorRole role)
     assigning roles to a widget's palette is not guaranteed to change the
     appearance of the widget. Instead, you may choose to apply a \l
     styleSheet. You can refer to our Knowledge Base article
-    \l{http://qtsoftware.com/developer/knowledgebase/22}{here} for more
+    \l{http://qt.nokia.com/developer/knowledgebase/22}{here} for more
     information.
 
     \warning Do not use this function in conjunction with \l{Qt Style Sheets}.
@@ -4589,6 +4589,11 @@ void QWidget::unsetLayoutDirection()
 
     By default, this property contains a cursor with the Qt::ArrowCursor
     shape.
+
+    Some underlying window implementations will reset the cursor if it
+    leaves a widget even if the mouse is grabbed. If you want to have
+    a cursor set for all widgets, even when outside the window, consider
+    QApplication::setOverrideCursor().
 
     \sa QApplication::setOverrideCursor()
 */
@@ -9796,6 +9801,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             data->window_modality = (w && w->testAttribute(Qt::WA_GroupLeader))
                                     ? Qt::WindowModal
                                     : Qt::ApplicationModal;
+            // Some window managers does not allow us to enter modal after the
+            // window is showing. Therefore, to be consistent, we cannot call
+            // QApplicationPrivate::enterModal(this) here. The window must be
+            // hidden before changing modality.
         }
         if (testAttribute(Qt::WA_WState_Created)) {
             // don't call setModal_sys() before create_sys()
@@ -9874,11 +9883,8 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             QInputContextPrivate::updateImeStatus(this, true);
 #endif
         QInputContext *ic = d->ic;
-        if (!ic) {
-            // implicitly create input context only if we have a focus
-            if (hasFocus())
-                ic = d->inputContext();
-        }
+        if (!ic && (!on || hasFocus()))
+            ic = d->inputContext();
         if (ic) {
             if (on && hasFocus() && ic->focusWidget() != this) {
                 ic->setFocusWidget(this);

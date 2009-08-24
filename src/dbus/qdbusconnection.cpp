@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -973,8 +973,15 @@ QDBusConnection QDBusConnection::systemBus()
 }
 
 /*!
+  \nonreentrant
+
   Returns the connection that sent the signal, if called in a slot activated
   by QDBus; otherwise it returns 0.
+
+  \note Please avoid this function. This function is not thread-safe, so if
+  there's any other thread delivering a D-Bus call, this function may return
+  the wrong connection. In new code, please use QDBusContext::connection()
+  (see that class for a description on how to use it).
 */
 QDBusConnection QDBusConnection::sender()
 {

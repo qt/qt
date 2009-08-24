@@ -755,8 +755,8 @@
         <translation type="obsolete">This version of Qt Assistant is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.</translation>
     </message>
     <message>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/model.html&quot;&gt;qtsoftware.com/company/model.html&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/model.html&quot;&gt;qtsoftware.com/company/model.html&lt;/a&gt; for an overview of Qt licensing.</translation>
+        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/model.html&quot;&gt;qt.nokia.com/company/model.html&lt;/a&gt; for an overview of Qt licensing.</source>
+        <translation type="obsolete">You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/model.html&quot;&gt;qt.nokia.com/company/model.html&lt;/a&gt; for an overview of Qt licensing.</translation>
     </message>
     <message>
         <source>This program is licensed to you under the terms of the Qt Commercial License Agreement. For details, see the file LICENSE that came with this software distribution.</source>
@@ -836,8 +836,8 @@
         <translation>&amp;Hilfe</translation>
     </message>
     <message>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qtsoftware.com/company/about/businessmodel&quot;&gt;http://qtsoftware.com/company/about/businessmodel&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">Sie benötigen eine kommerzielle Qt Lizenz für die Entwicklung von proprietären (geschlossenen) Anwendungen. Besuchen Sie &lt;a href=&quot;http://qtsoftware.com/company/about/businessmodel&quot;&gt;http://qtsoftware.com/company/about/businessmodel&lt;/a&gt; um sich einen Überblick über die Qt Lizenzvergabe zu verschaffen.</translation>
+        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/about/businessmodel&quot;&gt;http://qt.nokia.com/company/about/businessmodel&lt;/a&gt; for an overview of Qt licensing.</source>
+        <translation type="obsolete">Sie benötigen eine kommerzielle Qt Lizenz für die Entwicklung von proprietären (geschlossenen) Anwendungen. Besuchen Sie &lt;a href=&quot;http://qt.nokia.com/company/about/businessmodel&quot;&gt;http://qt.nokia.com/company/about/businessmodel&lt;/a&gt; um sich einen Überblick über die Qt Lizenzvergabe zu verschaffen.</translation>
     </message>
     <message>
         <location line="-37"/>

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -192,8 +192,8 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
     int h = ty2 - ty1;
     int w = tx2 - tx1;
 
-    const int dstx = int((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix);
-    const int dsty = int((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy);
+    const int dstx = qCeil((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix) - 1;
+    const int dsty = qCeil((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy) - 1;
 
     quint32 basex = quint32((sx < 0 ? srcRect.right() : srcRect.left()) * 65536) + dstx;
     quint32 srcy = quint32((sy < 0 ? srcRect.bottom() : srcRect.top()) * 65536) + dsty;
@@ -317,9 +317,9 @@ template <typename T> void qt_blend_argb24_on_rgb16(uchar *destPixels, int dbpl,
         const uchar *src = srcPixels + y * sbpl;
         const uchar *srcEnd = src + srcOffset;
         while (src < srcEnd) {
-#if defined(QT_ARCH_ARM) || defined(QT_ARCH_POWERPC) || (defined(QT_ARCH_WINDOWSCE) && !defined(_X86_))
-            // non-16-bit aligned memory access is not possible on PowerPC &
-            // ARM <v6 (QT_ARCH_ARMV6)
+#if defined(QT_ARCH_ARM) || defined(QT_ARCH_POWERPC) || defined(QT_ARCH_SH) || (defined(QT_ARCH_WINDOWSCE) && !defined(_X86_))
+            // non-16-bit aligned memory access is not possible on PowerPC,
+            // ARM <v6 (QT_ARCH_ARMV6) & SH
             quint16 spix = (quint16(src[2])<<8) + src[1];
 #else
             quint16 spix = *(quint16 *) (src + 1);
@@ -667,8 +667,8 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
     int h = ty2 - ty1;
     int w = tx2 - tx1;
 
-    const int dstx = int((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix);
-    const int dsty = int((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy);
+    const int dstx = qCeil((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix) - 1;
+    const int dsty = qCeil((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy) - 1;
 
     quint32 basex = quint32((sx < 0 ? srcRect.right() : srcRect.left()) * 65536) + dstx;
     quint32 srcy = quint32((sy < 0 ? srcRect.bottom() : srcRect.top()) * 65536) + dsty;

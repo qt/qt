@@ -34,14 +34,14 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "translator.h"
 #include "translatortools.h"
-#include "profileevaluator.h"
+#include "proreader.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -120,6 +120,7 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
     }
 
     ConversionData cd;
+    tor.normalizeTranslations(cd);
     cd.m_verbose = verbose;
     cd.m_ignoreUnfinished = ignoreUnfinished;
     cd.m_saveMode = mode;

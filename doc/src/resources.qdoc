@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -55,7 +55,7 @@
     The resource system is based on tight cooperation between \l qmake,
     \l rcc (Qt's resource compiler), and QFile. It obsoletes Qt 3's
     \c qembed tool and the
-    \l{http://doc.trolltech.com/qq/qq05-iconography.html#imagestorage}{image
+    \l{http://qt.nokia.com/doc/qq/qq05-iconography.html#imagestorage}{image
     collection} mechanism.
 
     \section1 Resource Collection Files (\c{.qrc})

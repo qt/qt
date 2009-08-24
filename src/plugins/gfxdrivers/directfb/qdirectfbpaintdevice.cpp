@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -43,10 +43,17 @@
 
 #include "qdirectfbscreen.h"
 #include "qdirectfbpaintdevice.h"
+#include "qdirectfbpaintengine.h"
+
+QDirectFBPaintDevice::QDirectFBPaintDevice(QDirectFBScreen *scr)
+    : QCustomRasterPaintDevice(0), dfbSurface(0), lockedImage(0), screen(scr),
+      lock(DFBSurfaceLockFlags(0)), mem(0), engine(0)
+{}
 
 QDirectFBPaintDevice::~QDirectFBPaintDevice()
 {
     delete lockedImage;
+    delete engine;
 }
 
 
@@ -56,20 +63,17 @@ IDirectFBSurface *QDirectFBPaintDevice::directFBSurface() const
 }
 
 
-void QDirectFBPaintDevice::lockDirectFB(uint flags)
+void QDirectFBPaintDevice::lockDirectFB(DFBSurfaceLockFlags flags)
 {
     if (!(lock & flags)) {
         if (lock)
             unlockDirectFB();
-        if ((mem = QDirectFBScreen::lockSurface(dfbSurface, flags, &bpl))) {
-            const QSize s = size();
-            lockedImage = new QImage(mem, s.width(), s.height(), bpl,
-                                     QDirectFBScreen::getImageFormat(dfbSurface));
-            lock = flags;
-            Q_ASSERT(mem);
-        } else {
-            lock = 0;
-        }
+        mem = QDirectFBScreen::lockSurface(dfbSurface, flags, &bpl);
+        Q_ASSERT(mem);
+        const QSize s = size();
+        lockedImage = new QImage(mem, s.width(), s.height(), bpl,
+                                 QDirectFBScreen::getImageFormat(dfbSurface));
+        lock = flags;
     }
 }
 
@@ -83,17 +87,12 @@ void QDirectFBPaintDevice::unlockDirectFB()
     delete lockedImage;
     lockedImage = 0;
     mem = 0;
-    lock = 0;
+    lock = DFBSurfaceLockFlags(0);
 }
 
 
 void *QDirectFBPaintDevice::memory() const
 {
-    if (lock != (DSLF_READ|DSLF_WRITE)) {
-        QDirectFBPaintDevice *that = const_cast<QDirectFBPaintDevice*>(this);
-        that->lockDirectFB(DSLF_READ|DSLF_WRITE);
-        Q_ASSERT(that->lockedImage);
-    }
     return mem;
 }
 
@@ -176,4 +175,10 @@ int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     }
 }
 
+QPaintEngine *QDirectFBPaintDevice::paintEngine() const
+{
+    return engine;
+}
+
 #endif
+

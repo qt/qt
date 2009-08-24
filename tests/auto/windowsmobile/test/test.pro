@@ -9,7 +9,7 @@ TARGET = tst_windowsmobile
 
 wincewm*: {
    addFiles.sources = \
-                ../testQMenuBar/*.exe
+                $$QT_BUILD_TREE/tests/auto/windowsmobile/testQMenuBar/*.exe
                 
 
    addFiles.path = "\Program Files\tst_windowsmobile"

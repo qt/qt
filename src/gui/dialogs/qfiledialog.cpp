@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -219,7 +219,7 @@ Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook 
     the native file dialog is used unless you use a subclass of QFileDialog that contains the
     Q_OBJECT macro.
     \value ReadOnly Indicates that the model is readonly.
-    \value HideNameFilterDetails Indicates if the is hidden or not.
+    \value HideNameFilterDetails Indicates if the filter extension (e.g. *.bmp) is hidden or not.
 
     This value is obsolete and does nothing since Qt 4.5:
 
@@ -1599,12 +1599,7 @@ QString QFileDialog::getOpenFileName(QWidget *parent,
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    //If workingDirectory returned a different path than the initial one,
-    //it means that the initial path was invalid. There is no point to try select a file
-    if (args.directory != QFileInfo(dir).path())
-        args.selection = QString();
-    else
-        args.selection = QFileDialogPrivate::initialSelection(dir);
+    args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = ExistingFile;
     args.options = options;
@@ -1682,18 +1677,13 @@ QStringList QFileDialog::getOpenFileNames(QWidget *parent,
                                           QString *selectedFilter,
                                           Options options)
 {
-    if (qt_filedialog_open_filenames_hook)
+    if (qt_filedialog_open_filenames_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_open_filenames_hook(parent, caption, dir, filter, selectedFilter, options);
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    //If workingDirectory returned a different path than the initial one,
-    //it means that the initial path was invalid. There is no point to try select a file
-    if (args.directory != QFileInfo(dir).path())
-        args.selection = QString();
-    else
-        args.selection = QFileDialogPrivate::initialSelection(dir);
+    args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = ExistingFiles;
     args.options = options;
@@ -1773,18 +1763,13 @@ QString QFileDialog::getSaveFileName(QWidget *parent,
                                      QString *selectedFilter,
                                      Options options)
 {
-    if (qt_filedialog_save_filename_hook)
+    if (qt_filedialog_save_filename_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_save_filename_hook(parent, caption, dir, filter, selectedFilter, options);
     QFileDialogArgs args;
     args.parent = parent;
     args.caption = caption;
     args.directory = QFileDialogPrivate::workingDirectory(dir);
-    //If workingDirectory returned a different path than the initial one,
-    //it means that the initial path was invalid. There is no point to try select a file
-    if (args.directory != QFileInfo(dir).path())
-        args.selection = QString();
-    else
-        args.selection = QFileDialogPrivate::initialSelection(dir);
+    args.selection = QFileDialogPrivate::initialSelection(dir);
     args.filter = filter;
     args.mode = AnyFile;
     args.options = options;
@@ -1853,7 +1838,7 @@ QString QFileDialog::getExistingDirectory(QWidget *parent,
                                           const QString &dir,
                                           Options options)
 {
-    if (qt_filedialog_existing_directory_hook)
+    if (qt_filedialog_existing_directory_hook && !(options & DontUseNativeDialog))
         return qt_filedialog_existing_directory_hook(parent, caption, dir, options);
     QFileDialogArgs args;
     args.parent = parent;

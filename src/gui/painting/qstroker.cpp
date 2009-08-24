@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1012,10 +1012,13 @@ void QDashStroker::processCurrentSubpath()
     int dashCount = qMin(m_dashPattern.size(), 32);
     qfixed dashes[32];
 
+    qreal longestLength = 0;
     qreal sumLength = 0;
     for (int i=0; i<dashCount; ++i) {
         dashes[i] = qMax(m_dashPattern.at(i), qreal(0)) * m_stroker->strokeWidth();
         sumLength += dashes[i];
+        if (dashes[i] > longestLength)
+            longestLength = dashes[i];
     }
 
     if (qFuzzyCompare(sumLength + 1, qreal(1)))
@@ -1053,7 +1056,7 @@ void QDashStroker::processCurrentSubpath()
     qfixed2d line_to_pos;
 
     // Pad to avoid clipping the borders of thick pens.
-    qfixed padding = qMax(m_stroker->strokeWidth(), m_stroker->miterLimit());
+    qfixed padding = qt_real_to_fixed(qMax(m_stroker->strokeWidth(), m_stroker->miterLimit()) * longestLength);
     qfixed2d clip_tl = { qt_real_to_fixed(m_clip_rect.left()) - padding,
                          qt_real_to_fixed(m_clip_rect.top()) - padding };
     qfixed2d clip_br = { qt_real_to_fixed(m_clip_rect.right()) + padding ,

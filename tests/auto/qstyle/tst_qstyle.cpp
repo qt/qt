@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -217,7 +217,8 @@ void tst_QStyle::drawItemPixmap()
 {
     testWidget->resize(300, 300);
     testWidget->show();
-    QPixmap p("task_25863.png", "PNG");
+
+    QPixmap p(QString(SRCDIR) + "/task_25863.png", "PNG");
     QPixmap actualPix = QPixmap::grabWidget(testWidget);
     QVERIFY(pixmapsAreEqual(&actualPix,&p));
     testWidget->hide();

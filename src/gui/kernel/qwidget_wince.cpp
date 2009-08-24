@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -197,7 +197,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     int exsty = WS_EX_NOPARENTNOTIFY;
 
     if (topLevel) {
-        if (!(flags & Qt::FramelessWindowHint) && !tool)
+        if (!(flags & Qt::FramelessWindowHint) && !tool && !q->testAttribute(Qt::WA_DontShowOnScreen))
           style = (WS_OVERLAPPED) | WS_SYSMENU;
         else
           style = WS_POPUP;
@@ -332,7 +332,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 
     if (desktop) {
         q->setAttribute(Qt::WA_WState_Visible);
-    } else if (topLevel) {
+    } else if (topLevel && !q->testAttribute(Qt::WA_DontShowOnScreen)) {
         RECT  cr;
         GetClientRect(id, &cr);
         // one cannot trust cr.left and cr.top, use a correction POINT instead

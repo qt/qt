@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -542,7 +542,7 @@ void QGraphicsScenePrivate::_q_updateIndex()
         // Regenerate the tree.
         if (regenerateIndex) {
             regenerateIndex = false;
-            bspTree.initialize(q->sceneRect(), depth);
+            bspTree.initialize(sceneRect, depth);
             unindexedItems = indexedItems;
             lastItemCount = indexedItems.size();
             q->update();

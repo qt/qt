@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -76,7 +76,7 @@ bool Boolean::evaluateEBV(const Item &first,
     {
         Q_ASSERT(context);
         context->error(QtXmlPatterns::tr("Effective Boolean Value cannot be calculated for a sequence "
-                          "containing two or more atomic values."),
+                                         "containing two or more atomic values."),
                           ReportContext::FORG0006,
                           QSourceLocation());
         return false;

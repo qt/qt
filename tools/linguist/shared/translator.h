@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -81,7 +81,8 @@ public:
 
 public:
     QString m_defaultContext;
-    QByteArray m_codecForSource; // CPP specific
+    QByteArray m_codecForSource; // CPP, PO & QM specific
+    QByteArray m_outputCodec; // PO specific
     QString m_sourceFileName;
     QString m_targetFileName;
     QDir m_sourceDir;
@@ -150,8 +151,8 @@ public:
     static QString guessLanguageCodeFromFileName(const QString &fileName);
     QList<TranslatorMessage> messages() const;
     QList<TranslatorMessage> translatedMessages() const;
-    static QStringList normalizedTranslations(const TranslatorMessage &m,
-        QLocale::Language lang, QLocale::Country country);
+    static QStringList normalizedTranslations(const TranslatorMessage &m, int numPlurals);
+    void normalizeTranslations(ConversionData &cd);
     QStringList normalizedTranslations(const TranslatorMessage &m, ConversionData &cd, bool *ok) const;
 
     int messageCount() const { return m_messages.size(); }

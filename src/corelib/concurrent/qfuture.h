@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -210,7 +210,7 @@ public:
     bool operator==(const QFuture &other) const { return (d == other.d); }
     bool operator!=(const QFuture &other) const { return (d != other.d); }
 
-#ifndef QT_NO_MEMBER_TEMPLATES
+#if !defined(QT_NO_MEMBER_TEMPLATES) && !defined(Q_CC_XLC)
     template <typename T>
     QFuture(const QFuture<T> &other)
         : d(other.d)

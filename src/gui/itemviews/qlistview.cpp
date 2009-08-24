@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -827,6 +827,8 @@ void QListView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int e
 */
 void QListView::mouseMoveEvent(QMouseEvent *e)
 {
+    if (!isVisible())
+	return;
     Q_D(QListView);
     QAbstractItemView::mouseMoveEvent(e);
     if (state() == DragSelectingState

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -68,6 +68,7 @@ struct DnDParams
     NSEvent *theEvent;
     NSPoint localPoint;
     NSDragOperation performedAction;
+    NSPoint activeDragEnterPos;
 };
 
 QT_END_NAMESPACE
@@ -85,6 +86,7 @@ Q_GUI_EXPORT
     int composingLength;
     bool sendKeyEvents;
     QStringList *currentCustomTypes;
+    NSInteger dragEnterSequence;
 }
 - (id)initWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;
 - (void) finishInitWithQWidget:(QWidget *)widget widgetPrivate:(QWidgetPrivate *)widgetprivate;
@@ -103,8 +105,6 @@ Q_GUI_EXPORT
 - (QWidget *)qt_qwidget;
 - (BOOL)qt_leftButtonIsRightButton;
 - (void)qt_setLeftButtonIsRightButton:(BOOL)isSwapped;
-- (NSView *)viewUnderTransparentForMouseView:(NSView *)mouseView widget:(QWidget *)widgetToGetMouse
-                             withWindowPoint:(NSPoint)windowPoint;
 + (DnDParams*)currentMouseEvent;
 
 @end

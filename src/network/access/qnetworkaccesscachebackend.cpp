@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -85,6 +85,20 @@ bool QNetworkAccessCacheBackend::sendCacheContents()
     setAttribute(QNetworkRequest::HttpStatusCodeAttribute, attributes.value(QNetworkRequest::HttpStatusCodeAttribute));
     setAttribute(QNetworkRequest::HttpReasonPhraseAttribute, attributes.value(QNetworkRequest::HttpReasonPhraseAttribute));
     setAttribute(QNetworkRequest::SourceIsFromCacheAttribute, true);
+
+    // set the raw headers
+    QNetworkCacheMetaData::RawHeaderList rawHeaders = item.rawHeaders();
+    QNetworkCacheMetaData::RawHeaderList::ConstIterator it = rawHeaders.constBegin(),
+                                                       end = rawHeaders.constEnd();
+    for ( ; it != end; ++it)
+        setRawHeader(it->first, it->second);
+
+    // handle a possible redirect
+    QVariant redirectionTarget = attributes.value(QNetworkRequest::RedirectionTargetAttribute);
+    if (redirectionTarget.isValid()) {
+        setAttribute(QNetworkRequest::RedirectionTargetAttribute, redirectionTarget);
+        redirectionRequested(redirectionTarget.toUrl());
+    }
 
     // signal we're open
     metaDataChanged();

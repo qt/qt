@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,6 +44,7 @@
 
 #include <QtGui/qscreen_qws.h>
 #include <directfb.h>
+#include <directfb_version.h>
 
 QT_BEGIN_HEADER
 
@@ -51,8 +52,23 @@ QT_MODULE(Gui)
 
 #define Q_DIRECTFB_VERSION ((DIRECTFB_MAJOR_VERSION << 16) | (DIRECTFB_MINOR_VERION << 8) | DIRECTFB_MICRO_VERSION)
 
-class QDirectFBScreenPrivate;
+#define DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(F)                         \
+    static inline F operator~(F f) { return F(~int(f)); } \
+    static inline F operator&(F left, F right) { return F(int(left) & int(right)); } \
+    static inline F operator|(F left, F right) { return F(int(left) | int(right)); } \
+    static inline F &operator|=(F &left, F right) { left = (left | right); return left; } \
+    static inline F &operator&=(F &left, F right) { left = (left & right); return left; }
 
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBInputDeviceCapabilities);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBWindowDescriptionFlags);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceDescriptionFlags);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceCapabilities);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceLockFlags);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceBlittingFlags);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceDrawingFlags);
+DIRECTFB_DECLARE_OPERATORS_FOR_FLAGS(DFBSurfaceFlipFlags);
+
+class QDirectFBScreenPrivate;
 class Q_GUI_EXPORT QDirectFBScreen : public QScreen
 {
 public:
@@ -63,8 +79,7 @@ public:
         NoFlags = 0x00,
         VideoOnly = 0x01,
         SystemOnly = 0x02,
-        IgnoreSystemClip = 0x04,
-        BoundingRectFlip = 0x08
+        BoundingRectFlip = 0x04
     };
 
     Q_DECLARE_FLAGS(DirectFBFlags, DirectFBFlag);
@@ -77,7 +92,6 @@ public:
     void shutdownDevice();
 
     void exposeRegion(QRegion r, int changing);
-    void blit(const QImage &img, const QPoint &topLeft, const QRegion &region);
     void scroll(const QRegion &region, const QPoint &offset);
     void solidFill(const QColor &color, const QRegion &region);
 
@@ -114,9 +128,12 @@ public:
                                      QImage::Format format,
                                      SurfaceCreationOptions options);
     IDirectFBSurface *copyToDFBSurface(const QImage &image,
-                                     QImage::Format format,
-                                     SurfaceCreationOptions options);
+                                       QImage::Format format,
+                                       SurfaceCreationOptions options);
+    void flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags flipFlags,
+                     const QRegion &region, const QPoint &offset);
     void releaseDFBSurface(IDirectFBSurface *surface);
+    void erase(const QRegion &region);
 
     static int depth(DFBSurfacePixelFormat format);
 
@@ -137,14 +154,9 @@ public:
 #endif
 
     static uchar *lockSurface(IDirectFBSurface *surface, uint flags, int *bpl = 0);
-
 private:
     IDirectFBSurface *createDFBSurface(DFBSurfaceDescription desc,
                                        SurfaceCreationOptions options);
-    void compose(const QRegion &r);
-    void blit(IDirectFBSurface *src, const QPoint &topLeft,
-              const QRegion &region);
-
     QDirectFBScreenPrivate *d_ptr;
     friend class SurfaceCache;
 };

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -183,6 +183,12 @@ public:
         const QString &url);
     void setupBookmarkModels();
 
+    void fillBookmarkMenu(QMenu *menu);
+    QUrl urlForAction(QAction* action) const;
+
+signals:
+    void bookmarksChanged();
+
 private slots:
     void itemChanged(QStandardItem *item);
 
@@ -191,6 +197,7 @@ private:
     void removeBookmarkFolderItems(QStandardItem *item);
     void readBookmarksRecursive(const QStandardItem *item, QDataStream &stream,
         const qint32 depth) const;
+    void fillBookmarkMenu(QMenu *menu, QStandardItem *root);
 
 private:
     QString oldText;
@@ -200,6 +207,7 @@ private:
     BookmarkModel *listModel;
     QStandardItem *renameItem;
     QHelpEngineCore *helpEngine;
+    QMap<QAction*, QModelIndex> map;
 };
 
 QT_END_NAMESPACE

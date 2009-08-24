@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -150,6 +150,8 @@ public:
     StrokeHandler *strokeHandler;
     QStrokerOps *activeStroker;
     QPen strokerPen;
+
+    QRect exDeviceRect;
 };
 
 class QPixmapFilter;

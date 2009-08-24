@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -254,8 +254,11 @@ void TextEditor::resourceActionActivated()
 {
     QString oldPath = m_editor->text();
     if (oldPath.startsWith(QLatin1String("qrc:")))
-        oldPath = oldPath.mid(4);
-    const QString newPath = IconSelector::choosePixmapResource(m_core, m_core->resourceModel(), oldPath, this);
+        oldPath.remove(0, 4);
+    // returns ':/file'
+    QString newPath = IconSelector::choosePixmapResource(m_core, m_core->resourceModel(), oldPath, this);
+    if (newPath.startsWith(QLatin1Char(':')))
+         newPath.remove(0, 1);
     if (newPath.isEmpty() || newPath == oldPath)
         return;
     const QString newText = QLatin1String("qrc:") + newPath;

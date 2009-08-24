@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1582,8 +1582,7 @@ void QColorDialog::setCurrentColor(const QColor &color)
     d->setCurrentAlpha(color.alpha());
 
 #ifdef Q_WS_MAC
-    if (d->delegate)
-        QColorDialogPrivate::setColor(d->delegate, color);
+    d->setCocoaPanelColor(color);
 #endif
 }
 
@@ -1724,19 +1723,16 @@ void QColorDialog::setVisible(bool visible)
 
 #if defined(Q_WS_MAC)
     if (visible) {
-        if (!d->delegate && QColorDialogPrivate::sharedColorPanelAvailable &&
-                !(testAttribute(Qt::WA_DontShowOnScreen) || (d->opts & DontUseNativeDialog))){
-            d->delegate = QColorDialogPrivate::openCocoaColorPanel(
-                    currentColor(), parentWidget(), windowTitle(), options(), d);
+        if (d->delegate || (QColorDialogPrivate::sharedColorPanelAvailable &&
+                !(testAttribute(Qt::WA_DontShowOnScreen) || (d->opts & DontUseNativeDialog)))){
+            d->openCocoaColorPanel(currentColor(), parentWidget(), windowTitle(), options());
             QColorDialogPrivate::sharedColorPanelAvailable = false;
             setAttribute(Qt::WA_DontShowOnScreen);
         }
         setWindowFlags(windowModality() == Qt::WindowModal ? Qt::Sheet : DefaultWindowFlags);
     } else {
         if (d->delegate) {
-            QColorDialogPrivate::closeCocoaColorPanel(d->delegate);
-            d->delegate = 0;
-            QColorDialogPrivate::sharedColorPanelAvailable = true;
+            d->closeCocoaColorPanel();
             setAttribute(Qt::WA_DontShowOnScreen, false);
         }
     }
@@ -1839,6 +1835,14 @@ QRgb QColorDialog::getRgba(QRgb initial, bool *ok, QWidget *parent)
 
 QColorDialog::~QColorDialog()
 {
+    Q_D(QColorDialog);
+#if defined(Q_WS_MAC)
+    if (d->delegate) {
+        d->releaseCocoaColorPanelDelegate();
+        QColorDialogPrivate::sharedColorPanelAvailable = true;
+    }
+#endif
+
 #ifndef QT_NO_SETTINGS
     if (!customSet) {
         QSettings settings(QSettings::UserScope, QLatin1String("Trolltech"));

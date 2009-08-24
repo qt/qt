@@ -1,3 +1,173 @@
+2009-05-27  John Sullivan  <sullivan@apple.com>
+
+        fixed <rdar://problem/6925482> repro crash in WebCore::DragController::dragExited dropping 
+        bookmarks (at least) over Top Sites (at least)
+
+        Reviewed by Kevin Decker
+
+        * page/DragController.cpp:
+        (WebCore::DragController::dragExited):
+        nil check m_documentUnderMouse and take the "local file" case if it's nil
+
+2009-07-23  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Holger Freyther.
+
+        Fix crashes with the QObject bindings after garbage collection.
+
+        There is one QtInstance per wrapped QObject, and that QtInstance keeps
+        references to cached JSObjects for slots. When those objects get
+        deleted due to GC, then they becoming dangling pointers.
+
+        When a cached member dies, it is now removed from the QtInstance's
+        cache.
+
+        As we cannot track the lifetime of the children, we have to remove
+        them from QtInstance alltogether. They are not cached and were
+        only used for mark(), but we _want_ them to be subject to gc.
+
+        * bridge/qt/qt_instance.cpp:
+        (JSC::Bindings::QtInstance::~QtInstance): Minor coding style cleanup,
+        use qDeleteAll().
+        (JSC::Bindings::QtInstance::removeCachedMethod): New function, to
+        clean m_methods and m_defaultMethod.
+        (JSC::Bindings::QtInstance::mark): Avoid marking already marked objects.
+        (JSC::Bindings::QtField::valueFromInstance): Don't save children for
+        marking.
+        * bridge/qt/qt_instance.h: Declare removeCachedMethod.
+        * bridge/qt/qt_runtime.cpp:
+        (JSC::Bindings::QtRuntimeMethod::~QtRuntimeMethod): Call removeCachedMethod
+        with this on the instance.
+
+2009-05-04  Jakub Wieczorek  <faw217@gmail.com>
+
+        Reviewed by Simon Hausmann.
+
+        As Qtish implementation of MIMETypeRegistry::getMIMETypeForExtension()
+        returns the application/octet-stream mimetype when it can't associate
+        extension with any mimetype, it can happen that the application/octet-stream
+        mimetype will hit the list of supported image formats. For instance,
+        it is possible when QImageReader or QImageWriter support an extension
+        that is not in the extensions map.
+
+        Make sure that this mimetype is not treated as displayable image type.
+
+        * platform/MIMETypeRegistry.cpp:
+        (WebCore::initializeSupportedImageMIMETypes):
+        (WebCore::initializeSupportedImageMIMETypesForEncoding):
+
+2009-06-18  Chris Evans  <scarybeasts@gmail.com>
+
+        Reviewed by Adam Barth.
+
+        Fix 8-digit long hex entities. Fixes bug 26454
+        https://bugs.webkit.org/show_bug.cgi?id=26454
+
+        Test: fast/parser/eightdigithexentity.html
+
+        * html/HTMLTokenizer.cpp: fix off-by-ones.
+
+2009-06-20  Sam Weinig  <sam@webkit.org>
+
+        Reviewed by Adam Barth.
+
+        Fix for https://bugs.webkit.org/show_bug.cgi?id=26554
+        Shadowing of top and parent
+
+        * page/DOMWindow.idl:
+
+2008-12-18  Bernhard Rosenkraenzer <bero@arklinux.ch>
+
+        Reviewed by Darin Adler.
+
+        https://bugs.webkit.org/show_bug.cgi?id=22205
+        Fix compatibility with bison 2.4, partially based on older patch by
+        Priit Laes <amd@store20.com>
+
+        * WebCore/css/CSSGrammar.y: Made compatible with bison 2.4
+
+2009-07-13  Cédric Luthi  <cedric.luthi@gmail.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Fix NPWindow clip rect in PluginViewMac
+
+        The rect should be in window-coordinates. This bug can be observed
+        with Flash 10 here: http://www.permadi.com/tutorial/cursorTracker/
+
+        * plugins/mac/PluginViewMac.cpp:
+
+2009-07-13  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Ariya Hidayat.
+
+        Fix Qt implementation of WebCore::directoryName to return the absolute
+        directory name instead of the base file name.
+
+        * platform/qt/FileSystemQt.cpp:
+        (WebCore::directoryName):
+
+2009-07-13  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Ariya Hidayat.
+
+        Fix WebCore::Path::isEmpty() for the Qt port to return true
+        if there is no element in the path.
+
+        QPainterPath::isEmpty() returns also true if there is one single
+        MoveTo element inside, which makes sense but doesn't patch Webcore's
+        is-empty definition.
+
+        * platform/graphics/qt/PathQt.cpp:
+        (WebCore::Path::isEmpty): Use elementCount() == 0.
+
+2009-01-11  Simon Fraser  <simon.fraser@apple.com>
+
+        Reviewed by Oliver Hunt
+
+        https://bugs.webkit.org/show_bug.cgi?id=23242
+        
+        Fix CanvasRenderingContext2D::transform to do a pre-multiply,
+        rather than a post-multiply into m_transform. This bug did not affect
+        drawing, but did cause m_transform to be incorrect, which impacted
+        willDraw(), and isPointInPath.
+        
+        Test: fast/canvas/canvas-incremental-repaint-2.html
+
+        * html/CanvasRenderingContext2D.cpp:
+        (WebCore::CanvasRenderingContext2D::transform):
+
+2009-07-04  Sriram Yadavalli  <sriram.yadavalli@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=26439
+
+        QtWebKit fails in loading www.nytimes.com in Windows/Linux
+
+        QNetworkReplyHandler is ignoring content associated with 401 error.
+        This causes the XHR response handling to fail.
+
+        Simon: Added also ProxyAuthenticationRequiredError, to handle the same
+        case when going through proxies, as suggested by Prasanth.
+
+        * platform/network/qt/QNetworkReplyHandler.cpp:
+        (WebCore::QNetworkReplyHandler::finish):
+
+2009-06-25  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by and done with Tor Arne Vestbø.
+
+        Fix shortcut keyboard handling with plugins on the Qt/Mac build.
+
+        When we receive shortcut events like Ctrl+V then the text in the QKeyEvent is
+        empty. If we're asked to disambiguate the event into a Char keyboard event,
+        we try to detect this situation and still set the text, to ensure that the
+        general event handling sends a key press event after this disambiguation.
+
+        * platform/qt/PlatformKeyboardEventQt.cpp:
+        (WebCore::PlatformKeyboardEvent::disambiguateKeyDownEvent):
+
 2009-06-23  Thiago Macieira  <thiago.macieira@nokia.com>
 
         Reviewed by Simon Hausmann.

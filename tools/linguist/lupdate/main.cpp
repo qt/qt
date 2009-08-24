@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,6 +42,7 @@
 #include "translator.h"
 #include "translatortools.h"
 #include "profileevaluator.h"
+#include "proreader.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
@@ -178,9 +179,10 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
         if (options & Verbose)
             printOut(QObject::tr("Updating '%1'...\n").arg(fn));
 
+        UpdateOptions theseOptions = options;
         if (tor.locationsType() == Translator::NoLocations) // Could be set from file
-            options |= NoLocations;
-        Translator out = merge(tor, fetchedTor, options, err);
+            theseOptions |= NoLocations;
+        Translator out = merge(tor, fetchedTor, theseOptions, err);
         if (!codecForTr.isEmpty())
             out.setCodecName(codecForTr);
 
@@ -197,6 +199,11 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
             out.stripObsoleteMessages();
         out.stripEmptyContexts();
 
+        out.normalizeTranslations(cd);
+        if (!cd.errors().isEmpty()) {
+            printOut(cd.error());
+            cd.clearErrors();
+        }
         if (!out.save(fileName, cd, QLatin1String("auto"))) {
             printOut(cd.error());
             *fail = true;
@@ -450,7 +457,7 @@ int main(int argc, char **argv)
                 continue;
             }
 
-            evaluateProFile(visitor, &variables);
+            evaluateProFile(visitor, &variables, pfi.absolutePath());
 
             sourceFiles = variables.value("SOURCES");
 
@@ -477,6 +484,9 @@ int main(int argc, char **argv)
                 cd.m_sourceFileName = *it;
                 fetchedTor.load(*it, cd, QLatin1String("java"));
                 //fetchtr_java(*it, &fetchedTor, defaultContext, true, codecForSource);
+            }
+            else if (it->endsWith(QLatin1String(".jui"), Qt::CaseInsensitive)) {
+                fetchedTor.load(*it, cd, QLatin1String("jui"));
             }
             else if (it->endsWith(QLatin1String(".ui"), Qt::CaseInsensitive)) {
                 fetchedTor.load(*it, cd, QLatin1String("ui"));

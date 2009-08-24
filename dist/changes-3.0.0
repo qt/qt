@@ -433,8 +433,8 @@ from one single project description. It is the C++ successor of
 'tmake' which required Perl.
 
 qmake offers additional functionallity that is difficult to reproduce
-in tmake. Trolltech uses qmake in its build system for Qt and related
-products and we have released it as free software.
+in tmake. Qt uses qmake in its build system and we have released it
+as free software.
 
 
 

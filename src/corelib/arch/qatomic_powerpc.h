@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -100,8 +100,6 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddNative()
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
 { return false; }
-
-QT_BEGIN_NAMESPACE
 
 #if defined(Q_CC_GNU)
 

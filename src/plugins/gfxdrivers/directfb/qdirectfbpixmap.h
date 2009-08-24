@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -56,7 +56,7 @@ class QDirectFBPaintEngine;
 class QDirectFBPixmapData : public QPixmapData, public QDirectFBPaintDevice
 {
 public:
-    QDirectFBPixmapData(PixelType pixelType);
+    QDirectFBPixmapData(QDirectFBScreen *screen, PixelType pixelType);
     ~QDirectFBPixmapData();
 
     // Re-implemented from QPixmapData:
@@ -70,7 +70,7 @@ public:
     QImage toImage() const;
     QPaintEngine* paintEngine() const;
     virtual QImage *buffer();
-    QImage *buffer(uint lockFlags);
+    QImage *buffer(DFBSurfaceLockFlags lockFlags);
 
     // Pure virtual in QPixmapData, so re-implement here and delegate to QDirectFBPaintDevice
     int metric(QPaintDevice::PaintDeviceMetric m) const {return QDirectFBPaintDevice::metric(m);}
@@ -78,7 +78,6 @@ public:
     static bool hasAlphaChannel(const QImage &img);
 private:
     void invalidate();
-    QDirectFBPaintEngine *engine;
     QImage::Format format;
     bool alpha;
 };

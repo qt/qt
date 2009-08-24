@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1415,8 +1415,8 @@
     \c -pluralonly command line option, which allows the creation of
     \c .ts files containing only entries with plural forms.
 
-    See the \l{http://doc.trolltech.com/qq/}{Qt Quarterly} Article 
-    \l{http://doc.trolltech.com/qq/qq19-plurals.html}{Plural Forms in Translations}
+    See the \l{http://qt.nokia.com/doc/qq/}{Qt Quarterly} Article 
+    \l{http://qt.nokia.com/doc/qq/qq19-plurals.html}{Plural Forms in Translations}
     for further details on this issue.
 
     \section2 Coping With C++ Namespaces

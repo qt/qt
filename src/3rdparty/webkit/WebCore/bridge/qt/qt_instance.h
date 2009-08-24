@@ -64,6 +64,8 @@ public:
     static PassRefPtr<QtInstance> getQtInstance(QObject*, PassRefPtr<RootObject>, QScriptEngine::ValueOwnership ownership);
     static RuntimeObjectImp* getRuntimeObject(ExecState* exec, PassRefPtr<QtInstance>);
 
+    void removeCachedMethod(JSObject*);
+
 private:
     static PassRefPtr<QtInstance> create(QObject *instance, PassRefPtr<RootObject> rootObject, QScriptEngine::ValueOwnership ownership)
     {
@@ -78,7 +80,6 @@ private:
     QObject* m_hashkey;
     mutable QHash<QByteArray, JSObject*> m_methods;
     mutable QHash<QString, QtField*> m_fields;
-    mutable QSet<JSValuePtr> m_children;
     mutable QtRuntimeMetaMethod* m_defaultMethod;
     QScriptEngine::ValueOwnership m_ownership;
 };

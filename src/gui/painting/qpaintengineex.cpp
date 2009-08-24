@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -296,12 +296,12 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
             d->activeStroker = 0;
         } else {
             // ### re-enable...
-//             if (pen.isCosmetic()) {
-//                 d->dashStroker->setClipRect(d->deviceRect);
-//             } else {
-//                 QRectF clipRect = s->matrix.inverted().mapRect(QRectF(d->deviceRect));
-//                 d->dashStroker->setClipRect(clipRect);
-//             }
+            if (pen.isCosmetic()) {
+                d->dasher.setClipRect(d->exDeviceRect);
+            } else {
+                QRectF clipRect = state()->matrix.inverted().mapRect(QRectF(d->exDeviceRect));
+                d->dasher.setClipRect(clipRect);
+            }
             d->dasher.setDashPattern(pen.dashPattern());
             d->dasher.setDashOffset(pen.dashOffset());
             d->activeStroker = &d->dasher;

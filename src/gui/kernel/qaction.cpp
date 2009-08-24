@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -249,9 +249,16 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
            as described in the QMenuBar documentation.
     \value ApplicationSpecificRole This action should be put in the application menu with an application specific role
     \value AboutQtRole This action matches handles the "About Qt" menu item.
-    \value AboutRole This action should be placed where the "About" menu item is in the application menu.
+    \value AboutRole This action should be placed where the "About" menu item is in the application menu. The text of
+           the menu item will be set to "About <application name>". The application name is fetched from the
+           \c{Info.plist} file in the application's bundle (See \l{Deploying an Application on Mac OS X}).
     \value PreferencesRole This action should be placed where the  "Preferences..." menu item is in the application menu.
     \value QuitRole This action should be placed where the Quit menu item is in the application menu.
+
+    Setting this value only has effect on items that are in the immediate menus
+    of the menubar, not the submenus of those menus. For example, if you have
+    File menu in your menubar and the File menu has a submenu, setting the
+    MenuRole for the actions in that submenu have no effect. They will never be moved.
 */
 
 /*!

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1294,8 +1294,13 @@ void QApplication::setOverrideCursor(const QCursor &cursor)
 {
     qApp->d_func()->cursor_list.prepend(cursor);
 
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    [static_cast<NSCursor *>(qt_mac_nsCursorForQCursor(cursor)) push];
+#else
     if (qApp && qApp->activeWindow())
         qt_mac_set_cursor(&qApp->d_func()->cursor_list.first(), QCursor::pos());
+#endif
 }
 
 void QApplication::restoreOverrideCursor()
@@ -1304,12 +1309,17 @@ void QApplication::restoreOverrideCursor()
         return;
     qApp->d_func()->cursor_list.removeFirst();
 
+#ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
+    [NSCursor pop];
+#else
     if (qApp && qApp->activeWindow()) {
         const QCursor def(Qt::ArrowCursor);
         qt_mac_set_cursor(qApp->d_func()->cursor_list.isEmpty() ? &def : &qApp->d_func()->cursor_list.first(), QCursor::pos());
     }
-}
 #endif
+}
+#endif // QT_NO_CURSOR
 
 QWidget *QApplication::topLevelAt(const QPoint &p)
 {
@@ -1471,6 +1481,7 @@ QWidget *QApplicationPrivate::tryModalHelper_sys(QWidget *top)
     return top;
 }
 
+#ifndef QT_MAC_USE_COCOA
 static bool qt_try_modal(QWidget *widget, EventRef event)
 {
     QWidget * top = 0;
@@ -1504,6 +1515,7 @@ static bool qt_try_modal(QWidget *widget, EventRef event)
 #endif
     return !block_event;
 }
+#endif
 
 OSStatus QApplicationPrivate::tabletProximityCallback(EventHandlerCallRef, EventRef carbonEvent,
                                                       void *)
@@ -2884,52 +2896,25 @@ bool QApplicationPrivate::canQuit()
 #endif
 }
 
-void onApplicationWindowChangedActivation( QWidget*widget, bool activated )
+void onApplicationWindowChangedActivation(QWidget *widget, bool activated)
 {
 #if QT_MAC_USE_COCOA
-    QApplication *app = qApp;
+    if (!widget)
+        return;
 
-    if ( activated )
-    {
-        if (QApplicationPrivate::app_style)
-        {
+    if (activated) {
+        if (QApplicationPrivate::app_style) {
             QEvent ev(QEvent::Style);
             qt_sendSpontaneousEvent(QApplicationPrivate::app_style, &ev);
         }
-
-        if (widget && app_do_modal && !qt_try_modal(widget, NULL))
-            return;
-
-        if (widget && widget->window()->isVisible())
-        {
-            QWidget *tlw = widget->window();
-
-            if (tlw->isWindow() && !(tlw->windowType() == Qt::Popup)
-                 && !qt_mac_is_macdrawer(tlw)
-                && (!tlw->parentWidget() || tlw->isModal() || !(tlw->windowType() == Qt::Tool))) {
-                bool just_send_event = false;
-#if 0
-                WindowActivationScope    scope;
-                if ( GetWindowActivationScope((OSWindowRef)wid, &scope) == noErr &&
-                        scope == kWindowActivationScopeIndependent) 
-                {
-                    if ( GetFrontWindowOfClass(kAllWindowClasses, true) != wid )
-                        just_send_event = true;
-                }
-#endif
-                if (just_send_event) {
-                    QEvent e(QEvent::WindowActivate);
-                    qt_sendSpontaneousEvent(widget, &e);
-                } else {
-                    app->setActiveWindow(tlw);
-                }
-            }
-        }
+        qApp->setActiveWindow(widget);
     } else { // deactivated
-        if (widget && QApplicationPrivate::active_window == widget)
-            app->setActiveWindow(0);
+        if (QApplicationPrivate::active_window == widget)
+            qApp->setActiveWindow(0);
     }
+
     QMenuBar::macUpdateMenuBar();
+
 #else
     Q_UNUSED(widget);
     Q_UNUSED(activated);

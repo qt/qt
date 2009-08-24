@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -340,6 +340,8 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
 {
     Q_D(QFSFileEngine);
     Q_ASSERT(!isReallyOpen());
+
+    openMode |= QIODevice::ReadWrite;
 
     if (!filePathIsTemplate)
         return QFSFileEngine::open(openMode);
@@ -758,7 +760,6 @@ bool QTemporaryFile::open(OpenMode flags)
         }
     }
 
-    flags |= QIODevice::ReadWrite;
     if (QFile::open(flags)) {
         d->fileName = d->fileEngine->fileName(QAbstractFileEngine::DefaultName);
         return true;

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -69,6 +69,7 @@ QT_BEGIN_NAMESPACE
 // functionality is provided within Qt (see task 196275).
 static const char * language_strings[] =
 {
+    QT_TRANSLATE_NOOP("MessageEditor", "Russian"),
     QT_TRANSLATE_NOOP("MessageEditor", "German"),
     QT_TRANSLATE_NOOP("MessageEditor", "Japanese"),
     QT_TRANSLATE_NOOP("MessageEditor", "French"),

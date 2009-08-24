@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1202,7 +1202,8 @@ QRect QWindowsXPStyle::subElementRect(SubElement sr, const QStyleOption *option,
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(option)) {
             MARGINS borderSize;
             if (widget) {
-                HTHEME theme = pOpenThemeData(QWindowsXPStylePrivate::winId(widget), L"Button");
+                XPThemeData buttontheme(widget, 0, QLatin1String("Button"));
+                HTHEME theme = buttontheme.handle();
                 if (theme) {
                     int stateId;
                     if (!(option->state & State_Enabled))
@@ -3611,7 +3612,8 @@ QSize QWindowsXPStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt
     case CT_LineEdit:
     case CT_ComboBox:
         {
-            HTHEME theme = pOpenThemeData(QWindowsXPStylePrivate::winId(widget), L"Button");
+            XPThemeData buttontheme(widget, 0, QLatin1String("Button"));
+            HTHEME theme = buttontheme.handle();
             MARGINS borderSize;
             if (theme) {
                 int result = pGetThemeMargins(theme,

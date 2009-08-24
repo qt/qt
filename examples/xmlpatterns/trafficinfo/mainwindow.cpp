@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -111,7 +111,9 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 
 void MainWindow::paintEvent(QPaintEvent*)
 {
-    QLinearGradient gradient(QPoint(width()/2, 0), QPoint(width()/2, height()));
+    const QPoint start(width()/2, 0);
+    const QPoint finalStop(width()/2, height());
+    QLinearGradient gradient(start, finalStop);
     const QColor qtGreen(102, 176, 54);
     gradient.setColorAt(0, qtGreen.dark());
     gradient.setColorAt(0.5, qtGreen);

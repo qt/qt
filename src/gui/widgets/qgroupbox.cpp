@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -479,11 +479,7 @@ void QGroupBox::focusInEvent(QFocusEvent *fe)
     if (focusPolicy() == Qt::NoFocus) {
         d->_q_fixFocus(fe->reason());
     } else {
-        QStyleOptionGroupBox box;
-        initStyleOption(&box);
-        QRect rect = style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxCheckBox, this)
-            | style()->subControlRect(QStyle::CC_GroupBox, &box, QStyle::SC_GroupBoxLabel, this);
-        update(rect);
+        QWidget::focusInEvent(fe);
     }
 }
 

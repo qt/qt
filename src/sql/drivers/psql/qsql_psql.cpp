@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,11 +54,33 @@
 #include <qstringlist.h>
 #include <qmutex.h>
 
+
 #include <libpq-fe.h>
 #include <pg_config.h>
 
 #include <stdlib.h>
 #include <math.h>
+// below code taken from an example at http://www.gnu.org/software/hello/manual/autoconf/Function-Portability.html
+#ifndef isnan
+    # define isnan(x) \
+        (sizeof (x) == sizeof (long double) ? isnan_ld (x) \
+        : sizeof (x) == sizeof (double) ? isnan_d (x) \
+        : isnan_f (x))
+    static inline int isnan_f  (float       x) { return x != x; }
+    static inline int isnan_d  (double      x) { return x != x; }
+    static inline int isnan_ld (long double x) { return x != x; }
+#endif
+
+#ifndef isinf
+    # define isinf(x) \
+        (sizeof (x) == sizeof (long double) ? isinf_ld (x) \
+        : sizeof (x) == sizeof (double) ? isinf_d (x) \
+        : isinf_f (x))
+    static inline int isinf_f  (float       x) { return isnan (x - x); }
+    static inline int isinf_d  (double      x) { return isnan (x - x); }
+    static inline int isinf_ld (long double x) { return isnan (x - x); }
+#endif
+
 
 // workaround for postgres defining their OIDs in a private header file
 #define QBOOLOID 16
@@ -604,10 +626,9 @@ static QPSQLDriver::Protocol getPSQLVersion(PGconn* connection)
 {
     QPSQLDriver::Protocol serverVersion = QPSQLDriver::Version6;
     PGresult* result = PQexec(connection, "select version()");
-    int status =  PQresultStatus(result);
+    int status = PQresultStatus(result);
     if (status == PGRES_COMMAND_OK || status == PGRES_TUPLES_OK) {
         QString val = QString::fromAscii(PQgetvalue(result, 0, 0));
-        PQclear(result);
         QRegExp rx(QLatin1String("(\\d+)\\.(\\d+)"));
         rx.setMinimal(true); // enforce non-greedy RegExp
         if (rx.indexIn(val) != -1) {
@@ -648,6 +669,7 @@ static QPSQLDriver::Protocol getPSQLVersion(PGconn* connection)
             }
         }
     }
+    PQclear(result);
 
     if (serverVersion < QPSQLDriver::Version71)
         qWarning("This version of PostgreSQL is not supported and may not work.");
@@ -1111,12 +1133,13 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QVariant::Time:
 #ifndef QT_NO_DATESTRING
             if (field.value().toTime().isValid()) {
-                r = field.value().toTime().toString(Qt::ISODate);
+                r = QLatin1Char('\'') + field.value().toTime().toString(Qt::ISODate) + QLatin1Char('\'');
             } else
 #endif
             {
                 r = QLatin1String("NULL");
             }
+            break;
         case QVariant::String:
         {
             // Escape '\' characters
@@ -1142,6 +1165,21 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             r += QLatin1String((const char*)data);
             r += QLatin1Char('\'');
             qPQfreemem(data);
+            break;
+        }
+        case QVariant::Double: {
+            double val = field.value().toDouble();
+            if (isnan(val))
+                r = QLatin1String("'NaN'");
+            else {
+                int res = isinf(val);
+                if (res == 1)
+                    r = QLatin1String("'Infinity'");
+                else if (res == -1)
+                    r = QLatin1String("'-Infinity'");
+                else
+                    r = QSqlDriver::formatValue(field, trimStrings);
+            }
             break;
         }
         default:
@@ -1248,15 +1286,15 @@ QStringList QPSQLDriver::subscribedToNotificationsImplementation() const
 void QPSQLDriver::_q_handleNotification(int)
 {
     PQconsumeInput(d->connection);
-    PGnotify *notify = PQnotifies(d->connection);
-    if (notify) {
-        QString name(QLatin1String(notify->relname));
 
+    PGnotify *notify = 0;
+    while((notify = PQnotifies(d->connection)) != 0) {
+        QString name(QLatin1String(notify->relname));
         if (d->seid.contains(name))
             emit notification(name);
         else
             qWarning("QPSQLDriver: received notification for '%s' which isn't subscribed to.",
-                qPrintable(name));
+                    qPrintable(name));
 
         qPQfreemem(notify);
     }

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -838,9 +838,11 @@ bool WidgetFactory::isPassiveInteractor(QWidget *widget)
         if (isTabBarInteractor(tabBar))
             m_lastWasAPassiveInteractor = true;
         return m_lastWasAPassiveInteractor;
-    }  else if (qobject_cast<QSizeGrip*>(widget))
+#ifndef QT_NO_SIZEGRIP
+    }  else if (qobject_cast<QSizeGrip*>(widget)) {
         return (m_lastWasAPassiveInteractor = true);
-     else if (qobject_cast<QMdiSubWindow*>(widget))
+#endif
+    }  else if (qobject_cast<QMdiSubWindow*>(widget))
         return (m_lastWasAPassiveInteractor = true);
     else if (qobject_cast<QAbstractButton*>(widget) && (qobject_cast<QTabBar*>(widget->parent()) || qobject_cast<QToolBox*>(widget->parent())))
         return (m_lastWasAPassiveInteractor = true);

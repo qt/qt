@@ -32,6 +32,7 @@
 #include "Frame.h"
 #include "FrameTree.h"
 #include "FrameView.h"
+#include "GCController.h"
 #include "IconDatabase.h"
 #include "InspectorController.h"
 #include "Page.h"
@@ -103,6 +104,11 @@ void QWEBKIT_EXPORT qt_drt_setJavaScriptProfilingEnabled(QWebFrame* qframe, bool
         controller->enableProfiler();
     else
         controller->disableProfiler();
+}
+
+void QWEBKIT_EXPORT qt_drt_garbageCollector_collect()
+{
+    gcController().garbageCollectNow();
 }
 
 void QWebFramePrivate::init(QWebFrame *qframe, WebCore::Page *webcorePage, QWebFrameData *frameData)

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,12 +51,6 @@
 #include <QtCore/QStack>
 
 QT_BEGIN_NAMESPACE
-
-class ProFile;
-class ProFileEvaluator;
-
-void evaluateProFile(const ProFileEvaluator &visitor, QHash<QByteArray, QStringList> *varMap);
-bool evaluateProFile(const QString &fileName, bool verbose, QHash<QByteArray, QStringList> *varMap);
 
 class ProFileEvaluator
 {
@@ -82,6 +76,10 @@ public:
     void addProperties(const QHash<QString, QString> &properties);
     QStringList values(const QString &variableName) const;
     QStringList values(const QString &variableName, const ProFile *pro) const;
+    QStringList absolutePathValues(const QString &variable, const QString &baseDirectory) const;
+    QStringList absoluteFileValues(
+            const QString &variable, const QString &baseDirectory, const QStringList &searchDirs,
+            const ProFile *pro) const;
     QString propertyValue(const QString &val) const;
 
     // for our descendents

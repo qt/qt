@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -202,7 +202,7 @@ bool QSqlTableModelPrivate::exec(const QString &stmt, bool prepStatement,
                 editQuery.addBindValue(rec.value(i));
         }
         for (i = 0; i < whereValues.count(); ++i) {
-            if (whereValues.isGenerated(i))
+            if (whereValues.isGenerated(i) && !whereValues.isNull(i))
                 editQuery.addBindValue(whereValues.value(i));
         }
 
@@ -538,6 +538,7 @@ bool QSqlTableModel::setData(const QModelIndex &index, const QVariant &value, in
         isOk = updateRowInTable(index.row(), d->editBuffer);
         if (isOk)
             select();
+        emit dataChanged(index, index);
         break; }
     case OnRowChange:
         if (index.row() == d->insertIndex) {

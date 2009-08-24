@@ -4,18 +4,20 @@ TEMPLATE = subdirs
 !wince*:SUBDIRS += \
            headers
 
-SUBDIRS += _networkselftest \
+SUBDIRS += \
            bic \
            collections \
-           compile \
+           compiler \
            compilerwarnings \
            exceptionsafety \
+           linguist \
            macgui \
            macplist \
 	   mediaobject \
 #	   mediaobject_wince_ds9 \   This is Windows CE only (we test the second phonon backend ds9 here)
            moc \
            modeltest \
+           networkselftest \
            q3accel \
            q3action \
            q3actiongroup \
@@ -103,8 +105,6 @@ SUBDIRS += _networkselftest \
            qdate \
            qdatetime \
            qdatetimeedit \
-	   qdbuspendingcall \
-	   qdbuspendingreply \
            qdebug \
            qdesktopservices \
            qdesktopwidget \
@@ -223,8 +223,8 @@ SUBDIRS += _networkselftest \
            qpixmapfilter \
            qplaintextedit \
            qpoint \
-           qpointarray \
            qpointer \
+           qpolygon \
            qprinter \
            qprinterinfo \
            qprocess \
@@ -246,9 +246,9 @@ SUBDIRS += _networkselftest \
            qscriptcontextinfo \
            qscriptengine \
            qscriptengineagent \
+           qscriptextqobject \
            qscriptjstestsuite \
            qscriptv8testsuite \
-           qscriptqobject \
            qscriptstring \
            qscriptvalue \
            qscriptvalueiterator \
@@ -424,7 +424,9 @@ unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
            qdbusmarshall \
            qdbusmetaobject \
            qdbusmetatype \
-	   qdbusperformance \
+           qdbuspendingcall \
+           qdbuspendingreply \
+           qdbusperformance \
            qdbusreply \
            qdbusthreading \
            qdbusxmlparser

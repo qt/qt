@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -261,6 +261,9 @@ tst_QMenu::addActionsAndClear()
 
 void tst_QMenu::mouseActivation()
 {
+#ifdef Q_OS_WINCE_WM
+    QSKIP("We have a separate mouseActivation test for Windows mobile.", SkipAll);
+#endif
     QMenu menu;
     menu.addAction("Menu Action");
     menu.show();

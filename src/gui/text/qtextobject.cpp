@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -412,11 +412,6 @@ QTextFrameLayoutData::~QTextFrameLayoutData()
 QTextFrame::QTextFrame(QTextDocument *doc)
     : QTextObject(*new QTextFramePrivate(doc), doc)
 {
-    Q_D(QTextFrame);
-    d->fragment_start = 0;
-    d->fragment_end = 0;
-    d->parentFrame = 0;
-    d->layoutData = 0;
 }
 
 // ### DOC: What does this do to child frames?
@@ -435,11 +430,6 @@ QTextFrame::~QTextFrame()
 QTextFrame::QTextFrame(QTextFramePrivate &p, QTextDocument *doc)
     : QTextObject(p, doc)
 {
-    Q_D(QTextFrame);
-    d->fragment_start = 0;
-    d->fragment_end = 0;
-    d->parentFrame = 0;
-    d->layoutData = 0;
 }
 
 /*!

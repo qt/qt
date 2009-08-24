@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -81,12 +81,14 @@ void QSvgQualityStyle::revert(QPainter *, QSvgExtraStates &)
 }
 
 QSvgFillStyle::QSvgFillStyle(const QBrush &brush)
-    : m_fill(brush), m_style(0), m_fillRuleSet(false), m_fillOpacitySet(false)
+    : m_fill(brush), m_style(0), m_fillRuleSet(false), m_fillRule(Qt::OddEvenFill),
+        m_fillOpacitySet(false), m_fillOpacity(0),m_oldOpacity(0)
 {
 }
 
 QSvgFillStyle::QSvgFillStyle(QSvgStyleProperty *style)
-    : m_style(style), m_fillRuleSet(false), m_fillOpacitySet(false)
+    : m_style(style), m_fillRuleSet(false), m_fillRule(Qt::OddEvenFill),
+        m_fillOpacitySet(false), m_fillOpacity(0),m_oldOpacity(0)
 {
 }
 
@@ -523,11 +525,14 @@ void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
     if (totalTimeElapsed < m_from || m_finished)
         return;
 
-    qreal animationFrame = (totalTimeElapsed - m_from) / m_to;
+    qreal animationFrame = 0;
+    if (m_totalRunningTime != 0) {
+        animationFrame = (totalTimeElapsed - m_from) / m_totalRunningTime;
 
-    if (m_repeatCount >= 0 && m_repeatCount < animationFrame) {
-        m_finished = true;
-        animationFrame = m_repeatCount;
+        if (m_repeatCount >= 0 && m_repeatCount < animationFrame) {
+            m_finished = true;
+            animationFrame = m_repeatCount;
+        }
     }
 
     qreal percentOfAnimation = animationFrame;

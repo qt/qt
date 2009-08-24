@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1526,12 +1526,16 @@ void QWidgetPrivate::toggleDrawers(bool visible)
  *****************************************************************************/
 bool QWidgetPrivate::qt_mac_update_sizer(QWidget *w, int up)
 {
+    // I'm not sure what "up" is
     if(!w || !w->isWindow())
         return false;
 
     QTLWExtra *topData = w->d_func()->topData();
     QWExtra *extraData = w->d_func()->extraData();
-    topData->resizer += up;
+    // topData->resizer is only 4 bits, so subtracting -1 from zero causes bad stuff
+    // to happen, prevent that here (you really want the thing hidden).
+    if (up >= 0 || topData->resizer != 0)
+        topData->resizer += up;
     OSWindowRef windowRef = qt_mac_window_for(OSViewRef(w->winId()));
     {
 #ifndef QT_MAC_USE_COCOA
@@ -1544,7 +1548,6 @@ bool QWidgetPrivate::qt_mac_update_sizer(QWidget *w, int up)
     bool remove_grip = (topData->resizer || (w->windowFlags() & Qt::FramelessWindowHint)
                         || (extraData->maxw && extraData->maxh &&
                             extraData->maxw == extraData->minw && extraData->maxh == extraData->minh));
-
 #ifndef QT_MAC_USE_COCOA
     WindowAttributes attr;
     GetWindowAttributes(windowRef, &attr);
@@ -2173,11 +2176,10 @@ void QWidgetPrivate::finishCreateWindow_sys_Cocoa(void * /*NSWindow * */ voidWin
 
     if ((popup || type == Qt::Tool || type == Qt::ToolTip) && !q->isModal()) {
         [windowRef setHidesOnDeactivate:YES];
-        [windowRef setHasShadow:YES];
     } else {
         [windowRef setHidesOnDeactivate:NO];
     }
-
+    [windowRef setHasShadow:YES];
     Q_UNUSED(parentWidget);
     Q_UNUSED(dialog);
 
@@ -2731,10 +2733,15 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
         createWinId();
         if (q->isWindow()) {
 #ifndef QT_MAC_USE_COCOA
-            if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
-                mwl->updateHIToolBarStatus();
+            // We do this down below for wasCreated, so avoid doing this twice
+            // (only for performance, it gets called a lot anyway).
+            if (!wasCreated) {
+                if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
+                    mwl->updateHIToolBarStatus();
+                }
             }
 #else
+            // Simply transfer our toolbar over. Everything should stay put, unlike in Carbon.
             if (oldToolbar && !(f & Qt::FramelessWindowHint)) {
                 OSWindowRef newWindow = qt_mac_window_for(q);
                 [newWindow setToolbar:oldToolbar];
@@ -2749,6 +2756,16 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
 
     if (wasCreated) {
         transferChildren();
+#ifndef QT_MAC_USE_COCOA
+        // If we were a unified window, We just transfered our toolbars out of the unified toolbar.
+        // So redo the status one more time. It apparently is not an issue with Cocoa.
+        if (q->isWindow()) {
+            if (QMainWindowLayout *mwl = qobject_cast<QMainWindowLayout *>(q->layout())) {
+                mwl->updateHIToolBarStatus();
+            }
+        }
+#endif
+
         if (topData &&
                 (!topData->caption.isEmpty() || !topData->filePath.isEmpty()))
             setWindowTitle_helper(q->windowTitle());
@@ -3231,6 +3248,12 @@ void QWidgetPrivate::show_sys()
         OSWindowRef window = qt_mac_window_for(q);
 #ifndef QT_MAC_USE_COCOA
         SizeWindow(window, q->width(), q->height(), true);
+#endif
+
+#ifdef QT_MAC_USE_COCOA
+        // Make sure that we end up sending a repaint event to
+        // the widget if the window has been visible one before:
+        [qt_mac_get_contentview_for(window) setNeedsDisplay:YES];
 #endif
         if(qt_mac_is_macsheet(q)) {
             qt_event_request_showsheet(q);
@@ -3749,7 +3772,7 @@ static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newR
     // Perform a normal (complete repaint) update in some cases:
     if (
         // move-by-scroll requires QWidgetPrivate::isOpaque set
-        (isMove && qd->isOpaque == false) ||
+        (isMove && q->testAttribute(Qt::WA_OpaquePaintEvent) == false) ||
 
         // limited update on resize requires WA_StaticContents.
         (isResize && q->testAttribute(Qt::WA_StaticContents) == false) ||
@@ -4070,6 +4093,8 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
             setGeometry_sys_helper(x, y, w, h, isMove);
         }
 #else
+        QSize  olds = q->size();
+        const bool isResize = (olds != QSize(w, h));
         NSWindow *window = qt_mac_window_for(q);
         const QRect &fStrut = frameStrut();
         const QRect frameRect(QPoint(x - fStrut.left(), y - fStrut.top()),
@@ -4077,7 +4102,10 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
                                     fStrut.top() + fStrut.bottom() + h));
         NSRect cocoaFrameRect = NSMakeRect(frameRect.x(), flipYCoordinate(frameRect.bottom() + 1),
                                            frameRect.width(), frameRect.height());
-
+        // The setFrame call will trigger a 'windowDidResize' notification for the corresponding
+        // NSWindow. The pending flag is set, so that the resize event can be send as non-spontaneous.
+        if (isResize)
+            q->setAttribute(Qt::WA_PendingResizeEvent);
         QPoint currTopLeft = data.crect.topLeft();
         if (currTopLeft.x() == x && currTopLeft.y() == y
                 && cocoaFrameRect.size.width != 0
@@ -4273,7 +4301,7 @@ void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
                         HIRect bounds = CGRectMake(w->data->crect.x(), w->data->crect.y(),
                                                    w->data->crect.width(), w->data->crect.height());
                         HIViewRef hiview = qt_mac_nativeview_for(w);
-                        const bool opaque = qt_widget_private(w)->isOpaque;
+                        const bool opaque = q->testAttribute(Qt::WA_OpaquePaintEvent);
 
                         if (opaque)
                             HIViewSetDrawingEnabled(hiview,  false);
@@ -4652,6 +4680,7 @@ void QWidgetPrivate::setModal_sys()
     OSWindowRef windowRef = qt_mac_window_for(q);
 
 #ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
     bool alreadySheet = [windowRef styleMask] & NSDocModalWindowMask;
 
     if (windowParent && q->windowModality() == Qt::WindowModal){
@@ -4728,31 +4757,40 @@ void QWidgetPrivate::setModal_sys()
                 || (primaryWindow && primaryWindow->windowModality() == Qt::WindowModal)){
             // Window should be window-modal (which implies a sheet).
             if (old_wclass != kSheetWindowClass){
-                // We cannot convert a created window to a sheet. So we recreate the window:
+                // We cannot convert a created window to a sheet.
+                // So we recreate the window:
                 recreateMacWindow();
                 return;
             }
-        } else if (!(q->data->window_flags & Qt::CustomizeWindowHint)) {
-            if (old_wclass == kDocumentWindowClass || old_wclass == kFloatingWindowClass || old_wclass == kUtilityWindowClass){
-                // Only change the class to kMovableModalWindowClass if the no explicit jewels
-                // are set (kMovableModalWindowClass can't contain them), and the current window class
-                // can be converted to modal (according to carbon doc). Mind the order of
-                // HIWindowChangeClass and ChangeWindowAttributes.
-                WindowGroupRef group = GetWindowGroup(windowRef);
-                HIWindowChangeClass(windowRef, kMovableModalWindowClass);
-                quint32 tmpWattr = kWindowCloseBoxAttribute | kWindowHorizontalZoomAttribute;
-                ChangeWindowAttributes(windowRef, tmpWattr, kWindowNoAttributes);
-                ChangeWindowAttributes(windowRef, kWindowNoAttributes, tmpWattr);
-                // If the window belongs to a qt-created group, set that group once more:
-                if (data.window_flags & Qt::WindowStaysOnTopHint
-                        || q->windowType() == Qt::Popup
-                        || q->windowType() == Qt::ToolTip)
-                    SetWindowGroup(windowRef, group);
+        } else {
+            // Window should be application-modal (which implies NOT using a sheet).
+            if (old_wclass == kSheetWindowClass){
+                // We cannot convert a sheet to a window.
+                // So we recreate the window:
+                recreateMacWindow();
+                return;
+            } else if (!(q->data->window_flags & Qt::CustomizeWindowHint)) {
+                if (old_wclass == kDocumentWindowClass || old_wclass == kFloatingWindowClass || old_wclass == kUtilityWindowClass){
+                    // Only change the class to kMovableModalWindowClass if the no explicit jewels
+                    // are set (kMovableModalWindowClass can't contain them), and the current window class
+                    // can be converted to modal (according to carbon doc). Mind the order of
+                    // HIWindowChangeClass and ChangeWindowAttributes.
+                    WindowGroupRef group = GetWindowGroup(windowRef);
+                    HIWindowChangeClass(windowRef, kMovableModalWindowClass);
+                    quint32 tmpWattr = kWindowCloseBoxAttribute | kWindowHorizontalZoomAttribute;
+                    ChangeWindowAttributes(windowRef, tmpWattr, kWindowNoAttributes);
+                    ChangeWindowAttributes(windowRef, kWindowNoAttributes, tmpWattr);
+                    // If the window belongs to a qt-created group, set that group once more:
+                    if (data.window_flags & Qt::WindowStaysOnTopHint
+                            || q->windowType() == Qt::Popup
+                            || q->windowType() == Qt::ToolTip)
+                        SetWindowGroup(windowRef, group);
+                }
+                // Popups are usually handled "special" and are never modal.
+                Qt::WindowType winType = q->windowType();
+                if (winType != Qt::Popup && winType != Qt::ToolTip)
+                    SetWindowModality(windowRef, kWindowModalityAppModal, 0);
             }
-            // Popups are usually handled "special" and are never modal.
-            Qt::WindowType winType = q->windowType();
-            if (winType != Qt::Popup && winType != Qt::ToolTip)
-                SetWindowModality(windowRef, kWindowModalityAppModal, 0);
         }
     } else if (windowRef) {
         if (old_wclass == kSheetWindowClass){

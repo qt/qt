@@ -15,7 +15,7 @@
 ** addition, as a special exception, Trolltech gives you certain
 ** additional rights. These rights are described in the Trolltech GPL
 ** Exception version 1.2, which can be found at
-** http://www.trolltech.com/products/qt/gplexception/ and in the file
+** http://qt.nokia.com/products/qt/gplexception/ and in the file
 ** GPL_EXCEPTION.txt in this package.
 **
 ** Please review the following information to ensure GNU General
@@ -297,7 +297,7 @@ public:
         );
         PushButton1->setText(QApplication::translate("PreviewWidgetBase", "PushButton", 0, QApplication::UnicodeUTF8));
         textView->setText(QApplication::translate("PreviewWidgetBase", "<p>\n"
-"<a href=\"http://www.trolltech.com\">http://www.trolltech.com</a>\n"
+"<a href=\"http://qt.nokia.com\">http://www.trolltech.com</a>\n"
 "</p>\n"
 "<p>\n"
 "<a href=\"http://www.kde.org\">http://www.kde.org</a>\n"

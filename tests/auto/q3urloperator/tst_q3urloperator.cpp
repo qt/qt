@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,6 +54,8 @@
 #include <q3ptrlist.h>
 #include <q3valuelist.h>
 #include <qlist.h>
+
+#include "../network-settings.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -150,7 +152,7 @@ void tst_Q3UrlOperator::initTestCase()
 
     // prepare: make sure that there is a unique directory for FTP upload
     // testing (to avoid parallel executed tests interfere with each other)
-    ftpQtestUpload = "ftp://qt-test-server.troll.no/";
+    ftpQtestUpload = QString("ftp://%1/").arg(QtNetworkSettings::serverLocalName());
     QString dir = QString( "qtest/upload/%1" ).arg( (ulong)this );
 
     Q3UrlOperator opMkdir( ftpQtestUpload );
@@ -218,8 +220,8 @@ void tst_Q3UrlOperator::cleanup()
 
 void tst_Q3UrlOperator::copy_data()
 {
-    const QString ftpQtest( "ftp://qt-test-server.troll.no/qtest" );
-    const QString httpQtest( "http://qt-test-server.troll.no/qtest" );
+    const QString ftpQtest( QString("ftp://%1/qtest").arg(QtNetworkSettings::serverLocalName()) );
+    const QString httpQtest( QString("http://%1/qtest").arg(QtNetworkSettings::serverLocalName()) );
 
     // argument for the constructor
     QTest::addColumn<QString>("url");
@@ -339,8 +341,8 @@ void tst_Q3UrlOperator::slotFinished_copy( Q3NetworkOperation *op )
 
 void tst_Q3UrlOperator::put_data()
 {
-    const QString httpQtest( "http://qt-test-server.troll.no/qtest/cgi-bin" );
-    const QString httpQtestGet( "http://qt-test-server.troll.no/qtest/cgi-bin/retrieve_testfile.cgi" );
+    const QString httpQtest( QString("http://%1/qtest/cgi-bin").arg(QtNetworkSettings::serverLocalName()) );
+    const QString httpQtestGet( QString("http://%1/qtest/cgi-bin/retrieve_testfile.cgi").arg(QtNetworkSettings::serverLocalName()) );
 
     QByteArray putData_1( 5 );
     putData_1[0] = 'a';

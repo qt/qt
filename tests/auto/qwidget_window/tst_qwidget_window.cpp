@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -78,6 +78,7 @@ private slots:
     void tst_windowFilePath();
 
     void tst_showWithoutActivating();
+    void tst_paintEventOnSecondShow();
 };
 
 void tst_QWidget_window::initTestCase()
@@ -150,7 +151,9 @@ class TestWidget : public QWidget
 {
 public:
     int m_first, m_next;    
-    void reset(){ m_first = m_next = 0; }
+    bool paintEventReceived;
+
+    void reset(){ m_first = m_next = 0; paintEventReceived = false; }
     bool event(QEvent *event)
     {
         switch (event->type()) {
@@ -162,6 +165,10 @@ public:
                 m_next = event->type();
             else 
                 m_first = event->type();
+            break;
+        case QEvent::Paint:
+            paintEventReceived = true;
+            break;
         default:
             break;
         }
@@ -298,6 +305,21 @@ void tst_QWidget_window::tst_showWithoutActivating()
     XGetInputFocus(QX11Info::display(), &window, &revertto);
     QCOMPARE(lineEdit->winId(), window);
 #endif // Q_WS_X11
+}
+
+void tst_QWidget_window::tst_paintEventOnSecondShow()
+{
+    TestWidget w;
+    w.show();
+    w.hide();
+
+    w.reset();
+    w.show();
+#ifdef Q_WS_X11
+    QTest::qWait(500);
+#endif
+    QApplication::processEvents();
+    QVERIFY(w.paintEventReceived);
 }
 
 QTEST_MAIN(tst_QWidget_window)

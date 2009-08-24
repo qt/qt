@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -3342,7 +3342,7 @@ void QGraphicsView::mouseReleaseEvent(QMouseEvent *event)
         }
     } else
 #endif
-    if (d->dragMode == QGraphicsView::ScrollHandDrag) {
+    if (d->dragMode == QGraphicsView::ScrollHandDrag && event->button() == Qt::LeftButton) {
 #ifndef QT_NO_CURSOR
         // Restore the open hand cursor. ### There might be items
         // under the mouse that have a valid cursor at this time, so

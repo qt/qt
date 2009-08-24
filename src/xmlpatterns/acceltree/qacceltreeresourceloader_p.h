@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -76,7 +76,7 @@ namespace QPatternist
      * to be used in a blocking manner.
      *
      * @see AccelTreeResourceLoader::load()
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NetworkLoop : public QEventLoop
     {
@@ -109,7 +109,7 @@ namespace QPatternist
      * @short Handles requests for documents, and instantiates
      * them as AccelTree instances.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_AUTOTEST_EXPORT AccelTreeResourceLoader : public DeviceResourceLoader
     {

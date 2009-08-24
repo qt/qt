@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -140,16 +140,10 @@ namespace QtSharedPointer {
 
         inline void internalConstruct(T *ptr)
         {
-#ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-            if (ptr) internalSafetyCheckAdd(ptr);
-#endif
             value = ptr;
         }
         inline void internalDestroy()
         {
-#ifdef QT_SHAREDPOINTER_TRACK_POINTERS
-            if (value) internalSafetyCheckRemove(value);
-#endif
         }
 
 #if defined(Q_NO_TEMPLATE_FRIENDS)

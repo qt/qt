@@ -57,7 +57,7 @@
     <message>
         <location line="+2"/>
         <source>Accessibility</source>
-        <translation>Средства для людей с ограниченными возможностями</translation>
+        <translation>Специальные возможности</translation>
     </message>
 </context>
 <context>
@@ -87,7 +87,7 @@ Check your Gstreamer installation and make sure you
 have libgstreamer-plugins-base installed.</source>
         <translation>Невозможно начать воспроизведение.
 
-Проверьте установку Gstreamer и убедитесь,
+Проверьте установку Gstreamer и убедитесь, 
 что пакет libgstreamer-plugins-base установлен.</translation>
     </message>
     <message>
@@ -917,22 +917,22 @@ to
 <context>
     <name>QAxSelect</name>
     <message>
-        <location filename="../src/activeqt/container/qaxselect.ui" line="+54"/>
+        <location filename="../src/activeqt/container/qaxselect.ui"/>
         <source>Select ActiveX Control</source>
         <translation>Выбор компоненты ActiveX</translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location/>
         <source>OK</source>
         <translation>Выбрать</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location/>
         <source>&amp;Cancel</source>
         <translation>&amp;Отмена</translation>
     </message>
     <message>
-        <location line="+49"/>
+        <location/>
         <source>COM &amp;Object:</source>
         <translation>COM &amp;Объект:</translation>
     </message>
@@ -1022,7 +1022,7 @@ to
         <translation>Открыть</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemviews/qitemeditorfactory.cpp" line="+544"/>
+        <location filename="../src/gui/itemviews/qitemeditorfactory.cpp" line="+556"/>
         <source>False</source>
         <translation>Нет</translation>
     </message>
@@ -1491,32 +1491,32 @@ Please verify the correct file name was given.</source>
         <translation>Показать скр&amp;ытые файлы</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.ui" line="+84"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="+73"/>
+        <location filename="../src/gui/dialogs/qfiledialog.ui"/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Back</source>
         <translation>Назад</translation>
     </message>
     <message>
-        <location line="+14"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="+14"/>
+        <location/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Parent Directory</source>
         <translation>Родительский каталог</translation>
     </message>
     <message>
-        <location line="+14"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="+14"/>
+        <location/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>List View</source>
         <translation>Список</translation>
     </message>
     <message>
-        <location line="+7"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="+7"/>
+        <location/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Detail View</source>
         <translation>Подробный вид</translation>
     </message>
     <message>
-        <location line="+141"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="+162"/>
+        <location/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Files of type:</source>
         <translation>Типы файлов:</translation>
     </message>
@@ -1595,8 +1595,8 @@ Do you want to delete it anyway?</source>
         <translation>Показать </translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.ui" line="-169"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="-190"/>
+        <location filename="../src/gui/dialogs/qfiledialog.ui"/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Forward</source>
         <translation>Вперёд</translation>
     </message>
@@ -1628,14 +1628,14 @@ Do you want to delete it anyway?</source>
         <translation>&amp;Имя файла:</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.ui" line="-32"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="+212"/>
+        <location filename="../src/gui/dialogs/qfiledialog.ui"/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Look in:</source>
         <translation>Перейти к:</translation>
     </message>
     <message>
-        <location line="+46"/>
-        <location filename="../src/gui/dialogs/qfiledialog_wince.ui" line="-198"/>
+        <location/>
+        <location filename="../src/gui/dialogs/qfiledialog_wince.ui"/>
         <source>Create New Folder</source>
         <translation>Создать папку</translation>
     </message>
@@ -1799,7 +1799,7 @@ Do you want to delete it anyway?</source>
     <message>
         <location line="+3"/>
         <source>Arabic</source>
-        <translation type="unfinished"></translation>
+        <translation>Арабская</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1809,57 +1809,57 @@ Do you want to delete it anyway?</source>
     <message>
         <location line="+3"/>
         <source>Thaana</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Таана</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Devanagari</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Деванагири</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Bengali</source>
-        <translation type="unfinished"></translation>
+        <translation>Бенгальская</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Gurmukhi</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Гурмукхи</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Gujarati</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Гуджарати</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Oriya</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ория</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Tamil</source>
-        <translation type="unfinished"></translation>
+        <translation>Тамильская</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Telugu</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Телугу</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Kannada</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Каннада</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Malayalam</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Малайялам</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Sinhala</source>
-        <translation type="unfinished"></translation>
+        <translation>Сингальская</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1869,7 +1869,7 @@ Do you want to delete it anyway?</source>
     <message>
         <location line="+3"/>
         <source>Lao</source>
-        <translation type="unfinished"></translation>
+        <translation>Лаосская</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1879,7 +1879,7 @@ Do you want to delete it anyway?</source>
     <message>
         <location line="+3"/>
         <source>Myanmar</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Мьянма</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -1924,7 +1924,7 @@ Do you want to delete it anyway?</source>
     <message>
         <location line="+3"/>
         <source>Ogham</source>
-        <translation type="unfinished"></translation>
+        <translation>Огамическая</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -2210,7 +2210,7 @@ Do you want to delete it anyway?</source>
         <translation>Ошибка записи ответа на устройство</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+901"/>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+904"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+38"/>
         <source>Connection refused</source>
         <translation>Отказано в соединении</translation>
@@ -2372,7 +2372,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QIBaseDriver</name>
     <message>
-        <location filename="../src/sql/drivers/ibase/qsql_ibase.cpp" line="+1434"/>
+        <location filename="../src/sql/drivers/ibase/qsql_ibase.cpp" line="+1454"/>
         <source>Error opening database</source>
         <translation>Ошибка открытия базы данных</translation>
     </message>
@@ -2395,7 +2395,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QIBaseResult</name>
     <message>
-        <location line="-1095"/>
+        <location line="-1112"/>
         <source>Unable to create BLOB</source>
         <translation>Невозможно создать BLOB</translation>
     </message>
@@ -2441,7 +2441,7 @@ Do you want to delete it anyway?</source>
         <translation>Невозможно выполнить транзакцию</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location line="+42"/>
         <source>Could not allocate statement</source>
         <translation>Не удалось получить ресурсы для создания выражения</translation>
     </message>
@@ -2452,12 +2452,12 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <location line="+5"/>
-        <location line="+7"/>
+        <location line="+11"/>
         <source>Could not describe input statement</source>
         <translation>Не удалось описать входящее выражение</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+14"/>
         <source>Could not describe statement</source>
         <translation>Не удалось описать выражение</translation>
     </message>
@@ -2970,8 +2970,8 @@ Do you want to delete it anyway?</source>
     </message>
     <message>
         <location line="+475"/>
-        <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://www.qtsoftware.com/products/licensing&quot;&gt;www.qtsoftware.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://www.qtsoftware.com/qt/&quot;&gt;www.qtsoftware.com/qt&lt;/a&gt; for more information.&lt;/p&gt;</source>
-        <translation type="unfinished">&lt;h3&gt;О Qt&lt;/h3&gt;&lt;p&gt;Данная программа использует Qt версии %1.&lt;/p&gt;&lt;p&gt;Qt - это инструментарий для разработки кроссплатформенных приложений на C++.&lt;/p&gt;&lt;p&gt;Qt предоставляет совместимость на уровне исходных текстов между MS&amp;amp;nbsp;Windows, Mac&amp;amp;nbsp;OS&amp;amp;nbsp;X, Linux и всеми популярными коммерческими вариантами Unix. Также Qt доступна для встраиваемых устройств в виде Qt для Embedded Linux и Qt для Windows CE.&lt;/p&gt;&lt;p&gt;Qt доступна под тремя различными лицензиями, разработанными для удовлетворения требований различных пользователей.&lt;/p&gt;Qt под нашей коммерческой лицензией предназначена для развития проприетарного/коммерческого программного обеспечения, когда Вы не желаете предоставлять исходные коды третьим сторонам, или в случае невозможности принятия условий лицензий GNU LGPL версии 2.1 или GNU GPL версии 3.0.&lt;/p&gt;&lt;p&gt;Qt под лицензией GNU LGPL версии 2.1 предназначена для разработки программного обеспечения с открытым исходным кодом или коммерческого программного обеспечения при соблюдении постановлений и условий лицензии GNU LGPL версии 2.1.&lt;/p&gt;&lt;p&gt;Qt под лицензией GNU General Public License версии 3.0 предназначена для разработки программных приложений в тех случаях, когда Вы хотели бы использовать такие приложения в сочетании с программным обеспечением на условиях лицензии GNU GPL с версии 3.0 или если Вы готовы соблюдать условия лицензии GNU GPL версии 3.0.&lt;/p&gt;&lt;p&gt;Обратитесь к &lt;a href=&quot;http://www.qtsoftware.com/products/licensing&quot;&gt;www.qtsoftware.com/products/licensing&lt;/a&gt; для обзора лицензий Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Корпорация Nokia и/или её дочерние подразделения.&lt;/p&gt;&lt;p&gt;Qt - продукт компании Nokia. Обратитесь к &lt;a href=&quot;http://www.qtsoftware.com/qt/&quot;&gt;www.qtsoftware.com/qt&lt;/a&gt; для получения дополнительной информации.&lt;/p&gt;</translation>
+        <source>&lt;h3&gt;About Qt&lt;/h3&gt;&lt;p&gt;This program uses Qt version %1.&lt;/p&gt;&lt;p&gt;Qt is a C++ toolkit for cross-platform application development.&lt;/p&gt;&lt;p&gt;Qt provides single-source portability across MS&amp;nbsp;Windows, Mac&amp;nbsp;OS&amp;nbsp;X, Linux, and all major commercial Unix variants. Qt is also available for embedded devices as Qt for Embedded Linux and Qt for Windows CE.&lt;/p&gt;&lt;p&gt;Qt is available under three different licensing options designed to accommodate the needs of our various users.&lt;/p&gt;Qt licensed under our commercial license agreement is appropriate for development of proprietary/commercial software where you do not want to share any source code with third parties or otherwise cannot comply with the terms of the GNU LGPL version 2.1 or GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU LGPL version 2.1 is appropriate for the development of Qt applications (proprietary or open source) provided you can comply with the terms and conditions of the GNU LGPL version 2.1.&lt;/p&gt;&lt;p&gt;Qt licensed under the GNU General Public License version 3.0 is appropriate for the development of Qt applications where you wish to use such applications in combination with software subject to the terms of the GNU GPL version 3.0 or where you are otherwise willing to comply with the terms of the GNU GPL version 3.0.&lt;/p&gt;&lt;p&gt;Please see &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; for an overview of Qt licensing.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;/p&gt;&lt;p&gt;Qt is a Nokia product. See &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; for more information.&lt;/p&gt;</source>
+        <translation type="unfinished">&lt;h3&gt;О Qt&lt;/h3&gt;&lt;p&gt;Данная программа использует Qt версии %1.&lt;/p&gt;&lt;p&gt;Qt - это инструментарий для разработки кроссплатформенных приложений на C++.&lt;/p&gt;&lt;p&gt;Qt предоставляет совместимость на уровне исходных текстов между MS&amp;amp;nbsp;Windows, Mac&amp;amp;nbsp;OS&amp;amp;nbsp;X, Linux и всеми популярными коммерческими вариантами Unix. Также Qt доступна для встраиваемых устройств в виде Qt для Embedded Linux и Qt для Windows CE.&lt;/p&gt;&lt;p&gt;Qt доступна под тремя различными лицензиями, разработанными для удовлетворения требований различных пользователей.&lt;/p&gt;Qt под нашей коммерческой лицензией предназначена для развития проприетарного/коммерческого программного обеспечения, когда Вы не желаете предоставлять исходные коды третьим сторонам, или в случае невозможности принятия условий лицензий GNU LGPL версии 2.1 или GNU GPL версии 3.0.&lt;/p&gt;&lt;p&gt;Qt под лицензией GNU LGPL версии 2.1 предназначена для разработки программного обеспечения с открытым исходным кодом или коммерческого программного обеспечения при соблюдении постановлений и условий лицензии GNU LGPL версии 2.1.&lt;/p&gt;&lt;p&gt;Qt под лицензией GNU General Public License версии 3.0 предназначена для разработки программных приложений в тех случаях, когда Вы хотели бы использовать такие приложения в сочетании с программным обеспечением на условиях лицензии GNU GPL с версии 3.0 или если Вы готовы соблюдать условия лицензии GNU GPL версии 3.0.&lt;/p&gt;&lt;p&gt;Обратитесь к &lt;a href=&quot;http://qt.nokia.com/products/licensing&quot;&gt;qt.nokia.com/products/licensing&lt;/a&gt; для обзора лицензий Qt.&lt;/p&gt;&lt;p&gt;Copyright (C) 2009 Корпорация Nokia и/или её дочерние подразделения.&lt;/p&gt;&lt;p&gt;Qt - продукт компании Nokia. Обратитесь к &lt;a href=&quot;http://qt.nokia.com/&quot;&gt;qt.nokia.com&lt;/a&gt; для получения дополнительной информации.&lt;/p&gt;</translation>
     </message>
     <message>
         <location line="+34"/>
@@ -3223,7 +3223,7 @@ Do you want to delete it anyway?</source>
         <translation>Ошибка загрузки %1 - ответ сервера: %2</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+68"/>
+        <location filename="../src/network/access/qnetworkreplyimpl.cpp" line="+71"/>
         <source>Protocol &quot;%1&quot; is unknown</source>
         <translation>Неизвестный протокол &quot;%1&quot;</translation>
     </message>
@@ -3231,7 +3231,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QNetworkReplyImpl</name>
     <message>
-        <location line="+433"/>
+        <location line="+464"/>
         <location line="+22"/>
         <source>Operation canceled</source>
         <translation>Операция отменена</translation>
@@ -3240,7 +3240,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QOCIDriver</name>
     <message>
-        <location filename="../src/sql/drivers/oci/qsql_oci.cpp" line="+2079"/>
+        <location filename="../src/sql/drivers/oci/qsql_oci.cpp" line="+2082"/>
         <source>Unable to logon</source>
         <translation>Невозможно авторизоваться</translation>
     </message>
@@ -3269,7 +3269,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QOCIResult</name>
     <message>
-        <location line="-973"/>
+        <location line="-976"/>
         <location line="+161"/>
         <location line="+15"/>
         <source>Unable to bind column for batch execute</source>
@@ -3281,7 +3281,7 @@ Do you want to delete it anyway?</source>
         <translation>Невозможно выполнить пакетное выражение</translation>
     </message>
     <message>
-        <location line="+302"/>
+        <location line="+305"/>
         <source>Unable to goto next</source>
         <translation>Невозможно перейти к следующей строке</translation>
     </message>
@@ -3314,7 +3314,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QODBCDriver</name>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1696"/>
+        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1684"/>
         <source>Unable to connect</source>
         <translation>Невозможно соединиться</translation>
     </message>
@@ -3324,7 +3324,7 @@ Do you want to delete it anyway?</source>
         <translation>Невозможно соединиться - Драйвер не поддерживает требуемый функционал</translation>
     </message>
     <message>
-        <location line="+242"/>
+        <location line="+239"/>
         <source>Unable to disable autocommit</source>
         <translation>Невозможно отключить автовыполнение транзакции</translation>
     </message>
@@ -3347,7 +3347,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QODBCResult</name>
     <message>
-        <location line="-1218"/>
+        <location line="-1216"/>
         <location line="+349"/>
         <source>QODBCResult::reset: Unable to set &apos;SQL_CURSOR_STATIC&apos; as statement attribute. Please check your ODBC driver configuration</source>
         <translation>QODBCResult::reset: Невозможно установить &apos;SQL_CURSOR_STATIC&apos; атрибутом выражение. Проверьте настройки драйвера ODBC</translation>
@@ -3376,12 +3376,12 @@ Do you want to delete it anyway?</source>
     <message>
         <location filename="../src/sql/drivers/db2/qsql_db2.cpp" line="+194"/>
         <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-475"/>
-        <location line="+578"/>
+        <location line="+579"/>
         <source>Unable to fetch last</source>
         <translation>Невозможно получить последнюю строку</translation>
     </message>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-672"/>
+        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="-673"/>
         <source>Unable to fetch</source>
         <translation>Невозможно получить данные</translation>
     </message>
@@ -3471,7 +3471,7 @@ Do you want to delete it anyway?</source>
         <translation>Не удалось начать транзакцию</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+30"/>
         <source>Could not commit transaction</source>
         <translation>Не удалось выполнить транзакцию</translation>
     </message>
@@ -3494,7 +3494,7 @@ Do you want to delete it anyway?</source>
 <context>
     <name>QPSQLResult</name>
     <message>
-        <location line="-1038"/>
+        <location line="-1051"/>
         <source>Unable to create query</source>
         <translation>Невозможно создать запрос</translation>
     </message>
@@ -3527,86 +3527,82 @@ Do you want to delete it anyway?</source>
         <translation>Точки (pt)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qpagesetupwidget.ui" line="+13"/>
+        <location filename="../src/gui/dialogs/qpagesetupwidget.ui"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location/>
         <source>Paper</source>
         <translation>Бумага</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Page size:</source>
         <translation>Размер страницы:</translation>
     </message>
     <message>
-        <location line="+13"/>
+        <location/>
         <source>Width:</source>
         <translation>Ширина:</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <source>Height:</source>
         <translation>Высота:</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <source>Paper source:</source>
         <translation>Источник бумаги:</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location/>
         <source>Orientation</source>
         <translation>Ориентация</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Portrait</source>
         <translation>Книжная</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Landscape</source>
         <translation>Альбомная</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Reverse landscape</source>
         <translation>Перевёрнутая альбомная</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Reverse portrait</source>
         <translation>Перевёрнутая книжная</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location/>
         <source>Margins</source>
         <translation>Поля</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <location line="+3"/>
+        <location/>
         <source>top margin</source>
         <translation>верхнее поле</translation>
     </message>
     <message>
-        <location line="+28"/>
-        <location line="+3"/>
+        <location/>
         <source>left margin</source>
         <translation>левое поле</translation>
     </message>
     <message>
-        <location line="+29"/>
-        <location line="+3"/>
+        <location/>
         <source>right margin</source>
         <translation>правое поле</translation>
     </message>
     <message>
-        <location line="+28"/>
-        <location line="+3"/>
+        <location/>
         <source>bottom margin</source>
         <translation>нижнее поле</translation>
     </message>
@@ -4165,17 +4161,17 @@ Please choose a different file name.</source>
 <context>
     <name>QPrintPropertiesWidget</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintpropertieswidget.ui" line="+13"/>
+        <location filename="../src/gui/dialogs/qprintpropertieswidget.ui"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location/>
         <source>Page</source>
         <translation>Страница</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Advanced</source>
         <translation>Дополнительно</translation>
     </message>
@@ -4183,97 +4179,97 @@ Please choose a different file name.</source>
 <context>
     <name>QPrintSettingsOutput</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintsettingsoutput.ui" line="+13"/>
+        <location filename="../src/gui/dialogs/qprintsettingsoutput.ui"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location/>
         <source>Copies</source>
         <translation>Копии</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>Print range</source>
         <translation>Диапазон печати</translation>
     </message>
     <message>
-        <location line="+12"/>
+        <location/>
         <source>Print all</source>
         <translation>Все</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location/>
         <source>Pages from</source>
         <translation>Страницы от</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location/>
         <source>to</source>
         <translation>до</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location/>
         <source>Selection</source>
         <translation>Выделенный фрагмент</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location/>
         <source>Output Settings</source>
         <translation>Настройки вывода</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Copies:</source>
         <translation>Количество копий:</translation>
     </message>
     <message>
-        <location line="+33"/>
+        <location/>
         <source>Collate</source>
         <translation>Разобрать про копиям</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location/>
         <source>Reverse</source>
         <translation>Обратный порядок</translation>
     </message>
     <message>
-        <location line="+32"/>
+        <location/>
         <source>Options</source>
         <translation>Параметры</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>Color Mode</source>
         <translation>Режим цвета</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location/>
         <source>Color</source>
         <translation>Цвет</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Grayscale</source>
         <translation>Оттенки серого</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Duplex Printing</source>
         <translation>Двусторонняя печать</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Long side</source>
         <translation>По длинной стороне</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Short side</source>
         <translation>По короткой стороне</translation>
     </message>
@@ -4281,47 +4277,47 @@ Please choose a different file name.</source>
 <context>
     <name>QPrintWidget</name>
     <message>
-        <location filename="../src/gui/dialogs/qprintwidget.ui" line="+13"/>
+        <location filename="../src/gui/dialogs/qprintwidget.ui"/>
         <source>Form</source>
         <translation>Форма</translation>
     </message>
     <message>
-        <location line="+9"/>
+        <location/>
         <source>Printer</source>
         <translation>Принтер</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location/>
         <source>&amp;Name:</source>
         <translation>&amp;Название:</translation>
     </message>
     <message>
-        <location line="+26"/>
+        <location/>
         <source>P&amp;roperties</source>
         <translation>С&amp;войства</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Location:</source>
         <translation>Расположение:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Preview</source>
         <translation>Просмотр</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location/>
         <source>Type:</source>
         <translation>Тип:</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location/>
         <source>Output &amp;file:</source>
         <translation>Выходной &amp;файл:</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -6258,7 +6254,7 @@ Please choose a different file name.</source>
 <context>
     <name>QWizard</name>
     <message>
-        <location filename="../src/gui/dialogs/qwizard.cpp" line="+637"/>
+        <location filename="../src/gui/dialogs/qwizard.cpp" line="+638"/>
         <source>Go Back</source>
         <translation>Назад</translation>
     </message>

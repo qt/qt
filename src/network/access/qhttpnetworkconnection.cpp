@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -135,7 +135,9 @@ int QHttpNetworkConnectionPrivate::indexOf(QAbstractSocket *socket) const
     for (int i = 0; i < channelCount; ++i)
         if (channels[i].socket == socket)
             return i;
-    return -1;
+
+    qFatal("Called with unknown socket object.");
+    return 0;
 }
 
 bool QHttpNetworkConnectionPrivate::isSocketBusy(QAbstractSocket *socket) const
@@ -226,7 +228,12 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
 #ifndef QT_NO_NETWORKPROXY
     }
 #endif
-    // set the gzip header
+
+    // If the request had a accept-encoding set, we better not mess
+    // with it. If it was not set, we announce that we understand gzip
+    // and remember this fact in request.d->autoDecompress so that
+    // we can later decompress the HTTP reply if it has such an
+    // encoding.
     value = request.headerField("accept-encoding");
     if (value.isEmpty()) {
 #ifndef QT_NO_COMPRESS
@@ -515,7 +522,7 @@ void QHttpNetworkConnectionPrivate::receiveReply(QAbstractSocket *socket, QHttpN
                 // try to reconnect/resend before sending an error.
                 if (channels[i].reconnectAttempts-- > 0) {
                     resendCurrentRequest(socket);
-                } else {
+                } else if (reply) {
                     reply->d_func()->errorString = errorDetail(QNetworkReply::RemoteHostClosedError, socket);
                     emit reply->finishedWithError(QNetworkReply::RemoteHostClosedError, reply->d_func()->errorString);
                     QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
@@ -788,6 +795,7 @@ void QHttpNetworkConnectionPrivate::createAuthorization(QAbstractSocket *socket,
     Q_ASSERT(socket);
 
     int i = indexOf(socket);
+
     if (channels[i].authMehtod != QAuthenticatorPrivate::None) {
         if (!(channels[i].authMehtod == QAuthenticatorPrivate::Ntlm && channels[i].lastStatus != 401)) {
             QAuthenticatorPrivate *priv = QAuthenticatorPrivate::getPrivate(channels[i].authenticator);
@@ -1322,7 +1330,8 @@ void QHttpNetworkConnectionPrivate::_q_encrypted()
     QAbstractSocket *socket = qobject_cast<QAbstractSocket*>(q->sender());
     if (!socket)
         return; // ### error
-    channels[indexOf(socket)].state = IdleState;
+    int i = indexOf(socket);
+    channels[i].state = IdleState;
     sendRequest(socket);
 }
 

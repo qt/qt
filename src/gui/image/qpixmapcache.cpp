@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -79,7 +79,7 @@ QT_BEGIN_NAMESPACE
     (\e{width} * \e{height} * \e{depth})/8 bytes of memory.
 
     The \e{Qt Quarterly} article
-    \l{http://doc.trolltech.com/qq/qq12-qpixmapcache.html}{Optimizing
+    \l{http://qt.nokia.com/doc/qq/qq12-qpixmapcache.html}{Optimizing
     with QPixmapCache} explains how to use QPixmapCache to speed up
     applications by caching the results of painting.
 

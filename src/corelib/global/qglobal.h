@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -44,11 +44,11 @@
 
 #include <stddef.h>
 
-#define QT_VERSION_STR   "4.5.2"
+#define QT_VERSION_STR   "4.5.3"
 /*
    QT_VERSION is (major << 16) + (minor << 8) + patch.
 */
-#define QT_VERSION 0x040502
+#define QT_VERSION 0x040503
 /*
    can be used like #if (QT_VERSION >= QT_VERSION_CHECK(4, 4, 0))
 */
@@ -279,7 +279,7 @@ namespace QT_NAMESPACE {}
 #  endif
 #endif
 
-#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA)
+#if defined(Q_OS_MAC64) && !defined(QT_MAC_USE_COCOA) && !defined(QT_BUILD_QMAKE)
 #error "You are building a 64-bit application, but using a 32-bit version of Qt. Check your build configuration."
 #endif
 
@@ -1250,7 +1250,7 @@ class QDataStream;
 
 /*
    No, this is not an evil backdoor. QT_BUILD_INTERNAL just exports more symbols
-   for Trolltech's internal unit tests. If you want slower loading times and more
+   for Qt's internal unit tests. If you want slower loading times and more
    symbols that can vanish from version to version, feel free to define QT_BUILD_INTERNAL.
 */
 #if defined(QT_BUILD_INTERNAL) && defined(Q_OS_WIN) && defined(QT_MAKEDLL)
@@ -2017,7 +2017,7 @@ public:
 
     inline bool operator!() const { return !i; }
 
-    inline bool testFlag(Enum f) const { return (i & f) == f; }
+    inline bool testFlag(Enum f) const { return (i & f) == f && (f != 0 || i == f ); }
 };
 
 #define Q_DECLARE_FLAGS(Flags, Enum)\

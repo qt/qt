@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -535,7 +535,7 @@ bool Q3IconDragData::operator==(const Q3IconDragData &i) const
 
     The data in Q3IconDragItems is stored in a QByteArray and is
     mime-typed (see QMimeSource and the
-    \link http://doc.trolltech.com/dnd.html Drag and Drop\endlink
+    \link http://qt.nokia.com/doc/dnd.html Drag and Drop\endlink
     overview). If you want to use your own mime-types derive a class
     from Q3IconDrag and reimplement format(), encodedData() and
     canDecode().

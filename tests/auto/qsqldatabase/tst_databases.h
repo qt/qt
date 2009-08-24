@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -219,7 +219,7 @@ public:
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 3307 );
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 3308, "CLIENT_COMPRESS=1;CLIENT_SSL=1" ); // MySQL 4.1.1
 //         addDb( "QMYSQL3", "testdb", "troll", "trond", "horsehead.nokia.troll.no", 3309, "CLIENT_COMPRESS=1;CLIENT_SSL=1" ); // MySQL 5.0.18 Linux
-//         addDb( "QMYSQL3", "testdb", "troll", "trond", "iceblink.nokia.troll.no" ); // MySQL 5.0.13 Windows
+//         addDb( "QMYSQL3", "testdb", "troll", "trond", "silence.nokia.troll.no" ); // MySQL 5.1.36 Windows
 //         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "mysql4-nokia.trolltech.com.au" ); // MySQL 4.1.22-2.el4  linux
 //         addDb( "QMYSQL3", "testdb", "testuser", "Ee4Gabf6_", "mysql5-nokia.trolltech.com.au" ); // MySQL 5.0.45-7.el5 linux
 
@@ -249,12 +249,15 @@ public:
 //         addDb( "QODBC3", "DRIVER={SQL Native Client};SERVER=silence.nokia.troll.no\\SQLEXPRESS", "troll", "trond", "" );
 
 //         addDb( "QODBC", "DRIVER={MySQL ODBC 3.51 Driver};SERVER=mysql5-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC", "DRIVER={MySQL ODBC 5.1 Driver};SERVER=mysql4-nokia.trolltech.com.au;DATABASE=testdb", "testuser", "Ee4Gabf6_", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=horsehead.nokia.troll.no;DATABASE=testdb;PORT=4101;UID=troll;PWD=trondk", "troll", "trondk", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=silence.nokia.troll.no;DATABASE=testdb;PORT=2392;UID=troll;PWD=trond", "troll", "trond", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2003-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "", "", "" );
 //         addDb( "QODBC", "DRIVER={FreeTDS};SERVER=bq-winserv2008-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433;UID=testuser;PWD=Ee4Gabf6_;TDS_Version=8.0", "", "", "" );
 //         addDb( "QTDS7", "testdb", "testuser", "Ee4Gabf6_", "bq-winserv2003" );
 //         addDb( "QTDS7", "testdb", "testuser", "Ee4Gabf6_", "bq-winserv2008" );
+//         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2003-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
+//         addDb( "QODBC3", "DRIVER={SQL SERVER};SERVER=bq-winserv2008-x86-01.apac.nokia.com;DATABASE=testdb;PORT=1433", "testuser", "Ee4Gabf6_", "" );
     }
 
     void open()
@@ -438,6 +441,16 @@ public:
         return db.databaseName().contains( "Access Driver", Qt::CaseInsensitive );
     }
 
+    static bool isPostgreSQL( QSqlDatabase db )
+    {
+        return db.driverName().startsWith("QPSQL") || (db.driverName().startsWith("QODBC") && db.databaseName().contains("PostgreSQL") );
+    }
+
+    static bool isMySQL( QSqlDatabase db )
+    {
+        return db.driverName().startsWith("QMYSQL") || (db.driverName().startsWith("QODBC") && db.databaseName().contains("MySQL") );
+    }
+
     // -1 on fail, else Oracle version
     static int getOraVersion( QSqlDatabase db )
     {
@@ -459,6 +472,16 @@ public:
     }
 
     static QString getMySqlVersion( const QSqlDatabase &db )
+    {
+        QSqlQuery q(db);
+        q.exec( "select version()" );
+        if(q.next())
+            return q.value( 0 ).toString();
+        else
+            return QString();
+    }
+
+    static QString getPSQLVersion( const QSqlDatabase &db )
     {
         QSqlQuery q(db);
         q.exec( "select version()" );

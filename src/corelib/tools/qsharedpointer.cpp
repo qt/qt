@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -833,42 +833,24 @@ namespace {
     };
 }
 
-Q_GLOBAL_STATIC(KnownPointers, knownPointers)
+//Q_GLOBAL_STATIC(KnownPointers, knownPointers)
 
 QT_BEGIN_NAMESPACE
 
 /*!
     \internal
 */
-void QtSharedPointer::internalSafetyCheckAdd(const volatile void *ptr)
+void QtSharedPointer::internalSafetyCheckAdd(const volatile void *)
 {
-    KnownPointers *const kp = knownPointers();
-    if (!kp)
-        return;                 // end-game: the application is being destroyed already
-
-    QMutexLocker lock(&kp->mutex);
-    void *actual = const_cast<void*>(ptr);
-    if (kp->values.contains(actual)) {
-        printBacktrace(knownPointers()->values.value(actual));
-        qFatal("QSharedPointerData: internal self-check failed: pointer %p was already tracked "
-               "by another QSharedPointerData object", actual);
-    }
-
-    kp->values.insert(actual, saveBacktrace());
+    // functionality is broken
+    // fix requires Qt 4.6
 }
 
 /*!
     \internal
 */
-void QtSharedPointer::internalSafetyCheckRemove(const volatile void *ptr)
+void QtSharedPointer::internalSafetyCheckRemove(const volatile void *)
 {
-    KnownPointers *const kp = knownPointers();
-    if (!kp)
-        return;                 // end-game: the application is being destroyed already
-
-    QMutexLocker lock(&kp->mutex);
-    void *actual = const_cast<void*>(ptr);
-    kp->values.remove(actual);
 }
 
 QT_END_NAMESPACE

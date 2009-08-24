@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1101,6 +1101,9 @@ void QRasterPaintEnginePrivate::systemStateChanged()
 #ifdef QT_DEBUG_DRAW
     qDebug() << "systemStateChanged" << this << "deviceRect" << deviceRect << clipRect << systemClip;
 #endif
+
+    exDeviceRect = deviceRect;
+
     Q_Q(QRasterPaintEngine);
     q->state()->strokeFlags |= QPaintEngine::DirtyClipRegion;
     q->state()->fillFlags |= QPaintEngine::DirtyClipRegion;
@@ -1679,11 +1682,30 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
     if (!s->penData.blend)
         return;
 
-    if (s->flags.fast_pen && path.shape() <= QVectorPath::NonCurvedShapeHint && s->lastPen.brush().isOpaque()) {
-        strokePolygonCosmetic((QPointF *) path.points(), path.elementCount(),
-                              path.hasImplicitClose()
-                              ? WindingMode
-                              : PolylineMode);
+    if (s->flags.fast_pen && path.shape() <= QVectorPath::NonCurvedShapeHint
+        && s->lastPen.brush().isOpaque()) {
+        int count = path.elementCount();
+        QPointF *points = (QPointF *) path.points();
+        const QPainterPath::ElementType *types = path.elements();
+        if (types) {
+            int first = 0;
+            int last;
+            while (first < count) {
+                while (first < count && types[first] != QPainterPath::MoveToElement) ++first;
+                last = first + 1;
+                while (last < count && types[last] == QPainterPath::LineToElement) ++last;
+                strokePolygonCosmetic(points + first, last - first,
+                                      path.hasImplicitClose() && last == count // only close last one..
+                                      ? WindingMode
+                                      : PolylineMode);
+                first = last;
+            }
+        } else {
+            strokePolygonCosmetic(points, count,
+                                  path.hasImplicitClose()
+                                  ? WindingMode
+                                  : PolylineMode);
+        }
 
     } else if (s->flags.non_complex_pen && path.shape() == QVectorPath::LinesHint) {
         qreal width = s->lastPen.isCosmetic()
@@ -1740,10 +1762,10 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
 
 static inline QRect toNormalizedFillRect(const QRectF &rect)
 {
-    const int x1 = qRound(rect.x() + aliasedCoordinateDelta);
-    const int y1 = qRound(rect.y() + aliasedCoordinateDelta);
-    const int x2 = qRound(rect.right() + aliasedCoordinateDelta);
-    const int y2 = qRound(rect.bottom() + aliasedCoordinateDelta);
+    const int x1 = qRound(rect.x());
+    const int y1 = qRound(rect.y());
+    const int x2 = qRound(rect.right());
+    const int y2 = qRound(rect.bottom());
 
     return QRect(x1, y1, x2 - x1, y2 - y1).normalized();
 }
@@ -1775,8 +1797,9 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
     if (path.shape() == QVectorPath::RectangleHint) {
         if (!s->flags.antialiased && s->matrix.type() <= QTransform::TxScale) {
             const qreal *p = path.points();
-            QPointF tl = QPointF(p[0], p[1]) * s->matrix;
-            QPointF br = QPointF(p[4], p[5]) * s->matrix;
+            const QPointF offs(aliasedCoordinateDelta, aliasedCoordinateDelta);
+            QPointF tl = QPointF(p[0], p[1]) * s->matrix + offs;
+            QPointF br = QPointF(p[4], p[5]) * s->matrix + offs;
             fillRect_normalized(toNormalizedFillRect(QRectF(tl, br)), &s->brushData, d);
             return;
         }
@@ -2575,12 +2598,7 @@ void QRasterPaintEngine::drawImage(const QRectF &r, const QImage &img, const QRe
     QRasterPaintEngineState *s = state();
     const bool aa = s->flags.antialiased || s->flags.bilinear;
     if (!aa && sr.size() == QSize(1, 1)) {
-        // as fillRect will apply the aliased coordinate delta we need to
-        // subtract it here as we don't use it for image drawing
-        QTransform old = s->matrix;
-        s->matrix = s->matrix * QTransform::fromTranslate(-aliasedCoordinateDelta, -aliasedCoordinateDelta);
         fillRect(r, QColor::fromRgba(img.pixel(sr.x(), sr.y())));
-        s->matrix = old;
         return;
     }
 

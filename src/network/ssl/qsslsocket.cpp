@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -653,7 +653,16 @@ void QSslSocket::close()
 #ifdef QSSLSOCKET_DEBUG
     qDebug() << "QSslSocket::close()";
 #endif
+    Q_D(QSslSocket);
     QTcpSocket::close();
+
+    // must be cleared, reading/writing not possible on closed socket:
+    d->readBuffer.clear();
+    d->writeBuffer.clear();
+    // for QTcpSocket this is already done because it uses the readBuffer/writeBuffer
+    // if the QIODevice it is based on
+    // ### FIXME QSslSocket should probably do similar instead of having
+    // its own readBuffer/writeBuffer
 }
 
 /*!

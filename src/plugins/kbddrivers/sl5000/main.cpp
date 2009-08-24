@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,10 +66,9 @@ QStringList QSL5000KbdDriver::keys() const
 QWSKeyboardHandler* QSL5000KbdDriver::create(const QString &driver,
                                              const QString &device)
 {
-    Q_UNUSED(device);
     if (driver.compare(QLatin1String("SL5000"), Qt::CaseInsensitive))
         return 0;
-    return new QWSSL5000KeyboardHandler(driver);
+    return new QWSSL5000KeyboardHandler(device);
 }
 
 Q_EXPORT_PLUGIN2(qwssl5000kbddriver, QSL5000KbdDriver)

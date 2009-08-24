@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -421,7 +421,8 @@ QWSWindowSurface::QWSWindowSurface(QWidget *widget)
 QWSWindowSurface::~QWSWindowSurface()
 {
 #ifdef Q_BACKINGSTORE_SUBSURFACES
-    winIdToSurfaceMap()->remove(winId());
+    if (d_ptr->winId)
+        winIdToSurfaceMap()->remove(d_ptr->winId);
 #endif
 
     delete d_ptr;

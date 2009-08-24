@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1359,7 +1359,7 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
     if (!action->action->icon().isNull()
             && action->action->isIconVisibleInMenu()) {
         data.iconType = kMenuIconRefType;
-        data.iconHandle = (Handle)qt_mac_create_iconref(action->action->icon().pixmap(22, QIcon::Normal));
+        data.iconHandle = (Handle)qt_mac_create_iconref(action->action->icon().pixmap(16, QIcon::Normal));
     } else {
         data.iconType = kMenuNoIcon;
     }
@@ -1398,7 +1398,7 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
     // Cocoa icon
     NSImage *nsimage = 0;
     if (!action->action->icon().isNull() && action->action->isIconVisibleInMenu()) {
-        nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(action->action->icon().pixmap(22, QIcon::Normal)));
+        nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(action->action->icon().pixmap(16, QIcon::Normal)));
     }
     [item setImage:nsimage];
     [nsimage release];

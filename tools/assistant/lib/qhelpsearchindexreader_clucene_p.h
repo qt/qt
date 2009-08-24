@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -85,9 +85,8 @@ public:
     void search(const QString &collectionFile,
         const QString &indexFilesFolder,
         const QList<QHelpSearchQuery> &queryList);
-
     int hitsCount() const;
-    QHelpSearchEngine::SearchHit hit(int index) const;
+    QList<QHelpSearchEngine::SearchHit> hits(int start, int end) const;
 
 signals:
     void searchingStarted();
@@ -105,10 +104,8 @@ private:
         const QList<QHelpSearchQuery> &queryList);
 
 private:
-    QMutex mutex;
+    mutable QMutex mutex;
     QList<QHelpSearchEngine::SearchHit> hitList;
-    QWaitCondition waitCondition;
-
     bool m_cancel;
     QString m_collectionFile;
     QList<QHelpSearchQuery> m_query;

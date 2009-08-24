@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -545,7 +545,8 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
     size_t numItems = offsetLength / (2 * sizeof(quint32));
     //qDebug() << "NUMITEMS: " << numItems;
 
-    QTextCodec *codec = QTextCodec::codecForName(cd.m_codecForSource);
+    QTextCodec *codec = QTextCodec::codecForName(
+        cd.m_codecForSource.isEmpty() ? QByteArray("Latin1") : cd.m_codecForSource);
     QTextCodec *utf8Codec = 0;
     if (codec->name() != "UTF-8")
         utf8Codec = QTextCodec::codecForName("UTF-8");

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1861,7 +1861,10 @@
                    We refer to a top-level window that has a parent
                    as a \e secondary window.
 
-    \value Sheet   Indicates that the widget is a Macintosh sheet.
+    \value Sheet   Indicates that the window is a Macintosh sheet. Since
+                   using a sheet implies window modality, the recommended
+                   way is to use QWidget::setWindowModality(), or
+                   QDialog::open(), instead.
 
     \value Drawer  Indicates that the widget is a Macintosh drawer.
 
@@ -2519,10 +2522,10 @@
     \value ElideNone    Ellipsis should NOT appear in the text.
 
     Qt::ElideMiddle is normally the most appropriate choice for URLs (e.g.,
-    "\l{http://www.qtsoftware.com/careers/movingto/beijing/}{http://www.qtsof...ovingto/beijing/}"),
+    "\l{http://qt.nokia.com/careers/movingto/brisbane/}{http://qt.nok...ovingto/brisbane/}"),
     whereas Qt::ElideRight is appropriate
     for other strings (e.g.,
-    "\l{http://doc.trolltech.com/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").
+    "\l{http://qt.nokia.com/doc/qq/qq09-mac-deployment.html}{Deploying Applications on Ma...}").
 
     \sa QAbstractItemView::textElideMode, QFontMetrics::elidedText(), AlignmentFlag QTabBar::elideMode
 */

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -139,7 +139,7 @@ DataModel::DataModel(QObject *parent)
 
 QStringList DataModel::normalizedTranslations(const MessageItem &m) const
 {
-    return Translator::normalizedTranslations(m.message(), m_language, m_country);
+    return Translator::normalizedTranslations(m.message(), m_numerusForms.count());
 }
 
 ContextItem *DataModel::contextItem(int context) const

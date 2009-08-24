@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,10 +52,12 @@
 QT_BEGIN_NAMESPACE
 
 inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
-    : copyDevice(0), networkCache(0),
+    : backend(0), outgoingData(0),
+      copyDevice(0), networkCache(0),
       cacheEnabled(false), cacheSaveDevice(0),
       notificationHandlingPaused(false),
       bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1),
+      httpStatusCode(0),
       state(Idle)
 {
 }
@@ -90,6 +92,9 @@ void QNetworkReplyImplPrivate::_q_startOperation()
 
 void QNetworkReplyImplPrivate::_q_sourceReadyRead()
 {
+    if (state != Working)
+        return;
+
     // read data from the outgoingData QIODevice into our internal buffer
     enum { DesiredBufferSize = 32 * 1024 };
 
@@ -129,7 +134,9 @@ void QNetworkReplyImplPrivate::_q_sourceReadChannelFinished()
 void QNetworkReplyImplPrivate::_q_copyReadyRead()
 {
     Q_Q(QNetworkReplyImpl);
-    if (!copyDevice && !q->isOpen())
+    if (state != Working)
+        return;
+    if (!copyDevice || !q->isOpen())
         return;
 
     forever {
@@ -369,7 +376,17 @@ void QNetworkReplyImplPrivate::feed(const QByteArray &data)
         QNetworkCacheMetaData metaData;
         metaData.setUrl(url);
         metaData = backend->fetchCacheMetaData(metaData);
+
+        // save the redirect request also in the cache
+        QVariant redirectionTarget = q->attribute(QNetworkRequest::RedirectionTargetAttribute);
+        if (redirectionTarget.isValid()) {
+            QNetworkCacheMetaData::AttributesMap attributes = metaData.attributes();
+            attributes.insert(QNetworkRequest::RedirectionTargetAttribute, redirectionTarget);
+            metaData.setAttributes(attributes);
+        }
+
         cacheSaveDevice = networkCache->prepare(metaData);
+
         if (!cacheSaveDevice || (cacheSaveDevice && !cacheSaveDevice->isOpen())) {
             if (cacheSaveDevice && !cacheSaveDevice->isOpen())
                 qCritical("QNetworkReplyImpl: network cache returned a device that is not open -- "

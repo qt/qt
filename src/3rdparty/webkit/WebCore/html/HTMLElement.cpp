@@ -44,6 +44,7 @@
 #include "XMLTokenizer.h"
 #include "markup.h"
 #include <wtf/StdLibExtras.h>
+#include <stdio.h>
 
 namespace WebCore {
 

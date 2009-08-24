@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -252,8 +252,10 @@ static QVariant::Type qDecodeODBCType(SQLSMALLINT sqltype, const T* p, bool isSi
     case SQL_SMALLINT:
     case SQL_INTEGER:
     case SQL_BIT:
-    case SQL_TINYINT:
         type = isSigned ? QVariant::Int : QVariant::UInt;
+        break;
+    case SQL_TINYINT:
+        type = QVariant::UInt;
         break;
     case SQL_BIGINT:
         type = isSigned ? QVariant::LongLong : QVariant::ULongLong;
@@ -1006,7 +1008,7 @@ QVariant QODBCResult::data(int field)
             d->fieldCache[i] = qGetBinaryData(d->hStmt, i);
             break;
         case QVariant::String:
-            d->fieldCache[i] = qGetStringData(d->hStmt, i, info.length(), true);
+            d->fieldCache[i] = qGetStringData(d->hStmt, i, info.length(), d->unicode);
             break;
         case QVariant::Double:
             {
@@ -1439,6 +1441,7 @@ bool QODBCResult::exec()
                 values[i] = QVariant(QDateTime(QDate(dt.year, dt.month, dt.day),
                                QTime(dt.hour, dt.minute, dt.second, dt.fraction / 1000000)));
                 break; }
+            case QVariant::Bool:
             case QVariant::Int:
             case QVariant::UInt:
             case QVariant::Double:

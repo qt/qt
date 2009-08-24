@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -227,7 +227,10 @@ void QDirModelPrivate::invalidate()
 
     \note QDirModel requires an instance of a GUI application.
 
-    \sa nameFilters(), setFilter(), filter(), QListView, QTreeView,
+    \note The usage of QDirModel is not recommended anymore. The
+    QFileSystemModel class is a more performant alternative.
+
+    \sa nameFilters(), setFilter(), filter(), QListView, QTreeView, QFileSystemModel
     {Dir View Example}, {Model Classes}
 */
 
