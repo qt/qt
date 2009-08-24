@@ -41,6 +41,8 @@ void tst_qmldom::loadSimple()
     QVERIFY(!rootObject.isComponent());
     QVERIFY(!rootObject.isCustomType());
     QVERIFY(rootObject.objectType() == "Qt/Item");
+    QVERIFY(rootObject.objectTypeMajorVersion() == 4);
+    QVERIFY(rootObject.objectTypeMinorVersion() == 6);
 }
 
 void tst_qmldom::loadProperties()

@@ -195,10 +195,24 @@ public:
         QUrl base;
         QmlImportsPrivate *d;
     };
-    struct ImportedNamespace;
+
+    struct ImportedNamespace {
+        ImportedNamespace();
+        ~ImportedNamespace();
+
+        bool getTypeInfo(const QByteArray &typeName, QString *uri, int *vmaj, int *vmin);
+    private:
+        friend class QmlImportsPrivate;
+        friend class QmlEnginePrivate;
+        class QmlImportedNamespacePrivate *d;
+    };
+
     bool addToImport(Imports*, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType) const;
+
     bool resolveType(const Imports&, const QByteArray& type, QmlType** type_return, QUrl* url_return, ImportedNamespace** ns_return=0) const;
-    void resolveTypeInNamespace(ImportedNamespace*, const QByteArray& type, QmlType** type_return, QUrl* url_return ) const;
+
+    void resolveNamespace(const Imports& imports, const QByteArray &type, ImportedNamespace **s, QByteArray *unqualifiedType) const;
+    bool resolveTypeInNamespace(ImportedNamespace*, const QByteArray& type, QmlType** type_return, QUrl* url_return ) const;
 
 
     static QScriptValue qmlScriptObject(QObject*, QmlEngine*);

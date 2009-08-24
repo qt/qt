@@ -174,7 +174,7 @@ public:
         , visiblePos(0), visibleIndex(0)
         , averageSize(100), currentIndex(-1), requestedIndex(-1)
         , currItemMode(QFxListView::Free), snapPos(0), highlightComponent(0), highlight(0), trackedItem(0)
-        , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0)
+        , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0), spacing(0)
         , ownModel(false), wrap(false), autoHighlight(true)
         , fixCurrentVisibility(false) {}
 
@@ -213,7 +213,7 @@ public:
     qreal startPosition() const {
         qreal pos = 0;
         if (!visibleItems.isEmpty())
-            pos = visibleItems.first()->position() - visibleIndex * averageSize;
+            pos = visibleItems.first()->position() - visibleIndex * (averageSize + spacing);
         return pos;
     }
 
@@ -227,7 +227,7 @@ public:
                     break;
                 }
             }
-            pos = visibleItems.last()->endPosition() + invisibleCount * averageSize;
+            pos = visibleItems.last()->endPosition() + invisibleCount * (averageSize + spacing);
         }
         return pos;
     }
@@ -238,7 +238,7 @@ public:
         if (!visibleItems.isEmpty()) {
             if (modelIndex < visibleIndex) {
                 int count = visibleIndex - modelIndex;
-                return visibleItems.first()->position() - count * averageSize;
+                return visibleItems.first()->position() - count * (averageSize + spacing);
             } else {
                 int idx = visibleItems.count() - 1;
                 while (idx >= 0 && visibleItems.at(idx)->index == -1)
@@ -248,7 +248,7 @@ public:
                 else
                     idx = visibleItems.at(idx)->index;
                 int count = modelIndex - idx - 1;
-                return visibleItems.last()->endPosition() + count * averageSize + 1;
+                return visibleItems.last()->endPosition() + spacing + count * (averageSize + spacing) + 1;
             }
         }
         return 0;
@@ -382,6 +382,7 @@ public:
     QmlFollow *highlightSizeAnimator;
     QString sectionExpression;
     QString currentSection;
+    int spacing;
 
     int ownModel : 1;
     int wrap : 1;
@@ -480,7 +481,7 @@ void QFxListViewPrivate::refill(qreal from, qreal to)
     qreal itemEnd = visiblePos-1;
     if (!visibleItems.isEmpty()) {
         visiblePos = visibleItems.first()->position();
-        itemEnd = visibleItems.last()->endPosition();
+        itemEnd = visibleItems.last()->endPosition() + spacing;
         int i = visibleItems.count() - 1;
         while (i > 0 && visibleItems.at(i)->index == -1)
             --i;
@@ -495,7 +496,7 @@ void QFxListViewPrivate::refill(qreal from, qreal to)
         if (!(item = createItem(modelIndex)))
             break;
         item->setPosition(pos);
-        pos += item->size();
+        pos += item->size() + spacing;
         visibleItems.append(item);
         ++modelIndex;
         changed = true;
@@ -505,7 +506,7 @@ void QFxListViewPrivate::refill(qreal from, qreal to)
         if (!(item = createItem(visibleIndex-1)))
             break;
         --visibleIndex;
-        visiblePos -= item->size();
+        visiblePos -= item->size() + spacing;
         item->setPosition(visiblePos);
         visibleItems.prepend(item);
         changed = true;
@@ -547,11 +548,11 @@ void QFxListViewPrivate::layout()
     Q_Q(QFxListView);
     if (!visibleItems.isEmpty()) {
         int oldEnd = visibleItems.last()->endPosition();
-        int pos = visibleItems.first()->endPosition() + 1;
+        int pos = visibleItems.first()->endPosition() + spacing + 1;
         for (int i=1; i < visibleItems.count(); ++i) {
             FxListItem *item = visibleItems.at(i);
             item->setPosition(pos);
-            pos += item->size();
+            pos += item->size() + spacing;
         }
         // move current item if it is after the visible items.
         if (currentItem && currentIndex > lastVisibleIndex())
@@ -661,7 +662,7 @@ void QFxListViewPrivate::createHighlight()
             highlightPosAnimator->setTarget(QmlMetaProperty(highlight->item, posProp));
             highlightPosAnimator->setEpsilon(0.25);
             highlightPosAnimator->setSpring(2.5);
-            highlightPosAnimator->setDamping(0.3);
+            highlightPosAnimator->setDamping(0.35);
             highlightPosAnimator->setEnabled(autoHighlight);
             const QLatin1String sizeProp(orient == Qt::Vertical ? "height" : "width");
             highlightSizeAnimator = new QmlFollow(q);
@@ -755,7 +756,7 @@ void QFxListViewPrivate::updateCurrent(int modelIndex)
     if (currentItem) {
         if (modelIndex == visibleIndex - 1) {
             // We can calculate exact postion in this case
-            currentItem->setPosition(visibleItems.first()->position() - currentItem->size());
+            currentItem->setPosition(visibleItems.first()->position() - currentItem->size() - spacing);
         } else {
             // Create current item now and position as best we can.
             // Its position will be corrected when it becomes visible.
@@ -1136,6 +1137,27 @@ void QFxListView::setSnapPosition(int pos)
 }
 
 /*!
+    \qmlproperty int ListView::spacing
+
+    This property holds the spacing to leave between items.
+*/
+int QFxListView::spacing() const
+{
+    Q_D(const QFxListView);
+    return d->spacing;
+}
+
+void QFxListView::setSpacing(int spacing)
+{
+    Q_D(QFxListView);
+    if (spacing != d->spacing) {
+        d->spacing = spacing;
+        d->layout();
+        emit spacingChanged();
+    }
+}
+
+/*!
     \qmlproperty enumeration ListView::orientation
     This property holds the orientation of the list.
 
@@ -1452,7 +1474,7 @@ void QFxListView::itemsInserted(int modelIndex, int count)
     int to = d->buffer+d->position()+d->size()-1;
     // index can be the next item past the end of the visible items list (i.e. appended)
     int pos = index < d->visibleItems.count() ? d->visibleItems.at(index)->position()
-                                                : d->visibleItems.at(index-1)->endPosition()+1;
+                                                : d->visibleItems.at(index-1)->endPosition()+d->spacing+1;
     int initialPos = pos;
     QList<FxListItem*> added;
     for (int i = 0; i < count && pos <= to; ++i) {
@@ -1460,7 +1482,7 @@ void QFxListView::itemsInserted(int modelIndex, int count)
         d->visibleItems.insert(index, item);
         item->setPosition(pos);
         added.append(item);
-        pos += item->size();
+        pos += item->size() + d->spacing;
         ++index;
     }
     if (d->currentIndex >= modelIndex) {

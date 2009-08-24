@@ -69,6 +69,7 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
     Q_PROPERTY(bool autoHighlight READ autoHighlight WRITE setAutoHighlight)
     Q_PROPERTY(CurrentItemPositioning currentItemPositioning READ currentItemPositioning WRITE setCurrentItemPositioning)
     Q_PROPERTY(int snapPosition READ snapPosition WRITE setSnapPosition)
+    Q_PROPERTY(int spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
     Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
     Q_PROPERTY(bool wrap READ isWrapEnabled WRITE setWrapEnabled)
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
@@ -104,6 +105,9 @@ public:
     int snapPosition() const;
     void setSnapPosition(int pos);
 
+    int spacing() const;
+    void setSpacing(int spacing);
+
     Qt::Orientation orientation() const;
     void setOrientation(Qt::Orientation);
 
@@ -121,6 +125,7 @@ public:
 
 Q_SIGNALS:
     void countChanged();
+    void spacingChanged();
     void currentIndexChanged();
     void currentSectionChanged();
     void sectionExpressionChanged();
