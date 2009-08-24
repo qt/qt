@@ -77,7 +77,7 @@ public:
         String
     };
 
-    QScriptValuePrivate();
+    QScriptValuePrivate(QScriptEnginePrivate*);
     ~QScriptValuePrivate();
 
     void initFrom(JSC::JSValue value);

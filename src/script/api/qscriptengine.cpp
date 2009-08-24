@@ -856,8 +856,7 @@ QScriptValue QScriptEnginePrivate::scriptValueFromJSCValue(JSC::JSValue value)
     if (!value)
         return QScriptValue();
 
-    QScriptValuePrivate *p_value = new (this)QScriptValuePrivate();
-    p_value->engine = this;
+    QScriptValuePrivate *p_value = new (this)QScriptValuePrivate(this);
     p_value->initFrom(value);
     return QScriptValuePrivate::toPublic(p_value);
 }
