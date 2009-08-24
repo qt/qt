@@ -1180,14 +1180,14 @@ JSC::JSValue QScriptEnginePrivate::newQObject(
     bool preferExisting = (options & QScriptEngine::PreferExistingWrapperObject) != 0;
     QScriptEngine::QObjectWrapOptions opt = options & ~QScriptEngine::PreferExistingWrapperObject;
     QScriptObject *result = 0;
-    if (preferExisting)
+    if (preferExisting) {
         result = data->findWrapper(ownership, opt);
-    if (!result) {
-        result = new (exec) QScriptObject(qobjectWrapperObjectStructure);
-        if (preferExisting)
-            data->registerWrapper(result, ownership, opt);
+        if (result)
+            return result;
     }
-    Q_ASSERT(result != 0);
+    result = new (exec) QScriptObject(qobjectWrapperObjectStructure);
+    if (preferExisting)
+        data->registerWrapper(result, ownership, opt);
     result->setDelegate(new QScript::QObjectDelegate(object, ownership, options));
     /*if (setDefaultPrototype)*/ {
         const QMetaObject *meta = object->metaObject();
@@ -1635,7 +1635,6 @@ QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
     }
     QScriptObject *jscScriptObject = static_cast<QScriptObject*>(jscObject);
     if (!object.isVariant()) {
-        delete jscScriptObject->delegate();
         jscScriptObject->setDelegate(new QScript::QVariantDelegate(value));
     } else {
         QScriptValuePrivate::get(object)->setVariantValue(value);
@@ -1713,7 +1712,6 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
     }
     QScriptObject *jscScriptObject = static_cast<QScriptObject*>(jscObject);
     if (!scriptObject.isQObject()) {
-        delete jscScriptObject->delegate();
         jscScriptObject->setDelegate(new QScript::QObjectDelegate(qtObject, ownership, options));
     } else {
         QScript::QObjectDelegate *delegate = static_cast<QScript::QObjectDelegate*>(jscScriptObject->delegate());
