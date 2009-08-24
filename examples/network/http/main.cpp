@@ -46,6 +46,7 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
+    qWarning("The usage of QHttp is not recommended anymore, please use QNetworkAccessManager.");
     HttpWindow httpWin;
     httpWin.show();
     return httpWin.exec();
