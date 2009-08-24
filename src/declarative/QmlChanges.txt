@@ -35,6 +35,8 @@ Text elements: hAlign  -> horizontalAlignment
 Text elements: vAlign  -> verticalAlignment
 State: operations      -> changes
 Transition: operations -> animations
+Transition: fromState  -> from
+Transition: toState    -> to
 Follow: followValue    -> value
 
 Additions:
@@ -59,8 +61,6 @@ Pending Changes
 Renamed elements:
 
 Renamed properties:
-Transition: fromState  -> from
-Trnasition: toState    -> to
 
 Removed Properties:
 PropertyAction::property
