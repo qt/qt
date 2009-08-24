@@ -102,6 +102,8 @@ public:
     QScriptValue property(const JSC::Identifier &id, int resolveMode) const;
     QScriptValue property(quint32 index, int resolveMode) const;
     inline QScriptValue property(const QString &, int resolveMode) const;
+    void setProperty(const JSC::Identifier &id, const QScriptValue &value,
+                     const QScriptValue::PropertyFlags &flags);
 
     void detachFromEngine();
 
