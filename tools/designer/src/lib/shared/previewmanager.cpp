@@ -562,6 +562,7 @@ QWidget *PreviewManager::createPreview(const QDesignerFormWindowInterface *fw,
 
     const QString title = tr("%1 - [Preview]").arg(formWidget->windowTitle());
     formWidget = fakeContainer(formWidget);
+    formWidget->setWindowTitle(title);
 
     // Clear any modality settings, child widget modalities must not be higher than parent's
     formWidget->setWindowModality(Qt::NonModal);
