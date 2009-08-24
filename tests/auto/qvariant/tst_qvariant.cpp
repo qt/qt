@@ -2623,7 +2623,7 @@ void tst_QVariant::qvariant_cast_QObject_data() {
 
     QTest::addColumn<QVariant>("data");
     QTest::addColumn<bool>("success");
-    QTest::newRow("from QObject") << QVariant(QMetaType::QObjectStar, new QObject) << true;
+    QTest::newRow("from QObject") << QVariant(QMetaType::QObjectStar, new QObject(this)) << true;
     QTest::newRow("from String") << QVariant(QLatin1String("1, 2, 3")) << false;
     QTest::newRow("from int") << QVariant((int) 123) << false;
 }
@@ -2748,6 +2748,7 @@ void tst_QVariant::dataStar() const
 
     v2 = qVariantFromValue(p1);
     QVERIFY(v1 == v2);
+    delete p1;
 }
 
 void tst_QVariant::canConvertQStringList() const

@@ -1,13 +1,11 @@
 CONFIG -= stl_off
 
-# STL usage in S60 requires the following mmp variables to be used.
-# These are added via $$STLLIB_USAGE_CW_FLAGS and $$STLLIB_USAGE_DEFINES
-# variables below.
-# OPTION CW -wchar_t on
-# MACRO  _WCHAR_T_DECLARED
+# STL usage in S60 requires the "OPTION CW -wchar_t on" mmp statement to be used.
+# This statement is added via $$STLLIB_USAGE_CW_FLAGS variable below.
+# S60 STL documentation instructs to use also "MACRO  _WCHAR_T_DECLARED" statement,
+# but QtS60 will not compile if that statement is set.
 
 QMAKE_CXXFLAGS.CW *= $$STLLIB_USAGE_CW_FLAGS 
-DEFINES *= $$STLLIB_USAGE_DEFINES
 
 # Path to stlport headers
 INCLUDEPATH += $$OS_LAYER_STDCPP_SYSTEMINCLUDE 

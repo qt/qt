@@ -539,12 +539,15 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::AnnotatedList:
         {
+            //qDebug() << "ANNOTATED LIS:";
             QList<Node*> values = tre->groups().values(atom->string());
             QMap<QString, const Node*> nodeMap;
             for (int i = 0; i < values.size(); ++i) {
                 const Node* n = values.at(i);
-                if ((n->status() != Node::Internal) && (n->access() != Node::Private))
-                    nodeMap.insert(n->name(),n);
+                if ((n->status() != Node::Internal) && (n->access() != Node::Private)) {
+                    nodeMap.insert(n->nameForLists(),n);
+                    //qDebug() << "  " << n->nameForLists();
+                }
             }
             generateAnnotatedList(relative, marker, nodeMap);
         }

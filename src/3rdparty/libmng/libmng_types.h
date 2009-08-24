@@ -198,12 +198,7 @@
 #endif /* MNG_INCLUDE_IJG6B */
 
 #if defined(MNG_INTERNAL_MEMMNGMT) || defined(MNG_INCLUDE_FILTERS)
-// Bug in stdlib.h, see more information from fixed_stdlib.h
-#if (defined __SYMBIAN32__ && !defined __cplusplus)
-#include <fixed_stdlib.h>
-#else
-#include <stdlib.h>
-#endif  // defined __SYMBIAN32__ && !defined __cplusplus
+#include <stdlib.h>                    /* "calloc" & "free" & "abs" */
 #endif
 
 #include <limits.h>                    /* get proper integer widths */

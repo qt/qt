@@ -643,13 +643,13 @@ void QPixmap::resize_helper(const QSize &s)
     QPixmap pm(QSize(w, h), data->type);
     bool uninit = false;
 #if defined(Q_WS_X11)
-    QX11PixmapData *x11Data = data->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(data) : 0;
+    QX11PixmapData *x11Data = data->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(data.data()) : 0;
     if (x11Data) {
         pm.x11SetScreen(x11Data->xinfo.screen());
         uninit = x11Data->flags & QX11PixmapData::Uninitialized;
     }
 #elif defined(Q_WS_MAC)
-    QMacPixmapData *macData = data->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data) : 0;
+    QMacPixmapData *macData = data->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
     if (macData)
         uninit = macData->uninit;
 #endif
@@ -663,7 +663,7 @@ void QPixmap::resize_helper(const QSize &s)
 
 #if defined(Q_WS_X11)
     if (x11Data && x11Data->x11_mask) {
-        QX11PixmapData *pmData = static_cast<QX11PixmapData*>(pm.data);
+        QX11PixmapData *pmData = static_cast<QX11PixmapData*>(pm.data.data());
         pmData->x11_mask = (Qt::HANDLE)XCreatePixmap(X11->display,
                                                      RootWindow(x11Data->xinfo.display(),
                                                                 x11Data->xinfo.screen()),
@@ -1158,7 +1158,7 @@ Qt::HANDLE QPixmap::handle() const
 {
 #if defined(Q_WS_X11)
     if (data->classId() == QPixmapData::X11Class)
-        return static_cast<QX11PixmapData*>(data)->handle();
+        return static_cast<const QX11PixmapData*>(data.constData())->handle();
 #endif
     return 0;
 }
@@ -1917,7 +1917,7 @@ void QPixmap::detach()
         QImagePixmapCleanupHooks::executePixmapHooks(this);
 
 #if defined(Q_WS_MAC)
-    QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data) : 0;
+    QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
     if (macData) {
         if (macData->cg_mask) {
             CGImageRelease(macData->cg_mask);
@@ -1933,7 +1933,7 @@ void QPixmap::detach()
 
 #if defined(Q_WS_X11)
     if (data->classId() == QPixmapData::X11Class) {
-        QX11PixmapData *d = static_cast<QX11PixmapData*>(data);
+        QX11PixmapData *d = static_cast<QX11PixmapData*>(data.data());
         d->flags &= ~QX11PixmapData::Uninitialized;
 
         // reset the cache data

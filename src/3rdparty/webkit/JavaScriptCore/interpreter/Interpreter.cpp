@@ -65,6 +65,14 @@
 #include "JIT.h"
 #endif
 
+#if ENABLE(ASSEMBLER)
+#include "AssemblerBuffer.h"
+#endif
+
+#ifdef QT_BUILD_SCRIPT_LIB
+#include "bridge/qscriptobject_p.h"
+#endif
+
 using namespace std;
 
 namespace JSC {
@@ -463,9 +471,12 @@ NEVER_INLINE bool Interpreter::unwindCallFrame(CallFrame*& callFrame, JSValue ex
 
     if (Debugger* debugger = callFrame->dynamicGlobalObject()->debugger()) {
         DebuggerCallFrame debuggerCallFrame(callFrame, exceptionValue);
-        if (callFrame->callee())
+        if (callFrame->callee()) {
             debugger->returnEvent(debuggerCallFrame, codeBlock->ownerNode()->sourceID(), codeBlock->ownerNode()->lastLine());
-        else
+#ifdef QT_BUILD_SCRIPT_LIB
+            debugger->functionExit(exceptionValue, codeBlock->ownerNode()->sourceID());
+#endif
+        } else
             debugger->didExecuteProgram(debuggerCallFrame, codeBlock->ownerNode()->sourceID(), codeBlock->ownerNode()->lastLine());
     }
 
@@ -510,9 +521,9 @@ NEVER_INLINE HandlerInfo* Interpreter::throwException(CallFrame*& callFrame, JSV
             exception = createNotAnObjectError(callFrame, static_cast<JSNotAnObjectErrorStub*>(exception), bytecodeOffset, codeBlock);
             exceptionValue = exception;
         } else {
-            if (!exception->hasProperty(callFrame, Identifier(callFrame, "line")) && 
+            if (!exception->hasProperty(callFrame, Identifier(callFrame, JSC_ERROR_LINENUMBER_PROPERTYNAME)) && 
                 !exception->hasProperty(callFrame, Identifier(callFrame, "sourceId")) && 
-                !exception->hasProperty(callFrame, Identifier(callFrame, "sourceURL")) && 
+                !exception->hasProperty(callFrame, Identifier(callFrame, JSC_ERROR_FILENAME_PROPERTYNAME)) && 
                 !exception->hasProperty(callFrame, Identifier(callFrame, expressionBeginOffsetPropertyName)) && 
                 !exception->hasProperty(callFrame, Identifier(callFrame, expressionCaretOffsetPropertyName)) && 
                 !exception->hasProperty(callFrame, Identifier(callFrame, expressionEndOffsetPropertyName))) {
@@ -521,16 +532,16 @@ NEVER_INLINE HandlerInfo* Interpreter::throwException(CallFrame*& callFrame, JSV
                     int endOffset = 0;
                     int divotPoint = 0;
                     int line = codeBlock->expressionRangeForBytecodeOffset(callFrame, bytecodeOffset, divotPoint, startOffset, endOffset);
-                    exception->putWithAttributes(callFrame, Identifier(callFrame, "line"), jsNumber(callFrame, line), ReadOnly | DontDelete);
+                    exception->putWithAttributes(callFrame, Identifier(callFrame, JSC_ERROR_LINENUMBER_PROPERTYNAME), jsNumber(callFrame, line), ReadOnly | DontDelete);
                     
                     // We only hit this path for error messages and throw statements, which don't have a specific failure position
                     // So we just give the full range of the error/throw statement.
                     exception->putWithAttributes(callFrame, Identifier(callFrame, expressionBeginOffsetPropertyName), jsNumber(callFrame, divotPoint - startOffset), ReadOnly | DontDelete);
                     exception->putWithAttributes(callFrame, Identifier(callFrame, expressionEndOffsetPropertyName), jsNumber(callFrame, divotPoint + endOffset), ReadOnly | DontDelete);
                 } else
-                    exception->putWithAttributes(callFrame, Identifier(callFrame, "line"), jsNumber(callFrame, codeBlock->lineNumberForBytecodeOffset(callFrame, bytecodeOffset)), ReadOnly | DontDelete);
+                    exception->putWithAttributes(callFrame, Identifier(callFrame, JSC_ERROR_LINENUMBER_PROPERTYNAME), jsNumber(callFrame, codeBlock->lineNumberForBytecodeOffset(callFrame, bytecodeOffset)), ReadOnly | DontDelete);
                 exception->putWithAttributes(callFrame, Identifier(callFrame, "sourceId"), jsNumber(callFrame, codeBlock->ownerNode()->sourceID()), ReadOnly | DontDelete);
-                exception->putWithAttributes(callFrame, Identifier(callFrame, "sourceURL"), jsOwnedString(callFrame, codeBlock->ownerNode()->sourceURL()), ReadOnly | DontDelete);
+                exception->putWithAttributes(callFrame, Identifier(callFrame, JSC_ERROR_FILENAME_PROPERTYNAME), jsOwnedString(callFrame, codeBlock->ownerNode()->sourceURL()), ReadOnly | DontDelete);
             }
             
             if (exception->isWatchdogException()) {
@@ -542,7 +553,8 @@ NEVER_INLINE HandlerInfo* Interpreter::throwException(CallFrame*& callFrame, JSV
         }
     }
 
-    if (Debugger* debugger = callFrame->dynamicGlobalObject()->debugger()) {
+    Debugger* debugger = callFrame->dynamicGlobalObject()->debugger();
+    if (debugger) {
         DebuggerCallFrame debuggerCallFrame(callFrame, exceptionValue);
         debugger->exception(debuggerCallFrame, codeBlock->ownerNode()->sourceID(), codeBlock->lineNumberForBytecodeOffset(callFrame, bytecodeOffset));
     }
@@ -566,11 +578,32 @@ NEVER_INLINE HandlerInfo* Interpreter::throwException(CallFrame*& callFrame, JSV
     // Calculate an exception handler vPC, unwinding call frames as necessary.
 
     HandlerInfo* handler = 0;
-    while (!(handler = codeBlock->handlerForBytecodeOffset(bytecodeOffset))) {
-        if (!unwindCallFrame(callFrame, exceptionValue, bytecodeOffset, codeBlock))
-            return 0;
-    }
 
+#ifdef QT_BUILD_SCRIPT_LIB
+    //try to find handler
+    bool hasHandler = true;
+    CallFrame *callFrameTemp = callFrame;
+    unsigned bytecodeOffsetTemp = bytecodeOffset;
+    CodeBlock *codeBlockTemp = codeBlock;
+    while (!(handler = codeBlockTemp->handlerForBytecodeOffset(bytecodeOffsetTemp))) {
+        callFrameTemp = callFrameTemp->callerFrame();
+        if (callFrameTemp->hasHostCallFrameFlag()) {
+            hasHandler = false;
+            break;
+        } else {
+            codeBlockTemp = callFrameTemp->codeBlock();
+            bytecodeOffsetTemp = bytecodeOffsetForPC(callFrameTemp, codeBlockTemp, callFrameTemp->returnPC());
+        }
+    }
+    if (debugger)
+        debugger->exceptionThrow(DebuggerCallFrame(callFrame, exceptionValue), codeBlock->ownerNode()->sourceID(), hasHandler);
+#endif
+
+    while (!(handler = codeBlock->handlerForBytecodeOffset(bytecodeOffset))) {
+        if (!unwindCallFrame(callFrame, exceptionValue, bytecodeOffset, codeBlock)) {
+            return 0;
+        }
+    }
     // Now unwind the scope chain within the exception handler's call frame.
 
     ScopeChainNode* scopeChain = callFrame->scopeChain();
@@ -870,7 +903,7 @@ JSValue Interpreter::execute(EvalNode* evalNode, CallFrame* callFrame, JSObject*
     return result;
 }
 
-NEVER_INLINE void Interpreter::debug(CallFrame* callFrame, DebugHookID debugHookID, int firstLine, int lastLine)
+NEVER_INLINE void Interpreter::debug(CallFrame* callFrame, DebugHookID debugHookID, int firstLine, int lastLine, int column)
 {
     Debugger* debugger = callFrame->dynamicGlobalObject()->debugger();
     if (!debugger)
@@ -884,7 +917,7 @@ NEVER_INLINE void Interpreter::debug(CallFrame* callFrame, DebugHookID debugHook
             debugger->returnEvent(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), lastLine);
             return;
         case WillExecuteStatement:
-            debugger->atStatement(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), firstLine);
+            debugger->atStatement(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), firstLine, column);
             return;
         case WillExecuteProgram:
             debugger->willExecuteProgram(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), firstLine);
@@ -893,7 +926,7 @@ NEVER_INLINE void Interpreter::debug(CallFrame* callFrame, DebugHookID debugHook
             debugger->didExecuteProgram(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), lastLine);
             return;
         case DidReachBreakpoint:
-            debugger->didReachBreakpoint(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), lastLine);
+            debugger->didReachBreakpoint(callFrame, callFrame->codeBlock()->ownerNode()->sourceID(), lastLine, column);
             return;
     }
 }
@@ -1127,7 +1160,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
 
     Instruction* vPC = callFrame->codeBlock()->instructions().begin();
     Profiler** enabledProfilerReference = Profiler::enabledProfilerReference();
-    unsigned tickCount = globalData->timeoutChecker.ticksUntilNextCheck();
+    unsigned tickCount = globalData->timeoutChecker->ticksUntilNextCheck();
 
 #define CHECK_FOR_EXCEPTION() \
     do { \
@@ -1143,11 +1176,11 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
 
 #define CHECK_FOR_TIMEOUT() \
     if (!--tickCount) { \
-        if (globalData->timeoutChecker.didTimeOut(callFrame)) { \
+        if (globalData->timeoutChecker->didTimeOut(callFrame)) { \
             exceptionValue = jsNull(); \
             goto vm_throw; \
         } \
-        tickCount = globalData->timeoutChecker.ticksUntilNextCheck(); \
+        tickCount = globalData->timeoutChecker->ticksUntilNextCheck(); \
     }
     
 #if ENABLE(OPCODE_SAMPLING)
@@ -3062,7 +3095,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         if (callType == CallTypeHost) {
             ScopeChainNode* scopeChain = callFrame->scopeChain();
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
-            newCallFrame->init(0, vPC + 5, scopeChain, callFrame, dst, argCount, 0);
+            newCallFrame->init(0, vPC + 5, scopeChain, callFrame, dst, argCount, asObject(v));
 
             Register* thisRegister = newCallFrame->registers() - RegisterFile::CallFrameHeaderSize - argCount;
             ArgList args(thisRegister + 1, argCount - 1);
@@ -3104,7 +3137,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
                 exceptionValue = createStackOverflowError(callFrame);
                 goto vm_throw;
             }
-            int32_t expectedParams = callFrame->callee()->body()->parameterCount();
+            int32_t expectedParams = static_cast<JSFunction*>(callFrame->callee())->body()->parameterCount();
             int32_t inplaceArgs = min(argCount, expectedParams);
             int32_t i = 0;
             Register* argStore = callFrame->registers() + argsOffset;
@@ -3216,7 +3249,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         if (callType == CallTypeHost) {
             ScopeChainNode* scopeChain = callFrame->scopeChain();
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
-            newCallFrame->init(0, vPC + 5, scopeChain, callFrame, dst, argCount, 0);
+            newCallFrame->init(0, vPC + 5, scopeChain, callFrame, dst, argCount, asObject(v));
             
             Register* thisRegister = newCallFrame->registers() - RegisterFile::CallFrameHeaderSize - argCount;
             ArgList args(thisRegister + 1, argCount - 1);
@@ -3295,17 +3328,27 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
            register base to those of the calling function.
         */
 
+#ifdef QT_BUILD_SCRIPT_LIB
+        Debugger* debugger = callFrame->dynamicGlobalObject()->debugger();
+        intptr_t sourceId = callFrame->codeBlock()->source()->asID();
+#endif
+
         int result = (++vPC)->u.operand;
 
         if (callFrame->codeBlock()->needsFullScopeChain())
             callFrame->scopeChain()->deref();
 
         JSValue returnValue = callFrame->r(result).jsValue();
+#ifdef QT_BUILD_SCRIPT_LIB
+        if (debugger) {
+            debugger->functionExit(returnValue, sourceId);
+        }
+#endif
 
         vPC = callFrame->returnPC();
         int dst = callFrame->returnValueRegister();
         callFrame = callFrame->callerFrame();
-        
+
         if (callFrame->hasHostCallFrameFlag())
             return returnValue;
 
@@ -3448,8 +3491,12 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
                 structure = asObject(prototype)->inheritorID();
             else
                 structure = callDataScopeChain->globalObject()->emptyObjectStructure();
+#ifdef QT_BUILD_SCRIPT_LIB
+            // ### world-class hack
+            QScriptObject* newObject = new (globalData) QScriptObject(structure);
+#else
             JSObject* newObject = new (globalData) JSObject(structure);
-
+#endif
             callFrame->r(thisRegister) = JSValue(newObject); // "this" value
 
             CallFrame* previousCallFrame = callFrame;
@@ -3475,8 +3522,9 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
             ArgList args(callFrame->registers() + thisRegister + 1, argCount - 1);
 
             ScopeChainNode* scopeChain = callFrame->scopeChain();
+
             CallFrame* newCallFrame = CallFrame::create(callFrame->registers() + registerOffset);
-            newCallFrame->init(0, vPC + 7, scopeChain, callFrame, dst, argCount, 0);
+            newCallFrame->init(0, vPC + 7, scopeChain, callFrame, dst, argCount, asObject(v));
 
             JSValue returnValue;
             {
@@ -3647,6 +3695,16 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         */
         ASSERT(exceptionValue);
         ASSERT(!globalData->exception);
+
+#ifdef QT_BUILD_SCRIPT_LIB
+        CodeBlock* codeBlock = callFrame->codeBlock();
+        Debugger* debugger = callFrame->dynamicGlobalObject()->debugger();
+        if (debugger) {
+            DebuggerCallFrame debuggerCallFrame(callFrame, exceptionValue);
+            debugger->exceptionCatch(debuggerCallFrame, codeBlock->ownerNode()->sourceID());
+        }
+#endif
+
         int ex = (++vPC)->u.operand;
         callFrame->r(ex) = exceptionValue;
         exceptionValue = JSValue();
@@ -3787,7 +3845,7 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         NEXT_INSTRUCTION();
     }
     DEFINE_OPCODE(op_debug) {
-        /* debug debugHookID(n) firstLine(n) lastLine(n)
+        /* debug debugHookID(n) firstLine(n) lastLine(n) columnNumber(n)
 
          Notifies the debugger of the current state of execution. This opcode
          is only generated while the debugger is attached.
@@ -3795,8 +3853,9 @@ JSValue Interpreter::privateExecute(ExecutionFlag flag, RegisterFile* registerFi
         int debugHookID = (++vPC)->u.operand;
         int firstLine = (++vPC)->u.operand;
         int lastLine = (++vPC)->u.operand;
+        int column = (++vPC)->u.operand;
 
-        debug(callFrame, static_cast<DebugHookID>(debugHookID), firstLine, lastLine);
+        debug(callFrame, static_cast<DebugHookID>(debugHookID), firstLine, lastLine, column);
 
         ++vPC;
         NEXT_INSTRUCTION();

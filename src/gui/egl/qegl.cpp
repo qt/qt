@@ -402,7 +402,7 @@ void QEglContext::dumpAllConfigs()
 
 QString QEglContext::extensions()
 {
-    const char* exts = eglQueryString(dpy, EGL_EXTENSIONS);
+    const char* exts = eglQueryString(QEglContext::defaultDisplay(0), EGL_EXTENSIONS);
     return QString(QLatin1String(exts));
 }
 

@@ -274,7 +274,8 @@ static inline int qt_safe_close(int fd)
 #undef QT_CLOSE
 #define QT_CLOSE qt_safe_close
 
-// Open C does not (yet?) implement these on Symbian OS and VxWorks doesn't have processes
+// - Open C does not (yet?) implement these on Symbian OS
+// - VxWorks doesn't have processes
 #if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_VXWORKS)
 static inline int qt_safe_execve(const char *filename, char *const argv[],
                                  char *const envp[])

@@ -65,14 +65,14 @@ void DebuggerActivation::putWithAttributes(ExecState* exec, const Identifier& pr
     m_activation->putWithAttributes(exec, propertyName, value, attributes);
 }
 
-bool DebuggerActivation::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool DebuggerActivation::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
-    return m_activation->deleteProperty(exec, propertyName);
+    return m_activation->deleteProperty(exec, propertyName, checkDontDelete);
 }
 
-void DebuggerActivation::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void DebuggerActivation::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
-    m_activation->getPropertyNames(exec, propertyNames);
+    m_activation->getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 bool DebuggerActivation::getPropertyAttributes(JSC::ExecState* exec, const Identifier& propertyName, unsigned& attributes) const

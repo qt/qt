@@ -285,9 +285,9 @@ void Structure::materializePropertyMap()
     }
 }
 
-void Structure::getEnumerablePropertyNames(ExecState* exec, PropertyNameArray& propertyNames, JSObject* baseObject)
+void Structure::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, JSObject* baseObject, unsigned listedAttributes)
 {
-    bool shouldCache = propertyNames.shouldCache() && !(propertyNames.size() || m_isDictionary);
+    bool shouldCache = propertyNames.shouldCache() && !(propertyNames.size() || m_isDictionary) && (listedAttributes & Prototype);
 
     if (shouldCache && m_cachedPropertyNameArrayData) {
         if (m_cachedPropertyNameArrayData->cachedPrototypeChain() == prototypeChain(exec)) {
@@ -296,11 +296,13 @@ void Structure::getEnumerablePropertyNames(ExecState* exec, PropertyNameArray& p
         }
         clearEnumerationCache();
     }
+    bool includeNonEnumerable = false;
+    if (listedAttributes & NonEnumerable)
+        includeNonEnumerable = true;
+    getNamesFromPropertyTable(propertyNames, includeNonEnumerable);
+    getNamesFromClassInfoTable(exec, baseObject->classInfo(), propertyNames, includeNonEnumerable);
 
-    getEnumerableNamesFromPropertyTable(propertyNames);
-    getEnumerableNamesFromClassInfoTable(exec, baseObject->classInfo(), propertyNames);
-
-    if (m_prototype.isObject()) {
+    if ((listedAttributes & Prototype) && m_prototype.isObject()) {
         propertyNames.setShouldCache(false); // No need for our prototypes to waste memory on caching, since they're not being enumerated directly.
         asObject(m_prototype)->getPropertyNames(exec, propertyNames);
     }
@@ -1008,7 +1010,7 @@ static int comparePropertyMapEntryIndices(const void* a, const void* b)
     return 0;
 }
 
-void Structure::getEnumerableNamesFromPropertyTable(PropertyNameArray& propertyNames)
+void Structure::getNamesFromPropertyTable(PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     materializePropertyMapIfNecessary();
     if (!m_propertyTable)
@@ -1019,7 +1021,8 @@ void Structure::getEnumerableNamesFromPropertyTable(PropertyNameArray& propertyN
         int i = 0;
         unsigned entryCount = m_propertyTable->keyCount + m_propertyTable->deletedSentinelCount;
         for (unsigned k = 1; k <= entryCount; k++) {
-            if (m_propertyTable->entries()[k].key && !(m_propertyTable->entries()[k].attributes & DontEnum)) {
+            if (m_propertyTable->entries()[k].key
+                    && (includeNonEnumerable || !(m_propertyTable->entries()[k].attributes & DontEnum))) {
                 PropertyMapEntry* value = &m_propertyTable->entries()[k];
                 int j;
                 for (j = i - 1; j >= 0 && a[j]->index > value->index; --j)
@@ -1046,7 +1049,8 @@ void Structure::getEnumerableNamesFromPropertyTable(PropertyNameArray& propertyN
     PropertyMapEntry** p = sortedEnumerables.data();
     unsigned entryCount = m_propertyTable->keyCount + m_propertyTable->deletedSentinelCount;
     for (unsigned i = 1; i <= entryCount; i++) {
-        if (m_propertyTable->entries()[i].key && !(m_propertyTable->entries()[i].attributes & DontEnum))
+        if (m_propertyTable->entries()[i].key
+                && (includeNonEnumerable || !(m_propertyTable->entries()[i].attributes & DontEnum)))
             *p++ = &m_propertyTable->entries()[i];
     }
 
@@ -1065,7 +1069,7 @@ void Structure::getEnumerableNamesFromPropertyTable(PropertyNameArray& propertyN
     }
 }
 
-void Structure::getEnumerableNamesFromClassInfoTable(ExecState* exec, const ClassInfo* classInfo, PropertyNameArray& propertyNames)
+void Structure::getNamesFromClassInfoTable(ExecState* exec, const ClassInfo* classInfo, PropertyNameArray& propertyNames, bool includeNonEnumerable)
 {
     // Add properties from the static hashtables of properties
     for (; classInfo; classInfo = classInfo->parentClass) {
@@ -1078,7 +1082,7 @@ void Structure::getEnumerableNamesFromClassInfoTable(ExecState* exec, const Clas
         int hashSizeMask = table->compactSize - 1;
         const HashEntry* entry = table->table;
         for (int i = 0; i <= hashSizeMask; ++i, ++entry) {
-            if (entry->key() && !(entry->attributes() & DontEnum))
+            if (entry->key() && (includeNonEnumerable || !(entry->attributes() & DontEnum)))
                 propertyNames.add(entry->key());
         }
     }

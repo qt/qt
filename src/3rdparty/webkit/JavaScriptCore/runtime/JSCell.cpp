@@ -167,14 +167,14 @@ void JSCell::put(ExecState* exec, unsigned identifier, JSValue value)
     toObject(exec)->put(exec, identifier, value);
 }
 
-bool JSCell::deleteProperty(ExecState* exec, const Identifier& identifier)
+bool JSCell::deleteProperty(ExecState* exec, const Identifier& identifier, bool checkDontDelete)
 {
-    return toObject(exec)->deleteProperty(exec, identifier);
+    return toObject(exec)->deleteProperty(exec, identifier, checkDontDelete);
 }
 
-bool JSCell::deleteProperty(ExecState* exec, unsigned identifier)
+bool JSCell::deleteProperty(ExecState* exec, unsigned identifier, bool checkDontDelete)
 {
-    return toObject(exec)->deleteProperty(exec, identifier);
+    return toObject(exec)->deleteProperty(exec, identifier, checkDontDelete);
 }
 
 JSObject* JSCell::toThisObject(ExecState* exec) const

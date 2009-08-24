@@ -535,7 +535,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
     if (!isWindow() && parentWidget())
-        parentWidget()->d_func()->invalidateBuffer(geometry());
+        parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
     if (testAttribute(Qt::WA_WState_Created)) {
         setAttribute(Qt::WA_WState_Created, false);
@@ -601,7 +601,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     Q_Q(QWidget);
     bool wasCreated = q->testAttribute(Qt::WA_WState_Created);
     if (q->isVisible() && q->parentWidget() && parent != q->parentWidget())
-        q->parentWidget()->d_func()->invalidateBuffer(q->geometry());
+        q->parentWidget()->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
 
     WId old_winid = data.winid;
     // hide and reparent our own window away. Otherwise we might get
@@ -2070,11 +2070,21 @@ void QWidgetPrivate::winSetupGestures()
     bool needh = false;
     bool needv = false;
     bool singleFingerPanEnabled = false;
-    QStandardGestures gestures = qAppPriv->widgetGestures[q];
+    QApplicationPrivate::WidgetStandardGesturesMap::const_iterator it =
+            qAppPriv->widgetGestures.find(q);
+    if (it == qAppPriv->widgetGestures.end())
+        return;
+    const QStandardGestures &gestures = it.value();
     WId winid = 0;
 
     if (QAbstractScrollArea *asa = qobject_cast<QAbstractScrollArea*>(q)) {
-        winid = asa->viewport()->winId();
+        winid = asa->viewport()->internalWinId();
+        if (!winid) {
+            QWidget *nativeParent = asa->viewport()->nativeParentWidget();
+            if (!nativeParent)
+                return;
+            winid = nativeParent->internalWinId();
+        }
         QScrollBar *hbar = asa->horizontalScrollBar();
         QScrollBar *vbar = asa->verticalScrollBar();
         Qt::ScrollBarPolicy hbarpolicy = asa->horizontalScrollBarPolicy();
@@ -2085,9 +2095,13 @@ void QWidgetPrivate::winSetupGestures()
                  (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
         singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
     } else {
-        winid = q->winId();
+        winid = q->internalWinId();
+        if (!winid) {
+            if (QWidget *nativeParent = q->nativeParentWidget())
+                winid = nativeParent->internalWinId();
+        }
     }
-    if (qAppPriv->SetGestureConfig) {
+    if (winid && qAppPriv->SetGestureConfig) {
         GESTURECONFIG gc[3];
         memset(gc, 0, sizeof(gc));
         gc[0].dwID = GID_PAN;
@@ -2116,7 +2130,6 @@ void QWidgetPrivate::winSetupGestures()
         else
             gc[2].dwBlock = GC_ROTATE;
 
-        Q_ASSERT(winid);
         qAppPriv->SetGestureConfig(winid, 0, sizeof(gc)/sizeof(gc[0]), gc, sizeof(gc[0]));
     }
 }

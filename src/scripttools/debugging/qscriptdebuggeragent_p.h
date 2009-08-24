@@ -125,6 +125,7 @@ public:
                        const QVariant &argument = QVariant());
 
 private:
+    QScriptDebuggerAgentPrivate *d_ptr;
     Q_DECLARE_PRIVATE(QScriptDebuggerAgent)
     Q_DISABLE_COPY(QScriptDebuggerAgent)
 };

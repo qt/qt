@@ -19,4 +19,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html *.doc images
 sources.path = $$[QT_INSTALL_DEMOS]/textedit
 INSTALLS += target sources
 
-include($$QT_SOURCE_TREE/demos/demobase.pri)
+symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)

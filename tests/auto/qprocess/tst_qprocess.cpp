@@ -134,6 +134,8 @@ private slots:
     void exitCodeTest();
     void setEnvironment_data();
     void setEnvironment();
+    void setProcessEnvironment_data();
+    void setProcessEnvironment();
     void systemEnvironment();
     void spaceInName();
     void lockupsInStartDetached();
@@ -1872,16 +1874,39 @@ void tst_QProcess::setEnvironment()
 
         QCOMPARE(process.readAll(), value.toLocal8Bit());
     }
+#endif
+}
 
-    // use the hash variant now
+//-----------------------------------------------------------------------------
+void tst_QProcess::setProcessEnvironment_data()
+{
+    setEnvironment_data();
+}
+
+void tst_QProcess::setProcessEnvironment()
+{
+#if !defined (Q_OS_WINCE)
+    // there is no concept of system variables on Windows CE as there is no console
+
+    // make sure our environment variables are correct
+    QVERIFY(qgetenv("tst_QProcess").isEmpty());
+    QVERIFY(!qgetenv("PATH").isEmpty());
+#ifdef Q_OS_WIN
+    QVERIFY(!qgetenv("PROMPT").isEmpty());
+#endif
+
+    QFETCH(QString, name);
+    QFETCH(QString, value);
+    QString executable = QDir::currentPath() + "/testProcessEnvironment/testProcessEnvironment";
+
     {
         QProcess process;
-        QHash<QString, QString> environment = QProcess::systemEnvironmentHash();
+        QProcessEnvironment environment = QProcessEnvironment::systemEnvironment();
         if (value.isNull())
             environment.remove(name);
         else
             environment.insert(name, value);
-        process.setEnvironmentHash(environment);
+        process.setProcessEnvironment(environment);
         process.start(executable, QStringList() << name);
 
         QVERIFY(process.waitForFinished());
@@ -1899,12 +1924,12 @@ void tst_QProcess::systemEnvironment()
 #if defined (Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     // there is no concept of system variables on Windows CE as there is no console
     QVERIFY(QProcess::systemEnvironment().isEmpty());
-    QVERIFY(QProcess::systemEnvironmentHash().isEmpty());
+    QVERIFY(QProcessEnvironment::systemEnvironment().isEmpty());
 #else
     QVERIFY(!QProcess::systemEnvironment().isEmpty());
-    QVERIFY(!QProcess::systemEnvironmentHash().isEmpty());
+    QVERIFY(!QProcessEnvironment::systemEnvironment().isEmpty());
 
-    QVERIFY(QProcess::systemEnvironmentHash().contains("PATH"));
+    QVERIFY(QProcessEnvironment::systemEnvironment().contains("PATH"));
     QVERIFY(!QProcess::systemEnvironment().filter(QRegExp("^PATH=", Qt::CaseInsensitive)).isEmpty());
 #endif
 }

@@ -1029,10 +1029,10 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     surface = createDFBSurface(description, DontTrackSurface);
 #endif
     // Work out what format we're going to use for surfaces with an alpha channel
-    d_ptr->alphaPixmapFormat = QDirectFBScreen::getImageFormat(surface);
+    QImage::Format pixelFormat = QDirectFBScreen::getImageFormat(surface);
+    d_ptr->alphaPixmapFormat = pixelFormat;
 
-    setPixelFormat(d_ptr->alphaPixmapFormat);
-    switch (d_ptr->alphaPixmapFormat) {
+    switch (pixelFormat) {
     case QImage::Format_RGB666:
         d_ptr->alphaPixmapFormat = QImage::Format_ARGB6666_Premultiplied;
         break;
@@ -1040,9 +1040,9 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
         d_ptr->alphaPixmapFormat = QImage::Format_ARGB4444_Premultiplied;
         break;
     case QImage::Format_RGB32:
-        qWarning("QDirectFBScreen::connect(). Qt/DirectFB does not work with the RGB32 pixelformat. "
-                 "We recommmend using ARGB instead");
-        return false;
+        pixelFormat = d_ptr->alphaPixmapFormat = QImage::Format_ARGB32_Premultiplied;
+        // ### Format_RGB32 doesn't work so well with Qt. Force ARGB32 for windows/pixmaps
+        break;
     case QImage::Format_Indexed8:
         qWarning("QDirectFBScreen::connect(). Qt/DirectFB does not work with the LUT8  pixelformat.");
         return false;
@@ -1064,8 +1064,8 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
         // works already
         break;
     }
-
-    QScreen::d = ::depth(pixelFormat());
+    setPixelFormat(pixelFormat);
+    QScreen::d = ::depth(pixelFormat);
     data = 0;
     lstep = 0;
     size = 0;

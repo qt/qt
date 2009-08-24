@@ -43,6 +43,7 @@
 #include "qvector3d.h"
 #include "qvector4d.h"
 #include <QtCore/qdebug.h>
+#include <QtCore/qvariant.h>
 #include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
@@ -401,6 +402,14 @@ QVector4D QVector2D::toVector4D() const
 
     \sa toPoint(), toVector3D()
 */
+
+/*!
+    Returns the 2D vector as a QVariant.
+*/
+QVector2D::operator QVariant() const
+{
+    return QVariant(QVariant::Vector2D, this);
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 

@@ -375,20 +375,20 @@ NEVER_INLINE void JSArray::putSlowCase(ExecState* exec, unsigned i, JSValue valu
     checkConsistency();
 }
 
-bool JSArray::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool JSArray::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
     bool isArrayIndex;
     unsigned i = propertyName.toArrayIndex(&isArrayIndex);
     if (isArrayIndex)
-        return deleteProperty(exec, i);
+        return deleteProperty(exec, i, checkDontDelete);
 
     if (propertyName == exec->propertyNames().length)
         return false;
 
-    return JSObject::deleteProperty(exec, propertyName);
+    return JSObject::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
-bool JSArray::deleteProperty(ExecState* exec, unsigned i)
+bool JSArray::deleteProperty(ExecState* exec, unsigned i, bool checkDontDelete)
 {
     checkConsistency();
 
@@ -422,12 +422,12 @@ bool JSArray::deleteProperty(ExecState* exec, unsigned i)
     checkConsistency();
 
     if (i > MAX_ARRAY_INDEX)
-        return deleteProperty(exec, Identifier::from(exec, i));
+        return deleteProperty(exec, Identifier::from(exec, i), checkDontDelete);
 
     return false;
 }
 
-void JSArray::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSArray::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     // FIXME: Filling PropertyNameArray with an identifier for every integer
     // is incredibly inefficient for large arrays. We need a different approach,
@@ -447,7 +447,7 @@ void JSArray::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames
             propertyNames.add(Identifier::from(exec, it->first));
     }
 
-    JSObject::getPropertyNames(exec, propertyNames);
+    JSObject::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 bool JSArray::increaseVectorLength(unsigned newLength)

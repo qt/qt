@@ -252,7 +252,6 @@ public:
 #endif
     QGLFormat glFormat;
     QGLFormat reqFormat;
-    GLuint pbo;
     GLuint fbo;
 
     uint valid : 1;

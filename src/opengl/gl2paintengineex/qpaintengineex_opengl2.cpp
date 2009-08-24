@@ -720,6 +720,12 @@ void QGL2PaintEngineEx::sync()
     d->needsSync = true;
 }
 
+const QGLContext *QGL2PaintEngineEx::context()
+{
+    Q_D(QGL2PaintEngineEx);
+    return d->ctx;
+}
+
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
 {
     if (newMode == mode)
@@ -1114,6 +1120,21 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
     d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT,
                            state()->renderHints & QPainter::SmoothPixmapTransform, id);
     d->drawTexture(dest, src, image.size(), !image.hasAlphaChannel());
+}
+
+void QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const QSize &size, const QRectF &src)
+{
+    Q_D(QGL2PaintEngineEx);
+    ensureActive();
+    d->transferMode(ImageDrawingMode);
+
+    QGLContext *ctx = d->ctx;
+    glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
+    d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT,
+                           state()->renderHints & QPainter::SmoothPixmapTransform, textureId);
+    d->drawTexture(dest, src, size, false);
 }
 
 void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem)
@@ -1718,6 +1739,14 @@ QOpenGL2PaintEngineState::QOpenGL2PaintEngineState()
 
 QOpenGL2PaintEngineState::~QOpenGL2PaintEngineState()
 {
+}
+
+QPixmapFilter *QGL2PaintEngineEx::createPixmapFilter(int type) const
+{
+    const QGLContext *ctx = QGLContext::currentContext();
+    if (ctx)
+        return ctx->d_func()->createPixmapFilter(type);
+    return 0;
 }
 
 QT_END_NAMESPACE

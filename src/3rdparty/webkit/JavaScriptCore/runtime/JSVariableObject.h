@@ -48,8 +48,8 @@ namespace JSC {
 
         virtual void putWithAttributes(ExecState*, const Identifier&, JSValue, unsigned attributes) = 0;
 
-        virtual bool deleteProperty(ExecState*, const Identifier&);
-        virtual void getPropertyNames(ExecState*, PropertyNameArray&);
+        virtual bool deleteProperty(ExecState*, const Identifier&, bool checkDontDelete = true);
+        virtual void getPropertyNames(ExecState*, PropertyNameArray&, unsigned listedAttributes = Structure::Prototype);
         
         virtual bool isVariableObject() const;
         virtual bool isDynamicScope() const = 0;

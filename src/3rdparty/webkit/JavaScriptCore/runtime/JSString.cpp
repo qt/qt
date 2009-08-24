@@ -112,6 +112,21 @@ bool JSString::getOwnPropertySlot(ExecState* exec, unsigned propertyName, Proper
     return JSString::getOwnPropertySlot(exec, Identifier::from(exec, propertyName), slot);
 }
 
+bool JSString::getStringPropertyAttributes(ExecState* exec, const Identifier& propertyName, unsigned& attributes) const
+{
+    if (propertyName == exec->propertyNames().length) {
+        attributes = DontEnum | DontDelete | ReadOnly;
+        return true;
+    }
+    bool isStrictUInt32;
+    unsigned i = propertyName.toStrictUInt32(&isStrictUInt32);
+    if (isStrictUInt32 && i < static_cast<unsigned>(m_value.size())) {
+        attributes = DontDelete | ReadOnly;
+        return true;
+    }
+    return false;
+}
+
 JSString* jsString(JSGlobalData* globalData, const UString& s)
 {
     int size = s.size();

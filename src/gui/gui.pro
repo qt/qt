@@ -35,6 +35,7 @@ include(graphicsview/graphicsview.pri)
 include(util/util.pri)
 include(statemachine/statemachine.pri)
 include(math3d/math3d.pri)
+include(effects/effects.pri)
 
 contains(QT_CONFIG, egl): include(egl/egl.pri)
 

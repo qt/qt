@@ -4,6 +4,7 @@ SUBDIRS       = \
                 desktop \
                 dialogs \
                 draganddrop \
+                effects \
                 graphicsview \
                 ipc \
                 itemviews \
@@ -22,7 +23,6 @@ SUBDIRS       = \
                 widgets \
                 uitools \
                 xml \
-                script \
                 multitouch \
                 gestures
 
@@ -39,6 +39,7 @@ symbian: SUBDIRS = \
                 uitools \
                 xml
 
+contains(QT_CONFIG, script): SUBDIRS += script
 contains(QT_CONFIG, multimedia):!static: SUBDIRS += multimedia
 contains(QT_CONFIG, phonon):!static: SUBDIRS += phonon
 contains(QT_CONFIG, webkit): SUBDIRS += webkit

@@ -35,12 +35,7 @@
 #endif
 
 #include <stdarg.h>
-// Bug in stdlib.h, see more information from fixed_stdlib.h
-#if (defined __SYMBIAN32__ && !defined __cplusplus)
-#include <fixed_stdlib.h>
-#else
 #include <stdlib.h>
-#endif  // defined __SYMBIAN32__ && !defined __cplusplus
 #include <sys/stat.h>
 
 #ifdef HAVE_UNISTD_H

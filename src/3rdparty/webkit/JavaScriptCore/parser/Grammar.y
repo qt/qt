@@ -62,7 +62,7 @@ static inline bool allowAutomaticSemicolon(JSC::Lexer&, int);
 
 #define AUTO_SEMICOLON do { if (!allowAutomaticSemicolon(*LEXER, yychar)) YYABORT; } while (0)
 #define SET_EXCEPTION_LOCATION(node, start, divot, end) node->setExceptionSourceCode((divot), (divot) - (start), (end) - (divot))
-#define DBG(l, s, e) (l)->setLoc((s).first_line, (e).last_line)
+#define DBG(l, s, e) (l)->setLoc((s).first_line, (e).last_line, (s).first_column + 1)
 
 using namespace JSC;
 using namespace std;

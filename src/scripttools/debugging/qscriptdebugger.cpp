@@ -993,7 +993,8 @@ public:
             m_debugger->scriptsModel->addScript(scriptId, data);
 
             // ### could be slow, might want to do this in a separate thread
-            QString xml = qt_scriptToXml(data.contents(), data.baseLineNumber());
+//            Q_ASSERT_X(false, Q_FUNC_INFO, "implement me");
+            QString xml; // = qt_scriptToXml(data.contents(), data.baseLineNumber());
             QScriptXmlParser::Result extraInfo = QScriptXmlParser::parse(xml);
             m_debugger->scriptsModel->addExtraScriptInfo(
                 scriptId, extraInfo.functionsInfo, extraInfo.executableLineNumbers);

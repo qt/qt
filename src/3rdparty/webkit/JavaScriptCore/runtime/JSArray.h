@@ -85,9 +85,9 @@ namespace JSC {
 
     protected:
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
-        virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
-        virtual bool deleteProperty(ExecState*, unsigned propertyName);
-        virtual void getPropertyNames(ExecState*, PropertyNameArray&);
+        virtual bool deleteProperty(ExecState*, const Identifier& propertyName, bool checkDontDelete = true);
+        virtual bool deleteProperty(ExecState*, unsigned propertyName, bool checkDontDelete = true);
+        virtual void getPropertyNames(ExecState*, PropertyNameArray&, unsigned listedAttributes = Structure::Prototype);
         virtual void mark();
 
         void* lazyCreationData();

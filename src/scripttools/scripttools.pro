@@ -9,6 +9,7 @@ unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtScript
 
 include(../qbase.pri)
 
+
 include(debugging/debugging.pri)
 
 symbian:TARGET.UID3=0x2001E625
