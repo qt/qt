@@ -907,8 +907,11 @@ qreal QGraphicsOpacityEffect::opacity() const
 void QGraphicsOpacityEffect::setOpacity(qreal opacity)
 {
     Q_D(QGraphicsOpacityEffect);
+    opacity = qBound(qreal(0.0), opacity, qreal(1.0));
+
     if (qFuzzyCompare(d->opacity, opacity))
         return;
+
     d->opacity = opacity;
     emit opacityChanged(opacity);
 }
