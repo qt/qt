@@ -95,7 +95,6 @@ public:
     {
         QScriptValue tmp;
         tmp.d_ptr = d;
-        d->ref.ref();
         return tmp;
     }
 
