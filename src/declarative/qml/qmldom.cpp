@@ -144,7 +144,7 @@ QList<QmlDomImport> QmlDomDocument::imports() const
     data.  On success, true is returned.  If the \a data is malformed, false
     is returned and QmlDomDocument::loadError() contains an error description.
 
-    \sa QmlDomDocument::save() QmlDomDocument::loadError()
+    \sa QmlDomDocument::loadError()
 */
 bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl &url)
 {
@@ -208,17 +208,6 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
 QList<QmlError> QmlDomDocument::errors() const
 {
     return d->errors;
-}
-
-/*!
-    Return a saved copy of the QmlDomDocument.  The returned data will be valid
-    QML XML data.
-
-    \sa load()
-*/
-QByteArray QmlDomDocument::save() const
-{
-    return QByteArray();
 }
 
 /*!

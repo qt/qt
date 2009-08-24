@@ -76,7 +76,6 @@ public:
 
     QList<QmlError> errors() const;
     bool load(QmlEngine *, const QByteArray &, const QUrl & = QUrl());
-    QByteArray save() const;
 
     QmlDomObject rootObject() const;
 
