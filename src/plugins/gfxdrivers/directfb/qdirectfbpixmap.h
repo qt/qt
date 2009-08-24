@@ -62,6 +62,12 @@ public:
     // Re-implemented from QPixmapData:
     virtual void resize(int width, int height);
     virtual void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
+#ifdef QT_DIRECTFB_IMAGEPROVIDER
+    virtual bool fromFile(const QString &filename, const char *format,
+                          Qt::ImageConversionFlags flags);
+    virtual bool fromData(const uchar *buffer, uint len, const char *format,
+                          Qt::ImageConversionFlags flags);
+#endif
     virtual void copy(const QPixmapData *data, const QRect &rect);
     virtual void fill(const QColor &color);
     virtual QPixmap transformed(const QTransform &matrix,
@@ -78,6 +84,9 @@ public:
     static bool hasAlphaChannel(const QImage &img);
     inline bool hasAlphaChannel() const { return alpha; }
 private:
+#ifdef QT_DIRECTFB_IMAGEPROVIDER
+    bool fromDataBufferDescription(const DFBDataBufferDescription &dataBuffer);
+#endif
     void invalidate();
     bool alpha;
 };

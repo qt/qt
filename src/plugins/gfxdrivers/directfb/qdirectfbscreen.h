@@ -59,6 +59,9 @@ QT_MODULE(Gui)
 #if !defined QT_DIRECTFB_IMAGECACHE && !defined QT_NO_DIRECTFB_IMAGECACHE
 #define QT_NO_DIRECTFB_IMAGECACHE
 #endif
+#if !defined QT_DIRECTFB_IMAGEPROVIDER && !defined QT_NO_DIRECTFB_IMAGEPROVIDER
+#define QT_NO_DIRECTFB_IMAGEPROVIDER
+#endif
 #if !defined QT_NO_DIRECTFB_PALETTE && !defined QT_DIRECTFB_PALETTE
 #define QT_DIRECTFB_PALETTE
 #endif
@@ -162,6 +165,10 @@ public:
                                      QImage::Format format,
                                      SurfaceCreationOptions options,
                                      DFBResult *result = 0);
+    IDirectFBSurface *createDFBSurface(DFBSurfaceDescription desc,
+                                       SurfaceCreationOptions options,
+                                       DFBResult *result);
+
     void flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags flipFlags,
                      const QRegion &region, const QPoint &offset);
     void releaseDFBSurface(IDirectFBSurface *surface);
@@ -188,11 +195,7 @@ public:
 
     static uchar *lockSurface(IDirectFBSurface *surface, uint flags, int *bpl = 0);
 private:
-    IDirectFBSurface *createDFBSurface(DFBSurfaceDescription desc,
-                                       SurfaceCreationOptions options,
-                                       DFBResult *result);
     QDirectFBScreenPrivate *d_ptr;
-    friend class SurfaceCache;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDirectFBScreen::SurfaceCreationOptions);
