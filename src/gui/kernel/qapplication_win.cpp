@@ -323,6 +323,7 @@ extern HRGN qt_tryCreateRegion(QRegion::RegionType type, int left, int top, int 
 #define APPCOMMAND_BASS_UP                21
 #define APPCOMMAND_TREBLE_DOWN            22
 #define APPCOMMAND_TREBLE_UP              23
+#endif // FAPPCOMMAND_MOUSE
 
 // New commands from Windows XP (some even Sp1)
 #ifndef APPCOMMAND_MICROPHONE_VOLUME_MUTE
@@ -356,8 +357,6 @@ extern HRGN qt_tryCreateRegion(QRegion::RegionType type, int left, int top, int 
 #define APPCOMMAND_MEDIA_CHANNEL_UP       51
 #define APPCOMMAND_MEDIA_CHANNEL_DOWN     52
 #endif // APPCOMMAND_MICROPHONE_VOLUME_MUTE
-
-#endif // FAPPCOMMAND_MOUSE
 
 #if (_WIN32_WINNT < 0x0400)
 // This struct is defined in winuser.h if the _WIN32_WINNT >= 0x0400 -- in the

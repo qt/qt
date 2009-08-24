@@ -338,7 +338,6 @@ namespace Phonon
 
         STDMETHODIMP QPin::QueryPinInfo(PIN_INFO *info)
         {
-            QMutexLocker locker(&m_mutex);
             if (!info) {
                 return E_POINTER;
             }
@@ -352,7 +351,6 @@ namespace Phonon
 
         STDMETHODIMP QPin::QueryDirection(PIN_DIRECTION *dir)
         {
-            QMutexLocker locker(&m_mutex);
             if (!dir) {
                 return E_POINTER;
             }
@@ -363,7 +361,6 @@ namespace Phonon
 
         STDMETHODIMP QPin::QueryId(LPWSTR *id)
         {
-            QMutexLocker locker(&m_mutex);
             if (!id) {
                 return E_POINTER;
             }
