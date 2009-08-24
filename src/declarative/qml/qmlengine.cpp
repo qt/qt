@@ -1418,6 +1418,9 @@ void QmlEnginePrivate::resolveNamespace(const Imports& imports, const QByteArray
 */
 bool QmlEnginePrivate::resolveTypeInNamespace(ImportedNamespace* ns, const QByteArray& type, QmlType** type_return, QUrl* url_return ) const
 {
+    if (!ns) 
+        return false;
+
     if (type_return) {
         QmlType* t = ns->d->findBuiltin(type);
         if (!t) t = QmlMetaType::qmlType(type,0,0); // Try global namespace
