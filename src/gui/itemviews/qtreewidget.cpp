@@ -2784,7 +2784,8 @@ int QTreeWidget::currentColumn() const
 /*!
   Sets the current \a item in the tree widget.
 
-  Depending on the current selection mode, the item may also be selected.
+  Unless the selection mode is \l{QAbstractItemView::}{NoSelection},
+  the item is also be selected.
 
   \sa currentItem(), currentItemChanged()
 */
