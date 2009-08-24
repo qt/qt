@@ -181,6 +181,7 @@ private slots:
     void ignoreSslErrorsList();
     void ignoreSslErrorsListWithSlot_data();
     void ignoreSslErrorsListWithSlot();
+    void readFromClosedSocket();
 
     static void exitLoop()
     {
@@ -1666,6 +1667,34 @@ void tst_QSslSocket::ignoreSslErrorsListWithSlot()
     QFETCH(int, expectedSslErrorSignalCount);
     bool expectEncryptionSuccess = (expectedSslErrorSignalCount == 0);
     QCOMPARE(socket.waitForEncrypted(10000), expectEncryptionSuccess);
+}
+
+// make sure a closed socket has no bytesAvailable()
+// related to https://bugs.webkit.org/show_bug.cgi?id=28016
+void tst_QSslSocket::readFromClosedSocket()
+{
+    QSslSocketPtr socket = newSocket();
+    socket->ignoreSslErrors();
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+    socket->ignoreSslErrors();
+    socket->waitForConnected();
+    socket->waitForEncrypted();
+    // provoke a response by sending a request
+    socket->write("GET /gif/fluke.gif HTTP/1.1\n");
+    socket->write("Host: ");
+    socket->write(QtNetworkSettings::serverName().toLocal8Bit().constData());
+    socket->write("\n");
+    socket->write("\n");
+    socket->waitForBytesWritten();
+    socket->waitForReadyRead();
+    QVERIFY(socket->state() == QAbstractSocket::ConnectedState);
+    QVERIFY(socket->bytesAvailable());
+    socket->close();
+    QVERIFY(!socket->bytesAvailable());
+    QVERIFY(!socket->bytesToWrite());
+    socket->waitForDisconnected();
+    QVERIFY(!socket->bytesAvailable());
+    QVERIFY(!socket->bytesToWrite());
 }
 
 #endif // QT_NO_OPENSSL

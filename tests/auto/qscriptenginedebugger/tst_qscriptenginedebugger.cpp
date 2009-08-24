@@ -745,6 +745,9 @@ private:
 
 void tst_QScriptEngineDebugger::multithreadedDebugging()
 {
+#ifdef Q_OS_WINCE
+    QSKIP("This tests uses too much memory for Windows CE", SkipAll);
+#endif
     ScriptEvaluator eval;
     QThread thread;
     eval.moveToThread(&thread);

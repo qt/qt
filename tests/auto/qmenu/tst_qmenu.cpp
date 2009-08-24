@@ -266,6 +266,9 @@ tst_QMenu::addActionsAndClear()
 
 void tst_QMenu::mouseActivation()
 {
+#ifdef Q_OS_WINCE_WM
+    QSKIP("We have a separate mouseActivation test for Windows mobile.", SkipAll);
+#endif
     QMenu menu;
     menu.addAction("Menu Action");
     menu.show();

@@ -8,7 +8,7 @@ TEMPLATE = subdirs
 SUBDIRS += \
            bic \
            collections \
-           compile \
+           compiler \
            compilerwarnings \
            exceptionsafety \
            linguist \
