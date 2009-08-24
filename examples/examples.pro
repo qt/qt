@@ -34,7 +34,6 @@ symbian: SUBDIRS = \
                 widgets \
                 draganddrop \
                 mainwindows \
-                script \
                 sql \
                 uitools \
                 xml
