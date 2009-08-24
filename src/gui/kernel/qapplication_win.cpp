@@ -1808,6 +1808,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                         case APPCOMMAND_VOLUME_UP:
                             key = Qt::Key_VolumeUp;
                             break;
+#if defined(WINVER) && WINVER >= 0x0501
                         // Commands new in Windows XP
                         case APPCOMMAND_HELP:
                             key = Qt::Key_Help;
@@ -1821,6 +1822,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                         case APPCOMMAND_MEDIA_PLAY:
                             key = Qt::Key_MediaPlay;
                             break;
+#endif
                         default:
                             break;
                         }
