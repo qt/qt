@@ -229,7 +229,7 @@ QColor QFxText::color() const
     Supported text styles are \c Normal, \c Outline, \c Raised and \c Sunken.
 
     \qml
-    HorizontalPositioner {
+    Row {
         Text { font.pointSize: 24; text: "Normal" }
         Text { font.pointSize: 24; text: "Raised";  style: "Raised";  styleColor: "#AAAAAA" }
         Text { font.pointSize: 24; text: "Outline"; style: "Outline"; styleColor: "red" }
@@ -363,7 +363,7 @@ void QFxText::setWrap(bool w)
     \row
     \o
     \qml
-VerticalPositioner {
+Column {
     TextEdit {
         font.pointSize: 24
         text: "<b>Hello</b> <i>World!</i>"

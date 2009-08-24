@@ -5,7 +5,7 @@ Rectangle {
     color: "white"
     width: 520; height: 280
 
-    HorizontalPositioner {
+    Row {
         anchors.centerIn: parent
         spacing: 50
 //! [0]

@@ -22,7 +22,7 @@ Rectangle {
 
     Item {
         anchors.centerIn: parent
-        HorizontalPositioner {
+        Row {
             id: MyLayout
             property real targetX: -(selectedX + imageWidth / 2)
 

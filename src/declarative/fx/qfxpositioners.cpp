@@ -318,22 +318,22 @@ void QFxBasePositioner::applyRemove(const QList<QPair<QString, QVariant> >& chan
     applyTransition(changes,target, d->removeActions);
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VerticalPositioner,QFxVerticalPositioner)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Column,QFxColumn)
 /*!
-  \qmlclass VerticalPositioner
-  \brief The VerticalPositioner item lines up its children vertically.
+  \qmlclass Column
+  \brief The Column item lines up its children vertically.
   \inherits Item
 
-  The VerticalPositioner item positions its child items so that they are vertically
+  The Column item positions its child items so that they are vertically
     aligned and not overlapping. Spacing between items can be added.
 
-  The below example positions differently shaped rectangles using a VerticalPositioner.
+  The below example positions differently shaped rectangles using a Column.
   \table
   \row
   \o \image verticalpositioner_example.png
   \o
   \qml
-VerticalPositioner {
+Column {
     spacing: 2
     Rectangle { color: "red"; width: 50; height: 50 }
     Rectangle { color: "green"; width: 20; height: 50 }
@@ -342,7 +342,7 @@ VerticalPositioner {
   \endqml
   \endtable
 
-  VerticalPositioner also provides for transitions to be set when items are added, moved,
+  Column also provides for transitions to be set when items are added, moved,
   or removed in the positioner. Adding and removing apply both to items which are deleted
   or have their position in the document changed so as to no longer be children of the positioner,
   as well as to items which have their opacity set to or from zero so as to appear or disappear.
@@ -352,7 +352,7 @@ VerticalPositioner {
   \o \image verticalpositioner_transition.gif
   \o
   \qml
-VerticalPositioner {
+Column {
     spacing: 2
     remove: ...
     add: ...
@@ -365,7 +365,7 @@ VerticalPositioner {
 
 */
 /*!
-    \qmlproperty Transition VerticalPositioner::remove
+    \qmlproperty Transition Column::remove
     This property holds the transition to apply when removing an item from the positioner. The transition is only applied to the removed items.
 
     Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the positioner, or that the object has had its opacity set to zero, and thus is no longer visible.
@@ -377,7 +377,7 @@ VerticalPositioner {
     \o \image positioner-remove.gif
     \o
     \qml
-VerticalPositioner {
+Column {
     remove: Transition {
         NumberAnimation {
             properties: "opacity"
@@ -392,7 +392,7 @@ VerticalPositioner {
 
 */
 /*!
-    \qmlproperty Transition VerticalPositioner::add
+    \qmlproperty Transition Column::add
     This property holds the transition to be applied when adding an item to the positioner. The transition will only be applied to the added item(s).
 
     Added can mean that either the object has been created or reparented, and thus is now a child or the positioner, or that the object has had its opacity increased from zero, and thus is now visible.
@@ -402,7 +402,7 @@ VerticalPositioner {
     \o \image positioner-add.gif
     \o
     \qml
-VerticalPositioner {
+Column {
     add: Transition {
         NumberAnimation {
             properties: "opacity"
@@ -417,7 +417,7 @@ VerticalPositioner {
 
 */
 /*!
-    \qmlproperty Transition VerticalPositioner::move
+    \qmlproperty Transition Column::move
     This property holds the transition to apply when moving an item within the positioner.
 
     This can happen when other items are added or removed from the positioner, or when items resize themselves.
@@ -427,7 +427,7 @@ VerticalPositioner {
     \o \image positioner-move.gif
     \o
     \qml
-VerticalPositioner {
+Column {
     move: Transition {
         NumberAnimation {
             properties: "y"
@@ -439,12 +439,12 @@ VerticalPositioner {
     \endtable
 */
 /*!
-  \qmlproperty int VerticalPositioner::spacing
+  \qmlproperty int Column::spacing
 
   spacing is the amount in pixels left empty between each adjacent
   item, and defaults to 0.
 
-  The below example places a GridPositioner containing a red, a blue and a
+  The below example places a Grid containing a red, a blue and a
   green rectangle on a gray background. The area the grid positioner
   occupies is colored white. The top positioner has the default of no spacing,
   and the bottom positioner has its spacing set to 2.
@@ -455,16 +455,16 @@ VerticalPositioner {
 */
 /*!
     \internal
-    \class QFxVerticalPositioner
-    \brief The QFxVerticalPositioner class lines up items vertically.
+    \class QFxColumn
+    \brief The QFxColumn class lines up items vertically.
     \ingroup group_positioners
 */
-QFxVerticalPositioner::QFxVerticalPositioner(QFxItem *parent)
+QFxColumn::QFxColumn(QFxItem *parent)
 : QFxBasePositioner(Vertical, parent)
 {
 }
 
-void QFxVerticalPositioner::doPositioning()
+void QFxColumn::doPositioning()
 {
     int voffset = 0;
 
@@ -500,13 +500,13 @@ void QFxVerticalPositioner::doPositioning()
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,HorizontalPositioner,QFxHorizontalPositioner)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Row,QFxRow)
 /*!
-  \qmlclass HorizontalPositioner
-  \brief The HorizontalPositioner item lines up its children horizontally.
+  \qmlclass Row
+  \brief The Row item lines up its children horizontally.
   \inherits Item
 
-  The HorizontalPositioner item positions its child items so that they are
+  The Row item positions its child items so that they are
   horizontally aligned and not overlapping. Spacing can be added between the
   items, and a margin around all items can also be added. It also provides for
   transitions to be set when items are added, moved, or removed in the
@@ -515,9 +515,9 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,HorizontalPositioner,QFxHorizont
   positioner, as well as to items which have their opacity set to or from zero
   so as to appear or disappear.
 
-  The below example lays out differently shaped rectangles using a HorizontalPositioner.
+  The below example lays out differently shaped rectangles using a Row.
   \qml
-HorizontalPositioner {
+Row {
     spacing: 2
     Rectangle { color: "red"; width: 50; height: 50 }
     Rectangle { color: "green"; width: 20; height: 50 }
@@ -528,7 +528,7 @@ HorizontalPositioner {
 
 */
 /*!
-    \qmlproperty Transition HorizontalPositioner::remove
+    \qmlproperty Transition Row::remove
     This property holds the transition to apply when removing an item from the positioner.
     The transition will only be applied to the removed item(s).
 
@@ -537,7 +537,7 @@ HorizontalPositioner {
     Note that if the item counts as removed because its opacity is zero it will not be visible during the transition unless you set the opacity in the transition, like in the below example.
 
     \qml
-HorizontalPositioner {
+Row {
     remove: Transition {
         NumberAnimation {
             properties: "opacity"
@@ -551,14 +551,14 @@ HorizontalPositioner {
 
 */
 /*!
-    \qmlproperty Transition HorizontalPositioner::add
+    \qmlproperty Transition Row::add
     This property holds the transition to apply when adding an item to the positioner.
     The transition will only be applied to the added item(s).
 
     Added can mean that either the object has been created or reparented, and thus is now a child or the positioner, or that the object has had its opacity increased from zero, and thus is now visible.
 
     \qml
-HorizontalPositioner {
+Row {
     add: Transition {
         NumberAnimation {
             properties: "opacity"
@@ -572,13 +572,13 @@ HorizontalPositioner {
 
 */
 /*!
-    \qmlproperty Transition HorizontalPositioner::move
+    \qmlproperty Transition Row::move
     This property holds the transition to apply when moving an item within the positioner.
 
     This can happen when other items are added or removed from the positioner, or when items resize themselves.
 
     \qml
-HorizontalPositioner {
+Row {
     id: positioner
     move: Transition {
         NumberAnimation {
@@ -591,12 +591,12 @@ HorizontalPositioner {
 
 */
 /*!
-  \qmlproperty int HorizontalPositioner::spacing
+  \qmlproperty int Row::spacing
 
   spacing is the amount in pixels left empty between each adjacent
   item, and defaults to 0.
 
-  The below example places a GridPositioner containing a red, a blue and a
+  The below example places a Grid containing a red, a blue and a
   green rectangle on a gray background. The area the grid positioner
   occupies is colored white. The top positioner has the default of no spacing,
   and the bottom positioner has its spacing set to 2.
@@ -607,16 +607,16 @@ HorizontalPositioner {
 */
 /*!
     \internal
-    \class QFxHorizontalPositioner
-    \brief The QFxHorizontalPositioner class lines up items horizontally.
+    \class QFxRow
+    \brief The QFxRow class lines up items horizontally.
     \ingroup group_positioners
 */
-QFxHorizontalPositioner::QFxHorizontalPositioner(QFxItem *parent)
+QFxRow::QFxRow(QFxItem *parent)
 : QFxBasePositioner(Horizontal, parent)
 {
 }
 
-void QFxHorizontalPositioner::doPositioning()
+void QFxRow::doPositioning()
 {
     int hoffset = 0;
 
@@ -651,14 +651,14 @@ void QFxHorizontalPositioner::doPositioning()
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GridPositioner,QFxGridPositioner)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Grid,QFxGrid)
 
 /*!
-  \qmlclass GridPositioner QFxGridPositioner
-  \brief The GridPositioner item positions its children in a grid.
+  \qmlclass Grid QFxGrid
+  \brief The Grid item positions its children in a grid.
   \inherits Item
 
-  The GridPositioner item positions its child items so that they are
+  The Grid item positions its child items so that they are
   aligned in a grid and are not overlapping. Spacing can be added
   between the items. It also provides for transitions to be set when items are
   added, moved, or removed in the positioner. Adding and removing apply
@@ -667,7 +667,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GridPositioner,QFxGridPositioner
   well as to items which have their opacity set to or from zero so
   as to appear or disappear.
 
-  The GridPositioner defaults to using four columns, and as many rows as
+  The Grid defaults to using four columns, and as many rows as
   are necessary to fit all the child items. The number of rows
   and/or the number of columns can be constrained by setting the rows
   or columns properties. The grid positioner calculates a grid with
@@ -681,7 +681,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GridPositioner,QFxGridPositioner
   \o \image gridLayout_example.png
   \o
   \qml
-GridPositioner {
+Grid {
     columns: 3
     spacing: 2
     Rectangle { color: "red"; width: 50; height: 50 }
@@ -694,7 +694,7 @@ GridPositioner {
   \endtable
 */
 /*!
-    \qmlproperty Transition GridPositioner::remove
+    \qmlproperty Transition Grid::remove
     This property holds the transition to apply when removing an item from the positioner.
     The transition is only applied to the removed item(s).
 
@@ -708,7 +708,7 @@ GridPositioner {
     the opacity in the transition, like in the below example.
 
     \qml
-GridPositioner {
+Grid {
     remove: Transition {
         NumberAnimation {
             properties: "opacity"
@@ -722,7 +722,7 @@ GridPositioner {
 
 */
 /*!
-    \qmlproperty Transition GridPositioner::add
+    \qmlproperty Transition Grid::add
     This property holds the transition to apply when adding an item to the positioner.
     The transition is only applied to the added item(s).
 
@@ -732,7 +732,7 @@ GridPositioner {
     visible.
 
     \qml
-GridPositioner {
+Grid {
     add: Transition {
         NumberAnimation {
             properties: "opacity"
@@ -746,14 +746,14 @@ GridPositioner {
 
 */
 /*!
-    \qmlproperty Transition GridPositioner::move
+    \qmlproperty Transition Grid::move
     This property holds the transition to apply when moving an item within the positioner.
 
     This can happen when other items are added or removed from the positioner, or
     when items resize themselves.
 
     \qml
-GridPositioner {
+Grid {
     move: Transition {
         NumberAnimation {
             properties: "x,y"
@@ -765,12 +765,12 @@ GridPositioner {
 
 */
 /*!
-  \qmlproperty int GridPositioner::spacing
+  \qmlproperty int Grid::spacing
 
   spacing is the amount in pixels left empty between each adjacent
   item, and defaults to 0.
 
-  The below example places a GridPositioner containing a red, a blue and a
+  The below example places a Grid containing a red, a blue and a
   green rectangle on a gray background. The area the grid positioner
   occupies is colored white. The top positioner has the default of no spacing,
   and the bottom positioner has its spacing set to 2.
@@ -781,12 +781,12 @@ GridPositioner {
 */
 /*!
     \internal
-    \class QFxGridPositioner
-    \brief The QFxGridPositioner class lays out items in a grid.
+    \class QFxGrid
+    \brief The QFxGrid class lays out items in a grid.
     \ingroup group_layouts
 
 */
-QFxGridPositioner::QFxGridPositioner(QFxItem *parent) :
+QFxGrid::QFxGrid(QFxItem *parent) :
     QFxBasePositioner(Both, parent)
 {
     _columns=-1;
@@ -794,24 +794,24 @@ QFxGridPositioner::QFxGridPositioner(QFxItem *parent) :
 }
 
 /*!
-    \qmlproperty int GridPositioner::columns
+    \qmlproperty int Grid::columns
     This property holds the number of columns in the grid.
 
-    When the columns property is set the GridPositioner will always have
+    When the columns property is set the Grid will always have
     that many columns. Note that if you do not have enough items to
     fill this many columns some columns will be of zero width.
 */
 
 /*!
-    \qmlproperty int GridPositioner::rows
+    \qmlproperty int Grid::rows
     This property holds the number of rows in the grid.
 
-    When the rows property is set the GridPositioner will always have that
+    When the rows property is set the Grid will always have that
     many rows. Note that if you do not have enough items to fill this
     many rows some rows will be of zero width.
 */
 
-void QFxGridPositioner::doPositioning()
+void QFxGrid::doPositioning()
 {
     int c=_columns,r=_rows;//Actual number of rows/columns
     int numVisible = items()->size() + newItems()->size();

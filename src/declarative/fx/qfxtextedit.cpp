@@ -172,7 +172,7 @@ void QFxTextEdit::setText(const QString &text)
     \row
     \o
     \qml
-VerticalPositioner {
+Column {
     TextEdit {
         font.pointSize: 24
         text: "<b>Hello</b> <i>World!</i>"

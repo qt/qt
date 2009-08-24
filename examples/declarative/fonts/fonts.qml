@@ -16,7 +16,7 @@ Rectangle {
     FontLoader { id: WebFont; source: "http://www.princexml.com/fonts/steffmann/Starburst.ttf" }
     FontLoader { id: WebFont2; source: "http://wrong.address.org" }
 
-    VerticalPositioner {
+    Column {
         anchors.fill: parent
         anchors.leftMargin: 10; anchors.rightMargin: 10
         Text {

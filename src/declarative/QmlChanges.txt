@@ -11,9 +11,12 @@ API Changes
 
 Renamed Elements:
 LineEdit         -> TextInput
-VerticalLayout   -> VerticalPositioner
-HorizontalLayout -> HorizontalPositioner
-GridLayout       -> GridPositioner
+VerticalLayout   -> Column
+HorizontalLayout -> Row
+VerticalPositioner -> Column
+HorizontalPositioner -> Row
+GridLayout       -> Grid
+GridPositioner   -> Grid
 Rect             -> Rectangle
 FocusRealm       -> FocusScope
 FontFamily       -> FontLoader
@@ -47,9 +50,9 @@ MouseRegion: add "pressedButtons" property
 Timer: add start() and stop() slots
 
 Deletions:
-VerticalPositioner: lost "margins" property
-HorizontalPositioner: lost "margins" property
-GridPositioner: lost "margins" property
+Column/VerticalPositioner: lost "margins" property
+Row/HorizontalPositioner: lost "margins" property
+Grid/Positioner/Layout: lost "margins" property
 
 Other Changes:
 Drag: axis becomes an enum with values "XAxis", "YAxis", "XandYAxis"

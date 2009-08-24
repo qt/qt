@@ -133,13 +133,6 @@ Item {
                             id: EditUrl
                             mouseGrabbed: parent.mouseGrabbed
 
-                            /*<<<<<<< HEAD:demos/declarative/webbrowser/webbrowser.qml
-                            text: MyWebView.url == '' ? ' ' : MyWebView.url
-                            wrap: false
-                            font.pointSize: 11
-                            color: "#555555"
-                            focusOnPress: true
-                            =======*/
                             text: WebBrowser.urlString
                             label: "url:"
                             onConfirmed: { print ('OnConfirmed: '+EditUrl.text); WebBrowser.urlString = EditUrl.text; print (EditUrl.text); MyWebView.focus=true }
@@ -207,7 +200,7 @@ Item {
                 idealHeight: Flick.height/scale
                 scale: (width > 0) ? Flick.width/width*zoomedOut+(1-zoomedOut) : 1
 
-                onUrlChanged: { print ('OnUrlChanged: '+url.toString()); WebBrowser.urlString = url.toString(); print ('Moved to url: ' + WebBrowser.urlString) }
+                onUrlChanged: { if (url != null) { WebBrowser.urlString = url.toString(); } }
                 onDoubleClick: { toggleZoom() }
 
                 property real zoomedOut : 1

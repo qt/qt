@@ -7,7 +7,7 @@ Rectangle {
     color: "white"
     width: 200
     height: Layout.height
-    VerticalPositioner {
+    Column {
         id: Layout
         spacing: 2
         WebView {

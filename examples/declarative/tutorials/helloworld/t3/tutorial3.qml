@@ -40,7 +40,7 @@ Rectangle {
         ]
     }
     MouseRegion { id: MouseRegion; anchors.fill: HelloText }
-    GridPositioner {
+    Grid {
         id: ColorPicker
         x: 0
         anchors.bottom: Page.bottom

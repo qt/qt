@@ -36,7 +36,7 @@ Rectangle {
                 x: 5
                 height: Layout.height + 4
                 anchors.top: Separator.bottom
-                VerticalPositioner {
+                Column {
                     id: Layout
                     y: 2
                     Text { text: 'Name: ' + name }

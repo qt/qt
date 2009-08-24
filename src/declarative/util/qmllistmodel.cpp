@@ -153,7 +153,7 @@ struct ListModelData
             width: 200; height: 50
             Text { id: Name; text: name }
             Text { text: '$'+cost; anchors.right: parent.right }
-            HorizontalPositioner {
+            Row {
                 anchors.top: Name.bottom
                 spacing: 5
                 Text { text: "Attributes:" }
