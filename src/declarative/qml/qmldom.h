@@ -152,6 +152,9 @@ public:
     QByteArray objectType() const;
     QByteArray objectClassName() const;
 
+    int objectTypeMajorVersion() const;
+    int objectTypeMinorVersion() const;
+
     QString objectId() const;
     void setObjectId(const QByteArray &);
 
