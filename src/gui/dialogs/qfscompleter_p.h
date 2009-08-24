@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QCOMPLETOR_P_H
-#define QCOMPLETOR_P_H
+#ifndef QFSCOMPLETOR_P_H
+#define QFSCOMPLETOR_P_H
 
 //
 //  W A R N I N G
@@ -78,5 +78,5 @@ public:
 };
 #endif // QT_NO_COMPLETER
 QT_END_NAMESPACE
-#endif // QCOMPLETOR_P_H
+#endif // QFSCOMPLETOR_P_H
 
