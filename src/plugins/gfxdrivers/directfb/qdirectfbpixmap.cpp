@@ -410,6 +410,7 @@ void QDirectFBPixmapData::invalidate()
     setSerialNumber(0);
     alpha = false;
     d = w = h = 0;
+    is_null = true;
     format = QImage::Format_Invalid;
 }
 
