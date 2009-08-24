@@ -188,17 +188,18 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage:
         return 0;
     }
     if (doMemCopy) {
-        int bpl;
-        uchar *mem = QDirectFBScreen::lockSurface(surface, DSLF_WRITE, &bpl);
+        int bplDFB;
+        uchar *mem = QDirectFBScreen::lockSurface(surface, DSLF_WRITE, &bplDFB);
         if (mem) {
-            const int h = image.height();
-            const int w = image.bytesPerLine();
-            // ### Could probably do a single memcpy here since I know
-            // ### image.bytesPerLine() == bpl == (image.width() *
-            // ### image.depth() / 8)
-            for (int i = 0; i < h; ++i) {
-                memcpy(mem, image.scanLine(i), w);
-                mem += bpl;
+            const int height = image.height();
+            const int bplQt = image.bytesPerLine();
+            if (bplQt == bplDFB && bplQt == (image.width() * image.depth() / 8)) {
+                memcpy(mem, image.bits(), image.numBytes());
+            } else {
+                for (int i=0; i<height; ++i) {
+                    memcpy(mem, image.scanLine(i), bplQt);
+                    mem += bplDFB;
+                }
             }
             surface->Unlock(surface);
         }
