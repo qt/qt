@@ -604,7 +604,7 @@ void QSvgStyle::revert(QPainter *p, QSvgExtraStates &states)
 QSvgAnimateTransform::QSvgAnimateTransform(int startMs, int endMs, int byMs )
     : QSvgStyleProperty(),
       m_from(startMs), m_to(endMs), m_by(byMs),
-      m_type(Empty), m_count(0), m_finished(false), m_additive(Replace), m_transformApplied(false)
+      m_type(Empty), m_additive(Replace), m_count(0), m_finished(false), m_transformApplied(false)
 {
     m_totalRunningTime = m_to - m_from;
 }
