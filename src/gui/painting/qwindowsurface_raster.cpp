@@ -147,7 +147,10 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     QRect br = rgn.boundingRect();
 
 #ifndef Q_WS_WINCE
-    if (!qt_widget_private(window())->isOpaque && window()->testAttribute(Qt::WA_TranslucentBackground)) {
+    if (!qt_widget_private(window())->isOpaque
+        && window()->testAttribute(Qt::WA_TranslucentBackground)
+        && (qt_widget_private(window())->data.window_flags & Qt::FramelessWindowHint))
+    {
         QRect r = window()->frameGeometry();
         QPoint frameOffset = qt_widget_private(window())->frameStrut().topLeft();
         QRect dirtyRect = br.translated(offset + frameOffset);
