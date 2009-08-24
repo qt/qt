@@ -1,8 +1,8 @@
 import Qt 4.6
 
 Item {
-    properties var period : 250
-    properties var color : "black"
+    property var period : 250
+    propert var color : "black"
     id: Root
 
     Item {
