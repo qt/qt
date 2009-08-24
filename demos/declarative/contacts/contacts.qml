@@ -281,8 +281,8 @@ Rectangle {
         ]
         transitions: [
             Transition {
-                fromState: "*"
-                toState: "*"
+                from: "*"
+                to: "*"
                 NumberAnimation {
                     property: "bottomMargin"
                     duration: 250
@@ -310,8 +310,8 @@ Rectangle {
     ]
     transitions: [
         Transition {
-            fromState: "*"
-            toState: "*"
+            from: "*"
+            to: "*"
             NumberAnimation {
                 property: "opacity"
                 duration: 500

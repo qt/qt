@@ -46,8 +46,8 @@ Item {
     ]
     transitions: [
         Transition {
-            fromState: ""
-            toState: "*"
+            from: ""
+            to: "*"
             reversible: true
             NumberAnimation {
                 properties: "width,rightMargin"

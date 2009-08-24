@@ -99,12 +99,12 @@ Item {
 
                     transitions: [
                         Transition {
-                            fromState: "*"; toState: "Details"
+                            from: "*"; to: "Details"
                             ParentAction { }
                             NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                         },
                         Transition {
-                            fromState: "Details"; toState: "*"
+                            from: "Details"; to: "*"
                             SequentialAnimation {
                                 ParentAction { }
                                 NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
@@ -140,7 +140,7 @@ Item {
                     ]
                     transitions: [
                         Transition {
-                            toState: "pathView"
+                            to: "pathView"
                             SequentialAnimation {
                                 PropertyAction { target: Wrapper; property: "moveToParent" }
                                 ParallelAnimation {
@@ -156,7 +156,7 @@ Item {
                             }
                         },
                         Transition {
-                            toState: "gridView"
+                            to: "gridView"
                             SequentialAnimation {
                                 PauseAnimation { duration: Math.floor(index/7)*100 }
                                 PropertyAction { target: Wrapper; property: "moveToParent" }

@@ -25,8 +25,8 @@ Rectangle {
         ]
         transitions: [
             Transition {
-                fromState: "*"
-                toState: "down"
+                from: "*"
+                to: "down"
                 reversible: true
                 ParallelAnimation {
                     NumberAnimation {

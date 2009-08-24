@@ -100,8 +100,8 @@ Rectangle {
     ]
     transitions: [
         Transition {
-            fromState: "*"
-            toState: "opened"
+            from: "*"
+            to: "opened"
             reversible: true
             NumberAnimation {
                 properties: "opacity,x,width"
