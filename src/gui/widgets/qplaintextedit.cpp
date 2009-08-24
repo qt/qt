@@ -562,13 +562,14 @@ QRectF QPlainTextEditControl::blockBoundingRect(const QTextBlock &block) const {
     if (!block.isValid())
         return QRectF();
     QRectF r = documentLayout->blockBoundingRect(currentBlock);
-    while (currentBlockNumber < blockNumber && offset.y() <= 2* textEdit->viewport()->height()) {
+    int maxVerticalOffset = r.height();
+    while (currentBlockNumber < blockNumber && offset.y() - maxVerticalOffset <= 2* textEdit->viewport()->height()) {
         offset.ry() += r.height();
         currentBlock = currentBlock.next();
         ++currentBlockNumber;
         r = documentLayout->blockBoundingRect(currentBlock);
     }
-    while (currentBlockNumber > blockNumber && offset.y() >= -textEdit->viewport()->height()) {
+    while (currentBlockNumber > blockNumber && offset.y() + maxVerticalOffset >= -textEdit->viewport()->height()) {
         currentBlock = currentBlock.previous();
         if (!currentBlock.isValid())
             break;
