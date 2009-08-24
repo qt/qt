@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -172,6 +172,7 @@ private slots:
     void disconnectFromHostWhenConnecting();
     void disconnectFromHostWhenConnected();
     void resetProxy();
+    void readFromClosedSocket();
 
     static void exitLoop()
     {
@@ -1506,6 +1507,34 @@ void tst_QSslSocket::resetProxy()
     socket2.setProxy(goodProxy);
     socket2.connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QVERIFY2(socket2.waitForConnected(10000), qPrintable(socket.errorString()));
+}
+
+// make sure a closed socket has no bytesAvailable()
+// related to https://bugs.webkit.org/show_bug.cgi?id=28016
+void tst_QSslSocket::readFromClosedSocket()
+{
+    QSslSocketPtr socket = newSocket();
+    socket->ignoreSslErrors();
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+    socket->ignoreSslErrors();
+    socket->waitForConnected();
+    socket->waitForEncrypted();
+    // provoke a response by sending a request
+    socket->write("GET /gif/fluke.gif HTTP/1.1\n");
+    socket->write("Host: ");
+    socket->write(QtNetworkSettings::serverName().toLocal8Bit().constData());
+    socket->write("\n");
+    socket->write("\n");
+    socket->waitForBytesWritten();
+    socket->waitForReadyRead();
+    QVERIFY(socket->state() == QAbstractSocket::ConnectedState);
+    QVERIFY(socket->bytesAvailable());
+    socket->close();
+    QVERIFY(!socket->bytesAvailable());
+    QVERIFY(!socket->bytesToWrite());
+    socket->waitForDisconnected();
+    QVERIFY(!socket->bytesAvailable());
+    QVERIFY(!socket->bytesToWrite());
 }
 
 #endif // QT_NO_OPENSSL

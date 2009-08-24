@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QLALR project on Trolltech Labs.
+** This file is part of the QLALR project on Qt Labs.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -64,7 +64,7 @@ static void help_me ()
        << "  --no-debug\t\tno debug information" << endl
        << "  --no-lines\t\tno #line directives" << endl
        << "  --dot\t\t\tgenerate a graph" << endl
-       << "  --troll\t\tadd the Trolltech copyright header" << endl
+       << "  --copyright\t\tadd the Qt copyright header" << endl
        << endl;
   exit (0);
 }
@@ -77,7 +77,7 @@ int main (int argc, char *argv[])
   bool generate_report = false;
   bool no_lines = false;
   bool debug_info = true;
-  bool troll_copyright = false;
+  bool copyright = false;
   QString file_name = 0;
 
   QStringList args = app.arguments ();
@@ -100,8 +100,8 @@ int main (int argc, char *argv[])
       else if (arg == QLatin1String ("--no-debug"))
         debug_info = false;
 
-      else if (arg == QLatin1String ("--troll"))
-        troll_copyright = true;
+      else if (arg == QLatin1String ("--copyright") || arg == QLatin1String ("--troll"))
+        copyright = true;
 
       else if (file_name.isEmpty ())
 	file_name = arg;
@@ -142,7 +142,7 @@ int main (int argc, char *argv[])
 
   CppGenerator gen (p, grammar, aut, generate_report);
   gen.setDebugInfo (debug_info);
-  gen.setTrollCopyright (troll_copyright);
+  gen.setCopyright (copyright);
   gen ();
 
   if (generate_dot)

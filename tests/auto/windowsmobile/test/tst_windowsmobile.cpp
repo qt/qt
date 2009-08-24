@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -60,14 +60,14 @@ public:
 #endif
     }
 
-#ifdef Q_OS_WINCE_WM
+#if defined(Q_OS_WINCE_WM) && defined(_WIN32_WCE) && _WIN32_WCE <= 0x501
     private slots:
         void testMainWindowAndMenuBar();
         void testSimpleWidget();
 #endif
 };
 
-#ifdef Q_OS_WINCE_WM
+#if defined(Q_OS_WINCE_WM) && defined(_WIN32_WCE) && _WIN32_WCE <= 0x501
 
 bool qt_wince_is_platform(const QString &platformString) {
     TCHAR tszPlatform[64];
@@ -118,8 +118,6 @@ void openMenu()
 
 void compareScreenshots(const QString &image1, const QString &image2)
 {
-    if (qt_wince_is_smartphone())
-        QSKIP("This test is only for Windows Mobile", SkipAll);
     QImage screenShot(image1);
     QImage original(image2);
 
@@ -143,6 +141,9 @@ void takeScreenShot(const QString filename)
 
 void tst_WindowsMobile::testMainWindowAndMenuBar()
 {
+    if (qt_wince_is_smartphone())
+        QSKIP("This test is only for Windows Mobile", SkipAll);
+
     QProcess process;
     process.start("testQMenuBar.exe");
     QCOMPARE(process.state(), QProcess::Running);
@@ -156,6 +157,9 @@ void tst_WindowsMobile::testMainWindowAndMenuBar()
 
 void tst_WindowsMobile::testSimpleWidget()
 {
+    if (qt_wince_is_smartphone())
+        QSKIP("This test is only for Windows Mobile", SkipAll);
+
     QMenuBar menubar;
     menubar.show();
     QWidget maximized;

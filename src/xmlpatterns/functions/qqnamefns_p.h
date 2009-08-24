@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -74,7 +74,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:QXmlName()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class QNameFN : public FunctionCall
     {
@@ -86,7 +86,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:resolve-QXmlName()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class ResolveQNameFN : public FunctionCall
     {
@@ -98,7 +98,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:prefix-from-QXmlName()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class PrefixFromQNameFN : public FunctionCall
     {
@@ -110,7 +110,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:local-name-from-QXmlName()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class LocalNameFromQNameFN : public FunctionCall
     {
@@ -122,7 +122,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:local-name-from-QXmlName()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class NamespaceURIFromQNameFN : public FunctionCall
     {
@@ -133,7 +133,7 @@ namespace QPatternist
     /**
      * @short Implements the function <tt>fn:namespace-uri-from-QXmlName()</tt>.
      *
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      * @ingroup Patternist_functions
      */
     class NamespaceURIForPrefixFN : public FunctionCall
@@ -146,7 +146,7 @@ namespace QPatternist
      * @short Implements the function <tt>fn:in-scope-prefixes()</tt>.
      *
      * @ingroup Patternist_functions
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class InScopePrefixesFN : public FunctionCall
     {

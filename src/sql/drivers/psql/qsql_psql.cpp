@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1133,12 +1133,13 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
         case QVariant::Time:
 #ifndef QT_NO_DATESTRING
             if (field.value().toTime().isValid()) {
-                r = field.value().toTime().toString(Qt::ISODate);
+                r = QLatin1Char('\'') + field.value().toTime().toString(Qt::ISODate) + QLatin1Char('\'');
             } else
 #endif
             {
                 r = QLatin1String("NULL");
             }
+            break;
         case QVariant::String:
         {
             // Escape '\' characters

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1047,7 +1047,7 @@ QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItemV4 *option, in
                 widthUsed = qMax(widthUsed, line.naturalTextWidth());
             }
             textLayout.endLayout();
-            const QSize size = QSizeF(widthUsed, height).toSize();
+            const QSize size(qCeil(widthUsed), qCeil(height));
             return QSize(size.width() + 2 * textMargin, size.height());
         }
         break;

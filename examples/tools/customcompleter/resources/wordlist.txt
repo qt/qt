@@ -1337,7 +1337,6 @@ transparency
 transparent
 travel
 traveled
-Trolltech
 true
 try
 turn

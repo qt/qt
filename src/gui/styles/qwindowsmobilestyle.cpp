@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -2984,7 +2984,11 @@ QRect QWindowsMobileStyle::subControlRect(ComplexControl control, const QStyleOp
                 rect = QRect(x + bs.width(), 0, bs.width(), bs.height());
                 break;
             case SC_SpinBoxEditField:
+                if (spinBox->buttonSymbols == QAbstractSpinBox::NoButtons) {
+                    rect = QRect(lx, fw, spinBox->rect.width() - 2*fw - 2, spinBox->rect.height() - 2*fw);
+                } else {
                     rect = QRect(lx, fw, rx-2, spinBox->rect.height() - 2*fw);
+                }
                 break;
             case SC_SpinBoxFrame:
                 rect = spinBox->rect;

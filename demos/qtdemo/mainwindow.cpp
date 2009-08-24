@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent) : QGraphicsView(parent), updateTimer(thi
     this->doneAdapt = false;
     this->useTimer = false;
     this->updateTimer.setSingleShot(true);
-    this->trolltechLogo = 0;
+    this->companyLogo = 0;
     this->qtLogo = 0;
     this->setupWidget();
     this->setupScene();
@@ -73,7 +73,7 @@ MainWindow::MainWindow(QWidget *parent) : QGraphicsView(parent), updateTimer(thi
 
 MainWindow::~MainWindow()
 {
-    delete this->trolltechLogo;
+    delete this->companyLogo;
     delete this->qtLogo;
 }
 
@@ -275,9 +275,9 @@ void MainWindow::setupSceneItems()
         this->fpsLabel->setPos(Colors::stageStartX, 600 - QFontMetricsF(Colors::buttonFont()).height() - 5);
     }
 
-    this->trolltechLogo = new ImageItem(QImage(":/images/trolltech-logo.png"), 1000, 1000, this->scene, 0, true, 0.5f);
+    this->companyLogo = new ImageItem(QImage(":/images/trolltech-logo.png"), 1000, 1000, this->scene, 0, true, 0.5f);
     this->qtLogo = new ImageItem(QImage(":/images/qtlogo_small.png"), 1000, 1000, this->scene, 0, true, 0.5f);
-    this->trolltechLogo->setZValue(100);
+    this->companyLogo->setZValue(100);
     this->qtLogo->setZValue(100);
     this->pausedLabel = new DemoTextItem(QString("PAUSED"), Colors::buttonFont(), Qt::white, -1, this->scene, 0);
     this->pausedLabel->setZValue(100);
@@ -463,10 +463,10 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     QGraphicsView::resizeEvent(event);
     DemoItem::setMatrix(this->matrix());
 
-    if (this->trolltechLogo){
+    if (this->companyLogo){
         const QRectF r = this->scene->sceneRect();
-        QRectF ttb = this->trolltechLogo->boundingRect();
-        this->trolltechLogo->setPos(int((r.width() - ttb.width()) / 2), 595 - ttb.height());
+        QRectF ttb = this->companyLogo->boundingRect();
+        this->companyLogo->setPos(int((r.width() - ttb.width()) / 2), 595 - ttb.height());
         QRectF qtb = this->qtLogo->boundingRect();
         this->qtLogo->setPos(802 - qtb.width(), 0);
     }

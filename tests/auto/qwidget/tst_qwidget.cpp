@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -5309,6 +5309,7 @@ void tst_QWidget::moveChild()
 void tst_QWidget::showAndMoveChild()
 {
     QWidget parent(0, Qt::FramelessWindowHint);
+    parent.move(qApp->desktop()->availableGeometry().topLeft());
     parent.resize(300, 300);
     parent.setPalette(Qt::red);
     parent.show();
@@ -8968,16 +8969,17 @@ void tst_QWidget::toplevelLineEditFocus()
 
 void tst_QWidget::inputFocus_task257832()
 {
-      QLineEdit *widget = new QLineEdit;
-      QInputContext *context = widget->inputContext();
-      if (!context)
-            QSKIP("No input context", SkipSingle);
-      widget->setFocus();
-      context->setFocusWidget(widget);
-      QCOMPARE(context->focusWidget(), widget);
-      widget->setReadOnly(true);
-      QVERIFY(!context->focusWidget());
-      delete widget;
+    QLineEdit *widget = new QLineEdit;
+    QInputContext *context = widget->inputContext();
+    if (!context)
+        QSKIP("No input context", SkipSingle);
+    widget->setFocus();
+    widget->winId();    // make sure, widget has been created
+    context->setFocusWidget(widget);
+    QCOMPARE(context->focusWidget(), widget);
+    widget->setReadOnly(true);
+    QVERIFY(!context->focusWidget());
+    delete widget;
 }
 
 QTEST_MAIN(tst_QWidget)

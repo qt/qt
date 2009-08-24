@@ -100,14 +100,5 @@
   -->
 <!ELEMENT numerusform (#PCDATA|byte|lengthvariant)* >
 <!ATTLIST numerusform
-          plurality (nullar|singular|dual|trial|paucal|greaterpaucal|plural|greaterplural) #IMPLIED>
           variants (yes|no) "no">
 <!ELEMENT lengthvariant %evilstring; >
-<!--
- ! The translation variants have a priority between 1 ("highest") and 9 ("lowest")
- ! Typically longer translations get a higher priority.
- ! If omitted, the order of appearance of the variants in the .ts files is used.
-  -->
-<!ATTLIST lengthvariant
-          priority (1|2|3|4|5|6|7|8|9) #IMPLIED>
-         

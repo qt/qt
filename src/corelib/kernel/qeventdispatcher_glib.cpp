@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -263,6 +263,7 @@ QEventDispatcherGlibPrivate::QEventDispatcherGlibPrivate(GMainContext *context)
     (void) new (&timerSource->timerList) QTimerInfoList();
     timerSource->processEventsFlags = QEventLoop::AllEvents;
     g_source_set_can_recurse(&timerSource->source, true);
+    g_source_set_priority(&timerSource->source, G_PRIORITY_DEFAULT_IDLE);
     g_source_attach(&timerSource->source, mainContext);
 }
 

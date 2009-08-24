@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -280,8 +280,9 @@ void tst_QSqlTableModel::setRecord()
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
 
-    QList<QSqlTableModel::EditStrategy> policies = QList<QSqlTableModel::EditStrategy>() << QSqlTableModel::OnFieldChange << QSqlTableModel::OnRowChange << QSqlTableModel::OnManualSubmit;
+    QList<QSqlTableModel::EditStrategy> policies = QList<QSqlTableModel::EditStrategy>() << QSqlTableModel::OnFieldChange << QSqlTableModel::OnManualSubmit <<  QSqlTableModel::OnRowChange;
 
+    QString x;
     foreach( QSqlTableModel::EditStrategy submitpolicy, policies) {
 
         QSqlTableModel model(0, db);
@@ -308,11 +309,11 @@ void tst_QSqlTableModel::setRecord()
                 QCOMPARE(qvariant_cast<QModelIndex>(spy.at(0).at(1)), model.index(i, 1));
             }
         }
-
-        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("fooX"));
-        QCOMPARE(model.data(model.index(0, 2)).toString(), QString("barX"));
-        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("bazX"));
-        QCOMPARE(model.data(model.index(1, 2)).toString(), QString("joeX"));
+        x+=QString('X');
+        QCOMPARE(model.data(model.index(0, 1)).toString(), QString("foo")+x);
+        QCOMPARE(model.data(model.index(0, 2)).toString(), QString("bar")+x);
+        QCOMPARE(model.data(model.index(1, 1)).toString(), QString("baz")+x);
+        QCOMPARE(model.data(model.index(1, 2)).toString(), QString("joe")+x);
     }
 }
 

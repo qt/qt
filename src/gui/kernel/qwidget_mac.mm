@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -3249,6 +3249,12 @@ void QWidgetPrivate::show_sys()
 #ifndef QT_MAC_USE_COCOA
         SizeWindow(window, q->width(), q->height(), true);
 #endif
+
+#ifdef QT_MAC_USE_COCOA
+        // Make sure that we end up sending a repaint event to
+        // the widget if the window has been visible one before:
+        [qt_mac_get_contentview_for(window) setNeedsDisplay:YES];
+#endif
         if(qt_mac_is_macsheet(q)) {
             qt_event_request_showsheet(q);
         } else if(qt_mac_is_macdrawer(q)) {
@@ -4674,6 +4680,7 @@ void QWidgetPrivate::setModal_sys()
     OSWindowRef windowRef = qt_mac_window_for(q);
 
 #ifdef QT_MAC_USE_COCOA
+    QMacCocoaAutoReleasePool pool;
     bool alreadySheet = [windowRef styleMask] & NSDocModalWindowMask;
 
     if (windowParent && q->windowModality() == Qt::WindowModal){

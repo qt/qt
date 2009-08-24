@@ -6,7 +6,7 @@ include(qt-defines.qdocconf)
 
 project                 = QMake
 description             = QMake Manual
-url                     = http://doc.qtsoftware.com/4.5
+url                     = http://qt.nokia.com/doc/4.5
 
 indexes                 = $QT_BUILD_TREE/doc-build/html-qt/qt.index
 

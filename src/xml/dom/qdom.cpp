@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -7379,11 +7379,9 @@ QDomComment QDomNode::toComment() const
  **************************************************************/
 
 QDomHandler::QDomHandler(QDomDocumentPrivate* adoc, bool namespaceProcessing)
+    : errorLine(0), errorColumn(0), doc(adoc), node(adoc), cdata(false),
+        nsProcessing(namespaceProcessing), locator(0)
 {
-    doc = adoc;
-    node = doc;
-    cdata = false;
-    nsProcessing = namespaceProcessing;
 }
 
 QDomHandler::~QDomHandler()

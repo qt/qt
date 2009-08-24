@@ -34,13 +34,13 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-// Most of the cp949 code was originally written by Joon-Kyu Park, and is included 
-// in Qt with the author's permission and the grateful thanks of the Trolltech team.
+// Most of the cp949 code was originally written by Joon-Kyu Park, and is included
+// in Qt with the author's permission and the grateful thanks of the Qt team.
 
 /*! \class QEucKrCodec
     \reentrant

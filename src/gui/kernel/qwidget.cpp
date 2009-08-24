@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -4194,7 +4194,7 @@ void QWidget::setForegroundRole(QPalette::ColorRole role)
     assigning roles to a widget's palette is not guaranteed to change the
     appearance of the widget. Instead, you may choose to apply a \l
     styleSheet. You can refer to our Knowledge Base article
-    \l{http://qtsoftware.com/developer/knowledgebase/22}{here} for more
+    \l{http://qt.nokia.com/developer/knowledgebase/22}{here} for more
     information.
 
     \warning Do not use this function in conjunction with \l{Qt Style Sheets}.

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -546,7 +546,7 @@ void tst_Q3SqlCursor::unicode()
         else
             QFAIL( QString( "Strings differ at position %1: orig: %2, db: %3" ).arg( i ).arg( utf8str[ i ].unicode(), 0, 16 ).arg( res[ i ].unicode(), 0, 16 ) );
     }
-    if(db.driverName().startsWith("QMYSQL") || db.driverName().startsWith("QDB2"))
+    if((db.driverName().startsWith("QMYSQL") || db.driverName().startsWith("QDB2")) && res != utf8str)
         QEXPECT_FAIL("", "See above message", Continue);
     QVERIFY( res == utf8str );
 }
@@ -722,7 +722,9 @@ void tst_Q3SqlCursor::updateNoPK()
     // Sqlite returns 2, don't ask why.
     QVERIFY(cur.update() != 0);
     QString expect = "update " + qTableName("qtestPK") +
-            " set id = 1 , name = NULL , num = NULL  where " + qTableName("qtestPK") + ".id"
+            " set "+db.driver()->escapeIdentifier("id", QSqlDriver::FieldName)+" = 1 , "
+            +db.driver()->escapeIdentifier("name", QSqlDriver::FieldName)+" = NULL , "
+            +db.driver()->escapeIdentifier("num", QSqlDriver::FieldName)+" = NULL  where " + qTableName("qtestPK") + ".id"
             " IS NULL and " + qTableName("qtestPK") + ".name IS NULL and " +
             qTableName("qtestPK") + ".num IS NULL";
     if (!db.driver()->hasFeature(QSqlDriver::PreparedQueries)) {

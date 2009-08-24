@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -297,6 +297,7 @@ void QTestLog::stopLogging()
 
 void QTestLog::warn(const char *msg)
 {
+    QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(msg);
 
     QTest::testLogger->addMessage(QAbstractTestLogger::Warn, msg);
@@ -304,9 +305,10 @@ void QTestLog::warn(const char *msg)
 
 void QTestLog::info(const char *msg, const char *file, int line)
 {
+    QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(msg);
+    QTEST_ASSERT(file);
 
-    if (QTest::testLogger)
     QTest::testLogger->addMessage(QAbstractTestLogger::Info, msg, file, line);
 }
 

@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -562,6 +562,7 @@ QWidget *PreviewManager::createPreview(const QDesignerFormWindowInterface *fw,
 
     const QString title = tr("%1 - [Preview]").arg(formWidget->windowTitle());
     formWidget = fakeContainer(formWidget);
+    formWidget->setWindowTitle(title);
 
     // Clear any modality settings, child widget modalities must not be higher than parent's
     formWidget->setWindowModality(Qt::NonModal);

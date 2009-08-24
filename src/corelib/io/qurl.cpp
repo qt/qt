@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -5523,7 +5523,7 @@ QString QUrl::fromPunycode(const QByteArray &pc)
     The ASCII Compatible Encoding (ACE) is defined by RFC 3490, RFC 3491
     and RFC 3492. It is part of the Internationalizing Domain Names in
     Applications (IDNA) specification, which allows for domain names
-    (like \c "qtsoftware.com") to be written using international
+    (like \c "example.com") to be written using international
     characters.
 */
 QString QUrl::fromAce(const QByteArray &domain)
@@ -5540,7 +5540,7 @@ QString QUrl::fromAce(const QByteArray &domain)
     The ASCII-Compatible Encoding (ACE) is defined by RFC 3490, RFC 3491
     and RFC 3492. It is part of the Internationalizing Domain Names in
     Applications (IDNA) specification, which allows for domain names
-    (like \c "qtsoftware.com") to be written using international
+    (like \c "example.com") to be written using international
     characters.
 */
 QByteArray QUrl::toAce(const QString &domain)
@@ -5850,10 +5850,10 @@ bool QUrl::isParentOf(const QUrl &childUrl) const
     Use resolved("..") instead.
 
     \oldcode
-        QUrl url("http://qtsoftware.com/Developer/");
+        QUrl url("http://qt.nokia.com/Developer/");
         url.cdUp();
     \newcode
-        QUrl url("http://qtsoftware.com/Developer/");
+        QUrl url("http://qt.nokia.com/Developer/");
         url = url.resolved("..");
     \endcode
 */

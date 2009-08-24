@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -131,14 +131,13 @@ private:
 
 
 QScriptDebuggerBackendPrivate::QScriptDebuggerBackendPrivate()
+    : agent(0), commandExecutor(0),
+        pendingEvaluateContextIndex(-1), pendingEvaluateLineNumber(-1),
+        ignoreExceptions(false),
+        nextScriptValueIteratorId(0), nextScriptObjectSnapshotId(0),
+        eventReceiver(0),
+        q_ptr(0) // q_ptr will be set later by QScriptDebuggerBackend constructor
 {
-    eventReceiver = 0;
-    agent = 0;
-    commandExecutor = 0;
-    pendingEvaluateLineNumber = -1;
-    ignoreExceptions = false;
-    nextScriptValueIteratorId = 0;
-    nextScriptObjectSnapshotId = 0;
 }
 
 QScriptDebuggerBackendPrivate::~QScriptDebuggerBackendPrivate()

@@ -34,18 +34,27 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#define BASECLASS_NOT_ABSTRACT
-#include "baseclass.h"
+#ifndef BASECLASS_H
+#define BASECLASS_H
 
-BaseClass::~BaseClass()
-{
-}
+#include <QtGlobal>
 
-void BaseClass::wasAPureVirtualFunction()
+QT_USE_NAMESPACE
+
+class BaseClass
 {
-    qDebug("BaseClass::wasAPureVirtualFunction()");
-}
+public:
+    virtual ~BaseClass();
+
+#ifdef BASECLASS_NOT_ABSTRACT
+    virtual void wasAPureVirtualFunction();
+#else
+    virtual void wasAPureVirtualFunction() = 0;
+#endif
+};
+
+#endif

@@ -3,4 +3,5 @@ SUBDIRS = testSend
 
 SUBDIRS += test
 
+requires(embedded)
 

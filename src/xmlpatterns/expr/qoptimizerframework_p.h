@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -73,7 +73,7 @@ namespace QPatternist
      * This class and sub-classes are never used on their own,
      * but in cooperation with OptimizationPass.
      *
-     * @author Frans englich <fenglich@trolltech.com>
+     * @author Frans englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class ExpressionCreator : public QSharedData
@@ -120,7 +120,7 @@ namespace QPatternist
      * This class and sub-classes are never used on their own,
      * but in cooperation with OptimizationPass.
      *
-     * @author Frans englich <fenglich@trolltech.com>
+     * @author Frans englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class ExpressionIdentifier : public QSharedData
@@ -176,7 +176,7 @@ namespace QPatternist
      * and resultCreator interacts with one another is described in more detail
      * in the member documentation as well as the classes they are instances of.
      *
-     * @author Frans englich <fenglich@trolltech.com>
+     * @author Frans englich <frans.englich@nokia.com>
      * @ingroup Patternist_expressions
      */
     class OptimizationPass : public QSharedData

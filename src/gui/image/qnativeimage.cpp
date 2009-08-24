@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -144,11 +144,15 @@ QImage::Format QNativeImage::systemFormat()
 #elif defined(Q_WS_X11) && !defined(QT_NO_MITSHM)
 
 QNativeImage::QNativeImage(int width, int height, QImage::Format format,bool /* isTextBuffer */, QWidget *widget)
+    : xshmimg(0), xshmpm(0)
 {
     if (!X11->use_mitshm) {
-        xshmimg = 0;
-        xshmpm = 0;
         image = QImage(width, height, format);
+        // follow good coding practice and set xshminfo attributes, though values not used in this case
+        xshminfo.readOnly = true;
+        xshminfo.shmaddr = 0;
+        xshminfo.shmid = 0;
+        xshminfo.shmseg = 0;
         return;
     }
 

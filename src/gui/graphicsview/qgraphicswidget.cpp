@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -410,6 +410,8 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
     }
     QSizeF oldSize = size();
     QGraphicsLayoutItem::setGeometry(newGeom);
+
+    wd->invalidateCachedClipPathRecursively();
 
     // Send resize event
     bool resized = newGeom.size() != oldSize;

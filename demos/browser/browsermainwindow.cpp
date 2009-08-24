@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -838,7 +838,7 @@ void BrowserMainWindow::slotHome()
 {
     QSettings settings;
     settings.beginGroup(QLatin1String("MainWindow"));
-    QString home = settings.value(QLatin1String("home"), QLatin1String("http://qtsoftware.com/")).toString();
+    QString home = settings.value(QLatin1String("home"), QLatin1String("http://qt.nokia.com/")).toString();
     loadPage(home);
 }
 

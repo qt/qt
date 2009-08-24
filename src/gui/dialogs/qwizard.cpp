@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -3461,7 +3461,7 @@ bool QWizardPage::validatePage()
     from the rest of your implementation, whenever the value of isComplete()
     changes. This ensures that QWizard updates the enabled or disabled state of
     its buttons. An example of the reimplementation is
-    available \l{http://doc.trolltech.com/qq/qq22-qwizard.html#validatebeforeitstoolate}
+    available \l{http://qt.nokia.com/doc/qq/qq22-qwizard.html#validatebeforeitstoolate}
     {here}. 
 
     \sa completeChanged(), isFinalPage()

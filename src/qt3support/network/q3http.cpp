@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,7 +42,7 @@
 #include <qplatformdefs.h>
 #include "q3http.h"
 
-#ifndef QT_NO_NETWORKPROTOCOL_HTTP
+#ifndef QT_NO_HTTP
 
 #include "q3socket.h"
 #include "qtextstream.h"
@@ -1048,8 +1048,8 @@ QString Q3HttpRequestHeader::toString() const
 
     To make an HTTP request you must set up suitable HTTP headers. The
     following example demonstrates, how to request the main HTML page
-    from the Trolltech home page (i.e. the URL
-    http://qtsoftware.com/index.html):
+    from the Qt web site (i.e. the URL
+    http://qt.nokia.com/index.html):
 
     \snippet doc/src/snippets/code/src_qt3support_network_q3http.cpp 3
 
@@ -1535,7 +1535,7 @@ int Q3Http::setHost(const QString &hostname, Q_UINT16 port )
     as specified in the constructor.
 
     \a path must be an absolute path like \c /index.html or an
-    absolute URI like \c http://qtsoftware.com/index.html.
+    absolute URI like \c http://example.com/index.html.
 
     If the IO device \a to is 0 the readyRead() signal is emitted
     every time new content data is available to read.
@@ -1568,7 +1568,7 @@ int Q3Http::get( const QString& path, QIODevice* to )
     as specified in the constructor.
 
     \a path must be an absolute path like \c /index.html or an
-    absolute URI like \c http://qtsoftware.com/index.html.
+    absolute URI like \c http://example.com/index.html.
 
     The incoming data comes via the \a data IO device.
 
@@ -1615,7 +1615,7 @@ int Q3Http::post( const QString& path, const QByteArray& data, QIODevice* to )
     or as specified in the constructor.
 
     \a path must be an absolute path like \c /index.html or an
-    absolute URI like \c http://qtsoftware.com/index.html.
+    absolute URI like \c http://example.com/index.html.
 
     The function does not block and returns immediately. The request
     is scheduled, and its execution is performed asynchronously. The

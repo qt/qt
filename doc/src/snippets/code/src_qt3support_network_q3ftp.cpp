@@ -1,18 +1,18 @@
 //! [0]
-QUrlOperator op( "ftp://ftp.trolltech.com" );
+QUrlOperator op( "ftp://ftp.qt.nokia.com" );
 op.listChildren(); // Asks the server to provide a directory listing
 //! [0]
 
 
 //! [1]
 Q3Ftp *ftp = new Q3Ftp( this ); // this is an optional QObject parent
-ftp->connectToHost( "ftp.trolltech.com" );
+ftp->connectToHost( "ftp.qt.nokia.com" );
 ftp->login();
 //! [1]
 
 
 //! [2]
-ftp->connectToHost( "ftp.trolltech.com" );  // id == 1
+ftp->connectToHost( "ftp.qt.nokia.com" );  // id == 1
 ftp->login();                               // id == 2
 ftp->cd( "qt" );                            // id == 3
 ftp->get( "INSTALL" );                      // id == 4

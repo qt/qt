@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -74,7 +74,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ***************************************************************************
@@ -102,7 +102,7 @@
  * @short Contains testing utilities for Patternist, interfacing W3C's XQuery Test Suite.
  *
  * @see <a href="http://www.w3.org/XML/Query/test-suite/">XML Query Test Suite</a>
- * @author Frans Englich <fenglich@trolltech.com>
+ * @author Frans Englich <frans.englich@nokia.com>
  */
 QT_BEGIN_HEADER
 
@@ -114,7 +114,7 @@ namespace QPatternistSDK
      * @short Contains global constants.
      *
      * @ingroup PatternistSDK
-     * @author Frans Englich <fenglich@trolltech.com>
+     * @author Frans Englich <frans.englich@nokia.com>
      */
     class Q_PATTERNISTSDK_EXPORT Global
     {

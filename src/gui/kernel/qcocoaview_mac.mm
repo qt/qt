@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -324,7 +324,7 @@ extern "C" {
         return NSDragOperationNone;
     } else {
         // save the mouse position, used by draggingExited handler.
-        DnDParams *dndParams = [QCocoaView currentMouseEvent];
+        DnDParams *dndParams = [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent];
         dndParams->activeDragEnterPos = windowPoint;
         // send a drag move event immediately after a drag enter event (as per documentation).
         QDragMoveEvent qDMEvent(posDrag, qtAllowed, mimeData, QApplication::mouseButtons(), modifiers);
@@ -403,7 +403,7 @@ extern "C" {
     dragEnterSequence = -1;
     if (qwidget->testAttribute(Qt::WA_TransparentForMouseEvents)) {
         // try sending the leave event to the last view which accepted drag enter.
-        DnDParams *dndParams = [QCocoaView currentMouseEvent];
+        DnDParams *dndParams = [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent];
         NSView *candidateView = [[[self window] contentView] hitTest:dndParams->activeDragEnterPos];
         if (candidateView && candidateView != self)
             return [candidateView draggingExited:sender];

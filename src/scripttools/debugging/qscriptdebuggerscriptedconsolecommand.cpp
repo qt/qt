@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -367,7 +367,7 @@ class QScriptDebuggerScriptedConsoleCommandJobPrivate
     : public QScriptDebuggerConsoleCommandJobPrivate
 {
 public:
-    QScriptDebuggerScriptedConsoleCommandJobPrivate() {}
+    QScriptDebuggerScriptedConsoleCommandJobPrivate() : command(0), commandCount(0) {}
     ~QScriptDebuggerScriptedConsoleCommandJobPrivate() {}
 
     QScriptDebuggerScriptedConsoleCommandPrivate *command;

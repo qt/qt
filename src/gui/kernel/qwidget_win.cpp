@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1558,6 +1558,11 @@ bool QWidgetPrivate::shouldShowMaximizeButton()
 {
     if (data.window_flags & Qt::MSWindowsFixedSizeDialogHint)
         return false;
+    // if the user explicitely asked for the maximize button, we try to add
+    // it even if the window has fixed size.
+    if (data.window_flags & Qt::CustomizeWindowHint &&
+        data.window_flags & Qt::WindowMaximizeButtonHint)
+        return true;
     if (extra) {
         if ((extra->maxw && extra->maxw != QWIDGETSIZE_MAX && extra->maxw != QLAYOUTSIZE_MAX)
             || (extra->maxh && extra->maxh != QWIDGETSIZE_MAX && extra->maxh != QLAYOUTSIZE_MAX))

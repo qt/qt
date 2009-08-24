@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -54,8 +54,7 @@
     If you want to develop Free or Open Source software for release using a recognized
     Open Source license, you can use the \l{Open Source Versions of Qt}.
 
-    The table below summarizes the differences between the three
-    commercial editions:
+    The table below summarizes the differences between the two commercial editions:
 
     \table 75%
     \header \o{1,2} Features                                      \o{2,1} Editions
@@ -110,7 +109,7 @@
     For further information and assistance, please contact Qt
     sales.
 
-    Web: http://www.qtsoftware.com/contact.
+    Web: http://qt.nokia.com/contact.
 
     Phone, U.S. office (for North America): \bold{1-650-813-1676}.
 

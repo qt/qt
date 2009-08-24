@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -117,7 +117,9 @@ extern "C" {
 
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
+#if !defined(QT_NO_XINPUT)
 #include <X11/extensions/XI.h>
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -638,11 +640,13 @@ static int qt_x_errhandler(Display *dpy, XErrorEvent *err)
         break;
 
     default:
+#if !defined(QT_NO_XINPUT)
         if (err->request_code == X11->xinput_major
             && err->error_code == (X11->xinput_errorbase + XI_BadDevice)
             && err->minor_code == 3 /* X_OpenDevice */) {
             return 0;
         }
+#endif
         break;
     }
 
@@ -1955,9 +1959,12 @@ void qt_init(QApplicationPrivate *priv, int,
             bool local = displayName.isEmpty() || displayName.lastIndexOf(QLatin1Char(':')) == 0;
             if (local && (qgetenv("QT_X11_NO_MITSHM").toInt() == 0)) {
                 Visual *defaultVisual = DefaultVisual(X11->display, DefaultScreen(X11->display));
-                X11->use_mitshm = mitshm_pixmaps && (defaultVisual->red_mask == 0xff0000
-                                                     && defaultVisual->green_mask == 0xff00
-                                                     && defaultVisual->blue_mask == 0xff);
+                X11->use_mitshm = mitshm_pixmaps && ((defaultVisual->red_mask == 0xff0000
+                                                      || defaultVisual->red_mask == 0xf800)
+                                                     && (defaultVisual->green_mask == 0xff00
+                                                         || defaultVisual->green_mask == 0x7e0)
+                                                     && (defaultVisual->blue_mask == 0xff
+                                                         || defaultVisual->blue_mask == 0x1f));
             }
         }
 #endif // QT_NO_MITSHM
@@ -5397,7 +5404,8 @@ class QSessionManagerPrivate : public QObjectPrivate
 {
 public:
     QSessionManagerPrivate(QSessionManager* mgr, QString& id, QString& key)
-        : QObjectPrivate(), sm(mgr), sessionId(id), sessionKey(key), eventLoop(0) {}
+        : QObjectPrivate(), sm(mgr), sessionId(id), sessionKey(key),
+            restartHint(QSessionManager::RestartIfRunning), eventLoop(0) {}
     QSessionManager* sm;
     QStringList restartCommand;
     QStringList discardCommand;

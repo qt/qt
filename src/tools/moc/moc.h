@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -58,7 +58,7 @@ struct Type
     enum ReferenceType { NoReference, Reference, Pointer };
 
     inline Type() : isVolatile(false), isScoped(false), firstToken(NOTOKEN), referenceType(NoReference) {}
-    inline explicit Type(const QByteArray &_name) : name(_name), isVolatile(false), firstToken(NOTOKEN), referenceType(NoReference) {}
+    inline explicit Type(const QByteArray &_name) : name(_name), isVolatile(false), isScoped(false), firstToken(NOTOKEN), referenceType(NoReference) {}
     QByteArray name;
     uint isVolatile : 1;
     uint isScoped : 1;
@@ -137,7 +137,7 @@ struct ClassInfoDef
 
 struct ClassDef {
     ClassDef():
-        hasQObject(false), hasQGadget(false), notifyableProperties(0){}
+        hasQObject(false), hasQGadget(false), notifyableProperties(0), begin(0), end(0){}
     QByteArray classname;
     QByteArray qualified;
     QList<QPair<QByteArray, FunctionDef::Access> > superclassList;

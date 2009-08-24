@@ -34,7 +34,7 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://www.qtsoftware.com/contact.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -638,18 +638,21 @@ void QGraphicsItemPrivate::updateAncestorFlag(QGraphicsItem::GraphicsItemFlag ch
             return;
         }
 
-        // Inherit the enabled-state from our parents.
-        if ((parent && ((parent->d_ptr->ancestorFlags & flag)
-                        || (int(parent->d_ptr->flags & childFlag) == childFlag)
-                        || (childFlag == -1 && parent->d_ptr->handlesChildEvents)))) {
-            enabled = true;
-            ancestorFlags |= flag;
-        }
-
-        // Top-level root items don't have any ancestors, so there are no
-        // ancestor flags either.
-        if (!parent)
+        if (parent) {
+            // Inherit the enabled-state from our parents.
+            if ((parent->d_ptr->ancestorFlags & flag)
+                    || (int(parent->d_ptr->flags & childFlag) == childFlag)
+                    || (childFlag == -1 && parent->d_ptr->handlesChildEvents)) {
+                enabled = true;
+                ancestorFlags |= flag;
+            } else {
+                ancestorFlags &= ~flag;
+            }
+        } else {
+            // Top-level root items don't have any ancestors, so there are no
+            // ancestor flags either.
             ancestorFlags = 0;
+        }
     } else {
         // Don't set or propagate the ancestor flag if it's already correct.
         if (((ancestorFlags & flag) && enabled) || (!(ancestorFlags & flag) && !enabled))
