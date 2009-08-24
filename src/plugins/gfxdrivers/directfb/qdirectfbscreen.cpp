@@ -217,7 +217,7 @@ IDirectFBSurface *QDirectFBScreen::copyDFBSurface(IDirectFBSurface *src,
     IDirectFBSurface *surface = createDFBSurface(size, format, options);
     DFBSurfacePixelFormat dspf;
     src->GetPixelFormat(src, &dspf);
-    DFBSurfaceBlittingFlags flags = QDirectFBScreen::hasAlpha(dspf)
+    DFBSurfaceBlittingFlags flags = QDirectFBScreen::hasAlphaChannel(dspf)
                                     ? DSBLIT_BLEND_ALPHACHANNEL
                                     : DSBLIT_NOFX;
     if (flags & DSBLIT_BLEND_ALPHACHANNEL)

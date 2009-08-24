@@ -532,7 +532,7 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
     d->unlock();
     bool release;
     IDirectFBSurface *imgSurface = d->getSurface(image, &release);
-    d->prepareForBlit(QDirectFBScreen::hasAlpha(imgSurface));
+    d->prepareForBlit(QDirectFBScreen::hasAlphaChannel(imgSurface));
     CLIPPED_PAINT(d->blit(r, imgSurface, sr));
     if (release) {
 #if (Q_DIRECTFB_VERSION >= 0x010000)

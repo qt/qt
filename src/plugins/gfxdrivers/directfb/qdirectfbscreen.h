@@ -170,8 +170,8 @@ public:
     static QImage::Format getImageFormat(IDirectFBSurface *surface);
     static bool initSurfaceDescriptionPixelFormat(DFBSurfaceDescription *description, QImage::Format format);
     static inline bool isPremultiplied(QImage::Format format);
-    static inline bool hasAlpha(DFBSurfacePixelFormat format);
-    static inline bool hasAlpha(IDirectFBSurface *surface);
+    static inline bool hasAlphaChannel(DFBSurfacePixelFormat format);
+    static inline bool hasAlphaChannel(IDirectFBSurface *surface);
     QImage::Format alphaPixmapFormat() const;
 
 #ifndef QT_NO_DIRECTFB_PALETTE
@@ -205,7 +205,7 @@ inline bool QDirectFBScreen::isPremultiplied(QImage::Format format)
     return false;
 }
 
-inline bool QDirectFBScreen::hasAlpha(DFBSurfacePixelFormat format)
+inline bool QDirectFBScreen::hasAlphaChannel(DFBSurfacePixelFormat format)
 {
     switch (format) {
     case DSPF_ARGB1555:
@@ -230,12 +230,12 @@ inline bool QDirectFBScreen::hasAlpha(DFBSurfacePixelFormat format)
     }
 }
 
-inline bool QDirectFBScreen::hasAlpha(IDirectFBSurface *surface)
+inline bool QDirectFBScreen::hasAlphaChannel(IDirectFBSurface *surface)
 {
     Q_ASSERT(surface);
     DFBSurfacePixelFormat format;
     surface->GetPixelFormat(surface, &format);
-    return QDirectFBScreen::hasAlpha(format);
+    return QDirectFBScreen::hasAlphaChannel(format);
 }
 
 QT_END_HEADER
