@@ -432,8 +432,17 @@ bool ProcessAST::visit(AST::UiImport *node)
     AST::SourceLocation startLoc = node->importToken;
     AST::SourceLocation endLoc = node->semicolonToken;
 
-    if (node->importId)
+    if (node->importId) {
         import.qualifier = node->importId->asString();
+        if (!import.qualifier.at(0).isUpper()) {
+            QmlError error;
+            error.setDescription(QLatin1String("Invalid import qualifier ID"));
+            error.setLine(node->importIdToken.startLine);
+            error.setColumn(node->importIdToken.startColumn);
+            _parser->_errors << error;
+            return false;
+        }
+    }
     if (node->versionToken.isValid())
         import.version = textAt(node->versionToken);
 
@@ -831,6 +840,7 @@ void QmlScriptParser::clear()
         root->release();
         root = 0;
     }
+    _imports.clear();
     qDeleteAll(_refTypes);
     _refTypes.clear();
     _errors.clear();

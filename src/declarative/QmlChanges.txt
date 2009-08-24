@@ -28,6 +28,7 @@ SetAnchors       -> AnchorChanges
 SetPropertyAction  -> PropertyAction
 RunScriptAction    -> ScriptAction
 ParentChangeAction -> ParentAction
+VisualModel        -> VisualDataModel
 
 Renamed properties:
 MouseRegion: xmin      -> minimumX

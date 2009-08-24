@@ -611,7 +611,7 @@ class QFxKeysAttachedPrivate : public QObjectPrivate
 public:
     QFxKeysAttachedPrivate() : QObjectPrivate(), enabled(true) {}
 
-    bool isConnected(int idx);
+    bool isConnected(const char *signalName);
 
     bool enabled;
 };
@@ -740,16 +740,9 @@ const QFxKeysAttached::SigMap QFxKeysAttached::sigMap[] = {
 
 QHash<QObject*, QFxKeysAttached*> QFxKeysAttached::attachedProperties;
 
-bool QFxKeysAttachedPrivate::isConnected(int idx)
+bool QFxKeysAttachedPrivate::isConnected(const char *signalName)
 {
-    if (idx < 32) {
-        quint32 mask = 1 << idx;
-        return connectedSignals[0] & mask;
-    } else if (idx < 64) {
-        quint32 mask = 1 << (idx-32);
-        return connectedSignals[1] & mask;
-    }
-    return false;
+    return isSignalConnected(signalIndex(signalName));
 }
 
 QFxKeysAttached::QFxKeysAttached(QObject *parent)
@@ -777,10 +770,10 @@ void QFxKeysAttached::keyPressed(QKeyEvent *event)
     QByteArray keySignal = keyToSignal(event->key());
     if (!keySignal.isEmpty()) {
         keySignal += "(QFxKeyEvent*)";
-        int idx = QFxKeysAttached::staticMetaObject.indexOfSignal(keySignal);
-        if (d->isConnected(idx)) {
+        if (d->isConnected(keySignal)) {
             // If we specifically handle a key then default to accepted
             ke.setAccepted(true);
+            int idx = QFxKeysAttached::staticMetaObject.indexOfSignal(keySignal);
             metaObject()->method(idx).invoke(this, Q_ARG(QFxKeysAttached, &ke));
         }
     }
