@@ -131,6 +131,8 @@ public:
     QWebSettings *s;
 };
 
+QML_DECLARE_TYPE(QFxWebSettings)
+QML_DEFINE_NOCREATE_TYPE(QFxWebSettings)
 
 class QFxWebViewPrivate : public QFxPaintedItemPrivate
 {
@@ -951,7 +953,7 @@ QWebPage *QFxWebView::page() const
         }
     \endqml
 */
-QObject *QFxWebView::settingsObject() const
+QFxWebSettings *QFxWebView::settingsObject() const
 {
     Q_D(const QFxWebView);
     d->settings.s = page()->settings();
@@ -1101,21 +1103,34 @@ public:
         QmlEngine *engine = qmlEngine(webview);
         component = new QmlComponent(engine, url, this);
         item = 0;
-        if (component->isReady())
-            qmlLoaded();
-        else
+        if (component->isLoading())
             connect(component, SIGNAL(statusChanged(QmlComponent::Status)), this, SLOT(qmlLoaded()));
+        else
+            qmlLoaded();
     }
 
 public Q_SLOTS:
     void qmlLoaded()
     {
+        if (component->isError()) {
+            // XXX Could instead give these errors to the WebView to handle.
+            foreach (QmlError err, component->errors())
+                qWarning(err.toString().toLatin1());
+            return;
+        }
         item = qobject_cast<QFxItem*>(component->create(qmlContext(webview)));
         item->setParent(webview);
+        QString jsObjName;
         for (int i=0; i<propertyNames.count(); ++i) {
             if (propertyNames[i] != QLatin1String("type") && propertyNames[i] != QLatin1String("data")) {
                 item->setProperty(propertyNames[i].toLatin1(),propertyValues[i]);
+                if (propertyNames[i] == QLatin1String("objectname"))
+                    jsObjName = propertyValues[i]; 
             }
+        }
+        if (!jsObjName.isNull()) { 
+            QWebFrame *f = webview->page()->mainFrame(); 
+            f->addToJavaScriptWindowObject(jsObjName, item); 
         }
         resizeEvent(0);
         delete component;

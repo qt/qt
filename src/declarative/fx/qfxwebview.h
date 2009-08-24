@@ -75,6 +75,8 @@ private:
 
 
 class QFxWebViewAttached;
+class QFxWebSettings;
+
 class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
 {
     Q_OBJECT
@@ -103,7 +105,7 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
     Q_PROPERTY(QObject* forward READ forwardAction CONSTANT)
     Q_PROPERTY(QObject* stop READ stopAction CONSTANT)
 
-    Q_PROPERTY(QObject* settings READ settingsObject CONSTANT)
+    Q_PROPERTY(QFxWebSettings* settings READ settingsObject CONSTANT)
 
     Q_PROPERTY(QmlList<QObject *>* javaScriptWindowObjects READ javaScriptWindowObjects CONSTANT)
 
@@ -157,7 +159,7 @@ public:
 
     QWebHistory *history() const;
     QWebSettings *settings() const;
-    QObject *settingsObject() const;
+    QFxWebSettings *settingsObject() const;
 
     QString status() const;
 
