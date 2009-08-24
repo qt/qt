@@ -96,6 +96,7 @@ class QWindowSurface;
 class QLocale;
 class QGraphicsProxyWidget;
 class QGestureManager;
+class QGraphicsEffect;
 #if defined(Q_WS_X11)
 class QX11Info;
 #endif
@@ -352,6 +353,9 @@ public:
     void render(QPainter *painter, const QPoint &targetOffset = QPoint(),
                 const QRegion &sourceRegion = QRegion(),
                 RenderFlags renderFlags = RenderFlags(DrawWindowBackground | DrawChildren));
+
+    QGraphicsEffect *graphicsEffect() const;
+    void setGraphicsEffect(QGraphicsEffect *effect);
 
 public Q_SLOTS:
     void setWindowTitle(const QString &);

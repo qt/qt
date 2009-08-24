@@ -258,7 +258,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
     Q_D(QWidget);
 
     if (!isWindow() && parentWidget())
-        parentWidget()->d_func()->invalidateBuffer(geometry());
+        parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
 
     d->deactivateWidgetCleanup();
     if (testAttribute(Qt::WA_WState_Created)) {
@@ -317,7 +317,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     Q_Q(QWidget);
     bool wasCreated = q->testAttribute(Qt::WA_WState_Created);
      if (q->isVisible() && q->parentWidget() && parent != q->parentWidget())
-        q->parentWidget()->d_func()->invalidateBuffer(q->geometry());
+        q->parentWidget()->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
 #ifndef QT_NO_CURSOR
     QCursor oldcurs;
     bool setcurs=q->testAttribute(Qt::WA_SetCursor);
@@ -814,7 +814,7 @@ void QWidgetPrivate::lower_sys()
                                            QWSChangeAltitudeCommand::Lower);
     } else if (QWidget *p = q->parentWidget()) {
         setDirtyOpaqueRegion();
-        p->d_func()->invalidateBuffer(q->geometry());
+        p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
     }
 }
 
@@ -823,7 +823,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget*)
     Q_Q(QWidget);
     if (QWidget *p = q->parentWidget()) {
         setDirtyOpaqueRegion();
-        p->d_func()->invalidateBuffer(q->geometry());
+        p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
     }
 }
 

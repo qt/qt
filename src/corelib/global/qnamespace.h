@@ -1591,6 +1591,11 @@ public:
         Uninitialized
     };
 
+    enum CoordinateSystem {
+        DeviceCoordinates,
+        LogicalCoordinates
+    };
+
     enum TouchPointState {
         TouchPointPressed    = 0x01,
         TouchPointMoved      = 0x02,

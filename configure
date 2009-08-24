@@ -47,6 +47,11 @@ QMAKE_VARS_FILE=.qmake.vars
 # utility functions
 #-------------------------------------------------------------------------------
 
+shellEscape()
+{
+    echo "$@" | sed 's/ /\ /g'
+}
+
 # Adds a new qmake variable to the cache
 # Usage: QMakeVar mode varname contents
 #   where mode is one of: set, add, del
@@ -87,6 +92,29 @@ getQMakeConf()
     next
 }
 { print }' "$tmpSPEC/qmake.conf"
+}
+
+# relies on $TEST_COMPILER being set correctly
+compilerSupportsFlag()
+{
+    cat >conftest.cpp <<EOF
+int main() { return 0; }
+EOF
+    "$TEST_COMPILER" "$@" -o /dev/null conftest.cpp
+    ret=$?
+    rm -f conftest.cpp conftest.o
+    return $ret
+}
+
+# relies on $TEST_COMPILER being set correctly
+linkerSupportsFlag()
+{
+    lflags=-Wl
+    for flag; do
+	safe_flag=`shellEscape "$flag"`
+	lflags=$lflags,$safe_flag
+    done
+    compilerSupportsFlag "$lflags"
 }
 
 #-------------------------------------------------------------------------------
@@ -7007,6 +7035,13 @@ QMAKE_INCDIR_QT  = \$\$QT_BUILD_TREE/include
 QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
 
 EOF
+
+# Ensure we can link to uninistalled libraries
+if linkerSupportsFlag -rpath-link "$outpath/lib"; then
+    echo "QMAKE_LFLAGS    += -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib" >> "$CACHEFILE.tmp"
+elif linkerSupportsFlag -rpath "$outpath/lib"; then
+    echo "QMAKE_LFLAGS    += -Wl,-rpath,\$\$QT_BUILD_TREE/lib" >> "$CACHEFILE.tmp"
+fi
 
 if [ -n "$QT_CFLAGS_PSQL" ]; then
     echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$CACHEFILE.tmp"

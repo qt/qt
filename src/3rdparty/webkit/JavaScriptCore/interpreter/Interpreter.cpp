@@ -471,9 +471,12 @@ NEVER_INLINE bool Interpreter::unwindCallFrame(CallFrame*& callFrame, JSValue ex
 
     if (Debugger* debugger = callFrame->dynamicGlobalObject()->debugger()) {
         DebuggerCallFrame debuggerCallFrame(callFrame, exceptionValue);
-        if (callFrame->callee())
+        if (callFrame->callee()) {
             debugger->returnEvent(debuggerCallFrame, codeBlock->ownerNode()->sourceID(), codeBlock->ownerNode()->lastLine());
-        else
+#ifdef QT_BUILD_SCRIPT_LIB
+            debugger->functionExit(exceptionValue, codeBlock->ownerNode()->sourceID());
+#endif
+        } else
             debugger->didExecuteProgram(debuggerCallFrame, codeBlock->ownerNode()->sourceID(), codeBlock->ownerNode()->lastLine());
     }
 
@@ -575,19 +578,32 @@ NEVER_INLINE HandlerInfo* Interpreter::throwException(CallFrame*& callFrame, JSV
     // Calculate an exception handler vPC, unwinding call frames as necessary.
 
     HandlerInfo* handler = 0;
+
+#ifdef QT_BUILD_SCRIPT_LIB
+    //try to find handler
+    bool hasHandler = true;
+    CallFrame *callFrameTemp = callFrame;
+    unsigned bytecodeOffsetTemp = bytecodeOffset;
+    CodeBlock *codeBlockTemp = codeBlock;
+    while (!(handler = codeBlockTemp->handlerForBytecodeOffset(bytecodeOffsetTemp))) {
+        callFrameTemp = callFrameTemp->callerFrame();
+        if (callFrameTemp->hasHostCallFrameFlag()) {
+            hasHandler = false;
+            break;
+        } else {
+            codeBlockTemp = callFrameTemp->codeBlock();
+            bytecodeOffsetTemp = bytecodeOffsetForPC(callFrameTemp, codeBlockTemp, callFrameTemp->returnPC());
+        }
+    }
+    if (debugger)
+        debugger->exceptionThrow(DebuggerCallFrame(callFrame, exceptionValue), codeBlock->ownerNode()->sourceID(), hasHandler);
+#endif
+
     while (!(handler = codeBlock->handlerForBytecodeOffset(bytecodeOffset))) {
         if (!unwindCallFrame(callFrame, exceptionValue, bytecodeOffset, codeBlock)) {
-#ifdef QT_BUILD_SCRIPT_LIB
-            if (debugger)
-                debugger->exceptionThrow(DebuggerCallFrame(callFrame, exceptionValue), codeBlock->ownerNode()->sourceID(),false);
-#endif
             return 0;
         }
     }
-#ifdef QT_BUILD_SCRIPT_LIB
-    if (debugger)
-        debugger->exceptionThrow(DebuggerCallFrame(callFrame, exceptionValue), codeBlock->ownerNode()->sourceID(),true);
-#endif
     // Now unwind the scope chain within the exception handler's call frame.
 
     ScopeChainNode* scopeChain = callFrame->scopeChain();

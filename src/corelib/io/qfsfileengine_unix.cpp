@@ -395,7 +395,10 @@ bool QFSFileEnginePrivate::nativeIsSequential() const
 bool QFSFileEngine::remove()
 {
     Q_D(QFSFileEngine);
-    return unlink(d->nativeFilePath.constData()) == 0;
+    bool ret = unlink(d->nativeFilePath.constData()) == 0;
+    if (!ret)
+        setError(QFile::RemoveError, qt_error_string(errno));
+    return ret;
 }
 
 bool QFSFileEngine::copy(const QString &newName)
@@ -423,6 +426,7 @@ bool QFSFileEngine::copy(const QString &newName)
     return (err == KErrNone);
 #else
     // ### Add copy code for Unix here
+    setError(QFile::UnspecifiedError, QLatin1String("Not implemented!"));
     return false;
 #endif
 }
@@ -430,13 +434,19 @@ bool QFSFileEngine::copy(const QString &newName)
 bool QFSFileEngine::rename(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    return ::rename(d->nativeFilePath.constData(), QFile::encodeName(newName).constData()) == 0;
+    bool ret = ::rename(d->nativeFilePath.constData(), QFile::encodeName(newName).constData()) == 0;
+    if (!ret)
+        setError(QFile::RenameError, qt_error_string(errno));
+    return ret;
 }
 
 bool QFSFileEngine::link(const QString &newName)
 {
     Q_D(QFSFileEngine);
-    return ::symlink(d->nativeFilePath.constData(), QFile::encodeName(newName).constData()) == 0;
+    bool ret = ::symlink(d->nativeFilePath.constData(), QFile::encodeName(newName).constData()) == 0;
+    if (!ret)
+        setError(QFile::RenameError, qt_error_string(errno));
+    return ret;
 }
 
 qint64 QFSFileEnginePrivate::nativeSize() const
@@ -589,10 +599,10 @@ QString QFSFileEngine::rootPath()
     return QDir::cleanPath(QDir::fromNativeSeparators(qt_TDesC2QString(symbianPath)));
 # else
 # warning No fallback implementation of QFSFileEngine::rootPath()
-    return QString();
+    return QLatin1String();
 # endif
 #else
-    return QString::fromLatin1("/");
+    return QLatin1String("/");
 #endif
 }
 
@@ -602,7 +612,7 @@ QString QFSFileEngine::tempPath()
 # ifdef Q_WS_S60
     TFileName symbianPath = PathInfo::PhoneMemoryRootPath();
     QString temp = QDir::fromNativeSeparators(qt_TDesC2QString(symbianPath));
-    temp += QString::fromLatin1( "temp/");
+    temp += QLatin1String( "temp/");
 # else
 # warning No fallback implementation of QFSFileEngine::tempPath()
     return QString();
@@ -610,7 +620,7 @@ QString QFSFileEngine::tempPath()
 #else
     QString temp = QFile::decodeName(qgetenv("TMPDIR"));
     if (temp.isEmpty())
-        temp = QString::fromLatin1("/tmp/");
+        temp = QLatin1String("/tmp/");
 #endif
     return temp;
 }
@@ -633,7 +643,7 @@ QFileInfoList QFSFileEngine::drives()
         qWarning("QDir::drives: Getting drives failed");
     }
 #else
-    ret.append(rootPath());
+    ret.append(QFileInfo(rootPath()));
 #endif
     return ret;
 }
@@ -780,11 +790,11 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
             else if (exists && (d->st.st_mode & S_IFMT) == S_IFDIR)
                 ret |= DirectoryType;
 #if !defined(QWS) && defined(Q_OS_MAC)
-            if((ret & DirectoryType) && (type & BundleType)) {
+            if ((ret & DirectoryType) && (type & BundleType)) {
                 QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(d->filePath),
                                                                       kCFURLPOSIXPathStyle, true);
                 UInt32 type, creator;
-                if(CFBundleGetPackageInfoInDirectory(url, &type, &creator))
+                if (CFBundleGetPackageInfoInDirectory(url, &type, &creator))
                     ret |= BundleType;
             }
 #endif
@@ -826,7 +836,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
 }
 
 #ifdef Q_OS_SYMBIAN
-static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFileEngine *engine, 
+static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFileEngine *engine,
                                const QFSFileEnginePrivate * const d)
 {
     const QLatin1Char slashChar('/');
@@ -847,10 +857,10 @@ static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFile
         if(slash == -1) {
             if(d->filePath.length() >= 2 && d->filePath.at(1) == QLatin1Char(':'))
                 return d->filePath.left(2);
-            return QString::fromLatin1(".");
+            return QLatin1String(".");
         } else {
             if(!slash)
-                return QString::fromLatin1("/");
+                return QLatin1String("/");
             if(slash == 2 && d->filePath.length() >= 2 && d->filePath.at(1) == QLatin1Char(':'))
                 slash++;
             return d->filePath.left(slash);
@@ -947,9 +957,9 @@ QString QFSFileEngine::fileName(FileName file) const
 #if !defined(QWS) && defined(Q_OS_MAC)
         QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(d->filePath),
                                                               kCFURLPOSIXPathStyle, true);
-        if(CFDictionaryRef dict = CFBundleCopyInfoDictionaryForURL(url)) {
-            if(CFTypeRef name = (CFTypeRef)CFDictionaryGetValue(dict, kCFBundleNameKey)) {
-                if(CFGetTypeID(name) == CFStringGetTypeID())
+        if (CFDictionaryRef dict = CFBundleCopyInfoDictionaryForURL(url)) {
+            if (CFTypeRef name = (CFTypeRef)CFDictionaryGetValue(dict, kCFBundleNameKey)) {
+                if (CFGetTypeID(name) == CFStringGetTypeID())
                     return QCFString::toQString((CFStringRef)name);
             }
         }
@@ -1158,6 +1168,7 @@ QString QFSFileEngine::owner(FileOwner own) const
 bool QFSFileEngine::setPermissions(uint perms)
 {
     Q_D(QFSFileEngine);
+    bool ret = false;
     mode_t mode = 0;
     if (perms & ReadOwnerPerm)
         mode |= S_IRUSR;
@@ -1184,18 +1195,27 @@ bool QFSFileEngine::setPermissions(uint perms)
     if (perms & ExeOtherPerm)
         mode |= S_IXOTH;
     if (d->fd != -1)
-        return !fchmod(d->fd, mode);
-    return !::chmod(d->nativeFilePath.constData(), mode);
+        ret = fchmod(d->fd, mode) == 0;
+    else
+        ret = ::chmod(d->nativeFilePath.constData(), mode) == 0;
+    if (!ret)
+        setError(QFile::PermissionsError, qt_error_string(errno));
+    return ret;
 }
 
 bool QFSFileEngine::setSize(qint64 size)
 {
     Q_D(QFSFileEngine);
+    bool ret = false;
     if (d->fd != -1)
-        return !QT_FTRUNCATE(d->fd, size);
-    if (d->fh)
-        return !QT_FTRUNCATE(QT_FILENO(d->fh), size);
-    return !QT_TRUNCATE(d->nativeFilePath.constData(), size);
+        ret = QT_FTRUNCATE(d->fd, size) == 0;
+    else if (d->fh)
+        ret = QT_FTRUNCATE(QT_FILENO(d->fh), size) == 0;
+    else
+        ret = QT_TRUNCATE(d->nativeFilePath.constData(), size) == 0;
+    if (!ret)
+        setError(QFile::ResizeError, qt_error_string(errno));
+    return ret;
 }
 
 QDateTime QFSFileEngine::fileTime(FileTime time) const
@@ -1217,12 +1237,12 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
 {
     Q_Q(QFSFileEngine);
     Q_UNUSED(flags);
-    if (offset < 0) {
-        q->setError(QFile::UnspecifiedError, qt_error_string(int(EINVAL)));
-        return 0;
-    }
     if (openMode == QIODevice::NotOpen) {
         q->setError(QFile::PermissionsError, qt_error_string(int(EACCES)));
+        return 0;
+    }
+    if (offset < 0) {
+        q->setError(QFile::UnspecifiedError, qt_error_string(int(EINVAL)));
         return 0;
     }
     int access = 0;

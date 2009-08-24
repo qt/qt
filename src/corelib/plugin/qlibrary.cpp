@@ -421,7 +421,23 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
 #endif // Q_OS_UNIX && !Q_OS_MAC && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_PLUGIN_CHECK)
 
 typedef QMap<QString, QLibraryPrivate*> LibraryMap;
-Q_GLOBAL_STATIC(LibraryMap, libraryMap)
+
+struct LibraryData {
+    LibraryData() : settings(0) { }
+    ~LibraryData() {
+        delete settings;
+    }
+
+    QSettings *settings;
+    LibraryMap libraryMap;
+};
+
+Q_GLOBAL_STATIC(LibraryData, libraryData)
+
+static LibraryMap *libraryMap()
+{
+    return &(libraryData()->libraryMap);
+}
 
 QLibraryPrivate::QLibraryPrivate(const QString &canonicalFileName, const QString &version)
     :pHnd(0), fileName(canonicalFileName), fullVersion(version), instance(0), qt_version(0),
@@ -614,10 +630,12 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
                      .arg(fileName);
     QStringList reg;
 #ifndef QT_NO_SETTINGS
-    QScopedPointer<QSettings> madeSettings;
     if (!settings) {
-        settings = new QSettings(QSettings::UserScope, QLatin1String("Trolltech"));
-        madeSettings.reset(settings);
+        settings = libraryData()->settings;
+        if (!settings) {
+            settings = new QSettings(QSettings::UserScope, QLatin1String("Trolltech"));
+            libraryData()->settings = settings;
+        }
     }
     reg = settings->value(regkey).toStringList();
 #endif
@@ -709,9 +727,6 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
         settings->setValue(regkey, queried);
 #endif
     }
-#ifndef QT_NO_SETTINGS
-    madeSettings.reset();
-#endif
 
     if (!success) {
         if (errorString.isEmpty()){

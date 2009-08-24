@@ -1844,7 +1844,6 @@ void tst_QScriptEngineAgent::eventOrder_functions()
         QCOMPARE(spy->at(37).type, ScriptEngineEvent::ContextPop);
         // exception
         QCOMPARE(spy->at(38).type, ScriptEngineEvent::ExceptionThrow);
-        QEXPECT_FAIL("","New backend propably gives bad script id for exceptions", Abort);
         QCOMPARE(spy->at(38).scriptId, spy->at(21).scriptId);
         QVERIFY(!spy->at(38).hasExceptionHandler);
         // bar() exit
@@ -1921,7 +1920,6 @@ void tst_QScriptEngineAgent::eventOrder_signalsHandling()
 
         emit testSignal(123);
 
-        QEXPECT_FAIL("","Signals events problem", Abort);
         QCOMPARE(spy->count(), 14);
         // new context
         QCOMPARE(spy->at(4).type, ScriptEngineEvent::ContextPush);
@@ -2048,7 +2046,7 @@ void tst_QScriptEngineAgent::syntaxError()
         spy->clear();
         eng.evaluate("{");
         
-        //QCOMPARE(spy->count(), 9);
+        QCOMPARE(spy->count(), 9);
 
         QCOMPARE(spy->at(i).type, ScriptEngineEvent::ScriptLoad);
         QVERIFY(spy->at(i).scriptId != -1);

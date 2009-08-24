@@ -135,6 +135,8 @@ SUBDIRS += \
            qgetputenv \
            qgl \
            qglobal \
+           qgraphicseffect \
+           qgraphicseffectsource \
            qgraphicsgridlayout \
            qgraphicsitem \
            qgraphicsitemanimation \
@@ -301,7 +303,10 @@ SUBDIRS += \
            qstatusbar \
            qstl \
            qstring \
-           qstringbuilder \
+           qstringbuilder1 \
+           qstringbuilder2 \
+           qstringbuilder3 \
+           qstringbuilder4 \
            qstringmatcher \
            qstringlist \
            qstringlistmodel \
