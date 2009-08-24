@@ -28,14 +28,13 @@ Rectangle {
             State {
                 name: "down"
                 when: MouseRegion.pressed == true
-                SetProperties { target: HelloText; y: 160 }
-                SetProperties { target: HelloText color: "red" }
+                PropertyChanges { target: HelloText; y: 160; color: "red" }
             }
         ]
         transitions: [
             Transition {
-                fromState: "*"
-                toState: "down"
+                from: "*"
+                to: "down"
                 reversible: true
                 ParallelAnimation {
                     NumberAnimation {
@@ -72,8 +71,7 @@ states: [
     State {
         name: "down"
         when: MouseRegion.pressed == true
-        SetProperties { target: HelloText; y: 160 }
-        SetProperties { target: HelloText; color: "red" }
+        PropertyChanges { target: HelloText; y: 160; color: "red" }
     }
 ]
 \endcode
@@ -84,15 +82,15 @@ The \e down state includes a set of property changes from our implicit \e {defau
 
 \code
 Transition {
-    fromState: "*"
-    toState: "down"
+    from: "*"
+    to: "down"
     reversible: true
 }
 \endcode
 
 Because we don't want the text to appear at the bottom instantly but rather move smoothly, we add a transition between our two states.
 
-\c fromState and \c toState define the states between which the transition will run. In this case, we want a transition from any state to our \e down state.
+\c from and \c to define the states between which the transition will run. In this case, we want a transition from any state to our \e down state.
 
 Because we want the same transition to be run in reverse when changing back from the \e down state to the default state, we set \c reversible to \c true. This is equivalent to writing the two transitions separately.
 

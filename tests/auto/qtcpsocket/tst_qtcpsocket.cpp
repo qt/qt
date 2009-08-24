@@ -45,6 +45,8 @@
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <fcntl.h>
+#include <unistd.h>
 #define SOCKET int
 #define INVALID_SOCKET -1
 #endif
@@ -415,6 +417,11 @@ void tst_QTcpSocket::setSocketDescriptor()
     }
 #else
     SOCKET sock = ::socket(AF_INET, SOCK_STREAM, 0);
+
+    // artificially increase the value of sock
+    SOCKET sock2 = ::fcntl(sock, F_DUPFD, sock + 50);
+    ::close(sock);
+    sock = sock2;
 #endif
 
     QVERIFY(sock != INVALID_SOCKET);

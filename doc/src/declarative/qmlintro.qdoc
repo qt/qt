@@ -200,9 +200,9 @@ If a list property has been the default property, it means the property tag can 
 
 \code
 State {
-    operations: [
-        SetProperties {},
-        SetProperties {}
+    changes: [
+        PropertyChanges {},
+        PropertyChanges {}
     ]
 }
 \endcode
@@ -211,8 +211,8 @@ can be simplified to
 
 \code
 State {
-    SetProperties {}
-    SetProperties {}
+    PropertyChanges {}
+    PropertyChanges {}
 }
 \endcode
 

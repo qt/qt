@@ -34,11 +34,11 @@ Item {
         State {
             name: "editingText"
             when: fieldText.state == 'editing'
-            SetProperties {
+            PropertyChanges {
                 target: removeButton.anchors
                 rightMargin: -35
             }
-            SetProperties {
+            PropertyChanges {
                 target: fieldText
                 width: contactField.width
             }
@@ -46,8 +46,8 @@ Item {
     ]
     transitions: [
         Transition {
-            fromState: ""
-            toState: "*"
+            from: ""
+            to: "*"
             reversible: true
             NumberAnimation {
                 properties: "width,rightMargin"

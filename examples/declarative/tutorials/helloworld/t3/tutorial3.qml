@@ -16,7 +16,7 @@ Rectangle {
             State {
                 name: "down"
                 when: MouseRegion.pressed == true
-                SetProperties {
+                PropertyChanges {
                     target: HelloText
                     y: 160
                     color: "red"
@@ -25,8 +25,8 @@ Rectangle {
         ]
         transitions: [
             Transition {
-                fromState: "*"
-                toState: "down"
+                from: "*"
+                to: "down"
                 reversible: true
                 ParallelAnimation {
                     NumberAnimation {

@@ -69,7 +69,7 @@ Item {
                     State {
                         name: "back"
                         when: modelData.flipped
-                        SetProperties { target: flipable; angle: 180 }
+                        PropertyChanges { target: flipable; angle: 180 }
                     }
                 ]
                 transitions: [
@@ -94,7 +94,7 @@ Item {
                                 easing: "easeInOutQuad"
                                 properties: "angle"
                             }
-                            RunScriptAction{
+                            ScriptAction{
                                 script: if(modelData.hasMine && modelData.flipped)
                                             {expl.explode = true;}
                             }

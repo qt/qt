@@ -28,7 +28,7 @@ Rectangle {
         // In state 'Position1', change the 'myrect' item x, y to 150, 50.
         State {
             name: "Position1"
-            SetProperties {
+            PropertyChanges {
                 target: myrect
                 x: 150
                 y: 50
@@ -39,7 +39,7 @@ Rectangle {
         // had been changed.
         State {
             name: "Position2"
-            SetProperties {
+            PropertyChanges {
                 target: myrect
                 y: 200
             }
@@ -51,13 +51,13 @@ Rectangle {
         // When transitioning to 'Position1' move x,y over a duration of 1 second,
         // with easeOutBounce easing function.
         Transition {
-            fromState: "*"; toState: "Position1"
+            from: "*"; to: "Position1"
             NumberAnimation { properties: "x,y"; easing: "easeOutBounce"; duration: 1000 }
         },
         // When transitioning to 'Position2' move x,y over a duration of 2 seconds,
         // with easeInOutQuad easing function.
         Transition {
-            fromState: "*"; toState: "Position2"
+            from: "*"; to: "Position2"
             NumberAnimation { properties: "x,y"; easing: "easeInOutQuad"; duration: 2000 }
         },
         // For any other state changes move x,y linearly over duration of 200ms.

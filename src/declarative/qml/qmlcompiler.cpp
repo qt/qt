@@ -297,6 +297,13 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
             if (!v->value.isBoolean()) COMPILE_EXCEPTION(v, "Invalid property assignment: boolean expected");
             }
             break;
+        case QVariant::Vector3D:
+            {
+            bool ok;
+            QVector3D point = QmlStringConverters::vector3DFromString(string, &ok);
+            if (!ok) COMPILE_EXCEPTION(v, "Invalid property assignment: 3D vector expected");
+            }
+            break;
         default:
             {
             int t = prop.type();
@@ -487,6 +494,18 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
             instr.storeBool.value = b;
             }
             break;
+        case QVariant::Vector3D:
+            {
+            bool ok;
+            QVector3D vector =
+                QmlStringConverters::vector3DFromString(string, &ok);
+            float data[] = { vector.x(), vector.y(), vector.z() };
+            int index = output->indexForFloat(data, 3);
+            instr.type = QmlInstruction::StoreVector3D;
+            instr.storeRealPair.propertyIndex = prop.propertyIndex();
+            instr.storeRealPair.valueIndex = index;
+            }
+            break;
         default:
             {
             int t = prop.type();
@@ -550,6 +569,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
     for (int ii = 0; ii < unit->types.count(); ++ii) {
         QmlCompositeTypeData::TypeReference &tref = unit->types[ii];
         QmlCompiledData::TypeReference ref;
+        QmlScriptParser::TypeReference *parserRef = unit->data.referencedTypes().at(ii);
         if (tref.type)
             ref.type = tref.type;
         else if (tref.unit) {
@@ -559,7 +579,13 @@ bool QmlCompiler::compile(QmlEngine *engine,
                 QmlError error;
                 error.setUrl(output->url);
                 error.setDescription(QLatin1String("Unable to create type ") +
-                                     unit->data.types().at(ii));
+                                     parserRef->name);
+                if (!parserRef->refObjects.isEmpty()) {
+                    QmlParser::Object *parserObject = parserRef->refObjects.first();
+                    error.setLine(parserObject->location.start.line);
+                    error.setColumn(parserObject->location.start.column);
+                }
+
                 exceptions << error;
                 exceptions << ref.component->errors();
                 reset(out);
@@ -568,7 +594,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
             ref.ref = tref.unit;
             ref.ref->addref();
         }
-        ref.className = unit->data.types().at(ii).toLatin1();
+        ref.className = parserRef->name.toLatin1();
         out->types << ref;
     }
 
@@ -1449,7 +1475,7 @@ bool QmlCompiler::buildAttachedProperty(QmlParser::Property *prop,
 
 // Build "grouped" properties. In this example:
 // Text {
-//     font.size: 12
+//     font.pointSize: 12
 //     font.family: "Helvetica"
 // }
 // font is a nested property.  size and family are not.

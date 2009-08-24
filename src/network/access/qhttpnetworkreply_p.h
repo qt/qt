@@ -128,6 +128,8 @@ public:
 
     bool isFinished() const;
 
+    bool isPipeliningUsed() const;
+
 #ifndef QT_NO_OPENSSL
     QSslConfiguration sslConfiguration() const;
     void setSslConfiguration(const QSslConfiguration &config);
@@ -177,6 +179,10 @@ public:
     void appendUncompressedReplyData(QByteDataBuffer &data);
     void appendCompressedReplyData(QByteDataBuffer &data);
 
+    bool shouldEmitSignals();
+    bool expectContent();
+    void eraseData();
+
     qint64 bytesAvailable() const;
     bool isChunked();
     bool connectionCloseEnabled();
@@ -219,6 +225,8 @@ public:
     QByteDataBuffer responseData; // uncompressed body
     QByteArray compressedData; // compressed body (temporary)
     bool requestIsPrepared;
+
+    bool pipeliningUsed;
 };
 
 

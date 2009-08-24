@@ -66,7 +66,7 @@ class Q_DECLARATIVE_EXPORT QmlFollow : public QmlPropertyValueSource,
     Q_PROPERTY(qreal epsilon READ epsilon WRITE setEpsilon)
     Q_PROPERTY(qreal modulus READ modulus WRITE setModulus)
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
-    Q_PROPERTY(qreal followValue READ value NOTIFY valueChanged)
+    Q_PROPERTY(qreal value READ value NOTIFY valueChanged)
     Q_PROPERTY(qreal modulus READ modulus WRITE setModulus NOTIFY modulusChanged)
     Q_PROPERTY(qreal mass READ mass WRITE setMass NOTIFY massChanged)
     Q_PROPERTY(bool inSync READ inSync NOTIFY syncChanged)

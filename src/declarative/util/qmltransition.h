@@ -61,11 +61,11 @@ class Q_DECLARATIVE_EXPORT QmlTransition : public QObject
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlTransition)
 
-    Q_PROPERTY(QString fromState READ fromState WRITE setFromState)
-    Q_PROPERTY(QString toState READ toState WRITE setToState)
+    Q_PROPERTY(QString from READ fromState WRITE setFromState)
+    Q_PROPERTY(QString to READ toState WRITE setToState)
     Q_PROPERTY(bool reversible READ reversible WRITE setReversible)
-    Q_PROPERTY(QmlList<QmlAbstractAnimation *>* operations READ operations)
-    Q_CLASSINFO("DefaultProperty", "operations")
+    Q_PROPERTY(QmlList<QmlAbstractAnimation *>* animations READ animations)
+    Q_CLASSINFO("DefaultProperty", "animations")
 
 public:
     QmlTransition(QObject *parent=0);
@@ -80,7 +80,7 @@ public:
     bool reversible() const;
     void setReversible(bool);
 
-    QmlList<QmlAbstractAnimation *>* operations();
+    QmlList<QmlAbstractAnimation *>* animations();
 
     void prepare(QmlStateOperation::ActionList &actions,
                  QList<QmlMetaProperty> &after,

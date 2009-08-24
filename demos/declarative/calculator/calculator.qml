@@ -4,7 +4,7 @@ Rectangle {
     id: MainWindow;
     width: 320; height: 270; color: Palette.window
 
-    Palette { id: Palette }
+    SystemPalette { id: Palette; colorGroup: Qt.Active }
     Script { source: "calculator.js" }
 
     VerticalPositioner {
@@ -111,13 +111,13 @@ Rectangle {
     states: [
         State {
             name: "Advanced"; when: AdvancedCheckBox.toggled == true
-            SetProperties { target: BasicButtons; x: 0 }
-            SetProperties { target: SimpleOperations; y: 32 }
-            SetProperties { target: Bksp; opacity: 1 }
-            SetProperties { target: C; x: 69; width: 67 }
-            SetProperties { target: AC; x: 138; width: 67 }
-            SetProperties { target: Equals; width: 50 }
-            SetProperties { target: AdvancedButtons; x: 210; opacity: 1 }
+            PropertyChanges { target: BasicButtons; x: 0 }
+            PropertyChanges { target: SimpleOperations; y: 32 }
+            PropertyChanges { target: Bksp; opacity: 1 }
+            PropertyChanges { target: C; x: 69; width: 67 }
+            PropertyChanges { target: AC; x: 138; width: 67 }
+            PropertyChanges { target: Equals; width: 50 }
+            PropertyChanges { target: AdvancedButtons; x: 210; opacity: 1 }
         }
     ]
 

@@ -4,14 +4,14 @@ Rectangle {
     id: Root
     width: parent.width
     height: parent.height
-    color: activePalette.base
+    color: Palette.base
     FolderListModel {
         id: folders
         nameFilters: [ "*.qml" ]
 //        folder: "E:"
     }
 
-    Palette { id: activePalette; colorGroup: "Active" }
+    SystemPalette { id: Palette; colorGroup: Qt.Active }
 
     Component {
         id: FolderDelegate
@@ -31,8 +31,8 @@ Rectangle {
                 id: Highlight; visible: false
                 anchors.fill: parent
                 gradient: Gradient {
-                    GradientStop { id: t1; position: 0.0; color: activePalette.highlight }
-                    GradientStop { id: t2; position: 1.0; color: activePalette.lighter(activePalette.highlight) }
+                    GradientStop { id: t1; position: 0.0; color: Palette.highlight }
+                    GradientStop { id: t2; position: 1.0; color: Palette.lighter(Palette.highlight) }
                 }
             }
             Item {
@@ -44,7 +44,7 @@ Rectangle {
                 anchors.fill: parent; verticalAlignment: "AlignVCenter"
                 text: fileName; anchors.leftMargin: 32
                 font.pointSize: 10
-                color: activePalette.windowText
+                color: Palette.windowText
             }
             MouseRegion {
                 id: Mouse
@@ -55,8 +55,8 @@ Rectangle {
                 State {
                     name: "pressed"
                     when: Mouse.pressed
-                    SetProperties { target: Highlight; visible: true }
-                    SetProperties { target: NameText; color: activePalette.highlightedText }
+                    PropertyChanges { target: Highlight; visible: true }
+                    PropertyChanges { target: NameText; color: Palette.highlightedText }
                 }
             ]
         }
@@ -92,13 +92,13 @@ Rectangle {
         id: TitleBar
         width: parent.width
         height: 32
-        color: activePalette.button; border.color: activePalette.mid
+        color: Palette.button; border.color: Palette.mid
 
         Rectangle {
             id: UpButton
             width: 30
             height: TitleBar.height
-            border.color: activePalette.mid; color: "transparent"
+            border.color: Palette.mid; color: "transparent"
             MouseRegion { anchors.fill: parent; onClicked: folders.folder = up(folders.folder) }
             Image { anchors.centerIn: parent; source: "images/up.png" }
         }
@@ -106,7 +106,7 @@ Rectangle {
         Text {
             anchors.left: UpButton.right; anchors.right: parent.right; height: parent.height
             anchors.leftMargin: 4; anchors.rightMargin: 4
-            text: folders.folder; color: activePalette.buttonText
+            text: folders.folder; color: Palette.buttonText
             elide: "ElideLeft"; horizontalAlignment: "AlignRight"; verticalAlignment: "AlignVCenter"
         }
     }

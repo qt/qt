@@ -137,7 +137,6 @@ QT_BEGIN_NAMESPACE
     \sa currentValue
 */
 
-
 static bool animationValueLessThan(const QVariantAnimation::KeyValue &p1, const QVariantAnimation::KeyValue &p2)
 {
     return p1.first < p2.first;
@@ -178,11 +177,8 @@ template<> Q_INLINE_TEMPLATE QLineF _q_interpolate(const QLineF &f, const QLineF
     return QLineF( _q_interpolate(f.p1(), t.p1(), progress), _q_interpolate(f.p2(), t.p2(), progress));
 }
 
-QVariantAnimationPrivate::QVariantAnimationPrivate() : duration(250), interpolator(&defaultInterpolator),
-                          changedSignalMask(1 << QVariantAnimation::staticMetaObject.indexOfSignal("valueChanged(QVariant)"))
-{
-    //we keep the mask so that we emit valueChanged only when needed (for performance reasons)
-}
+QVariantAnimationPrivate::QVariantAnimationPrivate() : duration(250), interpolator(&defaultInterpolator)
+{ }
 
 void QVariantAnimationPrivate::convertValues(int t)
 {
@@ -278,7 +274,12 @@ void QVariantAnimationPrivate::setCurrentValueForProgress(const qreal progress)
                                    localProgress);
     qSwap(currentValue, ret);
     q->updateCurrentValue(currentValue);
-    if ((connectedSignals[0] & changedSignalMask) && currentValue != ret) {
+    static QBasicAtomicInt changedSignalIndex = Q_BASIC_ATOMIC_INITIALIZER(0);
+    if (!changedSignalIndex) {
+        //we keep the mask so that we emit valueChanged only when needed (for performance reasons)
+        changedSignalIndex.testAndSetRelaxed(0, signalIndex("valueChanged(QVariant)"));
+    }
+    if (isSignalConnected(changedSignalIndex) && currentValue != ret) {
         //the value has changed
         emit q->valueChanged(currentValue);
     }

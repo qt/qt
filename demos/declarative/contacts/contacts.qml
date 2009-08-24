@@ -52,7 +52,7 @@ Rectangle {
                         State {
                             name: "currentItem"
                             when: wrapper.ListView.isCurrentItem
-                            SetProperties {
+                            PropertyChanges {
                                 target: label
                                 color: "black"
                             }
@@ -71,22 +71,22 @@ Rectangle {
                     id: Details
                     anchors.fill: wrapper
                     opacity: 0
-                    Bind {
+                    Binding {
                         target: Details.item
                         property: "contactId"
                         value: model.recid
                     }
-                    Bind {
+                    Binding {
                         target: Details.item
                         property: "label"
                         value: model.label
                     }
-                    Bind {
+                    Binding {
                         target: Details.item
                         property: "phone"
                         value: model.phone
                     }
-                    Bind {
+                    Binding {
                         target: Details.item
                         property: "email"
                         value: model.email
@@ -95,23 +95,23 @@ Rectangle {
                 states: [
                     State {
                         name: "opened"
-                        SetProperties {
+                        PropertyChanges {
                             target: wrapper
                             height: contactListView.height
                         }
-                        SetProperties {
+                        PropertyChanges {
                             target: contactListView
                             yPosition: wrapper.y
                         }
-                        SetProperties {
+                        PropertyChanges {
                             target: contactListView
                             locked: 1
                         }
-                        SetProperties {
+                        PropertyChanges {
                             target: label
                             opacity: 0
                         }
-                        SetProperties {
+                        PropertyChanges {
                             target: Details
                             opacity: 1
                         }
@@ -273,7 +273,7 @@ Rectangle {
             State {
                 name: "searchHidden"
                 when: searchBar.text == '' || contacts.mode != 'list'
-                SetProperties {
+                PropertyChanges {
                     target: searchBarWrapper.anchors
                     bottomMargin: -30
                 }
@@ -281,8 +281,8 @@ Rectangle {
         ]
         transitions: [
             Transition {
-                fromState: "*"
-                toState: "*"
+                from: "*"
+                to: "*"
                 NumberAnimation {
                     property: "bottomMargin"
                     duration: 250
@@ -298,11 +298,11 @@ Rectangle {
         State {
             name: "editNewState"
             when: contacts.mode == 'new'
-            SetProperties {
+            PropertyChanges {
                 target: contactListView
                 opacity: 0
             }
-            SetProperties {
+            PropertyChanges {
                 target: newContactWrapper
                 opacity: 1
             }
@@ -310,8 +310,8 @@ Rectangle {
     ]
     transitions: [
         Transition {
-            fromState: "*"
-            toState: "*"
+            from: "*"
+            to: "*"
             NumberAnimation {
                 property: "opacity"
                 duration: 500

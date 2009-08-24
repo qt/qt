@@ -40,29 +40,29 @@
 ****************************************************************************/
 
 #include "private/qobject_p.h"
-#include "qmlpalette.h"
+#include "qmlsystempalette.h"
 #include <QApplication>
 
 QT_BEGIN_NAMESPACE
 
-class QmlPalettePrivate : public QObjectPrivate
+class QmlSystemPalettePrivate : public QObjectPrivate
 {
 public:
     QPalette palette;
     QPalette::ColorGroup group;
 };
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Palette,QmlPalette)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,SystemPalette,QmlSystemPalette)
 
 /*!
-    \qmlclass Palette QmlPalette
+    \qmlclass SystemPalette QmlSystemPalette
     \ingroup group_utility
-    \brief The Palette item gives access to the Qt palettes.
+    \brief The SystemPalette item gives access to the Qt palettes.
     \sa QPalette
 
     Example:
-    \code
-    Palette { id: MyPalette; colorGroup: Qt.Active }
+    \qml
+    SystemPalette { id: MyPalette; colorGroup: Qt.Active }
 
     Rectangle {
         width: 640; height: 480
@@ -72,227 +72,227 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Palette,QmlPalette)
             text: "Hello!"; color: MyPalette.windowText
         }
     }
-    \endcode
+    \endqml
 */
-QmlPalette::QmlPalette(QObject *parent)
-    : QObject(*(new QmlPalettePrivate), parent)
+QmlSystemPalette::QmlSystemPalette(QObject *parent)
+    : QObject(*(new QmlSystemPalettePrivate), parent)
 {
-    Q_D(QmlPalette);
+    Q_D(QmlSystemPalette);
     d->palette = qApp->palette();
     d->group = QPalette::Active;
     qApp->installEventFilter(this);
 }
 
-QmlPalette::~QmlPalette()
+QmlSystemPalette::~QmlSystemPalette()
 {
 }
 
 /*!
-    \qmlproperty color Palette::window
+    \qmlproperty color SystemPalette::window
     The window (general background) color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::window() const
+QColor QmlSystemPalette::window() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::Window);
 }
 
 /*!
-    \qmlproperty color Palette::windowText
+    \qmlproperty color SystemPalette::windowText
     The window text (general foreground) color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::windowText() const
+QColor QmlSystemPalette::windowText() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::WindowText);
 }
 
 /*!
-    \qmlproperty color Palette::base
+    \qmlproperty color SystemPalette::base
     The base color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::base() const
+QColor QmlSystemPalette::base() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::Base);
 }
 
 /*!
-    \qmlproperty color Palette::text
+    \qmlproperty color SystemPalette::text
     The text color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::text() const
+QColor QmlSystemPalette::text() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::Text);
 }
 
 /*!
-    \qmlproperty color Palette::alternateBase
+    \qmlproperty color SystemPalette::alternateBase
     The alternate base color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::alternateBase() const
+QColor QmlSystemPalette::alternateBase() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::AlternateBase);
 }
 
 /*!
-    \qmlproperty color Palette::button
+    \qmlproperty color SystemPalette::button
     The button color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::button() const
+QColor QmlSystemPalette::button() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::Button);
 }
 
 /*!
-    \qmlproperty color Palette::buttonText
+    \qmlproperty color SystemPalette::buttonText
     The button text foreground color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::buttonText() const
+QColor QmlSystemPalette::buttonText() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::ButtonText);
 }
 
 /*!
-    \qmlproperty color Palette::light
+    \qmlproperty color SystemPalette::light
     The light color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::light() const
+QColor QmlSystemPalette::light() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::Light);
 }
 
 /*!
-    \qmlproperty color Palette::midlight
+    \qmlproperty color SystemPalette::midlight
     The midlight color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::midlight() const
+QColor QmlSystemPalette::midlight() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::Midlight);
 }
 
 /*!
-    \qmlproperty color Palette::dark
+    \qmlproperty color SystemPalette::dark
     The dark color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::dark() const
+QColor QmlSystemPalette::dark() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::Dark);
 }
 
 /*!
-    \qmlproperty color Palette::mid
+    \qmlproperty color SystemPalette::mid
     The mid color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::mid() const
+QColor QmlSystemPalette::mid() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::Mid);
 }
 
 /*!
-    \qmlproperty color Palette::shadow
+    \qmlproperty color SystemPalette::shadow
     The shadow color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::shadow() const
+QColor QmlSystemPalette::shadow() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::Shadow);
 }
 
 /*!
-    \qmlproperty color Palette::highlight
+    \qmlproperty color SystemPalette::highlight
     The highlight color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::highlight() const
+QColor QmlSystemPalette::highlight() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::Highlight);
 }
 
 /*!
-    \qmlproperty color Palette::highlightedText
+    \qmlproperty color SystemPalette::highlightedText
     The highlighted text color of the current color group.
 
     \sa QPalette::ColorRole
 */
-QColor QmlPalette::highlightedText() const
+QColor QmlSystemPalette::highlightedText() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->palette.color(d->group, QPalette::HighlightedText);
 }
 
 /*!
-    \qmlproperty color Palette::lighter
+    \qmlproperty color SystemPalette::lighter
 */
-QColor QmlPalette::lighter(const QColor& color) const
+QColor QmlSystemPalette::lighter(const QColor& color) const
 {
     return color.lighter();
 }
 
 /*!
-    \qmlproperty color Palette::darker
+    \qmlproperty color SystemPalette::darker
 */
-QColor QmlPalette::darker(const QColor& color) const
+QColor QmlSystemPalette::darker(const QColor& color) const
 {
     return color.darker();
 }
 
 /*!
-    \qmlproperty QPalette::ColorGroup Palette::colorGroup
+    \qmlproperty QPalette::ColorGroup SystemPalette::colorGroup
 
     The color group of the palette. It can be Active, Inactive or Disabled.
     Active is the default.
 
     \sa QPalette::ColorGroup
 */
-QPalette::ColorGroup QmlPalette::colorGroup() const
+QPalette::ColorGroup QmlSystemPalette::colorGroup() const
 {
-    Q_D(const QmlPalette);
+    Q_D(const QmlSystemPalette);
     return d->group;
 }
 
-void QmlPalette::setColorGroup(QPalette::ColorGroup colorGroup)
+void QmlSystemPalette::setColorGroup(QPalette::ColorGroup colorGroup)
 {
-    Q_D(QmlPalette);
+    Q_D(QmlSystemPalette);
     d->group = colorGroup;
     emit paletteChanged();
 }
 
-bool QmlPalette::eventFilter(QObject *watched, QEvent *event)
+bool QmlSystemPalette::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == qApp) {
         if (event->type() == QEvent::ApplicationPaletteChange) {
@@ -303,9 +303,9 @@ bool QmlPalette::eventFilter(QObject *watched, QEvent *event)
     return QObject::eventFilter(watched, event);
 }
 
-bool QmlPalette::event(QEvent *event)
+bool QmlSystemPalette::event(QEvent *event)
 {
-    Q_D(QmlPalette);
+    Q_D(QmlSystemPalette);
     if (event->type() == QEvent::ApplicationPaletteChange) {
         d->palette = qApp->palette();
         emit paletteChanged();

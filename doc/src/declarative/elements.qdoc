@@ -18,9 +18,10 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o
 \list
 \o \l State
-\o \l SetProperties
+\o \l PropertyChanges
 \o \l ParentChange
-\o \l RunScript
+\o \l StateChangeScript
+\o \l AnchorChanges
 \endlist
 
 \o
@@ -31,8 +32,9 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l PauseAnimation
 \o \l SequentialAnimation
 \o \l ParallelAnimation
-\o \l SetPropertyAction
-\o \l ParentChangeAction
+\o \l PropertyAction
+\o \l ParentAction
+\o \l ScriptAction
 \o \l Transition
 \o \l Behavior
 \o \l Follow
@@ -40,7 +42,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 
 \o
 \list
-\o \l Bind
+\o \l Binding
 \o \l ListModel
 \o \l VisualItemModel
 \o \l XmlListModel and XmlRole
@@ -97,7 +99,7 @@ The following table lists the QML elements provided by the Qt Declarative module
 \list
 \o \l Loader
 \o \l Repeater
-\o \l Palette
+\o \l SystemPalette
 \o \l ComponentInstance
 \o \l GraphicsObjectContainer
 \endlist

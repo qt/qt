@@ -42,13 +42,13 @@ Item { id:block
 
     states: [
         State{ name: "AliveState"; when: spawned == true && dying == false
-            SetProperties { target: img; opacity: 1 }
+            PropertyChanges { target: img; opacity: 1 }
         },
         State{ name: "DeathState"; when: dying == true
-            SetProperties { target: particles; count: 50 }
-            SetProperties { target: particles; opacity: 1 }
-            SetProperties { target: particles; emitting: false } // i.e. emit only once
-            SetProperties { target: img; opacity: 0 }
+            PropertyChanges { target: particles; count: 50 }
+            PropertyChanges { target: particles; opacity: 1 }
+            PropertyChanges { target: particles; emitting: false } // i.e. emit only once
+            PropertyChanges { target: img; opacity: 0 }
         }
     ]
 }

@@ -6,7 +6,7 @@ Rectangle {
     width: 800; height: 600
     color: Palette.base
 
-    Palette { id: Palette; colorGroup: "Active" }
+    SystemPalette { id: Palette; colorGroup: Qt.Active }
 
     FontLoader { id: FixedFont; name: "Courier" }
 

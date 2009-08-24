@@ -51,7 +51,7 @@ class QTreeWidgetItem;
 QT_END_NAMESPACE
 
 //! [0]
-class XbelReader : public QXmlStreamReader
+class XbelReader
 {
 public:
 //! [1]
@@ -60,9 +60,10 @@ public:
 
     bool read(QIODevice *device);
 
+    QString errorString() const;
+
 private:
 //! [2]
-    void readUnknownElement();
     void readXBEL();
     void readTitle(QTreeWidgetItem *item);
     void readSeparator(QTreeWidgetItem *item);
@@ -71,6 +72,7 @@ private:
 
     QTreeWidgetItem *createChildItem(QTreeWidgetItem *item);
 
+    QXmlStreamReader xml;
     QTreeWidget *treeWidget;
 //! [2]
 

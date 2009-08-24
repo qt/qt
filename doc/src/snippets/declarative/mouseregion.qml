@@ -12,6 +12,7 @@ Rectangle {
     width: 100; height: 100; color: "green"
     MouseRegion {
         anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: {
             if (mouse.button == Qt.RightButton)
                 parent.color = 'blue';

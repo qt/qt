@@ -88,7 +88,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
     it allows a different scale for the x and y axes, and allows the scale to be relative to an
     arbitrary point.
 
-    The following example scales the X axis of the Rect, relative to its interior point 25, 25:
+    The following example scales the X axis of the Rectangle, relative to its interior point 25, 25:
     \qml
     Rectangle {
         width: 100; height: 100
@@ -121,7 +121,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
     \qmlclass Rotation
     \brief A Rotation object provides a way to rotate an Item around a point using an axis in 3D space.
 
-    The following example rotates a Rect around its interior point 25, 25:
+    The following example rotates a Rectangle around its interior point 25, 25:
     \qml
     Rectangle {
         width: 100; height: 100

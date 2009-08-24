@@ -84,12 +84,24 @@ public:
         QmlParser::LocationSpan location;
     };
 
+    class TypeReference
+    {
+    public:
+        TypeReference(int typeId, const QString &typeName) : id(typeId), name(typeName) {}
+
+        int id;
+        // type as it has been referenced in Qml
+        QString name;
+        // objects in parse tree referencing the type
+        QList<QmlParser::Object*> refObjects;
+    };
+
     QmlScriptParser();
     ~QmlScriptParser();
 
     bool parse(const QByteArray &data, const QUrl &url = QUrl());
 
-    QStringList types() const;
+    QList<TypeReference*> referencedTypes() const;
 
     QmlParser::Object *tree() const;
     QList<Import> imports() const;
@@ -99,7 +111,7 @@ public:
     QList<QmlError> errors() const;
 
 // ### private:
-    int findOrCreateTypeId(const QString &name);
+    TypeReference *findOrCreateType(const QString &name);
     void setTree(QmlParser::Object *tree);
 
     void setScriptFile(const QString &filename) {_scriptFile = filename; }
@@ -110,7 +122,7 @@ public:
 
     QmlParser::Object *root;
     QList<Import> _imports;
-    QStringList _typeNames;
+    QList<TypeReference*> _refTypes;
     QString _scriptFile;
     QmlScriptParserJsASTData *data;
 };

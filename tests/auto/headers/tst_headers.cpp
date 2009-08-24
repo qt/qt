@@ -139,6 +139,9 @@ void tst_Headers::allSourceFilesData()
             || sourceFile.contains("/config.tests/")
             || sourceFile.contains("/snippets/")
             || sourceFile.contains("linguist/lupdate/testdata")
+            || sourceFile.contains("testdata/bundle-spaces/main.cpp")
+            || sourceFile.contains("demos/embedded/fluidlauncher/pictureflow.cpp")
+            || sourceFile.contains("tools/porting/src/")
             || sourceFile.contains("/fulltextsearch/"))
             continue;
 

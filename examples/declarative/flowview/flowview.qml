@@ -15,14 +15,14 @@ Rectangle {
 
         states: State { 
             name: "rotated"
-            SetProperties { target: ListView; z: 2 }
-            SetProperties { target: TopBar; y: -30 }
-            SetProperties { target: BottomBar; y: 480 }
-            SetProperties { target: LeftBar; x: 0 }
-            SetProperties { target: RightBar; x: 770 }
+            PropertyChanges { target: ListView; z: 2 }
+            PropertyChanges { target: TopBar; y: -30 }
+            PropertyChanges { target: BottomBar; y: 480 }
+            PropertyChanges { target: LeftBar; x: 0 }
+            PropertyChanges { target: RightBar; x: 770 }
         }
         transitions: Transition {
-            fromState: "" ; toState: "rotated"
+            from: "" ; to: "rotated"
             reversible: true
             SequentialAnimation {
                 NumberAnimation { targets: [TopBar, BottomBar]; properties: "x,y"; easing: "easeInOutQuad" }
@@ -53,28 +53,28 @@ Rectangle {
                             name: "InList"
                             when: MyPhone.state == "rotated"
                             ParentChange { target: MyContent; parent: List }
-                            SetProperties { target: MyContent; x: 120; y: 0; rotation: 90}
+                            PropertyChanges { target: MyContent; x: 120; y: 0; rotation: 90}
                         },
                         State { 
                             name: "InGrid"
                             when: MyPhone.state != "rotated"
                             ParentChange { target: MyContent; parent: Grid }
-                            SetProperties { target: MyContent; x: 0; y: 0; }
+                            PropertyChanges { target: MyContent; x: 0; y: 0; }
                         }
                     ]
                     transitions: [
                     Transition {
-                        fromState: "*"; toState: "InGrid"
+                        from: "*"; to: "InGrid"
                         SequentialAnimation { 
-                            ParentChangeAction{} 
+                            ParentAction{} 
                             PauseAnimation { duration: 50 * List.FlowView.column }
                             NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
                         } 
                     },
                     Transition {
-                        fromState: "*"; toState: "InList"
+                        from: "*"; to: "InList"
                         SequentialAnimation { 
-                            ParentChangeAction{} 
+                            ParentAction{} 
                             PauseAnimation { duration: 50 * (Grid.FlowView.row * 2 + Grid.FlowView.column) }
                             NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
                         } 

@@ -97,31 +97,31 @@ Rectangle {
     states: [
         State {
             name: "editing"
-            SetProperties {
+            PropertyChanges {
                 target: confirmIcon
                 opacity: 1
             }
-            SetProperties {
+            PropertyChanges {
                 target: cancelIcon
                 opacity: 1
             }
-            SetProperties {
+            PropertyChanges {
                 target: textEdit
                 readOnly: false
             }
-            SetProperties {
+            PropertyChanges {
                 target: textEdit
                 focus: true
             }
-            SetProperties {
+            PropertyChanges {
                 target: editRegion
                 opacity: 0
             }
-            SetProperties {
+            PropertyChanges {
                 target: textEdit.anchors
                 leftMargin: 39
             }
-            SetProperties {
+            PropertyChanges {
                 target: textEdit.anchors
                 rightMargin: 39
             }
@@ -129,8 +129,8 @@ Rectangle {
     ]
     transitions: [
         Transition {
-            fromState: ""
-            toState: "*"
+            from: ""
+            to: "*"
             reversible: true
             NumberAnimation {
                 properties: "opacity,leftMargin,rightMargin"

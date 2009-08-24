@@ -83,24 +83,24 @@ Rectangle {
         State {
             name: "opened"
 //! [use width]
-            SetProperties {
+            PropertyChanges {
                 target: removeButton
                 width: removeButton.expandedWidth
             }
 //! [use width]
-            SetProperties {
+            PropertyChanges {
                 target: text
                 opacity: 1
             }
-            SetProperties {
+            PropertyChanges {
                 target: confirmIcon
                 opacity: 1
             }
-            SetProperties {
+            PropertyChanges {
                 target: cancelIcon
                 opacity: 1
             }
-            SetProperties {
+            PropertyChanges {
                 target: trashIcon
                 opacity: 0
             }
@@ -108,8 +108,8 @@ Rectangle {
     ]
     transitions: [
         Transition {
-            fromState: "*"
-            toState: "opened"
+            from: "*"
+            to: "opened"
             reversible: true
             NumberAnimation {
                 properties: "opacity,x,width"

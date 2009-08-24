@@ -18,14 +18,14 @@ Rectangle {
             State {
                 name: "ShowBars"
                 when: View.moving
-                SetProperties { target: SBV; opacity: 1 }
-                SetProperties { target: SBH; opacity: 1 }
+                PropertyChanges { target: SBV; opacity: 1 }
+                PropertyChanges { target: SBH; opacity: 1 }
             }
         ]
         transitions: [
             Transition {
-                fromState: "*"
-                toState: "*"
+                from: "*"
+                to: "*"
                 NumberAnimation {
                     properties: "opacity"
                     duration: 400

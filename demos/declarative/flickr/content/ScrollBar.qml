@@ -20,7 +20,7 @@ Item {
         State {
             name: "show"
             when: flickableArea.moving
-            SetProperties {
+            PropertyChanges {
                 target: Container
                 opacity: 1
             }
@@ -28,8 +28,8 @@ Item {
     ]
     transitions: [
         Transition {
-            fromState: "*"
-            toState: "*"
+            from: "*"
+            to: "*"
             NumberAnimation {
                 target: Container
                 properties: "opacity"

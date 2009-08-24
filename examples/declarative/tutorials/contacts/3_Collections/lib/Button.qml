@@ -26,7 +26,7 @@ Item {
             State {
                 name: "pressed"
                 when: buttonMouseRegion.pressed == true
-                SetProperties {
+                PropertyChanges {
                     target: buttonRect
                     color: "green"
                 }
@@ -34,16 +34,16 @@ Item {
         ]
         transitions: [
             Transition {
-                fromState: "*"
-                toState: "pressed"
+                from: "*"
+                to: "pressed"
                 ColorAnimation {
                     property: "color"
                     duration: 200
                 }
             },
             Transition {
-                fromState: "pressed"
-                toState: "*"
+                from: "pressed"
+                to: "*"
                 ColorAnimation {
                     property: "color"
                     duration: 1000

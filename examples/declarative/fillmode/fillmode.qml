@@ -7,23 +7,23 @@ Image {
     fillMode: SequentialAnimation {
         running: true
         repeat: true
-        SetPropertyAction { value: "Stretch" }
-        SetPropertyAction { target: Label; property: "text"; value: "Stretch" }
+        PropertyAction { value: "Stretch" }
+        PropertyAction { target: Label; property: "text"; value: "Stretch" }
         PauseAnimation { duration: 1000 }
-        SetPropertyAction { value: "PreserveAspectFit" }
-        SetPropertyAction { target: Label; property: "text"; value: "PreserveAspectFit" }
+        PropertyAction { value: "PreserveAspectFit" }
+        PropertyAction { target: Label; property: "text"; value: "PreserveAspectFit" }
         PauseAnimation { duration: 1000 }
-        SetPropertyAction { value: "PreserveAspectCrop" }
-        SetPropertyAction { target: Label; property: "text"; value: "PreserveAspectCrop" }
+        PropertyAction { value: "PreserveAspectCrop" }
+        PropertyAction { target: Label; property: "text"; value: "PreserveAspectCrop" }
         PauseAnimation { duration: 1000 }
-        SetPropertyAction { value: "Tile" }
-        SetPropertyAction { target: Label; property: "text"; value: "Tile" }
+        PropertyAction { value: "Tile" }
+        PropertyAction { target: Label; property: "text"; value: "Tile" }
         PauseAnimation { duration: 1000 }
-        SetPropertyAction { value: "TileHorizontally" }
-        SetPropertyAction { target: Label; property: "text"; value: "TileHorizontally" }
+        PropertyAction { value: "TileHorizontally" }
+        PropertyAction { target: Label; property: "text"; value: "TileHorizontally" }
         PauseAnimation { duration: 1000 }
-        SetPropertyAction { value: "TileVertically" }
-        SetPropertyAction { target: Label; property: "text"; value: "TileVertically" }
+        PropertyAction { value: "TileVertically" }
+        PropertyAction { target: Label; property: "text"; value: "TileVertically" }
         PauseAnimation { duration: 1000 }
     }
     Text {

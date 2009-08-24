@@ -37,7 +37,7 @@ void tst_animations::badTypes()
         c.create();
 
         QVERIFY(c.errors().count() == 1);
-        QCOMPARE(c.errors().at(0).description(), QLatin1String("Cannot convert value \"blue\" to double number"));
+        QCOMPARE(c.errors().at(0).description(), QLatin1String("Invalid property assignment: double expected"));
     }
 
     //make sure we get a compiler error
@@ -48,7 +48,7 @@ void tst_animations::badTypes()
         c.create();
 
         QVERIFY(c.errors().count() == 1);
-        QCOMPARE(c.errors().at(0).description(), QLatin1String("Cannot convert value \"10\" to color"));
+        QCOMPARE(c.errors().at(0).description(), QLatin1String("Invalid property assignment: color expected"));
     }
 }
 

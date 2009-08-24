@@ -2,48 +2,69 @@ QML API Review
 ==============
 
 The QML API is being reviewed from 17 to 28 August 2009.  This
-file documents the changes.
+file documents the changes. Note that the changes are incremental,
+so a rename A->B for example may be follow by another subseqent
+rename B->C, if later reviews override earlier reviews.
 
 API Changes
 ===========
 
+Renamed Elements:
+LineEdit         -> TextInput
+VerticalLayout   -> VerticalPositioner
+HorizontalLayout -> HorizontalPositioner
+GridLayout       -> GridPositioner
+Rect             -> Rectangle
+FocusRealm       -> FocusScope
+FontFamily       -> FontLoader
+Palette          -> SystemPalette
+Bind             -> Binding
+SetProperties    -> PropertyChanges
+RunScript        -> StateChangeScript
+SetAnchors       -> AnchorChanges
+SetPropertyAction  -> PropertyAction
+RunScriptAction    -> ScriptAction
+ParentChangeAction -> ParentAction
+
 Renamed properties:
-MouseRegion: xmin    -> minimumX
-MouseRegion: xmax    -> maximumX
-MouseRegion: ymin    -> minimumY
-MouseRegion: ymin    -> maximumY
+MouseRegion: xmin      -> minimumX
+MouseRegion: xmax      -> maximumX
+MouseRegion: ymin      -> minimumY
+MouseRegion: ymin      -> maximumY
+Text elements: hAlign  -> horizontalAlignment
+Text elements: vAlign  -> verticalAlignment
+State: operations      -> changes
+Transition: operations -> animations
+Transition: fromState  -> from
+Transition: toState    -> to
+Follow: followValue    -> value
 
 Additions:
 MouseRegion: add "acceptedButtons" property
 MouseRegion: add "hoverEnabled" property
+MouseRegion: add "pressedButtons" property
+Timer: add start() and stop() slots
+
+Deletions:
+VerticalPositioner: lost "margins" property
+HorizontalPositioner: lost "margins" property
+GridPositioner: lost "margins" property
 
 Other Changes:
 Drag: axis becomes an enum with values "XAxis", "YAxis", "XandYAxis"
+Image: scaleGrid property removed. New item called BorderImage instead.
+KeyActions: changed to a Keys attached property on any item.
 
 Pending Changes
 ===============
 
 Renamed elements:
-RunScriptAction    -> ScriptAction
-ParentChangeAction -> ParentAction
-Bind               -> Binding
-Palette            -> SystemPalette
-SetProperties      -> PropertyChanges
-RunScript          -> StateChangeScript
-SetAnchors         -> AnchorChanges
 
 Renamed properties:
-Follow: followValue    -> value
-State: operations      -> changes
-Transition: fromState  -> from
-Trnasition: toState    -> to
-Transition: operations -> animations
 
 Removed Properties:
 PropertyAction::property
 PropertyAction::target (if possible)
 
 Additions:
-MouseRegion: add "pressedButtons" property
 Connection: add "slot" property
-Timer: add start() and stop() slots

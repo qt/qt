@@ -1,9 +1,9 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the QtXmlPatterns module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -34,51 +34,9 @@
 ** met: http://www.gnu.org/copyleft/gpl.html.
 **
 ** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+** contact the sales department at http://qt.nokia.com/contact.
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
-#ifndef QMLSETPROPERTIES_H
-#define QMLSETPROPERTIES_H
-
-#include <QtDeclarative/qmlstateoperations.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-    
-class QmlSetPropertiesPrivate;
-class Q_DECLARATIVE_EXPORT QmlSetProperties : public QmlStateOperation
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlSetProperties)
-
-    Q_PROPERTY(QObject *target READ object WRITE setObject)
-    Q_PROPERTY(bool restoreEntryValues READ restoreEntryValues WRITE setRestoreEntryValues)
-    Q_PROPERTY(bool explicit READ isExplicit WRITE setIsExplicit); 
-public:
-    QmlSetProperties();
-    ~QmlSetProperties();
-
-    QObject *object() const;
-    void setObject(QObject *);
-
-    bool restoreEntryValues() const;
-    void setRestoreEntryValues(bool);
-
-    bool isExplicit() const;
-    void setIsExplicit(bool);
-
-    virtual ActionList actions();
-};
-
-QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QmlSetProperties)
-
-QT_END_HEADER
-
-#endif // QMLSETPROPERTIES_H
+#include "../qstringbuilder1/stringbuilder.cpp"

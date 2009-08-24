@@ -66,14 +66,14 @@ Rectangle {
                     states: [
                         State {
                             name: "Details"
-                            SetProperties { target: Wrapper; height: childrenRect.height + 10 }
-                            SetProperties { target: Description; opacity: 1 } 
+                            PropertyChanges { target: Wrapper; height: childrenRect.height + 10 }
+                            PropertyChanges { target: Description; opacity: 1 } 
                         }
                     ]
                     transitions: [
                         Transition {
-                            fromState: "*"
-                            toState: "Details"
+                            from: "*"
+                            to: "Details"
                             reversible: true
                             SequentialAnimation {
                                 NumberAnimation {

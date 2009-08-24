@@ -62,7 +62,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Text,QFxText)
     It can display both plain and rich text. For example:
 
     \qml
-    Text { text: "Hello World!"; font.family: "Helvetica"; font.size: 24; color: "red" }
+    Text { text: "Hello World!"; font.family: "Helvetica"; font.pointSize: 24; color: "red" }
     Text { text: "<b>Hello</b> <i>World!</i>" }
     \endqml
 
@@ -90,7 +90,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Text,QFxText)
     It can display both plain and rich text. For example:
 
     \qml
-    Text { text: "Hello World!"; font.family: "Helvetica"; font.size: 24; color: "red" }
+    Text { text: "Hello World!"; font.family: "Helvetica"; font.pointSize: 24; color: "red" }
     Text { text: "<b>Hello</b> <i>World!</i>" }
     \endqml
 
@@ -126,11 +126,11 @@ QFxText::~QFxText()
     \qmlproperty string Text::font.family
     \qmlproperty bool Text::font.bold
     \qmlproperty bool Text::font.italic
-    \qmlproperty real Text::font.size
+    \qmlproperty bool Text::font.underline
+    \qmlproperty real Text::font.pointSize
+    \qmlproperty int Text::font.pixelSize
 
     Set the Text's font attributes.
-
-    \note \c font.size sets the font's point size (not pixel size).
 */
 QFont QFxText::font() const
 {
@@ -230,10 +230,10 @@ QColor QFxText::color() const
 
     \qml
     HorizontalPositioner {
-        Text { font.size: 24; text: "Normal" }
-        Text { font.size: 24; text: "Raised";  style: "Raised";  styleColor: "#AAAAAA" }
-        Text { font.size: 24; text: "Outline"; style: "Outline"; styleColor: "red" }
-        Text { font.size: 24; text: "Sunken";  style: "Sunken";  styleColor: "#AAAAAA" }
+        Text { font.pointSize: 24; text: "Normal" }
+        Text { font.pointSize: 24; text: "Raised";  style: "Raised";  styleColor: "#AAAAAA" }
+        Text { font.pointSize: 24; text: "Outline"; style: "Outline"; styleColor: "red" }
+        Text { font.pointSize: 24; text: "Sunken";  style: "Sunken";  styleColor: "#AAAAAA" }
     }
     \endqml
 
@@ -365,16 +365,16 @@ void QFxText::setWrap(bool w)
     \qml
 VerticalPositioner {
     TextEdit {
-        font.size: 24
+        font.pointSize: 24
         text: "<b>Hello</b> <i>World!</i>"
     }
     TextEdit {
-        font.size: 24
+        font.pointSize: 24
         textFormat: "RichText"
         text: "<b>Hello</b> <i>World!</i>"
     }
     TextEdit {
-        font.size: 24
+        font.pointSize: 24
         textFormat: "PlainText"
         text: "<b>Hello</b> <i>World!</i>"
     }
