@@ -63,6 +63,7 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qregexp.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qvarlengtharray.h>
 #include <QtCore/qnumeric.h>
 
 #include "utils/qscriptdate_p.h"
@@ -1943,8 +1944,7 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     if (!jscThisObject || !jscThisObject.isObject())
         jscThisObject = d->engine->globalObject();
 
-    QVector<JSC::JSValue> argsVector;
-    argsVector.resize(args.size());
+    QVarLengthArray<JSC::JSValue, 8> argsVector(args.size());
     for (int i = 0; i < args.size(); ++i) {
         const QScriptValue &arg = args.at(i);
         if (!arg.isValid()) {
@@ -2077,8 +2077,7 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
         return QScriptValue();
     JSC::ExecState *exec = d->engine->currentFrame;
 
-    QVector<JSC::JSValue> argsVector;
-    argsVector.resize(args.size());
+    QVarLengthArray<JSC::JSValue, 8> argsVector(args.size());
     for (int i = 0; i < args.size(); ++i) {
         if (!args.at(i).isValid())
             argsVector[i] = JSC::jsUndefined();

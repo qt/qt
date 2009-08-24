@@ -2022,8 +2022,7 @@ void QObjectConnectionManager::execute(int slotIndex, void **argv)
     int argc = parameterTypes.count();
 
     JSC::ExecState *exec = engine->currentFrame;
-    QVector<JSC::JSValue> argsVector;
-    argsVector.resize(argc);
+    QVarLengthArray<JSC::JSValue, 8> argsVector(argc);
     for (int i = 0; i < argc; ++i) {
         // ### optimize -- no need to convert via QScriptValue
         QScriptValue actual;
