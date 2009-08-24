@@ -1,0 +1,58 @@
+TODO list for MMF Phonon backend
+--------------------------------
+
+The following items are in rough order of priority.
+
+
+* Work out why video is not visible
+
+* On-target testing
+1. Ensure that Phonon front- and back-end libraries are included in the SIS file.
+2. Add musicplayer.exe and mediaplayer.exe to the FluidLauncher
+3. Ensure that both apps can be launched, and that we can somehow get trace output from the MMF backend onto the PC for analysis.
+
+* Trace for on-target testing
+Do we need to connect up the TRACE_* macros to another logging output (e.g. file / Flogger / UTrace etc)?
+
+* Fix position slider in audio test app (musicplayer.exe)
+The slider is enabled when playing, but does not move and cannot be dragged.  This means that we can't easily test seeking.
+
+* Fix track list in audio test app (musicplayer.exe)
+After loading a single clip, we get two entries in the list box: the first is blank and the second has the name of the clip we just loaded.  However, clicking on the first (blank) opens the clip, while clicking on the second (correct filename) has no effect.
+
+* Implement audio effects
+
+* Support for network streaming playback
+The main question here is how best to implement the MIME type detection for streams.  The OpenUrlL functions only take a URL, whereas the corresponding OpenFileL functions have overloads for filenames and for open RFile handles.  This is because files support random access whereas streams do not.  A naieve approach to MIME type detection for streams is as follows; is there a more efficient approach?
+	1. Open network connection
+	2. Download header
+	3. Detect MIME type and create AbstractMediaPlayer instance
+	4. Close network connection
+	5. Pass URL to MMF client utility, which will then re-open the stream
+
+* Performance analysis
+Compare video frame rate obtained using default S60 media player and Qt demo apps
+
+* Implement MMF::Backend::availableMimeTypes
+
+* Implement MMF::Backend::disconnectNodes
+This should probably be left for now, particularly until audio effects have been implemented.  This is because the node connection mechanism may need to be refactored slightly once we start building up longer graphs (e.g. MediaObject -> Effect -> Effect -> AudioOutput).
+
+* Namespace macros
+For consistency with other backends, the code should be wrapped in QT_BEGIN_NAMESPACE / QT_END_NAMESPACE macros.
+
+
+
+
+
+* Fix mediaplayer.exe UI
+On Windows, the mediaplayer UI has a drop-down menu (for loading clips etc), start/stop buttons, a position slider and a volume slider.  On S60, we just get a blank screen and two blank softkeys, so no clip can be loaded (unless main.cpp is hacked by adding a hard-coded path).
+
+
+
+
+
+
+
+
+
