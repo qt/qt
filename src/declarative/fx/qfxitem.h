@@ -155,8 +155,6 @@ public:
     void setKeepMouseGrab(bool);
 
 Q_SIGNALS:
-    void xChanged();
-    void yChanged();
     void widthChanged();
     void heightChanged();
     void childrenRectChanged();
