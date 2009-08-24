@@ -1695,6 +1695,7 @@ QSize QMenuBar::sizeHint() const
 
     ensurePolished();
     QSize ret(0, 0);
+    const_cast<QMenuBarPrivate*>(d)->updateGeometries();
     const int hmargin = style()->pixelMetric(QStyle::PM_MenuBarHMargin, 0, this);
     const int vmargin = style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, this);
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, this);
@@ -1750,6 +1751,7 @@ int QMenuBar::heightForWidth(int) const
     const bool as_gui_menubar = true;
 #endif
 
+    const_cast<QMenuBarPrivate*>(d)->updateGeometries();
     int height = 0;
     const int vmargin = style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, this);
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, this);

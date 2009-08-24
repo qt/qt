@@ -238,7 +238,6 @@ void QTimerActiveObject::Run()
 
     if (m_timerInfo->interval > 0) {
         // Start a new timer immediately so that we don't lose time.
-        iStatus = KRequestPending;
         SetActive();
         m_rTimer.After(iStatus, m_timerInfo->interval*1000);
 

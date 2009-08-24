@@ -559,6 +559,11 @@ static QScriptValue custom_eval(QScriptContext *ctx, QScriptEngine *eng)
     return eng->evaluate(ctx->argumentsObject().property(0).toString(), ctx->argumentsObject().property(1).toString());
 }
 
+static QScriptValue custom_call(QScriptContext *ctx, QScriptEngine *)
+{
+    return ctx->argumentsObject().property(0).call(QScriptValue(), QScriptValueList() << ctx->argumentsObject().property(1));
+}
+
 void tst_QScriptContext::backtrace_data()
 {
     QTest::addColumn<QString>("code");
@@ -681,7 +686,36 @@ void tst_QScriptContext::backtrace_data()
         QTest::newRow("two function") << source << expected;
     }
 
+    {
+        QString func("function foo(a, b) {\n"
+                     "  return bt(a);\n"
+                     "}");
 
+        QString source = func + QString::fromLatin1("\n"
+                 "custom_call(foo, 'hello');\n"
+                 "var a = 1\n");
+
+        QStringList expected;
+        expected << "<native>('hello') at -1"
+                 << "foo(a = 'hello') at testfile:2"
+                 << QString("<native>(%1, 'hello') at -1").arg(func)
+                 << "<global>() at testfile:4";
+
+        QTest::newRow("call") << source << expected;
+    }
+
+    {
+        QString source = QString::fromLatin1("\n"
+        "custom_call(bt, 'hello_world');\n"
+        "var a = 1\n");
+
+        QStringList expected;
+        expected << "<native>('hello_world') at -1"
+        << "<native>(function () {\n    [native code]\n}, 'hello_world') at -1"
+        << "<global>() at testfile:2";
+
+        QTest::newRow("call native") << source << expected;
+    }
 }
 
 
@@ -693,6 +727,7 @@ void tst_QScriptContext::backtrace()
     QScriptEngine eng;
     eng.globalObject().setProperty("bt", eng.newFunction(getBacktrace));
     eng.globalObject().setProperty("custom_eval", eng.newFunction(custom_eval));
+    eng.globalObject().setProperty("custom_call", eng.newFunction(custom_call));
 
     QString fileName = "testfile";
     QScriptValue ret = eng.evaluate(code, fileName);

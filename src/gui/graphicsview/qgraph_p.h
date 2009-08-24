@@ -155,8 +155,7 @@ public:
 #endif
         if (edgeData(first, second)) {
 #ifdef QT_DEBUG
-            qWarning(qPrintable(QString::fromAscii("%1-%2 already has an edge")
-                            .arg(first->toString()).arg(second->toString())));
+            qWarning("%s-%s already has an edge", qPrintable(first->toString()), qPrintable(second->toString()));
 #endif
         }
         createDirectedEdge(first, second, data);

@@ -94,6 +94,12 @@ static inline TPtrC qt_QString2TPtrC( const QString& string )
     return TPtrC16(static_cast<const TUint16*>(string.utf16()), string.length());
 }
 
+/*!
+    \internal
+    This class is a wrapper around the Symbian HBufC descriptor class.
+    It makes sure that the heap allocated HBufC class is freed when it is
+    destroyed.
+*/
 class Q_CORE_EXPORT QHBufC
 {
 public:

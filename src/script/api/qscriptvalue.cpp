@@ -63,6 +63,7 @@
 #include <QtCore/qdatetime.h>
 #include <QtCore/qregexp.h>
 #include <QtCore/qvariant.h>
+#include <QtCore/qvarlengtharray.h>
 #include <QtCore/qnumeric.h>
 
 #include "utils/qscriptdate_p.h"
@@ -275,58 +276,6 @@ qsreal ToInteger(qsreal n)
 
 } // namespace QScript
 
-QScriptValuePrivate::QScriptValuePrivate() : engine(0), prev(0), next(0)
-{
-    ref = 0;
-}
-
-QScriptValuePrivate::~QScriptValuePrivate()
-{
-    if (engine)
-        engine->unregisterScriptValue(this);
-}
-
-void QScriptValuePrivate::initFrom(JSC::JSValue value)
-{
-    if (value.isCell()) {
-        Q_ASSERT(engine != 0);
-        value = engine->toUsableValue(value);
-        JSC::JSCell *cell = JSC::asCell(value);
-        Q_ASSERT(cell != engine->originalGlobalObject());
-    }
-    type = JSC;
-    jscValue = value;
-    if (engine)
-        engine->registerScriptValue(this);
-}
-
-void QScriptValuePrivate::initFrom(double value)
-{
-    type = Number;
-    numberValue = value;
-    if (engine)
-        engine->registerScriptValue(this);
-}
-
-void QScriptValuePrivate::initFrom(const QString &value)
-{
-    type = String;
-    stringValue = value;
-    if (engine)
-        engine->registerScriptValue(this);
-}
-
-bool QScriptValuePrivate::isJSC() const
-{
-    return (type == JSC);
-}
-
-QScriptValue QScriptValuePrivate::property(const QString &name, int resolveMode) const
-{
-    JSC::ExecState *exec = engine->currentFrame;
-    return property(JSC::Identifier(exec, name), resolveMode);
-}
-
 QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolveMode) const
 {
     Q_ASSERT(isJSC());
@@ -364,6 +313,84 @@ QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
         result = slot.getValue(exec, index);
     }
     return engine->scriptValueFromJSCValue(result);
+}
+
+void QScriptValuePrivate::setProperty(const JSC::Identifier &id, const QScriptValue &value,
+                                      const QScriptValue::PropertyFlags &flags)
+{
+    QScriptEngine *valueEngine = value.engine();
+    if (valueEngine && (QScriptEnginePrivate::get(valueEngine) != engine)) {
+        qWarning("QScriptValue::setProperty(%s) failed: "
+                 "cannot set value created in a different engine",
+                 qPrintable(QString(id.ustring())));
+        return;
+    }
+    JSC::ExecState *exec = engine->currentFrame;
+    JSC::JSValue jsValue = engine->scriptValueToJSCValue(value);
+    JSC::JSObject *thisObject = JSC::asObject(jscValue);
+    JSC::JSValue setter = thisObject->lookupSetter(exec, id);
+    JSC::JSValue getter = thisObject->lookupGetter(exec, id);
+    if ((flags & QScriptValue::PropertyGetter) || (flags & QScriptValue::PropertySetter)) {
+        if (!jsValue) {
+            // deleting getter/setter
+            if ((flags & QScriptValue::PropertyGetter) && (flags & QScriptValue::PropertySetter)) {
+                // deleting both: just delete the property
+                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
+            } else if (flags & QScriptValue::PropertyGetter) {
+                // preserve setter, if there is one
+                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
+                if (setter && setter.isObject())
+                    thisObject->defineSetter(exec, id, JSC::asObject(setter));
+            } else { // flags & QScriptValue::PropertySetter
+                // preserve getter, if there is one
+                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
+                if (getter && getter.isObject())
+                    thisObject->defineGetter(exec, id, JSC::asObject(getter));
+            }
+        } else {
+            if (jsValue.isObject()) { // ### should check if it has callData()
+                // defining getter/setter
+                if (id == exec->propertyNames().underscoreProto) {
+                    qWarning("QScriptValue::setProperty() failed: "
+                             "cannot set getter or setter of native property `__proto__'");
+                } else {
+                    if (flags & QScriptValue::PropertyGetter)
+                        thisObject->defineGetter(exec, id, JSC::asObject(jsValue));
+                    if (flags & QScriptValue::PropertySetter)
+                        thisObject->defineSetter(exec, id, JSC::asObject(jsValue));
+                }
+            } else {
+                qWarning("QScriptValue::setProperty(): getter/setter must be a function");
+            }
+        }
+    } else {
+        // setting the value
+        if (getter && getter.isObject() && !(setter && setter.isObject())) {
+            qWarning("QScriptValue::setProperty() failed: "
+                     "property '%s' has a getter but no setter",
+                     qPrintable(QString(id.ustring())));
+            return;
+        }
+        if (!jsValue) {
+            // ### check if it's a getter/setter property
+            thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
+        } else if (flags != QScriptValue::KeepExistingFlags) {
+            if (thisObject->hasOwnProperty(exec, id))
+                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false); // ### hmmm - can't we just update the attributes?
+            unsigned attribs = 0;
+            if (flags & QScriptValue::ReadOnly)
+                attribs |= JSC::ReadOnly;
+            if (flags & QScriptValue::SkipInEnumeration)
+                attribs |= JSC::DontEnum;
+            if (flags & QScriptValue::Undeletable)
+                attribs |= JSC::DontDelete;
+            attribs |= flags & QScriptValue::UserRange;
+            thisObject->putWithAttributes(exec, id, jsValue, attribs);
+        } else {
+            JSC::PutPropertySlot slot;
+            thisObject->put(exec, id, jsValue, slot);
+        }
+    }
 }
 
 QVariant &QScriptValuePrivate::variantValue() const
@@ -405,6 +432,30 @@ void QScriptValuePrivate::detachFromEngine()
     engine = 0;
 }
 
+void* QScriptValuePrivate::operator new(size_t size, QScriptEnginePrivate *engine)
+{
+    if (engine)
+        return engine->allocateScriptValuePrivate(size);
+    return qMalloc(size);
+}
+
+void QScriptValuePrivate::operator delete(void *ptr)
+{
+    QScriptValuePrivate *d = reinterpret_cast<QScriptValuePrivate*>(ptr);
+    if (d->engine)
+        d->engine->freeScriptValuePrivate(d);
+    else
+        qFree(d);
+}
+
+/*!
+  \internal
+*/
+QScriptValue::QScriptValue(QScriptValuePrivate *d)
+    : d_ptr(d)
+{
+}
+
 /*!
   Constructs an invalid QScriptValue.
 */
@@ -439,9 +490,8 @@ QScriptValue::QScriptValue(const QScriptValue &other)
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, QScriptValue::SpecialValue value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
-    d_ptr->engine = QScriptEnginePrivate::get(engine);
     switch (value) {
     case NullValue:
         d_ptr->initFrom(JSC::jsNull());
@@ -461,9 +511,8 @@ QScriptValue::QScriptValue(QScriptEngine *engine, QScriptValue::SpecialValue val
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, bool val)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
-    d_ptr->engine = QScriptEnginePrivate::get(engine);
     d_ptr->initFrom(JSC::jsBoolean(val));
 }
 
@@ -475,9 +524,8 @@ QScriptValue::QScriptValue(QScriptEngine *engine, bool val)
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, int val)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
-    d_ptr->engine = QScriptEnginePrivate::get(engine);
     if (engine) {
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsNumber(exec, val));
@@ -498,9 +546,8 @@ QScriptValue::QScriptValue(QScriptEngine *engine, int val)
   registers it with the script \a engine.
  */
 QScriptValue::QScriptValue(QScriptEngine *engine, uint val)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
-    d_ptr->engine = QScriptEnginePrivate::get(engine);
     if (engine) {
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsNumber(exec, val));
@@ -521,9 +568,8 @@ QScriptValue::QScriptValue(QScriptEngine *engine, uint val)
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, qsreal val)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
-    d_ptr->engine = QScriptEnginePrivate::get(engine);
     if (engine) {
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsNumber(exec, val));
@@ -544,9 +590,8 @@ QScriptValue::QScriptValue(QScriptEngine *engine, qsreal val)
   registers it with the script \a engine.
 */
 QScriptValue::QScriptValue(QScriptEngine *engine, const QString &val)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
-    d_ptr->engine = QScriptEnginePrivate::get(engine);
     if (engine) {
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsString(exec, val));
@@ -565,9 +610,8 @@ QScriptValue::QScriptValue(QScriptEngine *engine, const QString &val)
 
 #ifndef QT_NO_CAST_FROM_ASCII
 QScriptValue::QScriptValue(QScriptEngine *engine, const char *val)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (QScriptEnginePrivate::get(engine))QScriptValuePrivate(QScriptEnginePrivate::get(engine)))
 {
-    d_ptr->engine = QScriptEnginePrivate::get(engine);
     if (engine) {
         JSC::ExecState *exec = d_ptr->engine->currentFrame;
         d_ptr->initFrom(JSC::jsString(exec, val));
@@ -583,9 +627,8 @@ QScriptValue::QScriptValue(QScriptEngine *engine, const char *val)
   Constructs a new QScriptValue with a special \a value.
 */
 QScriptValue::QScriptValue(SpecialValue value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate(/*engine=*/0))
 {
-    d_ptr->engine = 0;
     switch (value) {
     case NullValue:
         d_ptr->initFrom(JSC::jsNull());
@@ -602,9 +645,8 @@ QScriptValue::QScriptValue(SpecialValue value)
   Constructs a new QScriptValue with a boolean \a value.
 */
 QScriptValue::QScriptValue(bool value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate(/*engine=*/0))
 {
-    d_ptr->engine = 0;
     d_ptr->initFrom(JSC::jsBoolean(value));
 }
 
@@ -614,9 +656,8 @@ QScriptValue::QScriptValue(bool value)
   Constructs a new QScriptValue with a number \a value.
 */
 QScriptValue::QScriptValue(int value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate(/*engine=*/0))
 {
-    d_ptr->engine = 0;
     JSC::JSValue immediate = JSC::JSImmediate::from(value);
     if (immediate)
         d_ptr->initFrom(immediate);
@@ -630,9 +671,8 @@ QScriptValue::QScriptValue(int value)
   Constructs a new QScriptValue with a number \a value.
 */
 QScriptValue::QScriptValue(uint value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate(/*engine=*/0))
 {
-    d_ptr->engine = 0;
     JSC::JSValue immediate = JSC::JSImmediate::from(value);
     if (immediate)
         d_ptr->initFrom(immediate);
@@ -646,9 +686,8 @@ QScriptValue::QScriptValue(uint value)
   Constructs a new QScriptValue with a number \a value.
 */
 QScriptValue::QScriptValue(qsreal value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate(/*engine=*/0))
 {
-    d_ptr->engine = 0;
     JSC::JSValue immediate = JSC::JSImmediate::from(value);
     if (immediate)
         d_ptr->initFrom(immediate);
@@ -662,9 +701,8 @@ QScriptValue::QScriptValue(qsreal value)
   Constructs a new QScriptValue with a string \a value.
 */
 QScriptValue::QScriptValue(const QString &value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate(/*engine=*/0))
 {
-    d_ptr->engine = 0;
     d_ptr->initFrom(value);
 }
 
@@ -674,9 +712,8 @@ QScriptValue::QScriptValue(const QString &value)
   Constructs a new QScriptValue with a string \a value.
 */
 QScriptValue::QScriptValue(const QLatin1String &value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate(/*engine=*/0))
 {
-    d_ptr->engine = 0;
     d_ptr->initFrom(value);
 }
 
@@ -688,9 +725,8 @@ QScriptValue::QScriptValue(const QLatin1String &value)
 
 #ifndef QT_NO_CAST_FROM_ASCII
 QScriptValue::QScriptValue(const char *value)
-    : d_ptr(new QScriptValuePrivate)
+    : d_ptr(new (/*engine=*/0)QScriptValuePrivate(/*engine=*/0))
 {
-    d_ptr->engine = 0;
     d_ptr->initFrom(QString::fromAscii(value));
 }
 #endif
@@ -1628,7 +1664,8 @@ void QScriptValue::setProperty(const QString &name, const QScriptValue &value,
     Q_D(QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject())
         return;
-    setProperty(engine()->toStringHandle(name), value, flags);
+    JSC::ExecState *exec = d->engine->currentFrame;
+    d->setProperty(JSC::Identifier(exec, name), value, flags);
 }
 
 /*!
@@ -1768,80 +1805,7 @@ void QScriptValue::setProperty(const QScriptString &name,
     Q_D(QScriptValue);
     if (!d || !d->isJSC() || !d->jscValue.isObject() || !name.isValid())
         return;
-    QScriptEngine *valueEngine = value.engine();
-    if (valueEngine && (QScriptEnginePrivate::get(valueEngine) != d->engine)) {
-        qWarning("QScriptValue::setProperty(%s) failed: "
-                 "cannot set value created in a different engine",
-                 qPrintable(name.toString()));
-        return;
-    }
-    JSC::ExecState *exec = d->engine->currentFrame;
-    JSC::JSValue jscValue = d->engine->scriptValueToJSCValue(value);
-    JSC::Identifier id = name.d_ptr->identifier;
-    JSC::JSObject *thisObject = JSC::asObject(d->jscValue);
-    JSC::JSValue setter = thisObject->lookupSetter(exec, id);
-    JSC::JSValue getter = thisObject->lookupGetter(exec, id);
-    if ((flags & QScriptValue::PropertyGetter) || (flags & QScriptValue::PropertySetter)) {
-        if (!jscValue) {
-            // deleting getter/setter
-            if ((flags & QScriptValue::PropertyGetter) && (flags & QScriptValue::PropertySetter)) {
-                // deleting both: just delete the property
-                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
-            } else if (flags & QScriptValue::PropertyGetter) {
-                // preserve setter, if there is one
-                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
-                if (setter && setter.isObject())
-                    thisObject->defineSetter(exec, id, JSC::asObject(setter));
-            } else { // flags & QScriptValue::PropertySetter
-                // preserve getter, if there is one
-                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
-                if (getter && getter.isObject())
-                    thisObject->defineGetter(exec, id, JSC::asObject(getter));
-            }
-        } else {
-            if (jscValue.isObject()) { // ### should check if it has callData()
-                // defining getter/setter
-                if (id == exec->propertyNames().underscoreProto) {
-                    qWarning("QScriptValue::setProperty() failed: "
-                             "cannot set getter or setter of native property `__proto__'");
-                } else {
-                    if (flags & QScriptValue::PropertyGetter)
-                        thisObject->defineGetter(exec, id, JSC::asObject(jscValue));
-                    if (flags & QScriptValue::PropertySetter)
-                        thisObject->defineSetter(exec, id, JSC::asObject(jscValue));
-                }
-            } else {
-                qWarning("QScriptValue::setProperty(): getter/setter must be a function");
-            }
-        }
-    } else {
-        // setting the value
-        if (getter && getter.isObject() && !(setter && setter.isObject())) {
-            qWarning("QScriptValue::setProperty() failed: "
-                     "property '%s' has a getter but no setter",
-                     qPrintable(name.toString()));
-            return;
-        }
-        if (!jscValue) {
-            // ### check if it's a getter/setter property
-            thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false);
-        } else if (flags != QScriptValue::KeepExistingFlags) {
-            if (thisObject->hasOwnProperty(exec, id))
-                thisObject->deleteProperty(exec, id, /*checkDontDelete=*/false); // ### hmmm - can't we just update the attributes?
-            unsigned attribs = 0;
-            if (flags & QScriptValue::ReadOnly)
-                attribs |= JSC::ReadOnly;
-            if (flags & QScriptValue::SkipInEnumeration)
-                attribs |= JSC::DontEnum;
-            if (flags & QScriptValue::Undeletable)
-                attribs |= JSC::DontDelete;
-            attribs |= flags & QScriptValue::UserRange;
-            thisObject->putWithAttributes(exec, id, jscValue, attribs);
-        } else {
-            JSC::PutPropertySlot slot;
-            thisObject->put(exec, id, jscValue, slot);
-        }
-    }
+    d->setProperty(name.d_ptr->identifier, value, flags);
 }
 
 /*!
@@ -1927,7 +1891,12 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
                                 const QScriptValueList &args)
 {
     Q_D(const QScriptValue);
-    if (!isFunction())
+    if (!d || !d->isJSC())
+        return QScriptValue();
+    JSC::JSValue callee = d->jscValue;
+    JSC::CallData callData;
+    JSC::CallType callType = callee.getCallData(callData);
+    if (callType == JSC::CallTypeNone)
         return QScriptValue();
 
     if (thisObject.engine() && (thisObject.engine() != engine())) {
@@ -1936,7 +1905,6 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
                  "a different engine");
         return QScriptValue();
     }
-    engine()->currentContext()->activationObject(); //force the creation of a context for native function;
 
     JSC::ExecState *exec = d->engine->currentFrame;
 
@@ -1944,8 +1912,7 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     if (!jscThisObject || !jscThisObject.isObject())
         jscThisObject = d->engine->globalObject();
 
-    QVector<JSC::JSValue> argsVector;
-    argsVector.resize(args.size());
+    QVarLengthArray<JSC::JSValue, 8> argsVector(args.size());
     for (int i = 0; i < args.size(); ++i) {
         const QScriptValue &arg = args.at(i);
         if (!arg.isValid()) {
@@ -1961,9 +1928,6 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     }
     JSC::ArgList jscArgs(argsVector.data(), argsVector.size());
 
-    JSC::JSValue callee = d->jscValue;
-    JSC::CallData callData;
-    JSC::CallType callType = callee.getCallData(callData);
     JSC::JSValue savedException;
     QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSValue result = JSC::call(exec, callee, callType, callData, jscThisObject, jscArgs);
@@ -2002,7 +1966,12 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
                                 const QScriptValue &arguments)
 {
     Q_D(QScriptValue);
-    if (!isFunction())
+    if (!d || !d->isJSC())
+        return QScriptValue();
+    JSC::JSValue callee = d->jscValue;
+    JSC::CallData callData;
+    JSC::CallType callType = callee.getCallData(callData);
+    if (callType == JSC::CallTypeNone)
         return QScriptValue();
 
     if (thisObject.engine() && (thisObject.engine() != engine())) {
@@ -2011,7 +1980,6 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
                  "a different engine");
         return QScriptValue();
     }
-    engine()->currentContext()->activationObject(); //force the creation of a context for native function;
 
     JSC::ExecState *exec = d->engine->currentFrame;
 
@@ -2040,9 +2008,6 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
         }
     }
 
-    JSC::JSValue callee = d->jscValue;
-    JSC::CallData callData;
-    JSC::CallType callType = callee.getCallData(callData);
     JSC::JSValue savedException;
     QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSValue result = JSC::call(exec, callee, callType, callData, jscThisObject, applyArgs);
@@ -2075,13 +2040,17 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
 QScriptValue QScriptValue::construct(const QScriptValueList &args)
 {
     Q_D(const QScriptValue);
-    if (!isFunction())
+    if (!d || !d->isJSC())
         return QScriptValue();
-    engine()->currentContext()->activationObject(); //force the creation of a context for native function;
+    JSC::JSValue callee = d->jscValue;
+    JSC::ConstructData constructData;
+    JSC::ConstructType constructType = callee.getConstructData(constructData);
+    if (constructType == JSC::ConstructTypeNone)
+        return QScriptValue();
+
     JSC::ExecState *exec = d->engine->currentFrame;
 
-    QVector<JSC::JSValue> argsVector;
-    argsVector.resize(args.size());
+    QVarLengthArray<JSC::JSValue, 8> argsVector(args.size());
     for (int i = 0; i < args.size(); ++i) {
         if (!args.at(i).isValid())
             argsVector[i] = JSC::jsUndefined();
@@ -2091,9 +2060,6 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
 
     JSC::ArgList jscArgs(argsVector.data(), argsVector.size());
 
-    JSC::JSValue callee = d->jscValue;
-    JSC::ConstructData constructData;
-    JSC::ConstructType constructType = callee.getConstructData(constructData);
     JSC::JSValue savedException;
     QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSObject *result = JSC::construct(exec, callee, constructType, constructData, jscArgs);
@@ -2123,9 +2089,14 @@ QScriptValue QScriptValue::construct(const QScriptValueList &args)
 QScriptValue QScriptValue::construct(const QScriptValue &arguments)
 {
     Q_D(QScriptValue);
-    if (!isFunction())
+    if (!d || !d->isJSC())
         return QScriptValue();
-    engine()->currentContext()->activationObject(); //force the creation of a context for native function;
+    JSC::JSValue callee = d->jscValue;
+    JSC::ConstructData constructData;
+    JSC::ConstructType constructType = callee.getConstructData(constructData);
+    if (constructType == JSC::ConstructTypeNone)
+        return QScriptValue();
+
     JSC::ExecState *exec = d->engine->currentFrame;
 
     JSC::JSValue array = d->engine->scriptValueToJSCValue(arguments);
@@ -2148,9 +2119,6 @@ QScriptValue QScriptValue::construct(const QScriptValue &arguments)
         }
     }
 
-    JSC::JSValue callee = d->jscValue;
-    JSC::ConstructData constructData;
-    JSC::ConstructType constructType = callee.getConstructData(constructData);
     JSC::JSValue savedException;
     QScriptValuePrivate::saveException(exec, &savedException);
     JSC::JSObject *result = JSC::construct(exec, callee, constructType, constructData, applyArgs);

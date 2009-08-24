@@ -72,13 +72,15 @@ struct Q_CORE_EXPORT QListData {
     enum { DataHeaderSize = sizeof(Data) - sizeof(void *) };
 
     Data *detach(); // remove in 5.0
-    Data *detach2();
+    Data *detach2(); // remove in 5.0
+    Data *detach3();
     void realloc(int alloc);
     static Data shared_null;
     Data *d;
     void **erase(void **xi);
     void **append();
     void **append(const QListData &l);
+    void **append2(const QListData &l); // remove in 5.0
     void **prepend();
     void **insert(int i);
     void remove(int i);
@@ -381,6 +383,9 @@ Q_INLINE_TEMPLATE void QList<T>::node_copy(Node *from, Node *to, Node *src)
                 (reinterpret_cast<T*>(current--))->~T();
             QT_RETHROW;
         }
+    } else {
+        if (src != from && to - from > 0)
+            memcpy(from, src, (to - from) * sizeof(Node *));
     }
 }
 
@@ -590,7 +595,7 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE void QList<T>::detach_helper()
 {
     Node *n = reinterpret_cast<Node *>(p.begin());
-    QListData::Data *x = p.detach2();
+    QListData::Data *x = p.detach3();
     QT_TRY {
         node_copy(reinterpret_cast<Node *>(p.begin()), reinterpret_cast<Node *>(p.end()), n);
     } QT_CATCH(...) {
@@ -690,7 +695,7 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> &QList<T>::operator+=(const QList<T> &l)
 {
     detach();
-    Node *n = reinterpret_cast<Node *>(p.append(l.p));
+    Node *n = reinterpret_cast<Node *>(p.append2(l.p));
     QT_TRY{
         node_copy(n, reinterpret_cast<Node *>(p.end()), reinterpret_cast<Node *>(l.p.begin()));
     } QT_CATCH(...) {

@@ -117,9 +117,12 @@ typedef struct _REPARSE_DATA_BUFFER {
 } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
 
 #  define REPARSE_DATA_BUFFER_HEADER_SIZE  FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
-#ifndef MAXIMUM_REPARSE_DATA_BUFFER_SIZE
-#  define MAXIMUM_REPARSE_DATA_BUFFER_SIZE 16384
-#endif
+#  ifndef MAXIMUM_REPARSE_DATA_BUFFER_SIZE
+#    define MAXIMUM_REPARSE_DATA_BUFFER_SIZE 16384
+#  endif
+#  ifndef IO_REPARSE_TAG_SYMLINK
+#    define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
+#  endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -455,6 +458,9 @@ bool QFSFileEnginePrivate::nativeClose()
         q->setError(QFile::UnspecifiedError, qt_error_string());
         ok = false;
     }
+#ifdef Q_USE_DEPRECATED_MAP_API
+    fileMapHandle = INVALID_HANDLE_VALUE;
+#endif
     fileHandle = INVALID_HANDLE_VALUE;
     cachedFd = -1;              // gets closed by CloseHandle above
 
@@ -1252,7 +1258,7 @@ bool QFSFileEnginePrivate::doStat() const
 static QString readSymLink(const QString &link)
 {
     QString result;
-#if !defined(Q_OS_WINCE) && defined(FSCTL_GET_REPARSE_POINT) && defined(IO_REPARSE_TAG_MOUNT_POINT)
+#if !defined(Q_OS_WINCE)
     HANDLE handle = CreateFile((wchar_t*)QFSFileEnginePrivate::longFileName(link).utf16(),
                                FILE_READ_EA,
                                FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -1513,7 +1519,7 @@ QAbstractFileEngine::FileFlags QFSFileEnginePrivate::getPermissions() const
 */
 bool QFSFileEnginePrivate::isSymlink() const
 {
-#if !defined(Q_OS_WINCE) && defined(IO_REPARSE_TAG_SYMLINK)
+#if !defined(Q_OS_WINCE)
     if (need_lstat) {
         need_lstat = false;
         is_link = false;
@@ -1924,10 +1930,11 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
 #ifndef Q_OS_WINCE
     if (handle == INVALID_HANDLE_VALUE && fh)
         handle = (HANDLE)_get_osfhandle(QT_FILENO(fh));
-#else
-    #ifdef Q_USE_DEPRECATED_MAP_API
-    nativeClose();
+#endif
+
+#ifdef Q_USE_DEPRECATED_MAP_API
     if (fileMapHandle == INVALID_HANDLE_VALUE) {
+        nativeClose();
         fileMapHandle = CreateFileForMapping((const wchar_t*)nativeFilePath.constData(),
                 GENERIC_READ | (openMode & QIODevice::WriteOnly ? GENERIC_WRITE : 0),
                 0,
@@ -1937,10 +1944,12 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
                 NULL);
     }
     handle = fileMapHandle;
-    #endif
-    if (handle == INVALID_HANDLE_VALUE && fh)
-        return 0;
 #endif
+
+    if (handle == INVALID_HANDLE_VALUE) {
+        q->setError(QFile::UnspecifiedError, QLatin1String("No handle on file"));
+        return 0;
+    }
 
     // first create the file mapping handle
     DWORD protection = (openMode & QIODevice::WriteOnly) ? PAGE_READWRITE : PAGE_READONLY;

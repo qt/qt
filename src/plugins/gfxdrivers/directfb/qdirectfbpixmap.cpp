@@ -403,9 +403,14 @@ QImage * QDirectFBPixmapData::buffer(DFBSurfaceLockFlags lockFlags)
 
 void QDirectFBPixmapData::invalidate()
 {
+    if (dfbSurface) {
+        screen->releaseDFBSurface(dfbSurface);
+        dfbSurface = 0;
+    }
     setSerialNumber(0);
     alpha = false;
     d = w = h = 0;
+    is_null = true;
     format = QImage::Format_Invalid;
 }
 

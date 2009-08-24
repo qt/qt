@@ -1994,9 +1994,12 @@ void QTextDocumentLayoutPrivate::positionFloat(QTextFrame *frame, QTextLine *cur
         }
     }
 
-    if (y + layoutStruct->frameY + fd->size.height > layoutStruct->pageBottom) {
+    bool frameSpansIntoNextPage = (y + layoutStruct->frameY + fd->size.height > layoutStruct->pageBottom);
+    if (frameSpansIntoNextPage && fd->size.height <= layoutStruct->pageHeight) {
         layoutStruct->newPage();
         y = layoutStruct->y;
+
+        frameSpansIntoNextPage = false;
     }
 
     y = findY(y, layoutStruct, fd->size.width);
@@ -2017,6 +2020,11 @@ void QTextDocumentLayoutPrivate::positionFloat(QTextFrame *frame, QTextLine *cur
 
 //     qDebug()<< "float positioned at " << fd->position.x << fd->position.y;
     fd->layoutDirty = false;
+
+    // If the frame is a table, then positioning it will affect the size if it covers more than
+    // one page, because of page breaks and repeating the header.
+    if (qobject_cast<QTextTable *>(frame) != 0)
+        fd->sizeDirty = frameSpansIntoNextPage;
 }
 
 QRectF QTextDocumentLayoutPrivate::layoutFrame(QTextFrame *f, int layoutFrom, int layoutTo, QFixed parentY)
@@ -2348,6 +2356,10 @@ void QTextDocumentLayoutPrivate::layoutFlow(QTextFrame::Iterator it, QLayoutStru
                     updateRect = layoutFrame(c, layoutFrom, layoutTo);
 
                 positionFloat(c);
+
+                // If the size was made dirty when the position was set, layout again
+                if (cd->sizeDirty)
+                    updateRect = layoutFrame(c, layoutFrom, layoutTo);
 
                 QRectF frameRect(cd->position.toPointF(), cd->size.toSizeF());
 

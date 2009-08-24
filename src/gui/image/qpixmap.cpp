@@ -832,20 +832,11 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
     if (QPixmapCache::find(key, *this))
         return true;
 
-    QImage image = QImageReader(fileName, format).read();
-    if (image.isNull())
-        return false;
-
-    QPixmap pm;
-    if (data->pixelType() == QPixmapData::BitmapType)
-        pm = QBitmap::fromImage(image, flags);
-    else
-        pm = fromImage(image, flags);
-    if (!pm.isNull()) {
-        *this = pm;
+    if (data->fromFile(fileName, format, flags)) {
         QPixmapCache::insert(key, *this);
         return true;
     }
+
     return false;
 }
 
@@ -870,21 +861,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
 
 bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, Qt::ImageConversionFlags flags)
 {
-    QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(buf), len);
-    QBuffer b(&a);
-    b.open(QIODevice::ReadOnly);
-
-    QImage image = QImageReader(&b, format).read();
-    QPixmap pm;
-    if (data->pixelType() == QPixmapData::BitmapType)
-        pm = QBitmap::fromImage(image, flags);
-    else
-        pm = fromImage(image, flags);
-    if (!pm.isNull()) {
-        *this = pm;
-        return true;
-    }
-    return false;
+    return data->fromData(buf, len, format, flags);
 }
 
 /*!

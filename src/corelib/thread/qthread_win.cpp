@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-//#define WINVER 0x0500
-#define _WIN32_WINNT 0x0400
-
-
 #include "qthread.h"
 #include "qthread_p.h"
 #include "qthreadstorage.h"

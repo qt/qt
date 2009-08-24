@@ -71,6 +71,7 @@ private slots:
     void wrapAtWordBoundaryOrAnywhere();
     void inlineImage();
     void clippedTableCell();
+    void floatingTablePageBreak();
 
 private:
     QTextDocument *doc;
@@ -249,6 +250,26 @@ void tst_QTextDocumentLayout::clippedTableCell()
     expected.save("expected.png");
     QCOMPARE(img, expected);
 }
+
+void tst_QTextDocumentLayout::floatingTablePageBreak()
+{
+    doc->clear();
+
+    QTextCursor cursor(doc);
+
+    QTextTableFormat tableFormat;
+    tableFormat.setPosition(QTextFrameFormat::FloatLeft);
+    QTextTable *table = cursor.insertTable(50, 1, tableFormat);
+
+    // Make height of document 2/3 of the table, fitting the table into two pages
+    QSizeF documentSize = doc->size();
+    documentSize.rheight() *= 2.0 / 3.0;
+
+    doc->setPageSize(documentSize);
+
+    QCOMPARE(doc->pageCount(), 2);
+}
+
 
 QTEST_MAIN(tst_QTextDocumentLayout)
 #include "tst_qtextdocumentlayout.moc"

@@ -389,20 +389,20 @@ void QBrush::init(const QColor &color, Qt::BrushStyle style)
 {
     switch(style) {
     case Qt::NoBrush:
-        d.data_ptr() = nullBrushInstance();
+        d.reset(nullBrushInstance());
         d->ref.ref();
         if (d->color != color) setColor(color);
         return;
     case Qt::TexturePattern:
-        d.data_ptr() = new QTexturedBrushData;
+        d.reset(new QTexturedBrushData);
         break;
     case Qt::LinearGradientPattern:
     case Qt::RadialGradientPattern:
     case Qt::ConicalGradientPattern:
-        d.data_ptr() = new QGradientBrushData;
+        d.reset(new QGradientBrushData);
         break;
     default:
-        d.data_ptr() = new QBrushData;
+        d.reset(new QBrushData);
         break;
     }
     d->ref = 1;
@@ -460,7 +460,7 @@ QBrush::QBrush(Qt::BrushStyle style)
     if (qbrush_check_type(style))
         init(Qt::black, style);
     else {
-        d.data_ptr() = nullBrushInstance();
+        d.reset(nullBrushInstance());
         d->ref.ref();
     }
 }
@@ -476,7 +476,7 @@ QBrush::QBrush(const QColor &color, Qt::BrushStyle style)
     if (qbrush_check_type(style))
         init(color, style);
     else {
-        d.data_ptr() = nullBrushInstance();
+        d.reset(nullBrushInstance());
         d->ref.ref();
     }
 }
@@ -493,7 +493,7 @@ QBrush::QBrush(Qt::GlobalColor color, Qt::BrushStyle style)
     if (qbrush_check_type(style))
         init(color, style);
     else {
-        d.data_ptr() = nullBrushInstance();
+        d.reset(nullBrushInstance());
         d->ref.ref();
     }
 }

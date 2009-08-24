@@ -12,7 +12,7 @@
 
 <build xmlns="http://symbian.com/xml/build"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://symbian.com/xml/build http://symbian.com/xml/build/1_0.xsd">
+       xsi:schemaLocation="http://symbian.com/xml/build http://symbian.com/xml/build/2_0.xsd">
 
 	<!-- Extension interfaces : replacements for Template Extension Makefiles -->
     

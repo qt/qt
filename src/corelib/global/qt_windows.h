@@ -53,13 +53,6 @@
 #endif
 #endif
 
-#if defined(Q_CC_MINGW)
-// mingw's windows.h does not set _WIN32_WINNT, resulting breaking compilation
-#ifndef WINVER
-#define WINVER 0x500
-#endif
-#endif
-
 #include <windows.h>
 
 #ifdef _WIN32_WCE

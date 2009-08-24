@@ -265,6 +265,15 @@ namespace QT_NAMESPACE {}
 #  define Q_OS_WIN
 #endif
 
+#if defined(Q_OS_WIN32)
+#  ifndef WINVER
+#    define WINVER 0x0500
+#  endif
+#  ifndef _WIN32_WINNT
+#    define _WIN32_WINNT 0x0500
+#  endif
+#endif
+
 #if defined(Q_OS_DARWIN)
 #  define Q_OS_MAC /* Q_OS_MAC is mostly for compatibility, but also more clear */
 #  define Q_OS_MACX /* Q_OS_MACX is only for compatibility.*/
@@ -1325,6 +1334,12 @@ class QDataStream;
 #    else
 #      define Q_GUI_EXPORT_INLINE inline
 #    endif
+#elif defined(Q_CC_RVCT)
+// we force RVCT not to export inlines by passing --visibility_inlines_hidden
+// so we need to just inline it, rather than exporting and inlining
+// note: this affects the contents of the DEF files (ie. these functions do not appear)
+#    define Q_CORE_EXPORT_INLINE inline
+#    define Q_GUI_EXPORT_INLINE inline
 #else
 #    define Q_CORE_EXPORT_INLINE Q_CORE_EXPORT inline
 #    define Q_GUI_EXPORT_INLINE Q_GUI_EXPORT inline

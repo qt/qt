@@ -64,6 +64,11 @@ namespace Phonon
             ::CoUninitialize();
         }
 
+        QMutex *Backend::directShowMutex()
+        {
+            return &qobject_cast<Backend*>(qt_plugin_instance())->m_directShowMutex;
+        }
+
         QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const QList<QVariant> &args)
         {
             switch (c)
@@ -131,6 +136,7 @@ namespace Phonon
 
         QList<int> Backend::objectDescriptionIndexes(Phonon::ObjectDescriptionType type) const
         {
+            QMutexLocker locker(&m_directShowMutex);
             QList<int> ret;
 
             switch(type)
@@ -204,6 +210,7 @@ namespace Phonon
 
         QHash<QByteArray, QVariant> Backend::objectDescriptionProperties(Phonon::ObjectDescriptionType type, int index) const
         {
+            QMutexLocker locker(&m_directShowMutex);
             QHash<QByteArray, QVariant> ret;
             switch (type)
             {

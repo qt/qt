@@ -66,8 +66,10 @@ static QString scriptsDir()
 
 //! [0]
 Window::Window(QWidget *parent)
-    : QWidget(parent),
-      m_debugger(0), m_debugWindow(0)
+    : QWidget(parent)
+#ifndef QT_NO_SCRIPTTOOLS
+      , m_debugger(0), m_debugWindow(0)
+#endif
 {
     m_env = new Environment(this);
     QObject::connect(m_env, SIGNAL(scriptError(QScriptValue)),

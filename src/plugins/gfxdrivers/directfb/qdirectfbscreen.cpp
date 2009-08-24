@@ -150,7 +150,7 @@ QDirectFBScreenPrivate::~QDirectFBScreenPrivate()
         dfb->Release(dfb);
 }
 
-IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage::Format format, SurfaceCreationOptions options)
+IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage::Format format, SurfaceCreationOptions options, DFBResult *resultPtr)
 {
     if (image.isNull()) // assert?
         return 0;
@@ -159,7 +159,7 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage:
         format = QDirectFBPixmapData::hasAlphaChannel(image) ? d_ptr->alphaPixmapFormat : pixelFormat();
     }
     if (image.format() != format) {
-        return createDFBSurface(image.convertToFormat(format), format, options | NoPreallocated);
+        return createDFBSurface(image.convertToFormat(format), format, options | NoPreallocated, resultPtr);
     }
 
     DFBSurfaceDescription description;
@@ -179,23 +179,27 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage:
         description.preallocated[1].pitch = 0;
     }
 #endif
-    IDirectFBSurface *surface = createDFBSurface(description, options);
+    DFBResult result;
+    IDirectFBSurface *surface = createDFBSurface(description, options, &result);
+    if (resultPtr)
+        *resultPtr = result;
     if (!surface) {
-        qWarning("Couldn't create surface createDFBSurface(QImage, QImage::Format, SurfaceCreationOptions): error 1");
+        DirectFBError("Couldn't create surface createDFBSurface(QImage, QImage::Format, SurfaceCreationOptions)", result);
         return 0;
     }
     if (doMemCopy) {
-        int bpl;
-        uchar *mem = QDirectFBScreen::lockSurface(surface, DSLF_WRITE, &bpl);
+        int bplDFB;
+        uchar *mem = QDirectFBScreen::lockSurface(surface, DSLF_WRITE, &bplDFB);
         if (mem) {
-            const int h = image.height();
-            const int w = image.bytesPerLine();
-            // ### Could probably do a single memcpy here since I know
-            // ### image.bytesPerLine() == bpl == (image.width() *
-            // ### image.depth() / 8)
-            for (int i = 0; i < h; ++i) {
-                memcpy(mem, image.scanLine(i), w);
-                mem += bpl;
+            const int height = image.height();
+            const int bplQt = image.bytesPerLine();
+            if (bplQt == bplDFB && bplQt == (image.width() * image.depth() / 8)) {
+                memcpy(mem, image.bits(), image.numBytes());
+            } else {
+                for (int i=0; i<height; ++i) {
+                    memcpy(mem, image.scanLine(i), bplQt);
+                    mem += bplDFB;
+                }
             }
             surface->Unlock(surface);
         }
@@ -209,15 +213,14 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage:
 
 IDirectFBSurface *QDirectFBScreen::copyDFBSurface(IDirectFBSurface *src,
                                                   QImage::Format format,
-                                                  SurfaceCreationOptions options)
+                                                  SurfaceCreationOptions options,
+                                                  DFBResult *result)
 {
     Q_ASSERT(src);
     QSize size;
     src->GetSize(src, &size.rwidth(), &size.rheight());
-    IDirectFBSurface *surface = createDFBSurface(size, format, options);
-    DFBSurfacePixelFormat dspf;
-    src->GetPixelFormat(src, &dspf);
-    DFBSurfaceBlittingFlags flags = QDirectFBScreen::hasAlpha(dspf)
+    IDirectFBSurface *surface = createDFBSurface(size, format, options, result);
+    DFBSurfaceBlittingFlags flags = QDirectFBScreen::hasAlphaChannel(surface)
                                     ? DSBLIT_BLEND_ALPHACHANNEL
                                     : DSBLIT_NOFX;
     if (flags & DSBLIT_BLEND_ALPHACHANNEL)
@@ -233,7 +236,8 @@ IDirectFBSurface *QDirectFBScreen::copyDFBSurface(IDirectFBSurface *src,
 
 IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QSize &size,
                                                     QImage::Format format,
-                                                    SurfaceCreationOptions options)
+                                                    SurfaceCreationOptions options,
+                                                    DFBResult *result)
 {
     DFBSurfaceDescription desc;
     memset(&desc, 0, sizeof(DFBSurfaceDescription));
@@ -242,12 +246,14 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QSize &size,
         return 0;
     desc.width = size.width();
     desc.height = size.height();
-    return createDFBSurface(desc, options);
+    return createDFBSurface(desc, options, result);
 }
 
-IDirectFBSurface *QDirectFBScreen::createDFBSurface(DFBSurfaceDescription desc, SurfaceCreationOptions options)
+IDirectFBSurface *QDirectFBScreen::createDFBSurface(DFBSurfaceDescription desc, SurfaceCreationOptions options, DFBResult *resultPtr)
 {
-    DFBResult result = DFB_OK;
+    DFBResult tmp;
+    DFBResult &result = (resultPtr ? *resultPtr : tmp);
+    result = DFB_OK;
     IDirectFBSurface *newSurface = 0;
 
     if (!d_ptr->dfb) {
@@ -570,13 +576,14 @@ void QDirectFBScreenCursor::set(const QImage &image, int hotx, int hoty)
         cursor = image.convertToFormat(screen->alphaPixmapFormat());
         size = cursor.size();
         hotspot = QPoint(hotx, hoty);
+        DFBResult result = DFB_OK;
         IDirectFBSurface *surface = screen->createDFBSurface(cursor, screen->alphaPixmapFormat(),
-                                                             QDirectFBScreen::DontTrackSurface);
+                                                             QDirectFBScreen::DontTrackSurface, &result);
         if (!surface) {
-            qWarning("QDirectFBScreenCursor::set: Unable to create surface");
+            DirectFBError("QDirectFBScreenCursor::set: Unable to create surface", result);
             return;
         }
-        DFBResult result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
+        result = layer->SetCooperativeLevel(layer, DLSCL_ADMINISTRATIVE);
         if (result != DFB_OK) {
             DirectFBError("QDirectFBScreenCursor::show: "
                           "Unable to set cooperative level", result);
@@ -934,7 +941,7 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     }
 
     // We don't track the primary surface as it's released in disconnect
-    d_ptr->primarySurface = createDFBSurface(description, DontTrackSurface);
+    d_ptr->primarySurface = createDFBSurface(description, DontTrackSurface, &result);
     if (!d_ptr->primarySurface) {
         DirectFBError("QDirectFBScreen: error creating primary surface",
                       result);
@@ -945,7 +952,11 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 #else
     description.flags = DSDESC_WIDTH|DSDESC_HEIGHT;
     description.width = description.height = 1;
-    surface = createDFBSurface(description, DontTrackSurface);
+    surface = createDFBSurface(description, DontTrackSurface, &result);
+    if (!surface) {
+        DirectFBError("QDirectFBScreen: error creating surface", result);
+        return false;
+    }
 #endif
     // Work out what format we're going to use for surfaces with an alpha channel
     QImage::Format pixelFormat = QDirectFBScreen::getImageFormat(surface);

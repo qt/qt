@@ -532,7 +532,7 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
     d->unlock();
     bool release;
     IDirectFBSurface *imgSurface = d->getSurface(image, &release);
-    d->prepareForBlit(QDirectFBScreen::hasAlpha(imgSurface));
+    d->prepareForBlit(QDirectFBScreen::hasAlphaChannel(imgSurface));
     CLIPPED_PAINT(d->blit(r, imgSurface, sr));
     if (release) {
 #if (Q_DIRECTFB_VERSION >= 0x010000)
@@ -1133,7 +1133,7 @@ IDirectFBSurface *SurfaceCache::getSurface(const uint *buf, int size)
     clear();
 
     const DFBSurfaceDescription description = QDirectFBScreen::getSurfaceDescription(buf, size);
-    surface = QDirectFBScreen::instance()->createDFBSurface(description, QDirectFBScreen::TrackSurface);
+    surface = QDirectFBScreen::instance()->createDFBSurface(description, QDirectFBScreen::TrackSurface, 0);
     if (!surface)
         qWarning("QDirectFBPaintEngine: SurfaceCache: Unable to create surface");
 
