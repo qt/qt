@@ -28,6 +28,8 @@
 
 namespace JSC {
 
+    QT_USE_NAMESPACE
+
     class SourceCode;
     class Debugger;
 

@@ -63,8 +63,6 @@
 #include "JSGlobalObject.h"
 #include "JSValue.h"
 
-QT_BEGIN_NAMESPACE
-
 namespace JSC
 {
     class ExecState;
@@ -74,6 +72,8 @@ namespace JSC
     class UString;
 }
 
+
+QT_BEGIN_NAMESPACE
 
 class QString;
 class QStringList;

@@ -43,13 +43,14 @@
 #include "qscriptobject_p.h"
 #include "private/qobject_p.h"
 
-QT_BEGIN_NAMESPACE
-
 namespace JSC
 {
+//QT_USE_NAMESPACE
 ASSERT_CLASS_FITS_IN_CELL(QScriptObject);
 ASSERT_CLASS_FITS_IN_CELL(QScriptObjectPrototype);
 }
+
+QT_BEGIN_NAMESPACE
 
 // masquerading as JSC::JSObject
 const JSC::ClassInfo QScriptObject::info = { "Object", 0, 0, 0 };
