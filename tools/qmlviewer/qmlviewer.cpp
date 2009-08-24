@@ -191,6 +191,19 @@ private:
     QString customargs;
 };
 
+class ConfiguredNetworkAccessManager : public QNetworkAccessManager {
+public:
+    ConfiguredNetworkAccessManager() { }
+
+    QNetworkReply *createRequest (Operation op, const QNetworkRequest &req, QIODevice * outgoingData)
+    {
+        QNetworkRequest request = req;
+        request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
+        request.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
+        return QNetworkAccessManager::createRequest(op,request,outgoingData);
+    }
+};
+
 QString QmlViewer::getVideoFileName()
 {
     QString title = convertAvailable || ffmpegAvailable ? tr("Save Video File") : tr("Save PNG Frames");
@@ -240,6 +253,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
     canvas->setContentResizable(!skin || !scaleSkin);
+    canvas->engine()->setNetworkAccessManager(new ConfiguredNetworkAccessManager);
     canvas->setFocus();
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
@@ -966,7 +980,7 @@ void QmlViewer::setupProxy()
     else
         proxyFactory->unsetHttpProxy();
     nam->setProxyFactory(proxyFactory);
- }
+}
 
 void QmlViewer::setNetworkCacheSize(int size)
 {

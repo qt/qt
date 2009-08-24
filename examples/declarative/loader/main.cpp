@@ -10,8 +10,11 @@
 #include <QDebug>
 #include <QmlContext>
 #include <QmlComponent>
+#include <QmlEngine>
 #include <qfxview.h>
 #include <QDebug>
+#include <QNetworkDiskCache>
+#include <QNetworkAccessManager>
 
 QFxView *canvas = 0;
 
@@ -148,6 +151,24 @@ public slots:
     }
 };
 
+class ConfiguredNetworkAccessManager : public QNetworkAccessManager {
+public:
+    ConfiguredNetworkAccessManager()
+    {
+        QNetworkDiskCache *cache = new QNetworkDiskCache;
+        cache->setCacheDirectory(QDir::tempPath()+QLatin1String("/qml-loader-network-cache"));
+        setCache(cache);
+    }
+
+    QNetworkReply *createRequest (Operation op, const QNetworkRequest &req, QIODevice * outgoingData)
+    {
+        QNetworkRequest request = req;
+        request.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
+        request.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
+        return QNetworkAccessManager::createRequest(op,request,outgoingData);
+    }
+};
+
 
 int main(int argc, char *argv[])
 {
@@ -162,6 +183,8 @@ int main(int argc, char *argv[])
 
     canvas = new QFxView;
     canvas->setFocusPolicy(Qt::StrongFocus);
+    canvas->engine()->setNetworkAccessManager(new ConfiguredNetworkAccessManager);
+
     mw->setCentralWidget(canvas);
 
     QMenuBar *mb = mw->menuBar();

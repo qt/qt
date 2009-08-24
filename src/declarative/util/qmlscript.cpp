@@ -151,7 +151,6 @@ void QmlScript::setSource(const QUrl &source)
 #endif
     {
         QNetworkRequest req(d->url);
-        req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
         d->reply = qmlEngine(this)->networkAccessManager()->get(req);
         QObject::connect(d->reply, SIGNAL(finished()),
                          this, SLOT(replyFinished()));
