@@ -93,6 +93,9 @@ void QMapData::continueFreeData(int offset)
     could be several pointers to this node on different levels.
     \a offset is an amount of bytes that needs to reserved just before the
     QMapData::Node structure.
+
+    \internal
+    \since 4.6
 */
 QMapData::Node *QMapData::node_create(Node *update[], int offset)
 {
@@ -128,7 +131,6 @@ QMapData::Node *QMapData::node_create(Node *update[], int offset)
         update[i]->forward[i] = abstractNode;
         update[i] = abstractNode;
     }
-    // update[level+1]=reinterpret_cast<Node *>(this);
     ++size;
     return abstractNode;
 }
@@ -191,7 +193,7 @@ void QMapData::dump()
             update[i] = node->forward[i];
         }
         for (int j = level + 1; j <= topLevel; ++j)
-            output[j] += QString("---------------");
+            output[j] += QLatin1String("---------------");
         node = node->forward[0];
     }
 
