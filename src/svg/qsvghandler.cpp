@@ -3012,16 +3012,16 @@ static QSvgNode *createSvgNode(QSvgNode *parent,
         node->setHeight(int(height), type == QSvgHandler::LT_PERCENT);
     }
 
-
+    QStringList viewBoxValues;
     if (!viewBoxStr.isEmpty()) {
-        QStringList lst = viewBoxStr.split(QLatin1Char(' '), QString::SkipEmptyParts);
-        if (lst.count() != 4)
-            lst = viewBoxStr.split(QLatin1Char(','), QString::SkipEmptyParts);
-        QString xStr      = lst.at(0).trimmed();
-        QString yStr      = lst.at(1).trimmed();
-        QString widthStr  = lst.at(2).trimmed();
-        QString heightStr = lst.at(3).trimmed();
-
+        viewBoxStr = viewBoxStr.replace(QLatin1Char(' '), QLatin1Char(','));
+        viewBoxValues = viewBoxStr.split(QLatin1Char(','), QString::SkipEmptyParts);
+    }
+    if (viewBoxValues.count() == 4) {
+        QString xStr      = viewBoxValues.at(0).trimmed();
+        QString yStr      = viewBoxValues.at(1).trimmed();
+        QString widthStr  = viewBoxValues.at(2).trimmed();
+        QString heightStr = viewBoxValues.at(3).trimmed();
 
         QSvgHandler::LengthType lt;
         qreal x = parseLength(xStr, lt, handler);
