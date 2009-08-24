@@ -63,6 +63,9 @@ private slots:
     void split_stdw() const;
     void split_stdw_data() const { return split_data(); }
 
+    void split_ba() const;
+    void split_ba_data() const { return split_data(); }
+
 private:
     static QStringList populateList(const int count, const QString &unit);
     static QString populateString(const int count, const QString &unit);
@@ -171,6 +174,17 @@ void tst_QStringList::split_stdw() const
              std::getline(split, each, split_char);
              token.push_back(each))
             ;
+    }
+}
+
+void tst_QStringList::split_ba() const
+{
+    QFETCH(QString, input);
+    const char splitChar = ':';
+    QByteArray ba = input.toLatin1();
+
+    QBENCHMARK {
+        ba.split(splitChar);
     }
 }
 
