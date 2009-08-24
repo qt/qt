@@ -59,7 +59,7 @@ public:
         attachedProperties.remove(parent());
     }
 
-    Q_PROPERTY(QFxListView *view READ view)
+    Q_PROPERTY(QFxListView *view READ view CONSTANT)
     QFxListView *view() { return m_view; }
 
     Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
