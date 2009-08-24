@@ -217,7 +217,7 @@ namespace QPatternist
             Depth                           m_depth;
 
             /**
-             * Technically it is sufficient with 8 bits. However, at least MSVC
+             * Technically it is sufficient with 7 bits. However, at least MSVC
              * 2005 miscompiles it such that QXmlNodeModelIndex::Text becomes
              * -64 instead of 64 with hilarious crashes as result.
              *
