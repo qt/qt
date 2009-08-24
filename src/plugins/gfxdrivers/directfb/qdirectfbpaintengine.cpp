@@ -1133,7 +1133,7 @@ IDirectFBSurface *SurfaceCache::getSurface(const uint *buf, int size)
     clear();
 
     const DFBSurfaceDescription description = QDirectFBScreen::getSurfaceDescription(buf, size);
-    surface = QDirectFBScreen::instance()->createDFBSurface(description, QDirectFBScreen::TrackSurface);
+    surface = QDirectFBScreen::instance()->createDFBSurface(description, QDirectFBScreen::TrackSurface, 0);
     if (!surface)
         qWarning("QDirectFBPaintEngine: SurfaceCache: Unable to create surface");
 

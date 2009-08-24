@@ -149,13 +149,16 @@ public:
     Q_DECLARE_FLAGS(SurfaceCreationOptions, SurfaceCreationOption);
     IDirectFBSurface *createDFBSurface(const QImage &image,
                                        QImage::Format format,
-                                       SurfaceCreationOptions options);
+                                       SurfaceCreationOptions options,
+                                       DFBResult *result = 0);
     IDirectFBSurface *createDFBSurface(const QSize &size,
                                        QImage::Format format,
-                                       SurfaceCreationOptions options);
+                                       SurfaceCreationOptions options,
+                                       DFBResult *result = 0);
     IDirectFBSurface *copyDFBSurface(IDirectFBSurface *src,
                                      QImage::Format format,
-                                     SurfaceCreationOptions options);
+                                     SurfaceCreationOptions options,
+                                     DFBResult *result = 0);
     void flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags flipFlags,
                      const QRegion &region, const QPoint &offset);
     void releaseDFBSurface(IDirectFBSurface *surface);
@@ -182,7 +185,8 @@ public:
     static uchar *lockSurface(IDirectFBSurface *surface, uint flags, int *bpl = 0);
 private:
     IDirectFBSurface *createDFBSurface(DFBSurfaceDescription desc,
-                                       SurfaceCreationOptions options);
+                                       SurfaceCreationOptions options,
+                                       DFBResult *result);
     QDirectFBScreenPrivate *d_ptr;
     friend class SurfaceCache;
 };
