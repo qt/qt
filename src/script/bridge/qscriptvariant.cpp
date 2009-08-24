@@ -49,12 +49,13 @@
 #include "PrototypeFunction.h"
 #include "JSString.h"
 
-QT_BEGIN_NAMESPACE
-
 namespace JSC
 {
+QT_USE_NAMESPACE
 ASSERT_CLASS_FITS_IN_CELL(QScript::QVariantPrototype);
 }
+
+QT_BEGIN_NAMESPACE
 
 namespace QScript
 {

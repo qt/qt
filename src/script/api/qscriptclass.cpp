@@ -42,8 +42,6 @@
 #include "qscriptclass.h"
 #include "qscriptstring.h"
 
-QT_BEGIN_NAMESPACE
-
 /*!
   \since 4.4
   \class QScriptClass
@@ -130,6 +128,8 @@ QT_BEGIN_NAMESPACE
 
     \sa queryProperty()
 */
+
+QT_BEGIN_NAMESPACE
 
 class QScriptClassPrivate
 {

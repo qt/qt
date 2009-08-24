@@ -61,16 +61,17 @@
 #include "RegExpObject.h"
 #include "RegExpConstructor.h"
 
-QT_BEGIN_NAMESPACE
-
 namespace JSC
 {
+QT_USE_NAMESPACE
 ASSERT_CLASS_FITS_IN_CELL(QScript::QObjectPrototype);
 ASSERT_CLASS_FITS_IN_CELL(QScript::QMetaObjectWrapperObject);
 ASSERT_CLASS_FITS_IN_CELL(QScript::QMetaObjectPrototype);
 ASSERT_CLASS_FITS_IN_CELL(QScript::QtFunction);
 ASSERT_CLASS_FITS_IN_CELL(QScript::QtPropertyFunction);
 }
+
+QT_BEGIN_NAMESPACE
 
 namespace QScript
 {
@@ -2210,12 +2211,12 @@ void QObjectData::registerWrapper(QScriptObject *wrapper,
 
 } // namespace QScript
 
+QT_END_NAMESPACE
+
 namespace JSC
 {
     ASSERT_CLASS_FITS_IN_CELL(QScript::QtFunction);
 }
-
-QT_END_NAMESPACE
 
 #include "moc_qscriptqobject_p.cpp"
 

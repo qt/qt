@@ -71,8 +71,6 @@
 #include "bridge/qscriptvariant_p.h"
 #include "bridge/qscriptqobject_p.h"
 
-QT_BEGIN_NAMESPACE
-
 /*!
   \since 4.3
   \class QScriptValue
@@ -201,6 +199,8 @@ QT_BEGIN_NAMESPACE
 
 #include <QtCore/qnumeric.h>
 #include <math.h>
+
+QT_BEGIN_NAMESPACE
 
 namespace QScript
 {

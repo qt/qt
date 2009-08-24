@@ -59,6 +59,8 @@ ASSERT_CLASS_FITS_IN_CELL(QScript::FunctionWrapper);
 ASSERT_CLASS_FITS_IN_CELL(QScript::FunctionWithArgWrapper);
 }
 
+QT_BEGIN_NAMESPACE
+
 namespace QScript
 {
 

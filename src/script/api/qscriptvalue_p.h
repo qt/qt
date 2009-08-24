@@ -55,10 +55,10 @@
 
 #include <QtCore/qobjectdefs.h>
 
-QT_BEGIN_NAMESPACE
-
 #include "wtf/Platform.h"
 #include "JSValue.h"
+
+QT_BEGIN_NAMESPACE
 
 class QString;
 class QScriptEnginePrivate;

@@ -45,15 +45,16 @@
 #include "../api/qscriptengine.h"
 #include "../api/qscriptengine_p.h"
 
-QT_BEGIN_NAMESPACE
-
 namespace JSC
 {
+QT_USE_NAMESPACE
 
 ASSERT_CLASS_FITS_IN_CELL(QScript::GlobalObject);
 ASSERT_CLASS_FITS_IN_CELL(QScript::OriginalGlobalObjectProxy);
 
 } // namespace JSC
+
+QT_BEGIN_NAMESPACE
 
 namespace QScript
 {
