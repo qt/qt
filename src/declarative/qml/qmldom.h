@@ -100,7 +100,6 @@ public:
     bool isDefaultProperty() const;
 
     QmlDomValue value() const;
-    void setValue(const QmlDomValue &);
 
     int position() const;
     int length() const;
@@ -156,20 +155,15 @@ public:
     int objectTypeMinorVersion() const;
 
     QString objectId() const;
-    void setObjectId(const QByteArray &);
 
     QList<QmlDomProperty> properties() const;
     QmlDomProperty property(const QByteArray &) const;
-
-    void removeProperty(const QByteArray &);
-    void addProperty(const QByteArray &, const QmlDomValue &);
 
     QList<QmlDomDynamicProperty> dynamicProperties() const;
     QmlDomDynamicProperty dynamicProperty(const QByteArray &) const;
 
     bool isCustomType() const;
     QByteArray customTypeData() const;
-    void setCustomTypeData(const QByteArray &);
 
     bool isComponent() const;
     QmlDomComponent toComponent() const;
@@ -197,7 +191,6 @@ public:
     QmlDomValueLiteral &operator=(const QmlDomValueLiteral &);
 
     QString literal() const;
-    void setLiteral(const QString &);
 
 private:
     friend class QmlDomValue;
@@ -213,7 +206,6 @@ public:
     QmlDomValueBinding &operator=(const QmlDomValueBinding &);
 
     QString binding() const;
-    void setBinding(const QString &);
 
 private:
     friend class QmlDomValue;
@@ -229,7 +221,6 @@ public:
     QmlDomValueValueSource &operator=(const QmlDomValueValueSource &);
 
     QmlDomObject object() const;
-    void setObject(const QmlDomObject &);
 
 private:
     friend class QmlDomValue;
@@ -245,7 +236,6 @@ public:
     QmlDomComponent &operator=(const QmlDomComponent &);
 
     QmlDomObject componentRoot() const;
-    void setComponentRoot(const QmlDomObject &);
 };
 
 class Q_DECLARATIVE_EXPORT QmlDomValue
@@ -298,7 +288,6 @@ public:
     QmlDomList &operator=(const QmlDomList &);
 
     QList<QmlDomValue> values() const;
-    void setValues(const QList<QmlDomValue> &);
 
     int position() const;
     int length() const;
