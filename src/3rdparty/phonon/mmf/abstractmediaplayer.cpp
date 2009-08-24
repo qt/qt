@@ -374,7 +374,7 @@ Phonon::State MMF::AbstractMediaPlayer::phononState(PrivateState state)
 {
     const Phonon::State phononState =
         GroundState == state
-        ?    Phonon::StoppedState
+        ?    Phonon::LoadingState
         :    static_cast<Phonon::State>(state);
 
     return phononState;

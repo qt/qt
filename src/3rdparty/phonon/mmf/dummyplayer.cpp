@@ -73,7 +73,7 @@ bool MMF::DummyPlayer::isSeekable() const
 
 Phonon::State MMF::DummyPlayer::state() const
 {
-    return Phonon::StoppedState;
+    return Phonon::LoadingState;
 }
 
 qint64 MMF::DummyPlayer::currentTime() const

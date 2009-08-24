@@ -17,9 +17,6 @@ Do we need to connect up the TRACE_* macros to another logging output (e.g. file
 * Fix position slider in audio test app (musicplayer.exe)
 The slider is enabled when playing, but does not move and cannot be dragged.  This means that we can't easily test seeking.
 
-* Fix track list in audio test app (musicplayer.exe)
-After loading a single clip, we get two entries in the list box: the first is blank and the second has the name of the clip we just loaded.  However, clicking on the first (blank) opens the clip, while clicking on the second (correct filename) has no effect.
-
 * Implement audio effects
 
 * Support for network streaming playback
@@ -41,18 +38,7 @@ This should probably be left for now, particularly until audio effects have been
 * Namespace macros
 For consistency with other backends, the code should be wrapped in QT_BEGIN_NAMESPACE / QT_END_NAMESPACE macros.
 
-
-
-
-
 * Fix mediaplayer.exe UI
 On Windows, the mediaplayer UI has a drop-down menu (for loading clips etc), start/stop buttons, a position slider and a volume slider.  On S60, we just get a blank screen and two blank softkeys, so no clip can be loaded (unless main.cpp is hacked by adding a hard-coded path).
-
-
-
-
-
-
-
 
 
