@@ -80,7 +80,7 @@ Item {
     function remove() {
         removeContactQuery.exec();
     }
-    VerticalPositioner {
+    Column {
         id: layout
         width: contents.width
         height:contents.height

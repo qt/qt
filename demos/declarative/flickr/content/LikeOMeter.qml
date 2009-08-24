@@ -5,7 +5,7 @@ Item {
 
     property int rating: 2
 
-    HorizontalPositioner {
+    Row {
         Star {
             rating: 0
             onClicked: { Container.rating = rating }

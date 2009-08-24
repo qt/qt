@@ -72,7 +72,7 @@ struct ListModelData
     \qmlclass ListModel 
     \brief The ListModel element defines a free-form list data source.
 
-    The ListModel is a simple hierarchy of items containing data roles.
+    The ListModel is a simple hierarchy of elements containing data roles.
     For example:
 
     \code
@@ -93,8 +93,8 @@ struct ListModelData
     }
     \endcode
 
-    Item roles (properties) must begin with a lower-case letter.  The above example defines a
-    ListModel containing three items, with the roles "name" and "cost".
+    Roles (properties) must begin with a lower-case letter.  The above example defines a
+    ListModel containing three elements, with the roles "name" and "cost".
 
     The defined model can be used in views such as ListView:
     \code
@@ -153,7 +153,7 @@ struct ListModelData
             width: 200; height: 50
             Text { id: Name; text: name }
             Text { text: '$'+cost; anchors.right: parent.right }
-            HorizontalPositioner {
+            Row {
                 anchors.top: Name.bottom
                 spacing: 5
                 Text { text: "Attributes:" }

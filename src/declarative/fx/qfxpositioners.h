@@ -111,35 +111,35 @@ private:
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxBasePositioner)
 };
 
-class Q_DECLARATIVE_EXPORT QFxVerticalPositioner : public QFxBasePositioner
+class Q_DECLARATIVE_EXPORT QFxColumn : public QFxBasePositioner
 {
     Q_OBJECT
 public:
-    QFxVerticalPositioner(QFxItem *parent=0);
+    QFxColumn(QFxItem *parent=0);
 protected Q_SLOTS:
     virtual void doPositioning();
 private:
-    Q_DISABLE_COPY(QFxVerticalPositioner)
+    Q_DISABLE_COPY(QFxColumn)
 };
 
-class Q_DECLARATIVE_EXPORT QFxHorizontalPositioner: public QFxBasePositioner
+class Q_DECLARATIVE_EXPORT QFxRow: public QFxBasePositioner
 {
     Q_OBJECT
 public:
-    QFxHorizontalPositioner(QFxItem *parent=0);
+    QFxRow(QFxItem *parent=0);
 protected Q_SLOTS:
     virtual void doPositioning();
 private:
-    Q_DISABLE_COPY(QFxHorizontalPositioner)
+    Q_DISABLE_COPY(QFxRow)
 };
 
-class Q_DECLARATIVE_EXPORT QFxGridPositioner : public QFxBasePositioner
+class Q_DECLARATIVE_EXPORT QFxGrid : public QFxBasePositioner
 {
     Q_OBJECT
     Q_PROPERTY(int rows READ rows WRITE setRows)
     Q_PROPERTY(int columns READ columns WRITE setcolumns)
 public:
-    QFxGridPositioner(QFxItem *parent=0);
+    QFxGrid(QFxItem *parent=0);
 
     int rows() const {return _rows;}
     void setRows(const int rows){_rows = rows;}
@@ -152,14 +152,14 @@ protected Q_SLOTS:
 private:
     int _rows;
     int _columns;
-    Q_DISABLE_COPY(QFxGridPositioner)
+    Q_DISABLE_COPY(QFxGrid)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxVerticalPositioner)
-QML_DECLARE_TYPE(QFxHorizontalPositioner)
-QML_DECLARE_TYPE(QFxGridPositioner)
+QML_DECLARE_TYPE(QFxColumn)
+QML_DECLARE_TYPE(QFxRow)
+QML_DECLARE_TYPE(QFxGrid)
 
 QT_END_HEADER
 

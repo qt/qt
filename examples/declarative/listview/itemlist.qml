@@ -40,7 +40,7 @@ Rectangle {
         height: 30
         width: 240
 
-        HorizontalPositioner {
+        Row {
             anchors.centerIn: parent
             spacing: 20
             Repeater {

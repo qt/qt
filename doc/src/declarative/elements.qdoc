@@ -132,9 +132,9 @@ The following table lists the QML elements provided by the Qt Declarative module
 
 \o
 \list
-\o \l VerticalPositioner
-\o \l HorizontalPositioner
-\o \l GridPositioner
+\o \l Column
+\o \l Row
+\o \l Grid
 \endlist
 
 \o

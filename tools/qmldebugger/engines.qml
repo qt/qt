@@ -6,7 +6,7 @@ Item {
     signal engineClicked(int id)
     signal refreshEngines()
 
-    HorizontalPositioner {
+    Row {
         anchors.fill: parent
         Repeater {
             dataSource: engines

@@ -13,7 +13,7 @@ Rectangle {
         y: 30
         anchors.horizontalCenter: Page.horizontalCenter
     }
-    GridPositioner {
+    Grid {
         id: ColorPicker
         x: 0
         anchors.bottom: Page.bottom

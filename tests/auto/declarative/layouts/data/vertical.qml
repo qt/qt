@@ -3,7 +3,7 @@ import Qt 4.6
 Item {
     width: 640
     height: 480
-    VerticalPositioner {
+    Column {
         Rect {
             id: one
             color: "red"

@@ -5,7 +5,7 @@ Rectangle {
     width: layout.width
     height: layout.height
     color: "white"
-    VerticalPositioner {
+    Column {
         id: layout
         width: childrenRect.width
         GroupBox {

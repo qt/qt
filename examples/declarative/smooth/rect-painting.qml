@@ -12,7 +12,7 @@ Rectangle {
         color: "#eeeeee"
     }
 
-    GridPositioner {
+    Grid {
         anchors.centerIn: parent
         columns: 8; rows:4; spacing: 30
 

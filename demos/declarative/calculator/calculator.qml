@@ -7,7 +7,7 @@ Rectangle {
     SystemPalette { id: Palette; colorGroup: Qt.Active }
     Script { source: "calculator.js" }
 
-    VerticalPositioner {
+    Column {
         x: 2; spacing: 10;
 
         Rectangle {
@@ -56,7 +56,7 @@ Rectangle {
                 CalcButton { operation: "C"; id: C; width: 76 }
                 CalcButton { operation: "AC"; id: AC; x: 78; width: 76 }
 
-                GridPositioner {
+                Grid {
                     id: NumKeypad; y: 32; spacing: 2; columns: 3
 
                     CalcButton { operation: "7" }
@@ -70,7 +70,7 @@ Rectangle {
                     CalcButton { operation: "3" }
                 }
 
-                HorizontalPositioner {
+                Row {
                     y: 128; spacing: 2
 
                     CalcButton { operation: "0"; width: 50 }
@@ -78,7 +78,7 @@ Rectangle {
                     CalcButton { operation: "="; id: Equals; x: 77;  width: 102 }
                 }
 
-                VerticalPositioner {
+                Column {
                     id: SimpleOperations
                     x: 156; y: 0; spacing: 2
 
@@ -89,7 +89,7 @@ Rectangle {
                 }
             }
 
-            GridPositioner {
+            Grid {
                 id: AdvancedButtons
                 x: 350; spacing: 2; columns: 2; opacity: 0
 
