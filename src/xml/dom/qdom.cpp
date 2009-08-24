@@ -56,6 +56,7 @@
 #include <qxml.h>
 #include <qvariant.h>
 #include <qmap.h>
+#include <qshareddata.h>
 #include <qdebug.h>
 #include <stdio.h>
 
@@ -124,7 +125,8 @@ static void qt_split_namespace(QString& prefix, QString& name, const QString& qN
 class QDomImplementationPrivate
 {
 public:
-    QDomImplementationPrivate() { ref = 1; }
+    inline QDomImplementationPrivate() {}
+
     QDomImplementationPrivate* clone();
     QAtomicInt ref;
     static QDomImplementation::InvalidDataPolicy invalidDataPolicy;
@@ -537,8 +539,8 @@ public:
     void clear();
 
     // Variables
-    QScopedSharedPointer<QDomImplementationPrivate> impl;
-    QScopedSharedPointer<QDomDocumentTypePrivate> type;
+    QExplicitlySharedDataPointer<QDomImplementationPrivate> impl;
+    QExplicitlySharedDataPointer<QDomDocumentTypePrivate> type;
 
     void saveDocument(QTextStream& stream, const int indent, QDomNode::EncodingPolicy encUsed) const;
 
@@ -864,10 +866,7 @@ static QString fixedSystemLiteral(const QString &data, bool *ok)
 
 QDomImplementationPrivate* QDomImplementationPrivate::clone()
 {
-    QDomImplementationPrivate* p = new QDomImplementationPrivate;
-    // We are not interested in this node
-    p->ref.deref();
-    return p;
+    return new QDomImplementationPrivate;
 }
 
 /**************************************************************
@@ -6149,20 +6148,22 @@ void QDomProcessingInstruction::setData(const QString& d)
 
 QDomDocumentPrivate::QDomDocumentPrivate()
     : QDomNodePrivate(0),
+      impl(new QDomImplementationPrivate),
       nodeListTime(1)
 {
-    impl.reset(new QDomImplementationPrivate);
-    type.reset(new QDomDocumentTypePrivate(this, this));
+    type = new QDomDocumentTypePrivate(this, this);
+    type->ref.deref();
 
     name = QLatin1String("#document");
 }
 
 QDomDocumentPrivate::QDomDocumentPrivate(const QString& aname)
     : QDomNodePrivate(0),
+      impl(new QDomImplementationPrivate),
       nodeListTime(1)
 {
-    impl.reset(new QDomImplementationPrivate);
-    type.reset(new QDomDocumentTypePrivate(this, this));
+    type = new QDomDocumentTypePrivate(this, this);
+    type->ref.deref();
     type->name = aname;
 
     name = QLatin1String("#document");
@@ -6170,13 +6171,14 @@ QDomDocumentPrivate::QDomDocumentPrivate(const QString& aname)
 
 QDomDocumentPrivate::QDomDocumentPrivate(QDomDocumentTypePrivate* dt)
     : QDomNodePrivate(0),
+      impl(new QDomImplementationPrivate),
       nodeListTime(1)
 {
-    impl.reset(new QDomImplementationPrivate);
     if (dt != 0) {
-        type.assign(dt);
+        type = dt;
     } else {
-        type.reset(new QDomDocumentTypePrivate(this, this));
+        type = new QDomDocumentTypePrivate(this, this);
+        type->ref.deref();
     }
 
     name = QLatin1String("#document");
@@ -6184,10 +6186,10 @@ QDomDocumentPrivate::QDomDocumentPrivate(QDomDocumentTypePrivate* dt)
 
 QDomDocumentPrivate::QDomDocumentPrivate(QDomDocumentPrivate* n, bool deep)
     : QDomNodePrivate(n, deep),
+      impl(n->impl->clone()),
       nodeListTime(1)
 {
-    impl.assign(n->impl->clone());
-    type.assign((QDomDocumentTypePrivate*)n->type->cloneNode());
+    type = static_cast<QDomDocumentTypePrivate*>(n->type->cloneNode());
     type->setParent(this);
 }
 
@@ -6197,8 +6199,8 @@ QDomDocumentPrivate::~QDomDocumentPrivate()
 
 void QDomDocumentPrivate::clear()
 {
-    impl.assign(0);
-    type.assign(0);
+    impl.reset();
+    type.reset();
     QDomNodePrivate::clear();
 }
 
@@ -6219,8 +6221,9 @@ bool QDomDocumentPrivate::setContent(QXmlInputSource *source, bool namespaceProc
 bool QDomDocumentPrivate::setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg, int *errorLine, int *errorColumn)
 {
     clear();
-    impl.reset(new QDomImplementationPrivate);
-    type.reset(new QDomDocumentTypePrivate(this, this));
+    impl = new QDomImplementationPrivate;
+    type = new QDomDocumentTypePrivate(this, this);
+    type->ref.deref();
 
     bool namespaceProcessing = reader->feature(QLatin1String("http://xml.org/sax/features/namespaces"))
         && !reader->feature(QLatin1String("http://xml.org/sax/features/namespace-prefixes"));
