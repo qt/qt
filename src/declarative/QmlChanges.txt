@@ -2,7 +2,9 @@ QML API Review
 ==============
 
 The QML API is being reviewed from 17 to 28 August 2009.  This
-file documents the changes.
+file documents the changes. Note that the changes are incremental,
+so a rename A->B for example may be follow by another subseqent
+rename B->C, if later reviews override earlier reviews.
 
 API Changes
 ===========
@@ -34,6 +36,8 @@ Text elements: hAlign  -> horizontalAlignment
 Text elements: vAlign  -> verticalAlignment
 State: operations      -> changes
 Transition: operations -> animations
+Transition: fromState  -> from
+Transition: toState    -> to
 Follow: followValue    -> value
 
 Additions:
@@ -58,8 +62,6 @@ Pending Changes
 Renamed elements:
 
 Renamed properties:
-Transition: fromState  -> from
-Trnasition: toState    -> to
 
 Removed Properties:
 PropertyAction::property

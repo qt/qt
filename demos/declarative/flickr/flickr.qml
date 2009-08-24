@@ -100,12 +100,12 @@ Item {
 
             transitions: [
                 Transition {
-                    fromState: "*"; toState: "Details"
+                    from: "*"; to: "Details"
                     ParentAction { }
                     NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                 },
                 Transition {
-                    fromState: "Details"; toState: "*"
+                    from: "Details"; to: "*"
                     SequentialAnimation {
                         ParentAction { }
                         NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
@@ -196,7 +196,7 @@ Item {
 
         transitions: [
             Transition {
-                fromState: "*"; toState: "*"
+                from: "*"; to: "*"
                 NumberAnimation { properties: "y"; duration: 1000; easing: "easeOutBounce(amplitude:0.5)" }
             }
         ]

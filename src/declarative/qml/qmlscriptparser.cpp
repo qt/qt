@@ -288,10 +288,13 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
         QString resolvableObjectType = objectType;
         if (lastTypeDot >= 0)
             resolvableObjectType.replace(QLatin1Char('.'),QLatin1Char('/'));
-        const int typeId = _parser->findOrCreateTypeId(resolvableObjectType);
+
+        QmlScriptParser::TypeReference *typeRef = _parser->findOrCreateType(resolvableObjectType);
 
         Object *obj = new Object;
-        obj->type = typeId;
+        obj->type = typeRef->id;
+
+        typeRef->refObjects.append(obj);
 
         // XXX this doesn't do anything (_scope never builds up)
         _scope.append(resolvableObjectType);
@@ -802,9 +805,9 @@ bool QmlScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
     return _errors.isEmpty();
 }
 
-QStringList QmlScriptParser::types() const
+QList<QmlScriptParser::TypeReference*> QmlScriptParser::referencedTypes() const
 {
-    return _typeNames;
+    return _refTypes;
 }
 
 Object *QmlScriptParser::tree() const
@@ -828,7 +831,8 @@ void QmlScriptParser::clear()
         root->release();
         root = 0;
     }
-    _typeNames.clear();
+    qDeleteAll(_refTypes);
+    _refTypes.clear();
     _errors.clear();
 
     if (data) {
@@ -837,16 +841,22 @@ void QmlScriptParser::clear()
     }
 }
 
-int QmlScriptParser::findOrCreateTypeId(const QString &name)
+QmlScriptParser::TypeReference *QmlScriptParser::findOrCreateType(const QString &name)
 {
-    int index = _typeNames.indexOf(name);
-
-    if (index == -1) {
-        index = _typeNames.size();
-        _typeNames.append(name);
+    TypeReference *type = 0;
+    int i = 0;
+    for (; i < _refTypes.size(); ++i) {
+        if (_refTypes.at(i)->name == name) {
+            type = _refTypes.at(i);
+            break;
+        }
+    }
+    if (!type) {
+        type = new TypeReference(i, name);
+        _refTypes.append(type);
     }
 
-    return index;
+    return type;
 }
 
 void QmlScriptParser::setTree(Object *tree)

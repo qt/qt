@@ -311,21 +311,23 @@ void QmlCompositeTypeManager::checkComplete(QmlCompositeTypeData *unit)
 
 void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
 {
-    QStringList typeNames = unit->data.types();
+    QList<QmlScriptParser::TypeReference*> types = unit->data.referencedTypes();
 
     int waiting = 0;
-    for (int ii = 0; ii < typeNames.count(); ++ii) {
-        QByteArray type = typeNames.at(ii).toLatin1();
+    for (int ii = 0; ii < types.count(); ++ii) {
+        QmlScriptParser::TypeReference *parserRef = types.at(ii);
+        QByteArray typeName = parserRef->name.toLatin1();
 
         QmlCompositeTypeData::TypeReference ref;
-        if (type == QByteArray("Property") ||
-            type == QByteArray("Signal")) {
+
+        if (typeName == QByteArray("Property") ||
+            typeName == QByteArray("Signal")) {
             unit->types << ref;
             continue;
         }
 
         QUrl url;
-        if (!QmlEnginePrivate::get(engine)->resolveType(unit->imports, type, &ref.type, &url)) {
+        if (!QmlEnginePrivate::get(engine)->resolveType(unit->imports, typeName, &ref.type, &url)) {
             // XXX could produce error message here.
         }
 
@@ -353,7 +355,12 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
             {
                 QmlError error;
                 error.setUrl(unit->imports.baseUrl());
-                error.setDescription(tr("Type %1 unavailable").arg(QLatin1String(type)));
+                error.setDescription(tr("Type %1 unavailable").arg(QLatin1String(typeName)));
+                if (!parserRef->refObjects.isEmpty()) {
+                    QmlParser::Object *obj = parserRef->refObjects.first();
+                    error.setLine(obj->location.start.line);
+                    error.setColumn(obj->location.start.column);
+                }
                 unit->errors << error;
             }
             if (urlUnit->errorType != QmlCompositeTypeData::AccessError) 

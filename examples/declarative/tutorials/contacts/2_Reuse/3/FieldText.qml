@@ -128,8 +128,8 @@ Rectangle {
     ]
     transitions: [
         Transition {
-            fromState: ""
-            toState: "*"
+            from: ""
+            to: "*"
             reversible: true
             NumberAnimation {
                 properties: "opacity,leftMargin,rightMargin"

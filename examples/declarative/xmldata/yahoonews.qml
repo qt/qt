@@ -72,8 +72,8 @@ Rectangle {
                     ]
                     transitions: [
                         Transition {
-                            fromState: "*"
-                            toState: "Details"
+                            from: "*"
+                            to: "Details"
                             reversible: true
                             SequentialAnimation {
                                 NumberAnimation {

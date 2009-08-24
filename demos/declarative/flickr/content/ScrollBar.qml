@@ -28,8 +28,8 @@ Item {
     ]
     transitions: [
         Transition {
-            fromState: "*"
-            toState: "*"
+            from: "*"
+            to: "*"
             NumberAnimation {
                 target: Container
                 properties: "opacity"

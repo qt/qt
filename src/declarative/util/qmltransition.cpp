@@ -183,17 +183,17 @@ void QmlTransition::prepare(QmlStateOperation::ActionList &actions,
 }
 
 /*!
-    \qmlproperty string Transition::fromState
-    \qmlproperty string Transition::toState
+    \qmlproperty string Transition::from
+    \qmlproperty string Transition::to
     These properties are selectors indicating which state changes should trigger the transition.
 
-    fromState is used in conjunction with toState to determine when a transition should
-    be applied. By default fromState and toState are both "*" (any state). In the following example,
+    from is used in conjunction with to to determine when a transition should
+    be applied. By default from and to are both "*" (any state). In the following example,
     the transition is applied when changing from state1 to state2.
     \code
     Transition {
-        fromState: "state1"
-        toState: "state2"
+        from: "state1"
+        to: "state2"
         ...
     }
     \endcode

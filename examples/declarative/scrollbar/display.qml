@@ -24,8 +24,8 @@ Rectangle {
         ]
         transitions: [
             Transition {
-                fromState: "*"
-                toState: "*"
+                from: "*"
+                to: "*"
                 NumberAnimation {
                     properties: "opacity"
                     duration: 400
