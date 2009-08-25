@@ -361,7 +361,6 @@ public:
         MainFragmentShader,
 
         ImageSrcFragmentShader,
-        CustomSrcFragmentShader,
         ImageSrcWithPatternFragmentShader,
         NonPremultipliedImageSrcFragmentShader,
         CustomImageSrcFragmentShader,
