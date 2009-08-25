@@ -2779,6 +2779,8 @@ void QMenu::leaveEvent(QEvent *)
     d->sloppyAction = 0;
     if (!d->sloppyRegion.isEmpty())
         d->sloppyRegion = QRegion();
+    if (!d->activeMenu && d->currentAction)
+        setActiveAction(0);
 }
 
 /*!
