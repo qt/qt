@@ -1262,7 +1262,7 @@ void tst_QDir::homePath()
 #ifdef Q_OS_UNIX
     if (strHome.length() > 1)      // root dir = "/"
         QVERIFY(!strHome.endsWith('/'));
-#elif defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#elif defined(Q_OS_WIN)
     if (strHome.length() > 3)      // root dir = "c:/"; "//" is not really valid...
         QVERIFY(!strHome.endsWith('/'));
 #endif
@@ -1286,7 +1286,7 @@ void tst_QDir::tempPath()
 #ifdef Q_OS_UNIX
     if (path.length() > 1)      // root dir = "/"
         QVERIFY(!path.endsWith('/'));
-#elif defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
+#elif defined(Q_OS_WIN)
     if (path.length() > 3)      // root dir = "c:/"; "//" is not really valid...
         QVERIFY(!path.endsWith('/'));
 #endif

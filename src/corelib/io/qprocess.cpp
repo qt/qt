@@ -532,7 +532,7 @@ void QProcessPrivate::Channel::clear()
 
     \snippet doc/src/snippets/process/process.cpp 0
 
-    \section1 Notes for Windows Users 
+    \section1 Notes for Windows Users
 
     Some Windows commands (for example, \c dir) are not provided by
     separate applications, but by the command interpreter itself.
@@ -2011,9 +2011,6 @@ void QProcess::terminate()
 
     On Windows, kill() uses TerminateProcess, and on Unix and Mac OS X, the
     SIGKILL signal is sent to the process.
-
-    \note Killing running processes from other processes will typically
-    cause a panic in Symbian due to platform security.
 
     \sa terminate()
 */

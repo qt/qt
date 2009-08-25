@@ -271,12 +271,6 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv)
     qt_application_thread_id = QThread::currentThreadId();
 #endif
 
-#ifdef Q_OS_SYMBIAN
-    if(KErrNone != fileServerSession.Connect())
-        qFatal("FATAL: QCoreApplicationPrivate can't connect to file server");
-    fileServerSession.ShareProtected(); //makes the handle ok for multithreading and IPC
-#endif
-
     // note: this call to QThread::currentThread() may end up setting theMainThread!
     if (QThread::currentThread() != theMainThread)
         qWarning("WARNING: QApplication was not created in the main() thread.");
@@ -284,9 +278,6 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv)
 
 QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
-#ifdef Q_OS_SYMBIAN
-    fileServerSession.Close();
-#endif
     if (threadData) {
 #ifndef QT_NO_THREAD
         void *data = &threadData->tls;
@@ -824,18 +815,6 @@ bool QCoreApplicationPrivate::notify_helper(QObject *receiver, QEvent * event)
     // deliver the event
     return receiver->event(event);
 }
-
-#ifdef Q_OS_SYMBIAN
-/*!\internal
-
-  Accessor for shared global file server session
- */
-RFs QCoreApplicationPrivate::fileServerSession;
-RFs& QCoreApplicationPrivate::fsSession()
-{
-    return fileServerSession;
-}
-#endif
 
 /*!
   Returns true if an application object has not been created yet;
@@ -2192,7 +2171,7 @@ QStringList QCoreApplication::libraryPaths()
             if (tempPath.at(tempPath.length() - 1) != QChar('\\')) {
                 tempPath += QChar('\\');
             }
-            RFs& fs = QCoreApplicationPrivate::fsSession();
+            RFs& fs = qt_s60GetRFs();
             TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));
             TFindFile finder(fs);
             TInt err = finder.FindByDir(tempPathPtr, tempPathPtr);

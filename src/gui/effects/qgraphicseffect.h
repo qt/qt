@@ -80,8 +80,8 @@ protected:
     QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent = 0);
 
 private:
-    Q_DECLARE_PRIVATE(QGraphicsEffectSource);
-    Q_DISABLE_COPY(QGraphicsEffectSource);
+    Q_DECLARE_PRIVATE(QGraphicsEffectSource)
+    Q_DISABLE_COPY(QGraphicsEffectSource)
     friend class QGraphicsEffect;
     friend class QGraphicsEffectPrivate;
     friend class QGraphicsScenePrivate;
@@ -103,7 +103,7 @@ public:
         SourceBoundingRectChanged = 0x4,
         SourceInvalidated = 0x8
     };
-    Q_DECLARE_FLAGS(ChangeFlags, ChangeFlag);
+    Q_DECLARE_FLAGS(ChangeFlags, ChangeFlag)
 
     QGraphicsEffect(QObject *parent = 0);
     virtual ~QGraphicsEffect();
