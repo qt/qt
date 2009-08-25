@@ -1,34 +1,57 @@
 import Qt 4.6
-
 import "content"
 
 Rectangle {
-    id: page; width: 460; height: 700; color: activePalette.window
+    id: Screen
+    width: 460; height: 700
+
     Script { source: "content/samegame.js" }
+
     SystemPalette { id: activePalette; colorGroup: Qt.Active }
-    Rectangle {
-        id: gameCanvas
-        property int score: 0
-        z:20; y:20; color: "white"; border.width: 1
-        width:parent.width - tileSize - (parent.width % tileSize);
-        height:parent.height - tileSize - (parent.height % tileSize);
-        anchors.horizontalCenter: parent.horizontalCenter
-        Image { id:background;
-            source: "content/pics/background.png"
-            anchors.fill: parent
+
+    Item {
+        width: parent.width; anchors.top: parent.top; anchors.bottom: ToolBar.top
+
+        Image {
+            id: background
+            anchors.fill: parent; source: "content/pics/background.png"
+            fillMode: "PreserveAspectCrop"
         }
-        MouseRegion { id: gameMR
-            anchors.fill: parent; onClicked: handleClick(mouse.x,mouse.y);
+
+        Item {
+            id: gameCanvas
+            property int score: 0
+
+            z: 20; anchors.centerIn: parent
+            width: parent.width - tileSize - (parent.width % tileSize);
+            height: parent.height - tileSize - (parent.height % tileSize);
+
+            MouseRegion {
+                id: gameMR
+                anchors.fill: parent; onClicked: handleClick(mouse.x,mouse.y);
+            }
         }
     }
 
-    Dialog { id: dialog; anchors.centerIn: parent; z: 21}
-    Button {
-        id: btnA; text: "New Game"; onClicked: {initBoard();}
-        anchors.top: gameCanvas.bottom; anchors.topMargin: 4; anchors.left: gameCanvas.left;
-    }
-    Text {
-        text: "Score: " + gameCanvas.score; width:100; font.pointSize:14
-        anchors.top: gameCanvas.bottom; anchors.topMargin: 4; anchors.right: gameCanvas.right;
+    Dialog { id: dialog; anchors.centerIn: parent; z: 21 }
+
+    Rectangle {
+        id: ToolBar
+        color: activePalette.window
+        height: Score.height + 10; width: parent.width
+        anchors.bottom: Screen.bottom
+
+        Button {
+            id: btnA; text: "New Game"; onClicked: {initBoard();}
+            anchors.left: parent.left; anchors.leftMargin: 3
+            anchors.verticalCenter: parent.verticalCenter
+        }
+
+        Text {
+            id: Score
+            text: "Score: " + gameCanvas.score; font.pointSize: 11
+            anchors.right: parent.right; anchors.rightMargin: 3
+            anchors.verticalCenter: parent.verticalCenter
+        }
     }
 }
