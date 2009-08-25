@@ -1261,6 +1261,7 @@ CodeBlock::CodeBlock(ScopeNode* ownerNode)
 #endif
     , m_needsFullScopeChain(false)
     , m_usesEval(false)
+    , m_usesArguments(false)
     , m_isNumericCompareFunction(false)
     , m_codeType(NativeCode)
     , m_source(0)
@@ -1283,6 +1284,7 @@ CodeBlock::CodeBlock(ScopeNode* ownerNode, CodeType codeType, PassRefPtr<SourceP
 #endif
     , m_needsFullScopeChain(ownerNode->needsActivation())
     , m_usesEval(ownerNode->usesEval())
+    , m_usesArguments(ownerNode->usesArguments())
     , m_isNumericCompareFunction(false)
     , m_codeType(codeType)
     , m_source(sourceProvider)
