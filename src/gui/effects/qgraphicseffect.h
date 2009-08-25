@@ -137,7 +137,7 @@ private:
     friend class QWidget;
     friend class QWidgetPrivate;
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsEffect::ChangeFlags);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsEffect::ChangeFlags)
 
 class QGraphicsGrayscaleEffectPrivate;
 class Q_GUI_EXPORT QGraphicsGrayscaleEffect: public QGraphicsEffect
