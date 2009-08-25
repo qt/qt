@@ -46,6 +46,7 @@
 #include <qdebug.h>
 #include <qgl.h>
 #include <qglcolormap.h>
+#include <qpaintengine.h>
 
 #include <QGraphicsView>
 #include <QGraphicsProxyWidget>
@@ -67,6 +68,7 @@ private slots:
     void graphicsViewClipping();
     void partialGLWidgetUpdates_data();
     void partialGLWidgetUpdates();
+    void glWidgetRendering();
     void colormap();
 };
 
@@ -623,6 +625,50 @@ void tst_QGL::partialGLWidgetUpdates()
         QCOMPARE(widget.paintEventRegion, QRegion(50, 50, 50, 50));
     else
         QCOMPARE(widget.paintEventRegion, QRegion(widget.rect()));
+}
+
+
+class GLWidget : public QGLWidget
+{
+public:
+    GLWidget(QWidget* p = 0)
+            : QGLWidget(p), beginOk(false), engineType(QPaintEngine::MaxUser) {}
+    bool beginOk;
+    QPaintEngine::Type engineType;
+    void paintGL()
+    {
+        QPainter p;
+        beginOk = p.begin(this);
+        QPaintEngine* pe = p.paintEngine();
+        engineType = pe->type();
+
+        // This test only ensures it's possible to paint onto a QGLWidget. Full
+        // paint engine feature testing is way out of scope!
+
+        p.fillRect(0, 0, width(), height(), Qt::red);
+        // No p.end() or swap buffers, should be done automatically
+    }
+
+};
+
+void tst_QGL::glWidgetRendering()
+{
+    GLWidget w;
+    w.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&w);
+#endif
+    QTest::qWait(200);
+
+    QVERIFY(w.beginOk);
+    QVERIFY(w.engineType == QPaintEngine::OpenGL);
+
+    QImage fb = w.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
+    QImage reference(fb.size(), QImage::Format_RGB32);
+    reference.fill(0xffff0000);
+
+    QCOMPARE(fb, reference);
 }
 
 class ColormapExtended : public QGLColormap
