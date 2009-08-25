@@ -64,6 +64,11 @@ QmlBinding_Id::QmlBinding_Id(QObject *object, int propertyIdx,
     QmlAbstractExpression::setContext(context);
 }
 
+QmlBinding_Id::~QmlBinding_Id()
+{
+    removeFromContext();
+}
+
 void QmlBinding_Id::setEnabled(bool e)
 {
     if (e) {
@@ -103,7 +108,7 @@ void QmlBinding_Id::update()
     } 
 }
 
-void QmlBinding_Id::reset()
+void QmlBinding_Id::removeFromContext()
 {
     if (m_prev) {
         *m_prev = m_next;
@@ -111,6 +116,11 @@ void QmlBinding_Id::reset()
         m_next = 0;
         m_prev = 0;
     }
+}
+
+void QmlBinding_Id::reset()
+{
+    removeFromContext();
 
     QObject *o = 0;
     void *a[] = { &o, 0 };
