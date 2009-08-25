@@ -200,8 +200,11 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
         }
     } else if (event->timerId() == animationTimer.timerId()) {
         const int delta = lastTick - oldLastTick;
-        for (int i = 0; i < animations.count(); ++i) {
-            QAbstractAnimation *animation = animations.at(i);
+        //we copy the list so that if it is changed we still get to
+        //call setCurrentTime on all animations.
+        const QList<QAbstractAnimation*> currentAnimations = animations;
+        for (int i = 0; i < currentAnimations.count(); ++i) {
+            QAbstractAnimation *animation = currentAnimations.at(i);
             int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
                 + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
             animation->setCurrentTime(elapsed);
