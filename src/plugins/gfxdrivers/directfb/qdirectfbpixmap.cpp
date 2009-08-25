@@ -51,7 +51,7 @@ static int global_ser_no = 0;
 
 QDirectFBPixmapData::QDirectFBPixmapData(QDirectFBScreen *screen, PixelType pixelType)
     : QPixmapData(pixelType, DirectFBClass), QDirectFBPaintDevice(screen),
-      format(QImage::Format_Invalid), alpha(false)
+      alpha(false)
 {
     setSerialNumber(0);
 }
@@ -70,11 +70,11 @@ void QDirectFBPixmapData::resize(int width, int height)
         return;
     }
 
-    format = screen->pixelFormat();
+    imageFormat = screen->pixelFormat();
     dfbSurface = screen->createDFBSurface(QSize(width, height),
-                                          format,
+                                          imageFormat,
                                           QDirectFBScreen::TrackSurface);
-    d = screen->depth();
+    d = QDirectFBScreen::depth(imageFormat);
     alpha = false;
     if (!dfbSurface) {
         invalidate();
@@ -85,7 +85,6 @@ void QDirectFBPixmapData::resize(int width, int height)
     w = width;
     h = height;
     is_null = (w <= 0 || h <= 0);
-    d = metric(QPaintDevice::PdmDepth);
     setSerialNumber(++global_ser_no);
 }
 
@@ -183,13 +182,13 @@ void QDirectFBPixmapData::fromImage(const QImage &image,
 #endif
         ) {
         alpha = true;
-        format = screen->alphaPixmapFormat();
+        imageFormat = screen->alphaPixmapFormat();
     } else {
         alpha = false;
-        format = screen->pixelFormat();
+        imageFormat = screen->pixelFormat();
     }
 
-    dfbSurface = screen->createDFBSurface(image, format, QDirectFBScreen::TrackSurface|QDirectFBScreen::NoPreallocated);
+    dfbSurface = screen->createDFBSurface(image, imageFormat, QDirectFBScreen::TrackSurface|QDirectFBScreen::NoPreallocated);
     if (!dfbSurface) {
         qWarning("QDirectFBPixmapData::fromImage()");
         invalidate();
@@ -198,7 +197,7 @@ void QDirectFBPixmapData::fromImage(const QImage &image,
     w = image.width();
     h = image.height();
     is_null = (w <= 0 || h <= 0);
-    d = metric(QPaintDevice::PdmDepth);
+    d = QDirectFBScreen::depth(imageFormat);
     setSerialNumber(++global_ser_no);
 #ifdef QT_NO_DIRECTFB_OPAQUE_DETECTION
     Q_UNUSED(flags);
@@ -216,12 +215,12 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     const QDirectFBPixmapData *otherData = static_cast<const QDirectFBPixmapData*>(data);
     IDirectFBSurface *src = otherData->directFBSurface();
     alpha = data->hasAlphaChannel();
-    format = (alpha
-              ? QDirectFBScreen::instance()->alphaPixmapFormat()
-              : QDirectFBScreen::instance()->pixelFormat());
+    imageFormat = (alpha
+                   ? QDirectFBScreen::instance()->alphaPixmapFormat()
+                   : QDirectFBScreen::instance()->pixelFormat());
 
 
-    dfbSurface = screen->createDFBSurface(rect.size(), format,
+    dfbSurface = screen->createDFBSurface(rect.size(), imageFormat,
                                           QDirectFBScreen::TrackSurface);
     if (!dfbSurface) {
         qWarning("QDirectFBPixmapData::copy()");
@@ -279,11 +278,12 @@ void QDirectFBPixmapData::fill(const QColor &color)
 
     alpha = (color.alpha() < 255);
 
-    if (alpha && ::isOpaqueFormat(format)) {
+    if (alpha && ::isOpaqueFormat(imageFormat)) {
         QSize size;
         dfbSurface->GetSize(dfbSurface, &size.rwidth(), &size.rheight());
         screen->releaseDFBSurface(dfbSurface);
-        format = screen->alphaPixmapFormat();
+        imageFormat = screen->alphaPixmapFormat();
+        d = QDirectFBScreen::depth(imageFormat);
         dfbSurface = screen->createDFBSurface(size, screen->alphaPixmapFormat(), QDirectFBScreen::TrackSurface);
         setSerialNumber(++global_ser_no);
         if (!dfbSurface) {
@@ -324,7 +324,7 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
         flags = DSBLIT_BLEND_ALPHACHANNEL;
     }
     data->dfbSurface = screen->createDFBSurface(size,
-                                                format,
+                                                imageFormat,
                                                 QDirectFBScreen::TrackSurface);
     if (flags & DSBLIT_BLEND_ALPHACHANNEL) {
         data->dfbSurface->Clear(data->dfbSurface, 0, 0, 0, 0);
@@ -411,6 +411,6 @@ void QDirectFBPixmapData::invalidate()
     alpha = false;
     d = w = h = 0;
     is_null = true;
-    format = QImage::Format_Invalid;
+    imageFormat = QImage::Format_Invalid;
 }
 

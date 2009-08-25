@@ -74,12 +74,11 @@ public:
     QImage *buffer(DFBSurfaceLockFlags lockFlags);
 
     // Pure virtual in QPixmapData, so re-implement here and delegate to QDirectFBPaintDevice
-    inline QImage::Format pixelFormat() const { return format; }
+    inline QImage::Format pixelFormat() const { return imageFormat; }
     static bool hasAlphaChannel(const QImage &img);
     inline bool hasAlphaChannel() const { return alpha; }
 private:
     void invalidate();
-    QImage::Format format;
     bool alpha;
 };
 

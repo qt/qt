@@ -144,6 +144,7 @@ void QDirectFBWindowSurface::createWindow()
         dfbSurface->Release(dfbSurface);
 
     dfbWindow->GetSurface(dfbWindow, &dfbSurface);
+    updateFormat();
 }
 #endif // QT_NO_DIRECTFB_WM
 
@@ -179,6 +180,7 @@ static DFBResult setGeometry(IDirectFBWindow *dfbWindow, const QRect &old, const
 
 void QDirectFBWindowSurface::setGeometry(const QRect &rect)
 {
+    IDirectFBSurface *oldSurface = dfbSurface;
 #ifdef QT_NO_DIRECTFB_WM
     IDirectFBSurface *primarySurface = screen->primarySurface();
     Q_ASSERT(primarySurface);
@@ -236,6 +238,8 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
         if (result != DFB_OK)
             DirectFBErrorFatal("QDirectFBWindowSurface::setGeometry()", result);
     }
+    if (oldSurface != dfbSurface)
+        updateFormat();
     QWSWindowSurface::setGeometry(rect);
 }
 
@@ -462,3 +466,7 @@ QImage *QDirectFBWindowSurface::buffer(const QWidget *widget)
     return img;
 }
 
+void QDirectFBWindowSurface::updateFormat()
+{
+    imageFormat = dfbSurface ? QDirectFBScreen::getImageFormat(dfbSurface) : QImage::Format_Invalid;
+}

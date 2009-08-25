@@ -658,6 +658,42 @@ int QDirectFBScreen::depth(DFBSurfacePixelFormat format)
     return 0;
 }
 
+int QDirectFBScreen::depth(QImage::Format format)
+{
+    int depth = 0;
+    switch(format) {
+    case QImage::Format_Invalid:
+    case QImage::NImageFormats:
+        Q_ASSERT(false);
+    case QImage::Format_Mono:
+    case QImage::Format_MonoLSB:
+        depth = 1;
+        break;
+    case QImage::Format_Indexed8:
+        depth = 8;
+        break;
+    case QImage::Format_RGB32:
+    case QImage::Format_ARGB32:
+    case QImage::Format_ARGB32_Premultiplied:
+        depth = 32;
+        break;
+    case QImage::Format_RGB555:
+    case QImage::Format_RGB16:
+    case QImage::Format_RGB444:
+    case QImage::Format_ARGB4444_Premultiplied:
+        depth = 16;
+        break;
+    case QImage::Format_RGB666:
+    case QImage::Format_ARGB6666_Premultiplied:
+    case QImage::Format_ARGB8565_Premultiplied:
+    case QImage::Format_ARGB8555_Premultiplied:
+    case QImage::Format_RGB888:
+        depth = 24;
+        break;
+    }
+    return depth;
+}
+
 void QDirectFBScreenPrivate::setFlipFlags(const QStringList &args)
 {
     QRegExp flipRegexp(QLatin1String("^flip=([\\w,]*)$"));

@@ -169,6 +169,7 @@ public:
 
     using QScreen::depth;
     static int depth(DFBSurfacePixelFormat format);
+    static int depth(QImage::Format format);
 
     static DFBSurfacePixelFormat getSurfacePixelFormat(QImage::Format format);
     static DFBSurfaceDescription getSurfaceDescription(const uint *buffer,
