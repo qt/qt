@@ -1174,15 +1174,15 @@ private:
     QFxWebView *webview;
 };
 
-QFxWebView *QFxWebPage::view()
+QFxWebView *QFxWebPage::viewItem()
 {
     return static_cast<QFxWebView*>(parent());
 }
 
 QObject *QFxWebPage::createPlugin(const QString &, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues)
 {
-    QUrl comp = qmlContext(view())->resolvedUrl(url);
-    return new QWidget_Dummy_Plugin(comp,view(),paramNames,paramValues);
+    QUrl comp = qmlContext(viewItem())->resolvedUrl(url);
+    return new QWidget_Dummy_Plugin(comp,viewItem(),paramNames,paramValues);
 }
 
 QT_END_NAMESPACE
