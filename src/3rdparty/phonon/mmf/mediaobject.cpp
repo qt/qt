@@ -17,6 +17,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "audioplayer.h"
+#include "defs.h"
 #include "dummyplayer.h"
 #include "mediaobject.h"
 #include "utils.h"
@@ -95,28 +96,7 @@ bool MMF::MediaObject::openRecognizer()
 	return true;
 }
 
-const TInt KMimePrefixLength = 6; // either "audio/" or "video/"
-_LIT(KMimePrefixAudio, "audio/");
-_LIT(KMimePrefixVideo, "video/");
-
-MMF::MediaObject::MediaType MMF::MediaObject::mimeTypeToMediaType(const TDesC& mimeType)
-{
-	MediaType result = MediaTypeUnknown;
-
-	if(mimeType.Left(KMimePrefixLength).Compare(KMimePrefixAudio) == 0)
-		{
-			result = MediaTypeAudio;
-		}
-		else if(mimeType.Left(KMimePrefixLength).Compare(KMimePrefixVideo) == 0)
-		{
-			result = MediaTypeVideo;
-		}
-
-	return result;
-}
-
-
-MMF::MediaObject::MediaType MMF::MediaObject::fileMediaType
+MMF::MediaType MMF::MediaObject::fileMediaType
 	(const QString& fileName)
 {
 	TRACE_CONTEXT(MediaObject::fileMediaType, EAudioInternal);
@@ -137,7 +117,7 @@ MMF::MediaObject::MediaType MMF::MediaObject::fileMediaType
 			if(KErrNone == err)
 			{
 				const TPtrC mimeType = recognizerResult.iDataType.Des();
-				result = mimeTypeToMediaType(mimeType);
+				result = Utils::mimeTypeToMediaType(mimeType);
 			}
 			else
 			{

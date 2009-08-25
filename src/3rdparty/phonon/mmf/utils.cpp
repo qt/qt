@@ -44,3 +44,24 @@ QHBufC MMF::Utils::symbianFilename(const QString& qtFilename)
 
     return result;
 }
+
+
+static const TInt KMimePrefixLength = 6; // either "audio/" or "video/"
+_LIT(KMimePrefixAudio, "audio/");
+_LIT(KMimePrefixVideo, "video/");
+
+MMF::MediaType MMF::Utils::mimeTypeToMediaType(const TDesC& mimeType)
+{
+	MediaType result = MediaTypeUnknown;
+
+	if(mimeType.Left(KMimePrefixLength).Compare(KMimePrefixAudio) == 0)
+	{
+		result = MediaTypeAudio;
+	}
+	else if(mimeType.Left(KMimePrefixLength).Compare(KMimePrefixVideo) == 0)
+	{
+		result = MediaTypeVideo;
+	}
+
+	return result;
+}

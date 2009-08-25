@@ -19,6 +19,10 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QStringList>
 #include <QtPlugin>
 
+#include <apgcli.h> // for RApaLsSession
+#include <apmrec.h> // for CDataTypeArray
+#include <apmstd.h> // for TDataType
+
 #include "backend.h"
 #include "audiooutput.h"
 #include "mediaobject.h"
@@ -140,11 +144,42 @@ bool Backend::endConnectionChange(QSet<QObject *>)
     return true;
 }
 
+void getAvailableMimeTypesL(QStringList& result)
+{
+	RApaLsSession apaSession;
+	User::LeaveIfError(apaSession.Connect());
+	CleanupClosePushL(apaSession);
+
+	static const TInt DataTypeArrayGranularity = 8;
+	CDataTypeArray* array = new (ELeave) CDataTypeArray(DataTypeArrayGranularity);
+	CleanupStack::PushL(array);
+	
+	apaSession.GetSupportedDataTypesL(*array);
+	
+	for(TInt i=0; i<array->Count(); ++i)
+	{
+		const TPtrC mimeType = array->At(i).Des();
+		const MediaType mediaType = Utils::mimeTypeToMediaType(mimeType);
+		if(MediaTypeAudio == mediaType or MediaTypeVideo == mediaType)
+		{
+			result.append(qt_TDesC2QString(mimeType));
+		}
+	}
+	
+	CleanupStack::PopAndDestroy(2); // apaSession, array
+}
+
 QStringList Backend::availableMimeTypes() const
 {
-	// TODO: query MMF for available MIME types
+	QStringList result;
+	
+	// There is no way to return an error from this function, so we just
+	// have to trap and ignore exceptions...
+	TRAP_IGNORE(getAvailableMimeTypesL(result));
 
-    return QStringList();
+	result.sort();
+	
+	return result;
 }
 
 Q_EXPORT_PLUGIN2(phonon_mmf, Phonon::MMF::Backend);

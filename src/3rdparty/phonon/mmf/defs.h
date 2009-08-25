@@ -27,7 +27,13 @@ namespace Phonon
     {
 	static const qint32	DefaultTickInterval = 20;
 	static const qreal	InitialVolume = 0.5;
-    	 
+	
+    enum MediaType
+    {
+    	MediaTypeUnknown,
+    	MediaTypeAudio,
+    	MediaTypeVideo
+    };
     }
 }
 

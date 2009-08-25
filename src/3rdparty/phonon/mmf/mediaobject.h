@@ -27,6 +27,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 // For recognizer
 #include <apgcli.h>
 
+#include "defs.h"
 #include "volumeobserver.h"
 
 namespace Phonon
@@ -88,9 +89,7 @@ namespace Phonon
         	void createPlayer(const MediaSource &source);
         	bool openRecognizer();
 
-        	// Audio / video media type recognition
-        	enum MediaType { MediaTypeUnknown, MediaTypeAudio, MediaTypeVideo };
-			MediaType mimeTypeToMediaType(const TDesC& mimeType);
+        	// Audio / video media type recognition			
 			MediaType fileMediaType(const QString& fileName);
 			// TODO: urlMediaType function
         	

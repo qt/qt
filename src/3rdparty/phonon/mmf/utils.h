@@ -22,6 +22,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <private/qcore_symbian_p.h>
 #include <e32debug.h>	// for RDebug
 
+#include "defs.h"
+
 namespace Phonon
 {
     namespace MMF
@@ -30,12 +32,12 @@ namespace Phonon
          * Panic codes for fatal errors
          */
         enum PanicCode
-            {
+        {
             InvalidStatePanic				= 1,
             InvalidMediaTypePanic			= 2,
             InvalidBackendInterfaceClass	= 3
-            };
-
+        };
+        
         namespace Utils
         {
             /**
@@ -51,6 +53,12 @@ namespace Phonon
              *             determined.
              */
             QHBufC symbianFilename(const QString& qtFilename);
+            
+            /**
+             * Determines whether the provided MIME type is an audio or video
+             * type.  If it is neither, the function returns MediaTypeUnknown.
+             */
+            MediaType mimeTypeToMediaType(const TDesC& mimeType);
         }
 
         /**

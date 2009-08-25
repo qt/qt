@@ -30,8 +30,6 @@ The main question here is how best to implement the MIME type detection for stre
 * Performance analysis
 Compare video frame rate obtained using default S60 media player and Qt demo apps
 
-* Implement MMF::Backend::availableMimeTypes
-
 * Implement MMF::Backend::disconnectNodes
 This should probably be left for now, particularly until audio effects have been implemented.  This is because the node connection mechanism may need to be refactored slightly once we start building up longer graphs (e.g. MediaObject -> Effect -> Effect -> AudioOutput).
 
