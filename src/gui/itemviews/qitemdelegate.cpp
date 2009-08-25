@@ -1327,7 +1327,7 @@ QStyleOptionViewItem QItemDelegate::setOptions(const QModelIndex &index,
     // set text alignment
     value = index.data(Qt::TextAlignmentRole);
     if (value.isValid())
-        opt.displayAlignment = (Qt::Alignment)value.toInt();
+        opt.displayAlignment = Qt::Alignment(value.toInt());
 
     // set foreground brush
     value = index.data(Qt::ForegroundRole);

@@ -157,6 +157,7 @@ class Node
     QMap<LinkType, QPair<QString,QString> > links() const { return linkMap; }
     QString moduleName() const;
     QString url() const;
+    virtual QString nameForLists() const { return nam; }
 
     Access access() const { return acc; }
     const Location& location() const { return loc; }
@@ -337,6 +338,7 @@ class FakeNode : public InnerNode
     QString fullTitle() const;
     QString subTitle() const;
     const NodeList &groupMembers() const { return gr; }
+    virtual QString nameForLists() const { return title(); }
 
  private:
     SubType sub;

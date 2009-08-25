@@ -42,6 +42,7 @@
 #include "qhostinfo.h"
 #include "qhostinfo_p.h"
 
+#include "QtCore/qscopedpointer.h"
 #include <qabstracteventdispatcher.h>
 #include <private/qunicodetables_p.h>
 #include <qcoreapplication.h>
@@ -162,24 +163,24 @@ int QHostInfo::lookupHost(const QString &name, QObject *receiver,
     QWindowsSockInit bust; // makes sure WSAStartup was callled
 #endif
 
-    QHostInfoResult *result = new QHostInfoResult;
-    result->autoDelete = false;
-    QObject::connect(result, SIGNAL(resultsReady(QHostInfo)),
+    QScopedPointer<QHostInfoResult> result(new QHostInfoResult);
+    result.data()->autoDelete = false;
+    QObject::connect(result.data(), SIGNAL(resultsReady(QHostInfo)),
                      receiver, member);
-    int id = result->lookupId = theIdCounter.fetchAndAddRelaxed(1);
+    int id = result.data()->lookupId = theIdCounter.fetchAndAddRelaxed(1);
 
     if (name.isEmpty()) {
         QHostInfo info(id);
         info.setError(QHostInfo::HostNotFound);
         info.setErrorString(QObject::tr("No host name given"));
-        QMetaObject::invokeMethod(result, "emitResultsReady", Qt::QueuedConnection,
+        QMetaObject::invokeMethod(result.data(), "emitResultsReady", Qt::QueuedConnection,
                                   Q_ARG(QHostInfo, info));
-        result->autoDelete = true;
+        result.take()->autoDelete = true;
         return id;
     }
 
     QHostInfoAgent *agent = theAgent();
-    agent->addHostName(name, result);
+    agent->addHostName(name, result.take());
 
 #if !defined QT_NO_THREAD
     if (!agent->isRunning())
@@ -318,7 +319,7 @@ QHostInfo::QHostInfo(int id)
     Constructs a copy of \a other.
 */
 QHostInfo::QHostInfo(const QHostInfo &other)
-    : d(new QHostInfoPrivate(*other.d))
+    : d(new QHostInfoPrivate(*other.d.data()))
 {
 }
 
@@ -328,7 +329,7 @@ QHostInfo::QHostInfo(const QHostInfo &other)
 */
 QHostInfo &QHostInfo::operator=(const QHostInfo &other)
 {
-    *d = *other.d;
+    *d.data() = *other.d.data();
     return *this;
 }
 
@@ -337,7 +338,6 @@ QHostInfo &QHostInfo::operator=(const QHostInfo &other)
 */
 QHostInfo::~QHostInfo()
 {
-    delete d;
 }
 
 /*!

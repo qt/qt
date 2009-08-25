@@ -301,6 +301,14 @@ bool qt_mac_is_macdrawer(const QWidget *w)
     return (w && w->parentWidget() && w->windowType() == Qt::Drawer);
 }
 
+bool qt_mac_insideKeyWindow(const QWidget *w)
+{
+#ifdef QT_MAC_USE_COCOA
+    return [[reinterpret_cast<NSView *>(w->winId()) window] isKeyWindow];
+#endif
+    return false;
+}
+
 bool qt_mac_set_drawer_preferred_edge(QWidget *w, Qt::DockWidgetArea where) //users of Qt for Mac OS X can use this..
 {
     if(!qt_mac_is_macdrawer(w))
@@ -2567,7 +2575,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
 {
     Q_D(QWidget);
     if (!isWindow() && parentWidget())
-        parentWidget()->d_func()->invalidateBuffer(geometry());
+        parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
     d->deactivateWidgetCleanup();
     qt_mac_event_release(this);
     if(testAttribute(Qt::WA_WState_Created)) {
@@ -2618,7 +2626,11 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
                     qt_mac_destructWindow(window);
             }
         }
-        d->setWinId(0);
+        QT_TRY {
+            d->setWinId(0);
+        } QT_CATCH (const std::bad_alloc &) {
+            // swallow - destructors must not throw
+	}
     }
 }
 
@@ -2669,7 +2681,7 @@ void QWidgetPrivate::setParent_sys(QWidget *parent, Qt::WindowFlags f)
     OSViewRef old_id = 0;
 
     if (q->isVisible() && q->parentWidget() && parent != q->parentWidget())
-        q->parentWidget()->d_func()->invalidateBuffer(q->geometry());
+        q->parentWidget()->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
 
     // Maintain the glWidgets list on parent change: remove "our" gl widgets
     // from the list on the old parent and grandparents.
@@ -4165,12 +4177,12 @@ void QWidgetPrivate::setGeometry_sys_helper(int x, int y, int w, int h, bool isM
         setWSGeometry(false, oldRect);
         if (isResize && QApplicationPrivate::graphicsSystem()) {
             invalidateBuffer(q->rect());
-            if (extra && !extra->mask.isEmpty()) {
+            if (extra && !graphicsEffect && !extra->mask.isEmpty()) {
                 QRegion oldRegion(extra->mask.translated(oldp));
                 oldRegion &= oldRect;
                 q->parentWidget()->d_func()->invalidateBuffer(oldRegion);
             } else {
-                q->parentWidget()->d_func()->invalidateBuffer(oldRect);
+                q->parentWidget()->d_func()->invalidateBuffer(effectiveRectFor(oldRect));
             }
         }
     }

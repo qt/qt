@@ -240,7 +240,7 @@ protected:
     QStandardItem(const QStandardItem &other);
     QStandardItem(QStandardItemPrivate &dd);
     QStandardItem &operator=(const QStandardItem &other);
-    QStandardItemPrivate *d_ptr;
+    QScopedPointer<QStandardItemPrivate> d_ptr;
 
     void emitDataChanged();
 

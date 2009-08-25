@@ -41,6 +41,7 @@
 
 #include "qmatrix4x4.h"
 #include <QtCore/qmath.h>
+#include <QtCore/qvariant.h>
 #include <QtGui/qmatrix.h>
 #include <QtGui/qtransform.h>
 
@@ -1815,6 +1816,14 @@ void QMatrix4x4::inferSpecialType()
         flagBits = Identity;
     else
         flagBits = Scale;
+}
+
+/*!
+    Returns the matrix as a QVariant.
+*/
+QMatrix4x4::operator QVariant() const
+{
+    return QVariant(QVariant::Matrix4x4, this);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

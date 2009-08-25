@@ -45,7 +45,9 @@
 #include <qitemdelegate.h>
 #include <qcolumnview.h>
 #include "../../../src/gui/itemviews/qcolumnviewgrip_p.h"
+#ifndef Q_OS_SYMBIAN
 #include "../../../src/gui/dialogs/qfilesystemmodel_p.h"
+#endif
 #include <qdirmodel.h>
 #include <qstringlistmodel.h>
 #include <qdebug.h>

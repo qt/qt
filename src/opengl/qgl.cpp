@@ -1302,7 +1302,6 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
 #if defined(QT_OPENGL_ES)
     eglContext = 0;
 #endif
-    pbo = 0;
     fbo = 0;
     crWin = false;
     initDone = false;
@@ -1495,7 +1494,7 @@ void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
             instance()->remove(cacheKey);
     }
 #if defined(Q_WS_X11)
-    QPixmapData *pd = pixmap->data_ptr();
+    QPixmapData *pd = pixmap->data_ptr().data();
     // Only need to delete the gl surface if the pixmap is about to be deleted
     if (pd->ref == 0)
         QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
@@ -1599,8 +1598,8 @@ Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
 */
 
 QGLContext::QGLContext(const QGLFormat &format, QPaintDevice *device)
+    : d_ptr(new QGLContextPrivate(this))
 {
-    d_ptr = new QGLContextPrivate(this);
     Q_D(QGLContext);
     d->init(device, format);
 }
@@ -1622,8 +1621,8 @@ QGLContext::QGLContext(const QGLFormat &format, QPaintDevice *device)
     \sa format(), isValid()
 */
 QGLContext::QGLContext(const QGLFormat &format)
+    : d_ptr(new QGLContextPrivate(this))
 {
-    d_ptr = new QGLContextPrivate(this);
     Q_D(QGLContext);
     d->init(0, format);
 }
@@ -1641,17 +1640,10 @@ QGLContext::~QGLContext()
 
     QGLSignalProxy::instance()->emitAboutToDestroyContext(this);
     reset();
-    delete d;
 }
 
 void QGLContextPrivate::cleanup()
 {
-    Q_Q(QGLContext);
-    if (pbo) {
-        QGLContext *ctx = q;
-        glDeleteBuffers(1, &pbo);
-        pbo = 0;
-    }
 }
 
 typedef QHash<QString, GLuint> QGLDDSCache;
@@ -1915,14 +1907,6 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
     QGLContext *ctx = q;
 
-    bool use_pbo = false;
-    if (QGLExtensions::glExtensions & QGLExtensions::PixelBufferObject) {
-
-        use_pbo = qt_resolve_buffer_extensions(ctx);
-        if (use_pbo && pbo == 0)
-            glGenBuffers(1, &pbo);
-    }
-
     // the GL_BGRA format is only present in GL version >= 1.2
     GLenum texture_format = (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_2)
                             ? GL_BGRA : GL_RGBA;
@@ -1957,18 +1941,8 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         glTexParameterf(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
 #endif
         glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-        // Mipmap generation causes huge slowdown with PBO's for some reason
-        use_pbo = false;
     } else {
         glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    }
-
-    uchar *ptr = 0;
-    if (use_pbo) {
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, pbo);
-        glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, img.width() * img.height() * 4, 0, GL_STREAM_DRAW_ARB);
-        ptr = reinterpret_cast<uchar *>(glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY_ARB));
     }
 
     QImage::Format target_format = img.format();
@@ -1980,21 +1954,10 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     if (img.format() != target_format)
         img = img.convertToFormat(target_format);
 
-    if (ptr) {
-        QImage buffer(ptr, img.width(), img.height(), target_format);
-        convertToGLFormatHelper(buffer, img, texture_format);
-        glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
-        glTexImage2D(target, 0, format, img.width(), img.height(), 0, texture_format,
-                     GL_UNSIGNED_BYTE, 0);
-    } else {
-        QImage tx(scale ? QSize(tx_w, tx_h) : img.size(), target_format);
-        convertToGLFormatHelper(tx, img, texture_format);
-        glTexImage2D(target, 0, format, tx.width(), tx.height(), 0, texture_format,
-                     GL_UNSIGNED_BYTE, tx.bits());
-    }
-
-    if (use_pbo)
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+    QImage tx(scale ? QSize(tx_w, tx_h) : img.size(), target_format);
+    convertToGLFormatHelper(tx, img, texture_format);
+    glTexImage2D(target, 0, format, tx.width(), tx.height(), 0, texture_format,
+                 GL_UNSIGNED_BYTE, tx.bits());
 
     // this assumes the size of a texture is always smaller than the max cache size
     int cost = img.width()*img.height()*4/1024;
@@ -3409,12 +3372,15 @@ bool QGLWidget::event(QEvent *e)
             setContext(new QGLContext(d->glcx->requestedFormat(), this));
             // ### recreating the overlay isn't supported atm
         }
+    }
+
 #if defined(QT_OPENGL_ES)
-        // The window may have been re-created during re-parent - if so, the EGL
+    if ((e->type() == QEvent::ParentChange) || (e->type() == QEvent::WindowStateChange)) {
+        // The window may have been re-created during re-parent or state change - if so, the EGL
         // surface will need to be re-created.
         d->recreateEglSurface(false);
-#endif
     }
+#endif
 #elif defined(Q_WS_WIN)
     if (e->type() == QEvent::ParentChange) {
         QGLContext *newContext = new QGLContext(d->glcx->requestedFormat(), this);

@@ -64,6 +64,7 @@ class QFactoryLoaderPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QFactoryLoader)
 public:
     QFactoryLoaderPrivate(){}
+    ~QFactoryLoaderPrivate();
     mutable QMutex mutex;
     QByteArray iid;
     QList<QLibraryPrivate*> libraryList;
@@ -75,6 +76,12 @@ public:
 
     void unloadPath(const QString &path);
 };
+
+QFactoryLoaderPrivate::~QFactoryLoaderPrivate()
+{
+    for (int i = 0; i < libraryList.count(); ++i)
+        libraryList.at(i)->release();
+}
 
 QFactoryLoader::QFactoryLoader(const char *iid,
                                const QString &suffix,
@@ -89,8 +96,8 @@ QFactoryLoader::QFactoryLoader(const char *iid,
 
 
     QMutexLocker locker(qt_factoryloader_mutex());
-    qt_factory_loaders()->append(this);
     update();
+    qt_factory_loaders()->append(this);
 }
 
 
@@ -197,10 +204,6 @@ void QFactoryLoader::update()
 
 QFactoryLoader::~QFactoryLoader()
 {
-    Q_D(QFactoryLoader);
-    for (int i = 0; i < d->libraryList.count(); ++i)
-        d->libraryList.at(i)->release();
-
     QMutexLocker locker(qt_factoryloader_mutex());
     qt_factory_loaders()->removeAll(this);
 }

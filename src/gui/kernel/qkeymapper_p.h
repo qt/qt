@@ -58,6 +58,7 @@
 #include <qlist.h>
 #include <qlocale.h>
 #include <qevent.h>
+#include <qhash.h>
 
 #if defined (Q_WS_MAC64)
 # include <private/qt_mac_p.h>
@@ -160,6 +161,7 @@ public:
     bool translateKeyEvent(QWidget *receiver, const MSG &msg, bool grab);
     void updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32 scancode, quint32 vk_key);
     bool isADeadKey(unsigned int vk_key, unsigned int modifiers);
+    void deleteLayouts();
 
     KeyboardLayoutItem *keyLayout[256];
 
@@ -188,6 +190,7 @@ public:
     bool updateKeyboard();
     void updateKeyMap(EventHandlerCallRef, EventRef, void *);
     bool translateKeyEvent(QWidget *, EventHandlerCallRef, EventRef, void *, bool);
+    void deleteLayouts();
 
     enum { NullMode, UnicodeMode, OtherMode } keyboard_mode;
     union {
@@ -203,6 +206,13 @@ public:
     UInt32 keyboard_dead;
     KeyboardLayoutItem *keyLayout[256];
 #elif defined(Q_WS_QWS)
+#elif defined(Q_OS_SYMBIAN)
+private:
+    QHash<TUint, int> s60ToQtKeyMap;
+    void fillKeyMap();
+public:
+    QString translateKeyEvent(int keySym, Qt::KeyboardModifiers modifiers);
+    int mapS60KeyToQt(TUint s60key);
 #endif
 };
 

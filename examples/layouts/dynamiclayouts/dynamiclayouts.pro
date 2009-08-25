@@ -7,3 +7,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/layouts/dynamiclayouts
 sources.files = $$SOURCES $$HEADERS *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/layouts/dynamiclayouts
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

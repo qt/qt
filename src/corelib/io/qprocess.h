@@ -44,6 +44,7 @@
 
 #include <QtCore/qiodevice.h>
 #include <QtCore/qstringlist.h>
+#include <QtCore/qshareddata.h>
 
 QT_BEGIN_HEADER
 
@@ -53,10 +54,13 @@ QT_MODULE(Core)
 
 #ifndef QT_NO_PROCESS
 
-template <class Key, class T> class QHash;
-
-#if (!defined(Q_OS_WIN32) && !defined(Q_OS_WINCE)) || defined(qdoc)
+#if (!defined(Q_OS_WIN32) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)) || defined(qdoc)
 typedef qint64 Q_PID;
+#elif defined(Q_OS_SYMBIAN)
+QT_END_NAMESPACE
+#  include <e32std.h>
+QT_BEGIN_NAMESPACE
+typedef TProcessId Q_PID;
 #else
 QT_END_NAMESPACE
 typedef struct _PROCESS_INFORMATION *Q_PID;
@@ -64,6 +68,37 @@ QT_BEGIN_NAMESPACE
 #endif
 
 class QProcessPrivate;
+class QProcessEnvironmentPrivate;
+
+class Q_CORE_EXPORT QProcessEnvironment
+{
+public:
+    QProcessEnvironment();
+    QProcessEnvironment(const QProcessEnvironment &other);
+    ~QProcessEnvironment();
+    QProcessEnvironment &operator=(const QProcessEnvironment &other);
+
+    bool operator==(const QProcessEnvironment &other) const;
+    inline bool operator!=(const QProcessEnvironment &other) const
+    { return !(*this == other); }
+
+    bool isEmpty() const;
+    void clear();
+
+    bool contains(const QString &name) const;
+    void insert(const QString &name, const QString &value);
+    void remove(const QString &name);
+    QString value(const QString &name, const QString &defaultValue = QString()) const;
+
+    QStringList toStringList() const;
+
+    static QProcessEnvironment systemEnvironment();
+
+private:
+    friend class QProcessPrivate;
+    friend class QProcessEnvironmentPrivate;
+    QSharedDataPointer<QProcessEnvironmentPrivate> d;
+};
 
 class Q_CORE_EXPORT QProcess : public QIODevice
 {
@@ -123,8 +158,8 @@ public:
 
     void setEnvironment(const QStringList &environment);
     QStringList environment() const;
-    void setEnvironmentHash(const QHash<QString, QString> &environment);
-    QHash<QString, QString> environmentHash() const;
+    void setProcessEnvironment(const QProcessEnvironment &environment);
+    QProcessEnvironment processEnvironment() const;
 
     QProcess::ProcessError error() const;
     QProcess::ProcessState state() const;
@@ -160,7 +195,6 @@ public:
     static bool startDetached(const QString &program);
 
     static QStringList systemEnvironment();
-    static QHash<QString, QString> systemEnvironmentHash();
 
 public Q_SLOTS:
     void terminate();

@@ -180,6 +180,7 @@ private slots:
     void comboboxWindowFlags();
     void updateAndDelete();
     void inputMethod();
+    void clickFocus();
 };
 
 // Subclass that exposes the protected functions.
@@ -3189,7 +3190,7 @@ void tst_QGraphicsProxyWidget::windowFlags()
     QVERIFY((widget->windowFlags() & widgetWFlags) == widgetWFlags);
 
     proxy.setWidget(widget);
- 
+
     if (resultingProxyFlags == 0)
         QVERIFY(!proxy.windowFlags());
     else
@@ -3297,6 +3298,90 @@ void tst_QGraphicsProxyWidget::inputMethod()
         qApp->sendEvent(proxy, &event);
         QCOMPARE(lineEdit->inputMethodEvents, i);
     }
+}
+
+void tst_QGraphicsProxyWidget::clickFocus()
+{
+    QGraphicsScene scene;
+    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+    QGraphicsProxyWidget *proxy = scene.addWidget(new QLineEdit);
+
+    EventSpy proxySpy(proxy);
+    EventSpy widgetSpy(proxy->widget());
+
+    QGraphicsView view(&scene);
+    view.setFrameStyle(0);
+    view.resize(300, 300);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
+
+    QVERIFY(!proxy->hasFocus());
+    QVERIFY(!proxy->widget()->hasFocus());
+
+    QCOMPARE(proxySpy.counts[QEvent::FocusIn], 0);
+    QCOMPARE(proxySpy.counts[QEvent::FocusOut], 0);
+    QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 0);
+    QCOMPARE(widgetSpy.counts[QEvent::FocusOut], 0);
+
+    // Spontaneous mouse click sets focus on a clickable widget.
+    QPointF lineEditCenter = proxy->mapToScene(proxy->boundingRect().center());
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
+    QVERIFY(proxy->hasFocus());
+    QVERIFY(proxy->widget()->hasFocus());
+    QCOMPARE(proxySpy.counts[QEvent::FocusIn], 1);
+    QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 1);
+
+    scene.setFocusItem(0);
+    QVERIFY(!proxy->hasFocus());
+    QVERIFY(!proxy->widget()->hasFocus());
+    QCOMPARE(proxySpy.counts[QEvent::FocusOut], 1);
+    QCOMPARE(widgetSpy.counts[QEvent::FocusOut], 1);
+
+    // Non-spontaneous mouse click sets focus if the widget has been clicked before
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+        event.setScenePos(lineEditCenter);
+        event.setButton(Qt::LeftButton);
+        qApp->sendEvent(&scene, &event);
+        QVERIFY(proxy->hasFocus());
+        QVERIFY(proxy->widget()->hasFocus());
+        QCOMPARE(proxySpy.counts[QEvent::FocusIn], 2);
+        QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 2);
+    }
+
+    scene.setFocusItem(0);
+    proxy->setWidget(new QLineEdit); // resets focusWidget
+    QVERIFY(!proxy->hasFocus());
+    QVERIFY(!proxy->widget()->hasFocus());
+    QCOMPARE(proxySpy.counts[QEvent::FocusOut], 2);
+    QCOMPARE(widgetSpy.counts[QEvent::FocusOut], 2);
+
+    // Non-spontaneous mouse click does not set focus on the embedded widget.
+    {
+        QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
+        event.setScenePos(lineEditCenter);
+        event.setButton(Qt::LeftButton);
+        qApp->sendEvent(&scene, &event);
+        QVERIFY(!proxy->hasFocus());
+        QVERIFY(!proxy->widget()->hasFocus());
+        QCOMPARE(proxySpy.counts[QEvent::FocusIn], 2);
+        QCOMPARE(widgetSpy.counts[QEvent::FocusIn], 2);
+    }
+
+    scene.setFocusItem(0);
+    QVERIFY(!proxy->hasFocus());
+    QVERIFY(!proxy->widget()->hasFocus());
+    QCOMPARE(proxySpy.counts[QEvent::FocusOut], 2);
+    QCOMPARE(widgetSpy.counts[QEvent::FocusOut], 2);
+
+    // Spontaneous click on non-clickable widget does not give focus.
+    proxy->widget()->setFocusPolicy(Qt::NoFocus);
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(lineEditCenter));
+    QVERIFY(!proxy->hasFocus());
+    QVERIFY(!proxy->widget()->hasFocus());
 }
 
 QTEST_MAIN(tst_QGraphicsProxyWidget)

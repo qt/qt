@@ -3,7 +3,7 @@ SOURCES  += tst_qchar.cpp
 
 QT = core
 
-wince*: {
+wince*|symbian*: {
 deploy.sources += NormalizationTest.txt
 DEPLOYMENT = deploy
 }

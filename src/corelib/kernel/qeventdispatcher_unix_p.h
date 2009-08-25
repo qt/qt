@@ -58,6 +58,7 @@
 #include "private/qabstracteventdispatcher_p.h"
 #include "private/qcore_unix_p.h"
 #include "private/qpodlist_p.h"
+#include "QtCore/qvarlengtharray.h"
 
 #if defined(Q_OS_VXWORKS)
 #  include <sys/times.h>

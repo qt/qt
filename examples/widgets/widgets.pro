@@ -22,6 +22,16 @@ SUBDIRS       = analogclock \
                 wiggly \
                 windowflags
 
+symbian: SUBDIRS = \
+                analogclock \
+                calculator \
+                calendarwidget \
+                lineedits \
+                shapedclock \
+                tetrix \
+                wiggly \
+                softkeys
+
 contains(styles, motif): SUBDIRS += styles
 
 # install
@@ -29,3 +39,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/widgets
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS widgets.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/widgets
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

@@ -61,6 +61,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #endif
+#include <private/qactiontokeyeventmapper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -907,7 +908,9 @@ QAbstractItemView::SelectionBehavior QAbstractItemView::selectionBehavior() cons
 
 /*!
     Sets the current item to be the item at \a index.
-    Depending on the current selection mode, the item may also be selected.
+
+    Unless the current selection mode is
+    \l{QAbstractItemView::}{NoSelection}, the item is also be selected.
     Note that this function also updates the starting position for any
     new selections the user performs.
 
@@ -2010,15 +2013,18 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         if (QApplication::keypadNavigationEnabled()) {
             if (!hasEditFocus()) {
                 setEditFocus(true);
+                QActionToKeyEventMapper::addSoftKey(QAction::BackSoftKey, Qt::Key_Back, this);
                 return;
             }
         }
         break;
     case Qt::Key_Back:
-        if (QApplication::keypadNavigationEnabled() && hasEditFocus())
+        if (QApplication::keypadNavigationEnabled() && hasEditFocus()) {
+            QActionToKeyEventMapper::removeSoftkey(this);
             setEditFocus(false);
-        else
+        } else {
             event->ignore();
+        }
         return;
     default:
         if (QApplication::keypadNavigationEnabled() && !hasEditFocus()) {

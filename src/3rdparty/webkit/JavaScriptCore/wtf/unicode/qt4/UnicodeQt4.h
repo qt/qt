@@ -108,6 +108,8 @@ typedef uint32_t UChar32;
 namespace WTF {
 namespace Unicode {
 
+QT_USE_NAMESPACE
+
 enum Direction {
     LeftToRight = QChar::DirL,
     RightToLeft = QChar::DirR,

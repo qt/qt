@@ -139,12 +139,13 @@ public slots:
 
 tst_QHttpSocketEngine::tst_QHttpSocketEngine()
 {
+    Q_SET_DEFAULT_IAP
 }
 
 tst_QHttpSocketEngine::~tst_QHttpSocketEngine()
 {
-
 }
+
 
 void tst_QHttpSocketEngine::init()
 {
@@ -324,8 +325,8 @@ void tst_QHttpSocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
     // Check that the greeting is what we expect it to be
-    QCOMPARE(array.constData(),
-            "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+
 
     // Write a logout message
     QByteArray array2 = "XXXX LOGOUT\r\n";
@@ -454,7 +455,7 @@ void tst_QHttpSocketEngine::tcpSocketBlockingTest()
     // Read greeting
     QVERIFY(socket.waitForReadyRead(5000));
     QString s = socket.readLine();
-    QCOMPARE(s.toLatin1().constData(), "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+    QCOMPARE(s.toLatin1().constData(), QtNetworkSettings::expectedReplyIMAP().constData());
 
     // Write NOOP
     QCOMPARE((int) socket.write("1 NOOP\r\n", 8), 8);
@@ -529,7 +530,9 @@ void tst_QHttpSocketEngine::tcpSocketNonBlockingTest()
     // Read greeting
     QVERIFY(!tcpSocketNonBlocking_data.isEmpty());
     QCOMPARE(tcpSocketNonBlocking_data.at(0).toLatin1().constData(),
-            "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+            QtNetworkSettings::expectedReplyIMAP().constData());
+
+
     tcpSocketNonBlocking_data.clear();
 
     tcpSocketNonBlocking_totalWritten = 0;
@@ -648,7 +651,7 @@ void tst_QHttpSocketEngine::downloadBigFile()
     QTime stopWatch;
     stopWatch.start();
 
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     QTestEventLoop::instance().enterLoop(240);
 #else
     QTestEventLoop::instance().enterLoop(60);
@@ -709,8 +712,8 @@ void tst_QHttpSocketEngine::passwordAuth()
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
     // Check that the greeting is what we expect it to be
-    QCOMPARE(array.constData(),
-            "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+
 
     // Write a logout message
     QByteArray array2 = "XXXX LOGOUT\r\n";

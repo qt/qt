@@ -200,7 +200,7 @@ void tst_QCalendarWidget::buttonClickCheck()
     QTest::qWait(500);
     QWidget *widget = qFindChild<QWidget *>(&object, "qt_calendar_calendarview");
     QTest::mouseMove(widget);
-    QTest::mouseClick(widget, Qt::LeftButton, 0, QPoint(), 50);
+    QTest::mouseClick(widget, Qt::LeftButton);
     QCOMPARE(2006, object.yearShown());
     object.setSelectedDate(selectedDate);
     object.showSelectedDate();

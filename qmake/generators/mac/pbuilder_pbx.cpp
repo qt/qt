@@ -156,7 +156,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                     QString profile = tmp;
                     if(!profile.endsWith(Option::dir_sep))
                         profile += Option::dir_sep;
-                    profile += fi.baseName() + ".pro";
+                    profile += fi.baseName() + Option::pro_ext;
                     fi = QFileInfo(profile);
                 }
                 QMakeProject tmp_proj;

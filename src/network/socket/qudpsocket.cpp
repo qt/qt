@@ -95,6 +95,13 @@
     This enum describes the different flags you can pass to modify the
     behavior of QUdpSocket::bind().
 
+    \note On Symbian OS bind flags behaviour depends on process capabilties.
+    If process has NetworkControl capability, the bind attempt with
+    ReuseAddressHint will always succeed even if the address and port is already
+    bound by another socket with any flags. If process does not have
+    NetworkControl capability, the bind attempt to address and port already
+    bound by another socket will always fail.
+
     \value ShareAddress Allow other services to bind to the same address
     and port. This is useful when multiple processes share
     the load of a single service by listening to the same address and port
@@ -350,6 +357,9 @@ qint64 QUdpSocket::pendingDatagramSize() const
     fragmented by the IP layer before arriving at their final
     destination.
 
+    \warning In S60 5.0 and earlier versions, the writeDatagram return
+    value is not reliable for large datagrams.
+
     \warning Calling this function on a connected UDP socket may
     result in an error and no packet being sent. If you are using a
     connected socket, use write() to send datagrams.
@@ -368,6 +378,16 @@ qint64 QUdpSocket::writeDatagram(const char *data, qint64 size, const QHostAddre
         return -1;
 
     qint64 sent = d->socketEngine->writeDatagram(data, size, address, port);
+#ifdef Q_OS_SYMBIAN
+    if( QSysInfo::s60Version() <= QSysInfo::SV_S60_5_0 ) {
+        // This is evil hack, but for some reason native RSocket::SendTo returns 0,
+        // for large datagrams (such as 600 bytes). Based on comments from Open C team
+        // this should happen only in platforms <= S60 5.0.
+        // As an workaround, we just set sent = size
+        if( sent == 0 )
+            sent = size;
+    }
+#endif
     d->cachedSocketDescriptor = d->socketEngine->socketDescriptor();
 
     if (sent >= 0) {
@@ -380,7 +400,7 @@ qint64 QUdpSocket::writeDatagram(const char *data, qint64 size, const QHostAddre
     return sent;
 }
 
-/*! 
+/*!
     \fn qint64 QUdpSocket::writeDatagram(const QByteArray &datagram,
                                              const QHostAddress &host, quint16 port)
     \overload

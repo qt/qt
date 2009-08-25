@@ -71,7 +71,6 @@ public:
         : null(true), x509(0)
     {
         QSslSocketPrivate::ensureInitialized();
-        ref = 1;
     }
 
     ~QSslCertificatePrivate()

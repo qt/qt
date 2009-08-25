@@ -925,7 +925,7 @@ void tst_QTreeWidgetItemIterator::iteratorflags()
     QFETCH(int, iteratorflags);
     QFETCH(QStringList, matches);
 
-    QTreeWidgetItemIterator it(testWidget, (QTreeWidgetItemIterator::IteratorFlags)iteratorflags);
+    QTreeWidgetItemIterator it(testWidget, QTreeWidgetItemIterator::IteratorFlags(iteratorflags));
     it+=start;
     int iMatch = 0;
     while (*it && iMatch < matches.count()) {
@@ -1000,7 +1000,7 @@ void tst_QTreeWidgetItemIterator::plus_eq()
     QFETCH(int, iteratorflags);
     QFETCH(QString, expecteditem);
 
-    QTreeWidgetItemIterator it(testWidget, (QTreeWidgetItemIterator::IteratorFlags)iteratorflags);
+    QTreeWidgetItemIterator it(testWidget, QTreeWidgetItemIterator::IteratorFlags(iteratorflags));
     it+=start;
     it+=addition;
     QTreeWidgetItem *item = *it;
@@ -1033,7 +1033,7 @@ void tst_QTreeWidgetItemIterator::minus_eq()
     QFETCH(int, iteratorflags);
     QFETCH(QString, expecteditem);
 
-    QTreeWidgetItemIterator it(testWidget, (QTreeWidgetItemIterator::IteratorFlags)iteratorflags);
+    QTreeWidgetItemIterator it(testWidget, QTreeWidgetItemIterator::IteratorFlags(iteratorflags));
     it+=start;
     it-=subtraction;
     QTreeWidgetItem *item = *it;
@@ -1112,10 +1112,10 @@ void tst_QTreeWidgetItemIterator::updateIfModifiedFromWidget()
         }
     }
 
-    QTreeWidgetItemIterator it(&tw, (QTreeWidgetItemIterator::IteratorFlags)iteratorflags);
+    QTreeWidgetItemIterator it(&tw, QTreeWidgetItemIterator::IteratorFlags(iteratorflags));
     it+=expecteditemindex;
     QTreeWidgetItem *item = 0;
-    QTreeWidgetItemIterator itRemove(&tw, (QTreeWidgetItemIterator::IteratorFlags)iteratorflags);
+    QTreeWidgetItemIterator itRemove(&tw, QTreeWidgetItemIterator::IteratorFlags(iteratorflags));
     itRemove+=removeindex;
     item = *itRemove;
     QVERIFY(item);

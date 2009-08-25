@@ -978,6 +978,7 @@ QString::QString(const QChar *unicode, int size)
         d->ref.ref();
     } else {
         d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
+        Q_CHECK_PTR(d);
         d->ref = 1;
         d->alloc = d->size = size;
         d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
@@ -1001,6 +1002,7 @@ QString::QString(int size, QChar ch)
         d->ref.ref();
     } else {
         d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
+        Q_CHECK_PTR(d);
         d->ref = 1;
         d->alloc = d->size = size;
         d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
@@ -1023,6 +1025,7 @@ QString::QString(int size, QChar ch)
 QString::QString(int size, Qt::Initialization)
 {
     d = (Data*) qMalloc(sizeof(Data)+size*sizeof(QChar));
+    Q_CHECK_PTR(d);
     d->ref = 1;
     d->alloc = d->size = size;
     d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
@@ -1042,7 +1045,9 @@ QString::QString(int size, Qt::Initialization)
 */
 QString::QString(QChar ch)
 {
-    d = (Data *)qMalloc(sizeof(Data) + sizeof(QChar));
+    void *buf = qMalloc(sizeof(Data) + sizeof(QChar));
+    Q_CHECK_PTR(buf);
+    d = reinterpret_cast<Data *>(buf);
     d->ref = 1;
     d->alloc = d->size = 1;
     d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
@@ -1212,8 +1217,7 @@ void QString::realloc(int alloc)
 {
     if (d->ref != 1 || d->data != d->array) {
         Data *x = static_cast<Data *>(qMalloc(sizeof(Data) + alloc * sizeof(QChar)));
-        if (!x)
-            return;
+        Q_CHECK_PTR(x);
         x->size = qMin(alloc, d->size);
         ::memcpy(x->array, d->data, x->size * sizeof(QChar));
         x->array[x->size] = 0;
@@ -1235,12 +1239,9 @@ void QString::realloc(int alloc)
             asciiCache->remove(d);
         }
 #endif
-        Data *x = static_cast<Data *>(qRealloc(d, sizeof(Data) + alloc * sizeof(QChar)));
-        if (!x)
-            return;
-        x->alloc = alloc;
-        x->data = x->array;
-        d = x;
+        d = static_cast<Data *>(q_check_ptr(qRealloc(d, sizeof(Data) + alloc * sizeof(QChar))));
+        d->alloc = alloc;
+        d->data = d->array;
     }
 }
 
@@ -1394,6 +1395,7 @@ QString& QString::insert(int i, const QChar *unicode, int size)
     if (s >= d->data && s < d->data + d->alloc) {
         // Part of me - take a copy
         ushort *tmp = static_cast<ushort *>(qMalloc(size * sizeof(QChar)));
+        Q_CHECK_PTR(tmp);
         memcpy(tmp, s, size * sizeof(QChar));
         insert(i, reinterpret_cast<const QChar *>(tmp), size);
         qFree(tmp);
@@ -1748,51 +1750,69 @@ QString &QString::replace(const QString &before, const QString &after, Qt::CaseS
  */
 void QString::replace_helper(uint *indices, int nIndices, int blen, const QChar *after, int alen)
 {
-    if (blen == alen) {
-        detach();
-        for (int i = 0; i < nIndices; ++i)
-            memcpy(d->data + indices[i], after, alen * sizeof(QChar));
-    } else if (alen < blen) {
-        detach();
-        uint to = indices[0];
-        if (alen)
-            memcpy(d->data+to, after, alen*sizeof(QChar));
-        to += alen;
-        uint movestart = indices[0] + blen;
-        for (int i = 1; i < nIndices; ++i) {
-            int msize = indices[i] - movestart;
-            if (msize > 0) {
-                memmove(d->data + to, d->data + movestart, msize * sizeof(QChar));
-                to += msize;
-            }
-            if (alen) {
-                memcpy(d->data + to, after, alen*sizeof(QChar));
-                to += alen;
-            }
-            movestart = indices[i] + blen;
-        }
-        int msize = d->size - movestart;
-        if (msize > 0)
-            memmove(d->data + to, d->data + movestart, msize * sizeof(QChar));
-        resize(d->size - nIndices*(blen-alen));
-    } else {
-        // we have a table of replacement positions, use them for fast replacing
-        int adjust = nIndices*(alen-blen);
-        int newLen = d->size + adjust;
-        int moveend = d->size;
-        resize(newLen);
-
-        while (nIndices) {
-            --nIndices;
-            int movestart = indices[nIndices] + blen;
-            int insertstart = indices[nIndices] + nIndices*(alen-blen);
-            int moveto = insertstart + alen;
-            memmove(d->data + moveto, d->data + movestart,
-                    (moveend - movestart)*sizeof(QChar));
-            memcpy(d->data + insertstart, after, alen*sizeof(QChar));
-            moveend = movestart-blen;
-        }
+    // copy *after in case it lies inside our own d->data area
+    // (which we could possibly invalidate via a realloc or corrupt via memcpy operations.)
+    QChar *afterBuffer = const_cast<QChar *>(after);
+    if (after >= reinterpret_cast<QChar *>(d->data) && after < reinterpret_cast<QChar *>(d->data) + d->size) {
+        afterBuffer = static_cast<QChar *>(qMalloc(alen*sizeof(QChar)));
+        Q_CHECK_PTR(afterBuffer);
+        ::memcpy(afterBuffer, after, alen*sizeof(QChar));
     }
+
+    QT_TRY {
+        detach();
+        if (blen == alen) {
+            // replace in place
+            for (int i = 0; i < nIndices; ++i)
+                memcpy(d->data + indices[i], afterBuffer, alen * sizeof(QChar));
+        } else if (alen < blen) {
+            // replace from front
+            uint to = indices[0];
+            if (alen)
+                memcpy(d->data+to, after, alen*sizeof(QChar));
+            to += alen;
+            uint movestart = indices[0] + blen;
+            for (int i = 1; i < nIndices; ++i) {
+                int msize = indices[i] - movestart;
+                if (msize > 0) {
+                    memmove(d->data + to, d->data + movestart, msize * sizeof(QChar));
+                    to += msize;
+                }
+                if (alen) {
+                    memcpy(d->data + to, afterBuffer, alen*sizeof(QChar));
+                    to += alen;
+                }
+                movestart = indices[i] + blen;
+            }
+            int msize = d->size - movestart;
+            if (msize > 0)
+                memmove(d->data + to, d->data + movestart, msize * sizeof(QChar));
+            resize(d->size - nIndices*(blen-alen));
+        } else {
+            // replace from back
+            int adjust = nIndices*(alen-blen);
+            int newLen = d->size + adjust;
+            int moveend = d->size;
+            resize(newLen);
+
+            while (nIndices) {
+                --nIndices;
+                int movestart = indices[nIndices] + blen;
+                int insertstart = indices[nIndices] + nIndices*(alen-blen);
+                int moveto = insertstart + alen;
+                memmove(d->data + moveto, d->data + movestart,
+                        (moveend - movestart)*sizeof(QChar));
+                memcpy(d->data + insertstart, afterBuffer, alen*sizeof(QChar));
+                moveend = movestart-blen;
+            }
+        }
+    } QT_CATCH(const std::bad_alloc &) {
+        if (afterBuffer != after)
+            qFree(afterBuffer);
+        QT_RETHROW;
+    }
+    if (afterBuffer != after)
+        qFree(afterBuffer);
 }
 
 /*!
@@ -1820,21 +1840,7 @@ QString &QString::replace(const QChar *before, int blen,
     if (alen == 0 && blen == 0)
         return *this;
 
-    // protect against before or after being part of this
-    const QChar *a = after;
-    const QChar *b = before;
-    if (after >= (const QChar *)d->data && after < (const QChar *)d->data + d->size) {
-        QChar *copy = (QChar *)malloc(alen*sizeof(QChar));
-        memcpy(copy, after, alen*sizeof(QChar));
-        a = copy;
-    }
-    if (before >= (const QChar *)d->data && before < (const QChar *)d->data + d->size) {
-        QChar *copy = (QChar *)malloc(blen*sizeof(QChar));
-        memcpy(copy, before, blen*sizeof(QChar));
-        b = copy;
-    }
-
-    QStringMatcher matcher(b, blen, cs);
+    QStringMatcher matcher(before, blen, cs);
 
     int index = 0;
     while (1) {
@@ -1853,18 +1859,13 @@ QString &QString::replace(const QChar *before, int blen,
         if (!pos)
             break;
 
-        replace_helper(indices, pos, blen, a, alen);
+        replace_helper(indices, pos, blen, after, alen);
 
         if (index == -1)
             break;
         // index has to be adjusted in case we get back into the loop above.
         index += pos*(alen-blen);
     }
-
-    if (a != after)
-        ::free((QChar *)a);
-    if (b != before)
-        ::free((QChar *)b);
 
     return *this;
 }
@@ -3600,6 +3601,7 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
         if (size < 0)
             size = qstrlen(str);
         d = static_cast<Data *>(qMalloc(sizeof(Data) + size * sizeof(QChar)));
+        Q_CHECK_PTR(d);
         d->ref = 1;
         d->alloc = d->size = size;
         d->clean = d->asciiCache = d->simpletext = d->righttoleft = d->capacity = 0;
@@ -3607,7 +3609,7 @@ QString::Data *QString::fromLatin1_helper(const char *str, int size)
         ushort *i = d->data;
         d->array[size] = '\0';
         while (size--)
-           *i++ = (uchar)*str++;
+            *i++ = (uchar)*str++;
     }
     return d;
 }
@@ -6923,6 +6925,7 @@ void QString::updateProperties() const
 QString QString::fromRawData(const QChar *unicode, int size)
 {
     Data *x = static_cast<Data *>(qMalloc(sizeof(Data)));
+    Q_CHECK_PTR(x);
     if (unicode) {
         x->data = (ushort *)unicode;
     } else {

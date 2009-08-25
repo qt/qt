@@ -42,9 +42,9 @@
 /*!
     \headerfile <QtAlgorithms>
     \title Generic Algorithms
-    \ingroup classlists
+    \ingroup funclists
 
-    \brief The <QtAlgorithms> header provides generic template-based algorithms.
+    \brief The <QtAlgorithms> header includes the generic, template-based algorithms.
 
     Qt provides a number of global template functions in \c
     <QtAlgorithms> that work on containers and perform well-know

@@ -41,7 +41,7 @@
 
 
 #include <QString>
-#include <QTest>
+#include <QtTest/QtTest>
 #include <QtDebug>
 
 class tst_q_func_info : public QObject

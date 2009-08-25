@@ -56,20 +56,21 @@
 
 QT_BEGIN_NAMESPACE
 
-#define QT_SVG_DRAW_SHAPE(command)                  \
-    applyStyle(p, states);                          \
-    qreal oldOpacity = p->opacity();                \
-    QBrush oldBrush = p->brush();                   \
-    QPen oldPen = p->pen();                         \
-    p->setPen(Qt::NoPen);                           \
-    p->setOpacity(oldOpacity * states.fillOpacity); \
-    command;                                        \
-    p->setOpacity(oldOpacity);                      \
-    p->setPen(oldPen);                              \
-    p->setBrush(Qt::NoBrush);                       \
-    command;                                        \
-    p->setBrush(oldBrush);                          \
-    revertStyle(p, states);
+#define QT_SVG_DRAW_SHAPE(command)                          \
+    qreal oldOpacity = p->opacity();                        \
+    QBrush oldBrush = p->brush();                           \
+    QPen oldPen = p->pen();                                 \
+    p->setPen(Qt::NoPen);                                   \
+    p->setOpacity(oldOpacity * states.fillOpacity);         \
+    command;                                                \
+    p->setPen(oldPen);                                      \
+    if (oldPen.widthF() != 0) {                             \
+        p->setOpacity(oldOpacity * states.strokeOpacity);   \
+        p->setBrush(Qt::NoBrush);                           \
+        command;                                            \
+        p->setBrush(oldBrush);                              \
+    }                                                       \
+    p->setOpacity(oldOpacity);
 
 
 void QSvgAnimation::draw(QPainter *, QSvgExtraStates &)
@@ -105,7 +106,9 @@ QRectF QSvgCircle::bounds() const
 
 void QSvgCircle::draw(QPainter *p, QSvgExtraStates &states)
 {
+    applyStyle(p, states);
     QT_SVG_DRAW_SHAPE(p->drawEllipse(m_bounds));
+    revertStyle(p, states);
 }
 
 QSvgArc::QSvgArc(QSvgNode *parent, const QPainterPath &path)
@@ -117,7 +120,12 @@ QSvgArc::QSvgArc(QSvgNode *parent, const QPainterPath &path)
 void QSvgArc::draw(QPainter *p, QSvgExtraStates &states)
 {
     applyStyle(p, states);
-    p->drawPath(cubic);
+    if (p->pen().widthF() != 0) {
+        qreal oldOpacity = p->opacity();
+        p->setOpacity(oldOpacity * states.strokeOpacity);
+        p->drawPath(cubic);
+        p->setOpacity(oldOpacity);
+    }
     revertStyle(p, states);
 }
 
@@ -140,7 +148,9 @@ QRectF QSvgEllipse::bounds() const
 
 void QSvgEllipse::draw(QPainter *p, QSvgExtraStates &states)
 {
+    applyStyle(p, states);
     QT_SVG_DRAW_SHAPE(p->drawEllipse(m_bounds));
+    revertStyle(p, states);
 }
 
 QSvgImage::QSvgImage(QSvgNode *parent, const QImage &image,
@@ -171,7 +181,12 @@ QSvgLine::QSvgLine(QSvgNode *parent, const QLineF &line)
 void QSvgLine::draw(QPainter *p, QSvgExtraStates &states)
 {
     applyStyle(p, states);
-    p->drawLine(m_bounds);
+    if (p->pen().widthF() != 0) {
+        qreal oldOpacity = p->opacity();
+        p->setOpacity(oldOpacity * states.strokeOpacity);
+        p->drawLine(m_bounds);
+        p->setOpacity(oldOpacity);
+    }
     revertStyle(p, states);
 }
 
@@ -184,7 +199,10 @@ QSvgPath::QSvgPath(QSvgNode *parent, const QPainterPath &qpath)
 
 void QSvgPath::draw(QPainter *p, QSvgExtraStates &states)
 {
+    applyStyle(p, states);
+    m_path.setFillRule(states.fillRule);
     QT_SVG_DRAW_SHAPE(p->drawPath(m_path));
+    revertStyle(p, states);
 }
 
 QRectF QSvgPath::bounds() const
@@ -198,7 +216,7 @@ QRectF QSvgPath::bounds() const
 }
 
 QSvgPolygon::QSvgPolygon(QSvgNode *parent, const QPolygonF &poly)
-    : QSvgNode(parent), m_poly(poly), m_fillRule(Qt::WindingFill)
+    : QSvgNode(parent), m_poly(poly)
 {
 }
 
@@ -216,7 +234,9 @@ QRectF QSvgPolygon::bounds() const
 
 void QSvgPolygon::draw(QPainter *p, QSvgExtraStates &states)
 {
-    QT_SVG_DRAW_SHAPE(p->drawPolygon(m_poly, m_fillRule));
+    applyStyle(p, states);
+    QT_SVG_DRAW_SHAPE(p->drawPolygon(m_poly, states.fillRule));
+    revertStyle(p, states);
 }
 
 
@@ -229,13 +249,19 @@ QSvgPolyline::QSvgPolyline(QSvgNode *parent, const QPolygonF &poly)
 void QSvgPolyline::draw(QPainter *p, QSvgExtraStates &states)
 {
     applyStyle(p, states);
+    qreal oldOpacity = p->opacity();
     if (p->brush().style() != Qt::NoBrush) {
         QPen save = p->pen();
         p->setPen(QPen(Qt::NoPen));
-        p->drawPolygon(m_poly);
+        p->setOpacity(oldOpacity * states.fillOpacity);
+        p->drawPolygon(m_poly, states.fillRule);
         p->setPen(save);
     }
-    p->drawPolyline(m_poly);
+    if (p->pen().widthF() != 0) {
+        p->setOpacity(oldOpacity * states.strokeOpacity);
+        p->drawPolyline(m_poly);
+    }
+    p->setOpacity(oldOpacity);
     revertStyle(p, states);
 }
 
@@ -259,11 +285,13 @@ QRectF QSvgRect::bounds() const
 
 void QSvgRect::draw(QPainter *p, QSvgExtraStates &states)
 {
+    applyStyle(p, states);
     if (m_rx || m_ry) {
         QT_SVG_DRAW_SHAPE(p->drawRoundedRect(m_rect, m_rx, m_ry, Qt::RelativeSize));
     } else {
         QT_SVG_DRAW_SHAPE(p->drawRect(m_rect));
     }
+    revertStyle(p, states);
 }
 
 QSvgTspan * const QSvgText::LINEBREAK = 0;
@@ -296,6 +324,8 @@ void QSvgText::setTextArea(const QSizeF &size)
 void QSvgText::draw(QPainter *p, QSvgExtraStates &states)
 {
     applyStyle(p, states);
+    qreal oldOpacity = p->opacity();
+    p->setOpacity(oldOpacity * states.fillOpacity);
 
     // Force the font to have a size of 100 pixels to avoid truncation problems
     // when the font is very small.
@@ -456,6 +486,7 @@ void QSvgText::draw(QPainter *p, QSvgExtraStates &states)
     }
 
     p->setWorldTransform(oldTransform, false);
+    p->setOpacity(oldOpacity);
     revertStyle(p, states);
 }
 

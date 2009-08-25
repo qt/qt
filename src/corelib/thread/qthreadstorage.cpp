@@ -101,12 +101,14 @@ void **QThreadStorageData::get() const
         qWarning("QThreadStorage::get: QThreadStorage can only be used with threads started with QThread");
         return 0;
     }
-    QMap<int, void *>::iterator it = data->tls.find(id);
+    QMap<int, void *>::const_iterator it = data->tls.constFind(id);
     DEBUG_MSG("QThreadStorageData: Returning storage %d, data %p, for thread %p",
           id,
           it != data->tls.end() ? it.value() : 0,
           data->thread);
-    return it != data->tls.end() && it.value() != 0 ? &it.value() : 0;
+    // const_cast below is a bit evil - but we have to make sure not to detach here
+    // otherwise we'll go bonkers in oom situations
+    return it != data->tls.constEnd() && it.value() != 0 ? const_cast<void **>(&it.value()) : 0;
 }
 
 void **QThreadStorageData::set(void *p)
@@ -129,9 +131,9 @@ void **QThreadStorageData::set(void *p)
             void *q = it.value();
             it.value() = 0;
 
-            mutex()->lock();
+            QMutexLocker locker(mutex());
             void (*destructor)(void *) = destructors()->value(id);
-            mutex()->unlock();
+            locker.unlock();
 
             destructor(q);
         }
@@ -167,9 +169,9 @@ void QThreadStorageData::finish(void **p)
             continue;
         }
 
-        mutex()->lock();
+        QMutexLocker locker(mutex());
         void (*destructor)(void *) = destructors()->value(id);
-        mutex()->unlock();
+        locker.unlock();
 
         if (!destructor) {
             if (QThread::currentThread())

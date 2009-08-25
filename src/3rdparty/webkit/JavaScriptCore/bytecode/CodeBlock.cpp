@@ -1087,7 +1087,8 @@ void CodeBlock::dump(ExecState* exec, const Vector<Instruction>::const_iterator&
             int debugHookID = (++it)->u.operand;
             int firstLine = (++it)->u.operand;
             int lastLine = (++it)->u.operand;
-            printf("[%4d] debug\t\t %s, %d, %d\n", location, debugHookName(debugHookID), firstLine, lastLine);
+            int column = (++it)->u.operand;
+            printf("[%4d] debug\t\t %s, %d, %d, %d\n", location, debugHookName(debugHookID), firstLine, lastLine, column);
             break;
         }
         case op_profile_will_call: {
@@ -1260,6 +1261,7 @@ CodeBlock::CodeBlock(ScopeNode* ownerNode)
 #endif
     , m_needsFullScopeChain(false)
     , m_usesEval(false)
+    , m_usesArguments(false)
     , m_isNumericCompareFunction(false)
     , m_codeType(NativeCode)
     , m_source(0)
@@ -1282,6 +1284,7 @@ CodeBlock::CodeBlock(ScopeNode* ownerNode, CodeType codeType, PassRefPtr<SourceP
 #endif
     , m_needsFullScopeChain(ownerNode->needsActivation())
     , m_usesEval(ownerNode->usesEval())
+    , m_usesArguments(ownerNode->usesArguments())
     , m_isNumericCompareFunction(false)
     , m_codeType(codeType)
     , m_source(sourceProvider)

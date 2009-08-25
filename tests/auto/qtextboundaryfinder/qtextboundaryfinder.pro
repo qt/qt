@@ -1,9 +1,10 @@
 load(qttest_p4)
+QT = core
 HEADERS += 
 SOURCES += tst_qtextboundaryfinder.cpp 
-DEFINES += SRCDIR=\\\"$$PWD\\\"
+!symbian:*:DEFINES += SRCDIR=\\\"$$PWD\\\"
 
-wince*:{
+wince*|symbian*:{
    addFiles.sources = data
    addFiles.path = .
    DEPLOYMENT += addFiles

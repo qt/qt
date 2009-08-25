@@ -695,7 +695,12 @@ void QWinInputContext::updateImeStatus(QWidget *w, bool hasFocus)
 {
     if (!w)
         return;
-    bool e = w->testAttribute(Qt::WA_InputMethodEnabled) && w->isEnabled();
+    // It's always the proxy that carries the hints.
+    QWidget *focusProxyWidget = w->focusProxy();
+    if (!focusProxyWidget)
+        focusProxyWidget = w;
+    bool e = w->testAttribute(Qt::WA_InputMethodEnabled) && w->isEnabled()
+            && !(focusProxyWidget->inputMethodHints() & Qt::ImhExclusiveInputMask);
     bool hasIme = e && hasFocus;
 #ifdef Q_IME_DEBUG
     qDebug("%s HasFocus = %d hasIme = %d e = %d ", w->className(), hasFocus, hasIme, e);

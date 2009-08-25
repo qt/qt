@@ -254,7 +254,7 @@ void tst_QItemView::populate()
 {
     treeModel = new CheckerModel;
     QModelIndex parent;
-#ifdef QT_ARCH_ARM
+#if defined(QT_ARCH_ARM) || defined(Q_OS_SYMBIAN)
     const int baseInsert = 4;
 #else
     const int baseInsert = 26;
@@ -352,7 +352,7 @@ void tst_QItemView::nonDestructiveBasicTest()
     QCOMPARE(view->tabKeyNavigation(), false);
     view->setTabKeyNavigation(true);
     QCOMPARE(view->tabKeyNavigation(), true);
-
+#ifndef QT_NO_DRAGANDDROP
     // setDropIndicatorShown
     view->setDropIndicatorShown(false);
     QCOMPARE(view->showDropIndicator(), false);
@@ -364,6 +364,7 @@ void tst_QItemView::nonDestructiveBasicTest()
     QCOMPARE(view->dragEnabled(), false);
     view->setDragEnabled(true);
     QCOMPARE(view->dragEnabled(), true);
+#endif
 
     // setAlternatingRowColors
     view->setAlternatingRowColors(false);
@@ -457,7 +458,7 @@ void tst_QItemView::spider()
     view->setHorizontalScrollMode((QAbstractItemView::ScrollMode)hscroll);
     view->setModel(treeModel);
     view->show();
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     srandom(0);
 #else
     srandom(time(0));

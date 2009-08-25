@@ -47,6 +47,11 @@ QMAKE_VARS_FILE=.qmake.vars
 # utility functions
 #-------------------------------------------------------------------------------
 
+shellEscape()
+{
+    echo "$@" | sed 's/ /\ /g'
+}
+
 # Adds a new qmake variable to the cache
 # Usage: QMakeVar mode varname contents
 #   where mode is one of: set, add, del
@@ -87,6 +92,30 @@ getQMakeConf()
     next
 }
 { print }' "$tmpSPEC/qmake.conf"
+}
+
+# relies on $TEST_COMPILER being set correctly
+compilerSupportsFlag()
+{
+    cat >conftest.cpp <<EOF
+int main() { return 0; }
+EOF
+    "$TEST_COMPILER" "$@" -o /dev/null conftest.cpp
+    ret=$?
+    rm -f conftest.cpp conftest.o
+    return $ret
+}
+
+# relies on $TEST_COMPILER being set correctly
+linkerSupportsFlag()
+{
+    lflags=-Wl
+    for flag
+    do
+	safe_flag=`shellEscape "$flag"`
+	lflags=$lflags,$safe_flag
+    done
+    compilerSupportsFlag "$lflags" >/dev/null 2>&1
 }
 
 #-------------------------------------------------------------------------------
@@ -563,6 +592,7 @@ MIN_DBUS_1_VERSION=0.62
 CFG_CONFIGURE_EXIT_ON_ERROR=yes
 CFG_PROFILE=no
 CFG_EXCEPTIONS=unspecified
+CFG_SCRIPT=auto # (yes|no|auto)
 CFG_SCRIPTTOOLS=auto # (yes|no|auto)
 CFG_XMLPATTERNS=auto # (yes|no|auto)
 CFG_INCREMENTAL=auto
@@ -851,7 +881,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-declarative|-webkit|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-declarative|-webkit|-script|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1187,7 +1217,7 @@ while [ "$#" -gt 0 ]; do
             fi
         fi
 	;;
-	    
+
     qvfb) # left for commandline compatibility, not documented
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             if [ "$VAL" = "yes" ]; then
@@ -1745,6 +1775,17 @@ while [ "$#" -gt 0 ]; do
         else
             if [ "$VAL" = "no" ]; then
                 CFG_XMLPATTERNS="no"
+            else
+                UNKNOWN_OPT=yes
+            fi
+        fi
+        ;;
+    script)
+        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
+            CFG_SCRIPT="yes"
+        else
+            if [ "$VAL" = "no" ]; then
+                CFG_SCRIPT="no"
             else
                 UNKNOWN_OPT=yes
             fi
@@ -3173,11 +3214,10 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
         [-qtnamespace <namespace>] [-qtlibinfix <infix>] [-separate-debug-info] [-armfpa]
         [-no-optimized-qmake] [-optimized-qmake] [-no-xmlpatterns] [-xmlpatterns]
-        [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
+        [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
         [-no-openssl] [-openssl] [-openssl-linked]
-        [-no-multimedia] [-multimedia]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit]
-        [-no-scripttools] [-scripttools] [-no-declarative] [-declarative]
+        [-no-script] [-script] [-no-scripttools] [-scripttools] [-no-declarative] [-declarative]
 
         [additional platform specific options (see below)]
 
@@ -3310,14 +3350,14 @@ fi
                          QtXmlPatterns is built if a decent C++ compiler
                          is used and exceptions are enabled.
 
+    -no-multimedia ..... Do not build the QtMultimedia module.
+ +  -multimedia ........ Build the QtMultimedia module.
+
     -no-phonon ......... Do not build the Phonon module.
  +  -phonon ............ Build the Phonon module.
                          Phonon is built if a decent C++ compiler is used.
     -no-phonon-backend.. Do not build the platform phonon plugin.
  +  -phonon-backend..... Build the platform phonon plugin.
-
-    -no-multimedia ..... Do not build the multimedia module.
- *  -multimedia ........ Build the multimedia module.
 
     -no-svg ............ Do not build the SVG module.
  +  -svg ............... Build the SVG module.
@@ -3325,6 +3365,9 @@ fi
     -no-webkit ......... Do not build the WebKit module.
  +  -webkit ............ Build the WebKit module.
                          WebKit is built if a decent C++ compiler is used.
+
+    -no-script ......... Do not build the QtScript module.
+ +  -script ............ Build the QtScript module.
 
     -no-scripttools .... Do not build the QtScriptTools module.
  +  -scripttools ....... Build the QtScriptTools module.
@@ -5788,7 +5831,7 @@ else
     fi
 fi;
 
-# set the global Mac deployment target. This is overridden on an arch-by-arch basis 
+# set the global Mac deployment target. This is overridden on an arch-by-arch basis
 # in some cases, see code further down
 case "$PLATFORM,$CFG_MAC_COCOA" in
     macx*,yes)
@@ -6293,6 +6336,12 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_XMLPATTERNS"
 fi
 
+if [ "$CFG_MULTIMEDIA" = "no" ]; then
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
+else
+    QT_CONFIG="$QT_CONFIG multimedia"
+fi
+
 if [ "$CFG_SVG" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG svg"
 else
@@ -6318,21 +6367,30 @@ else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_WEBKIT"
 fi
 
-if [ "$CFG_SCRIPTTOOLS" = "auto" ]; then
+if [ "$CFG_SCRIPT" = "auto" ]; then
+    CFG_SCRIPT="$canBuildWebKit"
+fi
+
+if [ "$CFG_SCRIPT" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG script"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPT"
+fi
+
+if [ "$CFG_SCRIPTTOOLS" = "yes" -a "$CFG_SCRIPT" = "no" ]; then
+    echo "QtScriptTools was requested, but it can't be built due to QtScript being disabled."
+    exit 1
+fi
+if [ "$CFG_SCRIPTTOOLS" = "auto" -a "$CFG_SCRIPT" != "no" ]; then
     CFG_SCRIPTTOOLS="yes"
+elif [ "$CFG_SCRIPT" = "no" ]; then
+    CFG_SCRIPTTOOLS="no"
 fi
 
 if [ "$CFG_SCRIPTTOOLS" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG scripttools"
-    CFG_SCRIPTTOOLS="yes"
 else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SCRIPTTOOLS"
-fi
-
-if [ "$CFG_MULTIMEDIA" = "yes" ]; then
-    QT_CONFIG="$QT_CONFIG multimedia"
-else
-    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_MULTIMEDIA"
 fi
 
 if [ "$CFG_EXCEPTIONS" = "no" ]; then
@@ -6999,6 +7057,11 @@ QMAKE_LIBDIR_QT  = \$\$QT_BUILD_TREE/lib
 
 EOF
 
+# Ensure we can link to uninistalled libraries
+if linkerSupportsFlag -rpath-link "$outpath/lib"; then
+    echo "QMAKE_LFLAGS    += -Wl,-rpath-link,\$\$QT_BUILD_TREE/lib" >> "$CACHEFILE.tmp"
+fi
+
 if [ -n "$QT_CFLAGS_PSQL" ]; then
     echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$CACHEFILE.tmp"
 fi
@@ -7193,6 +7256,7 @@ echo "Qt 3 compatibility .. $CFG_QT3SUPPORT"
 [ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module ....... yes (run-time)"
 [ "$CFG_DBUS" = "linked" ] && echo "QtDBus module ....... yes (linked)"
 echo "QtConcurrent code.... $CFG_CONCURRENT"
+echo "QtScript module ..... $CFG_SCRIPT"
 echo "QtScriptTools module  $CFG_SCRIPTTOOLS"
 echo "QtXmlPatterns module  $CFG_XMLPATTERNS"
 echo "Phonon module ....... $CFG_PHONON"
@@ -7516,6 +7580,7 @@ for file in .projects .projects.3; do
 
         case $a in
         *winmain/winmain.pro) continue ;;
+        *s60main/s60main.pro) continue ;;
         */qmake/qmake.pro) continue ;;
         *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*) SPEC=$QMAKESPEC ;;
         *) SPEC=$XQMAKESPEC ;;

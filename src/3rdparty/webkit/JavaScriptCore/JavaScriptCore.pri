@@ -216,7 +216,8 @@ SOURCES += \
     wtf/DateMath.cpp \
     wtf/FastMalloc.cpp \
     wtf/Threading.cpp \
-    wtf/qt/MainThreadQt.cpp
+    wtf/qt/MainThreadQt.cpp \
+    parser/SourcePoolQt.cpp
 
 !contains(DEFINES, ENABLE_SINGLE_THREADED=1) {
     SOURCES += wtf/qt/ThreadingQt.cpp

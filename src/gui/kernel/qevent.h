@@ -245,7 +245,7 @@ public:
     inline QT3_SUPPORT_CONSTRUCTOR QKeyEvent(Type type, int key, int /*ascii*/,
                                            int modifiers, const QString& text = QString(),
                                            bool autorep = false, ushort count = 1)
-        : QInputEvent(type, (Qt::KeyboardModifiers)(modifiers & (int)Qt::KeyButtonMask)), txt(text), k(key),
+        : QInputEvent(type, Qt::KeyboardModifiers(modifiers & (int)Qt::KeyButtonMask)), txt(text), k(key),
           c(count), autor(autorep)
     {
         if (key >= Qt::Key_Back && key <= Qt::Key_MediaLast)
@@ -428,7 +428,8 @@ public:
        TextFormat,
        Cursor,
        Language,
-       Ruby
+       Ruby,
+       Selection
     };
     class Attribute {
     public:

@@ -54,6 +54,7 @@
 //
 
 #include <QtCore/qobjectdefs.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -76,7 +77,7 @@ public:
 
 protected:
     QScriptDebuggerJob(QScriptDebuggerJobPrivate &dd);
-    QScriptDebuggerJobPrivate *d_ptr;
+    QScopedPointer<QScriptDebuggerJobPrivate> d_ptr;
 
 private:
     Q_DECLARE_PRIVATE(QScriptDebuggerJob)

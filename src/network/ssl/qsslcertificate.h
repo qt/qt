@@ -47,6 +47,7 @@
 #include <QtCore/qbytearray.h>
 #include <QtCore/qcryptographichash.h>
 #include <QtCore/qregexp.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtNetwork/qssl.h>
 
 typedef struct x509_st X509; // ### check if this works
@@ -118,7 +119,7 @@ public:
     Qt::HANDLE handle() const;
 
 private:
-    QSslCertificatePrivate *d;
+    QExplicitlySharedDataPointer<QSslCertificatePrivate> d;
     friend class QSslCertificatePrivate;
     friend class QSslSocketBackendPrivate;
 };

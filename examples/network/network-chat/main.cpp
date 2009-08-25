@@ -42,11 +42,22 @@
 #include <QApplication>
 
 #include "chatdialog.h"
+#ifdef Q_OS_SYMBIAN
+#include "sym_iap_util.h"
+#endif
 
 int main(int argc, char *argv[])
 {
+#ifdef Q_OS_SYMBIAN
+    qt_SetDefaultIap();
+#endif
     QApplication app(argc, argv);
     ChatDialog dialog;
+#ifdef Q_OS_SYMBIAN
+    // Make application better looking and more usable on small screen
+    dialog.showMaximized();
+#else
     dialog.show();
+#endif
     return app.exec();
 }

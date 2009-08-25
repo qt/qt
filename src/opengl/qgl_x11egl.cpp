@@ -494,6 +494,10 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
 {
     Q_Q(QGLContext);
 
+    // The EGL texture_from_pixmap has no facility to invert the y coordinate
+    if (!canInvert)
+        return 0;
+
     Q_ASSERT(pd->classId() == QPixmapData::X11Class);
 
     static bool checkedForTFP = false;

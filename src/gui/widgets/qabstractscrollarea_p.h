@@ -99,11 +99,11 @@ public:
 
     inline bool viewportEvent(QEvent *event)
     { return q_func()->viewportEvent(event); }
-    QObject *viewportFilter;
+    QScopedPointer<QObject> viewportFilter;
 
-    virtual void _q_gestureTriggered();
-    QPanGesture *panGesture;
 #ifdef Q_WS_WIN
+    QPanGesture *panGesture;
+    virtual void _q_gestureTriggered();
     bool singleFingerPanEnabled;
     void setSingleFingerPanEnabled(bool on = true);
 #endif

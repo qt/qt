@@ -149,20 +149,18 @@ private:
 
     \sa setGraphicsItem()
 */
-QGesture::QGesture(QObject *parent)
+QGesture::QGesture(QObject *gestureTarget, QObject *parent)
     : QObject(*new QGesturePrivate, parent)
 {
-    if (parent)
-        parent->installEventFilter(this);
+    setGestureTarget(gestureTarget);
 }
 
 /*! \internal
  */
-QGesture::QGesture(QGesturePrivate &dd, QObject *parent)
+QGesture::QGesture(QGesturePrivate &dd, QObject *gestureTarget, QObject *parent)
     : QObject(dd, parent)
 {
-    if (parent)
-        parent->installEventFilter(this);
+    setGestureTarget(gestureTarget);
 }
 
 /*!
@@ -170,6 +168,33 @@ QGesture::QGesture(QGesturePrivate &dd, QObject *parent)
 */
 QGesture::~QGesture()
 {
+}
+
+/*!
+    \property QGesture::gestureTarget
+
+    Gesture target is the object that the gesture will observe for events.
+    Typically this means that the gesture installs an event filter on the
+    target object.
+*/
+void QGesture::setGestureTarget(QObject *object)
+{
+    d_func()->setupGestureTarget(object);
+}
+
+QObject* QGesture::gestureTarget() const
+{
+    return d_func()->gestureTarget;
+}
+
+void QGesturePrivate::setupGestureTarget(QObject *object)
+{
+    Q_Q(QGesture);
+    if (gestureTarget)
+        gestureTarget->removeEventFilter(q);
+    if (object)
+        object->installEventFilter(q);
+    gestureTarget = object;
 }
 
 /*! \internal

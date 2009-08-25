@@ -19,7 +19,7 @@ win32: {
     copy /Y $(DESTDIR_TARGET) ..\system.trolltech.test.mylib.dll && \
     copy /Y $(DESTDIR_TARGET) ..\mylib_noextension
 }
-unix: {
+unix:!symbian: {
     QMAKE_POST_LINK = cp -f $(DESTDIR)$(TARGET) ../libmylib.so2 && \
     cp -f $(DESTDIR)$(TARGET) ../system.trolltech.test.mylib.so
 }
@@ -27,4 +27,5 @@ unix: {
 #no special install rule for the library used by test
 INSTALLS =
 
+symbian: TARGET.CAPABILITY=ALL -TCB
 

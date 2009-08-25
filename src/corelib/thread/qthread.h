@@ -142,15 +142,18 @@ class Q_CORE_EXPORT QThread : public QObject
 {
 public:
     static Qt::HANDLE currentThreadId() { return Qt::HANDLE(currentThread()); }
-    static QThread* currentThread()
-    { if (!instance) instance = new QThread(); return instance; }
+    static QThread* currentThread();
+    
+protected:
+    QThread(QThreadPrivate &dd, QObject *parent = 0);
 
 private:
-    QThread();
+    explicit QThread(QObject *parent = 0);
     static QThread *instance;
 
     friend class QCoreApplication;
     friend class QThreadData;
+    friend class QAdoptedThread;
     Q_DECLARE_PRIVATE(QThread)
 };
 

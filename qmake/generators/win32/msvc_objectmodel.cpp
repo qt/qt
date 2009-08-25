@@ -484,7 +484,7 @@ bool VCCLCompilerTool::parseOption(const char* option)
             QString opt(option);
             if (opt.contains('a') && !opt.contains('s') && !opt.contains('c'))
                 ExceptionHandling = ehSEH;
-            else if (!opt.contains('a') && opt.contains("s-") && opt.contains("c-")) 
+            else if (!opt.contains('a') && opt.contains("s-") && opt.contains("c-"))
                 ExceptionHandling = ehNone;
             else if (!opt.contains('a') && opt.contains('s') && opt.contains('c'))
                 ExceptionHandling = ehNoSEH;

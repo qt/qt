@@ -56,7 +56,7 @@ namespace JSC {
 
         virtual bool getOwnPropertySlot(ExecState*, const Identifier&, PropertySlot&);
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
-        virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
+        virtual bool deleteProperty(ExecState*, const Identifier& propertyName, bool checkDontDelete = true);
 
         JSObject* construct(ExecState*, const ArgList&);
         JSValue call(ExecState*, JSValue thisValue, const ArgList&);

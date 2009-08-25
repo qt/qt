@@ -11,3 +11,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/activeqt/simple
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS simple.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/activeqt/simple
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

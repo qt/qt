@@ -1698,6 +1698,24 @@ public:
 };
 
 template<class T>
+static void storeItemFlags(const T *item, QList<DomProperty*> *properties)
+{
+    static const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
+    static const Qt::ItemFlags defaultFlags = T().flags();
+    static const QMetaEnum itemFlags_enum = metaEnum<QAbstractFormBuilderGadget>("itemFlags");
+
+    if (item->flags() != defaultFlags) {
+        DomProperty *p = new DomProperty;
+        p->setAttributeName(strings.flagsAttribute);
+        p->setElementSet(QString::fromAscii(itemFlags_enum.valueToKeys(item->flags())));
+        properties->append(p);
+    }
+}
+
+#ifndef Q_CC_RVCT
+// RVCT does not accept static inline functions if one argument is templated type
+// For this reason all necessary function variants are explicityly written for it.
+template<class T>
 static void storeItemProps(QAbstractFormBuilder *abstractFormBuilder, const T *item,
         QList<DomProperty*> *properties)
 {
@@ -1720,21 +1738,6 @@ static void storeItemProps(QAbstractFormBuilder *abstractFormBuilder, const T *i
 
     if ((p = formBuilder->saveResource(item->data(Qt::DecorationPropertyRole))))
         properties->append(p);
-}
-
-template<class T>
-static void storeItemFlags(const T *item, QList<DomProperty*> *properties)
-{
-    static const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
-    static const Qt::ItemFlags defaultFlags = T().flags();
-    static const QMetaEnum itemFlags_enum = metaEnum<QAbstractFormBuilderGadget>("itemFlags");
-
-    if (item->flags() != defaultFlags) {
-        DomProperty *p = new DomProperty;
-        p->setAttributeName(strings.flagsAttribute);
-        p->setElementSet(QString::fromAscii(itemFlags_enum.valueToKeys(item->flags())));
-        properties->append(p);
-    }
 }
 
 template<class T>
@@ -1789,6 +1792,158 @@ static void loadItemPropsNFlags(QAbstractFormBuilder *abstractFormBuilder, T *it
     if ((p = properties.value(strings.flagsAttribute)) && p->kind() == DomProperty::Set)
         item->setFlags(enumKeysToValue<Qt::ItemFlags>(itemFlags_enum, p->elementSet().toAscii()));
 }
+
+#else
+
+static void storeItemProps(QAbstractFormBuilder *abstractFormBuilder, const QTableWidgetItem *item,
+        QList<DomProperty*> *properties)
+{
+    static const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
+    FriendlyFB * const formBuilder = static_cast<FriendlyFB *>(abstractFormBuilder);
+
+    DomProperty *p;
+    QVariant v;
+
+    foreach (const QFormBuilderStrings::TextRoleNName &it, strings.itemTextRoles)
+        if ((p = formBuilder->saveText(it.second, item->data(it.first.second))))
+            properties->append(p);
+
+    foreach (const QFormBuilderStrings::RoleNName &it, strings.itemRoles)
+        if ((v = item->data(it.first)).isValid() &&
+            (p = variantToDomProperty(abstractFormBuilder,
+                static_cast<const QMetaObject *>(&QAbstractFormBuilderGadget::staticMetaObject),
+                it.second, v)))
+            properties->append(p);
+
+    if ((p = formBuilder->saveResource(item->data(Qt::DecorationPropertyRole))))
+        properties->append(p);
+}
+
+static void storeItemProps(QAbstractFormBuilder *abstractFormBuilder, const QListWidgetItem *item,
+        QList<DomProperty*> *properties)
+{
+    static const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
+    FriendlyFB * const formBuilder = static_cast<FriendlyFB *>(abstractFormBuilder);
+
+    DomProperty *p;
+    QVariant v;
+
+    foreach (const QFormBuilderStrings::TextRoleNName &it, strings.itemTextRoles)
+        if ((p = formBuilder->saveText(it.second, item->data(it.first.second))))
+            properties->append(p);
+
+    foreach (const QFormBuilderStrings::RoleNName &it, strings.itemRoles)
+        if ((v = item->data(it.first)).isValid() &&
+            (p = variantToDomProperty(abstractFormBuilder,
+                static_cast<const QMetaObject *>(&QAbstractFormBuilderGadget::staticMetaObject),
+                it.second, v)))
+            properties->append(p);
+
+    if ((p = formBuilder->saveResource(item->data(Qt::DecorationPropertyRole))))
+        properties->append(p);
+}
+
+static void storeItemPropsNFlags(QAbstractFormBuilder *abstractFormBuilder, const QTableWidgetItem *item,
+        QList<DomProperty*> *properties)
+{
+    storeItemProps(abstractFormBuilder, item, properties);
+    storeItemFlags(item, properties);
+}
+
+static void storeItemPropsNFlags(QAbstractFormBuilder *abstractFormBuilder, const QListWidgetItem *item,
+        QList<DomProperty*> *properties)
+{
+    storeItemProps(abstractFormBuilder, item, properties);
+    storeItemFlags(item, properties);
+}
+
+static void loadItemProps(QAbstractFormBuilder *abstractFormBuilder, QTableWidgetItem *item,
+        const QHash<QString, DomProperty*> &properties)
+{
+    static const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
+    FriendlyFB * const formBuilder = static_cast<FriendlyFB *>(abstractFormBuilder);
+
+    DomProperty *p;
+    QVariant v;
+
+    foreach (const QFormBuilderStrings::TextRoleNName &it, strings.itemTextRoles)
+        if ((p = properties.value(it.second))) {
+            v = formBuilder->textBuilder()->loadText(p);
+            QVariant nativeValue = formBuilder->textBuilder()->toNativeValue(v);
+            item->setData(it.first.first, qVariantValue<QString>(nativeValue));
+            item->setData(it.first.second, v);
+        }
+
+    foreach (const QFormBuilderStrings::RoleNName &it, strings.itemRoles)
+        if ((p = properties.value(it.second)) &&
+            (v = formBuilder->toVariant(&QAbstractFormBuilderGadget::staticMetaObject, p)).isValid())
+            item->setData(it.first, v);
+
+    if ((p = properties.value(strings.iconAttribute))) {
+        v = formBuilder->resourceBuilder()->loadResource(formBuilder->workingDirectory(), p);
+        QVariant nativeValue = formBuilder->resourceBuilder()->toNativeValue(v);
+        item->setIcon(qVariantValue<QIcon>(nativeValue));
+        item->setData(Qt::DecorationPropertyRole, v);
+    }
+}
+
+static void loadItemProps(QAbstractFormBuilder *abstractFormBuilder, QListWidgetItem *item,
+        const QHash<QString, DomProperty*> &properties)
+{
+    static const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
+    FriendlyFB * const formBuilder = static_cast<FriendlyFB *>(abstractFormBuilder);
+
+    DomProperty *p;
+    QVariant v;
+
+    foreach (const QFormBuilderStrings::TextRoleNName &it, strings.itemTextRoles)
+        if ((p = properties.value(it.second))) {
+            v = formBuilder->textBuilder()->loadText(p);
+            QVariant nativeValue = formBuilder->textBuilder()->toNativeValue(v);
+            item->setData(it.first.first, qVariantValue<QString>(nativeValue));
+            item->setData(it.first.second, v);
+        }
+
+    foreach (const QFormBuilderStrings::RoleNName &it, strings.itemRoles)
+        if ((p = properties.value(it.second)) &&
+            (v = formBuilder->toVariant(&QAbstractFormBuilderGadget::staticMetaObject, p)).isValid())
+            item->setData(it.first, v);
+
+    if ((p = properties.value(strings.iconAttribute))) {
+        v = formBuilder->resourceBuilder()->loadResource(formBuilder->workingDirectory(), p);
+        QVariant nativeValue = formBuilder->resourceBuilder()->toNativeValue(v);
+        item->setIcon(qVariantValue<QIcon>(nativeValue));
+        item->setData(Qt::DecorationPropertyRole, v);
+    }
+}
+
+static void loadItemPropsNFlags(QAbstractFormBuilder *abstractFormBuilder, QTableWidgetItem *item,
+        const QHash<QString, DomProperty*> &properties)
+{
+    static const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
+    static const QMetaEnum itemFlags_enum = metaEnum<QAbstractFormBuilderGadget>("itemFlags");
+
+    loadItemProps(abstractFormBuilder, item, properties);
+
+    DomProperty *p;
+    if ((p = properties.value(strings.flagsAttribute)) && p->kind() == DomProperty::Set)
+        item->setFlags(enumKeysToValue<Qt::ItemFlags>(itemFlags_enum, p->elementSet().toAscii()));
+}
+
+static void loadItemPropsNFlags(QAbstractFormBuilder *abstractFormBuilder, QListWidgetItem *item,
+        const QHash<QString, DomProperty*> &properties)
+{
+    static const QFormBuilderStrings &strings = QFormBuilderStrings::instance();
+    static const QMetaEnum itemFlags_enum = metaEnum<QAbstractFormBuilderGadget>("itemFlags");
+
+    loadItemProps(abstractFormBuilder, item, properties);
+
+    DomProperty *p;
+    if ((p = properties.value(strings.flagsAttribute)) && p->kind() == DomProperty::Set)
+        item->setFlags(enumKeysToValue<Qt::ItemFlags>(itemFlags_enum, p->elementSet().toAscii()));
+}
+
+#endif
 
 /*!
     \internal
@@ -2142,7 +2297,11 @@ void QAbstractFormBuilder::loadListWidgetExtraInfo(DomWidget *ui_widget, QListWi
     foreach (DomItem *ui_item, ui_widget->elementItem()) {
         const DomPropertyHash properties = propertyMap(ui_item->elementProperty());
         QListWidgetItem *item = new QListWidgetItem(listWidget);
+#ifndef Q_CC_RVCT
         loadItemPropsNFlags<QListWidgetItem>(this, item, properties);
+#else
+        loadItemPropsNFlags(this, item, properties);
+#endif        
     }
 
     DomProperty *currentRow = propertyMap(ui_widget->elementProperty()).value(strings.currentRowProperty);
@@ -2664,13 +2823,6 @@ void QAbstractFormBuilder::reset()
 QMetaEnum QAbstractFormBuilder::toolBarAreaMetaEnum()
 {
     return metaEnum<QAbstractFormBuilderGadget>("toolBarArea");
-}
-
-namespace {
-    // set forward slashes in image path.
-    inline void fixImagePath(QString &p)    {
-        p.replace(QLatin1Char('\\'), QLatin1Char('/'));
-    }
 }
 
 /*!

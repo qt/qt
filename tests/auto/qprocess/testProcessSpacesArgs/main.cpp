@@ -44,11 +44,21 @@
 
 int main(int argc, char ** argv)
 {
+#if defined(__SYMBIAN32__)
+    // Printing to stdout messes up the out.txt, so open a file and print there.
+    FILE* file = fopen("c:\\logs\\qprocess_args_test.txt","w+");
+    for (int i = 0; i < argc; ++i) {
+        if (i)
+            fprintf(file, "|");
+        fprintf(file, argv[i]);
+    }
+    fclose(file);
+#else
     for (int i = 0; i < argc; ++i) {
         if (i)
             printf("|");
         printf(argv[i]);
     }
-
+#endif
     return 0;
 }

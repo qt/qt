@@ -12,3 +12,8 @@ target.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/collidingmice
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS collidingmice.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/collidingmice
 INSTALLS += target sources
+
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000A643
+}

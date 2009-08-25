@@ -199,7 +199,6 @@ static void displayCommands()
            "  pixmap_load filename name_in_script\n"
            "  image_load filename name_in_script\n");
 }
-
 static InteractiveWidget *interactive_widget = 0;
 
 static void runInteractive()
@@ -581,6 +580,7 @@ int main(int argc, char **argv)
 
             case PrinterType:
             {
+#ifndef QT_NO_PRINTER
                 PaintCommands pcmd(QStringList(), 800, 800);
                 pcmd.setVerboseMode(verboseMode);
                 pcmd.setType(type);
@@ -608,11 +608,13 @@ int main(int argc, char **argv)
                 }
 
                 Q_ASSERT(!p.paintingActive());
+#endif
                 break;
             }
             case PsType:
             case PdfType:
             {
+#ifndef QT_NO_PRINTER
                 PaintCommands pcmd(QStringList(), 800, 800);
                 pcmd.setVerboseMode(verboseMode);
                 pcmd.setType(type);
@@ -635,6 +637,7 @@ int main(int argc, char **argv)
                 pt.end();
 
                 printf("write file: %s\n", qPrintable(file));
+#endif
                 break;
             }
             case GrabType:
@@ -657,7 +660,6 @@ int main(int argc, char **argv)
                 printf("%s grabbed to %s\n", qPrintable(files.at(j)), qPrintable(filename));
                 break;
             }
-
             default:
                 break;
             }
@@ -668,7 +670,6 @@ int main(int argc, char **argv)
         QObject::connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
         app.exec();
     }
-
     delete activeWidget;
 #endif
     return 0;

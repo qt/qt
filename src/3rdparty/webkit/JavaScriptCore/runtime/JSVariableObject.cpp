@@ -33,23 +33,23 @@
 
 namespace JSC {
 
-bool JSVariableObject::deleteProperty(ExecState* exec, const Identifier& propertyName)
+bool JSVariableObject::deleteProperty(ExecState* exec, const Identifier& propertyName, bool checkDontDelete)
 {
     if (symbolTable().contains(propertyName.ustring().rep()))
         return false;
 
-    return JSObject::deleteProperty(exec, propertyName);
+    return JSObject::deleteProperty(exec, propertyName, checkDontDelete);
 }
 
-void JSVariableObject::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSVariableObject::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     SymbolTable::const_iterator end = symbolTable().end();
     for (SymbolTable::const_iterator it = symbolTable().begin(); it != end; ++it) {
-        if (!(it->second.getAttributes() & DontEnum))
+        if ((listedAttributes & Structure::NonEnumerable) || !(it->second.getAttributes() & DontEnum))
             propertyNames.add(Identifier(exec, it->first.get()));
     }
     
-    JSObject::getPropertyNames(exec, propertyNames);
+    JSObject::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 bool JSVariableObject::getPropertyAttributes(ExecState* exec, const Identifier& propertyName, unsigned& attributes) const

@@ -52,10 +52,6 @@
 # include "qcoreapplication.h"
 #endif
 
-#if !defined(Q_OS_WINCE)
-#include <errno.h>
-#endif
-
 #ifdef QT_NO_QOBJECT
 #define tr(X) QString::fromLatin1(X)
 #endif
@@ -109,6 +105,7 @@ QFilePrivate::openExternalFile(int flags, int fd)
     return false;
 #else
     delete fileEngine;
+    fileEngine = 0;
     QFSFileEngine *fe = new QFSFileEngine;
     fe->setFileName(fileName);
     fileEngine = fe;
@@ -125,6 +122,7 @@ QFilePrivate::openExternalFile(int flags, FILE *fh)
     return false;
 #else
     delete fileEngine;
+    fileEngine = 0;
     QFSFileEngine *fe = new QFSFileEngine;
     fe->setFileName(fileName);
     fileEngine = fe;
@@ -408,9 +406,6 @@ QFile::QFile(QFilePrivate &dd, QObject *parent)
 QFile::~QFile()
 {
     close();
-#ifdef QT_NO_QOBJECT
-    delete d_ptr;
-#endif
 }
 
 /*!
@@ -654,11 +649,7 @@ QFile::remove()
             unsetError();
             return true;
         }
-#if defined(Q_OS_WIN)
-        d->setError(QFile::RemoveError, GetLastError());
-#else
-        d->setError(QFile::RemoveError, errno);
-#endif
+        d->setError(QFile::RemoveError, fileEngine()->errorString());
     }
     return false;
 }
@@ -745,9 +736,10 @@ QFile::rename(const QString &newName)
                         error = true;
                     }
                 }
-                if (error)
+                if (error) {
                     out.remove();
-                else {
+                } else {
+                    fileEngine()->setFileName(newName);
                     setPermissions(permissions());
                     unsetError();
                     setFileName(newName);
@@ -793,6 +785,9 @@ QFile::rename(const QString &oldName, const QString &newName)
 
     \note To create a valid link on Windows, \a linkName must have a \c{.lnk} file extension.
 
+    \note On Symbian, no link is created and false is returned if fileName()
+    currently specifies a directory.
+
     \sa setFileName()
 */
 
@@ -809,7 +804,7 @@ QFile::link(const QString &linkName)
         unsetError();
         return true;
     }
-    d->setError(QFile::RenameError, errno);
+    d->setError(QFile::RenameError, fileEngine()->errorString());
     return false;
 }
 
@@ -1255,7 +1250,7 @@ QFile::resize(qint64 sz)
         unsetError();
         return true;
     }
-    d->setError(QFile::ResizeError, errno);
+    d->setError(QFile::ResizeError, fileEngine()->errorString());
     return false;
 }
 
@@ -1319,7 +1314,7 @@ QFile::setPermissions(Permissions permissions)
         unsetError();
         return true;
     }
-    d->setError(QFile::PermissionsError, errno);
+    d->setError(QFile::PermissionsError, fileEngine()->errorString());
     return false;
 }
 
@@ -1475,7 +1470,7 @@ bool QFile::seek(qint64 off)
         d->setError(err, fileEngine()->errorString());
         return false;
     }
-    d->error = NoError;
+    unsetError();
     return true;
 }
 
@@ -1503,7 +1498,7 @@ qint64 QFile::readLineData(char *data, qint64 maxlen)
 qint64 QFile::readData(char *data, qint64 len)
 {
     Q_D(QFile);
-    d->error = NoError;
+    unsetError();
     if (!d->ensureFlushed())
         return -1;
 
@@ -1585,7 +1580,7 @@ qint64
 QFile::writeData(const char *data, qint64 len)
 {
     Q_D(QFile);
-    d->error = NoError;
+    unsetError();
     d->lastWasWrite = true;
     bool buffered = !(d->openMode & Unbuffered);
 

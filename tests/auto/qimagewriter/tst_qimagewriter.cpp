@@ -52,6 +52,9 @@
 #include <QPainter>
 #include <QSet>
 
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
 typedef QMap<QString, QString> QStringMap;
 typedef QList<int> QIntList;
 Q_DECLARE_METATYPE(QImage)
@@ -106,9 +109,11 @@ private slots:
 
     void saveToTemporaryFile();
 };
-
+#ifdef Q_OS_SYMBIAN
+static const QLatin1String prefix(SRCDIR "images/");
+#else
 static const QLatin1String prefix(SRCDIR "/images/");
-
+#endif
 static void initializePadding(QImage *image)
 {
     int effectiveBytesPerLine = (image->width() * image->depth() + 7) / 8;
@@ -276,7 +281,7 @@ void tst_QImageWriter::writeImage2_data()
 #if defined QTEST_HAVE_TIFF
 void tst_QImageWriter::largeTiff()
 {
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QImage img(4096, 2048, QImage::Format_ARGB32);
 
     QPainter p(&img);
@@ -302,6 +307,8 @@ void tst_QImageWriter::largeTiff()
     QVERIFY(!img2.isNull());
 
     QCOMPARE(img, img2);
+#else
+    QWARN("not tested on Symbian/WinCE");
 #endif
 }
 #endif

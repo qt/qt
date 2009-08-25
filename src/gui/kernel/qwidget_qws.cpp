@@ -258,7 +258,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
     Q_D(QWidget);
 
     if (!isWindow() && parentWidget())
-        parentWidget()->d_func()->invalidateBuffer(geometry());
+        parentWidget()->d_func()->invalidateBuffer(d->effectiveRectFor(geometry()));
 
     d->deactivateWidgetCleanup();
     if (testAttribute(Qt::WA_WState_Created)) {
@@ -298,11 +298,16 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
                 d->hide_sys();
             }
             if (destroyWindow && isWindow()) {
-                d->extra->topextra->backingStore->windowSurface->setGeometry(QRect());
+                if (d->extra && d->extra->topextra && d->extra->topextra->backingStore)
+                    d->extra->topextra->backingStore->windowSurface->setGeometry(QRect());
                 qwsDisplay()->destroyRegion(internalWinId());
             }
         }
-        d->setWinId(0);
+        QT_TRY {
+            d->setWinId(0);
+        } QT_CATCH (const std::bad_alloc &) {
+            // swallow - destructors must not throw
+        }
     }
 }
 
@@ -312,7 +317,7 @@ void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
     Q_Q(QWidget);
     bool wasCreated = q->testAttribute(Qt::WA_WState_Created);
      if (q->isVisible() && q->parentWidget() && parent != q->parentWidget())
-        q->parentWidget()->d_func()->invalidateBuffer(q->geometry());
+        q->parentWidget()->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
 #ifndef QT_NO_CURSOR
     QCursor oldcurs;
     bool setcurs=q->testAttribute(Qt::WA_SetCursor);
@@ -576,6 +581,15 @@ void QWidgetPrivate::show_sys()
 
     if (q->isWindow()) {
 
+
+        if (!q->testAttribute(Qt::WA_ShowWithoutActivating)
+            && q->windowType() != Qt::Popup
+            && q->windowType() != Qt::Tool
+            && q->windowType() != Qt::ToolTip) {
+            QWidget::qwsDisplay()->requestFocus(data.winid,true);
+        }
+
+
         if (QWindowSurface *surface = q->windowSurface()) {
             const QRect frameRect = q->frameGeometry();
             if (surface->geometry() != frameRect)
@@ -592,12 +606,6 @@ void QWidgetPrivate::show_sys()
 #endif
         data.fstrut_dirty = true;
         invalidateBuffer(r);
-        if (!q->testAttribute(Qt::WA_ShowWithoutActivating)
-            && q->windowType() != Qt::Popup
-            && q->windowType() != Qt::Tool
-            && q->windowType() != Qt::ToolTip) {
-            QWidget::qwsDisplay()->requestFocus(data.winid,true);
-        }
 	bool staysontop =
             (q->windowFlags() & Qt::WindowStaysOnTopHint)
             || q->windowType() == Qt::Popup;
@@ -638,7 +646,8 @@ void QWidgetPrivate::hide_sys()
         q->releaseMouse();
 //        requestWindowRegion(QRegion());
 
-        extra->topextra->backingStore->releaseBuffer();
+        if (extra->topextra->backingStore)
+            extra->topextra->backingStore->releaseBuffer();
 
 
         QWidget::qwsDisplay()->requestFocus(data.winid,false);
@@ -805,7 +814,7 @@ void QWidgetPrivate::lower_sys()
                                            QWSChangeAltitudeCommand::Lower);
     } else if (QWidget *p = q->parentWidget()) {
         setDirtyOpaqueRegion();
-        p->d_func()->invalidateBuffer(q->geometry());
+        p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
     }
 }
 
@@ -814,7 +823,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget*)
     Q_Q(QWidget);
     if (QWidget *p = q->parentWidget()) {
         setDirtyOpaqueRegion();
-        p->d_func()->invalidateBuffer(q->geometry());
+        p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
     }
 }
 

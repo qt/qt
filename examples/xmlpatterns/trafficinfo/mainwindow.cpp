@@ -165,8 +165,7 @@ void MainWindow::resizeEvent(QResizeEvent*)
 
 void MainWindow::updateTimeInformation()
 {
-    TimeQuery query;
-    m_times = query.query(m_station.id(), m_lines, QDateTime::currentDateTime());
+    m_times = TimeQuery::query(m_station.id(), m_lines, QDateTime::currentDateTime());
 
     update();
 }

@@ -1216,7 +1216,16 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     layoutChanged() after changing the layout.
 
     Subclasses should update any persistent model indexes before emitting
-    layoutChanged().
+    layoutChanged(). In other words, when the structure changes:
+
+    \list
+        \o  Call beginLayoutChanged()
+        \o  Remember the QModelIndex that will change
+        \o  Update your internal data
+        \o  Call changePersistentIndex()
+        \o  Call endLayoutChanged()
+    \endlist
+
 
     \sa layoutAboutToBeChanged(), dataChanged(), headerDataChanged(), reset(),
         changePersistentIndex()

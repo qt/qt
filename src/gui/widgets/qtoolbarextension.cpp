@@ -61,10 +61,12 @@ QToolBarExtension::QToolBarExtension(QWidget *parent)
 
 void QToolBarExtension::setOrientation(Qt::Orientation o)
 {
+    QStyleOption opt;
+    opt.init(this);
     if (o == Qt::Horizontal) {
-        setIcon(style()->standardIcon(QStyle::SP_ToolBarHorizontalExtensionButton));
+        setIcon(style()->standardIcon(QStyle::SP_ToolBarHorizontalExtensionButton, &opt));
     } else {
-        setIcon(style()->standardIcon(QStyle::SP_ToolBarVerticalExtensionButton));
+        setIcon(style()->standardIcon(QStyle::SP_ToolBarVerticalExtensionButton, &opt));
    }
 }
 

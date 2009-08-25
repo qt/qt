@@ -57,6 +57,21 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+#if defined(Q_OS_SYMBIAN)
+// In Symbian, the PluginsPath doesn't specify the only absolute path; just the dir that can be found on any drive
+static void addExpectedSymbianPluginsPath(QStringList& expected)
+{
+    QString installPathPlugins = QDir::fromNativeSeparators(QLibraryInfo::location(QLibraryInfo::PluginsPath));
+    QFileInfoList driveList = QDir::drives();
+    QListIterator<QFileInfo> iter(driveList);
+    while (iter.hasNext()) {
+        QFileInfo testFi(iter.next().canonicalPath().append(installPathPlugins));
+        if (testFi.exists())
+            expected << testFi.canonicalFilePath();
+    }
+}
+#endif
+
 class tst_QApplication : public QObject
 {
 Q_OBJECT
@@ -787,7 +802,13 @@ void tst_QApplication::libraryPaths()
         QStringList actual = QApplication::libraryPaths();
         actual.sort();
 
+#if defined(Q_OS_SYMBIAN)
+        QStringList expected;
+        addExpectedSymbianPluginsPath(expected);
+        expected << appDirPath;
+#else
         QStringList expected = QSet<QString>::fromList((QStringList() << installPathPlugins << appDirPath)).toList();
+#endif
         expected.sort();
 
         QVERIFY2(isPathListIncluded(actual, expected),
@@ -890,7 +911,11 @@ void tst_QApplication::libraryPaths_qt_plugin_path()
 
 void tst_QApplication::libraryPaths_qt_plugin_path_2()
 {
-#ifdef Q_OS_UNIX
+#ifdef Q_OS_SYMBIAN
+    QByteArray validPath = "C:\\data";
+    QByteArray nonExistentPath = "Z:\\nonexistent";
+    QByteArray pluginPath = validPath + ";" + nonExistentPath;
+#elif defined(Q_OS_UNIX)
     QByteArray validPath = QDir("/tmp").canonicalPath().toLatin1();
     QByteArray nonExistentPath = "/nonexistent";
     QByteArray pluginPath = validPath + ":" + nonExistentPath;
@@ -915,19 +940,25 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
         QApplication app(argc, &argv0, QApplication::GuiServer);
 
         // library path list should contain the default plus the one valid path
+#if defined(Q_OS_SYMBIAN)
+        // In Symbian, the PluginsPath doesn't specify the only absolute path; just the dir that can be found on any drive
+        QStringList expected;
+        addExpectedSymbianPluginsPath(expected);
+        expected << QDir(app.applicationDirPath()).canonicalPath()
+            << QDir(QDir::fromNativeSeparators(QString::fromLatin1(validPath))).canonicalPath();
+#else
         QStringList expected =
             QStringList()
             << QLibraryInfo::location(QLibraryInfo::PluginsPath)
             << QDir(app.applicationDirPath()).canonicalPath()
             << QDir(QDir::fromNativeSeparators(QString::fromLatin1(validPath))).canonicalPath();
-#ifdef Q_OS_WINCE
+# ifdef Q_OS_WINCE
         expected = QSet<QString>::fromList(expected).toList();
+# endif
 #endif
         QVERIFY2(isPathListIncluded(app.libraryPaths(), expected),
                  qPrintable("actual:\n - " + app.libraryPaths().join("\n - ") +
                             "\nexpected:\n - " + expected.join("\n - ")));
-
-        qputenv("QT_PLUGIN_PATH", QByteArray());
     }
 
     {
@@ -939,13 +970,19 @@ void tst_QApplication::libraryPaths_qt_plugin_path_2()
         // the environment variable here doesn't work
         qputenv("QT_PLUGIN_PATH", pluginPath);
 
-        // library path list should contain the default plus the one valid path
+        // library path list should contain the default
+#if defined(Q_OS_SYMBIAN)
+        QStringList expected;
+        addExpectedSymbianPluginsPath(expected);
+        expected << app.applicationDirPath();
+#else
         QStringList expected =
             QStringList()
             << QLibraryInfo::location(QLibraryInfo::PluginsPath)
             << app.applicationDirPath();
-#ifdef Q_OS_WINCE
+# ifdef Q_OS_WINCE
         expected = QSet<QString>::fromList(expected).toList();
+# endif
 #endif
         QVERIFY(isPathListIncluded(app.libraryPaths(), expected));
 
@@ -1393,6 +1430,13 @@ void tst_QApplication::desktopSettingsAware()
     testProcess.start("desktopsettingsaware/debug/desktopsettingsaware");
 #elif defined(Q_OS_WIN)
     testProcess.start("desktopsettingsaware/release/desktopsettingsaware");
+#elif defined(Q_OS_SYMBIAN)
+    testProcess.start("desktopsettingsaware");
+#if defined(Q_CC_NOKIAX86)
+    QEXPECT_FAIL("", "QProcess on Q_CC_NOKIAX86 cannot launch another Qt application, due to DLL conflicts.", Abort);
+    // TODO: Remove XFAIL, as soon as we can launch Qt applications from within Qt applications on Symbian
+    QVERIFY(testProcess.error() != QProcess::FailedToStart);
+#endif // defined(Q_CC_NOKIAX86)
 #else
     testProcess.start("desktopsettingsaware/desktopsettingsaware");
 #endif

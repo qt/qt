@@ -51,10 +51,21 @@
 #include <stdlib.h>
 #include <QNetworkProxy>
 
+#ifndef TEST_QNETWORK_PROXY
+#define TEST_QNETWORK_PROXY
+#endif
 #include "../network-settings.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
+
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+// Application private dir is default serach path for files, so SRCDIR can be set to empty
+#define SRCDIR ""
+#endif
+
+
 
 class tst_QFtp : public QObject
 {
@@ -178,11 +189,11 @@ const int bytesDone_init = -10;
 
 tst_QFtp::tst_QFtp()
 {
+    Q_SET_DEFAULT_IAP
 }
 
 tst_QFtp::~tst_QFtp()
 {
-
 }
 
 void tst_QFtp::initTestCase_data()
@@ -191,9 +202,11 @@ void tst_QFtp::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
+#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
     //### doesn't work well yet.
     //QTest::newRow("WithHttpProxy") << true << int(QNetworkProxy::HttpProxy);
+#endif
 }
 
 void tst_QFtp::initTestCase()
@@ -1144,7 +1157,7 @@ QDataStream &operator>>( QDataStream &s, FtpCommand &command )
 }
 Q_DECLARE_METATYPE(QList<FtpCommand>)
 
-        void tst_QFtp::commandSequence_data()
+void tst_QFtp::commandSequence_data()
 {
     // some "constants"
     QStringList argConnectToHost01;
@@ -1279,8 +1292,8 @@ void tst_QFtp::abort_data()
     QTest::newRow( "get_fluke01" ) << QtNetworkSettings::serverName() << (uint)21 << QString("qtest/bigfile") << QByteArray();
     QTest::newRow( "get_fluke02" ) << QtNetworkSettings::serverName() << (uint)21 << QString("qtest/rfc3252") << QByteArray();
 
-    // Qt/CE test environment has to less memory for this test
-#if !defined(Q_OS_WINCE)
+    // Qt/CE and Symbian test environment has to less memory for this test
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QByteArray bigData( 10*1024*1024, 0 );
     bigData.fill( 'B' );
 
@@ -1501,7 +1514,6 @@ void tst_QFtp::proxy()
 
 void tst_QFtp::binaryAscii()
 {
-
     QString file = "asciifile%1.txt";
 
     if(file.contains('%'))
@@ -1548,7 +1560,6 @@ void tst_QFtp::binaryAscii()
     // (and do not remove the windows line ending), the -1 below could be
     // deleted in the future
     QVERIFY(getData.size() == putData.size()-1);
-
     //////////////////////////////////////////////////////////////////
     // cleanup (i.e. remove the file) -- this also tests the remove command
     init();
@@ -2042,4 +2053,5 @@ void tst_QFtp::cdUpSlot(bool error)
 }
 
 QTEST_MAIN(tst_QFtp)
+
 #include "tst_qftp.moc"

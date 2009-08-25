@@ -232,9 +232,8 @@ void QtGradientWidgetPrivate::setupDrag(QtGradientStop *stop, int x)
 ////////////////////////////
 
 QtGradientWidget::QtGradientWidget(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), d_ptr(new QtGradientWidgetPrivate)
 {
-    d_ptr = new QtGradientWidgetPrivate;
     d_ptr->q_ptr = this;
     d_ptr->m_backgroundCheckered = true;
     d_ptr->m_handleSize = 20.0;
@@ -253,7 +252,6 @@ QtGradientWidget::QtGradientWidget(QWidget *parent)
 
 QtGradientWidget::~QtGradientWidget()
 {
-    delete d_ptr;
 }
 
 QSize QtGradientWidget::sizeHint() const

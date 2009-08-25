@@ -81,8 +81,10 @@ QSimpleResource::QSimpleResource(QDesignerFormEditorInterface *core) :
     workingDirectory +=  QDir::separator();
     workingDirectory +=  QLatin1String(".designer");
     setWorkingDirectory(QDir(workingDirectory));
+#ifndef QT_FORMBUILDER_NO_SCRIPT
     // Disable scripting in the editors.
     formScriptRunner()-> setOptions(QFormScriptRunner::DisableScripts);
+#endif
 }
 
 QSimpleResource::~QSimpleResource()

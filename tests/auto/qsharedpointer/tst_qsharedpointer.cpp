@@ -51,9 +51,15 @@
 #include <stdlib.h>
 #include <time.h>
 
+QT_BEGIN_NAMESPACE
 namespace QtSharedPointer {
     Q_CORE_EXPORT void internalSafetyCheckCleanCheck();
 }
+QT_END_NAMESPACE
+
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR "."
+#endif
 
 class tst_QSharedPointer: public QObject
 {

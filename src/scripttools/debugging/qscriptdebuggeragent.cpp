@@ -61,11 +61,11 @@ QT_BEGIN_NAMESPACE
 */
 
 QScriptDebuggerAgentPrivate::QScriptDebuggerAgentPrivate()
+    : state(NoState), stepDepth(0), stepCount(0),
+        targetScriptId(-1), targetLineNumber(-1), returnCounter(0),
+        nextBreakpointId(1), hitBreakpointId(0),
+        nextContextId(0), statementCounter(0)
 {
-    state = NoState;
-    nextBreakpointId = 1;
-    nextContextId = 0;
-    statementCounter = 0;
 }
 
 QScriptDebuggerAgentPrivate::~QScriptDebuggerAgentPrivate()
@@ -88,7 +88,7 @@ QScriptDebuggerAgentPrivate *QScriptDebuggerAgentPrivate::get(
 */
 QScriptDebuggerAgent::QScriptDebuggerAgent(
     QScriptDebuggerBackendPrivate *backend, QScriptEngine *engine)
-    : QScriptEngineAgent(*new QScriptDebuggerAgentPrivate, engine)
+    : QScriptEngineAgent(engine), d_ptr(new QScriptDebuggerAgentPrivate())
 {
     Q_D(QScriptDebuggerAgent);
     d->backend = backend;
@@ -110,6 +110,7 @@ QScriptDebuggerAgent::~QScriptDebuggerAgent()
     Q_D(QScriptDebuggerAgent);
     if (d->backend)
         d->backend->agentDestroyed(this);
+    delete d;
 }
 
 /*!

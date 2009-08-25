@@ -51,7 +51,10 @@
 #include "qdebug.h"
 #include "qboxlayout.h"
 #include "qpainter.h"
+
+#ifdef Q_WS_WIN
 #include "qstandardgestures.h"
+#endif
 
 #include "qabstractscrollarea_p.h"
 #include <qwidget.h>
@@ -159,9 +162,9 @@ QT_BEGIN_NAMESPACE
 QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate()
     :hbar(0), vbar(0), vbarpolicy(Qt::ScrollBarAsNeeded), hbarpolicy(Qt::ScrollBarAsNeeded),
      viewport(0), cornerWidget(0), left(0), top(0), right(0), bottom(0),
-     xoffset(0), yoffset(0), viewportFilter(0), panGesture(0)
+     xoffset(0), yoffset(0), viewportFilter(0)
 #ifdef Q_WS_WIN
-     , singleFingerPanEnabled(false)
+     , panGesture(0), singleFingerPanEnabled(false)
 #endif
 {
 }
@@ -287,16 +290,18 @@ void QAbstractScrollAreaPrivate::init()
     scrollBarContainers[Qt::Vertical]->setVisible(false);
     QObject::connect(vbar, SIGNAL(valueChanged(int)), q, SLOT(_q_vslide(int)));
     QObject::connect(vbar, SIGNAL(rangeChanged(int,int)), q, SLOT(_q_showOrHideScrollBars()), Qt::QueuedConnection);
-    viewportFilter = new QAbstractScrollAreaFilter(this);
-    viewport->installEventFilter(viewportFilter);
+    viewportFilter.reset(new QAbstractScrollAreaFilter(this));
+    viewport->installEventFilter(viewportFilter.data());
     viewport->setFocusProxy(q);
     q->setFocusPolicy(Qt::WheelFocus);
     q->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layoutChildren();
 
-    panGesture = new QPanGesture(q);
+#ifdef Q_WS_WIN
+    panGesture = new QPanGesture(viewport);
     QObject::connect(panGesture, SIGNAL(triggered()), q, SLOT(_q_gestureTriggered()));
+#endif // Q_WS_WIN
 }
 
 #ifdef Q_WS_WIN
@@ -485,7 +490,12 @@ QAbstractScrollArea::QAbstractScrollArea(QAbstractScrollAreaPrivate &dd, QWidget
     :QFrame(dd, parent)
 {
     Q_D(QAbstractScrollArea);
-    d->init();
+    QT_TRY {
+        d->init();
+    } QT_CATCH(...) {
+        d->viewportFilter.reset();
+        QT_RETHROW;
+    }
 }
 
 /*!
@@ -497,7 +507,12 @@ QAbstractScrollArea::QAbstractScrollArea(QWidget *parent)
     :QFrame(*new QAbstractScrollAreaPrivate, parent)
 {
     Q_D(QAbstractScrollArea);
-    d->init();
+    QT_TRY {
+        d->init();
+    } QT_CATCH(...) {
+        d->viewportFilter.reset();
+        QT_RETHROW;
+    }
 }
 
 
@@ -507,7 +522,8 @@ QAbstractScrollArea::QAbstractScrollArea(QWidget *parent)
 QAbstractScrollArea::~QAbstractScrollArea()
 {
     Q_D(QAbstractScrollArea);
-    delete d->viewportFilter;
+    // reset it here, otherwise we'll have a dangling pointer in ~QWidget
+    d->viewportFilter.reset();
 }
 
 
@@ -531,11 +547,14 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
         d->viewport = widget;
         d->viewport->setParent(this);
         d->viewport->setFocusProxy(this);
-        d->viewport->installEventFilter(d->viewportFilter);
+        d->viewport->installEventFilter(d->viewportFilter.data());
         d->layoutChildren();
         if (isVisible())
             d->viewport->show();
         QMetaObject::invokeMethod(this, "setupViewport", Q_ARG(QWidget *, widget));
+#ifdef Q_WS_WIN
+        d->panGesture->setGestureTarget(widget);
+#endif
         delete oldViewport;
     }
 }
@@ -923,6 +942,10 @@ bool QAbstractScrollArea::event(QEvent *e)
     case QEvent::DragMove:
     case QEvent::DragLeave:
 #endif
+        // ignore touch events in case they have been propagated from the viewport
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
         return false;
     case QEvent::StyleChange:
     case QEvent::LayoutDirectionChange:
@@ -963,6 +986,9 @@ bool QAbstractScrollArea::viewportEvent(QEvent *e)
     case QEvent::MouseButtonPress:
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:
+    case QEvent::TouchBegin:
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd:
     case QEvent::MouseMove:
     case QEvent::ContextMenu:
 #ifndef QT_NO_WHEELEVENT
@@ -1321,6 +1347,7 @@ void QAbstractScrollArea::setupViewport(QWidget *viewport)
     Q_UNUSED(viewport);
 }
 
+#ifdef Q_WS_WIN
 void QAbstractScrollAreaPrivate::_q_gestureTriggered()
 {
     Q_Q(QAbstractScrollArea);
@@ -1339,6 +1366,7 @@ void QAbstractScrollAreaPrivate::_q_gestureTriggered()
         vbar->setValue(newY);
     }
 }
+#endif
 
 QT_END_NAMESPACE
 

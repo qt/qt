@@ -290,6 +290,14 @@ static const char* const qglslImageSrcFragmentShader = "\
         return texture2D(imageTexture, textureCoords); \
     }";
 
+static const char* const qglslCustomSrcFragmentShader = "\
+    varying highp vec2      textureCoords; \
+    uniform       sampler2D imageTexture; \
+    lowp vec4 customShader(sampler2D texture, vec2 coords); \
+    lowp vec4 srcPixel() { \
+        return customShader(imageTexture, textureCoords); \
+    }";
+
 static const char* const qglslImageSrcWithPatternFragmentShader = "\
     varying highp vec2      textureCoords; \
     uniform lowp  vec4      patternColor; \

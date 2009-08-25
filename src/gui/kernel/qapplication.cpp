@@ -75,6 +75,9 @@
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
+#endif
+
+#if defined(Q_WS_X11) || defined(Q_WS_S60)
 #include "qinputcontextfactory.h"
 #endif
 
@@ -138,6 +141,8 @@ bool QApplicationPrivate::quitOnLastWindowClosed = true;
 #ifdef Q_WS_WINCE
 int QApplicationPrivate::autoMaximizeThreshold = -1;
 bool QApplicationPrivate::autoSipEnabled = false;
+#else
+bool QApplicationPrivate::autoSipEnabled = true;
 #endif
 
 QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::Type type)
@@ -433,7 +438,12 @@ bool Q_GUI_EXPORT qt_tab_all_widgets = true;
 bool qt_in_tab_key_event = false;
 int qt_antialiasing_threshold = -1;
 static int drag_time = 500;
+#ifdef Q_OS_SYMBIAN
+// The screens are a bit too small to for your thumb when using only 4 pixels drag distance.
+static int drag_distance = 8;
+#else
 static int drag_distance = 4;
+#endif
 static Qt::LayoutDirection layout_direction = Qt::LeftToRight;
 QSize QApplicationPrivate::app_strut = QSize(0,0); // no default application strut
 bool QApplicationPrivate::animate_ui = true;
@@ -448,7 +458,11 @@ bool QApplicationPrivate::widgetCount = false;
 bool QApplicationPrivate::inSizeMove = false;
 #endif
 #ifdef QT_KEYPAD_NAVIGATION
+#  if defined(Q_OS_SYMBIAN)
+bool QApplicationPrivate::keypadNavigation = true;
+#  else
 bool QApplicationPrivate::keypadNavigation = false;
+#  endif
 QWidget *QApplicationPrivate::oldEditFocus = 0;
 #endif
 
@@ -836,7 +850,7 @@ extern int qUnregisterGuiStateMachine();
 void QApplicationPrivate::initialize()
 {
     QWidgetPrivate::mapper = new QWidgetMapper;
-    QWidgetPrivate::uncreatedWidgets = new QWidgetSet;
+    QWidgetPrivate::allWidgets = new QWidgetSet;
     if (qt_appType != QApplication::Tty)
         (void) QApplication::style();  // trigger creation of application style
     // trigger registering of QVariant's GUI types
@@ -980,23 +994,14 @@ QApplication::~QApplication()
     qt_clipboard = 0;
 #endif
 
-    // delete widget mapper
-    if (QWidgetPrivate::mapper) {
-        QWidgetMapper * myMapper = QWidgetPrivate::mapper;
-        QWidgetPrivate::mapper = 0;
-        for (QWidgetMapper::Iterator it = myMapper->begin(); it != myMapper->end(); ++it) {
-            register QWidget *w = *it;
-            if (!w->parent())                        // window
-                w->destroy(true, true);
-        }
-        delete myMapper;
-    }
+    delete QWidgetPrivate::mapper;
+    QWidgetPrivate::mapper = 0;
 
-    // delete uncreated widgets
-    if (QWidgetPrivate::uncreatedWidgets) {
-        QWidgetSet *mySet = QWidgetPrivate::uncreatedWidgets;
-        QWidgetPrivate::uncreatedWidgets = 0;
-        for (QWidgetSet::Iterator it = mySet->begin(); it != mySet->end(); ++it) {
+    // delete all widgets
+    if (QWidgetPrivate::allWidgets) {
+        QWidgetSet *mySet = QWidgetPrivate::allWidgets;
+        QWidgetPrivate::allWidgets = 0;
+        for (QWidgetSet::ConstIterator it = mySet->constBegin(); it != mySet->constEnd(); ++it) {
             register QWidget *w = *it;
             if (!w->parent())                        // window
                 w->destroy(true, true);
@@ -1219,11 +1224,15 @@ bool QApplication::compressEvent(QEvent *event, QObject *receiver, QPostEventLis
     \since 4.5
     \brief toggles automatic SIP (software input panel) visibility
 
-    \bold{The auto SIP property is only available as part of Qt for Windows CE.}
-
     Set this property to \c true to automatically display the SIP when entering
     widgets that accept keyboard input. This property only affects widgets with
-    the WA_InputMethodEnabled attribute set.
+    the WA_InputMethodEnabled attribute set, and is typically used to launch
+    a virtual keyboard on devices which have very few or no keys.
+
+    \bold{ The property only has an effect on platforms which use software input
+    panels, such as Windows CE and Symbian.}
+
+    The default is platform dependent.
 */
 
 #ifdef Q_WS_WINCE
@@ -1236,6 +1245,7 @@ int QApplication::autoMaximizeThreshold() const
 {
     return QApplicationPrivate::autoMaximizeThreshold;
 }
+#endif
 
 void QApplication::setAutoSipEnabled(const bool enabled)
 {
@@ -1246,7 +1256,6 @@ bool QApplication::autoSipEnabled() const
 {
     return QApplicationPrivate::autoSipEnabled;
 }
-#endif
 
 #ifndef QT_NO_STYLE_STYLESHEET
 
@@ -1928,6 +1937,10 @@ QString desktopstyle;
                 desktopstyle = QLatin1String("Windows");                // default styles for Windows
 #elif defined(Q_WS_X11) && defined(Q_OS_SOLARIS)
             desktopstyle = QLatin1String("CDE");                        // default style for X11 on Solaris
+#elif defined(Q_WS_S60)
+            desktopstyle = QLatin1String("S60");                        // default style for Symbian with S60
+#elif defined(Q_OS_SYMBIAN)
+            desktopstyle = QLatin1String("Windows");                    // default style for Symbian without S60
 #elif defined(Q_WS_X11) && defined(Q_OS_IRIX)
             desktopstyle = QLatin1String("SGI");                        // default style for X11 on IRIX
 #elif defined(Q_WS_QWS)
@@ -2012,12 +2025,9 @@ QWidgetList QApplication::topLevelWidgets()
 
 QWidgetList QApplication::allWidgets()
 {
-    QWidgetList list;
-    if (QWidgetPrivate::mapper)
-        list += QWidgetPrivate::mapper->values();
-    if (QWidgetPrivate::uncreatedWidgets)
-        list += QWidgetPrivate::uncreatedWidgets->toList();
-    return list;
+    if (QWidgetPrivate::allWidgets)
+        return QWidgetPrivate::allWidgets->toList();
+    return QWidgetList();
 }
 
 /*!
@@ -2080,6 +2090,16 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                 if (QApplication::keypadNavigationEnabled()) {
                     if (prev->hasEditFocus() && reason != Qt::PopupFocusReason)
                         prev->setEditFocus(false);
+                }
+#endif
+#ifndef QT_NO_IM
+                if (focus) {
+                    QInputContext *prevIc;
+                    prevIc = prev->inputContext();
+                    if (prevIc && prevIc != focus->inputContext()) {
+                        QEvent closeSIPEvent(QEvent::CloseSoftwareInputPanel);
+                        QApplication::sendEvent(prev, &closeSIPEvent);
+                    }
                 }
 #endif
                 QFocusEvent out(QEvent::FocusOut, reason);
@@ -3720,6 +3740,14 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
             QPoint relpos = mouse->pos();
 
             if (e->spontaneous()) {
+#ifndef QT_NO_IM
+                QInputContext *ic = w->inputContext();
+                if (ic
+                        && w->testAttribute(Qt::WA_InputMethodEnabled)
+                        && ic->filterEvent(mouse))
+                    return true;
+#endif
+
                 if (e->type() == QEvent::MouseButtonPress) {
                     QApplicationPrivate::giveFocusAccordingToFocusPolicy(w,
                                                                          Qt::ClickFocus,
@@ -4058,6 +4086,20 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
         touchEvent->setAccepted(eventAccepted);
         break;
     }
+    case QEvent::RequestSoftwareInputPanel:
+    case QEvent::CloseSoftwareInputPanel:
+#ifndef QT_NO_IM
+        if (receiver->isWidgetType()) {
+            QWidget *w = static_cast<QWidget *>(receiver);
+            QInputContext *ic = w->inputContext();
+            if (ic && ic->filterEvent(e)) {
+                break;
+            }
+        }
+#endif
+        res = d->notify_helper(receiver, e);
+        break;
+
     case QEvent::NativeGesture:
     {
         // only propagate the first gesture event (after the GID_BEGIN)
@@ -4729,7 +4771,7 @@ void QApplicationPrivate::emitLastWindowClosed()
 
     If \a enable is true, Qt::Key_Up and Qt::Key_Down are used to change focus.
 
-    This feature is available in Qt for Embedded Linux only.
+    This feature is available in Qt for Embedded Linux and Symbian only.
 
     \sa keypadNavigationEnabled()
 */
@@ -4740,9 +4782,9 @@ void QApplication::setKeypadNavigationEnabled(bool enable)
 
 /*!
     Returns true if Qt is set to use keypad navigation; otherwise returns
-    false. The default is false.
+    false.  The default value is true on Symbian, but false on other platforms.
 
-    This feature is available in Qt for Embedded Linux only.
+    This feature is available in Qt for Embedded Linux and Symbian only.
 
     \sa setKeypadNavigationEnabled()
 */
@@ -4797,8 +4839,8 @@ bool QApplication::keypadNavigationEnabled()
     from two consecutive mouse clicks
 
     The default value on X11 is 400 milliseconds. On Windows and Mac OS, the
-    operating system's value is used. However, on Windows, calling this
-    function sets the double click interval for all applications.
+    operating system's value is used. However, on Windows and Symbian OS,
+    calling this function sets the double click interval for all applications.
 */
 
 /*!
@@ -4957,8 +4999,7 @@ void QApplication::setInputContext(QInputContext *inputContext)
         qWarning("QApplication::setInputContext: called with 0 input context");
         return;
     }
-    if (d->inputContext)
-        delete d->inputContext;
+    delete d->inputContext;
     d->inputContext = inputContext;
 }
 
@@ -4982,6 +5023,11 @@ QInputContext *QApplication::inputContext() const
             qic = QInputContextFactory::create(QLatin1String("xim"), that);
         that->d_func()->inputContext = qic;
     }
+#elif defined(Q_WS_S60)
+    if (!d->inputContext) {
+        QApplication *that = const_cast<QApplication *>(this);
+        that->d_func()->inputContext = QInputContextFactory::create(QString::fromLatin1("coefep"), that);
+    }
 #endif
     return d->inputContext;
 }
@@ -4999,6 +5045,8 @@ uint QApplicationPrivate::currentPlatform(){
         platform |= KB_Gnome;
     if (X11->desktopEnvironment == DE_CDE)
         platform |= KB_CDE;
+#elif defined(Q_OS_SYMBIAN)
+    platform = KB_S60;
 #endif
     return platform;
 }

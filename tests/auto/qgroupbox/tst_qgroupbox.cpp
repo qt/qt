@@ -119,8 +119,8 @@ void tst_QGroupBox::setCheckable_data()
 {
     QTest::addColumn<bool>("checkable");
     QTest::addColumn<bool>("expectedCheckable");
-    QTest::newRow( "checkable_true" ) << TRUE << TRUE;
-    QTest::newRow( "checkable_false" ) << FALSE << FALSE;
+    QTest::newRow( "checkable_true" ) << true << true;
+    QTest::newRow( "checkable_false" ) << false << false;
 }
 
 void tst_QGroupBox::setChecked_data()
@@ -128,9 +128,9 @@ void tst_QGroupBox::setChecked_data()
     QTest::addColumn<bool>("checkable");
     QTest::addColumn<bool>("checked");
     QTest::addColumn<bool>("expectedChecked");
-    QTest::newRow( "checkable_false_checked_true" ) << FALSE << TRUE << FALSE;
-    QTest::newRow( "checkable_true_checked_true" ) << TRUE << TRUE << TRUE;
-    QTest::newRow( "checkable_true_checked_false" ) << TRUE << FALSE << FALSE;
+    QTest::newRow( "checkable_false_checked_true" ) << false << true << false;
+    QTest::newRow( "checkable_true_checked_true" ) << true << true << true;
+    QTest::newRow( "checkable_true_checked_false" ) << true << false << false;
 }
 
 void tst_QGroupBox::setTitle()
@@ -173,116 +173,116 @@ void tst_QGroupBox::setChecked()
 void tst_QGroupBox::enabledPropagation()
 {
     QGroupBox *testWidget = new QGroupBox(0);
-    testWidget->setCheckable(TRUE);
-    testWidget->setChecked(TRUE);
+    testWidget->setCheckable(true);
+    testWidget->setChecked(true);
     QWidget* childWidget = new QWidget( testWidget );
     childWidget->show();
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( childWidget->isEnabled() );
 
-    testWidget->setEnabled( FALSE );
+    testWidget->setEnabled( false );
     QVERIFY( !testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
 
-    testWidget->setDisabled( FALSE );
+    testWidget->setDisabled( false );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( childWidget->isEnabled() );
 
     QWidget* grandChildWidget = new QWidget( childWidget );
     QVERIFY( grandChildWidget->isEnabled() );
 
-    testWidget->setDisabled( TRUE );
+    testWidget->setDisabled( true );
     QVERIFY( !testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
 
-    grandChildWidget->setEnabled( FALSE );
-    testWidget->setEnabled( TRUE );
+    grandChildWidget->setEnabled( false );
+    testWidget->setEnabled( true );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
 
-    grandChildWidget->setEnabled( TRUE );
-    testWidget->setEnabled( FALSE );
-    childWidget->setDisabled( TRUE );
-    testWidget->setEnabled( TRUE );
+    grandChildWidget->setEnabled( true );
+    testWidget->setEnabled( false );
+    childWidget->setDisabled( true );
+    testWidget->setEnabled( true );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
 
     // Reset state
-    testWidget->setEnabled( TRUE );
-    childWidget->setEnabled( TRUE );
-    grandChildWidget->setEnabled( TRUE );
+    testWidget->setEnabled( true );
+    childWidget->setEnabled( true );
+    grandChildWidget->setEnabled( true );
 
     // Now check when it's disabled
-    testWidget->setChecked(FALSE);
+    testWidget->setChecked(false);
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
 
-    testWidget->setEnabled( FALSE );
+    testWidget->setEnabled( false );
     QVERIFY( !testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
 
-    testWidget->setDisabled( FALSE );
+    testWidget->setDisabled( false );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
 
     QVERIFY( !grandChildWidget->isEnabled() );
 
-    testWidget->setDisabled( TRUE );
+    testWidget->setDisabled( true );
     QVERIFY( !testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
 
-    grandChildWidget->setEnabled( FALSE );
-    testWidget->setEnabled( TRUE );
+    grandChildWidget->setEnabled( false );
+    testWidget->setEnabled( true );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
 
-    grandChildWidget->setEnabled( TRUE );
-    testWidget->setEnabled( FALSE );
-    childWidget->setDisabled( TRUE );
-    testWidget->setEnabled( TRUE );
+    grandChildWidget->setEnabled( true );
+    testWidget->setEnabled( false );
+    childWidget->setDisabled( true );
+    testWidget->setEnabled( true );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
 
     // Reset state
-    testWidget->setEnabled( TRUE );
-    childWidget->setEnabled( TRUE );
-    grandChildWidget->setEnabled( TRUE );
+    testWidget->setEnabled( true );
+    childWidget->setEnabled( true );
+    grandChildWidget->setEnabled( true );
 
     // Finally enable it again
-    testWidget->setChecked(TRUE);
+    testWidget->setChecked(true);
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( childWidget->isEnabled() );
 
-    testWidget->setEnabled( FALSE );
+    testWidget->setEnabled( false );
     QVERIFY( !testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
 
-    testWidget->setDisabled( FALSE );
+    testWidget->setDisabled( false );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( childWidget->isEnabled() );
     QVERIFY( grandChildWidget->isEnabled() );
 
-    testWidget->setDisabled( TRUE );
+    testWidget->setDisabled( true );
     QVERIFY( !testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
 
-    grandChildWidget->setEnabled( FALSE );
-    testWidget->setEnabled( TRUE );
+    grandChildWidget->setEnabled( false );
+    testWidget->setEnabled( true );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
 
-    grandChildWidget->setEnabled( TRUE );
-    testWidget->setEnabled( FALSE );
-    childWidget->setDisabled( TRUE );
-    testWidget->setEnabled( TRUE );
+    grandChildWidget->setEnabled( true );
+    testWidget->setEnabled( false );
+    childWidget->setDisabled( true );
+    testWidget->setEnabled( true );
     QVERIFY( testWidget->isEnabled() );
     QVERIFY( !childWidget->isEnabled() );
     QVERIFY( !grandChildWidget->isEnabled() );
@@ -467,7 +467,7 @@ void tst_QGroupBox::propagateFocus()
     box.show();
     box.setFocus();
     QTest::qWait(250);
-    QCOMPARE(qApp->focusWidget(), &lineEdit);
+    QCOMPARE(qApp->focusWidget(), static_cast<QWidget*>(&lineEdit));
 }
 
 QTEST_MAIN(tst_QGroupBox)

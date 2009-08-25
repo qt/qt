@@ -43,7 +43,6 @@
 #include <QtTest/QtTest>
 #include <QtCore/QBuffer>
 #include <QtCore/QDataStream>
-#include <iostream>
 
 #include "qbitarray.h"
 
@@ -109,6 +108,8 @@ private slots:
     void invertOnNull() const;
     void operator_noteq_data();
     void operator_noteq();
+
+    void resize();
 };
 
 Q_DECLARE_METATYPE(QBitArray)
@@ -627,6 +628,31 @@ void tst_QBitArray::operator_noteq()
 
     bool b = input1 != input2;
     QCOMPARE(b, res);
+}
+
+void tst_QBitArray::resize()
+{
+    // -- check that a resize handles the bits correctly
+    QBitArray a = QStringToQBitArray(QString("11"));
+    a.resize(10);
+    QVERIFY(a.size() == 10);
+    QCOMPARE( a, QStringToQBitArray(QString("1100000000")) );
+
+    a.setBit(9);
+    a.resize(9);
+    // now the bit in a should have been gone:
+    QCOMPARE( a, QStringToQBitArray(QString("110000000")) );
+
+    // grow the array back and check the new bit
+    a.resize(10);
+    QCOMPARE( a, QStringToQBitArray(QString("1100000000")) );
+
+    // other test with and
+    a.resize(9);
+    QBitArray b = QStringToQBitArray(QString("1111111111"));
+    b &= a;
+    QCOMPARE( b, QStringToQBitArray(QString("1100000000")) );
+
 }
 
 QTEST_APPLESS_MAIN(tst_QBitArray)

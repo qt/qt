@@ -128,7 +128,7 @@ QString QNetworkInterfacePrivate::makeHwAddress(int len, uchar *data)
     for (int i = 0; i < len; ++i) {
         if (i)
             result += QLatin1Char(':');
-        
+
         char buf[3];
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE) && defined(_MSC_VER) && _MSC_VER >= 1400
         sprintf_s(buf, 3, "%02hX", ushort(data[i]));
@@ -170,7 +170,7 @@ QNetworkAddressEntry::QNetworkAddressEntry()
     object \a other.
 */
 QNetworkAddressEntry::QNetworkAddressEntry(const QNetworkAddressEntry &other)
-    : d(new QNetworkAddressEntryPrivate(*other.d))
+    : d(new QNetworkAddressEntryPrivate(*other.d.data()))
 {
 }
 
@@ -179,7 +179,7 @@ QNetworkAddressEntry::QNetworkAddressEntry(const QNetworkAddressEntry &other)
 */
 QNetworkAddressEntry &QNetworkAddressEntry::operator=(const QNetworkAddressEntry &other)
 {
-    *d = *other.d;
+    *d.data() = *other.d.data();
     return *this;
 }
 
@@ -188,7 +188,6 @@ QNetworkAddressEntry &QNetworkAddressEntry::operator=(const QNetworkAddressEntry
 */
 QNetworkAddressEntry::~QNetworkAddressEntry()
 {
-    delete d;
 }
 
 /*!
@@ -604,8 +603,13 @@ QDebug operator<<(QDebug debug, const QNetworkInterface &networkInterface)
                     << ", hardware address = " << networkInterface.hardwareAddress()
                     << ", flags = ";
     flagsDebug(debug, networkInterface.flags());
+#if defined(Q_CC_RVCT)
+    // RVCT gets confused with << networkInterface.addressEntries(), reason unknown.
+    debug.nospace() << ")\n";
+#else
     debug.nospace() << ", entries = " << networkInterface.addressEntries()
                     << ")\n";
+#endif
     return debug.space();
 }
 #endif

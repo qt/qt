@@ -7,6 +7,7 @@ PRECOMPILED_HEADER = kernel/qt_gui_pch.h
 KERNEL_P= kernel
 HEADERS += \
 	kernel/qaction.h \
+        kernel/qaction_p.h \
 	kernel/qactiongroup.h \
 	kernel/qapplication.h \
 	kernel/qapplication_p.h \
@@ -96,6 +97,27 @@ win32 {
         !contains(DEFINES, QT_NO_DIRECTDRAW):LIBS += ddraw.lib
 }
 
+symbian {
+        SOURCES += \
+                kernel/qapplication_s60.cpp \
+                kernel/qeventdispatcher_s60.cpp \
+                kernel/qwidget_s60.cpp \
+                kernel/qcursor_s60.cpp \
+                kernel/qdesktopwidget_s60.cpp \
+                kernel/qkeymapper_s60.cpp\
+                kernel/qclipboard_s60.cpp\
+                kernel/qdnd_s60.cpp \
+                kernel/qsound_s60.cpp
+
+        HEADERS += \
+                kernel/qt_s60_p.h \
+                kernel/qeventdispatcher_s60_p.h
+        LIBS += -lbafl -lestor
+
+        INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
+}
+
+
 unix:x11 {
 	INCLUDEPATH += ../3rdparty/xorg
 	HEADERS += \
@@ -172,7 +194,7 @@ embedded {
                 qcocoaview_mac_p.h \
                 qcocoaapplication_mac_p.h \
                 qcocoaapplicationdelegate_mac_p.h \
-                qmultitouch_mac_p.h 
+                qmultitouch_mac_p.h
 
         OBJECTIVE_SOURCES += \
                 kernel/qcursor_mac.mm \
@@ -190,7 +212,7 @@ embedded {
                 kernel/qt_cocoa_helpers_mac.mm \
                 kernel/qdesktopwidget_mac.mm \
                 kernel/qeventdispatcher_mac.mm \
-                kernel/qcocoawindowcustomthemeframe_mac.mm \   
+                kernel/qcocoawindowcustomthemeframe_mac.mm \
                 kernel/qmultitouch_mac.mm \
 
         HEADERS += \
@@ -199,10 +221,10 @@ embedded {
                 kernel/qcocoaapplicationdelegate_mac_p.h \
                 kernel/qeventdispatcher_mac_p.h
 
-        MENU_NIB.files = mac/qt_menu.nib 
-        MENU_NIB.path = Resources 
+        MENU_NIB.files = mac/qt_menu.nib
+        MENU_NIB.path = Resources
         MENU_NIB.version = Versions
-        QMAKE_BUNDLE_DATA += MENU_NIB 
+        QMAKE_BUNDLE_DATA += MENU_NIB
         RESOURCES += mac/macresources.qrc
 
         LIBS_PRIVATE += -framework AppKit

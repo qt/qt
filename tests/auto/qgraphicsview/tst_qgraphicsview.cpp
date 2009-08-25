@@ -1362,7 +1362,7 @@ void tst_QGraphicsView::itemsInRect_cosmeticAdjust()
 {
     QFETCH(QRect, updateRect);
     QFETCH(int, numPaints);
-    
+
     QGraphicsScene scene(-100, -100, 200, 200);
     CountPaintItem *rect = new CountPaintItem(QRectF(-50, -50, 100, 100));
     scene.addItem(rect);
@@ -2288,6 +2288,9 @@ void tst_QGraphicsView::viewportUpdateMode2()
 
 void tst_QGraphicsView::acceptDrops()
 {
+#ifdef QT_NO_DRAGANDDROP
+    QSKIP("Drag'n drop disabled in this build", SkipAll);
+#else
     QGraphicsView view;
 
     // Excepted default behavior.
@@ -2321,6 +2324,7 @@ void tst_QGraphicsView::acceptDrops()
     // Switching the view to not accept drops.
     view.setAcceptDrops(false);
     QVERIFY(!view.viewport()->acceptDrops());
+#endif
 }
 
 void tst_QGraphicsView::optimizationFlags()
@@ -2389,7 +2393,7 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState()
     MessUpPainterItem *parent = new MessUpPainterItem(QRectF(0, 0, 100, 100));
     MessUpPainterItem *child = new MessUpPainterItem(QRectF(0, 0, 100, 100));
     child->setParentItem(parent);
-    
+
     QGraphicsScene scene;
     scene.addItem(parent);
 
@@ -2528,7 +2532,7 @@ void tst_QGraphicsView::scrollBarRanges()
         QSKIP("No Motif style compiled.", SkipSingle);
 #endif
     } else {
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
         view.setStyle(new QWindowsStyle);
 #elif !defined(QT_NO_STYLE_PLASTIQUE)
         view.setStyle(new QPlastiqueStyle);
@@ -3261,7 +3265,9 @@ void tst_QGraphicsView::mouseTracking()
         QGraphicsView view(&scene);
 
         QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+#ifndef QT_NO_CURSOR
         item->setCursor(Qt::CrossCursor);
+#endif
         scene.addItem(item);
         QVERIFY(view.viewport()->hasMouseTracking());
     }
@@ -3269,7 +3275,9 @@ void tst_QGraphicsView::mouseTracking()
         // Adding an item to the scene before the scene is set on the view.
         QGraphicsScene scene(-10000, -10000, 20000, 20000);
         QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+#ifndef QT_NO_CURSOR
         item->setCursor(Qt::CrossCursor);
+#endif
         scene.addItem(item);
 
         QGraphicsView view(&scene);
@@ -3284,7 +3292,9 @@ void tst_QGraphicsView::mouseTracking()
         QGraphicsView view3(&scene);
 
         QGraphicsRectItem *item = new QGraphicsRectItem(10, 10, 10, 10);
+#ifndef QT_NO_CURSOR
         item->setCursor(Qt::CrossCursor);
+#endif
         scene.addItem(item);
 
         QVERIFY(view1.viewport()->hasMouseTracking());
@@ -3334,7 +3344,7 @@ public:
         QGraphicsRectItem::paint(painter, option, widget);
         ++paints;
     }
-    
+
     int paints;
 };
 

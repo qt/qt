@@ -44,6 +44,7 @@
 
 #include <QtCore/qplugin.h>
 #include <QtCore/qfactoryinterface.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -109,7 +110,7 @@ public:
 
 protected:
     QImageIOHandler(QImageIOHandlerPrivate &dd);
-    QImageIOHandlerPrivate *d_ptr;
+    QScopedPointer<QImageIOHandlerPrivate> d_ptr;
 private:
     Q_DISABLE_COPY(QImageIOHandler)
 };

@@ -51,8 +51,8 @@
     appropriate \c{#ifdef} directives (see below).
 
     Qt provides a few low-level global functions for fine-tuning
-    applications on specific platforms. See \l{Special-Purpose Global
-    Functions Exported by Qt} for details.
+    applications on specific platforms. See \l{Platform-Specific
+    Functions} for details.
 
     \tableofcontents
 

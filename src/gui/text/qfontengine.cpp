@@ -185,18 +185,20 @@ QFontEngine::QFontEngine()
 
 QFontEngine::~QFontEngine()
 {
-    for (GlyphPointerHash::iterator it = m_glyphPointerHash.begin(), end = m_glyphPointerHash.end();
-         it != end; ++it) {
-        for (QList<QFontEngineGlyphCache*>::iterator it2 = it.value().begin(), end2 = it.value().end();
-            it2 != end2; ++it2)
-                delete *it2;
+    for (GlyphPointerHash::const_iterator it = m_glyphPointerHash.constBegin(),
+            end = m_glyphPointerHash.constEnd(); it != end; ++it) {
+        for (QList<QFontEngineGlyphCache*>::const_iterator it2 = it.value().constBegin(),
+                end2 = it.value().constEnd(); it2 != end2; ++it2) {
+            delete *it2;
+        }
     }
     m_glyphPointerHash.clear();
-    for (GlyphIntHash::iterator it = m_glyphIntHash.begin(), end = m_glyphIntHash.end();
-         it != end; ++it) {
-        for (QList<QFontEngineGlyphCache*>::iterator it2 = it.value().begin(), end2 = it.value().end();
-            it2 != end2; ++it2)
-                delete *it2;
+    for (GlyphIntHash::const_iterator it = m_glyphIntHash.constBegin(),
+            end = m_glyphIntHash.constEnd(); it != end; ++it) {
+        for (QList<QFontEngineGlyphCache*>::const_iterator it2 = it.value().constBegin(),
+                end2 = it.value().constEnd(); it2 != end2; ++it2) {
+            delete *it2;
+        }
     }
     m_glyphIntHash.clear();
     qHBFreeFace(hbFace);
@@ -234,8 +236,10 @@ HB_Font QFontEngine::harfbuzzFont() const
 
 HB_Face QFontEngine::harfbuzzFace() const
 {
-    if (!hbFace)
+    if (!hbFace) {
         hbFace = qHBNewFace(const_cast<QFontEngine *>(this), hb_getSFntTable);
+        Q_CHECK_PTR(hbFace);
+    }
     return hbFace;
 }
 
@@ -812,7 +816,7 @@ QFontEngineGlyphCache *QFontEngine::glyphCache(QFontEngineGlyphCache::Type key, 
     return 0;
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
 static inline QFixed kerning(int left, int right, const QFontEngine::KernPair *pairs, int numPairs)
 {
     uint left_right = (left << 16) + right;
@@ -1034,9 +1038,8 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, uint unicode)
             return 0;
         quint16 segCountX2 = qFromBigEndian<quint16>(cmap + 6);
         const unsigned char *ends = cmap + 14;
-        quint16 endIndex = 0;
         int i = 0;
-        for (; i < segCountX2/2 && (endIndex = qFromBigEndian<quint16>(ends + 2*i)) < unicode; i++) {}
+        for (; i < segCountX2/2 && qFromBigEndian<quint16>(ends + 2*i) < unicode; i++) {}
 
         const unsigned char *idx = ends + segCountX2 + 2 + 2*i;
         quint16 startIndex = qFromBigEndian<quint16>(idx);
@@ -1101,6 +1104,18 @@ quint32 QFontEngine::getTrueTypeGlyphIndex(const uchar *cmap, uint unicode)
     }
 
     return 0;
+}
+
+Q_GLOBAL_STATIC_WITH_INITIALIZER(QVector<QRgb>, qt_grayPalette, {
+    x->resize(256);
+    QRgb *it = x->data();
+    for (int i = 0; i < x->size(); ++i, ++it)
+        *it = 0xff000000 | i | (i<<8) | (i<<16);
+});
+
+const QVector<QRgb> &QFontEngine::grayPalette()
+{
+    return *qt_grayPalette();
 }
 
 // ------------------------------------------------------------------

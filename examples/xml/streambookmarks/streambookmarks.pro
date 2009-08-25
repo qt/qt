@@ -12,3 +12,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/xml/streambookmarks
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS streambookmarks.pro *.xbel
 sources.path = $$[QT_INSTALL_EXAMPLES]/xml/streambookmarks
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

@@ -69,6 +69,9 @@ mac {
     HEADERS += image/qpixmap_mac_p.h
     SOURCES += image/qpixmap_mac.cpp
 }
+symbian {
+    SOURCES += image/qpixmap_s60.cpp
+}
 
 # Built-in image format support
 HEADERS += \

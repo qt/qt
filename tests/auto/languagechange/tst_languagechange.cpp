@@ -122,10 +122,7 @@ public slots:
     void install() {
         QCoreApplication::installTranslator(this);
         QTest::qWait(2500);
-        //### is there any better way to close a Qt dialog?
-        QThreadData *data = QThreadData::current();
-        if (!data->eventLoops.isEmpty())
-            data->eventLoops.top()->quit();
+        QApplication::closeAllWindows();
     }
 public:
     mutable QSet<QByteArray> m_translations;
@@ -212,7 +209,12 @@ void tst_languageChange::retranslatability()
                        "languages or to 'RTL' in right-to-left languages (such as Hebrew and Arabic) to "
                        "get proper widget layout.");
     TransformTranslator translator;
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+    // Allow a little extra time or emulator startup delays cause failure
+    QTimer::singleShot(5000, &translator, SLOT(install()));
+#else
     QTimer::singleShot(500, &translator, SLOT(install()));
+#endif
     switch (dialogType) {
     case InputDialog:
         (void)QInputDialog::getInteger(0, QLatin1String("title"), QLatin1String("label"));
@@ -235,7 +237,17 @@ void tst_languageChange::retranslatability()
         QString fooName = tmpParentDir + "/foo";
         QDir dir;
         QCOMPARE(dir.mkpath(tmpDir), true);
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+        // Just create a new file instead of copying exe, because exe is not there in emulator
+        {
+            QFile fooFile(fooName);
+            QVERIFY(fooFile.open(QIODevice::WriteOnly | QIODevice::Text));
+            for(int i=0; i<2048; i++) // File needs to be big enough for size to read in KB
+               fooFile.write("@");
+        }
+#else
         QCOMPARE(QFile::copy(QApplication::applicationFilePath(), fooName), true);
+#endif
 
         dlg.setDirectory(tmpParentDir);
 #ifdef Q_OS_WINCE
@@ -244,7 +256,12 @@ void tst_languageChange::retranslatability()
         dlg.setFileMode(QFileDialog::ExistingFiles);
         dlg.setViewMode(QFileDialog::Detail);
         dlg.exec();
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+        // increase the wait time because of increased delay caused by emulator startup
+        QTest::qWait(15000);
+#else
         QTest::qWait(3000);
+#endif
         QCOMPARE(QFile::remove(fooName), true);
         QCOMPARE(dir.rmdir(tmpDir), true);
         QCOMPARE(dir.rmdir(tmpParentDir), true);

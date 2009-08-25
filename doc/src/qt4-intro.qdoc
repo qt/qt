@@ -78,6 +78,28 @@
 
     The following features have been added to Qt since the first release of Qt 4:
 
+    In Qt 4.5:
+    \list
+    \o The WebKit browser engine included with Qt has been
+       upgraded to the latest upstream (trunk) version of WebKit,
+       bringing the latest features and improvements to Qt applications.
+    \o Qt for Mac OS X has been substantially rewritten to use
+       Apple's Cocoa API, enabling Qt applications to be deployed on
+       64-bit Macintosh hardware.
+    \o The QtXmlPatterns module has been extended to cover XSLT, a
+       transformation language for XML documents.
+    \o Qt Script introduced its debugger, 
+       providing error reporting for scripts, and to let users track down
+       bugs in their own scripts.
+    \o Qt 4.5 includes support for writing rich text documents as
+       OpenDocument files via the newly-introduced QTextDocumentWriter
+       class.
+    \o Qt Linguist can load and edit multiple translation
+       files simultaneously.
+    \o Support for ARGB top-level widgets (i.e., translucent
+       windows).
+    \endlist
+
     In Qt 4.4:
     \list
     \o \l{QtWebkit Module}{Qt WebKit integration}, making it possible for developers
@@ -87,8 +109,8 @@
     \o \l{QtXmlPatterns Module}{XQuery and XPath} support, providing facilities for
     XML processing beyond that supported by the QtXml module.
     \o Support for embedded widgets in \l{Graphics View} scenes.
-    \o The \l{QtConcurrent} framework for concurrent programming using Qt paradigms and
-    threading features.
+    \o The \l{Threading and Concurrent Programming}{QtConcurrent framework} for
+    concurrent programming using Qt paradigms and threading features.
     \o An \l{QtHelp Module}{improved help system} that can be used in conjunction
     with Qt Assistant or as an independent help resource manager.
     \o Printing system improvements, including the QPrinterInfo, QPrintPreviewWidget
@@ -435,6 +457,157 @@
 */
 
 /*!
+    \page qt4-6-intro.html
+    \title What's New in Qt 4.6
+
+    Qt 4.6 provides many improvements and enhancements over the
+    previous releases in the Qt 4 series. This document covers the
+    most important features in this release, separated by category.
+
+    A comprehensive list of changes between Qt 4.5 and Qt 4.6 is
+    included in the \c changes-4.6.0 file
+    \l{http://qt.nokia.com/developer/changes/changes-4.6.0}{available
+    online}. A \l{Known Issues in %VERSION%}{list of known issues}
+    for this release is also available.
+
+    Changes between this release and the previous release are provided
+    in the \c{changes-%VERSION%} file (also
+    \l{http://qt.nokia.com/developer/changes/changes-%VERSION%}{available online}).
+
+    A list of other Qt 4 features can be found on the \bold{\l{What's
+    New in Qt 4}} page.
+
+    \bold{Highlights}
+
+    \tableofcontents
+
+    \section1 Animation Framework
+
+    The animation framework helps build highly animated,
+    high-performance GUIs without the hassle of managing complex
+    structures, timers, and easing curves, not to mention the large
+    state graphs that all animated GUIs tend to be full of.
+
+    The framework makes it easy to animate \l{QObject}s, including
+    QWidgets, by allowing Qt properties to be animated. It also allows
+    creating custom animations and interpolation functions. Graphics
+    views are not left out--one can animate \l{QGraphicsWidget}s,
+    which inherits from QObject (and thereby enables properties).
+
+    Animations are controlled using easing curves and can be grouped
+    together. This enables animations of arbitrary complexity.
+
+    The API is easy to grasp with functions such as start(), stop(),
+    pause(), and currentTime(). Here is an image from one of the
+    examples that come with the framework:
+
+    \image whatsnewanimatedtiles.png
+
+    The animation framework also plugs into the new Qt Statemachine by
+    allowing an animation to be played when transitions are triggered.
+    The state machine framework is introduced in 4.6 and is described
+    below.
+
+    \section1 State Machine Framework
+
+    The state machine framework provides a robust state chart
+    implementation based on Harel statecharts and SCXML. Qt's API lets
+    you construct such state graphs and execute them. The key benefits
+    of a state machine are:
+
+    \list
+        \o Simplify complex application semantics.
+        \o Use of states to reduce code bloat.
+        \o Use states to improve maintainability. 
+        \o Makes event-driven programming robust and more
+           reusable.
+    \endlist
+
+    It is especially the last item here that makes using a state
+    machine worthwhile. A key characteristic of event-driven systems
+    (such as Qt applications) is that behavior often depends not only
+    on the last or current event, but also the events that preceded
+    it. With statecharts, this information is easy to express.
+
+    The framework fits neatly into Qt by allowing transitions to
+    trigger on signals and \l{QEvent}s. By inserting animations into
+    the state machine, it is also easier to use the framework for
+    animating GUIs, for instance.
+
+    \section1 Multi-touch & Gestures
+
+    The new multi-touch and gestures support enables user interaction
+    with more than one finger, and combines sequential touch inputs to
+    a 'gesture'.
+
+    \image gestures.png
+
+    The main benefits of this new functionality are:
+
+    \list
+        \o Allow users to interact with applications in better ways.
+        \o Simplify finger-based interaction with UI components.
+        \o Allowing common basic gestures and multi-touch
+           gestures.
+        \o Enable extensibility.
+    \endlist
+
+    \section1 DOM access API
+
+    Web pages and XML both have very complex document object models.
+    The W3C selector API provides a very simple way to access and
+    manipulate such structures. This API makes it intuitive to access
+    DOM, helps reuse CSS selector knowledge, and gives little
+    maintenance or footprint overhead.
+
+    \code
+        QWebElement document = frame->documentElement();
+        QList<QWebElement> allSpans = document.findAll("span");
+        QList<QWebElement> introSpans = document.findAll("p.intro span");
+    \endcode
+
+    \section1 Qt3D enablers
+
+    As more of Qt, and more of the applications built on Qt go 3D,
+    API's should be provided to simplify this. Mainly, the new API
+    aims to make it more easy to create 3D applications with OpenGL.
+    It will also unify the Qt OpenGL codebase, and enable
+    cross-platform 3D codebase.
+
+    The main features of the Qt3D enablers are currently: Math
+    primitives for matrix multiplication, vectors, quaternions
+    (client-side), and API for vertex and fragment shaders, GLSL/ES.
+    Future research will, among other things include stencils,
+scissors, vertex buffers and arrays, texture manipulation, and
+        geometry shaders.
+
+    \section1 Performance Optimizations
+
+    As always, Qt continuously strive to optimize its performance.
+    For this release, we have:
+
+    \list
+        \o Rewritten the QGraphicsView rendering algorithm.
+        \o Made QPixmapCache support efficient Key datastructure.
+        \o Reduced overhead in QNetworkAccessManager.
+        \o Added the QContiguousCache class, which provides efficient caching of
+           contiguous data.
+        \o Removed Win9x support.
+    \endlist
+
+    \section1 Multimedia Audio Services
+
+    Qt 4.6 comes with new classes for handling audio. These classes
+    provide low-level access to the system's audio system. By
+    specifying the audio format (QAudioFormat) and supplying audio
+    data through a QIODevice, you get direct access to the
+    functionality of the sound device. The API also comes with
+    functions to query audio devices for which audio formats they
+    support.
+
+*/
+
+/*
     \page qt4-5-intro.html
     \title What's New in Qt 4.5
 
@@ -563,7 +736,7 @@
     \section1 Improved Network Proxy Support
 
     Qt's networking classes have been updated with
-    \l{Network Programming#Support for Network Proxies}{improved proxy support}.
+    \l{QtNetwork Module#Support for Network Proxies}{improved proxy support}.
     This includes improved integration with system proxy settings and the added
     ability to handle non-trivial proxy cases.
 

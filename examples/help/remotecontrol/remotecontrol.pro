@@ -11,3 +11,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/help/remotecontrol
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro *.png *.doc doc
 sources.path = $$[QT_INSTALL_EXAMPLES]/help/remotecontrol
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

@@ -107,7 +107,7 @@ template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
 { return true; }
 
-#if defined(Q_CC_MSVC)
+#if defined(Q_CC_MSVC) || defined(Q_CC_MWERKS)
 
 // MSVC++ 6.0 doesn't generate correct code when optimizations are turned on!
 #if _MSC_VER < 1300 && defined (_M_IX86)
@@ -218,7 +218,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueTo
 
 #else
 
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE) && !defined(Q_CC_MWERKS)
 // use compiler intrinsics for all atomic functions
 //those functions need to be define in the global namespace
 QT_END_NAMESPACE
@@ -319,7 +319,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueTo
 
 #else // Q_OS_WINCE
 
-#if _WIN32_WCE < 0x600 && defined(_X86_)
+#if (_WIN32_WCE < 0x600 && defined(_X86_)) || defined(Q_CC_MWERKS)
 // For X86 Windows CE build we need to include winbase.h to be able
 // to catch the inline functions which overwrite the regular 
 // definitions inside of coredll.dll. Though one could use the 
@@ -327,8 +327,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueTo
 // exported at all.
 #include <winbase.h>
 #else
-
-#if _WIN32_WCE >= 0x600
+#if _WIN32_WCE >= 0x600 || defined(Q_CC_MWERKS)
 #define Q_ARGUMENT_TYPE volatile
 #  if defined(_X86_)
 #    define InterlockedIncrement _InterlockedIncrement

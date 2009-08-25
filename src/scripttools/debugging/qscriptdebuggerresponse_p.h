@@ -54,7 +54,7 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-
+#include <QtCore/qscopedpointer.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qvariant.h>
 
@@ -127,7 +127,7 @@ public:
     bool operator!=(const QScriptDebuggerResponse &other) const;
 
 private:
-    QScriptDebuggerResponsePrivate *d_ptr;
+    QScopedPointer<QScriptDebuggerResponsePrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptDebuggerResponse)
 };
