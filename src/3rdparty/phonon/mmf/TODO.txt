@@ -36,4 +36,9 @@ This should probably be left for now, particularly until audio effects have been
 * Namespace macros
 For consistency with other backends, the code should be wrapped in QT_BEGIN_NAMESPACE / QT_END_NAMESPACE macros.
 
+* Fix code layout
+My editor was set to use tabs for indenting, rather than the Qt standard of 4 spaces.  So we can either:
+	1. Do "s/\t/    /g" - which will just fix the indenting
+	2. Use http://astyle.sourceforge.net/:
+		astyle --indent=spaces=4 --brackets=linux --indent-labels --pad=oper --unpad=paren --one-line=keep-statements --convert-tabs --indent-preprocessor --recursive ./
 
