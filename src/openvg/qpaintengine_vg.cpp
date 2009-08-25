@@ -3112,6 +3112,8 @@ QPixmapFilter *QVGPaintEngine::createPixmapFilter(int type) const
         return new QVGPixmapColorizeFilter;
     else if (type == QPixmapFilter::DropShadowFilter)
         return new QVGPixmapDropShadowFilter;
+    else if (type == QPixmapFilter::BlurFilter)
+        return new QVGPixmapBlurFilter;
     else
 #endif
         return QPaintEngineEx::createPixmapFilter(type);
