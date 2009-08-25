@@ -6,7 +6,7 @@ Component {
         id: Wrapper; width: Wrapper.ListView.view.width; height: 86
         Item {
             id: MoveMe
-            Rectangle { color: "black"; opacity: Wrapper.ListView.index % 2 ? 0.2 : 0.3; height: 84; width: Wrapper.width; y: 1 }
+            Rectangle { color: "black"; opacity: index % 2 ? 0.2 : 0.4; height: 84; width: Wrapper.width; y: 1 }
             Rectangle {
                 id: WhiteRect; x: 6; y: 4; width: 77; height: 77; color: "white"; smooth: true
 

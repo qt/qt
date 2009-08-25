@@ -23,7 +23,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             elide: "ElideLeft"
             text: (RssModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + RssModel.tags)
-            font.pointSize: 10; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
+            font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
         }
 
         Button {
