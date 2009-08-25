@@ -1757,14 +1757,16 @@ void
 QMenuBarPrivate::macCreateMenuBar(QWidget *parent)
 {
     Q_Q(QMenuBar);
-    static int checkEnv = -1;
+    static int dontUseNativeMenuBar = -1;
     // We call the isNativeMenuBar function here
-    // becasue that will make sure that local overrides
+    // because that will make sure that local overrides
     // are dealt with correctly.
     bool qt_mac_no_native_menubar = !q->isNativeMenuBar();
-    if (qt_mac_no_native_menubar == false && checkEnv < 0) {
-        checkEnv = !qgetenv("QT_MAC_NO_NATIVE_MENUBAR").isEmpty();
-        QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, checkEnv);
+    if (qt_mac_no_native_menubar == false && dontUseNativeMenuBar < 0) {
+        bool isPlugin = QApplication::testAttribute(Qt::AA_MacPluginApplication);
+        bool environmentSaysNo = !qgetenv("QT_MAC_NO_NATIVE_MENUBAR").isEmpty();
+        dontUseNativeMenuBar = isPlugin || environmentSaysNo;
+        QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, dontUseNativeMenuBar);
         qt_mac_no_native_menubar = !q->isNativeMenuBar();
     }
     if (!qt_mac_no_native_menubar) {
@@ -1921,9 +1923,6 @@ static void cancelAllMenuTracking()
 */
 bool QMenuBar::macUpdateMenuBar()
 {
-    if (QApplication::testAttribute(Qt::AA_MacPluginApplication))
-        return false;
-
     cancelAllMenuTracking();
     QMenuBar *mb = 0;
     //find a menu bar
