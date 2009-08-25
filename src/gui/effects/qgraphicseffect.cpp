@@ -762,7 +762,7 @@ void QGraphicsDropShadowEffect::setOffset(const QPointF &offset)
 }
 
 /*!
-    \fn void QGraphicsDropShadowEffect::offsetChanged(const QPoint &offset)
+    \fn void QGraphicsDropShadowEffect::offsetChanged(const QPointF &offset)
 
     This signal is emitted whenever the effect's shadow offset changes.
 */
