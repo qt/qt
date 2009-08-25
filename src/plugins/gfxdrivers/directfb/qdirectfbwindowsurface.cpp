@@ -124,7 +124,7 @@ void QDirectFBWindowSurface::createWindow()
         qFatal("QDirectFBWindowSurface: Unable to get primary display layer!");
 
     DFBWindowDescription description;
-    description.caps = DWCAPS_NODECORATION;
+    description.caps = DWCAPS_NODECORATION|DWCAPS_DOUBLEBUFFER;
     description.flags = DWDESC_CAPS|DWDESC_SURFACE_CAPS|DWDESC_PIXELFORMAT;
 
     description.surface_caps = DSCAPS_NONE;
