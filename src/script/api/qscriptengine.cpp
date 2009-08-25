@@ -836,11 +836,6 @@ QScriptEnginePrivate::QScriptEnginePrivate()
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
-    while (freeScriptValues) {
-        QScriptValuePrivate *p = freeScriptValues;
-        freeScriptValues = p->next;
-        qFree(p);
-    }
     while (!ownedAgents.isEmpty())
         delete ownedAgents.takeFirst();
     detachAllRegisteredScriptValues();
@@ -849,6 +844,11 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     JSC::JSLock lock(false);
     globalData->heap.destroy();
     globalData->deref();
+    while (freeScriptValues) {
+        QScriptValuePrivate *p = freeScriptValues;
+        freeScriptValues = p->next;
+        qFree(p);
+    }
 }
 
 QScriptValue QScriptEnginePrivate::scriptValueFromVariant(const QVariant &v)
