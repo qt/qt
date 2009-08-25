@@ -103,7 +103,7 @@ MMF::VideoPlayer::~VideoPlayer()
 //-----------------------------------------------------------------------------
 
 void MMF::VideoPlayer::doPlay()
-{
+{    
 	m_player->Play();
 }
 
@@ -228,6 +228,20 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
 		maxVolumeChanged(m_player->MaxVolume());
 		
 		videoOutput().setFrameSize(m_frameSize);	
+		
+	    // Debugging video visibility
+	    videoOutput().dump();
+	    
+#ifdef PHONON_MMF_EXPLICITLY_SHOW_VIDEO_WIDGET
+	    // HACK: why do we need to explicitly show() the grandparent...?
+	    static_cast<QWidget*>(videoOutput().parent()->parent())->show();
+	    videoOutput().updateGeometry();
+	    videoOutput().update();
+#endif
+	    
+	    videoOutput().dump();
+	    	    
+	    videoOutputChanged();
 
         emit totalTimeChanged(totalTime());
         changeState(StoppedState);
@@ -374,6 +388,13 @@ void MMF::VideoPlayer::getNativeWindowSystemHandles()
 	TRACE("window size       %d %d",
         m_window->Size().iWidth, m_window->Size().iHeight);
 	
+#ifdef PHONON_MMF_HARD_CODE_VIDEO_RECT
+	// HACK: why isn't control->Rect updated following a call to 
+	// updateGeometry on the parent widget?
+	m_windowRect = TRect(0,100,320,250);
+#else
 	m_windowRect = control->Rect();
+#endif
+	
 	m_clipRect = m_windowRect;
 }

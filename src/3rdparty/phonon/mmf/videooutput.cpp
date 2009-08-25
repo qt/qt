@@ -35,13 +35,61 @@ MMF::VideoOutput::VideoOutput(QWidget* parent)
 {
 	TRACE_CONTEXT(VideoOutput::VideoOutput, EVideoInternal);
 	TRACE_ENTRY("parent 0x%08x", parent);
-	
+
+#ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 	setPalette(QPalette(Qt::black));
 	setAttribute(Qt::WA_OpaquePaintEvent, true);
 	setAttribute(Qt::WA_NoSystemBackground, true);
 	setAutoFillBackground(false);
+#endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
+	
+	dump();
 	
 	TRACE_EXIT_0();
+}
+
+// Debugging video visibility
+void VideoOutput::dump()
+{
+    TRACE_CONTEXT(VideoOutput::dump, EVideoInternal);
+    TRACE_ENTRY_0();
+    
+    TRACE("dumpObjectInfo this 0x%08x", this);
+    this->dumpObjectInfo();
+
+    TRACE_0("Traversing up object tree ...");
+    QObject* node = this;
+    QObject* root = this;
+    while(node)
+    {
+        QWidget* widget = qobject_cast<QWidget*>(node);
+        const bool visible = widget ? widget->isVisible() : false;
+        TRACE("node 0x%08x widget 0x%08x visible %d", node, widget, visible);
+        
+        root = node;
+        node = node->parent();
+    }
+    
+    TRACE("dumpObjectInfo root 0x%08x", root);
+    root->dumpObjectInfo();
+    TRACE_0("+ dumpObjectTree");
+    root->dumpObjectTree();
+    TRACE_0("- dumpObjectTree");
+    
+    TRACE("isVisible %d", isVisible());
+    TRACE("pos %d %d", x(), y());
+    TRACE("size %d %d", size().width(), size().height());
+    TRACE("maxSize %d %d", maximumWidth(), maximumHeight());
+    TRACE("sizeHint %d %d", sizeHint().width(), sizeHint().height());
+    
+    QWidget& parentWidget = *qobject_cast<QWidget*>(parent());
+    TRACE("parent.isVisible %d", parentWidget.isVisible());
+    TRACE("parent.pos %d %d", parentWidget.x(), parentWidget.y());
+    TRACE("parent.size %d %d", parentWidget.size().width(), parentWidget.size().height());
+    TRACE("parent.maxSize %d %d", parentWidget.maximumWidth(), parentWidget.maximumHeight());
+    TRACE("parent.sizeHint %d %d", parentWidget.sizeHint().width(), parentWidget.sizeHint().height());
+    
+    TRACE_EXIT_0();
 }
 
 MMF::VideoOutput::~VideoOutput()
@@ -54,6 +102,9 @@ MMF::VideoOutput::~VideoOutput()
 
 void MMF::VideoOutput::setFrameSize(const QSize& frameSize)
 {
+#ifdef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
+    Q_UNUSED(frameSize);
+#else
     TRACE_CONTEXT(VideoOutput::setFrameSize, EVideoInternal);
     TRACE("oldSize %d %d newSize %d %d",
         m_frameSize.width(), m_frameSize.height(),
@@ -64,12 +115,15 @@ void MMF::VideoOutput::setFrameSize(const QSize& frameSize)
         m_frameSize = frameSize;
         updateGeometry();
     }
+#endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 }
 
 
 //-----------------------------------------------------------------------------
 // QWidget
 //-----------------------------------------------------------------------------
+
+#ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 
 QSize MMF::VideoOutput::sizeHint() const
 {
@@ -95,12 +149,17 @@ void MMF::VideoOutput::paintEvent(QPaintEvent* event)
 		event->rect().right(), event->rect().bottom());
 	TRACE("regions %d", event->region().numRects());
 	TRACE("type %d", event->type());
+	
+	QWidget::paintEvent(event);
 }
 
 QPaintEngine* MMF::VideoOutput::paintEngine() const
 {
     TRACE_CONTEXT(VideoOutput::sizeHint, EVideoApi);
-    TRACE_RETURN("0x%08x", NULL);
+    
+    QPaintEngine* const engine = QWidget::paintEngine();
+
+    TRACE_RETURN("0x%08x", engine);
 }
 
 void MMF::VideoOutput::resizeEvent(QResizeEvent* event)
@@ -109,6 +168,8 @@ void MMF::VideoOutput::resizeEvent(QResizeEvent* event)
 	TRACE("%d %d -> %d %d", 
 		event->oldSize().width(), event->oldSize().height(),
 		event->size().width(), event->size().height());
+	
+	QWidget::resizeEvent(event);
 }
 
 void MMF::VideoOutput::moveEvent(QMoveEvent* event)
@@ -117,7 +178,11 @@ void MMF::VideoOutput::moveEvent(QMoveEvent* event)
 	TRACE("%d %d -> %d %d", 
 		event->oldPos().x(), event->oldPos().y(),
 		event->pos().x(), event->pos().y());
+	
+	QWidget::moveEvent(event);
 }
+
+#endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 
 
 //-----------------------------------------------------------------------------

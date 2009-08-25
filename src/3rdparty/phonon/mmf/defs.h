@@ -21,6 +21,21 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QtGlobal>
 
+// The following macros are for switching on / off various bits of code, 
+// in order to debug the current problems with video visibility.
+
+// If this is defined, then VideoOutput is essentially just a typedef for
+// QWidget
+#define PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
+
+// Use hard-coded rectangle coordinates, rather than using CCoeControl
+// rect, i.e. QWidget::winId()->Rect()
+#define PHONON_MMF_HARD_CODE_VIDEO_RECT
+
+// If this is defined, show() is called on the grandparent of the widget
+// on which video will be rendered.
+#define PHONON_MMF_EXPLICITLY_SHOW_VIDEO_WIDGET
+
 namespace Phonon
 {
     namespace MMF

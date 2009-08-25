@@ -20,6 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #define PHONON_MMF_VIDEOOUTPUT_H
 
 #include <QtGui/QWidget>
+#include "defs.h"
 
 namespace Phonon
 {
@@ -36,12 +37,18 @@ namespace Phonon
         	void setFrameSize(const QSize& size);
         	
         protected:
-        	// QWidget
+        #ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
+            // Override QWidget functions
             QSize sizeHint() const;
         	void paintEvent(QPaintEvent* event);
         	void resizeEvent(QResizeEvent* event);
         	void moveEvent(QMoveEvent* event);
         	QPaintEngine* paintEngine() const;
+        #endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
+
+        // Debugging video visibility
+        public:
+            void dump();
         	
         private:
             QSize m_frameSize;

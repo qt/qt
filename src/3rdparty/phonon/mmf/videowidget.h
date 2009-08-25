@@ -57,8 +57,8 @@ namespace Phonon
 			VideoOutput& videoOutput();
 			
         private:
-        	QScopedPointer<VideoOutput>				m_videoOutput;
-        	
+        	QScopedPointer<QWidget>                 m_widget;
+            
         	Phonon::VideoWidget::AspectRatio		m_aspectRatio;
         	qreal									m_brightness;
         	Phonon::VideoWidget::ScaleMode			m_scaleMode;
