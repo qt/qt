@@ -734,14 +734,15 @@ void QItemSelectionModelPrivate::_q_layoutAboutToBeChanged()
     if (ranges.isEmpty() && currentSelection.count() == 1) {
         QItemSelectionRange range = currentSelection.first();
         QModelIndex parent = range.parent();
-        if (range.top() == 0
+        tableRowCount = model->rowCount(parent);
+        tableColCount = model->columnCount(parent);
+        if (tableRowCount * tableColCount > 100
+            && range.top() == 0
             && range.left() == 0
-            && range.bottom() == model->rowCount(parent) - 1
-            && range.right() == model->columnCount(parent) - 1) {
+            && range.bottom() == tableRowCount - 1
+            && range.right() == tableColCount - 1) {
             tableSelected = true;
             tableParent = parent;
-            tableColCount = model->columnCount(parent);
-            tableRowCount = model->rowCount(parent);
             return;
         }
     }
