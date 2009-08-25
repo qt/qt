@@ -44,6 +44,7 @@
 #include "qvector4d.h"
 #include <QtCore/qmath.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
