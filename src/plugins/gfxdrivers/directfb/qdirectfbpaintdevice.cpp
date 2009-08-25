@@ -104,7 +104,7 @@ int QDirectFBPaintDevice::bytesPerLine() const
         // Can only get the stride when we lock the surface
         Q_ASSERT(!lockedImage);
         QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
-        that->lockDirectFB(DSLF_READ);
+        that->lockDirectFB(DSLF_READ|DSLF_WRITE);
         Q_ASSERT(bpl != -1);
     }
     return bpl;
