@@ -2331,7 +2331,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 bool hasIcon = (ico.cacheKey() != QApplication::windowIcon().cacheKey());
                 if (hasIcon) {
                     QPixmap pxIco = ico.pixmap(titleHeight);
-                    if (!verticalTitleBar && QApplication::layoutDirection() == Qt::RightToLeft)
+                    if (!verticalTitleBar && dwOpt->direction == Qt::RightToLeft)
                         p->drawPixmap(rect.width() - titleHeight - pxIco.width(), rect.bottom() - titleHeight - 2, pxIco);
                     else
                         p->drawPixmap(fw, rect.bottom() - titleHeight - 2, pxIco);

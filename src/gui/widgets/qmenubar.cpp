@@ -132,7 +132,7 @@ QRect QMenuBarPrivate::menuRect(bool extVisible) const
     result.adjust(hmargin, 0, -hmargin, 0);
 
     if (extVisible) {
-        if (q->layoutDirection() == Qt::RightToLeft)
+        if (q->isRightToLeft())
             result.setLeft(result.left() + extension->sizeHint().width());
         else
             result.setWidth(result.width() - extension->sizeHint().width());
@@ -140,7 +140,7 @@ QRect QMenuBarPrivate::menuRect(bool extVisible) const
 
     if (leftWidget && leftWidget->isVisible()) {
         QSize sz = leftWidget->sizeHint();
-        if (q->layoutDirection() == Qt::RightToLeft)
+        if (q->isRightToLeft())
             result.setRight(result.right() - sz.width());
         else
             result.setLeft(result.left() + sz.width());
@@ -148,7 +148,7 @@ QRect QMenuBarPrivate::menuRect(bool extVisible) const
 
     if (rightWidget && rightWidget->isVisible()) {
         QSize sz = rightWidget->sizeHint();
-        if (q->layoutDirection() == Qt::RightToLeft)
+        if (q->isRightToLeft())
             result.setLeft(result.left() + sz.width());
         else
             result.setRight(result.right() - sz.width());
@@ -245,7 +245,7 @@ void QMenuBarPrivate::updateGeometries()
         pop->addActions(hiddenActions);
 
         int vmargin = q->style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, q);
-        int x = q->layoutDirection() == Qt::RightToLeft
+        int x = q->isRightToLeft()
                 ? menuRect.left() - extension->sizeHint().width() + 1
                 : menuRect.right();
         extension->setGeometry(x, vmargin, extension->sizeHint().width(), menuRect.height() - vmargin*2);

@@ -1832,7 +1832,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
     if (adjustToDesktop) {
         //handle popup falling "off screen"
-        if (QApplication::layoutDirection() == Qt::RightToLeft) {
+        if (isRightToLeft()) {
             if(snapToMouse) //position flowing left from the mouse
                 pos.setX(mouse.x()-size.width());
 
@@ -1870,9 +1870,9 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     }
     setGeometry(QRect(pos, size));
 #ifndef QT_NO_EFFECTS
-    int hGuess = QApplication::layoutDirection() == Qt::RightToLeft ? QEffects::LeftScroll : QEffects::RightScroll;
+    int hGuess = isRightToLeft() ? QEffects::LeftScroll : QEffects::RightScroll;
     int vGuess = QEffects::DownScroll;
-    if (QApplication::layoutDirection() == Qt::RightToLeft) {
+    if (isRightToLeft()) {
         if ((snapToMouse && (pos.x() + size.width()/2 > mouse.x())) ||
            (qobject_cast<QMenu*>(d->causedPopup.widget) && pos.x() + size.width()/2 > d->causedPopup.widget->x()))
             hGuess = QEffects::RightScroll;
