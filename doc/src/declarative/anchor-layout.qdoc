@@ -3,11 +3,11 @@
 \target anchor-layout
 \title Anchor-based Layout
 
-In additional to the more traditional Fx layouts GridLayout, HorizontalLayout, and VerticalLayout, QML also provides a way to layout items using the concept of anchors. Each visual Fx item can be thought of as having a set of 6 invisible "anchor lines": \e left, \e horizontalCenter, \e right, \e top, \e verticalCenter, and \e bottom.
+In additional to the more traditional layouts Grid, Row, and Column, QML also provides a way to layout items using the concept of anchors. Each visual item can be thought of as having a set of 6 invisible "anchor lines": \e left, \e horizontalCenter, \e right, \e top, \e verticalCenter, and \e bottom.
 
 \image edges_qml.png
 
-The Fx anchoring system allows you to define relationships between the anchor lines of different items. For example, you can write:
+The anchoring system allows you to define relationships between the anchor lines of different items. For example, you can write:
 
 \code
 Rectangle { id: rect1; ... }
