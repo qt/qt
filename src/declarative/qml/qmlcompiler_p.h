@@ -60,6 +60,7 @@
 #include <private/qmlinstruction_p.h>
 #include <private/qmlcompositetypemanager_p.h>
 #include <private/qmlparser_p.h>
+#include <private/qmlengine_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -165,6 +166,10 @@ private:
                      const BindingContext &);
     bool buildProperty(QmlParser::Property *prop, QmlParser::Object *obj, 
                        const BindingContext &);
+    bool buildPropertyInNamespace(QmlEnginePrivate::ImportedNamespace *ns,
+                                  QmlParser::Property *prop, 
+                                  QmlParser::Object *obj, 
+                                  const BindingContext &);
     bool buildIdProperty(QmlParser::Property *prop, QmlParser::Object *obj);
     bool buildAttachedProperty(QmlParser::Property *prop, 
                                QmlParser::Object *obj,

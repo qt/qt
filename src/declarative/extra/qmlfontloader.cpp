@@ -121,7 +121,6 @@ void QmlFontLoader::setSource(const QUrl &url)
 #endif
     {
         QNetworkRequest req(d->url);
-        req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
         d->reply = qmlEngine(this)->networkAccessManager()->get(req);
         QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(replyFinished()));
     }

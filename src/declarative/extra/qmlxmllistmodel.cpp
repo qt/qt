@@ -605,7 +605,6 @@ void QmlXmlListModel::reload()
     emit statusChanged(d->status);
 
     QNetworkRequest req(d->src);
-    req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
     d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
     QObject::connect(d->reply, SIGNAL(finished()), this, SLOT(requestFinished()));
     QObject::connect(d->reply, SIGNAL(downloadProgress(qint64,qint64)),

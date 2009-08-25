@@ -67,7 +67,7 @@
 QT_BEGIN_NAMESPACE
 
 class QNetworkReply;
-class QFxKeysAttached;
+class QFxItemKeyFilter;
 
 //### merge into private?
 class QFxContents : public QObject
@@ -209,7 +209,7 @@ public:
     bool _keepMouse:1;
     bool smooth:1;
 
-    QFxKeysAttached *keyHandler;
+    QFxItemKeyFilter *keyHandler;
 
     qreal width;
     qreal height;

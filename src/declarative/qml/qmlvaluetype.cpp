@@ -103,6 +103,16 @@ void QmlPointFValueType::write(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
+QVariant QmlPointFValueType::value()
+{
+    return QVariant(point);
+}
+
+void QmlPointFValueType::setValue(QVariant value)
+{
+    point = qvariant_cast<QPointF>(value);
+}
+
 qreal QmlPointFValueType::x() const
 {
     return point.x();
@@ -138,6 +148,16 @@ void QmlPointValueType::write(QObject *obj, int idx)
 {
     void *a[] = { &point, 0 };
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+QVariant QmlPointValueType::value()
+{
+    return QVariant(point);
+}
+
+void QmlPointValueType::setValue(QVariant value)
+{
+    point = qvariant_cast<QPoint>(value);
 }
 
 int QmlPointValueType::x() const
@@ -177,6 +197,16 @@ void QmlSizeFValueType::write(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
+QVariant QmlSizeFValueType::value()
+{
+    return QVariant(size);
+}
+
+void QmlSizeFValueType::setValue(QVariant value)
+{
+    size = qvariant_cast<QSizeF>(value);
+}
+
 qreal QmlSizeFValueType::width() const
 {
     return size.width();
@@ -214,6 +244,16 @@ void QmlSizeValueType::write(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
+QVariant QmlSizeValueType::value()
+{
+    return QVariant(size);
+}
+
+void QmlSizeValueType::setValue(QVariant value)
+{
+    size = qvariant_cast<QSize>(value);
+}
+
 int QmlSizeValueType::width() const
 {
     return size.width();
@@ -249,6 +289,16 @@ void QmlRectFValueType::write(QObject *obj, int idx)
 {
     void *a[] = { &rect, 0 };
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
+}
+
+QVariant QmlRectFValueType::value()
+{
+    return QVariant(rect);
+}
+
+void QmlRectFValueType::setValue(QVariant value)
+{
+    rect = qvariant_cast<QRectF>(value);
 }
 
 qreal QmlRectFValueType::x() const
@@ -308,6 +358,16 @@ void QmlRectValueType::write(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
+QVariant QmlRectValueType::value()
+{
+    return QVariant(rect);
+}
+
+void QmlRectValueType::setValue(QVariant value)
+{
+    rect = qvariant_cast<QRect>(value);
+}
+
 int QmlRectValueType::x() const
 {
     return rect.x();
@@ -365,6 +425,16 @@ void QmlVector3DValueType::write(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
+QVariant  QmlVector3DValueType::value()
+{
+    return QVariant(vector);
+}
+
+void QmlVector3DValueType::setValue(QVariant value)
+{
+    vector = qvariant_cast<QVector3D>(value);
+}
+
 qreal QmlVector3DValueType::x() const
 {
     return vector.x();
@@ -411,6 +481,17 @@ void QmlFontValueType::write(QObject *obj, int idx)
     void *a[] = { &font, 0 };
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
+
+QVariant  QmlFontValueType::value()
+{
+    return QVariant(font);
+}
+
+void QmlFontValueType::setValue(QVariant value)
+{
+    font = qvariant_cast<QFont>(value);
+}
+
 
 QString QmlFontValueType::family() const
 {
