@@ -58,12 +58,12 @@ namespace Phonon
             virtual void doPlay();
             virtual void doPause();
             virtual void doStop();
+            virtual void doSeek(qint64 milliseconds);
             virtual int setDeviceVolume(int mmfVolume);
             virtual int openFile(RFile& file);
             virtual void close();
             
             // MediaObjectInterface
-            virtual void seek(qint64 milliseconds);
             virtual bool hasVideo() const;
             virtual qint64 currentTime() const;
             virtual qint64 totalTime() const;
@@ -85,7 +85,7 @@ namespace Phonon
 #endif
 
         Q_SIGNALS:
-            void totalTimeChanged();
+            void totalTimeChanged(qint64 length);
             void finished();            
             
         private:

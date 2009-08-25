@@ -79,7 +79,18 @@ namespace Phonon
             void setVideoOutput(VideoOutput* videoOutput);
 
         Q_SIGNALS:
-            void totalTimeChanged();
+            void totalTimeChanged(qint64 length);
+            void hasVideoChanged(bool hasVideo);
+            void seekableChanged(bool seekable);
+            // TODO: emit bufferStatus from MediaObject
+            void bufferStatus(int);             
+            // TODO: emit aboutToFinish from MediaObject
+            void aboutToFinish();               
+            // TODO: emit prefinishMarkReached from MediaObject
+            void prefinishMarkReached(qint32);  
+            // TODO: emit metaDataChanged from MediaObject
+            void metaDataChanged(const QMultiMap<QString, QString>& metaData);
+            void currentSourceChanged(const MediaSource& source);
             void stateChanged(Phonon::State oldState,
                               Phonon::State newState);
             void finished();

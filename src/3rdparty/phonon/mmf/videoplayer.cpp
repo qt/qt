@@ -124,6 +124,19 @@ void MMF::VideoPlayer::doStop()
 	m_player->Stop();
 }
 
+void MMF::VideoPlayer::doSeek(qint64 ms)
+{
+    TRACE_CONTEXT(VideoPlayer::doSeek, EVideoApi);
+    
+    TRAPD(err, m_player->SetPositionL(TTimeIntervalMicroSeconds(ms * 1000)));
+
+    if(KErrNone != err)
+    {
+        TRACE("SetPositionL error %d", err);
+        setError(NormalError);
+    }
+}
+
 int MMF::VideoPlayer::setDeviceVolume(int mmfVolume)
 {
 	TRAPD(err, m_player->SetVolumeL(mmfVolume));
@@ -139,22 +152,6 @@ int MMF::VideoPlayer::openFile(RFile& file)
 void MMF::VideoPlayer::close()
 {
 	m_player->Close();
-}
-
-void MMF::VideoPlayer::seek(qint64 ms)
-{
-	TRACE_CONTEXT(VideoPlayer::seek, EVideoApi);
-    TRACE_ENTRY("state %d pos %Ld", state(), ms);
-
-    TRAPD(err, m_player->SetPositionL(TTimeIntervalMicroSeconds(ms)));
-
-    if(KErrNone != err)
-	{
-		TRACE("SetPositionL error %d", err);
-		setError(NormalError);
-	}
-    
-    TRACE_EXIT_0();
 }
 
 bool MMF::VideoPlayer::hasVideo() const
@@ -232,7 +229,7 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
 		
 		videoOutput().setFrameSize(m_frameSize);	
 
-        emit totalTimeChanged();
+        emit totalTimeChanged(totalTime());
         changeState(StoppedState);
 	}
     else

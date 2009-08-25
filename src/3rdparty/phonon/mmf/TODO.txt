@@ -14,9 +14,6 @@ The following items are in rough order of priority.
 * Trace for on-target testing
 Do we need to connect up the TRACE_* macros to another logging output (e.g. file / Flogger / UTrace etc)?
 
-* Fix position slider in audio test app (musicplayer.exe)
-The slider is enabled when playing, but does not move and cannot be dragged.  This means that we can't easily test seeking.
-
 * Implement audio effects
 
 * Support for network streaming playback

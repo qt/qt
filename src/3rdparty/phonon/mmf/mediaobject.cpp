@@ -156,6 +156,11 @@ void MMF::MediaObject::stop()
 void MMF::MediaObject::seek(qint64 ms)
 {
     m_player->seek(ms);
+    
+    if(state() == PausedState or state() == PlayingState)
+    {
+        emit tick(currentTime());
+    }
 }
 
 qint32 MMF::MediaObject::tickInterval() const
@@ -215,6 +220,8 @@ void MMF::MediaObject::setSource(const MediaSource &source)
     // This is a hack to work around KErrInUse from MMF client utility
     // OpenFileL calls
     m_player->setFileSource(source, m_file);
+    
+    emit currentSourceChanged(source);
 }
 
 void MMF::MediaObject::createPlayer(const MediaSource &source)
@@ -226,6 +233,9 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
 	MediaType mediaType = MediaTypeUnknown;
 	
 	AbstractPlayer* oldPlayer = m_player.data();
+	
+	const bool oldPlayerHasVideo = oldPlayer->hasVideo(); 
+	const bool oldPlayerSeekable = oldPlayer->isSeekable();
 	
 	// Determine media type
 	switch(source.type())
@@ -313,10 +323,20 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
 	
 	m_player.reset(newPlayer);
 		
-	connect(m_player.data(), SIGNAL(totalTimeChanged()), SIGNAL(totalTimeChanged()));
+	connect(m_player.data(), SIGNAL(totalTimeChanged(qint64)), SIGNAL(totalTimeChanged(qint64)));
 	connect(m_player.data(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), SIGNAL(stateChanged(Phonon::State, Phonon::State)));
 	connect(m_player.data(), SIGNAL(finished()), SIGNAL(finished()));
 	connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
+	
+	if(oldPlayerHasVideo != hasVideo())
+	{
+	    emit hasVideoChanged(hasVideo());
+	}
+	
+	if(oldPlayerSeekable != isSeekable())
+	{
+	    emit seekableChanged(isSeekable());
+	}
 	
 	TRACE_EXIT_0();
 }

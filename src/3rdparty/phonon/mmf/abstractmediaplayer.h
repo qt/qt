@@ -50,6 +50,7 @@ namespace Phonon
         	virtual void play();
         	virtual void pause();
         	virtual void stop();
+        	virtual void seek(qint64 milliseconds);
         	virtual bool isSeekable() const;
             virtual Phonon::ErrorType errorType() const;
             virtual QString errorString() const;
@@ -69,12 +70,14 @@ namespace Phonon
         	virtual void doPlay() = 0;
         	virtual void doPause() = 0;
         	virtual void doStop() = 0;
+        	virtual void doSeek(qint64 pos) = 0;
         	virtual int setDeviceVolume(int mmfVolume) = 0;
         	virtual int openFile(RFile& file) = 0;
         	virtual void close() = 0;
         	
         protected:
-        	void startTickTimer();
+        	bool tickTimerRunning() const;
+            void startTickTimer();
         	void stopTickTimer();
         	void maxVolumeChanged(int maxVolume);
         	

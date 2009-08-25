@@ -25,7 +25,7 @@ namespace Phonon
 {
     namespace MMF
     {
-	static const qint32	DefaultTickInterval = 20;
+	static const qint32	DefaultTickInterval = 10;
 	static const qreal	InitialVolume = 0.5;
 	
     enum MediaType

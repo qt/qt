@@ -169,6 +169,26 @@ void MMF::AbstractMediaPlayer::stop()
     TRACE_EXIT("state %d", m_state);
 }
 
+void MMF::AbstractMediaPlayer::seek(qint64 ms)
+{
+    TRACE_CONTEXT(AbstractMediaPlayer::seek, EAudioApi);
+    TRACE_ENTRY("state %d pos %Ld", state(), ms);
+
+    // TODO: put a state guard in here
+    
+    const bool tickTimerWasRunning = m_tickTimer->isActive();
+    stopTickTimer();
+        
+    doSeek(ms);
+    
+    if(tickTimerWasRunning)
+    {
+        startTickTimer();
+    }
+    
+    TRACE_EXIT_0();
+}
+
 bool MMF::AbstractMediaPlayer::isSeekable() const
 {
 	return true;

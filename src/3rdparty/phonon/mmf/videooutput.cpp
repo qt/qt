@@ -73,15 +73,18 @@ void MMF::VideoOutput::setFrameSize(const QSize& frameSize)
 
 QSize MMF::VideoOutput::sizeHint() const
 {
-    if(m_frameSize.isNull())
+    TRACE_CONTEXT(VideoOutput::sizeHint, EVideoApi);
+    
+    // TODO: replace this with a more sensible default
+    QSize result(320, 240);
+    
+    if(!m_frameSize.isNull())
     {
-        // TODO: replace this with a more sensible default
-        return QSize(320, 240);
+        result = m_frameSize;
     }
-    else
-    {
-        return m_frameSize;
-    }
+    
+    TRACE("  result %d %d", result.width(), result.height());
+    return result;
 }
 
 void MMF::VideoOutput::paintEvent(QPaintEvent* event)
@@ -96,7 +99,8 @@ void MMF::VideoOutput::paintEvent(QPaintEvent* event)
 
 QPaintEngine* MMF::VideoOutput::paintEngine() const
 {
-	return NULL;
+    TRACE_CONTEXT(VideoOutput::sizeHint, EVideoApi);
+    TRACE_RETURN("0x%08x", NULL);
 }
 
 void MMF::VideoOutput::resizeEvent(QResizeEvent* event)

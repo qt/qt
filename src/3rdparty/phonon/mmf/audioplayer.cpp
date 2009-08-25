@@ -85,6 +85,11 @@ void MMF::AudioPlayer::doStop()
 	m_player->Stop();
 }
 
+void MMF::AudioPlayer::doSeek(qint64 ms)
+{
+    m_player->SetPosition(TTimeIntervalMicroSeconds(ms * 1000));
+}
+
 int MMF::AudioPlayer::setDeviceVolume(int mmfVolume)
 {
 	return m_player->SetVolume(mmfVolume);
@@ -111,16 +116,6 @@ int MMF::AudioPlayer::openFile(RFile& file)
 void MMF::AudioPlayer::close()
 {
 	m_player->Close();
-}
-
-void MMF::AudioPlayer::seek(qint64 ms)
-{
-    TRACE_CONTEXT(AudioPlayer::seek, EAudioApi);
-    TRACE_ENTRY("state %d pos %Ld", state(), ms);
-
-    m_player->SetPosition(TTimeIntervalMicroSeconds(ms));
-
-    TRACE_EXIT_0();
 }
 
 bool MMF::AudioPlayer::hasVideo() const
@@ -180,7 +175,7 @@ void MMF::AudioPlayer::MapcInitComplete(TInt aError,
     {
 		maxVolumeChanged(m_player->MaxVolume());
 
-		emit totalTimeChanged();
+		emit totalTimeChanged(totalTime());
 		changeState(StoppedState);
     }
     else
