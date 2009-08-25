@@ -145,6 +145,9 @@ Q_CORE_EXPORT TLibraryFunction qt_resolveS60PluginFunc(int ordinal);
 
 Q_CORE_EXPORT RFs& qt_s60GetRFs();
 
+// Defined in qlocale_symbian.cpp.
+Q_CORE_EXPORT QByteArray qt_symbianLocaleName(int code);
+
 QT_END_NAMESPACE
 
 QT_END_HEADER
