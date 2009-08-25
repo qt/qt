@@ -284,14 +284,6 @@ void QVector3D::normalize()
 */
 
 /*!
-    Returns the vector as a QVariant
-*/
-QVector3D::operator QVariant () const
-{
-   return QVariant(QVariant::Vector3D, this);
-}
-
-/*!
     Returns the dot product of \a v1 and \a v2.
 */
 qreal QVector3D::dotProduct(const QVector3D& v1, const QVector3D& v2)
