@@ -80,23 +80,18 @@
     function accepts two arguments: the painter and a pointer to the source
     (QGraphicsEffectSource). The source provides extra context information,
     such as a pointer to the item that is rendering the effect, any cached
-    pixmap data, or the device rect bounds. For more information, refer to the
-    documenation for draw(). To obtain a pointer to the current source, simply
-    call source().
+    pixmap data, or the device rectangle bounds. For more information, refer to
+    the documenation for draw(). To obtain a pointer to the current source,
+    simply call source().
 
     If your effect changes, use update() to request for a redraw. If your
     custom effect changes the bounding rectangle of the source, e.g., a radial
-    glow effect may need to apply an extra margin, 
-
-
-    If your effect changes, you can call update() to request a redraw. If your
-    custom effect changes the bounding rectangle of the source (e.g., a radial
-    glow effect may need to apply an extra margin), you can reimplement the
+    glow effect may need to apply an extra margin, you can reimplement the
     virtual boundingRectFor() function, and call updateBoundingRect() to notify
     the framework whenever this rectangle changes. The virtual
     sourceBoundingRectChanged() function is called to notify the effects that
-    the source's bounding rectangle has changed (e.g., if the source is a
-    QGraphicsRectItem, then if the rectangle parameters have changed).
+    the source's bounding rectangle has changed - e.g., if the source is a
+    QGraphicsRectItem and its rectangle parameters have changed.
 
     \sa QGraphicsItem::setGraphicsEffect(), QWidget::setGraphicsEffect(),
     QGraphicsEffectSource
