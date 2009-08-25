@@ -128,8 +128,8 @@ namespace QPatternist
         class BasicNodeData
         {
         public:
+            /* No need to initialize the members. See AccelTreeBuilder. */
             inline BasicNodeData()
-                : m_parent(0), m_size(0), m_depth(0), m_kind(0)
             {
             }
 
@@ -217,7 +217,7 @@ namespace QPatternist
             Depth                           m_depth;
 
             /**
-             * Technically it is sufficient with 8 bits. However, at least MSVC
+             * Technically it is sufficient with 7 bits. However, at least MSVC
              * 2005 miscompiles it such that QXmlNodeModelIndex::Text becomes
              * -64 instead of 64 with hilarious crashes as result.
              *

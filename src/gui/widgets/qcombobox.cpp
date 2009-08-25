@@ -2418,7 +2418,16 @@ void QComboBox::showPopup()
         && !style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this) && !window()->testAttribute(Qt::WA_DontShowOnScreen))
         qScrollEffect(container, scrollDown ? QEffects::DownScroll : QEffects::UpScroll, 150);
 #endif
+
+// Don't disable updates on Mac OS X. Windows are displayed immediately on this platform,
+// which means that the window will be visible before the call to container->show() returns.
+// If updates are disabled at this point we'll miss our chance at painting the popup 
+// menu before it's shown, causing flicker since the window then displays the standard gray 
+// background.
+#ifndef Q_WS_MAC
     container->setUpdatesEnabled(false);
+#endif
+
     container->raise();
     container->show();
     container->updateScrollers();
@@ -2429,7 +2438,10 @@ void QComboBox::showPopup()
                              ? QAbstractItemView::PositionAtCenter
                              : QAbstractItemView::EnsureVisible);
 
+#ifndef Q_WS_MAC
     container->setUpdatesEnabled(updatesEnabled);
+#endif
+
     container->update();
 }
 
