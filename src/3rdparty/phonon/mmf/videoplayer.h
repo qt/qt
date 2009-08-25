@@ -77,6 +77,8 @@ namespace Phonon
         	void construct();
         	VideoOutput& videoOutput();
         	
+        	void doPrepareCompleteL(TInt aError);
+        	
         	// AbstractPlayer
         	virtual void videoOutputChanged();
         	
@@ -92,6 +94,9 @@ namespace Phonon
         	RWindowBase*						m_window;
         	TRect								m_windowRect;
         	TRect								m_clipRect;
+        	
+        	QSize                               m_frameSize;
+        	qint64                              m_totalTime;
         	
         };
     }

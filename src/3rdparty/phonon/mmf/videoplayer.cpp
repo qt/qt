@@ -37,6 +37,7 @@ MMF::VideoPlayer::VideoPlayer()
 								:	m_wsSession(NULL)
 								,	m_screenDevice(NULL)
 								,	m_window(NULL)
+								,   m_totalTime(0)
 {
 	construct();
 }
@@ -46,6 +47,7 @@ MMF::VideoPlayer::VideoPlayer(const AbstractPlayer& player)
 								,	m_wsSession(NULL)
 								,	m_screenDevice(NULL)
 								,	m_window(NULL)
+                                ,   m_totalTime(0)
 {
 	construct();
 }
@@ -187,21 +189,7 @@ qint64 MMF::VideoPlayer::currentTime() const
 
 qint64 MMF::VideoPlayer::totalTime() const
 {
-	TRACE_CONTEXT(VideoPlayer::totalTime, EVideoApi);
-
-	qint64 result = 0;
-	TRAPD(err, result = toMilliSeconds(m_player->DurationL()));
-	
-	if(KErrNone != err)
-	{
-		TRACE("DurationL error %d", err);
-	
-		// If we don't cast away constness here, we simply have to ignore 
-		// the error.
-		const_cast<VideoPlayer*>(this)->setError(NormalError);
-	}
-	
-	return result;
+    return m_totalTime;
 }
 
 
@@ -235,22 +223,40 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
 	TRACE_ENTRY("state %d error %d", state(), aError);
 
     __ASSERT_ALWAYS(LoadingState == state(), Utils::panic(InvalidStatePanic));
-
-	if(KErrNone == aError)
+    
+    TRAPD(err, doPrepareCompleteL(aError));
+    
+	if(KErrNone == err)
 	{
 		maxVolumeChanged(m_player->MaxVolume());
+		
+		videoOutput().setFrameSize(m_frameSize);	
 
-		emit totalTimeChanged();
-		changeState(StoppedState);
+        emit totalTimeChanged();
+        changeState(StoppedState);
 	}
-	else
+    else
 	{
-		// TODO: set different error states according to value of aError?
-		setError(NormalError);
+	    // TODO: set different error states according to value of aError?
+	    setError(NormalError);   
 	}
 	
 	TRACE_EXIT_0();
 }
+
+void MMF::VideoPlayer::doPrepareCompleteL(TInt aError)
+{
+    User::LeaveIfError(aError);
+    
+    // Get frame size
+    TSize size;
+    m_player->VideoFrameSizeL(size);
+    m_frameSize = QSize(size.iWidth, size.iHeight);
+    
+    // Get duration
+    m_totalTime = toMilliSeconds(m_player->DurationL());
+}
+
 
 void MMF::VideoPlayer::MvpuoFrameReady(CFbsBitmap &aFrame, TInt aError)
 {
@@ -310,6 +316,8 @@ void MMF::VideoPlayer::videoOutputChanged()
 		m_dummyVideoOutput.reset(new VideoOutput(NULL));
 	}
 	
+	videoOutput().setFrameSize(m_frameSize);
+	
 	getNativeWindowSystemHandles();
 	
 	TRAPD(err,
@@ -334,7 +342,8 @@ void MMF::VideoPlayer::getNativeWindowSystemHandles()
 {
 	TRACE_CONTEXT(VideoPlayer::getNativeWindowSystemHandles, EVideoInternal);
 
-	CCoeControl* const control = videoOutput().winId();
+	VideoOutput& output = videoOutput();
+	CCoeControl* const control = output.winId();
 	
 	TRACE("control 0x%08x", control);
 	TRACE("control isVisible %d", control->IsVisible());
@@ -350,20 +359,24 @@ void MMF::VideoPlayer::getNativeWindowSystemHandles()
 	
 	m_wsSession = &(coeEnv->WsSession());
 	
-	TRACE("session handle    %d", m_wsSession->Handle());
+	TRACE("session handle    0x%08x", m_wsSession->Handle());
 	
 	m_screenDevice = coeEnv->ScreenDevice();
 	
-	TRACE("device srv handle %d", m_screenDevice->WsHandle());
+	TRACE("device srv handle 0x%08x", m_screenDevice->WsHandle());
 	
 	m_window = control->DrawableWindow();
 	
-	TRACE("window cli handle %d", m_window->ClientHandle());
-	TRACE("window srv handle %d", m_window->WsHandle());
+	TRACE("window cli handle 0x%08x", m_window->ClientHandle());
+	TRACE("window srv handle 0x%08x", m_window->WsHandle());
 	TRACE("window group      %d", m_window->WindowGroupId());
 	TRACE("window position   %d %d",
 		m_window->Position().iX, m_window->Position().iY);
+	TRACE("window abs_pos    %d %d",
+	    m_window->AbsPosition().iX, m_window->AbsPosition().iY);
+	TRACE("window size       %d %d",
+        m_window->Size().iWidth, m_window->Size().iHeight);
 	
 	m_windowRect = control->Rect();
-	m_clipRect = control->Rect();
+	m_clipRect = m_windowRect;
 }

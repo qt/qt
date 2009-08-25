@@ -33,7 +33,18 @@ namespace Phonon
         	VideoOutput(QWidget* parent);      
         	~VideoOutput();
 			
+        	void setFrameSize(const QSize& size);
+        	
+        protected:
+        	// QWidget
+            QSize sizeHint() const;
+        	void paintEvent(QPaintEvent* event);
+        	void resizeEvent(QResizeEvent* event);
+        	void moveEvent(QMoveEvent* event);
+        	QPaintEngine* paintEngine() const;
+        	
         private:
+            QSize m_frameSize;
         	
         };
     }
