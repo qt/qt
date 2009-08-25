@@ -63,7 +63,9 @@ QT_BEGIN_NAMESPACE
 
     The specific effect is defined by a fragment of GLSL source code
     supplied to setPixelShaderFragment().  This source code must define a
-    function called \c{srcPixel()} that returns the source pixel value
+    function with the signature
+    \c{lowp vec4 customShader(sampler2D imageTexture, vec2 textureCoords)}
+    that returns the source pixel value
     to use in the paint engine's shader program.  The shader fragment
     is linked with the regular shader code used by the GL2 paint engine
     to construct a complete QGLShaderProgram.
@@ -74,10 +76,8 @@ QT_BEGIN_NAMESPACE
 
     \code
     static char const colorizeShaderCode[] =
-        "varying highp vec2 textureCoords;\n"
-        "uniform sampler2D imageTexture;\n"
         "uniform lowp vec4 effectColor;\n"
-        "lowp vec4 srcPixel() {\n"
+        "lowp vec4 customShader(sampler2D imageTexture, vec2 textureCoords) {\n"
         "    vec4 src = texture2D(imageTexture, textureCoords);\n"
         "    float gray = dot(src.rgb, vec3(0.212671, 0.715160, 0.072169));\n"
         "    vec4 colorize = 1.0-((1.0-gray)*(1.0-effectColor));\n"
@@ -130,9 +130,7 @@ QT_BEGIN_NAMESPACE
 */
 
 static const char qglslDefaultImageFragmentShader[] = "\
-    varying highp vec2 textureCoords; \
-    uniform sampler2D imageTexture; \
-    lowp vec4 srcPixel() { \
+    lowp vec4 customShader(sampler2D imageTexture, vec2 textureCoords) { \
         return texture2D(imageTexture, textureCoords); \
     }\n";
 
@@ -216,15 +214,14 @@ QByteArray QGraphicsShaderEffect::pixelShaderFragment() const
     Sets the source code for the pixel shader fragment for
     this shader effect to \a code.
 
-    The \a code must define a GLSL function called \c{srcPixel()}
+    The \a code must define a GLSL function with the signature
+    \c{lowp vec4 customShader(sampler2D imageTexture, vec2 textureCoords)}
     that returns the source pixel value to use in the paint engine's
     shader program.  The following is the default pixel shader fragment,
     which draws a pixmap with no effect applied:
 
     \code
-    varying highp vec2 textureCoords;
-    uniform sampler2D imageTexture;
-    lowp vec4 srcPixel() {
+    lowp vec4 customShader(sampler2D imageTexture, vec2 textureCoords) {
         return texture2D(imageTexture, textureCoords);
     }
     \endcode
