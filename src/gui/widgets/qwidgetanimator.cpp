@@ -93,7 +93,7 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
     if (it != m_animation_map.constEnd() && (*it)->endValue().toRect() == final_geometry)
         return;
 
-    QPropertyAnimation *anim = new QPropertyAnimation(widget, "geometry");
+    QPropertyAnimation *anim = new QPropertyAnimation(widget, "geometry", widget);
     anim->setDuration(animate ? 200 : 0);
     anim->setEasingCurve(QEasingCurve::InOutQuad);
     anim->setEndValue(final_geometry);
