@@ -225,11 +225,12 @@ QVariant QmlExpressionPrivate::evalQtScript()
        ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount, me);
 
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
-    QScriptContext *scriptContext = scriptEngine->pushContext();
-    for (int i = ctxtPriv->scopeChain.size() - 1; i > -1; --i)
-        scriptContext->pushScope(ctxtPriv->scopeChain.at(i));
 
     if (!expressionFunctionValid) {
+
+        QScriptContext *scriptContext = scriptEngine->pushContext();
+        for (int i = ctxtPriv->scopeChain.size() - 1; i > -1; --i)
+            scriptContext->pushScope(ctxtPriv->scopeChain.at(i));
 
         if (expressionRewritten) {
             expressionFunction = scriptEngine->evaluate(expression, fileName, line);
@@ -239,11 +240,12 @@ QVariant QmlExpressionPrivate::evalQtScript()
             const QString code = rewriteBinding(expression);
             expressionFunction = scriptEngine->evaluate(code, fileName, line);
         }
+
+        scriptEngine->popContext();
         expressionFunctionValid = true;
     }
 
     QScriptValue svalue = expressionFunction.call();
-
 
     if (scriptEngine->hasUncaughtException()) {
         if (scriptEngine->uncaughtException().isError()){
@@ -300,8 +302,6 @@ QVariant QmlExpressionPrivate::evalQtScript()
     }
     if (rv.isNull())
         rv = svalue.toVariant();
-
-    scriptEngine->popContext();
 
     return rv;
 }
