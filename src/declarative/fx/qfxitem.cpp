@@ -704,7 +704,6 @@ private:
     };
 
     static const SigMap sigMap[];
-    static QHash<QObject*, QFxKeysAttached*> attachedProperties;
     friend class QFxItem;
 };
 
@@ -737,8 +736,6 @@ const QFxKeysAttached::SigMap QFxKeysAttached::sigMap[] = {
     { Qt::Key_VolumeDown, "volumeDownPressed" },
     { 0, 0 }
 };
-
-QHash<QObject*, QFxKeysAttached*> QFxKeysAttached::attachedProperties;
 
 bool QFxKeysAttachedPrivate::isConnected(const char *signalName)
 {
@@ -796,10 +793,12 @@ void QFxKeysAttached::keyReleased(QKeyEvent *event)
 
 QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 {
-    QFxKeysAttached *rv = attachedProperties.value(obj);
-    if (!rv) {
-        rv = new QFxKeysAttached(obj);
-        attachedProperties.insert(obj, rv);
+    QFxKeysAttached *rv = 0;
+    QFxItem *item = qobject_cast<QFxItem*>(obj);
+    if (item) {
+        rv = item->keyHandler();
+        if (!rv)
+            rv = new QFxKeysAttached(obj);
     }
     return rv;
 }
@@ -1421,6 +1420,12 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
         QFxAnchors *anchor = d->dependantAnchors.at(ii);
         anchor->d_func()->update(this, newGeometry, oldGeometry);
     }
+}
+
+QFxKeysAttached *QFxItem::keyHandler()
+{
+    Q_D(QFxItem);
+    return d->keyHandler;
 }
 
 void QFxItem::setKeyHandler(QFxKeysAttached *handler)

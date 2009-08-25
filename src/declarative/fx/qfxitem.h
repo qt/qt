@@ -197,6 +197,7 @@ private:
     QFxAnchorLine verticalCenter() const;
     QFxAnchorLine baseline() const;
 
+    QFxKeysAttached *keyHandler();
     void setKeyHandler(QFxKeysAttached *);
 
     friend class QmlStatePrivate;
