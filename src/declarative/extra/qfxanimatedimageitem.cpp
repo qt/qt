@@ -201,7 +201,6 @@ void QFxAnimatedImageItem::setSource(const QUrl &url)
     } else {
         d->status = Loading;
         QNetworkRequest req(d->url);
-        req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
         d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
         QObject::connect(d->reply, SIGNAL(finished()),
                          this, SLOT(movieRequestFinished()));

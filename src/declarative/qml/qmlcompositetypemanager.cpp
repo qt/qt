@@ -327,26 +327,18 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         }
 
         QUrl url;
-        QmlEnginePrivate::ImportedNamespace *s;
-        QByteArray localTypeName;
-
-        QmlEnginePrivate::get(engine)->resolveNamespace(unit->imports, typeName, &s, &localTypeName);
-        if (QmlEnginePrivate::get(engine)->resolveTypeInNamespace(s, localTypeName, &ref.type, &url)) {
-            int majorVersion;
-            int minorVersion;
-            if (s->getTypeInfo(localTypeName, 0, &majorVersion, &minorVersion)) {
-                foreach (QmlParser::Object *obj, parserRef->refObjects) {
-                    // store namespace for DOM
-                   obj->majorVersion = majorVersion;
-                   obj->minorVersion = minorVersion;
-                }
-            }
-        } else {
-            // try base url
-            url = unit->imports.baseUrl().resolved(QUrl(QLatin1String(typeName + ".qml")));
+        int majorVersion;
+        int minorVersion;
+        if (!QmlEnginePrivate::get(engine)->resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion, 0)) {
+            // XXX could produce error message here.
         }
 
         if (ref.type) {
+            foreach (QmlParser::Object *obj, parserRef->refObjects) {
+               // store namespace for DOM
+               obj->majorVersion = majorVersion;
+               obj->minorVersion = minorVersion;
+            }
             unit->types << ref;
             continue;
         }

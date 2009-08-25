@@ -1072,7 +1072,7 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
 }
 
 
-struct QmlImportedNamespacePrivate {
+struct QmlEnginePrivate::ImportedNamespace {
     QStringList urls;
     QList<int> majversions;
     QList<int> minversions;
@@ -1122,7 +1122,7 @@ struct QmlImportedNamespacePrivate {
         return QUrl();
     }
 
-    QmlType *findBuiltin(const QByteArray& type, QByteArray* found=0) const
+    QmlType *findBuiltin(const QByteArray& type, int *vmajor, int *vminor) const
     {
         for (int i=0; i<urls.count(); ++i) {
             int vmaj = majversions.at(i);
@@ -1131,7 +1131,8 @@ struct QmlImportedNamespacePrivate {
             qt += "/";
             qt += type;
             QmlType *t = QmlMetaType::qmlType(qt,vmaj,vmin);
-            if (found) *found = qt;
+            if (vmajor) *vmajor = vmaj;
+            if (vminor) *vminor = vmin;
             if (t) return t;
         }
         return 0;
@@ -1140,6 +1141,16 @@ struct QmlImportedNamespacePrivate {
 
 class QmlImportsPrivate {
 public:
+    QmlImportsPrivate() : ref(1)
+    {
+    }
+
+    ~QmlImportsPrivate()
+    {
+        foreach (QmlEnginePrivate::ImportedNamespace* s, set.values())
+            delete s;
+    }
+
     bool add(const QUrl& base, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType, const QStringList& importPath)
     {
         QmlEnginePrivate::ImportedNamespace *s;
@@ -1177,10 +1188,10 @@ public:
         } else {
             url = base.resolved(QUrl(url)).toString();
         }
-        s->d->urls.append(url);
-        s->d->majversions.append(vmaj);
-        s->d->minversions.append(vmin);
-        s->d->isLibrary.append(importType == QmlScriptParser::Import::Library);
+        s->urls.append(url);
+        s->majversions.append(vmaj);
+        s->minversions.append(vmin);
+        s->isLibrary.append(importType == QmlScriptParser::Import::Library);
         return true;
     }
 
@@ -1202,13 +1213,13 @@ public:
         }
         QString unqualifiedtype = type.mid(slash+1);
         if (s)
-            return s->d->find(unqualifiedtype);
+            return s->find(unqualifiedtype);
         else
             return QUrl();
     }
 
 
-    QmlType *findBuiltin(const QByteArray& type, QByteArray* found=0)
+    QmlType *findBuiltin(const QByteArray& type, int *vmajor, int *vminor)
     {
         QmlEnginePrivate::ImportedNamespace *s = 0;
         int slash = type.indexOf('/');
@@ -1226,41 +1237,38 @@ public:
         }
         QByteArray unqualifiedtype = slash < 0 ? type : type.mid(slash+1); // common-case opt (QString::mid works fine, but slower)
         if (s)
-            return s->d->findBuiltin(unqualifiedtype,found);
+            return s->findBuiltin(unqualifiedtype,vmajor,vminor);
         else
             return 0;
-      }
+    }
 
     QmlEnginePrivate::ImportedNamespace *findNamespace(const QString& type)
     {
         return set.value(type);
     }
 
-    void resolveNamespace(const QByteArray &type, QmlEnginePrivate::ImportedNamespace **ns, QByteArray *unqualifiedType)
-    {
-        QmlEnginePrivate::ImportedNamespace *s = 0;
-        int slash = type.indexOf('/');
-        if (slash >= 0) {
-            while (!s) {
-                s = set.value(QString::fromLatin1(type.left(slash)));
-                int nslash = type.indexOf('/',slash+1);
-                if (nslash > 0)
-                    slash = nslash;
-                else
-                    break;
-            }
-        } else {
-            s = &unqualifiedset;
-        }
-
-        *ns = s;
-        *unqualifiedType = slash < 0 ? type : type.mid(slash+1); // common-case opt (QString::mid works fine, but slower)
-    }
+    QUrl base;
+    int ref;
 
 private:
     QmlEnginePrivate::ImportedNamespace unqualifiedset;
     QHash<QString,QmlEnginePrivate::ImportedNamespace* > set;
 };
+
+QmlEnginePrivate::Imports::Imports(const Imports &copy) :
+    d(copy.d)
+{
+    ++d->ref;
+}
+
+QmlEnginePrivate::Imports &QmlEnginePrivate::Imports::operator =(const Imports &copy)
+{
+    ++copy.d->ref;
+    if (--d->ref == 0)
+        delete d;
+    d = copy.d;
+    return *this;
+}
 
 QmlEnginePrivate::Imports::Imports() :
     d(new QmlImportsPrivate)
@@ -1269,6 +1277,8 @@ QmlEnginePrivate::Imports::Imports() :
 
 QmlEnginePrivate::Imports::~Imports()
 {
+    if (--d->ref == 0)
+        delete d;
 }
 
 /*!
@@ -1276,38 +1286,15 @@ QmlEnginePrivate::Imports::~Imports()
 */
 void QmlEnginePrivate::Imports::setBaseUrl(const QUrl& url)
 {
-    base = url;
+    d->base = url;
 }
 
-QmlEnginePrivate::ImportedNamespace::ImportedNamespace()
-        : d(new QmlImportedNamespacePrivate)
+/*!
+  Returns the base URL to be used for all relative file imports added.
+*/
+QUrl QmlEnginePrivate::Imports::baseUrl() const
 {
-}
-
-QmlEnginePrivate::ImportedNamespace::~ImportedNamespace()
-{
-    delete d;
-}
-
-bool QmlEnginePrivate::ImportedNamespace::getTypeInfo(const QByteArray &typeName, QString *uri, int *majorVersion, int *minorVersion)
-{
-    for (int i=0; i<d->urls.count(); ++i) {
-        int vmaj = d->majversions.at(i);
-        int vmin = d->minversions.at(i);
-        QByteArray qt = d->urls.at(i).toLatin1();
-        qt += "/";
-        qt += typeName;
-        if (QmlMetaType::qmlType(qt,vmaj,vmin)) {
-            if (uri)
-                *uri = d->urls.at(i);
-            if (majorVersion)
-                *majorVersion = d->majversions.at(i);
-            if (minorVersion)
-                *minorVersion = d->minversions.at(i);
-            return true;
-        }
-    }
-    return false;
+    return d->base;
 }
 
 /*!
@@ -1344,7 +1331,7 @@ void QmlEngine::addImportPath(const QString& path)
 */
 bool QmlEnginePrivate::addToImport(Imports* imports, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType) const
 {
-    bool ok = imports->d->add(imports->base,uri,prefix,vmaj,vmin,importType,fileImportPath);
+    bool ok = imports->d->add(imports->d->base,uri,prefix,vmaj,vmin,importType,fileImportPath);
     if (qmlImportTrace())
         qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << vmaj << "." << vmin << (importType==QmlScriptParser::Import::Library? "Library" : "File") << ": " << ok;
     return ok;
@@ -1362,11 +1349,21 @@ bool QmlEnginePrivate::addToImport(Imports* imports, const QString& uri, const Q
 
   \sa addToImport()
 */
-bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& type, QmlType** type_return, QUrl* url_return, ImportedNamespace** ns_return) const
+bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& type, QmlType** type_return, QUrl* url_return, int *vmaj, int *vmin, ImportedNamespace** ns_return) const
 {
+    if (ns_return) {
+        *ns_return = imports.d->findNamespace(QLatin1String(type));
+        if (*ns_return)
+            return true;
+    }
     if (type_return) {
-        QmlType* t = imports.d->findBuiltin(type);
-        if (!t) t = QmlMetaType::qmlType(type,0,0); // Try global namespace
+        QmlType* t = imports.d->findBuiltin(type,vmaj,vmin);
+        if (!t) {
+            // XXX do we really still need this?
+            t = QmlMetaType::qmlType(type,0,0); // Try global namespace
+            if (vmin) *vmin = 0;
+            if (vmaj) *vmaj = 0;
+        }
         if (t) {
             if (type_return) *type_return = t;
             if (qmlImportTrace())
@@ -1377,7 +1374,7 @@ bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& typ
     if (url_return) {
         QUrl url = imports.d->find(QLatin1String(type));
         if (!url.isValid())
-            url = imports.base.resolved(QUrl(QLatin1String(type + ".qml")));
+            url = imports.d->base.resolved(QUrl(QLatin1String(type + ".qml")));
 
         if (url.isValid()) {
             if (url_return) *url_return = url;
@@ -1386,24 +1383,9 @@ bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& typ
             return true;
         }
     }
-    if (ns_return) {
-        *ns_return = imports.d->findNamespace(QLatin1String(type));
-        if (*ns_return)
-            return true;
-    }
     if (qmlImportTrace())
         qDebug() << "QmlEngine::resolveType" << type << " not found";
     return false;
-}
-
-/*!
-  \internal
-
-  Splits a fully qualified type name into the namespace and the unqualified type name.
-*/
-void QmlEnginePrivate::resolveNamespace(const Imports& imports, const QByteArray &type, ImportedNamespace **ns, QByteArray *unqualifiedType) const
-{
-    imports.d->resolveNamespace(type, ns, unqualifiedType);
 }
 
 /*!
@@ -1416,31 +1398,14 @@ void QmlEnginePrivate::resolveNamespace(const Imports& imports, const QByteArray
 
   If either return pointer is 0, the corresponding search is not done.
 */
-bool QmlEnginePrivate::resolveTypeInNamespace(ImportedNamespace* ns, const QByteArray& type, QmlType** type_return, QUrl* url_return ) const
+void QmlEnginePrivate::resolveTypeInNamespace(ImportedNamespace* ns, const QByteArray& type, QmlType** type_return, QUrl* url_return, int *vmaj, int *vmin ) const
 {
-    if (!ns) 
-        return false;
-
     if (type_return) {
-        QmlType* t = ns->d->findBuiltin(type);
-        if (!t) t = QmlMetaType::qmlType(type,0,0); // Try global namespace
-        if (t) {
-            *type_return = t;
-            if (qmlImportTrace())
-                qDebug() << "QmlEngine::resolveTypeInNamespace" << type << "= (builtin)";
-            return true;
-        }
+        *type_return = ns->findBuiltin(type,vmaj,vmin);
     }
     if (url_return) {
-        QUrl url = ns->d->find(QLatin1String(type));
-        if (url.isValid()) {
-            if (url_return) *url_return = url;
-            if (qmlImportTrace())
-                qDebug() << "QmlEngine::resolveType" << type << "=" << url;
-            return true;
-        }
+        *url_return = ns->find(QLatin1String(type));
     }
-    return false;
 }
 
 QT_END_NAMESPACE

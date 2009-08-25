@@ -44,6 +44,7 @@
 #include "qvector4d.h"
 #include <QtCore/qmath.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -280,6 +281,14 @@ void QVector3D::normalize()
 
     \sa operator*=()
 */
+
+/*!
+    Returns the vector as a QVariant
+*/
+QVector3D::operator QVariant () const
+{
+   return QVariant(QVariant::Vector3D, this);
+}
 
 /*!
     Returns the dot product of \a v1 and \a v2.

@@ -218,7 +218,6 @@ QNetworkReply *QFxPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *
     QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
     if (iter == qfxActiveNetworkReplies.end()) {
         QNetworkRequest req(url);
-        req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
         QSharedNetworkReply *item = new QSharedNetworkReply(engine->networkAccessManager()->get(req));
         iter = qfxActiveNetworkReplies.insert(key, item);
     } else {

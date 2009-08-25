@@ -187,7 +187,6 @@ void QFxBorderImage::setSource(const QUrl &url)
 #endif
             {
                 QNetworkRequest req(d->url);
-                req.setAttribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferCache);
                 d->sciReply = qmlEngine(this)->networkAccessManager()->get(req);
                 QObject::connect(d->sciReply, SIGNAL(finished()),
                                  this, SLOT(sciRequestFinished()));
