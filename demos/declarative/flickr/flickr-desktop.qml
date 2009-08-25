@@ -1,6 +1,6 @@
 import Qt 4.6
 
-import "content"
+import "common"
 
 Item {
     id: MainWindow; width: 800; height: 450
@@ -8,25 +8,6 @@ Item {
     property bool showPathView : false
 
     resources: [
-        XmlListModel {
-            id: FeedModel
-            property string tags : TagsEdit.text
-            source: "http://api.flickr.com/services/feeds/photos_public.gne?"+(tags ? "tags="+tags+"&" : "")+"format=rss2"
-            query: "/rss/channel/item"
-            namespaceDeclarations: "declare namespace media=\"http://search.yahoo.com/mrss/\";"
-
-            XmlRole { name: "title"; query: "title/string()" }
-            XmlRole { name: "imagePath"; query: "media:thumbnail/@url/string()" }
-            XmlRole { name: "url"; query: "media:content/@url/string()" }
-            XmlRole { name: "description"; query: "description/string()" }
-            XmlRole { name: "tags"; query: "media:category/string()" }
-            XmlRole { name: "photoWidth"; query: "media:content/@width/string()" }
-            XmlRole { name: "photoHeight"; query: "media:content/@height/string()" }
-            XmlRole { name: "photoType"; query: "media:content/@type/string()" }
-            XmlRole { name: "photoAuthor"; query: "author/string()" }
-            XmlRole { name: "photoDate"; query: "pubDate/string()" }
-        },
-
         Component {
         id: PhotoDelegate
         Item {
@@ -72,9 +53,9 @@ Item {
 
                 Item {
                     id: Shadows
-                    Image { source: "content/pics/shadow-right.png"; x: WhiteRect.width; height: WhiteRect.height }
-                    Image { source: "content/pics/shadow-bottom.png"; y: WhiteRect.height; width: WhiteRect.width }
-                    Image { id: Corner; source: "content/pics/shadow-corner.png"; x: WhiteRect.width; y: WhiteRect.height }
+                    Image { source: "common/pics/shadow-right.png"; x: WhiteRect.width; height: WhiteRect.height }
+                    Image { source: "common/pics/shadow-bottom.png"; y: WhiteRect.height; width: WhiteRect.width }
+                    Image { id: Corner; source: "common/pics/shadow-corner.png"; x: WhiteRect.width; y: WhiteRect.height }
                 }
             }
 
@@ -123,17 +104,17 @@ Item {
 
         anchors.fill: parent
 
-        Image { source: "content/pics/background.png"; anchors.fill: parent }
-
-        Loading { anchors.centerIn: parent; visible: FeedModel.status }
+        Image { source: "common/pics/background.png"; anchors.fill: parent }
+        RssModel { id: RssModel; tags : TagsEdit.text }
+        Loading { anchors.centerIn: parent; visible: RssModel.status }
 
         GridView {
-            id: PhotoGridView; model: FeedModel; delegate: PhotoDelegate; cacheBuffer: 100
+            id: PhotoGridView; model: RssModel; delegate: PhotoDelegate; cacheBuffer: 100
             cellWidth: 105; cellHeight: 105; x:32; y: 80; width: 800; height: 330; z: 1
         }
 
         PathView {
-            id: PhotoPathView; model: FeedModel; delegate: PhotoDelegate
+            id: PhotoPathView; model: RssModel; delegate: PhotoDelegate
             y: -380; width: 800; height: 330; pathItemCount: 10; z: 1
             path: Path {
                 startX: -50; startY: 40;
@@ -175,7 +156,7 @@ Item {
             text: "Update"
             anchors.right: ViewModeButton.left; anchors.rightMargin: 5
             anchors.top: ViewModeButton.top
-            onClicked: { FeedModel.reload(); }
+            onClicked: { RssModel.reload(); }
         }
 
         MediaLineEdit {
@@ -205,7 +186,7 @@ Item {
     Text {
         id: CategoryText;  anchors.horizontalCenter: parent.horizontalCenter; y: 15;
         text: "Flickr - " +
-            (FeedModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + FeedModel.tags)
+            (RssModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + RssModel.tags)
         font.pointSize: 20; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
     }
 }
