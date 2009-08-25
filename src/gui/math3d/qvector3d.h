@@ -95,6 +95,8 @@ public:
     QVector3D &operator*=(const QVector3D& vector);
     QVector3D &operator/=(qreal divisor);
 
+    operator QVariant() const;
+
     static qreal dotProduct(const QVector3D& v1, const QVector3D& v2);
     static QVector3D crossProduct(const QVector3D& v1, const QVector3D& v2);
     static QVector3D normal(const QVector3D& v1, const QVector3D& v2);

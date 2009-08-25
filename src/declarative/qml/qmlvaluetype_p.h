@@ -68,6 +68,8 @@ public:
     QmlValueType(QObject *parent = 0);
     virtual void read(QObject *, int) = 0;
     virtual void write(QObject *, int) = 0;
+    virtual QVariant value() = 0;
+    virtual void setValue(QVariant) = 0;
 };
 
 class QmlValueTypeFactory
@@ -91,6 +93,8 @@ public:
 
     virtual void read(QObject *, int);
     virtual void write(QObject *, int);
+    virtual QVariant value();
+    virtual void setValue(QVariant value);
 
     qreal x() const;
     qreal y() const;
@@ -111,6 +115,8 @@ public:
 
     virtual void read(QObject *, int);
     virtual void write(QObject *, int);
+    virtual QVariant value();
+    virtual void setValue(QVariant value);
 
     int x() const;
     int y() const;
@@ -131,6 +137,8 @@ public:
 
     virtual void read(QObject *, int);
     virtual void write(QObject *, int);
+    virtual QVariant value();
+    virtual void setValue(QVariant value);
 
     qreal width() const;
     qreal height() const;
@@ -151,6 +159,8 @@ public:
 
     virtual void read(QObject *, int);
     virtual void write(QObject *, int);
+    virtual QVariant value();
+    virtual void setValue(QVariant value);
 
     int width() const;
     int height() const;
@@ -173,6 +183,8 @@ public:
 
     virtual void read(QObject *, int);
     virtual void write(QObject *, int);
+    virtual QVariant value();
+    virtual void setValue(QVariant value);
 
     qreal x() const;
     qreal y() const;
@@ -200,6 +212,8 @@ public:
 
     virtual void read(QObject *, int);
     virtual void write(QObject *, int);
+    virtual QVariant value();
+    virtual void setValue(QVariant value);
 
     int x() const;
     int y() const;
@@ -226,6 +240,8 @@ public:
 
     virtual void read(QObject *, int);
     virtual void write(QObject *, int);
+    virtual QVariant value();
+    virtual void setValue(QVariant value);
 
     qreal x() const;
     qreal y() const;
@@ -252,6 +268,8 @@ public:
 
     virtual void read(QObject *, int);
     virtual void write(QObject *, int);
+    virtual QVariant value();
+    virtual void setValue(QVariant value);
 
     QString family() const;
     void setFamily(const QString &);
