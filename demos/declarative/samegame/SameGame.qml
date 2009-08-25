@@ -3,7 +3,7 @@ import "content"
 
 Rectangle {
     id: Screen
-    width: 460; height: 700
+    width: 490; height: 720
 
     Script { source: "content/samegame.js" }
 
@@ -23,8 +23,8 @@ Rectangle {
             property int score: 0
 
             z: 20; anchors.centerIn: parent
-            width: parent.width - tileSize - (parent.width % tileSize);
-            height: parent.height - tileSize - (parent.height % tileSize);
+            width: parent.width - (parent.width % tileSize);
+            height: parent.height - (parent.height % tileSize);
 
             MouseRegion {
                 id: gameMR
