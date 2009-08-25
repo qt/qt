@@ -176,12 +176,14 @@ public:
 #endif
 
     void _q_cursorPositionChanged();
-
     void _q_modificationChanged(bool);
 
-    void _q_gestureTriggered();
     int originalOffsetY;
+
+#ifdef Q_WS_WIN
+    void _q_gestureTriggered();
     QPanGesture *panGesture;
+#endif
 };
 
 QT_END_NAMESPACE
