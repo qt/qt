@@ -1176,11 +1176,19 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
         }
 
         QmlType *type = 0;
-        QmlEnginePrivate::get(engine)->resolveType(unit->imports, prop->name, &type, 0, 0, 0);
-        // 0: attached properties not supported in QML component files
+        QmlEnginePrivate::ImportedNamespace *typeNamespace = 0;
+        QmlEnginePrivate::get(engine)->resolveType(unit->imports, prop->name, 
+                                                   &type, 0, 0, 0, &typeNamespace);
 
-        if (!type || !type->attachedPropertiesType())
+        if (typeNamespace) {
+            // ### We might need to indicate that this property is a namespace 
+            // for the DOM API
+            COMPILE_CHECK(buildPropertyInNamespace(typeNamespace, prop, obj, 
+                                                   ctxt));
+            return true;
+        } else if (!type || !type->attachedPropertiesType())  {
             COMPILE_EXCEPTION(prop, "Non-existant attached object");
+        }
 
         if (!prop->value)
             COMPILE_EXCEPTION(prop, "Invalid attached object assignment");
@@ -1263,6 +1271,40 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
     }
 
     return true;
+}
+
+bool 
+QmlCompiler::buildPropertyInNamespace(QmlEnginePrivate::ImportedNamespace *ns,
+                                      QmlParser::Property *nsProp, 
+                                      QmlParser::Object *obj, 
+                                      const BindingContext &ctxt)
+{
+    if (!nsProp->value)
+        COMPILE_EXCEPTION(nsProp, "Invalid use of namespace");
+
+    foreach (Property *prop, nsProp->value->properties) {
+
+        if (!isAttachedPropertyName(prop->name))
+            COMPILE_EXCEPTION(prop, "Not an attached property name");
+
+        // Setup attached property data
+
+        QmlType *type = 0;
+        QmlEnginePrivate::get(engine)->resolveTypeInNamespace(ns, prop->name,
+                                                              &type, 0, 0, 0);
+
+        if (!type || !type->attachedPropertiesType()) 
+            COMPILE_EXCEPTION(prop, "Non-existant attached object");
+
+        if (!prop->value)
+            COMPILE_EXCEPTION(prop, "Invalid attached object assignment");
+
+        Q_ASSERT(type->attachedPropertiesFunction());
+        prop->index = type->index();
+        prop->value->metatype = type->attachedPropertiesType();
+
+        COMPILE_CHECK(buildAttachedProperty(prop, obj, ctxt));
+    }
 }
 
 void QmlCompiler::genValueProperty(QmlParser::Property *prop,
@@ -1407,10 +1449,18 @@ bool QmlCompiler::buildIdProperty(QmlParser::Property *prop,
         prop->values.at(0)->object)
         COMPILE_EXCEPTION(prop, "Invalid use of id property");
 
-    QString val = prop->values.at(0)->primitive();
+    QmlParser::Value *idValue = prop->values.at(0);
+    QString val = idValue->primitive();
 
     if (!isValidId(val))
         COMPILE_EXCEPTION(prop, val << "is not a valid object id");
+
+    // We disallow id's that conflict with import prefixes
+    QmlEnginePrivate::ImportedNamespace *ns = 0;
+    QmlEnginePrivate::get(engine)->resolveType(unit->imports, val.toUtf8(), 
+                                               0, 0, 0, 0, &ns);
+    if (ns)
+        COMPILE_EXCEPTION(idValue, "id conflicts with namespace prefix");
 
     if (compileState.ids.contains(val))
         COMPILE_EXCEPTION(prop, "id is not unique");

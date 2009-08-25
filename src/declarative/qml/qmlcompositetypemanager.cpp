@@ -329,7 +329,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         QUrl url;
         int majorVersion;
         int minorVersion;
-        if (!QmlEnginePrivate::get(engine)->resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion)) {
+        if (!QmlEnginePrivate::get(engine)->resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion, 0)) {
             // XXX could produce error message here.
         }
 

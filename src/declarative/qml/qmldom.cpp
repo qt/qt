@@ -765,8 +765,11 @@ Text { id: MyText }
 */
 QString QmlDomObject::objectId() const
 {
-    if (d->object) return d->object->id;
-    else return QByteArray();
+    if (d->object) {
+        return d->object->id;
+    } else {
+        return QString();
+    }
 }
 
 /*!

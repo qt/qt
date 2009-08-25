@@ -299,6 +299,229 @@ void QFxContents::setItem(QFxItem *item)
     calcWidth();
 }
 
+/*
+    Key filters can be installed on a QFxItem, but not removed.  Currently they
+    are only used by attached objects (which are only destroyed on Item 
+    destruction), so this isn't a problem.  If in future this becomes any form 
+    of public API, they will have to support removal too.
+*/ 
+class QFxItemKeyFilter 
+{
+public:
+    QFxItemKeyFilter(QFxItem * = 0);
+    virtual ~QFxItemKeyFilter();
+
+    virtual void keyPressed(QKeyEvent *event);
+    virtual void keyReleased(QKeyEvent *event);
+
+private:
+    QFxItemKeyFilter *m_next;
+};
+
+QFxItemKeyFilter::QFxItemKeyFilter(QFxItem *item)
+: m_next(0)
+{
+    QFxItemPrivate *p = 
+        item?static_cast<QFxItemPrivate *>(QGraphicsItemPrivate::get(item)):0;
+    if (p) {
+        m_next = p->keyHandler;
+        p->keyHandler = this;
+    }
+}
+
+QFxItemKeyFilter::~QFxItemKeyFilter()
+{
+}
+
+void QFxItemKeyFilter::keyPressed(QKeyEvent *event)
+{
+    if (m_next) m_next->keyPressed(event);
+}
+
+void QFxItemKeyFilter::keyReleased(QKeyEvent *event)
+{
+    if (m_next) m_next->keyReleased(event);
+}
+
+class QFxKeyNavigationAttachedPrivate : public QObjectPrivate
+{
+public:
+    QFxKeyNavigationAttachedPrivate() 
+        : QObjectPrivate(), left(0), right(0), up(0), down(0) {}
+
+    QFxItem *left;
+    QFxItem *right;
+    QFxItem *up;
+    QFxItem *down;
+};
+
+class QFxKeyNavigationAttached : public QObject, public QFxItemKeyFilter
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QFxKeyNavigationAttached);
+
+    Q_PROPERTY(QFxItem *left READ left WRITE setLeft NOTIFY changed);
+    Q_PROPERTY(QFxItem *right READ right WRITE setRight NOTIFY changed);
+    Q_PROPERTY(QFxItem *up READ up WRITE setUp NOTIFY changed);
+    Q_PROPERTY(QFxItem *down READ down WRITE setDown NOTIFY changed);
+public:
+    QFxKeyNavigationAttached(QObject * = 0);
+
+    QFxItem *left() const;
+    void setLeft(QFxItem *);
+    QFxItem *right() const;
+    void setRight(QFxItem *);
+    QFxItem *up() const;
+    void setUp(QFxItem *);
+    QFxItem *down() const;
+    void setDown(QFxItem *);
+
+    static QFxKeyNavigationAttached *qmlAttachedProperties(QObject *);
+
+signals:
+    void changed();
+
+private:
+    virtual void keyPressed(QKeyEvent *event);
+    virtual void keyReleased(QKeyEvent *event);
+};
+
+QFxKeyNavigationAttached::QFxKeyNavigationAttached(QObject *parent)
+: QObject(*(new QFxKeyNavigationAttachedPrivate), parent),
+  QFxItemKeyFilter(qobject_cast<QFxItem*>(parent))
+{
+}
+
+QFxKeyNavigationAttached *
+QFxKeyNavigationAttached::qmlAttachedProperties(QObject *obj)
+{
+    return new QFxKeyNavigationAttached(obj);
+}
+
+QFxItem *QFxKeyNavigationAttached::left() const
+{
+    Q_D(const QFxKeyNavigationAttached);
+    return d->left;
+}
+
+void QFxKeyNavigationAttached::setLeft(QFxItem *i)
+{
+    Q_D(QFxKeyNavigationAttached);
+    d->left = i;
+    emit changed();
+}
+
+QFxItem *QFxKeyNavigationAttached::right() const
+{
+    Q_D(const QFxKeyNavigationAttached);
+    return d->right;
+}
+
+void QFxKeyNavigationAttached::setRight(QFxItem *i)
+{
+    Q_D(QFxKeyNavigationAttached);
+    d->right = i;
+    emit changed();
+}
+
+QFxItem *QFxKeyNavigationAttached::up() const
+{
+    Q_D(const QFxKeyNavigationAttached);
+    return d->up;
+}
+
+void QFxKeyNavigationAttached::setUp(QFxItem *i)
+{
+    Q_D(QFxKeyNavigationAttached);
+    d->up = i;
+    emit changed();
+}
+
+QFxItem *QFxKeyNavigationAttached::down() const
+{
+    Q_D(const QFxKeyNavigationAttached);
+    return d->down;
+}
+
+void QFxKeyNavigationAttached::setDown(QFxItem *i)
+{
+    Q_D(QFxKeyNavigationAttached);
+    d->down = i;
+    emit changed();
+}
+
+void QFxKeyNavigationAttached::keyPressed(QKeyEvent *event)
+{
+    Q_D(QFxKeyNavigationAttached);
+
+    event->ignore();
+
+    switch(event->key()) {
+    case Qt::Key_Left:
+        if (d->left) {
+            d->left->setFocus(true);
+            event->accept();
+        }
+        break;
+    case Qt::Key_Right:
+        if (d->right) {
+            d->right->setFocus(true);
+            event->accept();
+        }
+        break;
+    case Qt::Key_Up:
+        if (d->up) {
+            d->up->setFocus(true);
+            event->accept();
+        }
+        break;
+    case Qt::Key_Down:
+        if (d->down) {
+            d->down->setFocus(true);
+            event->accept();
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (!event->isAccepted()) QFxItemKeyFilter::keyPressed(event);
+}
+
+void QFxKeyNavigationAttached::keyReleased(QKeyEvent *event)
+{
+    Q_D(QFxKeyNavigationAttached);
+
+    event->ignore();
+
+    switch(event->key()) {
+    case Qt::Key_Left:
+        if (d->left) {
+            event->accept();
+        }
+        break;
+    case Qt::Key_Right:
+        if (d->right) {
+            event->accept();
+        }
+        break;
+    case Qt::Key_Up:
+        if (d->up) {
+            event->accept();
+        }
+        break;
+    case Qt::Key_Down:
+        if (d->down) {
+            event->accept();
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (!event->isAccepted()) QFxItemKeyFilter::keyReleased(event);
+}
+
 /*!
     \qmlclass Keys
     \brief The Keys attached property provides key handling to Items.
@@ -616,7 +839,7 @@ public:
     bool enabled;
 };
 
-class QFxKeysAttached : public QObject
+class QFxKeysAttached : public QObject, public QFxItemKeyFilter
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFxKeysAttached);
@@ -681,8 +904,8 @@ signals:
     void volumeDownPressed(QFxKeyEvent *event);
 
 private:
-    void keyPressed(QKeyEvent *event);
-    void keyReleased(QKeyEvent *event);
+    virtual void keyPressed(QKeyEvent *event);
+    virtual void keyReleased(QKeyEvent *event);
 
     const char *keyToSignal(int key) {
         QByteArray keySignal;
@@ -704,8 +927,6 @@ private:
     };
 
     static const SigMap sigMap[];
-    static QHash<QObject*, QFxKeysAttached*> attachedProperties;
-    friend class QFxItem;
 };
 
 const QFxKeysAttached::SigMap QFxKeysAttached::sigMap[] = {
@@ -738,24 +959,19 @@ const QFxKeysAttached::SigMap QFxKeysAttached::sigMap[] = {
     { 0, 0 }
 };
 
-QHash<QObject*, QFxKeysAttached*> QFxKeysAttached::attachedProperties;
-
 bool QFxKeysAttachedPrivate::isConnected(const char *signalName)
 {
     return isSignalConnected(signalIndex(signalName));
 }
 
 QFxKeysAttached::QFxKeysAttached(QObject *parent)
-    : QObject(*(new QFxKeysAttachedPrivate), parent)
+: QObject(*(new QFxKeysAttachedPrivate), parent), 
+  QFxItemKeyFilter(qobject_cast<QFxItem*>(parent))
 {
-    if (QFxItem *item = qobject_cast<QFxItem*>(parent))
-        item->setKeyHandler(this);
 }
 
 QFxKeysAttached::~QFxKeysAttached()
 {
-    if (QFxItem *item = qobject_cast<QFxItem*>(parent()))
-        item->setKeyHandler(0);
 }
 
 void QFxKeysAttached::keyPressed(QKeyEvent *event)
@@ -780,6 +996,8 @@ void QFxKeysAttached::keyPressed(QKeyEvent *event)
     if (!ke.isAccepted())
         emit pressed(&ke);
     event->setAccepted(ke.isAccepted());
+
+    if (!event->isAccepted()) QFxItemKeyFilter::keyPressed(event);
 }
 
 void QFxKeysAttached::keyReleased(QKeyEvent *event)
@@ -792,18 +1010,14 @@ void QFxKeysAttached::keyReleased(QKeyEvent *event)
     QFxKeyEvent ke(*event);
     emit released(&ke);
     event->setAccepted(ke.isAccepted());
+
+    if (!event->isAccepted()) QFxItemKeyFilter::keyReleased(event);
 }
 
 QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 {
-    QFxKeysAttached *rv = attachedProperties.value(obj);
-    if (!rv) {
-        rv = new QFxKeysAttached(obj);
-        attachedProperties.insert(obj, rv);
-    }
-    return rv;
+    return new QFxKeysAttached(obj);
 }
-
 
 /*!
     \qmlclass Item QFxItem
@@ -1421,12 +1635,6 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
         QFxAnchors *anchor = d->dependantAnchors.at(ii);
         anchor->d_func()->update(this, newGeometry, oldGeometry);
     }
-}
-
-void QFxItem::setKeyHandler(QFxKeysAttached *handler)
-{
-    Q_D(QFxItem);
-    d->keyHandler = handler;
 }
 
 /*!
@@ -2438,6 +2646,8 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QFxKeysAttached)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Keys,QFxKeysAttached)
+QML_DECLARE_TYPE(QFxKeyNavigationAttached)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,KeyNavigation,QFxKeyNavigationAttached)
 
 #include "moc_qfxitem.cpp"
 #include "qfxitem.moc"

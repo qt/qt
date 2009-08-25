@@ -224,7 +224,7 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
 
         if (typeData) {
             QmlType *t = 0;
-            enginePrivate->resolveType(typeData->imports, name.toLatin1(), &t, 0, 0, 0);
+            enginePrivate->resolveType(typeData->imports, name.toLatin1(), &t, 0, 0, 0, 0);
             if (t && t->attachedPropertiesFunction()) {
                 attachedFunc = t->index();
                 if (attachedFunc != -1)
