@@ -65,7 +65,8 @@ class QmlBinding_Id : public QmlAbstractExpression,
 {
 public:
     QmlBinding_Id(QObject *object, int propertyIdx,
-                             QmlContext *context, int id);
+                  QmlContext *context, int id);
+    virtual ~QmlBinding_Id();
 
     // Inherited from QmlAbstractBinding
     virtual void setEnabled(bool);
@@ -75,6 +76,8 @@ public:
     void reset();
 
 private:
+    void removeFromContext();
+
     QmlBinding_Id **m_prev;
     QmlBinding_Id  *m_next;
 
