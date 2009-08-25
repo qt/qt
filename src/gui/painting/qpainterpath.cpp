@@ -1520,12 +1520,6 @@ QList<QPolygonF> QPainterPath::toSubpathPolygons(const QMatrix &matrix) const
     return toSubpathPolygons(QTransform(matrix));
 }
 
-static inline bool rect_intersects(const QRectF &r1, const QRectF &r2)
-{
-    return qMax(r1.left(), r2.left()) <= qMin(r1.right(), r2.right())
-        && qMax(r1.top(), r2.top()) <= qMin(r1.bottom(), r2.bottom());
-}
-
 /*!
     Converts the path into a list of polygons using the
     QTransform \a matrix, and returns the list.
@@ -1578,7 +1572,7 @@ QList<QPolygonF> QPainterPath::toFillPolygons(const QTransform &matrix) const
             continue;
         QRectF cbounds = bounds.at(j);
         for (int i=0; i<count; ++i) {
-            if (rect_intersects(cbounds, bounds.at(i))) {
+            if (cbounds.intersects(bounds.at(i))) {
                 isects[j] << i;
             }
         }
