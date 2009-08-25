@@ -221,7 +221,7 @@ private:
     void init();
     virtual void componentComplete();
     Q_DISABLE_COPY(QFxWebView)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxWebView)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxWebView)
 };
 
 QT_END_NAMESPACE

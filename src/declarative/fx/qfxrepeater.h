@@ -78,7 +78,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxRepeater)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxRepeater)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxRepeater)
 };
 
 QT_END_NAMESPACE

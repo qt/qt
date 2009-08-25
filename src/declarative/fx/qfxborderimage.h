@@ -94,7 +94,7 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(QFxBorderImage)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxBorderImage)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxBorderImage)
 };
 
 QT_END_NAMESPACE

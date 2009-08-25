@@ -184,7 +184,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxFlickable)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxFlickable)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxFlickable)
 };
 
 QT_END_NAMESPACE

@@ -80,7 +80,7 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QFxFlipable)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxFlipable)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxFlipable)
 };
 
 QT_END_NAMESPACE

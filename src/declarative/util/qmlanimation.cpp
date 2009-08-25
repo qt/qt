@@ -407,12 +407,12 @@ void QmlAbstractAnimation::setGroup(QmlAnimationGroup *g)
     if (d->group == g)
         return;
     if (d->group)
-        static_cast<QmlAnimationGroupPrivate *>(d->group->d_ptr)->animations.removeAll(this);
+        static_cast<QmlAnimationGroupPrivate *>(d->group->d_func())->animations.removeAll(this);
 
     d->group = g;
 
-    if (d->group && !static_cast<QmlAnimationGroupPrivate *>(d->group->d_ptr)->animations.contains(this))
-        static_cast<QmlAnimationGroupPrivate *>(d->group->d_ptr)->animations.append(this);
+    if (d->group && !static_cast<QmlAnimationGroupPrivate *>(d->group->d_func())->animations.contains(this))
+        static_cast<QmlAnimationGroupPrivate *>(d->group->d_func())->animations.append(this);
 
     if (d->group)
         ((QAnimationGroup*)d->group->qtAnimation())->addAnimation(qtAnimation());
