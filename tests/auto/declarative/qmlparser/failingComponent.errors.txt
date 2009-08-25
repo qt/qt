@@ -1,2 +1,2 @@
--1:-1:Unable to create type FailingComponent
+3:5:Unable to create type FailingComponent
 4:5:Cannot assign to non-existant property "a"
