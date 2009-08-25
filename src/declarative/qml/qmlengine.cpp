@@ -1362,9 +1362,6 @@ bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& typ
 */
 void QmlEnginePrivate::resolveTypeInNamespace(ImportedNamespace* ns, const QByteArray& type, QmlType** type_return, QUrl* url_return, int *vmaj, int *vmin ) const
 {
-    if (!ns) 
-        return;
-
     if (type_return) {
         *type_return = ns->findBuiltin(type,vmaj,vmin);
     }
