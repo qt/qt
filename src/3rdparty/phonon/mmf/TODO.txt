@@ -36,7 +36,4 @@ This should probably be left for now, particularly until audio effects have been
 * Namespace macros
 For consistency with other backends, the code should be wrapped in QT_BEGIN_NAMESPACE / QT_END_NAMESPACE macros.
 
-* Fix mediaplayer.exe UI
-On Windows, the mediaplayer UI has a drop-down menu (for loading clips etc), start/stop buttons, a position slider and a volume slider.  On S60, we just get a blank screen and two blank softkeys, so no clip can be loaded (unless main.cpp is hacked by adding a hard-coded path).
-
 
