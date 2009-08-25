@@ -3299,7 +3299,7 @@ bool QSvgHandler::startElement(const QString &localName,
             m_style = prop;
             m_nodes.top()->appendStyleProperty(prop, someId(attributes), true);
         } else {
-            qWarning("Couldn't parse node: %s", qPrintable(localName));
+            qWarning("Could not parse node: %s", qPrintable(localName));
         }
     } else if (StyleParseMethod method = findStyleUtilFactoryMethod(localName)) {
         if (m_style) {
@@ -3366,7 +3366,7 @@ bool QSvgHandler::endElement(const QStringRef &localName)
                         if (style->type() == QSvgStyleProperty::SOLID_COLOR || style->type() == QSvgStyleProperty::GRADIENT)
                             fill->setFillStyle(reinterpret_cast<QSvgFillStyleProperty *>(style));
                     } else {
-                        qWarning("Couldn't resolve property : %s",qPrintable(id));
+                        qWarning("Could not resolve property : %s",qPrintable(id));
                         fill->setBrush(QBrush(Qt::NoBrush));
                     }
                 }
@@ -3378,7 +3378,7 @@ bool QSvgHandler::endElement(const QStringRef &localName)
                         if (style->type() == QSvgStyleProperty::SOLID_COLOR || style->type() == QSvgStyleProperty::GRADIENT)
                             stroke->setStyle(reinterpret_cast<QSvgFillStyleProperty *>(style));
                     } else {
-                        qWarning("Couldn't resolve property : %s",qPrintable(id));
+                        qWarning("Could not resolve property : %s",qPrintable(id));
                         stroke->setStroke(QBrush(Qt::NoBrush));
                     }
                 }
