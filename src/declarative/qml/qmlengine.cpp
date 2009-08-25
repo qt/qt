@@ -1141,6 +1141,16 @@ struct QmlEnginePrivate::ImportedNamespace {
 
 class QmlImportsPrivate {
 public:
+    QmlImportsPrivate() : ref(1)
+    {
+    }
+
+    ~QmlImportsPrivate()
+    {
+        foreach (QmlEnginePrivate::ImportedNamespace* s, set.values())
+            delete s;
+    }
+
     bool add(const QUrl& base, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType, const QStringList& importPath)
     {
         QmlEnginePrivate::ImportedNamespace *s;
@@ -1237,10 +1247,28 @@ public:
         return set.value(type);
     }
 
+    QUrl base;
+    int ref;
+
 private:
     QmlEnginePrivate::ImportedNamespace unqualifiedset;
     QHash<QString,QmlEnginePrivate::ImportedNamespace* > set;
 };
+
+QmlEnginePrivate::Imports::Imports(const Imports &copy) :
+    d(copy.d)
+{
+    ++d->ref;
+}
+
+QmlEnginePrivate::Imports &QmlEnginePrivate::Imports::operator =(const Imports &copy)
+{
+    ++copy.d->ref;
+    if (--d->ref == 0)
+        delete d;
+    d = copy.d;
+    return *this;
+}
 
 QmlEnginePrivate::Imports::Imports() :
     d(new QmlImportsPrivate)
@@ -1249,6 +1277,8 @@ QmlEnginePrivate::Imports::Imports() :
 
 QmlEnginePrivate::Imports::~Imports()
 {
+    if (--d->ref == 0)
+        delete d;
 }
 
 /*!
@@ -1256,7 +1286,15 @@ QmlEnginePrivate::Imports::~Imports()
 */
 void QmlEnginePrivate::Imports::setBaseUrl(const QUrl& url)
 {
-    base = url;
+    d->base = url;
+}
+
+/*!
+  Returns the base URL to be used for all relative file imports added.
+*/
+QUrl QmlEnginePrivate::Imports::baseUrl() const
+{
+    return d->base;
 }
 
 /*!
@@ -1293,7 +1331,7 @@ void QmlEngine::addImportPath(const QString& path)
 */
 bool QmlEnginePrivate::addToImport(Imports* imports, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType) const
 {
-    bool ok = imports->d->add(imports->base,uri,prefix,vmaj,vmin,importType,fileImportPath);
+    bool ok = imports->d->add(imports->d->base,uri,prefix,vmaj,vmin,importType,fileImportPath);
     if (qmlImportTrace())
         qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << vmaj << "." << vmin << (importType==QmlScriptParser::Import::Library? "Library" : "File") << ": " << ok;
     return ok;
@@ -1336,7 +1374,7 @@ bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& typ
     if (url_return) {
         QUrl url = imports.d->find(QLatin1String(type));
         if (!url.isValid())
-            url = imports.base.resolved(QUrl(QLatin1String(type + ".qml")));
+            url = imports.d->base.resolved(QUrl(QLatin1String(type + ".qml")));
 
         if (url.isValid()) {
             if (url_return) *url_return = url;

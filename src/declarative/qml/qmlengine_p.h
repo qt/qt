@@ -188,13 +188,17 @@ public:
     struct Imports {
         Imports();
         ~Imports();
+        Imports(const Imports &copy);
+        Imports &operator =(const Imports &copy);
+
         void setBaseUrl(const QUrl& url);
-        QUrl baseUrl() const { return base; }
+        QUrl baseUrl() const;
+
     private:
         friend class QmlEnginePrivate;
-        QUrl base;
         QmlImportsPrivate *d;
     };
+
     struct ImportedNamespace;
     bool addToImport(Imports*, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType) const;
     bool resolveType(const Imports&, const QByteArray& type, QmlType** type_return, QUrl* url_return, int *version_major, int *version_minor, ImportedNamespace** ns_return=0) const;
@@ -209,6 +213,7 @@ public:
     static QScriptEngine *getScriptEngine(QmlEngine *e) { return &e->d_func()->scriptEngine; }
     static QmlEnginePrivate *get(QmlEngine *e) { return e->d_func(); }
 };
+
 
 class QmlScriptClass : public QScriptClass
 {
