@@ -299,6 +299,101 @@ void QFxContents::setItem(QFxItem *item)
     calcWidth();
 }
 
+class QFxKeyNavigationAttachedPrivate : public QObjectPrivate
+{
+public:
+    QFxKeyNavigationAttachedPrivate() 
+        : QObjectPrivate(), left(0), right(0), up(0), down(0) {}
+
+    QFxItem *left;
+    QFxItem *right;
+    QFxItem *up;
+    QFxItem *down;
+};
+
+class QFxKeyNavigationAttached : public QObject
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QFxKeyNavigationAttached);
+
+    Q_PROPERTY(QFxItem *left READ left WRITE setLeft NOTIFY changed);
+    Q_PROPERTY(QFxItem *right READ right WRITE setRight NOTIFY changed);
+    Q_PROPERTY(QFxItem *up READ up WRITE setUp NOTIFY changed);
+    Q_PROPERTY(QFxItem *down READ down WRITE setDown NOTIFY changed);
+public:
+    QFxKeyNavigationAttached(QObject * = 0);
+
+    QFxItem *left() const;
+    void setLeft(QFxItem *);
+    QFxItem *right() const;
+    void setRight(QFxItem *);
+    QFxItem *up() const;
+    void setUp(QFxItem *);
+    QFxItem *down() const;
+    void setDown(QFxItem *);
+
+    static QFxKeyNavigationAttached *qmlAttachedProperties(QObject *);
+};
+
+QFxKeyNavigationAttached::QFxKeyNavigationAttached(QObject *parent)
+: QObject(*(new QFxKeyNavigationAttachedPrivate), parent)
+{
+}
+
+QFxKeyNavigationAttached *
+QFxKeyNavigationAttached::qmlAttachedProperties(QObject *obj)
+{
+    return new QFxKeyNavigationAttached(obj);
+}
+
+QFxItem *QFxKeyNavigationAttached::left() const
+{
+    Q_D(const QFxKeyNavigationAttached);
+    return d->left;
+}
+
+void QFxKeyNavigationAttached::setLeft(QFxItem *i)
+{
+    Q_D(QFxKeyNavigationAttached);
+    d->left = i;
+}
+
+QFxItem *QFxKeyNavigationAttached::right() const
+{
+    Q_D(const QFxKeyNavigationAttached);
+    return d->right;
+}
+
+void QFxKeyNavigationAttached::setRight(QFxItem *i)
+{
+    Q_D(QFxKeyNavigationAttached);
+    d->right = i;
+}
+
+QFxItem *QFxKeyNavigationAttached::up() const
+{
+    Q_D(const QFxKeyNavigationAttached);
+    return d->up;
+}
+
+void QFxKeyNavigationAttached::setUp(QFxItem *i)
+{
+    Q_D(QFxKeyNavigationAttached);
+    d->up = i;
+}
+
+QFxItem *QFxKeyNavigationAttached::down() const
+{
+    Q_D(const QFxKeyNavigationAttached);
+    return d->down;
+}
+
+void QFxKeyNavigationAttached::setDown(QFxItem *i)
+{
+    Q_D(QFxKeyNavigationAttached);
+    d->down = i;
+}
+
 /*!
     \qmlclass Keys
     \brief The Keys attached property provides key handling to Items.
@@ -746,7 +841,7 @@ bool QFxKeysAttachedPrivate::isConnected(const char *signalName)
 }
 
 QFxKeysAttached::QFxKeysAttached(QObject *parent)
-    : QObject(*(new QFxKeysAttachedPrivate), parent)
+: QObject(*(new QFxKeysAttachedPrivate), parent)
 {
     if (QFxItem *item = qobject_cast<QFxItem*>(parent))
         item->setKeyHandler(this);
@@ -2438,6 +2533,8 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QFxKeysAttached)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Keys,QFxKeysAttached)
+QML_DECLARE_TYPE(QFxKeyNavigationAttached)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,KeyNavigation,QFxKeyNavigationAttached)
 
 #include "moc_qfxitem.cpp"
 #include "qfxitem.moc"
