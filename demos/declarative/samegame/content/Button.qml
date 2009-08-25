@@ -21,6 +21,5 @@ Rectangle {
 
     Text {
         id: txtItem; text: Container.text; anchors.centerIn: Container; color: activePalette.buttonText
-        font.pointSize: 10;
     }
 }

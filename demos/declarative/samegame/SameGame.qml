@@ -38,7 +38,7 @@ Rectangle {
     Rectangle {
         id: ToolBar
         color: activePalette.window
-        height: Score.height + 10; width: parent.width
+        height: 32; width: parent.width
         anchors.bottom: Screen.bottom
 
         Button {
@@ -49,7 +49,7 @@ Rectangle {
 
         Text {
             id: Score
-            text: "Score: " + gameCanvas.score; font.pointSize: 11
+            text: "Score: " + gameCanvas.score; font.bold: true
             anchors.right: parent.right; anchors.rightMargin: 3
             anchors.verticalCenter: parent.verticalCenter
         }
