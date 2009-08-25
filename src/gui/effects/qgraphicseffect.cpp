@@ -41,23 +41,24 @@
 
 /*!
     \class QGraphicsEffect
-    \brief The QGraphicsEffect class is the base class for all graphics effects.
+    \brief The QGraphicsEffect class is the base class for all graphics
+           effects.
     \since 4.6
     \ingroup multimedia
     \ingroup graphicsview-api
 
     Effects alter the appearance of elements by hooking into the rendering
-    pipeline and operating between the source (e.g., a QGraphicsPixmapItem),
+    pipeline and operating between the source (e.g., a QGraphicsPixmapItem)
     and the destination device (e.g., QGraphicsView's viewport). Effects can be
-    disabled by calling setEnabled(); if the effect is disabled, the source is
-    rendered directly.
+    disabled by calling setEnabled(false). If effects are disabled, the source
+    is rendered directly.
 
-    If you want to add a visual effect to a e.g. a QGraphicsItem, you can either use
-    one of the standard effects, or create your own effect by making a subclass
-    of QGraphicsEffect. The effect can then be installed on the item by calling
-    QGraphicsItem::setGraphicsEffect.
+    To add a visual effect to a QGraphicsItem, for example, you can use one of
+    the standard effects, or alternately, create your own effect by creating a
+    subclass of QGraphicsEffect. The effect can then be installed on the item
+    using QGraphicsItem::setGraphicsEffect().
 
-    Qt provides several standard effects, including:
+    Qt provides the following standard effects:
 
     \list
     \o QGraphicsGrayScaleEffect - renders the item in shades of gray
@@ -69,19 +70,24 @@
     \o QGrahicsShaderEffect - renders the item with a pixel shader fragment
     \endlist
 
-    If all you want is to add an effect to an item, you should visit the
-    documentation for the specific effect to learn more about how each effect
-    can be used.
 
-    If you want to create your own custom effect, you can start by creating a
-    subclass of QGraphicsEffect (or any of the existing effects), and
-    reimplement the virtual function draw(). This function is called whenever
-    the effect needs to redraw. draw() has two arguments: the painter, and a
-    pointer to the source (QGraphicsEffectSource). The source provides extra
-    context information, such as a pointer to the item that is rendering the
-    effect, any cached pixmap data, and the device rect bounds. See the draw()
-    documentation for more details. You can also get a pointer to the current
-    source by calling source().
+    For more information on how to use each effect, refer to the specific
+    effect's documentation.
+
+    To create your own custom effect, create a subclass of QGraphicsEffect (or
+    any other existing effects) and reimplement the virtual function draw().
+    This function is called whenever the effect needs to redraw. The draw()
+    function accepts two arguments: the painter and a pointer to the source
+    (QGraphicsEffectSource). The source provides extra context information,
+    such as a pointer to the item that is rendering the effect, any cached
+    pixmap data, or the device rect bounds. For more information, refer to the
+    documenation for draw(). To obtain a pointer to the current source, simply
+    call source().
+
+    If your effect changes, use update() to request for a redraw. If your
+    custom effect changes the bounding rectangle of the source, e.g., a radial
+    glow effect may need to apply an extra margin, 
+
 
     If your effect changes, you can call update() to request a redraw. If your
     custom effect changes the bounding rectangle of the source (e.g., a radial
@@ -107,11 +113,11 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QGraphicsEffectSource
-    \brief The QGraphicsEffectSource represents the source of which a QGraphicsEffect
-    is installed on.
+    \brief The QGraphicsEffectSource represents the source on which a
+           QGraphicsEffect is installed on.
     \since 4.6
 
-    When a QGraphicsEffect is installed on e.g. a QGraphicsItem, this class will act as
+    When a QGraphicsEffect is installed on a QGraphicsItem, for example, this class will act as
     a wrapper around QGraphicsItem. E.g. calling update() is effectively the same as
     calling QGraphicsItem::update().
 
