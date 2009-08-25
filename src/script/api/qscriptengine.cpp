@@ -3585,9 +3585,6 @@ void QScriptEngine::setAgent(QScriptEngineAgent *agent)
         QScriptEngineAgentPrivate::get(d->activeAgent)->detach();
     d->activeAgent = agent;
     if (agent) {
-        int index = d->ownedAgents.indexOf(agent);
-        if (index == -1)
-            d->ownedAgents.append(agent);
         QScriptEngineAgentPrivate::get(agent)->attach();
     }
 }

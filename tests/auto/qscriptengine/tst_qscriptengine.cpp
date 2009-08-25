@@ -3913,6 +3913,7 @@ void tst_QScriptEngine::getSetAgent()
         TestAgent *agent = new TestAgent(&eng);
         QTest::ignoreMessage(QtWarningMsg, "QScriptEngine::setAgent(): cannot set agent belonging to different engine");
         eng2.setAgent(agent);
+        QCOMPARE(eng2.agent(), (QScriptEngineAgent*)0);
     }
 }
 

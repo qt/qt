@@ -213,6 +213,7 @@ QScriptEngineAgent::QScriptEngineAgent(QScriptEngine *engine)
 {
     d_ptr->q_ptr = this;
     d_ptr->engine = QScriptEnginePrivate::get(engine);
+    d_ptr->engine->ownedAgents.append(this);
 }
 
 /*!
