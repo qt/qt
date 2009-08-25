@@ -728,6 +728,9 @@ bool qt_mac_menubar_is_open()
 
 void qt_mac_clear_menubar()
 {
+    if (QApplication::testAttribute(Qt::AA_MacPluginApplication))
+        return;
+
 #ifndef QT_MAC_USE_COCOA
     MenuRef clear_menu = 0;
     if (CreateNewMenu(0, 0, &clear_menu) == noErr) {
@@ -1918,6 +1921,9 @@ static void cancelAllMenuTracking()
 */
 bool QMenuBar::macUpdateMenuBar()
 {
+    if (QApplication::testAttribute(Qt::AA_MacPluginApplication))
+        return false;
+
     cancelAllMenuTracking();
     QMenuBar *mb = 0;
     //find a menu bar
