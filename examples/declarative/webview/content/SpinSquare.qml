@@ -2,7 +2,7 @@ import Qt 4.6
 
 Item {
     property var period : 250
-    propert var color : "black"
+    property var color : "black"
     id: Root
 
     Item {
