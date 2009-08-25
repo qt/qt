@@ -76,15 +76,11 @@ QmlDomDocumentPrivate::~QmlDomDocumentPrivate()
     \brief The QmlDomDocument class represents the root of a QML document
 
     A QML document is a self-contained snippet of QML, usually contained in a
-    single file.  Each document has a version number, accessible through
-    QmlDomDocument::version(),  and a root object, accessible through
+    single file. Each document has a root object, accessible through
     QmlDomDocument::rootObject().
 
-    The QmlDomDocument class allows the programmer to load a QML document, by
-    calling QmlDomDocument::load(), manipulate it and save it to textual form
-    by calling QmlDomDocument::save().  By using the QML DOM API, editors can
-    non-destructively modify a QML document even if they only understand a
-    subset of the total QML functionality.
+    The QmlDomDocument class allows the programmer to inspect a QML document by
+    calling QmlDomDocument::load().
 
     The following example loads a QML file from disk, and prints out its root
     object type and the properties assigned in the root object.
@@ -136,15 +132,6 @@ QmlDomDocument &QmlDomDocument::operator=(const QmlDomDocument &other)
 }
 
 /*!
-    Return the version number of the Qml document.  Currently only version
-    1 exists.
-*/
-int QmlDomDocument::version() const
-{
-    return 1;
-}
-
-/*!
     Returns all import statements in qml.
 */
 QList<QmlDomImport> QmlDomDocument::imports() const
@@ -157,7 +144,7 @@ QList<QmlDomImport> QmlDomDocument::imports() const
     data.  On success, true is returned.  If the \a data is malformed, false
     is returned and QmlDomDocument::loadError() contains an error description.
 
-    \sa QmlDomDocument::save() QmlDomDocument::loadError()
+    \sa QmlDomDocument::loadError()
 */
 bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl &url)
 {
@@ -221,17 +208,6 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
 QList<QmlError> QmlDomDocument::errors() const
 {
     return d->errors;
-}
-
-/*!
-    Return a saved copy of the QmlDomDocument.  The returned data will be valid
-    QML XML data.
-
-    \sa load()
-*/
-QByteArray QmlDomDocument::save() const
-{
-    return QByteArray();
 }
 
 /*!
@@ -414,15 +390,6 @@ QmlDomValue QmlDomProperty::value() const
         rv.d->value->addref();
     }
     return rv;
-}
-
-/*!
-    Sets the QmlDomValue that is assigned to this property to \a value.
-*/
-void QmlDomProperty::setValue(const QmlDomValue &value)
-{
-    Q_UNUSED(value);
-    qWarning("QmlDomProperty::setValue(const QmlDomValue &): Not Implemented");
 }
 
 /*!
@@ -689,11 +656,6 @@ QGraphicsWidget {
     "opacity" and "size".  Obviously QGraphicsWidget has many more properties than just
     these two, but the QML DOM representation only contains those assigned
     values (or bindings) in the QML file.
-
-    The DOM tree can be modified to include new property assignments by calling
-    QmlDomObject::addProperty().  Existing property assignments can be modified
-    through the QmlDomProperty::setValue() method, or removed entirely by
-    calling QmlDomObject::removeProperty().
 */
 
 /*!
@@ -808,17 +770,6 @@ QString QmlDomObject::objectId() const
 }
 
 /*!
-    Set the object \a id.  If any other object within the DOM tree has the same
-    id, the other object's id will be cleared.
-*/
-void QmlDomObject::setObjectId(const QByteArray &id)
-{
-    Q_UNUSED(id);
-    qWarning("QmlDomObject::setObjectId(const QByteArray &): Not implemented");
-}
-
-
-/*!
     Returns the list of assigned properties on this object.
 
     In the following example, "text" and "x" properties would be returned.
@@ -878,27 +829,6 @@ QmlDomProperty QmlDomObject::property(const QByteArray &name) const
     return QmlDomProperty();
 }
 
-/*!
-    Remove the property \a name from this object, if it exists.  Otherwise does
-    nothing.
-*/
-void QmlDomObject::removeProperty(const QByteArray &name)
-{
-    Q_UNUSED(name);
-    qWarning("QmlDomObject::removeProperty(const QByteArray &): Not implemented");
-}
-
-/*!
-    Adds the property \a name with the specified \a value to this object.  If
-    a property by \a name already exists, it will be removed.
-*/
-void QmlDomObject::addProperty(const QByteArray &name, const QmlDomValue &value)
-{
-    Q_UNUSED(name);
-    Q_UNUSED(value);
-    qWarning("QmlDomObject::addProperty(const QByteArray &, const QmlDomValue &): Not implemented");
-}
-
 QList<QmlDomDynamicProperty> QmlDomObject::dynamicProperties() const
 {
     QList<QmlDomDynamicProperty> properties;
@@ -947,18 +877,6 @@ QmlDomDynamicProperty QmlDomObject::dynamicProperty(const QByteArray &name) cons
 bool QmlDomObject::isCustomType() const
 {
     return false;
-}
-
-/*!
-    Sets the custom type \a data.  If this type is not a custom type, this
-    method does nothing.
-
-    \sa QmlDomObject::isCustomType() QmlDomObject::customTypeData()
-*/
-void QmlDomObject::setCustomTypeData(const QByteArray &data)
-{
-    Q_UNUSED(data);
-    qWarning("QmlDomObject::setCustomTypeData(const QByteArray &): Not implemented");
 }
 
 /*!
@@ -1116,15 +1034,6 @@ QString QmlDomValueLiteral::literal() const
 }
 
 /*!
-    Sets the literal \a value.
-*/
-void QmlDomValueLiteral::setLiteral(const QString &value)
-{
-    Q_UNUSED(value);
-    qWarning("QmlDomValueLiteral::setLiteral(const QString &): Not implemented");
-}
-
-/*!
     \class QmlDomValueBinding
     \internal
     \brief The QmlDomValueBinding class represents a property binding.
@@ -1183,15 +1092,6 @@ QString QmlDomValueBinding::binding() const
         return d->value->value.asScript();
     else
         return QString();
-}
-
-/*!
-    Sets the binding \a expression.
-*/
-void QmlDomValueBinding::setBinding(const QString &expression)
-{
-    Q_UNUSED(expression);
-    qWarning("QmlDomValueBinding::setBinding(const QString &): Not implemented");
 }
 
 /*!
@@ -1274,14 +1174,6 @@ QmlDomObject QmlDomValueValueSource::object() const
     return rv;
 }
 
-/*!
-    Sets the value source \a object.
-*/
-void QmlDomValueValueSource::setObject(const QmlDomObject &object)
-{
-    Q_UNUSED(object);
-    qWarning("QmlDomValueValueSource::setObject(const QmlDomObject &): Not implemented");
-}
 
 QmlDomValuePrivate::QmlDomValuePrivate()
 : property(0), value(0)
@@ -1659,15 +1551,6 @@ QList<QmlDomValue> QmlDomList::values() const
 }
 
 /*!
-    Set the list of QmlDomValue's to \a values.
-*/
-void QmlDomList::setValues(const QList<QmlDomValue> &values)
-{
-    Q_UNUSED(values);
-    qWarning("QmlDomList::setValues(const QList<QmlDomValue> &): Not implemented");
-}
-
-/*!
     Returns the position in the input data where the list started, or -1 if
  the property is invalid.
 */
@@ -1792,16 +1675,6 @@ QmlDomObject QmlDomComponent::componentRoot() const
 
     return rv;
 }
-
-/*!
-    Set the component's \a root object.
-*/
-void QmlDomComponent::setComponentRoot(const QmlDomObject &root)
-{
-    Q_UNUSED(root);
-    qWarning("QmlDomComponent::setComponentRoot(const QmlDomObject &): Not implemented");
-}
-
 
 QmlDomImportPrivate::QmlDomImportPrivate()
 : type(File)
