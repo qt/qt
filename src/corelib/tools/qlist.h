@@ -72,13 +72,15 @@ struct Q_CORE_EXPORT QListData {
     enum { DataHeaderSize = sizeof(Data) - sizeof(void *) };
 
     Data *detach(); // remove in 5.0
-    Data *detach2();
+    Data *detach2(); // remove in 5.0
+    Data *detach3();
     void realloc(int alloc);
     static Data shared_null;
     Data *d;
     void **erase(void **xi);
     void **append();
     void **append(const QListData &l);
+    void **append2(const QListData &l); // remove in 5.0
     void **prepend();
     void **insert(int i);
     void remove(int i);
@@ -117,6 +119,14 @@ public:
     inline int size() const { return p.size(); }
 
     inline void detach() { if (d->ref != 1) detach_helper(); }
+
+    inline void detachShared()
+    {
+        // The "this->" qualification is needed for GCCE.
+        if (d->ref != 1 && this->d != &QListData::shared_null)
+            detach_helper();
+    }
+
     inline bool isDetached() const { return d->ref == 1; }
     inline void setSharable(bool sharable) { if (!sharable) detach(); d->sharable = sharable; }
 
@@ -352,12 +362,31 @@ Q_INLINE_TEMPLATE void QList<T>::node_destruct(Node *n)
 template <typename T>
 Q_INLINE_TEMPLATE void QList<T>::node_copy(Node *from, Node *to, Node *src)
 {
-    if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic)
-        while(from != to)
-            (from++)->v = new T(*reinterpret_cast<T*>((src++)->v));
-    else if (QTypeInfo<T>::isComplex)
-        while(from != to)
-            new (from++) T(*reinterpret_cast<T*>(src++));
+    Node *current = from;
+    if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
+        QT_TRY {
+            while(current != to) {
+                (current++)->v = new T(*reinterpret_cast<T*>((src++)->v));
+            }
+        } QT_CATCH(...) {
+            while (current != from)
+                delete reinterpret_cast<T*>(current--);
+            QT_RETHROW;
+        }
+
+    } else if (QTypeInfo<T>::isComplex) {
+        QT_TRY {
+            while(current != to)
+                new (current++) T(*reinterpret_cast<T*>(src++));
+        } QT_CATCH(...) {
+            while (current != from)
+                (reinterpret_cast<T*>(current--))->~T();
+            QT_RETHROW;
+        }
+    } else {
+        if (src != from && to - from > 0)
+            memcpy(from, src, (to - from) * sizeof(Node *));
+    }
 }
 
 template <typename T>
@@ -384,8 +413,17 @@ Q_INLINE_TEMPLATE QList<T> &QList<T>::operator=(const QList<T> &l)
 }
 template <typename T>
 inline typename QList<T>::iterator QList<T>::insert(iterator before, const T &t)
-{ Node *n = reinterpret_cast<Node *>(p.insert(before.i-reinterpret_cast<Node *>(p.begin())));
- node_construct(n,t); return n; }
+{
+    int iBefore = before.i - reinterpret_cast<Node *>(p.begin());
+    Node *n = reinterpret_cast<Node *>(p.insert(iBefore));
+    QT_TRY {
+        node_construct(n, t);
+    } QT_CATCH(...) {
+        p.remove(iBefore);
+        QT_RETHROW;
+    }
+    return n;
+}
 template <typename T>
 inline typename QList<T>::iterator QList<T>::erase(iterator it)
 { node_destruct(it.i);
@@ -423,10 +461,22 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::append(const T &t)
 {
     detach();
     if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
-        node_construct(reinterpret_cast<Node *>(p.append()), t);
+        Node *n = reinterpret_cast<Node *>(p.append());
+        QT_TRY {
+            node_construct(n, t);
+        } QT_CATCH(...) {
+            --d->end;
+            QT_RETHROW;
+        }
     } else {
         const T cpy(t);
-        node_construct(reinterpret_cast<Node *>(p.append()), cpy);
+        Node *n = reinterpret_cast<Node *>(p.append());
+        QT_TRY {
+            node_construct(n, cpy);
+        } QT_CATCH(...) {
+            --d->end;
+            QT_RETHROW;
+        }
     }
 }
 
@@ -435,10 +485,22 @@ inline void QList<T>::prepend(const T &t)
 {
     detach();
     if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
-        node_construct(reinterpret_cast<Node *>(p.prepend()), t);
+        Node *n = reinterpret_cast<Node *>(p.prepend());
+        QT_TRY {
+            node_construct(n, t);
+        } QT_CATCH(...) {
+            ++d->begin;
+            QT_RETHROW;
+        }
     } else {
         const T cpy(t);
-        node_construct(reinterpret_cast<Node *>(p.prepend()), cpy);
+        Node *n = reinterpret_cast<Node *>(p.prepend());
+        QT_TRY {
+            node_construct(n, cpy);
+        } QT_CATCH(...) {
+            ++d->begin;
+            QT_RETHROW;
+        }
     }
 }
 
@@ -447,10 +509,22 @@ inline void QList<T>::insert(int i, const T &t)
 {
     detach();
     if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
-        node_construct(reinterpret_cast<Node *>(p.insert(i)), t);
+        Node *n = reinterpret_cast<Node *>(p.insert(i));
+        QT_TRY {
+            node_construct(n, t);
+        } QT_CATCH(...) {
+            p.remove(i);
+            QT_RETHROW;
+        }
     } else {
         const T cpy(t);
-        node_construct(reinterpret_cast<Node *>(p.insert(i)), cpy);
+        Node *n = reinterpret_cast<Node *>(p.insert(i));
+        QT_TRY {
+            node_construct(n, cpy);
+        } QT_CATCH(...) {
+            p.remove(i);
+            QT_RETHROW;
+        }
     }
 }
 
@@ -521,8 +595,15 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE void QList<T>::detach_helper()
 {
     Node *n = reinterpret_cast<Node *>(p.begin());
-    QListData::Data *x = p.detach2();
-    node_copy(reinterpret_cast<Node *>(p.begin()), reinterpret_cast<Node *>(p.end()), n);
+    QListData::Data *x = p.detach3();
+    QT_TRY {
+        node_copy(reinterpret_cast<Node *>(p.begin()), reinterpret_cast<Node *>(p.end()), n);
+    } QT_CATCH(...) {
+        qFree(d);
+        d = x;
+        QT_RETHROW;
+    }
+
     if (!x->ref.deref())
         free(x);
 }
@@ -572,7 +653,7 @@ Q_OUTOFLINE_TEMPLATE void QList<T>::clear()
 template <typename T>
 Q_OUTOFLINE_TEMPLATE int QList<T>::removeAll(const T &_t)
 {
-    detach();
+    detachShared();
     const T t = _t;
     int removedCount=0, i=0;
     Node *n;
@@ -590,7 +671,7 @@ Q_OUTOFLINE_TEMPLATE int QList<T>::removeAll(const T &_t)
 template <typename T>
 Q_OUTOFLINE_TEMPLATE bool QList<T>::removeOne(const T &_t)
 {
-    detach();
+    detachShared();
     int index = indexOf(_t);
     if (index != -1) {
         removeAt(index);
@@ -614,8 +695,14 @@ template <typename T>
 Q_OUTOFLINE_TEMPLATE QList<T> &QList<T>::operator+=(const QList<T> &l)
 {
     detach();
-    Node *n = reinterpret_cast<Node *>(p.append(l.p));
-    node_copy(n, reinterpret_cast<Node *>(p.end()), reinterpret_cast<Node *>(l.p.begin()));
+    Node *n = reinterpret_cast<Node *>(p.append2(l.p));
+    QT_TRY{
+        node_copy(n, reinterpret_cast<Node *>(p.end()), reinterpret_cast<Node *>(l.p.begin()));
+    } QT_CATCH(...) {
+        // restore the old end
+        d->end -= (reinterpret_cast<Node *>(p.end()) - n);
+        QT_RETHROW;
+    }
     return *this;
 }
 

@@ -99,8 +99,10 @@ QHttpNetworkConnectionPrivate::QHttpNetworkConnectionPrivate(quint16 channelCoun
 QHttpNetworkConnectionPrivate::~QHttpNetworkConnectionPrivate()
 {
     for (int i = 0; i < channelCount; ++i) {
-        channels[i].socket->close();
-        delete channels[i].socket;
+        if (channels[i].socket) {
+            channels[i].socket->close();
+            delete channels[i].socket;
+        }
     }
     delete []channels;
 }

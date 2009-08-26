@@ -134,7 +134,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxText)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxText)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxText)
 };
 
 QT_END_NAMESPACE

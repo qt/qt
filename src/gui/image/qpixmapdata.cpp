@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qpixmapdata_p.h"
+#include <QtCore/qbuffer.h>
 #include <QtGui/qbitmap.h>
 #include <QtGui/qimagereader.h>
 
@@ -66,14 +67,44 @@ QPixmapData::~QPixmapData()
 {
 }
 
-void QPixmapData::fromFile(const QString &fileName, const char *format,
+static QImage makeBitmapCompliantIfNeeded(QPixmapData *d, const QImage &image, Qt::ImageConversionFlags flags)
+{
+    if (d->pixelType() == QPixmapData::BitmapType) {
+        QImage img = image.convertToFormat(QImage::Format_MonoLSB, flags);
+
+        // make sure image.color(0) == Qt::color0 (white)
+        // and image.color(1) == Qt::color1 (black)
+        const QRgb c0 = QColor(Qt::black).rgb();
+        const QRgb c1 = QColor(Qt::white).rgb();
+        if (img.color(0) == c0 && img.color(1) == c1) {
+            img.invertPixels();
+            img.setColor(0, c1);
+            img.setColor(1, c0);
+        }
+        return img;
+    }
+
+    return image;
+}
+
+bool QPixmapData::fromFile(const QString &fileName, const char *format,
                            Qt::ImageConversionFlags flags)
 {
-    const QImage image = QImageReader(fileName, format).read();
+    QImage image = QImageReader(fileName, format).read();
     if (image.isNull())
-        return;
+        return false;
+    fromImage(makeBitmapCompliantIfNeeded(this, image, flags), flags);
+    return !isNull();
+}
 
-    fromImage(image, flags);
+bool QPixmapData::fromData(const uchar *buf, uint len, const char *format, Qt::ImageConversionFlags flags)
+{
+    QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(buf), len);
+    QBuffer b(&a);
+    b.open(QIODevice::ReadOnly);
+    QImage image = QImageReader(&b, format).read();
+    fromImage(makeBitmapCompliantIfNeeded(this, image, flags), flags);
+    return !isNull();
 }
 
 void QPixmapData::copy(const QPixmapData *data, const QRect &rect)

@@ -209,9 +209,21 @@ void QInputContext::setFocusWidget(QWidget *widget)
     way. Although the input events have accept() and ignore()
     methods, leave it untouched.
 
-    \a event is currently restricted to QKeyEvent. But some input
-    method related events such as QWheelEvent or QTabletEvent may be
-    added in future.
+    \a event is currently restricted to events of these types:
+
+    \list
+        \i CloseSoftwareInputPanel
+        \i KeyPress
+        \i KeyRelease
+        \i MouseButtonDblClick
+        \i MouseButtonPress
+        \i MouseButtonRelease
+        \i MouseMove
+        \i RequestSoftwareInputPanel
+    \endlist
+
+    But some input method related events such as QWheelEvent or
+    QTabletEvent may be added in future.
 
     The filtering opportunity is always given to the input context as
     soon as possible. It has to be taken place before any other key
@@ -415,13 +427,6 @@ QTextFormat QInputContext::standardFormat(StandardFormat s) const
     switch (s) {
     case QInputContext::PreeditFormat: {
         fmt.setUnderlineStyle(QTextCharFormat::DashUnderline);
-#ifndef Q_WS_WIN
-        int h1, s1, v1, h2, s2, v2;
-        pal.color(QPalette::Base).getHsv(&h1, &s1, &v1);
-        pal.color(QPalette::Background).getHsv(&h2, &s2, &v2);
-        bg.setHsv(h1, s1, (v1 + v2) / 2);
-        fmt.setBackground(QBrush(bg));
-#endif
         break;
     }
     case QInputContext::SelectionFormat: {
@@ -458,6 +463,31 @@ bool QInputContext::x11FilterEvent(QWidget * /*keywidget*/, XEvent * /*event*/)
     return false;
 }
 #endif // Q_WS_X11
+
+#ifdef Q_WS_S60
+/*!
+    This function may be overridden only if input method is depending
+    on Symbian and you need raw TWsEvent. Otherwise, this function must not.
+
+    This function is designed to filter raw key events on S60, but
+    other input methods may use this to implement some special
+    features.
+
+    Return true if the \a event has been consumed. Otherwise, the
+    unfiltered \a event will be translated into QEvent and forwarded
+    to filterEvent(). Filtering at both s60FilterEvent() and
+    filterEvent() in single input method is allowed.
+
+    \a keywidget is a client widget into which a text is inputted. \a
+    event is inputted TWsEvent.
+
+    \sa filterEvent()
+*/
+bool QInputContext::s60FilterEvent(QWidget * /*keywidget*/, TWsEvent * /*event*/)
+{
+    return false;
+}
+#endif // Q_WS_S60
 
 QT_END_NAMESPACE
 

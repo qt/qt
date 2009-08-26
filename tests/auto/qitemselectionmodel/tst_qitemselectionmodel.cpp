@@ -91,6 +91,7 @@ private slots:
     void task119433_isRowSelected();
     void task252069_rowIntersectsSelection();
     void task232634_childrenDeselectionSignal();
+    void task260134_layoutChangedWithAllSelected();
 
 private:
     QAbstractItemModel *model;
@@ -2240,6 +2241,38 @@ void tst_QItemSelectionModel::task232634_childrenDeselectionSignal()
     QVERIFY(!selectionModel.selection().contains(sel));
     QVERIFY(selectionModel.selection().contains(sel2));
 }
+
+void tst_QItemSelectionModel::task260134_layoutChangedWithAllSelected()
+{
+    QStringListModel model( QStringList() << "foo" << "bar" << "foo2");
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    QItemSelectionModel selection(&proxy);
+
+
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(proxy.rowCount(), 3);
+    proxy.setFilterRegExp( QRegExp("f"));
+    QCOMPARE(proxy.rowCount(), 2);
+
+    QList<QPersistentModelIndex> indexList;
+    indexList << proxy.index(0,0) << proxy.index(1,0);
+    selection.select( QItemSelection(indexList.first(), indexList.last()), QItemSelectionModel::Select);
+
+    //let's check the selection hasn't changed
+    QCOMPARE(selection.selectedIndexes().count(), indexList.count());
+    foreach(QPersistentModelIndex index, indexList)
+        QVERIFY(selection.isSelected(index));
+
+    proxy.setFilterRegExp(QRegExp());
+    QCOMPARE(proxy.rowCount(), 3);
+
+    //let's check the selection hasn't changed
+    QCOMPARE(selection.selectedIndexes().count(), indexList.count());
+    foreach(QPersistentModelIndex index, indexList)
+        QVERIFY(selection.isSelected(index));
+}
+
 
 QTEST_MAIN(tst_QItemSelectionModel)
 #include "tst_qitemselectionmodel.moc"

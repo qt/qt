@@ -76,6 +76,8 @@ public:
 #endif
     }
 
+    void setupGestureTarget(QObject *o);
+
     QSize totalOffset;
     QSize lastOffset;
     QPoint lastPosition;
@@ -98,6 +100,9 @@ public:
 #endif
     {
     }
+
+    void setupGestureTarget(QObject *o);
+
     qreal scaleFactor;
     qreal lastScaleFactor;
     qreal rotationAngle;

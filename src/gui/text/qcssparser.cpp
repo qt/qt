@@ -48,6 +48,7 @@
 #include <qfontmetrics.h>
 #include <qbrush.h>
 #include <qimagereader.h>
+#include "private/qfunctions_p.h"
 
 #ifndef QT_NO_CSSPARSER
 
@@ -340,12 +341,12 @@ static const QCssKnownValue styleFeatures[NumKnownStyleFeatures - 1] = {
     { "none", StyleFeature_None }
 };
 
-static bool operator<(const QString &name, const QCssKnownValue &prop)
+Q_STATIC_GLOBAL_OPERATOR bool operator<(const QString &name, const QCssKnownValue &prop)
 {
     return QString::compare(name, QLatin1String(prop.name), Qt::CaseInsensitive) < 0;
 }
 
-static bool operator<(const QCssKnownValue &prop, const QString &name)
+Q_STATIC_GLOBAL_OPERATOR bool operator<(const QCssKnownValue &prop, const QString &name)
 {
     return QString::compare(QLatin1String(prop.name), name, Qt::CaseInsensitive) < 0;
 }

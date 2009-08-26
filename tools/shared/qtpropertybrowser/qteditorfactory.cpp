@@ -227,9 +227,8 @@ void QtSpinBoxFactoryPrivate::slotSetValue(int value)
     Creates a factory with the given \a parent.
 */
 QtSpinBoxFactory::QtSpinBoxFactory(QObject *parent)
-    : QtAbstractEditorFactory<QtIntPropertyManager>(parent)
+    : QtAbstractEditorFactory<QtIntPropertyManager>(parent), d_ptr(new QtSpinBoxFactoryPrivate())
 {
-    d_ptr = new QtSpinBoxFactoryPrivate();
     d_ptr->q_ptr = this;
 
 }
@@ -240,7 +239,6 @@ QtSpinBoxFactory::QtSpinBoxFactory(QObject *parent)
 QtSpinBoxFactory::~QtSpinBoxFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!
@@ -383,9 +381,8 @@ void QtSliderFactoryPrivate::slotSetValue(int value)
     Creates a factory with the given \a parent.
 */
 QtSliderFactory::QtSliderFactory(QObject *parent)
-    : QtAbstractEditorFactory<QtIntPropertyManager>(parent)
+    : QtAbstractEditorFactory<QtIntPropertyManager>(parent), d_ptr(new QtSliderFactoryPrivate())
 {
-    d_ptr = new QtSliderFactoryPrivate();
     d_ptr->q_ptr = this;
 
 }
@@ -396,7 +393,6 @@ QtSliderFactory::QtSliderFactory(QObject *parent)
 QtSliderFactory::~QtSliderFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!
@@ -539,9 +535,8 @@ void QtScrollBarFactoryPrivate::slotSetValue(int value)
     Creates a factory with the given \a parent.
 */
 QtScrollBarFactory::QtScrollBarFactory(QObject *parent)
-    : QtAbstractEditorFactory<QtIntPropertyManager>(parent)
+    : QtAbstractEditorFactory<QtIntPropertyManager>(parent), d_ptr(new QtScrollBarFactoryPrivate())
 {
-    d_ptr = new QtScrollBarFactoryPrivate();
     d_ptr->q_ptr = this;
 
 }
@@ -552,7 +547,6 @@ QtScrollBarFactory::QtScrollBarFactory(QObject *parent)
 QtScrollBarFactory::~QtScrollBarFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!
@@ -661,9 +655,8 @@ void QtCheckBoxFactoryPrivate::slotSetValue(bool value)
     Creates a factory with the given \a parent.
 */
 QtCheckBoxFactory::QtCheckBoxFactory(QObject *parent)
-    : QtAbstractEditorFactory<QtBoolPropertyManager>(parent)
+    : QtAbstractEditorFactory<QtBoolPropertyManager>(parent), d_ptr(new QtCheckBoxFactoryPrivate())
 {
-    d_ptr = new QtCheckBoxFactoryPrivate();
     d_ptr->q_ptr = this;
 
 }
@@ -674,7 +667,6 @@ QtCheckBoxFactory::QtCheckBoxFactory(QObject *parent)
 QtCheckBoxFactory::~QtCheckBoxFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!
@@ -836,9 +828,8 @@ void QtDoubleSpinBoxFactoryPrivate::slotSetValue(double value)
     Creates a factory with the given \a parent.
 */
 QtDoubleSpinBoxFactory::QtDoubleSpinBoxFactory(QObject *parent)
-    : QtAbstractEditorFactory<QtDoublePropertyManager>(parent)
+    : QtAbstractEditorFactory<QtDoublePropertyManager>(parent), d_ptr(new QtDoubleSpinBoxFactoryPrivate())
 {
-    d_ptr = new QtDoubleSpinBoxFactoryPrivate();
     d_ptr->q_ptr = this;
 
 }
@@ -849,7 +840,6 @@ QtDoubleSpinBoxFactory::QtDoubleSpinBoxFactory(QObject *parent)
 QtDoubleSpinBoxFactory::~QtDoubleSpinBoxFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!
@@ -991,9 +981,8 @@ void QtLineEditFactoryPrivate::slotSetValue(const QString &value)
     Creates a factory with the given \a parent.
 */
 QtLineEditFactory::QtLineEditFactory(QObject *parent)
-    : QtAbstractEditorFactory<QtStringPropertyManager>(parent)
+    : QtAbstractEditorFactory<QtStringPropertyManager>(parent), d_ptr(new QtLineEditFactoryPrivate())
 {
-    d_ptr = new QtLineEditFactoryPrivate();
     d_ptr->q_ptr = this;
 
 }
@@ -1004,7 +993,6 @@ QtLineEditFactory::QtLineEditFactory(QObject *parent)
 QtLineEditFactory::~QtLineEditFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!
@@ -1134,9 +1122,8 @@ void QtDateEditFactoryPrivate::slotSetValue(const QDate &value)
     Creates a factory with the given \a parent.
 */
 QtDateEditFactory::QtDateEditFactory(QObject *parent)
-    : QtAbstractEditorFactory<QtDatePropertyManager>(parent)
+    : QtAbstractEditorFactory<QtDatePropertyManager>(parent), d_ptr(new QtDateEditFactoryPrivate())
 {
-    d_ptr = new QtDateEditFactoryPrivate();
     d_ptr->q_ptr = this;
 
 }
@@ -1147,7 +1134,6 @@ QtDateEditFactory::QtDateEditFactory(QObject *parent)
 QtDateEditFactory::~QtDateEditFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!
@@ -1252,9 +1238,8 @@ void QtTimeEditFactoryPrivate::slotSetValue(const QTime &value)
     Creates a factory with the given \a parent.
 */
 QtTimeEditFactory::QtTimeEditFactory(QObject *parent)
-    : QtAbstractEditorFactory<QtTimePropertyManager>(parent)
+    : QtAbstractEditorFactory<QtTimePropertyManager>(parent), d_ptr(new QtTimeEditFactoryPrivate())
 {
-    d_ptr = new QtTimeEditFactoryPrivate();
     d_ptr->q_ptr = this;
 
 }
@@ -1265,7 +1250,6 @@ QtTimeEditFactory::QtTimeEditFactory(QObject *parent)
 QtTimeEditFactory::~QtTimeEditFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!
@@ -1367,9 +1351,8 @@ void QtDateTimeEditFactoryPrivate::slotSetValue(const QDateTime &value)
     Creates a factory with the given \a parent.
 */
 QtDateTimeEditFactory::QtDateTimeEditFactory(QObject *parent)
-    : QtAbstractEditorFactory<QtDateTimePropertyManager>(parent)
+    : QtAbstractEditorFactory<QtDateTimePropertyManager>(parent), d_ptr(new QtDateTimeEditFactoryPrivate())
 {
-    d_ptr = new QtDateTimeEditFactoryPrivate();
     d_ptr->q_ptr = this;
 
 }
@@ -1380,7 +1363,6 @@ QtDateTimeEditFactory::QtDateTimeEditFactory(QObject *parent)
 QtDateTimeEditFactory::~QtDateTimeEditFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!
@@ -1481,9 +1463,8 @@ void QtKeySequenceEditorFactoryPrivate::slotSetValue(const QKeySequence &value)
     Creates a factory with the given \a parent.
 */
 QtKeySequenceEditorFactory::QtKeySequenceEditorFactory(QObject *parent)
-    : QtAbstractEditorFactory<QtKeySequencePropertyManager>(parent)
+    : QtAbstractEditorFactory<QtKeySequencePropertyManager>(parent), d_ptr(new QtKeySequenceEditorFactoryPrivate())
 {
-    d_ptr = new QtKeySequenceEditorFactoryPrivate();
     d_ptr->q_ptr = this;
 
 }
@@ -1494,7 +1475,6 @@ QtKeySequenceEditorFactory::QtKeySequenceEditorFactory(QObject *parent)
 QtKeySequenceEditorFactory::~QtKeySequenceEditorFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!
@@ -1765,9 +1745,8 @@ void QtCharEditorFactoryPrivate::slotSetValue(const QChar &value)
     Creates a factory with the given \a parent.
 */
 QtCharEditorFactory::QtCharEditorFactory(QObject *parent)
-    : QtAbstractEditorFactory<QtCharPropertyManager>(parent)
+    : QtAbstractEditorFactory<QtCharPropertyManager>(parent), d_ptr(new QtCharEditorFactoryPrivate())
 {
-    d_ptr = new QtCharEditorFactoryPrivate();
     d_ptr->q_ptr = this;
 
 }
@@ -1778,7 +1757,6 @@ QtCharEditorFactory::QtCharEditorFactory(QObject *parent)
 QtCharEditorFactory::~QtCharEditorFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!
@@ -1929,9 +1907,8 @@ void QtEnumEditorFactoryPrivate::slotSetValue(int value)
     Creates a factory with the given \a parent.
 */
 QtEnumEditorFactory::QtEnumEditorFactory(QObject *parent)
-    : QtAbstractEditorFactory<QtEnumPropertyManager>(parent)
+    : QtAbstractEditorFactory<QtEnumPropertyManager>(parent), d_ptr(new QtEnumEditorFactoryPrivate())
 {
-    d_ptr = new QtEnumEditorFactoryPrivate();
     d_ptr->q_ptr = this;
 
 }
@@ -1942,7 +1919,6 @@ QtEnumEditorFactory::QtEnumEditorFactory(QObject *parent)
 QtEnumEditorFactory::~QtEnumEditorFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!
@@ -2094,9 +2070,8 @@ void QtCursorEditorFactoryPrivate::slotEditorDestroyed(QObject *object)
     Creates a factory with the given \a parent.
 */
 QtCursorEditorFactory::QtCursorEditorFactory(QObject *parent)
-    : QtAbstractEditorFactory<QtCursorPropertyManager>(parent)
+    : QtAbstractEditorFactory<QtCursorPropertyManager>(parent), d_ptr(new QtCursorEditorFactoryPrivate())
 {
-    d_ptr = new QtCursorEditorFactoryPrivate();
     d_ptr->q_ptr = this;
 
     d_ptr->m_enumEditorFactory = new QtEnumEditorFactory(this);
@@ -2111,7 +2086,6 @@ QtCursorEditorFactory::QtCursorEditorFactory(QObject *parent)
 */
 QtCursorEditorFactory::~QtCursorEditorFactory()
 {
-    delete d_ptr;
 }
 
 /*!
@@ -2328,7 +2302,6 @@ QtColorEditorFactory::QtColorEditorFactory(QObject *parent) :
 QtColorEditorFactory::~QtColorEditorFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!
@@ -2542,7 +2515,6 @@ QtFontEditorFactory::QtFontEditorFactory(QObject *parent) :
 QtFontEditorFactory::~QtFontEditorFactory()
 {
     qDeleteAll(d_ptr->m_editorToProperty.keys());
-    delete d_ptr;
 }
 
 /*!

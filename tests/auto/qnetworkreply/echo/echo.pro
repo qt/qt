@@ -3,4 +3,4 @@ QT = core
 CONFIG -= app_bundle debug_and_release_target
 CONFIG += console
 
-
+symbian:TARGET.CAPABILITY="ALL -TCB"

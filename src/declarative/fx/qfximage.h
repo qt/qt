@@ -80,7 +80,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxImage)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxImage)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxImage)
 };
 
 QT_END_NAMESPACE

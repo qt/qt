@@ -68,11 +68,13 @@ private slots:
 
 tst_QNetworkInterface::tst_QNetworkInterface()
 {
+    Q_SET_DEFAULT_IAP
 }
 
 tst_QNetworkInterface::~tst_QNetworkInterface()
 {
 }
+
 
 void tst_QNetworkInterface::dump()
 {
@@ -125,6 +127,10 @@ void tst_QNetworkInterface::loopbackIPv4()
 
 void tst_QNetworkInterface::loopbackIPv6()
 {
+#ifdef Q_OS_SYMBIAN
+    QSKIP( "Symbian: IPv6 is not yet supported", SkipAll );
+#else
+
     QList<QHostAddress> all = QNetworkInterface::allAddresses();
 
     bool loopbackfound = false;
@@ -136,8 +142,9 @@ void tst_QNetworkInterface::loopbackIPv6()
             break;
         } else if (addr.protocol() == QAbstractSocket::IPv6Protocol)
             anyIPv6 = true;
-            
+
     QVERIFY(!anyIPv6 || loopbackfound);
+#endif
 }
 
 void tst_QNetworkInterface::localAddress()

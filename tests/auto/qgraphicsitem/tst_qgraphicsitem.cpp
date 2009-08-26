@@ -58,6 +58,7 @@
 #include <QPainter>
 #include <QScrollBar>
 #include <QVBoxLayout>
+#include <QGraphicsEffect>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -160,6 +161,7 @@ public slots:
     void init();
 
 private slots:
+    void explicitDeleteAutoFocusProxy();
     void construction();
     void constructionWithParent();
     void destruction();
@@ -216,6 +218,7 @@ private slots:
     void childrenBoundingRect();
     void childrenBoundingRectTransformed();
     void childrenBoundingRect2();
+    void childrenBoundingRect3();
     void group();
     void setGroup();
     void nestedGroups();
@@ -276,12 +279,14 @@ private slots:
     void sorting();
     void itemHasNoContents();
     void hitTestUntransformableItem();
+    void hitTestGraphicsEffectItem();
     void focusProxy();
     void autoDetectFocusProxy();
     void subFocus();
     void reverseCreateAutoFocusProxy();
     void focusProxyDeletion();
     void negativeZStacksBehindParent();
+    void setGraphicsEffect();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -598,7 +603,7 @@ void tst_QGraphicsItem::destruction()
         child->setParentItem(parent);
         parent->setVisible(false);
         scene->addItem(parent);
-        QCOMPARE(child->parentItem(), parent);
+        QCOMPARE(child->parentItem(), static_cast<QGraphicsItem*>(parent));
         delete scene;
         QCOMPARE(itemDeleted, 110);
     }
@@ -3083,6 +3088,39 @@ void tst_QGraphicsItem::childrenBoundingRect2()
     QGraphicsLineItem l3(0, 0, 0, 100, &box);
     // Make sure lines (zero with/height) are included in the childrenBoundingRect.
     QCOMPARE(box.childrenBoundingRect(), QRectF(0, 0, 100, 100));
+}
+
+void tst_QGraphicsItem::childrenBoundingRect3()
+{
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *rect = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect2 = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect3 = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect4 = scene.addRect(QRectF(0, 0, 100, 100));
+    QGraphicsRectItem *rect5 = scene.addRect(QRectF(0, 0, 100, 100));
+    rect2->setParentItem(rect);
+    rect3->setParentItem(rect2);
+    rect4->setParentItem(rect3);
+    rect5->setParentItem(rect4);
+
+    rect2->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect2->setPos(25, 25);
+    rect3->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect3->setPos(25, 25);
+    rect4->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect4->setPos(25, 25);
+    rect5->setTransform(QTransform().translate(50, 50).rotate(45));
+    rect5->setPos(25, 25);
+
+    // Try to mess up the cached bounding rect.
+    (void)rect2->childrenBoundingRect();
+
+    QRectF subTreeRect = rect->childrenBoundingRect();
+    QCOMPARE(subTreeRect.left(), qreal(-206.0660171779821));
+    QCOMPARE(subTreeRect.top(), qreal(75.0));
+    QCOMPARE(subTreeRect.width(), qreal(351.7766952966369));
+    QCOMPARE(subTreeRect.height(), qreal(251.7766952966369));
 }
 
 void tst_QGraphicsItem::group()
@@ -6669,7 +6707,7 @@ public:
         QGraphicsRectItem::paint(painter, option, widget);
         painter->drawText(boundingRect(), Qt::AlignCenter, QString("%1x%2\n%3x%4").arg(p.x()).arg(p.y()).arg(sp.x()).arg(sp.y()));
     }
-    
+
 protected:
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     {
@@ -7020,7 +7058,7 @@ void tst_QGraphicsItem::setTransformProperties()
 
         QCOMPARE_TRANSFORM(item1->sceneTransform(), item2->sceneTransform());
 
-        QCOMPARE_TRANSFORM(item1->itemTransform(item2), QTransform()); 
+        QCOMPARE_TRANSFORM(item1->itemTransform(item2), QTransform());
         QCOMPARE_TRANSFORM(item2->itemTransform(item1), QTransform());
     }
 }
@@ -7335,6 +7373,94 @@ void tst_QGraphicsItem::hitTestUntransformableItem()
     QCOMPARE(items.at(0), static_cast<QGraphicsItem*>(item3));
 }
 
+void tst_QGraphicsItem::hitTestGraphicsEffectItem()
+{
+    QGraphicsScene scene;
+    scene.setSceneRect(-100, -100, 200, 200);
+
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(100);
+
+    // Confuse the BSP with dummy items.
+    QGraphicsRectItem *dummy = new QGraphicsRectItem(0, 0, 20, 20);
+    dummy->setPos(-100, -100);
+    scene.addItem(dummy);
+    for (int i = 0; i < 100; ++i) {
+        QGraphicsItem *parent = dummy;
+        dummy = new QGraphicsRectItem(0, 0, 20, 20);
+        dummy->setPos(-100 + i, -100 + i);
+        dummy->setParentItem(parent);
+    }
+
+    const QRectF itemBoundingRect(0, 0, 20, 20);
+    EventTester *item1 = new EventTester;
+    item1->br = itemBoundingRect;
+    item1->setPos(-200, -200);
+
+    EventTester *item2 = new EventTester;
+    item2->br = itemBoundingRect;
+    item2->setFlag(QGraphicsItem::ItemIgnoresTransformations);
+    item2->setParentItem(item1);
+    item2->setPos(200, 200);
+
+    EventTester *item3 = new EventTester;
+    item3->br = itemBoundingRect;
+    item3->setParentItem(item2);
+    item3->setPos(80, 80);
+
+    scene.addItem(item1);
+    QTest::qWait(100);
+
+    item1->repaints = 0;
+    item2->repaints = 0;
+    item3->repaints = 0;
+
+    // Apply shadow effect to the entire sub-tree.
+    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect;
+    shadow->setOffset(-20, -20);
+    item1->setGraphicsEffect(shadow);
+    QTest::qWait(50);
+
+    // Make sure all items are repainted.
+    QCOMPARE(item1->repaints, 1);
+    QCOMPARE(item2->repaints, 1);
+    QCOMPARE(item3->repaints, 1);
+
+    // Make sure an item doesn't respond to a click on its shadow.
+    QList<QGraphicsItem *> items = scene.items(QPointF(75, 75));
+    QVERIFY(items.isEmpty());
+    items = scene.items(QPointF(80, 80));
+    QCOMPARE(items.size(), 1);
+    QCOMPARE(items.at(0), static_cast<EventTester *>(item3));
+
+    item1->repaints = 0;
+    item2->repaints = 0;
+    item3->repaints = 0;
+
+    view.viewport()->update(75, 75, 20, 20);
+    QTest::qWait(50);
+
+    // item1 is the effect source and must therefore be repainted.
+    // item2 intersects with the exposed region
+    // item3 is just another child outside the exposed region
+    QCOMPARE(item1->repaints, 1);
+    QCOMPARE(item2->repaints, 1);
+    QCOMPARE(item3->repaints, 0);
+
+    scene.setItemIndexMethod(QGraphicsScene::NoIndex);
+    QTest::qWait(100);
+
+    items = scene.items(QPointF(75, 75));
+    QVERIFY(items.isEmpty());
+    items = scene.items(QPointF(80, 80));
+    QCOMPARE(items.size(), 1);
+    QCOMPARE(items.at(0), static_cast<EventTester *>(item3));
+}
+
 void tst_QGraphicsItem::focusProxy()
 {
     QGraphicsScene scene;
@@ -7518,6 +7644,29 @@ void tst_QGraphicsItem::reverseCreateAutoFocusProxy()
     QVERIFY(text2->hasFocus());
 }
 
+void tst_QGraphicsItem::explicitDeleteAutoFocusProxy()
+{
+    QGraphicsTextItem *text = new QGraphicsTextItem;
+    text->setTextInteractionFlags(Qt::TextEditorInteraction);
+    text->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
+
+    QGraphicsTextItem *text2 = new QGraphicsTextItem;
+    text2->setTextInteractionFlags(Qt::TextEditorInteraction);
+    text2->setFocus();
+    QVERIFY(!text2->hasFocus());
+    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
+    text2->setParentItem(text);
+    QCOMPARE(text->focusProxy(), (QGraphicsItem *)text2);
+    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
+
+    QGraphicsScene scene;
+    scene.addItem(text);
+    QVERIFY(text2->hasFocus());
+
+    delete text2;
+    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
+}
+
 void tst_QGraphicsItem::focusProxyDeletion()
 {
     QGraphicsRectItem *rect = new QGraphicsRectItem;
@@ -7582,6 +7731,37 @@ void tst_QGraphicsItem::negativeZStacksBehindParent()
     QVERIFY(rect.flags() & QGraphicsItem::ItemStacksBehindParent);
     rect.setFlag(QGraphicsItem::ItemNegativeZStacksBehindParent, false);
     QVERIFY(rect.flags() & QGraphicsItem::ItemStacksBehindParent);
+}
+
+void tst_QGraphicsItem::setGraphicsEffect()
+{
+    // Check that we don't have any effect by default.
+    QGraphicsItem *item = new QGraphicsRectItem(0, 0, 10, 10);
+    QVERIFY(!item->graphicsEffect());
+
+    // SetGet check.
+    QPointer<QGraphicsEffect> blurEffect = new QGraphicsBlurEffect;
+    item->setGraphicsEffect(blurEffect);
+    QCOMPARE(item->graphicsEffect(), static_cast<QGraphicsEffect *>(blurEffect));
+
+    // Ensure the existing effect is deleted when setting a new one.
+    QPointer<QGraphicsEffect> shadowEffect = new QGraphicsDropShadowEffect;
+    item->setGraphicsEffect(shadowEffect);
+    QVERIFY(!blurEffect);
+    QCOMPARE(item->graphicsEffect(), static_cast<QGraphicsEffect *>(shadowEffect));
+    blurEffect = new QGraphicsBlurEffect;
+
+    // Ensure the effect is uninstalled when setting it on a new target.
+    QGraphicsItem *anotherItem = new QGraphicsRectItem(0, 0, 10, 10);
+    anotherItem->setGraphicsEffect(blurEffect);
+    item->setGraphicsEffect(blurEffect);
+    QVERIFY(!anotherItem->graphicsEffect());
+    QVERIFY(!shadowEffect);
+
+    // Ensure the existing effect is deleted when deleting the item.
+    delete item;
+    QVERIFY(!blurEffect);
+    delete anotherItem;
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

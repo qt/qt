@@ -271,7 +271,6 @@ QSslKey::QSslKey(QIODevice *device, QSsl::KeyAlgorithm algorithm, QSsl::Encoding
 */
 QSslKey::QSslKey(const QSslKey &other) : d(other.d)
 {
-    d->ref.ref();
 }
 
 /*!
@@ -279,8 +278,6 @@ QSslKey::QSslKey(const QSslKey &other) : d(other.d)
 */
 QSslKey::~QSslKey()
 {
-    if (!d->ref.deref())
-        delete d;
 }
 
 /*!
@@ -291,7 +288,7 @@ QSslKey::~QSslKey()
 */
 QSslKey &QSslKey::operator=(const QSslKey &other)
 {
-    qAtomicAssign(d, other.d);
+    d = other.d;
     return *this;
 }
 
@@ -312,10 +309,7 @@ bool QSslKey::isNull() const
 */
 void QSslKey::clear()
 {
-    if (!d->ref.deref()) {
-        delete d;
-        d = new QSslKeyPrivate;
-    }
+    d = new QSslKeyPrivate;
 }
 
 /*!

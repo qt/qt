@@ -8,3 +8,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/threads/semaphores
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS semaphores.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/threads/semaphores
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

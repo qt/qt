@@ -10,7 +10,7 @@ win32 {
   }
 }
 
-DEFINES += SRCDIR=\\\"$$PWD/..\\\"
+!symbian:DEFINES += SRCDIR=\\\"$$PWD/..\\\"
 
 QT = core network
 RESOURCES += ../qnetworkreply.qrc
@@ -19,4 +19,16 @@ wince*: {
     addFiles.sources = ../empty ../rfc3252.txt ../resource
     addFiles.path = .
     DEPLOYMENT += addFiles
+}
+
+symbian:{
+    addFiles.sources = ../empty ../rfc3252.txt ../resource ../bigfile
+    addFiles.path = .
+    DEPLOYMENT += addFiles
+
+    # Symbian toolchain does not support correct include semantics
+    INCPATH+=..\..\..\..\include\QtNetwork\private
+    # bigfile test case requires more heap
+    TARGET.EPOCHEAPSIZE="0x100 0x1000000"
+    TARGET.CAPABILITY="ALL -TCB"
 }

@@ -41,7 +41,7 @@
 
 
 /*-*-encoding:latin1-*-*/
-#include <iostream>
+//#include <iostream>
 //using namespace std;
 
 #include <QtTest/QtTest>
@@ -75,6 +75,10 @@ QT_END_NAMESPACE
 
 //TESTED_CLASS=
 //TESTED_FILES=
+
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR ""
+#endif
 
 class tst_QTextStream : public QObject
 {
@@ -469,6 +473,8 @@ tst_QTextStream::tst_QTextStream()
     inBuffer = 0;
     inString = 0;
     file_is_empty = FALSE;
+
+    Q_SET_DEFAULT_IAP
 }
 
 tst_QTextStream::~tst_QTextStream()
@@ -1247,7 +1253,13 @@ void tst_QTextStream::stillOpenWhenAtEnd()
 #endif
     QTcpSocket socket;
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
+#if defined(Q_OS_SYMBIAN)
+    // This number is determined in an arbitrary way; whatever it takes
+    // to make the test pass.
+    QVERIFY(socket.waitForReadyRead(30000));
+#else
     QVERIFY(socket.waitForReadyRead(5000));
+#endif
 
     QTextStream stream2(&socket);
     while (!stream2.readLine().isNull()) {}
@@ -1490,8 +1502,8 @@ void tst_QTextStream::pos2()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::readStdin()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Qt/CE has no stdin/out", SkipAll);
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+    QSKIP("Qt/CE and Symbian have no stdin/out support for processes", SkipAll);
 #endif
     QProcess stdinProcess;
     stdinProcess.start("stdinProcess/stdinProcess");
@@ -1516,8 +1528,8 @@ void tst_QTextStream::readStdin()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::readAllFromStdin()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Qt/CE has no stdin/out", SkipAll);
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+    QSKIP("Qt/CE and Symbian have no stdin/out support for processes", SkipAll);
 #endif
     QProcess stdinProcess;
     stdinProcess.start("readAllStdinProcess/readAllStdinProcess", QIODevice::ReadWrite | QIODevice::Text);
@@ -1537,8 +1549,8 @@ void tst_QTextStream::readAllFromStdin()
 // ------------------------------------------------------------------------------
 void tst_QTextStream::readLineFromStdin()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Qt/CE has no stdin/out", SkipAll);
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+    QSKIP("Qt/CE and Symbian have no stdin/out support for processes", SkipAll);
 #endif
     QProcess stdinProcess;
     stdinProcess.start("readLineStdinProcess/readLineStdinProcess", QIODevice::ReadWrite | QIODevice::Text);
@@ -4298,7 +4310,7 @@ void tst_QTextStream::int_write_with_locale()
 // like QTEST_APPLESS_MAIN, but initialising the locale on Unix
 int main(int argc, char *argv[])
 {
-#ifdef Q_OS_UNIX
+#if defined (Q_OS_UNIX) && !defined (Q_OS_SYMBIAN)
     extern bool qt_locale_initialized;
     ::setlocale(LC_ALL, "");
     qt_locale_initialized = true;

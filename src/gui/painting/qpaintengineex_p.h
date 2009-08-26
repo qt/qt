@@ -55,10 +55,10 @@
 
 #include <QtGui/qpaintengine.h>
 
-#include "qpaintengine_p.h"
-#include "qstroker_p.h"
-#include "qpainter_p.h"
-#include "qvectorpath_p.h"
+#include <private/qpaintengine_p.h>
+#include <private/qstroker_p.h>
+#include <private/qpainter_p.h>
+#include <private/qvectorpath_p.h>
 
 
 QT_BEGIN_HEADER

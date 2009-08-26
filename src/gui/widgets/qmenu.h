@@ -52,10 +52,18 @@
 #endif
 
 QT_BEGIN_HEADER
+#ifdef Q_WS_S60
+    class CEikMenuPane;
+#endif
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
+
+#ifdef Q_WS_S60
+    IMPORT_C void qt_symbian_show_toplevel(CEikMenuPane* menuPane);
+    IMPORT_C void qt_symbian_show_submenu(CEikMenuPane* menuPane, int id);
+#endif // Q_WS_S60
 
 #ifndef QT_NO_MENU
 
@@ -144,7 +152,6 @@ public:
 #ifdef Q_WS_WINCE
     HMENU wceMenu(bool create = false);
 #endif
-
 
     bool separatorsCollapsible() const;
     void setSeparatorsCollapsible(bool collapse);

@@ -306,6 +306,7 @@ void tst_QFiledialog::filesSelectedSignal()
     QTest::qWait(500);
     QListView *listView = qFindChild<QListView*>(&fd, "listView");
     QVERIFY(listView);
+
     QModelIndex root = listView->rootIndex();
     QTRY_COMPARE(listView->model()->rowCount(root) > 0, true);
     QModelIndex file;
@@ -473,10 +474,11 @@ void tst_QFiledialog::completer()
     if (!tmp.exists(tempPath))
         QVERIFY(tmp.mkdir("QFileDialogTestDir"));
     QList<QTemporaryFile*> files;
+    QT_TRY {
     for (int i = 0; i < 10; ++i) {
-        QTemporaryFile *file = new QTemporaryFile(tempPath + "/rXXXXXX");
+        QScopedPointer<QTemporaryFile> file(new QTemporaryFile(tempPath + "/rXXXXXX"));
         file->open();
-        files.append(file);
+        files.append(file.take());
     }
 
     // ### flesh this out more
@@ -541,14 +543,14 @@ void tst_QFiledialog::completer()
         if (input.startsWith(".."))
             input.clear();
         for (int ii = 0; ii < expectedFiles.count(); ++ii) {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
             if (expectedFiles.at(ii).startsWith(input,Qt::CaseInsensitive))
 #else
             if (expectedFiles.at(ii).startsWith(input))
 #endif
                 ++expected;
         }
-#ifndef Q_OS_WIN
+#if !defined(Q_OS_WIN)
         if (inputStartsWithRootPath)
             expected++;
 #endif
@@ -563,7 +565,14 @@ void tst_QFiledialog::completer()
         //qDebug() << expectedFiles;
     }
 
+
+    // ### FIXME: This will fail on Symbian on some tests and some environments until the file engine and QFileSystemModel
+    // are fixed to properly capitalize paths, so that some folders are not duplicated in QFileSystemModel.
     QTRY_COMPARE(cModel->rowCount(), expected);
+    } QT_CATCH(...) {
+        qDeleteAll(files);
+        QT_RETHROW;
+    }
     qDeleteAll(files);
 }
 
@@ -926,8 +935,8 @@ void tst_QFiledialog::selectFiles()
     QVERIFY(listView);
     for (int i = 0; i < list.count(); ++i) {
         fd.selectFile(fd.directory().path() + "/" + list.at(i));
-#if defined(Q_WS_MAC) || defined(Q_WS_WIN)
-    QEXPECT_FAIL("", "This test does not work on Mac or Windows", Abort);
+#if defined(Q_WS_MAC) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
+    QEXPECT_FAIL("", "This test does not work on Mac, Windows, or Symbian", Abort);
 #endif
         QTRY_VERIFY(!listView->selectionModel()->selectedRows().isEmpty());
         toSelect.append(listView->selectionModel()->selectedRows().last());
@@ -1232,6 +1241,9 @@ void tst_QFiledialog::clearLineEdit()
     fd.setDirectory(QDir::home());
 
     QTest::qWait(1000);
+#ifdef QT_KEYPAD_NAVIGATION
+    list->setEditFocus(true);
+#endif
     QTest::keyClick(list, Qt::Key_Down);
 #ifndef Q_WS_MAC
     QTest::keyClick(list, Qt::Key_Return);
@@ -1705,6 +1717,9 @@ void tst_QFiledialog::task233037_selectingDirectory()
     fd.show();
     QListView *list = qFindChild<QListView*>(&fd, "listView");
     QTest::qWait(3000); // Wait for sort to settle (I need a signal).
+#ifdef QT_KEYPAD_NAVIGATION
+    list->setEditFocus(true);
+#endif
     QTest::keyClick(list, Qt::Key_Down);
     QTest::qWait(100);
     QDialogButtonBox *buttonBox = qFindChild<QDialogButtonBox*>(&fd, "buttonBox");

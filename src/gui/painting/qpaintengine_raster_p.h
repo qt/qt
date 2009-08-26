@@ -62,6 +62,7 @@
 #include "private/qstroker_p.h"
 #include "private/qpainter_p.h"
 #include "private/qtextureglyphcache_p.h"
+#include "private/qoutlinemapper_p.h"
 
 #include <stdlib.h>
 
@@ -331,8 +332,8 @@ public:
     void recalculateFastImages();
 
     QPaintDevice *device;
-    QOutlineMapper *outlineMapper;
-    QRasterBuffer *rasterBuffer;
+    QScopedPointer<QOutlineMapper> outlineMapper;
+    QScopedPointer<QRasterBuffer>  rasterBuffer;
 
 #if defined (Q_WS_WIN)
     HDC hdc;
@@ -343,9 +344,9 @@ public:
     QRect deviceRect;
 
     QStroker basicStroker;
-    QDashStroker *dashStroker;
+    QScopedPointer<QDashStroker> dashStroker;
 
-    QT_FT_Raster *grayRaster;
+    QScopedPointer<QT_FT_Raster> grayRaster;
     unsigned long rasterPoolSize;
     unsigned char *rasterPoolBase;
 
@@ -357,7 +358,7 @@ public:
 
     QFontEngineGlyphCache::Type glyphCacheType;
 
-    QClipData *baseClip;
+    QScopedPointer<QClipData> baseClip;
 
     int deviceDepth;
 
@@ -368,11 +369,11 @@ public:
     uint isPlain45DegreeRotation : 1;
 #endif
 
-    QRasterizer *rasterizer;
+    QScopedPointer<QRasterizer> rasterizer;
 };
 
 
-class QClipData {
+class Q_GUI_EXPORT QClipData {
 public:
     QClipData(int height);
     ~QClipData();
@@ -479,7 +480,7 @@ private:
 /*******************************************************************************
  * QRasterBuffer
  */
-class QRasterBuffer
+class Q_GUI_EXPORT QRasterBuffer
 {
 public:
     QRasterBuffer() : m_width(0), m_height(0), m_buffer(0) { init(); }
@@ -539,7 +540,7 @@ inline const QClipData *QRasterPaintEnginePrivate::clip() const {
     Q_Q(const QRasterPaintEngine);
     if (q->state() && q->state()->clip && q->state()->clip->enabled)
         return q->state()->clip;
-    return baseClip;
+    return baseClip.data();
 }
 
 

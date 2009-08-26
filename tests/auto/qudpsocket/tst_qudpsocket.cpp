@@ -105,11 +105,11 @@ protected slots:
 
 tst_QUdpSocket::tst_QUdpSocket()
 {
+    Q_SET_DEFAULT_IAP
 }
 
 tst_QUdpSocket::~tst_QUdpSocket()
 {
-
 }
 
 void tst_QUdpSocket::initTestCase_data()
@@ -207,7 +207,7 @@ void tst_QUdpSocket::broadcasting()
 #ifdef TEST_QNETWORK_PROXY
         QFETCH_GLOBAL(int, proxyType);
         if (proxyType == QNetworkProxy::Socks5Proxy) {
-            QSKIP("With socks5 Broadcast is not supported.", SkipAll);
+            QSKIP("With socks5 Broadcast is not supported.", SkipSingle);
         }
 #endif
     }
@@ -320,6 +320,9 @@ void tst_QUdpSocket::ipv6Loop_data()
 
 void tst_QUdpSocket::ipv6Loop()
 {
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("Symbian IPv6 is not yet supported", SkipAll);
+#endif
     QFETCH(QByteArray, peterMessage);
     QFETCH(QByteArray, paulMessage);
     QFETCH(bool, success);
@@ -331,17 +334,17 @@ void tst_QUdpSocket::ipv6Loop()
     quint16 paulPort = 28123;
 
     if (!peter.bind(QHostAddress::LocalHostIPv6, peterPort)) {
-	QCOMPARE(peter.error(), QUdpSocket::UnsupportedSocketOperationError);
+    QCOMPARE(peter.error(), QUdpSocket::UnsupportedSocketOperationError);
     } else {
-	QVERIFY(paul.bind(QHostAddress::LocalHostIPv6, paulPort));
+    QVERIFY(paul.bind(QHostAddress::LocalHostIPv6, paulPort));
 
-	QCOMPARE(peter.writeDatagram(peterMessage.data(), peterMessage.length(), QHostAddress("::1"),
+    QCOMPARE(peter.writeDatagram(peterMessage.data(), peterMessage.length(), QHostAddress("::1"),
                                     paulPort), qint64(peterMessage.length()));
-	QCOMPARE(paul.writeDatagram(paulMessage.data(), paulMessage.length(),
+    QCOMPARE(paul.writeDatagram(paulMessage.data(), paulMessage.length(),
                                    QHostAddress("::1"), peterPort), qint64(paulMessage.length()));
 
-	char peterBuffer[16*1024];
-	char paulBuffer[16*1024];
+    char peterBuffer[16*1024];
+    char paulBuffer[16*1024];
 #if !defined(Q_OS_WINCE)
         QVERIFY(peter.waitForReadyRead(5000));
         QVERIFY(paul.waitForReadyRead(5000));
@@ -349,16 +352,16 @@ void tst_QUdpSocket::ipv6Loop()
         QVERIFY(peter.waitForReadyRead(15000));
         QVERIFY(paul.waitForReadyRead(15000));
 #endif
-	if (success) {
-	    QCOMPARE(peter.readDatagram(peterBuffer, sizeof(peterBuffer)), qint64(paulMessage.length()));
-	    QCOMPARE(paul.readDatagram(paulBuffer, sizeof(peterBuffer)), qint64(peterMessage.length()));
-	} else {
-	    QVERIFY(peter.readDatagram(peterBuffer, sizeof(peterBuffer)) != paulMessage.length());
-	    QVERIFY(paul.readDatagram(paulBuffer, sizeof(peterBuffer)) != peterMessage.length());
-	}
+    if (success) {
+        QCOMPARE(peter.readDatagram(peterBuffer, sizeof(peterBuffer)), qint64(paulMessage.length()));
+        QCOMPARE(paul.readDatagram(paulBuffer, sizeof(peterBuffer)), qint64(peterMessage.length()));
+    } else {
+        QVERIFY(peter.readDatagram(peterBuffer, sizeof(peterBuffer)) != paulMessage.length());
+        QVERIFY(paul.readDatagram(paulBuffer, sizeof(peterBuffer)) != peterMessage.length());
+    }
 
-	QCOMPARE(QByteArray(peterBuffer, paulMessage.length()), paulMessage);
-	QCOMPARE(QByteArray(paulBuffer, peterMessage.length()), peterMessage);
+    QCOMPARE(QByteArray(peterBuffer, paulMessage.length()), paulMessage);
+    QCOMPARE(QByteArray(paulBuffer, peterMessage.length()), peterMessage);
     }
 }
 
@@ -479,6 +482,22 @@ void tst_QUdpSocket::writeDatagram()
 
 void tst_QUdpSocket::performance()
 {
+#if defined(Q_OS_SYMBIAN)
+    // Large packets seems not to go through on Symbian
+    // Reason might be also fragmentation due to VPN connection etc
+
+    QFETCH_GLOBAL(bool, setProxy);
+    QFETCH_GLOBAL(int, proxyType);
+
+    int arrSize = 8192;
+    if (setProxy && proxyType == QNetworkProxy::Socks5Proxy)
+        arrSize = 1024;
+
+    QByteArray arr(arrSize, '@');
+#else
+    QByteArray arr(8192, '@');
+#endif // Q_OS_SYMBIAN
+
     QUdpSocket server;
     QVERIFY2(server.bind(), server.errorString().toLatin1().constData());
 
@@ -488,8 +507,6 @@ void tst_QUdpSocket::performance()
 
     QUdpSocket client;
     client.connectToHost(serverAddress, server.localPort());
-
-    QByteArray arr(8192, '@');
 
     QTime stopWatch;
     stopWatch.start();
@@ -508,6 +525,14 @@ void tst_QUdpSocket::performance()
     float secs = stopWatch.elapsed() / 1000.0;
     qDebug("\t%.2fMB/%.2fs: %.2fMB/s", float(nbytes / (1024.0*1024.0)),
            secs, float(nbytes / (1024.0*1024.0)) / secs);
+
+#if defined(Q_OS_SYMBIAN)
+    if(nbytes == 0) {
+        qDebug("No bytes passed through local UDP socket, since UDP socket write returns EWOULDBLOCK");
+        qDebug("Should try with blocking sockets, but it is not currently possible due to Open C defect");
+    }
+#endif
+
 }
 
 void tst_QUdpSocket::bindMode()
@@ -526,8 +551,47 @@ void tst_QUdpSocket::bindMode()
     QVERIFY2(socket.bind(), socket.errorString().toLatin1().constData());
     QUdpSocket socket2;
     QVERIFY(!socket2.bind(socket.localPort()));
+#if defined(Q_OS_SYMBIAN)
+    if(RProcess().HasCapability(ECapabilityNetworkControl)) {
+        qDebug("Test executed *with* NetworkControl capability");
+        // In Symbian OS ReuseAddressHint together with NetworkControl capability
+        // gives application *always* right to bind to port. I.e. it does not matter
+        // if first socket was bound with any bind flag. Since autotests in Symbian
+        // are currently executed with ALL -TCB rights, this path is the one executed.
+        QVERIFY(socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint));
+        socket.close();
+        socket2.close();
 
-#ifdef Q_OS_UNIX
+        QVERIFY2(socket.bind(0, QUdpSocket::ShareAddress), socket.errorString().toLatin1().constData());
+        QVERIFY(!socket2.bind(socket.localPort()));
+        QVERIFY2(socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint), socket2.errorString().toLatin1().constData());
+        socket.close();
+        socket2.close();
+
+        QVERIFY2(socket.bind(0, QUdpSocket::DontShareAddress), socket.errorString().toLatin1().constData());
+        QVERIFY(!socket2.bind(socket.localPort()));
+        QVERIFY(socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint));
+        socket.close();
+        socket2.close();
+    } else {
+        qDebug("Test executed *without* NetworkControl capability");
+        // If we don't have NetworkControl capability, attempt to bind already bound
+        // address will *always* fail. I.e. it does not matter if first socket was
+        // bound with any bind flag.
+        QVERIFY(!socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint));
+        socket.close();
+
+        QVERIFY2(socket.bind(0, QUdpSocket::ShareAddress), socket.errorString().toLatin1().constData());
+        QVERIFY(!socket2.bind(socket.localPort()));
+        QVERIFY2(!socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint), socket2.errorString().toLatin1().constData());
+        socket.close();
+
+        QVERIFY2(socket.bind(0, QUdpSocket::DontShareAddress), socket.errorString().toLatin1().constData());
+        QVERIFY(!socket2.bind(socket.localPort()));
+        QVERIFY(!socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint));
+        socket.close();
+    }
+#elif defined(Q_OS_UNIX)
     QVERIFY(!socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint));
     socket.close();
     QVERIFY2(socket.bind(0, QUdpSocket::ShareAddress), socket.errorString().toLatin1().constData());
@@ -535,6 +599,7 @@ void tst_QUdpSocket::bindMode()
     socket2.close();
     QVERIFY2(socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint), socket2.errorString().toLatin1().constData());
 #else
+
     // Depending on the user's privileges, this or will succeed or
     // fail. Admins are allowed to reuse the address, but nobody else.
     if (!socket2.bind(socket.localPort(), QUdpSocket::ReuseAddressHint), socket2.errorString().toLatin1().constData())
@@ -554,13 +619,16 @@ void tst_QUdpSocket::writeDatagramToNonExistingPeer_data()
     QTest::addColumn<bool>("bind");
     QTest::addColumn<QHostAddress>("peerAddress");
     QHostAddress localhost(QHostAddress::LocalHost);
+#if !defined(Q_OS_SYMBIAN)
     QHostAddress remote = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first();
+#endif
 
     QTest::newRow("localhost-unbound") << false << localhost;
     QTest::newRow("localhost-bound") << true << localhost;
-
+#if !defined(Q_OS_SYMBIAN)
     QTest::newRow("remote-unbound") << false << remote;
     QTest::newRow("remote-bound") << true << remote;
+#endif
 }
 
 void tst_QUdpSocket::writeDatagramToNonExistingPeer()
@@ -583,11 +651,14 @@ void tst_QUdpSocket::writeToNonExistingPeer_data()
 {
     QTest::addColumn<QHostAddress>("peerAddress");
     QHostAddress localhost(QHostAddress::LocalHost);
+#if !defined(Q_OS_SYMBIAN)
     QHostAddress remote = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first();
-
+#endif
     // write (required to be connected)
     QTest::newRow("localhost") << localhost;
+#if !defined(Q_OS_SYMBIAN)
     QTest::newRow("remote") << remote;
+#endif
 }
 
 void tst_QUdpSocket::writeToNonExistingPeer()
@@ -638,8 +709,8 @@ void tst_QUdpSocket::writeToNonExistingPeer()
 
 void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE.", SkipAll);
+#if defined(Q_OS_WINCE) || defined (Q_OS_SYMBIAN)
+    QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE and Symbian).", SkipAll);
 #endif
 #if defined(QT_NO_PROCESS)
     QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
@@ -698,8 +769,8 @@ void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
 
 void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE.", SkipAll);
+#if defined(Q_OS_WINCE) || defined (Q_OS_SYMBIAN)
+    QSKIP("This test depends on reading data from QProcess (not supported on Qt/WinCE and Symbian).", SkipAll);
 #endif
 #if defined(QT_NO_PROCESS)
     QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);

@@ -3196,7 +3196,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 if (subRule.hasDrawable()) {
                     QRect rect = subRule.boxRect(subControlRect(CC_MdiControls, opt, control, w), Margin);
                     subRule.drawRule(p, rect);
-                    QIcon icon = standardIcon(subControlIcon(layoutButton));
+                    QIcon icon = standardIcon(subControlIcon(layoutButton), opt);
                     icon.paint(p, subRule.contentsRect(rect), Qt::AlignCenter);
                 } else {
                     optCopy.subControls |= control;
@@ -3643,9 +3643,9 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 QPixmap pixmap = cb->currentIcon.pixmap(cb->iconSize, mode);
                 QRect iconRect(editRect);
                 iconRect.setWidth(cb->iconSize.width());
-                iconRect = alignedRect(QApplication::layoutDirection(),
-                                                           Qt::AlignLeft | Qt::AlignVCenter,
-                                                           iconRect.size(), editRect);
+                iconRect = alignedRect(cb->direction,
+                                       Qt::AlignLeft | Qt::AlignVCenter,
+                                       iconRect.size(), editRect);
                 drawItemPixmap(p, iconRect, Qt::AlignCenter, pixmap);
 
                 if (cb->direction == Qt::RightToLeft)

@@ -85,7 +85,7 @@
 # define SUFFIX         ".a"
 # define PREFIX         "lib"
 
-#elif defined(Q_OS_WIN)
+#elif defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
 # undef dll_VALID
 # define dll_VALID      true
 # define SUFFIX         ".dll"
@@ -100,8 +100,12 @@
 
 static QString sys_qualifiedLibraryName(const QString &fileName)
 {
+#if defined(Q_OS_SYMBIAN)
+    return PREFIX + fileName + SUFFIX;
+#else
     QString currDir = QDir::currentPath();
     return currDir + "/" + PREFIX + fileName + SUFFIX;
+#endif
 }
 
 //TESTED_CLASS=
@@ -187,13 +191,13 @@ void tst_QLibrary::version()
     QFETCH( int, loadversion );
     QFETCH( int, resultversion );
 
-#if !defined(Q_OS_AIX) && !defined(Q_OS_WIN)
+#if !defined(Q_OS_AIX) && !defined(Q_OS_WIN) && !defined(Q_OS_SYMBIAN)
     QString currDir = QDir::currentPath();
     QLibrary library( currDir + QLatin1Char('/') + lib, loadversion );
     bool ok = library.load();
     QVERIFY(ok);
 
-    VersionFunction fnVersion = (VersionFunction)library.resolve("version");
+    VersionFunction fnVersion = (VersionFunction)library.resolve("mylibversion");
     QVERIFY(fnVersion);
     QCOMPARE(fnVersion(), resultversion);
 #else
@@ -209,7 +213,11 @@ void tst_QLibrary::load_data()
     QTest::addColumn<QString>("lib");
     QTest::addColumn<bool>("result");
 
+#if defined(Q_OS_SYMBIAN)
+    QString currDir;
+#else
     QString currDir = QDir::currentPath();
+#endif
     QTest::newRow( "ok00" ) << currDir + "/mylib" << (bool)true;
     QTest::newRow( "notexist" ) << currDir + "/nolib" << (bool)false;
     QTest::newRow( "badlibrary" ) << currDir + "/qlibrary.pro" << (bool)false;
@@ -218,7 +226,7 @@ void tst_QLibrary::load_data()
     QTest::newRow("ok (libmylib ver. 1)") << currDir + "/libmylib" <<(bool)true;
 #endif
 
-# if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+# if defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     QTest::newRow( "ok01 (with suffix)" ) << currDir + "/mylib.dll" << (bool)true;
     QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/mylib.dl2" << (bool)true;
     QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.dll" << (bool)true;
@@ -248,7 +256,12 @@ void tst_QLibrary::unload_data()
     QTest::addColumn<QString>("lib");
     QTest::addColumn<bool>("result");
 
+#if defined(Q_OS_SYMBIAN)
+    QString currDir;
+#else
     QString currDir = QDir::currentPath();
+#endif
+
     QTest::newRow( "mylib" ) << currDir + "/mylib" << (bool)TRUE;
 #ifdef Q_WS_MAC
     if (QSysInfo::MacintoshVersion <= QSysInfo::MV_10_3)
@@ -274,8 +287,12 @@ void tst_QLibrary::unload()
 
 void tst_QLibrary::unload_after_implicit_load()
 {
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("SYMBIAN does not support symbols on non-STDDLL libraries.", SkipAll);
+#endif
+
     QLibrary library( "./mylib" );
-    void *p = library.resolve("version");
+    void *p = library.resolve("mylibversion");
     QVERIFY(p); // Check if it was loaded
     QVERIFY(library.isLoaded());
     QVERIFY(library.unload());
@@ -289,14 +306,23 @@ void tst_QLibrary::resolve_data()
     QTest::addColumn<QString>("symbol");
     QTest::addColumn<bool>("goodPointer");
 
+#if defined(Q_OS_SYMBIAN)
+    QString currDir;
+#else
     QString currDir = QDir::currentPath();
-    QTest::newRow( "ok00" ) << currDir + "/mylib" << QString("version") << (bool)TRUE;
+#endif
+
+    QTest::newRow( "ok00" ) << currDir + "/mylib" << QString("mylibversion") << (bool)TRUE;
     QTest::newRow( "bad00" ) << currDir + "/mylib" << QString("nosym") << (bool)FALSE;
     QTest::newRow( "bad01" ) << currDir + "/nolib" << QString("nosym") << (bool)FALSE;
 }
 
 void tst_QLibrary::resolve()
 {
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("SYMBIAN does not support symbols on non-STDDLL libraries.", SkipAll);
+#endif
+
     typedef int (*testFunc)();
     QFETCH( QString, lib );
     QFETCH( QString, symbol );
@@ -347,7 +373,7 @@ void tst_QLibrary::isLibrary_data()
     QTest::newRow("good (libmylib.so.1.0.0)") << QString("libmylib.so.1.0.0") << true;
 
     QTest::newRow("bad (libmylib.1.0.0.foo)") << QString("libmylib.1.0.0.foo") << false;
-#elif defined(Q_OS_WIN)
+#elif defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     QTest::newRow("good (with many dots)" ) << "/system.trolltech.test.mylib.dll" << true;
 #endif
 }
@@ -367,10 +393,15 @@ void tst_QLibrary::errorString_data()
     QTest::addColumn<bool>("success");
     QTest::addColumn<QString>("errorString");
 
+#if defined(Q_OS_SYMBIAN)
+    QString currDir;
+#else
     QString currDir = QDir::currentPath();
+
     QString srcDir = SRCDIR;
     if (srcDir.isEmpty())
         srcDir = currDir;
+#endif
 
     QTest::newRow("bad load()") << (int)Load << QString("nosuchlib") << false << QString("Cannot load library nosuchlib: .*");
     QTest::newRow("call errorString() on QLibrary with no d-pointer (crashtest)") << (int)(Load | DontSetFileName) << QString() << false << QString("Unknown error");
@@ -385,6 +416,8 @@ void tst_QLibrary::errorString_data()
     QTest::newRow("bad load() with .dll suffix") << (int)Load << QString("nosuchlib.dll") << false << QString("Cannot load library nosuchlib.dll: The specified module could not be found.");
 //    QTest::newRow("bad unload") << (int)Unload << QString("nosuchlib.dll") << false << QString("QLibrary::unload_sys: Cannot unload nosuchlib.dll (The specified module could not be found.)");
 #elif defined Q_OS_MAC
+#elif defined Q_OS_SYMBIAN
+    QTest::newRow("load invalid file") << (int)Load << "tst_qlibrary.exe" << false << QString("Cannot load library.*");
 #else
     QTest::newRow("load invalid file") << (int)Load << srcDir + "/library_path/invalid.so" << false << QString("Cannot load library.*");
 #endif
@@ -396,6 +429,13 @@ void tst_QLibrary::errorString()
     QFETCH(QString, fileName);
     QFETCH(bool, success);
     QFETCH(QString, errorString);
+
+#if defined(Q_OS_SYMBIAN)
+    if ( success )
+        {
+        QSKIP("SYMBIAN does not support symbols on non-STDDLL libraries.", SkipSingle );
+        }
+#endif
 
     QLibrary lib;
     if (!(operation & DontSetFileName)) {
@@ -415,7 +455,7 @@ void tst_QLibrary::errorString()
             ok = lib.load();
             QCOMPARE(ok, true);
             if (success) {
-                ok = lib.resolve("version");
+                ok = lib.resolve("mylibversion");
             } else {
                 ok = lib.resolve("nosuchsymbol");
             }
@@ -446,9 +486,14 @@ void tst_QLibrary::loadHints_data()
     }
 #endif
 
+#if defined(Q_OS_SYMBIAN)
+    QString currDir;
+#else
     QString currDir = QDir::currentPath();
+#endif
+
     lh |= QLibrary::ResolveAllSymbolsHint;
-# if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
+# if defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     QTest::newRow( "ok01 (with suffix)" ) << currDir + "/mylib.dll" << int(lh) << (bool)TRUE;
     QTest::newRow( "ok02 (with non-standard suffix)" ) << currDir + "/mylib.dl2" << int(lh) << (bool)TRUE;
     QTest::newRow( "ok03 (with many dots)" ) << currDir + "/system.trolltech.test.mylib.dll" << int(lh) << (bool)TRUE;
@@ -486,7 +531,6 @@ void tst_QLibrary::fileName_data()
     QTest::addColumn<QString>("libName");
     QTest::addColumn<QString>("expectedFilename");
 
-    QString currDir = QDir::currentPath();
     QTest::newRow( "ok02" ) << sys_qualifiedLibraryName(QLatin1String("mylib"))
                             << sys_qualifiedLibraryName(QLatin1String("mylib"));
 #ifdef Q_WS_WIN
@@ -518,7 +562,12 @@ void tst_QLibrary::fileName()
 
 void tst_QLibrary::multipleInstancesForOneLibrary()
 {
+#if defined(Q_OS_SYMBIAN)
+    QString lib = "/mylib";
+#else
     QString lib = QDir::currentPath() + "/mylib";
+#endif
+
     QLibrary lib1(lib);
     QLibrary lib2(lib);
     QCOMPARE(lib1.isLoaded(), false);

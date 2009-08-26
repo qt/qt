@@ -12,7 +12,7 @@ mac:CONFIG -= app_bundle
 DEFINES += QLOCALSERVER_DEBUG
 DEFINES += QLOCALSOCKET_DEBUG
 
-SOURCES		+= main.cpp 
+SOURCES		+= main.cpp
 TARGET		= lackey
 
-
+symbian:TARGET.CAPABILITY = ALL -TCB

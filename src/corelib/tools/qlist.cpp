@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include <new>
 #include "qlist.h"
 #include "qtools_p.h"
 #include <string.h>
@@ -71,15 +72,18 @@ static int grow(int size)
 QListData::Data *QListData::detach()
 {
     Data *x = static_cast<Data *>(qMalloc(DataHeaderSize + d->alloc * sizeof(void *)));
-    if (!x)
-        qFatal("QList: Out of memory");
+    Q_CHECK_PTR(x);
 
-    ::memcpy(x, d, DataHeaderSize + d->alloc * sizeof(void *));
-    x->alloc = d->alloc;
     x->ref = 1;
     x->sharable = true;
-    if (!x->alloc)
-        x->begin = x->end = 0;
+    x->alloc = d->alloc;
+    if (!x->alloc) {
+        x->begin = 0;
+        x->end = 0;
+    } else {
+        x->begin = d->begin;
+        x->end   = d->end;
+    }
 
     qSwap(d, x);
     if (!x->ref.deref())
@@ -87,20 +91,63 @@ QListData::Data *QListData::detach()
     return 0;
 }
 
-// Returns the old (shared) data, it is up to the caller to deref() and free()
+/*!
+ *  Detaches the QListData by reallocating new memory.
+ *  Returns the old (shared) data, it is up to the caller to deref() and free()
+ *  For the new data node_copy needs to be called.
+ *
+ *  \internal
+ */
+#if QT_VERSION >= 0x050000
+#  error "Remove QListData::detach2(), it is only required for binary compatibility for 4.3.x to 4.5.x"
+#endif
 QListData::Data *QListData::detach2()
 {
     Data *x = d;
-    d = static_cast<Data *>(qMalloc(DataHeaderSize + x->alloc * sizeof(void *)));
-    if (!d)
-        qFatal("QList: Out of memory");
+    Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + x->alloc * sizeof(void *)));
+    Q_CHECK_PTR(t);
 
-    ::memcpy(d, x, DataHeaderSize + x->alloc * sizeof(void *));
-    d->alloc = x->alloc;
-    d->ref = 1;
-    d->sharable = true;
-    if (!d->alloc)
-        d->begin = d->end = 0;
+    ::memcpy(t, d, DataHeaderSize + d->alloc * sizeof(void *));
+
+    t->ref = 1;
+    t->sharable = true;
+    t->alloc = x->alloc;
+    if (!t->alloc) {
+        t->begin = 0;
+        t->end = 0;
+    } else {
+        t->begin = x->begin;
+        t->end   = x->end;
+    }
+    d = t;
+
+    return x;
+}
+
+/*!
+ *  Detaches the QListData by reallocating new memory.
+ *  Returns the old (shared) data, it is up to the caller to deref() and free()
+ *  For the new data node_copy needs to be called.
+ *
+ *  \internal
+ */
+QListData::Data *QListData::detach3()
+{
+    Data *x = d;
+    Data* t = static_cast<Data *>(qMalloc(DataHeaderSize + x->alloc * sizeof(void *)));
+    Q_CHECK_PTR(t);
+
+    t->ref = 1;
+    t->sharable = true;
+    t->alloc = x->alloc;
+    if (!t->alloc) {
+        t->begin = 0;
+        t->end = 0;
+    } else {
+        t->begin = x->begin;
+        t->end   = x->end;
+    }
+    d = t;
 
     return x;
 }
@@ -109,8 +156,7 @@ void QListData::realloc(int alloc)
 {
     Q_ASSERT(d->ref == 1);
     Data *x = static_cast<Data *>(qRealloc(d, DataHeaderSize + alloc * sizeof(void *)));
-    if (!x)
-        qFatal("QList: Out of memory");
+    Q_CHECK_PTR(x);
 
     d = x;
     d->alloc = alloc;
@@ -118,12 +164,14 @@ void QListData::realloc(int alloc)
         d->begin = d->end = 0;
 }
 
+// ensures that enough space is available to append one element
 void **QListData::append()
 {
     Q_ASSERT(d->ref == 1);
     if (d->end == d->alloc) {
         int n = d->end - d->begin;
         if (d->begin > 2 * d->alloc / 3) {
+            // we have enough space. Just not at the end -> move it.
             ::memcpy(d->array + n, d->array + d->begin, n * sizeof(void *));
             d->begin = n;
             d->end = n * 2;
@@ -134,6 +182,10 @@ void **QListData::append()
     return d->array + d->end++;
 }
 
+// ensures that enough space is available to append the list
+#if QT_VERSION >= 0x050000
+#  error "Remove QListData::append(), it is only required for binary compatibility up to 4.5.x"
+#endif
 void **QListData::append(const QListData& l)
 {
     Q_ASSERT(d->ref == 1);
@@ -142,7 +194,21 @@ void **QListData::append(const QListData& l)
     if (n) {
         if (e + n > d->alloc)
             realloc(grow(e + l.d->end - l.d->begin));
-        ::memcpy(d->array + d->end, l.d->array + l.d->begin, n * sizeof(void*));
+        ::memcpy(d->array + d->end, l.d->array + l.d->begin, n*sizeof(void*));
+        d->end += n;
+    }
+    return d->array + e;
+}
+
+// ensures that enough space is available to append the list
+void **QListData::append2(const QListData& l)
+{
+    Q_ASSERT(d->ref == 1);
+    int e = d->end;
+    int n = l.d->end - l.d->begin;
+    if (n) {
+        if (e + n > d->alloc)
+            realloc(grow(e + l.d->end - l.d->begin));
         d->end += n;
     }
     return d->array + e;
@@ -512,6 +578,15 @@ void **QListData::erase(void **xi)
 /*! \fn void QList::detach()
 
     \internal
+*/
+
+/*! \fn void QList::detachShared()
+
+    \internal
+
+    like detach(), but does nothing if we're shared_null.
+    This prevents needless mallocs, and makes QList more exception safe
+    in case of cleanup work done in destructors on empty lists.
 */
 
 /*! \fn bool QList::isDetached() const

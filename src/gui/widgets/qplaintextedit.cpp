@@ -66,13 +66,20 @@
 #include <qtexttable.h>
 #include <qvariant.h>
 
+#ifdef Q_WS_WIN
 #include <qstandardgestures.h>
+#endif
 
 #include <qinputcontext.h>
 
 #ifndef QT_NO_TEXTEDIT
 
 QT_BEGIN_NAMESPACE
+
+static inline bool shouldEnableInputMethod(QPlainTextEdit *plaintextedit)
+{
+    return !plaintextedit->isReadOnly();
+}
 
 class QPlainTextDocumentLayoutPrivate : public QAbstractTextDocumentLayoutPrivate
 {
@@ -568,7 +575,8 @@ QRectF QPlainTextEditControl::blockBoundingRect(const QTextBlock &block) const {
     if (!block.isValid())
         return QRectF();
     QRectF r = documentLayout->blockBoundingRect(currentBlock);
-    while (currentBlockNumber < blockNumber && offset.y() <= 2* textEdit->viewport()->height()) {
+    int maxVerticalOffset = r.height();
+    while (currentBlockNumber < blockNumber && offset.y() - maxVerticalOffset <= 2* textEdit->viewport()->height()) {
         offset.ry() += r.height();
         currentBlock = currentBlock.next();
         ++currentBlockNumber;
@@ -578,7 +586,7 @@ QRectF QPlainTextEditControl::blockBoundingRect(const QTextBlock &block) const {
         }
         r = documentLayout->blockBoundingRect(currentBlock);
     }
-    while (currentBlockNumber > blockNumber && offset.y() >= -textEdit->viewport()->height()) {
+    while (currentBlockNumber > blockNumber && offset.y() + maxVerticalOffset >= -textEdit->viewport()->height()) {
         currentBlock = currentBlock.previous();
         --currentBlockNumber;
         while (!currentBlock.isVisible()) {
@@ -720,7 +728,8 @@ QPlainTextEditPrivate::QPlainTextEditPrivate()
       tabChangesFocus(false),
       lineWrap(QPlainTextEdit::WidgetWidth),
       wordWrap(QTextOption::WrapAtWordBoundaryOrAnywhere),
-      topLine(0), pageUpDownLastCursorYIsValid(false)
+      clickCausedFocus(0),topLine(0), 
+      pageUpDownLastCursorYIsValid(false)
 {
     showCursorOnInitialShow = true;
     backgroundVisible = false;
@@ -785,8 +794,10 @@ void QPlainTextEditPrivate::init(const QString &txt)
     viewport->setCursor(Qt::IBeamCursor);
 #endif
     originalOffsetY = 0;
+#ifdef Q_WS_WIN
     panGesture = new QPanGesture(q);
     QObject::connect(panGesture, SIGNAL(triggered()), q, SLOT(_q_gestureTriggered()));
+#endif
 }
 
 void QPlainTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
@@ -1924,6 +1935,9 @@ void QPlainTextEdit::mouseReleaseEvent(QMouseEvent *e)
         d->autoScrollTimer.stop();
         d->ensureCursorVisible();
     }
+
+    d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
+    d->clickCausedFocus = 0;
 }
 
 /*! \reimp
@@ -2058,6 +2072,9 @@ QVariant QPlainTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 void QPlainTextEdit::focusInEvent(QFocusEvent *e)
 {
     Q_D(QPlainTextEdit);
+    if (e->reason() == Qt::MouseFocusReason) {
+        d->clickCausedFocus = 1;
+    }
     QAbstractScrollArea::focusInEvent(e);
     d->sendControlEvent(e);
 }
@@ -2324,7 +2341,7 @@ void QPlainTextEdit::setReadOnly(bool ro)
     } else {
         flags = Qt::TextEditorInteraction;
     }
-    setAttribute(Qt::WA_InputMethodEnabled, !ro);
+    setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod(this));
     d->control->setTextInteractionFlags(flags);
 }
 
@@ -2905,6 +2922,8 @@ QAbstractTextDocumentLayout::PaintContext QPlainTextEdit::getPaintContext() cons
     (\a available is true) or unavailable (\a available is false).
 */
 
+#ifdef Q_WS_WIN
+
 void QPlainTextEditPrivate::_q_gestureTriggered()
 {
     Q_Q(QPlainTextEdit);
@@ -2928,6 +2947,8 @@ void QPlainTextEditPrivate::_q_gestureTriggered()
         vbar->setValue(newY);
     }
 }
+
+#endif
 
 QT_END_NAMESPACE
 

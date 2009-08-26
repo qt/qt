@@ -326,6 +326,12 @@ QUrl QFxWebView::url() const
 
 void QFxWebView::setUrl(const QUrl &url)
 {
+    if (url.isEmpty()) {
+        // Make absolute.
+        setUrl(QUrl("about:blank"));
+        return;
+    }
+
     Q_D(QFxWebView);
     if (url == page()->mainFrame()->url())
         return;
@@ -334,7 +340,7 @@ void QFxWebView::setUrl(const QUrl &url)
         d->idealwidth>0 ? d->idealwidth : width(),
         d->idealheight>0 ? d->idealheight : height()));
 
-    Q_ASSERT(url.isEmpty() || !url.isRelative());
+    Q_ASSERT(!url.isRelative());
 
     if (isComponentComplete())
         page()->mainFrame()->load(url);
@@ -1175,15 +1181,15 @@ private:
     QFxWebView *webview;
 };
 
-QFxWebView *QFxWebPage::view()
+QFxWebView *QFxWebPage::viewItem()
 {
     return static_cast<QFxWebView*>(parent());
 }
 
 QObject *QFxWebPage::createPlugin(const QString &, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues)
 {
-    QUrl comp = qmlContext(view())->resolvedUrl(url);
-    return new QWidget_Dummy_Plugin(comp,view(),paramNames,paramValues);
+    QUrl comp = qmlContext(viewItem())->resolvedUrl(url);
+    return new QWidget_Dummy_Plugin(comp,viewItem(),paramNames,paramValues);
 }
 
 QT_END_NAMESPACE

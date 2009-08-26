@@ -55,7 +55,7 @@
 
 #include "qcolumnview.h"
 
-#ifndef QT_NO_QCOlUMNVIEW
+#ifndef QT_NO_QCOLUMNVIEW
 
 #include <private/qabstractitemview_p.h>
 

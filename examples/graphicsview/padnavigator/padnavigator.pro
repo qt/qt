@@ -22,3 +22,10 @@ target.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/padnavigator
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS padnavigator.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/padnavigator
 INSTALLS += target sources
+
+CONFIG += console
+
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000A644
+}

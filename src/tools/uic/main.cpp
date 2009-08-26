@@ -138,21 +138,6 @@ int runUic(int argc, char *argv[])
         ++arg;
     }
 
-    // report Qt usage for commercial customers with a "metered license" (currently experimental)
-#if QT_EDITION != QT_EDITION_OPENSOURCE
-#ifdef QT_CONFIGURE_BINARIES_PATH
-    const char *binariesPath = QT_CONFIGURE_BINARIES_PATH;
-    QString reporterPath = QString::fromLocal8Bit(binariesPath);
-    reporterPath += QDir::separator();
-    reporterPath += QLatin1String("qtusagereporter");
-#if defined(Q_OS_WIN)
-    reporterPath += QLatin1String(".exe");
-#endif
-    if (QFile::exists(reporterPath))
-        system(qPrintable(reporterPath + QLatin1String(" uic")));
-#endif
-#endif
-
     QString inputFile;
     if (fileName)
         inputFile = QString::fromLocal8Bit(fileName);

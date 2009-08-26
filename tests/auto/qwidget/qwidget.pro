@@ -14,4 +14,8 @@ LIBS += -framework Security -framework AppKit
 OBJECTIVE_SOURCES += tst_qwidget_mac_helpers.mm
 }
 
-!wince*:win32: LIBS += -luser32 -lgdi32
+symbian  {
+    INCLUDEPATH += $$MW_LAYER_SYSTEMINCLUDE
+}
+
+!wince*:!symbian:win32: LIBS += -luser32 -lgdi32

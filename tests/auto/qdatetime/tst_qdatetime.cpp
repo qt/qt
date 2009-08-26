@@ -877,13 +877,13 @@ void tst_QDateTime::toTime_t_data()
     QTest::addColumn<QString>("dateTimeStr");
     QTest::addColumn<bool>("res");
 
-    QTest::newRow( "data1" ) << str( 1800, 1, 1, 12, 0, 0 ) << FALSE;
-    QTest::newRow( "data2" ) << str( 1969, 1, 1, 12, 0, 0 ) << FALSE;
-    QTest::newRow( "data3" ) << str( 2002, 1, 1, 12, 0, 0 ) << TRUE;
-    QTest::newRow( "data4" ) << str( 2002, 6, 1, 12, 0, 0 ) << TRUE;
-    QTest::newRow( "data5" ) << QString("INVALID") << FALSE;
-    QTest::newRow( "data6" ) << str( 2038, 1, 1, 12, 0, 0 ) << TRUE;
-    QTest::newRow( "data7" ) << str( 2063, 4, 5, 12, 0, 0 ) << TRUE; // the day of First Contact
+    QTest::newRow( "data1" ) << str( 1800, 1, 1, 12, 0, 0 ) << false;
+    QTest::newRow( "data2" ) << str( 1969, 1, 1, 12, 0, 0 ) << false;
+    QTest::newRow( "data3" ) << str( 2002, 1, 1, 12, 0, 0 ) << true;
+    QTest::newRow( "data4" ) << str( 2002, 6, 1, 12, 0, 0 ) << true;
+    QTest::newRow( "data5" ) << QString("INVALID") << false;
+    QTest::newRow( "data6" ) << str( 2038, 1, 1, 12, 0, 0 ) << true;
+    QTest::newRow( "data7" ) << str( 2063, 4, 5, 12, 0, 0 ) << true; // the day of First Contact
     QTest::newRow( "data8" ) << str( 2107, 1, 1, 12, 0, 0 )
                           << bool( sizeof(uint) > 32 && sizeof(time_t) > 32 );
 }

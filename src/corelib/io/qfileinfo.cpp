@@ -371,8 +371,6 @@ QFileInfo::QFileInfo(const QFileInfo &fileinfo) : d_ptr(new QFileInfoPrivate(&fi
 
 QFileInfo::~QFileInfo()
 {
-    delete d_ptr;
-    d_ptr = 0;
 }
 
 /*!

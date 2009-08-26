@@ -129,7 +129,44 @@ void QThreadData::deref()
 #endif
 }
 
+/*
+  QAdoptedThread
+*/
 
+QAdoptedThread::QAdoptedThread(QThreadData *data)
+    : QThread(*new QThreadPrivate(data))
+{
+    // thread should be running and not finished for the lifetime
+    // of the application (even if QCoreApplication goes away)
+#ifndef QT_NO_THREAD
+    d_func()->running = true;
+    d_func()->finished = false;
+    init();
+#endif
+
+    // fprintf(stderr, "new QAdoptedThread = %p\n", this);
+}
+
+QAdoptedThread::~QAdoptedThread()
+{
+#ifndef QT_NO_THREAD
+    QThreadPrivate::finish(this);
+#endif
+    // fprintf(stderr, "~QAdoptedThread = %p\n", this);
+}
+
+QThread *QAdoptedThread::createThreadForAdoption()
+{
+    QScopedPointer<QThread> t(new QAdoptedThread(0));
+    t->moveToThread(t.data());
+    return t.take();
+}
+
+void QAdoptedThread::run()
+{
+    // this function should never be called
+    qFatal("QAdoptedThread::run(): Internal error, this implementation should never be called.");
+}
 #ifndef QT_NO_THREAD
 /*
   QThreadPrivate
@@ -145,6 +182,8 @@ QThreadPrivate::QThreadPrivate(QThreadData *d)
     handle = 0;
     id = 0;
     waiters = 0;
+#endif
+#if defined (Q_WS_WIN) || defined (Q_OS_SYMBIAN)
     terminationEnabled = true;
     terminatePending = false;
 #endif
@@ -156,42 +195,6 @@ QThreadPrivate::QThreadPrivate(QThreadData *d)
 QThreadPrivate::~QThreadPrivate()
 {
     data->deref();
-}
-
-/*
-  QAdoptedThread
-*/
-
-QAdoptedThread::QAdoptedThread(QThreadData *data)
-    : QThread(*new QThreadPrivate(data))
-{
-    // thread should be running and not finished for the lifetime
-    // of the application (even if QCoreApplication goes away)
-    d_func()->running = true;
-    d_func()->finished = false;
-    init();
-
-    // fprintf(stderr, "new QAdoptedThread = %p\n", this);
-}
-
-QAdoptedThread::~QAdoptedThread()
-{
-    QThreadPrivate::finish(this);
-
-    // fprintf(stderr, "~QAdoptedThread = %p\n", this);
-}
-
-QThread *QAdoptedThread::createThreadForAdoption()
-{
-    QThread *t = new QAdoptedThread(0);
-    t->moveToThread(t);
-    return t;
-}
-
-void QAdoptedThread::run()
-{
-    // this function should never be called
-    qFatal("QAdoptedThread::run(): Internal error, this implementation should never be called.");
 }
 
 /*!
@@ -477,10 +480,10 @@ uint QThread::stackSize() const
 int QThread::exec()
 {
     Q_D(QThread);
-    d->mutex.lock();
+    QMutexLocker locker(&d->mutex);
     d->data->quitNow = false;
     QEventLoop eventLoop;
-    d->mutex.unlock();
+    locker.unlock();
     int returnCode = eventLoop.exec();
     return returnCode;
 }
@@ -713,25 +716,37 @@ QThread::Priority QThread::priority() const
 
 #else // QT_NO_THREAD
 
-QT_BEGIN_INCLUDE_NAMESPACE
-#include <private/qcoreapplication_p.h>
-QT_END_INCLUDE_NAMESPACE
-
-Q_GLOBAL_STATIC_WITH_ARGS(QThreadData, staticThreadData, (0));
-QThread* QThread::instance = 0;
-
-QThread::QThread() : QObject(*new QThreadPrivate, (QObject*)0)
-{
+QThread::QThread(QObject *parent)
+    : QObject(*(new QThreadPrivate), (QObject*)0){
     Q_D(QThread);
     d->data->thread = this;
-    QCoreApplicationPrivate::theMainThread = this;
+}
+
+QThread *QThread::currentThread()
+{
+    return QThreadData::current()->thread;
 }
 
 QThreadData* QThreadData::current()
 {
-    if (QThread::instance)
-        return QThread::instance->d_func()->data;
-    return staticThreadData();
+    static QThreadData *data = 0; // reinterpret_cast<QThreadData *>(pthread_getspecific(current_thread_data_key));
+    if (!data) {
+        QScopedPointer<QThreadData> newdata(new QThreadData);
+        newdata->thread = new QAdoptedThread(newdata.data());
+        data = newdata.take();
+        data->deref();
+    }
+    return data;
+}
+
+/*! \internal
+ */
+QThread::QThread(QThreadPrivate &dd, QObject *parent)
+    : QObject(dd, parent)
+{
+    Q_D(QThread);
+    // fprintf(stderr, "QThreadData %p taken from private data for thread %p\n", d->data, this);
+    d->data->thread = this;
 }
 
 #endif // QT_NO_THREAD

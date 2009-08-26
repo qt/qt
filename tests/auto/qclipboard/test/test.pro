@@ -10,7 +10,7 @@ win32 {
   }
 }
 
-wince*: {
+wince*|symbian*: {
   copier.sources = ../copier/copier.exe
   copier.path = copier
   paster.sources = ../paster/paster.exe

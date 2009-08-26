@@ -576,7 +576,7 @@ QUrl BrowserMainWindow::guessUrlFromString(const QString &string)
         int dotIndex = urlStr.indexOf(QLatin1Char('.'));
         if (dotIndex != -1) {
             QString prefix = urlStr.left(dotIndex).toLower();
-            QByteArray schema = (prefix == QLatin1String("ftp")) ? prefix.toLatin1() : "http";
+            QByteArray schema = (prefix == QLatin1String("ftp")) ? prefix.toLatin1() : QByteArray("http");
             QUrl url =
                 QUrl::fromEncoded(schema + "://" + urlStr.toUtf8(), QUrl::TolerantMode);
             if (url.isValid())

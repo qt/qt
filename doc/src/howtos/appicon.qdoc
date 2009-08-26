@@ -212,4 +212,19 @@
     installed in the appropriate locations for GNOME.
 
     The GNOME developer website is at \l{http://developer.gnome.org/}.
+    
+    \section1 Setting the Application Icon on S60 platforms
+    
+    In order to set application icon for S60 application you need SVG-T icon. 
+    How to create such SVG-T, please refer to 
+    \l{http://wiki.forum.nokia.com/index.php/How_to_create_application_icon(SVG)_in_S60_3rd_edition/}
+
+    Once you have icon in correct format and assuming you are using 
+    \c qmake to generate your makefiles, you only need to add a single
+    line to your \c .pro project file. For example, if the name of your
+    icon file is \c{myapp.svg}, and your project file is \c{myapp.pro},
+    add this line to \c{myapp.pro}:
+
+    \snippet doc/src/snippets/code/doc_src_appicon.qdoc 5
+    
 */

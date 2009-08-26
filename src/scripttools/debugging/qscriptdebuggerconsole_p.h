@@ -54,6 +54,7 @@
 //
 
 #include <QtCore/qobjectdefs.h>
+#include <QtCore/qscopedpointer.h>
 
 #include "qscriptdebuggerconsolehistorianinterface_p.h"
 
@@ -109,7 +110,7 @@ public:
     void bumpSessionId();
 
 private:
-    QScriptDebuggerConsolePrivate *d_ptr;
+    QScopedPointer<QScriptDebuggerConsolePrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptDebuggerConsole)
     Q_DISABLE_COPY(QScriptDebuggerConsole)

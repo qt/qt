@@ -4,11 +4,11 @@ SOURCES  += tst_qsplitter.cpp
 
 contains(QT_CONFIG, qt3support): QT += qt3support
 
-wince*: {
+wince*|symbian*: {
    addFiles.sources = extradata.txt setSizes3.dat
    addFiles.path = .
    DEPLOYMENT += addFiles
-   DEFINES += SRCDIR=\\\"./\\\"
+   !symbian:DEFINES += SRCDIR=\\\"./\\\"
 } else {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

@@ -57,6 +57,10 @@
 #include "QtCore/qtranslator.h"
 #include "private/qobject_p.h"
 
+#ifdef Q_OS_SYMBIAN
+#include <f32file.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 typedef QList<QTranslator*> QTranslatorList;
@@ -91,7 +95,7 @@ public:
     static bool checkInstance(const char *method);
     static void sendPostedEvents(QObject *receiver, int event_type, QThreadData *data);
 
-#if !defined (QT_NO_DEBUG) || defined (QT_MAC_FRAMEWORK_BUILD)
+#if !defined (QT_NO_DEBUG) || defined (QT_MAC_FRAMEWORK_BUILD) || defined (Q_OS_SYMBIAN)
     void checkReceiverThread(QObject *receiver);
 #endif
     int &argc;

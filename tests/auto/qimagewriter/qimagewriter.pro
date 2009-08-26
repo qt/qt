@@ -10,6 +10,12 @@ wince*: {
    addFiles.path = images
    DEPLOYMENT += addFiles
    DEFINES += SRCDIR=\\\".\\\"
+} else:symbian* {
+   addFiles.sources = images\*.*
+   addFiles.path = images
+   imagePlugins.sources = qjpeg.dll qtiff.dll
+   imagePlugins.path = imageformats
+   DEPLOYMENT += addFiles imagePlugins
 } else {
    DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

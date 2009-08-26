@@ -132,7 +132,7 @@ QRect QMenuBarPrivate::menuRect(bool extVisible) const
     result.adjust(hmargin, 0, -hmargin, 0);
 
     if (extVisible) {
-        if (q->layoutDirection() == Qt::RightToLeft)
+        if (q->isRightToLeft())
             result.setLeft(result.left() + extension->sizeHint().width());
         else
             result.setWidth(result.width() - extension->sizeHint().width());
@@ -140,7 +140,7 @@ QRect QMenuBarPrivate::menuRect(bool extVisible) const
 
     if (leftWidget && leftWidget->isVisible()) {
         QSize sz = leftWidget->sizeHint();
-        if (q->layoutDirection() == Qt::RightToLeft)
+        if (q->isRightToLeft())
             result.setRight(result.right() - sz.width());
         else
             result.setLeft(result.left() + sz.width());
@@ -148,7 +148,7 @@ QRect QMenuBarPrivate::menuRect(bool extVisible) const
 
     if (rightWidget && rightWidget->isVisible()) {
         QSize sz = rightWidget->sizeHint();
-        if (q->layoutDirection() == Qt::RightToLeft)
+        if (q->isRightToLeft())
             result.setLeft(result.left() + sz.width());
         else
             result.setRight(result.right() - sz.width());
@@ -245,7 +245,7 @@ void QMenuBarPrivate::updateGeometries()
         pop->addActions(hiddenActions);
 
         int vmargin = q->style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, q);
-        int x = q->layoutDirection() == Qt::RightToLeft
+        int x = q->isRightToLeft()
                 ? menuRect.left() - extension->sizeHint().width() + 1
                 : menuRect.right();
         extension->setGeometry(x, vmargin, extension->sizeHint().width(), menuRect.height() - vmargin*2);
@@ -740,6 +740,12 @@ void QMenuBarPrivate::init()
             q->hide();
     }
 #endif
+#ifdef Q_WS_S60
+    symbianCreateMenuBar(q->parentWidget());
+    if(symbian_menubar)
+        q->hide();
+#endif
+
     q->setBackgroundRole(QPalette::Button);
     oldWindow = oldParent = 0;
 #ifdef QT3_SUPPORT
@@ -810,6 +816,10 @@ QMenuBar::~QMenuBar()
     Q_D(QMenuBar);
     if (qt_wince_is_mobile())
         d->wceDestroyMenuBar();
+#endif
+#ifdef Q_WS_S60
+    Q_D(QMenuBar);
+    d->symbianDestroyMenuBar();
 #endif
 }
 
@@ -1066,6 +1076,12 @@ void QMenuBar::setVisible(bool visible)
     if (isNativeMenuBar())
         return;
 #endif
+#ifdef Q_WS_S60
+    Q_D(QMenuBar);
+    if(d->symbian_menubar)
+        return;
+#endif
+
     QWidget::setVisible(visible);
 }
 
@@ -1278,6 +1294,17 @@ void QMenuBar::actionEvent(QActionEvent *e)
             nativeMenuBar->syncAction(e->action());
     }
 #endif
+#ifdef Q_WS_S60
+    if(d->symbian_menubar) {
+        if(e->type() == QEvent::ActionAdded)
+            d->symbian_menubar->addAction(e->action(), d->symbian_menubar->findAction(e->before()));
+        else if(e->type() == QEvent::ActionRemoved)
+            d->symbian_menubar->removeAction(e->action());
+        else if(e->type() == QEvent::ActionChanged)
+            d->symbian_menubar->syncAction(e->action());
+    }
+#endif
+
     if(e->type() == QEvent::ActionAdded) {
         connect(e->action(), SIGNAL(triggered()), this, SLOT(_q_actionTriggered()));
         connect(e->action(), SIGNAL(hovered()), this, SLOT(_q_actionHovered()));
@@ -1364,6 +1391,11 @@ void QMenuBarPrivate::handleReparent()
     if (qt_wince_is_mobile() && wce_menubar)
         wce_menubar->rebuild();
 #endif
+#ifdef Q_WS_S60
+    if (symbian_menubar)
+        symbian_menubar->rebuild();
+#endif
+
 }
 
 #ifdef QT3_SUPPORT
@@ -1598,7 +1630,7 @@ QRect QMenuBar::actionGeometry(QAction *act) const
 QSize QMenuBar::minimumSizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_WS_MAC) || defined(Q_WS_WINCE)
+#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1654,7 +1686,7 @@ QSize QMenuBar::minimumSizeHint() const
 QSize QMenuBar::sizeHint() const
 {
     Q_D(const QMenuBar);
-#if defined(Q_WS_MAC) || defined(Q_WS_WINCE)
+#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
@@ -1663,6 +1695,7 @@ QSize QMenuBar::sizeHint() const
 
     ensurePolished();
     QSize ret(0, 0);
+    const_cast<QMenuBarPrivate*>(d)->updateGeometries();
     const int hmargin = style()->pixelMetric(QStyle::PM_MenuBarHMargin, 0, this);
     const int vmargin = style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, this);
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, this);
@@ -1712,12 +1745,13 @@ QSize QMenuBar::sizeHint() const
 int QMenuBar::heightForWidth(int) const
 {
     Q_D(const QMenuBar);
-#if defined(Q_WS_MAC) || defined(Q_WS_WINCE)
+#if defined(Q_WS_MAC) || defined(Q_WS_WINCE) || defined(Q_WS_S60)
     const bool as_gui_menubar = !isNativeMenuBar();
 #else
     const bool as_gui_menubar = true;
 #endif
 
+    const_cast<QMenuBarPrivate*>(d)->updateGeometries();
     int height = 0;
     const int vmargin = style()->pixelMetric(QStyle::PM_MenuBarVMargin, 0, this);
     int fw = style()->pixelMetric(QStyle::PM_MenuBarPanelWidth, 0, this);

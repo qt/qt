@@ -102,11 +102,11 @@ private slots:
 
 tst_QNativeSocketEngine::tst_QNativeSocketEngine()
 {
+    Q_SET_DEFAULT_IAP
 }
 
 tst_QNativeSocketEngine::~tst_QNativeSocketEngine()
 {
-
 }
 
 void tst_QNativeSocketEngine::init()
@@ -173,7 +173,7 @@ void tst_QNativeSocketEngine::simpleConnectToIMAP()
     QVERIFY(socketDevice.read(array.data(), array.size()) == available);
 
     // Check that the greeting is what we expect it to be
-    QCOMPARE(array.constData(), "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+    QCOMPARE(array.constData(), QtNetworkSettings::expectedReplyIMAP().constData());
 
     // Write a logout message
     QByteArray array2 = "ZZZ LOGOUT\r\n";
@@ -204,6 +204,9 @@ void tst_QNativeSocketEngine::simpleConnectToIMAP()
 //---------------------------------------------------------------------------
 void tst_QNativeSocketEngine::udpLoopbackTest()
 {
+#ifdef SYMBIAN_WINSOCK_CONNECTIVITY
+    QSKIP("Not working on Emulator without WinPCAP", SkipAll);
+#endif
     QNativeSocketEngine udpSocket;
 
     // Initialize device #1
@@ -252,6 +255,9 @@ void tst_QNativeSocketEngine::udpLoopbackTest()
 //---------------------------------------------------------------------------
 void tst_QNativeSocketEngine::udpIPv6LoopbackTest()
 {
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("Symbian: IPv6 is not yet supported", SkipAll);
+#endif
     QNativeSocketEngine udpSocket;
 
     // Initialize device #1
@@ -396,6 +402,9 @@ void tst_QNativeSocketEngine::serverTest()
 //---------------------------------------------------------------------------
 void tst_QNativeSocketEngine::udpLoopbackPerformance()
 {
+#ifdef SYMBIAN_WINSOCK_CONNECTIVITY
+    QSKIP("Not working on Emulator without WinPCAP", SkipAll);
+#endif
     QNativeSocketEngine udpSocket;
 
     // Initialize device #1
@@ -553,7 +562,7 @@ void tst_QNativeSocketEngine::tooManySockets()
 //---------------------------------------------------------------------------
 void tst_QNativeSocketEngine::bind()
 {
-#ifndef Q_OS_WIN
+#if !defined Q_OS_WIN && !defined Q_OS_SYMBIAN
     QNativeSocketEngine binder;
     QVERIFY(binder.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QVERIFY(!binder.bind(QHostAddress::Any, 82));
@@ -567,7 +576,13 @@ void tst_QNativeSocketEngine::bind()
     QNativeSocketEngine binder3;
     QVERIFY(binder3.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
     QVERIFY(!binder3.bind(QHostAddress::Any, 31180));
+
+#ifdef SYMBIAN_WINSOCK_CONNECTIVITY
+    qDebug("On Symbian Emulator (WinSock) we get EADDRNOTAVAIL instead of EADDRINUSE");
+    QVERIFY(binder3.error() == QAbstractSocket::SocketAddressNotAvailableError);
+#else
     QVERIFY(binder3.error() == QAbstractSocket::AddressInUseError);
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -577,7 +592,7 @@ void tst_QNativeSocketEngine::networkError()
 
     QVERIFY(client.initialize(QAbstractSocket::TcpSocket, QAbstractSocket::IPv4Protocol));
 
-    const bool isConnected = client.connectToHost(QHostAddress(QtNetworkSettings::serverIP()), 143);
+    const bool isConnected = client.connectToHost(QtNetworkSettings::serverIP(), 143);
     if (!isConnected) {
         QVERIFY(client.state() == QAbstractSocket::ConnectingState);
         QVERIFY(client.waitForWrite());

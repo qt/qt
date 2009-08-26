@@ -11,3 +11,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/opengl/textures
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS textures.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/opengl/textures
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

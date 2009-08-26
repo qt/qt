@@ -1,6 +1,12 @@
 # OpenSSL support; compile in QSslSocket.
 contains(QT_CONFIG, openssl) | contains(QT_CONFIG, openssl-linked) {
-    include($$QT_SOURCE_TREE/config.tests/unix/openssl/openssl.pri)
+
+
+symbian {
+	INCLUDEPATH *= $$OS_LAYER_SSL_SYSTEMINCLUDE
+} else {
+	include($$QT_SOURCE_TREE/config.tests/unix/openssl/openssl.pri)
+}
 
     HEADERS += ssl/qssl.h \
                ssl/qsslcertificate.h \

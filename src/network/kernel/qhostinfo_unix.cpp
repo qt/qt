@@ -41,8 +41,6 @@
 
 //#define QHOSTINFO_DEBUG
 
-static const int RESOLVER_TIMEOUT = 2000;
-
 #include "qplatformdefs.h"
 
 #include "qhostinfo_p.h"
@@ -150,7 +148,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     if (address.setAddress(hostName)) {
         // Reverse lookup
 // Reverse lookups using getnameinfo are broken on darwin, use gethostbyaddr instead.
-#if !defined (QT_NO_GETADDRINFO) && !defined (Q_OS_DARWIN)
+#if !defined (QT_NO_GETADDRINFO) && !defined (Q_OS_DARWIN) && !defined (Q_OS_SYMBIAN)
         sockaddr_in sa4;
 #ifndef QT_NO_IPV6
         sockaddr_in6 sa6;
@@ -341,6 +339,7 @@ QString QHostInfo::localDomainName()
     if (local_res_ninit) {
         // using thread-safe version
         res_state_ptr state = res_state_ptr(qMalloc(sizeof(*state)));
+        Q_CHECK_PTR(state);
         memset(state, 0, sizeof(*state));
         local_res_ninit(state);
         QString domainName = QUrl::fromAce(state->defdname);

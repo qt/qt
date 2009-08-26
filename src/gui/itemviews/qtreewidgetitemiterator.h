@@ -43,6 +43,7 @@
 #define QTREEWIDGETITEMITERATOR_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -105,7 +106,7 @@ public:
 
 private:
     bool matchesFlags(const QTreeWidgetItem *item) const;
-    QTreeWidgetItemIteratorPrivate *d_ptr;
+    QScopedPointer<QTreeWidgetItemIteratorPrivate> d_ptr;
     QTreeWidgetItem *current;
     IteratorFlags flags;
     Q_DECLARE_PRIVATE(QTreeWidgetItemIterator)

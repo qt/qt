@@ -3,7 +3,7 @@ SOURCES  += tst_qdiriterator.cpp
 RESOURCES      += qdiriterator.qrc
 QT = core
 
-wince*: {
+wince*|symbian*: {
    addFiles.sources = entrylist recursiveDirs foo
    addFiles.path = .
    DEPLOYMENT += addFiles

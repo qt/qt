@@ -131,8 +131,6 @@ QPicture::QPicture(int formatVersion)
       d_ptr(new QPicturePrivate)
 {
     Q_D(QPicture);
-    d_ptr->q_ptr = this;
-    d->paintEngine = 0;
 
     if (formatVersion == 0)
         qWarning("QPicture: invalid format version 0");
@@ -142,8 +140,7 @@ QPicture::QPicture(int formatVersion)
         d->formatMajor = formatVersion;
         d->formatMinor = 0;
         d->formatOk = false;
-    }
-    else {
+    } else {
         d->resetFormat();
     }
 }
@@ -157,7 +154,6 @@ QPicture::QPicture(int formatVersion)
 QPicture::QPicture(const QPicture &pic)
     : QPaintDevice(), d_ptr(pic.d_ptr)
 {
-    d_func()->ref.ref();
 }
 
 /*! \internal */
@@ -165,7 +161,6 @@ QPicture::QPicture(QPicturePrivate &dptr)
     : QPaintDevice(),
       d_ptr(&dptr)
 {
-    d_ptr->q_ptr = this;
 }
 
 /*!
@@ -173,10 +168,6 @@ QPicture::QPicture(QPicturePrivate &dptr)
 */
 QPicture::~QPicture()
 {
-    if (!d_func()->ref.deref()) {
-        delete d_func()->paintEngine;
-        delete d_func();
-    }
 }
 
 /*!
@@ -230,8 +221,7 @@ const char* QPicture::data() const
 
 void QPicture::detach()
 {
-    if (d_func()->ref != 1)
-        detach_helper();
+    d_ptr.detach();
 }
 
 bool QPicture::isDetached() const
@@ -1017,24 +1007,16 @@ int QPicture::metric(PaintDeviceMetric m) const
 /*! \fn bool QPicture::isDetached() const
 \internal
 */
+
+/*! \internal
+### Qt 5 - remove me
+ */
 void QPicture::detach_helper()
 {
-    Q_D(QPicture);
-    QPicturePrivate *x = new QPicturePrivate;
-    int pictsize = size();
-    x->pictb.setData(data(), pictsize);
-    if (d->pictb.isOpen()) {
-        x->pictb.open(d->pictb.openMode());
-        x->pictb.seek(d->pictb.pos());
-    }
-    x->trecs = d->trecs;
-    x->formatOk = d->formatOk;
-    x->formatMinor = d->formatMinor;
-    x->brect = d->brect;
-    x->override_rect = d->override_rect;
-    if (!d->ref.deref())
-        delete d;
-    d_ptr = x;
+    // QExplicitelySharedDataPointer takes care of cloning using
+    // QPicturePrivate's copy constructor. Do not call detach_helper() anymore
+    // and remove in Qt 5, please.
+    Q_ASSERT_X(false, "QPicture::detach_helper()", "Do not call this function");
 }
 
 /*!
@@ -1043,8 +1025,38 @@ void QPicture::detach_helper()
 */
 QPicture& QPicture::operator=(const QPicture &p)
 {
-    qAtomicAssign<QPicturePrivate>(d_ptr, p.d_ptr);
+    d_ptr = p.d_ptr;
     return *this;
+}
+
+/*!
+  \internal
+
+  Constructs a QPicturePrivate
+*/
+QPicturePrivate::QPicturePrivate()
+    : in_memory_only(false)
+{
+}
+
+/*!
+  \internal
+
+  Copy-Constructs a QPicturePrivate. Needed when detaching.
+*/
+QPicturePrivate::QPicturePrivate(const QPicturePrivate &other)
+    : trecs(other.trecs),
+      formatOk(other.formatOk),
+      formatMinor(other.formatMinor),
+      brect(other.brect),
+      override_rect(other.override_rect),
+      in_memory_only(false)
+{
+    pictb.setData(other.pictb.data(), other.pictb.size());
+    if (other.pictb.isOpen()) {
+        pictb.open(other.pictb.openMode());
+        pictb.seek(other.pictb.pos());
+    }
 }
 
 /*!
@@ -1137,8 +1149,8 @@ bool QPicturePrivate::checkFormat()
 QPaintEngine *QPicture::paintEngine() const
 {
     if (!d_func()->paintEngine)
-        const_cast<QPicture*>(this)->d_func()->paintEngine = new QPicturePaintEngine;
-    return d_func()->paintEngine;
+        const_cast<QPicture*>(this)->d_func()->paintEngine.reset(new QPicturePaintEngine);
+    return d_func()->paintEngine.data();
 }
 
 /*****************************************************************************

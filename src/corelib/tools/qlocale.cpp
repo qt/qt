@@ -122,6 +122,13 @@ Q_CORE_EXPORT double qstrtod(const char *s00, char const **se, bool *ok);
 static qlonglong qstrtoll(const char *nptr, const char **endptr, register int base, bool *ok);
 static qulonglong qstrtoull(const char *nptr, const char **endptr, register int base, bool *ok);
 
+#if defined(Q_CC_MWERKS) && defined(Q_OS_WIN32)
+inline bool isascii(int c)
+{
+	return (c >= 0 && c <=127);
+}
+#endif
+
 /******************************************************************************
 ** Helpers for accessing Qt locale database
 */
@@ -288,7 +295,7 @@ static bool splitLocaleName(const QString &name, QChar *lang_begin, QChar *cntry
     return lang_len == 2 || lang_len == 3;
 }
 
-static void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Country &cntry)
+void getLangAndCountry(const QString &name, QLocale::Language &lang, QLocale::Country &cntry)
 {
     lang = QLocale::C;
     cntry = QLocale::AnyCountry;
@@ -1199,7 +1206,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
     return QVariant();
 }
 
-#elif defined(Q_OS_UNIX)
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
 
 static uint unixGetSystemMeasurementSystem()
 {
@@ -1243,7 +1250,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant /* in */) const
     }
 }
 
-#else
+#elif !defined(Q_OS_SYMBIAN)
 
 /*!
     Returns a fallback locale, that will get used for everything that
@@ -3877,7 +3884,13 @@ QString QLocalePrivate::doubleToString(double d,
 
         char *rve = 0;
         char *buff = 0;
-        digits = QLatin1String(qdtoa(d, mode, pr, &decpt, &sign, &rve, &buff));
+        QT_TRY {
+            digits = QLatin1String(qdtoa(d, mode, pr, &decpt, &sign, &rve, &buff));
+        } QT_CATCH(...) {
+            if (buff != 0)
+                free(buff);
+            QT_RETHROW;
+        }
         if (buff != 0)
             free(buff);
 #endif // QT_QLOCALE_USES_FCVT
@@ -5050,6 +5063,7 @@ static Bigint *Balloc(int k)
 
     x = 1 << k;
     rv = static_cast<Bigint *>(MALLOC(sizeof(Bigint) + (x-1)*sizeof(Long)));
+    Q_CHECK_PTR(rv);
     rv->k = k;
     rv->maxwds = x;
     rv->sign = rv->wds = 0;
@@ -6726,7 +6740,13 @@ static char *_qdtoa( NEEDS_VOLATILE double d, int mode, int ndigits, int *decpt,
         if (i <= 0)
             i = 1;
     }
-    *resultp = static_cast<char *>(malloc(i + 1));
+    QT_TRY {
+        *resultp = static_cast<char *>(malloc(i + 1));
+        Q_CHECK_PTR(*resultp);
+    } QT_CATCH(...) {
+        Bfree(b);
+        QT_RETHROW;
+    }
     s = s0 = *resultp;
 
     if (ilim >= 0 && ilim <= Quick_max && try_quick) {
@@ -7148,6 +7168,7 @@ Q_CORE_EXPORT char *qdtoa( double d, int mode, int ndigits, int *decpt, int *sig
         n = i + 1;
     }
     *resultp = static_cast<char*>(malloc(n + 1));
+    Q_CHECK_PTR(resultp);
     qstrncpy(*resultp, res, n + 1);
     return *resultp;
 }

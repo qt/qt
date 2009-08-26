@@ -367,7 +367,7 @@ QTextLayout::QTextLayout(const QString& text, const QFont &font, QPaintDevice *p
     QFont f(font);
     if (paintdevice)
         f = QFont(font, paintdevice);
-    d = new QTextEngine((text.isNull() ? (const QString&)QString::fromLatin1("") : text), f.d);
+    d = new QTextEngine((text.isNull() ? (const QString&)QString::fromLatin1("") : text), f.d.data());
 }
 
 /*!

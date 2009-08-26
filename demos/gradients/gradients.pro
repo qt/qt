@@ -16,3 +16,5 @@ target.path = $$[QT_INSTALL_DEMOS]/gradients
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html
 sources.path = $$[QT_INSTALL_DEMOS]/gradients
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)

@@ -72,6 +72,9 @@
 #include "qfontengine_qpf_p.h"
 #endif
 #endif
+#ifdef Q_OS_SYMBIAN
+#include "qt_s60_p.h"
+#endif
 
 #include <QMutexLocker>
 
@@ -169,6 +172,8 @@ Q_GUI_EXPORT int qt_defaultDpiX()
     if (!subScreens.isEmpty())
         screen = subScreens.at(0);
     dpi = qRound(screen->width() / (screen->physicalWidth() / qreal(25.4)));
+#elif defined(Q_OS_SYMBIAN)
+    dpi = S60->defaultDpiX;
 #endif // Q_WS_X11
 
     return dpi;
@@ -195,6 +200,8 @@ Q_GUI_EXPORT int qt_defaultDpiY()
     if (!subScreens.isEmpty())
         screen = subScreens.at(0);
     dpi = qRound(screen->height() / (screen->physicalHeight() / qreal(25.4)));
+#elif defined(Q_OS_SYMBIAN)
+    dpi = S60->defaultDpiY;
 #endif // Q_WS_X11
 
     return dpi;
@@ -210,7 +217,6 @@ QFontPrivate::QFontPrivate()
       rawMode(false), underline(false), overline(false), strikeOut(false), kerning(true),
       capital(0), letterSpacingIsAbsolute(false), scFont(0)
 {
-    ref = 1;
 #ifdef Q_WS_X11
     if (QX11Info::display())
         screen = QX11Info::appScreen();
@@ -230,7 +236,6 @@ QFontPrivate::QFontPrivate(const QFontPrivate &other)
       letterSpacing(other.letterSpacing), wordSpacing(other.wordSpacing),
       scFont(other.scFont)
 {
-    ref = 1;
 #ifdef Q_WS_WIN
     hdc = other.hdc;
 #endif
@@ -307,7 +312,7 @@ QFontPrivate *QFontPrivate::smallCapsFontPrivate() const
         font.setPointSizeF(pointSize * .7);
     else
         font.setPixelSize((font.pixelSize() * 7 + 5) / 10);
-    scFont = font.d;
+    scFont = font.d.data();
     if (scFont != this)
         scFont->ref.ref();
     return scFont;
@@ -718,8 +723,7 @@ QFont::QFont(const QFont &font, QPaintDevice *pd)
         d->dpi = dpi;
         d->screen = screen;
     } else {
-        d = font.d;
-        d->ref.ref();
+        d = font.d.data();
     }
 #ifdef Q_WS_WIN
     if (pd->devType() == QInternal::Printer && pd->getDC())
@@ -731,10 +735,8 @@ QFont::QFont(const QFont &font, QPaintDevice *pd)
   \internal
 */
 QFont::QFont(QFontPrivate *data)
-    : resolve_mask(QFont::AllPropertiesResolved)
+    : d(data), resolve_mask(QFont::AllPropertiesResolved)
 {
-    d = data;
-    d->ref.ref();
 }
 
 /*! \internal
@@ -746,13 +748,13 @@ void QFont::detach()
         if (d->engineData)
             d->engineData->ref.deref();
         d->engineData = 0;
-        if (d->scFont && d->scFont != d)
+        if (d->scFont && d->scFont != d.data())
             d->scFont->ref.deref();
         d->scFont = 0;
         return;
     }
 
-    qAtomicDetach(d);
+    d.detach();
 }
 
 /*!
@@ -761,16 +763,17 @@ void QFont::detach()
     \sa QApplication::setFont(), QApplication::font()
 */
 QFont::QFont()
-    :d(QApplication::font().d), resolve_mask(0)
+    : d(QApplication::font().d.data()), resolve_mask(0)
 {
-    d->ref.ref();
 }
 
 /*!
     Constructs a font object with the specified \a family, \a
     pointSize, \a weight and \a italic settings.
 
-    If \a pointSize is <= 0, it is set to 12.
+    If \a pointSize is zero or negative, the point size of the font
+    is set to a system-dependent default value. Generally, this is
+    12 points, except on Symbian where it is 7 points.
 
     The \a family name may optionally also include a foundry name,
     e.g. "Helvetica [Cronyx]". If the \a family is
@@ -783,12 +786,14 @@ QFont::QFont()
     setStyleHint() QApplication::font()
 */
 QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
-    :d(new QFontPrivate)
+    : d(new QFontPrivate()), resolve_mask(QFont::FamilyResolved)
 {
-    resolve_mask = QFont::FamilyResolved;
-
     if (pointSize <= 0) {
+#ifdef Q_OS_SYMBIAN
+        pointSize = 7;
+#else
         pointSize = 12;
+#endif
     } else {
         resolve_mask |= QFont::SizeResolved;
     }
@@ -810,10 +815,8 @@ QFont::QFont(const QString &family, int pointSize, int weight, bool italic)
     Constructs a font that is a copy of \a font.
 */
 QFont::QFont(const QFont &font)
+    : d(font.d.data()), resolve_mask(font.resolve_mask)
 {
-    d = font.d;
-    d->ref.ref();
-    resolve_mask = font.resolve_mask;
 }
 
 /*!
@@ -821,8 +824,6 @@ QFont::QFont(const QFont &font)
 */
 QFont::~QFont()
 {
-    if (!d->ref.deref())
-        delete d;
 }
 
 /*!
@@ -830,7 +831,7 @@ QFont::~QFont()
 */
 QFont &QFont::operator=(const QFont &font)
 {
-    qAtomicAssign(d, font.d);
+    d = font.d.data();
     resolve_mask = font.resolve_mask;
     return *this;
 }
@@ -1713,7 +1714,7 @@ QFont QFont::resolve(const QFont &other) const
 
     QFont font(*this);
     font.detach();
-    font.d->resolve(resolve_mask, other.d);
+    font.d->resolve(resolve_mask, other.d.data());
 
     return font;
 }
@@ -2166,11 +2167,11 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
         s << (quint8) font.d->request.styleStrategy;
     s << (quint8) 0
       << (quint8) font.d->request.weight
-      << get_font_bits(s.version(), font.d);
+      << get_font_bits(s.version(), font.d.data());
     if (s.version() >= QDataStream::Qt_4_3)
         s << (quint16)font.d->request.stretch;
     if (s.version() >= QDataStream::Qt_4_4)
-        s << get_extended_font_bits(font.d);
+        s << get_extended_font_bits(font.d.data());
     if (s.version() >= QDataStream::Qt_4_5) {
         s << font.d->letterSpacing.value();
         s << font.d->wordSpacing.value();
@@ -2189,9 +2190,6 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
 */
 QDataStream &operator>>(QDataStream &s, QFont &font)
 {
-    if (!font.d->ref.deref())
-        delete font.d;
-
     font.d = new QFontPrivate;
     font.resolve_mask = QFont::AllPropertiesResolved;
 
@@ -2233,7 +2231,7 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
     font.d->request.styleStrategy = styleStrategy;
     font.d->request.weight = weight;
 
-    set_font_bits(s.version(), bits, font.d);
+    set_font_bits(s.version(), bits, font.d.data());
 
     if (s.version() >= QDataStream::Qt_4_3) {
         quint16 stretch;
@@ -2244,7 +2242,7 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
     if (s.version() >= QDataStream::Qt_4_4) {
         quint8 extendedBits;
         s >> extendedBits;
-        set_extended_font_bits(extendedBits, font.d);
+        set_extended_font_bits(extendedBits, font.d.data());
     }
     if (s.version() >= QDataStream::Qt_4_5) {
         int value;
@@ -2325,7 +2323,7 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
     that is not screen-compatible.
 */
 QFontInfo::QFontInfo(const QFont &font)
-    : d(font.d)
+    : d(font.d.data())
 { d->ref.ref(); }
 
 /*!
@@ -2598,7 +2596,14 @@ QFontCache *QFontCache::instance()
 
 void QFontCache::cleanup()
 {
-    theFontCache()->setLocalData(0);
+    QThreadStorage<QFontCache *> *cache = 0;
+    QT_TRY {
+        cache = theFontCache();
+    } QT_CATCH (const std::bad_alloc &) {
+        // no cache - just ignore
+    }
+    if (cache && cache->hasLocalData())
+        cache->setLocalData(0);
 }
 #endif // QT_NO_THREAD
 
@@ -2611,8 +2616,8 @@ QFontCache::QFontCache()
 QFontCache::~QFontCache()
 {
     {
-        EngineDataCache::Iterator it = engineDataCache.begin(),
-                                 end = engineDataCache.end();
+        EngineDataCache::ConstIterator it = engineDataCache.constBegin(),
+                                 end = engineDataCache.constEnd();
         while (it != end) {
             if (it.value()->ref == 0)
                 delete it.value();
@@ -2622,8 +2627,8 @@ QFontCache::~QFontCache()
             ++it;
         }
     }
-    EngineCache::Iterator it = engineCache.begin(),
-                         end = engineCache.end();
+    EngineCache::ConstIterator it = engineCache.constBegin(),
+                         end = engineCache.constEnd();
     while (it != end) {
         if (--it.value().data->cache_count == 0) {
             if (it.value().data->ref == 0) {

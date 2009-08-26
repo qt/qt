@@ -69,6 +69,9 @@ private:
 template <class T> class QSharedDataPointer
 {
 public:
+    typedef T Type;
+    typedef T *pointer;
+
     inline void detach() { if (d && d->ref != 1) detach_helper(); }
     inline T &operator*() { detach(); return *d; }
     inline const T &operator*() const { return *d; }
@@ -127,6 +130,7 @@ template <class T> class QExplicitlySharedDataPointer
 {
 public:
     typedef T Type;
+    typedef T *pointer;
 
     inline T &operator*() const { return *d; }
     inline T *operator->() { return d; }

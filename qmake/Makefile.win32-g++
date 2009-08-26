@@ -15,14 +15,16 @@ CXX	    =	g++
 CFLAGS	    =	-c -o$@ -O \
 		-I. -Igenerators -Igenerators/unix \
 		-Igenerators/win32 -Igenerators/mac \
+		-Igenerators/symbian \
 		-I$(BUILD_PATH)/include -I$(BUILD_PATH)/include/QtCore \
 		-I$(SOURCE_PATH)/include -I$(SOURCE_PATH)/include/QtCore \
 		-I$(BUILD_PATH)/src/corelib/global \
-	        -I$(BUILD_PATH)/include/QtScript \
+		-I$(BUILD_PATH)/src/corelib/xml \
 		-I$(SOURCE_PATH)/mkspecs/win32-g++  \
 		-DQT_NO_TEXTCODEC -DQT_NO_UNICODETABLES -DQT_LITE_COMPONENT -DQT_NO_PCRE \
-	       	-DQT_NODLL -DQT_NO_STL -DQT_NO_COMPRESS -DUNICODE -DHAVE_QCONFIG_CPP \
-	       	-DQT_BUILD_QMAKE -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM
+		-DQT_NODLL -DQT_NO_STL -DQT_NO_COMPRESS -DUNICODE -DHAVE_QCONFIG_CPP \
+		-DQT_BUILD_QMAKE -DQT_NO_THREAD -DQT_NO_QOBJECT -DQT_NO_GEOM_VARIANT -DQT_NO_DATASTREAM \
+		-DQT_BOOTSTRAPPED
 CXXFLAGS    =   $(CFLAGS)
 LFLAGS	    =
 LIBS	    = -lole32 -luuid
@@ -35,7 +37,8 @@ OBJS        = project.o main.o makefile.o unixmake.o unixmake2.o mingw_make.o \
               option.o winmakefile.o projectgenerator.o property.o meta.o \
               makefiledeps.o metamakefile.o xmloutput.o pbuilder_pbx.o \
               borland_bmake.o msvc_nmake.o msvc_dsp.o msvc_vcproj.o \
-              msvc_objectmodel.o
+              msvc_objectmodel.o symmake.o initprojectdeploy_symbian.o \
+              symmake_abld.o symmake_sbsv2.o
 
 ifdef QMAKE_OPENSOURCE_EDITION
 CFLAGS      += -DQMAKE_OPENSOURCE_EDITION
@@ -46,7 +49,7 @@ QTOBJS= \
 	qbitarray.o \
 	qbuffer.o \
 	qbytearray.o \
-        qcryptographichash.o \
+	qcryptographichash.o \
 	qvsnprintf.o \
 	qbytearraymatcher.o \
 	qconfig.o \
@@ -83,45 +86,9 @@ QTOBJS= \
 	qsettings_win.o \
 	qvariant.o \
 	qmetatype.o \
-	qnumeric.o \
-	qscriptasm.o \
-	qscriptast.o \
-	qscriptastvisitor.o \
-	qscriptcompiler.o \
-	qscriptecmaarray.o \
-	qscriptecmaboolean.o \
-	qscriptecmacore.o \
-	qscriptecmadate.o \
-	qscriptecmafunction.o \
-	qscriptecmaglobal.o \
-	qscriptecmamath.o \
-	qscriptecmanumber.o \
-	qscriptecmaobject.o \
-	qscriptecmaregexp.o \
-	qscriptecmastring.o \
-	qscriptecmaerror.o \
-	qscriptcontext_p.o \
-	qscriptengine.o \
-	qscriptengine_p.o \
-	qscriptengineagent.o \
-	qscriptextenumeration.o \
-	qscriptextvariant.o \
-	qscriptcontext.o \
-	qscriptcontextinfo.o \
-	qscriptfunction.o \
-	qscriptgrammar.o \
-	qscriptlexer.o \
-	qscriptclassdata.o \
-	qscriptparser.o \
-	qscriptprettypretty.o \
-	qscriptsyntaxchecker.o \
-	qscriptclass.o \
-	qscriptclasspropertyiterator.o \
-	qscriptstring.o \
-	qscriptvalue.o \
-	qscriptvalueimpl.o \
-	qscriptvalueiterator.o \
-	qscriptvalueiteratorimpl.o
+	qxmlstream.o \
+	qxmlutils.o \
+	qnumeric.o
 
 
 qmake.exe: $(OBJS) $(QTOBJS)
@@ -299,6 +266,18 @@ msvc_vcproj.o: $(SOURCE_PATH)/qmake/generators/win32/msvc_vcproj.cpp
 msvc_objectmodel.o: $(SOURCE_PATH)/qmake/generators/win32/msvc_objectmodel.cpp
 	$(CXX) $(CXXFLAGS) generators/win32/msvc_objectmodel.cpp
 
+symmake.o: $(SOURCE_PATH)/qmake/generators/symbian/symmake.cpp
+	$(CXX) $(CXXFLAGS) generators/symbian/symmake.cpp
+
+symmake_abld.o: $(SOURCE_PATH)/qmake/generators/symbian/symmake_abld.cpp
+	$(CXX) $(CXXFLAGS) generators/symbian/symmake_abld.cpp
+
+symmake_sbsv2.o: $(SOURCE_PATH)/qmake/generators/symbian/symmake_sbsv2.cpp
+	$(CXX) $(CXXFLAGS) generators/symbian/symmake_sbsv2.cpp
+
+initprojectdeploy_symbian.o: $(SOURCE_PATH)/qmake/generators/symbian/initprojectdeploy_symbian.cpp
+	$(CXX) $(CXXFLAGS) generators/symbian/initprojectdeploy_symbian.cpp
+
 project.o: $(SOURCE_PATH)/qmake/project.cpp $(SOURCE_PATH)/qmake/project.h $(SOURCE_PATH)/qmake/option.h
 	$(CXX) $(CXXFLAGS) project.cpp
 
@@ -329,116 +308,8 @@ metamakefile.o: $(SOURCE_PATH)/qmake/generators/metamakefile.cpp
 xmloutput.o: $(SOURCE_PATH)/qmake/generators/xmloutput.cpp
 	$(CXX) $(CXXFLAGS) generators/xmloutput.cpp
 
-qscriptasm.o: $(SOURCE_PATH)\src\script\qscriptasm.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\script\qscriptasm.cpp
+qxmlstream.o: $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/xml/qxmlstream.cpp
 
-qscriptast.o: $(SOURCE_PATH)\src\script\qscriptast.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\script\qscriptast.cpp
-
-qscriptastvisitor.o: $(SOURCE_PATH)\src\script\qscriptastvisitor.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\script\qscriptastvisitor.cpp
-
-qscriptcompiler.o: $(SOURCE_PATH)\src\script\qscriptcompiler.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\script\qscriptcompiler.cpp
-
-qscriptecmaarray.o: $(SOURCE_PATH)\src\script\qscriptecmaarray.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)\src\script\qscriptecmaarray.cpp
-
-qscriptecmaboolean.o: $(SOURCE_PATH)/src/script/qscriptecmaboolean.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmaboolean.cpp
-
-qscriptecmacore.o: $(SOURCE_PATH)/src/script/qscriptecmacore.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmacore.cpp
-
-qscriptecmadate.o: $(SOURCE_PATH)/src/script/qscriptecmadate.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmadate.cpp
-
-qscriptecmafunction.o: $(SOURCE_PATH)/src/script/qscriptecmafunction.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmafunction.cpp
-
-qscriptecmaglobal.o: $(SOURCE_PATH)/src/script/qscriptecmaglobal.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmaglobal.cpp
-
-qscriptecmamath.o: $(SOURCE_PATH)/src/script/qscriptecmamath.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmamath.cpp
-
-qscriptecmanumber.o: $(SOURCE_PATH)/src/script/qscriptecmanumber.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmanumber.cpp
-
-qscriptecmaobject.o: $(SOURCE_PATH)/src/script/qscriptecmaobject.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmaobject.cpp
-
-qscriptecmaregexp.o: $(SOURCE_PATH)/src/script/qscriptecmaregexp.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmaregexp.cpp
-
-qscriptecmastring.o: $(SOURCE_PATH)/src/script/qscriptecmastring.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmastring.cpp
-
-qscriptecmaerror.o: $(SOURCE_PATH)/src/script/qscriptecmaerror.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptecmaerror.cpp
-
-qscriptcontext_p.o: $(SOURCE_PATH)/src/script/qscriptcontext_p.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptcontext_p.cpp
-
-qscriptengine.o: $(SOURCE_PATH)/src/script/qscriptengine.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptengine.cpp
-
-qscriptengine_p.o: $(SOURCE_PATH)/src/script/qscriptengine_p.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptengine_p.cpp
-
-qscriptengineagent.o: $(SOURCE_PATH)/src/script/qscriptengineagent.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptengineagent.cpp
-
-qscriptextenumeration.o: $(SOURCE_PATH)/src/script/qscriptextenumeration.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptextenumeration.cpp
-
-qscriptextvariant.o: $(SOURCE_PATH)/src/script/qscriptextvariant.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptextvariant.cpp
-
-qscriptcontext.o: $(SOURCE_PATH)/src/script/qscriptcontext.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptcontext.cpp
-
-qscriptcontextinfo.o: $(SOURCE_PATH)/src/script/qscriptcontextinfo.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptcontextinfo.cpp
-
-qscriptfunction.o: $(SOURCE_PATH)/src/script/qscriptfunction.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptfunction.cpp
-
-qscriptgrammar.o: $(SOURCE_PATH)/src/script/qscriptgrammar.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptgrammar.cpp
-
-qscriptlexer.o: $(SOURCE_PATH)/src/script/qscriptlexer.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptlexer.cpp
-
-qscriptclassdata.o: $(SOURCE_PATH)/src/script/qscriptclassdata.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptclassdata.cpp
-
-qscriptparser.o: $(SOURCE_PATH)/src/script/qscriptparser.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptparser.cpp
-
-qscriptprettypretty.o: $(SOURCE_PATH)/src/script/qscriptprettypretty.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptprettypretty.cpp
-
-qscriptsyntaxchecker.o: $(SOURCE_PATH)/src/script/qscriptsyntaxchecker.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptsyntaxchecker.cpp
-
-qscriptclass.o: $(SOURCE_PATH)/src/script/qscriptclass.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptclass.cpp
-
-qscriptclasspropertyiterator.o: $(SOURCE_PATH)/src/script/qscriptclasspropertyiterator.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptclasspropertyiterator.cpp
-
-qscriptstring.o: $(SOURCE_PATH)/src/script/qscriptstring.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptstring.cpp
-
-qscriptvalue.o: $(SOURCE_PATH)/src/script/qscriptvalue.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptvalue.cpp
-
-qscriptvalueimpl.o: $(SOURCE_PATH)/src/script/qscriptvalueimpl.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptvalueimpl.cpp
-
-qscriptvalueiterator.o: $(SOURCE_PATH)/src/script/qscriptvalueiterator.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptvalueiterator.cpp
-
-qscriptvalueiteratorimpl.o: $(SOURCE_PATH)/src/script/qscriptvalueiteratorimpl.cpp
-	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/script/qscriptvalueiteratorimpl.cpp
+qxmlutils.o: $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp
+	$(CXX) $(CXXFLAGS) $(SOURCE_PATH)/src/corelib/xml/qxmlutils.cpp

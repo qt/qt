@@ -44,6 +44,7 @@
 
 #include <QtXmlPatterns/QXmlName>
 #include <QtCore/QSharedData>
+#include <QtCore/QScopedPointer>
 
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
@@ -343,7 +344,7 @@ protected:
         return QXmlNodeModelIndex::create(data, this, additionalData);
     }
 
-    QAbstractXmlNodeModelPrivate *d_ptr;
+    QScopedPointer<QAbstractXmlNodeModelPrivate> d_ptr;
 private:
     friend class QPatternist::ItemMappingIterator<QXmlNodeModelIndex, QXmlNodeModelIndex, const QAbstractXmlNodeModel *, QExplicitlySharedDataPointer<QPatternist::DynamicContext> >;
     friend class QPatternist::SequenceMappingIterator<QXmlNodeModelIndex, QXmlNodeModelIndex, const QAbstractXmlNodeModel *>;

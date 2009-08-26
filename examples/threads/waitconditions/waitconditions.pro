@@ -10,11 +10,13 @@ INCLUDEPATH += .
 # Input
 SOURCES += waitconditions.cpp
 CONFIG += qt warn_on create_prl link_prl console
-OBJECTS_DIR=.obj/debug-shared
-MOC_DIR=.moc/debug-shared
+OBJECTS_DIR=obj/debug-shared
+MOC_DIR=moc/debug-shared
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/threads/waitconditions
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS waitconditions.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/threads/waitconditions
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

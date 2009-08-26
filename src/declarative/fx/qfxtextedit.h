@@ -222,7 +222,7 @@ protected:
     void drawContents(QPainter *, const QRect &);
 private:
     Q_DISABLE_COPY(QFxTextEdit)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxTextEdit)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxTextEdit)
 };
 
 QT_END_NAMESPACE

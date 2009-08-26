@@ -1170,6 +1170,7 @@ QFxItem::~QFxItem()
             anchor->d_func()->updateOnComplete();
     }
     delete d->_anchorLines; d->_anchorLines = 0;
+    delete d->_anchors; d->_anchors = 0;
 }
 
 /*!

@@ -10,3 +10,4 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/draganddrop/dropsite
 INSTALLS += target sources
 
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

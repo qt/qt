@@ -45,9 +45,16 @@
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(fridgemagnets);
+    bool smallScreen = false;
+    for (int i=0; i<argc; i++)
+        if (QString(argv[i]) == "-small-screen")
+            smallScreen = true;
 
     QApplication app(argc, argv);
     DragWidget window;
-    window.show();
+    if (smallScreen)
+        window.showFullScreen();
+    else
+        window.show();
     return app.exec();
 }

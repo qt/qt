@@ -121,7 +121,7 @@ void JSEventListener::handleEvent(Event* event, bool isWindowEvent)
 
         JSValue retval;
         if (handleEventFunction) {
-            globalObject->globalData()->timeoutChecker.start();
+            globalObject->globalData()->timeoutChecker->start();
             retval = call(exec, handleEventFunction, callType, callData, jsFunction, args);
         } else {
             JSValue thisValue;
@@ -129,10 +129,10 @@ void JSEventListener::handleEvent(Event* event, bool isWindowEvent)
                 thisValue = globalObject->toThisObject(exec);
             else
                 thisValue = toJS(exec, globalObject, event->currentTarget());
-            globalObject->globalData()->timeoutChecker.start();
+            globalObject->globalData()->timeoutChecker->start();
             retval = call(exec, jsFunction, callType, callData, thisValue, args);
         }
-        globalObject->globalData()->timeoutChecker.stop();
+        globalObject->globalData()->timeoutChecker->stop();
 
         globalObject->setCurrentEvent(savedEvent);
 
@@ -187,9 +187,9 @@ bool JSEventListener::reportError(const String& message, const String& url, int 
 
     JSValue thisValue = globalObject->toThisObject(exec);
 
-    globalObject->globalData()->timeoutChecker.start();
+    globalObject->globalData()->timeoutChecker->start();
     JSValue returnValue = call(exec, jsFunction, callType, callData, thisValue, args);
-    globalObject->globalData()->timeoutChecker.stop();
+    globalObject->globalData()->timeoutChecker->stop();
 
     // If an error occurs while handling the script error, it should be bubbled up.
     if (exec->hadException()) {

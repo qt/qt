@@ -181,7 +181,27 @@ void QScreenCursor::set(const QImage &image, int hotx, int hoty)
     const QRect r = boundingRect();
 
     hotspot = QPoint(hotx, hoty);
-    cursor = image;
+    // These are in almost all cases the fastest formats to blend
+    QImage::Format f;
+    switch (qt_screen->depth()) {
+    case 12:
+        f = QImage::Format_ARGB4444_Premultiplied;
+        break;
+    case 15:
+        f =  QImage::Format_ARGB8555_Premultiplied;
+        break;
+    case 16:
+        f = QImage::Format_ARGB8565_Premultiplied;
+        break;
+    case 18:
+        f = QImage::Format_ARGB6666_Premultiplied;
+        break;
+    default:
+        f =  QImage::Format_ARGB32_Premultiplied;
+    }
+
+    cursor = image.convertToFormat(f);
+
     size = image.size();
 
     if (enable && !hwaccel)
@@ -2420,7 +2440,7 @@ void QScreen::exposeRegion(QRegion r, int windowIndex)
 #endif
     compose(0, r, blendRegion, &blendBuffer, changing);
 
-    if (blendBuffer) {
+    if (blendBuffer && !blendBuffer->isNull()) {
         const QPoint offset = blendRegion.boundingRect().topLeft();
 #ifndef QT_NO_QWS_CURSOR
         if (qt_screencursor && !qt_screencursor->isAccelerated()) {

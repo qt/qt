@@ -94,7 +94,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxAnimatedImageItem)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxAnimatedImageItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxAnimatedImageItem)
 };
 
 QT_END_NAMESPACE

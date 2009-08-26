@@ -48,6 +48,9 @@
 
 //TESTED_CLASS=
 //TESTED_FILES=gui/text/qtextlayout.h corelib/tools/qtextboundaryfinder.cpp
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR "$$PWD"
+#endif
 
 class tst_QTextBoundaryFinder : public QObject
 {

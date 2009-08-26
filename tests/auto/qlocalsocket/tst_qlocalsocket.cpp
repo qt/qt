@@ -47,9 +47,16 @@
 #include <QtNetwork/qlocalserver.h>
 #include "../../shared/util.h"
 
+#ifdef Q_OS_SYMBIAN
+    #include <unistd.h>
+#endif
 //TESTED_CLASS=QLocalServer, QLocalSocket
 //TESTED_FILES=network/socket/qlocalserver.cpp network/socket/qlocalsocket.cpp
-
+#ifdef Q_OS_SYMBIAN
+    #define STRINGIFY(x) #x
+    #define TOSTRING(x) STRINGIFY(x)
+    #define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
+#endif
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketError)
 Q_DECLARE_METATYPE(QLocalSocket::LocalSocketState)
 
@@ -80,8 +87,6 @@ private slots:
     void sendData_data();
     void sendData();
 
-    void readBufferOverflow();
-
     void fullPath();
 
     void hitMaximumConnections_data();
@@ -97,17 +102,17 @@ private slots:
 
     void longPath();
     void waitForDisconnect();
-    void waitForDisconnectByServer();
 
     void removeServer();
 
     void recycleServer();
 
-    void multiConnect();
-    void writeOnlySocket();
-
     void debug();
 
+#ifdef Q_OS_SYMBIAN
+private:
+    void unlink(QString serverName);
+#endif
 };
 
 tst_QLocalSocket::tst_QLocalSocket()
@@ -142,13 +147,7 @@ public:
     LocalServer() : QLocalServer()
     {
         connect(this, SIGNAL(newConnection()), this, SLOT(slotNewConnection()));
-    }
-
-    bool listen(const QString &name)
-    {
-        removeServer(name);
-        return QLocalServer::listen(name);
-    }
+    };
 
     QList<int> hits;
 
@@ -294,6 +293,9 @@ void tst_QLocalSocket::listen()
     QSignalSpy spyNewConnection(&server, SIGNAL(newConnection()));
 
     QFETCH(QString, name);
+#ifdef Q_OS_SYMBIAN
+    unlink(name);
+#endif
     QFETCH(bool, canListen);
     QFETCH(bool, close);
     QVERIFY2((server.listen(name) == canListen), server.errorString().toLatin1().constData());
@@ -344,7 +346,9 @@ void tst_QLocalSocket::listenAndConnect()
 
     QFETCH(QString, name);
     QFETCH(bool, canListen);
-
+#ifdef Q_OS_SYMBIAN
+    unlink(name);
+#endif
     QCOMPARE(server.listen(name), canListen);
     QTest::qWait(1000);
     //QVERIFY(!server.errorString().isEmpty());
@@ -364,7 +368,7 @@ void tst_QLocalSocket::listenAndConnect()
         QSignalSpy spyReadyRead(socket, SIGNAL(readyRead()));
 
         socket->connectToServer(name);
-#ifdef QT_LOCALSOCKET_TCP
+#if defined(QT_LOCALSOCKET_TCP)
         QTest::qWait(250);
 #endif
 
@@ -467,6 +471,9 @@ void tst_QLocalSocket::sendData_data()
 void tst_QLocalSocket::sendData()
 {
     QFETCH(QString, name);
+#ifdef Q_OS_SYMBIAN
+    unlink(name);
+#endif
     QFETCH(bool, canListen);
 
     LocalServer server;
@@ -484,8 +491,10 @@ void tst_QLocalSocket::sendData()
     // test creating a connection
     socket.connectToServer(name);
     bool timedOut = true;
+
     QCOMPARE(server.waitForNewConnection(3000, &timedOut), canListen);
-#ifdef QT_LOCALSOCKET_TCP
+
+#if defined(QT_LOCALSOCKET_TCP)
     QTest::qWait(250);
 #endif
     QVERIFY(!timedOut);
@@ -495,7 +504,11 @@ void tst_QLocalSocket::sendData()
     // test sending/receiving data
     if (server.hasPendingConnections()) {
         QString testLine = "test";
+#ifdef Q_OS_SYMBIAN
+    for (int i = 0; i < 25 * 1024; ++i)
+#else
 	for (int i = 0; i < 50000; ++i)
+#endif
 		testLine += "a";
         QLocalSocket *serverSocket = server.nextPendingConnection();
         QVERIFY(serverSocket);
@@ -516,7 +529,9 @@ void tst_QLocalSocket::sendData()
         QCOMPARE(spyReadyRead.count(), 1);
 
         QVERIFY(testLine.startsWith(in.readLine()));
+
         QVERIFY(wrote || serverSocket->waitForBytesWritten(1000));
+
         QCOMPARE(serverSocket->errorString(), QString("Unknown error"));
         QCOMPARE(socket.errorString(), QString("Unknown error"));
     }
@@ -534,46 +549,14 @@ void tst_QLocalSocket::sendData()
     QCOMPARE(spy.count(), (canListen ? 1 : 0));
 }
 
-void tst_QLocalSocket::readBufferOverflow()
-{
-    const int readBufferSize = 128;
-    const int dataBufferSize = readBufferSize * 2;
-    const QString serverName = QLatin1String("myPreciousTestServer");
-    LocalServer server;
-    server.listen(serverName);
-    QVERIFY(server.isListening());
-
-    LocalSocket client;
-    client.setReadBufferSize(readBufferSize);
-    client.connectToServer(serverName);
-
-    bool timedOut = true;
-    QVERIFY(server.waitForNewConnection(3000, &timedOut));
-    QVERIFY(!timedOut);
-
-    QCOMPARE(client.state(), QLocalSocket::ConnectedState);
-    QVERIFY(server.hasPendingConnections());
-
-    QLocalSocket* serverSocket = server.nextPendingConnection();
-    char buffer[dataBufferSize];
-    memset(buffer, 0, dataBufferSize);
-    serverSocket->write(buffer, dataBufferSize);
-    serverSocket->flush();
-
-    QVERIFY(client.waitForReadyRead());
-    QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
-#ifdef QT_LOCALSOCKET_TCP
-    QTest::qWait(250);
-#endif
-    QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
-}
-
 // QLocalSocket/Server can take a name or path, check that it works as expected
 void tst_QLocalSocket::fullPath()
 {
-    LocalServer server;
+    QLocalServer server;
     QString name = "qlocalsocket_pathtest";
-#if defined(QT_LOCALSOCKET_TCP)
+#if defined(Q_OS_SYMBIAN)
+    QString path = "";
+#elif defined(QT_LOCALSOCKET_TCP)
     QString path = "QLocalServer";
 #elif defined(Q_OS_WIN)
     QString path = "\\\\.\\pipe\\";
@@ -587,6 +570,7 @@ void tst_QLocalSocket::fullPath()
 
     LocalSocket socket;
     socket.connectToServer(serverName);
+
     QCOMPARE(socket.serverName(), serverName);
     QCOMPARE(socket.fullServerName(), serverName);
     socket.disconnectFromServer();
@@ -610,6 +594,9 @@ void tst_QLocalSocket::hitMaximumConnections()
     QFETCH(int, max);
     LocalServer server;
     QString name = "tst_localsocket";
+#ifdef Q_OS_SYMBIAN
+    unlink(name);
+#endif
     server.setMaxPendingConnections(max);
     QVERIFY2(server.listen(name), server.errorString().toLatin1().constData());
     int connections = server.maxPendingConnections() + 1;
@@ -723,20 +710,30 @@ void tst_QLocalSocket::threadedConnection_data()
 
 void tst_QLocalSocket::threadedConnection()
 {
+#ifdef Q_OS_SYMBIAN
+    unlink("qlocalsocket_threadtest");
+#endif
+
     QFETCH(int, threads);
     Server server;
+#if defined(Q_OS_SYMBIAN)
+    server.setStackSize(0x14000);
+#endif
     server.clients = threads;
     server.start();
 
     QList<Client*> clients;
     for (int i = 0; i < threads; ++i) {
         clients.append(new Client());
+#if defined(Q_OS_SYMBIAN)
+        clients.last()->setStackSize(0x14000);
+#endif
         clients.last()->start();
     }
 
     server.wait();
     while (!clients.isEmpty()) {
-        QVERIFY(clients.first()->wait(30000));
+        QVERIFY(clients.first()->wait(3000));
         Client *client =clients.takeFirst();
 	client->terminate();
 	delete client;
@@ -759,7 +756,7 @@ void tst_QLocalSocket::processConnection_data()
  */
 void tst_QLocalSocket::processConnection()
 {
-#if defined(QT_NO_PROCESS)
+#if defined(QT_NO_PROCESS) || defined(Q_CC_NOKIAX86)
     QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
 #else
     QFETCH(int, processes);
@@ -814,6 +811,9 @@ void tst_QLocalSocket::longPath()
 void tst_QLocalSocket::waitForDisconnect()
 {
     QString name = "tst_localsocket";
+#ifdef Q_OS_SYMBIAN
+    unlink(name);
+#endif
     LocalServer server;
     QVERIFY(server.listen(name));
     LocalSocket socket;
@@ -827,25 +827,6 @@ void tst_QLocalSocket::waitForDisconnect()
     timer.start();
     QVERIFY(serverSocket->waitForDisconnected(3000));
     QVERIFY(timer.elapsed() < 2000);
-}
-
-void tst_QLocalSocket::waitForDisconnectByServer()
-{
-    QString name = "tst_localsocket";
-    LocalServer server;
-    QVERIFY(server.listen(name));
-    LocalSocket socket;
-    QSignalSpy spy(&socket, SIGNAL(disconnected()));
-    QVERIFY(spy.isValid());
-    socket.connectToServer(name);
-    QVERIFY(socket.waitForConnected(3000));
-    QVERIFY(server.waitForNewConnection(3000));
-    QLocalSocket *serverSocket = server.nextPendingConnection();
-    QVERIFY(serverSocket);
-    serverSocket->close();
-    QVERIFY(serverSocket->state() == QLocalSocket::UnconnectedState);
-    QVERIFY(socket.waitForDisconnected(3000));
-    QCOMPARE(spy.count(), 1);
 }
 
 void tst_QLocalSocket::removeServer()
@@ -865,7 +846,11 @@ void tst_QLocalSocket::removeServer()
 
 void tst_QLocalSocket::recycleServer()
 {
-    LocalServer server;
+#ifdef Q_OS_SYMBIAN
+    unlink("recycletest1");
+#endif
+
+    QLocalServer server;
     QLocalSocket client;
 
     QVERIFY(server.listen("recycletest1"));
@@ -885,54 +870,35 @@ void tst_QLocalSocket::recycleServer()
     QVERIFY(server.nextPendingConnection() != 0);
 }
 
-void tst_QLocalSocket::multiConnect()
-{
-    QLocalServer server;
-    QLocalSocket client1;
-    QLocalSocket client2;
-    QLocalSocket client3;
-
-    QVERIFY(server.listen("multiconnect"));
-
-    client1.connectToServer("multiconnect");
-    client2.connectToServer("multiconnect");
-    client3.connectToServer("multiconnect");
-
-    QVERIFY(client1.waitForConnected(201));
-    QVERIFY(client2.waitForConnected(202));
-    QVERIFY(client3.waitForConnected(203));
-
-    QVERIFY(server.waitForNewConnection(201));
-    QVERIFY(server.nextPendingConnection() != 0);
-    QVERIFY(server.waitForNewConnection(202));
-    QVERIFY(server.nextPendingConnection() != 0);
-    QVERIFY(server.waitForNewConnection(203));
-    QVERIFY(server.nextPendingConnection() != 0);
-}
-
-void tst_QLocalSocket::writeOnlySocket()
-{
-    QLocalServer server;
-    QVERIFY(server.listen("writeOnlySocket"));
-
-    QLocalSocket client;
-    client.connectToServer("writeOnlySocket", QIODevice::WriteOnly);
-    QVERIFY(client.waitForConnected());
-
-    QVERIFY(server.waitForNewConnection());
-    QLocalSocket* serverSocket = server.nextPendingConnection();
-    QVERIFY(serverSocket);
-
-    QCOMPARE(client.bytesAvailable(), qint64(0));
-    QCOMPARE(client.state(), QLocalSocket::ConnectedState);
-}
-
 void tst_QLocalSocket::debug()
 {
     // Make sure this compiles
     qDebug() << QLocalSocket::ConnectionRefusedError << QLocalSocket::UnconnectedState;
 }
 
+#ifdef Q_OS_SYMBIAN
+void tst_QLocalSocket::unlink(QString name)
+{
+    if(name.length() == 0)
+        return;
+
+    QString fullName;
+    // determine the full server path
+    if (name.startsWith(QLatin1Char('/'))) {
+        fullName = name;
+    } else {
+        fullName = QDir::cleanPath(QDir::tempPath());
+        fullName += QLatin1Char('/') + name;
+        fullName = QDir::toNativeSeparators(fullName);
+    }
+
+    int result = ::unlink(fullName.toUtf8().data());
+
+    if(result != 0) {
+        qWarning() << "Unlinking " << fullName << " failed with " << strerror(errno);
+    }
+}
+#endif
 QTEST_MAIN(tst_QLocalSocket)
 #include "tst_qlocalsocket.moc"
 

@@ -102,6 +102,8 @@ tst_XmlPatterns::tst_XmlPatterns() : m_generatedTests(0)
                                    , m_command(QLatin1String("xmlpatterns"))
                                    , m_dontRun(false)
 {
+    Q_SET_DEFAULT_IAP
+
     Q_ASSERT(m_normalizeTestName.isValid());
     Q_ASSERT(m_filenameInStderr.isValid());
 }

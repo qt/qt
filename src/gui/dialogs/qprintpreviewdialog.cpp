@@ -42,6 +42,7 @@
 #include "qprintpreviewdialog.h"
 #include "qprintpreviewwidget.h"
 #include <private/qprinter_p.h>
+#include "private/qdialog_p.h"
 
 #include <QtGui/qaction.h>
 #include <QtGui/qboxlayout.h>
@@ -138,12 +139,12 @@ private:
 };
 } // anonymous namespace
 
-class QPrintPreviewDialogPrivate
+class QPrintPreviewDialogPrivate : public QDialogPrivate
 {
     Q_DECLARE_PUBLIC(QPrintPreviewDialog)
 public:
-    QPrintPreviewDialogPrivate(QPrintPreviewDialog *q)
-        : q_ptr(q), printDialog(0), ownPrinter(false),
+    QPrintPreviewDialogPrivate()
+        : printDialog(0), ownPrinter(false),
           initialized(false) {}
 
     // private slots
@@ -168,7 +169,6 @@ public:
     void updatePageNumLabel();
     void updateZoomFactor();
 
-    QPrintPreviewDialog *q_ptr;
     QPrintDialog *printDialog;
     QPrintPreviewWidget *preview;
     QPrinter *printer;
@@ -665,7 +665,7 @@ void QPrintPreviewDialogPrivate::_q_zoomFactorChanged()
     \sa QWidget::setWindowFlags()
 */
 QPrintPreviewDialog::QPrintPreviewDialog(QPrinter* printer, QWidget *parent, Qt::WindowFlags flags)
-    : QDialog(parent, flags), d_ptr(new QPrintPreviewDialogPrivate(this))
+    : QDialog(*new QPrintPreviewDialogPrivate, parent, flags)
 {
     Q_D(QPrintPreviewDialog);
     d->init(printer);
@@ -679,7 +679,7 @@ QPrintPreviewDialog::QPrintPreviewDialog(QPrinter* printer, QWidget *parent, Qt:
     system default printer.
 */
 QPrintPreviewDialog::QPrintPreviewDialog(QWidget *parent, Qt::WindowFlags f)
-    : QDialog(parent, f), d_ptr(new QPrintPreviewDialogPrivate(this))
+    : QDialog(*new QPrintPreviewDialogPrivate, parent, f)
 {
     Q_D(QPrintPreviewDialog);
     d->init();
@@ -694,7 +694,6 @@ QPrintPreviewDialog::~QPrintPreviewDialog()
     if (d->ownPrinter)
         delete d->printer;
     delete d->printDialog;
-    delete d_ptr;
 }
 
 /*!

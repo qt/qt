@@ -60,6 +60,14 @@ namespace JSC {
     JSObject* throwError(ExecState*, ErrorType, const char* message);
     JSObject* throwError(ExecState*, ErrorType);
 
+#ifdef QT_BUILD_SCRIPT_LIB
+#  define JSC_ERROR_FILENAME_PROPERTYNAME "fileName"
+#  define JSC_ERROR_LINENUMBER_PROPERTYNAME "lineNumber"
+#else
+#  define JSC_ERROR_FILENAME_PROPERTYNAME "sourceURL"
+#  define JSC_ERROR_LINENUMBER_PROPERTYNAME "line"
+#endif
+
 } // namespace JSC
 
 #endif // Error_h

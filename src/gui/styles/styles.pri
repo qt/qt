@@ -161,3 +161,19 @@ contains( styles, windowsmobile ) {
 	DEFINES += QT_NO_STYLE_WINDOWSMOBILE
 }
 
+contains( styles, s60 ):contains(QT_CONFIG, s60) {
+	HEADERS += \
+		styles/qs60style.h \
+		styles/qs60style_p.h
+	SOURCES += styles/qs60style.cpp
+	symbian {
+		SOURCES += styles/qs60style_s60.cpp
+		# TODO: fix the following LIBS hack. Line 1 is for armv5, 2 for winscw
+		LIBS += aknicon aknskins aknskinsrv fontutils
+		LIBS += -laknicon -laknskins -laknskinsrv -lfontutils
+	} else {
+		SOURCES += styles/qs60style_simulated.cpp
+	}
+} else {
+	DEFINES += QT_NO_STYLE_S60
+}

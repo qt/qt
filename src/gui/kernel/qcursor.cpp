@@ -561,7 +561,6 @@ QCursor::operator QVariant() const
 {
     return QVariant(QVariant::Cursor, this);
 }
-
+QT_END_NAMESPACE
 #endif // QT_NO_CURSOR
 
-QT_END_NAMESPACE

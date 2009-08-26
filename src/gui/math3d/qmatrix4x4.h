@@ -58,6 +58,7 @@ QT_MODULE(Gui)
 
 class QMatrix;
 class QTransform;
+class QVariant;
 
 class Q_GUI_EXPORT QMatrix4x4
 {
@@ -181,6 +182,8 @@ public:
     inline const float *constData() const { return m[0]; }
 
     void inferSpecialType();
+
+    operator QVariant() const;
 
 #ifndef QT_NO_DEBUG_STREAM
     friend Q_GUI_EXPORT QDebug operator<<(QDebug dbg, const QMatrix4x4 &m);

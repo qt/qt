@@ -46,10 +46,15 @@
 #include <QtGui/qcolor.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h> // char*->QString conversion
+#include <QtCore/qsharedpointer.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qtransform.h>
 
 QT_BEGIN_HEADER
+
+#if defined(Q_OS_SYMBIAN)
+class CFbsBitmap;
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -59,7 +64,6 @@ class QImageWriter;
 class QColor;
 class QVariant;
 class QX11Info;
-
 class QPixmapData;
 
 class Q_GUI_EXPORT QPixmap : public QPaintDevice
@@ -152,6 +156,11 @@ public:
     static QPixmap fromMacCGImageRef(CGImageRef image);
 #endif
 
+#if defined(Q_OS_SYMBIAN)
+    CFbsBitmap *toSymbianCFbsBitmap() const;
+    static QPixmap fromSymbianCFbsBitmap(CFbsBitmap *bitmap);
+#endif
+
     inline QPixmap copy(int x, int y, int width, int height) const;
     QPixmap copy(const QRect &rect = QRect()) const;
 
@@ -219,7 +228,7 @@ public:
 #endif
 
 private:
-    QPixmapData *data;
+    QExplicitlySharedDataPointer<QPixmapData> data;
 
     bool doImageIO(QImageWriter *io, int quality) const;
 
@@ -264,7 +273,7 @@ public:
     QPixmapData* pixmapData() const;
 
 public:
-    typedef QPixmapData * DataPtr;
+    typedef QExplicitlySharedDataPointer<QPixmapData> DataPtr;
     inline DataPtr &data_ptr() { return data; }
 };
 

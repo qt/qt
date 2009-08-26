@@ -17,3 +17,11 @@ target.path = $$[QT_INSTALL_EXAMPLES]/network/network-chat
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS network-chat.pro *.chat
 sources.path = $$[QT_INSTALL_EXAMPLES]/network/network-chat
 INSTALLS += target sources
+
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    HEADERS += $$QT_SOURCE_TREE/examples/network/ftp/sym_iap_util.h
+    LIBS += -lesock -lconnmon -lcharconv -linsock
+    TARGET.CAPABILITY = "NetworkServices ReadUserData WriteUserData"
+    TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
+}

@@ -38,3 +38,8 @@ embedded {
 !embedded:!x11:mac {
 		OBJECTIVE_SOURCES += util/qsystemtrayicon_mac.mm
 }
+
+symbian {
+    LIBS += -lsendas2 -letext -lapmime
+    contains(QT_CONFIG, s60): LIBS += -lplatformenv -lcommonui
+}

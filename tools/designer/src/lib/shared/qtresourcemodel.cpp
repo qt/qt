@@ -141,7 +141,6 @@ QtResourceSet::QtResourceSet(QtResourceModel *model) :
 
 QtResourceSet::~QtResourceSet()
 {
-    delete d_ptr;
 }
 
 QStringList QtResourceSet::activeQrcPaths() const
@@ -489,7 +488,6 @@ QtResourceModel::~QtResourceModel()
     while (it.hasNext())
         removeResourceSet(it.next());
     blockSignals(false);
-    delete d_ptr;
 }
 
 QStringList QtResourceModel::loadedQrcFiles() const

@@ -76,7 +76,7 @@ Q_SIGNALS:
 
 private:
     Q_DISABLE_COPY(QFxLoader)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxLoader)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxLoader)
     Q_PRIVATE_SLOT(d_func(), void _q_sourceLoaded())
 };
 

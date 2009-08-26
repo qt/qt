@@ -146,14 +146,12 @@ QString BrushManagerProxyPrivate::uniqueBrushFileName(const QString &brushName) 
 
 
 BrushManagerProxy::BrushManagerProxy(QDesignerFormEditorInterface *core, QObject *parent)
-    : QObject(parent)
+    : QObject(parent), d_ptr(new BrushManagerProxyPrivate(this, core))
 {
-    d_ptr = new BrushManagerProxyPrivate(this, core);
 }
 
 BrushManagerProxy::~BrushManagerProxy()
 {
-    delete d_ptr;
 }
 
 void BrushManagerProxy::setBrushManager(QtBrushManager *manager)

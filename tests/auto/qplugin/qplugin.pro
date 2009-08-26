@@ -1,3 +1,4 @@
+QT = core
 TEMPLATE = subdirs
 win32 {
     exists($$[QT_INSTALL_LIBS]/QtCore4.dll) {

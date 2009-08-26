@@ -56,7 +56,7 @@ class QFxListViewPrivate;
 class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxListView)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxListView)
 
     Q_ENUMS(CurrentItemPositioning)
     Q_PROPERTY(QVariant model READ model WRITE setModel)

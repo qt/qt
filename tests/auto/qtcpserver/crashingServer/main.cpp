@@ -53,15 +53,15 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-#if !defined(Q_OS_WINCE)
-    printf("Listening\n");
-    fflush(stdout);
-#else
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     QFile file(QLatin1String("/test_signal.txt"));
     file.open(QIODevice::WriteOnly);
     file.write("Listening\n");
     file.flush();
     file.close();
+#else
+    printf("Listening\n");
+    fflush(stdout);
 #endif
 
     server.waitForNewConnection(5000);

@@ -68,8 +68,6 @@ QWSGLPaintDevice::QWSGLPaintDevice(QWidget *widget) :
 
 QWSGLPaintDevice::~QWSGLPaintDevice()
 {
-    Q_D(QWSGLPaintDevice);
-    delete d;
 }
 
 QPaintEngine* QWSGLPaintDevice::paintEngine() const

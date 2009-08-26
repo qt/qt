@@ -221,7 +221,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QGraphicsWidget)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QGraphicsWidget)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QGraphicsWidget)
     friend class QGraphicsScene;
     friend class QGraphicsScenePrivate;
     friend class QGraphicsView;

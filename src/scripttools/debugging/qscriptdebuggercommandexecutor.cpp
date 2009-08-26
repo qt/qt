@@ -98,7 +98,6 @@ QScriptDebuggerCommandExecutor::QScriptDebuggerCommandExecutor()
 
 QScriptDebuggerCommandExecutor::~QScriptDebuggerCommandExecutor()
 {
-    delete d_ptr;
 }
 
 static bool isPrefixOf(const QString &prefix, const QString &what)

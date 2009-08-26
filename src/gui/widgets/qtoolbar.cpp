@@ -205,7 +205,7 @@ void QToolBarPrivate::initDrag(const QPoint &pos)
     state->moving = false;
     state->widgetItem = 0;
 
-    if (q->layoutDirection() == Qt::RightToLeft)
+    if (q->isRightToLeft())
         state->pressPos = QPoint(q->width() - state->pressPos.x(), state->pressPos.y());
 }
 
@@ -359,7 +359,7 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
         QPoint pos = event->globalPos();
         // if we are right-to-left, we move so as to keep the right edge the same distance
         // from the mouse
-        if (q->layoutDirection() == Qt::LeftToRight)
+        if (q->isLeftToRight())
             pos -= state->pressPos;
         else
             pos += QPoint(state->pressPos.x() - q->width(), -state->pressPos.y());
@@ -369,14 +369,14 @@ bool QToolBarPrivate::mouseMoveEvent(QMouseEvent *event)
     } else if (state->moving) {
 
         const QPoint rtl(q->width() - state->pressPos.x(), state->pressPos.y()); //for RTL
-        const QPoint globalPressPos = q->mapToGlobal(q->layoutDirection() == Qt::RightToLeft ? rtl : state->pressPos);
+        const QPoint globalPressPos = q->mapToGlobal(q->isRightToLeft() ? rtl : state->pressPos);
         int pos = 0;
 
         QPoint delta = event->globalPos() - globalPressPos;
         if (orientation == Qt::Vertical) {
             pos = q->y() + delta.y();
         } else {
-            if (q->layoutDirection() == Qt::RightToLeft) {
+            if (q->isRightToLeft()) {
                 pos = win->width() - q->width() - q->x()  - delta.x();
             } else {
                 pos = q->x() + delta.x();

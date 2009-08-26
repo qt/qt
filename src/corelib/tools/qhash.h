@@ -129,12 +129,15 @@ struct Q_CORE_EXPORT QHashData
 
     void *allocateNode();
     void freeNode(void *node);
-    QHashData *detach_helper(void (*node_duplicate)(Node *, void *), int nodeSize);
+    QHashData *detach_helper(void (*node_duplicate)(Node *, void *), int nodeSize); // ### Qt5 remove me
+    QHashData *detach_helper(void (*node_duplicate)(Node *, void *), void (*node_delete)(Node *),
+            int nodeSize);
     void mightGrow();
     bool willGrow();
     void hasShrunk();
     void rehash(int hint);
-    void destroyAndFree();
+    void free_helper(void (*node_delete)(Node *));
+    void destroyAndFree(); // ### Qt5 remove me
     Node *firstNode();
 #ifdef QT_QHASH_DEBUG
     void dump();
@@ -147,10 +150,10 @@ struct Q_CORE_EXPORT QHashData
 };
 
 inline void QHashData::mightGrow() // ### Qt 5: eliminate
-{ 
+{
     if (size >= numBuckets)
         rehash(numBits + 1);
-}  
+}
 
 inline bool QHashData::willGrow()
 {
@@ -164,8 +167,13 @@ inline bool QHashData::willGrow()
 
 inline void QHashData::hasShrunk()
 {
-    if (size <= (numBuckets >> 3) && numBits > userNumBits)
-        rehash(qMax(int(numBits) - 2, int(userNumBits)));
+    if (size <= (numBuckets >> 3) && numBits > userNumBits) {
+        QT_TRY {
+            rehash(qMax(int(numBits) - 2, int(userNumBits)));
+        } QT_CATCH(const std::bad_alloc &) {
+            // ignore bad allocs - shrinking shouldn't throw. rehash is exception safe.
+        }
+    }
 }
 
 inline QHashData::Node *QHashData::firstNode()
@@ -476,21 +484,30 @@ private:
     Node **findNode(const Key &key, uint *hp = 0) const;
     Node *createNode(uint h, const Key &key, const T &value, Node **nextNode);
     void deleteNode(Node *node);
+    static void deleteNode(QHashData::Node *node);
 
     static void duplicateNode(QHashData::Node *originalNode, void *newNode);
 };
 
+
 template <class Key, class T>
 Q_INLINE_TEMPLATE void QHash<Key, T>::deleteNode(Node *node)
 {
+    deleteNode(reinterpret_cast<QHashData::Node*>(node));
+}
+
+
+template <class Key, class T>
+Q_INLINE_TEMPLATE void QHash<Key, T>::deleteNode(QHashData::Node *node)
+{
 #ifdef Q_CC_BOR
-    node->~QHashNode<Key, T>();
+    concrete(node)->~QHashNode<Key, T>();
 #elif defined(QT_NO_PARTIAL_TEMPLATE_SPECIALIZATION)
-    node->~QHashNode();
+    concrete(node)->~QHashNode();
 #else
-    node->~Node();
+    concrete(node)->~Node();
 #endif
-    d->freeNode(node);
+    qFree(node);
 }
 
 template <class Key, class T>
@@ -538,18 +555,7 @@ Q_INLINE_TEMPLATE QHash<Key, T> &QHash<Key, T>::unite(const QHash<Key, T> &other
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE void QHash<Key, T>::freeData(QHashData *x)
 {
-    Node *e_for_x = reinterpret_cast<Node *>(x);
-    Node **bucket = reinterpret_cast<Node **>(x->buckets);
-    int n = x->numBuckets;
-    while (n--) {
-        Node *cur = *bucket++;
-        while (cur != e_for_x) {
-            Node *next = cur->next;
-            deleteNode(cur);
-            cur = next;
-        }
-    }
-    x->destroyAndFree();
+    x->free_helper(deleteNode);
 }
 
 template <class Key, class T>
@@ -561,7 +567,7 @@ Q_INLINE_TEMPLATE void QHash<Key, T>::clear()
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE void QHash<Key, T>::detach_helper()
 {
-    QHashData *x = d->detach_helper(duplicateNode,
+    QHashData *x = d->detach_helper(duplicateNode, deleteNode,
         QTypeInfo<T>::isDummy ? sizeof(DummyNode) : sizeof(Node));
     if (!d->ref.deref())
         freeData(d);
@@ -760,6 +766,8 @@ Q_INLINE_TEMPLATE typename QHash<Key, T>::iterator QHash<Key, T>::insertMulti(co
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE int QHash<Key, T>::remove(const Key &akey)
 {
+    if (isEmpty()) // prevents detaching shared null
+        return 0;
     detach();
 
     int oldSize = d->size;
@@ -781,6 +789,8 @@ Q_OUTOFLINE_TEMPLATE int QHash<Key, T>::remove(const Key &akey)
 template <class Key, class T>
 Q_OUTOFLINE_TEMPLATE T QHash<Key, T>::take(const Key &akey)
 {
+    if (isEmpty()) // prevents detaching shared null
+        return T();
     detach();
 
     Node **node = findNode(akey);
@@ -911,7 +921,8 @@ public:
     inline QMultiHash operator+(const QMultiHash &other) const
     { QMultiHash result = *this; result += other; return result; }
 
-#ifndef Q_NO_USING_KEYWORD
+#if !defined(Q_NO_USING_KEYWORD) && !defined(Q_CC_RVCT)
+    // RVCT compiler doesn't handle using-keyword right when used functions are overloaded in child class
     using QHash<Key, T>::contains;
     using QHash<Key, T>::remove;
     using QHash<Key, T>::count;
@@ -981,7 +992,12 @@ Q_INLINE_TEMPLATE int QMultiHash<Key, T>::remove(const Key &key, const T &value)
     typename QHash<Key, T>::iterator end(QHash<Key, T>::end());
     while (i != end && i.key() == key) {
         if (i.value() == value) {
+#if defined(Q_CC_RVCT)
+            // RVCT has problems with scoping, apparently.
+            i = QHash<Key, T>::erase(i);
+#else
             i = erase(i);
+#endif
             ++n;
         } else {
             ++i;

@@ -67,6 +67,14 @@
 #include <qcalendarwidget.h>
 #include <qmainwindow.h>
 #include <QtGui/qpaintengine.h>
+#include <private/qbackingstore_p.h>
+
+#ifdef Q_WS_S60
+#include <avkon.hrh>                // EEikStatusPaneUidTitle
+#include <akntitle.h>               // CAknTitlePane
+#include <akncontext.h>             // CAknContextPane
+#include <eikspane.h>               // CEikStatusPane
+#endif
 
 #ifdef Q_WS_QWS
 # include <qscreen_qws.h>
@@ -355,6 +363,9 @@ private slots:
 
     void focusWidget_task254563();
     void rectOutsideCoordinatesLimit_task144779();
+    void setGraphicsEffect();
+
+    void destroyBackingStore();
 
 private:
     bool ensureScreenSize(int width, int height);
@@ -1079,6 +1090,9 @@ void tst_QWidget::enabledPropagation()
 
 void tst_QWidget::acceptDropsPropagation()
 {
+#ifdef QT_NO_DRAGANDDROP
+    QSKIP("Drag'n drop disabled in this build", SkipAll);
+#else
     QWidget *childWidget = new QWidget(testWidget);
     childWidget->show();
     QVERIFY(!testWidget->acceptDrops());
@@ -1122,6 +1136,7 @@ void tst_QWidget::acceptDropsPropagation()
     QVERIFY(childWidget->acceptDrops());
     QVERIFY(!grandChildWidget->acceptDrops());
     QVERIFY(grandChildWidget->testAttribute(Qt::WA_DropSiteRegistered));
+#endif
 }
 
 void tst_QWidget::isEnabledTo()
@@ -1409,7 +1424,7 @@ void tst_QWidget::mapFromAndTo()
     subWindow2->setGeometry(75, 75, 100, 100);
     subSubWindow->setGeometry(10, 10, 10, 10);
 
-#ifndef Q_OS_WINCE //still no proper minimizing
+#if !defined (Q_OS_WINCE) && !defined(Q_OS_SYMBIAN) //still no proper minimizing
     //update visibility
     if (windowMinimized) {
         if (!windowHidden) {
@@ -1814,6 +1829,9 @@ void tst_QWidget::windowState()
         pos = QPoint(10,10);
         size = QSize(100,100);
     }
+#elif defined(Q_WS_S60)
+    QPoint pos = QPoint(10,10);
+    QSize size = QSize(100,100);
 #else
     const QPoint pos(500, 500);
     const QSize size(200, 200);
@@ -1928,7 +1946,7 @@ void tst_QWidget::showMaximized()
     layouted.showNormal();
     QVERIFY(!(layouted.windowState() & Qt::WindowMaximized));
 
-#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE)
+#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE) && !defined(Q_WS_S60)
 //embedded may choose a different size to fit on the screen.
     QCOMPARE(layouted.size(), layouted.sizeHint());
 #endif
@@ -1967,6 +1985,13 @@ void tst_QWidget::showMaximized()
         QWidget widget(&frame);
         widget.showMaximized();
         QVERIFY(widget.isMaximized());
+    }
+
+    {
+        QWidget widget;
+        widget.setGeometry(0, 0, 10, 10);
+        widget.showMaximized();
+        QVERIFY(widget.size().width() > 20 && widget.size().height() > 20);
     }
 
 #ifdef QT3_SUPPORT
@@ -2020,7 +2045,7 @@ void tst_QWidget::showFullScreen()
     layouted.showNormal();
     QVERIFY(!(layouted.windowState() & Qt::WindowFullScreen));
 
-#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE)
+#if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE) && !defined (Q_WS_S60)
 //embedded may choose a different size to fit on the screen.
     QCOMPARE(layouted.size(), layouted.sizeHint());
 #endif
@@ -2451,6 +2476,9 @@ void tst_QWidget::hideWhenFocusWidgetIsChild()
     actualFocusWidget.sprintf("%p %s %s", qApp->focusWidget(), qApp->focusWidget()->objectName().toLatin1().constData(), qApp->focusWidget()->metaObject()->className());
     expectedFocusWidget.sprintf("%p %s %s", edit2, edit2->objectName().toLatin1().constData(), edit2->metaObject()->className());
     QCOMPARE(actualFocusWidget, expectedFocusWidget);
+
+    delete edit2;
+    delete parentWidget;
 }
 
 void tst_QWidget::normalGeometry()
@@ -3354,6 +3382,9 @@ void tst_QWidget::widgetAt()
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
 #endif
+#if defined(Q_OS_SYMBIAN)
+    QEXPECT_FAIL("", "Symbian/S60 does only support rectangular regions", Continue); //See also task 147191
+#endif
     QCOMPARE(QApplication::widgetAt(100,100)->objectName(), w1->objectName());
     QCOMPARE(QApplication::widgetAt(101,101)->objectName(), w2->objectName());
 
@@ -3368,6 +3399,9 @@ void tst_QWidget::widgetAt()
     QTest::qWait(1000);
 #if defined(Q_OS_WINCE)
     QEXPECT_FAIL("", "Windows CE does only support rectangular regions", Continue); //See also task 147191
+#endif
+#if defined(Q_OS_SYMBIAN)
+    QEXPECT_FAIL("", "Symbian/S60 does only support rectangular regions", Continue); //See also task 147191
 #endif
     QVERIFY(QApplication::widgetAt(100,100) == w1);
     QVERIFY(QApplication::widgetAt(101,101) == w2);
@@ -3426,6 +3460,34 @@ QString textPropertyToString(Display *display, XTextProperty& text_prop)
     return ret;
 }
 
+#endif
+
+#if defined(Q_WS_S60)
+// Returns the application's status pane control, if not present returns NULL.
+static CCoeControl* GetStatusPaneControl( TInt aPaneId )
+{
+    const TUid paneUid = { aPaneId };
+
+    CEikStatusPane* statusPane = CEikonEnv::Static()->AppUiFactory()->StatusPane();
+    if (statusPane && statusPane->PaneCapabilities(paneUid).IsPresent()){
+		CCoeControl* control = NULL;
+        // ControlL shouldn't leave because the pane is present
+		TRAPD(err, control = statusPane->ControlL(paneUid));
+		return err != KErrNone ? NULL : control;
+    }
+    return NULL;
+}
+// Returns the application's title pane, if not present returns NULL.
+static CAknTitlePane* TitlePane()
+{
+    return static_cast<CAknTitlePane*>(GetStatusPaneControl(EEikStatusPaneUidTitle));
+}
+
+// Returns the application's title pane, if not present returns NULL.
+static CAknContextPane* ContextPane()
+{
+    return static_cast<CAknContextPane*>(GetStatusPaneControl(EEikStatusPaneUidContext));
+}
 #endif
 
 static QString visibleWindowTitle(QWidget *window, Qt::WindowState state = Qt::WindowNoState)
@@ -3490,6 +3552,13 @@ static QString visibleWindowTitle(QWidget *window, Qt::WindowState state = Qt::W
     if (win)
         vTitle = win->caption();
     }
+#elif defined (Q_WS_S60)
+    CAknTitlePane* titlePane = TitlePane();
+    if(titlePane)
+        {
+        const TDesC* nTitle = titlePane->Text();
+        vTitle = QString::fromUtf16(nTitle->Ptr(), nTitle->Length());
+        }
 #endif
 
     return vTitle;
@@ -3520,6 +3589,9 @@ void tst_QWidget::windowTitle()
 
 void tst_QWidget::windowIconText()
 {
+#ifdef Q_OS_SYMBIAN
+    QSKIP("Symbian/S60 windows don't have window icon text", SkipAll);
+#endif
     QWidget widget(0);
 
     widget.setWindowTitle("Application Name");
@@ -5312,7 +5384,7 @@ void tst_QWidget::moveChild()
     QCOMPARE(pos, child.pos());
 
     QCOMPARE(parent.r, QRegion(oldGeometry) - child.geometry());
-#ifndef Q_WS_MAC
+#if !defined(Q_WS_MAC)
     // should be scrolled in backingstore
     QCOMPARE(child.r, QRegion());
 #endif
@@ -6108,7 +6180,10 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             EventRecorder::EventList()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS)
+#ifdef Q_OS_SYMBIAN
+            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
+#endif
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
             ;
@@ -6203,7 +6278,10 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS)
+#ifdef Q_OS_SYMBIAN
+            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
+#endif
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
             ;
@@ -6298,7 +6376,10 @@ void tst_QWidget::compatibilityChildInsertedEvents()
             << qMakePair(&widget, QEvent::PolishRequest)
             << qMakePair(&widget, QEvent::Type(QEvent::User + 1))
             << qMakePair(&widget, QEvent::Type(QEvent::User + 2))
-#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS)
+#ifdef Q_OS_SYMBIAN
+            << qMakePair(&widget, QEvent::SymbianDeferredFocusChanged)
+#endif
+#if defined(Q_WS_X11) || defined(Q_WS_WIN) || defined(Q_WS_QWS) || defined(Q_WS_S60)
             << qMakePair(&widget, QEvent::UpdateRequest)
 #endif
             ;
@@ -7352,7 +7433,7 @@ void tst_QWidget::repaintWhenChildDeleted()
     }
 #endif
     ColorWidget w(0, Qt::red);
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_WS_S60)
     QPoint startPoint = QApplication::desktop()->availableGeometry(&w).topLeft();
     startPoint.rx() += 50;
     startPoint.ry() += 50;
@@ -7386,7 +7467,7 @@ void tst_QWidget::repaintWhenChildDeleted()
 void tst_QWidget::hideOpaqueChildWhileHidden()
 {
     ColorWidget w(0, Qt::red);
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_WS_S60)
     QPoint startPoint = QApplication::desktop()->availableGeometry(&w).topLeft();
     startPoint.rx() += 50;
     startPoint.ry() += 50;
@@ -8261,7 +8342,12 @@ void tst_QWidget::customDpi()
     custom->logicalDpiX();
     QCOMPARE(custom->metricCallCount, 1);
     child->logicalDpiX();
+#ifdef Q_WS_S60
+    // QWidget::metric is not recursive on Symbian
+    QCOMPARE(custom->metricCallCount, 1);
+#else
     QCOMPARE(custom->metricCallCount, 2);
+#endif
 
     delete topLevel;
 }
@@ -9102,8 +9188,8 @@ void tst_QWidget::toplevelLineEditFocus()
 #endif
     QTest::qWait(200);
 
-    QCOMPARE(QApplication::activeWindow(), &w);
-    QCOMPARE(QApplication::focusWidget(), &w);
+    QCOMPARE(QApplication::activeWindow(), (QWidget*)&w);
+    QCOMPARE(QApplication::focusWidget(), (QWidget*)&w);
 }
 
 void tst_QWidget::focusWidget_task254563()
@@ -9119,6 +9205,32 @@ void tst_QWidget::focusWidget_task254563()
     container.setFocus();
     delete widget; // will call clearFocus but that doesn't help
     QVERIFY(top.focusWidget() != widget); //dangling pointer
+}
+
+void tst_QWidget::destroyBackingStore()
+{
+    UpdateWidget w;
+    w.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&w);
+#endif
+    QApplication::processEvents();
+
+    w.reset();
+    w.update();
+    delete qt_widget_private(&w)->topData()->backingStore;
+    qt_widget_private(&w)->topData()->backingStore = 0;
+    qt_widget_private(&w)->topData()->backingStore = new QWidgetBackingStore(&w);
+
+    w.update();
+    QApplication::processEvents();
+    QCOMPARE(w.numPaintEvents, 1);
+
+    // Check one more time, because the second time around does more caching.
+    w.update();
+    QApplication::processEvents();
+    QCOMPARE(w.numPaintEvents, 2);
 }
 
 void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
@@ -9163,10 +9275,41 @@ void tst_QWidget::inputFocus_task257832()
             QSKIP("No input context", SkipSingle);
       widget->setFocus();
       context->setFocusWidget(widget);
-      QCOMPARE(context->focusWidget(), widget);
+      QCOMPARE(context->focusWidget(), static_cast<QWidget*>(widget));
       widget->setReadOnly(true);
       QVERIFY(!context->focusWidget());
       delete widget;
+}
+
+void tst_QWidget::setGraphicsEffect()
+{
+    // Check that we don't have any effect by default.
+    QWidget *widget = new QWidget;
+    QVERIFY(!widget->graphicsEffect());
+
+    // SetGet check.
+    QPointer<QGraphicsEffect> blurEffect = new QGraphicsBlurEffect;
+    widget->setGraphicsEffect(blurEffect);
+    QCOMPARE(widget->graphicsEffect(), static_cast<QGraphicsEffect *>(blurEffect));
+
+    // Ensure the existing effect is deleted when setting a new one.
+    QPointer<QGraphicsEffect> shadowEffect = new QGraphicsDropShadowEffect;
+    widget->setGraphicsEffect(shadowEffect);
+    QVERIFY(!blurEffect);
+    QCOMPARE(widget->graphicsEffect(), static_cast<QGraphicsEffect *>(shadowEffect));
+    blurEffect = new QGraphicsBlurEffect;
+
+    // Ensure the effect is uninstalled when setting it on a new target.
+    QWidget *anotherWidget = new QWidget;
+    anotherWidget->setGraphicsEffect(blurEffect);
+    widget->setGraphicsEffect(blurEffect);
+    QVERIFY(!anotherWidget->graphicsEffect());
+    QVERIFY(!shadowEffect);
+
+    // Ensure the existing effect is deleted when deleting the widget.
+    delete widget;
+    QVERIFY(!blurEffect);
+    delete anotherWidget;
 }
 
 QTEST_MAIN(tst_QWidget)

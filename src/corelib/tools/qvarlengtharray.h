@@ -52,6 +52,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
+template<class T, int Prealloc>
+class QPodList;
+
 // Prealloc = 256 by default, specified in qcontainerfwd.h
 template<class T, int Prealloc>
 class QVarLengthArray
@@ -122,6 +125,7 @@ public:
     inline const T * constData() const { return ptr; }
 
 private:
+    friend class QPodList<T, Prealloc>;
     void realloc(int size, int alloc);
 
     int a;
@@ -140,6 +144,7 @@ Q_INLINE_TEMPLATE QVarLengthArray<T, Prealloc>::QVarLengthArray(int asize)
     : s(asize) {
     if (s > Prealloc) {
         ptr = reinterpret_cast<T *>(qMalloc(s * sizeof(T)));
+        Q_CHECK_PTR(ptr);
         a = s;
     } else {
         ptr = reinterpret_cast<T *>(array);
@@ -161,25 +166,24 @@ Q_INLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::reserve(int asize)
 { if (asize > a) realloc(s, asize); }
 
 template <class T, int Prealloc>
-Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, int asize)
+Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::append(const T *abuf, int increment)
 {
     Q_ASSERT(abuf);
-    if (asize <= 0)
+    if (increment <= 0)
         return;
 
-    const int idx = s;
-    const int news = s + asize;
-    if (news >= a)
-        realloc(s, qMax(s<<1, news));
-    s = news;
+    const int asize = s + increment;
+
+    if (asize >= a)
+        realloc(s, qMax(s*2, asize));
 
     if (QTypeInfo<T>::isComplex) {
-        T *i = ptr + idx;
-        T *j = i + asize;
-        while (i < j)
-            new (i++) T(*abuf++);
+        // call constructor for new objects (which can throw)
+        while (s < asize)
+            new (ptr+(s++)) T(*abuf++);
     } else {
-        qMemCopy(&ptr[idx], abuf, asize * sizeof(T));
+        qMemCopy(&ptr[s], abuf, increment * sizeof(T));
+        s = asize;
     }
 }
 
@@ -189,46 +193,60 @@ Q_OUTOFLINE_TEMPLATE void QVarLengthArray<T, Prealloc>::realloc(int asize, int a
     Q_ASSERT(aalloc >= asize);
     T *oldPtr = ptr;
     int osize = s;
-    s = asize;
+    // s = asize;
 
     if (aalloc != a) {
         ptr = reinterpret_cast<T *>(qMalloc(aalloc * sizeof(T)));
+        Q_CHECK_PTR(ptr);
         if (ptr) {
+            s = 0;
             a = aalloc;
 
             if (QTypeInfo<T>::isStatic) {
-                T *i = ptr + osize;
-                T *j = oldPtr + osize;
-                while (i != ptr) {
-                    new (--i) T(*--j);
-                    j->~T();
+                QT_TRY {
+                    // copy all the old elements
+                    const int copySize = qMin(asize, osize);
+                    while (s < copySize) {
+                        new (ptr+s) T(*(oldPtr+s));
+                        (oldPtr+s)->~T();
+                        s++;
+                    }
+                } QT_CATCH(...) {
+                    // clean up all the old objects and then free the old ptr
+                    int sClean = s;
+                    while (sClean < osize)
+                        (oldPtr+(sClean++))->~T();
+                    if (oldPtr != reinterpret_cast<T *>(array) && oldPtr != ptr)
+                        qFree(oldPtr);
+                    QT_RETHROW;
                 }
             } else {
-                qMemCopy(ptr, oldPtr, osize * sizeof(T));
+                qMemCopy(ptr, oldPtr, qMin(asize, osize) * sizeof(T));
+                s = asize;
             }
         } else {
             ptr = oldPtr;
-            s = 0;
-            asize = 0;
+            return;
         }
     }
 
     if (QTypeInfo<T>::isComplex) {
-        if (asize < osize) {
-            T *i = oldPtr + osize;
-            T *j = oldPtr + asize;
-            while (i-- != j)
-                i->~T();
-        } else {
-            T *i = ptr + asize;
-            T *j = ptr + osize;
-            while (i != j)
-                new (--i) T;
-        }
+        while (osize > asize)
+            (oldPtr+(--osize))->~T();
+        if( oldPtr == ptr )
+            s = osize;
     }
 
     if (oldPtr != reinterpret_cast<T *>(array) && oldPtr != ptr)
         qFree(oldPtr);
+
+    if (QTypeInfo<T>::isComplex) {
+        // call default constructor for new objects (which can throw)
+        while (s < asize)
+            new (ptr+(s++)) T;
+    } else {
+        s = asize;
+    }
 }
 
 QT_END_NAMESPACE

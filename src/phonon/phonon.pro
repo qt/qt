@@ -113,3 +113,17 @@ contains(QT_CONFIG, dbus) {
 }
 
 contains(QT_CONFIG, reduce_exports): CONFIG += hide_symbols
+
+symbian: {
+    # Phonon depends on numeric_limits. Enabling STL support in Qt
+    # would bring in link dependencies, and we don't need that for
+    # numeric_limits, hence we here merely ensure we bring in the necessary
+    # header.
+    INCLUDEPATH *= $$OS_LAYER_STDCPP_SYSTEMINCLUDE
+
+	# Without this setting, code using numeric_limits will fail
+	# for winscw, although armv5 works fine no matter what.
+    QMAKE_CXXFLAGS.CW *= $$STLLIB_USAGE_CW_FLAGS
+    
+    TARGET.UID3 = 0x2001E624
+}

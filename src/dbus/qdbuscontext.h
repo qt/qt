@@ -74,7 +74,7 @@ public:
 
 private:
     QDBusContextPrivate *d_ptr;
-    Q_DECLARE_PRIVATE(QDBusContext)
+    friend class QDBusContextPrivate;
 };
 
 QT_END_NAMESPACE

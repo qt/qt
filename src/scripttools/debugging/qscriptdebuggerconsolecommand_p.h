@@ -54,7 +54,7 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-
+#include <QtCore/qscopedpointer.h>
 #include <QtCore/qlist.h>
 
 QT_BEGIN_NAMESPACE
@@ -91,7 +91,7 @@ public:
 
 protected:
     QScriptDebuggerConsoleCommand(QScriptDebuggerConsoleCommandPrivate &dd);
-    QScriptDebuggerConsoleCommandPrivate *d_ptr;
+    QScopedPointer<QScriptDebuggerConsoleCommandPrivate> d_ptr;
 
 private:
     Q_DECLARE_PRIVATE(QScriptDebuggerConsoleCommand)

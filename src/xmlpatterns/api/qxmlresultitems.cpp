@@ -85,7 +85,6 @@ QXmlResultItems::QXmlResultItems() : d_ptr(new QXmlResultItemsPrivate())
  */
 QXmlResultItems::~QXmlResultItems()
 {
-    delete d_ptr;
 }
 
 /*!

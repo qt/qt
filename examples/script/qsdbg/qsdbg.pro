@@ -16,4 +16,6 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS qsdbg.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/script/qsdbg
 INSTALLS += target sources
 
+include($$QT_SOURCE_TREE/examples/examplebase.pri)
+
 

@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 
     Panel panel(3, 3);
     panel.setFocus();
-    panel.show();
+    panel.showFullScreen();
 
     return app.exec();
 }

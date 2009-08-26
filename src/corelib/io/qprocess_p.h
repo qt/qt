@@ -55,6 +55,8 @@
 
 #include "QtCore/qprocess.h"
 #include "QtCore/qstringlist.h"
+#include "QtCore/qhash.h"
+#include "QtCore/qshareddata.h"
 #include "private/qringbuffer_p.h"
 #include "private/qiodevice_p.h"
 
@@ -75,6 +77,21 @@ class QSocketNotifier;
 class QWindowsPipeWriter;
 class QWinEventNotifier;
 class QTimer;
+
+class QProcessEnvironmentPrivate: public QSharedData
+{
+public:
+#ifdef Q_OS_WIN
+    typedef QString Unit;
+#else
+    typedef QByteArray Unit;
+#endif
+    typedef QHash<Unit, Unit> Hash;
+    Hash hash;
+
+    static QProcessEnvironment fromList(const QStringList &list);
+    QStringList toList() const;
+};
 
 class QProcessPrivate : public QIODevicePrivate
 {
@@ -161,7 +178,7 @@ public:
 
     QString program;
     QStringList arguments;
-    QHash<QString, QString> *environment;
+    QProcessEnvironment environment;
 
     QRingBuffer outputReadBuffer;
     QRingBuffer errorReadBuffer;
@@ -180,7 +197,7 @@ public:
     QWinEventNotifier *processFinishedNotifier;
 
     void startProcess();
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     void execChild(const char *workingDirectory, char **path, char **argv, char **envp);
 #endif
     bool processStarted();
@@ -220,6 +237,11 @@ public:
     void cleanup();
 #ifdef Q_OS_UNIX
     static void initializeProcessManager();
+#endif
+
+#ifdef Q_OS_SYMBIAN
+    bool processLaunched;
+    RProcess* symbianProcess;
 #endif
 };
 

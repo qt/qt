@@ -61,6 +61,13 @@
 #include "qguifunctions_wince.h"
 #endif
 
+#ifndef QT_NO_MENUBAR
+#ifdef Q_WS_S60
+class CCoeControl;
+class CEikMenuBar;
+#endif
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_MENUBAR
@@ -82,7 +89,11 @@ public:
 #ifdef Q_WS_WINCE
                          , wce_menubar(0), wceClassicMenu(false)
 #endif
-    { }
+#ifdef Q_WS_S60
+                         , symbian_menubar(0)
+#endif
+
+        { }
     ~QMenuBarPrivate()
         {
 #ifdef Q_WS_MAC
@@ -90,6 +101,9 @@ public:
 #endif
 #ifdef Q_WS_WINCE
             delete wce_menubar;
+#endif
+#ifdef Q_WS_S60
+            delete symbian_menubar;
 #endif
         }
 
@@ -224,6 +238,35 @@ public:
     void wceCommands(uint command);
     void wceRefresh();
     bool wceEmitSignals(QList<QWceMenuAction*> actions, uint command);
+#endif
+#ifdef Q_WS_S60
+    void symbianCreateMenuBar(QWidget *);
+    void symbianDestroyMenuBar();
+    struct QSymbianMenuBarPrivate {
+        QList<QSymbianMenuAction*> actionItems;
+        QMenuBarPrivate *d;
+        QSymbianMenuBarPrivate(QMenuBarPrivate *menubar);
+        ~QSymbianMenuBarPrivate();
+        void addAction(QAction *, QSymbianMenuAction* =0);
+        void addAction(QSymbianMenuAction *, QSymbianMenuAction* =0);
+        void syncAction(QSymbianMenuAction *);
+        inline void syncAction(QAction *a) { syncAction(findAction(a)); }
+        void removeAction(QSymbianMenuAction *);
+        void rebuild();
+        inline void removeAction(QAction *a) { removeAction(findAction(a)); }
+        inline QSymbianMenuAction *findAction(QAction *a) {
+            for(int i = 0; i < actionItems.size(); i++) {
+                QSymbianMenuAction *act = actionItems[i];
+                if(a == act->action)
+                    return act;
+            }
+            return 0;
+        }
+        void insertNativeMenuItems(const QList<QAction*> &actions);
+
+    } *symbian_menubar;
+    static void symbianCommands(int command);
+
 #endif
 };
 #endif

@@ -1,0 +1,201 @@
+EXPORTS
+	?load@QSvgRenderer@@QAE_NABVQString@@@Z @ 1 NONAME ; bool QSvgRenderer::load(class QString const &)
+	?beginEditBlock@QTextDocumentPrivate@@QAEXXZ @ 2 NONAME ; void QTextDocumentPrivate::beginEditBlock(void)
+	?redo@QTextDocumentPrivate@@QAEXXZ @ 3 NONAME ; void QTextDocumentPrivate::redo(void)
+	?addCursor@QTextDocumentPrivate@@QAEXPAVQTextCursorPrivate@@@Z @ 4 NONAME ; void QTextDocumentPrivate::addCursor(class QTextCursorPrivate *)
+	?setMaximumCacheSize@QGraphicsSvgItem@@QAEXABVQSize@@@Z @ 5 NONAME ; void QGraphicsSvgItem::setMaximumCacheSize(class QSize const &)
+	?isUndoRedoEnabled@QTextDocumentPrivate@@QBE_NXZ @ 6 NONAME ; bool QTextDocumentPrivate::isUndoRedoEnabled(void) const
+	??1QSvgWidget@@UAE@XZ @ 7 NONAME ; QSvgWidget::~QSvgWidget(void)
+	?setDefaultFont@QTextDocumentPrivate@@QAEXABVQFont@@@Z @ 8 NONAME ; void QTextDocumentPrivate::setDefaultFont(class QFont const &)
+	?height@QSvgTinyDocument@@QBEHXZ @ 9 NONAME ; int QSvgTinyDocument::height(void) const
+	?load@QSvgWidget@@QAEXABVQString@@@Z @ 10 NONAME ; void QSvgWidget::load(class QString const &)
+	?d_func@QGraphicsSvgItem@@ABEPBVQGraphicsSvgItemPrivate@@XZ @ 11 NONAME ; class QGraphicsSvgItemPrivate const * QGraphicsSvgItem::d_func(void) const
+	?d_func@QGraphicsSvgItem@@AAEPAVQGraphicsSvgItemPrivate@@XZ @ 12 NONAME ; class QGraphicsSvgItemPrivate * QGraphicsSvgItem::d_func(void)
+	?unsetExtra@QGraphicsItemPrivate@@QAEXW4Extra@1@@Z @ 13 NONAME ; void QGraphicsItemPrivate::unsetExtra(enum QGraphicsItemPrivate::Extra)
+	?render@QSvgRenderer@@QAEXPAVQPainter@@ABVQString@@ABVQRectF@@@Z @ 14 NONAME ; void QSvgRenderer::render(class QPainter *, class QString const &, class QRectF const &)
+	?q_func@QGraphicsItemPrivate@@ABEPBVQGraphicsItem@@XZ @ 15 NONAME ; class QGraphicsItem const * QGraphicsItemPrivate::q_func(void) const
+	?trUtf8@QGraphicsSvgItem@@SA?AVQString@@PBD0@Z @ 16 NONAME ; class QString QGraphicsSvgItem::trUtf8(char const *, char const *)
+	?setEmptyCachedClipPath@QGraphicsItemPrivate@@QAEXXZ @ 17 NONAME ; void QGraphicsItemPrivate::setEmptyCachedClipPath(void)
+	?removeCursor@QTextDocumentPrivate@@QAEXPAVQTextCursorPrivate@@@Z @ 18 NONAME ; void QTextDocumentPrivate::removeCursor(class QTextCursorPrivate *)
+	?draw@QSvgTinyDocument@@UAEXPAVQPainter@@AAUQSvgExtraStates@@@Z @ 19 NONAME ; void QSvgTinyDocument::draw(class QPainter *, struct QSvgExtraStates &)
+	?tr@QSvgRenderer@@SA?AVQString@@PBD0@Z @ 20 NONAME ; class QString QSvgRenderer::tr(char const *, char const *)
+	?elementExists@QSvgRenderer@@QBE_NABVQString@@@Z @ 21 NONAME ; bool QSvgRenderer::elementExists(class QString const &) const
+	?repaintNeeded@QSvgRenderer@@IAEXXZ @ 22 NONAME ; void QSvgRenderer::repaintNeeded(void)
+	?isRedoAvailable@QTextDocumentPrivate@@QBE_NXZ @ 23 NONAME ; bool QTextDocumentPrivate::isRedoAvailable(void) const
+	?qt_metacast@QSvgWidget@@UAEPAXPBD@Z @ 24 NONAME ; void * QSvgWidget::qt_metacast(char const *)
+	??_EQSvgRenderer@@UAE@I@Z @ 25 NONAME ; QSvgRenderer::~QSvgRenderer(unsigned int)
+	?d_func@QSvgGenerator@@ABEPBVQSvgGeneratorPrivate@@XZ @ 26 NONAME ; class QSvgGeneratorPrivate const * QSvgGenerator::d_func(void) const
+	?animationDuration@QSvgTinyDocument@@QBEHXZ @ 27 NONAME ; int QSvgTinyDocument::animationDuration(void) const
+	?begin@QTextDocumentPrivate@@QBE?AVConstIterator@?$QFragmentMap@VQTextFragmentData@@@@XZ @ 28 NONAME ; class QFragmentMap<class QTextFragmentData>::ConstIterator QTextDocumentPrivate::begin(void) const
+	??0QSvgGenerator@@QAE@XZ @ 29 NONAME ; QSvgGenerator::QSvgGenerator(void)
+	?load@QSvgRenderer@@QAE_NPAVQXmlStreamReader@@@Z @ 30 NONAME ; bool QSvgRenderer::load(class QXmlStreamReader *)
+	?d_func@QSvgWidget@@ABEPBVQSvgWidgetPrivate@@XZ @ 31 NONAME ; class QSvgWidgetPrivate const * QSvgWidget::d_func(void) const
+	?fileName@QSvgGenerator@@QBE?AVQString@@XZ @ 32 NONAME ; class QString QSvgGenerator::fileName(void) const
+	?outputDevice@QSvgGenerator@@QBEPAVQIODevice@@XZ @ 33 NONAME ; class QIODevice * QSvgGenerator::outputDevice(void) const
+	?document@QTextDocumentPrivate@@QAEPAVQTextDocument@@XZ @ 34 NONAME ; class QTextDocument * QTextDocumentPrivate::document(void)
+	?extra@QGraphicsItemPrivate@@QBE?AVQVariant@@W4Extra@1@@Z @ 35 NONAME ; class QVariant QGraphicsItemPrivate::extra(enum QGraphicsItemPrivate::Extra) const
+	?svgFont@QSvgTinyDocument@@QBEPAVQSvgFont@@ABVQString@@@Z @ 36 NONAME ; class QSvgFont * QSvgTinyDocument::svgFont(class QString const &) const
+	?paintEvent@QSvgWidget@@MAEXPAVQPaintEvent@@@Z @ 37 NONAME ; void QSvgWidget::paintEvent(class QPaintEvent *)
+	?paint@QGraphicsSvgItem@@UAEXPAVQPainter@@PBVQStyleOptionGraphicsItem@@PAVQWidget@@@Z @ 38 NONAME ; void QGraphicsSvgItem::paint(class QPainter *, class QStyleOptionGraphicsItem const *, class QWidget *)
+	?qt_metacall@QSvgRenderer@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 39 NONAME ; int QSvgRenderer::qt_metacall(enum QMetaObject::Call, int, void * *)
+	??0QGraphicsItemPrivate@@QAE@XZ @ 40 NONAME ; QGraphicsItemPrivate::QGraphicsItemPrivate(void)
+	?height@QScriptItem@@QBE?AUQFixed@@XZ @ 41 NONAME ; struct QFixed QScriptItem::height(void) const
+	?qt_metacast@QGraphicsSvgItem@@UAEPAXPBD@Z @ 42 NONAME ; void * QGraphicsSvgItem::qt_metacast(char const *)
+	??_EQGraphicsSvgItem@@UAE@I@Z @ 43 NONAME ; QGraphicsSvgItem::~QGraphicsSvgItem(unsigned int)
+	?render@QSvgRenderer@@QAEXPAVQPainter@@ABVQRectF@@@Z @ 44 NONAME ; void QSvgRenderer::render(class QPainter *, class QRectF const &)
+	?setFramesPerSecond@QSvgRenderer@@QAEXH@Z @ 45 NONAME ; void QSvgRenderer::setFramesPerSecond(int)
+	??0QScriptItem@@QAE@XZ @ 46 NONAME ; QScriptItem::QScriptItem(void)
+	??0QSvgRenderer@@QAE@ABVQByteArray@@PAVQObject@@@Z @ 47 NONAME ; QSvgRenderer::QSvgRenderer(class QByteArray const &, class QObject *)
+	?draw@QSvgTinyDocument@@QAEXPAVQPainter@@ABVQRectF@@@Z @ 48 NONAME ; void QSvgTinyDocument::draw(class QPainter *, class QRectF const &)
+	?boundsOnElement@QSvgRenderer@@QBE?AVQRectF@@ABVQString@@@Z @ 49 NONAME ; class QRectF QSvgRenderer::boundsOnElement(class QString const &) const
+	?currentElapsed@QSvgTinyDocument@@QBEHXZ @ 50 NONAME ; int QSvgTinyDocument::currentElapsed(void) const
+	?setFramesPerSecond@QSvgTinyDocument@@QAEXH@Z @ 51 NONAME ; void QSvgTinyDocument::setFramesPerSecond(int)
+	?formatCollection@QTextDocumentPrivate@@QBEPBVQTextFormatCollection@@XZ @ 52 NONAME ; class QTextFormatCollection const * QTextDocumentPrivate::formatCollection(void) const
+	??0QSvgRenderer@@QAE@PAVQXmlStreamReader@@PAVQObject@@@Z @ 53 NONAME ; QSvgRenderer::QSvgRenderer(class QXmlStreamReader *, class QObject *)
+	??0QGraphicsSvgItem@@QAE@ABVQString@@PAVQGraphicsItem@@@Z @ 54 NONAME ; QGraphicsSvgItem::QGraphicsSvgItem(class QString const &, class QGraphicsItem *)
+	??_EQSvgGenerator@@UAE@I@Z @ 55 NONAME ; QSvgGenerator::~QSvgGenerator(unsigned int)
+	?staticMetaObject@QGraphicsSvgItem@@2UQMetaObject@@B @ 56 NONAME ; struct QMetaObject const QGraphicsSvgItem::staticMetaObject
+	?height@QScriptLine@@QBE?AUQFixed@@XZ @ 57 NONAME ; struct QFixed QScriptLine::height(void) const
+	?blockMap@QTextDocumentPrivate@@QAEAAV?$QFragmentMap@VQTextBlockData@@@@XZ @ 58 NONAME ; class QFragmentMap<class QTextBlockData> & QTextDocumentPrivate::blockMap(void)
+	?render@QSvgRenderer@@QAEXPAVQPainter@@@Z @ 59 NONAME ; void QSvgRenderer::render(class QPainter *)
+	??0QSvgRenderer@@QAE@PAVQObject@@@Z @ 60 NONAME ; QSvgRenderer::QSvgRenderer(class QObject *)
+	??1QSvgRenderer@@UAE@XZ @ 61 NONAME ; QSvgRenderer::~QSvgRenderer(void)
+	??8QScriptAnalysis@@QBE_NABU0@@Z @ 62 NONAME ; bool QScriptAnalysis::operator==(struct QScriptAnalysis const &) const
+	?viewBox@QSvgRenderer@@QBE?AVQRect@@XZ @ 63 NONAME ; class QRect QSvgRenderer::viewBox(void) const
+	?isModified@QTextDocumentPrivate@@QBE_NXZ @ 64 NONAME ; bool QTextDocumentPrivate::isModified(void) const
+	?resolution@QSvgGenerator@@QBEHXZ @ 65 NONAME ; int QSvgGenerator::resolution(void) const
+	?staticMetaObject@QSvgRenderer@@2UQMetaObject@@B @ 66 NONAME ; struct QMetaObject const QSvgRenderer::staticMetaObject
+	?setViewBox@QSvgRenderer@@QAEXABVQRectF@@@Z @ 67 NONAME ; void QSvgRenderer::setViewBox(class QRectF const &)
+	?setDescription@QSvgGenerator@@QAEXABVQString@@@Z @ 68 NONAME ; void QSvgGenerator::setDescription(class QString const &)
+	?isUndoAvailable@QTextDocumentPrivate@@QBE_NXZ @ 69 NONAME ; bool QTextDocumentPrivate::isUndoAvailable(void) const
+	?type@QGraphicsSvgItem@@UBEHXZ @ 70 NONAME ; int QGraphicsSvgItem::type(void) const
+	?size@QSvgTinyDocument@@QBE?AVQSize@@XZ @ 71 NONAME ; class QSize QSvgTinyDocument::size(void) const
+	?setResolution@QSvgGenerator@@QAEXH@Z @ 72 NONAME ; void QSvgGenerator::setResolution(int)
+	?setViewBox@QSvgTinyDocument@@QAEXABVQRectF@@@Z @ 73 NONAME ; void QSvgTinyDocument::setViewBox(class QRectF const &)
+	??0QScriptItem@@QAE@HABUQScriptAnalysis@@@Z @ 74 NONAME ; QScriptItem::QScriptItem(int, struct QScriptAnalysis const &)
+	?type@QSvgTinyDocument@@UBE?AW4Type@QSvgNode@@XZ @ 75 NONAME ; enum QSvgNode::Type QSvgTinyDocument::type(void) const
+	?setCachedClipPath@QGraphicsItemPrivate@@QAEXABVQPainterPath@@@Z @ 76 NONAME ; void QGraphicsItemPrivate::setCachedClipPath(class QPainterPath const &)
+	?renderer@QSvgWidget@@QBEPAVQSvgRenderer@@XZ @ 77 NONAME ; class QSvgRenderer * QSvgWidget::renderer(void) const
+	?trUtf8@QSvgRenderer@@SA?AVQString@@PBD0@Z @ 78 NONAME ; class QString QSvgRenderer::trUtf8(char const *, char const *)
+	?setSize@QSvgGenerator@@QAEXABVQSize@@@Z @ 79 NONAME ; void QSvgGenerator::setSize(class QSize const &)
+	?numBlocks@QTextDocumentPrivate@@QBEHXZ @ 80 NONAME ; int QTextDocumentPrivate::numBlocks(void) const
+	?elementExists@QSvgTinyDocument@@QBE_NABVQString@@@Z @ 81 NONAME ; bool QSvgTinyDocument::elementExists(class QString const &) const
+	?fragmentMap@QTextDocumentPrivate@@QAEAAV?$QFragmentMap@VQTextFragmentData@@@@XZ @ 82 NONAME ; class QFragmentMap<class QTextFragmentData> & QTextDocumentPrivate::fragmentMap(void)
+	?description@QSvgGenerator@@QBE?AVQString@@XZ @ 83 NONAME ; class QString QSvgGenerator::description(void) const
+	?setCurrentFrame@QSvgRenderer@@QAEXH@Z @ 84 NONAME ; void QSvgRenderer::setCurrentFrame(int)
+	?load@QSvgRenderer@@QAE_NABVQByteArray@@@Z @ 85 NONAME ; bool QSvgRenderer::load(class QByteArray const &)
+	?currentFrame@QSvgRenderer@@QBEHXZ @ 86 NONAME ; int QSvgRenderer::currentFrame(void) const
+	?tr@QGraphicsSvgItem@@SA?AVQString@@PBD0@Z @ 87 NONAME ; class QString QGraphicsSvgItem::tr(char const *, char const *)
+	?invalidateCachedClipPath@QGraphicsItemPrivate@@QAEXXZ @ 88 NONAME ; void QGraphicsItemPrivate::invalidateCachedClipPath(void)
+	?setHeight@QSvgTinyDocument@@QAEXH_N@Z @ 89 NONAME ; void QSvgTinyDocument::setHeight(int, bool)
+	?boundsOnElement@QSvgTinyDocument@@QBE?AVQRectF@@ABVQString@@@Z @ 90 NONAME ; class QRectF QSvgTinyDocument::boundsOnElement(class QString const &) const
+	?draw@QSvgTinyDocument@@QAEXPAVQPainter@@@Z @ 91 NONAME ; void QSvgTinyDocument::draw(class QPainter *)
+	?qt_metacall@QGraphicsSvgItem@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 92 NONAME ; int QGraphicsSvgItem::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?fragmentMap@QTextDocumentPrivate@@QBEABV?$QFragmentMap@VQTextFragmentData@@@@XZ @ 93 NONAME ; class QFragmentMap<class QTextFragmentData> const & QTextDocumentPrivate::fragmentMap(void) const
+	?metaObject@QSvgWidget@@UBEPBUQMetaObject@@XZ @ 94 NONAME ; struct QMetaObject const * QSvgWidget::metaObject(void) const
+	??_EQSvgTinyDocument@@UAE@I@Z @ 95 NONAME ; QSvgTinyDocument::~QSvgTinyDocument(unsigned int)
+	??0QSvgTinyDocument@@QAE@XZ @ 96 NONAME ; QSvgTinyDocument::QSvgTinyDocument(void)
+	?paintEngine@QSvgGenerator@@MBEPAVQPaintEngine@@XZ @ 97 NONAME ; class QPaintEngine * QSvgGenerator::paintEngine(void) const
+	?animated@QSvgTinyDocument@@QBE_NXZ @ 98 NONAME ; bool QSvgTinyDocument::animated(void) const
+	?staticMetaObject@QSvgWidget@@2UQMetaObject@@B @ 99 NONAME ; struct QMetaObject const QSvgWidget::staticMetaObject
+	?buffer@QTextDocumentPrivate@@QBE?AVQString@@XZ @ 100 NONAME ; class QString QTextDocumentPrivate::buffer(void) const
+	?length@QTextDocumentPrivate@@QBEHXZ @ 101 NONAME ; int QTextDocumentPrivate::length(void) const
+	?sizeHint@QSvgWidget@@UBE?AVQSize@@XZ @ 102 NONAME ; class QSize QSvgWidget::sizeHint(void) const
+	?undo@QTextDocumentPrivate@@QAEXXZ @ 103 NONAME ; void QTextDocumentPrivate::undo(void)
+	?tr@QSvgRenderer@@SA?AVQString@@PBD0H@Z @ 104 NONAME ; class QString QSvgRenderer::tr(char const *, char const *, int)
+	?d_func@QSvgGenerator@@AAEPAVQSvgGeneratorPrivate@@XZ @ 105 NONAME ; class QSvgGeneratorPrivate * QSvgGenerator::d_func(void)
+	?q_func@QTextDocumentPrivate@@AAEPAVQTextDocument@@XZ @ 106 NONAME ; class QTextDocument * QTextDocumentPrivate::q_func(void)
+	?widthPercent@QSvgTinyDocument@@QBE_NXZ @ 107 NONAME ; bool QSvgTinyDocument::widthPercent(void) const
+	?blocksFind@QTextDocumentPrivate@@QBE?AVQTextBlock@@H@Z @ 108 NONAME ; class QTextBlock QTextDocumentPrivate::blocksFind(int) const
+	?qt_metacall@QSvgWidget@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 109 NONAME ; int QSvgWidget::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?isInEditBlock@QTextDocumentPrivate@@QBE_NXZ @ 110 NONAME ; bool QTextDocumentPrivate::isInEditBlock(void) const
+	?document@QTextDocumentPrivate@@QBEPBVQTextDocument@@XZ @ 111 NONAME ; class QTextDocument const * QTextDocumentPrivate::document(void) const
+	?setWidth@QSvgTinyDocument@@QAEXH_N@Z @ 112 NONAME ; void QSvgTinyDocument::setWidth(int, bool)
+	?resolveFont@QGraphicsItemPrivate@@UAEXI@Z @ 113 NONAME ; void QGraphicsItemPrivate::resolveFont(unsigned int)
+	?block@QTextDocumentPrivate@@SAPBVQTextBlockData@@ABVQTextBlock@@@Z @ 114 NONAME ; class QTextBlockData const * QTextDocumentPrivate::block(class QTextBlock const &)
+	?blocksEnd@QTextDocumentPrivate@@QBE?AVQTextBlock@@XZ @ 115 NONAME ; class QTextBlock QTextDocumentPrivate::blocksEnd(void) const
+	?childrenCombineOpacity@QGraphicsItemPrivate@@QBE_NXZ @ 116 NONAME ; bool QGraphicsItemPrivate::childrenCombineOpacity(void) const
+	?isClippedAway@QGraphicsItemPrivate@@QBE_NXZ @ 117 NONAME ; bool QGraphicsItemPrivate::isClippedAway(void) const
+	?trUtf8@QSvgWidget@@SA?AVQString@@PBD0@Z @ 118 NONAME ; class QString QSvgWidget::trUtf8(char const *, char const *)
+	??0QSvgRenderer@@QAE@ABVQString@@PAVQObject@@@Z @ 119 NONAME ; QSvgRenderer::QSvgRenderer(class QString const &, class QObject *)
+	?matrixForElement@QSvgTinyDocument@@QBE?AVQMatrix@@ABVQString@@@Z @ 120 NONAME ; class QMatrix QSvgTinyDocument::matrixForElement(class QString const &) const
+	?title@QSvgGenerator@@QBE?AVQString@@XZ @ 121 NONAME ; class QString QSvgGenerator::title(void) const
+	?size@QSvgGenerator@@QBE?AVQSize@@XZ @ 122 NONAME ; class QSize QSvgGenerator::size(void) const
+	?end@QTextDocumentPrivate@@QBE?AVConstIterator@?$QFragmentMap@VQTextFragmentData@@@@XZ @ 123 NONAME ; class QFragmentMap<class QTextFragmentData>::ConstIterator QTextDocumentPrivate::end(void) const
+	?viewBoxF@QSvgRenderer@@QBE?AVQRectF@@XZ @ 124 NONAME ; class QRectF QSvgRenderer::viewBoxF(void) const
+	?isCachingEnabled@QGraphicsSvgItem@@QBE_NXZ @ 125 NONAME ; bool QGraphicsSvgItem::isCachingEnabled(void) const
+	?defaultSize@QSvgRenderer@@QBE?AVQSize@@XZ @ 126 NONAME ; class QSize QSvgRenderer::defaultSize(void) const
+	?setTitle@QSvgGenerator@@QAEXABVQString@@@Z @ 127 NONAME ; void QSvgGenerator::setTitle(class QString const &)
+	?load@QSvgTinyDocument@@SAPAV1@PAVQXmlStreamReader@@@Z @ 128 NONAME ; class QSvgTinyDocument * QSvgTinyDocument::load(class QXmlStreamReader *)
+	??_EQSvgWidget@@UAE@I@Z @ 129 NONAME ; QSvgWidget::~QSvgWidget(unsigned int)
+	??_EQGraphicsItemPrivate@@UAE@I@Z @ 130 NONAME ; QGraphicsItemPrivate::~QGraphicsItemPrivate(unsigned int)
+	?d_func@QSvgRenderer@@ABEPBVQSvgRendererPrivate@@XZ @ 131 NONAME ; class QSvgRendererPrivate const * QSvgRenderer::d_func(void) const
+	?animated@QSvgRenderer@@QBE_NXZ @ 132 NONAME ; bool QSvgRenderer::animated(void) const
+	??1QGraphicsItemPrivate@@UAE@XZ @ 133 NONAME ; QGraphicsItemPrivate::~QGraphicsItemPrivate(void)
+	?metric@QSvgGenerator@@MBEHW4PaintDeviceMetric@QPaintDevice@@@Z @ 134 NONAME ; int QSvgGenerator::metric(enum QPaintDevice::PaintDeviceMetric) const
+	?resolvePalette@QGraphicsItemPrivate@@UAEXI@Z @ 135 NONAME ; void QGraphicsItemPrivate::resolvePalette(unsigned int)
+	?q_func@QGraphicsItemPrivate@@AAEPAVQGraphicsItem@@XZ @ 136 NONAME ; class QGraphicsItem * QGraphicsItemPrivate::q_func(void)
+	?matrixForElement@QSvgRenderer@@QBE?AVQMatrix@@ABVQString@@@Z @ 137 NONAME ; class QMatrix QSvgRenderer::matrixForElement(class QString const &) const
+	?layout@QTextDocumentPrivate@@QBEPAVQAbstractTextDocumentLayout@@XZ @ 138 NONAME ; class QAbstractTextDocumentLayout * QTextDocumentPrivate::layout(void) const
+	??1QGraphicsSvgItem@@UAE@XZ @ 139 NONAME ; QGraphicsSvgItem::~QGraphicsSvgItem(void)
+	?d_func@QSvgRenderer@@AAEPAVQSvgRendererPrivate@@XZ @ 140 NONAME ; class QSvgRendererPrivate * QSvgRenderer::d_func(void)
+	?qt_metacast@QSvgRenderer@@UAEPAXPBD@Z @ 141 NONAME ; void * QSvgRenderer::qt_metacast(char const *)
+	??1QSvgTinyDocument@@UAE@XZ @ 142 NONAME ; QSvgTinyDocument::~QSvgTinyDocument(void)
+	??1QSvgGenerator@@UAE@XZ @ 143 NONAME ; QSvgGenerator::~QSvgGenerator(void)
+	?load@QSvgTinyDocument@@SAPAV1@ABVQByteArray@@@Z @ 144 NONAME ; class QSvgTinyDocument * QSvgTinyDocument::load(class QByteArray const &)
+	?d_func@QSvgWidget@@AAEPAVQSvgWidgetPrivate@@XZ @ 145 NONAME ; class QSvgWidgetPrivate * QSvgWidget::d_func(void)
+	?isValid@QSvgRenderer@@QBE_NXZ @ 146 NONAME ; bool QSvgRenderer::isValid(void) const
+	?metaObject@QSvgRenderer@@UBEPBUQMetaObject@@XZ @ 147 NONAME ; struct QMetaObject const * QSvgRenderer::metaObject(void) const
+	?addSvgFont@QSvgTinyDocument@@QAEXPAVQSvgFont@@@Z @ 148 NONAME ; void QSvgTinyDocument::addSvgFont(class QSvgFont *)
+	??0QScriptLine@@QAE@XZ @ 149 NONAME ; QScriptLine::QScriptLine(void)
+	?viewBoxF@QSvgGenerator@@QBE?AVQRectF@@XZ @ 150 NONAME ; class QRectF QSvgGenerator::viewBoxF(void) const
+	?tr@QSvgWidget@@SA?AVQString@@PBD0H@Z @ 151 NONAME ; class QString QSvgWidget::tr(char const *, char const *, int)
+	?tr@QSvgWidget@@SA?AVQString@@PBD0@Z @ 152 NONAME ; class QString QSvgWidget::tr(char const *, char const *)
+	??0QSvgWidget@@QAE@PAVQWidget@@@Z @ 153 NONAME ; QSvgWidget::QSvgWidget(class QWidget *)
+	?preserveAspectRatio@QSvgTinyDocument@@QBE_NXZ @ 154 NONAME ; bool QSvgTinyDocument::preserveAspectRatio(void) const
+	?boundingRect@QGraphicsSvgItem@@UBE?AVQRectF@@XZ @ 155 NONAME ; class QRectF QGraphicsSvgItem::boundingRect(void) const
+	?maximumCacheSize@QGraphicsSvgItem@@QBE?AVQSize@@XZ @ 156 NONAME ; class QSize QGraphicsSvgItem::maximumCacheSize(void) const
+	?setSharedRenderer@QGraphicsSvgItem@@QAEXPAVQSvgRenderer@@@Z @ 157 NONAME ; void QGraphicsSvgItem::setSharedRenderer(class QSvgRenderer *)
+	?setViewBox@QSvgRenderer@@QAEXABVQRect@@@Z @ 158 NONAME ; void QSvgRenderer::setViewBox(class QRect const &)
+	?framesPerSecond@QSvgRenderer@@QBEHXZ @ 159 NONAME ; int QSvgRenderer::framesPerSecond(void) const
+	?formatCollection@QTextDocumentPrivate@@QAEPAVQTextFormatCollection@@XZ @ 160 NONAME ; class QTextFormatCollection * QTextDocumentPrivate::formatCollection(void)
+	?tr@QGraphicsSvgItem@@SA?AVQString@@PBD0H@Z @ 161 NONAME ; class QString QGraphicsSvgItem::tr(char const *, char const *, int)
+	?restartAnimation@QSvgTinyDocument@@QAEXXZ @ 162 NONAME ; void QSvgTinyDocument::restartAnimation(void)
+	?currentFrame@QSvgTinyDocument@@QBEHXZ @ 163 NONAME ; int QSvgTinyDocument::currentFrame(void) const
+	?qt_inflateGZipDataFrom@@YA?AVQByteArray@@PAVQIODevice@@@Z @ 164 NONAME ; class QByteArray qt_inflateGZipDataFrom(class QIODevice *)
+	?setFileName@QSvgGenerator@@QAEXABVQString@@@Z @ 165 NONAME ; void QSvgGenerator::setFileName(class QString const &)
+	?renderer@QGraphicsSvgItem@@QBEPAVQSvgRenderer@@XZ @ 166 NONAME ; class QSvgRenderer * QGraphicsSvgItem::renderer(void) const
+	?find@QTextDocumentPrivate@@QBE?AVConstIterator@?$QFragmentMap@VQTextFragmentData@@@@H@Z @ 167 NONAME ; class QFragmentMap<class QTextFragmentData>::ConstIterator QTextDocumentPrivate::find(int) const
+	?draw@QSvgTinyDocument@@QAEXPAVQPainter@@ABVQString@@ABVQRectF@@@Z @ 168 NONAME ; void QSvgTinyDocument::draw(class QPainter *, class QString const &, class QRectF const &)
+	?viewBox@QSvgGenerator@@QBE?AVQRect@@XZ @ 169 NONAME ; class QRect QSvgGenerator::viewBox(void) const
+	?trUtf8@QSvgRenderer@@SA?AVQString@@PBD0H@Z @ 170 NONAME ; class QString QSvgRenderer::trUtf8(char const *, char const *, int)
+	?metaObject@QGraphicsSvgItem@@UBEPBUQMetaObject@@XZ @ 171 NONAME ; struct QMetaObject const * QGraphicsSvgItem::metaObject(void) const
+	?trUtf8@QSvgWidget@@SA?AVQString@@PBD0H@Z @ 172 NONAME ; class QString QSvgWidget::trUtf8(char const *, char const *, int)
+	?setOutputDevice@QSvgGenerator@@QAEXPAVQIODevice@@@Z @ 173 NONAME ; void QSvgGenerator::setOutputDevice(class QIODevice *)
+	?elementId@QGraphicsSvgItem@@QBE?AVQString@@XZ @ 174 NONAME ; class QString QGraphicsSvgItem::elementId(void) const
+	?childrenClippedToShape@QGraphicsItemPrivate@@QBE_NXZ @ 175 NONAME ; bool QGraphicsItemPrivate::childrenClippedToShape(void) const
+	?isInvisible@QGraphicsItemPrivate@@QBE_NXZ @ 176 NONAME ; bool QGraphicsItemPrivate::isInvisible(void) const
+	?load@QSvgWidget@@QAEXABVQByteArray@@@Z @ 177 NONAME ; void QSvgWidget::load(class QByteArray const &)
+	?viewBox@QSvgTinyDocument@@QBE?AVQRectF@@XZ @ 178 NONAME ; class QRectF QSvgTinyDocument::viewBox(void) const
+	?setElementId@QGraphicsSvgItem@@QAEXABVQString@@@Z @ 179 NONAME ; void QGraphicsSvgItem::setElementId(class QString const &)
+	?setAnimated@QSvgTinyDocument@@QAEX_N@Z @ 180 NONAME ; void QSvgTinyDocument::setAnimated(bool)
+	?width@QSvgTinyDocument@@QBEHXZ @ 181 NONAME ; int QSvgTinyDocument::width(void) const
+	?setCurrentFrame@QSvgTinyDocument@@QAEXH@Z @ 182 NONAME ; void QSvgTinyDocument::setCurrentFrame(int)
+	?animationDuration@QSvgRenderer@@QBEHXZ @ 183 NONAME ; int QSvgRenderer::animationDuration(void) const
+	?setExtra@QGraphicsItemPrivate@@QAEXW4Extra@1@ABVQVariant@@@Z @ 184 NONAME ; void QGraphicsItemPrivate::setExtra(enum QGraphicsItemPrivate::Extra, class QVariant const &)
+	?mapSourceToTarget@QSvgTinyDocument@@AAEXPAVQPainter@@ABVQRectF@@1@Z @ 185 NONAME ; void QSvgTinyDocument::mapSourceToTarget(class QPainter *, class QRectF const &, class QRectF const &)
+	?setViewBox@QSvgGenerator@@QAEXABVQRectF@@@Z @ 186 NONAME ; void QSvgGenerator::setViewBox(class QRectF const &)
+	??0QSvgWidget@@QAE@ABVQString@@PAVQWidget@@@Z @ 187 NONAME ; QSvgWidget::QSvgWidget(class QString const &, class QWidget *)
+	??0QGraphicsSvgItem@@QAE@PAVQGraphicsItem@@@Z @ 188 NONAME ; QGraphicsSvgItem::QGraphicsSvgItem(class QGraphicsItem *)
+	?load@QSvgTinyDocument@@SAPAV1@ABVQString@@@Z @ 189 NONAME ; class QSvgTinyDocument * QSvgTinyDocument::load(class QString const &)
+	?setViewBox@QSvgGenerator@@QAEXABVQRect@@@Z @ 190 NONAME ; void QSvgGenerator::setViewBox(class QRect const &)
+	?isFullyTransparent@QGraphicsItemPrivate@@QBE_NXZ @ 191 NONAME ; bool QGraphicsItemPrivate::isFullyTransparent(void) const
+	?setCachingEnabled@QGraphicsSvgItem@@QAEX_N@Z @ 192 NONAME ; void QGraphicsSvgItem::setCachingEnabled(bool)
+	??YQScriptLine@@QAEXABU0@@Z @ 193 NONAME ; void QScriptLine::operator+=(struct QScriptLine const &)
+	?q_func@QTextDocumentPrivate@@ABEPBVQTextDocument@@XZ @ 194 NONAME ; class QTextDocument const * QTextDocumentPrivate::q_func(void) const
+	?trUtf8@QGraphicsSvgItem@@SA?AVQString@@PBD0H@Z @ 195 NONAME ; class QString QGraphicsSvgItem::trUtf8(char const *, char const *, int)
+	?defaultFont@QTextDocumentPrivate@@QBE?AVQFont@@XZ @ 196 NONAME ; class QFont QTextDocumentPrivate::defaultFont(void) const
+	?blocksBegin@QTextDocumentPrivate@@QBE?AVQTextBlock@@XZ @ 197 NONAME ; class QTextBlock QTextDocumentPrivate::blocksBegin(void) const
+	?blockMap@QTextDocumentPrivate@@QBEABV?$QFragmentMap@VQTextBlockData@@@@XZ @ 198 NONAME ; class QFragmentMap<class QTextBlockData> const & QTextDocumentPrivate::blockMap(void) const
+	?heightPercent@QSvgTinyDocument@@QBE_NXZ @ 199 NONAME ; bool QSvgTinyDocument::heightPercent(void) const
+

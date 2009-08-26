@@ -44,6 +44,10 @@
 
 #include <QtCore/qglobal.h>
 
+#ifdef Q_OS_SYMBIAN
+# include <e32def.h>
+#endif
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -87,7 +91,8 @@ Qt {
     Q_FLAGS(MatchFlags)
     Q_FLAGS(KeyboardModifiers MouseButtons)
     Q_ENUMS(WindowType WindowState WindowModality WidgetAttribute ApplicationAttribute)
-    Q_FLAGS(WindowFlags WindowStates)
+    Q_ENUMS(InputMethodHint)
+    Q_FLAGS(WindowFlags WindowStates InputMethodHints)
     Q_ENUMS(ConnectionType)
 #endif // (defined(Q_MOC_RUN) || defined(QT_JAMBI_RUN))
 
@@ -1404,21 +1409,27 @@ public:
         ImFont,
         ImCursorPosition,
         ImSurroundingText,
-        ImCurrentSelection
+        ImCurrentSelection,
+        ImMaximumTextLength,
+        ImAnchorPosition
     };
 
     enum InputMethodHint {
         ImhNone = 0x0,
         ImhHiddenText = 0x1,
-        ImhNumbersOnly = 0x2,
-        ImhUppercaseOnly = 0x4,
-        ImhLowercaseOnly = 0x8,
-        ImhNoAutoUppercase = 0x10,
-        ImhPreferNumbers = 0x20,
-        ImhPreferUppercase = 0x40,
-        ImhPreferLowercase = 0x80,
-        ImhNoPredictiveText = 0x100,
-        ImhDialableCharactersOnly = 0x200
+        ImhNoAutoUppercase = 0x2,
+        ImhPreferNumbers = 0x4,
+        ImhPreferUppercase = 0x8,
+        ImhPreferLowercase = 0x10,
+        ImhNoPredictiveText = 0x20,
+
+        ImhDigitsOnly = 0x10000,
+        ImhFormattedNumbersOnly = 0x20000,
+        ImhUppercaseOnly = 0x40000,
+        ImhLowercaseOnly = 0x80000,
+        ImhDialableCharactersOnly = 0x100000,
+
+        ImhExclusiveInputMask = 0xffff0000
     };
     Q_DECLARE_FLAGS(InputMethodHints, InputMethodHint)
 
@@ -1434,6 +1445,17 @@ public:
         LeftToRight,
         RightToLeft
     };
+
+    enum AnchorPoint {
+        AnchorLeft = 0,
+        AnchorHorizontalCenter,
+        AnchorRight,
+        AnchorTop,
+        AnchorVerticalCenter,
+        AnchorBottom
+    };
+
+
 
     enum DropAction {
         CopyAction = 0x1,
@@ -1515,6 +1537,8 @@ public:
     typedef unsigned long HANDLE;
 #elif defined(Q_WS_QWS)
     typedef void * HANDLE;
+#elif defined(Q_OS_SYMBIAN)
+    typedef unsigned long int HANDLE; // equivalent to TUint32
 #endif
     typedef WindowFlags WFlags;
 
@@ -1568,6 +1592,11 @@ public:
         Uninitialized
     };
 
+    enum CoordinateSystem {
+        DeviceCoordinates,
+        LogicalCoordinates
+    };
+
     enum TouchPointState {
         TouchPointPressed    = 0x01,
         TouchPointMoved      = 0x02,
@@ -1606,8 +1635,8 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::DropActions)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::ItemFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodHints)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
 
 typedef bool (*qInternalCallback)(void **);
 

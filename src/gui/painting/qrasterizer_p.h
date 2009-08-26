@@ -65,7 +65,7 @@ struct QSpanData;
 class QRasterBuffer;
 class QRasterizerPrivate;
 
-class QRasterizer
+class Q_GUI_EXPORT QRasterizer
 {
 public:
     QRasterizer();

@@ -70,7 +70,7 @@
 #   include "private/qcore_mac_p.h"
 #endif
 
-#include "qfontengineglyphcache_p.h"
+#include <private/qfontengineglyphcache_p.h>
 
 struct glyph_metrics_t;
 typedef unsigned int glyph_t;
@@ -112,6 +112,10 @@ public:
         QPF1,
         QPF2,
         Proxy,
+
+        // S60 types
+        S60FontEngine, // Cannot be simply called "S60". Reason is qt_s60Data.h
+
         TestFontEngine = 0x1000
     };
 
@@ -163,7 +167,7 @@ public:
     virtual void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const {}
     virtual void doKerning(QGlyphLayout *, QTextEngine::ShaperFlags) const;
 
-#if !defined(Q_WS_X11) && !defined(Q_WS_WIN) && !defined(Q_WS_MAC)
+#if !defined(Q_WS_X11) && !defined(Q_WS_WIN) && !defined(Q_WS_MAC) && !defined(Q_OS_SYMBIAN)
     virtual void draw(QPaintEngine *p, qreal x, qreal y, const QTextItemInt &si) = 0;
 #endif
     virtual void addGlyphsToPath(glyph_t *glyphs, QFixedPoint *positions, int nglyphs,
@@ -230,7 +234,7 @@ public:
     bool symbol;
     mutable HB_FontRec hbFont;
     mutable HB_Face hbFace;
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     struct KernPair {
         uint left_right;
         QFixed adjust;
@@ -245,6 +249,9 @@ public:
 #endif
 
     int glyphFormat;
+
+protected:
+    static const QVector<QRgb> &grayPalette();
 
 private:
     /// remove old entries from the glyph cache. Helper method for the setGlyphCache ones.
@@ -321,7 +328,7 @@ public:
     virtual bool stringToCMap(const QChar *str, int len, QGlyphLayout *glyphs, int *nglyphs, QTextEngine::ShaperFlags flags) const;
     virtual void recalcAdvances(QGlyphLayout *, QTextEngine::ShaperFlags) const;
 
-#if !defined(Q_WS_X11) && !defined(Q_WS_WIN) && !defined(Q_WS_MAC)
+#if !defined(Q_WS_X11) && !defined(Q_WS_WIN) && !defined(Q_WS_MAC) && !defined(Q_OS_SYMBIAN)
     void draw(QPaintEngine *p, qreal x, qreal y, const QTextItemInt &si);
 #endif
     virtual void addOutlineToPath(qreal x, qreal y, const QGlyphLayout &glyphs, QPainterPath *path, QTextItem::RenderFlags flags);
@@ -616,6 +623,10 @@ QT_END_NAMESPACE
 
 #ifdef Q_WS_WIN
 #   include "private/qfontengine_win_p.h"
+#endif
+
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_FREETYPE)
+#   include "private/qfontengine_ft_p.h"
 #endif
 
 #endif // QFONTENGINE_P_H

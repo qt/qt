@@ -48,8 +48,6 @@
 
 int main(int argc, char * argv[])
 {
-    int widgetNum = 20;
-
     QList<QWidget*> widgets;
     QApplication app(argc, argv);
 

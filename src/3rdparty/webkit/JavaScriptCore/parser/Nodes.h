@@ -36,6 +36,10 @@
 #include <wtf/MathExtras.h>
 #include <wtf/OwnPtr.h>
 
+#ifdef QT_BUILD_SCRIPT_LIB
+#include "SourcePoolQt.h"
+#endif
+
 namespace JSC {
 
     class ArgumentListNode;
@@ -191,9 +195,10 @@ namespace JSC {
     public:
         StatementNode(JSGlobalData*);
 
-        void setLoc(int line0, int line1);
+        void setLoc(int line0, int line1, int column);
         int firstLine() const { return lineNo(); }
         int lastLine() const { return m_lastLine; }
+        int column() const { return m_column; }
 
         virtual bool isEmptyStatement() const { return false; }
         virtual bool isReturnNode() const { return false; }
@@ -203,6 +208,7 @@ namespace JSC {
 
     private:
         int m_lastLine;
+        int m_column;
     };
 
     class NullNode : public ExpressionNode {
@@ -1605,6 +1611,9 @@ namespace JSC {
         Identifier* m_parameters;
         size_t m_parameterCount;
         OwnPtr<CodeBlock> m_code;
+#ifdef QT_BUILD_SCRIPT_LIB
+        SourcePool::SourcePoolToken* sourceToken;
+#endif
     };
 
     class FuncExprNode : public ExpressionNode, public ParserArenaRefCounted {

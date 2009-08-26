@@ -63,6 +63,7 @@ QT_BEGIN_NAMESPACE
 
 class Q_OPENVG_EXPORT QVGPixmapConvolutionFilter : public QPixmapConvolutionFilter
 {
+    Q_OBJECT
 public:
     QVGPixmapConvolutionFilter();
     ~QVGPixmapConvolutionFilter();
@@ -72,6 +73,7 @@ public:
 
 class Q_OPENVG_EXPORT QVGPixmapColorizeFilter : public QPixmapColorizeFilter
 {
+    Q_OBJECT
 public:
     QVGPixmapColorizeFilter();
     ~QVGPixmapColorizeFilter();
@@ -86,6 +88,7 @@ private:
 
 class Q_OPENVG_EXPORT QVGPixmapDropShadowFilter : public QPixmapDropShadowFilter
 {
+    Q_OBJECT
 public:
     QVGPixmapDropShadowFilter();
     ~QVGPixmapDropShadowFilter();
@@ -99,6 +102,16 @@ private:
     mutable int kernelSize;
     mutable bool firstTime;
     mutable QVarLengthArray<VGshort, 16> kernel;
+};
+
+class Q_OPENVG_EXPORT QVGPixmapBlurFilter : public QPixmapBlurFilter
+{
+    Q_OBJECT
+public:
+    QVGPixmapBlurFilter(QObject *parent = 0);
+    ~QVGPixmapBlurFilter();
+
+    void draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect = QRectF()) const;
 };
 
 #endif
