@@ -642,7 +642,7 @@ QSize QToolBarLayout::expandedSize(const QSize &size) const
     return result;
 }
 
-void QToolBarLayout::setExpanded(bool exp)
+void QToolBarLayout::setExpanded(bool exp, bool animated)
 {
     if (exp == expanded)
         return;
@@ -665,7 +665,7 @@ void QToolBarLayout::setExpanded(bool exp)
                 layoutActions(rect.size());
             }
         }
-        layout->layoutState.toolBarAreaLayout.apply(true);
+        layout->layoutState.toolBarAreaLayout.apply(animated);
     }
 }
 
