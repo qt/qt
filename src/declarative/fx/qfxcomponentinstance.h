@@ -50,6 +50,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+//### remove
+//### add component property to Loader
+
 class QFxComponentInstancePrivate;
 class Q_DECLARATIVE_EXPORT QFxComponentInstance : public QFxItem
 {

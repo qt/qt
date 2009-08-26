@@ -79,7 +79,7 @@ public:
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
     void setSource(const QUrl &url);
 
-signals:
+Q_SIGNALS:
     void tileModeChanged();
 
 protected:

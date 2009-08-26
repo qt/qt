@@ -56,7 +56,11 @@ class Q_DECLARATIVE_EXPORT QFxLoader : public QFxItem
     Q_OBJECT
 
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
-    Q_PROPERTY(QFxItem *item READ item)
+    Q_PROPERTY(QFxItem *item READ item) //### NOTIFY itemChanged
+    //### sourceItem
+    //### sourceComponent
+    //### status, progress
+    //### resizeMode { NoResize, SizeLoaderToItem (default), SizeItemToLoader }
 
 public:
     QFxLoader(QFxItem *parent=0);

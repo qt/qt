@@ -50,6 +50,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+//### move to Keys attached property as Keys.forwardTo
+
 class QFxKeyProxyPrivate;
 class Q_DECLARATIVE_EXPORT QFxKeyProxy : public QFxItem
 {
