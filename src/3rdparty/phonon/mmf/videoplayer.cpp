@@ -301,7 +301,9 @@ void MMF::VideoPlayer::videoOutputRegionChanged()
     TRACE_CONTEXT(VideoPlayer::videoOutputRegionChanged, EVideoInternal);
     TRACE_ENTRY_0();
     
+#ifdef PHONON_MMF_DEBUG_VIDEO_OUTPUT
     videoOutput().dump();
+#endif
     
     getNativeWindowSystemHandles();
         

@@ -34,6 +34,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 // rect, i.e. QWidget::winId()->Rect()
 //#define PHONON_MMF_HARD_CODE_VIDEO_RECT
 
+#define PHONON_MMF_DEBUG_VIDEO_OUTPUT
+
 namespace Phonon
 {
     namespace MMF

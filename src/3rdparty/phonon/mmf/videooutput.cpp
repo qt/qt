@@ -45,12 +45,14 @@ MMF::VideoOutput::VideoOutput(QWidget* parent)
 	setAutoFillBackground(false);
 #endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 	
+#ifdef PHONON_MMF_DEBUG_VIDEO_OUTPUT
 	dump();
+#endif
 	
 	TRACE_EXIT_0();
 }
 
-// Debugging video visibility
+#ifdef PHONON_MMF_DEBUG_VIDEO_OUTPUT
 void VideoOutput::dump()
 {
     TRACE_CONTEXT(VideoOutput::dump, EVideoInternal);
@@ -94,6 +96,7 @@ void VideoOutput::dump()
     
     TRACE_EXIT_0();
 }
+#endif // PHONON_MMF_DEBUG_VIDEO_OUTPUT
 
 MMF::VideoOutput::~VideoOutput()
 {

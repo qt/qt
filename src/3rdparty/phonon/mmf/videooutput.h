@@ -50,9 +50,10 @@ namespace Phonon
         	QPaintEngine* paintEngine() const;
         #endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 
-        // Debugging video visibility
+#ifdef PHONON_MMF_DEBUG_VIDEO_OUTPUT
         public:
             void dump();
+#endif
         	
         private:
             QSize m_frameSize;
