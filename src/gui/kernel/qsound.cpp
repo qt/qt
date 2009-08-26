@@ -153,6 +153,9 @@ public:
     \o Qt for Embedded Linux
     \o A built-in mixing sound server is used, accessing \c /dev/dsp
     directly. Only the WAVE format is supported.
+    \o Symbian
+    \o CMdaAudioPlayerUtility is used. All formats that Symbian OS or devices support
+    are supported also by Qt.
     \endtable
 
     Note that QSound does not support \l{resources.html}{resources}.

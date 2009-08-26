@@ -98,6 +98,10 @@ private:
     QString currentPath;
     QFtp *ftp;
     QFile *file;
+
+#ifdef Q_OS_SYMBIAN
+    bool bDefaultIapSet;
+#endif
 //![1]
 };
 

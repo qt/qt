@@ -10,3 +10,8 @@ wince*: {
    DEPLOYMENT += addFiles
 }
 
+symbian: {
+    addFiles.sources = signalbug.exe
+    addFiles.path = \sys\bin
+    DEPLOYMENT += addFiles
+}

@@ -76,12 +76,12 @@
         <ul>
             <li><a href="installation.html">Installation</a> and <a href="how-to-learn-qt.html">First Steps with Qt</a></li>
             <li><a href="tutorials.html">Tutorials</a> and <a href="examples.html">Examples</a></li>
-            <li><a href="demos.html">Demonstrations</a> and <a href="qt4-5-intro.html"><b>New in Qt 4.5</b></a></li>
+            <li><a href="demos.html">Demonstrations</a> and <a href="qt4-6-intro.html"><b>New in Qt 4.6</b></a></li>
         </ul>
         </td>
         <td valign="top">
         <ul>
-            <li><a href="classlists.html">C++ Class Documentation</a></li>
+            <li><a href="classlists.html">Class and Function Documentation</a></li>
             <li><a href="frameworks-technologies.html">Frameworks and Technologies</a></li>
             <li><a href="best-practices.html">How-To&#39;s and Best Practices</a></li>
         </ul>

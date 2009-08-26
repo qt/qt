@@ -384,7 +384,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         QImage texImage = qt_imageForBrush(style, false);
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, true);
+        ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, true, QGLContext::InternalBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, true);
     }
     else if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern) {
@@ -410,7 +410,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         const QPixmap& texPixmap = currentBrush->texture();
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
-        ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA, true);
+        ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, true);
     }
     brushTextureDirty = false;
@@ -666,7 +666,7 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
     GLfloat dx = 1.0 / textureSize.width();
     GLfloat dy = 1.0 / textureSize.height();
 
-    QGLRect srcTextureRect(src.left*dx, 1.0 - src.top*dy, src.right*dx, 1.0 - src.bottom*dy);
+    QGLRect srcTextureRect(src.left*dx, src.top*dy, src.right*dx, src.bottom*dy);
 
     setCoords(staticVertexCoordinateArray, dest);
     setCoords(staticTextureCoordinateArray, srcTextureRect);
@@ -718,6 +718,12 @@ void QGL2PaintEngineEx::sync()
     glClearDepth(1);
 
     d->needsSync = true;
+}
+
+const QGLContext *QGL2PaintEngineEx::context()
+{
+    Q_D(QGL2PaintEngineEx);
+    return d->ctx;
 }
 
 void QGL2PaintEngineExPrivate::transferMode(EngineMode newMode)
@@ -1085,10 +1091,11 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
 
     QGLContext *ctx = d->ctx;
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
-    QGLTexture *texture = ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, true, true);
+    QGLTexture *texture =
+        ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
 
-    GLfloat top = texture->yInverted ? (pixmap.height() - src.top()) : src.top();
-    GLfloat bottom = texture->yInverted ? (pixmap.height() - src.bottom()) : src.bottom();
+    GLfloat top = texture->options & QGLContext::InvertedYBindOption ? (pixmap.height() - src.top()) : src.top();
+    GLfloat bottom = texture->options & QGLContext::InvertedYBindOption ? (pixmap.height() - src.bottom()) : src.bottom();
     QGLRect srcRect(src.left(), top, src.right(), bottom);
 
     bool isBitmap = pixmap.isQBitmap();
@@ -1108,12 +1115,28 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
 
     QGLContext *ctx = d->ctx;
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
-    QGLTexture *texture = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true);
+    QGLTexture *texture = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true,
+                                                     QGLContext::InternalBindOption);
     GLuint id = texture->id;
 
     d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT,
                            state()->renderHints & QPainter::SmoothPixmapTransform, id);
     d->drawTexture(dest, src, image.size(), !image.hasAlphaChannel());
+}
+
+void QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const QSize &size, const QRectF &src)
+{
+    Q_D(QGL2PaintEngineEx);
+    ensureActive();
+    d->transferMode(ImageDrawingMode);
+
+    QGLContext *ctx = d->ctx;
+    glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
+    d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT,
+                           state()->renderHints & QPainter::SmoothPixmapTransform, textureId);
+    d->drawTexture(dest, src, size, false);
 }
 
 void QGL2PaintEngineEx::drawTextItem(const QPointF &p, const QTextItem &textItem)
@@ -1229,7 +1252,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
     if (d->ctx->d_ptr->active_engine) {
         QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->ctx->d_ptr->active_engine);
-        QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
+        QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
         p->transferMode(BrushDrawingMode);
         p->drawable.doneCurrent();
     }
@@ -1313,7 +1336,7 @@ bool QGL2PaintEngineEx::end()
     if (ctx->d_ptr->active_engine != this) {
         QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
         if (engine && engine->isActive()) {
-            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
+            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
             p->transferMode(BrushDrawingMode);
             p->drawable.doneCurrent();
         }
@@ -1345,7 +1368,7 @@ void QGL2PaintEngineEx::ensureActive()
     if (isActive() && ctx->d_ptr->active_engine != this) {
         QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
         if (engine && engine->isActive()) {
-            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr);
+            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
             p->transferMode(BrushDrawingMode);
             p->drawable.doneCurrent();
         }
@@ -1718,6 +1741,14 @@ QOpenGL2PaintEngineState::QOpenGL2PaintEngineState()
 
 QOpenGL2PaintEngineState::~QOpenGL2PaintEngineState()
 {
+}
+
+QPixmapFilter *QGL2PaintEngineEx::createPixmapFilter(int type) const
+{
+    const QGLContext *ctx = QGLContext::currentContext();
+    if (ctx)
+        return ctx->d_func()->createPixmapFilter(type);
+    return 0;
 }
 
 QT_END_NAMESPACE

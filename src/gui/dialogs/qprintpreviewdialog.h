@@ -94,7 +94,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_previewChanged())
     Q_PRIVATE_SLOT(d_func(), void _q_zoomFactorChanged())
 
-    QPrintPreviewDialogPrivate *d_ptr;
+    void *dummy; // ### Qt 5 - remove me
 };
 
 

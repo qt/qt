@@ -64,6 +64,11 @@ namespace Phonon
             ::CoUninitialize();
         }
 
+        QMutex *Backend::directShowMutex()
+        {
+            return &qobject_cast<Backend*>(qt_plugin_instance())->m_directShowMutex;
+        }
+
         QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const QList<QVariant> &args)
         {
             switch (c)
@@ -131,6 +136,7 @@ namespace Phonon
 
         QList<int> Backend::objectDescriptionIndexes(Phonon::ObjectDescriptionType type) const
         {
+            QMutexLocker locker(&m_directShowMutex);
             QList<int> ret;
 
             switch(type)
@@ -157,7 +163,7 @@ namespace Phonon
                     while (S_OK == enumMon->Next(1, mon.pparam(), 0)) {
                         LPOLESTR str = 0;
                         mon->GetDisplayName(0,0,&str);
-                        const QString name = QString::fromUtf16((unsigned short*)str);
+                        const QString name = QString::fromWCharArray(str);
 						ComPointer<IMalloc> alloc;
 						::CoGetMalloc(1, alloc.pparam());
                         alloc->Free(str);
@@ -204,6 +210,7 @@ namespace Phonon
 
         QHash<QByteArray, QVariant> Backend::objectDescriptionProperties(Phonon::ObjectDescriptionType type, int index) const
         {
+            QMutexLocker locker(&m_directShowMutex);
             QHash<QByteArray, QVariant> ret;
             switch (type)
             {
@@ -216,7 +223,7 @@ namespace Phonon
                     LPOLESTR str = 0;
                     HRESULT hr = mon->GetDisplayName(0,0, &str);
                     if (SUCCEEDED(hr)) {
-                        QString name = QString::fromUtf16((unsigned short*)str);
+                        QString name = QString::fromWCharArray(str);
 						ComPointer<IMalloc> alloc;
 						::CoGetMalloc(1, alloc.pparam());
                         alloc->Free(str);
@@ -231,7 +238,7 @@ namespace Phonon
                     WCHAR name[80]; // 80 is clearly stated in the MSDN doc
                     HRESULT hr = ::DMOGetName(m_audioEffects[index], name);
                     if (SUCCEEDED(hr)) {
-                        ret["name"] = QString::fromUtf16((unsigned short*)name);
+                        ret["name"] = QString::fromWCharArray(name);
                     }
                 }
                 break;

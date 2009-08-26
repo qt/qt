@@ -165,7 +165,7 @@ public:
     virtual bool winEventFilter(MSG *message, long *result);
 #endif
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     static void watchUnixSignal(int signal, bool watch);
 #endif
 
@@ -195,6 +195,8 @@ private:
     void init();
 
     static QCoreApplication *self;
+    
+    Q_DISABLE_COPY(QCoreApplication)
 
     friend class QEventDispatcherUNIXPrivate;
     friend class QApplication;

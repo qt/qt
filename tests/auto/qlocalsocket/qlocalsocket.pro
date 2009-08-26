@@ -1,3 +1,3 @@
 TEMPLATE = subdirs
 SUBDIRS = lackey test
-!wince*: SUBDIRS += example
+!wince*:!symbian*: SUBDIRS += example

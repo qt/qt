@@ -590,9 +590,8 @@ void QtGradientStopsControllerPrivate::slotZoomChanged(double zoom)
 }
 
 QtGradientStopsController::QtGradientStopsController(QObject *parent)
-    : QObject(parent)
+    : QObject(parent), d_ptr(new QtGradientStopsControllerPrivate())
 {
-    d_ptr = new QtGradientStopsControllerPrivate();
     d_ptr->q_ptr = this;
 
     d_ptr->m_spec = QColor::Hsv;
@@ -671,7 +670,6 @@ void QtGradientStopsController::setUi(Ui::QtGradientEditor *ui)
 
 QtGradientStopsController::~QtGradientStopsController()
 {
-    delete d_ptr;
 }
 
 void QtGradientStopsController::setGradientStops(const QGradientStops &stops)

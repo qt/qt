@@ -98,7 +98,11 @@ JSValue JSC_HOST_CALL functionProtoFuncToString(ExecState* exec, JSObject*, JSVa
         return jsString(exec, "function " + function->name(&exec->globalData()) + "() {\n    [native code]\n}");
     }
 
+#ifdef QT_BUILD_SCRIPT_LIB  //same error message as in the old engine, and in mozilla
+    return throwError(exec, TypeError, "Function.prototype.toString called on incompatible object");
+#else
     return throwError(exec, TypeError);
+#endif
 }
 
 JSValue JSC_HOST_CALL functionProtoFuncApply(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

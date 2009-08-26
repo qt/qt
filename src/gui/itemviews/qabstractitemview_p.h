@@ -126,6 +126,15 @@ public:
     void doDelayedItemsLayout(int delay = 0);
     void interruptDelayedItemsLayout() const;
 
+    void startAutoScroll()
+    {   // ### it would be nice to make this into a style hint one day
+        int scrollInterval = (verticalScrollMode == QAbstractItemView::ScrollPerItem) ? 150 : 50;
+        autoScrollTimer.start(scrollInterval, q_func());
+        autoScrollCount = 0;
+    }
+    void stopAutoScroll() { autoScrollTimer.stop(); autoScrollCount = 0;}
+
+
     bool dropOn(QDropEvent *event, int *row, int *col, QModelIndex *index);
     bool droppingOnItself(QDropEvent *event, const QModelIndex &index);
 
@@ -312,7 +321,7 @@ public:
      */
     inline bool isPersistent(const QModelIndex &index) const
     {
-        return static_cast<QAbstractItemModelPrivate *>(model->d_ptr)->persistent.indexes.contains(index);
+        return static_cast<QAbstractItemModelPrivate *>(model->d_ptr.data())->persistent.indexes.contains(index);
     }
 
     QModelIndexList selectedDraggableIndexes() const;

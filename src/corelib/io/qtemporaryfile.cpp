@@ -514,6 +514,10 @@ QTemporaryFile::QTemporaryFile()
 {
     Q_D(QTemporaryFile);
     d->templateName = QDir::tempPath() + QLatin1String("/qt_temp.XXXXXX");
+#ifdef Q_OS_SYMBIAN
+    //Just to verify that folder really exist on hardware
+    fileEngine()->mkdir(QDir::tempPath(), true);
+#endif
 }
 
 /*!

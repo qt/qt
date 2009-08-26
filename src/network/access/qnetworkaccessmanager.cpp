@@ -768,8 +768,8 @@ void QNetworkAccessManagerPrivate::createCookieJar() const
     if (!cookieJarCreated) {
         // keep the ugly hack in here
         QNetworkAccessManagerPrivate *that = const_cast<QNetworkAccessManagerPrivate *>(this);
-        that->cookieJarCreated = true;
         that->cookieJar = new QNetworkCookieJar(that->q_func());
+        that->cookieJarCreated = true;
     }
 }
 

@@ -78,6 +78,8 @@ public:
     QChar thousand;
 
     inline void init() {
+        Q_Q(QSpinBox);
+        q->setInputMethodHints(Qt::ImhDigitsOnly);
         setLayoutItemMargins(QStyle::SE_SpinBoxLayoutItem);
     }
 };
@@ -98,6 +100,11 @@ public:
     // variables
     int decimals;
     QChar delimiter, thousand;
+
+    inline void init() {
+        Q_Q(QDoubleSpinBox);
+        q->setInputMethodHints(Qt::ImhFormattedNumbersOnly);
+    }
 };
 
 
@@ -599,6 +606,8 @@ void QSpinBox::fixup(QString &input) const
 QDoubleSpinBox::QDoubleSpinBox(QWidget *parent)
     : QAbstractSpinBox(*new QDoubleSpinBoxPrivate(parent), parent)
 {
+    Q_D(QDoubleSpinBox);
+    d->init();
 }
 
 /*!

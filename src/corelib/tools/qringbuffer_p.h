@@ -245,9 +245,7 @@ public:
 
     inline void clear() {
         if(!buffers.isEmpty()) {
-            QByteArray tmp = buffers[0];
-            buffers.clear();
-            buffers << tmp;
+            buffers.erase(buffers.begin() + 1, buffers.end());
             if (buffers.at(0).size() != basicBlockSize)
                 buffers[0].resize(basicBlockSize);
         }

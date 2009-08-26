@@ -4,9 +4,12 @@ TEMPLATE = subdirs
 unset(SRC_SUBDIRS)
 win32:SRC_SUBDIRS += src_winmain
 wince*:{
-  SRC_SUBDIRS += src_corelib src_xml src_gui src_sql src_network src_script src_testlib
+  SRC_SUBDIRS += src_corelib src_xml src_gui src_sql src_network src_testlib
+} else:symbian {
+  SRC_SUBDIRS += src_s60main src_corelib src_xml src_gui src_network src_sql src_testlib
+  SRC_SUBDIRS += $$QT_SOURCE_TREE/src/s60installs/qt_libs.pro
 } else {
-    SRC_SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_corelib src_xml src_network src_gui src_sql src_script src_testlib
+    SRC_SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_corelib src_xml src_network src_gui src_sql src_testlib
     !vxworks:contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
     contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
     !cross_compile {
@@ -28,9 +31,12 @@ contains(QT_CONFIG, webkit)  {
     #exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): SRC_SUBDIRS += src_javascriptcore
     SRC_SUBDIRS += src_webkit
 }
+contains(QT_CONFIG, script): SRC_SUBDIRS += src_script
 contains(QT_CONFIG, scripttools): SRC_SUBDIRS += src_scripttools
 SRC_SUBDIRS += src_plugins
 
+src_s60main.subdir = $$QT_SOURCE_TREE/src/s60main
+src_s60main.target = sub-s60main
 src_winmain.subdir = $$QT_SOURCE_TREE/src/winmain
 src_winmain.target = sub-winmain
 src_tools_bootstrap.subdir = $$QT_SOURCE_TREE/src/tools/bootstrap
@@ -87,7 +93,7 @@ src_webkit.subdir = $$QT_SOURCE_TREE/src/3rdparty/webkit/WebCore
 src_webkit.target = sub-webkit
 
 #CONFIG += ordered
-!wince*:!ordered {
+!wince*:!symbian:!ordered {
    src_tools_moc.depends = src_tools_bootstrap
    src_tools_rcc.depends = src_tools_bootstrap
    src_tools_uic.depends = src_tools_bootstrap
@@ -123,6 +129,7 @@ src_webkit.target = sub-webkit
    }
 }
 
+!symbian {
 # This creates a sub-src rule
 sub_src_target.CONFIG = recursive
 sub_src_target.recurse = $$SRC_SUBDIRS
@@ -171,6 +178,7 @@ for(subname, SRC_SUBDIRS) {
 debug.depends = $$EXTRA_DEBUG_TARGETS
 release.depends = $$EXTRA_RELEASE_TARGETS
 QMAKE_EXTRA_TARGETS += debug release
+}
 
 SUBDIRS += $$SRC_SUBDIRS
 

@@ -116,6 +116,12 @@ extern "C" typedef int (qt_atomic_eabi_cmpxchg_ptr_t)(void *oldval, void *newval
 extern Q_CORE_EXPORT char q_atomic_lock;
 Q_CORE_EXPORT void qt_atomic_yield(int *);
 
+#ifdef Q_CC_RVCT
+
+Q_CORE_EXPORT __asm char q_atomic_swp(volatile char *ptr, char newval);
+
+#else
+
 inline char q_atomic_swp(volatile char *ptr, char newval)
 {
     register char ret;
@@ -126,7 +132,9 @@ inline char q_atomic_swp(volatile char *ptr, char newval)
     return ret;
 }
 
-#endif
+#endif // Q_CC_RVCT
+
+#endif // QT_NO_ARM_EABI
 
 // Reference counting
 
@@ -213,6 +221,8 @@ inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
 
 // Fetch and store for integers
 
+#ifndef Q_CC_RVCT
+
 inline int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
 {
     int originalValue;
@@ -222,6 +232,8 @@ inline int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
                  : "cc", "memory");
     return originalValue;
 }
+
+#endif
 
 inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
 {
@@ -323,6 +335,22 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValu
 
 // Fetch and store for pointers
 
+#ifdef Q_CC_RVCT
+
+template <typename T>
+__asm T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
+{
+    add r2, pc, #0
+    bx r2
+    arm
+    swp r2,r1,[r0]
+    mov r0, r2
+    bx lr
+    thumb
+}
+
+#else
+
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
 {
@@ -333,6 +361,8 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
                  : "cc", "memory");
     return originalValue;
 }
+
+#endif // Q_CC_RVCT
 
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)

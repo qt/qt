@@ -71,13 +71,9 @@ public:
     void setCurrentBrush(const QString &name);
 
     QPixmap brushPixmap(const QBrush &brush) const;
-signals:
-    void brushAdded(const QString &name, const QBrush &brush);
-    void brushRemoved(const QString &name);
-    void currentBrushChanged(const QString &name, const QBrush &brush);
 
 private:
-    QtBrushManagerPrivate *d_ptr;
+    QScopedPointer<QtBrushManagerPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtBrushManager)
     Q_DISABLE_COPY(QtBrushManager)
 };

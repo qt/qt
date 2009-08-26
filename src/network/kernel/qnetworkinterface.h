@@ -43,6 +43,7 @@
 #define QNETWORKINTERFACE_H
 
 #include <QtCore/qshareddata.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtNetwork/qhostaddress.h>
 
 #ifndef QT_NO_NETWORKINTERFACE
@@ -79,7 +80,7 @@ public:
     void setBroadcast(const QHostAddress &newBroadcast);
 
 private:
-    QNetworkAddressEntryPrivate *d;
+    QScopedPointer<QNetworkAddressEntryPrivate> d;
 };
 
 class QNetworkInterfacePrivate;

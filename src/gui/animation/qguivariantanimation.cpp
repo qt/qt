@@ -45,6 +45,10 @@
 #include <private/qvariantanimation_p.h>
 
 #include <QtGui/qcolor.h>
+#include <QtGui/qvector2d.h>
+#include <QtGui/qvector3d.h>
+#include <QtGui/qvector4d.h>
+#include <QtGui/qquaternion.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -56,17 +60,35 @@ template<> Q_INLINE_TEMPLATE QColor _q_interpolate(const QColor &f,const QColor 
                   _q_interpolate(f.alpha(), t.alpha(), progress));
 }
 
+template<> Q_INLINE_TEMPLATE QQuaternion _q_interpolate(const QQuaternion &f,const QQuaternion &t, qreal progress)
+{
+    return QQuaternion::slerp(f, t, progress);
+}
+
 static int qRegisterGuiGetInterpolator()
 {
     qRegisterAnimationInterpolator<QColor>(_q_interpolateVariant<QColor>);
+    qRegisterAnimationInterpolator<QVector2D>(_q_interpolateVariant<QVector2D>);
+    qRegisterAnimationInterpolator<QVector3D>(_q_interpolateVariant<QVector3D>);
+    qRegisterAnimationInterpolator<QVector4D>(_q_interpolateVariant<QVector4D>);
+    qRegisterAnimationInterpolator<QQuaternion>(_q_interpolateVariant<QQuaternion>);
     return 1;
 }
 Q_CONSTRUCTOR_FUNCTION(qRegisterGuiGetInterpolator)
 
 static int qUnregisterGuiGetInterpolator()
 {
+    // casts required by Sun CC 5.5
     qRegisterAnimationInterpolator<QColor>(
-        (QVariant (*)(const QColor &, const QColor &, qreal))0); // cast required by Sun CC 5.5
+        (QVariant (*)(const QColor &, const QColor &, qreal))0);
+    qRegisterAnimationInterpolator<QVector2D>(
+        (QVariant (*)(const QVector2D &, const QVector2D &, qreal))0);
+    qRegisterAnimationInterpolator<QVector3D>(
+        (QVariant (*)(const QVector3D &, const QVector3D &, qreal))0);
+    qRegisterAnimationInterpolator<QVector4D>(
+        (QVariant (*)(const QVector4D &, const QVector4D &, qreal))0);
+    qRegisterAnimationInterpolator<QQuaternion>(
+        (QVariant (*)(const QQuaternion &, const QQuaternion &, qreal))0);
 
     return 1;
 }

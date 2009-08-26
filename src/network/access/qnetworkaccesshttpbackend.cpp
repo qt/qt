@@ -687,10 +687,15 @@ void QNetworkAccessHttpBackend::replyFinished()
     // store the SSL configuration now
     // once we call finished(), we won't have access to httpReply anymore
     QSslConfiguration sslConfig = httpReply->sslConfiguration();
-    if (pendingSslConfiguration)
+    if (pendingSslConfiguration) {
         *pendingSslConfiguration = sslConfig;
-    else if (!sslConfig.isNull())
-        pendingSslConfiguration = new QSslConfiguration(sslConfig);
+    } else if (!sslConfig.isNull()) {
+        QT_TRY {
+            pendingSslConfiguration = new QSslConfiguration(sslConfig);
+        } QT_CATCH(...) {
+            qWarning("QNetworkAccess: could not allocate a QSslConfiguration object for a SSL connection.");
+        }
+    }
 #endif
 
     finished();
@@ -716,6 +721,8 @@ void QNetworkAccessHttpBackend::checkForRedirect(const int statusCode)
 
 void QNetworkAccessHttpBackend::replyHeaderChanged()
 {
+    setAttribute(QNetworkRequest::HttpPipeliningWasUsedAttribute, httpReply->isPipeliningUsed());
+
     // reconstruct the HTTP header
     QList<QPair<QByteArray, QByteArray> > headerMap = httpReply->header();
     QList<QPair<QByteArray, QByteArray> >::ConstIterator it = headerMap.constBegin(),

@@ -81,7 +81,8 @@ static QString qt_strippedText(QString s)
 
 QActionPrivate::QActionPrivate() : group(0), enabled(1), forceDisabled(0),
                                    visible(1), forceInvisible(0), checkable(0), checked(0), separator(0), fontSet(false),
-                                   menuRole(QAction::TextHeuristicRole), priority(QAction::NormalPriority), iconVisibleInMenu(-1)
+                                   menuRole(QAction::TextHeuristicRole), softKeyRole(QAction::OptionsSoftKey),
+                                   priority(QAction::NormalPriority), iconVisibleInMenu(-1)
 {
 #ifdef QT3_SUPPORT
     static int qt_static_action_id = -1;
@@ -261,6 +262,11 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
            \c{Info.plist} file in the application's bundle (See \l{Deploying an Application on Mac OS X}).
     \value PreferencesRole This action should be placed where the  "Preferences..." menu item is in the application menu.
     \value QuitRole This action should be placed where the Quit menu item is in the application menu.
+
+    Setting this value only has effect on items that are in the immediate menus
+    of the menubar, not the submenus of those menus. For example, if you have
+    File menu in your menubar and the File menu has a submenu, setting the
+    MenuRole for the actions in that submenu have no effect. They will never be moved.
 */
 
 /*!
@@ -1404,6 +1410,32 @@ QAction::MenuRole QAction::menuRole() const
 {
     Q_D(const QAction);
     return d->menuRole;
+}
+
+/*!
+    \property QAction::softKeyRole
+    \brief the action's softkey role
+    \since 4.6
+
+    This indicates what softkey action this action is. Usually used on mobile
+    platforms to map QActions to hardware keys.
+
+    The softkey role can be changed any time.
+*/
+void QAction::setSoftKeyRole(SoftKeyRole softKeyRole)
+{
+    Q_D(QAction);
+    if (d->softKeyRole == softKeyRole)
+        return;
+
+    d->softKeyRole = softKeyRole;
+    d->sendDataChanged();
+}
+
+QAction::SoftKeyRole QAction::softKeyRole() const
+{
+    Q_D(const QAction);
+    return d->softKeyRole;
 }
 
 /*!

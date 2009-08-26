@@ -187,6 +187,10 @@ bool QHttpNetworkReply::isFinished() const
     return d_func()->state == QHttpNetworkReplyPrivate::AllDoneState;
 }
 
+bool QHttpNetworkReply::isPipeliningUsed() const
+{
+    return d_func()->pipeliningUsed;
+}
 
 
 QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
@@ -195,6 +199,7 @@ QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
       chunkedTransferEncoding(0),
       currentChunkSize(0), currentChunkRead(0), connection(0), initInflate(false),
       autoDecompress(false), responseData(), requestIsPrepared(false)
+      ,pipeliningUsed(false)
 {
 }
 
@@ -483,8 +488,6 @@ bool QHttpNetworkReplyPrivate::parseStatus(const QByteArray &status)
 qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
 {
     qint64 bytes = 0;
-    char crlfcrlf[5];
-    crlfcrlf[4] = '\0';
     char c = 0;
     bool allHeaders = false;
     while (!allHeaders && socket->bytesAvailable()) {

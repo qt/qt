@@ -62,6 +62,10 @@
 #include "QtCore/qmap.h"
 #include "private/qobject_p.h"
 
+#ifdef Q_OS_SYMBIAN
+#include <e32base.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class QAbstractEventDispatcher;
@@ -132,37 +136,28 @@ public:
     QWaitCondition thread_done;
 
     static void *start(void *arg);
-    static void finish(void *arg);
+#if defined(Q_OS_SYMBIAN)
+    static void finish(void *arg, bool lockAnyway=true, bool closeNativeHandle=true);
+#else
+    static void finish(void *);
 #endif
+#endif // Q_OS_UNIX
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     HANDLE handle;
     unsigned int id;
     int waiters;
-    bool terminationEnabled, terminatePending;
 
     static unsigned int __stdcall start(void *);
     static void finish(void *, bool lockAnyway=true);
 #endif // Q_OS_WIN32
 
+#if defined(Q_OS_WIN32) || defined(Q_OS_WINCE) || defined (Q_OS_SYMBIAN)
+    bool terminationEnabled, terminatePending;
+# endif
     QThreadData *data;
 
     static void createEventDispatcher(QThreadData *data);
-};
-
-// thread wrapper for the main() thread
-class QAdoptedThread : public QThread
-{
-    Q_DECLARE_PRIVATE(QThread)
-
-public:
-    QAdoptedThread(QThreadData *data = 0);
-    ~QAdoptedThread();
-    void init();
-
-    static QThread *createThreadForAdoption();
-private:
-    void run();
 };
 
 #else // QT_NO_THREAD
@@ -170,8 +165,8 @@ private:
 class QThreadPrivate : public QObjectPrivate
 {
 public:
-    QThreadPrivate() : data(QThreadData::current()) {}
-    ~QThreadPrivate() { }
+    QThreadPrivate(QThreadData *d = 0) : data(d ? d : new QThreadData) {}
+    ~QThreadPrivate() { delete data; }
 
     QThreadData *data;
 
@@ -210,6 +205,25 @@ public:
     QMap<int, void *> tls;
 
     QMutex mutex;
+
+# ifdef Q_OS_SYMBIAN
+    RThread symbian_thread_handle;
+# endif
+};
+
+// thread wrapper for the main() thread
+class QAdoptedThread : public QThread
+{
+    Q_DECLARE_PRIVATE(QThread)
+
+public:
+    QAdoptedThread(QThreadData *data = 0);
+    ~QAdoptedThread();
+    void init();
+
+    static QThread *createThreadForAdoption();
+private:
+    void run();
 };
 
 QT_END_NAMESPACE

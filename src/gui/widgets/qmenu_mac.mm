@@ -728,6 +728,9 @@ bool qt_mac_menubar_is_open()
 
 void qt_mac_clear_menubar()
 {
+    if (QApplication::testAttribute(Qt::AA_MacPluginApplication))
+        return;
+
 #ifndef QT_MAC_USE_COCOA
     MenuRef clear_menu = 0;
     if (CreateNewMenu(0, 0, &clear_menu) == noErr) {
@@ -1361,7 +1364,7 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
     if (!action->action->icon().isNull()
             && action->action->isIconVisibleInMenu()) {
         data.iconType = kMenuIconRefType;
-        data.iconHandle = (Handle)qt_mac_create_iconref(action->action->icon().pixmap(22, QIcon::Normal));
+        data.iconHandle = (Handle)qt_mac_create_iconref(action->action->icon().pixmap(16, QIcon::Normal));
     } else {
         data.iconType = kMenuNoIcon;
     }
@@ -1400,7 +1403,7 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
     // Cocoa icon
     NSImage *nsimage = 0;
     if (!action->action->icon().isNull() && action->action->isIconVisibleInMenu()) {
-        nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(action->action->icon().pixmap(22, QIcon::Normal)));
+        nsimage = static_cast<NSImage *>(qt_mac_create_nsimage(action->action->icon().pixmap(16, QIcon::Normal)));
     }
     [item setImage:nsimage];
     [nsimage release];
@@ -1754,14 +1757,16 @@ void
 QMenuBarPrivate::macCreateMenuBar(QWidget *parent)
 {
     Q_Q(QMenuBar);
-    static int checkEnv = -1;
+    static int dontUseNativeMenuBar = -1;
     // We call the isNativeMenuBar function here
-    // becasue that will make sure that local overrides
+    // because that will make sure that local overrides
     // are dealt with correctly.
     bool qt_mac_no_native_menubar = !q->isNativeMenuBar();
-    if (qt_mac_no_native_menubar == false && checkEnv < 0) {
-        checkEnv = !qgetenv("QT_MAC_NO_NATIVE_MENUBAR").isEmpty();
-        QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, checkEnv);
+    if (qt_mac_no_native_menubar == false && dontUseNativeMenuBar < 0) {
+        bool isPlugin = QApplication::testAttribute(Qt::AA_MacPluginApplication);
+        bool environmentSaysNo = !qgetenv("QT_MAC_NO_NATIVE_MENUBAR").isEmpty();
+        dontUseNativeMenuBar = isPlugin || environmentSaysNo;
+        QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, dontUseNativeMenuBar);
         qt_mac_no_native_menubar = !q->isNativeMenuBar();
     }
     if (!qt_mac_no_native_menubar) {

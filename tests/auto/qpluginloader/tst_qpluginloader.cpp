@@ -87,6 +87,12 @@
 # endif
 # define PREFIX         ""
 
+#elif defined(Q_OS_SYMBIAN)
+# undef dll_VALID
+# define dll_VALID      true
+# define SUFFIX         ".dll"
+# define PREFIX         ""
+
 #else  // all other Unix
 # undef so_VALID
 # define so_VALID       true
@@ -116,7 +122,7 @@ private slots:
     void errorString();
     void loadHints();
     void deleteinstanceOnUnload();
-
+    void checkingStubsFromDifferentDrives();
 };
 
 tst_QPluginLoader::tst_QPluginLoader()
@@ -210,7 +216,7 @@ void tst_QPluginLoader::errorString()
     QVERIFY(loader.errorString() != unknown);
     }
 
-#if !defined Q_OS_WIN && !defined Q_OS_MAC && !defined Q_OS_HPUX
+#if !defined Q_OS_WIN && !defined Q_OS_MAC && !defined Q_OS_HPUX && !defined Q_OS_SYMBIAN
     {
     QPluginLoader loader( sys_qualifiedLibraryName("almostplugin"));     //a plugin with unresolved symbols
     loader.setLoadHints(QLibrary::ResolveAllSymbolsHint);
@@ -241,6 +247,11 @@ void tst_QPluginLoader::errorString()
 
     QVERIFY(loader.instance() !=  static_cast<QObject*>(0));
     QCOMPARE(loader.errorString(), unknown);
+
+    // Make sure that plugin really works
+    PluginInterface* theplugin = qobject_cast<PluginInterface*>(loader.instance());
+    QString pluginName = theplugin->pluginName();
+    QCOMPARE(pluginName, QLatin1String("Plugin ok"));
 
     QCOMPARE(loader.unload(), true);
     QCOMPARE(loader.errorString(), unknown);
@@ -287,6 +298,55 @@ void tst_QPluginLoader::deleteinstanceOnUnload()
     }
 }
 
+void tst_QPluginLoader::checkingStubsFromDifferentDrives()
+{
+#if defined(Q_OS_SYMBIAN)
+
+    // This test needs C-drive + some additional drive (driveForStubs)
+
+    const QString driveForStubs("E:/");// != "C:/"
+    const QString stubDir("system/temp/stubtest/");
+    const QString stubName("dummyStub.qtplugin");
+    const QString fullStubFileName(stubDir + stubName);
+    QDir dir(driveForStubs);
+    bool test1(false); bool test2(false);
+
+    // initial clean up
+    QFile::remove(driveForStubs + fullStubFileName);
+    dir.rmdir(driveForStubs + stubDir);
+
+    // create a stub dir and do stub drive check
+    if (!dir.mkpath(stubDir))
+        QSKIP("Required drive not available for this test", SkipSingle);
+
+    {// test without stub, should not be found
+    QPluginLoader loader("C:/" + fullStubFileName);
+    test1 = !loader.fileName().length();
+    }
+
+    // create a stub to defined drive
+    QFile tempFile(driveForStubs + fullStubFileName);
+    tempFile.open(QIODevice::ReadWrite);
+    QFileInfo fileInfo(tempFile);
+
+    {// now should be found even tried to find from C:
+    QPluginLoader loader("C:/" + fullStubFileName);
+    test2 = (loader.fileName() == fileInfo.absoluteFilePath());
+    }
+
+    // clean up
+    tempFile.close();
+    if (!QFile::remove(driveForStubs + fullStubFileName))
+        QWARN("Could not remove stub file");
+    if (!dir.rmdir(driveForStubs + stubDir))
+        QWARN("Could not remove stub directory");
+
+    // test after cleanup
+    QVERIFY(test1);
+    QVERIFY(test2);
+
+#endif//Q_OS_SYMBIAN
+}
+
 QTEST_APPLESS_MAIN(tst_QPluginLoader)
 #include "tst_qpluginloader.moc"
-

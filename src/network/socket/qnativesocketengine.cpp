@@ -381,7 +381,9 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
         return false;
     }
 
+
     // Make sure we receive out-of-band data
+    // On Symbian OS this works only with native IP stack, not with WinSock
     if (socketType == QAbstractSocket::TcpSocket
         && !setOption(ReceiveOutOfBandData, 1)) {
         qWarning("QNativeSocketEngine::initialize unable to inline out-of-band data");
@@ -911,7 +913,7 @@ bool QNativeSocketEngine::waitForReadOrWrite(bool *readyToRead, bool *readyToWri
         d_func()->fetchConnectionParameters();
         return true;
     }
-#endif    
+#endif
     if (ret == 0) {
         if (timedOut)
             *timedOut = true;
@@ -1086,7 +1088,10 @@ protected:
 bool QExceptionNotifier::event(QEvent *e)
 {
     if (e->type() == QEvent::SockAct) {
-        engine->exceptionNotification();
+        if (engine->state() == QAbstractSocket::ConnectingState)
+            engine->connectionNotification();
+        else
+            engine->exceptionNotification();
         return true;
     }
     return QSocketNotifier::event(e);

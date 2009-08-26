@@ -318,9 +318,8 @@ QResourcePrivate::ensureInitialized() const
     if(path.startsWith(QLatin1Char(':')))
         path = path.mid(1);
 
-    bool found = false;
     if(path.startsWith(QLatin1Char('/'))) {
-        found = that->load(path);
+        that->load(path);
     } else {
         QMutexLocker lock(resourceMutex());
         QStringList searchPaths = *resourceSearchPaths();
@@ -328,7 +327,6 @@ QResourcePrivate::ensureInitialized() const
         for(int i = 0; i < searchPaths.size(); ++i) {
             const QString searchPath(searchPaths.at(i) + QLatin1Char('/') + path);
             if(that->load(searchPath)) {
-                found = true;
                 that->absoluteFilePath = QLatin1Char(':') + searchPath;
                 break;
             }
@@ -390,7 +388,6 @@ QResource::QResource(const QString &file, const QLocale &locale) : d_ptr(new QRe
 */
 QResource::~QResource()
 {
-    delete d_ptr;
 }
 
 /*!
@@ -1488,11 +1485,7 @@ uchar *QResourceFileEnginePrivate::map(qint64 offset, qint64 size, QFile::Memory
 {
     Q_Q(QResourceFileEngine);
     Q_UNUSED(flags);
-    if (!resource.isValid()
-        || offset < 0
-        || size < 0
-        || offset + size > resource.size()
-        || (size == 0)) {
+    if (offset < 0 || size <= 0 || !resource.isValid() || offset + size > resource.size()) {
         q->setError(QFile::UnspecifiedError, QString());
         return 0;
     }

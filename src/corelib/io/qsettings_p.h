@@ -149,6 +149,8 @@ inline QString QSettingsGroup::toString() const
 class Q_AUTOTEST_EXPORT QConfFile
 {
 public:
+    ~QConfFile();
+
     ParsedSettingsMap mergedKeyMap() const;
     bool isWritable() const;
 
@@ -300,7 +302,7 @@ private:
     void ensureAllSectionsParsed(QConfFile *confFile) const;
     void ensureSectionParsed(QConfFile *confFile, const QSettingsKey &key) const;
 
-    QConfFile *confFiles[NumConfFiles];
+    QScopedSharedPointer<QConfFile> confFiles[NumConfFiles];
     QSettings::ReadFunc readFunc;
     QSettings::WriteFunc writeFunc;
     QString extension;

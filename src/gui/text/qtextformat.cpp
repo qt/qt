@@ -3043,12 +3043,18 @@ int QTextFormatCollection::indexForFormat(const QTextFormat &format)
     int idx = formats.size();
     formats.append(format);
 
-    QTextFormat &f = formats.last();
-    if (!f.d)
-        f.d = new QTextFormatPrivate;
-    f.d->resolveFont(defaultFnt);
+    QT_TRY{
+        QTextFormat &f = formats.last();
+        if (!f.d)
+            f.d = new QTextFormatPrivate;
+        f.d->resolveFont(defaultFnt);
 
-    hashes.insert(hash);
+        hashes.insert(hash);
+
+    } QT_CATCH(...) {
+        formats.pop_back();
+        QT_RETHROW;
+    }
     return idx;
 }
 

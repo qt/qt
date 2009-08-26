@@ -128,7 +128,9 @@ TextEdit::TextEdit(QWidget *parent)
     connect(textEdit, SIGNAL(copyAvailable(bool)), actionCut, SLOT(setEnabled(bool)));
     connect(textEdit, SIGNAL(copyAvailable(bool)), actionCopy, SLOT(setEnabled(bool)));
 
+#ifndef QT_NO_CLIPBOARD
     connect(QApplication::clipboard(), SIGNAL(dataChanged()), this, SLOT(clipboardDataChanged()));
+#endif
 
     QString initialFile = ":/example.html";
     const QStringList args = QCoreApplication::arguments();
@@ -259,7 +261,9 @@ void TextEdit::setupEditActions()
     a->setShortcut(QKeySequence::Paste);
     tb->addAction(a);
     menu->addAction(a);
+#ifndef QT_NO_CLIPBOARD
     actionPaste->setEnabled(!QApplication::clipboard()->text().isEmpty());
+#endif
 }
 
 void TextEdit::setupTextActions()
@@ -676,7 +680,9 @@ void TextEdit::cursorPositionChanged()
 
 void TextEdit::clipboardDataChanged()
 {
+#ifndef QT_NO_CLIPBOARD
     actionPaste->setEnabled(!QApplication::clipboard()->text().isEmpty());
+#endif
 }
 
 void TextEdit::about()

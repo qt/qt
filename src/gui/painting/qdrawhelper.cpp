@@ -38,14 +38,17 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <private/qdrawhelper_p.h>
 #include <private/qpaintengine_raster_p.h>
 #include <private/qpainter_p.h>
 #include <private/qdrawhelper_x86_p.h>
+#include <private/qdrawhelper_armv6_p.h>
 #include <private/qmath_p.h>
 #include <qmath.h>
 
 QT_BEGIN_NAMESPACE
+
 
 #define MASK(src, a) src = BYTE_MUL(src, a)
 
@@ -654,7 +657,15 @@ Q_STATIC_TEMPLATE_FUNCTION
 const uint * QT_FASTCALL fetchTransformedBilinear(uint *buffer, const Operator *, const QSpanData *data,
                                                   int y, int x, int length)
 {
+#ifdef Q_CC_RVCT // needed to avoid compiler crash in RVCT 2.2
+    FetchPixelProc fetch;
+    if (format != QImage::Format_Invalid)
+        fetch = qt_fetchPixel<format>;
+    else
+        fetch = fetchPixelProc[data->texture.format];
+#else
     FetchPixelProc fetch = (format != QImage::Format_Invalid) ? FetchPixelProc(qt_fetchPixel<format>) : fetchPixelProc[data->texture.format];
+#endif
 
     int image_width = data->texture.width;
     int image_height = data->texture.height;
@@ -1203,7 +1214,32 @@ static const uint * QT_FASTCALL fetchConicalGradient(uint *buffer, const Operato
     return b;
 }
 
+#if defined(Q_CC_RVCT)
+// Force ARM code generation for comp_func_* -methods
+#  pragma push
+#  pragma arm
+#  if defined(QT_HAVE_ARMV6)
+static __forceinline void preload(const uint *start)
+{
+    asm( "pld [start]" );
+}
+static const uint L2CacheLineLength = 32;
+static const uint L2CacheLineLengthInInts = L2CacheLineLength/sizeof(uint);
+#    define PRELOAD_INIT(x) preload(x);
+#    define PRELOAD_INIT2(x,y) PRELOAD_INIT(x) PRELOAD_INIT(y)
+#    define PRELOAD_COND(x) if (((uint)&x[i])%L2CacheLineLength == 0) preload(&x[i] + L2CacheLineLengthInInts);
+// Two consecutive preloads stall, so space them out a bit by using different modulus.
+#    define PRELOAD_COND2(x,y) if (((uint)&x[i])%L2CacheLineLength == 0) preload(&x[i] + L2CacheLineLengthInInts); \
+         if (((uint)&y[i])%L2CacheLineLength == 16) preload(&y[i] + L2CacheLineLengthInInts);
+#  endif // QT_HAVE_ARMV6
+#endif // Q_CC_RVCT
 
+#if !defined(Q_CC_RVCT) || !defined(QT_HAVE_ARMV6)
+#    define PRELOAD_INIT(x)
+#    define PRELOAD_INIT2(x,y)
+#    define PRELOAD_COND(x)
+#    define PRELOAD_COND2(x,y)
+#endif
 
 /* The constant alpha factor describes an alpha factor that gets applied
    to the result of the composition operation combining it with the destination.
@@ -1236,8 +1272,11 @@ static void QT_FASTCALL comp_func_solid_Clear(uint *dest, int length, uint, uint
         QT_MEMFILL_UINT(dest, length, 0);
     } else {
         int ialpha = 255 - const_alpha;
-        for (int i = 0; i < length; ++i)
+        PRELOAD_INIT(dest)
+        for (int i = 0; i < length; ++i) {
+            PRELOAD_COND(dest)
             dest[i] = BYTE_MUL(dest[i], ialpha);
+        }
     }
 }
 
@@ -1247,8 +1286,11 @@ static void QT_FASTCALL comp_func_Clear(uint *dest, const uint *, int length, ui
         QT_MEMFILL_UINT(dest, length, 0);
     } else {
         int ialpha = 255 - const_alpha;
-        for (int i = 0; i < length; ++i)
+        PRELOAD_INIT(dest)
+        for (int i = 0; i < length; ++i) {
+            PRELOAD_COND(dest)
             dest[i] = BYTE_MUL(dest[i], ialpha);
+        }
     }
 }
 
@@ -1263,8 +1305,11 @@ static void QT_FASTCALL comp_func_solid_Source(uint *dest, int length, uint colo
     } else {
         int ialpha = 255 - const_alpha;
         color = BYTE_MUL(color, const_alpha);
-        for (int i = 0; i < length; ++i)
+        PRELOAD_INIT(dest)
+        for (int i = 0; i < length; ++i) {
+            PRELOAD_COND(dest)
             dest[i] = color + BYTE_MUL(dest[i], ialpha);
+        }
     }
 }
 
@@ -1274,8 +1319,11 @@ static void QT_FASTCALL comp_func_Source(uint *dest, const uint *src, int length
         ::memcpy(dest, src, length * sizeof(uint));
     } else {
         int ialpha = 255 - const_alpha;
-        for (int i = 0; i < length; ++i)
+        PRELOAD_INIT2(dest, src)
+        for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             dest[i] = INTERPOLATE_PIXEL_255(src[i], const_alpha, dest[i], ialpha);
+        }
     }
 }
 
@@ -1300,20 +1348,26 @@ static void QT_FASTCALL comp_func_solid_SourceOver(uint *dest, int length, uint 
     } else {
         if (const_alpha != 255)
             color = BYTE_MUL(color, const_alpha);
-        for (int i = 0; i < length; ++i)
+        PRELOAD_INIT(dest)
+        for (int i = 0; i < length; ++i) {
+            PRELOAD_COND(dest)
             dest[i] = color + BYTE_MUL(dest[i], qAlpha(~color));
+        }
     }
 }
 
 static void QT_FASTCALL comp_func_SourceOver(uint *dest, const uint *src, int length, uint const_alpha)
 {
+    PRELOAD_INIT2(dest, src)
     if (const_alpha == 255) {
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint s = src[i];
             dest[i] = s + BYTE_MUL(dest[i], qAlpha(~s));
         }
     } else {
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint s = BYTE_MUL(src[i], const_alpha);
             dest[i] = s + BYTE_MUL(dest[i], qAlpha(~s));
         }
@@ -1329,7 +1383,9 @@ static void QT_FASTCALL comp_func_solid_DestinationOver(uint *dest, int length, 
 {
     if (const_alpha != 255)
         color = BYTE_MUL(color, const_alpha);
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         dest[i] = d + BYTE_MUL(color, qAlpha(~d));
     }
@@ -1337,13 +1393,16 @@ static void QT_FASTCALL comp_func_solid_DestinationOver(uint *dest, int length, 
 
 static void QT_FASTCALL comp_func_DestinationOver(uint *dest, const uint *src, int length, uint const_alpha)
 {
+    PRELOAD_INIT2(dest, src)
     if (const_alpha == 255) {
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint d = dest[i];
             dest[i] = d + BYTE_MUL(src[i], qAlpha(~d));
         }
     } else {
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint d = dest[i];
             uint s = BYTE_MUL(src[i], const_alpha);
             dest[i] = d + BYTE_MUL(s, qAlpha(~d));
@@ -1357,13 +1416,17 @@ static void QT_FASTCALL comp_func_DestinationOver(uint *dest, const uint *src, i
 */
 static void QT_FASTCALL comp_func_solid_SourceIn(uint *dest, int length, uint color, uint const_alpha)
 {
+    PRELOAD_INIT(dest)
     if (const_alpha == 255) {
-        for (int i = 0; i < length; ++i)
+        for (int i = 0; i < length; ++i) {
+            PRELOAD_COND(dest)
             dest[i] = BYTE_MUL(color, qAlpha(dest[i]));
+        }
     } else {
         color = BYTE_MUL(color, const_alpha);
         uint cia = 255 - const_alpha;
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND(dest)
             uint d = dest[i];
             dest[i] = INTERPOLATE_PIXEL_255(color, qAlpha(d), d, cia);
         }
@@ -1372,12 +1435,16 @@ static void QT_FASTCALL comp_func_solid_SourceIn(uint *dest, int length, uint co
 
 static void QT_FASTCALL comp_func_SourceIn(uint *dest, const uint *src, int length, uint const_alpha)
 {
+    PRELOAD_INIT2(dest, src)
     if (const_alpha == 255) {
-        for (int i = 0; i < length; ++i)
+        for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             dest[i] = BYTE_MUL(src[i], qAlpha(dest[i]));
+        }
     } else {
         uint cia = 255 - const_alpha;
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint d = dest[i];
             uint s = BYTE_MUL(src[i], const_alpha);
             dest[i] = INTERPOLATE_PIXEL_255(s, qAlpha(d), d, cia);
@@ -1396,19 +1463,25 @@ static void QT_FASTCALL comp_func_solid_DestinationIn(uint *dest, int length, ui
     if (const_alpha != 255) {
         a = BYTE_MUL(a, const_alpha) + 255 - const_alpha;
     }
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         dest[i] = BYTE_MUL(dest[i], a);
     }
 }
 
 static void QT_FASTCALL comp_func_DestinationIn(uint *dest, const uint *src, int length, uint const_alpha)
 {
+    PRELOAD_INIT2(dest, src)
     if (const_alpha == 255) {
-        for (int i = 0; i < length; ++i)
+        for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             dest[i] = BYTE_MUL(dest[i], qAlpha(src[i]));
+        }
     } else {
         int cia = 255 - const_alpha;
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint a = BYTE_MUL(qAlpha(src[i]), const_alpha) + cia;
             dest[i] = BYTE_MUL(dest[i], a);
         }
@@ -1422,13 +1495,17 @@ static void QT_FASTCALL comp_func_DestinationIn(uint *dest, const uint *src, int
 
 static void QT_FASTCALL comp_func_solid_SourceOut(uint *dest, int length, uint color, uint const_alpha)
 {
+    PRELOAD_INIT(dest)
     if (const_alpha == 255) {
-        for (int i = 0; i < length; ++i)
+        for (int i = 0; i < length; ++i) {
+            PRELOAD_COND(dest)
             dest[i] = BYTE_MUL(color, qAlpha(~dest[i]));
+        }
     } else {
         color = BYTE_MUL(color, const_alpha);
         int cia = 255 - const_alpha;
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND(dest)
             uint d = dest[i];
             dest[i] = INTERPOLATE_PIXEL_255(color, qAlpha(~d), d, cia);
         }
@@ -1437,12 +1514,16 @@ static void QT_FASTCALL comp_func_solid_SourceOut(uint *dest, int length, uint c
 
 static void QT_FASTCALL comp_func_SourceOut(uint *dest, const uint *src, int length, uint const_alpha)
 {
+    PRELOAD_INIT2(dest, src)
     if (const_alpha == 255) {
-        for (int i = 0; i < length; ++i)
+        for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             dest[i] = BYTE_MUL(src[i], qAlpha(~dest[i]));
+        }
     } else {
         int cia = 255 - const_alpha;
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint s = BYTE_MUL(src[i], const_alpha);
             uint d = dest[i];
             dest[i] = INTERPOLATE_PIXEL_255(s, qAlpha(~d), d, cia);
@@ -1460,18 +1541,25 @@ static void QT_FASTCALL comp_func_solid_DestinationOut(uint *dest, int length, u
     uint a = qAlpha(~color);
     if (const_alpha != 255)
         a = BYTE_MUL(a, const_alpha) + 255 - const_alpha;
-    for (int i = 0; i < length; ++i)
+    PRELOAD_INIT(dest)
+    for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         dest[i] = BYTE_MUL(dest[i], a);
+    }
 }
 
 static void QT_FASTCALL comp_func_DestinationOut(uint *dest, const uint *src, int length, uint const_alpha)
 {
+    PRELOAD_INIT2(dest, src)
     if (const_alpha == 255) {
-        for (int i = 0; i < length; ++i)
+        for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             dest[i] = BYTE_MUL(dest[i], qAlpha(~src[i]));
+        }
     } else {
         int cia = 255 - const_alpha;
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint sia = BYTE_MUL(qAlpha(~src[i]), const_alpha) + cia;
             dest[i] = BYTE_MUL(dest[i], sia);
         }
@@ -1490,20 +1578,26 @@ static void QT_FASTCALL comp_func_solid_SourceAtop(uint *dest, int length, uint 
         color = BYTE_MUL(color, const_alpha);
     }
     uint sia = qAlpha(~color);
-    for (int i = 0; i < length; ++i)
+    PRELOAD_INIT(dest)
+    for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         dest[i] = INTERPOLATE_PIXEL_255(color, qAlpha(dest[i]), dest[i], sia);
+    }
 }
 
 static void QT_FASTCALL comp_func_SourceAtop(uint *dest, const uint *src, int length, uint const_alpha)
 {
+    PRELOAD_INIT2(dest, src)
     if (const_alpha == 255) {
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint s = src[i];
             uint d = dest[i];
             dest[i] = INTERPOLATE_PIXEL_255(s, qAlpha(d), d, qAlpha(~s));
         }
     } else {
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint s = BYTE_MUL(src[i], const_alpha);
             uint d = dest[i];
             dest[i] = INTERPOLATE_PIXEL_255(s, qAlpha(d), d, qAlpha(~s));
@@ -1523,7 +1617,9 @@ static void QT_FASTCALL comp_func_solid_DestinationAtop(uint *dest, int length, 
         color = BYTE_MUL(color, const_alpha);
         a = qAlpha(color) + 255 - const_alpha;
     }
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         dest[i] = INTERPOLATE_PIXEL_255(d, a, color, qAlpha(~d));
     }
@@ -1531,8 +1627,10 @@ static void QT_FASTCALL comp_func_solid_DestinationAtop(uint *dest, int length, 
 
 static void QT_FASTCALL comp_func_DestinationAtop(uint *dest, const uint *src, int length, uint const_alpha)
 {
+    PRELOAD_INIT2(dest, src)
     if (const_alpha == 255) {
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint s = src[i];
             uint d = dest[i];
             dest[i] = INTERPOLATE_PIXEL_255(d, qAlpha(s), s, qAlpha(~d));
@@ -1540,6 +1638,7 @@ static void QT_FASTCALL comp_func_DestinationAtop(uint *dest, const uint *src, i
     } else {
         int cia = 255 - const_alpha;
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint s = BYTE_MUL(src[i], const_alpha);
             uint d = dest[i];
             uint a = qAlpha(s) + cia;
@@ -1560,7 +1659,9 @@ static void QT_FASTCALL comp_func_solid_XOR(uint *dest, int length, uint color, 
         color = BYTE_MUL(color, const_alpha);
     uint sia = qAlpha(~color);
 
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         dest[i] = INTERPOLATE_PIXEL_255(color, qAlpha(~d), d, sia);
     }
@@ -1568,14 +1669,17 @@ static void QT_FASTCALL comp_func_solid_XOR(uint *dest, int length, uint color, 
 
 static void QT_FASTCALL comp_func_XOR(uint *dest, const uint *src, int length, uint const_alpha)
 {
+    PRELOAD_INIT2(dest, src)
     if (const_alpha == 255) {
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint d = dest[i];
             uint s = src[i];
             dest[i] = INTERPOLATE_PIXEL_255(s, qAlpha(~d), d, qAlpha(~s));
         }
     } else {
         for (int i = 0; i < length; ++i) {
+            PRELOAD_COND2(dest, src)
             uint d = dest[i];
             uint s = BYTE_MUL(src[i], const_alpha);
             dest[i] = INTERPOLATE_PIXEL_255(s, qAlpha(~d), d, qAlpha(~s));
@@ -1626,7 +1730,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Plus_impl(uint *dest, int
 {
     uint s = color;
 
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
 #define MIX(mask) (qMin(((qint64(s)&mask) + (qint64(d)&mask)), qint64(mask)))
         d = (MIX(AMASK) | MIX(RMASK) | MIX(GMASK) | MIX(BMASK));
@@ -1646,7 +1752,9 @@ static void QT_FASTCALL comp_func_solid_Plus(uint *dest, int length, uint color,
 template <typename T>
 Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Plus_impl(uint *dest, const uint *src, int length, const T &coverage)
 {
+    PRELOAD_INIT2(dest, src)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND2(dest, src)
         uint d = dest[i];
         uint s = src[i];
 
@@ -1682,7 +1790,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Multiply_impl(uint *dest,
     int sg = qGreen(color);
     int sb = qBlue(color);
 
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         int da = qAlpha(d);
 
@@ -1708,7 +1818,9 @@ static void QT_FASTCALL comp_func_solid_Multiply(uint *dest, int length, uint co
 template <typename T>
 Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Multiply_impl(uint *dest, const uint *src, int length, const T &coverage)
 {
+    PRELOAD_INIT2(dest, src)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND2(dest, src)
         uint d = dest[i];
         uint s = src[i];
 
@@ -1746,7 +1858,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Screen_impl(uint *dest, i
     int sg = qGreen(color);
     int sb = qBlue(color);
 
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         int da = qAlpha(d);
 
@@ -1772,7 +1886,9 @@ static void QT_FASTCALL comp_func_solid_Screen(uint *dest, int length, uint colo
 template <typename T>
 Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Screen_impl(uint *dest, const uint *src, int length, const T &coverage)
 {
+    PRELOAD_INIT2(dest, src)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND2(dest, src)
         uint d = dest[i];
         uint s = src[i];
 
@@ -1821,7 +1937,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Overlay_impl(uint *dest, 
     int sg = qGreen(color);
     int sb = qBlue(color);
 
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         int da = qAlpha(d);
 
@@ -1847,7 +1965,9 @@ static void QT_FASTCALL comp_func_solid_Overlay(uint *dest, int length, uint col
 template <typename T>
 Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Overlay_impl(uint *dest, const uint *src, int length, const T &coverage)
 {
+    PRELOAD_INIT2(dest, src)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND2(dest, src)
         uint d = dest[i];
         uint s = src[i];
 
@@ -1890,7 +2010,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Darken_impl(uint *dest, i
     int sg = qGreen(color);
     int sb = qBlue(color);
 
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         int da = qAlpha(d);
 
@@ -1916,7 +2038,9 @@ static void QT_FASTCALL comp_func_solid_Darken(uint *dest, int length, uint colo
 template <typename T>
 Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Darken_impl(uint *dest, const uint *src, int length, const T &coverage)
 {
+    PRELOAD_INIT2(dest, src)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND2(dest, src)
         uint d = dest[i];
         uint s = src[i];
 
@@ -1959,7 +2083,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Lighten_impl(uint *dest, 
     int sg = qGreen(color);
     int sb = qBlue(color);
 
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         int da = qAlpha(d);
 
@@ -1985,7 +2111,9 @@ static void QT_FASTCALL comp_func_solid_Lighten(uint *dest, int length, uint col
 template <typename T>
 Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Lighten_impl(uint *dest, const uint *src, int length, const T &coverage)
 {
+    PRELOAD_INIT2(dest, src)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND2(dest, src)
         uint d = dest[i];
         uint s = src[i];
 
@@ -2038,7 +2166,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_ColorDodge_impl(uint *des
     int sg = qGreen(color);
     int sb = qBlue(color);
 
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         int da = qAlpha(d);
 
@@ -2064,7 +2194,9 @@ static void QT_FASTCALL comp_func_solid_ColorDodge(uint *dest, int length, uint 
 template <typename T>
 Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_ColorDodge_impl(uint *dest, const uint *src, int length, const T &coverage)
 {
+    PRELOAD_INIT2(dest, src)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND2(dest, src)
         uint d = dest[i];
         uint s = src[i];
 
@@ -2117,7 +2249,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_ColorBurn_impl(uint *dest
     int sg = qGreen(color);
     int sb = qBlue(color);
 
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         int da = qAlpha(d);
 
@@ -2143,7 +2277,9 @@ static void QT_FASTCALL comp_func_solid_ColorBurn(uint *dest, int length, uint c
 template <typename T>
 Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_ColorBurn_impl(uint *dest, const uint *src, int length, const T &coverage)
 {
+    PRELOAD_INIT2(dest, src)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND2(dest, src)
         uint d = dest[i];
         uint s = src[i];
 
@@ -2193,7 +2329,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_HardLight_impl(uint *dest
     int sg = qGreen(color);
     int sb = qBlue(color);
 
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         int da = qAlpha(d);
 
@@ -2219,7 +2357,9 @@ static void QT_FASTCALL comp_func_solid_HardLight(uint *dest, int length, uint c
 template <typename T>
 Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_HardLight_impl(uint *dest, const uint *src, int length, const T &coverage)
 {
+    PRELOAD_INIT2(dest, src)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND2(dest, src)
         uint d = dest[i];
         uint s = src[i];
 
@@ -2278,7 +2418,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_SoftLight_impl(uint *dest
     int sg = qGreen(color);
     int sb = qBlue(color);
 
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         int da = qAlpha(d);
 
@@ -2304,7 +2446,9 @@ static void QT_FASTCALL comp_func_solid_SoftLight(uint *dest, int length, uint c
 template <typename T>
 Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_SoftLight_impl(uint *dest, const uint *src, int length, const T &coverage)
 {
+    PRELOAD_INIT2(dest, src)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND2(dest, src)
         uint d = dest[i];
         uint s = src[i];
 
@@ -2347,7 +2491,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_solid_Difference_impl(uint *des
     int sg = qGreen(color);
     int sb = qBlue(color);
 
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         int da = qAlpha(d);
 
@@ -2373,7 +2519,9 @@ static void QT_FASTCALL comp_func_solid_Difference(uint *dest, int length, uint 
 template <typename T>
 Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Difference_impl(uint *dest, const uint *src, int length, const T &coverage)
 {
+    PRELOAD_INIT2(dest, src)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND2(dest, src)
         uint d = dest[i];
         uint s = src[i];
 
@@ -2410,7 +2558,9 @@ Q_STATIC_TEMPLATE_FUNCTION inline void QT_FASTCALL comp_func_solid_Exclusion_imp
     int sg = qGreen(color);
     int sb = qBlue(color);
 
+    PRELOAD_INIT(dest)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND(dest)
         uint d = dest[i];
         int da = qAlpha(d);
 
@@ -2436,7 +2586,9 @@ static void QT_FASTCALL comp_func_solid_Exclusion(uint *dest, int length, uint c
 template <typename T>
 Q_STATIC_TEMPLATE_FUNCTION inline void comp_func_Exclusion_impl(uint *dest, const uint *src, int length, const T &coverage)
 {
+    PRELOAD_INIT2(dest, src)
     for (int i = 0; i < length; ++i) {
+        PRELOAD_COND2(dest, src)
         uint d = dest[i];
         uint s = src[i];
 
@@ -2461,6 +2613,11 @@ static void QT_FASTCALL comp_func_Exclusion(uint *dest, const uint *src, int len
     else
         comp_func_Exclusion_impl(dest, src, length, QPartialCoverage(const_alpha));
 }
+
+#if defined(Q_CC_RVCT)
+// Restore pragma state from previous #pragma arm
+#  pragma pop
+#endif
 
 static void QT_FASTCALL rasterop_solid_SourceOrDestination(uint *dest,
                                                            int length,
@@ -7739,6 +7896,96 @@ static uint detectCPUFeatures()
 #endif
 }
 
+#if defined(Q_CC_RVCT) && defined(QT_HAVE_ARMV6)
+// Move these to qdrawhelper_arm.c when all
+// functions are implemented using arm assembly.
+static CompositionFunctionSolid qt_functionForModeSolid_ARMv6[numCompositionFunctions] = {
+        comp_func_solid_SourceOver,
+        comp_func_solid_DestinationOver,
+        comp_func_solid_Clear,
+        comp_func_solid_Source,
+        comp_func_solid_Destination,
+        comp_func_solid_SourceIn,
+        comp_func_solid_DestinationIn,
+        comp_func_solid_SourceOut,
+        comp_func_solid_DestinationOut,
+        comp_func_solid_SourceAtop,
+        comp_func_solid_DestinationAtop,
+        comp_func_solid_XOR,
+        comp_func_solid_Plus,
+        comp_func_solid_Multiply,
+        comp_func_solid_Screen,
+        comp_func_solid_Overlay,
+        comp_func_solid_Darken,
+        comp_func_solid_Lighten,
+        comp_func_solid_ColorDodge,
+        comp_func_solid_ColorBurn,
+        comp_func_solid_HardLight,
+        comp_func_solid_SoftLight,
+        comp_func_solid_Difference,
+        comp_func_solid_Exclusion,
+        rasterop_solid_SourceOrDestination,
+        rasterop_solid_SourceAndDestination,
+        rasterop_solid_SourceXorDestination,
+        rasterop_solid_NotSourceAndNotDestination,
+        rasterop_solid_NotSourceOrNotDestination,
+        rasterop_solid_NotSourceXorDestination,
+        rasterop_solid_NotSource,
+        rasterop_solid_NotSourceAndDestination,
+        rasterop_solid_SourceAndNotDestination
+};
+
+static CompositionFunction qt_functionForMode_ARMv6[numCompositionFunctions] = {
+        comp_func_SourceOver_armv6,
+        comp_func_DestinationOver,
+        comp_func_Clear,
+        comp_func_Source_armv6,
+        comp_func_Destination,
+        comp_func_SourceIn,
+        comp_func_DestinationIn,
+        comp_func_SourceOut,
+        comp_func_DestinationOut,
+        comp_func_SourceAtop,
+        comp_func_DestinationAtop,
+        comp_func_XOR,
+        comp_func_Plus,
+        comp_func_Multiply,
+        comp_func_Screen,
+        comp_func_Overlay,
+        comp_func_Darken,
+        comp_func_Lighten,
+        comp_func_ColorDodge,
+        comp_func_ColorBurn,
+        comp_func_HardLight,
+        comp_func_SoftLight,
+        comp_func_Difference,
+        comp_func_Exclusion,
+        rasterop_SourceOrDestination,
+        rasterop_SourceAndDestination,
+        rasterop_SourceXorDestination,
+        rasterop_NotSourceAndNotDestination,
+        rasterop_NotSourceOrNotDestination,
+        rasterop_NotSourceXorDestination,
+        rasterop_NotSource,
+        rasterop_NotSourceAndDestination,
+        rasterop_SourceAndNotDestination
+};
+
+static void qt_blend_color_argb_armv6(int count, const QSpan *spans, void *userData)
+{
+    QSpanData *data = reinterpret_cast<QSpanData *>(userData);
+
+    CompositionFunctionSolid func = qt_functionForModeSolid_ARMv6[data->rasterBuffer->compositionMode];
+    while (count--) {
+        uint *target = ((uint *)data->rasterBuffer->scanLine(spans->y)) + spans->x;
+        func(target, spans->len, data->solid.color, spans->coverage);
+        ++spans;
+    }
+}
+
+#endif // Q_CC_RVCT && QT_HAVE_ARMV6
+
+
 void qInitDrawhelperAsm()
 {
     static uint features = 0xffffffff;
@@ -7853,6 +8100,20 @@ void qInitDrawhelperAsm()
 #endif // IWMMXT
 
 #endif // QT_NO_DEBUG
+
+#if defined(Q_CC_RVCT) && defined(QT_HAVE_ARMV6)
+        functionForModeAsm = qt_functionForMode_ARMv6;
+        functionForModeSolidAsm = qt_functionForModeSolid_ARMv6;
+
+        qt_memfill32 = qt_memfill32_armv6;
+
+        qDrawHelper[QImage::Format_ARGB32_Premultiplied].blendColor = qt_blend_color_argb_armv6;
+
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_armv6;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_RGB32] = qt_blend_rgb32_on_rgb32_armv6;
+        qBlendFunctions[QImage::Format_RGB32][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_armv6;
+        qBlendFunctions[QImage::Format_ARGB32_Premultiplied][QImage::Format_ARGB32_Premultiplied] = qt_blend_argb32_on_argb32_armv6;
+#endif // Q_CC_RVCT && QT_HAVE_ARMV6
 
     if (functionForModeSolidAsm) {
         const int destinationMode = QPainter::CompositionMode_Destination;

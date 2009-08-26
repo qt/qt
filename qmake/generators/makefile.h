@@ -116,9 +116,12 @@ protected:
     enum SubTargetFlags {
         SubTargetInstalls=0x01,
         SubTargetOrdered=0x02,
+        SubTargetSkipDefaultVariables=0x04,
+        SubTargetSkipDefaultTargets=0x08,
 
         SubTargetsNoFlags=0x00
     };
+    QList<MakefileGenerator::SubTarget*> findSubDirsSubTargets() const;
     void writeSubTargets(QTextStream &t, QList<SubTarget*> subtargets, int flags);
 
     //extra compiler interface

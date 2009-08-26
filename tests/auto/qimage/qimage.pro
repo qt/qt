@@ -6,6 +6,13 @@ wince*: {
    addImages.path = images
    DEPLOYMENT += addImages
    DEFINES += SRCDIR=\\\".\\\"
+} else:symbian* {
+   TARGET.EPOCHEAPSIZE = 0x200000 0x800000
+   addImages.sources = images/*
+   addImages.path = images
+   imagePlugins.sources = qjpeg.dll qgif.dll qmng.dll qtiff.dll qico.dll
+   imagePlugins.path = imageformats
+   DEPLOYMENT += addImages imagePlugins
 } else {
    contains(QT_CONFIG, qt3support): QT += qt3support
    DEFINES += SRCDIR=\\\"$$PWD\\\"

@@ -1055,23 +1055,31 @@ void tst_QItemDelegate::editorEvent()
     QCOMPARE(index.data(Qt::CheckStateRole).toInt(), expectedCheckState);
 }
 
+enum WidgetType
+{
+    LineEdit,
+    TextEdit,
+    PlainTextEdit
+};
+Q_DECLARE_METATYPE(WidgetType);
+
 void tst_QItemDelegate::enterKey_data()
 {
-    QTest::addColumn<int>("widget");
+    QTest::addColumn<WidgetType>("widget");
     QTest::addColumn<int>("key");
     QTest::addColumn<bool>("expectedFocus");
 
-    QTest::newRow("lineedit enter") << 1 << int(Qt::Key_Enter) << false;
-    QTest::newRow("textedit enter") << 2 << int(Qt::Key_Enter) << true;
-    QTest::newRow("plaintextedit enter") << 3 << int(Qt::Key_Enter) << true;
-    QTest::newRow("plaintextedit return") << 3 << int(Qt::Key_Return) << true;
-    QTest::newRow("plaintextedit tab") << 3 << int(Qt::Key_Tab) << false;
-    QTest::newRow("lineedit tab") << 1 << int(Qt::Key_Tab) << false;
+    QTest::newRow("lineedit enter") << LineEdit << int(Qt::Key_Enter) << false;
+    QTest::newRow("textedit enter") << TextEdit << int(Qt::Key_Enter) << true;
+    QTest::newRow("plaintextedit enter") << PlainTextEdit << int(Qt::Key_Enter) << true;
+    QTest::newRow("plaintextedit return") << PlainTextEdit << int(Qt::Key_Return) << true;
+    QTest::newRow("plaintextedit tab") << PlainTextEdit << int(Qt::Key_Tab) << false;
+    QTest::newRow("lineedit tab") << LineEdit << int(Qt::Key_Tab) << false;
 }
 
 void tst_QItemDelegate::enterKey()
 {
-    QFETCH(int, widget);
+    QFETCH(WidgetType, widget);
     QFETCH(int, key);
     QFETCH(bool, expectedFocus);
 
@@ -1087,18 +1095,18 @@ void tst_QItemDelegate::enterKey()
 
     struct TestDelegate : public QItemDelegate
     {
-        int widgetType;
+        WidgetType widgetType;
         virtual QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& /*option*/, const QModelIndex& /*index*/) const
         {
             QWidget *editor = 0;
             switch(widgetType) {
-                case 1:
+                case LineEdit:
                     editor = new QLineEdit(parent);
                     break;
-                case 2:
+                case TextEdit:
                     editor = new QTextEdit(parent);
                     break;
-                case 3:
+                case PlainTextEdit:
                     editor = new QPlainTextEdit(parent);
                     break;
             }
@@ -1124,7 +1132,11 @@ void tst_QItemDelegate::enterKey()
     QTest::keyClick(editor, Qt::Key(key));
     QApplication::processEvents();
 
-    QCOMPARE(editor && editor->hasFocus(), expectedFocus);
+    // The line edit has already been destroyed, so avoid that case.
+    if (widget == TextEdit || widget == PlainTextEdit) {
+        QVERIFY(!editor.isNull());
+        QCOMPARE(editor && editor->hasFocus(), expectedFocus);
+    }
 }
 
 void tst_QItemDelegate::task257859_finalizeEdit()

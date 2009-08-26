@@ -117,7 +117,7 @@ void XmlServer::run()
                 i += cnt;
                 sock->flush();
                 QTest::qSleep(1);
-                
+
                 if (quit_soon) {
                     sock->abort();
                     break;
@@ -576,11 +576,15 @@ void tst_QXmlSimpleReader::inputFromSocket()
 {
     QFETCH(QString, file_name);
 
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("Symbian: Skipped due to problems in Open C and QtNetwork", SkipAll);
+#endif
+
 #if defined(Q_OS_WIN32) && (defined(Q_CC_INTEL) || defined(Q_CC_MINGW) || defined(Q_CC_MSVC_NET))
     QSKIP("Regression caused by QHOstInfo change 294548, see task 202231.", SkipAll);
 #endif
     QTcpSocket sock;
-    sock.connectToHost("localhost", TEST_PORT);
+    sock.connectToHost(QHostAddress::LocalHost, TEST_PORT);
 
     const bool connectionSuccess = sock.waitForConnected();
     if(!connectionSuccess) {

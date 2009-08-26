@@ -60,6 +60,7 @@ public:
 };
 
 QScriptDebuggerEventPrivate::QScriptDebuggerEventPrivate()
+    : type(QScriptDebuggerEvent::None)
 {
 }
 
@@ -97,7 +98,6 @@ QScriptDebuggerEvent::QScriptDebuggerEvent(const QScriptDebuggerEvent &other)
 
 QScriptDebuggerEvent::~QScriptDebuggerEvent()
 {
-    delete d_ptr;
 }
 
 QScriptDebuggerEvent &QScriptDebuggerEvent::operator=(const QScriptDebuggerEvent &other)
@@ -276,7 +276,7 @@ bool QScriptDebuggerEvent::operator!=(const QScriptDebuggerEvent &other) const
 */
 QDataStream &operator<<(QDataStream &out, const QScriptDebuggerEvent &event)
 {
-    const QScriptDebuggerEventPrivate *d = event.d_ptr;
+    const QScriptDebuggerEventPrivate *d = event.d_ptr.data();
     out << (quint32)d->type;
     out << (qint32)d->attributes.size();
     QHash<QScriptDebuggerEvent::Attribute, QVariant>::const_iterator it;
@@ -296,7 +296,7 @@ QDataStream &operator<<(QDataStream &out, const QScriptDebuggerEvent &event)
 */
 QDataStream &operator>>(QDataStream &in, QScriptDebuggerEvent &event)
 {
-    QScriptDebuggerEventPrivate *d = event.d_ptr;
+    QScriptDebuggerEventPrivate *d = event.d_ptr.data();
 
     quint32 type;
     in >> type;

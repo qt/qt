@@ -108,6 +108,14 @@
 
 #include <QDebug>
 
+static const int captionFontSize =
+#ifdef Q_WS_S60
+    8;
+#else
+    14;
+#endif
+
+
 // uncomment this to enable bilinear filtering for texture mapping
 // gives much better rendering, at the cost of memory space
 // #define PICTUREFLOW_BILINEAR_FILTER
@@ -742,14 +750,14 @@ void PictureFlowPrivate::render()
     QPainter painter;
     painter.begin(&buffer);
 
-    QFont font("Arial", 14);
+    QFont font("Arial", captionFontSize);
     font.setBold(true);
     painter.setFont(font);
     painter.setPen(Qt::white);
     //painter.setPen(QColor(255,255,255,127));
 
     if (!captions.isEmpty())
-        painter.drawText( QRect(0,0, buffer.width(), (buffer.height() - slideSize().height())/2),
+        painter.drawText( QRect(0,0, buffer.width(), (buffer.height() - slideSize().height())/4),
         Qt::AlignCenter, captions[centerIndex]);
 
     painter.end();
@@ -790,18 +798,18 @@ void PictureFlowPrivate::render()
     QPainter painter;
     painter.begin(&buffer);
 
-    QFont font("Arial", 14);
+    QFont font("Arial", captionFontSize);
     font.setBold(true);
     painter.setFont(font);
 
     int leftTextIndex = (step>0) ? centerIndex : centerIndex-1;
 
     painter.setPen(QColor(255,255,255, (255-fade) ));
-    painter.drawText( QRect(0,0, buffer.width(), (buffer.height() - slideSize().height())/2),
+    painter.drawText( QRect(0,0, buffer.width(), (buffer.height() - slideSize().height())/4),
                       Qt::AlignCenter, captions[leftTextIndex]);
 
     painter.setPen(QColor(255,255,255, fade));
-    painter.drawText( QRect(0,0, buffer.width(), (buffer.height() - slideSize().height())/2),
+    painter.drawText( QRect(0,0, buffer.width(), (buffer.height() - slideSize().height())/4),
                       Qt::AlignCenter, captions[leftTextIndex+1]);
 
     painter.end();
@@ -1261,6 +1269,12 @@ void PictureFlow::keyPressEvent(QKeyEvent* event)
       showSlide(currentSlide()+10);
     else
       showNext();
+    event->accept();
+    return;
+  }
+
+  if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Select) {
+    emit itemActivated(d->getTarget());
     event->accept();
     return;
   }

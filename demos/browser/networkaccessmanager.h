@@ -52,19 +52,18 @@ class NetworkAccessManager : public QNetworkAccessManager
 public:
     NetworkAccessManager(QObject *parent = 0);
 
-    // this is a temporary hack until we properly use the pipelining flags from QtWebkit
-    // pipeline everything! :)
-    virtual QNetworkReply* createRequest ( Operation op, const QNetworkRequest & req, QIODevice * outgoingData = 0 ) {
-        QNetworkRequest request = req; // copy so we can modify
-        request.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
-        return QNetworkAccessManager::createRequest(op, request, outgoingData);
-    }
+    virtual QNetworkReply* createRequest ( Operation op, const QNetworkRequest & req, QIODevice * outgoingData = 0 );
 
 private:
     QList<QString> sslTrustedHostList;
+    qint64 requestFinishedCount;
+    qint64 requestFinishedFromCacheCount;
+    qint64 requestFinishedPipelinedCount;
+    qint64 requestFinishedSecureCount;
 
 public slots:
     void loadSettings();
+    void requestFinished(QNetworkReply *reply);
 
 private slots:
     void authenticationRequired(QNetworkReply *reply, QAuthenticator *auth);

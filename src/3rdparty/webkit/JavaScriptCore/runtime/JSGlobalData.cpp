@@ -134,6 +134,7 @@ JSGlobalData::JSGlobalData(bool isShared, const VPtrSet& vptrSet)
 #if ENABLE(JIT)
     , jitStubs(this)
 #endif
+    , timeoutChecker(new TimeoutChecker)
     , heap(this)
     , initializingLazyNumericCompareFunction(false)
     , head(0)
@@ -141,6 +142,9 @@ JSGlobalData::JSGlobalData(bool isShared, const VPtrSet& vptrSet)
     , scopeNodeBeingReparsed(0)
     , firstStringifierToMark(0)
 {
+#ifdef QT_BUILD_SCRIPT_LIB
+    scriptpool = new SourcePool();
+#endif
 #if PLATFORM(MAC)
     startProfilerServerIfNeeded();
 #endif
@@ -176,6 +180,7 @@ JSGlobalData::~JSGlobalData()
 
     delete parser;
     delete lexer;
+    delete timeoutChecker;
 
     deleteAllValues(opaqueJSClassData);
 
@@ -185,6 +190,10 @@ JSGlobalData::~JSGlobalData()
     deleteIdentifierTable(identifierTable);
 
     delete clientData;
+#ifdef QT_BUILD_SCRIPT_LIB
+    if (scriptpool)
+        delete scriptpool;
+#endif
 }
 
 PassRefPtr<JSGlobalData> JSGlobalData::create(bool isShared)

@@ -329,7 +329,6 @@ QStandardItemModelPrivate::QStandardItemModelPrivate()
 */
 QStandardItemModelPrivate::~QStandardItemModelPrivate()
 {
-    delete root;
     delete itemPrototype;
     qDeleteAll(columnHeaderItems);
     qDeleteAll(rowHeaderItems);
@@ -554,7 +553,7 @@ void QStandardItemModelPrivate::rowsInserted(QStandardItem *parent,
                                              int row, int count)
 {
     Q_Q(QStandardItemModel);
-    if (parent == root)
+    if (parent == root.data())
         rowHeaderItems.insert(row, count, 0);
     q->endInsertRows();
 }
@@ -566,7 +565,7 @@ void QStandardItemModelPrivate::columnsInserted(QStandardItem *parent,
                                                 int column, int count)
 {
     Q_Q(QStandardItemModel);
-    if (parent == root)
+    if (parent == root.data())
         columnHeaderItems.insert(column, count, 0);
     q->endInsertColumns();
 }
@@ -578,7 +577,7 @@ void QStandardItemModelPrivate::rowsRemoved(QStandardItem *parent,
                                             int row, int count)
 {
     Q_Q(QStandardItemModel);
-    if (parent == root) {
+    if (parent == root.data()) {
         for (int i = row; i < row + count; ++i) {
             QStandardItem *oldItem = rowHeaderItems.at(i);
             if (oldItem)
@@ -597,7 +596,7 @@ void QStandardItemModelPrivate::columnsRemoved(QStandardItem *parent,
                                                int column, int count)
 {
     Q_Q(QStandardItemModel);
-    if (parent == root) {
+    if (parent == root.data()) {
         for (int i = column; i < column + count; ++i) {
             QStandardItem *oldItem = columnHeaderItems.at(i);
             if (oldItem)
@@ -778,8 +777,6 @@ QStandardItem &QStandardItem::operator=(const QStandardItem &other)
 */
 QStandardItem::~QStandardItem()
 {
-    Q_D(QStandardItem);
-    delete d;
 }
 
 /*!
@@ -790,7 +787,7 @@ QStandardItem::~QStandardItem()
 QStandardItem *QStandardItem::parent() const
 {
     Q_D(const QStandardItem);
-    if (!d->model || (d->model->d_func()->root != d->parent))
+    if (!d->model || (d->model->d_func()->root.data() != d->parent))
         return d->parent;
     return 0;
 }
@@ -899,7 +896,7 @@ Qt::ItemFlags QStandardItem::flags() const
     if (!v.isValid())
         return (Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsEditable
                 |Qt::ItemIsDragEnabled|Qt::ItemIsDropEnabled);
-    return ((Qt::ItemFlags)(v.toInt()));
+    return Qt::ItemFlags(v.toInt());
 }
 
 /*!
@@ -1900,7 +1897,7 @@ void QStandardItem::read(QDataStream &in)
     in >> d->values;
     qint32 flags;
     in >> flags;
-    setFlags((Qt::ItemFlags)flags);
+    setFlags(Qt::ItemFlags(flags));
 }
 
 /*!
@@ -2089,8 +2086,7 @@ QStandardItemModel::~QStandardItemModel()
 void QStandardItemModel::clear()
 {
     Q_D(QStandardItemModel);
-    delete d->root;
-    d->root = new QStandardItem;
+    d->root.reset(new QStandardItem);
     d->root->d_func()->setModel(this);
     qDeleteAll(d->columnHeaderItems);
     d->columnHeaderItems.clear();
@@ -2237,7 +2233,7 @@ QStandardItem *QStandardItemModel::item(int row, int column) const
 QStandardItem *QStandardItemModel::invisibleRootItem() const
 {
     Q_D(const QStandardItemModel);
-    return d->root;
+    return d->root.data();
 }
 
 /*!
@@ -2739,7 +2735,7 @@ QModelIndex QStandardItemModel::index(int row, int column, const QModelIndex &pa
 bool QStandardItemModel::insertColumns(int column, int count, const QModelIndex &parent)
 {
     Q_D(QStandardItemModel);
-    QStandardItem *item = parent.isValid() ? itemFromIndex(parent) : d->root;
+    QStandardItem *item = parent.isValid() ? itemFromIndex(parent) : d->root.data();
     if (item == 0)
         return false;
     return item->d_func()->insertColumns(column, count, QList<QStandardItem*>());
@@ -2751,7 +2747,7 @@ bool QStandardItemModel::insertColumns(int column, int count, const QModelIndex 
 bool QStandardItemModel::insertRows(int row, int count, const QModelIndex &parent)
 {
     Q_D(QStandardItemModel);
-    QStandardItem *item = parent.isValid() ? itemFromIndex(parent) : d->root;
+    QStandardItem *item = parent.isValid() ? itemFromIndex(parent) : d->root.data();
     if (item == 0)
         return false;
     return item->d_func()->insertRows(row, count, QList<QStandardItem*>());

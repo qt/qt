@@ -16,3 +16,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/dragdroprobot
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS dragdroprobot.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/dragdroprobot
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

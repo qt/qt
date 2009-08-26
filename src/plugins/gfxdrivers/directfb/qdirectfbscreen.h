@@ -74,6 +74,9 @@ QT_MODULE(Gui)
 #if !defined QT_NO_DIRECTFB_OPAQUE_DETECTION && !defined QT_DIRECTFB_OPAQUE_DETECTION
 #define QT_DIRECTFB_OPAQUE_DETECTION
 #endif
+#if defined QT_NO_DIRECTFB_LAYER && defined QT_DIRECTFB_WM
+#error QT_NO_DIRECTFB_LAYER requires QT_NO_DIRECTFB_WM
+#endif
 
 #define Q_DIRECTFB_VERSION ((DIRECTFB_MAJOR_VERSION << 16) | (DIRECTFB_MINOR_VERION << 8) | DIRECTFB_MICRO_VERSION)
 
@@ -142,21 +145,23 @@ public:
 
     // Track surface creation/release so we can release all on exit
     enum SurfaceCreationOption {
-        DontTrackSurface = 0,
-        TrackSurface = 1
+        DontTrackSurface = 0x1,
+        TrackSurface = 0x2,
+        NoPreallocated = 0x4
     };
     Q_DECLARE_FLAGS(SurfaceCreationOptions, SurfaceCreationOption);
     IDirectFBSurface *createDFBSurface(const QImage &image,
-                                       SurfaceCreationOptions options);
+                                       QImage::Format format,
+                                       SurfaceCreationOptions options,
+                                       DFBResult *result = 0);
     IDirectFBSurface *createDFBSurface(const QSize &size,
                                        QImage::Format format,
-                                       SurfaceCreationOptions options);
+                                       SurfaceCreationOptions options,
+                                       DFBResult *result = 0);
     IDirectFBSurface *copyDFBSurface(IDirectFBSurface *src,
                                      QImage::Format format,
-                                     SurfaceCreationOptions options);
-    IDirectFBSurface *copyToDFBSurface(const QImage &image,
-                                       QImage::Format format,
-                                       SurfaceCreationOptions options);
+                                     SurfaceCreationOptions options,
+                                     DFBResult *result = 0);
     void flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags flipFlags,
                      const QRegion &region, const QPoint &offset);
     void releaseDFBSurface(IDirectFBSurface *surface);
@@ -166,14 +171,13 @@ public:
     static int depth(DFBSurfacePixelFormat format);
 
     static DFBSurfacePixelFormat getSurfacePixelFormat(QImage::Format format);
-    static DFBSurfaceDescription getSurfaceDescription(const QImage &image);
     static DFBSurfaceDescription getSurfaceDescription(const uint *buffer,
                                                        int length);
     static QImage::Format getImageFormat(IDirectFBSurface *surface);
     static bool initSurfaceDescriptionPixelFormat(DFBSurfaceDescription *description, QImage::Format format);
     static inline bool isPremultiplied(QImage::Format format);
-    static inline bool hasAlpha(DFBSurfacePixelFormat format);
-    static inline bool hasAlpha(IDirectFBSurface *surface);
+    static inline bool hasAlphaChannel(DFBSurfacePixelFormat format);
+    static inline bool hasAlphaChannel(IDirectFBSurface *surface);
     QImage::Format alphaPixmapFormat() const;
 
 #ifndef QT_NO_DIRECTFB_PALETTE
@@ -184,7 +188,8 @@ public:
     static uchar *lockSurface(IDirectFBSurface *surface, uint flags, int *bpl = 0);
 private:
     IDirectFBSurface *createDFBSurface(DFBSurfaceDescription desc,
-                                       SurfaceCreationOptions options);
+                                       SurfaceCreationOptions options,
+                                       DFBResult *result);
     QDirectFBScreenPrivate *d_ptr;
     friend class SurfaceCache;
 };
@@ -207,7 +212,7 @@ inline bool QDirectFBScreen::isPremultiplied(QImage::Format format)
     return false;
 }
 
-inline bool QDirectFBScreen::hasAlpha(DFBSurfacePixelFormat format)
+inline bool QDirectFBScreen::hasAlphaChannel(DFBSurfacePixelFormat format)
 {
     switch (format) {
     case DSPF_ARGB1555:
@@ -232,12 +237,12 @@ inline bool QDirectFBScreen::hasAlpha(DFBSurfacePixelFormat format)
     }
 }
 
-inline bool QDirectFBScreen::hasAlpha(IDirectFBSurface *surface)
+inline bool QDirectFBScreen::hasAlphaChannel(IDirectFBSurface *surface)
 {
     Q_ASSERT(surface);
     DFBSurfacePixelFormat format;
     surface->GetPixelFormat(surface, &format);
-    return QDirectFBScreen::hasAlpha(format);
+    return QDirectFBScreen::hasAlphaChannel(format);
 }
 
 QT_END_HEADER

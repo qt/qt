@@ -160,8 +160,6 @@ public:
     Direction directionTo(int vertex) const;
     int vertex(Direction direction) const;
 
-    bool isBezier() const;
-
 private:
     int m_next[2][2];
 };
@@ -345,11 +343,6 @@ inline QPathEdge::Direction QPathEdge::directionTo(int vertex) const
 inline int QPathEdge::vertex(Direction direction) const
 {
     return direction == Backward ? first : second;
-}
-
-inline bool QPathEdge::isBezier() const
-{
-    return bezier >= 0;
 }
 
 inline QPathVertex::QPathVertex(const QPointF &p, int e)

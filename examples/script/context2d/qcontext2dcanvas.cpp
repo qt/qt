@@ -85,6 +85,11 @@ void QContext2DCanvas::contentsChanged(const QImage &image)
 void QContext2DCanvas::paintEvent(QPaintEvent *e)
 {
     QPainter p(this);
+#ifdef Q_WS_S60
+// Draw white rect first since in with some themes the js-file content will produce black-on-black.
+    QBrush whiteBgBrush(Qt::white);
+    p.fillRect(e->rect(), whiteBgBrush);
+#endif
     p.setClipRect(e->rect());
     p.drawImage(0, 0, m_image);
 }

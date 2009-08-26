@@ -8,7 +8,7 @@ QT += svg
 SOURCES += tst_qsvgrenderer.cpp
 RESOURCES += resources.qrc
 
-wince*: {
+wince*|symbian {
    addFiles.sources = *.svg *.svgz
    addFiles.path = .
 

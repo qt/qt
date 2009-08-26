@@ -17,3 +17,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/portedasteroids
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS portedasteroids.pro bg.png sounds sprites
 sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/portedasteroids
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

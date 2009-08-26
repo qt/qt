@@ -40,11 +40,16 @@
 ****************************************************************************/
 
 
-#ifdef _WIN32
+// Just to get Q_OS_SYMBIAN
+#include <qglobal.h>
+
+#if defined(_WIN32) && !defined(Q_OS_SYMBIAN)
 #include <winsock2.h>
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <fcntl.h>
+#include <unistd.h>
 #define SOCKET int
 #define INVALID_SOCKET -1
 #endif
@@ -80,9 +85,8 @@
 #ifndef TEST_QNETWORK_PROXY
 #define TEST_QNETWORK_PROXY
 #endif
-#ifdef TEST_QNETWORK_PROXY
+// RVCT compiles also unused inline methods
 # include <QNetworkProxy>
-#endif
 
 #ifdef Q_OS_LINUX
 #include <stdio.h>
@@ -247,6 +251,7 @@ int tst_QTcpSocket::loopLevel = 0;
 
 tst_QTcpSocket::tst_QTcpSocket()
 {
+    Q_SET_DEFAULT_IAP
     tmpSocket = 0;
 }
 
@@ -415,6 +420,11 @@ void tst_QTcpSocket::setSocketDescriptor()
     }
 #else
     SOCKET sock = ::socket(AF_INET, SOCK_STREAM, 0);
+
+    // artificially increase the value of sock
+    SOCKET sock2 = ::fcntl(sock, F_DUPFD, sock + 50);
+    ::close(sock);
+    sock = sock2;
 #endif
 
     QVERIFY(sock != INVALID_SOCKET);
@@ -900,7 +910,11 @@ void tst_QTcpSocket::disconnectWhileConnecting()
     }
 
     connect(socket, SIGNAL(disconnected()), SLOT(exitLoopSlot()));
+#ifndef Q_OS_SYMBIAN
     enterLoop(10);
+#else
+    enterLoop(30);
+#endif
     QVERIFY2(!timeout(), "Network timeout");
     QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
     if (!closeDirectly) {
@@ -935,7 +949,7 @@ public:
         : server(0), ok(false), quit(false)
     { }
 
-    ~ReceiverThread() { wait(); delete server; }
+    ~ReceiverThread() { /*delete server;*/ terminate(); wait();  }
 
     bool listen()
     {
@@ -952,7 +966,11 @@ protected:
     {
         bool timedOut = false;
         while (!quit) {
+#ifndef Q_OS_SYMBIAN
             if (server->waitForNewConnection(500, &timedOut))
+#else
+            if (server->waitForNewConnection(5000, &timedOut))
+#endif
                 break;
             if (!timedOut)
                 return;
@@ -960,7 +978,11 @@ protected:
 
         QTcpSocket *socket = server->nextPendingConnection();
         while (!quit) {
+#ifndef Q_OS_SYMBIAN
             if (socket->waitForDisconnected(500))
+#else
+            if (socket->waitForDisconnected(5000))
+#endif
                 break;
             if (socket->error() != QAbstractSocket::SocketTimeoutError)
                 return;
@@ -1008,7 +1030,11 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
         socket->disconnectFromHost();
     }
 
+#ifndef Q_OS_SYMBIAN
     QVERIFY2(socket->waitForDisconnected(10000), "Network timeout");
+#else
+    QVERIFY2(socket->waitForDisconnected(30000), "Network timeout");
+#endif
     QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
     if (!closeDirectly) {
         QCOMPARE(int(socket->openMode()), int(QIODevice::ReadWrite));
@@ -1018,7 +1044,7 @@ void tst_QTcpSocket::disconnectWhileConnectingNoEventLoop()
     delete socket;
 
     // check if the other side received everything ok
-    QVERIFY(thread.wait(10000));
+    QVERIFY(thread.wait(30000));
     QVERIFY(thread.ok);
     QCOMPARE(thread.receivedData, data);
 }
@@ -1054,7 +1080,11 @@ void tst_QTcpSocket::disconnectWhileLookingUp()
 
     // let anything queued happen
     QEventLoop loop;
+#ifndef Q_OS_SYMBIAN
     QTimer::singleShot(50, &loop, SLOT(quit()));
+#else
+    QTimer::singleShot(5000, &loop, SLOT(quit()));
+#endif
     loop.exec();
 
     // recheck
@@ -1159,13 +1189,13 @@ void tst_QTcpSocket::readLine()
         QVERIFY(socket->waitForReadyRead(10000));
 
     char buffer[1024];
-    QCOMPARE(socket->readLine(buffer, sizeof(buffer)), qint64(161));
+    int expectedReplySize = QtNetworkSettings::expectedReplyIMAP().size();
+    Q_ASSERT(expectedReplySize >= 3);
+    QCOMPARE(socket->readLine(buffer, sizeof(buffer)), qint64(expectedReplySize));
 
-    // * OK fluke Cyrus IMAP4 v2.2.12 server ready__
-//    // 01234567890123456789012345678901234567890123456789
-    QCOMPARE((int) buffer[159], (int) '\r');
-    QCOMPARE((int) buffer[160], (int) '\n');
-    QCOMPARE((int) buffer[161], (int) '\0');
+    QCOMPARE((int) buffer[expectedReplySize-2], (int) '\r');
+    QCOMPARE((int) buffer[expectedReplySize-1], (int) '\n');
+    QCOMPARE((int) buffer[expectedReplySize], (int) '\0');
 
     QCOMPARE(socket->write("1 NOOP\r\n"), qint64(8));
 
@@ -1203,7 +1233,7 @@ void tst_QTcpSocket::readLineString()
     QVERIFY(socket->waitForReadyRead(10000));
 
     QByteArray arr = socket->readLine();
-    QCOMPARE(arr, expected);
+    QCOMPARE(arr, QtNetworkSettings::expectedReplyIMAP());
 
     delete socket;
 }
@@ -1300,11 +1330,19 @@ void tst_QTcpSocket::dontCloseOnTimeout()
 
     QTcpSocket *socket = newSocket();
     socket->connectToHost(serverAddress, server.serverPort());
+#ifndef Q_OS_SYMBIAN
     QVERIFY(!socket->waitForReadyRead(100));
+#else
+    QVERIFY(!socket->waitForReadyRead(5000));
+#endif
     QCOMPARE(socket->error(), QTcpSocket::SocketTimeoutError);
     QVERIFY(socket->isOpen());
 
+#ifndef Q_OS_SYMBIAN
     QVERIFY(!socket->waitForDisconnected(100));
+#else
+    QVERIFY(!socket->waitForDisconnected(5000));
+#endif
     QCOMPARE(socket->error(), QTcpSocket::SocketTimeoutError);
     QVERIFY(socket->isOpen());
 
@@ -1431,9 +1469,7 @@ void tst_QTcpSocket::socketInAThread()
         TestThread thread;
         thread.start();
         QVERIFY(thread.wait(15000));
-        QCOMPARE(thread.data(),
-//                 QByteArray("220 (vsFTPd 2.0.4)\r\n221 Goodbye.\r\n"));
-				 QByteArray("220 (vsFTPd 2.0.5)\r\n221 Goodbye.\r\n"));
+        QCOMPARE(thread.data(), QtNetworkSettings::expectedReplyFtp());
     }
 }
 
@@ -1453,12 +1489,9 @@ void tst_QTcpSocket::socketsInThreads()
         QVERIFY(thread3.wait(15000));
         QVERIFY(thread1.wait(15000));
 
-        QCOMPARE(thread1.data(),
-				 QByteArray("220 (vsFTPd 2.0.5)\r\n221 Goodbye.\r\n"));
-        QCOMPARE(thread2.data(),
-                 QByteArray("220 (vsFTPd 2.0.5)\r\n221 Goodbye.\r\n"));
-        QCOMPARE(thread3.data(),
-                 QByteArray("220 (vsFTPd 2.0.5)\r\n221 Goodbye.\r\n"));
+        QCOMPARE(thread1.data(),QtNetworkSettings::expectedReplyFtp());
+        QCOMPARE(thread2.data(),QtNetworkSettings::expectedReplyFtp());
+        QCOMPARE(thread3.data(),QtNetworkSettings::expectedReplyFtp());
     }
 }
 
@@ -1757,7 +1790,16 @@ void tst_QTcpSocket::readyReadSignalsAfterWaitForReadyRead()
     QCOMPARE(readyReadSpy.count(), 1);
 
     QString s = socket->readLine();
-    QCOMPARE(s.toLatin1().constData(), "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+#ifdef TEST_QNETWORK_PROXY
+    QNetworkProxy::ProxyType proxyType = QNetworkProxy::applicationProxy().type();
+    if(proxyType == QNetworkProxy::NoProxy) {
+        QCOMPARE(s.toLatin1().constData(), "* OK [CAPABILITY IMAP4REV1] aspiriniks Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+    } else {
+        QCOMPARE(s.toLatin1().constData(), "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] aspiriniks Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
+    }
+#else
+    QCOMPARE(s.toLatin1().constData(), QtNetworkSettings::expectedReplyIMAP().constData());
+#endif
     QCOMPARE(socket->bytesAvailable(), qint64(0));
 
     QCoreApplication::instance()->processEvents();
@@ -1975,6 +2017,8 @@ void tst_QTcpSocket::suddenRemoteDisconnect()
 {
 #if defined(Q_OS_WINCE) || defined(Q_OS_VXWORKS)
     QSKIP("stressTest subprocess needs Qt3Support", SkipAll);
+#elif defined( Q_OS_SYMBIAN )
+    QSKIP("Symbian: QProcess IO is not yet supported, fix when supported", SkipAll);
 #else
     QFETCH(QString, client);
     QFETCH(QString, server);
@@ -2193,11 +2237,12 @@ void tst_QTcpSocket::invalidProxy_data()
     QTest::newRow("no-such-host-http") << int(QNetworkProxy::HttpProxy)
                                        << "this-host-will-never-exist.troll.no" << 3128 << false
                                        << int(QAbstractSocket::ProxyNotFoundError);
-
+#if !defined(Q_OS_SYMBIAN)
     QTest::newRow("http-on-socks5") << int(QNetworkProxy::HttpProxy) << fluke << 1080 << false
                                     << int(QAbstractSocket::ProxyConnectionClosedError);
     QTest::newRow("socks5-on-http") << int(QNetworkProxy::Socks5Proxy) << fluke << 3128 << false
                                     << int(QAbstractSocket::SocketTimeoutError);
+#endif
 }
 
 void tst_QTcpSocket::invalidProxy()
@@ -2352,6 +2397,7 @@ void tst_QTcpSocket::proxyFactory()
     delete socket;
 }
 #endif
+
 
 QTEST_MAIN(tst_QTcpSocket)
 #include "tst_qtcpsocket.moc"

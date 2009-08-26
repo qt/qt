@@ -44,7 +44,9 @@
 #include "qsystemsemaphore.h"
 #include <qdir.h>
 #include <qcryptographichash.h>
-
+#ifdef Q_OS_SYMBIAN
+#include <e32const.h>
+#endif
 #include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
@@ -57,6 +59,7 @@ QT_BEGIN_NAMESPACE
     the subset that the win/unix kernel allows.
 
     On Unix this will be a file name
+    On Symbian key will be truncated to 80 characters
   */
 QString
 QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
@@ -70,10 +73,12 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
     QString part1 = key;
     part1.replace(QRegExp(QLatin1String("[^A-Za-z]")), QString());
     result.append(part1);
+#ifdef Q_OS_SYMBIAN
+    return result.left(KMaxKernelName);
+#endif
 
     QByteArray hex = QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex();
     result.append(QLatin1String(hex));
-
 #ifdef Q_OS_WIN
     return result;
 #else
@@ -116,6 +121,14 @@ QSharedMemoryPrivate::makePlatformSafeKey(const QString &key,
   \o HP-UX: Only one attach to a shared memory segment is allowed per
   process. This means that QSharedMemory should not be used across
   multiple threads in the same process in HP-UX.
+
+  \o Symbian: QSharedMemory does not "own" the shared memory segment.
+  When all threads or processes that have an instance of QSharedMemory
+  attached to a particular shared memory segment have either destroyed
+  their instance of QSharedMemory or exited, the Symbian kernel
+  releases the shared memory segment automatically.
+  Also, access to a shared memory segment cannot be limited to read-only
+  in Symbian.
 
   \endlist
 

@@ -142,8 +142,8 @@ public:
     \sa QtAbstractPropertyManager::addProperty()
 */
 QtProperty::QtProperty(QtAbstractPropertyManager *manager)
+    : d_ptr(new QtPropertyPrivate(manager))
 {
-    d_ptr = new QtPropertyPrivate(manager);
     d_ptr->q_ptr = this;
 }
 
@@ -177,7 +177,6 @@ QtProperty::~QtProperty()
         QtProperty *property = itParent.next();
         property->d_ptr->m_subItems.removeAll(this);
     }
-    delete d_ptr;
 }
 
 /*!
@@ -638,9 +637,8 @@ void QtAbstractPropertyManagerPrivate::propertyInserted(QtProperty *property,
     Creates an abstract property manager with the given \a parent.
 */
 QtAbstractPropertyManager::QtAbstractPropertyManager(QObject *parent)
-    : QObject(parent)
+    : QObject(parent), d_ptr(new QtAbstractPropertyManagerPrivate)
 {
-    d_ptr = new QtAbstractPropertyManagerPrivate;
     d_ptr->q_ptr = this;
 
 }
@@ -652,7 +650,6 @@ QtAbstractPropertyManager::QtAbstractPropertyManager(QObject *parent)
 QtAbstractPropertyManager::~QtAbstractPropertyManager()
 {
     clear();
-    delete d_ptr;
 }
 
 /*!
@@ -1167,14 +1164,13 @@ QtAbstractPropertyBrowser *QtBrowserItem::browser() const
 }
 
 QtBrowserItem::QtBrowserItem(QtAbstractPropertyBrowser *browser, QtProperty *property, QtBrowserItem *parent)
+    : d_ptr(new QtBrowserItemPrivate(browser, property, parent))
 {
-    d_ptr = new QtBrowserItemPrivate(browser, property, parent);
     d_ptr->q_ptr = this;
 }
 
 QtBrowserItem::~QtBrowserItem()
 {
-    delete d_ptr;
 }
 
 
@@ -1646,9 +1642,8 @@ void QtAbstractPropertyBrowserPrivate::slotPropertyDataChanged(QtProperty *prope
     Creates an abstract property browser with the given \a parent.
 */
 QtAbstractPropertyBrowser::QtAbstractPropertyBrowser(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), d_ptr(new QtAbstractPropertyBrowserPrivate)
 {
-    d_ptr = new QtAbstractPropertyBrowserPrivate;
     d_ptr->q_ptr = this;
 
 }
@@ -1671,7 +1666,6 @@ QtAbstractPropertyBrowser::~QtAbstractPropertyBrowser()
     QListIterator<QtBrowserItem *> itItem(indexes);
     while (itItem.hasNext())
         d_ptr->clearIndex(itItem.next());
-    delete d_ptr;
 }
 
 /*!

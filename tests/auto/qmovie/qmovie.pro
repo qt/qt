@@ -12,3 +12,13 @@ wince*: {
    DEPLOYMENT += addFiles
 }
 
+
+symbian*: {
+   addFiles.sources = animations\*
+   addFiles.path = animations
+   DEPLOYMENT += addFiles
+
+   imagePlugins.sources = qjpeg.dll qgif.dll qmng.dll
+   imagePlugins.path = imageformats
+   DEPLOYMENT += imagePlugins
+}

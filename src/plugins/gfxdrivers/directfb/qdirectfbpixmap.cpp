@@ -169,16 +169,17 @@ bool QDirectFBPixmapData::hasAlphaChannel(const QImage &img)
 }
 
 
-void QDirectFBPixmapData::fromImage(const QImage &i,
+void QDirectFBPixmapData::fromImage(const QImage &image,
                                     Qt::ImageConversionFlags flags)
 {
-#ifdef QT_NO_DIRECTFB_OPAQUE_DETECTION
-    Q_UNUSED(flags);
-#endif
-    const QImage img = (i.depth() == 1 ? i.convertToFormat(screen->alphaPixmapFormat()) : i);
-    if (img.hasAlphaChannel()
+    if (image.depth() == 1) {
+        fromImage(image.convertToFormat(screen->alphaPixmapFormat()), flags);
+        return;
+    }
+
+    if (image.hasAlphaChannel()
 #ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
-        && (flags & Qt::NoOpaqueDetection || QDirectFBPixmapData::hasAlphaChannel(img))
+        && (flags & Qt::NoOpaqueDetection || QDirectFBPixmapData::hasAlphaChannel(image))
 #endif
         ) {
         alpha = true;
@@ -187,18 +188,21 @@ void QDirectFBPixmapData::fromImage(const QImage &i,
         alpha = false;
         format = screen->pixelFormat();
     }
-    dfbSurface = screen->copyToDFBSurface(img, format,
-                                          QDirectFBScreen::TrackSurface);
+
+    dfbSurface = screen->createDFBSurface(image, format, QDirectFBScreen::TrackSurface|QDirectFBScreen::NoPreallocated);
     if (!dfbSurface) {
         qWarning("QDirectFBPixmapData::fromImage()");
         invalidate();
         return;
     }
-    w = img.width();
-    h = img.height();
+    w = image.width();
+    h = image.height();
     is_null = (w <= 0 || h <= 0);
     d = metric(QPaintDevice::PdmDepth);
     setSerialNumber(++global_ser_no);
+#ifdef QT_NO_DIRECTFB_OPAQUE_DETECTION
+    Q_UNUSED(flags);
+#endif
 }
 
 void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
@@ -399,9 +403,14 @@ QImage * QDirectFBPixmapData::buffer(DFBSurfaceLockFlags lockFlags)
 
 void QDirectFBPixmapData::invalidate()
 {
+    if (dfbSurface) {
+        screen->releaseDFBSurface(dfbSurface);
+        dfbSurface = 0;
+    }
     setSerialNumber(0);
     alpha = false;
     d = w = h = 0;
+    is_null = true;
     format = QImage::Format_Invalid;
 }
 

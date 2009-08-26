@@ -106,9 +106,27 @@ embedded {
 	DEFINES += QT_NO_FONTCONFIG
 }
 
+symbian {
+	SOURCES += \
+		text/qfont_s60.cpp
+	contains(QT_CONFIG, freetype) {
+		SOURCES += \
+			text/qfontengine_ft.cpp
+		HEADERS += \
+			text/qfontengine_ft_p.h
+		DEFINES += \
+			QT_NO_FONTCONFIG
+	} else {
+		SOURCES += \
+			text/qfontengine_s60.cpp
+		HEADERS += \
+			text/qfontengine_s60_p.h
+		LIBS += -lfntstr -lecom
+	}
+}
+
 contains(QT_CONFIG, freetype) {
     SOURCES += \
-	../3rdparty/freetype/builds/unix/ftsystem.c \
 	../3rdparty/freetype/src/base/ftbase.c \
 	../3rdparty/freetype/src/base/ftbbox.c \
 	../3rdparty/freetype/src/base/ftdebug.c \
@@ -152,10 +170,19 @@ contains(QT_CONFIG, freetype) {
           ../3rdparty/freetype/src/autofit/afloader.c\
           ../3rdparty/freetype/src/autofit/autofit.c
 
+    symbian {
+        SOURCES += \
+            ../3rdparty/freetype/src/base/ftsystem.c
+    } else {
+        SOURCES += \
+            ../3rdparty/freetype/builds/unix/ftsystem.c
+        INCLUDEPATH += \
+            ../3rdparty/freetype/builds/unix
+    }
+
     INCLUDEPATH += \
 	../3rdparty/freetype/src \
-	../3rdparty/freetype/include \
-	../3rdparty/freetype/builds/unix
+	../3rdparty/freetype/include
 
     DEFINES += FT2_BUILD_LIBRARY FT_CONFIG_OPTION_SYSTEM_ZLIB
     

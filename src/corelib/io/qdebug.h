@@ -80,8 +80,11 @@ public:
     inline QDebug &operator=(const QDebug &other);
     inline ~QDebug() {
         if (!--stream->ref) {
-            if(stream->message_output)
-                qt_message_output(stream->type, stream->buffer.toLocal8Bit().data());
+            if(stream->message_output) {
+                QT_TRY {
+                    qt_message_output(stream->type, stream->buffer.toLocal8Bit().data());
+                } QT_CATCH(std::bad_alloc) { /* We're out of memory - give up. */ }
+            }
             delete stream;
         }
     }

@@ -61,6 +61,7 @@
 #ifndef QT_NO_ACCESSIBILITY
 #include <qaccessible.h>
 #endif
+#include <private/qactiontokeyeventmapper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -907,7 +908,9 @@ QAbstractItemView::SelectionBehavior QAbstractItemView::selectionBehavior() cons
 
 /*!
     Sets the current item to be the item at \a index.
-    Depending on the current selection mode, the item may also be selected.
+
+    Unless the current selection mode is
+    \l{QAbstractItemView::}{NoSelection}, the item is also be selected.
     Note that this function also updates the starting position for any
     new selections the user performs.
 
@@ -2010,15 +2013,18 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
         if (QApplication::keypadNavigationEnabled()) {
             if (!hasEditFocus()) {
                 setEditFocus(true);
+                QActionToKeyEventMapper::addSoftKey(QAction::BackSoftKey, Qt::Key_Back, this);
                 return;
             }
         }
         break;
     case Qt::Key_Back:
-        if (QApplication::keypadNavigationEnabled() && hasEditFocus())
+        if (QApplication::keypadNavigationEnabled() && hasEditFocus()) {
+            QActionToKeyEventMapper::removeSoftkey(this);
             setEditFocus(false);
-        else
+        } else {
             event->ignore();
+        }
         return;
     default:
         if (QApplication::keypadNavigationEnabled() && !hasEditFocus()) {
@@ -3378,11 +3384,7 @@ QPoint QAbstractItemView::dirtyRegionOffset() const
 */
 void QAbstractItemView::startAutoScroll()
 {
-    Q_D(QAbstractItemView);
-    // ### it would be nice to make this into a style hint one day
-    int scrollInterval = (verticalScrollMode() == QAbstractItemView::ScrollPerItem) ? 150 : 50;
-    d->autoScrollTimer.start(scrollInterval, this);
-    d->autoScrollCount = 0;
+    d_func()->startAutoScroll();
 }
 
 /*!
@@ -3390,9 +3392,7 @@ void QAbstractItemView::startAutoScroll()
 */
 void QAbstractItemView::stopAutoScroll()
 {
-    Q_D(QAbstractItemView);
-    d->autoScrollTimer.stop();
-    d->autoScrollCount = 0;
+    d_func()->stopAutoScroll();
 }
 
 /*!

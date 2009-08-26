@@ -809,5 +809,122 @@ CONFIG(debug, debug|release) {
 //! [127]
 
 //! [128]
-DEPLOYMENT_PLUGIN += qjpeg
+customplugin.sources = customimageplugin.dll
+customplugin.sources += c:\myplugins\othercustomimageplugin.dll
+customplugin.path = imageformats
+dynamiclibrary.sources = mylib.dll helper.exe
+dynamiclibrary.path = \sys\bin
+globalplugin.sources = someglobalimageplugin.dll
+globalplugin.path = \resource\qt\plugins\imageformats
+DEPLOYMENT += customplugin dynamiclibrary globalplugin
 //! [128]
+
+//! [129]
+TARGET.EPOCALLOWDLLDATA = 1
+//! [129]
+
+//! [130]
+TARGET.EPOCHEAPSIZE = 10000 10000000
+TARGET.EPOCSTACKSIZE = 0x8000
+//! [130]
+
+//! [131]
+QMAKE_CXXFLAGS.CW += -O2
+QMAKE_CXXFLAGS.ARMCC += -O0
+//! [131]
+
+//! [132]
+TARGET.UID2 = 0x00000001
+TARGET.UID3 = 0x00000002
+TARGET.SID = 0x00000003
+TARGET.VID = 0x00000004
+//! [132]
+
+//! [133]
+TARGET.CAPABILITY += AllFiles
+//! [133]
+
+//! [134]
+TARGET.CAPABILITY = ALL -TCB
+//! [134]
+
+//! [135]
+TARGET.EPOCHEAPSIZE = 10000 10000000
+//! [135]
+
+//! [136]
+TARGET.EPOCSTACKSIZE = 0x8000
+//! [136]
+
+//! [137]
+MMP_RULES += "DEFFILE hello.def"
+//! [137]
+
+//! [138]
+myBlock = \
+"START RESOURCE foo.rss" \
+"TARGET bar" \
+"TARGETPATH private\10001234" \
+"HEADER" \
+"LANG 01" \
+"UID 0x10002345 0x10003456" \
+"END"
+
+MMP_RULES += myBlock
+//! [138]
+
+//! [139]
+myIfdefBlock = \
+"$${LITERAL_HASH}ifdef WINSCW" \
+"DEFFILE hello_winscw.def" \
+"$${LITERAL_HASH}endif" 
+
+MMP_RULES += myIfdefBlock
+//! [139]
+
+//! [140]
+somelib.sources = somelib.dll
+somelib.path = \sys\bin
+somelib.pkg_prerules = "(0x12345678), 2, 2, 0, {\"Some Package\"}" \
+                  "(0x87654321), 1, *, * ~ 2, 2, 0, {\"Some Other Package\"}"
+justdep.pkg_prerules = "(0xAAAABBBB), 0, 2, 0, {\"My Framework\"}"                  
+DEPLOYMENT += somelib justdep
+//! [140]
+
+//! [141]
+default_deployment.pkg_prerules = "[0x11223344],0,0,0,{\"SomeSpecificDeviceID\"}"
+//! [141]
+
+//! [142]
+DEPLOYMENT_PLUGIN += qjpeg
+//! [142]
+
+//! [143]
+myextension = \
+    "start extension myextension" \
+    "$${LITERAL_HASH}if defined(WINSCW)" \
+    "option MYOPTION foo" \
+    "$${LITERAL_HASH}endif" \
+    "option MYOPTION bar" \
+    "end"
+BLD_INF_RULES.prj_extensions += myextension
+//! [143]
+
+//! [144]
+RSS_RULES += "hidden = KAppIsHidden;" 
+//! [144]
+
+//! [145]
+myrssrules = \
+    "hidden = KAppIsHidden;" \
+    "launch = KAppLaunchInBackground;" \
+RSS_RULES += myrssrules
+//! [145]
+
+//! [146]
+BLD_INF_RULES.prj_exports += \
+    "$${LITERAL_HASH}include <platform_paths.hrh>" \
+    "rom/my.iby  APP_LAYER_PUBLIC_EXPORT_PATH(my.iby)" \
+    "inc/myheader.h mycomp/myheader.h" \
+    ":zip my_api.zip my_api"
+//! [146]

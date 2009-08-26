@@ -42,7 +42,8 @@ HEADERS +=  \
 	tools/qtimeline.h \
 	tools/qunicodetables_p.h \
 	tools/qvarlengtharray.h \
-	tools/qvector.h
+	tools/qvector.h \
+        tools/qscopedpointer.h
 
 
 SOURCES += \
@@ -73,6 +74,7 @@ SOURCES += \
 	tools/qvector.cpp \
         tools/qvsnprintf.cpp
 
+symbian:SOURCES+=tools/qlocale_symbian.cpp
 
 #zlib support
 contains(QT_CONFIG, zlib) {
@@ -109,5 +111,9 @@ SOURCES += ../3rdparty/harfbuzz/src/harfbuzz-buffer.c \
            tools/qharfbuzz.cpp
 HEADERS += tools/qharfbuzz_p.h
 
+INCLUDEPATH += ../3rdparty/md5 \
+               ../3rdparty/md4
+
 # Note: libm should be present by default becaue this is C++
-!macx-icc:!vxworks:unix:LIBS_PRIVATE += -lm
+!macx-icc:!vxworks:!symbian:unix:LIBS_PRIVATE += -lm
+

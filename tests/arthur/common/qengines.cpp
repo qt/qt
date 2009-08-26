@@ -101,6 +101,7 @@ void QtEngines::init()
         m_engines << new GLEngine;
 #endif
 
+#ifndef QT_NO_PRINTER
     m_engines << new PDFEngine
 #ifdef Q_WS_X11
               << new PSEngine
@@ -109,7 +110,8 @@ void QtEngines::init()
 			  << new WinPrintEngine
 #endif
         ;
-
+#endif //QT_NO_PRINTER
+    
     m_foreignEngines << new RSVGEngine;
 }
 
@@ -433,7 +435,7 @@ void WidgetEngine::cleanup()
     delete m_widget;
 }
 
-
+#ifndef QT_NO_PRINTER
 PDFEngine::PDFEngine()
 {
 }
@@ -606,6 +608,7 @@ void PSEngine::cleanup()
     delete printer; printer = 0;
 }
 #endif
+#endif //QT_NO_PRINTER
 
 RSVGEngine::RSVGEngine()
 {

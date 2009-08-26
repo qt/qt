@@ -18,7 +18,7 @@ win32 {
 RESOURCES += ../files.qrc
 
 wince*: {
-# this test calls lackkey, which then again depends on QtScript.
+# this test calls lackey, which then again depends on QtScript.
 # let's add it here so that it gets deployed easily
 QT += script
 lackey.sources = ../../qsharedmemory/lackey/lackey.exe
@@ -27,3 +27,12 @@ lackey.path = ../qsharedmemory/lackey
 DEPLOYMENT += lackey
 }
 
+symbian: {
+# this test calls lackey, which then again depends on QtScript.
+# let's add it here so that it gets deployed easily
+QT += script
+
+lackey.sources = ../../qsharedmemory/lackey/lackey.exe
+lackey.path = /sys/bin
+DEPLOYMENT += lackey
+}

@@ -11,7 +11,9 @@ wince*: {
 QT += network
 vxworks:QT -= gui
 
-DEFINES += TEST_QNETWORK_PROXY
+symbian: TARGET.EPOCHEAPSIZE="0x100 0x1000000"
+
+#DEFINES += TEST_QNETWORK_PROXY
 
 TARGET = tst_qtcpsocket
 

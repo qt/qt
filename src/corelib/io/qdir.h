@@ -45,6 +45,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qstringlist.h>
+#include <QtCore/qscopedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -57,7 +58,7 @@ class QDirPrivate;
 class Q_CORE_EXPORT QDir
 {
 protected:
-    QDirPrivate *d_ptr;
+    QScopedPointer<QDirPrivate> d_ptr;
 private:
     Q_DECLARE_PRIVATE(QDir)
 public:

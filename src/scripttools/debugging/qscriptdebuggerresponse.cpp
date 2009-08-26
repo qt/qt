@@ -101,7 +101,6 @@ QScriptDebuggerResponse::QScriptDebuggerResponse(const QScriptDebuggerResponse &
 
 QScriptDebuggerResponse::~QScriptDebuggerResponse()
 {
-    delete d_ptr;
 }
 
 QScriptDebuggerResponse &QScriptDebuggerResponse::operator=(const QScriptDebuggerResponse &other)
@@ -320,7 +319,7 @@ bool QScriptDebuggerResponse::operator!=(const QScriptDebuggerResponse &other) c
 */
 QDataStream &operator<<(QDataStream &out, const QScriptDebuggerResponse &response)
 {
-    const QScriptDebuggerResponsePrivate *d = response.d_ptr;
+    const QScriptDebuggerResponsePrivate *d = response.d_ptr.data();
     out << (quint32)d->error;
     out << d->result;
     out << d->async;
@@ -336,7 +335,7 @@ QDataStream &operator<<(QDataStream &out, const QScriptDebuggerResponse &respons
 */
 QDataStream &operator>>(QDataStream &in, QScriptDebuggerResponse &response)
 {
-    QScriptDebuggerResponsePrivate *d = response.d_ptr;
+    QScriptDebuggerResponsePrivate *d = response.d_ptr.data();
 
     quint32 error;
     in >> error;

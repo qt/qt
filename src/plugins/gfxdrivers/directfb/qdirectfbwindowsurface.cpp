@@ -119,9 +119,6 @@ bool QDirectFBWindowSurface::isValid() const
 #ifndef QT_NO_DIRECTFB_WM
 void QDirectFBWindowSurface::createWindow()
 {
-#ifdef QT_NO_DIRECTFB_LAYER
-#error QT_NO_DIRECTFB_LAYER requires QT_NO_DIRECTFB_WM
-#else
     IDirectFBDisplayLayer *layer = screen->dfbDisplayLayer();
     if (!layer)
         qFatal("QDirectFBWindowSurface: Unable to get primary display layer!");
@@ -147,7 +144,6 @@ void QDirectFBWindowSurface::createWindow()
         dfbSurface->Release(dfbSurface);
 
     dfbWindow->GetSurface(dfbWindow, &dfbSurface);
-#endif
 }
 #endif // QT_NO_DIRECTFB_WM
 
@@ -392,7 +388,7 @@ void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
             && region.intersects(cursorRectangle.translated(-(offset + windowGeometry.topLeft())))) {
             const QImage image = cursor->image();
 
-            IDirectFBSurface *surface = screen->createDFBSurface(image, QDirectFBScreen::DontTrackSurface);
+            IDirectFBSurface *surface = screen->createDFBSurface(image, image.format(), QDirectFBScreen::DontTrackSurface);
             primarySurface->SetBlittingFlags(primarySurface, DSBLIT_BLEND_ALPHACHANNEL);
             primarySurface->Blit(primarySurface, surface, 0, cursorRectangle.x(), cursorRectangle.y());
             surface->Release(surface);

@@ -1037,24 +1037,28 @@ void QWSSoundServerPrivate::stopFile(int wid, int sid)
 void QWSSoundServerPrivate::stopAll(int wid)
 {
     QWSSoundServerProvider *bucket;
-    QList<QWSSoundServerProvider*>::Iterator it = active.begin();
-    while (it != active.end()) {
-        bucket = *it;
-        if (bucket->groupId() == wid) {
-            it = active.erase(it);
-            delete bucket;
-        } else {
-            ++it;
+    if (!active.isEmpty()) {
+        QList<QWSSoundServerProvider*>::Iterator it = active.begin();
+        while (it != active.end()) {
+            bucket = *it;
+            if (bucket->groupId() == wid) {
+                it = active.erase(it);
+                delete bucket;
+            } else {
+                ++it;
+            }
         }
     }
-    it = inactive.begin();
-    while (it != inactive.end()) {
-        bucket = *it;
-        if (bucket->groupId() == wid) {
-            it = inactive.erase(it);
-            delete bucket;
-        } else {
-            ++it;
+    if (!inactive.isEmpty()) {
+        QList<QWSSoundServerProvider*>::Iterator it = inactive.begin();
+        while (it != inactive.end()) {
+            bucket = *it;
+            if (bucket->groupId() == wid) {
+                it = inactive.erase(it);
+                delete bucket;
+            } else {
+                ++it;
+            }
         }
     }
 }

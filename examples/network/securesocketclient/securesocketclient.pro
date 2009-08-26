@@ -14,3 +14,8 @@ target.path = $$[QT_INSTALL_EXAMPLES]/network/securesocketclient
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro *.png *.jpg images
 sources.path = $$[QT_INSTALL_EXAMPLES]/network/securesocketclient
 INSTALLS += target sources
+
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000CF67
+}

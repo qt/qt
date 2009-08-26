@@ -51,9 +51,15 @@
 #include <stdlib.h>
 #include <time.h>
 
+QT_BEGIN_NAMESPACE
 namespace QtSharedPointer {
     Q_CORE_EXPORT void internalSafetyCheckCleanCheck();
 }
+QT_END_NAMESPACE
+
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR "."
+#endif
 
 class tst_QSharedPointer: public QObject
 {
@@ -1655,21 +1661,6 @@ void tst_QSharedPointer::invalidConstructs_data()
         << "QObject *ptr = new QObject;\n"
            "QWeakPointer<QObject> weak = ptr;\n"    // this makes the object unmanaged
            "QSharedPointer<QObject> shared(ptr);\n";
-
-#ifndef QT_NO_DEBUG
-    // this tests a Q_ASSERT, so it is only valid in debug mode
-    // the DerivedFromQObject destructor below creates a QWeakPointer from parent().
-    // parent() is not 0 in the current Qt implementation, but has started destruction,
-    // so the code should detect that issue
-    QTest::newRow("shared-pointer-from-qobject-in-destruction")
-        << &QTest::QExternalTest::tryRunFail
-        << "class DerivedFromQObject: public QObject { public:\n"
-           "    DerivedFromQObject(QObject *parent): QObject(parent) {}\n"
-           "    ~DerivedFromQObject() { QWeakPointer<QObject> weak = parent(); }\n"
-           "};\n"
-           "QObject obj;\n"
-           "new DerivedFromQObject(&obj);";
-#endif
 }
 
 void tst_QSharedPointer::invalidConstructs()

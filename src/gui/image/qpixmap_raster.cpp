@@ -172,9 +172,13 @@ void QRasterPixmapData::fromImage(const QImage &sourceImage,
         }
     }
 #endif
-    w = image.d->width;
-    h = image.d->height;
-    d = image.d->depth;
+    if (image.d) {
+        w = image.d->width;
+        h = image.d->height;
+        d = image.d->depth;
+    } else {
+        w = h = d = 0;
+    }
     is_null = (w <= 0 || h <= 0);
 
     setSerialNumber(image.serialNumber());

@@ -3,7 +3,7 @@ TARGET = browser
 QT += webkit network
 
 CONFIG += qt warn_on
-contains(QT_BUILD_PARTS, tools): CONFIG += uitools
+contains(QT_BUILD_PARTS, tools):!symbian: CONFIG += uitools
 else: DEFINES += QT_NO_UITOOLS
 
 FORMS += \
@@ -89,3 +89,8 @@ target.path = $$[QT_INSTALL_DEMOS]/browser
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.plist *.icns *.ico *.rc *.pro *.html *.doc images htmls data
 sources.path = $$[QT_INSTALL_DEMOS]/browser
 INSTALLS += target sources
+
+symbian {
+    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000CF70
+}

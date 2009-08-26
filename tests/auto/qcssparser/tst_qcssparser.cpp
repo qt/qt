@@ -98,7 +98,7 @@ void tst_QCssParser::scanner_data()
     QTest::addColumn<QString>("input");
     QTest::addColumn<QString>("output");
 
-#if !defined(Q_OS_IRIX) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_IRIX) && !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QDir d(SRCDIR);
 #else
     QDir d(QDir::current());
@@ -884,7 +884,7 @@ private:
     QDomDocument doc;
 };
 
-Q_DECLARE_METATYPE(QDomDocument);
+Q_DECLARE_METATYPE(QDomDocument)
 
 void tst_QCssParser::marginValue_data()
 {

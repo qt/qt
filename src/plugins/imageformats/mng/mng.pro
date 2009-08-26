@@ -7,6 +7,12 @@ HEADERS += qmnghandler.h
 SOURCES += main.cpp \
            qmnghandler.cpp
 
+symbian: {
+        #Disable warnings in 3rdparty code due to unused variables and arguments
+        QMAKE_CXXFLAGS.CW += -W nounused
+        TARGET.UID3=0x2001E619
+}
+
 contains(QT_CONFIG, system-mng) {
         unix:LIBS += -lmng
         win32:LIBS += libmng.lib
@@ -47,3 +53,4 @@ contains(QT_CONFIG, system-zlib) {
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/imageformats
 target.path += $$[QT_INSTALL_PLUGINS]/imageformats
 INSTALLS += target
+

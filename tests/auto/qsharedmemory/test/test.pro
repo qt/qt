@@ -17,13 +17,19 @@ TARGET = ../tst_qsharedmemory
   }
 }
 
-wince*: {
+wince*:{
 QT += gui script
 addFiles.sources = ../lackey/lackey.exe ../lackey/scripts
 addFiles.path = lackey
 DEPLOYMENT += addFiles
 DEFINES += SRCDIR=\\\"\\\"
+}else:symbian*{
+QT += gui script
+addFiles.sources = ../lackey/scripts
+addFiles.path = /data/qsharedmemorytemp/lackey
+addBin.sources = lackey.exe
+addBin.path = /sys/bin
+DEPLOYMENT += addFiles addBin
 } else {
 DEFINES += SRCDIR=\\\"$$PWD/../\\\"
 }
-

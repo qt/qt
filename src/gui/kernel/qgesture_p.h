@@ -69,11 +69,14 @@ class QGesturePrivate : public QObjectPrivate
 
 public:
     QGesturePrivate()
-        : graphicsItem(0), eventFilterProxyGraphicsItem(0), state(Qt::NoGesture)
+        : gestureTarget(0), graphicsItem(0), eventFilterProxyGraphicsItem(0),
+          state(Qt::NoGesture)
     {
     }
 
+    virtual void setupGestureTarget(QObject *o);
 
+    QPointer<QObject> gestureTarget;
     QGraphicsItem *graphicsItem;
     QGraphicsItem *eventFilterProxyGraphicsItem;
 

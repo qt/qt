@@ -76,6 +76,10 @@ Q_DECLARE_METATYPE(QSslError)
 #define QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
 #endif
 
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR ""
+#endif
+
 #ifndef QT_NO_OPENSSL
 class QSslSocketPtr: public QSharedPointer<QSslSocket>
 {
@@ -177,6 +181,7 @@ private slots:
     void ignoreSslErrorsList();
     void ignoreSslErrorsListWithSlot_data();
     void ignoreSslErrorsListWithSlot();
+    void readFromClosedSocket();
 
     static void exitLoop()
     {
@@ -195,7 +200,9 @@ protected slots:
     }
     void untrustedWorkaroundSlot(const QList<QSslError> &errors)
     {
-        if (errors.size() == 1 && errors.first().error() == QSslError::CertificateUntrusted)
+        if (errors.size() == 1 &&
+                (errors.first().error() == QSslError::CertificateUntrusted ||
+                        errors.first().error() == QSslError::SelfSignedCertificate))
             socket->ignoreSslErrors();
     }
     void ignoreErrorListSlot(const QList<QSslError> &errors);
@@ -219,11 +226,11 @@ tst_QSslSocket::tst_QSslSocket()
     qRegisterMetaType<QAbstractSocket::SocketError>("QAbstractSocket::SocketError");
     qRegisterMetaType<QAbstractSocket::SocketState>("QSslSocket::SslMode");
 #endif
+    Q_SET_DEFAULT_IAP
 }
 
 tst_QSslSocket::~tst_QSslSocket()
 {
-
 }
 
 enum ProxyTests {
@@ -427,8 +434,10 @@ void tst_QSslSocket::simpleConnect()
     enterLoop(10);
 
     // Entered connecting state
+#ifndef Q_OS_SYMBIAN
     QCOMPARE(socket.state(), QAbstractSocket::ConnectingState);
     QCOMPARE(connectedSpy.count(), 0);
+#endif
     QCOMPARE(hostFoundSpy.count(), 1);
     QCOMPARE(disconnectedSpy.count(), 0);
     enterLoop(10);
@@ -496,8 +505,7 @@ void tst_QSslSocket::simpleConnectWithIgnore()
     if (!socket.canReadLine())
         enterLoop(10);
 
-    QCOMPARE(socket.readAll(), QByteArray("* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] qt-test-server.qt-test-net Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n"));
-
+    QCOMPARE(socket.readAll(), QtNetworkSettings::expectedReplySSL());
     socket.disconnectFromHost();
 }
 
@@ -530,8 +538,9 @@ void tst_QSslSocket::sslErrors()
     socket->waitForEncrypted(5000);
 
     SslErrorList output;
-    foreach (QSslError error, socket->sslErrors())
+    foreach (QSslError error, socket->sslErrors()) {
         output << error.error();
+    }
 
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     if (output.last() == QSslError::CertificateUntrusted)
@@ -583,16 +592,16 @@ void tst_QSslSocket::connectToHostEncrypted()
 
     QSslSocketPtr socket = newSocket();
     this->socket = socket;
-
-    QVERIFY(socket->addCaCertificates(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem")));
+    QVERIFY(socket->addCaCertificates(QLatin1String("certs/qt-test-server-cacert.pem")));
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
-    connect(&socket, SIGNAL(sslErrors(QList<QSslError>)),
+    connect(socket, SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
 #endif
 
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
 
     // This should pass unconditionally when using fluke's CA certificate.
+    // or use untrusted certificate workaround
     QVERIFY2(socket->waitForEncrypted(10000), qPrintable(socket->errorString()));
 
     socket->disconnectFromHost();
@@ -617,7 +626,7 @@ void tst_QSslSocket::connectToHostEncryptedWithVerificationPeerName()
 
     socket->addCaCertificates(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
-    connect(&socket, SIGNAL(sslErrors(QList<QSslError>)),
+    connect(socket, SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
 #endif
 
@@ -683,10 +692,9 @@ void tst_QSslSocket::peerCertificateChain()
 
     QList<QSslCertificate> caCertificates = QSslCertificate::fromPath(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
     QVERIFY(caCertificates.count() == 1);
-
     socket->addCaCertificates(caCertificates);
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
-    connect(&socket, SIGNAL(sslErrors(QList<QSslError>)),
+    connect(socket, SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
 #endif
 
@@ -747,7 +755,7 @@ void tst_QSslSocket::protocol()
 //    qDebug() << "certs:" << certs.at(0).issuerInfo(QSslCertificate::CommonName);
     socket->setCaCertificates(certs);
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
-    connect(&socket, SIGNAL(sslErrors(QList<QSslError>)),
+    connect(socket, SIGNAL(sslErrors(QList<QSslError>)),
             this, SLOT(untrustedWorkaroundSlot(QList<QSslError>)));
 #endif
 
@@ -940,11 +948,24 @@ void tst_QSslSocket::waitForConnectedEncryptedReadyRead()
     connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 993);
 
+#ifdef Q_OS_SYMBIAN
+    QVERIFY(socket->waitForConnected(10000));
+    QVERIFY(socket->waitForEncrypted(10000));
+
+    // dont forget to login
+    QCOMPARE((int) socket->write("USER ftptest\r\n"), 14);
+    QCOMPARE((int) socket->write("PASS ftP2Ptf\r\n"), 14);
+
+    QVERIFY(socket->waitForReadyRead(10000));
+    QVERIFY(!socket->peerCertificate().isNull());
+    QVERIFY(!socket->peerCertificateChain().isEmpty());
+#else
     QVERIFY(socket->waitForConnected(10000));
     QVERIFY(socket->waitForEncrypted(10000));
     QVERIFY(socket->waitForReadyRead(10000));
     QVERIFY(!socket->peerCertificate().isNull());
     QVERIFY(!socket->peerCertificateChain().isEmpty());
+#endif
 }
 
 void tst_QSslSocket::startClientEncryption()
@@ -1035,7 +1056,7 @@ void tst_QSslSocket::systemCaCertificates()
 
 void tst_QSslSocket::wildcard()
 {
-	QSKIP("TODO: solve wildcard problem", SkipAll);
+    QSKIP("TODO: solve wildcard problem", SkipAll);
 
     if (!QSslSocket::supportsSsl())
         return;
@@ -1047,7 +1068,7 @@ void tst_QSslSocket::wildcard()
     // responds with the wildcard, and QSslSocket should accept that as a
     // valid connection.  This was broken in 4.3.0.
     QSslSocketPtr socket = newSocket();
-    socket->addCaCertificates(QLatin1String(SRCDIR "certs/qt-test-server-cacert.pem"));
+    socket->addCaCertificates(QLatin1String("certs/aspiriniks.ca.crt"));
     this->socket = socket;
 #ifdef QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
     connect(socket, SIGNAL(sslErrors(QList<QSslError>)),
@@ -1290,7 +1311,11 @@ protected:
 
         // delayed acceptance:
         QTest::qSleep(100);
-        server.waitForNewConnection(2000);
+#ifndef Q_OS_SYMBIAN
+        bool ret = server.waitForNewConnection(2000);
+#else
+        bool ret = server.waitForNewConnection(20000);
+#endif
 
         // delayed start of encryption
         QTest::qSleep(100);
@@ -1478,18 +1503,22 @@ void tst_QSslSocket::disconnectFromHostWhenConnecting()
     // without proxy, the state will be HostLookupState;
     // with    proxy, the state will be ConnectingState.
     QVERIFY(socket->state() == QAbstractSocket::HostLookupState ||
-    		socket->state() == QAbstractSocket::ConnectingState);
+            socket->state() == QAbstractSocket::ConnectingState);
     socket->disconnectFromHost();
     // the state of the socket must be the same before and after calling
     // disconnectFromHost()
     QCOMPARE(state, socket->state());
     QVERIFY(socket->state() == QAbstractSocket::HostLookupState ||
-    		socket->state() == QAbstractSocket::ConnectingState);
+            socket->state() == QAbstractSocket::ConnectingState);
     QVERIFY(socket->waitForDisconnected(5000));
     QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
     // we did not call close, so the socket must be still open
     QVERIFY(socket->isOpen());
     QCOMPARE(socket->bytesToWrite(), qint64(0));
+
+    // dont forget to login
+    QCOMPARE((int) socket->write("USER ftptest\r\n"), 14);
+
 }
 
 void tst_QSslSocket::disconnectFromHostWhenConnected()
@@ -1497,12 +1526,27 @@ void tst_QSslSocket::disconnectFromHostWhenConnected()
     QSslSocketPtr socket = newSocket();
     socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 993);
     socket->ignoreSslErrors();
+#ifndef Q_OS_SYMBIAN
     QVERIFY(socket->waitForEncrypted(5000));
+#else
+    QVERIFY(socket->waitForEncrypted(10000));
+#endif
     socket->write("XXXX LOGOUT\r\n");
     QCOMPARE(socket->state(), QAbstractSocket::ConnectedState);
     socket->disconnectFromHost();
     QCOMPARE(socket->state(), QAbstractSocket::ClosingState);
+#ifdef Q_OS_SYMBIAN
+    // I don't understand how socket->waitForDisconnected can work on other platforms
+    // since socket->write will end to:
+    //   QMetaObject::invokeMethod(this, "_q_flushWriteBuffer", Qt::QueuedConnection);
+    // In order that _q_flushWriteBuffer will be called the eventloop need to run
+    // If we just call waitForDisconnected, which blocks the whole thread how that can happen?
+    connect(socket, SIGNAL(disconnected()), this, SLOT(exitLoop()));
+    enterLoop(5);
+    QVERIFY(!timeout());
+#else
     QVERIFY(socket->waitForDisconnected(5000));
+#endif
     QCOMPARE(socket->bytesToWrite(), qint64(0));
 }
 
@@ -1528,6 +1572,12 @@ void tst_QSslSocket::resetProxy()
     socket.setProxy(badProxy);
     socket.connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QVERIFY(! socket.waitForConnected(10000));
+
+    // dont forget to login
+    QCOMPARE((int) socket.write("USER ftptest\r\n"), 14);
+    QCOMPARE((int) socket.write("PASS password\r\n"), 15);
+
+    enterLoop(10);
 
     // now the other way round:
     // set the nonsense proxy and make sure the connection does not work,
@@ -1617,6 +1667,34 @@ void tst_QSslSocket::ignoreSslErrorsListWithSlot()
     QFETCH(int, expectedSslErrorSignalCount);
     bool expectEncryptionSuccess = (expectedSslErrorSignalCount == 0);
     QCOMPARE(socket.waitForEncrypted(10000), expectEncryptionSuccess);
+}
+
+// make sure a closed socket has no bytesAvailable()
+// related to https://bugs.webkit.org/show_bug.cgi?id=28016
+void tst_QSslSocket::readFromClosedSocket()
+{
+    QSslSocketPtr socket = newSocket();
+    socket->ignoreSslErrors();
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+    socket->ignoreSslErrors();
+    socket->waitForConnected();
+    socket->waitForEncrypted();
+    // provoke a response by sending a request
+    socket->write("GET /gif/fluke.gif HTTP/1.1\n");
+    socket->write("Host: ");
+    socket->write(QtNetworkSettings::serverName().toLocal8Bit().constData());
+    socket->write("\n");
+    socket->write("\n");
+    socket->waitForBytesWritten();
+    socket->waitForReadyRead();
+    QVERIFY(socket->state() == QAbstractSocket::ConnectedState);
+    QVERIFY(socket->bytesAvailable());
+    socket->close();
+    QVERIFY(!socket->bytesAvailable());
+    QVERIFY(!socket->bytesToWrite());
+    socket->waitForDisconnected();
+    QVERIFY(!socket->bytesAvailable());
+    QVERIFY(!socket->bytesToWrite());
 }
 
 #endif // QT_NO_OPENSSL

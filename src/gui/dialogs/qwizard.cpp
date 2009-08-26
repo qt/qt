@@ -83,7 +83,7 @@ const int ModernHeaderTopMargin = 2;
 const int ClassicHMargin = 4;
 const int MacButtonTopMargin = 13;
 const int MacLayoutLeftMargin = 20;
-const int MacLayoutTopMargin = 14;
+//const int MacLayoutTopMargin = 14; // Unused. Save some space and avoid warning.
 const int MacLayoutRightMargin = 20;
 const int MacLayoutBottomMargin = 17;
 

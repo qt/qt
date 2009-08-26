@@ -46,8 +46,16 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-
-    Dialog dialog;
-    dialog.show();
+    bool smallScreen = false;
+    for (int i=0; i<argc; i++)
+        if (QString(argv[i]) == "-small-screen")
+            smallScreen = true;
+    Dialog dialog(0,smallScreen);
+    if (!smallScreen){
+        dialog.show();
+    }
+    else{
+        dialog.showFullScreen();
+    }
     return app.exec();
 }

@@ -130,6 +130,7 @@ bool QHttpNetworkConnectionChannel::sendRequest()
             reply->d_func()->clear();
             reply->d_func()->connection = connection;
             reply->d_func()->autoDecompress = request.d->autoDecompress;
+            reply->d_func()->pipeliningUsed = false;
         }
         state = QHttpNetworkConnectionChannel::WritingState;
         pendingEncrypt = false;
@@ -682,6 +683,7 @@ void  QHttpNetworkConnectionChannel::pipelineInto(HttpMessagePair &pair)
         reply->d_func()->clear();
         reply->d_func()->connection = connection;
         reply->d_func()->autoDecompress = request.d->autoDecompress;
+        reply->d_func()->pipeliningUsed = true;
     }
 
 #ifndef QT_NO_NETWORKPROXY

@@ -98,17 +98,6 @@ int runQMake(int argc, char **argv)
         return 0;
     }
 
-    // report Qt usage for commercial customers with a "metered license" (currently experimental)
-#if QT_EDITION != QT_EDITION_OPENSOURCE
-    QString reporterPath = QLibraryInfo::location(QLibraryInfo::BinariesPath) + QDir::separator()
-                           + "qtusagereporter";
-#if defined(Q_OS_WIN)
-    reporterPath += ".exe";
-#endif
-    if (QFile::exists(reporterPath))
-        system(qPrintable(reporterPath + " qmake"));
-#endif
-
     QString oldpwd = qmake_getpwd();
 #ifdef Q_WS_WIN
     if(!(oldpwd.length() == 3 && oldpwd[0].isLetter() && oldpwd.endsWith(":/")))

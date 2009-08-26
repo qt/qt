@@ -12,6 +12,12 @@ wince*: {
 }
 }
 
+symbian {
+	crashApp.sources = $$QT_BUILD_TREE/examples/widgets/wiggly/$${BUILD_DIR}/crashingServer.exe
+	crashApp.path = .
+	DEPLOYMENT += crashApp
+}
+
 TARGET = ../tst_qtcpserver
 
 win32 {

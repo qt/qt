@@ -75,8 +75,12 @@ public:
     virtual void resize(int width, int height) = 0;
     virtual void fromImage(const QImage &image,
                            Qt::ImageConversionFlags flags) = 0;
-    virtual void fromFile(const QString &filename, const char *format,
+
+    virtual bool fromFile(const QString &filename, const char *format,
                           Qt::ImageConversionFlags flags);
+    virtual bool fromData(const uchar *buffer, uint len, const char *format,
+                          Qt::ImageConversionFlags flags);
+
     virtual void copy(const QPixmapData *data, const QRect &rect);
     virtual bool scroll(int dx, int dy, const QRect &rect);
 
@@ -117,6 +121,7 @@ private:
     friend class QGLContextPrivate;
     friend class QX11PixmapData;
     friend class QGLTextureCache; //Needs to check the reference count
+    friend class QExplicitlySharedDataPointer<QPixmapData>;
 
     QAtomicInt ref;
     int detach_no;

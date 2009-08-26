@@ -98,10 +98,10 @@ Q_GLOBAL_STATIC(QMutex, qt_library_mutex)
     Unix), unless the file name has an absolute path. If the file
     cannot be found, QLibrary tries the name with different
     platform-specific file suffixes, like ".so" on Unix, ".dylib" on
-    the Mac, or ".dll" on Windows. This makes it possible to specify
-    shared libraries that are only identified by their basename (i.e.
-    without their suffix), so the same code will work on different
-    operating systems.
+    the Mac, or ".dll" on Windows and Symbian. This makes it possible
+    to specify shared libraries that are only identified by their
+    basename (i.e. without their suffix), so the same code will work
+    on different operating systems.
 
     The most important functions are load() to dynamically load the
     library file, isLoaded() to check whether loading was successful,
@@ -119,6 +119,11 @@ Q_GLOBAL_STATIC(QMutex, qt_library_mutex)
     This is called "explicit linking" in contrast to "implicit
     linking", which is done by the link step in the build process when
     linking an executable against a library.
+
+    Note: In Symbian resolving symbols using their names is supported
+    only if the library is built as STDDLL. Otherwise ordinals must
+    be used. Also, in Symbian the path of the library is ignored and
+    system default library location is always used.
 
     The following code snippet loads a library, resolves the symbol
     "mysymbol", and calls the function if everything succeeded. If
@@ -288,7 +293,7 @@ static bool qt_parse_pattern(const char *s, uint *version, bool *debug, QByteArr
 }
 #endif // QT_NO_PLUGIN_CHECK
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(QT_NO_PLUGIN_CHECK)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_PLUGIN_CHECK)
 
 #if defined(Q_OS_FREEBSD) || defined(Q_OS_LINUX)
 #  define USE_MMAP
@@ -361,7 +366,7 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
     char *filedata = 0;
     ulong fdlen = 0;
 
-#ifdef USE_MMAP
+# ifdef USE_MMAP
     char *mapaddr = 0;
     size_t maplen = file.size();
     mapaddr = (char *) mmap(mapaddr, maplen, PROT_READ, MAP_PRIVATE, file.handle(), 0);
@@ -378,14 +383,14 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
             lib->errorString = QLibrary::tr("Could not mmap '%1': %2")
                 .arg(library)
                 .arg(qt_error_string());
-#endif // USE_MMAP
+# endif // USE_MMAP
         // try reading the data into memory instead
         data = file.readAll();
         filedata = data.data();
         fdlen = data.size();
-#ifdef USE_MMAP
+# ifdef USE_MMAP
     }
-#endif // USE_MMAP
+# endif // USE_MMAP
 
     // verify that the pattern is present in the plugin
     const char pattern[] = "pattern=QT_PLUGIN_VERIFICATION_DATA";
@@ -398,7 +403,7 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
 
     if (!ret && lib)
         lib->errorString = QLibrary::tr("Plugin verification data mismatch in '%1'").arg(library);
-#ifdef USE_MMAP
+# ifdef USE_MMAP
     if (mapaddr != MAP_FAILED && munmap(mapaddr, maplen) != 0) {
         if (qt_debug_component())
             qWarning("munmap: %s", qPrintable(qt_error_string(errno)));
@@ -407,16 +412,33 @@ static bool qt_unix_query(const QString &library, uint *version, bool *debug, QB
                 .arg(library)
                 .arg( qt_error_string() );
     }
-#endif // USE_MMAP
+# endif // USE_MMAP
 
     file.close();
     return ret;
 }
 
-#endif // Q_OS_UNIX && !Q_OS_MAC && !defined(QT_NO_PLUGIN_CHECK)
+#endif // Q_OS_UNIX && !Q_OS_MAC && !defined(Q_OS_SYMBIAN) && !defined(QT_NO_PLUGIN_CHECK)
 
 typedef QMap<QString, QLibraryPrivate*> LibraryMap;
-Q_GLOBAL_STATIC(LibraryMap, libraryMap)
+
+struct LibraryData {
+    LibraryData() : settings(0) { }
+    ~LibraryData() {
+        delete settings;
+    }
+
+    QSettings *settings;
+    LibraryMap libraryMap;
+};
+
+Q_GLOBAL_STATIC(LibraryData, libraryData)
+
+static LibraryMap *libraryMap()
+{
+    LibraryData *data = libraryData();
+    return data ? &data->libraryMap : 0;
+}
 
 QLibraryPrivate::QLibraryPrivate(const QString &canonicalFileName, const QString &version)
     :pHnd(0), fileName(canonicalFileName), fullVersion(version), instance(0), qt_version(0),
@@ -493,6 +515,14 @@ bool QLibraryPrivate::loadPlugin()
     }
     if (load()) {
         instance = (QtPluginInstanceFunction)resolve("qt_plugin_instance");
+#if defined(Q_OS_SYMBIAN)
+        if (!instance) {
+            // If resolving with function name failed (i.e. not STDDLL),
+            // try resolving using known ordinal, which for
+            // qt_plugin_instance function is always "2".
+            instance = (QtPluginInstanceFunction)resolve("2");
+        }
+#endif
         return instance;
     }
     return false;
@@ -517,6 +547,10 @@ bool QLibrary::isLibrary(const QString &fileName)
 {
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     return fileName.endsWith(QLatin1String(".dll"));
+#elif defined(Q_OS_SYMBIAN)
+    // Plugin stubs are also considered libraries in Symbian.
+    return (fileName.endsWith(QLatin1String(".dll")) ||
+            fileName.endsWith(QLatin1String(".qtplugin")));
 #else
     QString completeSuffix = QFileInfo(fileName).completeSuffix();
     if (completeSuffix.isEmpty())
@@ -597,10 +631,12 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
                      .arg(fileName);
     QStringList reg;
 #ifndef QT_NO_SETTINGS
-    bool madeSettings = false;
     if (!settings) {
-        settings = new QSettings(QSettings::UserScope, QLatin1String("Trolltech"));
-        madeSettings = true;
+        settings = libraryData()->settings;
+        if (!settings) {
+            settings = new QSettings(QSettings::UserScope, QLatin1String("Trolltech"));
+            libraryData()->settings = settings;
+        }
     }
     reg = settings->value(regkey).toStringList();
 #endif
@@ -610,7 +646,7 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
         key = reg.at(2).toLatin1();
         success = qt_version != 0;
     } else {
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN)
         if (!pHnd) {
             // use unix shortcut to avoid loading the library
             success = qt_unix_query(fileName, &qt_version, &debug, &key, this);
@@ -625,6 +661,10 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
 #ifdef Q_OS_WIN
                 hTempModule = ::LoadLibraryEx((wchar_t*)QDir::toNativeSeparators(fileName).utf16(), 0, DONT_RESOLVE_DLL_REFERENCES);
 #else
+#  if defined(Q_OS_SYMBIAN)
+                //Guard against accidentally trying to load non-plugin libraries by making sure the stub exists
+                if (fileinfo.exists())
+#  endif
                 temporary_load =  load_sys();
 #endif
             }
@@ -643,8 +683,17 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
 #endif
                 : (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_verification_data");
 #else
-            QtPluginQueryVerificationDataFunction qtPluginQueryVerificationDataFunction =
-                (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_verification_data");
+            QtPluginQueryVerificationDataFunction qtPluginQueryVerificationDataFunction = NULL;
+#  if defined(Q_OS_SYMBIAN)
+            if (temporary_load) {
+                qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_verification_data");
+                // If resolving with function name failed (i.e. not STDDLL), try resolving using known ordinal
+                if (!qtPluginQueryVerificationDataFunction)
+                    qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction) resolve("1");
+            }
+#  else
+            qtPluginQueryVerificationDataFunction = (QtPluginQueryVerificationDataFunction) resolve("qt_plugin_query_verification_data");
+#  endif
 #endif
 
             if (!qtPluginQueryVerificationDataFunction
@@ -679,10 +728,6 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
         settings->setValue(regkey, queried);
 #endif
     }
-#ifndef QT_NO_SETTINGS
-    if (madeSettings)
-        delete settings;
-#endif
 
     if (!success) {
         if (errorString.isEmpty()){
@@ -818,6 +863,8 @@ QLibrary::QLibrary(QObject *parent)
     QLibrary will automatically look for the file with the appropriate
     suffix in accordance with the platform, e.g. ".so" on Unix,
     ".dylib" on Mac OS X, and ".dll" on Windows. (See \l{fileName}.)
+
+    Note: In Symbian the path portion of the \a fileName is ignored.
  */
 QLibrary::QLibrary(const QString& fileName, QObject *parent)
     :QObject(parent), d(0), did_load(false)
@@ -829,13 +876,15 @@ QLibrary::QLibrary(const QString& fileName, QObject *parent)
 /*!
     Constructs a library object with the given \a parent that will
     load the library specified by \a fileName and major version number \a verNum.
-    Currently, the version number is ignored on Windows.
+    Currently, the version number is ignored on Windows and Symbian.
 
     We recommend omitting the file's suffix in \a fileName, since
     QLibrary will automatically look for the file with the appropriate
     suffix in accordance with the platform, e.g. ".so" on Unix,
     ".dylib" on Mac OS X, and ".dll" on Windows. (See \l{fileName}.)
- */
+
+    Note: In Symbian the path portion of the \a fileName is ignored.
+*/
 QLibrary::QLibrary(const QString& fileName, int verNum, QObject *parent)
     :QObject(parent), d(0), did_load(false)
 {
@@ -845,12 +894,14 @@ QLibrary::QLibrary(const QString& fileName, int verNum, QObject *parent)
 /*!
     Constructs a library object with the given \a parent that will
     load the library specified by \a fileName and full version number \a version.
-    Currently, the version number is ignored on Windows.
+    Currently, the version number is ignored on Windows and Symbian.
 
     We recommend omitting the file's suffix in \a fileName, since
     QLibrary will automatically look for the file with the appropriate
     suffix in accordance with the platform, e.g. ".so" on Unix,
     ".dylib" on Mac OS X, and ".dll" on Windows. (See \l{fileName}.)
+
+    Note: In Symbian the path portion of the \a fileName is ignored.
  */
 QLibrary::QLibrary(const QString& fileName, const QString &version, QObject *parent)
     :QObject(parent), d(0), did_load(false)
@@ -892,6 +943,8 @@ QLibrary::~QLibrary()
     platforms, fileName() will return "libGL.so". If the file name was
     originally passed as "/usr/lib/libGL", fileName() will return
     "/usr/lib/libGL.so".
+
+    Note: In Symbian the path portion of the \a fileName is ignored.
 */
 
 void QLibrary::setFileName(const QString &fileName)
@@ -919,7 +972,10 @@ QString QLibrary::fileName() const
 
     Sets the fileName property and major version number to \a fileName
     and \a versionNumber respectively.
-    The \a versionNumber is ignored on Windows.
+    The \a versionNumber is ignored on Windows and Symbian.
+
+    Note: In Symbian the path portion of the \a fileName is ignored.
+
     \sa setFileName()
 */
 void QLibrary::setFileNameAndVersion(const QString &fileName, int verNum)
@@ -940,7 +996,10 @@ void QLibrary::setFileNameAndVersion(const QString &fileName, int verNum)
 
     Sets the fileName property and full version number to \a fileName
     and \a version respectively.
-    The \a version parameter is ignored on Windows.
+    The \a version parameter is ignored on Windows and Symbian.
+
+    Note: In Symbian the path portion of the \a fileName is ignored.
+
     \sa setFileName()
 */
 void QLibrary::setFileNameAndVersion(const QString &fileName, const QString &version)
@@ -976,6 +1035,8 @@ void QLibrary::setFileNameAndVersion(const QString &fileName, const QString &ver
 
     \snippet doc/src/snippets/code/src_corelib_plugin_qlibrary.cpp 4
 
+    Note: In Symbian resolving with symbol names works only if the loaded
+    library was built as STDDLL. Otherwise, the ordinals must be used.
 */
 void *QLibrary::resolve(const char *symbol)
 {
@@ -994,6 +1055,9 @@ void *QLibrary::resolve(const char *symbol)
 
     The function returns 0 if the symbol could not be resolved or if
     the library could not be loaded.
+
+    Note: In Symbian resolving with symbol names works only if the loaded
+    library was built as STDDLL. Otherwise, the ordinals must be used.
 
     \sa resolve()
 */
@@ -1015,6 +1079,9 @@ void *QLibrary::resolve(const QString &fileName, const char *symbol)
     The function returns 0 if the symbol could not be resolved or if
     the library could not be loaded.
 
+    Note: In Symbian resolving with symbol names works only if the loaded
+    library was built as STDDLL. Otherwise, the ordinals must be used.
+
     \sa resolve()
 */
 void *QLibrary::resolve(const QString &fileName, int verNum, const char *symbol)
@@ -1035,6 +1102,9 @@ void *QLibrary::resolve(const QString &fileName, int verNum, const char *symbol)
 
     The function returns 0 if the symbol could not be resolved or if
     the library could not be loaded.
+
+    Note: In Symbian resolving with symbol names works only if the loaded
+    library was built as STDDLL. Otherwise, the ordinals must be used.
 
     \sa resolve()
 */

@@ -46,6 +46,7 @@
 #include <QtCore/qstring.h>
 #include <QtCore/qchar.h>
 #include <QtCore/qlocale.h>
+#include <QtCore/qscopedpointer.h>
 
 #ifndef QT_NO_TEXTCODEC
 #  ifdef QT3_SUPPORT
@@ -256,7 +257,7 @@ private:
 
     Q_DISABLE_COPY(QTextStream)
 
-    QTextStreamPrivate *d_ptr;
+    QScopedPointer<QTextStreamPrivate> d_ptr;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QTextStream::NumberFlags)

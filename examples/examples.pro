@@ -4,6 +4,7 @@ SUBDIRS       = \
                 desktop \
                 dialogs \
                 draganddrop \
+                effects \
                 graphicsview \
                 ipc \
                 itemviews \
@@ -22,15 +23,32 @@ SUBDIRS       = \
                 widgets \
                 uitools \
                 xml \
-                script \
                 multitouch \
                 gestures
 
-contains(QT_CONFIG, multimedia):!static: SUBDIRS += multimedia
+symbian: SUBDIRS = \
+                graphicsview \
+                itemviews \
+                network \
+                painting \
+                widgets \
+                draganddrop \
+                mainwindows \
+                sql \
+                uitools \
+                xml
+
+contains(QT_CONFIG, multimedia) {
+    SUBDIRS += video
+    !static: SUBDIRS += multimedia
+}
+
+contains(QT_CONFIG, script): SUBDIRS += script
+
 contains(QT_CONFIG, phonon):!static: SUBDIRS += phonon
 contains(QT_CONFIG, webkit): SUBDIRS += webkit
 embedded:SUBDIRS += qws
-!wince*: {
+!wince*:!symbian: {
 	!contains(QT_EDITION, Console):contains(QT_BUILD_PARTS, tools):SUBDIRS += designer
 	contains(QT_BUILD_PARTS, tools):SUBDIRS += assistant qtestlib help
 } else {
@@ -47,3 +65,5 @@ contains(DEFINES, QT_NO_CURSOR): SUBDIRS -= mainwindows
 sources.files = README *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]
 INSTALLS += sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

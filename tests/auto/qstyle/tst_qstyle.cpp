@@ -71,6 +71,10 @@
 #include <qlineedit.h>
 #include <qmdiarea.h>
 
+#if defined(Q_OS_SYMBIAN)
+#define SRCDIR "."
+#endif
+
 #include <QCleanlooksStyle>
 
 #ifdef Q_WS_MAC
@@ -100,10 +104,14 @@ static bool qt_wince_is_smartphone() {
 }
 #endif
 
+#ifdef Q_WS_S60
+#include <qs60style.h>
+#endif
+
 #include <qwidget.h>
 
 //TESTED_CLASS=
-//TESTED_FILES=gui/styles/qstyle.h gui/styles/qstyle.cpp gui/styles/qplastiquestyle.cpp gui/styles/qwindowsstyle.cpp gui/styles/qwindowsxpstyle.cpp gui/styles/qwindowsvistastyle.cpp gui/styles/qmotifstyle.cpp
+//TESTED_FILES=gui/styles/qstyle.h gui/styles/qstyle.cpp gui/styles/qplastiquestyle.cpp gui/styles/qwindowsstyle.cpp gui/styles/qwindowsxpstyle.cpp gui/styles/qwindowsvistastyle.cpp gui/styles/qmotifstyle.cpp gui/styles/qs60style.cpp
 
 class tst_QStyle : public QObject
 {
@@ -131,13 +139,14 @@ private slots:
     void testMacStyle();
     void testWindowsCEStyle();
     void testWindowsMobileStyle();
+    void testS60Style();
     void testStyleFactory();
     void testProxyStyle();
     void pixelMetric();
     void progressBarChangeStyle();
     void defaultFont();
 private:
-	void lineUpLayoutTest(QStyle *);
+    void lineUpLayoutTest(QStyle *);
     QWidget *testWidget;
 };
 
@@ -200,10 +209,10 @@ void tst_QStyle::testStyleFactory()
     QVERIFY(keys.contains("Motif"));
 #endif
 #ifdef Q_WS_WIN
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP && 
+    if (QSysInfo::WindowsVersion >= QSysInfo::WV_XP &&
         QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
         QVERIFY(keys.contains("WindowsXP"));
-    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && 
+    if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA &&
         QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
         QVERIFY(keys.contains("WindowsVista"));
 #endif
@@ -270,17 +279,17 @@ void tst_QStyle::testAllFunctions(QStyle *style)
     opt.init(testWidget);
 
     testWidget->setStyle(style);
-    
+
     //Tests styleHint with default arguments for potential crashes
     for ( int hint = 0 ; hint < int(QStyle::SH_Menu_Mask); ++hint) {
         style->styleHint(QStyle::StyleHint(hint));
         style->styleHint(QStyle::StyleHint(hint), &opt, testWidget);
     }
-    
+
     //Tests pixelMetric with default arguments for potential crashes
     for ( int pm = 0 ; pm < int(QStyle::PM_LayoutVerticalSpacing); ++pm) {
         style->pixelMetric(QStyle::PixelMetric(pm));
-        style->pixelMetric(QStyle::PixelMetric(pm), &opt, testWidget);        
+        style->pixelMetric(QStyle::PixelMetric(pm), &opt, testWidget);
     }
 
     //Tests drawControl with default arguments for potential crashes
@@ -296,7 +305,7 @@ void tst_QStyle::testAllFunctions(QStyle *style)
         QPainter painter(&surface);
         QStyleOptionComboBox copt1;
         copt1.init(testWidget);
-        
+
         QStyleOptionGroupBox copt2;
         copt2.init(testWidget);
         QStyleOptionSizeGrip copt3;
@@ -347,7 +356,7 @@ void tst_QStyle::testAllFunctions(QStyle *style)
 
     style->itemPixmapRect(QRect(0, 0, 100, 100), Qt::AlignHCenter, QPixmap(200, 200));
     style->itemTextRect(QFontMetrics(qApp->font()), QRect(0, 0, 100, 100), Qt::AlignHCenter, true, QString("Test"));
-    
+
     testScrollBarSubControls(style);
 }
 
@@ -362,6 +371,12 @@ void tst_QStyle::testScrollBarSubControls(QStyle* style)
     scrollBar.show();
     const QStyleOptionSlider opt = qt_qscrollbarStyleOption(&scrollBar);
     foreach (int subControl, QList<int>() << 1 << 2 << 4 << 8) {
+
+#ifdef Q_WS_S60
+// in s60style add line and sub line have been removed.
+        if (subControl == QStyle::SC_ScrollBarAddLine || subControl == QStyle::SC_ScrollBarSubLine )
+            continue;
+#endif
         QRect sr = testWidget->style()->subControlRect(QStyle::CC_ScrollBar, &opt,
                                     QStyle::SubControl(subControl), &scrollBar);
         QVERIFY(sr.isNull() == false);
@@ -446,7 +461,7 @@ void comparePixmap(const QString &filename, const QPixmap &pixmap)
 void tst_QStyle::testPainting(QStyle *style, const QString &platform)
 {
     //Test Menu
-    QString fileName = "images/" + platform + "/menu.png"; 
+    QString fileName = "images/" + platform + "/menu.png";
     QMenu menu;
     menu.setStyle(style);
     menu.show();
@@ -455,7 +470,7 @@ void tst_QStyle::testPainting(QStyle *style, const QString &platform)
     QPixmap pixmap = QPixmap::grabWidget(&menu);
     comparePixmap(fileName, pixmap);
 
-    //Push button    
+    //Push button
     fileName = "images/" + platform + "/button.png";
     QPushButton button("OK");
     button.setStyle(style);
@@ -464,7 +479,7 @@ void tst_QStyle::testPainting(QStyle *style, const QString &platform)
     button.hide();
     comparePixmap(fileName, pixmap);
 
-    //Push button    
+    //Push button
     fileName = "images/" + platform + "/radiobutton.png";
     QRadioButton radiobutton("Check");
     radiobutton.setStyle(style);
@@ -494,7 +509,7 @@ void tst_QStyle::testPainting(QStyle *style, const QString &platform)
     spinbox.hide();
     comparePixmap(fileName, pixmap);
     QLocale::setDefault(QLocale::system());
-    
+
     //Slider
     fileName = "images/" + platform + "/slider.png";
     QSlider slider;
@@ -572,6 +587,16 @@ void tst_QStyle::testWindowsMobileStyle()
     QSKIP("No WindowsMobileStyle style", SkipAll);
 #endif
 }
+
+void tst_QStyle::testS60Style()
+    {
+#if defined(Q_WS_S60)
+    QS60Style cstyle;
+    testAllFunctions(&cstyle);
+#else
+    QSKIP("No S60Style style", SkipAll);
+#endif
+    }
 
 // Helper class...
 
@@ -657,9 +682,9 @@ void tst_QStyle::pixelMetric()
 void tst_QStyle::progressBarChangeStyle()
 {
 #if !defined(QT_NO_STYLE_PLASTIQUE) && !defined(QT_NO_STYLE_WINDOWS)
-    //test a crashing situation (task 143530) 
+    //test a crashing situation (task 143530)
     //where changing the styles and deleting a progressbar would crash
-    
+
     QWindowsStyle style1;
     QPlastiqueStyle style2;
 
@@ -676,35 +701,55 @@ void tst_QStyle::progressBarChangeStyle()
     QTest::qWait(100);
 
     //before the correction, there would be a crash here
+#elif !defined(QT_NO_STYLE_S60) && !defined(QT_NO_STYLE_WINDOWS)
+    //test a crashing situation (task 143530)
+    //where changing the styles and deleting a progressbar would crash
+
+    QWindowsStyle style1;
+    QS60Style style2;
+
+    QProgressBar *progress=new QProgressBar;
+    progress->setStyle(&style1);
+
+    progress->show();
+
+    progress->setStyle(&style2);
+
+    QTest::qWait(100);
+    delete progress;
+
+    QTest::qWait(100);
+
+    //before the correction, there would be a crash here
 #else
-    QSKIP("Either style Plastique or Windows missing", SkipAll);
+    QSKIP("Either style Plastique or Windows or S60 missing", SkipAll);
 #endif
 }
 
 void tst_QStyle::lineUpLayoutTest(QStyle *style)
 {
-	QWidget widget;
-	QHBoxLayout layout;
-	QFont font;
-	font.setPointSize(9); //Plastique is lined up for odd numbers...
-	widget.setFont(font);
-	QSpinBox spinbox(&widget);
-	QLineEdit lineedit(&widget);
-	QComboBox combo(&widget);
-	combo.setEditable(true);
-	layout.addWidget(&spinbox);
-	layout.addWidget(&lineedit);
-	layout.addWidget(&combo);
-	widget.setLayout(&layout);
+    QWidget widget;
+    QHBoxLayout layout;
+    QFont font;
+    font.setPointSize(9); //Plastique is lined up for odd numbers...
+    widget.setFont(font);
+    QSpinBox spinbox(&widget);
+    QLineEdit lineedit(&widget);
+    QComboBox combo(&widget);
+    combo.setEditable(true);
+    layout.addWidget(&spinbox);
+    layout.addWidget(&lineedit);
+    layout.addWidget(&combo);
+    widget.setLayout(&layout);
         widget.setStyle(style);
         // propagate the style.
         foreach (QWidget *w, qFindChildren<QWidget *>(&widget))
             w->setStyle(style);
-	widget.show();
+    widget.show();
         QTest::qWait( 500 );
 
-	QVERIFY(qAbs(spinbox.height() - lineedit.height()) <= 1);
-	QVERIFY(qAbs(spinbox.height() - combo.height()) <= 1);
+    QVERIFY(qAbs(spinbox.height() - lineedit.height()) <= 1);
+    QVERIFY(qAbs(spinbox.height() - combo.height()) <= 1);
 }
 
 void tst_QStyle::defaultFont()

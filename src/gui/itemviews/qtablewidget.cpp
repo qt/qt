@@ -2115,8 +2115,8 @@ QTableWidgetItem *QTableWidget::currentItem() const
 /*!
     Sets the current item to \a item.
 
-    Depending on the current \l{QAbstractItemView::SelectionMode}{selection mode},
-    the item may also be selected.
+    Unless the selection mode is \l{QAbstractItemView::}{NoSelection},
+    the item is also be selected.
 
     \sa currentItem(), setCurrentCell()
 */

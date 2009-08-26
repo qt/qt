@@ -66,7 +66,6 @@ QScriptStdMessageHandler::QScriptStdMessageHandler()
 
 QScriptStdMessageHandler::~QScriptStdMessageHandler()
 {
-    delete d_ptr;
 }
 
 void QScriptStdMessageHandler::message(QtMsgType type, const QString &text,

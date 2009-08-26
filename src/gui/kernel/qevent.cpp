@@ -1691,6 +1691,17 @@ Qt::ButtonState QContextMenuEvent::state() const
     several are specified for any character in the string the behaviour
     is undefined.
 
+    \value Selection
+    If set, the edit cursor should be moved to the specified position
+    in the editor text contents. In contrast with \c Cursor, this
+    attribute does not work on the preedit text, but on the surrounding
+    text. The cursor will be moved after the commit string has been
+    committed, and the preedit string will be located at the new edit
+    position.
+    The start position specifies the new position and the length
+    variable can be used to set a selection starting from that point.
+    The value is unused.
+
     \sa Attribute
 */
 

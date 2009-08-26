@@ -19,3 +19,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/widgets/validators
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro *.png
 sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/validators
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

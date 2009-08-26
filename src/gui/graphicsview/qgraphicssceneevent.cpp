@@ -308,7 +308,6 @@ QGraphicsSceneEvent::QGraphicsSceneEvent(QGraphicsSceneEventPrivate &dd, Type ty
 */
 QGraphicsSceneEvent::~QGraphicsSceneEvent()
 {
-    delete d_ptr;
 }
 
 /*!

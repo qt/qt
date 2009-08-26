@@ -50,6 +50,12 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+#if defined(Q_OS_SYMBIAN)
+# define STRINGIFY(x) #x
+# define TOSTRING(x) STRINGIFY(x)
+# define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
+#endif
+
 class tst_QDirModel : public QObject
 {
     Q_OBJECT
@@ -89,7 +95,7 @@ private slots:
 
     void rmdir_data();
     void rmdir();
-    
+
     void filePath();
 
     void hidden();
@@ -292,7 +298,7 @@ void tst_QDirModel::mkdir_data()
     QTest::newRow("nameWithSpace") << QString("ab cd") << true << 2;
     QTest::newRow("emptyDirName") << QString("") << false << 1;
     QTest::newRow("nullDirName") << QString() << false << 1;
-    
+
 /*
     QTest::newRow("recursiveDirName") << QString("test2/test3") << false << false;
     QTest::newRow("singleDotDirName") << QString("./test3") << true << true;
@@ -449,7 +455,7 @@ bool tst_QDirModel::rowsAboutToBeRemoved_cleanup(const QString &test_path)
     QString path = QDir::currentPath() + "/" + test_path;
     QDir dir(path, "*", QDir::SortFlags(QDir::Name|QDir::IgnoreCase), QDir::Files);
     QStringList files = dir.entryList();
-    
+
     for (int i = 0; i < files.count(); ++i) {
         if (!dir.remove(files.at(i))) {
             qDebug() << "failed to remove file" << files.at(i);
@@ -481,14 +487,14 @@ void tst_QDirModel::rowsAboutToBeRemoved()
 
     qRegisterMetaType<QModelIndex>("QModelIndex");
 
-    // NOTE: QDirModel will call refres() when a file is removed. refresh() will reread the entire directory,
+    // NOTE: QDirModel will call refresh() when a file is removed. refresh() will reread the entire directory,
     // and emit layoutAboutToBeChanged and layoutChange. So, instead of checking for
     // rowsAboutToBeRemoved/rowsRemoved we check for layoutAboutToBeChanged/layoutChanged
     QSignalSpy spy(&model, SIGNAL(layoutAboutToBeChanged()));
 
     QModelIndex parent = model.index(test_path);
     QVERIFY(parent.isValid());
-        
+
     // remove the file
     {
         QModelIndex index = model.index(remove_row, 0, parent);
@@ -580,6 +586,13 @@ void tst_QDirModel::filePath()
     model.setResolveSymlinks(false);
     QModelIndex index = model.index(SRCDIR "test.lnk");
     QVERIFY(index.isValid());
+#if defined(Q_OS_SYMBIAN)
+    // Since model will force lowercase path in Symbian, make case insensitive compare
+    // Note: Windows should fail this, too, if test path has any uppercase letters.
+    QCOMPARE(model.filePath(index).toLower(), QString(SRCDIR).toLower() + "test.lnk");
+    model.setResolveSymlinks(true);
+    QCOMPARE(model.filePath(index).toLower(), QString(SRCDIR).toLower() + "tst_qdirmodel.cpp");
+#else
 #ifndef Q_OS_WINCE
     QString path = SRCDIR;
 #else
@@ -588,6 +601,7 @@ void tst_QDirModel::filePath()
     QCOMPARE(model.filePath(index), path + QString( "test.lnk"));
     model.setResolveSymlinks(true);
     QCOMPARE(model.filePath(index), path + QString( "tst_qdirmodel.cpp"));
+#endif
     QFile::remove(SRCDIR "test.lnk");
 }
 
@@ -596,14 +610,14 @@ void tst_QDirModel::task196768_sorting()
     //this task showed that the persistent model indexes got corrupted when sorting
     QString path = SRCDIR;
 
-    QDirModel model; 
+    QDirModel model;
     QTreeView view;
     QPersistentModelIndex index = model.index(path);
 
     view.setModel(&model);
     QModelIndex index2 = model.index(path);
     QCOMPARE(index.data(), index2.data());
-    view.setRootIndex(index); 
+    view.setRootIndex(index);
     index2 = model.index(path);
     QCOMPARE(index.data(), index2.data());
     view.setCurrentIndex(index);

@@ -831,7 +831,7 @@ void tst_QStyleSheetStyle::hoverColors()
         QDialog frame;
         QLayout* layout = new QGridLayout;
 
-        QLineEdit* dummy = new QLineEdit; 
+        QLineEdit* dummy = new QLineEdit;
 
         widget->setStyleSheet("*:hover { border:none; background: #e8ff66; color: #ff0084 }");
 
@@ -1210,6 +1210,7 @@ void tst_QStyleSheetStyle::proxyStyle()
     QTest::qWait(100);
     delete w;
     delete proxy;
+    delete newProxy;
 }
 
 void tst_QStyleSheetStyle::dialogButtonBox()
@@ -1400,7 +1401,7 @@ void tst_QStyleSheetStyle::opaquePaintEvent()
     QWidget tl;
     QWidget cl(&tl);
     cl.setAttribute(Qt::WA_OpaquePaintEvent, true);
-    cl.setAutoFillBackground(true);     
+    cl.setAutoFillBackground(true);
     cl.setStyleSheet(stylesheet);
     cl.ensurePolished();
     QCOMPARE(cl.testAttribute(Qt::WA_OpaquePaintEvent), !transparent);
@@ -1415,7 +1416,7 @@ void tst_QStyleSheetStyle::task188195_baseBackground()
     tree.show();
     QTest::qWait(20);
     QImage image(tree.width(), tree.height(), QImage::Format_ARGB32);
-    
+
     tree.render(&image);
     QVERIFY(testForColors(image, tree.palette().base().color()));
     QVERIFY(!testForColors(image, QColor(0xab, 0x12, 0x51)));

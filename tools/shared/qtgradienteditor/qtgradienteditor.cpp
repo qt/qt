@@ -723,9 +723,8 @@ void QtGradientEditorPrivate::setAngleConical(qreal angle)
 }
 
 QtGradientEditor::QtGradientEditor(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), d_ptr(new QtGradientEditorPrivate())
 {
-    d_ptr = new QtGradientEditorPrivate();
     d_ptr->q_ptr = this;
     d_ptr->m_type = QGradient::RadialGradient;
     d_ptr->m_ui.setupUi(this);
@@ -831,7 +830,6 @@ QtGradientEditor::~QtGradientEditor()
 {
     if (d_ptr->m_hiddenWidget)
         delete d_ptr->m_hiddenWidget;
-    delete d_ptr;
 }
 
 void QtGradientEditor::setGradient(const QGradient &grad)

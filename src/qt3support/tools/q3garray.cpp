@@ -114,6 +114,7 @@ Q3GArray::Q3GArray()
 */
 
 Q3GArray::Q3GArray(int, int)
+    : shd(0)
 {
 }
 

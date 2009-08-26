@@ -77,6 +77,10 @@
 # include <private/qpixmap_x11_p.h>
 #endif
 
+#if defined(Q_OS_SYMBIAN)
+# include <private/qt_s60_p.h>
+#endif
+
 #include "qpixmap_raster_p.h"
 
 QT_BEGIN_NAMESPACE
@@ -116,7 +120,6 @@ void QPixmap::init(int w, int h, int type)
         data = QGraphicsSystem::createDefaultPixmapData(static_cast<QPixmapData::PixelType>(type));
 
     data->resize(w, h);
-    data->ref.ref();
 }
 
 /*!
@@ -218,7 +221,6 @@ QPixmap::QPixmap(const QSize &s, int type)
 QPixmap::QPixmap(QPixmapData *d)
     : QPaintDevice(), data(d)
 {
-    data->ref.ref();
 }
 
 /*!
@@ -274,11 +276,9 @@ QPixmap::QPixmap(const QPixmap &pixmap)
         return;
     }
     if (pixmap.paintingActive()) {                // make a deep copy
-        data = 0;
         operator=(pixmap.copy());
     } else {
         data = pixmap.data;
-        data->ref.ref();
     }
 }
 
@@ -322,7 +322,6 @@ QPixmap::QPixmap(const char * const xpm[])
 
 QPixmap::~QPixmap()
 {
-    deref();
 }
 
 /*!
@@ -367,7 +366,7 @@ QPixmap QPixmap::copy(const QRect &rect) const
     else
         d = QGraphicsSystem::createDefaultPixmapData(data->pixelType());
 
-    d->copy(data, r);
+    d->copy(data.data(), r);
     return QPixmap(d);
 }
 
@@ -440,8 +439,6 @@ QPixmap &QPixmap::operator=(const QPixmap &pixmap)
     if (pixmap.paintingActive()) {                // make a deep copy
         *this = pixmap.copy();
     } else {
-        pixmap.data->ref.ref();                                // avoid 'x = x'
-        deref();
         data = pixmap.data;
     }
     return *this;
@@ -646,13 +643,13 @@ void QPixmap::resize_helper(const QSize &s)
     QPixmap pm(QSize(w, h), data->type);
     bool uninit = false;
 #if defined(Q_WS_X11)
-    QX11PixmapData *x11Data = data->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(data) : 0;
+    QX11PixmapData *x11Data = data->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(data.data()) : 0;
     if (x11Data) {
         pm.x11SetScreen(x11Data->xinfo.screen());
         uninit = x11Data->flags & QX11PixmapData::Uninitialized;
     }
 #elif defined(Q_WS_MAC)
-    QMacPixmapData *macData = data->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data) : 0;
+    QMacPixmapData *macData = data->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
     if (macData)
         uninit = macData->uninit;
 #endif
@@ -666,7 +663,7 @@ void QPixmap::resize_helper(const QSize &s)
 
 #if defined(Q_WS_X11)
     if (x11Data && x11Data->x11_mask) {
-        QX11PixmapData *pmData = static_cast<QX11PixmapData*>(pm.data);
+        QX11PixmapData *pmData = static_cast<QX11PixmapData*>(pm.data.data());
         pmData->x11_mask = (Qt::HANDLE)XCreatePixmap(X11->display,
                                                      RootWindow(x11Data->xinfo.display(),
                                                                 x11Data->xinfo.screen()),
@@ -835,19 +832,11 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
     if (QPixmapCache::find(key, *this))
         return true;
 
-    QImage image = QImageReader(fileName, format).read();
-    if (image.isNull())
-        return false;
-    QPixmap pm;
-    if (data->pixelType() == QPixmapData::BitmapType)
-        pm = QBitmap::fromImage(image, flags);
-    else
-        pm = fromImage(image, flags);
-    if (!pm.isNull()) {
-        *this = pm;
+    if (data->fromFile(fileName, format, flags)) {
         QPixmapCache::insert(key, *this);
         return true;
     }
+
     return false;
 }
 
@@ -872,21 +861,7 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
 
 bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, Qt::ImageConversionFlags flags)
 {
-    QByteArray a = QByteArray::fromRawData(reinterpret_cast<const char *>(buf), len);
-    QBuffer b(&a);
-    b.open(QIODevice::ReadOnly);
-
-    QImage image = QImageReader(&b, format).read();
-    QPixmap pm;
-    if (data->pixelType() == QPixmapData::BitmapType)
-        pm = QBitmap::fromImage(image, flags);
-    else
-        pm = fromImage(image, flags);
-    if (!pm.isNull()) {
-        *this = pm;
-        return true;
-    }
-    return false;
+    return data->fromData(buf, len, format, flags);
 }
 
 /*!
@@ -1160,7 +1135,7 @@ Qt::HANDLE QPixmap::handle() const
 {
 #if defined(Q_WS_X11)
     if (data->classId() == QPixmapData::X11Class)
-        return static_cast<QX11PixmapData*>(data)->handle();
+        return static_cast<const QX11PixmapData*>(data.constData())->handle();
 #endif
     return 0;
 }
@@ -1347,14 +1322,12 @@ bool QPixmap::isDetached() const
     return data->ref == 1;
 }
 
+/*! \internal
+  ### Qt5 - remove me.
+*/
 void QPixmap::deref()
 {
-    if (data && !data->ref.deref()) { // Destroy image if last ref
-        if (data->is_cached)
-            QImagePixmapCleanupHooks::executePixmapHooks(this);
-        delete data;
-        data = 0;
-    }
+    Q_ASSERT_X(false, "QPixmap::deref()", "Do not call this function anymore!");
 }
 
 /*!
@@ -1887,6 +1860,8 @@ int QPixmap::defaultDepth()
     return 32; // XXX
 #elif defined(Q_WS_MAC)
     return 32;
+#elif defined(Q_OS_SYMBIAN)
+    return S60->screenDepth;
 #endif
 }
 
@@ -1911,7 +1886,7 @@ void QPixmap::detach()
 {
     QPixmapData::ClassId id = data->classId();
     if (id == QPixmapData::RasterClass) {
-        QRasterPixmapData *rasterData = static_cast<QRasterPixmapData*>(data);
+        QRasterPixmapData *rasterData = static_cast<QRasterPixmapData*>(data.data());
         rasterData->image.detach();
     }
 
@@ -1919,7 +1894,7 @@ void QPixmap::detach()
         QImagePixmapCleanupHooks::executePixmapHooks(this);
 
 #if defined(Q_WS_MAC)
-    QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data) : 0;
+    QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
     if (macData) {
         if (macData->cg_mask) {
             CGImageRelease(macData->cg_mask);
@@ -1935,7 +1910,7 @@ void QPixmap::detach()
 
 #if defined(Q_WS_X11)
     if (data->classId() == QPixmapData::X11Class) {
-        QX11PixmapData *d = static_cast<QX11PixmapData*>(data);
+        QX11PixmapData *d = static_cast<QX11PixmapData*>(data.data());
         d->flags &= ~QX11PixmapData::Uninitialized;
 
         // reset the cache data
@@ -1972,15 +1947,11 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
     if (image.isNull())
         return QPixmap();
 
-    QPixmapData *data;
     QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
-    if (gs)
-        data = gs->createPixmapData(QPixmapData::PixmapType);
-    else
-        data = QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixmapType);
-
+    QScopedPointer<QPixmapData> data(gs ? gs->createPixmapData(QPixmapData::PixmapType)
+            : QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixmapType));
     data->fromImage(image, flags);
-    return QPixmap(data);
+    return QPixmap(data.take());
 }
 
 /*!
@@ -2025,7 +1996,7 @@ QPixmap QPixmap::fromImage(const QImage &image, Qt::ImageConversionFlags flags)
 */
 QPixmapData* QPixmap::pixmapData() const
 {
-    return data;
+    return data.data();
 }
 
 /*!

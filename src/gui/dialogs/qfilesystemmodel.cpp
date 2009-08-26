@@ -347,7 +347,7 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
     // ### TODO can we use bool QAbstractFileEngine::caseSensitive() const?
     QStringList pathElements = absolutePath.split(QLatin1Char('/'), QString::SkipEmptyParts);
     if ((pathElements.isEmpty())
-#if !defined(Q_OS_WIN) || defined(Q_OS_WINCE)
+#if (!defined(Q_OS_WIN) || defined(Q_OS_WINCE)) && !defined(Q_OS_SYMBIAN)
         && QDir::fromNativeSeparators(longPath) != QLatin1String("/")
 #endif
         )
@@ -376,9 +376,17 @@ QFileSystemModelPrivate::QFileSystemNode *QFileSystemModelPrivate::node(const QS
         r = translateVisibleLocation(rootNode, r);
         index = q->index(r, 0, QModelIndex());
         pathElements.pop_front();
-    } else {
-        if (!pathElements.at(0).contains(QLatin1String(":")))
-            pathElements.prepend(QDir(longPath).rootPath());
+    } else
+#endif
+
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+    {
+        if (!pathElements.at(0).contains(QLatin1String(":"))) {
+            // The reason we express it like this instead of with anonymous, temporary
+            // variables, is to workaround a compiler crash with Q_CC_NOKIAX86.
+            QString rootPath = QDir(longPath).rootPath();
+            pathElements.prepend(rootPath);
+        }
         if (pathElements.at(0).endsWith(QLatin1Char('/')))
             pathElements[0].chop(1);
     }
@@ -1589,12 +1597,25 @@ void QFileSystemModelPrivate::_q_directoryChanged(const QString &directory, cons
     if (parentNode->children.count() == 0)
         return;
     QStringList toRemove;
+#if defined(Q_OS_SYMBIAN)
+    // Filename case must be exact in qBinaryFind below, so create a list of all lowercase names.
+    QStringList newFiles;
+    for(int i = 0; i < files.size(); i++) {
+        newFiles << files.at(i).toLower();
+    }
+#else
     QStringList newFiles = files;
+#endif
     qSort(newFiles.begin(), newFiles.end());
     QHash<QString, QFileSystemNode*>::const_iterator i = parentNode->children.constBegin();
     while (i != parentNode->children.constEnd()) {
         QStringList::iterator iterator;
-        iterator = qBinaryFind(newFiles.begin(), newFiles.end(), i.value()->fileName);
+        iterator = qBinaryFind(newFiles.begin(), newFiles.end(),
+#if defined(Q_OS_SYMBIAN)
+                    i.value()->fileName.toLower());
+#else
+                    i.value()->fileName);
+#endif
         if (iterator == newFiles.end()) {
             toRemove.append(i.value()->fileName);
         }
@@ -1917,8 +1938,8 @@ bool QFileSystemModelPrivate::passNameFilters(const QFileSystemNode *node) const
     return true;
 }
 
+QT_END_NAMESPACE
+
 #include "moc_qfilesystemmodel.cpp"
 
 #endif // QT_NO_FILESYSTEMMODEL
-
-QT_END_NAMESPACE

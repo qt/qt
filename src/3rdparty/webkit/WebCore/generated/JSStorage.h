@@ -49,8 +49,8 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
 
-    virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&);
-    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
+    virtual bool deleteProperty(JSC::ExecState*, const JSC::Identifier&, bool checkDontDelete = true);
+    virtual void getPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&, unsigned listedAttributes = JSC::Structure::Prototype);
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
     Storage* impl() const { return m_impl.get(); }
 

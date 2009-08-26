@@ -66,6 +66,9 @@ MainWindow::MainWindow()
 
 void MainWindow::open()
 {
+#if defined(Q_OS_SYMBIAN)
+    QDir::setCurrent("/Data/qt/saxbookmarks");
+#endif
     QString fileName =
             QFileDialog::getOpenFileName(this, tr("Open Bookmark File"),
                                          QDir::currentPath(),

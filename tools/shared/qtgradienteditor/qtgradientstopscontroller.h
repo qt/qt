@@ -70,7 +70,7 @@ signals:
     void gradientStopsChanged(const QGradientStops &stops);
 
 private:
-    class QtGradientStopsControllerPrivate *d_ptr;
+    QScopedPointer<class QtGradientStopsControllerPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtGradientStopsController)
     Q_DISABLE_COPY(QtGradientStopsController)
     Q_PRIVATE_SLOT(d_func(), void slotHsvClicked())

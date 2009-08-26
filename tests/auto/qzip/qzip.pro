@@ -1,11 +1,11 @@
 load(qttest_p4)
 SOURCES += tst_qzip.cpp
 
-wince*: {
+wince*|symbian: {
    addFiles.sources = testdata
    addFiles.path = .
    DEPLOYMENT += addFiles
-   DEFINES += SRCDIR=\\\".\\\"
+   !symbian:DEFINES += SRCDIR=\\\".\\\"
 } else {
    DEFINES += SRCDIR=\\\"$$PWD\\\"
 }

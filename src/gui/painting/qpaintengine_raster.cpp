@@ -91,6 +91,8 @@
 #    include <private/qfontengine_qpf_p.h>
 #  endif
 #  include <private/qabstractfontengine_p.h>
+#elif defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE)
+#  include <private/qfontengine_s60_p.h>
 #endif
 
 #if defined(Q_WS_WIN64)
@@ -342,32 +344,36 @@ void QRasterPaintEngine::init()
 #else
         (unsigned char *) malloc(d->rasterPoolSize);
 #endif
+    Q_CHECK_PTR(d->rasterPoolBase);
 
     // The antialiasing raster.
-    d->grayRaster = new QT_FT_Raster;
-    qt_ft_grays_raster.raster_new(0, d->grayRaster);
-    qt_ft_grays_raster.raster_reset(*d->grayRaster, d->rasterPoolBase, d->rasterPoolSize);
+    d->grayRaster.reset(new QT_FT_Raster);
+    Q_CHECK_PTR(d->grayRaster.data());
+    if (qt_ft_grays_raster.raster_new(0, d->grayRaster.data()))
+        QT_THROW(std::bad_alloc()); // an error creating the raster is caused by a bad malloc
 
-    d->rasterizer = new QRasterizer;
-    d->rasterBuffer = new QRasterBuffer();
-    d->outlineMapper = new QOutlineMapper;
+
+    qt_ft_grays_raster.raster_reset(*d->grayRaster.data(), d->rasterPoolBase, d->rasterPoolSize);
+
+    d->rasterizer.reset(new QRasterizer);
+    d->rasterBuffer.reset(new QRasterBuffer());
+    d->outlineMapper.reset(new QOutlineMapper);
     d->outlinemapper_xform_dirty = true;
 
     d->basicStroker.setMoveToHook(qt_ft_outline_move_to);
     d->basicStroker.setLineToHook(qt_ft_outline_line_to);
     d->basicStroker.setCubicToHook(qt_ft_outline_cubic_to);
-    d->dashStroker = 0;
 
-    d->baseClip = new QClipData(d->device->height());
+    d->baseClip.reset(new QClipData(d->device->height()));
     d->baseClip->setClipRect(QRect(0, 0, d->device->width(), d->device->height()));
 
-    d->image_filler.init(d->rasterBuffer, this);
+    d->image_filler.init(d->rasterBuffer.data(), this);
     d->image_filler.type = QSpanData::Texture;
 
-    d->image_filler_xform.init(d->rasterBuffer, this);
+    d->image_filler_xform.init(d->rasterBuffer.data(), this);
     d->image_filler_xform.type = QSpanData::Texture;
 
-    d->solid_color_filler.init(d->rasterBuffer, this);
+    d->solid_color_filler.init(d->rasterBuffer.data(), this);
     d->solid_color_filler.type = QSpanData::Solid;
 
     d->deviceDepth = d->device->depth();
@@ -436,15 +442,7 @@ QRasterPaintEngine::~QRasterPaintEngine()
     free(d->rasterPoolBase);
 #endif
 
-    qt_ft_grays_raster.raster_done(*d->grayRaster);
-    delete d->grayRaster;
-
-    delete d->rasterBuffer;
-    delete d->outlineMapper;
-    delete d->rasterizer;
-    delete d->dashStroker;
-
-    delete d->baseClip;
+    qt_ft_grays_raster.raster_done(*d->grayRaster.data());
 }
 
 /*!
@@ -480,12 +478,12 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 
     d->rasterizer->setClipRect(d->deviceRect);
 
-    s->penData.init(d->rasterBuffer, this);
+    s->penData.init(d->rasterBuffer.data(), this);
     s->penData.setup(s->pen.brush(), s->intOpacity, s->composition_mode);
     s->stroker = &d->basicStroker;
     d->basicStroker.setClipRect(d->deviceRect);
 
-    s->brushData.init(d->rasterBuffer, this);
+    s->brushData.init(d->rasterBuffer.data(), this);
     s->brushData.setup(s->brush, s->intOpacity, s->composition_mode);
 
     d->rasterBuffer->compositionMode = QPainter::CompositionMode_SourceOver;
@@ -549,8 +547,7 @@ bool QRasterPaintEngine::end()
 void QRasterPaintEngine::releaseBuffer()
 {
     Q_D(QRasterPaintEngine);
-    delete d->rasterBuffer;
-    d->rasterBuffer = new QRasterBuffer;
+    d->rasterBuffer.reset(new QRasterBuffer);
 }
 
 /*!
@@ -794,8 +791,8 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
     if(pen_style == Qt::SolidLine) {
         s->stroker = &d->basicStroker;
     } else if (pen_style != Qt::NoPen) {
-        if (!d->dashStroker)
-            d->dashStroker = new QDashStroker(&d->basicStroker);
+        if (!d->dashStroker.data())
+            d->dashStroker.reset(new QDashStroker(&d->basicStroker));
         if (pen.isCosmetic()) {
             d->dashStroker->setClipRect(d->deviceRect);
         } else {
@@ -805,7 +802,7 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
         }
         d->dashStroker->setDashPattern(pen.dashPattern());
         d->dashStroker->setDashOffset(pen.dashOffset());
-        s->stroker = d->dashStroker;
+        s->stroker = d->dashStroker.data();
     } else {
         s->stroker = 0;
     }
@@ -1238,7 +1235,7 @@ void QRasterPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
         qrasterpaintengine_state_setNoClip(s);
 
     } else {
-        QClipData *base = d->baseClip;
+        QClipData *base = d->baseClip.data();
 
         // Intersect with current clip when available...
         if (op == Qt::IntersectClip && s->clip)
@@ -1363,7 +1360,7 @@ void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 
     QRasterPaintEngineState *s = state();
     const QClipData *clip = d->clip();
-    const QClipData *baseClip = d->baseClip;
+    const QClipData *baseClip = d->baseClip.data();
 
     if (op == Qt::NoClip) {
         qrasterpaintengine_state_setNoClip(s);
@@ -1431,7 +1428,7 @@ void QRasterPaintEngine::fillPath(const QPainterPath &path, QSpanData *fillData)
     }
 
     ensureOutlineMapper();
-    d->rasterize(d->outlineMapper->convertPath(path), blend, fillData, d->rasterBuffer);
+    d->rasterize(d->outlineMapper->convertPath(path), blend, fillData, d->rasterBuffer.data());
 }
 
 static void fillRect_normalized(const QRect &r, QSpanData *data,
@@ -1861,7 +1858,7 @@ void QRasterPaintEngine::fill(const QVectorPath &path, const QBrush &brush)
 //         }
 
     ensureOutlineMapper();
-    d->rasterize(d->outlineMapper->convertPath(path), blend, &s->brushData, d->rasterBuffer);
+    d->rasterize(d->outlineMapper->convertPath(path), blend, &s->brushData, d->rasterBuffer.data());
 }
 
 void QRasterPaintEngine::fillRect(const QRectF &r, QSpanData *data)
@@ -2028,7 +2025,7 @@ void QRasterPaintEngine::fillPolygon(const QPointF *points, int pointCount, Poly
     // scanconvert.
     ProcessSpans brushBlend = d->getBrushFunc(d->outlineMapper->controlPointRect,
                                               &s->brushData);
-    d->rasterize(outline, brushBlend, &s->brushData, d->rasterBuffer);
+    d->rasterize(outline, brushBlend, &s->brushData, d->rasterBuffer.data());
 }
 
 /*!
@@ -2124,7 +2121,7 @@ void QRasterPaintEngine::drawPolygon(const QPoint *points, int pointCount, Polyg
             // scanconvert.
             ProcessSpans brushBlend = d->getBrushFunc(d->outlineMapper->controlPointRect,
                                                       &s->brushData);
-            d->rasterize(d->outlineMapper->outline(), brushBlend, &s->brushData, d->rasterBuffer);
+            d->rasterize(d->outlineMapper->outline(), brushBlend, &s->brushData, d->rasterBuffer.data());
             d->outlineMapper->setCoordinateRounding(false);
         }
     }
@@ -2371,7 +2368,7 @@ void QRasterPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pixmap)
 #endif
 
     if (pixmap.data->classId() == QPixmapData::RasterClass) {
-        const QImage &image = ((QRasterPixmapData *) pixmap.data)->image;
+        const QImage &image = static_cast<QRasterPixmapData *>(pixmap.data.data())->image;
         if (image.depth() == 1) {
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
@@ -2409,7 +2406,7 @@ void QRasterPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pixmap, cons
 #endif
 
     if (pixmap.data->classId() == QPixmapData::RasterClass) {
-        const QImage &image = ((QRasterPixmapData *) pixmap.data)->image;
+        const QImage &image = static_cast<QRasterPixmapData *>(pixmap.data.data())->image;
         if (image.depth() == 1) {
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
@@ -2719,7 +2716,7 @@ void QRasterPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pixmap,
     QImage image;
 
     if (pixmap.data->classId() == QPixmapData::RasterClass) {
-        image = ((QRasterPixmapData *) pixmap.data)->image;
+        image = static_cast<QRasterPixmapData *>(pixmap.data.data())->image;
     } else {
         image = pixmap.toImage();
     }
@@ -2793,7 +2790,7 @@ void QRasterPaintEngine::alphaPenBlt(const void* src, int bpl, int depth, int rx
     if (!s->penData.blend)
         return;
 
-    QRasterBuffer *rb = d->rasterBuffer;
+    QRasterBuffer *rb = d->rasterBuffer.data();
 
     const QRect rect(rx, ry, w, h);
     const QClipData *clip = d->clip();
@@ -3200,7 +3197,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     ensurePen();
     ensureState();
 
-#if defined (Q_WS_WIN) || defined(Q_WS_MAC)
+#if defined (Q_WS_WIN) || defined(Q_WS_MAC) || (defined(Q_OS_SYMBIAN) && defined(QT_NO_FREETYPE))
 
     bool drawCached = true;
 
@@ -3233,7 +3230,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
         return;
     }
 
-#else // Q_WS_WIN || Q_WS_MAC
+#else // Q_WS_WIN || Q_WS_MAC || Q_OS_SYMBIAN && QT_NO_FREETYPE
 
     QFontEngine *fontEngine = ti.fontEngine;
 
@@ -3253,7 +3250,7 @@ void QRasterPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     }
 #endif // Q_WS_QWS
 
-#if (defined(Q_WS_X11) || defined(Q_WS_QWS)) && !defined(QT_NO_FREETYPE)
+#if (defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)) && !defined(QT_NO_FREETYPE)
 
 #if defined(Q_WS_QWS) && !defined(QT_NO_QWS_QPF2)
     if (fontEngine->type() == QFontEngine::QPF2) {
@@ -3918,7 +3915,7 @@ static void qt_merge_clip(const QClipData *c1, const QClipData *c2, QClipData *r
 
         // find required length
         int max = qMax(c1_spans[c1_count - 1].x + c1_spans[c1_count - 1].len,
-                       c2_spans[c2_count - 1].x + c2_spans[c2_count - 1].len);
+                c2_spans[c2_count - 1].x + c2_spans[c2_count - 1].len);
         buffer.resize(max);
         memset(buffer.data(), 0, buffer.size() * sizeof(short));
 
@@ -4055,7 +4052,7 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
 
         rasterParams.flags |= (QT_FT_RASTER_FLAG_AA | QT_FT_RASTER_FLAG_DIRECT);
         rasterParams.gray_spans = callback;
-        error = qt_ft_grays_raster.raster_render(*grayRaster, &rasterParams);
+        error = qt_ft_grays_raster.raster_render(*grayRaster.data(), &rasterParams);
 
         // Out of memory, reallocate some more and try again...
         if (error == -6) { // -6 is Result_err_OutOfMemory
@@ -4080,10 +4077,11 @@ void QRasterPaintEnginePrivate::rasterize(QT_FT_Outline *outline,
 #else
                 (unsigned char *) malloc(rasterPoolSize);
 #endif
+            Q_CHECK_PTR(rasterPoolBase); // note: we just freed the old rasterPoolBase. I hope it's not fatal.
 
-            qt_ft_grays_raster.raster_done(*grayRaster);
-            qt_ft_grays_raster.raster_new(0, grayRaster);
-            qt_ft_grays_raster.raster_reset(*grayRaster, rasterPoolBase, rasterPoolSize);
+            qt_ft_grays_raster.raster_done(*grayRaster.data());
+            qt_ft_grays_raster.raster_new(0, grayRaster.data());
+            qt_ft_grays_raster.raster_reset(*grayRaster.data(), rasterPoolBase, rasterPoolSize);
         } else {
             done = true;
         }
@@ -4117,6 +4115,8 @@ QImage QRasterBuffer::colorizeBitmap(const QImage &image, const QColor &color)
     for (int y=0; y<height; ++y) {
         uchar *source = sourceImage.scanLine(y);
         QRgb *target = reinterpret_cast<QRgb *>(dest.scanLine(y));
+        if (!source || !target)
+            QT_THROW(std::bad_alloc()); // we must have run out of memory
         for (int x=0; x < width; ++x)
             target[x] = (source[x>>3] >> (x&7)) & 1 ? fg : bg;
     }
@@ -4202,8 +4202,14 @@ int QCustomRasterPaintDevice::bytesPerLine() const
 {
     return (width() * depth() + 7) / 8;
 }
-#endif // Q_WS_QWS
 
+#elif defined(Q_OS_SYMBIAN)
+
+void QRasterBuffer::prepareBuffer(int /* width */, int /* height */)
+{
+}
+
+#endif // Q_OS_SYMBIAN
 
 /*!
     \class QCustomRasterPaintDevice
@@ -4311,95 +4317,109 @@ void QClipData::initialize()
     if (!m_clipLines)
         m_clipLines = (ClipLine *)calloc(sizeof(ClipLine), clipSpanHeight);
 
-    m_spans = (QSpan *)malloc(clipSpanHeight*sizeof(QSpan));
-    allocated = clipSpanHeight;
+    Q_CHECK_PTR(m_clipLines);
+    QT_TRY {
+        m_spans = (QSpan *)malloc(clipSpanHeight*sizeof(QSpan));
+        allocated = clipSpanHeight;
+        Q_CHECK_PTR(m_spans);
 
-    if (hasRectClip) {
-        int y = 0;
-        while (y < ymin) {
-            m_clipLines[y].spans = 0;
-            m_clipLines[y].count = 0;
-            ++y;
-        }
+        QT_TRY {
+            if (hasRectClip) {
+                int y = 0;
+                while (y < ymin) {
+                    m_clipLines[y].spans = 0;
+                    m_clipLines[y].count = 0;
+                    ++y;
+                }
 
-        const int len = clipRect.width();
-        count = 0;
-        while (y < ymax) {
-            QSpan *span = m_spans + count;
-            span->x = xmin;
-            span->len = len;
-            span->y = y;
-            span->coverage = 255;
-            ++count;
-
-            m_clipLines[y].spans = span;
-            m_clipLines[y].count = 1;
-            ++y;
-        }
-
-        while (y < clipSpanHeight) {
-            m_clipLines[y].spans = 0;
-            m_clipLines[y].count = 0;
-            ++y;
-        }
-    } else if (hasRegionClip) {
-
-        const QVector<QRect> rects = clipRegion.rects();
-        const int numRects = rects.size();
-
-        { // resize
-            const int maxSpans = (ymax - ymin) * numRects;
-            if (maxSpans > allocated) {
-                m_spans = (QSpan *)realloc(m_spans, maxSpans * sizeof(QSpan));
-                allocated = maxSpans;
-            }
-        }
-
-        int y = 0;
-        int firstInBand = 0;
-        count = 0;
-        while (firstInBand < numRects) {
-            const int currMinY = rects.at(firstInBand).y();
-            const int currMaxY = currMinY + rects.at(firstInBand).height();
-
-            while (y < currMinY) {
-                m_clipLines[y].spans = 0;
-                m_clipLines[y].count = 0;
-                ++y;
-            }
-
-            int lastInBand = firstInBand;
-            while (lastInBand + 1 < numRects && rects.at(lastInBand+1).top() == y)
-                ++lastInBand;
-
-            while (y < currMaxY) {
-
-                m_clipLines[y].spans = m_spans + count;
-                m_clipLines[y].count = lastInBand - firstInBand + 1;
-
-                for (int r = firstInBand; r <= lastInBand; ++r) {
-                    const QRect &currRect = rects.at(r);
+                const int len = clipRect.width();
+                count = 0;
+                while (y < ymax) {
                     QSpan *span = m_spans + count;
-                    span->x = currRect.x();
-                    span->len = currRect.width();
+                    span->x = xmin;
+                    span->len = len;
                     span->y = y;
                     span->coverage = 255;
                     ++count;
+
+                    m_clipLines[y].spans = span;
+                    m_clipLines[y].count = 1;
+                    ++y;
                 }
-                ++y;
+
+                while (y < clipSpanHeight) {
+                    m_clipLines[y].spans = 0;
+                    m_clipLines[y].count = 0;
+                    ++y;
+                }
+            } else if (hasRegionClip) {
+
+                const QVector<QRect> rects = clipRegion.rects();
+                const int numRects = rects.size();
+
+                { // resize
+                    const int maxSpans = (ymax - ymin) * numRects;
+                    if (maxSpans > allocated) {
+                        m_spans = q_check_ptr((QSpan *)realloc(m_spans, maxSpans * sizeof(QSpan)));
+                        allocated = maxSpans;
+                    }
+                }
+
+                int y = 0;
+                int firstInBand = 0;
+                count = 0;
+                while (firstInBand < numRects) {
+                    const int currMinY = rects.at(firstInBand).y();
+                    const int currMaxY = currMinY + rects.at(firstInBand).height();
+
+                    while (y < currMinY) {
+                        m_clipLines[y].spans = 0;
+                        m_clipLines[y].count = 0;
+                        ++y;
+                    }
+
+                    int lastInBand = firstInBand;
+                    while (lastInBand + 1 < numRects && rects.at(lastInBand+1).top() == y)
+                        ++lastInBand;
+
+                    while (y < currMaxY) {
+
+                        m_clipLines[y].spans = m_spans + count;
+                        m_clipLines[y].count = lastInBand - firstInBand + 1;
+
+                        for (int r = firstInBand; r <= lastInBand; ++r) {
+                            const QRect &currRect = rects.at(r);
+                            QSpan *span = m_spans + count;
+                            span->x = currRect.x();
+                            span->len = currRect.width();
+                            span->y = y;
+                            span->coverage = 255;
+                            ++count;
+                        }
+                        ++y;
+                    }
+
+                    firstInBand = lastInBand + 1;
+                }
+
+                Q_ASSERT(count <= allocated);
+
+                while (y < clipSpanHeight) {
+                    m_clipLines[y].spans = 0;
+                    m_clipLines[y].count = 0;
+                    ++y;
+                }
+
             }
-
-            firstInBand = lastInBand + 1;
+        } QT_CATCH(...) {
+            free(m_spans); // have to free m_spans again or someone might think that we were successfully initialized.
+            m_spans = 0;
+            QT_RETHROW;
         }
-
-        Q_ASSERT(count <= allocated);
-
-        while (y < clipSpanHeight) {
-            m_clipLines[y].spans = 0;
-            m_clipLines[y].count = 0;
-            ++y;
-        }
-
+    } QT_CATCH(...) {
+        free(m_clipLines); // same for clipLines
+        m_clipLines = 0;
+        QT_RETHROW;
     }
 }
 
@@ -4674,8 +4694,8 @@ static void qt_span_clip(int count, const QSpan *spans, void *userData)
                                            &newspans, newClip->allocated - newClip->count);
                 newClip->count = newspans - newClip->m_spans;
                 if (spans < end) {
+                    newClip->m_spans = q_check_ptr((QSpan *)realloc(newClip->m_spans, newClip->allocated*2*sizeof(QSpan)));
                     newClip->allocated *= 2;
-                    newClip->m_spans = (QSpan *)realloc(newClip->m_spans, newClip->allocated*sizeof(QSpan));
                 }
             }
         }

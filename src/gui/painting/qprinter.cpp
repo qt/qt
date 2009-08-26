@@ -712,7 +712,6 @@ QPrinter::~QPrinter()
 #ifndef QT_NO_PRINTPREVIEWWIDGET
     delete d->previewEngine;
 #endif
-    delete d;
 }
 
 /*!

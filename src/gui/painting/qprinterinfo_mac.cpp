@@ -65,6 +65,16 @@ private:
 
 static QPrinterInfoPrivate nullQPrinterInfoPrivate;
 
+class QPrinterInfoPrivateDeleter
+{
+public:
+    static inline void cleanup(QPrinterInfoPrivate *d)
+    {
+        if (d != &nullQPrinterInfoPrivate)
+            delete d;
+    }
+};
+
 extern QPrinter::PaperSize qSizeFTopaperSize(const QSizeF& size);
 
 /////////////////////////////////////////////////////////////////////////////
@@ -106,8 +116,8 @@ QPrinterInfo QPrinterInfo::defaultPrinter(){
 /////////////////////////////////////////////////////////////////////////////
 
 QPrinterInfo::QPrinterInfo(const QPrinter& prn)
+    : d_ptr(&nullQPrinterInfoPrivate)
 {
-    d_ptr = &nullQPrinterInfoPrivate;
     QList<QPrinterInfo> list = availablePrinters();
     for (int c = 0; c < list.size(); ++c) {
         if (prn.printerName() == list[c].printerName()) {
@@ -115,39 +125,33 @@ QPrinterInfo::QPrinterInfo(const QPrinter& prn)
             return;
         }
     }
-
-    *this = QPrinterInfo();
 }
 
 QPrinterInfo::~QPrinterInfo()
 {
-    if (d_ptr != &nullQPrinterInfoPrivate)
-        delete d_ptr;
 }
 
 QPrinterInfo::QPrinterInfo()
+    : d_ptr(&nullQPrinterInfoPrivate)
 {
-    d_ptr = &nullQPrinterInfoPrivate;
 }
 
 QPrinterInfo::QPrinterInfo(const QString& name)
+    : d_ptr(new QPrinterInfoPrivate(name))
 {
-    d_ptr = new QPrinterInfoPrivate(name);
     d_ptr->q_ptr = this;
 }
 
 QPrinterInfo::QPrinterInfo(const QPrinterInfo& src)
+    : d_ptr(&nullQPrinterInfoPrivate)
 {
-    d_ptr = &nullQPrinterInfoPrivate;
     *this = src;
 }
 
 QPrinterInfo& QPrinterInfo::operator=(const QPrinterInfo& src)
 {
     Q_ASSERT(d_ptr);
-    if (d_ptr != &nullQPrinterInfoPrivate)
-        delete d_ptr;
-    d_ptr = new QPrinterInfoPrivate(*src.d_ptr);
+    d_ptr.reset(new QPrinterInfoPrivate(*src.d_ptr));
     d_ptr->q_ptr = this;
     return *this;
 }

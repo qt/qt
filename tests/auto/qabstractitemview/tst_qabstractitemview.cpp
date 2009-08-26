@@ -148,8 +148,10 @@ public:
     inline QItemSelectionModel::SelectionFlags tst_selectionCommand(const QModelIndex &index,
                                                                     const QEvent *event = 0) const
         { return selectionCommand(index, event); }
+#ifndef QT_NO_DRAGANDDROP
     inline void tst_startDrag(Qt::DropActions supportedActions)
         { startDrag(supportedActions); }
+#endif
     inline QStyleOptionViewItem tst_viewOptions() const
         { return viewOptions(); }
     enum tst_State {
@@ -267,11 +269,12 @@ void tst_QAbstractItemView::getSetCheck()
 
     // bool QAbstractItemView::dragEnabled()
     // void QAbstractItemView::setDragEnabled(bool)
+#ifndef QT_NO_DRAGANDDROP
     obj1->setDragEnabled(false);
     QCOMPARE(false, obj1->dragEnabled());
     obj1->setDragEnabled(true);
     QCOMPARE(true, obj1->dragEnabled());
-
+#endif
     // bool QAbstractItemView::alternatingRowColors()
     // void QAbstractItemView::setAlternatingRowColors(bool)
     obj1->setAlternatingRowColors(false);
@@ -440,6 +443,7 @@ void tst_QAbstractItemView::basic_tests(TestView *view)
     view->setTabKeyNavigation(true);
     QCOMPARE(view->tabKeyNavigation(), true);
 
+#ifndef QT_NO_DRAGANDDROP
     // setDropIndicatorShown
     view->setDropIndicatorShown(false);
     QCOMPARE(view->showDropIndicator(), false);
@@ -451,6 +455,7 @@ void tst_QAbstractItemView::basic_tests(TestView *view)
     QCOMPARE(view->dragEnabled(), false);
     view->setDragEnabled(true);
     QCOMPARE(view->dragEnabled(), true);
+#endif
 
     // setAlternatingRowColors
     view->setAlternatingRowColors(false);
@@ -545,6 +550,7 @@ void tst_QAbstractItemView::basic_tests(TestView *view)
 
     view->tst_selectionCommand(QModelIndex(), 0);
 
+#ifndef QT_NO_DRAGANDDROP
     if (!view->model())
         view->tst_startDrag(Qt::CopyAction);
 
@@ -562,6 +568,7 @@ void tst_QAbstractItemView::basic_tests(TestView *view)
     QVERIFY(view->tst_state()==TestView::ExpandingState);
     view->tst_setState(TestView::CollapsingState);
     QVERIFY(view->tst_state()==TestView::CollapsingState);
+#endif
 
     view->tst_startAutoScroll();
     view->tst_stopAutoScroll();

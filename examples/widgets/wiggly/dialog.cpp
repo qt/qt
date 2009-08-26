@@ -45,7 +45,7 @@
 #include "wigglywidget.h"
 
 //! [0]
-Dialog::Dialog(QWidget *parent)
+Dialog::Dialog(QWidget *parent, bool smallScreen)
     : QDialog(parent)
 {
     WigglyWidget *wigglyWidget = new WigglyWidget;
@@ -58,9 +58,12 @@ Dialog::Dialog(QWidget *parent)
 
     connect(lineEdit, SIGNAL(textChanged(QString)),
             wigglyWidget, SLOT(setText(QString)));
-
-    lineEdit->setText(tr("Hello world!"));
-
+    if (!smallScreen){
+        lineEdit->setText(tr("Hello world!"));
+    }
+    else{
+        lineEdit->setText(tr("Hello!"));
+    }
     setWindowTitle(tr("Wiggly"));
     resize(360, 145);
 }

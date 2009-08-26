@@ -112,12 +112,12 @@ void RuntimeArray::put(ExecState* exec, unsigned index, JSValue value)
     getConcreteArray()->setValueAt(exec, index, value);
 }
 
-bool RuntimeArray::deleteProperty(ExecState*, const Identifier&)
+bool RuntimeArray::deleteProperty(ExecState*, const Identifier&, bool)
 {
     return false;
 }
 
-bool RuntimeArray::deleteProperty(ExecState*, unsigned)
+bool RuntimeArray::deleteProperty(ExecState*, unsigned, bool)
 {
     return false;
 }

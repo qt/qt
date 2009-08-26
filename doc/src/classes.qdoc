@@ -41,58 +41,85 @@
 
 /*!
     \group classlists
-    \title Class and Function Indexes
-    \brief Collections of classes and functions grouped together into lists.
+    \title Class and Function Documentation
+    \brief Lists and Indexes of classes, functions, and types.
 
-    The following documents contain collections of classes, grouped by
-    subject area or related to particular functionality, or comprehensive
-    lists of classes and functions.
+    Links to indexes and lists for finding class and function
+    reference documentation.
 
-    \generatelist{related}
-*/
+    \section2 Class Lists
 
-/*!
-    \group groups
-    \title Grouped Classes
-    \ingroup classlists
+    \annotatedlist classlists
 
-    This page provides a way of navigating Qt's classes by grouping
-    related classes together. Some classes may appear in more than one group.
+    \section2 Function Lists
 
-    \generatelist{related}
+    \annotatedlist funclists
 
 */
 
 /*!
     \page classes.html
-    \title Qt's Classes
+    \title All Qt Classes (main index)
     \ingroup classlists
 
-    This is a list of all Qt classes. For a list of the classes provided
-    for compatibility with Qt3, see \l{Qt 3 compatibility classes}. For
-    classes that have been deprecated, see the \l{Obsolete Classes} list.
+    \brief If you know the name of the class you want, find it here.
+
+    This is a list of all Qt classes. For a list of the classes
+    provided for compatibility with Qt3, see \l{Qt3 Support
+    Classes}. For classes that have been deprecated, see the
+    \l{Obsolete Classes} list.
 
     \generatelist classes
 
-    \sa {Qt 3 Compatibility Classes}, {Qt's Modules}, {Obsolete Classes}
+    \sa {Qt3 Support Classes}, {All Qt Modules}, {Obsolete Classes}
 */
 
 /*!
-    \page namespaces.html
-    \title Qt's Namespaces
+    \page annotated.html
+    \title Annotated Class List
     \ingroup classlists
 
-    This is a list of the main namespaces in Qt. For a list of classes in
-    Qt, see \l{Qt's Classes}.
+    \brief If you don't know the name of the class you want, but you
+    know what the class should do, you might try looking here.
 
-    \generatelist{namespaces}
+    Qt classes with brief descriptions:
+
+    \generatelist annotatedclasses
+*/
+
+/*!
+    \group groups
+    \title Groups Of Related Classes
+    \ingroup classlists
+
+    \brief If you know what kind of class you want (GUI, painting,
+    I.O, etc), look here.
+
+    This is a list of functional groups of Qt classes. A class can
+    appear in more than one functional group.
+
+    \generatelist{related}
+
+*/
+
+/*!
+    \page hierarchy.html
+
+    \title Inheritance Hierarchy
+    \ingroup classlists
+
+    \brief The C++ class inheritance hierarchy for all classes in the
+    Qt API.
+
+    \generatelist classhierarchy
 */
 
 /*!
     \page obsoleteclasses.html
     \title Obsolete Classes
     \ingroup classlists
-
+    
+    \brief These classes are obsolete and should not be used in new code. 
 
     This is a list of Qt classes that are obsolete (deprecated). These
     classes are provided to keep old source code working but they are
@@ -101,52 +128,46 @@
 
     \generatelist obsoleteclasses
 
-    \sa {Qt's Classes}, {Qt's Modules}
-*/
-
-/*!
-    \page annotated.html
-    \title Annotated Class Index
-    \ingroup classlists
-
-    Qt's classes with brief descriptions:
-
-    \generatelist annotatedclasses
-*/
-
-/*!
-    \page functions.html
-    \title Member Function Index
-    \ingroup classlists
-
-    Here is the list of all the documented member functions in the Qt
-    API with links to the class documentation for each function.
-
-    \generatelist functionindex
-*/
-
-/*!
-    \page hierarchy.html
-
-    \title Class Inheritance Hierarchy
-    \ingroup classlists
-
-    This list shows the C++ class inheritance relations between the
-    classes in the Qt API.
-
-    \generatelist classhierarchy
 */
 
 /*!
     \page compatclasses.html
-    \title Qt 3 Compatibility Classes
+    \title Qt3 Support Classes
     \ingroup classlists
 
-    This is a list of the classes that Qt provides for compatibility
-    with Qt 3. The vast majority of these are provided by the
-    Qt3Support module.
+    \brief These classes ease the porting of code from Qt 3 to Qt 4.
+
+    These are the classes that Qt provides for compatibility with Qt
+    3. Most of these are provided by the Qt3Support module.
 
     \generatelist compatclasses
 
-    \sa {Qt's Classes}, {Qt's Modules}
+*/
+
+/*!
+    \page functions.html
+    \title All Functions (main index)
+    \ingroup funclists
+
+    \brief All documented Qt functions listed alphabetically with a
+    link to where each one is declared.
+
+    This is the list of all documented member functions and global
+    functions in the Qt API.  Each function has a link to the class or
+    header file where it is declared and documented.
+
+    \generatelist functionindex
+*/
+
+
+/*!
+    \page namespaces.html
+    \title All Qt Namespaces
+    \ingroup classlists
+
+    \brief A Qt namespace contains enum types, functions, and sometimes classes.
+
+    This is a list of the main namespaces in Qt. 
+
+    \generatelist{namespaces}
 */

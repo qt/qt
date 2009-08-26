@@ -18,7 +18,11 @@ win32: {
 
 
 QT = core
-QT += network
+
+!symbian: {
+    QT += network
+}
+
 embedded: QT += gui
 
 wince*: {
@@ -47,3 +51,18 @@ wince*: {
    DEPLOYMENT += addFiles
 }
 
+symbian: {
+   binDep.sources = \
+        fileWriterProcess.exe \
+        testDetached.exe \
+        testExitCodes.exe \
+        testProcessCrash.exe \
+        testProcessEcho.exe \
+        testProcessNormal.exe \
+        testProcessOutput.exe \
+        nospace.exe \
+        testSpaceInName.exe
+   binDep.path = \sys\bin
+
+   DEPLOYMENT += binDep
+}

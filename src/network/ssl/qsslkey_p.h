@@ -69,7 +69,6 @@ public:
         , dsa(0)
     {
         clear();
-        ref = 1;
     }
 
     inline ~QSslKeyPrivate()
@@ -91,6 +90,9 @@ public:
     DSA *dsa;
 
     QAtomicInt ref;
+
+private:
+    Q_DISABLE_COPY(QSslKeyPrivate)
 };
 
 QT_END_NAMESPACE

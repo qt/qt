@@ -44,6 +44,8 @@
 #include "option.h"
 #include "cachekeys.h"
 
+#include "epocroot.h"
+
 #include <qdatetime.h>
 #include <qfile.h>
 #include <qfileinfo.h>
@@ -76,7 +78,8 @@ QT_BEGIN_NAMESPACE
 enum ExpandFunc { E_MEMBER=1, E_FIRST, E_LAST, E_CAT, E_FROMFILE, E_EVAL, E_LIST,
                   E_SPRINTF, E_JOIN, E_SPLIT, E_BASENAME, E_DIRNAME, E_SECTION,
                   E_FIND, E_SYSTEM, E_UNIQUE, E_QUOTE, E_ESCAPE_EXPAND,
-                  E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_REPLACE };
+                  E_UPPER, E_LOWER, E_FILES, E_PROMPT, E_RE_ESCAPE, E_REPLACE,
+                  E_SIZE };
 QMap<QString, ExpandFunc> qmake_expandFunctions()
 {
     static QMap<QString, ExpandFunc> *qmake_expand_functions = 0;
@@ -107,6 +110,7 @@ QMap<QString, ExpandFunc> qmake_expandFunctions()
         qmake_expand_functions->insert("files", E_FILES);
         qmake_expand_functions->insert("prompt", E_PROMPT);
         qmake_expand_functions->insert("replace", E_REPLACE);
+        qmake_expand_functions->insert("size", E_SIZE);
     }
     return *qmake_expand_functions;
 }
@@ -152,91 +156,6 @@ QMap<QString, TestFunc> qmake_testFunctions()
     }
     return *qmake_test_functions;
 }
-
-QT_END_NAMESPACE
-
-#ifdef QTSCRIPT_SUPPORT
-#include "qscriptvalue.h"
-#include "qscriptengine.h"
-#include "qscriptvalueiterator.h"
-
-QT_BEGIN_NAMESPACE
-
-static QScriptValue qscript_projectWrapper(QScriptEngine *eng, QMakeProject *project,
-                                    const QMap<QString, QStringList> &place);
-
-static bool qscript_createQMakeProjectMap(QMap<QString, QStringList> &vars, QScriptValue js)
-{
-    QScriptValueIterator it(js);
-    while(it.hasNext()) {
-        it.next();
-        vars[it.name()] = qscriptvalue_cast<QStringList>(it.value());
-    }
-    return true;
-}
-
-static QScriptValue qscript_call_testfunction(QScriptContext *context, QScriptEngine *engine)
-{
-    QMakeProject *self = qscriptvalue_cast<QMakeProject*>(context->callee().property("qmakeProject"));
-    QString func = context->callee().property("functionName").toString();
-    QStringList args;
-    for(int i = 0; i < context->argumentCount(); ++i)
-        args += context->argument(i).toString();
-    QMap<QString, QStringList> place = self->variables();
-    qscript_createQMakeProjectMap(place, engine->globalObject().property("qmake"));
-    QScriptValue ret(engine, self->doProjectTest(func, args, place));
-    engine->globalObject().setProperty("qmake", qscript_projectWrapper(engine, self, place));
-    return ret;
-}
-
-static QScriptValue qscript_call_expandfunction(QScriptContext *context, QScriptEngine *engine)
-{
-    QMakeProject *self = qscriptvalue_cast<QMakeProject*>(context->callee().property("qmakeProject"));
-    QString func = context->callee().property("functionName").toString();
-    QStringList args;
-    for(int i = 0; i < context->argumentCount(); ++i)
-        args += context->argument(i).toString();
-    QMap<QString, QStringList> place = self->variables();
-    qscript_createQMakeProjectMap(place, engine->globalObject().property("qmake"));
-    QScriptValue ret = qScriptValueFromValue(engine, self->doProjectExpand(func, args, place));
-    engine->globalObject().setProperty("qmake", qscript_projectWrapper(engine, self, place));
-    return ret;
-}
-
-static QScriptValue qscript_projectWrapper(QScriptEngine *eng, QMakeProject *project,
-                                           const QMap<QString, QStringList> &place)
-{
-    QScriptValue ret = eng->newObject();
-    {
-        QStringList testFuncs = qmake_testFunctions().keys() + project->userTestFunctions();
-        for(int i = 0; i < testFuncs.size(); ++i) {
-            QString funcName = testFuncs.at(i);
-            QScriptValue fun = eng->newFunction(qscript_call_testfunction);
-            fun.setProperty("qmakeProject", eng->newVariant(qVariantFromValue(project)));
-            fun.setProperty("functionName", QScriptValue(eng, funcName));
-            eng->globalObject().setProperty(funcName, fun);
-        }
-    }
-    {
-        QStringList testFuncs = qmake_expandFunctions().keys() + project->userExpandFunctions();
-        for(int i = 0; i < testFuncs.size(); ++i) {
-            QString funcName = testFuncs.at(i);
-            QScriptValue fun = eng->newFunction(qscript_call_expandfunction);
-            fun.setProperty("qmakeProject", eng->newVariant(qVariantFromValue(project)));
-            fun.setProperty("functionName", QScriptValue(eng, funcName));
-            eng->globalObject().setProperty(funcName, fun);
-        }
-    }
-    for(QMap<QString, QStringList>::ConstIterator it = place.begin(); it != place.end(); ++it)
-        ret.setProperty(it.key(), qScriptValueFromValue(eng, it.value()));
-    return ret;
-}
-
-QT_END_NAMESPACE
-
-#endif
-
-QT_BEGIN_NAMESPACE
 
 struct parser_info {
     QString file;
@@ -588,6 +507,68 @@ static void qmake_error_msg(const QString &msg)
             msg.toLatin1().constData());
 }
 
+enum isForSymbian_enum {
+    isForSymbian_NOT_SET = -1,
+    isForSymbian_FALSE = 0,
+    isForSymbian_ABLD = 1,
+    isForSymbian_SBSV2 = 2,
+};
+
+static isForSymbian_enum isForSymbian_value = isForSymbian_NOT_SET;
+
+// Checking for symbian build is primarily determined from the qmake spec,
+// but if that is not specified, detect if symbian is the default spec
+// by checking the MAKEFILE_GENERATOR variable value.
+static void init_isForSymbian(const QMap<QString, QStringList>& vars)
+{
+    if (isForSymbian_value != isForSymbian_NOT_SET)
+        return;
+
+    QString spec = QFileInfo(Option::mkfile::qmakespec).fileName();
+    if (spec.startsWith("symbian-abld", Qt::CaseInsensitive)) {
+        isForSymbian_value = isForSymbian_ABLD;
+        return;
+    }
+    if (spec.startsWith("symbian-sbsv2", Qt::CaseInsensitive)) {
+        isForSymbian_value = isForSymbian_SBSV2;
+        return;
+    }
+
+    QStringList generatorList = vars["MAKEFILE_GENERATOR"];
+
+    if (!generatorList.isEmpty()) {
+        QString generator = generatorList.first();
+        if (generator.startsWith("SYMBIAN_ABLD"))
+            isForSymbian_value = isForSymbian_ABLD;
+        else if (generator.startsWith("SYMBIAN_SBSV2"))
+            isForSymbian_value = isForSymbian_SBSV2;
+        else
+            isForSymbian_value = isForSymbian_FALSE;
+    } else {
+        isForSymbian_value = isForSymbian_FALSE;
+    }
+}
+
+bool isForSymbian()
+{
+    // If isForSymbian_value has not been initialized explicitly yet,
+    // call initializer with dummy map to check qmake spec.
+    if (isForSymbian_value == isForSymbian_NOT_SET)
+        init_isForSymbian(QMap<QString, QStringList>());
+
+    return (isForSymbian_value == isForSymbian_ABLD || isForSymbian_value == isForSymbian_SBSV2);
+}
+
+bool isForSymbianSbsv2()
+{
+    // If isForSymbian_value has not been initialized explicitly yet,
+    // call initializer with dummy map to check qmake spec.
+    if (isForSymbian_value == isForSymbian_NOT_SET)
+        init_isForSymbian(QMap<QString, QStringList>());
+
+    return (isForSymbian_value == isForSymbian_SBSV2);
+}
+
 /*
    1) environment variable QMAKEFEATURES (as separated by colons)
    2) property variable QMAKEFEATURES (as separated by colons)
@@ -614,11 +595,21 @@ QStringList qmake_feature_paths(QMakeProperty *prop=0)
             concat << base_concat + QDir::separator() + "unix";
             break;
         case Option::TARG_UNIX_MODE:
-            concat << base_concat + QDir::separator() + "unix";
-            break;
+            {
+                if (isForSymbian())
+                    concat << base_concat + QDir::separator() + "symbian";
+                else
+                    concat << base_concat + QDir::separator() + "unix";
+                break;
+            }
         case Option::TARG_WIN_MODE:
-            concat << base_concat + QDir::separator() + "win32";
-            break;
+            {
+                if (isForSymbian())
+                    concat << base_concat + QDir::separator() + "symbian";
+                else
+                    concat << base_concat + QDir::separator() + "win32";
+                break;
+            }
         case Option::TARG_MAC9_MODE:
             concat << base_concat + QDir::separator() + "mac";
             concat << base_concat + QDir::separator() + "mac9";
@@ -1471,6 +1462,9 @@ QMakeProject::read(uchar cmd)
                 fprintf(stderr, "Failure to read QMAKESPEC conf file %s.\n", spec.toLatin1().constData());
                 return false;
             }
+
+            init_isForSymbian(base_vars);
+
             if(Option::mkfile::do_cache && !Option::mkfile::cachefile.isEmpty()) {
                 debug_msg(1, "QMAKECACHE file: reading %s", Option::mkfile::cachefile.toLatin1().constData());
                 read(Option::mkfile::cachefile, base_vars);
@@ -1517,8 +1511,8 @@ QMakeProject::read(uchar cmd)
 
     if(cmd & ReadProFile) { // parse project file
         debug_msg(1, "Project file: reading %s", pfile.toLatin1().constData());
-        if(pfile != "-" && !QFile::exists(pfile) && !pfile.endsWith(".pro"))
-            pfile += ".pro";
+        if(pfile != "-" && !QFile::exists(pfile) && !pfile.endsWith(Option::pro_ext))
+            pfile += Option::pro_ext;
         if(!read(pfile, vars))
             return false;
     }
@@ -1605,23 +1599,32 @@ QMakeProject::isActiveConfig(const QString &x, bool regex, QMap<QString, QString
     else if(x == "false")
         return false;
 
-    //mkspecs
-    if((Option::target_mode == Option::TARG_MACX_MODE ||
-        Option::target_mode == Option::TARG_UNIX_MODE) && x == "unix")
-        return true;
-    else if(Option::target_mode == Option::TARG_MACX_MODE && x == "macx")
-        return true;
-    else if(Option::target_mode == Option::TARG_MAC9_MODE && x == "mac9")
-        return true;
-    else if((Option::target_mode == Option::TARG_MAC9_MODE || Option::target_mode == Option::TARG_MACX_MODE) &&
-            x == "mac")
-        return true;
-    else if(Option::target_mode == Option::TARG_WIN_MODE && x == "win32")
-        return true;
-    QRegExp re(x, Qt::CaseSensitive, QRegExp::Wildcard);
     static QString spec;
     if(spec.isEmpty())
         spec = QFileInfo(Option::mkfile::qmakespec).fileName();
+
+    // Symbian is an exception to how scopes are resolved. Since we do not
+    // have a separate target mode for Symbian, but we expect the scope to resolve
+    // on other platforms we base it entirely on the mkspec. This means that
+    // using a mkspec starting with 'symbian*' will resolve both the 'symbian'
+    // and the 'unix' (because of Open C) scopes to true.
+    if(isForSymbian() && (x == "symbian" || x == "unix"))
+        return true;
+
+    //mkspecs
+    if((Option::target_mode == Option::TARG_MACX_MODE ||
+        Option::target_mode == Option::TARG_UNIX_MODE) && x == "unix")
+        return !isForSymbian();
+    else if(Option::target_mode == Option::TARG_MACX_MODE && x == "macx")
+        return !isForSymbian();
+    else if(Option::target_mode == Option::TARG_MAC9_MODE && x == "mac9")
+        return !isForSymbian();
+    else if((Option::target_mode == Option::TARG_MAC9_MODE || Option::target_mode == Option::TARG_MACX_MODE) &&
+            x == "mac")
+        return !isForSymbian();
+    else if(Option::target_mode == Option::TARG_WIN_MODE && x == "win32")
+        return !isForSymbian();
+    QRegExp re(x, Qt::CaseSensitive, QRegExp::Wildcard);
     if((regex && re.exactMatch(spec)) || (!regex && spec == x))
         return true;
 #ifdef Q_OS_UNIX
@@ -1712,6 +1715,7 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
         if(file.indexOf(Option::dir_sep) == -1 || !QFile::exists(file)) {
             static QStringList *feature_roots = 0;
             if(!feature_roots) {
+                init_isForSymbian(base_vars);
                 feature_roots = new QStringList(qmake_feature_paths(prop));
                 qmakeAddCacheClear(qmakeDeleteCacheClear_QStringList, (void**)&feature_roots);
             }
@@ -1797,27 +1801,8 @@ QMakeProject::doProjectInclude(QString file, uchar flags, QMap<QString, QStringL
     bool parsed = false;
     parser_info pi = parser;
     if(format == JSFormat) {
-#ifdef QTSCRIPT_SUPPORT
-        eng.globalObject().setProperty("qmake", qscript_projectWrapper(&eng, this, place));
-        QFile f(file);
-        if (f.open(QFile::ReadOnly)) {
-            QString code = f.readAll();
-            QScriptValue r = eng.evaluate(code);
-            if(eng.hasUncaughtException()) {
-                const int lineNo = eng.uncaughtExceptionLineNumber();
-                fprintf(stderr, "%s:%d: %s\n", file.toLatin1().constData(), lineNo,
-                        r.toString().toLatin1().constData());
-            } else {
-                parsed = true;
-                QScriptValue variables = eng.globalObject().property("qmake");
-                if (variables.isValid() && variables.isObject())
-                    qscript_createQMakeProjectMap(place, variables);
-            }
-        }
-#else
         warn_msg(WarnParser, "%s:%d: QtScript support disabled for %s.",
                  pi.file.toLatin1().constData(), pi.line_no, orig_file.toLatin1().constData());
-#endif
     } else {
         QStack<ScopeBlock> sc = scope_blocks;
         IteratorBlock *it = iterator;
@@ -2152,11 +2137,11 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
         } else {
             QMakeProjectEnv env(place);
             char buff[256];
-            FILE *proc = QT_POPEN(args[0].toLatin1(), "r");
             bool singleLine = true;
             if(args.count() > 1)
                 singleLine = (args[1].toLower() == "true");
             QString output;
+            FILE *proc = QT_POPEN(args[0].toLatin1(), "r");
             while(proc && !feof(proc)) {
                 int read_in = int(fread(buff, 1, 255, proc));
                 if(!read_in)
@@ -2305,20 +2290,17 @@ QMakeProject::doProjectExpand(QString func, QList<QStringList> args_list,
                 ret += it->replace(before, after);
         }
         break; }
-    default: {
-#ifdef QTSCRIPT_SUPPORT
-        {
-            QScriptValue jsFunc = eng.globalObject().property(func);
-            if(jsFunc.isFunction()) {
-                QScriptValueList jsArgs;
-                for(int i = 0; i < args.size(); ++i)
-                    jsArgs += QScriptValue(&eng, args.at(i));
-                QScriptValue jsRet = jsFunc.call(eng.globalObject(), jsArgs);
-                ret = qscriptvalue_cast<QStringList>(jsRet);
-                break;
-            }
+    case E_SIZE: {
+        if(args.count() != 1) {
+            fprintf(stderr, "%s:%d: size(var) requires one argument.\n",
+                    parser.file.toLatin1().constData(), parser.line_no);
+        } else {
+            //QString target = args[0];
+            int size = values(args[0]).size();
+            ret += QString::number(size);
         }
-#endif
+        break; }
+    default: {
         fprintf(stderr, "%s:%d: Unknown replace function: %s\n",
                 parser.file.toLatin1().constData(), parser.line_no,
                 func.toLatin1().constData());
@@ -2787,20 +2769,6 @@ QMakeProject::doProjectTest(QString func, QList<QStringList> args_list, QMap<QSt
 #endif
         return true; }
     default:
-#ifdef QTSCRIPT_SUPPORT
-        {
-            QScriptValue jsFunc = eng.globalObject().property(func);
-            if(jsFunc.isFunction()) {
-                QScriptValueList jsArgs;
-                for(int i = 0; i < args.size(); ++i)
-                    jsArgs += QScriptValue(&eng, args.at(i));
-                QScriptValue jsRet = jsFunc.call(eng.globalObject(), jsArgs);
-                if(eng.hasUncaughtException())
-                    return false;
-                return qscriptvalue_cast<bool>(jsRet);
-            }
-        }
-#endif
         fprintf(stderr, "%s:%d: Unknown test function: %s\n", parser.file.toLatin1().constData(), parser.line_no,
                 func.toLatin1().constData());
     }
@@ -3184,6 +3152,9 @@ QStringList &QMakeProject::values(const QString &_var, QMap<QString, QStringList
     } else if (var == QLatin1String("QMAKE_DIR_SEP")) {
         if (place[var].isEmpty())
             return values("DIR_SEPARATOR", place);
+    } else if (var == QLatin1String("EPOCROOT")) {
+        if (place[var].isEmpty())
+            place[var] = QStringList(epocRoot());
     }
     //qDebug("REPLACE [%s]->[%s]", qPrintable(var), qPrintable(place[var].join("::")));
     return place[var];

@@ -39,12 +39,14 @@
 **
 ****************************************************************************/
 
-#include <QtXml>
+#include <QXmlStreamReader>
 
 #include "fluidlauncher.h"
 
 
 #define DEFAULT_INPUT_TIMEOUT 10000
+#define SIZING_FACTOR_HEIGHT 6/10
+#define SIZING_FACTOR_WIDTH 6/10
 
 FluidLauncher::FluidLauncher(QStringList* args)
 {
@@ -62,7 +64,11 @@ FluidLauncher::FluidLauncher(QStringList* args)
     inputTimer->setSingleShot(true);
     inputTimer->setInterval(DEFAULT_INPUT_TIMEOUT);
 
-    pictureFlowWidget->setSlideSize(QSize( (screen_size.width()*2)/5, (screen_size.height()*2)/5 ));
+    const int h = screen_size.height() * SIZING_FACTOR_HEIGHT;
+    const int w = screen_size.width() * SIZING_FACTOR_WIDTH;
+    const int hh = qMin(h, w);
+    const int ww = hh / 3 * 2;
+    pictureFlowWidget->setSlideSize(QSize(ww, hh));
 
     bool success;
     int configIndex = args->indexOf("-config");
@@ -100,51 +106,25 @@ bool FluidLauncher::loadConfig(QString configPath)
 
     slideShowWidget->clearImages();
 
-    QDomDocument xmlDoc;
-    xmlDoc.setContent(&xmlFile, true);
+    xmlFile.open(QIODevice::ReadOnly);
+    QXmlStreamReader reader(&xmlFile);
+    while (!reader.atEnd()) {
+        reader.readNext();
 
-    QDomElement rootElement = xmlDoc.documentElement();
-
-    // Process the demos node:
-    QDomNodeList demoNodes = rootElement.firstChildElement("demos").elementsByTagName("example");
-    for (int i=0; i<demoNodes.size(); i++) {
-        QDomElement element = demoNodes.item(i).toElement();
-
-        if (element.hasAttribute("filename")) {
-            DemoApplication* newDemo = new DemoApplication( 
-                                                     element.attribute("filename"), 
-                                                     element.attribute("name", "Unamed Demo"),
-                                                     element.attribute("image"),
-                                                     element.attribute("args").split(" "));
-            demoList.append(newDemo);
+        if (reader.isStartElement()) {
+            if (reader.name() == "demos")
+                parseDemos(reader);
+            else if(reader.name() == "slideshow")
+                parseSlideshow(reader);
         }
     }
 
-
-    // Process the slideshow node:
-    QDomElement slideshowElement = rootElement.firstChildElement("slideshow");
-
-    if (slideshowElement.hasAttribute("timeout")) {
-          bool valid;
-          int timeout = slideshowElement.attribute("timeout").toInt(&valid);
-          if (valid)
-            inputTimer->setInterval(timeout);
-    }
-
-    if (slideshowElement.hasAttribute("interval")) {
-          bool valid;
-          int interval = slideshowElement.attribute("interval").toInt(&valid);
-          if (valid)
-            slideShowWidget->setSlideInterval(interval);
-    }
-
-    for (QDomNode node=slideshowElement.firstChild(); !node.isNull(); node=node.nextSibling()) {
-        QDomElement element = node.toElement();
-
-        if (element.tagName() == "imagedir")
-            slideShowWidget->addImageDir(element.attribute("dir"));
-        else if (element.tagName() == "image")
-            slideShowWidget->addImage(element.attribute("image"));
+    if (reader.hasError()) {
+       qDebug() << QString("Error parsing %1 on line %2 column %3: \n%4")
+                .arg(configPath)
+                .arg(reader.lineNumber())
+                .arg(reader.columnNumber())
+                .arg(reader.errorString());
     }
 
     // Append an exit Item
@@ -154,6 +134,68 @@ bool FluidLauncher::loadConfig(QString configPath)
     return true;
 }
 
+
+void FluidLauncher::parseDemos(QXmlStreamReader& reader)
+{
+    while (!reader.atEnd()) {
+        reader.readNext();
+        if (reader.isStartElement() && reader.name() == "example") {
+            QXmlStreamAttributes attrs = reader.attributes();
+            QStringRef filename = attrs.value("filename");
+            if (!filename.isEmpty()) {
+                QStringRef name = attrs.value("name");
+                QStringRef image = attrs.value("image");
+                QStringRef args = attrs.value("args");
+
+                DemoApplication* newDemo = new DemoApplication(
+                        filename.toString(),
+                        name.isEmpty() ? "Unamed Demo" : name.toString(),
+                        image.toString(),
+                        args.toString().split(" "));
+                demoList.append(newDemo);
+            }
+        } else if(reader.isEndElement() && reader.name() == "demos") {
+            return;
+        }
+    }
+}
+
+void FluidLauncher::parseSlideshow(QXmlStreamReader& reader)
+{
+    QXmlStreamAttributes attrs = reader.attributes();
+
+    QStringRef timeout = attrs.value("timeout");
+    bool valid;
+    if (!timeout.isEmpty()) {
+        int t = timeout.toString().toInt(&valid);
+        if (valid)
+            inputTimer->setInterval(t);
+    }
+
+    QStringRef interval = attrs.value("interval");
+    if (!interval.isEmpty()) {
+        int i = interval.toString().toInt(&valid);
+        if (valid)
+            slideShowWidget->setSlideInterval(i);
+    }
+
+    while (!reader.atEnd()) {
+        reader.readNext();
+        if (reader.isStartElement()) {
+            QXmlStreamAttributes attrs = reader.attributes();
+            if (reader.name() == "imagedir") {
+                QStringRef dir = attrs.value("dir");
+                slideShowWidget->addImageDir(dir.toString());
+            } else if(reader.name() == "image") {
+                QStringRef image = attrs.value("image");
+                slideShowWidget->addImage(image.toString());
+            }
+        } else if(reader.isEndElement() && reader.name() == "slideshow") {
+            return;
+        }
+    }
+
+}
 
 void FluidLauncher::populatePictureFlow()
 {

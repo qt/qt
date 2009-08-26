@@ -9,8 +9,13 @@ RESOURCES += embeddedsvgviewer.qrc
 target.path = $$[QT_INSTALL_DEMOS]/embedded/embeddedsvgviewer
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro *.html *.svg files
 sources.path = $$[QT_INSTALL_DEMOS]/embedded/embeddedsvgviewer
-INSTALLS += target sources 
+INSTALLS += target sources
 
-wince*: {
+wince* {
    DEPLOYMENT_PLUGIN += qsvg
+}
+
+symbian {
+    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000A640
 }

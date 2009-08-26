@@ -49,7 +49,9 @@
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QDialogButtonBox>
 #include <QtGui/QMessageBox>
+#ifdef QT_SCRIPT_LIB
 #include <QtScript/QScriptEngine>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -112,12 +114,16 @@ variables <i>widget</i> and <i>childWidgets</i>, respectively.");
         const QString script = trimmedScript();
         if (script.isEmpty())
             return true;
+#ifdef QT_SCRIPT_LIB
         QScriptEngine scriptEngine;
         if (scriptEngine.canEvaluate(script))
             return true;
         m_dialogGui->message(this, QDesignerDialogGuiInterface::ScriptDialogMessage, QMessageBox::Warning,
                              windowTitle(), tr("Syntax error"), QMessageBox::Ok);
         return  false;
+#else
+        return true;
+#endif
     }
 } // namespace qdesigner_internal
 
