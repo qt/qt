@@ -187,6 +187,9 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , extraPaintEngine(0)
       , polished(0)
       , graphicsEffect(0)
+#if !defined(QT_NO_IM)
+      , imHints(Qt::ImhNone)
+#endif
       , inheritedFontResolveMask(0)
       , inheritedPaletteResolveMask(0)
       , leftmargin(0)
@@ -217,7 +220,6 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , window_event(0)
       , qd_hd(0)
 #endif
-		,imHints(Qt::ImhNone)
 {
     if (!qApp) {
         qFatal("QWidget: Must construct a QApplication before a QPaintDevice");
