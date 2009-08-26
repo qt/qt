@@ -418,7 +418,7 @@ QByteArray QGLPixmapBlurFilter::generateBlurShader(int radius, bool gaussianBlur
         source.append("uniform highp vec4      clip;\n");
     }
 
-    source.append("lowp vec4 customShader(sampler2D src, vec2 srcCoords) {\n");
+    source.append("lowp vec4 customShader(lowp sampler2D src, highp vec2 srcCoords) {\n");
 
     QVector<qreal> sampleOffsets;
     QVector<qreal> weights;
