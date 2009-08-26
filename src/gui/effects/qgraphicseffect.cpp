@@ -61,15 +61,17 @@
     Qt provides the following standard effects:
 
     \list
-    \o QGraphicsGrayscaleEffect - renders the item in shades of gray
-    \o QGraphicsColorizeEffect - renders the item in shades of any given color
-    \o QGraphicsPixelizeEffect - pixelizes the item with any pixel size
     \o QGraphicsBlurEffect - blurs the item by a given radius
     \o QGraphicsDropShadowEffect - renders a dropshadow behind the item
+    \o QGraphicsColorizeEffect - renders the item in shades of any given color
     \o QGraphicsOpacityEffect - renders the item with an opacity
+    \o QGraphicsPixelizeEffect - pixelizes the item with any pixel size
+    \o QGraphicsGrayscaleEffect - renders the item in shades of gray
     \o QGraphicsShaderEffect - renders the item with a pixel shader fragment
     \endlist
 
+    \img graphicseffect-effects.png
+    \img graphicseffect-widget.png
 
     For more information on how to use each effect, refer to the specific
     effect's documentation.
@@ -425,6 +427,8 @@ void QGraphicsEffect::sourceChanged(ChangeFlags flags)
 
     A grayscale effect renders the source in shades of gray.
 
+    \img graphicseffect-grayscale.png
+
     \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsPixelizeEffect,
         QGraphicsColorizeEffect, QGraphicsOpacityEffect
 */
@@ -477,6 +481,8 @@ void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *so
     can be modified using the setColor() function.
 
     By default, the color is light blue (QColor(0, 0, 192)).
+
+    \img graphicseffect-colorize.png
 
     \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsPixelizeEffect,
         QGraphicsGrayscaleEffect, QGraphicsOpacityEffect
@@ -559,6 +565,8 @@ void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
     modified using the setPixelSize() function.
 
     By default, the pixel size is 3.
+
+    \img graphicseffect-pixelize.png
 
     \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsGrayscaleEffect,
         QGraphicsColorizeEffect, QGraphicsOpacityEffect
@@ -678,6 +686,8 @@ void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
 
     By default, the blur radius is 5 pixels.
 
+    \img graphicseffect-blur.png
+
     \sa QGraphicsDropShadowEffect, QGraphicsPixelizeEffect, QGraphicsGrayscaleEffect,
         QGraphicsColorizeEffect, QGraphicsOpacityEffect
 */
@@ -781,6 +791,8 @@ void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
     By default, the drop shadow is a semi-transparent dark gray
     (QColor(63, 63, 63, 180)) shadow, blurred with a radius of 1 at an offset
     of 8 pixels towards the lower right.
+
+    \img graphicseffect-drop-shadow.png
 
     \sa QGraphicsBlurEffect, QGraphicsPixelizeEffect, QGraphicsGrayscaleEffect,
         QGraphicsColorizeEffect, QGraphicsOpacityEffect
@@ -947,6 +959,8 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *s
     sequence. The opacity can be modified using the setOpacity() function.
 
     By default, the opacity is 0.7.
+
+    \img graphicseffect-opacity.png
 
     \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsPixelizeEffect,
         QGraphicsGrayscaleEffect, QGraphicsColorizeEffect
