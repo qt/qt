@@ -3,7 +3,7 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = 
+TARGET = qmediaplayer
 DEPENDPATH += . build src ui
 
 QT += phonon
