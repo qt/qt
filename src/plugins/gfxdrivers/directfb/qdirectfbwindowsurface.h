@@ -89,6 +89,7 @@ public:
     void endPaint(const QRegion &);
 
     QImage *buffer(const QWidget *widget);
+    IDirectFBSurface *surfaceForWidget(const QWidget *widget, QRect *rect) const;
 private:
     void updateFormat();
 #ifdef QT_DIRECTFB_WM

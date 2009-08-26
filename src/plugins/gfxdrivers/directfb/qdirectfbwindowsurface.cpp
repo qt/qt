@@ -466,6 +466,27 @@ QImage *QDirectFBWindowSurface::buffer(const QWidget *widget)
     return img;
 }
 
+IDirectFBSurface *QDirectFBWindowSurface::surfaceForWidget(const QWidget *widget, QRect *rect) const
+{
+    Q_ASSERT(widget);
+    if (!dfbSurface) {
+        if (sibling && (!sibling->sibling || sibling->dfbSurface))
+            return sibling->surfaceForWidget(widget, rect);
+        return 0;
+    }
+    QWidget *win = window();
+    Q_ASSERT(win);
+    if (rect) {
+        if (win == widget) {
+            *rect = widget->rect();
+        } else {
+            *rect = QRect(widget->mapTo(win, QPoint(0, 0)), widget->size());
+        }
+    }
+    Q_ASSERT(win == widget || widget->isAncestorOf(win));
+    return dfbSurface;
+}
+
 void QDirectFBWindowSurface::updateFormat()
 {
     imageFormat = dfbSurface ? QDirectFBScreen::getImageFormat(dfbSurface) : QImage::Format_Invalid;

@@ -1557,5 +1557,36 @@ void QDirectFBScreen::setDirectFBImageProvider(IDirectFBImageProvider *provider)
 }
 #endif
 
+IDirectFBSurface * QDirectFBScreen::surfaceForWidget(const QWidget *widget, QRect *rect) const
+{
+    Q_ASSERT(widget);
+    if (!widget->isVisible() || widget->size().isNull())
+        return 0;
 
+    const QWSWindowSurface *surface = static_cast<const QWSWindowSurface*>(widget->windowSurface());
+    if (surface && surface->key() == QLatin1String("directfb")) {
+        return static_cast<const QDirectFBWindowSurface*>(surface)->surfaceForWidget(widget, rect);
+    }
+    return 0;
+}
+
+IDirectFBSurface *QDirectFBScreen::subSurfaceForWidget(const QWidget *widget, const QRect &area) const
+{
+    Q_ASSERT(widget);
+    QRect rect;
+    IDirectFBSurface *surface = surfaceForWidget(widget, &rect);
+    IDirectFBSurface *subSurface = 0;
+    if (surface) {
+        if (!area.isNull())
+            rect &= area.translated(widget->mapTo(widget->window(), QPoint(0, 0)));
+        if (!rect.isNull()) {
+            const DFBRectangle subRect = {rect.x(), rect.y(), rect.width(), rect.height() };
+            const DFBResult result = surface->GetSubSurface(surface, &subRect, &subSurface);
+            if (result != DFB_OK) {
+                DirectFBError("QDirectFBScreen::subSurface(): Can't get sub surface", result);
+            }
+        }
+    }
+    return subSurface;
+}
 
