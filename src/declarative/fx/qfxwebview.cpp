@@ -325,6 +325,12 @@ QUrl QFxWebView::url() const
 
 void QFxWebView::setUrl(const QUrl &url)
 {
+    if (url.isEmpty()) {
+        // Make absolute.
+        setUrl(QUrl("about:blank"));
+        return;
+    }
+
     Q_D(QFxWebView);
     if (url == page()->mainFrame()->url())
         return;
@@ -333,7 +339,7 @@ void QFxWebView::setUrl(const QUrl &url)
         d->idealwidth>0 ? d->idealwidth : width(),
         d->idealheight>0 ? d->idealheight : height()));
 
-    Q_ASSERT(url.isEmpty() || !url.isRelative());
+    Q_ASSERT(!url.isRelative());
 
     if (isComponentComplete())
         page()->mainFrame()->load(url);
