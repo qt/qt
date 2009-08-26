@@ -1,4 +1,4 @@
-/*
+/*!
 
    INCOMPLETE
 
@@ -51,7 +51,7 @@ QML usage of the item.
 As an example, imagine you wanted a reusable Button item. If you therefore
 decided to write a QFxItem subclass to implement a button,
 just as QToolButton subclasses QWidget for this purpose, following the rule above, your
-"QFxButton" would not have any appearance - just the notions of enabled, triggering, etc.
+\c QFxButton would not have any appearance - just the notions of enabled, triggering, etc.
 
 But there is already an object in Qt that does this: QAction.
 
