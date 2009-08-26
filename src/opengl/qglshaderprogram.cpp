@@ -104,7 +104,7 @@ QT_BEGIN_NAMESPACE
     on desktop systems.  The programmer should restrict themselves
     to just features that are present in GLSL/ES, and avoid
     standard variable names that only work on the desktop.
-    
+
     \section1 Simple shader example
 
     \code
@@ -199,8 +199,11 @@ QT_BEGIN_NAMESPACE
 
     \value VertexShader Vertex shader written in the OpenGL Shading Language (GLSL).
     \value FragmentShader Fragment shader written in the OpenGL Shading Language (GLSL).
+
     \value PartialVertexShader Partial vertex shader that will be concatenated with all other partial vertex shaders at link time.
     \value PartialFragmentShader Partial fragment shader that will be concatenated with all other partial fragment shaders at link time.
+
+    \omitvalue PartialShader
 */
 
 #ifndef GL_FRAGMENT_SHADER
@@ -251,8 +254,7 @@ public:
         , shader(0)
         , shaderType(type)
         , compiled(false)
-        , isPartial(type == QGLShader::PartialVertexShader ||
-                    type == QGLShader::PartialFragmentShader)
+        , isPartial((type & QGLShader::PartialShader) != 0)
         , hasPartialSource(false)
     {
     }
@@ -2959,6 +2961,7 @@ bool QGLShaderProgram::hasShaderPrograms(const QGLContext *context)
     return true;
 #endif
 }
+
 
 #endif
 
