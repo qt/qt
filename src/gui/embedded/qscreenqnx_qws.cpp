@@ -44,6 +44,8 @@
 
 #include <gf/gf.h>
 
+QT_BEGIN_NAMESPACE
+
 // This struct holds all the pointers to QNX's internals
 struct QQnxScreenContext
 {
@@ -445,3 +447,4 @@ void QQnxScreen::exposeRegion(QRegion r, int changing)
     gf_draw_end(d->context);
 }
 
+QT_END_NAMESPACE
