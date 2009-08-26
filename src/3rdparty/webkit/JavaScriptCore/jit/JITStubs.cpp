@@ -2713,11 +2713,7 @@ DEFINE_STUB_FUNCTION(void, op_debug)
     int debugHookID = stackFrame.args[0].int32();
     int firstLine = stackFrame.args[1].int32();
     int lastLine = stackFrame.args[2].int32();
-#ifdef QT_BUILD_SCRIPT_LIB
     int column = stackFrame.args[3].int32();
-#else
-    int column = -1;
-#endif
 
     stackFrame.globalData->interpreter->debug(callFrame, static_cast<DebugHookID>(debugHookID), firstLine, lastLine, column);
 }
