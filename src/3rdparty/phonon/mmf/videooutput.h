@@ -26,6 +26,8 @@ namespace Phonon
 {
     namespace MMF
     {
+        class VideoOutputObserver;
+    
         class VideoOutput		:	public QWidget
         {
             Q_OBJECT
@@ -35,6 +37,8 @@ namespace Phonon
         	~VideoOutput();
 			
         	void setFrameSize(const QSize& size);
+        	
+        	void setObserver(VideoOutputObserver* observer);
         	
         protected:
         #ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
@@ -53,6 +57,8 @@ namespace Phonon
         private:
             QSize m_frameSize;
         	
+            // Not owned
+            VideoOutputObserver* m_observer;
         };
     }
 }

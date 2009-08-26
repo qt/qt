@@ -18,6 +18,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils.h"
 #include "videooutput.h"
+#include "videooutputobserver.h"
 
 #include <QPaintEvent>
 #include <QMoveEvent>
@@ -32,13 +33,14 @@ using namespace Phonon::MMF;
 
 MMF::VideoOutput::VideoOutput(QWidget* parent)
 					:	QWidget(parent)
+					,   m_observer(NULL)
 {
 	TRACE_CONTEXT(VideoOutput::VideoOutput, EVideoInternal);
 	TRACE_ENTRY("parent 0x%08x", parent);
 
 #ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 	setPalette(QPalette(Qt::black));
-	setAttribute(Qt::WA_OpaquePaintEvent, true);
+	//setAttribute(Qt::WA_OpaquePaintEvent, true);
 	setAttribute(Qt::WA_NoSystemBackground, true);
 	setAutoFillBackground(false);
 #endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
@@ -119,6 +121,14 @@ void MMF::VideoOutput::setFrameSize(const QSize& frameSize)
 #endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 }
 
+void MMF::VideoOutput::setObserver(VideoOutputObserver* observer)
+{
+    TRACE_CONTEXT(VideoOutput::setObserver, EVideoInternal);
+    TRACE("observer 0x%08x", observer);
+    
+    m_observer = observer;
+}
+
 
 //-----------------------------------------------------------------------------
 // QWidget
@@ -171,6 +181,11 @@ void MMF::VideoOutput::resizeEvent(QResizeEvent* event)
 		event->size().width(), event->size().height());
 	
 	QWidget::resizeEvent(event);
+
+	if(m_observer)
+	{
+	    m_observer->videoOutputRegionChanged();
+	}
 }
 
 void MMF::VideoOutput::moveEvent(QMoveEvent* event)
@@ -181,6 +196,11 @@ void MMF::VideoOutput::moveEvent(QMoveEvent* event)
 		event->pos().x(), event->pos().y());
 	
 	QWidget::moveEvent(event);
+	
+	if(m_observer)
+    {
+        m_observer->videoOutputRegionChanged();
+    }
 }
 
 #endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET

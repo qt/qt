@@ -32,7 +32,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 // Use hard-coded rectangle coordinates, rather than using CCoeControl
 // rect, i.e. QWidget::winId()->Rect()
-#define PHONON_MMF_HARD_CODE_VIDEO_RECT
+//#define PHONON_MMF_HARD_CODE_VIDEO_RECT
 
 namespace Phonon
 {

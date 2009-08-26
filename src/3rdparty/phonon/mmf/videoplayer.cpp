@@ -62,6 +62,8 @@ void MMF::VideoPlayer::construct()
 		m_dummyVideoOutput.reset(new VideoOutput(NULL));
 	}
 	
+	videoOutput().setObserver(this);
+	
 	const TInt priority = 0;
 	const TMdaPriorityPreference preference = EMdaPriorityPreferenceNone;
 	
@@ -227,12 +229,7 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
 	{
 		maxVolumeChanged(m_player->MaxVolume());
 		
-		videoOutput().setFrameSize(m_frameSize);	
-		
-	    // Debugging video visibility
-	    videoOutput().dump();
-	    	    
-	    videoOutputChanged();
+		videoOutput().setFrameSize(m_frameSize);	    
 
         emit totalTimeChanged(totalTime());
         changeState(StoppedState);
@@ -296,6 +293,38 @@ void MMF::VideoPlayer::MvpuoEvent(const TMMFEvent &aEvent)
 
 
 //-----------------------------------------------------------------------------
+// VideoOutputObserver
+//-----------------------------------------------------------------------------
+
+void MMF::VideoPlayer::videoOutputRegionChanged()
+{
+    TRACE_CONTEXT(VideoPlayer::videoOutputRegionChanged, EVideoInternal);
+    TRACE_ENTRY_0();
+    
+    videoOutput().dump();
+    
+    getNativeWindowSystemHandles();
+        
+    TRAPD(err,
+        m_player->SetDisplayWindowL
+            (
+            *m_wsSession, *m_screenDevice,
+            *m_window,
+            m_windowRect, m_clipRect
+            )
+        );
+    
+    if(KErrNone != err)
+    {
+        TRACE("SetDisplayWindowL error %d", err);
+        setError(NormalError);
+    }
+    
+    TRACE_EXIT_0();
+}
+
+
+//-----------------------------------------------------------------------------
 // Private functions
 //-----------------------------------------------------------------------------
 
@@ -318,24 +347,11 @@ void MMF::VideoPlayer::videoOutputChanged()
 		m_dummyVideoOutput.reset(new VideoOutput(NULL));
 	}
 	
+	videoOutput().setObserver(this);
+	
 	videoOutput().setFrameSize(m_frameSize);
 	
-	getNativeWindowSystemHandles();
-	
-	TRAPD(err,
-		m_player->SetDisplayWindowL
-			(
-			*m_wsSession, *m_screenDevice,
-			*m_window,
-			m_windowRect, m_clipRect
-			)
-		);
-	
-	if(KErrNone != err)
-	{
-		TRACE("SetDisplayWindowL error %d", err);
-		setError(NormalError);
-	}
+	videoOutputRegionChanged();
 	
 	TRACE_EXIT_0();
 }

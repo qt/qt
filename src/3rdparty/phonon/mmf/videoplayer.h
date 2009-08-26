@@ -23,6 +23,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "abstractmediaplayer.h"
 #include "videooutput.h"
+#include "videooutputobserver.h"
 
 
 namespace Phonon
@@ -38,6 +39,7 @@ namespace Phonon
          */
         class VideoPlayer		:	public AbstractMediaPlayer
 								,	public MVideoPlayerUtilityObserver
+								,   public VideoOutputObserver
         {
             Q_OBJECT
             
@@ -66,6 +68,9 @@ namespace Phonon
             virtual void MvpuoFrameReady(CFbsBitmap &aFrame, TInt aError);
             virtual void MvpuoPlayComplete(TInt aError);
             virtual void MvpuoEvent(const TMMFEvent &aEvent);
+            
+            // VideoOutputObserver
+            virtual void videoOutputRegionChanged();
             
         Q_SIGNALS:
             void totalTimeChanged(qint64 length);
