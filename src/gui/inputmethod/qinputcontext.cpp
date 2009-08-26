@@ -154,16 +154,17 @@ QInputContext::~QInputContext()
 }
 
 /*!
-    \internal
     Returns the widget that has an input focus for this input
-    context. Ordinary input methods should not call this function
-    directly to keep platform independence and flexible configuration
-    possibility.
+    context.
 
     The return value may differ from holderWidget() if the input
     context is shared between several text widgets.
 
-    \sa setFocusWidget(), holderWidget()
+    \warning To ensure platform independence and support flexible
+    configuration of widgets, ordinary input methods should not call
+    this function directly.
+
+    \sa setFocusWidget()
 */
 QWidget *QInputContext::focusWidget() const
 {
@@ -173,9 +174,9 @@ QWidget *QInputContext::focusWidget() const
 
 
 /*!
-    \internal
-    Sets the widget that has an input focus for this input
-    context. Ordinary input methods must not call this function
+    Sets the widget that has an input focus for this input context.
+
+    \warning Ordinary input methods must not call this function
     directly.
 
     \sa focusWidget()

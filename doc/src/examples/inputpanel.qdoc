@@ -51,8 +51,8 @@
 
     The input fields in the main window have no function other than
     to accept input. The main focus is on how the extra input panel
-    can be used to input text without pressing any real physical
-    keys.
+    can be used to input text without the need for a real keyboard or
+    keypad.
 
     \section1 Main Form Class Definition
 
@@ -61,18 +61,18 @@
     made in Qt Designer. This emphasizes the point that no widget
     specific code is needed to use input panels with Qt.
 
-    \section1 Input Panel Context Class Definition
+    \section1 MyInputPanelContext Class Definition
 
     \snippet examples/tools/inputpanel/myinputpanelcontext.h 0
 
     The \c MyInputPanelContext class inherits QInputContext, which is
     Qt's base class for handling input methods.
     \c MyInputPanelContext is responsible for managing the state of
-    the input panel, and sending input method events to the receiving
+    the input panel and sending input method events to the receiving
     widgets.
 
     The \c inputPanel member is a pointer to input panel widget
-    itself, in other words the window that will display the buttons
+    itself; in other words, the window that will display the buttons
     used for input.
 
     The \c identifierName(), \c language(), \c isComposing() and
@@ -91,21 +91,24 @@
        the input panel.
     \endlist
 
-    \snippet examples/tools/inputpanel/myinputpanelcontext.cpp 1
+    \section1 MyInputPanelContext Class Implementation
 
     In the constructor we connect to the \c characterGenerated()
     signal of the input panel, in order to receive key presses. We'll
     see how it works in detail later on.
 
-    \snippet examples/tools/inputpanel/myinputpanelcontext.cpp 1
+    \snippet examples/tools/inputpanel/myinputpanelcontext.cpp 0
 
     In the \c filterEvent() function, we must look for the two event
-    types: \c RequestSoftwareInputPanel and
-    \c CloseSoftwareInputPanel. The first type will be sent whenever
+    types: \c RequestSoftwareInputPanel and \c CloseSoftwareInputPanel.
+
+    \snippet examples/tools/inputpanel/myinputpanelcontext.cpp 1
+
+    The first type will be sent whenever
     an input capable widget wants to ask for an input panel. Qt's
     input widgets do this automatically. If we receive that type of
-    event, we call \c updatePosition() (we'll see later on what it
-    does) and then show the actual input panel widget. If we receive
+    event, we call \c updatePosition() \mdash we'll see later on what it
+    does \mdash then show the actual input panel widget. If we receive
     the \c CloseSoftwareInputPanel event, we do the opposite, and
     hide the input panel.
 
@@ -119,33 +122,37 @@
 
     Also note that we chose to use key press events in this example.
     For more complex use cases with composed text it might be more
-    appropriate to send QInputMethodEvent type of events.
+    appropriate to send QInputMethodEvent events.
+
+    The \c updatePosition() function is implemented to position the
+    actual input panel window directly below the focused widget.
 
     \snippet examples/tools/inputpanel/myinputpanelcontext.cpp 3
 
-    The \c updatePosition() function is implemented to position the
-    actual input panel window directly below the focused widget, by
-    getting the coordinates of the focused widget and translating
-    them to global coordinates.
+    It performs the positioning by obtaining the coordinates of the
+    focused widget and translating them to global coordinates.
 
-    \section1 Input Panel Class Definition
-
-    \snippet examples/tools/inputpanel/myinputpanel.h 0
+    \section1 MyInputPanel Class Definition
 
     The \c MyInputPanel class inherits QWidget and is used to display
     the input panel widget and its buttons.
 
+    \snippet examples/tools/inputpanel/myinputpanel.h 0
+
     If we look at the member variables first, we see that there is
-    \c form, which is made with Qt Designer. That contains the layout
+    \c form, which is made with Qt Designer, that contains the layout
     of buttons to click. Note that all the buttons in the layout have
-    been declared with the \c NoFocus focus policy, so that we can
+    been declared with the \c NoFocus focus policy so that we can
     maintain focus on the window receiving input instead of the
-    window containing buttons. The \c lastFocusedWidget is a helper
-    variable, which also aids in maintaining focus.
+    window containing buttons.
+
+    The \c lastFocusedWidget is a helper variable, which also aids in
+    maintaining focus.
+
     \c signalMapper is an instance of the QSignalMapper class and is
     there to help us tell which button was clicked. Since they are
-    all very similar this is a better solution since we don't have to
-    create a separate slot for each one.
+    all very similar this is a better solution than creating a separate
+    slot for each one.
 
     The functions that we implement in \c MyInputPanel are the
     following:
@@ -155,25 +162,30 @@
        so we can maintain focus in the main window.
     \o \c saveFocusWidget() is a slot which will be called whenever
        focus changes, and allows us to store the newly focused widget
-       into \c lastFocusedWidget, so that its focus can be restored
+       in \c lastFocusedWidget, so that its focus can be restored
        if it loses it to the input panel.
     \o \c buttonClicked() is a slot which will be called by the
        \c signalMapper whenever it receives a \c clicked() signal
-       any of the buttons.
+       from any of the buttons.
     \endlist
 
-    \snippet examples/tools/inputpanel/myinputpanel.cpp 0
+    \section1 MyInputPanel Class Implementation
 
     If we look at the constructor first, we have a lot of signals to
-    connect to! We connect the QApplication::focusChanged() signal
+    connect to!
+
+    We connect the QApplication::focusChanged() signal
     to the \c saveFocusWidget() signal in order to get focus updates.
-    Then comes the interesting part with the signal mapper. The
+    Then comes the interesting part with the signal mapper: the
     series of \c setMapping() calls sets the mapper up so that each
     signal from one of the buttons will result in a
     QSignalMapper::mapped() signal, with the given widget as a
-    parameter. This allows us to do general processing of clicks. The
-    next series of connections then connect each button's
-    \c clicked() signal to the signal mapper. And finally, we create
+    parameter. This allows us to do general processing of clicks.
+
+    \snippet examples/tools/inputpanel/myinputpanel.cpp 0
+
+    The next series of connections then connect each button's
+    \c clicked() signal to the signal mapper. Finally, we create
     a connection from the \c mapped() signal to the
     \c buttonClicked() slot, where we will handle it.
 
@@ -186,20 +198,41 @@
     signal, which \c MyInputPanelContext is connected to. This will
     in turn cause it to send the input to the focused widget.
 
-    \snippet examples/tools/inputpanel/myinputpanel.cpp 2
-
     In the \c saveFocusWidget() slot, we test whether the newly
     focused widget is a child of the input panel or not, using the
-    QWidget::isAncestorOf() call. If it isn't, it means that the
-    widget is outside the input panel, and we store a pointer to that
-    widget for later.
+    QWidget::isAncestorOf() call.
 
-    \snippet examples/tools/inputpanel/myinputpanel.cpp 1
+    \snippet examples/tools/inputpanel/myinputpanel.cpp 2
+
+    If it isn't, it means that the widget is outside the input panel,
+    and we store a pointer to that widget for later.
 
     In the \c event() function we handle QEvent::WindowActivate
     event, which occurs if the focus switches to the input panel.
+
+    \snippet examples/tools/inputpanel/myinputpanel.cpp 0
+
     Since we want avoid focus on the input panel, we immediately call
     QWidget::activateWindow() on the widget that last had focus, so
-    that input into that widget can continue.
-*/
+    that input into that widget can continue. We ignore any other events
+    that we receive.
 
+    \section1 Setting the Input Context
+
+    The main function for the example is very similar to those for other
+    examples. The only real difference is that it creates a
+    \c MyInputPanelContext and sets it as the application-wide input
+    context.
+
+    \snippet examples/tools/inputpanel/main.cpp main
+
+    With the input context in place, we set up and shows the user interface
+    made in Qt Designer before running the event loop.
+
+    \section1 Further Reading
+
+    This example shows a specific kind of input context that uses interaction
+    with a widget to provide input for another. Qt's input context system can
+    also be used to create other kinds of input methods. We recommend starting
+    with the QInputContext documentation if you want to explore further.
+*/

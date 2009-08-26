@@ -42,10 +42,12 @@
 #include <QtGui/QApplication>
 #include <QtGui/QWidget>
 
+//! [main]
 #include "myinputpanelcontext.h"
 #include "ui_mainform.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     QApplication app(argc, argv);
 
     MyInputPanelContext *ic = new MyInputPanelContext;
@@ -57,3 +59,4 @@ int main(int argc, char **argv) {
     widget.show();
     return app.exec();
 }
+//! [main]
