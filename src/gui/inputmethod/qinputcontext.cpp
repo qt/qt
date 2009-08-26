@@ -105,24 +105,26 @@ QT_BEGIN_NAMESPACE
     \header \o Context \o Functions
 
     \row \o Receiving information \o
-	x11FilterEvent(),
-	filterEvent(),
-	mouseHandler()
+        x11FilterEvent(),
+        filterEvent(),
+        mouseHandler()
 
     \row \o Sending back composed text \o
-	sendEvent()
+        sendEvent()
 
     \row \o State change notification \o
-	setFocusWidget(),
-	reset()
+        setFocusWidget(),
+        reset()
 
     \row \o Context information \o
-	identifierName(),
-	language(),
-	font(),
-	isComposing()
+        identifierName(),
+        language(),
+        font(),
+        isComposing()
 
     \endtable
+
+    \section1 Licensing Information
 
     \legalese
     Copyright (C) 2003-2004 immodule for Qt Project.  All rights reserved.
