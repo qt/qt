@@ -355,7 +355,7 @@ void QmlComponent::loadUrl(const QUrl &url)
 
     d->clear();
 
-    if (url.isRelative())
+    if (url.isRelative() && !url.isEmpty())
         d->url = d->engine->baseUrl().resolved(url);
     else
         d->url = url;

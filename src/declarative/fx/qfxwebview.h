@@ -70,7 +70,7 @@ public:
 protected:
     QObject *createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
 private:
-    QFxWebView *view();
+    QFxWebView *viewItem();
 };
 
 
