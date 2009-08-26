@@ -1,20 +1,20 @@
-/*! 
+/*!
 \page anchor-layout.html
 \target anchor-layout
 \title Anchor-based Layout
 
-In additional to the more traditional Fx layouts GridLayout, HorizontalLayout, and VerticalLayout, QML also provides a way to layout items using the concept of anchors. Each visual Fx item can be thought of as having a set of 6 invisible "anchor lines": \e left, \e horizontalCenter, \e right, \e top, \e verticalCenter, and \e bottom.
+In addition to the more traditional \l Grid, \l Row, and \l Column, QML also provides a way to layout items using the concept of anchors. Each item can be thought of as having a set of 6 invisible "anchor lines": \e left, \e horizontalCenter, \e right, \e top, \e verticalCenter, and \e bottom.
 
 \image edges_qml.png
 
 The Fx anchoring system allows you to define relationships between the anchor lines of different items. For example, you can write:
 
 \code
-Rectangle { id: rect1; ... }
-Rectangle { id: rect2; anchors.left: rect1.right; ... }
+Rectangle { id: Rect1; ... }
+Rectangle { id: Rect2; anchors.left: Rect1.right; ... }
 \endcode
 
-In this case, the left edge of \e rect2 is bound to the right edge of rect1, producing the following:
+In this case, the left edge of \e Rect2 is bound to the right edge of Rect1, producing the following:
 
 \image edge1.png
 
@@ -25,19 +25,19 @@ The anchoring system also allows you to specify margins and offsets. Margins spe
 The following example specifies a left margin:
 
 \code
-Rectangle { id: rect1; ... }
-Rectangle { id: rect2; anchors.left: rect1.right; anchors.leftMargin: 5; ... }
+Rectangle { id: Rect1; ... }
+Rectangle { id: Rect2; anchors.left: Rect1.right; anchors.leftMargin: 5; ... }
 \endcode
 
-In this case, a margin of 5 pixels is reserved to the left of \e rect2, producing the following:
+In this case, a margin of 5 pixels is reserved to the left of \e Rect2, producing the following:
 
 \image edge2.png
 
 You can specify multiple anchors. For example:
 
 \code
-Rectangle { id: rect1; ... }
-Rectangle { id: rect2; anchors.left: rect1.right; anchors.top: rect1.bottom; ... }
+Rectangle { id: Rect1; ... }
+Rectangle { id: Rect2; anchors.left: Rect1.right; anchors.top: Rect1.bottom; ... }
 \endcode
 
 \image edge3.png
@@ -45,9 +45,9 @@ Rectangle { id: rect2; anchors.left: rect1.right; anchors.top: rect1.bottom; ...
 By specifying multiple horizontal or vertical anchors you can control the size of an item. For example:
 
 \code
-Rectangle { id: rect1; x: 0; ... }
-Rectangle { id: rect2; anchors.left: rect1.right; anchors.right: rect3.left; ... }
-Rectangle { id: rect3; x: 150; ... }
+Rectangle { id: Rect1; x: 0; ... }
+Rectangle { id: Rect2; anchors.left: Rect1.right; anchors.right: Rect3.left; ... }
+Rectangle { id: Rect3; x: 150; ... }
 \endcode
 
 \image edge4.png
@@ -56,12 +56,12 @@ Rectangle { id: rect3; x: 150; ... }
 
 For performance reasons, you can only anchor an item to its siblings and direct parent. For example, the following anchor would be considered invalid and would produce a warning:
 
-\code
+\badcode
 Item { id: group1 }
-    Rectangle { id: rect1; ... }
+    Rectangle { id: Rect1; ... }
 }
 Item id: group2">
-    Rectangle { id: rect2; anchors.left: rect1.right; ... }    // invalid anchor!
+    Rectangle { id: Rect2; anchors.left: Rect1.right; ... }    // invalid anchor!
 }
 \endcode
 

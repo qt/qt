@@ -46,7 +46,7 @@ Rectangle {
         y: 30
         anchors.horizontalCenter: Page.horizontalCenter
     }
-    GridLayout {
+    Grid {
         id: ColorPicker
         x: 0
         anchors.bottom: Page.bottom
@@ -91,7 +91,7 @@ Rectangle {
 
 Our cell component is basically a colored rectangle.
 
-The \c anchors.fill property is a convenient way to set the size of an element. In this case the \c Rect will have the same size as its parent.
+The \c anchors.fill property is a convenient way to set the size of an element. In this case the \c Rectangle will have the same size as its parent.
 
 We bind the \c color property of this \c Rectangle to the color property of our component.
 
@@ -109,7 +109,7 @@ The \c onClicked property sets the \c color property of the element named \e Hel
 \section2 The main QML file
 
 \code
-GridLayout {
+Grid {
     id: ColorPicker
     x: 0
     anchors.bottom: Page.bottom
@@ -124,7 +124,7 @@ GridLayout {
 }
 \endcode
 
-In the main QML file, the only thing we have to do is to create a color picker by putting 6 cells with different colors in a grid layout.
+In the main QML file, the only thing we have to do is to create a color picker by putting 6 cells with different colors in a grid.
 
 [Previous: \l tutorial1] [Next: \l tutorial3]
 
