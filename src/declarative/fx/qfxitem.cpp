@@ -301,11 +301,11 @@ void QFxContents::setItem(QFxItem *item)
 
 /*
     Key filters can be installed on a QFxItem, but not removed.  Currently they
-    are only used by attached objects (which are only destroyed on Item 
-    destruction), so this isn't a problem.  If in future this becomes any form 
+    are only used by attached objects (which are only destroyed on Item
+    destruction), so this isn't a problem.  If in future this becomes any form
     of public API, they will have to support removal too.
-*/ 
-class QFxItemKeyFilter 
+*/
+class QFxItemKeyFilter
 {
 public:
     QFxItemKeyFilter(QFxItem * = 0);
@@ -321,7 +321,7 @@ private:
 QFxItemKeyFilter::QFxItemKeyFilter(QFxItem *item)
 : m_next(0)
 {
-    QFxItemPrivate *p = 
+    QFxItemPrivate *p =
         item?static_cast<QFxItemPrivate *>(QGraphicsItemPrivate::get(item)):0;
     if (p) {
         m_next = p->keyHandler;
@@ -346,7 +346,7 @@ void QFxItemKeyFilter::keyReleased(QKeyEvent *event)
 class QFxKeyNavigationAttachedPrivate : public QObjectPrivate
 {
 public:
-    QFxKeyNavigationAttachedPrivate() 
+    QFxKeyNavigationAttachedPrivate()
         : QObjectPrivate(), left(0), right(0), up(0), down(0) {}
 
     QFxItem *left;
@@ -965,7 +965,7 @@ bool QFxKeysAttachedPrivate::isConnected(const char *signalName)
 }
 
 QFxKeysAttached::QFxKeysAttached(QObject *parent)
-: QObject(*(new QFxKeysAttachedPrivate), parent), 
+: QObject(*(new QFxKeysAttachedPrivate), parent),
   QFxItemKeyFilter(qobject_cast<QFxItem*>(parent))
 {
 }
@@ -1073,18 +1073,6 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 
     This signal is emitted when the baseline offset of the item
     is changed.
-*/
-
-/*!
-    \fn void QFxItem::xChanged()
-
-    This signal is emitted when the x coordinate of the item changes.
-*/
-
-/*!
-    \fn void QFxItem::yChanged()
-
-    This signal is emitted when the y coordinate of the item changes.
 */
 
 /*!
