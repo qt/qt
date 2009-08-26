@@ -551,4 +551,24 @@
           the widget is transformed resolution independently, allowing the
           fonts and style to stay crisp when zoomed in. (Note that the effect
           of resolution independence depends on the style.)
+
+    \section1 Performance
+
+      \section2 Floating Point Instructions
+
+        In order to accurately and quickly apply transformations and effects to
+        items, Graphics View is built with the assumption that the user's hardware
+        is able to provide reasonable performance for floating point instructions.
+
+        Many workstations and desktop computers are equipped with suitable hardware
+        to accelerate this kind of computation, but some embedded devices may only
+        provide libraries to handle mathematical operations or emulate floating
+        point instructions in software.
+
+        As a result, certain kinds of effects may be slower than expected on certain
+        devices. It may be possible to compensate for this performance hit by making
+        optimizations in other areas; for example, by using \l{#OpenGL Rendering}{OpenGL}
+        to render a scene. However, any such optimizations may themselves cause a
+        reduction in performance if they also rely on the presence of floating point
+        hardware.
 */
