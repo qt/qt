@@ -48,8 +48,6 @@
 #include <qpaintdevice.h>
 #include <qvarlengtharray.h>
 
-//#define QT_DIRECTFB_DEBUG_SURFACES 1
-
 QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *scr)
     : QDirectFBPaintDevice(scr)
 #ifndef QT_NO_DIRECTFB_WM
@@ -418,7 +416,6 @@ void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
 #endif
 }
 
-
 void QDirectFBWindowSurface::beginPaint(const QRegion &)
 {
     if (!engine)
@@ -427,43 +424,7 @@ void QDirectFBWindowSurface::beginPaint(const QRegion &)
 
 void QDirectFBWindowSurface::endPaint(const QRegion &)
 {
-#ifdef QT_DIRECTFB_DEBUG_SURFACES
-    if (bufferImages.count()) {
-        qDebug("QDirectFBWindowSurface::endPaint() this=%p", this);
-
-        foreach(QImage* bufferImg, bufferImages)
-            qDebug("   Deleting buffer image %p", bufferImg);
-    }
-#endif
-
-    qDeleteAll(bufferImages);
-    bufferImages.clear();
     unlockDirectFB();
-}
-
-
-QImage *QDirectFBWindowSurface::buffer(const QWidget *widget)
-{
-    if (!lockedImage)
-        return 0;
-
-    const QRect rect = QRect(offset(widget), widget->size())
-                       & lockedImage->rect();
-    if (rect.isEmpty())
-        return 0;
-
-    QImage *img = new QImage(lockedImage->scanLine(rect.y())
-                             + rect.x() * (lockedImage->depth() / 8),
-                             rect.width(), rect.height(),
-                             lockedImage->bytesPerLine(),
-                             lockedImage->format());
-    bufferImages.append(img);
-
-#ifdef QT_DIRECTFB_DEBUG_SURFACES
-    qDebug("QDirectFBWindowSurface::buffer() Created & returned %p", img);
-#endif
-
-    return img;
 }
 
 IDirectFBSurface *QDirectFBWindowSurface::surfaceForWidget(const QWidget *widget, QRect *rect) const

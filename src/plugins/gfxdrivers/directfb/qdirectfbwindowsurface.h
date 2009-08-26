@@ -88,7 +88,6 @@ public:
     void beginPaint(const QRegion &);
     void endPaint(const QRegion &);
 
-    QImage *buffer(const QWidget *widget);
     IDirectFBSurface *surfaceForWidget(const QWidget *widget, QRect *rect) const;
 private:
     void updateFormat();
@@ -105,7 +104,6 @@ private:
     } mode;
 #endif
 
-    QList<QImage*> bufferImages;
     DFBSurfaceFlipFlags flipFlags;
     bool boundingRectFlip;
 #ifdef QT_DIRECTFB_TIMING
