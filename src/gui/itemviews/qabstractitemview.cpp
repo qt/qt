@@ -1661,9 +1661,6 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
     bool edited = edit(index, trigger, event);
 
-    if (d->selectionModel)
-        d->selectionModel->select(index, selectionCommand(index, event));
-
     setState(NoState);
 
     if (click) {
