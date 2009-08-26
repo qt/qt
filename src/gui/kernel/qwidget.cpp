@@ -971,7 +971,10 @@ struct QWidgetExceptionCleaner
     /* this cleans up when the constructor throws an exception */
     static inline void cleanup(QWidget *that, QWidgetPrivate *d)
     {
-#ifndef QT_NO_EXCEPTIONS
+#ifdef QT_NO_EXCEPTIONS
+        Q_UNUSED(that);
+        Q_UNUSED(d);
+#else
         QWidgetPrivate::allWidgets->remove(that);
         if (d->focus_next != that) {
             if (d->focus_next)

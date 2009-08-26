@@ -93,19 +93,11 @@ void QLineEditPrivate::_q_completionHighlighted(QString newText)
 
 #endif // QT_NO_COMPLETER
 
-void QLineEditPrivate::_q_clipboardChanged()
-{
-}
-
 void QLineEditPrivate::_q_handleWindowActivate()
 {
     Q_Q(QLineEdit);
     if (!q->hasFocus() && control->hasSelectedText())
         control->deselect();
-}
-
-void QLineEditPrivate::_q_deleteSelected()
-{
 }
 
 void QLineEditPrivate::_q_textEdited(const QString &text)

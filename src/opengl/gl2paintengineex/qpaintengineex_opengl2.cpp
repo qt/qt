@@ -1499,7 +1499,7 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
     if (op == Qt::ReplaceClip && !d->hasClipOperations())
         op = Qt::IntersectClip;
 
-    if (!path.isEmpty() && op == Qt::IntersectClip && (path.hints() & QVectorPath::RectangleHint)) {
+    if (!path.isEmpty() && op == Qt::IntersectClip && (path.shape() == QVectorPath::RectangleHint)) {
         const QPointF* const points = reinterpret_cast<const QPointF*>(path.points());
         QRectF rect(points[0], points[2]);
 

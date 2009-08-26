@@ -2459,7 +2459,7 @@ QObject *QObject::sender() const
 {
     Q_D(const QObject);
 
-    QMutexLocker(signalSlotLock(this));
+    QMutexLocker locker(signalSlotLock(this));
     if (!d->currentSender)
         return 0;
 

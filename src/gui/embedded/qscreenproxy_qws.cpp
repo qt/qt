@@ -45,6 +45,7 @@
 
 #include <qregexp.h>
 
+QT_BEGIN_NAMESPACE
 #ifndef QT_NO_QWS_CURSOR
 
 /*!
@@ -628,5 +629,7 @@ QRegion QProxyScreen::region() const
     else
         return QScreen::region();
 }
+
+QT_END_NAMESPACE
 
 #endif // QT_NO_QWS_PROXYSCREEN

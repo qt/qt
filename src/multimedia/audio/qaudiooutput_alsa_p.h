@@ -66,6 +66,8 @@
 #include <QtMultimedia/qaudiodeviceinfo.h>
 #include <QtMultimedia/qaudioengine.h>
 
+QT_BEGIN_NAMESPACE
+
 class OutputPrivate;
 
 class QAudioOutputPrivate : public QAbstractAudioOutput
@@ -155,5 +157,7 @@ public:
 private:
     QAudioOutputPrivate *audioDevice;
 };
+
+QT_END_NAMESPACE
 
 #endif

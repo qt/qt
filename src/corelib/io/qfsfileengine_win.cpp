@@ -1289,6 +1289,8 @@ static QString readSymLink(const QString &link)
         qFree(rdb);
         CloseHandle(handle);
     }
+#else
+    Q_UNUSED(link);
 #endif // Q_OS_WINCE
     return result;
 }
