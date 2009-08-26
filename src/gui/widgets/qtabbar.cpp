@@ -1836,7 +1836,8 @@ void QTabBarPrivate::moveTabFinished(int index)
     }
 #endif //QT_NO_ANIMATION
     if (allAnimationsFinished && cleanup) {
-        movingTab->setVisible(false); // We might not get a mouse release
+        if(movingTab)
+            movingTab->setVisible(false); // We might not get a mouse release
         for (int i = 0; i < tabList.count(); ++i) {
             tabList[i].dragOffset = 0;
         }
