@@ -278,7 +278,7 @@ qsreal ToInteger(qsreal n)
 
 QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolveMode) const
 {
-    Q_ASSERT(isJSC());
+    Q_ASSERT(isObject());
     JSC::ExecState *exec = engine->currentFrame;
     JSC::JSObject *object = jscValue.getObject();
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
@@ -301,7 +301,7 @@ QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolv
 
 QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
 {
-    Q_ASSERT(isJSC());
+    Q_ASSERT(isObject());
     JSC::ExecState *exec = engine->currentFrame;
     JSC::JSObject *object = jscValue.getObject();
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
@@ -784,7 +784,7 @@ QScriptValue &QScriptValue::operator=(const QScriptValue &other)
 bool QScriptValue::isError() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return false;
     return d->jscValue.isObject(&JSC::ErrorInstance::info);
 }
@@ -798,7 +798,7 @@ bool QScriptValue::isError() const
 bool QScriptValue::isArray() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return false;
     return d->jscValue.isObject(&JSC::JSArray::info);
 }
@@ -812,7 +812,7 @@ bool QScriptValue::isArray() const
 bool QScriptValue::isDate() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return false;
     return d->jscValue.isObject(&JSC::DateInstance::info);
 }
@@ -826,7 +826,7 @@ bool QScriptValue::isDate() const
 bool QScriptValue::isRegExp() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return false;
     return d->jscValue.isObject(&JSC::RegExpObject::info);
 }
@@ -841,7 +841,7 @@ bool QScriptValue::isRegExp() const
 QScriptValue QScriptValue::prototype() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return QScriptValue();
     return d->engine->scriptValueFromJSCValue(JSC::asObject(d->jscValue)->prototype());
 }
@@ -860,7 +860,7 @@ QScriptValue QScriptValue::prototype() const
 void QScriptValue::setPrototype(const QScriptValue &prototype)
 {
     Q_D(QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return;
     if (prototype.isValid() && prototype.engine()
         && (prototype.engine() != engine())) {
@@ -890,7 +890,7 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
 QScriptValue QScriptValue::scope() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return QScriptValue();
     // ### make hidden property
     return d->property(QLatin1String("__qt_scope__"), QScriptValue::ResolveLocal);
@@ -902,7 +902,7 @@ QScriptValue QScriptValue::scope() const
 void QScriptValue::setScope(const QScriptValue &scope)
 {
     Q_D(QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return;
     if (scope.isValid() && scope.engine()
         && (scope.engine() != engine())) {
@@ -934,7 +934,7 @@ void QScriptValue::setScope(const QScriptValue &scope)
 bool QScriptValue::instanceOf(const QScriptValue &other) const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject() || !other.isObject())
+    if (!d || !d->isObject() || !other.isObject())
         return false;
     if (other.engine() != engine()) {
         qWarning("QScriptValue::instanceof: "
@@ -1693,7 +1693,7 @@ void QScriptValue::setProperty(const QString &name, const QScriptValue &value,
                                const PropertyFlags &flags)
 {
     Q_D(QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return;
     JSC::ExecState *exec = d->engine->currentFrame;
     d->setProperty(JSC::Identifier(exec, name), value, flags);
@@ -1718,7 +1718,7 @@ QScriptValue QScriptValue::property(const QString &name,
                                     const ResolveFlags &mode) const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return QScriptValue();
     return d->property(name, mode);
 }
@@ -1740,7 +1740,7 @@ QScriptValue QScriptValue::property(quint32 arrayIndex,
                                     const ResolveFlags &mode) const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return QScriptValue();
     return d->property(arrayIndex, mode);
 }
@@ -1761,7 +1761,7 @@ void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue &value,
                                const PropertyFlags &flags)
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return;
     if (value.engine() && (value.engine() != engine())) {
         qWarning("QScriptValue::setProperty() failed: "
@@ -1811,7 +1811,7 @@ QScriptValue QScriptValue::property(const QScriptString &name,
                                     const ResolveFlags &mode) const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject() || !name.isValid())
+    if (!d || !d->isObject() || !name.isValid())
         return QScriptValue();
     return d->property(name.d_ptr->identifier, mode);
 }
@@ -1834,7 +1834,7 @@ void QScriptValue::setProperty(const QScriptString &name,
                                const PropertyFlags &flags)
 {
     Q_D(QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject() || !name.isValid())
+    if (!d || !d->isObject() || !name.isValid())
         return;
     d->setProperty(name.d_ptr->identifier, value, flags);
 }
@@ -1849,7 +1849,7 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString &name,
                                                         const ResolveFlags &mode) const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return 0;
     JSC::ExecState *exec = d->engine->currentFrame;
     return d->propertyFlags(JSC::Identifier(exec, name), mode);
@@ -1868,7 +1868,7 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString &nam
                                                         const ResolveFlags &mode) const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject() || !name.isValid())
+    if (!d || !d->isObject() || !name.isValid())
         return 0;
     return d->propertyFlags(name.d_ptr->identifier, mode);
 }
@@ -2272,7 +2272,7 @@ bool QScriptValue::isUndefined() const
 bool QScriptValue::isObject() const
 {
     Q_D(const QScriptValue);
-    return d && d->isJSC() && d->jscValue.isObject();
+    return d && d->isObject();
 }
 
 /*!
@@ -2319,10 +2319,9 @@ bool QScriptValue::isQObject() const
 bool QScriptValue::isQMetaObject() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return false;
     return JSC::asObject(d->jscValue)->isObject(&QScript::QMetaObjectWrapperObject::info);
-    return false;
 }
 
 /*!
@@ -2346,7 +2345,7 @@ bool QScriptValue::isValid() const
 QScriptValue QScriptValue::data() const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return QScriptValue();
     if (d->jscValue.isObject(&QScriptObject::info)) {
         QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
@@ -2368,7 +2367,7 @@ QScriptValue QScriptValue::data() const
 void QScriptValue::setData(const QScriptValue &data)
 {
     Q_D(QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject())
+    if (!d || !d->isObject())
         return;
     JSC::JSValue other = d->engine->scriptValueToJSCValue(data);
     if (d->jscValue.isObject(&QScriptObject::info)) {
