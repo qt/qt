@@ -1483,6 +1483,7 @@ QAbstractItemModel::~QAbstractItemModel()
 
 /*!
     \fn void QAbstractItemModel::rowsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationRow)
+    \since 4.6
 
     This signal is emitted after rows have been moved within the
     model. The items between \a sourceStart and \a sourceEnd
@@ -1498,11 +1499,44 @@ QAbstractItemModel::~QAbstractItemModel()
 
 /*!
     \fn void QAbstractItemModel::rowsAboutToBeMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationRow)
+    \since 4.6
 
     This signal is emitted just before rows are moved within the
     model. The items that will be moved are those between \a sourceStart and \a sourceEnd
     inclusive, under the given \a sourceParent item. They will be moved to \a destinationParent
     starting at the row \a destinationRow.
+
+    \bold{Note:} Components connected to this signal use it to adapt to changes
+    in the model's dimensions. It can only be emitted by the QAbstractItemModel
+    implementation, and cannot be explicitly emitted in subclass code.
+
+    \sa beginMoveRows()
+*/
+
+/*!
+    \fn void QAbstractItemModel::columnsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationColumn)
+    \since 4.6
+
+    This signal is emitted after columns have been moved within the
+    model. The items between \a sourceStart and \a sourceEnd
+    inclusive, under the given \a sourceParent item have been moved to \a destinationParent
+    starting at the column \a destinationColumn.
+
+    \bold{Note:} Components connected to this signal use it to adapt to changes
+    in the model's dimensions. It can only be emitted by the QAbstractItemModel
+    implementation, and cannot be explicitly emitted in subclass code.
+
+    \sa beginMoveRows()
+*/
+
+/*!
+    \fn void QAbstractItemModel::columnsAboutToBeMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationColumn)
+    \since 4.6
+
+    This signal is emitted just before columns are moved within the
+    model. The items that will be moved are those between \a sourceStart and \a sourceEnd
+    inclusive, under the given \a sourceParent item. They will be moved to \a destinationParent
+    starting at the column \a destinationColumn.
 
     \bold{Note:} Components connected to this signal use it to adapt to changes
     in the model's dimensions. It can only be emitted by the QAbstractItemModel
