@@ -16,12 +16,16 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include "audiooutput.h"
 #include "audioplayer.h"
 #include "defs.h"
 #include "dummyplayer.h"
-#include "mediaobject.h"
+#include "utils.h"
 #include "utils.h"
 #include "videoplayer.h"
+#include "videowidget.h"
+
+#include "mediaobject.h"
 
 #include <QDir>
 
@@ -34,8 +38,8 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::MediaObject::MediaObject(QObject *parent)  :   QObject(parent)
-        ,   m_recognizerOpened(false)
+MMF::MediaObject::MediaObject(QObject *parent) : MMF::MediaNode::MediaNode(parent)
+                                               , m_recognizerOpened(false)
 {
     m_player.reset(new DummyPlayer());
 
@@ -365,6 +369,42 @@ void MMF::MediaObject::setVideoOutput(VideoOutput* videoOutput)
     m_player->setVideoOutput(videoOutput);
 }
 
+
+AbstractPlayer *MediaObject::abstractPlayer() const
+{
+    return m_player.data();
+}
+
+bool MediaObject::connectMediaNode(MediaNode *target)
+{
+    TRACE_CONTEXT(Backend::connect, EBackend);
+
+    MediaNode::connectMediaNode(target);
+
+    bool result = false;
+
+    {
+        AudioOutput *const audioOutput = qobject_cast<AudioOutput *>(target);
+
+        if (audioOutput) {
+            TRACE("this 0x%08x -> audioOutput 0x%08x", this, audioOutput);
+            audioOutput->setVolumeObserver(this);
+            return true;
+        }
+    }
+
+    {
+        VideoWidget *const videoWidget = qobject_cast<VideoWidget *>(target);
+
+        if (videoWidget) {
+            TRACE("this 0x%08x -> videoWidget 0x%08x", this, videoWidget);
+            this->setVideoOutput(&videoWidget->videoOutput());
+            return true;
+        }
+    }
+
+    return false;
+}
 
 QT_END_NAMESPACE
 

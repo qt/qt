@@ -44,9 +44,9 @@ namespace MMF
  * @short Wrapper over MMF audio client utility
  */
 class AudioPlayer   :   public AbstractMediaPlayer
-        ,   public MPlayerObserverType    // typedef
+                    ,   public MPlayerObserverType    // typedef
 #ifdef QT_PHONON_MMF_AUDIO_DRM
-        ,   public MAudioLoadingObserver
+                    ,   public MAudioLoadingObserver
 #endif
 {
     Q_OBJECT
@@ -86,6 +86,7 @@ public:
     virtual void MapcPlayComplete(TInt aError);
 #endif
 
+    CPlayerType *player() const;
 Q_SIGNALS:
     void totalTimeChanged(qint64 length);
     void finished();
@@ -99,7 +100,6 @@ private:
      * CMdaAudioPlayerUtility and CDrmPlayerUtility
      */
     CPlayerType*         m_player;
-
 };
 }
 }

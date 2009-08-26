@@ -27,6 +27,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 // For recognizer
 #include <apgcli.h>
 
+#include "abstractplayer.h"
+#include "mmf_medianode.h"
 #include "defs.h"
 #include "volumeobserver.h"
 
@@ -42,9 +44,9 @@ class VideoOutput;
 /**
  * @short Facade class which wraps MMF client utility instance
  */
-class MediaObject : public QObject
-        , public MediaObjectInterface
-        , public VolumeObserver
+class MediaObject : public MediaNode
+                  , public MediaObjectInterface
+                  , public VolumeObserver
 {
     Q_OBJECT
     Q_INTERFACES(Phonon::MediaObjectInterface)
@@ -78,7 +80,14 @@ public:
     // VolumeObserver
     void volumeChanged(qreal volume);
 
-    void setVideoOutput(VideoOutput* videoOutput);
+    // MediaNode
+    virtual bool connectMediaNode(MediaNode *target);
+
+    /**
+     * This class owns the AbstractPlayer, and will delete it upon
+     * destruction.
+     */
+    AbstractPlayer *abstractPlayer() const;
 
 Q_SIGNALS:
     void totalTimeChanged(qint64 length);
@@ -109,6 +118,8 @@ private:
     static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
 
 private:
+    void setVideoOutput(VideoOutput* videoOutput);
+
     // Audio / video media type recognition
     bool                                m_recognizerOpened;
     RApaLsSession                       m_recognizer;

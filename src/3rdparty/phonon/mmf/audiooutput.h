@@ -19,6 +19,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_AUDIOOUTPUT_H
 #define PHONON_MMF_AUDIOOUTPUT_H
 
+#include "mmf_medianode.h"
 #include <phonon/audiooutputinterface.h>
 
 QT_BEGIN_NAMESPACE
@@ -46,8 +47,8 @@ class VolumeObserver;
  *
  * @author Frans Englich<frans.englich@nokia.com>
  */
-class AudioOutput : public QObject
-        , public AudioOutputInterface
+class AudioOutput : public MediaNode
+                  , public AudioOutputInterface
 {
     Q_OBJECT
     Q_INTERFACES(Phonon::AudioOutputInterface)

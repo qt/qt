@@ -33,7 +33,7 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AudioOutput::AudioOutput(Backend *, QObject *parent)   : QObject(parent)
+MMF::AudioOutput::AudioOutput(Backend *, QObject *parent) : MediaNode(parent)
         , m_volume(InitialVolume)
         , m_observer(NULL)
 {

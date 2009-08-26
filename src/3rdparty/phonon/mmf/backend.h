@@ -29,7 +29,7 @@ namespace Phonon
 namespace MMF
 {
 class Backend : public QObject
-        , public BackendInterface
+              , public BackendInterface
 {
     Q_OBJECT
     Q_INTERFACES(Phonon::BackendInterface)

@@ -44,7 +44,7 @@ static const qreal DefaultSaturation = 1.0;
 //-----------------------------------------------------------------------------
 
 MMF::VideoWidget::VideoWidget(QWidget* parent)
-        :   QObject(parent)
+        :   MediaNode(parent)
         ,   m_widget(new VideoOutput(parent))
         ,   m_aspectRatio(DefaultAspectRatio)
         ,   m_brightness(DefaultBrightness)

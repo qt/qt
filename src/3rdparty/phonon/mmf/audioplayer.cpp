@@ -220,6 +220,12 @@ void MMF::AudioPlayer::MapcPlayComplete(TInt aError)
     TRACE_EXIT_0();
 }
 
+CPlayerType *MMF::AudioPlayer::player() const
+{
+    return m_player;
+}
+
+
 #ifdef QT_PHONON_MMF_AUDIO_DRM
 void MMF::AudioPlayer::MaloLoadingStarted()
 {

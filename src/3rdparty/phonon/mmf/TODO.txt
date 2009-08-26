@@ -37,4 +37,7 @@ Compare video frame rate obtained using default S60 media player and Qt demo app
 * Implement MMF::Backend::disconnectNodes
 This should probably be left for now, particularly until audio effects have been implemented.  This is because the node connection mechanism may need to be refactored slightly once we start building up longer graphs (e.g. MediaObject -> Effect -> Effect -> AudioOutput).
 
+* Before merging, ensure the UID3 is properly allocated, see the .pro file.
+
+* Metadata is not implemented.
 

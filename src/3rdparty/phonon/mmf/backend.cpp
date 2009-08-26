@@ -23,8 +23,11 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <apmrec.h> // for CDataTypeArray
 #include <apmstd.h> // for TDataType
 
-#include "backend.h"
+#include "abstractaudioeffect.h"
 #include "audiooutput.h"
+#include "audioplayer.h"
+#include "backend.h"
+#include "effectfactory.h"
 #include "mediaobject.h"
 #include "utils.h"
 #include "videowidget.h"
@@ -48,7 +51,7 @@ Backend::Backend(QObject *parent)   : QObject(parent)
     TRACE_EXIT_0();
 }
 
-QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const QList<QVariant> &)
+QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const QList<QVariant> &args)
 {
     TRACE_CONTEXT(Backend::createObject, EBackend);
     TRACE_ENTRY("class %d", c);
@@ -61,15 +64,20 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
         break;
 
     case MediaObjectClass:
-        result =  new MediaObject(parent);
+        result = new MediaObject(parent);
         break;
 
     case VolumeFaderEffectClass:
     case VisualizationClass:
     case VideoDataOutputClass:
     case EffectClass:
-        break;
+    {
+        Q_ASSERT(args.count() == 1);
+        Q_ASSERT(args.first().type() == QVariant::Int);
+        const AbstractAudioEffect::Type effect = AbstractAudioEffect::Type(args.first().toInt());
 
+        return EffectFactory::createAudioEffect(effect, parent);
+    }
     case VideoWidgetClass:
         result = new VideoWidget(qobject_cast<QWidget *>(parent));
         break;
@@ -81,14 +89,32 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
     TRACE_RETURN("0x%08x", result);
 }
 
-QList<int> Backend::objectDescriptionIndexes(ObjectDescriptionType) const
+QList<int> Backend::objectDescriptionIndexes(ObjectDescriptionType type) const
 {
-    return QList<int>();
+    TRACE_CONTEXT(Backend::objectDescriptionIndexes, EAudioApi);
+    TRACE_ENTRY_0();
+    QList<int> retval;
+
+    switch(type)
+    {
+        case EffectType:
+            retval.append(EffectFactory::effectIndexes());
+        default:
+            ;
+    }
+
+    TRACE_EXIT_0();
+    return retval;
 }
 
-QHash<QByteArray, QVariant> Backend::objectDescriptionProperties(ObjectDescriptionType, int) const
+QHash<QByteArray, QVariant> Backend::objectDescriptionProperties(ObjectDescriptionType type, int index) const
 {
-    return QHash<QByteArray, QVariant>();
+    TRACE_CONTEXT(Backend::connectNodes, EBackend);
+
+    if (type == EffectType)
+        return EffectFactory::audioEffectDescriptions(AbstractAudioEffect::Type(index));
+    else 
+        return QHash<QByteArray, QVariant>();
 }
 
 bool Backend::startConnectionChange(QSet<QObject *>)
@@ -100,40 +126,25 @@ bool Backend::connectNodes(QObject *source, QObject *target)
 {
     TRACE_CONTEXT(Backend::connectNodes, EBackend);
     TRACE_ENTRY("source 0x%08x target 0x%08x", source, target);
+    Q_ASSERT(qobject_cast<MediaNode *>(source));
+    Q_ASSERT(qobject_cast<MediaNode *>(target));
 
-    MediaObject *const mediaObject = qobject_cast<MediaObject *>(source);
-    AudioOutput *const audioOutput = qobject_cast<AudioOutput *>(target);
-    VideoWidget *const videoWidget = qobject_cast<VideoWidget *>(target);
+    MediaNode *const mediaSource = static_cast<MediaNode *>(source);
+    MediaNode *const mediaTarget = static_cast<MediaNode *>(target);
 
-    bool result = false;
+    mediaSource->connectMediaNode(mediaTarget);
 
-    if (mediaObject and audioOutput) {
-        TRACE("mediaObject 0x%08x -> audioOutput 0x%08x", mediaObject, audioOutput);
-        audioOutput->setVolumeObserver(mediaObject);
-        result = true;
-    }
-
-    if (mediaObject and videoWidget) {
-        TRACE("mediaObject 0x%08x -> videoWidget 0x%08x", mediaObject, videoWidget);
-        mediaObject->setVideoOutput(&videoWidget->videoOutput());
-        result = true;
-    }
-
-    TRACE_RETURN("%d", result);
+    return false;
 }
 
 bool Backend::disconnectNodes(QObject *source, QObject *target)
 {
     TRACE_CONTEXT(Backend::disconnectNodes, EBackend);
     TRACE_ENTRY("source 0x%08x target 0x%08x", source, target);
+    Q_ASSERT(qobject_cast<MediaNode *>(source));
+    Q_ASSERT(qobject_cast<MediaNode *>(target));
 
-    MediaObject *const mediaObject = qobject_cast<MediaObject *>(source);
-    AudioOutput *const audioOutput = qobject_cast<AudioOutput *>(target);
-    VideoWidget *const videoWidget = qobject_cast<VideoWidget *>(target);
-
-    bool result = true;
-
-    // TODO: disconnection
+    const bool result = static_cast<MediaNode *>(source)->disconnectMediaNode(static_cast<MediaNode *>(target));
 
     TRACE_RETURN("%d", result);
 }

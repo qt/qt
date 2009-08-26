@@ -19,9 +19,11 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_VIDEOWIDGET_H
 #define PHONON_MMF_VIDEOWIDGET_H
 
+#include "mmf_medianode.h"
+
 #include <QtGui/QWidget>
-#include <phonon/videowidget.h>
-#include <phonon/videowidgetinterface.h>
+#include <Phonon/VideoWidget>
+#include <Phonon/VideoWidgetInterface>
 
 QT_BEGIN_NAMESPACE
 
@@ -31,8 +33,8 @@ namespace MMF
 {
 class VideoOutput;
 
-class VideoWidget       :   public QObject
-        ,   public Phonon::VideoWidgetInterface
+class VideoWidget       :   public MediaNode
+                        ,   public Phonon::VideoWidgetInterface
 {
     Q_OBJECT
     Q_INTERFACES(Phonon::VideoWidgetInterface)

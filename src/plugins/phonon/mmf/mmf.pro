@@ -1,3 +1,2 @@
-TEMPLATE	= subdirs
-SUBDIRS		= objectdump plugin
-
+TEMPLATE    = subdirs
+SUBDIRS     = objectdump plugin
