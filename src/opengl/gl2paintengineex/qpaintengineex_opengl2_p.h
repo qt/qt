@@ -170,6 +170,7 @@ public:
     void setBrush(const QBrush* brush);
 
     void transferMode(EngineMode newMode);
+    void resetGLState();
 
     // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
     void fill(const QVectorPath &path);

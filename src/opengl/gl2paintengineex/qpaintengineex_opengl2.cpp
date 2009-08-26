@@ -710,16 +710,20 @@ void QGL2PaintEngineEx::beginNativePainting()
 #endif
 
     d->lastTexture = GLuint(-1);
+    d->resetGLState();
 
+    d->needsSync = true;
+}
+
+void QGL2PaintEngineExPrivate::resetGLState()
+{
     glDisable(GL_BLEND);
     glActiveTexture(GL_TEXTURE0);
-
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_SCISSOR_TEST);
     glDepthFunc(GL_LESS);
     glDepthMask(true);
     glClearDepth(1);
-
-    d->needsSync = true;
 }
 
 void QGL2PaintEngineEx::endNativePainting()
@@ -1363,6 +1367,8 @@ bool QGL2PaintEngineEx::end()
 #endif
     d->drawable.doneCurrent();
     d->ctx->d_ptr->active_engine = 0;
+
+    d->resetGLState();
 
     return false;
 }
