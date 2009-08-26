@@ -378,7 +378,7 @@ public:
 
     static QFxKeyNavigationAttached *qmlAttachedProperties(QObject *);
 
-signals:
+Q_SIGNALS:
     void changed();
 
 private:
@@ -860,7 +860,7 @@ public:
 
     static QFxKeysAttached *qmlAttachedProperties(QObject *);
 
-signals:
+Q_SIGNALS:
     void enabledChanged();
     void pressed(QFxKeyEvent *event);
     void released(QFxKeyEvent *event);

@@ -57,7 +57,7 @@ public:
     int row() const;
     int column() const;
 
-signals:
+Q_SIGNALS:
     void posChanged();
 
 private:

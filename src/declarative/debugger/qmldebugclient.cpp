@@ -57,7 +57,7 @@ public:
 
     QStringList enabled;
     QHash<QString, QmlDebugClient *> plugins;
-public slots:
+public Q_SLOTS:
     void connected();
     void readyRead();
 };
