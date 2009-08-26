@@ -252,6 +252,13 @@ private: // can only be emitted by QAbstractItemModel
     void modelAboutToBeReset();
     void modelReset();
 
+    void rowsAboutToBeMoved( const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationRow );
+    void rowsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int row );
+
+    void columnsAboutToBeMoved( const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationColumn );
+    void columnsMoved( const QModelIndex &parent, int start, int end, const QModelIndex &destination, int column );
+
+
 public Q_SLOTS:
     virtual bool submit();
     virtual void revert();
@@ -272,11 +279,17 @@ protected:
     void beginRemoveRows(const QModelIndex &parent, int first, int last);
     void endRemoveRows();
 
+    bool beginMoveRows(const QModelIndex &sourceParent, int sourceFirst, int sourceLast, const QModelIndex &destinationParent, int destinationRow);
+    void endMoveRows();
+
     void beginInsertColumns(const QModelIndex &parent, int first, int last);
     void endInsertColumns();
 
     void beginRemoveColumns(const QModelIndex &parent, int first, int last);
     void endRemoveColumns();
+
+    bool beginMoveColumns(const QModelIndex &sourceParent, int sourceFirst, int sourceLast, const QModelIndex &destinationParent, int destinationColumn);
+    void endMoveColumns();
 
     void reset();
 

@@ -2933,7 +2933,7 @@ class OverloadObject : public QObject
     friend class tst_QObject;
     Q_OBJECT
     signals:
-        void sig(int i, char c, qreal m = 12) const;
+        void sig(int i, char c, qreal m = 12);
         void sig(int i, int j = 12);
         void sig(QObject *o, QObject *p, QObject *q = 0, QObject *r = 0) const;
         void other(int a = 0);

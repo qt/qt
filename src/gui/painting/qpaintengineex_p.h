@@ -204,6 +204,9 @@ public:
 
     virtual void sync() {}
 
+    virtual void beginNativePainting() {}
+    virtual void endNativePainting() {}
+
     virtual QPixmapFilter *createPixmapFilter(int /*type*/) const { return 0; }
 
 protected:
