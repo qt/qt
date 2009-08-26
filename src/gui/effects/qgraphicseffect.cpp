@@ -61,13 +61,13 @@
     Qt provides the following standard effects:
 
     \list
-    \o QGraphicsGrayScaleEffect - renders the item in shades of gray
+    \o QGraphicsGrayscaleEffect - renders the item in shades of gray
     \o QGraphicsColorizeEffect - renders the item in shades of any given color
     \o QGraphicsPixelizeEffect - pixelizes the item with any pixel size
     \o QGraphicsBlurEffect - blurs the item by a given radius
     \o QGraphicsDropShadowEffect - renders a dropshadow behind the item
     \o QGraphicsOpacityEffect - renders the item with an opacity
-    \o QGrahicsShaderEffect - renders the item with a pixel shader fragment
+    \o QGraphicsShaderEffect - renders the item with a pixel shader fragment
     \endlist
 
 
