@@ -243,6 +243,9 @@ public:
     QPalette palette() const;
     void setPalette(const QPalette &palette);
 
+    bool isActive() const;
+    QGraphicsItem *activePanel() const;
+    void setActivePanel(QGraphicsItem *item);
     QGraphicsWidget *activeWindow() const;
     void setActiveWindow(QGraphicsWidget *widget);
 

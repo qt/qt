@@ -376,7 +376,7 @@ void tst_QGraphicsView::interactive()
     view.show();
 
     QTestEventLoop::instance().enterLoop(1);
-    QCOMPARE(item->events.size(), 0);
+    QCOMPARE(item->events.size(), 1); // activate
 
     QPoint itemPoint = view.mapFromScene(item->scenePos());
 
@@ -384,16 +384,16 @@ void tst_QGraphicsView::interactive()
 
     for (int i = 0; i < 100; ++i) {
         sendMousePress(view.viewport(), itemPoint);
-        QCOMPARE(item->events.size(), i * 5 + 2);
+        QCOMPARE(item->events.size(), i * 5 + 3);
         QCOMPARE(item->events.at(item->events.size() - 2), QEvent::GrabMouse);
         QCOMPARE(item->events.at(item->events.size() - 1), QEvent::GraphicsSceneMousePress);
         sendMouseRelease(view.viewport(), itemPoint);
-        QCOMPARE(item->events.size(), i * 5 + 4);
+        QCOMPARE(item->events.size(), i * 5 + 5);
         QCOMPARE(item->events.at(item->events.size() - 2), QEvent::GraphicsSceneMouseRelease);
         QCOMPARE(item->events.at(item->events.size() - 1), QEvent::UngrabMouse);
         QContextMenuEvent contextEvent(QContextMenuEvent::Mouse, itemPoint, view.mapToGlobal(itemPoint));
         QApplication::sendEvent(view.viewport(), &contextEvent);
-        QCOMPARE(item->events.size(), i * 5 + 5);
+        QCOMPARE(item->events.size(), i * 5 + 6);
         QCOMPARE(item->events.last(), QEvent::GraphicsSceneContextMenu);
     }
 
@@ -401,14 +401,14 @@ void tst_QGraphicsView::interactive()
 
     for (int i = 0; i < 100; ++i) {
         sendMousePress(view.viewport(), itemPoint);
-        QCOMPARE(item->events.size(), 500);
+        QCOMPARE(item->events.size(), 501);
         QCOMPARE(item->events.last(), QEvent::GraphicsSceneContextMenu);
         sendMouseRelease(view.viewport(), itemPoint);
-        QCOMPARE(item->events.size(), 500);
+        QCOMPARE(item->events.size(), 501);
         QCOMPARE(item->events.last(), QEvent::GraphicsSceneContextMenu);
         QContextMenuEvent contextEvent(QContextMenuEvent::Mouse, itemPoint, view.mapToGlobal(itemPoint));
         QApplication::sendEvent(view.viewport(), &contextEvent);
-        QCOMPARE(item->events.size(), 500);
+        QCOMPARE(item->events.size(), 501);
         QCOMPARE(item->events.last(), QEvent::GraphicsSceneContextMenu);
     }
 }
@@ -1872,32 +1872,32 @@ void tst_QGraphicsView::sendEvent()
     item->setFocus();
 
     QCOMPARE(scene.focusItem(), (QGraphicsItem *)item);
-    QCOMPARE(item->events.size(), 1);
+    QCOMPARE(item->events.size(), 2);
     QCOMPARE(item->events.last(), QEvent::FocusIn);
 
     QPoint itemPoint = view.mapFromScene(item->scenePos());
     sendMousePress(view.viewport(), itemPoint);
-    QCOMPARE(item->events.size(), 3);
+    QCOMPARE(item->events.size(), 4);
     QCOMPARE(item->events.at(item->events.size() - 2), QEvent::GrabMouse);
     QCOMPARE(item->events.at(item->events.size() - 1), QEvent::GraphicsSceneMousePress);
 
     QMouseEvent mouseMoveEvent(QEvent::MouseMove, itemPoint, view.viewport()->mapToGlobal(itemPoint),
                                 Qt::LeftButton, Qt::LeftButton, 0);
     QApplication::sendEvent(view.viewport(), &mouseMoveEvent);
-    QCOMPARE(item->events.size(), 4);
+    QCOMPARE(item->events.size(), 5);
     QCOMPARE(item->events.last(), QEvent::GraphicsSceneMouseMove);
 
     QMouseEvent mouseReleaseEvent(QEvent::MouseButtonRelease, itemPoint,
                                   view.viewport()->mapToGlobal(itemPoint),
                                   Qt::LeftButton, 0, 0);
     QApplication::sendEvent(view.viewport(), &mouseReleaseEvent);
-    QCOMPARE(item->events.size(), 6);
+    QCOMPARE(item->events.size(), 7);
     QCOMPARE(item->events.at(item->events.size() - 2), QEvent::GraphicsSceneMouseRelease);
     QCOMPARE(item->events.at(item->events.size() - 1), QEvent::UngrabMouse);
 
     QKeyEvent keyPress(QEvent::KeyPress, Qt::Key_Space, 0);
     QApplication::sendEvent(view.viewport(), &keyPress);
-    QCOMPARE(item->events.size(), 8);
+    QCOMPARE(item->events.size(), 9);
     QCOMPARE(item->events.at(item->events.size() - 2), QEvent::ShortcutOverride);
     QCOMPARE(item->events.last(), QEvent::KeyPress);
 }

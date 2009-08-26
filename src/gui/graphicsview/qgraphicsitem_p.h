@@ -463,7 +463,7 @@ public:
 
     // New 32 bits
     quint32 fullUpdatePending : 1;
-    quint32 flags : 15;
+    quint32 flags : 16;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
@@ -479,7 +479,6 @@ public:
     quint32 notifyBoundingRectChanged : 1;
     quint32 notifyInvalidated : 1;
     quint32 mouseSetsFocus : 1;
-    quint32 unused : 1; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

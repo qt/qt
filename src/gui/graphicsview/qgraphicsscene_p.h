@@ -129,7 +129,8 @@ public:
     QGraphicsItem *focusItem;
     QGraphicsItem *lastFocusItem;
     QGraphicsWidget *tabFocusFirst;
-    QGraphicsWidget *activeWindow;
+    QGraphicsItem *activePanel;
+    QGraphicsItem *lastActivePanel;
     int activationRefCount;
     void setFocusItemHelper(QGraphicsItem *item, Qt::FocusReason focusReason);
 

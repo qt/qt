@@ -287,6 +287,8 @@ private slots:
     void focusProxyDeletion();
     void negativeZStacksBehindParent();
     void setGraphicsEffect();
+    void panel();
+    void addPanelToActiveScene();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -2922,7 +2924,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     int npaints = tester->repaints;
     qApp->processEvents();
     qApp->processEvents();
-    QCOMPARE(tester->events.size(), 2); // enter + move
+    QCOMPARE(tester->events.size(), 3); // activate + enter + move
     QCOMPARE(tester->repaints, npaints + 1);
     QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverMove);
 
@@ -2936,7 +2938,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     qApp->processEvents();
     qApp->processEvents();
 
-    QCOMPARE(tester->events.size(), 3);
+    QCOMPARE(tester->events.size(), 4);
     QCOMPARE(tester->repaints, npaints + 1);
     QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverMove);
 
@@ -2950,7 +2952,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     qApp->processEvents();
     qApp->processEvents();
 
-    QCOMPARE(tester->events.size(), 4);
+    QCOMPARE(tester->events.size(), 5);
     QCOMPARE(tester->repaints, npaints + 2);
     QCOMPARE(tester->events.last(), QEvent::GraphicsSceneHoverLeave);
 }
@@ -7762,6 +7764,182 @@ void tst_QGraphicsItem::setGraphicsEffect()
     delete item;
     QVERIFY(!blurEffect);
     delete anotherItem;
+}
+
+void tst_QGraphicsItem::panel()
+{
+    QGraphicsScene scene;
+
+    QGraphicsRectItem *panel1 = new QGraphicsRectItem;
+    QGraphicsRectItem *panel2 = new QGraphicsRectItem;
+    QGraphicsRectItem *panel3 = new QGraphicsRectItem;
+    QGraphicsRectItem *panel4 = new QGraphicsRectItem;
+    QGraphicsRectItem *notPanel1 = new QGraphicsRectItem;
+    QGraphicsRectItem *notPanel2 = new QGraphicsRectItem;
+    panel1->setFlag(QGraphicsItem::ItemIsPanel);
+    panel2->setFlag(QGraphicsItem::ItemIsPanel);
+    panel3->setFlag(QGraphicsItem::ItemIsPanel);
+    panel4->setFlag(QGraphicsItem::ItemIsPanel);
+    scene.addItem(panel1);
+    scene.addItem(panel2);
+    scene.addItem(panel3);
+    scene.addItem(panel4);
+    scene.addItem(notPanel1);
+    scene.addItem(notPanel2);
+
+    EventSpy spy_activate_panel1(&scene, panel1, QEvent::WindowActivate);
+    EventSpy spy_deactivate_panel1(&scene, panel1, QEvent::WindowDeactivate);
+    EventSpy spy_activate_panel2(&scene, panel2, QEvent::WindowActivate);
+    EventSpy spy_deactivate_panel2(&scene, panel2, QEvent::WindowDeactivate);
+    EventSpy spy_activate_panel3(&scene, panel3, QEvent::WindowActivate);
+    EventSpy spy_deactivate_panel3(&scene, panel3, QEvent::WindowDeactivate);
+    EventSpy spy_activate_panel4(&scene, panel4, QEvent::WindowActivate);
+    EventSpy spy_deactivate_panel4(&scene, panel4, QEvent::WindowDeactivate);
+    EventSpy spy_activate_notPanel1(&scene, notPanel1, QEvent::WindowActivate);
+    EventSpy spy_deactivate_notPanel1(&scene, notPanel1, QEvent::WindowDeactivate);
+    EventSpy spy_activate_notPanel2(&scene, notPanel1, QEvent::WindowActivate);
+    EventSpy spy_deactivate_notPanel2(&scene, notPanel1, QEvent::WindowDeactivate);
+
+    QCOMPARE(spy_activate_panel1.count(), 0);
+    QCOMPARE(spy_deactivate_panel1.count(), 0);
+    QCOMPARE(spy_activate_panel2.count(), 0);
+    QCOMPARE(spy_deactivate_panel2.count(), 0);
+    QCOMPARE(spy_activate_panel3.count(), 0);
+    QCOMPARE(spy_deactivate_panel3.count(), 0);
+    QCOMPARE(spy_activate_panel4.count(), 0);
+    QCOMPARE(spy_deactivate_panel4.count(), 0);
+    QCOMPARE(spy_activate_notPanel1.count(), 0);
+    QCOMPARE(spy_deactivate_notPanel1.count(), 0);
+    QCOMPARE(spy_activate_notPanel2.count(), 0);
+    QCOMPARE(spy_deactivate_notPanel2.count(), 0);
+
+    QVERIFY(!scene.activePanel());
+    QVERIFY(!scene.isActive());
+
+    QEvent activate(QEvent::WindowActivate);
+    QEvent deactivate(QEvent::WindowDeactivate);
+    
+    QApplication::sendEvent(&scene, &activate);
+
+    // No previous activation, so the scene is active.
+    QVERIFY(scene.isActive());
+    QVERIFY(!scene.activePanel());
+    QVERIFY(!panel1->isActive());
+    QVERIFY(!panel2->isActive());
+    QVERIFY(!panel3->isActive());
+    QVERIFY(!panel4->isActive());
+    QVERIFY(notPanel1->isActive());
+    QVERIFY(notPanel2->isActive());
+    QCOMPARE(spy_activate_notPanel1.count(), 1);
+    QCOMPARE(spy_activate_notPanel2.count(), 1);
+
+    // Switch to panel1.
+    scene.setActivePanel(panel1);
+    QVERIFY(panel1->isActive());
+    QVERIFY(!panel2->isActive());
+    QVERIFY(!panel3->isActive());
+    QVERIFY(!panel4->isActive());
+    QVERIFY(!notPanel1->isActive());
+    QVERIFY(!notPanel2->isActive());
+    QCOMPARE(spy_deactivate_notPanel1.count(), 1);
+    QCOMPARE(spy_deactivate_notPanel2.count(), 1);
+    QCOMPARE(spy_activate_panel1.count(), 1);
+    QCOMPARE(spy_activate_panel2.count(), 0);
+    QCOMPARE(spy_activate_panel3.count(), 0);
+    QCOMPARE(spy_activate_panel4.count(), 0);
+
+    // Switch back to scene.
+    scene.setActivePanel(0);
+    QVERIFY(!scene.activePanel());
+    QVERIFY(!panel1->isActive());
+    QVERIFY(!panel2->isActive());
+    QVERIFY(!panel3->isActive());
+    QVERIFY(!panel4->isActive());
+    QVERIFY(notPanel1->isActive());
+    QVERIFY(notPanel2->isActive());
+    QCOMPARE(spy_activate_notPanel1.count(), 2);
+    QCOMPARE(spy_activate_notPanel2.count(), 2);
+
+    // Deactivate the scene
+    QApplication::sendEvent(&scene, &deactivate);
+    QVERIFY(!scene.activePanel());
+    QVERIFY(!panel1->isActive());
+    QVERIFY(!panel2->isActive());
+    QVERIFY(!panel3->isActive());
+    QVERIFY(!panel4->isActive());
+    QVERIFY(!notPanel1->isActive());
+    QVERIFY(!notPanel2->isActive());
+    QCOMPARE(spy_deactivate_notPanel1.count(), 2);
+    QCOMPARE(spy_deactivate_notPanel2.count(), 2);
+
+    // Reactivate the scene
+    QApplication::sendEvent(&scene, &activate);
+    QVERIFY(!scene.activePanel());
+    QVERIFY(!panel1->isActive());
+    QVERIFY(!panel2->isActive());
+    QVERIFY(!panel3->isActive());
+    QVERIFY(!panel4->isActive());
+    QVERIFY(notPanel1->isActive());
+    QVERIFY(notPanel2->isActive());
+    QCOMPARE(spy_activate_notPanel1.count(), 3);
+    QCOMPARE(spy_activate_notPanel2.count(), 3);
+
+    // Switch to panel1
+    scene.setActivePanel(panel1);
+    QVERIFY(panel1->isActive());
+    QCOMPARE(spy_deactivate_notPanel1.count(), 3);
+    QCOMPARE(spy_deactivate_notPanel2.count(), 3);
+    QCOMPARE(spy_activate_panel1.count(), 2);
+
+    // Deactivate the scene
+    QApplication::sendEvent(&scene, &deactivate);
+    QVERIFY(!panel1->isActive());
+    QCOMPARE(spy_deactivate_panel1.count(), 2);
+
+    // Reactivate the scene
+    QApplication::sendEvent(&scene, &activate);
+    QVERIFY(panel1->isActive());
+    QCOMPARE(spy_activate_panel1.count(), 3);
+
+    // Deactivate the scene
+    QApplication::sendEvent(&scene, &deactivate);
+    QVERIFY(!panel1->isActive());
+    QVERIFY(!scene.activePanel());
+    scene.setActivePanel(0);
+
+    // Reactivate the scene
+    QApplication::sendEvent(&scene, &activate);
+    QVERIFY(!panel1->isActive());
+}
+
+void tst_QGraphicsItem::addPanelToActiveScene()
+{
+    QGraphicsScene scene;
+    QVERIFY(!scene.isActive());
+
+    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    scene.addItem(rect);
+    QVERIFY(!rect->isActive());
+    scene.removeItem(rect);
+
+    QEvent activate(QEvent::WindowActivate);
+    QEvent deactivate(QEvent::WindowDeactivate);
+
+    QApplication::sendEvent(&scene, &activate);
+    QVERIFY(scene.isActive());
+    scene.addItem(rect);
+    QVERIFY(rect->isActive());
+    scene.removeItem(rect);
+
+    rect->setFlag(QGraphicsItem::ItemIsPanel);
+    scene.addItem(rect);
+    QVERIFY(rect->isActive());
+    QCOMPARE(scene.activePanel(), (QGraphicsItem *)rect);
+
+    QGraphicsRectItem *rect2 = new QGraphicsRectItem;
+    scene.addItem(rect2);
+    QVERIFY(rect->isActive());
+    QCOMPARE(scene.activePanel(), (QGraphicsItem *)rect);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
