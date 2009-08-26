@@ -819,8 +819,8 @@ void QFileDialogPrivate::qt_mac_filedialog_event_proc(const NavEventCallbackMess
                     || mode == QFileDialog::ExistingFiles){
                 // When changing directory, the current selection is cleared if
                 // we are supposed to be selecting files only:
-                fileDialogPrivate->mCurrentSelectionList.clear();
                 if (!fileDialogPrivate->mCurrentSelection.isEmpty()){
+                    fileDialogPrivate->mCurrentSelectionList.clear();
                     fileDialogPrivate->mCurrentSelection.clear();
                     emit fileDialogPrivate->q_func()->currentChanged(fileDialogPrivate->mCurrentSelection);
                 }
