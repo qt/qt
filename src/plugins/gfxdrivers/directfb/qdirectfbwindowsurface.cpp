@@ -243,22 +243,19 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
 
 QByteArray QDirectFBWindowSurface::permanentState() const
 {
-    QByteArray state;
 #ifdef QT_DIRECTFB_WM
-    QDataStream ds(&state, QIODevice::WriteOnly);
-    ds << reinterpret_cast<quintptr>(this);
-#endif
+    QByteArray state(sizeof(this), 0);
+    *reinterpret_cast<const QDirectFBWindowSurface**>(state.data()) = this;
     return state;
+#endif
+    return QByteArray();
 }
 
 void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 {
 #ifdef QT_DIRECTFB_WM
-    if (state.size() == sizeof(quintptr)) {
-        QDataStream ds(state);
-        quintptr ptr;
-        ds >> ptr;
-        sibling = reinterpret_cast<QDirectFBWindowSurface*>(ptr);
+    if (state.size() == sizeof(this)) {
+        sibling = *reinterpret_cast<QDirectFBWindowSurface *const*>(state.constData());
     }
 #else
     Q_UNUSED(state);
