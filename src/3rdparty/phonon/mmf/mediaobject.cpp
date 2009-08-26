@@ -322,12 +322,7 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
 	}
 	
 	m_player.reset(newPlayer);
-		
-	connect(m_player.data(), SIGNAL(totalTimeChanged(qint64)), SIGNAL(totalTimeChanged(qint64)));
-	connect(m_player.data(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), SIGNAL(stateChanged(Phonon::State, Phonon::State)));
-	connect(m_player.data(), SIGNAL(finished()), SIGNAL(finished()));
-	connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
-	
+			
 	if(oldPlayerHasVideo != hasVideo())
 	{
 	    emit hasVideoChanged(hasVideo());
@@ -337,6 +332,11 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
 	{
 	    emit seekableChanged(isSeekable());
 	}
+	
+	connect(m_player.data(), SIGNAL(totalTimeChanged(qint64)), SIGNAL(totalTimeChanged(qint64)));
+	connect(m_player.data(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), SIGNAL(stateChanged(Phonon::State, Phonon::State)));
+	connect(m_player.data(), SIGNAL(finished()), SIGNAL(finished()));
+	connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
 	
 	TRACE_EXIT_0();
 }

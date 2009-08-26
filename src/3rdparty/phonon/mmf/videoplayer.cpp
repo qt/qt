@@ -231,19 +231,6 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
 		
 	    // Debugging video visibility
 	    videoOutput().dump();
-	    
-#ifdef PHONON_MMF_EXPLICITLY_SHOW_VIDEO_WIDGET
-	    // HACK: why do we need to explicitly show() the grandparent...?
-	    QWidget* grandparent = static_cast<QWidget*>(videoOutput().parent()->parent());
-	    TRACE("Calling grandparent[0x%08x]->show()", grandparent);	    
-	    grandparent->show();
-	    TRACE_0("Calling videoOutput().updateGeometry()");
-	    videoOutput().updateGeometry();
-	    TRACE_0("Calling videoOutput().update()");
-	    videoOutput().update();
-#endif
-	    
-	    videoOutput().dump();
 	    	    
 	    videoOutputChanged();
 

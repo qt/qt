@@ -425,7 +425,7 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
     	and m_playPending
     )
     {
-		TRACE_0("Play was called while loading; starting playback now");
+		TRACE_0("play was called while loading; starting playback now");
 		m_playPending = false;
 		play();
     }

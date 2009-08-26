@@ -34,10 +34,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 // rect, i.e. QWidget::winId()->Rect()
 #define PHONON_MMF_HARD_CODE_VIDEO_RECT
 
-// If this is defined, show() is called on the grandparent of the widget
-// on which video will be rendered.
-#define PHONON_MMF_EXPLICITLY_SHOW_VIDEO_WIDGET
-
 namespace Phonon
 {
     namespace MMF
