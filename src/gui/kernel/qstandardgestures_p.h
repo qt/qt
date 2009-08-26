@@ -78,7 +78,7 @@ public:
 
 #if defined(QT_MAC_USE_COCOA)
     QBasicTimer singleTouchPanTimer;
-    QPointF singleTouchBeginPoint;
+    QPointF prevMousePos;
 #endif
 };
 

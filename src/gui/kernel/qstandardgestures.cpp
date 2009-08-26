@@ -214,19 +214,14 @@ bool QPanGesture::filterEvent(QEvent *event)
 
     switch (event->type()) {
     case QEvent::TouchBegin: {
-        if (ev->touchPoints().size() == 1)
+        if (ev->touchPoints().size() == 1) {
+            d->lastPosition = QCursor::pos();
             d->singleTouchPanTimer.start(panBeginDelay, this);
+        }
         break;}
     case QEvent::TouchEnd: {
-        if (state() != Qt::NoGesture) {
-            if (ev->touchPoints().size() == 1) {
-                QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
-                QPointF dist = p.pos() - p.lastPos();
-                d->lastOffset = QSizeF(dist.x(), dist.y());
-                d->totalOffset += d->lastOffset;
-            }
+        if (state() != Qt::NoGesture)
             updateState(Qt::GestureFinished);
-        }
         reset();
         break;}
     case QEvent::TouchUpdate: {
@@ -239,13 +234,18 @@ bool QPanGesture::filterEvent(QEvent *event)
                 const QPoint p = ev->touchPoints().at(0).pos().toPoint();
                 if ((startPos - p).manhattanLength() > panBeginRadius)
                     reset();
+                else
+                    d->lastPosition = QCursor::pos();
             } else {
-                QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
-                QPointF dist = p.pos() - p.lastPos();
+                QPointF mousePos = QCursor::pos();
+                QPointF dist = mousePos - d->lastPosition;
+                d->lastPosition = mousePos;
                 d->lastOffset = QSizeF(dist.x(), dist.y());
                 d->totalOffset += d->lastOffset;
                 updateState(Qt::GestureUpdated);
             }
+        } else if (state() == Qt::NoGesture) {
+            reset();
         }
         break;}
     default:
@@ -262,10 +262,11 @@ void QPanGesture::reset()
 {
     Q_D(QPanGesture);
     d->lastOffset = d->totalOffset = QSize(0, 0);
-    d->lastPosition = QPoint();
+    d->lastPosition = QPoint(0, 0);
 
 #if defined(QT_MAC_USE_COCOA)
     d->singleTouchPanTimer.stop();
+    d->prevMousePos = QPointF(0, 0);
 #endif
 
     QGesture::reset();
