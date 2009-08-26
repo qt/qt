@@ -166,6 +166,11 @@ void GLWidget::paintEvent(QPaintEvent *event)
 //! [7]
 
 //! [8]
+    glShadeModel(GL_FLAT);
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHTING);
+
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
 //! [8]
