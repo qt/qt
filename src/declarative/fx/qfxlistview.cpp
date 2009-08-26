@@ -396,7 +396,7 @@ public:
 void QFxListViewPrivate::init()
 {
     Q_Q(QFxListView);
-    q->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
+    q->setFlag(QGraphicsItem::ItemIsFocusScope);
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(refill()));
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(refill()));
 }

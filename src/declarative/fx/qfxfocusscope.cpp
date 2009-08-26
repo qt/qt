@@ -63,7 +63,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FocusScope,QFxFocusScope)
 QFxFocusScope::QFxFocusScope(QFxItem *parent) :
     QFxItem(parent)
 {
-    setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
+    setFlag(QGraphicsItem::ItemIsFocusScope);
 }
 
 QFxFocusScope::~QFxFocusScope()
