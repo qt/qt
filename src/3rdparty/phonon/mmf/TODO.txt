@@ -6,6 +6,15 @@ The following items are in rough order of priority.
 
 * Work out why video is not visible
 
+* Write a test app which allows the following:
+	- Dragging of the video widget
+	- Resizing of the video widget
+	- Dragging of other widgets on top of / underneath the video widget
+These will allow the video widget's moveEvent / resizeEvent implementations to be tested.
+
+* Write / modify a test app which allows audio effects to be enabled / disabled.
+	- In the simplest case, this could just be a command-line app which allows effects to be specified using flags.
+
 * On-target testing
 1. Ensure that Phonon front- and back-end libraries are included in the SIS file.
 2. Add musicplayer.exe and mediaplayer.exe to the FluidLauncher
@@ -23,6 +32,7 @@ The main question here is how best to implement the MIME type detection for stre
 	3. Detect MIME type and create AbstractMediaPlayer instance
 	4. Close network connection
 	5. Pass URL to MMF client utility, which will then re-open the stream
+An alternative approach is to always create a VideoPlayer when passed an RTSP URL, and then modify VideoPlayer::hasVideo to check CVideoPlayerUtility::VideoMimeTypeL before returning.  This way, we would always use CVideoPlayerUtility for RTSP streaming, whether the source is audio or video.  Well-behaved client apps, however, should check MediaObject::hasVideo before creating the UI - and therefore the VideoWidget would only be connected if the source is actually a video stream.
 
 * Performance analysis
 Compare video frame rate obtained using default S60 media player and Qt demo apps
