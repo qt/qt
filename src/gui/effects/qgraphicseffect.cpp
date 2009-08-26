@@ -112,12 +112,12 @@ QT_BEGIN_NAMESPACE
            QGraphicsEffect is installed on.
     \since 4.6
 
-    When a QGraphicsEffect is installed on a QGraphicsItem, for example, this class will act as
-    a wrapper around QGraphicsItem. E.g. calling update() is effectively the same as
-    calling QGraphicsItem::update().
+    When a QGraphicsEffect is installed on a QGraphicsItem, for example, this
+    class will act as a wrapper around QGraphicsItem. Then, calling update() is
+    effectively the same as calling QGraphicsItem::update().
 
-    It also provides a pixmap() function which creates a pixmap with the source
-    painted into it.
+    QGraphicsEffectSource also provides a pixmap() function which creates a
+    pixmap with the source painted into it.
 
     \sa QGraphicsItem::setGraphicsEffect(), QWidget::setGraphicsEffect.
 */
@@ -131,10 +131,11 @@ QGraphicsEffectSource::~QGraphicsEffectSource()
 /*!
     Returns the bounds of the current painter's device.
 
-    This function is useful when you e.g. want to draw something in device coordinates
-    and want to make sure the size of the pixmap is not bigger than the device's size.
+    This function is useful when you want to draw something in device
+    coordinates and ensure the size of the pixmap is not bigger than the size
+    of the device.
 
-    Note that calling QGraphicsEffectSource::pixmap(Qt::DeviceCoordinates) always returns
+    Calling QGraphicsEffectSource::pixmap(Qt::DeviceCoordinates) always returns
     a pixmap which is bound to the device's size.
 
     \sa pixmap()
@@ -145,7 +146,7 @@ QRect QGraphicsEffectSource::deviceRect() const
 }
 
 /*!
-    Returns the bounding rectangle of the source mapped to the \a system specified.
+    Returns the bounding rectangle of the source mapped to the given \a system.
 
     \sa draw()
 */
@@ -155,8 +156,8 @@ QRectF QGraphicsEffectSource::boundingRect(Qt::CoordinateSystem system) const
 }
 
 /*!
-    Returns a pointer to the item if this source is a QGraphicsItem;
-    otherwise returns 0;
+    Returns a pointer to the item if this source is a QGraphicsItem; otherwise
+    returns 0.
 
     \sa widget()
 */
@@ -166,8 +167,8 @@ const QGraphicsItem *QGraphicsEffectSource::graphicsItem() const
 }
 
 /*!
-    Returns a pointer to the widget if this source is a QWidget;
-    otherwise returns 0;
+    Returns a pointer to the widget if this source is a QWidget; otherwis
+     returns 0.
 
     \sa graphicsItem()
 */
@@ -177,8 +178,8 @@ const QWidget *QGraphicsEffectSource::widget() const
 }
 
 /*!
-    Returns a pointer to the style options (used when drawing the source)
-    if available; otherwise returns 0.
+    Returns a pointer to the style options (used when drawing the source) if
+    available; otherwise returns 0.
 
     \sa graphicsItem(), widget()
 */
@@ -188,9 +189,10 @@ const QStyleOption *QGraphicsEffectSource::styleOption() const
 }
 
 /*!
-    Draws the source using the \a painter specified.
+    Draws the source using the given \a painter.
 
     This function should only be called from QGraphicsEffect::draw().
+
     For example:
 
     \snippet doc/src/snippets/code/src_gui_effects_qgraphicseffect.cpp 0
@@ -204,10 +206,11 @@ void QGraphicsEffectSource::draw(QPainter *painter)
 }
 
 /*!
-    Schedules a redraw of the source. You can call this function whenever the
-    source needs to be redrawn.
+    Schedules a redraw of the source. Call this function whenever the source
+    needs to be redrawn.
 
-    \sa QGraphicsEffect::updateBoundingRect(), QWidget::update(), QGraphicsItem::update(),
+    \sa QGraphicsEffect::updateBoundingRect(), QWidget::update(),
+        QGraphicsItem::update(),
 */
 void QGraphicsEffectSource::update()
 {
@@ -215,11 +218,12 @@ void QGraphicsEffectSource::update()
 }
 
 /*!
-    Returns true if the source effectively is a pixmap, e.g. a QGraphicsPixmapItem.
+    Returns true if the source effectively is a pixmap, e.g., a
+    QGraphicsPixmapItem.
 
-    This function is useful for optimization purposes, e.g. there's no point in
-    drawing the source in device coordinates to avoid pixmap scaling if this function
-    returns true; the source pixmap will be scaled anyways.
+    This function is useful for optimization purposes. For instance, there's no
+    point in drawing the source in device coordinates to avoid pixmap scaling
+    if this function returns true - the source pixmap will be scaled anyways.
 */
 bool QGraphicsEffectSource::isPixmap() const
 {
@@ -227,13 +231,14 @@ bool QGraphicsEffectSource::isPixmap() const
 }
 
 /*!
-    Returns a pixmap with the source painted into it. The \a system specifies which
-    coordinate system to be used for the source. The optional out parameter
-    \a offset returns the offset of which the pixmap should be painted
-    at using the current painter.
+    Returns a pixmap with the source painted into it.
 
-    Note that the returned pixmap is bound to the current painter's device
-    rect when the specified \a system is Qt::DeviceCoordinates.
+    The \a system specifies which coordinate system to be used for the source.
+    The optional \a offset parameter returns the offset where the pixmap should
+    be painted at using the current painter.
+
+    The returned pixmap is bound to the current painter's device rectangle when
+    \a system is Qt::DeviceCoordinates.
 
     \sa QGraphicsEffect::draw(), boundingRect(), deviceRect()
 */
@@ -268,9 +273,9 @@ QGraphicsEffect::~QGraphicsEffect()
 }
 
 /*!
-    Returns the bounding rectangle for this effect (i.e., the bounding
+    Returns the bounding rectangle for this effect, i.e., the bounding
     rectangle of the source, adjusted by any margins applied by the effect
-    itself).
+    itself.
 
     \sa boundingRectFor(), updateBoundingRect()
 */
@@ -300,11 +305,13 @@ QRectF QGraphicsEffect::boundingRectFor(const QRectF &rect) const
     \brief whether the effect is enabled or not.
 
     If an effect is disabled, the source will be rendered with as normal, with
-    no interference from the effect. If the effect is enabled (default), the
-    source will be rendered with the effect applied.
+    no interference from the effect. If the effect is enabled, the source will
+    be rendered with the effect applied.
 
-    This property is provided so that you can disable certain effects on slow
-    platforms, in order to ensure that the user interface is responsive.
+    This property is enabled by default.
+
+    Using this property, you can disable certain effects on slow platforms, in
+    order to ensure that the user interface is responsive.
 
     \sa enabledChanged()
 */
@@ -347,7 +354,7 @@ QGraphicsEffectSource *QGraphicsEffect::source() const
 }
 
 /*!
-    This function notifies the effect framework that the effect's bounding
+    This function notifies the effect framework when the effect's bounding
     rectangle has changed. As a custom effect author, you must call this
     function whenever you change any parameters that will cause the virtual
     boundingRectFor() function to return a different value.
@@ -365,17 +372,19 @@ void QGraphicsEffect::updateBoundingRect()
     \fn virtual void QGraphicsEffect::draw(QPainter *painter,
     QGraphicsEffectSource *source) = 0
 
-    This pure virtual function draws the effect and is called whenever the source()
-    needs to be drawn.
+    This pure virtual function draws the effect and is called whenever the
+    source() needs to be drawn.
 
-    Reimplement this function in a QGraphicsEffect subclass to provide the effect's
-    drawing implementation, using \a painter. The \a source parameter is provided
-    for convenience; its value is the same as source(). Example:
+    Reimplement this function in a QGraphicsEffect subclass to provide the
+    effect's drawing implementation, using \a painter. The \a source parameter
+    is provided for convenience; its value is the same as source().
+
+    For example:
 
     \snippet doc/src/snippets/code/src_gui_effects_qgraphicseffect.cpp 1
 
-    Note that this function should not be called explicitly by the user, since it's
-    meant for re-implementation purposes only.
+    This function should not be called explicitly by the user, since it is
+    meant for reimplementation purposes only.
 
     \sa QGraphicsEffectSource
 */
@@ -387,7 +396,8 @@ void QGraphicsEffect::updateBoundingRect()
 
     \value SourceAttached The effect is installed on a source.
     \value SourceDetached The effect is uninstalled on a source.
-    \value SourceBoundingRectChanged The bounding rect of the source has changed.
+    \value SourceBoundingRectChanged The bounding rect of the source has
+           changed.
     \value SourceInvalidated The visual appearance of the source has changed.
 */
 
@@ -410,7 +420,8 @@ void QGraphicsEffect::sourceChanged(ChangeFlags flags)
 
     A grayscale effect renders the source in shades of gray.
 
-    \sa QGraphicsColorizeEffect
+    \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsPixelizeEffect,
+        QGraphicsColorizeEffect, QGraphicsOpacityEffect
 */
 QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect(QObject *parent)
     : QGraphicsEffect(*new QGraphicsGrayscaleEffectPrivate, parent)
@@ -446,12 +457,13 @@ void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *so
     \brief The QGraphicsColorizeEffect provides a colorize effect.
     \since 4.6
 
-    A colorize effect renders the source with a tint of its color(). The
-    color can be modified using the setColor() function.
+    A colorize effect renders the source with a tint of its color(). The color
+    can be modified using the setColor() function.
 
     By default, the color is light blue (QColor(0, 0, 192)).
 
-    \sa QGraphicsGrayscaleEffect
+    \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsPixelizeEffect,
+        QGraphicsGrayscaleEffect, QGraphicsOpacityEffect
 */
 QGraphicsColorizeEffect::QGraphicsColorizeEffect(QObject *parent)
     : QGraphicsEffect(*new QGraphicsColorizeEffectPrivate, parent)
@@ -474,7 +486,7 @@ QColor QGraphicsColorizeEffect::color() const
 }
 
 /*!
-    Sets the color to the \a color specified.
+    Sets the color to the given \a color.
 
     \sa color(), colorChanged()
 */
@@ -518,13 +530,14 @@ void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
     \brief The QGraphicsPixelizeEffect provides a pixelize effect.
     \since 4.6
 
-    A pixelize effect renders the source in lower resolution. This effect
-    is useful for reducing details, in e.g. a censorship. The resolution
-    can be modified using the setPixelSize() function.
+    A pixelize effect renders the source in lower resolution. This effect is
+    useful for reducing details, like censorship. The resolution can be
+    modified using the setPixelSize() function.
 
     By default, the pixel size is 3.
 
-    \sa QGraphicsBlurEffect
+    \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsGrayscaleEffect,
+        QGraphicsColorizeEffect, QGraphicsOpacityEffect
 */
 QGraphicsPixelizeEffect::QGraphicsPixelizeEffect(QObject *parent)
     : QGraphicsEffect(*new QGraphicsPixelizeEffectPrivate, parent)
@@ -547,11 +560,10 @@ int QGraphicsPixelizeEffect::pixelSize() const
 }
 
 /*!
-    Sets the size of a pixel to the \a size specified.
+    Sets the size of a pixel to the given \a size.
 
-    Setting the \a size to e.g. 2 means two pixels in the source will
-    be used to represent one pixel. Using a bigger size results in
-    lower resolution.
+    Setting \a size to 2 means two pixels in the source will be used to
+    represent one pixel. Using a bigger size results in lower resolution.
 
     \sa pixelSize(), pixelSizeChanged()
 */
@@ -628,13 +640,14 @@ void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
     \since 4.6
 
     A blur effect blurs the source. This effect is useful for reducing details,
-    e.g. when the source loses focus and you want to draw attention to other
+    such as when the source loses focus and you want to draw attention to other
     elements. The level of detail can be modified using the setBlurRadius()
     function.
 
     By default, the blur radius is 5 pixels.
 
-    \sa QGraphicsPixelizeEffect
+    \sa QGraphicsDropShadowEffect, QGraphicsPixelizeEffect, QGraphicsGrayscaleEffect,
+        QGraphicsColorizeEffect, QGraphicsOpacityEffect
 */
 QGraphicsBlurEffect::QGraphicsBlurEffect(QObject *parent)
     : QGraphicsEffect(*new QGraphicsBlurEffectPrivate, parent)
@@ -657,10 +670,10 @@ int QGraphicsBlurEffect::blurRadius() const
 }
 
 /*!
-    Sets the blur radius to the \a radius specified.
+    Sets the blur radius to the given \a radius.
 
-    Using a smaller radius results in a sharper appearance, whereas a
-    bigger radius results in a more blurry appearance.
+    Using a smaller radius results in a sharper appearance, whereas a bigger
+    radius results in a more blurred appearance.
 
     \sa blurRadius(), blurRadiusChanged()
 */
@@ -717,14 +730,17 @@ void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
     \since 4.6
 
     A drop shadow effect renders the source with a drop shadow. The color of
-    the drop shadow can be modified using the setColor() function, the drop
-    shadow offset can be modified using the setOffset function, and the blur
-    radius of the drop shadow can be changed through the setBlurRadius()
+    the drop shadow can be modified using the setColor() function. The drop
+    shadow offset can be modified using the setOffset() function and the blur
+    radius of the drop shadow can be changed with the setBlurRadius()
     function.
 
     By default, the drop shadow is a semi-transparent dark gray
-    (QColor(63, 63, 63, 180)) shadow, blurred with a radius of 1 at an
-    offset of 8 pixels towards the lower right.
+    (QColor(63, 63, 63, 180)) shadow, blurred with a radius of 1 at an offset
+    of 8 pixels towards the lower right.
+
+    \sa QGraphicsBlurEffect, QGraphicsPixelizeEffect, QGraphicsGrayscaleEffect,
+        QGraphicsColorizeEffect, QGraphicsOpacityEffect
 */
 QGraphicsDropShadowEffect::QGraphicsDropShadowEffect(QObject *parent)
     : QGraphicsEffect(*new QGraphicsDropShadowEffectPrivate, parent)
@@ -747,7 +763,7 @@ QPointF QGraphicsDropShadowEffect::offset() const
 }
 
 /*!
-    Sets the shadow offset in pixels to the \a offset specified.
+    Sets the shadow offset in pixels to the given \a offset.
 
     \sa offset(), setBlurRadius(), setColor(), offsetChanged()
 */
@@ -783,8 +799,8 @@ int QGraphicsDropShadowEffect::blurRadius() const
     Sets the radius in pixels of the blur on the drop shadow to the
     \a blurRadius specified.
 
-    Using a smaller radius results in a sharper shadow, whereas using
-    a bigger radius results in a more blurry shadow.
+    Using a smaller radius results in a sharper shadow, whereas using a bigger
+    radius results in a more blurred shadow.
 
     \sa blurRadius(), setColor(), setOffset(), blurRadiusChanged()
 */
@@ -817,7 +833,7 @@ QColor QGraphicsDropShadowEffect::color() const
 }
 
 /*!
-    Sets the color of the drop shadow to the \a color specified.
+    Sets the color of the drop shadow to the given \a color.
 
     \sa color(), setOffset(), setBlurRadius(), colorChanged()
 */
@@ -872,11 +888,14 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *s
     \brief The QGraphicsOpacityEffect class provides an opacity effect.
     \since 4.6
 
-    An opacity effects renders the source with an opacity. This effect is useful
-    for making the source semi-transparent, in e.g. a fade-in/fade-out sequence.
-    The opacity can be modified using the setOpacity() function.
+    An opacity effect renders the source with an opacity. This effect is useful
+    for making the source semi-transparent, similar to a fade-in/fade-out
+    sequence. The opacity can be modified using the setOpacity() function.
 
     By default, the opacity is 0.7.
+
+    \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsPixelizeEffect,
+        QGraphicsGrayscaleEffect, QGraphicsColorizeEffect
 */
 QGraphicsOpacityEffect::QGraphicsOpacityEffect(QObject *parent)
     : QGraphicsEffect(*new QGraphicsOpacityEffectPrivate, parent)
@@ -899,9 +918,8 @@ qreal QGraphicsOpacityEffect::opacity() const
 }
 
 /*!
-    Sets the opacity to the \a opacity specified. The value should be in
-    the range 0.0 to 1.0, where 0.0 is fully transparent and 1.0 is
-    fully opaque.
+    Sets the opacity to the given \a opacity. The value should be in the range
+    of 0.0 to 1.0, where 0.0 is fully transparent and 1.0 is fully opaque.
 
     \sa opacity(), opacityChanged()
 */
