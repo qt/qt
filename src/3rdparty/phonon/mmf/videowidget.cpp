@@ -42,7 +42,7 @@ static const qreal DefaultSaturation = 1.0;
 //-----------------------------------------------------------------------------
 
 MMF::VideoWidget::VideoWidget(QWidget* parent)
-					:	m_videoOutput(new VideoOutput(parent))
+					:	m_widget(new VideoOutput(parent))
 					,	m_aspectRatio(DefaultAspectRatio)
 					,	m_brightness(DefaultBrightness)
 					,	m_scaleMode(DefaultScaleMode)
@@ -51,7 +51,7 @@ MMF::VideoWidget::VideoWidget(QWidget* parent)
 					,	m_saturation(DefaultSaturation)
 {
 	TRACE_CONTEXT(VideoWidget::VideoWidget, EVideoApi);
-	TRACE_ENTRY_0();
+	TRACE_ENTRY_0();	
 	
 	TRACE_EXIT_0();
 }
@@ -150,11 +150,11 @@ void MMF::VideoWidget::setSaturation(qreal saturation)
 
 QWidget* MMF::VideoWidget::widget()
 {
-	return m_videoOutput.data();
+	return m_widget.data();
 }
 
 VideoOutput& MMF::VideoWidget::videoOutput()
 {
-	return *m_videoOutput; 
+	return *static_cast<VideoOutput*>(widget()); 
 }
 

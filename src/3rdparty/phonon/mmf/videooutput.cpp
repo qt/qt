@@ -64,7 +64,8 @@ void VideoOutput::dump()
     {
         QWidget* widget = qobject_cast<QWidget*>(node);
         const bool visible = widget ? widget->isVisible() : false;
-        TRACE("node 0x%08x widget 0x%08x visible %d", node, widget, visible);
+        const QHBufC name(node->objectName());
+        TRACE("node 0x%08x name %S widget 0x%08x visible %d", node, name.data(), widget, visible);
         
         root = node;
         node = node->parent();

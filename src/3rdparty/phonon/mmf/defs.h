@@ -25,8 +25,10 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 // in order to debug the current problems with video visibility.
 
 // If this is defined, then VideoOutput is essentially just a typedef for
-// QWidget
-#define PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
+// QWidget.  This is to allow us to test whether the QWidget function 
+// overrides present in VideoOutput (e.g. sizeHint, paintEvent etc) may
+// be the cause of the visibility problems.
+//#define PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 
 // Use hard-coded rectangle coordinates, rather than using CCoeControl
 // rect, i.e. QWidget::winId()->Rect()
@@ -40,16 +42,16 @@ namespace Phonon
 {
     namespace MMF
     {
-	static const qint32	DefaultTickInterval = 10;
-	static const qreal	InitialVolume = 0.5;
-	
-    enum MediaType
-    {
-    	MediaTypeUnknown,
-    	MediaTypeAudio,
-    	MediaTypeVideo
-    };
+        static const qint32	DefaultTickInterval = 10;
+        static const qreal	InitialVolume = 0.5;
+        
+        enum MediaType
+        {
+            MediaTypeUnknown,
+            MediaTypeAudio,
+            MediaTypeVideo
+        };
     }
 }
 
-#endif
+#endif // PHONON_MMF_DEFS_H
