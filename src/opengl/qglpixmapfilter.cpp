@@ -338,7 +338,6 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
 
     QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
 
-    engine->syncState();
     painter->save();
 
     // ensure GL_LINEAR filtering is used

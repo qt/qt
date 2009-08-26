@@ -675,7 +675,7 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void QGL2PaintEngineEx::sync()
+void QGL2PaintEngineEx::beginNativePainting()
 {
     Q_D(QGL2PaintEngineEx);
     ensureActive();
@@ -718,6 +718,12 @@ void QGL2PaintEngineEx::sync()
     glDepthMask(true);
     glClearDepth(1);
 
+    d->needsSync = true;
+}
+
+void QGL2PaintEngineEx::endNativePainting()
+{
+    Q_D(QGL2PaintEngineEx);
     d->needsSync = true;
 }
 

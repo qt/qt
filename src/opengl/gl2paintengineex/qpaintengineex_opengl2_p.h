@@ -133,7 +133,9 @@ public:
     inline const QOpenGL2PaintEngineState *state() const {
         return static_cast<const QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
     }
-    virtual void sync();
+
+    void beginNativePainting();
+    void endNativePainting();
 
     const QGLContext* context();
 

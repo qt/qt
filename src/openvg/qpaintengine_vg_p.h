@@ -140,7 +140,8 @@ public:
     QVGPainterState *state() { return static_cast<QVGPainterState *>(QPaintEngineEx::state()); }
     const QVGPainterState *state() const { return static_cast<const QVGPainterState *>(QPaintEngineEx::state()); }
 
-    void updateState(const QPaintEngineState &state);
+    void beginNativePainting();
+    void endNativePainting();
 
     QPixmapFilter *createPixmapFilter(int type) const;
 
