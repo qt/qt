@@ -61,6 +61,7 @@
 #include "qgesture_p.h"
 
 #include "qstandardgestures.h"
+#include "qbasictimer.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -69,21 +70,15 @@ class QPanGesturePrivate : public QGesturePrivate
     Q_DECLARE_PUBLIC(QPanGesture)
 
 public:
-    QPanGesturePrivate()
-    {
-#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
-        panFinishedTimer = 0;
-#endif
-    }
-
     void setupGestureTarget(QObject *o);
 
-    QSize totalOffset;
-    QSize lastOffset;
-    QPoint lastPosition;
+    QSizeF totalOffset;
+    QSizeF lastOffset;
+    QPointF lastPosition;
 
-#if defined(Q_OS_MAC) && !defined(QT_MAC_USE_COCOA)
-    int panFinishedTimer;
+#if defined(QT_MAC_USE_COCOA)
+    QBasicTimer singleTouchPanTimer;
+    QPointF singleTouchBeginPoint;
 #endif
 };
 

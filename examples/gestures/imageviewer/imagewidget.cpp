@@ -63,11 +63,14 @@ ImageWidget::ImageWidget(QWidget *parent)
     verticalOffset = 0;
 
     panGesture = new QPanGesture(this);
+    connect(panGesture, SIGNAL(started()), this, SLOT(gestureTriggered()));
+    connect(panGesture, SIGNAL(finished()), this, SLOT(gestureTriggered()));
+    connect(panGesture, SIGNAL(cancelled()), this, SLOT(gestureTriggered()));
     connect(panGesture, SIGNAL(triggered()), this, SLOT(gestureTriggered()));
 
-    tapAndHoldGesture = new TapAndHoldGesture(this);
-    connect(tapAndHoldGesture, SIGNAL(triggered()), this, SLOT(gestureTriggered()));
-    connect(tapAndHoldGesture, SIGNAL(finished()), this, SLOT(gestureTriggered()));
+//    tapAndHoldGesture = new TapAndHoldGesture(this);
+//    connect(tapAndHoldGesture, SIGNAL(triggered()), this, SLOT(gestureTriggered()));
+//    connect(tapAndHoldGesture, SIGNAL(finished()), this, SLOT(gestureTriggered()));
 }
 
 void ImageWidget::paintEvent(QPaintEvent*)

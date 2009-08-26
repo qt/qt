@@ -59,16 +59,16 @@ class Q_GUI_EXPORT QPanGesture : public QGesture
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPanGesture)
 
-    Q_PROPERTY(QSize totalOffset READ totalOffset)
-    Q_PROPERTY(QSize lastOffset READ lastOffset)
+    Q_PROPERTY(QSizeF totalOffset READ totalOffset)
+    Q_PROPERTY(QSizeF lastOffset READ lastOffset)
 
 public:
     QPanGesture(QWidget *gestureTarget, QObject *parent = 0);
 
     bool filterEvent(QEvent *event);
 
-    QSize totalOffset() const;
-    QSize lastOffset() const;
+    QSizeF totalOffset() const;
+    QSizeF lastOffset() const;
 
 protected:
     void reset();
