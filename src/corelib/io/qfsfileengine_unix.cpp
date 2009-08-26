@@ -827,12 +827,12 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
     return ret;
 }
 
-#ifdef Q_OS_SYMBIAN
-static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFileEngine *engine,
-                               const QFSFileEnginePrivate * const d)
+#if defined(Q_OS_SYMBIAN)
+QString QFSFileEngine::fileName(FileName file) const
 {
+    Q_D(const QFSFileEngine);
     const QLatin1Char slashChar('/');
-    if(file == QAbstractFileEngine::BaseName) {
+    if(file == BaseName) {
         int slash = d->filePath.lastIndexOf(slashChar);
         if(slash == -1) {
             int colon = d->filePath.lastIndexOf(QLatin1Char(':'));
@@ -841,7 +841,7 @@ static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFile
             return d->filePath;
         }
         return d->filePath.mid(slash + 1);
-    } else if(file == QAbstractFileEngine::PathName) {
+    } else if(file == PathName) {
         if(!d->filePath.size())
             return d->filePath;
 
@@ -857,7 +857,7 @@ static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFile
                 slash++;
             return d->filePath.left(slash);
         }
-    } else if(file == QAbstractFileEngine::AbsoluteName || file == QAbstractFileEngine::AbsolutePathName) {
+    } else if(file == AbsoluteName || file == AbsolutePathName) {
         QString ret;
         if (!isRelativePathSymbian(d->filePath)) {
             if (d->filePath.size() > 2 && d->filePath.at(1) == QLatin1Char(':')
@@ -885,7 +885,7 @@ static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFile
             ret[0] = ret.at(0).toUpper();
         }
 
-        if (file == QAbstractFileEngine::AbsolutePathName) {
+        if (file == AbsolutePathName) {
             int slash = ret.lastIndexOf(slashChar);
             if (slash < 0)
                 return ret;
@@ -895,12 +895,12 @@ static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFile
                 return ret.left(slash > 0 ? slash : 1);
         }
         return ret;
-    } else if(file == QAbstractFileEngine::CanonicalName || file == QAbstractFileEngine::CanonicalPathName) {
-        if (!(engine->fileFlags(QAbstractFileEngine::ExistsFlag) & QAbstractFileEngine::ExistsFlag))
+    } else if(file == CanonicalName || file == CanonicalPathName) {
+        if (!(fileFlags(ExistsFlag) & ExistsFlag))
             return QString();
 
-        QString ret = QFSFileEnginePrivate::canonicalized(symbianFileName(QAbstractFileEngine::AbsoluteName, engine, d));
-        if (!ret.isEmpty() && file == QAbstractFileEngine::CanonicalPathName) {
+        QString ret = QFSFileEnginePrivate::canonicalized(fileName(AbsoluteName));
+        if (file == CanonicalPathName && !ret.isEmpty()) {
             int slash = ret.lastIndexOf(slashChar);
             if (slash == -1)
                 ret = QDir::fromNativeSeparators(QDir::currentPath());
@@ -909,7 +909,7 @@ static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFile
             ret = ret.left(slash);
         }
         return ret;
-    } else if(file == QAbstractFileEngine::LinkName) {
+    } else if(file == LinkName) {
         if (d->isSymlink()) {
             char s[PATH_MAX+1];
             int len = readlink(d->nativeFilePath.constData(), s, PATH_MAX);
@@ -932,19 +932,17 @@ static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFile
             }
         }
         return QString();
-    } else if(file == QAbstractFileEngine::BundleName) {
+    } else if(file == BundleName) {
         return QString();
     }
     return d->filePath;
 }
-#endif
+
+#else
 
 QString QFSFileEngine::fileName(FileName file) const
 {
     Q_D(const QFSFileEngine);
-#ifdef Q_OS_SYMBIAN
-    return symbianFileName(file, this, d);
-#else
     if (file == BundleName) {
 #if !defined(QWS) && defined(Q_OS_MAC)
         QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(d->filePath),
@@ -997,7 +995,7 @@ QString QFSFileEngine::fileName(FileName file) const
             return QString();
 
         QString ret = QFSFileEnginePrivate::canonicalized(fileName(AbsoluteName));
-        if (!ret.isEmpty() && file == CanonicalPathName) {
+        if (file == CanonicalPathName && !ret.isEmpty()) {
             int slash = ret.lastIndexOf(QLatin1Char('/'));
             if (slash == -1)
                 ret = QDir::currentPath();
@@ -1078,8 +1076,8 @@ QString QFSFileEngine::fileName(FileName file) const
         return QString();
     }
     return d->filePath;
-#endif // Q_OS_SYMBIAN
 }
+#endif // Q_OS_SYMBIAN
 
 bool QFSFileEngine::isRelativePath() const
 {
