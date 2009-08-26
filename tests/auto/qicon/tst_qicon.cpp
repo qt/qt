@@ -43,6 +43,10 @@
 #include <QtTest/QtTest>
 
 #include <qicon.h>
+
+#if defined(Q_OS_SYMBIAN)
+#define SRCDIR "."
+#endif
 #include <qiconengine.h>
 
 Q_DECLARE_METATYPE(QSize)
@@ -125,7 +129,6 @@ void tst_QIcon::actualSize_data()
     QTest::newRow("resource10") << ":/rect.png" << QSize( 25,  50) << QSize( 20,  40);
 
     const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
-
     QTest::newRow("external0") << prefix + "image.png" << QSize(128, 128) << QSize(128, 128);
     QTest::newRow("external1") << prefix + "image.png" << QSize( 64,  64) << QSize( 64,  64);
     QTest::newRow("external2") << prefix + "image.png" << QSize( 32,  64) << QSize( 32,  32);
@@ -180,7 +183,6 @@ void tst_QIcon::actualSize2_data()
 void tst_QIcon::actualSize2()
 {
     QIcon icon;
-
     const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
 
     icon.addPixmap(QPixmap(prefix + "image.png"));
@@ -239,7 +241,6 @@ void tst_QIcon::isNull() {
     QVERIFY(!iconNoFileSuffix.actualSize(QSize(32, 32)).isValid());
 
     const QString prefix = QLatin1String(SRCDIR) + QLatin1String("/");
-
     // test string constructor with existing file but unsupported format
     QIcon iconUnsupportedFormat = QIcon(prefix + "image.tga");
     QVERIFY(!iconUnsupportedFormat.isNull());

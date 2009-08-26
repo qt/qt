@@ -15,6 +15,10 @@ if (!producer.create(size)) {
 }
 //print ("producer created and attached");
 
+QVERIFY(producer.lock());
+producer.set(0, 'Q');
+QVERIFY(producer.unlock());
+
 var i = 0;
 while(i < 5) {
     QVERIFY(producer.lock(), "lock");
@@ -34,3 +38,7 @@ producer.set(0, 'E');
 QVERIFY(producer.unlock());
 
 //print ("producer done");
+
+// Sleep for a bit to let all consumers start, otherwise they will get stuck in the attach loop,
+// because at least in Symbian the shared memory will be destroyed if there are no active handles to it.
+producer.sleep(3000);

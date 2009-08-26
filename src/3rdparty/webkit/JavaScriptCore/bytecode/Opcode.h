@@ -167,7 +167,7 @@ namespace JSC {
         macro(op_jsr, 3) \
         macro(op_sret, 2) \
         \
-        macro(op_debug, 4) \
+        macro(op_debug, 5) \
         macro(op_profile_will_call, 2) \
         macro(op_profile_did_call, 2) \
         \

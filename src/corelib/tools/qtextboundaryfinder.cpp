@@ -38,11 +38,11 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "private/qharfbuzz_p.h"
 #include <QtCore/qtextboundaryfinder.h>
 #include <QtCore/qvarlengtharray.h>
 #include <private/qunicodetables_p.h>
 #include <qdebug.h>
+#include "private/qharfbuzz_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -176,6 +176,7 @@ QTextBoundaryFinder::QTextBoundaryFinder(const QTextBoundaryFinder &other)
     , freePrivate(true)
 {
     d = (QTextBoundaryFinderPrivate *) malloc(length*sizeof(HB_CharAttributes));
+    Q_CHECK_PTR(d);
     memcpy(d, other.d, length*sizeof(HB_CharAttributes));
 }
 
@@ -193,8 +194,11 @@ QTextBoundaryFinder &QTextBoundaryFinder::operator=(const QTextBoundaryFinder &o
     length = other.length;
     pos = other.pos;
     freePrivate = true;
-    
-    d = (QTextBoundaryFinderPrivate *) realloc(d, length*sizeof(HB_CharAttributes));
+
+    QTextBoundaryFinderPrivate *newD = (QTextBoundaryFinderPrivate *)
+        realloc(d, length*sizeof(HB_CharAttributes));
+    Q_CHECK_PTR(newD);
+    d = newD;
     memcpy(d, other.d, length*sizeof(HB_CharAttributes));
 
     return *this;
@@ -221,6 +225,7 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, const QString &strin
     , freePrivate(true)
 {
     d = (QTextBoundaryFinderPrivate *) malloc(length*sizeof(HB_CharAttributes));
+    Q_CHECK_PTR(d);
     init(t, chars, length, d->attributes);
 }
 
@@ -248,6 +253,7 @@ QTextBoundaryFinder::QTextBoundaryFinder(BoundaryType type, const QChar *chars, 
         freePrivate = false;
     } else {
         d = (QTextBoundaryFinderPrivate *) malloc(length*sizeof(HB_CharAttributes));
+        Q_CHECK_PTR(d);
         freePrivate = true;
     }
     init(t, chars, length, d->attributes);

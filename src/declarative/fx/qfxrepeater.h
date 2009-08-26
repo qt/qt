@@ -55,9 +55,10 @@ class Q_DECLARATIVE_EXPORT QFxRepeater : public QFxItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QVariant dataSource READ dataSource WRITE setDataSource)
-    Q_PROPERTY(QmlComponent *component READ component WRITE setComponent)
+    Q_PROPERTY(QVariant dataSource READ dataSource WRITE setDataSource) //### model
+    Q_PROPERTY(QmlComponent *component READ component WRITE setComponent) //### delegate
     Q_CLASSINFO("DefaultProperty", "component")
+    //### count
 public:
     QFxRepeater(QFxItem *parent=0);
     virtual ~QFxRepeater();
@@ -78,7 +79,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxRepeater)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxRepeater)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxRepeater)
 };
 
 QT_END_NAMESPACE

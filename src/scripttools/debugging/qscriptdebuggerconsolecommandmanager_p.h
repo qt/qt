@@ -54,7 +54,7 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-
+#include <QtCore/qscopedpointer.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qlist.h>
 
@@ -86,7 +86,7 @@ public:
     QStringList completions(const QString &prefix) const;
 
 private:
-    QScriptDebuggerConsoleCommandManagerPrivate *d_ptr;
+    QScopedPointer<QScriptDebuggerConsoleCommandManagerPrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptDebuggerConsoleCommandManager)
 };

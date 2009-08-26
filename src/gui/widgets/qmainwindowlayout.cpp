@@ -1463,7 +1463,7 @@ void QMainWindowLayout::setGeometry(const QRect &_r)
                   QSize(r.width(), statusbar->heightForWidth(r.width()))
                   .expandedTo(statusbar->minimumSize()));
         sbr.moveBottom(r.bottom());
-        QRect vr = QStyle::visualRect(QApplication::layoutDirection(), _r, sbr);
+        QRect vr = QStyle::visualRect(parentWidget()->layoutDirection(), _r, sbr);
         statusbar->setGeometry(vr);
         r.setBottom(sbr.top() - 1);
     }

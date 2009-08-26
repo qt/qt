@@ -59,6 +59,7 @@ QMapData QMapData::shared_null = {
 QMapData *QMapData::createData()
 {
     QMapData *d = new QMapData;
+    Q_CHECK_PTR(d);
     Node *e = reinterpret_cast<Node *>(d);
     e->backward = e;
     e->forward[0] = e;
@@ -84,6 +85,18 @@ void QMapData::continueFreeData(int offset)
     delete this;
 }
 
+/*!
+    Creates a new node inside the data structure.
+
+    \a update is an array with pointers to the node after which the new node
+    should be inserted. Because of the strange skip list data structure there
+    could be several pointers to this node on different levels.
+    \a offset is an amount of bytes that needs to reserved just before the
+    QMapData::Node structure.
+
+    \internal
+    \since 4.6
+*/
 QMapData::Node *QMapData::node_create(Node *update[], int offset)
 {
     int level = 0;
@@ -94,10 +107,6 @@ QMapData::Node *QMapData::node_create(Node *update[], int offset)
         mask <<= Sparseness;
     }
 
-    ++randomBits;
-    if (level == 3 && !insertInOrder)
-        randomBits = qrand();
-
     if (level > topLevel) {
         Node *e = reinterpret_cast<Node *>(this);
         level = ++topLevel;
@@ -105,7 +114,13 @@ QMapData::Node *QMapData::node_create(Node *update[], int offset)
         update[level] = e;
     }
 
+    ++randomBits;
+    if (level == 3 && !insertInOrder)
+        randomBits = qrand();
+
     void *concreteNode = qMalloc(offset + sizeof(Node) + level * sizeof(Node *));
+    Q_CHECK_PTR(concreteNode);
+
     Node *abstractNode = reinterpret_cast<Node *>(reinterpret_cast<char *>(concreteNode) + offset);
 
     abstractNode->backward = update[0];
@@ -146,7 +161,7 @@ uint QMapData::adjust_ptr(Node *node)
 
 void QMapData::dump()
 {
-    qDebug("Map data (ref = %d, size = %d, randomBits = %#.8x)", ref.atomic, size, randomBits);
+    qDebug("Map data (ref = %d, size = %d, randomBits = %#.8x)", int(ref), size, randomBits);
 
     QString preOutput;
     QVector<QString> output(topLevel + 1);
@@ -158,12 +173,12 @@ void QMapData::dump()
 
     Node *update[LastLevel + 1];
     for (int i = 0; i <= topLevel; ++i) {
-        str.sprintf("%d: [%.8x] -", i, adjust_ptr(forward[i]));
+        str.sprintf("%d: [%.8x] -", i, adjust_ptr(reinterpret_cast<Node *>(forward[i])));
         output[i] += str;
-        update[i] = forward[i];
+        update[i] = reinterpret_cast<Node *>(forward[i]);
     }
 
-    Node *node = forward[0];
+    Node *node = reinterpret_cast<Node *>(forward[0]);
     while (node != e) {
         int level = 0;
         while (level < topLevel && update[level + 1] == node)
@@ -178,13 +193,13 @@ void QMapData::dump()
             update[i] = node->forward[i];
         }
         for (int j = level + 1; j <= topLevel; ++j)
-            output[j] += "---------------";
+            output[j] += QLatin1String("---------------");
         node = node->forward[0];
     }
 
-    qDebug(preOutput.ascii());
+    qDebug("%s", preOutput.ascii());
     for (int i = 0; i <= topLevel; ++i)
-        qDebug(output[i].ascii());
+        qDebug("%s", output[i].ascii());
 }
 #endif
 

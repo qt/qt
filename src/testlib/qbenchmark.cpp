@@ -240,6 +240,7 @@ void QTest::setIterationCountHint(int count)
 {
     QBenchmarkTestMethodData::current->adjustIterationCount(count);
 }
+
 /*! \internal
 */
 void QTest::setIterationCount(int count)

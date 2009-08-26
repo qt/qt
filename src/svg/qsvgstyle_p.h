@@ -143,9 +143,13 @@ struct QSvgExtraStates
     QSvgExtraStates();
 
     qreal fillOpacity;
+    qreal strokeOpacity;
     QSvgFont *svgFont;
     Qt::Alignment textAnchor;
     int fontWeight;
+    Qt::FillRule fillRule;
+    qreal strokeDashOffset;
+    bool vectorEffect; // true if pen is cosmetic
 };
 
 class QSvgStyleProperty : public QSvgRefCounted
@@ -171,6 +175,14 @@ public:
     virtual void apply(QPainter *p, const QRectF &, QSvgNode *node, QSvgExtraStates &states)  =0;
     virtual void revert(QPainter *p, QSvgExtraStates &states) =0;
     virtual Type type() const=0;
+};
+
+class QSvgFillStyleProperty : public QSvgStyleProperty
+{
+public:
+    virtual QBrush brush(QPainter *p, QSvgExtraStates &states) = 0;
+    virtual void apply(QPainter *p, const QRectF &, QSvgNode *node, QSvgExtraStates &states);
+    virtual void revert(QPainter *p, QSvgExtraStates &states);
 };
 
 class QSvgQualityStyle : public QSvgStyleProperty
@@ -220,15 +232,14 @@ private:
 class QSvgFillStyle : public QSvgStyleProperty
 {
 public:
-    QSvgFillStyle(const QBrush &brush);
-    QSvgFillStyle(QSvgStyleProperty *style);
+    QSvgFillStyle();
     virtual void apply(QPainter *p, const QRectF &, QSvgNode *node, QSvgExtraStates &states);
     virtual void revert(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
 
     void setFillRule(Qt::FillRule f);
     void setFillOpacity(qreal opacity);
-    void setFillStyle(QSvgStyleProperty* style);
+    void setFillStyle(QSvgFillStyleProperty* style);
     void setBrush(QBrush brush);
 
     const QBrush & qbrush() const
@@ -246,7 +257,7 @@ public:
         return m_fillRule;
     }
 
-    QSvgStyleProperty* style() const
+    QSvgFillStyleProperty* style() const
     {
         return m_style;
     }
@@ -256,7 +267,7 @@ public:
         m_gradientId = Id;
     }
 
-    QString getGradientId() const
+    QString gradientId() const
     {
         return m_gradientId;
     }
@@ -276,16 +287,19 @@ private:
     // fill-opacity    v 	v 	'inherit' | <OpacityValue.datatype>
     QBrush m_fill;
     QBrush m_oldFill;
-    QSvgStyleProperty *m_style;
+    QSvgFillStyleProperty *m_style;
 
-    bool         m_fillRuleSet;
     Qt::FillRule m_fillRule;
-    bool m_fillOpacitySet;
+    Qt::FillRule m_oldFillRule;
     qreal m_fillOpacity;
-    qreal m_oldOpacity;
+    qreal m_oldFillOpacity;
+
     QString m_gradientId;
-    bool m_gradientResolved;
-    bool m_fillSet;
+    uint m_gradientResolved : 1;
+
+    uint m_fillRuleSet : 1;
+    uint m_fillOpacitySet : 1;
+    uint m_fillSet : 1;
 };
 
 class QSvgViewportFillStyle : public QSvgStyleProperty
@@ -384,36 +398,121 @@ private:
     Qt::Alignment m_oldTextAnchor;
     int m_oldWeight;
 
-    unsigned m_familySet : 1;
-    unsigned m_sizeSet : 1;
-    unsigned m_styleSet : 1;
-    unsigned m_variantSet : 1;
-    unsigned m_weightSet : 1;
-    unsigned m_textAnchorSet : 1;
+    uint m_familySet : 1;
+    uint m_sizeSet : 1;
+    uint m_styleSet : 1;
+    uint m_variantSet : 1;
+    uint m_weightSet : 1;
+    uint m_textAnchorSet : 1;
 };
 
 class QSvgStrokeStyle : public QSvgStyleProperty
 {
 public:
-    QSvgStrokeStyle(const QPen &pen);
+    QSvgStrokeStyle();
     virtual void apply(QPainter *p, const QRectF &, QSvgNode *node, QSvgExtraStates &states);
     virtual void revert(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
 
-    void setStroke(bool stroke)
+    void setStroke(QBrush brush)
     {
-        m_strokePresent = stroke;
+        m_stroke.setBrush(brush);
+        m_style = 0;
+        m_strokeSet = 1;
     }
 
-    bool strokePresent() const
+    void setStyle(QSvgFillStyleProperty *style)
     {
-        return m_strokePresent;
+        m_style = style;
+        m_strokeSet = 1;
     }
 
-    const QPen & qpen() const
+    void setDashArray(const QVector<qreal> &dashes);
+
+    void setDashArrayNone()
+    {
+        m_stroke.setStyle(Qt::SolidLine);
+        m_strokeDashArraySet = 1;
+    }
+
+    void setDashOffset(qreal offset)
+    {
+        m_strokeDashOffset = offset;
+        m_strokeDashOffsetSet = 1;
+    }
+
+    void setLineCap(Qt::PenCapStyle cap)
+    {
+        m_stroke.setCapStyle(cap);
+        m_strokeLineCapSet = 1;
+    }
+
+    void setLineJoin(Qt::PenJoinStyle join)
+    {
+        m_stroke.setJoinStyle(join);
+        m_strokeLineJoinSet = 1;
+    }
+
+    void setMiterLimit(qreal limit)
+    {
+        m_stroke.setMiterLimit(limit);
+        m_strokeMiterLimitSet = 1;
+    }
+
+    void setOpacity(qreal opacity)
+    {
+        m_strokeOpacity = opacity;
+        m_strokeOpacitySet = 1;
+    }
+
+    void setWidth(qreal width)
+    {
+        m_stroke.setWidthF(width);
+        m_strokeWidthSet = 1;
+        Q_ASSERT(!m_strokeDashArraySet); // set width before dash array.
+    }
+
+    qreal width()
+    {
+        return m_stroke.widthF();
+    }
+
+    void setVectorEffect(bool nonScalingStroke)
+    {
+        m_vectorEffect = nonScalingStroke;
+        m_vectorEffectSet = 1;
+    }
+
+    QSvgFillStyleProperty* style() const
+    {
+        return m_style;
+    }
+
+    void setGradientId(const QString &Id)
+    {
+        m_gradientId = Id;
+    }
+
+    QString gradientId() const
+    {
+        return m_gradientId;
+    }
+
+    void setGradientResolved(bool resolved)
+    {
+        m_gradientResolved = resolved;
+    }
+
+    bool isGradientResolved() const
+    {
+        return m_gradientResolved;
+    }
+
+    QPen stroke() const
     {
         return m_stroke;
     }
+
 private:
     // stroke            v 	v 	'inherit' | <Paint.datatype>
     // stroke-dasharray  v 	v 	'inherit' | <StrokeDashArrayValue.datatype>
@@ -425,22 +524,44 @@ private:
     // stroke-width      v 	v 	'inherit' | <StrokeWidthValue.datatype>
     QPen m_stroke;
     QPen m_oldStroke;
-	bool m_strokePresent;
+    qreal m_strokeOpacity;
+    qreal m_oldStrokeOpacity;
+    qreal m_strokeDashOffset;
+    qreal m_oldStrokeDashOffset;
+
+    QSvgFillStyleProperty *m_style;
+    QString m_gradientId;
+    uint m_gradientResolved : 1;
+    uint m_vectorEffect : 1;
+    uint m_oldVectorEffect : 1;
+
+    uint m_strokeSet : 1;
+    uint m_strokeDashArraySet : 1;
+    uint m_strokeDashOffsetSet : 1;
+    uint m_strokeLineCapSet : 1;
+    uint m_strokeLineJoinSet : 1;
+    uint m_strokeMiterLimitSet : 1;
+    uint m_strokeOpacitySet : 1;
+    uint m_strokeWidthSet : 1;
+    uint m_vectorEffectSet : 1;
 };
 
-
-class QSvgSolidColorStyle : public QSvgStyleProperty
+class QSvgSolidColorStyle : public QSvgFillStyleProperty
 {
 public:
     QSvgSolidColorStyle(const QColor &color);
-    virtual void apply(QPainter *p, const QRectF &, QSvgNode *node, QSvgExtraStates &states);
-    virtual void revert(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
 
     const QColor & qcolor() const
     {
         return m_solidColor;
     }
+
+    QBrush brush(QPainter *, QSvgExtraStates &)
+    {
+        return m_solidColor;
+    }
+
 private:
     // solid-color       v 	x 	'inherit' | <SVGColor.datatype>
     // solid-opacity     v 	x 	'inherit' | <OpacityValue.datatype>
@@ -450,13 +571,11 @@ private:
     QPen   m_oldStroke;
 };
 
-class QSvgGradientStyle : public QSvgStyleProperty
+class QSvgGradientStyle : public QSvgFillStyleProperty
 {
 public:
     QSvgGradientStyle(QGradient *grad);
     ~QSvgGradientStyle() { delete m_gradient; }
-    virtual void apply(QPainter *p, const QRectF &, QSvgNode *node, QSvgExtraStates &states);
-    virtual void revert(QPainter *p, QSvgExtraStates &states);
     virtual Type type() const;
 
     void setStopLink(const QString &link, QSvgTinyDocument *doc);
@@ -474,8 +593,6 @@ public:
         return m_gradient;
     }
 
-    void addResolve(qreal offset);
-
     bool gradientStopsSet() const
     {
         return m_gradientStopsSet;
@@ -485,12 +602,10 @@ public:
     {
         m_gradientStopsSet = set;
     }
+
+    QBrush brush(QPainter *, QSvgExtraStates &);
 private:
     QGradient      *m_gradient;
-    QList<qreal>  m_resolvePoints;
-
-    QBrush m_oldFill;
-
     QMatrix m_matrix;
 
     QSvgTinyDocument *m_doc;

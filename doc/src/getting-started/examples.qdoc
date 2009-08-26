@@ -796,6 +796,13 @@
     \o \l{multimedia/audio/audioinput}{Audio Input}
     \endlist
 
+    \section1 Video Output
+
+    \list
+    \o \l{video/videowidget}{Video Widget}\raisedaster
+    \o \l{video/videographicsitem}{Video Graphics Item}
+    \endlist
+
     \section1 Phonon
 
     The Phonon Multimedia Framework brings multimedia support to Qt applications.

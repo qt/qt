@@ -59,7 +59,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef Q_OS_SYMBIAN
+static const int MaxWriteBufferSize = 4*1024;
+#else
 static const int MaxWriteBufferSize = 128*1024;
+#endif
 
 //#define QSOCKS5SOCKETLAYER_DEBUG
 
@@ -1844,9 +1848,9 @@ QSocks5SocketEngineHandler::createSocketEngine(QAbstractSocket::SocketType socke
         QSOCKS5_DEBUG << "not proxying";
         return 0;
     }
-    QSocks5SocketEngine *engine = new QSocks5SocketEngine(parent);
+    QScopedPointer<QSocks5SocketEngine> engine(new QSocks5SocketEngine(parent));
     engine->setProxy(proxy);
-    return engine;
+    return engine.take();
 }
 
 QAbstractSocketEngine *QSocks5SocketEngineHandler::createSocketEngine(int socketDescriptor, QObject *parent)

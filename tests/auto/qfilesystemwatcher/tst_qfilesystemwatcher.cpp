@@ -73,9 +73,11 @@ private slots:
     void removePath();
     void addPaths();
     void removePaths();
-    void watchFileAndItsDirectory();
-    void watchFileAndItsDirectory_data() { basicTest_data(); }
 
+    void watchFileAndItsDirectory_data() { basicTest_data(); }
+    void watchFileAndItsDirectory();
+
+    void cleanup();
 private:
     QStringList do_force_engines;
     bool do_force_native;
@@ -96,7 +98,7 @@ tst_QFileSystemWatcher::tst_QFileSystemWatcher()
     if (inotify_init() != -1)
         do_force_engines << "inotify";
 #endif
-#elif defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_FREEBSD)
+#elif defined(Q_OS_WIN) || defined(Q_OS_DARWIN) || defined(Q_OS_FREEBSD) || defined(Q_OS_SYMBIAN)
     // we have native engines for win32, macosx and freebsd
     do_force_engines << "native";
 #endif
@@ -314,6 +316,9 @@ void tst_QFileSystemWatcher::watchDirectory()
 
 #ifdef Q_OS_WINCE
     QEXPECT_FAIL("poller", "Directory does not get updated on file removal(See #137910)", Abort);
+#elif defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT)
+    // Since native watcher is always used in real devices, this poller issue is irrelevant
+    QEXPECT_FAIL("poller", "Poller doesn't detect directory removal in RVCT builds", Abort);
 #endif
     QCOMPARE(changedSpy.count(), 2);
     QCOMPARE(changedSpy.at(0).count(), 1);
@@ -456,12 +461,22 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     timer.start(3000);
     eventLoop.exec();
     QVERIFY(fileChangedSpy.count() > 0);
-    QCOMPARE(dirChangedSpy.count(), 0);
+    //according to Qt 4 documentation:
+    //void QFileSystemWatcher::directoryChanged ( const QString & path )   [signal]
+    //This signal is emitted when the directory at a specified path, is modified
+    //(e.g., when a file is added, -->modified<-- or deleted) or removed from disk.
+    //Note that if there are several changes during a short period of time, some
+    //of the changes might not emit this signal. However, the last change in the
+    //sequence of changes will always generate this signal.
+    //Symbian behaves as documented (and can't be filtered), but the other platforms don't
+    //so test should not assert this
+    QVERIFY(dirChangedSpy.count() < 2);
 
     if (backend == "dnotify")
         QSKIP("dnotify is broken, skipping the rest of the test.", SkipSingle);
 
     fileChangedSpy.clear();
+    dirChangedSpy.clear();
     QFile secondFile(secondFileName);
     secondFile.open(QIODevice::WriteOnly | QIODevice::Truncate);
     secondFile.write("Foo");
@@ -470,6 +485,11 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     timer.start(3000);
     eventLoop.exec();
     QCOMPARE(fileChangedSpy.count(), 0);
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT)
+    // Since native watcher is always used in real devices, this poller issue is irrelevant
+    // Symbian file system does not change modification time on a directory when a file inside is changed
+    QEXPECT_FAIL("poller", "Poller doesn't detect directory changes in RVCT builds", Abort);
+#endif
     QCOMPARE(dirChangedSpy.count(), 1);
 
     dirChangedSpy.clear();
@@ -493,6 +513,16 @@ void tst_QFileSystemWatcher::watchFileAndItsDirectory()
     QCOMPARE(dirChangedSpy.count(), 1);
 
     QVERIFY(QDir().rmdir("testDir"));
+}
+
+void tst_QFileSystemWatcher::cleanup()
+{
+    QDir testDir("testDir");
+    QString testFileName = testDir.filePath("testFile.txt");
+    QString secondFileName = testDir.filePath("testFile2.txt");
+    QFile::remove(testFileName);
+    QFile::remove(secondFileName);
+    QDir().rmdir("testDir");
 }
 
 QTEST_MAIN(tst_QFileSystemWatcher)

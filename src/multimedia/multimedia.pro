@@ -1,11 +1,12 @@
-TARGET     = QtMultimedia
-QPRO_PWD   = $$PWD
-QT         = core
-DEFINES   += QT_BUILD_MULTIMEDIA_LIB
+TARGET = QtMultimedia
+QPRO_PWD = $$PWD
+QT = core gui
 
-win32-msvc*:QMAKE_LIBS += $$QMAKE_LIBS_CORE
+DEFINES += QT_BUILD_MULTIMEDIA_LIB QT_NO_USING_NAMESPACE
 
-unix:QMAKE_PKGCONFIG_REQUIRES = QtCore
+unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui
 
 include(../qbase.pri)
+
 include(audio/audio.pri)
+include(video/video.pri)

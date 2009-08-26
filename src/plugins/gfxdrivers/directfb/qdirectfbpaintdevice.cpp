@@ -47,7 +47,8 @@
 
 QDirectFBPaintDevice::QDirectFBPaintDevice(QDirectFBScreen *scr)
     : QCustomRasterPaintDevice(0), dfbSurface(0), lockedImage(0), screen(scr),
-      bpl(-1), lockFlgs(DFBSurfaceLockFlags(0)), mem(0), engine(0)
+      bpl(-1), lockFlgs(DFBSurfaceLockFlags(0)), mem(0), engine(0),
+      imageFormat(QImage::Format_Invalid)
 {}
 
 QDirectFBPaintDevice::~QDirectFBPaintDevice()
@@ -56,12 +57,10 @@ QDirectFBPaintDevice::~QDirectFBPaintDevice()
     delete engine;
 }
 
-
 IDirectFBSurface *QDirectFBPaintDevice::directFBSurface() const
 {
     return dfbSurface;
 }
-
 
 void QDirectFBPaintDevice::lockDirectFB(DFBSurfaceLockFlags flags)
 {
@@ -77,7 +76,6 @@ void QDirectFBPaintDevice::lockDirectFB(DFBSurfaceLockFlags flags)
     }
 }
 
-
 void QDirectFBPaintDevice::unlockDirectFB()
 {
     if (!lockedImage || !QDirectFBScreen::instance())
@@ -90,18 +88,15 @@ void QDirectFBPaintDevice::unlockDirectFB()
     lockFlgs = DFBSurfaceLockFlags(0);
 }
 
-
 void *QDirectFBPaintDevice::memory() const
 {
     return mem;
 }
 
-
 QImage::Format QDirectFBPaintDevice::format() const
 {
-    return QDirectFBScreen::getImageFormat(dfbSurface);
+    return imageFormat;
 }
-
 
 int QDirectFBPaintDevice::bytesPerLine() const
 {
@@ -109,7 +104,7 @@ int QDirectFBPaintDevice::bytesPerLine() const
         // Can only get the stride when we lock the surface
         Q_ASSERT(!lockedImage);
         QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
-        that->lockDirectFB(DSLF_READ);
+        that->lockDirectFB(DSLF_READ|DSLF_WRITE);
         Q_ASSERT(bpl != -1);
     }
     return bpl;
@@ -143,11 +138,9 @@ int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     case QPaintDevice::PdmDpiY:
         return (dotsPerMeterY() * 254) / 10000; // 0.0254 meters-per-inch
     case QPaintDevice::PdmDepth:
-        DFBSurfacePixelFormat format;
-        dfbSurface->GetPixelFormat(dfbSurface, &format);
-        return QDirectFBScreen::depth(format);
+        return QDirectFBScreen::depth(imageFormat);
     case QPaintDevice::PdmNumColors: {
-       if (lockedImage)
+        if (lockedImage)
             return lockedImage->numColors();
 
         DFBResult result;

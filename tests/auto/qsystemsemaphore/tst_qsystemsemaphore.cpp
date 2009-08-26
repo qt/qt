@@ -185,6 +185,9 @@ void tst_QSystemSemaphore::complexacquire()
 
 void tst_QSystemSemaphore::basicProcesses()
 {
+#if defined (Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+    QSKIP("Cannot launch multiple Qt processes in Symbian emulator", SkipAll);
+#endif
     QSystemSemaphore sem("store", 0, QSystemSemaphore::Create);
 
     QStringList acquireArguments = QStringList() << acquire_js();
@@ -201,6 +204,7 @@ void tst_QSystemSemaphore::basicProcesses()
     acquire.kill();
     release.start(LACKYLOC "/lackey", releaseArguments);
     acquire.waitForFinished(5000);
+    release.waitForFinished(5000);
     QVERIFY(acquire.state() == QProcess::NotRunning);
 }
 
@@ -216,6 +220,9 @@ void tst_QSystemSemaphore::processes_data()
 
 void tst_QSystemSemaphore::processes()
 {
+#if defined (Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+    QSKIP("Cannot launch multiple Qt processes in Symbian emulator", SkipAll);
+#endif
     QSystemSemaphore sem("store", 1, QSystemSemaphore::Create);
 
     QFETCH(int, processes);
@@ -242,7 +249,7 @@ void tst_QSystemSemaphore::processes()
 
 void tst_QSystemSemaphore::undo()
 {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     QSKIP("This test only checks a unix behavior", SkipSingle);
 #endif
 
@@ -264,8 +271,10 @@ void tst_QSystemSemaphore::undo()
 
 void tst_QSystemSemaphore::initialValue()
 {
+#if defined (Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+    QSKIP("Cannot launch multiple Qt processes in Symbian emulator", SkipAll);
+#endif
     QSystemSemaphore sem("store", 1, QSystemSemaphore::Create);
-
 
     QStringList acquireArguments = QStringList() << acquire_js();
     QStringList releaseArguments = QStringList() << release_js();
@@ -286,6 +295,7 @@ void tst_QSystemSemaphore::initialValue()
 
     release.start(LACKYLOC "/lackey", releaseArguments);
     acquire.waitForFinished(10000);
+    release.waitForFinished(10000);
     QVERIFY(acquire.state()== QProcess::NotRunning);
 }
 QTEST_MAIN(tst_QSystemSemaphore)

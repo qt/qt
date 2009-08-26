@@ -120,12 +120,12 @@ void JSCustomSQLTransactionCallback::handleEvent(SQLTransaction* transaction, bo
     MarkedArgumentBuffer args;
     args.append(toJS(exec, deprecatedGlobalObjectForPrototype(exec), transaction));
 
-    globalObject->globalData()->timeoutChecker.start();
+    globalObject->globalData()->timeoutChecker->start();
     if (handleEventCallType != CallTypeNone)
         call(exec, handleEventFunction, handleEventCallType, handleEventCallData, m_data->callback(), args);
     else
         call(exec, m_data->callback(), callbackCallType, callbackCallData, m_data->callback(), args);
-    globalObject->globalData()->timeoutChecker.stop();
+    globalObject->globalData()->timeoutChecker->stop();
         
     if (exec->hadException()) {
         reportCurrentException(exec);

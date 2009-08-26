@@ -50,7 +50,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
-#ifndef Q_OS_WINCE
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
 #include <QHostInfo>
 #endif
 #include <QProcess>
@@ -73,8 +73,11 @@
 #endif
 
 #include <stdio.h>
-
 #include "../network-settings.h"
+
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
 
 Q_DECLARE_METATYPE(QFile::FileError)
 
@@ -382,7 +385,10 @@ void tst_QFile::open()
 
     QFETCH( bool, ok );
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_SYMBIAN)
+    if (qstrcmp(QTest::currentDataTag(), "noreadfile") == 0)
+        QSKIP("Symbian does not support non-readable files", SkipSingle);
+#elif defined(Q_OS_UNIX)
     if (::getuid() == 0)
         // root and Chuck Norris don't care for file permissions. Skip.
         QSKIP("Running this test as root doesn't make sense", SkipAll);
@@ -599,8 +605,8 @@ void tst_QFile::readLineNullInLine()
 
 void tst_QFile::readAllStdin()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Currently no stdin/out supported for Windows CE", SkipAll);
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+    QSKIP("Currently no stdin/out supported for Windows CE or Symbian", SkipAll);
 #endif
 #if defined(QT_NO_PROCESS)
     QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
@@ -625,8 +631,8 @@ void tst_QFile::readAllStdin()
 
 void tst_QFile::readLineStdin()
 {
-#if defined(Q_OS_WINCE)
-    QSKIP("Currently no stdin/out supported for Windows CE", SkipAll);
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+    QSKIP("Currently no stdin/out supported for Windows CE or Symbian", SkipAll);
 #endif
 #if defined(QT_NO_PROCESS)
     QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
@@ -668,7 +674,7 @@ void tst_QFile::readLineStdin()
 
 void tst_QFile::readLineStdin_lineByLine()
 {
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     QSKIP("Currently no stdin/out supported for Windows CE", SkipAll);
 #endif
 #if defined(QT_NO_PROCESS)
@@ -796,7 +802,7 @@ void tst_QFile::ungetChar()
 void tst_QFile::invalidFile_data()
 {
     QTest::addColumn<QString>("fileName");
-#ifndef Q_WS_WIN
+#if !defined(Q_WS_WIN) && !defined(Q_OS_SYMBIAN)
     QTest::newRow( "x11" ) << QString( "qwe//" );
 #else
     QTest::newRow( "colon1" ) << QString( "fail:invalid" );
@@ -866,6 +872,10 @@ void tst_QFile::permissions_data()
 
 void tst_QFile::permissions()
 {
+#if defined(Q_OS_SYMBIAN)
+    if (qstrcmp(QTest::currentDataTag(), "data0") == 0)
+        QSKIP("Symbian does not have execution permissions", SkipSingle);
+#endif
     QFETCH(QString, file);
     QFETCH(uint, perms);
     QFETCH(bool, expected);
@@ -957,7 +967,11 @@ void tst_QFile::copyShouldntOverwrite()
     QFile::remove("tst_qfile.cpy");
     QFile file(SRCDIR "tst_qfile.cpp");
     QVERIFY(file.copy("tst_qfile.cpy"));
+#if defined(Q_OS_SYMBIAN)
+	bool ok = QFile::setPermissions("tst_qfile.cpy", QFile::WriteUser);
+#else
 	bool ok = QFile::setPermissions("tst_qfile.cpy", QFile::WriteOther);
+#endif
     QVERIFY(ok);
     QVERIFY(!file.copy("tst_qfile.cpy"));
     QFile::remove("tst_qfile.cpy");
@@ -1042,11 +1056,7 @@ void tst_QFile::link()
     QVERIFY(QFile::link("tst_qfile.cpp", "myLink.lnk"));
     QFileInfo info2("myLink.lnk");
     QVERIFY(info2.isSymLink());
-#ifdef Q_OS_WIN // on windows links are always absolute
     QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
-#else
-    QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
-#endif
 
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     QString wd = getWorkingDirectoryForLink(info2.absoluteFilePath());
@@ -1057,6 +1067,9 @@ void tst_QFile::link()
 
 void tst_QFile::linkToDir()
 {
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("Symbian does not support linking to directories", SkipAll);
+#endif
     QFile::remove("myLinkToDir.lnk");
     QDir dir;
     dir.mkdir("myDir");
@@ -1069,11 +1082,7 @@ void tst_QFile::linkToDir()
     // later fail...
     QVERIFY(info2.isSymLink());
 #endif
-#ifdef Q_OS_WIN // on windows links are alway absolute
     QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
-#else
-    QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
-#endif
     QVERIFY(QFile::remove(info2.absoluteFilePath()));
     QFile::remove("myLinkToDir.lnk");
     dir.rmdir("myDir");
@@ -1092,8 +1101,7 @@ void tst_QFile::absolutePathLinkToRelativePath()
 #else
     QVERIFY(QFile::link("myDir/test.txt", "myDir/myLink.lnk"));
 #endif
-
-    QEXPECT_FAIL("", "Symlinking using relative paths is currently different on Windows and Unix", Continue);
+    QEXPECT_FAIL("", "Symlinking using relative paths is currently different on Windows and Unix/Symbian", Continue);
     QCOMPARE(QFileInfo(QFile(QFileInfo("myDir/myLink.lnk").absoluteFilePath()).symLinkTarget()).absoluteFilePath(),
              QFileInfo("myDir/test.txt").absoluteFilePath());
 
@@ -1106,18 +1114,24 @@ void tst_QFile::readBrokenLink()
 {
     QFile::remove("myLink2.lnk");
     QFileInfo info1("file12");
+#if defined(Q_OS_SYMBIAN)
+    // In Symbian can't link to nonexisting file directly, so create the file temporarily
+    QFile tempFile("file12");
+    tempFile.open(QIODevice::WriteOnly);
+    tempFile.link("myLink2.lnk");
+    tempFile.remove();
+#else
     QVERIFY(QFile::link("file12", "myLink2.lnk"));
+#endif
     QFileInfo info2("myLink2.lnk");
     QVERIFY(info2.isSymLink());
-#ifdef Q_OS_WIN // on windows links are alway absolute
     QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
-#else
-    QCOMPARE(info2.symLinkTarget(), info1.absoluteFilePath());
-#endif
     QVERIFY(QFile::remove(info2.absoluteFilePath()));
 
+#if !defined(Q_OS_SYMBIAN)
     QVERIFY(QFile::link("ole/..", "myLink2.lnk"));
     QCOMPARE(QFileInfo("myLink2.lnk").symLinkTarget(), QDir::currentPath());
+#endif
 }
 
 void tst_QFile::readTextFile_data()
@@ -1330,7 +1344,7 @@ void tst_QFile::bufferedRead()
 
 void tst_QFile::isSequential()
 {
-#if defined (Q_OS_WIN)
+#if defined (Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     QSKIP("Unix only test.", SkipAll);
 #endif
 
@@ -1639,7 +1653,7 @@ void tst_QFile::longFileName()
     }
     {
         QFile file(fileName);
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
         QEXPECT_FAIL("244 chars", "Full pathname must be less than 260 chars", Abort);
         QEXPECT_FAIL("244 chars to absolutepath", "Full pathname must be less than 260 chars", Abort);
 #endif
@@ -1912,8 +1926,8 @@ void tst_QFile::writeLargeDataBlock()
 
     // Generate a 64MB array with well defined contents.
     QByteArray array;
-#if defined(Q_OS_WINCE)
-	int resizeSize = 1024 * 1024; // WinCE does not have much space
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+	int resizeSize = 1024 * 1024; // WinCE and Symbian do not have much space
 #else
 	int resizeSize = 64 * 1024 * 1024;
 #endif
@@ -2050,7 +2064,7 @@ void tst_QFile::rename_data()
     QTest::newRow("a -> .") << QString("a") << QString(".") << false;
     QTest::newRow("renamefile -> renamefile") << QString("renamefile") << QString("renamefile") << false;
     QTest::newRow("renamefile -> Makefile") << QString("renamefile") << QString("Makefile") << false;
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     QTest::newRow("renamefile -> /etc/renamefile") << QString("renamefile") << QString("/etc/renamefile") << false;
 #endif
     QTest::newRow("renamefile -> renamedfile") << QString("renamefile") << QString("renamedfile") << true;
@@ -2278,7 +2292,7 @@ void tst_QFile::readEof_data()
     QTest::newRow("buffered") << SRCDIR "testfile.txt" << 0;
     QTest::newRow("unbuffered") << SRCDIR "testfile.txt" << int(QIODevice::Unbuffered);
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     QTest::newRow("sequential,buffered") << "/dev/null" << 0;
     QTest::newRow("sequential,unbuffered") << "/dev/null" << int(QIODevice::Unbuffered);
 #endif
@@ -2461,9 +2475,11 @@ void tst_QFile::map()
     QVERIFY(file.open(QFile::ReadWrite));
     memory = file.map(offset, size);
     if (error != QFile::NoError) {
+
 	QVERIFY(file.error() != QFile::NoError);
         return;
     }
+
     QCOMPARE(file.error(), error);
     QVERIFY(memory);
     memory[0] = 'Q';
@@ -2500,7 +2516,9 @@ void tst_QFile::map()
 
     file.close();
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_SYMBIAN)
+	 if (false) // No permissions for user makes no sense in Symbian
+#elif defined(Q_OS_UNIX)
     if (::getuid() != 0)
         // root always has permissions
 #endif

@@ -115,7 +115,7 @@ void tst_QTextBlock::fragmentOverBlockBoundaries()
     QVERIFY(doc);
     // Block separators are always a fragment of their self. Thus:
     // |Hello|\b|World|\b|
-#ifndef Q_WS_WIN
+#if !defined(Q_WS_WIN) && !defined(Q_WS_S60)
     QVERIFY(doc->d_func()->fragmentMap().numNodes() == 4);
 #endif
 

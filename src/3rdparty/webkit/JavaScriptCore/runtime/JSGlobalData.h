@@ -39,6 +39,10 @@
 #include <wtf/HashMap.h>
 #include <wtf/RefCounted.h>
 
+#ifdef QT_BUILD_SCRIPT_LIB
+#include "SourcePoolQt.h"
+#endif
+
 struct OpaqueJSClass;
 struct OpaqueJSClassContextData;
 
@@ -65,6 +69,9 @@ namespace JSC {
     public:
         struct ClientData {
             virtual ~ClientData() = 0;
+#ifdef QT_BUILD_SCRIPT_LIB
+            virtual void mark() {}
+#endif
         };
 
         static bool sharedInstanceExists();
@@ -118,10 +125,13 @@ namespace JSC {
         Lexer* lexer;
         Parser* parser;
         Interpreter* interpreter;
+#ifdef QT_BUILD_SCRIPT_LIB
+        SourcePool* scriptpool;
+#endif
 #if ENABLE(JIT)
         JITThunks jitStubs;
 #endif
-        TimeoutChecker timeoutChecker;
+        TimeoutChecker* timeoutChecker;
         Heap heap;
 
         JSValue exception;

@@ -281,7 +281,7 @@ QmlStatePrivate::generateActionList(QmlStateGroup *group) const
         QList<QmlState *> states = group->states();
         for (int ii = 0; ii < states.count(); ++ii)
             if (states.at(ii)->name() == extends)
-                applyList = static_cast<QmlStatePrivate*>(states.at(ii)->d_ptr)->generateActionList(group);
+                applyList = static_cast<QmlStatePrivate*>(states.at(ii)->d_func())->generateActionList(group);
     }
 
     foreach(QmlStateOperation *op, operations)
@@ -330,7 +330,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
 
     if (revert) {
         QmlStatePrivate *revertPrivate =
-            static_cast<QmlStatePrivate*>(revert->d_ptr);
+            static_cast<QmlStatePrivate*>(revert->d_func());
         d->revertList = revertPrivate->revertList;
         revertPrivate->revertList.clear();
     }

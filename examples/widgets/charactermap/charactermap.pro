@@ -9,3 +9,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/widgets/charactermap
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS charactermap.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/charactermap
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

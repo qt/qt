@@ -56,6 +56,7 @@
 #include <qxml.h>
 #include <qvariant.h>
 #include <qmap.h>
+#include <qshareddata.h>
 #include <qdebug.h>
 #include <stdio.h>
 
@@ -124,7 +125,8 @@ static void qt_split_namespace(QString& prefix, QString& name, const QString& qN
 class QDomImplementationPrivate
 {
 public:
-    QDomImplementationPrivate() { ref = 1; }
+    inline QDomImplementationPrivate() {}
+
     QDomImplementationPrivate* clone();
     QAtomicInt ref;
     static QDomImplementation::InvalidDataPolicy invalidDataPolicy;
@@ -512,8 +514,8 @@ public:
     bool setContent(QXmlInputSource *source, QXmlReader *reader, QString *errorMsg, int *errorLine, int *errorColumn);
 
     // Attributes
-    QDomDocumentTypePrivate* doctype() { return type; };
-    QDomImplementationPrivate* implementation() { return impl; };
+    QDomDocumentTypePrivate* doctype() { return type.data(); };
+    QDomImplementationPrivate* implementation() { return impl.data(); };
     QDomElementPrivate* documentElement();
 
     // Factories
@@ -537,8 +539,8 @@ public:
     void clear();
 
     // Variables
-    QDomImplementationPrivate* impl;
-    QDomDocumentTypePrivate* type;
+    QExplicitlySharedDataPointer<QDomImplementationPrivate> impl;
+    QExplicitlySharedDataPointer<QDomDocumentTypePrivate> type;
 
     void saveDocument(QTextStream& stream, const int indent, QDomNode::EncodingPolicy encUsed) const;
 
@@ -864,10 +866,7 @@ static QString fixedSystemLiteral(const QString &data, bool *ok)
 
 QDomImplementationPrivate* QDomImplementationPrivate::clone()
 {
-    QDomImplementationPrivate* p = new QDomImplementationPrivate;
-    // We are not interested in this node
-    p->ref.deref();
-    return p;
+    return new QDomImplementationPrivate;
 }
 
 /**************************************************************
@@ -3059,7 +3058,7 @@ QDomNamedNodeMapPrivate::~QDomNamedNodeMapPrivate()
 
 QDomNamedNodeMapPrivate* QDomNamedNodeMapPrivate::clone(QDomNodePrivate* p)
 {
-    QDomNamedNodeMapPrivate* m = new QDomNamedNodeMapPrivate(p);
+    QScopedPointer<QDomNamedNodeMapPrivate> m(new QDomNamedNodeMapPrivate(p));
     m->readonly = readonly;
     m->appendToParent = appendToParent;
 
@@ -3072,7 +3071,7 @@ QDomNamedNodeMapPrivate* QDomNamedNodeMapPrivate::clone(QDomNodePrivate* p)
 
     // we are no longer interested in ownership
     m->ref.deref();
-    return m;
+    return m.take();
 }
 
 void QDomNamedNodeMapPrivate::clearMap()
@@ -3498,13 +3497,18 @@ QDomDocumentTypePrivate::~QDomDocumentTypePrivate()
 void QDomDocumentTypePrivate::init()
 {
     entities = new QDomNamedNodeMapPrivate(this);
-    notations = new QDomNamedNodeMapPrivate(this);
-    publicId.clear();
-    systemId.clear();
-    internalSubset.clear();
+    QT_TRY {
+        notations = new QDomNamedNodeMapPrivate(this);
+        publicId.clear();
+        systemId.clear();
+        internalSubset.clear();
 
-    entities->setAppendToParent(true);
-    notations->setAppendToParent(true);
+        entities->setAppendToParent(true);
+        notations->setAppendToParent(true);
+    } QT_CATCH(...) {
+        delete entities;
+        QT_RETHROW;
+    }
 }
 
 QDomNodePrivate* QDomDocumentTypePrivate::cloneNode(bool deep)
@@ -6144,20 +6148,22 @@ void QDomProcessingInstruction::setData(const QString& d)
 
 QDomDocumentPrivate::QDomDocumentPrivate()
     : QDomNodePrivate(0),
+      impl(new QDomImplementationPrivate),
       nodeListTime(1)
 {
-    impl = new QDomImplementationPrivate;
     type = new QDomDocumentTypePrivate(this, this);
+    type->ref.deref();
 
     name = QLatin1String("#document");
 }
 
 QDomDocumentPrivate::QDomDocumentPrivate(const QString& aname)
     : QDomNodePrivate(0),
+      impl(new QDomImplementationPrivate),
       nodeListTime(1)
 {
-    impl = new QDomImplementationPrivate;
     type = new QDomDocumentTypePrivate(this, this);
+    type->ref.deref();
     type->name = aname;
 
     name = QLatin1String("#document");
@@ -6165,14 +6171,14 @@ QDomDocumentPrivate::QDomDocumentPrivate(const QString& aname)
 
 QDomDocumentPrivate::QDomDocumentPrivate(QDomDocumentTypePrivate* dt)
     : QDomNodePrivate(0),
+      impl(new QDomImplementationPrivate),
       nodeListTime(1)
 {
-    impl = new QDomImplementationPrivate;
     if (dt != 0) {
         type = dt;
-        type->ref.ref();
     } else {
         type = new QDomDocumentTypePrivate(this, this);
+        type->ref.deref();
     }
 
     name = QLatin1String("#document");
@@ -6180,33 +6186,21 @@ QDomDocumentPrivate::QDomDocumentPrivate(QDomDocumentTypePrivate* dt)
 
 QDomDocumentPrivate::QDomDocumentPrivate(QDomDocumentPrivate* n, bool deep)
     : QDomNodePrivate(n, deep),
+      impl(n->impl->clone()),
       nodeListTime(1)
 {
-    impl = n->impl->clone();
-    // Reference count is down to 0, so we set it to 1 here.
-    impl->ref.ref();
-    type = (QDomDocumentTypePrivate*)n->type->cloneNode();
+    type = static_cast<QDomDocumentTypePrivate*>(n->type->cloneNode());
     type->setParent(this);
-    // Reference count is down to 0, so we set it to 1 here.
-    type->ref.ref();
 }
 
 QDomDocumentPrivate::~QDomDocumentPrivate()
 {
-    if (!impl->ref.deref())
-        delete impl;
-    if (!type->ref.deref())
-        delete type;
 }
 
 void QDomDocumentPrivate::clear()
 {
-    if (!impl->ref.deref())
-        delete impl;
-    if (!type->ref.deref())
-        delete type;
-    impl = 0;
-    type = 0;
+    impl.reset();
+    type.reset();
     QDomNodePrivate::clear();
 }
 
@@ -6229,6 +6223,7 @@ bool QDomDocumentPrivate::setContent(QXmlInputSource *source, QXmlReader *reader
     clear();
     impl = new QDomImplementationPrivate;
     type = new QDomDocumentTypePrivate(this, this);
+    type->ref.deref();
 
     bool namespaceProcessing = reader->feature(QLatin1String("http://xml.org/sax/features/namespaces"))
         && !reader->feature(QLatin1String("http://xml.org/sax/features/namespace-prefixes"));
@@ -7377,11 +7372,9 @@ QDomComment QDomNode::toComment() const
  **************************************************************/
 
 QDomHandler::QDomHandler(QDomDocumentPrivate* adoc, bool namespaceProcessing)
+    : errorLine(0), errorColumn(0), doc(adoc), node(adoc), cdata(false),
+        nsProcessing(namespaceProcessing), locator(0)
 {
-    doc = adoc;
-    node = doc;
-    cdata = false;
-    nsProcessing = namespaceProcessing;
 }
 
 QDomHandler::~QDomHandler()
@@ -7446,20 +7439,22 @@ bool QDomHandler::characters(const QString&  ch)
     if (node == doc)
         return false;
 
-    QDomNodePrivate *n;
+    QScopedPointer<QDomNodePrivate> n;
     if (cdata) {
-        n = doc->createCDATASection(ch);
+        n.reset(doc->createCDATASection(ch));
     } else if (!entityName.isEmpty()) {
-        QDomEntityPrivate* e = new QDomEntityPrivate(doc, 0, entityName,
-                QString(), QString(), QString());
+        QScopedPointer<QDomEntityPrivate> e(new QDomEntityPrivate(doc, 0, entityName,
+                QString(), QString(), QString()));
         e->value = ch;
-        doc->doctype()->appendChild(e);
-        n = doc->createEntityReference(entityName);
+        doc->doctype()->appendChild(e.data());
+        e.take();
+        n.reset(doc->createEntityReference(entityName));
     } else {
-        n = doc->createTextNode(ch);
+        n.reset(doc->createTextNode(ch));
     }
     n->setLocation(locator->lineNumber(), locator->columnNumber());
-    node->appendChild(n);
+    node->appendChild(n.data());
+    n.take();
 
     return true;
 }

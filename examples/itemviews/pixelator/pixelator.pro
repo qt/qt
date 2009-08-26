@@ -12,3 +12,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/itemviews/pixelator
 sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/itemviews/pixelator
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

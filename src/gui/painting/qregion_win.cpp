@@ -47,7 +47,6 @@
 #include "qregion.h"
 #include "qt_windows.h"
 #include "qpainterpath.h"
-#include "qguifunctions_wince.h"
 
 QT_BEGIN_NAMESPACE
 

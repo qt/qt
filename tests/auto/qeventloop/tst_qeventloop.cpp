@@ -54,6 +54,11 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 
+#ifdef Q_OS_SYMBIAN
+#include <e32base.h>
+#include <unistd.h>
+#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -186,6 +191,10 @@ public slots:
     void init();
     void cleanup();
 private slots:
+    // This test *must* run first. See the definition for why.
+    void onlySymbianActiveScheduler();
+    void symbianNestedActiveSchedulerLoop_data();
+    void symbianNestedActiveSchedulerLoop();
     void processEvents();
     void exec();
     void exit();
@@ -212,6 +221,101 @@ void tst_QEventLoop::init()
 
 void tst_QEventLoop::cleanup()
 { }
+
+#ifdef Q_OS_SYMBIAN
+class OnlySymbianActiveScheduler_helper : public QObject
+{
+    Q_OBJECT
+
+public:
+    OnlySymbianActiveScheduler_helper(int fd, QTimer *zeroTimer)
+        : fd(fd),
+          timerCount(0),
+          zeroTimer(zeroTimer),
+          zeroTimerCount(0),
+          notifierCount(0)
+    {
+    }
+    ~OnlySymbianActiveScheduler_helper() {}
+
+public slots:
+    void timerSlot()
+    {
+        // Let all the events occur twice so we know they reactivated after
+        // each occurrence.
+        if (++timerCount >= 2) {
+            // This will hopefully run last, so stop the active scheduler.
+            CActiveScheduler::Stop();
+        }
+    }
+    void zeroTimerSlot()
+    {
+        if (++zeroTimerCount >= 2) {
+            zeroTimer->stop();
+        }
+    }
+    void notifierSlot()
+    {
+        if (++notifierCount >= 2) {
+            char dummy;
+            ::read(fd, &dummy, 1);
+        }
+    }
+
+private:
+    int fd;
+    int timerCount;
+    QTimer *zeroTimer;
+    int zeroTimerCount;
+    int notifierCount;
+};
+#endif
+
+void tst_QEventLoop::onlySymbianActiveScheduler() {
+#ifndef Q_OS_SYMBIAN
+    QSKIP("This is a Symbian-only test.", SkipAll);
+#else
+    // In here we try to use timers and sockets exclusively using the Symbian
+    // active scheduler and no processEvents().
+    // This test should therefore be run first, so that we can verify that
+    // the first occurrence of processEvents does not do any initalization that
+    // we depend on.
+
+    // Open up a pipe so we can test socket notifiers.
+    int pipeEnds[2];
+    if (::pipe(pipeEnds) != 0) {
+        QFAIL("Could not open pipe");
+    }
+    QSocketNotifier notifier(pipeEnds[0], QSocketNotifier::Read);
+    QSignalSpy notifierSpy(&notifier, SIGNAL(activated(int)));
+    char dummy = 1;
+    ::write(pipeEnds[1], &dummy, 1);
+
+    QTimer zeroTimer;
+    QSignalSpy zeroTimerSpy(&zeroTimer, SIGNAL(timeout()));
+    zeroTimer.setInterval(0);
+    zeroTimer.start();
+
+    QTimer timer;
+    QSignalSpy timerSpy(&timer, SIGNAL(timeout()));
+    timer.setInterval(2000); // Generous timeout or this test will fail if there is high load
+    timer.start();
+
+    OnlySymbianActiveScheduler_helper helper(pipeEnds[0], &zeroTimer);
+    connect(&notifier, SIGNAL(activated(int)), &helper, SLOT(notifierSlot()));
+    connect(&zeroTimer, SIGNAL(timeout()), &helper, SLOT(zeroTimerSlot()));
+    connect(&timer, SIGNAL(timeout()), &helper, SLOT(timerSlot()));
+
+    CActiveScheduler::Start();
+
+    ::close(pipeEnds[1]);
+    ::close(pipeEnds[0]);
+
+    QCOMPARE(notifierSpy.count(), 2);
+    QCOMPARE(zeroTimerSpy.count(), 2);
+    QCOMPARE(timerSpy.count(), 2);
+#endif
+}
 
 void tst_QEventLoop::processEvents()
 {
@@ -265,6 +369,14 @@ void tst_QEventLoop::processEvents()
     killTimer(timerId);
 }
 
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+// Symbian needs bit longer timeout for emulator, as emulator startup causes additional delay
+#  define EXEC_TIMEOUT 1000
+#else
+#  define EXEC_TIMEOUT 100
+#endif
+
+
 void tst_QEventLoop::exec()
 {
     {
@@ -272,15 +384,15 @@ void tst_QEventLoop::exec()
         EventLoopExiter exiter(&eventLoop);
         int returnCode;
 
-        QTimer::singleShot(100, &exiter, SLOT(exit()));
+        QTimer::singleShot(EXEC_TIMEOUT, &exiter, SLOT(exit()));
         returnCode = eventLoop.exec();
         QCOMPARE(returnCode, 0);
 
-        QTimer::singleShot(100, &exiter, SLOT(exit1()));
+        QTimer::singleShot(EXEC_TIMEOUT, &exiter, SLOT(exit1()));
         returnCode = eventLoop.exec();
         QCOMPARE(returnCode, 1);
 
-        QTimer::singleShot(100, &exiter, SLOT(exit2()));
+        QTimer::singleShot(EXEC_TIMEOUT, &exiter, SLOT(exit2()));
         returnCode = eventLoop.exec();
         QCOMPARE(returnCode, 2);
     }
@@ -313,16 +425,19 @@ void tst_QEventLoop::exec()
         QEventLoop eventLoop;
         EventLoopExecutor executor(&eventLoop);
 
-        QTimer::singleShot(100, &executor, SLOT(exec()));
+        QTimer::singleShot(EXEC_TIMEOUT, &executor, SLOT(exec()));
         int returnCode = eventLoop.exec();
         QCOMPARE(returnCode, 0);
         QCOMPARE(executor.returnCode, -1);
     }
 
-#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_OS_WINCE_WM)
+#if !defined(QT_NO_EXCEPTIONS) && !defined(Q_OS_WINCE_WM) && !defined(Q_OS_SYMBIAN)
     // Windows Mobile cannot handle cross library exceptions
     // qobject.cpp will try to rethrow the exception after handling
     // which causes gwes.exe to crash
+
+    // Symbian doesn't propagate exceptions from eventloop, but converts them to
+    // CActiveScheduler errors instead -> this test will hang.
     {
         // QEventLoop::exec() is exception safe
         QEventLoop eventLoop;
@@ -330,14 +445,14 @@ void tst_QEventLoop::exec()
 
         try {
             ExceptionThrower exceptionThrower;
-            QTimer::singleShot(100, &exceptionThrower, SLOT(throwException()));
+            QTimer::singleShot(EXEC_TIMEOUT, &exceptionThrower, SLOT(throwException()));
             (void) eventLoop.exec();
         } catch (...) {
             ++caughtExceptions;
         }
         try {
             ExceptionThrower exceptionThrower;
-            QTimer::singleShot(100, &exceptionThrower, SLOT(throwException()));
+            QTimer::singleShot(EXEC_TIMEOUT, &exceptionThrower, SLOT(throwException()));
             (void) eventLoop.exec();
         } catch (...) {
             ++caughtExceptions;
@@ -512,7 +627,7 @@ void tst_QEventLoop::processEventsExcludeTimers()
 
     // normal process events will send timers
     eventLoop.processEvents(QEventLoop::X11ExcludeTimers);
-#ifndef Q_OS_UNIX
+#if !defined(Q_OS_UNIX) || defined(Q_OS_SYMBIAN)
     QEXPECT_FAIL("", "X11ExcludeTimers only works on UN*X", Continue);
 #endif
     QCOMPARE(timerReceiver.gotTimerEvent, -1);
@@ -524,210 +639,163 @@ void tst_QEventLoop::processEventsExcludeTimers()
     timerReceiver.gotTimerEvent = -1;
 }
 
-QTEST_MAIN(tst_QEventLoop)
-#include "tst_qeventloop.moc"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// previous test
-
-#if 0
-
-#include <qwidget.h>
-
-#ifdef Q_WS_WIN
-#include <windows.h>
-#endif
-
-
-
-//TESTED_CLASS=
-//TESTED_FILES=
-
-class EventHandlerWidget : public QWidget
+#ifdef Q_OS_SYMBIAN
+class DummyActiveObject : public CActive
 {
 public:
-    EventHandlerWidget( QWidget* parent = 0, const char* name = 0 ) : QWidget( parent, name )
-    {
-        installEventFilter( this );
-        recievedPaintEvent = FALSE;
-        recievedMouseEvent = FALSE;
-    }
-    ~EventHandlerWidget() {}
+    DummyActiveObject(int levels);
+    ~DummyActiveObject();
 
-    bool recievedPaintEvent;
-    bool recievedMouseEvent;
+    void Start();
 
 protected:
-    bool eventFilter( QObject* o, QEvent* e )
-    {
-        if ( e->type() == QEvent::Paint )
-            recievedPaintEvent = TRUE;
-        else if ( e->type() == QEvent::MouseButtonPress )
-            recievedMouseEvent = TRUE;
-        return QWidget::eventFilter( o, e );
-    }
-};
+    void DoCancel();
+    void RunL();
 
-class InBetweenObject : public QObject
-{
-    Q_OBJECT
 public:
-    InBetweenObject(QObject *parent, QObject *child)
-    : QObject(parent), childObject(child)
-    {
-        childObject->setParent(this);
-        ++instanceCounter;
-    }
-
-    ~InBetweenObject()
-    {
-        --instanceCounter;
-    }
-
-    static int instanceCounter;
-
-protected:
-    void childEvent(QChildEvent *e)
-    {
-        if (e->removed() && e->child() == childObject) {
-            deleteLater();
-        }
-    }
+    bool succeeded;
 
 private:
-    QObject *childObject;
+    RTimer m_rTimer;
+    int remainingLevels;
 };
 
-class ObjectContainer : public QObject
+class ActiveSchedulerLoop : public QObject
 {
 public:
-    ObjectContainer(QObject *parent = 0)
-    : QObject(parent)
-    {
+    ActiveSchedulerLoop(int levels) : succeeded(false), timerId(-1), remainingLevels(levels) {}
+    ~ActiveSchedulerLoop() {}
+
+    void timerEvent(QTimerEvent *e);
+
+public:
+    bool succeeded;
+    int timerId;
+    int remainingLevels;
+};
+
+DummyActiveObject::DummyActiveObject(int levels)
+    : CActive(CActive::EPriorityStandard),
+      succeeded(false),
+      remainingLevels(levels)
+{
+    m_rTimer.CreateLocal();
+}
+
+DummyActiveObject::~DummyActiveObject()
+{
+    Cancel();
+    m_rTimer.Close();
+}
+
+void DummyActiveObject::DoCancel()
+{
+    m_rTimer.Cancel();
+}
+
+void DummyActiveObject::RunL()
+{
+    if (remainingLevels - 1 <= 0) {
+        ActiveSchedulerLoop loop(remainingLevels - 1);
+        loop.timerId = loop.startTimer(0);
+        QCoreApplication::processEvents();
+
+        succeeded = loop.succeeded;
+    } else {
+        succeeded = true;
     }
+    CActiveScheduler::Stop();
+}
+
+void DummyActiveObject::Start()
+{
+    m_rTimer.After(iStatus, 100000); // 100 ms
+    SetActive();
+}
+
+void ActiveSchedulerLoop::timerEvent(QTimerEvent *e)
+{
+    Q_UNUSED(e);
+    DummyActiveObject *dummy = new(ELeave) DummyActiveObject(remainingLevels);
+    CActiveScheduler::Add(dummy);
+
+    dummy->Start();
+
+    CActiveScheduler::Start();
+
+    succeeded = dummy->succeeded;
+
+    delete dummy;
+
+    killTimer(timerId);
+}
+
+// We cannot trap panics when the test case fails, so run it in a different thread instead.
+class ActiveSchedulerThread : public QThread
+{
+public:
+    ActiveSchedulerThread(QEventLoop::ProcessEventsFlag flags);
+    ~ActiveSchedulerThread();
 
 protected:
-    void childEvent(QChildEvent *e)
-    {
-        if (e->inserted() && !::qobject_cast<InBetweenObject*>(e->child())) {
-            InBetweenObject *inBetween = new InBetweenObject(this, e->child());
-        }
-    }
-};
+    void run();
 
-class tst_QEventLoop : public QObject
-{
-    Q_OBJECT
 public:
-    tst_QEventLoop();
-    ~tst_QEventLoop();
-public slots:
-    void init();
-    void cleanup();
-private slots:
-    void processEvents();
-    void eventHandlerPostsEvent();
+    volatile bool succeeded;
+
+private:
+    QEventLoop::ProcessEventsFlag m_flags;
 };
 
-tst_QEventLoop::tst_QEventLoop()
+ActiveSchedulerThread::ActiveSchedulerThread(QEventLoop::ProcessEventsFlag flags)
+    : succeeded(false),
+      m_flags(flags)
 {
 }
 
-tst_QEventLoop::~tst_QEventLoop()
+ActiveSchedulerThread::~ActiveSchedulerThread()
 {
 }
 
-void tst_QEventLoop::init()
+void ActiveSchedulerThread::run()
 {
+    ActiveSchedulerLoop loop(2);
+    loop.timerId = loop.startTimer(0);
+    // It may panic in here if the active scheduler and the Qt loop don't go together.
+    QCoreApplication::processEvents(m_flags);
+
+    succeeded = loop.succeeded;
+}
+#endif // ifdef Q_OS_SYMBIAN
+
+void tst_QEventLoop::symbianNestedActiveSchedulerLoop_data()
+{
+    QTest::addColumn<int>("processEventFlags");
+
+    QTest::newRow("AllEvents") << (int)QEventLoop::AllEvents;
+    QTest::newRow("WaitForMoreEvents") << (int)QEventLoop::WaitForMoreEvents;
 }
 
-void tst_QEventLoop::cleanup()
+/*
+  Before you start fiddling with this test, you should have a good understanding of how
+  Symbian active objects work. What the test does is to try to screw up the semaphore count
+  in the active scheduler to cause stray signals, by running the Qt event loop and the
+  active scheduler inside each other. Naturally, its attempts to do this should be futile!
+*/
+void tst_QEventLoop::symbianNestedActiveSchedulerLoop()
 {
-}
-
-
-void tst_QEventLoop::processEvents()
-{
-    EventHandlerWidget *mainWidget = new EventHandlerWidget( 0 );
-    mainWidget->show();
-    qApp->setMainWidget( mainWidget );
-
-#ifdef Q_WS_WIN
-    QEventLoop* eventLoop = qApp->eventLoop();
-    eventLoop->processEvents( QEventLoop::AllEvents );
-    QVERIFY( !eventLoop->hasPendingEvents() );
-
-    // Make sure the flag is cleared first
-    mainWidget->recievedPaintEvent = FALSE;
-#ifdef Q_WS_WIN
-    InvalidateRect( mainWidget->winId(), 0, TRUE );
-#endif
-    QVERIFY( !mainWidget->recievedPaintEvent );
-    eventLoop->processEvents( QEventLoop::AllEvents );
-    QVERIFY( mainWidget->recievedPaintEvent );
-
-#ifdef Q_WS_WIN
-    // TODO: Hardcoded for now...
-    LPARAM lParam = MAKELPARAM( 10, 10 );
-    PostMessage( mainWidget->winId(), WM_LBUTTONDOWN, 0, lParam );
-#endif
-
-    mainWidget->recievedMouseEvent = FALSE;
-    eventLoop->processEvents( QEventLoop::ExcludeUserInput );
-    QVERIFY( !mainWidget->recievedMouseEvent );
+#ifndef Q_OS_SYMBIAN
+    QSKIP("This is a Symbian only test.", SkipAll);
 #else
-    QSKIP( "QEventLoop test is not implememented on X11 yet", SkipAll);
+    QFETCH(int, processEventFlags);
+
+    ActiveSchedulerThread thread((QEventLoop::ProcessEventsFlag)processEventFlags);
+    thread.start();
+    thread.wait(2000);
+
+    QVERIFY(thread.succeeded);
 #endif
 }
-
-int InBetweenObject::instanceCounter = 0;
-
-void tst_QEventLoop::eventHandlerPostsEvent()
-{
-    ObjectContainer container;
-
-    QObject *object = new QObject(&container);
-    qApp->processEvents();
-    qApp->processEvents();
-
-    QCOMPARE(InBetweenObject::instanceCounter, 1);
-
-    object->deleteLater();
-
-    qApp->processEvents();
-    QCOMPARE(InBetweenObject::instanceCounter, 0);
-};
 
 QTEST_MAIN(tst_QEventLoop)
 #include "tst_qeventloop.moc"
-
-#endif

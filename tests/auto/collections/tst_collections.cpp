@@ -992,7 +992,7 @@ void tst_Collections::linkedList()
         QVERIFY(*(list.begin() + 2) == "alpha");
         QVERIFY(*(list.begin() + 3) == "beta");
     }
-    
+
     {
         QLinkedList<int> a;
         QCOMPARE(a.startsWith(1), false);
@@ -1364,6 +1364,9 @@ void tst_Collections::byteArray()
         ba1 = "FooFoo";
         ba1.replace(char('F'), ba1);
         QCOMPARE(ba1, QByteArray("FooFooooFooFoooo"));
+        ba1 = "FooFoo";
+        ba1.replace(char('o'), ba1);
+        QCOMPARE(ba1, QByteArray("FFooFooFooFooFFooFooFooFoo"));
 
         ba1.replace(ba1, "xxx");
         QCOMPARE(ba1, QByteArray("xxx"));
@@ -2354,6 +2357,9 @@ void tst_Collections::qstring()
         str1 = "FooFoo";
         str1.replace(char('F'), str1);
         QCOMPARE(str1, QString("FooFooooFooFoooo"));
+        str1 = "FooFoo";
+        str1.replace(char('o'), str1);
+        QCOMPARE(str1, QString("FFooFooFooFooFFooFooFooFoo"));
 
         str1 = "Foo";
         str1.replace("Foo", str1);
@@ -3447,7 +3453,7 @@ class Key1
 class T1
 {};
 class T2
-};
+{};
 #else
 class Key1;
 class T1;
@@ -3462,7 +3468,11 @@ void tst_Collections::forwardDeclared()
     { typedef QMap<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
     { typedef QMultiMap<Key1, T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
 #endif
+#if !defined(Q_CC_RVCT)
+    // RVCT can't handle forward declared template parameters if those are used to declare
+    // class members inside templated class.
     { typedef QPair<T1, T2> C; C *x = 0; Q_UNUSED(x) }
+#endif
     { typedef QList<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
     { typedef QLinkedList<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) }
     { typedef QVector<T1> C; C *x = 0; C::iterator i; C::const_iterator j; Q_UNUSED(x) Q_UNUSED(i) Q_UNUSED(j) }

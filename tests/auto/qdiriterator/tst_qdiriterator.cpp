@@ -52,6 +52,11 @@
 #define Q_NO_SYMLINKS
 #endif
 
+#if defined(Q_OS_SYMBIAN)
+// Open C in Symbian doesn't support symbolic links to directories
+#define Q_NO_SYMLINKS_TO_DIRS
+#endif
+
 Q_DECLARE_METATYPE(QDirIterator::IteratorFlags)
 Q_DECLARE_METATYPE(QDir::Filters)
 
@@ -92,16 +97,20 @@ tst_QDirIterator::tst_QDirIterator()
     QFile::remove("entrylist/directory/entrylist4.lnk");
 
 #ifndef Q_NO_SYMLINKS
-#ifdef Q_OS_WIN
+#  if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     // ### Sadly, this is a platform difference right now.
     QFile::link("entrylist/file", "entrylist/linktofile.lnk");
+#    ifndef Q_NO_SYMLINKS_TO_DIRS
     QFile::link("entrylist/directory", "entrylist/linktodirectory.lnk");
+#    endif
     QFile::link("entrylist/nothing", "entrylist/brokenlink.lnk");
-#else
+#  else
     QFile::link("file", "entrylist/linktofile.lnk");
+#    ifndef Q_NO_SYMLINKS_TO_DIRS
     QFile::link("directory", "entrylist/linktodirectory.lnk");
+#    endif
     QFile::link("nothing", "entrylist/brokenlink.lnk");
-#endif
+#  endif
 #endif
     QFile("entrylist/writable").open(QIODevice::ReadWrite);
 }
@@ -136,7 +145,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
         << QString("entrylist") << QDirIterator::IteratorFlags(0)
         << QDir::Filters(QDir::NoFilter) << QStringList("*")
         << QString(
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
                   "entrylist/.,"
                    "entrylist/..,"
 #endif
@@ -145,7 +154,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
                    "entrylist/linktofile.lnk,"
 #endif
                    "entrylist/directory,"
-#ifndef Q_NO_SYMLINKS
+#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
                    "entrylist/linktodirectory.lnk,"
 #endif
                    "entrylist/writable").split(',');
@@ -154,7 +163,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
         << QString("entrylist") << QDirIterator::IteratorFlags(QDirIterator::Subdirectories | QDirIterator::FollowSymlinks)
         << QDir::Filters(QDir::NoFilter) << QStringList("*")
         << QString(
-#if !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
                    "entrylist/.,"
                    "entrylist/..,"
                    "entrylist/directory/.,"
@@ -166,7 +175,7 @@ void tst_QDirIterator::iterateRelativeDirectory_data()
 #endif
                    "entrylist/directory,"
                    "entrylist/directory/dummy,"
-#ifndef Q_NO_SYMLINKS
+#if !defined(Q_NO_SYMLINKS) && !defined(Q_NO_SYMLINKS_TO_DIRS)
                    "entrylist/linktodirectory.lnk,"
 #endif
                    "entrylist/writable").split(',');

@@ -58,23 +58,22 @@ public:
     aut (aut),
     verbose (verbose),
     debug_info (false),
-    troll_copyright (false) {}
+    copyright (false) {}
 
   void operator () ();
 
   bool debugInfo () const { return debug_info; }
   void setDebugInfo (bool d) { debug_info = d; }
 
-  bool trollCopyright () const { return troll_copyright; }
-  void setTrollCopyright (bool t) { troll_copyright = t; }
+  void setCopyright (bool t) { copyright = t; }
 
 private:
   void generateDecl (QTextStream &out);
   void generateImpl (QTextStream &out);
 
   QString debugInfoProt() const;
-  QString trollCopyrightHeader() const;
-  QString trollPrivateCopyrightHeader() const;
+  QString copyrightHeader() const;
+  QString privateCopyrightHeader() const;
 
 private:
   static QString startIncludeGuard(const QString &fileName);
@@ -89,7 +88,7 @@ private:
   int terminal_count;
   int non_terminal_count;
   bool debug_info;
-  bool troll_copyright;
+  bool copyright;
   Compress compressed_action;
   Compress compressed_goto;
   QVector<int> count;

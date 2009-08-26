@@ -302,10 +302,12 @@ private:
     friend class QGraphicsViewPrivate;
     friend class QGraphicsWidget;
     friend class QGraphicsWidgetPrivate;
+    friend class QGraphicsEffect;
     friend class QGraphicsSceneIndex;
     friend class QGraphicsSceneIndexPrivate;
     friend class QGraphicsSceneBspTreeIndex;
     friend class QGraphicsSceneBspTreeIndexPrivate;
+    friend class QGraphicsItemEffectSourcePrivate;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsScene::SceneLayers)

@@ -61,6 +61,10 @@
 
 QT_BEGIN_HEADER
 
+#if defined(Q_OS_SYMBIAN)
+class TWsEvent;
+#endif
+
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
@@ -84,6 +88,7 @@ class QApplicationPrivate;
 #endif
 #define qApp (static_cast<QApplication *>(QCoreApplication::instance()))
 
+
 class Q_GUI_EXPORT QApplication : public QCoreApplication
 {
     Q_OBJECT
@@ -104,8 +109,8 @@ class Q_GUI_EXPORT QApplication : public QCoreApplication
 #endif
 #ifdef Q_WS_WINCE
     Q_PROPERTY(int autoMaximizeThreshold READ autoMaximizeThreshold WRITE setAutoMaximizeThreshold)
-    Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
 #endif
+    Q_PROPERTY(bool autoSipEnabled READ autoSipEnabled WRITE setAutoSipEnabled)
 
 public:
     enum Type { Tty, GuiClient, GuiServer };
@@ -223,6 +228,12 @@ public:
     virtual int x11ClientMessage(QWidget*, XEvent*, bool passive_only);
     int x11ProcessEvent(XEvent*);
 #endif
+#if defined(Q_OS_SYMBIAN)
+    int s60ProcessEvent(TWsEvent *event);
+    virtual bool s60EventFilter(TWsEvent *aEvent);
+    void symbianHandleCommand(int command);
+    void symbianResourceChange(int type);
+#endif
 #if defined(Q_WS_QWS)
     virtual bool qwsEventFilter(QWSEvent *);
     int qwsProcessEvent(QWSEvent*);
@@ -239,7 +250,6 @@ public:
     void winFocus(QWidget *, bool);
     static void winMouseButtonUp();
 #endif
-
 #ifndef QT_NO_SESSIONMANAGER
     // session management
     bool isSessionRestored() const;
@@ -284,9 +294,9 @@ public Q_SLOTS:
 #ifdef Q_WS_WINCE
     void setAutoMaximizeThreshold(const int threshold);
     int autoMaximizeThreshold() const;
+#endif
     void setAutoSipEnabled(const bool enabled);
     bool autoSipEnabled() const;
-#endif
     static void closeAllWindows();
     static void aboutQt();
 

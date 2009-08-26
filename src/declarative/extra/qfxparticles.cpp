@@ -368,7 +368,7 @@ public:
         : count(1), lifeSpan(1000), lifeSpanDev(1000), fadeInDur(200), fadeOutDur(300)
         , angle(0), angleDev(0), velocity(0), velocityDev(0)
         , addParticleTime(0), addParticleCount(0), lastAdvTime(0), stream(false), streamDelay(0)
-        , emitting(true), motion(0), clock(this)
+        , emitting(true), motion(0), pendingPixmapCache(false), clock(this)
     {
     }
 
@@ -405,6 +405,8 @@ public:
     bool emitting;
     QFxParticleMotion *motion;
     QFxParticlesPainter *paintItem;
+
+    bool pendingPixmapCache;
 
     QList<QFxParticle> particles;
     QTickAnimationProxy<QFxParticlesPrivate, &QFxParticlesPrivate::tick> clock;
@@ -615,7 +617,7 @@ QFxParticles::QFxParticles(QFxParticlesPrivate &dd, QFxItem *parent)
 QFxParticles::~QFxParticles()
 {
     Q_D(QFxParticles);
-    if (!d->url.isEmpty())
+    if (d->pendingPixmapCache)
         QFxPixmapCache::cancelGet(d->url, this);
 }
 
@@ -637,6 +639,7 @@ QUrl QFxParticles::source() const
 void QFxParticles::imageLoaded()
 {
     Q_D(QFxParticles);
+    d->pendingPixmapCache = false;
     QFxPixmapCache::find(d->url, &d->image);
     d->paintItem->updateSize();
     d->paintItem->update();
@@ -649,8 +652,10 @@ void QFxParticles::setSource(const QUrl &name)
     if ((d->url.isEmpty() == name.isEmpty()) && name == d->url)
         return;
 
-    if (!d->url.isEmpty())
+    if (d->pendingPixmapCache) {
         QFxPixmapCache::cancelGet(d->url, this);
+        d->pendingPixmapCache = false;
+    }
     if (name.isEmpty()) {
         d->url = name;
         d->image = QPixmap();
@@ -660,9 +665,10 @@ void QFxParticles::setSource(const QUrl &name)
         d->url = name;
         Q_ASSERT(!name.isRelative());
         QNetworkReply *reply = QFxPixmapCache::get(qmlEngine(this), d->url, &d->image);
-        if (reply)
+        if (reply) {
             connect(reply, SIGNAL(finished()), this, SLOT(imageLoaded()));
-        else {
+            d->pendingPixmapCache = true;
+        } else {
             //### unify with imageLoaded
             d->paintItem->updateSize();
             d->paintItem->update();

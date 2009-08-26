@@ -60,6 +60,7 @@
 #ifndef QT_NO_WHATSTHIS
 # include <qwhatsthis.h>
 #endif
+#include <private/qactiontokeyeventmapper_p.h>
 
 #include "qmenu_p.h"
 #include "qmenubar_p.h"
@@ -565,8 +566,14 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
                     //when the action has no QWidget, the QMenu itself should
                     // get the focus
                     // Since the menu is a pop-up, it uses the popup reason.
-                    if (!q->hasFocus())
+                    if (!q->hasFocus()) {
                         q->setFocus(Qt::PopupFocusReason);
+#ifdef QT_KEYPAD_NAVIGATION
+                        // TODO: aportale, remove KEYPAD_NAVIGATION_HACK when softkey stack
+                        //       handles focus related and user related actions separately...
+                        QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, q);
+#endif
+                    }
                 }
             }
         } else { //action is a separator
@@ -1774,6 +1781,22 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(p));
     const int desktopFrame = style()->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, this);
     bool adjustToDesktop = !window()->testAttribute(Qt::WA_DontShowOnScreen);
+#ifdef QT_KEYPAD_NAVIGATION
+    if (!atAction && QApplication::keypadNavigationEnabled()) {
+        // Try to have one item activated
+        if (d->defaultAction && d->defaultAction->isEnabled()) {
+            atAction = d->defaultAction;
+            // TODO: This works for first level menus, not yet sub menus
+        } else {
+            foreach (QAction *action, d->actions)
+                if (action->isEnabled()) {
+                    atAction = action;
+                    break;
+                }
+        }
+        d->currentAction = atAction;
+    }
+#endif
     if (d->ncols > 1) {
         pos.setY(screen.top()+desktopFrame);
     } else if (atAction) {
@@ -1809,7 +1832,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
     if (adjustToDesktop) {
         //handle popup falling "off screen"
-        if (QApplication::layoutDirection() == Qt::RightToLeft) {
+        if (isRightToLeft()) {
             if(snapToMouse) //position flowing left from the mouse
                 pos.setX(mouse.x()-size.width());
 
@@ -1847,9 +1870,9 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     }
     setGeometry(QRect(pos, size));
 #ifndef QT_NO_EFFECTS
-    int hGuess = QApplication::layoutDirection() == Qt::RightToLeft ? QEffects::LeftScroll : QEffects::RightScroll;
+    int hGuess = isRightToLeft() ? QEffects::LeftScroll : QEffects::RightScroll;
     int vGuess = QEffects::DownScroll;
-    if (QApplication::layoutDirection() == Qt::RightToLeft) {
+    if (isRightToLeft()) {
         if ((snapToMouse && (pos.x() + size.width()/2 > mouse.x())) ||
            (qobject_cast<QMenu*>(d->causedPopup.widget) && pos.x() + size.width()/2 > d->causedPopup.widget->x()))
             hGuess = QEffects::RightScroll;
@@ -1900,6 +1923,9 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 
 #ifndef QT_NO_ACCESSIBILITY
     QAccessible::updateAccessibility(this, 0, QAccessible::PopupMenuStart);
+#endif
+#ifdef QT_KEYPAD_NAVIGATION
+    QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, this);
 #endif
 }
 
@@ -2559,6 +2585,7 @@ void QMenu::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Escape:
 #ifdef QT_KEYPAD_NAVIGATION
     case Qt::Key_Back:
+        QActionToKeyEventMapper::removeSoftkey(this);
 #endif
         key_consumed = true;
         if (d->tornoff) {
@@ -2752,6 +2779,8 @@ void QMenu::leaveEvent(QEvent *)
     d->sloppyAction = 0;
     if (!d->sloppyRegion.isEmpty())
         d->sloppyRegion = QRegion();
+    if (!d->activeMenu && d->currentAction)
+        setActiveAction(0);
 }
 
 /*!
@@ -2834,6 +2863,16 @@ void QMenu::actionEvent(QActionEvent *e)
         d->wce_menu->syncAction(e->action());
 #endif
 
+#ifdef Q_WS_S60
+    if (!d->symbian_menu)
+        d->symbian_menu = new QMenuPrivate::QSymbianMenuPrivate;
+    if (e->type() == QEvent::ActionAdded)
+        d->symbian_menu->addAction(e->action(), d->symbian_menu->findAction(e->before()));
+    else if (e->type() == QEvent::ActionRemoved)
+        d->symbian_menu->removeAction(e->action());
+    else if (e->type() == QEvent::ActionChanged)
+        d->symbian_menu->syncAction(e->action());
+#endif
     if (isVisible()) {
         d->updateActionRects();
 	resize(sizeHint());

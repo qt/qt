@@ -53,6 +53,7 @@ QT_MODULE(Gui)
 
 class QVector3D;
 class QVector4D;
+class QVariant;
 
 #ifndef QT_NO_VECTOR2D
 
@@ -113,6 +114,8 @@ public:
 
     QPoint toPoint() const;
     QPointF toPointF() const;
+
+    operator QVariant() const;
 
 private:
     float xp, yp;

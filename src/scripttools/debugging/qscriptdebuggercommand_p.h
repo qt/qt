@@ -54,7 +54,7 @@
 //
 
 #include <QtCore/qobjectdefs.h>
-
+#include <QtCore/qscopedpointer.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qvariant.h>
 
@@ -255,7 +255,7 @@ public:
     static QScriptDebuggerCommand clearExceptionsCommand();
 
 private:
-    QScriptDebuggerCommandPrivate *d_ptr;
+    QScopedPointer<QScriptDebuggerCommandPrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptDebuggerCommand)
 };

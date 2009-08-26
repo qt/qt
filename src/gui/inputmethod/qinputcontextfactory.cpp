@@ -71,6 +71,9 @@
 #ifdef Q_WS_MAC
 #include "qmacinputcontext_p.h"
 #endif
+#ifdef Q_WS_S60
+#include "qcoefepinputcontext_p.h"
+#endif
 
 #include "private/qfactoryloader_p.h"
 #include "qmutex.h"
@@ -144,6 +147,11 @@ QInputContext *QInputContextFactory::create( const QString& key, QObject *parent
         result = new QMacInputContext;
     }
 #endif
+#if defined(Q_WS_S60)
+    if (key == QLatin1String("coefep")) {
+        result = new QCoeFepInputContext;
+    }
+#endif
 #if defined(QT_NO_LIBRARY) || defined(QT_NO_SETTINGS)
     Q_UNUSED(key);
 #else
@@ -181,6 +189,9 @@ QStringList QInputContextFactory::keys()
 #if defined(Q_WS_MAC)
     result << QLatin1String("mac");
 #endif
+#if defined(Q_WS_S60)
+    result << QLatin1String("coefep");
+#endif
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     result += loader()->keys();
 #endif // QT_NO_LIBRARY
@@ -216,6 +227,10 @@ QStringList QInputContextFactory::languages( const QString &key )
     if (key == QLatin1String("mac"))
         return QStringList(QString());
 #endif
+#if defined(Q_WS_S60)
+    if (key == QLatin1String("coefep"))
+        return QStringList(QString());
+#endif
 #if defined(QT_NO_LIBRARY) || defined(QT_NO_SETTINGS)
     Q_UNUSED(key);
 #else
@@ -239,6 +254,10 @@ QString QInputContextFactory::displayName( const QString &key )
 #if defined(Q_WS_X11) && !defined(QT_NO_XIM)
     if (key == QLatin1String("xim"))
         return QInputContext::tr( "XIM" );
+#endif
+#ifdef Q_WS_S60
+    if (key == QLatin1String("coefep"))
+        return QInputContext::tr( "FEP" );
 #endif
 #if defined(QT_NO_LIBRARY) || defined(QT_NO_SETTINGS)
     Q_UNUSED(key);
@@ -270,6 +289,10 @@ QString QInputContextFactory::description( const QString &key )
 #if defined(Q_WS_MAC)
     if (key == QLatin1String("mac"))
         return QInputContext::tr( "Mac OS X input method" );
+#endif
+#if defined(Q_WS_S60)
+    if (key == QLatin1String("coefep"))
+        return QInputContext::tr( "S60 FEP input method" );
 #endif
 #if defined(QT_NO_LIBRARY) || defined(QT_NO_SETTINGS)
     Q_UNUSED(key);

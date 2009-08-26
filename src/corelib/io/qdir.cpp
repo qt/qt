@@ -65,7 +65,7 @@ QT_BEGIN_NAMESPACE
 
 static QString driveSpec(const QString &path)
 {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
     if (path.size() < 2)
         return QString();
     char c = path.at(0).toAscii();
@@ -86,6 +86,7 @@ class QDirPrivate
     QDir *q_ptr;
     Q_DECLARE_PUBLIC(QDir)
 
+    friend struct QScopedPointerDeleter<QDirPrivate>;
 protected:
     QDirPrivate(QDir*, const QDir *copy=0);
     ~QDirPrivate();
@@ -150,7 +151,7 @@ private:
         QString path = p;
         if ((path.endsWith(QLatin1Char('/')) || path.endsWith(QLatin1Char('\\')))
                 && path.length() > 1) {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
             if (!(path.length() == 3 && path.at(1) == QLatin1Char(':')))
 #endif
                 path.truncate(path.length() - 1);
@@ -287,10 +288,10 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QFileInfoList &l,
                     names->append(l.at(i).fileName());
             }
         } else {
-            QDirSortItem *si = new QDirSortItem[n];
+            QScopedArrayPointer<QDirSortItem> si(new QDirSortItem[n]);
             for (int i = 0; i < n; ++i)
                 si[i].item = l.at(i);
-            qSort(si, si+n, QDirSortItemComparator(sort));
+            qSort(si.data(), si.data()+n, QDirSortItemComparator(sort));
             // put them back in the list(s)
             if(infos) {
                 for (int i = 0; i < n; ++i)
@@ -300,7 +301,6 @@ inline void QDirPrivate::sortFileList(QDir::SortFlags sort, QFileInfoList &l,
                 for (int i = 0; i < n; ++i)
                     names->append(si[i].item.fileName());
             }
-            delete [] si;
         }
     }
 }
@@ -333,8 +333,9 @@ void QDirPrivate::detach(bool createFileEngine)
 {
     qAtomicDetach(data);
     if (createFileEngine) {
+        QAbstractFileEngine *newFileEngine = QAbstractFileEngine::create(data->path);
         delete data->fileEngine;
-        data->fileEngine = QAbstractFileEngine::create(data->path);
+        data->fileEngine = newFileEngine;
     }
 }
 
@@ -588,8 +589,6 @@ QDir::QDir(const QDir &dir)  : d_ptr(new QDirPrivate(this, &dir))
 
 QDir::~QDir()
 {
-    delete d_ptr;
-    d_ptr = 0;
 }
 
 /*!
@@ -787,6 +786,8 @@ QString QDir::relativeFilePath(const QString &fileName) const
     if (fileDrive.toLower() != dirDrive.toLower()
         || (file.startsWith(QLatin1String("//"))
         && !dir.startsWith(QLatin1String("//"))))
+#elif defined(Q_OS_SYMBIAN)
+    if (fileDrive.toLower() != dirDrive.toLower())
 #else
     if (fileDrive != dirDrive)
 #endif
@@ -802,7 +803,7 @@ QString QDir::relativeFilePath(const QString &fileName) const
 
     int i = 0;
     while (i < dirElts.size() && i < fileElts.size() &&
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
            dirElts.at(i).toLower() == fileElts.at(i).toLower())
 #else
            dirElts.at(i) == fileElts.at(i))
@@ -849,7 +850,7 @@ QString QDir::convertSeparators(const QString &pathName)
 QString QDir::toNativeSeparators(const QString &pathName)
 {
     QString n(pathName);
-#if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX)
+#if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX) || defined(Q_OS_SYMBIAN)
     for (int i=0; i<(int)n.length(); i++) {
         if (n[i] == QLatin1Char('/'))
             n[i] = QLatin1Char('\\');
@@ -873,7 +874,7 @@ QString QDir::toNativeSeparators(const QString &pathName)
 QString QDir::fromNativeSeparators(const QString &pathName)
 {
     QString n(pathName);
-#if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX)
+#if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX) || defined(Q_OS_SYMBIAN)
     for (int i=0; i<(int)n.length(); i++) {
         if (n[i] == QLatin1Char('\\'))
             n[i] = QLatin1Char('/');
@@ -1826,10 +1827,10 @@ QFileInfoList QDir::drives()
 
 QChar QDir::separator()
 {
-#if defined(Q_OS_UNIX)
-    return QLatin1Char('/');
-#elif defined (Q_FS_FAT) || defined(Q_WS_WIN)
+#if defined (Q_FS_FAT) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
     return QLatin1Char('\\');
+#elif defined(Q_OS_UNIX)
+    return QLatin1Char('/');
 #elif defined (Q_OS_MAC)
     return QLatin1Char(':');
 #else
@@ -1929,7 +1930,7 @@ QString QDir::currentPath()
 
     Under non-Windows operating systems the \c HOME environment
     variable is used if it exists, otherwise the path returned by the
-    rootPath() function is used.
+    rootPath().
 
     \sa home(), currentPath(), rootPath(), tempPath()
 */
@@ -2151,7 +2152,7 @@ QString QDir::cleanPath(const QString &path)
                     levels++;
                 }
             } else if(last != -1 && iwrite - last == 1) {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
                 eaten = (iwrite > 2);
 #else
                 eaten = true;

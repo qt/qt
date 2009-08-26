@@ -632,6 +632,11 @@ public:
     virtual QSize sizeFromContents(ContentsType ct, const QStyleOption *opt,
                                    const QSize &contentsSize, const QWidget *w = 0) const = 0;
 
+    enum RequestSoftwareInputPanel {
+        RSIP_OnMouseClickAndAlreadyFocused,
+        RSIP_OnMouseClick
+    };
+
     enum StyleHint {
         SH_EtchDisabledText,
         SH_DitherDisabledText,
@@ -731,6 +736,7 @@ public:
         SH_TabBar_CloseButtonPosition,
         SH_DockWidget_ButtonsHaveFrame,
         SH_ToolButtonStyle,
+        SH_RequestSoftwareInputPanel,
         // Add new style hint values here
 
 #ifdef QT3_SUPPORT

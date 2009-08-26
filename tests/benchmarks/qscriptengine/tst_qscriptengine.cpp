@@ -69,6 +69,7 @@ private slots:
     void pushAndPopContext();
     void toStringHandle();
     void castValueToQreal();
+    void nativeCall();
 };
 
 tst_QScriptEngine::tst_QScriptEngine()
@@ -224,6 +225,22 @@ void tst_QScriptEngine::castValueToQreal()
         (void)qscriptvalue_cast<qreal>(val);
     }
 }
+
+static QScriptValue native_function(QScriptContext *, QScriptEngine *)
+{
+    return 42;
+}
+
+void tst_QScriptEngine::nativeCall()
+{
+    QScriptEngine eng;
+    eng.globalObject().setProperty("fun", eng.newFunction(native_function));
+    QBENCHMARK{
+        eng.evaluate("var w = 0; for (i = 0; i < 100000; ++i) {\n"
+                     "  w += fun() + fun(); w -= fun(); fun(); w -= fun(); }");
+    }
+}
+
 
 QTEST_MAIN(tst_QScriptEngine)
 #include "tst_qscriptengine.moc"

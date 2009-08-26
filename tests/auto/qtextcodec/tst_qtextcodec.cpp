@@ -45,7 +45,13 @@
 #include <qtextcodec.h>
 #include <qfile.h>
 #include <qtextdocument.h>
+#include <time.h>
 #include <qprocess.h>
+
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR ""
+#endif
+
 
 class tst_QTextCodec : public QObject
 {
@@ -278,7 +284,7 @@ void tst_QTextCodec::codecForLocale()
     QTextCodec *codec = QTextCodec::codecForLocale();
     QVERIFY(codec != 0);
 
-#ifdef Q_OS_UNIX
+#if defined(Q_OS_UNIX)
     // get a time string that is locale-encoded
     QByteArray originalLocaleEncodedTimeString;
     originalLocaleEncodedTimeString.resize(1024);
@@ -310,7 +316,6 @@ void tst_QTextCodec::codecForLocale()
     }
     if (!codec2) {
         QSKIP("Could not find a codec that is not already the codecForLocale()", SkipAll);
-        return;
     }
 
     // set it, codecForLocale() should return it now
@@ -1684,6 +1689,7 @@ void tst_QTextCodec::utfHeaders_data()
         << QByteArray("\xff\xfeh\0e\0l\0", 8)
         << (QString(QChar(0xfeff)) + QString::fromLatin1("hel"))
         << true;
+
 
     QTest::newRow("utf32 bom be")
         << QByteArray("UTF-32")

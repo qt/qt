@@ -172,11 +172,11 @@ JSValue jsCSSRuleListConstructor(ExecState* exec, const Identifier&, const Prope
     JSCSSRuleList* domObject = static_cast<JSCSSRuleList*>(asObject(slot.slotBase()));
     return JSCSSRuleList::getConstructor(exec, domObject->globalObject());
 }
-void JSCSSRuleList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSCSSRuleList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     for (unsigned i = 0; i < static_cast<CSSRuleList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames);
+     Base::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 JSValue JSCSSRuleList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

@@ -47,6 +47,10 @@
 #include <QBuffer>
 #include <QDebug>
 
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR "."
+#endif
+
 #include <private/qtextodfwriter_p.h>
 
 class tst_QTextOdfWriter : public QObject

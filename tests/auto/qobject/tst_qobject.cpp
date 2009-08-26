@@ -1170,7 +1170,7 @@ Q_DECLARE_METATYPE(PropertyObject::Priority)
 
 void tst_QObject::threadSignalEmissionCrash()
 {
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     int loopCount = 100;
 #else
     int loopCount = 1000;
@@ -1420,8 +1420,18 @@ void tst_QObject::moveToThread()
         MoveToThreadObject *child = new MoveToThreadObject(object);
 
         connect(object, SIGNAL(theSignal()), &thread, SLOT(quit()), Qt::DirectConnection);
+
+#if defined(Q_OS_SYMBIAN)
+        // Child timer will be registered after parent timer in the new
+        // thread, and 10ms is less than symbian timer resolution, so
+        // child->timerEventThread compare after thread.wait() will
+        // usually fail unless timers are farther apart.
+        child->startTimer(100);
+        object->startTimer(150);
+#else
         child->startTimer(90);
         object->startTimer(100);
+#endif
 
         QCOMPARE(object->thread(), currentThread);
         QCOMPARE(child->thread(), currentThread);
@@ -2428,7 +2438,9 @@ void tst_QObject::dynamicProperties()
 
 void tst_QObject::recursiveSignalEmission()
 {
-#ifdef QT_NO_PROCESS
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+    QSKIP("Emulator builds in Symbian do not support launching processes linking to Qt", SkipAll);
+#elif defined(QT_NO_PROCESS)
     QSKIP("Test requires QProcess", SkipAll);
 #else
     QProcess proc;

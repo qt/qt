@@ -129,7 +129,7 @@ protected Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(QGraphicsProxyWidget)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QGraphicsProxyWidget)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QGraphicsProxyWidget)
     Q_PRIVATE_SLOT(d_func(), void _q_removeWidgetSlot())
 
     friend class QWidget;

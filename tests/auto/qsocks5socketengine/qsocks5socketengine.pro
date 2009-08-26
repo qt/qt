@@ -9,6 +9,8 @@ MOC_DIR=tmp
 
 QT = core network
 
+# Symbian toolchain does not support correct include semantics
+symbian:INCPATH+=..\..\..\include\QtNetwork\private
 
 
 requires(contains(QT_CONFIG,private_tests))

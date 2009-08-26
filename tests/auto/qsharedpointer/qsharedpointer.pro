@@ -9,6 +9,6 @@ HEADERS += forwarddeclared.h \
     wrapper.h
 
 QT = core
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
+!symbian:DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 include(externaltests.pri)

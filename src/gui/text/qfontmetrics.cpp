@@ -163,7 +163,7 @@ extern int qt_defaultDpi();
     metrics that are compatible with a certain paint device.
 */
 QFontMetrics::QFontMetrics(const QFont &font)
-    : d(font.d)
+    : d(font.d.data())
 {
     d->ref.ref();
 }
@@ -195,7 +195,7 @@ QFontMetrics::QFontMetrics(const QFont &font, QPaintDevice *paintdevice)
         d->dpi = dpi;
         d->screen = screen;
     } else {
-        d = font.d;
+        d = font.d.data();
         d->ref.ref();
     }
 
@@ -1017,7 +1017,7 @@ QFontMetricsF &QFontMetricsF::operator=(const QFontMetrics &other)
     metrics that are compatible with a certain paint device.
 */
 QFontMetricsF::QFontMetricsF(const QFont &font)
-    : d(font.d)
+    : d(font.d.data())
 {
     d->ref.ref();
 }
@@ -1049,7 +1049,7 @@ QFontMetricsF::QFontMetricsF(const QFont &font, QPaintDevice *paintdevice)
         d->dpi = dpi;
         d->screen = screen;
     } else {
-        d = font.d;
+        d = font.d.data();
         d->ref.ref();
     }
 

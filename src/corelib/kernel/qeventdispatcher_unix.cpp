@@ -232,7 +232,7 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
                     continue;
 
                 for (int i = 0; i < list.size(); ++i) {
-                    QSockNot *sn = list.at(i);
+                    QSockNot *sn = list[i];
 
                     FD_ZERO(&fdset);
                     FD_SET(sn->fd, &fdset);
@@ -295,7 +295,7 @@ int QEventDispatcherUNIXPrivate::doSelect(QEventLoop::ProcessEventsFlags flags, 
         for (int i=0; i<3; i++) {
             QSockNotType::List &list = sn_vec[i].list;
             for (int j = 0; j < list.size(); ++j) {
-                QSockNot *sn = list.at(j);
+                QSockNot *sn = list[j];
                 if (FD_ISSET(sn->fd, &sn_vec[i].select_fds))
                     q->setSocketNotifierPending(sn->obj);
             }
@@ -622,7 +622,10 @@ QEventDispatcherUNIX::QEventDispatcherUNIX(QEventDispatcherUNIXPrivate &dd, QObj
 { }
 
 QEventDispatcherUNIX::~QEventDispatcherUNIX()
-{ }
+{
+    Q_D(QEventDispatcherUNIX);
+    d->threadData->eventDispatcher = 0;
+}
 
 int QEventDispatcherUNIX::select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
                                  timeval *timeout)
@@ -711,8 +714,8 @@ QSockNotType::QSockNotType()
 
 QSockNotType::~QSockNotType()
 {
-    while (!list.isEmpty())
-        delete list.takeFirst();
+    for (int i = 0; i < list.size(); ++i)
+        delete list[i];
 }
 
 /*****************************************************************************
@@ -748,7 +751,7 @@ void QEventDispatcherUNIX::registerSocketNotifier(QSocketNotifier *notifier)
 
     int i;
     for (i = 0; i < list.size(); ++i) {
-        QSockNot *p = list.at(i);
+        QSockNot *p = list[i];
         if (p->fd < sockfd)
             break;
         if (p->fd == sockfd) {
@@ -786,7 +789,7 @@ void QEventDispatcherUNIX::unregisterSocketNotifier(QSocketNotifier *notifier)
     QSockNot *sn = 0;
     int i;
     for (i = 0; i < list.size(); ++i) {
-        sn = list.at(i);
+        sn = list[i];
         if(sn->obj == notifier && sn->fd == sockfd)
             break;
     }
@@ -804,7 +807,7 @@ void QEventDispatcherUNIX::unregisterSocketNotifier(QSocketNotifier *notifier)
         for (int i=0; i<3; i++) {
             if (!d->sn_vec[i].list.isEmpty())
                 d->sn_highest = qMax(d->sn_highest,  // list is fd-sorted
-                                     d->sn_vec[i].list.first()->fd);
+                                     d->sn_vec[i].list[0]->fd);
         }
     }
 }
@@ -828,7 +831,7 @@ void QEventDispatcherUNIX::setSocketNotifierPending(QSocketNotifier *notifier)
     QSockNot *sn = 0;
     int i;
     for (i = 0; i < list.size(); ++i) {
-        sn = list.at(i);
+        sn = list[i];
         if(sn->obj == notifier && sn->fd == sockfd)
             break;
     }

@@ -107,9 +107,6 @@ Section "${MODULE_MINGW_NAME} ${MODULE_MINGW_VERSION}" MINGW_SEC01
   SetOverwrite ifnewer
   !insertmacro MODULE_MINGW_INSTALLFILES
   
-  push "$MINGW_INSTDIR"
-  call DeleteFloatingLicenseProgram
-
   push "$MINGW_INSTDIR\bin"
   call AddStartmenuApplication
   

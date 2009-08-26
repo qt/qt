@@ -2,11 +2,14 @@ load(qttest_p4)
 
 DEFINES += QLOCALSERVER_DEBUG
 DEFINES += QLOCALSOCKET_DEBUG
-!wince*: {
-    DEFINES += SRCDIR=\\\"$$PWD/../\\\"
-} else {
+
+symbian {
+    # nothing
+} else:wince* {
     DEFINES += QT_LOCALSOCKET_TCP
     DEFINES += SRCDIR=\\\"../\\\"
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD/../\\\"
 }
 
 QT = core network
@@ -27,6 +30,16 @@ CONFIG(debug_and_release) {
 wince* {
     additionalFiles.sources = ../lackey/lackey.exe
     additionalFiles.path = lackey
+}
+
+symbian {
+    additionalFiles.sources = lackey.exe
+    additionalFiles.path = \sys\bin
+    TARGET.UID3 = 0xE0340005
+    DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
+}
+
+wince*|symbian {
     scriptFiles.sources = ../lackey/scripts/*.js
     scriptFiles.path = lackey/scripts
     DEPLOYMENT = additionalFiles scriptFiles

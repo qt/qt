@@ -48,6 +48,7 @@ int main(int argc, char **argv)
 
     QApplication app(argc, argv);
     Window win;
-    win.show();
+    //win.show();
+    win.showFullScreen();
     return app.exec();
 }

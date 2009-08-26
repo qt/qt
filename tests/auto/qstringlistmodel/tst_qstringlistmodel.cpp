@@ -46,7 +46,6 @@
 #include <qmap.h>
 #include <qstringlistmodel.h>
 #include <qstringlist.h>
-#include <iostream>
 #include <qlistview.h>
 #include "qmodellistener.h"
 #include <qstringlistmodel.h>

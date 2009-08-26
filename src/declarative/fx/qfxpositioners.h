@@ -108,7 +108,7 @@ private:
     void applyTransition(const QList<QPair<QString, QVariant> >& changes, QFxItem* target,
             QmlStateOperation::ActionList &actions);
     Q_DISABLE_COPY(QFxBasePositioner)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxBasePositioner)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxBasePositioner)
 };
 
 class Q_DECLARATIVE_EXPORT QFxColumn : public QFxBasePositioner

@@ -564,7 +564,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         p->translate(opt->rect.x(), opt->rect.y());
         if (opt->state & State_Horizontal) {
             int x = opt->rect.width() / 3;
-            if (QApplication::layoutDirection() == Qt::RightToLeft)
+            if (opt->direction == Qt::RightToLeft)
                 x -= 2;
             if (opt->rect.height() > 4) {
                 qDrawShadePanel(p, x, 2, 3, opt->rect.height() - 4,
@@ -918,7 +918,7 @@ QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItemV4 *option, in
                 widthUsed = qMax(widthUsed, line.naturalTextWidth());
             }
             textLayout.endLayout();
-            const QSize size = QSizeF(widthUsed, height).toSize();
+            const QSize size(qCeil(widthUsed), qCeil(height));
             return QSize(size.width() + 2 * textMargin, size.height());
         }
         break;
@@ -3055,8 +3055,10 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         if (const QStyleOptionViewItemV4 *vopt = qstyleoption_cast<const QStyleOptionViewItemV4 *>(opt)) {
             if (!d->isViewItemCached(*vopt)) {
                 d->viewItemLayout(vopt, &d->checkRect, &d->decorationRect, &d->displayRect, false);
-                if (d->cachedOption)
+                if (d->cachedOption) {
                     delete d->cachedOption;
+                    d->cachedOption = 0;
+                }
                 d->cachedOption = new QStyleOptionViewItemV4(*vopt);
             }
             if (sr == SE_ViewItemCheckIndicator)
@@ -5201,6 +5203,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         }
 #endif
         break;
+    case SH_RequestSoftwareInputPanel:
+        ret = RSIP_OnMouseClickAndAlreadyFocused;
+        break;
     default:
         ret = 0;
         break;
@@ -5219,6 +5224,7 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
     Q_UNUSED(sp);
 #else
     QPixmap pixmap;
+    const bool rtl = (option && option->direction == Qt::RightToLeft) || !option && QApplication::isRightToLeft();
 
     if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (sp) {
@@ -5377,7 +5383,7 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
     switch (sp) {
 #ifndef QT_NO_IMAGEFORMAT_XPM
     case SP_ToolBarHorizontalExtensionButton:
-        if (QApplication::layoutDirection() == Qt::RightToLeft) {
+        if (rtl) {
             QImage im(tb_extension_arrow_h_xpm);
             im = im.convertToFormat(QImage::Format_ARGB32).mirrored(true, false);
             return QPixmap::fromImage(im);
@@ -5393,11 +5399,11 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
 #ifndef QT_NO_IMAGEFORMAT_PNG
     case SP_CommandLink:
     case SP_ArrowForward:
-        if (QApplication::layoutDirection() == Qt::RightToLeft)
+        if (rtl)
             return proxy()->standardPixmap(SP_ArrowLeft, option, widget);
         return proxy()->standardPixmap(SP_ArrowRight, option, widget);
     case SP_ArrowBack:
-        if (QApplication::layoutDirection() == Qt::RightToLeft)
+        if (rtl)
             return proxy()->standardPixmap(SP_ArrowRight, option, widget);
         return proxy()->standardPixmap(SP_ArrowLeft, option, widget);
     case SP_ArrowLeft:
@@ -5508,6 +5514,7 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
                                                const QWidget *widget) const
 {
     QIcon icon;
+    const bool rtl = (option && option->direction == Qt::RightToLeft) || !option && QApplication::isRightToLeft();
     if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (standardIcon) {
         case SP_DirHomeIcon:
@@ -5632,11 +5639,11 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
                 icon = QIcon::fromTheme(QLatin1String("edit-clear"));
                 break;
         case SP_ArrowForward:
-            if (QApplication::layoutDirection() == Qt::RightToLeft)
+            if (rtl)
                 return standardIconImplementation(SP_ArrowLeft, option, widget);
             return standardIconImplementation(SP_ArrowRight, option, widget);
         case SP_ArrowBack:
-            if (QApplication::layoutDirection() == Qt::RightToLeft)
+            if (rtl)
                 return standardIconImplementation(SP_ArrowRight, option, widget);
             return standardIconImplementation(SP_ArrowLeft, option, widget);
         case SP_FileLinkIcon:
@@ -5860,11 +5867,11 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
         icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-no-128.png"));
         break;
     case SP_ArrowForward:
-        if (QApplication::layoutDirection() == Qt::RightToLeft)
+        if (rtl)
             return standardIconImplementation(SP_ArrowLeft, option, widget);
         return standardIconImplementation(SP_ArrowRight, option, widget);
     case SP_ArrowBack:
-        if (QApplication::layoutDirection() == Qt::RightToLeft)
+        if (rtl)
             return standardIconImplementation(SP_ArrowRight, option, widget);
         return standardIconImplementation(SP_ArrowLeft, option, widget);
     case SP_ArrowLeft:

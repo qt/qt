@@ -76,7 +76,7 @@ public:
 
     QLineEditPrivate()
         : control(0), frame(1), contextMenuEnabled(1), cursorVisible(0),
-        dragEnabled(0), hscroll(0), vscroll(0),
+        dragEnabled(0), clickCausedFocus(0), hscroll(0), vscroll(0),
         alignment(Qt::AlignLeading | Qt::AlignVCenter),
         leftTextMargin(0), topTextMargin(0), rightTextMargin(0), bottomTextMargin(0)
     {
@@ -84,6 +84,7 @@ public:
 
     ~QLineEditPrivate()
     {
+        delete control;
     }
 
     QLineControl *control;
@@ -101,7 +102,7 @@ public:
 
     inline bool shouldEnableInputMethod() const
     {
-        return !control->isReadOnly() && (control->echoMode() == QLineEdit::Normal || control->echoMode() == QLineEdit::PasswordEchoOnEdit);
+        return !control->isReadOnly();
     }
 
     QPoint tripleClick;
@@ -110,6 +111,7 @@ public:
     uint contextMenuEnabled : 1;
     uint cursorVisible : 1;
     uint dragEnabled : 1;
+    uint clickCausedFocus : 1;
     int hscroll;
     int vscroll;
     uint alignment;

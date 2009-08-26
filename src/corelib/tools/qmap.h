@@ -416,9 +416,29 @@ Q_INLINE_TEMPLATE typename QMapData::Node *
 QMap<Key, T>::node_create(QMapData *adt, QMapData::Node *aupdate[], const Key &akey, const T &avalue)
 {
     QMapData::Node *abstractNode = adt->node_create(aupdate, payload());
-    Node *concreteNode = concrete(abstractNode);
-    new (&concreteNode->key) Key(akey);
-    new (&concreteNode->value) T(avalue);
+    QT_TRY {
+        Node *concreteNode = concrete(abstractNode);
+        new (&concreteNode->key) Key(akey);
+        QT_TRY {
+            new (&concreteNode->value) T(avalue);
+        } QT_CATCH(...) {
+            concreteNode->key.~Key();
+            QT_RETHROW;
+        }
+    } QT_CATCH(...) {
+        adt->node_delete(aupdate, payload(), abstractNode);
+        QT_RETHROW;
+    }
+
+    // clean up the update array for further insertions
+    /*
+    for (int i = 0; i <= d->topLevel; ++i) {
+        if ( aupdate[i]==reinterpret_cast<QMapData::Node *>(adt) || aupdate[i]->forward[i] != abstractNode)
+            break;
+        aupdate[i] = abstractNode;
+    }
+*/
+
     return abstractNode;
 }
 
@@ -704,8 +724,13 @@ Q_OUTOFLINE_TEMPLATE void QMap<Key, T>::detach_helper()
         QMapData::Node *cur = e->forward[0];
         update[0] = x.e;
         while (cur != e) {
-            Node *concreteNode = concrete(cur);
-            node_create(x.d, update, concreteNode->key, concreteNode->value);
+            QT_TRY {
+                Node *concreteNode = concrete(cur);
+                node_create(x.d, update, concreteNode->key, concreteNode->value);
+            } QT_CATCH(...) {
+                freeData(x.d);
+                QT_RETHROW;
+            }
             cur = cur->forward[0];
         }
         x.d->insertInOrder = false;
@@ -923,7 +948,8 @@ public:
     inline QMultiMap operator+(const QMultiMap &other) const
     { QMultiMap result = *this; result += other; return result; }
 
-#ifndef Q_NO_USING_KEYWORD
+#if !defined(Q_NO_USING_KEYWORD) && !defined(Q_CC_RVCT)
+    // RVCT compiler doesn't handle using-keyword right when used functions are overloaded in child class
     using QMap<Key, T>::contains;
     using QMap<Key, T>::remove;
     using QMap<Key, T>::count;
@@ -993,7 +1019,12 @@ Q_INLINE_TEMPLATE int QMultiMap<Key, T>::remove(const Key &key, const T &value)
     typename QMap<Key, T>::iterator end(QMap<Key, T>::end());
     while (i != end && !qMapLessThanKey<Key>(key, i.key())) {
         if (i.value() == value) {
+#if defined(Q_CC_RVCT)
+            // RVCT has problems with scoping, apparently.
+            i = QMap<Key, T>::erase(i);
+#else
             i = erase(i);
+#endif
             ++n;
         } else {
             ++i;

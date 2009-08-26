@@ -64,6 +64,17 @@ Q_DECLARE_METATYPE(sqlite3_stmt*)
 
 QT_BEGIN_NAMESPACE
 
+static QString _q_escapeIdentifier(const QString &identifier) 
+{
+    QString res = identifier;
+    if(!identifier.isEmpty() && identifier.left(1) != QString(QLatin1Char('"')) && identifier.right(1) != QString(QLatin1Char('"')) ) {
+        res.replace(QLatin1Char('"'), QLatin1String("\"\""));
+        res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
+        res.replace(QLatin1Char('.'), QLatin1String("\".\""));
+    }
+    return res;
+}
+
 static QVariant::Type qGetColumnType(const QString &tpName)
 {
     const QString typeName = tpName.toLower();
@@ -116,8 +127,6 @@ public:
     uint utf8: 1;
     QSqlRecord rInf;
 };
-
-static const uint initial_cache_size = 128;
 
 QSQLiteResultPrivate::QSQLiteResultPrivate(QSQLiteResult* res) : q(res), access(0),
     stmt(0), skippedStatus(false), skipRow(false), utf8(false)
@@ -631,7 +640,7 @@ static QSqlIndex qGetTableInfo(QSqlQuery &q, const QString &tableName, bool only
         schema = tableName.left(indexOfSeparator).append(QLatin1Char('.'));
         table = tableName.mid(indexOfSeparator + 1);
     }
-    q.exec(QLatin1String("PRAGMA ") + schema + QLatin1String("table_info ('") + table + QLatin1String("')"));
+    q.exec(QLatin1String("PRAGMA ") + schema + QLatin1String("table_info (") + _q_escapeIdentifier(table) + QLatin1String(")"));
 
     QSqlIndex ind;
     while (q.next()) {
@@ -686,13 +695,7 @@ QVariant QSQLiteDriver::handle() const
 
 QString QSQLiteDriver::escapeIdentifier(const QString &identifier, IdentifierType type) const
 {
-    QString res = identifier;
-    if(!identifier.isEmpty() && !isIdentifierEscaped(identifier, type) ) {
-        res.replace(QLatin1Char('"'), QLatin1String("\"\""));
-        res.prepend(QLatin1Char('"')).append(QLatin1Char('"'));
-        res.replace(QLatin1Char('.'), QLatin1String("\".\""));
-    }
-    return res;
+    return _q_escapeIdentifier(identifier);
 }
 
 QT_END_NAMESPACE

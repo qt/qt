@@ -43,5 +43,3 @@ wince*: {
 
     DEFINES += QT_LOCALSOCKET_TCP
 }
-
-

@@ -76,6 +76,10 @@ QT_BEGIN_NAMESPACE
 
 
 #ifndef QT_NO_TEXTEDIT
+static inline bool shouldEnableInputMethod(QTextEdit *textedit)
+{
+    return !textedit->isReadOnly();
+}
 
 class QTextEditControl : public QTextControl
 {
@@ -107,7 +111,8 @@ QTextEditPrivate::QTextEditPrivate()
     : control(0),
       autoFormatting(QTextEdit::AutoNone), tabChangesFocus(false),
       lineWrap(QTextEdit::WidgetWidth), lineWrapColumnOrWidth(0),
-      wordWrap(QTextOption::WrapAtWordBoundaryOrAnywhere), textFormat(Qt::AutoText)
+      wordWrap(QTextOption::WrapAtWordBoundaryOrAnywhere), clickCausedFocus(0),
+      textFormat(Qt::AutoText)
 {
     ignoreAutomaticScrollbarAdjustment = false;
     preferRichText = false;
@@ -1564,6 +1569,8 @@ void QTextEdit::mouseReleaseEvent(QMouseEvent *e)
         d->autoScrollTimer.stop();
         ensureCursorVisible();
     }
+    d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
+    d->clickCausedFocus = 0;
 }
 
 /*! \reimp
@@ -1700,6 +1707,9 @@ QVariant QTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 void QTextEdit::focusInEvent(QFocusEvent *e)
 {
     Q_D(QTextEdit);
+    if (e->reason() == Qt::MouseFocusReason) {
+        d->clickCausedFocus = 1;
+    }
     QAbstractScrollArea::focusInEvent(e);
     d->sendControlEvent(e);
 }
@@ -2064,7 +2074,7 @@ void QTextEdit::setReadOnly(bool ro)
     } else {
         flags = Qt::TextEditorInteraction;
     }
-    setAttribute(Qt::WA_InputMethodEnabled, !ro);
+    setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod(this));
     d->control->setTextInteractionFlags(flags);
 }
 

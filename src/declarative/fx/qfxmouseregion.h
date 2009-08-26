@@ -167,7 +167,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxMouseRegion)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxMouseRegion)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxMouseRegion)
 };
 
 QT_END_NAMESPACE

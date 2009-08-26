@@ -92,7 +92,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \property QEventTransition::eventObject
+    \property QEventTransition::eventSource
 
     \brief the event source that this event transition is associated with
 */
@@ -205,7 +205,7 @@ void QEventTransition::setEventType(QEvent::Type type)
 /*!
   Returns the event source associated with this event transition.
 */
-QObject *QEventTransition::eventObject() const
+QObject *QEventTransition::eventSource() const
 {
     Q_D(const QEventTransition);
     return d->object;
@@ -215,7 +215,7 @@ QObject *QEventTransition::eventObject() const
   Sets the event source associated with this event transition to be the given
   \a object.
 */
-void QEventTransition::setEventObject(QObject *object)
+void QEventTransition::setEventSource(QObject *object)
 {
     Q_D(QEventTransition);
     if (d->object == object)

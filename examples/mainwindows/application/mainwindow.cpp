@@ -328,9 +328,13 @@ void MainWindow::loadFile(const QString &fileName)
     }
 
     QTextStream in(&file);
+#ifndef QT_NO_CURSOR
     QApplication::setOverrideCursor(Qt::WaitCursor);
+#endif
     textEdit->setPlainText(in.readAll());
+#ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
+#endif
 
     setCurrentFile(fileName);
     statusBar()->showMessage(tr("File loaded"), 2000);
@@ -351,9 +355,13 @@ bool MainWindow::saveFile(const QString &fileName)
     }
 
     QTextStream out(&file);
+#ifndef QT_NO_CURSOR
     QApplication::setOverrideCursor(Qt::WaitCursor);
+#endif
     out << textEdit->toPlainText();
+#ifndef QT_NO_CURSOR
     QApplication::restoreOverrideCursor();
+#endif
 
     setCurrentFile(fileName);
     statusBar()->showMessage(tr("File saved"), 2000);

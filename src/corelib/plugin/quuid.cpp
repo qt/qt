@@ -557,7 +557,7 @@ bool QUuid::operator>(const QUuid &other) const
 
     \sa variant(), version()
 */
-#if defined(Q_OS_WIN32)
+#if defined(Q_OS_WIN32) && ! defined(Q_CC_MWERKS)
 
 QT_BEGIN_INCLUDE_NAMESPACE
 #include <objbase.h> // For CoCreateGuid

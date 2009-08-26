@@ -53,6 +53,7 @@ QT_MODULE(Gui)
 
 #ifndef QT_NO_PRINTER
 class QPrinterInfoPrivate;
+class QPrinterInfoPrivateDeleter;
 class Q_GUI_EXPORT QPrinterInfo
 {
 Q_DECLARE_PRIVATE(QPrinterInfo)
@@ -76,7 +77,7 @@ public:
 private:
     QPrinterInfo(const QString& name);
 
-    QPrinterInfoPrivate* d_ptr;
+    QScopedPointer<QPrinterInfoPrivate, QPrinterInfoPrivateDeleter> d_ptr;
 };
 
 #endif // QT_NO_PRINTER

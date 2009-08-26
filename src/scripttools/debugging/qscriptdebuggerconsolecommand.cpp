@@ -72,7 +72,6 @@ QScriptDebuggerConsoleCommand::QScriptDebuggerConsoleCommand()
 
 QScriptDebuggerConsoleCommand::~QScriptDebuggerConsoleCommand()
 {
-    delete d_ptr;
 }
 
 QScriptDebuggerConsoleCommand::QScriptDebuggerConsoleCommand(QScriptDebuggerConsoleCommandPrivate &dd)

@@ -151,7 +151,7 @@ public:
 private:
     static void createDatabase();
     static void parseFontName(const QString &name, QString &foundry, QString &family);
-#if defined(Q_WS_QWS)
+#if defined(Q_WS_QWS) || defined(Q_OS_SYMBIAN)
     static QFontEngine *findFont(int script, const QFontPrivate *fp, const QFontDef &request);
 #endif
     static void load(const QFontPrivate *d, int script);
@@ -165,6 +165,7 @@ private:
     friend class QFontDialogPrivate;
     friend class QFontEngineMultiXLFD;
     friend class QFontEngineMultiQWS;
+    friend class QFontEngineMultiS60;
 
     QFontDatabasePrivate *d;
 };

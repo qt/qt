@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qprintpreviewwidget.h"
+#include "private/qwidget_p.h"
 #include <private/qprinter_p.h>
 
 #include <QtCore/qmath.h>
@@ -170,12 +171,12 @@ protected:
 
 } // anonymous namespace
 
-class QPrintPreviewWidgetPrivate
+class QPrintPreviewWidgetPrivate : public QWidgetPrivate
 {
     Q_DECLARE_PUBLIC(QPrintPreviewWidget)
 public:
-    QPrintPreviewWidgetPrivate(QPrintPreviewWidget *q)
-        : q_ptr(q), scene(0), curPage(1),
+    QPrintPreviewWidgetPrivate()
+        : scene(0), curPage(1),
           viewMode(QPrintPreviewWidget::SinglePageView),
           zoomMode(QPrintPreviewWidget::FitInView),
           zoomFactor(1), initialized(false), fitting(true)
@@ -194,7 +195,6 @@ public:
     void setZoomFactor(qreal zoomFactor);
     int calcCurrentPage();
 
-    QPrintPreviewWidget *q_ptr;
     GraphicsView *graphicsView;
     QGraphicsScene *scene;
 
@@ -518,7 +518,7 @@ void QPrintPreviewWidgetPrivate::setZoomFactor(qreal _zoomFactor)
     \sa QWidget::setWindowFlags()
 */
 QPrintPreviewWidget::QPrintPreviewWidget(QPrinter *printer, QWidget *parent, Qt::WindowFlags flags)
-    : QWidget(parent, flags), d_ptr(new QPrintPreviewWidgetPrivate(this))
+    : QWidget(*new QPrintPreviewWidgetPrivate, parent, flags)
 {
     Q_D(QPrintPreviewWidget);
     d->printer = printer;
@@ -534,7 +534,7 @@ QPrintPreviewWidget::QPrintPreviewWidget(QPrinter *printer, QWidget *parent, Qt:
     preview.
 */
 QPrintPreviewWidget::QPrintPreviewWidget(QWidget *parent, Qt::WindowFlags flags)
-    : QWidget(parent, flags), d_ptr(new QPrintPreviewWidgetPrivate(this))
+    : QWidget(*new QPrintPreviewWidgetPrivate, parent, flags)
 {
     Q_D(QPrintPreviewWidget);
     d->printer = new QPrinter;
@@ -551,7 +551,6 @@ QPrintPreviewWidget::~QPrintPreviewWidget()
     Q_D(QPrintPreviewWidget);
     if (d->ownPrinter)
         delete d->printer;
-    delete d_ptr;
 }
 
 /*!

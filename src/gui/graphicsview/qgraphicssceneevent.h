@@ -44,6 +44,7 @@
 
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qpoint.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qpolygon.h>
 #include <QtCore/qset.h>
@@ -74,7 +75,7 @@ public:
 
 protected:
     QGraphicsSceneEvent(QGraphicsSceneEventPrivate &dd, Type type = None);
-    QGraphicsSceneEventPrivate *d_ptr;
+    QScopedPointer<QGraphicsSceneEventPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QGraphicsSceneEvent)
 };
 

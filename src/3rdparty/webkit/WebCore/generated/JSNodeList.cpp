@@ -178,11 +178,11 @@ JSValue jsNodeListConstructor(ExecState* exec, const Identifier&, const Property
     JSNodeList* domObject = static_cast<JSNodeList*>(asObject(slot.slotBase()));
     return JSNodeList::getConstructor(exec, domObject->globalObject());
 }
-void JSNodeList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void JSNodeList::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     for (unsigned i = 0; i < static_cast<NodeList*>(impl())->length(); ++i)
         propertyNames.add(Identifier::from(exec, i));
-     Base::getPropertyNames(exec, propertyNames);
+     Base::getPropertyNames(exec, propertyNames, listedAttributes);
 }
 
 JSValue JSNodeList::getConstructor(ExecState* exec, JSGlobalObject* globalObject)

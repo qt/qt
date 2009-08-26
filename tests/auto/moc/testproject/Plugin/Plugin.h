@@ -45,6 +45,8 @@ struct MyInterface
     virtual void blah() = 0;
 };
 
+QT_BEGIN_NAMESPACE
 Q_DECLARE_INTERFACE(MyInterface, "MyInterface")
+QT_END_NAMESPACE
 
 

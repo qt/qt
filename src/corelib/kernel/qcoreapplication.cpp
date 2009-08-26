@@ -64,7 +64,12 @@
 #include <private/qfactoryloader_p.h>
 #include <private/qfunctions_p.h>
 
-#ifdef Q_OS_UNIX
+#ifdef Q_OS_SYMBIAN
+#  include <exception>
+#  include <f32file.h>
+#  include "qeventdispatcher_symbian_p.h"
+#  include "private/qcore_symbian_p.h"
+#elif defined(Q_OS_UNIX)
 #  if !defined(QT_NO_GLIB)
 #    include "qeventdispatcher_glib_p.h"
 #  endif
@@ -90,6 +95,21 @@
 #endif
 
 QT_BEGIN_NAMESPACE
+
+class QMutexUnlocker
+{
+public:
+    inline explicit QMutexUnlocker(QMutex *m)
+        : mtx(m)
+    { }
+    inline ~QMutexUnlocker() { unlock(); }
+    inline void unlock() { if (mtx) mtx->unlock(); mtx = 0; }
+
+private:
+    Q_DISABLE_COPY(QMutexUnlocker)
+
+    QMutex *mtx;
+};
 
 #if defined(Q_WS_WIN) || defined(Q_WS_MAC)
 extern QString qAppFileName();
@@ -162,7 +182,14 @@ void qRemovePostRoutine(QtCleanUpFunction p)
 
 void Q_CORE_EXPORT qt_call_post_routines()
 {
-    QVFuncList *list = postRList();
+    QVFuncList *list = 0;
+    QT_TRY {
+        list = postRList();
+    } QT_CATCH(const std::bad_alloc &) {
+        // ignore - if we can't allocate a post routine list,
+        // there's a high probability that there's no post
+        // routine to be executed :)
+    }
     if (!list)
         return;
     while (!list->isEmpty())
@@ -251,30 +278,34 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv)
 
 QCoreApplicationPrivate::~QCoreApplicationPrivate()
 {
+    if (threadData) {
 #ifndef QT_NO_THREAD
-    void *data = &threadData->tls;
-    QThreadStorageData::finish((void **)data);
+        void *data = &threadData->tls;
+        QThreadStorageData::finish((void **)data);
 #endif
 
-    // need to clear the state of the mainData, just in case a new QCoreApplication comes along.
-    QMutexLocker locker(&threadData->postEventList.mutex);
-    for (int i = 0; i < threadData->postEventList.size(); ++i) {
-        const QPostEvent &pe = threadData->postEventList.at(i);
-        if (pe.event) {
-            --pe.receiver->d_func()->postedEvents;
-            pe.event->posted = false;
-            delete pe.event;
+        // need to clear the state of the mainData, just in case a new QCoreApplication comes along.
+        QMutexLocker locker(&threadData->postEventList.mutex);
+        for (int i = 0; i < threadData->postEventList.size(); ++i) {
+            const QPostEvent &pe = threadData->postEventList.at(i);
+            if (pe.event) {
+                --pe.receiver->d_func()->postedEvents;
+                pe.event->posted = false;
+                delete pe.event;
+            }
         }
+        threadData->postEventList.clear();
+        threadData->postEventList.recursion = 0;
+        threadData->quitNow = false;
     }
-    threadData->postEventList.clear();
-    threadData->postEventList.recursion = 0;
-    threadData->quitNow = false;
 }
 
 void QCoreApplicationPrivate::createEventDispatcher()
 {
     Q_Q(QCoreApplication);
-#if defined(Q_OS_UNIX)
+#if defined(Q_OS_SYMBIAN)
+    eventDispatcher = new QEventDispatcherSymbian(q);
+#elif defined(Q_OS_UNIX)
 #  if !defined(QT_NO_GLIB)
     if (qgetenv("QT_NO_GLIB").isEmpty() && QEventDispatcherGlib::versionSupported())
         eventDispatcher = new QEventDispatcherGlib(q);
@@ -312,6 +343,11 @@ void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
     Q_UNUSED(currentThread);
     Q_UNUSED(thr);
 }
+#elif defined(Q_OS_SYMBIAN) && defined (QT_NO_DEBUG)
+// no implementation in release builds, but keep the symbol present
+void QCoreApplicationPrivate::checkReceiverThread(QObject *receiver)
+{
+}
 #endif
 
 void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
@@ -319,10 +355,17 @@ void QCoreApplicationPrivate::appendApplicationPathToLibraryPaths()
 #if !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
     QStringList *app_libpaths = coreappdata()->app_libpaths;
     Q_ASSERT(app_libpaths);
+# if defined(Q_OS_SYMBIAN)
+    QString app_location( QCoreApplication::applicationDirPath() );
+    // File existence check for application's private dir requires additional '\' or
+    // platform security will not allow it.
+    if (app_location !=  QLibraryInfo::location(QLibraryInfo::PluginsPath) && QFile::exists(app_location + QLatin1Char('\\')) && !app_libpaths->contains(app_location))
+# else
     QString app_location( QCoreApplication::applicationFilePath() );
     app_location.truncate(app_location.lastIndexOf(QLatin1Char('/')));
     app_location = QDir(app_location).canonicalPath();
     if (app_location !=  QLibraryInfo::location(QLibraryInfo::PluginsPath) && QFile::exists(app_location) && !app_libpaths->contains(app_location))
+# endif
         app_libpaths->append(app_location);
 #endif
 }
@@ -447,6 +490,13 @@ QCoreApplication::QCoreApplication(int &argc, char **argv)
 {
     init();
     QCoreApplicationPrivate::eventDispatcher->startingUp();
+#if defined(Q_OS_SYMBIAN) && !defined(QT_NO_LIBRARY) && !defined(QT_NO_SETTINGS)
+    // Refresh factoryloader, as text codecs are requested during lib path
+    // resolving process and won't be therefore properly loaded.
+    // Unknown if this is symbian specific issue.
+    QFactoryLoader::refreshAll();
+#endif
+
 }
 
 extern void set_winapp_name();
@@ -523,7 +573,14 @@ QCoreApplication::~QCoreApplication()
 #if !defined(QT_NO_THREAD)
 #if !defined(QT_NO_CONCURRENT)
     // Synchronize and stop the global thread pool threads.
-    QThreadPool::globalInstance()->waitForDone();
+    QThreadPool *globalThreadPool = 0;
+    QT_TRY {
+        globalThreadPool = QThreadPool::globalInstance();
+    } QT_CATCH (...) {
+        // swallow the exception, since destructors shouldn't throw
+    }
+    if (globalThreadPool)
+        globalThreadPool->waitForDone();
 #endif
     QThread::cleanup();
 #endif
@@ -619,17 +676,13 @@ bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
     d->inEventHandler = true;
 #endif
 
-#if defined(QT_NO_EXCEPTIONS)
-    bool returnValue = notify(receiver, event);
-#else
     bool returnValue;
-    try {
+    QT_TRY {
         returnValue = notify(receiver, event);
-    } catch(...) {
+    } QT_CATCH (...) {
         --threadData->loopLevel;
-        throw;
+        QT_RETHROW;
     }
-#endif
 
 #ifdef QT_JAMBI_BUILD
     // Restore the previous state if the object was not deleted..
@@ -958,7 +1011,7 @@ void QCoreApplication::exit(int returnCode)
     The event is \e not deleted when the event has been sent. The normal
     approach is to create the event on the stack, for example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 0
+    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 0
 
     \sa postEvent(), notify()
 */
@@ -1050,21 +1103,23 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         data->postEventList.mutex.lock();
     }
 
+    QMutexUnlocker locker(&data->postEventList.mutex);
+
     // if this is one of the compressible events, do compression
     if (receiver->d_func()->postedEvents
         && self && self->compressEvent(event, receiver, &data->postEventList)) {
-        data->postEventList.mutex.unlock();
         return;
     }
 
-    event->posted = true;
-    ++receiver->d_func()->postedEvents;
     if (event->type() == QEvent::DeferredDelete && data == QThreadData::current()) {
         // remember the current running eventloop for DeferredDelete
         // events posted in the receiver's thread
         event->d = reinterpret_cast<QEventPrivate *>(quintptr(data->loopLevel));
     }
 
+    // delete the event on exceptions to protect against memory leaks till the event is
+    // properly owned in the postEventList
+    QScopedPointer<QEvent> eventDeleter(event);
     if (data->postEventList.isEmpty() || data->postEventList.last().priority >= priority) {
         // optimization: we can simply append if the last event in
         // the queue has higher or equal priority
@@ -1079,8 +1134,11 @@ void QCoreApplication::postEvent(QObject *receiver, QEvent *event, int priority)
         QPostEventList::iterator at = qUpperBound(begin, end, priority);
         data->postEventList.insert(at, QPostEvent(receiver, event, priority));
     }
+    eventDeleter.take();
+    event->posted = true;
+    ++receiver->d_func()->postedEvents;
     data->canWait = false;
-    data->postEventList.mutex.unlock();
+    locker.unlock();
 
     if (data->eventDispatcher)
         data->eventDispatcher->wakeUp();
@@ -1476,7 +1534,7 @@ bool QCoreApplication::event(QEvent *e)
 
     Example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 1
+    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 1
 
     \sa exit(), aboutToQuit(), QApplication::lastWindowClosed()
 */
@@ -1710,6 +1768,9 @@ bool QCoreApplicationPrivate::isTranslatorInstalled(QTranslator *translator)
     function also assumes that the current directory has not been
     changed by the application.
 
+    In Symbian this function will return the application private directory,
+    not the path to executable itself, as those are always in \c {/sys/bin}.
+
     \sa applicationFilePath()
 */
 QString QCoreApplication::applicationDirPath()
@@ -1721,7 +1782,32 @@ QString QCoreApplication::applicationDirPath()
 
     QCoreApplicationPrivate *d = self->d_func();
     if (d->cachedApplicationDirPath.isNull())
+#if defined(Q_OS_SYMBIAN)
+    {
+        QString appPath;
+        RProcess proc;
+        TInt err = proc.Open(proc.Id());
+        if (err == KErrNone) {
+#if defined(Q_CC_NOKIAX86)
+            // In emulator, always resolve the private dir on C-drive
+            appPath.append(QChar('C'));
+#else
+            appPath.append(QChar((proc.FileName())[0]));
+#endif
+            appPath.append(QLatin1String(":\\private\\"));
+            QString sid;
+            sid.setNum(proc.SecureId().iId, 16);
+            appPath.append(sid);
+            appPath.append(QLatin1Char('\\'));
+            proc.Close();
+        }
+
+        QFileInfo fi(appPath);
+        d->cachedApplicationDirPath = fi.exists() ? fi.canonicalFilePath() : QString();
+    }
+#else
         d->cachedApplicationDirPath = QFileInfo(applicationFilePath()).path();
+#endif
     return d->cachedApplicationDirPath;
 }
 
@@ -1762,7 +1848,20 @@ QString QCoreApplication::applicationFilePath()
         return d->cachedApplicationFilePath;
     }
 #endif
-#if defined( Q_OS_UNIX )
+#if defined(Q_OS_SYMBIAN)
+    QString appPath;
+    RProcess proc;
+    TInt err = proc.Open(proc.Id());
+    if (err == KErrNone) {
+        TFileName procName = proc.FileName();
+        appPath.append(QString(reinterpret_cast<const QChar*>(procName.Ptr()), procName.Length()));
+        proc.Close();
+    }
+
+    d->cachedApplicationFilePath = appPath;
+    return d->cachedApplicationFilePath;
+
+#elif defined( Q_OS_UNIX )
 #  ifdef Q_OS_LINUX
     // Try looking for a /proc/<pid>/exe symlink first which points to
     // the absolute path of the executable
@@ -2054,7 +2153,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
     If you want to iterate over the list, you can use the \l foreach
     pseudo-keyword:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 2
+    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 2
 
     \sa setLibraryPaths(), addLibraryPath(), removeLibraryPath(), QLibrary,
         {How to Create Qt Plugins}
@@ -2065,12 +2164,33 @@ QStringList QCoreApplication::libraryPaths()
     if (!coreappdata()->app_libpaths) {
         QStringList *app_libpaths = coreappdata()->app_libpaths = new QStringList;
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
+#if defined(Q_OS_SYMBIAN)
+        // Add existing path on all drives for relative PluginsPath in Symbian
+        if (installPathPlugins.at(1) != QChar(':')) {
+            QString tempPath = installPathPlugins;
+            if (tempPath.at(tempPath.length() - 1) != QChar('\\')) {
+                tempPath += QChar('\\');
+            }
+            RFs& fs = qt_s60GetRFs();
+            TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));
+            TFindFile finder(fs);
+            TInt err = finder.FindByDir(tempPathPtr, tempPathPtr);
+            while (err == KErrNone) {
+                QString foundDir = QString::fromUtf16(finder.File().Ptr(), finder.File().Length());
+                foundDir = QDir(foundDir).canonicalPath();
+                if (!app_libpaths->contains(foundDir))
+                    app_libpaths->append(foundDir);
+                err = finder.Find();
+            }
+        }
+#else
         if (QFile::exists(installPathPlugins)) {
             // Make sure we convert from backslashes to slashes.
             installPathPlugins = QDir(installPathPlugins).canonicalPath();
             if (!app_libpaths->contains(installPathPlugins))
                 app_libpaths->append(installPathPlugins);
         }
+#endif
 
         // If QCoreApplication is not yet instantiated,
         // make sure we add the application path when we construct the QCoreApplication
@@ -2078,7 +2198,7 @@ QStringList QCoreApplication::libraryPaths()
 
         const QByteArray libPathEnv = qgetenv("QT_PLUGIN_PATH");
         if (!libPathEnv.isEmpty()) {
-#ifdef Q_OS_WIN
+#if defined(Q_OS_WIN) || defined(Q_OS_SYMBIAN)
             QLatin1Char pathSep(';');
 #else
             QLatin1Char pathSep(':');
@@ -2180,7 +2300,7 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     A function with the following signature that can be used as an
     event filter:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 3
+    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 3
 
     \sa setEventFilter()
 */
@@ -2204,7 +2324,7 @@ void QCoreApplication::removeLibraryPath(const QString &path)
 
     By default, no event filter function is set (i.e., this function
     returns a null EventFilter the first time it is called).
-    
+
     \note The filter function set here receives native messages,
     i.e. MSG or XEvent structs, that are going to Qt objects. It is
     called by QCoreApplication::filterEvent(). If the filter function
@@ -2393,7 +2513,7 @@ int QCoreApplication::loopLevel()
     The function specified by \a ptr should take no arguments and should
     return nothing. For example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 4
+    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 4
 
     Note that for an application- or module-wide cleanup,
     qAddPostRoutine() is often not suitable. For example, if the
@@ -2407,7 +2527,7 @@ int QCoreApplication::loopLevel()
     parent-child mechanism to call a cleanup function at the right
     time:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 5
+    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 5
 
     By selecting the right parent object, this can often be made to
     clean up the module's data at the right moment.
@@ -2421,7 +2541,7 @@ int QCoreApplication::loopLevel()
     translation functions, \c tr() and \c trUtf8(), with these
     signatures:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 6
+    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 6
 
     This macro is useful if you want to use QObject::tr() or
     QObject::trUtf8() in classes that don't inherit from QObject.
@@ -2430,7 +2550,7 @@ int QCoreApplication::loopLevel()
     class definition (before the first \c{public:} or \c{protected:}).
     For example:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 7
+    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 7
 
     The \a context parameter is normally the class name, but it can
     be any string.

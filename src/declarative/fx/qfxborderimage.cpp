@@ -79,7 +79,7 @@ QFxBorderImage::~QFxBorderImage()
     Q_D(QFxBorderImage);
     if (d->sciReply)
         d->sciReply->deleteLater();
-    if (!d->sciurl.isEmpty())
+    if (d->sciPendingPixmapCache)
         QFxPixmapCache::cancelGet(d->sciurl, this);
 }
 /*!
@@ -153,10 +153,14 @@ void QFxBorderImage::setSource(const QUrl &url)
         d->sciReply = 0;
     }
 
-    if (!d->url.isEmpty())
+    if (d->pendingPixmapCache) {
         QFxPixmapCache::cancelGet(d->url, this);
-    if (!d->sciurl.isEmpty())
+        d->pendingPixmapCache = false;
+    }
+    if (d->sciPendingPixmapCache) {
         QFxPixmapCache::cancelGet(d->sciurl, this);
+        d->sciPendingPixmapCache = false;
+    }
 
     d->url = url;
     d->sciurl = QUrl();
@@ -194,6 +198,7 @@ void QFxBorderImage::setSource(const QUrl &url)
         } else {
             QNetworkReply *reply = QFxPixmapCache::get(qmlEngine(this), d->url, &d->pix);
             if (reply) {
+                d->pendingPixmapCache = true;
                 connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
                 connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
                         this, SLOT(requestProgress(qint64,qint64)));
@@ -310,6 +315,7 @@ void QFxBorderImage::setGridScaledImage(const QFxGridScaledImage& sci)
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
         QNetworkReply *reply = QFxPixmapCache::get(qmlEngine(this), d->sciurl, &d->pix);
         if (reply) {
+            d->sciPendingPixmapCache = true;
             connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
             connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
                     this, SLOT(requestProgress(qint64,qint64)));
@@ -332,9 +338,12 @@ void QFxBorderImage::setGridScaledImage(const QFxGridScaledImage& sci)
 void QFxBorderImage::requestFinished()
 {
     Q_D(QFxBorderImage);
+
     if (d->url.path().endsWith(QLatin1String(".sci"))) {
+        d->sciPendingPixmapCache = false;
         QFxPixmapCache::find(d->sciurl, &d->pix);
     } else {
+        d->pendingPixmapCache = false;
         if (!QFxPixmapCache::find(d->url, &d->pix))
             d->status = Error;
     }

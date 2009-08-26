@@ -2331,7 +2331,7 @@ void QWindowsXPStyle::drawControl(ControlElement element, const QStyleOption *op
                 bool hasIcon = (ico.cacheKey() != QApplication::windowIcon().cacheKey());
                 if (hasIcon) {
                     QPixmap pxIco = ico.pixmap(titleHeight);
-                    if (!verticalTitleBar && QApplication::layoutDirection() == Qt::RightToLeft)
+                    if (!verticalTitleBar && dwOpt->direction == Qt::RightToLeft)
                         p->drawPixmap(rect.width() - titleHeight - pxIco.width(), rect.bottom() - titleHeight - 2, pxIco);
                     else
                         p->drawPixmap(fw, rect.bottom() - titleHeight - 2, pxIco);
@@ -2672,11 +2672,8 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                     // Draw gripper if there is enough space
                     if (!gripperBounds.isEmpty()) {
                         p->save();
-                        XPThemeData grippBackground = theme;
-                        grippBackground.partId = flags & State_Horizontal ? SBP_LOWERTRACKHORZ : SBP_LOWERTRACKVERT;
                         theme.rect = gripperBounds;
                         p->setClipRegion(d->region(theme));// Only change inside the region of the gripper
-                        d->drawBackground(grippBackground);// The gutter is the grippers background
                         d->drawBackground(theme);          // Transparent gripper ontop of background
                         p->restore();
                     }

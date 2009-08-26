@@ -67,7 +67,7 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &, QColor &);
 class Q_GUI_EXPORT QColor
 {
 public:
-    enum Spec { Invalid, Rgb, Hsv, Cmyk };
+    enum Spec { Invalid, Rgb, Hsv, Cmyk, Hsl };
 
     QColor();
     QColor(Qt::GlobalColor color);
@@ -122,10 +122,14 @@ public:
 
     int hue() const; // 0 <= hue < 360
     int saturation() const;
+    int hsvHue() const; // 0 <= hue < 360
+    int hsvSaturation() const;
     int value() const;
 
     qreal hueF() const; // 0.0 <= hueF < 360.0
     qreal saturationF() const;
+    qreal hsvHueF() const; // 0.0 <= hueF < 360.0
+    qreal hsvSaturationF() const;
     qreal valueF() const;
 
     void getHsv(int *h, int *s, int *v, int *a = 0) const;
@@ -150,9 +154,24 @@ public:
     void getCmykF(qreal *c, qreal *m, qreal *y, qreal *k, qreal *a = 0);
     void setCmykF(qreal c, qreal m, qreal y, qreal k, qreal a = 1.0);
 
+    int hslHue() const; // 0 <= hue < 360
+    int hslSaturation() const;
+    int lightness() const;
+
+    qreal hslHueF() const; // 0.0 <= hueF < 360.0
+    qreal hslSaturationF() const;
+    qreal lightnessF() const;
+
+    void getHsl(int *h, int *s, int *l, int *a = 0) const;
+    void setHsl(int h, int s, int l, int a = 255);
+
+    void getHslF(qreal *h, qreal *s, qreal *l, qreal *a = 0) const;
+    void setHslF(qreal h, qreal s, qreal l, qreal a = 1.0);
+
     QColor toRgb() const;
     QColor toHsv() const;
     QColor toCmyk() const;
+    QColor toHsl() const;
 
     QColor convertTo(Spec colorSpec) const;
 
@@ -167,6 +186,9 @@ public:
 
     static QColor fromCmyk(int c, int m, int y, int k, int a = 255);
     static QColor fromCmykF(qreal c, qreal m, qreal y, qreal k, qreal a = 1.0);
+
+    static QColor fromHsl(int h, int s, int l, int a = 255);
+    static QColor fromHslF(qreal h, qreal s, qreal l, qreal a = 1.0);
 
     QColor light(int f = 150) const;
     QColor lighter(int f = 150) const;
@@ -234,6 +256,14 @@ private:
             ushort yellow;
             ushort black;
         } acmyk;
+        struct {
+            ushort alpha;
+            ushort hue;
+            ushort saturation;
+            ushort lightness;
+            ushort pad;
+        } ahsl;
+        ushort array[5];
     } ct;
 
     friend class QColormap;

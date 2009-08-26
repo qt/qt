@@ -75,7 +75,7 @@ protected:
     void dropEvent(QDropEvent *event);
 #endif
 private:
-    class QtColorButtonPrivate *d_ptr;
+    QScopedPointer<class QtColorButtonPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtColorButton)
     Q_DISABLE_COPY(QtColorButton)
     Q_PRIVATE_SLOT(d_func(), void slotEditColor())

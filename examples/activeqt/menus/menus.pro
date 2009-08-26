@@ -12,3 +12,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/activeqt/menus
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS menus.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/activeqt/menus
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

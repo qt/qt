@@ -39,8 +39,9 @@
 **
 ****************************************************************************/
 
-
-#ifdef _WIN32
+// Just to get Q_OS_SYMBIAN
+#include <qglobal.h>
+#if defined(_WIN32) && !defined(Q_OS_SYMBIAN)
 #include <winsock2.h>
 #else
 #include <sys/types.h>
@@ -129,11 +130,11 @@ void tst_QTcpServer::getSetCheck()
 
 tst_QTcpServer::tst_QTcpServer()
 {
+    Q_SET_DEFAULT_IAP
 }
 
 tst_QTcpServer::~tst_QTcpServer()
 {
-
 }
 
 void tst_QTcpServer::initTestCase_data()
@@ -232,6 +233,9 @@ void tst_QTcpServer::clientServerLoop()
 //----------------------------------------------------------------------------------
 void tst_QTcpServer::ipv6Server()
 {
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("Symbian: IPv6 is not yet supported", SkipAll);
+#endif
     //### need to enter the event loop for the server to get the connection ?? ( windows)
     QTcpServer server;
     if (!server.listen(QHostAddress::LocalHostIPv6, 8944)) {
@@ -309,6 +313,9 @@ void tst_QTcpServer::ipv4LoopbackPerformanceTest()
 //----------------------------------------------------------------------------------
 void tst_QTcpServer::ipv6LoopbackPerformanceTest()
 {
+#if defined(Q_OS_SYMBIAN)
+    QSKIP("Symbian: IPv6 is not yet supported", SkipAll);
+#endif
     QTcpServer server;
     if (!server.listen(QHostAddress::LocalHostIPv6, 0)) {
         QVERIFY(server.serverError() == QAbstractSocket::UnsupportedSocketOperationError);
@@ -503,6 +510,7 @@ private:
 //----------------------------------------------------------------------------------
 void tst_QTcpServer::waitForConnectionTest()
 {
+
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy) {
 #ifdef TEST_QNETWORK_PROXY
@@ -514,7 +522,7 @@ void tst_QTcpServer::waitForConnectionTest()
     }
 
     QTcpSocket findLocalIpSocket;
-    findLocalIpSocket.connectToHost(QtNetworkSettings::serverName(), 21);
+    findLocalIpSocket.connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY(findLocalIpSocket.waitForConnected(2000));
 
     QTcpServer server;
@@ -527,10 +535,10 @@ void tst_QTcpServer::waitForConnectionTest()
     ThreadConnector connector(findLocalIpSocket.localAddress(), server.serverPort());
     connector.start();
 
-#if !defined(Q_OS_WINCE)
-    QVERIFY(server.waitForNewConnection(3000, &timeout));
-#else
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     QVERIFY(server.waitForNewConnection(9000, &timeout));
+#else
+    QVERIFY(server.waitForNewConnection(3000, &timeout));
 #endif
     QVERIFY(!timeout);
 }
@@ -590,7 +598,11 @@ protected:
     {
         // how a user woulddo it (qabstractsocketengine is not public)
         unsigned long arg = 0;
-#ifdef Q_OS_WIN
+#if defined(Q_OS_SYMBIAN)
+        arg = fcntl(socketDescriptor, F_GETFL, NULL);
+        arg &= (~O_NONBLOCK);
+        ok = ::fcntl(socketDescriptor, F_SETFL, arg) != -1;
+#elif defined(Q_OS_WIN)
         ok = ::ioctlsocket(socketDescriptor, FIONBIO, &arg) == 0;
         ::closesocket(socketDescriptor);
 #else
@@ -602,6 +614,10 @@ protected:
 
 void tst_QTcpServer::addressReusable()
 {
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+    QSKIP("Symbian: Emulator does not support process launching", SkipAll );
+#endif
+
 #if defined(QT_NO_PROCESS)
     QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
 #else
@@ -615,7 +631,7 @@ void tst_QTcpServer::addressReusable()
         }
 #endif
     }
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     QString signalName = QString::fromLatin1("/test_signal.txt");
     QFile::remove(signalName);
     // The crashingServer process will crash once it gets a connection.
@@ -663,9 +679,7 @@ void tst_QTcpServer::setNewSocketDescriptorBlocking()
 
     QTcpSocket socket;
     socket.connectToHost(QHostAddress::LocalHost, server.serverPort());
-
     QVERIFY(server.waitForNewConnection(5000));
-
     QVERIFY(server.ok);
 }
 
@@ -678,7 +692,7 @@ void tst_QTcpServer::invalidProxy_data()
     QTest::addColumn<int>("expectedError");
 
     QString fluke = QHostInfo::fromName(QtNetworkSettings::serverName()).addresses().first().toString();
-    QTest::newRow("ftp-proxy") << int(QNetworkProxy::FtpCachingProxy) << fluke << 21
+    QTest::newRow("ftp-proxy") << int(QNetworkProxy::FtpCachingProxy) << fluke << 143
                                << int(QAbstractSocket::UnsupportedSocketOperationError);
     QTest::newRow("http-proxy") << int(QNetworkProxy::HttpProxy) << fluke << 3128
                                 << int(QAbstractSocket::UnsupportedSocketOperationError);

@@ -43,9 +43,11 @@
 #include <QtGui/QPushButton>
 #include <QtTest/QtTest>
 
+QT_BEGIN_NAMESPACE
 namespace QtSharedPointer {
     Q_CORE_EXPORT void internalSafetyCheckCleanCheck();
 }
+QT_END_NAMESPACE
 
 class tst_QSharedPointer_and_QWidget: public QObject
 {

@@ -323,7 +323,7 @@ void QStyledItemDelegate::initStyleOption(QStyleOptionViewItem *option,
 
     value = index.data(Qt::TextAlignmentRole);
     if (value.isValid() && !value.isNull())
-        option->displayAlignment = (Qt::Alignment)value.toInt();
+        option->displayAlignment = Qt::Alignment(value.toInt());
 
     value = index.data(Qt::ForegroundRole);
     if (qVariantCanConvert<QBrush>(value))

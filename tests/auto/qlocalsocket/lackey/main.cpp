@@ -41,7 +41,7 @@
 
 
 #include <qscriptengine.h>
-#include <QtGui/QtGui>
+ #include <QFile>
 #include <QTest>
 
 #include <qlocalsocket.h>

@@ -1,7 +1,7 @@
 load(qttest_p4)
 SOURCES += tst_patternistexamples.cpp
 CONFIG += qtestlib
-wince*: {
+wince*|symbian*: {
 	snippets.sources = $$QT_SOURCE_TREE/doc/src/snippets/patternist/*
 	snippets.path = patternist
 	widgetRen.sources = $$QT_SOURCE_TREE/examples/xmlpatterns/xquery/widgetRenderer/*

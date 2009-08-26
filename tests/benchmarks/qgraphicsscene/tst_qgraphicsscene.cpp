@@ -166,6 +166,8 @@ void tst_QGraphicsScene::addItem()
         }
         scene.itemAt(0, 0);
     }
+    //let QGraphicsScene::_q_polishItems be called so ~QGraphicsItem doesn't spend all his time cleaning the unpolished list
+    qApp->processEvents();
 }
 
 void tst_QGraphicsScene::itemAt_data()
@@ -220,6 +222,9 @@ void tst_QGraphicsScene::itemAt()
     QBENCHMARK {
         scene.itemAt(0, 0);
     }
+
+    //let QGraphicsScene::_q_polishItems be called so ~QGraphicsItem doesn't spend all his time cleaning the unpolished list
+    qApp->processEvents();
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

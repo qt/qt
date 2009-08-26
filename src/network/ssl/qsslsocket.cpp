@@ -683,7 +683,16 @@ void QSslSocket::close()
 #ifdef QSSLSOCKET_DEBUG
     qDebug() << "QSslSocket::close()";
 #endif
+    Q_D(QSslSocket);
     QTcpSocket::close();
+
+    // must be cleared, reading/writing not possible on closed socket:
+    d->readBuffer.clear();
+    d->writeBuffer.clear();
+    // for QTcpSocket this is already done because it uses the readBuffer/writeBuffer
+    // if the QIODevice it is based on
+    // ### FIXME QSslSocket should probably do similar instead of having
+    // its own readBuffer/writeBuffer
 }
 
 /*!

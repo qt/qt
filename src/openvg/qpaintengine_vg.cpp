@@ -1091,6 +1091,7 @@ VGPaintType QVGPaintEnginePrivate::setBrush
         // The brush is a texture specified by a QPixmap/QImage.
         QPixmapData *pd = brush.texture().pixmapData();
         VGImage vgImg;
+        bool deref = false;
         if (pd->pixelType() == QPixmapData::BitmapType) {
             // Colorize bitmaps using the brush color and opacity.
             QColor color = brush.color();
@@ -1098,15 +1099,21 @@ VGPaintType QVGPaintEnginePrivate::setBrush
                 color.setAlphaF(color.alphaF() * opacity);
             QImage image = colorizeBitmap(*(pd->buffer()), color);
             vgImg = toVGImage(image);
+            deref = true;
         } else if (opacity == 1.0) {
             if (pd->classId() == QPixmapData::OpenVGClass) {
                 QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
                 vgImg = vgpd->toVGImage();
             } else {
                 vgImg = toVGImage(*(pd->buffer()));
+                deref = true;
             }
+        } else if (pd->classId() == QPixmapData::OpenVGClass) {
+            QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
+            vgImg = vgpd->toVGImage(opacity);
         } else {
             vgImg = toVGImageWithOpacity(*(pd->buffer()), opacity);
+            deref = true;
         }
         if (vgImg == VG_INVALID_HANDLE)
             break;
@@ -1114,7 +1121,8 @@ VGPaintType QVGPaintEnginePrivate::setBrush
             vgSetParameteri(paint, VG_PAINT_TYPE, VG_PAINT_TYPE_PATTERN);
         vgSetParameteri(paint, VG_PAINT_PATTERN_TILING_MODE, VG_TILE_REPEAT);
         vgPaintPattern(paint, vgImg);
-        vgDestroyImage(vgImg); // Will stay valid until pattern is destroyed.
+        if (deref)
+            vgDestroyImage(vgImg); // Will be valid until pattern is destroyed.
         return VG_PAINT_TYPE_PATTERN;
     }
 
@@ -3112,6 +3120,8 @@ QPixmapFilter *QVGPaintEngine::createPixmapFilter(int type) const
         return new QVGPixmapColorizeFilter;
     else if (type == QPixmapFilter::DropShadowFilter)
         return new QVGPixmapDropShadowFilter;
+    else if (type == QPixmapFilter::BlurFilter)
+        return new QVGPixmapBlurFilter;
     else
 #endif
         return QPaintEngineEx::createPixmapFilter(type);

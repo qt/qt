@@ -63,7 +63,7 @@ public:
     void setBrushManager(QtBrushManager *manager);
 
 private:
-    BrushManagerProxyPrivate *d_ptr;
+    QScopedPointer<BrushManagerProxyPrivate> d_ptr;
     Q_DECLARE_PRIVATE(BrushManagerProxy)
     Q_DISABLE_COPY(BrushManagerProxy)
     Q_PRIVATE_SLOT(d_func(), void brushAdded(const QString &, const QBrush &))

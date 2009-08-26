@@ -42,6 +42,12 @@
 #include <QtGui>
 #include <QtCore>
 
+#if defined(Q_OS_SYMBIAN)
+# define STRINGIFY(x) #x
+# define TOSTRING(x) STRINGIFY(x)
+# define SRCDIR "C:/Private/" TOSTRING(SYMBIAN_SRCDIR_UID) "/"
+#endif
+
 class tst_QIcoImageFormat : public QObject
 {
     Q_OBJECT

@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qharfbuzz_p.h"
-
 #include "qunicodetables_p.h"
 #include "qlibrary.h"
 #include "qtextcodec.h"
+
+#include "qharfbuzz_p.h"
 
 QT_USE_NAMESPACE
 
@@ -126,6 +126,7 @@ char *HB_TextCodec_ConvertFromUnicode(void *codec, const HB_UChar16 *unicode, hb
     QByteArray data = reinterpret_cast<QTextCodec *>(codec)->fromUnicode((const QChar *)unicode, length);
     // ### suboptimal
     char *output = (char *)malloc(data.length() + 1);
+    Q_CHECK_PTR(output);
     memcpy(output, data.constData(), data.length() + 1);
     if (outputLength)
         *outputLength = data.length();

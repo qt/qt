@@ -90,6 +90,7 @@ public:
 
     QImage *buffer(const QWidget *widget);
 private:
+    void updateFormat();
 #ifdef QT_DIRECTFB_WM
     void createWindow();
     IDirectFBWindow *dfbWindow;

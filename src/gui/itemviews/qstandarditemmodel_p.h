@@ -153,7 +153,7 @@ public:
     inline QStandardItem *itemFromIndex(const QModelIndex &index) const {
         Q_Q(const QStandardItemModel);
         if (!index.isValid())
-            return root;
+            return root.data();
         if (index.model() != q)
             return 0;
         QStandardItem *parent = static_cast<QStandardItem*>(index.internalPointer());
@@ -178,7 +178,7 @@ public:
 
     QVector<QStandardItem*> columnHeaderItems;
     QVector<QStandardItem*> rowHeaderItems;
-    QStandardItem *root;
+    QScopedPointer<QStandardItem> root;
     const QStandardItem *itemPrototype;
     int sortRole;
 };

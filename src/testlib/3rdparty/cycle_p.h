@@ -190,6 +190,7 @@ INLINE_ELAPSED(__inline__)
 #endif
 
 /* Visual C++ -- thanks to Morten Nissov for his help with this */
+#if defined(_MSC_VER)
 #if _MSC_VER >= 1200 && (_M_IX86 >= 500 || (defined(_WIN32_WCE) && defined(_X86_))) && !defined(HAVE_TICK_COUNTER)
 #include <windows.h>
 typedef LARGE_INTEGER CycleCounterTicks;
@@ -214,6 +215,7 @@ static __inline double elapsed(CycleCounterTicks t1, CycleCounterTicks t0)
 
 #define HAVE_TICK_COUNTER
 #define TIME_MIN 5000.0   /* unreliable pentium IV cycle counter */
+#endif
 #endif
 
 #if _MSC_VER >= 1400 && defined(_WIN32_WCE) && !defined(HAVE_TICK_COUNTER)
@@ -485,6 +487,23 @@ static inline double elapsed(CycleCounterTicks t1, CycleCounterTicks t0)
 typedef long long CycleCounterTicks;
 
 #define getticks _rtc
+
+INLINE_ELAPSED(inline)
+
+#define HAVE_TICK_COUNTER
+#endif
+
+/*----------------------------------------------------------------*/
+/* Symbian */
+#if defined(__SYMBIAN32__) && !defined(HAVE_TICK_COUNTER)
+#include <e32std.h>
+
+typedef TUint32 CycleCounterTicks;
+
+static inline CycleCounterTicks getticks(void)
+{
+    return User::FastCounter();
+}
 
 INLINE_ELAPSED(inline)
 

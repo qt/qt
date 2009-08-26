@@ -1,4 +1,4 @@
-QT          +=  webkit
+QT          +=  webkit network
 TARGET       =  formExtractor
 TEMPLATE     =  app
 SOURCES     +=  main.cpp \
@@ -14,3 +14,8 @@ target.path = $$[QT_INSTALL_EXAMPLES]/webkit/formextractor
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro form.html images
 sources.path = $$[QT_INSTALL_EXAMPLES]/webkit/formextractor
 INSTALLS += target sources
+
+symbian {
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+    TARGET.UID3 = 0xA000CF6D
+}

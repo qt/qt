@@ -50,6 +50,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+//### remove
+//### add component property to Loader
+
 class QFxComponentInstancePrivate;
 class Q_DECLARATIVE_EXPORT QFxComponentInstance : public QFxItem
 {
@@ -78,7 +81,7 @@ protected:
     QFxComponentInstance(QFxComponentInstancePrivate &dd, QFxItem *parent);
 
 private:
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxComponentInstance)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxComponentInstance)
 };
 
 QT_END_NAMESPACE

@@ -174,6 +174,7 @@ class Q_CORE_EXPORT QVariant
     ~QVariant();
     QVariant(Type type);
     QVariant(int typeOrUserType, const void *copy);
+    QVariant(int typeOrUserType, const void *copy, uint flags);
     QVariant(const QVariant &other);
 
 #ifndef QT_NO_DATASTREAM
@@ -445,7 +446,7 @@ inline bool qvariant_cast_helper(const QVariant &v, QVariant::Type tp, void *ptr
 template <typename T>
 inline QVariant qVariantFromValue(const T &t)
 {
-    return QVariant(qMetaTypeId<T>(reinterpret_cast<T *>(0)), &t);
+    return QVariant(qMetaTypeId<T>(reinterpret_cast<T *>(0)), &t, QTypeInfo<T>::isPointer);
 }
 
 template <>
@@ -464,7 +465,7 @@ inline void qVariantSetValue(QVariant &v, const T &t)
             old->~T();
         new (old) T(t); //call the copy constructor
     } else {
-        v = QVariant(type, &t);
+        v = QVariant(type, &t, QTypeInfo<T>::isPointer);
     }
 }
 

@@ -46,6 +46,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qrect.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtGui/qpainterpath.h>
 #include <QtGui/qpixmap.h>
 
@@ -62,6 +63,7 @@ QT_MODULE(Gui)
 class QBrush;
 class QCursor;
 class QFocusEvent;
+class QGraphicsEffect;
 class QGraphicsItemGroup;
 class QGraphicsObject;
 class QGraphicsSceneContextMenuEvent;
@@ -208,6 +210,10 @@ public:
     qreal opacity() const;
     qreal effectiveOpacity() const;
     void setOpacity(qreal opacity);
+
+    // Effect
+    QGraphicsEffect *graphicsEffect() const;
+    void setGraphicsEffect(QGraphicsEffect *effect);
 
     Qt::MouseButtons acceptedMouseButtons() const;
     void setAcceptedMouseButtons(Qt::MouseButtons buttons);
@@ -423,7 +429,7 @@ protected:
 protected:
     QGraphicsItem(QGraphicsItemPrivate &dd,
                   QGraphicsItem *parent, QGraphicsScene *scene);
-    QGraphicsItemPrivate *d_ptr;
+    QScopedPointer<QGraphicsItemPrivate> d_ptr;
 
     void addToIndex();
     void removeFromIndex();
@@ -446,6 +452,7 @@ private:
     friend class QGraphicsSceneIndexPrivate;
     friend class QGraphicsSceneBspTreeIndex;
     friend class QGraphicsSceneBspTreeIndexPrivate;
+    friend class QGraphicsItemEffectSourcePrivate;
     friend class QGraphicsTransformPrivate;
     friend class ::tst_QGraphicsItem;
     friend bool qt_closestLeaf(const QGraphicsItem *, const QGraphicsItem *);

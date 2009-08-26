@@ -479,7 +479,7 @@ void tst_QScriptEngineDebugger::consoleCommands()
 
     outputEdit->clear();
     executeConsoleCommand(inputEdit, outputEdit, ".backtrace");
-    QCOMPARE(outputEdit->toPlainText(), QString::fromLatin1("qsdb> .backtrace\n#0  <global>()@:-1"));
+    QCOMPARE(outputEdit->toPlainText(), QString::fromLatin1("qsdb> .backtrace\n#0  <global>() at -1"));
 
     outputEdit->clear();
     executeConsoleCommand(inputEdit, outputEdit, ".down");
@@ -491,7 +491,7 @@ void tst_QScriptEngineDebugger::consoleCommands()
 
     outputEdit->clear();
     executeConsoleCommand(inputEdit, outputEdit, ".frame");
-    QCOMPARE(outputEdit->toPlainText(), QString::fromLatin1("qsdb> .frame\n#0  <global>()@:-1"));
+    QCOMPARE(outputEdit->toPlainText(), QString::fromLatin1("qsdb> .frame\n#0  <global>() at -1"));
 
     outputEdit->clear();
     executeConsoleCommand(inputEdit, outputEdit, ".break foo.qs:789");
@@ -745,6 +745,9 @@ private:
 
 void tst_QScriptEngineDebugger::multithreadedDebugging()
 {
+#ifdef Q_OS_WINCE
+    QSKIP("This tests uses too much memory for Windows CE", SkipAll);
+#endif
     ScriptEvaluator eval;
     QThread thread;
     eval.moveToThread(&thread);

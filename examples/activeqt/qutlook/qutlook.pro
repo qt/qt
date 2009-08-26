@@ -21,3 +21,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/activeqt/qutlook
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS qutlook.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/activeqt/qutlook
 INSTALLS += target sources
+
+include($$QT_SOURCE_TREE/examples/examplebase.pri)

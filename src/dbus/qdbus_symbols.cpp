@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 
-#include "qdbus_symbols_p.h"
 #include <QtCore/qglobal.h>
 #include <QtCore/qlibrary.h>
 #include <QtCore/qmutex.h>
@@ -53,7 +52,7 @@ void *qdbus_resolve_me(const char *name);
 
 static QLibrary *qdbus_libdbus = 0;
 
-static void qdbus_unloadLibDBus()
+void qdbus_unloadLibDBus()
 {
     delete qdbus_libdbus;
     qdbus_libdbus = 0;
@@ -77,11 +76,8 @@ bool qdbus_loadLibDBus()
     lib->setFileName(QLatin1String("dbus-1"));
     for (uint i = 0; i < sizeof(majorversions) / sizeof(majorversions[0]); ++i) {
         lib->setFileNameAndVersion(lib->fileName(), majorversions[i]);
-        if (lib->load() && lib->resolve("dbus_connection_open_private")) {
-            struct Unloader { ~Unloader() { qdbus_unloadLibDBus(); } };
-            static Unloader unloader;
+        if (lib->load() && lib->resolve("dbus_connection_open_private"))
             return true;
-        }
 
         lib->unload();
     }
@@ -110,6 +106,8 @@ void *qdbus_resolve_me(const char *name)
 
     return ptr;
 }
+
+Q_DESTRUCTOR_FUNCTION(qdbus_unloadLibDBus)
 
 QT_END_NAMESPACE
 

@@ -21,3 +21,11 @@ wince*: {
      addFiles.path = \My Documents
      DEPLOYMENT += addFiles
 }
+
+symbian: {
+     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+     TARGET.UID3 = 0xA000A64E
+     addFiles.sources = files\*.svg
+     addFiles.path = .
+     DEPLOYMENT += addFiles
+}

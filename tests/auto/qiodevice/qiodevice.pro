@@ -9,6 +9,11 @@ wince*: {
    DEPLOYMENT += addFiles
    DEFINES += SRCDIR=\\\"\\\"
    !wince50standard-x86-msvc2005: DEFINES += WINCE_EMULATOR_TEST=1
+} else:symbian {
+   # SRCDIR defined in code in symbian
+   addFiles.sources = tst_qiodevice.cpp
+   addFiles.path = .
+   DEPLOYMENT += addFiles
 } else {
    DEFINES += SRCDIR=\\\"$$PWD/\\\"
    contains(QT_CONFIG, qt3support):QT += qt3support

@@ -976,6 +976,15 @@ extern "C" {
     return qwidget->focusPolicy() != Qt::NoFocus;
 }
 
+- (BOOL)resignFirstResponder
+{
+    // Seems like the following test only triggers if this
+    // view is inside a QMacNativeWidget:
+    if (qwidget == QApplication::focusWidget())
+        QApplicationPrivate::setFocusWidget(0, Qt::OtherFocusReason);
+    return YES;
+}
+
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal
 {
     Q_UNUSED(isLocal);

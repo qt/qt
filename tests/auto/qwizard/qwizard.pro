@@ -5,5 +5,6 @@ SOURCES  += tst_qwizard.cpp
 #SOURCES  += /home/jasplin/dev/research/qwizard/src/qwizard.cpp
 #HEADERS  += /home/jasplin/dev/research/qwizard/src/qwizard.h
 RESOURCES = qwizard.qrc
+TARGET.EPOCHEAPSIZE = 0x200000 0xF00000
 
 

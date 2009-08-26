@@ -46,11 +46,22 @@
 
 #include "server.h"
 
+#ifdef Q_OS_SYMBIAN
+#include "sym_iap_util.h"
+#endif
+
 int main(int argc, char *argv[])
 {
+#ifdef Q_OS_SYMBIAN
+    qt_SetDefaultIap();
+#endif
     QApplication app(argc, argv);
     Server server;
+#ifdef Q_OS_SYMBIAN
+    server.showMaximized();
+#else
     server.show();
+#endif
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
     return server.exec();
 }

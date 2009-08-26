@@ -1,27 +1,32 @@
 TEMPLATE    = subdirs
 SUBDIRS     = \
-	demos_shared \
-	demos_deform \
-	demos_gradients \
-	demos_pathstroke \
-	demos_affine \
-	demos_composition \
-        demos_books \
-        demos_interview \
-        demos_mainwindow \
-        demos_spreadsheet \
-        demos_textedit \
-        demos_chip \
-        demos_embeddeddialogs \
-        demos_undo \
-        demos_sub-attaq
+            demos_shared \
+            demos_deform \
+            demos_gradients \
+            demos_pathstroke \
+            demos_affine \
+            demos_composition \
+            demos_books \
+            demos_interview \
+            demos_mainwindow \
+            demos_spreadsheet \
+            demos_textedit \
+            demos_chip \
+            demos_embeddeddialogs \
+            demos_undo \
+            demos_sub-attaq
+
+symbian: SUBDIRS = \
+            demos_shared \
+            demos_deform \
+            demos_pathstroke
 
 contains(QT_CONFIG, opengl):!contains(QT_CONFIG, opengles1):!contains(QT_CONFIG, opengles1cl):!contains(QT_CONFIG, opengles2):{
 SUBDIRS += demos_boxes
 }
 
 mac*: SUBDIRS += demos_macmainwindow
-wince*|embedded: SUBDIRS += embedded
+wince*|symbian|embedded: SUBDIRS += embedded
 
 !contains(QT_EDITION, Console):!cross_compile:!embedded:!wince*:SUBDIRS += demos_arthurplugin
 
@@ -38,6 +43,8 @@ contains(QT_CONFIG, webkit):contains(QT_CONFIG, svg):SUBDIRS += demos_browser
 sources.files = README *.pro
 sources.path = $$[QT_INSTALL_DEMOS]
 INSTALLS += sources
+
+symbian: include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
 
 demos_chip.subdir = chip
 demos_embeddeddialogs.subdir = embeddeddialogs

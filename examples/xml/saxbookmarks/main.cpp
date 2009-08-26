@@ -47,7 +47,11 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     MainWindow mainWin;
+#if defined(Q_OS_SYMBIAN)
+    mainWin.showFullScreen();
+#else
     mainWin.show();
+#endif
     mainWin.open();
     return app.exec();
 }

@@ -49,14 +49,6 @@
 #include <qmap.h>
 #include <qmetatype.h>
 
-#ifndef QT_BUILD_QMAKE_LIBRARY
-# define QTSCRIPT_SUPPORT
-#endif
-
-#ifdef QTSCRIPT_SUPPORT
-# include <qscriptengine.h>
-#endif
-
 QT_BEGIN_NAMESPACE
 
 class QMakeProperty;
@@ -80,9 +72,6 @@ class QMakeProject
     friend struct IteratorBlock;
     friend struct FunctionBlock;
 
-#ifdef QTSCRIPT_SUPPORT
-    QScriptEngine eng;
-#endif
     QStack<ScopeBlock> scope_blocks;
     QStack<FunctionBlock *> function_blocks;
     IteratorBlock *iterator;
@@ -202,6 +191,10 @@ inline QString QMakeProject::first(const QString &v)
 
 inline QMap<QString, QStringList> &QMakeProject::variables()
 { return vars; }
+
+// Helper functions needed for Symbian
+bool isForSymbian();
+bool isForSymbianSbsv2();
 
 QT_END_NAMESPACE
 

@@ -7,12 +7,6 @@ QT -= gui
 
 TARGET = tst_qsslsocket
 
-!wince* {
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
-} else {
-DEFINES += SRCDIR=\\\"./\\\"
-}
-
 win32 {
   CONFIG(debug, debug|release) {
     DESTDIR = debug
@@ -21,8 +15,20 @@ win32 {
   }
 }
 
-wince*: {
-   certFiles.sources = certs ssl.tar.gz
-   certFiles.path    = .
-   DEPLOYMENT += certFiles
+wince* {
+    DEFINES += SRCDIR=\\\"./\\\"
+
+    certFiles.sources = certs ssl.tar.gz
+    certFiles.path    = .
+    DEPLOYMENT += certFiles
+} else:symbian {
+    DEFINES += QSSLSOCKET_CERTUNTRUSTED_WORKAROUND
+    TARGET.EPOCHEAPSIZE="0x100 0x1000000"
+    TARGET.CAPABILITY="ALL -TCB"
+
+    certFiles.sources = certs ssl.tar.gz
+    certFiles.path    = .
+    DEPLOYMENT += certFiles
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }

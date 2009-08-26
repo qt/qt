@@ -92,7 +92,10 @@ public:
         return r;
     }
     inline QRectF cursorRect() { return cursorRect(textCursor()); }
-    void ensureCursorVisible() { textEdit->ensureCursorVisible(); }
+    void ensureCursorVisible() {
+        textEdit->ensureCursorVisible();
+        emit microFocusChanged();
+    }
 
 
     QPlainTextEdit *textEdit;
@@ -149,6 +152,7 @@ public:
     uint backgroundVisible : 1;
     uint centerOnScroll : 1;
     uint inDrag : 1;
+    uint clickCausedFocus : 1;
 
     int topLine;
 
@@ -172,12 +176,14 @@ public:
 #endif
 
     void _q_cursorPositionChanged();
-
     void _q_modificationChanged(bool);
 
-    void _q_gestureTriggered();
     int originalOffsetY;
+
+#ifdef Q_WS_WIN
+    void _q_gestureTriggered();
     QPanGesture *panGesture;
+#endif
 };
 
 QT_END_NAMESPACE

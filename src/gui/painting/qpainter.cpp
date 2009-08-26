@@ -75,9 +75,6 @@ QT_BEGIN_NAMESPACE
 #define QGradient_StretchToDevice 0x10000000
 #define QPaintEngine_OpaqueBackground 0x40000000
 
-// use the same rounding as in qrasterizer.cpp (6 bit fixed point)
-static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
-
 // #define QT_DEBUG_DRAW
 #ifdef QT_DEBUG_DRAW
 bool qt_show_painter_debug_output = true;
@@ -259,14 +256,16 @@ bool QPainterPrivate::attachPainterPrivate(QPainter *q, QPaintDevice *pdev)
         // in 99% of all cases). E.g: A renders B which renders C which renders D.
         sp->d_ptr->d_ptrs_size = 4;
         sp->d_ptr->d_ptrs = (QPainterPrivate **)malloc(4 * sizeof(QPainterPrivate *));
+        Q_CHECK_PTR(sp->d_ptr->d_ptrs);
     } else if (sp->d_ptr->refcount - 1 == sp->d_ptr->d_ptrs_size) {
         // However, to support corner cases we grow the array dynamically if needed.
         sp->d_ptr->d_ptrs_size <<= 1;
         const int newSize = sp->d_ptr->d_ptrs_size * sizeof(QPainterPrivate *);
-        sp->d_ptr->d_ptrs = (QPainterPrivate **)realloc(sp->d_ptr->d_ptrs, newSize);
+        sp->d_ptr->d_ptrs = q_check_ptr((QPainterPrivate **)realloc(sp->d_ptr->d_ptrs, newSize));
     }
-    sp->d_ptr->d_ptrs[++sp->d_ptr->refcount - 2] = q->d_ptr;
-    q->d_ptr = sp->d_ptr;
+    sp->d_ptr->d_ptrs[++sp->d_ptr->refcount - 2] = q->d_ptr.data();
+    q->d_ptr.take();
+    q->d_ptr.reset(sp->d_ptr.data());
 
     Q_ASSERT(q->d_ptr->state);
 
@@ -319,7 +318,8 @@ void QPainterPrivate::detachPainterPrivate(QPainter *q)
 
     d_ptrs[refcount - 1] = 0;
     q->restore();
-    q->d_ptr = original;
+    q->d_ptr.take();
+    q->d_ptr.reset(original);
 
     if (emulationEngine) {
         extended = emulationEngine->real_engine;
@@ -1354,8 +1354,8 @@ void QPainterPrivate::updateState(QPainterState *newState)
 */
 
 QPainter::QPainter()
+    : d_ptr(new QPainterPrivate(this))
 {
-    d_ptr = new QPainterPrivate(this);
 }
 
 /*!
@@ -1387,7 +1387,7 @@ QPainter::QPainter(QPaintDevice *pd)
 {
     Q_ASSERT(pd != 0);
     if (!QPainterPrivate::attachPainterPrivate(this, pd)) {
-        d_ptr = new QPainterPrivate(this);
+        d_ptr.reset(new QPainterPrivate(this));
         begin(pd);
     }
     Q_ASSERT(d_ptr);
@@ -1399,11 +1399,14 @@ QPainter::QPainter(QPaintDevice *pd)
 QPainter::~QPainter()
 {
     d_ptr->inDestructor = true;
-    if (isActive())
-        end();
-    else if (d_ptr->refcount > 1)
-        d_ptr->detachPainterPrivate(this);
-
+    QT_TRY {
+        if (isActive())
+            end();
+        else if (d_ptr->refcount > 1)
+            d_ptr->detachPainterPrivate(this);
+    } QT_CATCH(...) {
+        // don't throw anything in the destructor.
+    }
     if (d_ptr) {
         // Make sure we haven't messed things up.
         Q_ASSERT(d_ptr->inDestructor);
@@ -1411,7 +1414,6 @@ QPainter::~QPainter()
         Q_ASSERT(d_ptr->refcount == 1);
         if (d_ptr->d_ptrs)
             free(d_ptr->d_ptrs);
-        delete d_ptr;
     }
 }
 
@@ -2561,6 +2563,8 @@ void QPainter::setClipRect(const QRectF &rect, Qt::ClipOperation op)
         QVectorPath vp(pts, 4, 0, QVectorPath::RectangleHint);
         d->state->clipEnabled = true;
         d->extended->clip(vp, op);
+        if (op == Qt::ReplaceClip || op == Qt::NoClip)
+            d->state->clipInfo.clear();
         d->state->clipInfo << QPainterClipInfo(rect, op, d->state->matrix);
         d->state->clipOperation = op;
         return;
@@ -2607,6 +2611,8 @@ void QPainter::setClipRect(const QRect &rect, Qt::ClipOperation op)
     if (d->extended) {
         d->state->clipEnabled = true;
         d->extended->clip(rect, op);
+        if (op == Qt::ReplaceClip || op == Qt::NoClip)
+            d->state->clipInfo.clear();
         d->state->clipInfo << QPainterClipInfo(rect, op, d->state->matrix);
         d->state->clipOperation = op;
         return;
@@ -2660,6 +2666,8 @@ void QPainter::setClipRegion(const QRegion &r, Qt::ClipOperation op)
     if (d->extended) {
         d->state->clipEnabled = true;
         d->extended->clip(r, op);
+        if (op == Qt::NoClip || op == Qt::ReplaceClip)
+            d->state->clipInfo.clear();
         d->state->clipInfo << QPainterClipInfo(r, op, d->state->matrix);
         d->state->clipOperation = op;
         return;
@@ -3064,6 +3072,8 @@ void QPainter::setClipPath(const QPainterPath &path, Qt::ClipOperation op)
     if (d->extended) {
         d->state->clipEnabled = true;
         d->extended->clip(path, op);
+        if (op == Qt::NoClip || op == Qt::ReplaceClip)
+            d->state->clipInfo.clear();
         d->state->clipInfo << QPainterClipInfo(path, op, d->state->matrix);
         d->state->clipOperation = op;
         return;
@@ -5686,7 +5696,6 @@ void QPainter::drawText(const QPointF &p, const QString &str, int tf, int justif
         engine.justify(line);
     }
     QFixed x = QFixed::fromReal(p.x());
-    QFixed ox = x;
 
     for (int i = 0; i < nItems; ++i) {
         int item = visualOrder[i];
@@ -7412,8 +7421,21 @@ QPaintDevice *QPainter::redirected(const QPaintDevice *device, QPoint *offset)
 
 void qt_painter_removePaintDevice(QPaintDevice *dev)
 {
-    QMutexLocker locker(globalRedirectionsMutex());
-    if(QPaintDeviceRedirectionList *redirections = globalRedirections()) {
+    QMutex *mutex = 0;
+    QT_TRY {
+        mutex = globalRedirectionsMutex();
+    } QT_CATCH(...) {
+        // ignore the missing mutex, since we could be called from
+        // a destructor, and destructors shall not throw
+    }
+    QMutexLocker locker(mutex);
+    QPaintDeviceRedirectionList *redirections = 0;
+    QT_TRY {
+        redirections = globalRedirections();
+    } QT_CATCH(...) {
+        // do nothing - code below is safe with redirections being 0.
+    }
+    if (redirections) {
         for (int i = 0; i < redirections->size(); ) {
             if(redirections->at(i) == dev || redirections->at(i).replacement == dev)
                 redirections->removeAt(i);

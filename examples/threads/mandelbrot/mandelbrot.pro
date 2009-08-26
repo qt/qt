@@ -4,10 +4,12 @@ SOURCES       = main.cpp \
                 mandelbrotwidget.cpp \
                 renderthread.cpp
 
-unix:!mac:!vxworks:LIBS += -lm
+unix:!mac:!symbian:!vxworks:LIBS += -lm
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/threads/mandelbrot
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS mandelbrot.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/threads/mandelbrot
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

@@ -1499,7 +1499,7 @@ void QCleanlooksStyle::drawControl(ControlElement element, const QStyleOption *o
                 default:
                     break;
                 }
-                if (QApplication::layoutDirection() == Qt::RightToLeft) { //reverse layout changes the order of Beginning/end
+                if (toolbar->direction == Qt::RightToLeft) { //reverse layout changes the order of Beginning/end
                     bool tmp = paintLeftBorder;
                     paintRightBorder=paintLeftBorder;
                     paintLeftBorder=tmp;
@@ -4323,7 +4323,7 @@ QRect QCleanlooksStyle::subElementRect(SubElement sr, const QStyleOption *opt, c
         if (verticalTitleBar) {
             r.adjust(0, 0, 0, -4);
         } else {
-            if (QApplication::layoutDirection() == Qt::LeftToRight)
+            if (opt->direction == Qt::LeftToRight)
                 r.adjust(4, 0, 0, 0);
             else
                 r.adjust(0, 0, -4, 0);

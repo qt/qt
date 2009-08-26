@@ -663,7 +663,6 @@ void QAbstractSpinBox::setLineEdit(QLineEdit *lineEdit)
         d->edit->setParent(this);
 
     d->edit->setFrame(false);
-    d->edit->setAttribute(Qt::WA_InputMethodEnabled, false);
     d->edit->setFocusProxy(this);
     d->edit->setAcceptDrops(false);
 
@@ -692,6 +691,18 @@ void QAbstractSpinBox::interpretText()
 {
     Q_D(QAbstractSpinBox);
     d->interpret(EmitIfChanged);
+}
+
+/*
+    Reimplemented in 4.6, so be careful.
+ */
+/*!
+    \reimp
+*/
+QVariant QAbstractSpinBox::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    Q_D(const QAbstractSpinBox);
+    return d->edit->inputMethodQuery(query);
 }
 
 /*!

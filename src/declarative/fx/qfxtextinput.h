@@ -182,7 +182,7 @@ private Q_SLOTS:
     void cursorPosChanged();
 
 private:
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxTextInput);
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxTextInput);
 };
 
 QT_END_NAMESPACE

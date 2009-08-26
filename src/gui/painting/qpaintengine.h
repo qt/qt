@@ -44,6 +44,7 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qobjectdefs.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtGui/qpainter.h>
 
 QT_BEGIN_HEADER
@@ -210,6 +211,7 @@ public:
         Direct3D,
         Pdf,
         OpenVG,
+        OpenGL2,
 
         User = 50,    // first user type id
         MaxUser = 100 // last user type id
@@ -239,7 +241,7 @@ protected:
     uint selfDestruct : 1;
     uint extended : 1;
 
-    QPaintEnginePrivate *d_ptr;
+    QScopedPointer<QPaintEnginePrivate> d_ptr;
 
 private:
     void setAutoDestruct(bool autoDestr) { selfDestruct = autoDestr; }

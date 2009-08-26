@@ -68,6 +68,7 @@ static const int MAX_DOUBLECLICK_TIME=500; // XXX need better gesture system
 class QFxWebSettings : public QObject {
     Q_OBJECT
     /*
+        ### Add these
         StandardFont,
         FixedFont,
         SerifFont,

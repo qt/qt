@@ -262,7 +262,7 @@ PropertyEditor::PropertyEditor(QDesignerFormEditorInterface *core, QWidget *pare
 
     configureMenu->addAction(m_sortingAction);
     configureMenu->addAction(m_coloringAction);
-#if QT_VERSION >= 0x040600
+#if QT_VERSION >= 0x04FF00
     configureMenu->addSeparator();
     configureMenu->addAction(m_treeAction);
     configureMenu->addAction(m_buttonAction);

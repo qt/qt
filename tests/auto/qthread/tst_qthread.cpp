@@ -892,7 +892,7 @@ void tst_QThread::stressTest()
     while (t.elapsed() < one_minute) {
         Current_Thread t;
         t.start();
-        t.wait();
+        t.wait(one_minute);
     }
 }
 

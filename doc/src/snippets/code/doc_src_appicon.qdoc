@@ -21,3 +21,7 @@ kde-config --path icon
 //! [4]
 gnome-config --datadir
 //! [4]
+
+//! [5]
+ICON = myapp.svg
+//! [5]

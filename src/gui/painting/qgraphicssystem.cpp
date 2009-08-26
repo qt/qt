@@ -44,7 +44,7 @@
 #ifdef Q_WS_X11
 # include <private/qpixmap_x11_p.h>
 #endif
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
 # include <private/qpixmap_raster_p.h>
 #endif
 #ifdef Q_WS_MAC
@@ -64,7 +64,7 @@ QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType typ
 #endif
 #if defined(Q_WS_X11)
     return new QX11PixmapData(type);
-#elif defined(Q_WS_WIN)
+#elif defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
     return new QRasterPixmapData(type);
 #elif defined(Q_WS_MAC)
     return new QMacPixmapData(type);

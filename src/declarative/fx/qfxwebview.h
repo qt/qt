@@ -77,6 +77,10 @@ private:
 class QFxWebViewAttached;
 class QFxWebSettings;
 
+//### TODO: new web "windows" (popups)
+//### TODO: browser plugins
+//### TODO: smart zooming using e.g. DIV
+
 class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
 {
     Q_OBJECT
@@ -85,25 +89,26 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
     Q_PROPERTY(QPixmap icon READ icon NOTIFY iconChanged)
     Q_PROPERTY(qreal textSizeMultiplier READ textSizeMultiplier WRITE setTextSizeMultiplier DESIGNABLE false)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
-    Q_PROPERTY(QString status READ status NOTIFY statusChanged)
+    Q_PROPERTY(QString status READ status NOTIFY statusChanged) //### statusText
 
-    Q_PROPERTY(int mouseX READ mouseX)
+    Q_PROPERTY(int mouseX READ mouseX) //### remove and find way to handle double clicking
     Q_PROPERTY(int mouseY READ mouseY)
 
     Q_PROPERTY(QString html READ html WRITE setHtml)
 
-    Q_PROPERTY(int idealWidth READ idealWidth WRITE setIdealWidth NOTIFY idealWidthChanged)
-    Q_PROPERTY(int idealHeight READ idealHeight WRITE setIdealHeight NOTIFY idealHeightChanged)
-    Q_PROPERTY(int cacheSize READ cacheSize WRITE setCacheSize)
-    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
+    Q_PROPERTY(int idealWidth READ idealWidth WRITE setIdealWidth NOTIFY idealWidthChanged) //### widthHint
+    Q_PROPERTY(int idealHeight READ idealHeight WRITE setIdealHeight NOTIFY idealHeightChanged) //### heightHint
+    Q_PROPERTY(int cacheSize READ cacheSize WRITE setCacheSize) //### remove
+    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged) //### change immediately
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
+    //### status
 
-    Q_PROPERTY(bool interactive READ interactive WRITE setInteractive NOTIFY interactiveChanged)
+    Q_PROPERTY(bool interactive READ interactive WRITE setInteractive NOTIFY interactiveChanged) //### Really needed here??
 
-    Q_PROPERTY(QObject* reload READ reloadAction CONSTANT)
-    Q_PROPERTY(QObject* back READ backAction CONSTANT)
-    Q_PROPERTY(QObject* forward READ forwardAction CONSTANT)
-    Q_PROPERTY(QObject* stop READ stopAction CONSTANT)
+    Q_PROPERTY(QObject* reload READ reloadAction CONSTANT) //### QAction
+    Q_PROPERTY(QObject* back READ backAction CONSTANT) //### QAction
+    Q_PROPERTY(QObject* forward READ forwardAction CONSTANT) //### QAction
+    Q_PROPERTY(QObject* stop READ stopAction CONSTANT) //### QAction
 
     Q_PROPERTY(QFxWebSettings* settings READ settingsObject CONSTANT)
 
@@ -181,7 +186,7 @@ Q_SIGNALS:
     void statusChanged();
     void zoomFactorChanged();
 
-    void loadStarted();
+    void loadStarted(); //### document with \qmlsignal
     void loadFinished();
     void loadFailed();
 
@@ -189,7 +194,7 @@ Q_SIGNALS:
     void doubleClick();
 
 public Q_SLOTS:
-    QVariant evaluateJavaScript (const QString&);
+    QVariant evaluateJavaScript(const QString&);
 
 private Q_SLOTS:
     void expandToWebPage();
@@ -221,7 +226,7 @@ private:
     void init();
     virtual void componentComplete();
     Q_DISABLE_COPY(QFxWebView)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxWebView)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxWebView)
 };
 
 QT_END_NAMESPACE

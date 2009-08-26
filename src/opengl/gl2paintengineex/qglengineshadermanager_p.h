@@ -199,19 +199,23 @@
         O = Global Opacity
 
 
-    CUSTOM SHADER CODE (idea, depricated)
+    CUSTOM SHADER CODE
     ==================
 
     The use of custom shader code is supported by the engine for drawImage and
     drawPixmap calls. This is implemented via hooks in the fragment pipeline.
+
     The custom shader is passed to the engine as a partial fragment shader
-    (QGLCustomizedShader). The shader will implement a pre-defined method name
-    which Qt's fragment pipeline will call. There are two different hooks which
-    can be implemented as custom shader code:
+    (QGLCustomShaderStage). The shader will implement a pre-defined method name
+    which Qt's fragment pipeline will call:
 
-        mediump vec4 customShader(sampler2d src, vec2 srcCoords)
-        mediump vec4 customShaderWithDest(sampler2d dest, sampler2d src, vec2 srcCoords)
+        lowp vec4 customShader(sampler2d src, vec2 srcCoords)
 
+    The provided src and srcCoords parameters can be used to sample from the
+    source image.
+
+    Transformations, clipping, opacity, and composition modes set using QPainter
+    will be respected when using the custom shader hook.
 */
 
 #ifndef QGLENGINE_SHADER_MANAGER_H
@@ -221,13 +225,13 @@
 #include <QGLShaderProgram>
 #include <QPainter>
 #include <private/qgl_p.h>
+#include <private/qglcustomshaderstage_p.h>
 
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(OpenGL)
-
 
 struct QGLEngineShaderProg
 {
@@ -240,6 +244,17 @@ struct QGLEngineShaderProg
     QGLShaderProgram*   program;
 
     QVector<uint> uniformLocations;
+
+    bool operator==(const QGLEngineShaderProg& other) {
+        // We don't care about the program
+        return ( mainVertexShader      == other.mainVertexShader &&
+                 positionVertexShader  == other.positionVertexShader &&
+                 mainFragShader        == other.mainFragShader &&
+                 srcPixelFragShader    == other.srcPixelFragShader &&
+                 maskFragShader        == other.maskFragShader &&
+                 compositionFragShader == other.compositionFragShader
+               );
+    }
 };
 
 /*
@@ -260,7 +275,7 @@ struct QGLEngineCachedShaderProg
 static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
 static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
 
-class QGLEngineShaderManager : public QObject
+class Q_OPENGL_EXPORT QGLEngineShaderManager : public QObject
 {
     Q_OBJECT
 public:
@@ -305,6 +320,8 @@ public:
     void setUseGlobalOpacity(bool);
     void setMaskType(MaskType);
     void setCompositionMode(QPainter::CompositionMode);
+    void setCustomStage(QGLCustomShaderStage* stage);
+    void removeCustomStage(QGLCustomShaderStage* stage);
 
     uint getUniformLocation(Uniform id);
 
@@ -346,6 +363,7 @@ public:
         ImageSrcFragmentShader,
         ImageSrcWithPatternFragmentShader,
         NonPremultipliedImageSrcFragmentShader,
+        CustomImageSrcFragmentShader,
         SolidBrushSrcFragmentShader,
         TextureBrushSrcFragmentShader,
         TextureBrushSrcWithPatternFragmentShader,
@@ -389,6 +407,8 @@ public:
     Q_ENUMS(ShaderName)
 #endif
 
+private slots:
+    void shaderDestroyed(QObject *shader);
 
 private:
     QGLContext*     ctx;
@@ -401,6 +421,7 @@ private:
     MaskType                    maskType;
     bool                        useTextureCoords;
     QPainter::CompositionMode   compositionMode;
+    QGLCustomShaderStage*       customSrcStage;
 
     QGLShaderProgram*     blitShaderProg;
     QGLShaderProgram*     simpleShaderProg;
@@ -408,6 +429,7 @@ private:
 
     // TODO: Possibly convert to a LUT
     QList<QGLEngineShaderProg> cachedPrograms;
+    QCache<QByteArray, QGLShader> customShaderCache;
 
     QGLShader* compiledShaders[TotalShaderCount];
 
