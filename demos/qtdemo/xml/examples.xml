@@ -16,7 +16,7 @@
     <example filename="embeddeddialogs" name="Embedded Dialogs" />
     <example filename="interview" name="Interview" />
     <example filename="browser" name="Browser" />
-    <example filename="mediaplayer" name="Media Player" />
+    <example filename="qmediaplayer" name="Media Player" />
     <example filename="boxes" name="Boxes" />
     <example filename="sub-attaq" name="Sub-attaq" />
   </demos>
