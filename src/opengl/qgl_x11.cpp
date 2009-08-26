@@ -1599,7 +1599,8 @@ bool qt_resolveTextureFromPixmap()
 #endif //defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX)
 
 
-QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, const qint64 key, bool canInvert)
+QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, const qint64 key,
+                                                           QGLContext::BindOptions options)
 {
 #if !defined(GLX_VERSION_1_3) || defined(Q_OS_HPUX)
     return 0;
@@ -1632,7 +1633,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, con
             GLX_DRAWABLE_TYPE, GLX_PIXMAP_BIT,
             GLX_BIND_TO_TEXTURE_TARGETS_EXT, GLX_TEXTURE_2D_BIT_EXT,
             // QGLContext::bindTexture() can't return an inverted texture, but QPainter::drawPixmap() can:
-            GLX_Y_INVERTED_EXT, canInvert ? GLX_DONT_CARE : False,
+            GLX_Y_INVERTED_EXT, options & QGLContext::BindInvertedY ? GLX_DONT_CARE : False,
             XNone
         };
         configList = glXChooseFBConfig(x11Info.display(), x11Info.screen(), configAttribs, &configCount);
@@ -1693,9 +1694,10 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, con
 
     glBindTexture(GL_TEXTURE_2D, textureId);
 
-    QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, canInvert, false);
-    texture->yInverted = (hasAlpha && RGBAConfigInverted) || (!hasAlpha && RGBConfigInverted);
-    if (texture->yInverted)
+    if (!((hasAlpha && RGBAConfigInverted) || (!hasAlpha && RGBConfigInverted)));
+        options &= ~QGLContext::BindInvertedY;
+    QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, options);
+    if (texture->options & QGLContext::BindInvertedY)
         pixmapData->flags |= QX11PixmapData::InvertedWhenBoundToTexture;
 
     // We assume the cost of bound pixmaps is zero
