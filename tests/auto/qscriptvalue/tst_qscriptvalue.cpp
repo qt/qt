@@ -2106,6 +2106,7 @@ void tst_QScriptValue::getSetProperty()
     object.setProperty(foo, num);
     QVERIFY(object.property(foo).strictlyEquals(num));
     QVERIFY(object.property("foo").strictlyEquals(num));
+    QVERIFY(object.propertyFlags(foo) == 0);
 }
 
 void tst_QScriptValue::getSetPrototype()

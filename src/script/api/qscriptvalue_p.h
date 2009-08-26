@@ -104,6 +104,8 @@ public:
     inline QScriptValue property(const QString &, int resolveMode) const;
     void setProperty(const JSC::Identifier &id, const QScriptValue &value,
                      const QScriptValue::PropertyFlags &flags);
+    QScriptValue::PropertyFlags propertyFlags(
+        const JSC::Identifier &id, const QScriptValue::ResolveFlags &mode) const;
 
     void detachFromEngine();
 

@@ -393,6 +393,37 @@ void QScriptValuePrivate::setProperty(const JSC::Identifier &id, const QScriptVa
     }
 }
 
+QScriptValue::PropertyFlags QScriptValuePrivate::propertyFlags(const JSC::Identifier &id,
+                                                               const QScriptValue::ResolveFlags &mode) const
+{
+    JSC::ExecState *exec = engine->currentFrame;
+    JSC::JSObject *object = JSC::asObject(jscValue);
+    unsigned attribs = 0;
+    if (!object->getPropertyAttributes(exec, id, attribs)) {
+        if ((mode & QScriptValue::ResolvePrototype) && object->prototype() && object->prototype().isObject()) {
+            QScriptValue proto = engine->scriptValueFromJSCValue(object->prototype());
+            return QScriptValuePrivate::get(proto)->propertyFlags(id, mode);
+        }
+        return 0;
+    }
+    QScriptValue::PropertyFlags result = 0;
+    if (attribs & JSC::ReadOnly)
+        result |= QScriptValue::ReadOnly;
+    if (attribs & JSC::DontEnum)
+        result |= QScriptValue::SkipInEnumeration;
+    if (attribs & JSC::DontDelete)
+        result |= QScriptValue::Undeletable;
+    //We cannot rely on attribs JSC::Setter/Getter because they are not necesserly set by JSC (bug?)
+    if (attribs & JSC::Getter || !object->lookupGetter(exec, id).isUndefinedOrNull())
+        result |= QScriptValue::PropertyGetter;
+    if (attribs & JSC::Setter || !object->lookupSetter(exec, id).isUndefinedOrNull())
+        result |= QScriptValue::PropertySetter;
+    if (attribs & QScript::QObjectMemberAttribute)
+        result |= QScriptValue::QObjectMember;
+    result |= QScriptValue::PropertyFlag(attribs & QScriptValue::UserRange);
+    return result;
+}
+
 QVariant &QScriptValuePrivate::variantValue() const
 {
     Q_ASSERT(jscValue.isObject(&QScriptObject::info));
@@ -1817,9 +1848,11 @@ void QScriptValue::setProperty(const QScriptString &name,
 QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QString &name,
                                                         const ResolveFlags &mode) const
 {
-    if (!isObject())
+    Q_D(const QScriptValue);
+    if (!d || !d->isJSC() || !d->jscValue.isObject())
         return 0;
-    return propertyFlags(engine()->toStringHandle(name), mode);
+    JSC::ExecState *exec = d->engine->currentFrame;
+    return d->propertyFlags(JSC::Identifier(exec, name), mode);
 
 }
 
@@ -1835,33 +1868,9 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString &nam
                                                         const ResolveFlags &mode) const
 {
     Q_D(const QScriptValue);
-    if (!isObject())
+    if (!d || !d->isJSC() || !d->jscValue.isObject() || !name.isValid())
         return 0;
-    JSC::ExecState *exec = d->engine->currentFrame;
-    JSC::JSObject *object = JSC::asObject(d->jscValue);
-    JSC::Identifier id = name.d_ptr->identifier;
-    unsigned attribs = 0;
-    if (!object->getPropertyAttributes(exec, id, attribs)) {
-        if ((mode & QScriptValue::ResolvePrototype) && object->prototype())
-            return d->engine->scriptValueFromJSCValue(object->prototype()).propertyFlags(name, mode);
-        return 0;
-    }
-    QScriptValue::PropertyFlags result = 0;
-    if (attribs & JSC::ReadOnly)
-        result |= QScriptValue::ReadOnly;
-    if (attribs & JSC::DontEnum)
-        result |= QScriptValue::SkipInEnumeration;
-    if (attribs & JSC::DontDelete)
-        result |= QScriptValue::Undeletable;
-    //We cannot rely on attribs JSC::Setter/Getter because they are not necesserly set by JSC (bug?)
-    if (attribs & JSC::Getter || !object->lookupGetter(exec, id).isUndefinedOrNull())
-        result |= QScriptValue::PropertyGetter;
-    if (attribs & JSC::Setter || !object->lookupSetter(exec, id).isUndefinedOrNull())
-        result |= QScriptValue::PropertySetter;
-    if (attribs & QScript::QObjectMemberAttribute)
-        result |= QScriptValue::QObjectMember;
-    result |= QScriptValue::PropertyFlag(attribs & QScriptValue::UserRange);
-    return result;
+    return d->propertyFlags(name.d_ptr->identifier, mode);
 }
 
 /*!
