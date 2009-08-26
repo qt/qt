@@ -126,7 +126,7 @@ QT_BEGIN_NAMESPACE
     the drawItem() method will draw its item argument directly with
     no effect applied.
 
-    \sa QGrapicsEffect
+    \sa QGraphicsEffect
 */
 
 static const char qglslDefaultImageFragmentShader[] = "\
