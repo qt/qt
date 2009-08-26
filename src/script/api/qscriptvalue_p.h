@@ -85,6 +85,7 @@ public:
     inline void initFrom(const QString &value);
 
     inline bool isJSC() const;
+    inline bool isObject() const;
 
     QVariant &variantValue() const;
     void setVariantValue(const QVariant &value);
@@ -142,6 +143,11 @@ inline QScriptValuePrivate::QScriptValuePrivate(QScriptEnginePrivate *e)
 inline bool QScriptValuePrivate::isJSC() const
 {
     return (type == JSC);
+}
+
+inline bool QScriptValuePrivate::isObject() const
+{
+    return isJSC() && jscValue && jscValue.isObject();
 }
 
 // Rest of inline functions implemented in qscriptengine_p.h

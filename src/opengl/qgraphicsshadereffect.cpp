@@ -51,8 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
-
 /*!
     \class QGraphicsShaderEffect
     \brief The QGraphicsShaderEffect class is the base class for creating
@@ -126,7 +124,7 @@ QT_BEGIN_NAMESPACE
     the drawItem() method will draw its item argument directly with
     no effect applied.
 
-    \sa QGrapicsEffect
+    \sa QGraphicsEffect
 */
 
 static const char qglslDefaultImageFragmentShader[] = "\
@@ -312,7 +310,5 @@ void QGraphicsShaderEffect::setUniforms(QGLShaderProgram *program)
 {
     Q_UNUSED(program);
 }
-
-#endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE

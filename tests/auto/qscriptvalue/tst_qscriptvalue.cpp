@@ -3278,6 +3278,8 @@ void tst_QScriptValue::engineDeleted()
     QVERIFY(v4.engine() == 0);
     QVERIFY(v5.isValid());
     QVERIFY(v5.engine() == 0);
+
+    QVERIFY(!v3.property("foo").isValid());
 }
 
 void tst_QScriptValue::valueOfWithClosure()
