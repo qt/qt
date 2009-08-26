@@ -60,7 +60,9 @@ public:
     static QNetworkReply *get(QmlEngine *, const QUrl& url, QPixmap *pixmap);
     static void cancelGet(const QUrl& url, QObject* obj);
 
-    static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QFxPixmapCache::get, and finished. Or must be a local file.
+    static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QFxPixmapCache::get, and any returned reply finished.
+
+    static int pendingRequests(); // mainly for test verification
 };
 
 QT_END_NAMESPACE
