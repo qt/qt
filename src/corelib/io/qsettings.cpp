@@ -2110,12 +2110,12 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
     Custom types registered using qRegisterMetaType() and
     qRegisterMetaTypeStreamOperators() can be stored using QSettings.
 
-    \section1 Key Syntax
+    \section1 Section and Key Syntax
 
     Setting keys can contain any Unicode characters. The Windows
     registry and INI files use case-insensitive keys, whereas the
     Carbon Preferences API on Mac OS X uses case-sensitive keys. To
-    avoid portability problems, follow these two simple rules:
+    avoid portability problems, follow these simple rules:
 
     \list 1
     \o Always refer to the same key using the same case. For example,
@@ -2126,7 +2126,7 @@ void QConfFileSettingsPrivate::ensureSectionParsed(QConfFile *confFile,
        example, if you have a key called "MainWindow", don't try to
        save another key as "mainwindow".
 
-    \o Do not use slashes  ('/' and '\\') in key names; the
+    \o Do not use slashes ('/' and '\\') in section or key names; the
        backslash character is used to separate sub keys (see below). On
        windows '\\' are converted by QSettings to '/', which makes
        them identical.
