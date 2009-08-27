@@ -348,31 +348,6 @@ QGLShader::QGLShader(QGLShader::ShaderType type, QObject *parent)
 }
 
 /*!
-    Constructs a new QGLShader object from the source code in \a fileName
-    and attaches it to \a parent.  If the filename ends in \c{.fsh},
-    it is assumed to be a fragment shader, otherwise it is assumed to
-    be a vertex shader (normally the extension is \c{.vsh} for vertex shaders).
-    If the shader could not be loaded, then isCompiled() will return false.
-
-    The shader will be associated with the current QGLContext.
-
-    \sa isCompiled()
-*/
-QGLShader::QGLShader(const QString& fileName, QObject *parent)
-    : QObject(parent)
-{
-    if (fileName.endsWith(QLatin1String(".fsh"), Qt::CaseInsensitive))
-        d = new QGLShaderPrivate(QGLShader::FragmentShader, QGLContext::currentContext());
-    else
-        d = new QGLShaderPrivate(QGLShader::VertexShader, QGLContext::currentContext());
-    if (d->create() && !compileFile(fileName)) {
-        if (d->shader)
-            glDeleteShader(d->shader);
-        d->shader = 0;
-    }
-}
-
-/*!
     Constructs a new QGLShader object of the specified \a type from the
     source code in \a fileName and attaches it to \a parent.
     If the shader could not be loaded, then isCompiled() will return false.
@@ -410,31 +385,6 @@ QGLShader::QGLShader(QGLShader::ShaderType type, const QGLContext *context, QObj
 {
     d = new QGLShaderPrivate(type, context);
     d->create();
-}
-
-/*!
-    Constructs a new QGLShader object from the source code in \a fileName
-    and attaches it to \a parent.  If the filename ends in \c{.fsh},
-    it is assumed to be a fragment shader, otherwise it is assumed to
-    be a vertex shader (normally the extension is \c{.vsh} for vertex shaders).
-    If the shader could not be loaded, then isCompiled() will return false.
-
-    The shader will be associated with \a context.
-
-    \sa isCompiled()
-*/
-QGLShader::QGLShader(const QString& fileName, const QGLContext *context, QObject *parent)
-    : QObject(parent)
-{
-    if (fileName.endsWith(QLatin1String(".fsh"), Qt::CaseInsensitive))
-        d = new QGLShaderPrivate(QGLShader::FragmentShader, context);
-    else
-        d = new QGLShaderPrivate(QGLShader::VertexShader, context);
-    if (d->create() && !compileFile(fileName)) {
-        if (d->shader)
-            glDeleteShader(d->shader);
-        d->shader = 0;
-    }
 }
 
 /*!
@@ -914,6 +864,33 @@ bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const QByteArray& s
 bool QGLShaderProgram::addShader(QGLShader::ShaderType type, const QString& source)
 {
     return addShader(type, source.toLatin1().constData());
+}
+
+/*!
+    Compiles the contents of \a fileName as a shader of the specified
+    \a type and adds it to this shader program.  Returns true if
+    compilation was successful, false otherwise.  The compilation errors
+    and warnings will be made available via log().
+
+    This function is intended to be a short-cut for quickly
+    adding vertex and fragment shaders to a shader program without
+    creating an instance of QGLShader first.
+
+    \sa addShader()
+*/
+bool QGLShaderProgram::addShaderFromFile
+    (QGLShader::ShaderType type, const QString& fileName)
+{
+    if (!init())
+        return false;
+    QGLShader *shader = new QGLShader(type, this);
+    if (!shader->compileFile(fileName)) {
+        d->log = shader->log();
+        delete shader;
+        return false;
+    }
+    d->anonShaders.append(shader);
+    return addShader(shader);
 }
 
 /*!

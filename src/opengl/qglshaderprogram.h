@@ -72,10 +72,8 @@ public:
     };
 
     explicit QGLShader(QGLShader::ShaderType type, QObject *parent = 0);
-    explicit QGLShader(const QString& fileName, QObject *parent = 0);
     QGLShader(const QString& fileName, QGLShader::ShaderType type, QObject *parent = 0);
     QGLShader(QGLShader::ShaderType type, const QGLContext *context, QObject *parent = 0);
-    QGLShader(const QString& fileName, const QGLContext *context, QObject *parent = 0);
     QGLShader(const QString& fileName, QGLShader::ShaderType type, const QGLContext *context, QObject *parent = 0);
     virtual ~QGLShader();
 
@@ -123,6 +121,7 @@ public:
     bool addShader(QGLShader::ShaderType type, const char *source);
     bool addShader(QGLShader::ShaderType type, const QByteArray& source);
     bool addShader(QGLShader::ShaderType type, const QString& source);
+    bool addShaderFromFile(QGLShader::ShaderType type, const QString& fileName);
 
     void removeAllShaders();
 
