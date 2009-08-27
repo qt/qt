@@ -315,7 +315,7 @@ QVariant QmlExpression::value()
     Q_D(QmlExpression);
 
     QVariant rv;
-    if (!d->context() || (!d->sse.isValid() && d->expression.isEmpty()))
+    if (!engine() || (!d->sse.isValid() && d->expression.isEmpty()))
         return rv;
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
