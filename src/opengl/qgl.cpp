@@ -4815,6 +4815,8 @@ void QGLWidgetPrivate::initContext(QGLContext *context, const QGLWidget* shareWi
 {
     Q_Q(QGLWidget);
 
+    glDevice.setWidget(q);
+
     QGLExtensions::init();
     glcx = 0;
     autoSwap = true;
@@ -4850,6 +4852,7 @@ Q_OPENGL_EXPORT const QString qt_gl_library_name()
 }
 #endif
 
+#if 0
 void QGLDrawable::setDevice(QPaintDevice *pdev)
 {
     wasBound = false;
@@ -5084,7 +5087,7 @@ bool QGLDrawable::autoFillBackground() const
     else
         return false;
 }
-
+#endif
 
 bool QGLShareRegister::checkSharing(const QGLContext *context1, const QGLContext *context2) {
     bool sharing = (context1 && context2 && context1->d_ptr->group == context2->d_ptr->group);

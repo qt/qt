@@ -710,7 +710,7 @@ void QGL2PaintEngineEx::beginNativePainting()
         {  mtx.dx(),  mtx.dy(),     0, mtx.m33() }
     };
 
-    const QSize sz = d->drawable.size();
+    const QSize sz = d->device->size();
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -1308,21 +1308,28 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     Q_D(QGL2PaintEngineEx);
 
 //     qDebug("QGL2PaintEngineEx::begin()");
-    d->drawable.setDevice(pdev);
-    d->ctx = d->drawable.context();
+    if (pdev->devType() == QInternal::OpenGL)
+        d->device = static_cast<QGLPaintDevice*>(pdev);
+    else
+        d->device = QGLPaintDevice::getDevice(pdev);
+
+    if (!d->device)
+        return false;
+
+    d->ctx = d->device->context();
 
     if (d->ctx->d_ptr->active_engine) {
         QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->ctx->d_ptr->active_engine);
         QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
         p->transferMode(BrushDrawingMode);
-        p->drawable.doneCurrent();
+        p->device->context()->doneCurrent();
     }
 
     d->ctx->d_ptr->active_engine = this;
     d->last_created_state = 0;
 
-    d->drawable.makeCurrent();
-    QSize sz = d->drawable.size();
+    d->device->beginPaint();
+    QSize sz = d->device->size();
     d->width = sz.width();
     d->height = sz.height();
     d->mode = BrushDrawingMode;
@@ -1358,28 +1365,29 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     glDisable(GL_MULTISAMPLE);
 #endif
 
-    QGLPixmapData *source = d->drawable.copyOnBegin();
-    if (d->drawable.context()->d_func()->clear_on_painter_begin && d->drawable.autoFillBackground()) {
-        if (d->drawable.hasTransparentBackground())
+//    QGLPixmapData *source = d->drawable.copyOnBegin();
+    if (d->ctx->d_func()->clear_on_painter_begin && d->device->autoFillBackground()) {
+        if (d->device->hasTransparentBackground())
             glClearColor(0.0, 0.0, 0.0, 0.0);
         else {
-            const QColor &c = d->drawable.backgroundColor();
+            const QColor &c = d->device->backgroundColor();
             float alpha = c.alphaF();
             glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
         }
         glClear(GL_COLOR_BUFFER_BIT);
-    } else if (source) {
-        QGLContext *ctx = d->ctx;
-
-        d->transferMode(ImageDrawingMode);
-
-        glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
-        source->bind(false);
-
-        QRect rect(0, 0, source->width(), source->height());
-        d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
-        d->drawTexture(QRectF(rect), QRectF(rect), rect.size(), true);
     }
+//    else if (source) {
+//        QGLContext *ctx = d->ctx;
+//
+//        d->transferMode(ImageDrawingMode);
+//
+//        glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
+//        source->bind(false);
+//
+//        QRect rect(0, 0, source->width(), source->height());
+//        d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
+//        d->drawTexture(QRectF(rect), QRectF(rect), rect.size(), true);
+//    }
 
     d->systemStateChanged();
     return true;
@@ -1394,14 +1402,15 @@ bool QGL2PaintEngineEx::end()
         if (engine && engine->isActive()) {
             QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
             p->transferMode(BrushDrawingMode);
-            p->drawable.doneCurrent();
+            p->device->context()->doneCurrent();
         }
-        d->drawable.makeCurrent();
+        d->device->context()->makeCurrent();
     }
 
     glUseProgram(0);
     d->transferMode(BrushDrawingMode);
-    d->drawable.swapBuffers();
+    d->device->endPaint();
+
 #if defined(Q_WS_X11)
     // On some (probably all) drivers, deleting an X pixmap which has been bound to a texture
     // before calling glFinish/swapBuffers renders garbage. Presumably this is because X deletes
@@ -1410,7 +1419,6 @@ bool QGL2PaintEngineEx::end()
     // them here, after swapBuffers, where they can be safely deleted.
     ctx->d_func()->boundPixmaps.clear();
 #endif
-    d->drawable.doneCurrent();
     d->ctx->d_ptr->active_engine = 0;
 
     d->resetGLState();
@@ -1431,15 +1439,14 @@ void QGL2PaintEngineEx::ensureActive()
         if (engine && engine->isActive()) {
             QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
             p->transferMode(BrushDrawingMode);
-            p->drawable.doneCurrent();
+            p->device->context()->doneCurrent();
         }
-        d->drawable.context()->makeCurrent();
-        d->drawable.makeCurrent();
+        d->device->context()->makeCurrent();
 
         ctx->d_ptr->active_engine = this;
         d->needsSync = true;
     } else {
-        d->drawable.context()->makeCurrent();
+        d->device->context()->makeCurrent();
     }
 
     if (d->needsSync) {

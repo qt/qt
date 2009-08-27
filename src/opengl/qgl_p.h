@@ -62,6 +62,7 @@
 #include "QtCore/qatomic.h"
 #include "private/qwidget_p.h"
 #include "qcache.h"
+#include "qglpaintdevice_p.h"
 
 #ifndef QT_OPENGL_ES_1_CL
 #define q_vertexType float
@@ -189,7 +190,8 @@ public:
     bool renderCxPm(QPixmap *pixmap);
     void cleanupColormaps();
 
-    QGLContext *glcx;
+    QGLContext *glcx; // ### Keep for compatability with QGLDrawable (if that gets left in)
+    QGLWidgetGLPaintDevice glDevice;
     bool autoSwap;
 
     QGLColormap cmap;
@@ -337,6 +339,7 @@ Q_SIGNALS:
     void aboutToDestroyContext(const QGLContext *context);
 };
 
+#if 0
 class QGLPixelBuffer;
 class QGLFramebufferObject;
 class QWSGLWindowSurface;
@@ -387,6 +390,8 @@ private:
 #endif
     int previous_fbo;
 };
+
+#endif
 
 // GL extension definitions
 class QGLExtensions {

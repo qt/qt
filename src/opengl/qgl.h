@@ -542,6 +542,8 @@ private:
     friend class QGLContext;
     friend class QGLOverlayWidget;
     friend class QOpenGLPaintEngine;
+    friend class QGLPaintDevice;
+    friend class QGLWidgetGLPaintDevice;
 };
 
 
