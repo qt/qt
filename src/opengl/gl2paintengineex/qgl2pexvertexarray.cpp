@@ -98,7 +98,7 @@ void QGL2PEXVertexArray::addPath(const QVectorPath &path, GLfloat curveInverseSc
             case QPainterPath::MoveToElement:
 //                qDebug("element[%d] is a MoveToElement", i);
                 vertexArrayStops.append(vertexArray.size());
-                vertexArray.add(points[i]); // Add the moveTo as a new vertex
+                lineToArray(points[i].x(), points[i].y()); // Add the moveTo as a new vertex
                 break;
             case QPainterPath::LineToElement:
 //                qDebug("element[%d] is a LineToElement", i);
