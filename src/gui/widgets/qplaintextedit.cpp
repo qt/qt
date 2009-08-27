@@ -2934,7 +2934,7 @@ void QPlainTextEditPrivate::_q_gestureTriggered()
     QScrollBar *vBar = q->verticalScrollBar();
     if (g->state() == Qt::GestureStarted)
         originalOffsetY = vBar->value();
-    QSize totalOffset = g->totalOffset();
+    QSizeF totalOffset = g->totalOffset();
     if (!totalOffset.isNull()) {
         if (QApplication::isRightToLeft())
             totalOffset.rwidth() *= -1;

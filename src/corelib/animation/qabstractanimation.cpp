@@ -161,7 +161,9 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
 
-QUnifiedTimer::QUnifiedTimer() : QObject(), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL), consistentTiming(false)
+QUnifiedTimer::QUnifiedTimer() :
+    QObject(), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
+    currentAnimationIdx(0), consistentTiming(false)
 {
 }
 
@@ -200,21 +202,19 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
         }
     } else if (event->timerId() == animationTimer.timerId()) {
         const int delta = lastTick - oldLastTick;
-        //we copy the list so that if it is changed we still get to
-        //call setCurrentTime on all animations.
-        const QList<QAbstractAnimation*> currentAnimations = animations;
-        for (int i = 0; i < currentAnimations.count(); ++i) {
-            QAbstractAnimation *animation = currentAnimations.at(i);
+        for (currentAnimationIdx = 0; currentAnimationIdx < animations.count(); ++currentAnimationIdx) {
+            QAbstractAnimation *animation = animations.at(currentAnimationIdx);
             int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
                 + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
             animation->setCurrentTime(elapsed);
         }
+        currentAnimationIdx = 0;
     }
 }
 
 void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation)
 {
-    if (animations.contains(animation) ||animationsToStart.contains(animation))
+    if (animations.contains(animation) || animationsToStart.contains(animation))
         return;
     animationsToStart << animation;
     startStopAnimationTimer.start(0, this); // we delay the check if we should start/stop the global timer
@@ -222,8 +222,17 @@ void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation)
 
 void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
 {
-    animations.removeAll(animation);
-    animationsToStart.removeAll(animation);
+    Q_ASSERT(animations.count(animation) + animationsToStart.count(animation) <= 1);
+
+    int idx = animations.indexOf(animation);
+    if (idx != -1) {
+        animations.removeAt(idx);
+        // this is needed if we unregister an animation while its running
+        if (idx <= currentAnimationIdx)
+            --currentAnimationIdx;
+    } else {
+        animationsToStart.removeOne(animation);
+    }
     startStopAnimationTimer.start(0, this); // we delay the check if we should start/stop the global timer
 }
 

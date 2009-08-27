@@ -104,7 +104,8 @@ public:
         ItemSendsGeometryChanges = 0x800,
         ItemAcceptsInputMethod = 0x1000,
         ItemAutoDetectsFocusProxy = 0x2000,
-        ItemNegativeZStacksBehindParent = 0x4000
+        ItemNegativeZStacksBehindParent = 0x4000,
+        ItemIsPanel = 0x8000
         // NB! Don't forget to increase the d_ptr->flags bit field by 1 when adding a new flag.
     };
     Q_DECLARE_FLAGS(GraphicsItemFlags, GraphicsItemFlag)
@@ -161,11 +162,13 @@ public:
     QGraphicsWidget *parentWidget() const;
     QGraphicsWidget *topLevelWidget() const;
     QGraphicsWidget *window() const;
+    QGraphicsItem *panel() const;
     void setParentItem(QGraphicsItem *parent);
     QList<QGraphicsItem *> children() const; // ### obsolete
     QList<QGraphicsItem *> childItems() const;
     bool isWidget() const;
     bool isWindow() const;
+    bool isPanel() const;
 
     QGraphicsObject *toGraphicsObject();
     const QGraphicsObject *toGraphicsObject() const;
@@ -231,6 +234,7 @@ public:
     bool handlesChildEvents() const;
     void setHandlesChildEvents(bool enabled);
 
+    bool isActive() const;
     bool hasFocus() const;
     void setFocus(Qt::FocusReason focusReason = Qt::OtherFocusReason);
     void clearFocus();

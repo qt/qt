@@ -46,9 +46,11 @@
 #include <qdebug.h>
 #include <qgl.h>
 #include <qglcolormap.h>
+#include <qpaintengine.h>
 
 #include <QGraphicsView>
 #include <QGraphicsProxyWidget>
+#include <QVBoxLayout>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -67,6 +69,8 @@ private slots:
     void graphicsViewClipping();
     void partialGLWidgetUpdates_data();
     void partialGLWidgetUpdates();
+    void glWidgetRendering();
+    void glWidgetReparent();
     void colormap();
 };
 
@@ -623,6 +627,116 @@ void tst_QGL::partialGLWidgetUpdates()
         QCOMPARE(widget.paintEventRegion, QRegion(50, 50, 50, 50));
     else
         QCOMPARE(widget.paintEventRegion, QRegion(widget.rect()));
+}
+
+
+class GLWidget : public QGLWidget
+{
+public:
+    GLWidget(QWidget* p = 0)
+            : QGLWidget(p), beginOk(false), engineType(QPaintEngine::MaxUser) {}
+    bool beginOk;
+    QPaintEngine::Type engineType;
+    void paintGL()
+    {
+        QPainter p;
+        beginOk = p.begin(this);
+        QPaintEngine* pe = p.paintEngine();
+        engineType = pe->type();
+
+        // This test only ensures it's possible to paint onto a QGLWidget. Full
+        // paint engine feature testing is way out of scope!
+
+        p.fillRect(0, 0, width(), height(), Qt::red);
+        // No p.end() or swap buffers, should be done automatically
+    }
+
+};
+
+void tst_QGL::glWidgetRendering()
+{
+    GLWidget w;
+    w.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&w);
+#endif
+    QTest::qWait(200);
+
+    QVERIFY(w.beginOk);
+    QVERIFY(w.engineType == QPaintEngine::OpenGL);
+
+    QImage fb = w.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
+    QImage reference(fb.size(), QImage::Format_RGB32);
+    reference.fill(0xffff0000);
+
+    QCOMPARE(fb, reference);
+}
+
+void tst_QGL::glWidgetReparent()
+{
+    // Try it as a top-level first:
+    GLWidget *widget = new GLWidget;
+    widget->setGeometry(0, 0, 200, 30);
+    widget->show();
+
+    QWidget grandParentWidget;
+    grandParentWidget.setPalette(Qt::blue);
+    QVBoxLayout grandParentLayout(&grandParentWidget);
+
+    QWidget parentWidget(&grandParentWidget);
+    grandParentLayout.addWidget(&parentWidget);
+    parentWidget.setPalette(Qt::green);
+    parentWidget.setAutoFillBackground(true);
+    QVBoxLayout parentLayout(&parentWidget);
+
+    grandParentWidget.setGeometry(0, 100, 200, 200);
+    grandParentWidget.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(widget);
+    qt_x11_wait_for_window_manager(&parentWidget);
+#endif
+    QTest::qWait(2000);
+
+    QVERIFY(parentWidget.children().count() == 1); // The layout
+
+    // Now both widgets should be created & shown, time to re-parent:
+    parentLayout.addWidget(widget);
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&parentWidget);
+#endif
+    QTest::qWait(2000);
+
+    QVERIFY(parentWidget.children().count() == 2); // Layout & glwidget
+    QVERIFY(parentWidget.children().contains(widget));
+    QVERIFY(widget->height() > 30);
+
+    delete widget;
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&parentWidget);
+#endif
+    QTest::qWait(2000);
+
+    QVERIFY(parentWidget.children().count() == 1); // The layout
+
+    // Now do pretty much the same thing, but don't show the
+    // widget first:
+    widget = new GLWidget;
+    parentLayout.addWidget(widget);
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&parentWidget);
+#endif
+    QTest::qWait(2000);
+
+    QVERIFY(parentWidget.children().count() == 2); // Layout & glwidget
+    QVERIFY(parentWidget.children().contains(widget));
+    QVERIFY(widget->height() > 30);
+
+    delete widget;
 }
 
 class ColormapExtended : public QGLColormap

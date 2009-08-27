@@ -119,6 +119,34 @@ private:
     friend class QWidget;
 };
 
+class QSwipeGesturePrivate;
+class Q_GUI_EXPORT QSwipeGesture : public QGesture
+{
+    Q_OBJECT
+    Q_ENUMS(SwipeDirection)
+
+    Q_PROPERTY(SwipeDirection horizontalDirection READ horizontalDirection)
+    Q_PROPERTY(SwipeDirection verticalDirection READ verticalDirection)
+    Q_PROPERTY(qreal swipeAngle READ swipeAngle)
+
+    Q_DECLARE_PRIVATE(QSwipeGesture)
+
+public:
+    enum SwipeDirection { NoDirection, Left, Right, Up, Down };
+    QSwipeGesture(QWidget *gestureTarget, QObject *parent = 0);
+
+    bool filterEvent(QEvent *event);
+    void reset();
+
+    SwipeDirection horizontalDirection() const;
+    SwipeDirection verticalDirection() const;
+    qreal swipeAngle() const;
+
+private:
+    bool eventFilter(QObject *receiver, QEvent *event);
+
+    friend class QWidget;
+};
 QT_END_NAMESPACE
 
 QT_END_HEADER

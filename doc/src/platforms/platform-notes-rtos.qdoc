@@ -45,7 +45,7 @@
     \row \o Phonon
          \o There is no standard audio backend, which could be integrated into Phonon.
     \row \o Qt3Support
-         \o The Qt3Support library is not available on QNX.
+         \o The Qt3Support library is not available on VxWorks.
 
     \endtable
 

@@ -160,6 +160,11 @@ public:
 
     void eatWhitespace();
 
+    bool isSocketBusy() const;
+    bool isSocketWriting() const;
+    bool isSocketWaiting() const;
+    bool isSocketReading() const;
+
     protected slots:
     void _q_bytesWritten(qint64 bytes); // proceed sending
     void _q_readyRead(); // pending data to read

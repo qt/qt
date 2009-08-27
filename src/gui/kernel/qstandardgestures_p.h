@@ -110,6 +110,20 @@ public:
 #endif
 };
 
+class QSwipeGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QSwipeGesture)
+
+public:
+    QSwipeGesturePrivate()
+        : swipeAngle(-1)
+    {
+    }
+
+    void setupGestureTarget(QObject *o);
+    qreal swipeAngle;
+};
+
 QT_END_NAMESPACE
 
 #endif // QSTANDARDGESTURES_P_H

@@ -196,7 +196,8 @@ bool QHttpNetworkReply::isPipeliningUsed() const
 QHttpNetworkReplyPrivate::QHttpNetworkReplyPrivate(const QUrl &newUrl)
     : QHttpNetworkHeaderPrivate(newUrl), state(NothingDoneState), statusCode(100),
       majorVersion(0), minorVersion(0), bodyLength(0), contentRead(0), totalProgress(0),
-      chunkedTransferEncoding(0),
+      chunkedTransferEncoding(false),
+      connectionCloseEnabled(true),
       currentChunkSize(0), currentChunkRead(0), connection(0), initInflate(false),
       autoDecompress(false), responseData(), requestIsPrepared(false)
       ,pipeliningUsed(false)
@@ -216,6 +217,7 @@ void QHttpNetworkReplyPrivate::clear()
     totalProgress = 0;
     currentChunkSize = 0;
     currentChunkRead = 0;
+    connectionCloseEnabled = true;
     connection = 0;
 #ifndef QT_NO_COMPRESS
     if (initInflate)
@@ -510,6 +512,10 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
 
         // cache isChunked() since it is called often
         chunkedTransferEncoding = headerField("transfer-encoding").toLower().contains("chunked");
+
+        // cache isConnectionCloseEnabled since it is called often
+        connectionCloseEnabled = (headerField("connection").toLower().contains("close") ||
+            headerField("proxy-connection").toLower().contains("close"));
     }
     return bytes;
 }
@@ -553,10 +559,9 @@ bool QHttpNetworkReplyPrivate::isChunked()
     return chunkedTransferEncoding;
 }
 
-bool QHttpNetworkReplyPrivate::connectionCloseEnabled()
+bool QHttpNetworkReplyPrivate::isConnectionCloseEnabled()
 {
-    return (headerField("connection").toLower().contains("close") ||
-            headerField("proxy-connection").toLower().contains("close"));
+    return connectionCloseEnabled;
 }
 
 // note this function can only be used for non-chunked, non-compressed with

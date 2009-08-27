@@ -22,7 +22,7 @@ backslashed \ stuff.</source>
 <context>
     <name>Dialog2</name>
     <message numerus="yes">
-        <location filename="main.cpp" line="29"/>
+        <location filename="main.cpp" line="70"/>
         <source>%n files</source>
         <comment>plural form</comment>
         <translation type="unfinished">
@@ -30,40 +30,40 @@ backslashed \ stuff.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="main.cpp" line="30"/>
+        <location filename="main.cpp" line="71"/>
         <source>%n cars</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="main.cpp" line="31"/>
+        <location filename="main.cpp" line="72"/>
         <source>&amp;Find %n cars</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="main.cpp" line="32"/>
+        <location filename="main.cpp" line="73"/>
         <source>Search in %n items?</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="main.cpp" line="33"/>
+        <location filename="main.cpp" line="74"/>
         <source>%1. Search in %n items?</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message>
-        <location filename="main.cpp" line="34"/>
+        <location filename="main.cpp" line="75"/>
         <source>Age: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="main.cpp" line="35"/>
+        <location filename="main.cpp" line="76"/>
         <source>There are %n house(s)</source>
         <comment>Plurals and function call</comment>
         <translation type="unfinished">
@@ -71,7 +71,7 @@ backslashed \ stuff.</source>
         </translation>
     </message>
     <message>
-        <location filename="main.cpp" line="102"/>
+        <location filename="main.cpp" line="143"/>
         <source>func3</source>
         <translation type="unfinished"></translation>
     </message>
@@ -115,7 +115,7 @@ backslashed \ stuff.</source>
 <context>
     <name>Plurals, QCoreApplication</name>
     <message numerus="yes">
-        <location filename="main.cpp" line="40"/>
+        <location filename="main.cpp" line="81"/>
         <source>%n house(s)</source>
         <comment>Plurals and identifier</comment>
         <translation type="unfinished">
@@ -123,7 +123,7 @@ backslashed \ stuff.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="main.cpp" line="41"/>
+        <location filename="main.cpp" line="82"/>
         <source>%n car(s)</source>
         <comment>Plurals and literal number</comment>
         <translation type="unfinished">
@@ -131,7 +131,7 @@ backslashed \ stuff.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="main.cpp" line="42"/>
+        <location filename="main.cpp" line="83"/>
         <source>%n horse(s)</source>
         <comment>Plurals and function call</comment>
         <translation type="unfinished">
@@ -142,7 +142,7 @@ backslashed \ stuff.</source>
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="main.cpp" line="10"/>
+        <location filename="main.cpp" line="51"/>
         <source>QT_LAYOUT_DIRECTION</source>
         <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
         <translation type="unfinished"></translation>
@@ -180,26 +180,26 @@ backslashed \ stuff.</source>
 <context>
     <name>QTranslator</name>
     <message>
-        <location filename="main.cpp" line="52"/>
-        <location filename="main.cpp" line="53"/>
+        <location filename="main.cpp" line="93"/>
+        <location filename="main.cpp" line="94"/>
         <source>Simple</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="54"/>
+        <location filename="main.cpp" line="95"/>
         <source>Simple with comment</source>
         <comment>with comment</comment>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="main.cpp" line="55"/>
+        <location filename="main.cpp" line="96"/>
         <source>Plural without comment</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="main.cpp" line="56"/>
+        <location filename="main.cpp" line="97"/>
         <source>Plural with comment</source>
         <comment>comment 1</comment>
         <translation type="unfinished">
@@ -207,7 +207,7 @@ backslashed \ stuff.</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="main.cpp" line="57"/>
+        <location filename="main.cpp" line="98"/>
         <source>Plural with comment</source>
         <comment>comment 2</comment>
         <translation type="unfinished">
@@ -218,19 +218,19 @@ backslashed \ stuff.</source>
 <context>
     <name>TestClass</name>
     <message>
-        <location filename="main.cpp" line="116"/>
+        <location filename="main.cpp" line="157"/>
         <source>inline function</source>
         <comment>TestClass</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="120"/>
+        <location filename="main.cpp" line="161"/>
         <source>inline function 2</source>
         <comment>TestClass</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="124"/>
+        <location filename="main.cpp" line="165"/>
         <source>static inline function</source>
         <comment>TestClass</comment>
         <translation type="unfinished"></translation>
@@ -239,18 +239,18 @@ backslashed \ stuff.</source>
 <context>
     <name>Testing</name>
     <message>
-        <location filename="main.cpp" line="141"/>
+        <location filename="main.cpp" line="182"/>
         <source>extra-commented string</source>
         <extracomment>this is an extra comment for the translator</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="142"/>
+        <location filename="main.cpp" line="183"/>
         <source>not extra-commented string</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="144"/>
+        <location filename="main.cpp" line="185"/>
         <source>another extra-commented string</source>
         <extracomment>another extra-comment</extracomment>
         <translation type="unfinished"></translation>
@@ -280,7 +280,7 @@ backslashed \ stuff.</source>
 <context>
     <name>scope</name>
     <message numerus="yes">
-        <location filename="main.cpp" line="146"/>
+        <location filename="main.cpp" line="187"/>
         <source>works in translate, too</source>
         <comment>blabb</comment>
         <extracomment>blah!</extracomment>
@@ -289,20 +289,20 @@ backslashed \ stuff.</source>
         </translation>
     </message>
     <message>
-        <location filename="main.cpp" line="153"/>
+        <location filename="main.cpp" line="194"/>
         <source>string</source>
         <extracomment>extra comment for NOOP which spans multiple lines</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="155"/>
+        <location filename="main.cpp" line="196"/>
         <source>string</source>
         <comment>comment</comment>
         <extracomment>extra comment for NOOP3</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="157"/>
+        <location filename="main.cpp" line="198"/>
         <source>string continuation on next line</source>
         <translation type="unfinished"></translation>
     </message>

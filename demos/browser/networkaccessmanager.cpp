@@ -106,10 +106,13 @@ void NetworkAccessManager::requestFinished(QNetworkReply *reply)
     if (reply->attribute(QNetworkRequest::ConnectionEncryptedAttribute).toBool() == true)
         requestFinishedSecureCount++;
 
+    if (requestFinishedCount % 10)
+        return;
+
     double pctCached = (double(requestFinishedFromCacheCount) * 100.0/ double(requestFinishedCount));
     double pctPipelined = (double(requestFinishedPipelinedCount) * 100.0/ double(requestFinishedCount));
     double pctSecure = (double(requestFinishedSecureCount) * 100.0/ double(requestFinishedCount));
-    qDebug("%lli requests [%3.2f%% from cache] [%3.2f%% pipelined] [%3.2f%% SSL/TLS]", requestFinishedCount, pctCached, pctPipelined, pctSecure);
+    qDebug("STATS [%lli requests total] [%3.2f%% from cache] [%3.2f%% pipelined] [%3.2f%% SSL/TLS]", requestFinishedCount, pctCached, pctPipelined, pctSecure);
 
 }
 

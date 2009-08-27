@@ -181,11 +181,5 @@
 
     \l{Qt for Embedded Linux Architecture} and \l{Deploying Qt for Embedded Linux
     Applications}.
-
-    \row
-    \o \bold{Third party resources:}
-
-    \l{http://silmor.de/29}{Cross compiling Qt/Win Apps on Linux} covers the
-    process of cross-compiling Windows applications on Linux.
     \endtable
 */
