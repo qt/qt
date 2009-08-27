@@ -7208,7 +7208,8 @@ QPoint QPainter::xFormDev(const QPoint &p) const
         QRect transformed = painter.xFormDev(rectangle);
     \newcode
         QPainter painter(this);
-        QRect transformed = painter.combinedTransform().inverted(rectangle);
+        QRegion region = QRegion(rectangle) * painter.combinedTransform().inverted();
+        QRect transformed = region.boundingRect();
     \endcode
 */
 
