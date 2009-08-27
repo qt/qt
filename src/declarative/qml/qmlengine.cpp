@@ -78,6 +78,7 @@
 #include <private/qmlbinding_p.h>
 #include <private/qmlvme_p.h>
 #include <private/qmlenginedebug_p.h>
+#include <private/qmlxmlhttprequest_p.h>
 
 Q_DECLARE_METATYPE(QmlMetaProperty)
 Q_DECLARE_METATYPE(QList<QObject *>);
@@ -104,6 +105,8 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     QScriptValue qtObject =
         scriptEngine.newQMetaObject(StaticQtMetaObject::get());
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
+
+    qt_add_qmlxmlhttprequest(&scriptEngine);
 }
 
 QmlEnginePrivate::~QmlEnginePrivate()
