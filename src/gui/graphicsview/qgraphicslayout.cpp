@@ -390,8 +390,10 @@ void QGraphicsLayout::widgetEvent(QEvent *e)
     QGraphicsLayout to return a pointer to the item at index \a i. The
     reimplementation can assume that \a i is valid (i.e., it respects the
     value of count()).
+    Together with count(), it is provided as a means of iterating over all items in a layout.
 
-    The subclass is free to decide how to store the items.
+    The subclass is free to decide how to store the items, and the visual arrangement
+    does not have to be reflected through this function.
 
     \sa count(), removeAt()
 */
