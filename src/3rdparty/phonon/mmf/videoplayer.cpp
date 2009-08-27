@@ -365,36 +365,37 @@ void MMF::VideoPlayer::getNativeWindowSystemHandles()
 	VideoOutput& output = videoOutput();
 	CCoeControl* const control = output.winId();
 	
-	TRACE("control 0x%08x", control);
-	TRACE("control isVisible %d", control->IsVisible());
-	TRACE("control isDimmed  %d", control->IsDimmed());
-	TRACE("control hasBorder %d", control->HasBorder());
-	TRACE("control position  %d %d",
+	TRACE("control               0x%08x", control);
+	TRACE("control IsVisible     %d", control->IsVisible());
+	TRACE("control IsDimmed      %d", control->IsDimmed());
+	TRACE("control HasBorder     %d", control->HasBorder());
+	TRACE("control Position      %d %d",
 		control->Position().iX, control->Position().iY);
-	TRACE("control rect      %d %d - %d %d",
+	TRACE("control Rect          %d %d - %d %d",
 		control->Rect().iTl.iX, control->Rect().iTl.iY,
 		control->Rect().iBr.iX, control->Rect().iBr.iY);
+	TRACE("control OwnsWindow    %d", control->OwnsWindow());
 	
 	CCoeEnv* const coeEnv = control->ControlEnv();
 	
 	m_wsSession = &(coeEnv->WsSession());
 	
-	TRACE("session handle    0x%08x", m_wsSession->Handle());
+	TRACE("session Handle        0x%08x", m_wsSession->Handle());
 	
 	m_screenDevice = coeEnv->ScreenDevice();
 	
-	TRACE("device srv handle 0x%08x", m_screenDevice->WsHandle());
+	TRACE("device WsHandle       0x%08x", m_screenDevice->WsHandle());
 	
 	m_window = control->DrawableWindow();
 	
-	TRACE("window cli handle 0x%08x", m_window->ClientHandle());
-	TRACE("window srv handle 0x%08x", m_window->WsHandle());
-	TRACE("window group      %d", m_window->WindowGroupId());
-	TRACE("window position   %d %d",
+	TRACE("window ClientHandle   0x%08x", m_window->ClientHandle());
+	TRACE("window WsHandle       0x%08x", m_window->WsHandle());
+	TRACE("window WindowGroupId  %d", m_window->WindowGroupId());
+	TRACE("window Position       %d %d",
 		m_window->Position().iX, m_window->Position().iY);
-	TRACE("window abs_pos    %d %d",
+	TRACE("window AbsPosition    %d %d",
 	    m_window->AbsPosition().iX, m_window->AbsPosition().iY);
-	TRACE("window size       %d %d",
+	TRACE("window Size           %d %d",
         m_window->Size().iWidth, m_window->Size().iHeight);
 	
 #ifdef PHONON_MMF_HARD_CODE_VIDEO_RECT
