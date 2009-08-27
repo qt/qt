@@ -208,7 +208,7 @@ void QmlState::setWhen(QmlBinding *when)
 }
 
 /*!
-    \qmlproperty string State::extends
+    \qmlproperty string State::extend
     This property holds the state that this state extends
 
     The state being extended is treated as the base state in regards to
