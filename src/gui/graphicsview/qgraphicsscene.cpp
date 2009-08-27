@@ -602,7 +602,7 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
 
         QGraphicsItem *oldRootLevelFocusItem = 
             focusItem->d_ptr->rootLevelFocusItem();
-        if (oldRootLevelFocusItem != itemRootLevelFocusItem)
+        if (oldRootLevelFocusItem != itemRootLevelFocusItem) 
             oldRootLevelFocusItem->d_ptr->setItemFocusedInScope(false);
 
         focusItem = 0;
@@ -2374,21 +2374,9 @@ void QGraphicsScenePrivate::addItem(QGraphicsItem *item,
 
     // Ensure that newly added items that have subfocus set, gain
     // focus automatically if there isn't a focus item already.
-    if (!focusItem && item->focusItem())
+    if (!focusItem && item->focusItem() ||
+        focusScope && !focusScope->d_ptr->focusScopeItem && item->focusItem())
         item->focusItem()->setFocus();
-
-    // Ensure that focus scopes set themselves up at add time
-    if (item->d_ptr->itemIsFocusedInScope) {
-        if (focusScope && !focusScope->d_ptr->focusScopeItem) {
-            item->setFocus();
-        } else if (!(focusScope && focusScope->d_ptr->focusScopeItem == item) &&
-                   !(focusItem && focusItem->d_ptr->rootLevelFocusItem() == item)) {
-            // We unset the focused in scope variable in this item if:
-            //   It's not scope focused in the closest focus scope, and
-            //   It's not the root-level item for the globally focused item
-            item->d_ptr->setItemFocusedInScope(false);
-        }
-    }
 
     updateInputMethodSensitivityInViews();
 }
