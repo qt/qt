@@ -894,7 +894,7 @@ QFxListView::~QFxListView()
     provided by a C++ model object.  The C++ model object must be a \l
     {QAbstractItemModel} subclass, a VisualModel, or a simple list.
 
-    Models can also be created directly in QML, using a \l{ListModel}.
+    Models can also be created directly in QML, using a \l{ListModel} or \l{XmlListModel}.
 */
 QVariant QFxListView::model() const
 {

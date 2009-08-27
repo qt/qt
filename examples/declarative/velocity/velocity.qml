@@ -101,7 +101,7 @@ Rectangle {
         Row {
             id: Lay
             Repeater {
-                dataSource: List
+                model: List
                 Component {
                     Day {
                         day: name

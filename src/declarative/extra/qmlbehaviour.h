@@ -54,7 +54,7 @@ QT_MODULE(Declarative)
 
 class QmlAbstractAnimation;
 class QmlBehaviourPrivate;
-class Q_DECLARATIVE_EXPORT QmlBehaviour : public QmlPropertyValueSource
+class Q_DECLARATIVE_EXPORT QmlBehaviour : public QObject, public QmlPropertyValueSource
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlBehaviour)

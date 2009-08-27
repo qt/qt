@@ -130,7 +130,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
     }
     Repeater {
-        dataSource: tiles
+        model: tiles
         x: 1
         y: 1
         Component {

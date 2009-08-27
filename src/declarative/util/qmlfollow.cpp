@@ -239,7 +239,7 @@ void QmlFollowPrivate::stop()
 */
 
 QmlFollow::QmlFollow(QObject *parent)
-: QmlPropertyValueSource(*(new QmlFollowPrivate),parent)
+: QObject(*(new QmlFollowPrivate),parent)
 {
 }
 
