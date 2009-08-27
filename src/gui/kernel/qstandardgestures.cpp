@@ -87,6 +87,16 @@ QPanGesture::QPanGesture(QWidget *gestureTarget, QObject *parent)
     setObjectName(QLatin1String("QPanGesture"));
 }
 
+/*!
+  \internal
+  An internal constructor to mark the gesture implicitely created by Qt.
+*/
+QPanGesture::QPanGesture(QWidget *gestureTarget, QObject *parent, void*)
+    : QGesture(*new QPanGesturePrivate, gestureTarget, parent)
+{
+    setObjectName(QLatin1String("QPanGesture"));
+}
+
 void QPanGesturePrivate::setupGestureTarget(QObject *newGestureTarget)
 {
     Q_Q(QPanGesture);
@@ -326,6 +336,16 @@ QSizeF QPanGesture::lastOffset() const
   widget as \a parent to get native gesture support.
 */
 QPinchGesture::QPinchGesture(QWidget *gestureTarget, QObject *parent)
+    : QGesture(*new QPinchGesturePrivate, gestureTarget, parent)
+{
+    setObjectName(QLatin1String("QPinchGesture"));
+}
+
+/*!
+  \internal
+  An internal constructor to mark the gesture implicitely created by Qt.
+*/
+QPinchGesture::QPinchGesture(QWidget *gestureTarget, QObject *parent, void*)
     : QGesture(*new QPinchGesturePrivate, gestureTarget, parent)
 {
     setObjectName(QLatin1String("QPinchGesture"));
