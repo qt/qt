@@ -214,6 +214,11 @@ public:
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
     static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
     static QScriptValue vector(QScriptContext*, QScriptEngine*);
+    static QScriptValue rgba(QScriptContext*, QScriptEngine*);
+    static QScriptValue hsla(QScriptContext*, QScriptEngine*);
+    static QScriptValue point(QScriptContext*, QScriptEngine*);
+    static QScriptValue size(QScriptContext*, QScriptEngine*);
+    static QScriptValue rect(QScriptContext*, QScriptEngine*);
 
     static QScriptEngine *getScriptEngine(QmlEngine *e) { return &e->d_func()->scriptEngine; }
     static QmlEnginePrivate *get(QmlEngine *e) { return e->d_func(); }
