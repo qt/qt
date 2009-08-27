@@ -1396,13 +1396,14 @@ void QFxListView::trackedPositionChanged()
         case Free:
             if (d->trackedItem->position() < d->position()) {
                 d->setPosition(d->trackedItem->position());
+                d->fixupPosition();
             } else if (d->trackedItem->endPosition() > d->position() + d->size()) {
                 qreal pos = d->trackedItem->endPosition() - d->size();
                 if (d->trackedItem->size() > d->size())
                     pos = d->trackedItem->position();
                 d->setPosition(pos);
+                d->fixupPosition();
             }
-            d->fixupPosition();
             break;
         case Snap:
             if (d->trackedItem->position() < d->startPosition() + d->snapPos)
@@ -1521,6 +1522,7 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
 {
     Q_D(QFxListView);
     d->updateUnrequestedIndexes();
+    bool currentRemoved = d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count;
     if (!d->mapRangeFromModel(modelIndex, count)) {
         if (modelIndex + count - 1 < d->visibleIndex) {
             // Items removed before our visible items.
@@ -1535,7 +1537,7 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
             d->currentIndex -= count;
             if (d->currentItem)
                 d->currentItem->index -= count;
-        } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
+        } else if (currentRemoved) {
             // current item has been removed.
             d->releaseItem(d->currentItem);
             d->currentItem = 0;
@@ -1578,8 +1580,9 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
         d->currentIndex -= count;
         if (d->currentItem)
             d->currentItem->index -= count;
-    } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
+    } else if (currentRemoved) {
         // current item has been removed.
+        d->currentItem->attached->setIsCurrentItem(false);
         d->releaseItem(d->currentItem);
         d->currentItem = 0;
         d->currentIndex = -1;

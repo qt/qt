@@ -607,7 +607,6 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *)
 {
     Q_Q(QFxFlickable);
-
     pressed = false;
     if (lastPosTime.isNull())
         return;
@@ -871,13 +870,8 @@ void QFxFlickable::setViewportWidth(int w)
     else
         d->_flick->setWidth(w);
     // Make sure that we're entirely in view.
-    if (d->_moveX.value() > minXExtent() || maxXExtent() > 0) {
-        d->_tl.clear();
-        d->_moveX.setValue(minXExtent());
-    } else if (d->_moveX.value() < maxXExtent()) {
-        d->_tl.clear();
-        d->_moveX.setValue(maxXExtent());
-    }
+    if (!d->pressed)
+        d->fixupX();
     emit viewportWidthChanged();
     d->updateBeginningEnd();
 }
@@ -919,13 +913,8 @@ void QFxFlickable::setViewportHeight(int h)
     else
         d->_flick->setHeight(h);
     // Make sure that we're entirely in view.
-    if (d->_moveY.value() > minYExtent() || maxYExtent() > 0) {
-        d->_tl.clear();
-        d->_moveY.setValue(minYExtent());
-    } else if (d->_moveY.value() < maxYExtent()) {
-        d->_tl.clear();
-        d->_moveY.setValue(maxYExtent());
-    }
+    if (!d->pressed)
+        d->fixupY();
     emit viewportHeightChanged();
     d->updateBeginningEnd();
 }
