@@ -373,6 +373,7 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
 #endif
             return false;
         case QNativeGestureEvent::Rotate:
+            d->scaleFactor = 0;
             d->lastRotationAngle = d->rotationAngle;
 #if defined(Q_WS_WIN)
             d->rotationAngle = -1 * GID_ROTATE_ANGLE_FROM_ARGUMENT(ev->argument);
@@ -383,6 +384,7 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
             event->accept();
             break;
         case QNativeGestureEvent::Zoom:
+            d->rotationAngle = 0;
 #if defined(Q_WS_WIN)
             if (d->initialDistance != 0) {
                 d->lastScaleFactor = d->scaleFactor;

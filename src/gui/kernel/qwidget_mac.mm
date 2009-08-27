@@ -1064,7 +1064,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
                     break;
                 }
                 qNGEvent.gestureType = QNativeGestureEvent::Rotate;
-                qNGEvent.percentage = float(amount);
+                qNGEvent.percentage = float(-amount);
                 break; }
             case kEventGestureSwipe: {
                 HIPoint swipeDirection;
