@@ -4,17 +4,17 @@
 <context>
     <name>Class</name>
     <message>
-        <location filename="main.cpp" line="11"/>
+        <location filename="main.cpp" line="52"/>
         <source>nested class context</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="17"/>
+        <location filename="main.cpp" line="58"/>
         <source>just class context</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="77"/>
+        <location filename="main.cpp" line="118"/>
         <source>outestmost class</source>
         <translation type="unfinished"></translation>
     </message>
@@ -22,7 +22,7 @@
 <context>
     <name>Outer::Class</name>
     <message>
-        <location filename="main.cpp" line="78"/>
+        <location filename="main.cpp" line="119"/>
         <source>outer class</source>
         <translation type="unfinished"></translation>
     </message>
@@ -30,7 +30,7 @@
 <context>
     <name>Outer::Middle1::Different</name>
     <message>
-        <location filename="main.cpp" line="65"/>
+        <location filename="main.cpp" line="106/>
         <source>different namespaced class def</source>
         <translation type="unfinished"></translation>
     </message>
@@ -38,22 +38,22 @@
 <context>
     <name>Outer::Middle1::Inner1::Class</name>
     <message>
-        <location filename="main.cpp" line="79"/>
+        <location filename="main.cpp" line="120"/>
         <source>innermost one</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="80"/>
+        <location filename="main.cpp" line="121"/>
         <source>innermost two</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="81"/>
+        <location filename="main.cpp" line="122"/>
         <source>innermost three</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="83"/>
+        <location filename="main.cpp" line="124"/>
         <source>innermost four</source>
         <translation type="unfinished"></translation>
     </message>
@@ -61,12 +61,12 @@
 <context>
     <name>Outer::Middle1::Something</name>
     <message>
-        <location filename="main.cpp" line="90"/>
+        <location filename="main.cpp" line="131"/>
         <source>namespaced class def</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="93"/>
+        <location filename="main.cpp" line="134"/>
         <source>namespaced class def 2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -74,7 +74,7 @@
 <context>
     <name>Outer::Middle2::Inner2::Class</name>
     <message>
-        <location filename="main.cpp" line="82"/>
+        <location filename="main.cpp" line="123"/>
         <source>innermost three b</source>
         <translation type="unfinished"></translation>
     </message>

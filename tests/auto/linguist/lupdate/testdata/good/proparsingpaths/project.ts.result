@@ -4,25 +4,25 @@
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="file1.cpp" line="6"/>
+        <location filename="file1.cpp" line="47"/>
         <source>Hello world</source>
         <comment>top-level wildcard</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="filter.cpp" line="6"/>
+        <location filename="filter.cpp" line="47"/>
         <source>Hello world</source>
         <comment>top-level direct</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="sub/subfile1.cpp" line="6"/>
+        <location filename="sub/subfile1.cpp" line="47"/>
         <source>Hello world</source>
         <comment>nested wildcard</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="sub/subfilter.cpp" line="6"/>
+        <location filename="sub/subfilter.cpp" line="47"/>
         <source>Hello world</source>
         <comment>nested direct</comment>
         <translation type="unfinished"></translation>

@@ -4,7 +4,7 @@
 <context>
     <name>Plurals, QCoreApplication</name>
     <message numerus="yes">
-        <location filename="main.java" line="47"/>
+        <location filename="main.java" line="88"/>
         <source>%n house(s)</source>
         <comment>Plurals and identifier</comment>
         <extracomment>with extra comment!</extracomment>
@@ -16,26 +16,26 @@
 <context>
     <name>QTranslator</name>
     <message>
-        <location filename="main.java" line="39"/>
-        <location filename="main.java" line="40"/>
+        <location filename="main.java" line="80"/>
+        <location filename="main.java" line="81"/>
         <source>Simple</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.java" line="41"/>
+        <location filename="main.java" line="82"/>
         <source>Simple with comment</source>
         <comment>with comment</comment>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="main.java" line="42"/>
+        <location filename="main.java" line="83"/>
         <source>Plural without comment</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="main.java" line="43"/>
+        <location filename="main.java" line="84"/>
         <source>Plural with comment</source>
         <comment>comment 1</comment>
         <translation type="unfinished">
@@ -43,7 +43,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="main.java" line="44"/>
+        <location filename="main.java" line="85"/>
         <source>Plural with comment</source>
         <comment>comment 2</comment>
         <translation type="unfinished">
@@ -54,18 +54,18 @@
 <context>
     <name>com.trolltech.examples.I18N</name>
     <message>
-        <location filename="main.java" line="26"/>
+        <location filename="main.java" line="67"/>
         <source>pack class method</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.java" line="31"/>
+        <location filename="main.java" line="72"/>
         <source>QT_LAYOUT_DIRECTION</source>
         <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="main.java" line="33"/>
+        <location filename="main.java" line="74"/>
         <source>%n files</source>
         <comment>plural form</comment>
         <translation type="unfinished">
@@ -73,19 +73,19 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="main.java" line="34"/>
+        <location filename="main.java" line="75"/>
         <source>%n cars</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message>
-        <location filename="main.java" line="35"/>
+        <location filename="main.java" line="76"/>
         <source>Age: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="main.java" line="36"/>
+        <location filename="main.java" line="77"/>
         <source>There are %n house(s)</source>
         <comment>Plurals and function call</comment>
         <translation type="unfinished">
@@ -96,18 +96,18 @@
 <context>
     <name>com.trolltech.examples.I18N$MainWindow</name>
     <message>
-        <location filename="main.java" line="9"/>
+        <location filename="main.java" line="50"/>
         <source>pack class class</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.java" line="12"/>
+        <location filename="main.java" line="53"/>
         <source>pack class class extra</source>
         <extracomment>extra comment for t-tor</extracomment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.java" line="18"/>
+        <location filename="main.java" line="59"/>
         <source>pack class class method</source>
         <translation type="unfinished"></translation>
     </message>
