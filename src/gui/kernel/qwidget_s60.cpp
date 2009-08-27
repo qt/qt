@@ -358,9 +358,6 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         }
         QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
 
-        WId parentw = parentWidget->effectiveWinId();
-        QT_TRAP_THROWING(control->SetContainerWindowL(*parentw));
-
         q->setAttribute(Qt::WA_WState_Created);
         int x, y, w, h;
         data.crect.getRect(&x, &y, &w, &h);
