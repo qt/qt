@@ -66,7 +66,7 @@ protected:
 class MyObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(qreal x READ x WRITE setX) 
+    Q_PROPERTY(qreal x READ x WRITE setX)
 public:
     MyObject() : m_x(0) { }
     qreal x() const { return m_x; }
@@ -115,6 +115,7 @@ private slots:
     void restart();
     void valueChanged();
     void twoAnimations();
+    void deletedInUpdateCurrentTime();
 };
 
 tst_QPropertyAnimation::tst_QPropertyAnimation()
@@ -142,7 +143,7 @@ class AnimationObject : public QObject
     Q_PROPERTY(qreal realValue READ realValue WRITE setRealValue)
 public:
     AnimationObject(int startValue = 0)
-        : v(startValue)
+        : v(startValue), rv(startValue)
     { }
 
     int value() const { return v; }
@@ -402,7 +403,7 @@ void tst_QPropertyAnimation::duration0()
     animation.setStartValue(42);
     QVERIFY(animation.currentValue().isValid());
     QCOMPARE(animation.currentValue().toInt(), 42);
-    
+
     QCOMPARE(o.property("ole").toInt(), 42);
     animation.setDuration(0);
     QCOMPARE(animation.currentValue().toInt(), 43); //it is at the end
@@ -1125,11 +1126,55 @@ void tst_QPropertyAnimation::twoAnimations()
 
     QCOMPARE(o1.ole(), 1000);
     QCOMPARE(o2.ole(), 1000);
-
 }
 
+class MyComposedAnimation : public QPropertyAnimation
+{
+    Q_OBJECT
+public:
+    MyComposedAnimation(QObject *target, const QByteArray &propertyName, const QByteArray &innerPropertyName)
+        : QPropertyAnimation(target, propertyName)
+    {
+        innerAnim = new QPropertyAnimation(target, innerPropertyName);
+        this->setEndValue(1000);
+        innerAnim->setEndValue(1000);
+        innerAnim->setDuration(duration() + 100);
+    }
 
+    void start()
+    {
+        QPropertyAnimation::start();
+        innerAnim->start();
+    }
 
+    void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState)
+    {
+        QPropertyAnimation::updateState(oldState, newState);
+        if (newState == QAbstractAnimation::Stopped)
+            delete innerAnim;
+    }
+
+public:
+    QPropertyAnimation *innerAnim;
+};
+
+void tst_QPropertyAnimation::deletedInUpdateCurrentTime()
+{
+    // this test case reproduces an animation being deleted in the updateCurrentTime of
+    // another animation(was causing segfault).
+    // the deleted animation must have been started after the animation that is deleting.
+    AnimationObject o;
+    o.setValue(0);
+    o.setRealValue(0.0);
+
+    MyComposedAnimation composedAnimation(&o, "value", "realValue");
+    composedAnimation.start();
+    QCOMPARE(composedAnimation.state(), QAbstractAnimation::Running);
+    QTest::qWait(composedAnimation.duration() + 50);
+
+    QCOMPARE(composedAnimation.state(), QAbstractAnimation::Stopped);
+    QCOMPARE(o.value(), 1000);
+}
 
 QTEST_MAIN(tst_QPropertyAnimation)
 #include "tst_qpropertyanimation.moc"
