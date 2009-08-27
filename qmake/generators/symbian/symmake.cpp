@@ -1645,7 +1645,7 @@ void SymbianMakefileGenerator::writeSisxTargets(QTextStream &t)
 
     t << OK_SISX_TARGET ":" << endl;
 
-    QString pkgcommand = QString("\tcreatepackage.bat %1_template.%2 $(PLATFORM) $(TARGET) $(CERTIFICATE) $(KEY) $(PASSPHRASE)")
+    QString pkgcommand = QString("\tcreatepackage.bat %1_template.%2 $(TARGET) $(PLATFORM) $(CERTIFICATE) $(KEY) $(PASSPHRASE)")
                           .arg(fileInfo(project->projectFile()).completeBaseName())
                           .arg("pkg");
     t << pkgcommand << endl;

@@ -25,9 +25,9 @@ sub Usage() {
     print "Where parameters are as follows:\n";
     print "     [-i|install] = Install the package right away using PC suite\n";
     print "     templatepkg  = Name of .pkg file template\n";
+    print "     target       = Either debug|udeb or release|urel\n";    
     print "     platform     = One of the supported platform\n";
-    print "                    GCCE | ARMV5 | ARMV6 | ARMV7\n";
-    print "     target       = Either UDEB or UREL\n";
+    print "                    winscw | gcce | armv5 | armv6 | armv7\n";
     print "     certificate  = The certificate file used for signing\n";
     print "     key          = The certificate's private key file\n";
     print "     passphrase   = The certificate's private key file's passphrase\n";
@@ -47,8 +47,15 @@ unless (GetOptions('i|install' => \$install)){
 
 # Read params to variables
 my $templatepkg = $ARGV[0];
-my $platform = uc $ARGV[1];
-my $target = uc $ARGV[2];
+my $target = uc $ARGV[1];
+my $platform = uc $ARGV[2];
+
+# Make sure target contains only urel/udeb. 
+# i.e. convert possible given debug->udeb and release->urel
+$target =~ s/debug/udeb/i;
+$target =~ s/release/urel/i;
+
+# Make sure visual target contains only release/debug
 my $visualtarget = $target;
 $visualtarget =~ s/udeb/debug/i;
 $visualtarget =~ s/urel/release/i;
