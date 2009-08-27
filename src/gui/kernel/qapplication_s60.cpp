@@ -320,7 +320,7 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
         // We cannot assume that parentless widgets are top-level
         QWidget *const parent = qobject_cast<QWidget *>(qwidget->parent());
         
-        if (topLevel or parent)
+        if (topLevel or !parent)
             CreateWindowL(S60->windowGroup());
         else
             CreateWindowL(parent->winId());
