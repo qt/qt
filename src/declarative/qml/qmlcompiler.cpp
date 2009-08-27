@@ -1231,7 +1231,7 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
 
     if (!prop->isDefault && prop->name == "id" && !ctxt.isSubContext()) {
 
-        // The magic "id" behaviour doesn't apply when "id" is resolved as a
+        // The magic "id" behavior doesn't apply when "id" is resolved as a
         // default property or to sub-objects (which are always in binding
         // sub-contexts)
         COMPILE_CHECK(buildIdProperty(prop, obj));

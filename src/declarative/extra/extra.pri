@@ -7,7 +7,7 @@ SOURCES += \
            extra/qfxanimatedimageitem.cpp \
            extra/qfxflowview.cpp \
            extra/qfxparticles.cpp \
-           extra/qmlbehaviour.cpp \
+           extra/qmlbehavior.cpp \
            extra/qbindablemap.cpp \
            extra/qmlfontloader.cpp
 
@@ -21,7 +21,7 @@ HEADERS += \
            extra/qfxanimatedimageitem_p.h \
            extra/qfxflowview.h \
            extra/qfxparticles.h \
-           extra/qmlbehaviour.h \
+           extra/qmlbehavior.h \
            extra/qbindablemap.h \
            extra/qmlfontloader.h
 

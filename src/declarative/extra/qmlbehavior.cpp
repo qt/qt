@@ -42,19 +42,19 @@
 #include <private/qobject_p.h>
 #include "qmlanimation.h"
 #include "qmltransition.h"
-#include "qmlbehaviour.h"
+#include "qmlbehavior.h"
 #include <QtDeclarative/qmlcontext.h>
 #include <QtCore/qparallelanimationgroup.h>
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Behavior,QmlBehaviour)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Behavior,QmlBehavior)
 
-class QmlBehaviourData : public QObject
+class QmlBehaviorData : public QObject
 {
 Q_OBJECT
 public:
-    QmlBehaviourData(QObject *parent)
+    QmlBehaviorData(QObject *parent)
         : QObject(parent) {}
 
     Q_PROPERTY(QVariant endValue READ endValue NOTIFY valuesChanged)
@@ -69,13 +69,13 @@ Q_SIGNALS:
     void valuesChanged();
 
 private:
-    friend class QmlBehaviour;
+    friend class QmlBehavior;
 };
 
-class QmlBehaviourPrivate : public QObjectPrivate
+class QmlBehaviorPrivate : public QObjectPrivate
 {
 public:
-    QmlBehaviourPrivate() : operations(this) {}
+    QmlBehaviorPrivate() : operations(this) {}
     QmlMetaProperty property;
     QVariant currentValue;
 
@@ -84,7 +84,7 @@ public:
     class AnimationList : public QmlConcreteList<QmlAbstractAnimation *>
     {
     public:
-        AnimationList(QmlBehaviourPrivate *parent) : _parent(parent) {}
+        AnimationList(QmlBehaviorPrivate *parent) : _parent(parent) {}
         virtual void append(QmlAbstractAnimation *a)
         {
             QmlConcreteList<QmlAbstractAnimation *>::append(a);
@@ -95,14 +95,14 @@ public:
         }
         virtual void clear() {  QmlConcreteList<QmlAbstractAnimation *>::clear(); } //###
     private:
-        QmlBehaviourPrivate *_parent;
+        QmlBehaviorPrivate *_parent;
     };
     AnimationList operations;
     QParallelAnimationGroup *group;
 };
 
 /*!
-    \qmlclass Behavior QmlBehaviour
+    \qmlclass Behavior QmlBehavior
     \brief The Behavior element allows you to specify a default animation for a property change.
 
     In example below, the rect will use a bounce easing curve over 200 millisecond for any changes to its y property:
@@ -121,77 +121,77 @@ public:
     \endcode
 */
 
-QmlBehaviour::QmlBehaviour(QObject *parent)
-: QmlPropertyValueSource(*(new QmlBehaviourPrivate), parent)
+QmlBehavior::QmlBehavior(QObject *parent)
+: QmlPropertyValueSource(*(new QmlBehaviorPrivate), parent)
 {
-    Q_D(QmlBehaviour);
+    Q_D(QmlBehavior);
     d->group = new QParallelAnimationGroup;
     QFx_setParent_noEvent(d->group, this);
 }
 
 /*!
-    \qmlproperty QVariant Behavior::fromValue
-    This property holds a selector specifying a starting value for the behavior
+    \qmlproperty QVariant Behavior::from
+    This property holds a selector specifying a starting value for the behavior.
 
     If you only want the behavior to apply when the change starts at a
     specific value you can specify fromValue. This selector is used in conjunction
-    with the toValue selector.
+    with the to selector.
 */
 
-QVariant QmlBehaviour::fromValue() const
+QVariant QmlBehavior::fromValue() const
 {
-    Q_D(const QmlBehaviour);
+    Q_D(const QmlBehavior);
     return d->fromValue;
 }
 
-void QmlBehaviour::setFromValue(const QVariant &v)
+void QmlBehavior::setFromValue(const QVariant &v)
 {
-    Q_D(QmlBehaviour);
+    Q_D(QmlBehavior);
     d->fromValue = v;
 }
 
 /*!
-    \qmlproperty QVariant Behavior::toValue
-    This property holds a selector specifying a ending value for the behavior
+    \qmlproperty QVariant Behavior::to
+    This property holds a selector specifying a ending value for the behavior.
 
     If you only want the behavior to apply when the change ends at a
     specific value you can specify toValue. This selector is used in conjunction
-    with the fromValue selector.
+    with the from selector.
 */
 
-QVariant QmlBehaviour::toValue() const
+QVariant QmlBehavior::toValue() const
 {
-    Q_D(const QmlBehaviour);
+    Q_D(const QmlBehavior);
     return d->toValue;
 }
 
-void QmlBehaviour::setToValue(const QVariant &v)
+void QmlBehavior::setToValue(const QVariant &v)
 {
-    Q_D(QmlBehaviour);
+    Q_D(QmlBehavior);
     d->toValue = v;
 }
 
-QmlList<QmlAbstractAnimation *>* QmlBehaviour::operations()
+QmlList<QmlAbstractAnimation *>* QmlBehavior::operations()
 {
-    Q_D(QmlBehaviour);
+    Q_D(QmlBehavior);
     return &d->operations;
 }
 
-QmlBehaviour::~QmlBehaviour()
+QmlBehavior::~QmlBehavior()
 {
     //### do we need any other cleanup here?
 }
 
-bool QmlBehaviour::_ignore = false;
-void QmlBehaviour::propertyValueChanged()
+bool QmlBehavior::_ignore = false;
+void QmlBehavior::propertyValueChanged()
 {
-    Q_D(QmlBehaviour);
+    Q_D(QmlBehavior);
     if (_ignore)
         return;
 
     QVariant newValue = d->property.read();
 
-    if ((!fromValue().isValid() || fromValue() == d->currentValue) && 
+    if ((!fromValue().isValid() || fromValue() == d->currentValue) &&
        (!toValue().isValid() || toValue() == newValue)) {
 
         //### does this clean up everything needed?
@@ -220,9 +220,9 @@ void QmlBehaviour::propertyValueChanged()
     d->currentValue = newValue;
 }
 
-void QmlBehaviour::setTarget(const QmlMetaProperty &property)
+void QmlBehavior::setTarget(const QmlMetaProperty &property)
 {
-    Q_D(QmlBehaviour);
+    Q_D(QmlBehavior);
     d->property = property;
     d->currentValue = property.read();
     d->property.connectNotifier(this, SLOT(propertyValueChanged()));
@@ -233,4 +233,4 @@ void QmlBehaviour::setTarget(const QmlMetaProperty &property)
 
 QT_END_NAMESPACE
 
-#include "qmlbehaviour.moc"
+#include "qmlbehavior.moc"
