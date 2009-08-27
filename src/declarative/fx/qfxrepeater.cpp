@@ -47,7 +47,7 @@
 
 QT_BEGIN_NAMESPACE
 QFxRepeaterPrivate::QFxRepeaterPrivate()
-: component(0)
+: component(0), count(0)
 {
 }
 
@@ -112,41 +112,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QFxRepeater)
 /*!
     \internal
     \class QFxRepeater
-    \ingroup group_utility
     \qmlclass Repeater
-
-    \brief The QFxRepeater class allows you to repeat a component based on a
-           data source.
-
-    The QFxRepeater class is used when you want to create a large number of
-    similar items.  For each entry in the data source, an item is instantiated
-    in a context seeded with data from the data source.
-
-    The data source may be either an object list, a string list or a Qt model.
-    In each case, the data element and the index is exposed to each instantiated
-    component.  The index is always exposed as an accessible \c index property.
-    In the case of an object or string list, the data element (of type string
-    or object) is available as the \c modelData property.  In the case of a Qt model,
-    all roles are available as named properties just like in the view classes.
-
-    As a special case the data source can also be merely a number. In this case it will
-    create that many instances of the component. They will also be assigned an index
-    based on the order they are created.
-
-    Items instantiated by the QFxRepeater class are inserted, in order, as
-    children of the repeater's parent.  The insertion starts immediately after
-    the repeater's position in its parent stacking list.  This is to allow
-    you to use a repeater inside a layout.  The following QML example shows how
-    the instantiated items would visually appear stacked between the red and
-    blue rectangles.
-
-    \snippet doc/src/snippets/declarative/repeater.qml 0
-
-    The QFxRepeater instance continues to own all items it instantiates, even
-    if they are otherwise manipulated.  It is illegal to manually delete an item
-    created by the repeater.  On destruction, the repeater will clean up any
-    items it has instantiated.
-
 
     XXX Repeater is very conservative in how it instatiates/deletes items.  Also
     new model entries will not be created and old ones will not be removed.
@@ -177,27 +143,27 @@ QFxRepeater::~QFxRepeater()
 }
 
 /*!
-    \qmlproperty any Repeater::dataSource
+    \qmlproperty any Repeater::model
 
-    The Repeater's data source.
+    The model providing data for the repeater.
 
-    The data source may be either an object list, a string list or a Qt model.
+    The model may be either an object list, a string list or a Qt model.
     In each case, the data element and the index is exposed to each instantiated
     component.  The index is always exposed as an accessible \c index property.
     In the case of an object or string list, the data element (of type string
     or object) is available as the \c modelData property.  In the case of a Qt model,
     all roles are available as named properties just like in the view classes.
 
-    As a special case the data source can also be merely a number. In this case it will
+    As a special case the model can also be merely a number. In this case it will
     create that many instances of the component. They will also be assigned an index
     based on the order they are created.
 */
-QVariant QFxRepeater::dataSource() const
+QVariant QFxRepeater::model() const
 {
     return QVariant();
 }
 
-void QFxRepeater::setDataSource(const QVariant &v)
+void QFxRepeater::setModel(const QVariant &v)
 {
     Q_D(QFxRepeater);
     d->dataSource = v;
@@ -205,23 +171,35 @@ void QFxRepeater::setDataSource(const QVariant &v)
 }
 
 /*!
-    \qmlproperty Component Repeater::component
+    \qmlproperty Component Repeater::delegate
     \default
 
-    The component to repeat.
+    The delegate provides a template describing what each item instantiated by the repeater should look and act like.
  */
-QmlComponent *QFxRepeater::component() const
+QmlComponent *QFxRepeater::delegate() const
 {
     Q_D(const QFxRepeater);
     return d->component;
 }
 
-void QFxRepeater::setComponent(QmlComponent *_c)
+void QFxRepeater::setDelegate(QmlComponent *_c)
 {
     Q_D(QFxRepeater);
     d->component = _c;
     regenerate();
 }
+
+/*!
+    \qmlproperty int Repeater::count
+
+    This property holds the number of items in the repeater.
+*/
+int QFxRepeater::count() const
+{
+    Q_D(const QFxRepeater);
+    return d->count;
+}
+
 
 /*!
     \internal
@@ -260,10 +238,13 @@ void QFxRepeater::regenerate()
 
     QFxItem *lastItem = this;
 
+    int count = 0;
+
     if (d->dataSource.type() == QVariant::StringList) {
         QStringList sl = qvariant_cast<QStringList>(d->dataSource);
 
-        for (int ii = 0; ii < sl.size(); ++ii) {
+        count = sl.size();
+        for (int ii = 0; ii < count; ++ii) {
             QmlContext *ctxt = new QmlContext(qmlContext(this), this);
             d->deletables << ctxt;
 
@@ -274,11 +255,11 @@ void QFxRepeater::regenerate()
                 lastItem = item;
         }
     } else if (QmlMetaType::isList(d->dataSource)) {
-        int cnt = QmlMetaType::listCount(d->dataSource);
-        if (cnt <= 0)
+        count = QmlMetaType::listCount(d->dataSource);
+        if (count <= 0)
             return;
 
-        for (int ii = 0; ii < cnt; ++ii) {
+        for (int ii = 0; ii < count; ++ii) {
             QVariant v = QmlMetaType::listAt(d->dataSource, ii);
             QObject *o = QmlMetaType::toQObject(v);
 
@@ -292,11 +273,11 @@ void QFxRepeater::regenerate()
                 lastItem = item;
         }
     } else if (QListModelInterface *model = qobject_cast<QListModelInterface*>(d->dataSource.value<QObject*>())) {
-        int cnt = model->count();
-        if (cnt <= 0)
+        count = model->count();
+        if (count <= 0)
             return;
 
-        for (int ii = 0; ii < cnt; ++ii) {
+        for (int ii = 0; ii < count; ++ii) {
             QmlContext *ctxt = new QmlContext(qmlContext(this), this);
             d->deletables << ctxt;
 
@@ -322,13 +303,14 @@ void QFxRepeater::regenerate()
         d->deletables << ctxt;
 
         ctxt->setContextProperty(QLatin1String("index"), QVariant(0));
-        for (int ii = 1; ii < object->metaObject()->propertyCount(); ++ii) {
+        count = object->metaObject()->propertyCount();
+        for (int ii = 1; ii < count; ++ii) {
             const QMetaProperty &prop = object->metaObject()->property(ii);
             ctxt->setContextProperty(QLatin1String(prop.name()), prop.read(object));
         }
 
         //for compatability with other lists, assign data if there is only a single role (excluding objectName)
-        if (object->metaObject()->propertyCount() == 2) {
+        if (count == 2) {
             const QMetaProperty &prop = object->metaObject()->property(1);
             ctxt->setContextProperty(QLatin1String("modelData"), prop.read(object));
         }
@@ -337,7 +319,7 @@ void QFxRepeater::regenerate()
 
     } else if (d->dataSource.canConvert(QVariant::Int)){
 
-        int count = qvariant_cast<int>(d->dataSource);
+        count = qvariant_cast<int>(d->dataSource);
 
         for (int ii = 0; ii < count; ++ii) {
             QmlContext *ctxt = new QmlContext(qmlContext(this), this);
@@ -349,5 +331,6 @@ void QFxRepeater::regenerate()
                 lastItem = item;
         }
     }
+    d->count = count;
 }
 QT_END_NAMESPACE

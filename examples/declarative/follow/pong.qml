@@ -63,7 +63,7 @@ Rectangle {
     Rectangle { color: "#00ee00"; x: Page.width/2+40; y: 0; width: 40; height: 60 }
     Rectangle { color: "#000000"; x: Page.width/2+50; y: 10; width: 20; height: 40 }
     Repeater {
-        dataSource: Page.height/20
+        model: Page.height/20
         Rectangle { color: "#00ee00"; x: Page.width/2-5; y: index*20; width: 10; height: 10 }
     }
 }
