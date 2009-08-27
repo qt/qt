@@ -4177,6 +4177,10 @@ QPalette::ColorRole QWidget::backgroundRole() const
   If \a role is QPalette::NoRole, then the widget inherits its
   parent's background role.
 
+  Note that styles are free to choose any color from the palette.
+  You can modify the palette or set a style sheet if you don't
+  achieve the result you want with setBackgroundRole().
+
   \sa backgroundRole(), foregroundRole()
  */
 
@@ -4238,6 +4242,10 @@ QPalette::ColorRole QWidget::foregroundRole() const
 
   If \a role is QPalette::NoRole, the widget uses a foreground role
   that contrasts with the background role.
+
+  Note that styles are free to choose any color from the palette.
+  You can modify the palette or set a style sheet if you don't
+  achieve the result you want with setForegroundRole().
 
   \sa foregroundRole(), backgroundRole()
  */

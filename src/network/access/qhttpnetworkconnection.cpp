@@ -65,7 +65,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef Q_OS_SYMBIAN
+const int QHttpNetworkConnectionPrivate::defaultChannelCount = 3;
+#else
 const int QHttpNetworkConnectionPrivate::defaultChannelCount = 6;
+#endif
 
 // the maximum amount of requests that might be pipelined into a socket
 // from what was suggested, 3 seems to be OK

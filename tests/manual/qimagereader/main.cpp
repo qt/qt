@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the XMLPatterns module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,36 +39,61 @@
 **
 ****************************************************************************/
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
+#include <QtGui>
 
-#ifndef Patternist_main_h
-#define Patternist_main_h
-
-#include <QCoreApplication>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-class QXmlPatternistCLI
+class MyWidget : public QWidget
 {
 public:
-        Q_DECLARE_TR_FUNCTIONS(QXmlPatternistCLI)
+    MyWidget(QWidget * parent, const QString &imagefname, bool scaleImage)
+            : QWidget(parent), fileName(imagefname), scale(scaleImage)
+    {
+
+    }
+
+    virtual void paintEvent(QPaintEvent * /*event*/)
+    {
+        QPainter painter(this);
+        QImageReader reader(fileName);
+        if (!reader.canRead()) {
+            qWarning("Unable to read image file %s", fileName.toLocal8Bit().constData());
+            return;
+        }
+        if (!scale){
+            QImage image = reader.read();
+            painter.drawImage(rect(), image);
+        }else{
+            reader.setScaledSize( QSize(rect().width(), rect().height()) );
+            QImage image = reader.read();
+            painter.drawImage(rect(), image);
+        }
+    }
+
 private:
-    inline QXmlPatternistCLI();
-    Q_DISABLE_COPY(QXmlPatternistCLI)
+    QString fileName;
+    bool scale;
+
 };
 
-QT_END_NAMESPACE
 
-QT_END_HEADER 
 
-#endif
+// both the scaled and unscaled version of the CMYK encoded JPEG
+//      should have the same colors and not look corrupted.
+
+int main(int argc, char** argv)
+{
+    QApplication app(argc, argv);
+
+    QWidget mainWidget;
+    mainWidget.setWindowTitle("Colors in images are identical?");
+    mainWidget.setMinimumSize(400,400);
+    QHBoxLayout *l = new QHBoxLayout;
+    MyWidget *w1 = new MyWidget(&mainWidget,"Qt_logostrap_CMYK.jpg", false);
+    MyWidget *w2 = new MyWidget(&mainWidget,"Qt_logostrap_CMYK.jpg", true);
+    l->addWidget(w1);
+    l->addWidget(w2);
+    mainWidget.setLayout(l);
+    mainWidget.show();
+
+    return app.exec();
+}
+

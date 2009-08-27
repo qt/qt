@@ -447,6 +447,8 @@ void tst_QScriptValue::toString()
     variant = eng.newVariant(QVariant(QPoint(10, 20)));
     QVERIFY(variant.isVariant());
     QCOMPARE(variant.toString(), QString::fromLatin1("QVariant(QPoint)"));
+    variant = eng.newVariant(QUrl());
+    QVERIFY(variant.toString().isEmpty());
 }
 
 void tst_QScriptValue::toNumber()
