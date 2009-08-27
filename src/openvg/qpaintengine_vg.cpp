@@ -1091,6 +1091,7 @@ VGPaintType QVGPaintEnginePrivate::setBrush
         // The brush is a texture specified by a QPixmap/QImage.
         QPixmapData *pd = brush.texture().pixmapData();
         VGImage vgImg;
+        bool deref = false;
         if (pd->pixelType() == QPixmapData::BitmapType) {
             // Colorize bitmaps using the brush color and opacity.
             QColor color = brush.color();
@@ -1098,15 +1099,21 @@ VGPaintType QVGPaintEnginePrivate::setBrush
                 color.setAlphaF(color.alphaF() * opacity);
             QImage image = colorizeBitmap(*(pd->buffer()), color);
             vgImg = toVGImage(image);
+            deref = true;
         } else if (opacity == 1.0) {
             if (pd->classId() == QPixmapData::OpenVGClass) {
                 QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
                 vgImg = vgpd->toVGImage();
             } else {
                 vgImg = toVGImage(*(pd->buffer()));
+                deref = true;
             }
+        } else if (pd->classId() == QPixmapData::OpenVGClass) {
+            QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
+            vgImg = vgpd->toVGImage(opacity);
         } else {
             vgImg = toVGImageWithOpacity(*(pd->buffer()), opacity);
+            deref = true;
         }
         if (vgImg == VG_INVALID_HANDLE)
             break;
@@ -1114,7 +1121,8 @@ VGPaintType QVGPaintEnginePrivate::setBrush
             vgSetParameteri(paint, VG_PAINT_TYPE, VG_PAINT_TYPE_PATTERN);
         vgSetParameteri(paint, VG_PAINT_PATTERN_TILING_MODE, VG_TILE_REPEAT);
         vgPaintPattern(paint, vgImg);
-        vgDestroyImage(vgImg); // Will stay valid until pattern is destroyed.
+        if (deref)
+            vgDestroyImage(vgImg); // Will be valid until pattern is destroyed.
         return VG_PAINT_TYPE_PATTERN;
     }
 
@@ -3064,43 +3072,42 @@ void QVGPaintEngine::setState(QPainterState *s)
     }
 }
 
-// Called from QPaintEngine::syncState() to force a state flush.
-// This should be called before and after raw VG operations.
-void QVGPaintEngine::updateState(const QPaintEngineState &state)
+void QVGPaintEngine::beginNativePainting()
 {
-    Q_UNUSED(state);
     Q_D(QVGPaintEngine);
 
-    if (!(d->rawVG)) {
-        // About to enter raw VG mode: flush pending changes and make
-        // sure that all matrices are set to the current transformation.
-        QVGPainterState *s = this->state();
-        d->ensurePen(s->pen);
-        d->ensureBrush(s->brush);
-        d->ensurePathTransform();
-        d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, d->imageTransform);
+    // About to enter raw VG mode: flush pending changes and make
+    // sure that all matrices are set to the current transformation.
+    QVGPainterState *s = this->state();
+    d->ensurePen(s->pen);
+    d->ensureBrush(s->brush);
+    d->ensurePathTransform();
+    d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, d->imageTransform);
 #if !defined(QVG_NO_DRAW_GLYPHS)
-        d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, d->pathTransform);
+    d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, d->pathTransform);
 #endif
-        d->rawVG = true;
-    } else {
-        // Exiting raw VG mode: force all state values to be
-        // explicitly set on the VG engine to undo any changes
-        // that were made by the raw VG function calls.
-        QPaintEngine::DirtyFlags dirty = d->dirty;
-        d->clearModes();
-        d->forcePenChange = true;
-        d->forceBrushChange = true;
-        d->penType = (VGPaintType)0;
-        d->brushType = (VGPaintType)0;
-        d->clearColor = QColor();
-        d->fillPaint = d->brushPaint;
-        restoreState(QPaintEngine::AllDirty);
-        d->dirty = dirty;
-        d->rawVG = false;
-        vgSetPaint(d->penPaint, VG_STROKE_PATH);
-        vgSetPaint(d->brushPaint, VG_FILL_PATH);
-    }
+    d->rawVG = true;
+}
+
+void QVGPaintEngine::endNativePainting()
+{
+    Q_D(QVGPaintEngine);
+    // Exiting raw VG mode: force all state values to be
+    // explicitly set on the VG engine to undo any changes
+    // that were made by the raw VG function calls.
+    QPaintEngine::DirtyFlags dirty = d->dirty;
+    d->clearModes();
+    d->forcePenChange = true;
+    d->forceBrushChange = true;
+    d->penType = (VGPaintType)0;
+    d->brushType = (VGPaintType)0;
+    d->clearColor = QColor();
+    d->fillPaint = d->brushPaint;
+    restoreState(QPaintEngine::AllDirty);
+    d->dirty = dirty;
+    d->rawVG = false;
+    vgSetPaint(d->penPaint, VG_STROKE_PATH);
+    vgSetPaint(d->brushPaint, VG_FILL_PATH);
 }
 
 QPixmapFilter *QVGPaintEngine::createPixmapFilter(int type) const

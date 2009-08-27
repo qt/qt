@@ -322,6 +322,8 @@ qreal QSvgNode::strokeWidth() const
         styleProperty(QSvgStyleProperty::STROKE));
     if (!stroke)
         return 0;
+    if (stroke->stroke().brush().style() == Qt::NoBrush)
+        return 0;
     return stroke->width();
 }
 

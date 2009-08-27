@@ -508,6 +508,11 @@ public:
         return m_gradientResolved;
     }
 
+    QPen stroke() const
+    {
+        return m_stroke;
+    }
+
 private:
     // stroke            v 	v 	'inherit' | <Paint.datatype>
     // stroke-dasharray  v 	v 	'inherit' | <StrokeDashArrayValue.datatype>

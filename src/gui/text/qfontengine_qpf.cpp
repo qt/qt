@@ -66,8 +66,9 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_QWS_QPF2
 
-QT_BEGIN_INCLUDE_NAMESPACE
 #include "qpfutil.cpp"
+
+QT_BEGIN_INCLUDE_NAMESPACE
 
 #if defined(Q_WS_QWS)
 #   include "private/qwscommand_qws_p.h"

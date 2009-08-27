@@ -156,7 +156,7 @@ static const symbianToISO symbian_to_iso_list[] = {
 /*!
     Returns ISO name corresponding to the Symbian locale code \a sys_fmt.
 */
-static QByteArray symbianLocaleName(int code)
+QByteArray qt_symbianLocaleName(int code)
 {
     //Number of Symbian to ISO locale mappings
     static const int symbian_to_iso_count
@@ -797,7 +797,7 @@ QLocale QSystemLocale::fallbackLocale() const
     }
 
     TLanguage lang = User::Language();
-    QString locale = symbianLocaleName(lang);
+    QString locale = qt_symbianLocaleName(lang);
     return QLocale(locale);
 }
 
@@ -853,7 +853,7 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
         case LanguageId:
         case CountryId: {
                 TLanguage language = User::Language();
-                QString locale = symbianLocaleName(language);
+                QString locale = qt_symbianLocaleName(language);
                 QLocale::Language lang;
                 QLocale::Country cntry;
                 getLangAndCountry(locale, lang, cntry);

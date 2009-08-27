@@ -84,6 +84,7 @@ public:
 
     ~QLineEditPrivate()
     {
+        delete control;
     }
 
     QLineControl *control;
@@ -121,9 +122,7 @@ public:
 
     QRect adjustedContentsRect() const;
 
-    void _q_clipboardChanged();
     void _q_handleWindowActivate();
-    void _q_deleteSelected();
     void _q_textEdited(const QString &);
     void _q_cursorPositionChanged(int, int);
 #ifdef QT_KEYPAD_NAVIGATION

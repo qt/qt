@@ -43,10 +43,8 @@
 #include <QGLShaderProgram>
 
 static char const colorizeShaderCode[] =
-    "varying highp vec2 textureCoords;\n"
-    "uniform sampler2D imageTexture;\n"
     "uniform lowp vec4 effectColor;\n"
-    "lowp vec4 srcPixel() {\n"
+    "mediump vec4 customShader(lowp sampler2D imageTexture, highp vec2 textureCoords) {\n"
     "    vec4 src = texture2D(imageTexture, textureCoords);\n"
     "    float gray = dot(src.rgb, vec3(0.212671, 0.715160, 0.072169));\n"
     "    vec4 colorize = 1.0-((1.0-gray)*(1.0-effectColor));\n"

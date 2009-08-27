@@ -161,7 +161,7 @@ QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
 #if defined(QT_DEBUG)
         // Check that all the elements have been filled:
         for (int i = 0; i < TotalShaderCount; ++i) {
-            if (i != CustomImageSrcFragmentShader && qglEngineShaderSourceCode[i] == 0) {
+            if (qglEngineShaderSourceCode[i] == 0) {
                 int enumIndex = staticMetaObject.indexOfEnumerator("ShaderName");
                 QMetaEnum m = staticMetaObject.enumerator(enumIndex);
 

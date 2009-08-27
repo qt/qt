@@ -4433,13 +4433,13 @@ void QOpenGLPaintEngine::drawTextureRect(int tx_width, int tx_height, const QRec
     if (target == GL_TEXTURE_2D) {
         x1 = sr.x() / tx_width;
         x2 = x1 + sr.width() / tx_width;
-        y1 = 1.0 - (sr.bottom() / tx_height);
-        y2 = 1.0 - (sr.y() / tx_height);
+        y1 = 1 - (sr.bottom() / tx_height);
+        y2 = 1 - (sr.y() / tx_height);
     } else {
         x1 = sr.x();
         x2 = sr.right();
-        y1 = tx_height - sr.bottom();
-        y2 = tx_height - sr.y();
+        y1 = sr.bottom();
+        y2 = sr.y();
     }
 
     q_vertexType vertexArray[4*2];

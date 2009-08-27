@@ -205,7 +205,9 @@ void QCommandLinkButtonPrivate::init()
     q->setSizePolicy(policy);
 
     q->setIconSize(QSize(20, 20));
-    q->setIcon(q->style()->standardIcon(QStyle::SP_CommandLink));
+    QStyleOptionButton opt;
+    q->initStyleOption(&opt);
+    q->setIcon(q->style()->standardIcon(QStyle::SP_CommandLink, &opt));
 }
 
 // Calculates the height of the description text based on widget width

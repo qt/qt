@@ -209,7 +209,7 @@
     (QGLCustomShaderStage). The shader will implement a pre-defined method name
     which Qt's fragment pipeline will call:
 
-        lowp vec4 customShader(sampler2d src, vec2 srcCoords)
+        lowp vec4 customShader(lowp sampler2d imageTexture, highp vec2 textureCoords)
 
     The provided src and srcCoords parameters can be used to sample from the
     source image.
@@ -361,7 +361,6 @@ public:
         MainFragmentShader,
 
         ImageSrcFragmentShader,
-        CustomSrcFragmentShader,
         ImageSrcWithPatternFragmentShader,
         NonPremultipliedImageSrcFragmentShader,
         CustomImageSrcFragmentShader,

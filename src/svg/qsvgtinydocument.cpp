@@ -283,7 +283,9 @@ void QSvgTinyDocument::draw(QPainter *p, const QString &id,
     QTransform originalTransform = p->worldTransform();
 
     //XXX set default style on the painter
-    p->setPen(Qt::NoPen);
+    QPen pen(QBrush(Qt::NoBrush), 1, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin);
+    pen.setMiterLimit(4);
+    p->setPen(pen);
     p->setBrush(Qt::black);
     p->setRenderHint(QPainter::Antialiasing);
     p->setRenderHint(QPainter::SmoothPixmapTransform);

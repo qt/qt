@@ -65,8 +65,9 @@
     automatically added to the layout, and if items are removed, all their anchors will be
     automatically removed
 
-    \section1 Size Hints and Size Policies in QGraphicsLinearLayout
-    QGraphicsLinearLayout respects each item's size hints and size policies. However it does
+    \section1 Size Hints and Size Policies in QGraphicsAnchorLayout
+
+    QGraphicsAnchorLayout respects each item's size hints and size policies. However it does
     not respect stretch factors currently. This might change in the future, so please refrain
     from using stretch factors in anchor layout to avoid any future regressions.
 
@@ -228,6 +229,7 @@ void QGraphicsAnchorLayout::setAnchorSpacing(const QGraphicsLayoutItem *firstIte
 
     if (!d->setAnchorSize(firstItem, firstEdge, secondItem, secondEdge, &spacing)) {
         qWarning("setAnchorSpacing: The anchor does not exist.");
+        return;
     }
     invalidate();
 }

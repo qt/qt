@@ -1643,7 +1643,6 @@ QDateTimeEditPrivate::QDateTimeEditPrivate()
     cachedDay = -1;
     currentSectionIndex = FirstSectionIndex;
 
-    layoutDirection = QApplication::layoutDirection();
     first.type = FirstSection;
     last.type = LastSection;
     none.type = NoSection;

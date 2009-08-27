@@ -301,6 +301,14 @@ bool qt_mac_is_macdrawer(const QWidget *w)
     return (w && w->parentWidget() && w->windowType() == Qt::Drawer);
 }
 
+bool qt_mac_insideKeyWindow(const QWidget *w)
+{
+#ifdef QT_MAC_USE_COCOA
+    return [[reinterpret_cast<NSView *>(w->winId()) window] isKeyWindow];
+#endif
+    return false;
+}
+
 bool qt_mac_set_drawer_preferred_edge(QWidget *w, Qt::DockWidgetArea where) //users of Qt for Mac OS X can use this..
 {
     if(!qt_mac_is_macdrawer(w))

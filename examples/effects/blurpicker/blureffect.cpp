@@ -52,7 +52,7 @@ BlurEffect::BlurEffect(QGraphicsItem *item)
 void BlurEffect::adjustForItem()
 {
     qreal y = m_baseLine - item->pos().y();
-    qreal radius = qBound(0.0, y / 32, 16.0);
+    qreal radius = qBound(qreal(0.0), y / 32, qreal(16.0));
     setBlurRadius(radius);
 }
 

@@ -78,10 +78,10 @@ class Q_GUI_EXPORT QLineControl : public QObject
 
 public:
     QLineControl(const QString &txt = QString())
-        : m_cursor(0), m_preeditCursor(0), m_layoutDirection(Qt::LeftToRight),
+        : m_cursor(0), m_preeditCursor(0), m_cursorWidth(0), m_layoutDirection(Qt::LeftToRight),
         m_hideCursor(false), m_separator(0), m_readOnly(0),
         m_dragEnabled(0), m_echoMode(0), m_textDirty(0), m_selDirty(0),
-        m_validInput(1), m_blinkPeriod(0), m_blinkTimer(0), m_deleteAllTimer(0),
+        m_validInput(1), m_blinkStatus(0), m_blinkPeriod(0), m_blinkTimer(0), m_deleteAllTimer(0),
         m_ascent(0), m_maxLength(32767), m_lastCursorPos(-1),
         m_tripleClickTimer(0), m_maskData(0), m_modifiedState(0), m_undoState(0),
         m_selstart(0), m_selend(0), m_passwordEchoEditing(false)
@@ -262,10 +262,10 @@ private:
     uint m_textDirty : 1;
     uint m_selDirty : 1;
     uint m_validInput : 1;
+    uint m_blinkStatus : 1;
     int m_blinkPeriod; // 0 for non-blinking cursor
     int m_blinkTimer;
     int m_deleteAllTimer;
-    int m_blinkStatus;
     int m_ascent;
     int m_maxLength;
     int m_lastCursorPos;
@@ -349,7 +349,7 @@ Q_SIGNALS:
 protected:
     virtual void timerEvent(QTimerEvent *event);
 
-private slots:
+private Q_SLOTS:
     void _q_clipboardChanged();
     void _q_deleteSelected();
 

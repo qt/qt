@@ -95,6 +95,8 @@ void QScriptObject::setDelegate(QScriptObjectDelegate *delegate)
 {
     if (!d)
         d = new Data();
+    else
+        delete d->delegate;
     d->delegate = delegate;
 }
 

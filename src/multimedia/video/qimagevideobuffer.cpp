@@ -46,6 +46,8 @@
 #include <qimage.h>
 #include <qvariant.h>
 
+QT_BEGIN_NAMESPACE
+
 class QImageVideoBufferPrivate : public QAbstractVideoBufferPrivate
 {
 public:
@@ -100,3 +102,5 @@ void QImageVideoBuffer::unmap()
 
     d->mapMode = NotMapped;
 }
+
+QT_END_NAMESPACE

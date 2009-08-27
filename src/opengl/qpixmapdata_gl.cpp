@@ -108,7 +108,6 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
 
             if (sz != fboSize) {
                 delete candidate;
-                qDebug() << "Resizing fbo in pool:" << sz;
                 candidate = new QGLFramebufferObject(sz, requestFormat);
             }
 
@@ -117,7 +116,6 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
     }
 
     if (!chosen) {
-        qDebug() << "Creating new fbo in pool:" << requestSize;
         chosen = new QGLFramebufferObject(requestSize, requestFormat);
     }
 
@@ -273,7 +271,7 @@ void QGLPixmapData::ensureCreated() const
             m_source = QImage();
     }
 
-    m_texture.clean = false;
+    m_texture.options &= ~QGLContext::MemoryManagedBindOption;
 }
 
 QGLFramebufferObject *QGLPixmapData::fbo() const

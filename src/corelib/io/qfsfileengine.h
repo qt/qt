@@ -83,9 +83,6 @@ public:
     FileFlags fileFlags(FileFlags type) const;
     bool setPermissions(uint perms);
     QString fileName(FileName file) const;
-#ifdef Q_OS_SYMBIAN
-    QString fileNameSymbian(FileName file) const;
-#endif
     uint ownerId(FileOwner) const;
     QString owner(FileOwner) const;
     QDateTime fileTime(FileTime time) const;

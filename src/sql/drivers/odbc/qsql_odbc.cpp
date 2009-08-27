@@ -743,37 +743,31 @@ void QODBCDriverPrivate::splitTableQualifier(const QString & qualifier, QString 
 
 QODBCDriverPrivate::DefaultCase QODBCDriverPrivate::defaultCase() const
 {
-    static bool isInitialized = false;
-    static DefaultCase ret;
-
-    if (!isInitialized) {
-        SQLUSMALLINT casing;
-        int r = SQLGetInfo(hDbc,
-                SQL_IDENTIFIER_CASE,
-                &casing,
-                sizeof(casing),
-                NULL);
-        if ( r != SQL_SUCCESS)
-            ret = Lower;//arbitrary case if driver cannot be queried
-        else {
-            switch (casing) {
-                case (SQL_IC_UPPER):
-                    ret = Upper;
-                    break;
-                case (SQL_IC_LOWER):
-                    ret = Lower;
-                    break;
-                case (SQL_IC_SENSITIVE):
-                    ret = Sensitive;
-                    break;
-                case (SQL_IC_MIXED):
-                    ret = Mixed;
-                    break;
-                default:
-                    ret = Upper;
-            }
+    DefaultCase ret;
+    SQLUSMALLINT casing;
+    int r = SQLGetInfo(hDbc,
+            SQL_IDENTIFIER_CASE,
+            &casing,
+            sizeof(casing),
+            NULL);
+    if ( r != SQL_SUCCESS)
+        ret = Mixed;//arbitrary case if driver cannot be queried
+    else {
+        switch (casing) {
+            case (SQL_IC_UPPER):
+                ret = Upper;
+                break;
+            case (SQL_IC_LOWER):
+                ret = Lower;
+                break;
+            case (SQL_IC_SENSITIVE):
+                ret = Sensitive;
+                break;
+            case (SQL_IC_MIXED):
+            default:
+                ret = Mixed;
+                break;
         }
-        isInitialized = true;
     }
     return ret;
 }

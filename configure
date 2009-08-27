@@ -115,7 +115,7 @@ linkerSupportsFlag()
 	safe_flag=`shellEscape "$flag"`
 	lflags=$lflags,$safe_flag
     done
-    compilerSupportsFlag "$lflags"
+    compilerSupportsFlag "$lflags" >/dev/null 2>&1
 }
 
 #-------------------------------------------------------------------------------

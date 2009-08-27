@@ -53,6 +53,8 @@
 #include <QtCore/qcoreapplication.h>
 #include "qaudiooutput_alsa_p.h"
 
+QT_BEGIN_NAMESPACE
+
 //#define DEBUG_AUDIO 1
 
 QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray &device, const QAudioFormat& audioFormat):
@@ -704,3 +706,5 @@ qint64 OutputPrivate::writeData(const char* data, qint64 len)
     return written;
 
 }
+
+QT_END_NAMESPACE

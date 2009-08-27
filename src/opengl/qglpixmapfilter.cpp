@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 void QGLPixmapFilterBase::bindTexture(const QPixmap &src) const
 {
-    const_cast<QGLContext *>(QGLContext::currentContext())->d_func()->bindTexture(src, GL_TEXTURE_2D, GL_RGBA, true, false);
+    const_cast<QGLContext *>(QGLContext::currentContext())->d_func()->bindTexture(src, GL_TEXTURE_2D, GL_RGBA, QGLContext::BindOptions(QGLContext::DefaultBindOption | QGLContext::MemoryManagedBindOption));
 }
 
 void QGLPixmapFilterBase::drawImpl(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF& source) const
@@ -338,7 +338,6 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
 
     QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
 
-    engine->syncState();
     painter->save();
 
     // ensure GL_LINEAR filtering is used
@@ -418,7 +417,7 @@ QByteArray QGLPixmapBlurFilter::generateBlurShader(int radius, bool gaussianBlur
         source.append("uniform highp vec4      clip;\n");
     }
 
-    source.append("mediump vec4 customShader(sampler2D src, vec2 srcCoords) {\n");
+    source.append("lowp vec4 customShader(lowp sampler2D src, highp vec2 srcCoords) {\n");
 
     QVector<qreal> sampleOffsets;
     QVector<qreal> weights;

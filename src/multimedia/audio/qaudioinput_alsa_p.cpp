@@ -53,6 +53,8 @@
 #include <QtCore/qcoreapplication.h>
 #include "qaudioinput_alsa_p.h"
 
+QT_BEGIN_NAMESPACE
+
 //#define DEBUG_AUDIO 1
 
 QAudioInputPrivate::QAudioInputPrivate(const QByteArray &device, const QAudioFormat& audioFormat):
@@ -686,3 +688,4 @@ void InputPrivate::trigger()
     emit readyRead();
 }
 
+QT_END_NAMESPACE

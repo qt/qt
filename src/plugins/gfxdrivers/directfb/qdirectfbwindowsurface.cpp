@@ -48,8 +48,6 @@
 #include <qpaintdevice.h>
 #include <qvarlengtharray.h>
 
-//#define QT_DIRECTFB_DEBUG_SURFACES 1
-
 QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *scr)
     : QDirectFBPaintDevice(scr)
 #ifndef QT_NO_DIRECTFB_WM
@@ -124,7 +122,7 @@ void QDirectFBWindowSurface::createWindow()
         qFatal("QDirectFBWindowSurface: Unable to get primary display layer!");
 
     DFBWindowDescription description;
-    description.caps = DWCAPS_NODECORATION;
+    description.caps = DWCAPS_NODECORATION|DWCAPS_DOUBLEBUFFER;
     description.flags = DWDESC_CAPS|DWDESC_SURFACE_CAPS|DWDESC_PIXELFORMAT;
 
     description.surface_caps = DSCAPS_NONE;
@@ -144,6 +142,7 @@ void QDirectFBWindowSurface::createWindow()
         dfbSurface->Release(dfbSurface);
 
     dfbWindow->GetSurface(dfbWindow, &dfbSurface);
+    updateFormat();
 }
 #endif // QT_NO_DIRECTFB_WM
 
@@ -179,6 +178,7 @@ static DFBResult setGeometry(IDirectFBWindow *dfbWindow, const QRect &old, const
 
 void QDirectFBWindowSurface::setGeometry(const QRect &rect)
 {
+    IDirectFBSurface *oldSurface = dfbSurface;
 #ifdef QT_NO_DIRECTFB_WM
     IDirectFBSurface *primarySurface = screen->primarySurface();
     Q_ASSERT(primarySurface);
@@ -236,27 +236,26 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
         if (result != DFB_OK)
             DirectFBErrorFatal("QDirectFBWindowSurface::setGeometry()", result);
     }
+    if (oldSurface != dfbSurface)
+        updateFormat();
     QWSWindowSurface::setGeometry(rect);
 }
 
 QByteArray QDirectFBWindowSurface::permanentState() const
 {
-    QByteArray state;
 #ifdef QT_DIRECTFB_WM
-    QDataStream ds(&state, QIODevice::WriteOnly);
-    ds << reinterpret_cast<quintptr>(this);
-#endif
+    QByteArray state(sizeof(this), 0);
+    *reinterpret_cast<const QDirectFBWindowSurface**>(state.data()) = this;
     return state;
+#endif
+    return QByteArray();
 }
 
 void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 {
 #ifdef QT_DIRECTFB_WM
-    if (state.size() == sizeof(quintptr)) {
-        QDataStream ds(state);
-        quintptr ptr;
-        ds >> ptr;
-        sibling = reinterpret_cast<QDirectFBWindowSurface*>(ptr);
+    if (state.size() == sizeof(this)) {
+        sibling = *reinterpret_cast<QDirectFBWindowSurface *const*>(state.constData());
     }
 #else
     Q_UNUSED(state);
@@ -414,7 +413,6 @@ void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
 #endif
 }
 
-
 void QDirectFBWindowSurface::beginPaint(const QRegion &)
 {
     if (!engine)
@@ -423,42 +421,31 @@ void QDirectFBWindowSurface::beginPaint(const QRegion &)
 
 void QDirectFBWindowSurface::endPaint(const QRegion &)
 {
-#ifdef QT_DIRECTFB_DEBUG_SURFACES
-    if (bufferImages.count()) {
-        qDebug("QDirectFBWindowSurface::endPaint() this=%p", this);
-
-        foreach(QImage* bufferImg, bufferImages)
-            qDebug("   Deleting buffer image %p", bufferImg);
-    }
-#endif
-
-    qDeleteAll(bufferImages);
-    bufferImages.clear();
     unlockDirectFB();
 }
 
-
-QImage *QDirectFBWindowSurface::buffer(const QWidget *widget)
+IDirectFBSurface *QDirectFBWindowSurface::surfaceForWidget(const QWidget *widget, QRect *rect) const
 {
-    if (!lockedImage)
+    Q_ASSERT(widget);
+    if (!dfbSurface) {
+        if (sibling && (!sibling->sibling || sibling->dfbSurface))
+            return sibling->surfaceForWidget(widget, rect);
         return 0;
-
-    const QRect rect = QRect(offset(widget), widget->size())
-                       & lockedImage->rect();
-    if (rect.isEmpty())
-        return 0;
-
-    QImage *img = new QImage(lockedImage->scanLine(rect.y())
-                             + rect.x() * (lockedImage->depth() / 8),
-                             rect.width(), rect.height(),
-                             lockedImage->bytesPerLine(),
-                             lockedImage->format());
-    bufferImages.append(img);
-
-#ifdef QT_DIRECTFB_DEBUG_SURFACES
-    qDebug("QDirectFBWindowSurface::buffer() Created & returned %p", img);
-#endif
-
-    return img;
+    }
+    QWidget *win = window();
+    Q_ASSERT(win);
+    if (rect) {
+        if (win == widget) {
+            *rect = widget->rect();
+        } else {
+            *rect = QRect(widget->mapTo(win, QPoint(0, 0)), widget->size());
+        }
+    }
+    Q_ASSERT(win == widget || widget->isAncestorOf(win));
+    return dfbSurface;
 }
 
+void QDirectFBWindowSurface::updateFormat()
+{
+    imageFormat = dfbSurface ? QDirectFBScreen::getImageFormat(dfbSurface) : QImage::Format_Invalid;
+}

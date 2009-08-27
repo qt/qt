@@ -1443,7 +1443,7 @@ bool QGLTextureCache::remove(QGLContext* ctx, GLuint textureId)
     for (int i = 0; i < keys.size(); ++i) {
         QGLTexture *tex = m_cache.object(keys.at(i));
         if (tex->id == textureId && tex->context == ctx) {
-            tex->clean = true; // forces a glDeleteTextures() call
+            tex->options |= QGLContext::MemoryManagedBindOption; // forces a glDeleteTextures() call
             m_cache.remove(keys.at(i));
             return true;
         }
@@ -1479,7 +1479,7 @@ void QGLTextureCache::imageCleanupHook(qint64 cacheKey)
     if (qApp->thread() != QThread::currentThread())
         return;
     QGLTexture *texture = instance()->getTexture(cacheKey);
-    if (texture && texture->clean)
+    if (texture && texture->options & QGLContext::MemoryManagedBindOption)
         instance()->remove(cacheKey);
 }
 
@@ -1490,7 +1490,7 @@ void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
     if (qApp->thread() == QThread::currentThread()) {
         const qint64 cacheKey = pixmap->cacheKey();
         QGLTexture *texture = instance()->getTexture(cacheKey);
-        if (texture && texture->clean)
+        if (texture && texture->options & QGLContext::MemoryManagedBindOption)
             instance()->remove(cacheKey);
     }
 #if defined(Q_WS_X11)
@@ -1578,6 +1578,39 @@ Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
     Please note that QGLContext is not thread safe.
 */
 
+/*!
+    \enum QGLContext::BindOption
+    A set of options to decide how to bind a texture using bindTexture().
+
+    \value NoBindOption Don't do anything, pass the texture straight
+    thru.
+
+    \value InvertedYBindOption Specifies that the texture should be flipped
+    over the X axis so that the texture coordinate 0,0 corresponds to
+    the top left corner. Inverting the texture implies a deep copy
+    prior to upload.
+
+    \value MipmapBindOption Specifies that bindTexture should try
+    to generate mipmaps.  If the GL implementation supports the \c
+    GL_SGIS_generate_mipmap extension, mipmaps will be automatically
+    generated for the texture. Mipmap generation is only supported for
+    the \c GL_TEXTURE_2D target.
+
+    \value PremultipliedAlphaBindOption Specifies that the image should be
+    uploaded with premultiplied alpha and does a conversion accordingly.
+
+    \value LinearFilteringBindOption Specifies that the texture filtering
+    should be set to GL_LINEAR. Default is GL_NEAREST. If mipmap is
+    also enabled, filtering will be set to GL_LINEAR_MIPMAP_LINEAR.
+
+    \value DefaultBindOption In Qt 4.5 and earlier, bindTexture()
+    would mirror the image and automatically generate mipmaps. This
+    option helps preserve this default behavior.
+
+    \omitvalue MemoryManagedBindOption
+
+    \omitvalue InternalBindOption
+*/
 
 /*!
     \obsolete
@@ -1880,7 +1913,8 @@ QImage QGLContextPrivate::convertToGLFormat(const QImage &image, bool force_prem
 }
 
 /*! \internal */
-QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint format, bool clean)
+QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint format,
+                                           QGLContext::BindOptions options)
 {
     const qint64 key = image.cacheKey();
     QGLTexture *texture = textureCacheLookup(key, target);
@@ -1890,7 +1924,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     }
 
     if (!texture)
-        texture = bindTexture(image, target, format, key, clean);
+        texture = bindTexture(image, target, format, key, options);
     // NOTE: bindTexture(const QImage&, GLenum, GLint, const qint64, bool) should never return null
     Q_ASSERT(texture);
 
@@ -1900,68 +1934,128 @@ QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     return texture;
 }
 
+// #define QGL_BIND_TEXTURE_DEBUG
+
 QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, GLint format,
-                                      const qint64 key, bool clean)
+                                           const qint64 key, QGLContext::BindOptions options)
 {
     Q_Q(QGLContext);
 
-    QGLContext *ctx = q;
-
-    // the GL_BGRA format is only present in GL version >= 1.2
-    GLenum texture_format = (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_2)
-                            ? GL_BGRA : GL_RGBA;
+#ifdef QGL_BIND_TEXTURE_DEBUG
+    printf("QGLContextPrivate::bindTexture(), imageSize=(%d,%d), format=%x, options=%x\n",
+           image.width(), image.height(), format, int(options));
+#endif
 
     // Scale the pixmap if needed. GL textures needs to have the
     // dimensions 2^n+2(border) x 2^m+2(border), unless we're using GL
     // 2.0 or use the GL_TEXTURE_RECTANGLE texture target
     int tx_w = qt_next_power_of_two(image.width());
     int tx_h = qt_next_power_of_two(image.height());
-    bool scale = false;
 
     QImage img = image;
     if (( !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0) &&
           !(QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_ES_Version_2_0) )
         && (target == GL_TEXTURE_2D && (tx_w != image.width() || tx_h != image.height())))
     {
-        scale = true;
+        img = img.scaled(tx_w, tx_h);
+#ifdef QGL_BIND_TEXTURE_DEBUG
+        printf(" - upscaled to %dx%d\n", tx_w, tx_h);
+#endif
     }
+
+    GLuint filtering = options & QGLContext::LinearFilteringBindOption ? GL_LINEAR : GL_NEAREST;
 
     GLuint tx_id;
     glGenTextures(1, &tx_id);
     glBindTexture(target, tx_id);
-    glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(target, GL_TEXTURE_MAG_FILTER, filtering);
+
     if (glFormat.directRendering()
         && QGLExtensions::glExtensions & QGLExtensions::GenerateMipmap
-        && target == GL_TEXTURE_2D && !clean)
+        && target == GL_TEXTURE_2D
+        && options & QGLContext::MipmapBindOption)
     {
+#ifdef QGL_BIND_TEXTURE_DEBUG
+        printf(" - generating mipmaps\n");
+#endif
         glHint(GL_GENERATE_MIPMAP_HINT_SGIS, GL_NICEST);
 #ifndef QT_OPENGL_ES
         glTexParameteri(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
 #else
         glTexParameterf(target, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
 #endif
-        glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameterf(target, GL_TEXTURE_MIN_FILTER, options & QGLContext::LinearFilteringBindOption
+                        ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_NEAREST);
     } else {
-        glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameterf(target, GL_TEXTURE_MIN_FILTER, filtering);
     }
 
     QImage::Format target_format = img.format();
-    // Note: the clean param is only true when a texture is bound
-    // from the QOpenGLPaintEngine - in that case we have to force
-    // a premultiplied texture format
-    if (clean || img.format() != QImage::Format_ARGB32)
-        target_format = QImage::Format_ARGB32_Premultiplied;
-    if (img.format() != target_format)
-        img = img.convertToFormat(target_format);
+    bool premul = options & QGLContext::PremultipliedAlphaBindOption;
+    GLenum texture_format = QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_2
+                            ? GL_BGRA : GL_RGBA;
+    GLuint pixel_type = GL_UNSIGNED_BYTE;
 
-    QImage tx(scale ? QSize(tx_w, tx_h) : img.size(), target_format);
-    convertToGLFormatHelper(tx, img, texture_format);
-    glTexImage2D(target, 0, format, tx.width(), tx.height(), 0, texture_format,
-                 GL_UNSIGNED_BYTE, tx.bits());
+    switch (target_format) {
+    case QImage::Format_ARGB32:
+        if (premul) {
+            img = img.convertToFormat(target_format = QImage::Format_ARGB32_Premultiplied);
+#ifdef QGL_BIND_TEXTURE_DEBUG
+            printf(" - converting ARGB32 -> ARGB32_Premultiplied \n");
+#endif
+        }
+        break;
+    case QImage::Format_ARGB32_Premultiplied:
+        if (!premul) {
+            img = img.convertToFormat(target_format = QImage::Format_ARGB32);
+#ifdef QGL_BIND_TEXTURE_DEBUG
+            printf(" - converting ARGB32_Premultiplied -> ARGB32\n");
+#endif
+        }
+        break;
+    case QImage::Format_RGB16:
+        pixel_type = GL_UNSIGNED_SHORT_5_6_5;
+        texture_format = GL_RGB;
+        break;
+    case QImage::Format_RGB32:
+        if (format == GL_RGBA)
+            format = GL_RGB;
+        break;
+
+    default:
+        if (img.hasAlphaChannel()) {
+            img = img.convertToFormat(premul
+                                      ? QImage::Format_ARGB32_Premultiplied
+                                      : QImage::Format_ARGB32);
+#ifdef QGL_BIND_TEXTURE_DEBUG
+            printf(" - converting to 32-bit alpha format\n");
+#endif
+        } else {
+            img = img.convertToFormat(QImage::Format_RGB32);
+#ifdef QGL_BIND_TEXTURE_DEBUG
+            printf(" - converting to 32-bit\n");
+#endif
+        }
+    }
+
+    if (options & QGLContext::InvertedYBindOption) {
+        int ipl = img.bytesPerLine() / 4;
+        int h = img.height();
+        for (int y=0; y<h/2; ++y) {
+            int *a = (int *) img.scanLine(y);
+            int *b = (int *) img.scanLine(h - y - 1);
+            for (int x=0; x<ipl; ++x)
+                qSwap(a[x], b[x]);
+        }
+    }
+
+    const QImage &constRef = img; // to avoid detach in bits()...
+    glTexImage2D(target, 0, format, img.width(), img.height(), 0, texture_format,
+                 pixel_type, constRef.bits());
 
     // this assumes the size of a texture is always smaller than the max cache size
     int cost = img.width()*img.height()*4/1024;
-    QGLTexture *texture = new QGLTexture(q, tx_id, target, clean, false);
+    QGLTexture *texture = new QGLTexture(q, tx_id, target, options);
     QGLTextureCache::instance()->insert(q, key, texture, cost);
     return texture;
 }
@@ -1980,7 +2074,7 @@ QGLTexture *QGLContextPrivate::textureCacheLookup(const qint64 key, GLenum targe
 
 
 /*! \internal */
-QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target, GLint format, bool clean, bool canInvert)
+QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target, GLint format, QGLContext::BindOptions options)
 {
     Q_Q(QGLContext);
     QPixmapData *pd = pixmap.pixmapData();
@@ -2005,9 +2099,9 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 #if defined(Q_WS_X11)
     // Try to use texture_from_pixmap
     if (pd->classId() == QPixmapData::X11Class) {
-        texture = bindTextureFromNativePixmap(pd, key, canInvert);
+        texture = bindTextureFromNativePixmap(pd, key, options);
         if (texture) {
-            texture->clean = clean;
+            texture->options |= QGLContext::MemoryManagedBindOption;
             texture->boundPixmap = pd;
             boundPixmaps.insert(pd, QPixmap(pixmap));
         }
@@ -2015,7 +2109,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 #endif
 
     if (!texture)
-        texture = bindTexture(pixmap.toImage(), target, format, key, clean);
+        texture = bindTexture(pixmap.toImage(), target, format, key, options);
     // NOTE: bindTexture(const QImage&, GLenum, GLint, const qint64, bool) should never return null
     Q_ASSERT(texture);
 
@@ -2061,6 +2155,20 @@ int QGLContextPrivate::maxTextureSize()
 }
 
 /*!
+  Generates and binds a 2D GL texture to the current context, based
+  on \a image. The generated texture id is returned and can be used in
+  later \c glBindTexture() calls.
+
+  \overload
+*/
+GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format)
+{
+    Q_D(QGLContext);
+    QGLTexture *texture = d->bindTexture(image, target, format, false, DefaultBindOption);
+    return texture->id;
+}
+
+/*!
     Generates and binds a 2D GL texture to the current context, based
     on \a image. The generated texture id is returned and can be used
     in later \c glBindTexture() calls.
@@ -2069,12 +2177,7 @@ int QGLContextPrivate::maxTextureSize()
     target is \c GL_TEXTURE_2D.
 
     The \a format parameter sets the internal format for the
-    texture. The default format is \c GL_RGBA8.
-
-    If the GL implementation supports the \c GL_SGIS_generate_mipmap
-    extension, mipmaps will be automatically generated for the
-    texture. Mipmap generation is only supported for the \c
-    GL_TEXTURE_2D target.
+    texture. The default format is \c GL_RGBA.
 
     The texture that is generated is cached, so multiple calls to
     bindTexture() with the same QImage will return the same texture
@@ -2085,10 +2188,10 @@ int QGLContextPrivate::maxTextureSize()
 
     \sa deleteTexture()
 */
-GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format)
+GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format, BindOptions options)
 {
     Q_D(QGLContext);
-    QGLTexture *texture = d->bindTexture(image, target, format, false);
+    QGLTexture *texture = d->bindTexture(image, target, format, false, options);
     return texture->id;
 }
 
@@ -2097,7 +2200,16 @@ GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format)
 GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMacCompatGLint format)
 {
     Q_D(QGLContext);
-    QGLTexture *texture = d->bindTexture(image, GLenum(target), GLint(format), false);
+    QGLTexture *texture = d->bindTexture(image, GLenum(target), GLint(format), false, DefaultBindOption);
+    return texture->id;
+}
+
+/*! \internal */
+GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMacCompatGLint format,
+                               BindOptions options)
+{
+    Q_D(QGLContext);
+    QGLTexture *texture = d->bindTexture(image, GLenum(target), GLint(format), false, options);
     return texture->id;
 }
 #endif
@@ -2109,7 +2221,20 @@ GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMa
 GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint format)
 {
     Q_D(QGLContext);
-    QGLTexture *texture = d->bindTexture(pixmap, target, format, false, false);
+    QGLTexture *texture = d->bindTexture(pixmap, target, format, DefaultBindOption);
+    return texture->id;
+}
+
+/*!
+  \overload
+
+  Generates and binds a 2D GL texture to the current context, based
+  on \a image.
+*/
+GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint format, BindOptions options)
+{
+    Q_D(QGLContext);
+    QGLTexture *texture = d->bindTexture(pixmap, target, format, options);
     return texture->id;
 }
 
@@ -2118,7 +2243,15 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint forma
 GLuint QGLContext::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, QMacCompatGLint format)
 {
     Q_D(QGLContext);
-    QGLTexture *texture = d->bindTexture(pixmap, GLenum(target), GLint(format), false, false);
+    QGLTexture *texture = d->bindTexture(pixmap, GLenum(target), GLint(format), DefaultBindOption);
+    return texture->id;
+}
+/*! \internal */
+GLuint QGLContext::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, QMacCompatGLint format,
+                               BindOptions options)
+{
+    Q_D(QGLContext);
+    QGLTexture *texture = d->bindTexture(pixmap, GLenum(target), GLint(format), options);
     return texture->id;
 }
 #endif
@@ -4118,15 +4251,31 @@ bool QGLWidget::autoBufferSwap() const
 GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format)
 {
     Q_D(QGLWidget);
-    return d->glcx->bindTexture(image, target, format);
+    return d->glcx->bindTexture(image, target, format, QGLContext::DefaultBindOption);
 }
+
+
+
+GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format, QGLContext::BindOptions options)
+{
+    Q_D(QGLWidget);
+    return d->glcx->bindTexture(image, target, format, options);
+}
+
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
 /*! \internal */
 GLuint QGLWidget::bindTexture(const QImage &image, QMacCompatGLenum target, QMacCompatGLint format)
 {
    Q_D(QGLWidget);
-   return d->glcx->bindTexture(image, GLenum(target), GLint(format));
+   return d->glcx->bindTexture(image, GLenum(target), GLint(format), QGLContext::DefaultBindOption);
+}
+
+GLuint QGLWidget::bindTexture(const QImage &image, QMacCompatGLenum target, QMacCompatGLint format,
+                              QGLContext::BindOptions options)
+{
+   Q_D(QGLWidget);
+   return d->glcx->bindTexture(image, GLenum(target), GLint(format), options);
 }
 #endif
 
@@ -4139,7 +4288,14 @@ GLuint QGLWidget::bindTexture(const QImage &image, QMacCompatGLenum target, QMac
 GLuint QGLWidget::bindTexture(const QPixmap &pixmap, GLenum target, GLint format)
 {
     Q_D(QGLWidget);
-    return d->glcx->bindTexture(pixmap, target, format);
+    return d->glcx->bindTexture(pixmap, target, format, QGLContext::DefaultBindOption);
+}
+
+GLuint QGLWidget::bindTexture(const QPixmap &pixmap, GLenum target, GLint format,
+                              QGLContext::BindOptions options)
+{
+    Q_D(QGLWidget);
+    return d->glcx->bindTexture(pixmap, target, format, options);
 }
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
@@ -4147,7 +4303,14 @@ GLuint QGLWidget::bindTexture(const QPixmap &pixmap, GLenum target, GLint format
 GLuint QGLWidget::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, QMacCompatGLint format)
 {
     Q_D(QGLWidget);
-    return d->glcx->bindTexture(pixmap, target, format);
+    return d->glcx->bindTexture(pixmap, target, format, QGLContext::DefaultBindOption);
+}
+
+GLuint QGLWidget::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, QMacCompatGLint format,
+                              QGLContext::BindOptions options)
+{
+    Q_D(QGLWidget);
+    return d->glcx->bindTexture(pixmap, target, format, options);
 }
 #endif
 
@@ -4568,34 +4731,37 @@ QGLFormat QGLDrawable::format() const
     return QGLFormat();
 }
 
-GLuint QGLDrawable::bindTexture(const QImage &image, GLenum target, GLint format)
+GLuint QGLDrawable::bindTexture(const QImage &image, GLenum target, GLint format,
+                                QGLContext::BindOptions options)
 {
     QGLTexture *texture = 0;
+    options |= QGLContext::MemoryManagedBindOption;
     if (widget)
-        texture = widget->d_func()->glcx->d_func()->bindTexture(image, target, format, true);
+        texture = widget->d_func()->glcx->d_func()->bindTexture(image, target, format, options);
     else if (buffer)
-        texture = buffer->d_func()->qctx->d_func()->bindTexture(image, target, format, true);
+        texture = buffer->d_func()->qctx->d_func()->bindTexture(image, target, format, options);
     else if (fbo && QGLContext::currentContext())
-        texture = const_cast<QGLContext *>(QGLContext::currentContext())->d_func()->bindTexture(image, target, format, true);
+        texture = const_cast<QGLContext *>(QGLContext::currentContext())->d_func()->bindTexture(image, target, format, options);
 #if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
     else if (wsurf)
-        texture = wsurf->context()->d_func()->bindTexture(image, target, format, true);
+        texture = wsurf->context()->d_func()->bindTexture(image, target, format, options);
 #endif
     return texture->id;
 }
 
-GLuint QGLDrawable::bindTexture(const QPixmap &pixmap, GLenum target, GLint format)
+GLuint QGLDrawable::bindTexture(const QPixmap &pixmap, GLenum target, GLint format,
+                                QGLContext::BindOptions options)
 {
     QGLTexture *texture = 0;
     if (widget)
-        texture = widget->d_func()->glcx->d_func()->bindTexture(pixmap, target, format, true, true);
+        texture = widget->d_func()->glcx->d_func()->bindTexture(pixmap, target, format, options);
     else if (buffer)
-        texture = buffer->d_func()->qctx->d_func()->bindTexture(pixmap, target, format, true, true);
+        texture = buffer->d_func()->qctx->d_func()->bindTexture(pixmap, target, format, options);
     else if (fbo && QGLContext::currentContext())
-        texture = const_cast<QGLContext *>(QGLContext::currentContext())->d_func()->bindTexture(pixmap, target, format, true, true);
+        texture = const_cast<QGLContext *>(QGLContext::currentContext())->d_func()->bindTexture(pixmap, target, format, options);
 #if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
     else if (wsurf)
-        texture = wsurf->context()->d_func()->bindTexture(pixmap, target, format, true, true);
+        texture = wsurf->context()->d_func()->bindTexture(pixmap, target, format, options);
 #endif
     return texture->id;
 }

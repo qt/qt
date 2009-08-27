@@ -51,7 +51,10 @@
 #include "qdebug.h"
 #include "qboxlayout.h"
 #include "qpainter.h"
+
+#ifdef Q_WS_WIN
 #include "qstandardgestures.h"
+#endif
 
 #include "qabstractscrollarea_p.h"
 #include <qwidget.h>
@@ -1344,6 +1347,7 @@ void QAbstractScrollArea::setupViewport(QWidget *viewport)
     Q_UNUSED(viewport);
 }
 
+#ifdef Q_WS_WIN
 void QAbstractScrollAreaPrivate::_q_gestureTriggered()
 {
     Q_Q(QAbstractScrollArea);
@@ -1362,6 +1366,7 @@ void QAbstractScrollAreaPrivate::_q_gestureTriggered()
         vbar->setValue(newY);
     }
 }
+#endif
 
 QT_END_NAMESPACE
 

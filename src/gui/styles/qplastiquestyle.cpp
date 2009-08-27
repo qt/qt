@@ -3749,7 +3749,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
                         QPixmap pixmap = comboBox->currentIcon.pixmap(comboBox->iconSize, mode);
                         QRect iconRect(editRect);
                         iconRect.setWidth(comboBox->iconSize.width() + 5);
-                        iconRect = alignedRect(QApplication::layoutDirection(),
+                        iconRect = alignedRect(comboBox->direction,
                                                Qt::AlignLeft | Qt::AlignVCenter,
                                                iconRect.size(), editRect);
                         painter->fillRect(iconRect, option->palette.brush(QPalette::Base));

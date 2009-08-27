@@ -66,7 +66,9 @@
 #include <qtexttable.h>
 #include <qvariant.h>
 
+#ifdef Q_WS_WIN
 #include <qstandardgestures.h>
+#endif
 
 #include <qinputcontext.h>
 
@@ -377,7 +379,7 @@ void QPlainTextDocumentLayout::layoutBlock(const QTextBlock &block)
     tl->beginLayout();
     qreal availableWidth = d->width;
     if (availableWidth <= 0) {
-        availableWidth = INT_MAX; // similar to text edit with pageSize.width == 0
+        availableWidth = qreal(INT_MAX); // similar to text edit with pageSize.width == 0
     }
     availableWidth -= 2*margin + extraMargin;
     while (1) {
@@ -792,8 +794,10 @@ void QPlainTextEditPrivate::init(const QString &txt)
     viewport->setCursor(Qt::IBeamCursor);
 #endif
     originalOffsetY = 0;
+#ifdef Q_WS_WIN
     panGesture = new QPanGesture(q);
     QObject::connect(panGesture, SIGNAL(triggered()), q, SLOT(_q_gestureTriggered()));
+#endif
 }
 
 void QPlainTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
@@ -2918,6 +2922,8 @@ QAbstractTextDocumentLayout::PaintContext QPlainTextEdit::getPaintContext() cons
     (\a available is true) or unavailable (\a available is false).
 */
 
+#ifdef Q_WS_WIN
+
 void QPlainTextEditPrivate::_q_gestureTriggered()
 {
     Q_Q(QPlainTextEdit);
@@ -2941,6 +2947,8 @@ void QPlainTextEditPrivate::_q_gestureTriggered()
         vbar->setValue(newY);
     }
 }
+
+#endif
 
 QT_END_NAMESPACE
 

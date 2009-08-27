@@ -342,39 +342,44 @@ void tst_QPixmapFilter::dropShadowBoundingRectFor()
     QPixmapDropShadowFilter filter;
     filter.setBlurRadius(0);
 
-    QCOMPARE(filter.blurRadius(), 0.0);
+    QCOMPARE(filter.blurRadius(), 0);
+
+    const QRectF rect1(0, 0, 50, 50);
+    const QRectF rect2(30, 20, 10, 40);
+    const QRectF rect3(2.2, 6.3, 11.4, 47.5);
 
     filter.setOffset(QPointF(0,0));
-    QCOMPARE(filter.boundingRectFor(QRectF(0, 0, 50, 50)), QRectF(0, 0, 50, 50));
-    QCOMPARE(filter.boundingRectFor(QRectF(30, 20, 10, 40)), QRectF(30, 20, 10, 40));
-    QCOMPARE(filter.boundingRectFor(QRectF(2.2, 6.3, 11.4, 47.5)), QRectF(2.2, 6.3, 11.4, 47.5));
+    QCOMPARE(filter.boundingRectFor(rect1), rect1);
+    QCOMPARE(filter.boundingRectFor(rect2), rect2);
+    QCOMPARE(filter.boundingRectFor(rect3), rect3);
 
     filter.setOffset(QPointF(1,1));
     QCOMPARE(filter.offset(), QPointF(1, 1));
-    QCOMPARE(filter.boundingRectFor(QRectF(0, 0, 50, 50)), QRectF(0, 0, 51, 51));
-    QCOMPARE(filter.boundingRectFor(QRectF(30, 20, 10, 40)), QRectF(30, 20, 11, 41));
-    QCOMPARE(filter.boundingRectFor(QRectF(2.2, 6.3, 11.4, 47.5)), QRectF(2.2, 6.3, 12.4, 48.5));
+    QCOMPARE(filter.boundingRectFor(rect1), rect1.adjusted(0, 0, 1, 1));
+    QCOMPARE(filter.boundingRectFor(rect2), rect2.adjusted(0, 0, 1, 1));
+    QCOMPARE(filter.boundingRectFor(rect3), rect3.adjusted(0, 0, 1, 1));
 
     filter.setOffset(QPointF(-1,-1));
-    QCOMPARE(filter.boundingRectFor(QRectF(0, 0, 50, 50)), QRectF(-1, -1, 51, 51));
-    QCOMPARE(filter.boundingRectFor(QRectF(30, 20, 10, 40)), QRectF(29, 19, 11, 41));
-    QCOMPARE(filter.boundingRectFor(QRectF(2.2, 6.3, 11.4, 47.5)), QRectF(1.2, 5.3, 12.4, 48.5));
+    QCOMPARE(filter.boundingRectFor(rect1), rect1.adjusted(-1, -1, 0, 0));
+    QCOMPARE(filter.boundingRectFor(rect2), rect2.adjusted(-1, -1, 0, 0));
+    QCOMPARE(filter.boundingRectFor(rect3), rect3.adjusted(-1, -1, 0, 0));
 
     filter.setBlurRadius(2);
     filter.setOffset(QPointF(0,0));
-    QCOMPARE(filter.boundingRectFor(QRectF(0, 0, 50, 50)), QRectF(-2, -2, 54, 54));
-    QCOMPARE(filter.boundingRectFor(QRectF(30, 20, 10, 40)), QRectF(28, 18, 14, 44));
-    QCOMPARE(filter.boundingRectFor(QRectF(2.2, 6.3, 11.4, 47.5)), QRectF(0.2, 4.3, 15.4, 51.5));
+    int delta = 2 * 2;
+    QCOMPARE(filter.boundingRectFor(rect1), rect1.adjusted(-delta, -delta, delta, delta));
+    QCOMPARE(filter.boundingRectFor(rect2), rect2.adjusted(-delta, -delta, delta, delta));
+    QCOMPARE(filter.boundingRectFor(rect3), rect3.adjusted(-delta, -delta, delta, delta));
 
     filter.setOffset(QPointF(1,1));
-    QCOMPARE(filter.boundingRectFor(QRectF(0, 0, 50, 50)), QRectF(-1, -1, 54, 54));
-    QCOMPARE(filter.boundingRectFor(QRectF(30, 20, 10, 40)), QRectF(29, 19, 14, 44));
-    QCOMPARE(filter.boundingRectFor(QRectF(2.2, 6.3, 11.4, 47.5)), QRectF(1.2, 5.3, 15.4, 51.5));
+    QCOMPARE(filter.boundingRectFor(rect1), rect1.adjusted(-delta + 1, -delta + 1, delta + 1, delta + 1));
+    QCOMPARE(filter.boundingRectFor(rect2), rect2.adjusted(-delta + 1, -delta + 1, delta + 1, delta + 1));
+    QCOMPARE(filter.boundingRectFor(rect3), rect3.adjusted(-delta + 1, -delta + 1, delta + 1, delta + 1));
 
     filter.setOffset(QPointF(-10,-10));
-    QCOMPARE(filter.boundingRectFor(QRectF(0, 0, 50, 50)), QRectF(-12, -12, 62, 62));
-    QCOMPARE(filter.boundingRectFor(QRectF(30, 20, 10, 40)), QRectF(18, 8, 22, 52));
-    QCOMPARE(filter.boundingRectFor(QRectF(2.2, 6.3, 11.4, 47.5)), QRectF(-9.8, -5.7, 23.4, 59.5));
+    QCOMPARE(filter.boundingRectFor(rect1), rect1.adjusted(-delta - 10, -delta - 10, 0, 0));
+    QCOMPARE(filter.boundingRectFor(rect2), rect2.adjusted(-delta - 10, -delta - 10, 0, 0));
+    QCOMPARE(filter.boundingRectFor(rect3), rect3.adjusted(-delta - 10, -delta - 10, 0, 0));
 }
 
 

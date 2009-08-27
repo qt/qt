@@ -58,6 +58,7 @@
 #include <qstring.h>
 #include <qrect.h>
 #include <qhash.h>
+#include <f32file.h>
 
 QT_BEGIN_HEADER
 
@@ -141,6 +142,11 @@ enum S60PluginFuncOrdinals
 };
 
 Q_CORE_EXPORT TLibraryFunction qt_resolveS60PluginFunc(int ordinal);
+
+Q_CORE_EXPORT RFs& qt_s60GetRFs();
+
+// Defined in qlocale_symbian.cpp.
+Q_CORE_EXPORT QByteArray qt_symbianLocaleName(int code);
 
 QT_END_NAMESPACE
 

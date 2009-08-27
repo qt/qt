@@ -53,6 +53,8 @@
 // We mean it.
 //
 
+// no QT_BEGIN_NAMESPACE, since we include it internally...
+
 const QWSKeyboard::Mapping QWSKbPrivate::s_keymap_default[] = {
     {   1, 0xffff, 0x01000000, 0x00, 0x00, 0x0000 },
     {   2, 0x0031, 0x00000031, 0x00, 0x00, 0x0000 },
