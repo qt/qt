@@ -55,6 +55,7 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QNetworkAccessManager>
+#include <QDesktopServices>
 #include <QTimer>
 #include <QList>
 #include <QPair>
@@ -95,6 +96,14 @@ struct StaticQtMetaObject : public QObject
         { return &static_cast<StaticQtMetaObject*> (0)->staticQtMetaObject; }
 };
 
+QScriptValue desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
+{
+    if(!ctxt->argumentCount())
+        return e->newVariant(QVariant(false));
+    bool ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
+    return e->newVariant(QVariant(ret));
+}
+
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentBindContext(0), currentExpression(0),
   isDebugging(false), contextClass(0), objectClass(0), valueTypeClass(0),
@@ -103,6 +112,9 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 {
     QScriptValue qtObject =
         scriptEngine.newQMetaObject(StaticQtMetaObject::get());
+    QScriptValue desktopObject = scriptEngine.newObject();
+    desktopObject.setProperty(QLatin1String("openUrl"),scriptEngine.newFunction(desktopOpenUrl, 1));
+    qtObject.setProperty(QLatin1String("DesktopServices"), desktopObject);
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
 }
 
