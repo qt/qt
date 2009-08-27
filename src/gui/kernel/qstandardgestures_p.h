@@ -102,9 +102,9 @@ public:
     qreal lastScaleFactor;
     qreal rotationAngle;
     qreal lastRotationAngle;
-    QPoint startCenterPoint;
-    QPoint lastCenterPoint;
-    QPoint centerPoint;
+    QPointF startCenterPoint;
+    QPointF lastCenterPoint;
+    QPointF centerPoint;
 #ifdef Q_WS_WIN
     int initialDistance;
 #endif

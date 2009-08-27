@@ -230,8 +230,8 @@ bool QPanGesture::filterEvent(QEvent *event)
                 // INVARIANT: The singleTouchTimer has still not fired.
                 // Lets check if the user moved his finger so much from
                 // the starting point that it makes sense to cancel:
-                const QPoint startPos = ev->touchPoints().at(0).startPos().toPoint();
-                const QPoint p = ev->touchPoints().at(0).pos().toPoint();
+                const QPointF startPos = ev->touchPoints().at(0).startPos().toPoint();
+                const QPointF p = ev->touchPoints().at(0).pos().toPoint();
                 if ((startPos - p).manhattanLength() > panBeginRadius)
                     reset();
                 else
@@ -367,7 +367,7 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
             d->state = Qt::NoGesture;
             d->scaleFactor = d->lastScaleFactor = 1;
             d->rotationAngle = d->lastRotationAngle = 0;
-            d->startCenterPoint = d->centerPoint = d->lastCenterPoint = QPoint();
+            d->startCenterPoint = d->centerPoint = d->lastCenterPoint = QPointF();
 #if defined(Q_WS_WIN)
             d->initialDistance = 0;
 #endif
@@ -433,7 +433,7 @@ void QPinchGesture::reset()
     Q_D(QPinchGesture);
     d->scaleFactor = d->lastScaleFactor = 0;
     d->rotationAngle = d->lastRotationAngle = 0;
-    d->startCenterPoint = d->centerPoint = d->lastCenterPoint = QPoint();
+    d->startCenterPoint = d->centerPoint = d->lastCenterPoint = QPointF();
     QGesture::reset();
 }
 
@@ -483,7 +483,7 @@ qreal QPinchGesture::lastRotationAngle() const
     Specifies a center point of the gesture. The point can be used as a center
     point that the object is rotated around.
 */
-QPoint QPinchGesture::centerPoint() const
+QPointF QPinchGesture::centerPoint() const
 {
     return d_func()->centerPoint;
 }
@@ -493,7 +493,7 @@ QPoint QPinchGesture::centerPoint() const
 
     Specifies a previous center point of the gesture.
 */
-QPoint QPinchGesture::lastCenterPoint() const
+QPointF QPinchGesture::lastCenterPoint() const
 {
     return d_func()->lastCenterPoint;
 }
@@ -505,7 +505,7 @@ QPoint QPinchGesture::lastCenterPoint() const
     startCenterPoint and the centerPoint is the distance at which pinching
     fingers has shifted.
 */
-QPoint QPinchGesture::startCenterPoint() const
+QPointF QPinchGesture::startCenterPoint() const
 {
     return d_func()->startCenterPoint;
 }

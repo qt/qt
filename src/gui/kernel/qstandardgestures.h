@@ -92,9 +92,9 @@ class Q_GUI_EXPORT QPinchGesture : public QGesture
     Q_PROPERTY(qreal rotationAngle READ rotationAngle)
     Q_PROPERTY(qreal lastRotationAngle READ lastRotationAngle)
 
-    Q_PROPERTY(QPoint startCenterPoint READ startCenterPoint)
-    Q_PROPERTY(QPoint lastCenterPoint READ lastCenterPoint)
-    Q_PROPERTY(QPoint centerPoint READ centerPoint)
+    Q_PROPERTY(QPointF startCenterPoint READ startCenterPoint)
+    Q_PROPERTY(QPointF lastCenterPoint READ lastCenterPoint)
+    Q_PROPERTY(QPointF centerPoint READ centerPoint)
 
 public:
     QPinchGesture(QWidget *gestureTarget, QObject *parent = 0);
@@ -102,9 +102,9 @@ public:
     bool filterEvent(QEvent *event);
     void reset();
 
-    QPoint startCenterPoint() const;
-    QPoint lastCenterPoint() const;
-    QPoint centerPoint() const;
+    QPointF startCenterPoint() const;
+    QPointF lastCenterPoint() const;
+    QPointF centerPoint() const;
 
     qreal scaleFactor() const;
     qreal lastScaleFactor() const;
