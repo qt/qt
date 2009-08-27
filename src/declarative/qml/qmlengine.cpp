@@ -71,6 +71,7 @@
 #include <QtCore/qthread.h>
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qdir.h>
+#include <QtGui/qcolor.h>
 #include <QtGui/qvector3d.h>
 #include <qmlcomponent.h>
 #include "private/qmlcomponentjs_p.h"
@@ -104,6 +105,12 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     QScriptValue qtObject =
         scriptEngine.newQMetaObject(StaticQtMetaObject::get());
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
+    qtObject.setProperty(QLatin1String("rgba"), scriptEngine.newFunction(QmlEnginePrivate::rgba, 4));
+    qtObject.setProperty(QLatin1String("hsla"), scriptEngine.newFunction(QmlEnginePrivate::hsla, 4));
+    qtObject.setProperty(QLatin1String("rect"), scriptEngine.newFunction(QmlEnginePrivate::rect, 4));
+    qtObject.setProperty(QLatin1String("point"), scriptEngine.newFunction(QmlEnginePrivate::point, 2));
+    qtObject.setProperty(QLatin1String("size"), scriptEngine.newFunction(QmlEnginePrivate::size, 2));
+    qtObject.setProperty(QLatin1String("vector3d"), scriptEngine.newFunction(QmlEnginePrivate::vector, 3));
 }
 
 QmlEnginePrivate::~QmlEnginePrivate()
@@ -160,7 +167,7 @@ void QmlEnginePrivate::init()
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
             scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
     scriptEngine.globalObject().setProperty(QLatin1String("vector"),
-            scriptEngine.newFunction(QmlEnginePrivate::vector, 1));
+            scriptEngine.newFunction(QmlEnginePrivate::vector, 3));
 
     if (QCoreApplication::instance()->thread() == q->thread() &&
         QmlEngineDebugServer::isDebuggingEnabled()) {
@@ -698,7 +705,7 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     QVector3D as usual.
 
     This function takes three numeric components and combines them into a
-    QMLJS string that can be used with any property that takes a
+    QVector3D value that can be used with any property that takes a
     QVector3D argument.  The following QML code:
 
     \code
@@ -727,6 +734,59 @@ QScriptValue QmlEnginePrivate::vector(QScriptContext *ctxt, QScriptEngine *engin
     qsreal y = ctxt->argument(1).toNumber();
     qsreal z = ctxt->argument(2).toNumber();
     return engine->newVariant(qVariantFromValue(QVector3D(x, y, z)));
+}
+
+QScriptValue QmlEnginePrivate::rgba(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    int argCount = ctxt->argumentCount();
+    if(argCount < 3)
+        return engine->nullValue();
+    qsreal r = ctxt->argument(0).toNumber();
+    qsreal g = ctxt->argument(1).toNumber();
+    qsreal b = ctxt->argument(2).toNumber();
+    qsreal a = (argCount == 4) ? ctxt->argument(3).toNumber() : 1;
+    return qScriptValueFromValue(engine, qVariantFromValue(QColor::fromRgbF(r, g, b, a)));
+}
+
+QScriptValue QmlEnginePrivate::hsla(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    int argCount = ctxt->argumentCount();
+    if(argCount < 3)
+        return engine->nullValue();
+    qsreal h = ctxt->argument(0).toNumber();
+    qsreal s = ctxt->argument(1).toNumber();
+    qsreal l = ctxt->argument(2).toNumber();
+    qsreal a = (argCount == 4) ? ctxt->argument(3).toNumber() : 1;
+    return qScriptValueFromValue(engine, qVariantFromValue(QColor::fromHslF(h, s, l, a)));
+}
+
+QScriptValue QmlEnginePrivate::rect(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    if(ctxt->argumentCount() < 4)
+        return engine->nullValue();
+    qsreal x = ctxt->argument(0).toNumber();
+    qsreal y = ctxt->argument(1).toNumber();
+    qsreal w = ctxt->argument(2).toNumber();
+    qsreal h = ctxt->argument(3).toNumber();
+    return qScriptValueFromValue(engine, qVariantFromValue(QRectF(x, y, w, h)));
+}
+
+QScriptValue QmlEnginePrivate::point(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    if(ctxt->argumentCount() < 2)
+        return engine->nullValue();
+    qsreal x = ctxt->argument(0).toNumber();
+    qsreal y = ctxt->argument(1).toNumber();
+    return qScriptValueFromValue(engine, qVariantFromValue(QPointF(x, y)));
+}
+
+QScriptValue QmlEnginePrivate::size(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    if(ctxt->argumentCount() < 2)
+        return engine->nullValue();
+    qsreal w = ctxt->argument(0).toNumber();
+    qsreal h = ctxt->argument(1).toNumber();
+    return qScriptValueFromValue(engine, qVariantFromValue(QSizeF(w, h)));
 }
 
 QmlScriptClass::QmlScriptClass(QmlEngine *bindengine)
@@ -971,7 +1031,7 @@ QScriptValue QmlObjectToString(QScriptContext *context, QScriptEngine *engine)
         ret += QString::number((quintptr)obj,16);
         ret += QLatin1String(")");
     }else{
-        ret += "null";
+        ret += QLatin1String("null");
     }
     return engine->newVariant(ret);
 }
