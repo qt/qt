@@ -73,6 +73,7 @@ public:
 
     QVariant dataSource;
     QmlComponent *component;
+    int count;
 
     QList<QPointer<QObject> > deletables;
 };
