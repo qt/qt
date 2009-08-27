@@ -331,10 +331,6 @@
     \value ItemNegativeZStacksBehindParent The item automatically stacks behind
     it's parent if it's z-value is negative. This flag enables setZValue() to
     toggle ItemStacksBehindParent.
-
-    \value ItemAutoDetectsFocusProxy The item will assign any child that
-    gains input focus as its focus proxy. See also focusProxy().
-    This flag was introduced in Qt 4.6.
 */
 
 /*!
@@ -944,17 +940,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         parent->itemChange(QGraphicsItem::ItemChildRemovedChange, thisPointerVariant);
     }
 
-    // Auto-update focus proxy. Any ancestor that has this as focus proxy 
-    //needs to be nulled.
-    QGraphicsItem *p = parent;
-    while (p) {
-        if ((p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) &&
-            (p->focusProxy() == q)) {
-            p->setFocusProxy(0);
-        }
-        p = p->d_ptr->parent;
-    }
-
     // Update toplevelitem list. If this item is being deleted, its parent
     // will be 0 but we don't want to register/unregister it in the TLI list.
     if (scene && !inDestructor) {
@@ -969,7 +954,11 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         bool implicitUpdate = false;
         if (parent->d_func()->scene && parent->d_func()->scene != scene) {
             // Move this item to its new parent's scene
-            parent->d_func()->scene->addItem(q);
+
+            QGraphicsItem *focusScope = newParent;
+            while (focusScope && !(focusScope->d_ptr->flags & QGraphicsItem::ItemIsFocusScope))
+                focusScope = focusScope->d_ptr->parent;
+            parent->d_func()->scene->d_func()->addItem(q, focusScope);
             implicitUpdate = true;
         } else if (!parent->d_func()->scene && scene) {
             // Remove this item from its former scene
@@ -1030,17 +1019,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     // Restore the sub focus chain.
     if (lastSubFocusItem)
         lastSubFocusItem->d_ptr->setSubFocus();
-
-    // Auto-update focus proxy. The closest parent that detects
-    // focus proxies is updated as the proxy gains or loses focus.
-    p = newParent;
-    while (p) {
-        if (p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) {
-            p->setFocusProxy(q);
-            break;
-        }
-        p = p->d_ptr->parent;
-    }
 
     // Deliver post-change notification
     q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
@@ -2663,11 +2641,27 @@ void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 
     // Update the scene's focus item.
     if (d_ptr->scene) {
+        QGraphicsItem *s = d_ptr->focusScope();
+        if (s) {
+            bool scopeHasFocus = 
+                s->d_ptr->hasActiveFocus(d_ptr->scene->focusItem());
+            if (s->d_ptr->focusScopeItem) 
+                s->d_ptr->focusScopeItem->d_ptr->setItemFocusedInScope(false);
+            s->d_ptr->focusScopeItem = this;
+            d_ptr->setItemFocusedInScope(true);
+            if (scopeHasFocus) 
+                d_ptr->scene->d_func()->setFocusItemHelper(s, focusReason);
+            return;
+        }
+        d_ptr->setItemFocusedInScope(false);
+
         QGraphicsWidget *w = window();
         if (!w || w->isActiveWindow()) {
             // Visible items immediately gain focus from scene.
             d_ptr->scene->d_func()->setFocusItemHelper(f, focusReason);
         }
+    } else {
+        d_ptr->setItemFocusedInScope(true);
     }
 }
 
@@ -2684,12 +2678,31 @@ void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 */
 void QGraphicsItem::clearFocus()
 {
-    if (!d_ptr->scene)
+    if (!d_ptr->scene) {
+        d_ptr->setItemFocusedInScope(false);
         return;
+    }
     // Invisible items with focus must explicitly clear subfocus.
     d_ptr->clearSubFocus();
+
+    if (d_ptr->itemIsFocusedInScope) {
+        d_ptr->setItemFocusedInScope(false);
+        QGraphicsItem *s = d_ptr->focusScope();
+        if (s) {
+            if (s->d_ptr->focusScopeItem == this) {
+                bool scopeHasFocus = 
+                    s->d_ptr->hasActiveFocus(d_ptr->scene->focusItem());
+                s->d_ptr->focusScopeItem = 0;
+                if (scopeHasFocus)
+                    d_ptr->scene->setFocusItem(s);
+                return;
+            }
+        }
+    }
+
     if (hasFocus()) {
         // If this item has the scene's input focus, clear it.
+        d_ptr->setItemFocusedInScope(false);
         d_ptr->scene->setFocusItem(0);
     }
 }
@@ -2700,7 +2713,7 @@ void QGraphicsItem::clearFocus()
     Returns this item's focus proxy, or 0 if this item has no
     focus proxy.
 
-    \sa setFocusProxy(), ItemAutoDetectsFocusProxy, setFocus(), hasFocus()
+    \sa setFocusProxy(), setFocus(), hasFocus()
 */
 QGraphicsItem *QGraphicsItem::focusProxy() const
 {
@@ -2724,7 +2737,7 @@ QGraphicsItem *QGraphicsItem::focusProxy() const
     The focus proxy \a item must belong to the same scene as
     this item.
 
-    \sa focusProxy(), ItemAutoDetectsFocusProxy, setFocus(), hasFocus()
+    \sa focusProxy(), setFocus(), hasFocus()
 */
 void QGraphicsItem::setFocusProxy(QGraphicsItem *item)
 {
@@ -4770,7 +4783,7 @@ void QGraphicsItemPrivate::setSubFocus()
     bool hidden = !visible;
     do {
         parent->d_func()->subFocusItem = item;
-    } while (!parent->isWindow() && (parent = parent->d_ptr->parent) && (!hidden || !parent->d_func()->visible));
+    } while (!parent->isWindow() && (parent = parent->d_ptr->parent) && (!hidden || !parent->d_func()->visible) && !(parent->d_ptr->flags & QGraphicsItem::ItemIsFocusScope));
 }
 
 /*!
@@ -10437,8 +10450,8 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
     case QGraphicsItem::ItemNegativeZStacksBehindParent:
         str = "ItemNegativeZStacksBehindParent";
         break;
-    case QGraphicsItem::ItemAutoDetectsFocusProxy:
-        str = "ItemAutoDetectsFocusProxy";
+    case QGraphicsItem::ItemIsFocusScope:
+        str = "ItemIsFocusScope";
         break;
     }
     debug << str;
