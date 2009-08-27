@@ -38,8 +38,7 @@ QHBufC MMF::Utils::symbianFilename(const QString& qtFilename)
 
     QHBufC result(qtFilename);
     TInt pos = result->Find(ForwardSlash);
-    while(pos != KErrNotFound)
-    {
+    while (pos != KErrNotFound) {
         result->Des().Replace(pos, 1, BackwardSlash);
         pos = result->Find(ForwardSlash);
     }
@@ -54,18 +53,15 @@ _LIT(KMimePrefixVideo, "video/");
 
 MMF::MediaType MMF::Utils::mimeTypeToMediaType(const TDesC& mimeType)
 {
-	MediaType result = MediaTypeUnknown;
+    MediaType result = MediaTypeUnknown;
 
-	if(mimeType.Left(KMimePrefixLength).Compare(KMimePrefixAudio) == 0)
-	{
-		result = MediaTypeAudio;
-	}
-	else if(mimeType.Left(KMimePrefixLength).Compare(KMimePrefixVideo) == 0)
-	{
-		result = MediaTypeVideo;
-	}
+    if (mimeType.Left(KMimePrefixLength).Compare(KMimePrefixAudio) == 0) {
+        result = MediaTypeAudio;
+    } else if (mimeType.Left(KMimePrefixLength).Compare(KMimePrefixVideo) == 0) {
+        result = MediaTypeVideo;
+    }
 
-	return result;
+    return result;
 }
 
 

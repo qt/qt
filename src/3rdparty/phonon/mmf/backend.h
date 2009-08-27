@@ -26,29 +26,29 @@ QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
-    namespace MMF
-    {
-        class Backend : public QObject
-                      , public BackendInterface
-        {
-            Q_OBJECT
-            Q_INTERFACES(Phonon::BackendInterface)
-        public:
-            Backend(QObject *parent = 0);
+namespace MMF
+{
+class Backend : public QObject
+        , public BackendInterface
+{
+    Q_OBJECT
+    Q_INTERFACES(Phonon::BackendInterface)
+public:
+    Backend(QObject *parent = 0);
 
-            virtual QObject *createObject(BackendInterface::Class c, QObject *parent, const QList<QVariant> &args);
-            virtual QList<int> objectDescriptionIndexes(ObjectDescriptionType type) const;
-            virtual QHash<QByteArray, QVariant> objectDescriptionProperties(ObjectDescriptionType type, int index) const;
-            virtual bool startConnectionChange(QSet<QObject *>);
-            virtual bool connectNodes(QObject *, QObject *);
-            virtual bool disconnectNodes(QObject *, QObject *);
-            virtual bool endConnectionChange(QSet<QObject *>);
-            virtual QStringList availableMimeTypes() const;
+    virtual QObject *createObject(BackendInterface::Class c, QObject *parent, const QList<QVariant> &args);
+    virtual QList<int> objectDescriptionIndexes(ObjectDescriptionType type) const;
+    virtual QHash<QByteArray, QVariant> objectDescriptionProperties(ObjectDescriptionType type, int index) const;
+    virtual bool startConnectionChange(QSet<QObject *>);
+    virtual bool connectNodes(QObject *, QObject *);
+    virtual bool disconnectNodes(QObject *, QObject *);
+    virtual bool endConnectionChange(QSet<QObject *>);
+    virtual QStringList availableMimeTypes() const;
 
-        Q_SIGNALS:
-            void objectDescriptionChanged(ObjectDescriptionType);
-        };
-    }
+Q_SIGNALS:
+    void objectDescriptionChanged(ObjectDescriptionType);
+};
+}
 }
 
 QT_END_NAMESPACE

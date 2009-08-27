@@ -29,13 +29,13 @@ using namespace Phonon::MMF;
 
 MMF::DummyPlayer::DummyPlayer()
 {
-	
+
 }
 
 MMF::DummyPlayer::DummyPlayer(const AbstractPlayer& player)
-								:	AbstractPlayer(player)
+        :   AbstractPlayer(player)
 {
-	
+
 }
 
 

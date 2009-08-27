@@ -32,8 +32,8 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::MediaObject::MediaObject(QObject *parent)	: 	QObject(parent)
-												,	m_recognizerOpened(false)
+MMF::MediaObject::MediaObject(QObject *parent)  :   QObject(parent)
+        ,   m_recognizerOpened(false)
 {
     m_player.reset(new DummyPlayer());
 
@@ -64,74 +64,63 @@ MMF::MediaObject::~MediaObject()
 
 bool MMF::MediaObject::openRecognizer()
 {
-	TRACE_CONTEXT(MediaObject::openRecognizer, EAudioInternal);
+    TRACE_CONTEXT(MediaObject::openRecognizer, EAudioInternal);
 
-	if(!m_recognizerOpened)
-	{
-		TInt err = m_recognizer.Connect();
-		if(KErrNone != err)
-		{	
-			TRACE("RApaLsSession::Connect error %d", err);
-			return false;
-		}
-			
-	    err = m_fileServer.Connect();
-	    if(KErrNone != err)
-		{	
-			TRACE("RFs::Connect error %d", err);
-			return false;
-		}
-	    
-	    // This must be called in order to be able to share file handles with
-	    // the recognizer server (see fileMediaType function).
-	    err = m_fileServer.ShareProtected();
-	    if(KErrNone != err)
-		{	
-			TRACE("RFs::ShareProtected error %d", err);
-			return false;
-		}
-	    
-	    m_recognizerOpened = true;
-	}
-	
-	return true;
+    if (!m_recognizerOpened) {
+        TInt err = m_recognizer.Connect();
+        if (KErrNone != err) {
+            TRACE("RApaLsSession::Connect error %d", err);
+            return false;
+        }
+
+        err = m_fileServer.Connect();
+        if (KErrNone != err) {
+            TRACE("RFs::Connect error %d", err);
+            return false;
+        }
+
+        // This must be called in order to be able to share file handles with
+        // the recognizer server (see fileMediaType function).
+        err = m_fileServer.ShareProtected();
+        if (KErrNone != err) {
+            TRACE("RFs::ShareProtected error %d", err);
+            return false;
+        }
+
+        m_recognizerOpened = true;
+    }
+
+    return true;
 }
 
 MMF::MediaType MMF::MediaObject::fileMediaType
-	(const QString& fileName)
+(const QString& fileName)
 {
-	TRACE_CONTEXT(MediaObject::fileMediaType, EAudioInternal);
+    TRACE_CONTEXT(MediaObject::fileMediaType, EAudioInternal);
 
-	MediaType result = MediaTypeUnknown;
-	
-	if(openRecognizer())
-	{	
-		QHBufC fileNameSymbian = Utils::symbianFilename(fileName);
-		
-		m_file.Close();
-		TInt err = m_file.Open(m_fileServer, *fileNameSymbian, EFileRead|EFileShareReadersOnly);
-	
-		if(KErrNone == err)
-		{
-			TDataRecognitionResult recognizerResult;
-			err = m_recognizer.RecognizeData(m_file, recognizerResult);
-			if(KErrNone == err)
-			{
-				const TPtrC mimeType = recognizerResult.iDataType.Des();
-				result = Utils::mimeTypeToMediaType(mimeType);
-			}
-			else
-			{
-				TRACE("RApaLsSession::RecognizeData filename %S error %d", fileNameSymbian.data(), err);
-			}
-		}
-		else
-		{
-			TRACE("RFile::Open filename %S error %d", fileNameSymbian.data(), err);
-		}
-	}
-	
-	return result;
+    MediaType result = MediaTypeUnknown;
+
+    if (openRecognizer()) {
+        QHBufC fileNameSymbian = Utils::symbianFilename(fileName);
+
+        m_file.Close();
+        TInt err = m_file.Open(m_fileServer, *fileNameSymbian, EFileRead | EFileShareReadersOnly);
+
+        if (KErrNone == err) {
+            TDataRecognitionResult recognizerResult;
+            err = m_recognizer.RecognizeData(m_file, recognizerResult);
+            if (KErrNone == err) {
+                const TPtrC mimeType = recognizerResult.iDataType.Des();
+                result = Utils::mimeTypeToMediaType(mimeType);
+            } else {
+                TRACE("RApaLsSession::RecognizeData filename %S error %d", fileNameSymbian.data(), err);
+            }
+        } else {
+            TRACE("RFile::Open filename %S error %d", fileNameSymbian.data(), err);
+        }
+    }
+
+    return result;
 }
 
 
@@ -157,9 +146,8 @@ void MMF::MediaObject::stop()
 void MMF::MediaObject::seek(qint64 ms)
 {
     m_player->seek(ms);
-    
-    if(state() == PausedState or state() == PlayingState)
-    {
+
+    if (state() == PausedState or state() == PlayingState) {
         emit tick(currentTime());
     }
 }
@@ -216,130 +204,117 @@ MediaSource MMF::MediaObject::source() const
 
 void MMF::MediaObject::setSource(const MediaSource &source)
 {
-	createPlayer(source);
-	
+    createPlayer(source);
+
     // This is a hack to work around KErrInUse from MMF client utility
     // OpenFileL calls
     m_player->setFileSource(source, m_file);
-    
+
     emit currentSourceChanged(source);
 }
 
 void MMF::MediaObject::createPlayer(const MediaSource &source)
 {
-	TRACE_CONTEXT(MediaObject::createPlayer, EAudioApi);
+    TRACE_CONTEXT(MediaObject::createPlayer, EAudioApi);
     TRACE_ENTRY("state %d source.type %d", state(), source.type());
-	TRACE_ENTRY("source.type %d", source.type());
-	
-	MediaType mediaType = MediaTypeUnknown;
-	
-	AbstractPlayer* oldPlayer = m_player.data();
-	
-	const bool oldPlayerHasVideo = oldPlayer->hasVideo(); 
-	const bool oldPlayerSeekable = oldPlayer->isSeekable();
-	
-	// Determine media type
-	switch(source.type())
-	{
-		case MediaSource::LocalFile:
-			mediaType = fileMediaType(source.fileName());
-			break;
-			
-		case MediaSource::Url:
-			// TODO: support detection of media type from HTTP streams
-			TRACE_0("Network streaming not supported yet");
-		/*
-		 * TODO: handle error
-		 * 
-			m_error = NormalError;
-			changeState(ErrorState);
-		 */
-			break;
-			
-		case MediaSource::Invalid:
-		case MediaSource::Disc:
-		case MediaSource::Stream:
-			TRACE_0("Unsupported media type");
-		/*
-		 * TODO: handle error
-		 * 
-			m_error = NormalError;
-			changeState(ErrorState);
-		 */
-			break;
-			
-		case MediaSource::Empty:
-			TRACE_0("Empty media source");
-			break;
-	}
-	
-	AbstractPlayer* newPlayer = NULL;
-	
-	// Construct newPlayer using oldPlayer (if not NULL) in order to copy
-	// parameters (volume, prefinishMark, transitionTime) which may have
-	// been set on oldPlayer.
-	
-	switch(mediaType)
-	{
-		case MediaTypeUnknown:
-			TRACE_0("Media type could not be determined");
-			if(oldPlayer)
-				{
-				newPlayer = new DummyPlayer(*oldPlayer);
-				}
-			else
-				{
-				newPlayer = new DummyPlayer();
-				}
-		/*
-		 * TODO: handle error?
-		 * 
-			m_error = NormalError;
-			changeState(ErrorState);
-		 */
-			break;
-			
-		case MediaTypeAudio:
-			if(oldPlayer)
-				{
-				newPlayer = new AudioPlayer(*oldPlayer);
-				}
-			else
-				{
-				newPlayer = new AudioPlayer();
-				}
-			break;
-			
-		case MediaTypeVideo:
-			if(oldPlayer)
-				{
-				newPlayer = new VideoPlayer(*oldPlayer);
-				}
-			else
-				{
-				newPlayer = new VideoPlayer();
-				}
-			break;
-	}
-	
-	m_player.reset(newPlayer);
-			
-	if(oldPlayerHasVideo != hasVideo())
-	{
-	    emit hasVideoChanged(hasVideo());
-	}
-	
-	if(oldPlayerSeekable != isSeekable())
-	{
-	    emit seekableChanged(isSeekable());
-	}
-	
-	connect(m_player.data(), SIGNAL(totalTimeChanged(qint64)), SIGNAL(totalTimeChanged(qint64)));
-	connect(m_player.data(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), SIGNAL(stateChanged(Phonon::State, Phonon::State)));
-	connect(m_player.data(), SIGNAL(finished()), SIGNAL(finished()));
-	connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
-	
-	TRACE_EXIT_0();
+    TRACE_ENTRY("source.type %d", source.type());
+
+    MediaType mediaType = MediaTypeUnknown;
+
+    AbstractPlayer* oldPlayer = m_player.data();
+
+    const bool oldPlayerHasVideo = oldPlayer->hasVideo();
+    const bool oldPlayerSeekable = oldPlayer->isSeekable();
+
+    // Determine media type
+    switch (source.type()) {
+    case MediaSource::LocalFile:
+        mediaType = fileMediaType(source.fileName());
+        break;
+
+    case MediaSource::Url:
+        // TODO: support detection of media type from HTTP streams
+        TRACE_0("Network streaming not supported yet");
+        /*
+         * TODO: handle error
+         *
+            m_error = NormalError;
+            changeState(ErrorState);
+         */
+        break;
+
+    case MediaSource::Invalid:
+    case MediaSource::Disc:
+    case MediaSource::Stream:
+        TRACE_0("Unsupported media type");
+        /*
+         * TODO: handle error
+         *
+            m_error = NormalError;
+            changeState(ErrorState);
+         */
+        break;
+
+    case MediaSource::Empty:
+        TRACE_0("Empty media source");
+        break;
+    }
+
+    AbstractPlayer* newPlayer = NULL;
+
+    // Construct newPlayer using oldPlayer (if not NULL) in order to copy
+    // parameters (volume, prefinishMark, transitionTime) which may have
+    // been set on oldPlayer.
+
+    switch (mediaType) {
+    case MediaTypeUnknown:
+        TRACE_0("Media type could not be determined");
+        if (oldPlayer) {
+            newPlayer = new DummyPlayer(*oldPlayer);
+        } else {
+            newPlayer = new DummyPlayer();
+        }
+        /*
+         * TODO: handle error?
+         *
+            m_error = NormalError;
+            changeState(ErrorState);
+         */
+        break;
+
+    case MediaTypeAudio:
+        if (oldPlayer) {
+            newPlayer = new AudioPlayer(*oldPlayer);
+        } else {
+            newPlayer = new AudioPlayer();
+        }
+        break;
+
+    case MediaTypeVideo:
+        if (oldPlayer) {
+            newPlayer = new VideoPlayer(*oldPlayer);
+        } else {
+            newPlayer = new VideoPlayer();
+        }
+        break;
+    }
+
+    m_player.reset(newPlayer);
+
+    if (oldPlayerHasVideo != hasVideo()) {
+        emit hasVideoChanged(hasVideo());
+    }
+
+    if (oldPlayerSeekable != isSeekable()) {
+        emit seekableChanged(isSeekable());
+    }
+
+    connect(m_player.data(), SIGNAL(totalTimeChanged(qint64)), SIGNAL(totalTimeChanged(qint64)));
+    connect(m_player.data(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), SIGNAL(stateChanged(Phonon::State, Phonon::State)));
+    connect(m_player.data(), SIGNAL(finished()), SIGNAL(finished()));
+    connect(m_player.data(), SIGNAL(tick(qint64)), SIGNAL(tick(qint64)));
+
+    TRACE_EXIT_0();
 }
 
 void MMF::MediaObject::setNextSource(const MediaSource &source)

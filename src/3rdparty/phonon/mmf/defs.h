@@ -21,11 +21,11 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QtGlobal>
 
-// The following macros are for switching on / off various bits of code, 
+// The following macros are for switching on / off various bits of code,
 // in order to debug the current problems with video visibility.
 
 // If this is defined, then VideoOutput is essentially just a typedef for
-// QWidget.  This is to allow us to test whether the QWidget function 
+// QWidget.  This is to allow us to test whether the QWidget function
 // overrides present in VideoOutput (e.g. sizeHint, paintEvent etc) may
 // be the cause of the visibility problems.
 //#define PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
@@ -40,18 +40,17 @@ QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
-    namespace MMF
-    {
-        static const qint32	DefaultTickInterval = 10;
-        static const qreal	InitialVolume = 0.5;
-        
-        enum MediaType
-        {
-            MediaTypeUnknown,
-            MediaTypeAudio,
-            MediaTypeVideo
-        };
-    }
+namespace MMF
+{
+static const qint32 DefaultTickInterval = 10;
+static const qreal  InitialVolume = 0.5;
+
+enum MediaType {
+    MediaTypeUnknown,
+    MediaTypeAudio,
+    MediaTypeVideo
+};
+}
 }
 
 QT_END_NAMESPACE

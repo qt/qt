@@ -30,19 +30,19 @@ using namespace Phonon::MMF;
 //-----------------------------------------------------------------------------
 
 MMF::AbstractPlayer::AbstractPlayer()
-						:	m_videoOutput(NULL)
-						,	m_tickInterval(DefaultTickInterval)
-						,	m_transitionTime(0)
-						,	m_prefinishMark(0)
+        :   m_videoOutput(NULL)
+        ,   m_tickInterval(DefaultTickInterval)
+        ,   m_transitionTime(0)
+        ,   m_prefinishMark(0)
 {
 
 }
 
 MMF::AbstractPlayer::AbstractPlayer(const AbstractPlayer& player)
-						:	m_videoOutput(player.m_videoOutput)
-						,	m_tickInterval(player.tickInterval())
-						,	m_transitionTime(player.transitionTime())
-						,	m_prefinishMark(player.prefinishMark())
+        :   m_videoOutput(player.m_videoOutput)
+        ,   m_tickInterval(player.tickInterval())
+        ,   m_transitionTime(player.transitionTime())
+        ,   m_prefinishMark(player.prefinishMark())
 {
 
 }
@@ -64,17 +64,17 @@ void MMF::AbstractPlayer::setTickInterval(qint32 interval)
 
 qint32 MMF::AbstractPlayer::prefinishMark() const
 {
-	return m_prefinishMark;
+    return m_prefinishMark;
 }
 
 void MMF::AbstractPlayer::setPrefinishMark(qint32 mark)
 {
-	m_prefinishMark = mark;
+    m_prefinishMark = mark;
 }
 
 qint32 MMF::AbstractPlayer::transitionTime() const
 {
-	return m_transitionTime;
+    return m_transitionTime;
 }
 
 void MMF::AbstractPlayer::setTransitionTime(qint32 time)
@@ -95,7 +95,7 @@ void MMF::AbstractPlayer::setVideoOutput(VideoOutput* videoOutput)
 
 void MMF::AbstractPlayer::videoOutputChanged()
 {
-	// Default behaviour is empty - overridden by VideoPlayer
+    // Default behaviour is empty - overridden by VideoPlayer
 }
 
 

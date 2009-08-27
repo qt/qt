@@ -25,18 +25,18 @@ QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
-    namespace MMF
-    {
-        /**
-         * Interface via which VideoOutput notifies VideoPlayer of changes to the
-         * video output screen region.
-         */
-        class VideoOutputObserver
-        {
-        public:		
-			virtual void videoOutputRegionChanged() = 0;
-        };
-    }
+namespace MMF
+{
+/**
+ * Interface via which VideoOutput notifies VideoPlayer of changes to the
+ * video output screen region.
+ */
+class VideoOutputObserver
+{
+public:
+    virtual void videoOutputRegionChanged() = 0;
+};
+}
 }
 
 QT_END_NAMESPACE

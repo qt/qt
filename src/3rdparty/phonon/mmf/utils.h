@@ -20,7 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #define PHONON_MMF_UTILS_H
 
 #include <private/qcore_symbian_p.h>
-#include <e32debug.h>	// for RDebug
+#include <e32debug.h>   // for RDebug
 
 #include "defs.h"
 
@@ -28,136 +28,132 @@ QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
-    namespace MMF
-    {
-        /**
-         * Panic codes for fatal errors
-         */
-        enum PanicCode
-        {
-            InvalidStatePanic				= 1,
-            InvalidMediaTypePanic			= 2,
-            InvalidBackendInterfaceClass	= 3
-        };
-        
-        namespace Utils
-        {
-            /**
-             * Raise a fatal exception
-             */
-            void panic(PanicCode code);
+namespace MMF
+{
+/**
+ * Panic codes for fatal errors
+ */
+enum PanicCode {
+    InvalidStatePanic               = 1,
+    InvalidMediaTypePanic           = 2,
+    InvalidBackendInterfaceClass    = 3
+};
 
-            /**
-             * Translate forward slashes to backslashes
-             *
-             * \note    This function is a temporary measure, for use until the
-             *             responsibility for constructing valid file paths is
-             *             determined.
-             */
-            QHBufC symbianFilename(const QString& qtFilename);
-            
-            /**
-             * Determines whether the provided MIME type is an audio or video
-             * type.  If it is neither, the function returns MediaTypeUnknown.
-             */
-            MediaType mimeTypeToMediaType(const TDesC& mimeType);
-        }
+namespace Utils
+{
+/**
+ * Raise a fatal exception
+ */
+void panic(PanicCode code);
 
-        /**
-         * Available trace categories;
-         */
-        enum TTraceCategory
-            {
-            /**
-             * Backend
-             */
-            EBackend			 = 0x00000001,
-            
-            /**
-             * Functions which map directly to the public Phonon audio API
-             */
-            EAudioApi            = 0x00000010,
+/**
+ * Translate forward slashes to backslashes
+ *
+ * \note    This function is a temporary measure, for use until the
+ *             responsibility for constructing valid file paths is
+ *             determined.
+ */
+QHBufC symbianFilename(const QString& qtFilename);
 
-            /**
-             * Internal functions in the audio implementation
-             */
-            EAudioInternal       = 0x00000020,
-            
-            /**
-			 * Functions which map directly to the public Phonon video API
-			 */
-			EVideoApi            = 0x00010000,
+/**
+ * Determines whether the provided MIME type is an audio or video
+ * type.  If it is neither, the function returns MediaTypeUnknown.
+ */
+MediaType mimeTypeToMediaType(const TDesC& mimeType);
+}
 
-			/**
-			 * Internal functions in the video implementation
-			 */
-			EVideoInternal       = 0x00020000
-            };
+/**
+ * Available trace categories;
+ */
+enum TTraceCategory {
+    /**
+     * Backend
+     */
+    EBackend             = 0x00000001,
 
-        /**
-         * Mask indicating which trace categories are enabled
-         *
-         * Note that, at the moment, this is a compiled static constant.  For
-         * runtime control over enabled trace categories, this could be replaced
-         * by a per-thread singleton object which owns the trace mask, and which
-         * exposes an API allowing it to be modified.
-         */
-        static const TUint KTraceMask = 0xffffffff;
+    /**
+     * Functions which map directly to the public Phonon audio API
+     */
+    EAudioApi            = 0x00000010,
 
-        /**
-         * Data structure used by tracing macros
-         */
-        class TTraceContext
-            {
-        public:
-            TTraceContext(const TText* aFunction, const TUint aAddr,
-                    const TUint aCategory=0)
+    /**
+     * Internal functions in the audio implementation
+     */
+    EAudioInternal       = 0x00000020,
+
+    /**
+     * Functions which map directly to the public Phonon video API
+     */
+    EVideoApi            = 0x00010000,
+
+    /**
+     * Internal functions in the video implementation
+     */
+    EVideoInternal       = 0x00020000
+};
+
+/**
+ * Mask indicating which trace categories are enabled
+ *
+ * Note that, at the moment, this is a compiled static constant.  For
+ * runtime control over enabled trace categories, this could be replaced
+ * by a per-thread singleton object which owns the trace mask, and which
+ * exposes an API allowing it to be modified.
+ */
+static const TUint KTraceMask = 0xffffffff;
+
+/**
+ * Data structure used by tracing macros
+ */
+class TTraceContext
+{
+public:
+    TTraceContext(const TText* aFunction, const TUint aAddr,
+                  const TUint aCategory = 0)
             :    iFunction(aFunction),
-                iAddr(aAddr),
-                iCategory(aCategory)
-            { }
+            iAddr(aAddr),
+            iCategory(aCategory) { }
 
-            /**
-             * Check whether iCategory appears in the trace mask
-             */
-            TBool Enabled() const
-                {
-                return (iCategory == 0) or (iCategory & KTraceMask);
-                }
-
-            const TText*    iFunction;    // Name of function
-            const TUint        iAddr;        // 'this' pointer
-            const TUint        iCategory;
-            };
-
-        // Macros used internally by the trace system
-        #define _TRACE_PRINT RDebug::Print
-        #define _TRACE_TEXT(x) (TPtrC((const TText *)(x)))
-        #define _TRACE_MODULE Phonon::MMF
-
-        // Macros available for use by implementation code
-#ifdef _DEBUG
-        #define TRACE_CONTEXT(_fn, _cat) const ::Phonon::MMF::TTraceContext _tc((TText*)L ## #_fn, (TUint)this, _cat);
-        #define TRACE_ENTRY_0() { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "+ Phonon::MMF::%s [0x%08x]"), _tc.iFunction, _tc.iAddr); }
-        #define TRACE_ENTRY(string, args...) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "+ Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, args); }
-        #define TRACE_EXIT_0() { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "- Phonon::MMF::%s [0x%08x]"), _tc.iFunction, _tc.iAddr); }
-        #define TRACE_EXIT(string, args...) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "- Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, args); }
-        #define TRACE_RETURN(string, result) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "r Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, result); } return result;
-        #define TRACE_PANIC(code) { _TRACE_PRINT(_TRACE_TEXT(L ## "! Phonon::MMF::%s [0x%08x] panic %d"), _tc.iFunction, _tc.iAddr, code); } Utils::panic(code);
-		#define TRACE_0(string) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "  Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr); }
-        #define TRACE(string, args...) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "  Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, args); }
-#else
-        #define TRACE_CONTEXT(_fn, _cat)
-        #define TRACE_ENTRY_0()
-        #define TRACE_ENTRY(string, args...)
-        #define TRACE_EXIT_0()
-        #define TRACE_EXIT(string, args...)
-        #define TRACE_RETURN(string, result) return result;
-        #define TRACE_PANIC(code) Utils::panic(code);
-		#define TRACE_0(string)
-        #define TRACE(string, args...)
-#endif
+    /**
+     * Check whether iCategory appears in the trace mask
+     */
+    TBool Enabled() const {
+        return (iCategory == 0) or(iCategory & KTraceMask);
     }
+
+    const TText*    iFunction;    // Name of function
+    const TUint        iAddr;        // 'this' pointer
+    const TUint        iCategory;
+};
+
+// Macros used internally by the trace system
+#define _TRACE_PRINT RDebug::Print
+#define _TRACE_TEXT(x) (TPtrC((const TText *)(x)))
+#define _TRACE_MODULE Phonon::MMF
+
+// Macros available for use by implementation code
+#ifdef _DEBUG
+#define TRACE_CONTEXT(_fn, _cat) const ::Phonon::MMF::TTraceContext _tc((TText*)L ## #_fn, (TUint)this, _cat);
+#define TRACE_ENTRY_0() { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "+ Phonon::MMF::%s [0x%08x]"), _tc.iFunction, _tc.iAddr); }
+#define TRACE_ENTRY(string, args...) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "+ Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, args); }
+#define TRACE_EXIT_0() { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "- Phonon::MMF::%s [0x%08x]"), _tc.iFunction, _tc.iAddr); }
+#define TRACE_EXIT(string, args...) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "- Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, args); }
+#define TRACE_RETURN(string, result) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "r Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, result); } return result;
+#define TRACE_PANIC(code) { _TRACE_PRINT(_TRACE_TEXT(L ## "! Phonon::MMF::%s [0x%08x] panic %d"), _tc.iFunction, _tc.iAddr, code); } Utils::panic(code);
+#define TRACE_0(string) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "  Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr); }
+#define TRACE(string, args...) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "  Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, args); }
+#else
+#define TRACE_CONTEXT(_fn, _cat)
+#define TRACE_ENTRY_0()
+#define TRACE_ENTRY(string, args...)
+#define TRACE_EXIT_0()
+#define TRACE_EXIT(string, args...)
+#define TRACE_RETURN(string, result) return result;
+#define TRACE_PANIC(code) Utils::panic(code);
+#define TRACE_0(string)
+#define TRACE(string, args...)
+#endif
+}
 }
 
 QT_END_NAMESPACE

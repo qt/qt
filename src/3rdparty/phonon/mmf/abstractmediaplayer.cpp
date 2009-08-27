@@ -29,7 +29,7 @@ using namespace Phonon::MMF;
 // Constants
 //-----------------------------------------------------------------------------
 
-const int		NullMaxVolume = -1;
+const int       NullMaxVolume = -1;
 
 
 //-----------------------------------------------------------------------------
@@ -37,31 +37,31 @@ const int		NullMaxVolume = -1;
 //-----------------------------------------------------------------------------
 
 MMF::AbstractMediaPlayer::AbstractMediaPlayer() :
-							m_state(GroundState)
-						,	m_error(NoError)
-						,	m_playPending(false)
-						,	m_tickTimer(new QTimer(this))
-						,	m_volume(InitialVolume)
-						,	m_mmfMaxVolume(NullMaxVolume)
+        m_state(GroundState)
+        ,   m_error(NoError)
+        ,   m_playPending(false)
+        ,   m_tickTimer(new QTimer(this))
+        ,   m_volume(InitialVolume)
+        ,   m_mmfMaxVolume(NullMaxVolume)
 {
-	connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
+    connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
 }
 
 MMF::AbstractMediaPlayer::AbstractMediaPlayer(const AbstractPlayer& player) :
-							AbstractPlayer(player)
-						,	m_state(GroundState)
-						,	m_error(NoError)
-						,	m_playPending(false)
-						,	m_tickTimer(new QTimer(this))
-						,	m_volume(InitialVolume)
-						,	m_mmfMaxVolume(NullMaxVolume)
+        AbstractPlayer(player)
+        ,   m_state(GroundState)
+        ,   m_error(NoError)
+        ,   m_playPending(false)
+        ,   m_tickTimer(new QTimer(this))
+        ,   m_volume(InitialVolume)
+        ,   m_mmfMaxVolume(NullMaxVolume)
 {
-	connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
+    connect(m_tickTimer.data(), SIGNAL(timeout()), this, SLOT(tick()));
 }
 
 MMF::AbstractMediaPlayer::~AbstractMediaPlayer()
 {
-	
+
 }
 
 
@@ -74,34 +74,33 @@ void MMF::AbstractMediaPlayer::play()
     TRACE_CONTEXT(AbstractMediaPlayer::play, EAudioApi);
     TRACE_ENTRY("state %d", m_state);
 
-    switch(m_state)
-    {
-        case GroundState:
-            // Is this the correct error?  Really we want 'NotReadyError'
-            m_error = NormalError;
-            changeState(ErrorState);
-            break;
-            
-        case LoadingState:
-			m_playPending = true;
-			break;
-        	
-        case StoppedState:
-        case PausedState:
-            doPlay();
-            startTickTimer();
-            changeState(PlayingState);
-            break;
+    switch (m_state) {
+    case GroundState:
+        // Is this the correct error?  Really we want 'NotReadyError'
+        m_error = NormalError;
+        changeState(ErrorState);
+        break;
 
-        case PlayingState:
-        case BufferingState:
-        case ErrorState:
-            // Do nothing
-            break;
+    case LoadingState:
+        m_playPending = true;
+        break;
+
+    case StoppedState:
+    case PausedState:
+        doPlay();
+        startTickTimer();
+        changeState(PlayingState);
+        break;
+
+    case PlayingState:
+    case BufferingState:
+    case ErrorState:
+        // Do nothing
+        break;
 
         // Protection against adding new states and forgetting to update this switch
-        default:
-            TRACE_PANIC(InvalidStatePanic);
+    default:
+        TRACE_PANIC(InvalidStatePanic);
     }
 
     TRACE_EXIT("state %d", m_state);
@@ -113,27 +112,26 @@ void MMF::AbstractMediaPlayer::pause()
     TRACE_ENTRY("state %d", m_state);
 
     m_playPending = false;
-    
-    switch(m_state)
-    {
-        case GroundState:
-        case LoadingState:
-        case StoppedState:
-        case PausedState:
-        case ErrorState:
-            // Do nothing
-            break;
 
-        case PlayingState:
-        case BufferingState:
-            doPause();
-            stopTickTimer();
-            changeState(PausedState);
-            break;
+    switch (m_state) {
+    case GroundState:
+    case LoadingState:
+    case StoppedState:
+    case PausedState:
+    case ErrorState:
+        // Do nothing
+        break;
+
+    case PlayingState:
+    case BufferingState:
+        doPause();
+        stopTickTimer();
+        changeState(PausedState);
+        break;
 
         // Protection against adding new states and forgetting to update this switch
-        default:
-            TRACE_PANIC(InvalidStatePanic);
+    default:
+        TRACE_PANIC(InvalidStatePanic);
     }
 
     TRACE_EXIT("state %d", m_state);
@@ -145,27 +143,26 @@ void MMF::AbstractMediaPlayer::stop()
     TRACE_ENTRY("state %d", m_state);
 
     m_playPending = false;
-    
-    switch(m_state)
-    {
-        case GroundState:
-        case LoadingState:
-        case StoppedState:
-        case ErrorState:
-            // Do nothing
-            break;
 
-        case PlayingState:
-        case BufferingState:
-        case PausedState:
-            doStop();
-            stopTickTimer();
-            changeState(StoppedState);
-            break;
+    switch (m_state) {
+    case GroundState:
+    case LoadingState:
+    case StoppedState:
+    case ErrorState:
+        // Do nothing
+        break;
+
+    case PlayingState:
+    case BufferingState:
+    case PausedState:
+        doStop();
+        stopTickTimer();
+        changeState(StoppedState);
+        break;
 
         // Protection against adding new states and forgetting to update this switch
-        default:
-            TRACE_PANIC(InvalidStatePanic);
+    default:
+        TRACE_PANIC(InvalidStatePanic);
     }
 
     TRACE_EXIT("state %d", m_state);
@@ -177,23 +174,22 @@ void MMF::AbstractMediaPlayer::seek(qint64 ms)
     TRACE_ENTRY("state %d pos %Ld", state(), ms);
 
     // TODO: put a state guard in here
-    
+
     const bool tickTimerWasRunning = m_tickTimer->isActive();
     stopTickTimer();
-        
+
     doSeek(ms);
-    
-    if(tickTimerWasRunning)
-    {
+
+    if (tickTimerWasRunning) {
         startTickTimer();
     }
-    
+
     TRACE_EXIT_0();
 }
 
 bool MMF::AbstractMediaPlayer::isSeekable() const
 {
-	return true;
+    return true;
 }
 
 void MMF::AbstractMediaPlayer::doSetTickInterval(qint32 interval)
@@ -209,7 +205,7 @@ void MMF::AbstractMediaPlayer::doSetTickInterval(qint32 interval)
 Phonon::ErrorType MMF::AbstractMediaPlayer::errorType() const
 {
     const Phonon::ErrorType result = (ErrorState == m_state)
-        ? m_error : NoError;
+                                     ? m_error : NoError;
     return result;
 }
 
@@ -244,58 +240,52 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
 
     TInt symbianErr = KErrNone;
 
-    switch(m_source.type())
-    {
-        case MediaSource::LocalFile:
-        {
-            // TODO: work out whose responsibility it is to ensure that paths
-            // are Symbian-style, i.e. have backslashes for path delimiters.
-            // Until then, use this utility function...
-            //const QHBufC filename = Utils::symbianFilename(m_source.fileName());
-            //TRAP(symbianErr, m_player->OpenFileL(*filename));
-            
-            // Open using shared filehandle
-            // This is a temporary hack to work around KErrInUse from MMF
-            // client utility OpenFileL calls
-            //TRAP(symbianErr, m_player->OpenFileL(file));
-            
-			symbianErr = openFile(file);    
-            break;
-        }
+    switch (m_source.type()) {
+    case MediaSource::LocalFile: {
+        // TODO: work out whose responsibility it is to ensure that paths
+        // are Symbian-style, i.e. have backslashes for path delimiters.
+        // Until then, use this utility function...
+        //const QHBufC filename = Utils::symbianFilename(m_source.fileName());
+        //TRAP(symbianErr, m_player->OpenFileL(*filename));
 
-        case MediaSource::Url:
-        {
-			TRACE_0("Source type not supported");
-			// TODO: support opening URLs
-			symbianErr = KErrNotSupported;
-			break;
-        }
+        // Open using shared filehandle
+        // This is a temporary hack to work around KErrInUse from MMF
+        // client utility OpenFileL calls
+        //TRAP(symbianErr, m_player->OpenFileL(file));
 
-        case MediaSource::Invalid:
-        case MediaSource::Disc:
-        case MediaSource::Stream:
-        	TRACE_0("Source type not supported");
-            symbianErr = KErrNotSupported;
-            break;
+        symbianErr = openFile(file);
+        break;
+    }
 
-        case MediaSource::Empty:
-        	TRACE_0("Empty source - doing nothing");
-            TRACE_EXIT_0();
-            return;
+    case MediaSource::Url: {
+        TRACE_0("Source type not supported");
+        // TODO: support opening URLs
+        symbianErr = KErrNotSupported;
+        break;
+    }
+
+    case MediaSource::Invalid:
+    case MediaSource::Disc:
+    case MediaSource::Stream:
+        TRACE_0("Source type not supported");
+        symbianErr = KErrNotSupported;
+        break;
+
+    case MediaSource::Empty:
+        TRACE_0("Empty source - doing nothing");
+        TRACE_EXIT_0();
+        return;
 
         // Protection against adding new media types and forgetting to update this switch
-        default:
-            TRACE_PANIC(InvalidMediaTypePanic);
+    default:
+        TRACE_PANIC(InvalidMediaTypePanic);
     }
 
-    if(KErrNone == symbianErr)
-    {
+    if (KErrNone == symbianErr) {
         changeState(LoadingState);
-    }
-    else
-    {
-		TRACE("error %d", symbianErr)
-    
+    } else {
+        TRACE("error %d", symbianErr)
+
         // TODO: do something with the value of symbianErr?
         m_error = NormalError;
         changeState(ErrorState);
@@ -326,44 +316,41 @@ void MMF::AbstractMediaPlayer::volumeChanged(qreal volume)
 {
     TRACE_CONTEXT(AbstractMediaPlayer::volumeChanged, EAudioInternal);
     TRACE_ENTRY("state %d", m_state);
-    
+
     m_volume = volume;
     doVolumeChanged();
-    
+
     TRACE_EXIT_0();
 }
 
 
 void MMF::AbstractMediaPlayer::doVolumeChanged()
 {
-	switch(m_state)
-	{
-		case GroundState:
-		case LoadingState:
-		case ErrorState:
-			// Do nothing
-			break;
+    switch (m_state) {
+    case GroundState:
+    case LoadingState:
+    case ErrorState:
+        // Do nothing
+        break;
 
-		case StoppedState:
-		case PausedState:
-		case PlayingState:
-		case BufferingState:
-		{
-			const int err = setDeviceVolume(m_volume * m_mmfMaxVolume);
-			
-			if(KErrNone != err)
-			{
-				m_error = NormalError;
-				changeState(ErrorState);
-			}
-			break;
-		}
+    case StoppedState:
+    case PausedState:
+    case PlayingState:
+    case BufferingState: {
+        const int err = setDeviceVolume(m_volume * m_mmfMaxVolume);
 
-		// Protection against adding new states and forgetting to update this
-		// switch
-		default:
-			Utils::panic(InvalidStatePanic);
-	}
+        if (KErrNone != err) {
+            m_error = NormalError;
+            changeState(ErrorState);
+        }
+        break;
+    }
+
+    // Protection against adding new states and forgetting to update this
+    // switch
+    default:
+        Utils::panic(InvalidStatePanic);
+    }
 }
 
 
@@ -373,23 +360,23 @@ void MMF::AbstractMediaPlayer::doVolumeChanged()
 
 void MMF::AbstractMediaPlayer::startTickTimer()
 {
-	m_tickTimer->start(tickInterval());
+    m_tickTimer->start(tickInterval());
 }
 
 void MMF::AbstractMediaPlayer::stopTickTimer()
 {
-	m_tickTimer->stop();
+    m_tickTimer->stop();
 }
 
 void MMF::AbstractMediaPlayer::maxVolumeChanged(int mmfMaxVolume)
 {
-	m_mmfMaxVolume = mmfMaxVolume;
-	doVolumeChanged();
+    m_mmfMaxVolume = mmfMaxVolume;
+    doVolumeChanged();
 }
 
 Phonon::State MMF::AbstractMediaPlayer::phononState() const
 {
-	return phononState(m_state);
+    return phononState(m_state);
 }
 
 Phonon::State MMF::AbstractMediaPlayer::phononState(PrivateState state)
@@ -411,27 +398,25 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
 
     const Phonon::State oldPhononState = phononState(m_state);
     const Phonon::State newPhononState = phononState(newState);
-    if(oldPhononState != newPhononState)
-    {
+    if (oldPhononState != newPhononState) {
         TRACE("emit stateChanged(%d, %d)", newPhononState, oldPhononState);
         emit stateChanged(newPhononState, oldPhononState);
     }
 
     m_state = newState;
-    
+
     // Check whether play() was called while clip was being loaded.  If so,
     // playback should be started now
-    if(
-    		LoadingState == oldPhononState
-    	and	StoppedState == newPhononState
-    	and m_playPending
-    )
-    {
-		TRACE_0("play was called while loading; starting playback now");
-		m_playPending = false;
-		play();
+    if (
+        LoadingState == oldPhononState
+        and StoppedState == newPhononState
+        and m_playPending
+    ) {
+        TRACE_0("play was called while loading; starting playback now");
+        m_playPending = false;
+        play();
     }
-    
+
     TRACE_EXIT_0();
 }
 

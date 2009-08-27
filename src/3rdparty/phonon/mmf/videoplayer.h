@@ -29,81 +29,81 @@ QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
-    namespace MMF
-    {
-        /**
-         * @short Wrapper over MMF video client utility
-         *
-         * See
-         * <a href="http://wiki.forum.nokia.com/index.php/How_to_play_a_video_file_using_CVideoPlayerUtility">How to
-         * play a video file using CVideoPlayerUtility</a>
-         */
-        class VideoPlayer		:	public AbstractMediaPlayer
-								,	public MVideoPlayerUtilityObserver
-								,   public VideoOutputObserver
-        {
-            Q_OBJECT
-            
-        public:
-            VideoPlayer();
-            explicit VideoPlayer(const AbstractPlayer& player);
-            virtual ~VideoPlayer();
+namespace MMF
+{
+/**
+ * @short Wrapper over MMF video client utility
+ *
+ * See
+ * <a href="http://wiki.forum.nokia.com/index.php/How_to_play_a_video_file_using_CVideoPlayerUtility">How to
+ * play a video file using CVideoPlayerUtility</a>
+ */
+class VideoPlayer       :   public AbstractMediaPlayer
+        ,   public MVideoPlayerUtilityObserver
+        ,   public VideoOutputObserver
+{
+    Q_OBJECT
 
-            // AbstractPlayer
-            virtual void doPlay();
-            virtual void doPause();
-            virtual void doStop();
-            virtual void doSeek(qint64 milliseconds);
-            virtual int setDeviceVolume(int mmfVolume);
-            virtual int openFile(RFile& file);
-            virtual void close();
-            
-            // MediaObjectInterface
-            virtual bool hasVideo() const;
-            virtual qint64 currentTime() const;
-            virtual qint64 totalTime() const;
-            
-            // MVideoPlayerUtilityObserver
-            virtual void MvpuoOpenComplete(TInt aError);
-            virtual void MvpuoPrepareComplete(TInt aError);
-            virtual void MvpuoFrameReady(CFbsBitmap &aFrame, TInt aError);
-            virtual void MvpuoPlayComplete(TInt aError);
-            virtual void MvpuoEvent(const TMMFEvent &aEvent);
-            
-            // VideoOutputObserver
-            virtual void videoOutputRegionChanged();
-            
-        Q_SIGNALS:
-            void totalTimeChanged(qint64 length);
-            void finished();
-            
-        private:
-        	void construct();
-        	VideoOutput& videoOutput();
-        	
-        	void doPrepareCompleteL(TInt aError);
-        	
-        	// AbstractPlayer
-        	virtual void videoOutputChanged();
-        	
-        	void getNativeWindowSystemHandles();
-            
-        private:
-        	CVideoPlayerUtility*				m_player;
-        	QScopedPointer<VideoOutput>			m_dummyVideoOutput;
+public:
+    VideoPlayer();
+    explicit VideoPlayer(const AbstractPlayer& player);
+    virtual ~VideoPlayer();
 
-        	// Not owned
-        	RWsSession*							m_wsSession;
-        	CWsScreenDevice*					m_screenDevice;
-        	RWindowBase*						m_window;
-        	TRect								m_windowRect;
-        	TRect								m_clipRect;
-        	
-        	QSize                               m_frameSize;
-        	qint64                              m_totalTime;
-        	
-        };
-    }
+    // AbstractPlayer
+    virtual void doPlay();
+    virtual void doPause();
+    virtual void doStop();
+    virtual void doSeek(qint64 milliseconds);
+    virtual int setDeviceVolume(int mmfVolume);
+    virtual int openFile(RFile& file);
+    virtual void close();
+
+    // MediaObjectInterface
+    virtual bool hasVideo() const;
+    virtual qint64 currentTime() const;
+    virtual qint64 totalTime() const;
+
+    // MVideoPlayerUtilityObserver
+    virtual void MvpuoOpenComplete(TInt aError);
+    virtual void MvpuoPrepareComplete(TInt aError);
+    virtual void MvpuoFrameReady(CFbsBitmap &aFrame, TInt aError);
+    virtual void MvpuoPlayComplete(TInt aError);
+    virtual void MvpuoEvent(const TMMFEvent &aEvent);
+
+    // VideoOutputObserver
+    virtual void videoOutputRegionChanged();
+
+Q_SIGNALS:
+    void totalTimeChanged(qint64 length);
+    void finished();
+
+private:
+    void construct();
+    VideoOutput& videoOutput();
+
+    void doPrepareCompleteL(TInt aError);
+
+    // AbstractPlayer
+    virtual void videoOutputChanged();
+
+    void getNativeWindowSystemHandles();
+
+private:
+    CVideoPlayerUtility*                m_player;
+    QScopedPointer<VideoOutput>         m_dummyVideoOutput;
+
+    // Not owned
+    RWsSession*                         m_wsSession;
+    CWsScreenDevice*                    m_screenDevice;
+    RWindowBase*                        m_window;
+    TRect                               m_windowRect;
+    TRect                               m_clipRect;
+
+    QSize                               m_frameSize;
+    qint64                              m_totalTime;
+
+};
+}
 }
 
 QT_END_NAMESPACE

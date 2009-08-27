@@ -25,66 +25,66 @@ QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
-    namespace MMF
-    {
-        class Backend;
-        class VolumeObserver;
+namespace MMF
+{
+class Backend;
+class VolumeObserver;
 
-        /**
-         * @short AudioOutputInterface implementation for MMF.
-         *
-         * Forwards volume commands to the VolumeObserver instance, 
-         * which is provided by the backend when MediaNode objects are 
-         * connected.
-         *
-         * \section volume Volume
-         *
-         * Phonon's concept on volume is from 0.0 to 1.0, and from 1< it does
-         * voltage multiplication. CDrmPlayerUtility goes from 1 to
-         * CDrmPlayerUtility::MaxVolume(). We apply some basic math to convert
-         * between the two.
-         *
-         * @author Frans Englich<frans.englich@nokia.com>
-         */
-        class AudioOutput : public QObject
-                          , public AudioOutputInterface
-        {
-            Q_OBJECT
-            Q_INTERFACES(Phonon::AudioOutputInterface)
+/**
+ * @short AudioOutputInterface implementation for MMF.
+ *
+ * Forwards volume commands to the VolumeObserver instance,
+ * which is provided by the backend when MediaNode objects are
+ * connected.
+ *
+ * \section volume Volume
+ *
+ * Phonon's concept on volume is from 0.0 to 1.0, and from 1< it does
+ * voltage multiplication. CDrmPlayerUtility goes from 1 to
+ * CDrmPlayerUtility::MaxVolume(). We apply some basic math to convert
+ * between the two.
+ *
+ * @author Frans Englich<frans.englich@nokia.com>
+ */
+class AudioOutput : public QObject
+        , public AudioOutputInterface
+{
+    Q_OBJECT
+    Q_INTERFACES(Phonon::AudioOutputInterface)
 
-        public:
-            AudioOutput(Backend *backend, QObject *parent);
-            virtual qreal volume() const;
-            virtual void setVolume(qreal volume);
+public:
+    AudioOutput(Backend *backend, QObject *parent);
+    virtual qreal volume() const;
+    virtual void setVolume(qreal volume);
 
-            virtual int outputDevice() const;
+    virtual int outputDevice() const;
 
-            /**
-             * Has no effect.
-             */
-            virtual bool setOutputDevice(int);
+    /**
+     * Has no effect.
+     */
+    virtual bool setOutputDevice(int);
 
-            /**
-             * Has no effect.
-             */
-            virtual bool setOutputDevice(const Phonon::AudioOutputDevice &);
+    /**
+     * Has no effect.
+     */
+    virtual bool setOutputDevice(const Phonon::AudioOutputDevice &);
 
-            /**
-             * Called by backend when nodes are connected.
-             */
-            void setVolumeObserver(VolumeObserver* observer);
+    /**
+     * Called by backend when nodes are connected.
+     */
+    void setVolumeObserver(VolumeObserver* observer);
 
-        Q_SIGNALS:
-            void volumeChanged(qreal volume);
-            void audioDeviceFailed();
+Q_SIGNALS:
+    void volumeChanged(qreal volume);
+    void audioDeviceFailed();
 
-        private:
-        	qreal							m_volume;
-        	
-        	// Not owned
-        	VolumeObserver*					m_observer;
-        };
-    }
+private:
+    qreal                           m_volume;
+
+    // Not owned
+    VolumeObserver*                 m_observer;
+};
+}
 }
 
 QT_END_NAMESPACE

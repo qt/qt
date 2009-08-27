@@ -33,9 +33,9 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AudioOutput::AudioOutput(Backend *, QObject *parent)	: QObject(parent)
-															, m_volume(InitialVolume)
-															, m_observer(NULL)
+MMF::AudioOutput::AudioOutput(Backend *, QObject *parent)   : QObject(parent)
+        , m_volume(InitialVolume)
+        , m_observer(NULL)
 {
 
 }
@@ -47,7 +47,7 @@ MMF::AudioOutput::AudioOutput(Backend *, QObject *parent)	: QObject(parent)
 
 qreal MMF::AudioOutput::volume() const
 {
-	return m_volume;
+    return m_volume;
 }
 
 void MMF::AudioOutput::setVolume(qreal volume)
@@ -55,18 +55,16 @@ void MMF::AudioOutput::setVolume(qreal volume)
     TRACE_CONTEXT(AudioOutput::setVolume, EAudioApi);
     TRACE_ENTRY("observer 0x%08x volume %f", m_observer, volume);
 
-    if(volume != m_volume)
-    {
-		if(m_observer)
-		{
-			m_observer->volumeChanged(volume);
-		}
-		
-		m_volume = volume;
-		TRACE("emit volumeChanged(%f)", volume)
-		emit volumeChanged(volume);
+    if (volume != m_volume) {
+        if (m_observer) {
+            m_observer->volumeChanged(volume);
+        }
+
+        m_volume = volume;
+        TRACE("emit volumeChanged(%f)", volume)
+        emit volumeChanged(volume);
     }
-    
+
     TRACE_EXIT_0();
 }
 
@@ -88,9 +86,8 @@ bool MMF::AudioOutput::setOutputDevice(const Phonon::AudioOutputDevice &)
 void MMF::AudioOutput::setVolumeObserver(VolumeObserver* observer)
 {
     m_observer = observer;
-    if(m_observer)
-    {
-		m_observer->volumeChanged(m_volume);
+    if (m_observer) {
+        m_observer->volumeChanged(m_volume);
     }
 }
 
