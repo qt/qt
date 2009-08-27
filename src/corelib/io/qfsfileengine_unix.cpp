@@ -565,7 +565,7 @@ QString QFSFileEngine::currentPath(const QString &)
         // try to create it (can happen with application private dirs)
         // Ignore mkdir failures; we want to be consistent with Open C
         // current path regardless.
-        ::mkdir(QFile::encodeName(nativeCurrentName), 0777);
+        QT_MKDIR(QFile::encodeName(nativeCurrentName), 0777);
 #else
 # if defined(QT_DEBUG)
         qWarning("QFSFileEngine::currentPath: stat(\".\") failed");
@@ -609,6 +609,9 @@ QString QFSFileEngine::tempPath()
     TFileName symbianPath = PathInfo::PhoneMemoryRootPath();
     QString temp = QDir::fromNativeSeparators(qt_TDesC2QString(symbianPath));
     temp += QLatin1String( "temp/");
+
+    // Just to verify that folder really exist on hardware
+    QT_MKDIR(QFile::encodeName(temp), 0777);
 # else
 # warning No fallback implementation of QFSFileEngine::tempPath()
     return QString();
