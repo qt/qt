@@ -75,7 +75,7 @@ public:
     static QAbstractTransitionPrivate *get(QAbstractTransition *q);
 
     bool callEventTest(QEvent *e);
-    void callOnTransition(QEvent *e);
+    virtual void callOnTransition(QEvent *e);
     QState *sourceState() const;
     QStateMachine *machine() const;
     void emitTriggered();
