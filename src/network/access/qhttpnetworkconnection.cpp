@@ -603,7 +603,7 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
     for (int i = 0; i < channelCount; ++i) {
         if (channels[i].reply == reply) {
             channels[i].reply = 0;
-            if (reply->d_func()->connectionCloseEnabled())
+            if (reply->d_func()->isConnectionCloseEnabled())
                 channels[i].close();
             QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
             return;
