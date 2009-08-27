@@ -316,14 +316,11 @@ QSymbianControl::QSymbianControl(QWidget *w)
 void QSymbianControl::ConstructL(bool topLevel, bool desktop)
 {
     if (!desktop)
-    {
-        // We cannot assume that parentless widgets are top-level
-        QWidget *const parent = qobject_cast<QWidget *>(qwidget->parent());
-        
-        if (topLevel or !parent)
+    {        
+        if (topLevel or !parentWidget())
             CreateWindowL(S60->windowGroup());
         else
-            CreateWindowL(parent->winId());
+            CreateWindowL(parentWidget()->winId());
         
         SetFocusing(true);
         m_longTapDetector = QLongTapTimer::NewL(this);
