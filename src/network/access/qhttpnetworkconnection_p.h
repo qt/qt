@@ -165,10 +165,6 @@ public:
     enum { ChunkSize = 4096 };
 
     int indexOf(QAbstractSocket *socket) const;
-    bool isSocketBusy(QAbstractSocket *socket) const;
-    bool isSocketWriting(QAbstractSocket *socket) const;
-    bool isSocketWaiting(QAbstractSocket *socket) const;
-    bool isSocketReading(QAbstractSocket *socket) const;
 
     QHttpNetworkReply *queueRequest(const QHttpNetworkRequest &request);
     void requeueRequest(const HttpMessagePair &pair); // e.g. after pipeline broke

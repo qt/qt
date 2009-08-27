@@ -129,30 +129,6 @@ int QHttpNetworkConnectionPrivate::indexOf(QAbstractSocket *socket) const
     return 0;
 }
 
-bool QHttpNetworkConnectionPrivate::isSocketBusy(QAbstractSocket *socket) const
-{
-    int i = indexOf(socket);
-    return (channels[i].state & QHttpNetworkConnectionChannel::BusyState);
-}
-
-bool QHttpNetworkConnectionPrivate::isSocketWriting(QAbstractSocket *socket) const
-{
-    int i = indexOf(socket);
-    return (i != -1 && (channels[i].state & QHttpNetworkConnectionChannel::WritingState));
-}
-
-bool QHttpNetworkConnectionPrivate::isSocketWaiting(QAbstractSocket *socket) const
-{
-    int i = indexOf(socket);
-    return (i != -1 && (channels[i].state & QHttpNetworkConnectionChannel::WaitingState));
-}
-
-bool QHttpNetworkConnectionPrivate::isSocketReading(QAbstractSocket *socket) const
-{
-    int i = indexOf(socket);
-    return (i != -1 && (channels[i].state & QHttpNetworkConnectionChannel::ReadingState));
-}
-
 qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailable(const QHttpNetworkReply &reply) const
 {
     return reply.d_func()->responseData.byteAmount();
@@ -674,7 +650,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     for (int i = 0; i < channelCount; ++i) {
         QAbstractSocket *chSocket = channels[i].socket;
         // send the request using the idle socket
-        if (!isSocketBusy(chSocket)) {
+        if (!channels[i].isSocketBusy()) {
             socket = chSocket;
             break;
         }
