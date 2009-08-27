@@ -1194,6 +1194,11 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTabV3 *opt, const QWidget 
         tr.setLeft(tr.left() + 6 + 2 +
             (verticalTabs ? opt->leftButtonSize.height() : opt->leftButtonSize.width()));
     }
+    // right widget
+    if (!opt->rightButtonSize.isEmpty()) {
+        tr.setRight(tr.right() - 6 - 2 -
+        (verticalTabs ? opt->rightButtonSize.height() : opt->rightButtonSize.width()));
+    }
 
     // icon
     if (!opt->icon.isNull()) {
@@ -1206,24 +1211,11 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTabV3 *opt, const QWidget 
                         (opt->state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled,
                         (opt->state & QStyle::State_Selected) ? QIcon::On : QIcon::Off  );
 
-        int left = opt->rect.left();
-        int offset = 4;
-        if (opt->leftButtonSize.isEmpty())
-            offset += 2;
-        else
-            left += opt->leftButtonSize.width() + (6 + 2) + 2;
-
-        *iconRect = QRect(left + offset, tr.center().y() - tabIconSize.height() / 2,
+        *iconRect = QRect(tr.left(), tr.center().y() - tabIconSize.height() / 2,
                     tabIconSize.width(), tabIconSize .height());
         if (!verticalTabs)
             *iconRect = proxyStyle->visualRect(opt->direction, opt->rect, *iconRect);
-        tr.setLeft(tr.left() + tabIconSize.width() + offset + 2);
-    }
-
-    // right widget
-    if (!opt->rightButtonSize.isEmpty()) {
-        tr.setRight(tr.right() - 6 - 2 -
-            (verticalTabs ? opt->rightButtonSize.height() : opt->rightButtonSize.width()));
+        tr.setLeft(tr.left() + tabIconSize.width() + 4);
     }
 
     if (!verticalTabs)

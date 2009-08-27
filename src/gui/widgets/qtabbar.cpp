@@ -1293,6 +1293,7 @@ QSize QTabBarPrivate::minimumTabSizeHint(int index)
 */
 QSize QTabBar::tabSizeHint(int index) const
 {
+    //Note: this must match with the computations in QCommonStylePrivate::tabLayout
     Q_D(const QTabBar);
     if (const QTabBarPrivate::Tab *tab = d->at(index)) {
         QStyleOptionTabV3 opt;
@@ -1309,18 +1310,18 @@ QSize QTabBar::tabSizeHint(int index) const
         int widgetWidth = 0;
         int widgetHeight = 0;
         int padding = 0;
-        if (opt.leftButtonSize.isValid()) {
+        if (!opt.leftButtonSize.isEmpty()) {
             padding += 6 + 2;
             widgetWidth += opt.leftButtonSize.width();
             widgetHeight += opt.leftButtonSize.height();
         }
-        if (opt.rightButtonSize.isValid()) {
+        if (!opt.rightButtonSize.isEmpty()) {
             padding += 6 + 2;
             widgetWidth += opt.rightButtonSize.width();
             widgetHeight += opt.rightButtonSize.height();
         }
-        if (opt.iconSize.isValid())
-            padding += 2;
+        if (!opt.icon.isNull())
+            padding += 4;
 
         QSize csz;
         if (verticalTabs(d->shape)) {
