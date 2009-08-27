@@ -161,7 +161,6 @@ public slots:
     void init();
 
 private slots:
-    void explicitDeleteAutoFocusProxy();
     void construction();
     void constructionWithParent();
     void destruction();
@@ -281,9 +280,7 @@ private slots:
     void hitTestUntransformableItem();
     void hitTestGraphicsEffectItem();
     void focusProxy();
-    void autoDetectFocusProxy();
     void subFocus();
-    void reverseCreateAutoFocusProxy();
     void focusProxyDeletion();
     void negativeZStacksBehindParent();
     void setGraphicsEffect();
@@ -7540,31 +7537,6 @@ void tst_QGraphicsItem::focusProxy()
     QCOMPARE(item3->focusProxy(), (QGraphicsItem *)0);
 }
 
-void tst_QGraphicsItem::autoDetectFocusProxy()
-{
-    QGraphicsScene scene;
-    QGraphicsItem *item = scene.addRect(0, 0, 10, 10);
-    item->setFlag(QGraphicsItem::ItemIsFocusable);
-
-    QGraphicsItem *item2 = scene.addRect(0, 0, 10, 10);
-    item2->setParentItem(item);
-    item2->setFlag(QGraphicsItem::ItemIsFocusable);
-
-    QGraphicsItem *item3 = scene.addRect(0, 0, 10, 10);
-    item3->setParentItem(item2);
-    item3->setFlag(QGraphicsItem::ItemIsFocusable);
-
-    item->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
-    QCOMPARE(item->focusProxy(), (QGraphicsItem *)0);
-
-    item2->setFocus();
-    QCOMPARE(item->focusProxy(), item2);
-    item3->setFocus();
-    QCOMPARE(item->focusProxy(), item3);
-    item3->clearFocus();
-    QCOMPARE(item->focusProxy(), item3);
-}
-
 void tst_QGraphicsItem::subFocus()
 {
     // Construct a text item that's not part of a scene (yet)
@@ -7622,49 +7594,6 @@ void tst_QGraphicsItem::subFocus()
     // Hiding and showing text should pass focus to text2.
     QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
     QVERIFY(text2->hasFocus());
-}
-
-void tst_QGraphicsItem::reverseCreateAutoFocusProxy()
-{
-    QGraphicsTextItem *text = new QGraphicsTextItem;
-    text->setTextInteractionFlags(Qt::TextEditorInteraction);
-    text->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
-
-    QGraphicsTextItem *text2 = new QGraphicsTextItem;
-    text2->setTextInteractionFlags(Qt::TextEditorInteraction);
-    text2->setFocus();
-    QVERIFY(!text2->hasFocus());
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
-    text2->setParentItem(text);
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)text2);
-    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
-
-    QGraphicsScene scene;
-    scene.addItem(text);
-    QVERIFY(text2->hasFocus());
-}
-
-void tst_QGraphicsItem::explicitDeleteAutoFocusProxy()
-{
-    QGraphicsTextItem *text = new QGraphicsTextItem;
-    text->setTextInteractionFlags(Qt::TextEditorInteraction);
-    text->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
-
-    QGraphicsTextItem *text2 = new QGraphicsTextItem;
-    text2->setTextInteractionFlags(Qt::TextEditorInteraction);
-    text2->setFocus();
-    QVERIFY(!text2->hasFocus());
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
-    text2->setParentItem(text);
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)text2);
-    QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
-
-    QGraphicsScene scene;
-    scene.addItem(text);
-    QVERIFY(text2->hasFocus());
-
-    delete text2;
-    QCOMPARE(text->focusProxy(), (QGraphicsItem *)0);
 }
 
 void tst_QGraphicsItem::focusProxyDeletion()

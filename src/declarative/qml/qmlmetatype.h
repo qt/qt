@@ -47,6 +47,7 @@
 #include <QtCore/qbitarray.h>
 #include <QtDeclarative/qmlprivate.h>
 #include <QtDeclarative/qmlparserstatus.h>
+#include <QtDeclarative/qmlpropertyvaluesource.h>
 
 QT_BEGIN_HEADER
 
@@ -59,7 +60,7 @@ class QmlCustomParser;
 class Q_DECLARATIVE_EXPORT QmlMetaType
 {
 public:
-    static int registerType(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *, int vmaj, int vmin_from, int vmin_to, const char *qmlName, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int pStatus, int object, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *);
+    static int registerType(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *, int vmaj, int vmin_from, int vmin_to, const char *qmlName, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int pStatus, int object, int valueSource, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *);
     static int registerInterface(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *);
 
     static bool copy(int type, void *data, const void *copy = 0);
@@ -78,6 +79,7 @@ public:
     static QMetaProperty property(QObject *, const char *);
     static QObject *toQObject(const QVariant &);
     static int qmlParserStatusCast(int);
+    static int qmlPropertyValueSourceCast(int);
     static int listType(int);
     static bool clear(const QVariant &);
     static bool append(const QVariant &, const QVariant &);
@@ -143,13 +145,14 @@ public:
     int parserStatusCast() const;
     QVariant fromObject(QObject *) const;
     const char *interfaceIId() const;
+    int propertyValueSourceCast() const;
 
     int index() const;
 private:
     friend class QmlMetaType;
     friend class QmlTypePrivate;
     QmlType(int, int, int, QmlPrivate::Func, const char *, int);
-    QmlType(int, int, int, QmlPrivate::Func, const char *, int, int, int, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int, QmlPrivate::CreateFunc, const QMetaObject *, int, QmlCustomParser *);
+    QmlType(int, int, int, QmlPrivate::Func, const char *, int, int, int, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int, int, QmlPrivate::CreateFunc, const QMetaObject *, int, QmlCustomParser *);
     ~QmlType();
 
     QmlTypePrivate *d;
@@ -170,7 +173,8 @@ int qmlRegisterType(const char *typeName)
             QmlPrivate::attachedPropertiesFunc<T>(),
             QmlPrivate::attachedPropertiesMetaObject<T>(),
             QmlPrivate::StaticCastSelector<T,QmlParserStatus>::cast(), 
-            QmlPrivate::StaticCastSelector<T,QObject>::cast(), 
+            QmlPrivate::StaticCastSelector<T,QObject>::cast(),
+            QmlPrivate::StaticCastSelector<T,QmlPropertyValueSource>::cast(),
             0, 0, 0);
 }
 
@@ -191,6 +195,7 @@ int qmlRegisterType(const char *uri, int version_maj, int version_min_from, int 
             QmlPrivate::attachedPropertiesMetaObject<T>(),
             QmlPrivate::StaticCastSelector<T,QmlParserStatus>::cast(), 
             QmlPrivate::StaticCastSelector<T,QObject>::cast(), 
+            QmlPrivate::StaticCastSelector<T,QmlPropertyValueSource>::cast(), 
             0, 0, 0);
 }
 
@@ -216,7 +221,8 @@ int qmlRegisterExtendedType(const char *typeName)
     return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 0, 0, 0, 0,
             &T::staticMetaObject, attached, attachedMo,
             QmlPrivate::StaticCastSelector<T,QmlParserStatus>::cast(), 
-            QmlPrivate::StaticCastSelector<T,QObject>::cast(), 
+            QmlPrivate::StaticCastSelector<T,QObject>::cast(),
+            QmlPrivate::StaticCastSelector<T,QmlPropertyValueSource>::cast(),
             &QmlPrivate::CreateParent<E>::create, &E::staticMetaObject, 0);
 }
 
@@ -244,7 +250,8 @@ int qmlRegisterExtendedType(const char *uri, int version_maj, int version_min_fr
             &T::staticMetaObject,
             attached, attachedMo,
             QmlPrivate::StaticCastSelector<T,QmlParserStatus>::cast(), 
-            QmlPrivate::StaticCastSelector<T,QObject>::cast(), 
+            QmlPrivate::StaticCastSelector<T,QObject>::cast(),
+            QmlPrivate::StaticCastSelector<T,QmlPropertyValueSource>::cast(),
             &QmlPrivate::CreateParent<E>::create, 
             &E::staticMetaObject, 0);
 }
@@ -280,7 +287,8 @@ int qmlRegisterCustomType(const char *uri, int version_maj, int version_min_from
             QmlPrivate::attachedPropertiesFunc<T>(),
             QmlPrivate::attachedPropertiesMetaObject<T>(),
             QmlPrivate::StaticCastSelector<T,QmlParserStatus>::cast(), 
-            QmlPrivate::StaticCastSelector<T,QObject>::cast(), 
+            QmlPrivate::StaticCastSelector<T,QObject>::cast(),
+            QmlPrivate::StaticCastSelector<T,QmlPropertyValueSource>::cast(),
             0, 0, parser);
 }
 

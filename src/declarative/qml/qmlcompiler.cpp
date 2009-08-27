@@ -1411,7 +1411,6 @@ void QmlCompiler::genPropertyAssignment(QmlParser::Property *prop,
 
             }
         } else if (v->type == Value::ValueSource) {
-
             genObject(v->object);
 
             QmlInstruction store;
@@ -1425,6 +1424,8 @@ void QmlCompiler::genPropertyAssignment(QmlParser::Property *prop,
                     QmlMetaPropertyPrivate::saveProperty(prop->index);
                 store.assignValueSource.owner = 0;
             }
+            QmlType *valueType = QmlMetaType::qmlType(v->object->metatype);
+            store.assignValueSource.castValue = valueType->propertyValueSourceCast();
             output->bytecode << store;
 
         } else if (v->type == Value::PropertyBinding) {
@@ -1584,15 +1585,7 @@ bool QmlCompiler::buildValueTypeProperty(QObject *type,
         Value *value = prop->values.at(0);
 
         if (value->object) {
-            const QMetaObject *c =
-                output->types.at(value->object->type).metaObject();
-            bool isPropertyValue = false;
-            while (c && !isPropertyValue) {
-                isPropertyValue =
-                    (c == &QmlPropertyValueSource::staticMetaObject);
-                c = c->superClass();
-            }
-
+            bool isPropertyValue = output->types.at(value->object->type).type->propertyValueSourceCast() != -1;
             if (!isPropertyValue) {
                 COMPILE_EXCEPTION(prop, "Invalid property use");
             } else {
@@ -1762,28 +1755,24 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
         v->object->metatype = output->types.at(v->object->type).metaObject();
         Q_ASSERT(v->object->metaObject());
 
+        // Will be true if the assigned type inherits QmlPropertyValueSource
+        bool isPropertyValue = false;
+        if (QmlType *valueType = QmlMetaType::qmlType(v->object->metatype))
+            isPropertyValue = valueType->propertyValueSourceCast() != -1;
+
         // We want to raw metaObject here as the raw metaobject is the
         // actual property type before we applied any extensions that might
         // effect the properties on the type, but don't effect assignability
         const QMetaObject *propertyMetaObject =
             QmlMetaType::rawMetaObjectForType(prop->type);
 
-        // Will be true if the assigned type inherits QmlPropertyValueSource
-        bool isPropertyValue = false;
         // Will be true if the assgned type inherits propertyMetaObject
         bool isAssignable = false;
-        // Determine isPropertyValue and isAssignable values
+        // Determine isAssignable value
         if (propertyMetaObject) {
             const QMetaObject *c = v->object->metatype;
             while(c) {
-                isPropertyValue |= (c == &QmlPropertyValueSource::staticMetaObject);
                 isAssignable |= (c == propertyMetaObject);
-                c = c->superClass();
-            }
-        } else {
-            const QMetaObject *c = v->object->metatype;
-            while(!isPropertyValue && c) {
-                isPropertyValue |= (c == &QmlPropertyValueSource::staticMetaObject);
                 c = c->superClass();
             }
         }

@@ -73,13 +73,11 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ComponentInstance,QFxComponentIn
 QFxComponentInstance::QFxComponentInstance(QFxItem *parent)
   : QFxItem(*(new QFxComponentInstancePrivate), parent)
 {
-    setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
 }
 
 QFxComponentInstance::QFxComponentInstance(QFxComponentInstancePrivate &dd, QFxItem *parent)
   : QFxItem(dd, parent)
 {
-    setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
 }
 
 /*!

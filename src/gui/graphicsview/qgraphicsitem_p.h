@@ -97,6 +97,8 @@ public:
     void purge();
 };
 
+#include <QDebug>
+
 class Q_GUI_EXPORT QGraphicsItemPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsItem)
@@ -128,6 +130,7 @@ public:
         siblingIndex(-1),
         itemDepth(-1),
         focusProxy(0),
+        focusScopeItem(0),
         subFocusItem(0),
         imHints(Qt::ImhNone),
         acceptedMouseButtons(0x1f),
@@ -171,6 +174,7 @@ public:
         notifyBoundingRectChanged(0),
         notifyInvalidated(0),
         mouseSetsFocus(1),
+        itemIsFocusedInScope(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -410,6 +414,38 @@ public:
     void clearSubFocus();
     void resetFocusProxy();
 
+    inline QGraphicsItem *rootLevelFocusItem() const {
+        QGraphicsItem *fi = q_ptr;
+        while(QGraphicsItem *i = fi->d_ptr->focusScope())
+            fi = i;
+        return fi;
+    }
+
+    inline QGraphicsItem *focusScope() const {
+        QGraphicsItem *item = parent;
+        while (item) {
+            if (item->isWindow())
+                return 0;
+            if (item->d_ptr->flags & QGraphicsItem::ItemIsFocusScope)
+                return item;
+            item = item->d_ptr->parent;
+        }
+        return 0;
+    }
+    inline bool hasActiveFocus(QGraphicsItem *focusItem) const {
+        if (!(flags & QGraphicsItem::ItemIsFocusScope) || !focusScopeItem)
+            return focusItem == q_ptr;
+        else
+            return focusScopeItem->d_ptr->hasActiveFocus(focusItem);
+    }
+    inline void setItemFocusedInScope(bool f) {
+        if (itemIsFocusedInScope != f) {
+            itemIsFocusedInScope = f;
+            if (!inDestructor) focusedInScopeChanged();
+        }
+    }
+    inline virtual void focusedInScopeChanged() {}
+
     inline QTransform transformToParent() const;
     inline void ensureSortedChildren();
 
@@ -431,6 +467,7 @@ public:
     int siblingIndex;
     int itemDepth;  // Lazily calculated when calling depth().
     QGraphicsItem *focusProxy;
+    QGraphicsItem *focusScopeItem; // Only used if this is a focus scope
     QList<QGraphicsItem **> focusProxyRefs;
     QGraphicsItem *subFocusItem;
     Qt::InputMethodHints imHints;
@@ -463,7 +500,7 @@ public:
 
     // New 32 bits
     quint32 fullUpdatePending : 1;
-    quint32 flags : 15;
+    quint32 flags : 16;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
@@ -479,6 +516,7 @@ public:
     quint32 notifyBoundingRectChanged : 1;
     quint32 notifyInvalidated : 1;
     quint32 mouseSetsFocus : 1;
+    quint32 itemIsFocusedInScope : 1;
     quint32 unused : 1; // feel free to use
 
     // Optional stacking order

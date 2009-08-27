@@ -157,10 +157,13 @@ QFxRepeater::~QFxRepeater()
     As a special case the model can also be merely a number. In this case it will
     create that many instances of the component. They will also be assigned an index
     based on the order they are created.
+
+    Models can also be created directly in QML, using a \l{ListModel} or \l{XmlListModel}.
 */
 QVariant QFxRepeater::model() const
 {
-    return QVariant();
+    Q_D(const QFxRepeater);
+    return d->dataSource;
 }
 
 void QFxRepeater::setModel(const QVariant &v)
@@ -287,6 +290,38 @@ void QFxRepeater::regenerate()
             QHash<int,QVariant> data = model->data(ii,roles);
             for (int j = 0; j < roles.size(); ++j) {
                 ctxt->setContextProperty(model->toString(roles.at(j)), data.value(roles.at(j)));
+            }
+
+            //for compatability with other lists, assign data if there is only a single role
+            if (roles.size() == 1)
+                ctxt->setContextProperty(QLatin1String("modelData"), data.value(roles.at(0)));
+
+            if (QFxItem *item = d->addItem(ctxt, lastItem))
+                lastItem = item;
+        }
+    } else if (QAbstractItemModel *model = qobject_cast<QAbstractItemModel*>(d->dataSource.value<QObject*>())) {
+        count = model->rowCount();
+        if (count <= 0)
+            return;
+
+        for (int ii = 0; ii < count; ++ii) {
+            QmlContext *ctxt = new QmlContext(qmlContext(this), this);
+            d->deletables << ctxt;
+
+            ctxt->setContextProperty(QLatin1String("index"), ii);
+
+            QList<int> roles;
+            QStringList roleNames;
+            QHash<int,QVariant> data;
+            for (QHash<int,QByteArray>::const_iterator it = model->roleNames().begin();
+                    it != model->roleNames().end(); ++it) {
+                roles.append(it.key());
+                roleNames.append(QLatin1String(*it));
+            }
+
+            QModelIndex index = model->index(ii, 0);
+            for (int j = 0; j < roles.size(); ++j) {
+                ctxt->setContextProperty(roleNames.at(j), model->data(index, roles.at(j)));
             }
 
             //for compatability with other lists, assign data if there is only a single role
