@@ -1311,12 +1311,12 @@ QSize QTabBar::tabSizeHint(int index) const
         int widgetHeight = 0;
         int padding = 0;
         if (!opt.leftButtonSize.isEmpty()) {
-            padding += 6 + 2;
+            padding += 4;
             widgetWidth += opt.leftButtonSize.width();
             widgetHeight += opt.leftButtonSize.height();
         }
         if (!opt.rightButtonSize.isEmpty()) {
-            padding += 6 + 2;
+            padding += 4;
             widgetWidth += opt.rightButtonSize.width();
             widgetHeight += opt.rightButtonSize.height();
         }

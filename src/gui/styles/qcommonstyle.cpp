@@ -1191,12 +1191,12 @@ void QCommonStylePrivate::tabLayout(const QStyleOptionTabV3 *opt, const QWidget 
 
     // left widget
     if (!opt->leftButtonSize.isEmpty()) {
-        tr.setLeft(tr.left() + 6 + 2 +
+        tr.setLeft(tr.left() + 4 +
             (verticalTabs ? opt->leftButtonSize.height() : opt->leftButtonSize.width()));
     }
     // right widget
     if (!opt->rightButtonSize.isEmpty()) {
-        tr.setRight(tr.right() - 6 - 2 -
+        tr.setRight(tr.right() - 4 -
         (verticalTabs ? opt->rightButtonSize.height() : opt->rightButtonSize.width()));
     }
 
@@ -2780,6 +2780,8 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             bool selected = tab->state & State_Selected;
             int verticalShift = proxy()->pixelMetric(QStyle::PM_TabBarTabShiftVertical, tab, widget);
             int horizontalShift = proxy()->pixelMetric(QStyle::PM_TabBarTabShiftHorizontal, tab, widget);
+            int hpadding = proxy()->pixelMetric(QStyle::PM_TabBarTabHSpace, opt, widget) / 2;
+            hpadding = qMax(hpadding, 4); //workaround KStyle returning 0 because they workaround an old bug in Qt
 
             bool verticalTabs = tab->shape == QTabBar::RoundedEast
                     || tab->shape == QTabBar::RoundedWest
@@ -2822,16 +2824,16 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 break;
             default:
                 if (sr == SE_TabBarTabLeftButton)
-                    r = QRect(6 + tab->rect.x(), midHeight, w, h);
+                    r = QRect(tab->rect.x() + hpadding, midHeight, w, h);
                 else
-                    r = QRect(tab->rect.right() - 6 - w, midHeight, w, h);
+                    r = QRect(tab->rect.right() - w - hpadding, midHeight, w, h);
                 r = visualRect(tab->direction, tab->rect, r);
             }
             if (verticalTabs) {
                 if (atTheTop)
-                    r = QRect(midWidth, tr.y() + tab->rect.height() - 6 - h, w, h);
+                    r = QRect(midWidth, tr.y() + tab->rect.height() - hpadding - h, w, h);
                 else
-                    r = QRect(midWidth, tr.y() + 6, w, h);
+                    r = QRect(midWidth, tr.y() + hpadding, w, h);
             }
         }
 
