@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 #define MAKEFILE_DEPENDENCY_SEPARATOR " \\\n\t"
 
 #define QT_EXTRA_INCLUDE_DIR "tmp"
+#define MAKE_CACHE_NAME ".make.cache"
 
 class SymbianMakefileGenerator : public MakefileGenerator
 {
@@ -136,6 +137,7 @@ protected:
                                const QString& itemPrefix,
                                const QString& itemSuffix);
 
+    void writeSisxTargets(QTextStream &t);
     void generateDistcleanTargets(QTextStream& t);
 
     // Subclass implements

@@ -219,6 +219,8 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         qDeleteAll(subtargets);
     }
 
+    writeSisxTargets(t);
+
     generateDistcleanTargets(t);
 
     t << "clean: " << BLD_INF_FILENAME << endl;
@@ -399,6 +401,10 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
 
     t << "START EXTENSION qt/qmake_generate_temp_dirs" << endl;
     t << "OPTION DIRS " << tempDirs << endl;
+    t << "END" << endl;
+    t << endl;
+
+    t << "START EXTENSION qt/qmake_store_build" << endl;
     t << "END" << endl;
     t << endl;
 

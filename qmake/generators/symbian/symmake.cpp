@@ -72,6 +72,12 @@
 #define MMP_TARGETTYPE "TARGETTYPE"
 #define MMP_SECUREID "SECUREID"
 
+#define SISX_TARGET "sisx"
+#define OK_SISX_TARGET "ok_sisx"
+#define FAIL_SISX_NOPKG_TARGET "fail_sisx_nopkg"
+#define FAIL_SISX_NOCACHE_TARGET "fail_sisx_nocache"
+#define RESTORE_BUILD_TARGET "restore_build"
+
 #define PRINT_FILE_CREATE_ERROR(filename) fprintf(stderr, "Error: Could not create '%s'\n", qPrintable(filename));
 
 QString SymbianMakefileGenerator::fixPathForMmp(const QString& origPath, const QDir& parentDir)
@@ -1624,6 +1630,41 @@ void SymbianMakefileGenerator::removeSpecialCharacters(QString& str)
     str.replace(QString(" "), QString("_"));
 }
 
+void SymbianMakefileGenerator::writeSisxTargets(QTextStream &t)
+{
+    t << SISX_TARGET ": " RESTORE_BUILD_TARGET << endl;
+    QString sisxcommand = QString("\t$(if $(wildcard %1_template.%2),$(if $(wildcard %3),$(MAKE) -s %4,$(MAKE) -s %5),$(MAKE) -s %6)")
+                          .arg(fileInfo(project->projectFile()).completeBaseName())
+                          .arg("pkg")
+                          .arg(MAKE_CACHE_NAME)
+                          .arg(OK_SISX_TARGET)
+                          .arg(FAIL_SISX_NOCACHE_TARGET)
+                          .arg(FAIL_SISX_NOPKG_TARGET);    
+    t << sisxcommand << endl;         
+    t << endl;
+
+    t << OK_SISX_TARGET ":" << endl;
+
+    QString pkgcommand = QString("\tcreatepackage.bat %1_template.%2 $(PLATFORM) $(TARGET) $(CERTIFICATE) $(KEY) $(PASSPHRASE)")
+                          .arg(fileInfo(project->projectFile()).completeBaseName())
+                          .arg("pkg");
+    t << pkgcommand << endl;
+    t << endl;
+    
+    t << FAIL_SISX_NOPKG_TARGET ":" << endl;  
+    t << "\t$(error PKG file does not exist, 'SISX' target is only supported for executables or projects with DEPLOYMENT statement)" << endl;  
+    t << endl;
+    
+    t << FAIL_SISX_NOCACHE_TARGET ":" << endl;  
+    t << "\t$(error Project has to be build before calling 'SISX' target)" << endl;  
+    t << endl;
+    
+
+    t << RESTORE_BUILD_TARGET ":" << endl;
+    t << "-include " MAKE_CACHE_NAME << endl;
+    t << endl;
+}
+
 void SymbianMakefileGenerator::generateDistcleanTargets(QTextStream& t)
 {
     t << "dodistclean:" << endl;
@@ -1677,4 +1718,3 @@ void SymbianMakefileGenerator::generateDistcleanTargets(QTextStream& t)
     t << "distclean: clean dodistclean" << endl;
     t << endl;
 }
-
