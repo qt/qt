@@ -70,6 +70,9 @@ ImageWidget::ImageWidget(QWidget *parent)
     connect(pinchGesture, SIGNAL(finished()), this, SLOT(pinchTriggered()));
     connect(pinchGesture, SIGNAL(cancelled()), this, SLOT(pinchTriggered()));
     connect(pinchGesture, SIGNAL(triggered()), this, SLOT(pinchTriggered()));
+
+    QGesture *swipeGesture = new QSwipeGesture(this);
+    connect(swipeGesture, SIGNAL(triggered()), this, SLOT(swipeTriggered()));
 }
 
 void ImageWidget::paintEvent(QPaintEvent*)
@@ -127,9 +130,15 @@ void ImageWidget::pinchTriggered()
 
 void ImageWidget::swipeTriggered()
 {
-    qDebug() << "swipe!";
-    goNextImage();
-//    goPrevImage();
+    QSwipeGesture *pg = qobject_cast<QSwipeGesture*>(sender());
+    qDebug() << (int) pg->horizontalDirection();
+    qDebug() << pg->swipeAngle();
+
+    if (pg->horizontalDirection() == QSwipeGesture::Left
+            || pg->verticalDirection() == QSwipeGesture::Up)
+        goPrevImage();
+    else
+        goNextImage();
     update();
 }
 

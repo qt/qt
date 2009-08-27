@@ -295,6 +295,7 @@ QSizeF QPanGesture::lastOffset() const
     return d->lastOffset;
 }
 
+//////////////////////////////////////////////////////////////////////////////
 
 /*!
     \class QPinchGesture
@@ -314,6 +315,7 @@ QSizeF QPanGesture::lastOffset() const
 QPinchGesture::QPinchGesture(QWidget *gestureTarget, QObject *parent)
     : QGesture(*new QPinchGesturePrivate, gestureTarget, parent)
 {
+    setObjectName(QLatin1String("QPinchGesture"));
 }
 
 void QPinchGesturePrivate::setupGestureTarget(QObject *newGestureTarget)
@@ -508,6 +510,112 @@ QPointF QPinchGesture::lastCenterPoint() const
 QPointF QPinchGesture::startCenterPoint() const
 {
     return d_func()->startCenterPoint;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+
+/*!
+    \class QSwipeGesture
+    \since 4.6
+
+    \brief The QSwipeGesture class represents a swipe gesture,
+    providing additional information related to swiping.
+*/
+
+/*!
+    Creates a new Swipe gesture handler object and marks it as a child of \a
+    parent.
+
+    On some platform like Windows it's necessary to provide a non-null widget
+    as \a parent to get native gesture support.
+*/
+QSwipeGesture::QSwipeGesture(QWidget *gestureTarget, QObject *parent)
+    : QGesture(*new QSwipeGesturePrivate, gestureTarget, parent)
+{
+    setObjectName(QLatin1String("QSwipeGesture"));
+}
+
+void QSwipeGesturePrivate::setupGestureTarget(QObject *newGestureTarget)
+{
+    Q_Q(QSwipeGesture);
+    if (gestureTarget && gestureTarget->isWidgetType()) {
+        QWidget *w = static_cast<QWidget*>(gestureTarget.data());
+        QApplicationPrivate::instance()->widgetGestures[w].swipe = 0;
+#if defined(Q_WS_WIN)
+        qt_widget_private(w)->winSetupGestures();
+#endif
+    }
+
+    if (newGestureTarget && newGestureTarget->isWidgetType()) {
+        QWidget *w = static_cast<QWidget*>(newGestureTarget);
+        QApplicationPrivate::instance()->widgetGestures[w].swipe = q;
+#if defined(Q_WS_WIN)
+        qt_widget_private(w)->winSetupGestures();
+#endif
+    }
+    QGesturePrivate::setupGestureTarget(newGestureTarget);
+}
+
+qreal QSwipeGesture::swipeAngle() const
+{
+    Q_D(const QSwipeGesture);
+    return d->swipeAngle;
+}
+
+QSwipeGesture::SwipeDirection QSwipeGesture::horizontalDirection() const
+{
+    Q_D(const QSwipeGesture);
+    if (d->swipeAngle < 0 || d->swipeAngle == 90 || d->swipeAngle == 270)
+        return QSwipeGesture::NoDirection;
+    else if (d->swipeAngle < 90 || d->swipeAngle > 270)
+        return QSwipeGesture::Right;
+    else
+        return QSwipeGesture::Left;
+}
+
+QSwipeGesture::SwipeDirection QSwipeGesture::verticalDirection() const
+{
+    Q_D(const QSwipeGesture);
+    if (d->swipeAngle <= 0 || d->swipeAngle == 180)
+        return QSwipeGesture::NoDirection;
+    else if (d->swipeAngle < 180)
+        return QSwipeGesture::Up;
+    else
+        return QSwipeGesture::Down;
+}
+
+bool QSwipeGesture::eventFilter(QObject *receiver, QEvent *event)
+{
+    Q_D(QSwipeGesture);
+    if (receiver->isWidgetType() && event->type() == QEvent::NativeGesture) {
+        QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
+        switch (ev->gestureType) {
+        case QNativeGestureEvent::Swipe:
+            d->swipeAngle = ev->angle;
+            updateState(Qt::GestureStarted);
+            updateState(Qt::GestureUpdated);
+            updateState(Qt::GestureFinished);
+            break;
+        default:
+            return false;
+        }
+        return true;
+    }
+    return QGesture::eventFilter(receiver, event);
+}
+
+/*! \internal */
+bool QSwipeGesture::filterEvent(QEvent *)
+{
+    return false;
+}
+
+/*! \internal */
+void QSwipeGesture::reset()
+{
+    Q_D(QSwipeGesture);
+    d->swipeAngle = -1;
+    QGesture::reset();
 }
 
 QT_END_NAMESPACE
