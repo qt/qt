@@ -468,7 +468,7 @@ bool isFunction(JSC::JSValue value)
 static JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 static JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 
-JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
+JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState *exec, JSC::JSObject * /*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
 {
 #ifndef QT_NO_QOBJECT
     if (args.size() == 0) {
@@ -533,7 +533,7 @@ JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState *exec, JSC::JSObjec
 #endif // QT_NO_QOBJECT
 }
 
-JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
+JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState *exec, JSC::JSObject * /*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
 {
 #ifndef QT_NO_QOBJECT
     if (args.size() == 0) {

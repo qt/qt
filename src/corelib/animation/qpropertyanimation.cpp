@@ -92,8 +92,6 @@
 #include "qanimationgroup.h"
 #include "qpropertyanimation_p.h"
 
-#include <QtCore/qmath.h>
-#include <QtCore/qmutex.h>
 #include <private/qmutexpool_p.h>
 
 #ifndef QT_NO_ANIMATION
@@ -102,50 +100,38 @@ QT_BEGIN_NAMESPACE
 
 void QPropertyAnimationPrivate::updateMetaProperty()
 {
-    if (!target || propertyName.isEmpty())
+    if (!target || propertyName.isEmpty()) {
+        propertyType = QVariant::Invalid;
+        propertyIndex = -1;
         return;
-
-    if (!hasMetaProperty && !property.isValid()) {
-        const QMetaObject *mo = target->metaObject();
-        propertyIndex = mo->indexOfProperty(propertyName);
-        if (propertyIndex != -1) {
-            hasMetaProperty = true;
-            property = mo->property(propertyIndex);
-            propertyType = property.userType();
-        } else {
-            if (!target->dynamicPropertyNames().contains(propertyName))
-                qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
-        }
     }
 
-    if (property.isValid())
+    propertyType = targetValue->property(propertyName).userType();
+    propertyIndex = targetValue->metaObject()->indexOfProperty(propertyName);
+    if (propertyIndex == -1 && !targetValue->dynamicPropertyNames().contains(propertyName))
+        qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
+
+    if (propertyType != QVariant::Invalid)
         convertValues(propertyType);
 }
 
 void QPropertyAnimationPrivate::updateProperty(const QVariant &newValue)
 {
-    if (!target || state == QAbstractAnimation::Stopped)
+    if (state == QAbstractAnimation::Stopped)
         return;
 
-    if (hasMetaProperty) {
-        if (newValue.userType() == propertyType) {
-          //no conversion is needed, we directly call the QObject::qt_metacall
-          void *data = const_cast<void*>(newValue.constData());
-          target->qt_metacall(QMetaObject::WriteProperty, propertyIndex, &data);
-        } else {
-          property.write(target, newValue);
-        }
-    } else {
-        target->setProperty(propertyName.constData(), newValue);
+    if (!target) {
+        q_func()->stop(); //the target was destroyed we need to stop the animation
+        return;
     }
-}
 
-void QPropertyAnimationPrivate::_q_targetDestroyed()
-{
-    Q_Q(QPropertyAnimation);
-    //we stop here so that this animation is removed from the global hash
-    q->stop();
-    target = 0;
+    if (propertyIndex != -1 && newValue.userType() == propertyType) {
+        //no conversion is needed, we directly call the QObject::qt_metacall
+        void *data = const_cast<void*>(newValue.constData());
+        targetValue->qt_metacall(QMetaObject::WriteProperty, propertyIndex, &data);
+    } else {
+        targetValue->setProperty(propertyName.constData(), newValue);
+    }
 }
 
 /*!
@@ -187,14 +173,13 @@ QPropertyAnimation::~QPropertyAnimation()
  */
 QObject *QPropertyAnimation::targetObject() const
 {
-    Q_D(const QPropertyAnimation);
-    return d->target;
+    return d_func()->target.data();
 }
 
 void QPropertyAnimation::setTargetObject(QObject *target)
 {
     Q_D(QPropertyAnimation);
-    if (d->target == target)
+    if (d->targetValue == target)
         return;
 
     if (d->state != QAbstractAnimation::Stopped) {
@@ -202,15 +187,7 @@ void QPropertyAnimation::setTargetObject(QObject *target)
         return;
     }
 
-    //we need to get notified when the target is destroyed
-    if (d->target)
-        disconnect(d->target, SIGNAL(destroyed()), this, SLOT(_q_targetDestroyed()));
-
-    if (target)
-        connect(target, SIGNAL(destroyed()), SLOT(_q_targetDestroyed()));
-
-    d->target = target;
-    d->hasMetaProperty = false;
+    d->target = d->targetValue = target;
     d->updateMetaProperty();
 }
 
@@ -236,7 +213,6 @@ void QPropertyAnimation::setPropertyName(const QByteArray &propertyName)
     }
 
     d->propertyName = propertyName;
-    d->hasMetaProperty = false;
     d->updateMetaProperty();
 }
 
@@ -273,7 +249,7 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
 {
     Q_D(QPropertyAnimation);
 
-    if (!d->target) {
+    if (!d->target && oldState == Stopped) {
         qWarning("QPropertyAnimation::updateState: Changing state of an animation without target");
         return;
     }
@@ -286,14 +262,16 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
         typedef QPair<QObject *, QByteArray> QPropertyAnimationPair;
         typedef QHash<QPropertyAnimationPair, QPropertyAnimation*> QPropertyAnimationHash;
         static QPropertyAnimationHash hash;
-        QPropertyAnimationPair key(d->target, d->propertyName);
+        //here we need to use value because we need to know to which pointer
+        //the animation was referring in case stopped because the target was destroyed
+        QPropertyAnimationPair key(d->targetValue, d->propertyName);
         if (newState == Running) {
             d->updateMetaProperty();
             animToStop = hash.value(key, 0);
             hash.insert(key, this);
             // update the default start value
             if (oldState == Stopped) {
-                d->setDefaultStartEndValue(d->target->property(d->propertyName.constData()));
+                d->setDefaultStartEndValue(d->targetValue->property(d->propertyName.constData()));
                 //let's check if we have a start value and an end value
                 if (d->direction == Forward && !startValue().isValid() && !d->defaultStartEndValue.isValid())
                     qWarning("QPropertyAnimation::updateState: starting an animation without start value");

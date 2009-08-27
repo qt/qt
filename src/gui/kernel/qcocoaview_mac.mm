@@ -892,7 +892,7 @@ extern "C" {
     qNGEvent.gestureType = QNativeGestureEvent::Rotate;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
-    qNGEvent.percentage = [event rotation];
+    qNGEvent.percentage = -[event rotation];
     qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
 
