@@ -317,10 +317,10 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
 {
     if (!desktop)
     {        
-        if (topLevel or !parentWidget())
+        if (topLevel or !qwidget->parentWidget())
             CreateWindowL(S60->windowGroup());
         else
-            CreateWindowL(parentWidget()->winId());
+            CreateWindowL(qwidget->parentWidget()->winId());
         
         SetFocusing(true);
         m_longTapDetector = QLongTapTimer::NewL(this);

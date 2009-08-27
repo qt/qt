@@ -150,9 +150,156 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
 #endif
 }
 
-void QWidgetPrivate::setWSGeometry(bool /* dontShow */, const QRect & /* rect */)
-{
+void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
+{    
+    // Note: based on x11 implementation
+    
+    static const int XCOORD_MAX = 16383;
+    static const int WRECT_MAX = 16383;
+    
+    Q_Q(QWidget);
+    Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
 
+    /*
+      There are up to four different coordinate systems here:
+      Qt coordinate system for this widget.
+      X coordinate system for this widget (relative to wrect).
+      Qt coordinate system for parent
+      X coordinate system for parent (relative to parent's wrect).
+     */
+
+    QRect validRange(-XCOORD_MAX,-XCOORD_MAX, 2*XCOORD_MAX, 2*XCOORD_MAX);
+    QRect wrectRange(-WRECT_MAX,-WRECT_MAX, 2*WRECT_MAX, 2*WRECT_MAX);
+    QRect wrect;
+    //xrect is the X geometry of my widget. (starts out in parent's Qt coord sys, and ends up in parent's X coord sys)
+    QRect xrect = data.crect;
+
+    const QWidget *const parent = q->parentWidget();
+    QRect parentWRect = parent->data->wrect;
+
+    if (parentWRect.isValid()) {
+        // parent is clipped, and we have to clip to the same limit as parent
+        if (!parentWRect.contains(xrect)) {
+            xrect &= parentWRect;
+            wrect = xrect;
+            //translate from parent's to my Qt coord sys
+            wrect.translate(-data.crect.topLeft());
+        }
+        //translate from parent's Qt coords to parent's X coords
+        xrect.translate(-parentWRect.topLeft());
+
+    } else {
+        // parent is not clipped, we may or may not have to clip
+
+        if (data.wrect.isValid() && QRect(QPoint(),data.crect.size()).contains(data.wrect)) {
+            // This is where the main optimization is: we are already
+            // clipped, and if our clip is still valid, we can just
+            // move our window, and do not need to move or clip
+            // children
+
+            QRect vrect = xrect & parent->rect();
+            vrect.translate(-data.crect.topLeft()); //the part of me that's visible through parent, in my Qt coords
+            if (data.wrect.contains(vrect)) {
+                xrect = data.wrect;
+                xrect.translate(data.crect.topLeft());
+                if (data.winid)
+                    data.winid->SetPosition(TPoint(xrect.x(), xrect.y()));
+                return;
+            }
+        }
+
+        if (!validRange.contains(xrect)) {
+            // we are too big, and must clip
+            xrect &=wrectRange;
+            wrect = xrect;
+            wrect.translate(-data.crect.topLeft());
+            //parent's X coord system is equal to parent's Qt coord
+            //sys, so we don't need to map xrect.
+        }
+
+    }
+
+    // unmap if we are outside the valid window system coord system
+    bool outsideRange = !xrect.isValid();
+    bool mapWindow = false;
+    if (q->testAttribute(Qt::WA_OutsideWSRange) != outsideRange) {
+        q->setAttribute(Qt::WA_OutsideWSRange, outsideRange);
+        if (outsideRange) {
+            if (data.winid)
+                data.winid->DrawableWindow()->SetVisible(EFalse);
+            q->setAttribute(Qt::WA_Mapped, false);
+        } else if (!q->isHidden()) {
+            mapWindow = true;
+        }
+    }
+
+    if (outsideRange)
+        return;
+
+    bool jump = (data.wrect != wrect);
+    data.wrect = wrect;
+
+
+    // and now recursively for all children...
+    // ### can be optimized
+    for (int i = 0; i < children.size(); ++i) {
+        QObject *object = children.at(i);
+        if (object->isWidgetType()) {
+            QWidget *w = static_cast<QWidget *>(object);
+            if (!w->isWindow() && w->testAttribute(Qt::WA_WState_Created))
+                w->d_func()->setWSGeometry(jump);
+        }
+    }
+
+    if (data.winid) {
+        // move ourselves to the new position and map (if necessary) after
+        // the movement. Rationale: moving unmapped windows is much faster
+        // than moving mapped windows
+        if (!parent->internalWinId())
+            xrect.translate(parent->mapTo(q->nativeParentWidget(), QPoint(0, 0)));
+        data.winid->SetExtent(TPoint(xrect.x(), xrect.y()), TSize(xrect.width(), xrect.height()));
+    }
+    if (mapWindow and !dontShow) {
+        q->setAttribute(Qt::WA_Mapped);
+        if (q->internalWinId())
+            q->internalWinId()->DrawableWindow()->SetVisible(ETrue);
+    }
+
+/*
+ * Not present in Windows port, so we omit it here aswell ... 
+ * 
+    //to avoid flicker, we have to show children after the helper widget has moved
+    if (jump) {
+        for (int i = 0; i < children.size(); ++i) {
+            QObject *object = children.at(i);
+            if (object->isWidgetType()) {
+                QWidget *w = static_cast<QWidget *>(object);
+                if (!w->testAttribute(Qt::WA_OutsideWSRange) && !w->testAttribute(Qt::WA_Mapped) && !w->isHidden()) {
+                    w->setAttribute(Qt::WA_Mapped);
+                    if (w->internalWinId())
+                        XMapWindow(dpy, w->data->winid);
+                }
+            }
+        }
+    }
+*/
+
+/*
+ * TODO: how to invalidate part of the control?
+ * 
+    if  (jump && data.winid)
+        data.winid->Draw(TRect(0, 0, wrect.width(), wrect.height()));
+*/
+        
+/*
+ * Not present in Windows port, so we omit it here aswell ... 
+ * 
+    if (mapWindow && !dontShow) {
+        q->setAttribute(Qt::WA_Mapped);
+        if (data.winid)
+            XMapWindow(dpy, data.winid);
+    }
+*/
 }
 
 void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
