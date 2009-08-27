@@ -4,49 +4,49 @@
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="main.cpp" line="6"/>
+        <location filename="main.cpp" line="47"/>
         <source>Hello world</source>
         <comment>Platform-independent file</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main_mac.cpp" line="6"/>
+        <location filename="main_mac.cpp" line="47"/>
         <source>Hello macworld</source>
         <comment>mac-only file</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main_unix.cpp" line="6"/>
+        <location filename="main_unix.cpp" line="47"/>
         <source>Hello unixworld</source>
         <comment>unix-only file</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main_win.cpp" line="6"/>
+        <location filename="main_win.cpp" line="47"/>
         <source>Hello windowsworld</source>
         <comment>Windows-only file</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="wildcard/main1.cpp" line="6"/>
+        <location filename="wildcard/main1.cpp" line="47"/>
         <source>Hello world</source>
         <comment>wildcard/main1.cpp</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="wildcard/mainfile.cpp" line="6"/>
+        <location filename="wildcard/mainfile.cpp" line="47"/>
         <source>Hello world</source>
         <comment>wildcard/main2.cpp</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="wildcard1.cpp" line="6"/>
+        <location filename="wildcard1.cpp" line="47"/>
         <source>Hello world</source>
         <comment>wildcard1.cpp</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="wildcard99.cpp" line="6"/>
+        <location filename="wildcard99.cpp" line="47"/>
         <source>Hello world</source>
         <comment>wildcard99.cpp</comment>
         <translation type="unfinished"></translation>
@@ -55,7 +55,7 @@
 <context>
     <name>QCoreApplication</name>
     <message>
-        <location filename="vpaths/dependpath/main_dependpath.cpp" line="7"/>
+        <location filename="vpaths/dependpath/main_dependpath.cpp" line="48"/>
         <source>Hello from a DEPENDPATH</source>
         <comment>See if the DEPENDPATH thing works</comment>
         <translation type="unfinished"></translation>
