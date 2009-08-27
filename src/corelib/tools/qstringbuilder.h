@@ -44,6 +44,12 @@
 
 #include <QtCore/qstring.h>
 
+#if defined(Q_CC_GNU) && !defined(Q_CC_INTEL)
+#  if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ == 0)
+#    include <QtCore/qmap.h>
+#  endif
+#endif
+
 #include <string.h>
 
 QT_BEGIN_HEADER
