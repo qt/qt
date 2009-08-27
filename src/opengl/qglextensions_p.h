@@ -410,6 +410,14 @@ struct QGLExtensionFuncs
 #define GL_BGRA 0x80E1
 #endif
 
+#ifndef GL_RGB16
+#define GL_RGB16 32852
+#endif
+
+#ifndef GL_UNSIGNED_SHORT_5_6_5
+#define GL_UNSIGNED_SHORT_5_6_5 33635
+#endif
+
 #ifndef GL_MULTISAMPLE
 #define GL_MULTISAMPLE  0x809D
 #endif

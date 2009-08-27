@@ -2421,8 +2421,13 @@ QScriptClass *QScriptValue::scriptClass() const
 void QScriptValue::setScriptClass(QScriptClass *scriptClass)
 {
     Q_D(QScriptValue);
-    if (!d || !d->isJSC() || !d->jscValue.isObject(&QScriptObject::info))
+    if (!d || !d->isObject())
         return;
+    if (!d->jscValue.isObject(&QScriptObject::info)) {
+        qWarning("QScriptValue::setScriptClass() failed: "
+                 "cannot change class of non-QScriptObject");
+        return;
+    }
     QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
     QScriptObjectDelegate *delegate = scriptObject->delegate();
     if (!delegate || (delegate->type() != QScriptObjectDelegate::ClassObject)) {

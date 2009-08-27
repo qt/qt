@@ -267,7 +267,8 @@ class QGridLayoutItem
 {
 public:
     QGridLayoutItem(QGridLayoutEngine *engine, QGraphicsLayoutItem *layoutItem, int row, int column,
-                    int rowSpan = 1, int columnSpan = 1, Qt::Alignment alignment = 0);
+                    int rowSpan = 1, int columnSpan = 1, Qt::Alignment alignment = 0,
+                    int itemAtIndex = -1);
 
     inline int firstRow() const { return q_firstRows[Ver]; }
     inline int firstColumn() const { return q_firstRows[Hor]; }
@@ -378,6 +379,7 @@ public:
     Qt::Alignment effectiveAlignment(const QGridLayoutItem *layoutItem) const;
 
 
+    void insertItem(QGridLayoutItem *item, int index);
     void addItem(QGridLayoutItem *item);
     void removeItem(QGridLayoutItem *item);
     QGridLayoutItem *findLayoutItem(QGraphicsLayoutItem *layoutItem) const;

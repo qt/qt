@@ -144,9 +144,11 @@ void tst_QSqlDriver::record()
     else if (db.driverName().startsWith("QPSQL"))
         tablename = tablename.toLower();
 
-    //check we can get records using a properly quoted table name
-    rec = db.driver()->record(db.driver()->escapeIdentifier(tablename,QSqlDriver::TableName));
-    QCOMPARE(rec.count(), 4);
+    if(!db.driverName().startsWith("QODBC") && !db.databaseName().contains("PostgreSql")) {
+        //check we can get records using a properly quoted table name
+        rec = db.driver()->record(db.driver()->escapeIdentifier(tablename,QSqlDriver::TableName));
+        QCOMPARE(rec.count(), 4);
+    }
 
     for (int i = 0; i < fields.count(); ++i)
         QCOMPARE(rec.fieldName(i), fields[i]);
@@ -188,8 +190,10 @@ void tst_QSqlDriver::primaryIndex()
     else if (db.driverName().startsWith("QPSQL"))
         tablename = tablename.toLower();
 
-    index = db.driver()->primaryIndex(db.driver()->escapeIdentifier(tablename, QSqlDriver::TableName));
-    QCOMPARE(index.count(), 1);
+    if(!db.driverName().startsWith("QODBC") && !db.databaseName().contains("PostgreSql")) {
+        index = db.driver()->primaryIndex(db.driver()->escapeIdentifier(tablename, QSqlDriver::TableName));
+        QCOMPARE(index.count(), 1);
+    }
     if( db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2"))
         QCOMPARE(index.fieldName(0), QString::fromLatin1("ID"));
     else

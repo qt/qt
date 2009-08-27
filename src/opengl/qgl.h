@@ -288,6 +288,25 @@ public:
 
     virtual void swapBuffers() const;
 
+    enum BindOption {
+        NoBindOption                    = 0x0000,
+        InvertedYBindOption             = 0x0001,
+        MipmapBindOption                = 0x0002,
+        PremultipliedAlphaBindOption    = 0x0004,
+        LinearFilteringBindOption       = 0x0008,
+
+        MemoryManagedBindOption         = 0x1000, // internal flag
+
+        DefaultBindOption               = LinearFilteringBindOption | InvertedYBindOption | MipmapBindOption,
+        InternalBindOption              = MemoryManagedBindOption | PremultipliedAlphaBindOption
+    };
+    Q_DECLARE_FLAGS(BindOptions, BindOption);
+
+    GLuint bindTexture(const QImage &image, GLenum target, GLint format,
+                       BindOptions options);
+    GLuint bindTexture(const QPixmap &pixmap, GLenum target, GLint format,
+                       BindOptions options);
+
     GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D,
                        GLint format = GL_RGBA);
     GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D,
@@ -304,6 +323,10 @@ public:
                        QMacCompatGLint format = GL_RGBA);
     GLuint bindTexture(const QPixmap &pixmap, QMacCompatGLenum = GL_TEXTURE_2D,
                        QMacCompatGLint format = GL_RGBA);
+    GLuint bindTexture(const QImage &image, QMacCompatGLenum, QMacCompatGLint format,
+                       BindOptions);
+    GLuint bindTexture(const QPixmap &pixmap, QMacCompatGLenum, QMacCompatGLint format,
+                       BindOptions);
 
     void deleteTexture(QMacCompatGLuint tx_id);
 
@@ -446,10 +469,16 @@ public:
                      const QFont & fnt = QFont(), int listBase = 2000);
     QPaintEngine *paintEngine() const;
 
+    GLuint bindTexture(const QImage &image, GLenum target, GLint format,
+                       QGLContext::BindOptions options);
+    GLuint bindTexture(const QPixmap &pixmap, GLenum target, GLint format,
+                       QGLContext::BindOptions options);
+
     GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D,
                        GLint format = GL_RGBA);
     GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D,
                        GLint format = GL_RGBA);
+
     GLuint bindTexture(const QString &fileName);
 
     void deleteTexture(GLuint tx_id);
@@ -462,6 +491,10 @@ public:
                        QMacCompatGLint format = GL_RGBA);
     GLuint bindTexture(const QPixmap &pixmap, QMacCompatGLenum = GL_TEXTURE_2D,
                        QMacCompatGLint format = GL_RGBA);
+    GLuint bindTexture(const QImage &image, QMacCompatGLenum, QMacCompatGLint format,
+                       QGLContext::BindOptions);
+    GLuint bindTexture(const QPixmap &pixmap, QMacCompatGLenum, QMacCompatGLint format,
+                       QGLContext::BindOptions);
 
     void deleteTexture(QMacCompatGLuint tx_id);
 

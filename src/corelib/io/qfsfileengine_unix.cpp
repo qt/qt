@@ -46,9 +46,6 @@
 
 #ifndef QT_NO_FSFILEENGINE
 
-#ifndef QT_NO_REGEXP
-# include "qregexp.h"
-#endif
 #include "qfile.h"
 #include "qdir.h"
 #include "qdatetime.h"
@@ -71,7 +68,7 @@
 QT_BEGIN_NAMESPACE
 
 
-#ifdef Q_OS_SYMBIAN
+#if defined(Q_OS_SYMBIAN)
 /*!
     \internal
 
@@ -409,7 +406,7 @@ bool QFSFileEngine::copy(const QString &newName)
     QString oldNative(QDir::toNativeSeparators(d->filePath));
     TPtrC oldPtr(qt_QString2TPtrC(oldNative));
     QFileInfo fi(newName);
-    QString absoluteNewName = fi.absolutePath() + QDir::separator() + fi.fileName();
+    QString absoluteNewName = fi.absoluteFilePath();
     QString newNative(QDir::toNativeSeparators(absoluteNewName));
     TPtrC newPtr(qt_QString2TPtrC(newNative));
     TRAPD (err,
@@ -422,8 +419,10 @@ bool QFSFileEngine::copy(const QString &newName)
         }
     ) // End TRAP
     delete fm;
+    // ### Add error reporting on failure
     return (err == KErrNone);
 #else
+    Q_UNUSED(newName);
     // ### Add copy code for Unix here
     setError(QFile::UnspecifiedError, QLatin1String("Not implemented!"));
     return false;
@@ -457,10 +456,9 @@ bool QFSFileEngine::mkdir(const QString &name, bool createParentDirectories) con
 {
     QString dirName = name;
     if (createParentDirectories) {
-#if defined(Q_OS_SYMBIAN)
-        dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
-#else
         dirName = QDir::cleanPath(dirName);
+#if defined(Q_OS_SYMBIAN)
+        dirName = QDir::toNativeSeparators(dirName);
 #endif
         for(int oldslash = -1, slash=0; slash != -1; oldslash = slash) {
             slash = dirName.indexOf(QDir::separator(), oldslash+1);
@@ -493,10 +491,9 @@ bool QFSFileEngine::rmdir(const QString &name, bool recurseParentDirectories) co
 {
     QString dirName = name;
     if (recurseParentDirectories) {
-#if defined(Q_OS_SYMBIAN)
-        dirName = QDir::toNativeSeparators(QDir::cleanPath(dirName));
-#else
         dirName = QDir::cleanPath(dirName);
+#if defined(Q_OS_SYMBIAN)
+        dirName = QDir::toNativeSeparators(dirName);
 #endif
         for(int oldslash = 0, slash=dirName.length(); slash > 0; oldslash = slash) {
             QByteArray chunk = QFile::encodeName(dirName.left(slash));
@@ -537,12 +534,12 @@ QString QFSFileEngine::currentPath(const QString &)
     QString result;
     QT_STATBUF st;
 #if defined(Q_OS_SYMBIAN)
-    char currentName[PATH_MAX+1];
-    if (::getcwd(currentName, PATH_MAX))
-        result = QDir::fromNativeSeparators(QFile::decodeName(QByteArray(currentName)));
+    char nativeCurrentName[PATH_MAX+1];
+    if (::getcwd(nativeCurrentName, PATH_MAX))
+        result = QDir::fromNativeSeparators(QFile::decodeName(QByteArray(nativeCurrentName)));
     if (result.isEmpty()) {
 # if defined(QT_DEBUG)
-        qWarning("QDir::currentPath: getcwd() failed");
+        qWarning("QFSFileEngine::currentPath: getcwd() failed");
 # endif
     } else
 #endif
@@ -559,7 +556,7 @@ QString QFSFileEngine::currentPath(const QString &)
             result = QFile::decodeName(QByteArray(currentName));
 # if defined(QT_DEBUG)
         if (result.isNull())
-            qWarning("QDir::currentPath: getcwd() failed");
+            qWarning("QFSFileEngine::currentPath: getcwd() failed");
 # endif
 #endif
     } else {
@@ -568,10 +565,10 @@ QString QFSFileEngine::currentPath(const QString &)
         // try to create it (can happen with application private dirs)
         // Ignore mkdir failures; we want to be consistent with Open C
         // current path regardless.
-        ::mkdir(QFile::encodeName(currentName), 0777);
+        QT_MKDIR(QFile::encodeName(nativeCurrentName), 0777);
 #else
 # if defined(QT_DEBUG)
-        qWarning("QDir::currentPath: stat(\".\") failed");
+        qWarning("QFSFileEngine::currentPath: stat(\".\") failed");
 # endif
 #endif
     }
@@ -607,11 +604,14 @@ QString QFSFileEngine::rootPath()
 
 QString QFSFileEngine::tempPath()
 {
-#ifdef Q_OS_SYMBIAN
+#if defined(Q_OS_SYMBIAN)
 # ifdef Q_WS_S60
     TFileName symbianPath = PathInfo::PhoneMemoryRootPath();
     QString temp = QDir::fromNativeSeparators(qt_TDesC2QString(symbianPath));
     temp += QLatin1String( "temp/");
+
+    // Just to verify that folder really exist on hardware
+    QT_MKDIR(QFile::encodeName(temp), 0777);
 # else
 # warning No fallback implementation of QFSFileEngine::tempPath()
     return QString();
@@ -632,14 +632,16 @@ QFileInfoList QFSFileEngine::drives()
     RFs rfs = qt_s60GetRFs();
     TInt err = rfs.DriveList(driveList);
     if (err == KErrNone) {
+        char driveName[] = "A:/";
+
         for (char i = 0; i < KMaxDrives; i++) {
             if (driveList[i]) {
-                ret.append(QString("%1:/").arg(QChar('A' + i)));
+                driveName[0] = 'A' + i;
+                ret.append(QFileInfo(QLatin1String(driveName)));
             }
         }
-    }
-    else {
-        qWarning("QDir::drives: Getting drives failed");
+    } else {
+        qWarning("QFSFileEngine::drives: Getting drives failed");
     }
 #else
     ret.append(QFileInfo(rootPath()));
@@ -680,22 +682,16 @@ bool QFSFileEnginePrivate::isSymlink() const
 #if defined(Q_OS_SYMBIAN)
 static bool _q_isSymbianHidden(const QString &path, bool isDir)
 {
-    bool retval = false;
     RFs rfs = qt_s60GetRFs();
     QFileInfo fi(path);
     QString absPath = fi.absoluteFilePath();
-    if (isDir && absPath.at(absPath.size()-1) != QChar('/')) {
-        absPath += QChar('/');
-    }
+    if (isDir && !absPath.endsWith(QLatin1Char('/')))
+        absPath.append(QLatin1Char('/'));
     QString native(QDir::toNativeSeparators(absPath));
     TPtrC ptr(qt_QString2TPtrC(native));
     TUint attributes;
     TInt err = rfs.Att(ptr, attributes);
-    if (err == KErrNone && (attributes & KEntryAttHidden)) {
-        retval = true;
-    }
-
-    return retval;
+    return (err == KErrNone && (attributes & KEntryAttHidden));
 }
 #endif
 
@@ -805,16 +801,16 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
             ret |= ExistsFlag;
 #if defined(Q_OS_SYMBIAN)
         if (d->filePath == QLatin1String("/")
-            || (d->filePath.at(0).isLetter()
-                && d->filePath.mid(1,d->filePath.length()) == QLatin1String(":/")))
+            || (d->filePath.length() == 3 && d->filePath.at(0).isLetter()
+                && d->filePath.at(1) == QLatin1Char(':') && d->filePath.at(2) == QLatin1Char('/'))) {
             ret |= RootFlag;
-
-        // In Symbian, all symlinks have hidden attribute for some reason;
-        // lets make them visible for better compatibility with other platforms.
-        // If somebody actually wants a hidden link, then they are out of luck.
-        if (!(ret & RootFlag) && !d->isSymlink())
-            if(_q_isSymbianHidden(d->filePath, ret & DirectoryType))
-                    ret |= HiddenFlag;
+        } else {
+            // In Symbian, all symlinks have hidden attribute for some reason;
+            // lets make them visible for better compatibility with other platforms.
+            // If somebody actually wants a hidden link, then they are out of luck.
+            if (!d->isSymlink() && _q_isSymbianHidden(d->filePath, ret & DirectoryType))
+                ret |= HiddenFlag;
+        }
 #else
         if (d->filePath == QLatin1String("/")) {
             ret |= RootFlag;
@@ -825,7 +821,7 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
 #  if !defined(QWS) && defined(Q_OS_MAC)
                     || _q_isMacHidden(d->filePath)
 #  endif
-               ) {
+            ) {
                 ret |= HiddenFlag;
             }
         }
@@ -834,12 +830,12 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
     return ret;
 }
 
-#ifdef Q_OS_SYMBIAN
-static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFileEngine *engine,
-                               const QFSFileEnginePrivate * const d)
+#if defined(Q_OS_SYMBIAN)
+QString QFSFileEngine::fileName(FileName file) const
 {
+    Q_D(const QFSFileEngine);
     const QLatin1Char slashChar('/');
-    if(file == QAbstractFileEngine::BaseName) {
+    if(file == BaseName) {
         int slash = d->filePath.lastIndexOf(slashChar);
         if(slash == -1) {
             int colon = d->filePath.lastIndexOf(QLatin1Char(':'));
@@ -848,7 +844,7 @@ static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFile
             return d->filePath;
         }
         return d->filePath.mid(slash + 1);
-    } else if(file == QAbstractFileEngine::PathName) {
+    } else if(file == PathName) {
         if(!d->filePath.size())
             return d->filePath;
 
@@ -864,7 +860,7 @@ static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFile
                 slash++;
             return d->filePath.left(slash);
         }
-    } else if(file == QAbstractFileEngine::AbsoluteName || file == QAbstractFileEngine::AbsolutePathName) {
+    } else if(file == AbsoluteName || file == AbsolutePathName) {
         QString ret;
         if (!isRelativePathSymbian(d->filePath)) {
             if (d->filePath.size() > 2 && d->filePath.at(1) == QLatin1Char(':')
@@ -892,7 +888,7 @@ static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFile
             ret[0] = ret.at(0).toUpper();
         }
 
-        if (file == QAbstractFileEngine::AbsolutePathName) {
+        if (file == AbsolutePathName) {
             int slash = ret.lastIndexOf(slashChar);
             if (slash < 0)
                 return ret;
@@ -902,12 +898,12 @@ static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFile
                 return ret.left(slash > 0 ? slash : 1);
         }
         return ret;
-    } else if(file == QAbstractFileEngine::CanonicalName || file == QAbstractFileEngine::CanonicalPathName) {
-        if (!(engine->fileFlags(QAbstractFileEngine::ExistsFlag) & QAbstractFileEngine::ExistsFlag))
+    } else if(file == CanonicalName || file == CanonicalPathName) {
+        if (!(fileFlags(ExistsFlag) & ExistsFlag))
             return QString();
 
-        QString ret = QFSFileEnginePrivate::canonicalized(symbianFileName(QAbstractFileEngine::AbsoluteName, engine, d));
-        if (!ret.isEmpty() && file == QAbstractFileEngine::CanonicalPathName) {
+        QString ret = QFSFileEnginePrivate::canonicalized(fileName(AbsoluteName));
+        if (file == CanonicalPathName && !ret.isEmpty()) {
             int slash = ret.lastIndexOf(slashChar);
             if (slash == -1)
                 ret = QDir::fromNativeSeparators(QDir::currentPath());
@@ -916,7 +912,7 @@ static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFile
             ret = ret.left(slash);
         }
         return ret;
-    } else if(file == QAbstractFileEngine::LinkName) {
+    } else if(file == LinkName) {
         if (d->isSymlink()) {
             char s[PATH_MAX+1];
             int len = readlink(d->nativeFilePath.constData(), s, PATH_MAX);
@@ -939,19 +935,17 @@ static QString symbianFileName(QAbstractFileEngine::FileName file, const QFSFile
             }
         }
         return QString();
-    } else if(file == QAbstractFileEngine::BundleName) {
+    } else if(file == BundleName) {
         return QString();
     }
     return d->filePath;
 }
-#endif
+
+#else
 
 QString QFSFileEngine::fileName(FileName file) const
 {
     Q_D(const QFSFileEngine);
-#ifdef Q_OS_SYMBIAN
-    return symbianFileName(file, this, d);
-#else
     if (file == BundleName) {
 #if !defined(QWS) && defined(Q_OS_MAC)
         QCFType<CFURLRef> url = CFURLCreateWithFileSystemPath(0, QCFString(d->filePath),
@@ -1004,7 +998,7 @@ QString QFSFileEngine::fileName(FileName file) const
             return QString();
 
         QString ret = QFSFileEnginePrivate::canonicalized(fileName(AbsoluteName));
-        if (!ret.isEmpty() && file == CanonicalPathName) {
+        if (file == CanonicalPathName && !ret.isEmpty()) {
             int slash = ret.lastIndexOf(QLatin1Char('/'));
             if (slash == -1)
                 ret = QDir::currentPath();
@@ -1085,19 +1079,16 @@ QString QFSFileEngine::fileName(FileName file) const
         return QString();
     }
     return d->filePath;
-#endif // Q_OS_SYMBIAN
 }
+#endif // Q_OS_SYMBIAN
 
 bool QFSFileEngine::isRelativePath() const
 {
     Q_D(const QFSFileEngine);
-#ifdef Q_OS_SYMBIAN
+#if defined(Q_OS_SYMBIAN)
     return isRelativePathSymbian(d->filePath);
 #else
-    int len = d->filePath.length();
-    if (len == 0)
-        return true;
-    return d->filePath[0] != QLatin1Char('/');
+    return d->filePath.length() ? d->filePath[0] != QLatin1Char('/') : true;
 #endif
 }
 
@@ -1134,9 +1125,7 @@ QString QFSFileEngine::owner(FileOwner own) const
         if (pw)
             return QFile::decodeName(QByteArray(pw->pw_name));
     } else if (own == OwnerGroup) {
-#ifdef Q_OS_SYMBIAN
-        return QString();
-#endif
+#if !defined(Q_OS_SYMBIAN)
         struct group *gr = 0;
 #if !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
         size_max = sysconf(_SC_GETGR_R_SIZE_MAX);
@@ -1154,12 +1143,12 @@ QString QFSFileEngine::owner(FileOwner own) const
                 || errno != ERANGE)
                 break;
         }
-
 #else
         gr = getgrgid(ownerId(own));
 #endif
         if (gr)
             return QFile::decodeName(QByteArray(gr->gr_name));
+#endif
     }
     return QString();
 }

@@ -271,7 +271,7 @@ void QGLPixmapData::ensureCreated() const
             m_source = QImage();
     }
 
-    m_texture.clean = false;
+    m_texture.options &= ~QGLContext::MemoryManagedBindOption;
 }
 
 QGLFramebufferObject *QGLPixmapData::fbo() const

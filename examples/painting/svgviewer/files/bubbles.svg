@@ -72,7 +72,7 @@
       <radialGradient id="shadowGrad" gradientUnits="userSpaceOnUse"
                       cx="0" cy="0" r="100" fx="-50" fy="50">
         <stop offset="0%" stop-color="black" stop-opacity="1.0" />
-        <stop offset="100%" stop-color="white" stop-opacity="0.0" />
+        <stop offset="100%" stop-color="black" stop-opacity="0.0" />
       </radialGradient>
 
       <!-- Define a shadow for each sphere. -->

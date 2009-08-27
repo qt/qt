@@ -152,6 +152,9 @@ public:
         return static_cast<QDirectFBScreen*>(inst);
     }
 
+    IDirectFBSurface *surfaceForWidget(const QWidget *widget, QRect *rect) const;
+    IDirectFBSurface *subSurfaceForWidget(const QWidget *widget, const QRect &area = QRect()) const;
+
     IDirectFB *dfb();
 #ifdef QT_NO_DIRECTFB_WM
     IDirectFBSurface *primarySurface();

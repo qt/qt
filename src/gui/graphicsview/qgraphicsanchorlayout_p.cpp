@@ -554,7 +554,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
             qDebug("candidate list for sequential simplification:\n[%s]", qPrintable(strPath));
 #endif
 
-            bool forward;
+            bool forward = true;
             AnchorVertex *prev = beforeSequence;
             int intervalFrom = 0;
 

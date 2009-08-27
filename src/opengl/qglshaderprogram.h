@@ -63,19 +63,21 @@ class Q_OPENGL_EXPORT QGLShader : public QObject
 {
     Q_OBJECT
 public:
-    enum ShaderType
+    enum ShaderTypeBits
     {
-        VertexShader,
-        FragmentShader,
-        PartialVertexShader,
-        PartialFragmentShader
+        VertexShader            = 0x0001,
+        FragmentShader          = 0x0002,
+
+        PartialShader           = 0x1000,
+
+        PartialVertexShader     = PartialShader | VertexShader,
+        PartialFragmentShader   = PartialShader | FragmentShader
     };
+    Q_DECLARE_FLAGS(ShaderType, ShaderTypeBits);
 
     explicit QGLShader(QGLShader::ShaderType type, QObject *parent = 0);
-    explicit QGLShader(const QString& fileName, QObject *parent = 0);
     QGLShader(const QString& fileName, QGLShader::ShaderType type, QObject *parent = 0);
     QGLShader(QGLShader::ShaderType type, const QGLContext *context, QObject *parent = 0);
-    QGLShader(const QString& fileName, const QGLContext *context, QObject *parent = 0);
     QGLShader(const QString& fileName, QGLShader::ShaderType type, const QGLContext *context, QObject *parent = 0);
     virtual ~QGLShader();
 
@@ -106,6 +108,9 @@ private:
     Q_DISABLE_COPY(QGLShader)
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QGLShader::ShaderType);
+
+
 class QGLShaderProgramPrivate;
 
 class Q_OPENGL_EXPORT QGLShaderProgram : public QObject
@@ -123,6 +128,7 @@ public:
     bool addShader(QGLShader::ShaderType type, const char *source);
     bool addShader(QGLShader::ShaderType type, const QByteArray& source);
     bool addShader(QGLShader::ShaderType type, const QString& source);
+    bool addShaderFromFile(QGLShader::ShaderType type, const QString& fileName);
 
     void removeAllShaders();
 

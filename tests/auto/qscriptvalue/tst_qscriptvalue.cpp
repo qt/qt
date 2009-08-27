@@ -447,6 +447,8 @@ void tst_QScriptValue::toString()
     variant = eng.newVariant(QVariant(QPoint(10, 20)));
     QVERIFY(variant.isVariant());
     QCOMPARE(variant.toString(), QString::fromLatin1("QVariant(QPoint)"));
+    variant = eng.newVariant(QUrl());
+    QVERIFY(variant.toString().isEmpty());
 }
 
 void tst_QScriptValue::toNumber()
@@ -2220,13 +2222,30 @@ void tst_QScriptValue::getSetScriptClass()
     QCOMPARE(inv.scriptClass(), (QScriptClass*)0);
     QScriptValue num(123);
     QCOMPARE(num.scriptClass(), (QScriptClass*)0);
-    QScriptValue obj = eng.newObject();
-    QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
+
     TestScriptClass testClass(&eng);
-    obj.setScriptClass(&testClass);
-    QCOMPARE(obj.scriptClass(), (QScriptClass*)&testClass);
-    obj.setScriptClass(0);
-    QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
+    // object created in C++ (newObject())
+    {
+        QScriptValue obj = eng.newObject();
+        QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
+        obj.setScriptClass(&testClass);
+        QCOMPARE(obj.scriptClass(), (QScriptClass*)&testClass);
+        obj.setScriptClass(0);
+        QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
+    }
+    // object created in JS
+    {
+        QScriptValue obj = eng.evaluate("new Object");
+        QVERIFY(!eng.hasUncaughtException());
+        QVERIFY(obj.isObject());
+        QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
+        QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setScriptClass() failed: cannot change class of non-QScriptObject");
+        obj.setScriptClass(&testClass);
+        QEXPECT_FAIL("", "With JSC back-end, the class of a plain object created in JS can't be changed", Continue);
+        QCOMPARE(obj.scriptClass(), (QScriptClass*)&testClass);
+        obj.setScriptClass(0);
+        QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
+    }
 }
 
 static QScriptValue getArg(QScriptContext *ctx, QScriptEngine *)

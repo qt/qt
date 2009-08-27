@@ -209,66 +209,60 @@ bool QDirectFBPixmapData::fromData(const uchar *buffer, uint len, const char *fo
     return QPixmapData::fromData(buffer, len, format, flags);
 }
 
-template <typename T> class QDirectFBPointer
+template <typename T> struct QDirectFBInterfaceCleanupHandler
+{
+    static void cleanup(T *t) { if (t) t->Release(t); }
+};
+
+template <typename T>
+class QDirectFBPointer : public QScopedPointer<T, QDirectFBInterfaceCleanupHandler<T> >
 {
 public:
-    QDirectFBPointer(T *tt = 0) : t(tt) {}
-    ~QDirectFBPointer() { if (t) t->Release(t); }
-
-    inline T* operator->() { return t; }
-    inline operator T*() { return t; }
-
-    inline T** operator&() { return &t; }
-    inline bool operator!() const { return !t; }
-    inline T *data() { return t; }
-    inline const T *data() const { return t; }
-
-    T *t;
+    QDirectFBPointer(T *t = 0)
+        : QScopedPointer<T, QDirectFBInterfaceCleanupHandler<T> >(t)
+    {}
 };
 
 bool QDirectFBPixmapData::fromDataBufferDescription(const DFBDataBufferDescription &dataBufferDescription)
 {
     IDirectFB *dfb = screen->dfb();
     Q_ASSERT(dfb);
-    QDirectFBPointer<IDirectFBDataBuffer> dataBuffer;
     DFBResult result = DFB_OK;
-    if ((result = dfb->CreateDataBuffer(dfb, &dataBufferDescription, &dataBuffer)) != DFB_OK) {
+    IDirectFBDataBuffer *dataBufferPtr;
+    if ((result = dfb->CreateDataBuffer(dfb, &dataBufferDescription, &dataBufferPtr)) != DFB_OK) {
         DirectFBError("QDirectFBPixmapData::fromDataBufferDescription()", result);
         return false;
     }
+    QDirectFBPointer<IDirectFBDataBuffer> dataBuffer(dataBufferPtr);
 
-#if defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
-    IDirectFBImageProvider *provider = 0;
-#else
-    QDirectFBPointer<IDirectFBImageProvider> provider;
-#endif
-    if ((result = dataBuffer->CreateImageProvider(dataBuffer, &provider)) != DFB_OK) {
+    IDirectFBImageProvider *providerPtr;
+    if ((result = dataBuffer->CreateImageProvider(dataBuffer.data(), &providerPtr)) != DFB_OK) {
         DirectFBError("QDirectFBPixmapData::fromDataBufferDescription(): Can't create image provider", result);
         return false;
     }
-#if defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
-    screen->setDirectFBImageProvider(provider);
-#endif
+    QDirectFBPointer<IDirectFBImageProvider> provider(providerPtr);
+
     DFBSurfaceDescription surfaceDescription;
-    if ((result = provider->GetSurfaceDescription(provider, &surfaceDescription)) != DFB_OK) {
+    if ((result = provider->GetSurfaceDescription(provider.data(), &surfaceDescription)) != DFB_OK) {
         DirectFBError("QDirectFBPixmapData::fromDataBufferDescription(): Can't get surface description", result);
         return false;
     }
 
-    QDirectFBPointer<IDirectFBSurface> surfaceFromDescription = screen->createDFBSurface(surfaceDescription, QDirectFBScreen::DontTrackSurface, &result);
+    QDirectFBPointer<IDirectFBSurface> surfaceFromDescription;
+    surfaceFromDescription.reset(screen->createDFBSurface(surfaceDescription, QDirectFBScreen::DontTrackSurface, &result));
     if (!surfaceFromDescription) {
         DirectFBError("QDirectFBPixmapData::fromSurfaceDescription(): Can't create surface", result);
         return false;
     }
 
-    result = provider->RenderTo(provider, surfaceFromDescription, 0);
+    result = provider->RenderTo(provider.data(), surfaceFromDescription.data(), 0);
     if (result != DFB_OK) {
         DirectFBError("QDirectFBPixmapData::fromSurfaceDescription(): Can't render to surface", result);
         return false;
     }
 
     DFBImageDescription imageDescription;
-    result = provider->GetImageDescription(provider, &imageDescription);
+    result = provider->GetImageDescription(provider.data(), &imageDescription);
     if (result != DFB_OK) {
         DirectFBError("QDirectFBPixmapData::fromSurfaceDescription(): Can't get image description", result);
         return false;
@@ -285,7 +279,7 @@ bool QDirectFBPixmapData::fromDataBufferDescription(const DFBDataBufferDescripti
     DFBSurfaceBlittingFlags blittingFlags = DSBLIT_NOFX;
     if (imageDescription.caps & DICAPS_COLORKEY) {
         blittingFlags |= DSBLIT_SRC_COLORKEY;
-        result = surfaceFromDescription->SetSrcColorKey(surfaceFromDescription,
+        result = surfaceFromDescription->SetSrcColorKey(surfaceFromDescription.data(),
                                                         imageDescription.colorkey_r,
                                                         imageDescription.colorkey_g,
                                                         imageDescription.colorkey_b);
@@ -305,7 +299,7 @@ bool QDirectFBPixmapData::fromDataBufferDescription(const DFBDataBufferDescripti
         return false;
     }
 
-    result = dfbSurface->Blit(dfbSurface, surfaceFromDescription, 0, 0, 0);
+    result = dfbSurface->Blit(dfbSurface, surfaceFromDescription.data(), 0, 0, 0);
     if (result != DFB_OK) {
         DirectFBError("QDirectFBPixmapData::fromSurfaceDescription: Can't blit to surface", result);
         invalidate(); // release dfbSurface
@@ -324,6 +318,11 @@ bool QDirectFBPixmapData::fromDataBufferDescription(const DFBDataBufferDescripti
 #if (Q_DIRECTFB_VERSION >= 0x010000)
     dfbSurface->ReleaseSource(dfbSurface);
 #endif
+#if defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
+    screen->setDirectFBImageProvider(providerPtr);
+    provider.take();
+#endif
+
     return true;
 }
 
