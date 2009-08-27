@@ -58,7 +58,7 @@ QT_MODULE(Declarative)
 
 class QmlAbstractAnimationPrivate;
 class QmlAnimationGroup;
-class QmlAbstractAnimation : public QmlPropertyValueSource, public QmlParserStatus
+class QmlAbstractAnimation : public QObject, public QmlPropertyValueSource, public QmlParserStatus
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlAbstractAnimation)

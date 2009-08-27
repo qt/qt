@@ -154,7 +154,7 @@ QML_DEFINE_NOCREATE_TYPE(QmlAbstractAnimation)
 */
 
 QmlAbstractAnimation::QmlAbstractAnimation(QObject *parent)
-: QmlPropertyValueSource(*(new QmlAbstractAnimationPrivate), parent)
+: QObject(*(new QmlAbstractAnimationPrivate), parent)
 {
 }
 
@@ -163,7 +163,7 @@ QmlAbstractAnimation::~QmlAbstractAnimation()
 }
 
 QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObject *parent)
-: QmlPropertyValueSource(dd, parent)
+: QObject(dd, parent)
 {
 }
 

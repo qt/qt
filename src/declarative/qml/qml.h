@@ -50,6 +50,7 @@
 #include <QtDeclarative/qmlmetatype.h>
 #include <QtDeclarative/qmlmetaproperty.h>
 #include <QtDeclarative/qmlparserstatus.h>
+#include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qmllist.h>
 
 QT_BEGIN_HEADER

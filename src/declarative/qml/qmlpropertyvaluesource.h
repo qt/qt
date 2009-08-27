@@ -42,9 +42,7 @@
 #ifndef QMLPROPERTYVALUESOURCE_H
 #define QMLPROPERTYVALUESOURCE_H
 
-#include <QtDeclarative/qfxglobal.h>
-#include <QtDeclarative/qml.h>
-#include <QtCore/QObject>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 
@@ -52,27 +50,16 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QObjectPrivate;
 class QmlMetaProperty;
-class Q_DECLARATIVE_EXPORT QmlPropertyValueSource : public QObject
+class Q_DECLARATIVE_EXPORT QmlPropertyValueSource
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QObject)
-
 public:
-    QmlPropertyValueSource(QObject *parent);
-    virtual void setTarget(const QmlMetaProperty &);
-
-protected:
-    QmlPropertyValueSource(QObjectPrivate &dd, QObject *parent);
-
-private:
-    Q_DISABLE_COPY(QmlPropertyValueSource)
+    QmlPropertyValueSource();
+    virtual void setTarget(const QmlMetaProperty &) = 0;
 };
+Q_DECLARE_INTERFACE(QmlPropertyValueSource, "com.trolltech.qml.QmlPropertyValueSource")
 
 QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QmlPropertyValueSource)
 
 QT_END_HEADER
 

@@ -52,11 +52,12 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QmlFollowPrivate;
-class Q_DECLARATIVE_EXPORT QmlFollow : public QmlPropertyValueSource, 
+class Q_DECLARATIVE_EXPORT QmlFollow : public QObject, public QmlPropertyValueSource,
                                  public QmlParserStatus
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlFollow)
+    Q_INTERFACES(QmlPropertyValueSource)
     Q_INTERFACES(QmlParserStatus)
 
     Q_PROPERTY(qreal source READ sourceValue WRITE setSourceValue)
