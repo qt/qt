@@ -34,77 +34,77 @@ QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
-    namespace MMF
-    {
-        class VideoOutput;
+namespace MMF
+{
+class VideoOutput;
 
-        /**
-         * @short Interface which abstracts from MediaObject the current
-         * media type
-         * 
-         * This may be:
-         * 	-	Nothing, in which case this interface is implemented by
-         * 		DummyPlayer
-         *  -	Audio, in which case the implementation is AudioPlayer
-         *  -	Video, in which case the implementation is VideoPlayer
-         */
-        class AbstractPlayer	: public QObject
-								, public VolumeObserver
-        {
-			// Required although this class has no signals or slots
-			// Without this, qobject_cast will fail
-			Q_OBJECT
-        
-        public:
-        	AbstractPlayer();
-        	explicit AbstractPlayer(const AbstractPlayer& player);
-        	
-        	// MediaObjectInterface (implemented)
-        	qint32 tickInterval() const;
-        	void setTickInterval(qint32);
-            void setTransitionTime(qint32);
-            qint32 transitionTime() const;
-            void setPrefinishMark(qint32);
-            qint32 prefinishMark() const;
-        	
-        	// MediaObjectInterface (abstract)
-            virtual void play() = 0;
-            virtual void pause() = 0;
-            virtual void stop() = 0;
-            virtual void seek(qint64 milliseconds) = 0;
-            virtual bool hasVideo() const = 0;
-            virtual bool isSeekable() const = 0;
-            virtual qint64 currentTime() const = 0;
-            virtual Phonon::State state() const = 0;
-            virtual QString errorString() const = 0;
-            virtual Phonon::ErrorType errorType() const = 0;
-            virtual qint64 totalTime() const = 0;
-            virtual Phonon::MediaSource source() const = 0;           
-            // This is a temporary hack to work around KErrInUse from MMF
-            // client utility OpenFileL calls
-            //virtual void setSource(const Phonon::MediaSource &) = 0;
-            virtual void setFileSource(const Phonon::MediaSource&, RFile&) = 0;
-            virtual void setNextSource(const Phonon::MediaSource &) = 0;
-            
-            void setVideoOutput(VideoOutput* videoOutput);
-            
-        protected:
-        	virtual void videoOutputChanged();
-            
-        private:
-        	virtual void doSetTickInterval(qint32 interval) = 0;
-        	
-        protected:       	
-        	// Not owned
-        	VideoOutput*				m_videoOutput;
-        	
-        private:
-        	qint32						m_tickInterval;
-        	qint32						m_transitionTime;
-        	qint32						m_prefinishMark;
+/**
+ * @short Interface which abstracts from MediaObject the current
+ * media type
+ *
+ * This may be:
+ *  -   Nothing, in which case this interface is implemented by
+ *      DummyPlayer
+ *  -   Audio, in which case the implementation is AudioPlayer
+ *  -   Video, in which case the implementation is VideoPlayer
+ */
+class AbstractPlayer    : public QObject
+        , public VolumeObserver
+{
+    // Required although this class has no signals or slots
+    // Without this, qobject_cast will fail
+    Q_OBJECT
 
-        };
-    }
+public:
+    AbstractPlayer();
+    explicit AbstractPlayer(const AbstractPlayer& player);
+
+    // MediaObjectInterface (implemented)
+    qint32 tickInterval() const;
+    void setTickInterval(qint32);
+    void setTransitionTime(qint32);
+    qint32 transitionTime() const;
+    void setPrefinishMark(qint32);
+    qint32 prefinishMark() const;
+
+    // MediaObjectInterface (abstract)
+    virtual void play() = 0;
+    virtual void pause() = 0;
+    virtual void stop() = 0;
+    virtual void seek(qint64 milliseconds) = 0;
+    virtual bool hasVideo() const = 0;
+    virtual bool isSeekable() const = 0;
+    virtual qint64 currentTime() const = 0;
+    virtual Phonon::State state() const = 0;
+    virtual QString errorString() const = 0;
+    virtual Phonon::ErrorType errorType() const = 0;
+    virtual qint64 totalTime() const = 0;
+    virtual Phonon::MediaSource source() const = 0;
+    // This is a temporary hack to work around KErrInUse from MMF
+    // client utility OpenFileL calls
+    //virtual void setSource(const Phonon::MediaSource &) = 0;
+    virtual void setFileSource(const Phonon::MediaSource&, RFile&) = 0;
+    virtual void setNextSource(const Phonon::MediaSource &) = 0;
+
+    void setVideoOutput(VideoOutput* videoOutput);
+
+protected:
+    virtual void videoOutputChanged();
+
+private:
+    virtual void doSetTickInterval(qint32 interval) = 0;
+
+protected:
+    // Not owned
+    VideoOutput*                m_videoOutput;
+
+private:
+    qint32                      m_tickInterval;
+    qint32                      m_transitionTime;
+    qint32                      m_prefinishMark;
+
+};
+}
 }
 
 QT_END_NAMESPACE

@@ -25,51 +25,51 @@ QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
-    namespace MMF
-    {
-        class AudioOutput;
+namespace MMF
+{
+class AudioOutput;
 
-        /**
-         * @short Stub implementation of AbstractPlayer.
-         * 
-         * The functions of this class are:
-         * -	Allow MediaObject to call a subset of the MediaObjectInterface
-         * 		API, before SetSource has been called.
-         * -	Cache any parameters which are set in this state (e.g.
-         * 		prefinish mark), so that they can be copied into the 'real'
-         * 		AbstractPlayer implementation once a source has been loaded.
-         */
-        class DummyPlayer : public AbstractPlayer
-        {
-        public:
-        	DummyPlayer();
-        	DummyPlayer(const AbstractPlayer& player);
-        	
-            // MediaObjectInterface
-            virtual void play();
-            virtual void pause();
-            virtual void stop();
-            virtual void seek(qint64 milliseconds);
-            virtual bool hasVideo() const;
-            virtual bool isSeekable() const;
-            virtual qint64 currentTime() const;
-            virtual Phonon::State state() const;
-            virtual QString errorString() const;
-            virtual Phonon::ErrorType errorType() const;
-            virtual qint64 totalTime() const;
-            virtual MediaSource source() const;
-            // virtual void setSource(const MediaSource &);
-            virtual void setFileSource(const Phonon::MediaSource&, RFile&);
-            virtual void setNextSource(const MediaSource &source);
-            
-            // VolumeObserver
-            virtual void volumeChanged(qreal volume);
-            
-            // AbstractPlayer
-            virtual void doSetTickInterval(qint32 interval);
-            
-        };
-    }
+/**
+ * @short Stub implementation of AbstractPlayer.
+ *
+ * The functions of this class are:
+ * -    Allow MediaObject to call a subset of the MediaObjectInterface
+ *      API, before SetSource has been called.
+ * -    Cache any parameters which are set in this state (e.g.
+ *      prefinish mark), so that they can be copied into the 'real'
+ *      AbstractPlayer implementation once a source has been loaded.
+ */
+class DummyPlayer : public AbstractPlayer
+{
+public:
+    DummyPlayer();
+    DummyPlayer(const AbstractPlayer& player);
+
+    // MediaObjectInterface
+    virtual void play();
+    virtual void pause();
+    virtual void stop();
+    virtual void seek(qint64 milliseconds);
+    virtual bool hasVideo() const;
+    virtual bool isSeekable() const;
+    virtual qint64 currentTime() const;
+    virtual Phonon::State state() const;
+    virtual QString errorString() const;
+    virtual Phonon::ErrorType errorType() const;
+    virtual qint64 totalTime() const;
+    virtual MediaSource source() const;
+    // virtual void setSource(const MediaSource &);
+    virtual void setFileSource(const Phonon::MediaSource&, RFile&);
+    virtual void setNextSource(const MediaSource &source);
+
+    // VolumeObserver
+    virtual void volumeChanged(qreal volume);
+
+    // AbstractPlayer
+    virtual void doSetTickInterval(qint32 interval);
+
+};
+}
 }
 
 QT_END_NAMESPACE

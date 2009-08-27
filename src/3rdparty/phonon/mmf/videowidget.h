@@ -27,49 +27,49 @@ QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
-    namespace MMF
-    {
-		class VideoOutput;
-    
-        class VideoWidget		:	public QObject
-								,	public Phonon::VideoWidgetInterface
-        {
-            Q_OBJECT
-            Q_INTERFACES(Phonon::VideoWidgetInterface)
-            
-        public:
-        	VideoWidget(QWidget* parent);      
-        	~VideoWidget();
+namespace MMF
+{
+class VideoOutput;
 
-			// VideoWidgetInterface
-        	virtual Phonon::VideoWidget::AspectRatio aspectRatio() const;
-			virtual void setAspectRatio(Phonon::VideoWidget::AspectRatio aspectRatio);
-			virtual qreal brightness() const;
-			virtual void setBrightness(qreal brightness);
-			virtual Phonon::VideoWidget::ScaleMode scaleMode() const;
-			virtual void setScaleMode(Phonon::VideoWidget::ScaleMode scaleMode);
-			virtual qreal contrast() const;
-			virtual void setContrast(qreal constrast);
-			virtual qreal hue() const;
-			virtual void setHue(qreal hue);
-			virtual qreal saturation() const;
-			virtual void setSaturation(qreal saturation);
-			virtual QWidget *widget();
-			
-			VideoOutput& videoOutput();
-			
-        private:
-        	QScopedPointer<QWidget>                 m_widget;
-            
-        	Phonon::VideoWidget::AspectRatio		m_aspectRatio;
-        	qreal									m_brightness;
-        	Phonon::VideoWidget::ScaleMode			m_scaleMode;
-        	qreal									m_contrast;
-        	qreal									m_hue;
-        	qreal									m_saturation;
-        	
-        };
-    }
+class VideoWidget       :   public QObject
+        ,   public Phonon::VideoWidgetInterface
+{
+    Q_OBJECT
+    Q_INTERFACES(Phonon::VideoWidgetInterface)
+
+public:
+    VideoWidget(QWidget* parent);
+    ~VideoWidget();
+
+    // VideoWidgetInterface
+    virtual Phonon::VideoWidget::AspectRatio aspectRatio() const;
+    virtual void setAspectRatio(Phonon::VideoWidget::AspectRatio aspectRatio);
+    virtual qreal brightness() const;
+    virtual void setBrightness(qreal brightness);
+    virtual Phonon::VideoWidget::ScaleMode scaleMode() const;
+    virtual void setScaleMode(Phonon::VideoWidget::ScaleMode scaleMode);
+    virtual qreal contrast() const;
+    virtual void setContrast(qreal constrast);
+    virtual qreal hue() const;
+    virtual void setHue(qreal hue);
+    virtual qreal saturation() const;
+    virtual void setSaturation(qreal saturation);
+    virtual QWidget *widget();
+
+    VideoOutput& videoOutput();
+
+private:
+    QScopedPointer<QWidget>                 m_widget;
+
+    Phonon::VideoWidget::AspectRatio        m_aspectRatio;
+    qreal                                   m_brightness;
+    Phonon::VideoWidget::ScaleMode          m_scaleMode;
+    qreal                                   m_contrast;
+    qreal                                   m_hue;
+    qreal                                   m_saturation;
+
+};
+}
 }
 
 QT_END_NAMESPACE

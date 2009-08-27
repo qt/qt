@@ -26,43 +26,43 @@ QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
-    namespace MMF
-    {
-        class VideoOutputObserver;
-    
-        class VideoOutput		:	public QWidget
-        {
-            Q_OBJECT
-            
-        public:
-        	explicit VideoOutput(QWidget* parent);      
-        	~VideoOutput();
-			
-        	void setFrameSize(const QSize& size);
-        	void setObserver(VideoOutputObserver* observer);
-        	
-        protected:
-        #ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
-            // Override QWidget functions
-            QSize sizeHint() const;
-        	void paintEvent(QPaintEvent* event);
-        	void resizeEvent(QResizeEvent* event);
-        	void moveEvent(QMoveEvent* event);
-        	QPaintEngine* paintEngine() const;
-        #endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
+namespace MMF
+{
+class VideoOutputObserver;
+
+class VideoOutput       :   public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit VideoOutput(QWidget* parent);
+    ~VideoOutput();
+
+    void setFrameSize(const QSize& size);
+    void setObserver(VideoOutputObserver* observer);
+
+protected:
+#ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
+    // Override QWidget functions
+    QSize sizeHint() const;
+    void paintEvent(QPaintEvent* event);
+    void resizeEvent(QResizeEvent* event);
+    void moveEvent(QMoveEvent* event);
+    QPaintEngine* paintEngine() const;
+#endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 
 #ifdef PHONON_MMF_DEBUG_VIDEO_OUTPUT
-        public:
-            void dump();
+public:
+    void dump();
 #endif
-        	
-        private:
-            QSize m_frameSize;
-        	
-            // Not owned
-            VideoOutputObserver* m_observer;
-        };
-    }
+
+private:
+    QSize m_frameSize;
+
+    // Not owned
+    VideoOutputObserver* m_observer;
+};
+}
 }
 
 QT_END_NAMESPACE

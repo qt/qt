@@ -25,18 +25,18 @@ QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
-    namespace MMF
-    {
-        /**
-         * Interface used by AudioOutput to pass volume control commands
-         * back along the audio path to the MediaObject.
-         */
-        class VolumeObserver
-        {
-        public:		
-			virtual void volumeChanged(qreal volume) = 0;
-        };
-    }
+namespace MMF
+{
+/**
+ * Interface used by AudioOutput to pass volume control commands
+ * back along the audio path to the MediaObject.
+ */
+class VolumeObserver
+{
+public:
+    virtual void volumeChanged(qreal volume) = 0;
+};
+}
 }
 
 QT_END_NAMESPACE

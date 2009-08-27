@@ -38,70 +38,70 @@ QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
-    namespace MMF
-    {
-        /**
-         * @short Wrapper over MMF audio client utility
-         */
-        class AudioPlayer	:	public AbstractMediaPlayer
-							,	public MPlayerObserverType    // typedef
+namespace MMF
+{
+/**
+ * @short Wrapper over MMF audio client utility
+ */
+class AudioPlayer   :   public AbstractMediaPlayer
+        ,   public MPlayerObserverType    // typedef
 #ifdef QT_PHONON_MMF_AUDIO_DRM
-							,	public MAudioLoadingObserver
+        ,   public MAudioLoadingObserver
 #endif
-        {
-            Q_OBJECT
+{
+    Q_OBJECT
 
-        public:
-            AudioPlayer();
-            explicit AudioPlayer(const AbstractPlayer& player);
-            virtual ~AudioPlayer();
+public:
+    AudioPlayer();
+    explicit AudioPlayer(const AbstractPlayer& player);
+    virtual ~AudioPlayer();
 
-            // AbstractMediaPlayer
-            virtual void doPlay();
-            virtual void doPause();
-            virtual void doStop();
-            virtual void doSeek(qint64 milliseconds);
-            virtual int setDeviceVolume(int mmfVolume);
-            virtual int openFile(RFile& file);
-            virtual void close();
-            
-            // MediaObjectInterface
-            virtual bool hasVideo() const;
-            virtual qint64 currentTime() const;
-            virtual qint64 totalTime() const;
+    // AbstractMediaPlayer
+    virtual void doPlay();
+    virtual void doPause();
+    virtual void doStop();
+    virtual void doSeek(qint64 milliseconds);
+    virtual int setDeviceVolume(int mmfVolume);
+    virtual int openFile(RFile& file);
+    virtual void close();
+
+    // MediaObjectInterface
+    virtual bool hasVideo() const;
+    virtual qint64 currentTime() const;
+    virtual qint64 totalTime() const;
 
 #ifdef QT_PHONON_MMF_AUDIO_DRM
-            // MDrmAudioPlayerCallback
-            virtual void MdapcInitComplete(TInt aError,
-                                           const TTimeIntervalMicroSeconds &aDuration);
-            virtual void MdapcPlayComplete(TInt aError);
+    // MDrmAudioPlayerCallback
+    virtual void MdapcInitComplete(TInt aError,
+                                   const TTimeIntervalMicroSeconds &aDuration);
+    virtual void MdapcPlayComplete(TInt aError);
 
-            // MAudioLoadingObserver
-            virtual void MaloLoadingStarted();
-            virtual void MaloLoadingComplete();
+    // MAudioLoadingObserver
+    virtual void MaloLoadingStarted();
+    virtual void MaloLoadingComplete();
 #else
-            // MMdaAudioPlayerCallback
-            virtual void MapcInitComplete(TInt aError,
-                                                       const TTimeIntervalMicroSeconds &aDuration);
-            virtual void MapcPlayComplete(TInt aError);
+    // MMdaAudioPlayerCallback
+    virtual void MapcInitComplete(TInt aError,
+                                  const TTimeIntervalMicroSeconds &aDuration);
+    virtual void MapcPlayComplete(TInt aError);
 #endif
 
-        Q_SIGNALS:
-            void totalTimeChanged(qint64 length);
-            void finished();            
-            
-        private:
-        	void construct();
+Q_SIGNALS:
+    void totalTimeChanged(qint64 length);
+    void finished();
 
-        private:
-            /**
-             * Using CPlayerType typedef in order to be able to easily switch between
-             * CMdaAudioPlayerUtility and CDrmPlayerUtility
-             */
-            CPlayerType*         m_player;
+private:
+    void construct();
 
-        };
-    }
+private:
+    /**
+     * Using CPlayerType typedef in order to be able to easily switch between
+     * CMdaAudioPlayerUtility and CDrmPlayerUtility
+     */
+    CPlayerType*         m_player;
+
+};
+}
 }
 
 QT_END_NAMESPACE
