@@ -84,6 +84,10 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    Constructs a QGraphicsAnchorLayout instance.  \a parent is passed to
+    QGraphicsLayout's constructor.
+  */
 QGraphicsAnchorLayout::QGraphicsAnchorLayout(QGraphicsLayoutItem *parent)
     : QGraphicsLayout(*new QGraphicsAnchorLayoutPrivate(), parent)
 {
@@ -91,6 +95,9 @@ QGraphicsAnchorLayout::QGraphicsAnchorLayout(QGraphicsLayoutItem *parent)
     d->createLayoutEdges();
 }
 
+/*!
+    Destroys the QGraphicsAnchorLayout object.
+*/
 QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
 {
     Q_D(QGraphicsAnchorLayout);
@@ -188,32 +195,41 @@ void QGraphicsAnchorLayout::addCornerAnchors(QGraphicsLayoutItem *firstItem,
 }
 
 /*!
-    \fn QGraphicsAnchorLayout::addLeftAndRightAnchors(QGraphicsLayoutItem *firstEdge, QGraphicsLayoutItem *secondEdge)
+    \fn QGraphicsAnchorLayout::addLeftAndRightAnchors(QGraphicsLayoutItem *firstItem, QGraphicsLayoutItem *secondItem)
+
+    Anchors the left and right edges of \a firstItem to the same edges of
+    \a secondItem.
 
     This convenience function is equivalent to calling
     \code
-    l->addAnchor(firstEdge, Qt::AnchorLeft, secondEdge, Qt::AnchorLeft);
-    l->addAnchor(firstEdge, Qt::AnchorRight, secondEdge, Qt::AnchorRight);
+    l->addAnchor(firstItem, Qt::AnchorLeft, secondItem, Qt::AnchorLeft);
+    l->addAnchor(firstItem, Qt::AnchorRight, secondItem, Qt::AnchorRight);
     \endcode
 */
 
 /*!
-    \fn QGraphicsAnchorLayout::addTopAndBottomAnchors(QGraphicsLayoutItem *firstEdge, QGraphicsLayoutItem *secondEdge)
+    \fn QGraphicsAnchorLayout::addTopAndBottomAnchors(QGraphicsLayoutItem *firstItem, QGraphicsLayoutItem *secondItem)
+
+    Anchors the top and bottom edges of \a firstItem to the same edges of
+    \a secondItem.
 
     This convenience function is equivalent to calling
     \code
-    l->addAnchor(firstEdge, Qt::AnchorTop, secondEdge, Qt::AnchorTop);
-    l->addAnchor(firstEdge, Qt::AnchorBottom, secondEdge, Qt::AnchorBottom);
+    l->addAnchor(firstItem, Qt::AnchorTop, secondItem, Qt::AnchorTop);
+    l->addAnchor(firstItem, Qt::AnchorBottom, secondItem, Qt::AnchorBottom);
     \endcode
 */
 
 /*!
-    \fn QGraphicsAnchorLayout::addAllAnchors(QGraphicsLayoutItem *firstEdge, QGraphicsLayoutItem *secondEdge)
+    \fn QGraphicsAnchorLayout::addAllAnchors(QGraphicsLayoutItem *firstItem, QGraphicsLayoutItem *secondItem)
+
+    Anchors all edges (left, right, top and bottom) of \a firstItem to the same edges of
+    \a secondItem.
 
     This convenience function is equivalent to calling
     \code
-    l->addLeftAndRightAnchors(firstEdge, secondEdge);
-    l->addTopAndBottomAnchors(firstEdge, secondEdge);
+    l->addLeftAndRightAnchors(firstItem, secondItem);
+    l->addTopAndBottomAnchors(firstItem, secondItem);
     \endcode
 */
 
@@ -371,7 +387,12 @@ void QGraphicsAnchorLayout::setGeometry(const QRectF &geom)
 }
 
 /*!
+    Removes the layout item at \a index without destroying it. Ownership of
+    the item is transferred to the caller.
+
     Removing an item will also remove any of the anchors associated with it.
+
+    \sa itemAt(), count()
 */
 void QGraphicsAnchorLayout::removeAt(int index)
 {
