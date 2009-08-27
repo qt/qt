@@ -122,7 +122,7 @@ public:
 */
 
 QmlBehaviour::QmlBehaviour(QObject *parent)
-: QmlPropertyValueSource(*(new QmlBehaviourPrivate), parent)
+: QObject(*(new QmlBehaviourPrivate), parent)
 {
     Q_D(QmlBehaviour);
     d->group = new QParallelAnimationGroup;
