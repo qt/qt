@@ -34,94 +34,94 @@ QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
-    namespace MMF
-    {
-		class AbstractPlayer;
-        class VideoOutput;
-        
-        /**
-         * @short Facade class which wraps MMF client utility instance
-         */
-        class MediaObject : public QObject
-                          , public MediaObjectInterface
-                          , public VolumeObserver
-        {
-            Q_OBJECT
-            Q_INTERFACES(Phonon::MediaObjectInterface)
+namespace MMF
+{
+class AbstractPlayer;
+class VideoOutput;
 
-        public:
-            MediaObject(QObject *parent);
-            virtual ~MediaObject();
+/**
+ * @short Facade class which wraps MMF client utility instance
+ */
+class MediaObject : public QObject
+        , public MediaObjectInterface
+        , public VolumeObserver
+{
+    Q_OBJECT
+    Q_INTERFACES(Phonon::MediaObjectInterface)
 
-            // MediaObjectInterface
-            virtual void play();
-            virtual void pause();
-            virtual void stop();
-            virtual void seek(qint64 milliseconds);
-            virtual qint32 tickInterval() const;
-            virtual void setTickInterval(qint32 interval);
-            virtual bool hasVideo() const;
-            virtual bool isSeekable() const;
-            virtual qint64 currentTime() const;
-            virtual Phonon::State state() const;
-            virtual QString errorString() const;
-            virtual Phonon::ErrorType errorType() const;
-            virtual qint64 totalTime() const;
-            virtual MediaSource source() const;
-            virtual void setSource(const MediaSource &);
-            virtual void setNextSource(const MediaSource &source);
-            virtual qint32 prefinishMark() const;
-            virtual void setPrefinishMark(qint32);
-            virtual qint32 transitionTime() const;
-            virtual void setTransitionTime(qint32);
-            
-            // VolumeObserver
-            void volumeChanged(qreal volume);     
-            
-            void setVideoOutput(VideoOutput* videoOutput);
+public:
+    MediaObject(QObject *parent);
+    virtual ~MediaObject();
 
-        Q_SIGNALS:
-            void totalTimeChanged(qint64 length);
-            void hasVideoChanged(bool hasVideo);
-            void seekableChanged(bool seekable); 
-            // TODO: emit bufferStatus from MediaObject
-            void bufferStatus(int);             
-            // TODO: emit aboutToFinish from MediaObject
-            void aboutToFinish();               
-            // TODO: emit prefinishMarkReached from MediaObject
-            void prefinishMarkReached(qint32);  
-            // TODO: emit metaDataChanged from MediaObject
-            void metaDataChanged(const QMultiMap<QString, QString>& metaData);
-            void currentSourceChanged(const MediaSource& source);
-            void stateChanged(Phonon::State oldState,
-                              Phonon::State newState);
-            void finished();
-            void tick(qint64 time);
-            
-        private:
-        	void createPlayer(const MediaSource &source);
-        	bool openRecognizer();
+    // MediaObjectInterface
+    virtual void play();
+    virtual void pause();
+    virtual void stop();
+    virtual void seek(qint64 milliseconds);
+    virtual qint32 tickInterval() const;
+    virtual void setTickInterval(qint32 interval);
+    virtual bool hasVideo() const;
+    virtual bool isSeekable() const;
+    virtual qint64 currentTime() const;
+    virtual Phonon::State state() const;
+    virtual QString errorString() const;
+    virtual Phonon::ErrorType errorType() const;
+    virtual qint64 totalTime() const;
+    virtual MediaSource source() const;
+    virtual void setSource(const MediaSource &);
+    virtual void setNextSource(const MediaSource &source);
+    virtual qint32 prefinishMark() const;
+    virtual void setPrefinishMark(qint32);
+    virtual qint32 transitionTime() const;
+    virtual void setTransitionTime(qint32);
 
-        	// Audio / video media type recognition			
-			MediaType fileMediaType(const QString& fileName);
-			// TODO: urlMediaType function
-        	
-			static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
-			
-        private:
-            // Audio / video media type recognition
-            bool								m_recognizerOpened;
-			RApaLsSession						m_recognizer;
-			RFs									m_fileServer;
+    // VolumeObserver
+    void volumeChanged(qreal volume);
 
-			// Storing the file handle here to work around KErrInUse error
-			// from MMF player utility OpenFileL functions
-			RFile								m_file;
+    void setVideoOutput(VideoOutput* videoOutput);
 
-            QScopedPointer<AbstractPlayer>		m_player;
-            
-        };
-    }
+Q_SIGNALS:
+    void totalTimeChanged(qint64 length);
+    void hasVideoChanged(bool hasVideo);
+    void seekableChanged(bool seekable);
+    // TODO: emit bufferStatus from MediaObject
+    void bufferStatus(int);
+    // TODO: emit aboutToFinish from MediaObject
+    void aboutToFinish();
+    // TODO: emit prefinishMarkReached from MediaObject
+    void prefinishMarkReached(qint32);
+    // TODO: emit metaDataChanged from MediaObject
+    void metaDataChanged(const QMultiMap<QString, QString>& metaData);
+    void currentSourceChanged(const MediaSource& source);
+    void stateChanged(Phonon::State oldState,
+                      Phonon::State newState);
+    void finished();
+    void tick(qint64 time);
+
+private:
+    void createPlayer(const MediaSource &source);
+    bool openRecognizer();
+
+    // Audio / video media type recognition
+    MediaType fileMediaType(const QString& fileName);
+    // TODO: urlMediaType function
+
+    static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
+
+private:
+    // Audio / video media type recognition
+    bool                                m_recognizerOpened;
+    RApaLsSession                       m_recognizer;
+    RFs                                 m_fileServer;
+
+    // Storing the file handle here to work around KErrInUse error
+    // from MMF player utility OpenFileL functions
+    RFile                               m_file;
+
+    QScopedPointer<AbstractPlayer>      m_player;
+
+};
+}
 }
 
 QT_END_NAMESPACE
