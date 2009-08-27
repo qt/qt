@@ -24,6 +24,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMoveEvent>
 #include <QResizeEvent>
 
+QT_BEGIN_NAMESPACE
+
 using namespace Phonon;
 using namespace Phonon::MMF;
 
@@ -87,12 +89,15 @@ void VideoOutput::dump()
     TRACE("maxSize %d %d", maximumWidth(), maximumHeight());
     TRACE("sizeHint %d %d", sizeHint().width(), sizeHint().height());
     
-    QWidget& parentWidget = *qobject_cast<QWidget*>(parent());
-    TRACE("parent.isVisible %d", parentWidget.isVisible());
-    TRACE("parent.pos %d %d", parentWidget.x(), parentWidget.y());
-    TRACE("parent.size %d %d", parentWidget.size().width(), parentWidget.size().height());
-    TRACE("parent.maxSize %d %d", parentWidget.maximumWidth(), parentWidget.maximumHeight());
-    TRACE("parent.sizeHint %d %d", parentWidget.sizeHint().width(), parentWidget.sizeHint().height());
+    QWidget* parentWidget = qobject_cast<QWidget*>(parent());
+    if(parentWidget)
+    {
+        TRACE("parent.isVisible %d", parentWidget->isVisible());
+        TRACE("parent.pos %d %d", parentWidget->x(), parentWidget->y());
+        TRACE("parent.size %d %d", parentWidget->size().width(), parentWidget->size().height());
+        TRACE("parent.maxSize %d %d", parentWidget->maximumWidth(), parentWidget->maximumHeight());
+        TRACE("parent.sizeHint %d %d", parentWidget->sizeHint().width(), parentWidget->sizeHint().height());
+    }
     
     TRACE_EXIT_0();
 }
@@ -214,4 +219,5 @@ void MMF::VideoOutput::moveEvent(QMoveEvent* event)
 //-----------------------------------------------------------------------------
 
 
+QT_END_NAMESPACE
 

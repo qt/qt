@@ -22,6 +22,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtGui/QWidget>
 #include "defs.h"
 
+QT_BEGIN_NAMESPACE
+
 namespace Phonon
 {
     namespace MMF
@@ -33,11 +35,10 @@ namespace Phonon
             Q_OBJECT
             
         public:
-        	VideoOutput(QWidget* parent);      
+        	explicit VideoOutput(QWidget* parent);      
         	~VideoOutput();
 			
         	void setFrameSize(const QSize& size);
-        	
         	void setObserver(VideoOutputObserver* observer);
         	
         protected:
@@ -63,5 +64,7 @@ namespace Phonon
         };
     }
 }
+
+QT_END_NAMESPACE
 
 #endif

@@ -12,9 +12,6 @@ The following items are in rough order of priority.
 	- Dragging of other widgets on top of / underneath the video widget
 These will allow the video widget's moveEvent / resizeEvent implementations to be tested.
 
-* Write / modify a test app which allows audio effects to be enabled / disabled.
-	- In the simplest case, this could just be a command-line app which allows effects to be specified using flags.
-
 * On-target testing
 1. Ensure that Phonon front- and back-end libraries are included in the SIS file.
 2. Add musicplayer.exe and mediaplayer.exe to the FluidLauncher
@@ -39,9 +36,6 @@ Compare video frame rate obtained using default S60 media player and Qt demo app
 
 * Implement MMF::Backend::disconnectNodes
 This should probably be left for now, particularly until audio effects have been implemented.  This is because the node connection mechanism may need to be refactored slightly once we start building up longer graphs (e.g. MediaObject -> Effect -> Effect -> AudioOutput).
-
-* Namespace macros
-For consistency with other backends, the code should be wrapped in QT_BEGIN_NAMESPACE / QT_END_NAMESPACE macros.
 
 * Fix code layout
 My editor was set to use tabs for indenting, rather than the Qt standard of 4 spaces.  So we can either:

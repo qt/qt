@@ -23,6 +23,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include "volumeobserver.h"
 
+QT_BEGIN_NAMESPACE
+
 using namespace Phonon;
 using namespace Phonon::MMF;
 
@@ -92,3 +94,5 @@ void MMF::AudioOutput::setVolumeObserver(VolumeObserver* observer)
     }
 }
 
+
+QT_END_NAMESPACE

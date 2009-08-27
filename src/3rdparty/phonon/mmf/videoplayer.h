@@ -25,6 +25,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "videooutput.h"
 #include "videooutputobserver.h"
 
+QT_BEGIN_NAMESPACE
 
 namespace Phonon
 {
@@ -104,5 +105,7 @@ namespace Phonon
         };
     }
 }
+
+QT_END_NAMESPACE
 
 #endif

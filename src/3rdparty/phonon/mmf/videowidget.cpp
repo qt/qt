@@ -20,6 +20,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "videooutput.h"
 #include "videowidget.h"
 
+QT_BEGIN_NAMESPACE
+
 using namespace Phonon;
 using namespace Phonon::MMF;
 
@@ -42,7 +44,8 @@ static const qreal DefaultSaturation = 1.0;
 //-----------------------------------------------------------------------------
 
 MMF::VideoWidget::VideoWidget(QWidget* parent)
-					:	m_widget(new VideoOutput(parent))
+					:	QObject(parent)
+					,   m_widget(new VideoOutput(parent))
 					,	m_aspectRatio(DefaultAspectRatio)
 					,	m_brightness(DefaultBrightness)
 					,	m_scaleMode(DefaultScaleMode)
@@ -157,4 +160,7 @@ VideoOutput& MMF::VideoWidget::videoOutput()
 {
 	return *static_cast<VideoOutput*>(widget()); 
 }
+
+
+QT_END_NAMESPACE
 

@@ -29,6 +29,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include "videowidget.h"
 
+QT_BEGIN_NAMESPACE
+
 using namespace Phonon;
 using namespace Phonon::MMF;
 
@@ -183,4 +185,6 @@ QStringList Backend::availableMimeTypes() const
 }
 
 Q_EXPORT_PLUGIN2(phonon_mmf, Phonon::MMF::Backend);
+
+QT_END_NAMESPACE
 
