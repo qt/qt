@@ -1396,13 +1396,14 @@ void QFxListView::trackedPositionChanged()
         case Free:
             if (d->trackedItem->position() < d->position()) {
                 d->setPosition(d->trackedItem->position());
+                d->fixupPosition();
             } else if (d->trackedItem->endPosition() > d->position() + d->size()) {
                 qreal pos = d->trackedItem->endPosition() - d->size();
                 if (d->trackedItem->size() > d->size())
                     pos = d->trackedItem->position();
                 d->setPosition(pos);
+                d->fixupPosition();
             }
-            d->fixupPosition();
             break;
         case Snap:
             if (d->trackedItem->position() < d->startPosition() + d->snapPos)
