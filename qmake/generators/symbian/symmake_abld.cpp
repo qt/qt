@@ -102,12 +102,14 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         QString finalDepsWinscw;
         QStringList wrapperTargets;
         if (deploymentOnly) {
-            buildDeps.append(DO_NOTHING_TARGET);
+            buildDeps.append(STORE_BUILD_TARGET);
             cleanDeps.append(DO_NOTHING_TARGET);
             cleanDepsWinscw.append(WINSCW_DEPLOYMENT_CLEAN_TARGET);
             finalDeps.append(DO_NOTHING_TARGET);
             finalDepsWinscw.append(WINSCW_DEPLOYMENT_TARGET);
-            wrapperTargets << WINSCW_DEPLOYMENT_TARGET << WINSCW_DEPLOYMENT_CLEAN_TARGET;
+            wrapperTargets << WINSCW_DEPLOYMENT_TARGET 
+                << WINSCW_DEPLOYMENT_CLEAN_TARGET 
+                << STORE_BUILD_TARGET;
         } else {
             buildDeps.append(CREATE_TEMPS_TARGET " " PRE_TARGETDEPS_TARGET " " STORE_BUILD_TARGET);
             cleanDeps.append(EXTENSION_CLEAN);
