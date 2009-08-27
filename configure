@@ -643,7 +643,7 @@ CFG_MULTIMEDIA=yes
 CFG_SVG=yes
 CFG_WEBKIT=auto # (yes|no|auto)
 
-CFG_GFX_AVAILABLE="linuxfb transformed qvfb vnc multiscreen"
+CFG_GFX_AVAILABLE="linuxfb transformed qvfb vnc multiscreen directfb"
 CFG_GFX_ON="linuxfb multiscreen"
 CFG_GFX_PLUGIN_AVAILABLE=
 CFG_GFX_PLUGIN=
