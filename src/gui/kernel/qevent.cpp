@@ -3544,7 +3544,8 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
 
 #endif
 
-/*! \class QTouchEvent
+/*! 
+    \class QTouchEvent
     \brief The QTouchEvent class contains parameters that describe a touch event.
     \since 4.6
     \ingroup events
@@ -3556,27 +3557,19 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     Qt::WA_AcceptTouchEvents attribute set and graphics items need to have the
     \l{QGraphicsItem::setAcceptTouchEvents()}{acceptTouchEvents} attribute set to true.
 
-    Note: when using QAbstractScrollArea based widgets, you should enabled the
-    Qt::WA_AcceptTouchEvents attribute on the scroll area's
-    \l{QAbstractScrollArea::viewport()}{viewport}.
+    When using QAbstractScrollArea based widgets, you should enabled the Qt::WA_AcceptTouchEvents
+    attribute on the scroll area's \l{QAbstractScrollArea::viewport()}{viewport}.
 
-    \section1 Event Delivery and Propagation
+    Similarly to QMouseEvent, Qt automatically grabs each touch point on the first press inside a
+    widget, and the widget will receive all updates for the touch point until it is released.
+    Note that it is possible for a widget to receive events for multiple touch points, and that
+    multiple widgets may be receiving touch events at the same time.
+
+    \section1 Event Handling
 
     All touch events are of type QEvent::TouchBegin, QEvent::TouchUpdate, or QEvent::TouchEnd.
     Reimplement QWidget::event() or QAbstractScrollArea::viewportEvent() for widgets and
-    QGraphicsItem::sceneEvent() for items in a graphics view to receive touch events. By default,
-    QWidget::event() translates the first non-primary touch point in a QTouchEvent into a
-    QMouseEvent. This makes it possible to enable touch events on existing widgets that do not
-    normally handle QTouchEvent. See below for information on some special considerations needed
-    when doing this.
-
-    QEvent::TouchBegin is the first touch event sent to a widget. The QEvent::TouchBegin event
-    contains a special accept flag that indicates whether the receiver wants the event. By default,
-    the event is accepted. You should call ignore() if the touch event is not handled by your
-    widget. The QEvent::TouchBegin event is propagated up the parent widget chain until a widget
-    accepts it with accept(), or an event filter consumes it. For QGraphicsItems, the
-    QEvent::TouchBegin event is propagated to items under the mouse (similar to mouse event
-    propagation for QGraphicsItems).
+    QGraphicsItem::sceneEvent() for items in a graphics view to receive touch events.
 
     The QEvent::TouchUpdate and QEvent::TouchEnd events are sent to the widget or item that
     accepted the QEvent::TouchBegin event. If the QEvent::TouchBegin event is not accepted and not
@@ -3587,10 +3580,20 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     Information about each touch point can be retrieved using the QTouchEvent::TouchPoint class.
     The Qt::TouchPointState enum describes the different states that a touch point may have.
 
-    Similar to QMouseEvent, Qt automatically grabs each touch point on the first press inside a
-    widget; the widget will receive all updates for the touch point until it is released. Note that
-    it is possible for a widget to receive events for multiple touch points, and that multiple
-    widgets may be receiving touch events at the same time.
+    \section1 Event Delivery and Propagation
+
+    By default, QWidget::event() translates the first non-primary touch point in a QTouchEvent into
+    a QMouseEvent. This makes it possible to enable touch events on existing widgets that do not
+    normally handle QTouchEvent. See below for information on some special considerations needed
+    when doing this.
+
+    QEvent::TouchBegin is the first touch event sent to a widget. The QEvent::TouchBegin event
+    contains a special accept flag that indicates whether the receiver wants the event. By default,
+    the event is accepted. You should call ignore() if the touch event is not handled by your
+    widget. The QEvent::TouchBegin event is propagated up the parent widget chain until a widget
+    accepts it with accept(), or an event filter consumes it. For QGraphicsItems, the
+    QEvent::TouchBegin event is propagated to items under the mouse (similar to mouse event
+    propagation for QGraphicsItems).
 
     \section1 Touch Point Grouping
 
@@ -3604,7 +3607,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     \list
 
     \i When the first touch point is detected, the destination widget is determined firstly by the
-    location on screen first and secondly by the propagation rules.
+    location on screen and secondly by the propagation rules.
 
     \i When additional touch points are detected, Qt first looks to see if there are any active
     touch points on any ancestor or descendent of the widget under the new touch point. If there
@@ -3637,17 +3640,17 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     events simultaneously. Combined with the default QWidget::event() handling for QTouchEvents,
     this gives you great flexibility in designing multi-touch user interfaces. Be aware of the
     implications. For example, is is possible that the user is moving a QSlider with one finger and
-    pressing a QPushButton with another. The signals are emitted from these widgets will be
+    pressing a QPushButton with another. The signals emitted by these widgets will be
     interleaved.
 
-    \i Recursion into the event loop using one of the exec() methods (e.g. QDialog::exec() or
+    \i Recursion into the event loop using one of the exec() methods (e.g., QDialog::exec() or
     QMenu::exec()) in a QTouchEvent event handler is not supported. Since there are multiple event
     recipients, unexpected recursion may cause problems, including but not limited to lost events
     and unexpected infinite recursion.
 
     \i QTouchEvents are not affected by a \l{QWidget::grabMouse()}{mouse grab} or an
-    \l{QApplication::activePopupWidget()}{active popup widget}. The behavior of QTouchEvents is
-    undefined when opening a popup or grabbing the mouse while there are multiple active touch
+    \l{QApplication::activePopupWidget()}{active pop-up widget}. The behavior of QTouchEvents is
+    undefined when opening a pop-up or grabbing the mouse while there are multiple active touch
     points.
 
     \endlist
