@@ -30,6 +30,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "defs.h"
 #include "volumeobserver.h"
 
+QT_BEGIN_NAMESPACE
+
 namespace Phonon
 {
     namespace MMF
@@ -121,5 +123,7 @@ namespace Phonon
         };
     }
 }
+
+QT_END_NAMESPACE
 
 #endif

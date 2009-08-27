@@ -19,6 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include <e32std.h>
 
+QT_BEGIN_NAMESPACE
+
 using namespace Phonon;
 using namespace Phonon::MMF;
 
@@ -65,3 +67,7 @@ MMF::MediaType MMF::Utils::mimeTypeToMediaType(const TDesC& mimeType)
 
 	return result;
 }
+
+
+QT_END_NAMESPACE
+

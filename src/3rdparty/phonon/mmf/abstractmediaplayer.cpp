@@ -20,6 +20,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "defs.h"
 #include "utils.h"
 
+QT_BEGIN_NAMESPACE
+
 using namespace Phonon;
 using namespace Phonon::MMF;
 
@@ -459,7 +461,5 @@ void MMF::AbstractMediaPlayer::tick()
     emit tick(currentTime());
 }
 
-
-
-
+QT_END_NAMESPACE
 

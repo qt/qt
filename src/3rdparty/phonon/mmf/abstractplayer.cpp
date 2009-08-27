@@ -19,6 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "abstractplayer.h"
 #include "defs.h"
 
+QT_BEGIN_NAMESPACE
+
 using namespace Phonon;
 using namespace Phonon::MMF;
 
@@ -95,4 +97,7 @@ void MMF::AbstractPlayer::videoOutputChanged()
 {
 	// Default behaviour is empty - overridden by VideoPlayer
 }
+
+
+QT_END_NAMESPACE
 

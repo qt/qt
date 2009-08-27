@@ -36,6 +36,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #define PHONON_MMF_DEBUG_VIDEO_OUTPUT
 
+QT_BEGIN_NAMESPACE
+
 namespace Phonon
 {
     namespace MMF
@@ -51,5 +53,7 @@ namespace Phonon
         };
     }
 }
+
+QT_END_NAMESPACE
 
 #endif // PHONON_MMF_DEFS_H

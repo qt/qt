@@ -34,6 +34,8 @@ typedef CMdaAudioPlayerUtility CPlayerType;
 typedef MMdaAudioPlayerCallback MPlayerObserverType;
 #endif
 
+QT_BEGIN_NAMESPACE
+
 namespace Phonon
 {
     namespace MMF
@@ -101,5 +103,7 @@ namespace Phonon
         };
     }
 }
+
+QT_END_NAMESPACE
 
 #endif
