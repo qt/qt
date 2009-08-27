@@ -1522,6 +1522,7 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
 {
     Q_D(QFxListView);
     d->updateUnrequestedIndexes();
+    bool currentRemoved = d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count;
     if (!d->mapRangeFromModel(modelIndex, count)) {
         if (modelIndex + count - 1 < d->visibleIndex) {
             // Items removed before our visible items.
@@ -1536,7 +1537,7 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
             d->currentIndex -= count;
             if (d->currentItem)
                 d->currentItem->index -= count;
-        } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
+        } else if (currentRemoved) {
             // current item has been removed.
             d->releaseItem(d->currentItem);
             d->currentItem = 0;
@@ -1579,8 +1580,9 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
         d->currentIndex -= count;
         if (d->currentItem)
             d->currentItem->index -= count;
-    } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
+    } else if (currentRemoved) {
         // current item has been removed.
+        d->currentItem->attached->setIsCurrentItem(false);
         d->releaseItem(d->currentItem);
         d->currentItem = 0;
         d->currentIndex = -1;
