@@ -265,15 +265,6 @@ namespace QT_NAMESPACE {}
 #  define Q_OS_WIN
 #endif
 
-#if defined(Q_OS_WIN32)
-#  ifndef WINVER
-#    define WINVER 0x0500
-#  endif
-#  ifndef _WIN32_WINNT
-#    define _WIN32_WINNT 0x0500
-#  endif
-#endif
-
 #if defined(Q_OS_DARWIN)
 #  define Q_OS_MAC /* Q_OS_MAC is mostly for compatibility, but also more clear */
 #  define Q_OS_MACX /* Q_OS_MACX is only for compatibility.*/

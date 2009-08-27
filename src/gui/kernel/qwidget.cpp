@@ -4970,6 +4970,13 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
 }
 #endif // !defined(Q_OS_SYMBIAN)
 
+/*!
+    Returns a pointer to this widget's effect if it has one; otherwise 0.
+
+    \since 4.6
+
+    \sa setGraphicsEffect()
+*/
 QGraphicsEffect *QWidget::graphicsEffect() const
 {
     Q_D(const QWidget);
@@ -4987,6 +4994,8 @@ QGraphicsEffect *QWidget::graphicsEffect() const
     \note This function will apply the effect on itself and all its children.
 
     \since 4.6
+
+    \sa graphicsEffect()
 */
 void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
 {

@@ -338,7 +338,6 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
 
     QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
 
-    engine->syncState();
     painter->save();
 
     // ensure GL_LINEAR filtering is used
@@ -418,7 +417,7 @@ QByteArray QGLPixmapBlurFilter::generateBlurShader(int radius, bool gaussianBlur
         source.append("uniform highp vec4      clip;\n");
     }
 
-    source.append("lowp vec4 customShader(sampler2D src, vec2 srcCoords) {\n");
+    source.append("lowp vec4 customShader(lowp sampler2D src, highp vec2 srcCoords) {\n");
 
     QVector<qreal> sampleOffsets;
     QVector<qreal> weights;

@@ -74,6 +74,8 @@ public:
                                     JSC::PropertySlot&);
     virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                      JSC::JSValue, JSC::PutPropertySlot&);
+    virtual void putWithAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
+                                   JSC::JSValue value, unsigned attributes);
     virtual bool deleteProperty(JSC::ExecState*,
                                 const JSC::Identifier& propertyName,
                                 bool checkDontDelete = true);
@@ -115,6 +117,8 @@ public:
     virtual void put(JSC::ExecState* exec, const JSC::Identifier& propertyName,
                      JSC::JSValue value, JSC::PutPropertySlot& slot)
     { originalGlobalObject->JSC::JSGlobalObject::put(exec, propertyName, value, slot); }
+    virtual void putWithAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::JSValue value, unsigned attributes)
+    { originalGlobalObject->JSC::JSGlobalObject::putWithAttributes(exec, propertyName, value, attributes); }
     virtual bool deleteProperty(JSC::ExecState* exec,
                                 const JSC::Identifier& propertyName, bool checkDontDelete = true)
     { return originalGlobalObject->JSC::JSGlobalObject::deleteProperty(exec, propertyName, checkDontDelete); }

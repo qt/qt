@@ -1089,10 +1089,9 @@ QObjectPrivate::Connection::~Connection()
 
     \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 4
 
-    (\l QLayoutItem is not a QObject.)
-
-    Consider using qobject_cast<Type *>(object) instead. The method
-    is both faster and safer.
+    If you need to determine whether an object is an instance of a particular
+    class for the purpose of casting it, consider using qobject_cast<Type *>(object)
+    instead.
 
     \sa metaObject(), qobject_cast()
 */

@@ -327,8 +327,10 @@ QFontEngineWin::QFontEngineWin(const QString &name, HFONT _hfont, bool stockFont
 
     BOOL res = GetTextMetrics(hdc, &tm);
     fontDef.fixedPitch = !(tm.tmPitchAndFamily & TMPF_FIXED_PITCH);
-    if (!res)
+    if (!res) {
         qErrnoWarning("QFontEngineWin: GetTextMetrics failed");
+        ZeroMemory(&tm, sizeof(TEXTMETRIC));
+    }
 
     cache_cost = tm.tmHeight * tm.tmAveCharWidth * 2000;
     getCMap();

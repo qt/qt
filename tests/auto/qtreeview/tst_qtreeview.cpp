@@ -232,6 +232,7 @@ private slots:
     void task250683_wrongSectionSize();
     void task239271_addRowsWithFirstColumnHidden();
     void task254234_proxySort();
+    void task248022_changeSelection();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -3434,6 +3435,34 @@ void tst_QTreeView::task254234_proxySort()
     QCOMPARE(view.model()->data(view.model()->index(0,1)).toString(), QString::fromLatin1("h"));
     QCOMPARE(view.model()->data(view.model()->index(1,1)).toString(), QString::fromLatin1("g"));
 }
+
+class TreeView : public QTreeView
+{
+    Q_OBJECT
+public slots:
+    void handleSelectionChanged()
+    {
+        //let's select the last item
+        QModelIndex idx = model()->index(0, 0);
+        selectionModel()->select(QItemSelection(idx, idx), QItemSelectionModel::Select);
+        disconnect(selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this, SLOT(handleSelectionChanged()));
+    }
+};
+
+void tst_QTreeView::task248022_changeSelection()
+{
+    //we check that changing the selection between the mouse press and the mouse release
+    //works correctly
+    TreeView view;
+    QStringList list = QStringList() << "1" << "2";
+    QStringListModel model(list);
+    view.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    view.setModel(&model);
+    view.connect(view.selectionModel(), SIGNAL(selectionChanged(QItemSelection, QItemSelection)), SLOT(handleSelectionChanged()));
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(model.index(1)).center());
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), list.count());
+}
+
 
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"

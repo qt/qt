@@ -111,8 +111,8 @@ public:
     void updateMarginAndSpacing();
     bool hasExpandFlag() const;
 
-public slots:
-    void setExpanded(bool b);
+public Q_SLOTS:
+    void setExpanded(bool b, bool animated = true);
 
 private:
     QList<QToolBarItem*> items;

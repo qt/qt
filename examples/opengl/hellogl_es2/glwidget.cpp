@@ -266,7 +266,7 @@ void GLWidget::paintGL()
     QPainter painter;
     painter.begin(this);
 
-    painter.paintEngine()->syncState();
+    painter.beginNativePainting();
 
     glClearColor(0.1f, 0.1f, 0.2f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -301,6 +301,8 @@ void GLWidget::paintGL()
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
+
+    painter.endNativePainting();
 
     if (m_showBubbles)
         foreach (Bubble *bubble, bubbles) {
