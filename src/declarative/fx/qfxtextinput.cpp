@@ -320,6 +320,20 @@ void QFxTextInput::setSelectionEnd(int s)
     d->control->setSelection(d->lastSelectionStart, s - d->lastSelectionStart);
 }
 
+/*!
+    \qmlproperty string TextInput::selectedText
+
+    This read-only property provides the text currently selected in the
+    text input.
+
+    It is equivalent to the following snippet, but is faster and easier
+    to use.
+
+    \qmlcode
+    myTextInput.text.toString().substring(myTextInput.selectionStart,
+        myTextInput.selectionEnd);
+    \endcode
+*/
 QString QFxTextInput::selectedText() const
 {
     Q_D(const QFxTextInput);

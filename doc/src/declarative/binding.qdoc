@@ -34,7 +34,7 @@ Data can be bound to C++ objects - see \l {QML/C++ Data Binding}.
 \target qtbinding
 \title QML/C++ Data Binding
 
-The QML mechanisms of \l {Data Binding} can also be used to bind Qt C++ objects.
+The QML mechanisms of data binding can also be used to bind Qt C++ objects.
 
 The data binding framework is based on Qt's property system (see the Qt documentation for more details on this system). If a binding is meant to be dynamic (where changes in one object are reflected in another object), \c NOTIFY must be specified for the property being tracked. If \c NOTIFY is not specified, any binding to that property will be an 'intialization' binding (the tracking object will be updated only once with the initial value of the tracked object).
 

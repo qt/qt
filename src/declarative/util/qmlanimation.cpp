@@ -47,7 +47,7 @@
 #include "qml.h"
 #include "qmlinfo.h"
 #include "qmlanimation_p.h"
-#include "qmlbehaviour.h"
+#include "qmlbehavior.h"
 #include <QParallelAnimationGroup>
 #include <QSequentialAnimationGroup>
 #include <QtCore/qset.h>
@@ -330,7 +330,7 @@ void QmlAbstractAnimation::componentComplete()
     calling the \c stop() method.  The \c complete() method is not effected
     by this value.
 
-    This behaviour is most useful when the \c repeat property is set, as the
+    This behavior is most useful when the \c repeat property is set, as the
     animation will finish playing normally but not restart.
 
     By default, the alwaysRunToEnd property is not set.
@@ -1007,9 +1007,9 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
         {
             for (int ii = 0; ii < actions.count(); ++ii) {
                 const Action &action = actions.at(ii);
-                QmlBehaviour::_ignore = true;
+                QmlBehavior::_ignore = true;
                 action.property.write(action.toValue);
-                QmlBehaviour::_ignore = false;
+                QmlBehavior::_ignore = false;
             }
         }
     };
@@ -1338,7 +1338,7 @@ void QmlSequentialAnimation::transition(QmlStateActions &actions,
         inc = -1;
         from = d->animations.count() - 1;
     }
-    
+
     //needed for Behavior
     if (d->userProperty.isValid() && d->propertyName.isEmpty() && !target()) {
         for (int i = 0; i < d->animations.count(); ++i)
@@ -1760,7 +1760,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
             for (int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
 
-                QmlBehaviour::_ignore = true;
+                QmlBehavior::_ignore = true;
                 if (v == 1.)
                     action.property.write(action.toValue);
                 else {
@@ -1779,7 +1779,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
                     if (interpolator)
                         action.property.write(interpolator(action.fromValue.constData(), action.toValue.constData(), v));
                 }
-                QmlBehaviour::_ignore = false;
+                QmlBehavior::_ignore = false;
             }
         }
     };

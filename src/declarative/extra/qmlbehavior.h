@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBEHAVIOUR_H
-#define QMLBEHAVIOUR_H
+#ifndef QMLBEHAVIOR_H
+#define QMLBEHAVIOR_H
 
 #include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qml.h>
@@ -53,11 +53,11 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QmlAbstractAnimation;
-class QmlBehaviourPrivate;
-class Q_DECLARATIVE_EXPORT QmlBehaviour : public QObject, public QmlPropertyValueSource
+class QmlBehaviorPrivate;
+class Q_DECLARATIVE_EXPORT QmlBehavior : public QObject, public QmlPropertyValueSource
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlBehaviour)
+    Q_DECLARE_PRIVATE(QmlBehavior)
 
     Q_PROPERTY(QVariant from READ fromValue WRITE setFromValue)
     Q_PROPERTY(QVariant to READ toValue WRITE setToValue)
@@ -65,8 +65,8 @@ class Q_DECLARATIVE_EXPORT QmlBehaviour : public QObject, public QmlPropertyValu
     Q_PROPERTY(QmlList<QmlAbstractAnimation *>* operations READ operations)
 
 public:
-    QmlBehaviour(QObject *parent=0);
-    ~QmlBehaviour();
+    QmlBehavior(QObject *parent=0);
+    ~QmlBehavior();
 
     QVariant fromValue() const;
     void setFromValue(const QVariant &);
@@ -84,8 +84,8 @@ private Q_SLOTS:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlBehaviour)
+QML_DECLARE_TYPE(QmlBehavior)
 
 QT_END_HEADER
 
-#endif // QMLBEHAVIOUR_H
+#endif // QMLBEHAVIOR_H
