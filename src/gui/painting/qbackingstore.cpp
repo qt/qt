@@ -1544,7 +1544,8 @@ void QWidgetPrivate::repaint_sys(const QRegion &rgn)
     // QGLWidget does not support partial updates if:
     // 1) The context is double buffered
     // 2) The context is single buffered and auto-fill background is enabled.
-    const bool noPartialUpdateSupport = (engine && engine->type() == QPaintEngine::OpenGL)
+    const bool noPartialUpdateSupport = (engine && engine->type() == QPaintEngine::OpenGL
+                                                || engine->type() == QPaintEngine::OpenGL2)
                                         && (usesDoubleBufferedGLContext || q->autoFillBackground());
     QRegion toBePainted(noPartialUpdateSupport ? q->rect() : rgn);
 
