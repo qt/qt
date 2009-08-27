@@ -57,10 +57,19 @@
 # include <qsslsocket.h>
 #endif
 
+#ifndef TEST_QNETWORK_PROXY
+#define TEST_QNETWORK_PROXY
+#endif
 #include "../network-settings.h"
 
 //TESTED_CLASS=
 //TESTED_FILES=
+
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+// And underlying Open C have application private dir in default search path
+#define SRCDIR ""
+#endif
 
 Q_DECLARE_METATYPE(QHttpResponseHeader)
 
@@ -140,9 +149,9 @@ private:
 
     struct RequestResult
     {
-	QHttpRequestHeader req;
-	QHttpResponseHeader resp;
-	int success;
+    QHttpRequestHeader req;
+    QHttpResponseHeader resp;
+    int success;
     };
     QMap< int, RequestResult > resultMap;
     typedef QMap<int,RequestResult>::Iterator ResMapIt;
@@ -176,6 +185,7 @@ const int bytesDone_init = -10;
 
 tst_QHttp::tst_QHttp()
 {
+    Q_SET_DEFAULT_IAP
 }
 
 tst_QHttp::~tst_QHttp()
@@ -188,7 +198,9 @@ void tst_QHttp::initTestCase_data()
     QTest::addColumn<int>("proxyType");
 
     QTest::newRow("WithoutProxy") << false << 0;
+#ifdef TEST_QNETWORK_PROXY
     QTest::newRow("WithSocks5Proxy") << true << int(QNetworkProxy::Socks5Proxy);
+#endif
 }
 
 void tst_QHttp::initTestCase()
@@ -344,47 +356,47 @@ void tst_QHttp::get()
 
     addRequest( QHttpRequestHeader(), http->setHost( host, port ) );
     if ( useIODevice ) {
-	buf.open( QIODevice::WriteOnly );
-	getId = http->get( path, &buf );
+    buf.open( QIODevice::WriteOnly );
+    getId = http->get( path, &buf );
     } else {
-	getId = http->get( path );
+    getId = http->get( path );
     }
     addRequest( QHttpRequestHeader(), getId );
 
     QTestEventLoop::instance().enterLoop( 30 );
 
     if ( QTestEventLoop::instance().timeout() )
-	QFAIL( "Network operation timed out" );
+    QFAIL( "Network operation timed out" );
 
     ResMapIt res = resultMap.find( getId );
     QVERIFY( res != resultMap.end() );
     if ( res.value().success!=1 && host=="www.ietf.org" ) {
-	// The nightly tests fail from time to time. In order to make them more
-	// stable, add some debug output that might help locate the problem (I
-	// can't reproduce the problem in the non-nightly builds).
-	qDebug( "Error %d: %s", http->error(), http->errorString().toLatin1().constData() );
+    // The nightly tests fail from time to time. In order to make them more
+    // stable, add some debug output that might help locate the problem (I
+    // can't reproduce the problem in the non-nightly builds).
+    qDebug( "Error %d: %s", http->error(), http->errorString().toLatin1().constData() );
     }
     QTEST( res.value().success, "success" );
     if ( res.value().success ) {
-	QTEST( res.value().resp.statusCode(), "statusCode" );
+    QTEST( res.value().resp.statusCode(), "statusCode" );
 
-	QFETCH( QByteArray, res );
-	if ( res.count() > 0 ) {
-	    if ( useIODevice ) {
-		QCOMPARE(buf_ba, res);
-		if ( bytesDoneRead != bytesDone_init )
-		    QVERIFY( (int)buf_ba.size() == bytesDoneRead );
-	    } else {
-		QCOMPARE(readyRead_ba, res);
-		if ( bytesDoneRead != bytesDone_init )
-		    QVERIFY( (int)readyRead_ba.size() == bytesDoneRead );
-	    }
-	}
-	QVERIFY( bytesTotalRead != bytesTotal_init );
-	if ( bytesTotalRead > 0 )
-	    QVERIFY( bytesDoneRead == bytesTotalRead );
+    QFETCH( QByteArray, res );
+    if ( res.count() > 0 ) {
+        if ( useIODevice ) {
+        QCOMPARE(buf_ba, res);
+        if ( bytesDoneRead != bytesDone_init )
+            QVERIFY( (int)buf_ba.size() == bytesDoneRead );
+        } else {
+        QCOMPARE(readyRead_ba, res);
+        if ( bytesDoneRead != bytesDone_init )
+            QVERIFY( (int)readyRead_ba.size() == bytesDoneRead );
+        }
+    }
+    QVERIFY( bytesTotalRead != bytesTotal_init );
+    if ( bytesTotalRead > 0 )
+        QVERIFY( bytesDoneRead == bytesTotalRead );
     } else {
-	QVERIFY( !res.value().resp.isValid() );
+    QVERIFY( !res.value().resp.isValid() );
     }
 }
 
@@ -399,19 +411,22 @@ void tst_QHttp::head_data()
 
     QTest::newRow( "path_01" ) << QtNetworkSettings::serverName() << 80u
 	<< QString("/qtest/rfc3252.txt") << 1 << 200 << 25962u;
+
     QTest::newRow( "path_02" ) << QString("www.ietf.org") << 80u
 	<< QString("/rfc/rfc3252.txt") << 1 << 200 << 25962u;
 
     QTest::newRow( "uri_01" ) << QtNetworkSettings::serverName() << 80u
 	<< QString("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt") << 1 << 200 << 25962u;
+
     QTest::newRow( "uri_02" ) << QString("www.ietf.org") << 80u
-	<< QString("http://www.ietf.org/rfc/rfc3252.txt") << 1 << 200 << 25962u;
+    << QString("http://www.ietf.org/rfc/rfc3252.txt") << 1 << 200 << 25962u;
 
     QTest::newRow( "fail_01" ) << QString("this-host-will-not-exist.") << 80u
-	<< QString("/qtest/rfc3252.txt") << 0 << 0 << 0u;
+    << QString("/qtest/rfc3252.txt") << 0 << 0 << 0u;
 
     QTest::newRow( "failprot_01" ) << QtNetworkSettings::serverName() << 80u
 	<< QString("/t") << 1 << 404 << 0u;
+
     QTest::newRow( "failprot_02" ) << QtNetworkSettings::serverName() << 80u
 	<< QString("qtest/rfc3252.txt") << 1 << 400 << 0u;
 
@@ -464,7 +479,7 @@ void tst_QHttp::head()
 
 void tst_QHttp::post_data()
 {
-    QTest::addColumn<QString>("source");
+	QTest::addColumn<QString>("source");
     QTest::addColumn<bool>("useIODevice");
     QTest::addColumn<bool>("useProxy");
     QTest::addColumn<QString>("host");
@@ -505,7 +520,7 @@ void tst_QHttp::post_data()
 
 void tst_QHttp::post()
 {
-    QFETCH(QString, source);
+	QFETCH(QString, source);
     QFETCH(bool, useIODevice);
     QFETCH(bool, useProxy);
     QFETCH(QString, host);
@@ -543,7 +558,7 @@ void tst_QHttp::post()
     QTestEventLoop::instance().enterLoop( 30 );
 
     if ( QTestEventLoop::instance().timeout() )
-	QFAIL( "Network operation timed out" );
+    QFAIL( "Network operation timed out" );
 
     ResMapIt res = resultMap.find(postId);
     QVERIFY(res != resultMap.end());
@@ -602,7 +617,6 @@ void tst_QHttp::request_data()
     QTest::newRow("proxy-post-data") << "rfc3252.txt" << false << true
                                      << QtNetworkSettings::serverName() << 80 << "POST" << "/qtest/cgi-bin/md5sum.cgi"
                                      << md5sum;
-
     // the following test won't work. See task 185996
 /*
     QTest::newRow("proxy-post-device") << "rfc3252.txt" << true << true
@@ -667,7 +681,7 @@ void tst_QHttp::request()
     QTestEventLoop::instance().enterLoop( 30 );
 
     if ( QTestEventLoop::instance().timeout() )
-	QFAIL( "Network operation timed out" );
+    QFAIL( "Network operation timed out" );
 
     ResMapIt res = resultMap.find(*theId);
     QVERIFY(res != resultMap.end());
@@ -777,7 +791,7 @@ void tst_QHttp::proxy()
 
     QTestEventLoop::instance().enterLoop(30);
     if (QTestEventLoop::instance().timeout())
-	QFAIL("Network operation timed out");
+    QFAIL("Network operation timed out");
 
     ResMapIt res = resultMap.find(getId);
     QVERIFY(res != resultMap.end());
@@ -847,17 +861,17 @@ void tst_QHttp::proxy3()
 // test QHttp::currentId() and QHttp::currentRequest()
 #define CURRENTREQUEST_TEST \
     { \
-	ResMapIt res = resultMap.find( http->currentId() ); \
-	QVERIFY( res != resultMap.end() ); \
-	if ( http->currentId() == getId ) { \
-	    QCOMPARE( http->currentRequest().method(), QString("GET") ); \
-	} else if ( http->currentId() == headId ) { \
-	    QCOMPARE( http->currentRequest().method(), QString("HEAD") ); \
+    ResMapIt res = resultMap.find( http->currentId() ); \
+    QVERIFY( res != resultMap.end() ); \
+    if ( http->currentId() == getId ) { \
+        QCOMPARE( http->currentRequest().method(), QString("GET") ); \
+    } else if ( http->currentId() == headId ) { \
+        QCOMPARE( http->currentRequest().method(), QString("HEAD") ); \
         } else if ( http->currentId() == postId ) { \
             QCOMPARE( http->currentRequest().method(), QString("POST") ); \
-	} else { \
-	    QVERIFY( headerAreEqual( http->currentRequest(), res.value().req ) ); \
-	} \
+    } else { \
+        QVERIFY( headerAreEqual( http->currentRequest(), res.value().req ) ); \
+    } \
     }
 
 void tst_QHttp::requestStarted( int id )
@@ -872,9 +886,9 @@ void tst_QHttp::requestStarted( int id )
     QVERIFY( !ids.isEmpty() );
     QVERIFY( ids.first() == id );
     if ( ids.count() > 1 ) {
-	QVERIFY( http->hasPendingRequests() );
+    QVERIFY( http->hasPendingRequests() );
     } else {
-	QVERIFY( !http->hasPendingRequests() );
+    QVERIFY( !http->hasPendingRequests() );
     }
 
     QVERIFY( http->currentId() == id );
@@ -892,7 +906,7 @@ void tst_QHttp::requestFinished( int id, bool error )
 {
 #if defined( DUMP_SIGNALS )
     qDebug( "%d:requestFinished( %d, %d ) -- errorString: '%s'",
-	    http->currentId(), id, (int)error, http->errorString().latin1() );
+        http->currentId(), id, (int)error, http->errorString().toAscii().data() );
 #endif
     // make sure that the requestStarted and requestFinished are nested correctly
     QVERIFY( current_id == id );
@@ -901,17 +915,17 @@ void tst_QHttp::requestFinished( int id, bool error )
     QVERIFY( !ids.isEmpty() );
     QVERIFY( ids.first() == id );
     if ( ids.count() > 1 ) {
-	QVERIFY( http->hasPendingRequests() );
+    QVERIFY( http->hasPendingRequests() );
     } else {
-	QVERIFY( !http->hasPendingRequests() );
+    QVERIFY( !http->hasPendingRequests() );
     }
 
     if ( error ) {
-	QVERIFY( http->error() != QHttp::NoError );
-	ids.clear();
+    QVERIFY( http->error() != QHttp::NoError );
+    ids.clear();
     } else {
-	QVERIFY( http->error() == QHttp::NoError );
-	ids.pop_front();
+    QVERIFY( http->error() == QHttp::NoError );
+    ids.pop_front();
     }
 
     QVERIFY( http->currentId() == id );
@@ -922,9 +936,9 @@ void tst_QHttp::requestFinished( int id, bool error )
     QVERIFY( res != resultMap.end() );
     QVERIFY( res.value().success == -1 );
     if ( error )
-	res.value().success = 0;
+    res.value().success = 0;
     else
-	res.value().success = 1;
+    res.value().success = 1;
 }
 
 void tst_QHttp::done( bool error )
@@ -940,11 +954,11 @@ void tst_QHttp::done( bool error )
 
     QVERIFY( done_success == -1 );
     if ( error ) {
-	QVERIFY( http->error() != QHttp::NoError );
-	done_success = 0;
+    QVERIFY( http->error() != QHttp::NoError );
+    done_success = 0;
     } else {
-	QVERIFY( http->error() == QHttp::NoError );
-	done_success = 1;
+    QVERIFY( http->error() == QHttp::NoError );
+    done_success = 1;
     }
     QTestEventLoop::instance().exitLoop();
 }
@@ -956,14 +970,14 @@ void tst_QHttp::stateChanged( int state )
 #endif
     QCOMPARE( http->currentId(), current_id );
     if ( ids.count() > 0 )
-	CURRENTREQUEST_TEST;
+    CURRENTREQUEST_TEST;
 
     QVERIFY( state != cur_state );
     QVERIFY( state == http->state() );
     if ( state != QHttp::Unconnected && !connectionWithAuth ) {
-	// make sure that the states are always emitted in the right order (for
-	// this, we assume an ordering on the enum values, which they have at
-	// the moment)
+    // make sure that the states are always emitted in the right order (for
+    // this, we assume an ordering on the enum values, which they have at
+    // the moment)
         // connections with authentication will possibly reconnect, so ignore them
         QVERIFY( cur_state < state );
     }
@@ -980,13 +994,13 @@ void tst_QHttp::stateChanged( int state )
 void tst_QHttp::responseHeaderReceived( const QHttpResponseHeader &header )
 {
 #if defined( DUMP_SIGNALS )
-    qDebug( "%d:  responseHeaderReceived(\n---{\n%s}---)", http->currentId(), header.toString().latin1() );
+    qDebug( "%d:  responseHeaderReceived(\n---{\n%s}---)", http->currentId(), header.toString().toAscii().data() );
 #endif
     QCOMPARE( http->currentId(), current_id );
     if ( ids.count() > 1 ) {
-	QVERIFY( http->hasPendingRequests() );
+    QVERIFY( http->hasPendingRequests() );
     } else {
-	QVERIFY( !http->hasPendingRequests() );
+    QVERIFY( !http->hasPendingRequests() );
     }
     CURRENTREQUEST_TEST;
 
@@ -1000,25 +1014,25 @@ void tst_QHttp::readyRead( const QHttpResponseHeader & )
 #endif
     QCOMPARE( http->currentId(), current_id );
     if ( ids.count() > 1 ) {
-	QVERIFY( http->hasPendingRequests() );
+    QVERIFY( http->hasPendingRequests() );
     } else {
-	QVERIFY( !http->hasPendingRequests() );
+    QVERIFY( !http->hasPendingRequests() );
     }
     QVERIFY( cur_state == http->state() );
     CURRENTREQUEST_TEST;
 
     if ( QTest::currentTestFunction() != QLatin1String("bytesAvailable") ) {
-	int oldSize = readyRead_ba.size();
-	quint64 bytesAvail = http->bytesAvailable();
-	QByteArray ba = http->readAll();
-	QVERIFY( (quint64) ba.size() == bytesAvail );
-	readyRead_ba.resize( oldSize + ba.size() );
-	memcpy( readyRead_ba.data()+oldSize, ba.data(), ba.size() );
+    int oldSize = readyRead_ba.size();
+    quint64 bytesAvail = http->bytesAvailable();
+    QByteArray ba = http->readAll();
+    QVERIFY( (quint64) ba.size() == bytesAvail );
+    readyRead_ba.resize( oldSize + ba.size() );
+    memcpy( readyRead_ba.data()+oldSize, ba.data(), ba.size() );
 
-	if ( bytesTotalRead > 0 ) {
-	    QVERIFY( (int)readyRead_ba.size() <= bytesTotalRead );
-	}
-	QVERIFY( (int)readyRead_ba.size() == bytesDoneRead );
+    if ( bytesTotalRead > 0 ) {
+        QVERIFY( (int)readyRead_ba.size() <= bytesTotalRead );
+    }
+    QVERIFY( (int)readyRead_ba.size() == bytesDoneRead );
     }
 }
 
@@ -1029,38 +1043,38 @@ void tst_QHttp::dataSendProgress( int done, int total )
 #endif
     QCOMPARE( http->currentId(), current_id );
     if ( ids.count() > 1 ) {
-	QVERIFY( http->hasPendingRequests() );
+    QVERIFY( http->hasPendingRequests() );
     } else {
-	QVERIFY( !http->hasPendingRequests() );
+    QVERIFY( !http->hasPendingRequests() );
     }
     QVERIFY( cur_state == http->state() );
     CURRENTREQUEST_TEST;
 
     if ( bytesTotalSend == bytesTotal_init ) {
-	bytesTotalSend = total;
+    bytesTotalSend = total;
     } else {
-	QCOMPARE( bytesTotalSend, total );
+    QCOMPARE( bytesTotalSend, total );
     }
 
     QVERIFY( bytesTotalSend != bytesTotal_init );
     QVERIFY( bytesDoneSend <= done );
     bytesDoneSend = done;
     if ( bytesTotalSend > 0 ) {
-	QVERIFY( bytesDoneSend <= bytesTotalSend );
+    QVERIFY( bytesDoneSend <= bytesTotalSend );
     }
 
     if ( QTest::currentTestFunction() == QLatin1String("abort") ) {
-	// ### it would be nice if we could specify in our testdata when to do
-	// the abort
-	if ( done >= total/100000 ) {
-	    if ( ids.count() != 1 ) {
-		// do abort only once
-		int tmpId = ids.first();
-		ids.clear();
-		ids << tmpId;
-		http->abort();
-	    }
-	}
+    // ### it would be nice if we could specify in our testdata when to do
+    // the abort
+    if ( done >= total/100000 ) {
+        if ( ids.count() != 1 ) {
+        // do abort only once
+        int tmpId = ids.first();
+        ids.clear();
+        ids << tmpId;
+        http->abort();
+        }
+    }
     }
 }
 
@@ -1071,38 +1085,38 @@ void tst_QHttp::dataReadProgress( int done, int total )
 #endif
     QCOMPARE( http->currentId(), current_id );
     if ( ids.count() > 1 ) {
-	QVERIFY( http->hasPendingRequests() );
+    QVERIFY( http->hasPendingRequests() );
     } else {
-	QVERIFY( !http->hasPendingRequests() );
+    QVERIFY( !http->hasPendingRequests() );
     }
     QVERIFY( cur_state == http->state() );
     CURRENTREQUEST_TEST;
 
     if ( bytesTotalRead == bytesTotal_init )
-	bytesTotalRead = total;
+    bytesTotalRead = total;
     else {
-	QVERIFY( bytesTotalRead == total );
+    QVERIFY( bytesTotalRead == total );
     }
 
     QVERIFY( bytesTotalRead != bytesTotal_init );
     QVERIFY( bytesDoneRead <= done );
     bytesDoneRead = done;
     if ( bytesTotalRead > 0 ) {
-	QVERIFY( bytesDoneRead <= bytesTotalRead );
+    QVERIFY( bytesDoneRead <= bytesTotalRead );
     }
 
     if ( QTest::currentTestFunction() == QLatin1String("abort") ) {
-	// ### it would be nice if we could specify in our testdata when to do
-	// the abort
-	if ( done >= total/100000 ) {
-	    if ( ids.count() != 1 ) {
-		// do abort only once
-		int tmpId = ids.first();
-		ids.clear();
-		ids << tmpId;
-		http->abort();
-	    }
-	}
+    // ### it would be nice if we could specify in our testdata when to do
+    // the abort
+    if ( done >= total/100000 ) {
+        if ( ids.count() != 1 ) {
+        // do abort only once
+        int tmpId = ids.first();
+        ids.clear();
+        ids << tmpId;
+        http->abort();
+        }
+    }
     }
 }
 
@@ -1111,21 +1125,21 @@ QHttp *tst_QHttp::newHttp(bool withAuth)
 {
     QHttp *nHttp = new QHttp( 0 );
     connect( nHttp, SIGNAL(requestStarted(int)),
-	    SLOT(requestStarted(int)) );
+        SLOT(requestStarted(int)) );
     connect( nHttp, SIGNAL(requestFinished(int,bool)),
-	    SLOT(requestFinished(int,bool)) );
+        SLOT(requestFinished(int,bool)) );
     connect( nHttp, SIGNAL(done(bool)),
-	    SLOT(done(bool)) );
+        SLOT(done(bool)) );
     connect( nHttp, SIGNAL(stateChanged(int)),
-	    SLOT(stateChanged(int)) );
+        SLOT(stateChanged(int)) );
     connect( nHttp, SIGNAL(responseHeaderReceived(const QHttpResponseHeader&)),
-	    SLOT(responseHeaderReceived(const QHttpResponseHeader&)) );
+        SLOT(responseHeaderReceived(const QHttpResponseHeader&)) );
     connect( nHttp, SIGNAL(readyRead(const QHttpResponseHeader&)),
-	    SLOT(readyRead(const QHttpResponseHeader&)) );
+        SLOT(readyRead(const QHttpResponseHeader&)) );
     connect( nHttp, SIGNAL(dataSendProgress(int,int)),
-	    SLOT(dataSendProgress(int,int)) );
+        SLOT(dataSendProgress(int,int)) );
     connect( nHttp, SIGNAL(dataReadProgress(int,int)),
-	    SLOT(dataReadProgress(int,int)) );
+        SLOT(dataReadProgress(int,int)) );
 
     connectionWithAuth = withAuth;
     return nHttp;
@@ -1143,9 +1157,9 @@ void tst_QHttp::addRequest( QHttpRequestHeader header, int id )
 bool tst_QHttp::headerAreEqual( const QHttpHeader &h1, const QHttpHeader &h2 )
 {
     if ( !h1.isValid() )
-	return !h2.isValid();
+    return !h2.isValid();
     if ( !h2.isValid() )
-	return !h1.isValid();
+    return !h1.isValid();
 
     return h1.toString() == h2.toString();
 }
@@ -1165,13 +1179,13 @@ void tst_QHttp::reconnect()
 
     QTestEventLoop::instance().enterLoop(60);
     if (QTestEventLoop::instance().timeout())
-	QFAIL("Network operation timed out");
+    QFAIL("Network operation timed out");
 
     QCOMPARE(reconnect_state_connect_count, 1);
 
     QTestEventLoop::instance().enterLoop(60);
     if (QTestEventLoop::instance().timeout())
-	QFAIL("Network operation timed out");
+    QFAIL("Network operation timed out");
 
     QCOMPARE(reconnect_state_connect_count, 2);
 }
@@ -1212,12 +1226,12 @@ private slots:
         socket->write("HTTP/1.1 404 Not found\r\n"
                       "content-length: 4\r\n\r\nabcd");
         socket->disconnectFromHost();
-    }
+    };
 };
 
 void tst_QHttp::unexpectedRemoteClose()
 {
-    QFETCH_GLOBAL(int, proxyType);
+	QFETCH_GLOBAL(int, proxyType);
     if (proxyType == QNetworkProxy::Socks5Proxy) {
         // This test doesn't make sense for SOCKS5
         return;
@@ -1380,7 +1394,7 @@ void tst_QHttp::cachingProxyAndSsl()
 void tst_QHttp::emptyBodyInReply()
 {
     // Note: if this test starts failing, please verify the date on the file
-    // returned by Apache on http://fluke.troll.no/
+    // returned by Apache on http://netiks.troll.no/
     // It is right now hard-coded to the date below
     QHttp http;
     http.setHost(QtNetworkSettings::serverName());
@@ -1458,8 +1472,9 @@ void tst_QHttp::connectionClose()
     // Note: the servers might change too...
     //
     // This was added in response to bug 176822
+#ifndef Q_OS_SYMBIAN
     QSKIP("This test is manual - read comments in the source code", SkipAll);
-
+#endif
     QFETCH_GLOBAL(bool, setProxy);
     if (setProxy)
         return;

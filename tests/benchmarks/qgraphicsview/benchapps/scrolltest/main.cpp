@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 #if 0
     ItemMover mover(scrollItem);
 #endif
-    
+
     CountView view;
     view.setScene(&scene);
     view.setSceneRect(-25, -25, 150, 150);

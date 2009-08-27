@@ -3,7 +3,7 @@ SOURCES += tst_qimagereader.cpp
 MOC_DIR=tmp
 QT += network
 RESOURCES += qimagereader.qrc
-DEFINES += SRCDIR=\\\"$$PWD\\\"
+!symbian:DEFINES += SRCDIR=\\\"$$PWD\\\"
 
 !contains(QT_CONFIG, no-gif):DEFINES += QTEST_HAVE_GIF
 !contains(QT_CONFIG, no-jpeg):DEFINES += QTEST_HAVE_JPEG
@@ -26,3 +26,12 @@ wince*: {
     DEFINES += SRCDIR=\\\".\\\"
 }
 
+symbian*: {
+    images.sources = images
+    images.path = .
+
+    imagePlugins.sources = qjpeg.dll qgif.dll qmng.dll
+    imagePlugins.path = imageformats
+
+    DEPLOYMENT += images imagePlugins
+}

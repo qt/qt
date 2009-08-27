@@ -231,10 +231,9 @@ public:
         url = other.url;
 
 #ifndef QT_NO_OPENSSL
+        sslConfiguration = 0;
         if (other.sslConfiguration)
             sslConfiguration = new QSslConfiguration(*other.sslConfiguration);
-        else
-            sslConfiguration = 0;
 #endif
     }
 

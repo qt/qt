@@ -199,7 +199,7 @@ private:
     friend class QmlStatePrivate;
     friend class QFxAnchors;
     Q_DISABLE_COPY(QFxItem)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxItem)
 };
 
 // ### move to QGO

@@ -87,7 +87,7 @@ Q_SIGNALS:
     void isErrorChanged();
     void isReadyChanged();
     void isLoadingChanged();
-private slots:
+private Q_SLOTS:
     void statusChange(QmlComponent::Status newStatus);
 };
 

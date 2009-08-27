@@ -187,7 +187,7 @@ void RuntimeObjectImp::put(ExecState* exec, const Identifier& propertyName, JSVa
     instance->end();
 }
 
-bool RuntimeObjectImp::deleteProperty(ExecState*, const Identifier&)
+bool RuntimeObjectImp::deleteProperty(ExecState*, const Identifier&, bool)
 {
     // Can never remove a property of a RuntimeObject.
     return false;
@@ -241,7 +241,7 @@ ConstructType RuntimeObjectImp::getConstructData(ConstructData& constructData)
     return ConstructTypeHost;
 }
 
-void RuntimeObjectImp::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
+void RuntimeObjectImp::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames, unsigned listedAttributes)
 {
     if (!instance) {
         throwInvalidAccessError(exec);
@@ -249,7 +249,7 @@ void RuntimeObjectImp::getPropertyNames(ExecState* exec, PropertyNameArray& prop
     }
     
     instance->begin();
-    instance->getPropertyNames(exec, propertyNames);
+    instance->getPropertyNames(exec, propertyNames, listedAttributes);
     instance->end();
 }
 

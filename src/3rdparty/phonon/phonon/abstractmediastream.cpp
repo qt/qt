@@ -49,7 +49,6 @@ AbstractMediaStream::AbstractMediaStream(AbstractMediaStreamPrivate &dd, QObject
 
 AbstractMediaStream::~AbstractMediaStream()
 {
-    delete d_ptr;
 }
 
 qint64 AbstractMediaStream::streamSize() const

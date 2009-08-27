@@ -216,20 +216,6 @@ int runMoc(int _argc, char **_argv)
         }
     }
 
-    // report Qt usage for commercial customers with a "metered license" (currently experimental)
-#if QT_EDITION != QT_EDITION_OPENSOURCE
-#ifdef QT_CONFIGURE_BINARIES_PATH
-    const char *binariesPath = QT_CONFIGURE_BINARIES_PATH;
-    QString reporterPath = QString::fromLocal8Bit(binariesPath) + QDir::separator()
-                           + QLatin1String("qtusagereporter");
-#if defined(Q_OS_WIN)
-    reporterPath += QLatin1String(".exe");
-#endif
-    if (QFile::exists(reporterPath))
-        system(qPrintable(reporterPath + QLatin1String(" moc")));
-#endif
-#endif
-
     argc = argv.count();
 
     for (int n = 0; n < argc; ++n) {

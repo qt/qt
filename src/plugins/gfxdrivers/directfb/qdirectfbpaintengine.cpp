@@ -532,7 +532,7 @@ void QDirectFBPaintEngine::drawImage(const QRectF &r, const QImage &image,
     d->unlock();
     bool release;
     IDirectFBSurface *imgSurface = d->getSurface(image, &release);
-    d->prepareForBlit(QDirectFBScreen::hasAlpha(imgSurface));
+    d->prepareForBlit(QDirectFBScreen::hasAlphaChannel(imgSurface));
     CLIPPED_PAINT(d->blit(r, imgSurface, sr));
     if (release) {
 #if (Q_DIRECTFB_VERSION >= 0x010000)
@@ -939,9 +939,9 @@ void QDirectFBPaintEnginePrivate::setDFBColor(const QColor &color)
 
 IDirectFBSurface *QDirectFBPaintEnginePrivate::getSurface(const QImage &img, bool *release)
 {
-#ifndef QT_DIRECTFB_IMAGECACHE
+#ifdef QT_NO_DIRECTFB_IMAGECACHE
     *release = true;
-    return QDirectFBScreen::instance()->createDFBSurface(img, QDirectFBScreen::DontTrackSurface);
+    return QDirectFBScreen::instance()->createDFBSurface(img, img.format(), QDirectFBScreen::DontTrackSurface);
 #else
     const qint64 key = img.cacheKey();
     *release = false;
@@ -955,7 +955,7 @@ IDirectFBSurface *QDirectFBPaintEnginePrivate::getSurface(const QImage &img, boo
     const QImage::Format format = (img.format() == screen->alphaPixmapFormat() || QDirectFBPixmapData::hasAlphaChannel(img)
                                    ? screen->alphaPixmapFormat() : screen->pixelFormat());
 
-    IDirectFBSurface *surface = screen->copyToDFBSurface(img, format,
+    IDirectFBSurface *surface = screen->createDFBSurface(img, format,
                                                          cache
                                                          ? QDirectFBScreen::TrackSurface
                                                          : QDirectFBScreen::DontTrackSurface);
@@ -1133,7 +1133,7 @@ IDirectFBSurface *SurfaceCache::getSurface(const uint *buf, int size)
     clear();
 
     const DFBSurfaceDescription description = QDirectFBScreen::getSurfaceDescription(buf, size);
-    surface = QDirectFBScreen::instance()->createDFBSurface(description, QDirectFBScreen::TrackSurface);
+    surface = QDirectFBScreen::instance()->createDFBSurface(description, QDirectFBScreen::TrackSurface, 0);
     if (!surface)
         qWarning("QDirectFBPaintEngine: SurfaceCache: Unable to create surface");
 

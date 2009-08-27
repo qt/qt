@@ -1,7 +1,7 @@
 load(qttest_p4)
 SOURCES         += tst_qdirmodel.cpp
 
-wince*: {
+wince*|symbian: {
 	addit.sources = dirtest\test1\*
 	addit.path = dirtest\test1
 	tests.sources = test\*
@@ -9,8 +9,14 @@ wince*: {
         sourceFile.sources = tst_qdirmodel.cpp
         sourceFile.path = .
 	DEPLOYMENT += addit tests sourceFile
- DEFINES += SRCDIR=\\\"./\\\"
+}
+
+wince*: {
+    DEFINES += SRCDIR=\\\"./\\\"
+} symbian: {
+    TARGET.UID3 = 0xE0340003
+    DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
 } else {
-  DEFINES += SRCDIR=\\\"$$PWD/\\\"
+    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 

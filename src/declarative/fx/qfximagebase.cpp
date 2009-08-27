@@ -64,7 +64,7 @@ QFxImageBase::QFxImageBase(QFxImageBasePrivate &dd, QFxItem *parent)
 QFxImageBase::~QFxImageBase()
 {
     Q_D(QFxImageBase);
-    if (!d->url.isEmpty())
+    if (d->pendingPixmapCache)
         QFxPixmapCache::cancelGet(d->url, this);
 }
 
@@ -94,8 +94,10 @@ void QFxImageBase::setSource(const QUrl &url)
     if ((d->url.isEmpty() == url.isEmpty()) && url == d->url)
         return;
 
-    if (!d->url.isEmpty())
+    if (d->pendingPixmapCache) {
         QFxPixmapCache::cancelGet(d->url, this);
+        d->pendingPixmapCache = false;
+    }
 
     d->url = url;
     if (d->progress != 0.0) {
@@ -117,6 +119,7 @@ void QFxImageBase::setSource(const QUrl &url)
         d->status = Loading;
         QNetworkReply *reply = QFxPixmapCache::get(qmlEngine(this), d->url, &d->pix);
         if (reply) {
+            d->pendingPixmapCache = true;
             connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
             connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
                     this, SLOT(requestProgress(qint64,qint64)));
@@ -141,6 +144,9 @@ void QFxImageBase::setSource(const QUrl &url)
 void QFxImageBase::requestFinished()
 {
     Q_D(QFxImageBase);
+
+    d->pendingPixmapCache = false;
+
     if (!QFxPixmapCache::find(d->url, &d->pix))
         d->status = Error;
     setImplicitWidth(d->pix.width());

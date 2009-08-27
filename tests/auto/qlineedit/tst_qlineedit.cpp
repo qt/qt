@@ -220,10 +220,11 @@ private slots:
     void setSelection_data();
     void setSelection();
 
+#ifndef QT_NO_CLIPBOARD
     void cut();
     void copy();
     void paste();
-
+#endif
     void maxLengthAndInputMask();
     void returnPressedKeyEvent();
 
@@ -2750,6 +2751,7 @@ void tst_QLineEdit::setSelection()
         QCOMPARE(testWidget->cursorPosition(), expectedCursor);
 }
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QLineEdit::cut()
 {
 #ifdef Q_WS_MAC
@@ -2830,7 +2832,7 @@ void tst_QLineEdit::paste()
 {
     DEPENDS_ON("cut");
 }
-
+#endif
 class InputMaskValidator : public QValidator
 {
 public:

@@ -1,6 +1,6 @@
 /*!
 \page binding.html
-\title Data Binding
+\title Data Binding in QML
 \target binding
 
 Data binding provides a declarative way of specifying the data associated with objects, as well as the relationship between data of different objects. For example, you could bind the text of a label to the value of a slider: as the value of the slider changed, the label would be automatically updated with the new value.

@@ -85,6 +85,8 @@ private slots:
     void deleteLaterOnQTimer(); // long name, don't want to shadow QObject::deleteLater()
     void moveToThread();
     void restartedTimerFiresTooSoon();
+    void timerFiresOnlyOncePerProcessEvents_data();
+    void timerFiresOnlyOncePerProcessEvents();
 };
 
 class TimerHelper : public QObject
@@ -159,6 +161,13 @@ void tst_QTimer::singleShotTimeout()
     QCOMPARE(helper.count, 1);
 }
 
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+// Increase wait as emulator startup can cause unexpected delays
+#define TIMEOUT_TIMEOUT 2000
+#else
+#define TIMEOUT_TIMEOUT 200
+#endif
+
 void tst_QTimer::timeout()
 {
     TimerHelper helper;
@@ -169,11 +178,11 @@ void tst_QTimer::timeout()
 
     QCOMPARE(helper.count, 0);
 
-    QTest::qWait(200);
+    QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count > 0);
     int oldCount = helper.count;
 
-    QTest::qWait(200);
+    QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count > oldCount);
 }
 
@@ -263,7 +272,7 @@ void tst_QTimer::livelock()
 #if defined(Q_OS_MAC)
     QEXPECT_FAIL("zero timer", "Posted events source are handled AFTER timers", Continue);
     QEXPECT_FAIL("non-zero timer", "Posted events source are handled AFTER timers", Continue);
-#elif defined(Q_OS_UNIX)
+#elif defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     QEXPECT_FAIL("zero timer", "", Continue);
     QEXPECT_FAIL("non-zero timer", "", Continue);
 #elif defined(Q_OS_WIN)
@@ -404,29 +413,38 @@ void tst_QTimer::deleteLaterOnQTimer()
     QVERIFY(pointer.isNull());
 }
 
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+// Increase wait as emulator startup can cause unexpected delays
+#define MOVETOTHREAD_TIMEOUT 200
+#define MOVETOTHREAD_WAIT 5000
+#else
+#define MOVETOTHREAD_TIMEOUT 200
+#define MOVETOTHREAD_WAIT 300
+#endif
+
 void tst_QTimer::moveToThread()
 {
     QTimer ti1;
     QTimer ti2;
-    ti1.start(200);
-    ti2.start(200);
+    ti1.start(MOVETOTHREAD_TIMEOUT);
+    ti2.start(MOVETOTHREAD_TIMEOUT);
     QVERIFY((ti1.timerId() & 0xffffff) != (ti2.timerId() & 0xffffff));
     QThread tr;
     ti1.moveToThread(&tr);
     connect(&ti1,SIGNAL(timeout()), &tr, SLOT(quit()));
     tr.start();
     QTimer ti3;
-    ti3.start(200);
+    ti3.start(MOVETOTHREAD_TIMEOUT);
     QVERIFY((ti3.timerId() & 0xffffff) != (ti2.timerId() & 0xffffff));
     QVERIFY((ti3.timerId() & 0xffffff) != (ti1.timerId() & 0xffffff));
-    QTest::qWait(300);
+    QTest::qWait(MOVETOTHREAD_WAIT);
     QVERIFY(tr.wait());
     ti2.stop();
     QTimer ti4;
-    ti4.start(200);
+    ti4.start(MOVETOTHREAD_TIMEOUT);
     ti3.stop();
-    ti2.start(200);
-    ti3.start(200);
+    ti2.start(MOVETOTHREAD_TIMEOUT);
+    ti3.start(MOVETOTHREAD_TIMEOUT);
     QVERIFY((ti4.timerId() & 0xffffff) != (ti2.timerId() & 0xffffff));
     QVERIFY((ti3.timerId() & 0xffffff) != (ti2.timerId() & 0xffffff));
     QVERIFY((ti3.timerId() & 0xffffff) != (ti1.timerId() & 0xffffff));
@@ -493,6 +511,55 @@ void tst_QTimer::restartedTimerFiresTooSoon()
     RestartedTimerFiresTooSoonObject object;
     object.timerFired();
     QVERIFY(object.eventLoop.exec() == 0);
+}
+
+class LongLastingSlotClass : public QObject
+{
+    Q_OBJECT
+
+public:
+    LongLastingSlotClass(QTimer *timer) : count(0), timer(timer) {}
+
+public slots:
+    void longLastingSlot()
+    {
+        // Don't use timers for this, because we are testing them.
+        QTime time;
+        time.start();
+        while (time.elapsed() < 200) {
+            for (int c = 0; c < 100000; c++) {} // Mindless looping.
+        }
+        if (++count >= 2) {
+            timer->stop();
+        }
+    }
+
+public:
+    int count;
+    QTimer *timer;
+};
+
+void tst_QTimer::timerFiresOnlyOncePerProcessEvents_data()
+{
+    QTest::addColumn<int>("interval");
+    QTest::newRow("zero timer") << 0;
+    QTest::newRow("non-zero timer") << 10;
+}
+
+void tst_QTimer::timerFiresOnlyOncePerProcessEvents()
+{
+    QFETCH(int, interval);
+
+    QTimer t;
+    LongLastingSlotClass longSlot(&t);
+    t.start(interval);
+    connect(&t, SIGNAL(timeout()), &longSlot, SLOT(longLastingSlot()));
+    // Loop because there may be other events pending.
+    while (longSlot.count == 0) {
+        QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+    }
+
+    QCOMPARE(longSlot.count, 1);
 }
 
 QTEST_MAIN(tst_QTimer)

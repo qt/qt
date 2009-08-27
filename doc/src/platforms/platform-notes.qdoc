@@ -401,6 +401,19 @@
 */
 
 /*!
+    \page platform-notes-symbian.html
+    \title Platform Notes - Symbian
+    \contentspage Platform Notes
+
+    This page contains information about the Symbian platforms Qt is currently known
+    to run on. More information about the combinations of platforms and compilers
+    supported by Qt can be found on the \l{Supported Platforms} page.
+
+    For information about mixing exceptions with symbian leaves,
+    see \l{Exception Safety with Symbian}
+*/
+
+/*!
     \page platform-notes-embedded-linux.html
     \title Platform Notes - Embedded Linux
     \contentspage Platform Notes

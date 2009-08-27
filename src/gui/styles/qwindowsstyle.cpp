@@ -1261,7 +1261,7 @@ void QWindowsStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, 
         p->translate(opt->rect.x(), opt->rect.y());
         if (opt->state & State_Horizontal) {
             int x = opt->rect.width() / 2 - 4;
-            if (QApplication::layoutDirection() == Qt::RightToLeft)
+            if (opt->direction == Qt::RightToLeft)
                 x -= 2;
             if (opt->rect.height() > 4) {
                 qDrawShadePanel(p, x, 2, 3, opt->rect.height() - 4,
@@ -2312,7 +2312,7 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                 default:
                     break;
                 }
-                if(QApplication::layoutDirection() == Qt::RightToLeft){ //reverse layout changes the order of Beginning/end
+                if(opt->direction == Qt::RightToLeft){ //reverse layout changes the order of Beginning/end
                     bool tmp = paintLeftBorder;
                     paintRightBorder=paintLeftBorder;
                     paintLeftBorder=tmp;
@@ -2483,7 +2483,6 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
 
             bool floating = false;
             bool active = dwOpt->state & State_Active;
-            int menuOffset = 0; //used to center text when floated
             QColor inactiveCaptionTextColor = d->inactiveCaptionText;
             if (dwOpt->movable) {
                 QColor left, right;
@@ -2498,7 +2497,6 @@ void QWindowsStyle::drawControl(ControlElement ce, const QStyleOption *opt, QPai
                         left = d->inactiveCaptionColor;
                         right = d->inactiveGradientCaptionColor;
                     }
-                    menuOffset = 2;
                     QBrush fillBrush(left);
                     if (left != right) {
                         QPoint p1(r.x(), r.top() + r.height()/2);
@@ -2566,7 +2564,7 @@ QRect QWindowsStyle::subElementRect(SubElement sr, const QStyleOption *opt, cons
         if (verticalTitleBar) {
             r.adjust(0, 0, 0, -m);
         } else {
-            if (QApplication::layoutDirection() == Qt::LeftToRight)
+            if (opt->direction == Qt::LeftToRight)
                 r.adjust(m, 0, 0, 0);
             else
                 r.adjust(0, 0, -m, 0);

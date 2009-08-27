@@ -228,7 +228,7 @@ QT_BEGIN_NAMESPACE
     In the member function documentation, \e{d pointer} always refers
     to the internal pointer to the shared data object.
 
-    \sa QSharedData, QExplicitlySharedDataPointer
+    \sa QSharedData, QExplicitlySharedDataPointer, QScopedPointer, QSharedPointer
 */
 
 /*! \fn T& QSharedDataPointer::operator*()

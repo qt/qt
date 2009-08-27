@@ -72,28 +72,6 @@ FunctionEnd
 !insertmacro MakeQtDirectory ""
 !insertmacro MakeQtDirectory "un."
 
-Function DeleteFloatingLicenseProgram
-  exch $1
-  push $0
-  
-  StrCmp $LICENSE_KEY "" end
-
-  ClearErrors
-  !ifndef OPENSOURCE_BUILD
-  qtnsisext::IsFloatingLicense $LICENSE_KEY
-  !endif
-  IfErrors end
-  pop $0
-  
-  StrCmp $0 "1" end
-    IfFileExists "$1\bin\qtusagereporter.exe" 0 end
-      Delete "$1\bin\qtusagereporter.exe"
-
-  end:
-  pop $0
-  pop $1
-FunctionEnd
-
 Function AddStartmenuApplication
   exch $0
   IfFileExists "$0\assistant.exe" 0 +2

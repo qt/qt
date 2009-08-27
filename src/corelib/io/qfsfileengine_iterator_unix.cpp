@@ -53,7 +53,7 @@ class QFSFileEngineIteratorPlatformSpecificData
 public:
     inline QFSFileEngineIteratorPlatformSpecificData()
         : dir(0), dirEntry(0), done(false)
-#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN)
+#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN) && !defined(Q_OS_SYMBIAN)
           , mt_file(0)
 #endif
     {}
@@ -62,7 +62,7 @@ public:
     dirent *dirEntry;
     bool done;
 
-#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN)
+#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN) && !defined(Q_OS_SYMBIAN)
     // for readdir_r
     dirent *mt_file;
 #endif
@@ -75,7 +75,7 @@ void QFSFileEngineIterator::advance()
     if (!platform->dir)
         return;
 
-#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN)
+#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN) && !defined(Q_OS_SYMBIAN)
     if (::readdir_r(platform->dir, platform->mt_file, &platform->dirEntry) != 0)
         platform->done = true;
 #else
@@ -86,7 +86,7 @@ void QFSFileEngineIterator::advance()
         ::closedir(platform->dir);
         platform->dir = 0;
         platform->done = true;
-#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN)
+#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN) && !defined(Q_OS_SYMBIAN)
         delete [] platform->mt_file;
         platform->mt_file = 0;
 #endif
@@ -102,7 +102,7 @@ void QFSFileEngineIterator::deletePlatformSpecifics()
 {
     if (platform->dir) {
         ::closedir(platform->dir);
-#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN)
+#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN) && !defined(Q_OS_SYMBIAN)
         delete [] platform->mt_file;
         platform->mt_file = 0;
 #endif
@@ -123,7 +123,7 @@ bool QFSFileEngineIterator::hasNext() const
             if ((int) maxPathName == -1)
                 maxPathName = FILENAME_MAX;
             maxPathName += sizeof(dirent) + 1;
-#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN)
+#if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_CYGWIN) && !defined(Q_OS_SYMBIAN)
             if (that->platform->mt_file)
                 delete [] that->platform->mt_file;
             that->platform->mt_file = (dirent *)new char[maxPathName];

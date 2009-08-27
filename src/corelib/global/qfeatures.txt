@@ -1143,13 +1143,6 @@ Requires: UNDOSTACK LISTVIEW
 Name: QUndoView
 SeeAlso: ???
 
-Feature: SCRIPT
-Description: Provides support for the QtScript module
-Section: Utilities
-Requires: TEXTDATE DATESTRING PROPERTIES
-Name: QtScript
-SeeAlso: ???
-
 Feature: ACCESSIBILITY
 Description: Provides accessibility support.
 Section: Utilities

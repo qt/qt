@@ -1,0 +1,16 @@
+//! [0]
+    qmake
+//! [0]
+
+
+//! [1]
+    make debug-winscw
+//! [1]
+
+//! [2]
+    createpackage wiggly_gcce_udeb.pkg
+//! [2]
+
+//! [3]
+    createpackage -i wiggly_gcce_udeb.pkg
+//! [3]

@@ -11,3 +11,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/xmlpatterns/filetree
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro *.xq *.html
 sources.path = $$[QT_INSTALL_EXAMPLES]/xmlpatterns/filetree
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

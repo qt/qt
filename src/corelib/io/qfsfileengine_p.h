@@ -137,10 +137,11 @@ public:
     mutable uint is_sequential : 2;
     mutable uint could_stat : 1;
     mutable uint tried_stat : 1;
-#ifdef Q_OS_UNIX
+#if !defined(Q_OS_WINCE)
     mutable uint need_lstat : 1;
     mutable uint is_link : 1;
 #endif
+
     bool doStat() const;
     bool isSymlink() const;
 
@@ -161,7 +162,6 @@ protected:
 
 #if defined(Q_OS_WIN32) || defined(Q_OS_WINCE)
     QAbstractFileEngine::FileFlags getPermissions() const;
-    QString getLink() const;
 #endif
 };
 

@@ -154,11 +154,12 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
     Value value;
     Pseudo pseudo;
     AttributeSelector attr;
-    
+
     // pixmap based style doesn't support any features
     bool styleIsPixmapBased = baseStyle()->inherits("QMacStyle")
                            || baseStyle()->inherits("QWindowsXPStyle")
-                           || baseStyle()->inherits("QGtkStyle");
+                           || baseStyle()->inherits("QGtkStyle")
+                           || baseStyle()->inherits("QS60Style");
 
 
     /*QLineEdit {
@@ -212,7 +213,7 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_BASIC_SELECTOR;
         ADD_SELECTOR;
 
-        
+
         SET_PROPERTY(QLatin1String("padding-top"), PaddingTop);
         ADD_VALUE(Value::Identifier, QString::fromLatin1("2px"));
         ADD_DECLARATION;

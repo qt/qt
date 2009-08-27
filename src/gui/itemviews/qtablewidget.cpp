@@ -226,6 +226,8 @@ QTableWidgetItem *QTableModel::takeItem(int row, int column)
         itm->view = 0;
         itm->d->id = -1;
         tableItems[i] = 0;
+        QModelIndex ind = index(itm);
+        emit dataChanged(ind, ind);
     }
     return itm;
 }
@@ -2115,8 +2117,8 @@ QTableWidgetItem *QTableWidget::currentItem() const
 /*!
     Sets the current item to \a item.
 
-    Depending on the current \l{QAbstractItemView::SelectionMode}{selection mode},
-    the item may also be selected.
+    Unless the selection mode is \l{QAbstractItemView::}{NoSelection},
+    the item is also be selected.
 
     \sa currentItem(), setCurrentCell()
 */

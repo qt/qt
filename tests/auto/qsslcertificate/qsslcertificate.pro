@@ -2,7 +2,7 @@ load(qttest_p4)
 
 SOURCES += tst_qsslcertificate.cpp
 !wince*:win32:LIBS += -lws2_32
-QT += network
+QT = core network
 
 TARGET = tst_qsslcertificate
 
@@ -14,13 +14,14 @@ win32 {
   }
 }
 
-wince*: {
+wince*|symbian: {
   certFiles.sources = certificates more-certificates
   certFiles.path    = .
   DEPLOYMENT += certFiles
-  DEFINES += SRCDIR=\\\".\\\"
-} else {
-   DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
-
+wince*: {
+  DEFINES += SRCDIR=\\\".\\\"
+} else:!symbian {
+   DEFINES += SRCDIR=\\\"$$PWD/\\\"
+}

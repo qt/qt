@@ -132,7 +132,6 @@ public:
     mutable bool cacheGuard;
 
     QString defaultDateFormat, defaultTimeFormat, defaultDateTimeFormat, unreversedFormat;
-    Qt::LayoutDirection layoutDirection;
     mutable QVariant conflictGuard;
     bool hasHadFocus, formatExplicitlySet, calendarPopup;
     QStyle::StateFlag arrowState;

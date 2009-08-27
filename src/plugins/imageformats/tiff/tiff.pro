@@ -56,6 +56,9 @@ contains(QT_CONFIG, system-tiff) {
             wince*: {
                SOURCES += ../../../corelib/kernel/qfunctions_wince.cpp
             }
+            symbian*: {
+               SOURCES += ../../../3rdparty/libtiff/port/lfind.c
+            }
 }
 
 contains(QT_CONFIG, system-zlib) {
@@ -68,3 +71,5 @@ contains(QT_CONFIG, system-zlib) {
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/imageformats
 target.path += $$[QT_INSTALL_PLUGINS]/imageformats
 INSTALLS += target
+
+symbian:TARGET.UID3=0x2001E617

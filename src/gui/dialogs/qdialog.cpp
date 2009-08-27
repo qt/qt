@@ -64,8 +64,10 @@ extern bool qt_wince_is_mobile();     //defined in qguifunctions_wce.cpp
 extern bool qt_wince_is_smartphone(); //is defined in qguifunctions_wce.cpp
 #elif defined(Q_WS_X11)
 #  include "../kernel/qt_x11_p.h"
+#elif defined(Q_OS_SYMBIAN)
+#  include "qfiledialog.h"
+#  include "qmenubar.h"
 #endif
-
 #ifndef SPI_GETSNAPTODEFBUTTON
 #  define SPI_GETSNAPTODEFBUTTON  95
 #endif
@@ -292,9 +294,13 @@ QDialog::QDialog(QDialogPrivate &dd, QWidget *parent, Qt::WindowFlags f)
 
 QDialog::~QDialog()
 {
-    // Need to hide() here, as our (to-be) overridden hide()
-    // will not be called in ~QWidget.
-    hide();
+    QT_TRY {
+        // Need to hide() here, as our (to-be) overridden hide()
+        // will not be called in ~QWidget.
+        hide();
+    } QT_CATCH(...) {
+        // we're in the destructor - just swallow the exception
+    }
 }
 
 /*!
@@ -486,7 +492,19 @@ int QDialog::exec()
 #endif //QT_NO_MENUBAR
 #endif //Q_WS_WINCE_WM
 
-    show();
+#ifdef Q_OS_SYMBIAN
+#ifndef QT_NO_MENUBAR
+    QMenuBar *menuBar = 0;
+    if (!findChild<QMenuBar *>())
+        menuBar = new QMenuBar(this);
+#endif
+
+    if (qobject_cast<QFileDialog *>(this))
+        showFullScreen();
+    else
+#endif // Q_OS_SYMBIAN
+
+        show();
 
 #ifdef Q_WS_MAC
     d->mac_nativeDialogModalHelp();
@@ -511,6 +529,13 @@ int QDialog::exec()
         delete menuBar;
 #endif //QT_NO_MENUBAR
 #endif //Q_WS_WINCE_WM
+#ifdef Q_OS_SYMBIAN
+#ifndef QT_NO_MENUBAR
+    else if (menuBar)
+        delete menuBar;
+#endif //QT_NO_MENUBAR
+#endif //Q_OS_SYMBIAN
+
     return res;
 }
 

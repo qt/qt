@@ -87,24 +87,32 @@ public slots:
     void cleanup();
 private slots:
     void getSetCheck();
+#ifndef QT_NO_CLIPBOARD
     void clearMustNotChangeClipboard();
+#endif
     void clearMustNotResetRootFrameMarginToDefault();
     void paragSeparatorOnPlaintextAppend();
+#ifndef QT_NO_CLIPBOARD
     void selectAllSetsNotSelection();
+#endif
     void asciiTab();
     void setDocument();
     void emptyAppend();
     void appendOnEmptyDocumentShouldReuseInitialParagraph();
     void cursorPositionChanged();
     void setTextCursor();
+#ifndef QT_NO_CLIPBOARD
     void undoAvailableAfterPaste();
+#endif
     void undoRedoAvailableRepetition();
     void appendShouldNotTouchTheSelection();
     void backspace();
     void shiftBackspace();
     void undoRedo();
     void preserveCharFormatInAppend();
+#ifndef QT_NO_CLIPBOARD
     void copyAndSelectAllInReadonly();
+#endif
     void ctrlAltInput();
     void noPropertiesOnDefaultTextEditCharFormat();
     void setPlainTextShouldEmitTextChangedOnce();
@@ -118,13 +126,17 @@ private slots:
     void undoRedoAfterSetContent();
     void numPadKeyNavigation();
     void moveCursor();
+#ifndef QT_NO_CLIPBOARD
     void mimeDataReimplementations();
+#endif
     void shiftEnterShouldInsertLineSeparator();
     void selectWordsFromStringsContainingSeparators_data();
     void selectWordsFromStringsContainingSeparators();
+#ifndef QT_NO_CLIPBOARD
     void canPaste();
     void copyAvailable_data();
     void copyAvailable();
+#endif
     void ensureCursorVisibleOnInitialShow();
     void setTextInsideResizeEvent();
     void colorfulAppend();
@@ -209,7 +221,7 @@ void tst_QPlainTextEdit::getSetCheck()
     QCOMPARE(0, obj1.tabStopWidth());
     obj1.setTabStopWidth(INT_MIN);
     QCOMPARE(0, obj1.tabStopWidth()); // Makes no sense to set a negative tabstop value
-#if defined(QT_ARCH_WINDOWSCE)
+#if defined(QT_ARCH_WINDOWSCE) || defined (QT_ARCH_SYMBIAN)
     // due to rounding error in qRound when qreal==float
     // we cannot use INT_MAX for this check
     obj1.setTabStopWidth(SHRT_MAX*2);
@@ -290,7 +302,7 @@ void tst_QPlainTextEdit::createSelection()
 #endif
     QCOMPARE(ed->textCursor().position(), 11);
 }
-
+#ifndef QT_NO_CLIPBOARD
 void tst_QPlainTextEdit::clearMustNotChangeClipboard()
 {
     if (!nativeClipboardWorking())
@@ -301,6 +313,7 @@ void tst_QPlainTextEdit::clearMustNotChangeClipboard()
     ed->clear();
     QCOMPARE(QApplication::clipboard()->text(), txt);
 }
+#endif
 
 void tst_QPlainTextEdit::clearMustNotResetRootFrameMarginToDefault()
 {
@@ -322,6 +335,7 @@ void tst_QPlainTextEdit::paragSeparatorOnPlaintextAppend()
     QCOMPARE(cnt, 2);
 }
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QPlainTextEdit::selectAllSetsNotSelection()
 {
     if (!QApplication::clipboard()->supportsSelection()) {
@@ -337,6 +351,7 @@ void tst_QPlainTextEdit::selectAllSetsNotSelection()
 
     QCOMPARE(QApplication::clipboard()->text(QClipboard::Selection), QString::fromAscii("foobar"));
 }
+#endif
 
 void tst_QPlainTextEdit::asciiTab()
 {
@@ -466,6 +481,7 @@ void tst_QPlainTextEdit::setTextCursor()
     QCOMPARE(spy.count(), 1);
 }
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QPlainTextEdit::undoAvailableAfterPaste()
 {
     if (!nativeClipboardWorking())
@@ -479,6 +495,7 @@ void tst_QPlainTextEdit::undoAvailableAfterPaste()
     QVERIFY(spy.count() >= 1);
     QCOMPARE(ed->toPlainText(), txt);
 }
+#endif
 
 class UndoRedoRecorder : public QObject
 {
@@ -657,6 +674,7 @@ void tst_QPlainTextEdit::preserveCharFormatInAppend()
     QCOMPARE(cursor.block().text(), QString("third para"));
 }
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QPlainTextEdit::copyAndSelectAllInReadonly()
 {
     if (!nativeClipboardWorking())
@@ -687,6 +705,7 @@ void tst_QPlainTextEdit::copyAndSelectAllInReadonly()
     QTest::keyClick(ed, Qt::Key_C, Qt::ControlModifier);
     QCOMPARE(QApplication::clipboard()->text(), QString("Hello World"));
 }
+#endif
 
 void tst_QPlainTextEdit::ctrlAltInput()
 {
@@ -908,6 +927,7 @@ void tst_QPlainTextEdit::implicitClear()
     QVERIFY(ed->toPlainText().isEmpty());
 }
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QPlainTextEdit::copyAvailable_data()
 {
     QTest::addColumn<pairListType>("keystrokes");
@@ -1025,6 +1045,7 @@ void tst_QPlainTextEdit::copyAvailable()
         QVERIFY2(variantSpyCopyAvailable.toBool() == copyAvailable.at(i), QString("Spied singnal: %1").arg(i).toLatin1());
     }
 }
+#endif
 
 void tst_QPlainTextEdit::undoRedoAfterSetContent()
 {
@@ -1090,6 +1111,7 @@ public:
 
 };
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QPlainTextEdit::mimeDataReimplementations()
 {
     MyTextEdit ed;
@@ -1128,6 +1150,7 @@ void tst_QPlainTextEdit::mimeDataReimplementations()
     QCOMPARE(ed.insertCallCount, 1);
 #endif
 }
+#endif
 
 void tst_QPlainTextEdit::shiftEnterShouldInsertLineSeparator()
 {
@@ -1167,6 +1190,7 @@ void tst_QPlainTextEdit::selectWordsFromStringsContainingSeparators()
     cursor.clearSelection();
 }
 
+#ifndef QT_NO_CLIPBOARD
 void tst_QPlainTextEdit::canPaste()
 {
     if (!nativeClipboardWorking())
@@ -1179,6 +1203,7 @@ void tst_QPlainTextEdit::canPaste()
     ed->setTextInteractionFlags(Qt::NoTextInteraction);
     QVERIFY(!ed->canPaste());
 }
+#endif
 
 void tst_QPlainTextEdit::ensureCursorVisibleOnInitialShow()
 {

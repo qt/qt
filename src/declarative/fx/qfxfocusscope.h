@@ -50,6 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
+//### set component root as focusscope
 class Q_DECLARATIVE_EXPORT QFxFocusScope : public QFxItem
 {
     Q_OBJECT

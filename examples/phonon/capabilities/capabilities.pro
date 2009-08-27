@@ -14,3 +14,4 @@ wince*{
 DEPLOYMENT_PLUGIN += phonon_ds9 phonon_waveout
 }
 
+symbian:TARGET.UID3 = 0xA000CF69

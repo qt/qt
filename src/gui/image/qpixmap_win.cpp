@@ -123,7 +123,7 @@ HBITMAP QPixmap::toWinHBITMAP(HBitmapFormat format) const
 {
     HBITMAP bitmap = 0;
     if (data->classId() == QPixmapData::RasterClass) {
-        QRasterPixmapData* d = static_cast<QRasterPixmapData*>(data);
+        QRasterPixmapData* d = static_cast<QRasterPixmapData*>(data.data());
         int w = d->image.width();
         int h = d->image.height();
 

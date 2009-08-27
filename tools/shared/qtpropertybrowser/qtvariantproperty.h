@@ -67,7 +67,7 @@ protected:
     QtVariantProperty(QtVariantPropertyManager *manager);
 private:
     friend class QtVariantPropertyManager;
-    class QtVariantPropertyPrivate *d_ptr;
+    QScopedPointer<class QtVariantPropertyPrivate> d_ptr;
 };
 
 class QtVariantPropertyManager : public QtAbstractPropertyManager
@@ -111,7 +111,7 @@ protected:
     virtual void uninitializeProperty(QtProperty *property);
     virtual QtProperty *createProperty();
 private:
-    class QtVariantPropertyManagerPrivate *d_ptr;
+    QScopedPointer<class QtVariantPropertyManagerPrivate> d_ptr;
     Q_PRIVATE_SLOT(d_func(), void slotValueChanged(QtProperty *, int))
     Q_PRIVATE_SLOT(d_func(), void slotRangeChanged(QtProperty *, int, int))
     Q_PRIVATE_SLOT(d_func(), void slotSingleStepChanged(QtProperty *, int))
@@ -165,7 +165,7 @@ protected:
                 QWidget *parent);
     void disconnectPropertyManager(QtVariantPropertyManager *manager);
 private:
-    class QtVariantEditorFactoryPrivate *d_ptr;
+    QScopedPointer<class QtVariantEditorFactoryPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtVariantEditorFactory)
     Q_DISABLE_COPY(QtVariantEditorFactory)
 };

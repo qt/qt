@@ -1,9 +1,9 @@
 TEMPLATE      = subdirs
 SUBDIRS       = blockingfortuneclient \
- 		broadcastreceiver \
+                broadcastreceiver \
                 broadcastsender \
-		download \
-		downloadmanager \
+                download \
+                downloadmanager \
                 fortuneclient \
                 fortuneserver \
                 ftp \
@@ -11,10 +11,12 @@ SUBDIRS       = blockingfortuneclient \
                 loopback \
                 threadedfortuneserver \
                 googlesuggest \
- 		torrent
+                torrent
 
 # no QProcess
 !vxworks:!qnx:SUBDIRS += network-chat
+
+symbian: SUBDIRS = ftp
 
 contains(QT_CONFIG, openssl):SUBDIRS += securesocketclient
 
@@ -22,3 +24,5 @@ contains(QT_CONFIG, openssl):SUBDIRS += securesocketclient
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS network.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/network
 INSTALLS += sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

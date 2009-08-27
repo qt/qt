@@ -422,7 +422,7 @@ void QmlContext::setContextProperty(const QString &name, QObject *value)
 QUrl QmlContext::resolvedUrl(const QUrl &src)
 {
     QmlContext *ctxt = this;
-    if (src.isRelative()) {
+    if (src.isRelative() && !src.isEmpty()) {
         if (ctxt) {
             while(ctxt) {
                 if(ctxt->d_func()->url.isValid())

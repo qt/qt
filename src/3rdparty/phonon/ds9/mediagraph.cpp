@@ -383,7 +383,8 @@ namespace Phonon
 #endif
             if (info.pGraph) {
                 info.pGraph->Release();
-                return m_graph->RemoveFilter(filter);
+                if (info.pGraph == m_graph)
+                    return m_graph->RemoveFilter(filter);
             }
 
             //already removed
@@ -681,7 +682,6 @@ namespace Phonon
  #ifndef QT_NO_PHONON_MEDIACONTROLLER
                } else if (source.discType() == Phonon::Cd) {
                     m_realSource = Filter(new QAudioCDPlayer);
-                    m_result = m_graph->AddFilter(m_realSource, 0);
 
 #endif //QT_NO_PHONON_MEDIACONTROLLER
                 } else {
@@ -1008,27 +1008,27 @@ namespace Phonon
                 BSTR str;
                 HRESULT hr = mediaContent->get_AuthorName(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("ARTIST"), QString::fromUtf16((const unsigned short*)str));
+                    ret.insert(QLatin1String("ARTIST"), QString::fromWCharArray(str));
                     SysFreeString(str);
                 }
                 hr = mediaContent->get_Title(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("TITLE"), QString::fromUtf16((const unsigned short*)str));
+                    ret.insert(QLatin1String("TITLE"), QString::fromWCharArray(str));
                     SysFreeString(str);
                 }
                 hr = mediaContent->get_Description(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("DESCRIPTION"), QString::fromUtf16((const unsigned short*)str));
+                    ret.insert(QLatin1String("DESCRIPTION"), QString::fromWCharArray(str));
                     SysFreeString(str);
                 }
                 hr = mediaContent->get_Copyright(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("COPYRIGHT"), QString::fromUtf16((const unsigned short*)str));
+                    ret.insert(QLatin1String("COPYRIGHT"), QString::fromWCharArray(str));
                     SysFreeString(str);
                 }
                 hr = mediaContent->get_MoreInfoText(&str);
                 if (SUCCEEDED(hr)) {
-                    ret.insert(QLatin1String("MOREINFO"), QString::fromUtf16((const unsigned short*)str));
+                    ret.insert(QLatin1String("MOREINFO"), QString::fromWCharArray(str));
                     SysFreeString(str);
                 }
             }

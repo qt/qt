@@ -166,6 +166,7 @@ private:
     QTimer *stretchTimer, *widgetStretchTimer;
     Q3TableHeaderPrivate *d;
 
+    Q_DISABLE_COPY(Q3TableHeader)
 };
 
 #ifdef _WS_QWS_

@@ -197,7 +197,7 @@ void QDesktopWidgetPrivate::init()
 
     if (screens) {
         // leaks QWidget* pointers on purpose, can't delete them as pointer escapes
-        screens = (QWidget**) realloc(screens, j * sizeof(QWidget*));
+        screens = q_check_ptr((QWidget**) realloc(screens, j * sizeof(QWidget*)));
         if (j > screenCount)
             memset(&screens[screenCount], 0, (j-screenCount) * sizeof(QWidget*));
     }

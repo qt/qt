@@ -87,6 +87,8 @@ namespace JSC {
         bool getStringPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
         bool getStringPropertySlot(ExecState*, unsigned propertyName, PropertySlot&);
 
+        bool getStringPropertyAttributes(ExecState*, const Identifier& propertyName, unsigned&) const;
+
         bool canGetIndex(unsigned i) { return i < static_cast<unsigned>(m_value.size()); }
         JSString* getIndex(JSGlobalData*, unsigned);
 

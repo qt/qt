@@ -66,7 +66,8 @@ class QFxImageBasePrivate : public QFxItemPrivate
 public:
     QFxImageBasePrivate()
       : status(QFxImageBase::Null),
-        progress(0.0)
+        progress(0.0),
+        pendingPixmapCache(false)
     {
     }
 
@@ -74,6 +75,7 @@ public:
     QFxImageBase::Status status;
     QUrl url;
     qreal progress;
+    bool pendingPixmapCache;
 };
 
 QT_END_NAMESPACE

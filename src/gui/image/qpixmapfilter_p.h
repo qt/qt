@@ -78,6 +78,7 @@ public:
         ConvolutionFilter,
         ColorizeFilter,
         DropShadowFilter,
+        BlurFilter,
 
         UserFilter = 1024
     };
@@ -117,6 +118,30 @@ private:
     int columns() const;
 };
 
+class QPixmapBlurFilterPrivate;
+
+class Q_GUI_EXPORT QPixmapBlurFilter : public QPixmapFilter
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QPixmapBlurFilter)
+
+public:
+    QPixmapBlurFilter(QObject *parent = 0);
+    ~QPixmapBlurFilter();
+
+    void setRadius(int radius);
+    void setQuality(Qt::TransformationMode mode);
+
+    int radius() const;
+    Qt::TransformationMode quality() const;
+
+    QRectF boundingRectFor(const QRectF &rect) const;
+    void draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect = QRectF()) const;
+
+private:
+    friend class QGLPixmapBlurFilter;
+};
+
 class QPixmapColorizeFilterPrivate;
 
 class Q_GUI_EXPORT QPixmapColorizeFilter : public QPixmapFilter
@@ -147,8 +172,8 @@ public:
     QRectF boundingRectFor(const QRectF &rect) const;
     void draw(QPainter *p, const QPointF &pos, const QPixmap &px, const QRectF &src = QRectF()) const;
 
-    qreal blurRadius() const;
-    void setBlurRadius(qreal radius);
+    int blurRadius() const;
+    void setBlurRadius(int radius);
 
     QColor color() const;
     void setColor(const QColor &color);

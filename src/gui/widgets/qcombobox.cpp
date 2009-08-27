@@ -64,7 +64,7 @@
 #include <private/qabstractitemmodel_p.h>
 #include <private/qabstractscrollarea_p.h>
 #include <qdebug.h>
-
+#include <private/qactiontokeyeventmapper_p.h>
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #endif
@@ -629,6 +629,9 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Select:
 #endif
             if (view->currentIndex().isValid() && (view->currentIndex().flags() & Qt::ItemIsEnabled) ) {
+#ifdef QT_KEYPAD_NAVIGATION
+                QActionToKeyEventMapper::removeSoftkey(this);
+#endif
                 combo->hidePopup();
                 emit itemSelected(view->currentIndex());
             }
@@ -641,6 +644,7 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
         case Qt::Key_Escape:
 #ifdef QT_KEYPAD_NAVIGATION
         case Qt::Key_Back:
+            QActionToKeyEventMapper::removeSoftkey(this);
 #endif
             combo->hidePopup();
             return true;
@@ -1247,8 +1251,12 @@ QComboBox::~QComboBox()
     // ### check delegateparent and delete delegate if us?
     Q_D(QComboBox);
 
-    disconnect(d->model, SIGNAL(destroyed()),
-               this, SLOT(_q_modelDestroyed()));
+    QT_TRY {
+        disconnect(d->model, SIGNAL(destroyed()),
+                this, SLOT(_q_modelDestroyed()));
+    } QT_CATCH(...) {
+        ; // objects can't throw in destructor
+    }
 }
 
 /*!
@@ -2441,7 +2449,16 @@ void QComboBox::showPopup()
         && !style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this) && !window()->testAttribute(Qt::WA_DontShowOnScreen))
         qScrollEffect(container, scrollDown ? QEffects::DownScroll : QEffects::UpScroll, 150);
 #endif
+
+// Don't disable updates on Mac OS X. Windows are displayed immediately on this platform,
+// which means that the window will be visible before the call to container->show() returns.
+// If updates are disabled at this point we'll miss our chance at painting the popup 
+// menu before it's shown, causing flicker since the window then displays the standard gray 
+// background.
+#ifndef Q_WS_MAC
     container->setUpdatesEnabled(false);
+#endif
+
     container->raise();
     container->show();
     container->updateScrollers();
@@ -2452,8 +2469,16 @@ void QComboBox::showPopup()
                              ? QAbstractItemView::PositionAtCenter
                              : QAbstractItemView::EnsureVisible);
 
+#ifndef Q_WS_MAC
     container->setUpdatesEnabled(updatesEnabled);
+#endif
+
     container->update();
+#ifdef QT_KEYPAD_NAVIGATION
+    if (QApplication::keypadNavigationEnabled())
+        view()->setEditFocus(true);
+    QActionToKeyEventMapper::addSoftKey(QAction::CancelSoftKey, Qt::Key_Back, view());
+#endif
 }
 
 /*!

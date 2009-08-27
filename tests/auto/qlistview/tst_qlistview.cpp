@@ -48,7 +48,9 @@
 #include <qitemdelegate.h>
 #include <qstandarditemmodel.h>
 #include <qstringlistmodel.h>
+#ifndef Q_OS_SYMBIAN
 #include <cmath>
+#endif
 #include <math.h>
 #include <QtGui/QScrollBar>
 #include <QtGui/QDialog>

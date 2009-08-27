@@ -10,15 +10,15 @@ RESOURCES = input.qrc
 
 QT += network
 
-!wince* {
-DEFINES += SRCDIR=\\\"$$PWD/\\\"
-} else {
-DEFINES += SRCDIR=\\\"./\\\"
+wince* {
+    DEFINES += SRCDIR=\\\"./\\\"
+} else:!symbian {
+    DEFINES += SRCDIR=\\\"$$PWD/\\\"
 }
 
 include (../xmlpatterns.pri)
 
-wince*: {
+wince*|symbian*: {
    addFiles.sources = pushBaselines input.xml
    addFiles.path    = .
 

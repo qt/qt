@@ -351,7 +351,7 @@ void PaintCommands::staticInit()
                       "^gradient_setCoordinateMode\\s+(\\w*)$",
                       "gradient_setCoordinateMode <coordinate method enum>",
                       "gradient_setCoordinateMode ObjectBoundingMode");
-
+#ifdef QT3_SUPPORT
     DECL_PAINTCOMMANDSECTION("qt3 drawing ops");
     DECL_PAINTCOMMAND("qt3_drawArc", command_qt3_drawArc,
                       "^qt3_drawArc\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)$",
@@ -377,7 +377,7 @@ void PaintCommands::staticInit()
                       "^qt3_drawRoundRect\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s+(-?\\w*)\\s*(-?\\w)?\\s*(-?\\w)?$",
                       "qt3_drawRoundRect <x> <y> <w> <h> [rx] [ry]",
                       "qt3_drawRoundRect 10 10 20 20 3 3");
-
+#endif
     DECL_PAINTCOMMANDSECTION("drawing ops");
     DECL_PAINTCOMMAND("drawPoint", command_drawPoint,
                       "^drawPoint\\s+(-?[\\w.]*)\\s+(-?[\\w.]*)$",
@@ -1237,6 +1237,7 @@ void PaintCommands::command_drawArc(QRegExp re)
     m_painter->drawArc(x, y, w, h, angle, sweep);
 }
 
+#ifdef QT3_SUPPORT
 /***************************************************************************************************/
 void PaintCommands::command_qt3_drawRect(QRegExp re)
 {
@@ -1352,7 +1353,7 @@ void PaintCommands::command_qt3_drawArc(QRegExp re)
     static_cast<Q3Painter*>(m_painter)->drawArc(x, y, w, h, angle, sweep);
 #endif
 }
-
+#endif //QT3_SUPPORT
 /***************************************************************************************************/
 void PaintCommands::command_drawText(QRegExp re)
 {

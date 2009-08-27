@@ -122,6 +122,17 @@ template <typename T> class QList;
 
 class Q_CORE_EXPORT QByteArray
 {
+private:
+    struct Data {
+        QBasicAtomicInt ref;
+        int alloc, size;
+        // ### Qt 5.0: We need to add the missing capacity bit
+        // (like other tool classes have), to maintain the
+        // reserved memory on resize.
+        char *data;
+        char array[1];
+    };
+
 public:
     inline QByteArray();
     QByteArray(const char *);
@@ -349,15 +360,6 @@ public:
 
 private:
     operator QNoImplicitBoolCast() const;
-    struct Data {
-        QBasicAtomicInt ref;
-        int alloc, size;
-	// ### Qt 5.0: We need to add the missing capacity bit
-	// (like other tool classes have), to maintain the
-	// reserved memory on resize.
-        char *data;
-        char array[1];
-    };
     static Data shared_null;
     static Data shared_empty;
     Data *d;

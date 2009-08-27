@@ -355,6 +355,7 @@ public:
     virtual ~QmlAnimationGroup();
 
     QmlList<QmlAbstractAnimation *>* animations();
+    friend class QmlAbstractAnimation;
 };
 
 class QmlSequentialAnimation : public QmlAnimationGroup

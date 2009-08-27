@@ -40,7 +40,6 @@ namespace JSC {
     class CodeBlock;
     class ExecState;
     class JSActivation;
-    class JSFunction;
     class JSPropertyNameIterator;
     class ScopeChainNode;
 
@@ -73,7 +72,7 @@ namespace JSC {
         Register(JSActivation*);
         Register(CallFrame*);
         Register(CodeBlock*);
-        Register(JSFunction*);
+        Register(JSObject*);
         Register(JSPropertyNameIterator*);
         Register(ScopeChainNode*);
         Register(Instruction*);
@@ -82,7 +81,7 @@ namespace JSC {
         Arguments* arguments() const;
         CallFrame* callFrame() const;
         CodeBlock* codeBlock() const;
-        JSFunction* function() const;
+        JSObject* object() const;
         JSPropertyNameIterator* propertyNameIterator() const;
         ScopeChainNode* scopeChain() const;
         Instruction* vPC() const;
@@ -96,7 +95,7 @@ namespace JSC {
             Arguments* arguments;
             CallFrame* callFrame;
             CodeBlock* codeBlock;
-            JSFunction* function;
+            JSObject* object;
             JSPropertyNameIterator* propertyNameIterator;
             ScopeChainNode* scopeChain;
             Instruction* vPC;
@@ -152,9 +151,9 @@ namespace JSC {
         u.codeBlock = codeBlock;
     }
 
-    ALWAYS_INLINE Register::Register(JSFunction* function)
+    ALWAYS_INLINE Register::Register(JSObject* object)
     {
-        u.function = function;
+        u.object = object;
     }
 
     ALWAYS_INLINE Register::Register(Instruction* vPC)
@@ -211,9 +210,9 @@ namespace JSC {
         return u.codeBlock;
     }
     
-    ALWAYS_INLINE JSFunction* Register::function() const
+    ALWAYS_INLINE JSObject* Register::object() const
     {
-        return u.function;
+        return u.object;
     }
     
     ALWAYS_INLINE JSPropertyNameIterator* Register::propertyNameIterator() const

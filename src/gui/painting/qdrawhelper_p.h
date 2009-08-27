@@ -87,7 +87,7 @@ QT_BEGIN_NAMESPACE
 #if defined(Q_CC_RVCT)
 // RVCT doesn't like static template functions
 #  define Q_STATIC_TEMPLATE_FUNCTION
-#  define Q_STATIC_INLINE_FUNCTION inline
+#  define Q_STATIC_INLINE_FUNCTION static __forceinline
 #else
 #  define Q_STATIC_TEMPLATE_FUNCTION static
 #  define Q_STATIC_INLINE_FUNCTION static inline
@@ -310,19 +310,23 @@ struct QSpanData
 };
 
 
-static inline uint BYTE_MUL_RGB16(uint x, uint a) {
+Q_STATIC_INLINE_FUNCTION uint BYTE_MUL_RGB16(uint x, uint a) {
     a += 1;
     uint t = (((x & 0x07e0)*a) >> 8) & 0x07e0;
     t |= (((x & 0xf81f)*(a>>2)) >> 6) & 0xf81f;
     return t;
 }
 
-static inline uint BYTE_MUL_RGB16_32(uint x, uint a) {
+Q_STATIC_INLINE_FUNCTION uint BYTE_MUL_RGB16_32(uint x, uint a) {
     uint t = (((x & 0xf81f07e0) >> 5)*a) & 0xf81f07e0;
     t |= (((x & 0x07e0f81f)*a) >> 5) & 0x07e0f81f;
     return t;
 }
 
+#if defined(Q_CC_RVCT)
+#  pragma push
+#  pragma arm
+#endif
 Q_STATIC_INLINE_FUNCTION uint BYTE_MUL(uint x, uint a) {
     uint t = (x & 0xff00ff) * a;
     t = (t + ((t >> 8) & 0xff00ff) + 0x800080) >> 8;
@@ -334,8 +338,11 @@ Q_STATIC_INLINE_FUNCTION uint BYTE_MUL(uint x, uint a) {
     x |= t;
     return x;
 }
+#if defined(Q_CC_RVCT)
+#  pragma pop
+#endif
 
-static inline uint PREMUL(uint x) {
+Q_STATIC_INLINE_FUNCTION uint PREMUL(uint x) {
     uint a = x >> 24;
     uint t = (x & 0xff00ff) * a;
     t = (t + ((t >> 8) & 0xff00ff) + 0x800080) >> 8;
@@ -400,7 +407,7 @@ public:
         return qt_colorConvert<quint16, quint32>(data, 0);
     }
 
-    static inline quint32p fromRawData(quint32 v)
+    Q_STATIC_INLINE_FUNCTION quint32p fromRawData(quint32 v)
     {
         quint32p p;
         p.data = v;
@@ -431,7 +438,7 @@ class qrgb565;
 class qargb8565
 {
 public:
-    static inline bool hasAlpha() { return true; }
+    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return true; }
 
     inline qargb8565() {}
     inline qargb8565(quint32 v);
@@ -448,8 +455,8 @@ public:
         data[1] &= 0xdf;
         return *this;
     }
-    static inline quint8 alpha(quint8 a) { return (a + 1) >> 3; }
-    static inline quint8 ialpha(quint8 a) { return 0x20 - alpha(a); }
+    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 3; }
+    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 0x20 - alpha(a); }
 
     inline qargb8565 byte_mul(quint8 a) const;
     inline qargb8565 operator+(qargb8565 v) const;
@@ -467,7 +474,7 @@ private:
 class qrgb565
 {
 public:
-    static inline bool hasAlpha() { return false; }
+    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return false; }
 
     qrgb565(int v = 0) : data(v) {}
 
@@ -482,8 +489,8 @@ public:
 
     inline quint8 alpha() const { return 0xff; }
     inline qrgb565 truncedAlpha() { return *this; }
-    static inline quint8 alpha(quint8 a) { return (a + 1) >> 3; }
-    static inline quint8 ialpha(quint8 a) { return 0x20 - alpha(a); }
+    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 3; }
+    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 0x20 - alpha(a); }
 
     inline qrgb565 byte_mul(quint8 a) const;
 
@@ -663,7 +670,7 @@ class qrgb555;
 class qargb8555
 {
 public:
-    static inline bool hasAlpha() { return true; }
+    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return true; }
 
     qargb8555() {}
     inline qargb8555(quint32 v);
@@ -675,8 +682,8 @@ public:
 
     inline quint8 alpha() const { return data[0]; }
     inline qargb8555 truncedAlpha() { data[0] &= 0xf8; return *this; }
-    static inline quint8 alpha(quint8 a) { return (a + 1) >> 3; }
-    static inline quint8 ialpha(quint8 a) { return 0x20 - alpha(a); }
+    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 3; }
+    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 0x20 - alpha(a); }
 
     inline qargb8555 operator+(qargb8555 v) const;
     inline qargb8555 byte_mul(quint8 a) const;
@@ -693,7 +700,7 @@ private:
 class qrgb555
 {
 public:
-    static inline bool hasAlpha() { return false; }
+    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return false; }
 
     inline qrgb555(int v = 0) : data(v) {}
 
@@ -742,8 +749,8 @@ public:
 
     inline quint8 alpha() const { return 0xff; }
     inline qrgb555 truncedAlpha() { return *this; }
-    static inline quint8 alpha(quint8 a) { return (a + 1) >> 3; }
-    static inline quint8 ialpha(quint8 a) { return 0x20 - alpha(a); }
+    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 3; }
+    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 0x20 - alpha(a); }
 
     inline bool operator==(const qrgb555 &v) const { return v.data == data; }
     inline bool operator!=(const qrgb555 &v) const { return v.data != data; }
@@ -891,7 +898,7 @@ class qrgb666;
 class qargb6666
 {
 public:
-    static inline bool hasAlpha() { return true; }
+    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return true; }
 
     inline qargb6666() {}
     inline qargb6666(quint32 v) { *this = qargb6666(quint32p(v)); }
@@ -903,8 +910,8 @@ public:
 
     inline quint8 alpha() const;
     inline qargb6666 truncedAlpha() { return *this; }
-    static inline quint8 alpha(quint8 a) { return (a + 1) >> 2; }
-    static inline quint8 ialpha(quint8 a) { return (255 - a + 1) >> 2; }
+    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 2; }
+    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return (255 - a + 1) >> 2; }
 
     inline qargb6666 byte_mul(quint8 a) const;
     inline qargb6666 operator+(qargb6666 v) const;
@@ -921,7 +928,7 @@ private:
 class qrgb666
 {
 public:
-    static inline bool hasAlpha() { return false; }
+    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return false; }
 
     inline qrgb666() {}
     inline qrgb666(quint32 v);
@@ -931,8 +938,8 @@ public:
 
     inline quint8 alpha() const { return 0xff; }
     inline qrgb666 truncedAlpha() { return *this; }
-    static inline quint8 alpha(quint8 a) { return (a + 1) >> 2; }
-    static inline quint8 ialpha(quint8 a) { return (255 - a + 1) >> 2; }
+    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 2; }
+    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return (255 - a + 1) >> 2; }
 
     inline qrgb666 operator+(qrgb666 v) const;
     inline qrgb666 byte_mul(quint8 a) const;
@@ -1089,7 +1096,7 @@ quint32 qargb6666::rawValue() const
 class qrgb888
 {
 public:
-    static inline bool hasAlpha() { return false; }
+    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return false; }
 
     inline qrgb888() {}
     inline qrgb888(quint32 v);
@@ -1098,8 +1105,8 @@ public:
 
     inline quint8 alpha() const { return 0xff; }
     inline qrgb888 truncedAlpha() { return *this; }
-    static inline quint8 alpha(quint8 a) { return a; }
-    static inline quint8 ialpha(quint8 a) { return 255 - a; }
+    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return a; }
+    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 255 - a; }
 
     inline qrgb888 byte_mul(quint8 a) const;
     inline qrgb888 operator+(qrgb888 v) const;
@@ -1278,7 +1285,7 @@ class qrgb444;
 class qargb4444
 {
 public:
-    static inline bool hasAlpha() { return true; }
+    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return true; }
 
     inline qargb4444() {}
     inline qargb4444(quint32 v) { *this = qargb4444(quint32p(v)); }
@@ -1292,8 +1299,8 @@ public:
 
     inline quint8 alpha() const { return ((data & 0xf000) >> 8) | ((data & 0xf000) >> 12); }
     inline qargb4444 truncedAlpha() { return *this; }
-    static inline quint8 alpha(quint8 a) { return (a + 1) >> 4; }
-    static inline quint8 ialpha(quint8 a) { return 0x10 - alpha(a); }
+    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 4; }
+    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 0x10 - alpha(a); }
     inline qargb4444 byte_mul(quint8 a) const;
 
     inline bool operator==(const qargb4444 &v) const { return data == v.data; }
@@ -1309,7 +1316,7 @@ private:
 class qrgb444
 {
 public:
-    static inline bool hasAlpha() { return false; }
+    Q_STATIC_INLINE_FUNCTION bool hasAlpha() { return false; }
 
     inline qrgb444() {}
     inline qrgb444(quint32 v);
@@ -1321,8 +1328,8 @@ public:
     inline qrgb444 operator+(qrgb444 v) const;
     inline quint8 alpha() const { return 0xff; }
     inline qrgb444 truncedAlpha() { return *this; }
-    static inline quint8 alpha(quint8 a) { return (a + 1) >> 4; }
-    static inline quint8 ialpha(quint8 a) { return 0x10 - alpha(a); }
+    Q_STATIC_INLINE_FUNCTION quint8 alpha(quint8 a) { return (a + 1) >> 4; }
+    Q_STATIC_INLINE_FUNCTION quint8 ialpha(quint8 a) { return 0x10 - alpha(a); }
     inline qrgb444 byte_mul(quint8 a) const;
 
     inline bool operator==(const qrgb444 &v) const { return data == v.data; }
@@ -1783,7 +1790,14 @@ do {                                          \
     }                                         \
 } while (0)
 
+#if defined(Q_CC_RVCT)
+#  pragma push
+#  pragma arm
+#endif
 Q_STATIC_INLINE_FUNCTION int qt_div_255(int x) { return (x + (x>>8) + 0x80) >> 8; }
+#if defined(Q_CC_RVCT)
+#  pragma pop
+#endif
 
 inline ushort qConvertRgb32To16(uint c)
 {
@@ -1826,7 +1840,7 @@ inline int qBlue565(quint16 rgb) {
 }
 
 #if 1
-static inline uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
+Q_STATIC_INLINE_FUNCTION uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
     uint t = (x & 0xff00ff) * a + (y & 0xff00ff) * b;
     t >>= 8;
     t &= 0xff00ff;
@@ -1837,7 +1851,11 @@ static inline uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
     return x;
 }
 
-static inline uint INTERPOLATE_PIXEL_255(uint x, uint a, uint y, uint b) {
+#if defined(Q_CC_RVCT)
+#  pragma push
+#  pragma arm
+#endif
+Q_STATIC_INLINE_FUNCTION uint INTERPOLATE_PIXEL_255(uint x, uint a, uint y, uint b) {
     uint t = (x & 0xff00ff) * a + (y & 0xff00ff) * b;
     t = (t + ((t >> 8) & 0xff00ff) + 0x800080) >> 8;
     t &= 0xff00ff;
@@ -1848,9 +1866,12 @@ static inline uint INTERPOLATE_PIXEL_255(uint x, uint a, uint y, uint b) {
     x |= t;
     return x;
 }
+#if defined(Q_CC_RVCT)
+#  pragma pop
+#endif
 #else
 // possible implementation for 64 bit
-static inline uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
+Q_STATIC_INLINE_FUNCTION uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
     ulong t = (((ulong(x)) | ((ulong(x)) << 24)) & 0x00ff00ff00ff00ff) * a;
     t += (((ulong(y)) | ((ulong(y)) << 24)) & 0x00ff00ff00ff00ff) * b;
     t >>= 8;
@@ -1858,7 +1879,7 @@ static inline uint INTERPOLATE_PIXEL_256(uint x, uint a, uint y, uint b) {
     return (uint(t)) | (uint(t >> 24));
 }
 
-static inline uint INTERPOLATE_PIXEL_255(uint x, uint a, uint y, uint b) {
+Q_STATIC_INLINE_FUNCTION uint INTERPOLATE_PIXEL_255(uint x, uint a, uint y, uint b) {
     ulong t = (((ulong(x)) | ((ulong(x)) << 24)) & 0x00ff00ff00ff00ff) * a;
     t += (((ulong(y)) | ((ulong(y)) << 24)) & 0x00ff00ff00ff00ff) * b;
     t = (t + ((t >> 8) & 0xff00ff00ff00ff) + 0x80008000800080);
@@ -1873,7 +1894,7 @@ Q_STATIC_INLINE_FUNCTION uint BYTE_MUL(uint x, uint a) {
     return (uint(t)) | (uint(t >> 24));
 }
 
-static inline uint PREMUL(uint x) {
+Q_STATIC_INLINE_FUNCTION uint PREMUL(uint x) {
     uint a = x >> 24;
     ulong t = (((ulong(x)) | ((ulong(x)) << 24)) & 0x00ff00ff00ff00ff) * a;
     t = (t + ((t >> 8) & 0xff00ff00ff00ff) + 0x80008000800080);

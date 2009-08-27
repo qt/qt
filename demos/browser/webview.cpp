@@ -54,7 +54,9 @@
 
 #include <QtWebKit/QWebHitTestResult>
 
+#ifndef QT_NO_UITOOLS
 #include <QtUiTools/QUiLoader>
+#endif  //QT_NO_UITOOLS
 
 #include <QtCore/QDebug>
 #include <QtCore/QBuffer>

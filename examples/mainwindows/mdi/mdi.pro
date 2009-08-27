@@ -10,3 +10,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/mainwindows/mdi
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS mdi.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/mainwindows/mdi
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

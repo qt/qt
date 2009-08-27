@@ -106,7 +106,7 @@ QScriptDebuggerValueProperty::QScriptDebuggerValueProperty(const QString &name,
   Constructs a QScriptDebuggerValueProperty that is a copy of the \a other property.
 */
 QScriptDebuggerValueProperty::QScriptDebuggerValueProperty(const QScriptDebuggerValueProperty &other)
-    : d_ptr(other.d_ptr)
+    : d_ptr(other.d_ptr.data())
 {
     if (d_ptr)
         d_ptr->ref.ref();
@@ -117,10 +117,6 @@ QScriptDebuggerValueProperty::QScriptDebuggerValueProperty(const QScriptDebugger
 */
 QScriptDebuggerValueProperty::~QScriptDebuggerValueProperty()
 {
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
 }
 
 /*!
@@ -128,13 +124,7 @@ QScriptDebuggerValueProperty::~QScriptDebuggerValueProperty()
 */
 QScriptDebuggerValueProperty &QScriptDebuggerValueProperty::operator=(const QScriptDebuggerValueProperty &other)
 {
-    if (d_ptr == other.d_ptr)
-        return *this;
-    if (d_ptr && !d_ptr->ref.deref())
-        delete d_ptr;
-    d_ptr = other.d_ptr;
-    if (d_ptr)
-        d_ptr->ref.ref();
+    d_ptr.assign(other.d_ptr.data());
     return *this;
 }
 

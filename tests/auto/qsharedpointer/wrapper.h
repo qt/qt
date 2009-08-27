@@ -41,7 +41,10 @@
 #ifndef WRAPPER_H
 #define WRAPPER_H
 
+QT_BEGIN_NAMESPACE
 template <class T> class QSharedPointer;
+QT_END_NAMESPACE
+
 class Wrapper
 {
 public:

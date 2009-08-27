@@ -35,3 +35,5 @@ sources.files = $$SOURCES $$HEADERS $$RESOURCES torrent.pro *.torrent
 sources.files += icons forms 3rdparty
 sources.path = $$[QT_INSTALL_EXAMPLES]/network/torrent
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

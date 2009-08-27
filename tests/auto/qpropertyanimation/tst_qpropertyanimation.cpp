@@ -114,6 +114,7 @@ private slots:
     void updateOnSetKeyValues();
     void restart();
     void valueChanged();
+    void twoAnimations();
 };
 
 tst_QPropertyAnimation::tst_QPropertyAnimation()
@@ -1078,6 +1079,55 @@ void tst_QPropertyAnimation::valueChanged()
         QCOMPARE(qvariant_cast<QVariant>(spy.at(i).first()).toInt(), i);
     }
 }
+
+//this class will help us make sure that 2 animations started
+//at the same time also end at the same time
+class MySyncObject : public MyErrorObject
+{
+    Q_OBJECT
+public:
+    MySyncObject() : anim(this, "ole")
+    {
+        anim.setEndValue(1000);
+    }
+public slots:
+    void checkAnimationFinished()
+    {
+        QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
+        QCOMPARE(ole(), 1000);
+    }
+
+public:
+    QPropertyAnimation anim;
+};
+
+void tst_QPropertyAnimation::twoAnimations()
+{
+    MySyncObject o1, o2;
+    o1.setOle(0);
+    o2.setOle(0);
+
+    //when the animation in o1 is finished
+    //the animation in o2 should stop around the same time
+    //We use a queued connection to check just after the tick from the common timer
+    //the other way is true too
+    QObject::connect(&o1.anim, SIGNAL(finished()),
+        &o2, SLOT(checkAnimationFinished()), Qt::QueuedConnection);
+    QObject::connect(&o2.anim, SIGNAL(finished()),
+        &o1, SLOT(checkAnimationFinished()), Qt::QueuedConnection);
+
+    o1.anim.start();
+    o2.anim.start();
+
+    QTest::qWait(o1.anim.duration() + 50);
+    QCOMPARE(o1.anim.state(), QAbstractAnimation::Stopped);
+    QCOMPARE(o2.anim.state(), QAbstractAnimation::Stopped);
+
+    QCOMPARE(o1.ole(), 1000);
+    QCOMPARE(o2.ole(), 1000);
+
+}
+
 
 
 

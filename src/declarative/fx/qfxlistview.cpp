@@ -110,7 +110,7 @@ public:
     void emitAdd() { emit add(); }
     void emitRemove() { emit remove(); }
 
-signals:
+Q_SIGNALS:
     void currentItemChanged();
     void sectionChanged();
     void prevSectionChanged();

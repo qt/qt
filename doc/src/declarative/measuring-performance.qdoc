@@ -1,7 +1,7 @@
-/*! 
+/*!
 \page optimizing-performance.html
 \target optimizing-performance
-\title Optimizing Performance
+\title Optimizing Performance in QML
 
 The Qt Declarative module includes several tools to help measure performance.
 

@@ -72,6 +72,7 @@ public:
     QPaintDevice *pdev;
     QPaintEngine *q_ptr;
     QRegion systemClip;
+    QRect systemRect;
     QRegion systemViewport;
     QTransform systemTransform;
     QWidget *currentClipWidget;
@@ -117,9 +118,6 @@ public:
     virtual void systemStateChanged() { }
 
     void drawBoxTextItem(const QPointF &p, const QTextItemInt &ti);
-
-private:
-    QRect systemRect;
 };
 
 QT_END_NAMESPACE

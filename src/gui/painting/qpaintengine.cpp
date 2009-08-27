@@ -717,7 +717,6 @@ QPaintEngine::QPaintEngine(QPaintEnginePrivate &dptr, PaintEngineFeatures caps)
 */
 QPaintEngine::~QPaintEngine()
 {
-    delete d_ptr;
 }
 
 /*!

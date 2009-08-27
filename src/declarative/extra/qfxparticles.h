@@ -214,7 +214,7 @@ private Q_SLOTS:
 
 private:
     Q_DISABLE_COPY(QFxParticles)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxParticles)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxParticles)
 };
 
 QT_END_NAMESPACE

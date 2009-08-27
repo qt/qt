@@ -872,8 +872,10 @@ QModelIndex QDirModel::index(const QString &path, int column) const
         return QModelIndex();
 
     QString absolutePath = QDir(path).absolutePath();
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
     absolutePath = absolutePath.toLower();
+#endif
+#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     // On Windows, "filename......." and "filename" are equivalent
     if (absolutePath.endsWith(QLatin1Char('.'))) {
         int i;
@@ -913,7 +915,10 @@ QModelIndex QDirModel::index(const QString &path, int column) const
         pathElements.pop_front();
         if (childAppended)
             emit const_cast<QDirModel*>(this)->layoutChanged();
-    } else if (pathElements.at(0).endsWith(QLatin1Char(':'))) {
+    } else 
+#endif
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
+    if (pathElements.at(0).endsWith(QLatin1Char(':'))) {
         pathElements[0] += QLatin1Char('/');
     }
 #else
@@ -935,11 +940,9 @@ QModelIndex QDirModel::index(const QString &path, int column) const
         for (int j = parent->children.count() - 1; j >= 0; --j) {
             const QFileInfo& fi = parent->children.at(j).info;
             QString childFileName;
-#if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
             childFileName = idx.isValid() ? fi.fileName() : fi.absoluteFilePath();
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
             childFileName = childFileName.toLower();
-#else
-            childFileName = idx.isValid() ? fi.fileName() : fi.absoluteFilePath();
 #endif
             if (childFileName == element) {
                 if (i == pathElements.count() - 1)
@@ -956,7 +959,7 @@ QModelIndex QDirModel::index(const QString &path, int column) const
             if (parent->info.isRoot())
                 newPath = parent->info.absoluteFilePath() + element;
             else
-                newPath= parent->info.absoluteFilePath() + QLatin1Char('/') + element;
+                newPath = parent->info.absoluteFilePath() + QLatin1Char('/') + element;
 #else
             QString newPath = parent->info.absoluteFilePath() + QLatin1Char('/') + element;
 #endif
@@ -1308,6 +1311,8 @@ QString QDirModelPrivate::name(const QModelIndex &index) const
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
         if (name.startsWith(QLatin1Char('/'))) // UNC host
             return info.fileName();
+#endif        
+#if (defined(Q_OS_WIN) && !defined(Q_OS_WINCE)) || defined(Q_OS_SYMBIAN)
         if (name.endsWith(QLatin1Char('/')))
             name.chop(1);
 #endif

@@ -45,6 +45,7 @@
 #include <QtCore/qnamespace.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qpoint.h>
+#include <QtCore/qscopedpointer.h>
 #include <QtGui/qpixmap.h>
 #include <QtGui/qimage.h>
 #include <QtGui/qtextoption.h>
@@ -77,6 +78,8 @@ class QPolygon;
 class QTextItem;
 class QMatrix;
 class QTransform;
+
+class QPainterPrivateDeleter;
 
 class Q_GUI_EXPORT QPainter
 {
@@ -497,7 +500,7 @@ private:
     Q_DISABLE_COPY(QPainter)
     friend class Q3Painter;
 
-    QPainterPrivate *d_ptr;
+    QScopedPointer<QPainterPrivate> d_ptr;
 
     friend class QFontEngine;
     friend class QFontEngineBox;

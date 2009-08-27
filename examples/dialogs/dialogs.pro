@@ -5,7 +5,7 @@ SUBDIRS       = classwizard \
                 tabdialog \
                 trivialwizard
 
-!wince*: SUBDIRS += licensewizard \
+!symbian:!wince*: SUBDIRS += licensewizard \
                     extension \
                     findfiles
 
@@ -15,3 +15,5 @@ wince*: SUBDIRS += sipdialog
 sources.files = README *.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/dialogs
 INSTALLS += sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

@@ -56,9 +56,11 @@
 #include "qgraphicsitem.h"
 #include "qset.h"
 #include "qpixmapcache.h"
-#include "qgraphicsview_p.h"
+#include <private/qgraphicsview_p.h>
 #include "qgraphicstransform.h"
-#include "qgraphicstransform_p.h"
+#include <private/qgraphicstransform_p.h>
+
+#include <private/qgraphicseffect_p.h>
 
 #include <QtCore/qpoint.h>
 
@@ -121,6 +123,7 @@ public:
         scene(0),
         parent(0),
         transformData(0),
+        graphicsEffect(0),
         index(-1),
         siblingIndex(-1),
         itemDepth(-1),
@@ -165,6 +168,8 @@ public:
         acceptedTouchBeginEvent(0),
         filtersDescendantEvents(0),
         sceneTransformTranslateOnly(0),
+        notifyBoundingRectChanged(0),
+        notifyInvalidated(0),
         mouseSetsFocus(1),
         globalStackingOrder(-1),
         q_ptr(0)
@@ -176,11 +181,11 @@ public:
 
     static const QGraphicsItemPrivate *get(const QGraphicsItem *item)
     {
-        return item->d_ptr;
+        return item->d_ptr.data();
     }
     static QGraphicsItemPrivate *get(QGraphicsItem *item)
     {
-        return item->d_ptr;
+        return item->d_ptr.data();
     }
 
     void updateAncestorFlag(QGraphicsItem::GraphicsItemFlag childFlag,
@@ -218,6 +223,8 @@ public:
     void childrenBoundingRectHelper(QTransform *x, QRectF *rect);
     void initStyleOption(QStyleOptionGraphicsItem *option, const QTransform &worldTransform,
                          const QRegion &exposedRegion, bool allItems = false) const;
+    QRectF effectiveBoundingRect() const;
+    QRectF sceneEffectiveBoundingRect() const;
 
     virtual void resolveFont(uint inheritedMask)
     {
@@ -418,6 +425,7 @@ public:
     QList<QGraphicsItem *> children;
     struct TransformData;
     TransformData *transformData;
+    QGraphicsEffect *graphicsEffect;
     QTransform sceneTransform;
     int index;
     int siblingIndex;
@@ -468,8 +476,10 @@ public:
     quint32 acceptedTouchBeginEvent : 1;
     quint32 filtersDescendantEvents : 1;
     quint32 sceneTransformTranslateOnly : 1;
+    quint32 notifyBoundingRectChanged : 1;
+    quint32 notifyInvalidated : 1;
     quint32 mouseSetsFocus : 1;
-    quint32 unused : 3; // feel free to use
+    quint32 unused : 1; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;
@@ -516,14 +526,82 @@ struct QGraphicsItemPrivate::TransformData
     }
 };
 
+struct QGraphicsItemPaintInfo
+{
+    inline QGraphicsItemPaintInfo(const QTransform *const xform1, const QTransform *const xform2,
+                                  const QTransform *const xform3,
+                                  QRegion *r, QWidget *w, QStyleOptionGraphicsItem *opt,
+                                  QPainter *p, qreal o, bool b1, bool b2)
+        : viewTransform(xform1), transformPtr(xform2), effectTransform(xform3), exposedRegion(r), widget(w),
+          option(opt), painter(p), opacity(o), wasDirtySceneTransform(b1), drawItem(b2)
+    {}
+
+    const QTransform *viewTransform;
+    const QTransform *transformPtr;
+    const QTransform *effectTransform;
+    QRegion *exposedRegion;
+    QWidget *widget;
+    QStyleOptionGraphicsItem *option;
+    QPainter *painter;
+    qreal opacity;
+    quint32 wasDirtySceneTransform : 1;
+    quint32 drawItem : 1;
+};
+
+class QGraphicsItemEffectSourcePrivate : public QGraphicsEffectSourcePrivate
+{
+public:
+    QGraphicsItemEffectSourcePrivate(QGraphicsItem *i)
+        : QGraphicsEffectSourcePrivate(), item(i), info(0)
+    {}
+
+    inline void detach()
+    { item->setGraphicsEffect(0); }
+
+    inline const QGraphicsItem *graphicsItem() const
+    { return item; }
+
+    inline const QWidget *widget() const
+    { return 0; }
+
+    inline void update()
+    { item->update(); }
+
+    inline bool isPixmap() const
+    {
+        return (item->type() == QGraphicsPixmapItem::Type);
+            //|| (item->d_ptr->isObject && qobject_cast<QFxImage *>(q_func()));
+    }
+
+    inline const QStyleOption *styleOption() const
+    { return info ? info->option : 0; }
+
+    inline QRect deviceRect() const
+    {
+        if (!info || !info->widget) {
+            qWarning("QGraphicsEffectSource::deviceRect: Not yet implemented, lacking device context");
+            return QRect();
+        }
+        return info->widget->rect();
+    }
+
+    QRectF boundingRect(Qt::CoordinateSystem system) const;
+    void draw(QPainter *);
+    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
+
+    QGraphicsItem *item;
+    QGraphicsItemPaintInfo *info;
+};
+
+
 /*!
     \internal
 */
 inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
 {
     // Return true if sibling item1 is on top of item2.
-    const QGraphicsItemPrivate *d1 = item1->d_ptr;
-    const QGraphicsItemPrivate *d2 = item2->d_ptr;
+    const QGraphicsItemPrivate *d1 = item1->d_ptr.data();
+    const QGraphicsItemPrivate *d2 = item2->d_ptr.data();
     bool f1 = d1->flags & QGraphicsItem::ItemStacksBehindParent;
     bool f2 = d2->flags & QGraphicsItem::ItemStacksBehindParent;
     if (f1 != f2)

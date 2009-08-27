@@ -92,7 +92,7 @@ public:
     void emitAdd() { emit add(); }
     void emitRemove() { emit remove(); }
 
-signals:
+Q_SIGNALS:
     void currentItemChanged();
     void delayRemoveChanged();
     void add();

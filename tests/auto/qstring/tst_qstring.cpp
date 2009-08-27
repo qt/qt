@@ -446,48 +446,48 @@ void tst_QString::replace_string_data()
     QTest::addColumn<QString>("result" );
     QTest::addColumn<bool>("bcs" );
 
-    QTest::newRow( "rem00" ) << QString("") << QString("") << QString("") << QString("") << TRUE;
-    QTest::newRow( "rem01" ) << QString("A") << QString("") << QString("") << QString("A") << TRUE;
-    QTest::newRow( "rem02" ) << QString("A") << QString("A") << QString("") << QString("") << TRUE;
-    QTest::newRow( "rem03" ) << QString("A") << QString("B") << QString("") << QString("A") << TRUE;
-    QTest::newRow( "rem04" ) << QString("AA") << QString("A") << QString("") << QString("") << TRUE;
-    QTest::newRow( "rem05" ) << QString("AB") << QString("A") << QString("") << QString("B") << TRUE;
-    QTest::newRow( "rem06" ) << QString("AB") << QString("B") << QString("") << QString("A") << TRUE;
-    QTest::newRow( "rem07" ) << QString("AB") << QString("C") << QString("") << QString("AB") << TRUE;
-    QTest::newRow( "rem08" ) << QString("ABA") << QString("A") << QString("") << QString("B") << TRUE;
-    QTest::newRow( "rem09" ) << QString("ABA") << QString("B") << QString("") << QString("AA") << TRUE;
-    QTest::newRow( "rem10" ) << QString("ABA") << QString("C") << QString("") << QString("ABA") << TRUE;
-    QTest::newRow( "rem11" ) << QString("banana") << QString("an") << QString("") << QString("ba") << TRUE;
-    QTest::newRow( "rem12" ) << QString("") << QString("A") << QString("") << QString("") << TRUE;
-    QTest::newRow( "rem13" ) << QString("") << QString("A") << QString() << QString("") << TRUE;
-    QTest::newRow( "rem14" ) << QString() << QString("A") << QString("") << QString() << TRUE;
-    QTest::newRow( "rem15" ) << QString() << QString("A") << QString() << QString() << TRUE;
-    QTest::newRow( "rem16" ) << QString() << QString("") << QString("") << QString("") << TRUE;
-    QTest::newRow( "rem17" ) << QString("") << QString() << QString("") << QString("") << TRUE;
-    QTest::newRow( "rem18" ) << QString("a") << QString("a") << QString("") << QString("") << FALSE;
-    QTest::newRow( "rem19" ) << QString("A") << QString("A") << QString("") << QString("") << FALSE;
-    QTest::newRow( "rem20" ) << QString("a") << QString("A") << QString("") << QString("") << FALSE;
-    QTest::newRow( "rem21" ) << QString("A") << QString("a") << QString("") << QString("") << FALSE;
-    QTest::newRow( "rem22" ) << QString("Alpha beta") << QString("a") << QString("") << QString("lph bet") << FALSE;
+    QTest::newRow( "rem00" ) << QString("") << QString("") << QString("") << QString("") << true;
+    QTest::newRow( "rem01" ) << QString("A") << QString("") << QString("") << QString("A") << true;
+    QTest::newRow( "rem02" ) << QString("A") << QString("A") << QString("") << QString("") << true;
+    QTest::newRow( "rem03" ) << QString("A") << QString("B") << QString("") << QString("A") << true;
+    QTest::newRow( "rem04" ) << QString("AA") << QString("A") << QString("") << QString("") << true;
+    QTest::newRow( "rem05" ) << QString("AB") << QString("A") << QString("") << QString("B") << true;
+    QTest::newRow( "rem06" ) << QString("AB") << QString("B") << QString("") << QString("A") << true;
+    QTest::newRow( "rem07" ) << QString("AB") << QString("C") << QString("") << QString("AB") << true;
+    QTest::newRow( "rem08" ) << QString("ABA") << QString("A") << QString("") << QString("B") << true;
+    QTest::newRow( "rem09" ) << QString("ABA") << QString("B") << QString("") << QString("AA") << true;
+    QTest::newRow( "rem10" ) << QString("ABA") << QString("C") << QString("") << QString("ABA") << true;
+    QTest::newRow( "rem11" ) << QString("banana") << QString("an") << QString("") << QString("ba") << true;
+    QTest::newRow( "rem12" ) << QString("") << QString("A") << QString("") << QString("") << true;
+    QTest::newRow( "rem13" ) << QString("") << QString("A") << QString() << QString("") << true;
+    QTest::newRow( "rem14" ) << QString() << QString("A") << QString("") << QString() << true;
+    QTest::newRow( "rem15" ) << QString() << QString("A") << QString() << QString() << true;
+    QTest::newRow( "rem16" ) << QString() << QString("") << QString("") << QString("") << true;
+    QTest::newRow( "rem17" ) << QString("") << QString() << QString("") << QString("") << true;
+    QTest::newRow( "rem18" ) << QString("a") << QString("a") << QString("") << QString("") << false;
+    QTest::newRow( "rem19" ) << QString("A") << QString("A") << QString("") << QString("") << false;
+    QTest::newRow( "rem20" ) << QString("a") << QString("A") << QString("") << QString("") << false;
+    QTest::newRow( "rem21" ) << QString("A") << QString("a") << QString("") << QString("") << false;
+    QTest::newRow( "rem22" ) << QString("Alpha beta") << QString("a") << QString("") << QString("lph bet") << false;
 
-    QTest::newRow( "rep00" ) << QString("ABC") << QString("B") << QString("-") << QString("A-C") << TRUE;
-    QTest::newRow( "rep01" ) << QString("$()*+.?[\\]^{|}") << QString("$()*+.?[\\]^{|}") << QString("X") << QString("X") << TRUE;
-    QTest::newRow( "rep02" ) << QString("ABCDEF") << QString("") << QString("X") << QString("XAXBXCXDXEXFX") << TRUE;
-    QTest::newRow( "rep03" ) << QString("") << QString("") << QString("X") << QString("X") << TRUE;
-    QTest::newRow( "rep04" ) << QString("a") << QString("a") << QString("b") << QString("b") << FALSE;
-    QTest::newRow( "rep05" ) << QString("A") << QString("A") << QString("b") << QString("b") << FALSE;
-    QTest::newRow( "rep06" ) << QString("a") << QString("A") << QString("b") << QString("b") << FALSE;
-    QTest::newRow( "rep07" ) << QString("A") << QString("a") << QString("b") << QString("b") << FALSE;
-    QTest::newRow( "rep08" ) << QString("a") << QString("a") << QString("a") << QString("a") << FALSE;
-    QTest::newRow( "rep09" ) << QString("A") << QString("A") << QString("a") << QString("a") << FALSE;
-    QTest::newRow( "rep10" ) << QString("a") << QString("A") << QString("a") << QString("a") << FALSE;
-    QTest::newRow( "rep11" ) << QString("A") << QString("a") << QString("a") << QString("a") << FALSE;
-    QTest::newRow( "rep12" ) << QString("Alpha beta") << QString("a") << QString("o") << QString("olpho beto") << FALSE;
-    QTest::newRow( "rep13" ) << QString() << QString("") << QString("A") << QString("A") << TRUE;
-    QTest::newRow( "rep14" ) << QString("") << QString() << QString("A") << QString("A") << TRUE;
-    QTest::newRow( "rep15" ) << QString("fooxbarxbazxblub") << QString("x") << QString("yz") << QString("fooyzbaryzbazyzblub") << TRUE;
-    QTest::newRow( "rep16" ) << QString("fooxbarxbazxblub") << QString("x") << QString("z") << QString("foozbarzbazzblub") << TRUE;
-    QTest::newRow( "rep17" ) << QString("fooxybarxybazxyblub") << QString("xy") << QString("z") << QString("foozbarzbazzblub") << TRUE;
+    QTest::newRow( "rep00" ) << QString("ABC") << QString("B") << QString("-") << QString("A-C") << true;
+    QTest::newRow( "rep01" ) << QString("$()*+.?[\\]^{|}") << QString("$()*+.?[\\]^{|}") << QString("X") << QString("X") << true;
+    QTest::newRow( "rep02" ) << QString("ABCDEF") << QString("") << QString("X") << QString("XAXBXCXDXEXFX") << true;
+    QTest::newRow( "rep03" ) << QString("") << QString("") << QString("X") << QString("X") << true;
+    QTest::newRow( "rep04" ) << QString("a") << QString("a") << QString("b") << QString("b") << false;
+    QTest::newRow( "rep05" ) << QString("A") << QString("A") << QString("b") << QString("b") << false;
+    QTest::newRow( "rep06" ) << QString("a") << QString("A") << QString("b") << QString("b") << false;
+    QTest::newRow( "rep07" ) << QString("A") << QString("a") << QString("b") << QString("b") << false;
+    QTest::newRow( "rep08" ) << QString("a") << QString("a") << QString("a") << QString("a") << false;
+    QTest::newRow( "rep09" ) << QString("A") << QString("A") << QString("a") << QString("a") << false;
+    QTest::newRow( "rep10" ) << QString("a") << QString("A") << QString("a") << QString("a") << false;
+    QTest::newRow( "rep11" ) << QString("A") << QString("a") << QString("a") << QString("a") << false;
+    QTest::newRow( "rep12" ) << QString("Alpha beta") << QString("a") << QString("o") << QString("olpho beto") << false;
+    QTest::newRow( "rep13" ) << QString() << QString("") << QString("A") << QString("A") << true;
+    QTest::newRow( "rep14" ) << QString("") << QString() << QString("A") << QString("A") << true;
+    QTest::newRow( "rep15" ) << QString("fooxbarxbazxblub") << QString("x") << QString("yz") << QString("fooyzbaryzbazyzblub") << true;
+    QTest::newRow( "rep16" ) << QString("fooxbarxbazxblub") << QString("x") << QString("z") << QString("foozbarzbazzblub") << true;
+    QTest::newRow( "rep17" ) << QString("fooxybarxybazxyblub") << QString("xy") << QString("z") << QString("foozbarzbazzblub") << true;
 }
 
 void tst_QString::replace_regexp_data()
@@ -958,68 +958,68 @@ void tst_QString::indexOf_data()
     QTest::addColumn<bool>("bcs" );
     QTest::addColumn<int>("resultpos" );
 
-    QTest::newRow( "data0" ) << QString("abc") << QString("a") << 0 << TRUE << 0;
-    QTest::newRow( "data1" ) << QString("abc") << QString("a") << 0 << FALSE << 0;
-    QTest::newRow( "data2" ) << QString("abc") << QString("A") << 0 << TRUE << -1;
-    QTest::newRow( "data3" ) << QString("abc") << QString("A") << 0 << FALSE << 0;
-    QTest::newRow( "data4" ) << QString("abc") << QString("a") << 1 << TRUE << -1;
-    QTest::newRow( "data5" ) << QString("abc") << QString("a") << 1 << FALSE << -1;
-    QTest::newRow( "data6" ) << QString("abc") << QString("A") << 1 << TRUE << -1;
-    QTest::newRow( "data7" ) << QString("abc") << QString("A") << 1 << FALSE << -1;
-    QTest::newRow( "data8" ) << QString("abc") << QString("b") << 0 << TRUE << 1;
-    QTest::newRow( "data9" ) << QString("abc") << QString("b") << 0 << FALSE << 1;
-    QTest::newRow( "data10" ) << QString("abc") << QString("B") << 0 << TRUE << -1;
-    QTest::newRow( "data11" ) << QString("abc") << QString("B") << 0 << FALSE << 1;
-    QTest::newRow( "data12" ) << QString("abc") << QString("b") << 1 << TRUE << 1;
-    QTest::newRow( "data13" ) << QString("abc") << QString("b") << 1 << FALSE << 1;
-    QTest::newRow( "data14" ) << QString("abc") << QString("B") << 1 << TRUE << -1;
-    QTest::newRow( "data15" ) << QString("abc") << QString("B") << 1 << FALSE << 1;
-    QTest::newRow( "data16" ) << QString("abc") << QString("b") << 2 << TRUE << -1;
-    QTest::newRow( "data17" ) << QString("abc") << QString("b") << 2 << FALSE << -1;
+    QTest::newRow( "data0" ) << QString("abc") << QString("a") << 0 << true << 0;
+    QTest::newRow( "data1" ) << QString("abc") << QString("a") << 0 << false << 0;
+    QTest::newRow( "data2" ) << QString("abc") << QString("A") << 0 << true << -1;
+    QTest::newRow( "data3" ) << QString("abc") << QString("A") << 0 << false << 0;
+    QTest::newRow( "data4" ) << QString("abc") << QString("a") << 1 << true << -1;
+    QTest::newRow( "data5" ) << QString("abc") << QString("a") << 1 << false << -1;
+    QTest::newRow( "data6" ) << QString("abc") << QString("A") << 1 << true << -1;
+    QTest::newRow( "data7" ) << QString("abc") << QString("A") << 1 << false << -1;
+    QTest::newRow( "data8" ) << QString("abc") << QString("b") << 0 << true << 1;
+    QTest::newRow( "data9" ) << QString("abc") << QString("b") << 0 << false << 1;
+    QTest::newRow( "data10" ) << QString("abc") << QString("B") << 0 << true << -1;
+    QTest::newRow( "data11" ) << QString("abc") << QString("B") << 0 << false << 1;
+    QTest::newRow( "data12" ) << QString("abc") << QString("b") << 1 << true << 1;
+    QTest::newRow( "data13" ) << QString("abc") << QString("b") << 1 << false << 1;
+    QTest::newRow( "data14" ) << QString("abc") << QString("B") << 1 << true << -1;
+    QTest::newRow( "data15" ) << QString("abc") << QString("B") << 1 << false << 1;
+    QTest::newRow( "data16" ) << QString("abc") << QString("b") << 2 << true << -1;
+    QTest::newRow( "data17" ) << QString("abc") << QString("b") << 2 << false << -1;
 
-    QTest::newRow( "data20" ) << QString("ABC") << QString("A") << 0 << TRUE << 0;
-    QTest::newRow( "data21" ) << QString("ABC") << QString("A") << 0 << FALSE << 0;
-    QTest::newRow( "data22" ) << QString("ABC") << QString("a") << 0 << TRUE << -1;
-    QTest::newRow( "data23" ) << QString("ABC") << QString("a") << 0 << FALSE << 0;
-    QTest::newRow( "data24" ) << QString("ABC") << QString("A") << 1 << TRUE << -1;
-    QTest::newRow( "data25" ) << QString("ABC") << QString("A") << 1 << FALSE << -1;
-    QTest::newRow( "data26" ) << QString("ABC") << QString("a") << 1 << TRUE << -1;
-    QTest::newRow( "data27" ) << QString("ABC") << QString("a") << 1 << FALSE << -1;
-    QTest::newRow( "data28" ) << QString("ABC") << QString("B") << 0 << TRUE << 1;
-    QTest::newRow( "data29" ) << QString("ABC") << QString("B") << 0 << FALSE << 1;
-    QTest::newRow( "data30" ) << QString("ABC") << QString("b") << 0 << TRUE << -1;
-    QTest::newRow( "data31" ) << QString("ABC") << QString("b") << 0 << FALSE << 1;
-    QTest::newRow( "data32" ) << QString("ABC") << QString("B") << 1 << TRUE << 1;
-    QTest::newRow( "data33" ) << QString("ABC") << QString("B") << 1 << FALSE << 1;
-    QTest::newRow( "data34" ) << QString("ABC") << QString("b") << 1 << TRUE << -1;
-    QTest::newRow( "data35" ) << QString("ABC") << QString("b") << 1 << FALSE << 1;
-    QTest::newRow( "data36" ) << QString("ABC") << QString("B") << 2 << TRUE << -1;
-    QTest::newRow( "data37" ) << QString("ABC") << QString("B") << 2 << FALSE << -1;
+    QTest::newRow( "data20" ) << QString("ABC") << QString("A") << 0 << true << 0;
+    QTest::newRow( "data21" ) << QString("ABC") << QString("A") << 0 << false << 0;
+    QTest::newRow( "data22" ) << QString("ABC") << QString("a") << 0 << true << -1;
+    QTest::newRow( "data23" ) << QString("ABC") << QString("a") << 0 << false << 0;
+    QTest::newRow( "data24" ) << QString("ABC") << QString("A") << 1 << true << -1;
+    QTest::newRow( "data25" ) << QString("ABC") << QString("A") << 1 << false << -1;
+    QTest::newRow( "data26" ) << QString("ABC") << QString("a") << 1 << true << -1;
+    QTest::newRow( "data27" ) << QString("ABC") << QString("a") << 1 << false << -1;
+    QTest::newRow( "data28" ) << QString("ABC") << QString("B") << 0 << true << 1;
+    QTest::newRow( "data29" ) << QString("ABC") << QString("B") << 0 << false << 1;
+    QTest::newRow( "data30" ) << QString("ABC") << QString("b") << 0 << true << -1;
+    QTest::newRow( "data31" ) << QString("ABC") << QString("b") << 0 << false << 1;
+    QTest::newRow( "data32" ) << QString("ABC") << QString("B") << 1 << true << 1;
+    QTest::newRow( "data33" ) << QString("ABC") << QString("B") << 1 << false << 1;
+    QTest::newRow( "data34" ) << QString("ABC") << QString("b") << 1 << true << -1;
+    QTest::newRow( "data35" ) << QString("ABC") << QString("b") << 1 << false << 1;
+    QTest::newRow( "data36" ) << QString("ABC") << QString("B") << 2 << true << -1;
+    QTest::newRow( "data37" ) << QString("ABC") << QString("B") << 2 << false << -1;
 
-    QTest::newRow( "data40" ) << QString("aBc") << QString("bc") << 0 << TRUE << -1;
-    QTest::newRow( "data41" ) << QString("aBc") << QString("Bc") << 0 << TRUE << 1;
-    QTest::newRow( "data42" ) << QString("aBc") << QString("bC") << 0 << TRUE << -1;
-    QTest::newRow( "data43" ) << QString("aBc") << QString("BC") << 0 << TRUE << -1;
-    QTest::newRow( "data44" ) << QString("aBc") << QString("bc") << 0 << FALSE << 1;
-    QTest::newRow( "data45" ) << QString("aBc") << QString("Bc") << 0 << FALSE << 1;
-    QTest::newRow( "data46" ) << QString("aBc") << QString("bC") << 0 << FALSE << 1;
-    QTest::newRow( "data47" ) << QString("aBc") << QString("BC") << 0 << FALSE << 1;
-    QTest::newRow( "data48" ) << QString("AbC") << QString("bc") << 0 << TRUE << -1;
-    QTest::newRow( "data49" ) << QString("AbC") << QString("Bc") << 0 << TRUE << -1;
-    QTest::newRow( "data50" ) << QString("AbC") << QString("bC") << 0 << TRUE << 1;
-    QTest::newRow( "data51" ) << QString("AbC") << QString("BC") << 0 << TRUE << -1;
-    QTest::newRow( "data52" ) << QString("AbC") << QString("bc") << 0 << FALSE << 1;
-    QTest::newRow( "data53" ) << QString("AbC") << QString("Bc") << 0 << FALSE << 1;
+    QTest::newRow( "data40" ) << QString("aBc") << QString("bc") << 0 << true << -1;
+    QTest::newRow( "data41" ) << QString("aBc") << QString("Bc") << 0 << true << 1;
+    QTest::newRow( "data42" ) << QString("aBc") << QString("bC") << 0 << true << -1;
+    QTest::newRow( "data43" ) << QString("aBc") << QString("BC") << 0 << true << -1;
+    QTest::newRow( "data44" ) << QString("aBc") << QString("bc") << 0 << false << 1;
+    QTest::newRow( "data45" ) << QString("aBc") << QString("Bc") << 0 << false << 1;
+    QTest::newRow( "data46" ) << QString("aBc") << QString("bC") << 0 << false << 1;
+    QTest::newRow( "data47" ) << QString("aBc") << QString("BC") << 0 << false << 1;
+    QTest::newRow( "data48" ) << QString("AbC") << QString("bc") << 0 << true << -1;
+    QTest::newRow( "data49" ) << QString("AbC") << QString("Bc") << 0 << true << -1;
+    QTest::newRow( "data50" ) << QString("AbC") << QString("bC") << 0 << true << 1;
+    QTest::newRow( "data51" ) << QString("AbC") << QString("BC") << 0 << true << -1;
+    QTest::newRow( "data52" ) << QString("AbC") << QString("bc") << 0 << false << 1;
+    QTest::newRow( "data53" ) << QString("AbC") << QString("Bc") << 0 << false << 1;
 
-    QTest::newRow( "data54" ) << QString("AbC") << QString("bC") << 0 << FALSE << 1;
-    QTest::newRow( "data55" ) << QString("AbC") << QString("BC") << 0 << FALSE << 1;
-    QTest::newRow( "data56" ) << QString("AbC") << QString("BC") << 1 << FALSE << 1;
-    QTest::newRow( "data57" ) << QString("AbC") << QString("BC") << 2 << FALSE << -1;
+    QTest::newRow( "data54" ) << QString("AbC") << QString("bC") << 0 << false << 1;
+    QTest::newRow( "data55" ) << QString("AbC") << QString("BC") << 0 << false << 1;
+    QTest::newRow( "data56" ) << QString("AbC") << QString("BC") << 1 << false << 1;
+    QTest::newRow( "data57" ) << QString("AbC") << QString("BC") << 2 << false << -1;
 #if 0
-    QTest::newRow( "null-in-null") << QString() << QString() << 0 << FALSE << 0;
-    QTest::newRow( "empty-in-null") << QString() << QString("") << 0 << FALSE << 0;
-    QTest::newRow( "null-in-empty") << QString("") << QString() << 0 << FALSE << 0;
-    QTest::newRow( "empty-in-empty") << QString("") << QString("") << 0 << FALSE << 0;
+    QTest::newRow( "null-in-null") << QString() << QString() << 0 << false << 0;
+    QTest::newRow( "empty-in-null") << QString() << QString("") << 0 << false << 0;
+    QTest::newRow( "null-in-empty") << QString("") << QString() << 0 << false << 0;
+    QTest::newRow( "empty-in-empty") << QString("") << QString("") << 0 << false << 0;
 #endif
 
 
@@ -1027,21 +1027,21 @@ void tst_QString::indexOf_data()
     s1 += QChar(0xb5);
     QString s2;
     s2 += QChar(0x3bc);
-    QTest::newRow( "data58" ) << s1 << s2 << 0 << FALSE << 3;
+    QTest::newRow( "data58" ) << s1 << s2 << 0 << false << 3;
     s2.prepend("C");
-    QTest::newRow( "data59" ) << s1 << s2 << 0 << FALSE << 2;
+    QTest::newRow( "data59" ) << s1 << s2 << 0 << false << 2;
 
     QString veryBigHaystack(500, 'a');
     veryBigHaystack += 'B';
-    QTest::newRow("BoyerMooreStressTest") << veryBigHaystack << veryBigHaystack << 0 << TRUE << 0;
-    QTest::newRow("BoyerMooreStressTest2") << veryBigHaystack + 'c' << veryBigHaystack << 0 << TRUE << 0;
-    QTest::newRow("BoyerMooreStressTest3") << 'c' + veryBigHaystack << veryBigHaystack << 0 << TRUE << 1;
-    QTest::newRow("BoyerMooreStressTest4") << veryBigHaystack << veryBigHaystack + 'c' << 0 << TRUE << -1;
-    QTest::newRow("BoyerMooreStressTest5") << veryBigHaystack << 'c' + veryBigHaystack << 0 << TRUE << -1;
-    QTest::newRow("BoyerMooreStressTest6") << 'd' + veryBigHaystack << 'c' + veryBigHaystack << 0 << TRUE << -1;
-    QTest::newRow("BoyerMooreStressTest6") << veryBigHaystack + 'c' << 'c' + veryBigHaystack << 0 << TRUE << -1;
+    QTest::newRow("BoyerMooreStressTest") << veryBigHaystack << veryBigHaystack << 0 << true << 0;
+    QTest::newRow("BoyerMooreStressTest2") << veryBigHaystack + 'c' << veryBigHaystack << 0 << true << 0;
+    QTest::newRow("BoyerMooreStressTest3") << 'c' + veryBigHaystack << veryBigHaystack << 0 << true << 1;
+    QTest::newRow("BoyerMooreStressTest4") << veryBigHaystack << veryBigHaystack + 'c' << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest5") << veryBigHaystack << 'c' + veryBigHaystack << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest6") << 'd' + veryBigHaystack << 'c' + veryBigHaystack << 0 << true << -1;
+    QTest::newRow("BoyerMooreStressTest6") << veryBigHaystack + 'c' << 'c' + veryBigHaystack << 0 << true << -1;
 
-    QTest::newRow("BoyerMooreInsensitiveStressTest") << veryBigHaystack << veryBigHaystack << 0 << FALSE << 0;
+    QTest::newRow("BoyerMooreInsensitiveStressTest") << veryBigHaystack << veryBigHaystack << 0 << false << 0;
 
 }
 
@@ -1470,11 +1470,11 @@ void tst_QString::leftJustified()
 
     QString n;
     QVERIFY(!n.leftJustified(3).isNull());
-    QCOMPARE(a.leftJustified(4,' ',TRUE),(QString)"ABC ");
-    QCOMPARE(a.leftJustified(3,' ',TRUE),(QString)"ABC");
-    QCOMPARE(a.leftJustified(2,' ',TRUE),(QString)"AB");
-    QCOMPARE(a.leftJustified(1,' ',TRUE),(QString)"A");
-    QCOMPARE(a.leftJustified(0,' ',TRUE),(QString)"");
+    QCOMPARE(a.leftJustified(4,' ',true),(QString)"ABC ");
+    QCOMPARE(a.leftJustified(3,' ',true),(QString)"ABC");
+    QCOMPARE(a.leftJustified(2,' ',true),(QString)"AB");
+    QCOMPARE(a.leftJustified(1,' ',true),(QString)"A");
+    QCOMPARE(a.leftJustified(0,' ',true),(QString)"");
 }
 
 void tst_QString::rightJustified()
@@ -1491,12 +1491,12 @@ void tst_QString::rightJustified()
 
     QString n;
     QVERIFY(!n.rightJustified(3).isNull());
-    QCOMPARE(a.rightJustified(4,'-',TRUE),(QString)"-ABC");
-    QCOMPARE(a.rightJustified(4,' ',TRUE),(QString)" ABC");
-    QCOMPARE(a.rightJustified(3,' ',TRUE),(QString)"ABC");
-    QCOMPARE(a.rightJustified(2,' ',TRUE),(QString)"AB");
-    QCOMPARE(a.rightJustified(1,' ',TRUE),(QString)"A");
-    QCOMPARE(a.rightJustified(0,' ',TRUE),(QString)"");
+    QCOMPARE(a.rightJustified(4,'-',true),(QString)"-ABC");
+    QCOMPARE(a.rightJustified(4,' ',true),(QString)" ABC");
+    QCOMPARE(a.rightJustified(3,' ',true),(QString)"ABC");
+    QCOMPARE(a.rightJustified(2,' ',true),(QString)"AB");
+    QCOMPARE(a.rightJustified(1,' ',true),(QString)"A");
+    QCOMPARE(a.rightJustified(0,' ',true),(QString)"");
     QCOMPARE(a,(QString)"ABC");
 }
 
@@ -2498,10 +2498,10 @@ void tst_QString::toULong_data()
     QTest::addColumn<ulong>("result" );
     QTest::addColumn<bool>("ok" );
 
-    QTest::newRow( "default" ) << QString() << 10 << 0UL << FALSE;
-    QTest::newRow( "empty" ) << QString("") << 10 << 0UL << FALSE;
-    QTest::newRow( "ulong1" ) << QString("3234567890") << 10 << 3234567890UL << TRUE;
-    QTest::newRow( "ulong2" ) << QString("fFFfFfFf") << 16 << 0xFFFFFFFFUL << TRUE;
+    QTest::newRow( "default" ) << QString() << 10 << 0UL << false;
+    QTest::newRow( "empty" ) << QString("") << 10 << 0UL << false;
+    QTest::newRow( "ulong1" ) << QString("3234567890") << 10 << 3234567890UL << true;
+    QTest::newRow( "ulong2" ) << QString("fFFfFfFf") << 16 << 0xFFFFFFFFUL << true;
 }
 
 void tst_QString::toULong()
@@ -2524,16 +2524,16 @@ void tst_QString::toLong_data()
     QTest::addColumn<long>("result" );
     QTest::addColumn<bool>("ok" );
 
-    QTest::newRow( "default" ) << QString() << 10 << 0L << FALSE;
-    QTest::newRow( "empty" ) << QString("") << 10 << 0L << FALSE;
-    QTest::newRow( "normal" ) << QString("7fFFfFFf") << 16 << 0x7fFFfFFfL << TRUE;
-    QTest::newRow( "long_max" ) << QString("2147483647") << 10 << 2147483647L << TRUE;
+    QTest::newRow( "default" ) << QString() << 10 << 0L << false;
+    QTest::newRow( "empty" ) << QString("") << 10 << 0L << false;
+    QTest::newRow( "normal" ) << QString("7fFFfFFf") << 16 << 0x7fFFfFFfL << true;
+    QTest::newRow( "long_max" ) << QString("2147483647") << 10 << 2147483647L << true;
     if (sizeof(long) == 4) {
-        QTest::newRow( "long_max+1" ) << QString("2147483648") << 10 << 0L << FALSE;
-        QTest::newRow( "long_min-1" ) << QString("-80000001") << 16 << 0L << FALSE;
+        QTest::newRow( "long_max+1" ) << QString("2147483648") << 10 << 0L << false;
+        QTest::newRow( "long_min-1" ) << QString("-80000001") << 16 << 0L << false;
     }
-    QTest::newRow( "negative" ) << QString("-7fffffff") << 16 << -0x7fffffffL << TRUE;
-//    QTest::newRow( "long_min" ) << QString("-80000000") << 16 << 0x80000000uL << TRUE;
+    QTest::newRow( "negative" ) << QString("-7fffffff") << 16 << -0x7fffffffL << true;
+//    QTest::newRow( "long_min" ) << QString("-80000000") << 16 << 0x80000000uL << true;
 }
 
 void tst_QString::toLong()
@@ -2637,33 +2637,33 @@ void tst_QString::toDouble_data()
     QTest::addColumn<double>("result" );
     QTest::addColumn<bool>("result_ok" );
 
-    QTest::newRow( "ok00" ) << QString("0.000000000931322574615478515625") << 0.000000000931322574615478515625 << (bool)TRUE;
-    QTest::newRow( "ok01" ) << QString(" 123.45") << 123.45 << (bool)TRUE;
+    QTest::newRow( "ok00" ) << QString("0.000000000931322574615478515625") << 0.000000000931322574615478515625 << true;
+    QTest::newRow( "ok01" ) << QString(" 123.45") << 123.45 << true;
 
-    QTest::newRow( "ok02" ) << QString("0.1e10") << 0.1e10 << (bool)TRUE;
-    QTest::newRow( "ok03" ) << QString("0.1e-10") << 0.1e-10 << (bool)TRUE;
+    QTest::newRow( "ok02" ) << QString("0.1e10") << 0.1e10 << true;
+    QTest::newRow( "ok03" ) << QString("0.1e-10") << 0.1e-10 << true;
 
-    QTest::newRow( "ok04" ) << QString("1e10") << 1.0e10 << (bool)TRUE;
-    QTest::newRow( "ok05" ) << QString("1e+10") << 1.0e10 << (bool)TRUE;
-    QTest::newRow( "ok06" ) << QString("1e-10") << 1.0e-10 << (bool)TRUE;
+    QTest::newRow( "ok04" ) << QString("1e10") << 1.0e10 << true;
+    QTest::newRow( "ok05" ) << QString("1e+10") << 1.0e10 << true;
+    QTest::newRow( "ok06" ) << QString("1e-10") << 1.0e-10 << true;
 
-    QTest::newRow( "ok07" ) << QString(" 1e10") << 1.0e10 << (bool)TRUE;
-    QTest::newRow( "ok08" ) << QString("  1e+10") << 1.0e10 << (bool)TRUE;
-    QTest::newRow( "ok09" ) << QString("   1e-10") << 1.0e-10 << (bool)TRUE;
+    QTest::newRow( "ok07" ) << QString(" 1e10") << 1.0e10 << true;
+    QTest::newRow( "ok08" ) << QString("  1e+10") << 1.0e10 << true;
+    QTest::newRow( "ok09" ) << QString("   1e-10") << 1.0e-10 << true;
 
-    QTest::newRow( "ok10" ) << QString("1.") << 1.0 << (bool)TRUE;
-    QTest::newRow( "ok11" ) << QString(".1") << 0.1 << (bool)TRUE;
+    QTest::newRow( "ok10" ) << QString("1.") << 1.0 << true;
+    QTest::newRow( "ok11" ) << QString(".1") << 0.1 << true;
 
-    QTest::newRow( "wrong00" ) << QString("123.45 ") << 123.45 << (bool)TRUE;
-    QTest::newRow( "wrong01" ) << QString(" 123.45 ") << 123.45 << (bool)TRUE;
+    QTest::newRow( "wrong00" ) << QString("123.45 ") << 123.45 << true;
+    QTest::newRow( "wrong01" ) << QString(" 123.45 ") << 123.45 << true;
 
-    QTest::newRow( "wrong02" ) << QString("aa123.45aa") << 0.0 << (bool)FALSE;
-    QTest::newRow( "wrong03" ) << QString("123.45aa") << 0.0 << (bool)FALSE;
-    QTest::newRow( "wrong04" ) << QString("123erf") << 0.0 << (bool)FALSE;
+    QTest::newRow( "wrong02" ) << QString("aa123.45aa") << 0.0 << false;
+    QTest::newRow( "wrong03" ) << QString("123.45aa") << 0.0 << false;
+    QTest::newRow( "wrong04" ) << QString("123erf") << 0.0 << false;
 
-    QTest::newRow( "wrong05" ) << QString("abc") << 0.0 << (bool)FALSE;
-    QTest::newRow( "wrong06" ) << QString() << 0.0 << (bool)FALSE;
-    QTest::newRow( "wrong07" ) << QString("") << 0.0 << (bool)FALSE;
+    QTest::newRow( "wrong05" ) << QString("abc") << 0.0 << false;
+    QTest::newRow( "wrong06" ) << QString() << 0.0 << false;
+    QTest::newRow( "wrong07" ) << QString("") << 0.0 << false;
 }
 
 void tst_QString::toDouble()

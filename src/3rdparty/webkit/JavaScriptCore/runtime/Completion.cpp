@@ -31,6 +31,11 @@
 #include "Debugger.h"
 #include <stdio.h>
 
+#ifdef QT_BUILD_SCRIPT_LIB
+#include "DebuggerCallFrame.h"
+#include "SourcePoolQt.h"
+#endif
+
 #if !PLATFORM(WIN_OS)
 #include <unistd.h>
 #endif
@@ -54,12 +59,15 @@ Completion evaluate(ExecState* exec, ScopeChain& scopeChain, const SourceCode& s
 {
     JSLock lock(exec);
     
+    intptr_t sourceId = source.provider()->asID();
     int errLine;
     UString errMsg;
     RefPtr<ProgramNode> programNode = exec->globalData().parser->parse<ProgramNode>(exec, exec->dynamicGlobalObject()->debugger(), source, &errLine, &errMsg);
 
-    if (!programNode)
-        return Completion(Throw, Error::create(exec, SyntaxError, errMsg, errLine, source.provider()->asID(), source.provider()->url()));
+    if (!programNode) {
+        JSValue error = Error::create(exec, SyntaxError, errMsg, errLine, sourceId, source.provider()->url());
+        return Completion(Throw, error);
+    }
 
     JSObject* thisObj = (!thisValue || thisValue.isUndefinedOrNull()) ? exec->dynamicGlobalObject() : thisValue.toObject(exec);
 
@@ -71,6 +79,7 @@ Completion evaluate(ExecState* exec, ScopeChain& scopeChain, const SourceCode& s
             return Completion(Interrupted, exception);
         return Completion(Throw, exception);
     }
+
     return Completion(Normal, result);
 }
 

@@ -5,7 +5,7 @@
 
 QLabel, QAbstractButton 
 {
-    font: 10pt bold;
+    font: bold;
 	color: yellow;
 }
 
@@ -28,7 +28,6 @@ QAbstractButton
     border-style: solid;
     border-radius: 5;
     padding: 3px;
-	qproperty-focusPolicy: NoFocus;
 }
 
 QAbstractButton:pressed

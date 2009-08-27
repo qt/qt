@@ -1715,8 +1715,7 @@ QRect QListViewPrivate::mapToViewport(const QRect &rect, bool extend) const
     QRect result = extend ? commonListView->mapToViewport(rect) : rect;
     int dx = -q->horizontalOffset();
     int dy = -q->verticalOffset();
-    result.adjust(dx, dy, dx, dy);
-    return result;
+    return result.adjusted(dx, dy, dx, dy);
 }
 
 QModelIndex QListViewPrivate::closestIndex(const QRect &target,
@@ -2287,15 +2286,14 @@ QRect QListModeViewBase::mapToViewport(const QRect &rect) const
     if (isWrapping())
         return rect;
     // If the listview is in "listbox-mode", the items are as wide as the view.
+    // But we don't shrink the items.
     QRect result = rect;
-    QSize vsize = viewport()->size();
-    QSize csize = contentsSize;
     if (flow() == QListView::TopToBottom) {
         result.setLeft(spacing());
-        result.setWidth(qMax(csize.width(), vsize.width()) - 2 * spacing());
+        result.setWidth(qMax(rect.width(), qMax(contentsSize.width(), viewport()->width()) - 2 * spacing()));
     } else { // LeftToRight
         result.setTop(spacing());
-        result.setHeight(qMax(csize.height(), vsize.height()) - 2 * spacing());
+        result.setHeight(qMax(rect.height(), qMax(contentsSize.height(), viewport()->height()) - 2 * spacing()));
     }
     return result;
 }

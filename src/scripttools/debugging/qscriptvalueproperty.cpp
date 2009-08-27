@@ -95,7 +95,7 @@ QScriptValueProperty::QScriptValueProperty(const QString &name,
   Constructs a QScriptValueProperty that is a copy of the \a other property.
 */
 QScriptValueProperty::QScriptValueProperty(const QScriptValueProperty &other)
-    : d_ptr(other.d_ptr)
+    : d_ptr(other.d_ptr.data())
 {
     if (d_ptr)
         d_ptr->ref.ref();
@@ -106,10 +106,6 @@ QScriptValueProperty::QScriptValueProperty(const QScriptValueProperty &other)
 */
 QScriptValueProperty::~QScriptValueProperty()
 {
-    if (d_ptr && !d_ptr->ref.deref()) {
-        delete d_ptr;
-        d_ptr = 0;
-    }
 }
 
 /*!
@@ -117,13 +113,7 @@ QScriptValueProperty::~QScriptValueProperty()
 */
 QScriptValueProperty &QScriptValueProperty::operator=(const QScriptValueProperty &other)
 {
-    if (d_ptr == other.d_ptr)
-        return *this;
-    if (d_ptr && !d_ptr->ref.deref())
-        delete d_ptr;
-    d_ptr = other.d_ptr;
-    if (d_ptr)
-        d_ptr->ref.ref();
+    d_ptr.assign(other.d_ptr.data());
     return *this;
 }
 

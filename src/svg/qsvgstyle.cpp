@@ -59,15 +59,30 @@ QT_BEGIN_NAMESPACE
 
 QSvgExtraStates::QSvgExtraStates()
     : fillOpacity(1.0)
+    , strokeOpacity(1.0)
     , svgFont(0)
     , textAnchor(Qt::AlignLeft)
     , fontWeight(400)
+    , fillRule(Qt::WindingFill)
+    , strokeDashOffset(0)
+    , vectorEffect(false)
 {
 }
 
 QSvgStyleProperty::~QSvgStyleProperty()
 {
 }
+
+void QSvgFillStyleProperty::apply(QPainter *, const QRectF &, QSvgNode *, QSvgExtraStates &)
+{
+    Q_ASSERT(!"This should not be called!");
+}
+
+void QSvgFillStyleProperty::revert(QPainter *, QSvgExtraStates &)
+{
+    Q_ASSERT(!"This should not be called!");
+}
+
 
 QSvgQualityStyle::QSvgQualityStyle(int color)
     : m_colorRendering(color)
@@ -83,83 +98,55 @@ void QSvgQualityStyle::revert(QPainter *, QSvgExtraStates &)
 
 }
 
-QSvgFillStyle::QSvgFillStyle(const QBrush &brush)
-    : m_fill(brush)
-    , m_style(0)
-    , m_fillRuleSet(false)
+QSvgFillStyle::QSvgFillStyle()
+    : m_style(0)
     , m_fillRule(Qt::WindingFill)
-    , m_fillOpacitySet(false)
+    , m_oldFillRule(Qt::WindingFill)
     , m_fillOpacity(1.0)
-    , m_oldOpacity(0)
-    , m_gradientResolved(true)
-    , m_fillSet(true)
-{
-}
-
-QSvgFillStyle::QSvgFillStyle(QSvgStyleProperty *style)
-    : m_style(style)
-    , m_fillRuleSet(false)
-    , m_fillRule(Qt::WindingFill)
-    , m_fillOpacitySet(false)
-    , m_fillOpacity(1.0)
-    , m_oldOpacity(0)
-    , m_gradientResolved(true)
-    , m_fillSet(style != 0)
+    , m_oldFillOpacity(0)
+    , m_gradientResolved(1)
+    , m_fillRuleSet(0)
+    , m_fillOpacitySet(0)
+    , m_fillSet(0)
 {
 }
 
 void QSvgFillStyle::setFillRule(Qt::FillRule f)
 {
-    m_fillRuleSet = true;
+    m_fillRuleSet = 1;
     m_fillRule = f;
 }
 
 void QSvgFillStyle::setFillOpacity(qreal opacity)
 {
-    m_fillOpacitySet = true;
+    m_fillOpacitySet = 1;
     m_fillOpacity = opacity;
 }
 
-void QSvgFillStyle::setFillStyle(QSvgStyleProperty* style)
+void QSvgFillStyle::setFillStyle(QSvgFillStyleProperty* style)
 {
     m_style = style;
-    m_fillSet = true;
+    m_fillSet = 1;
 }
 
 void QSvgFillStyle::setBrush(QBrush brush)
 {
     m_fill = brush;
     m_style = 0;
-    m_fillSet = true;
+    m_fillSet = 1;
 }
 
-static void recursivelySetFill(QSvgNode *node, Qt::FillRule f)
-{
-    if (node->type() == QSvgNode::PATH) {
-        QSvgPath *path = static_cast<QSvgPath*>(node);
-        path->qpath()->setFillRule(f);
-    } else if (node->type() == QSvgNode::POLYGON) {
-        QSvgPolygon *polygon = static_cast<QSvgPolygon*>(node);
-        polygon->setFillRule(f);
-    } else if (node->type() == QSvgNode::G) {
-        QList<QSvgNode*> renderers = static_cast<QSvgG*>(node)->renderers();
-        foreach(QSvgNode *n, renderers) {
-            recursivelySetFill(n, f);
-        }
-    }
-}
-void QSvgFillStyle::apply(QPainter *p, const QRectF &rect, QSvgNode *node, QSvgExtraStates &states)
+void QSvgFillStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &states)
 {
     m_oldFill = p->brush();
-    m_oldOpacity = states.fillOpacity;
+    m_oldFillRule = states.fillRule;
+    m_oldFillOpacity = states.fillOpacity;
 
-    if (m_fillRuleSet) {
-        recursivelySetFill(node, m_fillRule);
-        m_fillRuleSet = false;//set it only on the first run
-    }
+    if (m_fillRuleSet)
+        states.fillRule = m_fillRule;
     if (m_fillSet) {
         if (m_style)
-            m_style->apply(p, rect, node, states);
+            p->setBrush(m_style->brush(p, states));
         else
             p->setBrush(m_fill);
     }
@@ -170,13 +157,11 @@ void QSvgFillStyle::apply(QPainter *p, const QRectF &rect, QSvgNode *node, QSvgE
 void QSvgFillStyle::revert(QPainter *p, QSvgExtraStates &states)
 {
     if (m_fillOpacitySet)
-        states.fillOpacity = m_oldOpacity;
-    if (m_fillSet) {
-        if (m_style)
-            m_style->revert(p, states);
-        else
-            p->setBrush(m_oldFill);
-    }
+        states.fillOpacity = m_oldFillOpacity;
+    if (m_fillSet)
+        p->setBrush(m_oldFill);
+    if (m_fillRuleSet)
+        states.fillRule = m_oldFillRule;
 }
 
 QSvgViewportFillStyle::QSvgViewportFillStyle(const QBrush &brush)
@@ -286,24 +271,132 @@ void QSvgFontStyle::revert(QPainter *p, QSvgExtraStates &states)
     states.fontWeight = m_oldWeight;
 }
 
-QSvgStrokeStyle::QSvgStrokeStyle(const QPen &pen)
-    : m_stroke(pen), m_strokePresent(true)
+QSvgStrokeStyle::QSvgStrokeStyle()
+    : m_strokeOpacity(1.0)
+    , m_oldStrokeOpacity(0.0)
+    , m_strokeDashOffset(0)
+    , m_oldStrokeDashOffset(0)
+    , m_style(0)
+    , m_gradientResolved(1)
+    , m_vectorEffect(0)
+    , m_oldVectorEffect(0)
+    , m_strokeSet(0)
+    , m_strokeDashArraySet(0)
+    , m_strokeDashOffsetSet(0)
+    , m_strokeLineCapSet(0)
+    , m_strokeLineJoinSet(0)
+    , m_strokeMiterLimitSet(0)
+    , m_strokeOpacitySet(0)
+    , m_strokeWidthSet(0)
+    , m_vectorEffectSet(0)
 {
 }
 
-void QSvgStrokeStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &)
+void QSvgStrokeStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &states)
 {
     m_oldStroke = p->pen();
-    if (!m_strokePresent || !m_stroke.widthF() || !m_stroke.color().alphaF()) {
-        p->setPen(Qt::NoPen);
-    } else {
-        p->setPen(m_stroke);
+    m_oldStrokeOpacity = states.strokeOpacity;
+    m_oldStrokeDashOffset = states.strokeDashOffset;
+    m_oldVectorEffect = states.vectorEffect;
+
+    QPen pen = p->pen();
+
+    qreal oldWidth = pen.widthF();
+    qreal width = m_stroke.widthF();
+    if (oldWidth == 0)
+        oldWidth = 1;
+    if (width == 0)
+        width = 1;
+    qreal scale = oldWidth / width;
+
+    if (m_strokeOpacitySet)
+        states.strokeOpacity = m_strokeOpacity;
+
+    if (m_vectorEffectSet)
+        states.vectorEffect = m_vectorEffect;
+
+    if (m_strokeSet) {
+        if (m_style)
+            pen.setBrush(m_style->brush(p, states));
+        else
+            pen.setBrush(m_stroke.brush());
     }
+
+    if (m_strokeWidthSet)
+        pen.setWidthF(m_stroke.widthF());
+
+    bool setDashOffsetNeeded = false;
+
+    if (m_strokeDashOffsetSet) {
+        states.strokeDashOffset = m_strokeDashOffset;
+        setDashOffsetNeeded = true;
+    }
+
+    if (m_strokeDashArraySet) {
+        if (m_stroke.style() == Qt::SolidLine) {
+            pen.setStyle(Qt::SolidLine);
+        } else if (m_strokeWidthSet || oldWidth == 1) {
+            // If both width and dash array was set, the dash array is already scaled correctly.
+            pen.setDashPattern(m_stroke.dashPattern());
+            setDashOffsetNeeded = true;
+        } else {
+            // If dash array was set, but not the width, the dash array has to be scaled with respect to the old width.
+            QVector<qreal> dashes = m_stroke.dashPattern();
+            for (int i = 0; i < dashes.size(); ++i)
+                dashes[i] /= oldWidth;
+            pen.setDashPattern(dashes);
+            setDashOffsetNeeded = true;
+        }
+    } else if (m_strokeWidthSet && pen.style() != Qt::SolidLine && scale != 1) {
+        // If the width was set, but not the dash array, the old dash array must be scaled with respect to the new width.
+        QVector<qreal> dashes = pen.dashPattern();
+        for (int i = 0; i < dashes.size(); ++i)
+            dashes[i] *= scale;
+        pen.setDashPattern(dashes);
+        setDashOffsetNeeded = true;
+    }
+
+    if (m_strokeLineCapSet)
+        pen.setCapStyle(m_stroke.capStyle());
+    if (m_strokeLineJoinSet)
+        pen.setJoinStyle(m_stroke.joinStyle());
+    if (m_strokeMiterLimitSet)
+        pen.setMiterLimit(m_stroke.miterLimit());
+
+    if (setDashOffsetNeeded) {
+        qreal currentWidth = pen.widthF();
+        if (currentWidth == 0)
+            currentWidth = 1;
+        pen.setDashOffset(states.strokeDashOffset / currentWidth);
+    }
+
+    pen.setCosmetic(states.vectorEffect);
+
+    p->setPen(pen);
 }
 
-void QSvgStrokeStyle::revert(QPainter *p, QSvgExtraStates &)
+void QSvgStrokeStyle::revert(QPainter *p, QSvgExtraStates &states)
 {
     p->setPen(m_oldStroke);
+    states.strokeOpacity = m_oldStrokeOpacity;
+    states.strokeDashOffset = m_oldStrokeDashOffset;
+    states.vectorEffect = m_oldVectorEffect;
+}
+
+void QSvgStrokeStyle::setDashArray(const QVector<qreal> &dashes)
+{
+    if (m_strokeWidthSet) {
+        QVector<qreal> d = dashes;
+        qreal w = m_stroke.widthF();
+        if (w != 0 && w != 1) {
+            for (int i = 0; i < d.size(); ++i)
+                d[i] /= w;
+        }
+        m_stroke.setDashPattern(d);
+    } else {
+        m_stroke.setDashPattern(dashes);
+    }
+    m_strokeDashArraySet = 1;
 }
 
 QSvgSolidColorStyle::QSvgSolidColorStyle(const QColor &color)
@@ -311,47 +404,15 @@ QSvgSolidColorStyle::QSvgSolidColorStyle(const QColor &color)
 {
 }
 
-void QSvgSolidColorStyle::apply(QPainter *p, const QRectF &, QSvgNode *, QSvgExtraStates &)
-{
-    m_oldFill = p->brush();
-    m_oldStroke = p->pen();
-    QBrush b = m_oldFill;
-    b.setColor(m_solidColor);
-    p->setBrush(b);
-    QPen pen = m_oldStroke;
-    pen.setColor(m_solidColor);
-    p->setPen(pen);
-}
-
-void QSvgSolidColorStyle::revert(QPainter *p, QSvgExtraStates &)
-{
-    p->setBrush(m_oldFill);
-    p->setPen(m_oldStroke);
-}
-
 QSvgGradientStyle::QSvgGradientStyle(QGradient *grad)
     : m_gradient(grad), m_gradientStopsSet(false)
 {
 }
 
-void QSvgGradientStyle::apply(QPainter *p, const QRectF &/*rect*/, QSvgNode *, QSvgExtraStates &)
+QBrush QSvgGradientStyle::brush(QPainter *, QSvgExtraStates &)
 {
     if (!m_link.isEmpty()) {
         resolveStops();
-    }
-
-    m_oldFill = p->brush();
-
-    //resolving stop colors
-    if (!m_resolvePoints.isEmpty()) {
-        QColor color = p->brush().color();
-        if (!color.isValid())
-            color = p->pen().color();
-        QList<qreal>::const_iterator itr = m_resolvePoints.constBegin();
-        for (; itr != m_resolvePoints.constEnd(); ++itr) {
-            //qDebug()<<"resolving "<<(*itr)<<" to "<<color;
-            m_gradient->setColorAt(*itr, color);
-        }
     }
 
     // If the gradient is marked as empty, insert transparent black
@@ -360,29 +421,18 @@ void QSvgGradientStyle::apply(QPainter *p, const QRectF &/*rect*/, QSvgNode *, Q
         m_gradientStopsSet = true;
     }
 
-    QBrush brush;
-    brush = QBrush(*m_gradient);
+    QBrush b(*m_gradient);
 
     if (!m_matrix.isIdentity())
-        brush.setMatrix(m_matrix);
+        b.setMatrix(m_matrix);
 
-    p->setBrush(brush);
-}
-
-void QSvgGradientStyle::revert(QPainter *p, QSvgExtraStates &)
-{
-    p->setBrush(m_oldFill);
+    return b;
 }
 
 
 void QSvgGradientStyle::setMatrix(const QMatrix &mat)
 {
     m_matrix = mat;
-}
-
-void QSvgGradientStyle::addResolve(qreal offset)
-{
-    m_resolvePoints.append(offset);
 }
 
 QSvgTransformStyle::QSvgTransformStyle(const QTransform &trans)
@@ -490,14 +540,6 @@ void QSvgStyle::apply(QPainter *p, const QRectF &rect, QSvgNode *node, QSvgExtra
         stroke->apply(p, rect, node, states);
     }
 
-    if (solidColor) {
-        solidColor->apply(p, rect, node, states);
-    }
-
-    if (gradient) {
-        gradient->apply(p, rect, node, states);
-    }
-
     if (transform) {
         transform->apply(p, rect, node, states);
     }
@@ -562,14 +604,6 @@ void QSvgStyle::revert(QPainter *p, QSvgExtraStates &states)
         stroke->revert(p, states);
     }
 
-    if (solidColor) {
-        solidColor->revert(p, states);
-    }
-
-    if (gradient) {
-        gradient->revert(p, states);
-    }
-
     //animated transforms need to be reverted _before_
     //the native transforms
     if (!animateTransforms.isEmpty()) {
@@ -604,7 +638,7 @@ void QSvgStyle::revert(QPainter *p, QSvgExtraStates &states)
 QSvgAnimateTransform::QSvgAnimateTransform(int startMs, int endMs, int byMs )
     : QSvgStyleProperty(),
       m_from(startMs), m_to(endMs), m_by(byMs),
-      m_type(Empty), m_count(0), m_finished(false), m_additive(Replace), m_transformApplied(false)
+      m_type(Empty), m_additive(Replace), m_count(0), m_finished(false), m_transformApplied(false)
 {
     m_totalRunningTime = m_to - m_from;
 }
@@ -815,7 +849,9 @@ void QSvgAnimateColor::apply(QPainter *p, const QRectF &, QSvgNode *node, QSvgEx
     if (totalTimeElapsed < m_from || m_finished)
         return;
 
-    qreal animationFrame = (totalTimeElapsed - m_from) / m_to;
+    qreal animationFrame = 0;
+    if (m_totalRunningTime != 0)
+        animationFrame = (totalTimeElapsed - m_from) / m_totalRunningTime;
 
     if (m_repeatCount >= 0 && m_repeatCount < animationFrame) {
         m_finished = true;

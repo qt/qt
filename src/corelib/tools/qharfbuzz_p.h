@@ -53,8 +53,8 @@
 #ifndef QHARFBUZZ_P_H
 #define QHARFBUZZ_P_H
 
-#include <harfbuzz-shaper.h>
 #include <QtCore/qglobal.h>
+#include <harfbuzz-shaper.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -102,7 +102,7 @@ protected:
 
 private:
 
-    class QtResourceViewPrivate *d_ptr;
+    QScopedPointer<class QtResourceViewPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtResourceView)
     Q_DISABLE_COPY(QtResourceView)
     Q_PRIVATE_SLOT(d_func(), void slotResourceSetActivated(QtResourceSet *))
@@ -130,7 +130,7 @@ public:
     void setResourceEditingEnabled(bool enable);
 
 private:
-    class QtResourceViewDialogPrivate *d_ptr;
+    QScopedPointer<class QtResourceViewDialogPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QtResourceViewDialog)
     Q_DISABLE_COPY(QtResourceViewDialog)
     Q_PRIVATE_SLOT(d_func(), void slotResourceSelected(const QString &))

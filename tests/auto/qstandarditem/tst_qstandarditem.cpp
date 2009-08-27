@@ -291,12 +291,14 @@ void tst_QStandardItem::getSetFlags()
     item.setTristate(true);
     QVERIFY(item.isTristate());
     QVERIFY(item.flags() & Qt::ItemIsTristate);
+#ifndef QT_NO_DRAGANDDROP
     item.setDragEnabled(true);
     QVERIFY(item.isDragEnabled());
     QVERIFY(item.flags() & Qt::ItemIsDragEnabled);
     item.setDropEnabled(true);
     QVERIFY(item.isDropEnabled());
     QVERIFY(item.flags() & Qt::ItemIsDropEnabled);
+#endif
     
     QVERIFY(item.isEnabled());
     item.setEnabled(false);
@@ -318,6 +320,7 @@ void tst_QStandardItem::getSetFlags()
     item.setTristate(false);
     QVERIFY(!item.isTristate());
     QVERIFY(!(item.flags() & Qt::ItemIsTristate));
+#ifndef QT_NO_DRAGANDDROP
     QVERIFY(item.isDragEnabled());
     item.setDragEnabled(false);
     QVERIFY(!item.isDragEnabled());
@@ -326,6 +329,7 @@ void tst_QStandardItem::getSetFlags()
     item.setDropEnabled(false);
     QVERIFY(!item.isDropEnabled());
     QVERIFY(!(item.flags() & Qt::ItemIsDropEnabled));
+#endif
 
     item.setCheckable(false);
     item.setCheckState(Qt::Checked);

@@ -56,26 +56,31 @@ class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
     Q_OBJECT
 
     Q_PROPERTY(bool overShoot READ overShoot WRITE setOverShoot)
-    Q_PROPERTY(int viewportWidth READ viewportWidth WRITE setViewportWidth NOTIFY viewportWidthChanged)
+    Q_PROPERTY(int viewportWidth READ viewportWidth WRITE setViewportWidth NOTIFY viewportWidthChanged) //### qreal
     Q_PROPERTY(int viewportHeight READ viewportHeight WRITE setViewportHeight NOTIFY viewportHeightChanged)
-    Q_PROPERTY(qreal xPosition READ xPosition WRITE setXPosition NOTIFY positionChanged)
-    Q_PROPERTY(qreal yPosition READ yPosition WRITE setYPosition NOTIFY positionChanged)
+    Q_PROPERTY(qreal xPosition READ xPosition WRITE setXPosition NOTIFY positionChanged) //### viewportX, positionXChannged
+    Q_PROPERTY(qreal yPosition READ yPosition WRITE setYPosition NOTIFY positionChanged) //### ^^^
+
+    Q_PROPERTY(int velocityDecay READ velocityDecay WRITE setVelocityDecay NOTIFY velocityDecayChanged) //### qreal deceleration
+    Q_PROPERTY(int maximumFlickVelocity READ maximumFlickVelocity WRITE setMaximumFlickVelocity) ///### qreal, use same units as follow (pixels/s)
+
+    Q_PROPERTY(qreal xVelocity READ xVelocity NOTIFY velocityChanged) //### horizontalVelocity
+    Q_PROPERTY(qreal yVelocity READ yVelocity NOTIFY velocityChanged) //### verticalVelocity
     Q_PROPERTY(bool moving READ isMoving NOTIFY movingChanged)
     Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
-    Q_PROPERTY(int velocityDecay READ velocityDecay WRITE setVelocityDecay NOTIFY velocityDecayChanged)
-    Q_PROPERTY(int maximumFlickVelocity READ maximumFlickVelocity WRITE setMaximumFlickVelocity)
-    Q_PROPERTY(bool locked READ isLocked WRITE setLocked)
-    Q_PROPERTY(DragMode dragMode READ dragMode WRITE setDragMode)
-    Q_PROPERTY(qreal xVelocity READ xVelocity NOTIFY velocityChanged)
-    Q_PROPERTY(qreal yVelocity READ yVelocity NOTIFY velocityChanged)
+
+    Q_PROPERTY(bool locked READ isLocked WRITE setLocked) //### interactive, ensure flicking is stopped, etc.
+    Q_PROPERTY(DragMode dragMode READ dragMode WRITE setDragMode) //### remove.  Consider a better way to implement different drag behaviour
+
     Q_PROPERTY(bool atXEnd READ isAtXEnd NOTIFY isAtBoundaryChanged)
     Q_PROPERTY(bool atYEnd READ isAtYEnd NOTIFY isAtBoundaryChanged)
     Q_PROPERTY(bool atXBeginning READ isAtXBeginning NOTIFY isAtBoundaryChanged)
     Q_PROPERTY(bool atYBeginning READ isAtYBeginning NOTIFY isAtBoundaryChanged)
-    Q_PROPERTY(qreal pageXPosition READ pageXPosition NOTIFY pageChanged)
-    Q_PROPERTY(qreal pageYPosition READ pageYPosition NOTIFY pageChanged)
-    Q_PROPERTY(qreal pageWidth READ pageWidth NOTIFY pageChanged)
-    Q_PROPERTY(qreal pageHeight READ pageHeight NOTIFY pageChanged)
+
+    Q_PROPERTY(qreal pageXPosition READ pageXPosition NOTIFY pageChanged) //### visibleArea.xPosition
+    Q_PROPERTY(qreal pageYPosition READ pageYPosition NOTIFY pageChanged) //### visibleArea.yPosition
+    Q_PROPERTY(qreal pageWidth READ pageWidth NOTIFY pageChanged) //### visibleArea.widthRatio
+    Q_PROPERTY(qreal pageHeight READ pageHeight NOTIFY pageChanged) //### visibleArea.heightRatio
 
     Q_PROPERTY(QmlList<QObject *>* flickableData READ flickableData)
     Q_PROPERTY(QmlList<QFxItem *>* flickableChildren READ flickableChildren)
@@ -184,7 +189,7 @@ protected:
 
 private:
     Q_DISABLE_COPY(QFxFlickable)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxFlickable)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxFlickable)
 };
 
 QT_END_NAMESPACE

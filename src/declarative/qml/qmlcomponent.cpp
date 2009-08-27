@@ -355,7 +355,7 @@ void QmlComponent::loadUrl(const QUrl &url)
 
     d->clear();
 
-    if (url.isRelative())
+    if (url.isRelative() && !url.isEmpty())
         d->url = d->engine->baseUrl().resolved(url);
     else
         d->url = url;
@@ -487,7 +487,7 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
     QmlContextPrivate *contextPriv = 
         static_cast<QmlContextPrivate *>(QObjectPrivate::get(context));
     QmlContext *ctxt = new QmlContext(context, 0, true);
-    static_cast<QmlContextPrivate*>(ctxt->d_ptr)->url = d->cc->url;
+    static_cast<QmlContextPrivate*>(ctxt->d_func())->url = d->cc->url;
 
     QmlVME vme;
     QObject *rv = vme.run(ctxt, d->cc, d->start, d->count);

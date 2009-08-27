@@ -49,6 +49,10 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR ""
+#endif
+
 class tst_QIODevice : public QObject
 {
     Q_OBJECT
@@ -94,11 +98,11 @@ void tst_QIODevice::getSetCheck()
 
 tst_QIODevice::tst_QIODevice()
 {
+    Q_SET_DEFAULT_IAP
 }
 
 tst_QIODevice::~tst_QIODevice()
 {
-
 }
 
 void tst_QIODevice::init()
@@ -136,6 +140,7 @@ void tst_QIODevice::constructing_QTcpSocket()
     socket.close();
     socket.connectToHost(QtNetworkSettings::serverName(), 143);
     QVERIFY(socket.waitForConnected(5000));
+    QVERIFY(device->isOpen());
 
     while (!device->canReadLine())
         QVERIFY(device->waitForReadyRead(5000));

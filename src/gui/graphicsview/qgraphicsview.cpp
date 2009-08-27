@@ -775,7 +775,7 @@ QRect QGraphicsViewPrivate::mapToViewRect(const QGraphicsItem *item, const QRect
     const QGraphicsItem *parentItem = item;
     const QGraphicsItemPrivate *itemd;
     do {
-        itemd = parentItem->d_ptr;
+        itemd = parentItem->d_ptr.data();
         if (itemd->transformData)
             break;
         offset += itemd->pos;
@@ -1006,10 +1006,10 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
 void QGraphicsViewPrivate::updateInputMethodSensitivity()
 {
     Q_Q(QGraphicsView);
-    q->setAttribute(
-        Qt::WA_InputMethodEnabled,
-        scene && scene->focusItem()
-        && scene->focusItem()->flags() & QGraphicsItem::ItemAcceptsInputMethod);
+    bool enabled = scene && scene->focusItem()
+                   && (scene->focusItem()->flags() & QGraphicsItem::ItemAcceptsInputMethod);
+    q->setAttribute(Qt::WA_InputMethodEnabled, enabled);
+    q->viewport()->setAttribute(Qt::WA_InputMethodEnabled, enabled);
 }
 
 /*!
@@ -1021,12 +1021,9 @@ QGraphicsView::QGraphicsView(QWidget *parent)
     setViewport(0);
     setAcceptDrops(true);
     setBackgroundRole(QPalette::Base);
-
-    // ### Ideally this would be enabled/disabled depending on whether any
-    // widgets in the current scene enabled input methods. We could do that
-    // using a simple reference count. The same goes for acceptDrops and mouse
-    // tracking.
+    // Investigate leaving these disabled by default.
     setAttribute(Qt::WA_InputMethodEnabled);
+    viewport()->setAttribute(Qt::WA_InputMethodEnabled);
 }
 
 /*!
@@ -1040,7 +1037,9 @@ QGraphicsView::QGraphicsView(QGraphicsScene *scene, QWidget *parent)
     setViewport(0);
     setAcceptDrops(true);
     setBackgroundRole(QPalette::Base);
+    // Investigate leaving these disabled by default.
     setAttribute(Qt::WA_InputMethodEnabled);
+    viewport()->setAttribute(Qt::WA_InputMethodEnabled);
 }
 
 /*!
@@ -1052,7 +1051,9 @@ QGraphicsView::QGraphicsView(QGraphicsViewPrivate &dd, QWidget *parent)
     setViewport(0);
     setAcceptDrops(true);
     setBackgroundRole(QPalette::Base);
+    // Investigate leaving these disabled by default.
     setAttribute(Qt::WA_InputMethodEnabled);
+    viewport()->setAttribute(Qt::WA_InputMethodEnabled);
 }
 
 /*!

@@ -242,7 +242,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
                         QLatin1String("QLocalSocket::connectToServer"));
         return;
     }
-
+#ifndef Q_OS_SYMBIAN
     // set non blocking so we can try to connect and it wont wait
     int flags = fcntl(d->connectingSocket, F_GETFL, 0);
     if (-1 == flags
@@ -251,6 +251,7 @@ void QLocalSocket::connectToServer(const QString &name, OpenMode openMode)
                 QLatin1String("QLocalSocket::connectToServer"));
         return;
     }
+#endif
 
     // _q_connectToSocket does the actual connecting
     d->connectingName = name;
@@ -308,7 +309,7 @@ void QLocalSocketPrivate::_q_connectToSocket()
         case EAGAIN:
             // Try again later, all of the sockets listening are full
             if (!delayConnect) {
-                delayConnect = new QSocketNotifier(connectingSocket, QSocketNotifier::Write);
+                delayConnect = new QSocketNotifier(connectingSocket, QSocketNotifier::Write, q);
                 q->connect(delayConnect, SIGNAL(activated(int)), q, SLOT(_q_connectToSocket()));
             }
             if (!connectTimer) {
@@ -519,9 +520,9 @@ bool QLocalSocket::waitForConnected(int msec)
     if (state() != ConnectingState)
         return (state() == ConnectedState);
 
-    fd_set readfds;
-    FD_ZERO(&readfds);
-    FD_SET(d->connectingSocket, &readfds);
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(d->connectingSocket, &fds);
 
     timeval timeout;
     timeout.tv_sec = msec / 1000;
@@ -537,7 +538,14 @@ bool QLocalSocket::waitForConnected(int msec)
     timer.start();
     while (state() == ConnectingState
            && (-1 == msec || timer.elapsed() < msec)) {
-        result = ::select(d->connectingSocket + 1, &readfds, 0, 0, &timeout);
+#ifdef Q_OS_SYMBIAN
+        // On Symbian, ready-to-write is signaled when non-blocking socket
+        // connect is finised. Is ready-to-read really used on other
+        // UNIX paltforms when using non-blocking AF_UNIX socket?
+        result = ::select(d->connectingSocket + 1, 0, &fds, 0, &timeout);
+#else
+        result = ::select(d->connectingSocket + 1, &fds, 0, 0, &timeout);
+#endif
         if (-1 == result && errno != EINTR) {
             d->errorOccurred( QLocalSocket::UnknownSocketError,
                     QLatin1String("QLocalSocket::waitForConnected"));

@@ -924,9 +924,15 @@ void QBoxLayout::insertSpacing(int index, int size)
     else
         b = QLayoutPrivate::createSpacerItem(this, 0, size, QSizePolicy::Minimum, QSizePolicy::Fixed);
 
-    QBoxLayoutItem *it = new QBoxLayoutItem(b);
-    it->magic = true;
-    d->list.insert(index, it);
+    QT_TRY {
+        QBoxLayoutItem *it = new QBoxLayoutItem(b);
+        it->magic = true;
+        d->list.insert(index, it);
+
+    } QT_CATCH(...) {
+        delete b;
+        QT_RETHROW;
+    }
     invalidate();
 }
 
@@ -1026,8 +1032,21 @@ void QBoxLayout::insertWidget(int index, QWidget *widget, int stretch,
         index = d->list.count();
     QWidgetItem *b = QLayoutPrivate::createWidgetItem(this, widget);
     b->setAlignment(alignment);
-    QBoxLayoutItem *it = new QBoxLayoutItem(b, stretch);
-    d->list.insert(index, it);
+
+    QBoxLayoutItem *it;
+    QT_TRY{
+        it = new QBoxLayoutItem(b, stretch);
+    } QT_CATCH(...) {
+        delete b;
+        QT_RETHROW;
+    }
+
+    QT_TRY{
+        d->list.insert(index, it);
+    } QT_CATCH(...) {
+        delete it;
+        QT_RETHROW;
+    }
     invalidate();
 }
 

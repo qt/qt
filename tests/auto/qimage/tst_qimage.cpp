@@ -51,8 +51,12 @@
 #include <qpainter.h>
 #include <private/qdrawhelper_p.h>
 
+
 //TESTED_CLASS=
 //TESTED_FILES=
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
 
 Q_DECLARE_METATYPE(QImage::Format)
 
@@ -262,8 +266,11 @@ void tst_QImage::formatHandlersInput_data()
 {
     QTest::addColumn<QString>("testFormat");
     QTest::addColumn<QString>("testFile");
-
+    #ifdef Q_OS_SYMBIAN
+    const QString prefix = QLatin1String(SRCDIR) + "images/";
+    #else
     const QString prefix = QLatin1String(SRCDIR) + "/images/";
+    #endif
 
     // add a new line here when a file is added
     QTest::newRow("ICO") << "ICO" << prefix + "image.ico";
@@ -285,7 +292,6 @@ void tst_QImage::formatHandlersInput()
 {
     QFETCH(QString, testFormat);
     QFETCH(QString, testFile);
-
     QList<QByteArray> formats = QImageReader::supportedImageFormats();
    // qDebug("Image input formats : %s", formats.join(" | ").latin1());
 
@@ -297,7 +303,7 @@ void tst_QImage::formatHandlersInput()
 	}
     }
     if (formatSupported) {
-//	qDebug(QImage::imageFormat(testFile));
+//     qDebug(QImage::imageFormat(testFile));
 	QCOMPARE(testFormat.toLatin1().toLower(), QImageReader::imageFormat(testFile));
     } else {
 	QString msg = "Format not supported : ";
@@ -1469,10 +1475,12 @@ void tst_QImage::smoothScale3()
 
 void tst_QImage::smoothScaleBig()
 {
-#ifndef Q_OS_WINCE
-    int bigValue = 200000;
-#else
+#if defined(Q_OS_WINCE)
     int bigValue = 2000;
+#elif defined(Q_OS_SYMBIAN)
+    int bigValue = 2000;
+#else
+    int bigValue = 200000;
 #endif
     QImage tall(4, bigValue, QImage::Format_ARGB32);
     tall.fill(0x0);

@@ -1,8 +1,8 @@
-/*! 
+/*!
 \page tutorial.html
 \title Tutorial
 
-This tutorial gives an introduction to QML and the Fluid UI atoms. It doesn't cover everything; the emphasis is on teaching the key principles, and features are introduced as needed.
+This tutorial gives an introduction to QML. It doesn't cover everything; the emphasis is on teaching the key principles, and features are introduced as needed.
 
 Chapter one starts with a minimal "Hello world" program and the following chapters introduce new concepts.
 

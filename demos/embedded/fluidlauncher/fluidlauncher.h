@@ -44,6 +44,7 @@
 
 #include <QtGui>
 #include <QTimer>
+#include <QStringRef>
 
 #include "pictureflow.h"
 #include "slideshow.h"
@@ -73,7 +74,8 @@ private:
     bool loadConfig(QString configPath);
     void populatePictureFlow();
     void switchToSlideshow();
-
+    void parseDemos(QXmlStreamReader& reader);
+    void parseSlideshow(QXmlStreamReader& reader);
 
 };
 

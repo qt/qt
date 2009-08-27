@@ -78,9 +78,9 @@ void JSCustomSQLStatementCallback::handleEvent(SQLTransaction* transaction, SQLR
     args.append(toJS(exec, deprecatedGlobalObjectForPrototype(exec), transaction));
     args.append(toJS(exec, deprecatedGlobalObjectForPrototype(exec), resultSet));
         
-    globalObject->globalData()->timeoutChecker.start();
+    globalObject->globalData()->timeoutChecker->start();
     call(exec, function, callType, callData, m_callback, args);
-    globalObject->globalData()->timeoutChecker.stop();
+    globalObject->globalData()->timeoutChecker->stop();
 
     if (exec->hadException()) {
         reportCurrentException(exec);

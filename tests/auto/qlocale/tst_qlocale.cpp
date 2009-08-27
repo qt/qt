@@ -68,6 +68,11 @@ extern "C" DWORD GetThreadLocale(void) {
 #    include <stdlib.h>
 #endif
 
+#if defined(Q_OS_SYMBIAN)
+#    include <e32std.h>
+#    include <private/qcore_symbian_p.h>
+#endif
+
 Q_DECLARE_METATYPE(qlonglong)
 Q_DECLARE_METATYPE(QDate)
 Q_DECLARE_METATYPE(QLocale::FormatType)
@@ -130,6 +135,9 @@ private slots:
     void queryDateTime();
     void queryMeasureSystem_data();
     void queryMeasureSystem();
+#if defined(Q_OS_SYMBIAN)
+    void symbianSystemLocale();
+#endif
 
     void ampm();
 
@@ -317,8 +325,8 @@ void tst_QLocale::ctor()
 
 void tst_QLocale::emptyCtor()
 {
-#ifdef Q_OS_WINCE
-    QSKIP("Uses unsupported Windows CE QProcess functionality", SkipAll);
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
+    QSKIP("Uses unsupported Windows CE / Symbian QProcess functionality (std streams, env)", SkipAll);
 #endif
 #if defined(QT_NO_PROCESS)
     QSKIP("Qt was compiled with QT_NO_PROCESS", SkipAll);
@@ -667,7 +675,7 @@ void tst_QLocale::testInfAndNan()
     double nan = sqrt(-1.0);
 
 #ifdef Q_OS_WIN
-    // these causes INVALID floating point exception so we want to clare the status.
+    // these cause INVALID floating point exception so we want to clear the status.
     _clear87();
 #endif
 
@@ -1060,11 +1068,11 @@ void tst_QLocale::macDefaultLocale()
     QTime utcTime = QDateTime::currentDateTime().toUTC().time();
 
     int diff = currentTime.hour() - utcTime.hour();
-    
+
      // Check if local time and utc time are on opposite sides of the 24-hour wrap-around.
-	if (diff < -12) 
+	if (diff < -12)
 	   diff += 24;
-	if (diff > 12) 
+	if (diff > 12)
 	   diff -= 24;
 
 	const QString timeString = locale.toString(QTime(1,2,3), QLocale::LongFormat);
@@ -1720,7 +1728,7 @@ void tst_QLocale::systemMeasurementSystems()
     // Theoretically, we could include HPUX in this test, but its setenv implementation
     // stinks. It's called putenv, and it requires you to keep the variable you pass
     // to it around forever.
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN)
     QFETCH(QString, lcAllLocale);
     QFETCH(QString, lcMeasurementLocale);
     QFETCH(QString, langLocale);
@@ -1744,7 +1752,7 @@ void tst_QLocale::systemMeasurementSystems()
     qputenv("LC_MEASUREMENT", oldLcMeasurement.toLocal8Bit());
     qputenv("LANG", oldLang.toLocal8Bit());
 #else
-    QSKIP("Test doesn't work on Mac or Windows", SkipAll);
+    QSKIP("Test doesn't work on Mac, Windows or Symbian", SkipAll);
 #endif
 }
 
@@ -1842,7 +1850,7 @@ void tst_QLocale::queryMeasureSystem()
     // Theoretically, we could include HPUX in this test, but its setenv implementation
     // stinks. It's called putenv, and it requires you to keep the variable you pass
     // to it around forever.
-#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC) && !defined(Q_OS_SYMBIAN)
     QFETCH(QString, lcAllLocale);
     QFETCH(QString, lcMeasurementLocale);
     QFETCH(QString, langLocale);
@@ -1866,7 +1874,7 @@ void tst_QLocale::queryMeasureSystem()
     qputenv("LC_MEASUREMENT", oldLcMeasurement.toLocal8Bit());
     qputenv("LANG", oldLang.toLocal8Bit());
 #else
-    QSKIP("Test doesn't work on Mac or Windows", SkipAll);
+    QSKIP("Test doesn't work on Mac, Windows or Symbian", SkipAll);
 #endif
 }
 #endif // QT_NO_SYSTEMLOCALE
@@ -1982,6 +1990,34 @@ void tst_QLocale::standaloneMonthName()
     QCOMPARE(ru.standaloneMonthName(1, QLocale::ShortFormat), QString::fromUtf8("\321\217\320\275\320\262\56"));
     QCOMPARE(ru.standaloneMonthName(1, QLocale::NarrowFormat), QString::fromUtf8("\320\257"));
 }
+
+#if defined(Q_OS_SYMBIAN)
+void tst_QLocale::symbianSystemLocale()
+{
+# if defined(__SERIES60_31__)
+    QSKIP("S60 3.1 doesn't support system format properly", SkipAll);
+# else
+    // Simple test to verify that Symbian system locale works at all
+    const QSystemLocale locale;
+    TExtendedLocale s60Locale;
+    s60Locale.LoadSystemSettings();
+
+    TTime s60Date(_L("20090117:")); // Symbian offsets day and month from zero
+    QDate date(2009,2,18);
+
+    TPtrC s60DateFormat = s60Locale.GetShortDateFormatSpec();
+    QString dateFormat = locale.query(QSystemLocale::DateFormatShort, QVariant()).toString();
+
+    TBuf<50> s60FormattedDate;
+    TRAPD(err, s60Date.FormatL(s60FormattedDate, s60DateFormat));
+    QVERIFY(err == KErrNone);
+    QString s60FinalResult = qt_TDesC2QString(s60FormattedDate);
+    QString finalResult = date.toString(dateFormat);
+
+    QCOMPARE(finalResult, s60FinalResult);
+# endif
+}
+#endif
 
 QTEST_APPLESS_MAIN(tst_QLocale)
 #include "tst_qlocale.moc"

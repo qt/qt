@@ -66,6 +66,7 @@ class QFxBorderImagePrivate : public QFxImageBasePrivate
 public:
     QFxBorderImagePrivate()
       : border(0), sciReply(0),
+        sciPendingPixmapCache(false),
         horizontalTileMode(QFxBorderImage::Stretch),
         verticalTileMode(QFxBorderImage::Stretch)
     {
@@ -86,6 +87,7 @@ public:
     QFxScaleGrid *border;
     QUrl sciurl;
     QNetworkReply *sciReply;
+    bool sciPendingPixmapCache;
     QFxBorderImage::TileMode horizontalTileMode;
     QFxBorderImage::TileMode verticalTileMode;
 };

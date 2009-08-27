@@ -301,11 +301,11 @@ void QFxContents::setItem(QFxItem *item)
 
 /*
     Key filters can be installed on a QFxItem, but not removed.  Currently they
-    are only used by attached objects (which are only destroyed on Item 
-    destruction), so this isn't a problem.  If in future this becomes any form 
+    are only used by attached objects (which are only destroyed on Item
+    destruction), so this isn't a problem.  If in future this becomes any form
     of public API, they will have to support removal too.
-*/ 
-class QFxItemKeyFilter 
+*/
+class QFxItemKeyFilter
 {
 public:
     QFxItemKeyFilter(QFxItem * = 0);
@@ -321,7 +321,7 @@ private:
 QFxItemKeyFilter::QFxItemKeyFilter(QFxItem *item)
 : m_next(0)
 {
-    QFxItemPrivate *p = 
+    QFxItemPrivate *p =
         item?static_cast<QFxItemPrivate *>(QGraphicsItemPrivate::get(item)):0;
     if (p) {
         m_next = p->keyHandler;
@@ -346,7 +346,7 @@ void QFxItemKeyFilter::keyReleased(QKeyEvent *event)
 class QFxKeyNavigationAttachedPrivate : public QObjectPrivate
 {
 public:
-    QFxKeyNavigationAttachedPrivate() 
+    QFxKeyNavigationAttachedPrivate()
         : QObjectPrivate(), left(0), right(0), up(0), down(0) {}
 
     QFxItem *left;
@@ -378,7 +378,7 @@ public:
 
     static QFxKeyNavigationAttached *qmlAttachedProperties(QObject *);
 
-signals:
+Q_SIGNALS:
     void changed();
 
 private:
@@ -860,7 +860,7 @@ public:
 
     static QFxKeysAttached *qmlAttachedProperties(QObject *);
 
-signals:
+Q_SIGNALS:
     void enabledChanged();
     void pressed(QFxKeyEvent *event);
     void released(QFxKeyEvent *event);
@@ -965,7 +965,7 @@ bool QFxKeysAttachedPrivate::isConnected(const char *signalName)
 }
 
 QFxKeysAttached::QFxKeysAttached(QObject *parent)
-: QObject(*(new QFxKeysAttachedPrivate), parent), 
+: QObject(*(new QFxKeysAttachedPrivate), parent),
   QFxItemKeyFilter(qobject_cast<QFxItem*>(parent))
 {
 }
@@ -1076,18 +1076,6 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 */
 
 /*!
-    \fn void QFxItem::xChanged()
-
-    This signal is emitted when the x coordinate of the item changes.
-*/
-
-/*!
-    \fn void QFxItem::yChanged()
-
-    This signal is emitted when the y coordinate of the item changes.
-*/
-
-/*!
     \fn void QFxItem::widthChanged()
 
     This signal is emitted when the width of the item changes.
@@ -1164,12 +1152,14 @@ QFxItem::~QFxItem()
         QFxAnchors *anchor = d->dependantAnchors.at(ii);
         anchor->d_func()->clearItem(this);
     }
-    for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
-        QFxAnchors *anchor = d->dependantAnchors.at(ii);
-        if (anchor->d_func()->item && anchor->d_func()->item->parentItem() != this) //child will be deleted anyway
-            anchor->d_func()->updateOnComplete();
-    }
+    if (!d->parent || (parentItem() && !parentItem()->QGraphicsItem::d_ptr->inDestructor))
+        for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
+            QFxAnchors *anchor = d->dependantAnchors.at(ii);
+            if (anchor->d_func()->item && anchor->d_func()->item->parentItem() != this) //child will be deleted anyway
+                anchor->d_func()->updateOnComplete();
+        }
     delete d->_anchorLines; d->_anchorLines = 0;
+    delete d->_anchors; d->_anchors = 0;
 }
 
 /*!

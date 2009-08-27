@@ -41,14 +41,14 @@
 
 /*!
     \group modules
-    \title Qt's Modules
+    \title All Qt Modules
     \startpage index.html Qt Reference Documentation
     \nextpage QtCore
     
     \ingroup classlists
 
-    Qt 4 consists of several modules, each of which lives in a
-    separate library.
+    \brief Qt 4 comprises several modules. Each module is a separate
+    library.
 
     \table 80%
     \header \o {2,1} \bold{Modules for general software development}
@@ -90,14 +90,14 @@
     or other build tools such as CMake, you also need to link against
     the \c qtmain library.
 
-    \sa {Qt's Classes}
+    \sa {Class and Function Documentation}
 */
 
 /*!
     \module QtCore
     \title QtCore Module
-    \contentspage Qt's Modules
-    \previouspage Qt's Modules
+    \contentspage All Qt Modules
+    \previouspage All Qt Modules
     \nextpage QtGui
     \ingroup modules
 
@@ -117,7 +117,7 @@
 /*!
     \module QtGui
     \title QtGui Module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QtCore
     \nextpage QtNetwork
     \ingroup modules
@@ -136,7 +136,7 @@
 /*!
     \module QtMultimedia
     \title QtMultimedia Module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QtCore
     \nextpage QtNetwork
     \ingroup modules
@@ -160,7 +160,7 @@
 /*!
     \module QtNetwork
     \title QtNetwork Module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QtMultimedia
     \nextpage QtOpenGL
     \ingroup modules
@@ -185,7 +185,7 @@
 /*!
     \module QtOpenGL
     \title QtOpenGL Module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QtNetwork
     \nextpage QtOpenVG
     \ingroup modules
@@ -237,7 +237,7 @@
     \module QtOpenVG
     \title QtOpenVG Module
     \since 4.6
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QtOpenGL
     \nextpage QtScript
     \ingroup modules
@@ -292,7 +292,7 @@
 	\module QtScript
 	\title QtScript Module
 	\since 4.3
-	\contentspage Qt's Modules
+	\contentspage All Qt Modules
 	\previouspage QtOpenVG
 	\nextpage QtScriptTools
 	\ingroup modules
@@ -322,7 +322,7 @@
   \module QtScriptTools
   \title QtScriptTools Module
   \since 4.5
-  \contentspage Qt's Modules
+  \contentspage All Qt Modules
   \previouspage QtScript
   \nextpage QtSql
   \ingroup modules
@@ -351,7 +351,7 @@
 /*!
     \module QtSql
     \title QtSql Module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QtScript
     \nextpage QtSvg
     \ingroup modules
@@ -374,7 +374,7 @@
 	\module QtSvg
 	\title QtSvg Module
 	\since 4.1
-	\contentspage Qt's Modules
+	\contentspage All Qt Modules
 	\previouspage QtSql
 	\nextpage QtWebKit
 	\ingroup modules
@@ -429,7 +429,7 @@
 /*!
     \module QtXml
     \title QtXml Module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QtSvg
     \nextpage QtXmlPatterns
     \ingroup modules
@@ -459,7 +459,7 @@
     \module QtXmlPatterns
     \title QtXmlPatterns Module
     \since 4.4
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QtXml
     \nextpage Phonon Module
     \ingroup modules
@@ -534,7 +534,7 @@
     \page phonon-module.html
     \module Phonon
     \title Phonon Module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QtXmlPatterns
     \nextpage Qt3Support
     \ingroup modules
@@ -605,7 +605,7 @@
 /*!
     \module Qt3Support
     \title Qt3Support Module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage Phonon Module
     \nextpage QtDesigner
     \ingroup modules
@@ -646,7 +646,7 @@
 /*!
     \module QtDesigner
     \title QtDesigner Module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage Qt3Support
     \nextpage QtUiTools
     \ingroup modules
@@ -677,7 +677,7 @@
     \module QtUiTools
     \title QtUiTools Module
     \since 4.1
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QtDesigner
     \nextpage QtHelp
     \ingroup modules
@@ -717,7 +717,7 @@
 /*!
     \module QtHelp
     \title QtHelp Module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QtUiTools
     \nextpage QtTest
     \ingroup modules
@@ -780,7 +780,7 @@
 /*!
     \module QtTest
     \title QtTest Module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QtHelp
     \nextpage QAxContainer
     \ingroup modules
@@ -810,7 +810,7 @@
 /*!
     \module QAxContainer
     \title QAxContainer Module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QtTest
     \nextpage QAxServer
     \ingroup modules
@@ -860,7 +860,7 @@
 /*!
     \module QAxServer
     \title QAxServer Module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QAxContainer
     \nextpage QtDBus module
     \ingroup modules
@@ -910,7 +910,7 @@
 /*!
     \module QtDBus
     \title QtDBus module
-    \contentspage Qt's Modules
+    \contentspage All Qt Modules
     \previouspage QAxServer
     \ingroup modules
 

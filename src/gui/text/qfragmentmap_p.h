@@ -214,6 +214,7 @@ private:
 
 template <class Fragment>
 QFragmentMapData<Fragment>::QFragmentMapData()
+    : fragments(0)
 {
     init();
 }
@@ -221,12 +222,19 @@ QFragmentMapData<Fragment>::QFragmentMapData()
 template <class Fragment>
 void QFragmentMapData<Fragment>::init()
 {
-    fragments = (Fragment *)malloc(64*fragmentSize);
+    // the following code will realloc an existing fragment or create a new one.
+    // it will also ignore errors when shrinking an existing fragment.
+    Fragment *newFragments = (Fragment *)realloc(fragments, 64*fragmentSize);
+    if (newFragments) {
+        fragments = newFragments;
+        head->allocated = 64;
+    }
+    Q_CHECK_PTR(fragments);
+
     head->tag = (((quint32)'p') << 24) | (((quint32)'m') << 16) | (((quint32)'a') << 8) | 'p'; //TAG('p', 'm', 'a', 'p');
     head->root = 0;
     head->freelist = 1;
     head->node_count = 0;
-    head->allocated = 64;
     // mark all items to the right as unused
     F(head->freelist).right = 0;
 }
@@ -234,7 +242,7 @@ void QFragmentMapData<Fragment>::init()
 template <class Fragment>
 QFragmentMapData<Fragment>::~QFragmentMapData()
 {
-    free(head);
+    free(fragments);
 }
 
 template <class Fragment>
@@ -247,7 +255,9 @@ uint QFragmentMapData<Fragment>::createFragment()
         // need to create some free space
         uint needed = qAllocMore((freePos+1)*fragmentSize, 0);
         Q_ASSERT(needed/fragmentSize > head->allocated);
-        fragments = (Fragment *)realloc(fragments, needed);
+        Fragment *newFragments = (Fragment *)realloc(fragments, needed);
+        Q_CHECK_PTR(newFragments);
+        fragments = newFragments;
         head->allocated = needed/fragmentSize;
         F(freePos).right = 0;
     }
@@ -787,6 +797,8 @@ public:
     QFragmentMap() {}
     ~QFragmentMap()
     {
+        if (!data.fragments)
+            return; // in case of out-of-memory, we won't have fragments
         for (Iterator it = begin(); !it.atEnd(); ++it)
             it.value()->free();
     }
@@ -794,7 +806,6 @@ public:
     inline void clear() {
         for (Iterator it = begin(); !it.atEnd(); ++it)
             it.value()->free();
-        ::free(data.head);
         data.init();
     }
 

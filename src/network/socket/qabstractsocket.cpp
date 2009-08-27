@@ -1069,6 +1069,7 @@ void QAbstractSocketPrivate::_q_abortConnectionAttempt()
 #endif
     if (socketEngine)
         socketEngine->setWriteNotificationEnabled(false);
+
     connectTimer->stop();
 
     if (addresses.isEmpty()) {
@@ -1281,8 +1282,9 @@ void QAbstractSocket::connectToHostImplementation(const QString &hostName, quint
            (int) openMode);
 #endif
 
-    if (d->state == ConnectedState || d->state == ConnectingState || d->state == ClosingState) {
-        qWarning("QAbstractSocket::connectToHost() called when already connecting/connected to \"%s\"", qPrintable(hostName));
+    if (d->state == ConnectedState || d->state == ConnectingState
+        || d->state == ClosingState || d->state == HostLookupState) {
+        qWarning("QAbstractSocket::connectToHost() called when already looking up or connecting/connected to \"%s\"", qPrintable(hostName));
         return;
     }
 

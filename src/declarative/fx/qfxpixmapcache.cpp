@@ -63,6 +63,7 @@ public:
         reply->deleteLater();
     }
     QNetworkReply *reply;
+    QPixmap pixmap; // ensure reference to pixmap to QPixmapCache does not discard
 
     int refCount;
     void addRef()
@@ -169,6 +170,9 @@ bool QFxPixmapCache::find(const QUrl& url, QPixmap *pixmap)
                     qWarning() << "Format error loading" << url;
                     *pixmap = QPixmap();
                     ok = false;
+                } else {
+                    if ((*iter)->refCount > 1)
+                        (*iter)->pixmap = *pixmap;
                 }
                 (*iter)->release();
             }
@@ -176,6 +180,15 @@ bool QFxPixmapCache::find(const QUrl& url, QPixmap *pixmap)
         QPixmapCache::insert(key, *pixmap);
     } else {
         ok = !pixmap->isNull();
+#ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
+        if (url.scheme()!=QLatin1String("file"))
+#endif
+        // We may be the second finder. Still need to check for active replies.
+        {
+            QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
+            if (iter != qfxActiveNetworkReplies.end())
+                (*iter)->release();
+        }
     }
     return ok;
 }
@@ -244,6 +257,15 @@ void QFxPixmapCache::cancelGet(const QUrl& url, QObject* obj)
     if (obj)
         QObject::disconnect((*iter)->reply, 0, obj, 0);
     (*iter)->release();
+}
+
+/*!
+    This function is mainly for test verification. It returns the number of
+    requests that are still unfinished.
+*/
+int QFxPixmapCache::pendingRequests()
+{
+    return qfxActiveNetworkReplies.count();
 }
 
 QT_END_NAMESPACE

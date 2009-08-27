@@ -53,7 +53,9 @@
 
 class tst_QNetworkAccessManager_And_QProgressDialog : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
+public:
+    tst_QNetworkAccessManager_And_QProgressDialog();
 private slots:
     void downloadCheck();
 };
@@ -109,6 +111,11 @@ private:
     QProgressDialog progressDlg;
     QNetworkAccessManager netmanager;
 };
+
+tst_QNetworkAccessManager_And_QProgressDialog::tst_QNetworkAccessManager_And_QProgressDialog()
+{
+    Q_SET_DEFAULT_IAP
+}
 
 void tst_QNetworkAccessManager_And_QProgressDialog::downloadCheck()
 {

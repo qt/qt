@@ -38,28 +38,57 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <QStringList>
-#include <qtest.h>
+#include <QtTest>
+
+#include <sstream>
+#include <string>
+#include <vector>
 
 class tst_QStringList: public QObject
 {
     Q_OBJECT
+
 private slots:
     void join() const;
     void join_data() const;
 
+    void split() const;
+    void split_data() const;
+
+    void split_std() const;
+    void split_std_data() const { return split_data(); }
+
+    void split_stdw() const;
+    void split_stdw_data() const { return split_data(); }
+
+    void split_ba() const;
+    void split_ba_data() const { return split_data(); }
+
 private:
-    static QStringList populate(const unsigned int count,
-                                const QString &unit);
+    static QStringList populateList(const int count, const QString &unit);
+    static QString populateString(const int count, const QString &unit);
 };
 
-QStringList tst_QStringList::populate(const unsigned int count,
-                                      const QString &unit)
+QStringList tst_QStringList::populateList(const int count, const QString &unit)
 {
     QStringList retval;
 
-    for(unsigned int i = 0; i < count; ++i)
+    for (int i = 0; i < count; ++i)
         retval.append(unit);
+
+    return retval;
+}
+
+QString tst_QStringList::populateString(const int count, const QString &unit)
+{
+    QString retval;
+
+    for (int i = 0; i < count; ++i) {
+        retval.append(unit);
+        retval.append(QLatin1Char(':'));
+    }
 
     return retval;
 }
@@ -80,20 +109,83 @@ void tst_QStringList::join_data() const
     QTest::addColumn<QString>("separator");
 
     QTest::newRow("")
-        << populate(100, QLatin1String("unit"))
+        << populateList(100, QLatin1String("unit"))
         << QString();
 
     QTest::newRow("")
-        << populate(1000, QLatin1String("unit"))
+        << populateList(1000, QLatin1String("unit"))
         << QString();
 
     QTest::newRow("")
-        << populate(10000, QLatin1String("unit"))
+        << populateList(10000, QLatin1String("unit"))
         << QString();
 
     QTest::newRow("")
-        << populate(100000, QLatin1String("unit"))
+        << populateList(100000, QLatin1String("unit"))
         << QString();
+}
+
+void tst_QStringList::split() const
+{
+    QFETCH(QString, input);
+    const QChar splitChar = ':';
+
+    QBENCHMARK {
+        input.split(splitChar);
+    }
+}
+
+void tst_QStringList::split_data() const
+{
+    QTest::addColumn<QString>("input");
+    QString unit = QLatin1String("unit");
+    QTest::newRow("") << populateString(10, unit);
+    QTest::newRow("") << populateString(100, unit);
+    QTest::newRow("") << populateString(1000, unit);
+    QTest::newRow("") << populateString(10000, unit);
+}
+
+void tst_QStringList::split_std() const
+{
+    QFETCH(QString, input);
+    const char split_char = ':';
+    std::string stdinput = input.toStdString();
+
+    QBENCHMARK {
+        std::istringstream split(stdinput);
+        std::vector<std::string> token;
+        for (std::string each;
+             std::getline(split, each, split_char);
+             token.push_back(each))
+            ;
+    }
+}
+
+void tst_QStringList::split_stdw() const
+{
+    QFETCH(QString, input);
+    const wchar_t split_char = ':';
+    std::wstring stdinput = input.toStdWString();
+
+    QBENCHMARK {
+        std::wistringstream split(stdinput);
+        std::vector<std::wstring> token;
+        for (std::wstring each;
+             std::getline(split, each, split_char);
+             token.push_back(each))
+            ;
+    }
+}
+
+void tst_QStringList::split_ba() const
+{
+    QFETCH(QString, input);
+    const char splitChar = ':';
+    QByteArray ba = input.toLatin1();
+
+    QBENCHMARK {
+        ba.split(splitChar);
+    }
 }
 
 QTEST_MAIN(tst_QStringList)

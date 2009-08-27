@@ -191,7 +191,6 @@ QGLPixelBuffer::~QGLPixelBuffer()
     delete d->qctx;
     if (current && current != d->qctx)
         current->makeCurrent();
-    delete d_ptr;
 }
 
 /*! \fn bool QGLPixelBuffer::makeCurrent()

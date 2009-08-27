@@ -266,9 +266,7 @@ QScriptValue QmlEnginePrivate::propertyObject(const QScriptString &propName,
         if (varobj) {
             return scriptEngine.newObject(objectClass, scriptEngine.newVariant(QVariant::fromValue(varobj)));
         } else {
-            if (var.type() == QVariant::Bool)
-                return QScriptValue(&scriptEngine, var.toBool());
-            return scriptEngine.newVariant(var);
+            return qScriptValueFromValue(&scriptEngine, var);
         }
     }
 
@@ -863,21 +861,14 @@ void QmlContextScriptClass::setProperty(QScriptValue &object,
     QmlContext *bindContext =
         static_cast<QmlContext*>(object.data().toQObject());
 
-
     int objIdx = (id & QmlScriptClass::ClassIdSelectorMask) >> 24;
     QObject *obj = bindContext->d_func()->defaultObjects.at(objIdx);
-
-    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
-    QScriptValue oldact = scriptEngine->currentContext()->activationObject();
-    scriptEngine->currentContext()->setActivationObject(scriptEngine->globalObject());
 
     QmlMetaProperty prop;
     prop.restore(id, obj);
 
     QVariant v = QmlScriptClass::toVariant(engine, value);
     prop.write(v);
-
-    scriptEngine->currentContext()->setActivationObject(oldact);
 }
 
 /////////////////////////////////////////////////////////////
@@ -1058,17 +1049,11 @@ void QmlObjectScriptClass::setProperty(QScriptValue &object,
 
     QObject *obj = object.data().toQObject();
 
-    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
-    QScriptValue oldact = scriptEngine->currentContext()->activationObject();
-    scriptEngine->currentContext()->setActivationObject(scriptEngine->globalObject());
-
     QmlMetaProperty prop;
     prop.restore(id, obj);
 
     QVariant v = QmlScriptClass::toVariant(engine, value);
     prop.write(v);
-
-    scriptEngine->currentContext()->setActivationObject(oldact);
 }
 
 

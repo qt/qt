@@ -119,15 +119,12 @@ bool QDirectFBWindowSurface::isValid() const
 #ifndef QT_NO_DIRECTFB_WM
 void QDirectFBWindowSurface::createWindow()
 {
-#ifdef QT_NO_DIRECTFB_LAYER
-#error QT_NO_DIRECTFB_LAYER requires QT_NO_DIRECTFB_WM
-#else
     IDirectFBDisplayLayer *layer = screen->dfbDisplayLayer();
     if (!layer)
         qFatal("QDirectFBWindowSurface: Unable to get primary display layer!");
 
     DFBWindowDescription description;
-    description.caps = DWCAPS_NODECORATION;
+    description.caps = DWCAPS_NODECORATION|DWCAPS_DOUBLEBUFFER;
     description.flags = DWDESC_CAPS|DWDESC_SURFACE_CAPS|DWDESC_PIXELFORMAT;
 
     description.surface_caps = DSCAPS_NONE;
@@ -147,7 +144,7 @@ void QDirectFBWindowSurface::createWindow()
         dfbSurface->Release(dfbSurface);
 
     dfbWindow->GetSurface(dfbWindow, &dfbSurface);
-#endif
+    updateFormat();
 }
 #endif // QT_NO_DIRECTFB_WM
 
@@ -183,6 +180,7 @@ static DFBResult setGeometry(IDirectFBWindow *dfbWindow, const QRect &old, const
 
 void QDirectFBWindowSurface::setGeometry(const QRect &rect)
 {
+    IDirectFBSurface *oldSurface = dfbSurface;
 #ifdef QT_NO_DIRECTFB_WM
     IDirectFBSurface *primarySurface = screen->primarySurface();
     Q_ASSERT(primarySurface);
@@ -240,6 +238,8 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
         if (result != DFB_OK)
             DirectFBErrorFatal("QDirectFBWindowSurface::setGeometry()", result);
     }
+    if (oldSurface != dfbSurface)
+        updateFormat();
     QWSWindowSurface::setGeometry(rect);
 }
 
@@ -392,7 +392,7 @@ void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
             && region.intersects(cursorRectangle.translated(-(offset + windowGeometry.topLeft())))) {
             const QImage image = cursor->image();
 
-            IDirectFBSurface *surface = screen->createDFBSurface(image, QDirectFBScreen::DontTrackSurface);
+            IDirectFBSurface *surface = screen->createDFBSurface(image, image.format(), QDirectFBScreen::DontTrackSurface);
             primarySurface->SetBlittingFlags(primarySurface, DSBLIT_BLEND_ALPHACHANNEL);
             primarySurface->Blit(primarySurface, surface, 0, cursorRectangle.x(), cursorRectangle.y());
             surface->Release(surface);
@@ -466,3 +466,7 @@ QImage *QDirectFBWindowSurface::buffer(const QWidget *widget)
     return img;
 }
 
+void QDirectFBWindowSurface::updateFormat()
+{
+    imageFormat = dfbSurface ? QDirectFBScreen::getImageFormat(dfbSurface) : QImage::Format_Invalid;
+}

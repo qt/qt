@@ -1,7 +1,7 @@
-/*! 
+/*!
 \page cppitem.html
 \target cppitem
-\title C++ Components
+\title C++ Components for QML
 
 \section1 Making a C++ object available in QML
 
@@ -79,9 +79,9 @@ QML_DEFINE_TYPE(MyLib,1,0,5,Circle,MyCircle);
 would make the \e MyCircle class accessable though the \c Circle type in QML whenever MyLib 1.0 to 1.5 is imported.
 
 
-\section1 Creating a new 'Fx' item in C++
+\section1 Creating a new type of QML item in C++
 
-You can create a new type of 'Fx' item by:
+You can create a new type of QML item by:
 \list 1
 \o Creating a subclass of QFxItem,
 \o Adding Q_PROPERTYs appropriate for your item (see \l {properties}{Properties}),

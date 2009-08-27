@@ -39,10 +39,13 @@
 **
 ****************************************************************************/
 
+#if !defined(Q_OS_SYMBIAN) || (defined(Q_OS_SYMBIAN) && !defined(Q_CC_RVCT))
+
 #include "qplatformdefs.h"
 
 #include <QtCore/qatomic.h>
 
+QT_BEGIN_NAMESPACE
 static pthread_mutex_t qAtomicMutex = PTHREAD_MUTEX_INITIALIZER;
 
 Q_CORE_EXPORT
@@ -116,3 +119,5 @@ void *QBasicAtomicPointer_fetchAndAddOrdered(void * volatile *_q_value, qptrdiff
     pthread_mutex_unlock(&qAtomicMutex);
     return returnValue;
 }
+QT_END_NAMESPACE
+#endif //!defined(Q_OS_SYMBIAN) && !defined(Q_CC_RVCT)

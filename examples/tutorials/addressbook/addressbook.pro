@@ -6,3 +6,5 @@ target.path = $$[QT_INSTALL_EXAMPLES]/tutorials/addressbook
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS addressbook.pro README
 sources.path = $$[QT_INSTALL_EXAMPLES]/tutorials/addressbook
 INSTALLS += target sources
+
+symbian: include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)

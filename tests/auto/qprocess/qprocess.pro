@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
+
 SUBDIRS = testProcessCrash \
           testProcessEcho \
           testProcessEcho2 \
@@ -9,10 +10,7 @@ SUBDIRS = testProcessCrash \
           testProcessOutput \
           testProcessDeadWhileReading \
           testProcessEOF \
-          testSoftExit \
           testProcessSpacesArgs/nospace.pro \
-          testProcessSpacesArgs/onespace.pro \
-          testProcessSpacesArgs/twospaces.pro \
           testExitCodes \
           testSpaceInName \
           testGuiProcess \
@@ -20,6 +18,11 @@ SUBDIRS = testProcessCrash \
           fileWriterProcess \
           testSetWorkingDirectory
 
+!symbian: {
+SUBDIRS +=testProcessSpacesArgs/onespace.pro \
+          testProcessSpacesArgs/twospaces.pro \
+          testSoftExit
+}
 
 win32:!wince*:SUBDIRS+=testProcessEchoGui
 

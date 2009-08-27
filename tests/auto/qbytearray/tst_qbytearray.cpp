@@ -53,6 +53,10 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+#if defined(Q_OS_SYMBIAN)
+#define SRCDIR ""
+#endif
+
 class tst_QByteArray : public QObject
 {
     Q_OBJECT
@@ -957,7 +961,7 @@ void tst_QByteArray::toInt()
     QCOMPARE( number, expectednumber );
 }
 
-Q_DECLARE_METATYPE(qulonglong);
+Q_DECLARE_METATYPE(qulonglong)
 void tst_QByteArray::toULong_data()
 {
     QTest::addColumn<QByteArray>("str");
@@ -967,8 +971,8 @@ void tst_QByteArray::toULong_data()
 
     ulong LongMaxPlusOne = (ulong)LONG_MAX + 1;
     QTest::newRow("LONG_MAX+1") << QString::number(LongMaxPlusOne).toLatin1() << 10 << LongMaxPlusOne << true;
-    QTest::newRow("default") << QByteArray() << 10 << 0UL << FALSE;
-    QTest::newRow("empty") << QByteArray("") << 10 << 0UL << FALSE;
+    QTest::newRow("default") << QByteArray() << 10 << 0UL << false;
+    QTest::newRow("empty") << QByteArray("") << 10 << 0UL << false;
     QTest::newRow("ulong1") << QByteArray("3234567890") << 10 << 3234567890UL << true;
     QTest::newRow("ulong2") << QByteArray("fFFfFfFf") << 16 << 0xFFFFFFFFUL << true;
 }
@@ -993,8 +997,8 @@ void tst_QByteArray::toULongLong_data()
     QTest::addColumn<qulonglong>("result");
     QTest::addColumn<bool>("ok");
 
-    QTest::newRow("default") << QByteArray() << 10 << (qulonglong)0 << FALSE;
-    QTest::newRow("out of base bound") << QByteArray("c") << 10 << (qulonglong)0 << FALSE;
+    QTest::newRow("default") << QByteArray() << 10 << (qulonglong)0 << false;
+    QTest::newRow("out of base bound") << QByteArray("c") << 10 << (qulonglong)0 << false;
 
 }
 
@@ -1136,12 +1140,12 @@ void tst_QByteArray::toFromHex()
 void tst_QByteArray::toFromPercentEncoding()
 {
     QByteArray arr("Qt is great!");
-
+/*
     QByteArray data = arr.toPercentEncoding();
     QCOMPARE(QString(data), QString("Qt%20is%20great%21"));
     QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
-
-    data = arr.toPercentEncoding("! ", "Qt");
+*/
+    QByteArray data = arr.toPercentEncoding("! ", "Qt");
     QCOMPARE(QString(data), QString("%51%74 is grea%74!"));
     QCOMPARE(QByteArray::fromPercentEncoding(data), arr);
 

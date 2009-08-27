@@ -105,8 +105,6 @@ QRasterWindowSurface::~QRasterWindowSurface()
 #endif
     if (d_ptr->image)
         delete d_ptr->image;
-
-    delete d_ptr;
 }
 
 
@@ -149,7 +147,10 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
     QRect br = rgn.boundingRect();
 
 #ifndef Q_WS_WINCE
-    if (!qt_widget_private(window())->isOpaque && window()->testAttribute(Qt::WA_TranslucentBackground)) {
+    if (!qt_widget_private(window())->isOpaque
+        && window()->testAttribute(Qt::WA_TranslucentBackground)
+        && (qt_widget_private(window())->data.window_flags & Qt::FramelessWindowHint))
+    {
         QRect r = window()->frameGeometry();
         QPoint frameOffset = qt_widget_private(window())->frameStrut().topLeft();
         QRect dirtyRect = br.translated(offset + frameOffset);
@@ -283,6 +284,12 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 #else
     CGContextFlush(context);
 #endif
+#endif
+
+#ifdef Q_OS_SYMBIAN
+    Q_UNUSED(widget);
+    Q_UNUSED(rgn);
+    Q_UNUSED(offset);
 #endif
 }
 

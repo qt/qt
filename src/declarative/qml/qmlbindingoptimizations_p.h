@@ -99,7 +99,7 @@ public:
     virtual void setEnabled(bool);
     virtual int propertyIndex();
 
-private slots:
+private Q_SLOTS:
     virtual void update();
 
 private:

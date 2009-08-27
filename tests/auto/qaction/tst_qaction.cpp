@@ -240,7 +240,7 @@ void tst_QAction::setStandardKeys()
     QVERIFY(act.shortcut() == act.shortcuts().first());
 
     QList<QKeySequence> expected;
-#ifdef Q_WS_MAC
+#if defined(Q_WS_MAC) || defined(Q_OS_SYMBIAN)
     expected  << QKeySequence("CTRL+C");
 #elif defined(Q_WS_WIN) || defined(Q_WS_QWS)
     expected  << QKeySequence("CTRL+C") << QKeySequence("CTRL+INSERT");

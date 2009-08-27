@@ -49,8 +49,11 @@
 #define EXISTING_SHARE "existing"
 #define EXISTING_SIZE 1024
 
-Q_DECLARE_METATYPE(QSharedMemory::SharedMemoryError);
-Q_DECLARE_METATYPE(QSharedMemory::AccessMode);
+#ifdef Q_OS_SYMBIAN
+#define SRCDIR "c:/data/qsharedmemorytemp/"
+#endif
+Q_DECLARE_METATYPE(QSharedMemory::SharedMemoryError)
+Q_DECLARE_METATYPE(QSharedMemory::AccessMode)
 
 class tst_QSharedMemory : public QObject
 {
@@ -405,6 +408,9 @@ void tst_QSharedMemory::readOnly()
 #ifdef Q_OS_WIN
     QSKIP("This test opens a crash dialog on Windows", SkipSingle);
 #endif
+#if defined (Q_OS_SYMBIAN)
+    QSKIP("Readonly shared memory is not supported in symbian", SkipAll);
+#endif
     QString program = "./lackey/lackey";
     QStringList arguments;
     rememberKey("readonly_segfault");
@@ -527,7 +533,9 @@ void tst_QSharedMemory::simpleProducerConsumer()
     char *get = (char*)consumer.data();
     // On Windows CE you always have ReadWrite access. Thus
     // ViewMapOfFile returns the same pointer
-#ifndef Q_OS_WINCE
+    // On Symbian, the address will always be same, as
+    // write protection of chunks is not currently supported by Symbian
+#if !defined(Q_OS_WINCE) && !defined(Q_OS_SYMBIAN)
     QVERIFY(put != get);
 #endif
     for (int i = 0; i < size; ++i) {
@@ -629,6 +637,11 @@ public:
         QVERIFY(producer.lock());
         memory[0] = 'E';
         QVERIFY(producer.unlock());
+
+#if defined(Q_OS_SYMBIAN)
+        // Sleep a while to ensure that consumers start properly
+        QTest::qSleep(1000);
+#endif
     }
 private:
 
@@ -660,12 +673,25 @@ void tst_QSharedMemory::simpleThreadedProducerConsumer()
 #endif
 
     Producer p;
+#if defined(Q_OS_SYMBIAN)
+    enum
+    {
+        /**
+         * The maximum stack size.
+         */
+        SymbianStackSize = 0x14000
+    };
+    p.setStackSize(SymbianStackSize);
+#endif
     if (producerIsThread)
         p.start();
 
     QList<Consumer*> consumers;
     for (int i = 0; i < threads; ++i) {
         consumers.append(new Consumer());
+#if defined(Q_OS_SYMBIAN)
+        consumers.last()->setStackSize(SymbianStackSize);
+#endif
         consumers.last()->start();
     }
 
@@ -697,6 +723,9 @@ void tst_QSharedMemory::simpleProcessProducerConsumer_data()
  */
 void tst_QSharedMemory::simpleProcessProducerConsumer()
 {
+#if defined (Q_OS_SYMBIAN) && defined(Q_CC_NOKIAX86)
+    QSKIP("Cannot launch multiple Qt processes in Symbian emulator", SkipAll);
+#endif
     QFETCH(int, processes);
 
     rememberKey("market");
@@ -710,6 +739,7 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
     producer.setProcessChannelMode(QProcess::ForwardedChannels);
     producer.start("./lackey/lackey", arguments);
     producer.waitForStarted();
+    QVERIFY(producer.error() != QProcess::FailedToStart);
 
     QList<QProcess*> consumers;
     for (int i = 0; i < processes; ++i) {
@@ -730,7 +760,8 @@ void tst_QSharedMemory::simpleProcessProducerConsumer()
 
     while (!consumers.isEmpty()) {
         consumers.first()->waitForFinished(1000);
-        if (consumers.first()->exitStatus() != QProcess::NormalExit ||
+        if (consumers.first()->state() == QProcess::Running ||
+            consumers.first()->exitStatus() != QProcess::NormalExit ||
             consumers.first()->exitCode() != 0) {
                 consumerFailed = true;
             }

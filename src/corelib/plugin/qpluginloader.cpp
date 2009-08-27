@@ -46,6 +46,7 @@
 #include <qfileinfo.h>
 #include "qlibrary_p.h"
 #include "qdebug.h"
+#include "qdir.h"
 
 #ifndef QT_NO_LIBRARY
 
@@ -116,6 +117,16 @@ QT_BEGIN_NAMESPACE
     link to plugins statically. You can use QLibrary if you need to
     load dynamic libraries in a statically linked application.
 
+    \note In Symbian the plugin stub files must be used whenever a
+    path to plugin is needed. For the purposes of loading plugins,
+    the stubs can be considered to have the same name as the actual
+    plugin binary. In practice they have ".qtplugin" extension
+    instead of ".dll", but this difference is handled transparently
+    by QPluginLoader and QLibrary to avoid need for Symbian specific
+    plugin handling in most Qt applications. Plugin stubs are needed
+    because Symbian Platform Security denies all access to the directory
+    where the actual plugin binaries are located.
+
     \sa QLibrary, {Plug & Paint Example}
 */
 
@@ -135,6 +146,8 @@ QPluginLoader::QPluginLoader(QObject *parent)
     loadable library in accordance with the platform, e.g. \c .so on
     Unix, - \c .dylib on Mac OS X, and \c .dll on Windows. The suffix
     can be verified with QLibrary::isLibrary().
+
+    Note: In Symbian the \a fileName must point to plugin stub file.
 
     \sa setFileName()
 */
@@ -170,7 +183,7 @@ QPluginLoader::~QPluginLoader()
     The root component, returned by this function, is not deleted when
     the QPluginLoader is destroyed. If you want to ensure that the root
     component is deleted, you should call unload() as soon you don't
-    need to access the core component anymore.  When the library is 
+    need to access the core component anymore.  When the library is
     finally unloaded, the root component will automatically be deleted.
 
     The component object is a QObject. Use qobject_cast() to access
@@ -221,9 +234,9 @@ bool QPluginLoader::load()
     call will fail, and unloading will only happen when every instance
     has called unload().
 
-    Don't try to delete the root component. Instead rely on 
+    Don't try to delete the root component. Instead rely on
     that unload() will automatically delete it when needed.
-    
+
     \sa instance(), load()
 */
 bool QPluginLoader::unload()
@@ -261,6 +274,8 @@ bool QPluginLoader::isLoaded() const
 
     By default, this property contains an empty string.
 
+    Note: In Symbian the \a fileName must point to plugin stub file.
+
     \sa load()
 */
 void QPluginLoader::setFileName(const QString &fileName)
@@ -273,7 +288,42 @@ void QPluginLoader::setFileName(const QString &fileName)
         d = 0;
         did_load = false;
     }
+
+#if defined(Q_OS_SYMBIAN)
+    // In Symbian we actually look for plugin stub, so modify the filename
+    // to make canonicalFilePath find the file, if .dll is specified.
+    QFileInfo fi(fileName);
+
+    if (fi.suffix() == QLatin1String("dll")) {
+        QString stubName = fileName;
+        stubName.chop(3);
+        stubName += QLatin1String("qtplugin");
+        fi = QFileInfo(stubName);
+    }
+
+    QString fn = fi.canonicalFilePath();
+    // If not found directly, check also all the available drives
+    if (!fn.length()) {
+        QString stubPath(fi.fileName().length() ? fi.absoluteFilePath() : QString());
+        if (stubPath.length() > 1) {
+            if (stubPath.at(1).toAscii() == ':')
+                stubPath.remove(0,2);
+            QFileInfoList driveList(QDir::drives());
+            foreach(const QFileInfo& drive, driveList) {
+                QString testFilePath(drive.absolutePath() + stubPath);
+                testFilePath = QDir::cleanPath(testFilePath);
+                if (QFile::exists(testFilePath)) {
+                    fn = testFilePath;
+                    break;
+                }
+            }
+        }
+    }
+
+#else
     QString fn = QFileInfo(fileName).canonicalFilePath();
+#endif
+
     d = QLibraryPrivate::findOrCreate(fn);
     d->loadHints = lh;
     if (fn.isEmpty())

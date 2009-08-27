@@ -335,6 +335,65 @@ void QVGPixmapDropShadowFilter::draw(QPainter *painter, const QPointF &dest, con
     vgDestroyImage(dstImage);
 }
 
+QVGPixmapBlurFilter::QVGPixmapBlurFilter(QObject *parent)
+    : QPixmapBlurFilter(parent)
+{
+}
+
+QVGPixmapBlurFilter::~QVGPixmapBlurFilter()
+{
+}
+
+void QVGPixmapBlurFilter::draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const
+{
+    if (src.pixmapData()->classId() != QPixmapData::OpenVGClass) {
+        // The pixmap data is not an instance of QVGPixmapData, so fall
+        // back to the default blur filter implementation.
+        QPixmapBlurFilter::draw(painter, dest, src, srcRect);
+        return;
+    }
+
+    QVGPixmapData *pd = static_cast<QVGPixmapData *>(src.pixmapData());
+
+    VGImage srcImage = pd->toVGImage();
+    if (srcImage == VG_INVALID_HANDLE)
+        return;
+
+    QSize size = pd->size();
+    VGImage dstImage = vgCreateImage
+        (VG_sARGB_8888_PRE, size.width(), size.height(),
+         VG_IMAGE_QUALITY_FASTER);
+    if (dstImage == VG_INVALID_HANDLE)
+        return;
+
+    // Clamp the radius range.  We divide by 2 because the OpenVG blur
+    // is "too blurry" compared to the default raster implementation.
+    VGfloat maxRadius = VGfloat(vgGeti(VG_MAX_GAUSSIAN_STD_DEVIATION));
+    VGfloat radiusF = VGfloat(radius()) / 2.0f;
+    if (radiusF < 0.001f)
+        radiusF = 0.001f;
+    else if (radiusF > maxRadius)
+        radiusF = maxRadius;
+
+    vgGaussianBlur(dstImage, srcImage, radiusF, radiusF, VG_TILE_PAD);
+
+    VGImage child = VG_INVALID_HANDLE;
+
+    if (srcRect.isNull() ||
+        (srcRect.topLeft().isNull() && srcRect.size() == size)) {
+        child = dstImage;
+    } else {
+        QRect src = srcRect.toRect();
+        child = vgChildImage(dstImage, src.x(), src.y(), src.width(), src.height());
+    }
+
+    qt_vg_drawVGImage(painter, dest, child);
+
+    if(child != dstImage)
+        vgDestroyImage(child);
+    vgDestroyImage(dstImage);
+}
+
 #endif
 
 QT_END_NAMESPACE

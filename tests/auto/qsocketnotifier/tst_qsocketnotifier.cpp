@@ -57,6 +57,7 @@ public:
 
 private slots:
     void unexpectedDisconnection();
+    void mixingWithTimers();
 };
 
 tst_QSocketNotifier::tst_QSocketNotifier()
@@ -125,24 +126,24 @@ void tst_QSocketNotifier::unexpectedDisconnection()
 
     QNativeSocketEngine readEnd1;
     readEnd1.initialize(QAbstractSocket::TcpSocket);
-    bool b = readEnd1.connectToHost(server.serverAddress(), server.serverPort());    
+    bool b = readEnd1.connectToHost(server.serverAddress(), server.serverPort());
     QVERIFY(readEnd1.waitForWrite());
 //    while (!b && readEnd1.state() != QAbstractSocket::ConnectedState)
 //        b = readEnd1.connectToHost(server.serverAddress(), server.serverPort());
     QVERIFY(readEnd1.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(server.waitForNewConnection());    
+    QVERIFY(server.waitForNewConnection());
     QTcpSocket *writeEnd1 = server.nextPendingConnection();
     QVERIFY(writeEnd1 != 0);
-    
+
     QNativeSocketEngine readEnd2;
     readEnd2.initialize(QAbstractSocket::TcpSocket);
-    b = readEnd2.connectToHost(server.serverAddress(), server.serverPort());    
+    b = readEnd2.connectToHost(server.serverAddress(), server.serverPort());
     QVERIFY(readEnd2.waitForWrite());
 //    while (!b)
 //        b = readEnd2.connectToHost(server.serverAddress(), server.serverPort());
     QVERIFY(readEnd2.state() == QAbstractSocket::ConnectedState);
-    QVERIFY(server.waitForNewConnection());    
-    QTcpSocket *writeEnd2 = server.nextPendingConnection();    
+    QVERIFY(server.waitForNewConnection());
+    QTcpSocket *writeEnd2 = server.nextPendingConnection();
     QVERIFY(writeEnd2 != 0);
 
     writeEnd1->write("1", 1);
@@ -155,24 +156,85 @@ void tst_QSocketNotifier::unexpectedDisconnection()
     writeEnd2->flush();
 
     UnexpectedDisconnectTester tester(&readEnd1, &readEnd2);
-    QEventLoop eventLoop;
-    connect(&tester, SIGNAL(finished()), &eventLoop, SLOT(quit()));
-    eventLoop.exec();
+
+    do {
+        // we have to wait until sequence value changes
+        // as any event can make us jump out processing
+        QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents);
+    }  while(tester.sequence <= 0);
 
     QVERIFY(readEnd1.state() == QAbstractSocket::ConnectedState);
     QVERIFY(readEnd2.state() == QAbstractSocket::ConnectedState);
-#if defined(Q_OS_WIN)
-    qWarning("### Windows returns 1 activation, Unix returns 2.");
-    QCOMPARE(tester.sequence, 1);
-#else
+
     QCOMPARE(tester.sequence, 2);
-#endif
 
     readEnd1.close();
     readEnd2.close();
     writeEnd1->close();
     writeEnd2->close();
     server.close();
+}
+
+class MixingWithTimersHelper : public QObject
+{
+    Q_OBJECT
+
+public:
+    MixingWithTimersHelper(QTimer *timer, QTcpServer *server);
+
+    bool timerActivated;
+    bool socketActivated;
+
+private slots:
+    void timerFired();
+    void socketFired();
+};
+
+MixingWithTimersHelper::MixingWithTimersHelper(QTimer *timer, QTcpServer *server)
+{
+    timerActivated = false;
+    socketActivated = false;
+
+    connect(timer, SIGNAL(timeout()), SLOT(timerFired()));
+    connect(server, SIGNAL(newConnection()), SLOT(socketFired()));
+}
+
+void MixingWithTimersHelper::timerFired()
+{
+    timerActivated = true;
+}
+
+void MixingWithTimersHelper::socketFired()
+{
+    socketActivated = true;
+}
+
+void tst_QSocketNotifier::mixingWithTimers()
+{
+    QTimer timer;
+    timer.setInterval(0);
+    timer.start();
+
+    QTcpServer server;
+    QVERIFY(server.listen(QHostAddress::LocalHost, 0));
+
+    MixingWithTimersHelper helper(&timer, &server);
+
+    QCoreApplication::processEvents();
+
+    QCOMPARE(helper.timerActivated, true);
+    QCOMPARE(helper.socketActivated, false);
+
+    helper.timerActivated = false;
+    helper.socketActivated = false;
+
+    QTcpSocket socket;
+    socket.connectToHost(server.serverAddress(), server.serverPort());
+
+    QCoreApplication::processEvents();
+
+    QCOMPARE(helper.timerActivated, true);
+    QCOMPARE(helper.socketActivated, true);
 }
 
 QTEST_MAIN(tst_QSocketNotifier)

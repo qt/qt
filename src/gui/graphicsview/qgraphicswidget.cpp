@@ -168,6 +168,8 @@ QT_BEGIN_NAMESPACE
     \sa QGraphicsProxyWidget, QGraphicsItem, {Widgets and Layouts}
 */
 
+bool qt_sendSpontaneousEvent(QObject *receiver, QEvent *event);
+
 /*!
     Constructs a QGraphicsWidget instance. The optional \a parent argument is
     passed to QGraphicsItem's constructor. The optional \a wFlags argument
@@ -334,7 +336,7 @@ void QGraphicsWidget::resize(const QSizeF &size)
 void QGraphicsWidget::setGeometry(const QRectF &rect)
 {
     QGraphicsWidgetPrivate *wd = QGraphicsWidget::d_func();
-    QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr;
+    QGraphicsLayoutItemPrivate *d = QGraphicsLayoutItem::d_ptr.data();
     QRectF newGeom;
     QPointF oldPos = d->geom.topLeft();
     if (!wd->inSetPos) {
@@ -378,6 +380,8 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
     }
     QSizeF oldSize = size();
     QGraphicsLayoutItem::setGeometry(newGeom);
+
+    wd->invalidateCachedClipPathRecursively();
 
     // Send resize event
     bool resized = newGeom.size() != oldSize;
@@ -1097,7 +1101,11 @@ QVariant QGraphicsWidget::propertyChange(const QString &propertyName, const QVar
 */
 bool QGraphicsWidget::sceneEvent(QEvent *event)
 {
-    return QCoreApplication::sendEvent(this, event) || QGraphicsItem::sceneEvent(event);
+    bool spont = event->spontaneous();
+    if (spont ? qt_sendSpontaneousEvent(this, event) : QApplication::sendEvent(this, event))
+        return true;
+    event->spont = spont;
+    return QGraphicsItem::sceneEvent(event);
 }
 
 /*!

@@ -1,3 +1,4 @@
+QT = core
 TEMPLATE = subdirs
 
 # Directories
@@ -7,7 +8,7 @@ TEMPLATE = subdirs
 SUBDIRS += \
            bic \
            collections \
-           compile \
+           compiler \
            compilerwarnings \
            exceptionsafety \
            linguist \
@@ -71,6 +72,8 @@ SUBDIRS += \
            qabstractsocket \
            qabstractspinbox \
            qabstracttextdocumentlayout \
+           qabstractvideobuffer \
+           qabstractvideosurface \
            qaccessibility \
            qaction \
            qactiongroup \
@@ -134,9 +137,12 @@ SUBDIRS += \
            qgetputenv \
            qgl \
            qglobal \
+           qgraphicseffect \
+           qgraphicseffectsource \
            qgraphicsgridlayout \
            qgraphicsitem \
            qgraphicsitemanimation \
+           qgraphicsanchorlayout \
            qgraphicslayout \
            qgraphicslayoutitem \
            qgraphicslinearlayout \
@@ -178,7 +184,6 @@ SUBDIRS += \
            qitemmodel \
            qitemselectionmodel \
            qitemview \
-           qkeyevent \
            qkeysequence \
            qlabel \
            qlayout \
@@ -252,19 +257,7 @@ SUBDIRS += \
            qregion \
            qresourceengine \
            qringbuffer \
-           qscriptable \
-           qscriptclass \
-           qscriptcontext \
-           qscriptcontextinfo \
-           qscriptengine \
-           qscriptengineagent \
-           qscriptextqobject \
-           qscriptjstestsuite \
-           qscriptv8testsuite \
-           qscriptstring \
-           qscriptvalue \
-           qscriptvalueiterator \
-           qscriptenginedebugger \
+           qscopedpointer \
            qscrollarea \
            qsemaphore \
            qsharedpointer \
@@ -312,7 +305,10 @@ SUBDIRS += \
            qstatusbar \
            qstl \
            qstring \
-           qstringbuilder \
+           qstringbuilder1 \
+           qstringbuilder2 \
+           qstringbuilder3 \
+           qstringbuilder4 \
            qstringmatcher \
            qstringlist \
            qstringlistmodel \
@@ -374,6 +370,8 @@ SUBDIRS += \
            qvariant \
            qvarlengtharray \
            qvector \
+           qvideoframe \
+           qvideosurfaceformat \
            qvectornd \
            qwaitcondition \
            qwidget \
@@ -472,6 +470,21 @@ unix:!embedded:contains(QT_CONFIG, dbus):SUBDIRS += \
            qdbusreply \
            qdbusthreading \
            qdbusxmlparser
+
+contains(QT_CONFIG, script): SUBDIRS += \
+           qscriptable \
+           qscriptclass \
+           qscriptcontext \
+           qscriptcontextinfo \
+           qscriptengine \
+           qscriptengineagent \
+           qscriptextqobject \
+           qscriptjstestsuite \
+           qscriptv8testsuite \
+           qscriptstring \
+           qscriptvalue \
+           qscriptvalueiterator \
+           qscriptenginedebugger
 
 contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebframe \

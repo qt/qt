@@ -75,6 +75,7 @@
 #include <qpointer.h>
 #include <qdebug.h>
 #include "qsidebar_p.h"
+#include "qfscompleter_p.h"
 
 #if defined (Q_OS_UNIX)
 #include <unistd.h>
@@ -90,25 +91,6 @@ class QCompleter;
 class QHBoxLayout;
 class Ui_QFileDialog;
 
-#ifndef QT_NO_COMPLETER
-/*!
-    QCompleter that can deal with QFileSystemModel
-  */
-class QFSCompletor :  public QCompleter {
-public:
-    QFSCompletor(QFileSystemModel *model, QObject *parent = 0) : QCompleter(model, parent), proxyModel(0), sourceModel(model)
-    {
-#ifdef Q_OS_WIN
-        setCaseSensitivity(Qt::CaseInsensitive);
-#endif
-    }
-    QString pathFromIndex(const QModelIndex &index) const;
-    QStringList splitPath(const QString& path) const;
-
-    QAbstractProxyModel *proxyModel;
-    QFileSystemModel *sourceModel;
-};
-#endif // QT_NO_COMPLETER
 
 struct QFileDialogArgs
 {
@@ -130,31 +112,7 @@ class Q_AUTOTEST_EXPORT QFileDialogPrivate : public QDialogPrivate
     Q_DECLARE_PUBLIC(QFileDialog)
 
 public:
-    QFileDialogPrivate() :
-#ifndef QT_NO_PROXYMODEL
-    proxyModel(0),
-#endif
-    model(0),
-    fileMode(QFileDialog::AnyFile),
-    acceptMode(QFileDialog::AcceptOpen),
-    currentHistoryLocation(-1),
-    renameAction(0),
-    deleteAction(0),
-    showHiddenAction(0),
-    useDefaultCaption(true),
-    defaultFileTypes(true),
-    fileNameLabelExplicitlySat(false),
-    nativeDialogInUse(false),
-#ifdef Q_WS_MAC
-    mDelegate(0),
-#ifndef QT_MAC_USE_COCOA
-    mDialog(0),
-    mDialogStarted(false),
-    mDialogClosed(true),
-#endif
-#endif
-    qFileDialogUi(0)
-    {}
+    QFileDialogPrivate();
 
     void createToolButtons();
     void createMenuActions();
@@ -222,7 +180,7 @@ public:
 
     static inline QString toInternal(const QString &path)
     {
-#if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX)
+#if defined(Q_FS_FAT) || defined(Q_OS_OS2EMX) || defined(Q_OS_SYMBIAN)
         QString n(path);
         for (int i = 0; i < (int)n.length(); ++i)
             if (n[i] == QLatin1Char('\\')) n[i] = QLatin1Char('/');
@@ -275,7 +233,7 @@ public:
     QFileSystemModel *model;
 
 #ifndef QT_NO_COMPLETER
-    QFSCompletor *completer;
+    QFSCompleter *completer;
 #endif //QT_NO_COMPLETER
 
     QFileDialog::FileMode fileMode;
@@ -296,7 +254,7 @@ public:
     bool defaultFileTypes;
     bool fileNameLabelExplicitlySat;
     QStringList nameFilters;
-    
+
     // Members for using native dialogs:
     bool nativeDialogInUse;
     // setVisible_sys returns true if it ends up showing a native
@@ -358,7 +316,7 @@ public:
     void mac_nativeDialogModalHelp();
 #endif
 
-    Ui_QFileDialog *qFileDialogUi;
+    QScopedPointer<Ui_QFileDialog> qFileDialogUi;
 
     QString acceptLabel;
 
@@ -367,6 +325,11 @@ public:
     QByteArray signalToDisconnectOnClose;
 
     QFileDialog::Options opts;
+
+    ~QFileDialogPrivate();
+
+private:
+    Q_DISABLE_COPY(QFileDialogPrivate)
 };
 
 class QFileDialogLineEdit : public QLineEdit

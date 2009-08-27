@@ -54,6 +54,10 @@ int main(int argc, char *argv[])
         return 1;
 
     View view("offices", "images");
+#ifndef Q_OS_SYMBIAN
     view.show();
+#else
+    view.showFullScreen();
+#endif
     return app.exec();
 }

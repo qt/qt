@@ -495,7 +495,7 @@ void VcprojGenerator::writeSubDirs(QTextStream &t)
                 QString profile = tmp;
                 if(!profile.endsWith(Option::dir_sep))
                     profile += Option::dir_sep;
-                profile += fi.baseName() + ".pro";
+                profile += fi.baseName() + Option::pro_ext;
                 subdirs.append(profile);
             } else {
                 QMakeProject tmp_proj;
@@ -1261,8 +1261,8 @@ void VcprojGenerator::initDeploymentTool()
                 searchPath = info.absoluteFilePath();
             } else {
                 nameFilter = source.split('\\').last();
-                if (source.contains('*')) {                    
-                    source = source.split('*').first();                    
+                if (source.contains('*')) {
+                    source = source.split('*').first();
                     info = QFileInfo(source);
                  }
                  searchPath = info.absolutePath();

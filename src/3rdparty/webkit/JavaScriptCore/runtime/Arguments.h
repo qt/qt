@@ -45,7 +45,7 @@ namespace JSC {
         OwnArrayPtr<bool> deletedArguments;
         Register extraArgumentsFixedBuffer[4];
 
-        JSFunction* callee;
+        JSObject* callee;
         bool overrodeLength : 1;
         bool overrodeCallee : 1;
     };
@@ -87,13 +87,14 @@ namespace JSC {
         }
 
     private:
-        void getArgumentsData(CallFrame*, JSFunction*&, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc);
+        void getArgumentsData(CallFrame*, JSObject*&, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc);
         virtual bool getOwnPropertySlot(ExecState*, const Identifier& propertyName, PropertySlot&);
         virtual bool getOwnPropertySlot(ExecState*, unsigned propertyName, PropertySlot&);
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
         virtual void put(ExecState*, unsigned propertyName, JSValue, PutPropertySlot&);
-        virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
-        virtual bool deleteProperty(ExecState*, unsigned propertyName);
+        virtual bool deleteProperty(ExecState*, const Identifier& propertyName, bool checkDontDelete = true);
+        virtual bool deleteProperty(ExecState*, unsigned propertyName, bool checkDontDelete = true);
+        virtual bool getPropertyAttributes(ExecState*, const Identifier& propertyName, unsigned& attributes) const;
 
         virtual const ClassInfo* classInfo() const { return &info; }
 
@@ -110,12 +111,17 @@ namespace JSC {
         return static_cast<Arguments*>(asObject(value));
     }
 
-    ALWAYS_INLINE void Arguments::getArgumentsData(CallFrame* callFrame, JSFunction*& function, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc)
+    ALWAYS_INLINE void Arguments::getArgumentsData(CallFrame* callFrame, JSObject*& callee, ptrdiff_t& firstParameterIndex, Register*& argv, int& argc)
     {
-        function = callFrame->callee();
-    
-        CodeBlock* codeBlock = &function->body()->generatedBytecode();
-        int numParameters = codeBlock->m_numParameters;
+        callee = callFrame->callee();
+
+        int numParameters;
+        if (callee->isObject(&JSFunction::info)) {
+            CodeBlock* codeBlock =  &JSC::asFunction(callee)->body()->generatedBytecode();
+            numParameters = codeBlock->m_numParameters;
+        } else {
+            numParameters = 0;
+        }
         argc = callFrame->argumentCount();
 
         if (argc <= numParameters)
@@ -131,13 +137,16 @@ namespace JSC {
         : JSObject(callFrame->lexicalGlobalObject()->argumentsStructure())
         , d(new ArgumentsData)
     {
-        JSFunction* callee;
+        JSObject* callee;
         ptrdiff_t firstParameterIndex;
         Register* argv;
         int numArguments;
         getArgumentsData(callFrame, callee, firstParameterIndex, argv, numArguments);
 
-        d->numParameters = callee->body()->parameterCount();
+        if (callee->isObject(&JSFunction::info))
+            d->numParameters = JSC::asFunction(callee)->body()->parameterCount();
+        else
+            d->numParameters = 0;
         d->firstParameterIndex = firstParameterIndex;
         d->numArguments = numArguments;
 
@@ -168,7 +177,8 @@ namespace JSC {
         : JSObject(callFrame->lexicalGlobalObject()->argumentsStructure())
         , d(new ArgumentsData)
     {
-        ASSERT(!callFrame->callee()->body()->parameterCount());
+        if (callFrame->callee() && callFrame->callee()->isObject(&JSC::JSFunction::info))
+            ASSERT(!asFunction(callFrame->callee())->body()->parameterCount());
 
         unsigned numArguments = callFrame->argumentCount() - 1;
 
@@ -183,6 +193,8 @@ namespace JSC {
             extraArguments = d->extraArgumentsFixedBuffer;
 
         Register* argv = callFrame->registers() - RegisterFile::CallFrameHeaderSize - numArguments - 1;
+        if (callFrame->callee() && !callFrame->callee()->isObject(&JSC::JSFunction::info))
+            ++argv; // ### off-by-one issue with native functions
         for (unsigned i = 0; i < numArguments; ++i)
             extraArguments[i] = argv[i];
 

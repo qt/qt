@@ -575,6 +575,9 @@ void tst_QCompleter::directoryModel_data()
 #elif defined(Q_OS_WIN)
         QTest::newRow("()") << "C" << "" << "C:" << "C:";
         QTest::newRow("()") << "C:\\Program" << "" << "Program Files" << "C:\\Program Files";
+#elif defined(Q_OS_SYMBIAN)
+        QTest::newRow("()") << "C" << "" << "C:" << "C:";
+        QTest::newRow("()") << "C:\\re" << "" << "resource" << "C:\\resource";
 #elif defined (Q_OS_MAC)
         QTest::newRow("()") << "" << "" << "/" << "/";
         QTest::newRow("(/a)") << "/a" << "" << "Applications" << "/Applications";

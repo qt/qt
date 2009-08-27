@@ -50,6 +50,10 @@
 class tst_QHttpNetworkConnection: public QObject
 {
     Q_OBJECT
+
+public:
+    tst_QHttpNetworkConnection();
+
 public Q_SLOTS:
     void finishedReply();
     void finishedWithError(QNetworkReply::NetworkError errorCode, const QString &detail);
@@ -104,6 +108,10 @@ private Q_SLOTS:
     void getMultipleWithPipeliningAndMultiplePriorities();
 };
 
+tst_QHttpNetworkConnection::tst_QHttpNetworkConnection()
+{
+    Q_SET_DEFAULT_IAP
+}
 
 void tst_QHttpNetworkConnection::initTestCase()
 {
@@ -203,8 +211,8 @@ void tst_QHttpNetworkConnection::get_data()
     QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 200 << "OK" << 25962 << 25962;
     QTest::newRow("success-external") << "http://" << "www.ietf.org" << "/rfc/rfc3252.txt" << ushort(80) << false << 200 << "OK" << 25962 << 25962;
 
-    QTest::newRow("failure-path") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << 404 << "Not Found" << -1 << 1023;
-    QTest::newRow("failure-protocol") << "" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 400 << "Bad Request" << -1 << 956;
+    QTest::newRow("failure-path") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << 404 << "Not Found" << -1 << 997 + QtNetworkSettings::serverName().size();
+    QTest::newRow("failure-protocol") << "" << QtNetworkSettings::serverName() << "/qtest/rfc3252.txt" << ushort(80) << false << 400 << "Bad Request" << -1 << 930 + QtNetworkSettings::serverName().size();
 }
 
 void tst_QHttpNetworkConnection::get()
@@ -372,7 +380,7 @@ void tst_QHttpNetworkConnection::post_data()
     QTest::addColumn<int>("downloadSize");
 
     QTest::newRow("success-internal") << "http://" << QtNetworkSettings::serverName() << "/cgi-bin/echo.cgi" << ushort(80) << false << "7 bytes" << 200 << "OK" << 7 << 7;
-    QTest::newRow("failure-internal") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << "Hello World" << 404 << "Not Found" << -1 << 1023;
+    QTest::newRow("failure-internal") << "http://" << QtNetworkSettings::serverName() << "/t" << ushort(80) << false << "Hello World" << 404 << "Not Found" << -1 << 997 + QtNetworkSettings::serverName().size();
 }
 
 void tst_QHttpNetworkConnection::post()
@@ -415,7 +423,16 @@ void tst_QHttpNetworkConnection::post()
 
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
-    QCOMPARE(reply->contentLength(), qint64(contentLength));
+
+    qint64 cLen = reply->contentLength();
+    if (cLen==-1) {
+        // HTTP 1.1 server may respond with chunked encoding and in that
+        // case contentLength is not present in reply -> verify that it is the case
+        QByteArray transferEnc = reply->headerField("Transfer-Encoding");
+        QCOMPARE(transferEnc, QByteArray("chunked"));
+    } else {
+        QCOMPARE(cLen, qint64(contentLength));
+    }
 
     stopWatch.start();
     QByteArray ba;
@@ -429,6 +446,7 @@ void tst_QHttpNetworkConnection::post()
 
     QVERIFY(reply->isFinished());
     QCOMPARE(ba.size(), downloadSize);
+
     delete reply;
 }
 

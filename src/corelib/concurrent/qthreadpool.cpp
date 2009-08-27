@@ -248,14 +248,14 @@ bool QThreadPoolPrivate::tooManyThreadsActive() const
 */
 void QThreadPoolPrivate::startThread(QRunnable *runnable)
 {
-    QThreadPoolThread *thread = new QThreadPoolThread(this);
-    allThreads.insert(thread);
+    QScopedPointer <QThreadPoolThread> thread(new QThreadPoolThread(this));
+    allThreads.insert(thread.data());
     ++activeThreads;
 
     if (runnable->autoDelete())
         ++runnable->ref;
     thread->runnable = runnable;
-    thread->start();
+    thread.take()->start();
 }
 
 /*! \internal

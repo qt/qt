@@ -91,7 +91,7 @@ protected Q_SLOTS:
 private:
     void init();
     Q_DISABLE_COPY(QFxPaintedItem)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr, QFxPaintedItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxPaintedItem)
 };
 
 QT_END_NAMESPACE

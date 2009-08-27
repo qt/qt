@@ -7,6 +7,7 @@ HEADERS += \
 	dialogs/qabstractpagesetupdialog_p.h \
 	dialogs/qcolordialog.h \
 	dialogs/qcolordialog_p.h \
+        dialogs/qfscompleter_p.h \
 	dialogs/qdialog.h \
 	dialogs/qdialog_p.h \
 	dialogs/qerrormessage.h \
@@ -45,7 +46,7 @@ win32 {
     !win32-borland:!wince*: LIBS += -lshell32 	# the filedialog needs this library
 }
 
-!mac:!embedded:unix {
+!mac:!embedded:!symbian:unix {
         HEADERS += dialogs/qpagesetupdialog_unix_p.h
 	SOURCES += dialogs/qprintdialog_unix.cpp \
 		   dialogs/qpagesetupdialog_unix.cpp
@@ -70,7 +71,7 @@ embedded {
         }
 }
 
-wince*: FORMS += dialogs/qfiledialog_wince.ui
+wince*|symbian: FORMS += dialogs/qfiledialog_embedded.ui
 else: FORMS += dialogs/qfiledialog.ui
 
 INCLUDEPATH += $$PWD

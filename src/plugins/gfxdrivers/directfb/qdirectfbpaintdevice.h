@@ -89,6 +89,7 @@ protected:
     DFBSurfaceLockFlags lockFlgs;
     uchar *mem;
     QDirectFBPaintEngine *engine;
+    QImage::Format imageFormat;
 private:
     Q_DISABLE_COPY(QDirectFBPaintDevice);
 };

@@ -47,6 +47,12 @@
 #include <QtNetwork/qhostaddress.h>
 #include <QtNetwork/qnetworkproxy.h>
 
+#ifdef Q_OS_SYMBIAN
+// In Symbian OS test data is located in applications private dir
+// Current path (C:\private\<UID>) contains only ascii chars
+#define SRCDIR QDir::currentPath().toAscii()
+#endif
+
 class tst_QSslKey : public QObject
 {
     Q_OBJECT
@@ -101,7 +107,7 @@ tst_QSslKey::tst_QSslKey()
 #ifdef Q_WS_MAC
     // applicationDirPath() points to a path inside the app bundle on Mac.
     QDir dir(qApp->applicationDirPath() + QLatin1String("/../../../keys"));
-#elif defined(Q_OS_WIN)
+#elif defined(Q_OS_WIN) || defined (Q_OS_SYMBIAN)
     QDir dir(SRCDIR + QLatin1String("/keys"));  // prefer this way to avoid ifdeffery and support shadow builds?
 #else
     QDir dir(qApp->applicationDirPath() + QLatin1String("/keys"));

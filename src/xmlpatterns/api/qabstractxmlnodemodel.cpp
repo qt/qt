@@ -301,7 +301,6 @@ QAbstractXmlNodeModel::QAbstractXmlNodeModel(QAbstractXmlNodeModelPrivate *d) : 
  */
 QAbstractXmlNodeModel::~QAbstractXmlNodeModel()
 {
-    delete d_ptr;
 }
 
 /*!

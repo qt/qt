@@ -56,6 +56,9 @@ namespace JSC {
         JSObject* thisObject() const;
         JSValue evaluate(const UString&, JSValue& exception) const;
         JSValue exception() const { return m_exception; }
+#if QT_BUILD_SCRIPT_LIB
+        CallFrame* callFrame() const { return m_callFrame; }
+#endif
 
     private:
         CallFrame* m_callFrame;

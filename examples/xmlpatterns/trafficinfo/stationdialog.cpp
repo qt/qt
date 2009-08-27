@@ -157,8 +157,6 @@ QStringList StationDialog::lineNumbers() const
 
 void StationDialog::searchStations()
 {
-    StationQuery query;
-
-    m_model->setStations(query.query(m_ui.m_input->text()));
+    m_model->setStations(StationQuery::query(m_ui.m_input->text()));
     m_ui.m_view->keyboardSearch(m_ui.m_input->text());
 }

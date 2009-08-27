@@ -29,3 +29,11 @@ wince*: {
    DEPLOYMENT += addFiles
 }
 
+symbian:contains(S60_VERSION,3.2) {
+    # This test case compilation crashes on 3.2 for gcce if paging is on
+    MMP_RULES -= PAGED
+    custom_paged_rule = "$${LITERAL_HASH}ifndef GCCE"\
+        "PAGED" \
+        "$${LITERAL_HASH}endif"
+    MMP_RULES += custom_paged_rule
+}
