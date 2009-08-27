@@ -67,13 +67,13 @@ class QPropertyAnimationPrivate : public QVariantAnimationPrivate
    Q_DECLARE_PUBLIC(QPropertyAnimation)
 public:
     QPropertyAnimationPrivate()
-        : target(0), propertyType(0), propertyIndex(0), hasMetaProperty(false)
+        : targetValue(0), propertyType(0), propertyIndex(0), hasMetaProperty(false)
     {
     }
 
-    void _q_targetDestroyed();
-
-    QObject *target;
+    QWeakPointer<QObject> target;
+    //we use targetValue to be able to unregister the target from the global hash
+    QObject *targetValue;
 
     //for the QProperty
     QMetaProperty property;
