@@ -84,7 +84,7 @@ protected:
     QString canonizePath(const QString& origPath);
 
     virtual bool writeMakefile(QTextStream &t);
-    void generatePkgFile(const QString &compiler, const QString &config, const QString &iconFile);
+    void generatePkgFile(const QString &iconFile);
     bool containsStartWithItem(const QChar &c, const QStringList& src);
 
     virtual void init();

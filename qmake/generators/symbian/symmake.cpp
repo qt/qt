@@ -194,13 +194,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     }
 
     if (generatePkg) {
-        QStringList platformList = project->values("SYMBIAN_PLATFORMS");
-        foreach(QString platform, platformList) {
-            if (platform.compare("WINSCW", Qt::CaseInsensitive)) {
-                generatePkgFile(platform.toLower(), "udeb", iconFile);
-                generatePkgFile(platform.toLower(), "urel", iconFile);
-            }
-        }
+        generatePkgFile(iconFile);
     }
 
     writeBldInfContent(t, generatePkg);
@@ -258,13 +252,10 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     return true;
 }
 
-void SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QString &config, const QString &iconFile)
+void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile)
 {
-    QString build = (config == "udeb") ? "debug" : "release";
-    QString pkgFilename = QString("%1_%2-%3.%4")
+    QString pkgFilename = QString("%1_template.%2")
                           .arg(fileInfo(project->projectFile()).completeBaseName())
-                          .arg(build)
-                          .arg(compiler)
                           .arg("pkg");
     QFile pkgFile(pkgFilename);
     if (!pkgFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -344,10 +335,8 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QS
     QString installPathRegResource = "!:\\private\\10003a3f\\import\\apps";
 
     // Find location of builds
-    QString epocReleasePath = QString("%1epoc32/release/%2/%3")
-                              .arg(epocRoot())
-                              .arg(compiler)
-                              .arg(config);
+    QString epocReleasePath = QString("%1epoc32/release/$(PLATFORM)/$(TARGET)")
+                              .arg(epocRoot());
 
 
     if (targetType == TypeExe) {
@@ -391,7 +380,7 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QS
     QString remoteTestPath;
     remoteTestPath = QString("!:\\private\\%1").arg(privateDirUid);
 
-    initProjectDeploySymbian(project, depList, remoteTestPath, true, compiler, config, generatedDirs, generatedFiles);
+    initProjectDeploySymbian(project, depList, remoteTestPath, true, "$(PLATFORM)", "$(TARGET)", generatedDirs, generatedFiles);
     if (depList.size())
         t << "; DEPLOYMENT" << endl;
     for (int i = 0; i < depList.size(); ++i)  {
