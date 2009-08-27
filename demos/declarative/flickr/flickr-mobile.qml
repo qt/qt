@@ -33,7 +33,7 @@ Item {
             }
         }
 
-        Mobile.ImageDetails { id: ImageDetails; width: parent.width; x: parent.width; height: parent.height }
+        Common.ImageDetails { id: ImageDetails; width: parent.width; x: parent.width; height: parent.height }
         Mobile.TitleBar { id: TitleBar; width: parent.width; height: 40; opacity: 0.9 }
         Mobile.ToolBar { id: ToolBar; height: 40; anchors.bottom: parent.bottom; width: parent.width; opacity: 0.9 }
 
