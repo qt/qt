@@ -1164,11 +1164,12 @@ QFxItem::~QFxItem()
         QFxAnchors *anchor = d->dependantAnchors.at(ii);
         anchor->d_func()->clearItem(this);
     }
-    for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
-        QFxAnchors *anchor = d->dependantAnchors.at(ii);
-        if (anchor->d_func()->item && anchor->d_func()->item->parentItem() != this) //child will be deleted anyway
-            anchor->d_func()->updateOnComplete();
-    }
+    if (!d->parent || (parentItem() && !parentItem()->QGraphicsItem::d_ptr->inDestructor))
+        for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
+            QFxAnchors *anchor = d->dependantAnchors.at(ii);
+            if (anchor->d_func()->item && anchor->d_func()->item->parentItem() != this) //child will be deleted anyway
+                anchor->d_func()->updateOnComplete();
+        }
     delete d->_anchorLines; d->_anchorLines = 0;
     delete d->_anchors; d->_anchors = 0;
 }
