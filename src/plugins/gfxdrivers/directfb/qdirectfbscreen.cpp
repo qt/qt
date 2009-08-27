@@ -1227,6 +1227,8 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
                       "Unable to get screen size!", result);
         return false;
     }
+    ::setIntOption(displayArgs, QLatin1String("width"), &w);
+    ::setIntOption(displayArgs, QLatin1String("height"), &h);
 
     dw = w;
     dh = h;
