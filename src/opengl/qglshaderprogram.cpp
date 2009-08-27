@@ -441,6 +441,16 @@ static const char qualifierDefines[] =
     "#define highp\n";
 #endif
 
+// The "highp" qualifier doesn't exist in fragment shaders
+// on all ES platforms.  When it doesn't exist, use "mediump".
+#ifdef QT_OPENGL_ES
+#define QGL_REDEFINE_HIGHP 1
+static const char redefineHighp[] =
+    "#ifndef GL_FRAGMENT_PRECISION_HIGH\n"
+    "#define highp mediump\n"
+    "#endif\n";
+#endif
+
 /*!
     Sets the \a source code for this shader and compiles it.
     Returns true if the source was successfully compiled, false otherwise.
@@ -462,6 +472,11 @@ bool QGLShader::compile(const char *source)
         QVarLengthArray<const char *> src;
 #ifdef QGL_DEFINE_QUALIFIERS
         src.append(qualifierDefines);
+#endif
+#ifdef QGL_REDEFINE_HIGHP
+        if (d->shaderType == FragmentShader ||
+                d->shaderType == PartialFragmentShader)
+            src.append(redefineHighp);
 #endif
         src.append(source);
         glShaderSource(d->shader, src.size(), src.data(), 0);
