@@ -255,7 +255,6 @@ static const char* const qglslPositionWithTextureBrushVertexShader = "\
             gl_Position.xy = gl_Position.xy * invertedHTexCoordsZ; \
             gl_Position.w = invertedHTexCoordsZ; \
             brushTextureCoords.xy = (hTexCoords.xy * invertedTextureSize) * gl_Position.w; \
-            brushTextureCoords.y = -brushTextureCoords.y; \
     }";
 
 static const char* const qglslAffinePositionWithTextureBrushVertexShader
