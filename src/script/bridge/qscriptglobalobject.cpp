@@ -100,6 +100,15 @@ void GlobalObject::put(JSC::ExecState* exec, const JSC::Identifier& propertyName
         JSC::JSGlobalObject::put(exec, propertyName, value, slot);
 }
 
+void GlobalObject::putWithAttributes(JSC::ExecState* exec, const JSC::Identifier& propertyName,
+                                     JSC::JSValue value, unsigned attributes)
+{
+    if (customGlobalObject)
+        customGlobalObject->putWithAttributes(exec, propertyName, value, attributes);
+    else
+        JSC::JSGlobalObject::putWithAttributes(exec, propertyName, value, attributes);
+}
+
 bool GlobalObject::deleteProperty(JSC::ExecState* exec,
                                   const JSC::Identifier& propertyName, bool checkDontDelete)
 {

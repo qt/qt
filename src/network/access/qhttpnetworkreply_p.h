@@ -185,7 +185,7 @@ public:
 
     qint64 bytesAvailable() const;
     bool isChunked();
-    bool connectionCloseEnabled();
+    bool isConnectionCloseEnabled();
     bool isGzipped();
 #ifndef QT_NO_COMPRESS
     bool gzipCheckHeader(QByteArray &content, int &pos);
@@ -212,6 +212,7 @@ public:
     qint64 totalProgress;
     QByteArray fragment; // used for header, status, chunk header etc, not for reply data
     bool chunkedTransferEncoding;
+    bool connectionCloseEnabled;
     qint64 currentChunkSize;
     qint64 currentChunkRead;
     QPointer<QHttpNetworkConnection> connection;

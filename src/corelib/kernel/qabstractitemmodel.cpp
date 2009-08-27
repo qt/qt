@@ -599,6 +599,118 @@ void QAbstractItemModelPrivate::rowsInserted(const QModelIndex &parent,
     }
 }
 
+void QAbstractItemModelPrivate::itemsAboutToBeMoved(const QModelIndex &srcParent, int srcFirst, int srcLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation orientation)
+{
+    Q_Q(QAbstractItemModel);
+    QVector<QPersistentModelIndexData *> persistent_moved_explicitly;
+    QVector<QPersistentModelIndexData *> persistent_moved_in_source;
+    QVector<QPersistentModelIndexData *> persistent_moved_in_destination;
+
+    QHash<QModelIndex, QPersistentModelIndexData *>::const_iterator it;
+    const QHash<QModelIndex, QPersistentModelIndexData *>::const_iterator begin = persistent.indexes.constBegin();
+    const QHash<QModelIndex, QPersistentModelIndexData *>::const_iterator end = persistent.indexes.constEnd();
+
+    const bool sameParent = (srcParent == destinationParent);
+    const bool movingUp = (srcFirst > destinationChild);
+
+    for ( it = begin; it != end; ++it) {
+        QPersistentModelIndexData *data = *it;
+        const QModelIndex &index = data->index;
+        const QModelIndex &parent = index.parent();
+        const bool isSourceIndex = (parent == srcParent);
+        const bool isDestinationIndex = (parent == destinationParent);
+
+        int childPosition;
+        if (orientation == Qt::Vertical)
+            childPosition = index.row();
+        else
+            childPosition = index.column();
+
+        if (!index.isValid() || !(isSourceIndex || isDestinationIndex ) )
+            continue;
+
+        if (!sameParent && isDestinationIndex) {
+            if (childPosition >= destinationChild)
+                persistent_moved_in_destination.append(data);
+            continue;
+        }
+
+        if (sameParent && movingUp && childPosition < destinationChild)
+            continue;
+
+        if (sameParent && !movingUp && childPosition < srcFirst )
+            continue;
+
+        if (!sameParent && childPosition < srcFirst)
+            continue;
+
+        if (sameParent && (childPosition > srcLast) && (childPosition >= destinationChild ))
+            continue;
+
+        if ((childPosition <= srcLast) && (childPosition >= srcFirst)) {
+            persistent_moved_explicitly.append(data);
+        } else {
+            persistent_moved_in_source.append(data);
+        }
+    }
+    persistent.moved.push(persistent_moved_explicitly);
+    persistent.moved.push(persistent_moved_in_source);
+    persistent.moved.push(persistent_moved_in_destination);
+}
+
+/*!
+  \internal
+
+  Moves persistent indexes \a indexes by amount \a change. The change will be either a change in row value or a change in
+  column value depending on the value of \a orientation. The indexes may also be moved to a different parent if \a parent
+  differs from the existing parent for the index.
+*/
+void QAbstractItemModelPrivate::movePersistentIndexes(QVector<QPersistentModelIndexData *> indexes, int change, const QModelIndex &parent, Qt::Orientation orientation)
+{
+    QVector<QPersistentModelIndexData *>::const_iterator it;
+    const QVector<QPersistentModelIndexData *>::const_iterator begin = indexes.constBegin();
+    const QVector<QPersistentModelIndexData *>::const_iterator end = indexes.constEnd();
+
+    for (it = begin; it != end; ++it)
+    {
+        QPersistentModelIndexData *data = *it;
+
+        int row = data->index.row();
+        int column = data->index.column();
+
+        if (Qt::Vertical == orientation)
+            row += change;
+        else
+            column += change;
+
+        persistent.indexes.erase(persistent.indexes.find(data->index));
+        data->index = q_func()->index(row, column, parent);
+        if (data->index.isValid()) {
+            persistent.insertMultiAtEnd(data->index, data);
+        } else {
+            qWarning() << "QAbstractItemModel::endMoveRows:  Invalid index (" << row << "," << column << ") in model" << q_func();
+        }
+    }
+}
+
+void QAbstractItemModelPrivate::itemsMoved(const QModelIndex &sourceParent, int sourceFirst, int sourceLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation orientation)
+{
+    QVector<QPersistentModelIndexData *> moved_in_destination = persistent.moved.pop();
+    QVector<QPersistentModelIndexData *> moved_in_source = persistent.moved.pop();
+    QVector<QPersistentModelIndexData *> moved_explicitly = persistent.moved.pop();
+
+    const bool sameParent = (sourceParent == destinationParent);
+    const bool movingUp = (sourceFirst > destinationChild);
+
+    const int explicit_change = (!sameParent || movingUp) ? destinationChild - sourceFirst : destinationChild - sourceLast - 1 ;
+    const int source_change = (!sameParent || !movingUp) ? -1*(sourceLast - sourceFirst + 1) : sourceLast - sourceFirst + 1 ;
+    const int destination_change = sourceLast - sourceFirst + 1;
+
+    movePersistentIndexes(moved_explicitly, explicit_change, destinationParent, orientation);
+    movePersistentIndexes(moved_in_source, source_change, sourceParent, orientation);
+    movePersistentIndexes(moved_in_destination, destination_change, destinationParent, orientation);
+}
+
 void QAbstractItemModelPrivate::rowsAboutToBeRemoved(const QModelIndex &parent,
                                                      int first, int last)
 {
@@ -1367,6 +1479,70 @@ QAbstractItemModel::~QAbstractItemModel()
     implementation, and cannot be explicitly emitted in subclass code.
 
     \sa removeRows(), beginRemoveRows()
+*/
+
+/*!
+    \fn void QAbstractItemModel::rowsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationRow)
+    \since 4.6
+
+    This signal is emitted after rows have been moved within the
+    model. The items between \a sourceStart and \a sourceEnd
+    inclusive, under the given \a sourceParent item have been moved to \a destinationParent
+    starting at the row \a destinationRow.
+
+    \bold{Note:} Components connected to this signal use it to adapt to changes
+    in the model's dimensions. It can only be emitted by the QAbstractItemModel
+    implementation, and cannot be explicitly emitted in subclass code.
+
+    \sa beginMoveRows()
+*/
+
+/*!
+    \fn void QAbstractItemModel::rowsAboutToBeMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationRow)
+    \since 4.6
+
+    This signal is emitted just before rows are moved within the
+    model. The items that will be moved are those between \a sourceStart and \a sourceEnd
+    inclusive, under the given \a sourceParent item. They will be moved to \a destinationParent
+    starting at the row \a destinationRow.
+
+    \bold{Note:} Components connected to this signal use it to adapt to changes
+    in the model's dimensions. It can only be emitted by the QAbstractItemModel
+    implementation, and cannot be explicitly emitted in subclass code.
+
+    \sa beginMoveRows()
+*/
+
+/*!
+    \fn void QAbstractItemModel::columnsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationColumn)
+    \since 4.6
+
+    This signal is emitted after columns have been moved within the
+    model. The items between \a sourceStart and \a sourceEnd
+    inclusive, under the given \a sourceParent item have been moved to \a destinationParent
+    starting at the column \a destinationColumn.
+
+    \bold{Note:} Components connected to this signal use it to adapt to changes
+    in the model's dimensions. It can only be emitted by the QAbstractItemModel
+    implementation, and cannot be explicitly emitted in subclass code.
+
+    \sa beginMoveRows()
+*/
+
+/*!
+    \fn void QAbstractItemModel::columnsAboutToBeMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationColumn)
+    \since 4.6
+
+    This signal is emitted just before columns are moved within the
+    model. The items that will be moved are those between \a sourceStart and \a sourceEnd
+    inclusive, under the given \a sourceParent item. They will be moved to \a destinationParent
+    starting at the column \a destinationColumn.
+
+    \bold{Note:} Components connected to this signal use it to adapt to changes
+    in the model's dimensions. It can only be emitted by the QAbstractItemModel
+    implementation, and cannot be explicitly emitted in subclass code.
+
+    \sa beginMoveRows()
 */
 
 /*!
@@ -2284,6 +2460,116 @@ void QAbstractItemModel::endRemoveRows()
 }
 
 /*!
+    Returns whether a move operation is valid.
+
+    A move operation is not allowed if it moves a continuous range of rows to a destination within
+    itself, or if it attempts to move a row to one of its own descendants.
+
+    \internal
+*/
+bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int start, int end, const QModelIndex &destinationParent, int destinationStart, Qt::Orientation orientation)
+{
+    Q_Q(QAbstractItemModel);
+    // Don't move the range within itself.
+    if ( ( destinationParent == srcParent )
+            && ( destinationStart >= start )
+            && ( destinationStart <= end + 1) )
+        return false;
+
+    QModelIndex destinationAncestor = destinationParent;
+    int pos = (Qt::Vertical == orientation) ? destinationAncestor.row() : destinationAncestor.column();
+    forever {
+        if (destinationAncestor == srcParent) {
+            if (pos >= start && pos <= end)
+                return false;
+            break;
+        }
+
+        if (!destinationAncestor.isValid())
+          break;
+
+        pos = (Qt::Vertical == orientation) ? destinationAncestor.row() : destinationAncestor.column();
+        destinationAncestor = destinationAncestor.parent();
+    }
+
+    return true;
+}
+
+/*!
+    Begins a row move operation.
+
+    When reimplementing a subclass, this method simplifies moving entities
+    in your model. This method is responsible for moving persistent indexes
+    in the model, which you would otherwise be required to do yourself.
+
+    Using beginMoveRows and endMoveRows is an alternative to emitting
+    layoutAboutToBeChanged and layoutChanged directly along with changePersistentIndexes.
+    layoutAboutToBeChanged is emitted by this method for compatibility reasons.
+
+    The \a sourceParent index corresponds to the parent from which the
+    rows are moved; \a sourceFirst and \a sourceLast are the row numbers of the
+    rows to be moved. The \a destinationParent index corresponds to the parent into which
+    the rows are moved. The \a destinationRow is the row to which the rows will be moved.
+    That is, the index at row \a sourceFirst in \a sourceParent will become row \a destinationRow
+    in \a destinationParent. Its siblings will be moved correspondingly.
+
+    Note that \a sourceParent and \a destinationParent may be the same, in which case you must
+    ensure that the \a destinationRow is not within the range of \a sourceFirst and \a sourceLast.
+    You must also ensure that you do not attempt to move a row to one of its own chilren or ancestors.
+    This method returns false if either condition is true, in which case you should abort your move operation.
+
+    \sa endMoveRows()
+
+    \since 4.6
+*/
+bool QAbstractItemModel::beginMoveRows(const QModelIndex &sourceParent, int sourceFirst, int sourceLast, const QModelIndex &destinationParent, int destinationChild)
+{
+    Q_ASSERT(sourceFirst >= 0);
+    Q_ASSERT(sourceLast >= sourceFirst);
+    Q_ASSERT(destinationChild >= 0);
+    Q_D(QAbstractItemModel);
+
+    if (!d->allowMove(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, Qt::Vertical)) {
+        return false;
+    }
+
+    d->changes.push(QAbstractItemModelPrivate::Change(sourceParent, sourceFirst, sourceLast));
+    int destinationLast = destinationChild + (sourceLast - sourceFirst);
+    d->changes.push(QAbstractItemModelPrivate::Change(destinationParent, destinationChild, destinationLast));
+
+    d->itemsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, Qt::Vertical);
+    emit rowsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild);
+    emit layoutAboutToBeChanged();
+    return true;
+}
+
+/*!
+    Ends a row move operation.
+
+    When implementing a subclass, you must call this
+    function \e after moving data within the model's underlying data
+    store.
+
+    layoutChanged is emitted by this method for compatibility reasons.
+
+    \sa beginMoveRows()
+
+    \since 4.6
+*/
+void QAbstractItemModel::endMoveRows()
+{
+    Q_D(QAbstractItemModel);
+
+    QAbstractItemModelPrivate::Change insertChange = d->changes.pop();
+    QAbstractItemModelPrivate::Change removeChange = d->changes.pop();
+
+    d->itemsMoved(removeChange.parent, removeChange.first, removeChange.last, insertChange.parent, insertChange.first, Qt::Vertical);
+
+    emit rowsMoved(removeChange.parent, removeChange.first, removeChange.last, insertChange.parent, insertChange.first);
+    emit layoutChanged();
+}
+
+/*!
     Begins a column insertion operation.
 
     When reimplementing insertColumns() in a subclass, you must call this
@@ -2403,6 +2689,81 @@ void QAbstractItemModel::endRemoveColumns()
     QAbstractItemModelPrivate::Change change = d->changes.pop();
     d->columnsRemoved(change.parent, change.first, change.last);
     emit columnsRemoved(change.parent, change.first, change.last);
+}
+
+/*!
+    Begins a column move operation.
+
+    When reimplementing a subclass, this method simplifies moving entities
+    in your model. This method is responsible for moving persistent indexes
+    in the model, which you would otherwise be required to do yourself.
+
+    Using beginMoveColumns and endMoveColumns is an alternative to emitting
+    layoutAboutToBeChanged and layoutChanged directly along with changePersistentIndexes.
+    layoutAboutToBeChanged is emitted by this method for compatibility reasons.
+
+    The \a sourceParent index corresponds to the parent from which the
+    columns are moved; \a sourceFirst and \a sourceLast are the column numbers of the
+    columns to be moved. The \a destinationParent index corresponds to the parent into which
+    the columns are moved. The \a destinationColumn is the column to which the columns will be moved.
+    That is, the index at column \a sourceFirst in \a sourceParent will become column \a destinationColumn
+    in \a destinationParent. Its siblings will be moved correspondingly.
+
+    Note that \a sourceParent and \a destinationParent may be the same, in which case you must
+    ensure that the \a destinationColumn is not within the range of \a sourceFirst and \a sourceLast.
+    You must also ensure that you do not attempt to move a row to one of its own chilren or ancestors.
+    This method returns false if either condition is true, in which case you should abort your move operation.
+
+    \sa endMoveColumns()
+
+    \since 4.6
+*/
+bool QAbstractItemModel::beginMoveColumns(const QModelIndex &sourceParent, int sourceFirst, int sourceLast, const QModelIndex &destinationParent, int destinationChild)
+{
+    Q_ASSERT(sourceFirst >= 0);
+    Q_ASSERT(sourceLast >= sourceFirst);
+    Q_ASSERT(destinationChild >= 0);
+    Q_D(QAbstractItemModel);
+
+    if (!d->allowMove(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, Qt::Horizontal)) {
+        return false;
+    }
+
+    d->changes.push(QAbstractItemModelPrivate::Change(sourceParent, sourceFirst, sourceLast));
+    int destinationLast = destinationChild + (sourceLast - sourceFirst);
+    d->changes.push(QAbstractItemModelPrivate::Change(destinationParent, destinationChild, destinationLast));
+
+    d->itemsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild, Qt::Horizontal);
+
+    emit columnsAboutToBeMoved(sourceParent, sourceFirst, sourceLast, destinationParent, destinationChild);
+    emit layoutAboutToBeChanged();
+    return true;
+}
+
+/*!
+    Ends a column move operation.
+
+    When implementing a subclass, you must call this
+    function \e after moving data within the model's underlying data
+    store.
+
+    layoutChanged is emitted by this method for compatibility reasons.
+
+    \sa beginMoveColumns()
+
+    \since 4.6
+*/
+void QAbstractItemModel::endMoveColumns()
+{
+    Q_D(QAbstractItemModel);
+
+    QAbstractItemModelPrivate::Change insertChange = d->changes.pop();
+    QAbstractItemModelPrivate::Change removeChange = d->changes.pop();
+
+    d->itemsMoved(removeChange.parent, removeChange.first, removeChange.last, insertChange.parent, insertChange.first, Qt::Horizontal);
+
+    emit columnsMoved(removeChange.parent, removeChange.first, removeChange.last, insertChange.parent, insertChange.first);
+    emit layoutChanged();
 }
 
 /*!

@@ -111,8 +111,8 @@ void QWSInputContext::setFocusWidget( QWidget *w )
 
 void QWSInputContext::widgetDestroyed(QWidget *w)
 {
-    if (w == ::activeWidget)
-        ::activeWidget = 0;
+    if (w == QT_PREPEND_NAMESPACE(activeWidget))
+        QT_PREPEND_NAMESPACE(activeWidget) = 0;
     QInputContext::widgetDestroyed(w);
 }
 
@@ -138,13 +138,13 @@ void QWSInputContext::mouseHandler( int x, QMouseEvent *event)
 
 QWidget *QWSInputContext::activeWidget()
 {
-    return ::activeWidget;
+    return QT_PREPEND_NAMESPACE(activeWidget);
 }
 
 
 bool QWSInputContext::isComposing() const
 {
-    return ::activeWidget != 0;
+    return QT_PREPEND_NAMESPACE(activeWidget) != 0;
 }
 
 bool QWSInputContext::translateIMQueryEvent(QWidget *w, const QWSIMQueryEvent *e)
@@ -182,8 +182,8 @@ bool QWSInputContext::translateIMEvent(QWidget *w, const QWSIMEvent *e)
     stream >> preedit;
     stream >> commit;
 
-    if (preedit.isEmpty() && ::activeWidget)
-        w = ::activeWidget;
+    if (preedit.isEmpty() && QT_PREPEND_NAMESPACE(activeWidget))
+        w = QT_PREPEND_NAMESPACE(activeWidget);
 
     QInputContext *qic = w->inputContext();
     if (!qic)
@@ -213,9 +213,9 @@ bool QWSInputContext::translateIMEvent(QWidget *w, const QWSIMEvent *e)
 #endif
 
     if (preedit.isEmpty())
-        ::activeWidget = 0;
+        QT_PREPEND_NAMESPACE(activeWidget) = 0;
     else
-        ::activeWidget = w;
+        QT_PREPEND_NAMESPACE(activeWidget) = w;
 
 
     QInputMethodEvent ime(preedit, attrs);

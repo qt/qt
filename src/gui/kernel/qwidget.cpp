@@ -187,6 +187,9 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , extraPaintEngine(0)
       , polished(0)
       , graphicsEffect(0)
+#if !defined(QT_NO_IM)
+      , imHints(Qt::ImhNone)
+#endif
       , inheritedFontResolveMask(0)
       , inheritedPaletteResolveMask(0)
       , leftmargin(0)
@@ -217,7 +220,6 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , window_event(0)
       , qd_hd(0)
 #endif
-		,imHints(Qt::ImhNone)
 {
     if (!qApp) {
         qFatal("QWidget: Must construct a QApplication before a QPaintDevice");
@@ -971,7 +973,10 @@ struct QWidgetExceptionCleaner
     /* this cleans up when the constructor throws an exception */
     static inline void cleanup(QWidget *that, QWidgetPrivate *d)
     {
-#ifndef QT_NO_EXCEPTIONS
+#ifdef QT_NO_EXCEPTIONS
+        Q_UNUSED(that);
+        Q_UNUSED(d);
+#else
         QWidgetPrivate::allWidgets->remove(that);
         if (d->focus_next != that) {
             if (d->focus_next)
@@ -4172,6 +4177,10 @@ QPalette::ColorRole QWidget::backgroundRole() const
   If \a role is QPalette::NoRole, then the widget inherits its
   parent's background role.
 
+  Note that styles are free to choose any color from the palette.
+  You can modify the palette or set a style sheet if you don't
+  achieve the result you want with setBackgroundRole().
+
   \sa backgroundRole(), foregroundRole()
  */
 
@@ -4233,6 +4242,10 @@ QPalette::ColorRole QWidget::foregroundRole() const
 
   If \a role is QPalette::NoRole, the widget uses a foreground role
   that contrasts with the background role.
+
+  Note that styles are free to choose any color from the palette.
+  You can modify the palette or set a style sheet if you don't
+  achieve the result you want with setForegroundRole().
 
   \sa foregroundRole(), backgroundRole()
  */
@@ -4965,6 +4978,13 @@ void QWidgetPrivate::setSoftKeys_sys(const QList<QAction*> &softkeys)
 }
 #endif // !defined(Q_OS_SYMBIAN)
 
+/*!
+    Returns a pointer to this widget's effect if it has one; otherwise 0.
+
+    \since 4.6
+
+    \sa setGraphicsEffect()
+*/
 QGraphicsEffect *QWidget::graphicsEffect() const
 {
     Q_D(const QWidget);
@@ -4982,6 +5002,8 @@ QGraphicsEffect *QWidget::graphicsEffect() const
     \note This function will apply the effect on itself and all its children.
 
     \since 4.6
+
+    \sa graphicsEffect()
 */
 void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
 {

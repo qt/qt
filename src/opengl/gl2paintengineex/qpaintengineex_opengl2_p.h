@@ -133,7 +133,9 @@ public:
     inline const QOpenGL2PaintEngineState *state() const {
         return static_cast<const QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
     }
-    virtual void sync();
+
+    void beginNativePainting();
+    void endNativePainting();
 
     const QGLContext* context();
 
@@ -168,6 +170,7 @@ public:
     void setBrush(const QBrush* brush);
 
     void transferMode(EngineMode newMode);
+    void resetGLState();
 
     // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
     void fill(const QVectorPath &path);

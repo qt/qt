@@ -264,12 +264,15 @@ typedef struct tagGESTURECONFIG
 
 class QPanGesture;
 class QPinchGesture;
+class QSwipeGesture;
+
 struct QStandardGestures
 {
     QPanGesture *pan;
     QPinchGesture *pinch;
+    QSwipeGesture *swipe;
 
-    QStandardGestures() : pan(0), pinch(0) { }
+    QStandardGestures() : pan(0), pinch(0), swipe(0) { }
 };
 
 

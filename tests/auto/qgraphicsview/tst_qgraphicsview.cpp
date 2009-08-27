@@ -217,6 +217,7 @@ private slots:
     void task245469_itemsAtPointWithClip();
     void task253415_reconnectUpdateSceneOnSceneChanged();
     void task255529_transformationAnchorMouseAndViewportMargins();
+    void task259503_scrollingArtifacts();
 };
 
 void tst_QGraphicsView::initTestCase()
@@ -3663,6 +3664,65 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
     QVERIFY(qAbs(newMouseScenePos.y() - mouseScenePos.y()) < slack);
 }
 
+void tst_QGraphicsView::task259503_scrollingArtifacts()
+{
+    QGraphicsScene scene(0, 0, 800, 600);
+
+    QGraphicsRectItem card;
+    card.setRect(0, 0, 50, 50);
+    card.setPen(QPen(Qt::darkRed));
+    card.setBrush(QBrush(Qt::cyan));
+    card.setZValue(2.0);
+    card.setPos(300, 300);
+    scene.addItem(&card);
+
+    class SAGraphicsView: public QGraphicsView
+    {
+    public:
+        SAGraphicsView(QGraphicsScene *scene)
+            : QGraphicsView(scene)
+            , itSTimeToTest(false)
+        {
+            setViewportUpdateMode( QGraphicsView::MinimalViewportUpdate );
+            resize(QSize(640, 480));
+        }
+
+        QRegion updateRegion;
+        bool itSTimeToTest;
+
+        void paintEvent(QPaintEvent *event)
+        {
+            QGraphicsView::paintEvent(event);
+
+            if (itSTimeToTest)
+            {
+                qDebug() << event->region();
+                qDebug() << updateRegion;
+                QCOMPARE(event->region(), updateRegion);
+            }
+        }
+    };
+
+    SAGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+
+    int hsbValue = view.horizontalScrollBar()->value();
+    view.horizontalScrollBar()->setValue(hsbValue / 2);
+    QTest::qWait(10);
+    view.horizontalScrollBar()->setValue(0);
+    QTest::qWait(10);
+
+    QRect itemDeviceBoundingRect = card.deviceTransform(view.viewportTransform()).mapRect(card.boundingRect()).toRect();
+    itemDeviceBoundingRect.adjust(-2, -2, 2, 2);
+    view.updateRegion = itemDeviceBoundingRect;
+    view.updateRegion += itemDeviceBoundingRect.translated(-100, 0);
+    view.itSTimeToTest = true;
+    card.setPos(200, 300);
+    QTest::qWait(10);
+}
 
 QTEST_MAIN(tst_QGraphicsView)
 #include "tst_qgraphicsview.moc"

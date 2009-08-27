@@ -65,7 +65,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef Q_OS_SYMBIAN
+const int QHttpNetworkConnectionPrivate::defaultChannelCount = 3;
+#else
 const int QHttpNetworkConnectionPrivate::defaultChannelCount = 6;
+#endif
 
 // the maximum amount of requests that might be pipelined into a socket
 // from what was suggested, 3 seems to be OK
@@ -123,30 +127,6 @@ int QHttpNetworkConnectionPrivate::indexOf(QAbstractSocket *socket) const
 
     qFatal("Called with unknown socket object.");
     return 0;
-}
-
-bool QHttpNetworkConnectionPrivate::isSocketBusy(QAbstractSocket *socket) const
-{
-    int i = indexOf(socket);
-    return (channels[i].state & QHttpNetworkConnectionChannel::BusyState);
-}
-
-bool QHttpNetworkConnectionPrivate::isSocketWriting(QAbstractSocket *socket) const
-{
-    int i = indexOf(socket);
-    return (i != -1 && (channels[i].state & QHttpNetworkConnectionChannel::WritingState));
-}
-
-bool QHttpNetworkConnectionPrivate::isSocketWaiting(QAbstractSocket *socket) const
-{
-    int i = indexOf(socket);
-    return (i != -1 && (channels[i].state & QHttpNetworkConnectionChannel::WaitingState));
-}
-
-bool QHttpNetworkConnectionPrivate::isSocketReading(QAbstractSocket *socket) const
-{
-    int i = indexOf(socket);
-    return (i != -1 && (channels[i].state & QHttpNetworkConnectionChannel::ReadingState));
 }
 
 qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailable(const QHttpNetworkReply &reply) const
@@ -623,7 +603,7 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
     for (int i = 0; i < channelCount; ++i) {
         if (channels[i].reply == reply) {
             channels[i].reply = 0;
-            if (reply->d_func()->connectionCloseEnabled())
+            if (reply->d_func()->isConnectionCloseEnabled())
                 channels[i].close();
             QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
             return;
@@ -670,7 +650,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     for (int i = 0; i < channelCount; ++i) {
         QAbstractSocket *chSocket = channels[i].socket;
         // send the request using the idle socket
-        if (!isSocketBusy(chSocket)) {
+        if (!channels[i].isSocketBusy()) {
             socket = chSocket;
             break;
         }

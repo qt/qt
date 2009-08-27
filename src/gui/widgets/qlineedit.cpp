@@ -2002,7 +2002,7 @@ QMenu *QLineEdit::createStandardContextMenu()
 
     action = popup->addAction(QLineEdit::tr("Delete"));
     action->setEnabled(!d->control->isReadOnly() && !d->control->text().isEmpty() && d->control->hasSelectedText());
-    connect(action, SIGNAL(triggered()), SLOT(_q_deleteSelected()));
+    connect(action, SIGNAL(triggered()), d->control, SLOT(_q_deleteSelected()));
 
     popup->addSeparator();
 

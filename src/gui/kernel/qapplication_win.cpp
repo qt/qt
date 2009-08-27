@@ -171,6 +171,10 @@ typedef struct tagTOUCHINPUT
 #include <mywinsock.h>
 #endif
 
+#ifndef IMR_CONFIRMRECONVERTSTRING
+#define IMR_CONFIRMRECONVERTSTRING 0x0005
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_WINCE
@@ -2263,7 +2267,26 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             }
             break;
         }
-
+        case WM_IME_REQUEST: {
+            QWidget *fw = QApplication::focusWidget();
+            QWinInputContext *im = fw ? qobject_cast<QWinInputContext *>(fw->inputContext()) : 0;
+            if (fw && im) {
+                if(wParam == IMR_RECONVERTSTRING) {
+                    int ret = im->reconvertString((RECONVERTSTRING *)lParam);
+                    if (ret == -1) {
+                        result = false;
+                    } else {
+                        return ret;
+                    }
+                } else if (wParam == IMR_CONFIRMRECONVERTSTRING) {
+                    RETURN(TRUE);
+                } else {
+                    // in all other cases, call DefWindowProc()
+                    result = false;
+                }
+            }
+            break;
+        }
 #ifndef Q_WS_WINCE
         case WM_CHANGECBCHAIN:
         case WM_DRAWCLIPBOARD:

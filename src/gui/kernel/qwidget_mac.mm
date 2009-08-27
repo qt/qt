@@ -1064,7 +1064,7 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
                     break;
                 }
                 qNGEvent.gestureType = QNativeGestureEvent::Rotate;
-                qNGEvent.percentage = float(amount);
+                qNGEvent.percentage = float(-amount);
                 break; }
             case kEventGestureSwipe: {
                 HIPoint swipeDirection;
@@ -1074,7 +1074,14 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
                     break;
                 }
                 qNGEvent.gestureType = QNativeGestureEvent::Swipe;
-                qNGEvent.direction = QSize(-swipeDirection.x, -swipeDirection.y);
+                if (swipeDirection.x == 1)
+                    qNGEvent.angle = 180.0f;
+                else if (swipeDirection.x == -1)
+                    qNGEvent.angle = 0.0f;
+                else if (swipeDirection.y == 1)
+                    qNGEvent.angle = 90.0f;
+                else if (swipeDirection.y == -1)
+                    qNGEvent.angle = 270.0f;
                 break; }
             case kEventGestureMagnify: {
                 CGFloat amount;

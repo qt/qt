@@ -164,7 +164,7 @@ class QGraphicsOpacityEffectPrivate : public QGraphicsEffectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsOpacityEffect)
 public:
-    QGraphicsOpacityEffectPrivate() : opacity(0.7) {}
+    QGraphicsOpacityEffectPrivate() : opacity(qreal(0.7)) {}
     ~QGraphicsOpacityEffectPrivate() {}
 
     qreal opacity;

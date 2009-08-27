@@ -376,6 +376,7 @@ void QGL2PaintEngineExPrivate::useSimpleShader()
 
 void QGL2PaintEngineExPrivate::updateBrushTexture()
 {
+    Q_Q(QGL2PaintEngineEx);
 //     qDebug("QGL2PaintEngineExPrivate::updateBrushTexture()");
     Qt::BrushStyle style = currentBrush->style();
 
@@ -385,7 +386,7 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         ctx->d_func()->bindTexture(texImage, GL_TEXTURE_2D, GL_RGBA, true, QGLContext::InternalBindOption);
-        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, true);
+        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style >= Qt::LinearGradientPattern && style <= Qt::ConicalGradientPattern) {
         // Gradiant brush: All the gradiants use the same texture
@@ -400,18 +401,18 @@ void QGL2PaintEngineExPrivate::updateBrushTexture()
         glBindTexture(GL_TEXTURE_2D, texId);
 
         if (g->spread() == QGradient::RepeatSpread || g->type() == QGradient::ConicalGradient)
-            updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, true);
+            updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
         else if (g->spread() == QGradient::ReflectSpread)
-            updateTextureFilter(GL_TEXTURE_2D, GL_MIRRORED_REPEAT_IBM, true);
+            updateTextureFilter(GL_TEXTURE_2D, GL_MIRRORED_REPEAT_IBM, q->state()->renderHints & QPainter::SmoothPixmapTransform);
         else
-            updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, true);
+            updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     else if (style == Qt::TexturePattern) {
         const QPixmap& texPixmap = currentBrush->texture();
 
         glActiveTexture(GL_TEXTURE0 + QT_BRUSH_TEXTURE_UNIT);
         ctx->d_func()->bindTexture(texPixmap, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
-        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, true);
+        updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, q->state()->renderHints & QPainter::SmoothPixmapTransform);
     }
     brushTextureDirty = false;
 }
@@ -674,7 +675,7 @@ void QGL2PaintEngineExPrivate::drawTexture(const QGLRect& dest, const QGLRect& s
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void QGL2PaintEngineEx::sync()
+void QGL2PaintEngineEx::beginNativePainting()
 {
     Q_D(QGL2PaintEngineEx);
     ensureActive();
@@ -708,15 +709,25 @@ void QGL2PaintEngineEx::sync()
 #endif
 
     d->lastTexture = GLuint(-1);
+    d->resetGLState();
 
+    d->needsSync = true;
+}
+
+void QGL2PaintEngineExPrivate::resetGLState()
+{
     glDisable(GL_BLEND);
     glActiveTexture(GL_TEXTURE0);
-
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_SCISSOR_TEST);
     glDepthFunc(GL_LESS);
     glDepthMask(true);
     glClearDepth(1);
+}
 
+void QGL2PaintEngineEx::endNativePainting()
+{
+    Q_D(QGL2PaintEngineEx);
     d->needsSync = true;
 }
 
@@ -1073,6 +1084,7 @@ void QGL2PaintEngineEx::renderHintsChanged()
 
     Q_D(QGL2PaintEngineEx);
     d->lastTexture = GLuint(-1);
+    d->brushTextureDirty = true;
 //    qDebug("QGL2PaintEngineEx::renderHintsChanged() not implemented!");
 }
 
@@ -1101,7 +1113,7 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     bool isBitmap = pixmap.isQBitmap();
     bool isOpaque = !isBitmap && !pixmap.hasAlphaChannel();
 
-    d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT,
+    d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, texture->id);
     d->drawTexture(dest, srcRect, pixmap.size(), isOpaque, isBitmap);
 }
@@ -1115,11 +1127,10 @@ void QGL2PaintEngineEx::drawImage(const QRectF& dest, const QImage& image, const
 
     QGLContext *ctx = d->ctx;
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
-    QGLTexture *texture = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, true,
-                                                     QGLContext::InternalBindOption);
+    QGLTexture *texture = ctx->d_func()->bindTexture(image, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
     GLuint id = texture->id;
 
-    d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT,
+    d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, id);
     d->drawTexture(dest, src, image.size(), !image.hasAlphaChannel());
 }
@@ -1134,7 +1145,7 @@ void QGL2PaintEngineEx::drawTexture(const QRectF &dest, GLuint textureId, const 
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
-    d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT,
+    d->updateTextureFilter(GL_TEXTURE_2D, GL_CLAMP_TO_EDGE,
                            state()->renderHints & QPainter::SmoothPixmapTransform, textureId);
     d->drawTexture(dest, src, size, false);
 }
@@ -1357,6 +1368,8 @@ bool QGL2PaintEngineEx::end()
     d->drawable.doneCurrent();
     d->ctx->d_ptr->active_engine = 0;
 
+    d->resetGLState();
+
     return false;
 }
 
@@ -1500,7 +1513,7 @@ void QGL2PaintEngineEx::clip(const QVectorPath &path, Qt::ClipOperation op)
     if (op == Qt::ReplaceClip && !d->hasClipOperations())
         op = Qt::IntersectClip;
 
-    if (!path.isEmpty() && op == Qt::IntersectClip && (path.hints() & QVectorPath::RectangleHint)) {
+    if (!path.isEmpty() && op == Qt::IntersectClip && (path.shape() == QVectorPath::RectangleHint)) {
         const QPointF* const points = reinterpret_cast<const QPointF*>(path.points());
         QRectF rect(points[0], points[2]);
 

@@ -39,10 +39,10 @@ timer->inherits("QTimer");          // returns true
 timer->inherits("QObject");         // returns true
 timer->inherits("QAbstractButton"); // returns false
 
-// QLayout inherits QObject and QLayoutItem
-QLayout *layout = new QLayout;
+// QVBoxLayout inherits QObject and QLayoutItem
+QVBoxLayout *layout = new QVBoxLayout;
 layout->inherits("QObject");        // returns true
-layout->inherits("QLayoutItem");    // returns false
+layout->inherits("QLayoutItem");    // returns true (even though QLayoutItem is not a QObject)
 //! [4]
 
 

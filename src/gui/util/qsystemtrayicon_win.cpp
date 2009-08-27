@@ -132,11 +132,12 @@ QSystemTrayIconSys::QSystemTrayIconSys(QSystemTrayIcon *object)
     : hIcon(0), q(object), ignoreNextMouseRelease(false)
 
 {
-    notifyIconSize = sizeof(NOTIFYICONDATA);
-#ifdef Q_OS_WINCE
-    maxTipLength = 64;
-#else
+#ifndef Q_OS_WINCE
+    notifyIconSize = FIELD_OFFSET(NOTIFYICONDATA, guidItem); // NOTIFYICONDATAW_V2_SIZE;
     maxTipLength = 128;
+#else
+    notifyIconSize = FIELD_OFFSET(NOTIFYICONDATA, szTip[64]); // NOTIFYICONDATAW_V1_SIZE;
+    maxTipLength = 64;
 #endif
 
     // For restoring the tray icon after explorer crashes

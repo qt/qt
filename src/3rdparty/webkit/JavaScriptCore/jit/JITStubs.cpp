@@ -58,6 +58,10 @@
 #include "SamplingTool.h"
 #include <stdio.h>
 
+#ifdef QT_BUILD_SCRIPT_LIB
+#include "bridge/qscriptobject_p.h"
+#endif
+
 using namespace std;
 
 namespace JSC {
@@ -1470,7 +1474,11 @@ DEFINE_STUB_FUNCTION(JSObject*, op_construct_JSConstruct)
         structure = asObject(stackFrame.args[3].jsValue())->inheritorID();
     else
         structure = constructor->scope().node()->globalObject()->emptyObjectStructure();
+#ifdef QT_BUILD_SCRIPT_LIB
+    return new (stackFrame.globalData) QScriptObject(structure);
+#else
     return new (stackFrame.globalData) JSObject(structure);
+#endif
 }
 
 DEFINE_STUB_FUNCTION(EncodedJSValue, op_construct_NotJSConstruct)

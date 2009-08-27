@@ -143,7 +143,7 @@ public:
     Type gestureType;
     float percentage;
     QPoint position;
-    QSize direction;
+    float angle;
 #ifdef Q_WS_WIN
     ulong sequenceId;
     quint64 argument;

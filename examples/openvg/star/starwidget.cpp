@@ -91,7 +91,7 @@ void StarWidget::paintEvent(QPaintEvent *)
 
     // Flush the state changes to the OpenVG implementation
     // and prepare to perform raw OpenVG calls.
-    painter.paintEngine()->syncState();
+    painter.beginNativePainting();
 
     // Cache the path if we haven't already.
     if (path == VG_INVALID_HANDLE) {
@@ -109,7 +109,7 @@ void StarWidget::paintEvent(QPaintEvent *)
     vgDrawPath(path, VG_FILL_PATH | VG_STROKE_PATH);
 
     // Restore normal QPainter operations.
-    painter.paintEngine()->syncState();
+    painter.endNativePainting();
 
     painter.end();
 }

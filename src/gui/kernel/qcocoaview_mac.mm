@@ -892,7 +892,7 @@ extern "C" {
     qNGEvent.gestureType = QNativeGestureEvent::Rotate;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
-    qNGEvent.percentage = [event rotation];
+    qNGEvent.percentage = -[event rotation];
     qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
 
@@ -905,7 +905,14 @@ extern "C" {
     qNGEvent.gestureType = QNativeGestureEvent::Swipe;
     NSPoint p = [[event window] convertBaseToScreen:[event locationInWindow]];
     qNGEvent.position = flipPoint(p).toPoint();
-    qNGEvent.direction = QSize(-[event deltaX], -[event deltaY]);
+    if ([event deltaX] == 1)
+        qNGEvent.angle = 180.0f;
+    else if ([event deltaX] == -1)
+        qNGEvent.angle = 0.0f;
+    else if ([event deltaY] == 1)
+        qNGEvent.angle = 90.0f;
+    else if ([event deltaY] == -1)
+        qNGEvent.angle = 270.0f;
     qt_sendSpontaneousEvent(qwidget, &qNGEvent);
 }
 

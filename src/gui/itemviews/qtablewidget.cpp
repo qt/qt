@@ -226,6 +226,8 @@ QTableWidgetItem *QTableModel::takeItem(int row, int column)
         itm->view = 0;
         itm->d->id = -1;
         tableItems[i] = 0;
+        QModelIndex ind = index(itm);
+        emit dataChanged(ind, ind);
     }
     return itm;
 }

@@ -607,6 +607,13 @@ static inline void syncNSMenuItemVisiblity(NSMenuItem *menuItem, bool actionVisi
     [menuItem setHidden:!actionVisibility];
 }
 
+static inline void syncNSMenuItemEnabled(NSMenuItem *menuItem, bool enabled)
+{
+    [menuItem setEnabled:NO];
+    [menuItem setEnabled:YES];
+    [menuItem setEnabled:enabled];
+}
+
 static inline void syncMenuBarItemsVisiblity(const QMenuBarPrivate::QMacMenuBarPrivate *mac_menubar)
 {
     const QList<QMacMenuAction *> &menubarActions = mac_menubar->actionItems;
@@ -659,12 +666,12 @@ void qt_mac_set_modal_state_helper_recursive(OSMenuRef menu, OSMenuRef merge, bo
                 // The item should follow what the QAction has.
                 if ([item tag]) {
                     QAction *action = reinterpret_cast<QAction *>([item tag]);
-                    [item setEnabled:action->isEnabled()];
+                     syncNSMenuItemEnabled(item, action->isEnabled());
                  } else {
-                     [item setEnabled:YES];
+                     syncNSMenuItemEnabled(item, YES);
                  }
             } else {
-                [item setEnabled:NO];
+                syncNSMenuItemEnabled(item, NO);
             }
         }
     }
