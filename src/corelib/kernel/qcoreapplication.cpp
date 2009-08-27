@@ -393,43 +393,61 @@ QString qAppName()
     application's initialization and finalization, as well as
     system-wide and application-wide settings.
 
-    The command line arguments which QCoreApplication's constructor
-    should be called with are accessible using arguments(). The
-    event loop is started with a call to exec(). Long running
+    \section1 The Event Loop and Event Handling
+
+    The event loop is started with a call to exec(). Long running
     operations can call processEvents() to keep the application
     responsive.
 
     Some Qt classes, such as QString, can be used without a
     QCoreApplication object. However, in general, we recommend that
     you create a QCoreApplication or a QApplication object in your \c
-    main() function as early as possible. The application will enter
-    the event loop when exec() is called. exit() will not return
-    until the event loop exits, e.g., when quit() is called.
-
-    An application has an applicationDirPath() and an
-    applicationFilePath(). Translation files can be added or removed
-    using installTranslator() and removeTranslator(). Application
-    strings can be translated using translate(). The QObject::tr()
-    and QObject::trUtf8() functions are implemented in terms of
-    translate().
-
-    The class provides a quit() slot and an aboutToQuit() signal.
+    main() function as early as possible. exit() will not return
+    until the event loop exits; e.g., when quit() is called.
 
     Several static convenience functions are also provided. The
     QCoreApplication object is available from instance(). Events can
     be sent or posted using sendEvent(), postEvent(), and
     sendPostedEvents(). Pending events can be removed with
-    removePostedEvents() or flushed with flush(). Library paths (see
-    QLibrary) can be retrieved with libraryPaths() and manipulated by
-    setLibraryPaths(), addLibraryPath(), and removeLibraryPath().
+    removePostedEvents() or flushed with flush().
 
-	On Unix/Linux Qt is configured to use the system local settings by
-	default. This can cause a conflict when using POSIX functions, for
-	instance, when converting between data types such as floats and
-	strings, since the notation may differ between locales. To get
-	around this problem call the POSIX function setlocale(LC_NUMERIC,"C")
-	right after initializing QApplication or QCoreApplication to reset
-	the locale that is used for number formatting to "C"-locale.
+    The class provides a quit() slot and an aboutToQuit() signal.
+
+    \section1 Application and Library Paths
+
+    An application has an applicationDirPath() and an
+    applicationFilePath(). Library paths (see QLibrary) can be retrieved
+    with libraryPaths() and manipulated by setLibraryPaths(), addLibraryPath(),
+    and removeLibraryPath().
+
+    \section1 Internationalization and Translations
+
+    Translation files can be added or removed
+    using installTranslator() and removeTranslator(). Application
+    strings can be translated using translate(). The QObject::tr()
+    and QObject::trUtf8() functions are implemented in terms of
+    translate().
+
+    \section1 Accessing Command Line Arguments
+
+    The command line arguments which are passed to QCoreApplication's
+    constructor should be accessed using the arguments() function.
+    Note that some arguments supplied by the user may have been
+    processed and removed by QCoreApplication.
+
+    In cases where command line arguments need to be obtained using the
+    argv() function, you must convert them from the local string encoding
+    using QString::fromLocal8Bit().
+
+    \section1 Locale Settings
+
+    On Unix/Linux Qt is configured to use the system locale settings by
+    default. This can cause a conflict when using POSIX functions, for
+    instance, when converting between data types such as floats and
+    strings, since the notation may differ between locales. To get
+    around this problem, call the POSIX function \c{setlocale(LC_NUMERIC,"C")}
+    right after initializing QApplication or QCoreApplication to reset
+    the locale that is used for number formatting to "C"-locale.
 
     \sa QApplication, QAbstractEventDispatcher, QEventLoop,
     {Semaphores Example}, {Wait Conditions Example}
@@ -1975,9 +1993,9 @@ char **QCoreApplication::argv()
     \warning On Unix, this list is built from the argc and argv parameters passed
     to the constructor in the main() function. The string-data in argv is
     interpreted using QString::fromLocal8Bit(); hence it is not possible to
-    pass i.e. Japanese command line arguments on a system that runs in a latin1
-    locale. Most modern Unix systems do not have this limitation, as they are
-    Unicode based.
+    pass, for example, Japanese command line arguments on a system that runs in a
+    Latin1 locale. Most modern Unix systems do not have this limitation, as they are
+    Unicode-based.
 
     On NT-based Windows, this limitation does not apply either.
     On Windows, the arguments() are not built from the contents of argv/argc, as
