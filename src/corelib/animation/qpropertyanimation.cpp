@@ -92,8 +92,6 @@
 #include "qanimationgroup.h"
 #include "qpropertyanimation_p.h"
 
-#include <QtCore/qmath.h>
-#include <QtCore/qmutex.h>
 #include <private/qmutexpool_p.h>
 
 #ifndef QT_NO_ANIMATION
@@ -102,23 +100,18 @@ QT_BEGIN_NAMESPACE
 
 void QPropertyAnimationPrivate::updateMetaProperty()
 {
-    if (!target || propertyName.isEmpty())
+    if (!target || propertyName.isEmpty()) {
+        propertyType = QVariant::Invalid;
+        propertyIndex = -1;
         return;
-
-    if (!hasMetaProperty && !property.isValid()) {
-        const QMetaObject *mo = targetValue->metaObject();
-        propertyIndex = mo->indexOfProperty(propertyName);
-        if (propertyIndex != -1) {
-            hasMetaProperty = true;
-            property = mo->property(propertyIndex);
-            propertyType = property.userType();
-        } else {
-            if (!targetValue->dynamicPropertyNames().contains(propertyName))
-                qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
-        }
     }
 
-    if (property.isValid())
+    propertyType = targetValue->property(propertyName).userType();
+    propertyIndex = targetValue->metaObject()->indexOfProperty(propertyName);
+    if (propertyIndex == -1 && !targetValue->dynamicPropertyNames().contains(propertyName))
+        qWarning("QPropertyAnimation: you're trying to animate a non-existing property %s of your QObject", propertyName.constData());
+
+    if (propertyType != QVariant::Invalid)
         convertValues(propertyType);
 }
 
@@ -132,14 +125,10 @@ void QPropertyAnimationPrivate::updateProperty(const QVariant &newValue)
         return;
     }
 
-    if (hasMetaProperty) {
-        if (newValue.userType() == propertyType) {
-          //no conversion is needed, we directly call the QObject::qt_metacall
-          void *data = const_cast<void*>(newValue.constData());
-          targetValue->qt_metacall(QMetaObject::WriteProperty, propertyIndex, &data);
-        } else {
-          property.write(targetValue, newValue);
-        }
+    if (propertyIndex != -1 && newValue.userType() == propertyType) {
+        //no conversion is needed, we directly call the QObject::qt_metacall
+        void *data = const_cast<void*>(newValue.constData());
+        targetValue->qt_metacall(QMetaObject::WriteProperty, propertyIndex, &data);
     } else {
         targetValue->setProperty(propertyName.constData(), newValue);
     }
@@ -199,7 +188,6 @@ void QPropertyAnimation::setTargetObject(QObject *target)
     }
 
     d->target = d->targetValue = target;
-    d->hasMetaProperty = false;
     d->updateMetaProperty();
 }
 
@@ -225,7 +213,6 @@ void QPropertyAnimation::setPropertyName(const QByteArray &propertyName)
     }
 
     d->propertyName = propertyName;
-    d->hasMetaProperty = false;
     d->updateMetaProperty();
 }
 

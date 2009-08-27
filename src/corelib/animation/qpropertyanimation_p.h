@@ -54,7 +54,6 @@
 //
 
 #include "qpropertyanimation.h"
-#include <QtCore/qmetaobject.h>
 
 #include "private/qvariantanimation_p.h"
 
@@ -67,7 +66,7 @@ class QPropertyAnimationPrivate : public QVariantAnimationPrivate
    Q_DECLARE_PUBLIC(QPropertyAnimation)
 public:
     QPropertyAnimationPrivate()
-        : targetValue(0), propertyType(0), propertyIndex(0), hasMetaProperty(false)
+        : targetValue(0), propertyType(0), propertyIndex(-1)
     {
     }
 
@@ -76,11 +75,9 @@ public:
     QObject *targetValue;
 
     //for the QProperty
-    QMetaProperty property;
     int propertyType;
     int propertyIndex;
 
-    bool hasMetaProperty;
     QByteArray propertyName;
     void updateProperty(const QVariant &);
     void updateMetaProperty();
