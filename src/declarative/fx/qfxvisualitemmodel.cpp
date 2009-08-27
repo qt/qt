@@ -87,7 +87,7 @@ public:
         return rv;
     }
 
-signals:
+Q_SIGNALS:
     void indexChanged();
 
 public:

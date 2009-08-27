@@ -123,7 +123,7 @@ public:
         return m_modelData;
     }
 
-signals:
+Q_SIGNALS:
     void queryCompleted(int queryId, int size);
 
 protected:

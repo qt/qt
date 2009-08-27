@@ -4,21 +4,21 @@
 \title QML Examples
 
 A \l {qmlviewer}{viewer} application is included that allows you to quickly explore many of the
-examples.  It has some useful options, revealed by:
+examples. It has some useful options, revealed by:
 
 \code
     bin/qmlviewer -help
 \endcode
 
-There are several illustrative QML examples available.  From your build 
-directory, 
+There are several illustrative QML examples available.  From your build
+directory,
 
 \code
     bin/qmlviewer $QT_SOURCE_DIR/demos/declarative/flickr/flickr.qml
 \endcode
 
-Many other simple examples can be found under the \c examples/declarative sub 
-directory.  Some can be run directly using the viewer like those above, and 
+Many other simple examples can be found under the \c examples/declarative sub
+directory.  Some can be run directly using the viewer like those above, and
 others require you to build and run an executable.
 
 More sophisticated demos of large applications can be found under the \c demos/declarative

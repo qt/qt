@@ -1,21 +1,21 @@
 /*!
 \target qmlfocus
 \page qmlfocus.html
-\title Fluid UI Keyboard Focus 
+\title Keyboard Focus in QML
 
 When a key is pressed or released, a key event is generated and delivered to the
-focused fluid UI \l Item.  To facilitate the construction of reusable components
-and to address some of the cases unique to fluid UIs, the fluid UI atoms add a 
-"scope" based extension to Qt's traditional keyboard focus model.
+focused QML \l Item.  To facilitate the construction of reusable components
+and to address some of the cases unique to fluid user interfaces, the QML items add a
+\e scope based extension to Qt's traditional keyboard focus model.
 
 \section1 Key Handling Overview
 
 When the user presses or releases a key, the following occurs:
 \list 1
 \o Qt receives the key action and generates a key event.
-\o If the Qt widget containing the fluid UI scene has focus, the key event is delivered to the fluid UI scene.  Otherwise, regular Qt key handling continues.
-\o The key event is delivered by the scene to the fluid UI \l Item with \e {active focus}.  If no fluid UI \l Item has \e {active focus}, the key event is \l {QEvent::ignore()}{ignored} and regular Qt key handling continues.
-\o If the fluid UI \l Item with \e {active focus} accepts the key event, propagation stops.  Otherwise the event is "bubbled up", by recursively passing it to each \l Item's parent until either the event is accepted, or the root \l Item is reached.
+\o If the Qt widget containing the \l QFxView has focus, the key event is delivered to it. Otherwise, regular Qt key handling continues.
+\o The key event is delivered by the scene to the QML \l Item with \e {active focus}.  If no \l Item has \e {active focus}, the key event is \l {QEvent::ignore()}{ignored} and regular Qt key handling continues.
+\o If the QML \l Item with \e {active focus} accepts the key event, propagation stops.  Otherwise the event is "bubbled up", by recursively passing it to each \l Item's parent until either the event is accepted, or the root \l Item is reached.
 
 If the \c {Rect} element in the following example has active focus and the \e A key is pressed, it will bubble up to the \c {KeyActions}.  However, pressing the \e B key will bubble up to the root item and thus subsequently be \l {QEvent::ignore()}{ignored}.
 
@@ -34,7 +34,7 @@ Item {
 
 \section1 Querying the Active Focus Item
 
-Whether or not an \l Item has \e {active focus} can be queried through the 
+Whether or not an \l Item has \e {active focus} can be queried through the
 read-only property \c {Item::activeFocus}.  For example, here we have a \l Text
 element whose text is determined by whether or not it has \e {active focus}.
 
@@ -46,7 +46,7 @@ Text {
 
 \section1 Acquiring Focus and Focus Scopes
 
-An \l Item requests focus by setting the \c {Item::focus} property to true.  
+An \l Item requests focus by setting the \c {Item::focus} property to true.
 
 For very simple cases simply setting the \c {Item::focus} property is sometimes
 sufficient.  If we run the following example in the \c qmlviewer, we see that
@@ -74,8 +74,8 @@ However, were the above example to be used as a self-contained component, this
 simple use of the \c {Item::focus} property is no longer sufficient.  The left
 hand side of the following table shows what we would like to be able to write.
 Here we create two instances of our previously defined component, and set the
-second one to have focus.  The intention is that when the \e A, \e B, or \e C 
-keys are pressed, the second of the two components receives the event and 
+second one to have focus.  The intention is that when the \e A, \e B, or \e C
+keys are pressed, the second of the two components receives the event and
 reponds accordingly.
 
 \table
@@ -117,25 +117,25 @@ Rectangle {
 
 The right hand side of the example shows the expanded code - the equivalent QML
 without the use of the component \c {MyWidget}.  From this, the problem is
-evident - there are no less than three elements that have the \c {Item::focus} 
-property set to true.  Ultimately only one element can have focus, and the 
-system has to decide which on.  In this case the first appearance of the 
+evident - there are no less than three elements that have the \c {Item::focus}
+property set to true.  Ultimately only one element can have focus, and the
+system has to decide which on.  In this case the first appearance of the
 \c {Item::focus} property being set to true on line 4 is selected, and the value
 of \c {Item::focus} in the other two instances is reverted back to false.  This
 is exactly the opposite of what was wanted!
 
-This problem is fundamentally one of visibility.  The \c {MyWidget} 
+This problem is fundamentally one of visibility.  The \c {MyWidget}
 components each set their \c {KeyActions} as focused as that is all they can
 do - they don't know how they are going to be used, but they do know that when
 they're in use their \c {KeyActions} element is what needs focus.  Likewise
 the code that uses the \c {MyWidget}'s sets the second \c {MyWidget} as
-focused because, while it doesn't know exactly how the \c {MyWidget} is 
+focused because, while it doesn't know exactly how the \c {MyWidget} is
 implemented, it knows that it wants the second one to be focused.  No one piece
 of code knows everything about the other, which is exactly how it should be.
 
 To solve this problem - allowing components to care about what they know about
-and ignore everything else - the fluid UI atoms introduce a concept known as a 
-\e {focus scope}.  For existing Qt users, a \e {focus scope} is like an 
+and ignore everything else - the QML items introduce a concept known as a
+\e {focus scope}.  For existing Qt users, a \e {focus scope} is like an
 automatic focus proxy.  A \e {focus scope} is created using the \l FocusScope
 element.
 
@@ -162,11 +162,11 @@ FocusScope {
 \o \image declarative-qmlfocus2.png
 \endtable
 
-Conceptually \e {focus scopes} are quite simple.  
+Conceptually \e {focus scopes} are quite simple.
 \list
-\o Within each \e {focus scope} one element may have \c {Item::focus} set to true.  If more than one \l Item has the \c {Item::focus} property set, the first is selected and the others are unset, just like when there are no \e {focus scopes}. 
+\o Within each \e {focus scope} one element may have \c {Item::focus} set to true.  If more than one \l Item has the \c {Item::focus} property set, the first is selected and the others are unset, just like when there are no \e {focus scopes}.
 \o When a \e {focus scope} receives \e {active focus}, the contained element with \c {Item::focus} set (if any) also gets \e {active focus}.  If this element is
-also a \l FocusScope, the proxying behaviour continues.  Both the 
+also a \l FocusScope, the proxying behaviour continues.  Both the
 \e {focus scope} and the sub-focused item will have \c {Item::activeFocus} set.
 \endlist
 
@@ -176,7 +176,7 @@ application.  We still set a one of the widgets as focused by default, but from
 then on clicking the either one gives it focus.
 
 \table
-\row 
+\row
 \o \code
 Rectangle {
     color: "red"; width: 240; height: 55
@@ -195,24 +195,24 @@ FocusScope {
 
 \image declarative-qmlfocus3.png
 
-When a fluid UI atom explicitly relinquishes focus (by setting its 
-\c {Item::focus} property to false while it has \e {active focus}), the system 
+When a QML item explicitly relinquishes focus (by setting its
+\c {Item::focus} property to false while it has \e {active focus}), the system
 does not automatically select another element to receive focus.  That is, it
 is possible for there to be no currently \e {active focus}.
 
 \section1 Advanced uses of Focus Scopes
 
-Focus scopes allow focus to allocation to be easily partitioned.  Several 
-fluid UI atoms use it to this effect.
+Focus scopes allow focus to allocation to be easily partitioned.  Several
+QML items use it to this effect.
 
-\l ListView, for example, is itself a focus scope.  Generally this isn't 
+\l ListView, for example, is itself a focus scope.  Generally this isn't
 noticable as \l ListView doesn't usually have manually added visual children.
-By being a focus scope, \l ListView can focus the current list item without 
+By being a focus scope, \l ListView can focus the current list item without
 worrying about how that will effect the rest of the application.  This allows
 the current item delegate to react to key presses.
 
 This contrived example shows how this works.  Pressing the \c Return key will
-print the name of the current list item.  
+print the name of the current list item.
 
 \table
 \row
@@ -240,22 +240,22 @@ Rectangle {
 
 While the example is simple, there's a lot going on behind the scenes.  Whenever
 the current item changes, the \l ListView sets the delegate's \c {Item::focus}
-property.  As the \l ListView is a \e {focus scope}, this doesn't effect the 
-rest of the application.  However, if the \l ListView itself has 
+property.  As the \l ListView is a \e {focus scope}, this doesn't effect the
+rest of the application.  However, if the \l ListView itself has
 \e {active focus} this causes the delegate itself to receive \e {active focus}.
 In this example, the root element of the delegate is also a \e {focus scope},
 which in turn gives \e {active focus} to the \c {KeyActions} element that
 actually performs the work of handling the \e {Return} key.
 
-All of the fluid UI view classes, such as \l PathView and \l GridView, behave
+All of the QML view classes, such as \l PathView and \l GridView, behave
 in a similar mannor to allow key handling in their respective delegates.
 
 \section1 Focus Panels
 
-Traditional UIs are composed of many top-level windows.  Windows actually 
+Traditional UIs are composed of many top-level windows.  Windows actually
 perform two tasks - they act as the visual bounds for a widget, and they segment
-focus.  Each window has a separate focused widget, that becomes (to mix 
-terminologies) the \e {active focus} widget when the window is the active 
+focus.  Each window has a separate focused widget, that becomes (to mix
+terminologies) the \e {active focus} widget when the window is the active
 window.
 
 ### Focus panels do basically the same thing.

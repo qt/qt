@@ -153,7 +153,7 @@ Item {
 
 \section3 The 'id' property
 
-The id property is a special property of type \e id. Assigning an id to an object allows you
+The \c id property is a special property of type \e id. Assigning an id to an object allows you
 to refer to it elsewhere.
 
 \code
@@ -168,7 +168,7 @@ Item {
 }
 \endcode
 
-ids must begin with a letter. We recommended that you start your ids with a capital letter.
+\c ids must begin with a letter. We recommend that you start your ids with a capital letter.
 
 \section2 List properties
 
@@ -195,9 +195,10 @@ Image {
 
 \section2 Default properties
 
-Each object type can specify one of it's list properties as its default property.
-If a list property has been the default property, it means the property tag can emitted:
+Each object type can specify one of its list properties as its default property.
+If a list property has been declared as the default property, the property tag can be omitted.
 
+For example this code:
 \code
 State {
     changes: [
@@ -207,7 +208,7 @@ State {
 }
 \endcode
 
-can be simplified to
+can be simplified to:
 
 \code
 State {
@@ -215,6 +216,8 @@ State {
     PropertyChanges {}
 }
 \endcode
+
+because \c changes is the default property of the \c State type.
 
 \section2 Dot Properties
 

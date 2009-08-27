@@ -71,7 +71,7 @@ public:
 Q_SIGNALS:
     void instanceChanged();
 
-private slots:
+private Q_SLOTS:
     void updateSize();
 
 private:

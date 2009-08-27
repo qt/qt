@@ -115,13 +115,13 @@ public:
     QmlList<QmlSqlBind *> *bindings();
     const QmlList<QmlSqlBind *> *bindings() const;
 
-public slots:
+public Q_SLOTS:
     void exec();
 
 protected:
     void timerEvent(QTimerEvent *);
 
-private slots:
+private Q_SLOTS:
     void resetBinds();
     void resetQuery();
 

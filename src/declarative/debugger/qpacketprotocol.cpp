@@ -131,12 +131,12 @@ public:
                          this, SLOT(bytesWritten(qint64)));
     }
 
-signals:
+Q_SIGNALS:
     void readyRead();
     void packetWritten();
     void invalidPacket();
 
-public slots:
+public Q_SLOTS:
     void aboutToClose()
     {
         inProgress.clear();

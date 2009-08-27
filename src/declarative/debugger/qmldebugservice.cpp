@@ -59,7 +59,7 @@ public:
     static QmlDebugServer *instance();
     void wait();
 
-private slots:
+private Q_SLOTS:
     void readyRead();
 
 private:

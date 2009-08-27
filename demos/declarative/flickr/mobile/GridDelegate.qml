@@ -31,7 +31,7 @@
              Rectangle {
                  id: WhiteRect; width: 77; height: 77; anchors.centerIn: parent; color: "#dddddd"; smooth: true
                  Image { id: Thumb; source: imagePath; x: 1; y: 1; smooth: true}
-                 Image { source: "mobile/images/gloss.png"; smooth: true}
+                 Image { source: "images/gloss.png" }
              }
 
              Connection {
