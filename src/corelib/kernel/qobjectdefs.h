@@ -150,6 +150,7 @@ inline void qYouForgotTheQ_OBJECT_Macro(T1, T2) {}
 public: \
     Q_OBJECT_CHECK \
     static const QMetaObject staticMetaObject; \
+    static const QMetaObject &getStaticMetaObject(); \
     virtual const QMetaObject *metaObject() const; \
     virtual void *qt_metacast(const char *); \
     QT_TR_FUNCTIONS \
@@ -161,6 +162,7 @@ private:
 #define Q_GADGET \
 public: \
     static const QMetaObject staticMetaObject; \
+    static const QMetaObject &getStaticMetaObject(); \
 private:
 #else // Q_MOC_RUN
 #define slots slots
@@ -444,9 +446,15 @@ struct Q_CORE_EXPORT QMetaObject
 
 };
 
+typedef const QMetaObject& (*QMetaObjectAccessor)();
+
 struct QMetaObjectExtraData
 {
+#ifdef Q_NO_DATA_RELOCATION
+    const QMetaObjectAccessor *objects;
+#else
     const QMetaObject **objects;
+#endif
     int (*static_metacall)(QMetaObject::Call, int, void **);
 };
 
