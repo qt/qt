@@ -46,6 +46,7 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qcolor.h>
+#include <QtGui/qbrush.h>
 
 QT_BEGIN_HEADER
 
@@ -274,17 +275,21 @@ class Q_GUI_EXPORT QGraphicsOpacityEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_PROPERTY(int opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
+    Q_PROPERTY(QBrush opacityMask READ opacityMask WRITE setOpacityMask NOTIFY opacityMaskChanged)
 public:
     QGraphicsOpacityEffect(QObject *parent = 0);
     ~QGraphicsOpacityEffect();
 
     qreal opacity() const;
+    QBrush opacityMask() const;
 
 public Q_SLOTS:
     void setOpacity(qreal opacity);
+    void setOpacityMask(const QBrush &mask);
 
 Q_SIGNALS:
     void opacityChanged(qreal opacity);
+    void opacityMaskChanged(const QBrush &mask);
 
 protected:
     void draw(QPainter *painter, QGraphicsEffectSource *source);

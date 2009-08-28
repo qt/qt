@@ -990,6 +990,8 @@ QGraphicsOpacityEffect::~QGraphicsOpacityEffect()
     fully transparent and 1.0 is fully opaque.
 
     By default, the opacity is 0.7.
+
+    \sa setOpacityMask()
 */
 qreal QGraphicsOpacityEffect::opacity() const
 {
@@ -1017,6 +1019,45 @@ void QGraphicsOpacityEffect::setOpacity(qreal opacity)
 */
 
 /*!
+    \property QGraphicsOpacityEffect::opacityMask
+    \brief the opacity mask of the effect.
+
+    An opacity mask allows you apply opacity to portions of an element.
+
+    For example:
+
+    \snippet doc/src/snippets/code/src_gui_effects_qgraphicseffect.cpp 2
+
+    There is no opacity mask by default.
+
+    \sa setOpacity()
+*/
+QBrush QGraphicsOpacityEffect::opacityMask() const
+{
+    Q_D(const QGraphicsOpacityEffect);
+    return d->opacityMask;
+}
+
+void QGraphicsOpacityEffect::setOpacityMask(const QBrush &mask)
+{
+    Q_D(QGraphicsOpacityEffect);
+    if (d->opacityMask == mask)
+        return;
+
+    d->opacityMask = mask;
+    d->hasOpacityMask = (mask.style() != Qt::NoBrush);
+
+    emit opacityMaskChanged(mask);
+}
+
+/*!
+    \fn void QGraphicsOpacityEffect::opacityMaskChanged(const QBrush &mask)
+
+    This signal is emitted whenever the effect's opacity mask changes.
+    The \a mask parameter holds the effect's new opacity mask.
+*/
+
+/*!
     \reimp
 */
 void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
@@ -1039,13 +1080,55 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
     QPoint offset;
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
-        painter->drawPixmap(offset, pixmap);
+        if (!d->hasOpacityMask) {
+            const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+            painter->drawPixmap(offset, pixmap);
+        } else {
+            QRectF srcBrect = source->boundingRect();
+            QPixmap pixmap(srcBrect.size().toSize());
+            pixmap.fill(Qt::transparent);
+
+            QPainter pixmapPainter(&pixmap);
+            pixmapPainter.setRenderHints(painter->renderHints());
+            pixmapPainter.translate(-srcBrect.topLeft());
+            source->draw(&pixmapPainter);
+            pixmapPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+            pixmapPainter.fillRect(srcBrect, d->opacityMask);
+            pixmapPainter.end();
+
+            painter->drawPixmap(srcBrect.topLeft(), pixmap);
+        }
     } else {
         // Draw pixmap in device coordinates to avoid pixmap scaling;
-        const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
-        painter->setWorldTransform(QTransform());
-        painter->drawPixmap(offset, pixmap);
+        if (!d->hasOpacityMask) {
+            const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+            painter->setWorldTransform(QTransform());
+            painter->drawPixmap(offset, pixmap);
+        } else {
+            QTransform worldTransform = painter->worldTransform();
+
+            // Calculate source bounding rect in logical and device coordinates.
+            QRectF srcBrect = source->boundingRect();
+            QRect srcDeviceBrect = worldTransform.mapRect(srcBrect).toAlignedRect();
+            srcDeviceBrect &= source->deviceRect();
+
+            offset = srcDeviceBrect.topLeft();
+            worldTransform *= QTransform::fromTranslate(-srcDeviceBrect.x(), -srcDeviceBrect.y());
+
+            QPixmap pixmap(srcDeviceBrect.size());
+            pixmap.fill(Qt::transparent);
+
+            QPainter pixmapPainter(&pixmap);
+            pixmapPainter.setRenderHints(painter->renderHints());
+            pixmapPainter.setWorldTransform(worldTransform);
+            source->draw(&pixmapPainter);
+            pixmapPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+            pixmapPainter.fillRect(srcBrect, d->opacityMask);
+            pixmapPainter.end();
+
+            painter->setWorldTransform(QTransform());
+            painter->drawPixmap(offset, pixmap);
+        }
     }
 
     painter->restore();
