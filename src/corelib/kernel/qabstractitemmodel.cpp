@@ -2498,25 +2498,32 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
 /*!
     Begins a row move operation.
 
-    When reimplementing a subclass, this method simplifies moving entities
-    in your model. This method is responsible for moving persistent indexes
-    in the model, which you would otherwise be required to do yourself.
+    When reimplementing a subclass, this method simplifies moving
+    entities in your model. This method is responsible for moving
+    persistent indexes in the model, which you would otherwise be
+    required to do yourself.
 
     Using beginMoveRows and endMoveRows is an alternative to emitting
-    layoutAboutToBeChanged and layoutChanged directly along with changePersistentIndexes.
-    layoutAboutToBeChanged is emitted by this method for compatibility reasons.
+    layoutAboutToBeChanged and layoutChanged directly along with
+    changePersistentIndexes.  layoutAboutToBeChanged is emitted by
+    this method for compatibility reasons.
 
     The \a sourceParent index corresponds to the parent from which the
-    rows are moved; \a sourceFirst and \a sourceLast are the row numbers of the
-    rows to be moved. The \a destinationParent index corresponds to the parent into which
-    the rows are moved. The \a destinationRow is the row to which the rows will be moved.
-    That is, the index at row \a sourceFirst in \a sourceParent will become row \a destinationRow
-    in \a destinationParent. Its siblings will be moved correspondingly.
+    rows are moved; \a sourceFirst and \a sourceLast are the row
+    numbers of the rows to be moved. The \a destinationParent index
+    corresponds to the parent into which the rows are moved. The \a
+    destinationChild is the row to which the rows will be moved.  That
+    is, the index at row \a sourceFirst in \a sourceParent will become
+    row \a destinationChild in \a destinationParent. Its siblings will
+    be moved correspondingly.
 
-    Note that \a sourceParent and \a destinationParent may be the same, in which case you must
-    ensure that the \a destinationRow is not within the range of \a sourceFirst and \a sourceLast.
-    You must also ensure that you do not attempt to move a row to one of its own chilren or ancestors.
-    This method returns false if either condition is true, in which case you should abort your move operation.
+    Note that \a sourceParent and \a destinationParent may be the
+    same, in which case you must ensure that the \a destinationChild is
+    not within the range of \a sourceFirst and \a sourceLast.  You
+    must also ensure that you do not attempt to move a row to one of
+    its own chilren or ancestors.  This method returns false if either
+    condition is true, in which case you should abort your move
+    operation.
 
     \sa endMoveRows()
 
@@ -2694,25 +2701,32 @@ void QAbstractItemModel::endRemoveColumns()
 /*!
     Begins a column move operation.
 
-    When reimplementing a subclass, this method simplifies moving entities
-    in your model. This method is responsible for moving persistent indexes
-    in the model, which you would otherwise be required to do yourself.
+    When reimplementing a subclass, this method simplifies moving
+    entities in your model. This method is responsible for moving
+    persistent indexes in the model, which you would otherwise be
+    required to do yourself.
 
-    Using beginMoveColumns and endMoveColumns is an alternative to emitting
-    layoutAboutToBeChanged and layoutChanged directly along with changePersistentIndexes.
-    layoutAboutToBeChanged is emitted by this method for compatibility reasons.
+    Using beginMoveColumns and endMoveColumns is an alternative to
+    emitting layoutAboutToBeChanged and layoutChanged directly along
+    with changePersistentIndexes.  layoutAboutToBeChanged is emitted
+    by this method for compatibility reasons.
 
     The \a sourceParent index corresponds to the parent from which the
-    columns are moved; \a sourceFirst and \a sourceLast are the column numbers of the
-    columns to be moved. The \a destinationParent index corresponds to the parent into which
-    the columns are moved. The \a destinationColumn is the column to which the columns will be moved.
-    That is, the index at column \a sourceFirst in \a sourceParent will become column \a destinationColumn
-    in \a destinationParent. Its siblings will be moved correspondingly.
+    columns are moved; \a sourceFirst and \a sourceLast are the column
+    numbers of the columns to be moved. The \a destinationParent index
+    corresponds to the parent into which the columns are moved. The \a
+    destinationChild is the column to which the columns will be
+    moved.  That is, the index at column \a sourceFirst in \a
+    sourceParent will become column \a destinationChild in \a
+    destinationParent. Its siblings will be moved correspondingly.
 
-    Note that \a sourceParent and \a destinationParent may be the same, in which case you must
-    ensure that the \a destinationColumn is not within the range of \a sourceFirst and \a sourceLast.
-    You must also ensure that you do not attempt to move a row to one of its own chilren or ancestors.
-    This method returns false if either condition is true, in which case you should abort your move operation.
+    Note that \a sourceParent and \a destinationParent may be the
+    same, in which case you must ensure that the \a destinationChild
+    is not within the range of \a sourceFirst and \a sourceLast.  You
+    must also ensure that you do not attempt to move a row to one of
+    its own chilren or ancestors.  This method returns false if either
+    condition is true, in which case you should abort your move
+    operation.
 
     \sa endMoveColumns()
 
