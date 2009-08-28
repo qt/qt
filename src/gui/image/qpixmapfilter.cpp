@@ -580,8 +580,6 @@ Qt::TransformationMode QPixmapBlurFilter::quality() const
 }
 
 /*!
-    \reimp
-
     \internal
 */
 QRectF QPixmapBlurFilter::boundingRectFor(const QRectF &rect) const
@@ -657,8 +655,6 @@ static QImage blurred(const QImage& image, const QRect& rect, int radius)
 }
 
 /*!
-    \reimp
-
     \internal
 */
 void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &p, const QPixmap &src, const QRectF &srcRect) const

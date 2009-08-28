@@ -1408,6 +1408,7 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
         signal.remove(0, 1);
     const QMetaObject *meta = sender->metaObject();
     int signalIndex = meta->indexOfSignal(signal);
+    int originalSignalIndex = signalIndex;
     if (signalIndex == -1) {
         signalIndex = meta->indexOfSignal(QMetaObject::normalizedSignature(signal));
         if (signalIndex == -1) {
@@ -1416,6 +1417,11 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
             return;
         }
     }
+    // The signal index we actually want to connect to is the one
+    // that is going to be sent, i.e. the non-cloned original index.
+    while (meta->method(signalIndex).attributes() & QMetaMethod::Cloned)
+        --signalIndex;
+
     QVector<int> &connectedSignalIndexes = connections[sender];
     if (connectedSignalIndexes.size() <= signalIndex)
         connectedSignalIndexes.resize(signalIndex+1);
@@ -1435,6 +1441,7 @@ void QStateMachinePrivate::registerSignalTransition(QSignalTransition *transitio
     }
     ++connectedSignalIndexes[signalIndex];
     QSignalTransitionPrivate::get(transition)->signalIndex = signalIndex;
+    QSignalTransitionPrivate::get(transition)->originalSignalIndex = originalSignalIndex;
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << q << ": added signal transition from" << transition->sourceState()
              << ": ( sender =" << sender << ", signal =" << signal

@@ -300,7 +300,7 @@ public:
         DefaultBindOption               = LinearFilteringBindOption | InvertedYBindOption | MipmapBindOption,
         InternalBindOption              = MemoryManagedBindOption | PremultipliedAlphaBindOption
     };
-    Q_DECLARE_FLAGS(BindOptions, BindOption);
+    Q_DECLARE_FLAGS(BindOptions, BindOption)
 
     GLuint bindTexture(const QImage &image, GLenum target, GLint format,
                        BindOptions options);

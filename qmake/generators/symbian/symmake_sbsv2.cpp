@@ -123,10 +123,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     t << "#" << endl;
     t << "# ==============================================================================" << "\n" << endl;
     t << endl;
-    QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
-    if (ofile.lastIndexOf(Option::dir_sep) != -1)
-        ofile = ofile.right(ofile.length() - ofile.lastIndexOf(Option::dir_sep) - 1);
-    t << "MAKEFILE          = " << ofile << endl;
+    t << "MAKEFILE          = " << wrapperFile.fileName() << endl;
     t << "QMAKE             = " << Option::fixPathToTargetOS(var("QMAKE_QMAKE")) << endl;
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
     t << "DEL_DIR           = " << var("QMAKE_DEL_DIR") << endl;
@@ -218,6 +215,8 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         writeSubTargets(t, subtargets, SubTargetSkipDefaultVariables|SubTargetSkipDefaultTargets);
         qDeleteAll(subtargets);
     }
+
+    writeSisxTargets(t);
 
     generateDistcleanTargets(t);
 
@@ -399,6 +398,10 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
 
     t << "START EXTENSION qt/qmake_generate_temp_dirs" << endl;
     t << "OPTION DIRS " << tempDirs << endl;
+    t << "END" << endl;
+    t << endl;
+
+    t << "START EXTENSION qt/qmake_store_build" << endl;
     t << "END" << endl;
     t << endl;
 

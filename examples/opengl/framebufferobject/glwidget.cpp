@@ -57,6 +57,7 @@ GLWidget::GLWidget(QWidget *parent)
     if (QGLFramebufferObject::hasOpenGLFramebufferBlit()) {
         QGLFramebufferObjectFormat format;
         format.setSamples(4);
+        format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
 
         render_fbo = new QGLFramebufferObject(512, 512, format);
         texture_fbo = new QGLFramebufferObject(512, 512);

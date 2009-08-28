@@ -1029,7 +1029,7 @@ void QCoreApplication::exit(int returnCode)
     The event is \e not deleted when the event has been sent. The normal
     approach is to create the event on the stack, for example:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 0
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 0
 
     \sa postEvent(), notify()
 */
@@ -1552,7 +1552,7 @@ bool QCoreApplication::event(QEvent *e)
 
     Example:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 1
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 1
 
     \sa exit(), aboutToQuit(), QApplication::lastWindowClosed()
 */
@@ -2171,7 +2171,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QMutex, libraryPathMutex, (QMutex::Recursive))
     If you want to iterate over the list, you can use the \l foreach
     pseudo-keyword:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 2
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 2
 
     \sa setLibraryPaths(), addLibraryPath(), removeLibraryPath(), QLibrary,
         {How to Create Qt Plugins}
@@ -2318,7 +2318,7 @@ void QCoreApplication::removeLibraryPath(const QString &path)
     A function with the following signature that can be used as an
     event filter:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 3
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 3
 
     \sa setEventFilter()
 */
@@ -2507,7 +2507,7 @@ int QCoreApplication::loopLevel()
 }
 #endif
 
-/*!
+/*
     \fn void QCoreApplication::watchUnixSignal(int signal, bool watch)
     \internal
 */
@@ -2531,7 +2531,7 @@ int QCoreApplication::loopLevel()
     The function specified by \a ptr should take no arguments and should
     return nothing. For example:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 4
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 4
 
     Note that for an application- or module-wide cleanup,
     qAddPostRoutine() is often not suitable. For example, if the
@@ -2545,7 +2545,7 @@ int QCoreApplication::loopLevel()
     parent-child mechanism to call a cleanup function at the right
     time:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 5
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 5
 
     By selecting the right parent object, this can often be made to
     clean up the module's data at the right moment.
@@ -2559,7 +2559,7 @@ int QCoreApplication::loopLevel()
     translation functions, \c tr() and \c trUtf8(), with these
     signatures:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 6
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 6
 
     This macro is useful if you want to use QObject::tr() or
     QObject::trUtf8() in classes that don't inherit from QObject.
@@ -2568,7 +2568,7 @@ int QCoreApplication::loopLevel()
     class definition (before the first \c{public:} or \c{protected:}).
     For example:
 
-    \snippet doc/src/snippets/code/src.corelib.kernel.qcoreapplication.cpp 7
+    \snippet doc/src/snippets/code/src_corelib_kernel_qcoreapplication.cpp 7
 
     The \a context parameter is normally the class name, but it can
     be any string.

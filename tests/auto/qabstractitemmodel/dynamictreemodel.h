@@ -70,6 +70,8 @@ private:
 
   friend class ModelInsertCommand;
   friend class ModelMoveCommand;
+  friend class ModelResetCommand;
+  friend class ModelResetCommandFixed;
 
 };
 
@@ -118,6 +120,7 @@ public:
   virtual void doCommand();
 };
 
+
 class ModelMoveCommand : public ModelChangeCommand
 {
   Q_OBJECT
@@ -126,7 +129,11 @@ public:
 
   virtual ~ModelMoveCommand() {}
 
+  virtual bool emitPreSignal(const QModelIndex &srcParent, int srcStart, int srcEnd, const QModelIndex &destParent, int destRow);
+
   virtual void doCommand();
+
+  virtual void emitPostSignal();
 
   void setDestAncestors( QList<int> rows ) { m_destRowNumbers = rows; }
 
@@ -135,6 +142,38 @@ public:
 protected:
   QList<int> m_destRowNumbers;
   int m_destRow;
+};
+
+/**
+  A command which does a move and emits a reset signal.
+*/
+class ModelResetCommand : public ModelMoveCommand
+{
+  Q_OBJECT
+public:
+  ModelResetCommand(DynamicTreeModel* model, QObject* parent = 0);
+
+  virtual ~ModelResetCommand();
+
+  virtual bool emitPreSignal(const QModelIndex &srcParent, int srcStart, int srcEnd, const QModelIndex &destParent, int destRow);
+  virtual void emitPostSignal();
+
+};
+
+/**
+  A command which does a move and emits a beginResetModel and endResetModel signals.
+*/
+class ModelResetCommandFixed : public ModelMoveCommand
+{
+  Q_OBJECT
+public:
+  ModelResetCommandFixed(DynamicTreeModel* model, QObject* parent = 0);
+
+  virtual ~ModelResetCommandFixed();
+
+  virtual bool emitPreSignal(const QModelIndex &srcParent, int srcStart, int srcEnd, const QModelIndex &destParent, int destRow);
+  virtual void emitPostSignal();
+
 };
 
 

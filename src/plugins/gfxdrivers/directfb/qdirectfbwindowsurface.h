@@ -95,9 +95,7 @@ private:
     void createWindow();
     IDirectFBWindow *dfbWindow;
     QDirectFBWindowSurface *sibling;
-#endif
-
-#ifdef QT_NO_DIRECTFB_WM
+#else
     enum Mode {
         Primary,
         Offscreen

@@ -69,9 +69,12 @@ public:
     void unregister();
     void maybeRegister();
 
+    virtual void callOnTransition(QEvent *e);
+
     QObject *sender;
     QByteArray signal;
     int signalIndex;
+    int originalSignalIndex;
 };
 
 QT_END_NAMESPACE

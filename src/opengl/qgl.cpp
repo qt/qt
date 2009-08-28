@@ -2179,6 +2179,9 @@ GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format)
     The \a format parameter sets the internal format for the
     texture. The default format is \c GL_RGBA.
 
+    The binding \a options are a set of options used to decide how to
+    bind the texture to the context.
+
     The texture that is generated is cached, so multiple calls to
     bindTexture() with the same QImage will return the same texture
     id.
@@ -2229,7 +2232,7 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint forma
   \overload
 
   Generates and binds a 2D GL texture to the current context, based
-  on \a image.
+  on \a pixmap.
 */
 GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint format, BindOptions options)
 {
@@ -4254,8 +4257,12 @@ GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format)
     return d->glcx->bindTexture(image, target, format, QGLContext::DefaultBindOption);
 }
 
+/*!
+  \overload
 
-
+  The binding \a options are a set of options used to decide how to
+  bind the texture to the context.
+ */
 GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format, QGLContext::BindOptions options)
 {
     Q_D(QGLWidget);
@@ -4291,6 +4298,15 @@ GLuint QGLWidget::bindTexture(const QPixmap &pixmap, GLenum target, GLint format
     return d->glcx->bindTexture(pixmap, target, format, QGLContext::DefaultBindOption);
 }
 
+/*!
+  \overload
+
+  Generates and binds a 2D GL texture to the current context, based
+  on \a pixmap. The generated texture id is returned and can be used in
+
+  The binding \a options are a set of options used to decide how to
+  bind the texture to the context.
+ */
 GLuint QGLWidget::bindTexture(const QPixmap &pixmap, GLenum target, GLint format,
                               QGLContext::BindOptions options)
 {

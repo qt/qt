@@ -210,7 +210,7 @@ public:
                                      const QImage &image);
 #endif
 
-    static uchar *lockSurface(IDirectFBSurface *surface, uint flags, int *bpl = 0);
+    static uchar *lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFlags flags, int *bpl = 0);
 #if defined QT_DIRECTFB_IMAGEPROVIDER && defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
     void setDirectFBImageProvider(IDirectFBImageProvider *provider);
 #endif

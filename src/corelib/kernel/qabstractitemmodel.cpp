@@ -1339,7 +1339,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     \endlist
 
 
-    \sa layoutAboutToBeChanged(), dataChanged(), headerDataChanged(), reset(),
+    \sa layoutAboutToBeChanged(), dataChanged(), headerDataChanged(), modelReset(),
         changePersistentIndex()
 */
 
@@ -2498,25 +2498,32 @@ bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int star
 /*!
     Begins a row move operation.
 
-    When reimplementing a subclass, this method simplifies moving entities
-    in your model. This method is responsible for moving persistent indexes
-    in the model, which you would otherwise be required to do yourself.
+    When reimplementing a subclass, this method simplifies moving
+    entities in your model. This method is responsible for moving
+    persistent indexes in the model, which you would otherwise be
+    required to do yourself.
 
     Using beginMoveRows and endMoveRows is an alternative to emitting
-    layoutAboutToBeChanged and layoutChanged directly along with changePersistentIndexes.
-    layoutAboutToBeChanged is emitted by this method for compatibility reasons.
+    layoutAboutToBeChanged and layoutChanged directly along with
+    changePersistentIndexes.  layoutAboutToBeChanged is emitted by
+    this method for compatibility reasons.
 
     The \a sourceParent index corresponds to the parent from which the
-    rows are moved; \a sourceFirst and \a sourceLast are the row numbers of the
-    rows to be moved. The \a destinationParent index corresponds to the parent into which
-    the rows are moved. The \a destinationRow is the row to which the rows will be moved.
-    That is, the index at row \a sourceFirst in \a sourceParent will become row \a destinationRow
-    in \a destinationParent. Its siblings will be moved correspondingly.
+    rows are moved; \a sourceFirst and \a sourceLast are the row
+    numbers of the rows to be moved. The \a destinationParent index
+    corresponds to the parent into which the rows are moved. The \a
+    destinationChild is the row to which the rows will be moved.  That
+    is, the index at row \a sourceFirst in \a sourceParent will become
+    row \a destinationChild in \a destinationParent. Its siblings will
+    be moved correspondingly.
 
-    Note that \a sourceParent and \a destinationParent may be the same, in which case you must
-    ensure that the \a destinationRow is not within the range of \a sourceFirst and \a sourceLast.
-    You must also ensure that you do not attempt to move a row to one of its own chilren or ancestors.
-    This method returns false if either condition is true, in which case you should abort your move operation.
+    Note that \a sourceParent and \a destinationParent may be the
+    same, in which case you must ensure that the \a destinationChild is
+    not within the range of \a sourceFirst and \a sourceLast.  You
+    must also ensure that you do not attempt to move a row to one of
+    its own chilren or ancestors.  This method returns false if either
+    condition is true, in which case you should abort your move
+    operation.
 
     \sa endMoveRows()
 
@@ -2694,25 +2701,32 @@ void QAbstractItemModel::endRemoveColumns()
 /*!
     Begins a column move operation.
 
-    When reimplementing a subclass, this method simplifies moving entities
-    in your model. This method is responsible for moving persistent indexes
-    in the model, which you would otherwise be required to do yourself.
+    When reimplementing a subclass, this method simplifies moving
+    entities in your model. This method is responsible for moving
+    persistent indexes in the model, which you would otherwise be
+    required to do yourself.
 
-    Using beginMoveColumns and endMoveColumns is an alternative to emitting
-    layoutAboutToBeChanged and layoutChanged directly along with changePersistentIndexes.
-    layoutAboutToBeChanged is emitted by this method for compatibility reasons.
+    Using beginMoveColumns and endMoveColumns is an alternative to
+    emitting layoutAboutToBeChanged and layoutChanged directly along
+    with changePersistentIndexes.  layoutAboutToBeChanged is emitted
+    by this method for compatibility reasons.
 
     The \a sourceParent index corresponds to the parent from which the
-    columns are moved; \a sourceFirst and \a sourceLast are the column numbers of the
-    columns to be moved. The \a destinationParent index corresponds to the parent into which
-    the columns are moved. The \a destinationColumn is the column to which the columns will be moved.
-    That is, the index at column \a sourceFirst in \a sourceParent will become column \a destinationColumn
-    in \a destinationParent. Its siblings will be moved correspondingly.
+    columns are moved; \a sourceFirst and \a sourceLast are the column
+    numbers of the columns to be moved. The \a destinationParent index
+    corresponds to the parent into which the columns are moved. The \a
+    destinationChild is the column to which the columns will be
+    moved.  That is, the index at column \a sourceFirst in \a
+    sourceParent will become column \a destinationChild in \a
+    destinationParent. Its siblings will be moved correspondingly.
 
-    Note that \a sourceParent and \a destinationParent may be the same, in which case you must
-    ensure that the \a destinationColumn is not within the range of \a sourceFirst and \a sourceLast.
-    You must also ensure that you do not attempt to move a row to one of its own chilren or ancestors.
-    This method returns false if either condition is true, in which case you should abort your move operation.
+    Note that \a sourceParent and \a destinationParent may be the
+    same, in which case you must ensure that the \a destinationChild
+    is not within the range of \a sourceFirst and \a sourceLast.  You
+    must also ensure that you do not attempt to move a row to one of
+    its own chilren or ancestors.  This method returns false if either
+    condition is true, in which case you should abort your move
+    operation.
 
     \sa endMoveColumns()
 
@@ -2769,7 +2783,24 @@ void QAbstractItemModel::endMoveColumns()
 /*!
     Resets the model to its original state in any attached views.
 
-    The view to which the model is attached to will be reset as well.
+    \note Use beginResetModel() and endResetModel() instead whenever possible.
+    Use this method only if there is no way to call beginResetModel() before invalidating the model.
+    Otherwise it could lead to unexcpected behaviour, especially when used with proxy models.
+*/
+void QAbstractItemModel::reset()
+{
+    Q_D(QAbstractItemModel);
+    emit modelAboutToBeReset();
+    d->invalidatePersistentIndexes();
+    emit modelReset();
+}
+
+/*!
+    Begins a model reset operation.
+
+    A reset operation resets the model to its current state in any attached views.
+
+    \note Any views attached to this model will be reset as well.
 
     When a model is reset it means that any previous data reported from the
     model is now invalid and has to be queried for again. This also means that
@@ -2779,12 +2810,29 @@ void QAbstractItemModel::endMoveColumns()
     call this function rather than emit dataChanged() to inform other
     components when the underlying data source, or its structure, has changed.
 
-    \sa modelAboutToBeReset(), modelReset()
+    You must call this function before resetting any internal data structures in your model
+    or proxy model.
+
+    \sa modelAboutToBeReset(), modelReset(), endResetModel()
+    \since 4.6
 */
-void QAbstractItemModel::reset()
+void QAbstractItemModel::beginResetModel()
+{
+    emit modelAboutToBeReset();
+}
+
+/*!
+    Completes a model reset operation.
+
+    You must call this function after resetting any internal data structure in your model
+    or proxy model.
+
+    \sa beginResetModel()
+    \since 4.6
+*/
+void QAbstractItemModel::endResetModel()
 {
     Q_D(QAbstractItemModel);
-    emit modelAboutToBeReset();
     d->invalidatePersistentIndexes();
     emit modelReset();
 }
@@ -3256,7 +3304,7 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     This signal is emitted when reset() is called, before the model's internal
     state (e.g. persistent model indexes) has been invalidated.
 
-    \sa reset(), modelReset()
+    \sa beginResetModel(), modelReset()
 */
 
 /*!
@@ -3266,7 +3314,7 @@ bool QAbstractListModel::dropMimeData(const QMimeData *data, Qt::DropAction acti
     This signal is emitted when reset() is called, after the model's internal
     state (e.g. persistent model indexes) has been invalidated.
 
-    \sa reset(), modelAboutToBeReset()
+    \sa endResetModel(), modelAboutToBeReset()
 */
 
 /*!

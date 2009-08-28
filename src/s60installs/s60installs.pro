@@ -5,7 +5,8 @@ symbian: {
     load(data_caging_paths)
 
     SUBDIRS=
-    TARGET = "QtLibs pre-release"
+    # WARNING: Changing TARGET name will break Symbian SISX upgrade functionality
+    TARGET = "Qt for S60"
     TARGET.UID3 = 0x2001E61C
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
 

@@ -598,8 +598,11 @@ void tst_QScriptContext::backtrace_data()
 
            expected << "<native>('hey') at -1"
                     << "<eval>() at 3"
-                    //### line number should be 2 but the line number information is not kept for eval call
+#ifdef ENABLE_JIT
+                    << "foo(arg1 = 'hello', arg2 = 456) at testfile:2"
+#else  //### interpreter unfortunately does store information about line number for eval()
                     << "foo(arg1 = 'hello', arg2 = 456) at testfile:-1"
+#endif
                     << "<global>() at testfile:4";
 
             QTest::newRow("eval") << source << expected;
@@ -658,8 +661,11 @@ void tst_QScriptContext::backtrace_data()
 
            expected << "<native>('hey') at -1"
                     << "<eval>() at 3"
-                    //### line number should be 3 but the line number information is not kept for eval call
+#ifdef ENABLE_JIT
+                    << "plop('hello', 456) at testfile:3"
+#else  //### interpreter unfortunately does store information about line number for eval()
                     << "plop('hello', 456) at testfile:-1"
+#endif
                     << "<global>() at testfile:5";
 
             QTest::newRow("eval in member") << source << expected;

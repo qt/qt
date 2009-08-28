@@ -261,3 +261,17 @@ bool TestCompiler::removeMakefile( const QString &workPath )
     else
         return true;
 }
+
+QString TestCompiler::commandOutput() const
+{
+#ifndef Q_OS_WIN
+    return testOutput_.join("\n");
+#else
+    return testOutput_.join("\r\n");
+#endif
+}
+
+void TestCompiler::clearCommandOutput()
+{
+   testOutput_.clear();
+}

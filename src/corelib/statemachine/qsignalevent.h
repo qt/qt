@@ -70,6 +70,8 @@ private:
     QObject *m_sender;
     int m_signalIndex;
     QList<QVariant> m_arguments;
+
+    friend class QSignalTransitionPrivate;
 };
 
 #endif //QT_NO_STATEMACHINE
