@@ -54,10 +54,11 @@
 
 QT_BEGIN_NAMESPACE
 
-QFontEngineS60Extensions::QFontEngineS60Extensions(COpenFont *font)
+QFontEngineS60Extensions::QFontEngineS60Extensions(CFont* fontOwner, COpenFont *font)
     : m_font(font)
     , m_cmap(0)
     , m_symbolCMap(false)
+    , m_fontOwner(fontOwner)
 {
     TAny *shapingExtension = NULL;
     m_font->ExtendedInterface(KUidOpenFontShapingExtension, shapingExtension);
@@ -108,6 +109,12 @@ QPainterPath QFontEngineS60Extensions::glyphOutline(glyph_t glyph) const
     }
     return result;
 }
+
+CFont *QFontEngineS60Extensions::fontOwner() const
+{
+    return m_fontOwner;
+}
+
 
 // duplicated from qfontengine_xyz.cpp
 static inline unsigned int getChar(const QChar *str, int &i, const int len)
