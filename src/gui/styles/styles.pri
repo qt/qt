@@ -171,6 +171,7 @@ contains( styles, s60 ):contains(QT_CONFIG, s60) {
 		LIBS += -laknicon -laknskins -laknskinsrv -lfontutils
 	} else {
 		SOURCES += styles/qs60style_simulated.cpp
+		RESOURCES += styles/qstyle_s60_simulated.qrc
 	}
 } else {
 	DEFINES += QT_NO_STYLE_S60

@@ -366,8 +366,7 @@ QFont QS60StylePrivate::s60Font_specific(QS60StyleEnums::FontCategories fontCate
 QS60Style::QS60Style()
     : QCommonStyle(*new QS60StylePrivate)
 {
-    // Assume, that the resource system has a ':/s60Stylethemes/Default.blob'
-    const QString defaultBlob = QString::fromLatin1(":/s60Stylethemes/Default.blob");
+    const QString defaultBlob = QString::fromLatin1(":/trolltech/styles/s60style/images/defaults60theme.blob");
     if (QFile::exists(defaultBlob))
         loadS60ThemeFromBlob(defaultBlob);
 }
