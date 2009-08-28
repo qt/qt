@@ -196,6 +196,7 @@
     <example filename="completer" name="Completer" />
     <example filename="customcompleter" name="Custom Completer" />
     <example filename="i18n" name="Internationalization" />
+    <example filename="inputpanel" name="Input Panel" />
     <example filename="plugandpaint" name="Plug and Paint" />
     <example filename="regexp" name="Regular Expressions" />
     <example filename="settingseditor" name="Settings Editor" />
