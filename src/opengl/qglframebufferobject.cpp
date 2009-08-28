@@ -896,7 +896,7 @@ QPaintEngine *QGLFramebufferObject::paintEngine() const
     return qt_buffer_2_engine();
 #else
     Q_D(const QGLFramebufferObject);
-    if (d->ctx->d_func()->internal_context || qt_gl_preferGL2Engine())
+    if (qt_gl_preferGL2Engine())
         return qt_buffer_2_engine();
     else
         return qt_buffer_engine();

@@ -1666,7 +1666,6 @@ QGLContext::QGLContext(const QGLFormat &format)
 
 QGLContext::~QGLContext()
 {
-    Q_D(QGLContext);
     // remove any textures cached in this context
     QGLTextureCache::instance()->removeContextTextures(this);
     QGLTextureCache::deleteIfEmpty(); // ### thread safety
@@ -4073,6 +4072,10 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     bool auto_swap = autoBufferSwap();
 
     QPaintEngine *engine = paintEngine();
+#ifndef QT_OPENGL_ES
+    if (engine->type() == QPaintEngine::OpenGL2)
+        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(true);
+#endif
     QPainter *p;
     bool reuse_painter = false;
     if (engine->isActive()) {
@@ -4098,6 +4101,13 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
         d->glcx->d_func()->clear_on_painter_begin = false;
+        if (engine->type() == QPaintEngine::OpenGL2) {
+            qt_save_gl_state();
+#ifndef QT_OPENGL_ES_2
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
+#endif
+        }
         p = new QPainter(this);
     }
 
@@ -4121,7 +4131,13 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
         delete p;
         setAutoBufferSwap(auto_swap);
         d->glcx->d_func()->clear_on_painter_begin = true;
+        if (engine->type() == QPaintEngine::OpenGL2)
+            qt_restore_gl_state();
     }
+#ifndef QT_OPENGL_ES
+    if (engine->type() == QPaintEngine::OpenGL2)
+        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(false);
+#endif
 }
 
 /*! \overload
@@ -4154,6 +4170,10 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
     win_y = height - win_y; // y is inverted
 
     QPaintEngine *engine = paintEngine();
+#ifndef QT_OPENGL_ES
+    if (engine->type() == QPaintEngine::OpenGL2)
+        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(true);
+#endif
     QPainter *p;
     bool reuse_painter = false;
 #ifndef QT_OPENGL_ES
@@ -4172,6 +4192,8 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
         d->glcx->d_func()->clear_on_painter_begin = false;
+        if (engine->type() == QPaintEngine::OpenGL2)
+            qt_save_gl_state();
         p = new QPainter(this);
     }
 
@@ -4210,9 +4232,15 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
     } else {
         p->end();
         delete p;
+        if (engine->type() == QPaintEngine::OpenGL2)
+            qt_restore_gl_state();
         setAutoBufferSwap(auto_swap);
         d->glcx->d_func()->clear_on_painter_begin = true;
     }
+#ifndef QT_OPENGL_ES
+    if (engine->type() == QPaintEngine::OpenGL2)
+        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(false);
+#endif
 }
 
 QGLFormat QGLWidget::format() const
@@ -4443,10 +4471,10 @@ QPaintEngine *QGLWidget::paintEngine() const
 #elif defined(QT_OPENGL_ES_2)
     return qt_gl_2_engine();
 #else
-    if (!qt_gl_preferGL2Engine())
-        return qt_gl_engine();
-    else
+    if (qt_gl_preferGL2Engine())
         return qt_gl_2_engine();
+    else
+        return qt_gl_engine();
 #endif
 }
 
