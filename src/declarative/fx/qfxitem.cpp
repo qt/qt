@@ -49,6 +49,7 @@
 #include <QtScript/qscriptengine.h>
 #include <private/qfxperf_p.h>
 #include <QtGui/qgraphicstransform.h>
+#include <QtGui/qgraphicseffect.h>
 
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlopenmetaobject.h>
@@ -75,6 +76,26 @@ QML_DEFINE_NOCREATE_TYPE(QGraphicsTransform);
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Scale,QGraphicsScale)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 
+QML_DECLARE_TYPE(QGraphicsEffect)
+QML_DEFINE_NOCREATE_TYPE(QGraphicsEffect)
+
+QML_DECLARE_TYPE(QGraphicsBlurEffect)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Blur,QGraphicsBlurEffect)
+
+QML_DECLARE_TYPE(QGraphicsGrayscaleEffect)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Grayscale,QGraphicsGrayscaleEffect)
+
+QML_DECLARE_TYPE(QGraphicsColorizeEffect)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Colorize,QGraphicsColorizeEffect)
+
+QML_DECLARE_TYPE(QGraphicsPixelizeEffect)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Pixelize,QGraphicsPixelizeEffect)
+
+QML_DECLARE_TYPE(QGraphicsDropShadowEffect)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,DropShadow,QGraphicsDropShadowEffect)
+
+QML_DECLARE_TYPE(QGraphicsOpacityEffect)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Opacity,QGraphicsOpacityEffect)
 /*!
     \qmlclass Transform
     \brief A transformation.

@@ -93,6 +93,7 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin)
     Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
+    Q_PROPERTY(QGraphicsEffect *effect READ graphicsEffect WRITE setGraphicsEffect);
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
 
