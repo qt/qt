@@ -214,6 +214,7 @@ enum PseudoElement {
     PseudoElement_ViewItemText,
     PseudoElement_ViewItemIndicator,
     PseudoElement_ScrollAreaCorner,
+    PseudoElement_TabBarTabCloseButton,
     NumPseudoElements
 };
 
@@ -223,7 +224,7 @@ struct PseudoElementInfo {
 };
 
 static const PseudoElementInfo knownPseudoElements[NumPseudoElements] = {
-    { QStyle::SC_None, "", },
+    { QStyle::SC_None, "" },
     { QStyle::SC_None, "down-arrow" },
     { QStyle::SC_None, "up-arrow" },
     { QStyle::SC_None, "left-arrow" },
@@ -300,8 +301,9 @@ static const PseudoElementInfo knownPseudoElements[NumPseudoElements] = {
     { QStyle::SC_None, "item" },
     { QStyle::SC_None, "icon" },
     { QStyle::SC_None, "text" },
-    { QStyle::SC_None, "indicator" } ,
-    { QStyle::SC_None, "corner" }
+    { QStyle::SC_None, "indicator" },
+    { QStyle::SC_None, "corner" },
+    { QStyle::SC_None, "close-button" },
 };
 
 
@@ -4370,6 +4372,12 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
     case PE_IndicatorSpinPlus:
         pseudoElement = PseudoElement_SpinBoxUpArrow;
         break;
+#ifndef QT_NO_TABBAR
+    case PE_IndicatorTabClose:
+        if (w)
+            w = w->parentWidget(); //match on the QTabBar instead of the CloseButton
+        pseudoElement = PseudoElement_TabBarTabCloseButton;
+#endif
 
     default:
         break;
