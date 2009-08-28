@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef QMLFOLLOW_H
-#define QMLFOLLOW_H
+#ifndef QMLBEHAVIOR_H
+#define QMLBEHAVIOR_H
 
 #include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlstate.h>
 
 QT_BEGIN_HEADER
 
@@ -51,64 +52,40 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlFollowPrivate;
-class Q_DECLARATIVE_EXPORT QmlFollow : public QObject, public QmlPropertyValueSource,
-                                 public QmlParserStatus
+class QmlAbstractAnimation;
+class QmlBehaviorPrivate;
+class Q_DECLARATIVE_EXPORT QmlBehavior : public QObject, public QmlPropertyValueSource
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlFollow)
-    Q_INTERFACES(QmlPropertyValueSource)
-    Q_INTERFACES(QmlParserStatus)
+    Q_DECLARE_PRIVATE(QmlBehavior)
 
-    Q_PROPERTY(qreal source READ sourceValue WRITE setSourceValue)
-    Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity)
-    Q_PROPERTY(qreal spring READ spring WRITE setSpring)
-    Q_PROPERTY(qreal damping READ damping WRITE setDamping)
-    Q_PROPERTY(qreal epsilon READ epsilon WRITE setEpsilon)
-    Q_PROPERTY(qreal modulus READ modulus WRITE setModulus)
-    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
-    Q_PROPERTY(qreal value READ value NOTIFY valueChanged)
-    Q_PROPERTY(qreal modulus READ modulus WRITE setModulus NOTIFY modulusChanged)
-    Q_PROPERTY(qreal mass READ mass WRITE setMass NOTIFY massChanged)
-    Q_PROPERTY(bool inSync READ inSync NOTIFY syncChanged)
+    Q_PROPERTY(QVariant from READ fromValue WRITE setFromValue)
+    Q_PROPERTY(QVariant to READ toValue WRITE setToValue)
+    Q_CLASSINFO("DefaultProperty", "operations")
+    Q_PROPERTY(QmlList<QmlAbstractAnimation *>* operations READ operations)
 
 public:
-    QmlFollow(QObject *parent=0);
-    ~QmlFollow();
+    QmlBehavior(QObject *parent=0);
+    ~QmlBehavior();
 
+    QVariant fromValue() const;
+    void setFromValue(const QVariant &);
+    QVariant toValue() const;
+    void setToValue(const QVariant &);
     virtual void setTarget(const QmlMetaProperty &);
 
-    qreal sourceValue() const;
-    void setSourceValue(qreal value);
-    qreal velocity() const;
-    void setVelocity(qreal velocity);
-    qreal spring() const;
-    void setSpring(qreal spring);
-    qreal damping() const;
-    void setDamping(qreal damping);
-    qreal epsilon() const;
-    void setEpsilon(qreal epsilon);
-    qreal mass() const;
-    void setMass(qreal modulus);
-    qreal modulus() const;
-    void setModulus(qreal modulus);
-    bool enabled() const;
-    void setEnabled(bool enabled);
-    bool inSync() const;
+    QmlList<QmlAbstractAnimation *>* operations();
 
-    qreal value() const;
+    static bool _ignore;
 
-Q_SIGNALS:
-    void valueChanged(qreal);
-    void modulusChanged();
-    void massChanged();
-    void syncChanged();
+private Q_SLOTS:
+    void propertyValueChanged();
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlFollow)
+QML_DECLARE_TYPE(QmlBehavior)
 
 QT_END_HEADER
 
-#endif // QFXFOLLOW_H
+#endif // QMLBEHAVIOR_H

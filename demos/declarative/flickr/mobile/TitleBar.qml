@@ -3,6 +3,8 @@ import Qt 4.6
 Item {
     id: TitleBar
 
+    property string untaggedString: "Uploads from everyone"
+    property string taggedString: "Recent uploads tagged "
     BorderImage { source: "images/titlebar2.sci"; width: parent.width; height: parent.height + 14; y: -7 }
 
     Item {
@@ -22,13 +24,14 @@ Item {
             anchors.leftMargin: 10; anchors.rightMargin: 10
             anchors.verticalCenter: parent.verticalCenter
             elide: "ElideLeft"
-            text: (RssModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + RssModel.tags)
+            text: (RssModel.tags=="" ? untaggedString : taggedString + RssModel.tags)
             font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
         }
 
         Button {
-            id: TagButton; x: TitleBar.width - 50; y: 3; width: 45; height: 32; text: "..."
+            id: TagButton; x: TitleBar.width - 50; width: 45; height: 32; text: "..."
             onClicked: if (TitleBar.state == "Tags") accept(); else TitleBar.state = "Tags"
+            anchors.verticalCenter: parent.verticalCenter
         }
 
         Item {

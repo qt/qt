@@ -39,53 +39,22 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBEHAVIOUR_H
-#define QMLBEHAVIOUR_H
+#ifndef QMLXMLHTTPREQUEST_P_H
+#define QMLXMLHTTPREQUEST_P_H
 
-#include <QtDeclarative/qmlpropertyvaluesource.h>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlstate.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-QT_BEGIN_HEADER
+class QScriptEngine;
+void qt_add_qmlxmlhttprequest(QScriptEngine *engine);
 
-QT_BEGIN_NAMESPACE
+#endif // QMLXMLHTTPREQUEST_P_H
 
-QT_MODULE(Declarative)
-
-class QmlAbstractAnimation;
-class QmlBehaviourPrivate;
-class Q_DECLARATIVE_EXPORT QmlBehaviour : public QmlPropertyValueSource
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlBehaviour)
-
-    Q_PROPERTY(QVariant from READ fromValue WRITE setFromValue)
-    Q_PROPERTY(QVariant to READ toValue WRITE setToValue)
-    Q_CLASSINFO("DefaultProperty", "operations")
-    Q_PROPERTY(QmlList<QmlAbstractAnimation *>* operations READ operations)
-
-public:
-    QmlBehaviour(QObject *parent=0);
-    ~QmlBehaviour();
-
-    QVariant fromValue() const;
-    void setFromValue(const QVariant &);
-    QVariant toValue() const;
-    void setToValue(const QVariant &);
-    virtual void setTarget(const QmlMetaProperty &);
-
-    QmlList<QmlAbstractAnimation *>* operations();
-
-    static bool _ignore;
-
-private Q_SLOTS:
-    void propertyValueChanged();
-};
-
-QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QmlBehaviour)
-
-QT_END_HEADER
-
-#endif // QMLBEHAVIOUR_H

@@ -223,6 +223,9 @@ public:
         QGraphicsItemPrivate::setPosHelper(pos);
         q->geometryChanged(QRectF(this->pos.x(), this->pos.y(), width, height), oldGeometry);
     }
+
+    // Inherited from QGraphcisItemPrivate
+    virtual void focusedInScopeChanged();
 };
 
 QT_END_NAMESPACE

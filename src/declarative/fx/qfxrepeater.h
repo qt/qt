@@ -55,19 +55,22 @@ class Q_DECLARATIVE_EXPORT QFxRepeater : public QFxItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QVariant dataSource READ dataSource WRITE setDataSource) //### model
-    Q_PROPERTY(QmlComponent *component READ component WRITE setComponent) //### delegate
-    Q_CLASSINFO("DefaultProperty", "component")
-    //### count
+    Q_PROPERTY(QVariant model READ model WRITE setModel)
+    Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_CLASSINFO("DefaultProperty", "delegate")
+
 public:
     QFxRepeater(QFxItem *parent=0);
     virtual ~QFxRepeater();
 
-    QVariant dataSource() const;
-    void setDataSource(const QVariant &);
+    QVariant model() const;
+    void setModel(const QVariant &);
 
-    QmlComponent *component() const;
-    void setComponent(QmlComponent *);
+    QmlComponent *delegate() const;
+    void setDelegate(QmlComponent *);
+
+    int count() const;
 
 private:
     void regenerate();

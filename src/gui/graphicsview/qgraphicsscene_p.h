@@ -124,6 +124,8 @@ public:
     QBrush backgroundBrush;
     QBrush foregroundBrush;
 
+    void addItem(QGraphicsItem *, QGraphicsItem *focusScope = 0);
+
     bool stickyFocus;
     bool hasFocus;
     QGraphicsItem *focusItem;

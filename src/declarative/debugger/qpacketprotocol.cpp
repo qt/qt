@@ -391,7 +391,7 @@ QIODevice * QPacketProtocol::device()
   Only packets returned from QPacketProtocol::read() may be read from.  QPacket
   instances constructed by directly by applications are for transmission only 
   and are considered "write only".  Attempting to read data from them will 
-  result in undefined behaviour.
+  result in undefined behavior.
 
   \ingroup io
   \sa QPacketProtocol

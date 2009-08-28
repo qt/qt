@@ -183,6 +183,7 @@ public:
         struct {
             int property;
             int owner;
+            int castValue;
         } assignValueSource;
         struct {
             int property;

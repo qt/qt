@@ -48,34 +48,18 @@ QT_BEGIN_NAMESPACE
     \class QmlPropertyValueSource
     \brief The QmlPropertyValueSource class is inherited by property value sources such as animations and bindings.
  */
-QML_DEFINE_NOCREATE_TYPE(QmlPropertyValueSource)
 
 /*!
-    Constructs a QmlPropertyValueSource with parent \a parent.
+    Constructs a QmlPropertyValueSource.
 */
-QmlPropertyValueSource::QmlPropertyValueSource(QObject *parent)
-    : QObject(parent)
-    
+QmlPropertyValueSource::QmlPropertyValueSource()
 {
 }
 
 /*!
-  \internal
- */
-QmlPropertyValueSource::QmlPropertyValueSource(QObjectPrivate &dd, QObject *parent)
-    : QObject(dd, parent)
-{
-}
-
-/*!
+    \fn void QmlPropertyValueSource::setTarget(const QmlMetaProperty &property)
     Set the target \a property for the value source.  This method will
     be called by the QML engine when assigning a value source.
-
-    The default implementation does nothing.
 */
-void QmlPropertyValueSource::setTarget(const QmlMetaProperty &property)
-{
-    Q_UNUSED(property);
-}
 
 QT_END_NAMESPACE

@@ -26,7 +26,7 @@ Rectangle {
         styleColor: "#dedede"
     }
     Repeater {
-        dataSource: Page.stickies
+        model: Page.stickies
         Item {
             x: Math.random() * 200 + 100
             y: Math.random() * 300 + 50

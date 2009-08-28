@@ -325,7 +325,7 @@ public:
 void QFxGridViewPrivate::init()
 {
     Q_Q(QFxGridView);
-    q->setFlag(QGraphicsItem::ItemAutoDetectsFocusProxy);
+    q->setFlag(QGraphicsItem::ItemIsFocusScope);
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(sizeChange()));
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(sizeChange()));
 }
@@ -1254,6 +1254,7 @@ void QFxGridView::itemsInserted(int modelIndex, int count)
 void QFxGridView::itemsRemoved(int modelIndex, int count)
 {
     Q_D(QFxGridView);
+    bool currentRemoved = d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count;
     int index = d->mapFromModel(modelIndex);
     if (index == -1) {
         if (modelIndex + count - 1 < d->visibleIndex) {
@@ -1269,7 +1270,7 @@ void QFxGridView::itemsRemoved(int modelIndex, int count)
             d->currentIndex -= count;
             if (d->currentItem)
                 d->currentItem->index -= count;
-        } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
+        } else if (currentRemoved) {
             // current item has been removed.
             d->releaseItem(d->currentItem);
             d->currentItem = 0;
@@ -1311,7 +1312,7 @@ void QFxGridView::itemsRemoved(int modelIndex, int count)
         d->currentIndex -= count;
         if (d->currentItem)
             d->currentItem->index -= count;
-    } else if (d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count) {
+    } else if (currentRemoved) {
         // current item has been removed.
         d->releaseItem(d->currentItem);
         d->currentItem = 0;

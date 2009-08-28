@@ -5,9 +5,11 @@ examples/*/*/*
 !examples/*/*/*[.]*
 !examples/*/*/README
 examples/*/*/*[.]app
+!examples/declarative/*
 demos/*/*
 !demos/*/*[.]*
 demos/*/*[.]app
+!demos/declarative/*
 config.tests/*/*/*
 !config.tests/*/*/*[.]*
 config.tests/*/*/*[.]app

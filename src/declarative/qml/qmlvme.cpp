@@ -591,13 +591,12 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
 
         case QmlInstruction::StoreValueSource:
             {
-                QmlPropertyValueSource *vs = 
-                    static_cast<QmlPropertyValueSource *>(stack.pop());
-                QObject *target = 
-                    stack.at(stack.count() - 1 - instr.assignValueSource.owner);
+                QObject *obj = stack.pop();
+                QmlPropertyValueSource *vs = reinterpret_cast<QmlPropertyValueSource *>(reinterpret_cast<char *>(obj) + instr.assignValueSource.castValue);
+                QObject *target = stack.at(stack.count() - 1 - instr.assignValueSource.owner);
                 QmlMetaProperty prop;
                 prop.restore(instr.assignValueSource.property, target, ctxt);
-                vs->setParent(target);
+                obj->setParent(target);
                 vs->setTarget(prop);
             }
             break;

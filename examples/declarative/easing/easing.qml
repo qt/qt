@@ -56,7 +56,7 @@ Rectangle {
         anchors.left: Window.left
         anchors.right: Window.right
         Repeater {
-            dataSource: EasingTypes
+            model: EasingTypes
             Component {
                 Text {
                     id: Text

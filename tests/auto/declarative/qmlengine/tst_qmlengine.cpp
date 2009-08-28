@@ -1,4 +1,6 @@
 #include <qtest.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/QmlComponent>
 #include <QtDeclarative/QmlEngine>
 
 #include <QtCore/QDebug>
@@ -12,30 +14,83 @@ public:
     tst_qmlengine() {}
 
 private slots:
-    void componentSearchPath();
+    void valueTypeFunctions();
+
+private:
+    QmlEngine engine;
 };
 
-
-void tst_qmlengine::componentSearchPath()
+class MyTypeObject : public QObject
 {
-    QFile file(SRCDIR  "/imports.qml");
-    QVERIFY(file.open(QIODevice::ReadOnly));
+    Q_OBJECT
+    Q_PROPERTY(QPoint pointProperty READ pointProperty WRITE setPointProperty);
+    Q_PROPERTY(QPointF pointFProperty READ pointFProperty WRITE setPointFProperty);
+    Q_PROPERTY(QSize sizeProperty READ sizeProperty WRITE setSizeProperty);
+    Q_PROPERTY(QSizeF sizeFProperty READ sizeFProperty WRITE setSizeFProperty);
+    Q_PROPERTY(QRect rectProperty READ rectProperty WRITE setRectProperty NOTIFY rectPropertyChanged);
+    Q_PROPERTY(QRectF rectFProperty READ rectFProperty WRITE setRectFProperty);
+    
+public:
+    MyTypeObject() {}
 
-    QmlEngine engine;
-
-    QList<QUrl> searchPath = engine.componentSearchPath(file.readAll(),
-                                                        QUrl::fromLocalFile(file.fileName()));
-
-    QList<QUrl> expected;
-    expected << QUrl::fromLocalFile(SRCDIR);
-    expected << QUrl::fromLocalFile(file.fileName()).resolved(QUrl("import1"));
-    expected << QUrl::fromLocalFile(file.fileName()).resolved(QUrl("import2"));
-
-    QCOMPARE(searchPath.size(), expected.size());
-    for (int i = 0; i < expected.size(); ++i) {
-        QCOMPARE(searchPath.at(i).toString(QUrl::StripTrailingSlash),
-                 expected.at(i).toString(QUrl::StripTrailingSlash));
+    QPoint pointPropertyValue;
+    QPoint pointProperty() const {
+       return pointPropertyValue;
     }
+    void setPointProperty(const QPoint &v) {
+        pointPropertyValue = v;
+    }
+
+    QPointF pointFPropertyValue;
+    QPointF pointFProperty() const {
+       return pointFPropertyValue;
+    }
+    void setPointFProperty(const QPointF &v) {
+        pointFPropertyValue = v;
+    }
+
+    QSize sizePropertyValue;
+    QSize sizeProperty() const {
+       return sizePropertyValue;
+    }
+    void setSizeProperty(const QSize &v) {
+        sizePropertyValue = v;
+    }
+
+    QSizeF sizeFPropertyValue;
+    QSizeF sizeFProperty() const {
+       return sizeFPropertyValue;
+    }
+    void setSizeFProperty(const QSizeF &v) {
+        sizeFPropertyValue = v;
+    }
+
+    QRect rectPropertyValue;
+    QRect rectProperty() const {
+       return rectPropertyValue;
+    }
+    void setRectProperty(const QRect &v) {
+        rectPropertyValue = v;
+    }
+
+    QRectF rectFPropertyValue;
+    QRectF rectFProperty() const {
+       return rectFPropertyValue;
+    }
+    void setRectFProperty(const QRectF &v) {
+        rectFPropertyValue = v;
+    }
+
+};
+QML_DECLARE_TYPE(MyTypeObject);
+QML_DEFINE_TYPE(Test, 1, 0, 0, MyTypeObject, MyTypeObject);
+
+void tst_qmlengine::valueTypeFunctions()
+{
+    QmlComponent component(&engine, SRCDIR "/functions.qml");
+    MyTypeObject *obj = qobject_cast<MyTypeObject*>(component.create());
+    QCOMPARE(obj->rectProperty(), QRect(0,0,100,100));
+    QCOMPARE(obj->rectFProperty(), QRectF(0,0.5,100,99.5));
 }
 
 QTEST_MAIN(tst_qmlengine)

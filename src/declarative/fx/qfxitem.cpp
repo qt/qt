@@ -1152,11 +1152,12 @@ QFxItem::~QFxItem()
         QFxAnchors *anchor = d->dependantAnchors.at(ii);
         anchor->d_func()->clearItem(this);
     }
-    for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
-        QFxAnchors *anchor = d->dependantAnchors.at(ii);
-        if (anchor->d_func()->item && anchor->d_func()->item->parentItem() != this) //child will be deleted anyway
-            anchor->d_func()->updateOnComplete();
-    }
+    if (!d->parent || (parentItem() && !parentItem()->QGraphicsItem::d_ptr->inDestructor))
+        for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
+            QFxAnchors *anchor = d->dependantAnchors.at(ii);
+            if (anchor->d_func()->item && anchor->d_func()->item->parentItem() != this) //child will be deleted anyway
+                anchor->d_func()->updateOnComplete();
+        }
     delete d->_anchorLines; d->_anchorLines = 0;
     delete d->_anchors; d->_anchors = 0;
 }
@@ -2362,7 +2363,14 @@ QPointF QFxItemPrivate::computeTransformOrigin() const
 */
 bool QFxItem::sceneEvent(QEvent *event)
 {
-    return QGraphicsItem::sceneEvent(event);
+    bool rv = QGraphicsItem::sceneEvent(event);
+
+    if (event->type() == QEvent::FocusIn ||
+        event->type() == QEvent::FocusOut) {
+        activeFocusChanged(hasActiveFocus());
+    }
+
+    return rv;
 }
 
 /*!
@@ -2547,49 +2555,20 @@ bool QFxItem::heightValid() const
 
 bool QFxItem::hasFocus() const
 {
-    const QGraphicsItem *current = this->parentItem();
-    while (current && !(current->flags() & ItemAutoDetectsFocusProxy))
-        current = current->parentItem();
-
-    if (current)
-        return current->focusProxy() == this;
-    else
-        return QGraphicsItem::hasFocus();
+    Q_D(const QFxItem);
+    return d->itemIsFocusedInScope;
 }
 
 void QFxItem::setFocus(bool focus)
 {
-    QGraphicsScene *s = scene();
-    if (!s) {
-        if (focus) QGraphicsItem::setFocus(Qt::OtherFocusReason);
-        else QGraphicsItem::clearFocus();
-        focusChanged(focus);
-        return;
-    }
+    if (focus) QGraphicsItem::setFocus(Qt::OtherFocusReason);
+    else QGraphicsItem::clearFocus();
+}
 
-    QGraphicsItem *current = this->parentItem();
-    while (current && !(current->flags() & ItemAutoDetectsFocusProxy))
-        current = current->parentItem();
-
-    if (!current) {
-        if (focus) QGraphicsItem::setFocus(Qt::OtherFocusReason);
-        else QGraphicsItem::clearFocus();
-        focusChanged(focus);
-        return;
-    }
-
-    if (current->focusProxy() && current->focusProxy() != this) {
-        QFxItem *currentItem = qobject_cast<QFxItem *>(current->focusProxy());
-        if (currentItem)
-            currentItem->setFocus(false);
-    }
-
-    if (current->focusProxy() == this && !focus)
-        current->setFocusProxy(0);
-    else if (focus)
-        current->setFocusProxy(this);
-
-    focusChanged(focus);
+void QFxItemPrivate::focusedInScopeChanged()
+{
+    Q_Q(QFxItem);
+    q->focusChanged(q->hasFocus());
 }
 
 /*!

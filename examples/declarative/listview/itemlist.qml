@@ -44,7 +44,7 @@ Rectangle {
             anchors.centerIn: parent
             spacing: 20
             Repeater {
-                dataSource: ItemModel.count
+                model: ItemModel.count
                 Rectangle {
                     width: 5; height: 5
                     radius: 3
