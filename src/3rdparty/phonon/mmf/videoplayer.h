@@ -85,9 +85,10 @@ private:
 
     // AbstractPlayer
     virtual void videoOutputChanged();
-
+    
     void getNativeWindowSystemHandles();
-
+    void updateMmfOutput();
+    
 private:
     CVideoPlayerUtility*                m_player;
     QScopedPointer<VideoOutput>         m_dummyVideoOutput;
@@ -98,10 +99,12 @@ private:
     RWindowBase*                        m_window;
     TRect                               m_windowRect;
     TRect                               m_clipRect;
-
+    
     QSize                               m_frameSize;
     qint64                              m_totalTime;
 
+    bool                                m_mmfOutputChangePending;
+    
 };
 }
 }

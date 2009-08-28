@@ -40,6 +40,7 @@ MMF::VideoPlayer::VideoPlayer()
         ,   m_screenDevice(NULL)
         ,   m_window(NULL)
         ,   m_totalTime(0)
+        ,   m_mmfOutputChangePending(false)
 {
     construct();
 }
@@ -50,6 +51,7 @@ MMF::VideoPlayer::VideoPlayer(const AbstractPlayer& player)
         ,   m_screenDevice(NULL)
         ,   m_window(NULL)
         ,   m_totalTime(0)
+        ,   m_mmfOutputChangePending(false)
 {
     construct();
 }
@@ -222,6 +224,12 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
 
         videoOutput().setFrameSize(m_frameSize);
 
+        // See comment in updateMmfOutput
+        if(m_mmfOutputChangePending) {
+            TRACE_0("MMF output change pending - pushing now");
+            updateMmfOutput();
+        }       
+        
         emit totalTimeChanged(totalTime());
         changeState(StoppedState);
     } else {
@@ -288,7 +296,7 @@ void MMF::VideoPlayer::MvpuoEvent(const TMMFEvent &aEvent)
 void MMF::VideoPlayer::videoOutputRegionChanged()
 {
     TRACE_CONTEXT(VideoPlayer::videoOutputRegionChanged, EVideoInternal);
-    TRACE_ENTRY_0();
+    TRACE_ENTRY("state %d", state());
 
 #ifdef PHONON_MMF_DEBUG_VIDEO_OUTPUT
     videoOutput().dump();
@@ -296,6 +304,27 @@ void MMF::VideoPlayer::videoOutputRegionChanged()
 
     getNativeWindowSystemHandles();
 
+    // See comment in updateMmfOutput
+    if(state() == LoadingState)
+        m_mmfOutputChangePending = true;
+    else
+        updateMmfOutput();
+        
+    TRACE_EXIT_0();
+}
+
+void MMF::VideoPlayer::updateMmfOutput()
+{
+    TRACE_CONTEXT(VideoPlayer::updateMmfOutput, EVideoInternal);
+    TRACE_ENTRY_0();
+    
+    // Calling SetDisplayWindowL is a no-op unless the MMF controller has 
+    // been loaded, so we shouldn't do it.  Instead, the
+    // m_mmfOutputChangePending flag is used to record the fact that we
+    // need to call SetDisplayWindowL, and this is checked in 
+    // MvpuoPrepareComplete, at which point the MMF controller has been
+    // loaded.
+    
     TRAPD(err,
           m_player->SetDisplayWindowL
           (
@@ -309,7 +338,9 @@ void MMF::VideoPlayer::videoOutputRegionChanged()
         TRACE("SetDisplayWindowL error %d", err);
         setError(NormalError);
     }
-
+    
+    m_mmfOutputChangePending = false;
+    
     TRACE_EXIT_0();
 }
 
