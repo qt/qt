@@ -10270,10 +10270,8 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
                      info->widget, info->opacity, info->effectTransform, info->wasDirtySceneTransform,
                      info->drawItem);
     } else {
-        QTransform effectTransform = painter->worldTransform();
-        effectTransform *= info->painter->worldTransform().inverted();
-        if (info->effectTransform)
-            effectTransform *= *info->effectTransform;
+        QTransform effectTransform = info->painter->worldTransform().inverted();
+        effectTransform *= painter->worldTransform();
         scened->draw(item, painter, info->viewTransform, info->transformPtr, info->exposedRegion,
                      info->widget, info->opacity, &effectTransform, info->wasDirtySceneTransform,
                      info->drawItem);
