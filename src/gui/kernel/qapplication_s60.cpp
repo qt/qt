@@ -330,6 +330,10 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
              */
             CreateWindowL(qwidget->parentWidget()->winId());
         
+        // Necessary in order to be able to track the activation status of
+        // the control's window
+        qwidget->d_func()->createTLExtra();
+        
         SetFocusing(true);
         m_longTapDetector = QLongTapTimer::NewL(this);
     }

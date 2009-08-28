@@ -521,7 +521,7 @@ void QWidgetPrivate::show_sys()
         return;
     }
 
-    if (q->isWindow() && q->internalWinId()) {
+    if (q->internalWinId()) {
 
         WId id = q->internalWinId();
         if (!extra->topextra->activated) {
@@ -529,12 +529,15 @@ void QWidgetPrivate::show_sys()
             extra->topextra->activated = 1;
         }
         id->MakeVisible(true);
-        id->SetFocus(true);
+        
+        if(q->isWindow())
+        	id->SetFocus(true);
 
         // Force setting of the icon after window is made visible,
         // this is needed even WA_SetWindowIcon is not set, as in that case we need
         // to reset to the application level window icon
-        setWindowIcon_sys(true);
+        if(q->isWindow())
+            setWindowIcon_sys(true);
     }
 
     invalidateBuffer(q->rect());
