@@ -102,6 +102,7 @@ enum MetaObjectFlags {
     DynamicMetaObject = 0x01
 };
 
+class QMutex;
 
 struct QMetaObjectPrivate
 {
@@ -127,7 +128,9 @@ struct QMetaObjectPrivate
                         int type = 0, int *types = 0);
     static bool disconnect(const QObject *sender, int signal_index,
                            const QObject *receiver, int method_index);
-
+    static inline bool disconnectHelper(QObjectPrivate::Connection *c,
+                                        const QObject *receiver, int method_index,
+                                        QMutex *senderMutex);
 };
 
 #ifndef UTILS_H

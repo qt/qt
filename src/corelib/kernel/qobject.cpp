@@ -3079,6 +3079,43 @@ bool QMetaObject::disconnect(const QObject *sender, int signal_index,
 }
 
 /*! \internal
+    Helper function to remove the connection from the senders list and setting the receivers to 0
+ */
+bool QMetaObjectPrivate::disconnectHelper(QObjectPrivate::Connection *c,
+                                          const QObject *receiver, int method_index,
+                                          QMutex *senderMutex)
+{
+    bool success = false;
+    while (c) {
+        if (c->receiver
+            && (receiver == 0 || (c->receiver == receiver
+                           && (method_index < 0 || c->method == method_index)))) {
+            bool needToUnlock = false;
+            QMutex *receiverMutex = 0;
+            if (!receiver) {
+                receiverMutex = signalSlotLock(c->receiver);
+                // need to relock this receiver and sender in the correct order
+                needToUnlock = QOrderedMutexLocker::relock(senderMutex, receiverMutex);
+            }
+            if (c->receiver) {
+                *c->prev = c->next;
+                if (c->next)
+                    c->next->prev = c->prev;
+            }
+
+            if (needToUnlock)
+                receiverMutex->unlock();
+
+            c->receiver = 0;
+
+            success = true;
+        }
+        c = c->nextConnectionList;
+    }
+    return success;
+}
+
+/*! \internal
     Same as the QMetaObject::disconnect, but \a signal_index must be the result of QObjectPrivate::signalIndex
  */
 bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
@@ -3088,7 +3125,6 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
         return false;
 
     QObject *s = const_cast<QObject *>(sender);
-    QObject *r = const_cast<QObject *>(receiver);
 
     QMutex *senderMutex = signalSlotLock(sender);
     QMutex *receiverMutex = receiver ? signalSlotLock(receiver) : 0;
@@ -3107,58 +3143,17 @@ bool QMetaObjectPrivate::disconnect(const QObject *sender, int signal_index,
         for (signal_index = -1; signal_index < connectionLists->count(); ++signal_index) {
             QObjectPrivate::Connection *c =
                 (*connectionLists)[signal_index].first;
-            while (c) {
-                if (c->receiver
-                    && (r == 0 || (c->receiver == r
-                                   && (method_index < 0 || c->method == method_index)))) {
-                    QMutex *m = signalSlotLock(c->receiver);
-                    bool needToUnlock = false;
-                    if (!receiverMutex && senderMutex != m) {
-                        // need to relock this receiver and sender in the correct order
-                        needToUnlock = QOrderedMutexLocker::relock(senderMutex, m);
-                    }
-                    if (c->receiver) {
-                        *c->prev = c->next;
-                        if (c->next) c->next->prev = c->prev;
-                    }
-
-                    if (needToUnlock)
-                        m->unlock();
-
-                    c->receiver = 0;
-
-                    success = true;
-                    connectionLists->dirty = true;
-                }
-                c = c->nextConnectionList;
+            if (disconnectHelper(c, receiver, method_index, senderMutex)) {
+                success = true;
+                connectionLists->dirty = true;
             }
         }
     } else if (signal_index < connectionLists->count()) {
         QObjectPrivate::Connection *c =
             (*connectionLists)[signal_index].first;
-        while (c) {
-            if (c->receiver
-                && (r == 0 || (c->receiver == r
-                               && (method_index < 0 || c->method == method_index)))) {
-                QMutex *m = signalSlotLock(c->receiver);
-                bool needToUnlock = false;
-                if (!receiverMutex && senderMutex != m) {
-                    // need to relock this receiver and sender in the correct order
-                    needToUnlock = QOrderedMutexLocker::relock(senderMutex, m);
-                }
-                if (c->receiver) {
-                    *c->prev = c->next;
-                    if (c->next) c->next->prev = c->prev;
-                }
-
-                if (needToUnlock)
-                    m->unlock();
-                c->receiver = 0;
-
-                success = true;
-                connectionLists->dirty = true;
-            }
-            c = c->nextConnectionList;
+        if (disconnectHelper(c, receiver, method_index, senderMutex)) {
+            success = true;
+            connectionLists->dirty = true;
         }
     }
 
