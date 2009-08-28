@@ -175,10 +175,6 @@ Q_CORE_EXPORT TLibraryFunction qt_resolveS60PluginFunc(int ordinal)
     return qt_s60_plugin_resolver()->resolve(ordinal);
 }
 
-/*!
-\internal
-Provides global access to a shared RFs.
-*/
 class QS60RFsSession
 {
 public:
