@@ -3789,4 +3789,15 @@ QScriptSyntaxCheckResult &QScriptSyntaxCheckResult::operator=(const QScriptSynta
     return *this;
 }
 
+#ifdef QT_BUILD_INTERNAL
+Q_AUTOTEST_EXPORT bool qt_script_isJITEnabled()
+{
+#if ENABLE(JIT)
+    return true;
+#else
+    return false;
+#endif
+}
+#endif
+
 QT_END_NAMESPACE
