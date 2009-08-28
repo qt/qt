@@ -92,6 +92,8 @@ class QFxFlickablePrivate : public QFxItemPrivate
 public:
     QFxFlickablePrivate();
     void init();
+    void flickX(qreal velocity);
+    void flickY(qreal velocity);
     virtual void fixupX();
     virtual void fixupY();
     void updateBeginningEnd();
@@ -126,6 +128,8 @@ public:
     QTime velocityTime;
     QPointF lastFlickablePosition;
     int velocityDecay;
+    int flickTargetX;
+    int flickTargetY;
 
     void updateVelocity();
     struct Velocity : public QmlTimeLineValue
