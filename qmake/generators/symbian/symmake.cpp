@@ -246,9 +246,9 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
 
     if (targetType == TypeExe) {
         if (!project->values("CONFIG").contains("no_icon", Qt::CaseInsensitive)) {
-            writeRegRssFile(fixedTarget, userRssRules);
-            writeRssFile(fixedTarget, numberOfIcons, iconFile);
-            writeLocFile(fixedTarget, symbianLangCodes);
+            writeRegRssFile(userRssRules);
+            writeRssFile(numberOfIcons, iconFile);
+            writeLocFile(symbianLangCodes);
         }
     }
 
@@ -261,7 +261,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
 void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile)
 {
     QString pkgFilename = QString("%1_template.%2")
-                          .arg(fileInfo(project->projectFile()).completeBaseName())
+                          .arg(fixedTarget)
                           .arg("pkg");
     QFile pkgFile(pkgFilename);
     if (!pkgFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -310,8 +310,11 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile)
     QString applicationVersion = project->first("VERSION").isEmpty() ? "1,0,0" : project->first("VERSION").replace('.', ',');
 
     if (!containsStartWithItem('#', rawPkgPreRules)) {
+        QString visualTarget = escapeFilePath(fileFixify(project->first("TARGET")));
+        visualTarget = removePathSeparators(visualTarget);
+
         t << "; SIS header: name, uid, version" << endl;
-        t << QString("#{\"%1\"},(%2),%3").arg(fixedTarget).arg(uid3).arg(applicationVersion) << endl << endl;
+        t << QString("#{\"%1\"},(%2),%3").arg(visualTarget).arg(uid3).arg(applicationVersion) << endl << endl;
     }
 
     // Localized vendor name
@@ -466,6 +469,7 @@ void SymbianMakefileGenerator::init()
     MakefileGenerator::init();
     fixedTarget = escapeFilePath(fileFixify(project->first("TARGET")));
     fixedTarget = removePathSeparators(fixedTarget);
+    removeSpecialCharacters(fixedTarget);
 
     if (0 != project->values("QMAKE_PLATFORM").size())
         platform = varGlue("QMAKE_PLATFORM", "", " ", "");
@@ -1182,9 +1186,9 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     }
 }
 
-void SymbianMakefileGenerator::writeRegRssFile(QString &appName, QStringList &userItems)
+void SymbianMakefileGenerator::writeRegRssFile(QStringList &userItems)
 {
-    QString filename(appName);
+    QString filename(fixedTarget);
     filename.append("_reg.rss");
     QFile ft(filename);
     if (ft.open(QIODevice::WriteOnly)) {
@@ -1197,7 +1201,7 @@ void SymbianMakefileGenerator::writeRegRssFile(QString &appName, QStringList &us
         t << "// * user." << endl;
         t << "// ============================================================================" << endl;
         t << endl;
-        t << "#include <" << appName << ".rsg>" << endl;
+        t << "#include <" << fixedTarget << ".rsg>" << endl;
         t << "#include <appinfo.rh>" << endl;
         t << endl;
         //t << "#include <data_caging_paths.hrh>" << "\n" << endl;
@@ -1205,8 +1209,8 @@ void SymbianMakefileGenerator::writeRegRssFile(QString &appName, QStringList &us
         t << "UID3 " << uid3 << endl << endl;
         t << "RESOURCE APP_REGISTRATION_INFO" << endl;
         t << "\t{" << endl;
-        t << "\tapp_file=\"" << appName << "\";" << endl;
-        t << "\tlocalisable_resource_file=\"" RESOURCE_DIRECTORY_RESOURCE << appName << "\";" << endl;
+        t << "\tapp_file=\"" << fixedTarget << "\";" << endl;
+        t << "\tlocalisable_resource_file=\"" RESOURCE_DIRECTORY_RESOURCE << fixedTarget << "\";" << endl;
         t << endl;
 
         foreach(QString item, userItems)
@@ -1217,9 +1221,9 @@ void SymbianMakefileGenerator::writeRegRssFile(QString &appName, QStringList &us
     }
 }
 
-void SymbianMakefileGenerator::writeRssFile(QString &appName, QString &numberOfIcons, QString &iconFile)
+void SymbianMakefileGenerator::writeRssFile(QString &numberOfIcons, QString &iconFile)
 {
-    QString filename(appName);
+    QString filename(fixedTarget);
     filename.append(".rss");
     QFile ft(filename);
     if (ft.open(QIODevice::WriteOnly)) {
@@ -1233,7 +1237,7 @@ void SymbianMakefileGenerator::writeRssFile(QString &appName, QString &numberOfI
         t << "// ============================================================================" << endl;
         t << endl;
         t << "#include <appinfo.rh>" << endl;
-        t << "#include \"" << appName << ".loc\"" << endl;
+        t << "#include \"" << fixedTarget << ".loc\"" << endl;
         t << endl;
         t << "RESOURCE LOCALISABLE_APP_INFO r_localisable_app_info" << endl;
         t << "\t{" << endl;
@@ -1260,9 +1264,9 @@ void SymbianMakefileGenerator::writeRssFile(QString &appName, QString &numberOfI
     }
 }
 
-void SymbianMakefileGenerator::writeLocFile(QString &appName, QStringList &symbianLangCodes)
+void SymbianMakefileGenerator::writeLocFile(QStringList &symbianLangCodes)
 {
-    QString filename(appName);
+    QString filename(fixedTarget);
     filename.append(".loc");
     QFile ft(filename);
     if (ft.open(QIODevice::WriteOnly)) {
@@ -1276,18 +1280,16 @@ void SymbianMakefileGenerator::writeLocFile(QString &appName, QStringList &symbi
         t << "// ============================================================================" << endl;
         t << endl;
         t << "#ifdef LANGUAGE_SC" << endl;
-        //t << "#include \"" << appName << ".l01\"" << endl;
-        t << "#define STRING_r_short_caption \"" << appName  << "\"" << endl;
-        t << "#define STRING_r_caption \"" << appName  << "\"" << endl;
+        t << "#define STRING_r_short_caption \"" << fixedTarget  << "\"" << endl;
+        t << "#define STRING_r_caption \"" << fixedTarget  << "\"" << endl;
         foreach(QString lang, symbianLangCodes) {
             t << "#elif defined LANGUAGE_" << lang << endl;
-            //t << "#include \"" << appName << ".l" << lang << "\"" << endl;
-            t << "#define STRING_r_short_caption \"" << appName  << "\"" << endl;
-            t << "#define STRING_r_caption \"" << appName  << "\"" << endl;
+            t << "#define STRING_r_short_caption \"" << fixedTarget  << "\"" << endl;
+            t << "#define STRING_r_caption \"" << fixedTarget  << "\"" << endl;
         }
         t << "#else" << endl;
-        t << "#define STRING_r_short_caption \"" << appName  << "\"" << endl;
-        t << "#define STRING_r_caption \"" << appName  << "\"" << endl;
+        t << "#define STRING_r_short_caption \"" << fixedTarget  << "\"" << endl;
+        t << "#define STRING_r_caption \"" << fixedTarget  << "\"" << endl;
         t << "#endif" << endl;
     } else {
         PRINT_FILE_CREATE_ERROR(filename);
@@ -1633,8 +1635,10 @@ void SymbianMakefileGenerator::removeSpecialCharacters(QString& str)
 void SymbianMakefileGenerator::writeSisxTargets(QTextStream &t)
 {
     t << SISX_TARGET ": " RESTORE_BUILD_TARGET << endl;
-    QString sisxcommand = QString("\t$(if $(wildcard %1_template.%2),$(if $(wildcard %3),$(MAKE) -s %4,$(MAKE) -s %5),$(MAKE) -s %6)")
-                          .arg(fileInfo(project->projectFile()).completeBaseName())
+    QString sisxcommand = QString("\t$(if $(wildcard %1_template.%2),$(if $(wildcard %3)," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %4,$(MAKE) -s -f $(MAKEFILE) %5)," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %6)")
+                          .arg(fixedTarget)
                           .arg("pkg")
                           .arg(MAKE_CACHE_NAME)
                           .arg(OK_SISX_TARGET)
@@ -1645,8 +1649,9 @@ void SymbianMakefileGenerator::writeSisxTargets(QTextStream &t)
 
     t << OK_SISX_TARGET ":" << endl;
 
-    QString pkgcommand = QString("\tcreatepackage.bat %1_template.%2 $(TARGET) $(PLATFORM) $(CERTIFICATE) $(KEY) $(PASSPHRASE)")
-                          .arg(fileInfo(project->projectFile()).completeBaseName())
+    QString pkgcommand = QString("\tcreatepackage.bat %1_template.%2 $(QT_SISX_TARGET) " \
+                                 "$(QT_SISX_PLATFORM) $(QT_SISX_CERTIFICATE) $(QT_SISX_KEY) $(QT_SISX_PASSPHRASE)")
+                          .arg(fixedTarget)
                           .arg("pkg");
     t << pkgcommand << endl;
     t << endl;

@@ -25,8 +25,8 @@ $(STORE_BUILD_TARGET):
 	echo "#                make sisx target." >> $(CACHE_FILENAME) && \
 	echo "#  Version     : " >> $(CACHE_FILENAME) && \
 	echo "# ==============================================================================" >> $(CACHE_FILENAME) && \
-	echo PLATFORM ?= $(PLATFORM_PATH) >> $(CACHE_FILENAME) && \
-	echo TARGET ?= $(CFG_PATH) >> $(CACHE_FILENAME) \
+	echo QT_SISX_PLATFORM ?= $(PLATFORM_PATH) >> $(CACHE_FILENAME) && \
+	echo QT_SISX_TARGET ?= $(CFG_PATH) >> $(CACHE_FILENAME) \
 	$(call endrule,qmake_store_build)
 endef
 

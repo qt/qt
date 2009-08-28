@@ -117,9 +117,9 @@ protected:
 
     void writeCustomDefFile();
 
-    void writeRegRssFile(QString &appname, QStringList &useritems);
-    void writeRssFile(QString &appName, QString &numberOfIcons, QString &iconfile);
-    void writeLocFile(QString &appName, QStringList &symbianLangCodes);
+    void writeRegRssFile(QStringList &useritems);
+    void writeRssFile(QString &numberOfIcons, QString &iconfile);
+    void writeLocFile(QStringList &symbianLangCodes);
     void readRssRules(QString &numberOfIcons, QString &iconFile, QStringList &userRssRules);
 
     QStringList symbianLangCodesFromTsFiles();

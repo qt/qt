@@ -147,7 +147,7 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         QString makefile(Option::fixPathToTargetOS(fileInfo(wrapperFileName).canonicalFilePath()));
         foreach(QString target, wrapperTargets) {
             t << target << " : " << makefile << endl;
-            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << " PLATFORM=$(PLATFORM) TARGET=$(CFG)" << endl << endl;
+            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << " QT_SISX_PLATFORM=$(PLATFORM) QT_SISX_TARGET=$(CFG)" << endl << endl;
         }
 
         t << endl;
@@ -183,10 +183,8 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "#" << endl;
     t << "# ==============================================================================" << "\n" << endl;
     t << endl;
-    QString ofile = Option::fixPathToTargetOS(Option::output.fileName());
-    if (ofile.lastIndexOf(Option::dir_sep) != -1)
-        ofile = ofile.right(ofile.length() - ofile.lastIndexOf(Option::dir_sep) - 1);
-    t << "MAKEFILE          = " << ofile << endl;
+
+    t << "MAKEFILE          = " << wrapperFile.fileName() << endl;
     t << "QMAKE             = " << Option::fixPathToTargetOS(var("QMAKE_QMAKE")) << endl;
     t << "DEL_FILE          = " << var("QMAKE_DEL_FILE") << endl;
     t << "DEL_DIR           = " << var("QMAKE_DEL_DIR") << endl;
@@ -429,8 +427,8 @@ void SymbianAbldMakefileGenerator::writeStoreBuildTarget(QTextStream &t)
     t << "\t@echo # >> " MAKE_CACHE_NAME << endl;
     t << "\t@echo # ============================================================================== >> " MAKE_CACHE_NAME <<  endl;
     t << "\t@echo. >> " MAKE_CACHE_NAME <<  endl;
-    t << "\t@echo PLATFORM ?= $(PLATFORM) >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo TARGET ?= $(TARGET) >> " MAKE_CACHE_NAME << endl;
+    t << "\t@echo QT_SISX_PLATFORM ?= $(QT_SISX_PLATFORM) >> " MAKE_CACHE_NAME << endl;
+    t << "\t@echo QT_SISX_TARGET ?= $(QT_SISX_TARGET) >> " MAKE_CACHE_NAME << endl;
     t << endl;
 
     generatedFiles << MAKE_CACHE_NAME;
