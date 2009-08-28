@@ -80,8 +80,6 @@ public:
     void setStyleProperty(const char *name, const QVariant &value);
     QVariant styleProperty(const char *name) const;
 
-    bool event(QEvent *e);
-
 #ifndef Q_WS_S60
     static QStringList partKeys();
     static QStringList colorListKeys();

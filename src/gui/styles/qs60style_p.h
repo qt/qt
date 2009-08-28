@@ -292,8 +292,6 @@ public:
     };
 };
 
-class QFocusFrame;
-
 // Private class
 #ifdef Q_OS_SYMBIAN
 NONSHARABLE_CLASS (QS60StylePrivate)
@@ -432,6 +430,8 @@ public:
     //access to theme palette
     static QPalette* themePalette();
 
+    static int focusRectPenWidth();
+
     static const layoutHeader m_layoutHeaders[];
     static const short data[][MAX_PIXELMETRICS];
 
@@ -499,8 +499,6 @@ private:
     // defined theme palette
     static QPalette *m_themePalette;
     QPalette m_originalPalette;
-
-    QPointer<QFocusFrame> m_focusFrame;
 };
 
 QT_END_NAMESPACE
