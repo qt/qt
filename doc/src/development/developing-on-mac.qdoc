@@ -128,7 +128,7 @@
         \row
             \o 10.6
             \o Snow Leopard
-            \o Carbon
+            \o Cocoa/Carbon
             \o 32
             \o PPC/Intel
             \o Yes
@@ -136,10 +136,12 @@
             \o 10.6
             \o Snow Leopard
             \o Cocoa
-            \o 32/64
-            \o PPC/Intel
+            \o 64
+            \o Intel
             \o Yes
     \endtable
+    
+    Note that building for ppc-64 is not supported on 10.6.
 
     \section2 Which One Should I Use?
 
