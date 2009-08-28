@@ -50,6 +50,9 @@
 #include <QtCore/qmetaobject.h>
 #include "CodeBlock.h"
 #include "JSFunction.h"
+#if ENABLE(JIT)
+#include "MacroAssemblerCodeRef.h"
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -154,7 +157,7 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
     lineNumber = -1;
     columnNumber = -1;
 
-    const JSC::ExecState *frame = QScriptEnginePrivate::frameForContext(context);
+    JSC::CallFrame *frame = const_cast<JSC::CallFrame *>(QScriptEnginePrivate::frameForContext(context));
 
     // Get the line number:
 
@@ -171,8 +174,13 @@ QScriptContextInfoPrivate::QScriptContextInfoPrivate(const QScriptContext *conte
             JSC::Instruction *returnPC = aboveFrame->returnPC();
             JSC::CodeBlock *codeBlock = frame->codeBlock();
             if (returnPC && codeBlock) {
-                lineNumber = codeBlock->lineNumberForBytecodeOffset(const_cast<JSC::ExecState *>(frame),
-                                                                    returnPC - codeBlock->instructions().begin() -1);
+#if ENABLE(JIT)
+                unsigned bytecodeOffset = codeBlock->getBytecodeIndex(frame, JSC::ReturnAddressPtr(returnPC));
+#else
+                unsigned bytecodeOffset = returnPC - codeBlock->instructions().begin();
+#endif
+                bytecodeOffset--; //because returnPC is on the next instruction. We want the current one
+                lineNumber = codeBlock->lineNumberForBytecodeOffset(const_cast<JSC::ExecState *>(frame), bytecodeOffset);
             }
         }
     } else {
