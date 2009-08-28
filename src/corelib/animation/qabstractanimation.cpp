@@ -259,28 +259,33 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     }
 
     state = newState;
-    QPointer<QAbstractAnimation> guard(q);
+    QWeakPointer<QAbstractAnimation> guard(q);
 
-    guard->updateState(oldState, newState);
+    q->updateState(oldState, newState);
+    if (!guard)
+        return;
 
     //this is to be safe if updateState changes the state
     if (state == oldState)
         return;
 
     // Notify state change
-    if (guard)
-        emit guard->stateChanged(oldState, newState);
+    emit q->stateChanged(oldState, newState);
+    if (!guard)
+        return;
 
-    switch (state)
-    {
+    switch (state) {
     case QAbstractAnimation::Paused:
     case QAbstractAnimation::Running:
         //this ensures that the value is updated now that the animation is running
-        if(oldState == QAbstractAnimation::Stopped && guard)
-            guard->setCurrentTime(currentTime);
+        if(oldState == QAbstractAnimation::Stopped) {
+            q->setCurrentTime(currentTime);
+            if (!guard)
+                return;
+        }
 
         // Register timer if our parent is not running.
-        if (state == QAbstractAnimation::Running && guard) {
+        if (state == QAbstractAnimation::Running) {
             if (!group || group->state() == QAbstractAnimation::Stopped) {
                 QUnifiedTimer::instance()->registerAnimation(q);
             }
@@ -292,7 +297,10 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     case QAbstractAnimation::Stopped:
         // Leave running state.
         int dura = q->duration();
-        if (deleteWhenStopped && guard)
+        if (!guard)
+            return;
+
+        if (deleteWhenStopped)
             q->deleteLater();
 
         QUnifiedTimer::instance()->unregisterAnimation(q);
@@ -300,8 +308,7 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
         if (dura == -1 || loopCount < 0
             || (oldDirection == QAbstractAnimation::Forward && (oldCurrentTime * (oldCurrentLoop + 1)) == (dura * loopCount))
             || (oldDirection == QAbstractAnimation::Backward && oldCurrentTime == 0)) {
-                if (guard)
-                    emit q->finished();
+                emit q->finished();
         }
         break;
     }

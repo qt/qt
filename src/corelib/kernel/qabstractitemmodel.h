@@ -293,6 +293,9 @@ protected:
 
     void reset();
 
+    void beginResetModel();
+    void endResetModel();
+
     void changePersistentIndex(const QModelIndex &from, const QModelIndex &to);
     void changePersistentIndexList(const QModelIndexList &from, const QModelIndexList &to);
     QModelIndexList persistentIndexList() const;
