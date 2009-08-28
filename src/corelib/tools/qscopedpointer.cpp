@@ -170,7 +170,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn bool QScopedPointer::operator==(const QScopedPointer<T> &other) const
+    \fn bool QScopedPointer::operator==(const QScopedPointer<T, Cleanup> &other) const
 
     Equality operator. Returns true if the scoped pointer \a other
     is pointing to the same object as this pointer, otherwise returns false.
@@ -178,7 +178,7 @@ QT_BEGIN_NAMESPACE
 
 
 /*!
-    \fn bool QScopedPointer::operator!=(const QScopedPointer<T> &other) const
+    \fn bool QScopedPointer::operator!=(const QScopedPointer<T, Cleanup> &other) const
 
     Inequality operator. Returns true if the scoped pointer \a other
     is not pointing to the same object as this pointer, otherwise returns false.

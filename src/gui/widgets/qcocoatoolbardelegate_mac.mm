@@ -100,7 +100,8 @@ QT_FORWARD_DECLARE_CLASS(QCFString);
 {
     Q_UNUSED(flag);
     Q_UNUSED(nstoolbar);
-    QToolBar *tb = mainWindowLayout->cocoaItemIDToToolbarHash.value(qt_mac_NSStringToQString(itemIdentifier));
+    QToolBar *tb = mainWindowLayout->cocoaItemIDToToolbarHash.value(
+            QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString)(itemIdentifier));
     NSToolbarItem *item = nil;
     if (tb) {
         item = [[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier];
@@ -112,7 +113,8 @@ QT_FORWARD_DECLARE_CLASS(QCFString);
 - (void)toolbarWillAddItem:(NSNotification *)notification
 {
     NSToolbarItem *item = [[notification userInfo] valueForKey:@"item"];
-    QToolBar *tb = mainWindowLayout->cocoaItemIDToToolbarHash.value(qt_mac_NSStringToQString([item itemIdentifier]));
+    QToolBar *tb = mainWindowLayout->cocoaItemIDToToolbarHash.value(
+            QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString)([item itemIdentifier]));
     if (!tb)
         return; // I can't really do anything about this.
     [item retain];

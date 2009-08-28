@@ -69,11 +69,12 @@ QT_BEGIN_NAMESPACE
 class QFontEngineS60Extensions
 {
 public:
-    QFontEngineS60Extensions(COpenFont *font);
+    QFontEngineS60Extensions(CFont* fontOwner, COpenFont *font);
 
     QByteArray getSfntTable(uint tag) const;
     const unsigned char *cmap() const;
     QPainterPath glyphOutline(glyph_t glyph) const;
+    CFont *fontOwner() const;
 
 private:
     COpenFont *m_font;
@@ -82,6 +83,7 @@ private:
     mutable const unsigned char *m_cmap;
     mutable bool m_symbolCMap;
     mutable QByteArray m_cmapTable;
+    CFont* m_fontOwner;
 };
 
 class QFontEngineS60 : public QFontEngine

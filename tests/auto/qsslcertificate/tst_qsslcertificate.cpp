@@ -107,6 +107,7 @@ private slots:
     void certInfo();
     void task256066toPem();
     void nulInCN();
+    void nulInSan();
 // ### add tests for certificate bundles (multiple certificates concatenated into a single
 //     structure); both PEM and DER formatted
 #endif
@@ -748,6 +749,26 @@ void tst_QSslCertificate::nulInCN()
 
     static const char realCN[] = "www.bank.com\\x00.badguy.com";
     QCOMPARE(cn, QString::fromLatin1(realCN, sizeof realCN - 1));
+}
+
+void tst_QSslCertificate::nulInSan()
+{
+    QList<QSslCertificate> certList =
+        QSslCertificate::fromPath(SRCDIR "more-certificates/badguy-nul-san.crt");
+    QCOMPARE(certList.size(), 1);
+
+    const QSslCertificate &cert = certList.at(0);
+    QVERIFY(!cert.isNull());
+
+    QMultiMap<QSsl::AlternateNameEntryType, QString> san = cert.alternateSubjectNames();
+    QVERIFY(!san.isEmpty());
+
+    QString dnssan = san.value(QSsl::DnsEntry);
+    QVERIFY(!dnssan.isEmpty());
+    QVERIFY(dnssan != "www.bank.com");
+
+    static const char realSAN[] = "www.bank.com\0.badguy.com";
+    QCOMPARE(dnssan, QString::fromLatin1(realSAN, sizeof realSAN - 1));
 }
 
 #endif // QT_NO_OPENSSL

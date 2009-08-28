@@ -6,8 +6,7 @@ win32:SRC_SUBDIRS += src_winmain
 wince*:{
   SRC_SUBDIRS += src_corelib src_xml src_gui src_sql src_network src_testlib
 } else:symbian {
-  SRC_SUBDIRS += src_s60main src_corelib src_xml src_gui src_network src_sql src_testlib
-  SRC_SUBDIRS += $$QT_SOURCE_TREE/src/s60installs/qt_libs.pro
+  SRC_SUBDIRS += src_s60main src_corelib src_xml src_gui src_network src_sql src_testlib src_s60installs
 } else {
     SRC_SUBDIRS += src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic src_corelib src_xml src_network src_gui src_sql src_testlib
     !vxworks:contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
@@ -37,6 +36,8 @@ SRC_SUBDIRS += src_plugins
 
 src_s60main.subdir = $$QT_SOURCE_TREE/src/s60main
 src_s60main.target = sub-s60main
+src_s60installs.subdir = $$QT_SOURCE_TREE/src/s60installs
+src_s60installs.target = sub-s60installs
 src_winmain.subdir = $$QT_SOURCE_TREE/src/winmain
 src_winmain.target = sub-winmain
 src_tools_bootstrap.subdir = $$QT_SOURCE_TREE/src/tools/bootstrap

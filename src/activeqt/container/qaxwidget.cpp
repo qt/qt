@@ -1535,9 +1535,10 @@ HRESULT WINAPI QAxClientSite::SetBorderSpace(LPCBORDERWIDTHS pborderwidths)
 HRESULT WINAPI QAxClientSite::SetActiveObject(IOleInPlaceActiveObject *pActiveObject, LPCOLESTR pszObjName)
 {
     AX_DEBUG(QAxClientSite::SetActiveObject);
-
-    if (pszObjName && widget)
-        widget->setWindowTitle(QString::fromWCharArray(pszObjName));
+    
+    Q_UNUSED(pszObjName);
+    // we are ignoring the name of the object, as suggested by MSDN documentation 
+    // for IOleInPlaceUIWindow::SetActiveObject().
 
     if (m_spInPlaceActiveObject) {
         if (!inPlaceModelessEnabled)

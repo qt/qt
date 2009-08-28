@@ -109,7 +109,7 @@
     \o \l{QtXmlPatterns Module}{XQuery and XPath} support, providing facilities for
     XML processing beyond that supported by the QtXml module.
     \o Support for embedded widgets in \l{Graphics View} scenes.
-    \o The \l{Threading and Concurrent Programming}{QtConcurrent framework} for
+    \o The \l{Thread Support in Qt}{QtConcurrent framework} for
     concurrent programming using Qt paradigms and threading features.
     \o An \l{QtHelp Module}{improved help system} that can be used in conjunction
     with Qt Assistant or as an independent help resource manager.

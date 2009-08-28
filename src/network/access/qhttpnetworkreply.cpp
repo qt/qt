@@ -514,8 +514,11 @@ qint64 QHttpNetworkReplyPrivate::readHeader(QAbstractSocket *socket)
         chunkedTransferEncoding = headerField("transfer-encoding").toLower().contains("chunked");
 
         // cache isConnectionCloseEnabled since it is called often
-        connectionCloseEnabled = (headerField("connection").toLower().contains("close") ||
-            headerField("proxy-connection").toLower().contains("close"));
+        QByteArray connectionHeaderField = headerField("connection");
+        // check for explicit indication of close or the implicit connection close of HTTP/1.0
+        connectionCloseEnabled = (connectionHeaderField.toLower().contains("close") ||
+            headerField("proxy-connection").toLower().contains("close")) ||
+            (majorVersion == 1 && minorVersion == 0 && connectionHeaderField.isEmpty());
     }
     return bytes;
 }

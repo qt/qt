@@ -50,6 +50,7 @@
 EXPORT_C QString localizedDirectoryName(QString& rawPath)
 {
     QString ret;
+    std::exception dummy;   // voodoo fix for "Undefined symbol typeinfo for std::exception" in armv5 build
 
     TRAPD(err,
         QT_TRYCATCH_LEAVING(

@@ -381,7 +381,7 @@ inline QList<T> qFindChildren(const QObject *o, const QRegExp &re)
 #endif // Q_MOC_RUN
 
 
-template <class T> inline const char * qobject_interface_iid() 
+template <class T> inline const char * qobject_interface_iid()
 { return 0; }
 
 template <class T> inline T qobject_cast_helper(QObject *object, T)
@@ -465,7 +465,7 @@ inline T qobject_cast(const QObject *object)
 }
 
 
-template <class T> inline const char * qobject_interface_iid() 
+template <class T> inline const char * qobject_interface_iid()
 { return 0; }
 
 #ifndef Q_MOC_RUN
