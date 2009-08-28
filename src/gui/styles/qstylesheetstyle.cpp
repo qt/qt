@@ -5112,6 +5112,18 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
 #endif // QT_NO_TABWIDGET
             s = QLatin1String("alignment");
             break;
+#ifndef QT_NO_TABBAR
+        case SH_TabBar_CloseButtonPosition:
+            rule = renderRule(w, opt, PseudoElement_TabBarTabCloseButton);
+            if (rule.hasPosition()) {
+                Qt::Alignment align = rule.position()->position;
+                if (align & Qt::AlignLeft || align & Qt::AlignTop)
+                    return QTabBar::LeftSide;
+                if (align & Qt::AlignRight || align & Qt::AlignBottom)
+                    return QTabBar::RightSide;
+            }
+            break;
+#endif
         case SH_TabBar_ElideMode: s = QLatin1String("tabbar-elide-mode"); break;
         case SH_TabBar_PreferNoArrows: s = QLatin1String("tabbar-prefer-no-arrows"); break;
         case SH_ComboBox_PopupFrameStyle:
