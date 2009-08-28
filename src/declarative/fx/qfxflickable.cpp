@@ -120,6 +120,78 @@ void QFxFlickablePrivate::init()
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(widthChange()));
 }
 
+void QFxFlickablePrivate::flickX(qreal velocity)
+{
+    Q_Q(QFxFlickable);
+    qreal maxDistance = -1;
+    // -ve velocity means list is moving up
+    if (velocity > 0) {
+        if (_moveX.value() < q->minXExtent())
+            maxDistance = qAbs(q->minXExtent() -_moveX.value() + (overShoot?30:0));
+        flickTargetX = q->minXExtent();
+    } else {
+        if (_moveX.value() > q->maxXExtent())
+            maxDistance = qAbs(q->maxXExtent() - _moveX.value()) + (overShoot?30:0);
+        flickTargetX = q->maxXExtent();
+    }
+    if (maxDistance > 0) {
+        qreal v = velocity;
+        if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
+            if (v < 0)
+                v = -maxVelocity;
+            else
+                v = maxVelocity;
+        }
+        _tl.clear();
+        _tl.accel(_moveX, v, 500, maxDistance);
+        _tl.execute(fixupXEvent);
+        if (!flicked) {
+            flicked = true;
+            emit q->flickingChanged();
+            emit q->flickStarted();
+        }
+    } else {
+        _tl.clear();
+        fixupX();
+    }
+}
+
+void QFxFlickablePrivate::flickY(qreal velocity)
+{
+    Q_Q(QFxFlickable);
+    qreal maxDistance = -1;
+    // -ve velocity means list is moving up
+    if (velocity > 0) {
+        if (_moveY.value() < q->minYExtent())
+            maxDistance = qAbs(q->minYExtent() -_moveY.value() + (overShoot?30:0));
+        flickTargetY = q->minYExtent();
+    } else {
+        if (_moveY.value() > q->maxYExtent())
+            maxDistance = qAbs(q->maxYExtent() - _moveY.value()) + (overShoot?30:0);
+        flickTargetY = q->maxYExtent();
+    }
+    if (maxDistance > 0) {
+        qreal v = velocity;
+        if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
+            if (v < 0)
+                v = -maxVelocity;
+            else
+                v = maxVelocity;
+        }
+        _tl.clear();
+        _tl.accel(_moveY, v, 500, maxDistance);
+        _tl.execute(fixupYEvent);
+        if (!flicked) {
+            flicked = true;
+            emit q->flickingChanged();
+            emit q->flickStarted();
+        }
+    } else {
+        _tl.clear();
+        fixupY();
+    }
+}
+
 void QFxFlickablePrivate::fixupX()
 {
     Q_Q(QFxFlickable);
@@ -617,64 +689,16 @@ void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *)
     }
 
     vTime = _tl.time();
-    if (qAbs(velocityY) > 10) {
-        qreal maxDistance = -1;
-        // -ve velocity means list is moving up
-        if (velocityY > 0) {
-            if (_moveY.value() < q->minYExtent())
-                maxDistance = qAbs(q->minYExtent() -_moveY.value() + (overShoot?30:0));
-        } else {
-            if (_moveY.value() > q->maxYExtent())
-                maxDistance = qAbs(q->maxYExtent() - _moveY.value()) + (overShoot?30:0);
-        }
-        if (maxDistance > 0) {
-            qreal v = velocityY;
-            if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
-                if (v < 0)
-                    v = -maxVelocity;
-                else
-                    v = maxVelocity;
-            }
-            _tl.accel(_moveY, v, 500, maxDistance);
-            _tl.execute(fixupYEvent);
-            flicked = true;
-            emit q->flickingChanged();
-            emit q->flickStarted();
-        } else {
-            fixupY();
-        }
-    } else {
+    if (qAbs(velocityY) > 10)
+        flickY(velocityY);
+    else
         fixupY();
-    }
-    if (qAbs(velocityX) > 10) {
-        qreal maxDistance = -1;
-        // -ve velocity means list is moving up
-        if (velocityX > 0) {
-            if (_moveX.value() < q->minXExtent())
-                maxDistance = qAbs(q->minXExtent()) -_moveX.value() + (overShoot?30:0);
-        } else {
-            if (_moveX.value() > q->maxXExtent())
-                maxDistance = qAbs(q->maxXExtent() - _moveX.value()) + (overShoot?30:0);
-        }
-        if (maxDistance > 0) {
-            qreal v = velocityX;
-            if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
-                if (v < 0)
-                    v = -maxVelocity;
-                else
-                    v = maxVelocity;
-            }
-            _tl.accel(_moveX, v, 500, maxDistance);
-            _tl.execute(fixupXEvent);
-            flicked = true;
-            emit q->flickingChanged();
-            emit q->flickStarted();
-        } else {
-            fixupX();
-        }
-    } else {
+
+    if (qAbs(velocityX) > 10)
+        flickX(velocityX);
+    else
         fixupX();
-    }
+
     stealMouse = false;
     lastPosTime = QTime();
 
@@ -728,15 +752,6 @@ qreal QFxFlickable::maxYExtent() const
 void QFxFlickable::viewportMoved()
 {
     Q_D(QFxFlickable);
-    //XXX should look at moveX here as well
-    if (d->flicked && (d->_moveY.value() > minYExtent() + (d->overShoot?30:0)
-                || d->_moveY.value() < maxYExtent() - (d->overShoot?30:0))){
-        d->flicked = false;
-        emit flickingChanged();
-        emit flickEnded();
-        d->_tl.reset(d->_moveY);
-        d->fixupY();
-    }
 
     int elapsed = d->velocityTime.elapsed();
 
@@ -765,6 +780,30 @@ void QFxFlickable::viewportMoved()
     d->lastFlickablePosition = QPointF(d->_moveY.value(), d->_moveX.value());
     d->velocityTime.restart();
     d->updateBeginningEnd();
+
+    if (d->flicked) {
+        // Near an end and it seems that the extent has changed?
+        // Recalculate the flick so that we don't end up in an odd position.
+        if (d->velocityY > 0) {
+            const qreal minY = minYExtent();
+            if (minY - d->_moveY.value() < height()/3 && minY != d->flickTargetY)
+                d->flickY(-d->yVelocity.value());
+        } else {
+            const qreal maxY = maxYExtent();
+            if (d->_moveY.value() - maxY < height()/3 && maxY != d->flickTargetY)
+                d->flickY(-d->yVelocity.value());
+        }
+
+        if (d->velocityX > 0) {
+            const qreal minX = minXExtent();
+            if (minX - d->_moveX.value() < height()/3 && minX != d->flickTargetX)
+                d->flickX(-d->xVelocity.value());
+        } else {
+            const qreal maxX = maxXExtent();
+            if (d->_moveX.value() - maxX < height()/3 && maxX != d->flickTargetX)
+                d->flickX(-d->xVelocity.value());
+        }
+    }
 }
 
 void QFxFlickablePrivate::data_removeAt(int)
