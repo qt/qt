@@ -88,9 +88,15 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         t << "# ==============================================================================" << "\n" << endl;
 
         t << endl << endl;
-
+        
         t << "MAKE = make" << endl;
         t << endl;
+        
+        t << "VISUAL_CFG = RELEASE" << endl;
+        t << "ifeq \"$(CFG)\" \"UDEB\"" << endl;        
+        t << "VISUAL_CFG = DEBUG" << endl;        
+        t << "endif" << endl;           
+        t << endl;        
 
         t << DO_NOTHING_TARGET " :" << endl;
         t << "\t" << "@rem " DO_NOTHING_TARGET << endl << endl;
@@ -147,9 +153,9 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         QString makefile(Option::fixPathToTargetOS(fileInfo(wrapperFileName).canonicalFilePath()));
         foreach(QString target, wrapperTargets) {
             t << target << " : " << makefile << endl;
-            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << " QT_SISX_PLATFORM=$(PLATFORM) QT_SISX_TARGET=$(CFG)" << endl << endl;
-        }
-
+            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << "QT_SISX_TARGET=$(VISUAL_CFG)-$(PLATFORM)" << endl << endl;                    
+        }     
+        
         t << endl;
     } // if(ft.open(QIODevice::WriteOnly))
 }
@@ -427,7 +433,6 @@ void SymbianAbldMakefileGenerator::writeStoreBuildTarget(QTextStream &t)
     t << "\t@echo # >> " MAKE_CACHE_NAME << endl;
     t << "\t@echo # ============================================================================== >> " MAKE_CACHE_NAME <<  endl;
     t << "\t@echo. >> " MAKE_CACHE_NAME <<  endl;
-    t << "\t@echo QT_SISX_PLATFORM ?= $(QT_SISX_PLATFORM) >> " MAKE_CACHE_NAME << endl;
     t << "\t@echo QT_SISX_TARGET ?= $(QT_SISX_TARGET) >> " MAKE_CACHE_NAME << endl;
     t << endl;
 

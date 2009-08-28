@@ -20,17 +20,20 @@ sub Usage() {
     print "==========================================================================================\n";
     print "Convenience script for creating signed packages you can install on your phone.\n";
     print "\n";
-    print "Usage: createpackage.pl [-i] templatepkg platform target [certificate key [passphrase]]\n";
+    print "Usage: createpackage.pl [-i] templatepkg target-platform [certificate key [passphrase]]\n";
     print "\n";
     print "Where parameters are as follows:\n";
     print "     [-i|install] = Install the package right away using PC suite\n";
     print "     templatepkg  = Name of .pkg file template\n";
-    print "     target       = Either debug|udeb or release|urel\n";    
+    print "     target       = Either debug or release\n";    
     print "     platform     = One of the supported platform\n";
     print "                    winscw | gcce | armv5 | armv6 | armv7\n";
     print "     certificate  = The certificate file used for signing\n";
     print "     key          = The certificate's private key file\n";
     print "     passphrase   = The certificate's private key file's passphrase\n";
+    print "\n";
+    print "For example:\n";    
+    print "     createpackage.pl fluidlauncher_template.pkg release-armv5\n";        
     print "\n";
     print "If no certificate and key files are provided, either a RnD certificate or\n";
     print "a self-signed certificate from Qt installation root directory is used.\n";
@@ -47,26 +50,23 @@ unless (GetOptions('i|install' => \$install)){
 
 # Read params to variables
 my $templatepkg = $ARGV[0];
-my $target = uc $ARGV[1];
-my $platform = uc $ARGV[2];
+my $targetplatform = uc $ARGV[1];
 
-# Make sure target contains only urel/udeb. 
-# i.e. convert possible given debug->udeb and release->urel
+my @tmpvalues = split('-', $targetplatform);
+my $target = $tmpvalues[0];
+my $platform = $tmpvalues[1];;
+
+# Convert visual target to real target (debug->udeb and release->urel)
 $target =~ s/debug/udeb/i;
 $target =~ s/release/urel/i;
 
-# Make sure visual target contains only release/debug
-my $visualtarget = $target;
-$visualtarget =~ s/udeb/debug/i;
-$visualtarget =~ s/urel/release/i;
-
-my $certificate = $ARGV[3];
-my $key = $ARGV[4];
-my $passphrase = $ARGV[5];
+my $certificate = $ARGV[2];
+my $key = $ARGV[3];
+my $passphrase = $ARGV[4];
 
 # Generate output pkg basename (i.e. file name without extension)
 my $pkgoutputbasename = $templatepkg;
-$pkgoutputbasename =~ s/_template\.pkg/_$visualtarget-$platform/g;
+$pkgoutputbasename =~ s/_template\.pkg/_$targetplatform/g;
 $pkgoutputbasename = lc($pkgoutputbasename);
 
 # Store output file names to variables
