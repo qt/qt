@@ -48,8 +48,8 @@ Item {
             anchors.bottom: Footer.top
         }
         RectSoftShadow {
-            x: -Flick.xPosition
-            y: -Flick.yPosition
+            x: -Flick.viewportX
+            y: -Flick.viewportY
             width: MyWebView.width*MyWebView.scale
             height: Flick.y+MyWebView.height*MyWebView.scale
         }
@@ -72,10 +72,10 @@ Item {
                 width: parent.width
                 height: 64
                 state: "Normal"
-                x: Flick.xPosition < 0 ? -Flick.xPosition : Flick.xPosition > Flick.viewportWidth-Flick.width
-                                         ? -Flick.xPosition+Flick.viewportWidth-Flick.width : 0
-                y: Flick.yPosition < 0 ? -Flick.yPosition : progressOff*
-                                        (Flick.yPosition>height?-height:-Flick.yPosition)
+                x: Flick.viewportX < 0 ? -Flick.viewportX : Flick.viewportX > Flick.viewportWidth-Flick.width
+                                         ? -Flick.viewportX+Flick.viewportWidth-Flick.width : 0
+                y: Flick.viewportY < 0 ? -Flick.viewportY : progressOff*
+                                        (Flick.viewportY>height?-height:-Flick.viewportY)
                 Text {
                     id: HeaderText
 
@@ -335,8 +335,8 @@ Item {
         State {
             name: "Normal"
             PropertyChanges { target: MyWebView; zoomedOut: 0 }
-            PropertyChanges { target: Flick; explicit: true; xPosition: Math.min(MyWebView.width-Flick.width,Math.max(0,Flick.centerX-Flick.width/2)) }
-            PropertyChanges { target: Flick; explicit: true; yPosition: Math.min(MyWebView.height-Flick.height,Math.max(0,Flick.centerY-Flick.height/2)) }
+            PropertyChanges { target: Flick; explicit: true; viewportX: Math.min(MyWebView.width-Flick.width,Math.max(0,Flick.centerX-Flick.width/2)) }
+            PropertyChanges { target: Flick; explicit: true; viewportY: Math.min(MyWebView.height-Flick.height,Math.max(0,Flick.centerY-Flick.height/2)) }
         },
         State {
             name: "ZoomedOut"
@@ -360,7 +360,7 @@ Item {
                     }
                     NumberAnimation {
                         target: Flick
-                        properties: "xPosition,yPosition"
+                        properties: "viewportX,viewportY"
                         easing: "easeInOutQuad"
                         duration: 200
                     }

@@ -103,8 +103,8 @@ public:
     QmlTimeLineValueProxy<QFxItem> _moveX;
     QmlTimeLineValueProxy<QFxItem> _moveY;
     QmlTimeLine _tl;
-    int vWidth;
-    int vHeight;
+    qreal vWidth;
+    qreal vHeight;
     bool overShoot;
     bool flicked;
     bool moving;
@@ -120,14 +120,14 @@ public:
     QTime pressTime;
     QmlTimeLineEvent fixupXEvent;
     QmlTimeLineEvent fixupYEvent;
-    int maxVelocity;
+    qreal maxVelocity;
     bool locked;
     QFxFlickable::DragMode dragMode;
     ElasticValue elasticY;
     ElasticValue elasticX;
     QTime velocityTime;
     QPointF lastFlickablePosition;
-    int velocityDecay;
+    qreal reportedVelocitySmoothing;
     int flickTargetX;
     int flickTargetY;
 
@@ -142,8 +142,8 @@ public:
         }
         QFxFlickablePrivate *parent;
     };
-    Velocity xVelocity;
-    Velocity yVelocity;
+    Velocity horizontalVelocity;
+    Velocity verticalVelocity;
     int vTime;
     QmlTimeLine velocityTimeline;
     bool atXEnd;

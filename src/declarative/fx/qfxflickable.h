@@ -55,17 +55,17 @@ class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
 {
     Q_OBJECT
 
+    Q_PROPERTY(qreal viewportWidth READ viewportWidth WRITE setViewportWidth NOTIFY viewportWidthChanged)
+    Q_PROPERTY(qreal viewportHeight READ viewportHeight WRITE setViewportHeight NOTIFY viewportHeightChanged)
+    Q_PROPERTY(qreal viewportX READ viewportX WRITE setViewportX NOTIFY positionXChanged)
+    Q_PROPERTY(qreal viewportY READ viewportY WRITE setViewportY NOTIFY positionYChanged)
+
+    Q_PROPERTY(qreal horizontalVelocity READ horizontalVelocity NOTIFY horizontalVelocityChanged)
+    Q_PROPERTY(qreal verticalVelocity READ verticalVelocity NOTIFY verticalVelocityChanged)
+    Q_PROPERTY(qreal reportedVelocitySmoothing READ reportedVelocitySmoothing WRITE setReportedVelocitySmoothing NOTIFY reportedVelocitySmoothingChanged)
+
     Q_PROPERTY(bool overShoot READ overShoot WRITE setOverShoot)
-    Q_PROPERTY(int viewportWidth READ viewportWidth WRITE setViewportWidth NOTIFY viewportWidthChanged) //### qreal
-    Q_PROPERTY(int viewportHeight READ viewportHeight WRITE setViewportHeight NOTIFY viewportHeightChanged)
-    Q_PROPERTY(qreal xPosition READ xPosition WRITE setXPosition NOTIFY positionChanged) //### viewportX, positionXChannged
-    Q_PROPERTY(qreal yPosition READ yPosition WRITE setYPosition NOTIFY positionChanged) //### ^^^
-
-    Q_PROPERTY(int velocityDecay READ velocityDecay WRITE setVelocityDecay NOTIFY velocityDecayChanged) //### qreal deceleration
-    Q_PROPERTY(int maximumFlickVelocity READ maximumFlickVelocity WRITE setMaximumFlickVelocity) ///### qreal, use same units as follow (pixels/s)
-
-    Q_PROPERTY(qreal xVelocity READ xVelocity NOTIFY velocityChanged) //### horizontalVelocity
-    Q_PROPERTY(qreal yVelocity READ yVelocity NOTIFY velocityChanged) //### verticalVelocity
+    Q_PROPERTY(qreal maximumFlickVelocity READ maximumFlickVelocity WRITE setMaximumFlickVelocity)
     Q_PROPERTY(bool moving READ isMoving NOTIFY movingChanged)
     Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
 
@@ -96,26 +96,26 @@ public:
     bool overShoot() const;
     void setOverShoot(bool);
 
-    int viewportWidth() const;
-    void setViewportWidth(int);
+    qreal viewportWidth() const;
+    void setViewportWidth(qreal);
 
-    int viewportHeight() const;
-    void setViewportHeight(int);
+    qreal viewportHeight() const;
+    void setViewportHeight(qreal);
 
-    qreal xPosition() const;
-    void setXPosition(qreal pos);
+    qreal viewportX() const;
+    void setViewportX(qreal pos);
 
-    qreal yPosition() const;
-    void setYPosition(qreal pos);
+    qreal viewportY() const;
+    void setViewportY(qreal pos);
 
     bool isMoving() const;
     bool isFlicking() const;
 
-    int velocityDecay() const;
-    void setVelocityDecay(int);
+    qreal reportedVelocitySmoothing() const;
+    void setReportedVelocitySmoothing(qreal);
 
-    int maximumFlickVelocity() const;
-    void setMaximumFlickVelocity(int);
+    qreal maximumFlickVelocity() const;
+    void setMaximumFlickVelocity(qreal);
 
     bool isLocked() const;
     void setLocked(bool);
@@ -125,8 +125,8 @@ public:
     DragMode dragMode() const;
     void setDragMode(DragMode mode);
 
-    qreal xVelocity() const;
-    qreal yVelocity() const;
+    qreal horizontalVelocity() const;
+    qreal verticalVelocity() const;
 
     bool isAtXEnd() const;
     bool isAtXBeginning() const;
@@ -143,14 +143,15 @@ public:
 Q_SIGNALS:
     void viewportWidthChanged();
     void viewportHeightChanged();
-    void positionChanged();
+    void positionXChanged();
+    void positionYChanged();
     void movingChanged();
     void flickingChanged();
     void movementStarted();
     void movementEnded();
     void flickStarted();
     void flickEnded();
-    void velocityDecayChanged(int);
+    void reportedVelocitySmoothingChanged(int);
     void velocityChanged(qreal, qreal);
     void isAtBoundaryChanged();
     void pageChanged();
@@ -176,8 +177,8 @@ protected:
     virtual qreal minYExtent() const;
     virtual qreal maxXExtent() const;
     virtual qreal maxYExtent() const;
-    int vWidth() const;
-    int vHeight() const;
+    qreal vWidth() const;
+    qreal vHeight() const;
     virtual void viewportMoved();
     bool sendMouseEvent(QGraphicsSceneMouseEvent *event);
 

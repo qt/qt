@@ -42,6 +42,11 @@ Transition: operations -> animations
 Transition: fromState  -> from
 Transition: toState    -> to
 Follow: followValue    -> value
+Flickable: xPosition   -> viewportX
+Flickable: yPosition   -> viewportY
+Flickable: xVelocity   -> horizontalVelocity
+Flickable: yVelocity   -> verticalVelocity
+Flickable: velocityDecay -> reportedVelocitySmoothing
 
 Additions:
 MouseRegion: add "acceptedButtons" property
