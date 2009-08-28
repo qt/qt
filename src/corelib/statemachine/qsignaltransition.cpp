@@ -245,6 +245,23 @@ bool QSignalTransition::event(QEvent *e)
     return QAbstractTransition::event(e);
 }
 
+void QSignalTransitionPrivate::callOnTransition(QEvent *e)
+{
+    Q_Q(QSignalTransition);
+
+    QSignalEvent *se = static_cast<QSignalEvent *>(e);
+    int savedSignalIndex;
+    if (e->type() == QEvent::Signal) {
+        savedSignalIndex = se->m_signalIndex;
+        se->m_signalIndex = originalSignalIndex;
+    }
+
+    q->onTransition(e);
+
+    if (e->type() == QEvent::Signal)
+        se->m_signalIndex = savedSignalIndex;
+}
+
 QT_END_NAMESPACE
 
 #endif //QT_NO_STATEMACHINE
