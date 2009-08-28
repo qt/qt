@@ -121,12 +121,12 @@ Flipable {
             id: Slider; x: 25; y: 374; visible: { BigImage.status == 1 && maximum > minimum }
             onValueChanged: {
                 if (BigImage.width * value > Flick.width) {
-                    var xoff = (Flick.width/2 + Flick.xPosition) * value / prevScale;
-                    Flick.xPosition = xoff - Flick.width/2;
+                    var xoff = (Flick.width/2 + Flick.viewportX) * value / prevScale;
+                    Flick.viewportX = xoff - Flick.width/2;
                 }
                 if (BigImage.height * value > Flick.height) {
-                    var yoff = (Flick.height/2 + Flick.yPosition) * value / prevScale;
-                    Flick.yPosition = yoff - Flick.height/2;
+                    var yoff = (Flick.height/2 + Flick.viewportY) * value / prevScale;
+                    Flick.viewportY = yoff - Flick.height/2;
                 }
                 prevScale = value;
             }

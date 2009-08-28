@@ -614,7 +614,7 @@
 
     This defines the open state of the delegate.  It changes the height of the delegate
     component to that of the whole list view, pushing the other items off each end of
-    the list.  It sets the lists views scroll yPosition of the ListView to the
+    the list.  It sets the listview's scroll viewportY of the ListView to the
     y value of the delegate so that the top of the delegate matches the top of the list view.
     The next step is to lock the list view.  This prevents the user being able to flick
     the list view. The final to properties that are set should

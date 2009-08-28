@@ -101,7 +101,7 @@ Rectangle {
                         }
                         PropertyChanges {
                             target: contactListView
-                            yPosition: wrapper.y
+                            viewportY: wrapper.y
                         }
                         PropertyChanges {
                             target: contactListView
@@ -121,7 +121,7 @@ Rectangle {
                     Transition {
                         NumberAnimation {
                             duration: 500
-                            properties: "yPosition,height,opacity"
+                            properties: "viewportY,height,opacity"
                         }
                     }
                 ]

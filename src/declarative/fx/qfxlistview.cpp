@@ -196,14 +196,14 @@ public:
 
     qreal position() const {
         Q_Q(const QFxListView);
-        return orient == Qt::Vertical ? q->yPosition() : q->xPosition();
+        return orient == Qt::Vertical ? q->viewportY() : q->viewportX();
     }
     void setPosition(qreal pos) {
         Q_Q(QFxListView);
         if (orient == Qt::Vertical)
-            q->setYPosition(pos);
+            q->setViewportY(pos);
         else
-            q->setXPosition(pos);
+            q->setViewportX(pos);
     }
     int size() const {
         Q_Q(const QFxListView);

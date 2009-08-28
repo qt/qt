@@ -32,7 +32,7 @@ Rectangle {
             y: Math.random() * 300 + 50
             id: StickyPage
             rotation: Follow {
-                source: -Flick.xVelocity / 100
+                source: -Flick.horizontalVelocity / 100
                 spring: 2.0
                 damping: 0.1
             }

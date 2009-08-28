@@ -185,14 +185,14 @@ public:
 
     qreal position() const {
         Q_Q(const QFxGridView);
-        return flow == QFxGridView::LeftToRight ? q->yPosition() : q->xPosition();
+        return flow == QFxGridView::LeftToRight ? q->viewportY() : q->viewportX();
     }
     void setPosition(qreal pos) {
         Q_Q(QFxGridView);
         if (flow == QFxGridView::LeftToRight)
-            q->setYPosition(pos);
+            q->setViewportY(pos);
         else
-            q->setXPosition(pos);
+            q->setViewportX(pos);
     }
     int size() const {
         Q_Q(const QFxGridView);

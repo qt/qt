@@ -17,10 +17,10 @@ Item {
         function zoomOut() {
             WebBrowser.state = "ZoomedOut";
         }
-        function toggleZoom() {
+        function toggleZoom(x,y) {
             if(WebBrowser.state == "ZoomedOut") {
-                Flick.centerX = MyWebView.mouseX;
-                Flick.centerY = MyWebView.mouseY;
+                Flick.centerX = x
+                Flick.centerY = y
                 WebBrowser.state = "Normal";
             } else {
                 zoomOut();
@@ -48,8 +48,8 @@ Item {
             anchors.bottom: Footer.top
         }
         RectSoftShadow {
-            x: -Flick.xPosition
-            y: -Flick.yPosition
+            x: -Flick.viewportX
+            y: -Flick.viewportY
             width: MyWebView.width*MyWebView.scale
             height: Flick.y+MyWebView.height*MyWebView.scale
         }
@@ -72,10 +72,10 @@ Item {
                 width: parent.width
                 height: 64
                 state: "Normal"
-                x: Flick.xPosition < 0 ? -Flick.xPosition : Flick.xPosition > Flick.viewportWidth-Flick.width
-                                         ? -Flick.xPosition+Flick.viewportWidth-Flick.width : 0
-                y: Flick.yPosition < 0 ? -Flick.yPosition : progressOff*
-                                        (Flick.yPosition>height?-height:-Flick.yPosition)
+                x: Flick.viewportX < 0 ? -Flick.viewportX : Flick.viewportX > Flick.viewportWidth-Flick.width
+                                         ? -Flick.viewportX+Flick.viewportWidth-Flick.width : 0
+                y: Flick.viewportY < 0 ? -Flick.viewportY : progressOff*
+                                        (Flick.viewportY>height?-height:-Flick.viewportY)
                 Text {
                     id: HeaderText
 
@@ -135,9 +135,9 @@ Item {
 
                             text: WebBrowser.urlString
                             label: "url:"
-                            onConfirmed: { print ('OnConfirmed: '+EditUrl.text); WebBrowser.urlString = EditUrl.text; print (EditUrl.text); MyWebView.focus=true }
+                            onConfirmed: { WebBrowser.urlString = EditUrl.text; MyWebView.focus=true }
                             onCancelled: { MyWebView.focus=true }
-                            onStartEdit: { print (EditUrl.text); MyWebView.focus=false }
+                            onStartEdit: { MyWebView.focus=false }
 
                             anchors.left: UrlBox.left
                             anchors.right: UrlBox.right
@@ -188,20 +188,36 @@ Item {
 
             WebView {
                 id: MyWebView
-                cacheSize: 4000000
+                pixelCacheSize: 4000000
 
-                url: WebBrowser.urlString
+                Script {
+                    function fixUrl(url)
+                    {
+                        if (url == "") return url
+                        if (url[0] == "/") return "file://"+url
+                        if (url.indexOf(":")<0) {
+                            if (url.indexOf(".")<0 || url.indexOf(" ")>=0) {
+                                // Fall back to a search engine; hard-code Wikipedia
+                                return "http://en.wikipedia.org/w/index.php?search="+url
+                            } else {
+                                return "http://"+url
+                            }
+                        }
+                        return url
+                    }
+                }
+
+                url: fixUrl(WebBrowser.urlString)
                 smooth: !Flick.moving
                 fillColor: "white"
                 focus: true
-                interactive: true
 
-                idealWidth: Flick.width
-                idealHeight: Flick.height/scale
+                preferredWidth: Flick.width
+                preferredHeight: Flick.height/scale
                 scale: (width > 0) ? Flick.width/width*zoomedOut+(1-zoomedOut) : 1
 
                 onUrlChanged: { if (url != null) { WebBrowser.urlString = url.toString(); } }
-                onDoubleClick: { toggleZoom() }
+                onDoubleClick: { toggleZoom(clickX,clickY) }
 
                 property real zoomedOut : 1
             }
@@ -335,8 +351,8 @@ Item {
         State {
             name: "Normal"
             PropertyChanges { target: MyWebView; zoomedOut: 0 }
-            PropertyChanges { target: Flick; explicit: true; xPosition: Math.min(MyWebView.width-Flick.width,Math.max(0,Flick.centerX-Flick.width/2)) }
-            PropertyChanges { target: Flick; explicit: true; yPosition: Math.min(MyWebView.height-Flick.height,Math.max(0,Flick.centerY-Flick.height/2)) }
+            PropertyChanges { target: Flick; explicit: true; viewportX: Math.min(MyWebView.width-Flick.width,Math.max(0,Flick.centerX-Flick.width/2)) }
+            PropertyChanges { target: Flick; explicit: true; viewportY: Math.min(MyWebView.height-Flick.height,Math.max(0,Flick.centerY-Flick.height/2)) }
         },
         State {
             name: "ZoomedOut"
@@ -360,7 +376,7 @@ Item {
                     }
                     NumberAnimation {
                         target: Flick
-                        properties: "xPosition,yPosition"
+                        properties: "viewportX,viewportY"
                         easing: "easeInOutQuad"
                         duration: 200
                     }

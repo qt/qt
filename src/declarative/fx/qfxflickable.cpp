@@ -96,7 +96,7 @@ QFxFlickablePrivate::QFxFlickablePrivate()
   : _flick(new QFxItem), _moveX(_flick, &QFxItem::setX), _moveY(_flick, &QFxItem::setY)
     , vWidth(-1), vHeight(-1), overShoot(true), flicked(false), moving(false), stealMouse(false)
     , pressed(false), maxVelocity(-1), locked(false), dragMode(QFxFlickable::Hard)
-    , elasticY(_moveY), elasticX(_moveX), velocityDecay(100), xVelocity(this), yVelocity(this)
+    , elasticY(_moveY), elasticX(_moveX), reportedVelocitySmoothing(100), horizontalVelocity(this), verticalVelocity(this)
     , vTime(0), atXEnd(false), atXBeginning(true), pageXPosition(0.), pageWidth(0.)
     , atYEnd(false), atYBeginning(true), pageYPosition(0.), pageHeight(0.)
 {
@@ -112,8 +112,8 @@ void QFxFlickablePrivate::init()
     QObject::connect(&_tl, SIGNAL(completed()), q, SLOT(movementEnding()));
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setFiltersChildEvents(true);
-    QObject::connect(_flick, SIGNAL(xChanged()), q, SIGNAL(positionChanged()));
-    QObject::connect(_flick, SIGNAL(yChanged()), q, SIGNAL(positionChanged()));
+    QObject::connect(_flick, SIGNAL(xChanged()), q, SIGNAL(positionXChanged()));
+    QObject::connect(_flick, SIGNAL(yChanged()), q, SIGNAL(positionYChanged()));
     QObject::connect(&elasticX, SIGNAL(updated()), q, SLOT(ticked()));
     QObject::connect(&elasticY, SIGNAL(updated()), q, SLOT(ticked()));
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(heightChange()));
@@ -142,7 +142,7 @@ void QFxFlickablePrivate::flickX(qreal velocity)
             else
                 v = maxVelocity;
         }
-        _tl.clear();
+        _tl.reset(_moveX);
         _tl.accel(_moveX, v, 500, maxDistance);
         _tl.execute(fixupXEvent);
         if (!flicked) {
@@ -151,7 +151,7 @@ void QFxFlickablePrivate::flickX(qreal velocity)
             emit q->flickStarted();
         }
     } else {
-        _tl.clear();
+        _tl.reset(_moveX);
         fixupX();
     }
 }
@@ -178,7 +178,7 @@ void QFxFlickablePrivate::flickY(qreal velocity)
             else
                 v = maxVelocity;
         }
-        _tl.clear();
+        _tl.reset(_moveY);
         _tl.accel(_moveY, v, 500, maxDistance);
         _tl.execute(fixupYEvent);
         if (!flicked) {
@@ -187,7 +187,7 @@ void QFxFlickablePrivate::flickY(qreal velocity)
             emit q->flickStarted();
         }
     } else {
-        _tl.clear();
+        _tl.reset(_moveY);
         fixupY();
     }
 }
@@ -369,20 +369,20 @@ QFxFlickable::~QFxFlickable()
 }
 
 /*!
-    \qmlproperty int Flickable::xPosition
-    \qmlproperty int Flickable::yPosition
+    \qmlproperty int Flickable::viewportX
+    \qmlproperty int Flickable::viewportY
 
     These properties hold the surface coordinate currently at the top-left
     corner of the Flickable. For example, if you flick an image up 100 pixels,
     \c yPosition will be 100.
 */
-qreal QFxFlickable::xPosition() const
+qreal QFxFlickable::viewportX() const
 {
     Q_D(const QFxFlickable);
     return -d->_moveX.value();
 }
 
-void QFxFlickable::setXPosition(qreal pos)
+void QFxFlickable::setViewportX(qreal pos)
 {
     Q_D(QFxFlickable);
     pos = qRound(pos);
@@ -393,13 +393,13 @@ void QFxFlickable::setXPosition(qreal pos)
     }
 }
 
-qreal QFxFlickable::yPosition() const
+qreal QFxFlickable::viewportY() const
 {
     Q_D(const QFxFlickable);
     return -d->_moveY.value();
 }
 
-void QFxFlickable::setYPosition(qreal pos)
+void QFxFlickable::setViewportY(qreal pos)
 {
     Q_D(QFxFlickable);
     pos = qRound(pos);
@@ -454,21 +454,25 @@ void QFxFlickable::setDragMode(DragMode mode)
 }
 
 /*!
-    \qmlproperty real Flickable::xVelocity
-    \qmlproperty real Flickable::yVelocity
+    \qmlproperty real Flickable::horizontalVelocity
+    \qmlproperty real Flickable::verticalVelocity
+    \qmlproperty real Flickable::reportedVelocitySmoothing
 
     The instantaneous velocity of movement along the x and y axes, in pixels/sec.
+
+    The reported velocity is smoothed to avoid erratic output.
+    reportedVelocitySmoothing determines how much smoothing is applied.
 */
-qreal QFxFlickable::xVelocity() const
+qreal QFxFlickable::horizontalVelocity() const
 {
     Q_D(const QFxFlickable);
-    return d->xVelocity.value();
+    return d->horizontalVelocity.value();
 }
 
-qreal QFxFlickable::yVelocity() const
+qreal QFxFlickable::verticalVelocity() const
 {
     Q_D(const QFxFlickable);
-    return d->yVelocity.value();
+    return d->verticalVelocity.value();
 }
 
 /*!
@@ -760,18 +764,18 @@ void QFxFlickable::viewportMoved()
         qreal prevX = d->lastFlickablePosition.y();
         d->velocityTimeline.clear();
         if (d->pressed) {
-            qreal xVelocity = (prevX - d->_moveX.value()) * 1000 / elapsed;
-            qreal yVelocity = (prevY - d->_moveY.value()) * 1000 / elapsed;
-            d->velocityTimeline.move(d->xVelocity, xVelocity, d->velocityDecay);
-            d->velocityTimeline.move(d->xVelocity, 0, d->velocityDecay);
-            d->velocityTimeline.move(d->yVelocity, yVelocity, d->velocityDecay);
-            d->velocityTimeline.move(d->yVelocity, 0, d->velocityDecay);
+            qreal horizontalVelocity = (prevX - d->_moveX.value()) * 1000 / elapsed;
+            qreal verticalVelocity = (prevY - d->_moveY.value()) * 1000 / elapsed;
+            d->velocityTimeline.move(d->horizontalVelocity, horizontalVelocity, d->reportedVelocitySmoothing);
+            d->velocityTimeline.move(d->horizontalVelocity, 0, d->reportedVelocitySmoothing);
+            d->velocityTimeline.move(d->verticalVelocity, verticalVelocity, d->reportedVelocitySmoothing);
+            d->velocityTimeline.move(d->verticalVelocity, 0, d->reportedVelocitySmoothing);
         } else {
             if (d->_tl.time() != d->vTime) {
-                qreal xVelocity = (prevX - d->_moveX.value()) * 1000 / (d->_tl.time() - d->vTime);
-                qreal yVelocity = (prevY - d->_moveY.value()) * 1000 / (d->_tl.time() - d->vTime);
-                d->xVelocity.setValue(xVelocity);
-                d->yVelocity.setValue(yVelocity);
+                qreal horizontalVelocity = (prevX - d->_moveX.value()) * 1000 / (d->_tl.time() - d->vTime);
+                qreal verticalVelocity = (prevY - d->_moveY.value()) * 1000 / (d->_tl.time() - d->vTime);
+                d->horizontalVelocity.setValue(horizontalVelocity);
+                d->verticalVelocity.setValue(verticalVelocity);
             }
             d->vTime = d->_tl.time();
         }
@@ -787,21 +791,21 @@ void QFxFlickable::viewportMoved()
         if (d->velocityY > 0) {
             const qreal minY = minYExtent();
             if (minY - d->_moveY.value() < height()/3 && minY != d->flickTargetY)
-                d->flickY(-d->yVelocity.value());
+                d->flickY(-d->verticalVelocity.value());
         } else {
             const qreal maxY = maxYExtent();
             if (d->_moveY.value() - maxY < height()/3 && maxY != d->flickTargetY)
-                d->flickY(-d->yVelocity.value());
+                d->flickY(-d->verticalVelocity.value());
         }
 
         if (d->velocityX > 0) {
             const qreal minX = minXExtent();
             if (minX - d->_moveX.value() < height()/3 && minX != d->flickTargetX)
-                d->flickX(-d->xVelocity.value());
+                d->flickX(-d->horizontalVelocity.value());
         } else {
             const qreal maxX = maxXExtent();
             if (d->_moveX.value() - maxX < height()/3 && maxX != d->flickTargetX)
-                d->flickX(-d->xVelocity.value());
+                d->flickX(-d->horizontalVelocity.value());
         }
     }
 }
@@ -892,13 +896,13 @@ void QFxFlickable::setOverShoot(bool o)
     }
     \endcode
 */
-int QFxFlickable::viewportWidth() const
+qreal QFxFlickable::viewportWidth() const
 {
     Q_D(const QFxFlickable);
     return d->vWidth;
 }
 
-void QFxFlickable::setViewportWidth(int w)
+void QFxFlickable::setViewportWidth(qreal w)
 {
     Q_D(QFxFlickable);
     if (d->vWidth == w)
@@ -935,13 +939,13 @@ void QFxFlickable::heightChange()
     }
 }
 
-int QFxFlickable::viewportHeight() const
+qreal QFxFlickable::viewportHeight() const
 {
     Q_D(const QFxFlickable);
     return d->vHeight;
 }
 
-void QFxFlickable::setViewportHeight(int h)
+void QFxFlickable::setViewportHeight(qreal h)
 {
     Q_D(QFxFlickable);
     if (d->vHeight == h)
@@ -958,7 +962,7 @@ void QFxFlickable::setViewportHeight(int h)
     d->updateBeginningEnd();
 }
 
-int QFxFlickable::vWidth() const
+qreal QFxFlickable::vWidth() const
 {
     Q_D(const QFxFlickable);
     if (d->vWidth < 0)
@@ -967,7 +971,7 @@ int QFxFlickable::vWidth() const
         return d->vWidth;
 }
 
-int QFxFlickable::vHeight() const
+qreal QFxFlickable::vHeight() const
 {
     Q_D(const QFxFlickable);
     if (d->vHeight < 0)
@@ -1049,15 +1053,15 @@ bool QFxFlickable::sceneEventFilter(QGraphicsItem *i, QEvent *e)
 
 /*!
     \qmlproperty int Flickable::maximumFlickVelocity
-    This property holds the maximum velocity that the user can flick the view.
+    This property holds the maximum velocity that the user can flick the view in pixels/second.
 */
-int QFxFlickable::maximumFlickVelocity() const
+qreal QFxFlickable::maximumFlickVelocity() const
 {
     Q_D(const QFxFlickable);
     return d->maxVelocity;
 }
 
-void QFxFlickable::setMaximumFlickVelocity(int v)
+void QFxFlickable::setMaximumFlickVelocity(qreal v)
 {
     Q_D(QFxFlickable);
     if (v == d->maxVelocity)
@@ -1071,20 +1075,20 @@ bool QFxFlickable::isFlicking() const
     return d->flicked;
 }
 
-int QFxFlickable::velocityDecay() const
+qreal QFxFlickable::reportedVelocitySmoothing() const
 {
     Q_D(const QFxFlickable);
-    return d->velocityDecay;
+    return d->reportedVelocitySmoothing;
 }
 
-void QFxFlickable::setVelocityDecay(int decay)
+void QFxFlickable::setReportedVelocitySmoothing(qreal reportedVelocitySmoothing)
 {
     Q_D(QFxFlickable);
-    Q_ASSERT(decay >= 0);
-    if (decay == d->velocityDecay)
+    Q_ASSERT(reportedVelocitySmoothing >= 0);
+    if (reportedVelocitySmoothing == d->reportedVelocitySmoothing)
         return;
-    d->velocityDecay = decay;
-    emit velocityDecayChanged(decay);
+    d->reportedVelocitySmoothing = reportedVelocitySmoothing;
+    emit reportedVelocitySmoothingChanged(reportedVelocitySmoothing);
 }
 
 bool QFxFlickable::isMoving() const
@@ -1116,13 +1120,13 @@ void QFxFlickable::movementEnding()
         emit flickingChanged();
         emit flickEnded();
     }
-    d->xVelocity.setValue(0);
+    d->horizontalVelocity.setValue(0);
 }
 
 void QFxFlickablePrivate::updateVelocity()
 {
     Q_Q(QFxFlickable);
-    emit q->velocityChanged(q->xVelocity(), q->yVelocity());
+    emit q->velocityChanged(q->horizontalVelocity(), q->verticalVelocity());
 }
 
 QT_END_NAMESPACE
