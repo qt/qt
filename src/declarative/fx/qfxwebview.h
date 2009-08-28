@@ -85,30 +85,27 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
 {
     Q_OBJECT
 
+    Q_ENUMS(Status)
+
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(QPixmap icon READ icon NOTIFY iconChanged)
     Q_PROPERTY(qreal textSizeMultiplier READ textSizeMultiplier WRITE setTextSizeMultiplier DESIGNABLE false)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
-    Q_PROPERTY(QString status READ status NOTIFY statusChanged) //### statusText
-
-    Q_PROPERTY(int mouseX READ mouseX) //### remove and find way to handle double clicking
-    Q_PROPERTY(int mouseY READ mouseY)
+    Q_PROPERTY(QString statusText READ statusText NOTIFY statusTextChanged)
 
     Q_PROPERTY(QString html READ html WRITE setHtml)
 
-    Q_PROPERTY(int idealWidth READ idealWidth WRITE setIdealWidth NOTIFY idealWidthChanged) //### widthHint
-    Q_PROPERTY(int idealHeight READ idealHeight WRITE setIdealHeight NOTIFY idealHeightChanged) //### heightHint
-    Q_PROPERTY(int cacheSize READ cacheSize WRITE setCacheSize) //### remove
-    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged) //### change immediately
+    Q_PROPERTY(int preferredWidth READ preferredWidth WRITE setPreferredWidth NOTIFY preferredWidthChanged)
+    Q_PROPERTY(int preferredHeight READ preferredHeight WRITE setPreferredHeight NOTIFY preferredHeightChanged)
+    Q_PROPERTY(int pixelCacheSize READ pixelCacheSize WRITE setPixelCacheSize)
+    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
-    //### status
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
 
-    Q_PROPERTY(bool interactive READ interactive WRITE setInteractive NOTIFY interactiveChanged) //### Really needed here??
-
-    Q_PROPERTY(QObject* reload READ reloadAction CONSTANT) //### QAction
-    Q_PROPERTY(QObject* back READ backAction CONSTANT) //### QAction
-    Q_PROPERTY(QObject* forward READ forwardAction CONSTANT) //### QAction
-    Q_PROPERTY(QObject* stop READ stopAction CONSTANT) //### QAction
+    Q_PROPERTY(QAction* reload READ reloadAction CONSTANT)
+    Q_PROPERTY(QAction* back READ backAction CONSTANT)
+    Q_PROPERTY(QAction* forward READ forwardAction CONSTANT)
+    Q_PROPERTY(QAction* stop READ stopAction CONSTANT)
 
     Q_PROPERTY(QFxWebSettings* settings READ settingsObject CONSTANT)
 
@@ -131,19 +128,15 @@ public:
     qreal zoomFactor() const;
     void setZoomFactor(qreal);
 
-    bool interactive() const;
-    void setInteractive(bool);
+    int preferredWidth() const;
+    void setPreferredWidth(int);
+    int preferredHeight() const;
+    void setPreferredHeight(int);
 
-    int mouseX() const;
-    int mouseY() const;
-
-    int idealWidth() const;
-    void setIdealWidth(int);
-    int idealHeight() const;
-    void setIdealHeight(int);
-
-
+    enum Status { Null, Ready, Loading, Error };
+    Status status() const;
     qreal progress() const;
+    QString statusText() const;
 
     QAction *reloadAction() const;
     QAction *backAction() const;
@@ -166,32 +159,29 @@ public:
     QWebSettings *settings() const;
     QFxWebSettings *settingsObject() const;
 
-    QString status() const;
-
-    int cacheSize() const;
-    void setCacheSize(int pixels);
+    int pixelCacheSize() const;
+    void setPixelCacheSize(int pixels);
 
     QmlList<QObject *> *javaScriptWindowObjects();
 
     static QFxWebViewAttached *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
-    void idealWidthChanged();
-    void idealHeightChanged();
+    void preferredWidthChanged();
+    void preferredHeightChanged();
     void urlChanged();
-    void interactiveChanged();
     void progressChanged();
+    void statusChanged(Status);
     void titleChanged(const QString&);
     void iconChanged();
-    void statusChanged();
+    void statusTextChanged();
     void zoomFactorChanged();
 
-    void loadStarted(); //### document with \qmlsignal
+    void loadStarted();
     void loadFinished();
     void loadFailed();
 
-    void singleClick();
-    void doubleClick();
+    void doubleClick(int clickX, int clickY);
 
 public Q_SLOTS:
     QVariant evaluateJavaScript(const QString&);
@@ -199,10 +189,12 @@ public Q_SLOTS:
 private Q_SLOTS:
     void expandToWebPage();
     void paintPage(const QRect&);
+    void doLoadStarted();
     void doLoadProgress(int p);
     void doLoadFinished(bool ok);
-    void setStatusBarMessage(const QString&);
+    void setStatusText(const QString&);
     void windowObjectCleared();
+    void pageUrlChanged();
 
 protected:
     QFxWebView(QFxWebViewPrivate &dd, QFxItem *parent);
@@ -216,7 +208,6 @@ protected:
     void hoverMoveEvent (QGraphicsSceneHoverEvent * event);
     void keyPressEvent(QKeyEvent* event);
     void keyReleaseEvent(QKeyEvent* event);
-    void timerEvent(QTimerEvent *event);
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
     virtual void focusChanged(bool);
@@ -232,6 +223,7 @@ private:
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QFxWebView)
+QML_DECLARE_TYPE(QAction)
 
 QT_END_HEADER
 

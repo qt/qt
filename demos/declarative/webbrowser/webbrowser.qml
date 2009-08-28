@@ -17,10 +17,10 @@ Item {
         function zoomOut() {
             WebBrowser.state = "ZoomedOut";
         }
-        function toggleZoom() {
+        function toggleZoom(x,y) {
             if(WebBrowser.state == "ZoomedOut") {
-                Flick.centerX = MyWebView.mouseX;
-                Flick.centerY = MyWebView.mouseY;
+                Flick.centerX = x
+                Flick.centerY = y
                 WebBrowser.state = "Normal";
             } else {
                 zoomOut();
@@ -135,9 +135,9 @@ Item {
 
                             text: WebBrowser.urlString
                             label: "url:"
-                            onConfirmed: { print ('OnConfirmed: '+EditUrl.text); WebBrowser.urlString = EditUrl.text; print (EditUrl.text); MyWebView.focus=true }
+                            onConfirmed: { WebBrowser.urlString = EditUrl.text; MyWebView.focus=true }
                             onCancelled: { MyWebView.focus=true }
-                            onStartEdit: { print (EditUrl.text); MyWebView.focus=false }
+                            onStartEdit: { MyWebView.focus=false }
 
                             anchors.left: UrlBox.left
                             anchors.right: UrlBox.right
@@ -188,20 +188,36 @@ Item {
 
             WebView {
                 id: MyWebView
-                cacheSize: 4000000
+                pixelCacheSize: 4000000
 
-                url: WebBrowser.urlString
+                Script {
+                    function fixUrl(url)
+                    {
+                        if (url == "") return url
+                        if (url[0] == "/") return "file://"+url
+                        if (url.indexOf(":")<0) {
+                            if (url.indexOf(".")<0 || url.indexOf(" ")>=0) {
+                                // Fall back to a search engine; hard-code Wikipedia
+                                return "http://en.wikipedia.org/w/index.php?search="+url
+                            } else {
+                                return "http://"+url
+                            }
+                        }
+                        return url
+                    }
+                }
+
+                url: fixUrl(WebBrowser.urlString)
                 smooth: !Flick.moving
                 fillColor: "white"
                 focus: true
-                interactive: true
 
-                idealWidth: Flick.width
-                idealHeight: Flick.height/scale
+                preferredWidth: Flick.width
+                preferredHeight: Flick.height/scale
                 scale: (width > 0) ? Flick.width/width*zoomedOut+(1-zoomedOut) : 1
 
                 onUrlChanged: { if (url != null) { WebBrowser.urlString = url.toString(); } }
-                onDoubleClick: { toggleZoom() }
+                onDoubleClick: { toggleZoom(clickX,clickY) }
 
                 property real zoomedOut : 1
             }

@@ -35,7 +35,6 @@ Item {
         anchors.left: parent.left
         anchors.right: parent.right
         focus: true
-        interactive: true
         settings.pluginsEnabled: true
         javaScriptWindowObjects: [
         Object {

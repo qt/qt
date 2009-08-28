@@ -1,7 +1,7 @@
 import Qt 4.6
 
 // The WebView size is determined by the width, height,
-// idealWidth, and idealHeight properties.
+// preferredWidth, and preferredHeight properties.
 Rectangle {
     id: Rect
     color: "white"
@@ -34,16 +34,16 @@ Rectangle {
             }
         }
         WebView {
-            idealWidth: Rect.width/2
-            html: "The idealWidth is half."
+            preferredWidth: Rect.width/2
+            html: "The preferredWidth is half."
             Rectangle {
                 color: "#10000000"
                 anchors.fill: parent
             }
         }
         WebView {
-            idealWidth: Rect.width/2
-            html: "The_idealWidth_is_half."
+            preferredWidth: Rect.width/2
+            html: "The_preferredWidth_is_half."
             Rectangle {
                 color: "#10000000"
                 anchors.fill: parent
