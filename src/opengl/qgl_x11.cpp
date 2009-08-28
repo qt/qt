@@ -1694,7 +1694,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, con
 
     glBindTexture(GL_TEXTURE_2D, textureId);
 
-    if (!((hasAlpha && RGBAConfigInverted) || (!hasAlpha && RGBConfigInverted)));
+    if (!((hasAlpha && RGBAConfigInverted) || (!hasAlpha && RGBConfigInverted)))
         options &= ~QGLContext::InvertedYBindOption;
     QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, options);
     if (texture->options & QGLContext::InvertedYBindOption)
