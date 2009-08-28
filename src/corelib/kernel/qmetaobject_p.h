@@ -122,6 +122,7 @@ struct QMetaObjectPrivate
     static int indexOfSignalRelative(const QMetaObject **baseObject, const char* name);
     static int originalClone(const QMetaObject *obj, int local_method_index);
 
+#ifndef QT_NO_QOBJECT
     //defined in qobject.cpp
     static bool connect(const QObject *sender, int signal_index,
                         const QObject *receiver, int method_index,
@@ -131,6 +132,7 @@ struct QMetaObjectPrivate
     static inline bool disconnectHelper(QObjectPrivate::Connection *c,
                                         const QObject *receiver, int method_index,
                                         QMutex *senderMutex);
+#endif
 };
 
 #ifndef UTILS_H
