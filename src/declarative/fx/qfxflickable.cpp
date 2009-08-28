@@ -142,7 +142,7 @@ void QFxFlickablePrivate::flickX(qreal velocity)
             else
                 v = maxVelocity;
         }
-        _tl.clear();
+        _tl.reset(_moveX);
         _tl.accel(_moveX, v, 500, maxDistance);
         _tl.execute(fixupXEvent);
         if (!flicked) {
@@ -151,7 +151,7 @@ void QFxFlickablePrivate::flickX(qreal velocity)
             emit q->flickStarted();
         }
     } else {
-        _tl.clear();
+        _tl.reset(_moveX);
         fixupX();
     }
 }
@@ -178,7 +178,7 @@ void QFxFlickablePrivate::flickY(qreal velocity)
             else
                 v = maxVelocity;
         }
-        _tl.clear();
+        _tl.reset(_moveY);
         _tl.accel(_moveY, v, 500, maxDistance);
         _tl.execute(fixupYEvent);
         if (!flicked) {
@@ -187,7 +187,7 @@ void QFxFlickablePrivate::flickY(qreal velocity)
             emit q->flickStarted();
         }
     } else {
-        _tl.clear();
+        _tl.reset(_moveY);
         fixupY();
     }
 }
