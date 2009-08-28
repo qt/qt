@@ -80,6 +80,7 @@
 #include <private/qmlbinding_p.h>
 #include <private/qmlvme_p.h>
 #include <private/qmlenginedebug_p.h>
+#include <private/qmlxmlhttprequest_p.h>
 
 Q_DECLARE_METATYPE(QmlMetaProperty)
 Q_DECLARE_METATYPE(QList<QObject *>);
@@ -117,6 +118,9 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     desktopObject.setProperty(QLatin1String("openUrl"),scriptEngine.newFunction(desktopOpenUrl, 1));
     qtObject.setProperty(QLatin1String("DesktopServices"), desktopObject);
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
+
+    qt_add_qmlxmlhttprequest(&scriptEngine);
+
     qtObject.setProperty(QLatin1String("rgba"), scriptEngine.newFunction(QmlEnginePrivate::rgba, 4));
     qtObject.setProperty(QLatin1String("hsla"), scriptEngine.newFunction(QmlEnginePrivate::hsla, 4));
     qtObject.setProperty(QLatin1String("rect"), scriptEngine.newFunction(QmlEnginePrivate::rect, 4));

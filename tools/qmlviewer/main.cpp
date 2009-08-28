@@ -161,6 +161,7 @@ int main(int argc, char ** argv)
         viewer.show();
         viewer.open();
     }
+    viewer.raise();
 
     return app.exec();
 }
