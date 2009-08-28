@@ -164,11 +164,14 @@ class QGraphicsOpacityEffectPrivate : public QGraphicsEffectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsOpacityEffect)
 public:
-    QGraphicsOpacityEffectPrivate() : opacity(qreal(0.7)), hasOpacityMask(0) {}
+    QGraphicsOpacityEffectPrivate()
+        : opacity(qreal(0.7)), isFullyTransparent(0), isFullyOpaque(0), hasOpacityMask(0) {}
     ~QGraphicsOpacityEffectPrivate() {}
 
     qreal opacity;
     QBrush opacityMask;
+    uint isFullyTransparent : 1;
+    uint isFullyOpaque : 1;
     uint hasOpacityMask : 1;
 };
 

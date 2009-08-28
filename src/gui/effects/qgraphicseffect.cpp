@@ -1008,6 +1008,10 @@ void QGraphicsOpacityEffect::setOpacity(qreal opacity)
         return;
 
     d->opacity = opacity;
+    if ((d->isFullyTransparent = qFuzzyIsNull(d->opacity)))
+        d->isFullyOpaque = 0;
+    else
+        d->isFullyOpaque = qFuzzyIsNull(d->opacity - 1);
     emit opacityChanged(opacity);
 }
 
@@ -1065,11 +1069,11 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
     Q_D(QGraphicsOpacityEffect);
 
     // Transparent; nothing to draw.
-    if (qFuzzyIsNull(d->opacity))
+    if (d->isFullyTransparent)
         return;
 
     // Opaque; draw directly without going through a pixmap.
-    if (qFuzzyIsNull(d->opacity - 1)) {
+    if (d->isFullyOpaque && !d->hasOpacityMask) {
         source->draw(painter);
         return;
     }
