@@ -45,6 +45,7 @@
 #include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qgl.h>
+#include <qglpixelbuffer.h>
 #include <qglcolormap.h>
 #include <qpaintengine.h>
 
@@ -70,6 +71,7 @@ private slots:
     void partialGLWidgetUpdates_data();
     void partialGLWidgetUpdates();
     void glWidgetRendering();
+    void glPBufferRendering();
     void glWidgetReparent();
     void colormap();
 };
@@ -629,6 +631,37 @@ void tst_QGL::partialGLWidgetUpdates()
         QCOMPARE(widget.paintEventRegion, QRegion(widget.rect()));
 }
 
+
+// This tests that rendering to a QGLPBuffer using QPainter works.
+void tst_QGL::glPBufferRendering()
+{
+    if (!QGLPixelBuffer::hasOpenGLPbuffers())
+        QSKIP("QGLPixelBuffer not supported on this platform", SkipSingle);
+
+    QGLPixelBuffer* pbuf = new QGLPixelBuffer(128, 128);
+
+    QPainter p;
+    bool begun = p.begin(pbuf);
+    QVERIFY(begun);
+
+    QPaintEngine::Type engineType = p.paintEngine()->type();
+    QVERIFY(engineType == QPaintEngine::OpenGL || engineType == QPaintEngine::OpenGL2);
+
+    p.fillRect(0, 0, 128, 128, Qt::red);
+    p.fillRect(32, 32, 64, 64, Qt::blue);
+    p.end();
+
+    QImage fb = pbuf->toImage();
+    delete pbuf;
+
+    QImage reference(128, 128, fb.format());
+    p.begin(&reference);
+    p.fillRect(0, 0, 128, 128, Qt::red);
+    p.fillRect(32, 32, 64, 64, Qt::blue);
+    p.end();
+
+    QCOMPARE(fb, reference);
+}
 
 class GLWidget : public QGLWidget
 {
