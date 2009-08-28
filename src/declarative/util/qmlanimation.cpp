@@ -1168,6 +1168,8 @@ void QmlParentAction::transition(QmlStateActions &actions,
 
     QmlParentActionData *data = new QmlParentActionData;
 
+    bool explicitMatchFound = false;
+
     for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
@@ -1182,12 +1184,24 @@ void QmlParentAction::transition(QmlStateActions &actions,
                 myAction.event = pc;
                 data->pc = pc;
                 data->actions << myAction;
+                if (d->target) explicitMatchFound = true;
                 break;  //only match one
             } else {
                 action.actionDone = true;
                 data->actions << myAction;
             }
         }
+    }
+
+    if (!explicitMatchFound && d->pcTarget && d->pcParent) {
+        data->reverse = false;
+        Action myAction;
+        QmlParentChange *pc = new QmlParentChange;
+        pc->setObject(d->pcTarget);
+        pc->setParent(d->pcParent);
+        myAction.event = pc;
+        data->pc = pc;
+        data->actions << myAction;
     }
 
     if (data->actions.count()) {
