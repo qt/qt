@@ -1955,3 +1955,14 @@ QTreeView::branch:open:has-children:has-siblings  {
         image: url(branch-open.png);
 }
 //! [158]
+
+//! [159]
+QTabBar::close-button {
+    image: url(close.png)
+    subcontrol-position: left;
+}
+QTabBar::close-button:hover {
+    image: url(close-hover.png)
+}
+
+//! [159]

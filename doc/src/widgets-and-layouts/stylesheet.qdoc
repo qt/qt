@@ -1118,8 +1118,9 @@
 
     \row
         \o QTabBar \target qtabbar-widget
-        \o Individual tabs may be styled using the \l{#tab-sub}{::tab}
-           subcontrol. The tabs support the
+        \o Individual tabs may be styled using the \l{#tab-sub}{::tab}  subcontrol.
+           Close buttons using the \l{#close-button-sub}{::close-button}
+           The tabs support the
            \l{#only-one-ps}{:only-one}, \l{#first-ps}{:first},
            \l{#last-ps}{:last}, \l{#middle-ps}{:middle},
            \l{#previous-selected-ps}{:previous--selected},
@@ -3217,7 +3218,7 @@
 
     \row
         \o \c ::close-button \target close-button-sub
-        \o The close button of a QDockWidget.
+        \o The close button of a QDockWidget or tabs of QTabBar
 
     \row
         \o \c ::corner \target corner-sub
@@ -3802,6 +3803,9 @@
 
     The tear indicator and the scroll buttons can be further customized as follows:
     \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 148
+
+    Sine Qt 4.6 the close button can be customized as follow:
+    \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 159
 
     \section2 Customizing QTableView
 
