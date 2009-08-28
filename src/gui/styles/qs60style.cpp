@@ -2732,6 +2732,8 @@ bool QS60Style::event(QEvent *e)
     default:
         break;
     }
+#else
+    Q_UNUSED(e)
 #endif
     return false;
 }
