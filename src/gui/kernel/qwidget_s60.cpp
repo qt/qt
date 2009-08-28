@@ -202,8 +202,10 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
             if (data.wrect.contains(vrect)) {
                 xrect = data.wrect;
                 xrect.translate(data.crect.topLeft());
-                if (data.winid)
-                    data.winid->SetPosition(TPoint(xrect.x(), xrect.y()));
+                if (data.winid) {
+                    data.winid->SetExtent(TPoint(xrect.x(), xrect.y()), TSize(xrect.width(), xrect.height()));
+                    data.winid->DrawNow();
+                }
                 return;
             }
         }
@@ -258,16 +260,10 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
         if (!parent->internalWinId())
             xrect.translate(parent->mapTo(q->nativeParentWidget(), QPoint(0, 0)));
         data.winid->SetExtent(TPoint(xrect.x(), xrect.y()), TSize(xrect.width(), xrect.height()));
+        if(!jump)
+            data.winid->DrawNow();
     }
-    if (mapWindow and !dontShow) {
-        q->setAttribute(Qt::WA_Mapped);
-        if (q->internalWinId())
-            q->internalWinId()->DrawableWindow()->SetVisible(ETrue);
-    }
-
-/*
- * Not present in Windows port, so we omit it here aswell ... 
- * 
+    
     //to avoid flicker, we have to show children after the helper widget has moved
     if (jump) {
         for (int i = 0; i < children.size(); ++i) {
@@ -277,29 +273,20 @@ void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &)
                 if (!w->testAttribute(Qt::WA_OutsideWSRange) && !w->testAttribute(Qt::WA_Mapped) && !w->isHidden()) {
                     w->setAttribute(Qt::WA_Mapped);
                     if (w->internalWinId())
-                        XMapWindow(dpy, w->data->winid);
+                        w->data->winid->DrawableWindow()->SetVisible(ETrue);
                 }
             }
         }
     }
-*/
 
-/*
- * TODO: how to invalidate part of the control?
- * 
     if  (jump && data.winid)
-        data.winid->Draw(TRect(0, 0, wrect.width(), wrect.height()));
-*/
-        
-/*
- * Not present in Windows port, so we omit it here aswell ... 
- * 
-    if (mapWindow && !dontShow) {
+        data.winid->DrawNow(TRect(0, 0, wrect.width(), wrect.height()));
+    
+    if (mapWindow and !dontShow) {
         q->setAttribute(Qt::WA_Mapped);
-        if (data.winid)
-            XMapWindow(dpy, data.winid);
+        if (q->internalWinId())
+            q->internalWinId()->DrawableWindow()->SetVisible(ETrue);
     }
-*/
 }
 
 void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)

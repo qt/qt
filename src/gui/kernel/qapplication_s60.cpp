@@ -320,6 +320,14 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
         if (topLevel or !qwidget->parentWidget())
             CreateWindowL(S60->windowGroup());
         else
+            /**
+             * TODO: in order to avoid creating windows for all ancestors of 
+             * this widget up to the root window, the parameter passed to
+             * CreateWindowL should be
+             * qwidget->parentWidget()->effectiveWinId().  However, if we do
+             * this, then we need to take care of re-parenting when a window
+             * is created for a widget between this one and the root window.
+             */
             CreateWindowL(qwidget->parentWidget()->winId());
         
         SetFocusing(true);
