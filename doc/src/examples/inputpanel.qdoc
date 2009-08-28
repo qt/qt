@@ -71,7 +71,7 @@
     the input panel and sending input method events to the receiving
     widgets.
 
-    The \c inputPanel member is a pointer to input panel widget
+    The \c inputPanel member is a pointer to the input panel widget
     itself; in other words, the window that will display the buttons
     used for input.
 
@@ -210,7 +210,7 @@
     In the \c event() function we handle QEvent::WindowActivate
     event, which occurs if the focus switches to the input panel.
 
-    \snippet examples/tools/inputpanel/myinputpanel.cpp 0
+    \snippet examples/tools/inputpanel/myinputpanel.cpp 1
 
     Since we want avoid focus on the input panel, we immediately call
     QWidget::activateWindow() on the widget that last had focus, so
@@ -226,7 +226,7 @@
 
     \snippet examples/tools/inputpanel/main.cpp main
 
-    With the input context in place, we set up and shows the user interface
+    With the input context in place, we set up and show the user interface
     made in Qt Designer before running the event loop.
 
     \section1 Further Reading
