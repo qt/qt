@@ -257,6 +257,20 @@ void QFxRepeater::regenerate()
             if (QFxItem *item = d->addItem(ctxt, lastItem))
                 lastItem = item;
         }
+    } else if (d->dataSource.type() == QMetaType::QVariantList) {
+        QVariantList sl = qvariant_cast<QVariantList>(d->dataSource);
+
+        count = sl.size();
+        for (int ii = 0; ii < count; ++ii) {
+            QmlContext *ctxt = new QmlContext(qmlContext(this), this);
+            d->deletables << ctxt;
+
+            ctxt->setContextProperty(QLatin1String("index"), ii);
+            ctxt->setContextProperty(QLatin1String("modelData"), sl.at(ii));
+
+            if (QFxItem *item = d->addItem(ctxt, lastItem))
+                lastItem = item;
+        }
     } else if (QmlMetaType::isList(d->dataSource)) {
         count = QmlMetaType::listCount(d->dataSource);
         if (count <= 0)
