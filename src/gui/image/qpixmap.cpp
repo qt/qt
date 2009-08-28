@@ -322,6 +322,8 @@ QPixmap::QPixmap(const char * const xpm[])
 
 QPixmap::~QPixmap()
 {
+    if (data->is_cached && data->ref == 1)
+        QImagePixmapCleanupHooks::executePixmapHooks(this);
 }
 
 /*!

@@ -673,8 +673,8 @@ void QGraphicsScenePrivate::removePopup(QGraphicsWidget *widget, bool itemIsDyin
         if (focusItem && popupWidgets.isEmpty()) {
             QFocusEvent event(QEvent::FocusIn, Qt::PopupFocusReason);
             sendEvent(focusItem, &event);
-        } else {
-            ungrabKeyboard((QGraphicsItem *)widget, itemIsDying);
+        } else if (keyboardGrabberItems.contains(static_cast<QGraphicsItem *>(widget))) {
+            ungrabKeyboard(static_cast<QGraphicsItem *>(widget), itemIsDying);
         }
         if (!itemIsDying && widget->isVisible()) {
             widget->hide();

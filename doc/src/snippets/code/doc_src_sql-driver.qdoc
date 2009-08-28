@@ -98,7 +98,7 @@ make
 
 //! [7]
 cd $QTDIR/src/plugins/sqldrivers/oci
-qmake "INCLUDEPATH+=/usr/include/oracle/10.1.0.3/client/" "LIBS+=-L/usr/lib/oracle/10.1.0.3/client/lib" oci.pro
+qmake "INCLUDEPATH+=/usr/include/oracle/10.1.0.3/client/" "LIBS+=-L/usr/lib/oracle/10.1.0.3/client/lib -lclntsh" oci.pro
 make
 //! [7]
 

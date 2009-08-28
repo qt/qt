@@ -302,13 +302,18 @@ void Generator::generateCode()
         }
     }
     if (!extraList.isEmpty()) {
+        fprintf(out, "#ifdef Q_NO_DATA_RELOCATION\n");
+        fprintf(out, "static const QMetaObjectAccessor qt_meta_extradata_%s[] = {\n    ", qualifiedClassNameIdentifier.constData());
+        for (int i = 0; i < extraList.count(); ++i) {
+            fprintf(out, "    %s::getStaticMetaObject,\n", extraList.at(i).constData());
+        }
+        fprintf(out, "#else\n");
         fprintf(out, "static const QMetaObject *qt_meta_extradata_%s[] = {\n    ", qualifiedClassNameIdentifier.constData());
         for (int i = 0; i < extraList.count(); ++i) {
-            if (i)
-                fprintf(out, ",\n    ");
-            fprintf(out, "    &%s::staticMetaObject", extraList.at(i).constData());
+            fprintf(out, "    &%s::staticMetaObject,\n", extraList.at(i).constData());
         }
-        fprintf(out, ",0\n};\n\n");
+        fprintf(out, "#endif //Q_NO_DATA_RELOCATION\n");
+        fprintf(out, "    0\n};\n\n");
     }
 
     if (isConstructible || !extraList.isEmpty()) {
@@ -328,7 +333,6 @@ void Generator::generateCode()
 //
 // Finally create and initialize the static meta object
 //
-
     if (isQt)
         fprintf(out, "const QMetaObject QObject::staticQtMetaObject = {\n");
     else
@@ -348,11 +352,22 @@ void Generator::generateCode()
         fprintf(out, "&qt_meta_extradata2_%s }\n", qualifiedClassNameIdentifier.constData());
     fprintf(out, "};\n");
 
-    if (isQt || !cdef->hasQObject)
+    if(isQt)
+        return;
+
+//
+// Generate static meta object accessor (needed for symbian, because DLLs do not support data imports.
+//
+    fprintf(out, "\n#ifdef Q_NO_DATA_RELOCATION\n");
+    fprintf(out, "const QMetaObject &%s::getStaticMetaObject() { return staticMetaObject; }\n", cdef->qualified.constData());
+    fprintf(out, "#endif //Q_NO_DATA_RELOCATION\n");
+
+    if (!cdef->hasQObject)
         return;
 
     fprintf(out, "\nconst QMetaObject *%s::metaObject() const\n{\n    return QObject::d_ptr->metaObject ? QObject::d_ptr->metaObject : &staticMetaObject;\n}\n",
             cdef->qualified.constData());
+
 //
 // Generate smart cast function
 //

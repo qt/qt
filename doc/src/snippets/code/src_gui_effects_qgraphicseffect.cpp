@@ -31,3 +31,13 @@ MyGraphicsEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 }
 //! [1]
 
+//! [2]
+...
+QLinearGradient alphaGradient(rect.topLeft(), rect.bottomLeft());
+alphaGradient.setColorAt(0.0, Qt::transparent);
+alphaGradient.setColorAt(0.5, Qt::black);
+alphaGradient.setColorAt(1.0, Qt::transparent);
+QGraphicsOpacityEffect *effect = new QGraphicsOpacityEffect;
+effect->setOpacityMask(alphaGradient);
+...
+//! [2]

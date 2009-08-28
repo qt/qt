@@ -516,12 +516,12 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
     framebuffer objects more portable.
     \endlist
 
+    When using a QPainter to paint to a QGLFramebufferObject you should take
+    care that the QGLFramebufferObject is created with the CombinedDepthStencil
+    attachment for QPainter to be able to render correctly.
     Note that you need to create a QGLFramebufferObject with more than one
     sample per pixel for primitives to be antialiased when drawing using a
-    QPainter, unless if the QPainter::HighQualityAntialiasing render hint is
-    set. The QPainter::HighQualityAntialiasing render hint will enable
-    antialiasing as long as the \c{GL_ARB_fragment_program} extension is
-    present. To create a multisample framebuffer object you should use one of
+    QPainter. To create a multisample framebuffer object you should use one of
     the constructors that take a QGLFramebufferObject parameter, and set the
     QGLFramebufferObject::samples() property to a non-zero value.
 
@@ -896,7 +896,7 @@ QPaintEngine *QGLFramebufferObject::paintEngine() const
     return qt_buffer_2_engine();
 #else
     Q_D(const QGLFramebufferObject);
-    if (d->ctx->d_func()->internal_context || qt_gl_preferGL2Engine())
+    if (qt_gl_preferGL2Engine())
         return qt_buffer_2_engine();
     else
         return qt_buffer_engine();
