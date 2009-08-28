@@ -70,7 +70,7 @@ public:
     virtual void clear();
 
 private:
-    enum Type { Invalid, StringList, QmlList, QList, Instance };
+    enum Type { Invalid, StringList, VariantList, QmlList, QList, Instance };
     Type type;
     QVariant d;
 };

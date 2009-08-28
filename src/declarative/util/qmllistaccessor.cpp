@@ -68,6 +68,8 @@ void QmlListAccessor::setList(const QVariant &v)
         type = Invalid;
     } else if (d.type() == QVariant::StringList) {
         type = StringList;
+    } else if (d.type() == QMetaType::QVariantList) {
+        type = VariantList;
     } else if (d.type() != QVariant::UserType) {
         type = Instance;
     } else if (QmlMetaType::isObject(d.userType())) {
@@ -92,6 +94,8 @@ int QmlListAccessor::count() const
         return 0;
     case StringList:
         return qvariant_cast<QStringList>(d).count();
+    case VariantList:
+        return qvariant_cast<QVariantList>(d).count();
     case QmlList:
         {
             QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
@@ -114,6 +118,8 @@ QVariant QmlListAccessor::at(int idx) const
         return QVariant();
     case StringList:
         return QVariant::fromValue(qvariant_cast<QStringList>(d).at(idx));
+    case VariantList:
+        return qvariant_cast<QVariantList>(d).at(idx);
     case QmlList:
         {
             QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
@@ -139,6 +145,11 @@ void QmlListAccessor::append(const QVariant &value)
         {
             const QString &str = value.toString();
             qvariant_cast<QStringList>(d).append(str);
+            break;
+        }
+    case VariantList:
+        {
+            qvariant_cast<QVariantList>(d).append(value);
             break;
         }
     case QmlList:
@@ -167,6 +178,11 @@ void QmlListAccessor::insert(int index, const QVariant &value)
             qvariant_cast<QStringList>(d).insert(index, str);
             break;
         }
+    case VariantList:
+        {
+            qvariant_cast<QVariantList>(d).insert(index, value);
+            break;
+        }
     case QmlList:
         {
             QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
@@ -193,6 +209,9 @@ void QmlListAccessor::removeAt(int index)
     case StringList:
         qvariant_cast<QStringList>(d).removeAt(index);
         break;
+    case VariantList:
+        qvariant_cast<QVariantList>(d).removeAt(index);
+        break;
     case QmlList:
         {
             QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
@@ -218,6 +237,9 @@ void QmlListAccessor::clear()
         break;
     case StringList:
         qvariant_cast<QStringList>(d).clear();
+        break;
+    case VariantList:
+        qvariant_cast<QVariantList>(d).clear();
         break;
     case QmlList:
         {
