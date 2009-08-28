@@ -3199,8 +3199,8 @@ bool QSettings::isWritable() const
 
   Note that the Windows registry and INI files use case-insensitive
   keys, whereas the Carbon Preferences API on Mac OS X uses
-  case-sensitive keys. To avoid portability problems, see the \l{Key
-  Syntax} rules.
+  case-sensitive keys. To avoid portability problems, see the
+  \l{Section and Key Syntax} rules.
 
   Example:
 
@@ -3234,8 +3234,8 @@ void QSettings::setValue(const QString &key, const QVariant &value)
 
     Note that the Windows registry and INI files use case-insensitive
     keys, whereas the Carbon Preferences API on Mac OS X uses
-    case-sensitive keys. To avoid portability problems, see the \l{Key
-    Syntax} rules.
+    case-sensitive keys. To avoid portability problems, see the
+    \l{Section and Key Syntax} rules.
 
     \sa setValue(), value(), contains()
 */
@@ -3269,8 +3269,8 @@ void QSettings::remove(const QString &key)
 
     Note that the Windows registry and INI files use case-insensitive
     keys, whereas the Carbon Preferences API on Mac OS X uses
-    case-sensitive keys. To avoid portability problems, see the \l{Key
-    Syntax} rules.
+    case-sensitive keys. To avoid portability problems, see the
+    \l{Section and Key Syntax} rules.
 
     \sa value(), setValue()
 */
@@ -3331,8 +3331,8 @@ bool QSettings::event(QEvent *event)
 
     Note that the Windows registry and INI files use case-insensitive
     keys, whereas the Carbon Preferences API on Mac OS X uses
-    case-sensitive keys. To avoid portability problems, see the \l{Key
-    Syntax} rules.
+    case-sensitive keys. To avoid portability problems, see the
+    \l{Section and Key Syntax} rules.
 
     Example:
 

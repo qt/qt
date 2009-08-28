@@ -11846,10 +11846,9 @@ const QList<QAction*>& QWidget::softKeys() const
     \preliminary
     \since 4.6
 
-    Sets the softkey \a softkey to this widget's list of softkeys,
+    Sets the softkey \a softKey to this widget's list of softkeys.
     Setting 0 as softkey will clear all the existing softkeys set
-    to the widget
-    A QWidget can have 0 or more softkeys
+    to the widget. A QWidget can have 0 or more softkeys.
 
     \sa softKeys(), setSoftKeys()
 */
@@ -11866,8 +11865,8 @@ void QWidget::setSoftKey(QAction *softKey)
 }
 
 /*!
-    Sets the list of softkeys \a softkeys to this widget's list of softkeys,
-    A QWidget can have 0 or more softkeys
+    Sets the list of softkeys \a softKeys to this widget's list of softkeys.
+    A QWidget can have 0 or more softkeys.
 
     \sa softKeys(), setSoftKey()
 */

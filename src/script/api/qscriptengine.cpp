@@ -2259,8 +2259,11 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSV
     if (calledAsConstructor)
         flags |= CalledAsConstructorContext;
 
+    //build a frame
     JSC::CallFrame *newCallFrame = exec;
-    if (callee == 0 || !(exec->callee() == callee && exec->returnPC() != 0)) {
+    if (callee == 0 //called from  public QScriptEngine::pushContext
+        || exec->returnPC() == 0 || (contextFlags(exec) & NativeContext)  //called from native-native call
+        || (exec->codeBlock() && exec->callee() != callee)) { //the interpreter did not build a frame for us.
         //We need to check if the Interpreter might have already created a frame for function called from JS.
         JSC::Interpreter *interp = exec->interpreter();
         JSC::Register *oldEnd = interp->registerFile().end();
@@ -2278,6 +2281,9 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSV
         newCallFrame->init(0, /*vPC=*/0, exec->scopeChain(), exec, flags, argc, callee);
     } else {
         setContextFlags(newCallFrame, flags);
+#if ENABLE(JIT)
+        exec->registers()[JSC::RegisterFile::Callee] = JSC::JSValue(callee); //JIT let the callee set the 'callee'
+#endif
         if (calledAsConstructor) {
             //update the new created this
             JSC::Register* thisRegister = newCallFrame->registers() - JSC::RegisterFile::CallFrameHeaderSize - newCallFrame->argumentCount();

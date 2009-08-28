@@ -204,42 +204,106 @@ ModelMoveCommand::ModelMoveCommand(DynamicTreeModel *model, QObject *parent)
 {
 
 }
+bool ModelMoveCommand::emitPreSignal(const QModelIndex &srcParent, int srcStart, int srcEnd, const QModelIndex &destParent, int destRow)
+{
+  return m_model->beginMoveRows(srcParent, srcStart, srcEnd, destParent, destRow);
+}
 
 void ModelMoveCommand::doCommand()
 {
-  QModelIndex srcParent = findIndex(m_rowNumbers);
-  QModelIndex destParent = findIndex(m_destRowNumbers);
+    QModelIndex srcParent = findIndex(m_rowNumbers);
+    QModelIndex destParent = findIndex(m_destRowNumbers);
 
-  if (!m_model->beginMoveRows(srcParent, m_startRow, m_endRow, destParent, m_destRow))
-  {
-    return;
-  }
-  
-  for (int column = 0; column < m_numCols; ++column)
-  {
-    QList<qint64> l = m_model->m_childItems.value(srcParent.internalId())[column].mid(m_startRow, m_endRow - m_startRow + 1 );
-
-    for (int i = m_startRow; i <= m_endRow ; i++)
+    if (!emitPreSignal(srcParent, m_startRow, m_endRow, destParent, m_destRow))
     {
-      m_model->m_childItems[srcParent.internalId()][column].removeAt(m_startRow);
-    }
-    int d;
-    if (m_destRow < m_startRow)
-      d = m_destRow;
-    else
-    {
-      if (srcParent == destParent)
-        d = m_destRow - (m_endRow - m_startRow + 1);
-      else
-        d = m_destRow - (m_endRow - m_startRow) + 1;
+        return;
     }
 
-    foreach(const qint64 id, l)
+    for (int column = 0; column < m_numCols; ++column)
     {
-      m_model->m_childItems[destParent.internalId()][column].insert(d++, id);
-    }
-  }
+        QList<qint64> l = m_model->m_childItems.value(srcParent.internalId())[column].mid(m_startRow, m_endRow - m_startRow + 1 );
 
-   m_model->endMoveRows();
+        for (int i = m_startRow; i <= m_endRow ; i++)
+        {
+            m_model->m_childItems[srcParent.internalId()][column].removeAt(m_startRow);
+        }
+        int d;
+        if (m_destRow < m_startRow)
+            d = m_destRow;
+        else
+        {
+            if (srcParent == destParent)
+                d = m_destRow - (m_endRow - m_startRow + 1);
+            else
+                d = m_destRow - (m_endRow - m_startRow) + 1;
+        }
+
+        foreach(const qint64 id, l)
+        {
+            m_model->m_childItems[destParent.internalId()][column].insert(d++, id);
+        }
+    }
+
+    emitPostSignal();
+}
+
+void ModelMoveCommand::emitPostSignal()
+{
+    m_model->endMoveRows();
+}
+
+ModelResetCommand::ModelResetCommand(DynamicTreeModel* model, QObject* parent)
+  : ModelMoveCommand(model, parent)
+{
+
+}
+
+ModelResetCommand::~ModelResetCommand()
+{
+
+}
+
+bool ModelResetCommand::emitPreSignal(const QModelIndex &srcParent, int srcStart, int srcEnd, const QModelIndex &destParent, int destRow)
+{
+    Q_UNUSED(srcParent);
+    Q_UNUSED(srcStart);
+    Q_UNUSED(srcEnd);
+    Q_UNUSED(destParent);
+    Q_UNUSED(destRow);
+
+    return true;
+}
+
+void ModelResetCommand::emitPostSignal()
+{
+    m_model->reset();
+}
+
+ModelResetCommandFixed::ModelResetCommandFixed(DynamicTreeModel* model, QObject* parent)
+  : ModelMoveCommand(model, parent)
+{
+
+}
+
+ModelResetCommandFixed::~ModelResetCommandFixed()
+{
+
+}
+
+bool ModelResetCommandFixed::emitPreSignal(const QModelIndex &srcParent, int srcStart, int srcEnd, const QModelIndex &destParent, int destRow)
+{
+    Q_UNUSED(srcParent);
+    Q_UNUSED(srcStart);
+    Q_UNUSED(srcEnd);
+    Q_UNUSED(destParent);
+    Q_UNUSED(destRow);
+
+    m_model->beginResetModel();
+    return true;
+}
+
+void ModelResetCommandFixed::emitPostSignal()
+{
+    m_model->endResetModel();
 }
 

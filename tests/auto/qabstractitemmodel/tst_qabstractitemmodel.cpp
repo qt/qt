@@ -43,6 +43,8 @@
 #include <QtTest/QtTest>
 #include <QtCore/QtCore>
 
+#include <QSortFilterProxyModel>
+
 //TESTED_CLASS=QAbstractListModel QAbstractTableModel
 //TESTED_FILES=
 
@@ -109,6 +111,8 @@ private slots:
 
     void testMoveWithinOwnRange_data();
     void testMoveWithinOwnRange();
+
+    void testReset();
 
 
 private:
@@ -814,7 +818,7 @@ void tst_QAbstractItemModel::complexChangesWithPersistent()
 
     //remove a bunch of columns
     model.removeColumns(2, 4);
-    
+
     QVERIFY(a == model.index(1, 1, QModelIndex()));
     QVERIFY(b == model.index(9, 3, QModelIndex()));
     QVERIFY(c == model.index(5, 2, QModelIndex()));
@@ -825,7 +829,7 @@ void tst_QAbstractItemModel::complexChangesWithPersistent()
         QVERIFY(!e[i].isValid());
     for (int i=6; i <10 ; i++)
         QVERIFY(e[i] == model.index(2, i-4 , QModelIndex()));
-    
+
     //move some indexes around
     model.setPersistent(model.index(1, 1 , QModelIndex()), model.index(9, 3 , QModelIndex()));
     model.setPersistent(model.index(9, 3 , QModelIndex()), model.index(8, 4 , QModelIndex()));
@@ -1652,6 +1656,104 @@ void tst_QAbstractItemModel::testMoveWithinOwnRange()
 
 }
 
+class ListenerObject : public QObject
+{
+  Q_OBJECT
+public:
+    ListenerObject(QAbstractProxyModel *parent);
+
+protected:
+    void fillIndexStores(const QModelIndex &parent);
+
+public slots:
+    void slotAboutToBeReset();
+    void slotReset();
+
+private:
+    QAbstractProxyModel *m_model;
+    QList<QPersistentModelIndex> m_persistentIndexes;
+    QModelIndexList m_nonPersistentIndexes;
+};
+
+
+ListenerObject::ListenerObject(QAbstractProxyModel *parent)
+    : QObject(parent), m_model(parent)
+{
+    connect(m_model, SIGNAL(modelAboutToBeReset()), SLOT(slotAboutToBeReset()));
+    connect(m_model, SIGNAL(modelReset()), SLOT(slotReset()));
+
+    fillIndexStores(QModelIndex());
+}
+
+void ListenerObject::fillIndexStores(const QModelIndex &parent)
+{
+    const int column = 0;
+    int row = 0;
+    QModelIndex idx = m_model->index(row, column, parent);
+    while (idx.isValid())
+    {
+        m_persistentIndexes << QPersistentModelIndex(idx);
+        m_nonPersistentIndexes << idx;
+        if (m_model->hasChildren(idx))
+        {
+            fillIndexStores(idx);
+        }
+        ++row;
+        idx = m_model->index(row, column, parent);
+    }
+}
+
+void ListenerObject::slotAboutToBeReset()
+{
+    // Nothing has been changed yet. All indexes should be the same.
+    for (int i = 0; i < m_persistentIndexes.size(); ++i)
+    {
+        QModelIndex idx = m_persistentIndexes.at(i);
+        QVERIFY(idx == m_nonPersistentIndexes.at(i));
+        QVERIFY(m_model->mapToSource(idx).isValid());
+    }
+}
+
+void ListenerObject::slotReset()
+{
+    foreach(const QModelIndex &idx, m_persistentIndexes)
+    {
+        QVERIFY(!idx.isValid());
+    }
+}
+
+
+void tst_QAbstractItemModel::testReset()
+{
+    QSignalSpy beforeResetSpy(m_model, SIGNAL(modelAboutToBeReset()));
+    QSignalSpy afterResetSpy(m_model, SIGNAL(modelReset()));
+
+
+    QSortFilterProxyModel *nullProxy = new QSortFilterProxyModel(this);
+    nullProxy->setSourceModel(m_model);
+
+    // Makes sure the model and proxy are in a consistent state. before and after reset.
+    new ListenerObject(nullProxy);
+
+    ModelResetCommandFixed *resetCommand = new ModelResetCommandFixed(m_model, this);
+
+    resetCommand->setNumCols(4);
+    resetCommand->setStartRow(0);
+    resetCommand->setEndRow(0);
+    resetCommand->setDestRow(0);
+    resetCommand->setDestAncestors(QList<int>() << 5);
+    resetCommand->doCommand();
+
+    // Verify that the correct signals were emitted
+    QVERIFY(beforeResetSpy.size() == 1);
+    QVERIFY(afterResetSpy.size() == 1);
+
+    // Verify that the move actually happened.
+    QVERIFY(m_model->rowCount() == 9);
+    QModelIndex destIndex = m_model->index(4, 0);
+    QVERIFY(m_model->rowCount(destIndex) == 11);
+
+}
 
 
 QTEST_MAIN(tst_QAbstractItemModel)

@@ -240,18 +240,20 @@ static void computeOffsets(const QMetaObject *metaobject, int *signalOffset, int
     }
 }
 
-/*! \internal
+/*
     This vector contains the all connections from an object.
 
-    Each object may have one vector containing the lists of connections for a given signal.
-    The index in the vector correspond to the signal index.
-    The signal index is the one returned by QObjectPrivate::signalIndex (not QMetaObject::indexOfSignal).
+    Each object may have one vector containing the lists of
+    connections for a given signal. The index in the vector correspond
+    to the signal index. The signal index is the one returned by
+    QObjectPrivate::signalIndex (not QMetaObject::indexOfSignal).
     Negative index means connections to all signals.
 
     This vector is protected by the object mutex (signalSlotMutexes())
 
-    Each Connection is also part of a 'senders' linked list. The mutex of the receiver must be locked when touching
-    the pointers of this linked list.
+    Each Connection is also part of a 'senders' linked list. The mutex
+    of the receiver must be locked when touching the pointers of this
+    linked list.
 */
 class QObjectConnectionListVector : public QVector<QObjectPrivate::ConnectionList>
 {
