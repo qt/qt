@@ -664,7 +664,7 @@ void tst_QGL::glWidgetRendering()
     QTest::qWait(200);
 
     QVERIFY(w.beginOk);
-    QVERIFY(w.engineType == QPaintEngine::OpenGL);
+    QVERIFY(w.engineType == QPaintEngine::OpenGL || w.engineType == QPaintEngine::OpenGL2);
 
     QImage fb = w.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
     QImage reference(fb.size(), QImage::Format_RGB32);
@@ -697,7 +697,7 @@ void tst_QGL::glWidgetReparent()
     qt_x11_wait_for_window_manager(widget);
     qt_x11_wait_for_window_manager(&parentWidget);
 #endif
-    QTest::qWait(2000);
+    QTest::qWait(200);
 
     QVERIFY(parentWidget.children().count() == 1); // The layout
 
@@ -707,7 +707,7 @@ void tst_QGL::glWidgetReparent()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&parentWidget);
 #endif
-    QTest::qWait(2000);
+    QTest::qWait(200);
 
     QVERIFY(parentWidget.children().count() == 2); // Layout & glwidget
     QVERIFY(parentWidget.children().contains(widget));
@@ -718,7 +718,7 @@ void tst_QGL::glWidgetReparent()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&parentWidget);
 #endif
-    QTest::qWait(2000);
+    QTest::qWait(200);
 
     QVERIFY(parentWidget.children().count() == 1); // The layout
 
@@ -730,7 +730,7 @@ void tst_QGL::glWidgetReparent()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&parentWidget);
 #endif
-    QTest::qWait(2000);
+    QTest::qWait(200);
 
     QVERIFY(parentWidget.children().count() == 2); // Layout & glwidget
     QVERIFY(parentWidget.children().contains(widget));
