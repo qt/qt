@@ -48,7 +48,6 @@ protected:
     void paintEvent(QPaintEvent* event);
     void resizeEvent(QResizeEvent* event);
     void moveEvent(QMoveEvent* event);
-    QPaintEngine* paintEngine() const;
 #endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 
 #ifdef PHONON_MMF_DEBUG_VIDEO_OUTPUT

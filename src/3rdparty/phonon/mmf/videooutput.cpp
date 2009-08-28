@@ -42,10 +42,14 @@ MMF::VideoOutput::VideoOutput(QWidget* parent)
     TRACE_ENTRY("parent 0x%08x", parent);
 
 #ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
-    //QPalette palette(Qt::black);
+    QPalette palette(Qt::black);
     //palette.setColor(QPalette::Window, Qt::transparent); 
-    //setPalette(palette);  
-    //setAttribute(Qt::WA_OpaquePaintEvent, true);
+    setPalette(palette);  
+    
+    // Widget redraws all of its pixels when it receives a paint event, so Qt
+    // does not need to erase it before generating paint events.
+    setAttribute(Qt::WA_OpaquePaintEvent, true);
+    
     //setAttribute(Qt::WA_NoSystemBackground, true);
     //setAutoFillBackground(false);
 #endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
@@ -168,23 +172,11 @@ void MMF::VideoOutput::paintEvent(QPaintEvent* event)
     TRACE("regions %d", event->region().numRects());
     TRACE("type %d", event->type());
 
-/*
     QPainter painter;
     painter.begin(this);
-    painter.setBrush(QColor(255, 0, 0, 255));   // opaque red
-    //painter.setBrush(QColor(0, 0, 0, 0));   // transparent black
+    painter.setBrush(QColor(0, 0, 0, 255));   // opaque black
     painter.drawRects(event->region().rects());
     painter.end();
-*/
-}
-
-QPaintEngine* MMF::VideoOutput::paintEngine() const
-{
-    TRACE_CONTEXT(VideoOutput::sizeHint, EVideoApi);
-
-    QPaintEngine* const engine = QWidget::paintEngine();
-
-    TRACE_RETURN("0x%08x", engine);
 }
 
 void MMF::VideoOutput::resizeEvent(QResizeEvent* event)
@@ -196,9 +188,8 @@ void MMF::VideoOutput::resizeEvent(QResizeEvent* event)
 
     QWidget::resizeEvent(event);
     
-    if (m_observer) {
+    if (m_observer)
         m_observer->videoOutputRegionChanged();
-    }
 }
 
 void MMF::VideoOutput::moveEvent(QMoveEvent* event)
@@ -210,9 +201,8 @@ void MMF::VideoOutput::moveEvent(QMoveEvent* event)
 
     QWidget::moveEvent(event);
 
-    if (m_observer) {
+    if (m_observer)
         m_observer->videoOutputRegionChanged();
-    }
 }
 
 #endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET

@@ -74,6 +74,13 @@ void MMF::VideoPlayer::construct()
 
     // TODO: is this the correct way to handle errors which occur when
     // creating a Symbian object in the constructor of a Qt object?
+    
+    // TODO: check whether videoOutput is visible?  If not, then the 
+    // corresponding window will not be active, meaning that the 
+    // clipping region will be set to empty and the video will not be
+    // visible.  If this is the case, we should set m_mmfOutputChangePending
+    // and respond to future showEvents from the videoOutput widget.
+    
     TRAPD(err,
           m_player = CVideoPlayerUtility::NewL
                      (
@@ -108,6 +115,14 @@ MMF::VideoPlayer::~VideoPlayer()
 
 void MMF::VideoPlayer::doPlay()
 {
+    TRACE_CONTEXT(VideoPlayer::doPlay, EVideoApi);
+    
+    // See comment in updateMmfOutput
+    if(m_mmfOutputChangePending) {
+        TRACE_0("MMF output change pending - pushing now");
+        updateMmfOutput();
+    }
+    
     m_player->Play();
 }
 
@@ -298,10 +313,6 @@ void MMF::VideoPlayer::videoOutputRegionChanged()
     TRACE_CONTEXT(VideoPlayer::videoOutputRegionChanged, EVideoInternal);
     TRACE_ENTRY("state %d", state());
 
-#ifdef PHONON_MMF_DEBUG_VIDEO_OUTPUT
-    videoOutput().dump();
-#endif
-
     getNativeWindowSystemHandles();
 
     // See comment in updateMmfOutput
@@ -324,6 +335,12 @@ void MMF::VideoPlayer::updateMmfOutput()
     // need to call SetDisplayWindowL, and this is checked in 
     // MvpuoPrepareComplete, at which point the MMF controller has been
     // loaded.
+    
+    // TODO: check whether videoOutput is visible?  If not, then the 
+    // corresponding window will not be active, meaning that the 
+    // clipping region will be set to empty and the video will not be
+    // visible.  If this is the case, we should set m_mmfOutputChangePending
+    // and respond to future showEvents from the videoOutput widget.
     
     TRAPD(err,
           m_player->SetDisplayWindowL
@@ -420,11 +437,22 @@ void MMF::VideoPlayer::getNativeWindowSystemHandles()
     // HACK: why isn't control->Rect updated following a call to
     // updateGeometry on the parent widget?
     m_windowRect = TRect(0, 100, 320, 250);
-#else
-    m_windowRect = control->Rect();
-#endif
-
     m_clipRect = m_windowRect;
+#else
+    m_windowRect = TRect(
+        control->DrawableWindow()->AbsPosition(),
+        control->DrawableWindow()->Size());
+    
+    //m_clipRect = control->Rect();
+    m_clipRect = m_windowRect;
+#endif
+    
+    TRACE("windowRect            %d %d - %d %d",
+        m_windowRect.iTl.iX, m_windowRect.iTl.iY,
+        m_windowRect.iBr.iX, m_windowRect.iBr.iY);
+    TRACE("clipRect              %d %d - %d %d",
+        m_clipRect.iTl.iX, m_clipRect.iTl.iY,
+        m_clipRect.iBr.iX, m_clipRect.iBr.iY);
 }
 
 
