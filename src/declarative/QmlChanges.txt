@@ -54,6 +54,7 @@ MouseRegion: add "acceptedButtons" property
 MouseRegion: add "hoverEnabled" property
 MouseRegion: add "pressedButtons" property
 Timer: add start() and stop() slots
+WebView: add newWindowComponent and newWindowParent properties
 
 Deletions:
 Column/VerticalPositioner: lost "margins" property
