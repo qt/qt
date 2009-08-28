@@ -68,6 +68,12 @@
 #include "qmap.h"
 #include <private/qt_mac_p.h>
 
+
+#ifdef Q_WS_MAC32
+#include <QuickTime/QuickTime.h>
+#include <qlibrary.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 extern CGImageRef qt_mac_createCGImageFromQImage(const QImage &img, const QImage **imagePtr = 0); // qpaintengine_mac.cpp
@@ -503,9 +509,6 @@ QList<QByteArray> QMacPasteboardMimeHTMLText::convertFromMime(const QString &mim
 
 // This can be removed once 10.6 is the minimum (or we have to require 64-bit) whichever comes first.
 
-#include <QuickTime/QuickTime.h>
-#include <qlibrary.h>
-
 typedef ComponentResult (*PtrGraphicsImportSetDataHandle)(GraphicsImportComponent, Handle);
 typedef ComponentResult (*PtrGraphicsImportCreateCGImage)(GraphicsImportComponent, CGImageRef*, UInt32);
 typedef ComponentResult (*PtrGraphicsExportSetInputCGImage)(GraphicsExportComponent, CGImageRef);
@@ -636,7 +639,9 @@ QList<QByteArray> QMacPasteboardMimePict::convertFromMime(const QString &mime, Q
     DisposeHandle(pic);
     return ret;
 }
-#endif
+
+
+#endif //Q_WS_MAC32
 
 class QMacPasteboardMimeTiff : public QMacPasteboardMime {
 public:
