@@ -2769,10 +2769,9 @@ void QAbstractItemModel::endMoveColumns()
 /*!
     Resets the model to its original state in any attached views.
 
-    Use beginResetModel() and endResetModel() instead whenever possible. If usng this method, the modelAboutToBeReset signal will
-    not function as expected through proxy models.
-
+    \note Use beginResetModel() and endResetModel() instead whenever possible.
     Use this method only if there is no way to call beginResetModel() before invalidating the model.
+    Otherwise it could lead to unexcpected behaviour, especially when used with proxy models.
 */
 void QAbstractItemModel::reset()
 {
