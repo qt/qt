@@ -48,7 +48,7 @@ static char const colorizeShaderCode[] =
     "    vec4 src = texture2D(imageTexture, textureCoords);\n"
     "    float gray = dot(src.rgb, vec3(0.212671, 0.715160, 0.072169));\n"
     "    vec4 colorize = 1.0-((1.0-gray)*(1.0-effectColor));\n"
-    "    return vec4(colorize.rgb, src.a);\n"
+    "    return vec4(colorize.rgb * src.a, src.a);\n"
     "}";
 
 CustomShaderEffect::CustomShaderEffect()
