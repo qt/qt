@@ -201,7 +201,6 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
         const QRect oldRect = geometry();
         DFBResult result = DFB_OK;
         // If we're in a resize, the surface shouldn't be locked
-        Q_ASSERT((lockedImage == 0) || (rect.size() == geometry().size()));
 #ifdef QT_DIRECTFB_WM
         if (!dfbWindow)
             createWindow();
@@ -416,7 +415,9 @@ void QDirectFBWindowSurface::beginPaint(const QRegion &)
 
 void QDirectFBWindowSurface::endPaint(const QRegion &)
 {
-    unlockDirectFB();
+#ifdef QT_NO_DIRECTFB_SUBSURFACE
+    unlockSurface();
+#endif
 }
 
 IDirectFBSurface *QDirectFBWindowSurface::directFBSurface() const

@@ -64,9 +64,6 @@ QDirectFBPixmapData::QDirectFBPixmapData(QDirectFBScreen *screen, PixelType pixe
 
 QDirectFBPixmapData::~QDirectFBPixmapData()
 {
-    unlockDirectFB();
-    if (dfbSurface && QDirectFBScreen::instance())
-        screen->releaseDFBSurface(dfbSurface);
 }
 
 void QDirectFBPixmapData::resize(int width, int height)
@@ -375,9 +372,13 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
         QPixmapData::copy(data, rect);
         return;
     }
-    unlockDirectFB();
 
     const QDirectFBPixmapData *otherData = static_cast<const QDirectFBPixmapData*>(data);
+#ifdef QT_NO_DIRECTFB_SUBSURFACE
+    if (otherData->lockFlags()) {
+        const_cast<QDirectFBPixmapData*>(otherData)->unlockSurface();
+    }
+#endif
     IDirectFBSurface *src = otherData->directFBSurface();
     alpha = data->hasAlphaChannel();
     imageFormat = (alpha
@@ -405,6 +406,7 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     h = rect.height();
     d = otherData->d;
     is_null = (w <= 0 || h <= 0);
+    unlockSurface();
     DFBResult result = dfbSurface->Blit(dfbSurface, src, &blitRect, 0, 0);
 #if (Q_DIRECTFB_VERSION >= 0x010000)
     dfbSurface->ReleaseSource(dfbSurface);
@@ -465,18 +467,21 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
                                          Qt::TransformationMode mode) const
 {
     QDirectFBPixmapData *that = const_cast<QDirectFBPixmapData*>(this);
+#ifdef QT_NO_DIRECTFB_SUBSURFACE
+    if (lockFlags())
+        that->unlockSurface();
+#endif
+
     if (!dfbSurface || transform.type() != QTransform::TxScale
         || mode != Qt::FastTransformation)
     {
         const QImage *image = that->buffer();
         Q_ASSERT(image);
         const QImage transformed = image->transformed(transform, mode);
-        that->unlockDirectFB();
         QDirectFBPixmapData *data = new QDirectFBPixmapData(screen, QPixmapData::PixmapType);
         data->fromImage(transformed, Qt::AutoColor);
         return QPixmap(data);
     }
-    that->unlockDirectFB();
 
     const QSize size = transform.mapRect(QRect(0, 0, w, h)).size();
     if (size.isEmpty())
@@ -556,14 +561,12 @@ QPaintEngine *QDirectFBPixmapData::paintEngine() const
 
 QImage *QDirectFBPixmapData::buffer()
 {
-    lockDirectFB(DSLF_READ|DSLF_WRITE);
-    return lockedImage;
-}
-
-QImage * QDirectFBPixmapData::buffer(DFBSurfaceLockFlags lockFlags)
-{
-    lockDirectFB(lockFlags);
-    return lockedImage;
+    if (!lockFlgs) {
+        lockSurface(DSLF_READ|DSLF_WRITE);
+    }
+    Q_ASSERT(lockFlgs);
+    Q_ASSERT(!lockedImage.isNull());
+    return &lockedImage;
 }
 
 void QDirectFBPixmapData::invalidate()

@@ -319,13 +319,37 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(DFBSurfaceDescription desc, 
 
     if (options & TrackSurface) {
         d_ptr->allocatedSurfaces.insert(newSurface);
-
-        //qDebug("Created a new DirectFB surface at %p. New count = %d",
-        //        newSurface, d_ptr->allocatedSurfaces.count());
     }
 
     return newSurface;
 }
+
+#ifdef QT_DIRECTFB_SUBSURFACE
+IDirectFBSurface *QDirectFBScreen::getSubSurface(IDirectFBSurface *surface,
+                                                 const QRect &rect,
+                                                 SurfaceCreationOptions options,
+                                                 DFBResult *resultPtr)
+{
+    Q_ASSERT(!(options & NoPreallocated));
+    Q_ASSERT(surface);
+    DFBResult res;
+    DFBResult &result = (resultPtr ? *resultPtr : res);
+    IDirectFBSurface *subSurface = 0;
+    if (rect.isNull()) {
+        result = surface->GetSubSurface(surface, 0, &subSurface);
+    } else {
+        const DFBRectangle subRect = { rect.x(), rect.y(), rect.width(), rect.height() };
+        result = surface->GetSubSurface(surface, &subRect, &subSurface);
+    }
+    if (result != DFB_OK) {
+        DirectFBError("Can't get sub surface", result);
+    } else if (options & TrackSurface) {
+        d_ptr->allocatedSurfaces.insert(subSurface);
+    }
+    return subSurface;
+}
+#endif
+
 
 void QDirectFBScreen::releaseDFBSurface(IDirectFBSurface *surface)
 {
@@ -1527,6 +1551,11 @@ void QDirectFBScreen::setDirectFBImageProvider(IDirectFBImageProvider *provider)
 }
 #endif
 
+void QDirectFBScreen::waitIdle()
+{
+    d_ptr->dfb->WaitIdle(d_ptr->dfb);
+}
+
 IDirectFBSurface * QDirectFBScreen::surfaceForWidget(const QWidget *widget, QRect *rect) const
 {
     Q_ASSERT(widget);
@@ -1540,6 +1569,7 @@ IDirectFBSurface * QDirectFBScreen::surfaceForWidget(const QWidget *widget, QRec
     return 0;
 }
 
+#ifdef QT_DIRECTFB_SUBSURFACE
 IDirectFBSurface *QDirectFBScreen::subSurfaceForWidget(const QWidget *widget, const QRect &area) const
 {
     Q_ASSERT(widget);
@@ -1550,7 +1580,7 @@ IDirectFBSurface *QDirectFBScreen::subSurfaceForWidget(const QWidget *widget, co
         if (!area.isNull())
             rect &= area.translated(widget->mapTo(widget->window(), QPoint(0, 0)));
         if (!rect.isNull()) {
-            const DFBRectangle subRect = {rect.x(), rect.y(), rect.width(), rect.height() };
+            const DFBRectangle subRect = { rect.x(), rect.y(), rect.width(), rect.height() };
             const DFBResult result = surface->GetSubSurface(surface, &subRect, &subSurface);
             if (result != DFB_OK) {
                 DirectFBError("QDirectFBScreen::subSurface(): Can't get sub surface", result);
@@ -1559,6 +1589,7 @@ IDirectFBSurface *QDirectFBScreen::subSurfaceForWidget(const QWidget *widget, co
     }
     return subSurface;
 }
+#endif
 
 QT_END_NAMESPACE
 
