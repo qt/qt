@@ -21,6 +21,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "videooutputobserver.h"
 
 #include <QPaintEvent>
+#include <QPainter>
 #include <QMoveEvent>
 #include <QResizeEvent>
 
@@ -153,12 +154,11 @@ QSize MMF::VideoOutput::sizeHint() const
     if (!m_frameSize.isNull()) {
         result = m_frameSize;
     }
-
+    
     TRACE("  result %d %d", result.width(), result.height());
     return result;
 }
 
-#include <QPainter> // TEMPORARY
 void MMF::VideoOutput::paintEvent(QPaintEvent* event)
 {
     TRACE_CONTEXT(VideoOutput::paintEvent, EVideoInternal);
@@ -171,7 +171,8 @@ void MMF::VideoOutput::paintEvent(QPaintEvent* event)
 /*
     QPainter painter;
     painter.begin(this);
-    painter.setBrush(QColor(0, 0, 0, 0));
+    painter.setBrush(QColor(255, 0, 0, 255));   // opaque red
+    //painter.setBrush(QColor(0, 0, 0, 0));   // transparent black
     painter.drawRects(event->region().rects());
     painter.end();
 */
@@ -194,7 +195,7 @@ void MMF::VideoOutput::resizeEvent(QResizeEvent* event)
           event->size().width(), event->size().height());
 
     QWidget::resizeEvent(event);
-
+    
     if (m_observer) {
         m_observer->videoOutputRegionChanged();
     }
