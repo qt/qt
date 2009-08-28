@@ -69,6 +69,8 @@ public:
     ~QFxWebPage();
 protected:
     QObject *createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
+    QWebPage *createWindow(WebWindowType type);
+
 private:
     QFxWebView *viewItem();
 };
@@ -110,6 +112,9 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
     Q_PROPERTY(QFxWebSettings* settings READ settingsObject CONSTANT)
 
     Q_PROPERTY(QmlList<QObject *>* javaScriptWindowObjects READ javaScriptWindowObjects CONSTANT)
+
+    Q_PROPERTY(QmlComponent* newWindowComponent READ newWindowComponent WRITE setNewWindowComponent)
+    Q_PROPERTY(QFxItem* newWindowParent READ newWindowParent WRITE setNewWindowParent)
 
 public:
     QFxWebView(QFxItem *parent=0);
@@ -166,6 +171,11 @@ public:
 
     static QFxWebViewAttached *qmlAttachedProperties(QObject *);
 
+    QmlComponent *newWindowComponent() const;
+    void setNewWindowComponent(QmlComponent *newWindow);
+    QFxItem *newWindowParent() const;
+    void setNewWindowParent(QFxItem *newWindow);
+
 Q_SIGNALS:
     void preferredWidthChanged();
     void preferredHeightChanged();
@@ -212,12 +222,14 @@ protected:
                                  const QRectF &oldGeometry);
     virtual void focusChanged(bool);
     virtual bool sceneEvent(QEvent *event);
+    QFxWebView *createWindow(QWebPage::WebWindowType type);
 
 private:
     void init();
     virtual void componentComplete();
     Q_DISABLE_COPY(QFxWebView)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxWebView)
+    friend class QFxWebPage;
 };
 
 QT_END_NAMESPACE

@@ -167,7 +167,9 @@ class QFxWebViewPrivate : public QFxPaintedItemPrivate
 public:
     QFxWebViewPrivate()
       : QFxPaintedItemPrivate(), page(0), idealwidth(0), idealheight(0),
-            progress(1.0), status(QFxWebView::Null), pending(PendingNone), windowObjects(this)
+            progress(1.0), status(QFxWebView::Null), pending(PendingNone),
+            newWindowComponent(0), newWindowParent(0),
+            windowObjects(this)
     {
     }
 
@@ -184,6 +186,8 @@ public:
     QString pending_string;
     QByteArray pending_data;
     mutable QFxWebSettings settings;
+    QmlComponent *newWindowComponent;
+    QFxItem *newWindowParent;
 
     void updateWindowObjects();
     class WindowObjectList : public QmlConcreteList<QObject *>
@@ -1099,6 +1103,95 @@ QWebSettings *QFxWebView::settings() const
     return page()->settings();
 }
 
+QFxWebView *QFxWebView::createWindow(QWebPage::WebWindowType type)
+{
+    Q_D(QFxWebView);
+    switch (type) {
+        case QWebPage::WebBrowserWindow: {
+            if (!d->newWindowComponent && d->newWindowParent)
+                qWarning("WebView::newWindowComponent not set - WebView::newWindowParent ignored");
+            else if (d->newWindowComponent && !d->newWindowParent)
+                qWarning("WebView::newWindowParent not set - WebView::newWindowComponent ignored");
+            else if (d->newWindowComponent && d->newWindowParent) {
+                QFxWebView *webview = 0;
+                QmlContext *windowContext = new QmlContext(qmlContext(this));
+
+                QObject *nobj = d->newWindowComponent->create(windowContext);
+                if (nobj) {
+                    windowContext->setParent(nobj);
+                    QFxItem *item = qobject_cast<QFxItem *>(nobj);
+                    if (!item) {
+                        delete nobj;
+                    } else {
+                        webview = item->findChild<QFxWebView*>();
+                        if (!webview) {
+                            delete item;
+                        } else {
+                            item->setParent(d->newWindowParent);
+                        }
+                    }
+                } else {
+                    delete windowContext;
+                }
+
+                return webview;
+            }
+        }
+        break;
+        case QWebPage::WebModalDialog: {
+            // Not supported
+        }
+    }
+    return 0;
+}
+
+/*!
+    \qmlproperty component WebView::newWindowComponent
+
+    This property holds the component to use for new windows.
+    The component must have a WebView somewhere in its structure.
+
+    When the web engine requests a new window, it will be an instance of
+    this component.
+
+    The parent of the new window is set by newWindowParent. It must be set.
+*/
+QmlComponent *QFxWebView::newWindowComponent() const
+{
+    Q_D(const QFxWebView);
+    return d->newWindowComponent;
+}
+
+void QFxWebView::setNewWindowComponent(QmlComponent *newWindow)
+{
+    Q_D(QFxWebView);
+    delete d->newWindowComponent;
+    d->newWindowComponent = newWindow;
+}
+
+
+/*!
+    \qmlproperty item WebView::newWindowParent
+
+    The parent item for new windows.
+
+    \sa newWindowComponent
+*/
+QFxItem *QFxWebView::newWindowParent() const
+{
+    Q_D(const QFxWebView);
+    return d->newWindowParent;
+}
+
+void QFxWebView::setNewWindowParent(QFxItem *parent)
+{
+    Q_D(QFxWebView);
+    delete d->newWindowParent;
+    d->newWindowParent = parent;
+}
+
+
+
 /*!
     \internal
     \class QFxWebPage
@@ -1204,6 +1297,14 @@ QObject *QFxWebPage::createPlugin(const QString &, const QUrl &url, const QStrin
 {
     QUrl comp = qmlContext(viewItem())->resolvedUrl(url);
     return new QWidget_Dummy_Plugin(comp,viewItem(),paramNames,paramValues);
+}
+
+QWebPage *QFxWebPage::createWindow(WebWindowType type)
+{
+    QFxWebView *newView = viewItem()->createWindow(type);
+    if (newView)
+        return newView->page();
+    return 0;
 }
 
 QT_END_NAMESPACE
