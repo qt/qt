@@ -1607,7 +1607,13 @@ Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
     would mirror the image and automatically generate mipmaps. This
     option helps preserve this default behavior.
 
-    \omitvalue MemoryManagedBindOption
+    \omitvalue CanFlipNativePixmapBindOption Used by x11 from pixmap to choose
+    wether or not it can bind the pixmap upside down or not.
+
+    \omitvalue MemoryManagedBindOption Used by paint engines to
+    indicate that the pixmap should be memory managed along side with
+    the pixmap/image that it stems from, e.g. installing destruction
+    hooks in them.
 
     \omitvalue InternalBindOption
 */

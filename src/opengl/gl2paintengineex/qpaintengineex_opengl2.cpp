@@ -1104,7 +1104,9 @@ void QGL2PaintEngineEx::drawPixmap(const QRectF& dest, const QPixmap & pixmap, c
     QGLContext *ctx = d->ctx;
     glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
     QGLTexture *texture =
-        ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA, QGLContext::InternalBindOption);
+        ctx->d_func()->bindTexture(pixmap, GL_TEXTURE_2D, GL_RGBA,
+                                   QGLContext::InternalBindOption
+                                   | QGLContext::CanFlipNativePixmapBindOption);
 
     GLfloat top = texture->options & QGLContext::InvertedYBindOption ? (pixmap.height() - src.top()) : src.top();
     GLfloat bottom = texture->options & QGLContext::InvertedYBindOption ? (pixmap.height() - src.bottom()) : src.bottom();

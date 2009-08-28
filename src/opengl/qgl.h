@@ -289,16 +289,20 @@ public:
     virtual void swapBuffers() const;
 
     enum BindOption {
-        NoBindOption                    = 0x0000,
-        InvertedYBindOption             = 0x0001,
-        MipmapBindOption                = 0x0002,
-        PremultipliedAlphaBindOption    = 0x0004,
-        LinearFilteringBindOption       = 0x0008,
+        NoBindOption                            = 0x0000,
+        InvertedYBindOption                     = 0x0001,
+        MipmapBindOption                        = 0x0002,
+        PremultipliedAlphaBindOption            = 0x0004,
+        LinearFilteringBindOption               = 0x0008,
 
-        MemoryManagedBindOption         = 0x1000, // internal flag
+        MemoryManagedBindOption                 = 0x0010, // internal flag
+        CanFlipNativePixmapBindOption           = 0x0020, // internal flag
 
-        DefaultBindOption               = LinearFilteringBindOption | InvertedYBindOption | MipmapBindOption,
-        InternalBindOption              = MemoryManagedBindOption | PremultipliedAlphaBindOption
+        DefaultBindOption                       = LinearFilteringBindOption
+                                                  | InvertedYBindOption
+                                                  | MipmapBindOption,
+        InternalBindOption                      = MemoryManagedBindOption
+                                                  | PremultipliedAlphaBindOption
     };
     Q_DECLARE_FLAGS(BindOptions, BindOption)
 
@@ -407,6 +411,7 @@ private:
     Q_DISABLE_COPY(QGLContext)
 };
 
+Q_DECLARE_OPERATORS_FOR_FLAGS(QGLContext::BindOptions);
 
 class Q_OPENGL_EXPORT QGLWidget : public QWidget
 {
