@@ -79,7 +79,6 @@ private:
 class QFxWebViewAttached;
 class QFxWebSettings;
 
-//### TODO: new web "windows" (popups)
 //### TODO: browser plugins
 //### TODO: smart zooming using e.g. DIV
 
