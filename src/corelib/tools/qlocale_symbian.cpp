@@ -76,8 +76,8 @@ static TPtrC defaultFormatSpec(TExtendedLocale&)
     return TPtrC(KNullDesC);
 }
 
-/*!
-    Definition of struct for mapping Symbian to ISO locale
+/*
+  Definition of struct for mapping Symbian to ISO locale
 */
 struct symbianToISO {
     int symbian_language;
@@ -85,8 +85,8 @@ struct symbianToISO {
 };
 
 
-/*!
-    Mapping from Symbian to ISO locale
+/*
+  Mapping from Symbian to ISO locale
 */
 static const symbianToISO symbian_to_iso_list[] = {
     { ELangEnglish,             "en_GB" },

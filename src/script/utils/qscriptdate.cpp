@@ -330,7 +330,7 @@ static qsreal getLocalTZA()
 /*!
   \internal
 
-  Converts the QDateTime \dt to an ECMA Date value (in UTC form).
+  Converts the QDateTime \a dt to an ECMA Date value (in UTC form).
 */
 qsreal FromDateTime(const QDateTime &dt)
 {
