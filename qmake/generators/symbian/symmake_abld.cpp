@@ -153,7 +153,7 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         QString makefile(Option::fixPathToTargetOS(fileInfo(wrapperFileName).canonicalFilePath()));
         foreach(QString target, wrapperTargets) {
             t << target << " : " << makefile << endl;
-            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << "QT_SISX_TARGET=$(VISUAL_CFG)-$(PLATFORM)" << endl << endl;                    
+            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << " QT_SISX_TARGET=$(VISUAL_CFG)-$(PLATFORM)" << endl << endl;                    
         }     
         
         t << endl;
