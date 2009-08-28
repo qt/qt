@@ -1080,8 +1080,17 @@ Qt::FocusReason QFocusEvent::reason() const
     rect() that is the bounding rectangle of that region. Both are
     provided because many widgets can't make much use of region(),
     and rect() can be much faster than region().boundingRect().
+
+    \section1 Automatic Clipping
+
     Painting is clipped to region() during the processing of a paint
-    event.
+    event. This clipping is performed by Qt's paint system and is
+    independent of any clipping that may be applied to a QPainter used to
+    draw on the paint device.
+
+    As a result, the value returned by QPainter::clipRegion() on
+    a newly-constructed QPainter will not reflect the clip region that is
+    used by the paint system.
 
     \sa QPainter, QWidget::update(), QWidget::repaint(),
         QWidget::paintEvent()
