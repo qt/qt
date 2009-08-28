@@ -41,10 +41,12 @@ MMF::VideoOutput::VideoOutput(QWidget* parent)
     TRACE_ENTRY("parent 0x%08x", parent);
 
 #ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
-    setPalette(QPalette(Qt::black));
+    //QPalette palette(Qt::black);
+    //palette.setColor(QPalette::Window, Qt::transparent); 
+    //setPalette(palette);  
     //setAttribute(Qt::WA_OpaquePaintEvent, true);
-    setAttribute(Qt::WA_NoSystemBackground, true);
-    setAutoFillBackground(false);
+    //setAttribute(Qt::WA_NoSystemBackground, true);
+    //setAutoFillBackground(false);
 #endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 
 #ifdef PHONON_MMF_DEBUG_VIDEO_OUTPUT
@@ -156,6 +158,7 @@ QSize MMF::VideoOutput::sizeHint() const
     return result;
 }
 
+#include <QPainter> // TEMPORARY
 void MMF::VideoOutput::paintEvent(QPaintEvent* event)
 {
     TRACE_CONTEXT(VideoOutput::paintEvent, EVideoInternal);
@@ -165,7 +168,13 @@ void MMF::VideoOutput::paintEvent(QPaintEvent* event)
     TRACE("regions %d", event->region().numRects());
     TRACE("type %d", event->type());
 
-    QWidget::paintEvent(event);
+/*
+    QPainter painter;
+    painter.begin(this);
+    painter.setBrush(QColor(0, 0, 0, 0));
+    painter.drawRects(event->region().rects());
+    painter.end();
+*/
 }
 
 QPaintEngine* MMF::VideoOutput::paintEngine() const
