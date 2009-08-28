@@ -165,7 +165,7 @@ LI            {}  /* a=0 b=0 c=1 -> specificity =   1 */
 UL LI         {}  /* a=0 b=0 c=2 -> specificity =   2 */
 UL OL+LI      {}  /* a=0 b=0 c=3 -> specificity =   3 */
 H1 + *[REL=up]{}  /* a=0 b=1 c=1 -> specificity =  11 */
-UL OL LI.red  {}  /* a=0 b=1 c=3 -> specificity =  13 */ 
+UL OL LI.red  {}  /* a=0 b=1 c=3 -> specificity =  13 */
 LI.red.level  {}  /* a=0 b=2 c=1 -> specificity =  21 */
 #x34y         {}  /* a=1 b=0 c=0 -> specificity = 100 */
 //! [20]
@@ -260,7 +260,7 @@ QTextEdit { background: yellow }
 
 
 //! [35]
-QLabel { 
+QLabel {
     background-image: url(dense6pattern.png);
     background-repeat: repeat-xy;
 }
@@ -596,9 +596,9 @@ QTextEdit {
 
 /* radial gradient from white to green */
 QTextEdit {
-    background: qradialgradient(cx:0, cy:0, radius: 1, 
+    background: qradialgradient(cx:0, cy:0, radius: 1,
                 fx:0.5, fy:0.5, stop:0 white, stop:1 green)
-} 
+}
 //! [85]
 
 
@@ -871,7 +871,7 @@ QComboBox::down-arrow {
 QComboBox::down-arrow:on { /* shift the arrow when popup is open */
     top: 1px;
     left: 1px;
-} 
+}
 //! [109]
 
 
@@ -1002,8 +1002,8 @@ QGroupBox::indicator:unchecked {
 
 //! [116]
 QHeaderView::section {
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-                                      stop:0 #616161, stop: 0.5 #505050, 
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                      stop:0 #616161, stop: 0.5 #505050,
                                       stop: 0.6 #434343, stop:1 #656565);
     color: white;
     padding-left: 4px;
@@ -1066,17 +1066,17 @@ QListView::item:selected {
 }
 
 QListView::item:selected:!active {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                 stop: 0 #ABAFE5, stop: 1 #8588B2);
 }
 
 QListView::item:selected:active {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                 stop: 0 #6a6ea9, stop: 1 #888dd9);
 }
 
 QListView::item:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                 stop: 0 #FAFBFE, stop: 1 #DCDEF1);
 }
 //! [121]
@@ -1098,13 +1098,13 @@ QMainWindow::separator:hover {
 //! [123]
 QMenu {
     background-color: #ABABAB; /* sets background of the menu */
-    border: 1px solid black; 
+    border: 1px solid black;
 }
 
 QMenu::item {
-    /* sets background of menu item. set this to something non-transparent 
+    /* sets background of menu item. set this to something non-transparent
         if you want menu color and menu item color to be different */
-    background-color: transparent; 
+    background-color: transparent;
 }
 
 QMenu::item:selected { /* when user selects item using mouse or keyboard */
@@ -1133,16 +1133,16 @@ QMenu::icon:checked { /* appearance of a 'checked' icon */
     background: gray;
     border: 1px inset gray;
     position: absolute;
-    top: 1px; 
-    right: 1px; 
-    bottom: 1px; 
+    top: 1px;
+    right: 1px;
+    bottom: 1px;
     left: 1px;
 }
 
 QMenu::separator {
     height: 2px;
     background: lightblue;
-    margin-left: 10px; 
+    margin-left: 10px;
     margin-right: 5px;
 }
 
@@ -1246,13 +1246,13 @@ QProgressBar::chunk {
 QPushButton {
     border: 2px solid #8f8f91;
     border-radius: 6px;
-    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                       stop: 0 #f6f7fa, stop: 1 #dadbde);
     min-width: 80px;
 }
 
 QPushButton:pressed {
-    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                       stop: 0 #dadbde, stop: 1 #f6f7fa);
 }
 
@@ -1268,18 +1268,18 @@ QPushButton:default {
 
 //! [130]
 QPushButton:open { /* when the button has its menu open */
-    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                       stop: 0 #dadbde, stop: 1 #f6f7fa);
 }
 
-QPushButton::menu-indicator { 
+QPushButton::menu-indicator {
     image: url(menu_indicator.png);
-    subcontrol-origin: padding; 
+    subcontrol-origin: padding;
     subcontrol-position: bottom right;
 }
 
 QPushButton::menu-indicator:pressed, QPushButton::menu-indicator:open {
-    position: relative; 
+    position: relative;
     top: 2px; left: 2px; /* shift the arrow by 2 px */
 }
 //! [130]
@@ -1615,11 +1615,11 @@ QTabWidget::tab-bar {
     left: 5px; /* move to the right by 5px */
 }
 
-/* Style the tab using the tab sub-control. Note that 
+/* Style the tab using the tab sub-control. Note that
     it reads QTabBar _not_ QTabWidget */
 QTabBar::tab {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
-                                stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, 
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #E1E1E1, stop: 0.4 #DDDDDD,
                                 stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);
     border: 2px solid #C4C4C3;
     border-bottom-color: #C2C7CB; /* same as the pane color */
@@ -1630,8 +1630,8 @@ QTabBar::tab {
 }
 
 QTabBar::tab:selected, QTabBar::tab:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
-                                stop: 0 #fafafa, stop: 0.4 #f4f4f4, 
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #fafafa, stop: 0.4 #f4f4f4,
                                 stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);
 }
 
@@ -1655,11 +1655,11 @@ QTabWidget::tab-bar {
     left: 5px; /* move to the right by 5px */
 }
 
-/* Style the tab using the tab sub-control. Note that 
+/* Style the tab using the tab sub-control. Note that
     it reads QTabBar _not_ QTabWidget */
 QTabBar::tab {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
-                                stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, 
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #E1E1E1, stop: 0.4 #DDDDDD,
                                 stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);
     border: 2px solid #C4C4C3;
     border-bottom-color: #C2C7CB; /* same as the pane color */
@@ -1670,8 +1670,8 @@ QTabBar::tab {
 }
 
 QTabBar::tab:selected, QTabBar::tab:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
-                                stop: 0 #fafafa, stop: 0.4 #f4f4f4, 
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #fafafa, stop: 0.4 #f4f4f4,
                                 stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);
 }
 
@@ -1708,19 +1708,19 @@ QTabBar::tab:only-one {
 //! [147]
 QTabWidget::pane { /* The tab widget frame */
     border-top: 2px solid #C2C7CB;
-    position: absolute; 
-    top: -0.5em; 
+    position: absolute;
+    top: -0.5em;
 }
 
-QTabWidget::tab-bar { 
-    alignment: center; 
+QTabWidget::tab-bar {
+    alignment: center;
 }
 
-/* Style the tab using the tab sub-control. Note that 
+/* Style the tab using the tab sub-control. Note that
     it reads QTabBar _not_ QTabWidget */
 QTabBar::tab {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
-                                stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, 
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #E1E1E1, stop: 0.4 #DDDDDD,
                                 stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);
     border: 2px solid #C4C4C3;
     border-bottom-color: #C2C7CB; /* same as the pane color */
@@ -1731,8 +1731,8 @@ QTabBar::tab {
 }
 
 QTabBar::tab:selected, QTabBar::tab:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, 
-                                stop: 0 #fafafa, stop: 0.4 #f4f4f4, 
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #fafafa, stop: 0.4 #f4f4f4,
                                 stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);
 }
 
