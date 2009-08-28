@@ -129,7 +129,7 @@ nmake
 
 //! [23]
 cd \Qt\%VERSION%
-configure -platform win32-mwc -xplatform symbian-abld
+configure -platform win32-g++ -xplatform symbian-abld
 //! [23]
 
 
@@ -156,10 +156,10 @@ make release-armv5
 
 //! [29]
 cd src\s60installs
-createpackage -i qt_libs_armv5_urel.pkg <certificate file> <certificate key file>
+make sisx QT_SISX_OPTIONS=-i QT_SISX_CERTIFICATE=<certificate file> QT_SISX_KEY=<certificate key file>
 //! [29]
 
 //! [30]
 cd embedded\fluidlauncher
-createpackage -i fluidlauncher_armv5_urel.pkg
+make sisx QT_SISX_OPTIONS=-i
 //! [30]
