@@ -103,6 +103,34 @@ const QDBusArgument &operator>>(const QDBusArgument &arg, MyStruct &ms)
     return arg;
 }
 
+struct MyVariantMapStruct
+{
+    QString s;
+    QVariantMap map;
+
+    inline bool operator==(const MyVariantMapStruct &other) const
+    { return s == other.s && map == other.map; }
+};
+Q_DECLARE_METATYPE(MyVariantMapStruct)
+Q_DECLARE_METATYPE(QList<MyVariantMapStruct>)
+
+QDBusArgument &operator<<(QDBusArgument &arg, const MyVariantMapStruct &ms)
+{
+    arg.beginStructure();
+    arg << ms.s << ms.map;
+    arg.endStructure();
+    return arg;
+}
+
+const QDBusArgument &operator>>(const QDBusArgument &arg, MyVariantMapStruct &ms)
+{
+    arg.beginStructure();
+    arg >> ms.s >> ms.map;
+    arg.endStructure();
+    return arg;
+}
+
+
 void commonInit()
 {
     qDBusRegisterMetaType<QList<QDateTime> >();
@@ -127,6 +155,8 @@ void commonInit()
     qDBusRegisterMetaType<QHash<QDBusSignature, QString> >();
 
     qDBusRegisterMetaType<MyStruct>();
+    qDBusRegisterMetaType<MyVariantMapStruct>();
+    qDBusRegisterMetaType<QList<MyVariantMapStruct> >();
 }
 #ifdef USE_PRIVATE_CODE
 #include "private/qdbusintrospection_p.h"
@@ -476,6 +506,11 @@ bool compareToArgument(const QDBusArgument &arg, const QVariant &v2)
 
         else if (id == qMetaTypeId<MyStruct>())
             return compare<MyStruct>(arg, v2);
+
+        else if (id == qMetaTypeId<MyVariantMapStruct>())
+            return compare<MyVariantMapStruct>(arg, v2);
+        else if (id == qMetaTypeId<QList<MyVariantMapStruct> >())
+            return compare<QList<MyVariantMapStruct> >(arg, v2);
     }
 
     qWarning() << "Unexpected QVariant type" << v2.userType()
