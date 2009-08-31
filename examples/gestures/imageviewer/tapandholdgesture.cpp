@@ -72,8 +72,6 @@ TapAndHoldGesture::TapAndHoldGesture(QWidget *parent)
 /*! \internal */
 bool TapAndHoldGesture::filterEvent(QEvent *event)
 {
-    if (!event->spontaneous())
-        return false;
     const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
     switch (event->type()) {
     case QEvent::TouchBegin: {

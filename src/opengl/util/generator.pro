@@ -9,3 +9,5 @@ INCLUDEPATH += .
 
 # Input
 SOURCES += generator.cpp
+
+CONFIG += console

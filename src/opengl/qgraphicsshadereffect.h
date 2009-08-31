@@ -50,8 +50,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(OpenGL)
 
-#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
-
 class QGLShaderProgram;
 class QGLCustomShaderEffectStage;
 class QGraphicsShaderEffectPrivate;
@@ -77,8 +75,6 @@ private:
 
     friend class QGLCustomShaderEffectStage;
 };
-
-#endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE
 

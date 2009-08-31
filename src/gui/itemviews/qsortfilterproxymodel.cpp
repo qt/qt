@@ -174,6 +174,7 @@ public:
                            const QModelIndex &source_bottom_right);
     void _q_sourceHeaderDataChanged(Qt::Orientation orientation, int start, int end);
 
+    void _q_sourceAboutToBeReset();
     void _q_sourceReset();
 
     void _q_sourceLayoutAboutToBeChanged();
@@ -1148,11 +1149,17 @@ void QSortFilterProxyModelPrivate::_q_sourceHeaderDataChanged(Qt::Orientation or
     emit q->headerDataChanged(orientation, proxy_start, proxy_end);
 }
 
+void QSortFilterProxyModelPrivate::_q_sourceAboutToBeReset()
+{
+    Q_Q(QSortFilterProxyModel);
+    q->beginResetModel();
+}
+
 void QSortFilterProxyModelPrivate::_q_sourceReset()
 {
     Q_Q(QSortFilterProxyModel);
     // All internal structures are deleted in clear()
-    q->reset();
+    q->endResetModel();
     update_source_sort_column();
     if (dynamic_sortfilter)
         sort();
@@ -1499,6 +1506,7 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     disconnect(d->model, SIGNAL(layoutChanged()),
                this, SLOT(_q_sourceLayoutChanged()));
 
+    disconnect(d->model, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_sourceAboutToBeReset()));
     disconnect(d->model, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
 
     QAbstractProxyModel::setSourceModel(sourceModel);
@@ -1539,6 +1547,7 @@ void QSortFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
     connect(d->model, SIGNAL(layoutChanged()),
             this, SLOT(_q_sourceLayoutChanged()));
 
+    connect(d->model, SIGNAL(modelAboutToBeReset()), this, SLOT(_q_sourceAboutToBeReset()));
     connect(d->model, SIGNAL(modelReset()), this, SLOT(_q_sourceReset()));
 
     d->clear_mapping();

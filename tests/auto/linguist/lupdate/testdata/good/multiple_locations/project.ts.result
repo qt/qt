@@ -4,9 +4,9 @@
 <context>
     <name>context</name>
     <message>
-        <location filename="finddialog.cpp" line="2"/>
-        <location filename="finddialog.cpp" line="7"/>
-        <location filename="main.cpp" line="6"/>
+        <location filename="finddialog.cpp" line="43"/>
+        <location filename="finddialog.cpp" line="48"/>
+        <location filename="main.cpp" line="47"/>
         <source>just a message</source>
         <extracomment>This is one comment
 ----------

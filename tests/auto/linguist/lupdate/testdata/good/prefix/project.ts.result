@@ -4,18 +4,18 @@
 <context>
     <name>Foo</name>
     <message>
-        <location filename="main.cpp" line="6"/>
+        <location filename="main.cpp" line="46"/>
         <source>XXX</source>
         <comment>YYY</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="11"/>
+        <location filename="main.cpp" line="51"/>
         <source>CTOR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="16"/>
+        <location filename="main.cpp" line="56"/>
         <source>BAR</source>
         <translation type="unfinished"></translation>
     </message>

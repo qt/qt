@@ -47,8 +47,8 @@
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of qapplication_*.cpp, qwidget*.cpp and qfiledialog.cpp.  This header
-// file may change from version to version without notice, or even be removed.
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
 //
 // We mean it.
 //
@@ -498,7 +498,7 @@ public:
     quint32 needSortChildren : 1;
     quint32 allChildrenDirty : 1;
 
-    // New 32 bits
+    // Packed 32 bits
     quint32 fullUpdatePending : 1;
     quint32 flags : 16;
     quint32 dirtyChildrenBoundingRect : 1;
@@ -516,8 +516,10 @@ public:
     quint32 notifyBoundingRectChanged : 1;
     quint32 notifyInvalidated : 1;
     quint32 mouseSetsFocus : 1;
+
+    // New 32 bits
     quint32 itemIsFocusedInScope : 1;
-    quint32 unused : 1; // feel free to use
+    quint32 unused : 31; // feel free to use
 
     // Optional stacking order
     int globalStackingOrder;

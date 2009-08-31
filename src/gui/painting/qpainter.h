@@ -423,6 +423,9 @@ public:
     static QPaintDevice *redirected(const QPaintDevice *device, QPoint *offset = 0);
     static void restoreRedirected(const QPaintDevice *device);
 
+    void beginNativePainting();
+    void endNativePainting();
+
 #ifdef QT3_SUPPORT
 
     inline QT3_SUPPORT void setBackgroundColor(const QColor &color) { setBackground(color); }

@@ -217,6 +217,7 @@ private slots:
     void task245469_itemsAtPointWithClip();
     void task253415_reconnectUpdateSceneOnSceneChanged();
     void task255529_transformationAnchorMouseAndViewportMargins();
+    void task259503_scrollingArtifacts();
 };
 
 void tst_QGraphicsView::initTestCase()
@@ -376,7 +377,7 @@ void tst_QGraphicsView::interactive()
     view.show();
 
     QTestEventLoop::instance().enterLoop(1);
-    QCOMPARE(item->events.size(), 0);
+    QCOMPARE(item->events.size(), 1); // activate
 
     QPoint itemPoint = view.mapFromScene(item->scenePos());
 
@@ -384,16 +385,16 @@ void tst_QGraphicsView::interactive()
 
     for (int i = 0; i < 100; ++i) {
         sendMousePress(view.viewport(), itemPoint);
-        QCOMPARE(item->events.size(), i * 5 + 2);
+        QCOMPARE(item->events.size(), i * 5 + 3);
         QCOMPARE(item->events.at(item->events.size() - 2), QEvent::GrabMouse);
         QCOMPARE(item->events.at(item->events.size() - 1), QEvent::GraphicsSceneMousePress);
         sendMouseRelease(view.viewport(), itemPoint);
-        QCOMPARE(item->events.size(), i * 5 + 4);
+        QCOMPARE(item->events.size(), i * 5 + 5);
         QCOMPARE(item->events.at(item->events.size() - 2), QEvent::GraphicsSceneMouseRelease);
         QCOMPARE(item->events.at(item->events.size() - 1), QEvent::UngrabMouse);
         QContextMenuEvent contextEvent(QContextMenuEvent::Mouse, itemPoint, view.mapToGlobal(itemPoint));
         QApplication::sendEvent(view.viewport(), &contextEvent);
-        QCOMPARE(item->events.size(), i * 5 + 5);
+        QCOMPARE(item->events.size(), i * 5 + 6);
         QCOMPARE(item->events.last(), QEvent::GraphicsSceneContextMenu);
     }
 
@@ -401,14 +402,14 @@ void tst_QGraphicsView::interactive()
 
     for (int i = 0; i < 100; ++i) {
         sendMousePress(view.viewport(), itemPoint);
-        QCOMPARE(item->events.size(), 500);
+        QCOMPARE(item->events.size(), 501);
         QCOMPARE(item->events.last(), QEvent::GraphicsSceneContextMenu);
         sendMouseRelease(view.viewport(), itemPoint);
-        QCOMPARE(item->events.size(), 500);
+        QCOMPARE(item->events.size(), 501);
         QCOMPARE(item->events.last(), QEvent::GraphicsSceneContextMenu);
         QContextMenuEvent contextEvent(QContextMenuEvent::Mouse, itemPoint, view.mapToGlobal(itemPoint));
         QApplication::sendEvent(view.viewport(), &contextEvent);
-        QCOMPARE(item->events.size(), 500);
+        QCOMPARE(item->events.size(), 501);
         QCOMPARE(item->events.last(), QEvent::GraphicsSceneContextMenu);
     }
 }
@@ -1872,32 +1873,32 @@ void tst_QGraphicsView::sendEvent()
     item->setFocus();
 
     QCOMPARE(scene.focusItem(), (QGraphicsItem *)item);
-    QCOMPARE(item->events.size(), 1);
+    QCOMPARE(item->events.size(), 2);
     QCOMPARE(item->events.last(), QEvent::FocusIn);
 
     QPoint itemPoint = view.mapFromScene(item->scenePos());
     sendMousePress(view.viewport(), itemPoint);
-    QCOMPARE(item->events.size(), 3);
+    QCOMPARE(item->events.size(), 4);
     QCOMPARE(item->events.at(item->events.size() - 2), QEvent::GrabMouse);
     QCOMPARE(item->events.at(item->events.size() - 1), QEvent::GraphicsSceneMousePress);
 
     QMouseEvent mouseMoveEvent(QEvent::MouseMove, itemPoint, view.viewport()->mapToGlobal(itemPoint),
                                 Qt::LeftButton, Qt::LeftButton, 0);
     QApplication::sendEvent(view.viewport(), &mouseMoveEvent);
-    QCOMPARE(item->events.size(), 4);
+    QCOMPARE(item->events.size(), 5);
     QCOMPARE(item->events.last(), QEvent::GraphicsSceneMouseMove);
 
     QMouseEvent mouseReleaseEvent(QEvent::MouseButtonRelease, itemPoint,
                                   view.viewport()->mapToGlobal(itemPoint),
                                   Qt::LeftButton, 0, 0);
     QApplication::sendEvent(view.viewport(), &mouseReleaseEvent);
-    QCOMPARE(item->events.size(), 6);
+    QCOMPARE(item->events.size(), 7);
     QCOMPARE(item->events.at(item->events.size() - 2), QEvent::GraphicsSceneMouseRelease);
     QCOMPARE(item->events.at(item->events.size() - 1), QEvent::UngrabMouse);
 
     QKeyEvent keyPress(QEvent::KeyPress, Qt::Key_Space, 0);
     QApplication::sendEvent(view.viewport(), &keyPress);
-    QCOMPARE(item->events.size(), 8);
+    QCOMPARE(item->events.size(), 9);
     QCOMPARE(item->events.at(item->events.size() - 2), QEvent::ShortcutOverride);
     QCOMPARE(item->events.last(), QEvent::KeyPress);
 }
@@ -3663,6 +3664,65 @@ void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
     QVERIFY(qAbs(newMouseScenePos.y() - mouseScenePos.y()) < slack);
 }
 
+void tst_QGraphicsView::task259503_scrollingArtifacts()
+{
+    QGraphicsScene scene(0, 0, 800, 600);
+
+    QGraphicsRectItem card;
+    card.setRect(0, 0, 50, 50);
+    card.setPen(QPen(Qt::darkRed));
+    card.setBrush(QBrush(Qt::cyan));
+    card.setZValue(2.0);
+    card.setPos(300, 300);
+    scene.addItem(&card);
+
+    class SAGraphicsView: public QGraphicsView
+    {
+    public:
+        SAGraphicsView(QGraphicsScene *scene)
+            : QGraphicsView(scene)
+            , itSTimeToTest(false)
+        {
+            setViewportUpdateMode( QGraphicsView::MinimalViewportUpdate );
+            resize(QSize(640, 480));
+        }
+
+        QRegion updateRegion;
+        bool itSTimeToTest;
+
+        void paintEvent(QPaintEvent *event)
+        {
+            QGraphicsView::paintEvent(event);
+
+            if (itSTimeToTest)
+            {
+                qDebug() << event->region();
+                qDebug() << updateRegion;
+                QCOMPARE(event->region(), updateRegion);
+            }
+        }
+    };
+
+    SAGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+
+    int hsbValue = view.horizontalScrollBar()->value();
+    view.horizontalScrollBar()->setValue(hsbValue / 2);
+    QTest::qWait(10);
+    view.horizontalScrollBar()->setValue(0);
+    QTest::qWait(10);
+
+    QRect itemDeviceBoundingRect = card.deviceTransform(view.viewportTransform()).mapRect(card.boundingRect()).toRect();
+    itemDeviceBoundingRect.adjust(-2, -2, 2, 2);
+    view.updateRegion = itemDeviceBoundingRect;
+    view.updateRegion += itemDeviceBoundingRect.translated(-100, 0);
+    view.itSTimeToTest = true;
+    card.setPos(200, 300);
+    QTest::qWait(10);
+}
 
 QTEST_MAIN(tst_QGraphicsView)
 #include "tst_qgraphicsview.moc"

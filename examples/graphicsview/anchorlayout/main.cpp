@@ -66,17 +66,17 @@ int main(int argc, char **argv)
     QGraphicsScene scene;
     scene.setSceneRect(0, 0, 800, 480);
 
-    QSizeF min(30, 100);
-    QSizeF pref(210, 100);
-    QSizeF max(300, 100);
+    QSizeF minSize(30, 100);
+    QSizeF prefSize(210, 100);
+    QSizeF maxSize(300, 100);
 
-    QGraphicsProxyWidget *a = createItem(min, pref, max, "A");
-    QGraphicsProxyWidget *b = createItem(min, pref, max, "B");
-    QGraphicsProxyWidget *c = createItem(min, pref, max, "C");
-    QGraphicsProxyWidget *d = createItem(min, pref, max, "D");
-    QGraphicsProxyWidget *e = createItem(min, pref, max, "E");
-    QGraphicsProxyWidget *f = createItem(QSizeF(30, 50), QSizeF(150, 50), max, "F");
-    QGraphicsProxyWidget *g = createItem(QSizeF(30, 50), QSizeF(30, 100), max, "G");
+    QGraphicsProxyWidget *a = createItem(minSize, prefSize, maxSize, "A");
+    QGraphicsProxyWidget *b = createItem(minSize, prefSize, maxSize, "B");
+    QGraphicsProxyWidget *c = createItem(minSize, prefSize, maxSize, "C");
+    QGraphicsProxyWidget *d = createItem(minSize, prefSize, maxSize, "D");
+    QGraphicsProxyWidget *e = createItem(minSize, prefSize, maxSize, "E");
+    QGraphicsProxyWidget *f = createItem(QSizeF(30, 50), QSizeF(150, 50), maxSize, "F");
+    QGraphicsProxyWidget *g = createItem(QSizeF(30, 50), QSizeF(30, 100), maxSize, "G");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
 

@@ -87,9 +87,11 @@
     \since 4.2
     \ingroup graphicsview-api
 
-    When a QGraphicsView receives a QMouseEvent, it translates it to
-    a QGraphicsSceneMouseEvent. The event is then forwarded to the
-    QGraphicsScene associated with the view.
+    When a QGraphicsView receives a QMouseEvent, it translates it to a
+    QGraphicsSceneMouseEvent. The event is then forwarded to the
+    QGraphicsScene associated with the view. If the event is not
+    handled by the scene, the view may use it, e.g., for the
+    \l{QGraphicsView::}{DragMode}.
 
     In addition to containing the item, scene, and screen coordinates
     of the event (as pos(), scenePos(), and screenPos()), mouse

@@ -145,6 +145,8 @@ private slots:
     void noScrollbar();
     void setItemDelegate();
     void task253944_itemDelegateIsReset();
+    void subControlRectsWithOffset_data();
+    void subControlRectsWithOffset();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -2288,6 +2290,54 @@ void tst_QComboBox::task253944_itemDelegateIsReset()
 #endif
 }
 
+
+void tst_QComboBox::subControlRectsWithOffset_data()
+{
+    QTest::addColumn<bool>("editable");
+
+    QTest::newRow("editable = true") << true;
+    QTest::newRow("editable = false") << false;
+}
+
+void tst_QComboBox::subControlRectsWithOffset()
+{
+    // The sub control rect relative position should not depends
+    // on the position of the combobox
+
+    class FriendlyCombo : public QComboBox {
+    public:
+        void styleOption(QStyleOptionComboBox *optCombo) {
+            initStyleOption(optCombo);
+        }
+    } combo;
+    QStyleOptionComboBox optCombo;
+    combo.styleOption(&optCombo);
+
+
+    const QRect rectAtOrigin(0, 0, 80, 30);
+    const QPoint offset(25, 50);
+    const QRect rectWithOffset = rectAtOrigin.translated(offset);
+
+    QStyle *style = combo.style();
+
+    QFETCH(bool, editable);
+    optCombo.editable = editable;
+
+    optCombo.rect = rectAtOrigin;
+    QRect editFieldRect = style->subControlRect(QStyle::CC_ComboBox, &optCombo, QStyle::SC_ComboBoxEditField, 0);
+    QRect arrowRect = style->subControlRect(QStyle::CC_ComboBox, &optCombo, QStyle::SC_ComboBoxArrow, 0);
+    QRect listboxRect = style->subControlRect(QStyle::CC_ComboBox, &optCombo, QStyle::SC_ComboBoxListBoxPopup, 0);
+
+    optCombo.rect = rectWithOffset;
+    QRect editFieldRectWithOffset = style->subControlRect(QStyle::CC_ComboBox, &optCombo, QStyle::SC_ComboBoxEditField, 0);
+    QRect arrowRectWithOffset = style->subControlRect(QStyle::CC_ComboBox, &optCombo, QStyle::SC_ComboBoxArrow, 0);
+    QRect listboxRectWithOffset = style->subControlRect(QStyle::CC_ComboBox, &optCombo, QStyle::SC_ComboBoxListBoxPopup, 0);
+
+    QCOMPARE(editFieldRect, editFieldRectWithOffset.translated(-offset));
+    QCOMPARE(arrowRect, arrowRectWithOffset.translated(-offset));
+    QCOMPARE(listboxRect, listboxRectWithOffset.translated(-offset));
+
+}
 
 QTEST_MAIN(tst_QComboBox)
 #include "tst_qcombobox.moc"

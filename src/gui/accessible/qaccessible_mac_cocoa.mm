@@ -59,9 +59,9 @@ QT_BEGIN_NAMESPACE
 //#define MAC_ACCESSIBILTY_DEVELOPER_MODE
 
 #ifdef MAC_ACCESSIBILTY_DEVELOPER_MODE
-#define MAC_ACCESSIBILTY_DEBUG qDebug
+#define MAC_ACCESSIBILTY_DEBUG QT_PREPEND_NAMESPACE(qDebug)
 #else
-#define MAC_ACCESSIBILTY_DEBUG if (0) qDebug
+#define MAC_ACCESSIBILTY_DEBUG if (0) QT_PREPEND_NAMESPACE(qDebug)
 #endif
 
 typedef QMap<QAccessible::Role, NSString *> QMacAccessibiltyRoleMap;
@@ -195,13 +195,13 @@ QT_END_NAMESPACE
 
 - (BOOL)accessibilityIsIgnored
 {
-    QAInterface interface = interfaceForView(self);
+    QT_PREPEND_NAMESPACE(QAInterface) interface = QT_PREPEND_NAMESPACE(interfaceForView)(self);
     return isInterfaceIgnored(interface);
 }
 
 - (NSArray *)accessibilityAttributeNames
 {
-    QAInterface interface = interfaceForView(self);
+    QT_PREPEND_NAMESPACE(QAInterface) interface = QT_PREPEND_NAMESPACE(interfaceForView)(self);
 
     static NSArray *attributes = nil;
     if (attributes == nil) {
@@ -213,9 +213,10 @@ QT_END_NAMESPACE
 
 - (id)accessibilityAttributeValue:(NSString *)attribute
 {
-    MAC_ACCESSIBILTY_DEBUG() << "accessibilityAttributeValue" << self <<  QCFString::toQString(reinterpret_cast<CFStringRef>(attribute));
+    MAC_ACCESSIBILTY_DEBUG() << "accessibilityAttributeValue" << self <<  
+            QT_PREPEND_NAMESPACE(QCFString)::toQString(reinterpret_cast<CFStringRef>(attribute));
 
-    QAInterface interface = interfaceForView(self);
+    QT_PREPEND_NAMESPACE(QAInterface) interface = QT_PREPEND_NAMESPACE(interfaceForView)(self);
 
     // Switch on the attribute name and call the appropriate handler function.
     // Pass the call on to the NSView class for attributes we don't handle.

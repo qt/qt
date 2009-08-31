@@ -50,6 +50,8 @@
 #include <QtGui/qimage.h>
 #include <QtGui/qregion.h>
 
+struct fb_cmap;
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -168,8 +170,6 @@ private:
 };
 
 #endif // QT_NO_QWS_CURSOR
-
-struct fb_cmap;
 
 // A (used) chunk of offscreen memory
 

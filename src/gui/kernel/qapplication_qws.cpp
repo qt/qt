@@ -72,6 +72,7 @@
 //#include "qwsregionmanager_qws.h"
 #include "qwindowsystem_qws.h"
 #include "private/qwindowsystem_p.h"
+#include "qdecorationfactory_qws.h"
 
 #include "qwsdisplay_qws.h"
 #include "private/qwsdisplay_qws_p.h"
@@ -122,6 +123,8 @@
 #endif
 #endif
 
+QT_BEGIN_NAMESPACE
+
 #ifndef QT_NO_DIRECTPAINTER
 class QDirectPainter;
 extern void qt_directpainter_region(QDirectPainter *dp, const QRegion &alloc, int type);
@@ -161,13 +164,9 @@ int qt_servershmid = -1;
 
 bool qws_overrideCursor = false;
 #ifndef QT_NO_QWS_MANAGER
-#include "qdecorationfactory_qws.h"
 
 extern Q_GUI_EXPORT QWSServer *qwsServer;
 
-QT_BEGIN_NAMESPACE
-
-QT_USE_NAMESPACE
 static QDecoration *qws_decoration = 0;
 #endif
 
@@ -2371,7 +2370,7 @@ void qt_cleanup()
 
 QString QApplicationPrivate::appName() const // get application name
 {
-    return ::appName;
+    return QT_PREPEND_NAMESPACE(appName);
 }
 
 /*****************************************************************************

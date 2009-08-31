@@ -493,7 +493,16 @@ private:
 		in--;
 		out[i] = qRgb(*in, *in, *in);
 	    }
-	} else {
+       } else if (cinfo->out_color_space == JCS_CMYK) {
+           int cols32Bit = scaledWidth() * 4;
+           in = (uchar*)out + cols32Bit;
+           for (uint i = scaledWidth(); i--; ) {
+               in -= 4;
+               int k = in[3];
+               out[i] = qRgb(k * in[0] / 255, k * in[1] / 255, k * in[2] / 255);
+               //out[i] = qRgb(in[0], in[1], in[2]);
+           }
+       } else {
 	    in = (uchar*)out + cols24Bit;
 	    for (uint i = scaledWidth(); i--; ) {
 		in -= 3;

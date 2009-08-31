@@ -49,10 +49,13 @@ information about a particular change.
    this is that Nokia focuses on OpenGL for desktop hardware accelerated
    rendering.
 
- - When mixing OpenGL and QPainter calls you need to first call syncState()
-   on the paint engine, for example "painter->paintEngine()->syncState()".
-   This is to ensure that the engine flushes any pending drawing and sets up
-   the GL modelview/projection matrices properly.
+ - When mixing OpenGL and QPainter calls you need to surround your custom
+   OpenGL calls with QPainter::beginNativePainting() and
+   QPainter::endNativePainting().
+   This is to ensure that the paint engine flushes any pending drawing and sets
+   up the GL modelview/projection matrices properly before you can issue custom
+   OpenGL calls, and to let the paint engine synchronize to the painter state
+   before resuming regular QPainter based drawing.
 
  - Graphics View has undergone heavy optimization work, and as a result of
    this work, the following behavior changes were introduced.

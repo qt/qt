@@ -152,7 +152,7 @@
     \row
         \o \c offset=<x,y>
         \o Multi
-        \o Specifies the coordinates of a subscreens top-left corner
+        \o Specifies the coordinates of a subscreen's top-left corner
         (by default 0,0).
 
     \endtable

@@ -79,6 +79,7 @@ public:
     bool startComposition();
     bool endComposition();
     bool composition(LPARAM lparam);
+    int reconvertString(RECONVERTSTRING *reconv);
 
     static void TranslateMessage(const MSG *msg);
     static LRESULT DefWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

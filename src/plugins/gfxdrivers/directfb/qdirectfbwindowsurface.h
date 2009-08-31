@@ -88,23 +88,20 @@ public:
     void beginPaint(const QRegion &);
     void endPaint(const QRegion &);
 
-    QImage *buffer(const QWidget *widget);
+    IDirectFBSurface *surfaceForWidget(const QWidget *widget, QRect *rect) const;
 private:
     void updateFormat();
 #ifdef QT_DIRECTFB_WM
     void createWindow();
     IDirectFBWindow *dfbWindow;
     QDirectFBWindowSurface *sibling;
-#endif
-
-#ifdef QT_NO_DIRECTFB_WM
+#else
     enum Mode {
         Primary,
         Offscreen
     } mode;
 #endif
 
-    QList<QImage*> bufferImages;
     DFBSurfaceFlipFlags flipFlags;
     bool boundingRectFlip;
 #ifdef QT_DIRECTFB_TIMING

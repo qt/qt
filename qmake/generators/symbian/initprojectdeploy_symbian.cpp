@@ -331,7 +331,7 @@ void initProjectDeploySymbian(QMakeProject* project,
                         if (deployBinaries) {
                             // Executables and libraries are deployed to \sys\bin
                             QFileInfo releasePath(epocRoot() + "epoc32\\release\\" + platform + "\\" + build + "\\");
-                            deploymentList.append(CopyItem(Option::fixPathToLocalOS(releasePath.absolutePath() + "\\" + info.fileName()),
+                            deploymentList.append(CopyItem(Option::fixPathToLocalOS(releasePath.absolutePath() + "\\" + info.fileName(), false, true),
                                                            Option::fixPathToLocalOS(deploymentDrive + QLatin1String(SYSBIN_DIR "\\") + info.fileName())));
                         }
                         if (isPlugin(info, devicePath)) {

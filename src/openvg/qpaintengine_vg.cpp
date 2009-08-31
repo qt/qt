@@ -3072,43 +3072,42 @@ void QVGPaintEngine::setState(QPainterState *s)
     }
 }
 
-// Called from QPaintEngine::syncState() to force a state flush.
-// This should be called before and after raw VG operations.
-void QVGPaintEngine::updateState(const QPaintEngineState &state)
+void QVGPaintEngine::beginNativePainting()
 {
-    Q_UNUSED(state);
     Q_D(QVGPaintEngine);
 
-    if (!(d->rawVG)) {
-        // About to enter raw VG mode: flush pending changes and make
-        // sure that all matrices are set to the current transformation.
-        QVGPainterState *s = this->state();
-        d->ensurePen(s->pen);
-        d->ensureBrush(s->brush);
-        d->ensurePathTransform();
-        d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, d->imageTransform);
+    // About to enter raw VG mode: flush pending changes and make
+    // sure that all matrices are set to the current transformation.
+    QVGPainterState *s = this->state();
+    d->ensurePen(s->pen);
+    d->ensureBrush(s->brush);
+    d->ensurePathTransform();
+    d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, d->imageTransform);
 #if !defined(QVG_NO_DRAW_GLYPHS)
-        d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, d->pathTransform);
+    d->setTransform(VG_MATRIX_GLYPH_USER_TO_SURFACE, d->pathTransform);
 #endif
-        d->rawVG = true;
-    } else {
-        // Exiting raw VG mode: force all state values to be
-        // explicitly set on the VG engine to undo any changes
-        // that were made by the raw VG function calls.
-        QPaintEngine::DirtyFlags dirty = d->dirty;
-        d->clearModes();
-        d->forcePenChange = true;
-        d->forceBrushChange = true;
-        d->penType = (VGPaintType)0;
-        d->brushType = (VGPaintType)0;
-        d->clearColor = QColor();
-        d->fillPaint = d->brushPaint;
-        restoreState(QPaintEngine::AllDirty);
-        d->dirty = dirty;
-        d->rawVG = false;
-        vgSetPaint(d->penPaint, VG_STROKE_PATH);
-        vgSetPaint(d->brushPaint, VG_FILL_PATH);
-    }
+    d->rawVG = true;
+}
+
+void QVGPaintEngine::endNativePainting()
+{
+    Q_D(QVGPaintEngine);
+    // Exiting raw VG mode: force all state values to be
+    // explicitly set on the VG engine to undo any changes
+    // that were made by the raw VG function calls.
+    QPaintEngine::DirtyFlags dirty = d->dirty;
+    d->clearModes();
+    d->forcePenChange = true;
+    d->forceBrushChange = true;
+    d->penType = (VGPaintType)0;
+    d->brushType = (VGPaintType)0;
+    d->clearColor = QColor();
+    d->fillPaint = d->brushPaint;
+    restoreState(QPaintEngine::AllDirty);
+    d->dirty = dirty;
+    d->rawVG = false;
+    vgSetPaint(d->penPaint, VG_STROKE_PATH);
+    vgSetPaint(d->brushPaint, VG_FILL_PATH);
 }
 
 QPixmapFilter *QVGPaintEngine::createPixmapFilter(int type) const

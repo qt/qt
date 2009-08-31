@@ -68,6 +68,7 @@ private slots:
     void toQObject();
     void property();
     void setProperty();
+    void propertyFlags();
 };
 
 tst_QScriptValue::tst_QScriptValue()
@@ -186,6 +187,17 @@ void tst_QScriptValue::setProperty()
     QScriptValue val(123);
     QBENCHMARK {
         obj.setProperty(propertyName, val);
+    }
+}
+
+void tst_QScriptValue::propertyFlags()
+{
+    QScriptEngine engine;
+    QScriptValue obj = engine.newObject();
+    QString propertyName = QString::fromLatin1("foo");
+    obj.setProperty(propertyName, 123, QScriptValue::SkipInEnumeration | QScriptValue::ReadOnly);
+    QBENCHMARK {
+        (void)obj.propertyFlags(propertyName);
     }
 }
 

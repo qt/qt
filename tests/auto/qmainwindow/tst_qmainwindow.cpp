@@ -106,6 +106,7 @@ private slots:
     void isSeparator();
     void setCursor();
     void addToolbarAfterShow();
+    void centralWidgetSize();
 };
 
 // Testing get/set functions
@@ -1336,6 +1337,19 @@ public:
     }
 };
 
+class MyWidget : public QWidget
+{
+public:
+    MyWidget(QWidget *parent = 0) : QWidget(parent)
+    {
+    }
+
+    QSize sizeHint() const
+    {
+	return QSize(200, 200);
+    }
+};
+
 void tst_QMainWindow::hideBeforeLayout()
 {
     QMainWindow win;
@@ -1650,6 +1664,18 @@ void tst_QMainWindow::addToolbarAfterShow()
     QVERIFY(!toolBar.isHidden());
 }
 
+void tst_QMainWindow::centralWidgetSize()
+{
+    QMainWindow mainWindow;
+    mainWindow.menuBar()->addMenu("menu");
+
+    MyWidget widget;
+    mainWindow.setCentralWidget(&widget);
+
+    mainWindow.show();
+    QTest::qWait(100);
+    QCOMPARE(widget.size(), widget.sizeHint());
+}
 
 
 QTEST_MAIN(tst_QMainWindow)
