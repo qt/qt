@@ -76,8 +76,6 @@ struct QmlXmlRoleList : public QmlConcreteList<XmlListModelRole *>
     QmlXmlListModelPrivate *model;
 };
 
-
-
 class QmlXmlQuery : public QThread
 {
     Q_OBJECT
@@ -295,6 +293,7 @@ public:
 
     bool isComponentComplete;
     QUrl src;
+    QString xml;
     QString query;
     QString namespaces;
     int size;
@@ -460,6 +459,8 @@ QString QmlXmlListModel::toString(int role) const
 /*!
     \qmlproperty url XmlListModel::source
     The location of the XML data source.
+
+    If both source and xml are set, xml will be used.
 */
 QUrl QmlXmlListModel::source() const
 {
@@ -474,6 +475,27 @@ void QmlXmlListModel::setSource(const QUrl &src)
         d->src = src;
         reload();
     }
+}
+
+/*!
+    \qmlproperty string XmlListModel::xml
+    This property holds XML text set directly.
+
+    The text is assumed to be UTF-8 encoded.
+
+    If both source and xml are set, xml will be used.
+*/
+QString QmlXmlListModel::xml() const
+{
+    Q_D(const QmlXmlListModel);
+    return d->xml;
+}
+
+void QmlXmlListModel::setXml(const QString &xml)
+{
+    Q_D(QmlXmlListModel);
+    d->xml = xml;
+    reload();
 }
 
 /*!
@@ -589,16 +611,24 @@ void QmlXmlListModel::reload()
     if (count > 0)
         emit itemsRemoved(0, count);
 
-    if (d->src.isEmpty()) {
-        qmlInfo(this) << "Can't load empty src string";
+    if (d->src.isEmpty() && d->xml.isEmpty())
         return;
-    }
 
     if (d->reply) {
         d->reply->abort();
         d->reply->deleteLater();
         d->reply = 0;
     }
+
+    if (!d->xml.isEmpty()) {
+        d->queryId = d->qmlXmlQuery.doQuery(d->query, d->namespaces, d->xml.toUtf8(), &d->roleObjects);
+        d->progress = 1.0;
+        d->status = Idle;
+        emit progressChanged(d->progress);
+        emit statusChanged(d->status);
+        return;
+    }
+
     d->progress = 0.0;
     d->status = Loading;
     emit progressChanged(d->progress);
