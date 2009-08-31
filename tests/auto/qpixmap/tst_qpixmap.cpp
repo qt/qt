@@ -83,6 +83,9 @@ private slots:
     void fromImage_data();
     void fromImage();
 
+    void fromUninitializedImage_data();
+    void fromUninitializedImage();
+
     void convertFromImage_data();
     void convertFromImage();
 
@@ -264,6 +267,32 @@ void tst_QPixmap::fromImage()
     const QImage result = pixmap.toImage();
     image = image.convertToFormat(result.format());
     QCOMPARE(result, image);
+}
+
+
+void tst_QPixmap::fromUninitializedImage_data()
+{
+    QTest::addColumn<QImage::Format>("format");
+
+    QTest::newRow("Format_Mono") << QImage::Format_Mono;
+    QTest::newRow("Format_MonoLSB") << QImage::Format_MonoLSB;
+    QTest::newRow("Format_Indexed8") << QImage::Format_Indexed8;
+    QTest::newRow("Format_RGB32") << QImage::Format_RGB32;
+    QTest::newRow("Format_ARGB32") << QImage::Format_ARGB32;
+    QTest::newRow("Format_ARGB32_Premultiplied") << QImage::Format_ARGB32_Premultiplied;
+    QTest::newRow("Format_RGB16") << QImage::Format_RGB16;
+}
+
+void tst_QPixmap::fromUninitializedImage()
+{
+    QFETCH(QImage::Format, format);
+
+    QImage image(100, 100, format);
+    QPixmap pix = QPixmap::fromImage(image);
+
+    // it simply shouldn't crash...
+    QVERIFY(true);
+
 }
 
 void tst_QPixmap::convertFromImage_data()
