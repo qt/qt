@@ -1198,12 +1198,11 @@ static void parseVisibility(QSvgNode *node,
                             const QSvgAttributes &attributes,
                             QSvgHandler *)
 {
-    QString value = attributes.visibility.toString();
     QSvgNode *parent = node->parent();
 
-    if (parent && (value.isEmpty() || value == QT_INHERIT))
+    if (parent && (attributes.visibility.isEmpty() || attributes.visibility == QT_INHERIT))
         node->setVisible(parent->isVisible());
-    else if (value == QLatin1String("hidden") || value == QLatin1String("collapse")) {
+    else if (attributes.visibility == QLatin1String("hidden") || attributes.visibility == QLatin1String("collapse")) {
         node->setVisible(false);
     } else
         node->setVisible(true);
