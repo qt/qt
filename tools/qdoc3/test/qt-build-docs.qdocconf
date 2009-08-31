@@ -10,10 +10,10 @@ url                     = http://qt.nokia.com/doc/4.6
 
 edition.Console.modules = QtCore QtDBus QtNetwork QtScript QtSql QtXml \
                           QtXmlPatterns QtTest
-edition.Desktop.modules = QtCore QtDBus QtGui QtNetwork QtOpenGL QtScript QtSql QtSvg \
-                          QtWebKit QtXml QtXmlPatterns Qt3Support QtHelp \
-                          QtDesigner QtAssistant QAxContainer Phonon \
-                          QAxServer QtUiTools QtTest QtDBus
+edition.Desktop.modules = QtCore QtDBus QtGui QtNetwork QtOpenGL QtScript QtSql \
+                          QtSvg QtWebKit QtXml QtXmlPatterns Qt3Support QtHelp \
+                          QtDesigner QAxContainer Phonon QAxServer QtUiTools \
+                          QtTest QtDBus
 edition.DesktopLight.modules = QtCore QtDBus QtGui Qt3SupportLight QtTest
 edition.DesktopLight.groups       = -graphicsview-api
 

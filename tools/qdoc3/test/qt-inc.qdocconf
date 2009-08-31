@@ -6,9 +6,9 @@ description             = Qt Reference Documentation
 url                     = http://qt.nokia.com/doc/4.6
 
 edition.Console         = QtCore QtNetwork QtSql QtXml QtScript QtTest
-edition.Desktop         = QtCore QtGui QtNetwork QtOpenGL QtSql QtSvg QtXml QtScript \
-                          QtDesigner QtAssistant Qt3Support QAxContainer \
-                          QAxServer QtUiTools QtTest QtDBus
+edition.Desktop         = QtCore QtGui QtNetwork QtOpenGL QtSql QtSvg QtXml \
+                          QtScript QtDesigner Qt3Support QAxContainer QAxServer \
+                          QtUiTools QtTest QtDBus
 edition.DesktopLight    = QtCore QtGui Qt3SupportLight QtTest
 
 language                = Cpp
@@ -100,8 +100,8 @@ Cpp.ignoretokens        = QAXFACTORY_EXPORT \
                           Q_TYPENAME \
                           Q_XML_EXPORT \
                           QDBUS_EXPORT \
-			  Q_GADGET \
-			  QWEBKIT_EXPORT
+              Q_GADGET \
+              QWEBKIT_EXPORT
 Cpp.ignoredirectives    = Q_DECLARE_HANDLE \
                           Q_DECLARE_INTERFACE \
                           Q_DECLARE_METATYPE \

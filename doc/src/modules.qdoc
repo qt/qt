@@ -288,33 +288,33 @@
 */
 
 /*!
-	\module QtScript
-	\title QtScript Module
-	\since 4.3
-	\contentspage All Qt Modules
-	\previouspage QtOpenVG
-	\nextpage QtScriptTools
-	\ingroup modules
+    \module QtScript
+    \title QtScript Module
+    \since 4.3
+    \contentspage All Qt Modules
+    \previouspage QtOpenVG
+    \nextpage QtScriptTools
+    \ingroup modules
 
-	\brief The QtScript module provides classes for making Qt applications scriptable.
+    \brief The QtScript module provides classes for making Qt applications scriptable.
 
-	The QtScript module only provides core scripting facilities; the
-	QtScriptTools module provides additional Qt Script-related
-	components that application developers may find useful.
+    The QtScript module only provides core scripting facilities; the
+    QtScriptTools module provides additional Qt Script-related
+    components that application developers may find useful.
 
-	\tableofcontents
+    \tableofcontents
 
-	To include the definitions of the module's classes, use the
-	following directive:
+    To include the definitions of the module's classes, use the
+    following directive:
 
-	\snippet doc/src/snippets/code/doc_src_qtscript.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 0
 
-	To link against the module, add this line to your \l qmake \c .pro file:
+    To link against the module, add this line to your \l qmake \c .pro file:
 
-	\snippet doc/src/snippets/code/doc_src_qtscript.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qtscript.qdoc 1
 
-	The QtScript module is part of the \l{Qt Full Framework Edition} and the
-	\l{Open Source Versions of Qt}.
+    The QtScript module is part of the \l{Qt Full Framework Edition} and the
+    \l{Open Source Versions of Qt}.
 */
 
 /*!
@@ -370,59 +370,59 @@
 */
 
 /*!
-	\module QtSvg
-	\title QtSvg Module
-	\since 4.1
-	\contentspage All Qt Modules
-	\previouspage QtSql
-	\nextpage QtWebKit
-	\ingroup modules
+    \module QtSvg
+    \title QtSvg Module
+    \since 4.1
+    \contentspage All Qt Modules
+    \previouspage QtSql
+    \nextpage QtWebKit
+    \ingroup modules
 
-	\brief The QtSvg module provides classes for displaying the contents of SVG
-	files.
+    \brief The QtSvg module provides classes for displaying the contents of SVG
+    files.
 
-	To include the definitions of the module's classes, use the
-	following directive:
+    To include the definitions of the module's classes, use the
+    following directive:
 
-	\snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 0
+    \snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 0
 
-	To link against the module, add this line to your \l qmake \c
-	.pro file:
+    To link against the module, add this line to your \l qmake \c
+    .pro file:
 
-	\snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 1
+    \snippet doc/src/snippets/code/doc_src_qtsvg.qdoc 1
 
-	The QtSvg module is part of the \l{Qt Full Framework Edition} and the
-	\l{Open Source Versions of Qt}.
+    The QtSvg module is part of the \l{Qt Full Framework Edition} and the
+    \l{Open Source Versions of Qt}.
 
-	\section1 License Information
+    \section1 License Information
 
-	Some code for arc handling in this module is derived from code with
-	the following license:
+    Some code for arc handling in this module is derived from code with
+    the following license:
 
-	\legalese
-	Copyright  2002 USC/Information Sciences Institute
+    \legalese
+    Copyright  2002 USC/Information Sciences Institute
 
-	Permission to use, copy, modify, distribute, and sell this software
-	and its documentation for any purpose is hereby granted without
-	fee, provided that the above copyright notice appear in all copies
-	and that both that copyright notice and this permission notice
-	appear in supporting documentation, and that the name of
-	Information Sciences Institute not be used in advertising or
-	publicity pertaining to distribution of the software without
-	specific, written prior permission.  Information Sciences Institute
-	makes no representations about the suitability of this software for
-	any purpose.  It is provided "as is" without express or implied
-	warranty.
+    Permission to use, copy, modify, distribute, and sell this software
+    and its documentation for any purpose is hereby granted without
+    fee, provided that the above copyright notice appear in all copies
+    and that both that copyright notice and this permission notice
+    appear in supporting documentation, and that the name of
+    Information Sciences Institute not be used in advertising or
+    publicity pertaining to distribution of the software without
+    specific, written prior permission.  Information Sciences Institute
+    makes no representations about the suitability of this software for
+    any purpose.  It is provided "as is" without express or implied
+    warranty.
 
-	INFORMATION SCIENCES INSTITUTE DISCLAIMS ALL WARRANTIES WITH REGARD
-	TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
-	MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL INFORMATION SCIENCES
-	INSTITUTE BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
-	DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA
-	OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
-	TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-	PERFORMANCE OF THIS SOFTWARE.
-	\endlegalese
+    INFORMATION SCIENCES INSTITUTE DISCLAIMS ALL WARRANTIES WITH REGARD
+    TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF
+    MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL INFORMATION SCIENCES
+    INSTITUTE BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL
+    DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA
+    OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+    TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    \endlegalese
 */
 
 /*!
@@ -999,14 +999,4 @@
     CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
     ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
     \endlegalese
-*/
-
-/*!
-    \page qtassistant.html
-    \title QtAssistant
-
-    This module is no longer needed. Use the QtHelp module to integrate documentation
-    into your application.
-
-    \sa {QtHelp}
 */
