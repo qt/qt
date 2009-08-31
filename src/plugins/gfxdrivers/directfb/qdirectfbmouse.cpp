@@ -49,6 +49,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
+QT_BEGIN_NAMESPACE
+
 class QDirectFBMouseHandlerPrivate : public QObject
 {
     Q_OBJECT
@@ -269,5 +271,8 @@ void QDirectFBMouseHandler::resume()
     d->setEnabled(true);
 }
 
+QT_END_NAMESPACE
+
 #include "qdirectfbmouse.moc"
+
 

@@ -45,6 +45,8 @@
 #include "qdirectfbpaintdevice.h"
 #include "qdirectfbpaintengine.h"
 
+QT_BEGIN_NAMESPACE
+
 QDirectFBPaintDevice::QDirectFBPaintDevice(QDirectFBScreen *scr)
     : QCustomRasterPaintDevice(0), dfbSurface(0), lockedImage(0), screen(scr),
       bpl(-1), lockFlgs(DFBSurfaceLockFlags(0)), mem(0), engine(0),
@@ -168,6 +170,8 @@ QPaintEngine *QDirectFBPaintDevice::paintEngine() const
 {
     return engine;
 }
+
+QT_END_NAMESPACE
 
 #endif
 

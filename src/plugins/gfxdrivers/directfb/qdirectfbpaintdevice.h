@@ -48,6 +48,8 @@
 
 QT_BEGIN_HEADER
 
+QT_BEGIN_NAMESPACE
+
 QT_MODULE(Gui)
 
 // Inherited by both window surface and pixmap
@@ -93,6 +95,8 @@ protected:
 private:
     Q_DISABLE_COPY(QDirectFBPaintDevice);
 };
+
+QT_END_NAMESPACE
 
 QT_END_HEADER
 

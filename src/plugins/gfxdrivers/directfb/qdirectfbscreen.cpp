@@ -54,6 +54,8 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qrect.h>
 
+QT_BEGIN_NAMESPACE
+
 class QDirectFBScreenPrivate : public QObject, public QWSGraphicsSystem
 {
     Q_OBJECT
@@ -93,8 +95,6 @@ public:
     QColor backgroundColor;
     QDirectFBScreen *q;
 };
-
-#include "qdirectfbscreen.moc"
 
 QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *qptr)
     : QWSGraphicsSystem(qptr), dfb(0), flipFlags(DSFLIP_NONE),
@@ -1561,4 +1561,9 @@ IDirectFBSurface *QDirectFBScreen::subSurfaceForWidget(const QWidget *widget, co
     }
     return subSurface;
 }
+
+QT_END_NAMESPACE
+
+#include "qdirectfbscreen.moc"
+
 

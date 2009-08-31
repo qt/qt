@@ -56,6 +56,8 @@
 
 QT_BEGIN_HEADER
 
+QT_BEGIN_NAMESPACE
+
 QT_MODULE(Gui)
 
 class QDirectFBWindowSurface : public QWSWindowSurface, public QDirectFBPaintDevice
@@ -109,6 +111,8 @@ private:
     QTime timer;
 #endif
 };
+
+QT_END_NAMESPACE
 
 QT_END_HEADER
 

@@ -48,6 +48,8 @@
 #include <QtCore/qfile.h>
 #include <directfb.h>
 
+QT_BEGIN_NAMESPACE
+
 static int global_ser_no = 0;
 
 QDirectFBPixmapData::QDirectFBPixmapData(QDirectFBScreen *screen, PixelType pixelType)
@@ -573,4 +575,7 @@ void QDirectFBPixmapData::invalidate()
     is_null = true;
     imageFormat = QImage::Format_Invalid;
 }
+
+QT_END_NAMESPACE
+
 

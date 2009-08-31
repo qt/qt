@@ -47,6 +47,8 @@
 
 QT_BEGIN_HEADER
 
+QT_BEGIN_NAMESPACE
+
 QT_MODULE(Gui)
 
 class QDirectFBPaintEnginePrivate;
@@ -106,6 +108,8 @@ public:
 
     static void initImageCache(int size);
 };
+
+QT_END_NAMESPACE
 
 QT_END_HEADER
 

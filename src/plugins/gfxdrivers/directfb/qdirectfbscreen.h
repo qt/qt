@@ -48,6 +48,8 @@
 
 QT_BEGIN_HEADER
 
+QT_BEGIN_NAMESPACE
+
 QT_MODULE(Gui)
 
 #if !defined QT_NO_DIRECTFB_LAYER && !defined QT_DIRECTFB_LAYER
@@ -268,6 +270,8 @@ inline bool QDirectFBScreen::hasAlphaChannel(IDirectFBSurface *surface)
     surface->GetPixelFormat(surface, &format);
     return QDirectFBScreen::hasAlphaChannel(format);
 }
+
+QT_END_NAMESPACE
 
 QT_END_HEADER
 

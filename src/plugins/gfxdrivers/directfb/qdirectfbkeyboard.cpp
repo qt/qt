@@ -53,6 +53,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
+QT_BEGIN_NAMESPACE
+
 class KeyMap : public QHash<DFBInputDeviceKeySymbol, Qt::Key>
 {
 public:
@@ -428,6 +430,8 @@ KeyMap::KeyMap()
     insert(DIKS_CURLY_BRACKET_RIGHT   , Qt::Key_BraceRight);
     insert(DIKS_TILDE                 , Qt::Key_AsciiTilde);
 }
+
+QT_END_NAMESPACE
 
 #include "qdirectfbkeyboard.moc"
 
