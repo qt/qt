@@ -13,7 +13,7 @@ sub Usage() {
     print("If no capabilities are given, the binaries will be given the\n");
     print("capabilities supported by self-signed certificates.\n");
     print("\nUsage: patch_capabilities.pl pkg_filename [target-platform] [capability list]\n");
-    print("    If template .pkg file is given, next agrument must be 'target-platform'.\n");    
+    print("    If template .pkg file is given, next agrument must be 'target-platform'.\n");
     print("\nE.g. patch_capabilities.pl myapp_template.pkg release-armv5 \"All -TCB\"\n");
     exit();
 }
@@ -27,15 +27,15 @@ if (@ARGV)
     my $pkgFileName = shift(@ARGV);
 
     # Check if using template .pkg and do preprocessing if needed
-    if (($pkgFileName =~ m|_template\.pkg$|i) && -r($pkgFileName)) 
+    if (($pkgFileName =~ m|_template\.pkg$|i) && -r($pkgFileName))
     {
         my $target;
-        unless ($target = shift(@ARGV)) 
+        unless ($target = shift(@ARGV))
         {
             Usage();
         }
-        
-        system ("createpackage.bat -p ".$pkgFileName." ".$target);   
+
+        system ("createpackage.bat -p ".$pkgFileName." ".$target);
         $pkgFileName =~ s/_template\.pkg/_${target}\.pkg/;
     }
 
