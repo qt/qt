@@ -7,6 +7,17 @@
 #
 #######################################################################
 
+sub Usage() {
+    print("This script can be used to set capabilities of all binaries\n");
+    print("specified for deployment in a .pkg file.\n");
+    print("If no capabilities are given, the binaries will be given the\n");
+    print("capabilities supported by self-signed certificates.\n");
+    print("\nUsage: patch_capabilities.pl pkg_filename [target-platform] [capability list]\n");
+    print("    If template .pkg file is given, next agrument must be 'target-platform'.\n");    
+    print("\nE.g. patch_capabilities.pl myapp_template.pkg release-armv5 \"All -TCB\"\n");
+    exit();
+}
+
 my @capabilitiesToSet = ("LocalServices", "NetworkServices", "ReadUserData", "UserEnvironment", "WriteUserData");
 
 # If arguments were given to the script,
@@ -14,6 +25,19 @@ if (@ARGV)
 {
     # Parse the first given script argument as a ".pkg" file name.
     my $pkgFileName = shift(@ARGV);
+
+    # Check if using template .pkg and do preprocessing if needed
+    if (($pkgFileName =~ m|_template\.pkg$|i) && -r($pkgFileName)) 
+    {
+        my $target;
+        unless ($target = shift(@ARGV)) 
+        {
+            Usage();
+        }
+        
+        system ("createpackage.bat -p ".$pkgFileName." ".$target);   
+        $pkgFileName =~ s/_template\.pkg/_${target}\.pkg/;
+    }
 
     # If the specified ".pkg" file exists (and can be read),
     if (($pkgFileName =~ m|\.pkg$|i) && -r($pkgFileName))
@@ -98,10 +122,5 @@ if (@ARGV)
 }
 else
 {
-    print("This script can be used to set capabilities of all binaries\n");
-    print("specified for deployment in a .pkg file.\n");
-    print("If no capabilities are given, the binaries will be given the\n");
-    print("capabilities supported by self-signed certificates.\n");
-    print("\nUsage: patch_capabilities.pl pkg_filename [capability list]\n");
-    print("\nE.g. patch_capabilities.pl myapp_armv5_urel.pkg \"All -TCB\"\n");
+    Usage();
 }

@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1607,7 +1607,13 @@ Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
     would mirror the image and automatically generate mipmaps. This
     option helps preserve this default behavior.
 
-    \omitvalue MemoryManagedBindOption
+    \omitvalue CanFlipNativePixmapBindOption Used by x11 from pixmap to choose
+    wether or not it can bind the pixmap upside down or not.
+
+    \omitvalue MemoryManagedBindOption Used by paint engines to
+    indicate that the pixmap should be memory managed along side with
+    the pixmap/image that it stems from, e.g. installing destruction
+    hooks in them.
 
     \omitvalue InternalBindOption
 */
@@ -1666,7 +1672,6 @@ QGLContext::QGLContext(const QGLFormat &format)
 
 QGLContext::~QGLContext()
 {
-    Q_D(QGLContext);
     // remove any textures cached in this context
     QGLTextureCache::instance()->removeContextTextures(this);
     QGLTextureCache::deleteIfEmpty(); // ### thread safety
@@ -4073,6 +4078,10 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     bool auto_swap = autoBufferSwap();
 
     QPaintEngine *engine = paintEngine();
+#ifndef QT_OPENGL_ES
+    if (engine->type() == QPaintEngine::OpenGL2)
+        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(true);
+#endif
     QPainter *p;
     bool reuse_painter = false;
     if (engine->isActive()) {
@@ -4098,6 +4107,13 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
         d->glcx->d_func()->clear_on_painter_begin = false;
+        if (engine->type() == QPaintEngine::OpenGL2) {
+            qt_save_gl_state();
+#ifndef QT_OPENGL_ES_2
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
+#endif
+        }
         p = new QPainter(this);
     }
 
@@ -4121,7 +4137,13 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
         delete p;
         setAutoBufferSwap(auto_swap);
         d->glcx->d_func()->clear_on_painter_begin = true;
+        if (engine->type() == QPaintEngine::OpenGL2)
+            qt_restore_gl_state();
     }
+#ifndef QT_OPENGL_ES
+    if (engine->type() == QPaintEngine::OpenGL2)
+        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(false);
+#endif
 }
 
 /*! \overload
@@ -4154,6 +4176,10 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
     win_y = height - win_y; // y is inverted
 
     QPaintEngine *engine = paintEngine();
+#ifndef QT_OPENGL_ES
+    if (engine->type() == QPaintEngine::OpenGL2)
+        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(true);
+#endif
     QPainter *p;
     bool reuse_painter = false;
 #ifndef QT_OPENGL_ES
@@ -4172,6 +4198,8 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
         d->glcx->d_func()->clear_on_painter_begin = false;
+        if (engine->type() == QPaintEngine::OpenGL2)
+            qt_save_gl_state();
         p = new QPainter(this);
     }
 
@@ -4210,9 +4238,15 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
     } else {
         p->end();
         delete p;
+        if (engine->type() == QPaintEngine::OpenGL2)
+            qt_restore_gl_state();
         setAutoBufferSwap(auto_swap);
         d->glcx->d_func()->clear_on_painter_begin = true;
     }
+#ifndef QT_OPENGL_ES
+    if (engine->type() == QPaintEngine::OpenGL2)
+        static_cast<QGL2PaintEngineEx *>(engine)->setRenderTextActive(false);
+#endif
 }
 
 QGLFormat QGLWidget::format() const
@@ -4443,10 +4477,10 @@ QPaintEngine *QGLWidget::paintEngine() const
 #elif defined(QT_OPENGL_ES_2)
     return qt_gl_2_engine();
 #else
-    if (!qt_gl_preferGL2Engine())
-        return qt_gl_engine();
-    else
+    if (qt_gl_preferGL2Engine())
         return qt_gl_2_engine();
+    else
+        return qt_gl_engine();
 #endif
 }
 

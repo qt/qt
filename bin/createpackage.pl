@@ -23,14 +23,15 @@ sub Usage() {
     print "Usage: createpackage.pl [-i] templatepkg target-platform [certificate key [passphrase]]\n";
     print "\n";
     print "Where parameters are as follows:\n";
-    print "     [-i|install] = Install the package right away using PC suite\n";
-    print "     templatepkg  = Name of .pkg file template\n";
-    print "     target       = Either debug or release\n";    
-    print "     platform     = One of the supported platform\n";
-    print "                    winscw | gcce | armv5 | armv6 | armv7\n";
-    print "     certificate  = The certificate file used for signing\n";
-    print "     key          = The certificate's private key file\n";
-    print "     passphrase   = The certificate's private key file's passphrase\n";
+    print "     [-i|install]    = Install the package right away using PC suite\n";
+    print "     [-p|preprocess] = Only preprocess the template .pkg file.\n";    
+    print "     templatepkg     = Name of .pkg file template\n";
+    print "     target          = Either debug or release\n";    
+    print "     platform        = One of the supported platform\n";
+    print "                       winscw | gcce | armv5 | armv6 | armv7\n";
+    print "     certificate     = The certificate file used for signing\n";
+    print "     key             = The certificate's private key file\n";
+    print "     passphrase      = The certificate's private key file's passphrase\n";
     print "\n";
     print "For example:\n";    
     print "     createpackage.pl fluidlauncher_template.pkg release-armv5\n";        
@@ -44,13 +45,14 @@ sub Usage() {
 
 # Read given options
 my $install = "";
-unless (GetOptions('i|install' => \$install)){
+my $preprocessonly = "";
+unless (GetOptions('i|install' => \$install, 'p|preprocess' => \$preprocessonly)){
     Usage();
 }
 
 # Read params to variables
 my $templatepkg = $ARGV[0];
-my $targetplatform = uc $ARGV[1];
+my $targetplatform = lc $ARGV[1];
 
 my @tmpvalues = split('-', $targetplatform);
 my $target = $tmpvalues[0];
@@ -135,6 +137,10 @@ s/\$\(TARGET\)/$target/gm;
 open( OUTPUT, ">$pkgoutput" ) or die "Error '$pkgoutput' $!\n";
 print OUTPUT $_;
 close OUTPUT;
+
+if ($preprocessonly) {
+    exit;
+}
 
 # Create and sign SIS
 system ("makesis $pkgoutput $unsigned_sis_name");
