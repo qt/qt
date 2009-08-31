@@ -59,6 +59,8 @@ public:
     ~tst_QAtomicInt();
 
 private slots:
+    void warningFree();
+
     // QAtomicInt members
     void constructor_data();
     void constructor();
@@ -101,6 +103,9 @@ private slots:
     void testAndSet_loop();
     void fetchAndAdd_loop();
     void fetchAndAdd_threadedLoop();
+
+private:
+    static void warningFreeHelper();
 };
 
 tst_QAtomicInt::tst_QAtomicInt()
@@ -108,6 +113,45 @@ tst_QAtomicInt::tst_QAtomicInt()
 
 tst_QAtomicInt::~tst_QAtomicInt()
 { }
+
+void tst_QAtomicInt::warningFreeHelper()
+{
+    Q_ASSERT(false);
+    // The code below is bogus, and shouldn't be run. We're looking for warnings, only.
+
+    QBasicAtomicInt i = Q_BASIC_ATOMIC_INITIALIZER(0);
+
+    int expectedValue = 0;
+    int newValue = 0;
+    int valueToAdd = 0;
+
+    i.ref();
+    i.deref();
+
+    i.testAndSetRelaxed(expectedValue, newValue);
+    i.testAndSetAcquire(expectedValue, newValue);
+    i.testAndSetRelease(expectedValue, newValue);
+    i.testAndSetOrdered(expectedValue, newValue);
+
+    i.fetchAndStoreRelaxed(newValue);
+    i.fetchAndStoreAcquire(newValue);
+    i.fetchAndStoreRelease(newValue);
+    i.fetchAndStoreOrdered(newValue);
+
+    i.fetchAndAddRelaxed(valueToAdd);
+    i.fetchAndAddAcquire(valueToAdd);
+    i.fetchAndAddRelease(valueToAdd);
+    i.fetchAndAddOrdered(valueToAdd);
+}
+
+void tst_QAtomicInt::warningFree()
+{
+    // This is a compile time check for warnings.
+    // No need for actual work here.
+
+    void (*foo)() = &warningFreeHelper;
+    (void)foo;
+}
 
 void tst_QAtomicInt::constructor_data()
 {
