@@ -166,7 +166,7 @@ class QFxWebViewPrivate : public QFxPaintedItemPrivate
 
 public:
     QFxWebViewPrivate()
-      : QFxPaintedItemPrivate(), page(0), idealwidth(0), idealheight(0),
+      : QFxPaintedItemPrivate(), page(0), preferredwidth(0), pagewidth(0),
             progress(1.0), status(QFxWebView::Null), pending(PendingNone),
             newWindowComponent(0), newWindowParent(0),
             windowObjects(this)
@@ -176,8 +176,8 @@ public:
     QUrl url; // page url might be different if it has not loaded yet
     QWebPage *page;
 
-    int idealwidth;
-    int idealheight;
+    int preferredwidth;
+    int pagewidth;
     qreal progress;
     QFxWebView::Status status;
     QString statusText;
@@ -213,14 +213,10 @@ public:
 
     If the width and height of the item is not set, they will
     dynamically adjust to a size appropriate for the content.
-    This width may be large (eg. 980) for typical online web pages.
+    This width may be large for typical online web pages.
 
     If the preferredWidth is set, the width will be this amount or larger,
     usually laying out the web content to fit the preferredWidth.
-
-    If the preferredHeight is set, the height will be this amount or larger.
-    Due to WebKit limitations, the height may be more than necessary
-    if the preferredHeight is changed after the content is loaded.
 
     \qml
     WebView {
@@ -327,6 +323,7 @@ qreal QFxWebView::progress() const
 void QFxWebView::doLoadStarted()
 {
     Q_D(QFxWebView);
+
     if (!d->url.isEmpty()) {
         d->status = Loading;
         emit statusChanged(d->status);
@@ -340,13 +337,27 @@ void QFxWebView::doLoadProgress(int p)
     if (d->progress == p/100.0)
         return;
     d->progress = p/100.0;
-    expandToWebPage();
     emit progressChanged();
 }
 
 void QFxWebView::pageUrlChanged()
 {
     Q_D(QFxWebView);
+
+    // Reset zooming to full
+    qreal zf = 1.0;
+    if (d->preferredwidth) {
+        if (d->pagewidth)
+            zf = qreal(d->preferredwidth)/d->pagewidth;
+        page()->mainFrame()->setZoomFactor(zf);
+        page()->setViewportSize(QSize(d->preferredwidth,-1));
+    } else {
+        page()->mainFrame()->setZoomFactor(zf);
+        page()->setViewportSize(QSize(-1,-1));
+    }
+    emit zooming(0,0);
+    expandToWebPage();
+
     if ((d->url.isEmpty() && page()->mainFrame()->url() != QUrl(QLatin1String("about:blank")))
         || d->url != page()->mainFrame()->url())
     {
@@ -360,6 +371,7 @@ void QFxWebView::pageUrlChanged()
 void QFxWebView::doLoadFinished(bool ok)
 {
     Q_D(QFxWebView);
+
     if (title().isEmpty())
         pageUrlChanged(); // XXX bug 232556 - pages with no title never get urlChanged()
 
@@ -397,10 +409,15 @@ void QFxWebView::setUrl(const QUrl &url)
 
     if (isComponentComplete()) {
         d->url = url;
-        page()->setViewportSize(QSize(
-            d->idealwidth>0 ? d->idealwidth : width(),
-            d->idealheight>0 ? d->idealheight : height()));
-
+        qreal zf = 1.0;
+        if (d->preferredwidth) {
+            if (d->pagewidth)
+                zf = qreal(d->preferredwidth)/d->pagewidth;
+            page()->setViewportSize(QSize(d->preferredwidth,-1));
+        } else {
+            page()->setViewportSize(QSize(-1,-1));
+        }
+        page()->mainFrame()->setZoomFactor(zf);
         QUrl seturl = url;
         if (seturl.isEmpty())
             seturl = QUrl(QLatin1String("about:blank"));
@@ -423,35 +440,41 @@ void QFxWebView::setUrl(const QUrl &url)
 int QFxWebView::preferredWidth() const
 {
     Q_D(const QFxWebView);
-    return d->idealwidth;
+    return d->preferredwidth;
 }
 
 void QFxWebView::setPreferredWidth(int iw)
 {
     Q_D(QFxWebView);
-    if (d->idealwidth == iw) return;
-    d->idealwidth = iw;
+    if (d->preferredwidth == iw) return;
+    if (d->pagewidth) {
+        if (d->preferredwidth) {
+            setZoomFactor(zoomFactor()*iw/d->preferredwidth);
+        } else {
+            setZoomFactor(qreal(iw)/d->pagewidth);
+        }
+    }
+    d->preferredwidth = iw;
     expandToWebPage();
     emit preferredWidthChanged();
 }
 
 /*!
-    \qmlproperty int WebView::preferredHeight
-    This property holds the ideal height for displaying the current URL.
+    \qmlproperty int WebView::webPageWidth
+    This property holds the page width suggested to the web engine.
 */
-int QFxWebView::preferredHeight() const
+int QFxWebView::webPageWidth() const
 {
     Q_D(const QFxWebView);
-    return d->idealheight;
+    return d->pagewidth;
 }
 
-void QFxWebView::setPreferredHeight(int ih)
+void QFxWebView::setWebPageWidth(int pw)
 {
     Q_D(QFxWebView);
-    if (d->idealheight == ih) return;
-    d->idealheight = ih;
+    if (d->pagewidth == pw) return;
+    d->pagewidth = pw;
     expandToWebPage();
-    emit preferredHeightChanged();
 }
 
 /*!
@@ -470,17 +493,21 @@ void QFxWebView::focusChanged(bool hasFocus)
     QFxItem::focusChanged(hasFocus);
 }
 
+void QFxWebView::contentsSizeChanged(const QSize& sz)
+{
+    expandToWebPage();
+}
+
 void QFxWebView::expandToWebPage()
 {
     Q_D(QFxWebView);
     QSize cs = page()->mainFrame()->contentsSize();
-    if (cs.width() < d->idealwidth)
-        cs.setWidth(d->idealwidth);
-    if (cs.height() < d->idealheight)
-        cs.setHeight(d->idealheight);
-    if (widthValid() && cs.width() < width())
+    qreal zoom = zoomFactor();
+    if (cs.width() < d->preferredwidth*zoom)
+        cs.setWidth(d->preferredwidth*zoom);
+    if (widthValid())
         cs.setWidth(width());
-    if (heightValid() && cs.height() < height())
+    if (heightValid())
         cs.setHeight(height());
     if (cs != page()->viewportSize()) {
         page()->setViewportSize(cs);
@@ -659,7 +686,7 @@ static QMouseEvent *sceneHoverMoveEventToMouseEvent(QGraphicsSceneHoverEvent *e)
 /*!
     \qmlsignal WebView::onDoubleClick(clickx,clicky)
 
-    The WebView does not pass double-click events to the engine, but rather
+    The WebView does not pass double-click events to the web engine, but rather
     emits this signals.
 */
 
@@ -668,6 +695,21 @@ void QFxWebView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     QMouseEvent *me = sceneMouseEventToMouseEvent(event);
     emit doubleClick(me->x(),me->y());
     delete me;
+}
+
+void QFxWebView::heuristicZoom(int clickX, int clickY)
+{
+    Q_D(QFxWebView);
+    qreal ozf = zoomFactor();
+    QRect showarea = elementAreaAt(clickX, clickY, 1, 1);
+    qreal z = qreal(preferredWidth())*ozf/showarea.width()*.95;
+    if ((z/ozf > 0.99 && z/ozf <1.01) || z < qreal(d->preferredwidth)/d->pagewidth) {
+        // zoom out
+        z = qreal(d->preferredwidth)/d->pagewidth;
+    }
+    setZoomFactor(z);
+    QRectF r(showarea.left()/ozf*z, showarea.top()/ozf*z, showarea.width()/ozf*z, showarea.height()/ozf*z);
+    emit zooming(r.x()+r.width()/2, r.y()+r.height()/2);
 }
 
 void QFxWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -865,13 +907,10 @@ void QFxWebView::setZoomFactor(qreal factor)
     if (factor == page()->mainFrame()->zoomFactor())
         return;
 
-    //reset viewport size so we resize correctly
-    page()->setViewportSize(QSize(
-        d->idealwidth>0 ? d->idealwidth : -1,
-        d->idealheight>0 ? d->idealheight : -1));
-
     page()->mainFrame()->setZoomFactor(factor);
+    page()->setViewportSize(QSize(d->pagewidth*factor,-1));
     expandToWebPage();
+
     emit zoomFactorChanged();
 }
 
@@ -993,14 +1032,14 @@ void QFxWebView::setPage(QWebPage *page)
     }
     d->page = page;
     d->page->setViewportSize(QSize(
-        d->idealwidth>0 ? d->idealwidth : -1,
-        d->idealheight>0 ? d->idealheight : -1));
+        d->preferredwidth>0 ? d->preferredwidth : -1, -1));
     d->page->mainFrame()->setScrollBarPolicy(Qt::Horizontal,Qt::ScrollBarAlwaysOff);
     d->page->mainFrame()->setScrollBarPolicy(Qt::Vertical,Qt::ScrollBarAlwaysOff);
     connect(d->page,SIGNAL(repaintRequested(QRect)),this,SLOT(paintPage(QRect)));
     connect(d->page->mainFrame(),SIGNAL(urlChanged(QUrl)),this,SLOT(pageUrlChanged()));
     connect(d->page->mainFrame(), SIGNAL(titleChanged(QString)), this, SIGNAL(titleChanged(QString)));
     connect(d->page->mainFrame(), SIGNAL(iconChanged()), this, SIGNAL(iconChanged()));
+    connect(d->page->mainFrame(), SIGNAL(contentsSizeChanged(QSize)), this, SLOT(contentsSizeChanged(QSize)));
 
     connect(d->page,SIGNAL(loadStarted()),this,SLOT(doLoadStarted()));
     connect(d->page,SIGNAL(loadProgress(int)),this,SLOT(doLoadProgress(int)));
@@ -1065,8 +1104,7 @@ void QFxWebView::setHtml(const QString &html, const QUrl &baseUrl)
 {
     Q_D(QFxWebView);
     page()->setViewportSize(QSize(
-        d->idealwidth>0 ? d->idealwidth : width(),
-        d->idealheight>0 ? d->idealheight : height()));
+        d->preferredwidth>0 ? d->preferredwidth : width(), height()));
     if (isComponentComplete())
         page()->mainFrame()->setHtml(html, baseUrl);
     else {
@@ -1080,8 +1118,7 @@ void QFxWebView::setContent(const QByteArray &data, const QString &mimeType, con
 {
     Q_D(QFxWebView);
     page()->setViewportSize(QSize(
-        d->idealwidth>0 ? d->idealwidth : width(),
-        d->idealheight>0 ? d->idealheight : height()));
+        d->preferredwidth>0 ? d->preferredwidth : width(), height()));
 
     if (isComponentComplete())
         page()->mainFrame()->setContent(data,mimeType,qmlContext(this)->resolvedUrl(baseUrl));
@@ -1209,8 +1246,6 @@ QRect QFxWebView::elementAreaAt(int x, int y, int maxwidth, int maxheight) const
     }
     return element.geometry();
 }
-
-
 
 /*!
     \internal

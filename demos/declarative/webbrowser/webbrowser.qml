@@ -13,21 +13,6 @@ Item {
     width: 640
     height: 480
 
-    Script {
-        function zoomOut() {
-            WebBrowser.state = "ZoomedOut";
-        }
-        function toggleZoom(x,y) {
-            if(WebBrowser.state == "ZoomedOut") {
-                Flick.centerX = x
-                Flick.centerY = y
-                WebBrowser.state = "Normal";
-            } else {
-                zoomOut();
-            }
-        }
-    }
-
     Item {
         id: WebPanel
         anchors.fill: parent
@@ -183,9 +168,6 @@ Item {
             anchors.left: parent.left
             anchors.right: parent.right
 
-            property real centerX : 0
-            property real centerY : 0
-
             WebView {
                 id: MyWebView
                 pixelCacheSize: 4000000
@@ -213,13 +195,14 @@ Item {
                 focus: true
 
                 preferredWidth: Flick.width
-                preferredHeight: Flick.height/scale
-                scale: (width > 0) ? Flick.width/width*zoomedOut+(1-zoomedOut) : 1
+                webPageWidth: 980
 
                 onUrlChanged: { if (url != null) { WebBrowser.urlString = url.toString(); } }
-                onDoubleClick: { toggleZoom(clickX,clickY) }
+                onDoubleClick: { heuristicZoom(clickX,clickY) }
 
-                property real zoomedOut : 1
+                onZooming: { Flick.viewportX=Math.min(MyWebView.width-Flick.width,Math.max(0,centerX-Flick.width/2));
+                             Flick.viewportY=Math.max(0,Math.min(MyWebView.height-Flick.height,centerY-Flick.height/2)) }
+
             }
             Rectangle {
                 id: WebViewTint
@@ -347,46 +330,4 @@ Item {
             }
         }
     }
-    states: [
-        State {
-            name: "Normal"
-            PropertyChanges { target: MyWebView; zoomedOut: 0 }
-            PropertyChanges { target: Flick; explicit: true; viewportX: Math.min(MyWebView.width-Flick.width,Math.max(0,Flick.centerX-Flick.width/2)) }
-            PropertyChanges { target: Flick; explicit: true; viewportY: Math.min(MyWebView.height-Flick.height,Math.max(0,Flick.centerY-Flick.height/2)) }
-        },
-        State {
-            name: "ZoomedOut"
-            PropertyChanges { target: MyWebView; zoomedOut: 1 }
-        }
-    ]
-    transitions: [
-        Transition {
-            SequentialAnimation {
-                PropertyAction {
-                    target: MyWebView
-                    property: "smooth"
-                    value: false
-                }
-                ParallelAnimation {
-                    NumberAnimation {
-                        target: MyWebView
-                        properties: "zoomedOut"
-                        easing: "easeInOutQuad"
-                        duration: 200
-                    }
-                    NumberAnimation {
-                        target: Flick
-                        properties: "viewportX,viewportY"
-                        easing: "easeInOutQuad"
-                        duration: 200
-                    }
-                }
-                PropertyAction {
-                    target: MyWebView
-                    property: "smooth"
-                    value: !Flick.moving
-                }
-            }
-        }
-    ]
 }
