@@ -823,31 +823,28 @@ static void parseBrush(QSvgNode *node,
                        const QSvgAttributes &attributes,
                        QSvgHandler *handler)
 {
-    QString value = attributes.fill.toString();
-    QString fillRule = attributes.fillRule.toString();
-    QString opacity = attributes.fillOpacity.toString();
-    QString myId = someId(attributes);
-
-    if (!value.isEmpty() || !fillRule.isEmpty() || !opacity.isEmpty()) {
+    if (!attributes.fill.isEmpty() || !attributes.fillRule.isEmpty() || !attributes.fillOpacity.isEmpty()) {
         QSvgFillStyle *prop = new QSvgFillStyle;
 
         //fill-rule attribute handling
-        if (!fillRule.isEmpty() && fillRule != QT_INHERIT) {
-            if (fillRule == QLatin1String("evenodd"))
+        if (!attributes.fillRule.isEmpty() && attributes.fillRule != QT_INHERIT) {
+            if (attributes.fillRule == QLatin1String("evenodd"))
                 prop->setFillRule(Qt::OddEvenFill);
-            else if (fillRule == QLatin1String("nonzero"))
+            else if (attributes.fillRule == QLatin1String("nonzero"))
                 prop->setFillRule(Qt::WindingFill);
         }
 
         //fill-opacity atttribute handling
-        if (!opacity.isEmpty() && opacity != QT_INHERIT) {
-            prop->setFillOpacity(qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity))));
+        if (!attributes.fillOpacity.isEmpty() && attributes.fillOpacity != QT_INHERIT) {
+            prop->setFillOpacity(qMin(qreal(1.0), qMax(qreal(0.0), toDouble(attributes.fillOpacity))));
         }
 
         //fill attribute handling
-        if ((!value.isEmpty()) && (value != QT_INHERIT) ) {
-            if (value.startsWith(QLatin1String("url"))) {
-                value = value.remove(0, 3);
+        if ((!attributes.fill.isEmpty()) && (attributes.fill != QT_INHERIT) ) {
+            if (attributes.fill.length() > 3 &&
+                QStringRef(attributes.fill.string(), attributes.fill.position(), 3) == QLatin1String("url")) {
+                QStringRef urlRef(attributes.fill.string(), attributes.fill.position() + 3, attributes.fill.length() - 3);
+                QString value = urlRef.toString();
                 QSvgStyleProperty *style = styleFromUrl(node, value);
                 if (style) {
                     if (style->type() == QSvgStyleProperty::SOLID_COLOR || style->type() == QSvgStyleProperty::GRADIENT)
@@ -857,15 +854,15 @@ static void parseBrush(QSvgNode *node,
                     prop->setGradientId(id);
                     prop->setGradientResolved(false);
                 }
-            } else if (value != QLatin1String("none")) {
+            } else if (attributes.fill != QLatin1String("none")) {
                 QColor color;
-                if (resolveColor(value, color, handler))
+                if (resolveColor(attributes.fill.toString(), color, handler))
                     prop->setBrush(QBrush(color));
             } else {
                 prop->setBrush(QBrush(Qt::NoBrush));
             }
         }
-        node->appendStyleProperty(prop, myId);
+        node->appendStyleProperty(prop, someId(attributes));
     }
 }
 
