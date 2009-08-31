@@ -42,6 +42,8 @@
 #ifndef QDIRECTFBPIXMAP_H
 #define QDIRECTFBPIXMAP_H
 
+#include <qglobal.h>
+
 #ifndef QT_NO_QWS_DIRECTFB
 
 #include <QtGui/private/qpixmapdata_p.h>

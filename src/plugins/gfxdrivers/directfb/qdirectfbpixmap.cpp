@@ -41,6 +41,8 @@
 
 #include "qdirectfbpixmap.h"
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 #include "qdirectfbscreen.h"
 #include "qdirectfbpaintengine.h"
 
@@ -48,7 +50,6 @@
 #include <QtCore/qfile.h>
 #include <directfb.h>
 
-#ifndef QT_NO_QWS_DIRECTFB
 
 QT_BEGIN_NAMESPACE
 

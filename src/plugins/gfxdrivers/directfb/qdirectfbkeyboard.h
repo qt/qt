@@ -42,6 +42,7 @@
 #ifndef QDIRECTFBKEYBOARD_H
 #define QDIRECTFBKEYBOARD_H
 
+#include <qglobal.h>
 #include <QtGui/qkbd_qws.h>
 
 #ifndef QT_NO_QWS_DIRECTFB

@@ -41,6 +41,8 @@
 
 #include "qdirectfbkeyboard.h"
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 #include "qdirectfbscreen.h"
 #include <qobject.h>
 #include <qsocketnotifier.h>
@@ -50,8 +52,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
-
-#ifndef QT_NO_QWS_DIRECTFB
 
 QT_BEGIN_NAMESPACE
 

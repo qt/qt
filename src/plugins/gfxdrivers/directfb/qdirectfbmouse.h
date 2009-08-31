@@ -42,6 +42,7 @@
 #ifndef QDIRECTFBMOUSE_H
 #define QDIRECTFBMOUSE_H
 
+#include <qglobal.h>
 #include <QtGui/qmouse_qws.h>
 
 #ifndef QT_NO_QWS_DIRECTFB
