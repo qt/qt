@@ -57,10 +57,12 @@ Rectangle { id: Rect3; x: 150; ... }
 For performance reasons, you can only anchor an item to its siblings and direct parent. For example, the following anchor would be considered invalid and would produce a warning:
 
 \badcode
-Item { id: group1 }
+Item {
+    id: Group1
     Rectangle { id: Rect1; ... }
 }
-Item id: group2">
+Item {
+    id: Group2
     Rectangle { id: Rect2; anchors.left: Rect1.right; ... }    // invalid anchor!
 }
 \endcode
