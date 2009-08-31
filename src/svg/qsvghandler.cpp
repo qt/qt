@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -77,53 +77,6 @@ double qstrtod(const char *s00, char const **se, bool *ok);
 
 static bool parsePathDataFast(const QStringRef &data, QPainterPath &path);
 
-struct QSvgAttributes
-{
-    QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHandler *handler);
-
-    QStringRef value(const QLatin1String &name) const;
-    QStringRef value(const QString &namespaceUri, const QLatin1String &name) const;
-
-    QXmlStreamAttributes m_xmlAttributes;
-    QVector<QSvgCssAttribute> m_cssAttributes;
-};
-
-QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHandler *handler)
-    : m_xmlAttributes(xmlAttributes)
-{
-    QStringRef style = xmlAttributes.value(QLatin1String("style"));
-    if (!style.isEmpty())
-        handler->parseCSStoXMLAttrs(style.toString(), &m_cssAttributes);
-}
-
-QStringRef QSvgAttributes::value(const QLatin1String &name) const
-{
-    QStringRef v = m_xmlAttributes.value(name);
-    if (v.isEmpty()) {
-        for (int i = 0; i < m_cssAttributes.count(); ++i) {
-            if (m_cssAttributes.at(i).name == name) {
-                v = m_cssAttributes.at(i).value;
-                break;
-            }
-        }
-    }
-    return v;
-}
-
-QStringRef QSvgAttributes::value(const QString &namespaceUri, const QLatin1String &name) const
-{
-    QStringRef v = m_xmlAttributes.value(namespaceUri, name);
-    if (v.isEmpty()) {
-        for (int i = 0; i < m_cssAttributes.count(); ++i) {
-            if (m_cssAttributes.at(i).name == name) {
-                v = m_cssAttributes.at(i).value;
-                break;
-            }
-        }
-    }
-    return v;
-}
-
 static inline QString someId(const QXmlStreamAttributes &attributes)
 {
     QString id = attributes.value(QLatin1String("id")).toString();
@@ -131,10 +84,180 @@ static inline QString someId(const QXmlStreamAttributes &attributes)
         id = attributes.value(QLatin1String("xml:id")).toString();
     return id;
 }
+
+struct QSvgAttributes
+{
+    QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHandler *handler);
+
+    QString id;
+
+    QStringRef color;
+    QStringRef colorOpacity;
+    QStringRef fill;
+    QStringRef fillRule;
+    QStringRef fillOpacity;
+    QStringRef stroke;
+    QStringRef strokeDashArray;
+    QStringRef strokeDashOffset;
+    QStringRef strokeLineCap;
+    QStringRef strokeLineJoin;
+    QStringRef strokeMiterLimit;
+    QStringRef strokeOpacity;
+    QStringRef strokeWidth;
+    QStringRef vectorEffect;
+    QStringRef fontFamily;
+    QStringRef fontSize;
+    QStringRef fontStyle;
+    QStringRef fontWeight;
+    QStringRef fontVariant;
+    QStringRef textAnchor;
+    QStringRef transform;
+    QStringRef visibility;
+    QStringRef opacity;
+    QStringRef compOp;
+    QStringRef display;
+    QStringRef offset;
+    QStringRef stopColor;
+    QStringRef stopOpacity;
+
+    QVector<QSvgCssAttribute> m_cssAttributes;
+};
+
+QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHandler *handler)
+{
+    id = someId(xmlAttributes);
+    QStringRef style = xmlAttributes.value(QLatin1String("style"));
+    if (!style.isEmpty()) {
+        handler->parseCSStoXMLAttrs(style.toString(), &m_cssAttributes);
+        for (int j = 0; j < m_cssAttributes.count(); ++j) {
+            const QSvgCssAttribute &attribute = m_cssAttributes.at(j    );
+            QStringRef name = attribute.name;
+            QStringRef value = attribute.value;
+            if (name == QLatin1String("color"))
+                color = value;
+            if (name == QLatin1String("color-opacity"))
+                colorOpacity = value;
+            if (name == QLatin1String("fill"))
+                fill = value;
+            if (name == QLatin1String("fill-rule"))
+                fillRule = value;
+            if (name == QLatin1String("fill-opacity"))
+                fillOpacity = value;
+            if (name == QLatin1String("stroke"))
+                stroke = value;
+            if (name == QLatin1String("stroke-dasharray"))
+                strokeDashArray = value;
+            if (name == QLatin1String("stroke-dashoffset"))
+                strokeDashOffset = value;
+            if (name == QLatin1String("stroke-linecap"))
+                strokeLineCap = value;
+            if (name == QLatin1String("stroke-linejoin"))
+                strokeLineJoin = value;
+            if (name == QLatin1String("stroke-miterlimit"))
+                strokeMiterLimit = value;
+            if (name == QLatin1String("stroke-opacity"))
+                strokeOpacity = value;
+            if (name == QLatin1String("stroke-width"))
+                strokeWidth = value;
+            if (name == QLatin1String("vector-effect"))
+                vectorEffect = value;
+            if (name == QLatin1String("font-family"))
+                fontFamily = value;
+            if (name == QLatin1String("font-size"))
+                fontSize = value;
+            if (name == QLatin1String("font-style"))
+                fontStyle = value;
+            if (name == QLatin1String("font-weight"))
+                fontWeight = value;
+            if (name == QLatin1String("font-variant"))
+                fontVariant = value;
+            if (name == QLatin1String("text-anchor"))
+                textAnchor = value;
+            if (name == QLatin1String("transform"))
+                transform = value;
+            if (name == QLatin1String("visibility"))
+                visibility = value;
+            if (name == QLatin1String("opacity"))
+                opacity = value;
+            if (name == QLatin1String("comp-op"))
+                compOp = value;
+            if (name == QLatin1String("display"))
+                display = value;
+            if (name == QLatin1String("offset"))
+                offset = value;
+            if (name == QLatin1String("stop-color"))
+                stopColor = value;
+            if (name == QLatin1String("stop-opacity"))
+                stopOpacity = value;
+        }
+    }
+
+    for (int i = 0; i < xmlAttributes.count(); ++i) {
+        const QXmlStreamAttribute &attribute = xmlAttributes.at(i);
+        QStringRef name = attribute.qualifiedName();
+        QStringRef value = attribute.value();
+        if (name == QLatin1String("color"))
+            color = value;
+        if (name == QLatin1String("color-opacity"))
+            colorOpacity = value;
+        if (name == QLatin1String("fill"))
+            fill = value;
+        if (name == QLatin1String("fill-rule"))
+            fillRule = value;
+        if (name == QLatin1String("fill-opacity"))
+            fillOpacity = value;
+        if (name == QLatin1String("stroke"))
+            stroke = value;
+        if (name == QLatin1String("stroke-dasharray"))
+            strokeDashArray = value;
+        if (name == QLatin1String("stroke-dashoffset"))
+            strokeDashOffset = value;
+        if (name == QLatin1String("stroke-linecap"))
+            strokeLineCap = value;
+        if (name == QLatin1String("stroke-linejoin"))
+            strokeLineJoin = value;
+        if (name == QLatin1String("stroke-miterlimit"))
+            strokeMiterLimit = value;
+        if (name == QLatin1String("stroke-opacity"))
+            strokeOpacity = value;
+        if (name == QLatin1String("stroke-width"))
+            strokeWidth = value;
+        if (name == QLatin1String("vector-effect"))
+            vectorEffect = value;
+        if (name == QLatin1String("font-family"))
+            fontFamily = value;
+        if (name == QLatin1String("font-size"))
+            fontSize = value;
+        if (name == QLatin1String("font-style"))
+            fontStyle = value;
+        if (name == QLatin1String("font-weight"))
+            fontWeight = value;
+        if (name == QLatin1String("font-variant"))
+            fontVariant = value;
+        if (name == QLatin1String("text-anchor"))
+            textAnchor = value;
+        if (name == QLatin1String("transform"))
+            transform = value;
+        if (name == QLatin1String("visibility"))
+            visibility = value;
+        if (name == QLatin1String("opacity"))
+            opacity = value;
+        if (name == QLatin1String("comp-op"))
+            compOp = value;
+        if (name == QLatin1String("display"))
+            display = value;
+        if (name == QLatin1String("offset"))
+            offset = value;
+        if (name == QLatin1String("stop-color"))
+            stopColor = value;
+        if (name == QLatin1String("stop-opacity"))
+            stopOpacity = value;
+    }
+
+}
+
 static inline QString someId(const QSvgAttributes &attributes)
-{ return someId(attributes.m_xmlAttributes); }
-
-
+{ return attributes.id; }
 
 static const char * QSvgStyleSelector_nodeString[] = {
     "svg",
@@ -617,8 +740,8 @@ static void parseColor(QSvgNode *,
                        const QSvgAttributes &attributes,
                        QSvgHandler *handler)
 {
-    QString colorStr = attributes.value(QLatin1String("color")).toString();
-    QString opacity  = attributes.value(QLatin1String("color-opacity")).toString();
+    QString colorStr = attributes.color.toString();
+    QString opacity  = attributes.colorOpacity.toString();
     QColor color;
     if (constructColor(colorStr, opacity, color, handler)) {
         handler->pushColor(color);
@@ -642,9 +765,9 @@ static void parseBrush(QSvgNode *node,
                        const QSvgAttributes &attributes,
                        QSvgHandler *handler)
 {
-    QString value = attributes.value(QLatin1String("fill")).toString();
-    QString fillRule = attributes.value(QLatin1String("fill-rule")).toString();
-    QString opacity = attributes.value(QLatin1String("fill-opacity")).toString();
+    QString value = attributes.fill.toString();
+    QString fillRule = attributes.fillRule.toString();
+    QString opacity = attributes.fillOpacity.toString();
     QString myId = someId(attributes);
 
     if (!value.isEmpty() || !fillRule.isEmpty() || !opacity.isEmpty()) {
@@ -821,15 +944,15 @@ static void parsePen(QSvgNode *node,
                      const QSvgAttributes &attributes,
                      QSvgHandler *handler)
 {
-    QString value      = attributes.value(QLatin1String("stroke")).toString();
-    QString dashArray  = attributes.value(QLatin1String("stroke-dasharray")).toString();
-    QString dashOffset = attributes.value(QLatin1String("stroke-dashoffset")).toString();
-    QString linecap    = attributes.value(QLatin1String("stroke-linecap")).toString();
-    QString linejoin   = attributes.value(QLatin1String("stroke-linejoin")).toString();
-    QString miterlimit = attributes.value(QLatin1String("stroke-miterlimit")).toString();
-    QString opacity    = attributes.value(QLatin1String("stroke-opacity")).toString();
-    QString width      = attributes.value(QLatin1String("stroke-width")).toString();
-    QString vectorEffect = attributes.value(QLatin1String("vector-effect")).toString();
+    QString value      = attributes.stroke.toString();
+    QString dashArray  = attributes.strokeDashArray.toString();
+    QString dashOffset = attributes.strokeDashOffset.toString();
+    QString linecap    = attributes.strokeLineCap.toString();
+    QString linejoin   = attributes.strokeLineJoin.toString();
+    QString miterlimit = attributes.strokeMiterLimit.toString();
+    QString opacity    = attributes.strokeOpacity.toString();
+    QString width      = attributes.strokeWidth.toString();
+    QString vectorEffect = attributes.vectorEffect.toString();
     QString myId       = someId(attributes);
 
     //qDebug()<<"Node "<<node->type()<<", attrs are "<<value<<width;
@@ -931,12 +1054,12 @@ static void parseFont(QSvgNode *node,
                       const QSvgAttributes &attributes,
                       QSvgHandler *handler)
 {
-    QString family = attributes.value(QLatin1String("font-family")).toString();
-    QString size = attributes.value(QLatin1String("font-size")).toString();
-    QString style = attributes.value(QLatin1String("font-style")).toString();
-    QString weight = attributes.value(QLatin1String("font-weight")).toString();
-    QString variant = attributes.value(QLatin1String("font-variant")).toString();
-    QString anchor = attributes.value(QLatin1String("text-anchor")).toString();
+    QString family = attributes.fontFamily.toString();
+    QString size = attributes.fontSize.toString();
+    QString style = attributes.fontStyle.toString();
+    QString weight = attributes.fontWeight.toString();
+    QString variant = attributes.fontVariant.toString();
+    QString anchor = attributes.textAnchor.toString();
 
     if (family.isEmpty() && size.isEmpty() && style.isEmpty() && weight.isEmpty() && variant.isEmpty() && anchor.isEmpty())
         return;
@@ -1011,7 +1134,7 @@ static void parseTransform(QSvgNode *node,
                            const QSvgAttributes &attributes,
                            QSvgHandler *)
 {
-    QString value = attributes.value(QLatin1String("transform")).toString();
+    QString value = attributes.transform.toString();
     QString myId = someId(attributes);
     value = value.trimmed();
     if (value.isEmpty())
@@ -1028,7 +1151,7 @@ static void parseVisibility(QSvgNode *node,
                             const QSvgAttributes &attributes,
                             QSvgHandler *)
 {
-    QString value = attributes.value(QLatin1String("visibility")).toString();
+    QString value = attributes.visibility.toString();
     QSvgNode *parent = node->parent();
 
     if (parent && (value.isEmpty() || value == QT_INHERIT))
@@ -1681,7 +1804,7 @@ static void parseOpacity(QSvgNode *node,
                          const QSvgAttributes &attributes,
                          QSvgHandler *)
 {
-    const QString value = attributes.value(QLatin1String("opacity")).toString().trimmed();
+    const QString value = attributes.opacity.toString().trimmed();
 
     bool ok = false;
     qreal op = value.toDouble(&ok);
@@ -1754,7 +1877,7 @@ static void parseCompOp(QSvgNode *node,
                         const QSvgAttributes &attributes,
                         QSvgHandler *)
 {
-    QString value = attributes.value(QLatin1String("comp-op")).toString();
+    QString value = attributes.compOp.toString();
     value = value.trimmed();
 
     if (!value.isEmpty()) {
@@ -1809,7 +1932,7 @@ static void parseOthers(QSvgNode *node,
                         const QSvgAttributes &attributes,
                         QSvgHandler *)
 {
-    QString displayStr = attributes.value(QLatin1String("display")).toString();
+    QString displayStr = attributes.display.toString();
     displayStr = displayStr.trimmed();
 
     if (!displayStr.isEmpty()) {
@@ -2678,8 +2801,7 @@ static bool parseStopNode(QSvgStyleProperty *parent,
     cssNode.ptr = &anim;
     QVector<QCss::Declaration> decls = handler->selector()->declarationsForNode(cssNode);
 
-    QSvgAttributes attrs(attributes, handler);
-
+    QXmlStreamAttributes xmlAttr = attributes;
     for (int i = 0; i < decls.count(); ++i) {
         const QCss::Declaration &decl = decls.at(i);
 
@@ -2693,14 +2815,15 @@ static bool parseStopNode(QSvgStyleProperty *parent,
             valueStr.prepend(QLatin1String("url("));
             valueStr.append(QLatin1Char(')'));
         }
-        attrs.m_xmlAttributes.append(QString(), decl.d->property, valueStr);
+        xmlAttr.append(QString(), decl.d->property, valueStr);
     }
+    QSvgAttributes attrs(xmlAttr, handler);
 
     QSvgGradientStyle *style =
         static_cast<QSvgGradientStyle*>(parent);
-    QString offsetStr   = attrs.value(QString(), QLatin1String("offset")).toString();
-    QString colorStr    = attrs.value(QString(), QLatin1String("stop-color")).toString();
-    QString opacityStr  = attrs.value(QString(), QLatin1String("stop-opacity")).toString();
+    QString offsetStr   = attrs.offset.toString();
+    QString colorStr    = attrs.stopColor.toString();
+    QString opacityStr  = attrs.stopOpacity.toString();
     QColor color;
 
     bool ok = true;

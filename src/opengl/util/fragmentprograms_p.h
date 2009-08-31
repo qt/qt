@@ -1,3 +1,16 @@
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
 #ifndef FRAGMENTPROGRAMS_H
 #define FRAGMENTPROGRAMS_H
 

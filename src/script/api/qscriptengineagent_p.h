@@ -110,12 +110,7 @@ public:
         q_ptr->contextPush();
         q_ptr->functionEntry(sourceID);
     };
-    virtual void returnEvent(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno)
-    {
-        Q_UNUSED(frame);
-        Q_UNUSED(sourceID);
-        Q_UNUSED(lineno);
-    }
+    virtual void returnEvent(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno);
     virtual void willExecuteProgram(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno)
     {
         Q_UNUSED(frame);

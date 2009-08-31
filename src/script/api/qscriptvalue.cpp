@@ -2431,7 +2431,6 @@ void QScriptValue::setScriptClass(QScriptClass *scriptClass)
     QScriptObject *scriptObject = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
     QScriptObjectDelegate *delegate = scriptObject->delegate();
     if (!delegate || (delegate->type() != QScriptObjectDelegate::ClassObject)) {
-        delete delegate;
         delegate = new QScript::ClassObjectDelegate(scriptClass);
         scriptObject->setDelegate(delegate);
     }
