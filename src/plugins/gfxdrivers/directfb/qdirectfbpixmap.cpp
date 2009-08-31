@@ -48,6 +48,8 @@
 #include <QtCore/qfile.h>
 #include <directfb.h>
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 QT_BEGIN_NAMESPACE
 
 static int global_ser_no = 0;
@@ -577,5 +579,8 @@ void QDirectFBPixmapData::invalidate()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_QWS_DIRECTFB
+
 
 

@@ -46,9 +46,10 @@
 #include "qdirectfbpaintdevice.h"
 #include "qdirectfbscreen.h"
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 #include <private/qpaintengine_raster_p.h>
 #include <private/qwindowsurface_qws_p.h>
-#include <directfb.h>
 
 #ifdef QT_DIRECTFB_TIMING
 #include <qdatetime.h>
@@ -115,5 +116,7 @@ private:
 QT_END_NAMESPACE
 
 QT_END_HEADER
+
+#endif // QT_NO_QWS_DIRECTFB
 
 #endif // QDIRECFBWINDOWSURFACE_H

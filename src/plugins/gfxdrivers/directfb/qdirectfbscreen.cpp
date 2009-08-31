@@ -54,6 +54,8 @@
 #include <QtCore/qvector.h>
 #include <QtCore/qrect.h>
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 QT_BEGIN_NAMESPACE
 
 class QDirectFBScreenPrivate : public QObject, public QWSGraphicsSystem
@@ -1565,5 +1567,5 @@ IDirectFBSurface *QDirectFBScreen::subSurfaceForWidget(const QWidget *widget, co
 QT_END_NAMESPACE
 
 #include "qdirectfbscreen.moc"
-
+#endif // QT_NO_QWS_DIRECTFB
 

@@ -41,7 +41,7 @@
 
 #include "qdirectfbpaintengine.h"
 
-#ifndef QT_NO_DIRECTFB
+#ifndef QT_NO_QWS_DIRECTFB
 
 #include "qdirectfbwindowsurface.h"
 #include "qdirectfbscreen.h"
@@ -1253,4 +1253,4 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_DIRECTFB
+#endif // QT_NO_QWS_DIRECTFB

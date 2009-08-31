@@ -44,13 +44,13 @@
 
 #include <QtGui/qkbd_qws.h>
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
-
-#ifndef QT_NO_DIRECTFB
 
 class QDirectFBKeyboardHandlerPrivate;
 
@@ -66,7 +66,7 @@ private:
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_DIRECTFB
+#endif // QT_NO_QWS_DIRECTFB
 
 QT_END_HEADER
 

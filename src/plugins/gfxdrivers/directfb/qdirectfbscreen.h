@@ -42,6 +42,8 @@
 #ifndef QDIRECTFBSCREEN_H
 #define QDIRECTFBSCREEN_H
 
+#include <qglobal.h>
+#ifndef QT_NO_QWS_DIRECTFB
 #include <QtGui/qscreen_qws.h>
 #include <directfb.h>
 #include <directfb_version.h>
@@ -275,4 +277,6 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
+#endif // QT_NO_QWS_DIRECTFB
 #endif // QDIRECTFBSCREEN_H
+

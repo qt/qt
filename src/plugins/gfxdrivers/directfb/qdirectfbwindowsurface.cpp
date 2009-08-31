@@ -48,6 +48,8 @@
 #include <qpaintdevice.h>
 #include <qvarlengtharray.h>
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 QT_BEGIN_NAMESPACE
 
 QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *scr)
@@ -453,4 +455,7 @@ void QDirectFBWindowSurface::updateFormat()
 }
 
 QT_END_NAMESPACE
+
+#endif // QT_NO_QWS_DIRECTFB
+
 

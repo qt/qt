@@ -43,8 +43,9 @@
 #define QDIRECTFBPAINTDEVICE_H
 
 #include <private/qpaintengine_raster_p.h>
-#include <directfb.h>
 #include "qdirectfbscreen.h"
+
+#ifndef QT_NO_QWS_DIRECTFB
 
 QT_BEGIN_HEADER
 
@@ -100,4 +101,5 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
+#endif // QT_NO_QWS_DIRECTFB
 #endif //QDIRECTFBPAINTDEVICE_H

@@ -41,8 +41,6 @@
 
 #include "qdirectfbkeyboard.h"
 
-#ifndef QT_NO_DIRECTFB
-
 #include "qdirectfbscreen.h"
 #include <qobject.h>
 #include <qsocketnotifier.h>
@@ -52,6 +50,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+
+#ifndef QT_NO_QWS_DIRECTFB
 
 QT_BEGIN_NAMESPACE
 
@@ -432,7 +432,5 @@ KeyMap::KeyMap()
 }
 
 QT_END_NAMESPACE
-
 #include "qdirectfbkeyboard.moc"
-
-#endif // QT_NO_DIRECTFB
+#endif // QT_NO_QWS_DIRECTFB

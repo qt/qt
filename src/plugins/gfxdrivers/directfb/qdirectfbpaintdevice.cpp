@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_DIRECTFB
-
 #include "qdirectfbscreen.h"
 #include "qdirectfbpaintdevice.h"
 #include "qdirectfbpaintengine.h"
+
+#ifndef QT_NO_QWS_DIRECTFB
 
 QT_BEGIN_NAMESPACE
 
@@ -173,5 +173,4 @@ QPaintEngine *QDirectFBPaintDevice::paintEngine() const
 
 QT_END_NAMESPACE
 
-#endif
-
+#endif // QT_NO_QWS_DIRECTFB
