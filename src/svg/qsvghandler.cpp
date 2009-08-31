@@ -130,128 +130,186 @@ QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHa
     if (!style.isEmpty()) {
         handler->parseCSStoXMLAttrs(style.toString(), &m_cssAttributes);
         for (int j = 0; j < m_cssAttributes.count(); ++j) {
-            const QSvgCssAttribute &attribute = m_cssAttributes.at(j    );
+            const QSvgCssAttribute &attribute = m_cssAttributes.at(j);
             QStringRef name = attribute.name;
             QStringRef value = attribute.value;
-            if (name == QLatin1String("color"))
-                color = value;
-            if (name == QLatin1String("color-opacity"))
-                colorOpacity = value;
-            if (name == QLatin1String("fill"))
-                fill = value;
-            if (name == QLatin1String("fill-rule"))
-                fillRule = value;
-            if (name == QLatin1String("fill-opacity"))
-                fillOpacity = value;
-            if (name == QLatin1String("stroke"))
-                stroke = value;
-            if (name == QLatin1String("stroke-dasharray"))
-                strokeDashArray = value;
-            if (name == QLatin1String("stroke-dashoffset"))
-                strokeDashOffset = value;
-            if (name == QLatin1String("stroke-linecap"))
-                strokeLineCap = value;
-            if (name == QLatin1String("stroke-linejoin"))
-                strokeLineJoin = value;
-            if (name == QLatin1String("stroke-miterlimit"))
-                strokeMiterLimit = value;
-            if (name == QLatin1String("stroke-opacity"))
-                strokeOpacity = value;
-            if (name == QLatin1String("stroke-width"))
-                strokeWidth = value;
-            if (name == QLatin1String("vector-effect"))
-                vectorEffect = value;
-            if (name == QLatin1String("font-family"))
-                fontFamily = value;
-            if (name == QLatin1String("font-size"))
-                fontSize = value;
-            if (name == QLatin1String("font-style"))
-                fontStyle = value;
-            if (name == QLatin1String("font-weight"))
-                fontWeight = value;
-            if (name == QLatin1String("font-variant"))
-                fontVariant = value;
-            if (name == QLatin1String("text-anchor"))
-                textAnchor = value;
-            if (name == QLatin1String("transform"))
-                transform = value;
-            if (name == QLatin1String("visibility"))
-                visibility = value;
-            if (name == QLatin1String("opacity"))
-                opacity = value;
-            if (name == QLatin1String("comp-op"))
-                compOp = value;
-            if (name == QLatin1String("display"))
-                display = value;
-            if (name == QLatin1String("offset"))
-                offset = value;
-            if (name == QLatin1String("stop-color"))
-                stopColor = value;
-            if (name == QLatin1String("stop-opacity"))
-                stopOpacity = value;
+            if (name.isEmpty())
+                continue;
+
+            switch (name.at(0).unicode()) {
+
+            case 'c':
+                if (name == QLatin1String("color"))
+                    color = value;
+                else if (name == QLatin1String("color-opacity"))
+                    colorOpacity = value;
+                else if (name == QLatin1String("comp-op"))
+                    compOp = value;
+                break;
+
+            case 'd':
+                if (name == QLatin1String("display"))
+                    display = value;
+                break;
+
+            case 'f':
+                if (name == QLatin1String("fill"))
+                    fill = value;
+                else if (name == QLatin1String("fill-rule"))
+                    fillRule = value;
+                else if (name == QLatin1String("fill-opacity"))
+                    fillOpacity = value;
+                else if (name == QLatin1String("font-family"))
+                    fontFamily = value;
+                else if (name == QLatin1String("font-size"))
+                    fontSize = value;
+                else if (name == QLatin1String("font-style"))
+                    fontStyle = value;
+                else if (name == QLatin1String("font-weight"))
+                    fontWeight = value;
+                else if (name == QLatin1String("font-variant"))
+                    fontVariant = value;
+                break;
+
+            case 'o':
+                if (name == QLatin1String("opacity"))
+                    opacity = value;
+                else if (name == QLatin1String("offset"))
+                    offset = value;
+                break;
+
+            case 's':
+                if (name == QLatin1String("stroke"))
+                    stroke = value;
+                else if (name == QLatin1String("stroke-dasharray"))
+                    strokeDashArray = value;
+                else if (name == QLatin1String("stroke-dashoffset"))
+                    strokeDashOffset = value;
+                else if (name == QLatin1String("stroke-linecap"))
+                    strokeLineCap = value;
+                else if (name == QLatin1String("stroke-linejoin"))
+                    strokeLineJoin = value;
+                else if (name == QLatin1String("stroke-miterlimit"))
+                    strokeMiterLimit = value;
+                else if (name == QLatin1String("stroke-opacity"))
+                    strokeOpacity = value;
+                else if (name == QLatin1String("stroke-width"))
+                    strokeWidth = value;
+                else if (name == QLatin1String("stop-color"))
+                    stopColor = value;
+                else if (name == QLatin1String("stop-opacity"))
+                    stopOpacity = value;
+                break;
+
+            case 't':
+                if (name == QLatin1String("text-anchor"))
+                    textAnchor = value;
+                else if (name == QLatin1String("transform"))
+                    transform = value;
+                break;
+
+            case 'v':
+                if (name == QLatin1String("vector-effect"))
+                    vectorEffect = value;
+                else if (name == QLatin1String("visibility"))
+                    visibility = value;
+                break;
+
+            default:
+                break;
+           }
         }
     }
 
     for (int i = 0; i < xmlAttributes.count(); ++i) {
         const QXmlStreamAttribute &attribute = xmlAttributes.at(i);
         QStringRef name = attribute.qualifiedName();
+        if (name.isEmpty())
+            continue;
         QStringRef value = attribute.value();
-        if (name == QLatin1String("color"))
-            color = value;
-        if (name == QLatin1String("color-opacity"))
-            colorOpacity = value;
-        if (name == QLatin1String("fill"))
-            fill = value;
-        if (name == QLatin1String("fill-rule"))
-            fillRule = value;
-        if (name == QLatin1String("fill-opacity"))
-            fillOpacity = value;
-        if (name == QLatin1String("stroke"))
-            stroke = value;
-        if (name == QLatin1String("stroke-dasharray"))
-            strokeDashArray = value;
-        if (name == QLatin1String("stroke-dashoffset"))
-            strokeDashOffset = value;
-        if (name == QLatin1String("stroke-linecap"))
-            strokeLineCap = value;
-        if (name == QLatin1String("stroke-linejoin"))
-            strokeLineJoin = value;
-        if (name == QLatin1String("stroke-miterlimit"))
-            strokeMiterLimit = value;
-        if (name == QLatin1String("stroke-opacity"))
-            strokeOpacity = value;
-        if (name == QLatin1String("stroke-width"))
-            strokeWidth = value;
-        if (name == QLatin1String("vector-effect"))
-            vectorEffect = value;
-        if (name == QLatin1String("font-family"))
-            fontFamily = value;
-        if (name == QLatin1String("font-size"))
-            fontSize = value;
-        if (name == QLatin1String("font-style"))
-            fontStyle = value;
-        if (name == QLatin1String("font-weight"))
-            fontWeight = value;
-        if (name == QLatin1String("font-variant"))
-            fontVariant = value;
-        if (name == QLatin1String("text-anchor"))
-            textAnchor = value;
-        if (name == QLatin1String("transform"))
-            transform = value;
-        if (name == QLatin1String("visibility"))
-            visibility = value;
-        if (name == QLatin1String("opacity"))
-            opacity = value;
-        if (name == QLatin1String("comp-op"))
-            compOp = value;
-        if (name == QLatin1String("display"))
-            display = value;
-        if (name == QLatin1String("offset"))
-            offset = value;
-        if (name == QLatin1String("stop-color"))
-            stopColor = value;
-        if (name == QLatin1String("stop-opacity"))
-            stopOpacity = value;
+
+        switch (name.at(0).unicode()) {
+
+        case 'c':
+            if (name == QLatin1String("color"))
+                color = value;
+            else if (name == QLatin1String("color-opacity"))
+                colorOpacity = value;
+            else if (name == QLatin1String("comp-op"))
+                compOp = value;
+            break;
+
+        case 'd':
+            if (name == QLatin1String("display"))
+                display = value;
+            break;
+
+        case 'f':
+            if (name == QLatin1String("fill"))
+                fill = value;
+            else if (name == QLatin1String("fill-rule"))
+                fillRule = value;
+            else if (name == QLatin1String("fill-opacity"))
+                fillOpacity = value;
+            else if (name == QLatin1String("font-family"))
+                fontFamily = value;
+            else if (name == QLatin1String("font-size"))
+                fontSize = value;
+            else if (name == QLatin1String("font-style"))
+                fontStyle = value;
+            else if (name == QLatin1String("font-weight"))
+                fontWeight = value;
+            else if (name == QLatin1String("font-variant"))
+                fontVariant = value;
+            break;
+
+        case 'o':
+            if (name == QLatin1String("opacity"))
+                opacity = value;
+            if (name == QLatin1String("offset"))
+                offset = value;
+            break;
+
+        case 's':
+            if (name == QLatin1String("stroke"))
+                stroke = value;
+            else if (name == QLatin1String("stroke-dasharray"))
+                strokeDashArray = value;
+            else if (name == QLatin1String("stroke-dashoffset"))
+                strokeDashOffset = value;
+            else if (name == QLatin1String("stroke-linecap"))
+                strokeLineCap = value;
+            else if (name == QLatin1String("stroke-linejoin"))
+                strokeLineJoin = value;
+            else if (name == QLatin1String("stroke-miterlimit"))
+                strokeMiterLimit = value;
+            else if (name == QLatin1String("stroke-opacity"))
+                strokeOpacity = value;
+            else if (name == QLatin1String("stroke-width"))
+                strokeWidth = value;
+            else if (name == QLatin1String("stop-color"))
+                stopColor = value;
+            else if (name == QLatin1String("stop-opacity"))
+                stopOpacity = value;
+            break;
+
+        case 't':
+            if (name == QLatin1String("text-anchor"))
+                textAnchor = value;
+            else if (name == QLatin1String("transform"))
+                transform = value;
+            break;
+
+        case 'v':
+            if (name == QLatin1String("vector-effect"))
+                vectorEffect = value;
+            else if (name == QLatin1String("visibility"))
+                visibility = value;
+            break;
+
+        default:
+            break;
+        }
     }
 
 }

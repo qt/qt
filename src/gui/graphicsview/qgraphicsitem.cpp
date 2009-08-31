@@ -10349,6 +10349,8 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
                      info->widget, info->opacity, &newEffectTransform, info->wasDirtySceneTransform,
                      info->drawItem);
     }
+
+    pixmapPainter.end();
     return pixmap;
 }
 
