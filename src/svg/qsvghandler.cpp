@@ -1819,27 +1819,49 @@ static inline QStringList stringToList(const QString &str)
 static bool parseCoreNode(QSvgNode *node,
                           const QXmlStreamAttributes &attributes)
 {
-    QString featuresStr   = attributes.value(QLatin1String("requiredFeatures")).toString();
-    QString extensionsStr = attributes.value(QLatin1String("requiredExtensions")).toString();
-    QString languagesStr  = attributes.value(QLatin1String("systemLanguage")).toString();
-    QString formatsStr    = attributes.value(QLatin1String("requiredFormats")).toString();
-    QString fontsStr      = attributes.value(QLatin1String("requiredFonts")).toString();
-    QString nodeIdStr     = someId(attributes);
-    QString xmlClassStr   = attributes.value(QLatin1String("class")).toString();
+    QStringList features;
+    QStringList extensions;
+    QStringList languages;
+    QStringList formats;
+    QStringList fonts;
+    QString xmlClassStr;
 
-
-    QStringList features = stringToList(featuresStr);
-    QStringList extensions = stringToList(extensionsStr);
-    QStringList languages = stringToList(languagesStr);
-    QStringList formats = stringToList(formatsStr);
-    QStringList fonts = stringToList(fontsStr);
+    for (int i = 0; i < attributes.count(); ++i) {
+        const QXmlStreamAttribute &attribute = attributes.at(i);
+        QStringRef name = attribute.qualifiedName();
+        if (name.isEmpty())
+            continue;
+        QStringRef value = attribute.value();
+        switch (name.at(0).unicode()) {
+        case 'c':
+            if (name == QLatin1String("class"))
+                xmlClassStr = value.toString();
+            break;
+        case 'r':
+            if (name == QLatin1String("requiredFeatures"))
+                features = stringToList(value.toString());
+            else if (name == QLatin1String("requiredExtensions"))
+                extensions = stringToList(value.toString());
+            else if (name == QLatin1String("requiredFormats"))
+                formats = stringToList(value.toString());
+            else if (name == QLatin1String("requiredFonts"))
+                fonts = stringToList(value.toString());
+            break;
+        case 's':
+            if (name == QLatin1String("systemLanguage"))
+                languages = stringToList(value.toString());
+            break;
+        default:
+            break;
+        }
+    }
 
     node->setRequiredFeatures(features);
     node->setRequiredExtensions(extensions);
     node->setRequiredLanguages(languages);
     node->setRequiredFormats(formats);
     node->setRequiredFonts(fonts);
-    node->setNodeId(nodeIdStr);
+    node->setNodeId(someId(attributes));
     node->setXmlClass(xmlClassStr);
 
     return true;
