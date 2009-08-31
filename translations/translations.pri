@@ -68,16 +68,11 @@ qm-linguist.depends = sub-tools
 ts-assistant.commands = (cd $$QT_SOURCE_TREE/src && $$LUPDATE \
                                     ../tools/assistant/translations/translations.pro \
                                     && $$LUPDATE \
-                                    ../tools/assistant/translations/qt_help.pro \
-                                    && $$LUPDATE \
-                                    ../tools/assistant/translations/translations_adp.pro)
+                                    ../tools/assistant/translations/qt_help.pro))
 ts-assistant.depends = sub-tools
 
 qm-assistant.commands = ($$LRELEASE $$QT_SOURCE_TREE/tools/assistant/translations/translations.pro \
-                         && $$LRELEASE \
-                            $$QT_SOURCE_TREE/tools/assistant/translations/qt_help.pro \
-                         && $$LRELEASE \
-                            $$QT_SOURCE_TREE/tools/assistant/translations/translations_adp.pro)
+                         && $$LRELEASE $$QT_SOURCE_TREE/tools/assistant/translations/qt_help.pro)
 qm-assistant.depends = sub-tools
 
 ###### Qtconfig
