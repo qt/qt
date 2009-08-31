@@ -39,66 +39,64 @@
 **
 ****************************************************************************/
 
-#ifndef __QtS60MainAPPLICATION_H__
-#define __QtS60MainAPPLICATION_H__
+// INCLUDE FILES
+#include <exception>
+#include "qs60maindocument_p.h"
+#include "qs60mainapplication_p.h"
+#include <bautils.h>
+#include <coemain.h>
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-// INCLUDES
-#include <aknapp.h>
-
-// CLASS DECLARATION
-
-static TUid ProcessUid()
-    {
-    RProcess me;
-    TSecureId securId = me.SecureId();
-    me.Close();
-    return securId.operator TUid();
-    }
+QT_BEGIN_NAMESPACE
 
 /**
-* CQtS60MainApplication application class.
-* Provides factory to create concrete document object.
-* An instance of CQtS60MainApplication is the application part of the
-* AVKON application framework for the QtS60Main example application.
-*/
-class CQtS60MainApplication : public CAknApplication
-    {
-    public: // Functions from base classes
+ * factory function to create the QtS60Main application class
+ */
+CApaApplication* NewApplication()
+{
+    return new QS60MainApplication;
+}
 
-        /**
-        * From CApaApplication, AppDllUid.
-        * @return Application's UID (KUidQtS60MainApp).
-        */
-        TUid AppDllUid() const;
+// ============================ MEMBER FUNCTIONS ===============================
 
-        /**
-        * From CApaApplication, ResourceFileName
-        * @return Application's resource filename (KUidQtS60MainApp).
-        */
-        TFileName ResourceFileName() const;
 
-    protected: // Functions from base classes
+_LIT(KQtWrapperResourceFile, "\\resource\\apps\\s60main.rsc");
 
-        /**
-        * From CApaApplication, CreateDocumentL.
-        * Creates CQtS60MainDocument document object. The returned
-        * pointer in not owned by the CQtS60MainApplication object.
-        * @return A pointer to the created document object.
-        */
-        CApaDocument* CreateDocumentL();
-    };
+// -----------------------------------------------------------------------------
+// QS60MainApplication::CreateDocumentL()
+// Creates CApaDocument object
+// -----------------------------------------------------------------------------
+//
+CApaDocument* QS60MainApplication::CreateDocumentL()
+{
+    // Create an QtS60Main document, and return a pointer to it
+    return (static_cast<CApaDocument*>(QS60MainDocument::NewL(*this)));
+}
 
-#endif // __QtS60MainAPPLICATION_H__
+// -----------------------------------------------------------------------------
+// QS60MainApplication::AppDllUid()
+// Returns application UID
+// -----------------------------------------------------------------------------
+//
+TUid QS60MainApplication::AppDllUid() const
+{
+    // Return the UID for the QtS60Main application
+    return ProcessUid();
+}
+
+// -----------------------------------------------------------------------------
+// QS60MainApplication::ResourceFileName()
+// Returns application resource filename
+// -----------------------------------------------------------------------------
+//
+TFileName QS60MainApplication::ResourceFileName() const
+{
+    TFindFile finder(iCoeEnv->FsSession());
+    TInt err = finder.FindByDir(KQtWrapperResourceFile, KNullDesC);
+    if (err == KErrNone)
+        return finder.File();
+    return KNullDesC();
+}
+
+QT_END_NAMESPACE
 
 // End of File

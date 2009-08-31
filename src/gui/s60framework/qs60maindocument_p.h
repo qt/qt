@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef __QTS60MAINDOCUMENT_H__
-#define __QTS60MAINDOCUMENT_H__
+#ifndef QS60MAINDOCUMENT_P_H
+#define QS60MAINDOCUMENT_P_H
 
 //
 //  W A R N I N G
@@ -56,78 +56,84 @@
 // INCLUDES
 #include <akndoc.h>
 
-// FORWARD DECLARATIONS
-class CQtS60MainAppUi;
+#include <qglobal.h>
+
 class CEikApplication;
 
+QT_BEGIN_NAMESPACE
+
+// FORWARD DECLARATIONS
+class QS60MainAppUi;
 
 // CLASS DECLARATION
 
 /**
-* CQtS60MainDocument application class.
-* An instance of class CQtS60MainDocument is the Document part of the
+* QS60MainDocument application class.
+* An instance of class QS60MainDocument is the Document part of the
 * AVKON application framework for the QtS60Main application.
 */
-class CQtS60MainDocument : public CAknDocument
-    {
-    public: // Constructors and destructor
+class QS60MainDocument : public CAknDocument
+{
+public: // Constructors and destructor
 
-        /**
-        * NewL.
-        * Two-phased constructor.
-        * Construct a CQtS60MainDocument for the AVKON application aApp
-        * using two phase construction, and return a pointer
-        * to the created object.
-        * @param aApp Application creating this document.
-        * @return A pointer to the created instance of CQtS60MainDocument.
-        */
-        static CQtS60MainDocument* NewL( CEikApplication& aApp );
+    /**
+     * NewL.
+     * Two-phased constructor.
+     * Construct a QS60MainDocument for the AVKON application aApp
+     * using two phase construction, and return a pointer
+     * to the created object.
+     * @param aApp Application creating this document.
+     * @return A pointer to the created instance of QS60MainDocument.
+     */
+    static QS60MainDocument* NewL( CEikApplication& aApp );
 
-        /**
-        * NewLC.
-        * Two-phased constructor.
-        * Construct a CQtS60MainDocument for the AVKON application aApp
-        * using two phase construction, and return a pointer
-        * to the created object.
-        * @param aApp Application creating this document.
-        * @return A pointer to the created instance of CQtS60MainDocument.
-        */
-        static CQtS60MainDocument* NewLC( CEikApplication& aApp );
+    /**
+     * NewLC.
+     * Two-phased constructor.
+     * Construct a QS60MainDocument for the AVKON application aApp
+     * using two phase construction, and return a pointer
+     * to the created object.
+     * @param aApp Application creating this document.
+     * @return A pointer to the created instance of QS60MainDocument.
+     */
+    static QS60MainDocument* NewLC( CEikApplication& aApp );
 
-        /**
-        * ~CQtS60MainDocument
-        * Virtual Destructor.
-        */
-        virtual ~CQtS60MainDocument();
+    /**
+     * ~QS60MainDocument
+     * Virtual Destructor.
+     */
+    virtual ~QS60MainDocument();
 
-    public: // Functions from base classes
+public: // Functions from base classes
 
-        /**
-        * CreateAppUiL
-        * From CEikDocument, CreateAppUiL.
-        * Create a CQtS60MainAppUi object and return a pointer to it.
-        * The object returned is owned by the Uikon framework.
-        * @return Pointer to created instance of AppUi.
-        */
-        CEikAppUi* CreateAppUiL();
+    /**
+     * CreateAppUiL
+     * From CEikDocument, CreateAppUiL.
+     * Create a QS60MainAppUi object and return a pointer to it.
+     * The object returned is owned by the Uikon framework.
+     * @return Pointer to created instance of AppUi.
+     */
+    CEikAppUi* CreateAppUiL();
 
-    private: // Constructors
+private: // Constructors
 
-        /**
-        * ConstructL
-        * 2nd phase constructor.
-        */
-        void ConstructL();
+    /**
+     * ConstructL
+     * 2nd phase constructor.
+     */
+    void ConstructL();
 
-        /**
-        * CQtS60MainDocument.
-        * C++ default constructor.
-        * @param aApp Application creating this document.
-        */
-        CQtS60MainDocument( CEikApplication& aApp );
+    /**
+     * QS60MainDocument.
+     * C++ default constructor.
+     * @param aApp Application creating this document.
+     */
+    QS60MainDocument( CEikApplication& aApp );
 
-    };
+};
 
-#endif // __QTS60MAINDOCUMENT_H__
+QT_END_NAMESPACE
+
+#endif // QS60MAINDOCUMENT_P_H
 
 // End of File

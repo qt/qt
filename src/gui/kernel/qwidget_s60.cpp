@@ -722,7 +722,9 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
             // The API to get title_pane graphics size is not public -> assume square space based
             // on titlebar font height. CAknBitmap would be optimum, wihtout setting the size, since
             // then title pane would automatically scale the bitmap. Unfortunately it is not public API
-            const CFont * font = AknLayoutUtils::FontFromId(EAknLogicalFontTitleFont);
+            // Also this function is leaving, although it is not named as such.
+            const CFont * font;
+            QT_TRAP_THROWING(font = AknLayoutUtils::FontFromId(EAknLogicalFontTitleFont));
             TSize iconSize(font->HeightInPixels(), font->HeightInPixels());
 
             QIcon icon = q->windowIcon();

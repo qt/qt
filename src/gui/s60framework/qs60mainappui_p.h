@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef __QtS60MainAPPUI_H__
-#define __QtS60MainAPPUI_H__
+#ifndef QS60MAINAPPUI_P_H
+#define QS60MAINAPPUI_P_H
 
 //
 //  W A R N I N G
@@ -56,91 +56,75 @@
 // INCLUDES
 #include <aknappui.h>
 
+#include <qglobal.h>
+
+QT_BEGIN_NAMESPACE
+
 // FORWARD DECLARATIONS
 
 // CLASS DECLARATION
 /**
-* CQtS60MainAppUi application UI class.
+* QS60MainAppUi application UI class.
 * Interacts with the user through the UI and request message processing
 * from the handler class
 */
-class CQtS60MainAppUi : public CAknAppUi
-    {
-    public: // Constructors and destructor
+class QS60MainAppUi : public CAknAppUi
+{
+public: // Constructors and destructor
 
-        /**
-        * ConstructL.
-        * 2nd phase constructor.
-        */
-        void ConstructL();
+    /**
+     * ConstructL.
+     * 2nd phase constructor.
+     */
+    void ConstructL();
 
-        /**
-        * CQtS60MainAppUi.
-        * C++ default constructor. This needs to be public due to
-        * the way the framework constructs the AppUi
-        */
-        CQtS60MainAppUi();
+    /**
+     * QS60MainAppUi.
+     * C++ default constructor. This needs to be public due to
+     * the way the framework constructs the AppUi
+     */
+    QS60MainAppUi();
 
-        /**
-        * ~CQtS60MainAppUi.
-        * Virtual Destructor.
-        */
-        virtual ~CQtS60MainAppUi();
+    /**
+     * ~QS60MainAppUi.
+     * Virtual Destructor.
+     */
+    virtual ~QS60MainAppUi();
 
-    protected:
-        void RestoreMenuL(CCoeControl* aMenuWindow,TInt aMenuId,TMenuType aMenuType);
-        void DynInitMenuBarL(TInt aResourceId, CEikMenuBar *aMenuBar);
-        void DynInitMenuPaneL(TInt aResourceId, CEikMenuPane *aMenuPane);
+protected:
+    void RestoreMenuL(CCoeControl* aMenuWindow,TInt aMenuId,TMenuType aMenuType);
+    void DynInitMenuBarL(TInt aResourceId, CEikMenuBar *aMenuBar);
+    void DynInitMenuPaneL(TInt aResourceId, CEikMenuPane *aMenuPane);
 
-    private:  // Functions from base classes
+private:  // Functions from base classes
 
-        /**
-        * From CEikAppUi, HandleCommandL.
-        * Takes care of command handling.
-        * @param aCommand Command to be handled.
-        */
-        void HandleCommandL( TInt aCommand );
+    /**
+     * From CEikAppUi, HandleCommandL.
+     * Takes care of command handling.
+     * @param aCommand Command to be handled.
+     */
+    void HandleCommandL( TInt aCommand );
 
-        /**
-        * From CAknAppUi, HandleResourceChangeL
-        * Handles resource change events such as layout switches in global level.
-        * @param aType event type.
-        */
-        void HandleResourceChangeL(TInt aType);
+    /**
+     * From CAknAppUi, HandleResourceChangeL
+     * Handles resource change events such as layout switches in global level.
+     * @param aType event type.
+     */
+    void HandleResourceChangeL(TInt aType);
 
-        /**
-        *  HandleStatusPaneSizeChange.
-        *  Called by the framework when the application status pane
-		*  size is changed.
-        */
-		void HandleStatusPaneSizeChange();
+    /**
+     *  HandleStatusPaneSizeChange.
+     *  Called by the framework when the application status pane
+     *  size is changed.
+     */
+    void HandleStatusPaneSizeChange();
 
-        /**
-        *  Static callback method for invoking Qt main.
-        *  Called asynchronously from ConstructL() - passes call to non static method.
-        */
-        static TInt OpenCMainStaticCallBack(  TAny* aObject );
+protected:
+    void HandleWsEventL(const TWsEvent& aEvent, CCoeControl* aDestination);
+};
 
-        /**
-        *  Callback method for invoking Qt main.
-        *  Called from static OpenCMainStaticCallBack.
-        */
-        void OpenCMainCallBack();
+QT_END_NAMESPACE
 
-    protected:
-        void HandleWsEventL(const TWsEvent& aEvent, CCoeControl* aDestination);
-
-
-    private: // Data
-
-        /**
-        * Async callback object to call Qt main
-        * Owned by CQtS60MainAppUi
-        */
-        CAsyncCallBack* iAsyncCallBack;
-
-    };
-
-#endif // __QtS60MainAPPUI_H__
+#endif // QS60MAINAPPUI_P_H
 
 // End of File

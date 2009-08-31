@@ -51,6 +51,9 @@
 #include <e32base.h>
 #include "estlib.h"
 
+// Needed for QT_TRYCATCH_LEAVING.
+#include <qglobal.h>
+
 #ifdef __ARMCC__
 __asm int CallMain(int argc, char *argv[], char *envp[])
 {

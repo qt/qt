@@ -41,77 +41,81 @@
 
 // INCLUDE FILES
 #include <exception>
-#include "qts60mainappui_p.h"
-#include "qts60maindocument_p.h"
+#include "qs60mainappui_p.h"
+#include "qs60maindocument_p.h"
+
+QT_BEGIN_NAMESPACE
 
 // ============================ MEMBER FUNCTIONS ===============================
 
 // -----------------------------------------------------------------------------
-// CQtS60MainDocument::NewL()
+// QS60MainDocument::NewL()
 // Two-phased constructor.
 // -----------------------------------------------------------------------------
 //
-CQtS60MainDocument* CQtS60MainDocument::NewL(CEikApplication& aApp)
+QS60MainDocument* QS60MainDocument::NewL(CEikApplication& aApp)
 {
-    CQtS60MainDocument* self = NewLC(aApp);
+    QS60MainDocument* self = NewLC(aApp);
     CleanupStack::Pop(self);
     return self;
 }
 
 // -----------------------------------------------------------------------------
-// CQtS60MainDocument::NewLC()
+// QS60MainDocument::NewLC()
 // Two-phased constructor.
 // -----------------------------------------------------------------------------
 //
-CQtS60MainDocument* CQtS60MainDocument::NewLC(CEikApplication& aApp)
+QS60MainDocument* QS60MainDocument::NewLC(CEikApplication& aApp)
 {
-    CQtS60MainDocument* self = new(ELeave) CQtS60MainDocument(aApp);
+    QS60MainDocument* self = new(ELeave) QS60MainDocument(aApp);
     CleanupStack::PushL(self);
     self->ConstructL();
     return self;
 }
 
 // -----------------------------------------------------------------------------
-// CQtS60MainDocument::ConstructL()
+// QS60MainDocument::ConstructL()
 // Symbian 2nd phase constructor can leave.
 // -----------------------------------------------------------------------------
 //
-void CQtS60MainDocument::ConstructL()
+void QS60MainDocument::ConstructL()
 {
     // No implementation required
 }
 
 // -----------------------------------------------------------------------------
-// CQtS60MainDocument::CQtS60MainDocument()
+// QS60MainDocument::QS60MainDocument()
 // C++ default constructor can NOT contain any code, that might leave.
 // -----------------------------------------------------------------------------
 //
-CQtS60MainDocument::CQtS60MainDocument(CEikApplication& aApp)
+QS60MainDocument::QS60MainDocument(CEikApplication& aApp)
         : CAknDocument(aApp)
 {
     // No implementation required
 }
 
 // ---------------------------------------------------------------------------
-// CQtS60MainDocument::~CQtS60MainDocument()
+// QS60MainDocument::~QS60MainDocument()
 // Destructor.
 // ---------------------------------------------------------------------------
 //
-CQtS60MainDocument::~CQtS60MainDocument()
+QS60MainDocument::~QS60MainDocument()
 {
     // No implementation required
 }
 
 // ---------------------------------------------------------------------------
-// CQtS60MainDocument::CreateAppUiL()
+// QS60MainDocument::CreateAppUiL()
 // Constructs CreateAppUi.
 // ---------------------------------------------------------------------------
 //
-CEikAppUi* CQtS60MainDocument::CreateAppUiL()
+CEikAppUi* QS60MainDocument::CreateAppUiL()
 {
     // Create the application user interface, and return a pointer to it;
     // the framework takes ownership of this object
-    return (static_cast <CEikAppUi*>(new(ELeave)CQtS60MainAppUi));
+    return (static_cast <CEikAppUi*>(new(ELeave)QS60MainAppUi));
 }
+
+QT_END_NAMESPACE
 
 // End of File

@@ -95,6 +95,7 @@ public:
     int screenHeightInTwips;
     int defaultDpiX;
     int defaultDpiY;
+    int qtOwnsS60Environment : 1;
     static inline void updateScreenSize();
     static inline RWsSession& wsSession();
     static inline RWindowGroup& windowGroup();
