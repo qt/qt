@@ -652,7 +652,9 @@ If you are using pre-built binaries, follow the instructions
     \section1 OpenSSL (version 0.9.7 or later)
 
     Support for \l{SSL}{Secure Sockets Layer (SSL)} communication is provided by the
-    \l{OpenSSL Toolkit}, which must be obtained separately.
+    \l{OpenSSL Toolkit}, which must be obtained separately. More information about
+    enabling SSL support can be found in the \l{Secure Sockets Layer (SSL) Classes}
+    document.
 
     \section1 Platform-Specific Requirements
 

@@ -54,6 +54,32 @@
     See the \l{General Qt Requirements} page for information about the
     versions of OpenSSL that are known to work with Qt.
 
+    \section1 Enabling and Disabling SSL Support
+
+    When building Qt from source, the configuration system checks for the presence
+    of the \c{openssl/opensslv.h} header provided by source or developer packages
+    of OpenSSL.
+
+    By default, an SSL-enabled Qt library dynamically loads any installed OpenSSL
+    library at run-time. However, it is possible to link against the library at
+    compile-time by configuring Qt with the \c{-openssl-linked} option.
+
+    When building a version of Qt linked against OpenSSL, the build system will
+    attempt to link with libssl and libcrypt libraries located in the default
+    location on the developer's system. This location is configurable:
+    set the \c OPENSSL_LIBS environment variable to contain the linker options
+    required to link Qt against the installed library. For example, on a Unix/Linux
+    system:
+
+    \code
+        ./configure -openssl-linked OPENSSL_LIBS='-L/opt/ssl/lib -lssl -lcrypto'
+    \endcode
+
+    To disable SSL support in a Qt build, configure Qt with the \c{-no-openssl}
+    option.
+
+    \section1 Licensing Information
+
     \note Due to import and export restrictions in some parts of the world, we
     are unable to supply the OpenSSL Toolkit with Qt packages. Developers wishing
     to use SSL communication in their deployed applications should either ensure
