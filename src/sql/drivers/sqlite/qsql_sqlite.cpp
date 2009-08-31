@@ -502,13 +502,25 @@ static int qGetSqliteTimeout(QString opts)
     enum { DefaultTimeout = 5000 };
 
     opts.remove(QLatin1Char(' '));
-    if (opts.startsWith(QLatin1String("QSQLITE_BUSY_TIMEOUT="))) {
-        bool ok;
-        int nt = opts.mid(21).toInt(&ok);
-        if (ok)
-            return nt;
+    foreach(QString option, opts.split(QLatin1Char(';'))) {
+        if (option.startsWith(QLatin1String("QSQLITE_BUSY_TIMEOUT="))) {
+            bool ok;
+            int nt = option.mid(21).toInt(&ok);
+            if (ok)
+                return nt;
+        }
     }
     return DefaultTimeout;
+}
+
+static int qGetSqliteOpenMode(QString opts)
+{
+    opts.remove(QLatin1Char(' '));
+    foreach(QString option, opts.split(QLatin1Char(';'))) {
+        if (option == QLatin1String("QSQLITE_OPEN_READONLY")))
+                return SQLITE_OPEN_READONLY;
+    }
+    return SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 }
 
 /*
@@ -523,7 +535,7 @@ bool QSQLiteDriver::open(const QString & db, const QString &, const QString &, c
     if (db.isEmpty())
         return false;
 
-    if (sqlite3_open16(db.constData(), &d->access) == SQLITE_OK) {
+    if (sqlite3_open_v2(db.toUtf8().constData(), &d->access, qGetSqliteOpenMode(conOpts), NULL) == SQLITE_OK) {
         sqlite3_busy_timeout(d->access, qGetSqliteTimeout(conOpts));
         setOpen(true);
         setOpenError(false);
