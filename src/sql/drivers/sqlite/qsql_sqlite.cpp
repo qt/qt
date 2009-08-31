@@ -517,7 +517,7 @@ static int qGetSqliteOpenMode(QString opts)
 {
     opts.remove(QLatin1Char(' '));
     foreach(QString option, opts.split(QLatin1Char(';'))) {
-        if (option == QLatin1String("QSQLITE_OPEN_READONLY")))
+        if (option == QLatin1String("QSQLITE_OPEN_READONLY"))
                 return SQLITE_OPEN_READONLY;
     }
     return SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
