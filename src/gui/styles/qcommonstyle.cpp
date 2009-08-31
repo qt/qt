@@ -127,9 +127,7 @@ QCommonStyle::QCommonStyle(QCommonStylePrivate &dd)
 { }
 
 /*!
-    \overload
-
-    Destroys the style
+    Destroys the style.
 */
 QCommonStyle::~QCommonStyle()
 { }

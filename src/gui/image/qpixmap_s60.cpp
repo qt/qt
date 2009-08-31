@@ -189,15 +189,15 @@ CFbsBitmap *QPixmap::toSymbianCFbsBitmap() const
 }
 
 /*!
-\since 4.6
+  \since 4.6
 
-Returns a QPixmap that is equivalent to the \c CFbsBitmap by copying the data.
-If the CFbsBitmap is not valid or is compressed in memory, this function will
-return a null QPixmap.
+  Returns a QPixmap that is equivalent to the \c CFbsBitmap \a bitmap
+  by copying the data. If the CFbsBitmap is not valid or is compressed
+  in memory, this function will return a null QPixmap.
 
-\warning This function is only available on Symbian OS.
+  \warning This function is only available on Symbian OS.
 
-\sa toSymbianCFbsBitmap(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
+  \sa toSymbianCFbsBitmap(), {QPixmap#Pixmap Conversion}{Pixmap Conversion}
 */
 
 QPixmap QPixmap::fromSymbianCFbsBitmap(CFbsBitmap *bitmap)

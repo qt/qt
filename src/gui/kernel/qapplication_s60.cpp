@@ -972,6 +972,12 @@ void QApplication::beep()
     beep=NULL;
 }
 
+/*! \fn int QApplication::s60ProcessEvent(TWsEvent *event)
+    This function does the core processing of individual s60
+    \a{event}s. It returns 1 if the event was handled, 0 if
+    the \a event was not handled, and -1 if the event was
+    not handled because the event handle was not in the map.
+ */
 int QApplication::s60ProcessEvent(TWsEvent *event)
 {
     bool handled = s60EventFilter(event);
@@ -1058,17 +1064,21 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
     return 0;
 }
 
+/*!
+  Returns false. Does nothing with the TWsEvent \a aEvent.
+ */
 bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 {
     return false;
 }
 
 /*!
-    Handles commands which are typically handled by CAknAppUi::HandleCommandL()
-    Qts Ui integration into Symbian is partially achieved by deriving from CAknAppUi.
-    Currently, exit, menu and softkey commands are handled
+  Handles \a{command}s which are typically handled by
+  CAknAppUi::HandleCommandL(). Qts Ui integration into Symbian is
+  partially achieved by deriving from CAknAppUi.  Currently, exit,
+  menu and softkey commands are handled.
 
-    \sa s60EventFilter(), s60ProcessEvent()
+  \sa s60EventFilter(), s60ProcessEvent()
 */
 void QApplication::symbianHandleCommand(int command)
 {
@@ -1096,6 +1106,9 @@ void QApplication::symbianHandleCommand(int command)
     }
 }
 
+/*!
+  Handles the resource change specified by \a type.
+ */
 void QApplication::symbianResourceChange(int type)
 {
     switch (type) {
