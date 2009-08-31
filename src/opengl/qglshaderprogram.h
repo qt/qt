@@ -282,6 +282,9 @@ public:
 
     static bool hasShaderPrograms(const QGLContext *context = 0);
 
+private Q_SLOTS:
+    void shaderDestroyed();
+
 private:
     QGLShaderProgramPrivate *d;
 
