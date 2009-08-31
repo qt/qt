@@ -52,8 +52,8 @@ namespace JSC
 QT_BEGIN_NAMESPACE
 
 /*!
-\class QScriptActivationObject
-\internal
+  \class QScript::QScriptActivationObject
+  \internal
 
   Represent a scope for native function call.
 */

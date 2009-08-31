@@ -194,7 +194,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QGLShader::ShaderType
+    \enum QGLShader::ShaderTypeBits
     This enum specifies the type of QGLShader that is being created.
 
     \value VertexShader Vertex shader written in the OpenGL Shading Language (GLSL).

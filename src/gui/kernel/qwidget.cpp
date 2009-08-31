@@ -919,7 +919,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     any amount of widgets there might be physical restrictions to amount of
     softkeys that can be used by the device.
 
-    \o Series60: For series60 menu button is automatically mapped to left
+    \e Series60: For series60 menu button is automatically mapped to left
     soft key if there is QMainWindow with QMenuBar in widgets parent hierarchy.
 
     \sa softKeys()
