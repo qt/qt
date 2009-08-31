@@ -1015,7 +1015,7 @@ static void printDirectFBInfo(IDirectFB *fb, IDirectFBSurface *primarySurface)
 static inline bool setIntOption(const QStringList &arguments, const QString &variable, int *value)
 {
     Q_ASSERT(value);
-    QRegExp rx(QString("%1=?(\\d+)").arg(variable));
+    QRegExp rx(QString::fromLatin1("%1=?(\\d+)").arg(variable));
     rx.setCaseSensitivity(Qt::CaseInsensitive);
     if (arguments.indexOf(rx) != -1) {
         *value = rx.cap(1).toInt();
@@ -1224,7 +1224,7 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     surface->Release(surface);
 #endif
 
-    QRegExp backgroundColorRegExp("bgcolor=?(.+)");
+    QRegExp backgroundColorRegExp(QLatin1String("bgcolor=?(.+)"));
     backgroundColorRegExp.setCaseSensitivity(Qt::CaseInsensitive);
     if (displayArgs.indexOf(backgroundColorRegExp) != -1) {
         d_ptr->backgroundColor.setNamedColor(backgroundColorRegExp.cap(1));
