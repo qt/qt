@@ -1107,80 +1107,73 @@ static void parseFont(QSvgNode *node,
                       const QSvgAttributes &attributes,
                       QSvgHandler *handler)
 {
-    QString family = attributes.fontFamily.toString();
-    QString size = attributes.fontSize.toString();
-    QString style = attributes.fontStyle.toString();
-    QString weight = attributes.fontWeight.toString();
-    QString variant = attributes.fontVariant.toString();
-    QString anchor = attributes.textAnchor.toString();
-
-    if (family.isEmpty() && size.isEmpty() && style.isEmpty() && weight.isEmpty() && variant.isEmpty() && anchor.isEmpty())
+    if (attributes.fontFamily.isEmpty() && attributes.fontSize.isEmpty() && attributes.fontStyle.isEmpty() &&
+        attributes.fontWeight.isEmpty() && attributes.fontVariant.isEmpty() && attributes.textAnchor.isEmpty())
         return;
 
-    QString id = someId(attributes);
     QSvgTinyDocument *doc = node->document();
     QSvgFontStyle *fontStyle = 0;
-    if (!family.isEmpty()) {
-        QSvgFont *svgFont = doc->svgFont(family);
+    if (!attributes.fontFamily.isEmpty()) {
+        QSvgFont *svgFont = doc->svgFont(attributes.fontFamily.toString());
         if (svgFont)
             fontStyle = new QSvgFontStyle(svgFont, doc);
     }
     if (!fontStyle)
         fontStyle = new QSvgFontStyle;
 
-    if (!family.isEmpty() && family != QT_INHERIT)
-        fontStyle->setFamily(family.trimmed());
+    if (!attributes.fontFamily.isEmpty() && attributes.fontFamily != QT_INHERIT)
+        fontStyle->setFamily(attributes.fontFamily.toString().trimmed());
 
-    if (!size.isEmpty() && size != QT_INHERIT) {
+    if (!attributes.fontSize.isEmpty() && attributes.fontSize != QT_INHERIT) {
         QSvgHandler::LengthType dummy; // should always be pixel size
-        fontStyle->setSize(parseLength(size, dummy, handler));
+        fontStyle->setSize(parseLength(attributes.fontSize.toString(), dummy, handler));
     }
 
-    if (!style.isEmpty() && style != QT_INHERIT) {
-        if (style == QLatin1String("normal")) {
+    if (!attributes.fontStyle.isEmpty() && attributes.fontStyle != QT_INHERIT) {
+        if (attributes.fontStyle == QLatin1String("normal")) {
             fontStyle->setStyle(QFont::StyleNormal);
-        } else if (style == QLatin1String("italic")) {
+        } else if (attributes.fontStyle == QLatin1String("italic")) {
             fontStyle->setStyle(QFont::StyleItalic);
-        } else if (style == QLatin1String("oblique")) {
+        } else if (attributes.fontStyle == QLatin1String("oblique")) {
             fontStyle->setStyle(QFont::StyleOblique);
         }
     }
 
-    if (!weight.isEmpty() && weight != QT_INHERIT) {
+    if (!attributes.fontWeight.isEmpty() && attributes.fontWeight != QT_INHERIT) {
         bool ok = false;
-        int weightNum = weight.toInt(&ok);
+        int weightNum = attributes.fontWeight.toString().toInt(&ok);
         if (ok) {
             fontStyle->setWeight(weightNum);
         } else {
-            if (weight == QLatin1String("normal")) {
+            if (attributes.fontWeight == QLatin1String("normal")) {
                 fontStyle->setWeight(400);
-            } else if (weight == QLatin1String("bold")) {
+            } else if (attributes.fontWeight == QLatin1String("bold")) {
                 fontStyle->setWeight(700);
-            } else if (weight == QLatin1String("bolder")) {
+            } else if (attributes.fontWeight == QLatin1String("bolder")) {
                 fontStyle->setWeight(QSvgFontStyle::BOLDER);
-            } else if (weight == QLatin1String("lighter")) {
+            } else if (attributes.fontWeight == QLatin1String("lighter")) {
                 fontStyle->setWeight(QSvgFontStyle::LIGHTER);
             }
         }
     }
 
-    if (!variant.isEmpty() && variant != QT_INHERIT) {
-        if (variant == QLatin1String("normal"))
+    if (!attributes.fontVariant.isEmpty() && attributes.fontVariant != QT_INHERIT) {
+        if (attributes.fontVariant == QLatin1String("normal"))
             fontStyle->setVariant(QFont::MixedCase);
-        else if (variant == QLatin1String("small-caps"))
+        else if (attributes.fontVariant == QLatin1String("small-caps"))
             fontStyle->setVariant(QFont::SmallCaps);
     }
 
-    if (!anchor.isEmpty() && anchor != QT_INHERIT) {
-        if (anchor == QLatin1String("start"))
+    if (!attributes.textAnchor.isEmpty() && attributes.textAnchor != QT_INHERIT) {
+        if (attributes.textAnchor == QLatin1String("start"))
             fontStyle->setTextAnchor(Qt::AlignLeft);
-        if (anchor == QLatin1String("middle"))
+        if (attributes.textAnchor == QLatin1String("middle"))
            fontStyle->setTextAnchor(Qt::AlignHCenter);
-        else if (anchor == QLatin1String("end"))
+        else if (attributes.textAnchor == QLatin1String("end"))
            fontStyle->setTextAnchor(Qt::AlignRight);
     }
 
-    node->appendStyleProperty(fontStyle, id);
+    node->appendStyleProperty(fontStyle, someId(attributes));
 }
 
 static void parseTransform(QSvgNode *node,
