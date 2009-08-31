@@ -6,6 +6,7 @@ symbian: {
 
     SUBDIRS=
     # WARNING: Changing TARGET name will break Symbian SISX upgrade functionality
+    # DO NOT TOUCH TARGET VARIABLE IF YOU ARE NOT SURE WHAT YOU ARE DOING    
     TARGET = "Qt for S60"
     TARGET.UID3 = 0x2001E61C
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
