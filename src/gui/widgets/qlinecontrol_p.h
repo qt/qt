@@ -349,7 +349,7 @@ Q_SIGNALS:
 protected:
     virtual void timerEvent(QTimerEvent *event);
 
-private slots:
+private Q_SLOTS:
     void _q_clipboardChanged();
     void _q_deleteSelected();
 

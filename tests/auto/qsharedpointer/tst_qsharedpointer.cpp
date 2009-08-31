@@ -548,6 +548,13 @@ class OtherObject: public QObject
 void tst_QSharedPointer::qobjectWeakManagement()
 {
     {
+        QWeakPointer<QObject> weak;
+        weak = QWeakPointer<QObject>();
+        QVERIFY(weak.isNull());
+        QVERIFY(!weak.data());
+    }
+
+    {
         QObject *obj = new QObject;
         QWeakPointer<QObject> weak(obj);
         QVERIFY(!weak.isNull());
@@ -1661,6 +1668,11 @@ void tst_QSharedPointer::invalidConstructs_data()
         << "QObject *ptr = new QObject;\n"
            "QWeakPointer<QObject> weak = ptr;\n"    // this makes the object unmanaged
            "QSharedPointer<QObject> shared(ptr);\n";
+
+    QTest::newRow("shared-pointer-implicit-from-uninitialized")
+        << &QTest::QExternalTest::tryCompileFail
+        << "Data *ptr = 0;\n"
+           "QSharedPointer<Data> weakptr = Qt::Uninitialized;\n";
 }
 
 void tst_QSharedPointer::invalidConstructs()

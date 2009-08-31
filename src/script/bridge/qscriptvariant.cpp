@@ -137,7 +137,7 @@ static JSC::JSValue JSC_HOST_CALL variantProtoFuncToString(JSC::ExecState *exec,
     JSC::JSValue value = variantProtoFuncValueOf(exec, callee, thisValue, args);
     if (value.isObject()) {
         result = v.toString();
-        if (result.isEmpty()) {
+        if (result.isEmpty() && !v.canConvert(QVariant::String)) {
             result = "QVariant(";
             result += v.typeName();
             result += ")";

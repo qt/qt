@@ -1285,10 +1285,6 @@ bool QGraphicsWidget::event(QEvent *event)
     case QEvent::WindowActivate:
     case QEvent::WindowDeactivate:
         update();
-        foreach (QGraphicsItem *child, childItems()) {
-            if (child->isWidget())
-                QApplication::sendEvent(static_cast<QGraphicsWidget *>(child), event);
-        }
         break;
         // Taken from QWidget::event
     case QEvent::ActivationChange:
@@ -1598,6 +1594,8 @@ void QGraphicsWidget::ungrabKeyboardEvent(QEvent *event)
 
 /*!
     Returns the widgets window type.
+
+    \sa windowFlags(), isWindow(), isPanel()
 */
 Qt::WindowType QGraphicsWidget::windowType() const
 {
@@ -1613,6 +1611,13 @@ Qt::WindowType QGraphicsWidget::windowType() const
     is platform-dependent.
 
     By default, this property contains no window flags.
+
+    Windows are panels. If you set the Qt::Window flag, the ItemIsPanel flag
+    will be set automatically. If you clear the Qt::Window flag, the
+    ItemIsPanel flag is also cleared. Note that the ItemIsPanel flag can be
+    set independently of Qt::Window.
+
+    \sa isWindow(), isPanel()
 */
 Qt::WindowFlags QGraphicsWidget::windowFlags() const
 {
@@ -1630,6 +1635,8 @@ void QGraphicsWidget::setWindowFlags(Qt::WindowFlags wFlags)
     d->windowFlags = wFlags;
     if (!d->setWindowFrameMargins)
         unsetWindowFrameMargins();
+
+    setFlag(ItemIsPanel, d->windowFlags & Qt::Window);
 
     bool isPopup = (d->windowFlags & Qt::WindowType_Mask) == Qt::Popup;
     if (d->scene && isVisible() && wasPopup != isPopup) {
@@ -1654,7 +1661,7 @@ void QGraphicsWidget::setWindowFlags(Qt::WindowFlags wFlags)
     The active window is the window that either contains a child widget that
     currently has input focus, or that itself has input focus.
 
-    \sa QGraphicsScene::activeWindow(), QGraphicsScene::setActiveWindow()
+    \sa QGraphicsScene::activeWindow(), QGraphicsScene::setActiveWindow(), isActive()
 */
 bool QGraphicsWidget::isActiveWindow() const
 {
@@ -1662,7 +1669,7 @@ bool QGraphicsWidget::isActiveWindow() const
     if (!d->scene)
         return false;
     const QGraphicsWidget *w = window();
-    return (!w && d->scene->d_func()->activationRefCount) || (w && d->scene->activeWindow() == w);
+    return (!w && d->scene->isActive()) || (w && d->scene->activeWindow() == w);
 }
 
 /*!

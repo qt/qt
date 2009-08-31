@@ -88,6 +88,7 @@ private slots:
     // Test requires make
     void bundle_spaces();
 #endif
+    void includefunction();
 
 private:
     TestCompiler test_compiler;
@@ -125,10 +126,12 @@ void tst_qmake::cleanupTestCase()
 
 void tst_qmake::init()
 {
+    test_compiler.clearCommandOutput();
 }
 
 void tst_qmake::cleanup()
 {
+    test_compiler.clearCommandOutput();
 }
 
 void tst_qmake::simple_app()
@@ -437,6 +440,26 @@ void tst_qmake::bundle_spaces()
     QVERIFY( local_tc.removeMakefile(workDir) );
 }
 #endif // Q_OS_WIN
+
+void tst_qmake::includefunction()
+{
+    QString workDir = base_path + "/testdata/include_function";
+    QString warningMsg("Unable to find file for inclusion");
+    QVERIFY(test_compiler.qmake( workDir, "include_existing_file"));
+    QVERIFY(!test_compiler.commandOutput().contains(warningMsg));
+
+    // test include()  usage on a missing file
+    test_compiler.clearCommandOutput();
+    workDir = base_path + "/testdata/include_function";
+    QVERIFY(test_compiler.qmake( workDir, "include_missing_file" ));
+    QVERIFY(test_compiler.commandOutput().contains(warningMsg));
+
+    // test include() usage on a missing file when all function parameters are used
+    test_compiler.clearCommandOutput();
+    workDir = base_path + "/testdata/include_function";
+    QVERIFY(test_compiler.qmake( workDir, "include_missing_file2" ));
+    QVERIFY(test_compiler.commandOutput().contains(warningMsg));
+}
 
 QTEST_MAIN(tst_qmake)
 #include "tst_qmake.moc"

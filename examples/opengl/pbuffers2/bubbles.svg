@@ -72,7 +72,7 @@
       <radialGradient id="shadowGrad" gradientUnits="userSpaceOnUse"
                       cx="0" cy="0" r="100" fx="-50" fy="50">
         <stop offset="0%" stop-color="black" stop-opacity="1.0" />
-        <stop offset="100%" stop-color="white" stop-opacity="0.0" />
+        <stop offset="100%" stop-color="black" stop-opacity="0.0" />
       </radialGradient>
 
       <!-- Define a shadow for each sphere. -->
@@ -91,56 +91,56 @@
 
   <g transform="translate(200,700)">
     <use xlink:href="#bubble" fill="url(#blueBubble)" />
-    <animateTransform attributeName="transform" type="translate"
+    <animateTransform attributeName="transform" type="translate" additive="sum"
         values="0,0; 0,-800" begin="1s" dur="10s" fill="freeze" repeatCount="indefinite" />
   </g>
   <g transform="translate(315,700)">
     <g transform="scale(0.5,0.5)">
       <use xlink:href="#bubble" fill="url(#redBubble)" />
     </g>
-    <animateTransform attributeName="transform" type="translate"
+    <animateTransform attributeName="transform" type="translate" additive="sum"
         values="0,0; 0,-800" begin="3s" dur="7s" fill="freeze" repeatCount="indefinite" />
   </g>
   <g transform="translate(80,700)">
     <g transform="scale(0.65,0.65)">
       <use xlink:href="#bubble" fill="url(#greenBubble)" />
     </g>
-    <animateTransform attributeName="transform" type="translate"
+    <animateTransform attributeName="transform" type="translate" additive="sum"
         values="0,0; 0,-800" begin="5s" dur="9s" fill="freeze" repeatCount="indefinite" />
   </g>
   <g transform="translate(255,700)">
     <g transform="scale(0.3,0.3)">
       <use xlink:href="#bubble" fill="url(#yellowBubble)" />
     </g>
-    <animateTransform attributeName="transform" type="translate"
+    <animateTransform attributeName="transform" type="translate" additive="sum"
         values="0,0; 0,-800" begin="2s" dur="6s" fill="freeze" repeatCount="indefinite" />
   </g>
   <g transform="translate(565,700)">
     <g transform="scale(0.4,0.4)">
       <use xlink:href="#bubble" fill="url(#blueBubble)" />
     </g>
-    <animateTransform attributeName="transform" type="translate"
+    <animateTransform attributeName="transform" type="translate" additive="sum"
         values="0,0; 0,-800" begin="4s" dur="8s" fill="freeze" repeatCount="indefinite" />
   </g>
   <g transform="translate(715,700)">
     <g transform="scale(0.6,0.6)">
       <use xlink:href="#bubble" fill="url(#redBubble)" />
     </g>
-    <animateTransform attributeName="transform" type="translate"
+    <animateTransform attributeName="transform" type="translate" additive="sum"
         values="0,0; 0,-800" begin="1s" dur="4s" fill="freeze" repeatCount="indefinite" />
   </g>
   <g transform="translate(645,700)">
     <g transform="scale(0.375,0.375)">
       <use xlink:href="#bubble" fill="url(#greenBubble)" />
     </g>
-    <animateTransform attributeName="transform" type="translate"
+    <animateTransform attributeName="transform" type="translate" additive="sum"
         values="0,0; 0,-800" begin="0s" dur="11s" fill="freeze" repeatCount="indefinite" />
   </g>
   <g transform="translate(555,700)">
     <g transform="scale(0.9,0.9)">
       <use xlink:href="#bubble" fill="url(#yellowBubble)" />
     </g>
-    <animateTransform attributeName="transform" type="translate"
+    <animateTransform attributeName="transform" type="translate" additive="sum"
         values="0,0; 0,-800" begin="3s" dur="7.5s" fill="freeze" repeatCount="indefinite" />
   </g>
 
@@ -148,28 +148,28 @@
     <g transform="scale(0.5,0.5)">
       <use xlink:href="#bubble" fill="url(#blueBubble)" />
     </g>
-    <animateTransform attributeName="transform" type="translate"
+    <animateTransform attributeName="transform" type="translate" additive="sum"
         values="0,0; 0,-800" begin="3s" dur="6s" fill="freeze" repeatCount="indefinite" />
   </g>
   <g transform="translate(215,700)">
     <g transform="scale(0.45,0.45)">
       <use xlink:href="#bubble" fill="url(#redBubble)" />
     </g>
-    <animateTransform attributeName="transform" type="translate"
+    <animateTransform attributeName="transform" type="translate" additive="sum"
         values="0,0; 0,-800" begin="5.5s" dur="7s" fill="freeze" repeatCount="indefinite" />
   </g>
   <g transform="translate(420,700)">
     <g transform="scale(0.75,0.75)">
       <use xlink:href="#bubble" fill="url(#greenBubble)" />
     </g>
-    <animateTransform attributeName="transform" type="translate"
+    <animateTransform attributeName="transform" type="translate" additive="sum"
         values="0,0; 0,-800" begin="1s" dur="9s" fill="freeze" repeatCount="indefinite" />
   </g>
   <g transform="translate(815,700)">
     <g transform="scale(0.6,0.6)">
       <use xlink:href="#bubble" fill="url(#yellowBubble)" />
     </g>
-    <animateTransform attributeName="transform" type="translate"
+    <animateTransform attributeName="transform" type="translate" additive="sum"
         values="0,0; 0,-800" begin="2s" dur="9.5s" fill="freeze" repeatCount="indefinite" />
   </g>
 
@@ -186,7 +186,7 @@
       <circle fill="#a6ce39" cx="0" cy="0" r="33" />
       <path fill="black" d="M 37,50 L 50,37 L 12,-1 L 22,-11 L 10,-24 L -24,10
                             L -11,22 L -1,12 Z" />
-      <animateTransform attributeName="transform"  type="rotate" values="0; 360"
+      <animateTransform attributeName="transform"  type="rotate" additive="sum" values="0; 360"
 	         begin="0s" dur="10s" fill="freeze" repeatCount="indefinite" />
     </g>
     <g transform="translate(200,375)">

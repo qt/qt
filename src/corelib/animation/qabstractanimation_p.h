@@ -141,6 +141,7 @@ private:
     QTime time;
     int lastTick;
     int timingInterval;
+    int currentAnimationIdx;
     bool consistentTiming;
     QList<QAbstractAnimation*> animations, animationsToStart;
 };

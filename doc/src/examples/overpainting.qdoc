@@ -159,9 +159,10 @@
 
     \snippet examples/opengl/overpainting/glwidget.cpp 7
 
-    Once the list containing the object has been executed, the matrix stack
-    needs to be restored to its original state at the start of this function
-    before we can begin overpainting:
+    Once the list containing the object has been executed, the GL
+    states we changed and the matrix stack needs to be restored to its
+    original state at the start of this function before we can begin
+    overpainting:
 
     \snippet examples/opengl/overpainting/glwidget.cpp 8
 

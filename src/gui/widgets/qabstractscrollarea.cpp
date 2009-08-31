@@ -1356,7 +1356,7 @@ void QAbstractScrollAreaPrivate::_q_gestureTriggered()
         return;
     QScrollBar *hBar = q->horizontalScrollBar();
     QScrollBar *vBar = q->verticalScrollBar();
-    QSize delta = g->lastOffset();
+    QSizeF delta = g->lastOffset();
     if (!delta.isNull()) {
         if (QApplication::isRightToLeft())
             delta.rwidth() *= -1;

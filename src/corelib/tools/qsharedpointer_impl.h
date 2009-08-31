@@ -511,7 +511,7 @@ public:
     QWeakPointer<T> toWeakRef() const;
 
 protected:
-    inline QSharedPointer(Qt::Initialization i) : BaseClass(i) {}
+    inline explicit QSharedPointer(Qt::Initialization i) : BaseClass(i) {}
 
 public:
     static inline QSharedPointer<T> create()

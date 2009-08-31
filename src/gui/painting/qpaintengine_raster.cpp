@@ -791,7 +791,7 @@ void QRasterPaintEngine::updatePen(const QPen &pen)
     if(pen_style == Qt::SolidLine) {
         s->stroker = &d->basicStroker;
     } else if (pen_style != Qt::NoPen) {
-        if (!d->dashStroker.data())
+        if (!d->dashStroker)
             d->dashStroker.reset(new QDashStroker(&d->basicStroker));
         if (pen.isCosmetic()) {
             d->dashStroker->setClipRect(d->deviceRect);

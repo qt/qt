@@ -93,10 +93,13 @@ Q_OBJECT
         { emit signalWithIntArg(arg); }
     void emitSignalWithStringArg(const QString &arg)
         { emit signalWithStringArg(arg); }
+    void emitSignalWithDefaultArg()
+        { emit signalWithDefaultArg(); }
 Q_SIGNALS:
     void signalWithNoArg();
     void signalWithIntArg(int);
     void signalWithStringArg(const QString &);
+    void signalWithDefaultArg(int i = 42);
 };
 
 class tst_QStateMachine : public QObject
@@ -193,6 +196,8 @@ private slots:
 
     void nestedStateMachines();
     void goToState();
+
+    void task260403_clonedSignals();
 };
 
 tst_QStateMachine::tst_QStateMachine()
@@ -3935,6 +3940,43 @@ void tst_QStateMachine::goToState()
     QCOMPARE(machine.configuration().size(), 2);
     QVERIFY(machine.configuration().contains(s2));
     QVERIFY(machine.configuration().contains(s2_1));
+}
+
+class CloneSignalTransition : public QSignalTransition
+{
+public:
+    CloneSignalTransition(QObject *sender, const char *signal, QAbstractState *target)
+        : QSignalTransition(sender, signal)
+    {
+        setTargetState(target);
+    }
+
+    void onTransition(QEvent *e)
+    {
+        QSignalTransition::onTransition(e);
+        QSignalEvent *se = static_cast<QSignalEvent*>(e);
+        eventSignalIndex = se->signalIndex();
+    }
+
+    int eventSignalIndex;
+};
+
+void tst_QStateMachine::task260403_clonedSignals()
+{
+    SignalEmitter emitter;
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    QState *s2 = new QState(&machine);
+    CloneSignalTransition *t1 = new CloneSignalTransition(&emitter, SIGNAL(signalWithDefaultArg()), s2);
+    s1->addTransition(t1);
+
+    machine.setInitialState(s1);
+    machine.start();
+    QTest::qWait(1);
+
+    emitter.emitSignalWithDefaultArg();
+    QTest::qWait(1);
+    QCOMPARE(t1->eventSignalIndex, emitter.metaObject()->indexOfSignal("signalWithDefaultArg()"));
 }
 
 QTEST_MAIN(tst_QStateMachine)

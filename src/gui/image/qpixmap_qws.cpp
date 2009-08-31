@@ -48,6 +48,9 @@
 #include <private/qdrawhelper_p.h>
 #include <private/qpixmap_raster_p.h>
 
+
+QT_BEGIN_NAMESPACE
+
 QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
 {
     QWidget *widget = QWidget::find(window);
@@ -148,3 +151,5 @@ int QPixmap::qwsBytesPerLine() const
 
     return 0;
 }
+
+QT_END_NAMESPACE

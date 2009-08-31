@@ -380,7 +380,7 @@ int main(int argc, char **argv)
                 QString script = textFile.readAll();
                 content = script.split("\n", QString::SkipEmptyParts);
             } else {
-                printf("failed to read file: '%s'\n", qPrintable(fileName));
+                printf("failed to read file: '%s'\n", qPrintable(fileinfo.absoluteFilePath()));
                 continue;
             }
             pcmd.setContents(content);

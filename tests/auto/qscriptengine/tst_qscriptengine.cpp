@@ -1107,6 +1107,31 @@ void tst_QScriptEngine::globalObjectProperties()
         }
     }
     QVERIFY(remainingNames.isEmpty());
+
+    // create property with no attributes
+    {
+        QString name = QString::fromLatin1("foo");
+        QVERIFY(!global.property(name).isValid());
+        QScriptValue val(123);
+        global.setProperty(name, val);
+        QVERIFY(global.property(name).equals(val));
+        QVERIFY(global.propertyFlags(name) == 0);
+        global.setProperty(name, QScriptValue());
+        QVERIFY(!global.property(name).isValid());
+    }
+    // create property with attributes
+    {
+        QString name = QString::fromLatin1("bar");
+        QVERIFY(!global.property(name).isValid());
+        QScriptValue val(QString::fromLatin1("ciao"));
+        QScriptValue::PropertyFlags flags = QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration;
+        global.setProperty(name, val, flags);
+        QVERIFY(global.property(name).equals(val));
+        QEXPECT_FAIL("", "custom Global Object properties don't retain attributes", Continue);
+        QCOMPARE(global.propertyFlags(name), flags);
+        global.setProperty(name, QScriptValue());
+        QVERIFY(!global.property(name).isValid());
+    }
 }
 
 void tst_QScriptEngine::globalObjectGetterSetterProperty()

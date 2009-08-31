@@ -95,6 +95,7 @@ class Q_DECLARATIVE_EXPORT QmlXmlListModel : public QListModelInterface, public 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
     Q_PROPERTY(QUrl source READ source WRITE setSource)
+    Q_PROPERTY(QString xml READ xml WRITE setXml)
     Q_PROPERTY(QString query READ query WRITE setQuery)
     Q_PROPERTY(QString namespaceDeclarations READ namespaceDeclarations WRITE setNamespaceDeclarations)
     Q_PROPERTY(QmlList<XmlListModelRole *> *roles READ roleObjects)
@@ -115,13 +116,16 @@ public:
     QUrl source() const;
     void setSource(const QUrl&);
 
+    QString xml() const;
+    void setXml(const QString&);
+
     QString query() const;
     void setQuery(const QString&);
 
     QString namespaceDeclarations() const;
     void setNamespaceDeclarations(const QString&);
 
-    enum Status { Idle, Loading, Error }; // ### should include Null for consistency?
+    enum Status { Null, Ready, Loading, Error };
     Status status() const;
     qreal progress() const;
 

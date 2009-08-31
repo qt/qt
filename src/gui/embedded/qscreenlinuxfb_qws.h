@@ -44,6 +44,11 @@
 
 #include <QtGui/qscreen_qws.h>
 
+struct fb_cmap;
+struct fb_var_screeninfo;
+struct fb_fix_screeninfo;
+
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -70,9 +75,6 @@ public:
 
 };
 
-struct fb_cmap;
-struct fb_var_screeninfo;
-struct fb_fix_screeninfo;
 class QLinuxFbScreenPrivate;
 
 class Q_GUI_EXPORT QLinuxFbScreen : public QScreen

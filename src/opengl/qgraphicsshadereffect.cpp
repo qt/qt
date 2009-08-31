@@ -51,8 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
-
 /*!
     \class QGraphicsShaderEffect
     \brief The QGraphicsShaderEffect class is the base class for creating
@@ -64,7 +62,7 @@ QT_BEGIN_NAMESPACE
     The specific effect is defined by a fragment of GLSL source code
     supplied to setPixelShaderFragment().  This source code must define a
     function with the signature
-    \c{lowp vec4 customShader(sampler2D imageTexture, vec2 textureCoords)}
+    \c{lowp vec4 customShader(lowp sampler2D imageTexture, highp vec2 textureCoords)}
     that returns the source pixel value
     to use in the paint engine's shader program.  The shader fragment
     is linked with the regular shader code used by the GL2 paint engine
@@ -77,7 +75,7 @@ QT_BEGIN_NAMESPACE
     \code
     static char const colorizeShaderCode[] =
         "uniform lowp vec4 effectColor;\n"
-        "lowp vec4 customShader(sampler2D imageTexture, vec2 textureCoords) {\n"
+        "lowp vec4 customShader(lowp sampler2D imageTexture, highp vec2 textureCoords) {\n"
         "    vec4 src = texture2D(imageTexture, textureCoords);\n"
         "    float gray = dot(src.rgb, vec3(0.212671, 0.715160, 0.072169));\n"
         "    vec4 colorize = 1.0-((1.0-gray)*(1.0-effectColor));\n"
@@ -126,11 +124,11 @@ QT_BEGIN_NAMESPACE
     the drawItem() method will draw its item argument directly with
     no effect applied.
 
-    \sa QGrapicsEffect
+    \sa QGraphicsEffect
 */
 
 static const char qglslDefaultImageFragmentShader[] = "\
-    lowp vec4 customShader(sampler2D imageTexture, vec2 textureCoords) { \
+    lowp vec4 customShader(lowp sampler2D imageTexture, highp vec2 textureCoords) { \
         return texture2D(imageTexture, textureCoords); \
     }\n";
 
@@ -215,13 +213,13 @@ QByteArray QGraphicsShaderEffect::pixelShaderFragment() const
     this shader effect to \a code.
 
     The \a code must define a GLSL function with the signature
-    \c{lowp vec4 customShader(sampler2D imageTexture, vec2 textureCoords)}
+    \c{lowp vec4 customShader(lowp sampler2D imageTexture, highp vec2 textureCoords)}
     that returns the source pixel value to use in the paint engine's
     shader program.  The following is the default pixel shader fragment,
     which draws a pixmap with no effect applied:
 
     \code
-    lowp vec4 customShader(sampler2D imageTexture, vec2 textureCoords) {
+    lowp vec4 customShader(lowp sampler2D imageTexture, highp vec2 textureCoords) {
         return texture2D(imageTexture, textureCoords);
     }
     \endcode
@@ -312,7 +310,5 @@ void QGraphicsShaderEffect::setUniforms(QGLShaderProgram *program)
 {
     Q_UNUSED(program);
 }
-
-#endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE

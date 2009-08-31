@@ -1903,12 +1903,12 @@ QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 */
 
 /*!
-    T *q_check_ptr(T *pointer)
+    \fn T *q_check_ptr(T *pointer)
     \relates <QtGlobal>
 
-	Users Q_CHECK_PTR on \a pointer, then returns \a pointer.
+    Users Q_CHECK_PTR on \a pointer, then returns \a pointer.
 
-	This can be used as an inline version of Q_CHECK_PTR.
+    This can be used as an inline version of Q_CHECK_PTR.
 */
 
 /*!

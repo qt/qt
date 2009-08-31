@@ -35,7 +35,7 @@
              }
 
              Connection {
-                 sender: ToolBar.button2; signal: "clicked()"
+                 sender: ToolBar; signal: "button2Clicked()"
                  script: if (ScaleMe.state == 'Details' ) ScaleMe.state = 'Show';
              }
 
@@ -51,6 +51,7 @@
                      PropertyChanges { target: ImageDetails; x: 0 }
                      PropertyChanges { target: Views; x: -parent.width }
                      PropertyChanges { target: ToolBar.button2; text: "Back" }
+                     PropertyChanges { target: ToolBar; onButton2Clicked: { } }
                  }
              ]
              transitions: [

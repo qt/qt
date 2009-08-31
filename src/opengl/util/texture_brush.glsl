@@ -17,7 +17,5 @@ vec4 brush()
 
     coords *= inv_brush_texture_size;
 
-    coords.y = -coords.y;
-
     return texture2D(brush_texture, coords);
 }

@@ -54,6 +54,8 @@
 
 //#define DEBUG_AUDIO 1
 
+QT_BEGIN_NAMESPACE
+
 static CRITICAL_SECTION waveOutCriticalSection;
 
 QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray &device, const QAudioFormat& audioFormat):
@@ -502,3 +504,5 @@ qint64 OutputPrivate::writeData(const char* data, qint64 len)
     }
     return written;
 }
+
+QT_END_NAMESPACE

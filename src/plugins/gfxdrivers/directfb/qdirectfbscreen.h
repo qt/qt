@@ -152,6 +152,9 @@ public:
         return static_cast<QDirectFBScreen*>(inst);
     }
 
+    IDirectFBSurface *surfaceForWidget(const QWidget *widget, QRect *rect) const;
+    IDirectFBSurface *subSurfaceForWidget(const QWidget *widget, const QRect &area = QRect()) const;
+
     IDirectFB *dfb();
 #ifdef QT_NO_DIRECTFB_WM
     IDirectFBSurface *primarySurface();
@@ -207,7 +210,7 @@ public:
                                      const QImage &image);
 #endif
 
-    static uchar *lockSurface(IDirectFBSurface *surface, uint flags, int *bpl = 0);
+    static uchar *lockSurface(IDirectFBSurface *surface, DFBSurfaceLockFlags flags, int *bpl = 0);
 #if defined QT_DIRECTFB_IMAGEPROVIDER && defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
     void setDirectFBImageProvider(IDirectFBImageProvider *provider);
 #endif

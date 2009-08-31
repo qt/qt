@@ -5318,16 +5318,23 @@ QRect QMacStyle::subControlRect(ComplexControl cc, const QStyleOptionComplex *op
             case SC_ComboBoxArrow:{
                 ret = QMacStylePrivate::comboboxEditBounds(combo->rect, bdi);
                 ret.setX(ret.x() + ret.width());
-                ret.setWidth(combo->rect.width() - ret.width() - ret.x());
+                ret.setWidth(combo->rect.right() - ret.right());
                 break; }
             case SC_ComboBoxListBoxPopup:{
                 if (combo->editable) {
                     HIRect inner = QMacStylePrivate::comboboxInnerBounds(qt_hirectForQRect(combo->rect), bdi.kind);
                     QRect editRect = QMacStylePrivate::comboboxEditBounds(combo->rect, bdi);
-                    ret.adjust(qRound(inner.origin.x), 0, qRound(inner.origin.x + inner.size.width), editRect.y() + editRect.height() + 2);
+                    const int comboTop = combo->rect.top();
+                    ret = QRect(qRound(inner.origin.x),
+                                comboTop,
+                                qRound(inner.origin.x - combo->rect.left() + inner.size.width),
+                                editRect.bottom() - comboTop + 2);
                 } else {
                     QRect editRect = QMacStylePrivate::comboboxEditBounds(combo->rect, bdi);
-                    ret.adjust(4 - 11, 1, editRect.width() + 10 + 11, 1);
+                    ret = QRect(combo->rect.x() + 4 - 11,
+                                combo->rect.y() + 1,
+                                editRect.width() + 10 + 11,
+                                1);
                  }
                 break; }
             default:

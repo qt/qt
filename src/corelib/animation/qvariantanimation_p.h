@@ -78,10 +78,7 @@ public:
 
     void setDefaultStartEndValue(const QVariant &value);
 
-    int duration;
-    QEasingCurve easing;
 
-    QVariantAnimation::KeyValues keyValues;
     QVariant currentValue;
     QVariant defaultStartEndValue;
 
@@ -91,6 +88,9 @@ public:
         QVariantAnimation::KeyValue start, end;
     } currentInterval;
 
+    QEasingCurve easing;
+    int duration;
+    QVariantAnimation::KeyValues keyValues;
     QVariantAnimation::Interpolator interpolator;
 
     void setCurrentValueForProgress(const qreal progress);

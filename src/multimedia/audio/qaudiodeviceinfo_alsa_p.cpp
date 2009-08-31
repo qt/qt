@@ -52,6 +52,8 @@
 
 #include "qaudiodeviceinfo_alsa_p.h"
 
+QT_BEGIN_NAMESPACE
+
 QAudioDeviceInfoPrivate::QAudioDeviceInfoPrivate(QByteArray dev, QAudio::Mode mode)
 {
     handle = 0;
@@ -391,4 +393,4 @@ QByteArray QAudioDeviceInfoPrivate::defaultOutputDevice()
     return QByteArray("default");
 }
 
-
+QT_END_NAMESPACE

@@ -44,6 +44,12 @@
 
 #include <QtCore/QIODevice>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
 #ifndef QT_NO_SXE
 #define QWS_SOCK_BASE QUnixSocket
 #define QWS_SOCK_SERVER_BASE QUnixSocketServer
@@ -57,12 +63,6 @@ class QTcpServer;
 #endif
 class QWSSocket;
 class QWSServerSocket;
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
 
 /********************************************************************
  *

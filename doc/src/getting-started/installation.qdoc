@@ -520,7 +520,7 @@ in the \l{Qt for S60 Requirements} document.
         We've included a subset of the Qt demos in this package for you
         to try out. An excellent starting point is the "fluidlauncher"
         demo. To run the demo on a real device, you first have to install
-        \c{qt_libs.sis} and \c{fluidlauncher.sis} found in the Qt installation
+        \c{qt_for_s60.sis} and \c{fluidlauncher.sis} found in the Qt installation
         directory. Begin by connecting your phone using the USB cable and
         selecting "PC Suite mode". In Windows Explorer right click on the
         \c{.sis} files and select "Install with Nokia Application Installer"

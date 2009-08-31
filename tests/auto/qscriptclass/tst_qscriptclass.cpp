@@ -606,6 +606,7 @@ void tst_QScriptClass::newInstance()
     QScriptValue arr = eng.newArray();
     QVERIFY(arr.isArray());
     QCOMPARE(arr.scriptClass(), (QScriptClass*)0);
+    QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setScriptClass() failed: cannot change class of non-QScriptObject");
     arr.setScriptClass(&cls);
     QEXPECT_FAIL("", "Changing class of arbitrary script object is not allowed (it's OK)", Continue);
     QCOMPARE(arr.scriptClass(), (QScriptClass*)&cls);

@@ -490,12 +490,13 @@ void QGLWidgetPrivate::recreateEglSurface(bool force)
 }
 
 
-QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, const qint64 key, bool canInvert)
+QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, const qint64 key,
+                                                           QGLContext::BindOptions options)
 {
     Q_Q(QGLContext);
 
     // The EGL texture_from_pixmap has no facility to invert the y coordinate
-    if (!canInvert)
+    if (!(options & QGLContext::CanFlipNativePixmapBindOption))
         return 0;
 
     Q_ASSERT(pd->classId() == QPixmapData::X11Class);
@@ -623,7 +624,10 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
         return 0;
     }
 
-    QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, canInvert, true);
+    // Always inverted because the opposite is not supported...
+    options |= QGLContext::InvertedYBindOption;
+
+    QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, options);
     pixmapData->flags |= QX11PixmapData::InvertedWhenBoundToTexture;
 
     // We assume the cost of bound pixmaps is zero

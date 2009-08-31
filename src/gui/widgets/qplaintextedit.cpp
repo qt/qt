@@ -379,7 +379,7 @@ void QPlainTextDocumentLayout::layoutBlock(const QTextBlock &block)
     tl->beginLayout();
     qreal availableWidth = d->width;
     if (availableWidth <= 0) {
-        availableWidth = INT_MAX; // similar to text edit with pageSize.width == 0
+        availableWidth = qreal(INT_MAX); // similar to text edit with pageSize.width == 0
     }
     availableWidth -= 2*margin + extraMargin;
     while (1) {
@@ -2934,7 +2934,7 @@ void QPlainTextEditPrivate::_q_gestureTriggered()
     QScrollBar *vBar = q->verticalScrollBar();
     if (g->state() == Qt::GestureStarted)
         originalOffsetY = vBar->value();
-    QSize totalOffset = g->totalOffset();
+    QSizeF totalOffset = g->totalOffset();
     if (!totalOffset.isNull()) {
         if (QApplication::isRightToLeft())
             totalOffset.rwidth() *= -1;

@@ -67,9 +67,9 @@
 
 #include <qdebug.h>
 
-QT_BEGIN_NAMESPACE
-
 extern int errno;
+
+QT_BEGIN_NAMESPACE
 
 #define QT_QWS_SOUND_16BIT 1 // or 0, or undefined for always 0
 #define QT_QWS_SOUND_STEREO 1 // or 0, or undefined for always 0

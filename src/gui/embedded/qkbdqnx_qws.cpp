@@ -49,6 +49,9 @@
 #include "qplatformdefs.h"
 #include <errno.h>
 
+
+QT_BEGIN_NAMESPACE
+
 /*!
     \class QWSQnxKeyboardHandler
     \preliminary
@@ -229,3 +232,5 @@ void QWSQnxKeyboardHandler::socketActivated()
     // (on QNX, isPress is not set when the key event is repeated).
     processKeyEvent(unicode, key, modifiers, isPress || isRepeat, isRepeat);
 }
+
+QT_END_NAMESPACE
