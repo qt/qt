@@ -203,7 +203,7 @@ public:
     QGLExtensionFuncs &extensionFuncs() {return m_extensionFuncs;}
     const QGLContext *context() const {return m_context;}
 private:
-    QGLContextGroup(const QGLContext *context) : m_refs(1), m_context(context) { }
+    QGLContextGroup(const QGLContext *context) : m_context(context), m_refs(1) { }
 
     QGLExtensionFuncs m_extensionFuncs;
     const QGLContext *m_context; // context group's representative
