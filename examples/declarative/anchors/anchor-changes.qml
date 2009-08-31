@@ -26,14 +26,18 @@ Item {
     }
 
     MouseRegion {
-        anchors.fill: parent
+        anchors.fill: Content
         onPressed: Window.state = "FullScreen"
         onReleased: Window.state = ""
     }
 
     states : State {
         name: "FullScreen"
-        AnchorChanges { target: Content; top: Window.top; bottom: Window.bottom }
+    //! [0]
+        AnchorChanges {
+            target: Content; top: Window.top; bottom: Window.bottom
+        }
+    //! [0]
     }
 
     transitions : Transition {
