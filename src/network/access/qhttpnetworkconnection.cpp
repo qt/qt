@@ -519,7 +519,7 @@ bool QHttpNetworkConnectionPrivate::fillPipeline(QList<HttpMessagePair> &queue, 
     if (queue.isEmpty())
         return true;
 
-    for (int i = 0; i < queue.length(); i++) {
+    for (int i = queue.count() - 1; i >= 0; --i) {
         HttpMessagePair messagePair = queue.at(i);
         const QHttpNetworkRequest &request = messagePair.first;
 
