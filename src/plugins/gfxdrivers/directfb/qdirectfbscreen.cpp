@@ -496,14 +496,6 @@ void QDirectFBScreen::setSurfaceColorTable(IDirectFBSurface *surface,
 
 #endif // QT_NO_DIRECTFB_PALETTE
 
-#ifndef QT_NO_QWS_CURSOR
-#if defined QT_DIRECTFB_WM && defined QT_DIRECTFB_WINDOW_AS_CURSOR
-#define QT_DIRECTFB_CURSOR
-#elif defined QT_DIRECTFB_LAYER
-#define QT_DIRECTFB_CURSOR
-#endif
-#endif
-
 #if defined QT_DIRECTFB_CURSOR
 class Q_GUI_EXPORT QDirectFBScreenCursor : public QScreenCursor
 {
@@ -1279,12 +1271,10 @@ bool QDirectFBScreen::initDevice()
     }
 #endif
 
-#ifndef QT_NO_QWS_CURSOR
-#if defined QT_NO_DIRECTFB_WM || defined QT_NO_DIRECTFB_LAYER
-    QScreenCursor::initSoftwareCursor();
-#else
+#ifdef QT_DIRECTFB_CURSOR
     qt_screencursor = new QDirectFBScreenCursor;
-#endif
+#elif !defined QT_NO_QWS_CURSOR
+    QScreenCursor::initSoftwareCursor();
 #endif
     return true;
 }
@@ -1344,17 +1334,18 @@ QWSWindowSurface *QDirectFBScreen::createSurface(const QString &key) const
 // window surfaces. Normal, directFB surfaces are handled by DirectFB.
 void QDirectFBScreen::exposeRegion(QRegion r, int changing)
 {
-#ifdef QT_NO_DIRECTFB_WM
+#if defined QT_NO_DIRECTFB_WM
     const QList<QWSWindow*> windows = QWSServer::instance()->clientWindows();
-    if (changing < 0 || changing >= windows.size())
+    if (changing < 0 || changing >= windows.size()) {
         return;
-
+    }
 
     QWSWindow *win = windows.at(changing);
     QWSWindowSurface *s = win->windowSurface();
     r &= region();
-    if (r.isEmpty())
+    if (r.isEmpty()) {
         return;
+    }
 
     const QRect brect = r.boundingRect();
 
@@ -1372,15 +1363,18 @@ void QDirectFBScreen::exposeRegion(QRegion r, int changing)
                                                        ? static_cast<QDirectFBWindowSurface*>(s) : 0;
             if (dfbWindowSurface) {
                 IDirectFBSurface *surface = dfbWindowSurface->directFBSurface();
+                Q_ASSERT(surface);
                 const int n = insideWindow.numRects();
                 if (n == 1 || d_ptr->directFBFlags & BoundingRectFlip) {
                     const QRect source = (insideWindow.boundingRect().intersected(windowGeometry)).translated(-windowGeometry.topLeft());
                     const DFBRectangle rect = {
                         source.x(), source.y(), source.width(), source.height()
                     };
+
                     d_ptr->primarySurface->Blit(d_ptr->primarySurface, surface, &rect,
                                                 windowGeometry.x() + source.x(),
                                                 windowGeometry.y() + source.y());
+
                 } else {
                     const QVector<QRect> rects = insideWindow.rects();
                     QVarLengthArray<DFBRectangle, 16> dfbRectangles(n);
@@ -1403,6 +1397,7 @@ void QDirectFBScreen::exposeRegion(QRegion r, int changing)
         }
     }
 
+#ifdef QT_NO_DIRECTFB_CURSOR
     if (QScreenCursor *cursor = QScreenCursor::instance()) {
         const QRect cursorRectangle = cursor->boundingRect();
         if (cursor->isVisible() && !cursor->isAccelerated() && cursorRectangle.intersects(brect)) {
@@ -1416,6 +1411,7 @@ void QDirectFBScreen::exposeRegion(QRegion r, int changing)
 #endif
         }
     }
+#endif
     flipSurface(d_ptr->primarySurface, d_ptr->flipFlags, r, QPoint());
 #else
     Q_UNUSED(r);
@@ -1433,8 +1429,8 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
         return;
 
     d_ptr->primarySurface->SetColor(d_ptr->primarySurface,
-                                color.red(), color.green(), color.blue(),
-                                color.alpha());
+                                    color.red(), color.green(), color.blue(),
+                                    color.alpha());
     const int n = region.numRects();
     if (n > 1) {
         const QRect r = region.boundingRect();

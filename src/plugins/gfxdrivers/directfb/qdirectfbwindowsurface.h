@@ -92,12 +92,14 @@ public:
     void endPaint(const QRegion &);
 
     IDirectFBSurface *surfaceForWidget(const QWidget *widget, QRect *rect) const;
+    IDirectFBSurface *directFBSurface() const;
 private:
     void updateFormat();
+    QDirectFBWindowSurface *sibling;
+
 #ifdef QT_DIRECTFB_WM
     void createWindow();
     IDirectFBWindow *dfbWindow;
-    QDirectFBWindowSurface *sibling;
 #else
     enum Mode {
         Primary,
