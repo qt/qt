@@ -84,6 +84,10 @@ QT_BEGIN_NAMESPACE
     item in regards to height() and width().
 */
 
+// XXX bug in WebKit - can call repaintRequested and other cache-changing functions from within render!
+static int inpaint=0;
+static int inpaint_clearcache=0;
+
 /*!
     Marks areas of the cache that intersect with the given \a rect as dirty and
     in need of being refreshed.
@@ -96,7 +100,7 @@ void QFxPaintedItem::dirtyCache(const QRect& rect)
     for (int i=0; i < d->imagecache.count(); ) {
         QFxPaintedItemPrivate::ImageCacheItem *c = d->imagecache[i];
         QRect isect = (c->area & rect) | c->dirty;
-        if (isect == c->area) {
+        if (isect == c->area && !inpaint) {
             d->imagecache.removeAt(i);
         } else {
             c->dirty = isect;
@@ -112,6 +116,10 @@ void QFxPaintedItem::dirtyCache(const QRect& rect)
 */
 void QFxPaintedItem::clearCache()
 {
+    if (inpaint) {
+        inpaint_clearcache=1;
+        return;
+    }
     Q_D(QFxPaintedItem);
     qDeleteAll(d->imagecache);
     d->imagecache.clear();
@@ -188,6 +196,8 @@ void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
     const QRect content(QPoint(0,0),d->contentsSize);
     if (content.width() <= 0 || content.height() <= 0)
         return;
+
+    ++inpaint;
 
     bool oldAntiAliasing = p->testRenderHint(QPainter::Antialiasing);
     bool oldSmoothPixmap = p->testRenderHint(QPainter::SmoothPixmapTransform);
@@ -274,6 +284,13 @@ void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
         p->setRenderHints(QPainter::Antialiasing, oldAntiAliasing);
     if (d->smooth)
         p->setRenderHints(QPainter::SmoothPixmapTransform, oldSmoothPixmap);
+
+    if (inpaint_clearcache) {
+        clearCache();
+        inpaint_clearcache = 0;
+    }
+
+    --inpaint;
 }
 
 /*!
