@@ -390,7 +390,7 @@ QWidget *QGraphicsProxyWidgetPrivate::findFocusChild(QWidget *child, bool next) 
         if (child->isEnabled()
 	    && child->isVisibleTo(widget)
             && (child->focusPolicy() & Qt::TabFocus)) {
-	    return child;
+            return child;
         }
         child = next ? child->d_func()->focus_next : child->d_func()->focus_prev;
     } while (child != oldChild && !(next && child == widget) && !(!next && child == widget->d_func()->focus_prev));

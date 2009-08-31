@@ -291,6 +291,7 @@ private slots:
     void addPanelToActiveScene();
     void activate();
     void setActivePanelOnInactiveScene();
+    void activationOnShowHide();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -8036,6 +8037,69 @@ void tst_QGraphicsItem::setActivePanelOnInactiveScene()
     QCOMPARE(panelActivateSpy.count(), 0);
     QCOMPARE(panelDeactivateSpy.count(), 0);
     QCOMPARE(sceneActivationChangeSpy.count(), 0);
+}
+
+void tst_QGraphicsItem::activationOnShowHide()
+{
+    QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
+    QGraphicsRectItem *rootPanel = scene.addRect(QRectF());
+    rootPanel->setFlag(QGraphicsItem::ItemIsPanel);
+    rootPanel->setActive(true);
+
+    QGraphicsRectItem *subPanel = new QGraphicsRectItem;
+    subPanel->setFlag(QGraphicsItem::ItemIsPanel);
+
+    // Reparenting onto an active panel auto-activates the child panel.
+    subPanel->setParentItem(rootPanel);
+    QVERIFY(subPanel->isActive());
+    QVERIFY(!rootPanel->isActive());
+
+    // Hiding an active child panel will reactivate the parent panel.
+    subPanel->hide();
+    QVERIFY(rootPanel->isActive());
+
+    // Showing a child panel will auto-activate it.
+    subPanel->show();
+    QVERIFY(subPanel->isActive());
+    QVERIFY(!rootPanel->isActive());
+
+    // Adding an unrelated panel doesn't affect activation.
+    QGraphicsRectItem *otherPanel = new QGraphicsRectItem;
+    otherPanel->setFlag(QGraphicsItem::ItemIsPanel);
+    scene.addItem(otherPanel);
+    QVERIFY(subPanel->isActive());
+
+    // Showing an unrelated panel doesn't affect activation.
+    otherPanel->hide();
+    otherPanel->show();
+    QVERIFY(subPanel->isActive());
+
+    // Add a non-panel item.
+    QGraphicsRectItem *otherItem = new QGraphicsRectItem;
+    scene.addItem(otherItem);
+    otherItem->setActive(true);
+    QVERIFY(otherItem->isActive());
+
+    // Reparent a panel onto an active non-panel item.
+    subPanel->setParentItem(otherItem);
+    QVERIFY(subPanel->isActive());
+
+    // Showing a child panel of a non-panel item will activate it.
+    subPanel->hide();
+    QVERIFY(!subPanel->isActive());
+    QVERIFY(otherItem->isActive());
+    subPanel->show();
+    QVERIFY(subPanel->isActive());
+
+    // Hiding a toplevel active panel will pass activation back
+    // to the non-panel items.
+    rootPanel->setActive(true);
+    rootPanel->hide();
+    QVERIFY(!rootPanel->isActive());
+    QVERIFY(otherItem->isActive());
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

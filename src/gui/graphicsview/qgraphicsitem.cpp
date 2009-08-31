@@ -1007,6 +1007,9 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
                 setEnabledHelper(parent->isEnabled(), /* explicit = */ false, /* update = */ !implicitUpdate);
         }
 
+        // Auto-activate if visible and the parent is active.
+        if (q->isVisible() && parent->isActive())
+            q->setActive(true);
     } else {
         // Inherit ancestor flags from the new parent.
         updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
@@ -1939,6 +1942,17 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     foreach (QGraphicsItem *child, children) {
         if (!newVisible || !child->d_ptr->explicitlyHidden)
             child->d_ptr->setVisibleHelper(newVisible, false, updateChildren);
+    }
+
+    // Update activation
+    if (scene && q->isPanel()) {
+        if (newVisible) {
+            if (parent && parent->isActive())
+                q->setActive(true);
+        } else {
+            if (q->isActive())
+                scene->setActivePanel(parent);
+        }
     }
 
     // Enable subfocus
