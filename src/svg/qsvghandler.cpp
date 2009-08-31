@@ -2003,8 +2003,9 @@ static void parseOthers(QSvgNode *node,
                         const QSvgAttributes &attributes,
                         QSvgHandler *)
 {
-    QString displayStr = attributes.display.toString();
-    displayStr = displayStr.trimmed();
+    if (attributes.display.isEmpty())
+        return;
+    QString displayStr = attributes.display.toString().trimmed();
 
     if (!displayStr.isEmpty()) {
         node->setDisplayMode(displayStringToEnum(displayStr));
