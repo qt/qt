@@ -1190,6 +1190,26 @@ void QFxWebView::setNewWindowParent(QFxItem *parent)
     d->newWindowParent = parent;
 }
 
+/*!
+    Returns the area of the largest element at position (\a x,\a y) that is no larger
+    than \a maxwidth by \a maxheight pixels.
+
+    May return an area larger in the case when no smaller element is at the position.
+*/
+QRect QFxWebView::elementAreaAt(int x, int y, int maxwidth, int maxheight) const
+{
+    QWebHitTestResult hit = page()->mainFrame()->hitTestContent(QPoint(x,y));
+    QWebElement element = hit.enclosingBlockElement();
+    QWebElement parent = element.parent();
+    if (maxwidth<=0) maxwidth = INT_MAX;
+    if (maxheight<=0) maxheight = INT_MAX;
+    while (!parent.isNull() && parent.geometry().width() <= maxwidth && parent.geometry().height() <= maxheight) {
+        element = parent;
+        parent = element.parent();
+    }
+    return element.geometry();
+}
+
 
 
 /*!

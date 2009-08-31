@@ -222,6 +222,7 @@ protected:
     virtual void focusChanged(bool);
     virtual bool sceneEvent(QEvent *event);
     QFxWebView *createWindow(QWebPage::WebWindowType type);
+    QRect elementAreaAt(int x, int y, int minwidth, int minheight) const;
 
 private:
     void init();
