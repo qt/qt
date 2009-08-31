@@ -106,7 +106,7 @@ Item {
 
         Image { source: "common/pics/background.png"; anchors.fill: parent }
         RssModel { id: RssModel; tags : TagsEdit.text }
-        Loading { anchors.centerIn: parent; visible: RssModel.status }
+        Loading { anchors.centerIn: parent; visible: RssModel.status == 2 }
 
         GridView {
             id: PhotoGridView; model: RssModel; delegate: PhotoDelegate; cacheBuffer: 100

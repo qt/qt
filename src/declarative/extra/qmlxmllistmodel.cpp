@@ -288,7 +288,7 @@ class QmlXmlListModelPrivate : public QObjectPrivate
 public:
     QmlXmlListModelPrivate()
         : isComponentComplete(true), size(-1), highestRole(Qt::UserRole)
-        , reply(0), status(QmlXmlListModel::Idle), progress(0.0)
+        , reply(0), status(QmlXmlListModel::Null), progress(0.0)
         , queryId(-1), roleObjects(this) {}
 
     bool isComponentComplete;
@@ -547,7 +547,8 @@ void QmlXmlListModel::setNamespaceDeclarations(const QString &declarations)
 
     This property holds the status of data source loading.  It can be one of:
     \list
-    \o Idle - no data source has been set, or the data source has been loaded
+    \o Null - no data source has been set
+    \o Ready - nthe data source has been loaded
     \o Loading - the data source is currently being loaded
     \o Error - an error occurred while loading the data source
     \endlist
@@ -623,7 +624,7 @@ void QmlXmlListModel::reload()
     if (!d->xml.isEmpty()) {
         d->queryId = d->qmlXmlQuery.doQuery(d->query, d->namespaces, d->xml.toUtf8(), &d->roleObjects);
         d->progress = 1.0;
-        d->status = Idle;
+        d->status = Ready;
         emit progressChanged(d->progress);
         emit statusChanged(d->status);
         return;
@@ -650,7 +651,7 @@ void QmlXmlListModel::requestFinished()
         d->reply = 0;
         d->status = Error;
     } else {
-        d->status = Idle;
+        d->status = Ready;
         QByteArray data = d->reply->readAll();
         d->queryId = d->qmlXmlQuery.doQuery(d->query, d->namespaces, data, &d->roleObjects);
         disconnect(d->reply, 0, this, 0);

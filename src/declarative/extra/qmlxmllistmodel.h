@@ -125,7 +125,7 @@ public:
     QString namespaceDeclarations() const;
     void setNamespaceDeclarations(const QString&);
 
-    enum Status { Idle, Loading, Error }; // ### should include Null for consistency?
+    enum Status { Null, Ready, Loading, Error };
     Status status() const;
     qreal progress() const;
 

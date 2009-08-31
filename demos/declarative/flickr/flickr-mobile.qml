@@ -13,7 +13,7 @@ Item {
         Image { source: "mobile/images/stripes.png"; fillMode: "Tile"; anchors.fill: parent; opacity: 0.3 }
 
         Common.RssModel { id: RssModel }
-        Common.Loading { anchors.centerIn: parent; visible: RssModel.status }
+        Common.Loading { anchors.centerIn: parent; visible: RssModel.status == 2 }
 
         Item {
             id: Views
