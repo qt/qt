@@ -1081,8 +1081,10 @@ void tst_QNetworkReply::getFromHttp()
     QCOMPARE(reply->url(), request.url());
     QCOMPARE(reply->error(), QNetworkReply::NoError);
     QCOMPARE(reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt(), 200);
-
-    QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), reference.size());
+    QCOMPARE(reply->size(), reference.size());
+    // only compare when the header is set.
+    if (reply->header(QNetworkRequest::ContentLengthHeader).isValid())
+        QCOMPARE(reply->header(QNetworkRequest::ContentLengthHeader).toLongLong(), reference.size());
     QCOMPARE(reply->readAll(), reference.readAll());
 }
 
