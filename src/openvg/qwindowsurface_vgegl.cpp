@@ -618,6 +618,12 @@ QVGEGLWindowSurfaceDirect::QVGEGLWindowSurfaceDirect(QWindowSurface *win)
 
 QVGEGLWindowSurfaceDirect::~QVGEGLWindowSurfaceDirect()
 {
+    destroyPaintEngine();
+    if (context) {
+        if (windowSurface != EGL_NO_SURFACE)
+            qt_vg_destroy_surface(context, windowSurface);
+        qt_vg_destroy_context(context);
+    }
 }
 
 QEglContext *QVGEGLWindowSurfaceDirect::ensureContext(QWidget *widget)

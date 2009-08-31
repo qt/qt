@@ -533,6 +533,46 @@ private:
     FreeFunc free;
 };
 
+// Temporarily make a context current if not already current or
+// shared with the current contex.  The previous context is made
+// current when the object goes out of scope.
+class Q_OPENGL_EXPORT QGLShareContextScope
+{
+public:
+    QGLShareContextScope(const QGLContext *ctx)
+        : m_oldContext(0)
+    {
+        QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
+        if (currentContext != ctx && !qgl_share_reg()->checkSharing(ctx, currentContext)) {
+            m_oldContext = currentContext;
+            m_ctx = const_cast<QGLContext *>(ctx);
+            m_ctx->makeCurrent();
+        } else {
+            m_ctx = currentContext;
+        }
+    }
+
+    operator QGLContext *()
+    {
+        return m_ctx;
+    }
+
+    QGLContext *operator->()
+    {
+        return m_ctx;
+    }
+
+    ~QGLShareContextScope()
+    {
+        if (m_oldContext)
+            m_oldContext->makeCurrent();
+    }
+
+private:
+    QGLContext *m_oldContext;
+    QGLContext *m_ctx;
+};
+
 QT_END_NAMESPACE
 
 #endif // QGL_P_H

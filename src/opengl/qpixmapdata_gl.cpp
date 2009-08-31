@@ -132,43 +132,6 @@ void QGLFramebufferObjectPool::release(QGLFramebufferObject *fbo)
     m_fbos << fbo;
 }
 
-class QGLShareContextScope
-{
-public:
-    QGLShareContextScope(const QGLContext *ctx)
-        : m_oldContext(0)
-    {
-        QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (currentContext != ctx && !qgl_share_reg()->checkSharing(ctx, currentContext)) {
-            m_oldContext = currentContext;
-            m_ctx = const_cast<QGLContext *>(ctx);
-            m_ctx->makeCurrent();
-        } else {
-            m_ctx = currentContext;
-        }
-    }
-
-    operator QGLContext *()
-    {
-        return m_ctx;
-    }
-
-    QGLContext *operator->()
-    {
-        return m_ctx;
-    }
-
-    ~QGLShareContextScope()
-    {
-        if (m_oldContext)
-            m_oldContext->makeCurrent();
-    }
-
-private:
-    QGLContext *m_oldContext;
-    QGLContext *m_ctx;
-};
-
 static int qt_gl_pixmap_serial = 0;
 
 QGLPixmapData::QGLPixmapData(PixelType type)

@@ -1263,6 +1263,7 @@ QSqlRecord QSqlDatabase::record(const QString& tablename) const
     \i
     \list
     \i QSQLITE_BUSY_TIMEOUT
+    \i QSQLITE_OPEN_READONLY
     \endlist
 
     \i

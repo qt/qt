@@ -175,6 +175,14 @@ void QHelpEngineCorePrivate::errorReceived(const QString &msg)
     This class does not offer any GUI components or functionality for
     indices or contents. If you need one of those use QHelpEngine
     instead.
+
+    When creating a custom help viewer the viewer can be
+configured by writing a custom collection file which could contain various
+keywords to be used to configure the help engine. These keywords and values
+and their meaning can be found in the help information for
+\l{assistant-custom-help-viewer.html#creating-a-custom-help-collection-file
+}{creating a custom help collection file} for
+Assistant.
 */
 
 /*!

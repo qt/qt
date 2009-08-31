@@ -701,6 +701,7 @@ public:
         , linked(false)
         , inited(false)
         , hasPartialShaders(false)
+        , removingShaders(false)
         , vertexShader(0)
         , fragmentShader(0)
     {
@@ -716,6 +717,7 @@ public:
     bool linked;
     bool inited;
     bool hasPartialShaders;
+    bool removingShaders;
     QString log;
     QList<QGLShader *> shaders;
     QList<QGLShader *> anonShaders;
@@ -813,6 +815,7 @@ bool QGLShaderProgram::addShader(QGLShader *shader)
         }
         d->linked = false;  // Program needs to be relinked.
         d->shaders.append(shader);
+        connect(shader, SIGNAL(destroyed()), this, SLOT(shaderDestroyed()));
         return true;
     } else {
         return false;
@@ -917,12 +920,14 @@ bool QGLShaderProgram::addShaderFromFile
 */
 void QGLShaderProgram::removeShader(QGLShader *shader)
 {
-    if (d->program && shader && shader->d->shader) {
+    if (d->program && shader && shader->d->shader)
         glDetachShader(d->program, shader->d->shader);
-        d->linked = false;  // Program needs to be relinked.
+    d->linked = false;  // Program needs to be relinked.
+    if (shader) {
+        d->shaders.removeAll(shader);
+        d->anonShaders.removeAll(shader);
+        disconnect(shader, SIGNAL(destroyed()), this, SLOT(shaderDestroyed()));
     }
-    d->shaders.removeAll(shader);
-    d->anonShaders.removeAll(shader);
 }
 
 /*!
@@ -946,6 +951,7 @@ QList<QGLShader *> QGLShaderProgram::shaders() const
 */
 void QGLShaderProgram::removeAllShaders()
 {
+    d->removingShaders = true;
     foreach (QGLShader *shader, d->shaders) {
         if (d->program && shader && shader->d->shader)
             glDetachShader(d->program, shader->d->shader);
@@ -957,6 +963,7 @@ void QGLShaderProgram::removeAllShaders()
     d->shaders.clear();
     d->anonShaders.clear();
     d->linked = false;  // Program needs to be relinked.
+    d->removingShaders = false;
 }
 
 #if defined(QT_OPENGL_ES_2)
@@ -2977,6 +2984,15 @@ bool QGLShaderProgram::hasShaderPrograms(const QGLContext *context)
 #endif
 }
 
+/*!
+    \internal
+*/
+void QGLShaderProgram::shaderDestroyed()
+{
+    QGLShader *shader = qobject_cast<QGLShader *>(sender());
+    if (shader && !d->removingShaders)
+        removeShader(shader);
+}
 
 #endif
 
