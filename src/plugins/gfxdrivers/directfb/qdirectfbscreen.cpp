@@ -1024,36 +1024,6 @@ static inline bool setIntOption(const QStringList &arguments, const QString &var
     return false;
 }
 
-static inline int depth(QImage::Format format)
-{
-    switch (format) {
-    case QImage::Format_Mono:
-    case QImage::Format_MonoLSB:
-        return 1;
-    case QImage::Format_Indexed8:
-        return 8;
-    case QImage::Format_RGB32:
-    case QImage::Format_ARGB32:
-    case QImage::Format_ARGB32_Premultiplied:
-        return 32;
-    case QImage::Format_ARGB8565_Premultiplied:
-    case QImage::Format_RGB666:
-    case QImage::Format_ARGB6666_Premultiplied:
-    case QImage::Format_ARGB8555_Premultiplied:
-    case QImage::Format_RGB888:
-        return 24;
-    case QImage::Format_RGB555:
-    case QImage::Format_RGB444:
-    case QImage::Format_RGB16:
-    case QImage::Format_ARGB4444_Premultiplied:
-        return 16;
-    case QImage::Format_Invalid:
-    case QImage::NImageFormats:
-        break;
-    }
-    return -1;
-}
-
 bool QDirectFBScreen::connect(const QString &displaySpec)
 {
     DFBResult result = DFB_OK;
@@ -1199,7 +1169,7 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
         break;
     }
     setPixelFormat(pixelFormat);
-    QScreen::d = ::depth(pixelFormat);
+    QScreen::d = QDirectFBScreen::depth(pixelFormat);
     data = 0;
     lstep = 0;
     size = 0;
