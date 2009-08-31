@@ -2,9 +2,9 @@ import Qt 4.6
 
 Item {
     id: TitleBar
-
     property string untaggedString: "Uploads from everyone"
     property string taggedString: "Recent uploads tagged "
+
     BorderImage { source: "images/titlebar2.sci"; width: parent.width; height: parent.height + 14; y: -7 }
 
     Item {
@@ -20,12 +20,13 @@ Item {
 
         Text {
             id: CategoryText
-            anchors.left: parent.left; anchors.right: TagButton.left
-            anchors.leftMargin: 10; anchors.rightMargin: 10
-            anchors.verticalCenter: parent.verticalCenter
+            anchors {
+                left: parent.left; right: TagButton.left; leftMargin: 10; rightMargin: 10
+                verticalCenter: parent.verticalCenter
+            }
             elide: "ElideLeft"
             text: (RssModel.tags=="" ? untaggedString : taggedString + RssModel.tags)
-            font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
+            font.bold: true; color: "White"; style: "Raised"; styleColor: "Black"
         }
 
         Button {
@@ -36,23 +37,27 @@ Item {
 
         Item {
             id: LineEdit
-            anchors.left: TagButton.right; anchors.leftMargin: 5; y: 4
-            anchors.right: parent.right; anchors.rightMargin: 5; height: parent.height - 9
+            y: 4; height: parent.height - 9
+            anchors { left: TagButton.right; leftMargin: 5; right: parent.right; rightMargin: 5 }
+
             BorderImage { source: "images/lineedit.sci"; anchors.fill: parent }
 
             TextInput {
                 id: Editor
-                anchors.left: parent.left; anchors.right: parent.right
-                anchors.leftMargin: 10; anchors.rightMargin: 10
-                anchors.verticalCenter: parent.verticalCenter
+                anchors {
+                    left: parent.left; right: parent.right; leftMargin: 10; rightMargin: 10
+                    verticalCenter: parent.verticalCenter
+                }
                 cursorVisible: true; font.bold: true
-                color: "#151515"; highlightColor: "green"
+                color: "#151515"; highlightColor: "Green"
             }
+
             KeyProxy {
                 id: Proxy
                 anchors.fill: parent
                 targets: [(ReturnKey), (Editor)]
             }
+
             Item {
                 id: ReturnKey
                 Keys.onReturnPressed: accept()
@@ -60,18 +65,15 @@ Item {
             }
         }
     }
-    states: [
-        State {
-            name: "Tags"
-            PropertyChanges { target: Container; x: -TagButton.x + 5 }
-            PropertyChanges { target: TagButton; text: "OK" }
-            PropertyChanges { target: Proxy; focus: true }
-        }
-    ]
-    transitions: [
-        Transition {
-            from: "*"; to: "*"
-            NumberAnimation { properties: "x"; easing: "easeInOutQuad" }
-        }
-    ]
+
+    states: State {
+        name: "Tags"
+        PropertyChanges { target: Container; x: -TagButton.x + 5 }
+        PropertyChanges { target: TagButton; text: "OK" }
+        PropertyChanges { target: Proxy; focus: true }
+    }
+
+    transitions: Transition {
+        NumberAnimation { properties: "x"; easing: "easeInOutQuad" }
+    }
 }
