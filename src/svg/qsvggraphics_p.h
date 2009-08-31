@@ -145,7 +145,7 @@ public:
     }
 private:
     QPainterPath m_path;
-    QRectF m_cachedBounds;
+    mutable QRectF m_cachedBounds;
 };
 
 class QSvgPolygon : public QSvgNode
