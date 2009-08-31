@@ -193,8 +193,6 @@ void QSvgLine::draw(QPainter *p, QSvgExtraStates &states)
 QSvgPath::QSvgPath(QSvgNode *parent, const QPainterPath &qpath)
     : QSvgNode(parent), m_path(qpath)
 {
-    //m_cachedBounds = m_path.controlPointRect();
-    m_cachedBounds = m_path.boundingRect();
 }
 
 void QSvgPath::draw(QPainter *p, QSvgExtraStates &states)
@@ -208,8 +206,13 @@ void QSvgPath::draw(QPainter *p, QSvgExtraStates &states)
 QRectF QSvgPath::bounds() const
 {
     qreal sw = strokeWidth();
-    if (qFuzzyIsNull(sw))
+    if (qFuzzyIsNull(sw)) {
+        if (m_cachedBounds.isNull())
+            //m_cachedBounds = m_path.controlPointRect();
+            m_cachedBounds = m_path.boundingRect();
+
         return m_cachedBounds;
+    }
     else {
         return boundsOnStroke(m_path, sw);
     }
