@@ -8,9 +8,21 @@
 //! [1]
 
 //! [2]
-    createpackage wiggly_gcce_udeb.pkg
+    qmake
+    make debug-winscw release-armv5
+    make sisx
 //! [2]
 
 //! [3]
-    createpackage -i wiggly_gcce_udeb.pkg
+   make sisx QT_SISX_TARGET=debug-armv5
 //! [3]
+
+//! [4]
+   set QT_SISX_TARGET=debug-armv5
+   make sisx
+//! [4]
+
+//! [5]
+   set QT_SISX_OPTIONS=-i
+   make sisx
+//! [5]
