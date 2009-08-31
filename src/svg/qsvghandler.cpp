@@ -1181,15 +1181,15 @@ static void parseTransform(QSvgNode *node,
                            const QSvgAttributes &attributes,
                            QSvgHandler *)
 {
-    QString value = attributes.transform.toString();
-    QString myId = someId(attributes);
-    value = value.trimmed();
+    if (attributes.transform.isEmpty())
+        return;
+    QString value = attributes.transform.toString().trimmed();
     if (value.isEmpty())
         return;
     QMatrix matrix = parseTransformationMatrix(value);
 
     if (!matrix.isIdentity()) {
-        node->appendStyleProperty(new QSvgTransformStyle(QTransform(matrix)), myId);
+        node->appendStyleProperty(new QSvgTransformStyle(QTransform(matrix)), someId(attributes));
     }
 
 }
