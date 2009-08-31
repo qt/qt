@@ -226,6 +226,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_BLEND);
 
     glViewport(0, 0, oldWidth, oldHeight);
 
