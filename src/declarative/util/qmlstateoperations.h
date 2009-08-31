@@ -144,6 +144,7 @@ public:
     virtual bool isReversable();
     virtual void reverse();
     virtual QString typeName() const;
+    virtual bool override(ActionEvent*other);
     virtual QList<Action> extraActions();
     virtual bool changesBindings();
     virtual void clearForwardBindings();

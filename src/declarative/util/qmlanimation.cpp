@@ -1425,11 +1425,11 @@ void QmlParallelAnimation::transition(QmlStateActions &actions,
 {
     Q_D(QmlAnimationGroup);
 
-     //needed for Behavior
+    //needed for Behavior
     if (d->userProperty.isValid() && d->propertyName.isEmpty() && !target()) {
         for (int i = 0; i < d->animations.count(); ++i)
             d->animations.at(i)->setTarget(d->userProperty);
-   }
+    }
 
     for (int ii = 0; ii < d->animations.count(); ++ii) {
         d->animations.at(ii)->transition(actions, modified, direction);

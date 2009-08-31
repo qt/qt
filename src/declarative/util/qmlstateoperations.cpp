@@ -439,7 +439,6 @@ void QmlAnchorChanges::reverse()
         d->target->anchors()->setTop(d->origTop);
     if (d->origBottom.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->setBottom(d->origBottom);
-
 }
 
 QString QmlAnchorChanges::typeName() const
@@ -503,6 +502,16 @@ void QmlAnchorChanges::clearForwardBindings()
         d->target->anchors()->resetTop();
     if (d->resetList.contains(QLatin1String("bottom")))
         d->target->anchors()->resetBottom();
+
+    //reset any anchors that we'll be setting in the state
+    if (d->left.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetLeft();
+    if (d->right.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetRight();
+    if (d->top.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetTop();
+    if (d->bottom.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetBottom();
 }
 
 void QmlAnchorChanges::clearReverseBindings()
@@ -522,6 +531,27 @@ void QmlAnchorChanges::clearReverseBindings()
         d->target->anchors()->resetTop();
     if (d->bottom.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->resetBottom();
+
+    //reset any anchors that were set in the original state
+    if (d->origLeft.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetLeft();
+    if (d->origRight.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetRight();
+    if (d->origTop.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetTop();
+    if (d->origBottom.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetBottom();
+}
+
+bool QmlAnchorChanges::override(ActionEvent*other)
+{
+    if (other->typeName() != QLatin1String("AnchorChanges"))
+        return false;
+    if (static_cast<ActionEvent*>(this) == other)
+        return true;
+    //### can we do any other meaningful comparison? Do we need to attempt to merge the two
+    //    somehow if they have the same target and some of the same anchors?
+    return false;
 }
 
 QT_END_NAMESPACE
