@@ -329,10 +329,10 @@ void QFxTextInput::setSelectionEnd(int s)
     It is equivalent to the following snippet, but is faster and easier
     to use.
 
-    \qmlcode
+    \qml
     myTextInput.text.toString().substring(myTextInput.selectionStart,
         myTextInput.selectionEnd);
-    \endcode
+    \endqml
 */
 QString QFxTextInput::selectedText() const
 {
