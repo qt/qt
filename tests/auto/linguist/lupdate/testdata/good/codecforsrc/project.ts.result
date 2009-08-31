@@ -5,13 +5,13 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="main.cpp" line="10"/>
+        <location filename="main.cpp" line="51"/>
         <source>abc</source>
         <comment>ascii</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="11"/>
+        <location filename="main.cpp" line="52"/>
         <source>æøå</source>
         <comment>utf-8</comment>
         <translation type="unfinished"></translation>

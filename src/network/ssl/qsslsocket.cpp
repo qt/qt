@@ -1267,10 +1267,8 @@ QList<QSslCertificate> QSslSocket::defaultCaCertificates()
 }
 
 /*!
-    Returns the system default CA certificate database for your
-    system. This database is normally found in a standard place for
-    your system. If it is not found there, Qt will provide its own
-    default CA certificate database. The CA certificate database
+    This function provides a default CA certificate database
+    shipped together with Qt. The CA certificate database
     returned by this function is used to initialize the database
     returned by defaultCaCertificates(). You can replace that database
     with your own with setDefaultCaCertificates().

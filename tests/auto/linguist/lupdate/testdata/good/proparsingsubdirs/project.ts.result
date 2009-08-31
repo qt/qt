@@ -4,7 +4,7 @@
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="sub1/main.cpp" line="6"/>
+        <location filename="sub1/main.cpp" line="47"/>
         <source>Hello world</source>
         <comment>Platform-independent file</comment>
         <translation type="unfinished"></translation>
