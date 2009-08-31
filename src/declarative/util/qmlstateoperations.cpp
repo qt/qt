@@ -285,7 +285,11 @@ QmlStateChangeScript::ActionList QmlStateChangeScript::actions()
 
 /*!
     \qmlclass AnchorChanges
-    \brief The AnchorChanges element allows you to change anchors in a state.
+    \brief The AnchorChanges element allows you to change the anchors of an item in a state.
+
+    \snippet examples/declarative/anchors/anchor-changes.qml 0
+
+    For more information on anchors see \l {anchor-layout}{Anchor Layouts}.
 */
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,AnchorChanges,QmlAnchorChanges)
@@ -312,6 +316,11 @@ public:
     qreal origWidth;
     qreal origHeight;
 };
+
+/*!
+    \qmlproperty Object AnchorChanges::target
+    This property holds the object that the anchors to change belong to
+*/
 
 QmlAnchorChanges::QmlAnchorChanges(QObject *parent)
  : QmlStateOperation(*(new QmlAnchorChangesPrivate), parent)
@@ -353,6 +362,14 @@ void QmlAnchorChanges::setReset(const QString &reset)
     d->resetString = reset;
     d->resetList = d->resetString.split(QLatin1Char(','));
 }
+
+/*!
+    \qmlproperty AnchorLine AnchorChanges::top
+    \qmlproperty AnchorLine AnchorChanges::bottom
+    \qmlproperty AnchorLine AnchorChanges::left
+    \qmlproperty AnchorLine AnchorChanges::right
+    These properties change the \e left, \e top, \e right and \e bottom anchors of the item
+*/
 
 QFxAnchorLine QmlAnchorChanges::left() const
 {
