@@ -387,7 +387,7 @@ QMultiMap<QSsl::AlternateNameEntryType, QString> QSslCertificate::alternateSubje
             else if (genName->type == GEN_EMAIL)
                 result.insert(QSsl::EmailEntry, altName);
         }
-        q_sk_free((STACK*)altNames);
+        q_sk_pop_free((STACK*)altNames, q_sk_free);
     }
 
     return result;
