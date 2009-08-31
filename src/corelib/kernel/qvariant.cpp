@@ -1589,6 +1589,7 @@ QVariant::QVariant(const char *val)
   \fn QVariant::QVariant(float val)
 
     Constructs a new variant with a floating point value, \a val.
+    \since 4.6
 */
 
 /*!
