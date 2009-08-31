@@ -76,6 +76,7 @@ private slots:
     void invalidate();
     void itemAt_data();
     void itemAt();
+    void itemAt_visualOrder();
     void orientation_data();
     void orientation();
     void removeAt_data();
@@ -537,7 +538,7 @@ void tst_QGraphicsLinearLayout::insertItem()
     QCOMPARE(layout.count(), itemCount + layoutCount + 1);
 
     if (insertItemAt >= 0 && (itemCount + layoutCount >= 0)) {
-        QCOMPARE(layout.itemAt(itemCount + layoutCount), item);
+        QCOMPARE(layout.itemAt(insertItemAt), item);
     }
 
     layout.activate();
@@ -684,6 +685,28 @@ void tst_QGraphicsLinearLayout::itemAt()
         layout.addItem(new QGraphicsWidget);
 
     QVERIFY(layout.itemAt(index) != 0);
+}
+
+void tst_QGraphicsLinearLayout::itemAt_visualOrder()
+{
+    QGraphicsLinearLayout *l = new QGraphicsLinearLayout;
+
+    QGraphicsWidget *w1 = new QGraphicsWidget;
+    l->addItem(w1);
+
+    QGraphicsWidget *w3 = new QGraphicsWidget;
+    l->addItem(w3);
+
+    QGraphicsWidget *w0 = new QGraphicsWidget;
+    l->insertItem(0, w0);
+
+    QGraphicsWidget *w2 = new QGraphicsWidget;
+    l->insertItem(2, w2);
+
+    QCOMPARE(l->itemAt(0), w0);
+    QCOMPARE(l->itemAt(1), w1);
+    QCOMPARE(l->itemAt(2), w2);
+    QCOMPARE(l->itemAt(3), w3);
 }
 
 void tst_QGraphicsLinearLayout::orientation_data()

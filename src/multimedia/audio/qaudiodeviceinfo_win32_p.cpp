@@ -55,6 +55,8 @@
 #include <mmsystem.h>
 #include "qaudiodeviceinfo_win32_p.h"
 
+QT_BEGIN_NAMESPACE
+
 // For mingw toolchain mmsystem.h only defines half the defines, so add if needed.
 #ifndef WAVE_FORMAT_44M08
 #define WAVE_FORMAT_44M08 0x00000100
@@ -376,3 +378,4 @@ QByteArray QAudioDeviceInfoPrivate::defaultInputDevice()
     return QByteArray("default");
 }
 
+QT_END_NAMESPACE

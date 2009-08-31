@@ -133,11 +133,15 @@ public:
     inline const QOpenGL2PaintEngineState *state() const {
         return static_cast<const QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
     }
-    virtual void sync();
+
+    void beginNativePainting();
+    void endNativePainting();
 
     const QGLContext* context();
 
     QPixmapFilter *createPixmapFilter(int type) const;
+
+    void setRenderTextActive(bool);
 
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
@@ -154,7 +158,8 @@ public:
             ctx(0),
             currentBrush(0),
             inverseScale(1),
-            shaderManager(0)
+            shaderManager(0),
+            inRenderText(false)
     { }
 
     ~QGL2PaintEngineExPrivate();
@@ -168,6 +173,7 @@ public:
     void setBrush(const QBrush* brush);
 
     void transferMode(EngineMode newMode);
+    void resetGLState();
 
     // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
     void fill(const QVectorPath &path);
@@ -187,6 +193,8 @@ public:
 
     inline void useSimpleShader();
     inline QColor premultiplyColor(QColor c, GLfloat opacity);
+
+    float zValueForRenderText() const;
 
     QGL2PaintEngineEx* q;
     QGLDrawable drawable;
@@ -237,6 +245,7 @@ public:
     GLuint lastTexture;
 
     bool needsSync;
+    bool inRenderText;
 };
 
 QT_END_NAMESPACE

@@ -53,11 +53,6 @@
 #include <QDesktopWidget>
 #include <qmath.h>
 
-#if defined(Q_OS_SYMBIAN)
-// TODO: Remove all FONT_OUTLINE_TWEAK related code as soon as the S60FontEngine can deliver outlines
-#define FONT_OUTLINE_TWEAK
-#endif
-
 PathDeformControls::PathDeformControls(QWidget *parent, PathDeformRenderer* renderer, bool smallScreen)
       : QWidget(parent)
 {
@@ -245,13 +240,6 @@ void PathDeformControls::layoutForSmallScreen()
 
     QRect screen_size = QApplication::desktop()->screenGeometry();
     radiusSlider->setValue(qMin(screen_size.width(), screen_size.height())/5);
-
-#ifdef FONT_OUTLINE_TWEAK
-    radiusSlider->setValue(qMin(screen_size.width(), screen_size.height())/7);
-    fontSizeLabel->setText("Qt Logo Size:");
-    m_renderer->setText("A"); // Any Letter would be fine
-    fontSizeSlider->setValue(100);
-#endif
 
     m_renderer->setText(tr("Qt"));
 }

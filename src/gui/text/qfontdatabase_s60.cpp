@@ -126,8 +126,13 @@ QFontDatabaseS60StoreImplementation::QFontDatabaseS60StoreImplementation()
 }
 QFontDatabaseS60StoreImplementation::~QFontDatabaseS60StoreImplementation()
 {
-    qDeleteAll(m_extensions);
-    // TODO m_store cleanup removed because it was crashing
+    typedef QHash<QString, const QFontEngineS60Extensions *>::iterator iterator;
+    for (iterator p = m_extensions.begin(); p != m_extensions.end(); ++p) {
+        m_store->ReleaseFont((*p)->fontOwner());
+        delete *p;
+    }
+
+    delete m_store;
     m_heap->Close();
 }
 
@@ -140,7 +145,7 @@ const QFontEngineS60Extensions *QFontDatabaseS60StoreImplementation::extension(c
         const TInt err = m_store->GetNearestFontToDesignHeightInPixels(font, spec);
         Q_ASSERT(err == KErrNone && font);
         CBitmapFont *bitmapFont = static_cast<CBitmapFont*>(font);
-        m_extensions.insert(typeface, new QFontEngineS60Extensions(bitmapFont->OpenFont()));
+        m_extensions.insert(typeface, new QFontEngineS60Extensions(font, bitmapFont->OpenFont()));
     }
     return m_extensions.value(typeface);
 }

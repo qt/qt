@@ -47,6 +47,7 @@
 #include "qapplication.h"
 #include "qevent.h"
 #include "qtextformat.h"
+#include "qtextboundaryfinder.h"
 
 //#define Q_IME_DEBUG
 
@@ -808,6 +809,54 @@ void QWinInputContext::mouseHandler(int pos, QMouseEvent *e)
 QString QWinInputContext::language()
 {
     return QString();
+}
+
+int QWinInputContext::reconvertString(RECONVERTSTRING *reconv)
+{
+    QWidget *w = focusWidget();
+    if(!w)
+        return -1;
+
+    Q_ASSERT(w->testAttribute(Qt::WA_WState_Created));
+    QString surroundingText = qvariant_cast<QString>(w->inputMethodQuery(Qt::ImSurroundingText));
+    int memSize = sizeof(RECONVERTSTRING)+(surroundingText.length()+1)*sizeof(ushort);
+    // If memory is not allocated, return the required size.
+    if (!reconv) {
+        if (surroundingText.isEmpty())
+            return -1;
+        else
+            return memSize;
+    }
+    int pos = qvariant_cast<int>(w->inputMethodQuery(Qt::ImCursorPosition));
+    // find the word in the surrounding text.
+    QTextBoundaryFinder bounds(QTextBoundaryFinder::Word, surroundingText);
+    bounds.setPosition(pos);
+    if (bounds.isAtBoundary()) {
+        if (QTextBoundaryFinder::EndWord == bounds.boundaryReasons())
+            bounds.toPreviousBoundary();
+    } else {
+        bounds.toPreviousBoundary();
+    }
+    int startPos = bounds.position();
+    bounds.toNextBoundary();
+    int endPos = bounds.position();
+    // select the text, this will be overwritten by following ime events.
+    QList<QInputMethodEvent::Attribute> attrs;
+    attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, startPos, endPos-startPos, QVariant());
+    QInputMethodEvent e(QString(), attrs);
+    qt_sendSpontaneousEvent(w, &e);
+
+    reconv->dwSize = memSize;
+    reconv->dwVersion = 0;
+
+    reconv->dwStrLen = surroundingText.length();
+    reconv->dwStrOffset = sizeof(RECONVERTSTRING);
+    reconv->dwCompStrLen = endPos-startPos;
+    reconv->dwCompStrOffset = startPos*sizeof(ushort);
+    reconv->dwTargetStrLen = reconv->dwCompStrLen;
+    reconv->dwTargetStrOffset = reconv->dwCompStrOffset;
+    memcpy((char*)(reconv+1), surroundingText.utf16(), surroundingText.length()*sizeof(ushort));
+    return memSize;
 }
 
 QT_END_NAMESPACE

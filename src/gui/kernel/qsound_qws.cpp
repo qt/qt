@@ -53,16 +53,16 @@
 #include "qhash.h"
 #include "qfileinfo.h"
 
-#ifdef MEDIA_SERVER
 #include "qbytearray.h"
 #include "quuid.h"
 #include "qdatastream.h"
 #include "qcopchannel_qws.h"
 #include "qbuffer.h"
 
+
 QT_BEGIN_NAMESPACE
 
-QT_USE_NAMESPACE
+#ifdef MEDIA_SERVER
 
 #define SERVER_CHANNEL "QPE/MediaServer"
 

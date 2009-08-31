@@ -94,6 +94,7 @@ private slots:
     void moveTab();
 
     void task251184_removeTab();
+    void changeTitleWhileDoubleClickingTab();
 };
 
 // Testing get/set functions
@@ -534,6 +535,39 @@ void tst_QTabBar::task251184_removeTab()
     QCOMPARE(bar.tabText(bar.currentIndex()), QString("bar2"));    
 }
 
+
+class TitleChangeTabBar : public QTabBar
+{
+    Q_OBJECT
+
+    QTimer timer;
+    int count;
+
+public:
+    TitleChangeTabBar(QWidget * parent = 0) : QTabBar(parent), count(0)
+    {
+        setMovable(true);
+        addTab("0");
+        connect(&timer, SIGNAL(timeout()), this, SLOT(updateTabText()));
+        timer.start(1);
+    }
+
+public slots:
+    void updateTabText()
+    {
+        count++;
+        setTabText(0, QString("%1").arg(count));
+    }
+};
+
+void tst_QTabBar::changeTitleWhileDoubleClickingTab()
+{
+    TitleChangeTabBar bar;
+    QPoint tabPos = bar.tabRect(0).center();
+
+    for(int i=0; i < 10; i++)
+        QTest::mouseDClick(&bar, Qt::LeftButton, 0, tabPos);
+}
 
 QTEST_MAIN(tst_QTabBar)
 #include "tst_qtabbar.moc"

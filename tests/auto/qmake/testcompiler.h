@@ -70,6 +70,10 @@ public:
     bool exists( const QString &destDir, const QString &exeName, BuildType buildType, const QString &version );
     // removes the makefile
     bool removeMakefile( const QString &workPath );
+    // returns each line of stdout of the last command append with a "new line" character(s) to suit the platform
+    QString commandOutput() const;
+    // clear the results of storage of stdout for running previous commands
+    void clearCommandOutput();
 
 private:
     bool runCommand( QString cmdLine );

@@ -80,6 +80,7 @@ class Q_CORE_EXPORT QAbstractItemModelPrivate : public QObjectPrivate
 public:
     QAbstractItemModelPrivate() : QObjectPrivate(), supportedDragActions(-1), roleNames(defaultRoleNames()) {}
     void removePersistentIndexData(QPersistentModelIndexData *data);
+    void movePersistentIndexes(QVector<QPersistentModelIndexData *> indexes, int change, const QModelIndex &parent, Qt::Orientation orientation);
     void rowsAboutToBeInserted(const QModelIndex &parent, int first, int last);
     void rowsInserted(const QModelIndex &parent, int first, int last);
     void rowsAboutToBeRemoved(const QModelIndex &parent, int first, int last);
@@ -91,6 +92,10 @@ public:
     static QAbstractItemModel *staticEmptyModel();
     static bool variantLessThan(const QVariant &v1, const QVariant &v2);
 
+    void itemsAboutToBeMoved(const QModelIndex &srcParent, int srcFirst, int srcLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation);
+    void itemsMoved(const QModelIndex &srcParent, int srcFirst, int srcLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation orientation);
+    bool allowMove(const QModelIndex &srcParent, int srcFirst, int srcLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation orientation);
+    
     inline QModelIndex createIndex(int row, int column, void *data = 0) const {
         return q_func()->createIndex(row, column, data);
     }
@@ -132,6 +137,8 @@ public:
         Change(const QModelIndex &p, int f, int l) : parent(p), first(f), last(l) {}
         QModelIndex parent;
         int first, last;
+
+        bool isValid() { return first >= 0 && last >= 0; }
     };
     QStack<Change> changes;
 

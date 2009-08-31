@@ -369,7 +369,7 @@ QString QHelpProjectData::errorMessage() const
 }
 
 /*!
-    \reimp
+    \internal
 */
 QString QHelpProjectData::namespaceName() const
 {
@@ -377,7 +377,7 @@ QString QHelpProjectData::namespaceName() const
 }
 
 /*!
-    \reimp
+    \internal
 */
 QString QHelpProjectData::virtualFolder() const
 {
@@ -385,7 +385,7 @@ QString QHelpProjectData::virtualFolder() const
 }
 
 /*!
-    \reimp
+    \internal
 */
 QList<QHelpDataCustomFilter> QHelpProjectData::customFilters() const
 {
@@ -393,7 +393,7 @@ QList<QHelpDataCustomFilter> QHelpProjectData::customFilters() const
 }
 
 /*!
-    \reimp
+    \internal
 */
 QList<QHelpDataFilterSection> QHelpProjectData::filterSections() const
 {
@@ -401,7 +401,7 @@ QList<QHelpDataFilterSection> QHelpProjectData::filterSections() const
 }
 
 /*!
-    \reimp
+    \internal
 */
 QMap<QString, QVariant> QHelpProjectData::metaData() const
 {
@@ -409,7 +409,7 @@ QMap<QString, QVariant> QHelpProjectData::metaData() const
 }
 
 /*!
-    \reimp
+    \internal
 */
 QString QHelpProjectData::rootPath() const
 {

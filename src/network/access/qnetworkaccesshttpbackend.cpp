@@ -951,6 +951,12 @@ QNetworkCacheMetaData QNetworkAccessHttpBackend::fetchCacheMetaData(const QNetwo
         if (hop_by_hop)
             continue;
 
+        // Do not copy over the Date header because it will be
+        // different for every request and therefore cause a re-write to
+        // the disk when a 304 is received inside replyHeaderChanged()
+        if (header == "date")
+            continue;
+
         // Don't store Warning 1xx headers
         if (header == "warning") {
             QByteArray v = rawHeader(header);

@@ -1450,7 +1450,7 @@ static const qreal inv_dist_to_plane = 1. / 1024.;
     value of 1024 corresponds to the projection factor used
     by QTransform::rotate() for the x and y axes.
 
-    If \a distToPlane is zero, then the returned QTransform
+    If \a distanceToPlane is zero, then the returned QTransform
     is formed by simply dropping the third row and third column
     of the QMatrix4x4.  This is suitable for implementing
     orthographic projections where the z co-ordinate should

@@ -368,7 +368,9 @@ QRect QMenuPrivate::actionRect(QAction *act) const
     return actionRects.at(index);
 }
 
+#if defined(Q_WS_MAC)
 static const qreal MenuFadeTimeInSec = 0.150;
+#endif
 
 void QMenuPrivate::hideUpToMenuBar()
 {

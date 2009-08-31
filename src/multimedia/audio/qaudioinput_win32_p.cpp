@@ -53,6 +53,8 @@
 
 #include "qaudioinput_win32_p.h"
 
+QT_BEGIN_NAMESPACE
+
 //#define DEBUG_AUDIO 1
 
 static CRITICAL_SECTION waveInCriticalSection;
@@ -539,3 +541,4 @@ void InputPrivate::trigger()
     emit readyRead();
 }
 
+QT_END_NAMESPACE

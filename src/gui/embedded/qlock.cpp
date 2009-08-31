@@ -41,9 +41,10 @@
 
 #include "qlock_p.h"
 
-QT_BEGIN_NAMESPACE
 
 #ifdef QT_NO_QWS_MULTIPROCESS
+
+QT_BEGIN_NAMESPACE
 
 /* no multiprocess - use a dummy */
 
@@ -77,6 +78,8 @@ bool QLock::locked() const
     return data;
 }
 
+QT_END_NAMESPACE
+
 #else // QT_NO_QWS_MULTIPROCESS
 
 #include "qwssignalhandler_p.h"
@@ -109,6 +112,9 @@ union semun {
 #include <signal.h>
 
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
+
+
+QT_BEGIN_NAMESPACE
 
 #define MAX_LOCKS   200            // maximum simultaneous read locks
 
@@ -324,6 +330,7 @@ bool QLock::locked() const
     return (data->count > 0);
 }
 
+QT_END_NAMESPACE
+
 #endif // QT_NO_QWS_MULTIPROCESS
 
-QT_END_NAMESPACE

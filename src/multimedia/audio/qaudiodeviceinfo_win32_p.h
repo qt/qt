@@ -63,6 +63,8 @@
 #include <QtMultimedia/qaudioengine.h>
 
 
+QT_BEGIN_NAMESPACE
+
 const unsigned int MAX_SAMPLE_RATES = 5;
 const unsigned int SAMPLE_RATES[] = { 8000, 11025, 22050, 44100, 48000 };
 
@@ -104,5 +106,7 @@ private:
     QStringList codecz;
     QList<QAudioFormat::SampleType> typez;
 };
+
+QT_END_NAMESPACE
 
 #endif

@@ -1395,7 +1395,7 @@ bool QLineEdit::event(QEvent * e)
         if (e->type() == QEvent::EnterEditFocus) {
             end(false);
             d->setCursorVisible(true);
-            d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime()/2);
+            d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
         } else if (e->type() == QEvent::LeaveEditFocus) {
             d->setCursorVisible(false);
             d->control->setCursorBlinkPeriod(0);
@@ -1690,7 +1690,7 @@ void QLineEdit::focusInEvent(QFocusEvent *e)
 #ifdef QT_KEYPAD_NAVIGATION
     if (!QApplication::keypadNavigationEnabled() || (hasEditFocus() && e->reason() == Qt::PopupFocusReason)){
 #endif
-    d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime()/2);
+    d->control->setCursorBlinkPeriod(QApplication::cursorFlashTime());
     QStyleOptionFrameV2 opt;
     initStyleOption(&opt);
     if((!hasSelectedText() && d->control->preeditAreaText().isEmpty())
@@ -2002,7 +2002,7 @@ QMenu *QLineEdit::createStandardContextMenu()
 
     action = popup->addAction(QLineEdit::tr("Delete"));
     action->setEnabled(!d->control->isReadOnly() && !d->control->text().isEmpty() && d->control->hasSelectedText());
-    connect(action, SIGNAL(triggered()), SLOT(_q_deleteSelected()));
+    connect(action, SIGNAL(triggered()), d->control, SLOT(_q_deleteSelected()));
 
     popup->addSeparator();
 

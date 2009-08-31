@@ -68,6 +68,8 @@
 #include <QtMultimedia/qaudioengine.h>
 
 
+QT_BEGIN_NAMESPACE
+
 class QAudioInputPrivate : public QAbstractAudioInput
 {
     Q_OBJECT
@@ -148,5 +150,7 @@ public:
 private:
     QAudioInputPrivate *audioDevice;
 };
+
+QT_END_NAMESPACE
 
 #endif

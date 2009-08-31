@@ -293,7 +293,7 @@ int QSimplex::findPivotColumn()
 
 int QSimplex::pivotRowForColumn(int column)
 {
-    qreal min = 999999999999.0; // ###
+    qreal min = qreal(999999999999.0); // ###
     int minIndex = -1;
 
     for (int i = 1; i < rows; ++i) {

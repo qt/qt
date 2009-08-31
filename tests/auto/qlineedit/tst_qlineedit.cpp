@@ -190,6 +190,7 @@ private slots:
 
     void selectedText();
     void hasSelectedText();
+    void deleteSelectedText();
 
     void textChangedAndTextEdited();
     void returnPressed();
@@ -2053,6 +2054,32 @@ void tst_QLineEdit::hasSelectedText()
 {
     DEPENDS_ON("selectedText");
 }
+
+void tst_QLineEdit::deleteSelectedText()
+{
+    const QString text = QString::fromLatin1("bar");
+    QLineEdit edit( text );
+    QCOMPARE(edit.text(), text);
+
+    edit.selectAll();
+
+    QTest::keyClick(&edit, Qt::Key_Delete, 0);
+    QVERIFY(edit.text().isEmpty());
+
+    edit.setText(text);
+    edit.selectAll();
+
+    QMenu *menu = edit.createStandardContextMenu();
+    for (int i = 0; i < menu->actions().count(); ++i) {
+        QAction *current = menu->actions().at(i);
+        if (current->text() == QLineEdit::tr("Delete")) {
+            current->trigger(); //this will delete the whole text selected
+            QVERIFY(edit.text().isEmpty());
+        }
+    }
+
+}
+
 
 void tst_QLineEdit::textChangedAndTextEdited()
 {

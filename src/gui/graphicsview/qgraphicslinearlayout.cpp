@@ -277,7 +277,7 @@ void QGraphicsLinearLayout::insertItem(int index, QGraphicsLayoutItem *item)
     Q_ASSERT(item);
     d->fixIndex(&index);
     d->engine.insertRow(index, d->orientation);
-    new QGridLayoutItem(&d->engine, item, d->gridRow(index), d->gridColumn(index));
+    new QGridLayoutItem(&d->engine, item, d->gridRow(index), d->gridColumn(index), 1, 1, 0, index);
     invalidate();
 }
 
@@ -471,6 +471,7 @@ int QGraphicsLinearLayout::count() const
 
 /*!
     \reimp
+    When iterating from 0 and up, it will return the items in the visual arranged order.
 */
 QGraphicsLayoutItem *QGraphicsLinearLayout::itemAt(int index) const
 {

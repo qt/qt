@@ -55,6 +55,8 @@
 
 #include <QDataStream>
 
+QT_BEGIN_NAMESPACE
+
 namespace QWSKeyboard {
     const quint32 FileMagic = 0x514d4150; // 'QMAP'
 
@@ -126,5 +128,7 @@ inline QDataStream &operator<<(QDataStream &ds, const QWSKeyboard::Composing &c)
     return ds << c.first << c.second << c.result;
 }
 #endif // QT_NO_DATASTREAM
+
+QT_END_NAMESPACE
 
 #endif // QWSKEYBOARD_H

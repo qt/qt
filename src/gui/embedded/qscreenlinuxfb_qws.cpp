@@ -291,8 +291,8 @@ bool QLinuxFbScreen::connect(const QString &displaySpec)
             d_ptr->fd = QT_OPEN(dev.toLatin1().constData(), O_RDONLY);
     }
 
-    fb_fix_screeninfo finfo;
-    fb_var_screeninfo vinfo;
+    ::fb_fix_screeninfo finfo;
+    ::fb_var_screeninfo vinfo;
     //#######################
     // Shut up Valgrind
     memset(&vinfo, 0, sizeof(vinfo));
@@ -429,7 +429,7 @@ bool QLinuxFbScreen::connect(const QString &displaySpec)
     if((vinfo.bits_per_pixel==8) || (vinfo.bits_per_pixel==4)) {
         screencols= (vinfo.bits_per_pixel==8) ? 256 : 16;
         int loopc;
-        fb_cmap startcmap;
+        ::fb_cmap startcmap;
         startcmap.start=0;
         startcmap.len=screencols;
         startcmap.red=(unsigned short int *)

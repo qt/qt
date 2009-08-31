@@ -123,6 +123,9 @@ typedef struct _REPARSE_DATA_BUFFER {
 #  ifndef IO_REPARSE_TAG_SYMLINK
 #    define IO_REPARSE_TAG_SYMLINK (0xA000000CL)
 #  endif
+#  ifndef FSCTL_GET_REPARSE_POINT
+#    define FSCTL_GET_REPARSE_POINT CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 42, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#  endif
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1289,6 +1292,8 @@ static QString readSymLink(const QString &link)
         qFree(rdb);
         CloseHandle(handle);
     }
+#else
+    Q_UNUSED(link);
 #endif // Q_OS_WINCE
     return result;
 }

@@ -4351,13 +4351,6 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         GLdouble tc_w = r.width()/pm.width();
         GLdouble tc_h = r.height()/pm.height();
 
-        // Rotate the texture so that it is aligned correctly and the
-        // wrapping is done correctly
-        glMatrixMode(GL_TEXTURE);
-        glPushMatrix();
-        glRotatef(180.0, 0.0, 1.0, 0.0);
-        glRotatef(180.0, 0.0, 0.0, 1.0);
-
         q_vertexType vertexArray[4*2];
         q_vertexType texCoordArray[4*2];
 
@@ -4376,7 +4369,6 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
-        glPopMatrix();
 
         glDisable(GL_TEXTURE_2D);
 #ifndef QT_OPENGL_ES
@@ -4433,13 +4425,13 @@ void QOpenGLPaintEngine::drawTextureRect(int tx_width, int tx_height, const QRec
     if (target == GL_TEXTURE_2D) {
         x1 = sr.x() / tx_width;
         x2 = x1 + sr.width() / tx_width;
-        y1 = 1.0 - (sr.bottom() / tx_height);
-        y2 = 1.0 - (sr.y() / tx_height);
+        y1 = 1 - (sr.bottom() / tx_height);
+        y2 = 1 - (sr.y() / tx_height);
     } else {
         x1 = sr.x();
         x2 = sr.right();
-        y1 = tx_height - sr.bottom();
-        y2 = tx_height - sr.y();
+        y1 = sr.bottom();
+        y2 = sr.y();
     }
 
     q_vertexType vertexArray[4*2];

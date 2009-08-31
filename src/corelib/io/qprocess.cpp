@@ -1646,7 +1646,8 @@ bool QProcess::waitForBytesWritten(int msecs)
     has been emitted, or until \a msecs milliseconds have passed.
 
     Returns true if the process finished; otherwise returns false (if
-    the operation timed out or if an error occurred).
+    the operation timed out, if an error occurred, or if this QProcess
+    is already finished).
 
     This function can operate without an event loop. It is
     useful when writing non-GUI applications and when performing

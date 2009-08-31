@@ -208,10 +208,12 @@ class QGLContextPrivate
 public:
     explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {groupResources = new QGLContextGroupResources;}
     ~QGLContextPrivate() {if (!groupResources->refs.deref()) delete groupResources;}
-    QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format, bool clean);
+    QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format,
+                            QGLContext::BindOptions options);
     QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format, const qint64 key,
-                       bool clean = false);
-    QGLTexture *bindTexture(const QPixmap &pixmap, GLenum target, GLint format, bool clean, bool canInvert = false);
+                            QGLContext::BindOptions options);
+    QGLTexture *bindTexture(const QPixmap &pixmap, GLenum target, GLint format,
+                            QGLContext::BindOptions options);
     QGLTexture *textureCacheLookup(const qint64 key, GLenum target);
     void init(QPaintDevice *dev, const QGLFormat &format);
     QImage convertToGLFormat(const QImage &image, bool force_premul, GLenum texture_format);
@@ -241,7 +243,8 @@ public:
     quint32 gpm;
     int screen;
     QHash<QPixmapData*, QPixmap> boundPixmaps;
-    QGLTexture *bindTextureFromNativePixmap(QPixmapData*, const qint64 key, bool canInvert);
+    QGLTexture *bindTextureFromNativePixmap(QPixmapData*, const qint64 key,
+                                            QGLContext::BindOptions options);
     static void destroyGlSurfaceForPixmap(QPixmapData*);
     static void unbindPixmapFromTexture(QPixmapData*);
 #endif
@@ -319,8 +322,10 @@ public:
     void doneCurrent();
     QSize size() const;
     QGLFormat format() const;
-    GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA);
-    GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA);
+    GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA,
+                       QGLContext::BindOptions = QGLContext::InternalBindOption);
+    GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA,
+                       QGLContext::BindOptions = QGLContext::InternalBindOption);
     QColor backgroundColor() const;
     QGLContext *context() const;
     bool autoFillBackground() const;
@@ -404,15 +409,18 @@ extern Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg();
 class QGLTexture {
 public:
     QGLTexture(QGLContext *ctx = 0, GLuint tx_id = 0, GLenum tx_target = GL_TEXTURE_2D,
-               bool _clean = false, bool _yInverted = false)
-        : context(ctx), id(tx_id), target(tx_target), clean(_clean), yInverted(_yInverted)
+               QGLContext::BindOptions opt = QGLContext::DefaultBindOption)
+        : context(ctx),
+          id(tx_id),
+          target(tx_target),
+          options(opt)
 #if defined(Q_WS_X11)
-            , boundPixmap(0)
+        , boundPixmap(0)
 #endif
     {}
 
     ~QGLTexture() {
-        if (clean) {
+        if (options & QGLContext::MemoryManagedBindOption) {
             QGLContext *current = const_cast<QGLContext *>(QGLContext::currentContext());
             QGLContext *ctx = const_cast<QGLContext *>(context);
             Q_ASSERT(ctx);
@@ -436,8 +444,9 @@ public:
     QGLContext *context;
     GLuint id;
     GLenum target;
-    bool clean;
-    bool yInverted; // NOTE: Y-Inverted textures are for internal use only!
+
+    QGLContext::BindOptions options;
+
 #if defined(Q_WS_X11)
     QPixmapData* boundPixmap;
 #endif

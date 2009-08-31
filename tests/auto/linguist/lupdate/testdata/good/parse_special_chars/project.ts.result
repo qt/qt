@@ -4,12 +4,12 @@
 <context>
     <name>Dialog2</name>
     <message>
-        <location filename="main.cpp" line="13"/>
+        <location filename="main.cpp" line="54"/>
         <source>catégorie</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="15"/>
+        <location filename="main.cpp" line="56"/>
         <source>Für Èlise</source>
         <translation type="unfinished"></translation>
     </message>
