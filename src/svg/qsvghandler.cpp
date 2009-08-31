@@ -1925,8 +1925,9 @@ static void parseCompOp(QSvgNode *node,
                         const QSvgAttributes &attributes,
                         QSvgHandler *)
 {
-    QString value = attributes.compOp.toString();
-    value = value.trimmed();
+    if (attributes.compOp.isEmpty())
+        return;
+    QString value = attributes.compOp.toString().trimmed();
 
     if (!value.isEmpty()) {
         QSvgCompOpStyle *compop = new QSvgCompOpStyle(svgToQtCompositionMode(value));
