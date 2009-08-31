@@ -187,6 +187,15 @@ void QFxPaintedItem::init()
     connect(this,SIGNAL(visibleChanged()),this,SLOT(clearCache()));
 }
 
+void QFxPaintedItem::setCacheFrozen(bool frozen)
+{
+    Q_D(QFxPaintedItem);
+    if (d->cachefrozen == frozen)
+        return;
+    d->cachefrozen = frozen;
+    // XXX clear cache?
+}
+
 /*!
     \reimp
 */
@@ -222,14 +231,16 @@ void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
         QRect area = d->imagecache[i]->area;
         if (topaint.contains(area)) {
             QRectF target(area.x(), area.y(), area.width(), area.height());
-            if (!d->imagecache[i]->dirty.isNull() && topaint.contains(d->imagecache[i]->dirty)) {
-                QPainter qp(&d->imagecache[i]->image);
-                qp.translate(-area.x(), -area.y());
-                if (d->fillColor.isValid())
-                    qp.fillRect(d->imagecache[i]->dirty,d->fillColor);
-                qp.setClipRect(d->imagecache[i]->dirty);
-                drawContents(&qp, d->imagecache[i]->dirty);
-                d->imagecache[i]->dirty = QRect();
+            if (!d->cachefrozen) {
+                if (!d->imagecache[i]->dirty.isNull() && topaint.contains(d->imagecache[i]->dirty)) {
+                    QPainter qp(&d->imagecache[i]->image);
+                    qp.translate(-area.x(), -area.y());
+                    if (d->fillColor.isValid())
+                        qp.fillRect(d->imagecache[i]->dirty,d->fillColor);
+                    qp.setClipRect(d->imagecache[i]->dirty);
+                    drawContents(&qp, d->imagecache[i]->dirty);
+                    d->imagecache[i]->dirty = QRect();
+                }
             }
             p->drawPixmap(target.toRect(), d->imagecache[i]->image);
             topaint -= area;
@@ -242,41 +253,46 @@ void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
     }
 
     if (!topaint.isEmpty()) {
-        // Find a sensible larger area, otherwise will paint lots of tiny images.
-        QRect biggerrect = topaint.boundingRect().adjusted(-64,-64,128,128);
-        cachesize += biggerrect.width() * biggerrect.height();
-        while (d->imagecache.count() && cachesize > d->max_imagecache_size) {
-            int oldest=-1;
-            int age=-1;
-            for (int i=0; i<d->imagecache.count(); ++i) {
-                int a = d->imagecache[i]->age;
-                if (a > age) {
-                    oldest = i;
-                    age = a;
+        if (!d->cachefrozen) {
+            // Find a sensible larger area, otherwise will paint lots of tiny images.
+            QRect biggerrect = topaint.boundingRect().adjusted(-64,-64,128,128);
+            cachesize += biggerrect.width() * biggerrect.height();
+            while (d->imagecache.count() && cachesize > d->max_imagecache_size) {
+                int oldest=-1;
+                int age=-1;
+                for (int i=0; i<d->imagecache.count(); ++i) {
+                    int a = d->imagecache[i]->age;
+                    if (a > age) {
+                        oldest = i;
+                        age = a;
+                    }
                 }
+                cachesize -= d->imagecache[oldest]->area.width()*d->imagecache[oldest]->area.height();
+                uncached += d->imagecache[oldest]->area;
+                d->imagecache.removeAt(oldest);
             }
-            cachesize -= d->imagecache[oldest]->area.width()*d->imagecache[oldest]->area.height();
-            uncached += d->imagecache[oldest]->area;
-            d->imagecache.removeAt(oldest);
-        }
-        const QRegion bigger = QRegion(biggerrect) & uncached;
-        const QVector<QRect> rects = bigger.rects();
-        for (int i = 0; i < rects.count(); ++i) {
-            const QRect &r = rects.at(i);
-            QPixmap img(r.size());
-            if (d->fillColor.isValid())
-                img.fill(d->fillColor);
-            {
-                QPainter qp(&img);
-                qp.translate(-r.x(),-r.y());
-                drawContents(&qp, r);
+            const QRegion bigger = QRegion(biggerrect) & uncached;
+            const QVector<QRect> rects = bigger.rects();
+            for (int i = 0; i < rects.count(); ++i) {
+                const QRect &r = rects.at(i);
+                QPixmap img(r.size());
+                if (d->fillColor.isValid())
+                    img.fill(d->fillColor);
+                {
+                    QPainter qp(&img);
+                    qp.translate(-r.x(),-r.y());
+                    drawContents(&qp, r);
+                }
+                QFxPaintedItemPrivate::ImageCacheItem *newitem = new QFxPaintedItemPrivate::ImageCacheItem;
+                newitem->area = r;
+                newitem->image = img;
+                d->imagecache.append(newitem);
+                p->drawPixmap(r, newitem->image);
             }
-            QFxPaintedItemPrivate::ImageCacheItem *newitem = new QFxPaintedItemPrivate::ImageCacheItem;
-            newitem->area = r;
-            newitem->image = img;
-            d->imagecache.append(newitem);
-            QRectF target(r.x(), r.y(), r.width(), r.height());
-            p->drawPixmap(target.toRect(), newitem->image);
+        } else {
+            const QVector<QRect> rects = uncached.rects();
+            for (int i = 0; i < rects.count(); ++i)
+                p->fillRect(rects.at(i), Qt::lightGray);
         }
     }
 

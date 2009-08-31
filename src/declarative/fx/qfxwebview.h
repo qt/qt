@@ -115,6 +115,8 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
     Q_PROPERTY(QmlComponent* newWindowComponent READ newWindowComponent WRITE setNewWindowComponent)
     Q_PROPERTY(QFxItem* newWindowParent READ newWindowParent WRITE setNewWindowParent)
 
+    Q_PROPERTY(bool renderingEnabled READ renderingEnabled WRITE setRenderingEnabled)
+
 public:
     QFxWebView(QFxItem *parent=0);
     ~QFxWebView();
@@ -166,6 +168,9 @@ public:
     int pixelCacheSize() const;
     void setPixelCacheSize(int pixels);
 
+    bool renderingEnabled() const;
+    void setRenderingEnabled(bool);
+
     QmlList<QObject *> *javaScriptWindowObjects();
 
     static QFxWebViewAttached *qmlAttachedProperties(QObject *);
@@ -192,7 +197,7 @@ Q_SIGNALS:
 
     void doubleClick(int clickX, int clickY);
 
-    void zooming(int centerX, int centerY);
+    void zooming(qreal zoom, int centerX, int centerY);
 
 public Q_SLOTS:
     QVariant evaluateJavaScript(const QString&);

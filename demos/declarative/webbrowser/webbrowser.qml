@@ -190,7 +190,7 @@ Item {
                 }
 
                 url: fixUrl(WebBrowser.urlString)
-                smooth: !Flick.moving
+                smooth: false
                 fillColor: "white"
                 focus: true
 
@@ -200,9 +200,71 @@ Item {
                 onUrlChanged: { if (url != null) { WebBrowser.urlString = url.toString(); } }
                 onDoubleClick: { heuristicZoom(clickX,clickY) }
 
-                onZooming: { Flick.viewportX=Math.min(MyWebView.width-Flick.width,Math.max(0,centerX-Flick.width/2));
-                             Flick.viewportY=Math.max(0,Math.min(MyWebView.height-Flick.height,centerY-Flick.height/2)) }
+                SequentialAnimation {
+                    id: QuickZoom
 
+                    PropertyAction {
+                        target: MyWebView
+                        property: "renderingEnabled"
+                        value: false
+                    }
+                    ParallelAnimation {
+                        NumberAnimation {
+                            id: ScaleAnim
+                            target: MyWebView
+                            property: "scale"
+                            from: 1
+                            to: 0 // set before calling
+                            easing: "easeInOutQuad"
+                            duration: 200
+                        }
+                        NumberAnimation {
+                            id: FlickVX
+                            target: Flick
+                            property: "viewportX"
+                            easing: "easeInOutQuad"
+                            duration: 200
+                            from: 0 // set before calling
+                            to: 0 // set before calling
+                        }
+                        NumberAnimation {
+                            id: FlickVY
+                            target: Flick
+                            property: "viewportY"
+                            easing: "easeInOutQuad"
+                            duration: 200
+                            from: 0 // set before calling
+                            to: 0 // set before calling
+                        }
+                    }
+                    PropertyAction {
+                        target: MyWebView
+                        property: "scale"
+                        value: 1.0
+                    }
+                    PropertyAction {
+                        id: FinalZoom
+                        target: MyWebView
+                        property: "zoomFactor"
+                    }
+                    PropertyAction {
+                        target: MyWebView
+                        property: "renderingEnabled"
+                        value: true
+                    }
+                }
+                onZooming: {
+                    if (centerX) {
+                        sc = zoom/zoomFactor;
+                        ScaleAnim.to = sc;
+                        FlickVX.from = Flick.viewportX
+                        FlickVX.to = Math.min(Math.max(0,centerX-Flick.width/2),MyWebView.width*sc-Flick.width)
+                        FlickVY.from = Flick.viewportY
+                        FlickVY.to = Math.min(Math.max(0,centerY-Flick.height/2),MyWebView.height*sc-Flick.height)
+                        FinalZoom.value = zoom
+                        QuickZoom.start()
+                    }
+                }
             }
             Rectangle {
                 id: WebViewTint

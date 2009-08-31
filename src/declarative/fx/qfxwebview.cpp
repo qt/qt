@@ -169,7 +169,8 @@ public:
       : QFxPaintedItemPrivate(), page(0), preferredwidth(0), pagewidth(0),
             progress(1.0), status(QFxWebView::Null), pending(PendingNone),
             newWindowComponent(0), newWindowParent(0),
-            windowObjects(this)
+            windowObjects(this),
+            rendering(true)
     {
     }
 
@@ -202,6 +203,8 @@ public:
     private:
         QFxWebViewPrivate *priv;
     } windowObjects;
+
+    bool rendering;
 };
 
 /*!
@@ -355,7 +358,7 @@ void QFxWebView::pageUrlChanged()
         page()->mainFrame()->setZoomFactor(zf);
         page()->setViewportSize(QSize(-1,-1));
     }
-    emit zooming(0,0);
+    emit zooming(zf,0,0);
     expandToWebPage();
 
     if ((d->url.isEmpty() && page()->mainFrame()->url() != QUrl(QLatin1String("about:blank")))
@@ -493,7 +496,7 @@ void QFxWebView::focusChanged(bool hasFocus)
     QFxItem::focusChanged(hasFocus);
 }
 
-void QFxWebView::contentsSizeChanged(const QSize& sz)
+void QFxWebView::contentsSizeChanged(const QSize&)
 {
     expandToWebPage();
 }
@@ -645,9 +648,29 @@ void QFxWebViewPrivate::updateWindowObjects()
     }
 }
 
+bool QFxWebView::renderingEnabled() const
+{
+    Q_D(const QFxWebView);
+    return d->rendering;
+}
+
+void QFxWebView::setRenderingEnabled(bool enabled)
+{
+    Q_D(QFxWebView);
+    if (d->rendering == enabled)
+        return;
+    d->rendering = enabled;
+    setCacheFrozen(!enabled);
+    if (enabled)
+        clearCache();
+}
+
+
 void QFxWebView::drawContents(QPainter *p, const QRect &r)
 {
-    page()->mainFrame()->render(p,r);
+    Q_D(QFxWebView);
+    if (d->rendering)
+        page()->mainFrame()->render(p,r);
 }
 
 static QMouseEvent *sceneMouseEventToMouseEvent(QGraphicsSceneMouseEvent *e)
@@ -707,9 +730,8 @@ void QFxWebView::heuristicZoom(int clickX, int clickY)
         // zoom out
         z = qreal(d->preferredwidth)/d->pagewidth;
     }
-    setZoomFactor(z);
     QRectF r(showarea.left()/ozf*z, showarea.top()/ozf*z, showarea.width()/ozf*z, showarea.height()/ozf*z);
-    emit zooming(r.x()+r.width()/2, r.y()+r.height()/2);
+    emit zooming(z,r.x()+r.width()/2, r.y()+r.height()/2);
 }
 
 void QFxWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)

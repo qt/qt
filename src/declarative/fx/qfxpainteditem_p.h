@@ -63,7 +63,7 @@ class QFxPaintedItemPrivate : public QFxItemPrivate
 
 public:
     QFxPaintedItemPrivate()
-      : max_imagecache_size(100000), fillColor(Qt::transparent)
+      : max_imagecache_size(100000), fillColor(Qt::transparent), cachefrozen(false)
     {
     }
 
@@ -81,6 +81,7 @@ public:
     int max_imagecache_size;
     QSize contentsSize;
     QColor fillColor;
+    bool cachefrozen;
 };
 
 QT_END_NAMESPACE
