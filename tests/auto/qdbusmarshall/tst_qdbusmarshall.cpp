@@ -497,6 +497,24 @@ void tst_QDBusMarshall::sendStructs_data()
     QTest::newRow("time") << QVariant(time) << "(iiii)" << "[Argument: (iiii) 12, 25, 0, 0]";
     QTest::newRow("datetime") << QVariant(QDateTime(date, time)) << "((iii)(iiii)i)"
         << "[Argument: ((iii)(iiii)i) [Argument: (iii) 2006, 6, 18], [Argument: (iiii) 12, 25, 0, 0], 0]";
+
+    MyStruct ms = { 1, "Hello, World" };
+    QTest::newRow("int-string") << qVariantFromValue(ms) << "(is)" << "[Argument: (is) 1, \"Hello, World\"]";
+
+    MyVariantMapStruct mvms = { "Hello, World", QVariantMap() };
+    QTest::newRow("string-variantmap") << qVariantFromValue(mvms) << "(sa{sv})" << "[Argument: (sa{sv}) \"Hello, World\", [Argument: a{sv} {}]]";
+
+    // use only basic types, otherwise comparison will fail
+    mvms.map["int"] = 42;
+    mvms.map["uint"] = 42u;
+    mvms.map["short"] = qVariantFromValue<short>(-47);
+    mvms.map["bytearray"] = QByteArray("Hello, world");
+    QTest::newRow("string-variantmap2") << qVariantFromValue(mvms) << "(sa{sv})" << "[Argument: (sa{sv}) \"Hello, World\", [Argument: a{sv} {\"bytearray\" = [Variant(QByteArray): {72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100}], \"int\" = [Variant(int): 42], \"short\" = [Variant(short): -47], \"uint\" = [Variant(uint): 42]}]]";
+
+    QList<MyVariantMapStruct> list;
+    QTest::newRow("empty-list-of-string-variantmap") << qVariantFromValue(list) << "a(sa{sv})" << "[Argument: a(sa{sv}) {}]";
+    list << mvms;
+    QTest::newRow("list-of-string-variantmap") << qVariantFromValue(list) << "a(sa{sv})" << "[Argument: a(sa{sv}) {[Argument: (sa{sv}) \"Hello, World\", [Argument: a{sv} {\"bytearray\" = [Variant(QByteArray): {72, 101, 108, 108, 111, 44, 32, 119, 111, 114, 108, 100}], \"int\" = [Variant(int): 42], \"short\" = [Variant(short): -47], \"uint\" = [Variant(uint): 42]}]]}]";
 }
 
 void tst_QDBusMarshall::sendComplex_data()
