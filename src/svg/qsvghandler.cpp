@@ -1851,6 +1851,9 @@ static void parseOpacity(QSvgNode *node,
                          const QSvgAttributes &attributes,
                          QSvgHandler *)
 {
+    if (attributes.opacity.isEmpty())
+        return;
+
     const QString value = attributes.opacity.toString().trimmed();
 
     bool ok = false;
