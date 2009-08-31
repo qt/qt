@@ -351,7 +351,8 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     bool res = sendMouseEvent(alienWidget, &mEvent);
 
 #if !defined(QT_NO_CONTEXTMENU)
-    QContextMenuEvent e2(QContextMenuEvent::Mouse, widgetPos, globalPos, mEvent.modifiers());
+    QContextMenuEvent contextMenuEvent(QContextMenuEvent::Mouse, widgetPos, globalPos, mEvent.modifiers());
+    qt_sendSpontaneousEvent(alienWidget, &contextMenuEvent);
 #endif     
     
     m_previousEventLongTap = true;
