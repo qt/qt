@@ -6748,7 +6748,27 @@ void QWidget::setContentsMargins(int left, int top, int right, int bottom)
     QApplication::sendEvent(this, &e);
 }
 
-/*!  Returns the widget's contents margins for \a left, \a top, \a
+/*!
+  \overload
+  \since 4.6
+
+  Sets the margins around the contents of the widget to have the
+  sizes determined by \a margins. The margins are
+  used by the layout system, and may be used by subclasses to
+  specify the area to draw in (e.g. excluding the frame).
+
+  Changing the margins will trigger a resizeEvent().
+
+  \sa contentsRect(), getContentsMargins()
+*/
+void QWidget::setContentsMargins(const QMargins &margins)
+{
+    setContentsMargins(margins.left(), margins.top(),
+                       margins.right(), margins.bottom());
+}
+
+/*!
+  Returns the widget's contents margins for \a left, \a top, \a
   right, and \a bottom.
 
   \sa setContentsMargins(), contentsRect()
@@ -6765,6 +6785,20 @@ void QWidget::getContentsMargins(int *left, int *top, int *right, int *bottom) c
     if (bottom)
         *bottom = d->bottommargin;
 }
+
+/*!
+  \since 4.6
+
+  Returns the widget's contents margins.
+
+  \sa getContentsMargins(), setContentsMargins(), contentsRect()
+ */
+QMargins QWidget::contentsMargins() const
+{
+    Q_D(const QWidget);
+    return QMargins(d->leftmargin, d->topmargin, d->rightmargin, d->bottommargin);
+}
+
 
 /*!
     Returns the area inside the widget's margins.
