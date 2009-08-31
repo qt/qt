@@ -474,6 +474,13 @@ public:
     }
 };
 
+// '0' is 0x30 and '9' is 0x39
+static inline bool isDigit(ushort ch)
+{
+    static quint16 magic = 0x3ff;
+    return ((ch >> 4) == 3) && (magic >> (ch & 15));
+}
+
 static qreal toDouble(const QChar *&str)
 {
     const int maxLen = 255;//technically doubles can go til 308+ but whatever
@@ -486,7 +493,7 @@ static qreal toDouble(const QChar *&str)
     } else if (*str == QLatin1Char('+')) {
         ++str;
     }
-    while (*str >= QLatin1Char('0') && *str <= QLatin1Char('9') && pos < maxLen) {
+    while (isDigit(str->unicode()) && pos < maxLen) {
         temp[pos++] = str->toLatin1();
         ++str;
     }
@@ -494,7 +501,7 @@ static qreal toDouble(const QChar *&str)
         temp[pos++] = '.';
         ++str;
     }
-    while (*str >= QLatin1Char('0') && *str <= QLatin1Char('9') && pos < maxLen) {
+    while (isDigit(str->unicode()) && pos < maxLen) {
         temp[pos++] = str->toLatin1();
         ++str;
     }
@@ -507,7 +514,7 @@ static qreal toDouble(const QChar *&str)
             temp[pos++] = str->toLatin1();
             ++str;
         }
-        while (*str >= QLatin1Char('0') && *str <= QLatin1Char('9') && pos < maxLen) {
+        while (isDigit(str->unicode()) && pos < maxLen) {
             temp[pos++] = str->toLatin1();
             ++str;
         }
@@ -587,7 +594,7 @@ static QVector<qreal> parseNumbersList(const QChar *&str)
 
     while (*str == QLatin1Char(' '))
         ++str;
-    while ((*str >= QLatin1Char('0') && *str <= QLatin1Char('9')) ||
+    while (isDigit(str->unicode()) ||
            *str == QLatin1Char('-') || *str == QLatin1Char('+') ||
            *str == QLatin1Char('.')) {
 
