@@ -823,31 +823,28 @@ static void parseBrush(QSvgNode *node,
                        const QSvgAttributes &attributes,
                        QSvgHandler *handler)
 {
-    QString value = attributes.fill.toString();
-    QString fillRule = attributes.fillRule.toString();
-    QString opacity = attributes.fillOpacity.toString();
-    QString myId = someId(attributes);
-
-    if (!value.isEmpty() || !fillRule.isEmpty() || !opacity.isEmpty()) {
+    if (!attributes.fill.isEmpty() || !attributes.fillRule.isEmpty() || !attributes.fillOpacity.isEmpty()) {
         QSvgFillStyle *prop = new QSvgFillStyle;
 
         //fill-rule attribute handling
-        if (!fillRule.isEmpty() && fillRule != QT_INHERIT) {
-            if (fillRule == QLatin1String("evenodd"))
+        if (!attributes.fillRule.isEmpty() && attributes.fillRule != QT_INHERIT) {
+            if (attributes.fillRule == QLatin1String("evenodd"))
                 prop->setFillRule(Qt::OddEvenFill);
-            else if (fillRule == QLatin1String("nonzero"))
+            else if (attributes.fillRule == QLatin1String("nonzero"))
                 prop->setFillRule(Qt::WindingFill);
         }
 
         //fill-opacity atttribute handling
-        if (!opacity.isEmpty() && opacity != QT_INHERIT) {
-            prop->setFillOpacity(qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity))));
+        if (!attributes.fillOpacity.isEmpty() && attributes.fillOpacity != QT_INHERIT) {
+            prop->setFillOpacity(qMin(qreal(1.0), qMax(qreal(0.0), toDouble(attributes.fillOpacity))));
         }
 
         //fill attribute handling
-        if ((!value.isEmpty()) && (value != QT_INHERIT) ) {
-            if (value.startsWith(QLatin1String("url"))) {
-                value = value.remove(0, 3);
+        if ((!attributes.fill.isEmpty()) && (attributes.fill != QT_INHERIT) ) {
+            if (attributes.fill.length() > 3 &&
+                QStringRef(attributes.fill.string(), attributes.fill.position(), 3) == QLatin1String("url")) {
+                QStringRef urlRef(attributes.fill.string(), attributes.fill.position() + 3, attributes.fill.length() - 3);
+                QString value = urlRef.toString();
                 QSvgStyleProperty *style = styleFromUrl(node, value);
                 if (style) {
                     if (style->type() == QSvgStyleProperty::SOLID_COLOR || style->type() == QSvgStyleProperty::GRADIENT)
@@ -857,15 +854,15 @@ static void parseBrush(QSvgNode *node,
                     prop->setGradientId(id);
                     prop->setGradientResolved(false);
                 }
-            } else if (value != QLatin1String("none")) {
+            } else if (attributes.fill != QLatin1String("none")) {
                 QColor color;
-                if (resolveColor(value, color, handler))
+                if (resolveColor(attributes.fill.toString(), color, handler))
                     prop->setBrush(QBrush(color));
             } else {
                 prop->setBrush(QBrush(Qt::NoBrush));
             }
         }
-        node->appendStyleProperty(prop, myId);
+        node->appendStyleProperty(prop, someId(attributes));
     }
 }
 
@@ -1002,41 +999,32 @@ static void parsePen(QSvgNode *node,
                      const QSvgAttributes &attributes,
                      QSvgHandler *handler)
 {
-    QString value      = attributes.stroke.toString();
-    QString dashArray  = attributes.strokeDashArray.toString();
-    QString dashOffset = attributes.strokeDashOffset.toString();
-    QString linecap    = attributes.strokeLineCap.toString();
-    QString linejoin   = attributes.strokeLineJoin.toString();
-    QString miterlimit = attributes.strokeMiterLimit.toString();
-    QString opacity    = attributes.strokeOpacity.toString();
-    QString width      = attributes.strokeWidth.toString();
-    QString vectorEffect = attributes.vectorEffect.toString();
-    QString myId       = someId(attributes);
-
     //qDebug()<<"Node "<<node->type()<<", attrs are "<<value<<width;
 
-    if (!value.isEmpty() || !dashArray.isEmpty() || !dashOffset.isEmpty() || !linecap.isEmpty()
-        || !linejoin.isEmpty() || !miterlimit.isEmpty() || !opacity.isEmpty() || !width.isEmpty()
-        || !vectorEffect.isEmpty()) {
+    if (!attributes.stroke.isEmpty() || !attributes.strokeDashArray.isEmpty() || !attributes.strokeDashOffset.isEmpty() || !attributes.strokeLineCap.isEmpty()
+        || !attributes.strokeLineJoin.isEmpty() || !attributes.strokeMiterLimit.isEmpty() || !attributes.strokeOpacity.isEmpty() || !attributes.strokeWidth.isEmpty()
+        || !attributes.vectorEffect.isEmpty()) {
 
         QSvgStrokeStyle *prop = new QSvgStrokeStyle;
 
         //stroke attribute handling
-        if ((!value.isEmpty()) && (value != QT_INHERIT) ) {
-            if (value.startsWith(QLatin1String("url"))) {
-                value = value.remove(0, 3);
-                QSvgStyleProperty *style = styleFromUrl(node, value);
-                if (style) {
-                    if (style->type() == QSvgStyleProperty::SOLID_COLOR || style->type() == QSvgStyleProperty::GRADIENT)
-                        prop->setStyle(reinterpret_cast<QSvgFillStyleProperty *>(style));
-                } else {
-                    QString id = idFromUrl(value);
-                    prop->setGradientId(id);
-                    prop->setGradientResolved(false);
-                }
-            } else if (value != QLatin1String("none")) {
+        if ((!attributes.stroke.isEmpty()) && (attributes.stroke != QT_INHERIT) ) {
+            if (attributes.stroke.length() > 3 &&
+                 QStringRef(attributes.stroke.string(), attributes.stroke.position(), 3) == QLatin1String("url")) {
+                 QStringRef urlRef(attributes.stroke.string(), attributes.stroke.position() + 3, attributes.stroke.length() - 3);
+                 QString value = urlRef.toString();
+                    QSvgStyleProperty *style = styleFromUrl(node, value);
+                    if (style) {
+                        if (style->type() == QSvgStyleProperty::SOLID_COLOR || style->type() == QSvgStyleProperty::GRADIENT)
+                            prop->setStyle(reinterpret_cast<QSvgFillStyleProperty *>(style));
+                    } else {
+                        QString id = idFromUrl(value);
+                        prop->setGradientId(id);
+                        prop->setGradientResolved(false);
+                    }
+            } else if (attributes.stroke != QLatin1String("none")) {
                 QColor color;
-                if (resolveColor(value, color, handler))
+                if (resolveColor(attributes.stroke.toString(), color, handler))
                     prop->setStroke(QBrush(color));
             } else {
                 prop->setStroke(QBrush(Qt::NoBrush));
@@ -1045,16 +1033,17 @@ static void parsePen(QSvgNode *node,
 
         //stroke-width handling
         qreal w = 0;
-        if (!width.isEmpty() && width != QT_INHERIT) {
+        if (!attributes.strokeWidth.isEmpty() && attributes.strokeWidth != QT_INHERIT) {
             QSvgHandler::LengthType lt;
-            prop->setWidth(w = parseLength(width, lt, handler));
+            prop->setWidth(w = parseLength(attributes.strokeWidth.toString(), lt, handler));
         }
 
         //stroke-dasharray
-        if (!dashArray.isEmpty() && dashArray != QT_INHERIT) {
-            if (dashArray == QLatin1String("none")) {
+        if (!attributes.strokeDashArray.isEmpty() && attributes.strokeDashArray != QT_INHERIT) {
+            if (attributes.strokeDashArray == QLatin1String("none")) {
                 prop->setDashArrayNone();
             } else {
+                QString dashArray  = attributes.strokeDashArray.toString();
                 const QChar *s = dashArray.constData();
                 QVector<qreal> dashes = parseNumbersList(s);
                 // if the dash count is odd the dashes should be duplicated
@@ -1065,46 +1054,46 @@ static void parsePen(QSvgNode *node,
         }
 
         //stroke-linejoin attribute handling
-        if (!linejoin.isEmpty()) {
-            if (linejoin == QLatin1String("miter"))
+        if (!attributes.strokeLineJoin.isEmpty()) {
+            if (attributes.strokeLineJoin == QLatin1String("miter"))
                 prop->setLineJoin(Qt::SvgMiterJoin);
-            else if (linejoin == QLatin1String("round"))
+            else if (attributes.strokeLineJoin == QLatin1String("round"))
                 prop->setLineJoin(Qt::RoundJoin);
-            else if (linejoin == QLatin1String("bevel"))
+            else if (attributes.strokeLineJoin == QLatin1String("bevel"))
                 prop->setLineJoin(Qt::BevelJoin);
         }
 
         //stroke-linecap attribute handling
-        if (!linecap.isEmpty()) {
-            if (linecap == QLatin1String("butt"))
+        if (!attributes.strokeLineCap.isEmpty()) {
+            if (attributes.strokeLineCap == QLatin1String("butt"))
                 prop->setLineCap(Qt::FlatCap);
-            else if (linecap == QLatin1String("round"))
+            else if (attributes.strokeLineCap == QLatin1String("round"))
                 prop->setLineCap(Qt::RoundCap);
-            else if (linecap == QLatin1String("square"))
+            else if (attributes.strokeLineCap == QLatin1String("square"))
                 prop->setLineCap(Qt::SquareCap);
         }
 
         //stroke-dashoffset attribute handling
-        if (!dashOffset.isEmpty() && dashOffset != QT_INHERIT)
-            prop->setDashOffset(toDouble(dashOffset));
+        if (!attributes.strokeDashOffset.isEmpty() && attributes.strokeDashOffset != QT_INHERIT)
+            prop->setDashOffset(toDouble(attributes.strokeDashOffset));
 
         //vector-effect attribute handling
-        if (!vectorEffect.isEmpty()) {
-            if (vectorEffect == QLatin1String("non-scaling-stroke"))
+        if (!attributes.vectorEffect.isEmpty()) {
+            if (attributes.vectorEffect == QLatin1String("non-scaling-stroke"))
                 prop->setVectorEffect(true);
-            else if (vectorEffect == QLatin1String("none"))
+            else if (attributes.vectorEffect == QLatin1String("none"))
                 prop->setVectorEffect(false);
         }
 
         //stroke-miterlimit
-        if (!miterlimit.isEmpty() && miterlimit != QT_INHERIT)
-            prop->setMiterLimit(toDouble(miterlimit));
+        if (!attributes.strokeMiterLimit.isEmpty() && attributes.strokeMiterLimit != QT_INHERIT)
+            prop->setMiterLimit(toDouble(attributes.strokeMiterLimit));
 
         //stroke-opacity atttribute handling
-        if (!opacity.isEmpty() && opacity != QT_INHERIT)
-            prop->setOpacity(qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity))));
+        if (!attributes.strokeOpacity.isEmpty() && attributes.strokeOpacity != QT_INHERIT)
+            prop->setOpacity(qMin(qreal(1.0), qMax(qreal(0.0), toDouble(attributes.strokeOpacity))));
 
-        node->appendStyleProperty(prop, myId);
+        node->appendStyleProperty(prop, someId(attributes));
     }
 }
 
