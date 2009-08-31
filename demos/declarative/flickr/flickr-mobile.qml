@@ -35,17 +35,23 @@ Item {
 
         Common.ImageDetails { id: ImageDetails; width: parent.width; x: parent.width; height: parent.height }
         Mobile.TitleBar { id: TitleBar; width: parent.width; height: 40; opacity: 0.9 }
-        Mobile.ToolBar { id: ToolBar; height: 40; anchors.bottom: parent.bottom; width: parent.width; opacity: 0.9 }
 
-        states: [
-            State {
-                name: "ListView"; when: Screen.inListView == true
-                PropertyChanges { target: PhotoListView; x: 0 }
-                PropertyChanges { target: PhotoGridView; x: -(parent.width * 1.5) }
-            }
-        ]
-        transitions: [
-            Transition { NumberAnimation { properties: "x"; duration: 500; easing: "easeInOutQuad" } }
-        ]
+        Mobile.ToolBar {
+            id: ToolBar
+            height: 40; anchors.bottom: parent.bottom; width: parent.width; opacity: 0.9
+            button1Label: "Update"; button2Label: "View mode"
+            onButton1Clicked: RssModel.reload()
+            onButton2Clicked: if (Screen.inListView == true) Screen.inListView = false; else Screen.inListView = true
+        }
+
+        states: State {
+            name: "ListView"; when: Screen.inListView == true
+            PropertyChanges { target: PhotoListView; x: 0 }
+            PropertyChanges { target: PhotoGridView; x: -(parent.width * 1.5) }
+        }
+
+        transitions: Transition {
+            NumberAnimation { properties: "x"; duration: 500; easing: "easeInOutQuad" }
+        }
     }
 }
