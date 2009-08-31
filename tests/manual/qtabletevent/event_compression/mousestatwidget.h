@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the test suite module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,35 +39,31 @@
 **
 ****************************************************************************/
 
-#ifndef TABLETWIDGET_H
-#define TABLETWIDGET_H
+#ifndef MOUSESTATWIDGET_H
+#define MOUSESTATWIDGET_H
 
 #include <QWidget>
-#include <QTabletEvent>
 
-// a widget showing the information of the last tablet event
-class TabletWidget : public QWidget
+class QTabletEvent;
+class QMouseEvent;
+class QTimerEvent;
+class QPaintEvent;
+
+class MouseStatWidget : public QWidget
 {
 public:
-    TabletWidget();
+    MouseStatWidget(bool acceptTabletEvent = true);
 protected:
-    bool eventFilter(QObject *obj, QEvent *ev);
-    void tabletEvent(QTabletEvent *event);
-    void paintEvent(QPaintEvent *event);
+    void tabletEvent(QTabletEvent *);
+    void mouseMoveEvent(QMouseEvent *);
+    void timerEvent(QTimerEvent *);
+    void paintEvent(QPaintEvent *);
 private:
-    void resetAttributes() {
-        mType = mDev = mPointerType = mXT = mYT = mZ = 0;
-        mPress = mTangential = mRot = 0.0;
-        mPos = mGPos = QPoint();
-        mHiResGlobalPos = QPointF();
-        mUnique = 0;
-    }
-    int mType;
-    QPoint mPos, mGPos;
-    QPointF mHiResGlobalPos;
-    int mDev, mPointerType, mXT, mYT, mZ;
-    qreal mPress, mTangential, mRot;
-    qint64 mUnique;
+    const bool acceptTabletEvent;
+    int receivedMouseEventCount;
+    int receivedMouseEventCountToPaint;
+    int receivedTabletEventCount;
+    int receivedTabletEventCountToPaint;
 };
 
-#endif // TABLETWIDGET_H
+#endif // MOUSESTATWIDGET_H
