@@ -2243,8 +2243,30 @@ void tst_QScriptValue::getSetScriptClass()
         obj.setScriptClass(&testClass);
         QEXPECT_FAIL("", "With JSC back-end, the class of a plain object created in JS can't be changed", Continue);
         QCOMPARE(obj.scriptClass(), (QScriptClass*)&testClass);
+        QTest::ignoreMessage(QtWarningMsg, "QScriptValue::setScriptClass() failed: cannot change class of non-QScriptObject");
         obj.setScriptClass(0);
         QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
+    }
+    // object that already has a(n internal) class
+    {
+        QScriptValue obj = eng.newVariant(QUrl("http://example.com"));
+        QVERIFY(obj.isVariant());
+        QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
+        obj.setScriptClass(&testClass);
+        QCOMPARE(obj.scriptClass(), &testClass);
+        QVERIFY(obj.isObject());
+        QVERIFY(!obj.isVariant());
+        QVERIFY(!obj.toVariant().isValid());
+    }
+    {
+        QScriptValue obj = eng.newQObject(this);
+        QVERIFY(obj.isQObject());
+        QCOMPARE(obj.scriptClass(), (QScriptClass*)0);
+        obj.setScriptClass(&testClass);
+        QCOMPARE(obj.scriptClass(), &testClass);
+        QVERIFY(obj.isObject());
+        QVERIFY(!obj.isQObject());
+        QVERIFY(obj.toQObject() == 0);
     }
 }
 
