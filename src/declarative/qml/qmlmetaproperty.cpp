@@ -450,10 +450,10 @@ bool QmlMetaProperty::isWritable() const
 {
     if (propertyCategory() == List || propertyCategory() == QmlList)
         return true;
-    else if (!d->name.isEmpty() && d->object)
-        return d->object->metaObject()->property(d->coreIdx).isWritable();
     else if (type() & SignalProperty)
         return true;
+    else if (!d->name.isEmpty() && d->object)
+        return d->object->metaObject()->property(d->coreIdx).isWritable();
     else
         return false;
 }

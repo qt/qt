@@ -195,9 +195,14 @@ void QmlPropertyChangesPrivate::decode()
         ds >> data;
 
         if (isScript) {
-            QmlExpression *expression = new QmlExpression(qmlContext(q), data.toString(), object);
-            expression->setTrackChange(false);
-            expressions << qMakePair(name, expression);
+            QmlMetaProperty prop = property(name);      //### can we avoid or reuse?
+            if (prop.type() != QmlMetaProperty::SignalProperty) {  //binding
+                QmlExpression *expression = new QmlExpression(qmlContext(q), data.toString(), object);
+                expression->setTrackChange(false);
+                expressions << qMakePair(name, expression);
+            } else {
+                properties << qMakePair(name, data);    //same as non-script
+            }
         } else {
             properties << qMakePair(name, data);
         }
@@ -287,7 +292,7 @@ QmlPropertyChanges::ActionList QmlPropertyChanges::actions()
 
             if (a.property.propertyType() == QVariant::Url &&
                 (a.toValue.type() == QVariant::String || a.toValue.type() == QVariant::ByteArray) && !a.toValue.isNull())
-                a.toValue.setValue(qmlContext(this)->resolvedUrl(QUrl(a.toValue.toString())));  //### d->object's context?
+                a.toValue.setValue(qmlContext(this)->resolvedUrl(QUrl(a.toValue.toString())));
 
             list << a;
         }
