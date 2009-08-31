@@ -1094,6 +1094,12 @@ QByteArray QGLShaderProgram::programBinary(int *format) const
     if (!isLinked())
         return QByteArray();
 
+    QGLContextGroup *ctx = d->ctx;
+#ifndef QT_NO_DEBUG
+    if (!qt_check_sharing_with_current_context(ctx))
+        qWarning("QGLShaderProgram::programBinary: Program is not associated with current context.");
+#endif
+
     // Get the length of the binary data, bailing out if there is none.
     GLint length = 0;
     glGetProgramiv(d->program, GL_PROGRAM_BINARY_LENGTH_OES, &length);
@@ -1124,6 +1130,12 @@ QByteArray QGLShaderProgram::programBinary(int *format) const
 bool QGLShaderProgram::setProgramBinary(int format, const QByteArray& binary)
 {
 #if defined(QT_OPENGL_ES_2)
+    QGLContextGroup *ctx = d->ctx;
+#ifndef QT_NO_DEBUG
+    if (!qt_check_sharing_with_current_context(ctx))
+        qWarning("QGLShaderProgram::setProgramBinary: Program is not associated with current context.");
+#endif
+
     // Load the binary and check that it was linked correctly.
     glProgramBinaryOES(d->program, (GLenum)format,
                        binary.constData(), binary.size());
