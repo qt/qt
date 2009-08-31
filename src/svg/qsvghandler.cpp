@@ -181,21 +181,21 @@ QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHa
             case 's':
                 if (name.length() > 5 && QStringRef(name.string(), name.position() + 1, 5) == QLatin1String("troke")) {
                     QStringRef strokeRef(name.string(), name.position() + 6, name.length() - 6);
-                    if (name.isEmpty())
+                    if (strokeRef.isEmpty())
                         stroke = value;
-                    else if (name == QLatin1String("-dasharray"))
+                    else if (strokeRef == QLatin1String("-dasharray"))
                         strokeDashArray = value;
-                    else if (name == QLatin1String("-dashoffset"))
+                    else if (strokeRef == QLatin1String("-dashoffset"))
                         strokeDashOffset = value;
-                    else if (name == QLatin1String("-linecap"))
+                    else if (strokeRef == QLatin1String("-linecap"))
                         strokeLineCap = value;
-                    else if (name == QLatin1String("-linejoin"))
+                    else if (strokeRef == QLatin1String("-linejoin"))
                         strokeLineJoin = value;
-                    else if (name == QLatin1String("-miterlimit"))
+                    else if (strokeRef == QLatin1String("-miterlimit"))
                         strokeMiterLimit = value;
-                    else if (name == QLatin1String("-opacity"))
+                    else if (strokeRef == QLatin1String("-opacity"))
                         strokeOpacity = value;
-                    else if (name == QLatin1String("-width"))
+                    else if (strokeRef == QLatin1String("-width"))
                         strokeWidth = value;
                 }
                 else if (name == QLatin1String("stop-color"))
@@ -276,21 +276,21 @@ QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHa
         case 's':
             if (name.length() > 5 && QStringRef(name.string(), name.position() + 1, 5) == QLatin1String("troke")) {
                 QStringRef strokeRef(name.string(), name.position() + 6, name.length() - 6);
-                if (name.isEmpty())
+                if (strokeRef.isEmpty())
                     stroke = value;
-                else if (name == QLatin1String("-dasharray"))
+                else if (strokeRef == QLatin1String("-dasharray"))
                     strokeDashArray = value;
-                else if (name == QLatin1String("-dashoffset"))
+                else if (strokeRef == QLatin1String("-dashoffset"))
                     strokeDashOffset = value;
-                else if (name == QLatin1String("-linecap"))
+                else if (strokeRef == QLatin1String("-linecap"))
                     strokeLineCap = value;
-                else if (name == QLatin1String("-linejoin"))
+                else if (strokeRef == QLatin1String("-linejoin"))
                     strokeLineJoin = value;
-                else if (name == QLatin1String("-miterlimit"))
+                else if (strokeRef == QLatin1String("-miterlimit"))
                     strokeMiterLimit = value;
-                else if (name == QLatin1String("-opacity"))
+                else if (strokeRef == QLatin1String("-opacity"))
                     strokeOpacity = value;
-                else if (name == QLatin1String("-width"))
+                else if (strokeRef == QLatin1String("-width"))
                     strokeWidth = value;
             }
             else if (name == QLatin1String("stop-color"))
