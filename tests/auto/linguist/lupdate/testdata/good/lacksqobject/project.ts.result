@@ -4,7 +4,7 @@
 <context>
     <name>B</name>
     <message>
-        <location filename="main.cpp" line="17"/>
+        <location filename="main.cpp" line="58"/>
         <source>Bla</source>
         <comment>::B</comment>
         <translation type="unfinished"></translation>
@@ -13,7 +13,7 @@
 <context>
     <name>C</name>
     <message>
-        <location filename="main.cpp" line="24"/>
+        <location filename="main.cpp" line="65"/>
         <source>Bla</source>
         <comment>::C</comment>
         <translation type="unfinished"></translation>
@@ -22,7 +22,7 @@
 <context>
     <name>nsB::B</name>
     <message>
-        <location filename="main.cpp" line="37"/>
+        <location filename="main.cpp" line="78"/>
         <source>Bla</source>
         <comment>nsB::B</comment>
         <translation type="unfinished"></translation>
@@ -31,7 +31,7 @@
 <context>
     <name>nsB::C</name>
     <message>
-        <location filename="main.cpp" line="43"/>
+        <location filename="main.cpp" line="84"/>
         <source>Bla</source>
         <comment>nsB::C</comment>
         <translation type="unfinished"></translation>

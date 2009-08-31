@@ -4,31 +4,31 @@
 <context>
     <name>QApplication</name>
     <message>
-        <location filename="common/main.cpp" line="6"/>
+        <location filename="common/main.cpp" line="47"/>
         <source>Hello world</source>
         <comment>Platform-independent file</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mac/main_mac.cpp" line="6"/>
+        <location filename="mac/main_mac.cpp" line="47"/>
         <source>Hello macworld</source>
         <comment>mac-only file</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="relativity/relativity.cpp" line="6"/>
+        <location filename="relativity/relativity.cpp" line="47"/>
         <source>relativity.pri</source>
         <comment>Platform-independent file</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="unix/main_unix.cpp" line="6"/>
+        <location filename="unix/main_unix.cpp" line="47"/>
         <source>Hello unixworld</source>
         <comment>unix-only file</comment>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="win/main_win.cpp" line="6"/>
+        <location filename="win/main_win.cpp" line="47"/>
         <source>Hello windowsworld</source>
         <comment>Windows-only file</comment>
         <translation type="unfinished"></translation>

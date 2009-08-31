@@ -466,7 +466,7 @@ void QNetworkDiskCache::setMaximumCacheSize(qint64 size)
     Cleans the cache so that its size is under the maximum cache size.
     Returns the current size of the cache.
 
-    When the current size of the cache is greater then the maximumCacheSize()
+    When the current size of the cache is greater than the maximumCacheSize()
     older cache files are removed until the total size is less then 90% of
     maximumCacheSize() starting with the oldest ones first using the file
     creation date to determine how old a cache file is.
