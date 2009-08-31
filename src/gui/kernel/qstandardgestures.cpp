@@ -63,11 +63,23 @@ QWidgetPrivate *qt_widget_private(QWidget *widget);
 */
 
 /*!
-    Creates a new Pan gesture handler object and marks it as a child of \a
-    parent.
+    \enum QSwipeGesture::SwipeDirection
+    \brief This enum specifies the direction of the swipe gesture.
 
-    On some platform like Windows it's necessary to provide a non-null widget
-    as \a parent to get native gesture support.
+    \value NoDirection
+    \value Left
+    \value Right
+    \value Up
+    \value Down
+*/
+
+/*!
+  Creates a new pan gesture handler object and marks it as a child of
+  \a parent. The pan gesture handler watches \a gestureTarget for its
+  events.
+
+  On some platform like Windows it's necessary to provide a non-null
+  widget as \a parent to get native gesture support.
 */
 QPanGesture::QPanGesture(QWidget *gestureTarget, QObject *parent)
     : QGesture(*new QPanGesturePrivate, gestureTarget, parent)
@@ -306,11 +318,12 @@ QSizeF QPanGesture::lastOffset() const
 */
 
 /*!
-    Creates a new Pinch gesture handler object and marks it as a child of \a
-    parent.
+  Creates a new Pinch gesture handler object and marks it as a child
+  of \a parent. The pan gesture handler watches \a gestureTarget for its
+  events.
 
-    On some platform like Windows it's necessary to provide a non-null widget
-    as \a parent to get native gesture support.
+  On some platform like Windows it's necessary to provide a non-null
+  widget as \a parent to get native gesture support.
 */
 QPinchGesture::QPinchGesture(QWidget *gestureTarget, QObject *parent)
     : QGesture(*new QPinchGesturePrivate, gestureTarget, parent)
@@ -523,11 +536,12 @@ QPointF QPinchGesture::startCenterPoint() const
 */
 
 /*!
-    Creates a new Swipe gesture handler object and marks it as a child of \a
-    parent.
+  Creates a new Swipe gesture handler object and marks it as a
+  child of \a parent. The swipe gesture handler watches \a
+  gestureTarget for its events.
 
-    On some platform like Windows it's necessary to provide a non-null widget
-    as \a parent to get native gesture support.
+  On some platform like Windows it's necessary to provide a non-null
+  widget as \a parent to get native gesture support.
 */
 QSwipeGesture::QSwipeGesture(QWidget *gestureTarget, QObject *parent)
     : QGesture(*new QSwipeGesturePrivate, gestureTarget, parent)
@@ -556,12 +570,25 @@ void QSwipeGesturePrivate::setupGestureTarget(QObject *newGestureTarget)
     QGesturePrivate::setupGestureTarget(newGestureTarget);
 }
 
+/*!
+  \property QSwipeGesture::swipeAngle
+
+  Holds the angle of the swipe gesture, 0..360.
+*/
 qreal QSwipeGesture::swipeAngle() const
 {
     Q_D(const QSwipeGesture);
     return d->swipeAngle;
 }
 
+/*!
+  \property QSwipeGesture::horizontalDirection
+
+  Holds the direction for the horizontal component of the swipe
+  gesture, SwipeDirection::Left or SwipeDirection::Right.
+  SwipeDirection::NoDirection if there is no horizontal
+  component to the swipe gesture.
+*/
 QSwipeGesture::SwipeDirection QSwipeGesture::horizontalDirection() const
 {
     Q_D(const QSwipeGesture);
@@ -573,6 +600,15 @@ QSwipeGesture::SwipeDirection QSwipeGesture::horizontalDirection() const
         return QSwipeGesture::Left;
 }
 
+
+/*!
+  \property QSwipeGesture::verticalDirection
+
+  Holds the direction for the vertical component of the swipe
+  gesture, SwipeDirection::Down or SwipeDirection::Up.
+  SwipeDirection::NoDirection if there is no vertical
+  component to the swipe gesture.
+*/
 QSwipeGesture::SwipeDirection QSwipeGesture::verticalDirection() const
 {
     Q_D(const QSwipeGesture);
