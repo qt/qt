@@ -6,6 +6,7 @@ symbian: {
 
     SUBDIRS=
     # WARNING: Changing TARGET name will break Symbian SISX upgrade functionality
+    # DO NOT TOUCH TARGET VARIABLE IF YOU ARE NOT SURE WHAT YOU ARE DOING    
     TARGET = "Qt for S60"
     TARGET.UID3 = 0x2001E61C
     VERSION=$${QT_MAJOR_VERSION}.$${QT_MINOR_VERSION}.$${QT_PATCH_VERSION}
@@ -25,17 +26,13 @@ symbian: {
         qts60plugin_5_0.dll
 
 
-    # TODO: This should be conditional in PKG file, see commented code below
-    # However we don't yet have such mechanism in place
-    contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {
-        contains(CONFIG, system-sqlite): qtlibraries.sources += sqlite3.dll
-    }
-
-    #; EXISTS statement does not resolve !. Lets check the most common drives
-    #IF NOT EXISTS("c:\sys\bin\sqlite3.dll") AND NOT EXISTS("e:\sys\bin\sqlite3.dll") AND NOT EXISTS("z:\sys\bin\sqlite3.dll")
-    #"\Epoc32\release\armv5\UREL\sqlite3.dll"-"!:\sys\bin\sqlite3.dll"
-    #ENDIF
-
+    sqlitedeployment = \
+        "; EXISTS statement does not resolve!. Lets check the most common drives" \
+        "IF NOT EXISTS(\"c:\\sys\\bin\\sqlite3.dll\") AND NOT EXISTS(\"e:\\sys\\bin\\sqlite3.dll\") AND NOT EXISTS(\"z:\\sys\\bin\\sqlite3.dll\")" \
+        "\"$${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)/sqlite3.dll\"-\"!:\\sys\\bin\\sqlite3.dll\"" \
+        "ENDIF"
+    qtlibraries.pkg_postrules = sqlitedeployment
+        
     qtlibraries.path = /sys/bin
 
     vendorinfo = \

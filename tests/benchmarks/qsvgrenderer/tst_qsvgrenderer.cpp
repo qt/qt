@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the config.tests of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,12 +39,65 @@
 **
 ****************************************************************************/
 
-//! [0]
-    QBuffer device;
-    device.setData(myQString.toUtf8());
-    device.open(QIODevice::ReadOnly);
+#include <qtest.h>
 
-    QXmlQuery query;
-    query.setQuery("doc($inputDocument)/query[theDocument]");
-    query.bindVariable("inputDocument", &device);
-//! [0]
+#include <QFile>
+#include <QSvgRenderer>
+
+//TESTED_FILES=
+
+class tst_QSvgRenderer : public QObject
+{
+    Q_OBJECT
+
+public:
+    tst_QSvgRenderer();
+    virtual ~tst_QSvgRenderer();
+
+public slots:
+    void init();
+    void cleanup();
+
+private slots:
+    void construct();
+    void load();
+};
+
+tst_QSvgRenderer::tst_QSvgRenderer()
+{
+}
+
+tst_QSvgRenderer::~tst_QSvgRenderer()
+{
+}
+
+void tst_QSvgRenderer::init()
+{
+}
+
+void tst_QSvgRenderer::cleanup()
+{
+}
+
+void tst_QSvgRenderer::construct()
+{
+    QBENCHMARK {
+        QSvgRenderer renderer;
+    }
+}
+
+void tst_QSvgRenderer::load()
+{
+    QFile file(":/data/tiger.svg");
+    if (!file.open(QFile::ReadOnly))
+        QFAIL("Can not open tiger.svg");
+    QByteArray data = file.readAll();
+    QSvgRenderer renderer;
+
+    QBENCHMARK {
+        renderer.load(data);
+    }
+}
+
+QTEST_MAIN(tst_QSvgRenderer)
+#include "tst_qsvgrenderer.moc"

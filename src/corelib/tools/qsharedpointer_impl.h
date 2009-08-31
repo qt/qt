@@ -626,6 +626,10 @@ public:
 
     inline QSharedPointer<T> toStrongRef() const { return QSharedPointer<T>(*this); }
 
+#if defined(QWEAKPOINTER_ENABLE_ARROW)
+    inline T *operator->() const { return data(); }
+#endif
+
 private:
 
 #if defined(Q_NO_TEMPLATE_FRIENDS)

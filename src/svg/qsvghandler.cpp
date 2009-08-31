@@ -82,7 +82,6 @@ struct QSvgAttributes
     QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHandler *handler);
 
     QStringRef value(const QLatin1String &name) const;
-    QStringRef value(const QString &namespaceUri, const QLatin1String &name) const;
 
     QXmlStreamAttributes m_xmlAttributes;
     QVector<QSvgCssAttribute> m_cssAttributes;
@@ -99,20 +98,6 @@ QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHa
 QStringRef QSvgAttributes::value(const QLatin1String &name) const
 {
     QStringRef v = m_xmlAttributes.value(name);
-    if (v.isEmpty()) {
-        for (int i = 0; i < m_cssAttributes.count(); ++i) {
-            if (m_cssAttributes.at(i).name == name) {
-                v = m_cssAttributes.at(i).value;
-                break;
-            }
-        }
-    }
-    return v;
-}
-
-QStringRef QSvgAttributes::value(const QString &namespaceUri, const QLatin1String &name) const
-{
-    QStringRef v = m_xmlAttributes.value(namespaceUri, name);
     if (v.isEmpty()) {
         for (int i = 0; i < m_cssAttributes.count(); ++i) {
             if (m_cssAttributes.at(i).name == name) {
@@ -2698,9 +2683,9 @@ static bool parseStopNode(QSvgStyleProperty *parent,
 
     QSvgGradientStyle *style =
         static_cast<QSvgGradientStyle*>(parent);
-    QString offsetStr   = attrs.value(QString(), QLatin1String("offset")).toString();
-    QString colorStr    = attrs.value(QString(), QLatin1String("stop-color")).toString();
-    QString opacityStr  = attrs.value(QString(), QLatin1String("stop-opacity")).toString();
+    QString offsetStr   = attrs.value(QLatin1String("offset")).toString();
+    QString colorStr    = attrs.value(QLatin1String("stop-color")).toString();
+    QString opacityStr  = attrs.value(QLatin1String("stop-opacity")).toString();
     QColor color;
 
     bool ok = true;

@@ -52,7 +52,7 @@ unless (GetOptions('i|install' => \$install, 'p|preprocess' => \$preprocessonly)
 
 # Read params to variables
 my $templatepkg = $ARGV[0];
-my $targetplatform = uc $ARGV[1];
+my $targetplatform = lc $ARGV[1];
 
 my @tmpvalues = split('-', $targetplatform);
 my $target = $tmpvalues[0];
