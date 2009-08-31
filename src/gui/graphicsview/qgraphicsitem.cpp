@@ -6992,7 +6992,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
   \property QGraphicsObject::id
   \brief the id of of the item
 
-  \sa QGraphicsItem::opacity(), QGraphicsItem::setOpacity()
+  \sa QObject::objectName(), QObject::setObjectName()
 */
 
 /*!
