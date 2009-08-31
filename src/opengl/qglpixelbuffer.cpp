@@ -100,6 +100,13 @@ void qgl_cleanup_glyph_cache(QGLContext *) {}
 
 extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
+
+void QGLPBufferGLPaintDevice::setPBuffer(QGLPixelBuffer* pb)
+{
+    pbuf = pb;
+    setContext(pb->d_func()->qctx);
+}
+
 void QGLPixelBufferPrivate::common_init(const QSize &size, const QGLFormat &format, QGLWidget *shareWidget)
 {
     Q_Q(QGLPixelBuffer);
@@ -115,6 +122,7 @@ void QGLPixelBufferPrivate::common_init(const QSize &size, const QGLFormat &form
             shareWidget->d_func()->glcx->d_func()->sharing = true;
         }
 
+        glDevice.setPBuffer(q);
         qctx->d_func()->paintDevice = q;
         qctx->d_func()->valid = true;
 #if defined(Q_WS_WIN) && !defined(QT_OPENGL_ES)

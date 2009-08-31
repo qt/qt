@@ -41,6 +41,7 @@
 
 #include <private/qglpaintdevice_p.h>
 #include <private/qgl_p.h>
+#include <private/qglpixelbuffer_p.h>
 
 QGLPaintDevice::QGLPaintDevice()
     : m_context(0)
@@ -85,11 +86,12 @@ void QGLPaintDevice::beginPaint()
 
 void QGLPaintDevice::endPaint()
 {
+    glFlush();
 }
 
 QColor QGLPaintDevice::backgroundColor() const
 {
-    return QColor();
+    return QApplication::palette().brush(QPalette::Background).color();
 }
 
 bool QGLPaintDevice::autoFillBackground() const
@@ -180,6 +182,9 @@ QGLPaintDevice* QGLPaintDevice::getDevice(QPaintDevice* pd)
             // Should not be called on a non-gl widget:
             Q_ASSERT(qobject_cast<QGLWidget*>(static_cast<QWidget*>(pd)));
             glpd = &(static_cast<QGLWidget*>(pd)->d_func()->glDevice);
+            break;
+        case QInternal::Pbuffer:
+            glpd = &(static_cast<QGLPixelBuffer*>(pd)->d_func()->glDevice);
             break;
         default:
             qWarning("QGLPaintDevice::getDevice() - Unknown device type %d", pd->devType());

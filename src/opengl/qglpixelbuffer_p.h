@@ -58,6 +58,7 @@ QT_BEGIN_NAMESPACE
 QT_BEGIN_INCLUDE_NAMESPACE
 #include "QtOpenGL/qglpixelbuffer.h"
 #include <private/qgl_p.h>
+#include <private/qglpaintdevice_p.h>
 
 #if defined(Q_WS_X11) && !defined(QT_OPENGL_ES)
 #include <GL/glx.h>
@@ -135,6 +136,17 @@ QT_END_INCLUDE_NAMESPACE
 
 class QEglContext;
 
+
+class QGLPBufferGLPaintDevice : public QGLPaintDevice
+{
+public:
+    virtual QPaintEngine* paintEngine() const {return pbuf->paintEngine();}
+    virtual QSize size() const {return pbuf->size();}
+    void setPBuffer(QGLPixelBuffer* pb);
+private:
+    QGLPixelBuffer* pbuf;
+};
+
 class QGLPixelBufferPrivate {
     Q_DECLARE_PUBLIC(QGLPixelBuffer)
 public:
@@ -154,6 +166,7 @@ public:
     QGLPixelBuffer *q_ptr;
     bool invalid;
     QGLContext *qctx;
+    QGLPBufferGLPaintDevice glDevice;
     QGLFormat format;
 
     QGLFormat req_format;
