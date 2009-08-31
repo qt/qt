@@ -119,6 +119,10 @@ QT_BEGIN_NAMESPACE
     \sa QSharedPointer
 */
 
+/*! \typedef QScopedPointer::pointer
+  \internal
+ */
+
 /*!
     \fn QScopedPointer::QScopedPointer(T *p = 0)
 

@@ -275,13 +275,17 @@ public:
     GLuint current_fbo;
     QPaintEngine *active_engine;
 
+    static inline QGLContextGroupResources *qt_get_context_group(const QGLContext *ctx) { return ctx->d_ptr->groupResources; }
+
 #ifdef Q_WS_WIN
     static inline QGLExtensionFuncs& qt_get_extension_funcs(const QGLContext *ctx) { return ctx->d_ptr->groupResources->extensionFuncs; }
+    static inline QGLExtensionFuncs& qt_get_extension_funcs(QGLContextGroupResources *ctx) { return ctx->extensionFuncs; }
 #endif
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
     static QGLExtensionFuncs qt_extensionFuncs;
     static inline QGLExtensionFuncs& qt_get_extension_funcs(const QGLContext *) { return qt_extensionFuncs; }
+    static inline QGLExtensionFuncs& qt_get_extension_funcs(QGLContextGroupResources *ctx) { return qt_extensionFuncs; }
 #endif
 
     QPixmapFilter *createPixmapFilter(int type) const;

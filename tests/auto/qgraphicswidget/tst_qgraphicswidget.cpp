@@ -1483,6 +1483,7 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
     w->setParentItem(parent);
     //We don't crash perfect
     QVERIFY(w);
+    QTest::mouseMove(view.viewport());
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0);
     QTRY_COMPARE(qApp->activeWindow(), static_cast<QWidget *>(&view));
     QTRY_COMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(w));
