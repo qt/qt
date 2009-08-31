@@ -999,9 +999,9 @@ static void printDirectFBInfo(IDirectFB *fb, IDirectFBSurface *primarySurface)
            dev.name, dev.vendor, dev.driver.name, dev.driver.major,
            dev.driver.minor, dev.driver.vendor, DFB_PIXELFORMAT_INDEX(pixelFormat),
            QDirectFBScreen::getImageFormat(primarySurface), dev.acceleration_mask,
-           ::flagDescriptions(dev.acceleration_mask, accelerationDescriptions).constData(),
-           dev.blitting_flags, ::flagDescriptions(dev.blitting_flags, blitDescriptions).constData(),
-           dev.drawing_flags, ::flagDescriptions(dev.drawing_flags, drawDescriptions).constData(),
+           flagDescriptions(dev.acceleration_mask, accelerationDescriptions).constData(),
+           dev.blitting_flags, flagDescriptions(dev.blitting_flags, blitDescriptions).constData(),
+           dev.drawing_flags, flagDescriptions(dev.drawing_flags, drawDescriptions).constData(),
            (dev.video_memory >> 10));
 }
 #endif
@@ -1067,7 +1067,7 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 
 #ifdef QT_DIRECTFB_IMAGECACHE
     int imageCacheSize = 4 * 1024 * 1024; // 4 MB
-    ::setIntOption(displayArgs, QLatin1String("imagecachesize"), &imageCacheSize);
+    setIntOption(displayArgs, QLatin1String("imagecachesize"), &imageCacheSize);
     QDirectFBPaintEngine::initImageCache(imageCacheSize);
 #endif
 
@@ -1191,8 +1191,8 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
                       "Unable to get screen size!", result);
         return false;
     }
-    ::setIntOption(displayArgs, QLatin1String("width"), &w);
-    ::setIntOption(displayArgs, QLatin1String("height"), &h);
+    setIntOption(displayArgs, QLatin1String("width"), &w);
+    setIntOption(displayArgs, QLatin1String("height"), &h);
 
     dw = w;
     dh = h;
@@ -1200,8 +1200,8 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     Q_ASSERT(dw != 0 && dh != 0);
 
     physWidth = physHeight = -1;
-    ::setIntOption(displayArgs, QLatin1String("mmWidth"), &physWidth);
-    ::setIntOption(displayArgs, QLatin1String("mmHeight"), &physHeight);
+    setIntOption(displayArgs, QLatin1String("mmWidth"), &physWidth);
+    setIntOption(displayArgs, QLatin1String("mmHeight"), &physHeight);
     const int dpi = 72;
     if (physWidth < 0)
         physWidth = qRound(dw * 25.4 / dpi);

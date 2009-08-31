@@ -167,7 +167,7 @@ static bool checkForAlphaPixels(const QImage &img)
 bool QDirectFBPixmapData::hasAlphaChannel(const QImage &img)
 {
 #ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
-    return ::checkForAlphaPixels(img);
+    return checkForAlphaPixels(img);
 #else
     return img.hasAlphaChannel();
 #endif
@@ -443,7 +443,7 @@ void QDirectFBPixmapData::fill(const QColor &color)
 
     alpha = (color.alpha() < 255);
 
-    if (alpha && ::isOpaqueFormat(imageFormat)) {
+    if (alpha && isOpaqueFormat(imageFormat)) {
         QSize size;
         dfbSurface->GetSize(dfbSurface, &size.rwidth(), &size.rheight());
         screen->releaseDFBSurface(dfbSurface);

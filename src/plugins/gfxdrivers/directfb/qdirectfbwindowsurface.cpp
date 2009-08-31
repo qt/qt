@@ -102,6 +102,11 @@ QDirectFBWindowSurface::~QDirectFBWindowSurface()
 {
 }
 
+bool QDirectFBWindowSurface::isValid() const
+{
+    return true;
+}
+
 #ifdef QT_DIRECTFB_WM
 void QDirectFBWindowSurface::raise()
 {
@@ -111,14 +116,7 @@ void QDirectFBWindowSurface::raise()
         sibling->raise();
     }
 }
-#endif
 
-bool QDirectFBWindowSurface::isValid() const
-{
-    return true;
-}
-
-#ifndef QT_NO_DIRECTFB_WM
 void QDirectFBWindowSurface::createWindow()
 {
     IDirectFBDisplayLayer *layer = screen->dfbDisplayLayer();
@@ -148,10 +146,8 @@ void QDirectFBWindowSurface::createWindow()
     dfbWindow->GetSurface(dfbWindow, &dfbSurface);
     updateFormat();
 }
-#endif // QT_NO_DIRECTFB_WM
 
-#ifndef QT_NO_DIRECTFB_WM
-static DFBResult setGeometry(IDirectFBWindow *dfbWindow, const QRect &old, const QRect &rect)
+static DFBResult setWindowGeometry(IDirectFBWindow *dfbWindow, const QRect &old, const QRect &rect)
 {
     DFBResult result = DFB_OK;
     const bool isMove = old.isEmpty() || rect.topLeft() != old.topLeft();
@@ -178,7 +174,7 @@ static DFBResult setGeometry(IDirectFBWindow *dfbWindow, const QRect &old, const
 #endif
     return result;
 }
-#endif
+#endif // QT_NO_DIRECTFB_WM
 
 void QDirectFBWindowSurface::setGeometry(const QRect &rect)
 {
@@ -209,7 +205,7 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
 #ifdef QT_DIRECTFB_WM
         if (!dfbWindow)
             createWindow();
-        ::setGeometry(dfbWindow, oldRect, rect);
+        setWindowGeometry(dfbWindow, oldRect, rect);
 #else
         if (mode == Primary) {
             if (dfbSurface && dfbSurface != primarySurface)
@@ -271,12 +267,12 @@ bool QDirectFBWindowSurface::scroll(const QRegion &region, int dx, int dy)
         return false;
     dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
     if (region.numRects() == 1) {
-        ::scrollSurface(dfbSurface, region.boundingRect(), dx, dy);
+        scrollSurface(dfbSurface, region.boundingRect(), dx, dy);
     } else {
         const QVector<QRect> rects = region.rects();
         const int n = rects.size();
         for (int i=0; i<n; ++i) {
-            ::scrollSurface(dfbSurface, rects.at(i), dx, dy);
+            scrollSurface(dfbSurface, rects.at(i), dx, dy);
         }
     }
     return true;
