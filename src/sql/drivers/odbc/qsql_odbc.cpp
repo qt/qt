@@ -126,8 +126,8 @@ private:
 class QODBCPrivate
 {
 public:
-    QODBCPrivate()
-    : hEnv(0), hDbc(0), hStmt(0), useSchema(false), hasSQLFetchScroll(true)
+    QODBCPrivate(QODBCDriverPrivate *dpp)
+    : hStmt(0), useSchema(false), hasSQLFetchScroll(true), driverPrivate(dpp)
     {
         unicode = false;
     }
@@ -135,8 +135,8 @@ public:
     inline void clearValues()
     { fieldCache.fill(QVariant()); fieldCacheIdx = 0; }
 
-    SQLHANDLE hEnv;
-    SQLHANDLE hDbc;
+    SQLHANDLE dpEnv() const { return driverPrivate ? driverPrivate->hEnv : 0;}
+    SQLHANDLE dpDbc() const { return driverPrivate ? driverPrivate->hDbc : 0;}
     SQLHANDLE hStmt;
 
     uint unicode :1;
@@ -147,6 +147,7 @@ public:
     int fieldCacheIdx;
     int disconnectCount;
     bool hasSQLFetchScroll;
+    QODBCDriverPrivate *driverPrivate;
 
     bool isStmtHandleValid(const QSqlDriver *driver);
     void updateStmtHandleState(const QSqlDriver *driver);
@@ -208,8 +209,8 @@ static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode
 
 static QString qODBCWarn(const QODBCPrivate* odbc, int *nativeCode = 0)
 {
-    return (qWarnODBCHandle(SQL_HANDLE_ENV, odbc->hEnv) + QLatin1Char(' ')
-             + qWarnODBCHandle(SQL_HANDLE_DBC, odbc->hDbc) + QLatin1Char(' ')
+    return (qWarnODBCHandle(SQL_HANDLE_ENV, odbc->dpEnv()) + QLatin1Char(' ')
+             + qWarnODBCHandle(SQL_HANDLE_DBC, odbc->dpDbc()) + QLatin1Char(' ')
              + qWarnODBCHandle(SQL_HANDLE_STMT, odbc->hStmt, nativeCode));
 }
 
@@ -247,6 +248,7 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
 template<class T>
 static QVariant::Type qDecodeODBCType(SQLSMALLINT sqltype, const T* p, bool isSigned = true)
 {
+    Q_UNUSED(p);
     QVariant::Type type = QVariant::Invalid;
     switch (sqltype) {
     case SQL_DECIMAL:
@@ -799,9 +801,7 @@ QString QODBCDriverPrivate::adjustCase(const QString &identifier) const
 QODBCResult::QODBCResult(const QODBCDriver * db, QODBCDriverPrivate* p)
 : QSqlResult(db)
 {
-    d = new QODBCPrivate();
-    d->hEnv = p->hEnv;
-    d->hDbc = p->hDbc;
+    d = new QODBCPrivate(p);
     d->unicode = p->unicode;
     d->useSchema = p->useSchema;
     d->disconnectCount = p->disconnectCount;
@@ -839,7 +839,7 @@ bool QODBCResult::reset (const QString& query)
         }
     }
     r  = SQLAllocHandle(SQL_HANDLE_STMT,
-                         d->hDbc,
+                         d->dpDbc(),
                          &d->hStmt);
     if (r != SQL_SUCCESS) {
         qSqlWarning(QLatin1String("QODBCResult::reset: Unable to allocate statement handle"), d);
@@ -1180,7 +1180,7 @@ bool QODBCResult::prepare(const QString& query)
         }
     }
     r  = SQLAllocHandle(SQL_HANDLE_STMT,
-                         d->hDbc,
+                         d->dpDbc(),
                          &d->hStmt);
     if (r != SQL_SUCCESS) {
         qSqlWarning(QLatin1String("QODBCResult::prepare: Unable to allocate statement handle"), d);
