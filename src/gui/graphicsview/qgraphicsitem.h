@@ -235,6 +235,8 @@ public:
     void setHandlesChildEvents(bool enabled);
 
     bool isActive() const;
+    void setActive(bool active);
+
     bool hasFocus() const;
     void setFocus(Qt::FocusReason focusReason = Qt::OtherFocusReason);
     void clearFocus();

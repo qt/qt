@@ -2669,6 +2669,37 @@ bool QGraphicsItem::isActive() const
 }
 
 /*!
+    \since 4.6
+
+    If \a active is true, and the scene is active, this item's panel will be
+    activated. Otherwise, the panel is deactivated.
+
+    If the item is not part of an active scene, \a active will decide what
+    happens to the panel when the scene becomes active or the item is added to
+    the scene. If true, the item's panel will be activated when the item is
+    either added to the scene or the scene is activated. Otherwise, the item
+    will stay inactive independent of the scene's activated state.
+
+    \sa isPanel(), QGraphicsScene::setActivePanel(), QGraphicsScene::isActive()
+*/
+void QGraphicsItem::setActive(bool active)
+{
+    d_ptr->explicitActivate = 1;
+    d_ptr->wantsActive = active;
+    if (d_ptr->scene) {
+        if (active) {
+            // Activate this item.
+            d_ptr->scene->setActivePanel(this);
+        } else {
+            // Deactivate this item, and reactivate the last active item
+            // (if any).
+            QGraphicsItem *lastActive = d_ptr->scene->d_func()->lastActivePanel;
+            d_ptr->scene->setActivePanel(lastActive != this ? lastActive : 0);
+        }
+    }
+}
+
+/*!
     Returns true if this item is active, and it or its \l{focusProxy()}{focus
     proxy} has keyboard input focus; otherwise, returns false.
 
@@ -6099,8 +6130,10 @@ bool QGraphicsItem::sceneEvent(QEvent *event)
         if (d_ptr->scene) {
             for (int i = 0; i < d_ptr->children.size(); ++i) {
                 QGraphicsItem *child = d_ptr->children.at(i);
-                if (!(child->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorHandlesChildEvents))
-                    d_ptr->scene->sendEvent(child, event);
+                if (child->isVisible() && !child->isPanel()) {
+                    if (!(child->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorHandlesChildEvents))
+                        d_ptr->scene->sendEvent(child, event);
+                }
             }
         }
         break;

@@ -171,6 +171,8 @@ public:
         notifyBoundingRectChanged(0),
         notifyInvalidated(0),
         mouseSetsFocus(1),
+        explicitActivate(0),
+        wantsActive(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -461,7 +463,7 @@ public:
     quint32 needSortChildren : 1;
     quint32 allChildrenDirty : 1;
 
-    // New 32 bits
+    // Packed 32 bits
     quint32 fullUpdatePending : 1;
     quint32 flags : 16;
     quint32 dirtyChildrenBoundingRect : 1;
@@ -479,6 +481,10 @@ public:
     quint32 notifyBoundingRectChanged : 1;
     quint32 notifyInvalidated : 1;
     quint32 mouseSetsFocus : 1;
+
+    // New 32 bits
+    quint32 explicitActivate : 1;
+    quint32 wantsActive : 1;
 
     // Optional stacking order
     int globalStackingOrder;
