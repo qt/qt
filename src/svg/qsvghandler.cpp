@@ -64,6 +64,7 @@
 #include "qdebug.h"
 #include "qmath.h"
 #include "qnumeric.h"
+#include "qvarlengtharray.h"
 #include "private/qmath_p.h"
 
 #include "float.h"
@@ -613,6 +614,27 @@ static QVector<qreal> parseNumbersList(const QChar *&str)
     return points;
 }
 
+static inline void parseNumbersArray(const QChar *&str, QVarLengthArray<qreal, 8> &points)
+{
+    while (*str == QLatin1Char(' '))
+        ++str;
+    while (isDigit(str->unicode()) ||
+           *str == QLatin1Char('-') || *str == QLatin1Char('+') ||
+           *str == QLatin1Char('.')) {
+
+        points.append(toDouble(str));
+
+        while (*str == QLatin1Char(' '))
+            ++str;
+        if (*str == QLatin1Char(','))
+            ++str;
+
+        //eat the rest of space
+        while (*str == QLatin1Char(' '))
+            ++str;
+    }
+}
+
 static QVector<qreal> parsePercentageList(const QChar *&str)
 {
     QVector<qreal> points;
@@ -956,7 +978,8 @@ static QMatrix parseTransformationMatrix(const QString &value)
         if (*str != QLatin1Char('('))
             goto error;
         ++str;
-        QVector<qreal> points = parseNumbersList(str);
+        QVarLengthArray<qreal, 8> points;
+        parseNumbersArray(str, points);
         if (*str != QLatin1Char(')'))
             goto error;
         ++str;
