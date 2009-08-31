@@ -94,9 +94,12 @@ void QFxPaintedItem::dirtyCache(const QRect& rect)
 {
     Q_D(QFxPaintedItem);
     for (int i=0; i < d->imagecache.count(); ) {
-        if (d->imagecache[i]->area.intersects(rect)) {
+        QFxPaintedItemPrivate::ImageCacheItem *c = d->imagecache[i];
+        QRect isect = (c->area & rect) | c->dirty;
+        if (isect == c->area) {
             d->imagecache.removeAt(i);
         } else {
+            c->dirty = isect;
             ++i;
         }
     }
@@ -209,6 +212,15 @@ void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
         QRect area = d->imagecache[i]->area;
         if (topaint.contains(area)) {
             QRectF target(area.x(), area.y(), area.width(), area.height());
+            if (!d->imagecache[i]->dirty.isNull() && topaint.contains(d->imagecache[i]->dirty)) {
+                QPainter qp(&d->imagecache[i]->image);
+                qp.translate(-area.x(), -area.y());
+                if (d->fillColor.isValid())
+                    qp.fillRect(d->imagecache[i]->dirty,d->fillColor);
+                qp.setClipRect(d->imagecache[i]->dirty);
+                drawContents(&qp, d->imagecache[i]->dirty);
+                d->imagecache[i]->dirty = QRect();
+            }
             p->drawPixmap(target.toRect(), d->imagecache[i]->image);
             topaint -= area;
             d->imagecache[i]->age=0;

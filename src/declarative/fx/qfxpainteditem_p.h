@@ -72,6 +72,7 @@ public:
         ~ImageCacheItem() { }
         int age;
         QRect area;
+        QRect dirty; // one dirty area (allows optimization of common cases)
         QPixmap image;
     };
 
