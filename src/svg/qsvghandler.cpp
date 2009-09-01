@@ -685,6 +685,28 @@ static QString idFromUrl(const QString &url)
     return id;
 }
 
+static inline QStringRef trimRef(const QStringRef &str)
+{
+    if (str.isEmpty())
+        return QStringRef();
+    const QChar *s = str.string()->constData() + str.position();
+    int end = str.length() - 1;
+    if (!s[0].isSpace() && !s[end].isSpace())
+        return str;
+
+    int start = 0;
+    while (start<=end && s[start].isSpace())  // skip white space from start
+        start++;
+    if (start <= end) {                          // only white space
+        while (s[end].isSpace())           // skip white space from end
+            end--;
+    }
+    int l = end - start + 1;
+    if (l <= 0)
+        return QStringRef();
+    return QStringRef(str.string(), str.position() + start, l);
+}
+
 /**
  * returns true when successfuly set the color. false signifies
  * that the color should be inherited
@@ -903,12 +925,16 @@ static void parseBrush(QSvgNode *node,
 
 
 
-static QMatrix parseTransformationMatrix(const QString &value)
+static QMatrix parseTransformationMatrix(const QStringRef &value)
 {
+    if (value.isEmpty())
+        return QMatrix();
+
     QMatrix matrix;
     const QChar *str = value.constData();
+    const QChar *end = str + value.length();
 
-    while (*str != QLatin1Char(0)) {
+    while (str < end) {
         if (str->isSpace() || *str == QLatin1Char(',')) {
             ++str;
             continue;
@@ -973,7 +999,7 @@ static QMatrix parseTransformationMatrix(const QString &value)
         }
 
 
-        while (str->isSpace())
+        while (str < end && str->isSpace())
             ++str;
         if (*str != QLatin1Char('('))
             goto error;
@@ -1212,10 +1238,7 @@ static void parseTransform(QSvgNode *node,
 {
     if (attributes.transform.isEmpty())
         return;
-    QString value = attributes.transform.toString().trimmed();
-    if (value.isEmpty())
-        return;
-    QMatrix matrix = parseTransformationMatrix(value);
+    QMatrix matrix = parseTransformationMatrix(trimRef(attributes.transform));
 
     if (!matrix.isIdentity()) {
         node->appendStyleProperty(new QSvgTransformStyle(QTransform(matrix)), someId(attributes));
@@ -2583,7 +2606,7 @@ static void parseBaseGradient(QSvgNode *node,
                               QSvgHandler *handler)
 {
     QString link   = attributes.value(QLatin1String("xlink:href")).toString();
-    QString trans  = attributes.value(QLatin1String("gradientTransform")).toString();
+    QStringRef trans  = attributes.value(QLatin1String("gradientTransform"));
     QString spread = attributes.value(QLatin1String("spreadMethod")).toString();
     QString units = attributes.value(QLatin1String("gradientUnits")).toString();
 
