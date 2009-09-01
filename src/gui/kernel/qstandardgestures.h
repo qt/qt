@@ -78,6 +78,7 @@ private:
     bool eventFilter(QObject *receiver, QEvent *event);
 
     friend class QWidget;
+    friend class QAbstractScrollAreaPrivate;
 };
 
 class QPinchGesturePrivate;

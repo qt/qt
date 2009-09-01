@@ -87,22 +87,15 @@ QPanGesture::QPanGesture(QWidget *gestureTarget, QObject *parent)
     setObjectName(QLatin1String("QPanGesture"));
 }
 
-/*!
-  \internal
-  An internal constructor to mark the gesture implicitely created by Qt.
-*/
-QPanGesture::QPanGesture(QWidget *gestureTarget, QObject *parent, void*)
-    : QGesture(*new QPanGesturePrivate, gestureTarget, parent)
-{
-    setObjectName(QLatin1String("QPanGesture"));
-}
-
 void QPanGesturePrivate::setupGestureTarget(QObject *newGestureTarget)
 {
     Q_Q(QPanGesture);
+    QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+
     if (gestureTarget && gestureTarget->isWidgetType()) {
         QWidget *w = static_cast<QWidget*>(gestureTarget.data());
-        QApplicationPrivate::instance()->widgetGestures[w].pan = 0;
+        if (qAppPriv->widgetGestures[w].pan == q)
+            qAppPriv->widgetGestures[w].pan = 0;
 #if defined(Q_WS_WIN)
         qt_widget_private(w)->winSetupGestures();
 #elif defined(Q_WS_MAC)
@@ -113,7 +106,7 @@ void QPanGesturePrivate::setupGestureTarget(QObject *newGestureTarget)
 
     if (newGestureTarget && newGestureTarget->isWidgetType()) {
         QWidget *w = static_cast<QWidget*>(newGestureTarget);
-        QApplicationPrivate::instance()->widgetGestures[w].pan = q;
+        qAppPriv->widgetGestures[w].pan = q;
 #if defined(Q_WS_WIN)
         qt_widget_private(w)->winSetupGestures();
 #elif defined(Q_WS_MAC)
@@ -143,8 +136,13 @@ bool QPanGesture::event(QEvent *event)
 
 bool QPanGesture::eventFilter(QObject *receiver, QEvent *event)
 {
-#ifdef Q_WS_WIN
     Q_D(QPanGesture);
+
+    if (d->implicitGesture && d->gestureTarget && d->gestureTarget->isWidgetType() &&
+        static_cast<QWidget*>(d->gestureTarget.data())->testAttribute(Qt::WA_DontUseStandardGestures))
+        return false;
+
+#ifdef Q_WS_WIN
     if (receiver->isWidgetType() && event->type() == QEvent::NativeGesture) {
         QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
         QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
@@ -191,8 +189,13 @@ bool QPanGesture::eventFilter(QObject *receiver, QEvent *event)
 /*! \internal */
 bool QPanGesture::filterEvent(QEvent *event)
 {
-#if defined(Q_WS_WIN)
     Q_D(QPanGesture);
+
+    if (d->implicitGesture && d->gestureTarget && d->gestureTarget->isWidgetType() &&
+        static_cast<QWidget*>(d->gestureTarget.data())->testAttribute(Qt::WA_DontUseStandardGestures))
+        return false;
+
+#if defined(Q_WS_WIN)
     const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
 
     if (event->type() == QEvent::TouchBegin) {
@@ -229,7 +232,6 @@ bool QPanGesture::filterEvent(QEvent *event)
 #elif defined(QT_MAC_USE_COCOA)
     // The following implements single touch
     // panning on Mac:
-    Q_D(QPanGesture);
     const int panBeginDelay = 300;
     const int panBeginRadius = 3;
     const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
@@ -341,16 +343,6 @@ QPinchGesture::QPinchGesture(QWidget *gestureTarget, QObject *parent)
     setObjectName(QLatin1String("QPinchGesture"));
 }
 
-/*!
-  \internal
-  An internal constructor to mark the gesture implicitely created by Qt.
-*/
-QPinchGesture::QPinchGesture(QWidget *gestureTarget, QObject *parent, void*)
-    : QGesture(*new QPinchGesturePrivate, gestureTarget, parent)
-{
-    setObjectName(QLatin1String("QPinchGesture"));
-}
-
 void QPinchGesturePrivate::setupGestureTarget(QObject *newGestureTarget)
 {
     Q_Q(QPinchGesture);
@@ -380,8 +372,13 @@ bool QPinchGesture::event(QEvent *event)
 
 bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
 {
-#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
     Q_D(QPinchGesture);
+
+    if (d->implicitGesture && d->gestureTarget && d->gestureTarget->isWidgetType() &&
+        static_cast<QWidget*>(d->gestureTarget.data())->testAttribute(Qt::WA_DontUseStandardGestures))
+        return false;
+
+#if defined(Q_WS_WIN) || defined(Q_WS_MAC)
     if (receiver->isWidgetType() && event->type() == QEvent::NativeGesture) {
         QNativeGestureEvent *ev = static_cast<QNativeGestureEvent*>(event);
 #if defined(Q_WS_WIN)
@@ -458,6 +455,12 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
 /*! \internal */
 bool QPinchGesture::filterEvent(QEvent *event)
 {
+    Q_D(QPinchGesture);
+
+    if (d->implicitGesture && d->gestureTarget && d->gestureTarget->isWidgetType() &&
+        static_cast<QWidget*>(d->gestureTarget.data())->testAttribute(Qt::WA_DontUseStandardGestures))
+        return false;
+
     Q_UNUSED(event);
     return false;
 }
