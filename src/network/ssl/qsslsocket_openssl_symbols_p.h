@@ -201,6 +201,7 @@ QT_BEGIN_NAMESPACE
 #endif // !defined QT_LINKED_OPENSSL
 
 bool q_resolveOpenSslSymbols();
+long q_ASN1_INTEGER_get(ASN1_INTEGER *a);
 unsigned char * q_ASN1_STRING_data(ASN1_STRING *a);
 int q_ASN1_STRING_length(ASN1_STRING *a);
 long q_BIO_ctrl(BIO *a, int b, long c, void *d);

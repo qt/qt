@@ -250,6 +250,10 @@ void QSslCertificate::clear()
 */
 QByteArray QSslCertificate::version() const
 {
+    if (d->versionString.isEmpty() && d->x509)
+        d->versionString =
+            QByteArray::number( qlonglong(q_ASN1_INTEGER_get( d->x509->cert_info->version )) );
+
     return d->versionString;
 }
 
@@ -258,6 +262,10 @@ QByteArray QSslCertificate::version() const
 */
 QByteArray QSslCertificate::serialNumber() const
 {
+    if (d->serialNumberString.isEmpty() && d->x509)
+        d->serialNumberString =
+            QByteArray::number( qlonglong(q_ASN1_INTEGER_get( d->x509->cert_info->serialNumber )) );
+
     return d->serialNumberString;
 }
 
