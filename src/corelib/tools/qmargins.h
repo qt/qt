@@ -68,11 +68,6 @@ public:
     void setRight(int right);
     void setBottom(int bottom);
 
-    int &rleft();
-    int &rtop();
-    int &rright();
-    int &rbottom();
-
 private:
     int m_left;
     int m_top;
