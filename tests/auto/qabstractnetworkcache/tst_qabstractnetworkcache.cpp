@@ -81,8 +81,8 @@ public:
         : QNetworkDiskCache(parent)
         , gotData(false)
     {
-        QString location = QDesktopServices::storageLocation(QDesktopServices::DataLocation)
-                                    + QLatin1String("/cache/");
+        QString location = QDesktopServices::storageLocation(QDesktopServices::CacheLocation)
+                                    + QLatin1String("/qnetworkdiskcache/");
         setCacheDirectory(location);
         clear();
     }
