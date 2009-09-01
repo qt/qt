@@ -122,7 +122,7 @@ void ItemBase::duplicateSelectedItems(QGraphicsScene *scene)
     selected = scene->selectedItems();
 
     foreach (QGraphicsItem *item, selected) {
-        ItemBase *itemBase = dynamic_cast<ItemBase *>(item);
+        ItemBase *itemBase = qgraphicsitem_cast<ItemBase *>(item);
         if (itemBase)
             scene->addItem(itemBase->createNew(itemBase->m_size, itemBase->pos().x() + itemBase->m_size, itemBase->pos().y()));
     }
@@ -137,7 +137,7 @@ void ItemBase::deleteSelectedItems(QGraphicsScene *scene)
     selected = scene->selectedItems();
 
     foreach (QGraphicsItem *item, selected) {
-        ItemBase *itemBase = dynamic_cast<ItemBase *>(item);
+        ItemBase *itemBase = qgraphicsitem_cast<ItemBase *>(item);
         if (itemBase)
             delete itemBase;
     }
@@ -152,7 +152,7 @@ void ItemBase::growSelectedItems(QGraphicsScene *scene)
     selected = scene->selectedItems();
 
     foreach (QGraphicsItem *item, selected) {
-        ItemBase *itemBase = dynamic_cast<ItemBase *>(item);
+        ItemBase *itemBase = qgraphicsitem_cast<ItemBase *>(item);
         if (itemBase) {
             itemBase->prepareGeometryChange();
             itemBase->m_size *= 2;
@@ -171,7 +171,7 @@ void ItemBase::shrinkSelectedItems(QGraphicsScene *scene)
     selected = scene->selectedItems();
 
     foreach (QGraphicsItem *item, selected) {
-        ItemBase *itemBase = dynamic_cast<ItemBase *>(item);
+        ItemBase *itemBase = qgraphicsitem_cast<ItemBase *>(item);
         if (itemBase) {
             itemBase->prepareGeometryChange();
             itemBase->m_size /= 2;
@@ -256,6 +256,12 @@ void ItemBase::wheelEvent(QGraphicsSceneWheelEvent *event)
     else if (m_size < MIN_ITEM_SIZE)
         m_size = MIN_ITEM_SIZE;
 }
+
+int ItemBase::type() const
+{
+    return Type;
+}
+
 
 bool ItemBase::isInResizeArea(const QPointF &pos)
 {
