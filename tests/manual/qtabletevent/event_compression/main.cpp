@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,40 +39,20 @@
 **
 ****************************************************************************/
 
-#include "qdirectfbscreen.h"
+#include "mousestatwidget.h"
 
-#include <QtGui/qscreendriverplugin_qws.h>
-#include <QtCore/qstringlist.h>
-#ifndef QT_NO_QWS_DIRECTFB
+#include <QApplication>
+#include <QWidget>
+#include <QVBoxLayout>
 
-class DirectFBScreenDriverPlugin : public QScreenDriverPlugin
-{
-public:
-    DirectFBScreenDriverPlugin();
+int main(int argc, char **argv){
+  QApplication app(argc, argv);
 
-    QStringList keys() const;
-    QScreen *create(const QString&, int displayId);
-};
-
-DirectFBScreenDriverPlugin::DirectFBScreenDriverPlugin()
-    : QScreenDriverPlugin()
-{
+  QWidget main;
+  QVBoxLayout *layout = new QVBoxLayout(&main);
+  layout->addWidget(new MouseStatWidget(true));
+  layout->addWidget(new MouseStatWidget(false));
+  main.resize(800, 600);
+  main.show();
+  return app.exec();
 }
-
-QStringList DirectFBScreenDriverPlugin::keys() const
-{
-    return (QStringList() << "directfb");
-}
-
-QScreen* DirectFBScreenDriverPlugin::create(const QString& driver,
-                                            int displayId)
-{
-    if (driver.toLower() != "directfb")
-        return 0;
-
-    return new QDirectFBScreen(displayId);
-}
-
-Q_EXPORT_PLUGIN2(qdirectfbscreen, DirectFBScreenDriverPlugin)
-
-#endif

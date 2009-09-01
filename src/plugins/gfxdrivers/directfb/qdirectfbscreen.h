@@ -42,11 +42,15 @@
 #ifndef QDIRECTFBSCREEN_H
 #define QDIRECTFBSCREEN_H
 
+#include <qglobal.h>
+#ifndef QT_NO_QWS_DIRECTFB
 #include <QtGui/qscreen_qws.h>
 #include <directfb.h>
 #include <directfb_version.h>
 
 QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
@@ -82,6 +86,16 @@ QT_MODULE(Gui)
 #endif
 #if !defined QT_NO_DIRECTFB_OPAQUE_DETECTION && !defined QT_DIRECTFB_OPAQUE_DETECTION
 #define QT_DIRECTFB_OPAQUE_DETECTION
+#endif
+#ifndef QT_NO_QWS_CURSOR
+#if defined QT_DIRECTFB_WM && defined QT_DIRECTFB_WINDOW_AS_CURSOR
+#define QT_DIRECTFB_CURSOR
+#elif defined QT_DIRECTFB_LAYER
+#define QT_DIRECTFB_CURSOR
+#endif
+#endif
+#ifndef QT_DIRECTFB_CURSOR
+#define QT_NO_DIRECTFB_CURSOR
 #endif
 #if defined QT_NO_DIRECTFB_LAYER && defined QT_DIRECTFB_WM
 #error QT_NO_DIRECTFB_LAYER requires QT_NO_DIRECTFB_WM
@@ -269,6 +283,10 @@ inline bool QDirectFBScreen::hasAlphaChannel(IDirectFBSurface *surface)
     return QDirectFBScreen::hasAlphaChannel(format);
 }
 
+QT_END_NAMESPACE
+
 QT_END_HEADER
 
+#endif // QT_NO_QWS_DIRECTFB
 #endif // QDIRECTFBSCREEN_H
+

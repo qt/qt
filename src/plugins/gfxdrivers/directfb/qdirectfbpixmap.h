@@ -42,12 +42,18 @@
 #ifndef QDIRECTFBPIXMAP_H
 #define QDIRECTFBPIXMAP_H
 
+#include <qglobal.h>
+
+#ifndef QT_NO_QWS_DIRECTFB
+
 #include <QtGui/private/qpixmapdata_p.h>
 #include <QtGui/private/qpaintengine_raster_p.h>
 #include "qdirectfbpaintdevice.h"
 #include <directfb.h>
 
 QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
@@ -91,6 +97,10 @@ private:
     bool alpha;
 };
 
+QT_END_NAMESPACE
+
 QT_END_HEADER
+
+#endif // QT_NO_QWS_DIRECTFB
 
 #endif // QDIRECTFBPIXMAP_H

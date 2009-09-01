@@ -105,10 +105,8 @@ public:
 };
 
 /*!
-    Constructs a QSslError object. The two optional arguments specify the \a
-    error that occurred, and which \a certificate the error relates to.
+    Constructs a QSslError object with no error and default certificate. 
 
-    \sa QSslCertificate
 */
 
 // RVCT compiler in debug build does not like about default values in const-
@@ -120,6 +118,11 @@ QSslError::QSslError()
     d->certificate = QSslCertificate();
 }
 
+/*!
+    Constructs a QSslError object. The argument specifies the \a
+    error that occurred.
+
+*/
 QSslError::QSslError(SslError error)
     : d(new QSslErrorPrivate)
 {
@@ -127,6 +130,12 @@ QSslError::QSslError(SslError error)
     d->certificate = QSslCertificate();
 }
 
+/*!
+    Constructs a QSslError object. The two arguments specify the \a
+    error that occurred, and which \a certificate the error relates to.
+
+    \sa QSslCertificate
+*/
 QSslError::QSslError(SslError error, const QSslCertificate &certificate)
     : d(new QSslErrorPrivate)
 {

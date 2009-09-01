@@ -39,12 +39,31 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#include "tabletwidget.h"
+#ifndef MOUSESTATWIDGET_H
+#define MOUSESTATWIDGET_H
 
-int main(int argc, char **argv) {
-  QApplication app(argc, argv);
-  TabletWidget tabletWidget;
-  tabletWidget.showMaximized();
-  return app.exec();
-} 
+#include <QWidget>
+
+class QTabletEvent;
+class QMouseEvent;
+class QTimerEvent;
+class QPaintEvent;
+
+class MouseStatWidget : public QWidget
+{
+public:
+    MouseStatWidget(bool acceptTabletEvent = true);
+protected:
+    void tabletEvent(QTabletEvent *);
+    void mouseMoveEvent(QMouseEvent *);
+    void timerEvent(QTimerEvent *);
+    void paintEvent(QPaintEvent *);
+private:
+    const bool acceptTabletEvent;
+    int receivedMouseEventCount;
+    int receivedMouseEventCountToPaint;
+    int receivedTabletEventCount;
+    int receivedTabletEventCountToPaint;
+};
+
+#endif // MOUSESTATWIDGET_H
