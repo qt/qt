@@ -69,6 +69,8 @@ private slots:
     void cacheControl_data();
     void cacheControl();
 
+    void deleteCache();
+
 private:
     void check();
 };
@@ -81,8 +83,8 @@ public:
         : QNetworkDiskCache(parent)
         , gotData(false)
     {
-        QString location = QDesktopServices::storageLocation(QDesktopServices::DataLocation)
-                                    + QLatin1String("/cache/");
+        QString location = QDesktopServices::storageLocation(QDesktopServices::CacheLocation)
+                                    + QLatin1String("/qnetworkdiskcache/");
         setCacheDirectory(location);
         clear();
     }
@@ -267,6 +269,20 @@ void tst_QAbstractNetworkCache::check()
 
     }
     QCOMPARE(diskCache->gotData, fetchFromCache);
+}
+
+void tst_QAbstractNetworkCache::deleteCache()
+{
+    QNetworkAccessManager manager;
+    NetworkDiskCache *diskCache = new NetworkDiskCache(&manager);
+    manager.setCache(diskCache);
+
+    QString url = "httpcachetest_cachecontrol.cgi?max-age=1000";
+    QNetworkRequest request(QUrl(TESTFILE + url));
+    QNetworkReply *reply = manager.get(request);
+    QSignalSpy downloaded1(reply, SIGNAL(finished()));
+    manager.setCache(0);
+    QTRY_COMPARE(downloaded1.count(), 1);
 }
 
 
