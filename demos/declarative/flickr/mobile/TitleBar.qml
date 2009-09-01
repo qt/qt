@@ -13,8 +13,9 @@ Item {
 
         Script {
             function accept() {
-                RssModel.tags = Editor.text
                 TitleBar.state = ""
+                Background.state = ""
+                RssModel.tags = Editor.text
             }
         }
 
