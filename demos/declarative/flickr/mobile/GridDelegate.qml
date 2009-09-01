@@ -8,7 +8,6 @@
          Script {
              function photoClicked() {
                  ImageDetails.photoTitle = title;
-                 ImageDetails.photoDescription = description;
                  ImageDetails.photoTags = tags;
                  ImageDetails.photoWidth = photoWidth;
                  ImageDetails.photoHeight = photoHeight;
@@ -46,8 +45,9 @@
                  },
                  State {
                      name: "Details"; extend: "Show"
+                     //PropertyChanges { target: ImageDetails; z: 2 }
                      ParentChange { target: Wrapper; parent: ImageDetails.frontContainer }
-                     PropertyChanges { target: Wrapper; x: 20; y: 60 }
+                     PropertyChanges { target: Wrapper; x: 20; y: 60; z: 1000 }
                      PropertyChanges { target: Background; state: "DetailedView" }
                  }
              ]
