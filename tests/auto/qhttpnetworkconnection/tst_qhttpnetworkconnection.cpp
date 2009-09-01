@@ -177,7 +177,9 @@ void tst_QHttpNetworkConnection::head()
 
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
-    QCOMPARE(reply->contentLength(), qint64(contentLength));
+    // only check it if it is set
+    if (reply->contentLength() != -1)
+        QCOMPARE(reply->contentLength(), qint64(contentLength));
 
     QVERIFY(reply->isFinished());
 
@@ -237,7 +239,9 @@ void tst_QHttpNetworkConnection::get()
 
     QCOMPARE(reply->statusCode(), statusCode);
     QCOMPARE(reply->reasonPhrase(), statusString);
-    QCOMPARE(reply->contentLength(), qint64(contentLength));
+    // only check it if it is set
+    if (reply->contentLength() != -1)
+        QCOMPARE(reply->contentLength(), qint64(contentLength));
 
     stopWatch.start();
     QByteArray ba;
