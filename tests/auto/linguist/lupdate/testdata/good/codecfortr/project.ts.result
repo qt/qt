@@ -5,7 +5,7 @@
 <context>
     <name>QObject</name>
     <message>
-        <location filename="main.cpp" line="20"/>
+        <location filename="main.cpp" line="61"/>
         <source>Á</source>
         <translation type="unfinished"></translation>
     </message>

@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -172,6 +172,7 @@ private slots:
     void disconnectFromHostWhenConnecting();
     void disconnectFromHostWhenConnected();
     void resetProxy();
+    void readFromClosedSocket();
 
     static void exitLoop()
     {
@@ -1506,6 +1507,34 @@ void tst_QSslSocket::resetProxy()
     socket2.setProxy(goodProxy);
     socket2.connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
     QVERIFY2(socket2.waitForConnected(10000), qPrintable(socket.errorString()));
+}
+
+// make sure a closed socket has no bytesAvailable()
+// related to https://bugs.webkit.org/show_bug.cgi?id=28016
+void tst_QSslSocket::readFromClosedSocket()
+{
+    QSslSocketPtr socket = newSocket();
+    socket->ignoreSslErrors();
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+    socket->ignoreSslErrors();
+    socket->waitForConnected();
+    socket->waitForEncrypted();
+    // provoke a response by sending a request
+    socket->write("GET /gif/fluke.gif HTTP/1.1\n");
+    socket->write("Host: ");
+    socket->write(QtNetworkSettings::serverName().toLocal8Bit().constData());
+    socket->write("\n");
+    socket->write("\n");
+    socket->waitForBytesWritten();
+    socket->waitForReadyRead();
+    QVERIFY(socket->state() == QAbstractSocket::ConnectedState);
+    QVERIFY(socket->bytesAvailable());
+    socket->close();
+    QVERIFY(!socket->bytesAvailable());
+    QVERIFY(!socket->bytesToWrite());
+    socket->waitForDisconnected();
+    QVERIFY(!socket->bytesAvailable());
+    QVERIFY(!socket->bytesToWrite());
 }
 
 #endif // QT_NO_OPENSSL

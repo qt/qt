@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -149,6 +149,7 @@ private slots:
     void closePopupOnOutsideClick();
     void defaultSize();
     void shortcutsDeletion();
+    void ensureClipping();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -1926,6 +1927,87 @@ void tst_QGraphicsWidget::task250119_shortcutContext()
     QCOMPARE(spy.count(), 1);
 
     scene.removeItem(&w_signal);
+}
+
+class ClippingAndTransformsScene : public QGraphicsScene
+{
+public:
+    QList<QGraphicsItem *> drawnItems;
+protected:
+    void drawItems(QPainter *painter, int numItems, QGraphicsItem *items[],
+                   const QStyleOptionGraphicsItem options[], QWidget *widget = 0)
+    {
+        drawnItems.clear();
+        for (int i = 0; i < numItems; ++i)
+            drawnItems << items[i];
+        QGraphicsScene::drawItems(painter, numItems, items, options, widget);
+    }
+};
+
+class RectWidget : public QGraphicsWidget
+{
+public:
+
+    RectWidget(Qt::GlobalColor color, QGraphicsItem *parent=0) : QGraphicsWidget(parent), mColor(color) {}
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    {
+        painter->setBrush(QBrush(mColor));
+        painter->drawRect(boundingRect());
+    }
+
+    Qt::GlobalColor mColor;
+};
+
+class RectItem : public QGraphicsItem
+{
+public:
+
+    RectItem(Qt::GlobalColor color, QGraphicsItem *parent=0) : QGraphicsItem(parent), mColor(color) {}
+
+    QRectF boundingRect() const
+    {return QRectF(10,10,50,50);}
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    {
+        painter->setBrush(QBrush(mColor));
+        painter->drawRect(boundingRect());
+    }
+
+    Qt::GlobalColor mColor;
+};
+
+void tst_QGraphicsWidget::ensureClipping()
+{
+    ClippingAndTransformsScene scene;
+    scene.setSceneRect(-50, -50, 200, 200);
+
+    //A root that clip children
+    RectWidget *clipWidget = new RectWidget(Qt::black);
+    scene.addItem(clipWidget);
+
+    clipWidget->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+
+    //a child
+    RectWidget *childWidget = new RectWidget(Qt::red, clipWidget);
+    clipWidget->setGeometry(QRectF(10, 10, 100, 100));
+    childWidget->setGeometry(QRectF(25, 25, 50, 50));
+
+    //We put a QGraphicsItem to be sure this one is also paint
+    RectItem *childitem = new RectItem(Qt::blue, clipWidget);
+
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
+
+    QList<QGraphicsItem *> expected;
+    expected << clipWidget << childWidget << childitem;
+    QVERIFY(scene.drawnItems.contains(clipWidget));
+    QVERIFY(scene.drawnItems.contains(childWidget));
+    QVERIFY(scene.drawnItems.contains(childitem));
 }
 
 QTEST_MAIN(tst_QGraphicsWidget)
