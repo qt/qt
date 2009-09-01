@@ -601,7 +601,6 @@ void QAbstractItemModelPrivate::rowsInserted(const QModelIndex &parent,
 
 void QAbstractItemModelPrivate::itemsAboutToBeMoved(const QModelIndex &srcParent, int srcFirst, int srcLast, const QModelIndex &destinationParent, int destinationChild, Qt::Orientation orientation)
 {
-    Q_Q(QAbstractItemModel);
     QVector<QPersistentModelIndexData *> persistent_moved_explicitly;
     QVector<QPersistentModelIndexData *> persistent_moved_in_source;
     QVector<QPersistentModelIndexData *> persistent_moved_in_destination;
@@ -2469,7 +2468,6 @@ void QAbstractItemModel::endRemoveRows()
 */
 bool QAbstractItemModelPrivate::allowMove(const QModelIndex &srcParent, int start, int end, const QModelIndex &destinationParent, int destinationStart, Qt::Orientation orientation)
 {
-    Q_Q(QAbstractItemModel);
     // Don't move the range within itself.
     if ( ( destinationParent == srcParent )
             && ( destinationStart >= start )
