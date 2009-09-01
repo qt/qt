@@ -63,14 +63,14 @@ public:
     virtual ~QGLPaintDevice();
 
     virtual void beginPaint();
+    virtual void ensureActiveTarget();
     virtual void endPaint();
 
     virtual QColor backgroundColor() const;
     virtual bool autoFillBackground() const;
     virtual bool hasTransparentBackground() const;
 
-    // inline these?
-    QGLContext* context() const;
+    virtual QGLContext* context() const = 0;
     QGLFormat format() const;
     virtual QSize size() const;
 
@@ -79,10 +79,11 @@ public:
 
 protected:
     // Inline?
-    void setContext(QGLContext* c);
+//    void setContext(QGLContext* c);
 
 private:
-    QGLContext* m_context;
+//    QGLContext* m_context;
+    GLuint         m_previousFBO;
 };
 
 
@@ -102,6 +103,7 @@ public:
     // QGLWidgets need to do swapBufers in endPaint:
     virtual void endPaint();
     virtual QSize size() const;
+    virtual QGLContext* context() const;
 
     void setWidget(QGLWidget*);
 

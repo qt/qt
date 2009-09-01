@@ -22,6 +22,7 @@ HEADERS += qgl.h \
 	   qglpixelbuffer.h \
            qglpixelbuffer_p.h \
 	   qglframebufferobject.h  \
+           qglframebufferobject_p.h  \
            qglextensions_p.h \
            qglpaintdevice_p.h \
 

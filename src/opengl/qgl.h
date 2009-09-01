@@ -385,7 +385,7 @@ private:
     friend class QGLPixelBuffer;
     friend class QGLPixelBufferPrivate;
     friend class QGLWidget;
-    friend class QGLDrawable;
+//    friend class QGLDrawable;
     friend class QGLWidgetPrivate;
     friend class QGLGlyphCache;
     friend class QOpenGLPaintEngine;
@@ -407,6 +407,8 @@ private:
 #endif
     friend class QGLFramebufferObject;
     friend class QGLFramebufferObjectPrivate;
+    friend class QGLFBOGLPaintDevice;
+    friend class QGLPaintDevice;
 private:
     Q_DISABLE_COPY(QGLContext)
 };

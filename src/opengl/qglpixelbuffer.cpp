@@ -101,10 +101,20 @@ void qgl_cleanup_glyph_cache(QGLContext *) {}
 extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
 
+QGLContext* QGLPBufferGLPaintDevice::context() const
+{
+    return pbuf->d_func()->qctx;
+}
+
+void QGLPBufferGLPaintDevice::endPaint() {
+    glFlush();
+    QGLPaintDevice::endPaint();
+}
+
 void QGLPBufferGLPaintDevice::setPBuffer(QGLPixelBuffer* pb)
 {
     pbuf = pb;
-    setContext(pb->d_func()->qctx);
+//    setContext(pb->d_func()->qctx);
 }
 
 void QGLPixelBufferPrivate::common_init(const QSize &size, const QGLFormat &format, QGLWidget *shareWidget)

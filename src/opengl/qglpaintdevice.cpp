@@ -42,9 +42,9 @@
 #include <private/qglpaintdevice_p.h>
 #include <private/qgl_p.h>
 #include <private/qglpixelbuffer_p.h>
+#include <private/qglframebufferobject_p.h>
 
 QGLPaintDevice::QGLPaintDevice()
-    : m_context(0)
 {
 }
 
@@ -52,41 +52,38 @@ QGLPaintDevice::~QGLPaintDevice()
 {
 }
 
-//extern QPaintEngine* qt_gl_engine(); // in qgl.cpp
-//extern QPaintEngine* qt_gl_2_engine(); // in qgl.cpp
-
-//inline bool qt_gl_preferGL2Engine()
-//{
-//#if defined(QT_OPENGL_ES_2)
-//    return true;
-//#else
-//    return (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
-//           && qgetenv("QT_GL_USE_OPENGL1ENGINE").isEmpty();
-//#endif
-//}
-
-//QPaintEngine* QGLPaintDevice::paintEngine() const
-//{
-//#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
-//    return qt_gl_engine();
-//#elif defined(QT_OPENGL_ES_2)
-//    return qt_gl_2_engine();
-//#else
-//    if (!qt_gl_preferGL2Engine())
-//        return qt_gl_engine();
-//    else
-//        return qt_gl_2_engine();
-//#endif
-//}
 
 void QGLPaintDevice::beginPaint()
 {
-    m_context->makeCurrent();
+    // Record the currently bound FBO so we can restore it again
+    // in endPaint()
+    QGLContext *ctx = context();
+    ctx->makeCurrent();
+    m_previousFBO = ctx->d_func()->current_fbo;
+    if (m_previousFBO != 0) {
+        ctx->d_ptr->current_fbo = 0;
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+    }
+}
+
+void QGLPaintDevice::ensureActiveTarget()
+{
+    QGLContext* ctx = context();
+    if (ctx != QGLContext::currentContext())
+        ctx->makeCurrent();
+
+    if (ctx->d_ptr->current_fbo != 0)
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
 }
 
 void QGLPaintDevice::endPaint()
 {
-    glFlush();
+    // Make sure the FBO bound at beginPaint is re-bound again here:
+    QGLContext *ctx = context();
+    if (m_previousFBO != ctx->d_func()->current_fbo) {
+        ctx->d_ptr->current_fbo = m_previousFBO;
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_previousFBO);
+    }
 }
 
 QColor QGLPaintDevice::backgroundColor() const
@@ -104,26 +101,15 @@ bool QGLPaintDevice::hasTransparentBackground() const
     return false;
 }
 
-QGLContext* QGLPaintDevice::context() const
-{
-    return m_context;
-}
-
 QGLFormat QGLPaintDevice::format() const
 {
-    return m_context->format();
+    return context()->format();
 }
 
 QSize QGLPaintDevice::size() const
 {
     return QSize();
 }
-
-void QGLPaintDevice::setContext(QGLContext* c)
-{
-    m_context = c;
-}
-
 
 
 QGLWidgetGLPaintDevice::QGLWidgetGLPaintDevice()
@@ -155,21 +141,22 @@ void QGLWidgetGLPaintDevice::setWidget(QGLWidget* w)
     glWidget = w;
 }
 
-//void QGLWidgetGLPaintDevice::beginPaint()
-//{
-//    glWidget->makeCurrent();
-//}
-
 void QGLWidgetGLPaintDevice::endPaint()
 {
     if (glWidget->autoBufferSwap())
         glWidget->swapBuffers();
+    QGLPaintDevice::endPaint();
 }
 
 
 QSize QGLWidgetGLPaintDevice::size() const
 {
     return glWidget->size();
+}
+
+QGLContext* QGLWidgetGLPaintDevice::context() const
+{
+    return const_cast<QGLContext*>(glWidget->context());
 }
 
 // returns the QGLPaintDevice for the given QPaintDevice
@@ -185,6 +172,9 @@ QGLPaintDevice* QGLPaintDevice::getDevice(QPaintDevice* pd)
             break;
         case QInternal::Pbuffer:
             glpd = &(static_cast<QGLPixelBuffer*>(pd)->d_func()->glDevice);
+            break;
+        case QInternal::FramebufferObject:
+            glpd = &(static_cast<QGLFramebufferObject*>(pd)->d_func()->glDevice);
             break;
         default:
             qWarning("QGLPaintDevice::getDevice() - Unknown device type %d", pd->devType());

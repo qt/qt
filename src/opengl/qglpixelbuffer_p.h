@@ -142,6 +142,8 @@ class QGLPBufferGLPaintDevice : public QGLPaintDevice
 public:
     virtual QPaintEngine* paintEngine() const {return pbuf->paintEngine();}
     virtual QSize size() const {return pbuf->size();}
+    virtual QGLContext* context() const;
+    virtual void endPaint();
     void setPBuffer(QGLPixelBuffer* pb);
 private:
     QGLPixelBuffer* pbuf;

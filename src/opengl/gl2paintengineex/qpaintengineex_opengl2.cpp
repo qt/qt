@@ -1318,13 +1318,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
     d->ctx = d->device->context();
 
-    if (d->ctx->d_ptr->active_engine) {
-        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(d->ctx->d_ptr->active_engine);
-        QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
-        p->transferMode(BrushDrawingMode);
-        p->device->context()->doneCurrent();
-    }
-
     d->ctx->d_ptr->active_engine = this;
     d->last_created_state = 0;
 
@@ -1397,15 +1390,6 @@ bool QGL2PaintEngineEx::end()
 {
     Q_D(QGL2PaintEngineEx);
     QGLContext *ctx = d->ctx;
-    if (ctx->d_ptr->active_engine != this) {
-        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
-        if (engine && engine->isActive()) {
-            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
-            p->transferMode(BrushDrawingMode);
-            p->device->context()->doneCurrent();
-        }
-        d->device->context()->makeCurrent();
-    }
 
     glUseProgram(0);
     d->transferMode(BrushDrawingMode);
@@ -1435,19 +1419,11 @@ void QGL2PaintEngineEx::ensureActive()
     QGLContext *ctx = d->ctx;
 
     if (isActive() && ctx->d_ptr->active_engine != this) {
-        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(ctx->d_ptr->active_engine);
-        if (engine && engine->isActive()) {
-            QGL2PaintEngineExPrivate *p = static_cast<QGL2PaintEngineExPrivate *>(engine->d_ptr.data());
-            p->transferMode(BrushDrawingMode);
-            p->device->context()->doneCurrent();
-        }
-        d->device->context()->makeCurrent();
-
         ctx->d_ptr->active_engine = this;
         d->needsSync = true;
-    } else {
-        d->device->context()->makeCurrent();
     }
+
+    d->device->ensureActiveTarget();
 
     if (d->needsSync) {
         glViewport(0, 0, d->width, d->height);

@@ -1308,7 +1308,7 @@ void QGLWidget::setContext(QGLContext *context,
         d->glcx->doneCurrent();
     QGLContext* oldcx = d->glcx;
     d->glcx = context;
-    d->glDevice.setContext(context); // ### Do this for all platforms
+//    d->glDevice.setContext(context); // ### Do this for all platforms
 
     if (parentWidget()) {
         // force creation of delay-created widgets
