@@ -42,14 +42,11 @@
 #ifndef DYNAMICTREEMODEL_H
 #define DYNAMICTREEMODEL_H
 
-#include <QAbstractItemModel>
+#include <QtCore/QAbstractItemModel>
 
-#include <QHash>
-#include <QList>
+#include <QtCore/QHash>
+#include <QtCore/QList>
 
-#include <QDebug>
-
-#include <kdebug.h>
 
 template<typename T> class QList;
 

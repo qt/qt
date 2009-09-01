@@ -875,9 +875,22 @@ QImage QGLFramebufferObject::toImage() const
     if (!d->valid)
         return QImage();
 
-    const_cast<QGLFramebufferObject *>(this)->bind();
+    // qt_gl_read_framebuffer doesn't work on a multisample FBO
+    if (format().samples() != 0) {
+        QGLFramebufferObject temp(size());
+
+        QRect rect(QPoint(0, 0), size());
+        blitFramebuffer(&temp, rect, const_cast<QGLFramebufferObject *>(this), rect);
+
+        return temp.toImage();
+    }
+
+    bool wasBound = isBound();
+    if (!wasBound)
+        const_cast<QGLFramebufferObject *>(this)->bind();
     QImage image = qt_gl_read_framebuffer(d->size, d->ctx->format().alpha(), true);
-    const_cast<QGLFramebufferObject *>(this)->release();
+    if (!wasBound)
+        const_cast<QGLFramebufferObject *>(this)->release();
 
     return image;
 }

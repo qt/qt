@@ -41,13 +41,10 @@
 
 #include "dynamictreemodel.h"
 
-#include <QHash>
-#include <QList>
-#include <QTimer>
+#include <QtCore/QHash>
+#include <QtCore/QList>
+#include <QtCore/QTimer>
 
-#include <QDebug>
-
-#include <kdebug.h>
 
 DynamicTreeModel::DynamicTreeModel(QObject *parent)
   : QAbstractItemModel(parent),

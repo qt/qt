@@ -5417,6 +5417,7 @@ void tst_QGraphicsItem::contextMenuEventPropagation()
     qt_x11_wait_for_window_manager(&view);
 #endif
     view.resize(200, 200);
+    QTest::qWait(250);
 
     QContextMenuEvent event(QContextMenuEvent::Mouse, QPoint(10, 10),
                             view.viewport()->mapToGlobal(QPoint(10, 10)));

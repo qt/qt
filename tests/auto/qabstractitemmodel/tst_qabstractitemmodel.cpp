@@ -43,7 +43,7 @@
 #include <QtTest/QtTest>
 #include <QtCore/QtCore>
 
-#include <QSortFilterProxyModel>
+#include <QtGui/QSortFilterProxyModel>
 
 //TESTED_CLASS=QAbstractListModel QAbstractTableModel
 //TESTED_FILES=

@@ -727,6 +727,16 @@ public:
     inline bool isPixmap() const
     { return false; }
 
+    inline void effectBoundingRectChanged()
+    {
+        // ### This function should take a rect parameter; then we can avoid
+        // updating too much on the parent widget.
+        if (QWidget *parent = m_widget->parentWidget())
+            parent->update();
+        else
+            m_widget->update();
+    }
+
     inline const QStyleOption *styleOption() const
     { return 0; }
 
