@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -126,8 +126,8 @@ private:
 class QODBCPrivate
 {
 public:
-    QODBCPrivate()
-    : hEnv(0), hDbc(0), hStmt(0), useSchema(false), hasSQLFetchScroll(true)
+    QODBCPrivate(QODBCDriverPrivate *dpp)
+    : hStmt(0), useSchema(false), hasSQLFetchScroll(true), driverPrivate(dpp)
     {
         unicode = false;
     }
@@ -135,8 +135,8 @@ public:
     inline void clearValues()
     { fieldCache.fill(QVariant()); fieldCacheIdx = 0; }
 
-    SQLHANDLE hEnv;
-    SQLHANDLE hDbc;
+    SQLHANDLE dpEnv() const { return driverPrivate ? driverPrivate->hEnv : 0;}
+    SQLHANDLE dpDbc() const { return driverPrivate ? driverPrivate->hDbc : 0;}
     SQLHANDLE hStmt;
 
     uint unicode :1;
@@ -147,6 +147,7 @@ public:
     int fieldCacheIdx;
     int disconnectCount;
     bool hasSQLFetchScroll;
+    QODBCDriverPrivate *driverPrivate;
 
     bool isStmtHandleValid(const QSqlDriver *driver);
     void updateStmtHandleState(const QSqlDriver *driver);
@@ -208,8 +209,8 @@ static QString qWarnODBCHandle(int handleType, SQLHANDLE handle, int *nativeCode
 
 static QString qODBCWarn(const QODBCPrivate* odbc, int *nativeCode = 0)
 {
-    return (qWarnODBCHandle(SQL_HANDLE_ENV, odbc->hEnv) + QLatin1Char(' ')
-             + qWarnODBCHandle(SQL_HANDLE_DBC, odbc->hDbc) + QLatin1Char(' ')
+    return (qWarnODBCHandle(SQL_HANDLE_ENV, odbc->dpEnv()) + QLatin1Char(' ')
+             + qWarnODBCHandle(SQL_HANDLE_DBC, odbc->dpDbc()) + QLatin1Char(' ')
              + qWarnODBCHandle(SQL_HANDLE_STMT, odbc->hStmt, nativeCode));
 }
 
@@ -247,6 +248,7 @@ static QSqlError qMakeError(const QString& err, QSqlError::ErrorType type,
 template<class T>
 static QVariant::Type qDecodeODBCType(SQLSMALLINT sqltype, const T* p, bool isSigned = true)
 {
+    Q_UNUSED(p);
     QVariant::Type type = QVariant::Invalid;
     switch (sqltype) {
     case SQL_DECIMAL:
@@ -799,9 +801,7 @@ QString QODBCDriverPrivate::adjustCase(const QString &identifier) const
 QODBCResult::QODBCResult(const QODBCDriver * db, QODBCDriverPrivate* p)
 : QSqlResult(db)
 {
-    d = new QODBCPrivate();
-    d->hEnv = p->hEnv;
-    d->hDbc = p->hDbc;
+    d = new QODBCPrivate(p);
     d->unicode = p->unicode;
     d->useSchema = p->useSchema;
     d->disconnectCount = p->disconnectCount;
@@ -839,7 +839,7 @@ bool QODBCResult::reset (const QString& query)
         }
     }
     r  = SQLAllocHandle(SQL_HANDLE_STMT,
-                         d->hDbc,
+                         d->dpDbc(),
                          &d->hStmt);
     if (r != SQL_SUCCESS) {
         qSqlWarning(QLatin1String("QODBCResult::reset: Unable to allocate statement handle"), d);
@@ -1180,7 +1180,7 @@ bool QODBCResult::prepare(const QString& query)
         }
     }
     r  = SQLAllocHandle(SQL_HANDLE_STMT,
-                         d->hDbc,
+                         d->dpDbc(),
                          &d->hStmt);
     if (r != SQL_SUCCESS) {
         qSqlWarning(QLatin1String("QODBCResult::prepare: Unable to allocate statement handle"), d);

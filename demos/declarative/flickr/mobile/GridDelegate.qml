@@ -35,7 +35,7 @@
              }
 
              Connection {
-                 sender: ToolBar.button2; signal: "clicked()"
+                 sender: ToolBar; signal: "button2Clicked()"
                  script: if (ScaleMe.state == 'Details' ) ScaleMe.state = 'Show';
              }
 
@@ -48,22 +48,20 @@
                      name: "Details"; extend: "Show"
                      ParentChange { target: Wrapper; parent: ImageDetails.frontContainer }
                      PropertyChanges { target: Wrapper; x: 20; y: 60 }
-                     PropertyChanges { target: ImageDetails; x: 0 }
-                     PropertyChanges { target: Views; x: -parent.width }
-                     PropertyChanges { target: ToolBar.button2; text: "Back" }
+                     PropertyChanges { target: Background; state: "DetailedView" }
                  }
              ]
              transitions: [
                  Transition {
                      from: "Show"; to: "Details"
                      ParentAction { }
-                     NumberAnimation { properties: "x,y,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                     NumberAnimation { properties: "x,y"; duration: 500; easing: "easeInOutQuad" }
                  },
                  Transition {
                      from: "Details"; to: "Show"
                      SequentialAnimation {
                          ParentAction { }
-                         NumberAnimation { properties: "x,y,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                         NumberAnimation { properties: "x,y"; duration: 500; easing: "easeInOutQuad" }
                          PropertyAction { target: Wrapper; properties: "z" }
                      }
                  }

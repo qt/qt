@@ -81,6 +81,8 @@ protected:
 
     virtual void drawContents(QPainter *p, const QRect &) = 0;
 
+    void setCacheFrozen(bool);
+
 Q_SIGNALS:
     void fillColorChanged();
 
