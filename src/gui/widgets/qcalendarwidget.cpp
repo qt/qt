@@ -1967,9 +1967,7 @@ void QCalendarWidgetPrivate::_q_editingFinished()
 
     The widget is initialized with the current month and year, but
     QCalendarWidget provides several public slots to change the year
-    and month that is shown.  The currently displayed month and year
-    can be retrieved using the currentPageMonth() and currentPageYear()
-    functions, respectively.
+    and month that is shown.
 
     By default, today's date is selected, and the user can select a
     date using both mouse and keyboard. The currently selected date
@@ -1981,6 +1979,9 @@ void QCalendarWidgetPrivate::_q_editingFinished()
     property to NoSelection to prohibit the user from selecting at
     all. Note that a date also can be selected programmatically using
     the setSelectedDate() slot.
+
+    The currently displayed month and year can be retrieved using the
+    monthShown() and yearShown() functions, respectively.
 
     A newly created calendar widget uses abbreviated day names, and
     both Saturdays and Sundays are marked in red. The calendar grid is
@@ -2287,7 +2288,7 @@ int QCalendarWidget::monthShown() const
     selected date.
 
     The currently displayed month and year can be retrieved using the
-    currentPageMonth() and currentPageYear() functions respectively.
+    monthShown() and yearShown() functions respectively.
 
     \sa yearShown(), monthShown(), showPreviousMonth(), showNextMonth(),
     showPreviousYear(), showNextYear()
