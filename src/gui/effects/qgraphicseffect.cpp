@@ -335,7 +335,7 @@ void QGraphicsEffect::setEnabled(bool enable)
 
     d->isEnabled = enable;
     if (d->source)
-        d->source->update();
+        d->source->d_func()->effectBoundingRectChanged();
     emit enabledChanged(enable);
 }
 
@@ -390,7 +390,7 @@ void QGraphicsEffect::updateBoundingRect()
 {
     Q_D(QGraphicsEffect);
     if (d->source)
-        d->source->update();
+        d->source->d_func()->effectBoundingRectChanged();
 }
 
 /*!
