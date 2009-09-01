@@ -1414,24 +1414,29 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
         QChar pathElem = *str;
         ++str;
         QChar endc = *end;
-        *const_cast<QChar *>(end) = 0; // parseNumbersList requires 0-termination that QStringRef cannot guarantee
-        QVector<qreal> arg = parseNumbersList(str);
+        *const_cast<QChar *>(end) = 0; // parseNumbersArray requires 0-termination that QStringRef cannot guarantee
+        QVarLengthArray<qreal, 8> arg;
+        parseNumbersArray(str, arg);
         *const_cast<QChar *>(end) = endc;
         if (pathElem == QLatin1Char('z') || pathElem == QLatin1Char('Z'))
             arg.append(0);//dummy
-        while (!arg.isEmpty()) {
+        const qreal *num = arg.constData();
+        int count = arg.count();
+        while (count > 0) {
             qreal offsetX = x;        // correction offsets
             qreal offsetY = y;        // for relative commands
             switch (pathElem.unicode()) {
             case 'm': {
-                if (arg.count() < 2) {
-                    arg.pop_front();
+                if (count < 2) {
+                    num++;
+                    count--;
                     break;
                 }
-                x = x0 = arg[0] + offsetX;
-                y = y0 = arg[1] + offsetY;
+                x = x0 = num[0] + offsetX;
+                y = y0 = num[1] + offsetY;
+                num += 2;
+                count -= 2;
                 path.moveTo(x0, y0);
-                arg.pop_front(); arg.pop_front();
 
                  // As per 1.2  spec 8.3.2 The "moveto" commands
                  // If a 'moveto' is followed by multiple pairs of coordinates without explicit commands,
@@ -1440,15 +1445,16 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             }
                 break;
             case 'M': {
-                if (arg.count() < 2) {
-                    arg.pop_front();
+                if (count < 2) {
+                    num++;
+                    count--;
                     break;
                 }
-                x = x0 = arg[0];
-                y = y0 = arg[1];
-
+                x = x0 = num[0];
+                y = y0 = num[1];
+                num += 2;
+                count -= 2;
                 path.moveTo(x0, y0);
-                arg.pop_front(); arg.pop_front();
 
                 // As per 1.2  spec 8.3.2 The "moveto" commands
                 // If a 'moveto' is followed by multiple pairs of coordinates without explicit commands,
@@ -1460,96 +1466,104 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             case 'Z': {
                 x = x0;
                 y = y0;
+                count--; // skip dummy
+                num++;
                 path.closeSubpath();
-                arg.pop_front();//pop dummy
             }
                 break;
             case 'l': {
-                if (arg.count() < 2) {
-                    arg.pop_front();
+                if (count < 2) {
+                    num++;
+                    count--;
                     break;
                 }
-                x = arg.front() + offsetX;
-                arg.pop_front();
-                y = arg.front() + offsetY;
-                arg.pop_front();
+                x = x0 = num[0] + offsetX;
+                y = y0 = num[1] + offsetY;
+                num += 2;
+                count -= 2;
                 path.lineTo(x, y);
 
             }
                 break;
             case 'L': {
-                if (arg.count() < 2) {
-                    arg.pop_front();
+                if (count < 2) {
+                    num++;
+                    count--;
                     break;
                 }
-                x = arg.front(); arg.pop_front();
-                y = arg.front(); arg.pop_front();
+                x = x0 = num[0];
+                y = y0 = num[1];
+                num += 2;
+                count -= 2;
                 path.lineTo(x, y);
             }
                 break;
             case 'h': {
-                x = arg.front() + offsetX; arg.pop_front();
+                x = num[0] + offsetX;
+                num++;
+                count--;
                 path.lineTo(x, y);
             }
                 break;
             case 'H': {
-                x = arg[0];
+                x = num[0];
+                num++;
+                count--;
                 path.lineTo(x, y);
-                arg.pop_front();
             }
                 break;
             case 'v': {
-                y = arg[0] + offsetY;
+                y = num[0] + offsetY;
+                num++;
+                count--;
                 path.lineTo(x, y);
-                arg.pop_front();
             }
                 break;
             case 'V': {
-                y = arg[0];
+                y = num[0];
+                num++;
+                count--;
                 path.lineTo(x, y);
-                arg.pop_front();
             }
                 break;
             case 'c': {
-                if (arg.count() < 6) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 6) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                QPointF c1(arg[0]+offsetX, arg[1]+offsetY);
-                QPointF c2(arg[2]+offsetX, arg[3]+offsetY);
-                QPointF e(arg[4]+offsetX, arg[5]+offsetY);
+                QPointF c1(num[0] + offsetX, num[1] + offsetY);
+                QPointF c2(num[2] + offsetX, num[3] + offsetY);
+                QPointF e(num[4] + offsetX, num[5] + offsetY);
+                num += 6;
+                count -= 6;
                 path.cubicTo(c1, c2, e);
                 ctrlPt = c2;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 'C': {
-                if (arg.count() < 6) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 6) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                QPointF c1(arg[0], arg[1]);
-                QPointF c2(arg[2], arg[3]);
-                QPointF e(arg[4], arg[5]);
+                QPointF c1(num[0], num[1]);
+                QPointF c2(num[2], num[3]);
+                QPointF e(num[4], num[5]);
+                num += 6;
+                count -= 6;
                 path.cubicTo(c1, c2, e);
                 ctrlPt = c2;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 's': {
-                if (arg.count() < 4) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 4) {
+                    num += count;
+                    count = 0;
                     break;
                 }
                 QPointF c1;
@@ -1558,20 +1572,20 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                     c1 = QPointF(2*x-ctrlPt.x(), 2*y-ctrlPt.y());
                 else
                     c1 = QPointF(x, y);
-                QPointF c2(arg[0]+offsetX, arg[1]+offsetY);
-                QPointF e(arg[2]+offsetX, arg[3]+offsetY);
+                QPointF c2(num[0] + offsetX, num[1] + offsetY);
+                QPointF e(num[2] + offsetX, num[3] + offsetY);
+                num += 4;
+                count -= 4;
                 path.cubicTo(c1, c2, e);
                 ctrlPt = c2;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 'S': {
-                if (arg.count() < 4) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 4) {
+                    num += count;
+                    count = 0;
                     break;
                 }
                 QPointF c1;
@@ -1580,55 +1594,57 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                     c1 = QPointF(2*x-ctrlPt.x(), 2*y-ctrlPt.y());
                 else
                     c1 = QPointF(x, y);
-                QPointF c2(arg[0], arg[1]);
-                QPointF e(arg[2], arg[3]);
+                QPointF c2(num[0], num[1]);
+                QPointF e(num[2], num[3]);
+                num += 4;
+                count -= 4;
                 path.cubicTo(c1, c2, e);
                 ctrlPt = c2;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 'q': {
-                if (arg.count() < 4) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 4) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                QPointF c(arg[0]+offsetX, arg[1]+offsetY);
-                QPointF e(arg[2]+offsetX, arg[3]+offsetY);
+                QPointF c(num[0] + offsetX, num[1] + offsetY);
+                QPointF e(num[2] + offsetX, num[3] + offsetY);
+                num += 4;
+                count -= 4;
                 path.quadTo(c, e);
                 ctrlPt = c;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 'Q': {
-                if (arg.count() < 4) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 4) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                QPointF c(arg[0], arg[1]);
-                QPointF e(arg[2], arg[3]);
+                QPointF c(num[0], num[1]);
+                QPointF e(num[2], num[3]);
+                num += 4;
+                count -= 4;
                 path.quadTo(c, e);
                 ctrlPt = c;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 't': {
-                if (arg.count() < 2) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 2) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                QPointF e(arg[0]+offsetX, arg[1]+offsetY);
+                QPointF e(num[0] + offsetX, num[1] + offsetY);
+                num += 2;
+                count -= 2;
                 QPointF c;
                 if (lastMode == 'q' || lastMode == 'Q' ||
                     lastMode == 't' || lastMode == 'T')
@@ -1639,16 +1655,17 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                 ctrlPt = c;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 'T': {
-                if (arg.count() < 2) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 2) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                QPointF e(arg[0], arg[1]);
+                QPointF e(num[0], num[1]);
+                num += 2;
+                count -= 2;
                 QPointF c;
                 if (lastMode == 'q' || lastMode == 'Q' ||
                     lastMode == 't' || lastMode == 'T')
@@ -1659,22 +1676,22 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                 ctrlPt = c;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 'a': {
-                if (arg.count() < 7) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 7) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                qreal rx = arg[0];
-                qreal ry = arg[1];
-                qreal xAxisRotation = arg[2];
-                qreal largeArcFlag  = arg[3];
-                qreal sweepFlag = arg[4];
-                qreal ex = arg[5] + offsetX;
-                qreal ey = arg[6] + offsetY;
+                qreal rx = (*num++);
+                qreal ry = (*num++);
+                qreal xAxisRotation = (*num++);
+                qreal largeArcFlag  = (*num++);
+                qreal sweepFlag = (*num++);
+                qreal ex = (*num++) + offsetX;
+                qreal ey = (*num++) + offsetY;
+                count -= 7;
                 qreal curx = x;
                 qreal cury = y;
                 pathArc(path, rx, ry, xAxisRotation, int(largeArcFlag),
@@ -1682,36 +1699,29 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
 
                 x = ex;
                 y = ey;
-
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front();
             }
                 break;
             case 'A': {
-                if (arg.count() < 7) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 7) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                qreal rx = arg[0];
-                qreal ry = arg[1];
-                qreal xAxisRotation = arg[2];
-                qreal largeArcFlag  = arg[3];
-                qreal sweepFlag = arg[4];
-                qreal ex = arg[5];
-                qreal ey = arg[6];
+                qreal rx = (*num++);
+                qreal ry = (*num++);
+                qreal xAxisRotation = (*num++);
+                qreal largeArcFlag  = (*num++);
+                qreal sweepFlag = (*num++);
+                qreal ex = (*num++);
+                qreal ey = (*num++);
+                count -= 7;
                 qreal curx = x;
                 qreal cury = y;
                 pathArc(path, rx, ry, xAxisRotation, int(largeArcFlag),
                         int(sweepFlag), ex, ey, curx, cury);
+
                 x = ex;
                 y = ey;
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front();
             }
                 break;
             default:
