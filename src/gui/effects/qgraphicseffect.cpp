@@ -1129,19 +1129,20 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
             const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
             painter->drawPixmap(offset, pixmap);
         } else {
-            QRectF srcBrect = source->boundingRect();
-            QPixmap pixmap(srcBrect.size().toSize());
+            QRect srcBrect = source->boundingRect().toAlignedRect();
+            offset = srcBrect.topLeft();
+            QPixmap pixmap(srcBrect.size());
             pixmap.fill(Qt::transparent);
 
             QPainter pixmapPainter(&pixmap);
             pixmapPainter.setRenderHints(painter->renderHints());
-            pixmapPainter.translate(-srcBrect.topLeft());
+            pixmapPainter.translate(-offset);
             source->draw(&pixmapPainter);
             pixmapPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
             pixmapPainter.fillRect(srcBrect, d->opacityMask);
             pixmapPainter.end();
 
-            painter->drawPixmap(srcBrect.topLeft(), pixmap);
+            painter->drawPixmap(offset, pixmap);
         }
     } else {
         // Draw pixmap in device coordinates to avoid pixmap scaling;
