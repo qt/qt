@@ -549,7 +549,7 @@ void QWidgetPrivate::hide_sys()
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
     deactivateWidgetCleanup();
     WId id = q->internalWinId();
-    if (q->isWindow() && id) {
+    if (id) {
         if(id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
             id->SetFocus(false);
         id->MakeVisible(false);
