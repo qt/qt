@@ -76,6 +76,7 @@ public:
 private:
     QExplicitlySharedDataPointer<QScriptStringPrivate> d_ptr;
     friend class QScriptValue;
+    friend class QScriptEnginePrivate;
     Q_DECLARE_PRIVATE(QScriptString)
 };
 

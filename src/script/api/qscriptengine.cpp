@@ -3622,9 +3622,7 @@ QScriptEngineAgent *QScriptEngine::agent() const
 QScriptString QScriptEngine::toStringHandle(const QString &str)
 {
     Q_D(QScriptEngine);
-    QScriptString ss;
-    QScriptStringPrivate::init(ss, this, JSC::Identifier(d->currentFrame, str));
-    return ss;
+    return d->scriptStringFromJSCIdentifier(JSC::Identifier(d->currentFrame, str));
 }
 
 /*!
