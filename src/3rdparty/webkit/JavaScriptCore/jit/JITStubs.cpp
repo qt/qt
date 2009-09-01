@@ -2718,6 +2718,17 @@ DEFINE_STUB_FUNCTION(void, op_debug)
     stackFrame.globalData->interpreter->debug(callFrame, static_cast<DebugHookID>(debugHookID), firstLine, lastLine, column);
 }
 
+#ifdef QT_BUILD_SCRIPT_LIB
+DEFINE_STUB_FUNCTION(void, op_debug_catch)
+{
+    STUB_INIT_STACK_FRAME(stackFrame);
+    CallFrame* callFrame = stackFrame.callFrame;
+    if (JSC::Debugger* debugger = callFrame->lexicalGlobalObject()->debugger() ) {
+        debugger->exceptionCatch(DebuggerCallFrame(callFrame), callFrame->codeBlock()->ownerNode()->sourceID());
+    }
+}
+#endif
+
 DEFINE_STUB_FUNCTION(EncodedJSValue, vm_throw)
 {
     STUB_INIT_STACK_FRAME(stackFrame);
