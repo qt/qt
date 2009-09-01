@@ -425,32 +425,25 @@ void QHttpNetworkConnectionPrivate::dequeueAndSendRequest(QAbstractSocket *socke
     int i = indexOf(socket);
 
     if (!highPriorityQueue.isEmpty()) {
-        for (int j = highPriorityQueue.count() - 1; j >= 0; --j) {
-            HttpMessagePair &messagePair = highPriorityQueue[j];
-            if (!messagePair.second->d_func()->requestIsPrepared)
-                prepareRequest(messagePair);
-
-            channels[i].request = messagePair.first;
-            channels[i].reply = messagePair.second;
-            // remove before sendRequest! else we might pipeline the same request again
-            highPriorityQueue.removeAt(j);
-            channels[i].sendRequest();
-            return;
-        }
+        // remove from queue before sendRequest! else we might pipeline the same request again
+        HttpMessagePair messagePair = highPriorityQueue.takeLast();
+        if (!messagePair.second->d_func()->requestIsPrepared)
+            prepareRequest(messagePair);
+        channels[i].request = messagePair.first;
+        channels[i].reply = messagePair.second;
+        channels[i].sendRequest();
+        return;
     }
 
     if (!lowPriorityQueue.isEmpty()) {
-        for (int j = lowPriorityQueue.count() - 1; j >= 0; --j) {
-            HttpMessagePair &messagePair = lowPriorityQueue[j];
-            if (!messagePair.second->d_func()->requestIsPrepared)
-                prepareRequest(messagePair);
-            channels[i].request = messagePair.first;
-            channels[i].reply = messagePair.second;
-            // remove before sendRequest! else we might pipeline the same request again
-            lowPriorityQueue.removeAt(j);
-            channels[i].sendRequest();
-            return;
-        }
+        // remove from queue before sendRequest! else we might pipeline the same request again
+        HttpMessagePair messagePair = lowPriorityQueue.takeLast();
+        if (!messagePair.second->d_func()->requestIsPrepared)
+            prepareRequest(messagePair);
+        channels[i].request = messagePair.first;
+        channels[i].reply = messagePair.second;
+        channels[i].sendRequest();
+        return;
     }
 }
 
