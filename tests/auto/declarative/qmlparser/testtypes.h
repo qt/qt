@@ -357,12 +357,13 @@ private:
 
 QML_DECLARE_TYPE(MyContainer);
 
-class MyPropertyValueSource : public QmlPropertyValueSource
+class MyPropertyValueSource : public QObject, public QmlPropertyValueSource
 {
     Q_OBJECT
+    Q_INTERFACES(QmlPropertyValueSource)
 public:
     MyPropertyValueSource()
-        : QmlPropertyValueSource(0) {}
+        : QmlPropertyValueSource() {}
 
     QmlMetaProperty prop;
     virtual void setTarget(const QmlMetaProperty &p)
