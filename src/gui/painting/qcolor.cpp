@@ -298,11 +298,12 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QColor::Spec
 
-    The type of color specified, either RGB, HSV or CMYK.
+    The type of color specified, either RGB, HSV, CMYK or HSL.
 
     \value Rgb
     \value Hsv
     \value Cmyk
+    \value Hsl
     \value Invalid
 
     \sa spec(), convertTo()
@@ -1333,7 +1334,7 @@ qreal QColor::valueF() const
 /*!
     Returns the hue color component of this color.
 
-    \sa hueHslF(), getHsl()
+    \sa getHslF(), getHsl()
 */
 int QColor::hslHue() const
 {
@@ -1382,7 +1383,7 @@ qreal QColor::hslHueF() const
 /*!
     Returns the saturation color component of this color.
 
-    \sa saturationHsl() getHslF()
+    \sa saturationF() getHslF()
 */
 qreal QColor::hslSaturationF() const
 {

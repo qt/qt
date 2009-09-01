@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,28 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef SHADOWEFFECT_H
-#define SHADOWEFFECT_H
+#include <QtGui>
+#include "tabletwidget.h"
 
-#include <QGraphicsEffect>
-#include <QGraphicsItem>
-
-class ShadowEffect: public QGraphicsDropShadowEffect
-{
-public:
-    ShadowEffect(QGraphicsItem *item, QGraphicsItem *source);
-
-    QRectF boundingRectFor(const QRectF &rect) const;
-
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
-
-private:
-    void adjustForItem();
-
-private:
-    QColor m_color;
-    QGraphicsItem *item;
-    QGraphicsItem *m_lightSource;
-};
-
-#endif // SHADOWEFFECT_H
+int main(int argc, char **argv) {
+  QApplication app(argc, argv);
+  TabletWidget tabletWidget;
+  tabletWidget.showMaximized();
+  return app.exec();
+}

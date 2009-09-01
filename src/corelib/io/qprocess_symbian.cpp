@@ -1009,8 +1009,6 @@ void QProcessPrivate::_q_notified()
     // Nothing to do in Symbian
 }
 
-/*! \internal
- */
 bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDirectory, qint64 *pid)
 {
     QPROCESS_DEBUG_PRINT("QProcessPrivate::startDetached()");

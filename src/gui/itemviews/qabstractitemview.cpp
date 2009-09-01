@@ -956,6 +956,7 @@ QModelIndex QAbstractItemView::currentIndex() const
 void QAbstractItemView::reset()
 {
     Q_D(QAbstractItemView);
+    d->delayedReset.stop(); //make sure we stop the timer
     QList<QEditorInfo>::const_iterator it = d->editors.constBegin();
     for (; it != d->editors.constEnd(); ++it)
         d->releaseEditor(it->editor);
@@ -2208,7 +2209,9 @@ void QAbstractItemView::timerEvent(QTimerEvent *event)
     Q_D(QAbstractItemView);
     if (event->timerId() == d->fetchMoreTimer.timerId())
         d->fetchMore();
-    if (event->timerId() == d->autoScrollTimer.timerId())
+    else if (event->timerId() == d->delayedReset.timerId())
+        reset();
+    else if (event->timerId() == d->autoScrollTimer.timerId())
         doAutoScroll();
     else if (event->timerId() == d->updateTimer.timerId())
         d->updateDirtyRegion();
@@ -3132,9 +3135,8 @@ void QAbstractItemViewPrivate::_q_columnsInserted(const QModelIndex &, int, int)
 */
 void QAbstractItemViewPrivate::_q_modelDestroyed()
 {
-    Q_Q(QAbstractItemView);
     model = QAbstractItemModelPrivate::staticEmptyModel();
-    QMetaObject::invokeMethod(q, "reset", Qt::QueuedConnection);
+    doDelayedReset();
 }
 
 /*!

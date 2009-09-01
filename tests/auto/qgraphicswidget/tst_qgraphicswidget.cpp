@@ -352,12 +352,12 @@ void tst_QGraphicsWidget::activation()
     QEvent activateEvent(QEvent::WindowActivate);
     QApplication::sendEvent(&scene, &activateEvent);
 
-    QVERIFY(widget->isActiveWindow());
-    QVERIFY(!window1->isActiveWindow());
+    QVERIFY(!widget->isActiveWindow());
+    QVERIFY(window1->isActiveWindow());
     QVERIFY(!window2->isActiveWindow());
 
     scene.setActiveWindow(window1);
-    QVERIFY(widget->isActiveWindow());
+    QVERIFY(!widget->isActiveWindow());
     QVERIFY(window1->isActiveWindow());
     QVERIFY(!window2->isActiveWindow());
 
@@ -1483,6 +1483,7 @@ void tst_QGraphicsWidget::updateFocusChainWhenChildDie()
     w->setParentItem(parent);
     //We don't crash perfect
     QVERIFY(w);
+    QTest::mouseMove(view.viewport());
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0);
     QTRY_COMPARE(qApp->activeWindow(), static_cast<QWidget *>(&view));
     QTRY_COMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(w));

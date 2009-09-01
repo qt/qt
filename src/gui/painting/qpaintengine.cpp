@@ -385,6 +385,7 @@ void QPaintEngine::drawPolygon(const QPoint *points, int pointCount, PolygonDraw
     \value OpenVG
     \value User First user type ID
     \value MaxUser Last user type ID
+    \value OpenGL2
 */
 
 /*!

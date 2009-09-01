@@ -64,6 +64,7 @@
 #include "qdebug.h"
 #include "qmath.h"
 #include "qnumeric.h"
+#include "qvarlengtharray.h"
 #include "private/qmath_p.h"
 
 #include "float.h"
@@ -179,22 +180,25 @@ QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHa
                 break;
 
             case 's':
-                if (name == QLatin1String("stroke"))
-                    stroke = value;
-                else if (name == QLatin1String("stroke-dasharray"))
-                    strokeDashArray = value;
-                else if (name == QLatin1String("stroke-dashoffset"))
-                    strokeDashOffset = value;
-                else if (name == QLatin1String("stroke-linecap"))
-                    strokeLineCap = value;
-                else if (name == QLatin1String("stroke-linejoin"))
-                    strokeLineJoin = value;
-                else if (name == QLatin1String("stroke-miterlimit"))
-                    strokeMiterLimit = value;
-                else if (name == QLatin1String("stroke-opacity"))
-                    strokeOpacity = value;
-                else if (name == QLatin1String("stroke-width"))
-                    strokeWidth = value;
+                if (name.length() > 5 && QStringRef(name.string(), name.position() + 1, 5) == QLatin1String("troke")) {
+                    QStringRef strokeRef(name.string(), name.position() + 6, name.length() - 6);
+                    if (strokeRef.isEmpty())
+                        stroke = value;
+                    else if (strokeRef == QLatin1String("-dasharray"))
+                        strokeDashArray = value;
+                    else if (strokeRef == QLatin1String("-dashoffset"))
+                        strokeDashOffset = value;
+                    else if (strokeRef == QLatin1String("-linecap"))
+                        strokeLineCap = value;
+                    else if (strokeRef == QLatin1String("-linejoin"))
+                        strokeLineJoin = value;
+                    else if (strokeRef == QLatin1String("-miterlimit"))
+                        strokeMiterLimit = value;
+                    else if (strokeRef == QLatin1String("-opacity"))
+                        strokeOpacity = value;
+                    else if (strokeRef == QLatin1String("-width"))
+                        strokeWidth = value;
+                }
                 else if (name == QLatin1String("stop-color"))
                     stopColor = value;
                 else if (name == QLatin1String("stop-opacity"))
@@ -271,22 +275,25 @@ QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHa
             break;
 
         case 's':
-            if (name == QLatin1String("stroke"))
-                stroke = value;
-            else if (name == QLatin1String("stroke-dasharray"))
-                strokeDashArray = value;
-            else if (name == QLatin1String("stroke-dashoffset"))
-                strokeDashOffset = value;
-            else if (name == QLatin1String("stroke-linecap"))
-                strokeLineCap = value;
-            else if (name == QLatin1String("stroke-linejoin"))
-                strokeLineJoin = value;
-            else if (name == QLatin1String("stroke-miterlimit"))
-                strokeMiterLimit = value;
-            else if (name == QLatin1String("stroke-opacity"))
-                strokeOpacity = value;
-            else if (name == QLatin1String("stroke-width"))
-                strokeWidth = value;
+            if (name.length() > 5 && QStringRef(name.string(), name.position() + 1, 5) == QLatin1String("troke")) {
+                QStringRef strokeRef(name.string(), name.position() + 6, name.length() - 6);
+                if (strokeRef.isEmpty())
+                    stroke = value;
+                else if (strokeRef == QLatin1String("-dasharray"))
+                    strokeDashArray = value;
+                else if (strokeRef == QLatin1String("-dashoffset"))
+                    strokeDashOffset = value;
+                else if (strokeRef == QLatin1String("-linecap"))
+                    strokeLineCap = value;
+                else if (strokeRef == QLatin1String("-linejoin"))
+                    strokeLineJoin = value;
+                else if (strokeRef == QLatin1String("-miterlimit"))
+                    strokeMiterLimit = value;
+                else if (strokeRef == QLatin1String("-opacity"))
+                    strokeOpacity = value;
+                else if (strokeRef == QLatin1String("-width"))
+                    strokeWidth = value;
+            }
             else if (name == QLatin1String("stop-color"))
                 stopColor = value;
             else if (name == QLatin1String("stop-opacity"))
@@ -468,6 +475,13 @@ public:
     }
 };
 
+// '0' is 0x30 and '9' is 0x39
+static inline bool isDigit(ushort ch)
+{
+    static quint16 magic = 0x3ff;
+    return ((ch >> 4) == 3) && (magic >> (ch & 15));
+}
+
 static qreal toDouble(const QChar *&str)
 {
     const int maxLen = 255;//technically doubles can go til 308+ but whatever
@@ -480,7 +494,7 @@ static qreal toDouble(const QChar *&str)
     } else if (*str == QLatin1Char('+')) {
         ++str;
     }
-    while (*str >= QLatin1Char('0') && *str <= QLatin1Char('9') && pos < maxLen) {
+    while (isDigit(str->unicode()) && pos < maxLen) {
         temp[pos++] = str->toLatin1();
         ++str;
     }
@@ -488,7 +502,7 @@ static qreal toDouble(const QChar *&str)
         temp[pos++] = '.';
         ++str;
     }
-    while (*str >= QLatin1Char('0') && *str <= QLatin1Char('9') && pos < maxLen) {
+    while (isDigit(str->unicode()) && pos < maxLen) {
         temp[pos++] = str->toLatin1();
         ++str;
     }
@@ -501,7 +515,7 @@ static qreal toDouble(const QChar *&str)
             temp[pos++] = str->toLatin1();
             ++str;
         }
-        while (*str >= QLatin1Char('0') && *str <= QLatin1Char('9') && pos < maxLen) {
+        while (isDigit(str->unicode()) && pos < maxLen) {
             temp[pos++] = str->toLatin1();
             ++str;
         }
@@ -581,7 +595,7 @@ static QVector<qreal> parseNumbersList(const QChar *&str)
 
     while (*str == QLatin1Char(' '))
         ++str;
-    while ((*str >= QLatin1Char('0') && *str <= QLatin1Char('9')) ||
+    while (isDigit(str->unicode()) ||
            *str == QLatin1Char('-') || *str == QLatin1Char('+') ||
            *str == QLatin1Char('.')) {
 
@@ -598,6 +612,27 @@ static QVector<qreal> parseNumbersList(const QChar *&str)
     }
 
     return points;
+}
+
+static inline void parseNumbersArray(const QChar *&str, QVarLengthArray<qreal, 8> &points)
+{
+    while (*str == QLatin1Char(' '))
+        ++str;
+    while (isDigit(str->unicode()) ||
+           *str == QLatin1Char('-') || *str == QLatin1Char('+') ||
+           *str == QLatin1Char('.')) {
+
+        points.append(toDouble(str));
+
+        while (*str == QLatin1Char(' '))
+            ++str;
+        if (*str == QLatin1Char(','))
+            ++str;
+
+        //eat the rest of space
+        while (*str == QLatin1Char(' '))
+            ++str;
+    }
 }
 
 static QVector<qreal> parsePercentageList(const QChar *&str)
@@ -648,6 +683,28 @@ static QString idFromUrl(const QString &url)
         ++itr;
     }
     return id;
+}
+
+static inline QStringRef trimRef(const QStringRef &str)
+{
+    if (str.isEmpty())
+        return QStringRef();
+    const QChar *s = str.string()->constData() + str.position();
+    int end = str.length() - 1;
+    if (!s[0].isSpace() && !s[end].isSpace())
+        return str;
+
+    int start = 0;
+    while (start<=end && s[start].isSpace())  // skip white space from start
+        start++;
+    if (start <= end) {                          // only white space
+        while (s[end].isSpace())           // skip white space from end
+            end--;
+    }
+    int l = end - start + 1;
+    if (l <= 0)
+        return QStringRef();
+    return QStringRef(str.string(), str.position() + start, l);
 }
 
 /**
@@ -823,31 +880,28 @@ static void parseBrush(QSvgNode *node,
                        const QSvgAttributes &attributes,
                        QSvgHandler *handler)
 {
-    QString value = attributes.fill.toString();
-    QString fillRule = attributes.fillRule.toString();
-    QString opacity = attributes.fillOpacity.toString();
-    QString myId = someId(attributes);
-
-    if (!value.isEmpty() || !fillRule.isEmpty() || !opacity.isEmpty()) {
+    if (!attributes.fill.isEmpty() || !attributes.fillRule.isEmpty() || !attributes.fillOpacity.isEmpty()) {
         QSvgFillStyle *prop = new QSvgFillStyle;
 
         //fill-rule attribute handling
-        if (!fillRule.isEmpty() && fillRule != QT_INHERIT) {
-            if (fillRule == QLatin1String("evenodd"))
+        if (!attributes.fillRule.isEmpty() && attributes.fillRule != QT_INHERIT) {
+            if (attributes.fillRule == QLatin1String("evenodd"))
                 prop->setFillRule(Qt::OddEvenFill);
-            else if (fillRule == QLatin1String("nonzero"))
+            else if (attributes.fillRule == QLatin1String("nonzero"))
                 prop->setFillRule(Qt::WindingFill);
         }
 
         //fill-opacity atttribute handling
-        if (!opacity.isEmpty() && opacity != QT_INHERIT) {
-            prop->setFillOpacity(qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity))));
+        if (!attributes.fillOpacity.isEmpty() && attributes.fillOpacity != QT_INHERIT) {
+            prop->setFillOpacity(qMin(qreal(1.0), qMax(qreal(0.0), toDouble(attributes.fillOpacity))));
         }
 
         //fill attribute handling
-        if ((!value.isEmpty()) && (value != QT_INHERIT) ) {
-            if (value.startsWith(QLatin1String("url"))) {
-                value = value.remove(0, 3);
+        if ((!attributes.fill.isEmpty()) && (attributes.fill != QT_INHERIT) ) {
+            if (attributes.fill.length() > 3 &&
+                QStringRef(attributes.fill.string(), attributes.fill.position(), 3) == QLatin1String("url")) {
+                QStringRef urlRef(attributes.fill.string(), attributes.fill.position() + 3, attributes.fill.length() - 3);
+                QString value = urlRef.toString();
                 QSvgStyleProperty *style = styleFromUrl(node, value);
                 if (style) {
                     if (style->type() == QSvgStyleProperty::SOLID_COLOR || style->type() == QSvgStyleProperty::GRADIENT)
@@ -857,26 +911,30 @@ static void parseBrush(QSvgNode *node,
                     prop->setGradientId(id);
                     prop->setGradientResolved(false);
                 }
-            } else if (value != QLatin1String("none")) {
+            } else if (attributes.fill != QLatin1String("none")) {
                 QColor color;
-                if (resolveColor(value, color, handler))
+                if (resolveColor(attributes.fill.toString(), color, handler))
                     prop->setBrush(QBrush(color));
             } else {
                 prop->setBrush(QBrush(Qt::NoBrush));
             }
         }
-        node->appendStyleProperty(prop, myId);
+        node->appendStyleProperty(prop, someId(attributes));
     }
 }
 
 
 
-static QMatrix parseTransformationMatrix(const QString &value)
+static QMatrix parseTransformationMatrix(const QStringRef &value)
 {
+    if (value.isEmpty())
+        return QMatrix();
+
     QMatrix matrix;
     const QChar *str = value.constData();
+    const QChar *end = str + value.length();
 
-    while (*str != QLatin1Char(0)) {
+    while (str < end) {
         if (str->isSpace() || *str == QLatin1Char(',')) {
             ++str;
             continue;
@@ -941,12 +999,13 @@ static QMatrix parseTransformationMatrix(const QString &value)
         }
 
 
-        while (str->isSpace())
+        while (str < end && str->isSpace())
             ++str;
         if (*str != QLatin1Char('('))
             goto error;
         ++str;
-        QVector<qreal> points = parseNumbersList(str);
+        QVarLengthArray<qreal, 8> points;
+        parseNumbersArray(str, points);
         if (*str != QLatin1Char(')'))
             goto error;
         ++str;
@@ -1002,41 +1061,32 @@ static void parsePen(QSvgNode *node,
                      const QSvgAttributes &attributes,
                      QSvgHandler *handler)
 {
-    QString value      = attributes.stroke.toString();
-    QString dashArray  = attributes.strokeDashArray.toString();
-    QString dashOffset = attributes.strokeDashOffset.toString();
-    QString linecap    = attributes.strokeLineCap.toString();
-    QString linejoin   = attributes.strokeLineJoin.toString();
-    QString miterlimit = attributes.strokeMiterLimit.toString();
-    QString opacity    = attributes.strokeOpacity.toString();
-    QString width      = attributes.strokeWidth.toString();
-    QString vectorEffect = attributes.vectorEffect.toString();
-    QString myId       = someId(attributes);
-
     //qDebug()<<"Node "<<node->type()<<", attrs are "<<value<<width;
 
-    if (!value.isEmpty() || !dashArray.isEmpty() || !dashOffset.isEmpty() || !linecap.isEmpty()
-        || !linejoin.isEmpty() || !miterlimit.isEmpty() || !opacity.isEmpty() || !width.isEmpty()
-        || !vectorEffect.isEmpty()) {
+    if (!attributes.stroke.isEmpty() || !attributes.strokeDashArray.isEmpty() || !attributes.strokeDashOffset.isEmpty() || !attributes.strokeLineCap.isEmpty()
+        || !attributes.strokeLineJoin.isEmpty() || !attributes.strokeMiterLimit.isEmpty() || !attributes.strokeOpacity.isEmpty() || !attributes.strokeWidth.isEmpty()
+        || !attributes.vectorEffect.isEmpty()) {
 
         QSvgStrokeStyle *prop = new QSvgStrokeStyle;
 
         //stroke attribute handling
-        if ((!value.isEmpty()) && (value != QT_INHERIT) ) {
-            if (value.startsWith(QLatin1String("url"))) {
-                value = value.remove(0, 3);
-                QSvgStyleProperty *style = styleFromUrl(node, value);
-                if (style) {
-                    if (style->type() == QSvgStyleProperty::SOLID_COLOR || style->type() == QSvgStyleProperty::GRADIENT)
-                        prop->setStyle(reinterpret_cast<QSvgFillStyleProperty *>(style));
-                } else {
-                    QString id = idFromUrl(value);
-                    prop->setGradientId(id);
-                    prop->setGradientResolved(false);
-                }
-            } else if (value != QLatin1String("none")) {
+        if ((!attributes.stroke.isEmpty()) && (attributes.stroke != QT_INHERIT) ) {
+            if (attributes.stroke.length() > 3 &&
+                 QStringRef(attributes.stroke.string(), attributes.stroke.position(), 3) == QLatin1String("url")) {
+                 QStringRef urlRef(attributes.stroke.string(), attributes.stroke.position() + 3, attributes.stroke.length() - 3);
+                 QString value = urlRef.toString();
+                    QSvgStyleProperty *style = styleFromUrl(node, value);
+                    if (style) {
+                        if (style->type() == QSvgStyleProperty::SOLID_COLOR || style->type() == QSvgStyleProperty::GRADIENT)
+                            prop->setStyle(reinterpret_cast<QSvgFillStyleProperty *>(style));
+                    } else {
+                        QString id = idFromUrl(value);
+                        prop->setGradientId(id);
+                        prop->setGradientResolved(false);
+                    }
+            } else if (attributes.stroke != QLatin1String("none")) {
                 QColor color;
-                if (resolveColor(value, color, handler))
+                if (resolveColor(attributes.stroke.toString(), color, handler))
                     prop->setStroke(QBrush(color));
             } else {
                 prop->setStroke(QBrush(Qt::NoBrush));
@@ -1045,16 +1095,17 @@ static void parsePen(QSvgNode *node,
 
         //stroke-width handling
         qreal w = 0;
-        if (!width.isEmpty() && width != QT_INHERIT) {
+        if (!attributes.strokeWidth.isEmpty() && attributes.strokeWidth != QT_INHERIT) {
             QSvgHandler::LengthType lt;
-            prop->setWidth(w = parseLength(width, lt, handler));
+            prop->setWidth(w = parseLength(attributes.strokeWidth.toString(), lt, handler));
         }
 
         //stroke-dasharray
-        if (!dashArray.isEmpty() && dashArray != QT_INHERIT) {
-            if (dashArray == QLatin1String("none")) {
+        if (!attributes.strokeDashArray.isEmpty() && attributes.strokeDashArray != QT_INHERIT) {
+            if (attributes.strokeDashArray == QLatin1String("none")) {
                 prop->setDashArrayNone();
             } else {
+                QString dashArray  = attributes.strokeDashArray.toString();
                 const QChar *s = dashArray.constData();
                 QVector<qreal> dashes = parseNumbersList(s);
                 // if the dash count is odd the dashes should be duplicated
@@ -1065,46 +1116,46 @@ static void parsePen(QSvgNode *node,
         }
 
         //stroke-linejoin attribute handling
-        if (!linejoin.isEmpty()) {
-            if (linejoin == QLatin1String("miter"))
+        if (!attributes.strokeLineJoin.isEmpty()) {
+            if (attributes.strokeLineJoin == QLatin1String("miter"))
                 prop->setLineJoin(Qt::SvgMiterJoin);
-            else if (linejoin == QLatin1String("round"))
+            else if (attributes.strokeLineJoin == QLatin1String("round"))
                 prop->setLineJoin(Qt::RoundJoin);
-            else if (linejoin == QLatin1String("bevel"))
+            else if (attributes.strokeLineJoin == QLatin1String("bevel"))
                 prop->setLineJoin(Qt::BevelJoin);
         }
 
         //stroke-linecap attribute handling
-        if (!linecap.isEmpty()) {
-            if (linecap == QLatin1String("butt"))
+        if (!attributes.strokeLineCap.isEmpty()) {
+            if (attributes.strokeLineCap == QLatin1String("butt"))
                 prop->setLineCap(Qt::FlatCap);
-            else if (linecap == QLatin1String("round"))
+            else if (attributes.strokeLineCap == QLatin1String("round"))
                 prop->setLineCap(Qt::RoundCap);
-            else if (linecap == QLatin1String("square"))
+            else if (attributes.strokeLineCap == QLatin1String("square"))
                 prop->setLineCap(Qt::SquareCap);
         }
 
         //stroke-dashoffset attribute handling
-        if (!dashOffset.isEmpty() && dashOffset != QT_INHERIT)
-            prop->setDashOffset(toDouble(dashOffset));
+        if (!attributes.strokeDashOffset.isEmpty() && attributes.strokeDashOffset != QT_INHERIT)
+            prop->setDashOffset(toDouble(attributes.strokeDashOffset));
 
         //vector-effect attribute handling
-        if (!vectorEffect.isEmpty()) {
-            if (vectorEffect == QLatin1String("non-scaling-stroke"))
+        if (!attributes.vectorEffect.isEmpty()) {
+            if (attributes.vectorEffect == QLatin1String("non-scaling-stroke"))
                 prop->setVectorEffect(true);
-            else if (vectorEffect == QLatin1String("none"))
+            else if (attributes.vectorEffect == QLatin1String("none"))
                 prop->setVectorEffect(false);
         }
 
         //stroke-miterlimit
-        if (!miterlimit.isEmpty() && miterlimit != QT_INHERIT)
-            prop->setMiterLimit(toDouble(miterlimit));
+        if (!attributes.strokeMiterLimit.isEmpty() && attributes.strokeMiterLimit != QT_INHERIT)
+            prop->setMiterLimit(toDouble(attributes.strokeMiterLimit));
 
         //stroke-opacity atttribute handling
-        if (!opacity.isEmpty() && opacity != QT_INHERIT)
-            prop->setOpacity(qMin(qreal(1.0), qMax(qreal(0.0), toDouble(opacity))));
+        if (!attributes.strokeOpacity.isEmpty() && attributes.strokeOpacity != QT_INHERIT)
+            prop->setOpacity(qMin(qreal(1.0), qMax(qreal(0.0), toDouble(attributes.strokeOpacity))));
 
-        node->appendStyleProperty(prop, myId);
+        node->appendStyleProperty(prop, someId(attributes));
     }
 }
 
@@ -1112,95 +1163,85 @@ static void parseFont(QSvgNode *node,
                       const QSvgAttributes &attributes,
                       QSvgHandler *handler)
 {
-    QString family = attributes.fontFamily.toString();
-    QString size = attributes.fontSize.toString();
-    QString style = attributes.fontStyle.toString();
-    QString weight = attributes.fontWeight.toString();
-    QString variant = attributes.fontVariant.toString();
-    QString anchor = attributes.textAnchor.toString();
-
-    if (family.isEmpty() && size.isEmpty() && style.isEmpty() && weight.isEmpty() && variant.isEmpty() && anchor.isEmpty())
+    if (attributes.fontFamily.isEmpty() && attributes.fontSize.isEmpty() && attributes.fontStyle.isEmpty() &&
+        attributes.fontWeight.isEmpty() && attributes.fontVariant.isEmpty() && attributes.textAnchor.isEmpty())
         return;
 
-    QString id = someId(attributes);
     QSvgTinyDocument *doc = node->document();
     QSvgFontStyle *fontStyle = 0;
-    if (!family.isEmpty()) {
-        QSvgFont *svgFont = doc->svgFont(family);
+    if (!attributes.fontFamily.isEmpty()) {
+        QSvgFont *svgFont = doc->svgFont(attributes.fontFamily.toString());
         if (svgFont)
             fontStyle = new QSvgFontStyle(svgFont, doc);
     }
     if (!fontStyle)
         fontStyle = new QSvgFontStyle;
 
-    if (!family.isEmpty() && family != QT_INHERIT)
-        fontStyle->setFamily(family.trimmed());
+    if (!attributes.fontFamily.isEmpty() && attributes.fontFamily != QT_INHERIT)
+        fontStyle->setFamily(attributes.fontFamily.toString().trimmed());
 
-    if (!size.isEmpty() && size != QT_INHERIT) {
+    if (!attributes.fontSize.isEmpty() && attributes.fontSize != QT_INHERIT) {
         QSvgHandler::LengthType dummy; // should always be pixel size
-        fontStyle->setSize(parseLength(size, dummy, handler));
+        fontStyle->setSize(parseLength(attributes.fontSize.toString(), dummy, handler));
     }
 
-    if (!style.isEmpty() && style != QT_INHERIT) {
-        if (style == QLatin1String("normal")) {
+    if (!attributes.fontStyle.isEmpty() && attributes.fontStyle != QT_INHERIT) {
+        if (attributes.fontStyle == QLatin1String("normal")) {
             fontStyle->setStyle(QFont::StyleNormal);
-        } else if (style == QLatin1String("italic")) {
+        } else if (attributes.fontStyle == QLatin1String("italic")) {
             fontStyle->setStyle(QFont::StyleItalic);
-        } else if (style == QLatin1String("oblique")) {
+        } else if (attributes.fontStyle == QLatin1String("oblique")) {
             fontStyle->setStyle(QFont::StyleOblique);
         }
     }
 
-    if (!weight.isEmpty() && weight != QT_INHERIT) {
+    if (!attributes.fontWeight.isEmpty() && attributes.fontWeight != QT_INHERIT) {
         bool ok = false;
-        int weightNum = weight.toInt(&ok);
+        int weightNum = attributes.fontWeight.toString().toInt(&ok);
         if (ok) {
             fontStyle->setWeight(weightNum);
         } else {
-            if (weight == QLatin1String("normal")) {
+            if (attributes.fontWeight == QLatin1String("normal")) {
                 fontStyle->setWeight(400);
-            } else if (weight == QLatin1String("bold")) {
+            } else if (attributes.fontWeight == QLatin1String("bold")) {
                 fontStyle->setWeight(700);
-            } else if (weight == QLatin1String("bolder")) {
+            } else if (attributes.fontWeight == QLatin1String("bolder")) {
                 fontStyle->setWeight(QSvgFontStyle::BOLDER);
-            } else if (weight == QLatin1String("lighter")) {
+            } else if (attributes.fontWeight == QLatin1String("lighter")) {
                 fontStyle->setWeight(QSvgFontStyle::LIGHTER);
             }
         }
     }
 
-    if (!variant.isEmpty() && variant != QT_INHERIT) {
-        if (variant == QLatin1String("normal"))
+    if (!attributes.fontVariant.isEmpty() && attributes.fontVariant != QT_INHERIT) {
+        if (attributes.fontVariant == QLatin1String("normal"))
             fontStyle->setVariant(QFont::MixedCase);
-        else if (variant == QLatin1String("small-caps"))
+        else if (attributes.fontVariant == QLatin1String("small-caps"))
             fontStyle->setVariant(QFont::SmallCaps);
     }
 
-    if (!anchor.isEmpty() && anchor != QT_INHERIT) {
-        if (anchor == QLatin1String("start"))
+    if (!attributes.textAnchor.isEmpty() && attributes.textAnchor != QT_INHERIT) {
+        if (attributes.textAnchor == QLatin1String("start"))
             fontStyle->setTextAnchor(Qt::AlignLeft);
-        if (anchor == QLatin1String("middle"))
+        if (attributes.textAnchor == QLatin1String("middle"))
            fontStyle->setTextAnchor(Qt::AlignHCenter);
-        else if (anchor == QLatin1String("end"))
+        else if (attributes.textAnchor == QLatin1String("end"))
            fontStyle->setTextAnchor(Qt::AlignRight);
     }
 
-    node->appendStyleProperty(fontStyle, id);
+    node->appendStyleProperty(fontStyle, someId(attributes));
 }
 
 static void parseTransform(QSvgNode *node,
                            const QSvgAttributes &attributes,
                            QSvgHandler *)
 {
-    QString value = attributes.transform.toString();
-    QString myId = someId(attributes);
-    value = value.trimmed();
-    if (value.isEmpty())
+    if (attributes.transform.isEmpty())
         return;
-    QMatrix matrix = parseTransformationMatrix(value);
+    QMatrix matrix = parseTransformationMatrix(trimRef(attributes.transform));
 
     if (!matrix.isIdentity()) {
-        node->appendStyleProperty(new QSvgTransformStyle(QTransform(matrix)), myId);
+        node->appendStyleProperty(new QSvgTransformStyle(QTransform(matrix)), someId(attributes));
     }
 
 }
@@ -1209,12 +1250,11 @@ static void parseVisibility(QSvgNode *node,
                             const QSvgAttributes &attributes,
                             QSvgHandler *)
 {
-    QString value = attributes.visibility.toString();
     QSvgNode *parent = node->parent();
 
-    if (parent && (value.isEmpty() || value == QT_INHERIT))
+    if (parent && (attributes.visibility.isEmpty() || attributes.visibility == QT_INHERIT))
         node->setVisible(parent->isVisible());
-    else if (value == QLatin1String("hidden") || value == QLatin1String("collapse")) {
+    else if (attributes.visibility == QLatin1String("hidden") || attributes.visibility == QLatin1String("collapse")) {
         node->setVisible(false);
     } else
         node->setVisible(true);
@@ -1374,24 +1414,29 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
         QChar pathElem = *str;
         ++str;
         QChar endc = *end;
-        *const_cast<QChar *>(end) = 0; // parseNumbersList requires 0-termination that QStringRef cannot guarantee
-        QVector<qreal> arg = parseNumbersList(str);
+        *const_cast<QChar *>(end) = 0; // parseNumbersArray requires 0-termination that QStringRef cannot guarantee
+        QVarLengthArray<qreal, 8> arg;
+        parseNumbersArray(str, arg);
         *const_cast<QChar *>(end) = endc;
         if (pathElem == QLatin1Char('z') || pathElem == QLatin1Char('Z'))
             arg.append(0);//dummy
-        while (!arg.isEmpty()) {
+        const qreal *num = arg.constData();
+        int count = arg.count();
+        while (count > 0) {
             qreal offsetX = x;        // correction offsets
             qreal offsetY = y;        // for relative commands
             switch (pathElem.unicode()) {
             case 'm': {
-                if (arg.count() < 2) {
-                    arg.pop_front();
+                if (count < 2) {
+                    num++;
+                    count--;
                     break;
                 }
-                x = x0 = arg[0] + offsetX;
-                y = y0 = arg[1] + offsetY;
+                x = x0 = num[0] + offsetX;
+                y = y0 = num[1] + offsetY;
+                num += 2;
+                count -= 2;
                 path.moveTo(x0, y0);
-                arg.pop_front(); arg.pop_front();
 
                  // As per 1.2  spec 8.3.2 The "moveto" commands
                  // If a 'moveto' is followed by multiple pairs of coordinates without explicit commands,
@@ -1400,15 +1445,16 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             }
                 break;
             case 'M': {
-                if (arg.count() < 2) {
-                    arg.pop_front();
+                if (count < 2) {
+                    num++;
+                    count--;
                     break;
                 }
-                x = x0 = arg[0];
-                y = y0 = arg[1];
-
+                x = x0 = num[0];
+                y = y0 = num[1];
+                num += 2;
+                count -= 2;
                 path.moveTo(x0, y0);
-                arg.pop_front(); arg.pop_front();
 
                 // As per 1.2  spec 8.3.2 The "moveto" commands
                 // If a 'moveto' is followed by multiple pairs of coordinates without explicit commands,
@@ -1420,96 +1466,104 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
             case 'Z': {
                 x = x0;
                 y = y0;
+                count--; // skip dummy
+                num++;
                 path.closeSubpath();
-                arg.pop_front();//pop dummy
             }
                 break;
             case 'l': {
-                if (arg.count() < 2) {
-                    arg.pop_front();
+                if (count < 2) {
+                    num++;
+                    count--;
                     break;
                 }
-                x = arg.front() + offsetX;
-                arg.pop_front();
-                y = arg.front() + offsetY;
-                arg.pop_front();
+                x = x0 = num[0] + offsetX;
+                y = y0 = num[1] + offsetY;
+                num += 2;
+                count -= 2;
                 path.lineTo(x, y);
 
             }
                 break;
             case 'L': {
-                if (arg.count() < 2) {
-                    arg.pop_front();
+                if (count < 2) {
+                    num++;
+                    count--;
                     break;
                 }
-                x = arg.front(); arg.pop_front();
-                y = arg.front(); arg.pop_front();
+                x = x0 = num[0];
+                y = y0 = num[1];
+                num += 2;
+                count -= 2;
                 path.lineTo(x, y);
             }
                 break;
             case 'h': {
-                x = arg.front() + offsetX; arg.pop_front();
+                x = num[0] + offsetX;
+                num++;
+                count--;
                 path.lineTo(x, y);
             }
                 break;
             case 'H': {
-                x = arg[0];
+                x = num[0];
+                num++;
+                count--;
                 path.lineTo(x, y);
-                arg.pop_front();
             }
                 break;
             case 'v': {
-                y = arg[0] + offsetY;
+                y = num[0] + offsetY;
+                num++;
+                count--;
                 path.lineTo(x, y);
-                arg.pop_front();
             }
                 break;
             case 'V': {
-                y = arg[0];
+                y = num[0];
+                num++;
+                count--;
                 path.lineTo(x, y);
-                arg.pop_front();
             }
                 break;
             case 'c': {
-                if (arg.count() < 6) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 6) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                QPointF c1(arg[0]+offsetX, arg[1]+offsetY);
-                QPointF c2(arg[2]+offsetX, arg[3]+offsetY);
-                QPointF e(arg[4]+offsetX, arg[5]+offsetY);
+                QPointF c1(num[0] + offsetX, num[1] + offsetY);
+                QPointF c2(num[2] + offsetX, num[3] + offsetY);
+                QPointF e(num[4] + offsetX, num[5] + offsetY);
+                num += 6;
+                count -= 6;
                 path.cubicTo(c1, c2, e);
                 ctrlPt = c2;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 'C': {
-                if (arg.count() < 6) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 6) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                QPointF c1(arg[0], arg[1]);
-                QPointF c2(arg[2], arg[3]);
-                QPointF e(arg[4], arg[5]);
+                QPointF c1(num[0], num[1]);
+                QPointF c2(num[2], num[3]);
+                QPointF e(num[4], num[5]);
+                num += 6;
+                count -= 6;
                 path.cubicTo(c1, c2, e);
                 ctrlPt = c2;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 's': {
-                if (arg.count() < 4) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 4) {
+                    num += count;
+                    count = 0;
                     break;
                 }
                 QPointF c1;
@@ -1518,20 +1572,20 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                     c1 = QPointF(2*x-ctrlPt.x(), 2*y-ctrlPt.y());
                 else
                     c1 = QPointF(x, y);
-                QPointF c2(arg[0]+offsetX, arg[1]+offsetY);
-                QPointF e(arg[2]+offsetX, arg[3]+offsetY);
+                QPointF c2(num[0] + offsetX, num[1] + offsetY);
+                QPointF e(num[2] + offsetX, num[3] + offsetY);
+                num += 4;
+                count -= 4;
                 path.cubicTo(c1, c2, e);
                 ctrlPt = c2;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 'S': {
-                if (arg.count() < 4) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 4) {
+                    num += count;
+                    count = 0;
                     break;
                 }
                 QPointF c1;
@@ -1540,55 +1594,57 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                     c1 = QPointF(2*x-ctrlPt.x(), 2*y-ctrlPt.y());
                 else
                     c1 = QPointF(x, y);
-                QPointF c2(arg[0], arg[1]);
-                QPointF e(arg[2], arg[3]);
+                QPointF c2(num[0], num[1]);
+                QPointF e(num[2], num[3]);
+                num += 4;
+                count -= 4;
                 path.cubicTo(c1, c2, e);
                 ctrlPt = c2;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 'q': {
-                if (arg.count() < 4) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 4) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                QPointF c(arg[0]+offsetX, arg[1]+offsetY);
-                QPointF e(arg[2]+offsetX, arg[3]+offsetY);
+                QPointF c(num[0] + offsetX, num[1] + offsetY);
+                QPointF e(num[2] + offsetX, num[3] + offsetY);
+                num += 4;
+                count -= 4;
                 path.quadTo(c, e);
                 ctrlPt = c;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 'Q': {
-                if (arg.count() < 4) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 4) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                QPointF c(arg[0], arg[1]);
-                QPointF e(arg[2], arg[3]);
+                QPointF c(num[0], num[1]);
+                QPointF e(num[2], num[3]);
+                num += 4;
+                count -= 4;
                 path.quadTo(c, e);
                 ctrlPt = c;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 't': {
-                if (arg.count() < 2) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 2) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                QPointF e(arg[0]+offsetX, arg[1]+offsetY);
+                QPointF e(num[0] + offsetX, num[1] + offsetY);
+                num += 2;
+                count -= 2;
                 QPointF c;
                 if (lastMode == 'q' || lastMode == 'Q' ||
                     lastMode == 't' || lastMode == 'T')
@@ -1599,16 +1655,17 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                 ctrlPt = c;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 'T': {
-                if (arg.count() < 2) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 2) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                QPointF e(arg[0], arg[1]);
+                QPointF e(num[0], num[1]);
+                num += 2;
+                count -= 2;
                 QPointF c;
                 if (lastMode == 'q' || lastMode == 'Q' ||
                     lastMode == 't' || lastMode == 'T')
@@ -1619,22 +1676,22 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
                 ctrlPt = c;
                 x = e.x();
                 y = e.y();
-                arg.pop_front(); arg.pop_front();
                 break;
             }
             case 'a': {
-                if (arg.count() < 7) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 7) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                qreal rx = arg[0];
-                qreal ry = arg[1];
-                qreal xAxisRotation = arg[2];
-                qreal largeArcFlag  = arg[3];
-                qreal sweepFlag = arg[4];
-                qreal ex = arg[5] + offsetX;
-                qreal ey = arg[6] + offsetY;
+                qreal rx = (*num++);
+                qreal ry = (*num++);
+                qreal xAxisRotation = (*num++);
+                qreal largeArcFlag  = (*num++);
+                qreal sweepFlag = (*num++);
+                qreal ex = (*num++) + offsetX;
+                qreal ey = (*num++) + offsetY;
+                count -= 7;
                 qreal curx = x;
                 qreal cury = y;
                 pathArc(path, rx, ry, xAxisRotation, int(largeArcFlag),
@@ -1642,36 +1699,29 @@ static bool parsePathDataFast(const QStringRef &dataStr, QPainterPath &path)
 
                 x = ex;
                 y = ey;
-
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front();
             }
                 break;
             case 'A': {
-                if (arg.count() < 7) {
-                    while (arg.count())
-                        arg.pop_front();
+                if (count < 7) {
+                    num += count;
+                    count = 0;
                     break;
                 }
-                qreal rx = arg[0];
-                qreal ry = arg[1];
-                qreal xAxisRotation = arg[2];
-                qreal largeArcFlag  = arg[3];
-                qreal sweepFlag = arg[4];
-                qreal ex = arg[5];
-                qreal ey = arg[6];
+                qreal rx = (*num++);
+                qreal ry = (*num++);
+                qreal xAxisRotation = (*num++);
+                qreal largeArcFlag  = (*num++);
+                qreal sweepFlag = (*num++);
+                qreal ex = (*num++);
+                qreal ey = (*num++);
+                count -= 7;
                 qreal curx = x;
                 qreal cury = y;
                 pathArc(path, rx, ry, xAxisRotation, int(largeArcFlag),
                         int(sweepFlag), ex, ey, curx, cury);
+
                 x = ex;
                 y = ey;
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front(); arg.pop_front();
-                arg.pop_front();
             }
                 break;
             default:
@@ -1832,27 +1882,49 @@ static inline QStringList stringToList(const QString &str)
 static bool parseCoreNode(QSvgNode *node,
                           const QXmlStreamAttributes &attributes)
 {
-    QString featuresStr   = attributes.value(QLatin1String("requiredFeatures")).toString();
-    QString extensionsStr = attributes.value(QLatin1String("requiredExtensions")).toString();
-    QString languagesStr  = attributes.value(QLatin1String("systemLanguage")).toString();
-    QString formatsStr    = attributes.value(QLatin1String("requiredFormats")).toString();
-    QString fontsStr      = attributes.value(QLatin1String("requiredFonts")).toString();
-    QString nodeIdStr     = someId(attributes);
-    QString xmlClassStr   = attributes.value(QLatin1String("class")).toString();
+    QStringList features;
+    QStringList extensions;
+    QStringList languages;
+    QStringList formats;
+    QStringList fonts;
+    QString xmlClassStr;
 
-
-    QStringList features = stringToList(featuresStr);
-    QStringList extensions = stringToList(extensionsStr);
-    QStringList languages = stringToList(languagesStr);
-    QStringList formats = stringToList(formatsStr);
-    QStringList fonts = stringToList(fontsStr);
+    for (int i = 0; i < attributes.count(); ++i) {
+        const QXmlStreamAttribute &attribute = attributes.at(i);
+        QStringRef name = attribute.qualifiedName();
+        if (name.isEmpty())
+            continue;
+        QStringRef value = attribute.value();
+        switch (name.at(0).unicode()) {
+        case 'c':
+            if (name == QLatin1String("class"))
+                xmlClassStr = value.toString();
+            break;
+        case 'r':
+            if (name == QLatin1String("requiredFeatures"))
+                features = stringToList(value.toString());
+            else if (name == QLatin1String("requiredExtensions"))
+                extensions = stringToList(value.toString());
+            else if (name == QLatin1String("requiredFormats"))
+                formats = stringToList(value.toString());
+            else if (name == QLatin1String("requiredFonts"))
+                fonts = stringToList(value.toString());
+            break;
+        case 's':
+            if (name == QLatin1String("systemLanguage"))
+                languages = stringToList(value.toString());
+            break;
+        default:
+            break;
+        }
+    }
 
     node->setRequiredFeatures(features);
     node->setRequiredExtensions(extensions);
     node->setRequiredLanguages(languages);
     node->setRequiredFormats(formats);
     node->setRequiredFonts(fonts);
-    node->setNodeId(nodeIdStr);
+    node->setNodeId(someId(attributes));
     node->setXmlClass(xmlClassStr);
 
     return true;
@@ -1862,6 +1934,9 @@ static void parseOpacity(QSvgNode *node,
                          const QSvgAttributes &attributes,
                          QSvgHandler *)
 {
+    if (attributes.opacity.isEmpty())
+        return;
+
     const QString value = attributes.opacity.toString().trimmed();
 
     bool ok = false;
@@ -1935,8 +2010,9 @@ static void parseCompOp(QSvgNode *node,
                         const QSvgAttributes &attributes,
                         QSvgHandler *)
 {
-    QString value = attributes.compOp.toString();
-    value = value.trimmed();
+    if (attributes.compOp.isEmpty())
+        return;
+    QString value = attributes.compOp.toString().trimmed();
 
     if (!value.isEmpty()) {
         QSvgCompOpStyle *compop = new QSvgCompOpStyle(svgToQtCompositionMode(value));
@@ -1990,8 +2066,9 @@ static void parseOthers(QSvgNode *node,
                         const QSvgAttributes &attributes,
                         QSvgHandler *)
 {
-    QString displayStr = attributes.display.toString();
-    displayStr = displayStr.trimmed();
+    if (attributes.display.isEmpty())
+        return;
+    QString displayStr = attributes.display.toString().trimmed();
 
     if (!displayStr.isEmpty()) {
         node->setDisplayMode(displayStringToEnum(displayStr));
@@ -2539,7 +2616,7 @@ static void parseBaseGradient(QSvgNode *node,
                               QSvgHandler *handler)
 {
     QString link   = attributes.value(QLatin1String("xlink:href")).toString();
-    QString trans  = attributes.value(QLatin1String("gradientTransform")).toString();
+    QStringRef trans  = attributes.value(QLatin1String("gradientTransform"));
     QString spread = attributes.value(QLatin1String("spreadMethod")).toString();
     QString units = attributes.value(QLatin1String("gradientUnits")).toString();
 

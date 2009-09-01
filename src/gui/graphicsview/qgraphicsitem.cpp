@@ -198,20 +198,19 @@
     \o hoverEnterEvent(), hoverMoveEvent(), and hoverLeaveEvent() handles
     hover enter, move and leave events
     \o inputMethodEvent() handles input events, for accessibility support
-    \o keyPressEvent() and keyReleaseEvent handle key press and release events
+    \o keyPressEvent() and keyReleaseEvent() handle key press and release events
     \o mousePressEvent(), mouseMoveEvent(), mouseReleaseEvent(), and
     mouseDoubleClickEvent() handles mouse press, move, release, click and
     doubleclick events
     \endlist
 
-    You can filter events for any other item by installing event
-    filters. This functionaly is separate from from Qt's regular
-    event filters (see QObject::installEventFilter()), which only
-    work on subclasses of QObject. After installing your item as an
-    event filter for another item by calling
-    installSceneEventFilter(), the filtered events will be received
-    by the virtual function sceneEventFilter(). You can remove item
-    event filters by calling removeSceneEventFilter().
+    You can filter events for any other item by installing event filters. This
+    functionality is separate from Qt's regular event filters (see
+    QObject::installEventFilter()), which only work on subclasses of QObject. After
+    installing your item as an event filter for another item by calling
+    installSceneEventFilter(), the filtered events will be received by the virtual
+    function sceneEventFilter(). You can remove item event filters by calling
+    removeSceneEventFilter().
 
     \section1 Custom Data
 
@@ -414,11 +413,11 @@
     (same as transform()), and QGraphicsItem ignores the return value for this
     notification (i.e., a read-only notification).
 
-    \value ItemSelectedChange The item's selected state changes. If the item
-    is presently selected, it will become unselected, and vice verca. The
-    value argument is the new selected state (i.e., true or false). Do not
-    call setSelected() in itemChange() as this notification is delivered();
-    instead, you can return the new selected state from itemChange().
+    \value ItemSelectedChange The item's selected state changes. If the item is
+    presently selected, it will become unselected, and vice verca. The value
+    argument is the new selected state (i.e., true or false). Do not call
+    setSelected() in itemChange() as this notification is delivered; instead, you
+    can return the new selected state from itemChange().
 
     \value ItemSelectedHasChanged The item's selected state has changed. The
     value argument is the new selected state (i.e., true or false). Do not
@@ -1007,6 +1006,9 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
                 setEnabledHelper(parent->isEnabled(), /* explicit = */ false, /* update = */ !implicitUpdate);
         }
 
+        // Auto-activate if visible and the parent is active.
+        if (q->isVisible() && parent->isActive())
+            q->setActive(true);
     } else {
         // Inherit ancestor flags from the new parent.
         updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
@@ -1941,6 +1943,17 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
             child->d_ptr->setVisibleHelper(newVisible, false, updateChildren);
     }
 
+    // Update activation
+    if (scene && q->isPanel()) {
+        if (newVisible) {
+            if (parent && parent->isActive())
+                q->setActive(true);
+        } else {
+            if (q->isActive())
+                scene->setActivePanel(parent);
+        }
+    }
+
     // Enable subfocus
     if (newVisible && isWidget) {
         QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(q_ptr);
@@ -2666,6 +2679,37 @@ bool QGraphicsItem::isActive() const
     if (!d_ptr->scene || !d_ptr->scene->isActive())
         return false;
     return panel() == d_ptr->scene->activePanel();
+}
+
+/*!
+    \since 4.6
+
+    If \a active is true, and the scene is active, this item's panel will be
+    activated. Otherwise, the panel is deactivated.
+
+    If the item is not part of an active scene, \a active will decide what
+    happens to the panel when the scene becomes active or the item is added to
+    the scene. If true, the item's panel will be activated when the item is
+    either added to the scene or the scene is activated. Otherwise, the item
+    will stay inactive independent of the scene's activated state.
+
+    \sa isPanel(), QGraphicsScene::setActivePanel(), QGraphicsScene::isActive()
+*/
+void QGraphicsItem::setActive(bool active)
+{
+    d_ptr->explicitActivate = 1;
+    d_ptr->wantsActive = active;
+    if (d_ptr->scene) {
+        if (active) {
+            // Activate this item.
+            d_ptr->scene->setActivePanel(this);
+        } else {
+            // Deactivate this item, and reactivate the last active item
+            // (if any).
+            QGraphicsItem *lastActive = d_ptr->scene->d_func()->lastActivePanel;
+            d_ptr->scene->setActivePanel(lastActive != this ? lastActive : 0);
+        }
+    }
 }
 
 /*!
@@ -6099,8 +6143,10 @@ bool QGraphicsItem::sceneEvent(QEvent *event)
         if (d_ptr->scene) {
             for (int i = 0; i < d_ptr->children.size(); ++i) {
                 QGraphicsItem *child = d_ptr->children.at(i);
-                if (!(child->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorHandlesChildEvents))
-                    d_ptr->scene->sendEvent(child, event);
+                if (child->isVisible() && !child->isPanel()) {
+                    if (!(child->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorHandlesChildEvents))
+                        d_ptr->scene->sendEvent(child, event);
+                }
             }
         }
         break;
@@ -6945,7 +6991,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
   \property QGraphicsObject::id
   \brief the id of of the item
 
-  \sa QGraphicsItem::opacity(), QGraphicsItem::setOpacity()
+  \sa QObject::objectName(), QObject::setObjectName()
 */
 
 /*!

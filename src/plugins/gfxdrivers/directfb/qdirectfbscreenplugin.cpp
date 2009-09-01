@@ -43,6 +43,7 @@
 
 #include <QtGui/qscreendriverplugin_qws.h>
 #include <QtCore/qstringlist.h>
+#ifndef QT_NO_QWS_DIRECTFB
 
 class DirectFBScreenDriverPlugin : public QScreenDriverPlugin
 {
@@ -73,3 +74,5 @@ QScreen* DirectFBScreenDriverPlugin::create(const QString& driver,
 }
 
 Q_EXPORT_PLUGIN2(qdirectfbscreen, DirectFBScreenDriverPlugin)
+
+#endif

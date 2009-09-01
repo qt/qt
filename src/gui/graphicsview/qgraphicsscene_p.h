@@ -132,6 +132,8 @@ public:
     QGraphicsItem *activePanel;
     QGraphicsItem *lastActivePanel;
     int activationRefCount;
+    int childExplicitActivation;
+    void setActivePanelHelper(QGraphicsItem *item, bool duringActivationEvent);
     void setFocusItemHelper(QGraphicsItem *item, Qt::FocusReason focusReason);
 
     QList<QGraphicsWidget *> popupWidgets;

@@ -93,6 +93,8 @@ private slots:
     void renameFdLeak();
     void reOpenThroughQFile();
     void keepOpenMode();
+    void resetTemplateAfterError();
+    void setTemplateAfterOpen();
 
 public:
 };
@@ -474,6 +476,86 @@ void tst_QTemporaryFile::keepOpenMode()
         QVERIFY(((QFile &)file).open(QIODevice::WriteOnly));
         QVERIFY(QIODevice::WriteOnly == file.openMode());
     }
+}
+
+void tst_QTemporaryFile::resetTemplateAfterError()
+{
+    // calling setFileTemplate on a failed open
+
+    QString tempPath = QDir::tempPath();
+
+    QString const fileTemplate("destination/qt_temp_file_test.XXXXXX");
+    QString const fileTemplate2(tempPath + "/qt_temp_file_test.XXXXXX");
+
+    QVERIFY2( QDir(tempPath).exists() || QDir().mkpath(tempPath), "Test precondition" );
+    QVERIFY2( !QFile::exists("destination"), "Test precondition" );
+    QVERIFY2( !QFile::exists(fileTemplate2) || QFile::remove(fileTemplate2), "Test precondition" );
+
+    QFile file(fileTemplate2);
+    QByteArray fileContent("This file is intentionally NOT left empty.");
+
+    QVERIFY( file.open(QIODevice::ReadWrite | QIODevice::Truncate) );
+    QCOMPARE( file.write(fileContent), (qint64)fileContent.size() );
+    QVERIFY( file.flush() );
+
+    QString fileName;
+    {
+        QTemporaryFile temp;
+
+        QVERIFY( temp.fileName().isEmpty() );
+        QVERIFY( !temp.fileTemplate().isEmpty() );
+
+        temp.setFileTemplate( fileTemplate );
+
+        QVERIFY( temp.fileName().isEmpty() );
+        QCOMPARE( temp.fileTemplate(), fileTemplate );
+
+        QVERIFY( !temp.open() );
+
+        QVERIFY( temp.fileName().isEmpty() );
+        QCOMPARE( temp.fileTemplate(), fileTemplate );
+
+        temp.setFileTemplate( fileTemplate2 );
+        QVERIFY( temp.open() );
+
+        fileName = temp.fileName();
+        QVERIFY( QFile::exists(fileName) );
+        QVERIFY( !fileName.isEmpty() );
+        QVERIFY2( fileName != fileTemplate2,
+            ("Generated name shouldn't be same as template: " + fileTemplate2).toLocal8Bit().constData() );
+    }
+
+    QVERIFY( !QFile::exists(fileName) );
+
+    file.seek(0);
+    QCOMPARE( QString(file.readAll()), QString(fileContent) );
+    QVERIFY( file.remove() );
+}
+
+void tst_QTemporaryFile::setTemplateAfterOpen()
+{
+    QTemporaryFile temp;
+
+    QVERIFY( temp.fileName().isEmpty() );
+    QVERIFY( !temp.fileTemplate().isEmpty() );
+
+    QVERIFY( temp.open() );
+
+    QString const fileName = temp.fileName();
+    QString const newTemplate("funny-path/funny-name-XXXXXX.tmp");
+
+    QVERIFY( !fileName.isEmpty() );
+    QVERIFY( QFile::exists(fileName) );
+    QVERIFY( !temp.fileTemplate().isEmpty() );
+    QVERIFY( temp.fileTemplate() != newTemplate );
+
+    temp.close(); // QTemporaryFile::setFileTemplate will assert on isOpen() up to 4.5.2
+    temp.setFileTemplate(newTemplate);
+    QCOMPARE( temp.fileTemplate(), newTemplate );
+
+    QVERIFY( temp.open() );
+    QCOMPARE( temp.fileName(), fileName );
+    QCOMPARE( temp.fileTemplate(), newTemplate );
 }
 
 QTEST_MAIN(tst_QTemporaryFile)

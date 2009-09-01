@@ -231,6 +231,15 @@ QT_BEGIN_NAMESPACE
     \sa QSharedData, QExplicitlySharedDataPointer, QScopedPointer, QSharedPointer
 */
 
+/*! \typedef QSharedDataPointer::Type
+    This is the type of the shared data object. The \e{d pointer}
+    points to an object of this type.
+ */
+
+/*! \typedef QSharedDataPointer::pointer
+  \internal
+ */
+
 /*! \fn T& QSharedDataPointer::operator*()
     Provides access to the shared data object's members.
     This function calls detach().
@@ -551,5 +560,9 @@ QT_BEGIN_NAMESPACE
     This is the type of the shared data object. The \e{d pointer}
     points to an object of this type.
 */
+
+/*! \typedef QExplicitlySharedDataPointer::pointer
+  \internal
+ */
 
 QT_END_NAMESPACE

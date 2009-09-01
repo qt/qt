@@ -1163,8 +1163,6 @@ void QProcessPrivate::_q_notified()
 {
 }
 
-/*! \internal
- */
 bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDirectory, qint64 *pid)
 {
     processManager()->start();

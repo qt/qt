@@ -43,10 +43,13 @@
 #define QDIRECTFBPAINTDEVICE_H
 
 #include <private/qpaintengine_raster_p.h>
-#include <directfb.h>
 #include "qdirectfbscreen.h"
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
@@ -57,7 +60,7 @@ class QDirectFBPaintDevice : public QCustomRasterPaintDevice
 public:
     ~QDirectFBPaintDevice();
 
-    IDirectFBSurface *directFBSurface() const;
+    virtual IDirectFBSurface *directFBSurface() const;
 
     void lockDirectFB(DFBSurfaceLockFlags lock);
     void unlockDirectFB();
@@ -94,6 +97,9 @@ private:
     Q_DISABLE_COPY(QDirectFBPaintDevice);
 };
 
+QT_END_NAMESPACE
+
 QT_END_HEADER
 
+#endif // QT_NO_QWS_DIRECTFB
 #endif //QDIRECTFBPAINTDEVICE_H

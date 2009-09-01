@@ -1,5 +1,5 @@
-SOURCES += main.cpp lighting.cpp shadoweffect.cpp
-HEADERS += lighting.h shadoweffect.h
+SOURCES += main.cpp lighting.cpp
+HEADERS += lighting.h
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/effects/lighting

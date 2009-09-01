@@ -122,7 +122,12 @@ void debugBinaryString(const char *data, qint64 maxlen)
  */
 QIODevicePrivate::QIODevicePrivate()
     : openMode(QIODevice::NotOpen), buffer(QIODEVICE_BUFFERSIZE),
-      pos(0), devicePos(0), accessMode(Unset)
+      pos(0), devicePos(0)
+       , baseReadLineDataCalled(false)
+       , accessMode(Unset)
+#ifdef QT_NO_QOBJECT
+       , q_ptr(0)
+#endif
 {
 }
 

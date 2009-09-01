@@ -2067,6 +2067,9 @@
            QMenuBar, QPushButton, QRadioButton, QSizeGrip, QSpinBox,
            QSplitter, QStatusBar, QTextEdit, and QToolTip.
 
+           The value is relative to the contents rect in the \l{The
+           Box Model}{box model}.
+
            Example:
 
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 63
@@ -2083,6 +2086,9 @@
            QComboBox, QFrame, QGroupBox, QLabel, QLineEdit, QMenu,
            QMenuBar, QPushButton, QRadioButton, QSizeGrip, QSpinBox,
            QSplitter, QStatusBar, QTextEdit, and QToolTip.
+
+           The value is relative to the contents rect in the \l{The
+           Box Model}{box model}.
 
            Example:
 
@@ -2121,6 +2127,9 @@
            If this property is not specified, the minimum height is
            derived based on the widget's contents and the style.
 
+           The value is relative to the contents rect in the \l{The
+           Box Model}{box model}.
+
            Example:
 
            \snippet doc/src/snippets/code/doc_src_stylesheet.qdoc 66
@@ -2140,6 +2149,9 @@
 
            If this property is not specified, the minimum width is
            derived based on the widget's contents and the style.
+
+           The value is relative to the contents rect in the \l{The
+           Box Model}{box model}.
 
            Example:
 

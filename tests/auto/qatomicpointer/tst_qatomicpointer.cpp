@@ -58,6 +58,8 @@ public:
     ~tst_QAtomicPointer();
 
 private slots:
+    void warningFree();
+
     void constructor();
     void copy_constructor();
     void equality_operator();
@@ -78,6 +80,9 @@ private slots:
     void isFetchAndAddWaitFree();
     void fetchAndAdd_data();
     void fetchAndAdd();
+
+private:
+    static void warningFreeHelper();
 };
 
 tst_QAtomicPointer::tst_QAtomicPointer()
@@ -85,6 +90,49 @@ tst_QAtomicPointer::tst_QAtomicPointer()
 
 tst_QAtomicPointer::~tst_QAtomicPointer()
 { }
+
+struct WFHC
+{
+    void bar() {}
+};
+
+void tst_QAtomicPointer::warningFreeHelper()
+{
+    Q_ASSERT(false);
+    // The code below is bogus, and shouldn't be run. We're looking for warnings, only.
+
+    QBasicAtomicPointer<WFHC> p = Q_BASIC_ATOMIC_INITIALIZER(0);
+
+    p->bar();
+
+    WFHC *expectedValue = 0;
+    WFHC *newValue = 0;
+    qptrdiff valueToAdd = 0;
+
+    p.testAndSetRelaxed(expectedValue, newValue);
+    p.testAndSetAcquire(expectedValue, newValue);
+    p.testAndSetRelease(expectedValue, newValue);
+    p.testAndSetOrdered(expectedValue, newValue);
+
+    p.fetchAndStoreRelaxed(newValue);
+    p.fetchAndStoreAcquire(newValue);
+    p.fetchAndStoreRelease(newValue);
+    p.fetchAndStoreOrdered(newValue);
+
+    p.fetchAndAddRelaxed(valueToAdd);
+    p.fetchAndAddAcquire(valueToAdd);
+    p.fetchAndAddRelease(valueToAdd);
+    p.fetchAndAddOrdered(valueToAdd);
+}
+
+void tst_QAtomicPointer::warningFree()
+{
+    // This is a compile time check for warnings.
+    // No need for actual work here.
+
+    void (*foo)() = &warningFreeHelper;
+    (void)foo;
+}
 
 void tst_QAtomicPointer::constructor()
 {

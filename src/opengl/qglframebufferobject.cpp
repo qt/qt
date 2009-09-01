@@ -262,7 +262,7 @@ GLenum QGLFramebufferObjectFormat::internalFormat() const
 class QGLFramebufferObjectPrivate
 {
 public:
-    QGLFramebufferObjectPrivate() : depth_stencil_buffer(0), valid(false), bound(false), ctx(0), previous_fbo(0) {}
+    QGLFramebufferObjectPrivate() : depth_stencil_buffer(0), valid(false), bound(false), ctx(0), previous_fbo(0), engine(0) {}
     ~QGLFramebufferObjectPrivate() {}
 
     void init(const QSize& sz, QGLFramebufferObject::Attachment attachment,
@@ -280,6 +280,7 @@ public:
     QGLFramebufferObject::Attachment fbo_attachment;
     QGLContext *ctx; // for Windows extension ptrs
     GLuint previous_fbo;
+    mutable QPaintEngine *engine;
 };
 
 bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
@@ -723,6 +724,8 @@ QGLFramebufferObject::~QGLFramebufferObject()
     Q_D(QGLFramebufferObject);
     QGL_FUNC_CONTEXT;
 
+    delete d->engine;
+
     if (isValid()
         && (d->ctx == QGLContext::currentContext()
             || qgl_share_reg()->checkSharing(d->ctx, QGLContext::currentContext())))
@@ -872,9 +875,22 @@ QImage QGLFramebufferObject::toImage() const
     if (!d->valid)
         return QImage();
 
-    const_cast<QGLFramebufferObject *>(this)->bind();
+    // qt_gl_read_framebuffer doesn't work on a multisample FBO
+    if (format().samples() != 0) {
+        QGLFramebufferObject temp(size(), QGLFramebufferObjectFormat());
+
+        QRect rect(QPoint(0, 0), size());
+        blitFramebuffer(&temp, rect, const_cast<QGLFramebufferObject *>(this), rect);
+
+        return temp.toImage();
+    }
+
+    bool wasBound = isBound();
+    if (!wasBound)
+        const_cast<QGLFramebufferObject *>(this)->bind();
     QImage image = qt_gl_read_framebuffer(d->size, d->ctx->format().alpha(), true);
-    const_cast<QGLFramebufferObject *>(this)->release();
+    if (!wasBound)
+        const_cast<QGLFramebufferObject *>(this)->release();
 
     return image;
 }
@@ -890,16 +906,32 @@ Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_engine)
 /*! \reimp */
 QPaintEngine *QGLFramebufferObject::paintEngine() const
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
-    return qt_buffer_engine();
-#elif defined(QT_OPENGL_ES_2)
-    return qt_buffer_2_engine();
-#else
     Q_D(const QGLFramebufferObject);
-    if (qt_gl_preferGL2Engine())
-        return qt_buffer_2_engine();
-    else
-        return qt_buffer_engine();
+    if (d->engine)
+        return d->engine;
+
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined (QT_OPENGL_ES_2)
+    if (qt_gl_preferGL2Engine()) {
+#endif
+        QPaintEngine *engine = qt_buffer_2_engine();
+        if (engine->isActive() && engine->paintDevice() != this) {
+            d->engine = new QGL2PaintEngineEx;
+            return d->engine;
+        }
+        return engine;
+#if !defined (QT_OPENGL_ES_2)
+    }
+#endif
+#endif
+
+#if !defined(QT_OPENGL_ES_2)
+    QPaintEngine *engine = qt_buffer_engine();
+    if (engine->isActive() && engine->paintDevice() != this) {
+        d->engine = new QOpenGLPaintEngine;
+        return d->engine;
+    }
+    return engine;
 #endif
 }
 

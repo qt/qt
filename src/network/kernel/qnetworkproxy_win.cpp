@@ -363,8 +363,13 @@ QList<QNetworkProxy> QNetworkProxyFactory::systemProxyForQuery(const QNetworkPro
     if (sp->isAutoConfig) {
         WINHTTP_PROXY_INFO proxyInfo;
 
-        // try to get the proxy config for the URL, if we have a URL
+        // try to get the proxy config for the URL
         QUrl url = query.url();
+        // url could be empty, e.g. from QNetworkProxy::applicationProxy(), that's fine,
+        // we'll still ask for the proxy.
+        // But for a file url, we know we don't need one.
+        if (url.scheme() == QLatin1String("file") || url.scheme() == QLatin1String("qrc"))
+            return sp->defaultResult;
         if (query.queryType() != QNetworkProxyQuery::UrlRequest) {
             // change the scheme to https, maybe it'll work
             url.setScheme(QLatin1String("https"));

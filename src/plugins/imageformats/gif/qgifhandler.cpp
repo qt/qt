@@ -234,7 +234,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
 
 #define LM(l, m) (((m)<<8)|l)
     digress = false;
-    int initial = length;
+    const int initial = length;
     while (!digress && length) {
         length--;
         unsigned char ch=*buffer++;
@@ -333,7 +333,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                     sheight = newtop + newheight;
 
                 QImage::Format format = trans_index >= 0 ? QImage::Format_ARGB32 : QImage::Format_RGB32;
-                if (image->isNull() || (image->size() != QSize(swidth, sheight)) || image->format() != format) {
+                if (image->isNull()) {
                     (*image) = QImage(swidth, sheight, format);
                     memset(image->bits(), 0, image->numBytes());
 

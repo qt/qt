@@ -48,11 +48,15 @@
 #include <qpaintdevice.h>
 #include <qvarlengtharray.h>
 
+#ifndef QT_NO_QWS_DIRECTFB
+
+QT_BEGIN_NAMESPACE
+
 QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *scr)
     : QDirectFBPaintDevice(scr)
+    , sibling(0)
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
-    , sibling(0)
 #endif
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
@@ -69,9 +73,9 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 
 QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirectFBScreen *scr, QWidget *widget)
     : QWSWindowSurface(widget), QDirectFBPaintDevice(scr)
+    , sibling(0)
 #ifndef QT_NO_DIRECTFB_WM
     , dfbWindow(0)
-    , sibling(0)
 #endif
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
@@ -243,23 +247,16 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
 
 QByteArray QDirectFBWindowSurface::permanentState() const
 {
-#ifdef QT_DIRECTFB_WM
     QByteArray state(sizeof(this), 0);
     *reinterpret_cast<const QDirectFBWindowSurface**>(state.data()) = this;
     return state;
-#endif
-    return QByteArray();
 }
 
 void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 {
-#ifdef QT_DIRECTFB_WM
     if (state.size() == sizeof(this)) {
         sibling = *reinterpret_cast<QDirectFBWindowSurface *const*>(state.constData());
     }
-#else
-    Q_UNUSED(state);
-#endif
 }
 
 static inline void scrollSurface(IDirectFBSurface *surface, const QRect &r, int dx, int dy)
@@ -381,6 +378,7 @@ void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
         }
     }
 
+#ifdef QT_NO_DIRECTFB_CURSOR
     if (QScreenCursor *cursor = QScreenCursor::instance()) {
         const QRect cursorRectangle = cursor->boundingRect();
         if (cursor->isVisible() && !cursor->isAccelerated()
@@ -396,6 +394,7 @@ void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
 #endif
         }
     }
+#endif
     if (mode == Offscreen) {
         screen->flipSurface(primarySurface, flipFlags, region, offset + windowGeometry.topLeft());
     } else
@@ -424,6 +423,14 @@ void QDirectFBWindowSurface::endPaint(const QRegion &)
     unlockDirectFB();
 }
 
+IDirectFBSurface *QDirectFBWindowSurface::directFBSurface() const
+{
+    if (!dfbSurface && sibling && sibling->dfbSurface)
+        return sibling->dfbSurface;
+    return dfbSurface;
+}
+
+
 IDirectFBSurface *QDirectFBWindowSurface::surfaceForWidget(const QWidget *widget, QRect *rect) const
 {
     Q_ASSERT(widget);
@@ -449,3 +456,9 @@ void QDirectFBWindowSurface::updateFormat()
 {
     imageFormat = dfbSurface ? QDirectFBScreen::getImageFormat(dfbSurface) : QImage::Format_Invalid;
 }
+
+QT_END_NAMESPACE
+
+#endif // QT_NO_QWS_DIRECTFB
+
+

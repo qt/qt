@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the test suite module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,38 +39,31 @@
 **
 ****************************************************************************/
 
-#include "shadoweffect.h"
+#ifndef MOUSESTATWIDGET_H
+#define MOUSESTATWIDGET_H
 
-#include <math.h>
+#include <QWidget>
 
-ShadowEffect::ShadowEffect(QGraphicsItem *item, QGraphicsItem *source)
-    : QGraphicsDropShadowEffect()
-    , item(item), m_lightSource(source)
+class QTabletEvent;
+class QMouseEvent;
+class QTimerEvent;
+class QPaintEvent;
+
+class MouseStatWidget : public QWidget
 {
-    setBlurRadius(8);
-    m_color = color();
-}
+public:
+    MouseStatWidget(bool acceptTabletEvent = true);
+protected:
+    void tabletEvent(QTabletEvent *);
+    void mouseMoveEvent(QMouseEvent *);
+    void timerEvent(QTimerEvent *);
+    void paintEvent(QPaintEvent *);
+private:
+    const bool acceptTabletEvent;
+    int receivedMouseEventCount;
+    int receivedMouseEventCountToPaint;
+    int receivedTabletEventCount;
+    int receivedTabletEventCountToPaint;
+};
 
-void ShadowEffect::adjustForItem()
-{
-    QPointF delta = item->pos() - m_lightSource->pos();
-    setOffset(delta.toPoint() / 30);
-
-    qreal dx = delta.x();
-    qreal dy = delta.y();
-    qreal dd = sqrt(dx * dx + dy * dy);
-    m_color.setAlphaF(qBound(0.4, 1 - dd / 200.0, 0.7));
-    setColor(m_color);
-}
-
-QRectF ShadowEffect::boundingRectFor(const QRectF &rect) const
-{
-    const_cast<ShadowEffect *>(this)->adjustForItem();
-    return QGraphicsDropShadowEffect::boundingRectFor(rect);
-}
-
-void ShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
-{
-    adjustForItem();
-    QGraphicsDropShadowEffect::draw(painter, source);
-}
+#endif // MOUSESTATWIDGET_H
