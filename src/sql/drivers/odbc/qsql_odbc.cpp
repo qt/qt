@@ -314,12 +314,12 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
             colSize *= 2; // a tiny bit faster, since it saves a SQLGetData() call
         }
     }
-    char* buf = new char[colSize];
+    QVarLengthArray<char> buf(colSize);
     while (true) {
         r = SQLGetData(hStmt,
                         column+1,
                         unicode ? SQL_C_WCHAR : SQL_C_CHAR,
-                        (SQLPOINTER)buf,
+                        (SQLPOINTER)buf.data(),
                         colSize,
                         &lengthIndicator);
         if (r == SQL_SUCCESS || r == SQL_SUCCESS_WITH_INFO) {
@@ -334,11 +334,12 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
             // colSize-1: remove 0 termination when there is more data to fetch
             int rSize = (r == SQL_SUCCESS_WITH_INFO) ? (unicode ? colSize-2 : colSize-1) : lengthIndicator;
             if (unicode) {
-                fieldVal += QString((QChar*) buf, rSize / 2);
+                fieldVal += QString((const QChar*) buf.constData(), rSize / 2);
             } else {
-                fieldVal += QString::fromAscii(buf, rSize);
+                fieldVal += QString::fromAscii(buf.constData(), rSize);
             }
-            if (lengthIndicator - fieldVal.size() <= 0) {
+            memset(buf.data(), 0, colSize);
+            if (lengthIndicator < colSize) {
                 // workaround for Drivermanagers that don't return SQL_NO_DATA
                 break;
             }
@@ -350,7 +351,6 @@ static QString qGetStringData(SQLHANDLE hStmt, int column, int colSize, bool uni
             break;
         }
     }
-    delete[] buf;
     return fieldVal;
 }
 
