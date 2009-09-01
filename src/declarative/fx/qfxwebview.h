@@ -80,7 +80,6 @@ class QFxWebViewAttached;
 class QFxWebSettings;
 
 //### TODO: browser plugins
-//### TODO: smart zooming using e.g. DIV
 
 class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
 {
