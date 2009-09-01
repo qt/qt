@@ -106,6 +106,7 @@ private:
     bool                                m_mmfOutputChangePending;
     
 };
+
 }
 }
 

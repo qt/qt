@@ -342,6 +342,8 @@ void MMF::VideoPlayer::updateMmfOutput()
     // visible.  If this is the case, we should set m_mmfOutputChangePending
     // and respond to future showEvents from the videoOutput widget.
     
+    getNativeWindowSystemHandles();
+
     TRAPD(err,
           m_player->SetDisplayWindowL
           (
