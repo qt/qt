@@ -198,20 +198,19 @@
     \o hoverEnterEvent(), hoverMoveEvent(), and hoverLeaveEvent() handles
     hover enter, move and leave events
     \o inputMethodEvent() handles input events, for accessibility support
-    \o keyPressEvent() and keyReleaseEvent handle key press and release events
+    \o keyPressEvent() and keyReleaseEvent() handle key press and release events
     \o mousePressEvent(), mouseMoveEvent(), mouseReleaseEvent(), and
     mouseDoubleClickEvent() handles mouse press, move, release, click and
     doubleclick events
     \endlist
 
-    You can filter events for any other item by installing event
-    filters. This functionaly is separate from from Qt's regular
-    event filters (see QObject::installEventFilter()), which only
-    work on subclasses of QObject. After installing your item as an
-    event filter for another item by calling
-    installSceneEventFilter(), the filtered events will be received
-    by the virtual function sceneEventFilter(). You can remove item
-    event filters by calling removeSceneEventFilter().
+    You can filter events for any other item by installing event filters. This
+    functionality is separate from Qt's regular event filters (see
+    QObject::installEventFilter()), which only work on subclasses of QObject. After
+    installing your item as an event filter for another item by calling
+    installSceneEventFilter(), the filtered events will be received by the virtual
+    function sceneEventFilter(). You can remove item event filters by calling
+    removeSceneEventFilter().
 
     \section1 Custom Data
 
@@ -414,11 +413,11 @@
     (same as transform()), and QGraphicsItem ignores the return value for this
     notification (i.e., a read-only notification).
 
-    \value ItemSelectedChange The item's selected state changes. If the item
-    is presently selected, it will become unselected, and vice verca. The
-    value argument is the new selected state (i.e., true or false). Do not
-    call setSelected() in itemChange() as this notification is delivered();
-    instead, you can return the new selected state from itemChange().
+    \value ItemSelectedChange The item's selected state changes. If the item is
+    presently selected, it will become unselected, and vice verca. The value
+    argument is the new selected state (i.e., true or false). Do not call
+    setSelected() in itemChange() as this notification is delivered; instead, you
+    can return the new selected state from itemChange().
 
     \value ItemSelectedHasChanged The item's selected state has changed. The
     value argument is the new selected state (i.e., true or false). Do not
