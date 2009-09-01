@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
-class Q_CORE_EXPORT QMargins
+class QMargins
 {
 public:
     QMargins();
