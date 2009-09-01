@@ -3855,8 +3855,9 @@ elif [ "$Edition" = "OpenSource" ]; then
             echo "You have already accepted the terms of the $LicenseType license."
             acceptance=yes
         else
-            test -e "$relpath/LICENSE.GPL3" && \
+            if [ -e "$relpath/LICENSE.GPL3" ]; then
                 echo "Type '3' to view the GNU General Public License version 3."
+            fi
             echo "Type 'L' to view the Lesser GNU General Public License version 2.1."
             echo "Type 'yes' to accept this license offer."
             echo "Type 'no' to decline this license offer."

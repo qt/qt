@@ -73,6 +73,7 @@ private slots:
     void partialGLWidgetUpdates();
     void glWidgetRendering();
     void glFBORendering();
+    void glFBOUseInGLWidget();
     void glPBufferRendering();
     void glWidgetReparent();
     void colormap();
@@ -767,6 +768,60 @@ void tst_QGL::glFBORendering()
     QCOMPARE(fb.pixel(167, 39), QColor(Qt::red).rgb());
     QCOMPARE(fb.pixel(217, 39), QColor(Qt::red).rgb());
     QCOMPARE(fb.pixel(192, 64), QColor(Qt::green).rgb());
+}
+
+class FBOUseInGLWidget : public QGLWidget
+{
+public:
+    bool widgetPainterBeginOk;
+    bool fboPainterBeginOk;
+    QImage fboImage;
+protected:
+    void paintEvent(QPaintEvent*)
+    {
+        QPainter widgetPainter;
+        widgetPainterBeginOk = widgetPainter.begin(this);
+        QGLFramebufferObjectFormat fboFormat(0, QGLFramebufferObject::CombinedDepthStencil);
+        QGLFramebufferObject *fbo = new QGLFramebufferObject(128, 128, fboFormat);
+
+        QPainter fboPainter;
+        fboPainterBeginOk = fboPainter.begin(fbo);
+        fboPainter.fillRect(0, 0, 128, 128, Qt::red);
+        fboPainter.end();
+        fboImage = fbo->toImage();
+
+        widgetPainter.fillRect(rect(), Qt::blue);
+
+        delete fbo;
+    }
+
+};
+
+void tst_QGL::glFBOUseInGLWidget()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    FBOUseInGLWidget w;
+    w.resize(128, 128);
+    w.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&w);
+#endif
+    QTest::qWait(200);
+
+    QVERIFY(w.widgetPainterBeginOk);
+    QVERIFY(w.fboPainterBeginOk);
+
+    QImage widgetFB = w.grabFrameBuffer(false);
+    QImage widgetReference(widgetFB.size(), widgetFB.format());
+    widgetReference.fill(0xff0000ff);
+    QCOMPARE(widgetFB, widgetReference);
+
+    QImage fboReference(w.fboImage.size(), w.fboImage.format());
+    fboReference.fill(0xffff0000);
+    QCOMPARE(w.fboImage, fboReference);
 }
 
 void tst_QGL::glWidgetReparent()
