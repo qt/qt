@@ -1437,6 +1437,7 @@ extern Q_GUI_EXPORT bool qt_win_ignoreNextMouseReleaseEvent;
 
 HRESULT WINAPI QAxClientSite::EnableModeless(BOOL fEnable)
 {
+    LockWindowUpdate(host->window()->winId());
     EnableWindow(host->window()->winId(), fEnable);
 
     if (!fEnable) {
@@ -1447,6 +1448,7 @@ HRESULT WINAPI QAxClientSite::EnableModeless(BOOL fEnable)
             QApplicationPrivate::leaveModal(host);
     }
     qt_win_ignoreNextMouseReleaseEvent = false;
+    LockWindowUpdate(0);
 
     return S_OK;
 }
