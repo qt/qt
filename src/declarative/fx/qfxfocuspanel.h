@@ -58,11 +58,11 @@ public:
     QFxFocusPanel(QFxItem *parent=0);
     virtual ~QFxFocusPanel();
 
-    //bool isActive() const;
-    void setActive(bool);
-
 Q_SIGNALS:
     void activeChanged();
+
+protected:
+    bool sceneEvent(QEvent *event);
 
 private:
     Q_DISABLE_COPY(QFxFocusPanel)

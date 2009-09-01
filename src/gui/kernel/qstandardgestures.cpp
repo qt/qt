@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -63,11 +63,23 @@ QWidgetPrivate *qt_widget_private(QWidget *widget);
 */
 
 /*!
-    Creates a new Pan gesture handler object and marks it as a child of \a
-    parent.
+    \enum QSwipeGesture::SwipeDirection
+    \brief This enum specifies the direction of the swipe gesture.
 
-    On some platform like Windows it's necessary to provide a non-null widget
-    as \a parent to get native gesture support.
+    \value NoDirection
+    \value Left
+    \value Right
+    \value Up
+    \value Down
+*/
+
+/*!
+  Creates a new pan gesture handler object and marks it as a child of
+  \a parent. The pan gesture handler watches \a gestureTarget for its
+  events.
+
+  On some platform like Windows it's necessary to provide a non-null
+  widget as \a parent to get native gesture support.
 */
 QPanGesture::QPanGesture(QWidget *gestureTarget, QObject *parent)
     : QGesture(*new QPanGesturePrivate, gestureTarget, parent)
@@ -306,11 +318,12 @@ QSizeF QPanGesture::lastOffset() const
 */
 
 /*!
-    Creates a new Pinch gesture handler object and marks it as a child of \a
-    parent.
+  Creates a new Pinch gesture handler object and marks it as a child
+  of \a parent. The pan gesture handler watches \a gestureTarget for its
+  events.
 
-    On some platform like Windows it's necessary to provide a non-null widget
-    as \a parent to get native gesture support.
+  On some platform like Windows it's necessary to provide a non-null
+  widget as \a parent to get native gesture support.
 */
 QPinchGesture::QPinchGesture(QWidget *gestureTarget, QObject *parent)
     : QGesture(*new QPinchGesturePrivate, gestureTarget, parent)
@@ -523,11 +536,12 @@ QPointF QPinchGesture::startCenterPoint() const
 */
 
 /*!
-    Creates a new Swipe gesture handler object and marks it as a child of \a
-    parent.
+  Creates a new Swipe gesture handler object and marks it as a
+  child of \a parent. The swipe gesture handler watches \a
+  gestureTarget for its events.
 
-    On some platform like Windows it's necessary to provide a non-null widget
-    as \a parent to get native gesture support.
+  On some platform like Windows it's necessary to provide a non-null
+  widget as \a parent to get native gesture support.
 */
 QSwipeGesture::QSwipeGesture(QWidget *gestureTarget, QObject *parent)
     : QGesture(*new QSwipeGesturePrivate, gestureTarget, parent)
@@ -556,12 +570,25 @@ void QSwipeGesturePrivate::setupGestureTarget(QObject *newGestureTarget)
     QGesturePrivate::setupGestureTarget(newGestureTarget);
 }
 
+/*!
+  \property QSwipeGesture::swipeAngle
+
+  Holds the angle of the swipe gesture, 0..360.
+*/
 qreal QSwipeGesture::swipeAngle() const
 {
     Q_D(const QSwipeGesture);
     return d->swipeAngle;
 }
 
+/*!
+  \property QSwipeGesture::horizontalDirection
+
+  Holds the direction for the horizontal component of the swipe
+  gesture, SwipeDirection::Left or SwipeDirection::Right.
+  SwipeDirection::NoDirection if there is no horizontal
+  component to the swipe gesture.
+*/
 QSwipeGesture::SwipeDirection QSwipeGesture::horizontalDirection() const
 {
     Q_D(const QSwipeGesture);
@@ -573,6 +600,15 @@ QSwipeGesture::SwipeDirection QSwipeGesture::horizontalDirection() const
         return QSwipeGesture::Left;
 }
 
+
+/*!
+  \property QSwipeGesture::verticalDirection
+
+  Holds the direction for the vertical component of the swipe
+  gesture, SwipeDirection::Down or SwipeDirection::Up.
+  SwipeDirection::NoDirection if there is no vertical
+  component to the swipe gesture.
+*/
 QSwipeGesture::SwipeDirection QSwipeGesture::verticalDirection() const
 {
     Q_D(const QSwipeGesture);

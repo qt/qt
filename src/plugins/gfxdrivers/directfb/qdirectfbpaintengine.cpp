@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,27 +21,27 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
 #include "qdirectfbpaintengine.h"
 
-#ifndef QT_NO_DIRECTFB
+#ifndef QT_NO_QWS_DIRECTFB
 
 #include "qdirectfbwindowsurface.h"
 #include "qdirectfbscreen.h"
@@ -54,6 +54,8 @@
 #include <private/qpixmapdata_p.h>
 #include <private/qpixmap_raster_p.h>
 #include <private/qimagepixmapcleanuphooks_p.h>
+
+QT_BEGIN_NAMESPACE
 
 class SurfaceCache;
 class QDirectFBPaintEnginePrivate : public QRasterPaintEnginePrivate
@@ -145,7 +147,9 @@ private:
 
 
 #ifdef QT_DIRECTFB_IMAGECACHE
+QT_BEGIN_INCLUDE_NAMESPACE
 #include <private/qimage_p.h>
+QT_END_INCLUDE_NAMESPACE
 struct CachedImage
 {
     IDirectFBSurface *surface;
@@ -1246,4 +1250,7 @@ static void rasterFallbackWarn(const char *msg, const char *func, const device *
 }
 
 #endif // QT_DIRECTFB_WARN_ON_RASTERFALLBACKS
-#endif // QT_NO_DIRECTFB
+
+QT_END_NAMESPACE
+
+#endif // QT_NO_QWS_DIRECTFB

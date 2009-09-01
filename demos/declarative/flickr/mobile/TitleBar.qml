@@ -5,7 +5,7 @@ Item {
     property string untaggedString: "Uploads from everyone"
     property string taggedString: "Recent uploads tagged "
 
-    BorderImage { source: "images/titlebar2.sci"; width: parent.width; height: parent.height + 14; y: -7 }
+    BorderImage { source: "images/titlebar.sci"; width: parent.width; height: parent.height + 14; y: -7 }
 
     Item {
         id: Container
@@ -13,8 +13,9 @@ Item {
 
         Script {
             function accept() {
-                RssModel.tags = Editor.text
                 TitleBar.state = ""
+                Background.state = ""
+                RssModel.tags = Editor.text
             }
         }
 
