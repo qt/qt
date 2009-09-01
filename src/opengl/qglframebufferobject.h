@@ -137,18 +137,7 @@ class QGLFramebufferObjectFormatPrivate;
 class Q_OPENGL_EXPORT QGLFramebufferObjectFormat
 {
 public:
-#if !defined(QT_OPENGL_ES) || defined(Q_QDOC)
-    QGLFramebufferObjectFormat(int samples = 0,
-                               QGLFramebufferObject::Attachment attachment = QGLFramebufferObject::NoAttachment,
-                               GLenum target = GL_TEXTURE_2D,
-                               GLenum internalFormat = GL_RGBA8);
-#else
-    QGLFramebufferObjectFormat(int samples = 0,
-                               QGLFramebufferObject::Attachment attachment = QGLFramebufferObject::NoAttachment,
-                               GLenum target = GL_TEXTURE_2D,
-                               GLenum internalFormat = GL_RGBA);
-#endif
-
+    QGLFramebufferObjectFormat();
     QGLFramebufferObjectFormat(const QGLFramebufferObjectFormat &other);
     QGLFramebufferObjectFormat &operator=(const QGLFramebufferObjectFormat &other);
     ~QGLFramebufferObjectFormat();
@@ -164,6 +153,11 @@ public:
 
     void setInternalFormat(GLenum internalFormat);
     GLenum internalFormat() const;
+
+#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
+    void setTextureTarget(QMacCompatGLenum target);
+    void setInternalFormat(QMacCompatGLenum internalFormat);
+#endif
 
 private:
     QGLFramebufferObjectFormatPrivate *d;
