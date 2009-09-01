@@ -155,7 +155,7 @@ struct ScriptEngineEvent
           lineNumber(lineNumber)
         { }
 
-    ScriptEngineEvent(Type type, qint64 scriptId = -1)
+    ScriptEngineEvent(Type type, qint64 scriptId = -777)
         : type(type), scriptId(scriptId)
         { }
 
@@ -2098,6 +2098,7 @@ void tst_QScriptEngineAgent::syntaxError()
 
         i = 2;
         QCOMPARE(spy->at(i).type, ScriptEngineEvent::ContextPush);
+        QEXPECT_FAIL("","The test is broken, contextPush event do not provide scriptId", Continue);
         QVERIFY(spy->at(i).scriptId == -1);
         i = 3;
         QCOMPARE(spy->at(i).type, ScriptEngineEvent::FunctionEntry);
@@ -2107,6 +2108,7 @@ void tst_QScriptEngineAgent::syntaxError()
         QVERIFY(spy->at(i).scriptId == -1);
         i = 5;
         QCOMPARE(spy->at(i).type, ScriptEngineEvent::ContextPop);
+        QEXPECT_FAIL("","The test is broken, contextPop event do not provide scriptId", Continue);
         QVERIFY(spy->at(i).scriptId == -1);
         i = 6;
         QCOMPARE(spy->at(i).type, ScriptEngineEvent::ExceptionThrow);
