@@ -752,6 +752,7 @@ QHttpSocketEnginePrivate::QHttpSocketEnginePrivate()
     , readNotificationPending(false)
     , writeNotificationPending(false)
     , connectionNotificationPending(false)
+    , pendingResponseData(0)
 {
     socket = 0;
     state = QHttpSocketEngine::None;
