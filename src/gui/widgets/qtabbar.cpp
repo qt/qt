@@ -1913,13 +1913,8 @@ void QTabBar::keyPressEvent(QKeyEvent *event)
         event->ignore();
         return;
     }
-    int dx = event->key() == (isRightToLeft() ? Qt::Key_Right : Qt::Key_Left) ? -1 : 1;
-    for (int index = d->currentIndex + dx; d->validIndex(index); index += dx) {
-        if (d->tabList.at(index).enabled) {
-            setCurrentIndex(index);
-            break;
-        }
-    }
+    int offset = event->key() == (isRightToLeft() ? Qt::Key_Right : Qt::Key_Left) ? -1 : 1;    
+    d->setCurrentNextEnabledIndex(offset);
 }
 
 /*!\reimp
@@ -1928,14 +1923,22 @@ void QTabBar::keyPressEvent(QKeyEvent *event)
 void QTabBar::wheelEvent(QWheelEvent *event)
 {
     Q_D(QTabBar);
-    int overIndex = d->indexAtPos(event->pos());
-    if (overIndex != -1) {
-        int offset = event->delta() > 0 ? -1 : 1;
-        setCurrentIndex(currentIndex() + offset);
-    }
+    int offset = event->delta() > 0 ? -1 : 1;
+    d->setCurrentNextEnabledIndex(offset);
     QWidget::wheelEvent(event);
 }
 #endif //QT_NO_WHEELEVENT
+
+void QTabBarPrivate::setCurrentNextEnabledIndex(int offset)
+{
+    Q_Q(QTabBar);
+    for (int index = currentIndex + offset; validIndex(index); index += offset) {
+        if (tabList.at(index).enabled) {
+            q->setCurrentIndex(index);
+            break;
+        }
+    }
+}
 
 /*!\reimp
  */
