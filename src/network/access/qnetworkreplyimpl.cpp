@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 
 inline QNetworkReplyImplPrivate::QNetworkReplyImplPrivate()
     : backend(0), outgoingData(0),
-      copyDevice(0), networkCache(0),
+      copyDevice(0),
       cacheEnabled(false), cacheSaveDevice(0),
       notificationHandlingPaused(false),
       bytesDownloaded(0), lastBytesDownloaded(-1), bytesUploaded(-1),
@@ -203,11 +203,6 @@ void QNetworkReplyImplPrivate::setup(QNetworkAccessManager::Operation op, const 
     QMetaObject::invokeMethod(q, "_q_startOperation", Qt::QueuedConnection);
 }
 
-void QNetworkReplyImplPrivate::setNetworkCache(QAbstractNetworkCache *nc)
-{
-    networkCache = nc;
-}
-
 void QNetworkReplyImplPrivate::backendNotify(InternalNotifications notification)
 {
     Q_Q(QNetworkReplyImpl);
@@ -277,17 +272,27 @@ void QNetworkReplyImplPrivate::resumeNotificationHandling()
         QCoreApplication::postEvent(q, new QEvent(QEvent::NetworkReplyUpdated));
 }
 
+QAbstractNetworkCache *QNetworkReplyImplPrivate::networkCache() const
+{
+    if (!backend)
+        return 0;
+    return backend->networkCache();
+}
+
 void QNetworkReplyImplPrivate::createCache()
 {
     // check if we can save and if we're allowed to
-    if (!networkCache || !request.attribute(QNetworkRequest::CacheSaveControlAttribute, true).toBool())
+    if (!networkCache()
+        || request.attribute(QNetworkRequest::CacheLoadControlAttribute,
+                             QNetworkRequest::PreferNetwork).toInt()
+            == QNetworkRequest::AlwaysNetwork)
         return;
     cacheEnabled = true;
 }
 
 bool QNetworkReplyImplPrivate::isCachingEnabled() const
 {
-    return (cacheEnabled && networkCache != 0);
+    return (cacheEnabled && networkCache() != 0);
 }
 
 void QNetworkReplyImplPrivate::setCachingEnabled(bool enable)
@@ -311,7 +316,7 @@ void QNetworkReplyImplPrivate::setCachingEnabled(bool enable)
         qDebug("QNetworkReplyImpl: setCachingEnabled(true) called after setCachingEnabled(false) -- "
                "backend %s probably needs to be fixed",
                backend->metaObject()->className());
-        networkCache->remove(url);
+        networkCache()->remove(url);
         cacheSaveDevice = 0;
         cacheEnabled = false;
     }
@@ -320,9 +325,9 @@ void QNetworkReplyImplPrivate::setCachingEnabled(bool enable)
 void QNetworkReplyImplPrivate::completeCacheSave()
 {
     if (cacheEnabled && errorCode != QNetworkReplyImpl::NoError) {
-        networkCache->remove(url);
+        networkCache()->remove(url);
     } else if (cacheEnabled && cacheSaveDevice) {
-        networkCache->insert(cacheSaveDevice);
+        networkCache()->insert(cacheSaveDevice);
     }
     cacheSaveDevice = 0;
     cacheEnabled = false;
@@ -385,15 +390,15 @@ void QNetworkReplyImplPrivate::feed(const QByteArray &data)
             metaData.setAttributes(attributes);
         }
 
-        cacheSaveDevice = networkCache->prepare(metaData);
+        cacheSaveDevice = networkCache()->prepare(metaData);
 
         if (!cacheSaveDevice || (cacheSaveDevice && !cacheSaveDevice->isOpen())) {
             if (cacheSaveDevice && !cacheSaveDevice->isOpen())
                 qCritical("QNetworkReplyImpl: network cache returned a device that is not open -- "
                       "class %s probably needs to be fixed",
-                      networkCache->metaObject()->className());
+                      networkCache()->metaObject()->className());
 
-            networkCache->remove(url);
+            networkCache()->remove(url);
             cacheSaveDevice = 0;
             cacheEnabled = false;
         }
@@ -524,7 +529,7 @@ QNetworkReplyImpl::~QNetworkReplyImpl()
 {
     Q_D(QNetworkReplyImpl);
     if (d->isCachingEnabled())
-        d->networkCache->remove(url());
+        d->networkCache()->remove(url());
 }
 
 void QNetworkReplyImpl::abort()

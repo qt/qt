@@ -176,7 +176,9 @@ QList<QNetworkProxy> QNetworkAccessBackend::proxyList() const
 
 QAbstractNetworkCache *QNetworkAccessBackend::networkCache() const
 {
-    return reply->networkCache; // should be the same as manager->networkCache
+    if (!manager)
+        return 0;
+    return manager->networkCache;
 }
 
 void QNetworkAccessBackend::setCachingEnabled(bool enable)

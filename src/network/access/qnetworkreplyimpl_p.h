@@ -128,7 +128,6 @@ public:
 
     void setup(QNetworkAccessManager::Operation op, const QNetworkRequest &request,
                QIODevice *outgoingData);
-    void setNetworkCache(QAbstractNetworkCache *networkCache);
 
     void pauseNotificationHandling();
     void resumeNotificationHandling();
@@ -153,7 +152,7 @@ public:
     QNetworkAccessBackend *backend;
     QIODevice *outgoingData;
     QIODevice *copyDevice;
-    QAbstractNetworkCache *networkCache;
+    QAbstractNetworkCache *networkCache() const;
 
     bool cacheEnabled;
     QIODevice *cacheSaveDevice;
