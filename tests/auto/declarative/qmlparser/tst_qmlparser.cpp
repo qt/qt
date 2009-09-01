@@ -54,6 +54,8 @@ private slots:
     void importsLocal();
     void importsInstalled_data();
     void importsInstalled();
+    void importsOrder_data();
+    void importsOrder();
 
     // regression tests for crashes
     void crash1();
@@ -153,6 +155,8 @@ void tst_qmlparser::errors_data()
     QTest::newRow("failingComponent") << "failingComponentTest.qml" << "failingComponent.errors.txt" << false;
     QTest::newRow("missingSignal") << "missingSignal.qml" << "missingSignal.errors.txt" << false;
     QTest::newRow("finalOverride") << "finalOverride.qml" << "finalOverride.errors.txt" << false;
+
+    QTest::newRow("importNamespaceConflict") << "importNamespaceConflict.qml" << "importNamespaceConflict.errors.txt" << false;
 }
 
 void tst_qmlparser::errors()
@@ -688,6 +692,65 @@ void tst_qmlparser::importsInstalled_data()
 }
 
 void tst_qmlparser::importsInstalled()
+{
+    QFETCH(QString, qml);
+    QFETCH(QString, type);
+    testType(qml,type);
+}
+
+
+void tst_qmlparser::importsOrder_data()
+{
+    QTest::addColumn<QString>("qml");
+    QTest::addColumn<QString>("type");
+
+    QTest::newRow("installed import overrides 1") <<
+           "import com.nokia.installedtest 1.0\n"
+           "import com.nokia.installedtest 1.4\n"
+           "InstalledTest {}"
+        << "QFxText";
+    QTest::newRow("installed import overrides 2") <<
+           "import com.nokia.installedtest 1.4\n"
+           "import com.nokia.installedtest 1.0\n"
+           "InstalledTest {}"
+        << "QFxRect";
+    QTest::newRow("installed import re-overrides 1") <<
+           "import com.nokia.installedtest 1.4\n"
+           "import com.nokia.installedtest 1.0\n"
+           "import com.nokia.installedtest 1.4\n"
+           "InstalledTest {}"
+        << "QFxText";
+    QTest::newRow("installed import re-overrides 2") <<
+           "import com.nokia.installedtest 1.4\n"
+           "import com.nokia.installedtest 1.0\n"
+           "import com.nokia.installedtest 1.4\n"
+           "import com.nokia.installedtest 1.0\n"
+           "InstalledTest {}"
+        << "QFxRect";
+
+    QTest::newRow("installed import versus builtin 1") <<
+           "import com.nokia.installedtest 1.5\n"
+           "import Qt 4.6\n"
+           "Rectangle {}"
+        << "QFxRect";
+    QTest::newRow("installed import versus builtin 2") <<
+           "import Qt 4.6\n"
+           "import com.nokia.installedtest 1.5\n"
+           "Rectangle {}"
+        << "QFxText";
+    QTest::newRow("namespaces cannot be overridden by types 1") <<
+           "import Qt 4.6 as Rectangle\n"
+           "import com.nokia.installedtest 1.5\n"
+           "Rectangle {}"
+        << "";
+    QTest::newRow("namespaces cannot be overridden by types 2") <<
+           "import Qt 4.6 as Rectangle\n"
+           "import com.nokia.installedtest 1.5\n"
+           "Rectangle.Image {}"
+        << "QFxImage";
+}
+
+void tst_qmlparser::importsOrder()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);

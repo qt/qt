@@ -818,7 +818,7 @@ Rectangle {
 \endcode
 \endtable
 
-Components may be collected into \l {Modules of Components} that gives the 
+Components may be collected into \l {Modules} that gives the 
 developer more freedom than just putting files in the same directory.
 
 \section2 Building reusable components
