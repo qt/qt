@@ -237,6 +237,8 @@ class Q_GUI_EXPORT QGraphicsDropShadowEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_PROPERTY(QPointF offset READ offset WRITE setOffset NOTIFY offsetChanged)
+    Q_PROPERTY(qreal xOffset READ xOffset WRITE setXOffset NOTIFY offsetChanged)
+    Q_PROPERTY(qreal yOffset READ yOffset WRITE setYOffset NOTIFY offsetChanged)
     Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 public:
@@ -245,15 +247,31 @@ public:
 
     QRectF boundingRectFor(const QRectF &rect) const;
     QPointF offset() const;
+
+    inline qreal xOffset() const
+    { return offset().x(); }
+
+    inline qreal yOffset() const
+    { return offset().y(); }
+
     int blurRadius() const;
     QColor color() const;
 
 public Q_SLOTS:
     void setOffset(const QPointF &ofs);
+
     inline void setOffset(qreal dx, qreal dy)
     { setOffset(QPointF(dx, dy)); }
+
     inline void setOffset(qreal d)
     { setOffset(QPointF(d, d)); }
+
+    inline void setXOffset(qreal dx)
+    { setOffset(QPointF(dx, yOffset())); }
+
+    inline void setYOffset(qreal dy)
+    { setOffset(QPointF(xOffset(), dy)); }
+
     void setBlurRadius(int blurRadius);
     void setColor(const QColor &color);
 

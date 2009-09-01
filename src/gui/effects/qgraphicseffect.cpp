@@ -840,7 +840,7 @@ QGraphicsDropShadowEffect::~QGraphicsDropShadowEffect()
 
     By default, the offset is 8 pixels towards the lower right.
 
-    \sa blurRadius(), color()
+    \sa xOffset(), yOffset(), blurRadius(), color()
 */
 QPointF QGraphicsDropShadowEffect::offset() const
 {
@@ -858,6 +858,24 @@ void QGraphicsDropShadowEffect::setOffset(const QPointF &offset)
     updateBoundingRect();
     emit offsetChanged(offset);
 }
+
+/*!
+    \property QGraphicsDropShadowEffect::xOffset
+    \brief the horizontal shadow offset in pixels.
+
+    By default, the horizontal shadow offset is 8 pixels.
+
+    \sa yOffset(), offset()
+*/
+
+/*!
+    \property QGraphicsDropShadowEffect::yOffset
+    \brief the vertical shadow offset in pixels.
+
+    By default, the vertical shadow offset is 8 pixels.
+
+    \sa xOffset(), offset()
+*/
 
 /*!
     \fn void QGraphicsDropShadowEffect::offsetChanged(const QPointF &offset)
