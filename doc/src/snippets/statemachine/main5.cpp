@@ -1,3 +1,43 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the documentation of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
 
 #include <QtGui>
 
@@ -16,8 +56,8 @@ int main(int argv, char **args)
     s1->assignProperty(object, "fooBar", 1.0);
     machine.addState(s1);
     machine.setInitialState(s1);
-      
-    QState *s2 = new QState();  
+
+    QState *s2 = new QState();
     machine.addState(s2);
 //![1]
   }
@@ -27,16 +67,16 @@ int main(int argv, char **args)
 //![2]
     QStateMachine machine;
     machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
-      
+
     QState *s1 = new QState();
     s1->assignProperty(object, "fooBar", 1.0);
     machine.addState(s1);
     machine.setInitialState(s1);
-      
-    QState *s2 = new QState(s1);  
+
+    QState *s2 = new QState(s1);
     s2->assignProperty(object, "fooBar", 2.0);
     s1->setInitialState(s2);
-          
+
     QState *s3 = new QState(s1);
 //![2]
 
@@ -45,11 +85,11 @@ int main(int argv, char **args)
   {
 //![3]
     QState *s1 = new QState();
-    QState *s2 = new QState();      
-    
+    QState *s2 = new QState();
+
     s1->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
     s2->assignProperty(button, "geometry", QRectF(0, 0, 100, 100));
-    
+
     s1->addTransition(button, SIGNAL(clicked()), s2);
 //![3]
 
@@ -58,11 +98,11 @@ int main(int argv, char **args)
   {
 //![4]
     QState *s1 = new QState();
-    QState *s2 = new QState();      
-    
+    QState *s2 = new QState();
+
     s1->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
     s2->assignProperty(button, "geometry", QRectF(0, 0, 100, 100));
-    
+
     QSignalTransition *transition = s1->addTransition(button, SIGNAL(clicked()), s2);
     transition->addAnimation(new QPropertyAnimation(button, "geometry"));
 //![4]
@@ -74,9 +114,9 @@ int main(int argv, char **args)
 //![5]
     QState *s1 = new QState();
     s1->assignProperty(button, "geometry", QRectF(0, 0, 50, 50));
-    
+
     QState *s2 = new QState();
-    
+
     s1->addTransition(s1, SIGNAL(polished()), s2);
 //![5]
 
@@ -87,13 +127,13 @@ int main(int argv, char **args)
 //![6]
     QState *s1 = new QState();
     QState *s2 = new QState();
-    
+
     s2->assignProperty(object, "fooBar", 2.0);
-    s1->addTransition(s2);    
-    
+    s1->addTransition(s2);
+
     QStateMachine machine;
     machine.setInitialState(s1);
-    machine.addDefaultAnimation(new QPropertyAnimation(object, "fooBar"));    
+    machine.addDefaultAnimation(new QPropertyAnimation(object, "fooBar"));
 //![6]
 
   }

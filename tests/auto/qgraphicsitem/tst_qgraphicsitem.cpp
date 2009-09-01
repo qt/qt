@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -289,6 +289,9 @@ private slots:
     void setGraphicsEffect();
     void panel();
     void addPanelToActiveScene();
+    void activate();
+    void setActivePanelOnInactiveScene();
+    void activationOnShowHide();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -7823,26 +7826,15 @@ void tst_QGraphicsItem::panel()
 
     // No previous activation, so the scene is active.
     QVERIFY(scene.isActive());
-    QVERIFY(!scene.activePanel());
-    QVERIFY(!panel1->isActive());
-    QVERIFY(!panel2->isActive());
-    QVERIFY(!panel3->isActive());
-    QVERIFY(!panel4->isActive());
-    QVERIFY(notPanel1->isActive());
-    QVERIFY(notPanel2->isActive());
-    QCOMPARE(spy_activate_notPanel1.count(), 1);
-    QCOMPARE(spy_activate_notPanel2.count(), 1);
-
-    // Switch to panel1.
-    scene.setActivePanel(panel1);
+    QCOMPARE(scene.activePanel(), (QGraphicsItem *)panel1);
     QVERIFY(panel1->isActive());
     QVERIFY(!panel2->isActive());
     QVERIFY(!panel3->isActive());
     QVERIFY(!panel4->isActive());
     QVERIFY(!notPanel1->isActive());
     QVERIFY(!notPanel2->isActive());
-    QCOMPARE(spy_deactivate_notPanel1.count(), 1);
-    QCOMPARE(spy_deactivate_notPanel2.count(), 1);
+    QCOMPARE(spy_deactivate_notPanel1.count(), 0);
+    QCOMPARE(spy_deactivate_notPanel2.count(), 0);
     QCOMPARE(spy_activate_panel1.count(), 1);
     QCOMPARE(spy_activate_panel2.count(), 0);
     QCOMPARE(spy_activate_panel3.count(), 0);
@@ -7857,8 +7849,8 @@ void tst_QGraphicsItem::panel()
     QVERIFY(!panel4->isActive());
     QVERIFY(notPanel1->isActive());
     QVERIFY(notPanel2->isActive());
-    QCOMPARE(spy_activate_notPanel1.count(), 2);
-    QCOMPARE(spy_activate_notPanel2.count(), 2);
+    QCOMPARE(spy_activate_notPanel1.count(), 1);
+    QCOMPARE(spy_activate_notPanel2.count(), 1);
 
     // Deactivate the scene
     QApplication::sendEvent(&scene, &deactivate);
@@ -7869,8 +7861,8 @@ void tst_QGraphicsItem::panel()
     QVERIFY(!panel4->isActive());
     QVERIFY(!notPanel1->isActive());
     QVERIFY(!notPanel2->isActive());
-    QCOMPARE(spy_deactivate_notPanel1.count(), 2);
-    QCOMPARE(spy_deactivate_notPanel2.count(), 2);
+    QCOMPARE(spy_deactivate_notPanel1.count(), 1);
+    QCOMPARE(spy_deactivate_notPanel2.count(), 1);
 
     // Reactivate the scene
     QApplication::sendEvent(&scene, &activate);
@@ -7881,14 +7873,14 @@ void tst_QGraphicsItem::panel()
     QVERIFY(!panel4->isActive());
     QVERIFY(notPanel1->isActive());
     QVERIFY(notPanel2->isActive());
-    QCOMPARE(spy_activate_notPanel1.count(), 3);
-    QCOMPARE(spy_activate_notPanel2.count(), 3);
+    QCOMPARE(spy_activate_notPanel1.count(), 2);
+    QCOMPARE(spy_activate_notPanel2.count(), 2);
 
     // Switch to panel1
     scene.setActivePanel(panel1);
     QVERIFY(panel1->isActive());
-    QCOMPARE(spy_deactivate_notPanel1.count(), 3);
-    QCOMPARE(spy_deactivate_notPanel2.count(), 3);
+    QCOMPARE(spy_deactivate_notPanel1.count(), 2);
+    QCOMPARE(spy_deactivate_notPanel2.count(), 2);
     QCOMPARE(spy_activate_panel1.count(), 2);
 
     // Deactivate the scene
@@ -7940,6 +7932,174 @@ void tst_QGraphicsItem::addPanelToActiveScene()
     scene.addItem(rect2);
     QVERIFY(rect->isActive());
     QCOMPARE(scene.activePanel(), (QGraphicsItem *)rect);
+}
+
+void tst_QGraphicsItem::activate()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *rect = scene.addRect(-10, -10, 20, 20);
+    QVERIFY(!rect->isActive());
+
+    QEvent activate(QEvent::WindowActivate);
+    QEvent deactivate(QEvent::WindowDeactivate);
+
+    QApplication::sendEvent(&scene, &activate);
+
+    // Non-panel item (active when scene is active).
+    QVERIFY(rect->isActive());
+
+    QGraphicsRectItem *rect2 = new QGraphicsRectItem;
+    rect2->setFlag(QGraphicsItem::ItemIsPanel);
+    QGraphicsRectItem *rect3 = new QGraphicsRectItem;
+    rect3->setFlag(QGraphicsItem::ItemIsPanel);
+
+    // Test normal activation.
+    QVERIFY(!rect2->isActive());
+    scene.addItem(rect2);
+    QVERIFY(rect2->isActive()); // first panel item is activated
+    scene.addItem(rect3);
+    QVERIFY(!rect3->isActive()); // second panel item is _not_ activated
+    rect3->setActive(true);
+    QVERIFY(rect3->isActive());
+    scene.removeItem(rect3);
+    QVERIFY(!rect3->isActive()); // no panel is active anymore
+    QCOMPARE(scene.activePanel(), (QGraphicsItem *)0);
+    scene.addItem(rect3);
+    QVERIFY(rect3->isActive()); // second panel item is activated
+
+    // Test pending activation.
+    scene.removeItem(rect3);
+    rect2->setActive(true);
+    QVERIFY(rect2->isActive()); // first panel item is activated
+    rect3->setActive(true);
+    QVERIFY(!rect3->isActive()); // not active (yet)
+    scene.addItem(rect3);
+    QVERIFY(rect3->isActive()); // now becomes active
+
+    // Test pending deactivation.
+    scene.removeItem(rect3);
+    rect3->setActive(false);
+    scene.addItem(rect3);
+    QVERIFY(!rect3->isActive()); // doesn't become active
+
+    // Child of panel activation.
+    rect3->setActive(true);
+    QGraphicsRectItem *rect4 = new QGraphicsRectItem;
+    rect4->setFlag(QGraphicsItem::ItemIsPanel);
+    QGraphicsRectItem *rect5 = new QGraphicsRectItem(rect4);
+    QGraphicsRectItem *rect6 = new QGraphicsRectItem(rect5);
+    scene.addItem(rect4);
+    QCOMPARE(scene.activePanel(), (QGraphicsItem *)rect3);
+    scene.removeItem(rect4);
+    rect6->setActive(true);
+    scene.addItem(rect4);
+    QVERIFY(rect4->isActive());
+    QVERIFY(rect5->isActive());
+    QVERIFY(rect6->isActive());
+    QCOMPARE(scene.activePanel(), (QGraphicsItem *)rect4);
+    scene.removeItem(rect4); // no active panel
+    rect6->setActive(false);
+    scene.addItem(rect4);
+    QVERIFY(!rect4->isActive());
+    QVERIFY(!rect5->isActive());
+    QVERIFY(!rect6->isActive());
+    QCOMPARE(scene.activePanel(), (QGraphicsItem *)0);
+
+    // Controlling auto-activation when the scene changes activation.
+    rect4->setActive(true);
+    QApplication::sendEvent(&scene, &deactivate);
+    QVERIFY(!scene.isActive());
+    QVERIFY(!rect4->isActive());
+    rect4->setActive(false);
+    QApplication::sendEvent(&scene, &activate);
+    QVERIFY(scene.isActive());
+    QVERIFY(!scene.activePanel());
+    QVERIFY(!rect4->isActive());
+}
+
+void tst_QGraphicsItem::setActivePanelOnInactiveScene()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *item = scene.addRect(QRectF());
+    QGraphicsRectItem *panel = scene.addRect(QRectF());
+    panel->setFlag(QGraphicsItem::ItemIsPanel);
+
+    EventSpy itemActivateSpy(&scene, item, QEvent::WindowActivate);
+    EventSpy itemDeactivateSpy(&scene, item, QEvent::WindowDeactivate);
+    EventSpy panelActivateSpy(&scene, panel, QEvent::WindowActivate);
+    EventSpy panelDeactivateSpy(&scene, panel, QEvent::WindowDeactivate);
+    EventSpy sceneActivationChangeSpy(&scene, QEvent::ActivationChange);
+
+    scene.setActivePanel(panel);
+    QCOMPARE(scene.activePanel(), (QGraphicsItem *)0);
+    QCOMPARE(itemActivateSpy.count(), 0);
+    QCOMPARE(itemDeactivateSpy.count(), 0);
+    QCOMPARE(panelActivateSpy.count(), 0);
+    QCOMPARE(panelDeactivateSpy.count(), 0);
+    QCOMPARE(sceneActivationChangeSpy.count(), 0);
+}
+
+void tst_QGraphicsItem::activationOnShowHide()
+{
+    QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
+    QGraphicsRectItem *rootPanel = scene.addRect(QRectF());
+    rootPanel->setFlag(QGraphicsItem::ItemIsPanel);
+    rootPanel->setActive(true);
+
+    QGraphicsRectItem *subPanel = new QGraphicsRectItem;
+    subPanel->setFlag(QGraphicsItem::ItemIsPanel);
+
+    // Reparenting onto an active panel auto-activates the child panel.
+    subPanel->setParentItem(rootPanel);
+    QVERIFY(subPanel->isActive());
+    QVERIFY(!rootPanel->isActive());
+
+    // Hiding an active child panel will reactivate the parent panel.
+    subPanel->hide();
+    QVERIFY(rootPanel->isActive());
+
+    // Showing a child panel will auto-activate it.
+    subPanel->show();
+    QVERIFY(subPanel->isActive());
+    QVERIFY(!rootPanel->isActive());
+
+    // Adding an unrelated panel doesn't affect activation.
+    QGraphicsRectItem *otherPanel = new QGraphicsRectItem;
+    otherPanel->setFlag(QGraphicsItem::ItemIsPanel);
+    scene.addItem(otherPanel);
+    QVERIFY(subPanel->isActive());
+
+    // Showing an unrelated panel doesn't affect activation.
+    otherPanel->hide();
+    otherPanel->show();
+    QVERIFY(subPanel->isActive());
+
+    // Add a non-panel item.
+    QGraphicsRectItem *otherItem = new QGraphicsRectItem;
+    scene.addItem(otherItem);
+    otherItem->setActive(true);
+    QVERIFY(otherItem->isActive());
+
+    // Reparent a panel onto an active non-panel item.
+    subPanel->setParentItem(otherItem);
+    QVERIFY(subPanel->isActive());
+
+    // Showing a child panel of a non-panel item will activate it.
+    subPanel->hide();
+    QVERIFY(!subPanel->isActive());
+    QVERIFY(otherItem->isActive());
+    subPanel->show();
+    QVERIFY(subPanel->isActive());
+
+    // Hiding a toplevel active panel will pass activation back
+    // to the non-panel items.
+    rootPanel->setActive(true);
+    rootPanel->hide();
+    QVERIFY(!rootPanel->isActive());
+    QVERIFY(otherItem->isActive());
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

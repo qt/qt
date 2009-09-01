@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1007,6 +1007,9 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
                 setEnabledHelper(parent->isEnabled(), /* explicit = */ false, /* update = */ !implicitUpdate);
         }
 
+        // Auto-activate if visible and the parent is active.
+        if (q->isVisible() && parent->isActive())
+            q->setActive(true);
     } else {
         // Inherit ancestor flags from the new parent.
         updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
@@ -1941,6 +1944,17 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
             child->d_ptr->setVisibleHelper(newVisible, false, updateChildren);
     }
 
+    // Update activation
+    if (scene && q->isPanel()) {
+        if (newVisible) {
+            if (parent && parent->isActive())
+                q->setActive(true);
+        } else {
+            if (q->isActive())
+                scene->setActivePanel(parent);
+        }
+    }
+
     // Enable subfocus
     if (newVisible && isWidget) {
         QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(q_ptr);
@@ -2666,6 +2680,37 @@ bool QGraphicsItem::isActive() const
     if (!d_ptr->scene || !d_ptr->scene->isActive())
         return false;
     return panel() == d_ptr->scene->activePanel();
+}
+
+/*!
+    \since 4.6
+
+    If \a active is true, and the scene is active, this item's panel will be
+    activated. Otherwise, the panel is deactivated.
+
+    If the item is not part of an active scene, \a active will decide what
+    happens to the panel when the scene becomes active or the item is added to
+    the scene. If true, the item's panel will be activated when the item is
+    either added to the scene or the scene is activated. Otherwise, the item
+    will stay inactive independent of the scene's activated state.
+
+    \sa isPanel(), QGraphicsScene::setActivePanel(), QGraphicsScene::isActive()
+*/
+void QGraphicsItem::setActive(bool active)
+{
+    d_ptr->explicitActivate = 1;
+    d_ptr->wantsActive = active;
+    if (d_ptr->scene) {
+        if (active) {
+            // Activate this item.
+            d_ptr->scene->setActivePanel(this);
+        } else {
+            // Deactivate this item, and reactivate the last active item
+            // (if any).
+            QGraphicsItem *lastActive = d_ptr->scene->d_func()->lastActivePanel;
+            d_ptr->scene->setActivePanel(lastActive != this ? lastActive : 0);
+        }
+    }
 }
 
 /*!
@@ -6099,8 +6144,10 @@ bool QGraphicsItem::sceneEvent(QEvent *event)
         if (d_ptr->scene) {
             for (int i = 0; i < d_ptr->children.size(); ++i) {
                 QGraphicsItem *child = d_ptr->children.at(i);
-                if (!(child->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorHandlesChildEvents))
-                    d_ptr->scene->sendEvent(child, event);
+                if (child->isVisible() && !child->isPanel()) {
+                    if (!(child->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorHandlesChildEvents))
+                        d_ptr->scene->sendEvent(child, event);
+                }
             }
         }
         break;
@@ -6945,7 +6992,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
   \property QGraphicsObject::id
   \brief the id of of the item
 
-  \sa QGraphicsItem::opacity(), QGraphicsItem::setOpacity()
+  \sa QObject::objectName(), QObject::setObjectName()
 */
 
 /*!
@@ -10349,6 +10396,8 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
                      info->widget, info->opacity, &newEffectTransform, info->wasDirtySceneTransform,
                      info->drawItem);
     }
+
+    pixmapPainter.end();
     return pixmap;
 }
 

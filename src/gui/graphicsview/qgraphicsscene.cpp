@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -291,6 +291,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       activePanel(0),
       lastActivePanel(0),
       activationRefCount(0),
+      childExplicitActivation(0),
       lastMouseGrabberItem(0),
       lastMouseGrabberItemHasImplicitMouseGrab(false),
       dragDropItem(0),
@@ -566,6 +567,66 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     --selectionChanging;
     if (!selectionChanging && selectedItems.size() != oldSelectedItemsSize)
         emit q->selectionChanged();
+}
+
+/*!
+    \internal
+*/
+void QGraphicsScenePrivate::setActivePanelHelper(QGraphicsItem *item, bool duringActivationEvent)
+{
+    Q_Q(QGraphicsScene);
+    if (item && item->scene() != q) {
+        qWarning("QGraphicsScene::setActivePanel: item %p must be part of this scene",
+                 item);
+        return;
+    }
+
+    // Find the item's panel.
+    QGraphicsItem *panel = item ? item->panel() : 0;
+    lastActivePanel = panel ? activePanel : 0;
+    if (panel == activePanel || (!q->isActive() && !duringActivationEvent))
+        return;
+
+    // Deactivate the last active panel.
+    if (activePanel) {
+        if (QGraphicsItem *fi = activePanel->focusItem()) {
+            // Remove focus from the current focus item.
+            if (fi == q->focusItem())
+                q->setFocusItem(0, Qt::ActiveWindowFocusReason);
+        }
+
+        QEvent event(QEvent::WindowDeactivate);
+        q->sendEvent(activePanel, &event);
+    } else if (panel && !duringActivationEvent) {
+        // Deactivate the scene if changing activation to a panel.
+        QEvent event(QEvent::WindowDeactivate);
+        foreach (QGraphicsItem *item, q->items()) {
+            if (item->isVisible() && !item->isPanel() && !item->parentItem())
+                q->sendEvent(item, &event);
+        }
+    }
+
+    // Update activate state.
+    activePanel = panel;
+    QEvent event(QEvent::ActivationChange);
+    QApplication::sendEvent(q, &event);
+
+    // Activate
+    if (panel) {
+        QEvent event(QEvent::WindowActivate);
+        q->sendEvent(panel, &event);
+
+        // Set focus on the panel's focus item.
+        if (QGraphicsItem *focusItem = panel->focusItem())
+            focusItem->setFocus(Qt::ActiveWindowFocusReason);
+    } else if (q->isActive()) {
+        // Activate the scene
+        QEvent event(QEvent::WindowActivate);
+        foreach (QGraphicsItem *item, q->items()) {
+            if (item->isVisible() && !item->isPanel() && !item->parentItem())
+                q->sendEvent(item, &event);
+        }
+    }
 }
 
 /*!
@@ -2351,9 +2412,29 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     // Deliver post-change notification
     item->itemChange(QGraphicsItem::ItemSceneHasChanged, newSceneVariant);
 
-    // Auto-activate the first inactive panel if the scene is active.
-    if (isActive() && !d->activePanel && item->isPanel())
-        setActivePanel(item);
+    // Update explicit activation
+    bool autoActivate = true;
+    if (!d->childExplicitActivation && item->d_ptr->explicitActivate)
+        d->childExplicitActivation = item->d_ptr->wantsActive ? 1 : 2;
+    if (d->childExplicitActivation && item->isPanel()) {
+        if (d->childExplicitActivation == 1)
+            setActivePanel(item);
+        else
+            autoActivate = false;
+        d->childExplicitActivation = 0;
+    } else if (!item->d_ptr->parent) {
+        d->childExplicitActivation = 0;
+    }
+
+    // Auto-activate this item's panel if nothing else has been activated
+    if (autoActivate) {
+        if (!d->lastActivePanel && !d->activePanel && item->isPanel()) {
+            if (isActive())
+                setActivePanel(item);
+            else
+                d->lastActivePanel = item;
+        }
+    }
 
     // Ensure that newly added items that have subfocus set, gain
     // focus automatically if there isn't a focus item already.
@@ -3129,11 +3210,11 @@ bool QGraphicsScene::event(QEvent *event)
         if (!d->activationRefCount++) {
             if (d->lastActivePanel) {
                 // Activate the last panel.
-                setActivePanel(d->lastActivePanel);
+                d->setActivePanelHelper(d->lastActivePanel, true);
             } else if (d->tabFocusFirst && d->tabFocusFirst->isPanel()) {
                 // Activate the panel of the first item in the tab focus
                 // chain.
-                setActivePanel(d->tabFocusFirst);
+                d->setActivePanelHelper(d->tabFocusFirst, true);
             } else {
                 // Activate all toplevel items.
                 QEvent event(QEvent::WindowActivate);
@@ -3150,7 +3231,7 @@ bool QGraphicsScene::event(QEvent *event)
                 // Deactivate the active panel (but keep it so we can
                 // reactivate it later).
                 QGraphicsItem *lastActivePanel = d->activePanel;
-                setActivePanel(0);
+                d->setActivePanelHelper(0, true);
                 d->lastActivePanel = lastActivePanel;
             } else {
                 // Activate all toplevel items.
@@ -5095,63 +5176,15 @@ QGraphicsItem *QGraphicsScene::activePanel() const
     can also pass 0 for \a item, in which case QGraphicsScene will
     deactivate any currently active panel.
 
+    If the scene is currently inactive, \a item remains inactive until the
+    scene becomes active (or, ir \a item is 0, no item will be activated).
+
     \sa activePanel(), isActive(), QGraphicsItem::isActive()
 */
 void QGraphicsScene::setActivePanel(QGraphicsItem *item)
 {
     Q_D(QGraphicsScene);
-    if (item && item->scene() != this) {
-        qWarning("QGraphicsScene::setActivePanel: item %p must be part of this scene",
-                 item);
-        return;
-    }
-
-    // Find the item's panel.
-    QGraphicsItem *panel = item ? item->panel() : 0;
-    d->lastActivePanel = panel ? d->activePanel : 0;
-    if (panel == d->activePanel)
-        return;
-
-    // Deactivate the last active panel.
-    if (d->activePanel) {
-        if (QGraphicsItem *fi = d->activePanel->focusItem()) {
-            // Remove focus from the current focus item.
-            if (fi == focusItem())
-                setFocusItem(0, Qt::ActiveWindowFocusReason);
-        }
-
-        QEvent event(QEvent::WindowDeactivate);
-        sendEvent(d->activePanel, &event);
-    } else if (panel) {
-        // Deactivate the scene if changing activation to a panel.
-        QEvent event(QEvent::WindowDeactivate);
-        foreach (QGraphicsItem *item, items()) {
-            if (item->isVisible() && !item->isPanel() && !item->parentItem())
-                sendEvent(item, &event);
-        }
-    }
-
-    // Update activate state.
-    d->activePanel = panel;
-    QEvent event(QEvent::ActivationChange);
-    QApplication::sendEvent(this, &event);
-
-    // Activate
-    if (panel) {
-        QEvent event(QEvent::WindowActivate);
-        sendEvent(panel, &event);
-
-        // Set focus on the panel's focus item.
-        if (QGraphicsItem *focusItem = panel->focusItem())
-            focusItem->setFocus(Qt::ActiveWindowFocusReason);
-    } else if (isActive()) {
-        // Activate the scene
-        QEvent event(QEvent::WindowActivate);
-        foreach (QGraphicsItem *item, items()) {
-            if (item->isVisible() && !item->isPanel() && !item->parentItem())
-                sendEvent(item, &event);
-        }
-    }
+    d->setActivePanelHelper(item, false);
 }
 
 /*!
