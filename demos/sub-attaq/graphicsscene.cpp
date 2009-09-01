@@ -51,6 +51,7 @@
 #include "animationmanager.h"
 #include "qanimationstate.h"
 #include "progressitem.h"
+#include "textinformationitem.h"
 
 //Qt
 #include <QtCore/QPropertyAnimation>
@@ -112,6 +113,8 @@ GraphicsScene::GraphicsScene(int x, int y, int width, int height, Mode mode)
     //The item that display score and level
     progressItem = new ProgressItem(backgroundItem);
 
+    textInformationItem = new TextInformationItem(backgroundItem);
+    textInformationItem->hide();
     //We create the boat
     boat = new Boat();
     addItem(boat);
@@ -244,15 +247,15 @@ void GraphicsScene::setupScene(const QList<QAction *> &actions)
     lettersFadingState->setAnimation(lettersGroupFading);
 
     //if new game then we fade out the welcome screen and start playing
-    lettersMovingState->addTransition(newAction, SIGNAL(triggered()),lettersFadingState);
-    lettersFadingState->addTransition(lettersFadingState, SIGNAL(animationFinished()),gameState);
+    lettersMovingState->addTransition(newAction, SIGNAL(triggered()), lettersFadingState);
+    lettersFadingState->addTransition(lettersFadingState, SIGNAL(animationFinished()), gameState);
 
     //New Game is triggered then player start playing
-    gameState->addTransition(newAction, SIGNAL(triggered()),gameState);
+    gameState->addTransition(newAction, SIGNAL(triggered()), gameState);
 
     //Wanna quit, then connect to CTRL+Q
-    gameState->addTransition(quitAction, SIGNAL(triggered()),final);
-    lettersMovingState->addTransition(quitAction, SIGNAL(triggered()),final);
+    gameState->addTransition(quitAction, SIGNAL(triggered()), final);
+    lettersMovingState->addTransition(quitAction, SIGNAL(triggered()), final);
 
     //Welcome screen is the initial state
     machine->setInitialState(lettersMovingState);
