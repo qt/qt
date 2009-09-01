@@ -133,7 +133,7 @@ extern "C" {
     long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( InterlockedExchange )(long QT_INTERLOCKED_VOLATILE *, long);
     long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( InterlockedExchangeAdd )(long QT_INTERLOCKED_VOLATILE *, long);
 
-# if !defined(__i386__) && !defined(_M_IX86)
+# if !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
     void * QT_INTERLOCKED_FUNCTION( InterlockedCompareExchangePointer )(void * QT_INTERLOCKED_VOLATILE *, void *, void *);
     void * QT_INTERLOCKED_FUNCTION( InterlockedExchangePointer )(void * QT_INTERLOCKED_VOLATILE *, void *);
     __int64 QT_INTERLOCKED_FUNCTION( InterlockedExchangeAdd64 )(__int64 QT_INTERLOCKED_VOLATILE *, __int64);
