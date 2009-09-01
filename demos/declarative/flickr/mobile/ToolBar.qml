@@ -8,7 +8,7 @@ Item {
     signal button1Clicked
     signal button2Clicked
 
-    BorderImage { source: "images/titlebar2.sci"; width: parent.width; height: parent.height + 14; y: -7 }
+    BorderImage { source: "images/titlebar.sci"; width: parent.width; height: parent.height + 14; y: -7 }
 
     Button {
         id: Button1
