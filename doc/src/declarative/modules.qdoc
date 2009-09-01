@@ -1,12 +1,32 @@
 /*! 
-\page qmlmodules.html
 \target qmlmodules
-\title Modules of Components
+\page qmlmodules.html
+\title Modules
 
-A \bold module is a collection of \l Components.
+A \bold module is a collection of QML types.
 
-To use a module, include the following statement at the begining
-of your QML:
+To use types from a module it must be imported using the \c import statement. Successive
+import statements override earlier import statements.
+
+\section1 Importing Built-in Types
+
+To use built-in types, you must import the module defining them.
+For example, to use types from Qt, import it:
+
+\code
+import Qt 4.6
+\endcode
+
+This makes available all types in Qt that were available in Qt 4.6, regardless of the
+actual version of Qt executing the QML.
+
+Modules can be compiled-in (such as the Qt module), or they can be
+defined in QML files.
+
+\section1 Importing QML Files
+
+To import types defined in QML files in directories relative to the file importing them,
+a quoted import directory is used:
 
 \code
 import "path"
@@ -15,109 +35,71 @@ import "path"
 This allows all components defined in the directory \c path to be used in
 the component where this statement appears.
 
-Currently, \c path may only be a directory relative to the directory containing
-the component issuing the import.
+To import types defined in QML files that are installed somewhere on the system,
+an unquoted URI is used:
 
-The import statement cannot be used by remote content.
+\code
+import com.nokia.CoolStuff 1.0
+\endcode
+
+This will access file in the directory \c com/nokia/CoolStuff/, found in some
+location determined outside QML. See QmlEngine::addImportPath() and the \c -L option
+to the \l {qmlviewer}{viewer} application.
+
+The directory of installed files must include a file \c qmldir which specifies the
+mapping from all type names to versioned QML files. It is a list of lines of the form:
+
+\code
+# <Comment>
+<TypeName> <VersionRange> <File>
+\endcode
+
+<TypeName> is the type being made available; <VersionRange> is either a single version
+number like \c 4.0 or a range of minor versions like \c 4.0-2; <File> is the (relative)
+file name of the QML file defining the type.
+The same type can be provided by different files in different versions.
+If a type is in multiple major versions, it should be listed on a separate line.
+
+Installed files do not need to import the module of which they are a part, as they can refer
+to the other QML files in the module as relative (local) files.
+
+Installed files \e must be referred to by version information described above,
+local files \e may have it.
+
+The versioning system ensures that a given QML file will work regardless of the version
+of installed software, since a versioned import \e only imports types for that version,
+leaving other identifiers available, even if the actual installed version might otherwise
+use those identifiers.
+
+\section1 Namespaces - Named Imports
+
+When importing content it by default imports types into the global namespace.
+You may choose to import the module into another namespace, either to allow identically-named
+types to be referenced, or purely for readability.
+
+To import a module into a namespace:
+
+\code
+import Qt 4.6 as TheQtLibrary
+\endcode
+
+Types from Qt 4.6 may then be used, but only by qualifying them with the namespace:
+
+\code
+TheQtLibrary.Rectangle { ... }
+\endcode
+
+Multiple modules can be imported into the same namespace in the same way that multiple
+modules can be imported into the global namespace:
+
+\code
+import Qt 4.6 as Nokia
+import Ovi 1.0 as Nokia
+\endcode
 */
 
 /*
 
-Ideas for full module support....
-
-See QT-558.
-
-* Modularity within applications
-
-This is the currently-supported mechanism.
-
-By using the "import" statement, a subdirectory of types can be added to the
-empty namespace. Alternatively, a type in a subdirectory can be referenced
-explicitly.
-
-So, given these files:
-
-    ./SubModule1/Type1.qml
-    ./SubModule2/Type1.qml
-
-This is valid QML:
-
-    import "SubModule1"
-    Type1 { ... }
-    SubModule2.Type1 { ... }
-
-
-* System-installed modules (dependencies)
-
-To use system-installed modules, the dependency must be explicitly stated
-using the "require" statement. Types in required modules must still be
-explicitly qualified. Dependencies cannot be added to the empty namespace.
-
-    QMLPATH=/opt/Nokia/qml:/usr/share/lib/qml
-    /opt/Nokia/qml/Module1/Type1.qml
-    /usr/share/lib/qml/Module1/Type1.qml
-
-    require "Module1"
-    Module1.Type1 { ... }
-
-
-* Grouping of components within application modules
-
-Sub-sub directories allow further grouping of types.
-
-    ./SubModule1/Group1/*.qml
-    ./SubModule1/Group2/*.qml
-
-    SubModule1.Group1.Type1 { ... }
-    SubModule1.Group1.Type2 { ... }
-    SubModule1.Group2.Type1 { ... }
-    SubModule1.Group2.Type2 { ... }
-
-    import "SubModule1/Group1"
-    Type1 { ... }
-
-    import "SubModule1"
-    Group1.Type1 { ... }
-
-
-* Grouping of components within system-installed modules
-
-System-installed types may also be grouped into types. The hierarchy is a
-global namespace, so such grouping is recommended to reduce clashes.
-
-    /opt/Nokia/qml/Module1/Group1/*.qml
-    /opt/Nokia/qml/Module1/Group2/*.qml
-
-    require "Module1"
-    Module1.Group1.Type1 { ... }
-    Module1.Group1.Type2 { ... }
-    Module1.Group2.Type1 { ... }
-    Module1.Group2.Type2 { ... }
-
-    require "Module1/Group1"
-    Group1.Type1 { ... }
-
-    // Alternative syntax
-    /opt/qml/com/nokia/qml/Module1/Group1/*.qml
-    require "com.nokia.qml.Module1.Group1"
-    Group1.Type1 { ... }
-
-
-* Private sub-components
-
-Directories begining with _ cannot be referenced except by types in the
-directory immediately containing it.
-
-    /opt/Nokia/qml/Module1/_private/Type1.qml
-    ./SubModule1/_private/Type1.qml
-
-    SubModule1._private.Type1 { ... } // Not allowed
-    import "SubModule1._private" // Not allowed
-    require "SubModule1._private" // Not allowed
-    require "SubModule1"
-    Module1._private.Type1 { ... } // Not allowed
-
-    import "_private" // allowed
-    Type1 { ... }
+See original requirement QT-558.
 
 */

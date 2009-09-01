@@ -114,7 +114,7 @@ public:
     QPODVector<CapturedProperty> capturedProperties;
 
     QmlContext *rootContext;
-    QmlContext *currentBindContext;
+    QmlContext *currentBindContext; // ### Remove me
     QmlExpression *currentExpression;
     bool isDebugging;
 #ifdef QT_SCRIPTTOOLS_LIB
@@ -124,9 +124,12 @@ public:
     QmlContextScriptClass *contextClass;
     QmlObjectScriptClass *objectClass;
     QmlValueTypeScriptClass *valueTypeClass;
+    // Used by DOM Core 3 API
+    QScriptClass *nodeListClass;
+    QScriptClass *namedNodeMapClass;
 
     QmlContext *setCurrentBindContext(QmlContext *);
-    QStack<QmlContext *> activeContexts;
+    QStack<QmlContext *> activeContexts; // ### Remove me
 
     struct QmlScriptEngine : public QScriptEngine
     {

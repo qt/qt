@@ -48,14 +48,21 @@ private slots:
     void customVariantTypes();
     void valueTypes();
 
-    void imports_data();
-    void imports();
+    void importsBuiltin_data();
+    void importsBuiltin();
+    void importsLocal_data();
+    void importsLocal();
+    void importsInstalled_data();
+    void importsInstalled();
+    void importsOrder_data();
+    void importsOrder();
 
     // regression tests for crashes
     void crash1();
 
 private:
     QmlEngine engine;
+    void testType(const QString& qml, const QString& type);
 };
 
 #define VERIFY_ERRORS(errorfile) \
@@ -148,6 +155,8 @@ void tst_qmlparser::errors_data()
     QTest::newRow("failingComponent") << "failingComponentTest.qml" << "failingComponent.errors.txt" << false;
     QTest::newRow("missingSignal") << "missingSignal.qml" << "missingSignal.errors.txt" << false;
     QTest::newRow("finalOverride") << "finalOverride.qml" << "finalOverride.errors.txt" << false;
+
+    QTest::newRow("importNamespaceConflict") << "importNamespaceConflict.qml" << "importNamespaceConflict.errors.txt" << false;
 }
 
 void tst_qmlparser::errors()
@@ -420,6 +429,10 @@ void tst_qmlparser::autoComponentCreation()
 
 void tst_qmlparser::propertyValueSource()
 {
+    QVERIFY(false);
+
+/* Does not compile...
+
     QmlComponent component(&engine, TEST_FILE("propertyValueSource.qml"));
     VERIFY_ERRORS(0);
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
@@ -432,6 +445,7 @@ void tst_qmlparser::propertyValueSource()
     QVERIFY(valueSource != 0);
     QCOMPARE(valueSource->prop.object(), object);
     QCOMPARE(valueSource->prop.name(), QString(QLatin1String("intProperty")));
+*/
 }
 
 void tst_qmlparser::attachedProperties()
@@ -502,6 +516,21 @@ public:
     TestType2(QObject *p=0) : QObject(p) {}
 };
 
+// Check that first child of qml is of given type. Empty type insists on error.
+void tst_qmlparser::testType(const QString& qml, const QString& type)
+{
+    QmlComponent component(&engine, qml.toUtf8(), TEST_FILE("empty.qml")); // just a file for relative local imports
+
+    if (type.isEmpty()) {
+        QVERIFY(component.isError());
+    } else {
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        QCOMPARE(QString(object->metaObject()->className()), type);
+    }
+}
+
 QML_DECLARE_TYPE(TestType)
 QML_DECLARE_TYPE(TestType2)
 
@@ -511,7 +540,7 @@ QML_DEFINE_TYPE(com.nokia.Test, 1, 8, 9, Test, TestType2)
 QML_DEFINE_TYPE(com.nokia.Test, 1, 12, 13, Test, TestType2)
 QML_DEFINE_TYPE(com.nokia.Test, 1, 9, 11, OldTest, TestType)
 
-void tst_qmlparser::imports_data()
+void tst_qmlparser::importsBuiltin_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
@@ -605,6 +634,19 @@ void tst_qmlparser::imports_data()
            "import com.nokia.Test 1.10 as T10\n"
            "T10.Test {}"
         << "";
+}
+
+void tst_qmlparser::importsBuiltin()
+{
+    QFETCH(QString, qml);
+    QFETCH(QString, type);
+    testType(qml,type);
+}
+
+void tst_qmlparser::importsLocal_data()
+{
+    QTest::addColumn<QString>("qml");
+    QTest::addColumn<QString>("type");
 
     // import locals
     QTest::newRow("local import")
@@ -624,6 +666,19 @@ void tst_qmlparser::imports_data()
            "import com.nokia.Test 1.0\n"
            "Test {}"
         << "TestType";
+}
+
+void tst_qmlparser::importsLocal()
+{
+    QFETCH(QString, qml);
+    QFETCH(QString, type);
+    testType(qml,type);
+}
+
+void tst_qmlparser::importsInstalled_data()
+{
+    QTest::addColumn<QString>("qml");
+    QTest::addColumn<QString>("type");
 
     // import installed
     QTest::newRow("installed import")
@@ -636,21 +691,70 @@ void tst_qmlparser::imports_data()
         << "QFxText";
 }
 
-void tst_qmlparser::imports()
+void tst_qmlparser::importsInstalled()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);
+    testType(qml,type);
+}
 
-    QmlComponent component(&engine, qml.toUtf8(), TEST_FILE("empty.qml")); // just a file for relative local imports
 
-    if (type.isEmpty()) {
-        QVERIFY(component.isError());
-    } else {
-        VERIFY_ERRORS(0);
-        QObject *object = component.create();
-        QVERIFY(object != 0);
-        QCOMPARE(QString(object->metaObject()->className()), type);
-    }
+void tst_qmlparser::importsOrder_data()
+{
+    QTest::addColumn<QString>("qml");
+    QTest::addColumn<QString>("type");
+
+    QTest::newRow("installed import overrides 1") <<
+           "import com.nokia.installedtest 1.0\n"
+           "import com.nokia.installedtest 1.4\n"
+           "InstalledTest {}"
+        << "QFxText";
+    QTest::newRow("installed import overrides 2") <<
+           "import com.nokia.installedtest 1.4\n"
+           "import com.nokia.installedtest 1.0\n"
+           "InstalledTest {}"
+        << "QFxRect";
+    QTest::newRow("installed import re-overrides 1") <<
+           "import com.nokia.installedtest 1.4\n"
+           "import com.nokia.installedtest 1.0\n"
+           "import com.nokia.installedtest 1.4\n"
+           "InstalledTest {}"
+        << "QFxText";
+    QTest::newRow("installed import re-overrides 2") <<
+           "import com.nokia.installedtest 1.4\n"
+           "import com.nokia.installedtest 1.0\n"
+           "import com.nokia.installedtest 1.4\n"
+           "import com.nokia.installedtest 1.0\n"
+           "InstalledTest {}"
+        << "QFxRect";
+
+    QTest::newRow("installed import versus builtin 1") <<
+           "import com.nokia.installedtest 1.5\n"
+           "import Qt 4.6\n"
+           "Rectangle {}"
+        << "QFxRect";
+    QTest::newRow("installed import versus builtin 2") <<
+           "import Qt 4.6\n"
+           "import com.nokia.installedtest 1.5\n"
+           "Rectangle {}"
+        << "QFxText";
+    QTest::newRow("namespaces cannot be overridden by types 1") <<
+           "import Qt 4.6 as Rectangle\n"
+           "import com.nokia.installedtest 1.5\n"
+           "Rectangle {}"
+        << "";
+    QTest::newRow("namespaces cannot be overridden by types 2") <<
+           "import Qt 4.6 as Rectangle\n"
+           "import com.nokia.installedtest 1.5\n"
+           "Rectangle.Image {}"
+        << "QFxImage";
+}
+
+void tst_qmlparser::importsOrder()
+{
+    QFETCH(QString, qml);
+    QFETCH(QString, type);
+    testType(qml,type);
 }
 
 void tst_qmlparser::crash1()

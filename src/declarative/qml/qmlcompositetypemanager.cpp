@@ -329,8 +329,25 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         QUrl url;
         int majorVersion;
         int minorVersion;
-        if (!QmlEnginePrivate::get(engine)->resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion, 0)) {
+        QmlEnginePrivate::ImportedNamespace *typeNamespace = 0;
+        if (!QmlEnginePrivate::get(engine)->resolveType(unit->imports, typeName, &ref.type, &url, &majorVersion, &minorVersion, &typeNamespace)) {
             // XXX could produce error message here.
+        }
+
+        if (typeNamespace) {
+            QmlError error;
+            error.setUrl(unit->imports.baseUrl());
+            error.setDescription(tr("Namespace %1 cannot be used as a type").arg(QLatin1String(typeName)));
+            if (!parserRef->refObjects.isEmpty()) {
+                QmlParser::Object *obj = parserRef->refObjects.first();
+                error.setLine(obj->location.start.line);
+                error.setColumn(obj->location.start.column);
+            }
+            unit->status = QmlCompositeTypeData::Error;
+            unit->errorType = QmlCompositeTypeData::GeneralError;
+            unit->errors << error;
+            doComplete(unit);
+            return;
         }
 
         if (ref.type) {
