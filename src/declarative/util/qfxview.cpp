@@ -294,6 +294,7 @@ void QFxView::continueExecute()
             window()->setAttribute(Qt::WA_NoSystemBackground, false);
             if (!layout()) {
                 setLayout(new QVBoxLayout);
+                layout()->setContentsMargins(0, 0, 0, 0);
             } else if (layout()->count()) {
                 // Hide the QGraphicsView in GV mode.
                 QLayoutItem *item = layout()->itemAt(0);

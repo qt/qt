@@ -97,7 +97,7 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
     Q_PROPERTY(QString html READ html WRITE setHtml)
 
     Q_PROPERTY(int preferredWidth READ preferredWidth WRITE setPreferredWidth NOTIFY preferredWidthChanged)
-    Q_PROPERTY(int preferredHeight READ preferredHeight WRITE setPreferredHeight NOTIFY preferredHeightChanged)
+    Q_PROPERTY(int webPageWidth READ webPageWidth WRITE setWebPageWidth)
     Q_PROPERTY(int pixelCacheSize READ pixelCacheSize WRITE setPixelCacheSize)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
@@ -114,6 +114,8 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
 
     Q_PROPERTY(QmlComponent* newWindowComponent READ newWindowComponent WRITE setNewWindowComponent)
     Q_PROPERTY(QFxItem* newWindowParent READ newWindowParent WRITE setNewWindowParent)
+
+    Q_PROPERTY(bool renderingEnabled READ renderingEnabled WRITE setRenderingEnabled)
 
 public:
     QFxWebView(QFxItem *parent=0);
@@ -134,8 +136,8 @@ public:
 
     int preferredWidth() const;
     void setPreferredWidth(int);
-    int preferredHeight() const;
-    void setPreferredHeight(int);
+    int webPageWidth() const;
+    void setWebPageWidth(int);
 
     enum Status { Null, Ready, Loading, Error };
     Status status() const;
@@ -166,6 +168,9 @@ public:
     int pixelCacheSize() const;
     void setPixelCacheSize(int pixels);
 
+    bool renderingEnabled() const;
+    void setRenderingEnabled(bool);
+
     QmlList<QObject *> *javaScriptWindowObjects();
 
     static QFxWebViewAttached *qmlAttachedProperties(QObject *);
@@ -192,8 +197,11 @@ Q_SIGNALS:
 
     void doubleClick(int clickX, int clickY);
 
+    void zooming(qreal zoom, int centerX, int centerY);
+
 public Q_SLOTS:
     QVariant evaluateJavaScript(const QString&);
+    void heuristicZoom(int clickX, int clickY);
 
 private Q_SLOTS:
     void expandToWebPage();
@@ -204,6 +212,7 @@ private Q_SLOTS:
     void setStatusText(const QString&);
     void windowObjectCleared();
     void pageUrlChanged();
+    void contentsSizeChanged(const QSize&);
 
 protected:
     QFxWebView(QFxWebViewPrivate &dd, QFxItem *parent);
@@ -222,6 +231,7 @@ protected:
     virtual void focusChanged(bool);
     virtual bool sceneEvent(QEvent *event);
     QFxWebView *createWindow(QWebPage::WebWindowType type);
+    QRect elementAreaAt(int x, int y, int minwidth, int minheight) const;
 
 private:
     void init();

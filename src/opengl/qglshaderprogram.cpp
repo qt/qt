@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -194,7 +194,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QGLShader::ShaderType
+    \enum QGLShader::ShaderTypeBits
     This enum specifies the type of QGLShader that is being created.
 
     \value VertexShader Vertex shader written in the OpenGL Shading Language (GLSL).
@@ -246,11 +246,17 @@ QT_BEGIN_NAMESPACE
 #define GL_NUM_SHADER_BINARY_FORMATS      0x8DF9
 #endif
 
+inline bool qt_check_sharing_with_current_context(QGLContextGroup *group)
+{
+    const QGLContext *context = QGLContext::currentContext();
+    return context && QGLContextPrivate::contextGroup(context) == group;
+}
+
 class QGLShaderPrivate
 {
 public:
-    QGLShaderPrivate(QGLShader::ShaderType type, const QGLContext *ctx)
-        : context(ctx)
+    QGLShaderPrivate(QGLShader::ShaderType type)
+        : ctx(0)
         , shader(0)
         , shaderType(type)
         , compiled(false)
@@ -259,7 +265,7 @@ public:
     {
     }
 
-    const QGLContext *context;
+    QGLContextGroup *ctx;
     GLuint shader;
     QGLShader::ShaderType shaderType;
     bool compiled;
@@ -268,20 +274,19 @@ public:
     QString log;
     QByteArray partialSource;
 
-    bool create();
+    bool create(const QGLContext *context);
     bool compile(QGLShader *q);
 };
 
-#define ctx     context
-
-bool QGLShaderPrivate::create()
+bool QGLShaderPrivate::create(const QGLContext *context)
 {
-    if (isPartial)
-        return true;
     if (!context)
         context = QGLContext::currentContext();
     if (!context)
         return false;
+    ctx = QGLContextPrivate::contextGroup(context);
+    if (isPartial)
+        return true;
     if (qt_resolve_glsl_extensions(const_cast<QGLContext *>(context))) {
         if (shaderType == QGLShader::VertexShader)
             shader = glCreateShader(GL_VERTEX_SHADER);
@@ -327,9 +332,6 @@ bool QGLShaderPrivate::compile(QGLShader *q)
     return compiled;
 }
 
-#undef ctx
-#define ctx d->context
-
 /*!
     Constructs a new QGLShader object of the specified \a type
     and attaches it to \a parent.  If shader programs are not supported,
@@ -345,8 +347,8 @@ bool QGLShaderPrivate::compile(QGLShader *q)
 QGLShader::QGLShader(QGLShader::ShaderType type, QObject *parent)
     : QObject(parent)
 {
-    d = new QGLShaderPrivate(type, QGLContext::currentContext());
-    d->create();
+    d = new QGLShaderPrivate(type);
+    d->create(QGLContext::currentContext());
 }
 
 /*!
@@ -362,10 +364,12 @@ QGLShader::QGLShader
         (const QString& fileName, QGLShader::ShaderType type, QObject *parent)
     : QObject(parent)
 {
-    d = new QGLShaderPrivate(type, QGLContext::currentContext());
-    if (d->create() && !compileFile(fileName)) {
-        if (d->shader)
+    d = new QGLShaderPrivate(type);
+    if (d->create(QGLContext::currentContext()) && !compileFile(fileName)) {
+        if (d->shader) {
+            QGLContextGroup *ctx = d->ctx;
             glDeleteShader(d->shader);
+        }
         d->shader = 0;
     }
 }
@@ -385,8 +389,14 @@ QGLShader::QGLShader
 QGLShader::QGLShader(QGLShader::ShaderType type, const QGLContext *context, QObject *parent)
     : QObject(parent)
 {
-    d = new QGLShaderPrivate(type, context);
-    d->create();
+    d = new QGLShaderPrivate(type);
+#ifndef QT_NO_DEBUG
+    if (context && !qgl_share_reg()->checkSharing(context, QGLContext::currentContext())) {
+        qWarning("QGLShader::QGLShader: \'context\' must be the currect context or sharing with it.");
+        return;
+    }
+#endif
+    d->create(context);
 }
 
 /*!
@@ -402,10 +412,18 @@ QGLShader::QGLShader
         (const QString& fileName, QGLShader::ShaderType type, const QGLContext *context, QObject *parent)
     : QObject(parent)
 {
-    d = new QGLShaderPrivate(type, context);
-    if (d->create() && !compileFile(fileName)) {
-        if (d->shader)
+    d = new QGLShaderPrivate(type);
+#ifndef QT_NO_DEBUG
+    if (context && !qgl_share_reg()->checkSharing(context, QGLContext::currentContext())) {
+        qWarning("QGLShader::QGLShader: \'context\' must be currect context or sharing with it.");
+        return;
+    }
+#endif
+    if (d->create(context) && !compileFile(fileName)) {
+        if (d->shader) {
+            QGLContextGroup *ctx = d->ctx;
             glDeleteShader(d->shader);
+        }
         d->shader = 0;
     }
 }
@@ -417,8 +435,15 @@ QGLShader::QGLShader
 */
 QGLShader::~QGLShader()
 {
-    if (d->shader)
+    if (d->shader) {
+        QGLContextGroup *ctx = d->ctx;
+#ifndef QT_NO_DEBUG
+        if (!qt_check_sharing_with_current_context(ctx))
+            qWarning("QGLShader::~QGLShader: Shader is not associated with current context.");
+        else
+#endif
         glDeleteShader(d->shader);
+    }
     delete d;
 }
 
@@ -464,6 +489,12 @@ static const char redefineHighp[] =
 */
 bool QGLShader::compile(const char *source)
 {
+#ifndef QT_NO_DEBUG
+    if (!qt_check_sharing_with_current_context(d->ctx)) {
+        qWarning("QGLShader::compile: Shader is not associated with current context.");
+        return false;
+    }
+#endif
     if (d->isPartial) {
         d->partialSource = QByteArray(source);
         d->hasPartialSource = true;
@@ -479,6 +510,7 @@ bool QGLShader::compile(const char *source)
             src.append(redefineHighp);
 #endif
         src.append(source);
+        QGLContextGroup *ctx = d->ctx;
         glShaderSource(d->shader, src.size(), src.data(), 0);
         return d->compile(this);
     } else {
@@ -561,6 +593,14 @@ bool QGLShader::compileFile(const QString& fileName)
 */
 bool QGLShader::setShaderBinary(GLenum format, const void *binary, int length)
 {
+    QGLContextGroup *ctx = d->ctx;
+#ifndef QT_NO_DEBUG
+    if (!qt_check_sharing_with_current_context(ctx)) {
+        qWarning("QGLShader::setShaderBinary: Shader is not associated with current context.");
+        return false;
+    }
+#endif
+
 #if !defined(QT_OPENGL_ES_2)
     if (!glShaderBinary)
         return false;
@@ -593,6 +633,14 @@ bool QGLShader::setShaderBinary(GLenum format, const void *binary, int length)
 bool QGLShader::setShaderBinary
     (QGLShader& otherShader, GLenum format, const void *binary, int length)
 {
+    QGLContextGroup *ctx = d->ctx;
+#ifndef QT_NO_DEBUG
+    if (!qt_check_sharing_with_current_context(ctx)) {
+        qWarning("QGLShader::setShaderBinary: Shader is not associated with current context.");
+        return false;
+    }
+#endif
+
 #if !defined(QT_OPENGL_ES_2)
     if (!glShaderBinary)
         return false;
@@ -639,11 +687,19 @@ QList<GLenum> QGLShader::shaderBinaryFormats()
 */
 QByteArray QGLShader::sourceCode() const
 {
+#ifndef QT_NO_DEBUG
+    if (!qt_check_sharing_with_current_context(d->ctx)) {
+        qWarning("QGLShader::sourceCode: Shader is not associated with current context.");
+        return false;
+    }
+#endif
+
     if (d->isPartial)
         return d->partialSource;
     if (!d->shader)
         return QByteArray();
     GLint size = 0;
+    QGLContextGroup *ctx = d->ctx;
     glGetShaderiv(d->shader, GL_SHADER_SOURCE_LENGTH, &size);
     if (size <= 0)
         return QByteArray();
@@ -689,33 +745,28 @@ GLuint QGLShader::shaderId() const
     return d->shader;
 }
 
-#undef ctx
-#define ctx context
-
 class QGLShaderProgramPrivate
 {
 public:
-    QGLShaderProgramPrivate(const QGLContext *ctx)
-        : context(ctx)
+    QGLShaderProgramPrivate(const QGLContext *context)
+        : ctx(context ? QGLContextPrivate::contextGroup(context) : 0)
         , program(0)
         , linked(false)
         , inited(false)
         , hasPartialShaders(false)
+        , removingShaders(false)
         , vertexShader(0)
         , fragmentShader(0)
     {
     }
-    ~QGLShaderProgramPrivate()
-    {
-        if (program)
-            glDeleteProgram(program);
-    }
+    ~QGLShaderProgramPrivate();
 
-    const QGLContext *context;
+    QGLContextGroup *ctx;
     GLuint program;
     bool linked;
     bool inited;
     bool hasPartialShaders;
+    bool removingShaders;
     QString log;
     QList<QGLShader *> shaders;
     QList<QGLShader *> anonShaders;
@@ -723,8 +774,18 @@ public:
     QGLShader *fragmentShader;
 };
 
-#undef ctx
-#define ctx d->context
+QGLShaderProgramPrivate::~QGLShaderProgramPrivate()
+{
+    if (program) {
+#ifndef QT_NO_DEBUG
+        if (!qt_check_sharing_with_current_context(ctx))
+            qWarning("QGLShaderProgram: Shader program is not associated with current context.");
+        else
+#endif
+        glDeleteProgram(program);
+    }
+}
+
 
 /*!
     Constructs a new shader program and attaches it to \a parent.
@@ -767,11 +828,19 @@ bool QGLShaderProgram::init()
     if (d->program || d->inited)
         return true;
     d->inited = true;
-    if (!d->context)
-        d->context = QGLContext::currentContext();
-    if (!d->context)
+    const QGLContext *context = QGLContext::currentContext();
+    if (!context)
         return false;
-    if (qt_resolve_glsl_extensions(const_cast<QGLContext *>(d->context))) {
+    if (!d->ctx)
+        d->ctx = QGLContextPrivate::contextGroup(context);
+#ifndef QT_NO_DEBUG
+    else if (!qt_check_sharing_with_current_context(d->ctx)) {
+        qWarning("QGLShaderProgram: Shader program is not associated with current context.");
+        return false;
+    }
+#endif
+    if (qt_resolve_glsl_extensions(const_cast<QGLContext *>(context))) {
+        QGLContextGroup *ctx = d->ctx;
         d->program = glCreateProgram();
         if (!(d->program)) {
             qWarning() << "QGLShaderProgram: could not create shader program";
@@ -802,17 +871,29 @@ bool QGLShaderProgram::addShader(QGLShader *shader)
     if (d->shaders.contains(shader))
         return true;    // Already added to this shader program.
     if (d->program && shader) {
+#ifndef QT_NO_DEBUG
+        if (!qt_check_sharing_with_current_context(d->ctx)) {
+            qWarning("QGLShaderProgram::addShader: Program is not associated with current context.");
+            return false;
+        }
+#endif
+        if (shader->d->ctx != d->ctx) {
+            qWarning("QGLShaderProgram::addShader: Program and shader are not associated with same context.");
+            return false;
+        }
         if (!shader->d->compiled)
             return false;
         if (!shader->d->isPartial) {
             if (!shader->d->shader)
                 return false;
+            QGLContextGroup *ctx = d->ctx;
             glAttachShader(d->program, shader->d->shader);
         } else {
             d->hasPartialShaders = true;
         }
         d->linked = false;  // Program needs to be relinked.
         d->shaders.append(shader);
+        connect(shader, SIGNAL(destroyed()), this, SLOT(shaderDestroyed()));
         return true;
     } else {
         return false;
@@ -918,11 +999,20 @@ bool QGLShaderProgram::addShaderFromFile
 void QGLShaderProgram::removeShader(QGLShader *shader)
 {
     if (d->program && shader && shader->d->shader) {
+        QGLContextGroup *ctx = d->ctx;
+#ifndef QT_NO_DEBUG
+        if (!qt_check_sharing_with_current_context(ctx))
+            qWarning("QGLShaderProgram::removeShader: Program is not associated with current context.");
+        else
+#endif
         glDetachShader(d->program, shader->d->shader);
-        d->linked = false;  // Program needs to be relinked.
     }
-    d->shaders.removeAll(shader);
-    d->anonShaders.removeAll(shader);
+    d->linked = false;  // Program needs to be relinked.
+    if (shader) {
+        d->shaders.removeAll(shader);
+        d->anonShaders.removeAll(shader);
+        disconnect(shader, SIGNAL(destroyed()), this, SLOT(shaderDestroyed()));
+    }
 }
 
 /*!
@@ -946,6 +1036,13 @@ QList<QGLShader *> QGLShaderProgram::shaders() const
 */
 void QGLShaderProgram::removeAllShaders()
 {
+    d->removingShaders = true;
+    QGLContextGroup *ctx = d->ctx;
+#ifndef QT_NO_DEBUG
+    if (!qt_check_sharing_with_current_context(ctx))
+        qWarning("QGLShaderProgram::removeAllShaders: Program is not associated with current context.");
+    else
+#endif
     foreach (QGLShader *shader, d->shaders) {
         if (d->program && shader && shader->d->shader)
             glDetachShader(d->program, shader->d->shader);
@@ -957,6 +1054,7 @@ void QGLShaderProgram::removeAllShaders()
     d->shaders.clear();
     d->anonShaders.clear();
     d->linked = false;  // Program needs to be relinked.
+    d->removingShaders = false;
 }
 
 #if defined(QT_OPENGL_ES_2)
@@ -996,6 +1094,12 @@ QByteArray QGLShaderProgram::programBinary(int *format) const
     if (!isLinked())
         return QByteArray();
 
+    QGLContextGroup *ctx = d->ctx;
+#ifndef QT_NO_DEBUG
+    if (!qt_check_sharing_with_current_context(ctx))
+        qWarning("QGLShaderProgram::programBinary: Program is not associated with current context.");
+#endif
+
     // Get the length of the binary data, bailing out if there is none.
     GLint length = 0;
     glGetProgramiv(d->program, GL_PROGRAM_BINARY_LENGTH_OES, &length);
@@ -1026,6 +1130,12 @@ QByteArray QGLShaderProgram::programBinary(int *format) const
 bool QGLShaderProgram::setProgramBinary(int format, const QByteArray& binary)
 {
 #if defined(QT_OPENGL_ES_2)
+    QGLContextGroup *ctx = d->ctx;
+#ifndef QT_NO_DEBUG
+    if (!qt_check_sharing_with_current_context(ctx))
+        qWarning("QGLShaderProgram::setProgramBinary: Program is not associated with current context.");
+#endif
+
     // Load the binary and check that it was linked correctly.
     glProgramBinaryOES(d->program, (GLenum)format,
                        binary.constData(), binary.size());
@@ -1095,6 +1205,14 @@ bool QGLShaderProgram::link()
 {
     if (!d->program)
         return false;
+    QGLContextGroup *ctx = d->ctx;
+#ifndef QT_NO_DEBUG
+    if (!qt_check_sharing_with_current_context(ctx)) {
+        qWarning("QGLShaderProgram::link: Program is not associated with current context.");
+        return false;
+    }
+#endif
+
     if (d->hasPartialShaders) {
         // Compile the partial vertex and fragment shaders.
         QByteArray vertexSource;
@@ -1197,12 +1315,16 @@ bool QGLShaderProgram::enable()
         return false;
     if (!d->linked && !link())
         return false;
+    QGLContextGroup *ctx = d->ctx;
+#ifndef QT_NO_DEBUG
+    if (!qt_check_sharing_with_current_context(ctx)) {
+        qWarning("QGLShaderProgram::enable: Program is not associated with current context.");
+        return false;
+    }
+#endif
     glUseProgram(d->program);
     return true;
 }
-
-#undef ctx
-#define ctx QGLContext::currentContext()
 
 /*!
     Disables the active shader program in the current QGLContext.
@@ -1212,6 +1334,7 @@ bool QGLShaderProgram::enable()
 */
 void QGLShaderProgram::disable()
 {
+    const QGLContext *ctx = QGLContext::currentContext();
 #if defined(QT_OPENGL_ES_2)
     glUseProgram(0);
 #else
@@ -1220,8 +1343,7 @@ void QGLShaderProgram::disable()
 #endif
 }
 
-#undef ctx
-#define ctx d->context
+#define ctx d->ctx
 
 /*!
     Returns the OpenGL identifier associated with this shader program.
@@ -2956,6 +3078,8 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4x4 *
     setUniformValueArray(uniformLocation(name), values, count);
 }
 
+#undef ctx
+
 /*!
     Returns true if shader programs written in the OpenGL Shading
     Language (GLSL) are supported on this system; false otherwise.
@@ -2977,6 +3101,15 @@ bool QGLShaderProgram::hasShaderPrograms(const QGLContext *context)
 #endif
 }
 
+/*!
+    \internal
+*/
+void QGLShaderProgram::shaderDestroyed()
+{
+    QGLShader *shader = qobject_cast<QGLShader *>(sender());
+    if (shader && !d->removingShaders)
+        removeShader(shader);
+}
 
 #endif
 

@@ -41,6 +41,7 @@
 
 #include "qfxfocuspanel.h"
 #include <QtGui/qgraphicsscene.h>
+#include <QEvent>
 
 QT_BEGIN_NAMESPACE
 
@@ -76,19 +77,13 @@ QFxFocusPanel::~QFxFocusPanel()
 
     Sets whether the item is the active focus panel.
 */
-void QFxFocusPanel::setActive(bool a)
+
+bool QFxFocusPanel::sceneEvent(QEvent *event)
 {
-    if (!scene())
-        return;
-
-    if (isActive() == a)
-        return;
-
-    if (a)
-        scene()->setActivePanel(this);
-    else
-        scene()->setActivePanel(0);
-    emit activeChanged();
+    if (event->type() == QEvent::WindowActivate ||
+        event->type() == QEvent::WindowDeactivate)
+        emit activeChanged();
+    return QFxItem::sceneEvent(event);
 }
 
 QT_END_NAMESPACE

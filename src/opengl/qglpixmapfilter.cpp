@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -118,6 +118,8 @@ private:
     mutable QGLShader *m_shader;
 
     mutable QSize m_textureSize;
+
+    mutable bool m_horizontalBlur;
 
     QGLShaderProgram *m_program;
 };
@@ -336,46 +338,37 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
-
-    painter->save();
-
-    // ensure GL_LINEAR filtering is used
-    painter->setRenderHint(QPainter::SmoothPixmapTransform);
-
     // prepare for updateUniforms
     m_textureSize = src.size();
 
-    // first pass, to fbo
-    fbo->bind();
+    // horizontal pass, to pixmap
+    m_horizontalBlur = true;
+
+    QPainter fboPainter(fbo);
+
     if (src.hasAlphaChannel()) {
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
+    // ensure GL_LINEAR filtering is used
+    fboPainter.setRenderHint(QPainter::SmoothPixmapTransform);
+    filter->setOnPainter(&fboPainter);
+    fboPainter.drawPixmap(0, 0, src);
+    filter->removeFromPainter(&fboPainter);
+    fboPainter.end();
+
+    QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
+
+    // vertical pass, to painter
+    m_horizontalBlur = false;
+
+    painter->save();
+    // ensure GL_LINEAR filtering is used
+    painter->setRenderHint(QPainter::SmoothPixmapTransform);
     filter->setOnPainter(painter);
-
-    QTransform transform = engine->state()->matrix;
-    if (!transform.isIdentity()) {
-        engine->state()->matrix = QTransform();
-        engine->transformChanged();
-    }
-
-    engine->drawPixmap(src.rect().translated(0, painter->device()->height() - fbo->height()),
-                       src, src.rect());
-
-    if (!transform.isIdentity()) {
-        engine->state()->matrix = transform;
-        engine->transformChanged();
-    }
-
-    fbo->release();
-
-    // second pass, to widget
-    m_program->setUniformValue("delta", 0.0, 1.0);
     engine->drawTexture(src.rect().translated(pos.x(), pos.y()), fbo->texture(), fbo->size(), src.rect().translated(0, fbo->height() - src.height()));
     filter->removeFromPainter(painter);
-
     painter->restore();
 
     qgl_fbo_pool()->release(fbo);
@@ -386,7 +379,11 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
 void QGLPixmapBlurFilter::setUniforms(QGLShaderProgram *program)
 {
     program->setUniformValue("invTextureSize", 1.0 / m_textureSize.width(), 1.0 / m_textureSize.height());
-    program->setUniformValue("delta", 1.0, 0.0);
+
+    if (m_horizontalBlur)
+        program->setUniformValue("delta", 1.0, 0.0);
+    else
+        program->setUniformValue("delta", 0.0, 1.0);
 
     m_program = program;
 }

@@ -443,7 +443,7 @@ void QFxRect::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
         bool oldAA = p->testRenderHint(QPainter::Antialiasing);
         if (d->smooth)
             p->setRenderHints(QPainter::Antialiasing, true);
-        p->fillRect(QRect(0, 0, width(), height()), d->getColor());
+        p->fillRect(QRectF(0, 0, width(), height()), d->getColor());
         if (d->smooth)
             p->setRenderHint(QPainter::Antialiasing, oldAA);
     }

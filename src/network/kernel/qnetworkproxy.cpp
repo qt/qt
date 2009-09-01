@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -220,6 +220,7 @@
 
 #ifndef QT_NO_NETWORKPROXY
 
+#include "private/qnetworkproxy_p.h"
 #include "private/qsocks5socketengine_p.h"
 #include "private/qhttpsocketengine_p.h"
 #include "qauthenticator.h"
@@ -1154,6 +1155,29 @@ QNetworkProxyFactory::QNetworkProxyFactory()
 */
 QNetworkProxyFactory::~QNetworkProxyFactory()
 {
+}
+
+
+/*!
+    Enables the use of the platform-specific proxy settings, and only those.
+    See systemProxyForQuery() for more information.
+
+    Internally, this method (when called with \a enable set to true)
+    sets an application-wide proxy factory. For this reason, this method
+    is mutually exclusive with setApplicationProxyFactory: calling
+    setApplicationProxyFactory overrides the use of the system-wide proxy,
+    and calling setUseSystemConfigurationEnabled overrides any
+    application proxy or proxy factory that was previously set.
+
+    \since 4.6
+*/
+void QNetworkProxyFactory::setUseSystemConfigurationEnabled(bool enable)
+{
+    if (enable) {
+        setApplicationProxyFactory(new QSystemConfigurationProxyFactory);
+    } else {
+        setApplicationProxyFactory(0);
+    }
 }
 
 /*!

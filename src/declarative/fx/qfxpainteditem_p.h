@@ -63,7 +63,7 @@ class QFxPaintedItemPrivate : public QFxItemPrivate
 
 public:
     QFxPaintedItemPrivate()
-      : max_imagecache_size(100000), fillColor(Qt::transparent)
+      : max_imagecache_size(100000), fillColor(Qt::transparent), cachefrozen(false)
     {
     }
 
@@ -72,6 +72,7 @@ public:
         ~ImageCacheItem() { }
         int age;
         QRect area;
+        QRect dirty; // one dirty area (allows optimization of common cases)
         QPixmap image;
     };
 
@@ -80,6 +81,7 @@ public:
     int max_imagecache_size;
     QSize contentsSize;
     QColor fillColor;
+    bool cachefrozen;
 };
 
 QT_END_NAMESPACE

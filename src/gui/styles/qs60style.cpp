@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -886,6 +886,10 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
   \sa QMacStyle, QWindowsStyle, QWindowsXPStyle, QWindowsVistaStyle, QPlastiqueStyle, QCleanlooksStyle, QMotifStyle
 */
 
+
+/*!
+    Destroys the style.
+*/
 QS60Style::~QS60Style()
 {
 }
@@ -2450,6 +2454,9 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
     return ret;
 }
 
+/*!
+  \reimp
+*/
 QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, const QWidget *widget) const
 {
     QRect ret;
@@ -2610,6 +2617,9 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
     return ret;
 }
 
+/*!
+  \reimp
+ */
 void QS60Style::polish(QWidget *widget)
 {
     Q_D(const QS60Style);
@@ -2645,6 +2655,9 @@ void QS60Style::polish(QWidget *widget)
     d->setFont(widget);
 }
 
+/*!
+  \reimp
+ */
 void QS60Style::unpolish(QWidget *widget)
 {
     if (false
@@ -2676,6 +2689,9 @@ void QS60Style::unpolish(QWidget *widget)
     QCommonStyle::unpolish(widget);
 }
 
+/*!
+  \reimp
+ */
 void QS60Style::polish(QApplication *application)
 {
     Q_D(QS60Style);
@@ -2683,6 +2699,9 @@ void QS60Style::polish(QApplication *application)
     d->setThemePalette(application);
 }
 
+/*!
+  \reimp
+ */
 void QS60Style::unpolish(QApplication *application)
 {
     Q_UNUSED(application)
@@ -2692,18 +2711,27 @@ void QS60Style::unpolish(QApplication *application)
     QApplicationPrivate::setSystemPalette(d->m_originalPalette);
 }
 
+/*!
+  Sets the style property \a name to the \a value.
+ */
 void QS60Style::setStyleProperty(const char *name, const QVariant &value)
 {
     Q_D(QS60Style);
     d->setStyleProperty_specific(name, value);
 }
 
+/*!
+  Returns the value of style property \a name.
+ */
 QVariant QS60Style::styleProperty(const char *name) const
 {
     Q_D(const QS60Style);
     return d->styleProperty_specific(name);
 }
 
+/*!
+  \reimp
+ */
 bool QS60Style::event(QEvent *e)
 {
 #ifdef QT_KEYPAD_NAVIGATION
@@ -2738,6 +2766,9 @@ bool QS60Style::event(QEvent *e)
     return false;
 }
 
+/*!
+    \internal
+ */
 QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
     const QStyleOption *option, const QWidget *widget) const
 {
