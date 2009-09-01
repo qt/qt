@@ -283,6 +283,7 @@ void QNetworkReplyImplPrivate::createCache()
 {
     // check if we can save and if we're allowed to
     if (!networkCache()
+        || !request.attribute(QNetworkRequest::CacheSaveControlAttribute, true).toBool()
         || request.attribute(QNetworkRequest::CacheLoadControlAttribute,
                              QNetworkRequest::PreferNetwork).toInt()
             == QNetworkRequest::AlwaysNetwork)
