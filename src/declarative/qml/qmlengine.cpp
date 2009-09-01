@@ -1218,6 +1218,7 @@ public:
         if (prefix.isEmpty()) {
             if (importType == QmlScriptParser::Import::Library && !vmaj && !vmin) {
                 // unversioned library imports are always qualified - if only by final URI component
+                // XXX we need not support this
                 int lastdot = uri.lastIndexOf(QLatin1Char('.'));
                 QString defaultprefix = uri.mid(lastdot+1);
                 s = set.value(defaultprefix);
@@ -1249,10 +1250,10 @@ public:
         } else {
             url = base.resolved(QUrl(url)).toString();
         }
-        s->urls.append(url);
-        s->majversions.append(vmaj);
-        s->minversions.append(vmin);
-        s->isLibrary.append(importType == QmlScriptParser::Import::Library);
+        s->urls.prepend(url);
+        s->majversions.prepend(vmaj);
+        s->minversions.prepend(vmin);
+        s->isLibrary.prepend(importType == QmlScriptParser::Import::Library);
         return true;
     }
 
