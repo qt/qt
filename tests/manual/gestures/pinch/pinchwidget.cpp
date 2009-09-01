@@ -104,8 +104,8 @@ void PinchWidget::onPinchTriggered()
     QPoint transformCenter = worldTransform.map(QPoint(width()/2, height()/2));
     currentPinchTransform = QTransform()
         .translate(transformCenter.x(), transformCenter.y())
-        .scale(pinch->scaleFactor(), pinch->scaleFactor())
-        .rotateRadians(pinch->rotationAngle())
+        .scale(pinch->totalScaleFactor(), pinch->totalScaleFactor())
+        .rotate(pinch->totalRotationAngle())
         .translate(-transformCenter.x(), -transformCenter.y());
     update();
 }

@@ -123,8 +123,10 @@ void ImageWidget::panTriggered()
 void ImageWidget::pinchTriggered()
 {
     QPinchGesture *pg = qobject_cast<QPinchGesture*>(sender());
-    rotationAngle += pg->rotationAngle();
-    scaleFactor += pg->scaleFactor();
+    if (pg->rotationAngle() != 0.0)
+        rotationAngle += pg->rotationAngle() - pg->lastRotationAngle();
+    if (pg->scaleFactor() != 1.0)
+        scaleFactor += pg->scaleFactor() - pg->lastScaleFactor();
     update();
 }
 

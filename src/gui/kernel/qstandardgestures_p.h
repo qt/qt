@@ -74,6 +74,7 @@ public:
 
     QSizeF totalOffset;
     QSizeF lastOffset;
+    QSizeF offset;
     QPointF lastPosition;
 
 #if defined(QT_MAC_USE_COCOA)
@@ -88,25 +89,30 @@ class QPinchGesturePrivate : public QGesturePrivate
 
 public:
     QPinchGesturePrivate()
-        : scaleFactor(0), lastScaleFactor(0),
-          rotationAngle(0), lastRotationAngle(0)
+        : totalScaleFactor(0.), lastScaleFactor(0.), scaleFactor(0.),
+          totalRotationAngle(0.), lastRotationAngle(0.), rotationAngle(0.)
 #ifdef Q_WS_WIN
-          ,initialDistance(0)
+          ,initialDistance(0), lastSequenceId(0)
 #endif
     {
     }
 
     void setupGestureTarget(QObject *o);
 
-    qreal scaleFactor;
+    qreal totalScaleFactor; // total scale factor, excluding the current sequence.
     qreal lastScaleFactor;
-    qreal rotationAngle;
+    qreal scaleFactor; // scale factor in the current sequence.
+
+    qreal totalRotationAngle; // total rotation angle, excluding the current sequence.
     qreal lastRotationAngle;
+    qreal rotationAngle; // rotation angle in the current sequence.
+
     QPointF startCenterPoint;
     QPointF lastCenterPoint;
     QPointF centerPoint;
 #ifdef Q_WS_WIN
     int initialDistance;
+    ulong lastSequenceId;
 #endif
 };
 

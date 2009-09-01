@@ -61,6 +61,7 @@ class Q_GUI_EXPORT QPanGesture : public QGesture
 
     Q_PROPERTY(QSizeF totalOffset READ totalOffset)
     Q_PROPERTY(QSizeF lastOffset READ lastOffset)
+    Q_PROPERTY(QSizeF offset READ offset)
 
 public:
     QPanGesture(QWidget *gestureTarget, QObject *parent = 0);
@@ -69,6 +70,7 @@ public:
 
     QSizeF totalOffset() const;
     QSizeF lastOffset() const;
+    QSizeF offset() const;
 
 protected:
     void reset();
@@ -87,11 +89,13 @@ class Q_GUI_EXPORT QPinchGesture : public QGesture
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPinchGesture)
 
-    Q_PROPERTY(qreal scaleFactor READ scaleFactor)
+    Q_PROPERTY(qreal totalScaleFactor READ totalScaleFactor)
     Q_PROPERTY(qreal lastScaleFactor READ lastScaleFactor)
+    Q_PROPERTY(qreal scaleFactor READ scaleFactor)
 
-    Q_PROPERTY(qreal rotationAngle READ rotationAngle)
+    Q_PROPERTY(qreal totalRotationAngle READ totalRotationAngle)
     Q_PROPERTY(qreal lastRotationAngle READ lastRotationAngle)
+    Q_PROPERTY(qreal rotationAngle READ rotationAngle)
 
     Q_PROPERTY(QPointF startCenterPoint READ startCenterPoint)
     Q_PROPERTY(QPointF lastCenterPoint READ lastCenterPoint)
@@ -107,11 +111,13 @@ public:
     QPointF lastCenterPoint() const;
     QPointF centerPoint() const;
 
-    qreal scaleFactor() const;
+    qreal totalScaleFactor() const;
     qreal lastScaleFactor() const;
+    qreal scaleFactor() const;
 
-    qreal rotationAngle() const;
+    qreal totalRotationAngle() const;
     qreal lastRotationAngle() const;
+    qreal rotationAngle() const;
 
 private:
     bool event(QEvent *event);
