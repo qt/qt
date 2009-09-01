@@ -62,8 +62,8 @@ public:
 
     virtual IDirectFBSurface *directFBSurface() const;
 
-    void lockDirectFB(DFBSurfaceLockFlags lock);
-    void unlockDirectFB();
+    bool lockSurface(DFBSurfaceLockFlags lockFlags);
+    void unlockSurface();
 
     // Reimplemented from QCustomRasterPaintDevice:
     void *memory() const;
@@ -73,7 +73,6 @@ public:
     int metric(QPaintDevice::PaintDeviceMetric metric) const;
     DFBSurfaceLockFlags lockFlags() const { return lockFlgs; }
     QPaintEngine *paintEngine() const;
-
 protected:
     QDirectFBPaintDevice(QDirectFBScreen *scr);
     inline int dotsPerMeterX() const
@@ -84,17 +83,20 @@ protected:
     {
         return (screen->deviceHeight() * 1000) / screen->physicalHeight();
     }
-protected:
+
     IDirectFBSurface *dfbSurface;
-    QImage *lockedImage;
+#ifdef QT_DIRECTFB_SUBSURFACE
+    IDirectFBSurface *subSurface;
+    friend class QDirectFBPaintEnginePrivate;
+    bool syncPending;
+#endif
+    QImage lockedImage;
     QDirectFBScreen *screen;
     int bpl;
     DFBSurfaceLockFlags lockFlgs;
     uchar *mem;
     QDirectFBPaintEngine *engine;
     QImage::Format imageFormat;
-private:
-    Q_DISABLE_COPY(QDirectFBPaintDevice);
 };
 
 QT_END_NAMESPACE

@@ -121,8 +121,8 @@ QDirectFBMouseHandlerPrivate::QDirectFBMouseHandlerPrivate(QDirectFBMouseHandler
         return;
     }
 
-    int flags = ::fcntl(fd, F_GETFL, 0);
-    ::fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    int flags = fcntl(fd, F_GETFL, 0);
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 
     // DirectFB seems to assume that the mouse always starts centered
     prevPoint = QPoint(screen->deviceWidth() / 2, screen->deviceHeight() / 2);

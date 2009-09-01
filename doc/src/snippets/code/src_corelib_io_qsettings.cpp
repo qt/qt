@@ -309,7 +309,7 @@ int main(int argc, char *argv[])
     const QSettings::Format XmlFormat =
             QSettings::registerFormat("xml", readXmlFile, writeXmlFile);
 
-    QSettings settings(XmlFormat, QSettings::UserSettings, "MySoft",
+    QSettings settings(XmlFormat, QSettings::UserScope, "MySoft",
                        "Star Runner");
 
     ...
