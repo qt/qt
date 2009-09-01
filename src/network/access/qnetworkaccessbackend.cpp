@@ -90,8 +90,11 @@ QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessM
                               QNetworkRequest::PreferNetwork).toInt());
     if (mode == QNetworkRequest::AlwaysCache
         && (op == QNetworkAccessManager::GetOperation
-        || op == QNetworkAccessManager::HeadOperation))
-        return new QNetworkAccessCacheBackend;
+        || op == QNetworkAccessManager::HeadOperation)) {
+        QNetworkAccessBackend *backend = new QNetworkAccessCacheBackend;
+        backend->manager = this;
+        return backend;
+    }
 
     if (!factoryDataShutdown) {
         QMutexLocker locker(&factoryData()->mutex);
@@ -110,6 +113,8 @@ QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessM
 }
 
 QNetworkAccessBackend::QNetworkAccessBackend()
+    : manager(0)
+    , reply(0)
 {
 }
 
