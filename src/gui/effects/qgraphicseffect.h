@@ -118,7 +118,7 @@ public:
 
 public Q_SLOTS:
     void setEnabled(bool enable);
-    // ### add update() slot
+    void update();
 
 Q_SIGNALS:
     void enabledChanged(bool enabled);

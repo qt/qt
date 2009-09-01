@@ -349,6 +349,22 @@ void QGraphicsEffect::setEnabled(bool enable)
 */
 
 /*!
+    Schedules a redraw of the source. Call this function whenever the source
+    needs to be redrawn.
+
+    This convenience function is equivalent to calling
+    QGraphicsEffectSource::update().
+
+    \sa updateBoundingRect(), QGraphicsEffectSource::update()
+*/
+void QGraphicsEffect::update()
+{
+    Q_D(QGraphicsEffect);
+    if (d->source)
+        d->source->update();
+}
+
+/*!
     Returns a pointer to the source, which provides extra context information
     that can be useful for the effect.
 
@@ -365,6 +381,8 @@ QGraphicsEffectSource *QGraphicsEffect::source() const
     rectangle has changed. As a custom effect author, you must call this
     function whenever you change any parameters that will cause the virtual
     boundingRectFor() function to return a different value.
+
+    This function will call update() if this is necessary.
 
     \sa boundingRectFor(), boundingRect()
 */
@@ -523,6 +541,7 @@ void QGraphicsColorizeEffect::setColor(const QColor &color)
         return;
 
     d->filter->setColor(color);
+    update();
     emit colorChanged(color);
 }
 
@@ -610,6 +629,7 @@ void QGraphicsPixelizeEffect::setPixelSize(int size)
         return;
 
     d->pixelSize = size;
+    update();
     emit pixelSizeChanged(size);
 }
 
@@ -903,6 +923,7 @@ void QGraphicsDropShadowEffect::setColor(const QColor &color)
         return;
 
     d->filter->setColor(color);
+    update();
     emit colorChanged(color);
 }
 
@@ -1012,6 +1033,7 @@ void QGraphicsOpacityEffect::setOpacity(qreal opacity)
         d->isFullyOpaque = 0;
     else
         d->isFullyOpaque = qFuzzyIsNull(d->opacity - 1);
+    update();
     emit opacityChanged(opacity);
 }
 
@@ -1050,6 +1072,7 @@ void QGraphicsOpacityEffect::setOpacityMask(const QBrush &mask)
 
     d->opacityMask = mask;
     d->hasOpacityMask = (mask.style() != Qt::NoBrush);
+    update();
 
     emit opacityMaskChanged(mask);
 }
