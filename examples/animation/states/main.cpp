@@ -179,8 +179,8 @@ int main(int argc, char *argv[])
 
     // State 3
     state3->assignProperty(button, "text", "Switch to state 1");
-    state3->assignProperty(p1, "geometry", QRectF(5, 5, 64, 64));
-    state3->assignProperty(p2, "geometry", QRectF(5, 5 + 64 + 5, 64, 64));
+    state3->assignProperty(p1, "geometry", QRectF(0, 5, 64, 64));
+    state3->assignProperty(p2, "geometry", QRectF(0, 5 + 64 + 5, 64, 64));
     state3->assignProperty(p3, "geometry", QRectF(5, 5 + (64 + 5) + 64, 64, 64));
     state3->assignProperty(p4, "geometry", QRectF(5 + 64 + 5, 5, 64, 64));
     state3->assignProperty(p5, "geometry", QRectF(5 + 64 + 5, 5 + 64 + 5, 64, 64));
