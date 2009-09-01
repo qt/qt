@@ -267,6 +267,8 @@ void tst_QSslCertificate::compareCertificates(
     QCOMPARE(cert1.alternateSubjectNames(), cert2.alternateSubjectNames());
     QCOMPARE(cert1.effectiveDate(), cert2.effectiveDate());
     QCOMPARE(cert1.expiryDate(), cert2.expiryDate());
+    QCOMPARE(cert1.version(), cert2.version());
+    QCOMPARE(cert1.serialNumber(), cert2.serialNumber());
     // ### add more functions here ...
 }
 
@@ -677,7 +679,9 @@ void tst_QSslCertificate::certInfo()
     QCOMPARE(cert.subjectInfo("C"), QString("NO"));
     QCOMPARE(cert.subjectInfo("ST"), QString());
 
-    QCOMPARE(cert.version(), QByteArray());
+    QCOMPARE(cert.version(), QByteArray::number(1));
+    QCOMPARE(cert.serialNumber(), QByteArray::number(17));
+
     QCOMPARE(cert.toPem().constData(), (const char*)pem);
     QCOMPARE(cert.toDer(), QByteArray::fromHex(der));
 
