@@ -1665,11 +1665,7 @@ void QGraphicsWidget::setWindowFlags(Qt::WindowFlags wFlags)
 */
 bool QGraphicsWidget::isActiveWindow() const
 {
-    Q_D(const QGraphicsWidget);
-    if (!d->scene)
-        return false;
-    const QGraphicsWidget *w = window();
-    return (!w && d->scene->isActive()) || (w && d->scene->activeWindow() == w);
+    return isActive();
 }
 
 /*!

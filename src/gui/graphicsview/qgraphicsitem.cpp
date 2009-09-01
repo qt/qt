@@ -1007,6 +1007,9 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
                 setEnabledHelper(parent->isEnabled(), /* explicit = */ false, /* update = */ !implicitUpdate);
         }
 
+        // Auto-activate if visible and the parent is active.
+        if (q->isVisible() && parent->isActive())
+            q->setActive(true);
     } else {
         // Inherit ancestor flags from the new parent.
         updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
@@ -1941,6 +1944,17 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
             child->d_ptr->setVisibleHelper(newVisible, false, updateChildren);
     }
 
+    // Update activation
+    if (scene && q->isPanel()) {
+        if (newVisible) {
+            if (parent && parent->isActive())
+                q->setActive(true);
+        } else {
+            if (q->isActive())
+                scene->setActivePanel(parent);
+        }
+    }
+
     // Enable subfocus
     if (newVisible && isWidget) {
         QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(q_ptr);
@@ -2666,6 +2680,37 @@ bool QGraphicsItem::isActive() const
     if (!d_ptr->scene || !d_ptr->scene->isActive())
         return false;
     return panel() == d_ptr->scene->activePanel();
+}
+
+/*!
+    \since 4.6
+
+    If \a active is true, and the scene is active, this item's panel will be
+    activated. Otherwise, the panel is deactivated.
+
+    If the item is not part of an active scene, \a active will decide what
+    happens to the panel when the scene becomes active or the item is added to
+    the scene. If true, the item's panel will be activated when the item is
+    either added to the scene or the scene is activated. Otherwise, the item
+    will stay inactive independent of the scene's activated state.
+
+    \sa isPanel(), QGraphicsScene::setActivePanel(), QGraphicsScene::isActive()
+*/
+void QGraphicsItem::setActive(bool active)
+{
+    d_ptr->explicitActivate = 1;
+    d_ptr->wantsActive = active;
+    if (d_ptr->scene) {
+        if (active) {
+            // Activate this item.
+            d_ptr->scene->setActivePanel(this);
+        } else {
+            // Deactivate this item, and reactivate the last active item
+            // (if any).
+            QGraphicsItem *lastActive = d_ptr->scene->d_func()->lastActivePanel;
+            d_ptr->scene->setActivePanel(lastActive != this ? lastActive : 0);
+        }
+    }
 }
 
 /*!
@@ -6099,8 +6144,10 @@ bool QGraphicsItem::sceneEvent(QEvent *event)
         if (d_ptr->scene) {
             for (int i = 0; i < d_ptr->children.size(); ++i) {
                 QGraphicsItem *child = d_ptr->children.at(i);
-                if (!(child->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorHandlesChildEvents))
-                    d_ptr->scene->sendEvent(child, event);
+                if (child->isVisible() && !child->isPanel()) {
+                    if (!(child->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorHandlesChildEvents))
+                        d_ptr->scene->sendEvent(child, event);
+                }
             }
         }
         break;
@@ -6945,7 +6992,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
   \property QGraphicsObject::id
   \brief the id of of the item
 
-  \sa QGraphicsItem::opacity(), QGraphicsItem::setOpacity()
+  \sa QObject::objectName(), QObject::setObjectName()
 */
 
 /*!

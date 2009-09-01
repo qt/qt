@@ -220,6 +220,7 @@
 
 #ifndef QT_NO_NETWORKPROXY
 
+#include "private/qnetworkproxy_p.h"
 #include "private/qsocks5socketengine_p.h"
 #include "private/qhttpsocketengine_p.h"
 #include "qauthenticator.h"
@@ -1154,6 +1155,29 @@ QNetworkProxyFactory::QNetworkProxyFactory()
 */
 QNetworkProxyFactory::~QNetworkProxyFactory()
 {
+}
+
+
+/*!
+    Enables the use of the platform-specific proxy settings, and only those.
+    See systemProxyForQuery() for more information.
+
+    Internally, this method (when called with \a enable set to true)
+    sets an application-wide proxy factory. For this reason, this method
+    is mutually exclusive with setApplicationProxyFactory: calling
+    setApplicationProxyFactory overrides the use of the system-wide proxy,
+    and calling setUseSystemConfigurationEnabled overrides any
+    application proxy or proxy factory that was previously set.
+
+    \since 4.6
+*/
+void QNetworkProxyFactory::setUseSystemConfigurationEnabled(bool enable)
+{
+    if (enable) {
+        setApplicationProxyFactory(new QSystemConfigurationProxyFactory);
+    } else {
+        setApplicationProxyFactory(0);
+    }
 }
 
 /*!

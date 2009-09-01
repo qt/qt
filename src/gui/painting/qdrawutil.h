@@ -44,8 +44,8 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtCore/qstring.h> // char*->QString conversion
+#include <QtCore/qmargins.h>
 #include <QtGui/qpixmap.h>
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -132,24 +132,6 @@ Q_GUI_EXPORT QT3_SUPPORT void qDrawArrow(QPainter *p, Qt::ArrowType type, Qt::GU
                           int x, int y, int w, int h,
                           const QPalette &pal, bool enabled);
 #endif
-
-struct QMargins
-{
-    inline QMargins(int margin = 0)
-        : top(margin),
-          left(margin),
-          bottom(margin),
-          right(margin) {}
-    inline QMargins(int topMargin, int leftMargin, int bottomMargin, int rightMargin)
-         : top(topMargin),
-           left(leftMargin),
-           bottom(bottomMargin),
-           right(rightMargin) {}
-    int top;
-    int left;
-    int bottom;
-    int right;
-};
 
 struct QTileRules
 {

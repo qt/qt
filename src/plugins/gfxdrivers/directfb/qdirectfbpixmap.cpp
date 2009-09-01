@@ -41,12 +41,17 @@
 
 #include "qdirectfbpixmap.h"
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 #include "qdirectfbscreen.h"
 #include "qdirectfbpaintengine.h"
 
 #include <QtGui/qbitmap.h>
 #include <QtCore/qfile.h>
 #include <directfb.h>
+
+
+QT_BEGIN_NAMESPACE
 
 static int global_ser_no = 0;
 
@@ -573,4 +578,10 @@ void QDirectFBPixmapData::invalidate()
     is_null = true;
     imageFormat = QImage::Format_Invalid;
 }
+
+QT_END_NAMESPACE
+
+#endif // QT_NO_QWS_DIRECTFB
+
+
 

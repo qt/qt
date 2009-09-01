@@ -39,11 +39,13 @@
 **
 ****************************************************************************/
 
-#ifndef QT_NO_DIRECTFB
-
 #include "qdirectfbscreen.h"
 #include "qdirectfbpaintdevice.h"
 #include "qdirectfbpaintengine.h"
+
+#ifndef QT_NO_QWS_DIRECTFB
+
+QT_BEGIN_NAMESPACE
 
 QDirectFBPaintDevice::QDirectFBPaintDevice(QDirectFBScreen *scr)
     : QCustomRasterPaintDevice(0), dfbSurface(0), lockedImage(0), screen(scr),
@@ -169,5 +171,6 @@ QPaintEngine *QDirectFBPaintDevice::paintEngine() const
     return engine;
 }
 
-#endif
+QT_END_NAMESPACE
 
+#endif // QT_NO_QWS_DIRECTFB

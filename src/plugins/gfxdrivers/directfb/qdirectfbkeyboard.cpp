@@ -41,7 +41,7 @@
 
 #include "qdirectfbkeyboard.h"
 
-#ifndef QT_NO_DIRECTFB
+#ifndef QT_NO_QWS_DIRECTFB
 
 #include "qdirectfbscreen.h"
 #include <qobject.h>
@@ -52,6 +52,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+
+QT_BEGIN_NAMESPACE
 
 class KeyMap : public QHash<DFBInputDeviceKeySymbol, Qt::Key>
 {
@@ -429,6 +431,6 @@ KeyMap::KeyMap()
     insert(DIKS_TILDE                 , Qt::Key_AsciiTilde);
 }
 
+QT_END_NAMESPACE
 #include "qdirectfbkeyboard.moc"
-
-#endif // QT_NO_DIRECTFB
+#endif // QT_NO_QWS_DIRECTFB

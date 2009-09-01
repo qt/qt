@@ -171,6 +171,7 @@ public:
 
     virtual QList<QNetworkProxy> queryProxy(const QNetworkProxyQuery &query = QNetworkProxyQuery()) = 0;
 
+    static void setUseSystemConfigurationEnabled(bool enable);
     static void setApplicationProxyFactory(QNetworkProxyFactory *factory);
     static QList<QNetworkProxy> proxyForQuery(const QNetworkProxyQuery &query);
     static QList<QNetworkProxy> systemProxyForQuery(const QNetworkProxyQuery &query = QNetworkProxyQuery());

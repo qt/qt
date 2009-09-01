@@ -46,15 +46,18 @@
 #include "qdirectfbpaintdevice.h"
 #include "qdirectfbscreen.h"
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 #include <private/qpaintengine_raster_p.h>
 #include <private/qwindowsurface_qws_p.h>
-#include <directfb.h>
 
 #ifdef QT_DIRECTFB_TIMING
 #include <qdatetime.h>
 #endif
 
 QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
@@ -89,12 +92,14 @@ public:
     void endPaint(const QRegion &);
 
     IDirectFBSurface *surfaceForWidget(const QWidget *widget, QRect *rect) const;
+    IDirectFBSurface *directFBSurface() const;
 private:
     void updateFormat();
+    QDirectFBWindowSurface *sibling;
+
 #ifdef QT_DIRECTFB_WM
     void createWindow();
     IDirectFBWindow *dfbWindow;
-    QDirectFBWindowSurface *sibling;
 #else
     enum Mode {
         Primary,
@@ -110,6 +115,10 @@ private:
 #endif
 };
 
+QT_END_NAMESPACE
+
 QT_END_HEADER
+
+#endif // QT_NO_QWS_DIRECTFB
 
 #endif // QDIRECFBWINDOWSURFACE_H

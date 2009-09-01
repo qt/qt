@@ -119,6 +119,8 @@ private:
 
     mutable QSize m_textureSize;
 
+    mutable bool m_horizontalBlur;
+
     QGLShaderProgram *m_program;
 };
 
@@ -336,46 +338,37 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
-
-    painter->save();
-
-    // ensure GL_LINEAR filtering is used
-    painter->setRenderHint(QPainter::SmoothPixmapTransform);
-
     // prepare for updateUniforms
     m_textureSize = src.size();
 
-    // first pass, to fbo
-    fbo->bind();
+    // horizontal pass, to pixmap
+    m_horizontalBlur = true;
+
+    QPainter fboPainter(fbo);
+
     if (src.hasAlphaChannel()) {
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
+    // ensure GL_LINEAR filtering is used
+    fboPainter.setRenderHint(QPainter::SmoothPixmapTransform);
+    filter->setOnPainter(&fboPainter);
+    fboPainter.drawPixmap(0, 0, src);
+    filter->removeFromPainter(&fboPainter);
+    fboPainter.end();
+
+    QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
+
+    // vertical pass, to painter
+    m_horizontalBlur = false;
+
+    painter->save();
+    // ensure GL_LINEAR filtering is used
+    painter->setRenderHint(QPainter::SmoothPixmapTransform);
     filter->setOnPainter(painter);
-
-    QTransform transform = engine->state()->matrix;
-    if (!transform.isIdentity()) {
-        engine->state()->matrix = QTransform();
-        engine->transformChanged();
-    }
-
-    engine->drawPixmap(src.rect().translated(0, painter->device()->height() - fbo->height()),
-                       src, src.rect());
-
-    if (!transform.isIdentity()) {
-        engine->state()->matrix = transform;
-        engine->transformChanged();
-    }
-
-    fbo->release();
-
-    // second pass, to widget
-    m_program->setUniformValue("delta", 0.0, 1.0);
     engine->drawTexture(src.rect().translated(pos.x(), pos.y()), fbo->texture(), fbo->size(), src.rect().translated(0, fbo->height() - src.height()));
     filter->removeFromPainter(painter);
-
     painter->restore();
 
     qgl_fbo_pool()->release(fbo);
@@ -386,7 +379,11 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
 void QGLPixmapBlurFilter::setUniforms(QGLShaderProgram *program)
 {
     program->setUniformValue("invTextureSize", 1.0 / m_textureSize.width(), 1.0 / m_textureSize.height());
-    program->setUniformValue("delta", 1.0, 0.0);
+
+    if (m_horizontalBlur)
+        program->setUniformValue("delta", 1.0, 0.0);
+    else
+        program->setUniformValue("delta", 0.0, 1.0);
 
     m_program = program;
 }

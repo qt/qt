@@ -44,6 +44,7 @@
 
 #include <QtGui/qwindowdefs.h>
 #include <QtCore/qobject.h>
+#include <QtCore/qmargins.h>
 #include <QtGui/qpaintdevice.h>
 #include <QtGui/qpalette.h>
 #include <QtGui/qfont.h>
@@ -527,7 +528,10 @@ public:
     QRegion visibleRegion() const;
 
     void setContentsMargins(int left, int top, int right, int bottom);
+    void setContentsMargins(const QMargins &margins);
     void getContentsMargins(int *left, int *top, int *right, int *bottom) const;
+    QMargins contentsMargins() const;
+
     QRect contentsRect() const;
 
 public:

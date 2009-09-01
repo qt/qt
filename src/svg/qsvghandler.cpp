@@ -64,6 +64,7 @@
 #include "qdebug.h"
 #include "qmath.h"
 #include "qnumeric.h"
+#include "qvarlengtharray.h"
 #include "private/qmath_p.h"
 
 #include "float.h"
@@ -181,21 +182,21 @@ QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHa
             case 's':
                 if (name.length() > 5 && QStringRef(name.string(), name.position() + 1, 5) == QLatin1String("troke")) {
                     QStringRef strokeRef(name.string(), name.position() + 6, name.length() - 6);
-                    if (name.isEmpty())
+                    if (strokeRef.isEmpty())
                         stroke = value;
-                    else if (name == QLatin1String("-dasharray"))
+                    else if (strokeRef == QLatin1String("-dasharray"))
                         strokeDashArray = value;
-                    else if (name == QLatin1String("-dashoffset"))
+                    else if (strokeRef == QLatin1String("-dashoffset"))
                         strokeDashOffset = value;
-                    else if (name == QLatin1String("-linecap"))
+                    else if (strokeRef == QLatin1String("-linecap"))
                         strokeLineCap = value;
-                    else if (name == QLatin1String("-linejoin"))
+                    else if (strokeRef == QLatin1String("-linejoin"))
                         strokeLineJoin = value;
-                    else if (name == QLatin1String("-miterlimit"))
+                    else if (strokeRef == QLatin1String("-miterlimit"))
                         strokeMiterLimit = value;
-                    else if (name == QLatin1String("-opacity"))
+                    else if (strokeRef == QLatin1String("-opacity"))
                         strokeOpacity = value;
-                    else if (name == QLatin1String("-width"))
+                    else if (strokeRef == QLatin1String("-width"))
                         strokeWidth = value;
                 }
                 else if (name == QLatin1String("stop-color"))
@@ -276,21 +277,21 @@ QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHa
         case 's':
             if (name.length() > 5 && QStringRef(name.string(), name.position() + 1, 5) == QLatin1String("troke")) {
                 QStringRef strokeRef(name.string(), name.position() + 6, name.length() - 6);
-                if (name.isEmpty())
+                if (strokeRef.isEmpty())
                     stroke = value;
-                else if (name == QLatin1String("-dasharray"))
+                else if (strokeRef == QLatin1String("-dasharray"))
                     strokeDashArray = value;
-                else if (name == QLatin1String("-dashoffset"))
+                else if (strokeRef == QLatin1String("-dashoffset"))
                     strokeDashOffset = value;
-                else if (name == QLatin1String("-linecap"))
+                else if (strokeRef == QLatin1String("-linecap"))
                     strokeLineCap = value;
-                else if (name == QLatin1String("-linejoin"))
+                else if (strokeRef == QLatin1String("-linejoin"))
                     strokeLineJoin = value;
-                else if (name == QLatin1String("-miterlimit"))
+                else if (strokeRef == QLatin1String("-miterlimit"))
                     strokeMiterLimit = value;
-                else if (name == QLatin1String("-opacity"))
+                else if (strokeRef == QLatin1String("-opacity"))
                     strokeOpacity = value;
-                else if (name == QLatin1String("-width"))
+                else if (strokeRef == QLatin1String("-width"))
                     strokeWidth = value;
             }
             else if (name == QLatin1String("stop-color"))
@@ -474,6 +475,13 @@ public:
     }
 };
 
+// '0' is 0x30 and '9' is 0x39
+static inline bool isDigit(ushort ch)
+{
+    static quint16 magic = 0x3ff;
+    return ((ch >> 4) == 3) && (magic >> (ch & 15));
+}
+
 static qreal toDouble(const QChar *&str)
 {
     const int maxLen = 255;//technically doubles can go til 308+ but whatever
@@ -486,7 +494,7 @@ static qreal toDouble(const QChar *&str)
     } else if (*str == QLatin1Char('+')) {
         ++str;
     }
-    while (*str >= QLatin1Char('0') && *str <= QLatin1Char('9') && pos < maxLen) {
+    while (isDigit(str->unicode()) && pos < maxLen) {
         temp[pos++] = str->toLatin1();
         ++str;
     }
@@ -494,7 +502,7 @@ static qreal toDouble(const QChar *&str)
         temp[pos++] = '.';
         ++str;
     }
-    while (*str >= QLatin1Char('0') && *str <= QLatin1Char('9') && pos < maxLen) {
+    while (isDigit(str->unicode()) && pos < maxLen) {
         temp[pos++] = str->toLatin1();
         ++str;
     }
@@ -507,7 +515,7 @@ static qreal toDouble(const QChar *&str)
             temp[pos++] = str->toLatin1();
             ++str;
         }
-        while (*str >= QLatin1Char('0') && *str <= QLatin1Char('9') && pos < maxLen) {
+        while (isDigit(str->unicode()) && pos < maxLen) {
             temp[pos++] = str->toLatin1();
             ++str;
         }
@@ -587,7 +595,7 @@ static QVector<qreal> parseNumbersList(const QChar *&str)
 
     while (*str == QLatin1Char(' '))
         ++str;
-    while ((*str >= QLatin1Char('0') && *str <= QLatin1Char('9')) ||
+    while (isDigit(str->unicode()) ||
            *str == QLatin1Char('-') || *str == QLatin1Char('+') ||
            *str == QLatin1Char('.')) {
 
@@ -604,6 +612,27 @@ static QVector<qreal> parseNumbersList(const QChar *&str)
     }
 
     return points;
+}
+
+static inline void parseNumbersArray(const QChar *&str, QVarLengthArray<qreal, 8> &points)
+{
+    while (*str == QLatin1Char(' '))
+        ++str;
+    while (isDigit(str->unicode()) ||
+           *str == QLatin1Char('-') || *str == QLatin1Char('+') ||
+           *str == QLatin1Char('.')) {
+
+        points.append(toDouble(str));
+
+        while (*str == QLatin1Char(' '))
+            ++str;
+        if (*str == QLatin1Char(','))
+            ++str;
+
+        //eat the rest of space
+        while (*str == QLatin1Char(' '))
+            ++str;
+    }
 }
 
 static QVector<qreal> parsePercentageList(const QChar *&str)
@@ -949,7 +978,8 @@ static QMatrix parseTransformationMatrix(const QString &value)
         if (*str != QLatin1Char('('))
             goto error;
         ++str;
-        QVector<qreal> points = parseNumbersList(str);
+        QVarLengthArray<qreal, 8> points;
+        parseNumbersArray(str, points);
         if (*str != QLatin1Char(')'))
             goto error;
         ++str;
@@ -1819,27 +1849,49 @@ static inline QStringList stringToList(const QString &str)
 static bool parseCoreNode(QSvgNode *node,
                           const QXmlStreamAttributes &attributes)
 {
-    QString featuresStr   = attributes.value(QLatin1String("requiredFeatures")).toString();
-    QString extensionsStr = attributes.value(QLatin1String("requiredExtensions")).toString();
-    QString languagesStr  = attributes.value(QLatin1String("systemLanguage")).toString();
-    QString formatsStr    = attributes.value(QLatin1String("requiredFormats")).toString();
-    QString fontsStr      = attributes.value(QLatin1String("requiredFonts")).toString();
-    QString nodeIdStr     = someId(attributes);
-    QString xmlClassStr   = attributes.value(QLatin1String("class")).toString();
+    QStringList features;
+    QStringList extensions;
+    QStringList languages;
+    QStringList formats;
+    QStringList fonts;
+    QString xmlClassStr;
 
-
-    QStringList features = stringToList(featuresStr);
-    QStringList extensions = stringToList(extensionsStr);
-    QStringList languages = stringToList(languagesStr);
-    QStringList formats = stringToList(formatsStr);
-    QStringList fonts = stringToList(fontsStr);
+    for (int i = 0; i < attributes.count(); ++i) {
+        const QXmlStreamAttribute &attribute = attributes.at(i);
+        QStringRef name = attribute.qualifiedName();
+        if (name.isEmpty())
+            continue;
+        QStringRef value = attribute.value();
+        switch (name.at(0).unicode()) {
+        case 'c':
+            if (name == QLatin1String("class"))
+                xmlClassStr = value.toString();
+            break;
+        case 'r':
+            if (name == QLatin1String("requiredFeatures"))
+                features = stringToList(value.toString());
+            else if (name == QLatin1String("requiredExtensions"))
+                extensions = stringToList(value.toString());
+            else if (name == QLatin1String("requiredFormats"))
+                formats = stringToList(value.toString());
+            else if (name == QLatin1String("requiredFonts"))
+                fonts = stringToList(value.toString());
+            break;
+        case 's':
+            if (name == QLatin1String("systemLanguage"))
+                languages = stringToList(value.toString());
+            break;
+        default:
+            break;
+        }
+    }
 
     node->setRequiredFeatures(features);
     node->setRequiredExtensions(extensions);
     node->setRequiredLanguages(languages);
     node->setRequiredFormats(formats);
     node->setRequiredFonts(fonts);
-    node->setNodeId(nodeIdStr);
+    node->setNodeId(someId(attributes));
     node->setXmlClass(xmlClassStr);
 
     return true;
@@ -1981,8 +2033,9 @@ static void parseOthers(QSvgNode *node,
                         const QSvgAttributes &attributes,
                         QSvgHandler *)
 {
-    QString displayStr = attributes.display.toString();
-    displayStr = displayStr.trimmed();
+    if (attributes.display.isEmpty())
+        return;
+    QString displayStr = attributes.display.toString().trimmed();
 
     if (!displayStr.isEmpty()) {
         node->setDisplayMode(displayStringToEnum(displayStr));

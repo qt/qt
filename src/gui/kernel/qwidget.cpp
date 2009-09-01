@@ -919,7 +919,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     any amount of widgets there might be physical restrictions to amount of
     softkeys that can be used by the device.
 
-    \o Series60: For series60 menu button is automatically mapped to left
+    \e Series60: For series60 menu button is automatically mapped to left
     soft key if there is QMainWindow with QMenuBar in widgets parent hierarchy.
 
     \sa softKeys()
@@ -5962,6 +5962,8 @@ bool QWidget::hasFocus() const
     isActiveWindow() active window\endlink. The \a reason argument will
     be passed into any focus event sent from this function, it is used
     to give an explanation of what caused the widget to get focus.
+    If the window is not active, the widget will be given the focus when
+    the window becomes active.
 
     First, a focus out event is sent to the focus widget (if any) to
     tell it that it is about to lose the focus. Then a focus in event
@@ -6748,7 +6750,27 @@ void QWidget::setContentsMargins(int left, int top, int right, int bottom)
     QApplication::sendEvent(this, &e);
 }
 
-/*!  Returns the widget's contents margins for \a left, \a top, \a
+/*!
+  \overload
+  \since 4.6
+
+  Sets the margins around the contents of the widget to have the
+  sizes determined by \a margins. The margins are
+  used by the layout system, and may be used by subclasses to
+  specify the area to draw in (e.g. excluding the frame).
+
+  Changing the margins will trigger a resizeEvent().
+
+  \sa contentsRect(), getContentsMargins()
+*/
+void QWidget::setContentsMargins(const QMargins &margins)
+{
+    setContentsMargins(margins.left(), margins.top(),
+                       margins.right(), margins.bottom());
+}
+
+/*!
+  Returns the widget's contents margins for \a left, \a top, \a
   right, and \a bottom.
 
   \sa setContentsMargins(), contentsRect()
@@ -6765,6 +6787,20 @@ void QWidget::getContentsMargins(int *left, int *top, int *right, int *bottom) c
     if (bottom)
         *bottom = d->bottommargin;
 }
+
+/*!
+  \since 4.6
+
+  Returns the widget's contents margins.
+
+  \sa getContentsMargins(), setContentsMargins(), contentsRect()
+ */
+QMargins QWidget::contentsMargins() const
+{
+    Q_D(const QWidget);
+    return QMargins(d->leftmargin, d->topmargin, d->rightmargin, d->bottommargin);
+}
+
 
 /*!
     Returns the area inside the widget's margins.
