@@ -95,7 +95,7 @@ void ElasticValue::updateCurrentTime(int)
 QFxFlickablePrivate::QFxFlickablePrivate()
   : _flick(new QFxItem), _moveX(_flick, &QFxItem::setX), _moveY(_flick, &QFxItem::setY)
     , vWidth(-1), vHeight(-1), overShoot(true), flicked(false), moving(false), stealMouse(false)
-    , pressed(false), maxVelocity(-1), locked(false), dragMode(QFxFlickable::Hard)
+    , pressed(false), maxVelocity(-1), interactive(true), dragMode(QFxFlickable::Hard)
     , elasticY(_moveY), elasticX(_moveX), reportedVelocitySmoothing(100), horizontalVelocity(this), verticalVelocity(this)
     , vTime(0), atXEnd(false), atXBeginning(true), pageXPosition(0.), pageWidth(0.)
     , atYEnd(false), atYBeginning(true), pageYPosition(0.), pageHeight(0.)
@@ -201,12 +201,12 @@ void QFxFlickablePrivate::fixupX()
     vTime = _tl.time();
 
     if (_moveX.value() > q->minXExtent() || (q->maxXExtent() > q->maxXExtent())) {
-        _tl.clear();
+        _tl.reset(_moveY);
         if (_moveX.value() != q->minXExtent())
             _tl.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else if (_moveX.value() < q->maxXExtent()) {
-        _tl.clear();
+        _tl.reset(_moveY);
         _tl.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else {
@@ -223,12 +223,12 @@ void QFxFlickablePrivate::fixupY()
     vTime = _tl.time();
 
     if (_moveY.value() > q->minYExtent() || (q->maxYExtent() > q->minYExtent())) {
-        _tl.clear();
+        _tl.reset(_moveY);
         if (_moveY.value() != q->minYExtent())
             _tl.move(_moveY, q->minYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else if (_moveY.value() < q->maxYExtent()) {
-        _tl.clear();
+        _tl.reset(_moveY);
         _tl.move(_moveY,  q->maxYExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else {
@@ -411,24 +411,30 @@ void QFxFlickable::setViewportY(qreal pos)
 }
 
 /*!
-    \qmlproperty bool Flickable::locked
+    \qmlproperty bool Flickable::interactive
 
-    A user cannot drag or flick a Flickable that is locked.
+    A user cannot drag or flick a Flickable that is not interactive.
 
     This property is useful for temporarily disabling flicking. This allows
     special interaction with Flickable's children: for example, you might want to
     freeze a flickable map while viewing detailed information on a location popup that is a child of the Flickable.
 */
-bool QFxFlickable::isLocked() const
+bool QFxFlickable::isInteractive() const
 {
     Q_D(const QFxFlickable);
-    return d->locked;
+    return d->interactive;
 }
 
-void QFxFlickable::setLocked(bool lock)
+void QFxFlickable::setInteractive(bool interactive)
 {
     Q_D(QFxFlickable);
-    d->locked = lock;
+    d->interactive = interactive;
+    if (!interactive && d->flicked) {
+        d->_tl.clear();
+        d->flicked = false;
+        emit flickingChanged();
+        emit flickEnded();
+    }
 }
 
 /*!
@@ -577,7 +583,7 @@ qreal QFxFlickable::visibleY() const
 
 void QFxFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (!locked && _tl.isActive() && (qAbs(velocityX) > 10 || qAbs(velocityY) > 10))
+    if (interactive && _tl.isActive() && (qAbs(velocityX) > 10 || qAbs(velocityY) > 10))
         stealMouse = true; // If we've been flicked then steal the click.
     else
         stealMouse = false;
@@ -602,7 +608,7 @@ void QFxFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_Q(QFxFlickable);
-    if (locked || lastPosTime.isNull())
+    if (!interactive || lastPosTime.isNull())
         return;
     bool rejectY = false;
     bool rejectX = false;
