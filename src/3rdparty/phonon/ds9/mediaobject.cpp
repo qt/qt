@@ -21,7 +21,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtCore/QTime>
 #include <QtCore/QLibrary>
 
+#ifndef Q_CC_MSVC
 #include <dshow.h>
+#endif
 #include <objbase.h>
 #include <initguid.h>
 #include <qnetwork.h>
