@@ -292,14 +292,20 @@ class QTemporaryFileEngine : public QFSFileEngine
     Q_DECLARE_PRIVATE(QFSFileEngine)
 public:
     QTemporaryFileEngine(const QString &file, bool fileIsTemplate = true)
-        : QFSFileEngine(file), filePathIsTemplate(fileIsTemplate)
+        : QFSFileEngine(), filePathIsTemplate(fileIsTemplate)
     {
+        Q_D(QFSFileEngine);
+        d->filePath = file;
+
+        if (!filePathIsTemplate)
+            QFSFileEngine::setFileName(file);
     }
 
     ~QTemporaryFileEngine();
 
     bool isReallyOpen();
     void setFileName(const QString &file);
+    void setFileTemplate(const QString &fileTemplate);
 
     bool open(QIODevice::OpenMode flags);
     bool remove();
@@ -334,6 +340,13 @@ void QTemporaryFileEngine::setFileName(const QString &file)
     // Really close the file, so we don't leak
     QFSFileEngine::close();
     QFSFileEngine::setFileName(file);
+}
+
+void QTemporaryFileEngine::setFileTemplate(const QString &fileTemplate)
+{
+    Q_D(QFSFileEngine);
+    if (filePathIsTemplate)
+        d->filePath = fileTemplate;
 }
 
 bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
@@ -382,12 +395,19 @@ bool QTemporaryFileEngine::open(QIODevice::OpenMode openMode)
         return false;
     }
 
+    QString template_ = d->filePath;
     d->filePath = QString::fromLocal8Bit(filename);
-    filePathIsTemplate = false;
     d->nativeInitFileName();
-    d->closeFileHandle = true;
     delete [] filename;
-    return QFSFileEngine::open(openMode);
+
+    if (QFSFileEngine::open(openMode)) {
+        filePathIsTemplate = false;
+        return true;
+    }
+
+    d->filePath = template_;
+    d->nativeFilePath.clear();
+    return false;
 #endif
 }
 
@@ -533,7 +553,8 @@ QTemporaryFile::QTemporaryFile()
 QTemporaryFile::QTemporaryFile(const QString &templateName)
     : QFile(*new QTemporaryFilePrivate, 0)
 {
-    setFileTemplate(templateName);
+    Q_D(QTemporaryFile);
+    d->templateName = templateName;
 }
 
 /*!
@@ -567,7 +588,8 @@ QTemporaryFile::QTemporaryFile(QObject *parent)
 QTemporaryFile::QTemporaryFile(const QString &templateName, QObject *parent)
     : QFile(*new QTemporaryFilePrivate, parent)
 {
-    setFileTemplate(templateName);
+    Q_D(QTemporaryFile);
+    d->templateName = templateName;
 }
 #endif
 
@@ -671,10 +693,10 @@ QString QTemporaryFile::fileTemplate() const
 */
 void QTemporaryFile::setFileTemplate(const QString &name)
 {
-    Q_ASSERT(!isOpen());
     Q_D(QTemporaryFile);
-    fileEngine()->setFileName(name);
     d->templateName = name;
+    if (d->fileEngine)
+        static_cast<QTemporaryFileEngine*>(d->fileEngine)->setFileTemplate(name);
 }
 
 /*!

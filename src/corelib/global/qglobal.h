@@ -1372,6 +1372,9 @@ inline void qt_noop() {}
 #ifdef QT_BOOTSTRAPPED
 #  define QT_NO_EXCEPTIONS
 #endif
+#if defined(Q_CC_GNU) && !defined (__EXCEPTIONS)
+#  define QT_NO_EXCEPTIONS
+#endif
 
 #ifdef QT_NO_EXCEPTIONS
 #  define QT_TRY if (true)

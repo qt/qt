@@ -46,6 +46,7 @@
 #include <qdebug.h>
 #include <qgl.h>
 #include <qglpixelbuffer.h>
+#include <qglframebufferobject.h>
 #include <qglcolormap.h>
 #include <qpaintengine.h>
 
@@ -71,6 +72,8 @@ private slots:
     void partialGLWidgetUpdates_data();
     void partialGLWidgetUpdates();
     void glWidgetRendering();
+    void glFBORendering();
+    void glFBOUseInGLWidget();
     void glPBufferRendering();
     void glWidgetReparent();
     void colormap();
@@ -704,6 +707,121 @@ void tst_QGL::glWidgetRendering()
     reference.fill(0xffff0000);
 
     QCOMPARE(fb, reference);
+}
+
+// NOTE: This tests that CombinedDepthStencil attachment works by assuming the
+//       GL2 engine is being used and is implemented the same way as it was when
+//       this autotest was written. If this is not the case, there may be some
+//       false-positives: I.e. The test passes when either the depth or stencil
+//       buffer is actually missing. But that's probably ok anyway.
+void tst_QGL::glFBORendering()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    QGLWidget glw;
+    glw.makeCurrent();
+
+    // No multisample with combined depth/stencil attachment:
+    QGLFramebufferObjectFormat fboFormat(0, QGLFramebufferObject::CombinedDepthStencil);
+
+    // Don't complicate things by using NPOT:
+    QGLFramebufferObject *fbo = new QGLFramebufferObject(256, 128, fboFormat);
+
+    QPainter fboPainter;
+    bool painterBegun = fboPainter.begin(fbo);
+    QVERIFY(painterBegun);
+
+    QPainterPath intersectingPath;
+    intersectingPath.moveTo(0, 0);
+    intersectingPath.lineTo(100, 0);
+    intersectingPath.lineTo(0, 100);
+    intersectingPath.lineTo(100, 100);
+    intersectingPath.closeSubpath();
+
+    QPainterPath trianglePath;
+    trianglePath.moveTo(50, 0);
+    trianglePath.lineTo(100, 100);
+    trianglePath.lineTo(0, 100);
+    trianglePath.closeSubpath();
+
+    fboPainter.fillRect(0, 0, fbo->width(), fbo->height(), Qt::red); // Background
+    fboPainter.translate(14, 14);
+    fboPainter.fillPath(intersectingPath, Qt::blue); // Test stencil buffer works
+    fboPainter.translate(128, 0);
+    fboPainter.setClipPath(trianglePath); // Test depth buffer works
+    fboPainter.setTransform(QTransform()); // reset xform
+    fboPainter.fillRect(0, 0, fbo->width(), fbo->height(), Qt::green);
+    fboPainter.end();
+
+    QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
+    delete fbo;
+
+    // As we're doing more than trivial painting, we can't just compare to
+    // an image rendered with raster. Instead, we sample at well-defined
+    // test-points:
+    QCOMPARE(fb.pixel(39, 64), QColor(Qt::red).rgb());
+    QCOMPARE(fb.pixel(89, 64), QColor(Qt::red).rgb());
+    QCOMPARE(fb.pixel(64, 39), QColor(Qt::blue).rgb());
+    QCOMPARE(fb.pixel(64, 89), QColor(Qt::blue).rgb());
+
+    QCOMPARE(fb.pixel(167, 39), QColor(Qt::red).rgb());
+    QCOMPARE(fb.pixel(217, 39), QColor(Qt::red).rgb());
+    QCOMPARE(fb.pixel(192, 64), QColor(Qt::green).rgb());
+}
+
+class FBOUseInGLWidget : public QGLWidget
+{
+public:
+    bool widgetPainterBeginOk;
+    bool fboPainterBeginOk;
+    QImage fboImage;
+protected:
+    void paintEvent(QPaintEvent*)
+    {
+        QPainter widgetPainter;
+        widgetPainterBeginOk = widgetPainter.begin(this);
+        QGLFramebufferObjectFormat fboFormat(0, QGLFramebufferObject::CombinedDepthStencil);
+        QGLFramebufferObject *fbo = new QGLFramebufferObject(128, 128, fboFormat);
+
+        QPainter fboPainter;
+        fboPainterBeginOk = fboPainter.begin(fbo);
+        fboPainter.fillRect(0, 0, 128, 128, Qt::red);
+        fboPainter.end();
+        fboImage = fbo->toImage();
+
+        widgetPainter.fillRect(rect(), Qt::blue);
+
+        delete fbo;
+    }
+
+};
+
+void tst_QGL::glFBOUseInGLWidget()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    FBOUseInGLWidget w;
+    w.resize(128, 128);
+    w.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&w);
+#endif
+    QTest::qWait(200);
+
+    QVERIFY(w.widgetPainterBeginOk);
+    QVERIFY(w.fboPainterBeginOk);
+
+    QImage widgetFB = w.grabFrameBuffer(false);
+    QImage widgetReference(widgetFB.size(), widgetFB.format());
+    widgetReference.fill(0xff0000ff);
+    QCOMPARE(widgetFB, widgetReference);
+
+    QImage fboReference(w.fboImage.size(), w.fboImage.format());
+    fboReference.fill(0xffff0000);
+    QCOMPARE(w.fboImage, fboReference);
 }
 
 void tst_QGL::glWidgetReparent()

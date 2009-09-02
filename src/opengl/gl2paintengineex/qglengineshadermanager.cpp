@@ -570,20 +570,34 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
 
         requiredProgram.program->link();
         if (!requiredProgram.program->isLinked()) {
+            QLatin1String none("none");
+            QLatin1String br("\n");
             QString error;
-            qWarning() <<  "Shader program failed to link,"
+            error = QLatin1String("Shader program failed to link,")
 #if defined(QT_DEBUG)
-                  << '\n'
-                  << "  Shaders Used:" << '\n'
-                  << "    mainVertexShader = "     << requiredProgram.mainVertexShader->objectName()  << '\n'
-                  << "    positionVertexShader = " << requiredProgram.positionVertexShader->objectName() << '\n'
-                  << "    mainFragShader = "       << requiredProgram.mainFragShader->objectName() << '\n'
-                  << "    srcPixelFragShader = "   << requiredProgram.srcPixelFragShader->objectName() << '\n'
-                  << "    maskFragShader = "       << requiredProgram.maskFragShader->objectName() << '\n'
-                  << "    compositionFragShader = "<< requiredProgram.compositionFragShader->objectName() << '\n'
+              + br
+              + QLatin1String("  Shaders Used:\n")
+              + QLatin1String("    mainVertexShader = ")
+              + (requiredProgram.mainVertexShader ?
+                    requiredProgram.mainVertexShader->objectName() : none) + br
+              + QLatin1String("    positionVertexShader = ")
+              + (requiredProgram.positionVertexShader ?
+                    requiredProgram.positionVertexShader->objectName() : none) + br
+              + QLatin1String("    mainFragShader = ")
+              + (requiredProgram.mainFragShader ?
+                    requiredProgram.mainFragShader->objectName() : none) + br
+              + QLatin1String("    srcPixelFragShader = ")
+              + (requiredProgram.srcPixelFragShader ?
+                    requiredProgram.srcPixelFragShader->objectName() : none) + br
+              + QLatin1String("    maskFragShader = ")
+              + (requiredProgram.maskFragShader ?
+                    requiredProgram.maskFragShader->objectName() : none) + br
+              + QLatin1String("    compositionFragShader = ")
+              + (requiredProgram.compositionFragShader ?
+                    requiredProgram.compositionFragShader->objectName() : none) + br
 #endif
-                  << "  Error Log:" << '\n'
-                  << "    " << requiredProgram.program->log();
+             + QLatin1String("  Error Log:\n")
+             + QLatin1String("    ") + requiredProgram.program->log();
             qWarning() << error;
             delete requiredProgram.program;
         } else {

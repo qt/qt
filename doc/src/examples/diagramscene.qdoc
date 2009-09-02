@@ -704,7 +704,7 @@
     We use \c itemChange() and \c focusOutEvent() to notify the
     \c DiagramScene when the text item loses focus and gets selected.
 
-    Vi reimplement the functions that handle mouse events to make it
+    We reimplement the functions that handle mouse events to make it
     possible to alter the mouse behavior of QGraphicsTextItem.
 
     \section1 DiagramTextItem Implementation
@@ -729,7 +729,8 @@
     \snippet examples/graphicsview/diagramscene/diagramtextitem.cpp 2
 
     \c DiagramScene uses the signal emitted when the text item looses
-    remove the item if it is empty, i.e., it contains no text. 
+    focus to remove the item if it is empty, i.e., it contains no
+    text. 
 
     This is the implementation of \c mouseDoubleClickEvent():
 
@@ -838,7 +839,7 @@
 
     \snippet examples/graphicsview/diagramscene/arrow.cpp 7
 
-    If the line is selected we draw to dotted lines that are
+    If the line is selected, we draw two dotted lines that are
     parallel with the line of the arrow. We do not use the default
     implementation, which uses \l{QGraphicsItem::}{boundingRect()}
     because the QRect bounding rectangle is considerably larger than

@@ -611,6 +611,9 @@ public:
     inline void update()
     { item->update(); }
 
+    inline void effectBoundingRectChanged()
+    { item->prepareGeometryChange(); }
+
     inline bool isPixmap() const
     {
         return (item->type() == QGraphicsPixmapItem::Type);

@@ -501,6 +501,25 @@ bool QGLShader::compile(const char *source)
         return d->compile(this);
     } else if (d->shader) {
         QVarLengthArray<const char *> src;
+        int headerLen = 0;
+        while (source && source[headerLen] == '#') {
+            // Skip #version and #extension directives at the start of
+            // the shader code.  We need to insert the qualifierDefines
+            // and redefineHighp just after them.
+            if (qstrncmp(source + headerLen, "#version", 8) != 0 &&
+                    qstrncmp(source + headerLen, "#extension", 10) != 0) {
+                break;
+            }
+            while (source[headerLen] != '\0' && source[headerLen] != '\n')
+                ++headerLen;
+            if (source[headerLen] == '\n')
+                ++headerLen;
+        }
+        QByteArray header;
+        if (headerLen > 0) {
+            header = QByteArray(source, headerLen);
+            src.append(header.constData());
+        }
 #ifdef QGL_DEFINE_QUALIFIERS
         src.append(qualifierDefines);
 #endif
@@ -509,7 +528,7 @@ bool QGLShader::compile(const char *source)
                 d->shaderType == PartialFragmentShader)
             src.append(redefineHighp);
 #endif
-        src.append(source);
+        src.append(source + headerLen);
         QGLContextGroup *ctx = d->ctx;
         glShaderSource(d->shader, src.size(), src.data(), 0);
         return d->compile(this);

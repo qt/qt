@@ -1047,7 +1047,9 @@ int QHeaderView::visualIndex(int logicalIndex) const
 
 /*!
     Returns the logicalIndex for the section at the given \a visualIndex
-    position, or -1 otherwise.
+    position, or -1 if visualIndex < 0 or visualIndex >= QHeaderView::count().
+
+    Note that the visualIndex is not affected by hidden sections.
 
     \sa visualIndex(), sectionPosition()
 */

@@ -335,7 +335,7 @@ void QGraphicsEffect::setEnabled(bool enable)
 
     d->isEnabled = enable;
     if (d->source)
-        d->source->update();
+        d->source->d_func()->effectBoundingRectChanged();
     emit enabledChanged(enable);
 }
 
@@ -347,6 +347,22 @@ void QGraphicsEffect::setEnabled(bool enable)
 
     \sa isEnabled()
 */
+
+/*!
+    Schedules a redraw of the source. Call this function whenever the source
+    needs to be redrawn.
+
+    This convenience function is equivalent to calling
+    QGraphicsEffectSource::update().
+
+    \sa updateBoundingRect(), QGraphicsEffectSource::update()
+*/
+void QGraphicsEffect::update()
+{
+    Q_D(QGraphicsEffect);
+    if (d->source)
+        d->source->update();
+}
 
 /*!
     Returns a pointer to the source, which provides extra context information
@@ -366,13 +382,15 @@ QGraphicsEffectSource *QGraphicsEffect::source() const
     function whenever you change any parameters that will cause the virtual
     boundingRectFor() function to return a different value.
 
+    This function will call update() if this is necessary.
+
     \sa boundingRectFor(), boundingRect()
 */
 void QGraphicsEffect::updateBoundingRect()
 {
     Q_D(QGraphicsEffect);
     if (d->source)
-        d->source->update();
+        d->source->d_func()->effectBoundingRectChanged();
 }
 
 /*!
@@ -523,6 +541,7 @@ void QGraphicsColorizeEffect::setColor(const QColor &color)
         return;
 
     d->filter->setColor(color);
+    update();
     emit colorChanged(color);
 }
 
@@ -610,6 +629,7 @@ void QGraphicsPixelizeEffect::setPixelSize(int size)
         return;
 
     d->pixelSize = size;
+    update();
     emit pixelSizeChanged(size);
 }
 
@@ -820,7 +840,7 @@ QGraphicsDropShadowEffect::~QGraphicsDropShadowEffect()
 
     By default, the offset is 8 pixels towards the lower right.
 
-    \sa blurRadius(), color()
+    \sa xOffset(), yOffset(), blurRadius(), color()
 */
 QPointF QGraphicsDropShadowEffect::offset() const
 {
@@ -838,6 +858,24 @@ void QGraphicsDropShadowEffect::setOffset(const QPointF &offset)
     updateBoundingRect();
     emit offsetChanged(offset);
 }
+
+/*!
+    \property QGraphicsDropShadowEffect::xOffset
+    \brief the horizontal shadow offset in pixels.
+
+    By default, the horizontal shadow offset is 8 pixels.
+
+    \sa yOffset(), offset()
+*/
+
+/*!
+    \property QGraphicsDropShadowEffect::yOffset
+    \brief the vertical shadow offset in pixels.
+
+    By default, the vertical shadow offset is 8 pixels.
+
+    \sa xOffset(), offset()
+*/
 
 /*!
     \fn void QGraphicsDropShadowEffect::offsetChanged(const QPointF &offset)
@@ -903,6 +941,7 @@ void QGraphicsDropShadowEffect::setColor(const QColor &color)
         return;
 
     d->filter->setColor(color);
+    update();
     emit colorChanged(color);
 }
 
@@ -1012,6 +1051,7 @@ void QGraphicsOpacityEffect::setOpacity(qreal opacity)
         d->isFullyOpaque = 0;
     else
         d->isFullyOpaque = qFuzzyIsNull(d->opacity - 1);
+    update();
     emit opacityChanged(opacity);
 }
 
@@ -1050,6 +1090,7 @@ void QGraphicsOpacityEffect::setOpacityMask(const QBrush &mask)
 
     d->opacityMask = mask;
     d->hasOpacityMask = (mask.style() != Qt::NoBrush);
+    update();
 
     emit opacityMaskChanged(mask);
 }
@@ -1088,19 +1129,20 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
             const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
             painter->drawPixmap(offset, pixmap);
         } else {
-            QRectF srcBrect = source->boundingRect();
-            QPixmap pixmap(srcBrect.size().toSize());
+            QRect srcBrect = source->boundingRect().toAlignedRect();
+            offset = srcBrect.topLeft();
+            QPixmap pixmap(srcBrect.size());
             pixmap.fill(Qt::transparent);
 
             QPainter pixmapPainter(&pixmap);
             pixmapPainter.setRenderHints(painter->renderHints());
-            pixmapPainter.translate(-srcBrect.topLeft());
+            pixmapPainter.translate(-offset);
             source->draw(&pixmapPainter);
             pixmapPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
             pixmapPainter.fillRect(srcBrect, d->opacityMask);
             pixmapPainter.end();
 
-            painter->drawPixmap(srcBrect.topLeft(), pixmap);
+            painter->drawPixmap(offset, pixmap);
         }
     } else {
         // Draw pixmap in device coordinates to avoid pixmap scaling;

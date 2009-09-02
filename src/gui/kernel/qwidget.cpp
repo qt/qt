@@ -5962,6 +5962,8 @@ bool QWidget::hasFocus() const
     isActiveWindow() active window\endlink. The \a reason argument will
     be passed into any focus event sent from this function, it is used
     to give an explanation of what caused the widget to get focus.
+    If the window is not active, the widget will be given the focus when
+    the window becomes active.
 
     First, a focus out event is sent to the focus widget (if any) to
     tell it that it is about to lose the focus. Then a focus in event

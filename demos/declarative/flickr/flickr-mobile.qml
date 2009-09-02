@@ -23,12 +23,12 @@ Item {
             Mobile.GridDelegate { id: GridDelegate }
             GridView {
                 id: PhotoGridView; model: RssModel; delegate: GridDelegate; cacheBuffer: 100
-                cellWidth: 79; cellHeight: 79; width: parent.width; height: parent.height - 1
+                cellWidth: 79; cellHeight: 79; width: parent.width; height: parent.height - 1; z: 6
             }
 
             Mobile.ListDelegate { id: ListDelegate }
             ListView {
-                id: PhotoListView; model: RssModel; delegate: ListDelegate
+                id: PhotoListView; model: RssModel; delegate: ListDelegate; z: 6
                 width: parent.width; height: parent.height; x: -(parent.width * 1.5); cacheBuffer: 100;
             }
             states: State {
@@ -42,11 +42,11 @@ Item {
             }
         }
 
-        Common.ImageDetails { id: ImageDetails; width: parent.width; anchors.left: Views.right; height: parent.height }
-        Mobile.TitleBar { id: TitleBar; width: parent.width; height: 40; opacity: 0.9 }
+        Mobile.ImageDetails { id: ImageDetails; width: parent.width; anchors.left: Views.right; height: parent.height; z:1 }
+        Mobile.TitleBar { id: TitleBar; z: 5; width: parent.width; height: 40; opacity: 0.9 }
 
         Mobile.ToolBar {
-            id: ToolBar
+            id: ToolBar; z: 5
             height: 40; anchors.bottom: parent.bottom; width: parent.width; opacity: 0.9
             button1Label: "Update"; button2Label: "View mode"
             onButton1Clicked: RssModel.reload()
@@ -56,6 +56,8 @@ Item {
         states: State {
             name: "DetailedView"
             PropertyChanges { target: Views; x: -parent.width }
+            PropertyChanges { target: ToolBar; button1Label: "More..." }
+            PropertyChanges { target: ToolBar; onButton1Clicked: { } }
             PropertyChanges { target: ToolBar; button2Label: "Back" }
             PropertyChanges { target: ToolBar; onButton2Clicked: { } }
         }
