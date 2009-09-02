@@ -1452,10 +1452,13 @@ bool QmlCompiler::buildIdProperty(QmlParser::Property *prop,
     if (!isValidId(val))
         COMPILE_EXCEPTION(prop, val << "is not a valid object id");
 
-    // We disallow id's that conflict with import prefixes
+    // We disallow id's that conflict with import prefixes and types
     QmlEnginePrivate::ImportedNamespace *ns = 0;
+    QmlType *type = 0;
     QmlEnginePrivate::get(engine)->resolveType(unit->imports, val.toUtf8(), 
-                                               0, 0, 0, 0, &ns);
+                                               &type, 0, 0, 0, &ns);
+    if (type)
+        COMPILE_EXCEPTION(idValue, "id conflicts with type name");
     if (ns)
         COMPILE_EXCEPTION(idValue, "id conflicts with namespace prefix");
 

@@ -11,7 +11,7 @@ Item {
     signal clicked
 
     Image {
-        id: Image
+        id: StarImage
         source: "pics/ghns_star.png"
         x: 6
         y: 7
@@ -27,7 +27,7 @@ Item {
             name: "on"
             when: Container.on == true
             PropertyChanges {
-                target: Image
+                target: StarImage
                 opacity: 1
                 scale: 1
                 x: 1

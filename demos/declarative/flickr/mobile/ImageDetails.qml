@@ -19,7 +19,7 @@ Flipable {
     signal closed
 
     transform: Rotation {
-        id: Rotation
+        id: ItemRotation
         origin.x: Container.width / 2;
         axis.y: 1; axis.z: 0
     }
@@ -116,7 +116,7 @@ Flipable {
 
     states: State {
         name: "Back"
-        PropertyChanges { target: Rotation; angle: 180 }
+        PropertyChanges { target: ItemRotation; angle: 180 }
     }
 
     transitions: Transition {
