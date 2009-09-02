@@ -144,7 +144,6 @@ extern "C" {
 #endif // QT_INTERLOCKED_DECLARE_PROTOTYPES
 
 #undef QT_INTERLOCKED_PROTOTYPE
-#undef QT_INTERLOCKED_VOLATILE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -215,13 +214,13 @@ extern "C" {
 
 # define QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(value, newValue, expectedValue) \
     QT_INTERLOCKED_FUNCTION(InterlockedCompareExchangePointer)( \
-            QT_INTERLOCKED_REMOVE_VOLATILE( value ), \
+            reinterpret_cast<void * QT_INTERLOCKED_VOLATILE *>( QT_INTERLOCKED_REMOVE_VOLATILE( value ) ), \
             newValue, \
             expectedValue )
 
 # define QT_INTERLOCKED_EXCHANGE_POINTER(value, newValue) \
     QT_INTERLOCKED_FUNCTION(InterlockedExchangePointer)( \
-            QT_INTERLOCKED_REMOVE_VOLATILE( value ), \
+            reinterpret_cast<void * QT_INTERLOCKED_VOLATILE *>( QT_INTERLOCKED_REMOVE_VOLATILE( value ) ), \
             newValue )
 
 # define QT_INTERLOCKED_EXCHANGE_ADD_POINTER(value, valueToAdd) \
@@ -471,6 +470,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 #undef QT_INTERLOCKED_PREFIX
 
 #undef QT_INTERLOCKED_NO_VOLATILE
+#undef QT_INTERLOCKED_VOLATILE
 #undef QT_INTERLOCKED_REMOVE_VOLATILE
 
 #undef QT_INTERLOCKED_INCREMENT
