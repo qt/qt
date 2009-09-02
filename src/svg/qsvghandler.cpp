@@ -711,16 +711,18 @@ static inline QStringRef trimRef(const QStringRef &str)
  * returns true when successfuly set the color. false signifies
  * that the color should be inherited
  */
-static bool resolveColor(const QString &colorStr, QColor &color, QSvgHandler *handler)
+static bool resolveColor(const QStringRef &colorStr, QColor &color, QSvgHandler *handler)
 {
-    QString colorStrTr = colorStr.trimmed();
-    if (colorStr.startsWith(QLatin1String("rgb("))) {
-        const QChar *s = colorStr.constData() + 4;
+    QStringRef colorStrTr = trimRef(colorStr);
+    if (colorStrTr.isEmpty())
+        return false;
+    if (colorStrTr == QLatin1String("rgb(")) {
+        const QChar *s = colorStrTr.constData() + 4;
         QVector<qreal> compo = parseNumbersList(s);
         //1 means that it failed after reaching non-parsable
         //character which is going to be "%"
         if (compo.size() == 1) {
-            const QChar *s = colorStr.constData() + 4;
+            const QChar *s = colorStrTr.constData() + 4;
             compo = parsePercentageList(s);
             compo[0] *= (qreal)2.55;
             compo[1] *= (qreal)2.55;
@@ -731,18 +733,18 @@ static bool resolveColor(const QString &colorStr, QColor &color, QSvgHandler *ha
                        int(compo[1]),
                        int(compo[2]));
         return true;
-    } else if (colorStr == QT_INHERIT)  {
+    } else if (colorStrTr == QT_INHERIT)  {
         return false;
-    } else if (colorStr == QLatin1String("currentColor")) {
+    } else if (colorStrTr == QLatin1String("currentColor")) {
         color = handler->currentColor();
         return true;
     }
 
-    color = QColor(colorStrTr);
+    color = QColor(colorStrTr.toString());
     return color.isValid();
 }
 
-static bool constructColor(const QString &colorStr, const QStringRef &opacity,
+static bool constructColor(const QStringRef &colorStr, const QStringRef &opacity,
                            QColor &color, QSvgHandler *handler)
 {
     if (!resolveColor(colorStr, color, handler))
@@ -855,9 +857,8 @@ static void parseColor(QSvgNode *,
                        const QSvgAttributes &attributes,
                        QSvgHandler *handler)
 {
-    QString colorStr = attributes.color.toString();
     QColor color;
-    if (constructColor(colorStr, attributes.colorOpacity, color, handler)) {
+    if (constructColor(attributes.color, attributes.colorOpacity, color, handler)) {
         handler->pushColor(color);
     }
 }
@@ -912,7 +913,7 @@ static void parseBrush(QSvgNode *node,
                 }
             } else if (attributes.fill != QLatin1String("none")) {
                 QColor color;
-                if (resolveColor(attributes.fill.toString(), color, handler))
+                if (resolveColor(attributes.fill, color, handler))
                     prop->setBrush(QBrush(color));
             } else {
                 prop->setBrush(QBrush(Qt::NoBrush));
@@ -1085,7 +1086,7 @@ static void parsePen(QSvgNode *node,
                     }
             } else if (attributes.stroke != QLatin1String("none")) {
                 QColor color;
-                if (resolveColor(attributes.stroke.toString(), color, handler))
+                if (resolveColor(attributes.stroke, color, handler))
                     prop->setStroke(QBrush(color));
             } else {
                 prop->setStroke(QBrush(Qt::NoBrush));
@@ -2145,8 +2146,8 @@ static bool parseAnimateColorNode(QSvgNode *parent,
                                   QSvgHandler *handler)
 {
     QString typeStr    = attributes.value(QLatin1String("type")).toString();
-    QString fromStr    = attributes.value(QLatin1String("from")).toString();
-    QString toStr      = attributes.value(QLatin1String("to")).toString();
+    QStringRef fromStr    = attributes.value(QLatin1String("from"));
+    QStringRef toStr      = attributes.value(QLatin1String("to"));
     QString valuesStr  = attributes.value(QLatin1String("values")).toString();
     QString beginStr   = attributes.value(QLatin1String("begin")).toString();
     QString durStr     = attributes.value(QLatin1String("dur")).toString();
@@ -2166,7 +2167,8 @@ static bool parseAnimateColorNode(QSvgNode *parent,
         QStringList::const_iterator itr;
         for (itr = str.constBegin(); itr != str.constEnd(); ++itr) {
             QColor color;
-            resolveColor(*itr, color, handler);
+            QString str = *itr;
+            resolveColor(QStringRef(&str), color, handler);
             colors.append(color);
         }
     }
@@ -2901,7 +2903,7 @@ static QSvgStyleProperty *createSolidColorNode(QSvgNode *parent,
                                                QSvgHandler *handler)
 {
     Q_UNUSED(parent); Q_UNUSED(attributes);
-    QString solidColorStr = attributes.value(QLatin1String("solid-color")).toString();
+    QStringRef solidColorStr = attributes.value(QLatin1String("solid-color"));
     QStringRef solidOpacityStr = attributes.value(QLatin1String("solid-opacity"));
 
     if (solidOpacityStr.isEmpty())
@@ -2956,15 +2958,16 @@ static bool parseStopNode(QSvgStyleProperty *parent,
     QSvgGradientStyle *style =
         static_cast<QSvgGradientStyle*>(parent);
     QString offsetStr   = attrs.offset.toString();
-    QString colorStr    = attrs.stopColor.toString();
+    QStringRef colorStr    = attrs.stopColor;
     QColor color;
 
     bool ok = true;
     qreal offset = convertToNumber(offsetStr, handler, &ok);
     if (!ok)
         offset = 0.0;
+    QString black = QString::fromLatin1("#000000");
     if (colorStr.isEmpty()) {
-        colorStr = QLatin1String("#000000");
+        colorStr = QStringRef(&black);
     }
 
     constructColor(colorStr, attrs.stopOpacity, color, handler);
