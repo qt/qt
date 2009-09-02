@@ -82,13 +82,13 @@ int main(int argc, char **argv)
     view->setRenderHints(QPainter::Antialiasing);
     view->setTransformationAnchor(QGraphicsView::NoAnchor);
     view->setScene(scene);
-    view->showFullScreen();
-    view->setFocus();    
+    view->show();
+    view->setFocus();
     view->setSceneRect(scene->sceneRect());
-    
+
     LifeCycle *cycle = new LifeCycle(stickMan, view);
     cycle->setDeathAnimation(":/animations/dead");
-    
+
     cycle->addActivity(":/animations/jumping", Qt::Key_J);
     cycle->addActivity(":/animations/dancing", Qt::Key_D);
     cycle->addActivity(":/animations/chilling", Qt::Key_C);
