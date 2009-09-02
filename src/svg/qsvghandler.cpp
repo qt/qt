@@ -742,7 +742,7 @@ static bool resolveColor(const QString &colorStr, QColor &color, QSvgHandler *ha
     return color.isValid();
 }
 
-static bool constructColor(const QString &colorStr, const QString &opacity,
+static bool constructColor(const QString &colorStr, const QStringRef &opacity,
                            QColor &color, QSvgHandler *handler)
 {
     if (!resolveColor(colorStr, color, handler))
@@ -856,9 +856,8 @@ static void parseColor(QSvgNode *,
                        QSvgHandler *handler)
 {
     QString colorStr = attributes.color.toString();
-    QString opacity  = attributes.colorOpacity.toString();
     QColor color;
-    if (constructColor(colorStr, opacity, color, handler)) {
+    if (constructColor(colorStr, attributes.colorOpacity, color, handler)) {
         handler->pushColor(color);
     }
 }
@@ -2903,10 +2902,10 @@ static QSvgStyleProperty *createSolidColorNode(QSvgNode *parent,
 {
     Q_UNUSED(parent); Q_UNUSED(attributes);
     QString solidColorStr = attributes.value(QLatin1String("solid-color")).toString();
-    QString solidOpacityStr = attributes.value(QLatin1String("solid-opacity")).toString();
+    QStringRef solidOpacityStr = attributes.value(QLatin1String("solid-opacity"));
 
     if (solidOpacityStr.isEmpty())
-        solidOpacityStr = attributes.value(QLatin1String("opacity")).toString();
+        solidOpacityStr = attributes.value(QLatin1String("opacity"));
 
     QColor color;
     if (!constructColor(solidColorStr, solidOpacityStr, color, handler))
@@ -2958,7 +2957,6 @@ static bool parseStopNode(QSvgStyleProperty *parent,
         static_cast<QSvgGradientStyle*>(parent);
     QString offsetStr   = attrs.offset.toString();
     QString colorStr    = attrs.stopColor.toString();
-    QString opacityStr  = attrs.stopOpacity.toString();
     QColor color;
 
     bool ok = true;
@@ -2969,7 +2967,7 @@ static bool parseStopNode(QSvgStyleProperty *parent,
         colorStr = QLatin1String("#000000");
     }
 
-    constructColor(colorStr, opacityStr, color, handler);
+    constructColor(colorStr, attrs.stopOpacity, color, handler);
 
     QGradient *grad = style->qgradient();
 
