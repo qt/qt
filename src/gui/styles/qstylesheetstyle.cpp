@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -214,6 +214,7 @@ enum PseudoElement {
     PseudoElement_ViewItemText,
     PseudoElement_ViewItemIndicator,
     PseudoElement_ScrollAreaCorner,
+    PseudoElement_TabBarTabCloseButton,
     NumPseudoElements
 };
 
@@ -223,7 +224,7 @@ struct PseudoElementInfo {
 };
 
 static const PseudoElementInfo knownPseudoElements[NumPseudoElements] = {
-    { QStyle::SC_None, "", },
+    { QStyle::SC_None, "" },
     { QStyle::SC_None, "down-arrow" },
     { QStyle::SC_None, "up-arrow" },
     { QStyle::SC_None, "left-arrow" },
@@ -300,8 +301,9 @@ static const PseudoElementInfo knownPseudoElements[NumPseudoElements] = {
     { QStyle::SC_None, "item" },
     { QStyle::SC_None, "icon" },
     { QStyle::SC_None, "text" },
-    { QStyle::SC_None, "indicator" } ,
-    { QStyle::SC_None, "corner" }
+    { QStyle::SC_None, "indicator" },
+    { QStyle::SC_None, "corner" },
+    { QStyle::SC_None, "close-button" },
 };
 
 
@@ -3196,7 +3198,7 @@ void QStyleSheetStyle::drawComplexControl(ComplexControl cc, const QStyleOptionC
                 if (subRule.hasDrawable()) {
                     QRect rect = subRule.boxRect(subControlRect(CC_MdiControls, opt, control, w), Margin);
                     subRule.drawRule(p, rect);
-                    QIcon icon = standardIcon(subControlIcon(layoutButton));
+                    QIcon icon = standardIcon(subControlIcon(layoutButton), opt);
                     icon.paint(p, subRule.contentsRect(rect), Qt::AlignCenter);
                 } else {
                     optCopy.subControls |= control;
@@ -3643,9 +3645,9 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 QPixmap pixmap = cb->currentIcon.pixmap(cb->iconSize, mode);
                 QRect iconRect(editRect);
                 iconRect.setWidth(cb->iconSize.width());
-                iconRect = alignedRect(QApplication::layoutDirection(),
-                                                           Qt::AlignLeft | Qt::AlignVCenter,
-                                                           iconRect.size(), editRect);
+                iconRect = alignedRect(cb->direction,
+                                       Qt::AlignLeft | Qt::AlignVCenter,
+                                       iconRect.size(), editRect);
                 drawItemPixmap(p, iconRect, Qt::AlignCenter, pixmap);
 
                 if (cb->direction == Qt::RightToLeft)
@@ -4370,6 +4372,12 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
     case PE_IndicatorSpinPlus:
         pseudoElement = PseudoElement_SpinBoxUpArrow;
         break;
+#ifndef QT_NO_TABBAR
+    case PE_IndicatorTabClose:
+        if (w)
+            w = w->parentWidget(); //match on the QTabBar instead of the CloseButton
+        pseudoElement = PseudoElement_TabBarTabCloseButton;
+#endif
 
     default:
         break;
@@ -5104,6 +5112,18 @@ int QStyleSheetStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWi
 #endif // QT_NO_TABWIDGET
             s = QLatin1String("alignment");
             break;
+#ifndef QT_NO_TABBAR
+        case SH_TabBar_CloseButtonPosition:
+            rule = renderRule(w, opt, PseudoElement_TabBarTabCloseButton);
+            if (rule.hasPosition()) {
+                Qt::Alignment align = rule.position()->position;
+                if (align & Qt::AlignLeft || align & Qt::AlignTop)
+                    return QTabBar::LeftSide;
+                if (align & Qt::AlignRight || align & Qt::AlignBottom)
+                    return QTabBar::RightSide;
+            }
+            break;
+#endif
         case SH_TabBar_ElideMode: s = QLatin1String("tabbar-elide-mode"); break;
         case SH_TabBar_PreferNoArrows: s = QLatin1String("tabbar-prefer-no-arrows"); break;
         case SH_ComboBox_PopupFrameStyle:

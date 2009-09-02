@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -105,24 +105,26 @@ QT_BEGIN_NAMESPACE
     \header \o Context \o Functions
 
     \row \o Receiving information \o
-	x11FilterEvent(),
-	filterEvent(),
-	mouseHandler()
+        x11FilterEvent(),
+        filterEvent(),
+        mouseHandler()
 
     \row \o Sending back composed text \o
-	sendEvent()
+        sendEvent()
 
     \row \o State change notification \o
-	setFocusWidget(),
-	reset()
+        setFocusWidget(),
+        reset()
 
     \row \o Context information \o
-	identifierName(),
-	language(),
-	font(),
-	isComposing()
+        identifierName(),
+        language(),
+        font(),
+        isComposing()
 
     \endtable
+
+    \section1 Licensing Information
 
     \legalese
     Copyright (C) 2003-2004 immodule for Qt Project.  All rights reserved.
@@ -154,16 +156,17 @@ QInputContext::~QInputContext()
 }
 
 /*!
-    \internal
     Returns the widget that has an input focus for this input
-    context. Ordinary input methods should not call this function
-    directly to keep platform independence and flexible configuration
-    possibility.
+    context.
 
     The return value may differ from holderWidget() if the input
     context is shared between several text widgets.
 
-    \sa setFocusWidget(), holderWidget()
+    \warning To ensure platform independence and support flexible
+    configuration of widgets, ordinary input methods should not call
+    this function directly.
+
+    \sa setFocusWidget()
 */
 QWidget *QInputContext::focusWidget() const
 {
@@ -173,9 +176,9 @@ QWidget *QInputContext::focusWidget() const
 
 
 /*!
-    \internal
-    Sets the widget that has an input focus for this input
-    context. Ordinary input methods must not call this function
+    Sets the \a widget that has an input focus for this input context.
+
+    \warning Ordinary input methods must not call this function
     directly.
 
     \sa focusWidget()

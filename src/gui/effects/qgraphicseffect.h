@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -46,6 +46,7 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qrect.h>
 #include <QtGui/qcolor.h>
+#include <QtGui/qbrush.h>
 
 QT_BEGIN_HEADER
 
@@ -80,8 +81,8 @@ protected:
     QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent = 0);
 
 private:
-    Q_DECLARE_PRIVATE(QGraphicsEffectSource);
-    Q_DISABLE_COPY(QGraphicsEffectSource);
+    Q_DECLARE_PRIVATE(QGraphicsEffectSource)
+    Q_DISABLE_COPY(QGraphicsEffectSource)
     friend class QGraphicsEffect;
     friend class QGraphicsEffectPrivate;
     friend class QGraphicsScenePrivate;
@@ -103,7 +104,7 @@ public:
         SourceBoundingRectChanged = 0x4,
         SourceInvalidated = 0x8
     };
-    Q_DECLARE_FLAGS(ChangeFlags, ChangeFlag);
+    Q_DECLARE_FLAGS(ChangeFlags, ChangeFlag)
 
     QGraphicsEffect(QObject *parent = 0);
     virtual ~QGraphicsEffect();
@@ -117,7 +118,7 @@ public:
 
 public Q_SLOTS:
     void setEnabled(bool enable);
-    // ### add update() slot
+    void update();
 
 Q_SIGNALS:
     void enabledChanged(bool enabled);
@@ -137,7 +138,7 @@ private:
     friend class QWidget;
     friend class QWidgetPrivate;
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsEffect::ChangeFlags);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsEffect::ChangeFlags)
 
 class QGraphicsGrayscaleEffectPrivate;
 class Q_GUI_EXPORT QGraphicsGrayscaleEffect: public QGraphicsEffect
@@ -236,6 +237,8 @@ class Q_GUI_EXPORT QGraphicsDropShadowEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_PROPERTY(QPointF offset READ offset WRITE setOffset NOTIFY offsetChanged)
+    Q_PROPERTY(qreal xOffset READ xOffset WRITE setXOffset NOTIFY offsetChanged)
+    Q_PROPERTY(qreal yOffset READ yOffset WRITE setYOffset NOTIFY offsetChanged)
     Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 public:
@@ -244,15 +247,31 @@ public:
 
     QRectF boundingRectFor(const QRectF &rect) const;
     QPointF offset() const;
+
+    inline qreal xOffset() const
+    { return offset().x(); }
+
+    inline qreal yOffset() const
+    { return offset().y(); }
+
     int blurRadius() const;
     QColor color() const;
 
 public Q_SLOTS:
     void setOffset(const QPointF &ofs);
+
     inline void setOffset(qreal dx, qreal dy)
     { setOffset(QPointF(dx, dy)); }
+
     inline void setOffset(qreal d)
     { setOffset(QPointF(d, d)); }
+
+    inline void setXOffset(qreal dx)
+    { setOffset(QPointF(dx, yOffset())); }
+
+    inline void setYOffset(qreal dy)
+    { setOffset(QPointF(xOffset(), dy)); }
+
     void setBlurRadius(int blurRadius);
     void setColor(const QColor &color);
 
@@ -274,17 +293,21 @@ class Q_GUI_EXPORT QGraphicsOpacityEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_PROPERTY(int opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
+    Q_PROPERTY(QBrush opacityMask READ opacityMask WRITE setOpacityMask NOTIFY opacityMaskChanged)
 public:
     QGraphicsOpacityEffect(QObject *parent = 0);
     ~QGraphicsOpacityEffect();
 
     qreal opacity() const;
+    QBrush opacityMask() const;
 
 public Q_SLOTS:
     void setOpacity(qreal opacity);
+    void setOpacityMask(const QBrush &mask);
 
 Q_SIGNALS:
     void opacityChanged(qreal opacity);
+    void opacityMaskChanged(const QBrush &mask);
 
 protected:
     void draw(QPainter *painter, QGraphicsEffectSource *source);

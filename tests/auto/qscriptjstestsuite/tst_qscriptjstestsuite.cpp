@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -400,7 +400,6 @@ tst_Suite::tst_Suite()
     }
 
     QString willFixInNextReleaseMessage = QString::fromLatin1("Will fix in next release");
-    QString brokenOnSomePlatformsMessage = QString::fromLatin1("Doesn't behave the same on all platforms");
     QString fromCharCodeMessage = QString::fromLatin1("Test is wrong?");
     for (int i = 4256; i < 4294; ++i) {
         addExpectedFailure("ecma/String/15.5.4.11-2.js", QString::fromLatin1("var s = new String( String.fromCharCode(%0) ); s.toLowerCase().charCodeAt(0)").arg(i), fromCharCodeMessage);
@@ -418,61 +417,15 @@ tst_Suite::tst_Suite()
     addExpectedFailure("ecma/extensions/15.1.2.1-1.js", "var PROPS = ''; for ( p in eval ) { PROPS += p }; PROPS", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/GlobalObject/15.1.2.2-1.js", "var PROPS=''; for ( var p in parseInt ) { PROPS += p; }; PROPS", willFixInNextReleaseMessage);
 
-    addSkip("ecma/GlobalObject/15.1.2.2-2.js", "parseInt(s,36)", brokenOnSomePlatformsMessage);
-
     addExpectedFailure("ecma/GlobalObject/15.1.2.3-1.js", "var MYPROPS=''; for ( var p in parseFloat ) { MYPROPS += p }; MYPROPS", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/GlobalObject/15.1.2.4.js", "var MYPROPS=''; for ( var p in escape ) { MYPROPS+= p}; MYPROPS", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/GlobalObject/15.1.2.5-1.js", "var MYPROPS=''; for ( var p in unescape ) { MYPROPS+= p }; MYPROPS", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/GlobalObject/15.1.2.6.js", "var MYPROPS=''; for ( var p in isNaN ) { MYPROPS+= p }; MYPROPS", willFixInNextReleaseMessage);
     addExpectedFailure("ecma/GlobalObject/15.1.2.7.js", "var MYPROPS=''; for ( p in isFinite ) { MYPROPS+= p }; MYPROPS", willFixInNextReleaseMessage);
 
-    // qstrtod() has problems parsing reaaaaally big numbers -- they come out as NaN rather than Infinity or Number.MAX_VALUE
-    addSkip("ecma/TypeConversion/9.3.1-3.js", "parseInt(s1,10) == 1.7976931348623157e+308 || parseInt(s1,10) == Infinity", brokenOnSomePlatformsMessage);
-    addSkip("ecma/TypeConversion/9.3.1-3.js", "parseInt(s2,10) == Infinity || parseInt(s2,10) == 1.7976931348623157e+308", brokenOnSomePlatformsMessage);
-    addSkip("ecma/TypeConversion/9.3.1-3.js", "parseInt(s1) == 1.7976931348623157e+308 || parseInt(s1) == Infinity", brokenOnSomePlatformsMessage);
-    addSkip("ecma/TypeConversion/9.3.1-3.js", "parseInt(s2) == Infinity || parseInt(s2) == 1.7976931348623157e+308", brokenOnSomePlatformsMessage);
-    addSkip("ecma/TypeConversion/9.3.1-3.js", "parseInt(s,36)", brokenOnSomePlatformsMessage);
-
-#if defined(Q_OS_SOLARIS)
-    addExpectedFailure("ecma/Math/15.8.2.2.js", "Math.acos(11.00000001)", "Fails on Solaris");
-    addExpectedFailure("ecma/Math/15.8.2.3.js", "Math.asin(-1.000001)", "Fails on Solaris");
-#endif
-
     addExpectedFailure(QRegExp(), "NO TESTS EXIST", willFixInNextReleaseMessage);
 
-    addExpectedFailure("ecma_2/RegExp/multiline-001.js", "/.*[y]$/m.exec(ivory-billed\ndowny\nhairy\nacorn\nyellow-bellied sapsucker\nnorthern flicker\npileated\n)", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_2/RegExp/multiline-001.js", "/.*[d]$/m.exec(ivory-billed\ndowny\nhairy\nacorn\nyellow-bellied sapsucker\nnorthern flicker\npileated\n)", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_2/String/match-002.js", "//.toString()", willFixInNextReleaseMessage);
-
-#if defined(Q_WS_WIN)
-    addExpectedFailure(QRegExp(), "VAR1 = 0; VAR2= Infinity; VAR1 %= VAR2;VAR1", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "VAR1 = -0; VAR2= Infinity; VAR1 %= VAR2;VAR1", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "VAR1 = 0; VAR2= -Infinity; VAR1 %= VAR2;VAR1", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "VAR1 = -0; VAR2= -Infinity; VAR1 %= VAR2;VAR1", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "VAR1 = 1; VAR2= Infinity; VAR1 %= VAR2;VAR1", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "VAR1 = -1; VAR2= Infinity; VAR1 %= VAR2;VAR1", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "VAR1 = -1; VAR2= -Infinity; VAR1 %= VAR2;VAR1", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "VAR1 = 1; VAR2= -Infinity; VAR1 %= VAR2;VAR1", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "1 % Number.NEGATIVE_INFINITY", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "1 % Number.POSITIVE_INFINITY", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "-1 % Number.POSITIVE_INFINITY", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "-1 % Number.NEGATIVE_INFINITY", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "Number.MAX_VALUE % Number.NEGATIVE_INFINITY", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "Number.MAX_VALUE % Number.POSITIVE_INFINITY", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "-Number.MAX_VALUE % Number.POSITIVE_INFINITY", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "-Number.MAX_VALUE % Number.NEGATIVE_INFINITY", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "0 % Number.POSITIVE_INFINITY", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "0 % Number.NEGATIVE_INFINITY", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "-0 % Number.POSITIVE_INFINITY", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "-0 % Number.NEGATIVE_INFINITY", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "Math.atan2(Infinity, Infinity)", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "Math.atan2(Infinity, -Infinity)", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "Math.atan2(-Infinity, Infinity)", willFixInNextReleaseMessage);
-    addExpectedFailure(QRegExp(), "Math.atan2(-Infinity, -Infinity)", willFixInNextReleaseMessage);
-#endif
-
     addExpectedFailure("ecma_3/Array/15.4.5.1-01.js", "15.4.5.1 - array.length coverage", willFixInNextReleaseMessage);
-    addExpectedFailure("ecma_3/ExecutionContexts/10.1.4-1.js", "Expected to be able to delete x", willFixInNextReleaseMessage);
 
     addExpectedFailure("ecma_3/extensions/regress-228087-002.js",
                        "Section 1 of test - \nregexp = /{1.*}/g\n"

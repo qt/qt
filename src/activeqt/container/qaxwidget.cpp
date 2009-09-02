@@ -1437,6 +1437,9 @@ extern Q_GUI_EXPORT bool qt_win_ignoreNextMouseReleaseEvent;
 
 HRESULT WINAPI QAxClientSite::EnableModeless(BOOL fEnable)
 {
+#if !defined(Q_OS_WINCE)
+    LockWindowUpdate(host->window()->winId());
+#endif
     EnableWindow(host->window()->winId(), fEnable);
 
     if (!fEnable) {
@@ -1447,7 +1450,9 @@ HRESULT WINAPI QAxClientSite::EnableModeless(BOOL fEnable)
             QApplicationPrivate::leaveModal(host);
     }
     qt_win_ignoreNextMouseReleaseEvent = false;
-
+#if !defined(Q_OS_WINCE)
+    LockWindowUpdate(0);
+#endif
     return S_OK;
 }
 
@@ -1535,9 +1540,10 @@ HRESULT WINAPI QAxClientSite::SetBorderSpace(LPCBORDERWIDTHS pborderwidths)
 HRESULT WINAPI QAxClientSite::SetActiveObject(IOleInPlaceActiveObject *pActiveObject, LPCOLESTR pszObjName)
 {
     AX_DEBUG(QAxClientSite::SetActiveObject);
-
-    if (pszObjName && widget)
-        widget->setWindowTitle(QString::fromWCharArray(pszObjName));
+    
+    Q_UNUSED(pszObjName);
+    // we are ignoring the name of the object, as suggested by MSDN documentation 
+    // for IOleInPlaceUIWindow::SetActiveObject().
 
     if (m_spInPlaceActiveObject) {
         if (!inPlaceModelessEnabled)

@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1599,7 +1599,8 @@ bool qt_resolveTextureFromPixmap()
 #endif //defined(GLX_VERSION_1_3) && !defined(Q_OS_HPUX)
 
 
-QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, const qint64 key, bool canInvert)
+QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, const qint64 key,
+                                                           QGLContext::BindOptions options)
 {
 #if !defined(GLX_VERSION_1_3) || defined(Q_OS_HPUX)
     return 0;
@@ -1632,7 +1633,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, con
             GLX_DRAWABLE_TYPE, GLX_PIXMAP_BIT,
             GLX_BIND_TO_TEXTURE_TARGETS_EXT, GLX_TEXTURE_2D_BIT_EXT,
             // QGLContext::bindTexture() can't return an inverted texture, but QPainter::drawPixmap() can:
-            GLX_Y_INVERTED_EXT, canInvert ? GLX_DONT_CARE : False,
+            GLX_Y_INVERTED_EXT, options & QGLContext::CanFlipNativePixmapBindOption ? GLX_DONT_CARE : False,
             XNone
         };
         configList = glXChooseFBConfig(x11Info.display(), x11Info.screen(), configAttribs, &configCount);
@@ -1693,9 +1694,11 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, con
 
     glBindTexture(GL_TEXTURE_2D, textureId);
 
-    QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, canInvert, false);
-    texture->yInverted = (hasAlpha && RGBAConfigInverted) || (!hasAlpha && RGBConfigInverted);
-    if (texture->yInverted)
+    if (!((hasAlpha && RGBAConfigInverted) || (!hasAlpha && RGBConfigInverted)))
+        options &= ~QGLContext::InvertedYBindOption;
+
+    QGLTexture *texture = new QGLTexture(q, textureId, GL_TEXTURE_2D, options);
+    if (texture->options & QGLContext::InvertedYBindOption)
         pixmapData->flags |= QX11PixmapData::InvertedWhenBoundToTexture;
 
     // We assume the cost of bound pixmaps is zero

@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -468,7 +468,7 @@ bool isFunction(JSC::JSValue value)
 static JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 static JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 
-JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
+JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState *exec, JSC::JSObject * /*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
 {
 #ifndef QT_NO_QOBJECT
     if (args.size() == 0) {
@@ -533,7 +533,7 @@ JSC::JSValue JSC_HOST_CALL functionDisconnect(JSC::ExecState *exec, JSC::JSObjec
 #endif // QT_NO_QOBJECT
 }
 
-JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState *exec, JSC::JSObject */*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
+JSC::JSValue JSC_HOST_CALL functionConnect(JSC::ExecState *exec, JSC::JSObject * /*callee*/, JSC::JSValue thisObject, const JSC::ArgList &args)
 {
 #ifndef QT_NO_QOBJECT
     if (args.size() == 0) {
@@ -836,11 +836,6 @@ QScriptEnginePrivate::QScriptEnginePrivate()
 
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
-    while (freeScriptValues) {
-        QScriptValuePrivate *p = freeScriptValues;
-        freeScriptValues = p->next;
-        qFree(p);
-    }
     while (!ownedAgents.isEmpty())
         delete ownedAgents.takeFirst();
     detachAllRegisteredScriptValues();
@@ -849,6 +844,11 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     JSC::JSLock lock(false);
     globalData->heap.destroy();
     globalData->deref();
+    while (freeScriptValues) {
+        QScriptValuePrivate *p = freeScriptValues;
+        freeScriptValues = p->next;
+        qFree(p);
+    }
 }
 
 QScriptValue QScriptEnginePrivate::scriptValueFromVariant(const QVariant &v)
@@ -1180,14 +1180,14 @@ JSC::JSValue QScriptEnginePrivate::newQObject(
     bool preferExisting = (options & QScriptEngine::PreferExistingWrapperObject) != 0;
     QScriptEngine::QObjectWrapOptions opt = options & ~QScriptEngine::PreferExistingWrapperObject;
     QScriptObject *result = 0;
-    if (preferExisting)
+    if (preferExisting) {
         result = data->findWrapper(ownership, opt);
-    if (!result) {
-        result = new (exec) QScriptObject(qobjectWrapperObjectStructure);
-        if (preferExisting)
-            data->registerWrapper(result, ownership, opt);
+        if (result)
+            return result;
     }
-    Q_ASSERT(result != 0);
+    result = new (exec) QScriptObject(qobjectWrapperObjectStructure);
+    if (preferExisting)
+        data->registerWrapper(result, ownership, opt);
     result->setDelegate(new QScript::QObjectDelegate(object, ownership, options));
     /*if (setDefaultPrototype)*/ {
         const QMetaObject *meta = object->metaObject();
@@ -1635,7 +1635,6 @@ QScriptValue QScriptEngine::newVariant(const QScriptValue &object,
     }
     QScriptObject *jscScriptObject = static_cast<QScriptObject*>(jscObject);
     if (!object.isVariant()) {
-        delete jscScriptObject->delegate();
         jscScriptObject->setDelegate(new QScript::QVariantDelegate(value));
     } else {
         QScriptValuePrivate::get(object)->setVariantValue(value);
@@ -1713,7 +1712,6 @@ QScriptValue QScriptEngine::newQObject(const QScriptValue &scriptObject,
     }
     QScriptObject *jscScriptObject = static_cast<QScriptObject*>(jscObject);
     if (!scriptObject.isQObject()) {
-        delete jscScriptObject->delegate();
         jscScriptObject->setDelegate(new QScript::QObjectDelegate(qtObject, ownership, options));
     } else {
         QScript::QObjectDelegate *delegate = static_cast<QScript::QObjectDelegate*>(jscScriptObject->delegate());
@@ -2261,8 +2259,11 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSV
     if (calledAsConstructor)
         flags |= CalledAsConstructorContext;
 
+    //build a frame
     JSC::CallFrame *newCallFrame = exec;
-    if (callee == 0 || !(exec->callee() == callee && exec->returnPC() != 0)) {
+    if (callee == 0 //called from  public QScriptEngine::pushContext
+        || exec->returnPC() == 0 || (contextFlags(exec) & NativeContext)  //called from native-native call
+        || (exec->codeBlock() && exec->callee() != callee)) { //the interpreter did not build a frame for us.
         //We need to check if the Interpreter might have already created a frame for function called from JS.
         JSC::Interpreter *interp = exec->interpreter();
         JSC::Register *oldEnd = interp->registerFile().end();
@@ -2280,6 +2281,9 @@ JSC::CallFrame *QScriptEnginePrivate::pushContext(JSC::CallFrame *exec, JSC::JSV
         newCallFrame->init(0, /*vPC=*/0, exec->scopeChain(), exec, flags, argc, callee);
     } else {
         setContextFlags(newCallFrame, flags);
+#if ENABLE(JIT)
+        exec->registers()[JSC::RegisterFile::Callee] = JSC::JSValue(callee); //JIT let the callee set the 'callee'
+#endif
         if (calledAsConstructor) {
             //update the new created this
             JSC::Register* thisRegister = newCallFrame->registers() - JSC::RegisterFile::CallFrameHeaderSize - newCallFrame->argumentCount();
@@ -3232,11 +3236,10 @@ QStringList QScriptEngine::importedExtensions() const
     The \c Container type must provide a \c const_iterator class to enable the
     contents of the container to be copied into the array.
 
-    Additionally, the type of each element in the sequence should be suitable
-    for conversion to a QScriptValue.
-    See \l{QtScript Module#Conversion Between QtScript and C++ Types}
-    {Conversion Between QtScript and C++ Types} for more information about the
-    restrictions on types that can be used with QScriptValue.
+    Additionally, the type of each element in the sequence should be
+    suitable for conversion to a QScriptValue.  See
+    \l{Conversion Between QtScript and C++ Types} for more information
+    about the restrictions on types that can be used with QScriptValue.
 
     \sa qScriptValueFromValue()
 */
@@ -3253,11 +3256,11 @@ QStringList QScriptEngine::importedExtensions() const
     as long as it provides a \c length property describing how many elements
     it contains.
 
-    Additionally, the type of each element in the sequence must be suitable
-    for conversion to a C++ type from a QScriptValue.
-    See \l{QtScript Module#Conversion Between QtScript and C++ Types}
-    {Conversion Between QtScript and C++ Types} for more information about the
-    restrictions on types that can be used with QScriptValue.
+    Additionally, the type of each element in the sequence must be
+    suitable for conversion to a C++ type from a QScriptValue.  See
+    \l{Conversion Between QtScript and C++ Types} for more information
+    about the restrictions on types that can be used with
+    QScriptValue.
 
     \sa qscriptvalue_cast()
 */
@@ -3587,9 +3590,6 @@ void QScriptEngine::setAgent(QScriptEngineAgent *agent)
         QScriptEngineAgentPrivate::get(d->activeAgent)->detach();
     d->activeAgent = agent;
     if (agent) {
-        int index = d->ownedAgents.indexOf(agent);
-        if (index == -1)
-            d->ownedAgents.append(agent);
         QScriptEngineAgentPrivate::get(agent)->attach();
     }
 }
@@ -3621,9 +3621,7 @@ QScriptEngineAgent *QScriptEngine::agent() const
 QScriptString QScriptEngine::toStringHandle(const QString &str)
 {
     Q_D(QScriptEngine);
-    QScriptString ss;
-    QScriptStringPrivate::init(ss, this, JSC::Identifier(d->currentFrame, str));
-    return ss;
+    return d->scriptStringFromJSCIdentifier(JSC::Identifier(d->currentFrame, str));
 }
 
 /*!
@@ -3787,5 +3785,16 @@ QScriptSyntaxCheckResult &QScriptSyntaxCheckResult::operator=(const QScriptSynta
     d_ptr = other.d_ptr;
     return *this;
 }
+
+#ifdef QT_BUILD_INTERNAL
+Q_AUTOTEST_EXPORT bool qt_script_isJITEnabled()
+{
+#if ENABLE(JIT)
+    return true;
+#else
+    return false;
+#endif
+}
+#endif
 
 QT_END_NAMESPACE

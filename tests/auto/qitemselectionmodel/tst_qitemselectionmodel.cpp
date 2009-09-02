@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -91,6 +91,7 @@ private slots:
     void task119433_isRowSelected();
     void task252069_rowIntersectsSelection();
     void task232634_childrenDeselectionSignal();
+    void task260134_layoutChangedWithAllSelected();
 
 private:
     QAbstractItemModel *model;
@@ -2240,6 +2241,38 @@ void tst_QItemSelectionModel::task232634_childrenDeselectionSignal()
     QVERIFY(!selectionModel.selection().contains(sel));
     QVERIFY(selectionModel.selection().contains(sel2));
 }
+
+void tst_QItemSelectionModel::task260134_layoutChangedWithAllSelected()
+{
+    QStringListModel model( QStringList() << "foo" << "bar" << "foo2");
+    QSortFilterProxyModel proxy;
+    proxy.setSourceModel(&model);
+    QItemSelectionModel selection(&proxy);
+
+
+    QCOMPARE(model.rowCount(), 3);
+    QCOMPARE(proxy.rowCount(), 3);
+    proxy.setFilterRegExp( QRegExp("f"));
+    QCOMPARE(proxy.rowCount(), 2);
+
+    QList<QPersistentModelIndex> indexList;
+    indexList << proxy.index(0,0) << proxy.index(1,0);
+    selection.select( QItemSelection(indexList.first(), indexList.last()), QItemSelectionModel::Select);
+
+    //let's check the selection hasn't changed
+    QCOMPARE(selection.selectedIndexes().count(), indexList.count());
+    foreach(QPersistentModelIndex index, indexList)
+        QVERIFY(selection.isSelected(index));
+
+    proxy.setFilterRegExp(QRegExp());
+    QCOMPARE(proxy.rowCount(), 3);
+
+    //let's check the selection hasn't changed
+    QCOMPARE(selection.selectedIndexes().count(), indexList.count());
+    foreach(QPersistentModelIndex index, indexList)
+        QVERIFY(selection.isSelected(index));
+}
+
 
 QTEST_MAIN(tst_QItemSelectionModel)
 #include "tst_qitemselectionmodel.moc"

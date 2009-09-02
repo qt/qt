@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -47,6 +47,7 @@
 #include "qapplication.h"
 #include "qevent.h"
 #include "qtextformat.h"
+#include "qtextboundaryfinder.h"
 
 //#define Q_IME_DEBUG
 
@@ -808,6 +809,54 @@ void QWinInputContext::mouseHandler(int pos, QMouseEvent *e)
 QString QWinInputContext::language()
 {
     return QString();
+}
+
+int QWinInputContext::reconvertString(RECONVERTSTRING *reconv)
+{
+    QWidget *w = focusWidget();
+    if(!w)
+        return -1;
+
+    Q_ASSERT(w->testAttribute(Qt::WA_WState_Created));
+    QString surroundingText = qvariant_cast<QString>(w->inputMethodQuery(Qt::ImSurroundingText));
+    int memSize = sizeof(RECONVERTSTRING)+(surroundingText.length()+1)*sizeof(ushort);
+    // If memory is not allocated, return the required size.
+    if (!reconv) {
+        if (surroundingText.isEmpty())
+            return -1;
+        else
+            return memSize;
+    }
+    int pos = qvariant_cast<int>(w->inputMethodQuery(Qt::ImCursorPosition));
+    // find the word in the surrounding text.
+    QTextBoundaryFinder bounds(QTextBoundaryFinder::Word, surroundingText);
+    bounds.setPosition(pos);
+    if (bounds.isAtBoundary()) {
+        if (QTextBoundaryFinder::EndWord == bounds.boundaryReasons())
+            bounds.toPreviousBoundary();
+    } else {
+        bounds.toPreviousBoundary();
+    }
+    int startPos = bounds.position();
+    bounds.toNextBoundary();
+    int endPos = bounds.position();
+    // select the text, this will be overwritten by following ime events.
+    QList<QInputMethodEvent::Attribute> attrs;
+    attrs << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, startPos, endPos-startPos, QVariant());
+    QInputMethodEvent e(QString(), attrs);
+    qt_sendSpontaneousEvent(w, &e);
+
+    reconv->dwSize = memSize;
+    reconv->dwVersion = 0;
+
+    reconv->dwStrLen = surroundingText.length();
+    reconv->dwStrOffset = sizeof(RECONVERTSTRING);
+    reconv->dwCompStrLen = endPos-startPos;
+    reconv->dwCompStrOffset = startPos*sizeof(ushort);
+    reconv->dwTargetStrLen = reconv->dwCompStrLen;
+    reconv->dwTargetStrOffset = reconv->dwCompStrOffset;
+    memcpy((char*)(reconv+1), surroundingText.utf16(), surroundingText.length()*sizeof(ushort));
+    return memSize;
 }
 
 QT_END_NAMESPACE

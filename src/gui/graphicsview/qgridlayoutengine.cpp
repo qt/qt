@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -461,7 +461,7 @@ void QGridLayoutRowData::dump(int indent) const
 
 QGridLayoutItem::QGridLayoutItem(QGridLayoutEngine *engine, QGraphicsLayoutItem *layoutItem,
                                  int row, int column, int rowSpan, int columnSpan,
-                                 Qt::Alignment alignment)
+                                 Qt::Alignment alignment, int itemAtIndex)
     : q_engine(engine), q_layoutItem(layoutItem), q_alignment(alignment)
 {
     q_firstRows[Hor] = column;
@@ -471,7 +471,7 @@ QGridLayoutItem::QGridLayoutItem(QGridLayoutEngine *engine, QGraphicsLayoutItem 
     q_stretches[Hor] = -1;
     q_stretches[Ver] = -1;
 
-    q_engine->addItem(this);
+    q_engine->insertItem(this, itemAtIndex);
 }
 
 int QGridLayoutItem::firstRow(Qt::Orientation orientation) const
@@ -937,11 +937,20 @@ Qt::Alignment QGridLayoutEngine::effectiveAlignment(const QGridLayoutItem *layou
     return align;
 }
 
-void QGridLayoutEngine::addItem(QGridLayoutItem *item)
+/*!
+    \internal
+    The \a index is only used by QGraphicsLinearLayout to ensure that itemAt() reflects the order
+    of visual arrangement. Strictly speaking it does not have to, but most people expect it to.
+    (And if it didn't we would have to add itemArrangedAt(int index) or something..)
+ */
+void QGridLayoutEngine::insertItem(QGridLayoutItem *item, int index)
 {
     maybeExpandGrid(item->lastRow(), item->lastColumn());
 
-    q_items.append(item);
+    if (index == -1)
+        q_items.append(item);
+    else
+        q_items.insert(index, item);
 
     for (int i = item->firstRow(); i <= item->lastRow(); ++i) {
         for (int j = item->firstColumn(); j <= item->lastColumn(); ++j) {
@@ -950,6 +959,11 @@ void QGridLayoutEngine::addItem(QGridLayoutItem *item)
             setItemAt(i, j, item);
         }
     }
+}
+
+void QGridLayoutEngine::addItem(QGridLayoutItem *item)
+{
+    insertItem(item, -1);
 }
 
 void QGridLayoutEngine::removeItem(QGridLayoutItem *item)

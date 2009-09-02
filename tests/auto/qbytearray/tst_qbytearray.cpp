@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -90,6 +90,8 @@ private slots:
     void split();
     void base64_data();
     void base64();
+    void fromBase64_data();
+    void fromBase64();
     void qvsnprintf();
     void qstrlen();
     void qstrnlen();
@@ -460,6 +462,10 @@ void tst_QByteArray::base64_data()
     for (int i = 0; i < 256; ++i)
         ba[i] = i;
     QTest::newRow("f") << ba << QByteArray("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==");
+
+    QTest::newRow("g") << QByteArray("foo\0bar", 7) << QByteArray("Zm9vAGJhcg==");
+    QTest::newRow("h") << QByteArray("f\xd1oo\x9ctar") << QByteArray("ZtFvb5x0YXI=");
+    QTest::newRow("i") << QByteArray("\"\0\0\0\0\0\0\"", 8) << QByteArray("IgAAAAAAACI=");
 }
 
 
@@ -473,6 +479,54 @@ void tst_QByteArray::base64()
 
     QByteArray arr64 = rawdata.toBase64();
     QCOMPARE(arr64, base64);
+}
+
+//different from the previous test as the input are invalid
+void tst_QByteArray::fromBase64_data()
+{
+    QTest::addColumn<QByteArray>("rawdata");
+    QTest::addColumn<QByteArray>("base64");
+
+    QTest::newRow("1") << QByteArray("") << QByteArray("  ");
+    QTest::newRow("2") << QByteArray("1") << QByteArray("MQ");
+    QTest::newRow("3") << QByteArray("12") << QByteArray("MTI       ");
+    QTest::newRow("4") << QByteArray("123") << QByteArray("M=TIz");
+    QTest::newRow("5") << QByteArray("1234") << QByteArray("MTI zN A ");
+    QTest::newRow("6") << QByteArray("\n") << QByteArray("Cg");
+    QTest::newRow("7") << QByteArray("a\n") << QByteArray("======YQo=");
+    QTest::newRow("8") << QByteArray("ab\n") << QByteArray("Y\nWIK");
+    QTest::newRow("9") << QByteArray("abc\n") << QByteArray("YWJjCg==");
+    QTest::newRow("a") << QByteArray("abcd\n") << QByteArray("YWJ\1j\x9cZAo=");
+    QTest::newRow("b") << QByteArray("abcde\n") << QByteArray("YW JjZ\n G\tUK");
+    QTest::newRow("c") << QByteArray("abcdef\n") << QByteArray("YWJjZGVmCg=");
+    QTest::newRow("d") << QByteArray("abcdefg\n") << QByteArray("YWJ\rjZGVmZwo");
+    QTest::newRow("e") << QByteArray("abcdefgh\n") << QByteArray("YWJjZGVmZ2gK");
+
+    QByteArray ba;
+    ba.resize(256);
+    for (int i = 0; i < 256; ++i)
+        ba[i] = i;
+    QTest::newRow("f") << ba << QByteArray("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8gISIjJCUmJygpKissLS4vMDEyMzQ1Nj\n"
+                                           "c4OTo7PD0+P0BBQkNERUZHSElKS0xNTk9QUVJTVFVWV1hZWltcXV5fYGFiY2RlZmdoaWprbG1u\n"
+                                           "b3BxcnN0dXZ3eHl6e3x9fn+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpa\n"
+                                           "anqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd\n"
+                                           "3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/w==                            ");
+
+
+    QTest::newRow("g") << QByteArray("foo\0bar", 7) << QByteArray("Zm9vAGJhcg");
+    QTest::newRow("h") << QByteArray("f\xd1oo\x9ctar") << QByteArray("ZtFvb5x0YXI=");
+    QTest::newRow("i") << QByteArray("\"\0\0\0\0\0\0\"", 8) << QByteArray("IgAAAAAAACI");
+
+}
+
+
+void tst_QByteArray::fromBase64()
+{
+    QFETCH(QByteArray, rawdata);
+    QFETCH(QByteArray, base64);
+
+    QByteArray arr = QByteArray::fromBase64(base64);
+    QCOMPARE(arr, rawdata);
 }
 
 void tst_QByteArray::qvsnprintf()

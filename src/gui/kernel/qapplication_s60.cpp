@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -347,20 +347,21 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons | Qt::RightButton;
     QMouseEvent mEvent(QEvent::MouseButtonPress, alienWidget->mapFrom(qwidget, widgetPos), globalPos,
         Qt::RightButton, QApplicationPrivate::mouse_buttons, Qt::NoModifier);
-    
+
     bool res = sendMouseEvent(alienWidget, &mEvent);
 
 #if !defined(QT_NO_CONTEXTMENU)
-    QContextMenuEvent e2(QContextMenuEvent::Mouse, widgetPos, globalPos, mEvent.modifiers());
-#endif     
-    
+    QContextMenuEvent contextMenuEvent(QContextMenuEvent::Mouse, widgetPos, globalPos, mEvent.modifiers());
+    qt_sendSpontaneousEvent(alienWidget, &contextMenuEvent);
+#endif
+
     m_previousEventLongTap = true;
 }
 
 void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
 {
     m_longTapDetector->PointerEventL(pEvent);
-    QT_TRYCATCH_LEAVING(HandlePointerEvent(pEvent));  
+    QT_TRYCATCH_LEAVING(HandlePointerEvent(pEvent));
 }
 
 void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
@@ -395,15 +396,6 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
         if (!alienWidget)
             alienWidget = qwidget;
         S60->mousePressTarget = alienWidget;
-        //pointer grab
-        SetGloballyCapturing(ETrue);
-        SetPointerCapture(ETrue);
-    }
-    else if (type == QEvent::MouseButtonRelease)
-    {
-        //release pointer grab
-        SetGloballyCapturing(EFalse);
-        SetPointerCapture(EFalse);
     }
     alienWidget = S60->mousePressTarget;
 
@@ -800,14 +792,27 @@ bool QApplicationPrivate::modalState()
 
 void QApplicationPrivate::enterModal_sys(QWidget *widget)
 {
+    if (widget) {
+        widget->effectiveWinId()->DrawableWindow()->FadeBehind(ETrue);
+        // Modal partial screen dialogs (like queries) capture pointer events.
+        // ### FixMe: Add specialized behaviour for fullscreen modal dialogs
+        widget->effectiveWinId()->SetGloballyCapturing(ETrue);
+        widget->effectiveWinId()->SetPointerCapture(ETrue);
+    }
     if (!qt_modal_stack)
         qt_modal_stack = new QWidgetList;
     qt_modal_stack->insert(0, widget);
-    app_do_modal = true;    
+    app_do_modal = true;
 }
 
 void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 {
+    if (widget) {
+        widget->effectiveWinId()->DrawableWindow()->FadeBehind(EFalse);
+        // ### FixMe: Add specialized behaviour for fullscreen modal dialogs
+        widget->effectiveWinId()->SetGloballyCapturing(EFalse);
+        widget->effectiveWinId()->SetPointerCapture(EFalse);
+    }
     if (qt_modal_stack && qt_modal_stack->removeAll(widget)) {
         if (qt_modal_stack->isEmpty()) {
             delete qt_modal_stack;
@@ -823,18 +828,31 @@ void QApplicationPrivate::openPopup(QWidget *popup)
         QApplicationPrivate::popupWidgets = new QWidgetList;
     QApplicationPrivate::popupWidgets->append(popup);
 
-    if (QApplicationPrivate::popupWidgets->count() == 1 && !qt_nograb()) {
+
+    // Cancel focus widget pointer capture and long tap timer
+    if (QApplication::focusWidget()) {
+        static_cast<QSymbianControl*>(QApplication::focusWidget()->effectiveWinId())->CancelLongTapTimer();
+        QApplication::focusWidget()->effectiveWinId()->SetPointerCapture(false);
+        }
+
+    if (!qt_nograb()) {
+        // Cancel pointer capture and long tap timer for earlier popup
+        int popupCount = QApplicationPrivate::popupWidgets->count();
+        if (popupCount > 1) {
+            QWidget* prevPopup = QApplicationPrivate::popupWidgets->at(popupCount-2);
+            static_cast<QSymbianControl*>(prevPopup->effectiveWinId())->CancelLongTapTimer();
+            prevPopup->effectiveWinId()->SetPointerCapture(false);
+        }
+
+        // Enable pointer capture for this (topmost) popup
         Q_ASSERT(popup->testAttribute(Qt::WA_WState_Created));
         WId id = popup->effectiveWinId();
         id->SetPointerCapture(true);
-        id->SetGloballyCapturing(true);
     }
 
     // popups are not focus-handled by the window system (the first
     // popup grabbed the keyboard), so we have to do that manually: A
     // new popup gets the focus
-    if (QApplication::focusWidget())
-        static_cast<QSymbianControl*>(QApplication::focusWidget()->effectiveWinId())->CancelLongTapTimer();
     QWidget *fw = popup->focusWidget();
     if (fw) {
         fw->setFocus(Qt::PopupFocusReason);
@@ -853,14 +871,16 @@ void QApplicationPrivate::closePopup(QWidget *popup)
         return;
     QApplicationPrivate::popupWidgets->removeAll(popup);
 
+    // Cancel pointer capture and long tap for this popup
+    WId id = popup->effectiveWinId();
+    id->SetPointerCapture(false);
+    static_cast<QSymbianControl*>(id)->CancelLongTapTimer();
+
     if (QApplicationPrivate::popupWidgets->isEmpty()) { // this was the last popup
         delete QApplicationPrivate::popupWidgets;
         QApplicationPrivate::popupWidgets = 0;
         if (!qt_nograb()) {                        // grabbing not disabled
             Q_ASSERT(popup->testAttribute(Qt::WA_WState_Created));
-            WId id = popup->effectiveWinId();
-            id->SetPointerCapture(false);
-            id->SetGloballyCapturing(false);
             if (QWidgetPrivate::mouseGrabber != 0)
                 QWidgetPrivate::mouseGrabber->grabMouse();
 
@@ -879,6 +899,7 @@ void QApplicationPrivate::closePopup(QWidget *popup)
           }
         }
     } else {
+
         // popups are not focus-handled by the window system (the
         // first popup grabbed the keyboard), so we have to do that
         // manually: A popup was closed, so the previous popup gets
@@ -887,6 +908,11 @@ void QApplicationPrivate::closePopup(QWidget *popup)
         if (QWidget *fw = QApplication::focusWidget()) {
             QFocusEvent e(QEvent::FocusOut, Qt::PopupFocusReason);
             q_func()->sendEvent(fw, &e);
+        }
+
+        // Enable pointer capture for previous popup
+        if (aw) {
+            aw->effectiveWinId()->SetPointerCapture(true);
         }
     }
 }
@@ -971,6 +997,12 @@ void QApplication::beep()
     beep=NULL;
 }
 
+/*! \fn int QApplication::s60ProcessEvent(TWsEvent *event)
+    This function does the core processing of individual s60
+    \a{event}s. It returns 1 if the event was handled, 0 if
+    the \a event was not handled, and -1 if the event was
+    not handled because the event handle was not in the map.
+ */
 int QApplication::s60ProcessEvent(TWsEvent *event)
 {
     bool handled = s60EventFilter(event);
@@ -1057,17 +1089,21 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
     return 0;
 }
 
+/*!
+  Returns false. Does nothing with the TWsEvent \a aEvent.
+ */
 bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 {
     return false;
 }
 
 /*!
-    Handles commands which are typically handled by CAknAppUi::HandleCommandL()
-    Qts Ui integration into Symbian is partially achieved by deriving from CAknAppUi.
-    Currently, exit, menu and softkey commands are handled
+  Handles \a{command}s which are typically handled by
+  CAknAppUi::HandleCommandL(). Qts Ui integration into Symbian is
+  partially achieved by deriving from CAknAppUi.  Currently, exit,
+  menu and softkey commands are handled.
 
-    \sa s60EventFilter(), s60ProcessEvent()
+  \sa s60EventFilter(), s60ProcessEvent()
 */
 void QApplication::symbianHandleCommand(int command)
 {
@@ -1095,6 +1131,9 @@ void QApplication::symbianHandleCommand(int command)
     }
 }
 
+/*!
+  Handles the resource change specified by \a type.
+ */
 void QApplication::symbianResourceChange(int type)
 {
     switch (type) {

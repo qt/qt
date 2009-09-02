@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -525,23 +525,33 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
                 endOfSequence = true;
             }
         }
-        if (endOfSequence && candidates.count() >= 2) {
+        if (endOfSequence && candidates.count() >= 1) {
             int i;
             AnchorVertex *afterSequence= 0;
-            QList<AnchorVertex *> adjacentOfSecondLastVertex = g.adjacentVertices(candidates.last());
-            Q_ASSERT(adjacentOfSecondLastVertex.count() == 2);
-            if (adjacentOfSecondLastVertex.first() == candidates.at(candidates.count() - 2))
-                afterSequence = adjacentOfSecondLastVertex.last();
-            else
-                afterSequence = adjacentOfSecondLastVertex.first();
-
             AnchorVertex *beforeSequence = 0;
-            QList<AnchorVertex *> adjacentOfSecondVertex = g.adjacentVertices(candidates.first());
-            Q_ASSERT(adjacentOfSecondVertex.count() == 2);
-            if (adjacentOfSecondVertex.first() == candidates.at(1))
-                beforeSequence = adjacentOfSecondVertex.last();
-            else
-                beforeSequence = adjacentOfSecondVertex.first();
+            // find the items before and after the valid sequence
+            if (candidates.count() == 1) {
+                QList<AnchorVertex *> beforeAndAfterVertices = g.adjacentVertices(candidates.at(0));
+                Q_ASSERT(beforeAndAfterVertices.count() == 2);
+                // Since we only have one vertex, we can pick
+                // any of the two vertices to become before/after.
+                afterSequence = beforeAndAfterVertices.last();
+                beforeSequence = beforeAndAfterVertices.first();
+            } else {
+                QList<AnchorVertex *> adjacentOfSecondLastVertex = g.adjacentVertices(candidates.last());
+                Q_ASSERT(adjacentOfSecondLastVertex.count() == 2);
+                if (adjacentOfSecondLastVertex.first() == candidates.at(candidates.count() - 2))
+                    afterSequence = adjacentOfSecondLastVertex.last();
+                else
+                    afterSequence = adjacentOfSecondLastVertex.first();
+
+                QList<AnchorVertex *> adjacentOfSecondVertex = g.adjacentVertices(candidates.first());
+                Q_ASSERT(adjacentOfSecondVertex.count() == 2);
+                if (adjacentOfSecondVertex.first() == candidates.at(1))
+                    beforeSequence = adjacentOfSecondVertex.last();
+                else
+                    beforeSequence = adjacentOfSecondVertex.first();
+            }
             // The complete path of the sequence to simplify is: beforeSequence, <candidates>, afterSequence
             // where beforeSequence and afterSequence are the endpoints where the anchor is inserted
             // between.
@@ -554,7 +564,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
             qDebug("candidate list for sequential simplification:\n[%s]", qPrintable(strPath));
 #endif
 
-            bool forward;
+            bool forward = true;
             AnchorVertex *prev = beforeSequence;
             int intervalFrom = 0;
 
@@ -583,34 +593,37 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
                         // start and the end of the sequence. We never want to simplify internal
                         // center anchors where there is an external anchor connected to the center.
                         AnchorVertex *intervalVertexFrom = intervalFrom == 0 ? beforeSequence : candidates.at(intervalFrom - 1);
+                        int effectiveIntervalFrom = intervalFrom;
                         if (intervalVertexFrom->m_edge == centerEdge
-                            && intervalVertexFrom->m_item == candidates.at(intervalFrom)->m_item) {
-                            ++intervalFrom;
-                            intervalVertexFrom = candidates.at(intervalFrom - 1);
+                            && intervalVertexFrom->m_item == candidates.at(effectiveIntervalFrom)->m_item) {
+                            ++effectiveIntervalFrom;
+                            intervalVertexFrom = candidates.at(effectiveIntervalFrom - 1);
                         }
                         AnchorVertex *intervalVertexTo = intervalTo <= candidates.count() ? candidates.at(intervalTo - 1) : afterSequence;
+                        int effectiveIntervalTo = intervalTo;
                         if (intervalVertexTo->m_edge == centerEdge
-                            && intervalVertexTo->m_item == candidates.at(intervalTo - 2)->m_item) {
-                            --intervalTo;
-                            intervalVertexTo = candidates.at(intervalTo - 1);
+                            && intervalVertexTo->m_item == candidates.at(effectiveIntervalTo - 2)->m_item) {
+                            --effectiveIntervalTo;
+                            intervalVertexTo = candidates.at(effectiveIntervalTo - 1);
                         }
-
-                        QVector<AnchorVertex*> subCandidates;
-                        if (forward) {
-                           subCandidates = candidates.mid(intervalFrom, intervalTo - intervalFrom - 1);
-                        } else {
-                            // reverse the order of the candidates.
-                            qSwap(intervalVertexFrom, intervalVertexTo);
-                            do {
-                                ++intervalFrom;
-                                subCandidates.prepend(candidates.at(intervalFrom - 1));
-                            } while (intervalFrom < intervalTo - 1);
+                        if (effectiveIntervalTo - effectiveIntervalFrom >= 2) {
+                            QVector<AnchorVertex*> subCandidates;
+                            if (forward) {
+                               subCandidates = candidates.mid(effectiveIntervalFrom, effectiveIntervalTo - effectiveIntervalFrom - 1);
+                            } else {
+                                // reverse the order of the candidates.
+                                qSwap(intervalVertexFrom, intervalVertexTo);
+                                do {
+                                    ++effectiveIntervalFrom;
+                                    subCandidates.prepend(candidates.at(effectiveIntervalFrom - 1));
+                                } while (effectiveIntervalFrom < effectiveIntervalTo - 1);
+                            }
+                            if (simplifySequentialChunk(&g, intervalVertexFrom, subCandidates, intervalVertexTo)) {
+                                dirty = true;
+                                break;
+                            }
+                            // finished simplification of chunk with same direction
                         }
-                        if (simplifySequentialChunk(&g, intervalVertexFrom, subCandidates, intervalVertexTo)) {
-                            dirty = true;
-                            break;
-                        }
-                        // finished simplification of chunk with same direction
                     }
                     if (forward == (prev == data->from))
                         --intervalTo;

@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -262,7 +262,7 @@ GLenum QGLFramebufferObjectFormat::internalFormat() const
 class QGLFramebufferObjectPrivate
 {
 public:
-    QGLFramebufferObjectPrivate() : depth_stencil_buffer(0), valid(false), bound(false), ctx(0), previous_fbo(0) {}
+    QGLFramebufferObjectPrivate() : depth_stencil_buffer(0), valid(false), bound(false), ctx(0), previous_fbo(0), engine(0) {}
     ~QGLFramebufferObjectPrivate() {}
 
     void init(const QSize& sz, QGLFramebufferObject::Attachment attachment,
@@ -280,6 +280,7 @@ public:
     QGLFramebufferObject::Attachment fbo_attachment;
     QGLContext *ctx; // for Windows extension ptrs
     GLuint previous_fbo;
+    mutable QPaintEngine *engine;
 };
 
 bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
@@ -516,12 +517,12 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
     framebuffer objects more portable.
     \endlist
 
+    When using a QPainter to paint to a QGLFramebufferObject you should take
+    care that the QGLFramebufferObject is created with the CombinedDepthStencil
+    attachment for QPainter to be able to render correctly.
     Note that you need to create a QGLFramebufferObject with more than one
     sample per pixel for primitives to be antialiased when drawing using a
-    QPainter, unless if the QPainter::HighQualityAntialiasing render hint is
-    set. The QPainter::HighQualityAntialiasing render hint will enable
-    antialiasing as long as the \c{GL_ARB_fragment_program} extension is
-    present. To create a multisample framebuffer object you should use one of
+    QPainter. To create a multisample framebuffer object you should use one of
     the constructors that take a QGLFramebufferObject parameter, and set the
     QGLFramebufferObject::samples() property to a non-zero value.
 
@@ -723,6 +724,8 @@ QGLFramebufferObject::~QGLFramebufferObject()
     Q_D(QGLFramebufferObject);
     QGL_FUNC_CONTEXT;
 
+    delete d->engine;
+
     if (isValid()
         && (d->ctx == QGLContext::currentContext()
             || qgl_share_reg()->checkSharing(d->ctx, QGLContext::currentContext())))
@@ -872,9 +875,22 @@ QImage QGLFramebufferObject::toImage() const
     if (!d->valid)
         return QImage();
 
-    const_cast<QGLFramebufferObject *>(this)->bind();
+    // qt_gl_read_framebuffer doesn't work on a multisample FBO
+    if (format().samples() != 0) {
+        QGLFramebufferObject temp(size(), QGLFramebufferObjectFormat());
+
+        QRect rect(QPoint(0, 0), size());
+        blitFramebuffer(&temp, rect, const_cast<QGLFramebufferObject *>(this), rect);
+
+        return temp.toImage();
+    }
+
+    bool wasBound = isBound();
+    if (!wasBound)
+        const_cast<QGLFramebufferObject *>(this)->bind();
     QImage image = qt_gl_read_framebuffer(d->size, d->ctx->format().alpha(), true);
-    const_cast<QGLFramebufferObject *>(this)->release();
+    if (!wasBound)
+        const_cast<QGLFramebufferObject *>(this)->release();
 
     return image;
 }
@@ -890,16 +906,32 @@ Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_buffer_engine)
 /*! \reimp */
 QPaintEngine *QGLFramebufferObject::paintEngine() const
 {
-#if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
-    return qt_buffer_engine();
-#elif defined(QT_OPENGL_ES_2)
-    return qt_buffer_2_engine();
-#else
     Q_D(const QGLFramebufferObject);
-    if (d->ctx->d_func()->internal_context || qt_gl_preferGL2Engine())
-        return qt_buffer_2_engine();
-    else
-        return qt_buffer_engine();
+    if (d->engine)
+        return d->engine;
+
+#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+#if !defined (QT_OPENGL_ES_2)
+    if (qt_gl_preferGL2Engine()) {
+#endif
+        QPaintEngine *engine = qt_buffer_2_engine();
+        if (engine->isActive() && engine->paintDevice() != this) {
+            d->engine = new QGL2PaintEngineEx;
+            return d->engine;
+        }
+        return engine;
+#if !defined (QT_OPENGL_ES_2)
+    }
+#endif
+#endif
+
+#if !defined(QT_OPENGL_ES_2)
+    QPaintEngine *engine = qt_buffer_engine();
+    if (engine->isActive() && engine->paintDevice() != this) {
+        d->engine = new QOpenGLPaintEngine;
+        return d->engine;
+    }
+    return engine;
 #endif
 }
 

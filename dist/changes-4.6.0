@@ -27,6 +27,11 @@ information about a particular change.
 
     * [245219] Added QXmlQuery::setFocus(const QString &focus);
 
+ - QVariant
+    * Many optimisations
+    * Added QVariant::toFloat() and QVariant::toReal()
+    * Added QVariant(float) constructor
+
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
@@ -49,10 +54,13 @@ information about a particular change.
    this is that Nokia focuses on OpenGL for desktop hardware accelerated
    rendering.
 
- - When mixing OpenGL and QPainter calls you need to first call syncState()
-   on the paint engine, for example "painter->paintEngine()->syncState()".
-   This is to ensure that the engine flushes any pending drawing and sets up
-   the GL modelview/projection matrices properly.
+ - When mixing OpenGL and QPainter calls you need to surround your custom
+   OpenGL calls with QPainter::beginNativePainting() and
+   QPainter::endNativePainting().
+   This is to ensure that the paint engine flushes any pending drawing and sets
+   up the GL modelview/projection matrices properly before you can issue custom
+   OpenGL calls, and to let the paint engine synchronize to the painter state
+   before resuming regular QPainter based drawing.
 
  - Graphics View has undergone heavy optimization work, and as a result of
    this work, the following behavior changes were introduced.
@@ -80,29 +88,34 @@ information about a particular change.
  - QDesktopWidget on X11 no longer emits the resized(int) signal when screens
    are added or removed. This was not done on other platforms. Use the
    screenCountChanged signal instead
- 
+
  - QUrl's parser is more strict when for hostnames in URLs. QUrl now
    enforces STD 3 rules:
- 
+
     * each individual hostname section (between dots) must be at most
       63 ASCII characters in length;
- 
+
     * only letters, digits, and the hyphen character are allowed in the
       ASCII range; letters outside the ASCII range follow the normal
       IDN rules
- 
+
    That means QUrl no longer accepts some URLs that were invalid
    before, but weren't interpreted as such.
- 
+
  - The Unix configure-time check for STL is stricter now in Qt
    4.6.0. This means some legacy STL implementations may fail to pass
    the test and, therefore, Qt will automatically disable STL support.
- 
+
    This is a binary-compatible change: existing code will continue to
    work without being recompiled. However, it affects the source code,
    since some STL-compatibility API will not be enabled.
- 
+
    Platforms affected by this change:
      * solaris-cc-* with the default (Cstd) C++ STL library
        recommendation: use -library=stlport4
        See Sun Studio's documentation for the effects of this option
+
+ - QVariant has now a new implicit constructor that takes a float. This
+   means that code that assigned a float to a variant would create a
+   variant with userType QMetaType::Float, instead of QVariant::Double.
+

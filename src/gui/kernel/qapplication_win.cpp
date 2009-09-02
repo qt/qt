@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -169,6 +169,10 @@ typedef struct tagTOUCHINPUT
 #if defined(__CYGWIN32__)
 #define __INSIDE_CYGWIN32__
 #include <mywinsock.h>
+#endif
+
+#ifndef IMR_CONFIRMRECONVERTSTRING
+#define IMR_CONFIRMRECONVERTSTRING 0x0005
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -1808,7 +1812,6 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                         case APPCOMMAND_VOLUME_UP:
                             key = Qt::Key_VolumeUp;
                             break;
-#if defined(WINVER) && WINVER >= 0x0501
                         // Commands new in Windows XP
                         case APPCOMMAND_HELP:
                             key = Qt::Key_Help;
@@ -1822,7 +1825,6 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                         case APPCOMMAND_MEDIA_PLAY:
                             key = Qt::Key_MediaPlay;
                             break;
-#endif
                         default:
                             break;
                         }
@@ -2265,7 +2267,26 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             }
             break;
         }
-
+        case WM_IME_REQUEST: {
+            QWidget *fw = QApplication::focusWidget();
+            QWinInputContext *im = fw ? qobject_cast<QWinInputContext *>(fw->inputContext()) : 0;
+            if (fw && im) {
+                if(wParam == IMR_RECONVERTSTRING) {
+                    int ret = im->reconvertString((RECONVERTSTRING *)lParam);
+                    if (ret == -1) {
+                        result = false;
+                    } else {
+                        return ret;
+                    }
+                } else if (wParam == IMR_CONFIRMRECONVERTSTRING) {
+                    RETURN(TRUE);
+                } else {
+                    // in all other cases, call DefWindowProc()
+                    result = false;
+                }
+            }
+            break;
+        }
 #ifndef Q_WS_WINCE
         case WM_CHANGECBCHAIN:
         case WM_DRAWCLIPBOARD:

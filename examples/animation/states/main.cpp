@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -139,12 +139,12 @@ int main(int argc, char *argv[])
     state1->assignProperty(p4, "geometry", QRectF(68-150, 48-150, 64, 64));
     state1->assignProperty(p5, "geometry", QRectF(168, 48-150, 64, 64));
     state1->assignProperty(p6, "geometry", QRectF(268+150, 48-150, 64, 64));
-    state1->assignProperty(p1, "zRotation", qreal(0));
-    state1->assignProperty(p2, "zRotation", qreal(0));
-    state1->assignProperty(p3, "zRotation", qreal(0));
-    state1->assignProperty(p4, "zRotation", qreal(-270));
-    state1->assignProperty(p5, "zRotation", qreal(-90));
-    state1->assignProperty(p6, "zRotation", qreal(270));
+    state1->assignProperty(p1, "rotation", qreal(0));
+    state1->assignProperty(p2, "rotation", qreal(0));
+    state1->assignProperty(p3, "rotation", qreal(0));
+    state1->assignProperty(p4, "rotation", qreal(-270));
+    state1->assignProperty(p5, "rotation", qreal(-90));
+    state1->assignProperty(p6, "rotation", qreal(270));
     state1->assignProperty(boxProxy, "opacity", qreal(0));
     state1->assignProperty(p1, "opacity", qreal(1));
     state1->assignProperty(p2, "opacity", qreal(1));
@@ -163,12 +163,12 @@ int main(int argc, char *argv[])
     state2->assignProperty(p4, "geometry", QRectF(64, 48, 64, 64));
     state2->assignProperty(p5, "geometry", QRectF(168, 48, 64, 64));
     state2->assignProperty(p6, "geometry", QRectF(268, 48, 64, 64));
-    state2->assignProperty(p1, "zRotation", qreal(-270));
-    state2->assignProperty(p2, "zRotation", qreal(90));
-    state2->assignProperty(p3, "zRotation", qreal(270));
-    state2->assignProperty(p4, "zRotation", qreal(0));
-    state2->assignProperty(p5, "zRotation", qreal(0));
-    state2->assignProperty(p6, "zRotation", qreal(0));
+    state2->assignProperty(p1, "rotation", qreal(-270));
+    state2->assignProperty(p2, "rotation", qreal(90));
+    state2->assignProperty(p3, "rotation", qreal(270));
+    state2->assignProperty(p4, "rotation", qreal(0));
+    state2->assignProperty(p5, "rotation", qreal(0));
+    state2->assignProperty(p6, "rotation", qreal(0));
     state2->assignProperty(boxProxy, "opacity", qreal(1));
     state2->assignProperty(p1, "opacity", qreal(0));
     state2->assignProperty(p2, "opacity", qreal(0));
@@ -179,8 +179,8 @@ int main(int argc, char *argv[])
 
     // State 3
     state3->assignProperty(button, "text", "Switch to state 1");
-    state3->assignProperty(p1, "geometry", QRectF(5, 5, 64, 64));
-    state3->assignProperty(p2, "geometry", QRectF(5, 5 + 64 + 5, 64, 64));
+    state3->assignProperty(p1, "geometry", QRectF(0, 5, 64, 64));
+    state3->assignProperty(p2, "geometry", QRectF(0, 5 + 64 + 5, 64, 64));
     state3->assignProperty(p3, "geometry", QRectF(5, 5 + (64 + 5) + 64, 64, 64));
     state3->assignProperty(p4, "geometry", QRectF(5 + 64 + 5, 5, 64, 64));
     state3->assignProperty(p5, "geometry", QRectF(5 + 64 + 5, 5 + 64 + 5, 64, 64));
@@ -208,12 +208,12 @@ int main(int argc, char *argv[])
     animation1.addAnimation(new QPropertyAnimation(p4, "geometry"));
     animation1.addAnimation(new QPropertyAnimation(p5, "geometry"));
     animation1.addAnimation(new QPropertyAnimation(p6, "geometry"));
-    animation1.addAnimation(new QPropertyAnimation(p1, "zRotation"));
-    animation1.addAnimation(new QPropertyAnimation(p2, "zRotation"));
-    animation1.addAnimation(new QPropertyAnimation(p3, "zRotation"));
-    animation1.addAnimation(new QPropertyAnimation(p4, "zRotation"));
-    animation1.addAnimation(new QPropertyAnimation(p5, "zRotation"));
-    animation1.addAnimation(new QPropertyAnimation(p6, "zRotation"));
+    animation1.addAnimation(new QPropertyAnimation(p1, "rotation"));
+    animation1.addAnimation(new QPropertyAnimation(p2, "rotation"));
+    animation1.addAnimation(new QPropertyAnimation(p3, "rotation"));
+    animation1.addAnimation(new QPropertyAnimation(p4, "rotation"));
+    animation1.addAnimation(new QPropertyAnimation(p5, "rotation"));
+    animation1.addAnimation(new QPropertyAnimation(p6, "rotation"));
     animation1.addAnimation(new QPropertyAnimation(p1, "opacity"));
     animation1.addAnimation(new QPropertyAnimation(p2, "opacity"));
     animation1.addAnimation(new QPropertyAnimation(p3, "opacity"));
@@ -230,12 +230,12 @@ int main(int argc, char *argv[])
     animation2.addAnimation(new QPropertyAnimation(p4, "geometry"));
     animation2.addAnimation(new QPropertyAnimation(p5, "geometry"));
     animation2.addAnimation(new QPropertyAnimation(p6, "geometry"));
-    animation2.addAnimation(new QPropertyAnimation(p1, "zRotation"));
-    animation2.addAnimation(new QPropertyAnimation(p2, "zRotation"));
-    animation2.addAnimation(new QPropertyAnimation(p3, "zRotation"));
-    animation2.addAnimation(new QPropertyAnimation(p4, "zRotation"));
-    animation2.addAnimation(new QPropertyAnimation(p5, "zRotation"));
-    animation2.addAnimation(new QPropertyAnimation(p6, "zRotation"));
+    animation2.addAnimation(new QPropertyAnimation(p1, "rotation"));
+    animation2.addAnimation(new QPropertyAnimation(p2, "rotation"));
+    animation2.addAnimation(new QPropertyAnimation(p3, "rotation"));
+    animation2.addAnimation(new QPropertyAnimation(p4, "rotation"));
+    animation2.addAnimation(new QPropertyAnimation(p5, "rotation"));
+    animation2.addAnimation(new QPropertyAnimation(p6, "rotation"));
     animation2.addAnimation(new QPropertyAnimation(p1, "opacity"));
     animation2.addAnimation(new QPropertyAnimation(p2, "opacity"));
     animation2.addAnimation(new QPropertyAnimation(p3, "opacity"));
@@ -252,12 +252,12 @@ int main(int argc, char *argv[])
     animation3.addAnimation(new QPropertyAnimation(p4, "geometry"));
     animation3.addAnimation(new QPropertyAnimation(p5, "geometry"));
     animation3.addAnimation(new QPropertyAnimation(p6, "geometry"));
-    animation3.addAnimation(new QPropertyAnimation(p1, "zRotation"));
-    animation3.addAnimation(new QPropertyAnimation(p2, "zRotation"));
-    animation3.addAnimation(new QPropertyAnimation(p3, "zRotation"));
-    animation3.addAnimation(new QPropertyAnimation(p4, "zRotation"));
-    animation3.addAnimation(new QPropertyAnimation(p5, "zRotation"));
-    animation3.addAnimation(new QPropertyAnimation(p6, "zRotation"));
+    animation3.addAnimation(new QPropertyAnimation(p1, "rotation"));
+    animation3.addAnimation(new QPropertyAnimation(p2, "rotation"));
+    animation3.addAnimation(new QPropertyAnimation(p3, "rotation"));
+    animation3.addAnimation(new QPropertyAnimation(p4, "rotation"));
+    animation3.addAnimation(new QPropertyAnimation(p5, "rotation"));
+    animation3.addAnimation(new QPropertyAnimation(p6, "rotation"));
     animation3.addAnimation(new QPropertyAnimation(p1, "opacity"));
     animation3.addAnimation(new QPropertyAnimation(p2, "opacity"));
     animation3.addAnimation(new QPropertyAnimation(p3, "opacity"));

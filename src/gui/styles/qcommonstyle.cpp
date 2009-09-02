@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -127,9 +127,7 @@ QCommonStyle::QCommonStyle(QCommonStylePrivate &dd)
 { }
 
 /*!
-    \overload
-
-    Destroys the style
+    Destroys the style.
 */
 QCommonStyle::~QCommonStyle()
 { }
@@ -564,7 +562,7 @@ void QCommonStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *opt, Q
         p->translate(opt->rect.x(), opt->rect.y());
         if (opt->state & State_Horizontal) {
             int x = opt->rect.width() / 3;
-            if (QApplication::layoutDirection() == Qt::RightToLeft)
+            if (opt->direction == Qt::RightToLeft)
                 x -= 2;
             if (opt->rect.height() > 4) {
                 qDrawShadePanel(p, x, 2, 3, opt->rect.height() - 4,
@@ -870,7 +868,6 @@ int QCommonStylePrivate::lookupToolButtonStyle() const
 
 #ifndef QT_NO_ITEMVIEWS
 
-
 QSize QCommonStylePrivate::viewItemSize(const QStyleOptionViewItemV4 *option, int role) const
 {
     Q_Q(const QCommonStyle);
@@ -1157,6 +1154,75 @@ void QCommonStylePrivate::viewItemLayout(const QStyleOptionViewItemV4 *opt,  QRe
     }
 }
 #endif // QT_NO_ITEMVIEWS
+
+
+#ifndef QT_NO_TABBAR
+/*! \internal
+    Compute the textRect and the pixmapRect from the opt rect
+
+    Uses the same computation than in QTabBar::tabSizeHint
+ */
+void QCommonStylePrivate::tabLayout(const QStyleOptionTabV3 *opt, const QWidget *widget, QRect *textRect, QRect *iconRect) const
+{
+    Q_ASSERT(textRect);
+    Q_ASSERT(iconRect);
+    QRect tr = opt->rect;
+    bool verticalTabs = opt->shape == QTabBar::RoundedEast
+                        || opt->shape == QTabBar::RoundedWest
+                        || opt->shape == QTabBar::TriangularEast
+                        || opt->shape == QTabBar::TriangularWest;
+    if (verticalTabs)
+        tr.setRect(0, 0, tr.height(), tr.width()); //0, 0 as we will have a translate transform
+
+    int verticalShift = proxyStyle->pixelMetric(QStyle::PM_TabBarTabShiftVertical, opt, widget);
+    int horizontalShift = proxyStyle->pixelMetric(QStyle::PM_TabBarTabShiftHorizontal, opt, widget);
+    int hpadding = proxyStyle->pixelMetric(QStyle::PM_TabBarTabHSpace, opt, widget) / 2;
+    int vpadding = proxyStyle->pixelMetric(QStyle::PM_TabBarTabVSpace, opt, widget) / 2;
+    if (opt->shape == QTabBar::RoundedSouth || opt->shape == QTabBar::TriangularSouth)
+        verticalShift = -verticalShift;
+    tr.adjust(hpadding, vpadding, horizontalShift - hpadding, verticalShift - vpadding);
+    bool selected = opt->state & QStyle::State_Selected;
+    if (selected) {
+        tr.setBottom(tr.bottom() - verticalShift);
+        tr.setRight(tr.right() - horizontalShift);
+    }
+
+    // left widget
+    if (!opt->leftButtonSize.isEmpty()) {
+        tr.setLeft(tr.left() + 4 +
+            (verticalTabs ? opt->leftButtonSize.height() : opt->leftButtonSize.width()));
+    }
+    // right widget
+    if (!opt->rightButtonSize.isEmpty()) {
+        tr.setRight(tr.right() - 4 -
+        (verticalTabs ? opt->rightButtonSize.height() : opt->rightButtonSize.width()));
+    }
+
+    // icon
+    if (!opt->icon.isNull()) {
+        QSize iconSize = opt->iconSize;
+        if (!iconSize.isValid()) {
+            int iconExtent = proxyStyle->pixelMetric(QStyle::PM_SmallIconSize);
+            iconSize = QSize(iconExtent, iconExtent);
+        }
+        QSize tabIconSize = opt->icon.actualSize(iconSize,
+                        (opt->state & QStyle::State_Enabled) ? QIcon::Normal : QIcon::Disabled,
+                        (opt->state & QStyle::State_Selected) ? QIcon::On : QIcon::Off  );
+
+        *iconRect = QRect(tr.left(), tr.center().y() - tabIconSize.height() / 2,
+                    tabIconSize.width(), tabIconSize .height());
+        if (!verticalTabs)
+            *iconRect = proxyStyle->visualRect(opt->direction, opt->rect, *iconRect);
+        tr.setLeft(tr.left() + tabIconSize.width() + 4);
+    }
+
+    if (!verticalTabs)
+        tr = proxyStyle->visualRect(opt->direction, opt->rect, tr);
+
+    *textRect = tr;
+}
+#endif //QT_NO_TABBAR
+
 
 /*!
   \reimp
@@ -1840,38 +1906,20 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
                     newY = tr.y() + tr.height();
                     newRot = -90;
                 }
-                tr.setRect(0, 0, tr.height(), tr.width());
                 QTransform m = QTransform::fromTranslate(newX, newY);
                 m.rotate(newRot);
                 p->setTransform(m, true);
             }
-            tr = subElementRect(SE_TabBarTabText, opt, widget);
+            QRect iconRect;
+            d->tabLayout(&tabV2, widget, &tr, &iconRect);
+            tr = proxy()->subElementRect(SE_TabBarTabText, opt, widget); //we compute tr twice because the style may override subElementRect
 
             if (!tabV2.icon.isNull()) {
-                QSize iconSize = tabV2.iconSize;
-                if (!iconSize.isValid()) {
-                    int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
-                    iconSize = QSize(iconExtent, iconExtent);
-                }
-                QSize tabIconSize = tabV2.icon.actualSize(iconSize,
-                                                          (tabV2.state & State_Enabled) ? QIcon::Normal
-                                                          : QIcon::Disabled);
-                QPixmap tabIcon = tabV2.icon.pixmap(iconSize,
+                QPixmap tabIcon = tabV2.icon.pixmap(tabV2.iconSize,
                                                     (tabV2.state & State_Enabled) ? QIcon::Normal
                                                                                   : QIcon::Disabled,
                                                     (tabV2.state & State_Selected) ? QIcon::On
                                                                                    : QIcon::Off);
-
-                int offset = 4;
-                int left = opt->rect.left();
-                if (tabV2.leftButtonSize.isEmpty())
-                    offset += 2;
-                else
-                    left += tabV2.leftButtonSize.width() + (6 + 2) + 2;
-                QRect iconRect = QRect(left + offset, tr.center().y() - tabIcon.height() / 2,
-                            tabIconSize.width(), tabIconSize.height());
-                if (!verticalTabs)
-                    iconRect = visualRect(opt->direction, opt->rect, iconRect);
                 p->drawPixmap(iconRect.x(), iconRect.y(), tabIcon);
             }
 
@@ -2718,65 +2766,10 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
         }
         break;
     case SE_TabBarTabText:
-        // ### consider merging this with CE_TabBarTabLabel
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
-            QStyleOptionTabV3 tabV2(*tab);
-            QRect tr = tabV2.rect;
-            bool verticalTabs = tabV2.shape == QTabBar::RoundedEast
-                                || tabV2.shape == QTabBar::RoundedWest
-                                || tabV2.shape == QTabBar::TriangularEast
-                                || tabV2.shape == QTabBar::TriangularWest;
-            if (verticalTabs)
-                tr.setRect(0, 0, tr.height(), tr.width());
-            int verticalShift = pixelMetric(QStyle::PM_TabBarTabShiftVertical, tab, widget);
-            int horizontalShift = pixelMetric(QStyle::PM_TabBarTabShiftHorizontal, tab, widget);
-            int hpadding = proxy()->pixelMetric(QStyle::PM_TabBarTabHSpace, opt, widget) / 2;
-            int vpadding = proxy()->pixelMetric(QStyle::PM_TabBarTabVSpace, opt, widget) / 2;
-            if (tabV2.shape == QTabBar::RoundedSouth || tabV2.shape == QTabBar::TriangularSouth)
-                verticalShift = -verticalShift;
-            tr.adjust(hpadding, vpadding, horizontalShift - hpadding, verticalShift - vpadding);
-            bool selected = tabV2.state & State_Selected;
-            if (selected) {
-                tr.setBottom(tr.bottom() - verticalShift);
-                tr.setRight(tr.right() - horizontalShift);
-            }
-
-            // left widget
-            if (!tabV2.leftButtonSize.isEmpty()) {
-                tr.setLeft(tr.left() + 6 + 2 +
-                    (verticalTabs ? tabV2.leftButtonSize.height() : tabV2.leftButtonSize.width()));
-            }
-
-            // icon
-            if (!tabV2.icon.isNull()) {
-                QSize iconSize = tabV2.iconSize;
-                if (!iconSize.isValid()) {
-                    int iconExtent = proxy()->pixelMetric(PM_SmallIconSize);
-                    iconSize = QSize(iconExtent, iconExtent);
-                }
-                QSize tabIconSize = tabV2.icon.actualSize(iconSize,
-                                                          (tabV2.state & State_Enabled) ? QIcon::Normal
-                                                          : QIcon::Disabled);
-                int offset = 4;
-                if (tabV2.leftButtonSize.isEmpty())
-                    offset += 2;
-
-                QRect iconRect = QRect(tr.left() + offset, tr.center().y() - tabIconSize.height() / 2,
-                            tabIconSize.width(), tabIconSize .height());
-                if (!verticalTabs)
-                    iconRect = visualRect(opt->direction, opt->rect, iconRect);
-                tr.setLeft(tr.left() + tabIconSize.width() + offset + 2);
-            }
-
-            // right widget
-            if (!tabV2.rightButtonSize.isEmpty()) {
-                tr.setRight(tr.right() - 6 - 2 -
-                    (verticalTabs ? tabV2.rightButtonSize.height() : tabV2.rightButtonSize.width()));
-            }
-
-            if (!verticalTabs)
-                tr = visualRect(opt->direction, opt->rect, tr);
-            r = tr;
+            QStyleOptionTabV3 tabV3(*tab);
+            QRect dummyIconRect;
+            d->tabLayout(&tabV3, widget, &r, &dummyIconRect);
         }
         break;
     case SE_TabBarTabLeftButton:
@@ -2785,6 +2778,8 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
             bool selected = tab->state & State_Selected;
             int verticalShift = proxy()->pixelMetric(QStyle::PM_TabBarTabShiftVertical, tab, widget);
             int horizontalShift = proxy()->pixelMetric(QStyle::PM_TabBarTabShiftHorizontal, tab, widget);
+            int hpadding = proxy()->pixelMetric(QStyle::PM_TabBarTabHSpace, opt, widget) / 2;
+            hpadding = qMax(hpadding, 4); //workaround KStyle returning 0 because they workaround an old bug in Qt
 
             bool verticalTabs = tab->shape == QTabBar::RoundedEast
                     || tab->shape == QTabBar::RoundedWest
@@ -2827,16 +2822,16 @@ QRect QCommonStyle::subElementRect(SubElement sr, const QStyleOption *opt,
                 break;
             default:
                 if (sr == SE_TabBarTabLeftButton)
-                    r = QRect(6 + tab->rect.x(), midHeight, w, h);
+                    r = QRect(tab->rect.x() + hpadding, midHeight, w, h);
                 else
-                    r = QRect(tab->rect.right() - 6 - w, midHeight, w, h);
+                    r = QRect(tab->rect.right() - w - hpadding, midHeight, w, h);
                 r = visualRect(tab->direction, tab->rect, r);
             }
             if (verticalTabs) {
                 if (atTheTop)
-                    r = QRect(midWidth, tr.y() + tab->rect.height() - 6 - h, w, h);
+                    r = QRect(midWidth, tr.y() + tab->rect.height() - hpadding - h, w, h);
                 else
-                    r = QRect(midWidth, tr.y() + 6, w, h);
+                    r = QRect(midWidth, tr.y() + hpadding, w, h);
             }
         }
 
@@ -5224,6 +5219,7 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
     Q_UNUSED(sp);
 #else
     QPixmap pixmap;
+    const bool rtl = (option && option->direction == Qt::RightToLeft) || !option && QApplication::isRightToLeft();
 
     if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (sp) {
@@ -5382,7 +5378,7 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
     switch (sp) {
 #ifndef QT_NO_IMAGEFORMAT_XPM
     case SP_ToolBarHorizontalExtensionButton:
-        if (QApplication::layoutDirection() == Qt::RightToLeft) {
+        if (rtl) {
             QImage im(tb_extension_arrow_h_xpm);
             im = im.convertToFormat(QImage::Format_ARGB32).mirrored(true, false);
             return QPixmap::fromImage(im);
@@ -5398,11 +5394,11 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
 #ifndef QT_NO_IMAGEFORMAT_PNG
     case SP_CommandLink:
     case SP_ArrowForward:
-        if (QApplication::layoutDirection() == Qt::RightToLeft)
+        if (rtl)
             return proxy()->standardPixmap(SP_ArrowLeft, option, widget);
         return proxy()->standardPixmap(SP_ArrowRight, option, widget);
     case SP_ArrowBack:
-        if (QApplication::layoutDirection() == Qt::RightToLeft)
+        if (rtl)
             return proxy()->standardPixmap(SP_ArrowRight, option, widget);
         return proxy()->standardPixmap(SP_ArrowLeft, option, widget);
     case SP_ArrowLeft:
@@ -5513,6 +5509,7 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
                                                const QWidget *widget) const
 {
     QIcon icon;
+    const bool rtl = (option && option->direction == Qt::RightToLeft) || !option && QApplication::isRightToLeft();
     if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (standardIcon) {
         case SP_DirHomeIcon:
@@ -5637,11 +5634,11 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
                 icon = QIcon::fromTheme(QLatin1String("edit-clear"));
                 break;
         case SP_ArrowForward:
-            if (QApplication::layoutDirection() == Qt::RightToLeft)
+            if (rtl)
                 return standardIconImplementation(SP_ArrowLeft, option, widget);
             return standardIconImplementation(SP_ArrowRight, option, widget);
         case SP_ArrowBack:
-            if (QApplication::layoutDirection() == Qt::RightToLeft)
+            if (rtl)
                 return standardIconImplementation(SP_ArrowRight, option, widget);
             return standardIconImplementation(SP_ArrowLeft, option, widget);
         case SP_FileLinkIcon:
@@ -5865,11 +5862,11 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
         icon.addFile(QLatin1String(":/trolltech/styles/commonstyle/images/standardbutton-no-128.png"));
         break;
     case SP_ArrowForward:
-        if (QApplication::layoutDirection() == Qt::RightToLeft)
+        if (rtl)
             return standardIconImplementation(SP_ArrowLeft, option, widget);
         return standardIconImplementation(SP_ArrowRight, option, widget);
     case SP_ArrowBack:
-        if (QApplication::layoutDirection() == Qt::RightToLeft)
+        if (rtl)
             return standardIconImplementation(SP_ArrowRight, option, widget);
         return standardIconImplementation(SP_ArrowLeft, option, widget);
     case SP_ArrowLeft:

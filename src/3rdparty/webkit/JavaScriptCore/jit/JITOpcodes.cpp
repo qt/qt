@@ -684,6 +684,10 @@ void JIT::emit_op_catch(Instruction* currentInstruction)
     killLastResultRegister(); // FIXME: Implicitly treat op_catch as a labeled statement, and remove this line of code.
     peek(callFrameRegister, OBJECT_OFFSETOF(struct JITStackFrame, callFrame) / sizeof (void*));
     emitPutVirtualRegister(currentInstruction[1].u.operand);
+#ifdef QT_BUILD_SCRIPT_LIB
+    JITStubCall stubCall(this, JITStubs::cti_op_debug_catch);
+    stubCall.call();
+#endif
 }
 
 void JIT::emit_op_jmp_scopes(Instruction* currentInstruction)
@@ -763,6 +767,7 @@ void JIT::emit_op_debug(Instruction* currentInstruction)
     stubCall.addArgument(Imm32(currentInstruction[1].u.operand));
     stubCall.addArgument(Imm32(currentInstruction[2].u.operand));
     stubCall.addArgument(Imm32(currentInstruction[3].u.operand));
+    stubCall.addArgument(Imm32(currentInstruction[4].u.operand));
     stubCall.call();
 }
 

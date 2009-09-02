@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,7 +65,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifdef Q_OS_SYMBIAN
+const int QHttpNetworkConnectionPrivate::defaultChannelCount = 3;
+#else
 const int QHttpNetworkConnectionPrivate::defaultChannelCount = 6;
+#endif
 
 // the maximum amount of requests that might be pipelined into a socket
 // from what was suggested, 3 seems to be OK
@@ -123,30 +127,6 @@ int QHttpNetworkConnectionPrivate::indexOf(QAbstractSocket *socket) const
 
     qFatal("Called with unknown socket object.");
     return 0;
-}
-
-bool QHttpNetworkConnectionPrivate::isSocketBusy(QAbstractSocket *socket) const
-{
-    int i = indexOf(socket);
-    return (channels[i].state & QHttpNetworkConnectionChannel::BusyState);
-}
-
-bool QHttpNetworkConnectionPrivate::isSocketWriting(QAbstractSocket *socket) const
-{
-    int i = indexOf(socket);
-    return (i != -1 && (channels[i].state & QHttpNetworkConnectionChannel::WritingState));
-}
-
-bool QHttpNetworkConnectionPrivate::isSocketWaiting(QAbstractSocket *socket) const
-{
-    int i = indexOf(socket);
-    return (i != -1 && (channels[i].state & QHttpNetworkConnectionChannel::WaitingState));
-}
-
-bool QHttpNetworkConnectionPrivate::isSocketReading(QAbstractSocket *socket) const
-{
-    int i = indexOf(socket);
-    return (i != -1 && (channels[i].state & QHttpNetworkConnectionChannel::ReadingState));
 }
 
 qint64 QHttpNetworkConnectionPrivate::uncompressedBytesAvailable(const QHttpNetworkReply &reply) const
@@ -445,32 +425,25 @@ void QHttpNetworkConnectionPrivate::dequeueAndSendRequest(QAbstractSocket *socke
     int i = indexOf(socket);
 
     if (!highPriorityQueue.isEmpty()) {
-        for (int j = highPriorityQueue.count() - 1; j >= 0; --j) {
-            HttpMessagePair &messagePair = highPriorityQueue[j];
-            if (!messagePair.second->d_func()->requestIsPrepared)
-                prepareRequest(messagePair);
-
-            channels[i].request = messagePair.first;
-            channels[i].reply = messagePair.second;
-            // remove before sendRequest! else we might pipeline the same request again
-            highPriorityQueue.removeAt(j);
-            channels[i].sendRequest();
-            return;
-        }
+        // remove from queue before sendRequest! else we might pipeline the same request again
+        HttpMessagePair messagePair = highPriorityQueue.takeLast();
+        if (!messagePair.second->d_func()->requestIsPrepared)
+            prepareRequest(messagePair);
+        channels[i].request = messagePair.first;
+        channels[i].reply = messagePair.second;
+        channels[i].sendRequest();
+        return;
     }
 
     if (!lowPriorityQueue.isEmpty()) {
-        for (int j = lowPriorityQueue.count() - 1; j >= 0; --j) {
-            HttpMessagePair &messagePair = lowPriorityQueue[j];
-            if (!messagePair.second->d_func()->requestIsPrepared)
-                prepareRequest(messagePair);
-            channels[i].request = messagePair.first;
-            channels[i].reply = messagePair.second;
-            // remove before sendRequest! else we might pipeline the same request again
-            lowPriorityQueue.removeAt(j);
-            channels[i].sendRequest();
-            return;
-        }
+        // remove from queue before sendRequest! else we might pipeline the same request again
+        HttpMessagePair messagePair = lowPriorityQueue.takeLast();
+        if (!messagePair.second->d_func()->requestIsPrepared)
+            prepareRequest(messagePair);
+        channels[i].request = messagePair.first;
+        channels[i].reply = messagePair.second;
+        channels[i].sendRequest();
+        return;
     }
 }
 
@@ -539,7 +512,7 @@ bool QHttpNetworkConnectionPrivate::fillPipeline(QList<HttpMessagePair> &queue, 
     if (queue.isEmpty())
         return true;
 
-    for (int i = 0; i < queue.length(); i++) {
+    for (int i = queue.count() - 1; i >= 0; --i) {
         HttpMessagePair messagePair = queue.at(i);
         const QHttpNetworkRequest &request = messagePair.first;
 
@@ -623,7 +596,7 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
     for (int i = 0; i < channelCount; ++i) {
         if (channels[i].reply == reply) {
             channels[i].reply = 0;
-            if (reply->d_func()->connectionCloseEnabled())
+            if (reply->d_func()->isConnectionCloseEnabled())
                 channels[i].close();
             QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
             return;
@@ -670,7 +643,7 @@ void QHttpNetworkConnectionPrivate::_q_startNextRequest()
     for (int i = 0; i < channelCount; ++i) {
         QAbstractSocket *chSocket = channels[i].socket;
         // send the request using the idle socket
-        if (!isSocketBusy(chSocket)) {
+        if (!channels[i].isSocketBusy()) {
             socket = chSocket;
             break;
         }

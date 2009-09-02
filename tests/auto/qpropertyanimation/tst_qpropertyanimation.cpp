@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,7 +66,7 @@ protected:
 class MyObject : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(qreal x READ x WRITE setX) 
+    Q_PROPERTY(qreal x READ x WRITE setX)
 public:
     MyObject() : m_x(0) { }
     qreal x() const { return m_x; }
@@ -114,6 +114,8 @@ private slots:
     void updateOnSetKeyValues();
     void restart();
     void valueChanged();
+    void twoAnimations();
+    void deletedInUpdateCurrentTime();
 };
 
 tst_QPropertyAnimation::tst_QPropertyAnimation()
@@ -141,7 +143,7 @@ class AnimationObject : public QObject
     Q_PROPERTY(qreal realValue READ realValue WRITE setRealValue)
 public:
     AnimationObject(int startValue = 0)
-        : v(startValue)
+        : v(startValue), rv(startValue)
     { }
 
     int value() const { return v; }
@@ -401,7 +403,7 @@ void tst_QPropertyAnimation::duration0()
     animation.setStartValue(42);
     QVERIFY(animation.currentValue().isValid());
     QCOMPARE(animation.currentValue().toInt(), 42);
-    
+
     QCOMPARE(o.property("ole").toInt(), 42);
     animation.setDuration(0);
     QCOMPARE(animation.currentValue().toInt(), 43); //it is at the end
@@ -1079,7 +1081,100 @@ void tst_QPropertyAnimation::valueChanged()
     }
 }
 
+//this class will help us make sure that 2 animations started
+//at the same time also end at the same time
+class MySyncObject : public MyErrorObject
+{
+    Q_OBJECT
+public:
+    MySyncObject() : anim(this, "ole")
+    {
+        anim.setEndValue(1000);
+    }
+public slots:
+    void checkAnimationFinished()
+    {
+        QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
+        QCOMPARE(ole(), 1000);
+    }
 
+public:
+    QPropertyAnimation anim;
+};
+
+void tst_QPropertyAnimation::twoAnimations()
+{
+    MySyncObject o1, o2;
+    o1.setOle(0);
+    o2.setOle(0);
+
+    //when the animation in o1 is finished
+    //the animation in o2 should stop around the same time
+    //We use a queued connection to check just after the tick from the common timer
+    //the other way is true too
+    QObject::connect(&o1.anim, SIGNAL(finished()),
+        &o2, SLOT(checkAnimationFinished()), Qt::QueuedConnection);
+    QObject::connect(&o2.anim, SIGNAL(finished()),
+        &o1, SLOT(checkAnimationFinished()), Qt::QueuedConnection);
+
+    o1.anim.start();
+    o2.anim.start();
+
+    QTest::qWait(o1.anim.duration() + 50);
+    QCOMPARE(o1.anim.state(), QAbstractAnimation::Stopped);
+    QCOMPARE(o2.anim.state(), QAbstractAnimation::Stopped);
+
+    QCOMPARE(o1.ole(), 1000);
+    QCOMPARE(o2.ole(), 1000);
+}
+
+class MyComposedAnimation : public QPropertyAnimation
+{
+    Q_OBJECT
+public:
+    MyComposedAnimation(QObject *target, const QByteArray &propertyName, const QByteArray &innerPropertyName)
+        : QPropertyAnimation(target, propertyName)
+    {
+        innerAnim = new QPropertyAnimation(target, innerPropertyName);
+        this->setEndValue(1000);
+        innerAnim->setEndValue(1000);
+        innerAnim->setDuration(duration() + 100);
+    }
+
+    void start()
+    {
+        QPropertyAnimation::start();
+        innerAnim->start();
+    }
+
+    void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState)
+    {
+        QPropertyAnimation::updateState(oldState, newState);
+        if (newState == QAbstractAnimation::Stopped)
+            delete innerAnim;
+    }
+
+public:
+    QPropertyAnimation *innerAnim;
+};
+
+void tst_QPropertyAnimation::deletedInUpdateCurrentTime()
+{
+    // this test case reproduces an animation being deleted in the updateCurrentTime of
+    // another animation(was causing segfault).
+    // the deleted animation must have been started after the animation that is deleting.
+    AnimationObject o;
+    o.setValue(0);
+    o.setRealValue(0.0);
+
+    MyComposedAnimation composedAnimation(&o, "value", "realValue");
+    composedAnimation.start();
+    QCOMPARE(composedAnimation.state(), QAbstractAnimation::Running);
+    QTest::qWait(composedAnimation.duration() + 50);
+
+    QCOMPARE(composedAnimation.state(), QAbstractAnimation::Stopped);
+    QCOMPARE(o.value(), 1000);
+}
 
 QTEST_MAIN(tst_QPropertyAnimation)
 #include "tst_qpropertyanimation.moc"

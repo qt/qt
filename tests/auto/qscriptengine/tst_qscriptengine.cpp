@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -1107,6 +1107,31 @@ void tst_QScriptEngine::globalObjectProperties()
         }
     }
     QVERIFY(remainingNames.isEmpty());
+
+    // create property with no attributes
+    {
+        QString name = QString::fromLatin1("foo");
+        QVERIFY(!global.property(name).isValid());
+        QScriptValue val(123);
+        global.setProperty(name, val);
+        QVERIFY(global.property(name).equals(val));
+        QVERIFY(global.propertyFlags(name) == 0);
+        global.setProperty(name, QScriptValue());
+        QVERIFY(!global.property(name).isValid());
+    }
+    // create property with attributes
+    {
+        QString name = QString::fromLatin1("bar");
+        QVERIFY(!global.property(name).isValid());
+        QScriptValue val(QString::fromLatin1("ciao"));
+        QScriptValue::PropertyFlags flags = QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration;
+        global.setProperty(name, val, flags);
+        QVERIFY(global.property(name).equals(val));
+        QEXPECT_FAIL("", "custom Global Object properties don't retain attributes", Continue);
+        QCOMPARE(global.propertyFlags(name), flags);
+        global.setProperty(name, QScriptValue());
+        QVERIFY(!global.property(name).isValid());
+    }
 }
 
 void tst_QScriptEngine::globalObjectGetterSetterProperty()
@@ -3913,6 +3938,7 @@ void tst_QScriptEngine::getSetAgent()
         TestAgent *agent = new TestAgent(&eng);
         QTest::ignoreMessage(QtWarningMsg, "QScriptEngine::setAgent(): cannot set agent belonging to different engine");
         eng2.setAgent(agent);
+        QCOMPARE(eng2.agent(), (QScriptEngineAgent*)0);
     }
 }
 

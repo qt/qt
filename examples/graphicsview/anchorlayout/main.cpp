@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -66,17 +66,17 @@ int main(int argc, char **argv)
     QGraphicsScene scene;
     scene.setSceneRect(0, 0, 800, 480);
 
-    QSizeF min(30, 100);
-    QSizeF pref(210, 100);
-    QSizeF max(300, 100);
+    QSizeF minSize(30, 100);
+    QSizeF prefSize(210, 100);
+    QSizeF maxSize(300, 100);
 
-    QGraphicsProxyWidget *a = createItem(min, pref, max, "A");
-    QGraphicsProxyWidget *b = createItem(min, pref, max, "B");
-    QGraphicsProxyWidget *c = createItem(min, pref, max, "C");
-    QGraphicsProxyWidget *d = createItem(min, pref, max, "D");
-    QGraphicsProxyWidget *e = createItem(min, pref, max, "E");
-    QGraphicsProxyWidget *f = createItem(QSizeF(30, 50), QSizeF(150, 50), max, "F");
-    QGraphicsProxyWidget *g = createItem(QSizeF(30, 50), QSizeF(30, 100), max, "G");
+    QGraphicsProxyWidget *a = createItem(minSize, prefSize, maxSize, "A");
+    QGraphicsProxyWidget *b = createItem(minSize, prefSize, maxSize, "B");
+    QGraphicsProxyWidget *c = createItem(minSize, prefSize, maxSize, "C");
+    QGraphicsProxyWidget *d = createItem(minSize, prefSize, maxSize, "D");
+    QGraphicsProxyWidget *e = createItem(minSize, prefSize, maxSize, "E");
+    QGraphicsProxyWidget *f = createItem(QSizeF(30, 50), QSizeF(150, 50), maxSize, "F");
+    QGraphicsProxyWidget *g = createItem(QSizeF(30, 50), QSizeF(30, 100), maxSize, "G");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
 

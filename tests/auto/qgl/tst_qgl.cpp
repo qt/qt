@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,10 +45,14 @@
 #include <qcoreapplication.h>
 #include <qdebug.h>
 #include <qgl.h>
+#include <qglpixelbuffer.h>
+#include <qglframebufferobject.h>
 #include <qglcolormap.h>
+#include <qpaintengine.h>
 
 #include <QGraphicsView>
 #include <QGraphicsProxyWidget>
+#include <QVBoxLayout>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -67,6 +71,11 @@ private slots:
     void graphicsViewClipping();
     void partialGLWidgetUpdates_data();
     void partialGLWidgetUpdates();
+    void glWidgetRendering();
+    void glFBORendering();
+    void glFBOUseInGLWidget();
+    void glPBufferRendering();
+    void glWidgetReparent();
     void colormap();
 };
 
@@ -623,6 +632,262 @@ void tst_QGL::partialGLWidgetUpdates()
         QCOMPARE(widget.paintEventRegion, QRegion(50, 50, 50, 50));
     else
         QCOMPARE(widget.paintEventRegion, QRegion(widget.rect()));
+}
+
+
+// This tests that rendering to a QGLPBuffer using QPainter works.
+void tst_QGL::glPBufferRendering()
+{
+    if (!QGLPixelBuffer::hasOpenGLPbuffers())
+        QSKIP("QGLPixelBuffer not supported on this platform", SkipSingle);
+
+    QGLPixelBuffer* pbuf = new QGLPixelBuffer(128, 128);
+
+    QPainter p;
+    bool begun = p.begin(pbuf);
+    QVERIFY(begun);
+
+    QPaintEngine::Type engineType = p.paintEngine()->type();
+    QVERIFY(engineType == QPaintEngine::OpenGL || engineType == QPaintEngine::OpenGL2);
+
+    p.fillRect(0, 0, 128, 128, Qt::red);
+    p.fillRect(32, 32, 64, 64, Qt::blue);
+    p.end();
+
+    QImage fb = pbuf->toImage();
+    delete pbuf;
+
+    QImage reference(128, 128, fb.format());
+    p.begin(&reference);
+    p.fillRect(0, 0, 128, 128, Qt::red);
+    p.fillRect(32, 32, 64, 64, Qt::blue);
+    p.end();
+
+    QCOMPARE(fb, reference);
+}
+
+class GLWidget : public QGLWidget
+{
+public:
+    GLWidget(QWidget* p = 0)
+            : QGLWidget(p), beginOk(false), engineType(QPaintEngine::MaxUser) {}
+    bool beginOk;
+    QPaintEngine::Type engineType;
+    void paintGL()
+    {
+        QPainter p;
+        beginOk = p.begin(this);
+        QPaintEngine* pe = p.paintEngine();
+        engineType = pe->type();
+
+        // This test only ensures it's possible to paint onto a QGLWidget. Full
+        // paint engine feature testing is way out of scope!
+
+        p.fillRect(0, 0, width(), height(), Qt::red);
+        // No p.end() or swap buffers, should be done automatically
+    }
+
+};
+
+void tst_QGL::glWidgetRendering()
+{
+    GLWidget w;
+    w.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&w);
+#endif
+    QTest::qWait(200);
+
+    QVERIFY(w.beginOk);
+    QVERIFY(w.engineType == QPaintEngine::OpenGL || w.engineType == QPaintEngine::OpenGL2);
+
+    QImage fb = w.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
+    QImage reference(fb.size(), QImage::Format_RGB32);
+    reference.fill(0xffff0000);
+
+    QCOMPARE(fb, reference);
+}
+
+// NOTE: This tests that CombinedDepthStencil attachment works by assuming the
+//       GL2 engine is being used and is implemented the same way as it was when
+//       this autotest was written. If this is not the case, there may be some
+//       false-positives: I.e. The test passes when either the depth or stencil
+//       buffer is actually missing. But that's probably ok anyway.
+void tst_QGL::glFBORendering()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    QGLWidget glw;
+    glw.makeCurrent();
+
+    // No multisample with combined depth/stencil attachment:
+    QGLFramebufferObjectFormat fboFormat(0, QGLFramebufferObject::CombinedDepthStencil);
+
+    // Don't complicate things by using NPOT:
+    QGLFramebufferObject *fbo = new QGLFramebufferObject(256, 128, fboFormat);
+
+    QPainter fboPainter;
+    bool painterBegun = fboPainter.begin(fbo);
+    QVERIFY(painterBegun);
+
+    QPainterPath intersectingPath;
+    intersectingPath.moveTo(0, 0);
+    intersectingPath.lineTo(100, 0);
+    intersectingPath.lineTo(0, 100);
+    intersectingPath.lineTo(100, 100);
+    intersectingPath.closeSubpath();
+
+    QPainterPath trianglePath;
+    trianglePath.moveTo(50, 0);
+    trianglePath.lineTo(100, 100);
+    trianglePath.lineTo(0, 100);
+    trianglePath.closeSubpath();
+
+    fboPainter.fillRect(0, 0, fbo->width(), fbo->height(), Qt::red); // Background
+    fboPainter.translate(14, 14);
+    fboPainter.fillPath(intersectingPath, Qt::blue); // Test stencil buffer works
+    fboPainter.translate(128, 0);
+    fboPainter.setClipPath(trianglePath); // Test depth buffer works
+    fboPainter.setTransform(QTransform()); // reset xform
+    fboPainter.fillRect(0, 0, fbo->width(), fbo->height(), Qt::green);
+    fboPainter.end();
+
+    QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
+    delete fbo;
+
+    // As we're doing more than trivial painting, we can't just compare to
+    // an image rendered with raster. Instead, we sample at well-defined
+    // test-points:
+    QCOMPARE(fb.pixel(39, 64), QColor(Qt::red).rgb());
+    QCOMPARE(fb.pixel(89, 64), QColor(Qt::red).rgb());
+    QCOMPARE(fb.pixel(64, 39), QColor(Qt::blue).rgb());
+    QCOMPARE(fb.pixel(64, 89), QColor(Qt::blue).rgb());
+
+    QCOMPARE(fb.pixel(167, 39), QColor(Qt::red).rgb());
+    QCOMPARE(fb.pixel(217, 39), QColor(Qt::red).rgb());
+    QCOMPARE(fb.pixel(192, 64), QColor(Qt::green).rgb());
+}
+
+class FBOUseInGLWidget : public QGLWidget
+{
+public:
+    bool widgetPainterBeginOk;
+    bool fboPainterBeginOk;
+    QImage fboImage;
+protected:
+    void paintEvent(QPaintEvent*)
+    {
+        QPainter widgetPainter;
+        widgetPainterBeginOk = widgetPainter.begin(this);
+        QGLFramebufferObjectFormat fboFormat(0, QGLFramebufferObject::CombinedDepthStencil);
+        QGLFramebufferObject *fbo = new QGLFramebufferObject(128, 128, fboFormat);
+
+        QPainter fboPainter;
+        fboPainterBeginOk = fboPainter.begin(fbo);
+        fboPainter.fillRect(0, 0, 128, 128, Qt::red);
+        fboPainter.end();
+        fboImage = fbo->toImage();
+
+        widgetPainter.fillRect(rect(), Qt::blue);
+
+        delete fbo;
+    }
+
+};
+
+void tst_QGL::glFBOUseInGLWidget()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    FBOUseInGLWidget w;
+    w.resize(128, 128);
+    w.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&w);
+#endif
+    QTest::qWait(200);
+
+    QVERIFY(w.widgetPainterBeginOk);
+    QVERIFY(w.fboPainterBeginOk);
+
+    QImage widgetFB = w.grabFrameBuffer(false);
+    QImage widgetReference(widgetFB.size(), widgetFB.format());
+    widgetReference.fill(0xff0000ff);
+    QCOMPARE(widgetFB, widgetReference);
+
+    QImage fboReference(w.fboImage.size(), w.fboImage.format());
+    fboReference.fill(0xffff0000);
+    QCOMPARE(w.fboImage, fboReference);
+}
+
+void tst_QGL::glWidgetReparent()
+{
+    // Try it as a top-level first:
+    GLWidget *widget = new GLWidget;
+    widget->setGeometry(0, 0, 200, 30);
+    widget->show();
+
+    QWidget grandParentWidget;
+    grandParentWidget.setPalette(Qt::blue);
+    QVBoxLayout grandParentLayout(&grandParentWidget);
+
+    QWidget parentWidget(&grandParentWidget);
+    grandParentLayout.addWidget(&parentWidget);
+    parentWidget.setPalette(Qt::green);
+    parentWidget.setAutoFillBackground(true);
+    QVBoxLayout parentLayout(&parentWidget);
+
+    grandParentWidget.setGeometry(0, 100, 200, 200);
+    grandParentWidget.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(widget);
+    qt_x11_wait_for_window_manager(&parentWidget);
+#endif
+    QTest::qWait(200);
+
+    QVERIFY(parentWidget.children().count() == 1); // The layout
+
+    // Now both widgets should be created & shown, time to re-parent:
+    parentLayout.addWidget(widget);
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&parentWidget);
+#endif
+    QTest::qWait(200);
+
+    QVERIFY(parentWidget.children().count() == 2); // Layout & glwidget
+    QVERIFY(parentWidget.children().contains(widget));
+    QVERIFY(widget->height() > 30);
+
+    delete widget;
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&parentWidget);
+#endif
+    QTest::qWait(200);
+
+    QVERIFY(parentWidget.children().count() == 1); // The layout
+
+    // Now do pretty much the same thing, but don't show the
+    // widget first:
+    widget = new GLWidget;
+    parentLayout.addWidget(widget);
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&parentWidget);
+#endif
+    QTest::qWait(200);
+
+    QVERIFY(parentWidget.children().count() == 2); // Layout & glwidget
+    QVERIFY(parentWidget.children().contains(widget));
+    QVERIFY(widget->height() > 30);
+
+    delete widget;
 }
 
 class ColormapExtended : public QGLColormap

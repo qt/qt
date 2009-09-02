@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -4351,13 +4351,6 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         GLdouble tc_w = r.width()/pm.width();
         GLdouble tc_h = r.height()/pm.height();
 
-        // Rotate the texture so that it is aligned correctly and the
-        // wrapping is done correctly
-        glMatrixMode(GL_TEXTURE);
-        glPushMatrix();
-        glRotatef(180.0, 0.0, 1.0, 0.0);
-        glRotatef(180.0, 0.0, 0.0, 1.0);
-
         q_vertexType vertexArray[4*2];
         q_vertexType texCoordArray[4*2];
 
@@ -4376,7 +4369,6 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
-        glPopMatrix();
 
         glDisable(GL_TEXTURE_2D);
 #ifndef QT_OPENGL_ES
@@ -4433,13 +4425,13 @@ void QOpenGLPaintEngine::drawTextureRect(int tx_width, int tx_height, const QRec
     if (target == GL_TEXTURE_2D) {
         x1 = sr.x() / tx_width;
         x2 = x1 + sr.width() / tx_width;
-        y1 = 1.0 - (sr.bottom() / tx_height);
-        y2 = 1.0 - (sr.y() / tx_height);
+        y1 = 1 - (sr.bottom() / tx_height);
+        y2 = 1 - (sr.y() / tx_height);
     } else {
         x1 = sr.x();
         x2 = sr.right();
-        y1 = tx_height - sr.bottom();
-        y2 = tx_height - sr.y();
+        y1 = sr.bottom();
+        y2 = sr.y();
     }
 
     q_vertexType vertexArray[4*2];

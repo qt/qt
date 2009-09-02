@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -51,8 +51,6 @@
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QT_NO_GRAPHICSVIEW) || (QT_EDITION & QT_MODULE_GRAPHICSVIEW) != QT_MODULE_GRAPHICSVIEW
-
 /*!
     \class QGraphicsShaderEffect
     \brief The QGraphicsShaderEffect class is the base class for creating
@@ -63,7 +61,9 @@ QT_BEGIN_NAMESPACE
 
     The specific effect is defined by a fragment of GLSL source code
     supplied to setPixelShaderFragment().  This source code must define a
-    function called \c{srcPixel()} that returns the source pixel value
+    function with the signature
+    \c{lowp vec4 customShader(lowp sampler2D imageTexture, highp vec2 textureCoords)}
+    that returns the source pixel value
     to use in the paint engine's shader program.  The shader fragment
     is linked with the regular shader code used by the GL2 paint engine
     to construct a complete QGLShaderProgram.
@@ -74,10 +74,8 @@ QT_BEGIN_NAMESPACE
 
     \code
     static char const colorizeShaderCode[] =
-        "varying highp vec2 textureCoords;\n"
-        "uniform sampler2D imageTexture;\n"
         "uniform lowp vec4 effectColor;\n"
-        "lowp vec4 srcPixel() {\n"
+        "lowp vec4 customShader(lowp sampler2D imageTexture, highp vec2 textureCoords) {\n"
         "    vec4 src = texture2D(imageTexture, textureCoords);\n"
         "    float gray = dot(src.rgb, vec3(0.212671, 0.715160, 0.072169));\n"
         "    vec4 colorize = 1.0-((1.0-gray)*(1.0-effectColor));\n"
@@ -126,13 +124,11 @@ QT_BEGIN_NAMESPACE
     the drawItem() method will draw its item argument directly with
     no effect applied.
 
-    \sa QGrapicsEffect
+    \sa QGraphicsEffect
 */
 
 static const char qglslDefaultImageFragmentShader[] = "\
-    varying highp vec2 textureCoords; \
-    uniform sampler2D imageTexture; \
-    lowp vec4 srcPixel() { \
+    lowp vec4 customShader(lowp sampler2D imageTexture, highp vec2 textureCoords) { \
         return texture2D(imageTexture, textureCoords); \
     }\n";
 
@@ -216,15 +212,14 @@ QByteArray QGraphicsShaderEffect::pixelShaderFragment() const
     Sets the source code for the pixel shader fragment for
     this shader effect to \a code.
 
-    The \a code must define a GLSL function called \c{srcPixel()}
+    The \a code must define a GLSL function with the signature
+    \c{lowp vec4 customShader(lowp sampler2D imageTexture, highp vec2 textureCoords)}
     that returns the source pixel value to use in the paint engine's
     shader program.  The following is the default pixel shader fragment,
     which draws a pixmap with no effect applied:
 
     \code
-    varying highp vec2 textureCoords;
-    uniform sampler2D imageTexture;
-    lowp vec4 srcPixel() {
+    lowp vec4 customShader(lowp sampler2D imageTexture, highp vec2 textureCoords) {
         return texture2D(imageTexture, textureCoords);
     }
     \endcode
@@ -315,7 +310,5 @@ void QGraphicsShaderEffect::setUniforms(QGLShaderProgram *program)
 {
     Q_UNUSED(program);
 }
-
-#endif // QT_NO_GRAPHICSVIEW
 
 QT_END_NAMESPACE

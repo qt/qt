@@ -4532,7 +4532,7 @@ EXPORTS
 	_ZN20QGraphicsEllipseItemD1Ev @ 4531 NONAME
 	_ZN20QGraphicsEllipseItemD2Ev @ 4532 NONAME
 	_ZN20QGraphicsItemPrivate12remapItemPosEP6QEventP13QGraphicsItem @ 4533 NONAME
-	_ZN20QGraphicsItemPrivate12resolveDepthEi @ 4534 NONAME
+	_ZN20QGraphicsItemPrivate12resolveDepthEi @ 4534 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate12setPosHelperERK7QPointF @ 4535 NONAME
 	_ZN20QGraphicsItemPrivate12updateHelperERK6QRectFbb @ 4536 NONAME ABSENT
 	_ZN20QGraphicsItemPrivate16fullUpdateHelperEbbb @ 4537 NONAME ABSENT
@@ -4991,7 +4991,7 @@ EXPORTS
 	_ZN23QImageTextureGlyphCache17resizeTextureDataEii @ 4990 NONAME ABSENT
 	_ZN23QPixmapDropShadowFilter11qt_metacallEN11QMetaObject4CallEiPPv @ 4991 NONAME
 	_ZN23QPixmapDropShadowFilter11qt_metacastEPKc @ 4992 NONAME
-	_ZN23QPixmapDropShadowFilter13setBlurRadiusEf @ 4993 NONAME
+	_ZN23QPixmapDropShadowFilter13setBlurRadiusEf @ 4993 NONAME ABSENT
 	_ZN23QPixmapDropShadowFilter16staticMetaObjectE @ 4994 NONAME DATA 16
 	_ZN23QPixmapDropShadowFilter8setColorERK6QColor @ 4995 NONAME
 	_ZN23QPixmapDropShadowFilter9setOffsetERK7QPointF @ 4996 NONAME
@@ -11671,8 +11671,8 @@ EXPORTS
 	_ZN11QPanGesture16staticMetaObjectE @ 11670 NONAME DATA 16
 	_ZN11QPanGesture5eventEP6QEvent @ 11671 NONAME
 	_ZN11QPanGesture5resetEv @ 11672 NONAME
-	_ZN11QPanGestureC1EP7QWidget @ 11673 NONAME
-	_ZN11QPanGestureC2EP7QWidget @ 11674 NONAME
+	_ZN11QPanGestureC1EP7QWidget @ 11673 NONAME ABSENT
+	_ZN11QPanGestureC2EP7QWidget @ 11674 NONAME ABSENT
 	_ZN11QPixmapData6scrollEiiRK5QRect @ 11675 NONAME
 	_ZN11QProxyStyle11qt_metacallEN11QMetaObject4CallEiPPv @ 11676 NONAME
 	_ZN11QProxyStyle11qt_metacastEPKc @ 11677 NONAME
@@ -11802,15 +11802,15 @@ EXPORTS
 	_ZN13QPinchGesture16staticMetaObjectE @ 11801 NONAME DATA 16
 	_ZN13QPinchGesture5eventEP6QEvent @ 11802 NONAME
 	_ZN13QPinchGesture5resetEv @ 11803 NONAME
-	_ZN13QPinchGestureC1EP7QWidget @ 11804 NONAME
-	_ZN13QPinchGestureC2EP7QWidget @ 11805 NONAME
+	_ZN13QPinchGestureC1EP7QWidget @ 11804 NONAME ABSENT
+	_ZN13QPinchGestureC2EP7QWidget @ 11805 NONAME ABSENT
 	_ZN14QDesktopWidget18screenCountChangedEi @ 11806 NONAME
 	_ZN14QGraphicsScale11qt_metacallEN11QMetaObject4CallEiPPv @ 11807 NONAME
 	_ZN14QGraphicsScale11qt_metacastEPKc @ 11808 NONAME
 	_ZN14QGraphicsScale12scaleChangedEv @ 11809 NONAME
 	_ZN14QGraphicsScale13originChangedEv @ 11810 NONAME
 	_ZN14QGraphicsScale16staticMetaObjectE @ 11811 NONAME DATA 16
-	_ZN14QGraphicsScale9setOriginERK7QPointF @ 11812 NONAME
+	_ZN14QGraphicsScale9setOriginERK7QPointF @ 11812 NONAME ABSENT
 	_ZN14QGraphicsScale9setXScaleEf @ 11813 NONAME
 	_ZN14QGraphicsScale9setYScaleEf @ 11814 NONAME
 	_ZN14QGraphicsScaleC1EP7QObject @ 11815 NONAME
@@ -11856,7 +11856,7 @@ EXPORTS
 	_ZN17QGraphicsRotation7setAxisEN2Qt4AxisE @ 11855 NONAME
 	_ZN17QGraphicsRotation7setAxisERK9QVector3D @ 11856 NONAME
 	_ZN17QGraphicsRotation8setAngleEf @ 11857 NONAME
-	_ZN17QGraphicsRotation9setOriginERK7QPointF @ 11858 NONAME
+	_ZN17QGraphicsRotation9setOriginERK7QPointF @ 11858 NONAME ABSENT
 	_ZN17QGraphicsRotationC1EP7QObject @ 11859 NONAME
 	_ZN17QGraphicsRotationC2EP7QObject @ 11860 NONAME
 	_ZN17QGraphicsRotationD0Ev @ 11861 NONAME
@@ -12048,8 +12048,8 @@ EXPORTS
 	_ZN8QGesture8finishedEv @ 12047 NONAME
 	_ZN8QGesture9cancelledEv @ 12048 NONAME
 	_ZN8QGesture9triggeredEv @ 12049 NONAME
-	_ZN8QGestureC2EP7QObject @ 12050 NONAME
-	_ZN8QGestureC2ER15QGesturePrivateP7QObject @ 12051 NONAME
+	_ZN8QGestureC2EP7QObject @ 12050 NONAME ABSENT
+	_ZN8QGestureC2ER15QGesturePrivateP7QObject @ 12051 NONAME ABSENT
 	_ZN8QGestureD0Ev @ 12052 NONAME
 	_ZN8QGestureD1Ev @ 12053 NONAME
 	_ZN8QGestureD2Ev @ 12054 NONAME
@@ -12084,7 +12084,7 @@ EXPORTS
 	_ZNK10QCompleter15maxVisibleItemsEv @ 12083 NONAME
 	_ZNK10QMatrix4x410transposedEv @ 12084 NONAME
 	_ZNK10QMatrix4x411determinantEv @ 12085 NONAME
-	_ZNK10QMatrix4x411toTransformEv @ 12086 NONAME
+	_ZNK10QMatrix4x411toTransformEv @ 12086 NONAME ABSENT
 	_ZNK10QMatrix4x412normalMatrixEv @ 12087 NONAME
 	_ZNK10QMatrix4x412toValueArrayEPf @ 12088 NONAME
 	_ZNK10QMatrix4x418extractTranslationEv @ 12089 NONAME
@@ -12177,7 +12177,7 @@ EXPORTS
 	_ZNK14QGraphicsScale6originEv @ 12176 NONAME
 	_ZNK14QGraphicsScale6xScaleEv @ 12177 NONAME
 	_ZNK14QGraphicsScale6yScaleEv @ 12178 NONAME
-	_ZNK14QGraphicsScale7applyToEP10QTransform @ 12179 NONAME
+	_ZNK14QGraphicsScale7applyToEP10QTransform @ 12179 NONAME ABSENT
 	_ZNK14QGraphicsScene5itemsEN2Qt9SortOrderE @ 12180 NONAME
 	_ZNK14QGraphicsScene5itemsERK12QPainterPathN2Qt17ItemSelectionModeENS3_9SortOrderERK10QTransform @ 12181 NONAME
 	_ZNK14QGraphicsScene5itemsERK6QRectFN2Qt17ItemSelectionModeENS3_9SortOrderERK10QTransform @ 12182 NONAME
@@ -12194,9 +12194,9 @@ EXPORTS
 	_ZNK17QGraphicsRotation4axisEv @ 12193 NONAME
 	_ZNK17QGraphicsRotation5angleEv @ 12194 NONAME
 	_ZNK17QGraphicsRotation6originEv @ 12195 NONAME
-	_ZNK17QGraphicsRotation7applyToEP10QTransform @ 12196 NONAME
+	_ZNK17QGraphicsRotation7applyToEP10QTransform @ 12196 NONAME ABSENT
 	_ZNK18QGraphicsTransform10metaObjectEv @ 12197 NONAME
-	_ZNK18QGraphicsTransform9transformEv @ 12198 NONAME
+	_ZNK18QGraphicsTransform9transformEv @ 12198 NONAME ABSENT
 	_ZNK18QTextureGlyphCache18textureMapForGlyphEj @ 12199 NONAME
 	_ZNK19QDockAreaLayoutInfo12hasFixedSizeEv @ 12200 NONAME
 	_ZNK19QDockAreaLayoutInfo13separatorRectERK5QListIiE @ 12201 NONAME
@@ -12318,4 +12318,196 @@ EXPORTS
 	_ZrsR11QDataStreamR9QVector2D @ 12317 NONAME
 	_ZrsR11QDataStreamR9QVector3D @ 12318 NONAME
 	_ZrsR11QDataStreamR9QVector4D @ 12319 NONAME
+	_ZN11QPanGestureC1EP7QWidgetP7QObject @ 12320 NONAME
+	_ZN11QPanGestureC2EP7QWidgetP7QObject @ 12321 NONAME
+	_ZN13QGraphicsItem17setGraphicsEffectEP15QGraphicsEffect @ 12322 NONAME
+	_ZN13QPinchGestureC1EP7QWidgetP7QObject @ 12323 NONAME
+	_ZN13QPinchGestureC2EP7QWidgetP7QObject @ 12324 NONAME
+	_ZN14QGraphicsScale9setOriginERK9QVector3D @ 12325 NONAME
+	_ZN14QGraphicsScale9setZScaleEf @ 12326 NONAME
+	_ZN15QGraphicsEffect10setEnabledEb @ 12327 NONAME
+	_ZN15QGraphicsEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 12328 NONAME
+	_ZN15QGraphicsEffect11qt_metacastEPKc @ 12329 NONAME
+	_ZN15QGraphicsEffect13sourceChangedE6QFlagsINS_10ChangeFlagEE @ 12330 NONAME
+	_ZN15QGraphicsEffect14enabledChangedEb @ 12331 NONAME
+	_ZN15QGraphicsEffect16staticMetaObjectE @ 12332 NONAME DATA 16
+	_ZN15QGraphicsEffect18updateBoundingRectEv @ 12333 NONAME
+	_ZN15QGraphicsEffectC2EP7QObject @ 12334 NONAME
+	_ZN15QGraphicsEffectC2ER22QGraphicsEffectPrivateP7QObject @ 12335 NONAME
+	_ZN15QGraphicsEffectD0Ev @ 12336 NONAME
+	_ZN15QGraphicsEffectD1Ev @ 12337 NONAME
+	_ZN15QGraphicsEffectD2Ev @ 12338 NONAME
+	_ZN17QGraphicsRotation9setOriginERK9QVector3D @ 12339 NONAME
+	_ZN17QPixmapBlurFilter10setQualityEN2Qt18TransformationModeE @ 12340 NONAME
+	_ZN17QPixmapBlurFilter11qt_metacallEN11QMetaObject4CallEiPPv @ 12341 NONAME
+	_ZN17QPixmapBlurFilter11qt_metacastEPKc @ 12342 NONAME
+	_ZN17QPixmapBlurFilter16staticMetaObjectE @ 12343 NONAME DATA 16
+	_ZN17QPixmapBlurFilter9setRadiusEi @ 12344 NONAME
+	_ZN17QPixmapBlurFilterC1EP7QObject @ 12345 NONAME
+	_ZN17QPixmapBlurFilterC2EP7QObject @ 12346 NONAME
+	_ZN17QPixmapBlurFilterD0Ev @ 12347 NONAME
+	_ZN17QPixmapBlurFilterD1Ev @ 12348 NONAME
+	_ZN17QPixmapBlurFilterD2Ev @ 12349 NONAME
+	_ZN19QGraphicsBlurEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 12350 NONAME
+	_ZN19QGraphicsBlurEffect11qt_metacastEPKc @ 12351 NONAME
+	_ZN19QGraphicsBlurEffect13setBlurRadiusEi @ 12352 NONAME
+	_ZN19QGraphicsBlurEffect16staticMetaObjectE @ 12353 NONAME DATA 16
+	_ZN19QGraphicsBlurEffect17blurRadiusChangedEi @ 12354 NONAME
+	_ZN19QGraphicsBlurEffect4drawEP8QPainterP21QGraphicsEffectSource @ 12355 NONAME
+	_ZN19QGraphicsBlurEffectC1EP7QObject @ 12356 NONAME
+	_ZN19QGraphicsBlurEffectC2EP7QObject @ 12357 NONAME
+	_ZN19QGraphicsBlurEffectD0Ev @ 12358 NONAME
+	_ZN19QGraphicsBlurEffectD1Ev @ 12359 NONAME
+	_ZN19QGraphicsBlurEffectD2Ev @ 12360 NONAME
+	_ZN20QGraphicsItemPrivate12resolveDepthEv @ 12361 NONAME
+	_ZN20QGraphicsItemPrivate26invalidateDepthRecursivelyEv @ 12362 NONAME
+	_ZN21QGraphicsAnchorLayout10invalidateEv @ 12363 NONAME
+	_ZN21QGraphicsAnchorLayout10setSpacingEf @ 12364 NONAME
+	_ZN21QGraphicsAnchorLayout11setGeometryERK6QRectF @ 12365 NONAME
+	_ZN21QGraphicsAnchorLayout12removeAnchorEP19QGraphicsLayoutItemN2Qt11AnchorPointES1_S3_ @ 12366 NONAME
+	_ZN21QGraphicsAnchorLayout16addCornerAnchorsEP19QGraphicsLayoutItemN2Qt6CornerES1_S3_ @ 12367 NONAME
+	_ZN21QGraphicsAnchorLayout16setAnchorSpacingEPK19QGraphicsLayoutItemN2Qt11AnchorPointES2_S4_f @ 12368 NONAME
+	_ZN21QGraphicsAnchorLayout18setVerticalSpacingEf @ 12369 NONAME
+	_ZN21QGraphicsAnchorLayout18unsetAnchorSpacingEPK19QGraphicsLayoutItemN2Qt11AnchorPointES2_S4_ @ 12370 NONAME
+	_ZN21QGraphicsAnchorLayout20setHorizontalSpacingEf @ 12371 NONAME
+	_ZN21QGraphicsAnchorLayout8removeAtEi @ 12372 NONAME
+	_ZN21QGraphicsAnchorLayout9addAnchorEP19QGraphicsLayoutItemN2Qt11AnchorPointES1_S3_ @ 12373 NONAME
+	_ZN21QGraphicsAnchorLayoutC1EP19QGraphicsLayoutItem @ 12374 NONAME
+	_ZN21QGraphicsAnchorLayoutC2EP19QGraphicsLayoutItem @ 12375 NONAME
+	_ZN21QGraphicsAnchorLayoutD0Ev @ 12376 NONAME
+	_ZN21QGraphicsAnchorLayoutD1Ev @ 12377 NONAME
+	_ZN21QGraphicsAnchorLayoutD2Ev @ 12378 NONAME
+	_ZN21QGraphicsEffectSource11qt_metacallEN11QMetaObject4CallEiPPv @ 12379 NONAME
+	_ZN21QGraphicsEffectSource11qt_metacastEPKc @ 12380 NONAME
+	_ZN21QGraphicsEffectSource16staticMetaObjectE @ 12381 NONAME DATA 16
+	_ZN21QGraphicsEffectSource4drawEP8QPainter @ 12382 NONAME
+	_ZN21QGraphicsEffectSource6updateEv @ 12383 NONAME
+	_ZN21QGraphicsEffectSourceC1ER28QGraphicsEffectSourcePrivateP7QObject @ 12384 NONAME
+	_ZN21QGraphicsEffectSourceC2ER28QGraphicsEffectSourcePrivateP7QObject @ 12385 NONAME
+	_ZN21QGraphicsEffectSourceD0Ev @ 12386 NONAME
+	_ZN21QGraphicsEffectSourceD1Ev @ 12387 NONAME
+	_ZN21QGraphicsEffectSourceD2Ev @ 12388 NONAME
+	_ZN23QGraphicsColorizeEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 12389 NONAME
+	_ZN23QGraphicsColorizeEffect11qt_metacastEPKc @ 12390 NONAME
+	_ZN23QGraphicsColorizeEffect12colorChangedERK6QColor @ 12391 NONAME
+	_ZN23QGraphicsColorizeEffect16staticMetaObjectE @ 12392 NONAME DATA 16
+	_ZN23QGraphicsColorizeEffect4drawEP8QPainterP21QGraphicsEffectSource @ 12393 NONAME
+	_ZN23QGraphicsColorizeEffect8setColorERK6QColor @ 12394 NONAME
+	_ZN23QGraphicsColorizeEffectC1EP7QObject @ 12395 NONAME
+	_ZN23QGraphicsColorizeEffectC2EP7QObject @ 12396 NONAME
+	_ZN23QGraphicsColorizeEffectD0Ev @ 12397 NONAME
+	_ZN23QGraphicsColorizeEffectD1Ev @ 12398 NONAME
+	_ZN23QGraphicsColorizeEffectD2Ev @ 12399 NONAME
+	_ZN23QGraphicsPixelizeEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 12400 NONAME
+	_ZN23QGraphicsPixelizeEffect11qt_metacastEPKc @ 12401 NONAME
+	_ZN23QGraphicsPixelizeEffect12setPixelSizeEi @ 12402 NONAME
+	_ZN23QGraphicsPixelizeEffect16pixelSizeChangedEi @ 12403 NONAME
+	_ZN23QGraphicsPixelizeEffect16staticMetaObjectE @ 12404 NONAME DATA 16
+	_ZN23QGraphicsPixelizeEffect4drawEP8QPainterP21QGraphicsEffectSource @ 12405 NONAME
+	_ZN23QGraphicsPixelizeEffectC1EP7QObject @ 12406 NONAME
+	_ZN23QGraphicsPixelizeEffectC2EP7QObject @ 12407 NONAME
+	_ZN23QGraphicsPixelizeEffectD0Ev @ 12408 NONAME
+	_ZN23QGraphicsPixelizeEffectD1Ev @ 12409 NONAME
+	_ZN23QGraphicsPixelizeEffectD2Ev @ 12410 NONAME
+	_ZN23QPixmapDropShadowFilter13setBlurRadiusEi @ 12411 NONAME
+	_ZN24QGraphicsGrayscaleEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 12412 NONAME
+	_ZN24QGraphicsGrayscaleEffect11qt_metacastEPKc @ 12413 NONAME
+	_ZN24QGraphicsGrayscaleEffect16staticMetaObjectE @ 12414 NONAME DATA 16
+	_ZN24QGraphicsGrayscaleEffect4drawEP8QPainterP21QGraphicsEffectSource @ 12415 NONAME
+	_ZN24QGraphicsGrayscaleEffectC1EP7QObject @ 12416 NONAME
+	_ZN24QGraphicsGrayscaleEffectC2EP7QObject @ 12417 NONAME
+	_ZN24QGraphicsGrayscaleEffectD0Ev @ 12418 NONAME
+	_ZN24QGraphicsGrayscaleEffectD1Ev @ 12419 NONAME
+	_ZN24QGraphicsGrayscaleEffectD2Ev @ 12420 NONAME
+	_ZN25QGraphicsDropShadowEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 12421 NONAME
+	_ZN25QGraphicsDropShadowEffect11qt_metacastEPKc @ 12422 NONAME
+	_ZN25QGraphicsDropShadowEffect12colorChangedERK6QColor @ 12423 NONAME
+	_ZN25QGraphicsDropShadowEffect13offsetChangedERK7QPointF @ 12424 NONAME
+	_ZN25QGraphicsDropShadowEffect13setBlurRadiusEi @ 12425 NONAME
+	_ZN25QGraphicsDropShadowEffect16staticMetaObjectE @ 12426 NONAME DATA 16
+	_ZN25QGraphicsDropShadowEffect17blurRadiusChangedEi @ 12427 NONAME
+	_ZN25QGraphicsDropShadowEffect4drawEP8QPainterP21QGraphicsEffectSource @ 12428 NONAME
+	_ZN25QGraphicsDropShadowEffect8setColorERK6QColor @ 12429 NONAME
+	_ZN25QGraphicsDropShadowEffect9setOffsetERK7QPointF @ 12430 NONAME
+	_ZN25QGraphicsDropShadowEffectC1EP7QObject @ 12431 NONAME
+	_ZN25QGraphicsDropShadowEffectC2EP7QObject @ 12432 NONAME
+	_ZN25QGraphicsDropShadowEffectD0Ev @ 12433 NONAME
+	_ZN25QGraphicsDropShadowEffectD1Ev @ 12434 NONAME
+	_ZN25QGraphicsDropShadowEffectD2Ev @ 12435 NONAME
+	_ZN7QWidget17setGraphicsEffectEP15QGraphicsEffect @ 12436 NONAME
+	_ZN8QGesture16setGestureTargetEP7QObject @ 12437 NONAME
+	_ZN8QGestureC2EP7QObjectS1_ @ 12438 NONAME
+	_ZN8QGestureC2ER15QGesturePrivateP7QObjectS3_ @ 12439 NONAME
+	_ZNK10QMatrix4x411toTransformEf @ 12440 NONAME
+	_ZNK10QMatrix4x4cv8QVariantEv @ 12441 NONAME
+	_ZNK11QQuaternioncv8QVariantEv @ 12442 NONAME
+	_ZNK13QGraphicsItem14graphicsEffectEv @ 12443 NONAME
+	_ZNK14QGraphicsScale6zScaleEv @ 12444 NONAME
+	_ZNK14QGraphicsScale7applyToEP10QMatrix4x4 @ 12445 NONAME
+	_ZNK15QGraphicsEffect10metaObjectEv @ 12446 NONAME
+	_ZNK15QGraphicsEffect12boundingRectEv @ 12447 NONAME
+	_ZNK15QGraphicsEffect15boundingRectForERK6QRectF @ 12448 NONAME
+	_ZNK15QGraphicsEffect6sourceEv @ 12449 NONAME
+	_ZNK15QGraphicsEffect9isEnabledEv @ 12450 NONAME
+	_ZNK17QGraphicsRotation7applyToEP10QMatrix4x4 @ 12451 NONAME
+	_ZNK17QPixmapBlurFilter10metaObjectEv @ 12452 NONAME
+	_ZNK17QPixmapBlurFilter15boundingRectForERK6QRectF @ 12453 NONAME
+	_ZNK17QPixmapBlurFilter4drawEP8QPainterRK7QPointFRK7QPixmapRK6QRectF @ 12454 NONAME
+	_ZNK17QPixmapBlurFilter6radiusEv @ 12455 NONAME
+	_ZNK17QPixmapBlurFilter7qualityEv @ 12456 NONAME
+	_ZNK19QGraphicsBlurEffect10blurRadiusEv @ 12457 NONAME
+	_ZNK19QGraphicsBlurEffect10metaObjectEv @ 12458 NONAME
+	_ZNK19QGraphicsBlurEffect15boundingRectForERK6QRectF @ 12459 NONAME
+	_ZNK20QGraphicsItemPrivate21effectiveBoundingRectEv @ 12460 NONAME
+	_ZNK20QGraphicsItemPrivate26sceneEffectiveBoundingRectEv @ 12461 NONAME
+	_ZNK20QGraphicsItemPrivate5depthEv @ 12462 NONAME
+	_ZNK21QGraphicsAnchorLayout13anchorSpacingEPK19QGraphicsLayoutItemN2Qt11AnchorPointES2_S4_ @ 12463 NONAME
+	_ZNK21QGraphicsAnchorLayout15verticalSpacingEv @ 12464 NONAME
+	_ZNK21QGraphicsAnchorLayout17horizontalSpacingEv @ 12465 NONAME
+	_ZNK21QGraphicsAnchorLayout5countEv @ 12466 NONAME
+	_ZNK21QGraphicsAnchorLayout6itemAtEi @ 12467 NONAME
+	_ZNK21QGraphicsAnchorLayout8sizeHintEN2Qt8SizeHintERK6QSizeF @ 12468 NONAME
+	_ZNK21QGraphicsEffectSource10deviceRectEv @ 12469 NONAME
+	_ZNK21QGraphicsEffectSource10metaObjectEv @ 12470 NONAME
+	_ZNK21QGraphicsEffectSource11styleOptionEv @ 12471 NONAME
+	_ZNK21QGraphicsEffectSource12boundingRectEN2Qt16CoordinateSystemE @ 12472 NONAME
+	_ZNK21QGraphicsEffectSource12graphicsItemEv @ 12473 NONAME
+	_ZNK21QGraphicsEffectSource6pixmapEN2Qt16CoordinateSystemEP6QPoint @ 12474 NONAME
+	_ZNK21QGraphicsEffectSource6widgetEv @ 12475 NONAME
+	_ZNK21QGraphicsEffectSource8isPixmapEv @ 12476 NONAME
+	_ZNK23QGraphicsColorizeEffect10metaObjectEv @ 12477 NONAME
+	_ZNK23QGraphicsColorizeEffect5colorEv @ 12478 NONAME
+	_ZNK23QGraphicsPixelizeEffect10metaObjectEv @ 12479 NONAME
+	_ZNK23QGraphicsPixelizeEffect9pixelSizeEv @ 12480 NONAME
+	_ZNK24QGraphicsGrayscaleEffect10metaObjectEv @ 12481 NONAME
+	_ZNK25QGraphicsDropShadowEffect10blurRadiusEv @ 12482 NONAME
+	_ZNK25QGraphicsDropShadowEffect10metaObjectEv @ 12483 NONAME
+	_ZNK25QGraphicsDropShadowEffect15boundingRectForERK6QRectF @ 12484 NONAME
+	_ZNK25QGraphicsDropShadowEffect5colorEv @ 12485 NONAME
+	_ZNK25QGraphicsDropShadowEffect6offsetEv @ 12486 NONAME
+	_ZNK7QWidget14graphicsEffectEv @ 12487 NONAME
+	_ZNK8QGesture13gestureTargetEv @ 12488 NONAME
+	_ZNK9QVector2Dcv8QVariantEv @ 12489 NONAME
+	_ZNK9QVector3Dcv8QVariantEv @ 12490 NONAME
+	_ZNK9QVector4Dcv8QVariantEv @ 12491 NONAME
+	_ZTI15QGraphicsEffect @ 12492 NONAME
+	_ZTI17QPixmapBlurFilter @ 12493 NONAME
+	_ZTI19QGraphicsBlurEffect @ 12494 NONAME
+	_ZTI21QGraphicsAnchorLayout @ 12495 NONAME
+	_ZTI21QGraphicsEffectSource @ 12496 NONAME
+	_ZTI22QGraphicsEffectPrivate @ 12497 NONAME
+	_ZTI23QGraphicsColorizeEffect @ 12498 NONAME
+	_ZTI23QGraphicsPixelizeEffect @ 12499 NONAME
+	_ZTI24QGraphicsGrayscaleEffect @ 12500 NONAME
+	_ZTI25QGraphicsDropShadowEffect @ 12501 NONAME
+	_ZTV15QGraphicsEffect @ 12502 NONAME
+	_ZTV17QPixmapBlurFilter @ 12503 NONAME
+	_ZTV19QGraphicsBlurEffect @ 12504 NONAME
+	_ZTV21QGraphicsAnchorLayout @ 12505 NONAME
+	_ZTV21QGraphicsEffectSource @ 12506 NONAME
+	_ZTV22QGraphicsEffectPrivate @ 12507 NONAME
+	_ZTV23QGraphicsColorizeEffect @ 12508 NONAME
+	_ZTV23QGraphicsPixelizeEffect @ 12509 NONAME
+	_ZTV24QGraphicsGrayscaleEffect @ 12510 NONAME
+	_ZTV25QGraphicsDropShadowEffect @ 12511 NONAME
 

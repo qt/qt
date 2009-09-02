@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -198,20 +198,19 @@
     \o hoverEnterEvent(), hoverMoveEvent(), and hoverLeaveEvent() handles
     hover enter, move and leave events
     \o inputMethodEvent() handles input events, for accessibility support
-    \o keyPressEvent() and keyReleaseEvent handle key press and release events
+    \o keyPressEvent() and keyReleaseEvent() handle key press and release events
     \o mousePressEvent(), mouseMoveEvent(), mouseReleaseEvent(), and
     mouseDoubleClickEvent() handles mouse press, move, release, click and
     doubleclick events
     \endlist
 
-    You can filter events for any other item by installing event
-    filters. This functionaly is separate from from Qt's regular
-    event filters (see QObject::installEventFilter()), which only
-    work on subclasses of QObject. After installing your item as an
-    event filter for another item by calling
-    installSceneEventFilter(), the filtered events will be received
-    by the virtual function sceneEventFilter(). You can remove item
-    event filters by calling removeSceneEventFilter().
+    You can filter events for any other item by installing event filters. This
+    functionality is separate from Qt's regular event filters (see
+    QObject::installEventFilter()), which only work on subclasses of QObject. After
+    installing your item as an event filter for another item by calling
+    installSceneEventFilter(), the filtered events will be received by the virtual
+    function sceneEventFilter(). You can remove item event filters by calling
+    removeSceneEventFilter().
 
     \section1 Custom Data
 
@@ -335,6 +334,13 @@
     \value ItemAutoDetectsFocusProxy The item will assign any child that
     gains input focus as its focus proxy. See also focusProxy().
     This flag was introduced in Qt 4.6.
+
+    \value ItemIsPanel. The item is a panel. A panel provides activation and
+    contained focus handling. Only one panel can be active at a time (see
+    QGraphicsItem::isActive()). When no panel is active, QGraphicsScene
+    activates all non-panel items. Window items (i.e.,
+    QGraphicsItem::isWindow() returns true) are panels. This flag was
+    introduced in Qt 4.6.
 */
 
 /*!
@@ -407,11 +413,11 @@
     (same as transform()), and QGraphicsItem ignores the return value for this
     notification (i.e., a read-only notification).
 
-    \value ItemSelectedChange The item's selected state changes. If the item
-    is presently selected, it will become unselected, and vice verca. The
-    value argument is the new selected state (i.e., true or false). Do not
-    call setSelected() in itemChange() as this notification is delivered();
-    instead, you can return the new selected state from itemChange().
+    \value ItemSelectedChange The item's selected state changes. If the item is
+    presently selected, it will become unselected, and vice verca. The value
+    argument is the new selected state (i.e., true or false). Do not call
+    setSelected() in itemChange() as this notification is delivered; instead, you
+    can return the new selected state from itemChange().
 
     \value ItemSelectedHasChanged The item's selected state has changed. The
     value argument is the new selected state (i.e., true or false). Do not
@@ -1000,6 +1006,9 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
                 setEnabledHelper(parent->isEnabled(), /* explicit = */ false, /* update = */ !implicitUpdate);
         }
 
+        // Auto-activate if visible and the parent is active.
+        if (q->isVisible() && parent->isActive())
+            q->setActive(true);
     } else {
         // Inherit ancestor flags from the new parent.
         updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-2));
@@ -1363,11 +1372,26 @@ QGraphicsWidget *QGraphicsItem::topLevelWidget() const
 */
 QGraphicsWidget *QGraphicsItem::window() const
 {
-    if (isWidget() && static_cast<const QGraphicsWidget *>(this)->isWindow())
-        return static_cast<QGraphicsWidget *>(const_cast<QGraphicsItem *>(this));
-    if (QGraphicsWidget *parent = parentWidget())
-        return parent->window();
+    QGraphicsItem *p = panel();
+    if (p && p->isWindow())
+        return static_cast<QGraphicsWidget *>(p);
     return 0;
+}
+
+/*!
+    \since 4.6
+
+    Returns the item's panel, or 0 if this item does not have a panel. If the
+    item is a panel, it will return itself. Otherwise it will return the
+    closest ancestor that is a panel.
+
+    \sa isPanel(), ItemIsPanel
+*/
+QGraphicsItem *QGraphicsItem::panel() const
+{
+    if (d_ptr->flags & ItemIsPanel)
+        return const_cast<QGraphicsItem *>(this);
+    return d_ptr->parent ? d_ptr->parent->panel() : 0;
 }
 
 /*!
@@ -1456,6 +1480,17 @@ bool QGraphicsItem::isWindow() const
 }
 
 /*!
+    \since 4.6
+    Returns true if the item is a panel; otherwise returns false.
+
+    \sa QGraphicsItem::panel(), ItemIsPanel
+*/
+bool QGraphicsItem::isPanel() const
+{
+    return d_ptr->flags & ItemIsPanel;
+}
+
+/*!
     Returns this item's flags. The flags describe what configurable features
     of the item are enabled and not. For example, if the flags include
     ItemIsFocusable, the item can accept input focus.
@@ -1518,6 +1553,9 @@ static void _q_qgraphicsItemSetFlag(QGraphicsItem *item, QGraphicsItem::Graphics
 */
 void QGraphicsItem::setFlags(GraphicsItemFlags flags)
 {
+    if (isWindow())
+        flags |= ItemIsPanel;
+
     // Notify change and check for adjustment.
     if (quint32(d_ptr->flags) == quint32(flags))
         return;
@@ -1872,16 +1910,16 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
                 q->ungrabKeyboard();
         }
         if (q_ptr->hasFocus() && scene) {
-            // Hiding the closest non-window ancestor of the focus item
+            // Hiding the closest non-panel ancestor of the focus item
             QGraphicsItem *focusItem = scene->focusItem();
             bool clear = true;
-            if (isWidget && !focusItem->isWindow()) {
+            if (isWidget && !focusItem->isPanel()) {
                 do {
                     if (focusItem == q_ptr) {
                         clear = !static_cast<QGraphicsWidget *>(q_ptr)->focusNextPrevChild(true);
                         break;
                     }
-                } while ((focusItem = focusItem->parentWidget()) && !focusItem->isWindow());
+                } while ((focusItem = focusItem->parentWidget()) && !focusItem->isPanel());
             }
             if (clear)
                 q_ptr->clearFocus();
@@ -1903,6 +1941,17 @@ void QGraphicsItemPrivate::setVisibleHelper(bool newVisible, bool explicitly, bo
     foreach (QGraphicsItem *child, children) {
         if (!newVisible || !child->d_ptr->explicitlyHidden)
             child->d_ptr->setVisibleHelper(newVisible, false, updateChildren);
+    }
+
+    // Update activation
+    if (scene && q->isPanel()) {
+        if (newVisible) {
+            if (parent && parent->isActive())
+                q->setActive(true);
+        } else {
+            if (q->isActive())
+                scene->setActivePanel(parent);
+        }
     }
 
     // Enable subfocus
@@ -2003,17 +2052,17 @@ void QGraphicsItemPrivate::setEnabledHelper(bool newEnabled, bool explicitly, bo
         if (scene && scene->mouseGrabberItem() == q_ptr)
             q_ptr->ungrabMouse();
         if (q_ptr->hasFocus()) {
-            // Disabling the closest non-window ancestor of the focus item
+            // Disabling the closest non-panel ancestor of the focus item
             // causes focus to pop to the next item, otherwise it's cleared.
             QGraphicsItem *focusItem = scene->focusItem();
             bool clear = true;
-            if (isWidget && !focusItem->isWindow() && q_ptr->isAncestorOf(focusItem)) {
+            if (isWidget && !focusItem->isPanel() && q_ptr->isAncestorOf(focusItem)) {
                 do {
                     if (focusItem == q_ptr) {
                         clear = !static_cast<QGraphicsWidget *>(q_ptr)->focusNextPrevChild(true);
                         break;
                     }
-                } while ((focusItem = focusItem->parentWidget()) && !focusItem->isWindow());
+                } while ((focusItem = focusItem->parentWidget()) && !focusItem->isPanel());
             }
             if (clear)
                 q_ptr->clearFocus();
@@ -2610,12 +2659,64 @@ void QGraphicsItem::setHandlesChildEvents(bool enabled)
     d_ptr->handlesChildEvents = enabled;
     d_ptr->updateAncestorFlag(QGraphicsItem::GraphicsItemFlag(-1));
 }
+/*!
+    \since 4.6
+    Returns true if this item is active; otherwise returns false.
+
+    An item can only be active if the scene is active. An item is active
+    if it is, or is a descendent of, an active panel. Items in non-active
+    panels are not active.
+
+    Items that are not part of a panel follow scene activation when the
+    scene has no active panel.
+
+    Only active items can gain input focus.
+
+    \sa QGraphicsScene::isActive(), QGraphicsScene::activePanel(), panel(), isPanel()
+*/
+bool QGraphicsItem::isActive() const
+{
+    if (!d_ptr->scene || !d_ptr->scene->isActive())
+        return false;
+    return panel() == d_ptr->scene->activePanel();
+}
 
 /*!
-    Returns true if this item or its \l{focusProxy()}{focus proxy} has keyboard
-    input focus; otherwise, returns false.
+    \since 4.6
 
-    \sa focusItem(), setFocus(), QGraphicsScene::setFocusItem()
+    If \a active is true, and the scene is active, this item's panel will be
+    activated. Otherwise, the panel is deactivated.
+
+    If the item is not part of an active scene, \a active will decide what
+    happens to the panel when the scene becomes active or the item is added to
+    the scene. If true, the item's panel will be activated when the item is
+    either added to the scene or the scene is activated. Otherwise, the item
+    will stay inactive independent of the scene's activated state.
+
+    \sa isPanel(), QGraphicsScene::setActivePanel(), QGraphicsScene::isActive()
+*/
+void QGraphicsItem::setActive(bool active)
+{
+    d_ptr->explicitActivate = 1;
+    d_ptr->wantsActive = active;
+    if (d_ptr->scene) {
+        if (active) {
+            // Activate this item.
+            d_ptr->scene->setActivePanel(this);
+        } else {
+            // Deactivate this item, and reactivate the last active item
+            // (if any).
+            QGraphicsItem *lastActive = d_ptr->scene->d_func()->lastActivePanel;
+            d_ptr->scene->setActivePanel(lastActive != this ? lastActive : 0);
+        }
+    }
+}
+
+/*!
+    Returns true if this item is active, and it or its \l{focusProxy()}{focus
+    proxy} has keyboard input focus; otherwise, returns false.
+
+    \sa focusItem(), setFocus(), QGraphicsScene::setFocusItem(), isActive()
 */
 bool QGraphicsItem::hasFocus() const
 {
@@ -2632,9 +2733,10 @@ bool QGraphicsItem::hasFocus() const
     Only enabled items that set the ItemIsFocusable flag can accept keyboard
     focus.
 
-    If this item is not visible, or not associated with a scene, it will not
-    gain immediate input focus. However, it will be registered as the preferred
-    focus item for its subtree of items, should it later become visible.
+    If this item is not visible, not active, or not associated with a scene,
+    it will not gain immediate input focus. However, it will be registered as
+    the preferred focus item for its subtree of items, should it later become
+    visible.
 
     As a result of calling this function, this item will receive a 
     \l{focusInEvent()}{focus in event} with \a focusReason. If another item
@@ -2663,8 +2765,8 @@ void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 
     // Update the scene's focus item.
     if (d_ptr->scene) {
-        QGraphicsWidget *w = window();
-        if (!w || w->isActiveWindow()) {
+        QGraphicsItem *p = panel();
+        if (!p || p->isActive()) {
             // Visible items immediately gain focus from scene.
             d_ptr->scene->d_func()->setFocusItemHelper(f, focusReason);
         }
@@ -2674,8 +2776,8 @@ void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 /*!
     Takes keyboard input focus from the item.
 
-    If it has focus, a \l{focusOutEvent()}{focus out event} is sent to this item
-    to tell it that it is about to lose the focus.
+    If it has focus, a \l{focusOutEvent()}{focus out event} is sent to this
+    item to tell it that it is about to lose the focus.
 
     Only items that set the ItemIsFocusable flag, or widgets that set an
     appropriate focus policy, can accept keyboard focus.
@@ -4770,7 +4872,7 @@ void QGraphicsItemPrivate::setSubFocus()
     bool hidden = !visible;
     do {
         parent->d_func()->subFocusItem = item;
-    } while (!parent->isWindow() && (parent = parent->d_ptr->parent) && (!hidden || !parent->d_func()->visible));
+    } while (!parent->isPanel() && (parent = parent->d_ptr->parent) && (!hidden || !parent->d_func()->visible));
 }
 
 /*!
@@ -4784,7 +4886,7 @@ void QGraphicsItemPrivate::clearSubFocus()
         if (parent->d_ptr->subFocusItem != q_ptr)
             break;
         parent->d_ptr->subFocusItem = 0;
-    } while (!parent->isWindow() && (parent = parent->d_ptr->parent));
+    } while (!parent->isPanel() && (parent = parent->d_ptr->parent));
 }
 
 /*!
@@ -6035,6 +6137,19 @@ bool QGraphicsItem::sceneEvent(QEvent *event)
     case QEvent::InputMethod:
         inputMethodEvent(static_cast<QInputMethodEvent *>(event));
         break;
+    case QEvent::WindowActivate:
+    case QEvent::WindowDeactivate:
+        // Propagate panel activation.
+        if (d_ptr->scene) {
+            for (int i = 0; i < d_ptr->children.size(); ++i) {
+                QGraphicsItem *child = d_ptr->children.at(i);
+                if (child->isVisible() && !child->isPanel()) {
+                    if (!(child->d_ptr->ancestorFlags & QGraphicsItemPrivate::AncestorHandlesChildEvents))
+                        d_ptr->scene->sendEvent(child, event);
+                }
+            }
+        }
+        break;
     default:
         return false;
     }
@@ -6876,7 +6991,7 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
   \property QGraphicsObject::id
   \brief the id of of the item
 
-  \sa QGraphicsItem::opacity(), QGraphicsItem::setOpacity()
+  \sa QObject::objectName(), QObject::setObjectName()
 */
 
 /*!
@@ -10201,10 +10316,8 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
                      info->widget, info->opacity, info->effectTransform, info->wasDirtySceneTransform,
                      info->drawItem);
     } else {
-        QTransform effectTransform = painter->worldTransform();
-        effectTransform *= info->painter->worldTransform().inverted();
-        if (info->effectTransform)
-            effectTransform *= *info->effectTransform;
+        QTransform effectTransform = info->painter->worldTransform().inverted();
+        effectTransform *= painter->worldTransform();
         scened->draw(item, painter, info->viewTransform, info->transformPtr, info->exposedRegion,
                      info->widget, info->opacity, &effectTransform, info->wasDirtySceneTransform,
                      info->drawItem);
@@ -10282,6 +10395,8 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
                      info->widget, info->opacity, &newEffectTransform, info->wasDirtySceneTransform,
                      info->drawItem);
     }
+
+    pixmapPainter.end();
     return pixmap;
 }
 
@@ -10440,6 +10555,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
     case QGraphicsItem::ItemAutoDetectsFocusProxy:
         str = "ItemAutoDetectsFocusProxy";
         break;
+    case QGraphicsItem::ItemIsPanel:
+        str = "ItemIsPanel";
+        break;
     }
     debug << str;
     return debug;
@@ -10449,7 +10567,7 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlags flags)
 {
     debug << '(';
     bool f = false;
-    for (int i = 0; i < 9; ++i) {
+    for (int i = 0; i < 16; ++i) {
         if (flags & (1 << i)) {
             if (f)
                 debug << '|';

@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -42,8 +42,6 @@
 #include "lighting.h"
 
 #include <QtGui>
-
-#include "shadoweffect.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -98,7 +96,7 @@ void Lighting::setupScene()
 
             item->setPen(QPen(Qt::black));
             item->setBrush(QBrush(Qt::white));
-            item->setGraphicsEffect(new ShadowEffect(item, m_lightSource));
+            item->setGraphicsEffect(new QGraphicsDropShadowEffect);
             item->setZValue(1);
             item->setPos(i * 80, j * 80);
             m_scene.addItem(item);
@@ -114,6 +112,24 @@ void Lighting::animate()
     qreal xs = 200 * sin(angle) - 40 + 25;
     qreal ys = 200 * cos(angle) - 40 + 25;
     m_lightSource->setPos(xs, ys);
+
+    for (int i = 0; i < m_items.size(); ++i) {
+        QGraphicsItem *item = m_items.at(i);
+        Q_ASSERT(item);
+        QGraphicsDropShadowEffect *effect = static_cast<QGraphicsDropShadowEffect *>(item->graphicsEffect());
+        Q_ASSERT(effect);
+
+        QPointF delta(item->x() - xs, item->y() - ys);
+        effect->setOffset(delta.toPoint() / 30);
+
+        qreal dx = delta.x();
+        qreal dy = delta.y();
+        qreal dd = sqrt(dx * dx + dy * dy);
+        QColor color = effect->color();
+        color.setAlphaF(qBound(0.4, 1 - dd / 200.0, 0.7));
+        effect->setColor(color);
+    }
+
     m_scene.update();
 }
 

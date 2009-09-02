@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -411,6 +411,11 @@ void QProcessPrivate::Channel::clear()
     process = 0;
 }
 
+/*! \fn bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDirectory, qint64 *pid)
+  
+\internal
+ */
+
 /*!
     \class QProcess
 
@@ -532,7 +537,7 @@ void QProcessPrivate::Channel::clear()
 
     \snippet doc/src/snippets/process/process.cpp 0
 
-    \section1 Notes for Windows Users 
+    \section1 Notes for Windows Users
 
     Some Windows commands (for example, \c dir) are not provided by
     separate applications, but by the command interpreter itself.
@@ -1567,7 +1572,7 @@ void QProcess::setProcessEnvironment(const QProcessEnvironment &environment)
     \note The environment settings are ignored on Windows CE,
     as there is no concept of an environment.
 
-    \sa setProcessEnvironment(), setEnvironment(), QProcessEnvironment::isValid()
+    \sa setProcessEnvironment(), setEnvironment(), QProcessEnvironment::isEmpty()
 */
 QProcessEnvironment QProcess::processEnvironment() const
 {
@@ -1646,7 +1651,8 @@ bool QProcess::waitForBytesWritten(int msecs)
     has been emitted, or until \a msecs milliseconds have passed.
 
     Returns true if the process finished; otherwise returns false (if
-    the operation timed out or if an error occurred).
+    the operation timed out, if an error occurred, or if this QProcess
+    is already finished).
 
     This function can operate without an event loop. It is
     useful when writing non-GUI applications and when performing
@@ -2011,9 +2017,6 @@ void QProcess::terminate()
 
     On Windows, kill() uses TerminateProcess, and on Unix and Mac OS X, the
     SIGKILL signal is sent to the process.
-
-    \note Killing running processes from other processes will typically
-    cause a panic in Symbian due to platform security.
 
     \sa terminate()
 */

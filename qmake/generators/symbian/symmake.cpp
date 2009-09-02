@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -71,6 +71,12 @@
 #define MMP_TARGET "TARGET"
 #define MMP_TARGETTYPE "TARGETTYPE"
 #define MMP_SECUREID "SECUREID"
+
+#define SISX_TARGET "sisx"
+#define OK_SISX_TARGET "ok_sisx"
+#define FAIL_SISX_NOPKG_TARGET "fail_sisx_nopkg"
+#define FAIL_SISX_NOCACHE_TARGET "fail_sisx_nocache"
+#define RESTORE_BUILD_TARGET "restore_build"
 
 #define PRINT_FILE_CREATE_ERROR(filename) fprintf(stderr, "Error: Could not create '%s'\n", qPrintable(filename));
 
@@ -194,13 +200,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     }
 
     if (generatePkg) {
-        QStringList platformList = project->values("SYMBIAN_PLATFORMS");
-        foreach(QString platform, platformList) {
-            if (platform.compare("WINSCW", Qt::CaseInsensitive)) {
-                generatePkgFile(platform.toLower(), "udeb", iconFile);
-                generatePkgFile(platform.toLower(), "urel", iconFile);
-            }
-        }
+        generatePkgFile(iconFile);
     }
 
     writeBldInfContent(t, generatePkg);
@@ -246,9 +246,9 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
 
     if (targetType == TypeExe) {
         if (!project->values("CONFIG").contains("no_icon", Qt::CaseInsensitive)) {
-            writeRegRssFile(fixedTarget, userRssRules);
-            writeRssFile(fixedTarget, numberOfIcons, iconFile);
-            writeLocFile(fixedTarget, symbianLangCodes);
+            writeRegRssFile(userRssRules);
+            writeRssFile(numberOfIcons, iconFile);
+            writeLocFile(symbianLangCodes);
         }
     }
 
@@ -258,13 +258,10 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
     return true;
 }
 
-void SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QString &config, const QString &iconFile)
+void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile)
 {
-    QString build = (config == "udeb") ? "debug" : "release";
-    QString pkgFilename = QString("%1_%2-%3.%4")
-                          .arg(fileInfo(project->projectFile()).completeBaseName())
-                          .arg(build)
-                          .arg(compiler)
+    QString pkgFilename = QString("%1_template.%2")
+                          .arg(fixedTarget)
                           .arg("pkg");
     QFile pkgFile(pkgFilename);
     if (!pkgFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
@@ -313,8 +310,11 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QS
     QString applicationVersion = project->first("VERSION").isEmpty() ? "1,0,0" : project->first("VERSION").replace('.', ',');
 
     if (!containsStartWithItem('#', rawPkgPreRules)) {
+        QString visualTarget = escapeFilePath(fileFixify(project->first("TARGET")));
+        visualTarget = removePathSeparators(visualTarget);
+
         t << "; SIS header: name, uid, version" << endl;
-        t << QString("#{\"%1\"},(%2),%3").arg(fixedTarget).arg(uid3).arg(applicationVersion) << endl << endl;
+        t << QString("#{\"%1\"},(%2),%3").arg(visualTarget).arg(uid3).arg(applicationVersion) << endl << endl;
     }
 
     // Localized vendor name
@@ -344,10 +344,8 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QS
     QString installPathRegResource = "!:\\private\\10003a3f\\import\\apps";
 
     // Find location of builds
-    QString epocReleasePath = QString("%1epoc32/release/%2/%3")
-                              .arg(epocRoot())
-                              .arg(compiler)
-                              .arg(config);
+    QString epocReleasePath = QString("%1epoc32/release/$(PLATFORM)/$(TARGET)")
+                              .arg(epocRoot());
 
 
     if (targetType == TypeExe) {
@@ -391,7 +389,7 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &compiler, const QS
     QString remoteTestPath;
     remoteTestPath = QString("!:\\private\\%1").arg(privateDirUid);
 
-    initProjectDeploySymbian(project, depList, remoteTestPath, true, compiler, config, generatedDirs, generatedFiles);
+    initProjectDeploySymbian(project, depList, remoteTestPath, true, "$(PLATFORM)", "$(TARGET)", generatedDirs, generatedFiles);
     if (depList.size())
         t << "; DEPLOYMENT" << endl;
     for (int i = 0; i < depList.size(); ++i)  {
@@ -471,6 +469,7 @@ void SymbianMakefileGenerator::init()
     MakefileGenerator::init();
     fixedTarget = escapeFilePath(fileFixify(project->first("TARGET")));
     fixedTarget = removePathSeparators(fixedTarget);
+    removeSpecialCharacters(fixedTarget);
 
     if (0 != project->values("QMAKE_PLATFORM").size())
         platform = varGlue("QMAKE_PLATFORM", "", " ", "");
@@ -1187,9 +1186,9 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
     }
 }
 
-void SymbianMakefileGenerator::writeRegRssFile(QString &appName, QStringList &userItems)
+void SymbianMakefileGenerator::writeRegRssFile(QStringList &userItems)
 {
-    QString filename(appName);
+    QString filename(fixedTarget);
     filename.append("_reg.rss");
     QFile ft(filename);
     if (ft.open(QIODevice::WriteOnly)) {
@@ -1202,7 +1201,7 @@ void SymbianMakefileGenerator::writeRegRssFile(QString &appName, QStringList &us
         t << "// * user." << endl;
         t << "// ============================================================================" << endl;
         t << endl;
-        t << "#include <" << appName << ".rsg>" << endl;
+        t << "#include <" << fixedTarget << ".rsg>" << endl;
         t << "#include <appinfo.rh>" << endl;
         t << endl;
         //t << "#include <data_caging_paths.hrh>" << "\n" << endl;
@@ -1210,8 +1209,8 @@ void SymbianMakefileGenerator::writeRegRssFile(QString &appName, QStringList &us
         t << "UID3 " << uid3 << endl << endl;
         t << "RESOURCE APP_REGISTRATION_INFO" << endl;
         t << "\t{" << endl;
-        t << "\tapp_file=\"" << appName << "\";" << endl;
-        t << "\tlocalisable_resource_file=\"" RESOURCE_DIRECTORY_RESOURCE << appName << "\";" << endl;
+        t << "\tapp_file=\"" << fixedTarget << "\";" << endl;
+        t << "\tlocalisable_resource_file=\"" RESOURCE_DIRECTORY_RESOURCE << fixedTarget << "\";" << endl;
         t << endl;
 
         foreach(QString item, userItems)
@@ -1222,9 +1221,9 @@ void SymbianMakefileGenerator::writeRegRssFile(QString &appName, QStringList &us
     }
 }
 
-void SymbianMakefileGenerator::writeRssFile(QString &appName, QString &numberOfIcons, QString &iconFile)
+void SymbianMakefileGenerator::writeRssFile(QString &numberOfIcons, QString &iconFile)
 {
-    QString filename(appName);
+    QString filename(fixedTarget);
     filename.append(".rss");
     QFile ft(filename);
     if (ft.open(QIODevice::WriteOnly)) {
@@ -1238,7 +1237,7 @@ void SymbianMakefileGenerator::writeRssFile(QString &appName, QString &numberOfI
         t << "// ============================================================================" << endl;
         t << endl;
         t << "#include <appinfo.rh>" << endl;
-        t << "#include \"" << appName << ".loc\"" << endl;
+        t << "#include \"" << fixedTarget << ".loc\"" << endl;
         t << endl;
         t << "RESOURCE LOCALISABLE_APP_INFO r_localisable_app_info" << endl;
         t << "\t{" << endl;
@@ -1265,9 +1264,9 @@ void SymbianMakefileGenerator::writeRssFile(QString &appName, QString &numberOfI
     }
 }
 
-void SymbianMakefileGenerator::writeLocFile(QString &appName, QStringList &symbianLangCodes)
+void SymbianMakefileGenerator::writeLocFile(QStringList &symbianLangCodes)
 {
-    QString filename(appName);
+    QString filename(fixedTarget);
     filename.append(".loc");
     QFile ft(filename);
     if (ft.open(QIODevice::WriteOnly)) {
@@ -1281,18 +1280,16 @@ void SymbianMakefileGenerator::writeLocFile(QString &appName, QStringList &symbi
         t << "// ============================================================================" << endl;
         t << endl;
         t << "#ifdef LANGUAGE_SC" << endl;
-        //t << "#include \"" << appName << ".l01\"" << endl;
-        t << "#define STRING_r_short_caption \"" << appName  << "\"" << endl;
-        t << "#define STRING_r_caption \"" << appName  << "\"" << endl;
+        t << "#define STRING_r_short_caption \"" << fixedTarget  << "\"" << endl;
+        t << "#define STRING_r_caption \"" << fixedTarget  << "\"" << endl;
         foreach(QString lang, symbianLangCodes) {
             t << "#elif defined LANGUAGE_" << lang << endl;
-            //t << "#include \"" << appName << ".l" << lang << "\"" << endl;
-            t << "#define STRING_r_short_caption \"" << appName  << "\"" << endl;
-            t << "#define STRING_r_caption \"" << appName  << "\"" << endl;
+            t << "#define STRING_r_short_caption \"" << fixedTarget  << "\"" << endl;
+            t << "#define STRING_r_caption \"" << fixedTarget  << "\"" << endl;
         }
         t << "#else" << endl;
-        t << "#define STRING_r_short_caption \"" << appName  << "\"" << endl;
-        t << "#define STRING_r_caption \"" << appName  << "\"" << endl;
+        t << "#define STRING_r_short_caption \"" << fixedTarget  << "\"" << endl;
+        t << "#define STRING_r_caption \"" << fixedTarget  << "\"" << endl;
         t << "#endif" << endl;
     } else {
         PRINT_FILE_CREATE_ERROR(filename);
@@ -1635,6 +1632,44 @@ void SymbianMakefileGenerator::removeSpecialCharacters(QString& str)
     str.replace(QString(" "), QString("_"));
 }
 
+void SymbianMakefileGenerator::writeSisxTargets(QTextStream &t)
+{
+    t << SISX_TARGET ": " RESTORE_BUILD_TARGET << endl;
+    QString sisxcommand = QString("\t$(if $(wildcard %1_template.%2),$(if $(wildcard %3)," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %4,$(MAKE) -s -f $(MAKEFILE) %5)," \
+                                  "$(MAKE) -s -f $(MAKEFILE) %6)")
+                          .arg(fixedTarget)
+                          .arg("pkg")
+                          .arg(MAKE_CACHE_NAME)
+                          .arg(OK_SISX_TARGET)
+                          .arg(FAIL_SISX_NOCACHE_TARGET)
+                          .arg(FAIL_SISX_NOPKG_TARGET);    
+    t << sisxcommand << endl;         
+    t << endl;
+
+    t << OK_SISX_TARGET ":" << endl;
+
+    QString pkgcommand = QString("\tcreatepackage.bat $(QT_SISX_OPTIONS) %1_template.%2 $(QT_SISX_TARGET) " \
+                                 "$(QT_SISX_CERTIFICATE) $(QT_SISX_KEY) $(QT_SISX_PASSPHRASE)")
+                          .arg(fixedTarget)
+                          .arg("pkg");
+    t << pkgcommand << endl;
+    t << endl;
+    
+    t << FAIL_SISX_NOPKG_TARGET ":" << endl;  
+    t << "\t$(error PKG file does not exist, 'SISX' target is only supported for executables or projects with DEPLOYMENT statement)" << endl;  
+    t << endl;
+    
+    t << FAIL_SISX_NOCACHE_TARGET ":" << endl;  
+    t << "\t$(error Project has to be build before calling 'SISX' target)" << endl;  
+    t << endl;
+    
+
+    t << RESTORE_BUILD_TARGET ":" << endl;
+    t << "-include " MAKE_CACHE_NAME << endl;
+    t << endl;
+}
+
 void SymbianMakefileGenerator::generateDistcleanTargets(QTextStream& t)
 {
     t << "dodistclean:" << endl;
@@ -1688,4 +1723,3 @@ void SymbianMakefileGenerator::generateDistcleanTargets(QTextStream& t)
     t << "distclean: clean dodistclean" << endl;
     t << endl;
 }
-

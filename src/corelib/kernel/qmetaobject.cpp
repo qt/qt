@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -613,16 +613,26 @@ static const QMetaObject *QMetaObject_findMetaObject(const QMetaObject *self, co
         if (strcmp(self->d.stringdata, name) == 0)
             return self;
         if (self->d.extradata) {
+#ifdef Q_NO_DATA_RELOCATION
+            const QMetaObjectAccessor *e;
+            Q_ASSERT(priv(self->d.data)->revision >= 2);
+#else
             const QMetaObject **e;
             if (priv(self->d.data)->revision < 2) {
                 e = (const QMetaObject**)(self->d.extradata);
-            } else {
+            } else
+#endif
+            {
                 const QMetaObjectExtraData *extra = (const QMetaObjectExtraData*)(self->d.extradata);
                 e = extra->objects;
             }
             if (e) {
                 while (*e) {
+#ifdef Q_NO_DATA_RELOCATION
+                    if (const QMetaObject *m =QMetaObject_findMetaObject(&((*e)()), name))
+#else
                     if (const QMetaObject *m =QMetaObject_findMetaObject((*e), name))
+#endif
                         return m;
                     ++e;
                 }
@@ -933,7 +943,7 @@ QByteArray QMetaObject::normalizedType(const char *type)
     if (!type || !*type)
         return result;
 
-    QVarLengthArray<char> stackbuf((int)strlen(type));
+    QVarLengthArray<char> stackbuf(int(strlen(type)) + 1);
     qRemoveWhitespace(type, stackbuf.data());
     int templdepth = 0;
     qNormalizeType(stackbuf.data(), templdepth, result);
@@ -958,10 +968,9 @@ QByteArray QMetaObject::normalizedSignature(const char *method)
     if (!method || !*method)
         return result;
     int len = int(strlen(method));
-    char stackbuf[64];
-    char *buf = (len >= 64 ? new char[len+1] : stackbuf);
-    qRemoveWhitespace(method, buf);
-    char *d = buf;
+    QVarLengthArray<char> stackbuf(len + 1);
+    char *d = stackbuf.data();
+    qRemoveWhitespace(method, d);
 
     result.reserve(len);
 
@@ -977,8 +986,6 @@ QByteArray QMetaObject::normalizedSignature(const char *method)
         result += *d++;
     }
 
-    if (buf != stackbuf)
-        delete [] buf;
     return result;
 }
 

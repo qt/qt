@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -133,21 +133,22 @@ private:
 
 /*! \fn void QGesture::cancelled()
 
-    The signal is emitted when the gesture is cancelled, for example the reset()
-    function is called while the gesture was in the process of emitting a
-    triggered() signal.  Extended information about the gesture is contained in
-    the sender object.
+  The signal is emitted when the gesture is cancelled, for example the
+  reset() function is called while the gesture was in the process of
+  emitting a triggered() signal.  Extended information about the
+  gesture is contained in the sender object.
 */
 
-
 /*!
-    Creates a new gesture handler object and marks it as a child of \a parent.
+  Creates a new gesture handler object and marks it as a child of \a
+  parent.  \a gestureTarget is the object that the gesture will watch
+  for events.
 
-    The \a parent object is also the default event source for the gesture,
-    meaning that the gesture installs itself as an event filter for the \a
-    parent.
+  The \a parent object is also the default event source for the
+  gesture, meaning that the gesture installs itself as an event filter
+  for the \a parent.
 
-    \sa setGraphicsItem()
+  \sa setGraphicsItem()
 */
 QGesture::QGesture(QObject *gestureTarget, QObject *parent)
     : QObject(*new QGesturePrivate, parent)
@@ -173,7 +174,7 @@ QGesture::~QGesture()
 /*!
     \property QGesture::gestureTarget
 
-    Gesture target is the object that the gesture will observe for events.
+    Gesture target is the object that the gesture will watch for events.
     Typically this means that the gesture installs an event filter on the
     target object.
 */

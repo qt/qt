@@ -58,6 +58,10 @@
 #include "SamplingTool.h"
 #include <stdio.h>
 
+#ifdef QT_BUILD_SCRIPT_LIB
+#include "bridge/qscriptobject_p.h"
+#endif
+
 using namespace std;
 
 namespace JSC {
@@ -1470,7 +1474,11 @@ DEFINE_STUB_FUNCTION(JSObject*, op_construct_JSConstruct)
         structure = asObject(stackFrame.args[3].jsValue())->inheritorID();
     else
         structure = constructor->scope().node()->globalObject()->emptyObjectStructure();
+#ifdef QT_BUILD_SCRIPT_LIB
+    return new (stackFrame.globalData) QScriptObject(structure);
+#else
     return new (stackFrame.globalData) JSObject(structure);
+#endif
 }
 
 DEFINE_STUB_FUNCTION(EncodedJSValue, op_construct_NotJSConstruct)
@@ -2705,14 +2713,21 @@ DEFINE_STUB_FUNCTION(void, op_debug)
     int debugHookID = stackFrame.args[0].int32();
     int firstLine = stackFrame.args[1].int32();
     int lastLine = stackFrame.args[2].int32();
-#ifdef QT_BUILD_SCRIPT_LIB
     int column = stackFrame.args[3].int32();
-#else
-    int column = -1;
-#endif
 
     stackFrame.globalData->interpreter->debug(callFrame, static_cast<DebugHookID>(debugHookID), firstLine, lastLine, column);
 }
+
+#ifdef QT_BUILD_SCRIPT_LIB
+DEFINE_STUB_FUNCTION(void, op_debug_catch)
+{
+    STUB_INIT_STACK_FRAME(stackFrame);
+    CallFrame* callFrame = stackFrame.callFrame;
+    if (JSC::Debugger* debugger = callFrame->lexicalGlobalObject()->debugger() ) {
+        debugger->exceptionCatch(DebuggerCallFrame(callFrame), callFrame->codeBlock()->ownerNode()->sourceID());
+    }
+}
+#endif
 
 DEFINE_STUB_FUNCTION(EncodedJSValue, vm_throw)
 {

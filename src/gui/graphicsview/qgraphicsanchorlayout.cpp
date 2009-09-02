@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -65,8 +65,9 @@
     automatically added to the layout, and if items are removed, all their anchors will be
     automatically removed
 
-    \section1 Size Hints and Size Policies in QGraphicsLinearLayout
-    QGraphicsLinearLayout respects each item's size hints and size policies. However it does
+    \section1 Size Hints and Size Policies in QGraphicsAnchorLayout
+
+    QGraphicsAnchorLayout respects each item's size hints and size policies. However it does
     not respect stretch factors currently. This might change in the future, so please refrain
     from using stretch factors in anchor layout to avoid any future regressions.
 
@@ -83,6 +84,10 @@
 
 QT_BEGIN_NAMESPACE
 
+/*!
+    Constructs a QGraphicsAnchorLayout instance.  \a parent is passed to
+    QGraphicsLayout's constructor.
+  */
 QGraphicsAnchorLayout::QGraphicsAnchorLayout(QGraphicsLayoutItem *parent)
     : QGraphicsLayout(*new QGraphicsAnchorLayoutPrivate(), parent)
 {
@@ -90,6 +95,9 @@ QGraphicsAnchorLayout::QGraphicsAnchorLayout(QGraphicsLayoutItem *parent)
     d->createLayoutEdges();
 }
 
+/*!
+    Destroys the QGraphicsAnchorLayout object.
+*/
 QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
 {
     Q_D(QGraphicsAnchorLayout);
@@ -187,32 +195,41 @@ void QGraphicsAnchorLayout::addCornerAnchors(QGraphicsLayoutItem *firstItem,
 }
 
 /*!
-    \fn QGraphicsAnchorLayout::addLeftAndRightAnchors(QGraphicsLayoutItem *firstEdge, QGraphicsLayoutItem *secondEdge)
+    \fn QGraphicsAnchorLayout::addLeftAndRightAnchors(QGraphicsLayoutItem *firstItem, QGraphicsLayoutItem *secondItem)
+
+    Anchors the left and right edges of \a firstItem to the same edges of
+    \a secondItem.
 
     This convenience function is equivalent to calling
     \code
-    l->addAnchor(firstEdge, Qt::AnchorLeft, secondEdge, Qt::AnchorLeft);
-    l->addAnchor(firstEdge, Qt::AnchorRight, secondEdge, Qt::AnchorRight);
+    l->addAnchor(firstItem, Qt::AnchorLeft, secondItem, Qt::AnchorLeft);
+    l->addAnchor(firstItem, Qt::AnchorRight, secondItem, Qt::AnchorRight);
     \endcode
 */
 
 /*!
-    \fn QGraphicsAnchorLayout::addTopAndBottomAnchors(QGraphicsLayoutItem *firstEdge, QGraphicsLayoutItem *secondEdge)
+    \fn QGraphicsAnchorLayout::addTopAndBottomAnchors(QGraphicsLayoutItem *firstItem, QGraphicsLayoutItem *secondItem)
+
+    Anchors the top and bottom edges of \a firstItem to the same edges of
+    \a secondItem.
 
     This convenience function is equivalent to calling
     \code
-    l->addAnchor(firstEdge, Qt::AnchorTop, secondEdge, Qt::AnchorTop);
-    l->addAnchor(firstEdge, Qt::AnchorBottom, secondEdge, Qt::AnchorBottom);
+    l->addAnchor(firstItem, Qt::AnchorTop, secondItem, Qt::AnchorTop);
+    l->addAnchor(firstItem, Qt::AnchorBottom, secondItem, Qt::AnchorBottom);
     \endcode
 */
 
 /*!
-    \fn QGraphicsAnchorLayout::addAllAnchors(QGraphicsLayoutItem *firstEdge, QGraphicsLayoutItem *secondEdge)
+    \fn QGraphicsAnchorLayout::addAllAnchors(QGraphicsLayoutItem *firstItem, QGraphicsLayoutItem *secondItem)
+
+    Anchors all edges (left, right, top and bottom) of \a firstItem to the same edges of
+    \a secondItem.
 
     This convenience function is equivalent to calling
     \code
-    l->addLeftAndRightAnchors(firstEdge, secondEdge);
-    l->addTopAndBottomAnchors(firstEdge, secondEdge);
+    l->addLeftAndRightAnchors(firstItem, secondItem);
+    l->addTopAndBottomAnchors(firstItem, secondItem);
     \endcode
 */
 
@@ -228,6 +245,7 @@ void QGraphicsAnchorLayout::setAnchorSpacing(const QGraphicsLayoutItem *firstIte
 
     if (!d->setAnchorSize(firstItem, firstEdge, secondItem, secondEdge, &spacing)) {
         qWarning("setAnchorSpacing: The anchor does not exist.");
+        return;
     }
     invalidate();
 }
@@ -369,7 +387,12 @@ void QGraphicsAnchorLayout::setGeometry(const QRectF &geom)
 }
 
 /*!
+    Removes the layout item at \a index without destroying it. Ownership of
+    the item is transferred to the caller.
+
     Removing an item will also remove any of the anchors associated with it.
+
+    \sa itemAt(), count()
 */
 void QGraphicsAnchorLayout::removeAt(int index)
 {

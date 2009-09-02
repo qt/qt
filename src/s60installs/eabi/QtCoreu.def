@@ -3191,7 +3191,7 @@ EXPORTS
 	_ZN11QFinalStateD0Ev @ 3190 NONAME
 	_ZN11QFinalStateD1Ev @ 3191 NONAME
 	_ZN11QFinalStateD2Ev @ 3192 NONAME
-	_ZN11QMetaObject11isConnectedEP7QObjecti @ 3193 NONAME
+	_ZN11QMetaObject11isConnectedEP7QObjecti @ 3193 NONAME ABSENT
 	_ZN11QMetaObject8metacallEP7QObjectNS_4CallEiPPv @ 3194 NONAME
 	_ZN12QEasingCurve12setAmplitudeEf @ 3195 NONAME
 	_ZN12QEasingCurve12setOvershootEf @ 3196 NONAME
@@ -3320,7 +3320,7 @@ EXPORTS
 	_ZN16QEventTransition11qt_metacastEPKc @ 3319 NONAME
 	_ZN16QEventTransition12onTransitionEP6QEvent @ 3320 NONAME
 	_ZN16QEventTransition12setEventTypeEN6QEvent4TypeE @ 3321 NONAME
-	_ZN16QEventTransition14setEventObjectEP7QObject @ 3322 NONAME
+	_ZN16QEventTransition14setEventObjectEP7QObject @ 3322 NONAME ABSENT
 	_ZN16QEventTransition16staticMetaObjectE @ 3323 NONAME DATA 16
 	_ZN16QEventTransition5eventEP6QEvent @ 3324 NONAME
 	_ZN16QEventTransition9eventTestEP6QEvent @ 3325 NONAME
@@ -3547,8 +3547,8 @@ EXPORTS
 	_ZN6QStateD2Ev @ 3546 NONAME
 	_ZN7QStringC1EiN2Qt14InitializationE @ 3547 NONAME
 	_ZN7QStringC2EiN2Qt14InitializationE @ 3548 NONAME
-	_ZN8QProcess18setEnvironmentHashERK5QHashI7QStringS1_E @ 3549 NONAME
-	_ZN8QProcess21systemEnvironmentHashEv @ 3550 NONAME
+	_ZN8QProcess18setEnvironmentHashERK5QHashI7QStringS1_E @ 3549 NONAME ABSENT
+	_ZN8QProcess21systemEnvironmentHashEv @ 3550 NONAME ABSENT
 	_ZN9QConfFileD1Ev @ 3551 NONAME
 	_ZN9QConfFileD2Ev @ 3552 NONAME
 	_ZN9QTimeLine14setEasingCurveERK12QEasingCurve @ 3553 NONAME
@@ -3588,7 +3588,7 @@ EXPORTS
 	_ZNK15QPauseAnimation10metaObjectEv @ 3587 NONAME
 	_ZNK15QPauseAnimation8durationEv @ 3588 NONAME
 	_ZNK16QEventTransition10metaObjectEv @ 3589 NONAME
-	_ZNK16QEventTransition11eventObjectEv @ 3590 NONAME
+	_ZNK16QEventTransition11eventObjectEv @ 3590 NONAME ABSENT
 	_ZNK16QEventTransition9eventTypeEv @ 3591 NONAME
 	_ZNK17QSignalTransition10metaObjectEv @ 3592 NONAME
 	_ZNK17QSignalTransition12senderObjectEv @ 3593 NONAME
@@ -3643,7 +3643,7 @@ EXPORTS
 	_ZNK6QState12initialStateEv @ 3642 NONAME
 	_ZNK6QState9childModeEv @ 3643 NONAME
 	_ZNK7QPointF15manhattanLengthEv @ 3644 NONAME
-	_ZNK8QProcess15environmentHashEv @ 3645 NONAME
+	_ZNK8QProcess15environmentHashEv @ 3645 NONAME ABSENT
 	_ZNK8QVariant6toRealEPb @ 3646 NONAME
 	_ZNK8QVariant7toFloatEPb @ 3647 NONAME
 	_ZNK9QTimeLine11easingCurveEv @ 3648 NONAME
@@ -3694,4 +3694,33 @@ EXPORTS
 	_ZTV26QAbstractTransitionPrivate @ 3693 NONAME
 	_ZTV6QState @ 3694 NONAME
 	_Zls6QDebugRK12QEasingCurve @ 3695 NONAME
+	_Z12qt_s60GetRFsv @ 3696 NONAME
+	_Z21qt_regexp_toCanonicalRK7QStringN7QRegExp13PatternSyntaxE @ 3697 NONAME
+	_ZN16QEventTransition14setEventSourceEP7QObject @ 3698 NONAME
+	_ZN16QXmlStreamReader15readElementTextENS_24ReadElementTextBehaviourE @ 3699 NONAME
+	_ZN16QXmlStreamReader18skipCurrentElementEv @ 3700 NONAME
+	_ZN16QXmlStreamReader20readNextStartElementEv @ 3701 NONAME
+	_ZN19QProcessEnvironment17systemEnvironmentEv @ 3702 NONAME
+	_ZN19QProcessEnvironment5clearEv @ 3703 NONAME
+	_ZN19QProcessEnvironment6insertERK7QStringS2_ @ 3704 NONAME
+	_ZN19QProcessEnvironment6removeERK7QString @ 3705 NONAME
+	_ZN19QProcessEnvironmentC1ERKS_ @ 3706 NONAME
+	_ZN19QProcessEnvironmentC1Ev @ 3707 NONAME
+	_ZN19QProcessEnvironmentC2ERKS_ @ 3708 NONAME
+	_ZN19QProcessEnvironmentC2Ev @ 3709 NONAME
+	_ZN19QProcessEnvironmentD1Ev @ 3710 NONAME
+	_ZN19QProcessEnvironmentD2Ev @ 3711 NONAME
+	_ZN19QProcessEnvironmentaSERKS_ @ 3712 NONAME
+	_ZN8QProcess21setProcessEnvironmentERK19QProcessEnvironment @ 3713 NONAME
+	_ZN8QVariantC1EiPKvj @ 3714 NONAME
+	_ZN8QVariantC2EiPKvj @ 3715 NONAME
+	_ZNK14QObjectPrivate11signalIndexEPKc @ 3716 NONAME
+	_ZNK14QObjectPrivate17isSignalConnectedEi @ 3717 NONAME
+	_ZNK16QEventTransition11eventSourceEv @ 3718 NONAME
+	_ZNK19QProcessEnvironment12toStringListEv @ 3719 NONAME
+	_ZNK19QProcessEnvironment5valueERK7QStringS2_ @ 3720 NONAME
+	_ZNK19QProcessEnvironment7isEmptyEv @ 3721 NONAME
+	_ZNK19QProcessEnvironment8containsERK7QString @ 3722 NONAME
+	_ZNK19QProcessEnvironmenteqERKS_ @ 3723 NONAME
+	_ZNK8QProcess18processEnvironmentEv @ 3724 NONAME
 

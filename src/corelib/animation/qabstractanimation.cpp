@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -161,7 +161,9 @@ QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
 
-QUnifiedTimer::QUnifiedTimer() : QObject(), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL), consistentTiming(false)
+QUnifiedTimer::QUnifiedTimer() :
+    QObject(), lastTick(0), timingInterval(DEFAULT_TIMER_INTERVAL),
+    currentAnimationIdx(0), consistentTiming(false)
 {
 }
 
@@ -200,18 +202,19 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
         }
     } else if (event->timerId() == animationTimer.timerId()) {
         const int delta = lastTick - oldLastTick;
-        for (int i = 0; i < animations.count(); ++i) {
-            QAbstractAnimation *animation = animations.at(i);
+        for (currentAnimationIdx = 0; currentAnimationIdx < animations.count(); ++currentAnimationIdx) {
+            QAbstractAnimation *animation = animations.at(currentAnimationIdx);
             int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
                 + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
             animation->setCurrentTime(elapsed);
         }
+        currentAnimationIdx = 0;
     }
 }
 
 void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation)
 {
-    if (animations.contains(animation) ||animationsToStart.contains(animation))
+    if (animations.contains(animation) || animationsToStart.contains(animation))
         return;
     animationsToStart << animation;
     startStopAnimationTimer.start(0, this); // we delay the check if we should start/stop the global timer
@@ -219,8 +222,17 @@ void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation)
 
 void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
 {
-    animations.removeAll(animation);
-    animationsToStart.removeAll(animation);
+    Q_ASSERT(animations.count(animation) + animationsToStart.count(animation) <= 1);
+
+    int idx = animations.indexOf(animation);
+    if (idx != -1) {
+        animations.removeAt(idx);
+        // this is needed if we unregister an animation while its running
+        if (idx <= currentAnimationIdx)
+            --currentAnimationIdx;
+    } else {
+        animationsToStart.removeOne(animation);
+    }
     startStopAnimationTimer.start(0, this); // we delay the check if we should start/stop the global timer
 }
 
@@ -247,28 +259,33 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     }
 
     state = newState;
-    QPointer<QAbstractAnimation> guard(q);
+    QWeakPointer<QAbstractAnimation> guard(q);
 
-    guard->updateState(oldState, newState);
+    q->updateState(oldState, newState);
+    if (!guard)
+        return;
 
     //this is to be safe if updateState changes the state
     if (state == oldState)
         return;
 
     // Notify state change
-    if (guard)
-        emit guard->stateChanged(oldState, newState);
+    emit q->stateChanged(oldState, newState);
+    if (!guard)
+        return;
 
-    switch (state)
-    {
+    switch (state) {
     case QAbstractAnimation::Paused:
     case QAbstractAnimation::Running:
         //this ensures that the value is updated now that the animation is running
-        if(oldState == QAbstractAnimation::Stopped && guard)
-            guard->setCurrentTime(currentTime);
+        if(oldState == QAbstractAnimation::Stopped) {
+            q->setCurrentTime(currentTime);
+            if (!guard)
+                return;
+        }
 
         // Register timer if our parent is not running.
-        if (state == QAbstractAnimation::Running && guard) {
+        if (state == QAbstractAnimation::Running) {
             if (!group || group->state() == QAbstractAnimation::Stopped) {
                 QUnifiedTimer::instance()->registerAnimation(q);
             }
@@ -280,7 +297,10 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     case QAbstractAnimation::Stopped:
         // Leave running state.
         int dura = q->duration();
-        if (deleteWhenStopped && guard)
+        if (!guard)
+            return;
+
+        if (deleteWhenStopped)
             q->deleteLater();
 
         QUnifiedTimer::instance()->unregisterAnimation(q);
@@ -288,8 +308,7 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
         if (dura == -1 || loopCount < 0
             || (oldDirection == QAbstractAnimation::Forward && (oldCurrentTime * (oldCurrentLoop + 1)) == (dura * loopCount))
             || (oldDirection == QAbstractAnimation::Backward && oldCurrentTime == 0)) {
-                if (guard)
-                    emit q->finished();
+                emit q->finished();
         }
         break;
     }

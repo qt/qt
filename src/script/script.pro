@@ -10,8 +10,9 @@ unix:QMAKE_PKGCONFIG_REQUIRES = QtCore
 
 include(../qbase.pri)
 
-# disable JIT for now
-DEFINES += ENABLE_JIT=0
+# Disable a few warnings on Windows.
+win32-msvc*: QMAKE_CXXFLAGS += -wd4291 -wd4344 -wd4503 -wd4800 -wd4819 -wd4996 -wd4396 -wd4099
+
 # FIXME: shared the statically built JavaScriptCore
 
 # Fetch the base WebKit directory from the WEBKITDIR environment variable;

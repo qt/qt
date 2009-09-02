@@ -9,8 +9,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -21,20 +21,20 @@
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
 ** package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at http://qt.nokia.com/contact.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -82,8 +82,8 @@ public:
 
     bool depthTestEnabled;
     bool scissorTestEnabled;
-    qreal currentDepth;
-    qreal maxDepth;
+    uint maxDepth;
+    uint currentDepth;
 
     bool canRestoreClip;
     QRect rectangleClip;
@@ -133,11 +133,15 @@ public:
     inline const QOpenGL2PaintEngineState *state() const {
         return static_cast<const QOpenGL2PaintEngineState *>(QPaintEngineEx::state());
     }
-    virtual void sync();
+
+    void beginNativePainting();
+    void endNativePainting();
 
     const QGLContext* context();
 
     QPixmapFilter *createPixmapFilter(int type) const;
+
+    void setRenderTextActive(bool);
 
 private:
     Q_DISABLE_COPY(QGL2PaintEngineEx)
@@ -154,7 +158,8 @@ public:
             ctx(0),
             currentBrush(0),
             inverseScale(1),
-            shaderManager(0)
+            shaderManager(0),
+            inRenderText(false)
     { }
 
     ~QGL2PaintEngineExPrivate();
@@ -168,6 +173,7 @@ public:
     void setBrush(const QBrush* brush);
 
     void transferMode(EngineMode newMode);
+    void resetGLState();
 
     // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
     void fill(const QVectorPath &path);
@@ -187,6 +193,8 @@ public:
 
     inline void useSimpleShader();
     inline QColor premultiplyColor(QColor c, GLfloat opacity);
+
+    float zValueForRenderText() const;
 
     QGL2PaintEngineEx* q;
     QGLDrawable drawable;
@@ -222,12 +230,25 @@ public:
 
     QGLEngineShaderManager* shaderManager;
 
-    void writeClip(const QVectorPath &path, float depth);
+    void writeClip(const QVectorPath &path, uint depth);
     void updateDepthScissorTest();
     void setScissor(const QRect &rect);
     void regenerateDepthClip();
     void systemStateChanged();
     uint use_system_clip : 1;
+
+    static inline GLfloat rawDepth(uint depth)
+    {
+        // assume at least 16 bits in the depth buffer, and
+        // use 2^15 depth levels to be safe with regard to
+        // rounding issues etc
+        return depth * (1.0f / GLfloat((1 << 15) - 1));
+    }
+
+    static inline GLfloat normalizedDeviceDepth(uint depth)
+    {
+        return 2.0f * rawDepth(depth) - 1.0f;
+    }
 
     uint location(QGLEngineShaderManager::Uniform uniform)
     {
@@ -237,6 +258,7 @@ public:
     GLuint lastTexture;
 
     bool needsSync;
+    bool inRenderText;
 };
 
 QT_END_NAMESPACE

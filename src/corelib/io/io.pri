@@ -89,5 +89,6 @@ win32 {
         symbian {
             SOURCES += io/qfilesystemwatcher_symbian.cpp
             HEADERS += io/qfilesystemwatcher_symbian_p.h
+            contains(QT_CONFIG, s60): LIBS += -lplatformenv
         }
 }
