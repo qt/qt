@@ -50,6 +50,7 @@ Node::Node(const QPointF &pos, QGraphicsItem *parent)
   : QGraphicsItem(parent), m_dragging(false)
 {
     setPos(pos);
+    setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
 
 Node::~Node()
