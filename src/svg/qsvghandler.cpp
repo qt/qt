@@ -65,7 +65,6 @@
 #include "qmath.h"
 #include "qnumeric.h"
 #include "qvarlengtharray.h"
-#include "private/qcolor_p.h"
 #include "private/qmath_p.h"
 
 #include "float.h"
@@ -76,6 +75,77 @@ static const char *qt_inherit_text = "inherit";
 #define QT_INHERIT QLatin1String(qt_inherit_text)
 
 double qstrtod(const char *s00, char const **se, bool *ok);
+
+// ======== duplicated from qcolor_p
+
+static inline int h2i(char hex)
+{
+    if (hex >= '0' && hex <= '9')
+        return hex - '0';
+    if (hex >= 'a' && hex <= 'f')
+        return hex - 'a' + 10;
+    if (hex >= 'A' && hex <= 'F')
+        return hex - 'A' + 10;
+    return -1;
+}
+
+static inline int hex2int(const char *s)
+{
+    return (h2i(s[0]) << 4) | h2i(s[1]);
+}
+
+static inline int hex2int(char s)
+{
+    int h = h2i(s);
+    return (h << 4) | h;
+}
+
+bool qt_get_hex_rgb(const char *name, QRgb *rgb)
+{
+    if(name[0] != '#')
+        return false;
+    name++;
+    int len = qstrlen(name);
+    int r, g, b;
+    if (len == 12) {
+        r = hex2int(name);
+        g = hex2int(name + 4);
+        b = hex2int(name + 8);
+    } else if (len == 9) {
+        r = hex2int(name);
+        g = hex2int(name + 3);
+        b = hex2int(name + 6);
+    } else if (len == 6) {
+        r = hex2int(name);
+        g = hex2int(name + 2);
+        b = hex2int(name + 4);
+    } else if (len == 3) {
+        r = hex2int(name[0]);
+        g = hex2int(name[1]);
+        b = hex2int(name[2]);
+    } else {
+        r = g = b = -1;
+    }
+    if ((uint)r > 255 || (uint)g > 255 || (uint)b > 255) {
+        *rgb = 0;
+        return false;
+    }
+    *rgb = qRgb(r, g ,b);
+    return true;
+}
+
+bool qt_get_hex_rgb(const QChar *str, int len, QRgb *rgb)
+{
+    if (len > 13)
+        return false;
+    char tmp[16];
+    for(int i = 0; i < len; ++i)
+        tmp[i] = str[i].toLatin1();
+    tmp[len] = 0;
+    return qt_get_hex_rgb(tmp, rgb);
+}
+
+// ======== end of qcolor_p duplicate
 
 static bool parsePathDataFast(const QStringRef &data, QPainterPath &path);
 
