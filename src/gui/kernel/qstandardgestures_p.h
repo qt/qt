@@ -89,7 +89,7 @@ class QPinchGesturePrivate : public QGesturePrivate
 
 public:
     QPinchGesturePrivate()
-        : totalScaleFactor(0.), lastScaleFactor(0.), scaleFactor(0.),
+        : changes(0), totalScaleFactor(0.), lastScaleFactor(0.), scaleFactor(0.),
           totalRotationAngle(0.), lastRotationAngle(0.), rotationAngle(0.)
 #ifdef Q_WS_WIN
           ,initialDistance(0), lastSequenceId(0)
@@ -98,6 +98,8 @@ public:
     }
 
     void setupGestureTarget(QObject *o);
+
+    QPinchGesture::WhatChanged changes;
 
     qreal totalScaleFactor; // total scale factor, excluding the current sequence.
     qreal lastScaleFactor;

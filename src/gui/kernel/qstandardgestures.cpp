@@ -413,6 +413,7 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
             // next we might receive the first gesture update event, so we
             // prepare for it.
             d->state = Qt::NoGesture;
+            d->changes = 0;
             d->totalScaleFactor = d->scaleFactor = d->lastScaleFactor = 1.;
             d->totalRotationAngle = d->rotationAngle = d->lastRotationAngle = 0.;
             d->startCenterPoint = d->centerPoint = d->lastCenterPoint = QPointF();
@@ -460,6 +461,7 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
             if (!windowsRotateWorkaround)
                 nextState = Qt::GestureUpdated;
 #endif
+            d->changes = QPinchGesture::RotationAngleChanged;
             event->accept();
             break;
         }
@@ -484,6 +486,7 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
             d->scaleFactor += ev->percentage;
 #endif
             nextState = Qt::GestureUpdated;
+            d->changes = QPinchGesture::ScaleFactorChanged;
             event->accept();
             break;
         case QNativeGestureEvent::GestureEnd:
@@ -498,6 +501,8 @@ bool QPinchGesture::eventFilter(QObject *receiver, QEvent *event)
             d->startCenterPoint = d->centerPoint;
         d->lastCenterPoint = d->centerPoint;
         d->centerPoint = static_cast<QWidget*>(receiver)->mapFromGlobal(ev->position);
+        if (d->lastCenterPoint != d->centerPoint)
+            d->changes |= QPinchGesture::CenterPointChanged;
         updateState(nextState);
         return true;
     }
@@ -523,10 +528,21 @@ bool QPinchGesture::filterEvent(QEvent *event)
 void QPinchGesture::reset()
 {
     Q_D(QPinchGesture);
+    d->changes = 0;
     d->totalScaleFactor = d->scaleFactor = d->lastScaleFactor = 1.;
     d->totalRotationAngle = d->rotationAngle = d->lastRotationAngle = 0.;
     d->startCenterPoint = d->centerPoint = d->lastCenterPoint = QPointF();
     QGesture::reset();
+}
+
+/*!
+    \property QPinchGesture::whatChanged
+
+    Specifies which values were changed in the gesture.
+*/
+QPinchGesture::WhatChanged QPinchGesture::whatChanged() const
+{
+    return d_func()->changes;
 }
 
 /*!

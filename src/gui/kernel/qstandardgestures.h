@@ -89,6 +89,16 @@ class Q_GUI_EXPORT QPinchGesture : public QGesture
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPinchGesture)
 
+public:
+    enum WhatChange {
+        ScaleFactorChanged = 0x1,
+        RotationAngleChanged = 0x2,
+        CenterPointChanged = 0x4
+    };
+    Q_DECLARE_FLAGS(WhatChanged, WhatChange)
+
+    Q_PROPERTY(WhatChanged whatChanged READ whatChanged)
+
     Q_PROPERTY(qreal totalScaleFactor READ totalScaleFactor)
     Q_PROPERTY(qreal lastScaleFactor READ lastScaleFactor)
     Q_PROPERTY(qreal scaleFactor READ scaleFactor)
@@ -102,10 +112,13 @@ class Q_GUI_EXPORT QPinchGesture : public QGesture
     Q_PROPERTY(QPointF centerPoint READ centerPoint)
 
 public:
+
     QPinchGesture(QWidget *gestureTarget, QObject *parent = 0);
 
     bool filterEvent(QEvent *event);
     void reset();
+
+    WhatChanged whatChanged() const;
 
     QPointF startCenterPoint() const;
     QPointF lastCenterPoint() const;
