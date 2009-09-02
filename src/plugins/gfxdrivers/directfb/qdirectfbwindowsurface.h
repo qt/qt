@@ -95,6 +95,7 @@ public:
     IDirectFBSurface *directFBSurface() const;
 private:
     void updateFormat();
+    void releaseSurface();
     QDirectFBWindowSurface *sibling;
 
 #ifdef QT_DIRECTFB_WM

@@ -100,6 +100,8 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 
 QDirectFBWindowSurface::~QDirectFBWindowSurface()
 {
+    releaseSurface();
+    // these are not tracked by QDirectFBScreen so we don't want QDirectFBPaintDevice to release it
 }
 
 bool QDirectFBWindowSurface::isValid() const
@@ -453,6 +455,24 @@ void QDirectFBWindowSurface::updateFormat()
 {
     imageFormat = dfbSurface ? QDirectFBScreen::getImageFormat(dfbSurface) : QImage::Format_Invalid;
 }
+
+void QDirectFBWindowSurface::releaseSurface()
+{
+    if (dfbSurface) {
+#ifdef QT_NO_DIRECTFB_SUBSURFACE
+        if (lockFlgs)
+            unlockSurface();
+#endif
+#ifdef QT_NO_DIRECTFB_WM
+        Q_ASSERT(screen->primarySurface());
+        if (dfbSurface != screen->primarySurface())
+#endif
+
+            dfbSurface->Release(dfbSurface);
+        dfbSurface = 0;
+    }
+}
+
 
 QT_END_NAMESPACE
 
