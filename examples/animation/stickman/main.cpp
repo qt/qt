@@ -84,7 +84,11 @@ int main(int argc, char **argv)
     view->setScene(scene);
     view->show();
     view->setFocus();
-    view->setSceneRect(scene->sceneRect());
+
+    QRectF sceneRect = scene->sceneRect();
+    // making enough room in the scene for stickman to jump and die
+    view->resize(sceneRect.width() + 100, sceneRect.height() + 100);
+    view->setSceneRect(sceneRect);
 
     LifeCycle *cycle = new LifeCycle(stickMan, view);
     cycle->setDeathAnimation(":/animations/dead");
