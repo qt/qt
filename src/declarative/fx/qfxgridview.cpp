@@ -1069,7 +1069,7 @@ qreal QFxGridView::maxXExtent() const
 void QFxGridView::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QFxGridView);
-    if (d->model && d->model->count() && !d->locked) {
+    if (d->model && d->model->count() && d->interactive) {
         if ((d->flow == QFxGridView::LeftToRight && event->key() == Qt::Key_Up)
             || (d->flow == QFxGridView::TopToBottom && event->key() == Qt::Key_Left)) {
             if (currentIndex() >= d->columns || d->wrap) {

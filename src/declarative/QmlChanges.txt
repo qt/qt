@@ -1,7 +1,7 @@
 QML API Review
 ==============
 
-The QML API is being reviewed from 17 to 28 August 2009.  This
+The QML API is being reviewed from 17 to 4 September 2009.  This
 file documents the changes. Note that the changes are incremental,
 so a rename A->B for example may be follow by another subseqent
 rename B->C, if later reviews override earlier reviews.
@@ -47,6 +47,7 @@ Flickable: yPosition   -> viewportY
 Flickable: xVelocity   -> horizontalVelocity
 Flickable: yVelocity   -> verticalVelocity
 Flickable: velocityDecay -> reportedVelocitySmoothing
+Flickable: locked      -> interactive (note reversal of meaning)
 WebView: idealWidth    -> preferredWidth
 WebView: idealHeight   -> preferredHeight
 WebView: status        -> statusText

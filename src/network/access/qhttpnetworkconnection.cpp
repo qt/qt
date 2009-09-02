@@ -425,32 +425,25 @@ void QHttpNetworkConnectionPrivate::dequeueAndSendRequest(QAbstractSocket *socke
     int i = indexOf(socket);
 
     if (!highPriorityQueue.isEmpty()) {
-        for (int j = highPriorityQueue.count() - 1; j >= 0; --j) {
-            HttpMessagePair &messagePair = highPriorityQueue[j];
-            if (!messagePair.second->d_func()->requestIsPrepared)
-                prepareRequest(messagePair);
-
-            channels[i].request = messagePair.first;
-            channels[i].reply = messagePair.second;
-            // remove before sendRequest! else we might pipeline the same request again
-            highPriorityQueue.removeAt(j);
-            channels[i].sendRequest();
-            return;
-        }
+        // remove from queue before sendRequest! else we might pipeline the same request again
+        HttpMessagePair messagePair = highPriorityQueue.takeLast();
+        if (!messagePair.second->d_func()->requestIsPrepared)
+            prepareRequest(messagePair);
+        channels[i].request = messagePair.first;
+        channels[i].reply = messagePair.second;
+        channels[i].sendRequest();
+        return;
     }
 
     if (!lowPriorityQueue.isEmpty()) {
-        for (int j = lowPriorityQueue.count() - 1; j >= 0; --j) {
-            HttpMessagePair &messagePair = lowPriorityQueue[j];
-            if (!messagePair.second->d_func()->requestIsPrepared)
-                prepareRequest(messagePair);
-            channels[i].request = messagePair.first;
-            channels[i].reply = messagePair.second;
-            // remove before sendRequest! else we might pipeline the same request again
-            lowPriorityQueue.removeAt(j);
-            channels[i].sendRequest();
-            return;
-        }
+        // remove from queue before sendRequest! else we might pipeline the same request again
+        HttpMessagePair messagePair = lowPriorityQueue.takeLast();
+        if (!messagePair.second->d_func()->requestIsPrepared)
+            prepareRequest(messagePair);
+        channels[i].request = messagePair.first;
+        channels[i].reply = messagePair.second;
+        channels[i].sendRequest();
+        return;
     }
 }
 
@@ -519,7 +512,7 @@ bool QHttpNetworkConnectionPrivate::fillPipeline(QList<HttpMessagePair> &queue, 
     if (queue.isEmpty())
         return true;
 
-    for (int i = 0; i < queue.length(); i++) {
+    for (int i = queue.count() - 1; i >= 0; --i) {
         HttpMessagePair messagePair = queue.at(i);
         const QHttpNetworkRequest &request = messagePair.first;
 

@@ -139,6 +139,10 @@ embedded {
 		SOURCES += embedded/qscreentransformed_qws.cpp
 	}
 
+	contains( gfx-drivers, directfb ) {
+		INCLUDEPATH += $$QT_SOURCE_TREE/src/plugins/gfxdrivers/directfb
+                include($$PWD/directfb.pri)
+	}
 #
 # Keyboard drivers
 #

@@ -1344,7 +1344,7 @@ qreal QFxListView::maxXExtent() const
 void QFxListView::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QFxListView);
-    if (d->model && d->model->count() && !d->locked) {
+    if (d->model && d->model->count() && d->interactive) {
         if ((d->orient == Qt::Horizontal && event->key() == Qt::Key_Left)
                     || (d->orient == Qt::Vertical && event->key() == Qt::Key_Up)) {
             if (currentIndex() > 0 || d->wrap) {

@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,28 +39,17 @@
 **
 ****************************************************************************/
 
-#ifndef SHADOWEFFECT_H
-#define SHADOWEFFECT_H
+#ifndef TEXTINFORMATIONITEM_H
+#define TEXTINFORMATIONITEM_H
 
-#include <QGraphicsEffect>
-#include <QGraphicsItem>
+//Qt
+#include <QtGui/QGraphicsTextItem>
 
-class ShadowEffect: public QGraphicsDropShadowEffect
+class TextInformationItem : public QGraphicsTextItem
 {
 public:
-    ShadowEffect(QGraphicsItem *item, QGraphicsItem *source);
-
-    QRectF boundingRectFor(const QRectF &rect) const;
-
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
-
-private:
-    void adjustForItem();
-
-private:
-    QColor m_color;
-    QGraphicsItem *item;
-    QGraphicsItem *m_lightSource;
+    TextInformationItem(QGraphicsItem * parent = 0);
+    void setMessage(const QString& text);
 };
 
-#endif // SHADOWEFFECT_H
+#endif // TEXTINFORMATIONITEM_H

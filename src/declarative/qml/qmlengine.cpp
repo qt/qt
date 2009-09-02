@@ -652,7 +652,7 @@ QScriptValue QmlEnginePrivate::qmlScriptObject(QObject* object,
                                                QmlEngine* engine)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
-    return scriptEngine->newObject(new QmlObjectScriptClass(engine), scriptEngine->newQObject(object));
+    return scriptEngine->newObject(engine->d_func()->objectClass, scriptEngine->newQObject(object, QScriptEngine::AutoOwnership));
 }
 
 /*!

@@ -389,10 +389,19 @@ bool QNativeSocketEngine::initialize(QAbstractSocket::SocketType socketType, QAb
         qWarning("QNativeSocketEngine::initialize unable to inline out-of-band data");
     }
 
-    // Set the send and receive buffer sizes to a magic size, found
-    // most optimal for our platforms.
-    setReceiveBufferSize(49152);
-    setSendBufferSize(49152);
+    // Before Qt 4.6, we always set the send and receive buffer size to 49152 as
+    // this was found to be an optimal value. However, modern OS
+    // all have some kind of auto tuning for this and we therefore don't set
+    // this explictly anymore.
+    // If it introduces any performance regressions for Qt 4.6.x (x > 0) then
+    // it will be put back in.
+    //
+    // You can use tests/manual/qhttpnetworkconnection to test HTTP download speed
+    // with this.
+    //
+    // pre-4.6:
+    // setReceiveBufferSize(49152);
+    // setSendBufferSize(49152);
 
     d->socketType = socketType;
     d->socketProtocol = protocol;

@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,39 +38,17 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "textinformationitem.h"
+#include "pixmapitem.h"
 
-#include "shadoweffect.h"
-
-#include <math.h>
-
-ShadowEffect::ShadowEffect(QGraphicsItem *item, QGraphicsItem *source)
-    : QGraphicsDropShadowEffect()
-    , item(item), m_lightSource(source)
+TextInformationItem::TextInformationItem (QGraphicsItem * parent)
+    : QGraphicsTextItem(parent)
 {
-    setBlurRadius(8);
-    m_color = color();
+    setFont(QFont("Comic Sans MS", 25));
 }
-
-void ShadowEffect::adjustForItem()
+#include <QDebug>
+void TextInformationItem::setMessage(const QString& text)
 {
-    QPointF delta = item->pos() - m_lightSource->pos();
-    setOffset(delta.toPoint() / 30);
-
-    qreal dx = delta.x();
-    qreal dy = delta.y();
-    qreal dd = sqrt(dx * dx + dy * dy);
-    m_color.setAlphaF(qBound(0.4, 1 - dd / 200.0, 0.7));
-    setColor(m_color);
-}
-
-QRectF ShadowEffect::boundingRectFor(const QRectF &rect) const
-{
-    const_cast<ShadowEffect *>(this)->adjustForItem();
-    return QGraphicsDropShadowEffect::boundingRectFor(rect);
-}
-
-void ShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
-{
-    adjustForItem();
-    QGraphicsDropShadowEffect::draw(painter, source);
+    setHtml(text);
+    setPos(parentItem()->boundingRect().center().x() - boundingRect().size().width()/2 , parentItem()->boundingRect().center().y());
 }

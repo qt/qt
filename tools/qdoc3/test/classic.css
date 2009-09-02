@@ -254,7 +254,6 @@ span.string,span.char
 }
 
 .qmltype {
-   // font-weight: bold;
     text-align: center;
     font-size: 160%;
 }
