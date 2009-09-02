@@ -823,12 +823,11 @@ void QCompleterPrivate::_q_complete(QModelIndex index, bool highlighted)
     Q_Q(QCompleter);
     QString completion;
 
-    if (!(index.flags() & Qt::ItemIsEnabled))
-        return;
-
     if (!index.isValid() || (!proxy->showAll && (index.row() >= proxy->engine->matchCount()))) {
         completion = prefix;
     } else {
+        if (!(index.flags() & Qt::ItemIsEnabled))
+            return;
         QModelIndex si = proxy->mapToSource(index);
         si = si.sibling(si.row(), column); // for clicked()
         completion = q->pathFromIndex(si);
