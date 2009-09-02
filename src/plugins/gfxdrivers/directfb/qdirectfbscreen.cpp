@@ -1209,7 +1209,11 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
                       "Unable to get screen!", result);
         return false;
     }
+#ifdef QT_NO_DIRECTFB_WM
+    result = d_ptr->primarySurface->GetSize(d_ptr->primarySurface, &w, &h);
+#else
     result = d_ptr->dfbScreen->GetSize(d_ptr->dfbScreen, &w, &h);
+#endif
     if (result != DFB_OK) {
         DirectFBError("QDirectFBScreen::connect: "
                       "Unable to get screen size!", result);
