@@ -128,6 +128,7 @@ void QDirectFBPaintDevice::unlockSurface()
         if (surface) {
             surface->Unlock(surface);
             lockFlgs = static_cast<DFBSurfaceLockFlags>(0);
+            mem = 0;
         }
     }
 }
