@@ -1209,18 +1209,41 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
                       "Unable to get screen!", result);
         return false;
     }
-#ifdef QT_NO_DIRECTFB_WM
-    result = d_ptr->primarySurface->GetSize(d_ptr->primarySurface, &w, &h);
-#else
-    result = d_ptr->dfbScreen->GetSize(d_ptr->dfbScreen, &w, &h);
-#endif
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBScreen::connect: "
-                      "Unable to get screen size!", result);
-        return false;
+    const QString qws_size = qgetenv("QWS_SIZE");
+    if (!qws_size.isEmpty()) {
+        QRegExp rx(QLatin1String("(\\d+)x(\\d+)"));
+        if (!rx.exactMatch(qws_size)) {
+            qWarning("QDirectFBScreen::connect: Can't parse QWS_SIZE=\"%s\"", qPrintable(qws_size));
+        } else {
+            int *ints[2] = { &w, &h };
+            for (int i=0; i<2; ++i) {
+                *ints[i] = rx.cap(i + 1).toInt();
+                if (*ints[i] <= 0) {
+                    qWarning("QDirectFBScreen::connect: %s is not a positive integer",
+                             qPrintable(rx.cap(i + 1)));
+                    w = h = 0;
+                    break;
+                }
+            }
+        }
     }
+
     setIntOption(displayArgs, QLatin1String("width"), &w);
     setIntOption(displayArgs, QLatin1String("height"), &h);
+
+    if (w <= 0 || h <= 0) {
+#ifdef QT_NO_DIRECTFB_WM
+        result = d_ptr->primarySurface->GetSize(d_ptr->primarySurface, &w, &h);
+#else
+        result = d_ptr->dfbScreen->GetSize(d_ptr->dfbScreen, &w, &h);
+#endif
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreen::connect: "
+                          "Unable to get screen size!", result);
+            return false;
+        }
+    }
+
 
     dw = w;
     dh = h;
