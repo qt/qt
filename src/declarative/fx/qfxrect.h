@@ -136,7 +136,6 @@ class Q_DECLARATIVE_EXPORT QFxRect : public QFxItem
     Q_OBJECT
 
     Q_PROPERTY(QColor color READ color WRITE setColor)
-    Q_PROPERTY(QColor tintColor READ tintColor WRITE setTintColor)
     Q_PROPERTY(QFxGradient *gradient READ gradient WRITE setGradient)
     Q_PROPERTY(QFxPen * border READ border)
     Q_PROPERTY(qreal radius READ radius WRITE setRadius)
@@ -145,9 +144,6 @@ public:
 
     QColor color() const;
     void setColor(const QColor &);
-
-    QColor tintColor() const;
-    void setTintColor(const QColor &);
 
     QFxPen *border();
 

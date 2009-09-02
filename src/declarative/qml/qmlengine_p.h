@@ -219,6 +219,10 @@ public:
     static QScriptValue size(QScriptContext*, QScriptEngine*);
     static QScriptValue rect(QScriptContext*, QScriptEngine*);
 
+    static QScriptValue lighter(QScriptContext*, QScriptEngine*);
+    static QScriptValue darker(QScriptContext*, QScriptEngine*);
+    static QScriptValue tint(QScriptContext*, QScriptEngine*);
+
     static QScriptEngine *getScriptEngine(QmlEngine *e) { return &e->d_func()->scriptEngine; }
     static QmlEngine *getEngine(QScriptEngine *e) { return static_cast<QmlScriptEngine*>(e)->p->q_func(); }
     static QmlEnginePrivate *get(QmlEngine *e) { return e->d_func(); }
