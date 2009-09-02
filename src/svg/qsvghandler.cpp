@@ -127,7 +127,6 @@ struct QSvgAttributes
 
 QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHandler *handler)
 {
-    id = someId(xmlAttributes);
     QStringRef style = xmlAttributes.value(QLatin1String("style"));
     if (!style.isEmpty()) {
         handler->parseCSStoXMLAttrs(style.toString(), &m_cssAttributes);
@@ -268,6 +267,11 @@ QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHa
                 fontVariant = value;
             break;
 
+        case 'i':
+            if (name == QLatin1String("id"))
+                id = value.toString();
+            break;
+
         case 'o':
             if (name == QLatin1String("opacity"))
                 opacity = value;
@@ -315,15 +319,17 @@ QSvgAttributes::QSvgAttributes(const QXmlStreamAttributes &xmlAttributes, QSvgHa
                 visibility = value;
             break;
 
+        case 'x':
+            if (name == QLatin1String("xml:id") && id.isEmpty())
+                id = value.toString();
+            break;
+
         default:
             break;
         }
     }
 
 }
-
-static inline QString someId(const QSvgAttributes &attributes)
-{ return attributes.id; }
 
 static const char * QSvgStyleSelector_nodeString[] = {
     "svg",
@@ -949,7 +955,7 @@ static void parseBrush(QSvgNode *node,
                 prop->setBrush(QBrush(Qt::NoBrush));
             }
         }
-        node->appendStyleProperty(prop, someId(attributes));
+        node->appendStyleProperty(prop, attributes.id);
     }
 }
 
@@ -1185,7 +1191,7 @@ static void parsePen(QSvgNode *node,
         if (!attributes.strokeOpacity.isEmpty() && attributes.strokeOpacity != QT_INHERIT)
             prop->setOpacity(qMin(qreal(1.0), qMax(qreal(0.0), toDouble(attributes.strokeOpacity))));
 
-        node->appendStyleProperty(prop, someId(attributes));
+        node->appendStyleProperty(prop, attributes.id);
     }
 }
 
@@ -1259,7 +1265,7 @@ static void parseFont(QSvgNode *node,
            fontStyle->setTextAnchor(Qt::AlignRight);
     }
 
-    node->appendStyleProperty(fontStyle, someId(attributes));
+    node->appendStyleProperty(fontStyle, attributes.id);
 }
 
 static void parseTransform(QSvgNode *node,
@@ -1271,7 +1277,7 @@ static void parseTransform(QSvgNode *node,
     QMatrix matrix = parseTransformationMatrix(trimRef(attributes.transform));
 
     if (!matrix.isIdentity()) {
-        node->appendStyleProperty(new QSvgTransformStyle(QTransform(matrix)), someId(attributes));
+        node->appendStyleProperty(new QSvgTransformStyle(QTransform(matrix)), attributes.id);
     }
 
 }
@@ -1974,7 +1980,7 @@ static void parseOpacity(QSvgNode *node,
 
     if (ok) {
         QSvgOpacityStyle *opacity = new QSvgOpacityStyle(qBound(qreal(0.0), op, qreal(1.0)));
-        node->appendStyleProperty(opacity, someId(attributes));
+        node->appendStyleProperty(opacity, attributes.id);
     }
 }
 
@@ -2046,7 +2052,7 @@ static void parseCompOp(QSvgNode *node,
 
     if (!value.isEmpty()) {
         QSvgCompOpStyle *compop = new QSvgCompOpStyle(svgToQtCompositionMode(value));
-        node->appendStyleProperty(compop, someId(attributes));
+        node->appendStyleProperty(compop, attributes.id);
     }
 }
 
