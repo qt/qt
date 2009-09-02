@@ -104,9 +104,9 @@ Rectangle {
                         // Make the detailed view fill the entire list area
                         PropertyChanges { target: wrapper; height: List.height }
                         // Move the list so that this item is at the top.
-                        PropertyChanges { target: wrapper.ListView.view; explicit: true; yPosition: wrapper.y }
+                        PropertyChanges { target: wrapper.ListView.view; explicit: true; viewportY: wrapper.y }
                         // Disallow flicking while we're in detailed view
-                        PropertyChanges { target: wrapper.ListView.view; locked: 1 }
+                        PropertyChanges { target: wrapper.ListView.view; interactive: false }
                     }
                 ]
                 transitions: [
@@ -115,7 +115,7 @@ Rectangle {
                         ParallelAnimation {
                             ColorAnimation { property: "color"; duration: 500 }
                             NumberAnimation {
-                                duration: 300; properties: "detailsOpacity,x,yPosition,height,width"
+                                duration: 300; properties: "detailsOpacity,x,viewportY,height,width"
                             }
                         }
                     }

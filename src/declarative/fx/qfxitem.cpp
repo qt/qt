@@ -928,7 +928,7 @@ private:
     virtual void keyPressed(QKeyEvent *event);
     virtual void keyReleased(QKeyEvent *event);
 
-    const char *keyToSignal(int key) {
+    const QByteArray keyToSignal(int key) {
         QByteArray keySignal;
         if (key >= Qt::Key_0 && key <= Qt::Key_9) {
             keySignal = "digit0Pressed";

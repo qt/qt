@@ -114,7 +114,6 @@ public:
     QPODVector<CapturedProperty> capturedProperties;
 
     QmlContext *rootContext;
-    QmlContext *currentBindContext; // ### Remove me
     QmlExpression *currentExpression;
     bool isDebugging;
 #ifdef QT_SCRIPTTOOLS_LIB
@@ -127,9 +126,6 @@ public:
     // Used by DOM Core 3 API
     QScriptClass *nodeListClass;
     QScriptClass *namedNodeMapClass;
-
-    QmlContext *setCurrentBindContext(QmlContext *);
-    QStack<QmlContext *> activeContexts; // ### Remove me
 
     struct QmlScriptEngine : public QScriptEngine
     {
@@ -222,6 +218,10 @@ public:
     static QScriptValue point(QScriptContext*, QScriptEngine*);
     static QScriptValue size(QScriptContext*, QScriptEngine*);
     static QScriptValue rect(QScriptContext*, QScriptEngine*);
+
+    static QScriptValue lighter(QScriptContext*, QScriptEngine*);
+    static QScriptValue darker(QScriptContext*, QScriptEngine*);
+    static QScriptValue tint(QScriptContext*, QScriptEngine*);
 
     static QScriptEngine *getScriptEngine(QmlEngine *e) { return &e->d_func()->scriptEngine; }
     static QmlEngine *getEngine(QScriptEngine *e) { return static_cast<QmlScriptEngine*>(e)->p->q_func(); }
