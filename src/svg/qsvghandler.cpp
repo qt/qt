@@ -2158,8 +2158,8 @@ static bool parseAnimateColorNode(QSvgNode *parent,
     QList<QColor> colors;
     if (valuesStr.isEmpty()) {
         QColor startColor, endColor;
-        constructColor(fromStr, QString(), startColor, handler);
-        constructColor(toStr, QString(), endColor, handler);
+        resolveColor(fromStr, startColor, handler);
+        resolveColor(toStr, endColor, handler);
         colors.append(startColor);
         colors.append(endColor);
     } else {
@@ -2167,7 +2167,7 @@ static bool parseAnimateColorNode(QSvgNode *parent,
         QStringList::const_iterator itr;
         for (itr = str.constBegin(); itr != str.constEnd(); ++itr) {
             QColor color;
-            constructColor(*itr, QString(), color, handler);
+            resolveColor(*itr, color, handler);
             colors.append(color);
         }
     }
