@@ -126,11 +126,15 @@ void tst_QScriptString::test()
         QCOMPARE(twoInterned.toString(), two);
         QVERIFY(oneInterned != twoInterned);
         QVERIFY(!(oneInterned == twoInterned));
+        QScriptString copy1(oneInterned);
+        QScriptString copy2 = oneInterned;
 
         delete eng2;
 
         QVERIFY(!oneInterned.isValid());
         QVERIFY(!twoInterned.isValid());
+        QVERIFY(!copy1.isValid());
+        QVERIFY(!copy2.isValid());
     }
 }
 

@@ -123,7 +123,6 @@ public:
 
     inline QScriptValue scriptValueFromJSCValue(JSC::JSValue value);
     inline JSC::JSValue scriptValueToJSCValue(const QScriptValue &value);
-    inline QScriptString scriptStringFromJSCIdentifier(const JSC::Identifier &id);
 
     QScriptValue scriptValueFromVariant(const QVariant &value);
     QVariant scriptValueToVariant(const QScriptValue &value, int targetType);
@@ -219,6 +218,10 @@ public:
     inline void unregisterScriptValue(QScriptValuePrivate *value);
     void detachAllRegisteredScriptValues();
 
+    inline void registerScriptString(QScriptStringPrivate *value);
+    inline void unregisterScriptString(QScriptStringPrivate *value);
+    void detachAllRegisteredScriptStrings();
+
     // private slots
     void _q_objectDestroyed(QObject *);
 #endif
@@ -243,6 +246,7 @@ public:
     int agentLineNumber;
     QScriptValuePrivate *registeredScriptValues;
     QScriptValuePrivate *freeScriptValues;
+    QScriptStringPrivate *registeredScriptStrings;
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;
     QScriptValue abortResult;
@@ -364,13 +368,28 @@ inline QScriptValue QScriptValuePrivate::property(const QString &name, int resol
     return property(JSC::Identifier(exec, name), resolveMode);
 }
 
-inline QScriptString QScriptEnginePrivate::scriptStringFromJSCIdentifier(const JSC::Identifier &id)
+inline void QScriptEnginePrivate::registerScriptString(QScriptStringPrivate *value)
 {
-    QScriptString q;
-    q.d_ptr = new QScriptStringPrivate(q_func(), id);
-    return q;
+    Q_ASSERT(value->type == QScriptStringPrivate::HeapAllocated);
+    value->prev = 0;
+    value->next = registeredScriptStrings;
+    if (registeredScriptStrings)
+        registeredScriptStrings->prev = value;
+    registeredScriptStrings = value;
 }
 
+inline void QScriptEnginePrivate::unregisterScriptString(QScriptStringPrivate *value)
+{
+    Q_ASSERT(value->type == QScriptStringPrivate::HeapAllocated);
+    if (value->prev)
+        value->prev->next = value->next;
+    if (value->next)
+        value->next->prev = value->prev;
+    if (value == registeredScriptStrings)
+        registeredScriptStrings = value->next;
+    value->prev = 0;
+    value->next = 0;
+}
 
 QT_END_NAMESPACE
 

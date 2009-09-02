@@ -791,7 +791,8 @@ static QScriptValue __setupPackage__(QScriptContext *ctx, QScriptEngine *eng)
 } // namespace QScript
 
 QScriptEnginePrivate::QScriptEnginePrivate()
-    : registeredScriptValues(0), freeScriptValues(0), inEval(false)
+    : registeredScriptValues(0), freeScriptValues(0),
+      registeredScriptStrings(0), inEval(false)
 {
     qMetaTypeId<QScriptValue>();
 
@@ -839,6 +840,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     while (!ownedAgents.isEmpty())
         delete ownedAgents.takeFirst();
     detachAllRegisteredScriptValues();
+    detachAllRegisteredScriptStrings();
     qDeleteAll(m_qobjectData);
     qDeleteAll(m_typeInfos);
     JSC::JSLock lock(false);
@@ -1350,6 +1352,19 @@ void QScriptEnginePrivate::detachAllRegisteredScriptValues()
         it->next = 0;
     }
     registeredScriptValues = 0;
+}
+
+void QScriptEnginePrivate::detachAllRegisteredScriptStrings()
+{
+    QScriptStringPrivate *it;
+    QScriptStringPrivate *next;
+    for (it = registeredScriptStrings; it != 0; it = next) {
+        it->detachFromEngine();
+        next = it->next;
+        it->prev = 0;
+        it->next = 0;
+    }
+    registeredScriptStrings = 0;
 }
 
 #ifdef QT_NO_QOBJECT
@@ -3621,7 +3636,11 @@ QScriptEngineAgent *QScriptEngine::agent() const
 QScriptString QScriptEngine::toStringHandle(const QString &str)
 {
     Q_D(QScriptEngine);
-    return d->scriptStringFromJSCIdentifier(JSC::Identifier(d->currentFrame, str));
+    QScriptString result;
+    QScriptStringPrivate *p = new QScriptStringPrivate(d, JSC::Identifier(d->currentFrame, str), QScriptStringPrivate::HeapAllocated);
+    QScriptStringPrivate::init(result, p);
+    d->registerScriptString(p);
+    return result;
 }
 
 /*!

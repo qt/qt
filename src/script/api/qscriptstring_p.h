@@ -55,31 +55,57 @@
 
 #include <QtCore/qobjectdefs.h>
 
-#include <QtCore/qstring.h>
-#include <QtCore/qpointer.h>
-#include "qscriptengine.h"
-
 #include "Identifier.h"
-
 
 QT_BEGIN_NAMESPACE
 
-class QScriptString;
-class QScriptEngine;
+class QScriptEnginePrivate;
 class QScriptStringPrivate
 {
 public:
-    QScriptStringPrivate(QScriptEngine *engine, const JSC::Identifier &id);
-    ~QScriptStringPrivate();
+    enum AllocationType {
+        StackAllocated,
+        HeapAllocated
+    };
+
+    inline QScriptStringPrivate(QScriptEnginePrivate *engine, const JSC::Identifier &id,
+                                AllocationType type);
+    inline ~QScriptStringPrivate();
+    static inline void init(QScriptString &q, QScriptStringPrivate *d);
+
+    inline void detachFromEngine();
 
     QBasicAtomicInt ref;
-#ifndef QT_NO_QOBJECT
-    QPointer<QScriptEngine> engine;
-#else
-    void *engine;
-#endif
+    QScriptEnginePrivate *engine;
     JSC::Identifier identifier;
+    AllocationType type;
+
+    // linked list of engine's script values
+    QScriptStringPrivate *prev;
+    QScriptStringPrivate *next;
 };
+
+inline QScriptStringPrivate::QScriptStringPrivate(QScriptEnginePrivate *e, const JSC::Identifier &id,
+                                                  AllocationType tp)
+    : engine(e), identifier(id), type(tp), prev(0), next(0)
+{
+    ref = 0;
+}
+
+inline QScriptStringPrivate::~QScriptStringPrivate()
+{
+}
+
+inline void QScriptStringPrivate::init(QScriptString &q, QScriptStringPrivate *d)
+{
+    q.d_ptr = d;
+}
+
+inline void QScriptStringPrivate::detachFromEngine()
+{
+    engine = 0;
+    identifier = JSC::Identifier();
+}
 
 QT_END_NAMESPACE
 

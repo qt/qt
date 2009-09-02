@@ -97,7 +97,9 @@ bool ClassObjectDelegate::getOwnPropertySlot(QScriptObject* object,
 
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
-    QScriptString scriptName = engine->scriptStringFromJSCIdentifier(propertyName);
+    QScriptString scriptName;
+    QScriptStringPrivate scriptName_d(engine, propertyName, QScriptStringPrivate::StackAllocated);
+    QScriptStringPrivate::init(scriptName, &scriptName_d);
     uint id = 0;
     QScriptClass::QueryFlags flags = m_scriptClass->queryProperty(
         scriptObject, scriptName, QScriptClass::HandlesReadAccess, &id);
@@ -115,7 +117,9 @@ void ClassObjectDelegate::put(QScriptObject* object, JSC::ExecState *exec,
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
-    QScriptString scriptName = engine->scriptStringFromJSCIdentifier(propertyName);
+    QScriptString scriptName;
+    QScriptStringPrivate scriptName_d(engine, propertyName, QScriptStringPrivate::StackAllocated);
+    QScriptStringPrivate::init(scriptName, &scriptName_d);
     uint id = 0;
     QScriptClass::QueryFlags flags = m_scriptClass->queryProperty(
         scriptObject, scriptName, QScriptClass::HandlesWriteAccess, &id);
@@ -133,7 +137,9 @@ bool ClassObjectDelegate::deleteProperty(QScriptObject* object, JSC::ExecState *
     // ### avoid duplication of put()
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
-    QScriptString scriptName = engine->scriptStringFromJSCIdentifier(propertyName);
+    QScriptString scriptName;
+    QScriptStringPrivate scriptName_d(engine, propertyName, QScriptStringPrivate::StackAllocated);
+    QScriptStringPrivate::init(scriptName, &scriptName_d);
     uint id = 0;
     QScriptClass::QueryFlags flags = m_scriptClass->queryProperty(
         scriptObject, scriptName, QScriptClass::HandlesWriteAccess, &id);
@@ -152,7 +158,9 @@ bool ClassObjectDelegate::getPropertyAttributes(const QScriptObject* object, JSC
 {
     QScriptEnginePrivate *engine = scriptEngineFromExec(exec);
     QScriptValue scriptObject = engine->scriptValueFromJSCValue(object);
-    QScriptString scriptName = engine->scriptStringFromJSCIdentifier(propertyName);
+    QScriptString scriptName;
+    QScriptStringPrivate scriptName_d(engine, propertyName, QScriptStringPrivate::StackAllocated);
+    QScriptStringPrivate::init(scriptName, &scriptName_d);
     uint id = 0;
     QScriptClass::QueryFlags flags = m_scriptClass->queryProperty(
         scriptObject, scriptName, QScriptClass::HandlesReadAccess, &id);
