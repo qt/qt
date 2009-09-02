@@ -52,8 +52,11 @@
     \section1 Required tools
 
     In order to use Qt for Windows CE you need to have Visual Studio
-    2005 and at least one of the supported Windows CE/Mobile SDKs
-    installed.
+    2005 or 2008 and at least one of the supported Windows
+    CE/Mobile SDKs installed.
+    Note, that the Visual Studio 2008 Standard Edition doesn't come
+    with Windows CE support. You will need the Professional Edition,
+    if you're using Visual Studio 2008.
 
     We recommend the \e{Windows Mobile 5.0 SDK for Pocket PC} SDK available
     \l{http://www.microsoft.com/downloads/details.aspx?FamilyID=83a52af2-f524-4ec5-9155-717cbe5d25ed&amp;DisplayLang=en}{here}.
@@ -71,15 +74,15 @@
 
     Once you have a \c .pro file, there are two ways of building your
     application. You can either do it on the command line or inside of
-    VS2005. To do it on the command line, simply write:
+    Visual Studio. To do it on the command line, simply write:
 
     \snippet doc/src/snippets/code/doc_src_wince-introduction.qdoc 0
 
-    To build the project inside of VS2005, on the command line write:
+    To build the project inside of Visual Studio, on the command line write:
 
     \snippet doc/src/snippets/code/doc_src_wince-introduction.qdoc 1
 
-    then start VS2005 with the generated \c .vcproj or \c .sln file and
+    then start Visual Studio with the generated \c .vcproj or \c .sln file and
     select \e{Build project}.
 
     For more information on how to use qmake have a look at the \l
@@ -89,20 +92,20 @@
 
     In order to run the application, it needs to be deployed on the
     Windows CE/Mobile device you want to test it for. This can either
-    be done manually or automated using VS2005.
+    be done manually or automated using Visual Studio.
 
     To do it manually, simply copy the executable, the Qt \c{.dll}
     files needed for the application to run, and the C-runtime library
     into a folder on the device, and then click on the executable to
     start the program. You can either use the \e Explorer found in
-    ActiveSync or the \e{Remote File Viewer} found in VS2005 to do
+    ActiveSync or the \e{Remote File Viewer} found in Visual Studio to do
     this.
 
-    VS2005 can do this step automatically for you as well. If you have
-    built the project inside VS2005, simply select \e Deploy and then
+    Visual Studio can do this step automatically for you as well. If you have
+    built the project inside Visual Studio, simply select \e Deploy and then
     \e Debug to deploy and then run the application. You can change the
     device type by changing the \e{Target Device} specified in the
-    VS2005 toolbar.
+    Visual Studio toolbar.
 
     Further information on deploying Qt applications for Windows can
     be found in the \l{Deploying an Application on Windows}

@@ -46,5 +46,5 @@
     The Complex Ping Pong example improves on the \l{D-Bus Ping Pong Example} by providing
     a more useful demonstration of D-Bus interfaces.
 
-    \quotefile doc/src/snippets/complexpingpong-example.qdoc
+    \quotefile doc/src/snippets/complexpingpong-example.txt
 */

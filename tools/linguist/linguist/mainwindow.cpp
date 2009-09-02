@@ -1350,9 +1350,7 @@ void MainWindow::about()
                     "applications.</p>"
                     "<p>%2</p>"
                     "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)."
-                    "</p><p>The program is provided AS IS with NO WARRANTY OF ANY KIND,"
-                    " INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A"
-                    " PARTICULAR PURPOSE.</p>").arg(version).arg(edition));
+                    ).arg(version).arg(edition));
 
     box.setWindowTitle(QApplication::translate("AboutDialog", "Qt Linguist"));
     box.setIcon(QMessageBox::NoIcon);
