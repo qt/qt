@@ -692,9 +692,6 @@ QNetworkReply *QNetworkAccessManager::createRequest(QNetworkAccessManager::Opera
 
     // third step: setup the reply
     priv->setup(op, request, outgoingData);
-    if (request.attribute(QNetworkRequest::CacheLoadControlAttribute, QNetworkRequest::PreferNetwork).toInt() !=
-        QNetworkRequest::AlwaysNetwork)
-        priv->setNetworkCache(d->networkCache);
 #ifndef QT_NO_NETWORKPROXY
     QList<QNetworkProxy> proxyList = d->queryProxy(QNetworkProxyQuery(request.url()));
     priv->proxyList = proxyList;
