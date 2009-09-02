@@ -144,10 +144,10 @@ function victoryCheck()
         gameCanvas.score += 500;
     //Checks for game over
     if(deservesBonus || !(floodMoveCheck(0,maxY-1, -1))){
-        dialog.text = "Game Over. Your score is " + gameCanvas.score;
-        dialog.opacity = 1;
+        dialog.show("Game Over. Your score is " + gameCanvas.score);
         timer = new Date() - timer;
-        //if(scoresURL != "") sendHighScore(name);
+        if(scoresURL != "")
+            scoreName.show("Please enter your name:                ");
     }
 }
 
@@ -233,8 +233,7 @@ function tweetHighScore(twitterName, twitterPass) {
     postman.open("POST", "http://twitter.com/statuses/update.xml", true, twitterName,  twitterPass);
     postman.onreadystatechange = function() { 
         if (postman.readyState == postman.DONE) {
-            dialog.text = "Your score has been tweeted for you.";
-            dialog.opacity = 1;
+            dialog.show("Your score has been tweeted for you.");
         }
     }
     postman.send(postData);
@@ -247,8 +246,7 @@ function sendHighScore(name) {
     postman.open("POST", scoresURL, true);
     postman.onreadystatechange = function() { 
         if (postman.readyState == postman.DONE) {
-            dialog.text = "Your score has been uploaded.";
-            dialog.opacity = 1;
+            dialog.show("Your score has been uploaded.");
         }
     }
     postman.send(postData);

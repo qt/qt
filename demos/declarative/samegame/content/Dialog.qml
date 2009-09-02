@@ -2,14 +2,20 @@ import Qt 4.6
 
 Rectangle {
     id: page
+    function forceClose() {
+        page.closed();
+        page.opacity = 0;
+    }
+    function show(txt) {
+        MyText.text = txt;
+        page.opacity = 1;
+    }
+    signal closed();
     color: "white"; border.width: 1; width: MyText.width + 20; height: 60;
-    property string text: "Hello World!"
     opacity: 0
     opacity: Behavior { 
-        SequentialAnimation {
-            NumberAnimation {property: "opacity"; from: 0; duration: 1500 }
-            NumberAnimation {property: "opacity"; to: 0;  duration: 1500 }
-        }
+        NumberAnimation { duration: 1000 }
     }
-    Text { id: MyText; anchors.centerIn: parent; text: parent.text }
+    Text { id: MyText; anchors.centerIn: parent; text: "Hello World!" }
+    MouseRegion { id: mr; anchors.fill: parent; onClicked: forceClose(); }
 }
