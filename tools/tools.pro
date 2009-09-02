@@ -6,7 +6,8 @@ no-png {
      SUBDIRS += assistant \
 		pixeltool \
 		porting \
-                qtestlib
+                qtestlib \
+                qttracereplay
      contains(QT_EDITION, Console) {
          SUBDIRS += designer/src/uitools     # Linguist depends on this
      } else {
