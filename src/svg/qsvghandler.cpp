@@ -716,28 +716,42 @@ static bool resolveColor(const QStringRef &colorStr, QColor &color, QSvgHandler 
     QStringRef colorStrTr = trimRef(colorStr);
     if (colorStrTr.isEmpty())
         return false;
-    if (colorStrTr == QLatin1String("rgb(")) {
-        const QChar *s = colorStrTr.constData() + 4;
-        QVector<qreal> compo = parseNumbersList(s);
-        //1 means that it failed after reaching non-parsable
-        //character which is going to be "%"
-        if (compo.size() == 1) {
-            const QChar *s = colorStrTr.constData() + 4;
-            compo = parsePercentageList(s);
-            compo[0] *= (qreal)2.55;
-            compo[1] *= (qreal)2.55;
-            compo[2] *= (qreal)2.55;
-        }
 
-        color = QColor(int(compo[0]),
-                       int(compo[1]),
-                       int(compo[2]));
-        return true;
-    } else if (colorStrTr == QT_INHERIT)  {
-        return false;
-    } else if (colorStrTr == QLatin1String("currentColor")) {
-        color = handler->currentColor();
-        return true;
+    switch(colorStrTr.at(0).unicode()) {
+    case 'r': {
+        // starts with "rgb("
+        if (colorStrTr == QLatin1String("rgb(")) {
+            const QChar *s = colorStrTr.constData() + 4;
+            QVector<qreal> compo = parseNumbersList(s);
+            //1 means that it failed after reaching non-parsable
+            //character which is going to be "%"
+            if (compo.size() == 1) {
+                const QChar *s = colorStrTr.constData() + 4;
+                compo = parsePercentageList(s);
+                compo[0] *= (qreal)2.55;
+                compo[1] *= (qreal)2.55;
+                compo[2] *= (qreal)2.55;
+            }
+
+            color = QColor(int(compo[0]),
+                           int(compo[1]),
+                           int(compo[2]));
+            return true;
+            }
+        }
+        break;
+    case 'c':
+        if (colorStrTr == QLatin1String("currentColor")) {
+            color = handler->currentColor();
+            return true;
+        }
+        break;
+    case 'i':
+        if (colorStrTr == QT_INHERIT)
+            return false;
+        break;
+    default:
+        break;
     }
 
     color = QColor(colorStrTr.toString());
