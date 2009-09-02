@@ -15,6 +15,7 @@ function index(xIdx,yIdx){
 
 function initBoard()
 {
+    var a = new Date;
     for(i = 0; i<maxIndex; i++){
         //Delete old blocks
         if(board[i] != null)
@@ -34,6 +35,8 @@ function initBoard()
             startCreatingBlock(xIdx,yIdx);
         }
     }
+    var e = new Date;
+    print (e.valueOf() - a.valueOf());
 }
 
 var fillFound;//Set after a floodFill call to the number of tiles found

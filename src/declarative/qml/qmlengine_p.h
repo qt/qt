@@ -97,10 +97,17 @@ public:
 
     void init();
 
+    QScriptClass::QueryFlags queryContext(const QString &name, uint *id,
+                                          QmlContext *);
+    QScriptValue propertyContext(const QScriptString &propName, QmlContext *, 
+                                 uint id);
+    void setPropertyContext(const QScriptValue &, uint id);
     QScriptClass::QueryFlags queryObject(const QString &name, uint *id, 
                                          QObject *);
     QScriptValue propertyObject(const QScriptString &propName, QObject *, 
                                 uint id = 0);
+    void setPropertyObject(const QScriptValue &, uint id);
+
 
     struct CapturedProperty {
         CapturedProperty(QObject *o, int c, int n)
@@ -120,6 +127,20 @@ public:
     QScriptEngineDebugger *debugger;
 #endif
 
+    struct ResolveData {
+        ResolveData() : safetyCheckId(0) {}
+        int safetyCheckId;
+
+        void clear() { 
+            object = 0; context = 0; contextIndex = -1; isFunction = false;
+        }
+        QObject *object;
+        QmlContext *context;
+
+        int contextIndex;
+        bool isFunction;
+        QmlMetaProperty property;
+    } resolveData;
     QmlContextScriptClass *contextClass;
     QmlObjectScriptClass *objectClass;
     QmlValueTypeScriptClass *valueTypeClass;
