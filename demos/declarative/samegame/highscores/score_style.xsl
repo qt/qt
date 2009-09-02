@@ -13,6 +13,7 @@
         <th>Time, s</th>
       </tr>
       <xsl:for-each select="records/record">
+      <xsl:sort select="score" data-type="number" order="descending"/>
       <tr>
         <td><xsl:value-of select="name"/></td>
         <td><xsl:value-of select="score"/></td>
