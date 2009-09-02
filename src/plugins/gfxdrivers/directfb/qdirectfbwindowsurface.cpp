@@ -431,13 +431,11 @@ IDirectFBSurface *QDirectFBWindowSurface::directFBSurface() const
 IDirectFBSurface *QDirectFBWindowSurface::surfaceForWidget(const QWidget *widget, QRect *rect) const
 {
     Q_ASSERT(widget);
-#ifndef QT_NO_DIRECTFB_WM
     if (!dfbSurface) {
         if (sibling && (!sibling->sibling || sibling->dfbSurface))
             return sibling->surfaceForWidget(widget, rect);
         return 0;
     }
-#endif
     QWidget *win = window();
     Q_ASSERT(win);
     if (rect) {
