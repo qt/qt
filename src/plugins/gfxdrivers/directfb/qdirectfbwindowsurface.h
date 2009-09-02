@@ -99,7 +99,7 @@ private:
     QDirectFBWindowSurface *sibling;
 
 #ifdef QT_DIRECTFB_WM
-    void createWindow();
+    void createWindow(const QRect &rect);
     IDirectFBWindow *dfbWindow;
 #else
     enum Mode {
