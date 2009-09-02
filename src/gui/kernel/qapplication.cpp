@@ -3625,6 +3625,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
     case QEvent::MouseButtonRelease:
     case QEvent::MouseButtonDblClick:
         d->toolTipFallAsleep.stop();
+        // fall-through
     case QEvent::Leave:
         d->toolTipWakeUp.stop();
     default:
