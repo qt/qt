@@ -181,7 +181,7 @@ public:
         }
 #endif
         QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID AUTH=PLAIN SASL-IR] " );
-        expected = expected.append(QtNetworkSettings::serverLocalName().toAscii());
+        expected = expected.append(QtNetworkSettings::serverName().toAscii());
         expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
         return expected;
     }
