@@ -65,6 +65,7 @@
 #include "qmath.h"
 #include "qnumeric.h"
 #include "qvarlengtharray.h"
+#include "private/qcolor_p.h"
 #include "private/qmath_p.h"
 
 #include "float.h"
@@ -718,40 +719,55 @@ static bool resolveColor(const QStringRef &colorStr, QColor &color, QSvgHandler 
         return false;
 
     switch(colorStrTr.at(0).unicode()) {
-    case 'r': {
-        // starts with "rgb("
-        if (colorStrTr == QLatin1String("rgb(")) {
-            const QChar *s = colorStrTr.constData() + 4;
-            QVector<qreal> compo = parseNumbersList(s);
-            //1 means that it failed after reaching non-parsable
-            //character which is going to be "%"
-            if (compo.size() == 1) {
-                const QChar *s = colorStrTr.constData() + 4;
-                compo = parsePercentageList(s);
-                compo[0] *= (qreal)2.55;
-                compo[1] *= (qreal)2.55;
-                compo[2] *= (qreal)2.55;
-            }
 
-            color = QColor(int(compo[0]),
-                           int(compo[1]),
-                           int(compo[2]));
-            return true;
+        case '#':
+            {
+                // #rrggbb is very very common, so let's tackle it here
+                // rather than falling back to QColor
+                QRgb rgb;
+                bool ok = qt_get_hex_rgb(colorStrTr.unicode(), colorStrTr.length(), &rgb);
+                if (ok)
+                    color.setRgb(rgb);
+                return ok;
             }
-        }
-        break;
-    case 'c':
-        if (colorStrTr == QLatin1String("currentColor")) {
-            color = handler->currentColor();
-            return true;
-        }
-        break;
-    case 'i':
-        if (colorStrTr == QT_INHERIT)
-            return false;
-        break;
-    default:
-        break;
+            break;
+
+        case 'r':
+            {
+                // starts with "rgb("
+                if (colorStrTr == QLatin1String("rgb(")) {
+                    const QChar *s = colorStrTr.constData() + 4;
+                    QVector<qreal> compo = parseNumbersList(s);
+                    //1 means that it failed after reaching non-parsable
+                    //character which is going to be "%"
+                    if (compo.size() == 1) {
+                        const QChar *s = colorStrTr.constData() + 4;
+                        compo = parsePercentageList(s);
+                        compo[0] *= (qreal)2.55;
+                        compo[1] *= (qreal)2.55;
+                        compo[2] *= (qreal)2.55;
+                    }
+
+                    color = QColor(int(compo[0]),
+                                   int(compo[1]),
+                                   int(compo[2]));
+                    return true;
+                }
+            }
+            break;
+
+        case 'c':
+            if (colorStrTr == QLatin1String("currentColor")) {
+                color = handler->currentColor();
+                return true;
+            }
+            break;
+        case 'i':
+            if (colorStrTr == QT_INHERIT)
+                return false;
+            break;
+        default:
+            break;
     }
 
     color = QColor(colorStrTr.toString());
