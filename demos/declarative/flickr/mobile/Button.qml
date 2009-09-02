@@ -8,7 +8,7 @@ Item {
     property string text
 
     BorderImage {
-        id: Image
+        id: ButtonImage
         source: "images/toolbutton.sci"
         width: Container.width; height: Container.height
     }
@@ -19,19 +19,19 @@ Item {
         width: Container.width; height: Container.height
     }
     MouseRegion {
-        id: MouseRegion
-        anchors.fill: Image
+        id: MyMouseRegion
+        anchors.fill: ButtonImage
         onClicked: { Container.clicked(); }
     }
     Text {
         color: "white"
-        anchors.centerIn: Image; font.bold: true
+        anchors.centerIn: ButtonImage; font.bold: true
         text: Container.text; style: "Raised"; styleColor: "black"
     }
     states: [
         State {
             name: "Pressed"
-            when: MouseRegion.pressed == true
+            when: MyMouseRegion.pressed == true
             PropertyChanges {
                 target: Pressed
                 opacity: 1

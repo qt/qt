@@ -15,7 +15,7 @@ Item {
             scale: Wrapper.PathView.scale; z: Wrapper.PathView.z
 
             transform: Rotation {
-                id: Rotation; origin.x: Wrapper.width/2; origin.y: Wrapper.height/2
+                id: ItemRotation; origin.x: Wrapper.width/2; origin.y: Wrapper.height/2
                 axis.y: 1; axis.z: 0; angle: Wrapper.PathView.angle
             }
 
@@ -67,7 +67,7 @@ Item {
                     PropertyChanges { target: ImageDetails; z: 2 }
                     ParentChange { target: Wrapper; parent: ImageDetails.frontContainer }
                     PropertyChanges { target: Wrapper; x: 45; y: 35; scale: 1; z: 1000 }
-                    PropertyChanges { target: Rotation; angle: 0 }
+                    PropertyChanges { target: ItemRotation; angle: 0 }
                     PropertyChanges { target: Shadows; opacity: 0 }
                     PropertyChanges { target: ImageDetails; y: 20 }
                     PropertyChanges { target: PhotoGridView; y: "-480" }
