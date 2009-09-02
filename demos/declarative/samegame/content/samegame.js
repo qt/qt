@@ -6,16 +6,24 @@ var tileSize = 40;
 var maxIndex = maxX*maxY;
 var board = new Array(maxIndex);
 var tileSrc = "content/BoomBlock.qml";
+var scoresURL = "http://qtfx-nokia.trolltech.com.au/samegame/scores.php";
+var timer;
 var component;
 
 //Index function used instead of a 2D array
-function index(xIdx,yIdx){
+function index(xIdx,yIdx) {
     return xIdx + (yIdx * maxX);
+}
+
+function timeStr(msecs) {
+    var secs = Math.floor(msecs/1000);
+    var m = Math.floor(secs/60);
+    var ret = "" + m + "m " + (secs%60) + "s";
+    return ret;
 }
 
 function initBoard()
 {
-    var a = new Date;
     for(i = 0; i<maxIndex; i++){
         //Delete old blocks
         if(board[i] != null)
@@ -35,8 +43,7 @@ function initBoard()
             startCreatingBlock(xIdx,yIdx);
         }
     }
-    var e = new Date;
-    print (e.valueOf() - a.valueOf());
+    timer = new Date();
 }
 
 var fillFound;//Set after a floodFill call to the number of tiles found
@@ -137,8 +144,10 @@ function victoryCheck()
         gameCanvas.score += 500;
     //Checks for game over
     if(deservesBonus || !(floodMoveCheck(0,maxY-1, -1))){
-        dialog.text = "Game Over. Your score is " + gameCanvas.score;
-        dialog.opacity = 1;
+        dialog.show("Game Over. Your score is " + gameCanvas.score);
+        timer = new Date() - timer;
+        if(scoresURL != "")
+            scoreName.show("Please enter your name:                ");
     }
 }
 
@@ -211,4 +220,17 @@ function startCreatingBlock(xIdx,yIdx){
         return;
     component.statusChanged.connect(finishCreatingBlock());
     return;
+}
+
+function sendHighScore(name) {
+    var postman = new XMLHttpRequest()
+    var postData = "name="+name+"&score="+gameCanvas.score
+        +"&gridSize="+maxX+"x"+maxY +"&time="+Math.floor(timer/1000);
+    postman.open("POST", scoresURL, true);
+    postman.onreadystatechange = function() { 
+        if (postman.readyState == postman.DONE) {
+            dialog.show("Your score has been uploaded.");
+        }
+    }
+    postman.send(postData);
 }

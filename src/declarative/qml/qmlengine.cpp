@@ -80,6 +80,7 @@
 #include <private/qmlbinding_p.h>
 #include <private/qmlvme_p.h>
 #include <private/qmlenginedebug_p.h>
+#include <private/qmlstringconverters_p.h>
 #include <private/qmlxmlhttprequest_p.h>
 
 Q_DECLARE_METATYPE(QmlMetaProperty)
@@ -121,12 +122,18 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 
     qt_add_qmlxmlhttprequest(&scriptEngine);
 
+    //types
     qtObject.setProperty(QLatin1String("rgba"), scriptEngine.newFunction(QmlEnginePrivate::rgba, 4));
     qtObject.setProperty(QLatin1String("hsla"), scriptEngine.newFunction(QmlEnginePrivate::hsla, 4));
     qtObject.setProperty(QLatin1String("rect"), scriptEngine.newFunction(QmlEnginePrivate::rect, 4));
     qtObject.setProperty(QLatin1String("point"), scriptEngine.newFunction(QmlEnginePrivate::point, 2));
     qtObject.setProperty(QLatin1String("size"), scriptEngine.newFunction(QmlEnginePrivate::size, 2));
     qtObject.setProperty(QLatin1String("vector3d"), scriptEngine.newFunction(QmlEnginePrivate::vector, 3));
+
+    //color helpers
+    qtObject.setProperty(QLatin1String("lighter"), scriptEngine.newFunction(QmlEnginePrivate::lighter, 1));
+    qtObject.setProperty(QLatin1String("darker"), scriptEngine.newFunction(QmlEnginePrivate::darker, 1));
+    qtObject.setProperty(QLatin1String("tint"), scriptEngine.newFunction(QmlEnginePrivate::tint, 2));
 }
 
 QmlEnginePrivate::~QmlEnginePrivate()
@@ -887,6 +894,111 @@ QScriptValue QmlEnginePrivate::size(QScriptContext *ctxt, QScriptEngine *engine)
     qsreal w = ctxt->argument(0).toNumber();
     qsreal h = ctxt->argument(1).toNumber();
     return qScriptValueFromValue(engine, qVariantFromValue(QSizeF(w, h)));
+}
+
+QScriptValue QmlEnginePrivate::lighter(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    if(ctxt->argumentCount() < 1)
+        return engine->nullValue();
+    QVariant v = ctxt->argument(0).toVariant();
+    QColor color;
+    if (v.type() == QVariant::Color)
+        color = v.value<QColor>();
+    else if (v.type() == QVariant::String) {
+        bool ok;
+        color = QmlStringConverters::colorFromString(v.toString(), &ok);
+        if (!ok)
+            return engine->nullValue();
+    } else
+        return engine->nullValue();
+    color = color.lighter();
+    return qScriptValueFromValue(engine, qVariantFromValue(color));
+}
+
+QScriptValue QmlEnginePrivate::darker(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    if(ctxt->argumentCount() < 1)
+        return engine->nullValue();
+    QVariant v = ctxt->argument(0).toVariant();
+    QColor color;
+    if (v.type() == QVariant::Color)
+        color = v.value<QColor>();
+    else if (v.type() == QVariant::String) {
+        bool ok;
+        color = QmlStringConverters::colorFromString(v.toString(), &ok);
+        if (!ok)
+            return engine->nullValue();
+    } else
+        return engine->nullValue();
+    color = color.darker();
+    return qScriptValueFromValue(engine, qVariantFromValue(color));
+}
+
+/*!
+    This function allows tinting one color with another.
+
+    The tint color should usually be mostly transparent, or you will not be able to see the underlying color. The below example provides a slight red tint by having the tint color be pure red which is only 1/16th opaque.
+
+    \qml
+    Rectangle { x: 0; width: 80; height: 80; color: "lightsteelblue" }
+    Rectangle { x: 100; width: 80; height: 80; color: Qt.tint("lightsteelblue", "#10FF0000") }
+    \endqml
+    \image declarative-rect_tint.png
+
+    Tint is most useful when a subtle change is intended to be conveyed due to some event; you can then use tinting to more effectively tune the visible color.
+*/
+QScriptValue QmlEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    if(ctxt->argumentCount() < 2)
+        return engine->nullValue();
+    //get color
+    QVariant v = ctxt->argument(0).toVariant();
+    QColor color;
+    if (v.type() == QVariant::Color)
+        color = v.value<QColor>();
+    else if (v.type() == QVariant::String) {
+        bool ok;
+        color = QmlStringConverters::colorFromString(v.toString(), &ok);
+        if (!ok)
+            return engine->nullValue();
+    } else
+        return engine->nullValue();
+
+    //get tint color
+    v = ctxt->argument(1).toVariant();
+    QColor tintColor;
+    if (v.type() == QVariant::Color)
+        tintColor = v.value<QColor>();
+    else if (v.type() == QVariant::String) {
+        bool ok;
+        tintColor = QmlStringConverters::colorFromString(v.toString(), &ok);
+        if (!ok)
+            return engine->nullValue();
+    } else
+        return engine->nullValue();
+
+    //tint
+    QColor finalColor;
+    int a = tintColor.alpha();
+    if (a == 0xFF)
+        finalColor = tintColor;
+    else if (a == 0x00)
+        finalColor = color;
+    else {
+        uint src = tintColor.rgba();
+        uint dest = color.rgba();
+
+        uint res = (((a * (src & 0xFF00FF)) +
+                    ((0xFF - a) * (dest & 0xFF00FF))) >> 8) & 0xFF00FF;
+        res |= (((a * ((src >> 8) & 0xFF00FF)) +
+                ((0xFF - a) * ((dest >> 8) & 0xFF00FF)))) & 0xFF00FF00;
+        if ((src & 0xFF000000) == 0xFF000000)
+            res |= 0xFF000000;
+
+        finalColor = QColor::fromRgba(res);
+    }
+
+    return qScriptValueFromValue(engine, qVariantFromValue(finalColor));
 }
 
 QmlScriptClass::QmlScriptClass(QmlEngine *bindengine)
