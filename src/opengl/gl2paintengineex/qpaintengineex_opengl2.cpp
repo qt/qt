@@ -1662,10 +1662,16 @@ void QGL2PaintEngineExPrivate::systemStateChanged()
 {
     Q_Q(QGL2PaintEngineEx);
 
-    if (q->paintDevice()->devType() == QInternal::Widget)
+    if (systemClip.isEmpty()) {
         use_system_clip = false;
-    else
-        use_system_clip = !systemClip.isEmpty();
+    } else {
+        if (q->paintDevice()->devType() == QInternal::Widget && currentClipWidget) {
+            QWidgetPrivate *widgetPrivate = qt_widget_private(currentClipWidget->window());
+            use_system_clip = widgetPrivate->extra && widgetPrivate->extra->inRenderWithPainter;
+        } else {
+            use_system_clip = true;
+        }
+    }
 
     glDisable(GL_DEPTH_TEST);
     q->state()->depthTestEnabled = false;
