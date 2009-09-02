@@ -175,6 +175,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt, QmlCompiledData
                 }
 
                 QmlDeclarativeData *ddata = QmlDeclarativeData::get(o);
+                Q_ASSERT(ddata);
                 ddata->outerContext = ctxt;
                 ddata->lineNumber = instr.line;
                 ddata->columnNumber = instr.create.column;
