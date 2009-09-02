@@ -6,11 +6,20 @@ var tileSize = 40;
 var maxIndex = maxX*maxY;
 var board = new Array(maxIndex);
 var tileSrc = "content/BoomBlock.qml";
+var scoresURL = "http://qtfx-nokia.trolltech.com.au/samegame/scores.php";
+var timer;
 var component;
 
 //Index function used instead of a 2D array
-function index(xIdx,yIdx){
+function index(xIdx,yIdx) {
     return xIdx + (yIdx * maxX);
+}
+
+function timeStr(msecs) {
+    var secs = Math.floor(msecs/1000);
+    var m = Math.floor(secs/60);
+    var ret = "" + m + "m " + (secs%60) + "s";
+    return ret;
 }
 
 function initBoard()
@@ -34,6 +43,7 @@ function initBoard()
             startCreatingBlock(xIdx,yIdx);
         }
     }
+    timer = new Date();
 }
 
 var fillFound;//Set after a floodFill call to the number of tiles found
@@ -136,6 +146,8 @@ function victoryCheck()
     if(deservesBonus || !(floodMoveCheck(0,maxY-1, -1))){
         dialog.text = "Game Over. Your score is " + gameCanvas.score;
         dialog.opacity = 1;
+        timer = new Date() - timer;
+        //if(scoresURL != "") sendHighScore(name);
     }
 }
 
@@ -208,4 +220,36 @@ function startCreatingBlock(xIdx,yIdx){
         return;
     component.statusChanged.connect(finishCreatingBlock());
     return;
+}
+
+function tweetHighScore(twitterName, twitterPass) {
+    if(twitterName == '' || twitterPass == '')
+        return false;//Can't login like that
+
+    var scoreStr = "I just played the QML SameGame, and got " + gameCanvas.score + " points on a "
+            + maxX + "x" + maxY + " grid. It took me " + timeStr(timer) + ".";
+    var postData = "status=" + scoreStr;
+    var postman = new XMLHttpRequest();
+    postman.open("POST", "http://twitter.com/statuses/update.xml", true, twitterName,  twitterPass);
+    postman.onreadystatechange = function() { 
+        if (postman.readyState == postman.DONE) {
+            dialog.text = "Your score has been tweeted for you.";
+            dialog.opacity = 1;
+        }
+    }
+    postman.send(postData);
+}
+
+function sendHighScore(name) {
+    var postman = new XMLHttpRequest()
+    var postData = "name="+name+"&score="+gameCanvas.score
+        +"&gridSize="+maxX+"x"+maxY +"&time="+Math.floor(timer/1000);
+    postman.open("POST", scoresURL, true);
+    postman.onreadystatechange = function() { 
+        if (postman.readyState == postman.DONE) {
+            dialog.text = "Your score has been uploaded.";
+            dialog.opacity = 1;
+        }
+    }
+    postman.send(postData);
 }
