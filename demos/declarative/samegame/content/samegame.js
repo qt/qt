@@ -222,23 +222,6 @@ function startCreatingBlock(xIdx,yIdx){
     return;
 }
 
-function tweetHighScore(twitterName, twitterPass) {
-    if(twitterName == '' || twitterPass == '')
-        return false;//Can't login like that
-
-    var scoreStr = "I just played the QML SameGame, and got " + gameCanvas.score + " points on a "
-            + maxX + "x" + maxY + " grid. It took me " + timeStr(timer) + ".";
-    var postData = "status=" + scoreStr;
-    var postman = new XMLHttpRequest();
-    postman.open("POST", "http://twitter.com/statuses/update.xml", true, twitterName,  twitterPass);
-    postman.onreadystatechange = function() { 
-        if (postman.readyState == postman.DONE) {
-            dialog.show("Your score has been tweeted for you.");
-        }
-    }
-    postman.send(postData);
-}
-
 function sendHighScore(name) {
     var postman = new XMLHttpRequest()
     var postData = "name="+name+"&score="+gameCanvas.score
