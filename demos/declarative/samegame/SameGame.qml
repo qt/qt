@@ -44,7 +44,8 @@ Rectangle {
                 scoreName.forceClose(); 
             }
             anchors.verticalCenter: parent.verticalCenter
-            x:160; width: 200; height:20; focus: true
+            width: 72; focus: true
+            anchors.right: scoreName.right
         }
     }
 
