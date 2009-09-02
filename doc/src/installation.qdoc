@@ -661,7 +661,7 @@ in the \l{Qt for Windows CE Requirements} document.
     \brief Setting up the Windows CE environment for Qt.
     \previouspage General Qt Requirements
 
-    Qt is known to work with Visual Studio 2005 and the following SDKs for
+    Qt is known to work with Visual Studio 2005/2008 and the following SDKs for
     Windows CE development on Windows XP and Windows Vista:
 
     \list
