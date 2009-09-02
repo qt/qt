@@ -54,6 +54,7 @@ class Torpedo;
 class Bomb;
 class PixmapItem;
 class ProgressItem;
+class TextInformationItem;
 QT_BEGIN_NAMESPACE
 class QAction;
 QT_END_NAMESPACE
@@ -108,6 +109,7 @@ private:
     Mode mode;
     PixmapItem *backgroundItem;
     ProgressItem *progressItem;
+    TextInformationItem *textInformationItem;
     QAction * newAction;
     QAction * quitAction;
     Boat *boat;

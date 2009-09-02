@@ -180,6 +180,8 @@ private slots:
     void odbc_uintfield();
     void odbc_bindBoolean_data() { generic_data("QODBC"); }
     void odbc_bindBoolean();
+    void odbc_testqGetString_data() { generic_data("QODBC"); }
+    void odbc_testqGetString();
 
     void oci_serverDetach_data() { generic_data("QOCI"); }
     void oci_serverDetach(); // For task 154518
@@ -347,6 +349,7 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
             << qTableName("numericfields")
             << qTableName("qtest_ibaseblobs")
             << qTableName("qtestBindBool")
+            << qTableName("testqGetString")
             << qTableName("qtest_sqlguid")
             << qTableName("uint_table")
             << qTableName("uint_test")
@@ -510,10 +513,6 @@ void tst_QSqlDatabase::tables()
     QVERIFY(tables.contains(qTableName("qtest"), Qt::CaseInsensitive));
     QVERIFY(!tables.contains("sql_features", Qt::CaseInsensitive)); //check for postgres 7.4 internal tables
     if (views) {
-        if (db.driverName().startsWith("QMYSQL"))
-            // MySQL doesn't differentiate between tables and views when calling QSqlDatabase::tables()
-            // May be fixable by doing a select on informational_schema.tables instead of using the client library api
-            QEXPECT_FAIL("", "MySQL driver thinks that views are tables", Continue);
         QVERIFY(!tables.contains(qTableName("qtest_view"), Qt::CaseInsensitive));
     }
     if (tempTables)
@@ -521,10 +520,6 @@ void tst_QSqlDatabase::tables()
 
     tables = db.tables(QSql::Views);
     if (views) {
-        if (db.driverName().startsWith("QMYSQL"))
-            // MySQL doesn't give back anything when calling QSqlDatabase::tables() with QSql::Views
-            // May be fixable by doing a select on informational_schema.views instead of using the client library api
-            QEXPECT_FAIL("", "MySQL driver thinks that views are tables", Continue);
         if(!tables.contains(qTableName("qtest_view"), Qt::CaseInsensitive))
             qDebug() << "failed to find" << qTableName("qtest_view") << "in" << tables;
         QVERIFY(tables.contains(qTableName("qtest_view"), Qt::CaseInsensitive));
@@ -2023,6 +2018,44 @@ void tst_QSqlDatabase::odbc_bindBoolean()
     QCOMPARE(q.value(0).toInt(), 2);
     QCOMPARE(q.value(1).toBool(), false);
 }
+
+void tst_QSqlDatabase::odbc_testqGetString()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+    QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("testqGetString") + "(id int, vcvalue varchar(65538))"));
+
+    QString largeString;
+    largeString.fill('A', 65536);
+
+    // Bind and insert
+    QVERIFY_SQL(q, prepare("INSERT INTO " + qTableName("testqGetString") + " VALUES(?, ?)"));
+    q.bindValue(0, 1);
+    q.bindValue(1, largeString);
+    QVERIFY_SQL(q, exec());
+    q.bindValue(0, 2);
+    q.bindValue(1, largeString+QLatin1Char('B'));
+    QVERIFY_SQL(q, exec());
+    q.bindValue(0, 3);
+    q.bindValue(1, largeString+QLatin1Char('B')+QLatin1Char('C'));
+    QVERIFY_SQL(q, exec());
+
+    // Retrive
+    QVERIFY_SQL(q, exec("SELECT id, vcvalue FROM " + qTableName("testqGetString") + " ORDER BY id"));
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 1);
+    QCOMPARE(q.value(1).toString().length(), 65536);
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 2);
+    QCOMPARE(q.value(1).toString().length(), 65537);
+    QVERIFY_SQL(q, next());
+    QCOMPARE(q.value(0).toInt(), 3);
+    QCOMPARE(q.value(1).toString().length(), 65538);
+}
+
 
 void tst_QSqlDatabase::mysql_multiselect()
 {

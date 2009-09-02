@@ -298,7 +298,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \enum QColor::Spec
 
-    The type of color specified, either RGB, HSV or CMYK.
+    The type of color specified, either RGB, HSV, CMYK or HSL.
 
     \value Rgb
     \value Hsv

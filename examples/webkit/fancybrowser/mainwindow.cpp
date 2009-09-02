@@ -56,6 +56,8 @@ MainWindow::MainWindow()
     file.close();
 //! [1]
 
+    QNetworkProxyFactory::setUseSystemConfigurationEnabled(true);
+
 //! [2]
     view = new QWebView(this);
     view->load(QUrl("http://www.google.com/ncr"));

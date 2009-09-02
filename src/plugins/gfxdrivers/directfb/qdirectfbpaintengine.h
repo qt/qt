@@ -45,7 +45,11 @@
 #include <QtGui/qpaintengine.h>
 #include <private/qpaintengine_raster_p.h>
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
@@ -107,6 +111,10 @@ public:
     static void initImageCache(int size);
 };
 
+QT_END_NAMESPACE
+
 QT_END_HEADER
+
+#endif // QT_NO_QWS_DIRECTFB
 
 #endif // QPAINTENGINE_DIRECTFB_P_H

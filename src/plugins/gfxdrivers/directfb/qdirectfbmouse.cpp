@@ -41,6 +41,8 @@
 
 #include "qdirectfbmouse.h"
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 #include "qdirectfbscreen.h"
 #include <qsocketnotifier.h>
 
@@ -48,6 +50,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+
+QT_BEGIN_NAMESPACE
 
 class QDirectFBMouseHandlerPrivate : public QObject
 {
@@ -117,8 +121,8 @@ QDirectFBMouseHandlerPrivate::QDirectFBMouseHandlerPrivate(QDirectFBMouseHandler
         return;
     }
 
-    int flags = ::fcntl(fd, F_GETFL, 0);
-    ::fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    int flags = fcntl(fd, F_GETFL, 0);
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 
     // DirectFB seems to assume that the mouse always starts centered
     prevPoint = QPoint(screen->deviceWidth() / 2, screen->deviceHeight() / 2);
@@ -269,5 +273,8 @@ void QDirectFBMouseHandler::resume()
     d->setEnabled(true);
 }
 
+QT_END_NAMESPACE
 #include "qdirectfbmouse.moc"
+#endif // QT_NO_QWS_DIRECTFB
+
 

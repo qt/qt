@@ -58,6 +58,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qset.h>
 #include "qscriptvalue_p.h"
+#include "qscriptstring_p.h"
 
 #include "RefPtr.h"
 #include "Structure.h"
@@ -122,6 +123,7 @@ public:
 
     inline QScriptValue scriptValueFromJSCValue(JSC::JSValue value);
     inline JSC::JSValue scriptValueToJSCValue(const QScriptValue &value);
+    inline QScriptString scriptStringFromJSCIdentifier(const JSC::Identifier &id);
 
     QScriptValue scriptValueFromVariant(const QVariant &value);
     QVariant scriptValueToVariant(const QScriptValue &value, int targetType);
@@ -361,6 +363,14 @@ inline QScriptValue QScriptValuePrivate::property(const QString &name, int resol
     JSC::ExecState *exec = engine->currentFrame;
     return property(JSC::Identifier(exec, name), resolveMode);
 }
+
+inline QScriptString QScriptEnginePrivate::scriptStringFromJSCIdentifier(const JSC::Identifier &id)
+{
+    QScriptString q;
+    q.d_ptr = new QScriptStringPrivate(q_func(), id);
+    return q;
+}
+
 
 QT_END_NAMESPACE
 

@@ -42,12 +42,18 @@
 #ifndef QDIRECTFBPIXMAP_H
 #define QDIRECTFBPIXMAP_H
 
+#include <qglobal.h>
+
+#ifndef QT_NO_QWS_DIRECTFB
+
 #include <QtGui/private/qpixmapdata_p.h>
 #include <QtGui/private/qpaintengine_raster_p.h>
 #include "qdirectfbpaintdevice.h"
 #include <directfb.h>
 
 QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
@@ -75,11 +81,9 @@ public:
     virtual QImage toImage() const;
     virtual QPaintEngine *paintEngine() const;
     virtual QImage *buffer();
-    virtual int metric(QPaintDevice::PaintDeviceMetric m) const {return QDirectFBPaintDevice::metric(m);}
-
-    QImage *buffer(DFBSurfaceLockFlags lockFlags);
-
     // Pure virtual in QPixmapData, so re-implement here and delegate to QDirectFBPaintDevice
+    virtual int metric(QPaintDevice::PaintDeviceMetric m) const { return QDirectFBPaintDevice::metric(m); }
+
     inline QImage::Format pixelFormat() const { return imageFormat; }
     static bool hasAlphaChannel(const QImage &img);
     inline bool hasAlphaChannel() const { return alpha; }
@@ -91,6 +95,10 @@ private:
     bool alpha;
 };
 
+QT_END_NAMESPACE
+
 QT_END_HEADER
+
+#endif // QT_NO_QWS_DIRECTFB
 
 #endif // QDIRECTFBPIXMAP_H

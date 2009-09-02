@@ -175,10 +175,10 @@ bool qt_resolve_glsl_extensions(QGLContext *ctx)
 #if defined(QT_OPENGL_ES_2)
     // The GLSL shader functions are always present in OpenGL/ES 2.0.
     // The only exceptions are glGetProgramBinaryOES and glProgramBinaryOES.
-    if (!QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glslResolved) {
+    if (!QGLContextPrivate::extensionFuncs(ctx).qt_glslResolved) {
         glGetProgramBinaryOES = (_glGetProgramBinaryOES) ctx->getProcAddress(QLatin1String("glGetProgramBinaryOES"));
         glProgramBinaryOES = (_glProgramBinaryOES) ctx->getProcAddress(QLatin1String("glProgramBinaryOES"));
-        QGLContextPrivate::qt_get_extension_funcs(ctx).qt_glslResolved = true;
+        QGLContextPrivate::extensionFuncs(ctx).qt_glslResolved = true;
     }
     return true;
 #else

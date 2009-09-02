@@ -42,13 +42,16 @@
 #ifndef QDIRECTFBMOUSE_H
 #define QDIRECTFBMOUSE_H
 
+#include <qglobal.h>
 #include <QtGui/qmouse_qws.h>
+
+#ifndef QT_NO_QWS_DIRECTFB
 
 QT_BEGIN_HEADER
 
-QT_MODULE(Gui)
+QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_DIRECTFB
+QT_MODULE(Gui)
 
 class QDirectFBMouseHandlerPrivate;
 
@@ -65,8 +68,8 @@ protected:
     QDirectFBMouseHandlerPrivate *d;
 };
 
-#endif // QT_NO_DIRECTFB
+QT_END_NAMESPACE
 
 QT_END_HEADER
-
+#endif // QT_NO_QWS_DIRECTFB
 #endif // QDIRECTFBMOUSE_H

@@ -42,13 +42,16 @@
 #ifndef QDIRECTFBKEYBOARD_H
 #define QDIRECTFBKEYBOARD_H
 
+#include <qglobal.h>
 #include <QtGui/qkbd_qws.h>
+
+#ifndef QT_NO_QWS_DIRECTFB
 
 QT_BEGIN_HEADER
 
-QT_MODULE(Gui)
+QT_BEGIN_NAMESPACE
 
-#ifndef QT_NO_DIRECTFB
+QT_MODULE(Gui)
 
 class QDirectFBKeyboardHandlerPrivate;
 
@@ -62,7 +65,9 @@ private:
     QDirectFBKeyboardHandlerPrivate *d;
 };
 
-#endif // QT_NO_DIRECTFB
+QT_END_NAMESPACE
+
+#endif // QT_NO_QWS_DIRECTFB
 
 QT_END_HEADER
 

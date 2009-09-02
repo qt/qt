@@ -45,8 +45,6 @@
 #include <QGraphicsEffect>
 #include <QGraphicsView>
 
-#include "shadoweffect.h"
-
 class Lighting: public QGraphicsView
 {
     Q_OBJECT

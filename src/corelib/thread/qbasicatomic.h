@@ -56,7 +56,13 @@ public:
 #ifdef QT_ARCH_PARISC
     int _q_lock[4];
 #endif
+#if defined(QT_ARCH_WINDOWS) || defined(QT_ARCH_WINDOWSCE)
+    union { // needed for Q_BASIC_ATOMIC_INITIALIZER
+        volatile long _q_value;
+    };
+#else
     volatile int _q_value;
+#endif
 
     // Non-atomic API
     inline bool operator==(int value) const
@@ -128,7 +134,14 @@ public:
 #ifdef QT_ARCH_PARISC
     int _q_lock[4];
 #endif
+#if defined(QT_ARCH_WINDOWS) || defined(QT_ARCH_WINDOWSCE)
+    union {
+        T * volatile _q_value;
+        long volatile _q_value_integral;
+    };
+#else
     T * volatile _q_value;
+#endif
 
     // Non-atomic API
     inline bool operator==(T *value) const
@@ -194,6 +207,8 @@ public:
 
 #ifdef QT_ARCH_PARISC
 #  define Q_BASIC_ATOMIC_INITIALIZER(a) {{-1,-1,-1,-1},(a)}
+#elif defined(QT_ARCH_WINDOWS) || defined(QT_ARCH_WINDOWSCE)
+#  define Q_BASIC_ATOMIC_INITIALIZER(a) { {(a)} }
 #else
 #  define Q_BASIC_ATOMIC_INITIALIZER(a) { (a) }
 #endif

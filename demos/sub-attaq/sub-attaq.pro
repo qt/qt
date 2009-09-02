@@ -1,5 +1,4 @@
 contains(QT_CONFIG, opengl):QT += opengl
-
 HEADERS += boat.h \
     bomb.h \
     mainwindow.h \
@@ -13,7 +12,8 @@ HEADERS += boat.h \
     submarine_p.h \
     custompropertyanimation.h \
     qanimationstate.h \
-    progressitem.h
+    progressitem.h \
+    textinformationitem.h
 SOURCES += boat.cpp \
     bomb.cpp \
     main.cpp \
@@ -26,12 +26,18 @@ SOURCES += boat.cpp \
     states.cpp \
     custompropertyanimation.cpp \
     qanimationstate.cpp \
-    progressitem.cpp
+    progressitem.cpp \
+    textinformationitem.cpp
 RESOURCES += subattaq.qrc
 
 # install
 target.path = $$[QT_INSTALL_DEMOS]/animation/sub-attaq
-sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS sub-attaq.pro pics
+sources.files = $$SOURCES \
+    $$HEADERS \
+    $$RESOURCES \
+    $$FORMS \
+    sub-attaq.pro \
+    pics
 sources.path = $$[QT_INSTALL_DEMOS]/animation/sub-attaq
-INSTALLS += target sources
-
+INSTALLS += target \
+    sources

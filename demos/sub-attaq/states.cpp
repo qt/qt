@@ -47,6 +47,7 @@
 #include "torpedo.h"
 #include "animationmanager.h"
 #include "progressitem.h"
+#include "textinformationitem.h"
 
 //Qt
 #include <QtGui/QMessageBox>
@@ -226,8 +227,15 @@ void LostState::onEntry(QEvent *)
     //We clear the scene
     scene->clearScene();
 
-    //we have only one view
-    QMessageBox::information(scene->views().at(0),"You lose",message);
+    //We inform the player
+    scene->textInformationItem->setMessage(message);
+    scene->textInformationItem->show();
+}
+
+void LostState::onExit(QEvent *)
+{
+    //we hide the information
+    scene->textInformationItem->hide();
 }
 
 /** Win State */
@@ -242,7 +250,7 @@ void WinState::onEntry(QEvent *)
 
     QString message;
     if (scene->levelsData.size() - 1 != game->currentLevel) {
-        message = QString("You win the level %1. Your score is %2.\nPress Space to continue after closing this dialog.").arg(game->currentLevel+1).arg(game->score);
+        message = QString("You win the level %1. Your score is %2.\nPress Space to continue.").arg(game->currentLevel+1).arg(game->score);
         //We increment the level number
         game->currentLevel++;
     } else {
@@ -253,8 +261,15 @@ void WinState::onEntry(QEvent *)
         game->score = 0;
     }
 
-    //we have only one view
-    QMessageBox::information(scene->views().at(0),"You win",message);
+    //We inform the player
+    scene->textInformationItem->setMessage(message);
+    scene->textInformationItem->show();
+}
+
+void WinState::onExit(QEvent *)
+{
+    //we hide the information
+    scene->textInformationItem->hide();
 }
 
 /** UpdateScore State */

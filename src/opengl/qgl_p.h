@@ -193,11 +193,24 @@ public:
 #endif
 };
 
-struct QGLContextGroupResources
+// QGLContextPrivate has the responsibility of creating context groups.
+// QGLContextPrivate and QGLShareRegister will both maintain the reference counter and destroy
+// context groups when needed.
+// QGLShareRegister has the responsibility of keeping the context pointer up to date.
+class QGLContextGroup
 {
-    QGLContextGroupResources() : refs(1) { }
-    QGLExtensionFuncs extensionFuncs;
-    QAtomicInt refs;
+public:
+    QGLExtensionFuncs &extensionFuncs() {return m_extensionFuncs;}
+    const QGLContext *context() const {return m_context;}
+private:
+    QGLContextGroup(const QGLContext *context) : m_context(context), m_refs(1) { }
+
+    QGLExtensionFuncs m_extensionFuncs;
+    const QGLContext *m_context; // context group's representative
+    QAtomicInt m_refs;
+
+    friend class QGLShareRegister;
+    friend class QGLContextPrivate;
 };
 
 class QGLTexture;
@@ -206,8 +219,8 @@ class QGLContextPrivate
 {
     Q_DECLARE_PUBLIC(QGLContext)
 public:
-    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {groupResources = new QGLContextGroupResources;}
-    ~QGLContextPrivate() {if (!groupResources->refs.deref()) delete groupResources;}
+    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {group = new QGLContextGroup(context);}
+    ~QGLContextPrivate();
     QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format,
                             QGLContext::BindOptions options);
     QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format, const qint64 key,
@@ -269,23 +282,23 @@ public:
     QGLContext *q_ptr;
     QGLFormat::OpenGLVersionFlags version_flags;
 
-    QGLContextGroupResources *groupResources;
+    QGLContextGroup *group;
     GLint max_texture_size;
 
     GLuint current_fbo;
     QPaintEngine *active_engine;
 
-    static inline QGLContextGroupResources *qt_get_context_group(const QGLContext *ctx) { return ctx->d_ptr->groupResources; }
+    static inline QGLContextGroup *contextGroup(const QGLContext *ctx) { return ctx->d_ptr->group; }
 
 #ifdef Q_WS_WIN
-    static inline QGLExtensionFuncs& qt_get_extension_funcs(const QGLContext *ctx) { return ctx->d_ptr->groupResources->extensionFuncs; }
-    static inline QGLExtensionFuncs& qt_get_extension_funcs(QGLContextGroupResources *ctx) { return ctx->extensionFuncs; }
+    static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *ctx) { return ctx->d_ptr->group->extensionFuncs(); }
+    static inline QGLExtensionFuncs& extensionFuncs(QGLContextGroup *ctx) { return ctx->extensionFuncs(); }
 #endif
 
 #if defined(Q_WS_X11) || defined(Q_WS_MAC) || defined(Q_WS_QWS)
     static QGLExtensionFuncs qt_extensionFuncs;
-    static inline QGLExtensionFuncs& qt_get_extension_funcs(const QGLContext *) { return qt_extensionFuncs; }
-    static inline QGLExtensionFuncs& qt_get_extension_funcs(QGLContextGroupResources *ctx) { return qt_extensionFuncs; }
+    static inline QGLExtensionFuncs& extensionFuncs(const QGLContext *) { return qt_extensionFuncs; }
+    static inline QGLExtensionFuncs& extensionFuncs(QGLContextGroup *) { return qt_extensionFuncs; }
 #endif
 
     QPixmapFilter *createPixmapFilter(int type) const;
@@ -402,9 +415,9 @@ public:
     QList<const QGLContext *> shares(const QGLContext *context);
     void removeShare(const QGLContext *context);
 private:
-    // Use a context's 'groupResources' pointer to uniquely identify a group.
+    // Use a context's 'group' pointer to uniquely identify a group.
     typedef QList<const QGLContext *> ContextList;
-    typedef QHash<const QGLContextGroupResources *, ContextList> SharingHash;
+    typedef QHash<const QGLContextGroup *, ContextList> SharingHash;
     SharingHash reg;
 };
 

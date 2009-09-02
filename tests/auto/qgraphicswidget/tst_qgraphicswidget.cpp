@@ -352,12 +352,12 @@ void tst_QGraphicsWidget::activation()
     QEvent activateEvent(QEvent::WindowActivate);
     QApplication::sendEvent(&scene, &activateEvent);
 
-    QVERIFY(widget->isActiveWindow());
-    QVERIFY(!window1->isActiveWindow());
+    QVERIFY(!widget->isActiveWindow());
+    QVERIFY(window1->isActiveWindow());
     QVERIFY(!window2->isActiveWindow());
 
     scene.setActiveWindow(window1);
-    QVERIFY(widget->isActiveWindow());
+    QVERIFY(!widget->isActiveWindow());
     QVERIFY(window1->isActiveWindow());
     QVERIFY(!window2->isActiveWindow());
 

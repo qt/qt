@@ -205,7 +205,11 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, float scre
                 image.setColor(i, qRgba(c,c,c,0xff));
             }
             if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+#if PNG_LIBPNG_VER_MAJOR < 1 || (PNG_LIBPNG_VER_MAJOR == 1 && PNG_LIBPNG_VER_MINOR < 4)
                 const int g = info_ptr->trans_values.gray;
+#else
+                const int g = info_ptr->trans_color.gray;
+#endif
                 if (g < ncols) {
                     image.setColor(g, 0);
                 }
@@ -234,7 +238,11 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, float scre
                     info_ptr->palette[i].red,
                     info_ptr->palette[i].green,
                     info_ptr->palette[i].blue,
+#if PNG_LIBPNG_VER_MAJOR < 1 || (PNG_LIBPNG_VER_MAJOR == 1 && PNG_LIBPNG_VER_MINOR < 4)
                     info_ptr->trans[i]
+#else
+                    info_ptr->trans_alpha[i]
+#endif
                    )
                );
                 i++;

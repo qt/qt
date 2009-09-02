@@ -41,12 +41,17 @@
 
 #include "qdirectfbpixmap.h"
 
+#ifndef QT_NO_QWS_DIRECTFB
+
 #include "qdirectfbscreen.h"
 #include "qdirectfbpaintengine.h"
 
 #include <QtGui/qbitmap.h>
 #include <QtCore/qfile.h>
 #include <directfb.h>
+
+
+QT_BEGIN_NAMESPACE
 
 static int global_ser_no = 0;
 
@@ -59,9 +64,6 @@ QDirectFBPixmapData::QDirectFBPixmapData(QDirectFBScreen *screen, PixelType pixe
 
 QDirectFBPixmapData::~QDirectFBPixmapData()
 {
-    unlockDirectFB();
-    if (dfbSurface && QDirectFBScreen::instance())
-        screen->releaseDFBSurface(dfbSurface);
 }
 
 void QDirectFBPixmapData::resize(int width, int height)
@@ -162,7 +164,7 @@ static bool checkForAlphaPixels(const QImage &img)
 bool QDirectFBPixmapData::hasAlphaChannel(const QImage &img)
 {
 #ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
-    return ::checkForAlphaPixels(img);
+    return checkForAlphaPixels(img);
 #else
     return img.hasAlphaChannel();
 #endif
@@ -370,9 +372,13 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
         QPixmapData::copy(data, rect);
         return;
     }
-    unlockDirectFB();
 
     const QDirectFBPixmapData *otherData = static_cast<const QDirectFBPixmapData*>(data);
+#ifdef QT_NO_DIRECTFB_SUBSURFACE
+    if (otherData->lockFlags()) {
+        const_cast<QDirectFBPixmapData*>(otherData)->unlockSurface();
+    }
+#endif
     IDirectFBSurface *src = otherData->directFBSurface();
     alpha = data->hasAlphaChannel();
     imageFormat = (alpha
@@ -400,6 +406,7 @@ void QDirectFBPixmapData::copy(const QPixmapData *data, const QRect &rect)
     h = rect.height();
     d = otherData->d;
     is_null = (w <= 0 || h <= 0);
+    unlockSurface();
     DFBResult result = dfbSurface->Blit(dfbSurface, src, &blitRect, 0, 0);
 #if (Q_DIRECTFB_VERSION >= 0x010000)
     dfbSurface->ReleaseSource(dfbSurface);
@@ -438,7 +445,7 @@ void QDirectFBPixmapData::fill(const QColor &color)
 
     alpha = (color.alpha() < 255);
 
-    if (alpha && ::isOpaqueFormat(imageFormat)) {
+    if (alpha && isOpaqueFormat(imageFormat)) {
         QSize size;
         dfbSurface->GetSize(dfbSurface, &size.rwidth(), &size.rheight());
         screen->releaseDFBSurface(dfbSurface);
@@ -460,18 +467,21 @@ QPixmap QDirectFBPixmapData::transformed(const QTransform &transform,
                                          Qt::TransformationMode mode) const
 {
     QDirectFBPixmapData *that = const_cast<QDirectFBPixmapData*>(this);
+#ifdef QT_NO_DIRECTFB_SUBSURFACE
+    if (lockFlags())
+        that->unlockSurface();
+#endif
+
     if (!dfbSurface || transform.type() != QTransform::TxScale
         || mode != Qt::FastTransformation)
     {
         const QImage *image = that->buffer();
         Q_ASSERT(image);
         const QImage transformed = image->transformed(transform, mode);
-        that->unlockDirectFB();
         QDirectFBPixmapData *data = new QDirectFBPixmapData(screen, QPixmapData::PixmapType);
         data->fromImage(transformed, Qt::AutoColor);
         return QPixmap(data);
     }
-    that->unlockDirectFB();
 
     const QSize size = transform.mapRect(QRect(0, 0, w, h)).size();
     if (size.isEmpty())
@@ -551,14 +561,12 @@ QPaintEngine *QDirectFBPixmapData::paintEngine() const
 
 QImage *QDirectFBPixmapData::buffer()
 {
-    lockDirectFB(DSLF_READ|DSLF_WRITE);
-    return lockedImage;
-}
-
-QImage * QDirectFBPixmapData::buffer(DFBSurfaceLockFlags lockFlags)
-{
-    lockDirectFB(lockFlags);
-    return lockedImage;
+    if (!lockFlgs) {
+        lockSurface(DSLF_READ|DSLF_WRITE);
+    }
+    Q_ASSERT(lockFlgs);
+    Q_ASSERT(!lockedImage.isNull());
+    return &lockedImage;
 }
 
 void QDirectFBPixmapData::invalidate()
@@ -573,4 +581,10 @@ void QDirectFBPixmapData::invalidate()
     is_null = true;
     imageFormat = QImage::Format_Invalid;
 }
+
+QT_END_NAMESPACE
+
+#endif // QT_NO_QWS_DIRECTFB
+
+
 

@@ -86,16 +86,6 @@ QScriptStringPrivate::~QScriptStringPrivate()
 }
 
 /*!
-  \internal
-*/
-void QScriptStringPrivate::init(QScriptString &q, QScriptEngine *engine,
-                                const JSC::Identifier &value)
-{
-    Q_ASSERT(!q.isValid());
-    q.d_ptr = new QScriptStringPrivate(engine, value);
-}
-
-/*!
   Constructs an invalid QScriptString.
 */
 QScriptString::QScriptString()

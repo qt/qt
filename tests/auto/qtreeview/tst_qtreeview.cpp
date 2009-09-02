@@ -233,6 +233,7 @@ private slots:
     void task239271_addRowsWithFirstColumnHidden();
     void task254234_proxySort();
     void task248022_changeSelection();
+    void task245654_changeModelAndExpandAll();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -3462,6 +3463,35 @@ void tst_QTreeView::task248022_changeSelection()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(model.index(1)).center());
     QCOMPARE(view.selectionModel()->selectedIndexes().count(), list.count());
 }
+
+void tst_QTreeView::task245654_changeModelAndExpandAll()
+{
+    QTreeView view;
+    QStandardItemModel *model = new QStandardItemModel;
+    QStandardItem *top = new QStandardItem("top");
+    QStandardItem *sub = new QStandardItem("sub");
+    top->appendRow(sub);
+    model->appendRow(top);
+    view.setModel(model);
+    view.expandAll();
+    QApplication::processEvents();
+    QVERIFY(view.isExpanded(top->index()));
+
+    //now let's try to delete the model
+    //then repopulate and expand again
+    delete model;
+    model = new QStandardItemModel;
+    top = new QStandardItem("top");
+    sub = new QStandardItem("sub");
+    top->appendRow(sub);
+    model->appendRow(top);
+    view.setModel(model);
+    view.expandAll();
+    QApplication::processEvents();
+    QVERIFY(view.isExpanded(top->index()));
+
+}
+
 
 
 QTEST_MAIN(tst_QTreeView)

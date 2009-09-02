@@ -98,8 +98,10 @@ void TabletCanvas::tabletEvent(QTabletEvent *event)
 
     switch (event->type()) {
         case QEvent::TabletPress:
-            if (!deviceDown)
+            if (!deviceDown) {
                 deviceDown = true;
+                polyLine[0] = polyLine[1] = polyLine[2] = event->pos();
+            }
             break;
         case QEvent::TabletRelease:
             if (deviceDown)
