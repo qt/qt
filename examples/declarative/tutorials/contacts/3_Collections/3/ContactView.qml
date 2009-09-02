@@ -102,7 +102,7 @@ Item {
                         }
                         PropertyChanges {
                             target: contactListView
-                            locked: 1
+                            interactive: 0
                         }
                         PropertyChanges {
                             target: label
