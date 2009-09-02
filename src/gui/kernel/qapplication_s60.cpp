@@ -70,6 +70,11 @@
 
 #include "private/qstylesheetstyle_p.h"
 
+#ifdef _DEBUG
+#define DEBUG_QSYMBIANCONTROL
+#include <QDebug>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 #if defined(QT_DEBUG)
@@ -329,6 +334,12 @@ void QSymbianControl::ConstructL(bool topLevel, bool desktop)
              * is created for a widget between this one and the root window.
              */
             CreateWindowL(qwidget->parentWidget()->winId());
+        
+#ifdef DEBUG_QSYMBIANCONTROL
+        qDebug()    << "QSymbianControl::ConstructL [" << this
+                    << "] widget" << qwidget
+                    << "control" << qwidget->winId();
+#endif
         
         // Necessary in order to be able to track the activation status of
         // the control's window
@@ -606,12 +617,19 @@ TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 void QSymbianControl::Draw(const TRect& r) const
 {
     QWindowSurface *surface = qwidget->windowSurface();
-    if (!surface)
-        return;
-
-    QPaintEngine *engine = surface->paintDevice()->paintEngine();
+    QPaintEngine *engine = surface ? surface->paintDevice()->paintEngine() : NULL;
+    
+#ifdef DEBUG_QSYMBIANCONTROL
+    qDebug()    << "QSymbianControl::Draw [" << this << "]"
+                << "rect " << r.iTl.iX << ',' << r.iTl.iY
+                << '-' << r.iBr.iX << ',' << r.iBr.iY
+                << "surface" << surface
+                << "engine" << engine;
+#endif
+    
     if (!engine)
         return;
+    
     if (engine->type() == QPaintEngine::Raster) {
         QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
         CFbsBitmap *bitmap = s60Surface->symbianBitmap();
@@ -625,12 +643,18 @@ void QSymbianControl::Draw(const TRect& r) const
 }
 
 void QSymbianControl::SizeChanged()
-{
+{   
     CCoeControl::SizeChanged();
 
     QSize oldSize = qwidget->size();
     QSize newSize(Size().iWidth, Size().iHeight);
 
+#ifdef DEBUG_QSYMBIANCONTROL
+    qDebug()    << "QSymbianControl::SizeChanged [" << this << "]"
+                << oldSize.width() << 'x' << oldSize.height()
+                << "-" << newSize.width() << 'x' << newSize.height();
+#endif
+    
     if (oldSize != newSize) {
         QRect cr = qwidget->geometry();
         cr.setSize(newSize);
@@ -656,7 +680,13 @@ void QSymbianControl::PositionChanged()
 
     QPoint oldPos = qwidget->geometry().topLeft();
     QPoint newPos(Position().iX, Position().iY);
-
+    
+#ifdef DEBUG_QSYMBIANCONTROL
+    qDebug()    << "QSymbianControl::SizeChanged [" << this << "]"
+                << oldPos.x() << ',' << oldPos.y()
+                << "-" << newPos.x() << ',' << newPos.y();
+#endif
+    
     if (oldPos != newPos) {
         QRect cr = qwidget->geometry();
         cr.moveTopLeft(newPos);
