@@ -34,6 +34,10 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 // rect, i.e. QWidget::winId()->Rect()
 //#define PHONON_MMF_HARD_CODE_VIDEO_RECT
 
+// Hack to make the video invisible.  This is used in order to debug
+// problems caused by the window-owning control change.
+//#define PHONON_MMF_HARD_CODE_VIDEO_RECT_TO_EMPTY
+
 QT_BEGIN_NAMESPACE
 
 namespace Phonon

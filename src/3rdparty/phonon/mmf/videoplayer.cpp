@@ -412,41 +412,6 @@ void MMF::VideoPlayer::getNativeWindowSystemHandles()
     m_screenDevice = coeEnv->ScreenDevice();
     m_window = control->DrawableWindow();
     
-/*
-    TRACE("control               0x%08x", control);
-    TRACE("control IsVisible     %d", control->IsVisible());
-    TRACE("control IsDimmed      %d", control->IsDimmed());
-    TRACE("control HasBorder     %d", control->HasBorder());
-    TRACE("control Position      %d %d",
-          control->Position().iX, control->Position().iY);
-    TRACE("control Rect          %d %d - %d %d",
-          control->Rect().iTl.iX, control->Rect().iTl.iY,
-          control->Rect().iBr.iX, control->Rect().iBr.iY);
-    TRACE("control OwnsWindow    %d", control->OwnsWindow());
-
-    CCoeEnv* const coeEnv = control->ControlEnv();
-
-    m_wsSession = &(coeEnv->WsSession());
-
-    TRACE("session Handle        0x%08x", m_wsSession->Handle());
-
-    m_screenDevice = coeEnv->ScreenDevice();
-
-    TRACE("device WsHandle       0x%08x", m_screenDevice->WsHandle());
-
-    m_window = control->DrawableWindow();
-
-    TRACE("window ClientHandle   0x%08x", m_window->ClientHandle());
-    TRACE("window WsHandle       0x%08x", m_window->WsHandle());
-    TRACE("window WindowGroupId  %d", m_window->WindowGroupId());
-    TRACE("window Position       %d %d",
-          m_window->Position().iX, m_window->Position().iY);
-    TRACE("window AbsPosition    %d %d",
-          m_window->AbsPosition().iX, m_window->AbsPosition().iY);
-    TRACE("window Size           %d %d",
-          m_window->Size().iWidth, m_window->Size().iHeight);
-*/
-    
 #ifdef _DEBUG
     QScopedPointer<ObjectDump::QDumper> dumper(new ObjectDump::QDumper);
     dumper->setPrefix("Phonon::MMF"); // to aid searchability of logs
@@ -460,12 +425,16 @@ void MMF::VideoPlayer::getNativeWindowSystemHandles()
     // updateGeometry on the parent widget?
     m_windowRect = TRect(0, 100, 320, 250);
     m_clipRect = m_windowRect;
-#else
+#else    
     m_windowRect = TRect(
         control->DrawableWindow()->AbsPosition(),
         control->DrawableWindow()->Size());
     
-    //m_clipRect = control->Rect();
+    m_clipRect = m_windowRect;
+#endif
+    
+#ifdef PHONON_MMF_HARD_CODE_VIDEO_RECT_TO_EMPTY
+    m_windowRect = TRect(0, 0, 0, 0);
     m_clipRect = m_windowRect;
 #endif
     
