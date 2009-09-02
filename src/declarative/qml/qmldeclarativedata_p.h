@@ -59,6 +59,7 @@ QT_BEGIN_NAMESPACE
 
 class QmlCompiledData;
 class QmlAbstractBinding;
+class QmlContext;
 class QmlDeclarativeData : public QDeclarativeData
 {
 public:
@@ -68,6 +69,10 @@ public:
 
     QmlContext *context;
     QmlAbstractBinding *bindings;
+
+    QmlContext *outerContext; // Can't this be found from context?
+    ushort lineNumber;
+    ushort columnNumber;
 
     QmlCompiledData *deferredComponent; // Can't this be found from the context?
     unsigned int deferredIdx;
