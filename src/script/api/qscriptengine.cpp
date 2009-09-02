@@ -3236,11 +3236,10 @@ QStringList QScriptEngine::importedExtensions() const
     The \c Container type must provide a \c const_iterator class to enable the
     contents of the container to be copied into the array.
 
-    Additionally, the type of each element in the sequence should be suitable
-    for conversion to a QScriptValue.
-    See \l{QtScript Module#Conversion Between QtScript and C++ Types}
-    {Conversion Between QtScript and C++ Types} for more information about the
-    restrictions on types that can be used with QScriptValue.
+    Additionally, the type of each element in the sequence should be
+    suitable for conversion to a QScriptValue.  See
+    \l{Conversion Between QtScript and C++ Types} for more information
+    about the restrictions on types that can be used with QScriptValue.
 
     \sa qScriptValueFromValue()
 */
@@ -3257,11 +3256,11 @@ QStringList QScriptEngine::importedExtensions() const
     as long as it provides a \c length property describing how many elements
     it contains.
 
-    Additionally, the type of each element in the sequence must be suitable
-    for conversion to a C++ type from a QScriptValue.
-    See \l{QtScript Module#Conversion Between QtScript and C++ Types}
-    {Conversion Between QtScript and C++ Types} for more information about the
-    restrictions on types that can be used with QScriptValue.
+    Additionally, the type of each element in the sequence must be
+    suitable for conversion to a C++ type from a QScriptValue.  See
+    \l{Conversion Between QtScript and C++ Types} for more information
+    about the restrictions on types that can be used with
+    QScriptValue.
 
     \sa qscriptvalue_cast()
 */

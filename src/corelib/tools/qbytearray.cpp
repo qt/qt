@@ -4099,6 +4099,10 @@ QByteArray QByteArray::toPercentEncoding(const QByteArray &exclude, const QByteA
     \internal
 */
 
+/*! \typedef QByteArray::value_type
+  \internal
+ */
+
 /*!
     \fn QByteArray::QByteArray(int size)
 
