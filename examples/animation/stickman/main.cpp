@@ -50,6 +50,7 @@
 
 int main(int argc, char **argv)
 {
+    Q_INIT_RESOURCE(stickman);
     QApplication app(argc, argv);
 
     StickMan *stickMan = new StickMan;
@@ -86,11 +87,11 @@ int main(int argc, char **argv)
     view->setSceneRect(scene->sceneRect());
     
     LifeCycle *cycle = new LifeCycle(stickMan, view);
-    cycle->setDeathAnimation("animations/dead");
+    cycle->setDeathAnimation(":/animations/dead");
     
-    cycle->addActivity("animations/jumping", Qt::Key_J);
-    cycle->addActivity("animations/dancing", Qt::Key_D);
-    cycle->addActivity("animations/chilling", Qt::Key_C);
+    cycle->addActivity(":/animations/jumping", Qt::Key_J);
+    cycle->addActivity(":/animations/dancing", Qt::Key_D);
+    cycle->addActivity(":/animations/chilling", Qt::Key_C);
     cycle->start();
 
     return app.exec();
