@@ -40,6 +40,8 @@
 ****************************************************************************/
 
 #include "qmlinfo.h"
+#include <private/qmldeclarativedata_p.h>
+#include <QtDeclarative/qmlcontext.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -80,7 +82,19 @@ QmlInfo::QmlInfo(QObject *object)
     *this << "QML";
     if (object) 
         *this << object->metaObject()->className();
-    *this << "(unknown location):";
+    QmlDeclarativeData *ddata = QmlDeclarativeData::get(object);
+    if (ddata) {
+        QString location = QLatin1String("(");
+        location += ddata->outerContext->baseUrl().toString();
+        location += QLatin1String(":");
+        location += QString::number(ddata->lineNumber);
+        location += QLatin1String(":");
+        location += QString::number(ddata->columnNumber);
+        location += QLatin1String(")");
+        *this << location.toLatin1().constData();
+    } else {
+        *this << "(unknown location):";
+    }
 }
 
 /*!
