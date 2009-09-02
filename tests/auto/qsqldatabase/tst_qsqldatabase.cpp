@@ -513,10 +513,6 @@ void tst_QSqlDatabase::tables()
     QVERIFY(tables.contains(qTableName("qtest"), Qt::CaseInsensitive));
     QVERIFY(!tables.contains("sql_features", Qt::CaseInsensitive)); //check for postgres 7.4 internal tables
     if (views) {
-        if (db.driverName().startsWith("QMYSQL"))
-            // MySQL doesn't differentiate between tables and views when calling QSqlDatabase::tables()
-            // May be fixable by doing a select on informational_schema.tables instead of using the client library api
-            QEXPECT_FAIL("", "MySQL driver thinks that views are tables", Continue);
         QVERIFY(!tables.contains(qTableName("qtest_view"), Qt::CaseInsensitive));
     }
     if (tempTables)
@@ -524,10 +520,6 @@ void tst_QSqlDatabase::tables()
 
     tables = db.tables(QSql::Views);
     if (views) {
-        if (db.driverName().startsWith("QMYSQL"))
-            // MySQL doesn't give back anything when calling QSqlDatabase::tables() with QSql::Views
-            // May be fixable by doing a select on informational_schema.views instead of using the client library api
-            QEXPECT_FAIL("", "MySQL driver thinks that views are tables", Continue);
         if(!tables.contains(qTableName("qtest_view"), Qt::CaseInsensitive))
             qDebug() << "failed to find" << qTableName("qtest_view") << "in" << tables;
         QVERIFY(tables.contains(qTableName("qtest_view"), Qt::CaseInsensitive));
