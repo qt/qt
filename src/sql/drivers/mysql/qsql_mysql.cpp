@@ -1310,8 +1310,10 @@ QSqlResult *QMYSQLDriver::createResult() const
 QStringList QMYSQLDriver::tables(QSql::TableType type) const
 {
     QStringList tl;
+#if MYSQL_VERSION_ID >= 40100
     if( mysql_get_server_version(d->mysql) < 50000)
     {
+#endif
         if (!isOpen())
             return tl;
         if (!(type & QSql::Tables))
@@ -1329,6 +1331,7 @@ QStringList QMYSQLDriver::tables(QSql::TableType type) const
             i++;
         }
         mysql_free_result(tableRes);
+#if MYSQL_VERSION_ID >= 40100
     } else {
         QSqlQuery q(createResult());
         if(type & QSql::Tables) {
@@ -1342,6 +1345,7 @@ QStringList QMYSQLDriver::tables(QSql::TableType type) const
                 tl.append(q.value(0).toString());
         }
     }
+#endif
     return tl;
 }
 
