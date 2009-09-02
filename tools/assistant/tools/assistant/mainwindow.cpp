@@ -839,10 +839,7 @@ void MainWindow::showAboutDialog()
             "<p>Version %2 %3</p></center>"
             "<p>%4</p>"
             "<p>%5</p>"
-            "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)"
-            ".</p><p>The program is provided AS IS with NO WARRANTY OF ANY KIND,"
-            " INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A"
-            " PARTICULAR PURPOSE.<p/>")
+            "<p>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</p>")
             .arg(tr("Qt Assistant")).arg(QLatin1String(QT_VERSION_STR))
             .arg(edition).arg(info).arg(moreInfo), resources);
         QLatin1String path(":/trolltech/assistant/images/assistant-128.png");
