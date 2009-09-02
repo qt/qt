@@ -121,7 +121,7 @@ public:
     QmlTimeLineEvent fixupXEvent;
     QmlTimeLineEvent fixupYEvent;
     qreal maxVelocity;
-    bool locked;
+    bool interactive;
     QFxFlickable::DragMode dragMode;
     ElasticValue elasticY;
     ElasticValue elasticX;
