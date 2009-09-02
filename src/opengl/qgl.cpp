@@ -4922,13 +4922,13 @@ void QGLShareRegister::removeShare(const QGLContext *context) {
 QGLContextResource::QGLContextResource(FreeFunc f, QObject *parent)
     : QObject(parent), free(f)
 {
-    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext *)), this, SLOT(aboutToDestroyContext(const QGLContext *)));
+    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext *)), this, SLOT(removeOne(const QGLContext *)));
 }
 
 QGLContextResource::~QGLContextResource()
 {
     while (!m_resources.empty())
-        remove(m_resources.begin().key());
+        removeGroup(m_resources.begin().key());
 }
 
 void QGLContextResource::insert(const QGLContext *key, void *value)
@@ -4976,7 +4976,7 @@ void *QGLContextResource::value(const QGLContext *key)
     return it.value();
 }
 
-void QGLContextResource::remove(const QGLContext *key)
+void QGLContextResource::removeGroup(const QGLContext *key)
 {
     QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
     if (shares.size() == 0)
@@ -5000,7 +5000,7 @@ void QGLContextResource::remove(const QGLContext *key)
     }
 }
 
-void QGLContextResource::aboutToDestroyContext(const QGLContext *key)
+void QGLContextResource::removeOne(const QGLContext *key)
 {
     ResourceHash::iterator it = m_resources.find(key);
     if (it == m_resources.end())
