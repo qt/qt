@@ -328,63 +328,6 @@ void QFxRect::setColor(const QColor &c)
     update();
 }
 
-/*!
-    \qmlproperty color Rectangle::tintColor
-    This property holds The color to tint the rectangle.
-
-    This color will be drawn over the rectangle's color when the rectangle is painted. The tint color should usually be mostly transparent, or you will not be able to see the underlying color. The below example provides a slight red tint by having the tint color be pure red which is only 1/16th opaque.
-
-    \qml
-    Rectangle { x: 0; width: 80; height: 80; color: "lightsteelblue" }
-    Rectangle { x: 100; width: 80; height: 80; color: "lightsteelblue"; tintColor: "#10FF0000" }
-    \endqml
-    \image declarative-rect_tint.png
-
-    This attribute is not intended to be used with a single color over the lifetime of an user interface. It is most useful when a subtle change is intended to be conveyed due to some event; you can then use the tint color to more effectively tune the visible color.
-*/
-QColor QFxRect::tintColor() const
-{
-    Q_D(const QFxRect);
-    return d->tintColor;
-}
-
-void QFxRect::setTintColor(const QColor &c)
-{
-    Q_D(QFxRect);
-    if (d->tintColor == c)
-        return;
-
-    d->tintColor = c;
-    update();
-}
-
-QColor QFxRectPrivate::getColor()
-{
-    if (tintColor.isValid()) {
-        int a = tintColor.alpha();
-        if (a == 0xFF)
-            return tintColor;
-        else if (a == 0x00)
-            return color;
-        else {
-            uint src = tintColor.rgba();
-            uint dest = color.rgba();
-
-            uint res = (((a * (src & 0xFF00FF)) +
-                        ((0xFF - a) * (dest & 0xFF00FF))) >> 8) & 0xFF00FF;
-            res |= (((a * ((src >> 8) & 0xFF00FF)) +
-                    ((0xFF - a) * ((dest >> 8) & 0xFF00FF)))) & 0xFF00FF00;
-            if ((src & 0xFF000000) == 0xFF000000)
-                res |= 0xFF000000;
-
-            return QColor::fromRgba(res);
-        }
-    } else {
-        return color;
-    }
-}
-
-
 void QFxRect::generateRoundedRect()
 {
     Q_D(QFxRect);
@@ -443,7 +386,7 @@ void QFxRect::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
         bool oldAA = p->testRenderHint(QPainter::Antialiasing);
         if (d->smooth)
             p->setRenderHints(QPainter::Antialiasing, true);
-        p->fillRect(QRectF(0, 0, width(), height()), d->getColor());
+        p->fillRect(QRectF(0, 0, width(), height()), d->color);
         if (d->smooth)
             p->setRenderHint(QPainter::Antialiasing, oldAA);
     }
@@ -527,7 +470,7 @@ void QFxRect::drawRect(QPainter &p)
         // Middle
         if (xMiddles && yMiddles)
             // XXX paint errors in animation example
-            //p.fillRect(xOffset-pw/2, yOffset-pw/2, width() - xSide + pw, height() - ySide + pw, d->getColor());
+            //p.fillRect(xOffset-pw/2, yOffset-pw/2, width() - xSide + pw, height() - ySide + pw, d->color);
             p.drawPixmap(QRect(xOffset-pw/2, yOffset-pw/2, width() - xSide + pw, height() - ySide + pw), d->rectImage,
                                 QRect(d->rectImage.width()/2, d->rectImage.height()/2, 1, 1));
         // Middle right

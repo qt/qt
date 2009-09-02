@@ -81,7 +81,6 @@ public:
     QColor getColor();
     QColor color;
     QFxGradient *gradient;
-    QColor tintColor;
     QFxPen *getPen() {
         if (!pen) {
             Q_Q(QFxRect);
