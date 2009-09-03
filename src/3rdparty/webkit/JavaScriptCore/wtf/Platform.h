@@ -301,6 +301,30 @@
 #define WTF_PLATFORM_BIG_ENDIAN 1
 #endif
 
+/* PLATFORM(HPPA) */
+/* a.k.a. PA-RISC */
+#if defined(__hppa) || defined(__hppa__)
+#define WTF_PLATFORM_HPPA 1
+#define WTF_PLATFORM_BIG_ENDIAN 1
+#endif
+
+/* PLATFORM(IA64) */
+/* a.k.a. Itanium Processor Family, IPF */
+#if defined(__ia64) || defined(__ia64__) || defined(_M_IA64)
+#define WTF_PLATFORM_IA64 1
+
+/* Itanium can be both big- and little-endian
+   we need to determine at compile time which one it is.
+    - HP's aCC compiler only compiles big-endian (so HP-UXi is always big-endian)
+    - GCC defines __BIG_ENDIAN__ for us (default on HP-UX)
+    - Linux is usually little-endian
+    - I've never seen AIX or Windows on IA-64, but they should be little-endian too
+*/
+#if defined(__BIG_ENDIAN__) || defined(__HP_aCC)
+# define WTF_PLATFORM_BIG_ENDIAN 1
+#endif
+#endif
+
 /* PLATFORM(WINCE) && PLATFORM(QT)
    We can not determine the endianess at compile time. For
    Qt for Windows CE the endianess is specified in the
