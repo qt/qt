@@ -1490,7 +1490,7 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
                                     color.red(), color.green(), color.blue(),
                                     color.alpha());
     const int n = region.numRects();
-    if (n > 1) {
+    if (n == 1) {
         const QRect r = region.boundingRect();
         d_ptr->primarySurface->FillRectangle(d_ptr->primarySurface, r.x(), r.y(), r.width(), r.height());
     } else {
