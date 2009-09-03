@@ -517,6 +517,19 @@ struct QGraphicsItemPrivate::TransformData
             return transform * *postmultiplyTransform;
         }
 
+        if (graphicsTransforms.isEmpty()) {
+            // Faster, and higher precision if there are no graphics
+            // transforms.
+            QTransform x(transform);
+            x.translate(xOrigin, yOrigin);
+            x.rotate(rotation);
+            x.scale(scale, scale);
+            x.translate(-xOrigin, -yOrigin);
+            if (postmultiplyTransform)
+                x *= *postmultiplyTransform;
+            return x;
+        }
+
         QMatrix4x4 x(transform);
         for (int i = 0; i < graphicsTransforms.size(); ++i)
             graphicsTransforms.at(i)->applyTo(&x);

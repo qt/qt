@@ -501,6 +501,8 @@ public:
         WA_WState_AcceptedTouchBeginEvent = 122,
         WA_TouchPadAcceptSingleTouchEvents = 123,
 
+        WA_DontUseStandardGestures = 124,
+
         // Add new attributes before this line
         WA_AttributeCount
     };

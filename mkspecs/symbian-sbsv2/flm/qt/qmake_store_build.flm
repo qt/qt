@@ -27,10 +27,10 @@ $(STORE_BUILD_TARGET):
 	echo "#  Name        : .make.cache" >> $(CACHE_FILENAME) && \
 	echo "#  Part of     : " >> $(CACHE_FILENAME) && \
 	echo "#  Description : This file is used to cache last build target for" >> $(CACHE_FILENAME) && \
-	echo "#                make sisx target." >> $(CACHE_FILENAME) && \
+	echo "#                make sis target." >> $(CACHE_FILENAME) && \
 	echo "#  Version     : " >> $(CACHE_FILENAME) && \
 	echo "# ==============================================================================" >> $(CACHE_FILENAME) && \
-	echo QT_SISX_TARGET ?= $(VISUAL_CFG)-$(PLATFORM_PATH) >> $(CACHE_FILENAME) \
+	echo QT_SIS_TARGET ?= $(VISUAL_CFG)-$(PLATFORM_PATH) >> $(CACHE_FILENAME) \
 	$(call endrule,qmake_store_build)
 endef
 

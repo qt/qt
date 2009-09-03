@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include "config.h" // compile on Windows
 #include "qscriptstring.h"
 #include "qscriptstring_p.h"
 #include "qscriptengine.h"
