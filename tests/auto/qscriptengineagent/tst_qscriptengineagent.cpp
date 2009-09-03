@@ -176,6 +176,22 @@ struct ScriptEngineEvent
         : type(ExceptionThrow), scriptId(scriptId),
           value(exception), hasExceptionHandler(hasHandler)
         { }
+
+    static QString typeToQString(Type t)
+    {
+        switch (t) {
+            case ScriptEngineEvent::ScriptLoad: return "ScriptLoad";
+            case ScriptEngineEvent::ScriptUnload: return "ScriptUnload";
+            case ScriptEngineEvent::ContextPush: return "ContextPush";
+            case ScriptEngineEvent::ContextPop: return "ContextPop";
+            case ScriptEngineEvent::FunctionEntry: return "FunctionEntry";
+            case ScriptEngineEvent::FunctionExit: return "FunctionExit";
+            case ScriptEngineEvent::PositionChange: return "PositionChange";
+            case ScriptEngineEvent::ExceptionThrow: return "ExceptionThrow";
+            case ScriptEngineEvent::ExceptionCatch: return "ExceptionCatch";
+            case ScriptEngineEvent::DebuggerInvocationRequest: return "DebuggerInvocationRequest";
+            }
+    }
 };
 
 class ScriptEngineSpy : public QScriptEngineAgent, public QList<ScriptEngineEvent>
