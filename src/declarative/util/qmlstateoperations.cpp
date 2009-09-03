@@ -498,13 +498,19 @@ bool QmlAnchorChanges::changesBindings()
     return true;
 }
 
-void QmlAnchorChanges::clearForwardBindings()
+void QmlAnchorChanges::saveForwardBindings()
 {
     Q_D(QmlAnchorChanges);
     d->origLeft = d->target->anchors()->left();
     d->origRight = d->target->anchors()->right();
     d->origTop = d->target->anchors()->top();
     d->origBottom = d->target->anchors()->bottom();
+
+}
+
+void QmlAnchorChanges::clearForwardBindings()
+{
+    Q_D(QmlAnchorChanges);
     d->origX = d->target->x();
     d->origY = d->target->y();
     d->origWidth = d->target->width();

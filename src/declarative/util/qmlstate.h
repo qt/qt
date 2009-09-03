@@ -95,6 +95,7 @@ public:
     virtual QList<Action> extraActions();
 
     virtual bool changesBindings();
+    virtual void saveForwardBindings() {}
     virtual void clearForwardBindings();
     virtual void clearReverseBindings();
     virtual bool override(ActionEvent*other);
