@@ -794,10 +794,6 @@ void QPlainTextEditPrivate::init(const QString &txt)
     viewport->setCursor(Qt::IBeamCursor);
 #endif
     originalOffsetY = 0;
-#ifdef Q_WS_WIN
-    panGesture = new QPanGesture(q);
-    QObject::connect(panGesture, SIGNAL(triggered()), q, SLOT(_q_gestureTriggered()));
-#endif
 }
 
 void QPlainTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)

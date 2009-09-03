@@ -54,6 +54,7 @@
 
 #ifdef Q_WS_WIN
 #include "qstandardgestures.h"
+#include <private/qstandardgestures_p.h>
 #endif
 
 #include "qabstractscrollarea_p.h"
@@ -299,8 +300,11 @@ void QAbstractScrollAreaPrivate::init()
     layoutChildren();
 
 #ifdef Q_WS_WIN
-    panGesture = new QPanGesture(viewport);
+    panGesture = new QPanGesture(viewport, q);
+    panGesture->d_func()->implicitGesture = true;
+    QObject::connect(panGesture, SIGNAL(started()), q, SLOT(_q_gestureTriggered()));
     QObject::connect(panGesture, SIGNAL(triggered()), q, SLOT(_q_gestureTriggered()));
+    QObject::connect(panGesture, SIGNAL(finished()), q, SLOT(_q_gestureTriggered()));
 #endif // Q_WS_WIN
 }
 

@@ -241,15 +241,18 @@ void QGesture::updateState(Qt::GestureState state)
         return;
     }
     const Qt::GestureState oldState = d->state;
-    d->state = state;
     if (state != Qt::NoGesture && oldState > state) {
         // comparing the state as ints: state should only be changed from
         // started to (optionally) updated and to finished.
+        d->state = state;
         qWarning("QGesture::updateState: incorrect new state");
         return;
     }
-    if (oldState == Qt::NoGesture)
+    if (oldState == Qt::NoGesture) {
+        d->state = Qt::GestureStarted;
         emit started();
+    }
+    d->state = state;
     if (state == Qt::GestureUpdated)
         emit triggered();
     else if (state == Qt::GestureFinished)
