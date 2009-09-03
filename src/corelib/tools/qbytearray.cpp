@@ -1467,8 +1467,19 @@ QByteArray &QByteArray::prepend(const QByteArray &ba)
 
 QByteArray &QByteArray::prepend(const char *str)
 {
+    return prepend(str, qstrlen(str));
+}
+
+/*!
+    \overload
+    \since 4.6
+
+    Prepends \a len bytes of the string \a str to this byte array.
+*/
+
+QByteArray &QByteArray::prepend(const char *str, int len)
+{
     if (str) {
-        int len = qstrlen(str);
         if (d->ref != 1 || d->size + len > d->alloc)
             realloc(qAllocMore(d->size + len, sizeof(Data)));
         memmove(d->data+len, d->data, d->size);
@@ -1675,6 +1686,22 @@ QByteArray &QByteArray::insert(int i, const QByteArray &ba)
 QByteArray &QByteArray::insert(int i, const char *str)
 {
     return qbytearray_insert(this, i, str, qstrlen(str));
+}
+
+/*!
+    \overload
+    \since 4.6
+
+    Inserts \a len bytes of the string \a str at position
+    \a i in the byte array.
+
+    If \a i is greater than size(), the array is first extended using
+    resize().
+*/
+
+QByteArray &QByteArray::insert(int i, const char *str, int len)
+{
+    return qbytearray_insert(this, i, str, len);
 }
 
 /*!
