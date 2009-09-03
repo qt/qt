@@ -76,6 +76,7 @@ public:
 
     QByteArray name;
     QUrl url;
+    QmlEnginePrivate::Imports imports;
 
     struct TypeReference 
     {

@@ -7,6 +7,11 @@ QT += declarative \
     network \
     sql
 
+contains(QT_CONFIG, opengl) {
+    QT += opengl
+    DEFINES += GL_SUPPORTED
+}
+
 # Input
 HEADERS += qmlviewer.h \
     proxysettings.h
