@@ -48,6 +48,10 @@ Flickable: xVelocity   -> horizontalVelocity
 Flickable: yVelocity   -> verticalVelocity
 Flickable: velocityDecay -> reportedVelocitySmoothing
 Flickable: locked      -> interactive (note reversal of meaning)
+Flickable: pageXPosition -> visibleArea.xPosition
+Flickable: pageYPosition -> visibleArea.yPosition
+Flickable: pageWidth    -> visibleArea.widthRatio
+Flickable: pageHeight   -> visibleArea.heightRatio
 WebView: idealWidth    -> preferredWidth
 WebView: idealHeight   -> preferredHeight
 WebView: status        -> statusText
