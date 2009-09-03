@@ -131,7 +131,7 @@ private:
 
 template <class Key, class T>
 inline QCache<Key, T>::QCache(int amaxCost)
-    : f(0), l(0), mx(amaxCost), total(0) {}
+    : f(0), l(0), unused(0), mx(amaxCost), total(0) {}
 
 template <class Key, class T>
 inline void QCache<Key,T>::clear()

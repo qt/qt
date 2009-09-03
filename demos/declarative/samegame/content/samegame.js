@@ -34,6 +34,10 @@ function initBoard()
     maxY = Math.floor(gameCanvas.height/tileSize);
     maxIndex = maxY*maxX;
 
+    //Close dialogs
+    scoreName.forceClose();
+    dialog.forceClose();
+
     //Initialize Board
     board = new Array(maxIndex);
     gameCanvas.score = 0;
@@ -144,10 +148,11 @@ function victoryCheck()
         gameCanvas.score += 500;
     //Checks for game over
     if(deservesBonus || !(floodMoveCheck(0,maxY-1, -1))){
-        dialog.show("Game Over. Your score is " + gameCanvas.score);
         timer = new Date() - timer;
         if(scoresURL != "")
-            scoreName.show("Please enter your name:                ");
+            scoreName.show("You've won! Please enter your name:                ");
+        else
+            dialog.show("Game Over. Your score is " + gameCanvas.score);
     }
 }
 

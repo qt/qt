@@ -86,6 +86,7 @@ protected:
 
     IDirectFBSurface *dfbSurface;
 #ifdef QT_DIRECTFB_SUBSURFACE
+    void releaseSubSurface();
     IDirectFBSurface *subSurface;
     friend class QDirectFBPaintEnginePrivate;
     bool syncPending;

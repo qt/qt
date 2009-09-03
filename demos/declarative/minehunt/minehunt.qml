@@ -60,9 +60,6 @@ Item {
                     }
                     Explosion {
                         id: expl
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenter: parent.verticalCenter
-                        //explode: modelData.hasMine && modelData.flipped//Doesn't wait for the pause
                     }
                 }
                 states: [
@@ -77,16 +74,20 @@ Item {
                         SequentialAnimation {
                             PauseAnimation {
                                 duration: {
-                                    var ret = Math.abs(flipable.parent.x-field.clickx)
+                                    var ret;
+                                    if(flipable.parent != null)
+                                        ret = Math.abs(flipable.parent.x-field.clickx)
                                             + Math.abs(flipable.parent.y-field.clicky);
+                                    else
+                                        ret = 0;
                                     if (ret > 0) {
                                         if (modelData.hasMine && modelData.flipped) {
-                                            ret*3
+                                            ret*3;
                                         } else {
-                                            ret
+                                            ret;
                                         }
                                     } else {
-                                        0
+                                        0;
                                     }
                                 }
                             }
@@ -95,14 +96,14 @@ Item {
                                 properties: "angle"
                             }
                             ScriptAction{
-                                script: if(modelData.hasMine && modelData.flipped)
-                                            {expl.explode = true;}
+                                script: "if(modelData.hasMine && modelData.flipped){expl.explode = true;}"
                             }
                         }
                     }
                 ]
                 MouseRegion {
                     anchors.fill: parent
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
                     onPressed: {
                         field.clickx = flipable.parent.x;
                         field.clicky = flipable.parent.y;
@@ -141,47 +142,54 @@ Item {
             }
         }
     }
-    Item {
+    Row {
         id: gamedata
-        width: 370
-        height: 100
-        y: 380
-        Text {
-            color: "white"
-            font.pointSize: 18
-            x: 20
-            y: 20
-        }
-        Image {
-            x: 100
-            y: 20
-            source: "pics/bomb-color.png"
-        }
-        Text {
-            x: 100
-            y: 60
-            color: "white"
-            text: numMines
-        }
-        Image {
-            x: 140
-            y: 20
-            source: "pics/flag-color.png"
-        }
-        Text {
-            x: 140
-            y: 60
-            color: "white"
-            text: numFlags
-        }
-        Image {
-            x: 280
-            y: 10
-            source: isPlaying ? 'pics/face-smile.png' : hasWon ? 'pics/face-smile-big.png': 'pics/face-sad.png'
-            MouseRegion {
-                anchors.fill: parent
-                onPressed: { reset() }
+       // width: 370
+       // height: 100
+        y: 400
+        x: 20
+        spacing: 20
+        Column {
+            spacing: 2
+            width: childrenRect.width
+            Image {
+         //       x: 100
+         //       y: 20
+                source: "pics/bomb-color.png"
             }
+            Text {
+         //       x: 100
+         //       y: 60
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "white"
+                text: numMines
+            }
+        }
+        Column {
+            spacing: 2
+            width: childrenRect.width
+            Image {
+         //       x: 140
+         //       y: 20
+                source: "pics/flag-color.png"
+            }
+            Text {
+         //       x: 140
+         //       y: 60
+                anchors.horizontalCenter: parent.horizontalCenter
+                color: "white"
+                text: numFlags
+            }
+        }
+    }
+    Image {
+        y: 390
+        anchors.right: field.right
+        anchors.rightMargin: 20
+        source: isPlaying ? 'pics/face-smile.png' : hasWon ? 'pics/face-smile-big.png': 'pics/face-sad.png'
+        MouseRegion {
+            anchors.fill: parent
+            onPressed: { reset() }
         }
     }
 }

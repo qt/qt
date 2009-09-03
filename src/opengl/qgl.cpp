@@ -2005,9 +2005,15 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
     QImage::Format target_format = img.format();
     bool premul = options & QGLContext::PremultipliedAlphaBindOption;
-    GLenum texture_format = QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_2
-                            ? GL_BGRA : GL_RGBA;
-    GLuint pixel_type = GL_UNSIGNED_BYTE;
+    GLenum texture_format;
+    GLuint pixel_type;
+    if (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_2) {
+        texture_format = GL_BGRA;
+        pixel_type = GL_UNSIGNED_INT_8_8_8_8_REV;
+    } else {
+        texture_format = GL_RGBA;
+        pixel_type = GL_UNSIGNED_BYTE;
+    }
 
     switch (target_format) {
     case QImage::Format_ARGB32:
@@ -2034,7 +2040,6 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         if (format == GL_RGBA)
             format = GL_RGB;
         break;
-
     default:
         if (img.hasAlphaChannel()) {
             img = img.convertToFormat(premul
@@ -2059,6 +2064,30 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
             int *b = (int *) img.scanLine(h - y - 1);
             for (int x=0; x<ipl; ++x)
                 qSwap(a[x], b[x]);
+        }
+    }
+
+    if (texture_format == GL_RGBA) {
+        // The only case where we end up with a depth different from
+        // 32 in the switch above is for the RGB16 case, where we set
+        // the format to GL_RGB
+        Q_ASSERT(img.depth() == 32);
+        const int width = img.width();
+        const int height = img.height();
+
+        if (pixel_type == GL_UNSIGNED_INT_8_8_8_8_REV
+            || (pixel_type == GL_UNSIGNED_BYTE && QSysInfo::ByteOrder == QSysInfo::LittleEndian)) {
+            for (int i=0; i < height; ++i) {
+                uint *p = (uint *) img.scanLine(i);
+                for (int x=0; x<width; ++x)
+                    p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
+            }
+        } else {
+            for (int i=0; i < height; ++i) {
+                uint *p = (uint *) img.scanLine(i);
+                for (int x=0; x<width; ++x)
+                    p[x] = (p[x] << 8) | ((p[x] >> 24) & 0xff);
+            }
         }
     }
 
@@ -3533,12 +3562,7 @@ bool QGLWidget::event(QEvent *e)
 #elif defined(Q_WS_WIN)
     if (e->type() == QEvent::ParentChange) {
         QGLContext *newContext = new QGLContext(d->glcx->requestedFormat(), this);
-        QList<const QGLContext *> shares = qgl_share_reg()->shares(d->glcx);
-        setContext(newContext);
-        for (int i = 0; i < shares.size(); ++i) {
-            if (newContext != shares.at(i))
-                qgl_share_reg()->addShare(newContext, shares.at(i));
-        }
+        setContext(newContext, d->glcx);
 
         // the overlay needs to be recreated as well
         delete d->olcx;
@@ -4922,13 +4946,13 @@ void QGLShareRegister::removeShare(const QGLContext *context) {
 QGLContextResource::QGLContextResource(FreeFunc f, QObject *parent)
     : QObject(parent), free(f)
 {
-    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext *)), this, SLOT(aboutToDestroyContext(const QGLContext *)));
+    connect(QGLSignalProxy::instance(), SIGNAL(aboutToDestroyContext(const QGLContext *)), this, SLOT(removeOne(const QGLContext *)));
 }
 
 QGLContextResource::~QGLContextResource()
 {
     while (!m_resources.empty())
-        remove(m_resources.begin().key());
+        removeGroup(m_resources.begin().key());
 }
 
 void QGLContextResource::insert(const QGLContext *key, void *value)
@@ -4976,7 +5000,7 @@ void *QGLContextResource::value(const QGLContext *key)
     return it.value();
 }
 
-void QGLContextResource::remove(const QGLContext *key)
+void QGLContextResource::removeGroup(const QGLContext *key)
 {
     QList<const QGLContext *> shares = qgl_share_reg()->shares(key);
     if (shares.size() == 0)
@@ -5000,7 +5024,7 @@ void QGLContextResource::remove(const QGLContext *key)
     }
 }
 
-void QGLContextResource::aboutToDestroyContext(const QGLContext *key)
+void QGLContextResource::removeOne(const QGLContext *key)
 {
     ResourceHash::iterator it = m_resources.find(key);
     if (it == m_resources.end())

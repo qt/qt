@@ -133,21 +133,22 @@ private:
 
 /*! \fn void QGesture::cancelled()
 
-    The signal is emitted when the gesture is cancelled, for example the reset()
-    function is called while the gesture was in the process of emitting a
-    triggered() signal.  Extended information about the gesture is contained in
-    the sender object.
+  The signal is emitted when the gesture is cancelled, for example the
+  reset() function is called while the gesture was in the process of
+  emitting a triggered() signal.  Extended information about the
+  gesture is contained in the sender object.
 */
 
-
 /*!
-    Creates a new gesture handler object and marks it as a child of \a parent.
+  Creates a new gesture handler object and marks it as a child of \a
+  parent.  \a gestureTarget is the object that the gesture will watch
+  for events.
 
-    The \a parent object is also the default event source for the gesture,
-    meaning that the gesture installs itself as an event filter for the \a
-    parent.
+  The \a parent object is also the default event source for the
+  gesture, meaning that the gesture installs itself as an event filter
+  for the \a parent.
 
-    \sa setGraphicsItem()
+  \sa setGraphicsItem()
 */
 QGesture::QGesture(QObject *gestureTarget, QObject *parent)
     : QObject(*new QGesturePrivate, parent)
@@ -173,7 +174,7 @@ QGesture::~QGesture()
 /*!
     \property QGesture::gestureTarget
 
-    Gesture target is the object that the gesture will observe for events.
+    Gesture target is the object that the gesture will watch for events.
     Typically this means that the gesture installs an event filter on the
     target object.
 */
@@ -240,15 +241,18 @@ void QGesture::updateState(Qt::GestureState state)
         return;
     }
     const Qt::GestureState oldState = d->state;
-    d->state = state;
     if (state != Qt::NoGesture && oldState > state) {
         // comparing the state as ints: state should only be changed from
         // started to (optionally) updated and to finished.
+        d->state = state;
         qWarning("QGesture::updateState: incorrect new state");
         return;
     }
-    if (oldState == Qt::NoGesture)
+    if (oldState == Qt::NoGesture) {
+        d->state = Qt::GestureStarted;
         emit started();
+    }
+    d->state = state;
     if (state == Qt::GestureUpdated)
         emit triggered();
     else if (state == Qt::GestureFinished)

@@ -47,6 +47,7 @@ private slots:
     void dynamicObjects();
     void customVariantTypes();
     void valueTypes();
+    void cppnamespace();
 
     void importsBuiltin_data();
     void importsBuiltin();
@@ -505,6 +506,15 @@ void tst_qmlparser::valueTypes()
     QmlMetaProperty p2;
     p2.restore(r, object);
     QCOMPARE(p2.read(), QVariant(13));
+}
+
+void tst_qmlparser::cppnamespace()
+{
+    QmlComponent component(&engine, TEST_FILE("cppnamespace.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    delete object;
 }
 
 class TestType : public QObject {

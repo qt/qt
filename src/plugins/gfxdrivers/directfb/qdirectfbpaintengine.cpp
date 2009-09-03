@@ -904,10 +904,10 @@ void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode m
     case QPainter::CompositionMode_Plus:
         surface->SetPorterDuff(surface, DSPD_ADD);
         break;
-#endif
     case QPainter::CompositionMode_Xor:
         surface->SetPorterDuff(surface, DSPD_XOR);
         break;
+#endif
     default:
         compositionModeStatus = 0;
         break;

@@ -622,6 +622,10 @@ void QTreeModel::ensureSorted(int column, Qt::SortOrder order,
         QTreeWidgetItem *item = lst.takeAt(oldRow);
         lit = sortedInsertionIterator(lit, lst.end(), order, item);
         int newRow = qMax(lit - lst.begin(), 0);
+
+        if ((newRow < oldRow) && !(*item < *lst.at(oldRow - 1)))
+            newRow = oldRow;
+
         lit = lst.insert(lit, item);
         if (newRow != oldRow) {
             // we are going to change the persistent indexes, so we need to prepare
@@ -2074,7 +2078,7 @@ void QTreeWidgetItemPrivate::sortChildren(int column, Qt::SortOrder order, bool 
 {
     QTreeModel *model = (q->view ? qobject_cast<QTreeModel*>(q->view->model()) : 0);
     if (!model)
-        return;   
+        return;
     model->sortItems(&q->children, column, order);
     if (climb) {
         QList<QTreeWidgetItem*>::iterator it = q->children.begin();

@@ -52,7 +52,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-static const int NodeCount = 16;
 static const qreal Coords[NodeCount * 2] = {
     0.0, -150.0, // head, #0
 
@@ -79,7 +78,6 @@ static const qreal Coords[NodeCount * 2] = {
 
 };
 
-static const int BoneCount = 24;
 static const int Bones[BoneCount * 2] = {
     0, 1, // neck
 
@@ -116,7 +114,6 @@ static const int Bones[BoneCount * 2] = {
 
 StickMan::StickMan()
 {
-    m_nodes = new Node*[NodeCount];
     m_sticks = true;
     m_isDead = false;
     m_pixmap = QPixmap("images/head.png");
@@ -129,7 +126,6 @@ StickMan::StickMan()
         connect(m_nodes[i], SIGNAL(positionChanged()), this, SLOT(childPositionChanged()));
     }
 
-    m_perfectBoneLengths = new qreal[BoneCount];
     for (int i=0; i<BoneCount; ++i) {
         int n1 = Bones[i * 2];
         int n2 = Bones[i * 2 + 1];
@@ -146,7 +142,6 @@ StickMan::StickMan()
 
 StickMan::~StickMan()
 {
-    delete m_nodes;
 }
 
 void StickMan::childPositionChanged()

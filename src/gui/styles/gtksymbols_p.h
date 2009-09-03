@@ -77,6 +77,7 @@ class GConfClient;
 
 typedef GConfClient* (*Ptr_gconf_client_get_default)();
 typedef char* (*Ptr_gconf_client_get_string)(GConfClient*, const char*, GError **);
+typedef bool (*Ptr_gconf_client_get_bool)(GConfClient*, const char*, GError **);
 
 typedef void (*Ptr_gtk_init)(int *, char ***);
 typedef GtkWidget* (*Ptr_gtk_window_new) (GtkWindowType);
@@ -217,6 +218,7 @@ public:
     static QStringList openFilenames(QWidget *parent, const QString &caption, const QString &dir, const QString &filter,
                                     QString *selectedFilter, QFileDialog::Options options);
     static QString getGConfString(const QString &key, const QString &fallback = QString());
+    static bool getGConfBool(const QString &key, bool fallback = 0);
 
     static Ptr_gtk_container_forall gtk_container_forall;
     static Ptr_gtk_init gtk_init;
@@ -330,6 +332,7 @@ public:
 
     static Ptr_gconf_client_get_default gconf_client_get_default;
     static Ptr_gconf_client_get_string gconf_client_get_string;
+    static Ptr_gconf_client_get_bool gconf_client_get_bool;
 };
 
 // Helper to ensure that we have polished all our gtk widgets

@@ -1189,6 +1189,7 @@ bool qSharedBuild()
     \value SV_S60_3_2 S60 3rd Edition Feature Pack 2
     \value SV_S60_5_0 S60 5th Edition
     \value SV_S60_Unknown An unknown and currently unsupported platform
+    \omitvalue SV_S60_None
 
     \sa SymbianVersion, WinVersion, MacVersion
 */

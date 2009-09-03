@@ -1572,7 +1572,7 @@ void QProcess::setProcessEnvironment(const QProcessEnvironment &environment)
     \note The environment settings are ignored on Windows CE,
     as there is no concept of an environment.
 
-    \sa setProcessEnvironment(), setEnvironment(), QProcessEnvironment::isValid()
+    \sa setProcessEnvironment(), setEnvironment(), QProcessEnvironment::isEmpty()
 */
 QProcessEnvironment QProcess::processEnvironment() const
 {

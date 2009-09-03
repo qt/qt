@@ -100,6 +100,8 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
 
 QDirectFBWindowSurface::~QDirectFBWindowSurface()
 {
+    releaseSurface();
+    // these are not tracked by QDirectFBScreen so we don't want QDirectFBPaintDevice to release it
 }
 
 bool QDirectFBWindowSurface::isValid() const
@@ -117,7 +119,7 @@ void QDirectFBWindowSurface::raise()
     }
 }
 
-void QDirectFBWindowSurface::createWindow()
+void QDirectFBWindowSurface::createWindow(const QRect &rect)
 {
     IDirectFBDisplayLayer *layer = screen->dfbDisplayLayer();
     if (!layer)
@@ -125,8 +127,12 @@ void QDirectFBWindowSurface::createWindow()
 
     DFBWindowDescription description;
     description.caps = DWCAPS_NODECORATION|DWCAPS_DOUBLEBUFFER;
-    description.flags = DWDESC_CAPS|DWDESC_SURFACE_CAPS|DWDESC_PIXELFORMAT;
+    description.flags = DWDESC_CAPS|DWDESC_SURFACE_CAPS|DWDESC_PIXELFORMAT|DWDESC_HEIGHT|DWDESC_WIDTH|DWDESC_POSX|DWDESC_POSY;
 
+    description.posx = rect.x();
+    description.posy = rect.y();
+    description.width = rect.width();
+    description.height = rect.height();
     description.surface_caps = DSCAPS_NONE;
     if (screen->directFBFlags() & QDirectFBScreen::VideoOnly)
         description.surface_caps |= DSCAPS_VIDEOONLY;
@@ -202,9 +208,11 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
         DFBResult result = DFB_OK;
         // If we're in a resize, the surface shouldn't be locked
 #ifdef QT_DIRECTFB_WM
-        if (!dfbWindow)
-            createWindow();
-        setWindowGeometry(dfbWindow, oldRect, rect);
+        if (!dfbWindow) {
+            createWindow(rect);
+        } else {
+            setWindowGeometry(dfbWindow, oldRect, rect);
+        }
 #else
         if (mode == Primary) {
             if (dfbSurface && dfbSurface != primarySurface)
@@ -453,6 +461,24 @@ void QDirectFBWindowSurface::updateFormat()
 {
     imageFormat = dfbSurface ? QDirectFBScreen::getImageFormat(dfbSurface) : QImage::Format_Invalid;
 }
+
+void QDirectFBWindowSurface::releaseSurface()
+{
+    if (dfbSurface) {
+#ifdef QT_NO_DIRECTFB_SUBSURFACE
+        if (lockFlgs)
+            unlockSurface();
+#endif
+#ifdef QT_NO_DIRECTFB_WM
+        Q_ASSERT(screen->primarySurface());
+        if (dfbSurface != screen->primarySurface())
+#endif
+
+            dfbSurface->Release(dfbSurface);
+        dfbSurface = 0;
+    }
+}
+
 
 QT_END_NAMESPACE
 

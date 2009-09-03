@@ -563,9 +563,12 @@ int QNativeSocketEnginePrivate::nativeAccept()
     if(acceptedDescriptor > 0) {
         // Ensure that the socket is closed on exec*()
         ::fcntl(acceptedDescriptor, F_SETFD, FD_CLOEXEC);
-    } else {
+    }
+#ifdef Q_OS_SYMBIAN
+    else {
         qWarning("QNativeSocketEnginePrivate::nativeAccept() - acceptedDescriptor <= 0");
     }
+#endif
 
     return acceptedDescriptor;
 }
