@@ -418,6 +418,10 @@ struct QGLExtensionFuncs
 #define GL_UNSIGNED_SHORT_5_6_5 33635
 #endif
 
+#ifndef GL_UNSIGNED_INT_8_8_8_8_REV
+#define GL_UNSIGNED_INT_8_8_8_8_REV 0x8367
+#endif
+
 #ifndef GL_MULTISAMPLE
 #define GL_MULTISAMPLE  0x809D
 #endif

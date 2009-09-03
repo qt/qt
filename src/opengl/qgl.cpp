@@ -2005,9 +2005,15 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
     QImage::Format target_format = img.format();
     bool premul = options & QGLContext::PremultipliedAlphaBindOption;
-    GLenum texture_format = QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_2
-                            ? GL_BGRA : GL_RGBA;
-    GLuint pixel_type = GL_UNSIGNED_BYTE;
+    GLenum texture_format;
+    GLuint pixel_type;
+    if (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_1_2) {
+        texture_format = GL_BGRA;
+        pixel_type = GL_UNSIGNED_INT_8_8_8_8_REV;
+    } else {
+        texture_format = GL_RGBA;
+        pixel_type = GL_UNSIGNED_BYTE;
+    }
 
     switch (target_format) {
     case QImage::Format_ARGB32:
@@ -2034,7 +2040,6 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
         if (format == GL_RGBA)
             format = GL_RGB;
         break;
-
     default:
         if (img.hasAlphaChannel()) {
             img = img.convertToFormat(premul
@@ -2059,6 +2064,30 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
             int *b = (int *) img.scanLine(h - y - 1);
             for (int x=0; x<ipl; ++x)
                 qSwap(a[x], b[x]);
+        }
+    }
+
+    if (texture_format == GL_RGBA) {
+        // The only case where we end up with a depth different from
+        // 32 in the switch above is for the RGB16 case, where we set
+        // the format to GL_RGB
+        Q_ASSERT(img.depth() == 32);
+        const int width = img.width();
+        const int height = img.height();
+
+        if (pixel_type == GL_UNSIGNED_INT_8_8_8_8_REV
+            || (pixel_type == GL_UNSIGNED_BYTE && QSysInfo::ByteOrder == QSysInfo::LittleEndian)) {
+            for (int i=0; i < height; ++i) {
+                uint *p = (uint *) img.scanLine(i);
+                for (int x=0; x<width; ++x)
+                    p[x] = ((p[x] << 16) & 0xff0000) | ((p[x] >> 16) & 0xff) | (p[x] & 0xff00ff00);
+            }
+        } else {
+            for (int i=0; i < height; ++i) {
+                uint *p = (uint *) img.scanLine(i);
+                for (int x=0; x<width; ++x)
+                    p[x] = (p[x] << 8) | ((p[x] >> 24) & 0xff);
+            }
         }
     }
 
