@@ -104,7 +104,7 @@ void AddressWidget::editEntry()
     QModelIndex index, i;        
     QString name;
     QString address;
-    int row;
+    int row = -1;
 
     foreach (index, indexes) {
         row = proxy->mapToSource(index).row();
