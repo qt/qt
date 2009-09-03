@@ -2062,29 +2062,21 @@ void QWidgetPrivate::registerTouchWindow()
 void QWidgetPrivate::winSetupGestures()
 {
     Q_Q(QWidget);
-    if (!q)
-        return;
-    if (!q->isVisible())
+    if (!q || !q->isVisible())
         return;
     QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-    bool needh = false;
-    bool needv = false;
-    bool singleFingerPanEnabled = false;
     QApplicationPrivate::WidgetStandardGesturesMap::const_iterator it =
             qAppPriv->widgetGestures.find(q);
     if (it == qAppPriv->widgetGestures.end())
         return;
     const QStandardGestures &gestures = it.value();
-    WId winid = 0;
+    WId winid = q->effectiveWinId();
 
-    if (QAbstractScrollArea *asa = qobject_cast<QAbstractScrollArea*>(q)) {
-        winid = asa->viewport()->internalWinId();
-        if (!winid) {
-            QWidget *nativeParent = asa->viewport()->nativeParentWidget();
-            if (!nativeParent)
-                return;
-            winid = nativeParent->internalWinId();
-        }
+    bool needh = false;
+    bool needv = false;
+    bool singleFingerPanEnabled = false;
+
+    if (QAbstractScrollArea *asa = qobject_cast<QAbstractScrollArea*>(q->parent())) {
         QScrollBar *hbar = asa->horizontalScrollBar();
         QScrollBar *vbar = asa->verticalScrollBar();
         Qt::ScrollBarPolicy hbarpolicy = asa->horizontalScrollBarPolicy();
@@ -2094,12 +2086,6 @@ void QWidgetPrivate::winSetupGestures()
         needv = (vbarpolicy == Qt::ScrollBarAlwaysOn ||
                  (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
         singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
-    } else {
-        winid = q->internalWinId();
-        if (!winid) {
-            if (QWidget *nativeParent = q->nativeParentWidget())
-                winid = nativeParent->internalWinId();
-        }
     }
     if (winid && qAppPriv->SetGestureConfig) {
         GESTURECONFIG gc[3];

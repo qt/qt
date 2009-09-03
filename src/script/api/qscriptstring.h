@@ -52,10 +52,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Script)
 
-class QScriptEngine;
 class QScriptStringPrivate;
-struct QScriptStringPrivatePointerDeleter;
-
 class Q_SCRIPT_EXPORT QScriptString
 {
 public:

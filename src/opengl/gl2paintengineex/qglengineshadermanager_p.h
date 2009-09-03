@@ -275,65 +275,10 @@ struct QGLEngineCachedShaderProg
 static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
 static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
 
-class Q_OPENGL_EXPORT QGLEngineShaderManager : public QObject
+class QGLEngineSharedShaders : public QObject
 {
     Q_OBJECT
 public:
-    QGLEngineShaderManager(QGLContext* context);
-    ~QGLEngineShaderManager();
-
-    enum MaskType {NoMask, PixelMask, SubPixelMask, SubPixelWithGammaMask};
-    enum PixelSrcType {
-        ImageSrc = Qt::TexturePattern+1,
-        NonPremultipliedImageSrc = Qt::TexturePattern+2,
-        PatternSrc = Qt::TexturePattern+3,
-        TextureSrcWithPattern = Qt::TexturePattern+4
-    };
-
-    enum Uniform {
-        ImageTexture,
-        PatternColor,
-        GlobalOpacity,
-        Depth,
-        PmvMatrix,
-        MaskTexture,
-        FragmentColor,
-        LinearData,
-        Angle,
-        HalfViewportSize,
-        Fmp,
-        Fmp2MRadius2,
-        Inverse2Fmp2MRadius2,
-        InvertedTextureSize,
-        BrushTransform,
-        BrushTexture,
-        NumUniforms
-    };
-
-    // There are optimisations we can do, depending on the brush transform:
-    //    1) May not have to apply perspective-correction
-    //    2) Can use lower precision for matrix
-    void optimiseForBrushTransform(const QTransform &transform);
-    void setSrcPixelType(Qt::BrushStyle);
-    void setSrcPixelType(PixelSrcType); // For non-brush sources, like pixmaps & images
-    void setTextureCoordsEnabled(bool); // For images & text glyphs
-    void setUseGlobalOpacity(bool);
-    void setMaskType(MaskType);
-    void setCompositionMode(QPainter::CompositionMode);
-    void setCustomStage(QGLCustomShaderStage* stage);
-    void removeCustomStage(QGLCustomShaderStage* stage);
-
-    uint getUniformLocation(Uniform id);
-
-    void setDirty(); // someone has manually changed the current shader program
-    bool useCorrectShaderProg(); // returns true if the shader program needed to be changed
-
-    QGLShaderProgram* currentProgram(); // Returns pointer to the shader the manager has chosen
-    QGLShaderProgram* simpleProgram(); // Used to draw into e.g. stencil buffers
-    QGLShaderProgram* blitProgram(); // Used to blit a texture into the framebuffer
-
-    static QGLEngineShaderManager *managerForContext(const QGLContext *context);
-
     enum ShaderName {
         MainVertexShader,
         MainWithTexCoordsVertexShader,
@@ -392,6 +337,92 @@ public:
         TotalShaderCount, InvalidShaderName
     };
 
+    QGLEngineSharedShaders(const QGLContext *context);
+
+    QGLShader *compileNamedShader(ShaderName name, QGLShader::ShaderType type);
+
+    QGLShaderProgram *simpleProgram() { return simpleShaderProg; }
+    QGLShaderProgram *blitProgram() { return blitShaderProg; }
+    // Compile the program if it's not already in the cache, return the item in the cache.
+    QGLEngineShaderProg *findProgramInCache(const QGLEngineShaderProg &prog);
+    // Compile the custom shader if it's not already in the cache, return the item in the cache.
+    QGLShader *compileCustomShader(QGLCustomShaderStage *stage, QGLShader::ShaderType type);
+
+    static QGLEngineSharedShaders *shadersForContext(const QGLContext *context);
+
+signals:
+    void shaderProgNeedsChanging();
+
+private slots:
+    void shaderDestroyed(QObject *shader);
+
+private:
+    QGLContextGroup *ctx;
+    QGLShaderProgram *blitShaderProg;
+    QGLShaderProgram *simpleShaderProg;
+    QList<QGLEngineShaderProg> cachedPrograms;
+    QCache<QByteArray, QGLShader> customShaderCache;
+    QGLShader* compiledShaders[TotalShaderCount];
+
+    static const char* qglEngineShaderSourceCode[TotalShaderCount];
+};
+
+class Q_OPENGL_EXPORT QGLEngineShaderManager : public QObject
+{
+    Q_OBJECT
+public:
+    QGLEngineShaderManager(QGLContext* context);
+    ~QGLEngineShaderManager();
+
+    enum MaskType {NoMask, PixelMask, SubPixelMask, SubPixelWithGammaMask};
+    enum PixelSrcType {
+        ImageSrc = Qt::TexturePattern+1,
+        NonPremultipliedImageSrc = Qt::TexturePattern+2,
+        PatternSrc = Qt::TexturePattern+3,
+        TextureSrcWithPattern = Qt::TexturePattern+4
+    };
+
+    enum Uniform {
+        ImageTexture,
+        PatternColor,
+        GlobalOpacity,
+        Depth,
+        PmvMatrix,
+        MaskTexture,
+        FragmentColor,
+        LinearData,
+        Angle,
+        HalfViewportSize,
+        Fmp,
+        Fmp2MRadius2,
+        Inverse2Fmp2MRadius2,
+        InvertedTextureSize,
+        BrushTransform,
+        BrushTexture,
+        NumUniforms
+    };
+
+    // There are optimisations we can do, depending on the brush transform:
+    //    1) May not have to apply perspective-correction
+    //    2) Can use lower precision for matrix
+    void optimiseForBrushTransform(const QTransform &transform);
+    void setSrcPixelType(Qt::BrushStyle);
+    void setSrcPixelType(PixelSrcType); // For non-brush sources, like pixmaps & images
+    void setTextureCoordsEnabled(bool); // For images & text glyphs
+    void setUseGlobalOpacity(bool);
+    void setMaskType(MaskType);
+    void setCompositionMode(QPainter::CompositionMode);
+    void setCustomStage(QGLCustomShaderStage* stage);
+    void removeCustomStage(QGLCustomShaderStage* stage);
+
+    uint getUniformLocation(Uniform id);
+
+    void setDirty(); // someone has manually changed the current shader program
+    bool useCorrectShaderProg(); // returns true if the shader program needed to be changed
+
+    QGLShaderProgram* currentProgram(); // Returns pointer to the shader the manager has chosen
+    QGLShaderProgram* simpleProgram(); // Used to draw into e.g. stencil buffers
+    QGLShaderProgram* blitProgram(); // Used to blit a texture into the framebuffer
 
 /*
     // These allow the ShaderName enum to be used as a cache key
@@ -408,7 +439,7 @@ public:
 #endif
 
 private slots:
-    void shaderDestroyed(QObject *shader);
+    void shaderProgNeedsChangingSlot() { shaderProgNeedsChanging = true; }
 
 private:
     QGLContext*     ctx;
@@ -423,19 +454,9 @@ private:
     QPainter::CompositionMode   compositionMode;
     QGLCustomShaderStage*       customSrcStage;
 
-    QGLShaderProgram*     blitShaderProg;
-    QGLShaderProgram*     simpleShaderProg;
     QGLEngineShaderProg*  currentShaderProg;
-
-    // TODO: Possibly convert to a LUT
-    QList<QGLEngineShaderProg> cachedPrograms;
-    QCache<QByteArray, QGLShader> customShaderCache;
-
-    QGLShader* compiledShaders[TotalShaderCount];
-
-    void compileNamedShader(QGLEngineShaderManager::ShaderName name, QGLShader::ShaderType type);
-
-    static const char* qglEngineShaderSourceCode[TotalShaderCount];
+    QGLEngineSharedShaders *sharedShaders;
+    QGLShader *customShader;
 };
 
 QT_END_NAMESPACE

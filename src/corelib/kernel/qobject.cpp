@@ -3364,10 +3364,10 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
                  && (currentThreadData != sender->d_func()->threadData
                      || receiver->d_func()->threadData != sender->d_func()->threadData))
                 || (c->connectionType == Qt::QueuedConnection)) {
-                queued_activate(sender, signal_absolute_index, c, argv);
+                queued_activate(sender, signal_absolute_index, c, argv ? argv : empty_argv);
                 continue;
             } else if (c->connectionType == Qt::BlockingQueuedConnection) {
-                blocking_activate(sender, signal_absolute_index, c, argv);
+                blocking_activate(sender, signal_absolute_index, c, argv ? argv : empty_argv);
                 continue;
             }
 
@@ -3442,7 +3442,7 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
 void QMetaObject::activate(QObject *sender, int signal_index, void **argv)
 {
     const QMetaObject *mo = sender->metaObject();
-    while (mo && mo->methodOffset() > signal_index)
+    while (mo->methodOffset() > signal_index)
         mo = mo->superClass();
     activate(sender, mo, signal_index - mo->methodOffset(), argv);
 }
@@ -3706,7 +3706,7 @@ void QObject::dumpObjectInfo()
                 const QMetaObject *mo = metaObject();
                 int signalOffset, methodOffset;
                 computeOffsets(mo, &signalOffset, &methodOffset);
-                while (mo && signalOffset > signal_index) {
+                while (signalOffset > signal_index) {
                     mo = mo->superClass();
                     offsetToNextMetaObject = signalOffset;
                     computeOffsets(mo, &signalOffset, &methodOffset);

@@ -50,6 +50,8 @@ class tst_QGraphicsAnchorLayout : public QObject {
 
 private slots:
     void simple();
+    void simple_center();
+    void simple_semifloat();
     void diagonal();
     void parallel();
     void parallel2();
@@ -60,7 +62,7 @@ private slots:
     void proportionalPreferred();
     void example();
     void setSpacing();
-
+    void hardComplexS60();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -91,6 +93,17 @@ static QGraphicsWidget *createItem(const QSizeF &minimum = QSizeF(100.0, 100.0),
     return w;
 }
 
+static void setAnchor(QGraphicsAnchorLayout *l,
+                      QGraphicsLayoutItem *firstItem,
+                      Qt::AnchorPoint firstEdge,
+                      QGraphicsLayoutItem *secondItem,
+                      Qt::AnchorPoint secondEdge,
+                      qreal spacing)
+{
+    l->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
+    l->setAnchorSpacing(firstItem, firstEdge, secondItem, secondEdge, spacing);
+}
+
 void tst_QGraphicsAnchorLayout::simple()
 {
     QGraphicsWidget *w1 = createItem();
@@ -105,6 +118,92 @@ void tst_QGraphicsAnchorLayout::simple()
 
     QCOMPARE(l->count(), 2);
 }
+
+void tst_QGraphicsAnchorLayout::simple_center()
+{
+    QSizeF min(10, 10);
+    QSizeF pref(50, 10);
+    QSizeF max(100, 10);
+
+    QGraphicsWidget *a = createItem(min, pref, max, "a");
+    QGraphicsWidget *b = createItem(min, pref, max, "b");
+    QGraphicsWidget *c = createItem(min, pref, max, "c");
+
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    l->setContentsMargins(0, 0, 0, 0);
+    // horizontal
+    setAnchor(l, l, Qt::AnchorLeft, a, Qt::AnchorLeft, 0);
+    setAnchor(l, a, Qt::AnchorRight, b, Qt::AnchorLeft, 0);
+    setAnchor(l, b, Qt::AnchorRight, l, Qt::AnchorRight, 0);
+    setAnchor(l, a, Qt::AnchorHorizontalCenter, c, Qt::AnchorLeft, 0);
+    setAnchor(l, c, Qt::AnchorRight, b, Qt::AnchorHorizontalCenter, 0);
+
+    // vertical
+    setAnchor(l, l, Qt::AnchorTop, a, Qt::AnchorTop, 0);
+    setAnchor(l, l, Qt::AnchorTop, b, Qt::AnchorTop, 0);
+    setAnchor(l, a, Qt::AnchorBottom, c, Qt::AnchorTop, 0);
+    setAnchor(l, b, Qt::AnchorBottom, c, Qt::AnchorTop, 0);
+    setAnchor(l, c, Qt::AnchorBottom, l, Qt::AnchorBottom, 0);
+
+    QCOMPARE(l->count(), 3);
+
+    QGraphicsWidget *p = new QGraphicsWidget(0, Qt::Window);
+    p->setLayout(l);
+
+    QSizeF layoutMinimumSize = l->effectiveSizeHint(Qt::MinimumSize);
+    QCOMPARE(layoutMinimumSize, QSizeF(20, 20));
+
+    QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
+    QCOMPARE(layoutMaximumSize, QSizeF(200, 20));
+}
+
+void tst_QGraphicsAnchorLayout::simple_semifloat()
+{
+    // Useful for testing simplification between A_left and B_left.
+    // Unfortunately the only way to really test that now is to manually inspect the
+    // simplified graph.
+    QSizeF min(10, 10);
+    QSizeF pref(50, 10);
+    QSizeF max(100, 10);
+
+    QGraphicsWidget *A = createItem(min, pref, max, "A");
+    QGraphicsWidget *B = createItem(min, pref, max, "B");
+    QGraphicsWidget *a = createItem(min, pref, max, "a");
+    QGraphicsWidget *b = createItem(min, pref, max, "b");
+
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    l->setContentsMargins(0, 0, 0, 0);
+
+    // horizontal
+    setAnchor(l, l, Qt::AnchorLeft, A, Qt::AnchorLeft, 0);
+    setAnchor(l, A, Qt::AnchorRight, B, Qt::AnchorLeft, 0);
+    setAnchor(l, B, Qt::AnchorRight, l, Qt::AnchorRight, 0);
+
+    setAnchor(l, A, Qt::AnchorLeft, a, Qt::AnchorLeft, 0);
+    setAnchor(l, B, Qt::AnchorLeft, b, Qt::AnchorLeft, 0);
+
+    // vertical
+    setAnchor(l, l, Qt::AnchorTop, A, Qt::AnchorTop, 0);
+    setAnchor(l, l, Qt::AnchorTop, B, Qt::AnchorTop, 0);
+    setAnchor(l, A, Qt::AnchorBottom, a, Qt::AnchorTop, 0);
+    setAnchor(l, B, Qt::AnchorBottom, b, Qt::AnchorTop, 0);
+    setAnchor(l, a, Qt::AnchorBottom, l, Qt::AnchorBottom, 0);
+    setAnchor(l, b, Qt::AnchorBottom, l, Qt::AnchorBottom, 0);
+
+    QCOMPARE(l->count(), 4);
+
+    QGraphicsWidget *p = new QGraphicsWidget(0, Qt::Window);
+    p->setLayout(l);
+
+    QSizeF layoutMinimumSize = l->effectiveSizeHint(Qt::MinimumSize);
+    QCOMPARE(layoutMinimumSize, QSizeF(20, 20));
+
+    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(100, 20));
+
+    QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
+    QCOMPARE(layoutMaximumSize, QSizeF(200, 20));
+}
+
 
 void tst_QGraphicsAnchorLayout::diagonal()
 {
@@ -902,6 +1001,70 @@ void tst_QGraphicsAnchorLayout::setSpacing()
     QCOMPARE(a->geometry(), QRectF(0, 0, 20, 20));
     QCOMPARE(b->geometry(), QRectF(24, 0, 20, 20));
     QCOMPARE(c->geometry(), QRectF(0, 20, 44, 20));
+
+}
+
+void tst_QGraphicsAnchorLayout::hardComplexS60()
+{
+    // Test for "hard" complex case, taken from wiki
+    // https://cwiki.nokia.com/S60QTUI/AnchorLayoutComplexCases
+    QSizeF min(0, 10);
+    QSizeF pref(50, 10);
+    QSizeF max(100, 10);
+
+    QGraphicsWidget *a = createItem(min, pref, max, "a");
+    QGraphicsWidget *b = createItem(min, pref, max, "b");
+    QGraphicsWidget *c = createItem(min, pref, max, "c");
+    QGraphicsWidget *d = createItem(min, pref, max, "d");
+    QGraphicsWidget *e = createItem(min, pref, max, "e");
+    QGraphicsWidget *f = createItem(min, pref, max, "f");
+    QGraphicsWidget *g = createItem(min, pref, max, "g");
+
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    l->setContentsMargins(0, 0, 0, 0);
+
+    //<!-- Trunk -->
+    setAnchor(l, l, Qt::AnchorLeft, a, Qt::AnchorLeft, 10);
+    setAnchor(l, a, Qt::AnchorRight, b, Qt::AnchorLeft, 10);
+    setAnchor(l, b, Qt::AnchorRight, c, Qt::AnchorLeft, 10);
+    setAnchor(l, c, Qt::AnchorRight, d, Qt::AnchorLeft, 10);
+    setAnchor(l, d, Qt::AnchorRight, l, Qt::AnchorRight, 10);
+
+    //<!-- Above trunk -->
+    setAnchor(l, b, Qt::AnchorLeft, e, Qt::AnchorLeft, 10);
+    setAnchor(l, e, Qt::AnchorRight, d, Qt::AnchorLeft, 10);
+
+    //<!-- Below trunk -->
+    setAnchor(l, a, Qt::AnchorHorizontalCenter, g, Qt::AnchorLeft, 10);
+    setAnchor(l, g, Qt::AnchorRight, f, Qt::AnchorHorizontalCenter, 10);
+    setAnchor(l, c, Qt::AnchorLeft, f, Qt::AnchorLeft, 10);
+    setAnchor(l, f, Qt::AnchorRight, d, Qt::AnchorRight, 10);
+
+    //<!-- vertical is simpler -->
+    setAnchor(l, l, Qt::AnchorTop, e, Qt::AnchorTop, 0);
+    setAnchor(l, e, Qt::AnchorBottom, a, Qt::AnchorTop, 0);
+    setAnchor(l, e, Qt::AnchorBottom, b, Qt::AnchorTop, 0);
+    setAnchor(l, e, Qt::AnchorBottom, c, Qt::AnchorTop, 0);
+    setAnchor(l, e, Qt::AnchorBottom, d, Qt::AnchorTop, 0);
+    setAnchor(l, a, Qt::AnchorBottom, f, Qt::AnchorTop, 0);
+    setAnchor(l, a, Qt::AnchorBottom, b, Qt::AnchorBottom, 0);
+    setAnchor(l, a, Qt::AnchorBottom, c, Qt::AnchorBottom, 0);
+    setAnchor(l, a, Qt::AnchorBottom, d, Qt::AnchorBottom, 0);
+    setAnchor(l, f, Qt::AnchorBottom, g, Qt::AnchorTop, 0);
+    setAnchor(l, g, Qt::AnchorBottom, l, Qt::AnchorBottom, 0);
+
+    QCOMPARE(l->count(), 7);
+
+    QGraphicsWidget *p = new QGraphicsWidget(0, Qt::Window);
+    p->setLayout(l);
+
+    QSizeF layoutMinimumSize = l->effectiveSizeHint(Qt::MinimumSize);
+    QCOMPARE(layoutMinimumSize, QSizeF(60, 40));
+    // expected preferred might be wrong, (haven't manually verified it)
+    QSizeF layoutPreferredSize = l->effectiveSizeHint(Qt::PreferredSize);
+    QCOMPARE(layoutPreferredSize, QSizeF(220, 40));
+    QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
+    QCOMPARE(layoutMaximumSize, QSizeF(240, 40));
 
 }
 

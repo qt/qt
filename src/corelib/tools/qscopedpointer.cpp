@@ -219,4 +219,8 @@ QT_BEGIN_NAMESPACE
     \sa isNull()
 */
 
+/*! \fn void QScopedPointer::swap(QScopedPointer<T, Cleanup> &other)
+  Swap this pointer with \a other.
+ */
+
 QT_END_NAMESPACE

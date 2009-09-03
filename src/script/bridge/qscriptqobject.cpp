@@ -1869,6 +1869,7 @@ JSC::JSValue QMetaObjectWrapperObject::execute(JSC::ExecState *exec,
         QScriptContext *ctx = eng_p->contextForFrame(exec);
         JSC::CallData callData;
         JSC::CallType callType = data->ctor.getCallData(callData);
+        Q_UNUSED(callType);
         Q_ASSERT_X(callType == JSC::CallTypeHost, Q_FUNC_INFO, "script constructors not supported");
         if (data->ctor.isObject(&FunctionWithArgWrapper::info)) {
             FunctionWithArgWrapper *wrapper = static_cast<FunctionWithArgWrapper*>(JSC::asObject(data->ctor));

@@ -48,14 +48,26 @@
 QT_BEGIN_NAMESPACE
 
 QDirectFBPaintDevice::QDirectFBPaintDevice(QDirectFBScreen *scr)
-    : QCustomRasterPaintDevice(0), dfbSurface(0), lockedImage(0), screen(scr),
-      bpl(-1), lockFlgs(DFBSurfaceLockFlags(0)), mem(0), engine(0),
-      imageFormat(QImage::Format_Invalid)
-{}
+    : QCustomRasterPaintDevice(0), dfbSurface(0), screen(scr),
+      bpl(-1), lockFlgs(DFBSurfaceLockFlags(0)), mem(0), engine(0), imageFormat(QImage::Format_Invalid)
+{
+#ifdef QT_DIRECTFB_SUBSURFACE
+    subSurface = 0;
+    syncPending = false;
+#endif
+}
 
 QDirectFBPaintDevice::~QDirectFBPaintDevice()
 {
-    delete lockedImage;
+    if (QDirectFBScreen::instance()) {
+        unlockSurface();
+#ifdef QT_DIRECTFB_SUBSURFACE
+        releaseSubSurface();
+#endif
+        if (dfbSurface) {
+            screen->releaseDFBSurface(dfbSurface);
+        }
+    }
     delete engine;
 }
 
@@ -64,30 +76,58 @@ IDirectFBSurface *QDirectFBPaintDevice::directFBSurface() const
     return dfbSurface;
 }
 
-void QDirectFBPaintDevice::lockDirectFB(DFBSurfaceLockFlags flags)
+bool QDirectFBPaintDevice::lockSurface(DFBSurfaceLockFlags lockFlags)
 {
-    if (!(lockFlgs & flags)) {
-        if (lockFlgs)
-            unlockDirectFB();
-        mem = QDirectFBScreen::lockSurface(dfbSurface, flags, &bpl);
+    if (lockFlgs && (lockFlags & ~lockFlgs))
+        unlockSurface();
+    if (!mem) {
+        Q_ASSERT(dfbSurface);
+#ifdef QT_DIRECTFB_SUBSURFACE
+        if (!subSurface) {
+            DFBResult result;
+            subSurface = screen->getSubSurface(dfbSurface, QRect(), QDirectFBScreen::TrackSurface, &result);
+            if (result != DFB_OK || !subSurface) {
+                DirectFBError("Couldn't create sub surface", result);
+                return false;
+            }
+        }
+        IDirectFBSurface *surface = subSurface;
+#else
+        IDirectFBSurface *surface = dfbSurface;
+#endif
+        Q_ASSERT(surface);
+        mem = QDirectFBScreen::lockSurface(surface, lockFlags, &bpl);
+        lockFlgs = lockFlags;
         Q_ASSERT(mem);
+        Q_ASSERT(bpl > 0);
         const QSize s = size();
-        lockedImage = new QImage(mem, s.width(), s.height(), bpl,
-                                 QDirectFBScreen::getImageFormat(dfbSurface));
-        lockFlgs = flags;
+        lockedImage = QImage(mem, s.width(), s.height(), bpl,
+                             QDirectFBScreen::getImageFormat(dfbSurface));
+        return true;
     }
+#ifdef QT_DIRECTFB_SUBSURFACE
+    if (syncPending) {
+        syncPending = false;
+        screen->waitIdle();
+    }
+#endif
+    return false;
 }
 
-void QDirectFBPaintDevice::unlockDirectFB()
+void QDirectFBPaintDevice::unlockSurface()
 {
-    if (!lockedImage || !QDirectFBScreen::instance())
-        return;
-
-    dfbSurface->Unlock(dfbSurface);
-    delete lockedImage;
-    lockedImage = 0;
-    mem = 0;
-    lockFlgs = DFBSurfaceLockFlags(0);
+    if (QDirectFBScreen::instance() && lockFlgs) {
+#ifdef QT_DIRECTFB_SUBSURFACE
+        IDirectFBSurface *surface = subSurface;
+#else
+        IDirectFBSurface *surface = dfbSurface;
+#endif
+        if (surface) {
+            surface->Unlock(surface);
+            lockFlgs = static_cast<DFBSurfaceLockFlags>(0);
+            mem = 0;
+        }
+    }
 }
 
 void *QDirectFBPaintDevice::memory() const
@@ -102,16 +142,9 @@ QImage::Format QDirectFBPaintDevice::format() const
 
 int QDirectFBPaintDevice::bytesPerLine() const
 {
-    if (bpl == -1) {
-        // Can only get the stride when we lock the surface
-        Q_ASSERT(!lockedImage);
-        QDirectFBPaintDevice* that = const_cast<QDirectFBPaintDevice*>(this);
-        that->lockDirectFB(DSLF_READ|DSLF_WRITE);
-        Q_ASSERT(bpl != -1);
-    }
+    Q_ASSERT(!mem || bpl != -1);
     return bpl;
 }
-
 
 QSize QDirectFBPaintDevice::size() const
 {
@@ -142,8 +175,8 @@ int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
     case QPaintDevice::PdmDepth:
         return QDirectFBScreen::depth(imageFormat);
     case QPaintDevice::PdmNumColors: {
-        if (lockedImage)
-            return lockedImage->numColors();
+        if (!lockedImage.isNull())
+            return lockedImage.numColors();
 
         DFBResult result;
         IDirectFBPalette *palette = 0;
@@ -170,6 +203,17 @@ QPaintEngine *QDirectFBPaintDevice::paintEngine() const
 {
     return engine;
 }
+
+#ifdef QT_DIRECTFB_SUBSURFACE
+void QDirectFBPaintDevice::releaseSubSurface()
+{
+    Q_ASSERT(QDirectFBScreen::instance());
+    if (subSurface) {
+        screen->releaseDFBSurface(subSurface);
+        subSurface = 0;
+    }
+}
+#endif
 
 QT_END_NAMESPACE
 

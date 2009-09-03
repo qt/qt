@@ -54,6 +54,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
+#if !defined QT_NO_DIRECTFB_SUBSURFACE && !defined QT_DIRECTFB_SUBSURFACE
+#define QT_DIRECTFB_SUBSURFACE
+#endif
 #if !defined QT_NO_DIRECTFB_LAYER && !defined QT_DIRECTFB_LAYER
 #define QT_DIRECTFB_LAYER
 #endif
@@ -166,8 +169,11 @@ public:
         return static_cast<QDirectFBScreen*>(inst);
     }
 
+    void waitIdle();
     IDirectFBSurface *surfaceForWidget(const QWidget *widget, QRect *rect) const;
+#ifdef QT_DIRECTFB_SUBSURFACE
     IDirectFBSurface *subSurfaceForWidget(const QWidget *widget, const QRect &area = QRect()) const;
+#endif
 
     IDirectFB *dfb();
 #ifdef QT_NO_DIRECTFB_WM
@@ -199,6 +205,12 @@ public:
     IDirectFBSurface *createDFBSurface(DFBSurfaceDescription desc,
                                        SurfaceCreationOptions options,
                                        DFBResult *result);
+#ifdef QT_DIRECTFB_SUBSURFACE
+    IDirectFBSurface *getSubSurface(IDirectFBSurface *surface,
+                                    const QRect &rect,
+                                    SurfaceCreationOptions options,
+                                    DFBResult *result);
+#endif
 
     void flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags flipFlags,
                      const QRegion &region, const QPoint &offset);

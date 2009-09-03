@@ -1391,7 +1391,7 @@ void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
         if (curClip->hasRectClip)
             newClip->setClipRegion(r & curClip->clipRect);
         else if (curClip->hasRegionClip)
-            newClip->setClipRegion(r & clip->clipRegion);
+            newClip->setClipRegion(r & curClip->clipRegion);
 
         qrasterpaintengine_dirty_clip(d, s);
     }
@@ -3079,11 +3079,11 @@ bool QRasterPaintEnginePrivate::isUnclipped_normalized(const QRect &r) const
     }
 
 
-    // currently all painting functions clips to deviceRect internally
-    if (cl->clipRect == deviceRect)
-        return true;
-
     if (cl->hasRectClip) {
+        // currently all painting functions clips to deviceRect internally
+        if (cl->clipRect == deviceRect)
+            return true;
+
         // inline contains() for performance (we know the rects are normalized)
         const QRect &r1 = cl->clipRect;
         return (r.left() >= r1.left() && r.right() <= r1.right()
@@ -3109,7 +3109,7 @@ bool QRasterPaintEnginePrivate::isUnclipped(const QRect &rect,
 
 
     // currently all painting functions that call this function clip to deviceRect internally
-    if (cl->clipRect == deviceRect)
+    if (cl->hasRectClip && cl->clipRect == deviceRect)
         return true;
 
     if (s->flags.antialiased)
@@ -3123,7 +3123,7 @@ bool QRasterPaintEnginePrivate::isUnclipped(const QRect &rect,
         r.setHeight(r.height() + 2 * penWidth);
     }
 
-    if (!cl->clipRect.isEmpty()) {
+    if (cl->hasRectClip) {
         // inline contains() for performance (we know the rects are normalized)
         const QRect &r1 = cl->clipRect;
         return (r.left() >= r1.left() && r.right() <= r1.right()

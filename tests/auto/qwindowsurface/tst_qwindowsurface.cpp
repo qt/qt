@@ -43,6 +43,7 @@
 #include <QtTest/QtTest>
 #include <QPainter>
 #include <QPalette>
+#include <QWindowsStyle>
 
 #ifndef Q_WS_MAC
 
@@ -151,6 +152,8 @@ void tst_QWindowSurface::flushOutsidePaintEvent()
 #endif
     ColorWidget w(0, Qt::red);
     w.setGeometry(10, 100, 50, 50);
+    // prevent custom styles from messing up the background
+    w.setStyle(new QWindowsStyle);
     w.show();
 
     QApplication::processEvents();
@@ -222,6 +225,9 @@ void tst_QWindowSurface::grabWidget()
     pal = babyWidget.palette();
     pal.setColor(QPalette::Window, QColor(Qt::red));
     babyWidget.setPalette(pal);
+
+    // prevent custom styles from messing up the background
+    parentWidget.setStyle(new QWindowsStyle);
 
     babyWidget.show();
     childWidget.show();

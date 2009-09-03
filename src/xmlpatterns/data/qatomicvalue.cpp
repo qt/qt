@@ -172,13 +172,19 @@ Item AtomicValue::toXDM(const QVariant &value)
             return Item(Double::fromValue(value.toDouble()));
         default:
         {
-            Q_ASSERT_X(false,
-                       Q_FUNC_INFO,
-                       qPrintable(QString::fromLatin1(
-                           "QVariants of type %1 are not supported in "
-                           "Patternist, see the documentation")
+            if (value.userType() == qMetaTypeId<float>())
+            {
+                return Item(Float::fromValue(value.value<float>()));
+            }
+            else {
+                Q_ASSERT_X(false,
+                           Q_FUNC_INFO,
+                           qPrintable(QString::fromLatin1(
+                               "QVariants of type %1 are not supported in "
+                               "Patternist, see the documentation")
                                   .arg(QLatin1String(value.typeName()))));
-            return AtomicValue::Ptr();
+                return AtomicValue::Ptr();
+            }
         }
     }
 }

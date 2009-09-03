@@ -517,17 +517,20 @@ struct QGraphicsItemPrivate::TransformData
             return transform * *postmultiplyTransform;
         }
 
-        QMatrix4x4 x(transform);
-        for (int i = 0; i < graphicsTransforms.size(); ++i)
-            graphicsTransforms.at(i)->applyTo(&x);
+        QTransform x(transform);
+        if (!graphicsTransforms.isEmpty()) {
+            QMatrix4x4 m;
+            for (int i = 0; i < graphicsTransforms.size(); ++i)
+                graphicsTransforms.at(i)->applyTo(&m);
+            x *= m.toTransform();
+        }
         x.translate(xOrigin, yOrigin);
-        x.rotate(rotation, 0, 0, 1);
-        x.scale(scale);
+        x.rotate(rotation);
+        x.scale(scale, scale);
         x.translate(-xOrigin, -yOrigin);
-        QTransform t = x.toTransform(); // project the 3D matrix back to 2D.
         if (postmultiplyTransform)
-            t *= *postmultiplyTransform;
-        return t;
+            x *= *postmultiplyTransform;
+        return x;
     }
 };
 

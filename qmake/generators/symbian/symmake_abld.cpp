@@ -153,7 +153,7 @@ void SymbianAbldMakefileGenerator::writeMkFile(const QString& wrapperFileName, b
         QString makefile(Option::fixPathToTargetOS(fileInfo(wrapperFileName).canonicalFilePath()));
         foreach(QString target, wrapperTargets) {
             t << target << " : " << makefile << endl;
-            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << " QT_SISX_TARGET=$(VISUAL_CFG)-$(PLATFORM)" << endl << endl;                    
+            t << "\t-$(MAKE) -f \"" << makefile << "\" " << target << " QT_SIS_TARGET=$(VISUAL_CFG)-$(PLATFORM)" << endl << endl;                    
         }     
         
         t << endl;
@@ -361,7 +361,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
 
     writeDeploymentTargets(t);
 
-    writeSisxTargets(t);
+    writeSisTargets(t);
 
     writeStoreBuildTarget(t);
 
@@ -428,12 +428,12 @@ void SymbianAbldMakefileGenerator::writeStoreBuildTarget(QTextStream &t)
     t << "\t@echo #  Name        : " << MAKE_CACHE_NAME << " >> " MAKE_CACHE_NAME << endl;
     t << "\t@echo #  Part of     : " << project->values("TARGET").join(" ") << " >> " MAKE_CACHE_NAME << endl;
     t << "\t@echo #  Description : This file is used to cache last build target for >> " MAKE_CACHE_NAME << endl;
-    t << "\t@echo #                make sisx target. >> " MAKE_CACHE_NAME << endl;
+    t << "\t@echo #                make sis target. >> " MAKE_CACHE_NAME << endl;
     t << "\t@echo #  Version     :  >> " MAKE_CACHE_NAME << endl;
     t << "\t@echo # >> " MAKE_CACHE_NAME << endl;
     t << "\t@echo # ============================================================================== >> " MAKE_CACHE_NAME <<  endl;
     t << "\t@echo. >> " MAKE_CACHE_NAME <<  endl;
-    t << "\t@echo QT_SISX_TARGET ?= $(QT_SISX_TARGET) >> " MAKE_CACHE_NAME << endl;
+    t << "\t@echo QT_SIS_TARGET ?= $(QT_SIS_TARGET) >> " MAKE_CACHE_NAME << endl;
     t << endl;
 
     generatedFiles << MAKE_CACHE_NAME;

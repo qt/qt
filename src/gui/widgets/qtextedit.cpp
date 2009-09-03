@@ -67,8 +67,6 @@
 #include <qtexttable.h>
 #include <qvariant.h>
 
-#include <qstandardgestures.h>
-
 #include <qinputcontext.h>
 #endif
 

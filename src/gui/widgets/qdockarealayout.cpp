@@ -2601,28 +2601,28 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
         center_rect.setBottom(rect.bottom() - docks[QInternal::BottomDock].rect.height() - sep);
 
     QSize left_hint = docks[QInternal::LeftDock].size();
-    if (!left_hint.isValid())
+    if (left_hint.isNull())
         left_hint = docks[QInternal::LeftDock].sizeHint();
     QSize left_min = docks[QInternal::LeftDock].minimumSize();
     QSize left_max = docks[QInternal::LeftDock].maximumSize();
     left_hint = left_hint.boundedTo(left_max).expandedTo(left_min);
 
     QSize right_hint = docks[QInternal::RightDock].size();
-    if (!right_hint.isValid())
+    if (right_hint.isNull())
         right_hint = docks[QInternal::RightDock].sizeHint();
     QSize right_min = docks[QInternal::RightDock].minimumSize();
     QSize right_max = docks[QInternal::RightDock].maximumSize();
     right_hint = right_hint.boundedTo(right_max).expandedTo(right_min);
 
     QSize top_hint = docks[QInternal::TopDock].size();
-    if (!top_hint.isValid())
+    if (top_hint.isNull())
         top_hint = docks[QInternal::TopDock].sizeHint();
     QSize top_min = docks[QInternal::TopDock].minimumSize();
     QSize top_max = docks[QInternal::TopDock].maximumSize();
     top_hint = top_hint.boundedTo(top_max).expandedTo(top_min);
 
     QSize bottom_hint = docks[QInternal::BottomDock].size();
-    if (!bottom_hint.isValid())
+    if (bottom_hint.isNull())
         bottom_hint = docks[QInternal::BottomDock].sizeHint();
     QSize bottom_min = docks[QInternal::BottomDock].minimumSize();
     QSize bottom_max = docks[QInternal::BottomDock].maximumSize();
