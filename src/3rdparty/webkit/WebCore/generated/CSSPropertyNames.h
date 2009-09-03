@@ -275,7 +275,7 @@ enum CSSPropertyID {
     CSSPropertyGlyphOrientationVertical = 1268,
     CSSPropertyKerning = 1269,
     CSSPropertyTextAnchor = 1270,
-    CSSPropertyWritingMode = 1271,
+    CSSPropertyWritingMode = 1271
 };
 
 const int firstCSSProperty = 1001;
