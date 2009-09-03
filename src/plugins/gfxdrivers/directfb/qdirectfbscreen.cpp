@@ -95,6 +95,9 @@ public:
     IDirectFBImageProvider *imageProvider;
 #endif
     QColor backgroundColor;
+    IDirectFBSurface *cursorSurface;
+    qint64 cursorImageKey;
+
     QDirectFBScreen *q;
 };
 
@@ -117,6 +120,8 @@ QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *qptr)
 #if defined QT_DIRECTFB_IMAGEPROVIDER && defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
     , imageProvider(0)
 #endif
+    , cursorSurface(0)
+    , cursorImageKey(0)
     , q(qptr)
 {
 #ifndef QT_NO_QWS_SIGNALHANDLER
@@ -1460,13 +1465,17 @@ void QDirectFBScreen::exposeRegion(QRegion r, int changing)
         const QRect cursorRectangle = cursor->boundingRect();
         if (cursor->isVisible() && !cursor->isAccelerated() && cursorRectangle.intersects(brect)) {
             const QImage image = cursor->image();
-            IDirectFBSurface *surface = createDFBSurface(image, image.format(), QDirectFBScreen::DontTrackSurface);
-            d_ptr->primarySurface->SetBlittingFlags(d_ptr->primarySurface, DSBLIT_BLEND_ALPHACHANNEL);
-            d_ptr->primarySurface->Blit(d_ptr->primarySurface, surface, 0, cursorRectangle.x(), cursorRectangle.y());
-            surface->Release(surface);
-#if (Q_DIRECTFB_VERSION >= 0x010000)
-            d_ptr->primarySurface->ReleaseSource(d_ptr->primarySurface);
-#endif
+            if (image.cacheKey() != d_ptr->cursorImageKey) {
+                if (d_ptr->cursorSurface) {
+                    releaseDFBSurface(d_ptr->cursorSurface);
+                }
+                d_ptr->cursorSurface = createDFBSurface(image, image.format(), QDirectFBScreen::TrackSurface);
+                d_ptr->cursorImageKey = image.cacheKey();
+            }
+
+            Q_ASSERT(d_ptr->cursorSurface);
+            primary->SetBlittingFlags(primary, DSBLIT_BLEND_ALPHACHANNEL);
+            primary->Blit(primary, d_ptr->cursorSurface, 0, cursorRectangle.x(), cursorRectangle.y());
         }
     }
 #endif
