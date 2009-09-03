@@ -273,7 +273,7 @@ void QGLFramebufferObjectFormat::setInternalTextureFormat(QMacCompatGLenum inter
 class QGLFramebufferObjectPrivate
 {
 public:
-    QGLFramebufferObjectPrivate() : depth_stencil_buffer(0), valid(false), bound(false), ctx(0), previous_fbo(0), engine(0) {}
+    QGLFramebufferObjectPrivate() : depth_stencil_buffer(0), valid(false), ctx(0), previous_fbo(0), engine(0) {}
     ~QGLFramebufferObjectPrivate() {}
 
     void init(const QSize& sz, QGLFramebufferObject::Attachment attachment,
@@ -287,7 +287,6 @@ public:
     QSize size;
     QGLFramebufferObjectFormat format;
     uint valid : 1;
-    uint bound : 1;
     QGLFramebufferObject::Attachment fbo_attachment;
     QGLContext *ctx; // for Windows extension ptrs
     GLuint previous_fbo;
@@ -792,7 +791,7 @@ bool QGLFramebufferObject::bind()
     Q_D(QGLFramebufferObject);
     QGL_FUNC_CONTEXT;
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, d->fbo);
-    d->bound = d->valid = d->checkFramebufferStatus();
+    d->valid = d->checkFramebufferStatus();
     const QGLContext *context = QGLContext::currentContext();
     if (d->valid && context) {
         // Save the previous setting to automatically restore in release().
@@ -823,7 +822,6 @@ bool QGLFramebufferObject::release()
 	return false;
     Q_D(QGLFramebufferObject);
     QGL_FUNC_CONTEXT;
-    d->bound = false;
 
     const QGLContext *context = QGLContext::currentContext();
     if (context) {
@@ -1102,7 +1100,7 @@ QGLFramebufferObject::Attachment QGLFramebufferObject::attachment() const
 bool QGLFramebufferObject::isBound() const
 {
     Q_D(const QGLFramebufferObject);
-    return d->bound;
+    return d->ctx->d_ptr->current_fbo == d->fbo;
 }
 
 /*!
