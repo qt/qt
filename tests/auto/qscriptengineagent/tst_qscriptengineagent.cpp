@@ -176,7 +176,6 @@ struct ScriptEngineEvent
         : type(ExceptionThrow), scriptId(scriptId),
           value(exception), hasExceptionHandler(hasHandler)
         { }
-
 };
 
 class ScriptEngineSpy : public QScriptEngineAgent, public QList<ScriptEngineEvent>
@@ -1834,7 +1833,7 @@ void tst_QScriptEngineAgent::eventOrder_functions()
 
         eng.evaluate("foo('ciao')");
 
-        //QCOMPARE(spy->count(), 45);
+        QCOMPARE(spy->count(), 45);
 
         // load
         QCOMPARE(spy->at(25).type, ScriptEngineEvent::ScriptLoad);
@@ -1875,33 +1874,21 @@ void tst_QScriptEngineAgent::eventOrder_functions()
         // bar() exit
         QCOMPARE(spy->at(39).type, ScriptEngineEvent::FunctionExit);
         QCOMPARE(spy->at(39).scriptId, spy->at(21).scriptId);
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "function return value is not reported when JIT is enabled", Continue);
         QVERIFY(spy->at(39).value.isError());
         // restore context
         QCOMPARE(spy->at(40).type, ScriptEngineEvent::ContextPop);
         // foo() exit
         QCOMPARE(spy->at(41).type, ScriptEngineEvent::FunctionExit);
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "script ID for function exit is not correct when JIT is enabled", Continue);
         QCOMPARE(spy->at(41).scriptId, spy->at(0).scriptId);
         QVERIFY(spy->at(41).value.isError());
         // restore context
         QCOMPARE(spy->at(42).type, ScriptEngineEvent::ContextPop);
         // evaluate() exit
         QCOMPARE(spy->at(43).type, ScriptEngineEvent::FunctionExit);
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "script ID for function exit is not correct when JIT is enabled", Continue);
         QCOMPARE(spy->at(43).scriptId, spy->at(26).scriptId);
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "function return value is not reported when JIT is enabled", Continue);
         QVERIFY(spy->at(43).value.isError());
         // unload
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "wrong event type when JIT is enabled", Continue);
         QCOMPARE(spy->at(44).type, ScriptEngineEvent::ScriptUnload);
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "wrong script ID when JIT is enabled", Continue);
         QCOMPARE(spy->at(44).scriptId, spy->at(25).scriptId);
     }
     delete spy;
@@ -1958,8 +1945,6 @@ void tst_QScriptEngineAgent::eventOrder_signalsHandling()
 
         emit testSignal(123);
 
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "too many events reported when JIT is enabled", Abort);
         QCOMPARE(spy->count(), 14);
         // new context
         QCOMPARE(spy->at(4).type, ScriptEngineEvent::ContextPush);

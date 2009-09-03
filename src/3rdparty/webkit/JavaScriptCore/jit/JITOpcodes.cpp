@@ -285,6 +285,10 @@ void JIT::emit_op_tear_off_arguments(Instruction*)
 
 void JIT::emit_op_ret(Instruction* currentInstruction)
 {
+#ifdef QT_BUILD_SCRIPT_LIB
+    JITStubCall stubCall(this, JITStubs::cti_op_debug_return);
+    stubCall.call();
+#endif
     // We could JIT generate the deref, only calling out to C when the refcount hits zero.
     if (m_codeBlock->needsFullScopeChain())
         JITStubCall(this, JITStubs::cti_op_ret_scopeChain).call();

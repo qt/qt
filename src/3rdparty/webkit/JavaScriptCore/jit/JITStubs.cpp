@@ -2750,6 +2750,16 @@ DEFINE_STUB_FUNCTION(void, op_debug_catch)
         debugger->exceptionCatch(DebuggerCallFrame(callFrame), callFrame->codeBlock()->ownerNode()->sourceID());
     }
 }
+
+DEFINE_STUB_FUNCTION(void, op_debug_return)
+{
+    STUB_INIT_STACK_FRAME(stackFrame);
+    CallFrame* callFrame = stackFrame.callFrame;
+    if (JSC::Debugger* debugger = callFrame->lexicalGlobalObject()->debugger() ) {
+        debugger->functionExit(JSValue(), callFrame->codeBlock()->ownerNode()->sourceID());
+    }
+}
+
 #endif
 
 DEFINE_STUB_FUNCTION(EncodedJSValue, vm_throw)
