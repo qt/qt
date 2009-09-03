@@ -305,12 +305,19 @@ public:
     QStringList resetList;
     QFxAnchorLine left;
     QFxAnchorLine right;
+    QFxAnchorLine horizontalCenter;
     QFxAnchorLine top;
     QFxAnchorLine bottom;
+    QFxAnchorLine verticalCenter;
+    QFxAnchorLine baseline;
+
     QFxAnchorLine origLeft;
     QFxAnchorLine origRight;
+    QFxAnchorLine origHCenter;
     QFxAnchorLine origTop;
     QFxAnchorLine origBottom;
+    QFxAnchorLine origVCenter;
+    QFxAnchorLine origBaseline;
     qreal origX;
     qreal origY;
     qreal origWidth;
@@ -364,11 +371,15 @@ void QmlAnchorChanges::setReset(const QString &reset)
 }
 
 /*!
-    \qmlproperty AnchorLine AnchorChanges::top
-    \qmlproperty AnchorLine AnchorChanges::bottom
     \qmlproperty AnchorLine AnchorChanges::left
     \qmlproperty AnchorLine AnchorChanges::right
-    These properties change the \e left, \e top, \e right and \e bottom anchors of the item
+    \qmlproperty AnchorLine AnchorChanges::horizontalCenter
+    \qmlproperty AnchorLine AnchorChanges::top
+    \qmlproperty AnchorLine AnchorChanges::bottom
+    \qmlproperty AnchorLine AnchorChanges::verticalCenter
+    \qmlproperty AnchorLine AnchorChanges::baseline
+
+    These properties change the respective anchors of the item.
 */
 
 QFxAnchorLine QmlAnchorChanges::left() const
@@ -395,6 +406,18 @@ void QmlAnchorChanges::setRight(const QFxAnchorLine &edge)
     d->right = edge;
 }
 
+QFxAnchorLine QmlAnchorChanges::horizontalCenter() const
+{
+    Q_D(const QmlAnchorChanges);
+    return d->horizontalCenter;
+}
+
+void QmlAnchorChanges::setHorizontalCenter(const QFxAnchorLine &edge)
+{
+    Q_D(QmlAnchorChanges);
+    d->horizontalCenter = edge;
+}
+
 QFxAnchorLine QmlAnchorChanges::top() const
 {
     Q_D(const QmlAnchorChanges);
@@ -419,6 +442,30 @@ void QmlAnchorChanges::setBottom(const QFxAnchorLine &edge)
     d->bottom = edge;
 }
 
+QFxAnchorLine QmlAnchorChanges::verticalCenter() const
+{
+    Q_D(const QmlAnchorChanges);
+    return d->verticalCenter;
+}
+
+void QmlAnchorChanges::setVerticalCenter(const QFxAnchorLine &edge)
+{
+    Q_D(QmlAnchorChanges);
+    d->verticalCenter = edge;
+}
+
+QFxAnchorLine QmlAnchorChanges::baseline() const
+{
+    Q_D(const QmlAnchorChanges);
+    return d->baseline;
+}
+
+void QmlAnchorChanges::setBaseline(const QFxAnchorLine &edge)
+{
+    Q_D(QmlAnchorChanges);
+    d->baseline = edge;
+}
+
 void QmlAnchorChanges::execute()
 {
     Q_D(QmlAnchorChanges);
@@ -430,10 +477,16 @@ void QmlAnchorChanges::execute()
         d->target->anchors()->setLeft(d->left);
     if (d->right.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->setRight(d->right);
+    if (d->horizontalCenter.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->setHorizontalCenter(d->horizontalCenter);
     if (d->top.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->setTop(d->top);
     if (d->bottom.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->setBottom(d->bottom);
+    if (d->verticalCenter.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->setVerticalCenter(d->verticalCenter);
+    if (d->baseline.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->setBaseline(d->baseline);
 }
 
 bool QmlAnchorChanges::isReversable()
@@ -452,10 +505,16 @@ void QmlAnchorChanges::reverse()
         d->target->anchors()->setLeft(d->origLeft);
     if (d->origRight.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->setRight(d->origRight);
+    if (d->origHCenter.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->setHorizontalCenter(d->origHCenter);
     if (d->origTop.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->setTop(d->origTop);
     if (d->origBottom.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->setBottom(d->origBottom);
+    if (d->origVCenter.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->setVerticalCenter(d->origVCenter);
+    if (d->origBaseline.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->setBaseline(d->origBaseline);
 }
 
 QString QmlAnchorChanges::typeName() const
@@ -503,9 +562,11 @@ void QmlAnchorChanges::saveForwardBindings()
     Q_D(QmlAnchorChanges);
     d->origLeft = d->target->anchors()->left();
     d->origRight = d->target->anchors()->right();
+    d->origHCenter = d->target->anchors()->horizontalCenter();
     d->origTop = d->target->anchors()->top();
     d->origBottom = d->target->anchors()->bottom();
-
+    d->origVCenter = d->target->anchors()->verticalCenter();
+    d->origBaseline = d->target->anchors()->baseline();
 }
 
 void QmlAnchorChanges::clearForwardBindings()
@@ -521,20 +582,32 @@ void QmlAnchorChanges::clearForwardBindings()
         d->target->anchors()->resetLeft();
     if (d->resetList.contains(QLatin1String("right")))
         d->target->anchors()->resetRight();
+    if (d->resetList.contains(QLatin1String("horizontalCenter")))
+        d->target->anchors()->resetHorizontalCenter();
     if (d->resetList.contains(QLatin1String("top")))
         d->target->anchors()->resetTop();
     if (d->resetList.contains(QLatin1String("bottom")))
         d->target->anchors()->resetBottom();
+    if (d->resetList.contains(QLatin1String("verticalCenter")))
+        d->target->anchors()->resetVerticalCenter();
+    if (d->resetList.contains(QLatin1String("baseline")))
+        d->target->anchors()->resetBaseline();
 
     //reset any anchors that we'll be setting in the state
     if (d->left.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->resetLeft();
     if (d->right.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->resetRight();
+    if (d->horizontalCenter.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetHorizontalCenter();
     if (d->top.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->resetTop();
     if (d->bottom.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->resetBottom();
+    if (d->verticalCenter.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetVerticalCenter();
+    if (d->baseline.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetBaseline();
 }
 
 void QmlAnchorChanges::clearReverseBindings()
@@ -550,20 +623,32 @@ void QmlAnchorChanges::clearReverseBindings()
         d->target->anchors()->resetLeft();
     if (d->right.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->resetRight();
+    if (d->horizontalCenter.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetHorizontalCenter();
     if (d->top.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->resetTop();
     if (d->bottom.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->resetBottom();
+    if (d->verticalCenter.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetVerticalCenter();
+    if (d->baseline.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetBaseline();
 
     //reset any anchors that were set in the original state
     if (d->origLeft.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->resetLeft();
     if (d->origRight.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->resetRight();
+    if (d->origHCenter.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetHorizontalCenter();
     if (d->origTop.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->resetTop();
     if (d->origBottom.anchorLine != QFxAnchorLine::Invalid)
         d->target->anchors()->resetBottom();
+    if (d->origVCenter.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetVerticalCenter();
+    if (d->origBaseline.anchorLine != QFxAnchorLine::Invalid)
+        d->target->anchors()->resetBaseline();
 }
 
 bool QmlAnchorChanges::override(ActionEvent*other)
