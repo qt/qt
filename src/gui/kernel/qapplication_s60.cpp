@@ -997,11 +997,14 @@ void QApplication::beep()
     beep=NULL;
 }
 
-/*! \fn int QApplication::s60ProcessEvent(TWsEvent *event)
-    This function does the core processing of individual s60
-    \a{event}s. It returns 1 if the event was handled, 0 if
+/*!
+    \warning This function is only available on Symbian.
+
+    This function processes an individual Symbian window server
+    \a event. It returns 1 if the event was handled, 0 if
     the \a event was not handled, and -1 if the event was
-    not handled because the event handle was not in the map.
+    not handled because the event handle (\c{TWsEvent::Handle()})
+    is not known to Qt.
  */
 int QApplication::s60ProcessEvent(TWsEvent *event)
 {
@@ -1090,7 +1093,16 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
 }
 
 /*!
-  Returns false. Does nothing with the TWsEvent \a aEvent.
+  \warning This virtual function is only available on Symbian.
+
+  If you create an application that inherits QApplication and reimplement
+  this function, you get direct access to events that the are received
+  from the Symbian window server. The events are passed in the TWsEvent
+  \a aEvent parameter.
+
+  Return true if you want to stop the event from being processed. Return
+  false for normal event dispatching. The default implementation
+  false, and does nothing with \a aEvent.
  */
 bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 {
@@ -1098,9 +1110,11 @@ bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 }
 
 /*!
+  \warning This function is only available on Symbian.
+
   Handles \a{command}s which are typically handled by
   CAknAppUi::HandleCommandL(). Qts Ui integration into Symbian is
-  partially achieved by deriving from CAknAppUi.  Currently, exit,
+  partially achieved by deriving from CAknAppUi. Currently, exit,
   menu and softkey commands are handled.
 
   \sa s60EventFilter(), s60ProcessEvent()
@@ -1132,7 +1146,12 @@ void QApplication::symbianHandleCommand(int command)
 }
 
 /*!
+  \warning This function is only available on Symbian.
+
   Handles the resource change specified by \a type.
+
+  Currently, KEikDynamicLayoutVariantSwitch and
+  KAknsMessageSkinChange are handled.
  */
 void QApplication::symbianResourceChange(int type)
 {
