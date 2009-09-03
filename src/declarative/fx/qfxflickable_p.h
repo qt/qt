@@ -85,6 +85,7 @@ private:
     QTime _startTime;
 };
 
+class QFxFlickableVisibleArea;
 class QFxFlickablePrivate : public QFxItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxFlickable)
@@ -148,12 +149,9 @@ public:
     QmlTimeLine velocityTimeline;
     bool atXEnd;
     bool atXBeginning;
-    qreal pageXPosition;
-    qreal pageWidth;
     bool atYEnd;
     bool atYBeginning;
-    qreal pageYPosition;
-    qreal pageHeight;
+    QFxFlickableVisibleArea *visibleArea;
 
     void handleMousePressEvent(QGraphicsSceneMouseEvent *);
     void handleMouseMoveEvent(QGraphicsSceneMouseEvent *);
@@ -166,6 +164,8 @@ public:
     void data_insert(int, QObject *);
     QObject *data_at(int) const;
     void data_clear();
+
+    friend class QFxFlickableVisibleArea;
     QML_DECLARE_LIST_PROXY(QFxFlickablePrivate, QObject *, data)
 };
 

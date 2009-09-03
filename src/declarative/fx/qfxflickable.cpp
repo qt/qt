@@ -92,13 +92,108 @@ void ElasticValue::updateCurrentTime(int)
     emit updated();
 }
 
+
+class QFxFlickableVisibleArea : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(qreal xPosition READ xPosition NOTIFY pageChanged)
+    Q_PROPERTY(qreal yPosition READ yPosition NOTIFY pageChanged)
+    Q_PROPERTY(qreal widthRatio READ widthRatio NOTIFY pageChanged)
+    Q_PROPERTY(qreal heightRatio READ heightRatio NOTIFY pageChanged)
+
+public:
+    QFxFlickableVisibleArea(QFxFlickable *parent=0);
+
+    qreal xPosition() const;
+    qreal widthRatio() const;
+    qreal yPosition() const;
+    qreal heightRatio() const;
+
+    void updateVisible();
+
+signals:
+    void pageChanged();
+
+private:
+    QFxFlickable *flickable;
+    qreal m_xPosition;
+    qreal m_widthRatio;
+    qreal m_yPosition;
+    qreal m_heightRatio;
+};
+
+QFxFlickableVisibleArea::QFxFlickableVisibleArea(QFxFlickable *parent)
+    : QObject(parent), flickable(parent), m_xPosition(0.), m_widthRatio(0.)
+    , m_yPosition(0.), m_heightRatio(0.)
+{
+}
+
+qreal QFxFlickableVisibleArea::widthRatio() const
+{
+    return m_widthRatio;
+}
+
+qreal QFxFlickableVisibleArea::xPosition() const
+{
+    return m_xPosition;
+}
+
+qreal QFxFlickableVisibleArea::heightRatio() const
+{
+    return m_heightRatio;
+}
+
+qreal QFxFlickableVisibleArea::yPosition() const
+{
+    return m_yPosition;
+}
+
+void QFxFlickableVisibleArea::updateVisible()
+{
+    QFxFlickablePrivate *p = static_cast<QFxFlickablePrivate *>(QGraphicsItemPrivate::get(flickable));
+    bool pageChange = false;
+
+    // Vertical
+    const qreal viewheight = flickable->height();
+    const qreal maxyextent = -flickable->maxYExtent();
+    qreal pagePos = -p->_moveY.value() / (maxyextent + viewheight);
+    qreal pageSize = viewheight / (maxyextent + viewheight);
+
+    if (pageSize != m_heightRatio) {
+        m_heightRatio = pageSize;
+        pageChange = true;
+    }
+    if (pagePos != m_yPosition) {
+        m_yPosition = pagePos;
+        pageChange = true;
+    }
+
+    // Horizontal
+    const qreal viewwidth = flickable->width();
+    const qreal maxxextent = -flickable->maxXExtent();
+    pagePos = -p->_moveX.value() / (maxxextent + viewwidth);
+    pageSize = viewwidth / (maxxextent + viewwidth);
+
+    if (pageSize != m_widthRatio) {
+        m_widthRatio = pageSize;
+        pageChange = true;
+    }
+    if (pagePos != m_xPosition) {
+        m_xPosition = pagePos;
+        pageChange = true;
+    }
+    if (pageChange)
+        emit pageChanged();
+}
+
+
 QFxFlickablePrivate::QFxFlickablePrivate()
   : _flick(new QFxItem), _moveX(_flick, &QFxItem::setX), _moveY(_flick, &QFxItem::setY)
     , vWidth(-1), vHeight(-1), overShoot(true), flicked(false), moving(false), stealMouse(false)
     , pressed(false), maxVelocity(-1), interactive(true), dragMode(QFxFlickable::Hard)
     , elasticY(_moveY), elasticX(_moveX), reportedVelocitySmoothing(100), horizontalVelocity(this), verticalVelocity(this)
-    , vTime(0), atXEnd(false), atXBeginning(true), pageXPosition(0.), pageWidth(0.)
-    , atYEnd(false), atYBeginning(true), pageYPosition(0.), pageHeight(0.)
+    , vTime(0), atXEnd(false), atXBeginning(true), atYEnd(false), atYBeginning(true), visibleArea(0)
 {
     fixupXEvent = QmlTimeLineEvent::timeLineEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupX>(&_moveX, this);
     fixupYEvent = QmlTimeLineEvent::timeLineEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupY>(&_moveY, this);
@@ -200,13 +295,13 @@ void QFxFlickablePrivate::fixupX()
 
     vTime = _tl.time();
 
-    if (_moveX.value() > q->minXExtent() || (q->maxXExtent() > q->maxXExtent())) {
-        _tl.reset(_moveY);
+    if (_moveX.value() > q->minXExtent() || (q->maxXExtent() > q->minXExtent())) {
+        _tl.reset(_moveX);
         if (_moveX.value() != q->minXExtent())
             _tl.move(_moveX, q->minXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else if (_moveX.value() < q->maxXExtent()) {
-        _tl.reset(_moveY);
+        _tl.reset(_moveX);
         _tl.move(_moveX,  q->maxXExtent(), QEasingCurve(QEasingCurve::InOutQuad), 200);
         //emit flickingChanged();
     } else {
@@ -239,26 +334,14 @@ void QFxFlickablePrivate::fixupY()
 void QFxFlickablePrivate::updateBeginningEnd()
 {
     Q_Q(QFxFlickable);
-    bool pageChange = false;
     bool atBoundaryChange = false;
 
     // Vertical
-    const int viewheight = q->height();
     const int maxyextent = int(-q->maxYExtent());
     const qreal ypos = -_moveY.value();
-    qreal pagePos = ((ypos * 100.0) / (maxyextent + viewheight)) / 100.0;
-    qreal pageSize = ((viewheight * 100.0) / (maxyextent + viewheight)) / 100.0;
     bool atBeginning = (ypos <= 0.0);
     bool atEnd = (maxyextent <= ypos);
 
-    if (pageSize != pageHeight) {
-        pageHeight = pageSize;
-        pageChange = true;
-    }
-    if (pagePos != pageYPosition) {
-        pageYPosition = pagePos;
-        pageChange = true;
-    }
     if (atBeginning != atYBeginning) {
         atYBeginning = atBeginning;
         atBoundaryChange = true;
@@ -269,22 +352,11 @@ void QFxFlickablePrivate::updateBeginningEnd()
     }
 
     // Horizontal
-    const int viewwidth = q->width();
     const int maxxextent = int(-q->maxXExtent());
     const qreal xpos = -_moveX.value();
-    pagePos = ((xpos * 100.0) / (maxxextent + viewwidth)) / 100.0;
-    pageSize = ((viewwidth * 100.0) / (maxxextent + viewwidth)) / 100.0;
     atBeginning = (xpos <= 0.0);
     atEnd = (maxxextent <= xpos);
 
-    if (pageSize != pageWidth) {
-        pageWidth = pageSize;
-        pageChange = true;
-    }
-    if (pagePos != pageXPosition) {
-        pageXPosition = pagePos;
-        pageChange = true;
-    }
     if (atBeginning != atXBeginning) {
         atXBeginning = atBeginning;
         atBoundaryChange = true;
@@ -294,10 +366,11 @@ void QFxFlickablePrivate::updateBeginningEnd()
         atBoundaryChange = true;
     }
 
-    if (pageChange)
-        emit q->pageChanged();
     if (atBoundaryChange)
         emit q->isAtBoundaryChanged();
+
+    if (visibleArea)
+        visibleArea->updateVisible();
 }
 
 static const int FlickThreshold = 5;
@@ -348,6 +421,27 @@ Flickable {
     it is not full-screen it is likely that QFxItem::clip should be set
     to true.
 
+*/
+
+/*!
+    \qmlproperty real Flickable::visibleArea.xPosition
+    \qmlproperty real Flickable::visibleArea.widthRatio
+    \qmlproperty real Flickable::visibleArea.yPosition
+    \qmlproperty real Flickable::visibleArea.heightRatio
+
+    These properties describe the position and size of the currently viewed area.
+    The size is defined as the percentage of the full view currently visible,
+    scaled to 0.0 - 1.0.  The page position is in the range 0.0 (beginning) to
+    size ratio (end), i.e. yPosition is in the range 0.0 - heightRatio.
+
+    These properties are typically used to draw a scrollbar, for example:
+    \code
+    Rectangle {
+        opacity: 0.5; anchors.right: MyListView.right-2; width: 6
+        y: MyListView.visibleArea.yPosition * MyListView.height
+        height: MyListView.visibleArea.heightRatio * MyListView.height
+    }
+    \endcode
 */
 
 QFxFlickable::QFxFlickable(QFxItem *parent)
@@ -514,50 +608,6 @@ bool QFxFlickable::isAtYBeginning() const
     return d->atYBeginning;
 }
 
-/*!
-    \qmlproperty real Flickable::pageXPosition
-    \qmlproperty real Flickable::pageWidth
-    \qmlproperty real Flickable::pageYPosition
-    \qmlproperty real Flickable::pageHeight
-
-    These properties describe the position and size of the currently viewed page.
-    The page size is defined as the percentage of the full view currently visible,
-    scaled to 0.0 - 1.0.  The page position is also in the range 0.0 (beginning) to
-    1.0 (end).
-
-    These properties are typically used to draw a scrollbar, for example:
-    \code
-    Rectangle {
-        opacity: 0.5; anchors.right: MyListView.right-2; width: 6
-        y: MyListView.pageYPosition * MyListView.height
-        height: MyListView.pageHeight * MyListView.height
-    }
-    \endcode
-*/
-qreal QFxFlickable::pageWidth() const
-{
-    Q_D(const QFxFlickable);
-    return d->pageWidth;
-}
-
-qreal QFxFlickable::pageXPosition() const
-{
-    Q_D(const QFxFlickable);
-    return d->pageXPosition;
-}
-
-qreal QFxFlickable::pageHeight() const
-{
-    Q_D(const QFxFlickable);
-    return d->pageHeight;
-}
-
-qreal QFxFlickable::pageYPosition() const
-{
-    Q_D(const QFxFlickable);
-    return d->pageYPosition;
-}
-
 void QFxFlickable::ticked()
 {
     viewportMoved();
@@ -579,6 +629,14 @@ qreal QFxFlickable::visibleY() const
 {
     Q_D(const QFxFlickable);
     return -d->_moveY.value();
+}
+
+QFxFlickableVisibleArea *QFxFlickable::visibleArea()
+{
+    Q_D(QFxFlickable);
+    if (!d->visibleArea)
+        d->visibleArea = new QFxFlickableVisibleArea(this);
+    return d->visibleArea;
 }
 
 void QFxFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -931,8 +989,8 @@ void QFxFlickable::widthChange()
     if (d->vWidth < 0) {
         d->_flick->setWidth(width());
         emit viewportWidthChanged();
-        d->updateBeginningEnd();
     }
+    d->updateBeginningEnd();
 }
 
 void QFxFlickable::heightChange()
@@ -941,8 +999,8 @@ void QFxFlickable::heightChange()
     if (d->vHeight < 0) {
         d->_flick->setHeight(height());
         emit viewportHeightChanged();
-        d->updateBeginningEnd();
     }
+    d->updateBeginningEnd();
 }
 
 qreal QFxFlickable::viewportHeight() const
@@ -1136,3 +1194,8 @@ void QFxFlickablePrivate::updateVelocity()
 }
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QFxFlickableVisibleArea)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisibleArea,QFxFlickableVisibleArea)
+
+#include "qfxflickable.moc"

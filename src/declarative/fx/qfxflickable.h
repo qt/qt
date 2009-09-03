@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QFxFlickablePrivate;
+class QFxFlickableVisibleArea;
 class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
 {
     Q_OBJECT
@@ -77,10 +78,7 @@ class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
     Q_PROPERTY(bool atXBeginning READ isAtXBeginning NOTIFY isAtBoundaryChanged)
     Q_PROPERTY(bool atYBeginning READ isAtYBeginning NOTIFY isAtBoundaryChanged)
 
-    Q_PROPERTY(qreal pageXPosition READ pageXPosition NOTIFY pageChanged) //### visibleArea.xPosition
-    Q_PROPERTY(qreal pageYPosition READ pageYPosition NOTIFY pageChanged) //### visibleArea.yPosition
-    Q_PROPERTY(qreal pageWidth READ pageWidth NOTIFY pageChanged) //### visibleArea.widthRatio
-    Q_PROPERTY(qreal pageHeight READ pageHeight NOTIFY pageChanged) //### visibleArea.heightRatio
+    Q_PROPERTY(QFxFlickableVisibleArea *visibleArea READ visibleArea CONSTANT)
 
     Q_PROPERTY(QmlList<QObject *>* flickableData READ flickableData)
     Q_PROPERTY(QmlList<QFxItem *>* flickableChildren READ flickableChildren)
@@ -130,13 +128,8 @@ public:
 
     bool isAtXEnd() const;
     bool isAtXBeginning() const;
-    qreal pageXPosition() const;
-    qreal pageWidth() const;
-
     bool isAtYEnd() const;
     bool isAtYBeginning() const;
-    qreal pageYPosition() const;
-    qreal pageHeight() const;
 
     QFxItem *viewport();
 
@@ -165,6 +158,8 @@ protected:
     qreal visibleX() const;
     qreal visibleY() const;
 
+    QFxFlickableVisibleArea *visibleArea();
+
 protected Q_SLOTS:
     virtual void ticked();
     void movementStarting();
@@ -191,6 +186,7 @@ protected:
 private:
     Q_DISABLE_COPY(QFxFlickable)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxFlickable)
+    friend class QFxFlickableVisibleArea;
 };
 
 QT_END_NAMESPACE

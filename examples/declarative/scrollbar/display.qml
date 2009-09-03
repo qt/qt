@@ -38,22 +38,20 @@ Rectangle {
         id: SBV
         opacity: 0
         orientation: "Vertical"
-        position: View.pageYPosition
-        pageSize: View.pageHeight
+        position: View.visibleArea.yPosition
+        pageSize: View.visibleArea.heightRatio
         width: 12
         height: View.height-12
         anchors.right: View.right
     }
-           /*
     ScrollBar {
         id: SBH
         opacity: 0
         orientation: "Horizontal"
-        position: View.pageXPosition
-        pageSize: View.pageWidth
+        position: View.visibleArea.xPosition
+        pageSize: View.visibleArea.widthRatio
         height: 12
         width: View.width-12
         anchors.bottom: View.bottom
     }
-    */
 }
