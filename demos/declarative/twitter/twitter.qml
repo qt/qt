@@ -67,6 +67,7 @@ Item {
             width: parent.width; opacity: 0.9 
             button1Label: "Update"
             button2Label: "View others"
+            onButton1Clicked: RssModel.reload();
             onButton2Clicked: 
             {
                 if(Screen.userView == true){
