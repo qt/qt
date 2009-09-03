@@ -256,7 +256,8 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
 }
 
 /*!
-    Constructs a new QGraphicsEffect instance.
+    Constructs a new QGraphicsEffect instance having the
+    specified \a parent.
 */
 QGraphicsEffect::QGraphicsEffect(QObject *parent)
     : QObject(*new QGraphicsEffectPrivate, parent)

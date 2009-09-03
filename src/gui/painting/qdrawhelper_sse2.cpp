@@ -183,7 +183,7 @@ void qt_bitmapblit16_sse2(QRasterBuffer *rasterBuffer, int x, int y,
     const int destStride = rasterBuffer->bytesPerLine() / sizeof(quint16);
 
     const __m128i c128 = _mm_set1_epi16(c);
-#if defined(Q_OS_WIN)
+#if defined(Q_CC_MSVC)
 #  pragma warning(disable: 4309) // truncation of constant value
 #endif
     const __m128i maskmask = _mm_set_epi16(0x0101, 0x0202, 0x0404, 0x0808,

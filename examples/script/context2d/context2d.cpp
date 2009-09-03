@@ -369,7 +369,7 @@ void Context2D::setLineCap(const QString &capString)
         style = Qt::RoundCap;
     else if (capString == "square")
         style = Qt::SquareCap;
-    else if (capString == "butt")
+    else //if (capString == "butt")
         style = Qt::FlatCap;
     m_state.lineCap = style;
     m_state.flags |= DirtyLineCap;
@@ -397,7 +397,7 @@ void Context2D::setLineJoin(const QString &joinString)
         style = Qt::RoundJoin;
     else if (joinString == "bevel")
         style = Qt::BevelJoin;
-    else if (joinString == "miter")
+    else //if (joinString == "miter")
         style = Qt::MiterJoin;
     m_state.lineJoin = style;
     m_state.flags |= DirtyLineJoin;

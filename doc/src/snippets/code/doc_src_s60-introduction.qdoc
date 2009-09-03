@@ -10,19 +10,19 @@
 //! [2]
     qmake
     make debug-winscw release-armv5
-    make sisx
+    make sis
 //! [2]
 
 //! [3]
-   make sisx QT_SISX_TARGET=debug-armv5
+   make sis QT_SIS_TARGET=debug-armv5
 //! [3]
 
 //! [4]
-   set QT_SISX_TARGET=debug-armv5
-   make sisx
+   set QT_SIS_TARGET=debug-armv5
+   make sis
 //! [4]
 
 //! [5]
-   set QT_SISX_OPTIONS=-i
-   make sisx
+   set QT_SIS_OPTIONS=-i
+   make sis
 //! [5]

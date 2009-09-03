@@ -540,10 +540,10 @@ public:
     // Return resource for 'key' or a shared context.
     void *value(const QGLContext *key);
     // Free resource for 'key' and all its shared contexts.
-    void remove(const QGLContext *key);
+    void removeGroup(const QGLContext *key);
 private slots:
     // Remove entry 'key' from cache and delete resource if there are no shared contexts.
-    void aboutToDestroyContext(const QGLContext *key);
+    void removeOne(const QGLContext *key);
 private:
     typedef QHash<const QGLContext *, void *> ResourceHash;
     ResourceHash m_resources;

@@ -196,6 +196,8 @@ public:
 
     float zValueForRenderText() const;
 
+    static QGLEngineShaderManager* shaderManagerForEngine(QGL2PaintEngineEx *engine) { return engine->d_func()->shaderManager; }
+
     QGL2PaintEngineEx* q;
     QGLDrawable drawable;
     int width, height;

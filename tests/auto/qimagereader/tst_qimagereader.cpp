@@ -1249,7 +1249,7 @@ void tst_QImageReader::readCorruptImage()
 
 void tst_QImageReader::readCorruptBmp()
 {
-    QCOMPARE(QImage("tst7.bmp").convertToFormat(QImage::Format_ARGB32_Premultiplied), QImage("images/tst7.png").convertToFormat(QImage::Format_ARGB32_Premultiplied));
+    QCOMPARE(QImage(prefix + "tst7.bmp").convertToFormat(QImage::Format_ARGB32_Premultiplied), QImage(prefix + "tst7.png").convertToFormat(QImage::Format_ARGB32_Premultiplied));
 }
 
 void tst_QImageReader::supportsOption_data()

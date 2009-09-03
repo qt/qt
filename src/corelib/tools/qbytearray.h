@@ -224,6 +224,7 @@ public:
 
     QByteArray &prepend(char c);
     QByteArray &prepend(const char *s);
+    QByteArray &prepend(const char *s, int len);
     QByteArray &prepend(const QByteArray &a);
     QByteArray &append(char c);
     QByteArray &append(const char *s);
@@ -231,6 +232,7 @@ public:
     QByteArray &append(const QByteArray &a);
     QByteArray &insert(int i, char c);
     QByteArray &insert(int i, const char *s);
+    QByteArray &insert(int i, const char *s, int len);
     QByteArray &insert(int i, const QByteArray &a);
     QByteArray &remove(int index, int len);
     QByteArray &replace(int index, int len, const char *s);

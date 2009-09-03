@@ -501,6 +501,8 @@ public:
         WA_WState_AcceptedTouchBeginEvent = 122,
         WA_TouchPadAcceptSingleTouchEvents = 123,
 
+        WA_DontUseStandardGestures = 124,
+
         // Add new attributes before this line
         WA_AttributeCount
     };
@@ -1652,7 +1654,8 @@ public:
         Pbuffer       = 0x06,    // GL pbuffer
         FramebufferObject = 0x07, // GL framebuffer object
         CustomRaster  = 0x08,
-        MacQuartz     = 0x09
+        MacQuartz     = 0x09,
+        PaintBuffer   = 0x0a
     };
     enum RelayoutType {
         RelayoutNormal,

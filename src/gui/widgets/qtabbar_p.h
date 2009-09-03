@@ -159,6 +159,7 @@ public:
     int indexAtPos(const QPoint &p) const;
 
     inline bool validIndex(int index) const { return index >= 0 && index < tabList.count(); }
+    void setCurrentNextEnabledIndex(int offset);
 
     QSize minimumTabSizeHint(int index);
 
