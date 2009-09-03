@@ -809,19 +809,19 @@ void QmlScriptAction::setScript(const QString &script)
 }
 
 /*!
-    \qmlproperty QString ScriptAction::runScriptName
+    \qmlproperty QString ScriptAction::stateChangeScriptName
     This property holds the the name of the StateChangeScript to run.
 
     This property is only valid when ScriptAction is used as part of a transition.
-    If both script and runScriptName are set, runScriptName will be used.
+    If both script and stateChangeScriptName are set, stateChangeScriptName will be used.
 */
-QString QmlScriptAction::runScriptName() const
+QString QmlScriptAction::stateChangeScriptName() const
 {
     Q_D(const QmlScriptAction);
     return d->script;
 }
 
-void QmlScriptAction::setRunScriptName(const QString &name)
+void QmlScriptAction::setStateChangeScriptName(const QString &name)
 {
     Q_D(QmlScriptAction);
     d->name = name;
