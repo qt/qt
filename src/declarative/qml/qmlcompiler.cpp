@@ -781,6 +781,7 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
     QmlInstruction create;
     create.type = QmlInstruction::CreateObject;
     create.line = obj->location.start.line;
+    create.create.column = obj->location.start.column;
     create.create.data = -1;
     if (!obj->custom.isEmpty())
         create.create.data = output->indexForByteArray(obj->custom);
@@ -937,6 +938,7 @@ void QmlCompiler::genComponent(QmlParser::Object *obj)
     QmlInstruction create;
     create.type = QmlInstruction::CreateComponent;
     create.line = root->location.start.line;
+    create.createComponent.column = root->location.start.column;
     create.createComponent.endLine = root->location.end.line;
     output->bytecode << create;
     int count = output->bytecode.count();
