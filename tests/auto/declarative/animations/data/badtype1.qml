@@ -1,9 +1,9 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     width: 240
     height: 320
-    Rect {
+    Rectangle {
         color: "red"
         width: 50; height: 50
         x: 100; y: 100

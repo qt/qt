@@ -359,6 +359,9 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
                     }
                 }
             }
+            if (!found)
+                action.event->saveForwardBindings();
+            //### do we ever need to do saveForwardBindings when found == true?
         } else {
             action.fromBinding = action.property.binding();
 
