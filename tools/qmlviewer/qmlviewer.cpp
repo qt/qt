@@ -45,6 +45,10 @@
 #include <QKeyEvent>
 #include "proxysettings.h"
 
+#ifdef GL_SUPPORTED
+#include <QGLWidget>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 class PreviewDeviceSkin : public DeviceSkin
@@ -1001,6 +1005,20 @@ void QmlViewer::setNetworkCacheSize(int size)
     } else {
         nam->setCache(0);
     }
+}
+
+void QmlViewer::setUseGL(bool useGL)
+{
+#ifdef GL_SUPPORTED
+    if (useGL) {
+        QGLFormat format = QGLFormat::defaultFormat();
+        format.setSampleBuffers(false);
+
+        QGLWidget *glWidget = new QGLWidget(format);
+        glWidget->setAutoFillBackground(false);
+        canvas->setViewport(glWidget);
+    }
+#endif
 }
 
 QT_END_NAMESPACE

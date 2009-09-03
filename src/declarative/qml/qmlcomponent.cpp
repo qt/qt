@@ -488,6 +488,7 @@ QObject *QmlComponent::beginCreate(QmlContext *context)
         static_cast<QmlContextPrivate *>(QObjectPrivate::get(context));
     QmlContext *ctxt = new QmlContext(context, 0, true);
     static_cast<QmlContextPrivate*>(ctxt->d_func())->url = d->cc->url;
+    static_cast<QmlContextPrivate*>(ctxt->d_func())->imports = d->cc->imports;
 
     QmlVME vme;
     QObject *rv = vme.run(ctxt, d->cc, d->start, d->count);

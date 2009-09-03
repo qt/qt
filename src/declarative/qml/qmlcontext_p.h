@@ -60,6 +60,7 @@
 #include <QtScript/qscriptvalue.h>
 #include <QtCore/qset.h>
 #include <private/qguard_p.h>
+#include <private/qmlengine_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -91,6 +92,7 @@ public:
     QScriptValueList scopeChain;
 
     QUrl url;
+    QmlEnginePrivate::Imports imports;
 
     void init();
 

@@ -1,7 +1,6 @@
 load(qttest_p4)
 contains(QT_CONFIG,declarative): QT += declarative
-contains(QT_CONFIG, opengles2)|contains(QT_CONFIG, opengles1): QT += opengl
-SOURCES += tst_simplecanvasitem.cpp
+SOURCES += tst_states.cpp
 
 # Define SRCDIR equal to test's source directory
 DEFINES += SRCDIR=\\\"$$PWD\\\"

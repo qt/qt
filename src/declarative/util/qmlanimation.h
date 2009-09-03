@@ -58,7 +58,7 @@ QT_MODULE(Declarative)
 
 class QmlAbstractAnimationPrivate;
 class QmlAnimationGroup;
-class QmlAbstractAnimation : public QObject, public QmlPropertyValueSource, public QmlParserStatus
+class Q_AUTOTEST_EXPORT QmlAbstractAnimation : public QObject, public QmlPropertyValueSource, public QmlParserStatus
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlAbstractAnimation)
@@ -68,8 +68,6 @@ class QmlAbstractAnimation : public QObject, public QmlPropertyValueSource, publ
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
     Q_PROPERTY(bool alwaysRunToEnd READ alwaysRunToEnd WRITE setAlwaysRunToEnd NOTIFY alwaysRunToEndChanged())
     Q_PROPERTY(bool repeat READ repeat WRITE setRepeat NOTIFY repeatChanged)
-    //Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
-    //Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
     Q_CLASSINFO("DefaultMethod", "start()")
     Q_INTERFACES(QmlParserStatus)
 
@@ -252,7 +250,7 @@ protected:
 };
 
 class QmlPropertyAnimationPrivate;
-class QmlPropertyAnimation : public QmlAbstractAnimation
+class Q_AUTOTEST_EXPORT QmlPropertyAnimation : public QmlAbstractAnimation
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlPropertyAnimation)
@@ -304,7 +302,7 @@ Q_SIGNALS:
     void propertiesChanged(const QString &);
 };
 
-class QmlColorAnimation : public QmlPropertyAnimation
+class Q_AUTOTEST_EXPORT QmlColorAnimation : public QmlPropertyAnimation
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlPropertyAnimation)
@@ -322,7 +320,7 @@ public:
     void setTo(const QColor &);
 };
 
-class QmlNumberAnimation : public QmlPropertyAnimation
+class Q_AUTOTEST_EXPORT QmlNumberAnimation : public QmlPropertyAnimation
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlPropertyAnimation)

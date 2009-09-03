@@ -15,7 +15,7 @@ Rectangle {
 
         states: State { 
             name: "rotated"
-            PropertyChanges { target: ListView; z: 2 }
+            PropertyChanges { target: MyListView; z: 2 }
             PropertyChanges { target: TopBar; y: -30 }
             PropertyChanges { target: BottomBar; y: 480 }
             PropertyChanges { target: LeftBar; x: 0 }
@@ -44,7 +44,7 @@ Rectangle {
             }
             delegate: Package {
                 Item { id: List; Package.name: "list"; width:120; height: 400; }
-                Item { id: Grid; Package.name: "grid"; width:400; height: 120; }
+                Item { id: GridItem; Package.name: "grid"; width:400; height: 120; }
                 Loader { id: MyContent; width:400; height: 120; source: weblet }
 
                 StateGroup {
@@ -58,7 +58,7 @@ Rectangle {
                         State { 
                             name: "InGrid"
                             when: MyPhone.state != "rotated"
-                            ParentChange { target: MyContent; parent: Grid }
+                            ParentChange { target: MyContent; parent: GridItem }
                             PropertyChanges { target: MyContent; x: 0; y: 0; }
                         }
                     ]
@@ -75,7 +75,7 @@ Rectangle {
                         from: "*"; to: "InList"
                         SequentialAnimation { 
                             ParentAction{} 
-                            PauseAnimation { duration: 50 * (Grid.FlowView.row * 2 + Grid.FlowView.column) }
+                            PauseAnimation { duration: 50 * (GridItem.FlowView.row * 2 + GridItem.FlowView.column) }
                             NumberAnimation { properties: "x,y,rotation"; easing: "easeInOutQuad" } 
                         } 
                     }
@@ -87,7 +87,7 @@ Rectangle {
 
         Item {
             FlowView {
-                id: ListView
+                id: MyListView
                 vertical: true
                 y: 40
                 x: 40
