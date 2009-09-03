@@ -43,6 +43,7 @@ public:
     void setDeviceKeys(bool);
     void setNetworkCacheSize(int size);
     void addLibraryPath(const QString& lib);
+    void setUseGL(bool use);
 
     QStringList builtinSkins() const;
 
