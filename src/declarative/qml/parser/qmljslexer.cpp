@@ -381,6 +381,11 @@ int Lexer::findReservedWord(const QChar *c, int size) const
                 && c[4] == QLatin1Char('e') && c[5] == QLatin1Char('r')
                 && c[6] == QLatin1Char('t') && c[7] == QLatin1Char('y'))
             return QmlJSGrammar::T_PROPERTY;
+        else if (c[0] == QLatin1Char('r') && c[1] == QLatin1Char('e')
+                && c[2] == QLatin1Char('a') && c[3] == QLatin1Char('d')
+                && c[4] == QLatin1Char('o') && c[5] == QLatin1Char('n')
+                && c[6] == QLatin1Char('l') && c[7] == QLatin1Char('y'))
+            return QmlJSGrammar::T_READONLY;
         else if (check_reserved) {
             if (c[0] == QLatin1Char('a') && c[1] == QLatin1Char('b')
                     && c[2] == QLatin1Char('s') && c[3] == QLatin1Char('t')

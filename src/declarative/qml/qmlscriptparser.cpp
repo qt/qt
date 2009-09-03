@@ -533,6 +533,15 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
             return false;
         }
 
+        if (node->isReadonlyMember) {
+            QmlError error;
+            error.setDescription(QCoreApplication::translate("QmlParser","Readonly not yet supported"));
+            error.setLine(node->readonlyToken.startLine);
+            error.setColumn(node->readonlyToken.startColumn);
+            _parser->_errors << error;
+            return false;
+
+        }
         Object::DynamicProperty property;
         property.isDefaultProperty = node->isDefaultMember;
         property.type = type;

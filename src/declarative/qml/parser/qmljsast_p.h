@@ -2480,19 +2480,21 @@ public:
 
     UiPublicMember(NameId *memberType,
                    NameId *name)
-        : type(Property), memberType(memberType), name(name), expression(0), isDefaultMember(false), parameters(0)
+        : type(Property), memberType(memberType), name(name), expression(0), isDefaultMember(false), isReadonlyMember(false), parameters(0)
     { kind = K; }
 
     UiPublicMember(NameId *memberType,
                    NameId *name,
                    ExpressionNode *expression)
-        : type(Property), memberType(memberType), name(name), expression(expression), isDefaultMember(false), parameters(0)
+        : type(Property), memberType(memberType), name(name), expression(expression), isDefaultMember(false), isReadonlyMember(false), parameters(0)
     { kind = K; }
 
     virtual SourceLocation firstSourceLocation() const
     {
       if (defaultToken.isValid())
         return defaultToken;
+      else if (readonlyToken.isValid())
+          return readonlyToken;
 
       return propertyToken;
     }
@@ -2510,8 +2512,10 @@ public:
     NameId *name;
     ExpressionNode *expression;
     bool isDefaultMember;
+    bool isReadonlyMember;
     UiParameterList *parameters;
     SourceLocation defaultToken;
+    SourceLocation readonlyToken;
     SourceLocation propertyToken;
     SourceLocation typeToken;
     SourceLocation identifierToken;
