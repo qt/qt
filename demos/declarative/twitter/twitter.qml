@@ -72,6 +72,7 @@ Item {
                 if(Screen.userView == true){
                     Screen.setMode(false);
                 }else{
+                    RssModel.tags='';
                     Screen.setMode(true);
                 }
             }
