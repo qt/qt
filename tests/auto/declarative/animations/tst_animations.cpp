@@ -3,6 +3,7 @@
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qfxview.h>
 #include <QtDeclarative/qfxrect.h>
+#include <QtDeclarative/QmlNumberAnimation>
 
 class tst_animations : public QObject
 {
@@ -11,10 +12,67 @@ public:
     tst_animations() {}
 
 private slots:
+    void simpleNumber();
+    void simpleColor();
+    void alwaysRunToEnd();
     void badTypes();
     void badProperties();
-    //void mixedTypes();
+    void mixedTypes();
 };
+
+void tst_animations::simpleNumber()
+{
+    QFxRect rect;
+    QmlNumberAnimation animation;
+    animation.setTarget(&rect);
+    animation.setProperty("x");
+    animation.setTo(200);
+    animation.start();
+    QTest::qWait(animation.duration() + 50);
+    QCOMPARE(rect.x(), qreal(200));
+
+    rect.setX(0);
+    animation.start();
+    animation.pause();
+    animation.setCurrentTime(125);
+    QCOMPARE(rect.x(), qreal(100));
+}
+
+void tst_animations::simpleColor()
+{
+    QFxRect rect;
+    QmlColorAnimation animation;
+    animation.setTarget(&rect);
+    animation.setProperty("color");
+    animation.setTo(QColor("red"));
+    animation.start();
+    QTest::qWait(animation.duration() + 50);
+    QCOMPARE(rect.color(), QColor("red"));
+
+    rect.setColor(QColor("blue"));
+    animation.start();
+    animation.pause();
+    animation.setCurrentTime(125);
+    QCOMPARE(rect.color(), QColor::fromRgbF(0.498039, 0, 0.498039, 1));
+}
+
+void tst_animations::alwaysRunToEnd()
+{
+    QFxRect rect;
+    QmlPropertyAnimation animation;
+    animation.setTarget(&rect);
+    animation.setProperty("x");
+    animation.setTo(200);
+    animation.setDuration(1000);
+    animation.setRepeat(true);
+    animation.setAlwaysRunToEnd(true);
+    animation.start();
+    QTest::qWait(1500);
+    animation.stop();
+    QVERIFY(rect.x() != qreal(200));
+    QTest::qWait(500 + 50);
+    QCOMPARE(rect.x(), qreal(200));
+}
 
 void tst_animations::badTypes()
 {
@@ -50,47 +108,73 @@ void tst_animations::badTypes()
         QVERIFY(c.errors().count() == 1);
         QCOMPARE(c.errors().at(0).description(), QLatin1String("Invalid property assignment: color expected"));
     }
+
+    //don't crash
+    {
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/badtype4.qml"));
+        QFxRect *rect = qobject_cast<QFxRect*>(c.create());
+        QVERIFY(rect);
+
+        rect->setState("state1");
+        QTest::qWait(1000 + 50);
+        QFxRect *myRect = qobject_cast<QFxRect*>(rect->QGraphicsObject::children().at(3));    //### not robust
+        QVERIFY(myRect);
+        QCOMPARE(myRect->x(),qreal(200));
+    }
 }
 
 void tst_animations::badProperties()
 {
-    //don't crash (should be runtime error)
+    //make sure we get a runtime error
     {
-        QFxView *view = new QFxView;
-        view->setUrl(QUrl("file://" SRCDIR "/data/badproperty1.qml"));
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/badproperty1.qml"));
+        QFxRect *rect = qobject_cast<QFxRect*>(c.create());
+        QVERIFY(rect);
 
-        view->execute();
-        qApp->processEvents();
-
-        delete view;
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlColorAnimation (file://" SRCDIR "/data/badproperty1.qml:22:9) Cannot animate non-existant property \"pen.colr\" ");
+        rect->setState("state1");
     }
 }
 
-/*//test animating mixed types with property animation
-  //for example, int + real; color + real; etc
+//test animating mixed types with property animation in a transition
+//for example, int + real; color + real; etc
 void tst_animations::mixedTypes()
 {
-    //### this one isn't real robust because width will likely change to real as well
+    //assumes border.width stats a real -- not real robust
     {
-        QFxView *view = new QFxView;
-        view->setUrl(QUrl("file://" SRCDIR "/data/mixedtype1.qml"));
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/mixedtype1.qml"));
+        QFxRect *rect = qobject_cast<QFxRect*>(c.create());
+        QVERIFY(rect);
 
-        view->execute();
-        qApp->processEvents();
+        rect->setState("state1");
+        QTest::qWait(500);
+        QFxRect *myRect = qobject_cast<QFxRect*>(rect->QGraphicsObject::children().at(3));    //### not robust
+        QVERIFY(myRect);
 
-        delete view;
+        //rather inexact -- is there a better way?
+        QVERIFY(myRect->x() > 100 && myRect->x() < 200);
+        QVERIFY(myRect->border()->width() > 1 && myRect->border()->width() < 10);
     }
 
     {
-        QFxView *view = new QFxView;
-        view->setUrl(QUrl("file://" SRCDIR "/data/mixedtype2.qml"));
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/mixedtype2.qml"));
+        QFxRect *rect = qobject_cast<QFxRect*>(c.create());
+        QVERIFY(rect);
 
-        view->execute();
-        qApp->processEvents();
+        rect->setState("state1");
+        QTest::qWait(500);
+        QFxRect *myRect = qobject_cast<QFxRect*>(rect->QGraphicsObject::children().at(3));    //### not robust
+        QVERIFY(myRect);
 
-        delete view;
+        //rather inexact -- is there a better way?
+        QVERIFY(myRect->x() > 100 && myRect->x() < 200);
+        QVERIFY(myRect->color() != QColor("red") && myRect->color() != QColor("blue"));
     }
-}*/
+}
 
 QTEST_MAIN(tst_animations)
 
