@@ -725,7 +725,8 @@ void tst_QGL::glFBORendering()
     glw.makeCurrent();
 
     // No multisample with combined depth/stencil attachment:
-    QGLFramebufferObjectFormat fboFormat(0, QGLFramebufferObject::CombinedDepthStencil);
+    QGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
 
     // Don't complicate things by using NPOT:
     QGLFramebufferObject *fbo = new QGLFramebufferObject(256, 128, fboFormat);
@@ -785,7 +786,8 @@ void tst_QGL::multipleFBOInterleavedRendering()
     glw.makeCurrent();
 
     // No multisample with combined depth/stencil attachment:
-    QGLFramebufferObjectFormat fboFormat(0, QGLFramebufferObject::CombinedDepthStencil);
+    QGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
 
     QGLFramebufferObject *fbo1 = new QGLFramebufferObject(256, 128, fboFormat);
     QGLFramebufferObject *fbo2 = new QGLFramebufferObject(256, 128, fboFormat);
@@ -890,7 +892,8 @@ protected:
     {
         QPainter widgetPainter;
         widgetPainterBeginOk = widgetPainter.begin(this);
-        QGLFramebufferObjectFormat fboFormat(0, QGLFramebufferObject::CombinedDepthStencil);
+        QGLFramebufferObjectFormat fboFormat;
+        fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
         QGLFramebufferObject *fbo = new QGLFramebufferObject(128, 128, fboFormat);
 
         QPainter fboPainter;
@@ -1018,7 +1021,8 @@ void tst_QGL::stackedFBOs()
     glw.makeCurrent();
 
     // No multisample with combined depth/stencil attachment:
-    QGLFramebufferObjectFormat fboFormat(0, QGLFramebufferObject::CombinedDepthStencil);
+    QGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
 
     // Don't complicate things by using NPOT:
     QGLFramebufferObject *fbo1 = new QGLFramebufferObject(128, 128, fboFormat);
