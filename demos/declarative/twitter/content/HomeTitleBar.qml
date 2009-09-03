@@ -3,7 +3,7 @@ import "../../flickr/mobile"
 import "../../flickr/common"
 
 Item {
-    id: TitleBar
+    id: titleBar
 
     signal update()
     onYChanged: state="" //When switching titlebars
@@ -23,12 +23,13 @@ Item {
                 postman.open("POST", "http://twitter.com/statuses/update.xml", true, RssModel.authName,  RssModel.authPass);
                 postman.onreadystatechange = function() { 
                     if (postman.readyState == postman.DONE) {
-                        TitleBar.update();
+                        titleBar.update();
                     }
                 }
                 postman.send(postData);
 
-                TitleBar.state = ""
+                Editor.text = ""
+                titleBar.state = ""
             }
         }
 
@@ -57,15 +58,15 @@ Item {
         }
 
         Button {
-            id: TagButton; x: TitleBar.width - 90; width: 85; height: 32; text: "New Post..."
+            id: TagButton; x: titleBar.width - 90; width: 85; height: 32; text: "New Post..."
             anchors.verticalCenter: parent.verticalCenter;
-            onClicked: if (TitleBar.state == "Posting") accept(); else TitleBar.state = "Posting"
+            onClicked: if (titleBar.state == "Posting") accept(); else titleBar.state = "Posting"
         }
 
         Text {
             id: charsLeftText; anchors.horizontalCenter: TagButton.horizontalCenter;
             anchors.top: TagButton.bottom; anchors.topMargin: 2
-            text: {140 - Editor.text.length;} visible: TitleBar.state == "Posting"
+            text: {140 - Editor.text.length;} visible: titleBar.state == "Posting"
             font.pointSize: 10; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
         }
         Item {
@@ -101,7 +102,7 @@ Item {
             Item {
                 id: ReturnKey
                 Keys.onReturnPressed: accept()
-                Keys.onEscapePressed: TitleBar.state = ""
+                Keys.onEscapePressed: titleBar.state = ""
             }
         }
     }
@@ -109,7 +110,7 @@ Item {
         State {
             name: "Posting"
             PropertyChanges { target: Container; x: -TagButton.x + 5 }
-            PropertyChanges { target: TitleBar; height: 80 }
+            PropertyChanges { target: titleBar; height: 80 }
             PropertyChanges { target: TagButton; text: "OK" }
             PropertyChanges { target: TagButton; width: 28 }
             PropertyChanges { target: TagButton; height: 24 }

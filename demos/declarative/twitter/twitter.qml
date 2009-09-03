@@ -31,7 +31,13 @@ Item {
         Image { source: "mobile/images/stripes.png"; fillMode: "Tile"; anchors.fill: parent; opacity: 0.3 }
 
         Twitter.RssModel { id: RssModel }
-        Common.Loading { anchors.centerIn: parent; visible: RssModel.status && state!='unauthed'}
+        Common.Loading { anchors.centerIn: parent; visible: RssModel.status==XmlListModel.Loading && state!='unauthed'}
+        Text { 
+            width: 180
+            text: "Could not access twitter using this screen name and password pair."; 
+            color: "white"; color: "#cccccc"; style: "Raised"; styleColor: "black"; wrap: true
+            visible: RssModel.status==XmlListModel.Error; anchors.centerIn: parent
+        }
 
         Item {
             id: Views
@@ -61,11 +67,13 @@ Item {
             width: parent.width; opacity: 0.9 
             button1Label: "Update"
             button2Label: "View others"
+            onButton1Clicked: RssModel.reload();
             onButton2Clicked: 
             {
                 if(Screen.userView == true){
                     Screen.setMode(false);
                 }else{
+                    RssModel.tags='';
                     Screen.setMode(true);
                 }
             }

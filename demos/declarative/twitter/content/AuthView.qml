@@ -85,7 +85,7 @@ Item {
                 height: 32
                 id: guest
                 text: "Guest"
-                onClicked: RssModel.authName='inv'
+                onClicked: {RssModel.authName='-'; Screen.setMode(true);}
             }
         }
     }
