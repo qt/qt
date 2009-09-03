@@ -642,6 +642,8 @@ void QmlCompiler::compileTree(Object *tree)
     def.type = QmlInstruction::SetDefault;
     output->bytecode << def;
 
+    output->imports = unit->imports;
+
     if (tree->metatype)
         static_cast<QMetaObject &>(output->root) = *tree->metaObject();
     else

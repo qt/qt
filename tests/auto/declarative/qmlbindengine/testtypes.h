@@ -5,15 +5,30 @@
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlexpression.h>
 
+class MyQmlAttachedObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int value READ value CONSTANT)
+public:
+    MyQmlAttachedObject(QObject *parent) : QObject(parent) {}
+
+    int value() const { return 19; }
+};
+
 class MyQmlObject : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(MyEnum)
+    Q_ENUMS(MyEnum2)
     Q_PROPERTY(bool trueProperty READ trueProperty CONSTANT)
     Q_PROPERTY(bool falseProperty READ falseProperty CONSTANT)
     Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty NOTIFY stringChanged)
     Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty NOTIFY objectChanged);
 public:
     MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false), m_object(0) {}
+
+    enum MyEnum { EnumValue1 = 0, EnumValue2 = 1 };
+    enum MyEnum2 { EnumValue3 = 2, EnumValue4 = 3 };
 
     bool trueProperty() const { return true; }
     bool falseProperty() const { return false; }
@@ -39,6 +54,10 @@ public:
     bool methodIntCalled() const { return m_methodIntCalled; }
 
     QString string() const { return m_string; }
+
+    static MyQmlAttachedObject *qmlAttachedProperties(QObject *o) {
+        return new MyQmlAttachedObject(o);
+    }
 signals:
     void basicSignal();
     void argumentSignal(int a, QString b, qreal c);

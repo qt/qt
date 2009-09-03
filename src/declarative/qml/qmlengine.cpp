@@ -181,6 +181,7 @@ void QmlEnginePrivate::init()
     contextClass = new QmlContextScriptClass(q);
     objectClass = new QmlObjectScriptClass(q);
     valueTypeClass = new QmlValueTypeScriptClass(q);
+    typeNameClass = new QmlTypeNameScriptClass(q);
     rootContext = new QmlContext(q,true);
 #ifdef QT_SCRIPTTOOLS_LIB
     if (qmlDebugger()){
@@ -211,10 +212,22 @@ QmlEnginePrivate::CapturedProperty::CapturedProperty(const QmlMetaProperty &p)
 {
 }
 
-////////////////////////////////////////////////////////////////////
-typedef QHash<QPair<const QMetaObject *, QString>, bool> FunctionCache;
-Q_GLOBAL_STATIC(FunctionCache, functionCache);
+struct QmlTypeNameBridge
+{
+    QObject *object;
+    QmlType *type;
+    QmlEnginePrivate::ImportedNamespace *ns;
+};
+Q_DECLARE_METATYPE(QmlTypeNameBridge);
 
+struct QmlValueTypeReference {
+    QmlValueType *type;
+    QGuard<QObject> object;
+    int property;
+};
+Q_DECLARE_METATYPE(QmlValueTypeReference);
+
+////////////////////////////////////////////////////////////////////
 QScriptClass::QueryFlags 
 QmlEnginePrivate::queryContext(const QString &propName, uint *id,
                                QmlContext *bindContext)
@@ -223,19 +236,32 @@ QmlEnginePrivate::queryContext(const QString &propName, uint *id,
     *id = resolveData.safetyCheckId;
     resolveData.clear();
 
-    QScriptClass::QueryFlags rv = 0;
     QHash<QString, int>::Iterator contextProperty = 
         bindContext->d_func()->propertyNames.find(propName);
 
     if (contextProperty != bindContext->d_func()->propertyNames.end()) {
-        rv |= QScriptClass::HandlesReadAccess;
 
         resolveData.context = bindContext;
         resolveData.contextIndex = *contextProperty;
 
-        return rv;
+        return QScriptClass::HandlesReadAccess;
     } 
 
+    QmlType *type = 0; ImportedNamespace *ns = 0;
+    if (currentExpression && bindContext == currentExpression->context() && 
+        propName.at(0).isUpper() && resolveType(bindContext->d_func()->imports, propName.toUtf8(), &type, 0, 0, 0, &ns)) {
+        
+        if (type || ns) {
+            // Must be either an attached property, or an enum
+            resolveData.object = bindContext->d_func()->defaultObjects.first();
+            resolveData.type = type;
+            resolveData.ns = ns;
+            return QScriptClass::HandlesReadAccess;
+        }
+
+    } 
+
+    QScriptClass::QueryFlags rv = 0;
     for (int ii = 0; !rv && ii < bindContext->d_func()->defaultObjects.count(); ++ii) {
         rv = queryObject(propName, id, 
                          bindContext->d_func()->defaultObjects.at(ii));
@@ -252,7 +278,14 @@ QmlEnginePrivate::propertyContext(const QScriptString &name,
     Q_ASSERT(id == resolveData.safetyCheckId);
 
 
-    if (resolveData.context) {
+    if (resolveData.type || resolveData.ns) {
+        QmlTypeNameBridge tnb = { 
+            resolveData.object, 
+            resolveData.type, 
+            resolveData.ns 
+        };
+        return scriptEngine.newObject(typeNameClass, scriptEngine.newVariant(qVariantFromValue(tnb)));
+    } else if (resolveData.context) {
         QmlContext *bindContext = resolveData.context;
         QmlContextPrivate *contextPrivate = bindContext->d_func();
         int index = resolveData.contextIndex;
@@ -314,13 +347,13 @@ QmlEnginePrivate::queryObject(const QString &propName,
         QPair<const QMetaObject *, QString> key =
             qMakePair(obj->metaObject(), propName);
         bool isFunction = false;
-        if (functionCache()->contains(key)) {
-            isFunction = functionCache()->value(key);
+        if (functionCache.contains(key)) {
+            isFunction = functionCache.value(key);
         } else {
             QScriptValue sobj = scriptEngine.newQObject(obj);
             QScriptValue func = sobj.property(propName);
             isFunction = func.isFunction();
-            functionCache()->insert(key, isFunction);
+            functionCache.insert(key, isFunction);
         }
 
         if (isFunction) {
@@ -339,13 +372,6 @@ QmlEnginePrivate::queryObject(const QString &propName,
 
     return rv;
 }
-
-struct QmlValueTypeReference {
-    QmlValueType *type;
-    QGuard<QObject> object;
-    int property;
-};
-Q_DECLARE_METATYPE(QmlValueTypeReference);
 
 QScriptValue QmlEnginePrivate::propertyObject(const QScriptString &propName,
                                               QObject *obj, uint id)
@@ -1081,6 +1107,81 @@ void QmlContextScriptClass::setProperty(QScriptValue &object,
     Q_UNUSED(name);
 
     QmlEnginePrivate::get(engine)->setPropertyContext(value, id);
+}
+
+/////////////////////////////////////////////////////////////
+QmlTypeNameScriptClass::QmlTypeNameScriptClass(QmlEngine *engine)
+: QmlScriptClass(engine), object(0), type(0)
+{
+}
+
+QmlTypeNameScriptClass::~QmlTypeNameScriptClass()
+{
+}
+
+QmlTypeNameScriptClass::QueryFlags 
+QmlTypeNameScriptClass::queryProperty(const QScriptValue &scriptObject,
+                                      const QScriptString &name,
+                                      QueryFlags flags, uint *id)
+{
+    QmlTypeNameBridge bridge = 
+        qvariant_cast<QmlTypeNameBridge>(scriptObject.data().toVariant());
+
+    object = 0;
+    type = 0;
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
+
+    if (bridge.ns) {
+        QmlType *type = 0;
+        ep->resolveTypeInNamespace(bridge.ns, name.toString().toUtf8(),
+                                   &type, 0, 0, 0);
+        if (type) {
+            object = bridge.object;
+            this->type = type;
+            return HandlesReadAccess;
+        } else {
+            return 0;
+        }
+
+    } else {
+        Q_ASSERT(bridge.type);
+        QString strName = name.toString();
+        if (strName.at(0).isUpper()) {
+            // Must be an enum
+            // ### Optimize
+            const char *enumName = strName.toUtf8().constData();
+            const QMetaObject *metaObject = bridge.type->baseMetaObject();
+            for (int ii = metaObject->enumeratorCount() - 1; ii >= 0; --ii) {
+                QMetaEnum e = metaObject->enumerator(ii);
+                int value = e.keyToValue(enumName);
+                if (value != -1) {
+                    enumValue = value;
+                    return HandlesReadAccess;
+                }
+            }
+            return 0;
+        } else {
+            // Must be an attached property
+            this->object = qmlAttachedPropertiesObjectById(bridge.type->index(), bridge.object);
+            Q_ASSERT(this->object);
+            return ep->queryObject(strName, id, this->object);
+        }
+    }
+}
+
+QScriptValue QmlTypeNameScriptClass::property(const QScriptValue &,
+                                              const QScriptString &propName, 
+                                              uint id)
+{
+    QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
+    if (type) {
+        QmlTypeNameBridge tnb = { object, type, 0 };
+        return ep->scriptEngine.newObject(ep->typeNameClass, ep->scriptEngine.newVariant(qVariantFromValue(tnb)));
+    } else if (object) {
+        return ep->propertyObject(propName, object, id);
+    } else {
+        return QScriptValue(enumValue);
+    }
 }
 
 /////////////////////////////////////////////////////////////
