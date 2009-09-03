@@ -189,6 +189,8 @@ private slots:
     void oci_xmltypeSupport();
     void oci_fieldLength_data() { generic_data("QOCI"); }
     void oci_fieldLength();
+    void oci_synonymstest_data() { generic_data("QOCI"); }
+    void oci_synonymstest();
 
     void sqlite_bindAndFetchUInt_data() { generic_data("QSQLITE"); }
     void sqlite_bindAndFetchUInt();
@@ -365,6 +367,12 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
         tableNames <<  db.driver()->escapeIdentifier(qTableName("qtest") + " test", QSqlDriver::TableName);
 
     tst_Databases::safeDropTables(db, tableNames);
+
+    if (db.driverName().startsWith("QOCI")) {
+        q.exec("drop user "+qTableName("CREATOR")+" cascade");
+        q.exec("drop user "+qTableName("APPUSER")+" cascade");
+
+    }
 }
 
 void tst_QSqlDatabase::populateTestTables(QSqlDatabase db)
@@ -2161,6 +2169,36 @@ void tst_QSqlDatabase::oci_fieldLength()
     QCOMPARE(q.record().field(0).length(), 40);
     QCOMPARE(q.record().field(1).length(), 40);
 }
+
+void tst_QSqlDatabase::oci_synonymstest()
+{
+    QFETCH(QString, dbName);
+    QSqlDatabase db = QSqlDatabase::database(dbName);
+    CHECK_DATABASE(db);
+
+    QSqlQuery q(db);
+    QString creator(qTableName("CREATOR")), appuser(qTableName("APPUSER")), table1(qTableName("TABLE1"));
+//     QVERIFY_SQL(q, exec("drop public synonym "+table1));
+    QVERIFY_SQL(q, exec(QLatin1String("create user "+creator+" identified by "+creator+" default tablespace users temporary tablespace temp")));
+    QVERIFY_SQL(q, exec(QLatin1String("grant CONNECT to "+creator)));
+    QVERIFY_SQL(q, exec(QLatin1String("grant RESOURCE to "+creator)));
+    QSqlDatabase db2=db.cloneDatabase(db, QLatin1String("oci_synonymstest"));
+    db2.close();
+    QVERIFY_SQL(db2, open(creator,creator));
+    QSqlQuery q2(db2);
+    QVERIFY_SQL(q2, exec("create table "+table1+"(id int primary key)"));
+    QVERIFY_SQL(q, exec(QLatin1String("create user "+appuser+" identified by "+appuser+" default tablespace users temporary tablespace temp")));
+    QVERIFY_SQL(q, exec(QLatin1String("grant CREATE ANY SYNONYM to "+appuser)));
+    QVERIFY_SQL(q, exec(QLatin1String("grant CONNECT to "+appuser)));
+    QVERIFY_SQL(q2, exec(QLatin1String("grant select, insert, update, delete on "+table1+" to "+appuser)));
+    QSqlDatabase db3=db.cloneDatabase(db, QLatin1String("oci_synonymstest2"));
+    db3.close();
+    QVERIFY_SQL(db3, open(appuser,appuser));
+    QSqlQuery q3(db3);
+    QVERIFY_SQL(q3, exec("create synonym "+appuser+'.'+qTableName("synonyms")+" for "+creator+'.'+table1));
+    QVERIFY_SQL(db3, tables().filter(qTableName("synonyms"), Qt::CaseInsensitive).count() >= 1);
+}
+
 
 // This test isn't really necessary as SQL_GUID / uniqueidentifier is
 // already tested in recordSQLServer().

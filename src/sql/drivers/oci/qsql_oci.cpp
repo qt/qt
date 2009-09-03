@@ -2220,6 +2220,22 @@ QStringList QOCIDriver::tables(QSql::TableType type) const
             else
                 tl.append(t.value(1).toString());
         }
+
+        // list all table synonyms as well
+        t.exec(QLatin1String("select owner, synonym_name from all_synonyms "
+                "where owner != 'MDSYS' "
+                "and owner != 'LBACSYS' "
+                "and owner != 'SYS' "
+                "and owner != 'SYSTEM' "
+                "and owner != 'WKSYS'"
+                "and owner != 'CTXSYS'"
+                "and owner != 'WMSYS'"));
+        while (t.next()) {
+            if (t.value(0).toString() != d->user)
+                tl.append(t.value(0).toString() + QLatin1String(".") + t.value(1).toString());
+            else
+                tl.append(t.value(1).toString());
+        }
     }
     if (type & QSql::Views) {
         t.exec(QLatin1String("select owner, view_name from all_views "
@@ -2269,8 +2285,8 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     // eg. a sub-query on the sys.synonyms table
     QString stmt(QLatin1String("select column_name, data_type, data_length, "
                   "data_precision, data_scale, nullable, data_default%1"
-                  "from all_tab_columns "
-                  "where table_name=%2"));
+                  "from all_tab_columns a "
+                  "where a.table_name=%2"));
     if (d->serverVersion >= 9)
         stmt = stmt.arg(QLatin1String(", char_length "));
     else
@@ -2294,12 +2310,15 @@ QSqlRecord QOCIDriver::record(const QString& tablename) const
     else
         owner = owner.toUpper();
 
-    tmpStmt += QLatin1String(" and owner='") + owner + QLatin1Char('\'');
+    tmpStmt += QLatin1String(" and a.owner='") + owner + QLatin1Char('\'');
     t.setForwardOnly(true);
     t.exec(tmpStmt);
     if (!t.next()) { // try and see if the tablename is a synonym
-        stmt= stmt.arg(QLatin1String("(select tname from sys.synonyms where sname='")
-                        + table + QLatin1String("' and creator=owner)"));
+        stmt = stmt + QLatin1String(" join all_synonyms b "
+                              "on a.owner=b.table_owner and a.table_name=b.table_name "
+                              "where b.owner='") + owner +
+                      QLatin1String("' and b.synonym_name='") + table +
+                      QLatin1Char('\'');
         t.setForwardOnly(true);
         t.exec(stmt);
         if (t.next())
