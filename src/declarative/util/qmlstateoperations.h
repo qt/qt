@@ -113,8 +113,11 @@ class Q_DECLARATIVE_EXPORT QmlAnchorChanges : public QmlStateOperation, public A
     Q_PROPERTY(QString reset READ reset WRITE setReset)
     Q_PROPERTY(QFxAnchorLine left READ left WRITE setLeft)
     Q_PROPERTY(QFxAnchorLine right READ right WRITE setRight)
+    Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter)
     Q_PROPERTY(QFxAnchorLine top READ top WRITE setTop)
     Q_PROPERTY(QFxAnchorLine bottom READ bottom WRITE setBottom)
+    Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter)
+    Q_PROPERTY(QFxAnchorLine baseline READ baseline WRITE setBaseline)
 
 public:
     QmlAnchorChanges(QObject *parent=0);
@@ -134,11 +137,20 @@ public:
     QFxAnchorLine right() const;
     void setRight(const QFxAnchorLine &edge);
 
+    QFxAnchorLine horizontalCenter() const;
+    void setHorizontalCenter(const QFxAnchorLine &edge);
+
     QFxAnchorLine top() const;
     void setTop(const QFxAnchorLine &edge);
 
     QFxAnchorLine bottom() const;
     void setBottom(const QFxAnchorLine &edge);
+
+    QFxAnchorLine verticalCenter() const;
+    void setVerticalCenter(const QFxAnchorLine &edge);
+
+    QFxAnchorLine baseline() const;
+    void setBaseline(const QFxAnchorLine &edge);
 
     virtual void execute();
     virtual bool isReversable();
@@ -147,6 +159,7 @@ public:
     virtual bool override(ActionEvent*other);
     virtual QList<Action> extraActions();
     virtual bool changesBindings();
+    virtual void saveForwardBindings();
     virtual void clearForwardBindings();
     virtual void clearReverseBindings();
 };

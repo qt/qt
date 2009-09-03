@@ -1,10 +1,10 @@
 import Qt 4.6
 
-Rect {
+Rectangle {
     id: Wrapper
     width: 240
     height: 320
-    Rect {
+    Rectangle {
         id: MyRect
         color: "red"
         width: 50; height: 50
@@ -16,9 +16,9 @@ Rect {
     }
     states: State {
         name: "state1"
-        SetProperties { target: MyRect; x: 200; width: 40 }
+        PropertyChanges { target: MyRect; x: 200; border.width: 10 }
     }
     transitions: Transition {
-        PropertyAnimation { properties: "x,width"; duration: 1000 } //x is real, width is int
+        PropertyAnimation { properties: "x,border.width"; duration: 1000 } //x is real, border.width is int
     }
 }

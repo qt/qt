@@ -7,8 +7,8 @@ Item {
     // height of the page, i.e. a pageSize of 0.5 means that you can see 50%
     // of the height of the view.
     // orientation can be either 'Vertical' or 'Horizontal'
-    property var position
-    property var pageSize
+    property real position
+    property real pageSize
     property var orientation : "Vertical"
 
     // A light, semi-transparent background

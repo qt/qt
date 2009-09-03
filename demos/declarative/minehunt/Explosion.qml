@@ -5,8 +5,8 @@ Item {
 
     Particles {
         id: particles
-        width: 38
-        height: 21
+        width: 40
+        height: 40
         lifeSpan: 1000
         lifeSpanDeviation: 0
         source: "pics/star.png"
