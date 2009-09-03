@@ -174,7 +174,7 @@ VersionDialog::VersionDialog(QWidget *parent)
 
     lbl->setText(tr("%1"
                     "<br/>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)."
-                    ).arg(version).arg(edition));
+                    ).arg(version));
 
     lbl->setWordWrap(true);
     lbl->setOpenExternalLinks(true);
