@@ -216,7 +216,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         qDeleteAll(subtargets);
     }
 
-    writeSisxTargets(t);
+    writeSisTargets(t);
 
     generateDistcleanTargets(t);
 
