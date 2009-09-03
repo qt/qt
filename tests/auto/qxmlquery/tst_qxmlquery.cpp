@@ -1305,7 +1305,7 @@ void tst_QXmlQuery::basicQtToXQueryTypeCheck() const
     // TODO Do with different QDateTime time specs
     query.bindVariable(QLatin1String("fromQDateTime"), QXmlItem(QDateTime(QDate(2001, 9, 10), QTime(1, 2, 3))));
     query.bindVariable(QLatin1String("fromDouble"), QXmlItem(double(3)));
-//    query.bindVariable(QLatin1String("fromFloat"), QXmlItem(float(4)));
+    query.bindVariable(QLatin1String("fromFloat"), QXmlItem(float(4)));
     query.bindVariable(QLatin1String("integer"), QXmlItem(5));
     query.bindVariable(QLatin1String("fromQString"), QXmlItem(QString::fromLatin1("A QString")));
     query.bindVariable(QLatin1String("fromQChar"), QXmlItem(QChar::fromLatin1('C')));

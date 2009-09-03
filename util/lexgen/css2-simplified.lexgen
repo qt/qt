@@ -1,9 +1,8 @@
 [Options]
-case-insensitive
 classname = QCssScanner_Generated
 
 [Code Generator Options]
-MapToCode[a-z] = (ch.unicode() >= 'a' && ch.unicode() <= 'z') || ch.unicode() >= 256
+MapToCode[a-z] = (ch.unicode() >= 'a' && ch.unicode() <= 'z') || (ch.unicode() >= 'A' && ch.unicode() <= 'Z') || ch.unicode() >= 256
 TokenPrefix = QCss::
 FileHeader = ../moc/licenseheader.txt
 

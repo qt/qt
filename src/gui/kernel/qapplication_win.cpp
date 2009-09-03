@@ -1903,11 +1903,9 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                     QHideEvent e;
                     qt_sendSpontaneousEvent(widget, &e);
                     widget->hideChildren(true);
-#ifndef Q_WS_WINCE
                     const QString title = widget->windowIconText();
                     if (!title.isEmpty())
                         widget->setWindowTitle_helper(title);
-#endif
                 }
                 result = false;
                 break;
@@ -1926,11 +1924,9 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                     widget->showChildren(true);
                     QShowEvent e;
                     qt_sendSpontaneousEvent(widget, &e);
-#ifndef Q_WS_WINCE
                     const QString title = widget->windowTitle();
                     if (!title.isEmpty())
                         widget->setWindowTitle_helper(title);
-#endif
                 }
                 result = false;
                 break;
@@ -1943,7 +1939,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 QWindowStateChangeEvent e(oldstate);
                 qt_sendSpontaneousEvent(widget, &e);
             }
-#endif
+#endif // #ifndef Q_OS_WINCE
 
             break;
         }

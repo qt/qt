@@ -3533,12 +3533,7 @@ bool QGLWidget::event(QEvent *e)
 #elif defined(Q_WS_WIN)
     if (e->type() == QEvent::ParentChange) {
         QGLContext *newContext = new QGLContext(d->glcx->requestedFormat(), this);
-        QList<const QGLContext *> shares = qgl_share_reg()->shares(d->glcx);
-        setContext(newContext);
-        for (int i = 0; i < shares.size(); ++i) {
-            if (newContext != shares.at(i))
-                qgl_share_reg()->addShare(newContext, shares.at(i));
-        }
+        setContext(newContext, d->glcx);
 
         // the overlay needs to be recreated as well
         delete d->olcx;
