@@ -71,6 +71,7 @@ Column/VerticalPositioner: lost "margins" property
 Row/HorizontalPositioner: lost "margins" property
 Grid/Positioner/Layout: lost "margins" property
 WebView: lost "interactive" property (always true now)
+Flickable: removed "dragMode" property
 
 Other Changes:
 Drag: axis becomes an enum with values "XAxis", "YAxis", "XandYAxis"

@@ -71,7 +71,6 @@ class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
     Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
 
     Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive)
-    Q_PROPERTY(DragMode dragMode READ dragMode WRITE setDragMode) //### remove.  Consider a better way to implement different drag behavior
 
     Q_PROPERTY(bool atXEnd READ isAtXEnd NOTIFY isAtBoundaryChanged)
     Q_PROPERTY(bool atYEnd READ isAtYEnd NOTIFY isAtBoundaryChanged)
@@ -117,11 +116,6 @@ public:
 
     bool isInteractive() const;
     void setInteractive(bool);
-
-    Q_ENUMS(DragMode)
-    enum DragMode { Hard, Elastic };
-    DragMode dragMode() const;
-    void setDragMode(DragMode mode);
 
     qreal horizontalVelocity() const;
     qreal verticalVelocity() const;
