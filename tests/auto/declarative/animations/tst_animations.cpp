@@ -15,6 +15,7 @@ private slots:
     void simpleNumber();
     void simpleColor();
     void alwaysRunToEnd();
+    void dotProperty();
     void badTypes();
     void badProperties();
     void mixedTypes();
@@ -72,6 +73,24 @@ void tst_animations::alwaysRunToEnd()
     QVERIFY(rect.x() != qreal(200));
     QTest::qWait(500 + 50);
     QCOMPARE(rect.x(), qreal(200));
+}
+
+void tst_animations::dotProperty()
+{
+    QFxRect rect;
+    QmlNumberAnimation animation;
+    animation.setTarget(&rect);
+    animation.setProperty("border.width");
+    animation.setTo(10);
+    animation.start();
+    QTest::qWait(animation.duration() + 50);
+    QCOMPARE(rect.border()->width(), 10);
+
+    rect.border()->setWidth(1);
+    animation.start();
+    animation.pause();
+    animation.setCurrentTime(125);
+    QCOMPARE(rect.border()->width(), 5);
 }
 
 void tst_animations::badTypes()
