@@ -13,7 +13,8 @@ deffile.CONFIG = no_link combine
 expfile.input = DEFFILE
 expfile.output = $$OBJECTS_DIR/$${TARGET}.exp
 expfile.commands = makeexpfile ${QMAKE_FILE_NAME} $$OBJECTS_DIR/$${TARGET}.exp
-expfile.variable_out = PRE_TARGETDEPS
+expfile.variable_out = QMAKE_LIBS
+expfile.CONFIG = target_predeps
 
 ordinalmap.input = DEFFILE
 ordinalmap.output = $$OBJECTS_DIR/$${TARGET}.lib
