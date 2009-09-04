@@ -190,7 +190,7 @@ Item {
                 }
 
                 url: fixUrl(WebBrowser.urlString)
-                smooth: false
+                smooth: true
                 fillColor: "white"
                 focus: true
 
