@@ -106,6 +106,9 @@
 /* regardless of operating environment */
 #if defined(hpux) || defined(__hpux)
 #define WTF_PLATFORM_HPUX 1
+#ifndef MAP_ANON
+#define MAP_ANON MAP_ANONYMOUS
+#endif
 #endif
 
 #if defined (__SYMBIAN32__)
