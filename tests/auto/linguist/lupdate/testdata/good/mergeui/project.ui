@@ -1,6 +1,7 @@
 <ui version="4.0" >
  <author></author>
-  <comment>*********************************************************************
+  <comment>
+*********************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
@@ -39,7 +40,8 @@
 **
 ** $QT_END_LICENSE$
 **
-*********************************************************************</comment>
+*********************************************************************
+</comment>
  <exportmacro></exportmacro>
  <class>FindDialog</class>
  <widget class="QWidget" name="FindDialog" >
