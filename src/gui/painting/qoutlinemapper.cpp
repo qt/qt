@@ -45,6 +45,8 @@
 
 #include <stdlib.h>
 
+#include <private/qpainterpath_p.h>
+
 QT_BEGIN_NAMESPACE
 
 static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
