@@ -79,6 +79,7 @@ public:
     IDirectFBScreen *dfbScreen;
 #ifdef QT_NO_DIRECTFB_WM
     IDirectFBSurface *primarySurface;
+    QColor backgroundColor;
 #endif
 #ifndef QT_NO_DIRECTFB_LAYER
     IDirectFBDisplayLayer *dfbLayer;
@@ -94,7 +95,6 @@ public:
 #if defined QT_DIRECTFB_IMAGEPROVIDER && defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
     IDirectFBImageProvider *imageProvider;
 #endif
-    QColor backgroundColor;
     IDirectFBSurface *cursorSurface;
     qint64 cursorImageKey;
 
@@ -1277,10 +1277,9 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     if (displayArgs.contains(QLatin1String("debug"), Qt::CaseInsensitive))
         printDirectFBInfo(d_ptr->dfb, surface);
 #endif
-#ifndef QT_NO_DIRECTFB_WM
+#ifdef QT_DIRECTFB_WM
     surface->Release(surface);
-#endif
-
+#else
     QRegExp backgroundColorRegExp(QLatin1String("bgcolor=?(.+)"));
     backgroundColorRegExp.setCaseSensitivity(Qt::CaseInsensitive);
     if (displayArgs.indexOf(backgroundColorRegExp) != -1) {
@@ -1288,6 +1287,7 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     }
     if (!d_ptr->backgroundColor.isValid())
         d_ptr->backgroundColor = Qt::green;
+#endif
 
     return true;
 }
