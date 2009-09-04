@@ -1958,11 +1958,9 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                     QHideEvent e;
                     qt_sendSpontaneousEvent(widget, &e);
                     widget->hideChildren(true);
-#ifndef Q_OS_WINCE
                     const QString title = widget->windowIconText();
                     if (!title.isEmpty())
                         widget->setWindowTitle_helper(title);
-#endif
                 }
                 result = false;
                 break;
@@ -1981,11 +1979,9 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                     widget->showChildren(true);
                     QShowEvent e;
                     qt_sendSpontaneousEvent(widget, &e);
-#ifndef Q_OS_WINCE
                     const QString title = widget->windowTitle();
                     if (!title.isEmpty())
                         widget->setWindowTitle_helper(title);
-#endif
                 }
                 result = false;
                 break;
@@ -1998,7 +1994,7 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 QWindowStateChangeEvent e(oldstate);
                 qt_sendSpontaneousEvent(widget, &e);
             }
-#endif
+#endif // #ifndef Q_OS_WINCE
 
             break;
         }
@@ -2086,7 +2082,13 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 // WM_ACTIVATEAPP handles the "true" false case, as this is only when the application
                 // loses focus. Doing it here would result in the widget getting focus to not know
                 // where it got it from; it would simply get a 0 value as the old focus widget.
+#ifdef Q_OS_WINCE
+                {
+                    if (widget->windowState() & Qt::WindowMinimized)
+                        widget->dataPtr()->window_state &= ~Qt::WindowMinimized;
+#else
                 if (!(widget->windowState() & Qt::WindowMinimized)) {
+#endif
                     // Ignore the activate message send by WindowsXP to a minimized window
 #ifdef Q_OS_WINCE_WM
                     if  (widget->windowState() & Qt::WindowFullScreen)
