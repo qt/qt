@@ -4770,7 +4770,7 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
 {
     Q_ASSERT(inSetPosHelper);
 
-    if (!(ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
+    if (inDestructor || !(ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren))
         return; // Not clipped by any ancestor.
 
     // Find closest clip ancestor and transform.
@@ -4780,15 +4780,19 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
     if (transformData)
         thisToParentTransform = transformData->computedFullTransform(&thisToParentTransform);
     QGraphicsItem *clipParent = parent;
-    while (clipParent && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
+    while (clipParent && !clipParent->d_ptr->inDestructor && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
         thisToParentTransform *= clipParent->d_ptr->transformToParent();
         clipParent = clipParent->d_ptr->parent;
     }
 
-    // thisToParentTransform is now the same as q->itemTransform(clipParent), except
-    // that the new position (which is not yet set on the item) is taken into account.
-    Q_ASSERT(clipParent);
-    Q_ASSERT(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape);
+    // Ensure no parents are currently being deleted. This can only
+    // happen if the item is moved by a dying ancestor.
+    QGraphicsItem *p = clipParent;
+    while (p) {
+        if (p->d_ptr->inDestructor)
+            return;
+        p = p->d_ptr->parent;
+    }
 
     // From here everything is calculated in clip parent's coordinates.
     const QRectF parentBoundingRect(clipParent->boundingRect());
@@ -6850,6 +6854,8 @@ void QGraphicsItem::removeFromIndex()
 */
 void QGraphicsItem::prepareGeometryChange()
 {
+    if (d_ptr->inDestructor)
+        return;
     if (d_ptr->scene) {
         d_ptr->scene->d_func()->dirtyGrowingItemsBoundingRect = true;
         d_ptr->geometryChanged = 1;
