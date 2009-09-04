@@ -649,6 +649,24 @@ void Scene::initGL()
     m_renderOptions->emitParameterChanged();
 }
 
+static void loadMatrix(const QMatrix4x4& m)
+{
+    GLfloat mat[16];
+    const qreal *data = m.constData();
+    for (int index = 0; index < 16; ++index)
+        mat[index] = data[index];
+    glLoadMatrixf(mat);
+}
+
+static void multMatrix(const QMatrix4x4& m)
+{
+    GLfloat mat[16];
+    const qreal *data = m.constData();
+    for (int index = 0; index < 16; ++index)
+        mat[index] = data[index];
+    glMultMatrixf(mat);
+}
+
 // If one of the boxes should not be rendered, set excludeBox to its index.
 // If the main box should not be rendered, set excludeBox to -1.
 void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
@@ -673,7 +691,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
     viewRotation(3, 0) = viewRotation(3, 1) = viewRotation(3, 2) = 0.0f;
     viewRotation(0, 3) = viewRotation(1, 3) = viewRotation(2, 3) = 0.0f;
     viewRotation(3, 3) = 1.0f;
-    glLoadMatrixf(viewRotation.data());
+    loadMatrix(viewRotation);
     glScalef(20.0f, 20.0f, 20.0f);
 
     // Don't render the environment if the environment texture can't be set for the correct sampler.
@@ -688,7 +706,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         m_environment->unbind();
     }
 
-    glLoadMatrixf(view.data());
+    loadMatrix(view);
 
     glEnable(GL_CULL_FACE);
     glEnable(GL_LIGHTING);
@@ -702,7 +720,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         m.rotate(m_trackBalls[1].rotation());
         m = m.transposed();
 
-        glMultMatrixf(m.data());
+        multMatrix(m);
 
         glRotatef(360.0f * i / m_programs.size(), 0.0f, 0.0f, 1.0f);
         glTranslatef(2.0f, 0.0f, 0.0f);
@@ -736,7 +754,7 @@ void Scene::renderBoxes(const QMatrix4x4 &view, int excludeBox)
         QMatrix4x4 m;
         m.rotate(m_trackBalls[0].rotation());
         m = m.transposed();
-        glMultMatrixf(m.data());
+        multMatrix(m);
 
         if (glActiveTexture) {
             if (m_dynamicCubemap)
@@ -842,7 +860,7 @@ void Scene::renderCubemaps()
 
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
-    glLoadMatrixf(mat.data());
+    loadMatrix(mat);
 
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();

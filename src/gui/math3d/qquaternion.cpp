@@ -353,7 +353,7 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, qreal angle)
     qreal s = qSin(a);
     qreal c = qCos(a);
     QVector3D ax = axis.normalized();
-    return QQuaternion(c, ax.xp * s, ax.yp * s, ax.zp * s, 1).normalized();
+    return QQuaternion(c, ax.x() * s, ax.y() * s, ax.z() * s).normalized();
 }
 
 #endif
@@ -365,19 +365,16 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, qreal angle)
 QQuaternion QQuaternion::fromAxisAndAngle
         (qreal x, qreal y, qreal z, qreal angle)
 {
-    float xp = x;
-    float yp = y;
-    float zp = z;
-    qreal length = qSqrt(xp * xp + yp * yp + zp * zp);
-    if (!qIsNull(length)) {
-        xp /= length;
-        yp /= length;
-        zp /= length;
+    qreal length = qSqrt(x * x + y * y + z * z);
+    if (!qFuzzyIsNull(length - 1.0f) && !qFuzzyIsNull(length)) {
+        x /= length;
+        y /= length;
+        z /= length;
     }
     qreal a = (angle / 2.0f) * M_PI / 180.0f;
     qreal s = qSin(a);
     qreal c = qCos(a);
-    return QQuaternion(c, xp * s, yp * s, zp * s, 1).normalized();
+    return QQuaternion(c, x * s, y * s, z * s).normalized();
 }
 
 /*!

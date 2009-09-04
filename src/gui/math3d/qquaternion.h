@@ -133,19 +133,13 @@ public:
         (const QQuaternion& q1, const QQuaternion& q2, qreal t);
 
 private:
-    float wp, xp, yp, zp;
-
-    friend class QMatrix4x4;
-
-    QQuaternion(float scalar, float xpos, float ypos, float zpos, int dummy);
+    qreal wp, xp, yp, zp;
 };
 
 inline QQuaternion::QQuaternion() : wp(1.0f), xp(0.0f), yp(0.0f), zp(0.0f) {}
 
 inline QQuaternion::QQuaternion(qreal scalar, qreal xpos, qreal ypos, qreal zpos) : wp(scalar), xp(xpos), yp(ypos), zp(zpos) {}
 
-
-inline QQuaternion::QQuaternion(float scalar, float xpos, float ypos, float zpos, int) : wp(scalar), xp(xpos), yp(ypos), zp(zpos) {}
 
 inline bool QQuaternion::isNull() const
 {
@@ -169,7 +163,7 @@ inline void QQuaternion::setScalar(qreal scalar) { wp = scalar; }
 
 inline QQuaternion QQuaternion::conjugate() const
 {
-    return QQuaternion(wp, -xp, -yp, -zp, 1);
+    return QQuaternion(wp, -xp, -yp, -zp);
 }
 
 inline QQuaternion &QQuaternion::operator+=(const QQuaternion &quaternion)
@@ -201,18 +195,18 @@ inline QQuaternion &QQuaternion::operator*=(qreal factor)
 
 inline const QQuaternion operator*(const QQuaternion &q1, const QQuaternion& q2)
 {
-    float ww = (q1.zp + q1.xp) * (q2.xp + q2.yp);
-    float yy = (q1.wp - q1.yp) * (q2.wp + q2.zp);
-    float zz = (q1.wp + q1.yp) * (q2.wp - q2.zp);
-    float xx = ww + yy + zz;
-    float qq = 0.5 * (xx + (q1.zp - q1.xp) * (q2.xp - q2.yp));
+    qreal ww = (q1.zp + q1.xp) * (q2.xp + q2.yp);
+    qreal yy = (q1.wp - q1.yp) * (q2.wp + q2.zp);
+    qreal zz = (q1.wp + q1.yp) * (q2.wp - q2.zp);
+    qreal xx = ww + yy + zz;
+    qreal qq = 0.5 * (xx + (q1.zp - q1.xp) * (q2.xp - q2.yp));
 
-    float w = qq - ww + (q1.zp - q1.yp) * (q2.yp - q2.zp);
-    float x = qq - xx + (q1.xp + q1.wp) * (q2.xp + q2.wp);
-    float y = qq - yy + (q1.wp - q1.xp) * (q2.yp + q2.zp);
-    float z = qq - zz + (q1.zp + q1.yp) * (q2.wp - q2.xp);
+    qreal w = qq - ww + (q1.zp - q1.yp) * (q2.yp - q2.zp);
+    qreal x = qq - xx + (q1.xp + q1.wp) * (q2.xp + q2.wp);
+    qreal y = qq - yy + (q1.wp - q1.xp) * (q2.yp + q2.zp);
+    qreal z = qq - zz + (q1.zp + q1.yp) * (q2.wp - q2.xp);
 
-    return QQuaternion(w, x, y, z, 1);
+    return QQuaternion(w, x, y, z);
 }
 
 inline QQuaternion &QQuaternion::operator*=(const QQuaternion &quaternion)
@@ -242,32 +236,32 @@ inline bool operator!=(const QQuaternion &q1, const QQuaternion &q2)
 
 inline const QQuaternion operator+(const QQuaternion &q1, const QQuaternion &q2)
 {
-    return QQuaternion(q1.wp + q2.wp, q1.xp + q2.xp, q1.yp + q2.yp, q1.zp + q2.zp, 1);
+    return QQuaternion(q1.wp + q2.wp, q1.xp + q2.xp, q1.yp + q2.yp, q1.zp + q2.zp);
 }
 
 inline const QQuaternion operator-(const QQuaternion &q1, const QQuaternion &q2)
 {
-    return QQuaternion(q1.wp - q2.wp, q1.xp - q2.xp, q1.yp - q2.yp, q1.zp - q2.zp, 1);
+    return QQuaternion(q1.wp - q2.wp, q1.xp - q2.xp, q1.yp - q2.yp, q1.zp - q2.zp);
 }
 
 inline const QQuaternion operator*(qreal factor, const QQuaternion &quaternion)
 {
-    return QQuaternion(quaternion.wp * factor, quaternion.xp * factor, quaternion.yp * factor, quaternion.zp * factor, 1);
+    return QQuaternion(quaternion.wp * factor, quaternion.xp * factor, quaternion.yp * factor, quaternion.zp * factor);
 }
 
 inline const QQuaternion operator*(const QQuaternion &quaternion, qreal factor)
 {
-    return QQuaternion(quaternion.wp * factor, quaternion.xp * factor, quaternion.yp * factor, quaternion.zp * factor, 1);
+    return QQuaternion(quaternion.wp * factor, quaternion.xp * factor, quaternion.yp * factor, quaternion.zp * factor);
 }
 
 inline const QQuaternion operator-(const QQuaternion &quaternion)
 {
-    return QQuaternion(-quaternion.wp, -quaternion.xp, -quaternion.yp, -quaternion.zp, 1);
+    return QQuaternion(-quaternion.wp, -quaternion.xp, -quaternion.yp, -quaternion.zp);
 }
 
 inline const QQuaternion operator/(const QQuaternion &quaternion, qreal divisor)
 {
-    return QQuaternion(quaternion.wp / divisor, quaternion.xp / divisor, quaternion.yp / divisor, quaternion.zp / divisor, 1);
+    return QQuaternion(quaternion.wp / divisor, quaternion.xp / divisor, quaternion.yp / divisor, quaternion.zp / divisor);
 }
 
 inline bool qFuzzyCompare(const QQuaternion& q1, const QQuaternion& q2)
@@ -281,18 +275,18 @@ inline bool qFuzzyCompare(const QQuaternion& q1, const QQuaternion& q2)
 #ifndef QT_NO_VECTOR3D
 
 inline QQuaternion::QQuaternion(qreal scalar, const QVector3D& vector)
-    : wp(scalar), xp(vector.xp), yp(vector.yp), zp(vector.zp) {}
+    : wp(scalar), xp(vector.x()), yp(vector.y()), zp(vector.z()) {}
 
 inline void QQuaternion::setVector(const QVector3D& vector)
 {
-    xp = vector.xp;
-    yp = vector.yp;
-    zp = vector.zp;
+    xp = vector.x();
+    yp = vector.y();
+    zp = vector.z();
 }
 
 inline QVector3D QQuaternion::vector() const
 {
-    return QVector3D(xp, yp, zp, 1);
+    return QVector3D(xp, yp, zp);
 }
 
 #endif
@@ -307,11 +301,11 @@ inline void QQuaternion::setVector(qreal x, qreal y, qreal z)
 #ifndef QT_NO_VECTOR4D
 
 inline QQuaternion::QQuaternion(const QVector4D& vector)
-    : wp(vector.wp), xp(vector.xp), yp(vector.yp), zp(vector.zp) {}
+    : wp(vector.w()), xp(vector.x()), yp(vector.y()), zp(vector.z()) {}
 
 inline QVector4D QQuaternion::toVector4D() const
 {
-    return QVector4D(xp, yp, zp, wp, 1);
+    return QVector4D(xp, yp, zp, wp);
 }
 
 #endif

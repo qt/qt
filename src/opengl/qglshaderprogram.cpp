@@ -2288,6 +2288,58 @@ void QGLShaderProgram::setUniformValue(const char *name, const QSizeF& size)
     setUniformValue(uniformLocation(name), size);
 }
 
+// We have to repack matrices from qreal to GLfloat.
+#define setUniformMatrix(func,location,value,cols,rows) \
+    if (location == -1) \
+        return; \
+    if (sizeof(qreal) == sizeof(GLfloat)) { \
+        func(location, 1, GL_FALSE, \
+             reinterpret_cast<const GLfloat *>(value.constData())); \
+    } else { \
+        GLfloat mat[cols * rows]; \
+        const qreal *data = value.constData(); \
+        for (int i = 0; i < cols * rows; ++i) \
+            mat[i] = data[i]; \
+        func(location, 1, GL_FALSE, mat); \
+    }
+#if !defined(QT_OPENGL_ES_2)
+#define setUniformGenericMatrix(func,colfunc,location,value,cols,rows) \
+    if (location == -1) \
+        return; \
+    if (sizeof(qreal) == sizeof(GLfloat)) { \
+        const GLfloat *data = reinterpret_cast<const GLfloat *> \
+            (value.constData());  \
+        if (func) \
+            func(location, 1, GL_FALSE, data); \
+        else \
+            colfunc(location, cols, data); \
+    } else { \
+        GLfloat mat[cols * rows]; \
+        const qreal *data = value.constData(); \
+        for (int i = 0; i < cols * rows; ++i) \
+            mat[i] = data[i]; \
+        if (func) \
+            func(location, 1, GL_FALSE, mat); \
+        else \
+            colfunc(location, cols, mat); \
+    }
+#else
+#define setUniformGenericMatrix(func,colfunc,location,value,cols,rows) \
+    if (location == -1) \
+        return; \
+    if (sizeof(qreal) == sizeof(GLfloat)) { \
+        const GLfloat *data = reinterpret_cast<const GLfloat *> \
+            (value.constData());  \
+        colfunc(location, cols, data); \
+    } else { \
+        GLfloat mat[cols * rows]; \
+        const qreal *data = value.constData(); \
+        for (int i = 0; i < cols * rows; ++i) \
+            mat[i] = data[i]; \
+        colfunc(location, cols, mat); \
+    }
+#endif
+
 /*!
     Sets the uniform variable at \a location in the current context
     to a 2x2 matrix \a value.
@@ -2296,8 +2348,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QSizeF& size)
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix2x2& value)
 {
-    if (location != -1)
-        glUniformMatrix2fv(location, 1, GL_FALSE, value.data());
+    setUniformMatrix(glUniformMatrix2fv, location, value, 2, 2);
 }
 
 /*!
@@ -2321,20 +2372,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix2x2& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix2x3& value)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (location != -1) {
-        if (glUniformMatrix2x3fv) {
-            // OpenGL 2.1+: pass the matrix directly.
-            glUniformMatrix2x3fv(location, 1, GL_FALSE, value.data());
-        } else {
-            // OpenGL 2.0: pass the matrix columns as a vector.
-            glUniform3fv(location, 2, value.data());
-        }
-    }
-#else
-    if (location != -1)
-        glUniform3fv(location, 2, value.data());
-#endif
+    setUniformGenericMatrix
+        (glUniformMatrix2x3fv, glUniform3fv, location, value, 2, 3);
 }
 
 /*!
@@ -2358,20 +2397,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix2x3& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix2x4& value)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (location != -1) {
-        if (glUniformMatrix2x4fv) {
-            // OpenGL 2.1+: pass the matrix directly.
-            glUniformMatrix2x4fv(location, 1, GL_FALSE, value.data());
-        } else {
-            // OpenGL 2.0: pass the matrix columns as a vector.
-            glUniform4fv(location, 2, value.data());
-        }
-    }
-#else
-    if (location != -1)
-        glUniform4fv(location, 2, value.data());
-#endif
+    setUniformGenericMatrix
+        (glUniformMatrix2x4fv, glUniform4fv, location, value, 2, 4);
 }
 
 /*!
@@ -2395,20 +2422,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix2x4& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix3x2& value)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (location != -1) {
-        if (glUniformMatrix3x2fv) {
-            // OpenGL 2.1+: pass the matrix directly.
-            glUniformMatrix3x2fv(location, 1, GL_FALSE, value.data());
-        } else {
-            // OpenGL 2.0: pass the matrix columns as a vector.
-            glUniform2fv(location, 3, value.data());
-        }
-    }
-#else
-    if (location != -1)
-        glUniform2fv(location, 3, value.data());
-#endif
+    setUniformGenericMatrix
+        (glUniformMatrix3x2fv, glUniform2fv, location, value, 3, 2);
 }
 
 /*!
@@ -2432,8 +2447,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix3x2& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix3x3& value)
 {
-    if (location != -1)
-        glUniformMatrix3fv(location, 1, GL_FALSE, value.data());
+    setUniformMatrix(glUniformMatrix3fv, location, value, 3, 3);
 }
 
 /*!
@@ -2457,20 +2471,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix3x3& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix3x4& value)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (location != -1) {
-        if (glUniformMatrix3x4fv) {
-            // OpenGL 2.1+: pass the matrix directly.
-            glUniformMatrix3x4fv(location, 1, GL_FALSE, value.data());
-        } else {
-            // OpenGL 2.0: pass the matrix columns as a vector.
-            glUniform4fv(location, 3, value.data());
-        }
-    }
-#else
-    if (location != -1)
-        glUniform4fv(location, 3, value.data());
-#endif
+    setUniformGenericMatrix
+        (glUniformMatrix3x4fv, glUniform4fv, location, value, 3, 4);
 }
 
 /*!
@@ -2494,20 +2496,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix3x4& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix4x2& value)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (location != -1) {
-        if (glUniformMatrix4x2fv) {
-            // OpenGL 2.1+: pass the matrix directly.
-            glUniformMatrix4x2fv(location, 1, GL_FALSE, value.data());
-        } else {
-            // OpenGL 2.0: pass the matrix columns as a vector.
-            glUniform2fv(location, 4, value.data());
-        }
-    }
-#else
-    if (location != -1)
-        glUniform2fv(location, 4, value.data());
-#endif
+    setUniformGenericMatrix
+        (glUniformMatrix4x2fv, glUniform2fv, location, value, 4, 2);
 }
 
 /*!
@@ -2531,20 +2521,8 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix4x2& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix4x3& value)
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (location != -1) {
-        if (glUniformMatrix4x3fv) {
-            // OpenGL 2.1+: pass the matrix directly.
-            glUniformMatrix4x3fv(location, 1, GL_FALSE, value.data());
-        } else {
-            // OpenGL 2.0: pass the matrix columns as a vector.
-            glUniform3fv(location, 4, value.data());
-        }
-    }
-#else
-    if (location != -1)
-        glUniform3fv(location, 4, value.data());
-#endif
+    setUniformGenericMatrix
+        (glUniformMatrix4x3fv, glUniform3fv, location, value, 4, 3);
 }
 
 /*!
@@ -2568,8 +2546,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix4x3& value
 */
 void QGLShaderProgram::setUniformValue(int location, const QMatrix4x4& value)
 {
-    if (location != -1)
-        glUniformMatrix4fv(location, 1, GL_FALSE, value.data());
+    setUniformMatrix(glUniformMatrix4fv, location, value, 4, 4);
 }
 
 /*!
@@ -2815,18 +2792,20 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QVector4D *v
     setUniformValueArray(uniformLocation(name), values, count);
 }
 
-// We may have to repack matrix arrays if the matrix types
-// contain additional flag bits.  Especially QMatrix4x4.
+// We have to repack matrix arrays from qreal to GLfloat.
 #define setUniformMatrixArray(func,location,values,count,type,cols,rows) \
     if (location == -1 || count <= 0) \
         return; \
-    if (count == 1 || sizeof(type) == cols * rows * sizeof(GLfloat)) { \
-        func(location, count, GL_FALSE, values->constData()); \
+    if (sizeof(type) == sizeof(GLfloat) * cols * rows) { \
+        func(location, count, GL_FALSE, \
+             reinterpret_cast<const GLfloat *>(values[0].constData())); \
     } else { \
         QVarLengthArray<GLfloat> temp(cols * rows * count); \
         for (int index = 0; index < count; ++index) { \
-            qMemCopy(temp.data() + cols * rows * index, \
-                     values[index].constData(), cols * rows * sizeof(GLfloat)); \
+            for (int index2 = 0; index2 < (cols * rows); ++index2) { \
+                temp.data()[cols * rows * index + index2] = \
+                    values[index].constData()[index2]; \
+            } \
         } \
         func(location, count, GL_FALSE, temp.constData()); \
     }
@@ -2834,16 +2813,20 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QVector4D *v
 #define setUniformGenericMatrixArray(func,colfunc,location,values,count,type,cols,rows) \
     if (location == -1 || count <= 0) \
         return; \
-    if (count == 1 || sizeof(type) == cols * rows * sizeof(GLfloat)) { \
+    if (sizeof(type) == sizeof(GLfloat) * cols * rows) { \
+        const GLfloat *data = reinterpret_cast<const GLfloat *> \
+            (values[0].constData());  \
         if (func) \
-            func(location, count, GL_FALSE, values->constData()); \
+            func(location, count, GL_FALSE, data); \
         else \
-            colfunc(location, cols * count, values->constData()); \
+            colfunc(location, count * cols, data); \
     } else { \
         QVarLengthArray<GLfloat> temp(cols * rows * count); \
         for (int index = 0; index < count; ++index) { \
-            qMemCopy(temp.data() + cols * rows * index, \
-                     values[index].constData(), cols * rows * sizeof(GLfloat)); \
+            for (int index2 = 0; index2 < (cols * rows); ++index2) { \
+                temp.data()[cols * rows * index + index2] = \
+                    values[index].constData()[index2]; \
+            } \
         } \
         if (func) \
             func(location, count, GL_FALSE, temp.constData()); \
@@ -2854,13 +2837,17 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QVector4D *v
 #define setUniformGenericMatrixArray(func,colfunc,location,values,count,type,cols,rows) \
     if (location == -1 || count <= 0) \
         return; \
-    if (count == 1 || sizeof(type) == cols * rows * sizeof(GLfloat)) { \
-        colfunc(location, cols * count, values->constData()); \
+    if (sizeof(type) == sizeof(GLfloat) * cols * rows) { \
+        const GLfloat *data = reinterpret_cast<const GLfloat *> \
+            (values[0].constData());  \
+        colfunc(location, count * cols, data); \
     } else { \
         QVarLengthArray<GLfloat> temp(cols * rows * count); \
         for (int index = 0; index < count; ++index) { \
-            qMemCopy(temp.data() + cols * rows * index, \
-                     values[index].constData(), cols * rows * sizeof(GLfloat)); \
+            for (int index2 = 0; index2 < (cols * rows); ++index2) { \
+                temp.data()[cols * rows * index + index2] = \
+                    values[index].constData()[index2]; \
+            } \
         } \
         colfunc(location, count * cols, temp.constData()); \
     }
