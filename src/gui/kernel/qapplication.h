@@ -327,7 +327,7 @@ public:
     { if (replace) changeOverrideCursor(cursor); else setOverrideCursor(cursor); }
 #  endif
     inline static QT3_SUPPORT bool hasGlobalMouseTracking() {return true;}
-    inline static QT3_SUPPORT void setGlobalMouseTracking(bool) {};
+    inline static QT3_SUPPORT void setGlobalMouseTracking(bool) {}
     inline static QT3_SUPPORT void flushX() { flush(); }
     static inline QT3_SUPPORT void setWinStyleHighlightColor(const QColor &c) {
         QPalette p(palette());

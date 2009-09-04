@@ -97,7 +97,7 @@ public:
     \i \link setSamples() Number of samples per pixels.\endlink
     \i \link setAttachment() Depth and/or stencil attachments.\endlink
     \i \link setTextureTarget() Texture target.\endlink
-    \i \link setInternalFormat() Internal format.\endlink
+    \i \link setInternalTextureFormat() Internal texture format.\endlink
     \endlist
 
     Note that the desired attachments or number of samples per pixels might not
@@ -109,38 +109,28 @@ public:
 */
 
 /*!
-    Creates a QGLFramebufferObjectFormat object with properties specifying
+    Creates a QGLFramebufferObjectFormat object for specifying
     the format of an OpenGL framebuffer object.
 
-    A multisample framebuffer object is specified by setting \a samples
-    to a value different from zero. If the desired amount of samples per pixel is
-    not supported by the hardware then the maximum number of samples per pixel
-    will be used. Note that multisample framebuffer objects can not be bound as
-    textures. Also, the \c{GL_EXT_framebuffer_multisample} extension is required
-    to create a framebuffer with more than one sample per pixel.
+    By default the format specifies a non-multisample framebuffer object with no
+    attachments, texture target \c GL_TEXTURE_2D, and internal format \c GL_RGBA8.
 
-    For multisample framebuffer objects a color render buffer is created,
-    otherwise a texture with the texture target \a target is created.
-    The color render buffer or texture will have the internal format
-    \a internalFormat, and will be bound to the \c GL_COLOR_ATTACHMENT0
-    attachment in the framebuffer object.
-
-    The \a attachment parameter describes the depth/stencil buffer
-    configuration.
-
-    \sa samples(), attachment(), target(), internalFormat()
+    \sa samples(), attachment(), target(), internalTextureFormat()
 */
 
-QGLFramebufferObjectFormat::QGLFramebufferObjectFormat(int samples,
-                                                       QGLFramebufferObject::Attachment attachment,
-                                                       GLenum target,
-                                                       GLenum internalFormat)
+#ifndef QT_OPENGL_ES
+#define DEFAULT_FORMAT GL_RGBA8
+#else
+#define DEFAULT_FORMAT GL_RGBA
+#endif
+
+QGLFramebufferObjectFormat::QGLFramebufferObjectFormat()
 {
     d = new QGLFramebufferObjectFormatPrivate;
-    d->samples = samples;
-    d->attachment = attachment;
-    d->target = target;
-    d->internal_format = internalFormat;
+    d->samples = 0;
+    d->attachment = QGLFramebufferObject::NoAttachment;
+    d->target = GL_TEXTURE_2D;
+    d->internal_format = DEFAULT_FORMAT;
 }
 
 /*!
@@ -176,6 +166,12 @@ QGLFramebufferObjectFormat::~QGLFramebufferObjectFormat()
     to \a samples.
     A sample count of 0 represents a regular non-multisample framebuffer object.
 
+    If the desired amount of samples per pixel is not supported by the hardware
+    then the maximum number of samples per pixel will be used. Note that
+    multisample framebuffer objects can not be bound as textures. Also, the
+    \c{GL_EXT_framebuffer_multisample} extension is required to create a
+    framebuffer with more than one sample per pixel.
+
     \sa samples()
 */
 void QGLFramebufferObjectFormat::setSamples(int samples)
@@ -195,7 +191,7 @@ int QGLFramebufferObjectFormat::samples() const
 }
 
 /*!
-    Sets the attachments a framebuffer object should have to \a attachment.
+    Sets the attachment configuration of a framebuffer object to \a attachment.
 
     \sa attachment()
 */
@@ -238,26 +234,41 @@ GLenum QGLFramebufferObjectFormat::textureTarget() const
 }
 
 /*!
-    Sets the internal format of a framebuffer object's texture or multisample
-    framebuffer object's color buffer to \a internalFormat.
+    Sets the internal format of a framebuffer object's texture or
+    multisample framebuffer object's color buffer to
+    \a internalTextureFormat.
 
-    \sa internalFormat()
+    \sa internalTextureFormat()
 */
-void QGLFramebufferObjectFormat::setInternalFormat(GLenum internalFormat)
+void QGLFramebufferObjectFormat::setInternalTextureFormat(GLenum internalTextureFormat)
 {
-    d->internal_format = internalFormat;
+    d->internal_format = internalTextureFormat;
 }
 
 /*!
     Returns the internal format of a framebuffer object's texture or
     multisample framebuffer object's color buffer.
 
-    \sa setInternalFormat()
+    \sa setInternalTextureFormat()
 */
-GLenum QGLFramebufferObjectFormat::internalFormat() const
+GLenum QGLFramebufferObjectFormat::internalTextureFormat() const
 {
     return d->internal_format;
 }
+
+#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
+/*! \internal */
+void QGLFramebufferObjectFormat::setTextureTarget(QMacCompatGLenum target)
+{
+    d->target = target;
+}
+
+/*! \internal */
+void QGLFramebufferObjectFormat::setInternalTextureFormat(QMacCompatGLenum internalTextureFormat)
+{
+    d->internal_format = internalTextureFormat;
+}
+#endif
 
 class QGLFramebufferObjectPrivate
 {
@@ -469,7 +480,7 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
     format.setTextureTarget(target);
     format.setSamples(int(samples));
     format.setAttachment(fbo_attachment);
-    format.setInternalFormat(internal_format);
+    format.setInternalTextureFormat(internal_format);
 }
 
 /*!
@@ -526,6 +537,12 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
     the constructors that take a QGLFramebufferObject parameter, and set the
     QGLFramebufferObject::samples() property to a non-zero value.
 
+    For multisample framebuffer objects a color render buffer is created,
+    otherwise a texture with the specified texture target is created.
+    The color render buffer or texture will have the specified internal
+    format, and will be bound to the \c GL_COLOR_ATTACHMENT0
+    attachment in the framebuffer object.
+
     If you want to use a framebuffer object with multisampling enabled
     as a texture, you first need to copy from it to a regular framebuffer
     object using QGLContext::blitFramebuffer().
@@ -579,12 +596,6 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
     \sa size(), texture(), attachment()
 */
 
-#ifndef QT_OPENGL_ES
-#define DEFAULT_FORMAT GL_RGBA8
-#else
-#define DEFAULT_FORMAT GL_RGBA
-#endif
-
 QGLFramebufferObject::QGLFramebufferObject(const QSize &size, GLenum target)
     : d_ptr(new QGLFramebufferObjectPrivate)
 {
@@ -626,7 +637,7 @@ QGLFramebufferObject::QGLFramebufferObject(const QSize &size, const QGLFramebuff
     : d_ptr(new QGLFramebufferObjectPrivate)
 {
     Q_D(QGLFramebufferObject);
-    d->init(size, format.attachment(), format.textureTarget(), format.internalFormat(), format.samples());
+    d->init(size, format.attachment(), format.textureTarget(), format.internalTextureFormat(), format.samples());
 }
 
 /*! \overload
@@ -639,7 +650,7 @@ QGLFramebufferObject::QGLFramebufferObject(int width, int height, const QGLFrame
     : d_ptr(new QGLFramebufferObjectPrivate)
 {
     Q_D(QGLFramebufferObject);
-    d->init(QSize(width, height), format.attachment(), format.textureTarget(), format.internalFormat(), format.samples());
+    d->init(QSize(width, height), format.attachment(), format.textureTarget(), format.internalTextureFormat(), format.samples());
 }
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS

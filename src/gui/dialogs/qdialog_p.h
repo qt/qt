@@ -98,7 +98,7 @@ public:
 #endif
 
 #ifdef Q_WS_MAC
-    virtual void mac_nativeDialogModalHelp(){};
+    virtual void mac_nativeDialogModalHelp() {}
 #endif
 
     int rescode;

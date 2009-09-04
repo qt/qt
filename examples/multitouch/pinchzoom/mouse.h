@@ -42,11 +42,10 @@
 #ifndef MOUSE_H
 #define MOUSE_H
 
-#include <QGraphicsItem>
-#include <QObject>
+#include <QGraphicsObject>
 
 //! [0]
-class Mouse : public QObject, public QGraphicsItem
+class Mouse : public QGraphicsObject
 {
     Q_OBJECT
 

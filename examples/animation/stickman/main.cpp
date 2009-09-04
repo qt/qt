@@ -73,30 +73,30 @@ int main(int argc, char **argv)
     QRectF stickManBoundingRect = stickMan->mapToScene(stickMan->boundingRect()).boundingRect();
     textItem->setPos(-w / 2.0, stickManBoundingRect.bottom() + 25.0);
 
-    QGraphicsScene *scene = new QGraphicsScene();
-    scene->addItem(stickMan);
-    scene->addItem(textItem);
-    scene->setBackgroundBrush(Qt::black);
+    QGraphicsScene scene;
+    scene.addItem(stickMan);
+    scene.addItem(textItem);
+    scene.setBackgroundBrush(Qt::black);
 
-    GraphicsView *view = new GraphicsView();
-    view->setRenderHints(QPainter::Antialiasing);
-    view->setTransformationAnchor(QGraphicsView::NoAnchor);
-    view->setScene(scene);
-    view->show();
-    view->setFocus();
+    GraphicsView view;
+    view.setRenderHints(QPainter::Antialiasing);
+    view.setTransformationAnchor(QGraphicsView::NoAnchor);
+    view.setScene(&scene);
+    view.show();
+    view.setFocus();
 
-    QRectF sceneRect = scene->sceneRect();
+    QRectF sceneRect = scene.sceneRect();
     // making enough room in the scene for stickman to jump and die
-    view->resize(sceneRect.width() + 100, sceneRect.height() + 100);
-    view->setSceneRect(sceneRect);
+    view.resize(sceneRect.width() + 100, sceneRect.height() + 100);
+    view.setSceneRect(sceneRect);
 
-    LifeCycle *cycle = new LifeCycle(stickMan, view);
-    cycle->setDeathAnimation(":/animations/dead");
+    LifeCycle cycle(stickMan, &view);
+    cycle.setDeathAnimation(":/animations/dead");
 
-    cycle->addActivity(":/animations/jumping", Qt::Key_J);
-    cycle->addActivity(":/animations/dancing", Qt::Key_D);
-    cycle->addActivity(":/animations/chilling", Qt::Key_C);
-    cycle->start();
+    cycle.addActivity(":/animations/jumping", Qt::Key_J);
+    cycle.addActivity(":/animations/dancing", Qt::Key_D);
+    cycle.addActivity(":/animations/chilling", Qt::Key_C);
+    cycle.start();
 
     return app.exec();
 }

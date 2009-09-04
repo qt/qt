@@ -3648,13 +3648,13 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     \i As mentioned above, enabling touch events means multiple widgets can be receiving touch
     events simultaneously. Combined with the default QWidget::event() handling for QTouchEvents,
     this gives you great flexibility in designing multi-touch user interfaces. Be aware of the
-    implications. For example, is is possible that the user is moving a QSlider with one finger and
+    implications. For example, it is possible that the user is moving a QSlider with one finger and
     pressing a QPushButton with another. The signals emitted by these widgets will be
     interleaved.
 
     \i Recursion into the event loop using one of the exec() methods (e.g., QDialog::exec() or
     QMenu::exec()) in a QTouchEvent event handler is not supported. Since there are multiple event
-    recipients, unexpected recursion may cause problems, including but not limited to lost events
+    recipients, recursion may cause problems, including but not limited to lost events
     and unexpected infinite recursion.
 
     \i QTouchEvents are not affected by a \l{QWidget::grabMouse()}{mouse grab} or an

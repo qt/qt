@@ -84,7 +84,7 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
         if (format.samples() == requestFormat.samples()
             && format.attachment() == requestFormat.attachment()
             && format.textureTarget() == requestFormat.textureTarget()
-            && format.internalFormat() == requestFormat.internalFormat())
+            && format.internalTextureFormat() == requestFormat.internalTextureFormat())
         {
             // choose the fbo with a matching format and the closest size
             if (!candidate || areaDiff(requestSize, candidate) > areaDiff(requestSize, fbo))
@@ -467,7 +467,7 @@ QPaintEngine* QGLPixmapData::paintEngine() const
         QGLFramebufferObjectFormat format;
         format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
         format.setSamples(4);
-        format.setInternalFormat(m_hasAlpha ? GL_RGBA : GL_RGB);
+        format.setInternalTextureFormat(GLenum(m_hasAlpha ? GL_RGBA : GL_RGB));
 
         m_renderFbo = qgl_fbo_pool()->acquire(size(), format);
 

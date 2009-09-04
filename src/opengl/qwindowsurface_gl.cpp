@@ -569,7 +569,7 @@ void QGLWindowSurface::updateGeometry()
 
         QGLFramebufferObjectFormat format;
         format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
-        format.setInternalFormat(GL_RGBA);
+        format.setInternalTextureFormat(GLenum(GL_RGBA));
         format.setTextureTarget(target);
 
         if (QGLExtensions::glExtensions & QGLExtensions::FramebufferBlit)

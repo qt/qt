@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef __QtS60MainAPPLICATION_H__
-#define __QtS60MainAPPLICATION_H__
+#ifndef QS60MAINAPPLICATION_P_H
+#define QS60MAINAPPLICATION_P_H
 
 //
 //  W A R N I N G
@@ -56,49 +56,57 @@
 // INCLUDES
 #include <aknapp.h>
 
+#include <qglobal.h>
+
 // CLASS DECLARATION
 
+QT_BEGIN_NAMESPACE
+
+CApaApplication* NewApplication();
+
 static TUid ProcessUid()
-    {
+{
     RProcess me;
     TSecureId securId = me.SecureId();
     me.Close();
     return securId.operator TUid();
-    }
+}
 
 /**
-* CQtS60MainApplication application class.
+* QS60MainApplication application class.
 * Provides factory to create concrete document object.
-* An instance of CQtS60MainApplication is the application part of the
+* An instance of QS60MainApplication is the application part of the
 * AVKON application framework for the QtS60Main example application.
 */
-class CQtS60MainApplication : public CAknApplication
-    {
-    public: // Functions from base classes
+class QS60MainApplication : public CAknApplication
+{
+public: // Functions from base classes
 
-        /**
-        * From CApaApplication, AppDllUid.
-        * @return Application's UID (KUidQtS60MainApp).
-        */
-        TUid AppDllUid() const;
+    /**
+     * From CApaApplication, AppDllUid.
+     * @return Application's UID (KUidQtS60MainApp).
+     */
+    TUid AppDllUid() const;
 
-        /**
-        * From CApaApplication, ResourceFileName
-        * @return Application's resource filename (KUidQtS60MainApp).
-        */
-        TFileName ResourceFileName() const;
+    /**
+     * From CApaApplication, ResourceFileName
+     * @return Application's resource filename (KUidQtS60MainApp).
+     */
+    TFileName ResourceFileName() const;
 
-    protected: // Functions from base classes
+protected: // Functions from base classes
 
-        /**
-        * From CApaApplication, CreateDocumentL.
-        * Creates CQtS60MainDocument document object. The returned
-        * pointer in not owned by the CQtS60MainApplication object.
-        * @return A pointer to the created document object.
-        */
-        CApaDocument* CreateDocumentL();
-    };
+    /**
+     * From CApaApplication, CreateDocumentL.
+     * Creates QS60MainDocument document object. The returned
+     * pointer in not owned by the QS60MainApplication object.
+     * @return A pointer to the created document object.
+     */
+    CApaDocument* CreateDocumentL();
+};
 
-#endif // __QtS60MainAPPLICATION_H__
+QT_END_NAMESPACE
+
+#endif // QS60MAINAPPLICATION_P_H
 
 // End of File

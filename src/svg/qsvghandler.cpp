@@ -78,7 +78,7 @@ double qstrtod(const char *s00, char const **se, bool *ok);
 
 // ======== duplicated from qcolor_p
 
-static inline int h2i(char hex)
+static inline int qsvg_h2i(char hex)
 {
     if (hex >= '0' && hex <= '9')
         return hex - '0';
@@ -89,18 +89,18 @@ static inline int h2i(char hex)
     return -1;
 }
 
-static inline int hex2int(const char *s)
+static inline int qsvg_hex2int(const char *s)
 {
-    return (h2i(s[0]) << 4) | h2i(s[1]);
+    return (qsvg_h2i(s[0]) << 4) | qsvg_h2i(s[1]);
 }
 
-static inline int hex2int(char s)
+static inline int qsvg_hex2int(char s)
 {
-    int h = h2i(s);
+    int h = qsvg_h2i(s);
     return (h << 4) | h;
 }
 
-bool qt_get_hex_rgb(const char *name, QRgb *rgb)
+bool qsvg_get_hex_rgb(const char *name, QRgb *rgb)
 {
     if(name[0] != '#')
         return false;
@@ -108,21 +108,21 @@ bool qt_get_hex_rgb(const char *name, QRgb *rgb)
     int len = qstrlen(name);
     int r, g, b;
     if (len == 12) {
-        r = hex2int(name);
-        g = hex2int(name + 4);
-        b = hex2int(name + 8);
+        r = qsvg_hex2int(name);
+        g = qsvg_hex2int(name + 4);
+        b = qsvg_hex2int(name + 8);
     } else if (len == 9) {
-        r = hex2int(name);
-        g = hex2int(name + 3);
-        b = hex2int(name + 6);
+        r = qsvg_hex2int(name);
+        g = qsvg_hex2int(name + 3);
+        b = qsvg_hex2int(name + 6);
     } else if (len == 6) {
-        r = hex2int(name);
-        g = hex2int(name + 2);
-        b = hex2int(name + 4);
+        r = qsvg_hex2int(name);
+        g = qsvg_hex2int(name + 2);
+        b = qsvg_hex2int(name + 4);
     } else if (len == 3) {
-        r = hex2int(name[0]);
-        g = hex2int(name[1]);
-        b = hex2int(name[2]);
+        r = qsvg_hex2int(name[0]);
+        g = qsvg_hex2int(name[1]);
+        b = qsvg_hex2int(name[2]);
     } else {
         r = g = b = -1;
     }
@@ -134,7 +134,7 @@ bool qt_get_hex_rgb(const char *name, QRgb *rgb)
     return true;
 }
 
-bool qt_get_hex_rgb(const QChar *str, int len, QRgb *rgb)
+bool qsvg_get_hex_rgb(const QChar *str, int len, QRgb *rgb)
 {
     if (len > 13)
         return false;
@@ -142,7 +142,7 @@ bool qt_get_hex_rgb(const QChar *str, int len, QRgb *rgb)
     for(int i = 0; i < len; ++i)
         tmp[i] = str[i].toLatin1();
     tmp[len] = 0;
-    return qt_get_hex_rgb(tmp, rgb);
+    return qsvg_get_hex_rgb(tmp, rgb);
 }
 
 // ======== end of qcolor_p duplicate
@@ -801,7 +801,7 @@ static bool resolveColor(const QStringRef &colorStr, QColor &color, QSvgHandler 
                 // #rrggbb is very very common, so let's tackle it here
                 // rather than falling back to QColor
                 QRgb rgb;
-                bool ok = qt_get_hex_rgb(colorStrTr.unicode(), colorStrTr.length(), &rgb);
+                bool ok = qsvg_get_hex_rgb(colorStrTr.unicode(), colorStrTr.length(), &rgb);
                 if (ok)
                     color.setRgb(rgb);
                 return ok;
