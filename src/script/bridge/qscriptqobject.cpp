@@ -610,7 +610,7 @@ static JSC::JSValue callQtMethod(JSC::ExecState *exec, QMetaMethod::MethodType c
             if (i < (int)scriptArgs.size())
                 actual = engine->scriptValueFromJSCValue(scriptArgs.at(i));
             else
-                actual = QScriptValue::QScriptValue(QScriptValue::UndefinedValue);
+                actual = QScriptValue(QScriptValue::UndefinedValue);
             QScriptMetaType argType = mtd.argumentType(i);
             int tid = -1;
             QVariant v;
