@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,38 +39,33 @@
 **
 ****************************************************************************/
 
-#include "shadoweffect.h"
+#ifndef QGRAPHICSSYSTEM_TRACE_P_H
+#define QGRAPHICSSYSTEM_TRACE_P_H
 
-#include <math.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-ShadowEffect::ShadowEffect(QGraphicsItem *item, QGraphicsItem *source)
-    : QGraphicsDropShadowEffect()
-    , item(item), m_lightSource(source)
+#include <QtGui/private/qgraphicssystem_p.h>
+
+QT_BEGIN_NAMESPACE
+
+class QTraceGraphicsSystem : public QGraphicsSystem
 {
-    setBlurRadius(8);
-    m_color = color();
-}
+public:
+    QTraceGraphicsSystem();
 
-void ShadowEffect::adjustForItem()
-{
-    QPointF delta = item->pos() - m_lightSource->pos();
-    setOffset(delta.toPoint() / 30);
+    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
+    QWindowSurface *createWindowSurface(QWidget *widget) const;
+};
 
-    qreal dx = delta.x();
-    qreal dy = delta.y();
-    qreal dd = sqrt(dx * dx + dy * dy);
-    m_color.setAlphaF(qBound(0.4, 1 - dd / 200.0, 0.7));
-    setColor(m_color);
-}
+QT_END_NAMESPACE
 
-QRectF ShadowEffect::boundingRectFor(const QRectF &rect) const
-{
-    const_cast<ShadowEffect *>(this)->adjustForItem();
-    return QGraphicsDropShadowEffect::boundingRectFor(rect);
-}
-
-void ShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
-{
-    adjustForItem();
-    QGraphicsDropShadowEffect::draw(painter, source);
-}
+#endif

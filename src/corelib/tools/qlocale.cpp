@@ -636,6 +636,9 @@ static QString winSystemPMText()
     return QString();
 }
 
+/*!
+  Returns the fallback locale obtained from the system.
+ */
 QLocale QSystemLocale::fallbackLocale() const
 {
     return QLocale(QString::fromLatin1(getWinLocaleName()));

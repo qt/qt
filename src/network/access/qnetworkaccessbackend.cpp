@@ -92,8 +92,11 @@ QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessM
                               QNetworkRequest::PreferNetwork).toInt());
     if (mode == QNetworkRequest::AlwaysCache
         && (op == QNetworkAccessManager::GetOperation
-        || op == QNetworkAccessManager::HeadOperation))
-        return new QNetworkAccessCacheBackend;
+        || op == QNetworkAccessManager::HeadOperation)) {
+        QNetworkAccessBackend *backend = new QNetworkAccessCacheBackend;
+        backend->manager = this;
+        return backend;
+    }
 
     if (!factoryDataShutdown) {
         QMutexLocker locker(&factoryData()->mutex);
@@ -110,7 +113,6 @@ QNetworkAccessBackend *QNetworkAccessManagerPrivate::findBackend(QNetworkAccessM
     }
     return 0;
 }
-
 
 QNonContiguousByteDevice* QNetworkAccessBackend::createUploadByteDevice()
 {
@@ -143,6 +145,8 @@ void QNetworkAccessBackend::emitReplyUploadProgress(qint64 bytesSent, qint64 byt
 }
 
 QNetworkAccessBackend::QNetworkAccessBackend()
+    : manager(0)
+    , reply(0)
 {
 }
 
@@ -205,7 +209,9 @@ QList<QNetworkProxy> QNetworkAccessBackend::proxyList() const
 
 QAbstractNetworkCache *QNetworkAccessBackend::networkCache() const
 {
-    return reply->networkCache; // should be the same as manager->networkCache
+    if (!manager)
+        return 0;
+    return manager->networkCache;
 }
 
 void QNetworkAccessBackend::setCachingEnabled(bool enable)

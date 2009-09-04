@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,29 +38,17 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "textinformationitem.h"
+#include "pixmapitem.h"
 
-#ifndef SHADOWEFFECT_H
-#define SHADOWEFFECT_H
-
-#include <QGraphicsEffect>
-#include <QGraphicsItem>
-
-class ShadowEffect: public QGraphicsDropShadowEffect
+TextInformationItem::TextInformationItem (QGraphicsItem * parent)
+    : QGraphicsTextItem(parent)
 {
-public:
-    ShadowEffect(QGraphicsItem *item, QGraphicsItem *source);
-
-    QRectF boundingRectFor(const QRectF &rect) const;
-
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
-
-private:
-    void adjustForItem();
-
-private:
-    QColor m_color;
-    QGraphicsItem *item;
-    QGraphicsItem *m_lightSource;
-};
-
-#endif // SHADOWEFFECT_H
+    setFont(QFont("Comic Sans MS", 25));
+}
+#include <QDebug>
+void TextInformationItem::setMessage(const QString& text)
+{
+    setHtml(text);
+    setPos(parentItem()->boundingRect().center().x() - boundingRect().size().width()/2 , parentItem()->boundingRect().center().y());
+}

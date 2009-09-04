@@ -2892,6 +2892,12 @@ static void convert_Indexed8_to_X32(QImageData *dest, const QImageData *src, Qt:
     Q_ASSERT(src->height == dest->height);
 
     QVector<QRgb> colorTable = fix_color_table(src->colortable, dest->format);
+    if (colorTable.size() == 0) {
+        colorTable.resize(256);
+        for (int i=0; i<256; ++i)
+            colorTable[i] = qRgb(i, i, i);
+
+    }
 
     int w = src->width;
     const uchar *src_data = src->data;

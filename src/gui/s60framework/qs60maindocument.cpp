@@ -41,51 +41,81 @@
 
 // INCLUDE FILES
 #include <exception>
-#include "qts60maindocument_p.h"
-#include "qts60mainapplication_p.h"
-#include <bautils.h>
-#include <coemain.h>
+#include "qs60mainappui_p.h"
+#include "qs60maindocument_p.h"
+
+QT_BEGIN_NAMESPACE
 
 // ============================ MEMBER FUNCTIONS ===============================
 
-
-_LIT(KQtWrapperResourceFile, "\\resource\\apps\\s60main.rsc");
-
 // -----------------------------------------------------------------------------
-// CQtS60MainApplication::CreateDocumentL()
-// Creates CApaDocument object
+// QS60MainDocument::NewL()
+// Two-phased constructor.
 // -----------------------------------------------------------------------------
 //
-CApaDocument* CQtS60MainApplication::CreateDocumentL()
+QS60MainDocument* QS60MainDocument::NewL(CEikApplication& aApp)
 {
-    // Create an QtS60Main document, and return a pointer to it
-    return (static_cast<CApaDocument*>(CQtS60MainDocument::NewL(*this)));
+    QS60MainDocument* self = NewLC(aApp);
+    CleanupStack::Pop(self);
+    return self;
 }
 
 // -----------------------------------------------------------------------------
-// CQtS60MainApplication::AppDllUid()
-// Returns application UID
+// QS60MainDocument::NewLC()
+// Two-phased constructor.
 // -----------------------------------------------------------------------------
 //
-TUid CQtS60MainApplication::AppDllUid() const
+QS60MainDocument* QS60MainDocument::NewLC(CEikApplication& aApp)
 {
-    // Return the UID for the QtS60Main application
-    return ProcessUid();
+    QS60MainDocument* self = new(ELeave) QS60MainDocument(aApp);
+    CleanupStack::PushL(self);
+    self->ConstructL();
+    return self;
 }
 
 // -----------------------------------------------------------------------------
-// CQtS60MainApplication::ResourceFileName()
-// Returns application resource filename
+// QS60MainDocument::ConstructL()
+// Symbian 2nd phase constructor can leave.
 // -----------------------------------------------------------------------------
 //
-TFileName CQtS60MainApplication::ResourceFileName() const
+void QS60MainDocument::ConstructL()
 {
-    TFindFile finder(iCoeEnv->FsSession());
-    TInt err = finder.FindByDir(KQtWrapperResourceFile, KNullDesC);
-    if (err == KErrNone)
-        return finder.File();
-    return KNullDesC();
+    // No implementation required
 }
 
+// -----------------------------------------------------------------------------
+// QS60MainDocument::QS60MainDocument()
+// C++ default constructor can NOT contain any code, that might leave.
+// -----------------------------------------------------------------------------
+//
+QS60MainDocument::QS60MainDocument(CEikApplication& aApp)
+        : CAknDocument(aApp)
+{
+    // No implementation required
+}
+
+// ---------------------------------------------------------------------------
+// QS60MainDocument::~QS60MainDocument()
+// Destructor.
+// ---------------------------------------------------------------------------
+//
+QS60MainDocument::~QS60MainDocument()
+{
+    // No implementation required
+}
+
+// ---------------------------------------------------------------------------
+// QS60MainDocument::CreateAppUiL()
+// Constructs CreateAppUi.
+// ---------------------------------------------------------------------------
+//
+CEikAppUi* QS60MainDocument::CreateAppUiL()
+{
+    // Create the application user interface, and return a pointer to it;
+    // the framework takes ownership of this object
+    return (static_cast <CEikAppUi*>(new(ELeave)QS60MainAppUi));
+}
+
+QT_END_NAMESPACE
 
 // End of File

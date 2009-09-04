@@ -68,7 +68,7 @@
 
 # if _WIN32_WCE < 0x600 && defined(_X86_)
 // For X86 Windows CE, include winbase.h to catch inline functions which
-// overwrite the regular definitions inside of coredll.dll.
+// override the regular definitions inside of coredll.dll.
 // Though one could use the original version of Increment/Decrement, others are
 // not exported at all.
 #  include <winbase.h>
@@ -76,19 +76,21 @@
 // It's safer to remove the volatile and let the compiler add it as needed.
 #  define QT_INTERLOCKED_NO_VOLATILE
 
-# else // _WIN32_WCE >= 0x600 || _X86_
+# else // _WIN32_WCE >= 0x600 || !_X86_
 
 #  define QT_INTERLOCKED_PROTOTYPE __cdecl
 #  define QT_INTERLOCKED_DECLARE_PROTOTYPES
 
-#  if _WIN32_WCE >= 0x600 && defined(_X86_)
-#   define QT_INTERLOCKED_PREFIX _
-#   define QT_INTERLOCKED_INTRINSIC
+#  if _WIN32_WCE >= 0x600
+#   if defined(_X86_)
+#    define QT_INTERLOCKED_PREFIX _
+#    define QT_INTERLOCKED_INTRINSIC
+#   endif
 #  else
 #   define QT_INTERLOCKED_NO_VOLATILE
 #  endif
 
-# endif // _WIN32_WCE >= 0x600 || _X86_
+# endif // _WIN32_WCE >= 0x600 || !_X86_
 
 #endif // Q_OS_WINCE
 
@@ -131,10 +133,10 @@ extern "C" {
     long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( InterlockedExchange )(long QT_INTERLOCKED_VOLATILE *, long);
     long QT_INTERLOCKED_PROTOTYPE QT_INTERLOCKED_FUNCTION( InterlockedExchangeAdd )(long QT_INTERLOCKED_VOLATILE *, long);
 
-# if !defined(__i386__) && !defined(_M_IX86)
-    long QT_INTERLOCKED_FUNCTION( InterlockedCompareExchangePointer )(void * QT_INTERLOCKED_VOLATILE *, void *, void *);
-    long QT_INTERLOCKED_FUNCTION( InterlockedExchangePointer )(void * QT_INTERLOCKED_VOLATILE *, void *);
-    __int64 QT_INTERLOCKED_FUNCTION( InterlockedExchangeAdd64 )(__int64 QT_INTERLOCKED_VOLATILE *, long);
+# if !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
+    void * QT_INTERLOCKED_FUNCTION( InterlockedCompareExchangePointer )(void * QT_INTERLOCKED_VOLATILE *, void *, void *);
+    void * QT_INTERLOCKED_FUNCTION( InterlockedExchangePointer )(void * QT_INTERLOCKED_VOLATILE *, void *);
+    __int64 QT_INTERLOCKED_FUNCTION( InterlockedExchangeAdd64 )(__int64 QT_INTERLOCKED_VOLATILE *, __int64);
 # endif
 
 }
@@ -142,7 +144,6 @@ extern "C" {
 #endif // QT_INTERLOCKED_DECLARE_PROTOTYPES
 
 #undef QT_INTERLOCKED_PROTOTYPE
-#undef QT_INTERLOCKED_VOLATILE
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -190,7 +191,7 @@ extern "C" {
             QT_INTERLOCKED_REMOVE_VOLATILE( value ), \
             valueToAdd )
 
-#if defined(__i386__) || defined(_M_IX86)
+#if defined(Q_OS_WINCE) || defined(__i386__) || defined(_M_IX86)
 
 # define QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(value, newValue, expectedValue) \
     reinterpret_cast<void *>( \
@@ -209,17 +210,17 @@ extern "C" {
             QT_INTERLOCKED_REMOVE_VOLATILE( value ## _integral ), \
             valueToAdd )
 
-#else // !defined(__i386__) && !defined(_M_IX86)
+#else // !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
 
 # define QT_INTERLOCKED_COMPARE_EXCHANGE_POINTER(value, newValue, expectedValue) \
     QT_INTERLOCKED_FUNCTION(InterlockedCompareExchangePointer)( \
-            QT_INTERLOCKED_REMOVE_VOLATILE( value ), \
+            reinterpret_cast<void * QT_INTERLOCKED_VOLATILE *>( QT_INTERLOCKED_REMOVE_VOLATILE( value ) ), \
             newValue, \
             expectedValue )
 
 # define QT_INTERLOCKED_EXCHANGE_POINTER(value, newValue) \
     QT_INTERLOCKED_FUNCTION(InterlockedExchangePointer)( \
-            QT_INTERLOCKED_REMOVE_VOLATILE( value ), \
+            reinterpret_cast<void * QT_INTERLOCKED_VOLATILE *>( QT_INTERLOCKED_REMOVE_VOLATILE( value ) ), \
             newValue )
 
 # define QT_INTERLOCKED_EXCHANGE_ADD_POINTER(value, valueToAdd) \
@@ -227,7 +228,7 @@ extern "C" {
             QT_INTERLOCKED_REMOVE_VOLATILE( value ## _integral ), \
             valueToAdd )
 
-#endif // !defined(__i386__) && !defined(_M_IX86)
+#endif // !defined(Q_OS_WINCE) && !defined(__i386__) && !defined(_M_IX86)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -469,6 +470,7 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddRelease(qptrdiff valueTo
 #undef QT_INTERLOCKED_PREFIX
 
 #undef QT_INTERLOCKED_NO_VOLATILE
+#undef QT_INTERLOCKED_VOLATILE
 #undef QT_INTERLOCKED_REMOVE_VOLATILE
 
 #undef QT_INTERLOCKED_INCREMENT

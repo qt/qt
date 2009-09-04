@@ -137,7 +137,7 @@ protected:
                                const QString& itemPrefix,
                                const QString& itemSuffix);
 
-    void writeSisxTargets(QTextStream &t);
+    void writeSisTargets(QTextStream &t);
     void generateDistcleanTargets(QTextStream& t);
 
     // Subclass implements

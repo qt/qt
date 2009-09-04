@@ -155,7 +155,7 @@ struct ScriptEngineEvent
           lineNumber(lineNumber)
         { }
 
-    ScriptEngineEvent(Type type, qint64 scriptId = -1)
+    ScriptEngineEvent(Type type, qint64 scriptId = -777)
         : type(type), scriptId(scriptId)
         { }
 
@@ -1593,8 +1593,6 @@ void tst_QScriptEngineAgent::exceptionThrowAndCatch()
     {
         spy->clear();
         eng.evaluate("try { throw new Error('ciao'); } catch (e) { }");
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "Some events are missing when JIT is enabled", Abort);
         QCOMPARE(spy->count(), 2);
 
         QCOMPARE(spy->at(0).type, ScriptEngineEvent::ExceptionThrow);
@@ -1606,6 +1604,8 @@ void tst_QScriptEngineAgent::exceptionThrowAndCatch()
 
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::ExceptionCatch);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
+        if (qt_script_isJITEnabled())
+            QEXPECT_FAIL("", "Exception value is not passed in exceptionCatch event when JIT is enabled", Continue);
         QVERIFY(spy->at(1).value.strictlyEquals(spy->at(0).value));
     }
 }
@@ -1728,8 +1728,6 @@ void tst_QScriptEngineAgent::eventOrder_throwAndCatch()
     {
         spy->clear();
         eng.evaluate("try { throw new Error('ciao') } catch (e) { void(e); }");
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "One event is missing when JIT is enabled", Abort);
         QCOMPARE(spy->count(), 12);
         // load
         QCOMPARE(spy->at(0).type, ScriptEngineEvent::ScriptLoad);
@@ -1751,6 +1749,8 @@ void tst_QScriptEngineAgent::eventOrder_throwAndCatch()
         QVERIFY(spy->at(7).hasExceptionHandler);
         // catch
         QCOMPARE(spy->at(8).type, ScriptEngineEvent::ExceptionCatch);
+        if (qt_script_isJITEnabled())
+            QEXPECT_FAIL("", "Exception value is not passed in exceptionCatch event when JIT is enabled", Continue);
         QVERIFY(spy->at(8).value.isError());
         // void(e)
         QCOMPARE(spy->at(9).type, ScriptEngineEvent::PositionChange);
@@ -1914,8 +1914,6 @@ void tst_QScriptEngineAgent::eventOrder_throwCatchFinally()
     {
         spy->clear();
         eng.evaluate("try { throw 1; } catch(e) { i = e; } finally { i = 2; }");
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "One event is missing when JIT is enabled", Abort);
         QCOMPARE(spy->count(), 9);
 
         // load
@@ -2100,6 +2098,7 @@ void tst_QScriptEngineAgent::syntaxError()
 
         i = 2;
         QCOMPARE(spy->at(i).type, ScriptEngineEvent::ContextPush);
+        QEXPECT_FAIL("","The test is broken, contextPush event do not provide scriptId", Continue);
         QVERIFY(spy->at(i).scriptId == -1);
         i = 3;
         QCOMPARE(spy->at(i).type, ScriptEngineEvent::FunctionEntry);
@@ -2109,6 +2108,7 @@ void tst_QScriptEngineAgent::syntaxError()
         QVERIFY(spy->at(i).scriptId == -1);
         i = 5;
         QCOMPARE(spy->at(i).type, ScriptEngineEvent::ContextPop);
+        QEXPECT_FAIL("","The test is broken, contextPop event do not provide scriptId", Continue);
         QVERIFY(spy->at(i).scriptId == -1);
         i = 6;
         QCOMPARE(spy->at(i).type, ScriptEngineEvent::ExceptionThrow);

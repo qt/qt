@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the makespecs of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,26 +39,31 @@
 **
 ****************************************************************************/
 
-#ifndef FIXED_STDLIB_H
-#define FIXED_STDLIB_H
+#include <private/qgraphicssystemplugin_p.h>
+#include "qgraphicssystem_trace_p.h"
 
-// This hack fixes defect in Symbian stdlib.h. The original file
-// does not work correctly when intermixing C and C++ (STL). Remove the hack
-// when Open C / C++ team has fixed the defect.
+QT_BEGIN_NAMESPACE
 
-// If _WCHAR_T_DECLARED is defined, undef it and store information that we
-// need to revert the _WCHAR_T_DECLARED define after include
-#   ifdef _WCHAR_T_DECLARED
-#       define QT_REVERT_WCHAR_T_DECLARED
-#       undef _WCHAR_T_DECLARED
-#   endif //_WCHAR_T_DECLARED
+class QTraceGraphicsSystemPlugin : public QGraphicsSystemPlugin
+{
+public:
+    QStringList keys() const;
+    QGraphicsSystem *create(const QString&);
+};
 
-#include <stdlib.h>
+QStringList QTraceGraphicsSystemPlugin::keys() const
+{
+    return QStringList(QLatin1String("Trace"));
+}
 
-// Revert _WCHAR_T_DECLARED if necessary
-#   ifdef QT_REVERT_WCHAR_T_DECLARED
-#       define _WCHAR_T_DECLARED
-#       undef QT_REVERT_WCHAR_T_DECLARED
-#   endif //QT_REVERT_WCHAR_T_DECLARED
+QGraphicsSystem* QTraceGraphicsSystemPlugin::create(const QString& system)
+{
+    if (system.toLower() == QLatin1String("trace"))
+        return new QTraceGraphicsSystem;
 
-#endif
+    return 0;
+}
+
+Q_EXPORT_PLUGIN2(trace, QTraceGraphicsSystemPlugin)
+
+QT_END_NAMESPACE

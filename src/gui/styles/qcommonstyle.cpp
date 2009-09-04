@@ -5219,7 +5219,7 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
     Q_UNUSED(sp);
 #else
     QPixmap pixmap;
-    const bool rtl = (option && option->direction == Qt::RightToLeft) || !option && QApplication::isRightToLeft();
+    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QApplication::isRightToLeft());
 
     if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (sp) {
@@ -5509,7 +5509,7 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
                                                const QWidget *widget) const
 {
     QIcon icon;
-    const bool rtl = (option && option->direction == Qt::RightToLeft) || !option && QApplication::isRightToLeft();
+    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QApplication::isRightToLeft());
     if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (standardIcon) {
         case SP_DirHomeIcon:

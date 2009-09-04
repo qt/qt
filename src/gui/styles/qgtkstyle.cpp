@@ -656,6 +656,11 @@ int QGtkStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidg
         return !scrollbars_within_bevel;
     }
 
+    case SH_DialogButtonBox_ButtonsHaveIcons: {
+        static bool buttonsHaveIcons = QGtk::getGConfBool(QLS("/desktop/gnome/interface/buttons_have_icons"));
+        return buttonsHaveIcons;
+    }
+
     default:
         return QCleanlooksStyle::styleHint(hint, option, widget, returnData);
     }

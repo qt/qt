@@ -60,7 +60,7 @@ QT_BEGIN_NAMESPACE
 
 struct QSimplexVariable
 {
-    QSimplexVariable() : result(0), index(0) {};
+    QSimplexVariable() : result(0), index(0) {}
 
     qreal result;
     uint index;
@@ -80,7 +80,7 @@ struct QSimplexVariable
 */
 struct QSimplexConstraint
 {
-    QSimplexConstraint() : constant(0), ratio(Equal), artificial(0) {};
+    QSimplexConstraint() : constant(0), ratio(Equal), artificial(0) {}
 
     enum Ratio {
         LessOrEqual = 0,

@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
     \class QMargins
     \ingroup painting
 
-    \brief The QMargins 
+    \brief The QMargins class defines the four margins of a rectangle. 
 
     QMargin defines a set of four margins; left, top, right and bottom,
     that describe the size of the borders surrounding a rectangle.
@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
 
     Constructs a margins object with all margins set to 0.
 
-    \sa isValid()
+    \sa isNull()
 */
 
 /*!
@@ -78,7 +78,7 @@ QT_BEGIN_NAMESPACE
 
     Constructs margins with the given \a left, \a top, \a right, \a bottom
 
-    \sa setWidth(), setHeight()
+    \sa setLeft(), setRight(), setTop(), setBottom()
 */
 
 /*!
@@ -86,8 +86,6 @@ QT_BEGIN_NAMESPACE
 
     Returns true if all margins are is 0; otherwise returns
     false.
-
-    \sa isValid(), isEmpty()
 */
 
 

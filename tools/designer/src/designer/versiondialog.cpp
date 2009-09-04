@@ -174,9 +174,7 @@ VersionDialog::VersionDialog(QWidget *parent)
 
     lbl->setText(tr("%1"
                     "<br/>Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)."
-                    "<br/><br/>The program is provided AS IS with NO WARRANTY OF ANY KIND,"
-                    " INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A"
-                    " PARTICULAR PURPOSE.<br/> ").arg(version));
+                    ).arg(version));
 
     lbl->setWordWrap(true);
     lbl->setOpenExternalLinks(true);

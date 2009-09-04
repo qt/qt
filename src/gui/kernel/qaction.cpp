@@ -269,6 +269,26 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     MenuRole for the actions in that submenu have no effect. They will never be moved.
 */
 
+/*! \enum QAction::SoftKeyRole
+  \value OptionsSoftKey
+  \value SelectSoftKey
+  \value BackSoftKey
+  \value NextSoftKey
+  \value PreviousSoftKey
+  \value OkSoftKey
+  \value CancelSoftKey
+  \value EditSoftKey
+  \value ViewSoftKey
+  \value BackSpaceSoftKey
+  \value EndEditSoftKey
+  \value RevertEditSoftKey
+  \value DeselectSoftKey
+  \value FinishSoftKey
+  \value MenuSoftKey
+  \value ContextMenuSoftKey
+  \value ExitSoftKey
+ */
+
 /*!
     Constructs an action with \a parent. If \a parent is an action
     group the action will be automatically inserted into the group.

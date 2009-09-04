@@ -283,7 +283,6 @@ bool QSharedMemoryPrivate::detach()
     // If there are no attachments then remove it.
     if (shmid_ds.shm_nattch == 0) {
         // mark for removal
-        struct shmid_ds shmid_ds;
         if (-1 == shmctl(id, IPC_RMID, &shmid_ds)) {
             setErrorString(QLatin1String("QSharedMemory::remove"));
             switch (errno) {

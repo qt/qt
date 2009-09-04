@@ -58,6 +58,7 @@
 #include <QtCore/qhash.h>
 #include <QtCore/qset.h>
 #include "qscriptvalue_p.h"
+#include "qscriptstring_p.h"
 
 #include "RefPtr.h"
 #include "Structure.h"
@@ -217,6 +218,10 @@ public:
     inline void unregisterScriptValue(QScriptValuePrivate *value);
     void detachAllRegisteredScriptValues();
 
+    inline void registerScriptString(QScriptStringPrivate *value);
+    inline void unregisterScriptString(QScriptStringPrivate *value);
+    void detachAllRegisteredScriptStrings();
+
     // private slots
     void _q_objectDestroyed(QObject *);
 #endif
@@ -241,6 +246,7 @@ public:
     int agentLineNumber;
     QScriptValuePrivate *registeredScriptValues;
     QScriptValuePrivate *freeScriptValues;
+    QScriptStringPrivate *registeredScriptStrings;
     QHash<int, QScriptTypeInfo*> m_typeInfos;
     int processEventsInterval;
     QScriptValue abortResult;
@@ -360,6 +366,29 @@ inline QScriptValue QScriptValuePrivate::property(const QString &name, int resol
 {
     JSC::ExecState *exec = engine->currentFrame;
     return property(JSC::Identifier(exec, name), resolveMode);
+}
+
+inline void QScriptEnginePrivate::registerScriptString(QScriptStringPrivate *value)
+{
+    Q_ASSERT(value->type == QScriptStringPrivate::HeapAllocated);
+    value->prev = 0;
+    value->next = registeredScriptStrings;
+    if (registeredScriptStrings)
+        registeredScriptStrings->prev = value;
+    registeredScriptStrings = value;
+}
+
+inline void QScriptEnginePrivate::unregisterScriptString(QScriptStringPrivate *value)
+{
+    Q_ASSERT(value->type == QScriptStringPrivate::HeapAllocated);
+    if (value->prev)
+        value->prev->next = value->next;
+    if (value->next)
+        value->next->prev = value->prev;
+    if (value == registeredScriptStrings)
+        registeredScriptStrings = value->next;
+    value->prev = 0;
+    value->next = 0;
 }
 
 QT_END_NAMESPACE

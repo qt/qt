@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
-class Q_CORE_EXPORT QMargins
+class QMargins
 {
 public:
     QMargins();
@@ -67,11 +67,6 @@ public:
     void setTop(int top);
     void setRight(int right);
     void setBottom(int bottom);
-
-    int &rleft();
-    int &rtop();
-    int &rright();
-    int &rbottom();
 
 private:
     int m_left;

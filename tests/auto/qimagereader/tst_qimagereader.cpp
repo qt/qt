@@ -140,6 +140,7 @@ private slots:
 
 #if defined QTEST_HAVE_GIF
     void gifHandlerBugs();
+    void animatedGif();
 #endif
 
     void readCorruptImage_data();
@@ -710,6 +711,18 @@ void tst_QImageReader::gifHandlerBugs()
         QCOMPARE(im1.convertToFormat(QImage::Format_ARGB32), im2.convertToFormat(QImage::Format_ARGB32));
     }
 }
+
+void tst_QImageReader::animatedGif()
+{
+    QImageReader io(prefix + "qt.gif");
+    QImage image= io.read();
+    int i=0;
+    while(!image.isNull()){
+        QString frameName = QString(prefix + "qt%1.gif").arg(++i);
+        QCOMPARE(image, QImage(frameName));
+        image=io.read();
+    }
+}
 #endif
 
 class Server : public QObject
@@ -1236,7 +1249,7 @@ void tst_QImageReader::readCorruptImage()
 
 void tst_QImageReader::readCorruptBmp()
 {
-    QCOMPARE(QImage("tst7.bmp").convertToFormat(QImage::Format_ARGB32_Premultiplied), QImage("images/tst7.png").convertToFormat(QImage::Format_ARGB32_Premultiplied));
+    QCOMPARE(QImage(prefix + "tst7.bmp").convertToFormat(QImage::Format_ARGB32_Premultiplied), QImage(prefix + "tst7.png").convertToFormat(QImage::Format_ARGB32_Premultiplied));
 }
 
 void tst_QImageReader::supportsOption_data()

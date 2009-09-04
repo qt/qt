@@ -46,6 +46,7 @@
 #include <qdebug.h>
 #include <qgl.h>
 #include <qglpixelbuffer.h>
+#include <qglframebufferobject.h>
 #include <qglcolormap.h>
 #include <qpaintengine.h>
 
@@ -71,8 +72,12 @@ private slots:
     void partialGLWidgetUpdates_data();
     void partialGLWidgetUpdates();
     void glWidgetRendering();
+    void glFBORendering();
+    void multipleFBOInterleavedRendering();
+    void glFBOUseInGLWidget();
     void glPBufferRendering();
     void glWidgetReparent();
+    void stackedFBOs();
     void colormap();
 };
 
@@ -706,6 +711,231 @@ void tst_QGL::glWidgetRendering()
     QCOMPARE(fb, reference);
 }
 
+// NOTE: This tests that CombinedDepthStencil attachment works by assuming the
+//       GL2 engine is being used and is implemented the same way as it was when
+//       this autotest was written. If this is not the case, there may be some
+//       false-positives: I.e. The test passes when either the depth or stencil
+//       buffer is actually missing. But that's probably ok anyway.
+void tst_QGL::glFBORendering()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    QGLWidget glw;
+    glw.makeCurrent();
+
+    // No multisample with combined depth/stencil attachment:
+    QGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+
+    // Don't complicate things by using NPOT:
+    QGLFramebufferObject *fbo = new QGLFramebufferObject(256, 128, fboFormat);
+
+    QPainter fboPainter;
+    bool painterBegun = fboPainter.begin(fbo);
+    QVERIFY(painterBegun);
+
+    QPainterPath intersectingPath;
+    intersectingPath.moveTo(0, 0);
+    intersectingPath.lineTo(100, 0);
+    intersectingPath.lineTo(0, 100);
+    intersectingPath.lineTo(100, 100);
+    intersectingPath.closeSubpath();
+
+    QPainterPath trianglePath;
+    trianglePath.moveTo(50, 0);
+    trianglePath.lineTo(100, 100);
+    trianglePath.lineTo(0, 100);
+    trianglePath.closeSubpath();
+
+    fboPainter.fillRect(0, 0, fbo->width(), fbo->height(), Qt::red); // Background
+    fboPainter.translate(14, 14);
+    fboPainter.fillPath(intersectingPath, Qt::blue); // Test stencil buffer works
+    fboPainter.translate(128, 0);
+    fboPainter.setClipPath(trianglePath); // Test depth buffer works
+    fboPainter.setTransform(QTransform()); // reset xform
+    fboPainter.fillRect(0, 0, fbo->width(), fbo->height(), Qt::green);
+    fboPainter.end();
+
+    QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
+    delete fbo;
+
+    // As we're doing more than trivial painting, we can't just compare to
+    // an image rendered with raster. Instead, we sample at well-defined
+    // test-points:
+    QCOMPARE(fb.pixel(39, 64), QColor(Qt::red).rgb());
+    QCOMPARE(fb.pixel(89, 64), QColor(Qt::red).rgb());
+    QCOMPARE(fb.pixel(64, 39), QColor(Qt::blue).rgb());
+    QCOMPARE(fb.pixel(64, 89), QColor(Qt::blue).rgb());
+
+    QCOMPARE(fb.pixel(167, 39), QColor(Qt::red).rgb());
+    QCOMPARE(fb.pixel(217, 39), QColor(Qt::red).rgb());
+    QCOMPARE(fb.pixel(192, 64), QColor(Qt::green).rgb());
+}
+
+
+// Tests multiple QPainters active on different FBOs at the same time, with
+// interleaving painting. Performance-wise, this is sub-optimal, but it still
+// has to work flawlessly
+void tst_QGL::multipleFBOInterleavedRendering()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    QGLWidget glw;
+    glw.makeCurrent();
+
+    // No multisample with combined depth/stencil attachment:
+    QGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+
+    QGLFramebufferObject *fbo1 = new QGLFramebufferObject(256, 128, fboFormat);
+    QGLFramebufferObject *fbo2 = new QGLFramebufferObject(256, 128, fboFormat);
+    QGLFramebufferObject *fbo3 = new QGLFramebufferObject(256, 128, fboFormat);
+
+    QPainter fbo1Painter;
+    QPainter fbo2Painter;
+    QPainter fbo3Painter;
+
+    QVERIFY(fbo1Painter.begin(fbo1));
+    QVERIFY(fbo2Painter.begin(fbo2));
+    QVERIFY(fbo3Painter.begin(fbo3));
+
+    QPainterPath intersectingPath;
+    intersectingPath.moveTo(0, 0);
+    intersectingPath.lineTo(100, 0);
+    intersectingPath.lineTo(0, 100);
+    intersectingPath.lineTo(100, 100);
+    intersectingPath.closeSubpath();
+
+    QPainterPath trianglePath;
+    trianglePath.moveTo(50, 0);
+    trianglePath.lineTo(100, 100);
+    trianglePath.lineTo(0, 100);
+    trianglePath.closeSubpath();
+
+    fbo1Painter.fillRect(0, 0, fbo1->width(), fbo1->height(), Qt::red); // Background
+    fbo2Painter.fillRect(0, 0, fbo2->width(), fbo2->height(), Qt::green); // Background
+    fbo3Painter.fillRect(0, 0, fbo3->width(), fbo3->height(), Qt::blue); // Background
+
+    fbo1Painter.translate(14, 14);
+    fbo2Painter.translate(14, 14);
+    fbo3Painter.translate(14, 14);
+
+    fbo1Painter.fillPath(intersectingPath, Qt::blue); // Test stencil buffer works
+    fbo2Painter.fillPath(intersectingPath, Qt::red); // Test stencil buffer works
+    fbo3Painter.fillPath(intersectingPath, Qt::green); // Test stencil buffer works
+
+    fbo1Painter.translate(128, 0);
+    fbo2Painter.translate(128, 0);
+    fbo3Painter.translate(128, 0);
+
+    fbo1Painter.setClipPath(trianglePath);
+    fbo2Painter.setClipPath(trianglePath);
+    fbo3Painter.setClipPath(trianglePath);
+
+    fbo1Painter.setTransform(QTransform()); // reset xform
+    fbo2Painter.setTransform(QTransform()); // reset xform
+    fbo3Painter.setTransform(QTransform()); // reset xform
+
+    fbo1Painter.fillRect(0, 0, fbo1->width(), fbo1->height(), Qt::green);
+    fbo2Painter.fillRect(0, 0, fbo2->width(), fbo2->height(), Qt::blue);
+    fbo3Painter.fillRect(0, 0, fbo3->width(), fbo3->height(), Qt::red);
+
+    fbo1Painter.end();
+    fbo2Painter.end();
+    fbo3Painter.end();
+
+    QImage fb1 = fbo1->toImage().convertToFormat(QImage::Format_RGB32);
+    QImage fb2 = fbo2->toImage().convertToFormat(QImage::Format_RGB32);
+    QImage fb3 = fbo3->toImage().convertToFormat(QImage::Format_RGB32);
+    delete fbo1;
+    delete fbo2;
+    delete fbo3;
+
+    // As we're doing more than trivial painting, we can't just compare to
+    // an image rendered with raster. Instead, we sample at well-defined
+    // test-points:
+    QCOMPARE(fb1.pixel(39, 64), QColor(Qt::red).rgb());
+    QCOMPARE(fb1.pixel(89, 64), QColor(Qt::red).rgb());
+    QCOMPARE(fb1.pixel(64, 39), QColor(Qt::blue).rgb());
+    QCOMPARE(fb1.pixel(64, 89), QColor(Qt::blue).rgb());
+    QCOMPARE(fb1.pixel(167, 39), QColor(Qt::red).rgb());
+    QCOMPARE(fb1.pixel(217, 39), QColor(Qt::red).rgb());
+    QCOMPARE(fb1.pixel(192, 64), QColor(Qt::green).rgb());
+
+    QCOMPARE(fb2.pixel(39, 64), QColor(Qt::green).rgb());
+    QCOMPARE(fb2.pixel(89, 64), QColor(Qt::green).rgb());
+    QCOMPARE(fb2.pixel(64, 39), QColor(Qt::red).rgb());
+    QCOMPARE(fb2.pixel(64, 89), QColor(Qt::red).rgb());
+    QCOMPARE(fb2.pixel(167, 39), QColor(Qt::green).rgb());
+    QCOMPARE(fb2.pixel(217, 39), QColor(Qt::green).rgb());
+    QCOMPARE(fb2.pixel(192, 64), QColor(Qt::blue).rgb());
+
+    QCOMPARE(fb3.pixel(39, 64), QColor(Qt::blue).rgb());
+    QCOMPARE(fb3.pixel(89, 64), QColor(Qt::blue).rgb());
+    QCOMPARE(fb3.pixel(64, 39), QColor(Qt::green).rgb());
+    QCOMPARE(fb3.pixel(64, 89), QColor(Qt::green).rgb());
+    QCOMPARE(fb3.pixel(167, 39), QColor(Qt::blue).rgb());
+    QCOMPARE(fb3.pixel(217, 39), QColor(Qt::blue).rgb());
+    QCOMPARE(fb3.pixel(192, 64), QColor(Qt::red).rgb());
+}
+
+class FBOUseInGLWidget : public QGLWidget
+{
+public:
+    bool widgetPainterBeginOk;
+    bool fboPainterBeginOk;
+    QImage fboImage;
+protected:
+    void paintEvent(QPaintEvent*)
+    {
+        QPainter widgetPainter;
+        widgetPainterBeginOk = widgetPainter.begin(this);
+        QGLFramebufferObjectFormat fboFormat;
+        fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+        QGLFramebufferObject *fbo = new QGLFramebufferObject(128, 128, fboFormat);
+
+        QPainter fboPainter;
+        fboPainterBeginOk = fboPainter.begin(fbo);
+        fboPainter.fillRect(0, 0, 128, 128, Qt::red);
+        fboPainter.end();
+        fboImage = fbo->toImage();
+
+        widgetPainter.fillRect(rect(), Qt::blue);
+
+        delete fbo;
+    }
+
+};
+
+void tst_QGL::glFBOUseInGLWidget()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    FBOUseInGLWidget w;
+    w.resize(128, 128);
+    w.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&w);
+#endif
+    QTest::qWait(200);
+
+    QVERIFY(w.widgetPainterBeginOk);
+    QVERIFY(w.fboPainterBeginOk);
+
+    QImage widgetFB = w.grabFrameBuffer(false);
+    QImage widgetReference(widgetFB.size(), widgetFB.format());
+    widgetReference.fill(0xff0000ff);
+    QCOMPARE(widgetFB, widgetReference);
+
+    QImage fboReference(w.fboImage.size(), w.fboImage.format());
+    fboReference.fill(0xffff0000);
+    QCOMPARE(w.fboImage, fboReference);
+}
+
 void tst_QGL::glWidgetReparent()
 {
     // Try it as a top-level first:
@@ -771,6 +1001,109 @@ void tst_QGL::glWidgetReparent()
 
     delete widget;
 }
+
+// When using multiple FBOs at the same time, unbinding one FBO should re-bind the
+// previous. I.e. It should be possible to have a stack of FBOs where pop'ing there
+// top re-binds the one underneeth.
+void tst_QGL::stackedFBOs()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    QGLWidget glw;
+    glw.show();
+
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&glw);
+#endif
+    QTest::qWait(200);
+
+    glw.makeCurrent();
+
+    // No multisample with combined depth/stencil attachment:
+    QGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+
+    // Don't complicate things by using NPOT:
+    QGLFramebufferObject *fbo1 = new QGLFramebufferObject(128, 128, fboFormat);
+    QGLFramebufferObject *fbo2 = new QGLFramebufferObject(128, 128, fboFormat);
+    QGLFramebufferObject *fbo3 = new QGLFramebufferObject(128, 128, fboFormat);
+
+    glClearColor(1.0, 0.0, 1.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    fbo1->bind();
+        glClearColor(1.0, 0.0, 0.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        fbo2->bind();
+            glClearColor(0.0, 1.0, 0.0, 1.0);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            fbo3->bind();
+                glClearColor(0.0, 0.0, 1.0, 1.0);
+                glClear(GL_COLOR_BUFFER_BIT);
+                glScissor(32, 32, 64, 64);
+                glEnable(GL_SCISSOR_TEST);
+                glClearColor(0.0, 1.0, 1.0, 1.0);
+                glClear(GL_COLOR_BUFFER_BIT);
+            fbo3->release();
+
+            // Scissor rect & test should be left untouched by the fbo release...
+            glClearColor(0.0, 0.0, 0.0, 1.0);
+            glClear(GL_COLOR_BUFFER_BIT);
+        fbo2->release();
+
+        glClearColor(1.0, 1.0, 1.0, 1.0);
+        glClear(GL_COLOR_BUFFER_BIT);
+    fbo1->release();
+
+    glClearColor(1.0, 1.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glw.swapBuffers();
+
+    QImage widgetFB = glw.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
+    QImage fb1 = fbo1->toImage().convertToFormat(QImage::Format_RGB32);
+    QImage fb2 = fbo2->toImage().convertToFormat(QImage::Format_RGB32);
+    QImage fb3 = fbo3->toImage().convertToFormat(QImage::Format_RGB32);
+
+    delete fbo1;
+    delete fbo2;
+    delete fbo3;
+
+    QImage widgetReference(widgetFB.size(), widgetFB.format());
+    QImage fb1Reference(fb1.size(), fb1.format());
+    QImage fb2Reference(fb2.size(), fb2.format());
+    QImage fb3Reference(fb3.size(), fb3.format());
+
+    QPainter widgetReferencePainter(&widgetReference);
+    QPainter fb1ReferencePainter(&fb1Reference);
+    QPainter fb2ReferencePainter(&fb2Reference);
+    QPainter fb3ReferencePainter(&fb3Reference);
+
+    widgetReferencePainter.fillRect(0, 0, widgetReference.width(), widgetReference.height(), Qt::magenta);
+    fb1ReferencePainter.fillRect(0, 0, fb1Reference.width(), fb1Reference.height(), Qt::red);
+    fb2ReferencePainter.fillRect(0, 0, fb2Reference.width(), fb2Reference.height(), Qt::green);
+    fb3ReferencePainter.fillRect(0, 0, fb3Reference.width(), fb3Reference.height(), Qt::blue);
+
+    // Flip y-coords to match GL for the widget (which can be any size)
+    widgetReferencePainter.fillRect(32, glw.height() - 96, 64, 64, Qt::yellow);
+    fb1ReferencePainter.fillRect(32, 32, 64, 64, Qt::white);
+    fb2ReferencePainter.fillRect(32, 32, 64, 64, Qt::black);
+    fb3ReferencePainter.fillRect(32, 32, 64, 64, Qt::cyan);
+
+    widgetReferencePainter.end();
+    fb1ReferencePainter.end();
+    fb2ReferencePainter.end();
+    fb3ReferencePainter.end();
+
+    QCOMPARE(widgetFB, widgetReference);
+    QCOMPARE(fb1, fb1Reference);
+    QCOMPARE(fb2, fb2Reference);
+    QCOMPARE(fb3, fb3Reference);
+}
+
 
 class ColormapExtended : public QGLColormap
 {

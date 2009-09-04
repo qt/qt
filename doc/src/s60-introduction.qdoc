@@ -90,7 +90,7 @@
     \row \o \c debug-armv5   \o Build debug binaries for hardware using RVCT.
     \row \o \c release-armv5 \o Build release binaries for hardware using RVCT.
     \row \o \c run           \o Run the emulator binaries from the build directory.
-    \row \o \c sisx          \o Create signed \c .sis file for project.
+    \row \o \c sis          \o Create signed \c .sis file for project.
     \endtable
 
     The following lines perform a debug build for the emulator
@@ -104,9 +104,9 @@
     \section1 Installing your own applications
 
     To install your own applications on hardware, you need signed \c .sis file.
-    The signed \c .sis file can be created with \c make \c sisx target. \c sisx target
+    The signed \c .sis file can be created with \c make \c sis target. \c sis target
     is only supported for executables or projects with \c DEPLOYMENT statements.
-    By default the \c sisx target will create signed \.sis file for last build
+    By default the \c sis target will create signed \.sis file for last build
     target. For example, the following sequence will generate the needed makefiles, 
     build the project for \c debug-winscw and \c release-armv5, and create 
     self-signed \c .sis file for \c release-armv5 target:
@@ -118,18 +118,18 @@
     shown in the table below:
     
     \table
-    \row \o \c QT_SISX_OPTIONS      \o Options accepted by \c .sis creation. 
+    \row \o \c QT_SIS_OPTIONS      \o Options accepted by \c .sis creation. 
                                        Currently only -i, install the package right away 
                                        using PC suite, is supported.
                                        By default no otions are given.
-    \row \o \c QT_SISX_TARGET       \o Target for which \c .sis file is created.
+    \row \o \c QT_SIS_TARGET       \o Target for which \c .sis file is created.
                                        Accepted values are build targets listed in 
                                        previous table. By default last build target.
-    \row \o \c QT_SISX_CERTIFICATE  \o The certificate file used for signing.
+    \row \o \c QT_SIS_CERTIFICATE  \o The certificate file used for signing.
                                        By default self-signed certificate. 
-    \row \o \c QT_SISX_KEY          \o The certificate's private key file.
+    \row \o \c QT_SIS_KEY          \o The certificate's private key file.
                                        By default key is associated to self-signed certificate. 
-    \row \o \c QT_SISX_PASSPHRASE   \o The certificate's private key file's passphrase.
+    \row \o \c QT_SIS_PASSPHRASE   \o The certificate's private key file's passphrase.
                                        By default empty. 
     \endtable    
     
@@ -142,8 +142,8 @@
     \snippet doc/src/snippets/code/doc_src_s60-introduction.qdoc 4        
     
     If you want to install the program immediately, make sure that the device
-    is connected to the computer in "PC Suite" mode, and run \c sisx target
-    with the \c QT_SISX_OPTIONS=-i, like this:
+    is connected to the computer in "PC Suite" mode, and run \c sis target
+    with the \c QT_SIS_OPTIONS=-i, like this:
 
     \snippet doc/src/snippets/code/doc_src_s60-introduction.qdoc 5
 */

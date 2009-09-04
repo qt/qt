@@ -1145,8 +1145,9 @@ void tst_QPainterPath::testToFillPolygons()
     path.lineTo(QPointF(70, 100));
     path.lineTo(QPointF(40, 100));
 
-    QPolygonF polygon = path.toFillPolygons(QMatrix()).first();
-    QCOMPARE(polygon.count(QPointF(70, 50)), 2);
+    const QList<QPolygonF> polygons = path.toFillPolygons();
+    QCOMPARE(polygons.size(), 2);
+    QCOMPARE(polygons.first().count(QPointF(70, 50)), 0);
 }
 
 void tst_QPainterPath::connectPathDuplicatePoint()

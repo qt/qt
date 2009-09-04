@@ -879,21 +879,20 @@ void QIcon::setThemeSearchPaths(const QStringList &paths)
 }
 
 /*!
-    \since 4.6
+  \since 4.6
 
-    Returns the search paths for icon themes.
+  Returns the search paths for icon themes.
 
-    The default value will depend on the platform:
+  The default value will depend on the platform:
 
-    On X11, the search path will use the XDG_DATA_DIRS environment
-    variable if available.
+  On X11, the search path will use the XDG_DATA_DIRS environment
+  variable if available.
 
-    On Windows the search path defaults to [Application Directory]/icons
+  By default all platforms will have the resource directory
+  \c{:\icons} as a fallback. You can use "rcc -project" to generate a
+  resource file from your icon theme.
 
-    On Mac the default search path will search in the
-    [Contents/Resources/icons] part of the application bundle.
-
-    \sa setThemeSearchPaths(), fromTheme(), setThemeName()
+  \sa setThemeSearchPaths(), fromTheme(), setThemeName()
 */
 QStringList QIcon::themeSearchPaths()
 {
@@ -906,7 +905,7 @@ QStringList QIcon::themeSearchPaths()
     Sets the current icon theme to \a name.
 
     The \a name should correspond to a directory name in the
-    current themeSearchPath() containing an index.theme
+    themeSearchPath() containing an index.theme
     file describing it's contents.
 
     \sa themeSearchPaths(), themeName()
@@ -938,10 +937,6 @@ QString QIcon::themeName()
     Returns the QIcon corresponding to \a name in the current
     icon theme. If no such icon is found in the current theme
     \a fallback is return instead.
-
-    To use an icon theme on Windows or Mac, you will need to
-    bundle a compliant theme with your application and make sure
-    it is located in your themeSarchPaths.
 
     The lastest version of the freedesktop icon specification and naming
     spesification can be obtained here:

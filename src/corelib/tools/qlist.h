@@ -52,6 +52,7 @@
 #endif
 
 #include <new>
+#include <string.h>
 
 QT_BEGIN_HEADER
 

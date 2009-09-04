@@ -47,10 +47,11 @@
 #include <QtGui/qvector3d.h>
 #include "glbuffers.h"
 
-class ItemBase : public QObject, public QGraphicsItem
+class ItemBase : public QGraphicsItem
 {
-    Q_OBJECT
 public:
+    enum { Type = UserType + 1 };
+
     ItemBase(int size, int x, int y);
     virtual ~ItemBase();
     virtual QRectF boundingRect() const;
@@ -64,6 +65,7 @@ protected:
     virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     virtual void keyPressEvent(QKeyEvent *event);
     virtual void wheelEvent(QGraphicsSceneWheelEvent *event);
+    virtual int type() const;
     bool isInResizeArea(const QPointF &pos);
 
     static void duplicateSelectedItems(QGraphicsScene *scene);

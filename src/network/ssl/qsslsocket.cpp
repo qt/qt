@@ -1745,7 +1745,13 @@ qint64 QSslSocket::writeData(const char *data, qint64 len)
     \internal
 */
 QSslSocketPrivate::QSslSocketPrivate()
-    : initialized(false), readyReadEmittedPointer(0), plainSocket(0)
+    : initialized(false)
+    , mode(QSslSocket::UnencryptedMode)
+    , autoStartHandshake(false)
+    , connectionEncrypted(false)
+    , ignoreAllSslErrors(false)
+    , readyReadEmittedPointer(0)
+    , plainSocket(0)
 {
     QSslConfigurationPrivate::deepCopyDefaultConfiguration(&configuration);
 }

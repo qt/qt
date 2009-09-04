@@ -1897,11 +1897,9 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     Returns an integer representing the specified style \a hint for
     the given \a widget described by the provided style \a option.
 
-    Note that currently, the \a returnData and \a widget parameters
-    are not used; they are provided for future enhancement. In
-    addition, the \a option parameter is used only in case of the
-    SH_ComboBox_Popup, SH_ComboBox_LayoutDirection, and
-    SH_GroupBox_TextLabelColor style hints.
+    \a returnData is used when the querying widget needs more detailed data than
+    the integer that styleHint() returns. See the QStyleHintReturn class
+    description for details.
 */
 
 /*!
