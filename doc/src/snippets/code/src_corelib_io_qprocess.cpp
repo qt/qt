@@ -73,7 +73,7 @@ command1 | command2
 QProcess process1;
 QProcess process2;
 
-process1.setStandardOutputProcess(process2);
+process1.setStandardOutputProcess(&process2);
 
 process1.start("command1");
 process2.start("command2");
