@@ -1721,11 +1721,66 @@ QDataStream &operator>>(QDataStream &stream, QPaintBufferCommand &command)
     return stream;
 }
 
+struct QPaintBufferCacheEntry
+{
+    QVariant::Type type;
+    quint64 cacheKey;
+};
+
+QDataStream &operator<<(QDataStream &stream, const QPaintBufferCacheEntry &entry)
+{
+    return stream << entry.type << entry.cacheKey;
+}
+
+QDataStream &operator>>(QDataStream &stream, QPaintBufferCacheEntry &entry)
+{
+    return stream >> entry.type >> entry.cacheKey;
+}
+
+static int qRegisterPaintBufferMetaTypes()
+{
+    qRegisterMetaType<QPaintBufferCacheEntry>();
+    qRegisterMetaTypeStreamOperators<QPaintBufferCacheEntry>("QPaintBufferCacheEntry");
+
+    return 0; // something
+}
+
+Q_DECLARE_METATYPE(QPaintBufferCacheEntry);
+Q_CONSTRUCTOR_FUNCTION(qRegisterPaintBufferMetaTypes)
+
 QDataStream &operator<<(QDataStream &stream, const QPaintBuffer &buffer)
 {
+    QHash<qint64, QPixmap> pixmaps;
+    QHash<qint64, QImage> images;
+
+    QVector<QVariant> variants = buffer.d_ptr->variants;
+    for (int i = 0; i < variants.size(); ++i) {
+        const QVariant &v = variants.at(i);
+        if (v.type() == QVariant::Image) {
+            const QImage image(v.value<QImage>());
+            images[image.cacheKey()] = image;
+
+            QPaintBufferCacheEntry entry;
+            entry.type = QVariant::Image;
+            entry.cacheKey = image.cacheKey();
+            variants[i] = QVariant::fromValue(entry);
+        } else if (v.type() == QVariant::Pixmap) {
+            const QPixmap pixmap(v.value<QPixmap>());
+            pixmaps[pixmap.cacheKey()] = pixmap;
+
+            QPaintBufferCacheEntry entry;
+            entry.type = QVariant::Pixmap;
+            entry.cacheKey = pixmap.cacheKey();
+            variants[i] = QVariant::fromValue(entry);
+        }
+    }
+
+    stream << pixmaps;
+    stream << images;
+
     stream << buffer.d_ptr->ints;
     stream << buffer.d_ptr->floats;
-    stream << buffer.d_ptr->variants;
+    stream << variants;
     stream << buffer.d_ptr->commands;
     stream << buffer.d_ptr->boundingRect;
 
@@ -1734,11 +1789,29 @@ QDataStream &operator<<(QDataStream &stream, const QPaintBuffer &buffer)
 
 QDataStream &operator>>(QDataStream &stream, QPaintBuffer &buffer)
 {
+    QHash<qint64, QPixmap> pixmaps;
+    QHash<qint64, QImage> images;
+
+    stream >> pixmaps;
+    stream >> images;
+
     stream >> buffer.d_ptr->ints;
     stream >> buffer.d_ptr->floats;
     stream >> buffer.d_ptr->variants;
     stream >> buffer.d_ptr->commands;
     stream >> buffer.d_ptr->boundingRect;
+
+    QVector<QVariant> &variants = buffer.d_ptr->variants;
+    for (int i = 0; i < variants.size(); ++i) {
+        const QVariant &v = variants.at(i);
+        if (v.canConvert<QPaintBufferCacheEntry>()) {
+            QPaintBufferCacheEntry entry = v.value<QPaintBufferCacheEntry>();
+            if (entry.type == QVariant::Image)
+                variants[i] = QVariant(images.value(entry.cacheKey));
+            else
+                variants[i] = QVariant(pixmaps.value(entry.cacheKey));
+        }
+    }
 
     return stream;
 }
