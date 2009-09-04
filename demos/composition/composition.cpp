@@ -377,7 +377,9 @@ void CompositionRenderer::paint(QPainter *painter)
             p.setCompositionMode(QPainter::CompositionMode_Source);
             p.fillRect(QRect(0, 0, m_pbuffer->width(), m_pbuffer->height()), Qt::transparent);
 
-            p.save();
+            p.save(); // Needed when using the GL1 engine
+            p.beginNativePainting(); // Needed when using the GL2 engine
+
             glBindTexture(GL_TEXTURE_2D, m_base_tex);
             glEnable(GL_TEXTURE_2D);
             glColor4f(1.,1.,1.,1.);
@@ -399,16 +401,21 @@ void CompositionRenderer::paint(QPainter *painter)
             glEnd();
 
             glDisable(GL_TEXTURE_2D);
-            p.restore();
+
+            p.endNativePainting(); // Needed when using the GL2 engine
+            p.restore(); // Needed when using the GL1 engine
 
             drawSource(p);
             p.end();
             m_pbuffer->updateDynamicTexture(m_compositing_tex);
         }
 
-        glWidget()->makeCurrent();
+        painter->beginNativePainting(); // Needed when using the GL2 engine
+        glWidget()->makeCurrent(); // Needed when using the GL1 engine
         glBindTexture(GL_TEXTURE_2D, m_compositing_tex);
         glEnable(GL_TEXTURE_2D);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         glColor4f(1.,1.,1.,1.);
         glBegin(GL_QUADS);
         {
@@ -426,6 +433,7 @@ void CompositionRenderer::paint(QPainter *painter)
         }
         glEnd();
         glDisable(GL_TEXTURE_2D);
+        painter->endNativePainting(); // Needed when using the GL2 engine
     } else
 #endif
     {

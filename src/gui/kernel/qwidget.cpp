@@ -82,8 +82,6 @@
 #include "private/qstyle_p.h"
 #include "private/qinputcontext_p.h"
 #include "qfileinfo.h"
-#include "qstandardgestures.h"
-#include "qstandardgestures_p.h"
 
 #if defined (Q_WS_WIN)
 # include <private/qwininputcontext_p.h>

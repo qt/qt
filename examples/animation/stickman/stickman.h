@@ -42,15 +42,15 @@
 #ifndef STICKMAN_H
 #define STICKMAN_H
 
-#include <QGraphicsItem>
+#include <QGraphicsObject>
 
-const int LimbCount = 16;
+static const int NodeCount = 16;
+static const int BoneCount = 24;
 
 class Node;
 QT_BEGIN_NAMESPACE
-class QTimer;
 QT_END_NAMESPACE
-class StickMan: public QObject, public QGraphicsItem
+class StickMan: public QGraphicsObject
 {
     Q_OBJECT
     Q_PROPERTY(QColor penColor WRITE setPenColor READ penColor)
@@ -77,7 +77,7 @@ public:
 
     bool isDead() const { return m_isDead; }
     void setIsDead(bool isDead) { m_isDead = isDead; }
-   
+
 public slots:
     void stabilize();
     void childPositionChanged();
@@ -86,10 +86,11 @@ protected:
     void timerEvent(QTimerEvent *e);
 
 private:
+
     QPointF posFor(int idx) const;
 
-    Node **m_nodes;
-    qreal *m_perfectBoneLengths;
+    Node *m_nodes[NodeCount];
+    qreal m_perfectBoneLengths[BoneCount];
     
     uint m_sticks : 1;
     uint m_isDead : 1;

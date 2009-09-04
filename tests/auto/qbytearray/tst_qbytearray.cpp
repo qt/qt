@@ -710,6 +710,7 @@ void tst_QByteArray::prepend()
     QCOMPARE(ba.prepend("1"), QByteArray("1foo"));
     QCOMPARE(ba.prepend(QByteArray("2")), QByteArray("21foo"));
     QCOMPARE(ba.prepend('3'), QByteArray("321foo"));
+    QCOMPARE(ba.prepend("\0 ", 2), QByteArray::fromRawData("\0 321foo", 8));
 }
 
 void tst_QByteArray::append()
@@ -720,6 +721,9 @@ void tst_QByteArray::append()
     QCOMPARE(ba.append("1"), QByteArray("foo1"));
     QCOMPARE(ba.append(QByteArray("2")), QByteArray("foo12"));
     QCOMPARE(ba.append('3'), QByteArray("foo123"));
+    QCOMPARE(ba.append("\0"), QByteArray("foo123"));
+    QCOMPARE(ba.append("\0", 1), QByteArray::fromRawData("foo123\0", 7));
+    QCOMPARE(ba.size(), 7);
 }
 
 void tst_QByteArray::insert()
@@ -738,6 +742,10 @@ void tst_QByteArray::insert()
     ba = "ikl";
     QCOMPARE(ba.insert(1, "j"), QByteArray("ijkl"));
     QCOMPARE(ba.size(), 4);
+
+    ba = "ab";
+    QCOMPARE(ba.insert(1, "\0X\0", 3), QByteArray::fromRawData("a\0X\0b", 5));
+    QCOMPARE(ba.size(), 5);
 }
 
 void tst_QByteArray::remove_data()

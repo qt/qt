@@ -801,8 +801,8 @@ void QFxListViewPrivate::fixupY()
     if (currItemMode == QFxListView::SnapAuto) {
         if (currentItem) {
             moveReason = Mouse;
-            _tl.clear();
-            _tl.move(_moveY, -(currentItem->position() - snapPos), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            timeline.clear();
+            timeline.move(_moveY, -(currentItem->position() - snapPos), QEasingCurve(QEasingCurve::InOutQuad), 200);
         }
     } else if (currItemMode == QFxListView::Snap) {
         moveReason = Mouse;
@@ -813,8 +813,8 @@ void QFxListViewPrivate::fixupY()
                 pos = -q->maxYExtent();
             else if (pos < -q->minYExtent())
                 pos = -q->minYExtent();
-            _tl.clear();
-            _tl.move(_moveY, -(pos), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            timeline.clear();
+            timeline.move(_moveY, -(pos), QEasingCurve(QEasingCurve::InOutQuad), 200);
         }
     }
 }
@@ -828,8 +828,8 @@ void QFxListViewPrivate::fixupX()
     if (currItemMode == QFxListView::SnapAuto) {
         if (currentItem) {
             moveReason = Mouse;
-            _tl.clear();
-            _tl.move(_moveX, -(currentItem->position() - snapPos), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            timeline.clear();
+            timeline.move(_moveX, -(currentItem->position() - snapPos), QEasingCurve(QEasingCurve::InOutQuad), 200);
         }
     } else if (currItemMode == QFxListView::Snap) {
         moveReason = Mouse;
@@ -840,8 +840,8 @@ void QFxListViewPrivate::fixupX()
                 pos = -q->maxXExtent();
             else if (pos < -q->minXExtent())
                 pos = -q->minXExtent();
-            _tl.clear();
-            _tl.move(_moveX, -(pos), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            timeline.clear();
+            timeline.move(_moveX, -(pos), QEasingCurve(QEasingCurve::InOutQuad), 200);
         }
     }
 }
@@ -1600,7 +1600,7 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
     if (d->visibleItems.isEmpty()) {
         d->visibleIndex = 0;
         d->visiblePos = 0;
-        d->_tl.clear();
+        d->timeline.clear();
         d->setPosition(0);
         if (d->model->count() == 0)
             update();

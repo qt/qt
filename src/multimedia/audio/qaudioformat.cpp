@@ -57,10 +57,32 @@ public:
         sampleType = QAudioFormat::Unknown;
     }
 
+    QAudioFormatPrivate(const QAudioFormatPrivate &other):
+        QSharedData(other),
+        codec(other.codec),
+        byteOrder(other.byteOrder),
+        sampleType(other.sampleType),
+        frequency(other.frequency),
+        channels(other.channels),
+        sampleSize(other.sampleSize)
+    {
+    }
+
+    QAudioFormatPrivate& operator=(const QAudioFormatPrivate &other)
+    {
+        codec = other.codec;
+        byteOrder = other.byteOrder;
+        sampleType = other.sampleType;
+        frequency = other.frequency;
+        channels = other.channels;
+        sampleSize = other.sampleSize;
+
+        return *this;
+    }
+
     QString codec;
     QAudioFormat::Endian byteOrder;
     QAudioFormat::SampleType sampleType;
-
     int frequency;
     int channels;
     int sampleSize;

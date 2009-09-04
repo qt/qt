@@ -284,6 +284,7 @@ public:
         } assignSignalObject;
         struct {
             int count;
+            ushort column;
             int endLine;
             int metaObject;
         } createComponent;

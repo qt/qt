@@ -316,6 +316,7 @@ extern QImage qt_imageForBrush(int brushStyle, bool invert);
 
 QGL2PaintEngineExPrivate::~QGL2PaintEngineExPrivate()
 {
+    delete shaderManager;
 }
 
 void QGL2PaintEngineExPrivate::updateTextureFilter(GLenum target, GLenum wrapMode, bool smoothPixmapTransform, GLuint id)
@@ -1330,8 +1331,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     qt_resolve_version_2_0_functions(d->ctx);
 #endif
 
-    d->shaderManager = QGLEngineShaderManager::managerForContext(d->ctx);
-    d->shaderManager->setDirty();
+    d->shaderManager = new QGLEngineShaderManager(d->ctx);
 
     glViewport(0, 0, d->width, d->height);
 
@@ -1415,6 +1415,9 @@ bool QGL2PaintEngineEx::end()
 
     d->resetGLState();
 
+    delete d->shaderManager;
+    d->shaderManager = 0;
+
     return false;
 }
 
@@ -1430,11 +1433,13 @@ void QGL2PaintEngineEx::ensureActive()
             p->transferMode(BrushDrawingMode);
             p->drawable.doneCurrent();
         }
+        d->drawable.context()->makeCurrent();
         d->drawable.makeCurrent();
 
         ctx->d_ptr->active_engine = this;
-
         d->needsSync = true;
+    } else {
+        d->drawable.context()->makeCurrent();
     }
 
     if (d->needsSync) {
@@ -1658,10 +1663,16 @@ void QGL2PaintEngineExPrivate::systemStateChanged()
 {
     Q_Q(QGL2PaintEngineEx);
 
-    if (q->paintDevice()->devType() == QInternal::Widget)
+    if (systemClip.isEmpty()) {
         use_system_clip = false;
-    else
-        use_system_clip = !systemClip.isEmpty();
+    } else {
+        if (q->paintDevice()->devType() == QInternal::Widget && currentClipWidget) {
+            QWidgetPrivate *widgetPrivate = qt_widget_private(currentClipWidget->window());
+            use_system_clip = widgetPrivate->extra && widgetPrivate->extra->inRenderWithPainter;
+        } else {
+            use_system_clip = true;
+        }
+    }
 
     glDisable(GL_DEPTH_TEST);
     q->state()->depthTestEnabled = false;

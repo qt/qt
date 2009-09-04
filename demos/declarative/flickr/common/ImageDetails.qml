@@ -19,7 +19,7 @@ Flipable {
     signal closed
 
     transform: Rotation {
-        id: Rotation
+        id: DetailsRotation
         origin.x: Container.width / 2;
         axis.y: 1; axis.z: 0
     }
@@ -48,7 +48,7 @@ Flipable {
 
         LikeOMeter { x: 40; y: 250; rating: Container.rating }
 
-        Flickable { id: Flickable; x: 220; width: 480; height: 210; y: 130; clip: true
+        Flickable { id: FlickSurface; x: 220; width: 480; height: 210; y: 130; clip: true
                     viewportWidth: 480; viewportHeight: DescriptionText.height
 
             WebView { id: DescriptionText; width: parent.width
@@ -70,8 +70,8 @@ Flipable {
                 anchors.left: TagsLabel.right; anchors.top: Date.bottom;
                 elide: "ElideRight"; text: Container.photoTags }
 
-        ScrollBar { id: ScrollBar; x: 720; y: Flickable.y; width: 7; height: Flickable.height; opacity: 0;
-                    flickableArea: Flickable; clip: true }
+        ScrollBar { id: ScrollBar; x: 720; y: FlickSurface.y; width: 7; height: FlickSurface.height; opacity: 0;
+                    flickableArea: FlickSurface; clip: true }
     }
 
     back: Item {
@@ -136,7 +136,7 @@ Flipable {
     states: [
         State {
             name: "Back"
-            PropertyChanges { target: Rotation; angle: 180 }
+            PropertyChanges { target: DetailsRotation; angle: 180 }
         }
     ]
 

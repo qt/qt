@@ -414,6 +414,12 @@ private:
 
 QML_DECLARE_TYPE(MyDotPropertyObject);
 
-
+namespace MyNamespace {
+    class MyNamespacedType : public QObject
+    {
+        Q_OBJECT
+    };
+}
+QML_DECLARE_TYPE(MyNamespace::MyNamespacedType);
 
 #endif // TESTTYPES_H

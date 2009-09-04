@@ -48,6 +48,10 @@ Flickable: xVelocity   -> horizontalVelocity
 Flickable: yVelocity   -> verticalVelocity
 Flickable: velocityDecay -> reportedVelocitySmoothing
 Flickable: locked      -> interactive (note reversal of meaning)
+Flickable: pageXPosition -> visibleArea.xPosition
+Flickable: pageYPosition -> visibleArea.yPosition
+Flickable: pageWidth    -> visibleArea.widthRatio
+Flickable: pageHeight   -> visibleArea.heightRatio
 WebView: idealWidth    -> preferredWidth
 WebView: idealHeight   -> preferredHeight
 WebView: status        -> statusText
@@ -67,6 +71,7 @@ Column/VerticalPositioner: lost "margins" property
 Row/HorizontalPositioner: lost "margins" property
 Grid/Positioner/Layout: lost "margins" property
 WebView: lost "interactive" property (always true now)
+Flickable: removed "dragMode" property
 
 Other Changes:
 Drag: axis becomes an enum with values "XAxis", "YAxis", "XandYAxis"

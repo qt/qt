@@ -62,29 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class ElasticValue : public QAbstractAnimation {
-    Q_OBJECT
-public:
-    ElasticValue(QmlTimeLineValue &);
-    void setValue(qreal to);
-    void clear();
-
-    virtual int duration() const { return 10000; }
-
-protected:
-    virtual void updateCurrentTime(int);
-
-Q_SIGNALS:
-    void updated();
-
-private:
-    qreal _to;
-    qreal _myValue;
-    qreal _velocity;
-    QmlTimeLineValue &_value;
-    QTime _startTime;
-};
-
+class QFxFlickableVisibleArea;
 class QFxFlickablePrivate : public QFxItemPrivate
 {
     Q_DECLARE_PUBLIC(QFxFlickable)
@@ -99,17 +77,22 @@ public:
     void updateBeginningEnd();
 
 public:
-    QFxItem *_flick;
+    QFxItem *viewport;
     QmlTimeLineValueProxy<QFxItem> _moveX;
     QmlTimeLineValueProxy<QFxItem> _moveY;
-    QmlTimeLine _tl;
+    QmlTimeLine timeline;
     qreal vWidth;
     qreal vHeight;
-    bool overShoot;
-    bool flicked;
-    bool moving;
-    bool stealMouse;
-    bool pressed;
+    bool overShoot : 1;
+    bool flicked : 1;
+    bool moving : 1;
+    bool stealMouse : 1;
+    bool pressed : 1;
+    bool atXEnd : 1;
+    bool atXBeginning : 1;
+    bool atYEnd : 1;
+    bool atYBeginning : 1;
+    bool interactive : 1;
     QTime lastPosTime;
     QPointF lastPos;
     QPointF pressPos;
@@ -121,10 +104,6 @@ public:
     QmlTimeLineEvent fixupXEvent;
     QmlTimeLineEvent fixupYEvent;
     qreal maxVelocity;
-    bool interactive;
-    QFxFlickable::DragMode dragMode;
-    ElasticValue elasticY;
-    ElasticValue elasticX;
     QTime velocityTime;
     QPointF lastFlickablePosition;
     qreal reportedVelocitySmoothing;
@@ -146,14 +125,7 @@ public:
     Velocity verticalVelocity;
     int vTime;
     QmlTimeLine velocityTimeline;
-    bool atXEnd;
-    bool atXBeginning;
-    qreal pageXPosition;
-    qreal pageWidth;
-    bool atYEnd;
-    bool atYBeginning;
-    qreal pageYPosition;
-    qreal pageHeight;
+    QFxFlickableVisibleArea *visibleArea;
 
     void handleMousePressEvent(QGraphicsSceneMouseEvent *);
     void handleMouseMoveEvent(QGraphicsSceneMouseEvent *);
@@ -166,6 +138,8 @@ public:
     void data_insert(int, QObject *);
     QObject *data_at(int) const;
     void data_clear();
+
+    friend class QFxFlickableVisibleArea;
     QML_DECLARE_LIST_PROXY(QFxFlickablePrivate, QObject *, data)
 };
 

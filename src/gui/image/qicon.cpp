@@ -879,20 +879,20 @@ void QIcon::setThemeSearchPaths(const QStringList &paths)
 }
 
 /*!
-    \since 4.6
+  \since 4.6
 
-    Returns the search paths for icon themes.
+  Returns the search paths for icon themes.
 
-    The default value will depend on the platform:
+  The default value will depend on the platform:
 
-    On X11, the search path will use the XDG_DATA_DIRS environment
-    variable if available.
+  On X11, the search path will use the XDG_DATA_DIRS environment
+  variable if available.
 
-    By default all platforms will have the resource directory
-    ":\icons" as their fallback. You can use "rcc -project"
-    to generate a resource file from your icon theme.
+  By default all platforms will have the resource directory
+  \c{:\icons} as a fallback. You can use "rcc -project" to generate a
+  resource file from your icon theme.
 
-    \sa setThemeSearchPaths(), fromTheme(), setThemeName()
+  \sa setThemeSearchPaths(), fromTheme(), setThemeName()
 */
 QStringList QIcon::themeSearchPaths()
 {

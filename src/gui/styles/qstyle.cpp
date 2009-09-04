@@ -1897,7 +1897,7 @@ void QStyle::drawItemPixmap(QPainter *painter, const QRect &rect, int alignment,
     Returns an integer representing the specified style \a hint for
     the given \a widget described by the provided style \a option.
 
-    \c returnData is used when the querying widget needs more detailed data than
+    \a returnData is used when the querying widget needs more detailed data than
     the integer that styleHint() returns. See the QStyleHintReturn class
     description for details.
 */

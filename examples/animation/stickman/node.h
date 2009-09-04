@@ -44,10 +44,9 @@
 
 #include <QGraphicsItem>
 
-class Node: public QObject, public QGraphicsItem
+class Node: public QGraphicsObject
 {
     Q_OBJECT
-    Q_PROPERTY(QPointF position READ pos WRITE setPos)
 public:
     Node(const QPointF &pos, QGraphicsItem *parent = 0);
     ~Node();

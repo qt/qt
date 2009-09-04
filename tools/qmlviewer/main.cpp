@@ -41,6 +41,7 @@ void usage()
     qWarning("  -netcache <size> ......................... set disk cache to size bytes");
     qWarning("  -translation <translationfile> ........... set the language to run in");
     qWarning("  -L <directory> ........................... prepend to the library search path");
+    qWarning("  -opengl .................................. use a QGLWidget for the viewport");
     qWarning(" ");
     qWarning(" Press F1 for interactive help");
     exit(1);
@@ -79,6 +80,7 @@ int main(int argc, char ** argv)
     bool devkeys = false;
     int cache = 0;
     QString translationFile;
+    bool useGL = false;
 
     for (int i = 1; i < argc; ++i) {
         QString arg = argv[i];
@@ -114,6 +116,8 @@ int main(int argc, char ** argv)
                 usage();
             translationFile = argv[i + 1];
             ++i;
+        } else if (arg == "-opengl") {
+            useGL = true;
         } else if (arg == "-L") {
             libraries << QString(argv[++i]);
         } else if (arg[0] != '-') {
@@ -130,6 +134,7 @@ int main(int argc, char ** argv)
     }
 
     QmlViewer viewer(0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
+    viewer.setUseGL(useGL);
     foreach (QString lib, libraries)
         viewer.addLibraryPath(lib);
     viewer.setNetworkCacheSize(cache);

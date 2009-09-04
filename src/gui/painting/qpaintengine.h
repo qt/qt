@@ -212,6 +212,7 @@ public:
         Pdf,
         OpenVG,
         OpenGL2,
+        PaintBuffer,
 
         User = 50,    // first user type id
         MaxUser = 100 // last user type id
@@ -248,6 +249,7 @@ private:
     bool autoDestruct() const { return selfDestruct; }
     Q_DISABLE_COPY(QPaintEngine)
 
+    friend class QPainterReplayer;
     friend class QFontEngineBox;
     friend class QFontEngineMac;
     friend class QFontEngineWin;

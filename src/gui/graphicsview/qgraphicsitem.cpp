@@ -10370,10 +10370,14 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
             effectRect.setY(0);
         }
         // NB! We use +-1 for historical reasons (see QRect documentation).
-        if (right + 1 > info->widget->width())
-            effectRect.setRight(info->widget->width() - 1);
-        if (bottom + 1 > info->widget->height())
-            effectRect.setBottom(info->widget->height() -1);
+        QPaintDevice *device = info->painter->device();
+        const int deviceWidth = device->width();
+        const int deviceHeight = device->height();
+        if (right + 1 > deviceWidth)
+            effectRect.setRight(deviceWidth - 1);
+        if (bottom + 1 > deviceHeight)
+            effectRect.setBottom(deviceHeight -1);
+        
     }
 
     if (effectRect.isEmpty())

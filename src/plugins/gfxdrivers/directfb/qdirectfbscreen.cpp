@@ -1192,6 +1192,33 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     lstep = 0;
     size = 0;
 
+    if (result != DFB_OK) {
+        DirectFBError("QDirectFBScreen::connect: "
+                      "Unable to get screen!", result);
+        return false;
+    }
+    const QString qws_size = qgetenv("QWS_SIZE");
+    if (!qws_size.isEmpty()) {
+        QRegExp rx(QLatin1String("(\\d+)x(\\d+)"));
+        if (!rx.exactMatch(qws_size)) {
+            qWarning("QDirectFBScreen::connect: Can't parse QWS_SIZE=\"%s\"", qPrintable(qws_size));
+        } else {
+            int *ints[2] = { &w, &h };
+            for (int i=0; i<2; ++i) {
+                *ints[i] = rx.cap(i + 1).toInt();
+                if (*ints[i] <= 0) {
+                    qWarning("QDirectFBScreen::connect: %s is not a positive integer",
+                             qPrintable(rx.cap(i + 1)));
+                    w = h = 0;
+                    break;
+                }
+            }
+        }
+    }
+
+    setIntOption(displayArgs, QLatin1String("width"), &w);
+    setIntOption(displayArgs, QLatin1String("height"), &h);
+
 #ifndef QT_NO_DIRECTFB_LAYER
     result = d_ptr->dfb->GetDisplayLayer(d_ptr->dfb, DLID_PRIMARY,
                                          &d_ptr->dfbLayer);
@@ -1204,19 +1231,26 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 #else
     result = d_ptr->dfb->GetScreen(d_ptr->dfb, 0, &d_ptr->dfbScreen);
 #endif
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBScreen::connect: "
-                      "Unable to get screen!", result);
+
+    if (w <= 0 || h <= 0) {
+#ifdef QT_NO_DIRECTFB_WM
+        result = d_ptr->primarySurface->GetSize(d_ptr->primarySurface, &w, &h);
+#elif (Q_DIRECTFB_VERSION >= 0x010000)
+        result = d_ptr->dfbScreen->GetSize(d_ptr->dfbScreen, &w, &h);
+#else
+        qWarning("QDirectFBScreen::connect: DirectFB versions prior to 1.0 do not offer a way\n"
+                 "query the size of the primary surface in windowed mode. You have to specify\n"
+                 "the size of the display using QWS_SIZE=[0-9]x[0-9] or\n"
+                 "QWS_DISPLAY=directfb:width=[0-9]:height=[0-9]");
         return false;
+#endif
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreen::connect: "
+                          "Unable to get screen size!", result);
+            return false;
+        }
     }
-    result = d_ptr->dfbScreen->GetSize(d_ptr->dfbScreen, &w, &h);
-    if (result != DFB_OK) {
-        DirectFBError("QDirectFBScreen::connect: "
-                      "Unable to get screen size!", result);
-        return false;
-    }
-    setIntOption(displayArgs, QLatin1String("width"), &w);
-    setIntOption(displayArgs, QLatin1String("height"), &h);
+
 
     dw = w;
     dh = h;
@@ -1456,7 +1490,7 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
                                     color.red(), color.green(), color.blue(),
                                     color.alpha());
     const int n = region.numRects();
-    if (n > 1) {
+    if (n == 1) {
         const QRect r = region.boundingRect();
         d_ptr->primarySurface->FillRectangle(d_ptr->primarySurface, r.x(), r.y(), r.width(), r.height());
     } else {

@@ -182,7 +182,6 @@ public:
 
 #ifdef Q_WS_WIN
     void _q_gestureTriggered();
-    QPanGesture *panGesture;
 #endif
 };
 

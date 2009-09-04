@@ -72,8 +72,8 @@ private:
   void generateImpl (QTextStream &out);
 
   QString debugInfoProt() const;
-  QString copyrightHeader() const;
-  QString privateCopyrightHeader() const;
+  QString trollCopyrightHeader() const;
+  QString trollPrivateCopyrightHeader() const;
 
 private:
   static QString startIncludeGuard(const QString &fileName);

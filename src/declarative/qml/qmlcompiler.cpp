@@ -642,6 +642,8 @@ void QmlCompiler::compileTree(Object *tree)
     def.type = QmlInstruction::SetDefault;
     output->bytecode << def;
 
+    output->imports = unit->imports;
+
     if (tree->metatype)
         static_cast<QMetaObject &>(output->root) = *tree->metaObject();
     else
@@ -781,6 +783,7 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
     QmlInstruction create;
     create.type = QmlInstruction::CreateObject;
     create.line = obj->location.start.line;
+    create.create.column = obj->location.start.column;
     create.create.data = -1;
     if (!obj->custom.isEmpty())
         create.create.data = output->indexForByteArray(obj->custom);
@@ -937,6 +940,7 @@ void QmlCompiler::genComponent(QmlParser::Object *obj)
     QmlInstruction create;
     create.type = QmlInstruction::CreateComponent;
     create.line = root->location.start.line;
+    create.createComponent.column = root->location.start.column;
     create.createComponent.endLine = root->location.end.line;
     output->bytecode << create;
     int count = output->bytecode.count();
@@ -1452,10 +1456,13 @@ bool QmlCompiler::buildIdProperty(QmlParser::Property *prop,
     if (!isValidId(val))
         COMPILE_EXCEPTION(prop, val << "is not a valid object id");
 
-    // We disallow id's that conflict with import prefixes
+    // We disallow id's that conflict with import prefixes and types
     QmlEnginePrivate::ImportedNamespace *ns = 0;
+    QmlType *type = 0;
     QmlEnginePrivate::get(engine)->resolveType(unit->imports, val.toUtf8(), 
-                                               0, 0, 0, 0, &ns);
+                                               &type, 0, 0, 0, &ns);
+    if (type)
+        COMPILE_EXCEPTION(idValue, "id conflicts with type name");
     if (ns)
         COMPILE_EXCEPTION(idValue, "id conflicts with namespace prefix");
 
