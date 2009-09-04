@@ -1568,11 +1568,6 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
 #endif
 }
 
-void QDirectFBScreen::erase(const QRegion &region)
-{
-    solidFill(d_ptr->backgroundColor, region);
-}
-
 QImage::Format QDirectFBScreen::alphaPixmapFormat() const
 {
     return d_ptr->alphaPixmapFormat;
