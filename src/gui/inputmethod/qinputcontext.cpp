@@ -176,7 +176,7 @@ QWidget *QInputContext::focusWidget() const
 
 
 /*!
-    Sets the widget that has an input focus for this input context.
+    Sets the \a widget that has an input focus for this input context.
 
     \warning Ordinary input methods must not call this function
     directly.

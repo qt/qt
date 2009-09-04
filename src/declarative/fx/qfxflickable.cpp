@@ -433,8 +433,8 @@ void QFxFlickable::setViewportX(qreal pos)
 {
     Q_D(QFxFlickable);
     pos = qRound(pos);
+    d->timeline.reset(d->_moveX);
     if (-pos != d->_moveX.value()) {
-        d->timeline.reset(d->_moveX);
         d->_moveX.setValue(-pos);
         viewportMoved();
     }
@@ -450,8 +450,8 @@ void QFxFlickable::setViewportY(qreal pos)
 {
     Q_D(QFxFlickable);
     pos = qRound(pos);
+    d->timeline.reset(d->_moveY);
     if (-pos != d->_moveY.value()) {
-        d->timeline.reset(d->_moveY);
         d->_moveY.setValue(-pos);
         viewportMoved();
     }

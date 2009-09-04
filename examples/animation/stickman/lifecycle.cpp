@@ -100,7 +100,7 @@ LifeCycle::LifeCycle(StickMan *stickMan, GraphicsView *keyReceiver)
     m_animationGroup = new QParallelAnimationGroup();
     const int stickManNodeCount = m_stickMan->nodeCount();
     for (int i=0; i<stickManNodeCount; ++i) {
-        QPropertyAnimation *pa = new QPropertyAnimation(m_stickMan->node(i), "position");
+        QPropertyAnimation *pa = new QPropertyAnimation(m_stickMan->node(i), "pos");
         m_animationGroup->addAnimation(pa);    
     }
 
@@ -186,7 +186,7 @@ QState *LifeCycle::makeState(QState *parentState, const QString &animationFileNa
         QState *frameState = new QState(topLevel);                       
         const int nodeCount = animation.nodeCount();
         for (int j=0; j<nodeCount; ++j)
-            frameState->assignProperty(m_stickMan->node(j), "position", animation.nodePos(j));
+            frameState->assignProperty(m_stickMan->node(j), "pos", animation.nodePos(j));
 //! [1]
 
         frameState->setObjectName(QString::fromLatin1("frame %0").arg(i));

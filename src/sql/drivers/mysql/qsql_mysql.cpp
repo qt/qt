@@ -1310,23 +1310,42 @@ QSqlResult *QMYSQLDriver::createResult() const
 QStringList QMYSQLDriver::tables(QSql::TableType type) const
 {
     QStringList tl;
-    if (!isOpen())
-        return tl;
-    if (!(type & QSql::Tables))
-        return tl;
+#if MYSQL_VERSION_ID >= 40100
+    if( mysql_get_server_version(d->mysql) < 50000)
+    {
+#endif
+        if (!isOpen())
+            return tl;
+        if (!(type & QSql::Tables))
+            return tl;
 
-    MYSQL_RES* tableRes = mysql_list_tables(d->mysql, NULL);
-    MYSQL_ROW row;
-    int i = 0;
-    while (tableRes) {
-        mysql_data_seek(tableRes, i);
-        row = mysql_fetch_row(tableRes);
-        if (!row)
-            break;
-        tl.append(toUnicode(d->tc, row[0]));
-        i++;
+        MYSQL_RES* tableRes = mysql_list_tables(d->mysql, NULL);
+        MYSQL_ROW row;
+        int i = 0;
+        while (tableRes) {
+            mysql_data_seek(tableRes, i);
+            row = mysql_fetch_row(tableRes);
+            if (!row)
+                break;
+            tl.append(toUnicode(d->tc, row[0]));
+            i++;
+        }
+        mysql_free_result(tableRes);
+#if MYSQL_VERSION_ID >= 40100
+    } else {
+        QSqlQuery q(createResult());
+        if(type & QSql::Tables) {
+            q.exec(QLatin1String("select table_name from information_schema.tables where table_type = 'BASE TABLE'"));
+            while(q.next())
+                tl.append(q.value(0).toString());
+        }
+        if(type & QSql::Views) {
+            q.exec(QLatin1String("select table_name from information_schema.tables where table_type = 'VIEW'"));
+            while(q.next())
+                tl.append(q.value(0).toString());
+        }
     }
-    mysql_free_result(tableRes);
+#endif
     return tl;
 }
 

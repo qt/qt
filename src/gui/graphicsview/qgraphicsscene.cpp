@@ -4629,7 +4629,8 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
         return;
     }
 
-    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents;
+    bool hasNoContents = item->d_ptr->flags & QGraphicsItem::ItemHasNoContents
+                         && !item->d_ptr->graphicsEffect;
     if (!hasNoContents) {
         item->d_ptr->dirty = 1;
         if (fullItemUpdate)
@@ -4719,11 +4720,15 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
         return;
     }
 
-    const bool itemHasContents = !(item->d_ptr->flags & QGraphicsItem::ItemHasNoContents);
+    bool itemHasContents = !(item->d_ptr->flags & QGraphicsItem::ItemHasNoContents);
     const bool itemHasChildren = !item->d_ptr->children.isEmpty();
-    if (!itemHasContents && !itemHasChildren) {
-        resetDirtyItem(item);
-        return; // Item has neither contents nor children!(?)
+    if (!itemHasContents) {
+        if (!itemHasChildren) {
+            resetDirtyItem(item);
+            return; // Item has neither contents nor children!(?)
+        }
+        if (item->d_ptr->graphicsEffect)
+            itemHasContents = true;
     }
 
     const qreal opacity = item->d_ptr->combineOpacityFromParent(parentOpacity);

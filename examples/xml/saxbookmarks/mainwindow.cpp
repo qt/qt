@@ -67,7 +67,10 @@ MainWindow::MainWindow()
 void MainWindow::open()
 {
 #if defined(Q_OS_SYMBIAN)
-    QDir::setCurrent("/Data/qt/saxbookmarks");
+    // Always look for bookmarks on the same drive where the application is installed to.
+    QString bookmarksFolder = QCoreApplication::applicationFilePath().left(1);
+    bookmarksFolder.append(":/Data/qt/saxbookmarks");
+    QDir::setCurrent(bookmarksFolder);
 #endif
     QString fileName =
             QFileDialog::getOpenFileName(this, tr("Open Bookmark File"),

@@ -197,10 +197,10 @@ make release-armv5
 
 //! [29]
 cd src\s60installs
-make sisx QT_SISX_OPTIONS=-i QT_SISX_CERTIFICATE=<certificate file> QT_SISX_KEY=<certificate key file>
+make sis QT_SIS_OPTIONS=-i QT_SIS_CERTIFICATE=<certificate file> QT_SIS_KEY=<certificate key file>
 //! [29]
 
 //! [30]
 cd embedded\fluidlauncher
-make sisx QT_SISX_OPTIONS=-i
+make sis QT_SIS_OPTIONS=-i
 //! [30]

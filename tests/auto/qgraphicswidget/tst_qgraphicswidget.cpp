@@ -2529,6 +2529,7 @@ void tst_QGraphicsWidget::ensureClipping()
     RectItem *childitem = new RectItem(Qt::blue, clipWidget);
 
     QGraphicsView view(&scene);
+    view.setOptimizationFlag(QGraphicsView::IndirectPainting);
     view.show();
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);

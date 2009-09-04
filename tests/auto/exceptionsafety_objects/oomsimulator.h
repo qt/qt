@@ -189,6 +189,82 @@ static struct QCrtDebugRegistrator
 
 } crtDebugRegistrator;
 
+#elif defined(Q_OS_SYMBIAN)
+
+struct QAllocFailAllocator : public RAllocator
+{
+    QAllocFailAllocator() : allocator(User::Allocator())
+    {
+        User::SwitchAllocator(this);
+    }
+
+    ~QAllocFailAllocator()
+    {
+        User::SwitchAllocator(&allocator);
+    }
+
+    RAllocator& allocator;
+
+    // from MAllocator
+    TAny* Alloc(TInt aSize)
+    {
+        ++mallocCount;
+        if (mallocFailActive && --mallocFailIndex < 0)
+            return 0; // simulate OOM
+        return allocator.Alloc(aSize);
+    }
+
+    void Free(TAny* aPtr)
+    {
+        allocator.Free(aPtr);
+    }
+
+    TAny* ReAlloc(TAny* aPtr, TInt aSize, TInt aMode)
+    {
+        ++mallocCount;
+        if (mallocFailActive && --mallocFailIndex < 0)
+            return 0; // simulate OOM
+        return allocator.ReAlloc(aPtr, aSize, aMode);
+    }
+
+    TInt AllocLen(const TAny* aCell) const
+    {
+        return allocator.AllocLen(aCell);
+    }
+
+    TInt Compress()
+    {
+        return allocator.Compress();
+    }
+
+    void Reset()
+    {
+        allocator.Reset();
+    }
+
+    TInt AllocSize(TInt& aTotalAllocSize) const
+    {
+        return allocator.AllocSize(aTotalAllocSize);
+    }
+
+    TInt Available(TInt& aBiggestBlock) const
+    {
+        return allocator.Available(aBiggestBlock);
+    }
+
+    TInt DebugFunction(TInt aFunc, TAny* a1, TAny* a2)
+    {
+        return allocator.DebugFunction(aFunc, a1, a2);
+    }
+
+    TInt Extension_(TUint aExtensionId, TAny*& a0, TAny* a1)
+    {
+        return ((MAllocator&)allocator).Extension_(aExtensionId, a0, a1);
+    }
+};
+
+QAllocFailAllocator symbianTestAllocator;
+
 #endif
 
 struct AllocFailer
@@ -201,9 +277,6 @@ struct AllocFailer
 #ifdef RUNNING_ON_VALGRIND
         if (RUNNING_ON_VALGRIND)
             VALGRIND_ENABLE_OOM_AT_ALLOC_INDEX(VALGRIND_GET_ALLOC_INDEX + index + 1);
-#elif defined(Q_OS_SYMBIAN)
-        // symbian alloc fail index is 1 based
-        __UHEAP_BURSTFAILNEXT(index+1, KMaxTUint16);
 #endif
         mallocFailIndex = index;
         mallocFailActive = true;
@@ -214,8 +287,6 @@ struct AllocFailer
         mallocFailActive = false;
 #ifdef RUNNING_ON_VALGRIND
         VALGRIND_ENABLE_OOM_AT_ALLOC_INDEX(0);
-#elif defined(Q_OS_SYMBIAN)
-        __UHEAP_RESET;
 #endif
     }
 

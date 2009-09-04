@@ -791,7 +791,8 @@ static QScriptValue __setupPackage__(QScriptContext *ctx, QScriptEngine *eng)
 } // namespace QScript
 
 QScriptEnginePrivate::QScriptEnginePrivate()
-    : registeredScriptValues(0), freeScriptValues(0), inEval(false)
+    : registeredScriptValues(0), freeScriptValues(0),
+      registeredScriptStrings(0), inEval(false)
 {
     qMetaTypeId<QScriptValue>();
 
@@ -839,6 +840,7 @@ QScriptEnginePrivate::~QScriptEnginePrivate()
     while (!ownedAgents.isEmpty())
         delete ownedAgents.takeFirst();
     detachAllRegisteredScriptValues();
+    detachAllRegisteredScriptStrings();
     qDeleteAll(m_qobjectData);
     qDeleteAll(m_typeInfos);
     JSC::JSLock lock(false);
@@ -1350,6 +1352,19 @@ void QScriptEnginePrivate::detachAllRegisteredScriptValues()
         it->next = 0;
     }
     registeredScriptValues = 0;
+}
+
+void QScriptEnginePrivate::detachAllRegisteredScriptStrings()
+{
+    QScriptStringPrivate *it;
+    QScriptStringPrivate *next;
+    for (it = registeredScriptStrings; it != 0; it = next) {
+        it->detachFromEngine();
+        next = it->next;
+        it->prev = 0;
+        it->next = 0;
+    }
+    registeredScriptStrings = 0;
 }
 
 #ifdef QT_NO_QOBJECT
@@ -3236,11 +3251,10 @@ QStringList QScriptEngine::importedExtensions() const
     The \c Container type must provide a \c const_iterator class to enable the
     contents of the container to be copied into the array.
 
-    Additionally, the type of each element in the sequence should be suitable
-    for conversion to a QScriptValue.
-    See \l{QtScript Module#Conversion Between QtScript and C++ Types}
-    {Conversion Between QtScript and C++ Types} for more information about the
-    restrictions on types that can be used with QScriptValue.
+    Additionally, the type of each element in the sequence should be
+    suitable for conversion to a QScriptValue.  See
+    \l{Conversion Between QtScript and C++ Types} for more information
+    about the restrictions on types that can be used with QScriptValue.
 
     \sa qScriptValueFromValue()
 */
@@ -3257,11 +3271,11 @@ QStringList QScriptEngine::importedExtensions() const
     as long as it provides a \c length property describing how many elements
     it contains.
 
-    Additionally, the type of each element in the sequence must be suitable
-    for conversion to a C++ type from a QScriptValue.
-    See \l{QtScript Module#Conversion Between QtScript and C++ Types}
-    {Conversion Between QtScript and C++ Types} for more information about the
-    restrictions on types that can be used with QScriptValue.
+    Additionally, the type of each element in the sequence must be
+    suitable for conversion to a C++ type from a QScriptValue.  See
+    \l{Conversion Between QtScript and C++ Types} for more information
+    about the restrictions on types that can be used with
+    QScriptValue.
 
     \sa qscriptvalue_cast()
 */
@@ -3622,9 +3636,11 @@ QScriptEngineAgent *QScriptEngine::agent() const
 QScriptString QScriptEngine::toStringHandle(const QString &str)
 {
     Q_D(QScriptEngine);
-    QScriptString ss;
-    QScriptStringPrivate::init(ss, this, JSC::Identifier(d->currentFrame, str));
-    return ss;
+    QScriptString result;
+    QScriptStringPrivate *p = new QScriptStringPrivate(d, JSC::Identifier(d->currentFrame, str), QScriptStringPrivate::HeapAllocated);
+    QScriptStringPrivate::init(result, p);
+    d->registerScriptString(p);
+    return result;
 }
 
 /*!

@@ -7,12 +7,10 @@ contains(QT_CONFIG, svg) {
     !vxworks:!qnx:SUBDIRS += fluidlauncher
 }
 
-contains(QT_CONFIG, network) {
-    SUBDIRS += lightmaps
-    SUBDIRS += flightinfo
-    contains(QT_CONFIG, svg) {
-        SUBDIRS += weatherinfo
-    }
+SUBDIRS += lightmaps
+SUBDIRS += flightinfo
+contains(QT_CONFIG, svg) {
+    SUBDIRS += weatherinfo
 }
 
 contains(QT_CONFIG, webkit) {

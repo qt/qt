@@ -894,6 +894,7 @@ void Scene::drawBackground(QPainter *painter, const QRectF &)
     float width = float(painter->device()->width());
     float height = float(painter->device()->height());
 
+    painter->beginNativePainting();
     setStates();
 
     if (m_dynamicCubemap)
@@ -913,6 +914,8 @@ void Scene::drawBackground(QPainter *painter, const QRectF &)
 
     defaultStates();
     ++m_frame;
+
+    painter->endNativePainting();
 }
 
 QPointF Scene::pixelPosToViewPos(const QPointF& p)

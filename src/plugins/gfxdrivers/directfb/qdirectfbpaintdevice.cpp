@@ -59,13 +59,10 @@ QDirectFBPaintDevice::QDirectFBPaintDevice(QDirectFBScreen *scr)
 
 QDirectFBPaintDevice::~QDirectFBPaintDevice()
 {
-    unlockSurface();
     if (QDirectFBScreen::instance()) {
         unlockSurface();
 #ifdef QT_DIRECTFB_SUBSURFACE
-        if (subSurface) {
-            screen->releaseDFBSurface(subSurface);
-        }
+        releaseSubSurface();
 #endif
         if (dfbSurface) {
             screen->releaseDFBSurface(dfbSurface);
@@ -128,6 +125,7 @@ void QDirectFBPaintDevice::unlockSurface()
         if (surface) {
             surface->Unlock(surface);
             lockFlgs = static_cast<DFBSurfaceLockFlags>(0);
+            mem = 0;
         }
     }
 }
@@ -205,6 +203,17 @@ QPaintEngine *QDirectFBPaintDevice::paintEngine() const
 {
     return engine;
 }
+
+#ifdef QT_DIRECTFB_SUBSURFACE
+void QDirectFBPaintDevice::releaseSubSurface()
+{
+    Q_ASSERT(QDirectFBScreen::instance());
+    if (subSurface) {
+        screen->releaseDFBSurface(subSurface);
+        subSurface = 0;
+    }
+}
+#endif
 
 QT_END_NAMESPACE
 

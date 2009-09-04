@@ -127,10 +127,9 @@ public:
     inline bool isEmpty() const { return m_points == 0; }
 
     inline int elementCount() const { return m_count; }
+    inline const QPainterPath convertToPainterPath() const;
 
     static inline uint polygonFlags(QPaintEngine::PolygonDrawMode mode);
-
-    QPainterPath convertToPainterPath() const;
 
 private:
     Q_DISABLE_COPY(QVectorPath)

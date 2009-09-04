@@ -63,15 +63,20 @@ Server::Server(QWidget *parent)
         return;
     }
 //! [0]
-    QList<QHostAddress> ipAddresseList = QNetworkInterface::allAddresses();
-    QString ipAddresses;
-    for (int i = 0; i < ipAddresseList.size(); ++i) {
-        ipAddresses.append(ipAddresseList.at(i).toString()).append("\n");
+    QString ipAddress;
+    QList<QHostAddress> ipAddressesList = QNetworkInterface::allAddresses();
+    // use the first non-localhost IPv4 address
+    for (int i = 0; i < ipAddressesList.size(); ++i) {
+        if (ipAddressesList.at(i) != QHostAddress::LocalHost &&
+            ipAddressesList.at(i).toIPv4Address())
+            ipAddress = ipAddressesList.at(i).toString();
     }
-
-    statusLabel->setText(tr("The server is running on \n IP: \n%1 PORT: \n%2\n"
+    // if we did not find one, use IPv4 localhost
+    if (ipAddress.isEmpty())
+        ipAddress = QHostAddress(QHostAddress::LocalHost).toString();
+    statusLabel->setText(tr("The server is running on\nIP: \n%1 port:\n%2\n"
                             "Run the Fortune Client example now.")
-                         .arg(ipAddresses).arg(tcpServer->serverPort()));
+                         .arg(ipAddress).arg(tcpServer->serverPort()));
 //! [1]
 
 //! [2]
