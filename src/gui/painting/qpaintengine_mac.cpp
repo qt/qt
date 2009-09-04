@@ -121,11 +121,15 @@ QMacCGContext::QMacCGContext(QPainter *p)
 
         if (devType == QInternal::Widget) {
             QRegion clip = p->paintEngine()->systemClip();
+            QTransform native = p->deviceTransform();
+            QTransform logical = p->combinedTransform();
             if (p->hasClipping()) {
+                QRegion r = p->clipRegion();
+                r.translate(native.dx() - logical.dx(), native.dy() - logical.dy());
                 if (clip.isEmpty())
-                    clip = p->clipRegion();
+                    clip = r;
                 else
-                    clip &= p->clipRegion();
+                    clip &= r;
             }
             qt_mac_clip_cg(context, clip, 0);
 
