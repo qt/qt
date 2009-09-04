@@ -4789,10 +4789,12 @@ void QGraphicsItemPrivate::updateCachedClipPathFromSetPosHelper(const QPointF &n
     if (transformData)
         thisToParentTransform = transformData->computedFullTransform(&thisToParentTransform);
     QGraphicsItem *clipParent = parent;
-    while (clipParent && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
+    while (clipParent && !clipParent->d_ptr->inDestructor && !(clipParent->d_ptr->flags & QGraphicsItem::ItemClipsChildrenToShape)) {
         thisToParentTransform *= clipParent->d_ptr->transformToParent();
         clipParent = clipParent->d_ptr->parent;
     }
+    if (clipParent && clipParent->d_ptr->inDestructor)
+        return;
 
     // thisToParentTransform is now the same as q->itemTransform(clipParent), except
     // that the new position (which is not yet set on the item) is taken into account.
