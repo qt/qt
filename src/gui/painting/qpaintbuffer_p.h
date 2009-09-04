@@ -71,7 +71,10 @@ public:
 
     bool isEmpty() const;
 
-    void draw(QPainter *painter) const;
+    void beginNewFrame();
+    int numFrames() const;
+
+    void draw(QPainter *painter, int frame = 0) const;
     void setBoundingRect(const QRectF &rect);
     QRectF boundingRect() const;
 
@@ -270,6 +273,7 @@ public:
     QVector<QVariant> variants;
 
     QVector<QPaintBufferCommand> commands;
+    QList<int> frames;
 
     QPaintBufferEngine *engine;
     QRectF boundingRect;
@@ -306,7 +310,7 @@ public:
 
     void setupTransform(QPainter *painter);
     void process(const QPaintBufferCommand &cmd);
-    void draw(const QPaintBuffer &buffer, QPainter *painter);
+    void draw(const QPaintBuffer &buffer, QPainter *painter, int frame);
 
 protected:
     QPaintBufferPrivate *d;

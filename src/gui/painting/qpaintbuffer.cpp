@@ -239,7 +239,7 @@ bool QPaintBuffer::isEmpty() const
 
 
 
-void QPaintBuffer::draw(QPainter *painter) const
+void QPaintBuffer::draw(QPainter *painter, int frame) const
 {
 #ifdef QPAINTBUFFER_DEBUG_DRAW
     qDebug() << "QPaintBuffer::draw() --------------------------------";
@@ -270,10 +270,10 @@ void QPaintBuffer::draw(QPainter *painter) const
                               ? (QPaintEngineEx *) painter->paintEngine() : 0;
     if (xengine) {
         QPaintEngineExReplayer player;
-        player.draw(*this, painter);
+        player.draw(*this, painter, frame);
     } else {
         QPainterReplayer player;
-        player.draw(*this, painter);
+        player.draw(*this, painter, frame);
     }
 
 #ifdef QPAINTBUFFER_DEBUG_DRAW
@@ -1035,15 +1035,29 @@ void QPainterReplayer::setupTransform(QPainter *_painter)
     painter->setTransform(m_world_matrix);
 }
 
-void QPainterReplayer::draw(const QPaintBuffer &buffer, QPainter *_painter)
+void QPainterReplayer::draw(const QPaintBuffer &buffer, QPainter *_painter, int frame)
 {
     d = buffer.d_ptr;
     setupTransform(_painter);
 
-    for (int cmdIndex=0; cmdIndex<d->commands.size(); ++cmdIndex) {
+    int frameStart = (frame == 0) ? 0 : d->frames.at(frame-1);
+    int frameEnd = (frame == d->frames.size()) ? d->commands.size() : d->frames.at(frame);
+
+    for (int cmdIndex=frameStart; cmdIndex<frameEnd; ++cmdIndex) {
         const QPaintBufferCommand &cmd = d->commands.at(cmdIndex);
         process(cmd);
     }
+}
+
+void QPaintBuffer::beginNewFrame()
+{
+    if (!d_ptr->commands.isEmpty())
+        d_ptr->frames << d_ptr->commands.size();
+}
+
+int QPaintBuffer::numFrames() const
+{
+    return d_ptr->frames.size() + 1;
 }
 
 void QPainterReplayer::process(const QPaintBufferCommand &cmd)
@@ -1783,6 +1797,7 @@ QDataStream &operator<<(QDataStream &stream, const QPaintBuffer &buffer)
     stream << variants;
     stream << buffer.d_ptr->commands;
     stream << buffer.d_ptr->boundingRect;
+    stream << buffer.d_ptr->frames;
 
     return stream;
 }
@@ -1800,6 +1815,7 @@ QDataStream &operator>>(QDataStream &stream, QPaintBuffer &buffer)
     stream >> buffer.d_ptr->variants;
     stream >> buffer.d_ptr->commands;
     stream >> buffer.d_ptr->boundingRect;
+    stream >> buffer.d_ptr->frames;
 
     QVector<QVariant> &variants = buffer.d_ptr->variants;
     for (int i = 0; i < variants.size(); ++i) {
