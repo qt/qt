@@ -532,7 +532,7 @@ QmlAbstractBinding *QmlMetaProperty::binding() const
     QmlAbstractBinding *binding = data->bindings;
     while (binding) {
         // ### This wont work for value types
-        if (binding->propertyIndex() == d->coreIdx) //### should we check for enabled?
+        if (binding->propertyIndex() == d->coreIdx)
             return binding; 
         binding = binding->m_nextBinding;
     }
