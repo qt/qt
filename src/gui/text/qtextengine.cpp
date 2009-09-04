@@ -2245,6 +2245,28 @@ void QTextEngine::indexAdditionalFormats()
     }
 }
 
+/* These two helper functions are used to determine whether we need to insert a ZWJ character
+   between the text that gets truncated and the ellipsis. This is important to get
+   correctly shaped results for arabic text.
+*/
+static bool nextCharJoins(const QString &string, int pos)
+{
+    while (pos < string.length() && string.at(pos).category() == QChar::Mark_NonSpacing)
+        ++pos;
+    if (pos == string.length())
+        return false;
+    return string.at(pos).joining() != QChar::OtherJoining;
+}
+
+static bool prevCharJoins(const QString &string, int pos)
+{
+    while (pos > 0 && string.at(pos - 1).category() == QChar::Mark_NonSpacing)
+        --pos;
+    if (pos == 0)
+        return false;
+    return (string.at(pos - 1).joining() == QChar::Dual || string.at(pos - 1).joining() == QChar::Center);
+}
+
 QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int flags) const
 {
 //    qDebug() << "elidedText; available width" << width.toReal() << "text width:" << this->width(0, layoutData->string.length()).toReal();
@@ -2345,6 +2367,9 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         } while (nextBreak < layoutData->string.length()
                  && currentWidth < availableWidth);
 
+        if (nextCharJoins(layoutData->string, pos))
+            ellipsisText.prepend(QChar(0x200d) /* ZWJ */);
+
         return layoutData->string.left(pos) + ellipsisText;
     } else if (mode == Qt::ElideLeft) {
         QFixed currentWidth;
@@ -2361,6 +2386,9 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
             currentWidth += this->width(nextBreak, pos - nextBreak);
         } while (nextBreak > 0
                  && currentWidth < availableWidth);
+
+        if (prevCharJoins(layoutData->string, pos))
+            ellipsisText.append(QChar(0x200d) /* ZWJ */);
 
         return ellipsisText + layoutData->string.mid(pos);
     } else if (mode == Qt::ElideMiddle) {
@@ -2390,6 +2418,11 @@ QString QTextEngine::elidedText(Qt::TextElideMode mode, const QFixed &width, int
         } while (nextLeftBreak < layoutData->string.length()
                  && nextRightBreak > 0
                  && leftWidth + rightWidth < availableWidth);
+
+        if (nextCharJoins(layoutData->string, leftPos))
+            ellipsisText.prepend(QChar(0x200d) /* ZWJ */);
+        if (prevCharJoins(layoutData->string, rightPos))
+            ellipsisText.append(QChar(0x200d) /* ZWJ */);
 
         return layoutData->string.left(leftPos) + ellipsisText + layoutData->string.mid(rightPos);
     }
