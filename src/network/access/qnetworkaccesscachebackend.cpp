@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 
 QNetworkAccessCacheBackend::QNetworkAccessCacheBackend()
     : QNetworkAccessBackend()
+    , device(0)
 {
 }
 

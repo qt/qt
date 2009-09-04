@@ -107,7 +107,10 @@ private slots:
 
     void recycleServer();
 
+    void writeToClientAndDisconnect();
+
     void debug();
+
 
 #ifdef Q_OS_SYMBIAN
 private:
@@ -868,6 +871,33 @@ void tst_QLocalSocket::recycleServer()
     QVERIFY(client.waitForConnected(202));
     QVERIFY(server.waitForNewConnection(202));
     QVERIFY(server.nextPendingConnection() != 0);
+}
+
+void tst_QLocalSocket::writeToClientAndDisconnect()
+{
+#ifdef Q_OS_SYMBIAN
+    unlink("writeAndDisconnectServer");
+#endif
+
+    QLocalServer server;
+    QLocalSocket client;
+
+    QVERIFY(server.listen("writeAndDisconnectServer"));
+    client.connectToServer("writeAndDisconnectServer");
+    QVERIFY(client.waitForConnected(200));
+    QVERIFY(server.waitForNewConnection(200));
+    QLocalSocket* clientSocket = server.nextPendingConnection();
+    QVERIFY(clientSocket);
+
+    char buffer[100];
+    memset(buffer, 0, sizeof(buffer));
+    QCOMPARE(clientSocket->write(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
+    clientSocket->flush();
+    clientSocket->disconnectFromServer();
+    qApp->processEvents();  // give the socket the chance to receive data
+    QCOMPARE(client.read(buffer, sizeof(buffer)), (qint64)sizeof(buffer));
+    qApp->processEvents();  // give the socket the chance to close itself
+    QCOMPARE(client.state(), QLocalSocket::UnconnectedState);
 }
 
 void tst_QLocalSocket::debug()

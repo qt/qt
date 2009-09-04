@@ -198,6 +198,7 @@ plugin_commonU.def
 # ---------------------
 .project
 .cproject
+.make.cache
 
 qtc-debugging-helper
 src/corelib/lib

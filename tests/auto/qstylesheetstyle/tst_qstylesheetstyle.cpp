@@ -828,7 +828,8 @@ void tst_QStyleSheetStyle::hoverColors()
     widgets << new QLabel("<b>TESTING</b>");
 
     foreach (QWidget *widget, widgets) {
-        QDialog frame;
+        //without Qt::X11BypassWindowManagerHint the window manager may move the window after we moved the cursor
+        QDialog frame(0, Qt::X11BypassWindowManagerHint);
         QLayout* layout = new QGridLayout;
 
         QLineEdit* dummy = new QLineEdit;
@@ -845,6 +846,7 @@ void tst_QStyleSheetStyle::hoverColors()
 #endif
         QApplication::setActiveWindow(&frame);
         QTest::qWait(60);
+        //move the mouse inside the widget, it should be colored
         QTest::mouseMove ( widget, QPoint(5,5));
         QTest::qWait(60);
 
@@ -857,6 +859,32 @@ void tst_QStyleSheetStyle::hoverColors()
         QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
                  (QString::fromLatin1(widget->metaObject()->className())
                   + " did not contain text color #ff0084").toLocal8Bit().constData());
+
+        //move the mouse outside the widget, it should NOT be colored
+        QTest::mouseMove ( dummy, QPoint(5,5));
+        QTest::qWait(60);
+
+        frame.render(&image);
+
+        QVERIFY2(!testForColors(image, QColor(0xe8, 0xff, 0x66)),
+                  (QString::fromLatin1(widget->metaObject()->className())
+                  + " did contain background color #e8ff66").toLocal8Bit().constData());
+        QVERIFY2(!testForColors(image, QColor(0xff, 0x00, 0x84)),
+                 (QString::fromLatin1(widget->metaObject()->className())
+                  + " did contain text color #ff0084").toLocal8Bit().constData());
+
+        //move the mouse again inside the widget, it should be colored
+        QTest::mouseMove (widget, QPoint(5,5));
+        QTest::qWait(60);
+
+        frame.render(&image);
+
+        QVERIFY2(testForColors(image, QColor(0xe8, 0xff, 0x66)),
+                 (QString::fromLatin1(widget->metaObject()->className())
+                 + " did not contain background color #e8ff66").toLocal8Bit().constData());
+        QVERIFY2(testForColors(image, QColor(0xff, 0x00, 0x84)),
+                (QString::fromLatin1(widget->metaObject()->className())
+                + " did not contain text color #ff0084").toLocal8Bit().constData());
     }
 
 }

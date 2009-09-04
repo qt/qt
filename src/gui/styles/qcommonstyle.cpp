@@ -1882,7 +1882,6 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
         break;
     case CE_TabBarTabLabel:
         if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(opt)) {
-            // ### consider merging this with SE_TabBarTabText
             QStyleOptionTabV3 tabV2(*tab);
             QRect tr = tabV2.rect;
             bool verticalTabs = tabV2.shape == QTabBar::RoundedEast
@@ -5219,7 +5218,7 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
     Q_UNUSED(sp);
 #else
     QPixmap pixmap;
-    const bool rtl = (option && option->direction == Qt::RightToLeft) || !option && QApplication::isRightToLeft();
+    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QApplication::isRightToLeft());
 
     if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (sp) {
@@ -5509,7 +5508,7 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
                                                const QWidget *widget) const
 {
     QIcon icon;
-    const bool rtl = (option && option->direction == Qt::RightToLeft) || !option && QApplication::isRightToLeft();
+    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QApplication::isRightToLeft());
     if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (standardIcon) {
         case SP_DirHomeIcon:

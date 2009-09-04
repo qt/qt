@@ -89,7 +89,8 @@ typedef INT_PTR intptr_t;
 #  define INVALID_FILE_ATTRIBUTES (DWORD (-1))
 #endif
 
-#if !defined(REPARSE_DATA_BUFFER_HEADER_SIZE) && !defined(Q_OS_WINCE)
+#if !defined(Q_OS_WINCE)
+#  if !defined(REPARSE_DATA_BUFFER_HEADER_SIZE)
 typedef struct _REPARSE_DATA_BUFFER {
     ULONG  ReparseTag;
     USHORT ReparseDataLength;
@@ -115,8 +116,9 @@ typedef struct _REPARSE_DATA_BUFFER {
         } GenericReparseBuffer;
     };
 } REPARSE_DATA_BUFFER, *PREPARSE_DATA_BUFFER;
+#    define REPARSE_DATA_BUFFER_HEADER_SIZE  FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
+#  endif // !defined(REPARSE_DATA_BUFFER_HEADER_SIZE)
 
-#  define REPARSE_DATA_BUFFER_HEADER_SIZE  FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
 #  ifndef MAXIMUM_REPARSE_DATA_BUFFER_SIZE
 #    define MAXIMUM_REPARSE_DATA_BUFFER_SIZE 16384
 #  endif
@@ -126,7 +128,7 @@ typedef struct _REPARSE_DATA_BUFFER {
 #  ifndef FSCTL_GET_REPARSE_POINT
 #    define FSCTL_GET_REPARSE_POINT CTL_CODE(FILE_DEVICE_FILE_SYSTEM, 42, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #  endif
-#endif
+#endif // !defined(Q_OS_WINCE)
 
 QT_BEGIN_NAMESPACE
 

@@ -113,6 +113,7 @@ public:
 
 protected:
     void onEntry(QEvent *);
+    void onExit(QEvent *);
 private :
     GraphicsScene *scene;
     PlayState *game;
@@ -125,6 +126,7 @@ public:
 
 protected:
     void onEntry(QEvent *);
+    void onExit(QEvent *);
 private :
     GraphicsScene *scene;
     PlayState *game;

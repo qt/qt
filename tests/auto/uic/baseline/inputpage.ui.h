@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'inputpage.ui'
 **
-** Created: Tue Aug 18 19:03:31 2009
+** Created: Fri Sep 4 10:17:13 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -88,7 +88,6 @@ public:
         InputPage->setWindowTitle(QApplication::translate("InputPage", "Form", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("InputPage", "File name:", 0, QApplication::UnicodeUTF8));
         browseButton->setText(QApplication::translate("InputPage", "...", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(InputPage);
     } // retranslateUi
 
 };

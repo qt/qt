@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'form.ui'
 **
-** Created: Tue Aug 18 19:03:31 2009
+** Created: Fri Sep 4 10:17:13 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -130,7 +130,6 @@ public:
         WorldTimeForm->setWindowTitle(QApplication::translate("WorldTimeForm", "World Time Clock", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("WorldTimeForm", "Current time:", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("WorldTimeForm", "Set time zone:", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(WorldTimeForm);
     } // retranslateUi
 
 };

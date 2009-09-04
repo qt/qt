@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,38 +39,30 @@
 **
 ****************************************************************************/
 
-#include "shadoweffect.h"
+#include <QtGui>
+#include "pinchwidget.h"
 
-#include <math.h>
-
-ShadowEffect::ShadowEffect(QGraphicsItem *item, QGraphicsItem *source)
-    : QGraphicsDropShadowEffect()
-    , item(item), m_lightSource(source)
+class MainWindow : public QWidget
 {
-    setBlurRadius(8);
-    m_color = color();
+public:
+    MainWindow();
+};
+
+MainWindow::MainWindow()
+{
+    QVBoxLayout *l = new QVBoxLayout(this);
+    QPushButton *btn = new QPushButton(QLatin1String("AcceptTouchEvents"));
+    l->addWidget(btn);
+    QImage image(":/images/qt-logo.png");
+    PinchWidget *w = new PinchWidget(image);
+    l->addWidget(w);
+    connect(btn, SIGNAL(clicked()), w, SLOT(acceptTouchEvents()));
 }
 
-void ShadowEffect::adjustForItem()
+int main(int argc, char *argv[])
 {
-    QPointF delta = item->pos() - m_lightSource->pos();
-    setOffset(delta.toPoint() / 30);
-
-    qreal dx = delta.x();
-    qreal dy = delta.y();
-    qreal dd = sqrt(dx * dx + dy * dy);
-    m_color.setAlphaF(qBound(0.4, 1 - dd / 200.0, 0.7));
-    setColor(m_color);
-}
-
-QRectF ShadowEffect::boundingRectFor(const QRectF &rect) const
-{
-    const_cast<ShadowEffect *>(this)->adjustForItem();
-    return QGraphicsDropShadowEffect::boundingRectFor(rect);
-}
-
-void ShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
-{
-    adjustForItem();
-    QGraphicsDropShadowEffect::draw(painter, source);
+    QApplication app(argc, argv);
+    MainWindow w;
+    w.show();
+    return app.exec();
 }

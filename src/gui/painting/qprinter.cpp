@@ -1286,6 +1286,23 @@ int QPrinter::numCopies() const
 
 
 /*!
+    Returns the number of copies that will be printed. The default
+    value is 1.
+
+    This function always returns the actual value specified in the print
+    dialog or using setNumCopies().
+
+    \sa setNumCopies(), numCopies();
+*/
+int QPrinter::actualNumCopies() const
+{
+    Q_D(const QPrinter);
+    return qt_printerRealNumCopies(d->paintEngine);
+}
+
+
+
+/*!
   Sets the number of copies to be printed to \a numCopies.
 
   The printer driver reads this setting and prints the specified

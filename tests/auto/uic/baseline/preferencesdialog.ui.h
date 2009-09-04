@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'preferencesdialog.ui'
 **
-** Created: Tue Aug 18 19:03:32 2009
+** Created: Fri Sep 4 10:17:14 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -159,7 +159,6 @@ public:
         m_templatePathGroupBox->setTitle(QApplication::translate("PreferencesDialog", "Additional Template Paths", 0, QApplication::UnicodeUTF8));
         m_addTemplatePathButton->setText(QApplication::translate("PreferencesDialog", "...", 0, QApplication::UnicodeUTF8));
         m_removeTemplatePathButton->setText(QApplication::translate("PreferencesDialog", "...", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(PreferencesDialog);
     } // retranslateUi
 
 };

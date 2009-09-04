@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tetrixwindow.ui'
 **
-** Created: Tue Aug 18 19:03:32 2009
+** Created: Fri Sep 4 10:17:15 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -160,7 +160,6 @@ public:
         scoreLabel->setText(QApplication::translate("TetrixWindow", "SCORE", 0, QApplication::UnicodeUTF8));
         nextPieceLabel->setText(QString());
         quitButton->setText(QApplication::translate("TetrixWindow", "&Quit", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(TetrixWindow);
     } // retranslateUi
 
 };

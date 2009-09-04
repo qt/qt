@@ -194,6 +194,7 @@ Ptr_gdk_x11_drawable_get_xdisplay QGtk::gdk_x11_drawable_get_xdisplay = 0;
 
 Ptr_gconf_client_get_default QGtk::gconf_client_get_default = 0;
 Ptr_gconf_client_get_string QGtk::gconf_client_get_string = 0;
+Ptr_gconf_client_get_bool QGtk::gconf_client_get_bool = 0;
 
 static QString classPath(GtkWidget *widget)
 {
@@ -336,6 +337,7 @@ static bool resolveGConf()
     if (!QGtk::gconf_client_get_default) {
         QGtk::gconf_client_get_default = (Ptr_gconf_client_get_default)QLibrary::resolve(QLS("gconf-2"), 4, "gconf_client_get_default");
         QGtk::gconf_client_get_string =  (Ptr_gconf_client_get_string)QLibrary::resolve(QLS("gconf-2"), 4, "gconf_client_get_string");
+        QGtk::gconf_client_get_bool =  (Ptr_gconf_client_get_bool)QLibrary::resolve(QLS("gconf-2"), 4, "gconf_client_get_bool");
     }
     return (QGtk::gconf_client_get_default !=0);
 }
@@ -356,6 +358,23 @@ QString QGtk::getGConfString(const QString &value, const QString &fallback)
         }
         g_object_unref(client);
         if (err)
+            g_error_free (err);
+    }
+    return retVal;
+}
+
+bool QGtk::getGConfBool(const QString &key, bool fallback)
+{
+    bool retVal = fallback;
+    if (resolveGConf()) {
+        g_type_init();
+        GConfClient* client = QGtk::gconf_client_get_default();
+        GError *err = 0;
+        bool result = QGtk::gconf_client_get_bool(client, qPrintable(key), &err);
+        g_object_unref(client);
+        if (!err)
+            retVal = result;
+        else
             g_error_free (err);
     }
     return retVal;

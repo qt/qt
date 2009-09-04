@@ -39,10 +39,11 @@
 **
 ****************************************************************************/
 
-#include "config.h"
+#include "config.h" // compile on Windows
 #include "qscriptstring.h"
-
 #include "qscriptstring_p.h"
+#include "qscriptengine.h"
+#include "qscriptengine_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -70,32 +71,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-  \internal
-*/
-QScriptStringPrivate::QScriptStringPrivate(QScriptEngine *e, const JSC::Identifier &id)
-    : engine(e), identifier(id)
-{
-    ref = 0;
-}
-
-/*!
-  \internal
-*/
-QScriptStringPrivate::~QScriptStringPrivate()
-{
-}
-
-/*!
-  \internal
-*/
-void QScriptStringPrivate::init(QScriptString &q, QScriptEngine *engine,
-                                const JSC::Identifier &value)
-{
-    Q_ASSERT(!q.isValid());
-    q.d_ptr = new QScriptStringPrivate(engine, value);
-}
-
-/*!
   Constructs an invalid QScriptString.
 */
 QScriptString::QScriptString()
@@ -109,6 +84,13 @@ QScriptString::QScriptString()
 QScriptString::QScriptString(const QScriptString &other)
     : d_ptr(other.d_ptr)
 {
+    if (d_func() && (d_func()->type == QScriptStringPrivate::StackAllocated)) {
+        Q_ASSERT(d_func()->ref != 1);
+        d_ptr.detach();
+        d_func()->ref = 1;
+        d_func()->type = QScriptStringPrivate::HeapAllocated;
+        d_func()->engine->registerScriptString(d_func());
+    }
 }
 
 /*!
@@ -116,6 +98,19 @@ QScriptString::QScriptString(const QScriptString &other)
 */
 QScriptString::~QScriptString()
 {
+    Q_D(QScriptString);
+    if (d) {
+        switch (d->type) {
+        case QScriptStringPrivate::StackAllocated:
+            Q_ASSERT(d->ref == 1);
+            d->ref.ref(); // avoid deletion
+            break;
+        case QScriptStringPrivate::HeapAllocated:
+            if (d->engine && (d->ref == 1))
+                d->engine->unregisterScriptString(d);
+            break;
+        }
+    }
 }
 
 /*!
@@ -123,7 +118,18 @@ QScriptString::~QScriptString()
 */
 QScriptString &QScriptString::operator=(const QScriptString &other)
 {
+    if (d_func() && d_func()->engine && (d_func()->ref == 1) && (d_func()->type == QScriptStringPrivate::HeapAllocated)) {
+        // current d_ptr will be deleted at the assignment below, so unregister it first
+        d_func()->engine->unregisterScriptString(d_func());
+    }
     d_ptr = other.d_ptr;
+    if (d_func() && (d_func()->type == QScriptStringPrivate::StackAllocated)) {
+        Q_ASSERT(d_func()->ref != 1);
+        d_ptr.detach();
+        d_func()->ref = 1;
+        d_func()->type = QScriptStringPrivate::HeapAllocated;
+        d_func()->engine->registerScriptString(d_func());
+    }
     return *this;
 }
 
@@ -147,7 +153,7 @@ bool QScriptString::operator==(const QScriptString &other) const
     if (d == other.d_func())
         return true;
     if (!d || !other.d_func())
-        return false;
+        return d == other.d_func();
     if (d->engine != other.d_func()->engine)
         return false;
     if (!d->engine)

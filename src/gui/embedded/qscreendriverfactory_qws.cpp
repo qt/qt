@@ -51,7 +51,9 @@
 #include <stdlib.h>
 #include "private/qfactoryloader_p.h"
 #include "qscreendriverplugin_qws.h"
-
+#ifndef QT_NO_QWS_DIRECTFB
+#include "qdirectfbscreen.h"
+#endif
 #ifndef QT_NO_QWS_VNC
 #include "qscreenvnc_qws.h"
 #endif
@@ -118,6 +120,10 @@ QScreen *QScreenDriverFactory::create(const QString& key, int displayId)
     if (driver == QLatin1String("linuxfb") || driver.isEmpty())
         return new QLinuxFbScreen(displayId);
 #endif
+#ifndef QT_NO_QWS_DIRECTFB
+    if (driver == QLatin1String("directfb") || driver.isEmpty())
+        return new QDirectFBScreen(displayId);
+#endif
 #ifndef QT_NO_QWS_TRANSFORMED
     if (driver == QLatin1String("transformed"))
         return new QTransformedScreen(displayId);
@@ -130,7 +136,6 @@ QScreen *QScreenDriverFactory::create(const QString& key, int displayId)
     if (driver == QLatin1String("multi"))
         return new QMultiScreen(displayId);
 #endif
-
 #if !defined(Q_OS_WIN32) || defined(QT_MAKEDLL)
 #ifndef QT_NO_LIBRARY
 

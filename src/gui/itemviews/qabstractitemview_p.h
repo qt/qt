@@ -328,6 +328,15 @@ public:
 
     QStyleOptionViewItemV4 viewOptionsV4() const;
 
+    void doDelayedReset()
+    {
+        //we delay the reset of the timer because some views (QTableView)
+        //with headers can't handle the fact that the model has been destroyed
+        //all _q_modelDestroyed slots must have been called
+        if (!delayedReset.isActive())
+            delayedReset.start(0, q_func());
+    }
+
     QAbstractItemModel *model;
     QPointer<QAbstractItemDelegate> itemDelegate;
     QMap<int, QPointer<QAbstractItemDelegate> > rowDelegates;
@@ -389,6 +398,7 @@ public:
     QBasicTimer updateTimer;
     QBasicTimer delayedEditing;
     QBasicTimer delayedAutoScroll; //used when an item is clicked
+    QBasicTimer delayedReset;
 
     QAbstractItemView::ScrollMode verticalScrollMode;
     QAbstractItemView::ScrollMode horizontalScrollMode;

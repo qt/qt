@@ -37,9 +37,6 @@
 **
 ** $QT_END_LICENSE$
 **
-** This file is provided AS IS with NO WARRANTY OF ANY KND, INCLUDING THE
-** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
-**
 ****************************************************************************/
 
 #include "qlayout_widget_p.h"

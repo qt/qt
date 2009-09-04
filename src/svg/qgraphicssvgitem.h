@@ -58,6 +58,7 @@ class QGraphicsSvgItemPrivate;
 class Q_SVG_EXPORT QGraphicsSvgItem : public QObject, public QGraphicsItem
 {
     Q_OBJECT
+    Q_INTERFACES(QGraphicsItem)
 
 public:
     QGraphicsSvgItem(QGraphicsItem *parentItem=0);

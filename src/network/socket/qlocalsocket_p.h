@@ -139,7 +139,7 @@ public:
     void _q_emitReadyRead();
     DWORD bytesAvailable();
     void startAsyncRead();
-    void completeAsyncRead();
+    bool completeAsyncRead();
     void checkReadyRead();
     HANDLE handle;
     OVERLAPPED overlapped;

@@ -72,7 +72,6 @@ protected:
 
     QString fileName;
     mutable QAbstractFileEngine *fileEngine;
-    bool isOpen;
 
     bool lastWasWrite;
     QRingBuffer writeBuffer;

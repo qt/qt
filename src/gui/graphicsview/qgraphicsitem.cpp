@@ -198,20 +198,19 @@
     \o hoverEnterEvent(), hoverMoveEvent(), and hoverLeaveEvent() handles
     hover enter, move and leave events
     \o inputMethodEvent() handles input events, for accessibility support
-    \o keyPressEvent() and keyReleaseEvent handle key press and release events
+    \o keyPressEvent() and keyReleaseEvent() handle key press and release events
     \o mousePressEvent(), mouseMoveEvent(), mouseReleaseEvent(), and
     mouseDoubleClickEvent() handles mouse press, move, release, click and
     doubleclick events
     \endlist
 
-    You can filter events for any other item by installing event
-    filters. This functionaly is separate from from Qt's regular
-    event filters (see QObject::installEventFilter()), which only
-    work on subclasses of QObject. After installing your item as an
-    event filter for another item by calling
-    installSceneEventFilter(), the filtered events will be received
-    by the virtual function sceneEventFilter(). You can remove item
-    event filters by calling removeSceneEventFilter().
+    You can filter events for any other item by installing event filters. This
+    functionality is separate from Qt's regular event filters (see
+    QObject::installEventFilter()), which only work on subclasses of QObject. After
+    installing your item as an event filter for another item by calling
+    installSceneEventFilter(), the filtered events will be received by the virtual
+    function sceneEventFilter(). You can remove item event filters by calling
+    removeSceneEventFilter().
 
     \section1 Custom Data
 
@@ -304,13 +303,17 @@
     drop shadow effects and for decoration objects that follow the parent
     item's geometry without drawing on top of it.
 
-    \value ItemUsesExtendedStyleOption The item makes use of either the
-    exposedRect or matrix member of the QStyleOptionGraphicsItem. Implementers
-    of QGraphicsItem subclasses should set that flag if this data is required.
-    By default, the exposedRect is initialized to the item's boundingRect and
-    the matrix is untransformed. Enable this flag for more fine-grained values.
-    Use QStyleOptionGraphicsItem::levelOfDetailFromTransform() for a more
-    fine-grained value.
+    \value ItemUsesExtendedStyleOption The item makes use of either
+    \l{QStyleOptionGraphicsItem::}{exposedRect} or
+    \l{QStyleOptionGraphicsItem::}{matrix} in QStyleOptionGraphicsItem. By default,
+    the \l{QStyleOptionGraphicsItem::}{exposedRect} is initialized to the item's
+    boundingRect() and the \l{QStyleOptionGraphicsItem::}{matrix} is untransformed.
+    You can enable this flag for the style options to be set up with more
+    fine-grained values.
+    Note that QStyleOptionGraphicsItem::levelOfDetail is unaffected by this flag
+    and always initialized to 1. Use
+    QStyleOptionGraphicsItem::levelOfDetailFromTransform() if you need a higher
+    value.
 
     \value ItemHasNoContents The item does not paint anything (i.e., calling
     paint() on the item has no effect). You should set this flag on items that
@@ -414,11 +417,11 @@
     (same as transform()), and QGraphicsItem ignores the return value for this
     notification (i.e., a read-only notification).
 
-    \value ItemSelectedChange The item's selected state changes. If the item
-    is presently selected, it will become unselected, and vice verca. The
-    value argument is the new selected state (i.e., true or false). Do not
-    call setSelected() in itemChange() as this notification is delivered();
-    instead, you can return the new selected state from itemChange().
+    \value ItemSelectedChange The item's selected state changes. If the item is
+    presently selected, it will become unselected, and vice verca. The value
+    argument is the new selected state (i.e., true or false). Do not call
+    setSelected() in itemChange() as this notification is delivered; instead, you
+    can return the new selected state from itemChange().
 
     \value ItemSelectedHasChanged The item's selected state has changed. The
     value argument is the new selected state (i.e., true or false). Do not
@@ -10358,10 +10361,14 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
             effectRect.setY(0);
         }
         // NB! We use +-1 for historical reasons (see QRect documentation).
-        if (right + 1 > info->widget->width())
-            effectRect.setRight(info->widget->width() - 1);
-        if (bottom + 1 > info->widget->height())
-            effectRect.setBottom(info->widget->height() -1);
+        QPaintDevice *device = info->painter->device();
+        const int deviceWidth = device->width();
+        const int deviceHeight = device->height();
+        if (right + 1 > deviceWidth)
+            effectRect.setRight(deviceWidth - 1);
+        if (bottom + 1 > deviceHeight)
+            effectRect.setBottom(deviceHeight -1);
+        
     }
 
     if (effectRect.isEmpty())

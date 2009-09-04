@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'outputpage.ui'
 **
-** Created: Tue Aug 18 19:03:31 2009
+** Created: Fri Sep 4 10:17:14 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -94,7 +94,6 @@ public:
         OutputPage->setWindowTitle(QApplication::translate("OutputPage", "Form", 0, QApplication::UnicodeUTF8));
         label->setText(QApplication::translate("OutputPage", "Project file name:", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("OutputPage", "Collection file name:", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(OutputPage);
     } // retranslateUi
 
 };

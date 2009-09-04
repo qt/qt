@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the plugins of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,28 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef SHADOWEFFECT_H
-#define SHADOWEFFECT_H
+#ifndef QGRAPHICSSYSTEM_TRACE_P_H
+#define QGRAPHICSSYSTEM_TRACE_P_H
 
-#include <QGraphicsEffect>
-#include <QGraphicsItem>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-class ShadowEffect: public QGraphicsDropShadowEffect
+#include <QtGui/private/qgraphicssystem_p.h>
+
+QT_BEGIN_NAMESPACE
+
+class QTraceGraphicsSystem : public QGraphicsSystem
 {
 public:
-    ShadowEffect(QGraphicsItem *item, QGraphicsItem *source);
+    QTraceGraphicsSystem();
 
-    QRectF boundingRectFor(const QRectF &rect) const;
-
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
-
-private:
-    void adjustForItem();
-
-private:
-    QColor m_color;
-    QGraphicsItem *item;
-    QGraphicsItem *m_lightSource;
+    QPixmapData *createPixmapData(QPixmapData::PixelType type) const;
+    QWindowSurface *createWindowSurface(QWidget *widget) const;
 };
 
-#endif // SHADOWEFFECT_H
+QT_END_NAMESPACE
+
+#endif

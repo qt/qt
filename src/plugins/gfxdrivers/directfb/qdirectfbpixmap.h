@@ -81,11 +81,9 @@ public:
     virtual QImage toImage() const;
     virtual QPaintEngine *paintEngine() const;
     virtual QImage *buffer();
-    virtual int metric(QPaintDevice::PaintDeviceMetric m) const {return QDirectFBPaintDevice::metric(m);}
-
-    QImage *buffer(DFBSurfaceLockFlags lockFlags);
-
     // Pure virtual in QPixmapData, so re-implement here and delegate to QDirectFBPaintDevice
+    virtual int metric(QPaintDevice::PaintDeviceMetric m) const { return QDirectFBPaintDevice::metric(m); }
+
     inline QImage::Format pixelFormat() const { return imageFormat; }
     static bool hasAlphaChannel(const QImage &img);
     inline bool hasAlphaChannel() const { return alpha; }

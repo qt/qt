@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'previewdialogbase.ui'
 **
-** Created: Tue Aug 18 19:03:32 2009
+** Created: Fri Sep 4 10:17:14 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -178,7 +178,6 @@ public:
         label_2->setText(QApplication::translate("PreviewDialogBase", "&Orientation:", 0, QApplication::UnicodeUTF8));
         QTreeWidgetItem *___qtreewidgetitem = pageList->headerItem();
         ___qtreewidgetitem->setText(0, QApplication::translate("PreviewDialogBase", "1", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(PreviewDialogBase);
     } // retranslateUi
 
 };

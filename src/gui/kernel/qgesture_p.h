@@ -70,7 +70,7 @@ class QGesturePrivate : public QObjectPrivate
 public:
     QGesturePrivate()
         : gestureTarget(0), graphicsItem(0), eventFilterProxyGraphicsItem(0),
-          state(Qt::NoGesture)
+          state(Qt::NoGesture), implicitGesture(false)
     {
     }
 
@@ -81,6 +81,9 @@ public:
     QGraphicsItem *eventFilterProxyGraphicsItem;
 
     Qt::GestureState state;
+
+    // the flag specifies if the gesture was created implicitely by Qt.
+    bool implicitGesture;
 };
 
 QT_END_NAMESPACE
