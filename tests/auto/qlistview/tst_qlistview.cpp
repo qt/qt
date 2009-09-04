@@ -417,6 +417,18 @@ void tst_QListView::hideRows()
     view.setRowHidden(0, false);
     QVERIFY(!view.isRowHidden(0));
 
+    QStandardItemModel sim(0);
+    QStandardItem *root = new QStandardItem("Root row");
+    for (int i=0;i<5;i++)
+        root->appendRow(new QStandardItem(QString("Row %1").arg(i)));
+    sim.appendRow(root);
+    view.setModel(&sim);
+    view.setRootIndex(root->index());
+    QVERIFY(!view.isRowHidden(0));
+    view.setRowHidden(0, true);
+    QVERIFY(view.isRowHidden(0));
+    view.setRowHidden(0, false);
+    QVERIFY(!view.isRowHidden(0));
 }
 
 

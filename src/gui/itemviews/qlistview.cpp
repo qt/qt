@@ -549,16 +549,16 @@ void QListView::setRowHidden(int row, bool hide)
     const bool hidden = d->isHidden(row);
     if (d->viewMode == ListMode) {
         if (hide && !hidden)
-            d->hiddenRows.append(d->model->index(row, 0));
+            d->hiddenRows.append(d->model->index(row, 0, rootIndex()));
         else if (!hide && hidden)
-            d->hiddenRows.remove(d->hiddenRows.indexOf(d->model->index(row, 0)));
+            d->hiddenRows.remove(d->hiddenRows.indexOf(d->model->index(row, 0, rootIndex())));
         d->doDelayedItemsLayout();
     } else {
         if (hide && !hidden) {
             d->dynamicListView->removeItem(row);
-            d->hiddenRows.append(d->model->index(row, 0));
+            d->hiddenRows.append(d->model->index(row, 0, rootIndex()));
         } else if (!hide && hidden) {
-            d->hiddenRows.remove(d->hiddenRows.indexOf(d->model->index(row, 0)));
+            d->hiddenRows.remove(d->hiddenRows.indexOf(d->model->index(row, 0, rootIndex())));
             d->dynamicListView->insertItem(row);
         }
         if (d->resizeMode == Adjust)
