@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qoutlinemapper_p.h"
-
+#include <private/qpainterpath_p.h>
 #include "qmath.h"
 
 #include <stdlib.h>
