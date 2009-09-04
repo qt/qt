@@ -31,6 +31,7 @@ ParentChangeAction -> ParentAction
 VisualModel        -> VisualDataModel
 
 Renamed properties:
+Item: contents         -> childrenRect
 MouseRegion: xmin      -> minimumX
 MouseRegion: xmax      -> maximumX
 MouseRegion: ymin      -> minimumY

@@ -235,10 +235,10 @@ QFxContents::QFxContents() : m_x(0), m_y(0), m_width(0), m_height(0)
 }
 
 /*!
-    \qmlproperty qreal Item::childrenRect.x
-    \qmlproperty qreal Item::childrenRect.y
-    \qmlproperty qreal Item::childrenRect.width
-    \qmlproperty qreal Item::childrenRect.height
+    \qmlproperty real Item::childrenRect.x
+    \qmlproperty real Item::childrenRect.y
+    \qmlproperty real Item::childrenRect.width
+    \qmlproperty real Item::childrenRect.height
 
     The childrenRect properties allow an item access to the geometry of its
     children. This property is useful if you have an item that needs to be
