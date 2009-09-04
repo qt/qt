@@ -95,6 +95,9 @@ public:
     IDirectFBImageProvider *imageProvider;
 #endif
     QColor backgroundColor;
+    IDirectFBSurface *cursorSurface;
+    qint64 cursorImageKey;
+
     QDirectFBScreen *q;
 };
 
@@ -117,6 +120,8 @@ QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *qptr)
 #if defined QT_DIRECTFB_IMAGEPROVIDER && defined QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
     , imageProvider(0)
 #endif
+    , cursorSurface(0)
+    , cursorImageKey(0)
     , q(qptr)
 {
 #ifndef QT_NO_QWS_SIGNALHANDLER
@@ -1386,94 +1391,149 @@ QWSWindowSurface *QDirectFBScreen::createSurface(const QString &key) const
     return QScreen::createSurface(key);
 }
 
-// Normally, when using DirectFB to compose the windows (I.e. when
-// QT_NO_DIRECTFB_WM isn't set), exposeRegion will simply return. If
-// QT_NO_DIRECTFB_WM is set, exposeRegion will compose only non-directFB
-// window surfaces. Normal, directFB surfaces are handled by DirectFB.
-void QDirectFBScreen::exposeRegion(QRegion r, int changing)
-{
 #if defined QT_NO_DIRECTFB_WM
-    const QList<QWSWindow*> windows = QWSServer::instance()->clientWindows();
-    if (changing < 0 || changing >= windows.size()) {
-        return;
-    }
+struct PaintCommand {
+    PaintCommand() : dfbSurface(0), windowOpacity(255), blittingFlags(DSBLIT_NOFX) {}
+    IDirectFBSurface *dfbSurface;
+    QImage image;
+    QPoint windowPosition;
+    QRegion source;
+    quint8 windowOpacity;
+    DFBSurfaceBlittingFlags blittingFlags;
+};
 
-    QWSWindow *win = windows.at(changing);
-    QWSWindowSurface *s = win->windowSurface();
+static inline void initParameters(DFBRectangle &source, const QRect &sourceGlobal, const QPoint &pos)
+{
+    source.x = sourceGlobal.x() - pos.x();
+    source.y = sourceGlobal.y() - pos.y();
+    source.w = sourceGlobal.width();
+    source.h = sourceGlobal.height();
+}
+#endif
+
+void QDirectFBScreen::exposeRegion(QRegion r, int)
+{
+    Q_UNUSED(r);
+#if defined QT_NO_DIRECTFB_WM
+
     r &= region();
     if (r.isEmpty()) {
         return;
     }
+    r = r.boundingRect();
 
-    const QRect brect = r.boundingRect();
+    IDirectFBSurface *primary = d_ptr->primarySurface;
+    const QList<QWSWindow*> windows = QWSServer::instance()->clientWindows();
+    QVarLengthArray<PaintCommand, 4> commands(windows.size());
+    QRegion region = r;
+    int idx = 0;
+    for (int i=0; i<windows.size(); ++i) {
+        QWSWindowSurface *surface = windows.at(i)->windowSurface();
+        if (!surface)
+            continue;
 
-    if (!s) {
-        solidFill(d_ptr->backgroundColor, r);
-    } else {
-        const QRect windowGeometry = s->geometry();
-        const QRegion outsideWindow = r.subtracted(windowGeometry);
-        if (!outsideWindow.isEmpty()) {
-            solidFill(d_ptr->backgroundColor, outsideWindow);
+        const QRect windowGeometry = surface->geometry();
+        const QRegion intersection = region & windowGeometry;
+        if (intersection.isEmpty()) {
+            continue;
         }
-        const QRegion insideWindow = r.intersected(windowGeometry);
-        if (!insideWindow.isEmpty()) {
-            QDirectFBWindowSurface *dfbWindowSurface = (s->key() == QLatin1String("directfb"))
-                                                       ? static_cast<QDirectFBWindowSurface*>(s) : 0;
-            if (dfbWindowSurface) {
-                IDirectFBSurface *surface = dfbWindowSurface->directFBSurface();
-                Q_ASSERT(surface);
-                const int n = insideWindow.numRects();
-                if (n == 1 || d_ptr->directFBFlags & BoundingRectFlip) {
-                    const QRect source = (insideWindow.boundingRect().intersected(windowGeometry)).translated(-windowGeometry.topLeft());
-                    const DFBRectangle rect = {
-                        source.x(), source.y(), source.width(), source.height()
-                    };
 
-                    d_ptr->primarySurface->Blit(d_ptr->primarySurface, surface, &rect,
-                                                windowGeometry.x() + source.x(),
-                                                windowGeometry.y() + source.y());
+        PaintCommand &cmd = commands[idx];
 
-                } else {
-                    const QVector<QRect> rects = insideWindow.rects();
-                    QVarLengthArray<DFBRectangle, 16> dfbRectangles(n);
-                    QVarLengthArray<DFBPoint, 16> dfbPoints(n);
+        if (surface->key() == QLatin1String("directfb")) {
+            const QDirectFBWindowSurface *ws = static_cast<QDirectFBWindowSurface*>(surface);
+            cmd.dfbSurface = ws->directFBSurface();
 
-                    for (int i=0; i<n; ++i) {
-                        const QRect source = (rects.at(i).intersected(windowGeometry)).translated(-windowGeometry.topLeft());
-                        DFBRectangle &rect = dfbRectangles[i];
-                        rect.x = source.x();
-                        rect.y = source.y();
-                        rect.w = source.width();
-                        rect.h = source.height();
-                        dfbPoints[i].x = (windowGeometry.x() + source.x());
-                        dfbPoints[i].y = (windowGeometry.y() + source.y());
-                    }
-                    d_ptr->primarySurface->BatchBlit(d_ptr->primarySurface, surface, dfbRectangles.constData(),
-                                                     dfbPoints.constData(), n);
-                }
+            if (!cmd.dfbSurface) {
+                continue;
+            }
+        } else {
+            cmd.image = surface->image();
+            if (cmd.image.isNull()) {
+                continue;
             }
         }
+        ++idx;
+
+        cmd.windowPosition = windowGeometry.topLeft();
+        cmd.source = intersection;
+        if (windows.at(i)->isOpaque()) {
+            region -= intersection;
+            if (region.isEmpty())
+                break;
+        } else {
+            cmd.windowOpacity = windows.at(i)->opacity();
+            cmd.blittingFlags = cmd.windowOpacity == 255
+                                ? DSBLIT_BLEND_ALPHACHANNEL
+                                : (DSBLIT_BLEND_ALPHACHANNEL|DSBLIT_BLEND_COLORALPHA);
+        }
+    }
+    if (!region.isEmpty()) {
+        solidFill(d_ptr->backgroundColor, region);
     }
 
-#ifdef QT_NO_DIRECTFB_CURSOR
+    while (idx > 0) {
+        const PaintCommand &cmd = commands[--idx];
+        Q_ASSERT(cmd.dfbSurface || !cmd.image.isNull());
+        IDirectFBSurface *surface;
+        if (cmd.dfbSurface) {
+            surface = cmd.dfbSurface;
+        } else {
+            Q_ASSERT(!cmd.image.isNull());
+            DFBResult result;
+            surface = createDFBSurface(cmd.image, cmd.image.format(), DontTrackSurface, &result);
+            Q_ASSERT((result != DFB_OK) == !surface);
+            if (result != DFB_OK) {
+                DirectFBError("QDirectFBScreen::exposeRegion: Can't create surface from image", result);
+                continue;
+            }
+        }
+
+        primary->SetBlittingFlags(primary, cmd.blittingFlags);
+        if (cmd.blittingFlags & DSBLIT_BLEND_COLORALPHA) {
+            primary->SetColor(primary, 0xff, 0xff, 0xff, cmd.windowOpacity);
+        }
+        const QRegion &region = cmd.source;
+        const int rectCount = region.numRects();
+        DFBRectangle source;
+        if (rectCount == 1) {
+            ::initParameters(source, region.boundingRect(), cmd.windowPosition);
+            primary->Blit(primary, surface, &source, cmd.windowPosition.x() + source.x, cmd.windowPosition.y() + source.y);
+        } else {
+            const QVector<QRect> rects = region.rects();
+            for (int i=0; i<rectCount; ++i) {
+                ::initParameters(source, rects.at(i), cmd.windowPosition);
+                primary->Blit(primary, surface, &source, cmd.windowPosition.x() + source.x, cmd.windowPosition.y() + source.y);
+            }
+        }
+        if (surface != cmd.dfbSurface) {
+            surface->Release(surface);
+        }
+    }
+
+    primary->SetColor(primary, 0xff, 0xff, 0xff, 0xff);
+
+#if defined QT_NO_DIRECTFB_CURSOR and !defined QT_NO_QWS_CURSOR
     if (QScreenCursor *cursor = QScreenCursor::instance()) {
         const QRect cursorRectangle = cursor->boundingRect();
-        if (cursor->isVisible() && !cursor->isAccelerated() && cursorRectangle.intersects(brect)) {
+        if (cursor->isVisible() && !cursor->isAccelerated() && r.intersects(cursorRectangle)) {
             const QImage image = cursor->image();
-            IDirectFBSurface *surface = createDFBSurface(image, image.format(), QDirectFBScreen::DontTrackSurface);
-            d_ptr->primarySurface->SetBlittingFlags(d_ptr->primarySurface, DSBLIT_BLEND_ALPHACHANNEL);
-            d_ptr->primarySurface->Blit(d_ptr->primarySurface, surface, 0, cursorRectangle.x(), cursorRectangle.y());
-            surface->Release(surface);
-#if (Q_DIRECTFB_VERSION >= 0x010000)
-            d_ptr->primarySurface->ReleaseSource(d_ptr->primarySurface);
-#endif
+            if (image.cacheKey() != d_ptr->cursorImageKey) {
+                if (d_ptr->cursorSurface) {
+                    releaseDFBSurface(d_ptr->cursorSurface);
+                }
+                d_ptr->cursorSurface = createDFBSurface(image, image.format(), QDirectFBScreen::TrackSurface);
+                d_ptr->cursorImageKey = image.cacheKey();
+            }
+
+            Q_ASSERT(d_ptr->cursorSurface);
+            primary->SetBlittingFlags(primary, DSBLIT_BLEND_ALPHACHANNEL);
+            primary->Blit(primary, d_ptr->cursorSurface, 0, cursorRectangle.x(), cursorRectangle.y());
         }
     }
 #endif
-    flipSurface(d_ptr->primarySurface, d_ptr->flipFlags, r, QPoint());
-#else
-    Q_UNUSED(r);
-    Q_UNUSED(changing);
+    flipSurface(primary, d_ptr->flipFlags, r, QPoint());
+    primary->SetBlittingFlags(primary, DSBLIT_NOFX);
 #endif
 }
 

@@ -170,7 +170,7 @@ struct AnchorData : public QSimplexVariable {
           skipInPreferred(0), type(Normal), hasSize(false),
           isLayoutAnchor(false) {}
 
-    virtual void updateChildrenSizes() { };
+    virtual void updateChildrenSizes() {}
     virtual void refreshSizeHints(qreal effectiveSpacing);
 
     virtual ~AnchorData() {}
@@ -299,7 +299,7 @@ struct ParallelAnchorData : public AnchorData
 class GraphPath
 {
 public:
-    GraphPath() {};
+    GraphPath() {}
 
     QSimplexConstraint *constraint(const GraphPath &path) const;
 #ifdef QT_DEBUG

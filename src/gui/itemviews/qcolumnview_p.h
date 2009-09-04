@@ -174,8 +174,8 @@ class QColumnViewDelegate : public QItemDelegate
 {
 
 public:
-    explicit QColumnViewDelegate(QObject *parent = 0) : QItemDelegate(parent) {};
-    ~QColumnViewDelegate() {};
+    explicit QColumnViewDelegate(QObject *parent = 0) : QItemDelegate(parent) {}
+    ~QColumnViewDelegate() {}
 
     void paint(QPainter *painter,
                const QStyleOptionViewItem &option,

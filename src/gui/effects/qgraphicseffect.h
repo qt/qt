@@ -292,7 +292,7 @@ class QGraphicsOpacityEffectPrivate;
 class Q_GUI_EXPORT QGraphicsOpacityEffect: public QGraphicsEffect
 {
     Q_OBJECT
-    Q_PROPERTY(int opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
+    Q_PROPERTY(qreal opacity READ opacity WRITE setOpacity NOTIFY opacityChanged)
     Q_PROPERTY(QBrush opacityMask READ opacityMask WRITE setOpacityMask NOTIFY opacityMaskChanged)
 public:
     QGraphicsOpacityEffect(QObject *parent = 0);

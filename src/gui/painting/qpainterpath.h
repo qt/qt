@@ -220,6 +220,7 @@ private:
     friend class QPainterPathStrokerPrivate;
     friend class QMatrix;
     friend class QTransform;
+    friend class QVectorPath;
     friend Q_GUI_EXPORT const QVectorPath &qtVectorPathForPath(const QPainterPath &);
 
 #ifndef QT_NO_DATASTREAM
@@ -237,6 +238,7 @@ public:
     friend class QPainterPathStrokerPrivate;
     friend class QMatrix;
     friend class QTransform;
+    friend class QVectorPath;
     friend struct QPainterPathPrivateDeleter;
 #ifndef QT_NO_DATASTREAM
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QPainterPath &);

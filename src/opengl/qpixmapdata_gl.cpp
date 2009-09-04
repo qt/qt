@@ -467,7 +467,7 @@ QPaintEngine* QGLPixmapData::paintEngine() const
         QGLFramebufferObjectFormat format;
         format.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
         format.setSamples(4);
-        format.setInternalFormat(m_hasAlpha ? GL_RGBA : GL_RGB);
+        format.setInternalFormat(GLenum(m_hasAlpha ? GL_RGBA : GL_RGB));
 
         m_renderFbo = qgl_fbo_pool()->acquire(size(), format);
 

@@ -42,6 +42,7 @@ HEADERS += \
         painting/qtransform.h \
         painting/qwindowsurface_p.h \
         painting/qwmatrix.h \
+        painting/qpaintbuffer_p.h
 
 
 SOURCES += \
@@ -79,6 +80,7 @@ SOURCES += \
         painting/qtextureglyphcache.cpp \
         painting/qtransform.cpp \
         painting/qwindowsurface.cpp \
+        painting/qpaintbuffer.cpp
 
         SOURCES +=                                      \
                 painting/qpaintengine_raster.cpp        \

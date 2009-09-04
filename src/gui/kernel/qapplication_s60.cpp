@@ -63,10 +63,13 @@
 #include "apgwgnam.h" // For CApaWindowGroupName
 #include <MdaAudioTonePlayer.h>     // For CMdaAudioToneUtility
 
-#if !defined(QT_NO_IM) && defined(Q_WS_S60)
-#include "qinputcontext.h"
-#include <private/qcoefepinputcontext_p.h>
-#endif // !defined(QT_NO_IM) && defined(Q_WS_S60)
+#if defined(Q_WS_S60)
+# if !defined(QT_NO_IM)
+#  include "qinputcontext.h"
+#  include <private/qcoefepinputcontext_p.h>
+# endif
+# include <private/qs60mainapplication_p.h>
+#endif
 
 #include "private/qstylesheetstyle_p.h"
 
@@ -715,6 +718,22 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
 
 void qt_init(QApplicationPrivate * /* priv */, int)
 {
+    if (!CCoeEnv::Static()) {
+        // The S60 framework has not been initalized. We need to do it.
+        TApaApplicationFactory factory(NewApplication);
+        CApaCommandLine* commandLine = 0;
+        TInt err = CApaCommandLine::GetCommandLineFromProcessEnvironment(commandLine);
+        // After this construction, CEikonEnv will be available from CEikonEnv::Static().
+        // (much like our qApp).
+        CEikonEnv* coe = new CEikonEnv;
+        QT_TRAP_THROWING(coe->ConstructAppFromCommandLineL(factory,*commandLine));
+        delete commandLine;
+
+        S60->qtOwnsS60Environment = true;
+    } else {
+        S60->qtOwnsS60Environment = false;
+    }
+
 #ifdef QT_NO_DEBUG
     if (!qgetenv("QT_S60_AUTO_FLUSH_WSERV").isEmpty())
 #endif
@@ -766,6 +785,13 @@ void qt_cleanup()
     // it dies.
     delete QApplicationPrivate::inputContext;
     QApplicationPrivate::inputContext = 0;
+
+    if (S60->qtOwnsS60Environment) {
+        CEikonEnv* coe = CEikonEnv::Static();
+        coe->PrepareToExit();
+        // The CEikonEnv itself is destroyed in here.
+        coe->DestroyEnvironment();
+    }
 }
 
 void QApplicationPrivate::initializeWidgetPaletteHash()
@@ -997,11 +1023,14 @@ void QApplication::beep()
     beep=NULL;
 }
 
-/*! \fn int QApplication::s60ProcessEvent(TWsEvent *event)
-    This function does the core processing of individual s60
-    \a{event}s. It returns 1 if the event was handled, 0 if
+/*!
+    \warning This function is only available on Symbian.
+
+    This function processes an individual Symbian window server
+    \a event. It returns 1 if the event was handled, 0 if
     the \a event was not handled, and -1 if the event was
-    not handled because the event handle was not in the map.
+    not handled because the event handle (\c{TWsEvent::Handle()})
+    is not known to Qt.
  */
 int QApplication::s60ProcessEvent(TWsEvent *event)
 {
@@ -1090,7 +1119,16 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
 }
 
 /*!
-  Returns false. Does nothing with the TWsEvent \a aEvent.
+  \warning This virtual function is only available on Symbian.
+
+  If you create an application that inherits QApplication and reimplement
+  this function, you get direct access to events that the are received
+  from the Symbian window server. The events are passed in the TWsEvent
+  \a aEvent parameter.
+
+  Return true if you want to stop the event from being processed. Return
+  false for normal event dispatching. The default implementation
+  false, and does nothing with \a aEvent.
  */
 bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 {
@@ -1098,9 +1136,11 @@ bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 }
 
 /*!
+  \warning This function is only available on Symbian.
+
   Handles \a{command}s which are typically handled by
   CAknAppUi::HandleCommandL(). Qts Ui integration into Symbian is
-  partially achieved by deriving from CAknAppUi.  Currently, exit,
+  partially achieved by deriving from CAknAppUi. Currently, exit,
   menu and softkey commands are handled.
 
   \sa s60EventFilter(), s60ProcessEvent()
@@ -1132,7 +1172,12 @@ void QApplication::symbianHandleCommand(int command)
 }
 
 /*!
+  \warning This function is only available on Symbian.
+
   Handles the resource change specified by \a type.
+
+  Currently, KEikDynamicLayoutVariantSwitch and
+  KAknsMessageSkinChange are handled.
  */
 void QApplication::symbianResourceChange(int type)
 {

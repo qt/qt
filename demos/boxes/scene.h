@@ -108,6 +108,8 @@ private:
 
 class GraphicsWidget : public QGraphicsProxyWidget
 {
+public:
+    GraphicsWidget() : QGraphicsProxyWidget(0, Qt::Window) {}
 protected:
     virtual QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     virtual void resizeEvent(QGraphicsSceneResizeEvent *event);

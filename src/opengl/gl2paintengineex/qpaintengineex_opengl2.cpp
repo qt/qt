@@ -1331,9 +1331,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     qt_resolve_version_2_0_functions(d->ctx);
 #endif
 
-    if (!d->shaderManager)
-        d->shaderManager = new QGLEngineShaderManager(d->ctx);
-    d->shaderManager->setDirty();
+    d->shaderManager = new QGLEngineShaderManager(d->ctx);
 
     glViewport(0, 0, d->width, d->height);
 
@@ -1416,6 +1414,9 @@ bool QGL2PaintEngineEx::end()
     d->ctx->d_ptr->active_engine = 0;
 
     d->resetGLState();
+
+    delete d->shaderManager;
+    d->shaderManager = 0;
 
     return false;
 }

@@ -40,17 +40,10 @@
 ****************************************************************************/
 
 // INCLUDE FILES
-#include <exception>
-#include <eikstart.h>
-#include "qts60mainapplication_p.h"
+#include <e32base.h>
+#include <qglobal.h>
 
-/**
- * factory function to create the QtS60Main application class
- */
-LOCAL_C CApaApplication* NewApplication()
-{
-    return new CQtS60MainApplication;
-}
+GLDEF_C TInt QtMainWrapper();
 
 /**
  * A normal Symbian OS executable provides an E32Main() function which is
@@ -58,5 +51,10 @@ LOCAL_C CApaApplication* NewApplication()
  */
 GLDEF_C TInt E32Main()
 {
-    return EikStart::RunApplication(NewApplication);
+    CTrapCleanup *cleanupStack = q_check_ptr(CTrapCleanup::New());
+    TInt err = 0;
+    TRAP(err, QtMainWrapper());
+    delete cleanupStack;
+
+    return err;
 }

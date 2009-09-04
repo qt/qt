@@ -48,20 +48,22 @@
 #include <s60main.rsg>
 #include <avkon.rsg>
 
-#include "qts60mainappui_p.h"
+#include "qs60mainappui_p.h"
 #include <QtGui/qapplication.h>
 #include <QtGui/qmenu.h>
 #include <QtGui/private/qt_s60_p.h>
+
+QT_BEGIN_NAMESPACE
 
 // ============================ MEMBER FUNCTIONS ===============================
 
 
 // -----------------------------------------------------------------------------
-// CQtS60MainAppUi::ConstructL()
+// QS60MainAppUi::ConstructL()
 // Symbian 2nd phase constructor can leave.
 // -----------------------------------------------------------------------------
 //
-void CQtS60MainAppUi::ConstructL()
+void QS60MainAppUi::ConstructL()
 {
     // Cone's heap and handle checks on app destruction are not suitable for Qt apps, as many
     // objects can still exist in static data at that point. Instead we will print relevant information
@@ -76,51 +78,44 @@ void CQtS60MainAppUi::ConstructL()
 
     CEikButtonGroupContainer* nativeContainer = Cba();
     nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS);
-
-    // Create async callback to call Qt main,
-    // this is required to give S60 app FW to finish starting correctly
-    TCallBack callBack(OpenCMainStaticCallBack, this);
-    iAsyncCallBack = new(ELeave) CAsyncCallBack(callBack, CActive::EPriorityIdle);
-    iAsyncCallBack->Call();
 }
 
 // -----------------------------------------------------------------------------
-// CQtS60MainAppUi::CQtS60MainAppUi()
+// QS60MainAppUi::QS60MainAppUi()
 // C++ default constructor can NOT contain any code, that might leave.
 // -----------------------------------------------------------------------------
 //
-CQtS60MainAppUi::CQtS60MainAppUi()
+QS60MainAppUi::QS60MainAppUi()
 {
     // No implementation required
 }
 
 // -----------------------------------------------------------------------------
-// CQtS60MainAppUi::~CQtS60MainAppUi()
+// QS60MainAppUi::~QS60MainAppUi()
 // Destructor.
 // -----------------------------------------------------------------------------
 //
-CQtS60MainAppUi::~CQtS60MainAppUi()
+QS60MainAppUi::~QS60MainAppUi()
 {
-    delete iAsyncCallBack;
 }
 
 // -----------------------------------------------------------------------------
-// CQtS60MainAppUi::HandleCommandL()
+// QS60MainAppUi::HandleCommandL()
 // Takes care of command handling.
 // -----------------------------------------------------------------------------
 //
-void CQtS60MainAppUi::HandleCommandL(TInt aCommand)
+void QS60MainAppUi::HandleCommandL(TInt aCommand)
 {
     if (qApp)
         qApp->symbianHandleCommand(aCommand);
 }
 
 // -----------------------------------------------------------------------------
-// CQtS60MainAppUi::HandleResourceChangeL()
+// QS60MainAppUi::HandleResourceChangeL()
 // Takes care of event handling.
 // -----------------------------------------------------------------------------
 //
-void CQtS60MainAppUi::HandleResourceChangeL(TInt aType)
+void QS60MainAppUi::HandleResourceChangeL(TInt aType)
 {
     CAknAppUi::HandleResourceChangeL(aType);
 
@@ -128,7 +123,7 @@ void CQtS60MainAppUi::HandleResourceChangeL(TInt aType)
         qApp->symbianResourceChange(aType);
 }
 
-void CQtS60MainAppUi::HandleWsEventL(const TWsEvent& aEvent, CCoeControl *control)
+void QS60MainAppUi::HandleWsEventL(const TWsEvent& aEvent, CCoeControl *control)
 {
     int result = 0;
     if (qApp)
@@ -147,44 +142,17 @@ void CQtS60MainAppUi::HandleWsEventL(const TWsEvent& aEvent, CCoeControl *contro
 //  AppView
 // -----------------------------------------------------------------------------
 //
-void CQtS60MainAppUi::HandleStatusPaneSizeChange()
+void QS60MainAppUi::HandleStatusPaneSizeChange()
 {
     HandleResourceChangeL(KInternalStatusPaneChange);
     HandleStackedControlsResourceChange(KInternalStatusPaneChange);
 }
 
-// -----------------------------------------------------------------------------
-//  Called asynchronously from ConstructL() - passes call to nan static method
-// -----------------------------------------------------------------------------
-//
-TInt CQtS60MainAppUi::OpenCMainStaticCallBack(TAny* aObject)
-{
-    CQtS60MainAppUi* myObj = static_cast<CQtS60MainAppUi*>(aObject);
-    myObj->OpenCMainCallBack();
-    return 0;
-}
-
-#include "qtS60main_mcrt0.cpp"
-
-// -----------------------------------------------------------------------------
-//  Invokes Qt main, the Qt main will block and when we return from there
-//  application should be closed. -> Call Exit();
-// -----------------------------------------------------------------------------
-//
-void CQtS60MainAppUi::OpenCMainCallBack()
-{
-    TInt ret;
-    TRAPD(err, ret = QtMainWrapper());
-    Q_UNUSED(ret);
-    Q_UNUSED(err);
-    Exit();
-}
-
-void CQtS60MainAppUi::DynInitMenuBarL(TInt, CEikMenuBar *)
+void QS60MainAppUi::DynInitMenuBarL(TInt, CEikMenuBar *)
 {
 }
 
-void CQtS60MainAppUi::DynInitMenuPaneL(TInt aResourceId, CEikMenuPane *aMenuPane)
+void QS60MainAppUi::DynInitMenuPaneL(TInt aResourceId, CEikMenuPane *aMenuPane)
 {
     if (aResourceId == R_QT_WRAPPERAPP_MENU) {
         if (aMenuPane->NumberOfItemsInPane() <= 1)
@@ -195,7 +163,7 @@ void CQtS60MainAppUi::DynInitMenuPaneL(TInt aResourceId, CEikMenuPane *aMenuPane
     }
 }
 
-void CQtS60MainAppUi::RestoreMenuL(CCoeControl* aMenuWindow, TInt aMenuId, TMenuType aMenuType)
+void QS60MainAppUi::RestoreMenuL(CCoeControl* aMenuWindow, TInt aMenuId, TMenuType aMenuType)
 {
     if ((aMenuId == R_QT_WRAPPERAPP_MENUBAR) || (aMenuId == R_AVKON_MENUPANE_FEP_DEFAULT)) {
         TResourceReader reader;
@@ -209,5 +177,7 @@ void CQtS60MainAppUi::RestoreMenuL(CCoeControl* aMenuWindow, TInt aMenuId, TMenu
     else
         DynInitMenuBarL(aMenuId, (CEikMenuBar*)aMenuWindow);
 }
+
+QT_END_NAMESPACE
 
 // End of File
