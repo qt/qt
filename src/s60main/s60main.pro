@@ -14,13 +14,7 @@ symbian {
     CONFIG	-=  jpeg
     INCLUDEPATH	+=  tmp $$QMAKE_INCDIR_QT/QtCore $$MW_LAYER_SYSTEMINCLUDE
     SOURCES	 =  qts60main.cpp \
-                    qts60mainapplication.cpp \
-                    qts60mainappui.cpp \
-                    qts60maindocument.cpp
-
-    HEADERS      =  qts60mainapplication_p.h \
-                    qts60mainappui_p.h \
-                    qts60maindocument_p.h
+                    qts60main_mcrt0.cpp
 
     # This block serves the minimalistic resource file for S60 3.1 platforms.
     # Note there is no way to ifdef S60 version in mmp file, that is why the resource

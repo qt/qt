@@ -2487,6 +2487,11 @@ void tst_QTableView::indexAt()
     QtTestTableView view;
 
     view.show();
+
+    //some styles change the scroll mode in their polish
+    view.setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
+    view.setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
+
     view.setModel(&model);
     view.setSpan(row, column, rowSpan, columnSpan);
     view.hideRow(hiddenRow);
@@ -3142,6 +3147,10 @@ void tst_QTableView::task240266_veryBigColumn()
     table.setColumnWidth(2, 9000); //very big column
     table.show();
     QTest::qWait(100);
+
+    //some styles change the scroll mode in their polish
+    table.setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
+    table.setVerticalScrollMode(QAbstractItemView::ScrollPerItem);
 
     QScrollBar *scroll = table.horizontalScrollBar();
     QCOMPARE(scroll->minimum(), 0);

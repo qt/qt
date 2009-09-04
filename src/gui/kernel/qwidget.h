@@ -830,7 +830,7 @@ public:
     inline QT3_SUPPORT void setFont(const QFont &f, bool) { setFont(f); }
     inline QT3_SUPPORT void setPalette(const QPalette &p, bool) { setPalette(p); }
     enum BackgroundOrigin { WidgetOrigin, ParentOrigin, WindowOrigin, AncestorOrigin };
-    inline QT3_SUPPORT void setBackgroundOrigin(BackgroundOrigin){};
+    inline QT3_SUPPORT void setBackgroundOrigin(BackgroundOrigin) {}
     inline QT3_SUPPORT BackgroundOrigin backgroundOrigin() const { return WindowOrigin; }
     inline QT3_SUPPORT QPoint backgroundOffset() const { return QPoint(); }
     inline QT3_SUPPORT void repaint(bool) { repaint(); }

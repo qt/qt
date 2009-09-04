@@ -46,7 +46,7 @@ public:
     QCssScanner_Generated(const QString &inp);
 
     inline QChar next() {
-        return (pos < input.length()) ? input.at(pos++).toLower() : QChar();
+        return (pos < input.length()) ? input.at(pos++) : QChar();
     }
     int handleCommentStart();
     int lex();

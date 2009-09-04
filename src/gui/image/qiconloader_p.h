@@ -139,7 +139,7 @@ class QIconTheme
 {
 public:
     QIconTheme(const QString &name);
-    QIconTheme() : m_valid(false) {};
+    QIconTheme() : m_valid(false) {}
     QStringList parents() { return m_parents; }
     QList <QIconDirInfo> keyList() { return m_keyList; }
     QString contentDir() { return m_contentDir; }
