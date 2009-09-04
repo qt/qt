@@ -1287,6 +1287,10 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
     }
     if (!d_ptr->backgroundColor.isValid())
         d_ptr->backgroundColor = Qt::green;
+    d_ptr->primarySurface->Clear(d_ptr->primarySurface, d_ptr->backgroundColor.red(),
+                                 d_ptr->backgroundColor.green(), d_ptr->backgroundColor.blue(),
+                                 d_ptr->backgroundColor.alpha());
+    d_ptr->primarySurface->Flip(d_ptr->primarySurface, 0, d_ptr->flipFlags);
 #endif
 
     return true;

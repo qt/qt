@@ -248,10 +248,6 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
         updateFormat();
 
     QWSWindowSurface::setGeometry(rect);
-#ifdef QT_NO_DIRECTFB_WM
-    if (oldRect.isEmpty())
-        screen->exposeRegion(screen->region(), 0);
-#endif
 }
 
 QByteArray QDirectFBWindowSurface::permanentState() const
@@ -357,15 +353,11 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
     const QRect windowGeometry = QDirectFBWindowSurface::geometry();
 #ifdef QT_NO_DIRECTFB_WM
     if (mode == Offscreen) {
-        QRegion r = region;
-        r.translate(offset + windowGeometry.topLeft());
-        screen->exposeRegion(r, 0);
-    } else {
-        screen->flipSurface(dfbSurface, flipFlags, region, offset);
-    }
-#else
-    screen->flipSurface(dfbSurface, flipFlags, region, offset);
+        screen->exposeRegion(region.translated(offset + geometry().topLeft()), 0);
+
+    } else
 #endif
+        screen->flipSurface(dfbSurface, flipFlags, region, offset);
 
 #ifdef QT_DIRECTFB_TIMING
     enum { Secs = 3 };
