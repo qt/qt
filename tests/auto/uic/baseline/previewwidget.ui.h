@@ -44,7 +44,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'previewwidget.ui'
 **
-** Created: Tue Aug 18 19:03:32 2009
+** Created: Fri Sep 4 10:17:14 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -265,7 +265,6 @@ public:
         RadioButton1->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "RadioButton1", 0, QApplication::UnicodeUTF8));
         RadioButton2->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "RadioButton2", 0, QApplication::UnicodeUTF8));
         RadioButton3->setText(QApplication::translate("qdesigner_internal::PreviewWidget", "RadioButton3", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(qdesigner_internal__PreviewWidget);
     } // retranslateUi
 
 };
