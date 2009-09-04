@@ -2082,7 +2082,13 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 // WM_ACTIVATEAPP handles the "true" false case, as this is only when the application
                 // loses focus. Doing it here would result in the widget getting focus to not know
                 // where it got it from; it would simply get a 0 value as the old focus widget.
+#ifdef Q_OS_WINCE
+                {
+                    if (widget->windowState() & Qt::WindowMinimized)
+                        widget->dataPtr()->window_state &= ~Qt::WindowMinimized;
+#else
                 if (!(widget->windowState() & Qt::WindowMinimized)) {
+#endif
                     // Ignore the activate message send by WindowsXP to a minimized window
 #ifdef Q_OS_WINCE_WM
                     if  (widget->windowState() & Qt::WindowFullScreen)
