@@ -1,0 +1,39 @@
+#!/usr/bin/perl -w
+
+my $deffile = $ARGV[0];
+my $target = $ARGV[1];
+
+my @exports;
+open (HANDLE, "< $deffile") or die ("Could not open $deffile");
+while (<HANDLE>) {
+    while (/(_Z[^ ]+)/xg) {
+        push (@exports, $1);
+    }
+}
+close(HANDLE);
+
+open(HANDLE, "> $target.s") or die("Could not open $target.s");
+print (HANDLE "\tEXPORT __DLL_Export_Table__\n\n");
+print (HANDLE "\tEXPORT |DLL##ExportTable|\n\n");
+print (HANDLE "\tEXPORT |DLL##ExportTableSize|\n\n");
+print (HANDLE "\tAREA ExportTable, CODE\n");
+print (HANDLE "__DLL_Export_Table__\n");
+print (HANDLE "\tBX lr\n");
+print (HANDLE "|DLL##ExportTableSize|\n");
+print (HANDLE "\tDCD " . scalar(@exports) . "\n");
+print (HANDLE "|DLL##ExportTable|\n");
+print (HANDLE "\tPRESERVE8\n\n");
+for (my $c = 0; $c < scalar(@exports); $c++) {
+    print (HANDLE "\tIMPORT $exports[$c]\n");
+    print (HANDLE "\tDCD $exports[$c] ; \@ ". ($c + 1) . "\n");
+}
+print (HANDLE "\n");
+print (HANDLE "\tAREA |.directive|, READONLY, NOALLOC\n");
+print (HANDLE "\tDCB  \"#<SYMEDIT>#\\n\"\n");
+print (HANDLE "\tDCB  \"EXPORT DLL##ExportTable\\n\"\n");
+print (HANDLE "\tDCB  \"EXPORT DLL##ExportTableSize\\n\"\n");
+print (HANDLE "\tEND\n");
+close(HANDLE);
+
+my $result = system("armasm --apcs /inter -o $target $target.s");
+die("Could not execute armar") if ($result);

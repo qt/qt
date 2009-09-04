@@ -1,46 +1,17 @@
 #!/usr/bin/perl -w
 
 my $objects_dir = $ARGV[0];
-my $target = $ARGV[1];
+my $deffile = $ARGV[1];
 my $dllFile = $ARGV[2];
-
-shift @ARGV;
-shift @ARGV;
-shift @ARGV;
-
-sub uniqueify {
-    # String must be sorted beforehand.
-    my $c;
-    my $last = $_[0];
-    for ($c = 1; $c < scalar(@_); $c++) {
-        if ($_[$c] eq $last) {
-            splice(@_, $c, 1);
-            $c--;
-        } else {
-            $last = $_[$c];
-        }
-    }
-
-    return @_;
-}
+my $target = $ARGV[3];
 
 my @exports;
-
-foreach (@ARGV) {
-    my $file;
-    open($file, "< $_") or die("Could not open $_");
-    while (<$file>) {
-        push (@exports, $_);
+open (HANDLE, "< $deffile") or die ("Could not open $deffile");
+while (<HANDLE>) {
+    while (/(_Z[^ ]+)/xg) {
+        push (@exports, $1);
     }
-    close($file);
 }
-
-@exports = sort(@exports);
-
-@exports = uniqueify(@exports);
-
-open(HANDLE, "> test.txt");
-print (HANDLE join("", @exports));
 close(HANDLE);
 
 my @ordinalfiles;

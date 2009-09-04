@@ -4,11 +4,23 @@ exports.input = OBJECTS
 exports.variable_out = ORDINALMAP
 exports.CONFIG = no_link
 
-ordinalmap.input = ORDINALMAP
-ordinalmap.output = $$OBJECTS_DIR/$${TARGET}.lib
-ordinalmap.commands = makeordinalmap $$OBJECTS_DIR $$OBJECTS_DIR/$${TARGET}.lib $${TARGET}.dll ${QMAKE_FILE_NAME}
-ordinalmap.variable_out = PRE_TARGETDEPS
-ordinalmap.CONFIG = combine
+deffile.input = ORDINALMAP
+deffile.output = $$OBJECTS_DIR/$${TARGET}.def
+deffile.commands = makedeffile $$OBJECTS_DIR/$${TARGET}.def ${QMAKE_FILE_NAME}
+deffile.variable_out = DEFFILE
+deffile.CONFIG = no_link combine
 
-QMAKE_EXTRA_COMPILERS += ordinalmap
+expfile.input = DEFFILE
+expfile.output = $$OBJECTS_DIR/$${TARGET}.exp
+expfile.commands = makeexpfile ${QMAKE_FILE_NAME} $$OBJECTS_DIR/$${TARGET}.exp
+expfile.variable_out = PRE_TARGETDEPS
+
+ordinalmap.input = DEFFILE
+ordinalmap.output = $$OBJECTS_DIR/$${TARGET}.lib
+ordinalmap.commands = makeordinalmap $$OBJECTS_DIR ${QMAKE_FILE_NAME} $${TARGET}.dll $$OBJECTS_DIR/$${TARGET}.lib
+ordinalmap.variable_out = PRE_TARGETDEPS
+
 QMAKE_EXTRA_COMPILERS += exports
+QMAKE_EXTRA_COMPILERS += deffile
+QMAKE_EXTRA_COMPILERS += expfile
+QMAKE_EXTRA_COMPILERS += ordinalmap

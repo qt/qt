@@ -1,0 +1,48 @@
+#!/usr/bin/perl -w
+
+my $deffile = $ARGV[0];
+
+shift @ARGV;
+
+sub uniqueify {
+    # String must be sorted beforehand.
+    my $c;
+    my $last = $_[0];
+    for ($c = 1; $c < scalar(@_); $c++) {
+        if ($_[$c] eq $last) {
+            splice(@_, $c, 1);
+            $c--;
+        } else {
+            $last = $_[$c];
+        }
+    }
+
+    return @_;
+}
+
+my @exports;
+
+foreach (@ARGV) {
+    my $file;
+    open($file, "< $_") or die("Could not open $_");
+    while (<$file>) {
+        s/[\r\n]//g;
+        push (@exports, $_);
+    }
+    close($file);
+}
+
+@exports = sort(@exports);
+
+@exports = uniqueify(@exports);
+
+open(HANDLE, "> $deffile");
+print (HANDLE "EXPORTS\n; NEW:\n");
+for (my $c = 0; $c < scalar(@exports); $c++) {
+    if ($exports[$c] =~ /[ ]*([^ ]+)(.*)/) {
+        print (HANDLE "\t$1 \@ " . ($c + 1) . "  NONAME$2\n");
+    }
+}
+print(HANDLE "\n");
+close(HANDLE);
+
