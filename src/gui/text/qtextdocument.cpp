@@ -2521,13 +2521,15 @@ void QTextHtmlExporter::emitBlock(const QTextBlock &block)
                 default: html += QLatin1String("<ul"); // ### should not happen
             }
 
+            html += QLatin1String(" style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px;");
+
             if (format.hasProperty(QTextFormat::ListIndent)) {
-                html += QLatin1String(" style=\"-qt-list-indent: ");
+                html += QLatin1String(" -qt-list-indent: ");
                 html += QString::number(format.indent());
-                html += QLatin1String(";\"");
+                html += QLatin1Char(';');
             }
 
-            html += QLatin1Char('>');
+            html += QLatin1String("\">");
         }
 
         html += QLatin1String("<li");
