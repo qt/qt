@@ -44,7 +44,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'tablewidgeteditor.ui'
 **
-** Created: Tue Aug 18 19:03:32 2009
+** Created: Fri Sep 4 10:17:15 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -375,7 +375,6 @@ public:
 #endif // QT_NO_TOOLTIP
         moveRowDownButton->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "D", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("qdesigner_internal::TableWidgetEditor", "Icon", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(qdesigner_internal__TableWidgetEditor);
     } // retranslateUi
 
 };

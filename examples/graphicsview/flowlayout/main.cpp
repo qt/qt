@@ -50,6 +50,7 @@ int main(int argc, char **argv)
     QGraphicsView *view = new QGraphicsView(&scene);
     Window *w = new Window;
     scene.addItem(w);
+    view->resize(400, 300);
     view->show();
     return app.exec();
 }

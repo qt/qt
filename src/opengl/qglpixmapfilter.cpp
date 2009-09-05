@@ -324,7 +324,7 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
     filter->setSource(generateBlurShader(radius(), quality() == Qt::SmoothTransformation));
 
     QGLFramebufferObjectFormat format;
-    format.setInternalFormat(GLenum(src.hasAlphaChannel() ? GL_RGBA : GL_RGB));
+    format.setInternalTextureFormat(GLenum(src.hasAlphaChannel() ? GL_RGBA : GL_RGB));
     QGLFramebufferObject *fbo = qgl_fbo_pool()->acquire(src.size(), format);
 
     if (!fbo)

@@ -2035,7 +2035,6 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
 #endif
                     // Ignore the activate message send by WindowsXP to a minimized window
 #ifdef Q_WS_WINCE_WM
-                {
                     if  (widget->windowState() & Qt::WindowFullScreen)
                         qt_wince_hide_taskbar(widget->winId());
 #endif

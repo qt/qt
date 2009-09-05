@@ -87,6 +87,7 @@ private slots:
     void restartedTimerFiresTooSoon();
     void timerFiresOnlyOncePerProcessEvents_data();
     void timerFiresOnlyOncePerProcessEvents();
+    void timerIdPersistsAfterThreadExit();
 };
 
 class TimerHelper : public QObject
@@ -560,6 +561,45 @@ void tst_QTimer::timerFiresOnlyOncePerProcessEvents()
     }
 
     QCOMPARE(longSlot.count, 1);
+}
+
+class TimerIdPersistsAfterThreadExitThread : public QThread
+{
+public:
+    QTimer *timer;
+    int timerId, returnValue;
+
+    TimerIdPersistsAfterThreadExitThread()
+        : QThread(), timer(0), timerId(-1), returnValue(-1)
+    { }
+    ~TimerIdPersistsAfterThreadExitThread()
+    {
+        delete timer;
+    }
+
+    void run()
+    {
+        QEventLoop eventLoop;
+        timer = new QTimer;
+        connect(timer, SIGNAL(timeout()), &eventLoop, SLOT(quit()));
+        timer->start(100);
+        timerId = timer->timerId();
+        returnValue = eventLoop.exec();
+    }
+};
+
+void tst_QTimer::timerIdPersistsAfterThreadExit()
+{
+    TimerIdPersistsAfterThreadExitThread thread;
+    thread.start();
+    QVERIFY(thread.wait(30000));
+    QCOMPARE(thread.returnValue, 0);
+
+    // even though the thread has exited, and the event dispatcher destroyed, the timer is still
+    // "active", meaning the timer id should NOT be reused (i.e. the event dispatcher should not
+    // have unregistered it)
+    int timerId = thread.startTimer(100);
+    QVERIFY((timerId & 0xffffff) != (thread.timerId & 0xffffff));
 }
 
 QTEST_MAIN(tst_QTimer)

@@ -74,7 +74,7 @@ void Worker::postMessage(const String& message, ExceptionCode& ec)
 void Worker::postMessage(const String& message, MessagePort* messagePort, ExceptionCode& ec)
 {
     // Disentangle the port in preparation for sending it to the remote context.
-    OwnPtr<MessagePortChannel> channel = messagePort ? messagePort->disentangle(ec) : 0;
+    OwnPtr<MessagePortChannel> channel = messagePort ? messagePort->disentangle(ec) : PassOwnPtr<MessagePortChannel>(0);
     if (ec)
         return;
     m_contextProxy->postMessageToWorkerContext(message, channel.release());

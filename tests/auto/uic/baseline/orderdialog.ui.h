@@ -44,7 +44,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'orderdialog.ui'
 **
-** Created: Tue Aug 18 19:03:31 2009
+** Created: Fri Sep 4 10:17:14 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -155,7 +155,6 @@ public:
 #ifndef QT_NO_TOOLTIP
         downButton->setToolTip(QApplication::translate("qdesigner_internal::OrderDialog", "Move page down", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
-        Q_UNUSED(qdesigner_internal__OrderDialog);
     } // retranslateUi
 
 };

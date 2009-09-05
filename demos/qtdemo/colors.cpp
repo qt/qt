@@ -274,6 +274,8 @@ void Colors::parseArgs(int argc, char *argv[])
                                  + "[-low] [-ticker-letters<int>] [-ticker-speed<float>] [-no-ticker-morph] "
                                  + "[-ticker-morph-speed<float>] [-ticker-text<string>]");
             exit(0);
+        } else if (s == "-verbose") {
+            // this option was already handled above
         } else{
             QMessageBox::warning(0, "QtDemo", QString("Unrecognized argument:\n") + s);
             exit(0);

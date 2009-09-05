@@ -687,11 +687,13 @@ QSizeF QGraphicsWidget::sizeHint(Qt::SizeHint which, const QSizeF &constraint) c
     Q_D(const QGraphicsWidget);
     QSizeF sh;
     if (d->layout) {
-        sh = d->layout->effectiveSizeHint(which, constraint);
+        QSizeF marginSize(0,0);
         if (d->margins) {
-            sh += QSizeF(d->margins[d->Left] + d->margins[d->Right],
+            marginSize = QSizeF(d->margins[d->Left] + d->margins[d->Right],
                          d->margins[d->Top] + d->margins[d->Bottom]);
         }
+        sh = d->layout->effectiveSizeHint(which, constraint - marginSize);
+        sh += marginSize;
     } else {
         switch (which) {
             case Qt::MinimumSize:

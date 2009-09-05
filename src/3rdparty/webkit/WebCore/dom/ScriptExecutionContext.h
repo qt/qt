@@ -45,7 +45,7 @@ namespace WebCore {
 
     enum MessageDestination {
         InspectorControllerDestination,
-        ConsoleDestination,
+        ConsoleDestination
     };
 
     class ScriptExecutionContext {

@@ -44,7 +44,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'plugindialog.ui'
 **
-** Created: Tue Aug 18 19:03:31 2009
+** Created: Fri Sep 4 10:17:14 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -132,7 +132,6 @@ public:
         QTreeWidgetItem *___qtreewidgetitem = treeWidget->headerItem();
         ___qtreewidgetitem->setText(0, QApplication::translate("PluginDialog", "1", 0, QApplication::UnicodeUTF8));
         message->setText(QApplication::translate("PluginDialog", "TextLabel", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(PluginDialog);
     } // retranslateUi
 
 };

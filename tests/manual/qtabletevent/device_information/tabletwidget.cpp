@@ -47,6 +47,7 @@ TabletWidget::TabletWidget()
 {
     QPalette newPalette = palette();
     newPalette.setColor(QPalette::Window, Qt::white);
+    newPalette.setColor(QPalette::WindowText, Qt::black);
     setPalette(newPalette);
     qApp->installEventFilter(this);
     resetAttributes();

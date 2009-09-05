@@ -67,6 +67,7 @@ QT_MODULE(Test)
 namespace QTest
 {
     enum MouseAction { MousePress, MouseRelease, MouseClick, MouseDClick, MouseMove };
+    const char *mouseActionNames[] = { "MousePress", "MouseRelease", "MouseClick", "MouseDClick", "MouseMove" };
 
     static void mouseEvent(MouseAction action, QWidget *widget, Qt::MouseButton button,
                            Qt::KeyboardModifiers stateKey, QPoint pos, int delay=-1)
@@ -113,8 +114,10 @@ namespace QTest
                 QTEST_ASSERT(false);
         }
         QSpontaneKeyEvent::setSpontaneous(&me);
-        if (!qApp->notify(widget, &me))
-            QTest::qWarn("Mouse event not accepted by receiving widget");
+        if (!qApp->notify(widget, &me)) {
+            QString warning("Mouse event \"%1\" not accepted by receiving widget");
+            QTest::qWarn(warning.arg(mouseActionNames[static_cast<int>(action)]).toAscii().data());
+        }
 
     }
 

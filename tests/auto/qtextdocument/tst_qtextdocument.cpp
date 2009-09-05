@@ -1128,7 +1128,7 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("lists") << QTextDocumentFragment(&doc)
                           <<
                              QString("EMPTYBLOCK") +
-                             QString("<ul style=\"-qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li DEFAULTBLOCKSTYLE>Blah</li></ul>");
+                             QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li DEFAULTBLOCKSTYLE>Blah</li></ul>");
     }
 
     {
@@ -1151,7 +1151,7 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("charfmt-for-list-item") << QTextDocumentFragment(&doc)
                           <<
                              QString("EMPTYBLOCK") +
-                             QString("<ul style=\"-qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li style=\" color:#0000ff;\" DEFAULTBLOCKSTYLE><span style=\" color:#ff0000;\">Blah</span></li></ul>");
+                             QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li style=\" color:#0000ff;\" DEFAULTBLOCKSTYLE><span style=\" color:#ff0000;\">Blah</span></li></ul>");
     }
 
     {
@@ -1181,7 +1181,7 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("list-indent") << QTextDocumentFragment(&doc)
                                   <<
                                     QString("EMPTYBLOCK") +
-                                    QString("<ul style=\"-qt-list-indent: 4;\"><li DEFAULTBLOCKSTYLE>Blah</li></ul>");
+                                    QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 4;\"><li DEFAULTBLOCKSTYLE>Blah</li></ul>");
     }
 
     {
@@ -1444,6 +1444,21 @@ void tst_QTextDocument::toHtml_data()
                                       QString("<p OPENDEFAULTBLOCKSTYLE page-break-before:always;\">Foo</p>"
                                               "\n<p OPENDEFAULTBLOCKSTYLE page-break-before:always; page-break-after:always;\">Bar</p>"
                                               "\n<table border=\"1\" style=\" page-break-after:always;\" cellspacing=\"2\">\n<tr>\n<td></td></tr></table>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextListFormat listFmt;
+        listFmt.setStyle(QTextListFormat::ListDisc);
+
+        cursor.insertList(listFmt);
+        cursor.insertText("Blah");
+
+        QTest::newRow("list-ul-margin") << QTextDocumentFragment(&doc)
+                                        << QString("EMPTYBLOCK") +
+                                           QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blah</li></ul>");
+
     }
 }
 
