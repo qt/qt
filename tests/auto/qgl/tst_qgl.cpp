@@ -402,6 +402,89 @@ void tst_QGL::getSetCheck()
     obj1.setPlane(TEST_INT_MAX);
     QCOMPARE(TEST_INT_MAX, obj1.plane());
 
+    // operator== and operator!= for QGLFormat
+    QGLFormat format1;
+    QGLFormat format2;
+
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+    format1.setDoubleBuffer(false);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setDoubleBuffer(false);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setDepthBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setDepthBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setAccumBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setAccumBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setRedBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setRedBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setGreenBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setGreenBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setBlueBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setBlueBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setAlphaBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setAlphaBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setStencilBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setStencilBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setSamples(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setSamples(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setSwapInterval(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setSwapInterval(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setPlane(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setPlane(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
     MyGLContext obj2(obj1);
     // bool QGLContext::windowCreated()
     // void QGLContext::setWindowCreated(bool)
