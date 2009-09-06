@@ -60,6 +60,9 @@ public:
 
     VideoOutput& videoOutput();
 
+protected:
+    virtual bool activateOnMediaObject(MediaObject *mo);
+
 private:
     QScopedPointer<QWidget>                 m_widget;
 

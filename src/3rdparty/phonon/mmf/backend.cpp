@@ -132,9 +132,7 @@ bool Backend::connectNodes(QObject *source, QObject *target)
     MediaNode *const mediaSource = static_cast<MediaNode *>(source);
     MediaNode *const mediaTarget = static_cast<MediaNode *>(target);
 
-    mediaSource->connectMediaNode(mediaTarget);
-
-    return false;
+    return mediaSource->connectMediaNode(mediaTarget);
 }
 
 bool Backend::disconnectNodes(QObject *source, QObject *target)

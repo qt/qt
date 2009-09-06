@@ -38,6 +38,8 @@ namespace Phonon
 {
 namespace MMF
 {
+class MediaObject;
+
 /**
  * @short Base class for all nodes in the MMF backend.
  *
@@ -51,7 +53,8 @@ namespace MMF
  *
  * MediaNode provides spectatability into the chain, and also allows the
  * connection code to be written in a polymorphic manner, instead of putting it
- * all in the Backend class.
+ * all in the Backend class. Due to that MMF has no concept of chaining, the
+ * order of the nodes in the graph has no meaning.
  */
 class MediaNode : public QObject
 {
@@ -66,9 +69,27 @@ public:
     MediaNode *source() const;
     MediaNode *target() const;
 
+protected:
+    /**
+     * When connectMediaNode() is called and a MediaObject is part of
+     * the its graph, this function will be called for each MediaNode in the
+     * graph for which it hasn't been called yet.
+     *
+     * The caller guarantees that @p mo is always non-null.
+     */
+    virtual bool activateOnMediaObject(MediaObject *mo) = 0;
+
 private:
-    MediaNode *m_source;
-    MediaNode *m_target;
+    /**
+     * Finds a MediaObject anywhere in the graph @p target is apart of, and
+     * calls activateOnMediaObject() for all MediaNodes in the graph for which
+     * it hasn't been applied to already.
+     */
+    bool applyNodesOnMediaObject(MediaNode *target);
+
+    MediaNode * m_source;
+    MediaNode * m_target;
+    bool        m_isApplied;
 };
 }
 }

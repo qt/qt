@@ -16,8 +16,10 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include "mediaobject.h"
 #include "utils.h"
 #include "videooutput.h"
+
 #include "videowidget.h"
 
 QT_BEGIN_NAMESPACE
@@ -161,6 +163,11 @@ VideoOutput& MMF::VideoWidget::videoOutput()
     return *static_cast<VideoOutput*>(widget());
 }
 
+bool MMF::VideoWidget::activateOnMediaObject(MediaObject *mo)
+{
+    mo->setVideoOutput(&videoOutput());
+    return true;
+}
 
 QT_END_NAMESPACE
 

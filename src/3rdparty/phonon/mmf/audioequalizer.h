@@ -47,7 +47,7 @@ protected:
     virtual void parameterChanged(const int id,
                                   const QVariant &value);
 
-    virtual void activateOn(CPlayerType *player);
+    virtual bool activateOn(CPlayerType *player);
 
 private:
     inline CAudioEqualizer *eq() const;

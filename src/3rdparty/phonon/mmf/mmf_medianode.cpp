@@ -16,6 +16,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include "mediaobject.h"
+
 #include "mmf_medianode.h"
 
 QT_BEGIN_NAMESPACE
@@ -26,6 +28,7 @@ using namespace Phonon::MMF;
 MMF::MediaNode::MediaNode(QObject *parent) : QObject::QObject(parent)
                                            , m_source(0)
                                            , m_target(0)
+                                           , m_isApplied(false)
 {
 }
 
@@ -33,13 +36,15 @@ bool MMF::MediaNode::connectMediaNode(MediaNode *target)
 {
     m_target = target;
     m_target->setSource(this);
-    return true;
+
+    return applyNodesOnMediaObject(target);
 }
 
 bool MMF::MediaNode::disconnectMediaNode(MediaNode *target)
 {
     Q_UNUSED(target);
     m_target = 0;
+    m_isApplied = false;
     return false;
 }
 
@@ -58,6 +63,55 @@ MMF::MediaNode *MMF::MediaNode::target() const
     return m_target;
 }
 
+bool MediaNode::applyNodesOnMediaObject(MediaNode *)
+{
+    // Algorithmically, this can be expressed in a more efficient way by
+    // exercising available assumptions, but it complicates code for input
+    // data(length of the graph) which typically is very small.
+
+    // First, we go to the very beginning of the graph.
+    MediaNode *current = this;
+    do {
+        MediaNode *const candidate = current->source();
+        if (candidate)
+            current = candidate;
+        else
+            break;
+    }
+    while (current);
+
+    // Now we do two things, while walking to the other end:
+    // 1. Find the MediaObject, if present
+    // 2. Collect a list of all unapplied MediaNodes
+
+    QList<MediaNode *> unapplied;
+    MMF::MediaObject *mo = 0;
+
+    do {
+        if (!current->m_isApplied)
+            unapplied.append(current);
+
+        if (!mo)
+            mo = qobject_cast<MMF::MediaObject *>(current);
+
+        current = current->target();
+    }
+    while (current);
+
+    // Now, lets activate all the objects, if we found the MediaObject.
+
+    if (mo) {
+        for (int i = 0; i < unapplied.count(); ++i) {
+            MediaNode *const at = unapplied.at(i);
+
+            // We don't want to apply MediaObject on itself.
+            if (at != mo)
+                at->activateOnMediaObject(mo);
+        }
+    }
+
+    return true;
+}
 
 QT_END_NAMESPACE
 

@@ -29,7 +29,6 @@ using namespace Phonon::MMF;
 AbstractAudioEffect::AbstractAudioEffect(QObject *parent,
                                          const QList<EffectParameter> &params) : MediaNode::MediaNode(parent)
                                                                                , m_params(params)
-                                                                               , m_isApplied(false)
 {
 }
 
@@ -55,50 +54,21 @@ QVariant AbstractAudioEffect::parameterValue(const EffectParameter &queriedParam
         return val;
 }
 
+bool AbstractAudioEffect::activateOnMediaObject(MediaObject *mo)
+{
+    AudioPlayer *const ap = qobject_cast<AudioPlayer *>(mo->abstractPlayer());
+
+    if (ap)
+        return activateOn(ap->player());
+    else
+        return true;
+}
+
 void AbstractAudioEffect::setParameterValue(const EffectParameter &param,
                                             const QVariant &newValue)
 {
     m_values.insert(param.id(), newValue);
     parameterChanged(param.id(), newValue);
-}
-
-bool AbstractAudioEffect::activateBackwardsInChain(MediaNode *target)
-{
-    // TODO we need to walk forward too.
-    MediaNode *current = target;
-
-    while (current) {
-        MMF::MediaObject *const mo = qobject_cast<MMF::MediaObject *>(current);
-        if(!mo)
-            continue;
-
-        AudioPlayer *const ap = qobject_cast<AudioPlayer *>(mo->abstractPlayer());
-
-        if (ap) {
-            activateOn(ap->player());
-            // There might be stuff before the mediaobject, but
-            // that's undefined for us.
-            return true;
-        }
-        else
-            current = current->source();
-    }
-
-    return false;
-}
-
-bool AbstractAudioEffect::connectMediaNode(MediaNode *target)
-{
-    /**
-     * We first call this function, so source() and target()
-     * is properly set up.
-     */
-    MediaNode::connectMediaNode(target);
-
-    if (!m_isApplied && activateBackwardsInChain(target))
-        m_isApplied = true;
-
-    return true;
 }
 
 QT_END_NAMESPACE

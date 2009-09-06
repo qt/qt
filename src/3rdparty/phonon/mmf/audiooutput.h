@@ -70,16 +70,16 @@ public:
      */
     virtual bool setOutputDevice(const Phonon::AudioOutputDevice &);
 
-    /**
-     * Called by backend when nodes are connected.
-     */
-    void setVolumeObserver(VolumeObserver* observer);
+protected:
+    virtual bool activateOnMediaObject(MediaObject *mo);
 
 Q_SIGNALS:
     void volumeChanged(qreal volume);
     void audioDeviceFailed();
 
 private:
+    void setVolumeObserver(VolumeObserver* observer);
+
     qreal                           m_volume;
 
     // Not owned

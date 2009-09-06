@@ -20,6 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "audiooutput.h"
 #include "defs.h"
+#include "mediaobject.h"
 #include "utils.h"
 #include "volumeobserver.h"
 
@@ -91,5 +92,10 @@ void MMF::AudioOutput::setVolumeObserver(VolumeObserver* observer)
     }
 }
 
+bool MMF::AudioOutput::activateOnMediaObject(MediaObject *mo)
+{
+    setVolumeObserver(mo);
+    return true;
+}
 
 QT_END_NAMESPACE

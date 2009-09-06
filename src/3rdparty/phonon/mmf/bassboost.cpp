@@ -36,9 +36,10 @@ void BassBoost::parameterChanged(const int,
     // We should never be called, because we have no parameters.
 }
 
-void BassBoost::activateOn(CPlayerType *player)
+bool BassBoost::activateOn(CPlayerType *player)
 {
     m_effect.reset(CBassBoost::NewL(*player, true));
+    return true;
 }
 
 QT_END_NAMESPACE

@@ -80,14 +80,15 @@ public:
     // VolumeObserver
     void volumeChanged(qreal volume);
 
-    // MediaNode
-    virtual bool connectMediaNode(MediaNode *target);
-
     /**
      * This class owns the AbstractPlayer, and will delete it upon
      * destruction.
      */
     AbstractPlayer *abstractPlayer() const;
+
+    void setVideoOutput(VideoOutput* videoOutput);
+
+    virtual bool activateOnMediaObject(MediaObject *);
 
 Q_SIGNALS:
     void totalTimeChanged(qint64 length);
@@ -118,7 +119,6 @@ private:
     static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
 
 private:
-    void setVideoOutput(VideoOutput* videoOutput);
 
     // Audio / video media type recognition
     bool                                m_recognizerOpened;

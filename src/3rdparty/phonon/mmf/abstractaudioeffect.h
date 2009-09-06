@@ -66,7 +66,6 @@ public:
     virtual void setParameterValue(const EffectParameter &,
                                    const QVariant &newValue);
 
-    virtual bool connectMediaNode(MediaNode *target);
     virtual bool disconnectMediaNode(MediaNode *target);
 
     enum Type
@@ -83,20 +82,19 @@ public:
     };
 
 protected:
-    virtual void activateOn(CPlayerType *player) = 0;
+    virtual bool activateOn(CPlayerType *player) = 0;
     virtual void parameterChanged(const int id,
                                   const QVariant &value) = 0;
 
+    /**
+     * Part of the implementation of AbstractAudioEffect. Forwards the call to
+     * activateOn(), essentially.
+     */
+    virtual bool activateOnMediaObject(MediaObject *mo);
+
     QScopedPointer<CAudioEffect>    m_effect;
 private:
-    /**
-     * From @p target, we walk the chain backwards and try to find the media
-     * object, and apply ourselves to that one.
-     */
-    bool activateBackwardsInChain(MediaNode *target);
-
     const QList<EffectParameter>    m_params;
-    bool                            m_isApplied;
     QHash<int, QVariant>            m_values;
 };
 }

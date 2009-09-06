@@ -359,7 +359,6 @@ void MMF::MediaObject::volumeChanged(qreal volume)
     m_player->volumeChanged(volume);
 }
 
-
 //-----------------------------------------------------------------------------
 // Video output
 //-----------------------------------------------------------------------------
@@ -375,35 +374,10 @@ AbstractPlayer *MediaObject::abstractPlayer() const
     return m_player.data();
 }
 
-bool MediaObject::connectMediaNode(MediaNode *target)
+bool MediaObject::activateOnMediaObject(MediaObject *)
 {
-    TRACE_CONTEXT(Backend::connect, EBackend);
-
-    MediaNode::connectMediaNode(target);
-
-    bool result = false;
-
-    {
-        AudioOutput *const audioOutput = qobject_cast<AudioOutput *>(target);
-
-        if (audioOutput) {
-            TRACE("this 0x%08x -> audioOutput 0x%08x", this, audioOutput);
-            audioOutput->setVolumeObserver(this);
-            return true;
-        }
-    }
-
-    {
-        VideoWidget *const videoWidget = qobject_cast<VideoWidget *>(target);
-
-        if (videoWidget) {
-            TRACE("this 0x%08x -> videoWidget 0x%08x", this, videoWidget);
-            this->setVideoOutput(&videoWidget->videoOutput());
-            return true;
-        }
-    }
-
-    return false;
+    // Guess what, we do nothing.
+    return true;
 }
 
 QT_END_NAMESPACE

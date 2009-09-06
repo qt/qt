@@ -37,9 +37,10 @@ void AudioEqualizer::parameterChanged(const int pid,
     TRAP_IGNORE(eq()->SetBandLevelL(pid, value.toInt()));
 }
 
-void AudioEqualizer::activateOn(CPlayerType *player)
+bool AudioEqualizer::activateOn(CPlayerType *player)
 {
     m_effect.reset(CAudioEqualizer::NewL(*player));
+    return true;
 }
 
 CAudioEqualizer *AudioEqualizer::eq() const
