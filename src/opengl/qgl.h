@@ -403,10 +403,6 @@ private:
 #endif
     friend class QGLFramebufferObject;
     friend class QGLFramebufferObjectPrivate;
-#ifdef Q_WS_WIN
-    friend bool qt_resolve_GLSL_functions(QGLContext *ctx);
-    friend bool qt_createGLSLProgram(QGLContext *ctx, GLuint &program, const char *shader_src, GLuint &shader);
-#endif
 private:
     Q_DISABLE_COPY(QGLContext)
 };
