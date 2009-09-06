@@ -485,6 +485,20 @@ void tst_QGL::getSetCheck()
     QVERIFY(format1 == format2);
     QVERIFY(!(format1 != format2));
 
+    // Copy constructor and assignment for QGLFormat.
+    QGLFormat format3(format1);
+    QGLFormat format4;
+    QVERIFY(format1 == format3);
+    QVERIFY(format1 != format4);
+    format4 = format1;
+    QVERIFY(format1 == format4);
+
+    // Check that modifying a copy doesn't affect the original.
+    format3.setRedBufferSize(16);
+    format4.setPlane(16);
+    QCOMPARE(format1.redBufferSize(), 8);
+    QCOMPARE(format1.plane(), 8);
+
     MyGLContext obj2(obj1);
     // bool QGLContext::windowCreated()
     // void QGLContext::setWindowCreated(bool)
