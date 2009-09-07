@@ -699,6 +699,7 @@ QFxGridView::QFxGridView(QFxItem *parent)
 QFxGridView::~QFxGridView()
 {
     Q_D(QFxGridView);
+    d->clear();
     if (d->ownModel)
         delete d->model;
 }

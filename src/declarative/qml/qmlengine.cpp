@@ -144,6 +144,10 @@ QmlEnginePrivate::~QmlEnginePrivate()
     contextClass = 0;
     delete objectClass;
     objectClass = 0;
+    delete valueTypeClass;
+    valueTypeClass = 0;
+    delete typeNameClass;
+    typeNameClass = 0;
     delete networkAccessManager;
     networkAccessManager = 0;
     delete nodeListClass;
