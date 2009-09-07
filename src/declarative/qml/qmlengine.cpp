@@ -144,6 +144,10 @@ QmlEnginePrivate::~QmlEnginePrivate()
     contextClass = 0;
     delete objectClass;
     objectClass = 0;
+    delete valueTypeClass;
+    valueTypeClass = 0;
+    delete typeNameClass;
+    typeNameClass = 0;
     delete networkAccessManager;
     networkAccessManager = 0;
     delete nodeListClass;
@@ -270,13 +274,9 @@ QmlEnginePrivate::queryContext(const QString &propName, uint *id,
     return rv;
 }
 
-QScriptValue 
-QmlEnginePrivate::propertyContext(const QScriptString &name, 
-                                  QmlContext *bindContext, 
-                                  uint id)
+QScriptValue QmlEnginePrivate::propertyContext(const QScriptString &name, uint id)
 {
     Q_ASSERT(id == resolveData.safetyCheckId);
-
 
     if (resolveData.type || resolveData.ns) {
         QmlTypeNameBridge tnb = { 
@@ -1092,11 +1092,10 @@ QScriptValue QmlContextScriptClass::property(const QScriptValue &object,
                                              const QScriptString &name,
                                              uint id)
 {
-    QmlContext *bindContext =
-        static_cast<QmlContext*>(object.data().toQObject());
+    Q_UNUSED(object);
 
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
-    return ep->propertyContext(name, bindContext, id);
+    return ep->propertyContext(name, id);
 }
 
 void QmlContextScriptClass::setProperty(QScriptValue &object,
@@ -1104,6 +1103,7 @@ void QmlContextScriptClass::setProperty(QScriptValue &object,
                                             uint id,
                                             const QScriptValue &value)
 {
+    Q_UNUSED(object);
     Q_UNUSED(name);
 
     QmlEnginePrivate::get(engine)->setPropertyContext(value, id);
@@ -1124,6 +1124,8 @@ QmlTypeNameScriptClass::queryProperty(const QScriptValue &scriptObject,
                                       const QScriptString &name,
                                       QueryFlags flags, uint *id)
 {
+    Q_UNUSED(flags);
+
     QmlTypeNameBridge bridge = 
         qvariant_cast<QmlTypeNameBridge>(scriptObject.data().toVariant());
 
@@ -1279,7 +1281,7 @@ QScriptValue QmlObjectToString(QScriptContext *context, QScriptEngine *engine)
         ret += QLatin1String("\"");
         ret += obj->objectName();
         ret += QLatin1String("\" ");
-        ret += obj->metaObject()->className();
+        ret += QLatin1String(obj->metaObject()->className());
         ret += QLatin1String("(0x");
         ret += QString::number((quintptr)obj,16);
         ret += QLatin1String(")");

@@ -230,6 +230,7 @@ QmlListModel::QmlListModel(QObject *parent)
 
 QmlListModel::~QmlListModel()
 {
+    delete _root;
 }
 
 void QmlListModel::checkRoles() const
