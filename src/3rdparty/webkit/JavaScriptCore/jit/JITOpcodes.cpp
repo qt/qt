@@ -287,6 +287,7 @@ void JIT::emit_op_ret(Instruction* currentInstruction)
 {
 #ifdef QT_BUILD_SCRIPT_LIB
     JITStubCall stubCall(this, JITStubs::cti_op_debug_return);
+    stubCall.addArgument(Imm32(currentInstruction[1].u.operand));
     stubCall.call();
 #endif
     // We could JIT generate the deref, only calling out to C when the refcount hits zero.
@@ -690,6 +691,7 @@ void JIT::emit_op_catch(Instruction* currentInstruction)
     emitPutVirtualRegister(currentInstruction[1].u.operand);
 #ifdef QT_BUILD_SCRIPT_LIB
     JITStubCall stubCall(this, JITStubs::cti_op_debug_catch);
+    stubCall.addArgument(Imm32(currentInstruction[1].u.operand));
     stubCall.call();
 #endif
 }
