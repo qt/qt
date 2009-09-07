@@ -160,7 +160,7 @@ Structure::~Structure()
             m_previous->m_transitions.singleTransition = 0;
         } else {
             ASSERT(m_previous->m_transitions.table->contains(make_pair(m_nameInPrevious.get(), make_pair(m_attributesInPrevious, m_specificValueInPrevious))));
-            m_previous->m_transitions.table->remove(make_pair(m_nameInPrevious.get(), make_pair(m_attributesInPrevious, m_specificValueInPrevious)));
+            m_previous->m_transitions.table->remove(make_pair<RefPtr<UString::Rep>, std::pair<unsigned,JSCell*> >(m_nameInPrevious.get(), make_pair(m_attributesInPrevious, m_specificValueInPrevious)));
         }
     }
 
@@ -394,7 +394,7 @@ PassRefPtr<Structure> Structure::addPropertyTransitionToExistingStructure(Struct
             return existingTransition;
         }
     } else {
-        if (Structure* existingTransition = structure->m_transitions.table->get(make_pair(propertyName.ustring().rep(), make_pair(attributes, specificValue)))) {
+        if (Structure* existingTransition = structure->m_transitions.table->get(make_pair<RefPtr<UString::Rep>, std::pair<unsigned, JSCell*> >(propertyName.ustring().rep(), make_pair(attributes, specificValue)))) {
             ASSERT(existingTransition->m_offset != noOffset);
             offset = existingTransition->m_offset;
             return existingTransition;
@@ -459,9 +459,9 @@ PassRefPtr<Structure> Structure::addPropertyTransition(Structure* structure, con
         structure->m_usingSingleTransitionSlot = false;
         StructureTransitionTable* transitionTable = new StructureTransitionTable;
         structure->m_transitions.table = transitionTable;
-        transitionTable->add(make_pair(existingTransition->m_nameInPrevious.get(), make_pair(existingTransition->m_attributesInPrevious, existingTransition->m_specificValueInPrevious)), existingTransition);
+        transitionTable->add(make_pair<RefPtr<UString::Rep>, std::pair<unsigned, JSCell*> >(existingTransition->m_nameInPrevious.get(), make_pair(existingTransition->m_attributesInPrevious, existingTransition->m_specificValueInPrevious)), existingTransition);
     }
-    structure->m_transitions.table->add(make_pair(propertyName.ustring().rep(), make_pair(attributes, specificValue)), transition.get());
+    structure->m_transitions.table->add(make_pair<RefPtr<UString::Rep>, std::pair<unsigned, JSCell*> >(propertyName.ustring().rep(), make_pair(attributes, specificValue)), transition.get());
     return transition.release();
 }
 

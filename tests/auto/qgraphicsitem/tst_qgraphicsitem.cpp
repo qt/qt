@@ -292,6 +292,7 @@ private slots:
     void activate();
     void setActivePanelOnInactiveScene();
     void activationOnShowHide();
+    void moveWhileDeleting();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -1239,6 +1240,7 @@ void tst_QGraphicsItem::selected()
     QVERIFY(!item->isSelected());
 
     // Click inside and check that it's selected
+    QTest::mouseMove(view.viewport());
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(item->scenePos()));
     QCOMPARE(item->values.size(), 11);
     QCOMPARE(item->values.last(), true);
@@ -1246,7 +1248,6 @@ void tst_QGraphicsItem::selected()
 
     // Click outside and check that it's not selected
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, view.mapFromScene(item->scenePos() + QPointF(item->boundingRect().width(), item->boundingRect().height())));
-
     QCOMPARE(item->values.size(), 12);
     QCOMPARE(item->values.last(), false);
     QVERIFY(!item->isSelected());
@@ -8101,6 +8102,65 @@ void tst_QGraphicsItem::activationOnShowHide()
     rootPanel->hide();
     QVERIFY(!rootPanel->isActive());
     QVERIFY(otherItem->isActive());
+}
+
+class MoveWhileDying : public QGraphicsRectItem
+{
+public:
+    MoveWhileDying(QGraphicsItem *parent = 0)
+        : QGraphicsRectItem(parent)
+    { }
+    ~MoveWhileDying()
+    {
+        foreach (QGraphicsItem *c, childItems()) {
+            foreach (QGraphicsItem *cc, c->childItems()) {
+                cc->moveBy(10, 10);
+            }
+            c->moveBy(10, 10);
+        }
+        if (QGraphicsItem *p = parentItem()) { p->moveBy(10, 10); }
+    }
+};
+
+void tst_QGraphicsItem::moveWhileDeleting()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *rect = new QGraphicsRectItem;
+    MoveWhileDying *silly = new MoveWhileDying(rect);
+    QGraphicsRectItem *child = new QGraphicsRectItem(silly);
+    scene.addItem(rect);
+    delete rect; // don't crash!
+
+    rect = new QGraphicsRectItem;
+    silly = new MoveWhileDying(rect);
+    child = new QGraphicsRectItem(silly);
+
+    QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(125);
+
+    delete rect;
+
+    rect = new QGraphicsRectItem;
+    rect->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+    silly = new MoveWhileDying(rect);
+    child = new QGraphicsRectItem(silly);
+
+    QTest::qWait(125);
+
+    delete rect;
+
+    rect = new MoveWhileDying;
+    rect->setFlag(QGraphicsItem::ItemClipsChildrenToShape);
+    child = new QGraphicsRectItem(rect);
+    silly = new MoveWhileDying(child);
+
+    QTest::qWait(125);
+
+    delete rect;
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

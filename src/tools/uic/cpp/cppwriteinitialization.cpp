@@ -474,6 +474,7 @@ WriteInitialization::WriteInitialization(Uic *uic, bool activateScripts) :
       m_dindent(m_indent + m_option.indent),
       m_stdsetdef(true),
       m_layoutMarginType(TopLevelMargin),
+      m_mainFormUsedInRetranslateUi(false),
       m_delayedOut(&m_delayedInitialization, QIODevice::WriteOnly),
       m_refreshOut(&m_refreshInitialization, QIODevice::WriteOnly),
       m_actionOut(&m_delayedActionInitialization, QIODevice::WriteOnly),
@@ -569,11 +570,11 @@ void WriteInitialization::acceptUI(DomUI *node)
 
     m_output << m_option.indent << "} // setupUi\n\n";
 
-    if (m_delayedActionInitialization.isEmpty()) {
+    if (!m_mainFormUsedInRetranslateUi) {
         m_refreshInitialization += m_indent;
         m_refreshInitialization += QLatin1String("Q_UNUSED(");
         m_refreshInitialization += varName ;
-        m_refreshInitialization +=QLatin1String(");\n");
+        m_refreshInitialization += QLatin1String(");\n");
     }
 
     m_output << m_option.indent << "void " << "retranslateUi(" << widgetClassName << " *" << varName << ")\n"
@@ -1531,6 +1532,12 @@ void WriteInitialization::writeProperties(const QString &varName,
             o << ");\n";
             if (defineC)
                 closeIfndef(o, QLatin1String(defineC));
+
+            if (varName == m_mainFormVarName && &o == &m_refreshOut) {
+                // this is the only place (currently) where we output mainForm name to the retranslateUi().
+                // Other places output merely instances of a certain class (which cannot be main form, e.g. QListWidget).
+                m_mainFormUsedInRetranslateUi = true;
+            }
         }
     }
     if (leftMargin != -1 || topMargin != -1 || rightMargin != -1 || bottomMargin != -1) {

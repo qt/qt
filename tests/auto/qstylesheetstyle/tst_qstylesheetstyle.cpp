@@ -828,7 +828,8 @@ void tst_QStyleSheetStyle::hoverColors()
     widgets << new QLabel("<b>TESTING</b>");
 
     foreach (QWidget *widget, widgets) {
-        QDialog frame;
+        //without Qt::X11BypassWindowManagerHint the window manager may move the window after we moved the cursor
+        QDialog frame(0, Qt::X11BypassWindowManagerHint);
         QLayout* layout = new QGridLayout;
 
         QLineEdit* dummy = new QLineEdit;

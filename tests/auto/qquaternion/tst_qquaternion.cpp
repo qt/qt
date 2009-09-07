@@ -98,14 +98,11 @@ private slots:
     void metaTypes();
 };
 
-// qFuzzyCompare isn't always "fuzzy" enough to handle conversion
-// between float, double, and qreal.  So create "fuzzier" compares.
-static bool fuzzyCompare(float x, float y)
+// QVector3D uses float internally, which can lead to some precision
+// issues when using it with the qreal-based QQuaternion.
+static bool fuzzyCompare(qreal x, qreal y)
 {
-    float diff = x - y;
-    if (diff < 0.0f)
-        diff = -diff;
-    return (diff < 0.001);
+    return qFuzzyIsNull(float(x - y));
 }
 
 // Test the creation of QQuaternion objects in various ways:
@@ -250,8 +247,8 @@ void tst_QQuaternion::length()
     QFETCH(qreal, len);
 
     QQuaternion v(w, x, y, z);
-    QCOMPARE((float)(v.length()), (float)len);
-    QCOMPARE((float)(v.lengthSquared()), (float)(x * x + y * y + z * z + w * w));
+    QCOMPARE(v.length(), len);
+    QCOMPARE(v.lengthSquared(), x * x + y * y + z * z + w * w);
 }
 
 // Test the unit vector conversion for quaternions.
@@ -273,11 +270,11 @@ void tst_QQuaternion::normalized()
     if (v.isNull())
         QVERIFY(u.isNull());
     else
-        QCOMPARE((float)(u.length()), (float)1.0f);
-    QCOMPARE((float)(u.x() * len), (float)(v.x()));
-    QCOMPARE((float)(u.y() * len), (float)(v.y()));
-    QCOMPARE((float)(u.z() * len), (float)(v.z()));
-    QCOMPARE((float)(u.scalar() * len), (float)(v.scalar()));
+        QCOMPARE(u.length(), qreal(1.0f));
+    QCOMPARE(u.x() * len, v.x());
+    QCOMPARE(u.y() * len, v.y());
+    QCOMPARE(u.z() * len, v.z());
+    QCOMPARE(u.scalar() * len, v.scalar());
 }
 
 // Test the unit vector conversion for quaternions.
@@ -299,7 +296,7 @@ void tst_QQuaternion::normalize()
     if (isNull)
         QVERIFY(v.isNull());
     else
-        QCOMPARE((float)(v.length()), (float)1.0f);
+        QCOMPARE(v.length(), qreal(1.0f));
 }
 
 // Test the comparison operators for quaternions.

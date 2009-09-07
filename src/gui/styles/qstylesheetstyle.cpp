@@ -3948,7 +3948,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             QFont oldFont = p->font();
             if (subRule.hasFont)
                 p->setFont(subRule.font);
-            if (subRule.hasBox()) {
+            if (subRule.hasBox() || !subRule.hasNativeBorder()) {
                 tabCopy.rect = ce == CE_TabBarTabShape ? subRule.borderRect(r)
                                                        : subRule.contentsRect(r);
                 QWindowsStyle::drawControl(ce, &tabCopy, p, w);
@@ -5699,6 +5699,15 @@ QRect QStyleSheetStyle::subElementRect(SubElement se, const QStyleOption *opt, c
                 r = visualRect(opt->direction, opt->rect, r);
             }
             return r;
+        }
+        break;
+    }
+    case SE_TabBarTabText:
+    case SE_TabBarTabLeftButton:
+    case SE_TabBarTabRightButton: {
+        QRenderRule subRule = renderRule(w, opt, PseudoElement_TabBarTab);
+        if (subRule.hasBox() || !subRule.hasNativeBorder()) {
+            return ParentStyle::subElementRect(se, opt, w);
         }
         break;
     }

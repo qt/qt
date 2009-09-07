@@ -306,6 +306,7 @@ static QByteArray proxyAuthenticationKey(const QNetworkProxy &proxy, const QStri
 
     case QNetworkProxy::FtpCachingProxy:
         key.setScheme(QLatin1String("proxy-ftp"));
+        break;
 
     case QNetworkProxy::DefaultProxy:
     case QNetworkProxy::NoProxy:

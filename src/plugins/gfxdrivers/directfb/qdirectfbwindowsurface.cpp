@@ -43,6 +43,7 @@
 #include "qdirectfbscreen.h"
 #include "qdirectfbpaintengine.h"
 
+#include <private/qwidget_p.h>
 #include <qwidget.h>
 #include <qwindowsystem_qws.h>
 #include <qpaintdevice.h>
@@ -247,10 +248,6 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
         updateFormat();
 
     QWSWindowSurface::setGeometry(rect);
-#ifdef QT_NO_DIRECTFB_WM
-    if (oldRect.isEmpty())
-        screen->exposeRegion(screen->region(), 0);
-#endif
 }
 
 QByteArray QDirectFBWindowSurface::permanentState() const
@@ -319,48 +316,48 @@ inline bool isWidgetOpaque(const QWidget *w)
 
     return false;
 }
-
-void QDirectFBWindowSurface::flush(QWidget *, const QRegion &region,
+void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
                                    const QPoint &offset)
 {
-    // hw: make sure opacity information is updated before compositing
-    if (QWidget *win = window()) {
+    QWidget *win = window();
+    if (!win)
+        return;
 
-        const bool opaque = isWidgetOpaque(win);
-        if (opaque != isOpaque()) {
-            SurfaceFlags flags = surfaceFlags();
-            if (opaque) {
-                flags |= Opaque;
-            } else {
-                flags &= ~Opaque;
-            }
-            setSurfaceFlags(flags);
+    QWExtra *extra = qt_widget_private(widget)->extraData();
+    if (extra && extra->proxyWidget)
+        return;
+
+    // hw: make sure opacity information is updated before compositing
+    const bool opaque = isWidgetOpaque(win);
+    if (opaque != isOpaque()) {
+        SurfaceFlags flags = surfaceFlags();
+        if (opaque) {
+            flags |= Opaque;
+        } else {
+            flags &= ~Opaque;
         }
+        setSurfaceFlags(flags);
+    }
 
 #ifndef QT_NO_DIRECTFB_WM
-        const quint8 winOpacity = quint8(win->windowOpacity() * 255);
-        quint8 opacity;
+    const quint8 winOpacity = quint8(win->windowOpacity() * 255);
+    quint8 opacity;
 
-        if (dfbWindow) {
-            dfbWindow->GetOpacity(dfbWindow, &opacity);
-            if (winOpacity != opacity)
-                dfbWindow->SetOpacity(dfbWindow, winOpacity);
-        }
-#endif
+    if (dfbWindow) {
+        dfbWindow->GetOpacity(dfbWindow, &opacity);
+        if (winOpacity != opacity)
+            dfbWindow->SetOpacity(dfbWindow, winOpacity);
     }
+#endif
 
     const QRect windowGeometry = QDirectFBWindowSurface::geometry();
 #ifdef QT_NO_DIRECTFB_WM
     if (mode == Offscreen) {
-        QRegion r = region;
-        r.translate(offset + windowGeometry.topLeft());
-        screen->exposeRegion(r, 0);
-    } else {
-        screen->flipSurface(dfbSurface, flipFlags, region, offset);
-    }
-#else
-    screen->flipSurface(dfbSurface, flipFlags, region, offset);
+        screen->exposeRegion(region.translated(offset + geometry().topLeft()), 0);
+
+    } else
 #endif
+        screen->flipSurface(dfbSurface, flipFlags, region, offset);
 
 #ifdef QT_DIRECTFB_TIMING
     enum { Secs = 3 };

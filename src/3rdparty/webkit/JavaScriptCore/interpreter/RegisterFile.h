@@ -105,7 +105,7 @@ namespace JSC {
             ReturnValueRegister = -4,
             ArgumentCount = -3,
             Callee = -2,
-            OptionalCalleeArguments = -1,
+            OptionalCalleeArguments = -1
         };
 
         enum { ProgramCodeThisRegister = -CallFrameHeaderSize - 1 };
@@ -174,7 +174,7 @@ namespace JSC {
 
         size_t bufferLength = (capacity + maxGlobals) * sizeof(Register);
     #if HAVE(MMAP)
-        m_buffer = static_cast<Register*>(mmap(0, bufferLength, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, VM_TAG_FOR_REGISTERFILE_MEMORY, 0));
+        m_buffer = reinterpret_cast<Register*>(mmap(0, bufferLength, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, VM_TAG_FOR_REGISTERFILE_MEMORY, 0));
         if (m_buffer == MAP_FAILED) {
 #if PLATFORM(WINCE)
             fprintf(stderr, "Could not allocate register file: %d\n", GetLastError());

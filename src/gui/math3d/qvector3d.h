@@ -54,7 +54,6 @@ QT_MODULE(Gui)
 class QMatrix4x4;
 class QVector2D;
 class QVector4D;
-class QQuaternion;
 
 #ifndef QT_NO_VECTOR3D
 
@@ -136,8 +135,6 @@ private:
 
     friend class QVector2D;
     friend class QVector4D;
-    friend class QQuaternion;
-    friend class QMatrix4x4;
 #ifndef QT_NO_MATRIX4X4
     friend QVector3D operator*(const QVector3D& vector, const QMatrix4x4& matrix);
     friend QVector3D operator*(const QMatrix4x4& matrix, const QVector3D& vector);

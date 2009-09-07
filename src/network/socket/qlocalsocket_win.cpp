@@ -199,9 +199,13 @@ qint64 QLocalSocket::readData(char *data, qint64 maxSize)
         }
     }
 
-    if (!d->readSequenceStarted)
-        d->startAsyncRead();
-    d->checkReadyRead();
+    if (d->pipeClosed) {
+        QTimer::singleShot(0, this, SLOT(_q_pipeClosed()));
+    } else {
+        if (!d->readSequenceStarted)
+            d->startAsyncRead();
+        d->checkReadyRead();
+    }
 
     return readSoFar;
 }
@@ -251,9 +255,22 @@ void QLocalSocketPrivate::startAsyncRead()
         readSequenceStarted = true;
         if (ReadFile(handle, ptr, bytesToRead, NULL, &overlapped)) {
             completeAsyncRead();
-        } else if (GetLastError() != ERROR_IO_PENDING) {
-            setErrorString(QLatin1String("QLocalSocketPrivate::startAsyncRead"));
-            return;
+        } else {
+            switch (GetLastError()) {
+                case ERROR_IO_PENDING:
+                    // This is not an error. We're getting notified, when data arrives.
+                    return;
+                case ERROR_PIPE_NOT_CONNECTED:
+                    {
+                        // It may happen, that the other side closes the connection directly
+                        // after writing data. Then we must set the appropriate socket state.
+                        pipeClosed = true;
+                        return;
+                    }
+                default:
+                    setErrorString(QLatin1String("QLocalSocketPrivate::startAsyncRead"));
+                    return;
+            }
         }
     } while (!readSequenceStarted);
 }
@@ -261,20 +278,23 @@ void QLocalSocketPrivate::startAsyncRead()
 /*!
     \internal
     Sets the correct size of the read buffer after a read operation.
+    Returns false, if an error occured or the connection dropped.
  */
-void QLocalSocketPrivate::completeAsyncRead()
+bool QLocalSocketPrivate::completeAsyncRead()
 {
     ResetEvent(overlapped.hEvent);
     readSequenceStarted = false;
 
     DWORD bytesRead;
     if (!GetOverlappedResult(handle, &overlapped, &bytesRead, TRUE)) {
-        setErrorString(QLatin1String("QLocalSocketPrivate::completeAsyncRead"));
-        return;
+        if (GetLastError() != ERROR_PIPE_NOT_CONNECTED)
+            setErrorString(QLatin1String("QLocalSocketPrivate::completeAsyncRead"));
+        return false;
     }
 
     actualReadBufferSize += bytesRead;
     readBuffer.truncate(actualReadBufferSize);
+    return true;
 }
 
 qint64 QLocalSocket::writeData(const char *data, qint64 maxSize)
@@ -425,7 +445,10 @@ void QLocalSocketPrivate::_q_canWrite()
 void QLocalSocketPrivate::_q_notified()
 {
     Q_Q(QLocalSocket);
-    completeAsyncRead();
+    if (!completeAsyncRead()) {
+        pipeClosed = true;
+        return;
+    }
     startAsyncRead();
     pendingReadyRead = false;
     emit q->readyRead();

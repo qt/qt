@@ -38,7 +38,7 @@ SOURCES	+= qgl.cpp \
 !contains(QT_CONFIG, opengles1):!contains(QT_CONFIG, opengles1cl) {
     HEADERS +=  qglshaderprogram.h \
                 qglpixmapfilter_p.h  \
-                qgraphicsshadereffect.h \
+                qgraphicsshadereffect_p.h \
                 qgraphicssystem_gl_p.h \
                 qwindowsurface_gl_p.h \
                 qpixmapdata_gl_p.h \

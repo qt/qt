@@ -44,7 +44,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'paletteeditoradvancedbase.ui'
 **
-** Created: Tue Aug 18 19:03:31 2009
+** Created: Fri Sep 4 10:17:14 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -428,7 +428,6 @@ public:
 #ifndef QT_NO_WHATSTHIS
         buttonCancel->setProperty("whatsThis", QVariant(QApplication::translate("PaletteEditorAdvancedBase", "Close dialog and discard all changes.", 0, QApplication::UnicodeUTF8)));
 #endif // QT_NO_WHATSTHIS
-        Q_UNUSED(PaletteEditorAdvancedBase);
     } // retranslateUi
 
 

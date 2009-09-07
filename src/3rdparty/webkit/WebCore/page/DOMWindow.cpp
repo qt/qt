@@ -582,7 +582,7 @@ Storage* DOMWindow::localStorage() const
         return 0;
 
     StorageNamespace* localStorage = page->group().localStorage();
-    RefPtr<StorageArea> storageArea = localStorage ? localStorage->storageArea(document->securityOrigin()) : 0; 
+    RefPtr<StorageArea> storageArea = localStorage ? localStorage->storageArea(document->securityOrigin()) : PassRefPtr<StorageArea>(0);
     if (storageArea) {
         page->inspectorController()->didUseDOMStorage(storageArea.get(), true, m_frame);
         m_localStorage = Storage::create(m_frame, storageArea.release());
