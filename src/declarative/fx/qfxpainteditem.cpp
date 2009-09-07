@@ -175,6 +175,7 @@ QFxPaintedItem::QFxPaintedItem(QFxPaintedItemPrivate &dd, QFxItem *parent)
 */
 QFxPaintedItem::~QFxPaintedItem()
 {
+    clearCache();
 }
 
 /*!

@@ -100,8 +100,7 @@ public:
 
     QScriptClass::QueryFlags queryContext(const QString &name, uint *id,
                                           QmlContext *);
-    QScriptValue propertyContext(const QScriptString &propName, QmlContext *, 
-                                 uint id);
+    QScriptValue propertyContext(const QScriptString &propName, uint id);
     void setPropertyContext(const QScriptValue &, uint id);
     QScriptClass::QueryFlags queryObject(const QString &name, uint *id, 
                                          QObject *);
