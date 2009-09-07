@@ -6,7 +6,7 @@ Item {
 
     id: Container
     Image {
-        id: Image
+        id: Normal
         source: "pics/button.png"
     }
     Image {
@@ -15,21 +15,21 @@ Item {
         opacity: 0
     }
     MouseRegion {
-        id: MouseRegion
-        anchors.fill: Image
+        id: ClickRegion
+        anchors.fill: Normal
         onClicked: { Container.clicked(); }
     }
     Text {
         font.bold: true
         color: "white"
-        anchors.centerIn: Image
+        anchors.centerIn: Normal
         text: Container.text
     }
-    width: Image.width
+    width: Normal.width
     states: [
         State {
             name: "Pressed"
-            when: MouseRegion.pressed == true
+            when: ClickRegion.pressed == true
             PropertyChanges {
                 target: Pressed
                 opacity: 1
