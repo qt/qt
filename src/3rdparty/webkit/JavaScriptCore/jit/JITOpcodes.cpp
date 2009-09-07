@@ -690,6 +690,7 @@ void JIT::emit_op_catch(Instruction* currentInstruction)
     emitPutVirtualRegister(currentInstruction[1].u.operand);
 #ifdef QT_BUILD_SCRIPT_LIB
     JITStubCall stubCall(this, JITStubs::cti_op_debug_catch);
+    stubCall.addArgument(Imm32(currentInstruction[1].u.operand));
     stubCall.call();
 #endif
 }

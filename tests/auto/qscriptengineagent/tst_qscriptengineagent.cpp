@@ -1619,8 +1619,6 @@ void tst_QScriptEngineAgent::exceptionThrowAndCatch()
 
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::ExceptionCatch);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "Exception value is not passed in exceptionCatch event when JIT is enabled", Continue);
         QVERIFY(spy->at(1).value.strictlyEquals(spy->at(0).value));
     }
 }
@@ -1764,8 +1762,6 @@ void tst_QScriptEngineAgent::eventOrder_throwAndCatch()
         QVERIFY(spy->at(7).hasExceptionHandler);
         // catch
         QCOMPARE(spy->at(8).type, ScriptEngineEvent::ExceptionCatch);
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "Exception value is not passed in exceptionCatch event when JIT is enabled", Continue);
         QVERIFY(spy->at(8).value.isError());
         // void(e)
         QCOMPARE(spy->at(9).type, ScriptEngineEvent::PositionChange);
