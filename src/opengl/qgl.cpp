@@ -349,13 +349,26 @@ QGLFormat::QGLFormat(QGL::FormatOptions options, int plane)
 }
 
 /*!
+    \internal
+*/
+void QGLFormat::detach()
+{
+    if (d->ref != 1) {
+        QGLFormatPrivate *newd = new QGLFormatPrivate(d);
+        if (!d->ref.deref())
+            delete d;
+        d = newd;
+    }
+}
+
+/*!
     Constructs a copy of \a other.
 */
 
 QGLFormat::QGLFormat(const QGLFormat &other)
 {
-    d = new QGLFormatPrivate;
-    *d = *other.d;
+    d = other.d;
+    d->ref.ref();
 }
 
 /*!
@@ -364,7 +377,12 @@ QGLFormat::QGLFormat(const QGLFormat &other)
 
 QGLFormat &QGLFormat::operator=(const QGLFormat &other)
 {
-    *d = *other.d;
+    if (d != other.d) {
+        other.d->ref.ref();
+        if (!d->ref.deref())
+            delete d;
+        d = other.d;
+    }
     return *this;
 }
 
@@ -373,7 +391,8 @@ QGLFormat &QGLFormat::operator=(const QGLFormat &other)
 */
 QGLFormat::~QGLFormat()
 {
-    delete d;
+    if (!d->ref.deref())
+        delete d;
 }
 
 /*!
@@ -649,6 +668,7 @@ int QGLFormat::samples() const
 */
 void QGLFormat::setSamples(int numSamples)
 {
+    detach();
     if (numSamples < 0) {
         qWarning("QGLFormat::setSamples: Cannot have negative number of samples per pixel %d", numSamples);
         return;
@@ -676,6 +696,7 @@ void QGLFormat::setSamples(int numSamples)
 */
 void QGLFormat::setSwapInterval(int interval)
 {
+    detach();
     d->swapInterval = interval;
 }
 
@@ -743,6 +764,7 @@ int QGLFormat::plane() const
 */
 void QGLFormat::setPlane(int plane)
 {
+    detach();
     d->pln = plane;
 }
 
@@ -754,6 +776,7 @@ void QGLFormat::setPlane(int plane)
 
 void QGLFormat::setOption(QGL::FormatOptions opt)
 {
+    detach();
     if (opt & 0xffff)
         d->opts |= opt;
     else
@@ -783,6 +806,7 @@ bool QGLFormat::testOption(QGL::FormatOptions opt) const
 */
 void QGLFormat::setDepthBufferSize(int size)
 {
+    detach();
     if (size < 0) {
         qWarning("QGLFormat::setDepthBufferSize: Cannot set negative depth buffer size %d", size);
         return;
@@ -809,6 +833,7 @@ int QGLFormat::depthBufferSize() const
 */
 void QGLFormat::setRedBufferSize(int size)
 {
+    detach();
     if (size < 0) {
         qWarning("QGLFormat::setRedBufferSize: Cannot set negative red buffer size %d", size);
         return;
@@ -837,6 +862,7 @@ int QGLFormat::redBufferSize() const
 */
 void QGLFormat::setGreenBufferSize(int size)
 {
+    detach();
     if (size < 0) {
         qWarning("QGLFormat::setGreenBufferSize: Cannot set negative green buffer size %d", size);
         return;
@@ -865,6 +891,7 @@ int QGLFormat::greenBufferSize() const
 */
 void QGLFormat::setBlueBufferSize(int size)
 {
+    detach();
     if (size < 0) {
         qWarning("QGLFormat::setBlueBufferSize: Cannot set negative blue buffer size %d", size);
         return;
@@ -892,6 +919,7 @@ int QGLFormat::blueBufferSize() const
 */
 void QGLFormat::setAlphaBufferSize(int size)
 {
+    detach();
     if (size < 0) {
         qWarning("QGLFormat::setAlphaBufferSize: Cannot set negative alpha buffer size %d", size);
         return;
@@ -918,6 +946,7 @@ int QGLFormat::alphaBufferSize() const
 */
 void QGLFormat::setAccumBufferSize(int size)
 {
+    detach();
     if (size < 0) {
         qWarning("QGLFormat::setAccumBufferSize: Cannot set negative accumulate buffer size %d", size);
         return;
@@ -942,6 +971,7 @@ int QGLFormat::accumBufferSize() const
 */
 void QGLFormat::setStencilBufferSize(int size)
 {
+    detach();
     if (size < 0) {
         qWarning("QGLFormat::setStencilBufferSize: Cannot set negative stencil buffer size %d", size);
         return;

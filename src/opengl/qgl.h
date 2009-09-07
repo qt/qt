@@ -255,6 +255,8 @@ public:
 private:
     QGLFormatPrivate *d;
 
+    void detach();
+
     friend Q_OPENGL_EXPORT bool operator==(const QGLFormat&, const QGLFormat&);
     friend Q_OPENGL_EXPORT bool operator!=(const QGLFormat&, const QGLFormat&);
 };
@@ -277,7 +279,6 @@ public:
     bool isSharing() const;
     void reset();
 
-    // ### Qt 5: make format() return a const ref instead
     QGLFormat format() const;
     QGLFormat requestedFormat() const;
     void setFormat(const QGLFormat& format);
@@ -443,7 +444,6 @@ public:
     bool doubleBuffer() const;
     void swapBuffers();
 
-    // ### Qt 5: make format() return a const ref instead
     QGLFormat format() const;
     void setFormat(const QGLFormat& format);
 
