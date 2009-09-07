@@ -9,7 +9,7 @@ PHONON_MMF_DIR = $$QT_SOURCE_TREE/src/3rdparty/phonon/mmf
 #CONFIG += phonon_mmf_audio_drm
 
 phonon_mmf_audio_drm {
-    LIBS += -lDrmAudioPlayUtility.lib
+    LIBS += -lDrmAudioPlayUtility
 
     # In the internal 5th SDK, DrmAudioSamplePlayer.h is placed in this
     # folder, as opposed to the public, where it is placed in
@@ -18,7 +18,7 @@ phonon_mmf_audio_drm {
 
     DEFINES += QT_PHONON_MMF_AUDIO_DRM
 } else {
-    LIBS += -lmediaclientaudio.lib
+    LIBS += -lmediaclientaudio
 }
 
 HEADERS +=                                           \
@@ -65,11 +65,11 @@ SOURCES +=                                           \
 
 }
 	   
-LIBS += -lmediaclientvideo.lib		# For CVideoPlayerUtility
-LIBS += -lcone.lib			# For CCoeEnv
-LIBS += -lws32.lib			# For RWindow
+LIBS += -lmediaclientvideo		# For CVideoPlayerUtility
+LIBS += -lcone				# For CCoeEnv
+LIBS += -lws32				# For RWindow
 LIBS += -lefsrv                     	# For file server
-LIBS += -lapgrfx.lib -lapmime.lib   	# For recognizer
+LIBS += -lapgrfx -lapmime	   	# For recognizer
 
 # This is needed for having the .qtplugin file properly created on Symbian.
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/phonon_backend
