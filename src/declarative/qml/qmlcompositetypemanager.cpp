@@ -242,7 +242,24 @@ void QmlCompositeTypeManager::loadSource(QmlCompositeTypeData *unit)
             engine->networkAccessManager()->get(QNetworkRequest(url));
         QObject::connect(reply, SIGNAL(finished()),
                          this, SLOT(replyFinished()));
+        QObject::connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
+                         this, SLOT(requestProgress(qint64,qint64)));
     }
+}
+
+void QmlCompositeTypeManager::requestProgress(qint64 received, qint64 total)
+{
+    if (total <= 0)
+        return;
+    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
+
+    QmlCompositeTypeData *unit = components.value(reply->url().toString());
+    Q_ASSERT(unit);
+
+    unit->progress = qreal(received)/total;
+
+    foreach (QmlComponentPrivate *comp, unit->waiters)
+        comp->updateProgress(unit->progress);
 }
 
 void QmlCompositeTypeManager::setData(QmlCompositeTypeData *unit, 

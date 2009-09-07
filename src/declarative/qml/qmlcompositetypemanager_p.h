@@ -88,6 +88,7 @@ public:
 
 private Q_SLOTS:
     void replyFinished();
+    void requestProgress(qint64 received, qint64 total);
 
 private:
     void loadSource(QmlCompositeTypeData *);

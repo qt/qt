@@ -108,6 +108,8 @@ struct QmlCompositeTypeData : public QmlRefCount
     void addWaiter(QmlComponentPrivate *p);
     void remWaiter(QmlComponentPrivate *p);
 
+    qreal progress;
+
 private:
     friend class QmlCompositeTypeManager;
     friend class QmlCompiler;
