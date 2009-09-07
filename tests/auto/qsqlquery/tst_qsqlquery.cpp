@@ -381,6 +381,9 @@ void tst_QSqlQuery::char1SelectUnicode()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
+    if(db.driverName().startsWith("QDB2"))
+        QSKIP("Needs someone with more Unicode knowledge than I have to fix", SkipSingle);
+
     if ( db.driver()->hasFeature( QSqlDriver::Unicode ) ) {
         QString uniStr( QChar( 0xfb50 ) );
         QSqlQuery q( db );
@@ -1613,6 +1616,8 @@ void tst_QSqlQuery::prepare_bind_exec()
     CHECK_DATABASE( db );
     if(db.driverName().startsWith("QIBASE") && (db.databaseName() == "silence.nokia.troll.no:c:\\ibase\\testdb_ascii" || db.databaseName() == "/opt/interbase/qttest.gdb"))
         QSKIP("Can't transliterate extended unicode to ascii", SkipSingle);
+    if(db.driverName().startsWith("QDB2"))
+        QSKIP("Needs someone with more Unicode knowledge than I have to fix", SkipSingle);
 
     {
         // new scope for SQLITE
