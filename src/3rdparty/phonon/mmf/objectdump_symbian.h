@@ -16,51 +16,40 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef PHONON_MMF_VIDEOOUTPUT_H
-#define PHONON_MMF_VIDEOOUTPUT_H
+#ifndef OBJECTDUMP_SYMBIAN_H
+#define OBJECTDUMP_SYMBIAN_H
 
-#include <QtGui/QWidget>
-#include "defs.h"
+#include "objectdump.h"
 
 QT_BEGIN_NAMESPACE
 
-namespace Phonon
+namespace ObjectDump
 {
-namespace MMF
+namespace Symbian
 {
-class VideoOutputObserver;
 
-class VideoOutput       :   public QWidget
+/**
+ * Annotator which returns control information
+ */
+class QAnnotatorControl : public QAnnotator
 {
     Q_OBJECT
-
 public:
-    explicit VideoOutput(QWidget* parent);
-    ~VideoOutput();
-
-    void setFrameSize(const QSize& size);
-    void setObserver(VideoOutputObserver* observer);
-
-protected:
-#ifndef PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
-    // Override QWidget functions
-    QSize sizeHint() const;
-    void paintEvent(QPaintEvent* event);
-    void resizeEvent(QResizeEvent* event);
-    void moveEvent(QMoveEvent* event);
-#endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
-
-private:
-    void dump() const;
-    
-private:
-    QSize m_frameSize;
-
-    // Not owned
-    VideoOutputObserver* m_observer;
+    QList<QByteArray> annotation(const QObject& object);
 };
-}
-}
+
+/**
+ * Annotator which returns window information
+ */
+class QAnnotatorWindow : public QAnnotator
+{
+    Q_OBJECT
+public:
+    QList<QByteArray> annotation(const QObject& object);
+};
+
+} // namespace Symbian
+} // namespace ObjectDump
 
 QT_END_NAMESPACE
 

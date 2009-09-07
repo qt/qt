@@ -20,6 +20,10 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "videooutput.h"
 #include "videooutputobserver.h"
 
+#ifdef _DEBUG
+#include "objectdump.h"
+#endif
+
 #include <QPaintEvent>
 #include <QPainter>
 #include <QMoveEvent>
@@ -48,59 +52,10 @@ MMF::VideoOutput::VideoOutput(QWidget* parent)
     setAutoFillBackground(false);
 #endif // PHONON_MMF_VIDEOOUTPUT_IS_QWIDGET
 
-#ifdef PHONON_MMF_DEBUG_VIDEO_OUTPUT
     dump();
-#endif
-
+    
     TRACE_EXIT_0();
 }
-
-#ifdef PHONON_MMF_DEBUG_VIDEO_OUTPUT
-void VideoOutput::dump()
-{
-    TRACE_CONTEXT(VideoOutput::dump, EVideoInternal);
-    TRACE_ENTRY_0();
-
-    TRACE("dumpObjectInfo this 0x%08x", this);
-    this->dumpObjectInfo();
-
-    TRACE_0("Traversing up object tree ...");
-    QObject* node = this;
-    QObject* root = this;
-    while (node) {
-        QWidget* widget = qobject_cast<QWidget*>(node);
-        const bool visible = widget ? widget->isVisible() : false;
-        const QHBufC name(node->objectName());
-        TRACE("node 0x%08x name %S widget 0x%08x visible %d", node, name.data(), widget, visible);
-
-        root = node;
-        node = node->parent();
-    }
-
-    TRACE("dumpObjectInfo root 0x%08x", root);
-    root->dumpObjectInfo();
-    TRACE_0("+ dumpObjectTree");
-    root->dumpObjectTree();
-    TRACE_0("- dumpObjectTree");
-
-    TRACE("isVisible %d", isVisible());
-    TRACE("pos %d %d", x(), y());
-    TRACE("size %d %d", size().width(), size().height());
-    TRACE("maxSize %d %d", maximumWidth(), maximumHeight());
-    TRACE("sizeHint %d %d", sizeHint().width(), sizeHint().height());
-
-    QWidget* parentWidget = qobject_cast<QWidget*>(parent());
-    if (parentWidget) {
-        TRACE("parent.isVisible %d", parentWidget->isVisible());
-        TRACE("parent.pos %d %d", parentWidget->x(), parentWidget->y());
-        TRACE("parent.size %d %d", parentWidget->size().width(), parentWidget->size().height());
-        TRACE("parent.maxSize %d %d", parentWidget->maximumWidth(), parentWidget->maximumHeight());
-        TRACE("parent.sizeHint %d %d", parentWidget->sizeHint().width(), parentWidget->sizeHint().height());
-    }
-
-    TRACE_EXIT_0();
-}
-#endif // PHONON_MMF_DEBUG_VIDEO_OUTPUT
 
 MMF::VideoOutput::~VideoOutput()
 {
@@ -144,8 +99,6 @@ void MMF::VideoOutput::setObserver(VideoOutputObserver* observer)
 
 QSize MMF::VideoOutput::sizeHint() const
 {
-    TRACE_CONTEXT(VideoOutput::sizeHint, EVideoApi);
-
     // TODO: replace this with a more sensible default
     QSize result(320, 240);
 
@@ -153,7 +106,6 @@ QSize MMF::VideoOutput::sizeHint() const
         result = m_frameSize;
     }
 
-    TRACE("  result %d %d", result.width(), result.height());
     return result;
 }
 
@@ -166,6 +118,8 @@ void MMF::VideoOutput::paintEvent(QPaintEvent* event)
     TRACE("regions %d", event->region().numRects());
     TRACE("type %d", event->type());
 
+    dump();
+    
 /*
     QPainter painter;
     painter.begin(this);
@@ -207,6 +161,19 @@ void MMF::VideoOutput::moveEvent(QMoveEvent* event)
 //-----------------------------------------------------------------------------
 // Private functions
 //-----------------------------------------------------------------------------
+
+void VideoOutput::dump() const
+{
+#ifdef _DEBUG
+    TRACE_CONTEXT(VideoOutput::dump, EVideoInternal);
+    QScopedPointer<ObjectDump::QVisitor> visitor(new ObjectDump::QVisitor);
+    visitor->setPrefix("Phonon::MMF"); // to aid searchability of logs
+    ObjectDump::addDefaultAnnotators(*visitor);
+    TRACE("Dumping tree from leaf 0x%08x:", this);
+    //ObjectDump::dumpAncestors(*this, *visitor);
+    ObjectDump::dumpTreeFromLeaf(*this, *visitor);
+#endif
+}
 
 
 QT_END_NAMESPACE

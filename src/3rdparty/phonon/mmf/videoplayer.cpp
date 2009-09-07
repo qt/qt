@@ -26,6 +26,10 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "videoplayer.h"
 #include "utils.h"
 
+#ifdef _DEBUG
+#include "objectdump.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 using namespace Phonon;
@@ -398,10 +402,17 @@ void MMF::VideoPlayer::videoOutputChanged()
 void MMF::VideoPlayer::getNativeWindowSystemHandles()
 {
     TRACE_CONTEXT(VideoPlayer::getNativeWindowSystemHandles, EVideoInternal);
+    TRACE_ENTRY_0();
 
     VideoOutput& output = videoOutput();
     CCoeControl* const control = output.winId();
-
+    
+    CCoeEnv* const coeEnv = control->ControlEnv();
+    m_wsSession = &(coeEnv->WsSession());
+    m_screenDevice = coeEnv->ScreenDevice();
+    m_window = control->DrawableWindow();
+    
+/*
     TRACE("control               0x%08x", control);
     TRACE("control IsVisible     %d", control->IsVisible());
     TRACE("control IsDimmed      %d", control->IsDimmed());
@@ -434,6 +445,15 @@ void MMF::VideoPlayer::getNativeWindowSystemHandles()
           m_window->AbsPosition().iX, m_window->AbsPosition().iY);
     TRACE("window Size           %d %d",
           m_window->Size().iWidth, m_window->Size().iHeight);
+*/
+    
+#ifdef _DEBUG
+    QScopedPointer<ObjectDump::QDumper> dumper(new ObjectDump::QDumper);
+    dumper->setPrefix("Phonon::MMF"); // to aid searchability of logs
+    ObjectDump::addDefaultAnnotators(*dumper);
+    TRACE_0("Dumping VideoOutput:");
+    dumper->dumpObject(output);
+#endif
 
 #ifdef PHONON_MMF_HARD_CODE_VIDEO_RECT
     // HACK: why isn't control->Rect updated following a call to
@@ -455,6 +475,8 @@ void MMF::VideoPlayer::getNativeWindowSystemHandles()
     TRACE("clipRect              %d %d - %d %d",
         m_clipRect.iTl.iX, m_clipRect.iTl.iY,
         m_clipRect.iBr.iX, m_clipRect.iBr.iY);
+    
+    TRACE_EXIT_0();
 }
 
 

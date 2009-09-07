@@ -49,6 +49,21 @@ SOURCES +=                                           \
            $$PHONON_MMF_DIR/videooutput.cpp          \
            $$PHONON_MMF_DIR/videoplayer.cpp          \
            $$PHONON_MMF_DIR/videowidget.cpp
+
+# This is not mmfphonon-specific, and should be factored out into a separate
+# library (QtCore?) at a later date
+debug {
+HEADERS +=                                           \
+           $$PHONON_MMF_DIR/objectdump.h             \
+	   $$PHONON_MMF_DIR/objectdump_symbian.h     \
+           $$PHONON_MMF_DIR/objecttree.h
+
+SOURCES +=                                           \
+           $$PHONON_MMF_DIR/objectdump.cpp           \
+	   $$PHONON_MMF_DIR/objectdump_symbian.cpp   \
+           $$PHONON_MMF_DIR/objecttree.cpp
+
+}
 	   
 LIBS += -lmediaclientvideo.lib		# For CVideoPlayerUtility
 LIBS += -lcone.lib			# For CCoeEnv
