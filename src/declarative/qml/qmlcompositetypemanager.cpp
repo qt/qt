@@ -135,6 +135,14 @@ QmlCompositeTypeManager::QmlCompositeTypeManager(QmlEngine *e)
 {
 }
 
+QmlCompositeTypeManager::~QmlCompositeTypeManager()
+{
+    for (Components::Iterator iter = components.begin(); iter != components.end();) {
+        (*iter)->release();
+        iter = components.erase(iter);
+    }
+}
+
 QmlCompositeTypeData *QmlCompositeTypeManager::get(const QUrl &url)
 {
     QmlCompositeTypeData *unit = components.value(url.toString());

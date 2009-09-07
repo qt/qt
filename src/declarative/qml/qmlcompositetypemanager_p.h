@@ -73,6 +73,7 @@ class QmlCompositeTypeManager : public QObject
     Q_OBJECT
 public:
     QmlCompositeTypeManager(QmlEngine *);
+    ~QmlCompositeTypeManager();
 
     // Return a QmlCompositeTypeData for url.  The QmlCompositeTypeData may be 
     // cached.
