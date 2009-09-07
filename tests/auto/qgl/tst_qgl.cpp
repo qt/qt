@@ -500,6 +500,16 @@ void tst_QGL::getSetCheck()
     QCOMPARE(format1.redBufferSize(), 8);
     QCOMPARE(format1.plane(), 8);
 
+    // Check the QGLFormat constructor that takes an option list.
+    QGLFormat format5
+        (QGL::DepthBuffer | QGL::StereoBuffers | QGL::ColorIndex, 3);
+    QVERIFY(format5.depth());
+    QVERIFY(format5.stereo());
+    QVERIFY(format5.doubleBuffer());        // From defaultFormat()
+    QVERIFY(!format5.hasOverlay());         // From defaultFormat()
+    QVERIFY(!format5.rgba());
+    QCOMPARE(format5.plane(), 3);
+
     // The default format should be the same as QGLFormat().
     QVERIFY(QGLFormat::defaultFormat() == QGLFormat());
 
