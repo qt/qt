@@ -62,6 +62,8 @@ public:
     QGLPaintDevice();
     virtual ~QGLPaintDevice();
 
+    int devType() const {return QInternal::OpenGL;}
+
     virtual void beginPaint();
     virtual void ensureActiveTarget();
     virtual void endPaint();
@@ -74,7 +76,7 @@ public:
 
     virtual QGLContext* context() const = 0;
     QGLFormat format() const;
-    virtual QSize size() const;
+    virtual QSize size() const = 0;
 
     // returns the QGLPaintDevice for the given QPaintDevice
     static QGLPaintDevice* getDevice(QPaintDevice*);

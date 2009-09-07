@@ -43,6 +43,7 @@
 #include <private/qgl_p.h>
 #include <private/qglpixelbuffer_p.h>
 #include <private/qglframebufferobject_p.h>
+#include <private/qwindowsurface_gl_p.h>
 
 QGLPaintDevice::QGLPaintDevice()
 {
@@ -106,10 +107,10 @@ QGLFormat QGLPaintDevice::format() const
     return context()->format();
 }
 
-QSize QGLPaintDevice::size() const
-{
-    return QSize();
-}
+//QSize QGLPaintDevice::size() const
+//{
+//    return QSize();
+//}
 
 
 
