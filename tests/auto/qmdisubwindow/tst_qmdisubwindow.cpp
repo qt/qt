@@ -1835,7 +1835,10 @@ void tst_QMdiSubWindow::setFont()
     newFont.setBold(true);
     subWindow->setFont(newFont);
     qApp->processEvents();
-    QCOMPARE(subWindow->font(), newFont);
+    const QFont &swFont = subWindow->font();
+    QCOMPARE(swFont.family(), newFont.family());
+    QCOMPARE(swFont.pointSize(), newFont.pointSize());
+    QCOMPARE(swFont.weight(), newFont.weight());
     QImage newTitleBar = QPixmap::grabWidget(subWindow, titleBarRect).toImage();
     QVERIFY(newTitleBar != originalTitleBar);
 
