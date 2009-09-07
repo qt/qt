@@ -226,6 +226,20 @@
     located to your applications root folder (i.e., do not include the
     \c plugins directory).
 
+    \note In Symbian all binaries must be located in the directory \\sys\\bin,
+    so each Qt plugin has a stub with the same basename as the plugin dll 
+    and suffix ".qtplugin" to make Qt extension plugins work similarly to
+    other platforms.
+    When trying to locate the plugin, Qt actually looks for the stub
+    instead of the plugin binary. While plugin stub files have the
+    suffix ".qtplugin", they can still be loaded also by specifying a filename
+    with the normal library suffix ".dll" for QPluginLoader, so normally application
+    developer doesn't need to care about the different suffix of the stub.
+    Because of the way applications can be installed
+    on ROM or various other drives in Symbian, Qt looks for the stub from
+    the same directory on all available drives if it is not located in the given
+    directory when loading a plugin.
+
     For more information about deployment,
     see the \l {Deploying Qt Applications} and \l {Deploying Plugins}
     documentation.
