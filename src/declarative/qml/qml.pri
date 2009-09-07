@@ -31,7 +31,8 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlbasicscript.cpp \
     qml/qmlvaluetype.cpp \
     qml/qmlbindingoptimizations.cpp \
-    qml/qmlxmlhttprequest.cpp
+    qml/qmlxmlhttprequest.cpp \
+    qml/qmetaobjectbuilder.cpp
 
 HEADERS += qml/qmlparser_p.h \
     qml/qmlinstruction_p.h \
@@ -79,7 +80,8 @@ HEADERS += qml/qmlparser_p.h \
     qml/qpodvector_p.h \
     qml/qmlvaluetype_p.h \
     qml/qmlbindingoptimizations_p.h \
-    qml/qmlxmlhttprequest_p.h
+    qml/qmlxmlhttprequest_p.h \
+    qml/qmetaobjectbuilder_p.h
 
 # for qtscript debugger
 contains(QT_CONFIG, scripttools):QT += scripttools
