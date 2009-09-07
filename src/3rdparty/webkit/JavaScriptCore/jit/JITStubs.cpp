@@ -2758,7 +2758,9 @@ DEFINE_STUB_FUNCTION(void, op_debug_return)
     STUB_INIT_STACK_FRAME(stackFrame);
     CallFrame* callFrame = stackFrame.callFrame;
     if (JSC::Debugger* debugger = callFrame->lexicalGlobalObject()->debugger() ) {
-        debugger->functionExit(JSValue(), callFrame->codeBlock()->ownerNode()->sourceID());
+        JSValue returnValue = callFrame->r(stackFrame.args[0].int32()).jsValue();
+        intptr_t sourceID = callFrame->codeBlock()->ownerNode()->sourceID();
+        debugger->functionExit(returnValue, sourceID);
     }
 }
 

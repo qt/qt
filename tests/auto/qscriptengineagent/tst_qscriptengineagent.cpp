@@ -589,11 +589,7 @@ void tst_QScriptEngineAgent::functionEntryAndExit_functionCall()
         // anonymous function exit
         QCOMPARE(spy->at(2).type, ScriptEngineEvent::FunctionExit);
         QCOMPARE(spy->at(2).scriptId, spy->at(0).scriptId);
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "function return value is not reported when JIT is enabled", Continue);
         QVERIFY(spy->at(2).value.isNumber());
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "function return value is not reported when JIT is enabled", Continue);
         QCOMPARE(spy->at(2).value.toNumber(), qsreal(123));
 
         // evaluate() exit
@@ -670,11 +666,7 @@ void tst_QScriptEngineAgent::functionEntryAndExit_functionDefinition()
         // foo() exit
         QCOMPARE(spy->at(4).type, ScriptEngineEvent::FunctionExit);
         QCOMPARE(spy->at(4).scriptId, spy->at(0).scriptId);
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "function return value is not reported when JIT is enabled", Continue);
         QVERIFY(spy->at(4).value.isNumber());
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "function return value is not reported when JIT is enabled", Continue);
         QCOMPARE(spy->at(4).value.toNumber(), qsreal(456));
 
         // evaluate() exit
@@ -1059,11 +1051,7 @@ void tst_QScriptEngineAgent::functionEntryAndExit_call()
         // exit
         QCOMPARE(spy->at(1).type, ScriptEngineEvent::FunctionExit);
         QCOMPARE(spy->at(1).scriptId, spy->at(0).scriptId);
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "function return value is not reported when JIT is enabled", Continue);
         QVERIFY(spy->at(1).value.isNumber());
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "function return value is not reported when JIT is enabled", Continue);
         QCOMPARE(spy->at(1).value.toNumber(), qsreal(123));
     }
     delete spy;
@@ -1812,16 +1800,12 @@ void tst_QScriptEngineAgent::eventOrder_functions()
         // bar() exit
         QCOMPARE(spy->at(15).type, ScriptEngineEvent::FunctionExit);
         QCOMPARE(spy->at(15).scriptId, spy->at(3).scriptId);
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "function return value is not reported when JIT is enabled", Continue);
         QVERIFY(spy->at(15).value.isNumber());
         // restore context
         QCOMPARE(spy->at(16).type, ScriptEngineEvent::ContextPop);
         // foo() exit
         QCOMPARE(spy->at(17).type, ScriptEngineEvent::FunctionExit);
         QCOMPARE(spy->at(17).scriptId, spy->at(0).scriptId);
-        if (qt_script_isJITEnabled())
-            QEXPECT_FAIL("", "function return value is not reported when JIT is enabled", Continue);
         QVERIFY(spy->at(17).value.isNumber());
         // restore context
         QCOMPARE(spy->at(18).type, ScriptEngineEvent::ContextPop);
