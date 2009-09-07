@@ -19,7 +19,7 @@ contains( CONFIG, no_icon ) {
         # Note: symbian-sbsv2 builds can't utilize extra compiler for mifconv, so ICON handling is done in code
         symbian-abld {        
             #Makefile: requires paths with backslash    
-            ICON = $$replace( ICON, /, \\)
+            win32:ICON = $$replace(ICON, /, \\)
 
             # Extra compiler rules for mifconv
             mifconv.output = ${ZDIR}$$APP_RESOURCE_DIR/$${TARGET.UID3}.mif
@@ -34,7 +34,7 @@ contains( CONFIG, no_icon ) {
         } 
         # Rules to use generated MIF file from symbian resources
         RSS_RULES.number_of_icons = $$size(ICON)
-        RSS_RULES.icon_file = $$replace( APP_RESOURCE_DIR, /, \\\\ )\\\\$${TARGET.UID3}.mif
+        RSS_RULES.icon_file = APP_RESOURCE_DIR/$${TARGET.UID3}.mif
+        win32:RSS_RULES.icon_file = $$replace(RSS_RULES.icon_file, /, \\)
     }
 }
-
