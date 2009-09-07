@@ -58,7 +58,6 @@ class Q_DECLARATIVE_EXPORT QFxGridView : public QFxFlickable
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxGridView)
 
     Q_PROPERTY(QVariant model READ model WRITE setModel)
-    Q_CLASSINFO("DefaultProperty", "delegate")
     Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(QFxItem *current READ currentItem NOTIFY currentIndexChanged)
@@ -70,6 +69,7 @@ class Q_DECLARATIVE_EXPORT QFxGridView : public QFxFlickable
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
     Q_PROPERTY(int cellWidth READ cellWidth WRITE setCellWidth NOTIFY cellSizeChanged)
     Q_PROPERTY(int cellHeight READ cellHeight WRITE setCellHeight NOTIFY cellSizeChanged)
+    Q_CLASSINFO("DefaultProperty", "data")
 
 public:
     QFxGridView(QFxItem *parent=0);
