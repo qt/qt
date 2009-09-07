@@ -47,15 +47,6 @@ namespace Utils
 void panic(PanicCode code);
 
 /**
- * Translate forward slashes to backslashes
- *
- * \note    This function is a temporary measure, for use until the
- *             responsibility for constructing valid file paths is
- *             determined.
- */
-QHBufC symbianFilename(const QString& qtFilename);
-
-/**
  * Determines whether the provided MIME type is an audio or video
  * type.  If it is neither, the function returns MediaTypeUnknown.
  */

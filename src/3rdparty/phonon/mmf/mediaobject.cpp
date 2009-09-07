@@ -23,6 +23,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 #include "videoplayer.h"
 
+#include <QDir>
+
 QT_BEGIN_NAMESPACE
 
 using namespace Phonon;
@@ -101,7 +103,8 @@ MMF::MediaType MMF::MediaObject::fileMediaType
     MediaType result = MediaTypeUnknown;
 
     if (openRecognizer()) {
-        QHBufC fileNameSymbian = Utils::symbianFilename(fileName);
+        
+        const QHBufC fileNameSymbian(QDir::toNativeSeparators(fileName));
 
         m_file.Close();
         TInt err = m_file.Open(m_fileServer, *fileNameSymbian, EFileRead | EFileShareReadersOnly);

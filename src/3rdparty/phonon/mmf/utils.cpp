@@ -31,21 +31,6 @@ void MMF::Utils::panic(PanicCode code)
     User::Panic(PanicCategory, code);
 }
 
-QHBufC MMF::Utils::symbianFilename(const QString& qtFilename)
-{
-    _LIT(ForwardSlash, "/");
-    _LIT(BackwardSlash, "\\");
-
-    QHBufC result(qtFilename);
-    TInt pos = result->Find(ForwardSlash);
-    while (pos != KErrNotFound) {
-        result->Des().Replace(pos, 1, BackwardSlash);
-        pos = result->Find(ForwardSlash);
-    }
-
-    return result;
-}
-
 
 static const TInt KMimePrefixLength = 6; // either "audio/" or "video/"
 _LIT(KMimePrefixAudio, "audio/");
