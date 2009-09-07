@@ -731,6 +731,8 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
     }
 
     QAbstractFileEngine::FileFlags ret = 0;
+    if (type & FlagsMask)
+        ret |= LocalDiskFlag;
     bool exists = d->doStat();
     if (!exists && !d->isSymlink())
         return ret;
@@ -796,7 +798,6 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
         }
     }
     if (type & FlagsMask) {
-        ret |= LocalDiskFlag;
         if (exists)
             ret |= ExistsFlag;
 #if defined(Q_OS_SYMBIAN)
