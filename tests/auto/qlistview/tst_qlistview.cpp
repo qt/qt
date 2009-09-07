@@ -1614,13 +1614,6 @@ void tst_QListView::task254449_draggingItemToNegativeCoordinates()
     list.setModel(&model);
     list.setViewMode(QListView::IconMode);
     list.show();
-    QTest::qWait(200); //makes sure the layout is done
-
-    const QPoint topLeft(-6, 0);
-
-
-    list.setPositionForIndex(topLeft, index);
-
     class MyItemDelegate : public QStyledItemDelegate
     {
     public:
@@ -1634,15 +1627,18 @@ void tst_QListView::task254449_draggingItemToNegativeCoordinates()
 
         mutable int numPaints;
     } delegate;
-
     list.setItemDelegate(&delegate);
+
+    QTest::qWait(200); //makes sure the layout is done
+
+    const QPoint topLeft(-6, 0);
+    list.setPositionForIndex(topLeft, index);
 
     //we'll make sure the item is repainted
     delegate.numPaints = 0;
-    list.viewport()->repaint();
-
-    QCOMPARE(list.visualRect(index).topLeft(), topLeft); 
-    QCOMPARE(delegate.numPaints, 1); 
+    QApplication::processEvents();
+    QCOMPARE(list.visualRect(index).topLeft(), topLeft);
+    QCOMPARE(delegate.numPaints, 1);
 }
 
 
