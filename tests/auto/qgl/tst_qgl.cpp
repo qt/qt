@@ -79,6 +79,7 @@ private slots:
     void glWidgetReparent();
     void stackedFBOs();
     void colormap();
+    void fboFormat();
 };
 
 tst_QGL::tst_QGL()
@@ -1319,6 +1320,61 @@ void tst_QGL::colormap()
     QVERIFY(cmap4.handle() == Qt::HANDLE(42));
     QVERIFY(!cmap4.isEmpty());
     QCOMPARE(cmap4.size(), 256);
+}
+
+#ifndef QT_OPENGL_ES
+#define DEFAULT_FORMAT GL_RGBA8
+#else
+#define DEFAULT_FORMAT GL_RGBA
+#endif
+
+#ifndef GL_TEXTURE_3D
+#define GL_TEXTURE_3D 0x806F
+#endif
+
+#ifndef GL_RGB16
+#define GL_RGB16 0x8054
+#endif
+
+void tst_QGL::fboFormat()
+{
+    // Check the initial conditions.
+    QGLFramebufferObjectFormat format1;
+    QCOMPARE(format1.samples(), 0);
+    QVERIFY(format1.attachment() == QGLFramebufferObject::NoAttachment);
+    QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_2D));
+    QCOMPARE(int(format1.internalTextureFormat()), int(DEFAULT_FORMAT));
+
+    // Modify the values and re-check.
+    format1.setSamples(8);
+    format1.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+    format1.setTextureTarget(GL_TEXTURE_3D);
+    format1.setInternalTextureFormat(GL_RGB16);
+    QCOMPARE(format1.samples(), 8);
+    QVERIFY(format1.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_3D));
+    QCOMPARE(int(format1.internalTextureFormat()), int(GL_RGB16));
+
+    // Make copies and check that they are the same.
+    QGLFramebufferObjectFormat format2(format1);
+    QGLFramebufferObjectFormat format3;
+    QCOMPARE(format2.samples(), 8);
+    QVERIFY(format2.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(int(format2.textureTarget()), int(GL_TEXTURE_3D));
+    QCOMPARE(int(format2.internalTextureFormat()), int(GL_RGB16));
+    format3 = format1;
+    QCOMPARE(format3.samples(), 8);
+    QVERIFY(format3.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(int(format3.textureTarget()), int(GL_TEXTURE_3D));
+    QCOMPARE(int(format3.internalTextureFormat()), int(GL_RGB16));
+
+    // Modify the copies and check that the original is unchanged.
+    format2.setSamples(9);
+    format3.setTextureTarget(GL_TEXTURE_2D);
+    QCOMPARE(format1.samples(), 8);
+    QVERIFY(format1.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_3D));
+    QCOMPARE(int(format1.internalTextureFormat()), int(GL_RGB16));
 }
 
 QTEST_MAIN(tst_QGL)
