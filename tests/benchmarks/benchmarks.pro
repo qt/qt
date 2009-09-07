@@ -3,6 +3,7 @@ SUBDIRS = containers-associative \
 	containers-sequential \
         qanimation \
 	qbytearray \
+        qfile_vs_qnetworkaccessmanager \
 	qpainter \
 	qtestlib-simple	events \
 	qiodevice \
