@@ -53,11 +53,7 @@ Item {
                 color: "#151515"; highlightColor: "Green"
             }
 
-            KeyProxy {
-                id: Proxy
-                anchors.fill: parent
-                targets: [(ReturnKey), (Editor)]
-            }
+            Keys.forwardTo: [ (ReturnKey), (Editor)]
 
             Item {
                 id: ReturnKey
@@ -71,7 +67,7 @@ Item {
         name: "Tags"
         PropertyChanges { target: Container; x: -TagButton.x + 5 }
         PropertyChanges { target: TagButton; text: "OK" }
-        PropertyChanges { target: Proxy; focus: true }
+        PropertyChanges { target: LineEdit; focus: true }
     }
 
     transitions: Transition {

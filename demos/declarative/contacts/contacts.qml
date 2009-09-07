@@ -290,10 +290,8 @@ Rectangle {
             }
         ]
     }
-    KeyProxy {
-        focus: contacts.mode != 'new'
-        targets: { contacts.mode == "list" ? [searchBarWrapper, contactListView] : [contactListView]}
-    }
+    focus: contacts.mode != 'new'
+    forwardTo: { contacts.mode == "list" ? [searchBarWrapper, contactListView] : [contactListView]}
     states: [
         State {
             name: "editNewState"

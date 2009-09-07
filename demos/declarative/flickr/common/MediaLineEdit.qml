@@ -26,7 +26,7 @@ Item {
                 width: 100
             }
             PropertyChanges {
-                target: Proxy
+                target: Container
                 focus: true
             }
             StateChangeScript {
@@ -96,12 +96,7 @@ Item {
         anchors.left: Label.right
         anchors.verticalCenter: Container.verticalCenter
     }
-    KeyProxy {
-        id: Proxy
-        anchors.left: Container.left
-        anchors.fill: Container
-        targets: [(ReturnKey), (Editor)]
-    }
+    Keys.forwardTo: [(ReturnKey), (Editor)]
     Item {
         id: ReturnKey
         Keys.onReturnPressed: "Container.state = ''"

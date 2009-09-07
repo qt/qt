@@ -29,11 +29,7 @@ Item {
                     maximumLength:21
                     font.bold: true
                     color: "#151515"; highlightColor: "green"
-                    KeyProxy {
-                        id: Proxy
-                        targets: [(tabber), (nameIn)]
-                        focus: true
-                    }
+                    Keys.forwardTo: [(tabber), (nameIn)]
                     Item { 
                         id: tabber
                         //Note: it's not working yet
