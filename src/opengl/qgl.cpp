@@ -1399,7 +1399,6 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     crWin = false;
     initDone = false;
     sharing = false;
-    clear_on_painter_begin = true;
     max_texture_size = -1;
     version_flags_cached = false;
     version_flags = QGLFormat::OpenGL_Version_None;
@@ -4254,7 +4253,7 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     } else {
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
-        d->glcx->d_func()->clear_on_painter_begin = false;
+        d->disable_clear_on_painter_begin = true;
         if (engine->type() == QPaintEngine::OpenGL2) {
             qt_save_gl_state();
 #ifndef QT_OPENGL_ES_2
@@ -4284,7 +4283,7 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
         p->end();
         delete p;
         setAutoBufferSwap(auto_swap);
-        d->glcx->d_func()->clear_on_painter_begin = true;
+        d->disable_clear_on_painter_begin = false;
         if (engine->type() == QPaintEngine::OpenGL2)
             qt_restore_gl_state();
     }
@@ -4427,7 +4426,7 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
     } else {
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
-        d->glcx->d_func()->clear_on_painter_begin = false;
+        d->disable_clear_on_painter_begin = true;
         if (engine->type() == QPaintEngine::OpenGL2)
             qt_save_gl_state();
         p = new QPainter(this);
@@ -4467,7 +4466,7 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
         if (engine->type() == QPaintEngine::OpenGL2)
             qt_restore_gl_state();
         setAutoBufferSwap(auto_swap);
-        d->glcx->d_func()->clear_on_painter_begin = true;
+        d->disable_clear_on_painter_begin = false;
     }
 #ifndef QT_OPENGL_ES
     if (engine->type() == QPaintEngine::OpenGL2)

@@ -175,6 +175,7 @@ class QGLWidgetPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QGLWidget)
 public:
     QGLWidgetPrivate() : QWidgetPrivate()
+                       , disable_clear_on_painter_begin(false)
 #ifdef Q_WS_QWS
                        , wsurf(0)
 #endif
@@ -196,6 +197,8 @@ public:
 
     QGLColormap cmap;
     QMap<QString, int> displayListCache;
+
+    bool disable_clear_on_painter_begin;
 
 #if defined(Q_WS_WIN)
     void updateColormap();
@@ -295,7 +298,6 @@ public:
     uint sharing : 1;
     uint initDone : 1;
     uint crWin : 1;
-    uint clear_on_painter_begin : 1;
     uint internal_context : 1;
     uint version_flags_cached : 1;
     QPaintDevice *paintDevice;

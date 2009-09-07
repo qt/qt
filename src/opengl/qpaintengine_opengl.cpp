@@ -1349,22 +1349,6 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
 
     d->offscreen.begin();
 
-    if (d->device->context()->d_func()->clear_on_painter_begin && d->device->autoFillBackground()) {
-
-        if (d->device->hasTransparentBackground())
-            glClearColor(0.0, 0.0, 0.0, 0.0);
-        else {
-            const QColor &c = d->device->backgroundColor();
-            glClearColor(c.redF(), c.greenF(), c.blueF(), 1.0);
-        }
-
-        GLbitfield clearBits = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
-#ifndef QT_OPENGL_ES
-        clearBits |= GL_ACCUM_BUFFER_BIT;
-#endif
-        glClear(clearBits);
-    }
-
     QSize sz(d->device->size());
     glViewport(0, 0, sz.width(), sz.height()); // XXX (Embedded): We need a solution for GLWidgets that draw in a part or a bigger surface...
     glMatrixMode(GL_PROJECTION);

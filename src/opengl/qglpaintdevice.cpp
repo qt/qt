@@ -86,20 +86,20 @@ void QGLPaintDevice::endPaint()
     }
 }
 
-QColor QGLPaintDevice::backgroundColor() const
-{
-    return QApplication::palette().brush(QPalette::Background).color();
-}
+//QColor QGLPaintDevice::backgroundColor() const
+//{
+//    return QApplication::palette().brush(QPalette::Background).color();
+//}
 
-bool QGLPaintDevice::autoFillBackground() const
-{
-    return false;
-}
+//bool QGLPaintDevice::autoFillBackground() const
+//{
+//    return false;
+//}
 
-bool QGLPaintDevice::hasTransparentBackground() const
-{
-    return false;
-}
+//bool QGLPaintDevice::hasTransparentBackground() const
+//{
+//    return false;
+//}
 
 QGLFormat QGLPaintDevice::format() const
 {
@@ -112,6 +112,7 @@ QSize QGLPaintDevice::size() const
 }
 
 
+
 QGLWidgetGLPaintDevice::QGLWidgetGLPaintDevice()
 {
 }
@@ -121,24 +122,39 @@ QPaintEngine* QGLWidgetGLPaintDevice::paintEngine() const
     return glWidget->paintEngine();
 }
 
-QColor QGLWidgetGLPaintDevice::backgroundColor() const
-{
-    return glWidget->palette().brush(glWidget->backgroundRole()).color();
-}
+//QColor QGLWidgetGLPaintDevice::backgroundColor() const
+//{
+//    return glWidget->palette().brush(glWidget->backgroundRole()).color();
+//}
 
-bool QGLWidgetGLPaintDevice::autoFillBackground() const
-{
-    return glWidget->autoFillBackground();
-}
+//bool QGLWidgetGLPaintDevice::autoFillBackground() const
+//{
+//    return glWidget->autoFillBackground();
+//}
 
-bool QGLWidgetGLPaintDevice::hasTransparentBackground() const
-{
-    return glWidget->testAttribute(Qt::WA_TranslucentBackground);
-}
+//bool QGLWidgetGLPaintDevice::hasTransparentBackground() const
+//{
+//    return glWidget->testAttribute(Qt::WA_TranslucentBackground);
+//}
 
 void QGLWidgetGLPaintDevice::setWidget(QGLWidget* w)
 {
     glWidget = w;
+}
+
+void QGLWidgetGLPaintDevice::beginPaint()
+{
+    QGLPaintDevice::beginPaint();
+    if (!glWidget->d_func()->disable_clear_on_painter_begin && glWidget->autoFillBackground()) {
+        if (glWidget->testAttribute(Qt::WA_TranslucentBackground))
+            glClearColor(0.0, 0.0, 0.0, 0.0);
+        else {
+            const QColor &c = glWidget->palette().brush(glWidget->backgroundRole()).color();
+            float alpha = c.alphaF();
+            glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
+        }
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
 }
 
 void QGLWidgetGLPaintDevice::endPaint()

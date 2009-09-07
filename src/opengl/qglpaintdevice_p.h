@@ -66,9 +66,11 @@ public:
     virtual void ensureActiveTarget();
     virtual void endPaint();
 
-    virtual QColor backgroundColor() const;
-    virtual bool autoFillBackground() const;
-    virtual bool hasTransparentBackground() const;
+//    virtual void clearOnBegin() const;
+//    virtual QColor clearColor() const;
+//    virtual QColor backgroundColor() const;
+//    virtual bool autoFillBackground() const;
+//    virtual bool hasTransparentBackground() const;
 
     virtual QGLContext* context() const = 0;
     QGLFormat format() const;
@@ -96,11 +98,13 @@ public:
 
     virtual QPaintEngine* paintEngine() const;
 
-    virtual QColor backgroundColor() const;
-    virtual bool autoFillBackground() const;
-    virtual bool hasTransparentBackground() const;
+//    virtual void clearOnBegin() const;
+//    virtual QColor clearColor() const;
+//    virtual bool autoFillBackground() const;
+//    virtual bool hasTransparentBackground() const;
 
     // QGLWidgets need to do swapBufers in endPaint:
+    virtual void beginPaint();
     virtual void endPaint();
     virtual QSize size() const;
     virtual QGLContext* context() const;

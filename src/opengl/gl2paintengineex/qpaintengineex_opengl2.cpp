@@ -1359,17 +1359,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 #endif
 
 //    QGLPixmapData *source = d->drawable.copyOnBegin();
-    if (d->ctx->d_func()->clear_on_painter_begin && d->device->autoFillBackground()) {
-        if (d->device->hasTransparentBackground())
-            glClearColor(0.0, 0.0, 0.0, 0.0);
-        else {
-            const QColor &c = d->device->backgroundColor();
-            float alpha = c.alphaF();
-            glClearColor(c.redF() * alpha, c.greenF() * alpha, c.blueF() * alpha, alpha);
-        }
-        glClear(GL_COLOR_BUFFER_BIT);
-    }
-//    else if (source) {
+//    if (source) {
 //        QGLContext *ctx = d->ctx;
 //
 //        d->transferMode(ImageDrawingMode);
