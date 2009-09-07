@@ -90,7 +90,7 @@ Q_SIGNALS:
     void started();
     void triggered();
     void finished();
-    void cancelled();
+    void canceled();
 
 private:
     friend class QWidget;
