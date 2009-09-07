@@ -20,7 +20,6 @@ HEADERS += \
            fx/qfxitem_p.h \
            fx/qfxfocuspanel.h \
            fx/qfxfocusscope.h \
-           fx/qfxkeyproxy.h \
            fx/qfxpositioners.h \
            fx/qfxpositioners_p.h \
            fx/qfxloader.h \
@@ -62,7 +61,6 @@ SOURCES += \
            fx/qfxitem.cpp \
            fx/qfxfocuspanel.cpp \
            fx/qfxfocusscope.cpp \
-           fx/qfxkeyproxy.cpp \
            fx/qfxpositioners.cpp \
            fx/qfxloader.cpp \
            fx/qfxmouseregion.cpp \

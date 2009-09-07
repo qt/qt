@@ -881,6 +881,7 @@ QFxListView::QFxListView(QFxItem *parent)
 QFxListView::~QFxListView()
 {
     Q_D(QFxListView);
+    d->clear();
     if (d->ownModel)
         delete d->model;
 }

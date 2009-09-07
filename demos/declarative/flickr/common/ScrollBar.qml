@@ -12,9 +12,9 @@ Item {
         border.color: "white"
         border.width: 2
         x: 0
-        y: flickableArea.pageYPosition * Container.height
+        y: flickableArea.visibleArea.yPosition * Container.height
         width: parent.width
-        height: flickableArea.pageHeight * Container.height
+        height: flickableArea.visibleArea.heightRatio * Container.height
     }
     states: [
         State {
