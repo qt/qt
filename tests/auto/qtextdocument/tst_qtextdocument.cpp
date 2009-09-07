@@ -100,6 +100,9 @@ private slots:
 
     void task240325();
 
+    void stylesheetFont_data();
+    void stylesheetFont();
+
     void toHtml_data();
     void toHtml();
     void toHtml2();
@@ -569,6 +572,63 @@ void tst_QTextDocument::task240325()
             QCOMPARE(text, QString::fromLatin1("Foobar"));
         }
     }
+}
+
+void tst_QTextDocument::stylesheetFont_data()
+{    
+    QTest::addColumn<QString>("stylesheet");
+    QTest::addColumn<QFont>("font");
+
+    {
+        QFont font;
+        font.setBold(true);
+        font.setPixelSize(64);
+
+        QTest::newRow("Regular font specification")
+                 << "font-size: 64px; font-weight: bold;"
+                 << font;
+    }
+
+
+    {
+        QFont font;
+        font.setBold(true);
+        font.setPixelSize(64);
+
+        QTest::newRow("Shorthand font specification")
+                << "font: normal bold 64px Arial;"
+                << font;
+    }
+
+}
+
+void tst_QTextDocument::stylesheetFont()
+{
+    QFETCH(QString, stylesheet);
+    QFETCH(QFont, font);
+
+    QString html = QString::fromLatin1("<html>"
+                                       "<body>"
+                                       "<div style=\"%1\" >"
+                                       "Foobar"
+                                       "</div>"
+                                       "</body>"
+                                       "</html>").arg(stylesheet);
+
+    qDebug() << html;
+    doc->setHtml(html);
+    QCOMPARE(doc->blockCount(), 1);
+
+    // First and only block
+    QTextBlock block = doc->firstBlock();
+
+    QString text = block.text();
+    QCOMPARE(text, QString::fromLatin1("Foobar"));
+
+    QFont actualFont = block.charFormat().font();
+
+    QCOMPARE(actualFont.bold(), font.bold());
+    QCOMPARE(actualFont.pixelSize(), font.pixelSize());
 }
 
 void tst_QTextDocument::noundo_moreIsModified()
@@ -1458,7 +1518,6 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("list-ul-margin") << QTextDocumentFragment(&doc)
                                         << QString("EMPTYBLOCK") +
                                            QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blah</li></ul>");
-
     }
 }
 
