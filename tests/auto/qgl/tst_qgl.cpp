@@ -500,6 +500,47 @@ void tst_QGL::getSetCheck()
     QCOMPARE(format1.redBufferSize(), 8);
     QCOMPARE(format1.plane(), 8);
 
+    // The default format should be the same as QGLFormat().
+    QVERIFY(QGLFormat::defaultFormat() == QGLFormat());
+
+    // Modify the default format and check that it was changed.
+    QGLFormat::setDefaultFormat(format1);
+    QVERIFY(QGLFormat::defaultFormat() == format1);
+
+    // Restore the default format.
+    QGLFormat::setDefaultFormat(QGLFormat());
+    QVERIFY(QGLFormat::defaultFormat() == QGLFormat());
+
+    // Check the default overlay format's expected values.
+    QGLFormat overlay(QGLFormat::defaultOverlayFormat());
+    QCOMPARE(overlay.depthBufferSize(), -1);
+    QCOMPARE(overlay.accumBufferSize(), -1);
+    QCOMPARE(overlay.redBufferSize(), -1);
+    QCOMPARE(overlay.greenBufferSize(), -1);
+    QCOMPARE(overlay.blueBufferSize(), -1);
+    QCOMPARE(overlay.alphaBufferSize(), -1);
+    QCOMPARE(overlay.samples(), -1);
+    QCOMPARE(overlay.swapInterval(), -1);
+    QCOMPARE(overlay.plane(), 1);
+    QVERIFY(!overlay.sampleBuffers());
+    QVERIFY(!overlay.doubleBuffer());
+    QVERIFY(!overlay.depth());
+    QVERIFY(!overlay.rgba());
+    QVERIFY(!overlay.alpha());
+    QVERIFY(!overlay.accum());
+    QVERIFY(!overlay.stencil());
+    QVERIFY(!overlay.stereo());
+    QVERIFY(overlay.directRendering()); // Only option that should be on.
+    QVERIFY(!overlay.hasOverlay());     // Overlay doesn't need an overlay!
+
+    // Modify the default overlay format and check that it was changed.
+    QGLFormat::setDefaultOverlayFormat(format1);
+    QVERIFY(QGLFormat::defaultOverlayFormat() == format1);
+
+    // Restore the default overlay format.
+    QGLFormat::setDefaultOverlayFormat(overlay);
+    QVERIFY(QGLFormat::defaultOverlayFormat() == overlay);
+
     MyGLContext obj2(obj1);
     // bool QGLContext::windowCreated()
     // void QGLContext::setWindowCreated(bool)
