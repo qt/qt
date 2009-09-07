@@ -408,7 +408,7 @@ private:
     Q_DISABLE_COPY(QGLContext)
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QGLContext::BindOptions);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QGLContext::BindOptions)
 
 class Q_OPENGL_EXPORT QGLWidget : public QWidget
 {
