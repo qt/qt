@@ -23,6 +23,8 @@
 #include <private/qabstractanimation_p.h>
 #include "deviceskin.h"
 
+#include <QSettings>
+#include <QNetworkCookieJar>
 #include <QNetworkDiskCache>
 #include <QNetworkAccessManager>
 #include <QSignalMapper>
@@ -208,6 +210,34 @@ public:
     }
 };
 
+class PersistentCookieJar : public QNetworkCookieJar {
+public:
+    PersistentCookieJar(QObject *parent) : QNetworkCookieJar(parent) { load(); }
+    ~PersistentCookieJar() { save(); }
+
+private:
+    void save()
+    {
+        QList<QNetworkCookie> list = allCookies();
+        QByteArray data;
+        foreach (QNetworkCookie cookie, list) {
+            if (!cookie.isSessionCookie()) {
+                data.append(cookie.toRawForm());
+                data.append("\n");
+            }
+        }
+        QSettings settings("Nokia", "QtQmlViewer");
+        settings.setValue("Cookies",data);
+    }
+
+    void load()
+    {
+        QSettings settings("Nokia", "QtQmlViewer");
+        QByteArray data = settings.value("Cookies").toByteArray();
+        setAllCookies(QNetworkCookie::parseCookies(data));
+    }
+};
+
 QString QmlViewer::getVideoFileName()
 {
     QString title = convertAvailable || ffmpegAvailable ? tr("Save Video File") : tr("Save PNG Frames");
@@ -271,6 +301,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     layout->addWidget(canvas);
 
     setupProxy();
+    canvas->engine()->networkAccessManager()->setCookieJar(new PersistentCookieJar(this));
 
     connect(&autoStartTimer, SIGNAL(triggered()), this, SLOT(autoStartRecording()));
     connect(&autoStopTimer, SIGNAL(triggered()), this, SLOT(autoStopRecording()));
