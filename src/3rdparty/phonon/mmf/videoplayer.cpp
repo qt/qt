@@ -27,7 +27,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "utils.h"
 
 #ifdef _DEBUG
-#include "objectdump.h"
+#include "objectdump/objectdump.h"
 #endif
 
 QT_BEGIN_NAMESPACE

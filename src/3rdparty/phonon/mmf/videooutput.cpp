@@ -21,7 +21,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "videooutputobserver.h"
 
 #ifdef _DEBUG
-#include "objectdump.h"
+#include "objectdump/objectdump.h"
 #endif
 
 #include <QPaintEvent>
