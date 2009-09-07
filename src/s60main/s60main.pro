@@ -40,8 +40,13 @@ symbian-abld: {
     # abld build commands generated resources after the static library is built, and
     # we have dependency to resource from static lib -> resources need to be generated
     # explicitly before library
+win32: {
     rsgFix2.commands = "-$(DEL_FILE) $(EPOCROOT)Epoc32\Data\z\resource\apps\s60main.rsc >NUL 2>&1"
     rsgFix.commands = "-$(ABLD) resource $(PLATFORM) $(CFG) 2>NUL"
+} else {
+    rsgFix2.commands = "-$(DEL_FILE) $(EPOCROOT)epoc32/data/z/resource/apps/s60main.rsc >/dev/null 2>&1"
+    rsgFix.commands = "-$(ABLD) resource $(PLATFORM) $(CFG) 2>/dev/null"
+}
     QMAKE_EXTRA_TARGETS += rsgFix rsgFix2
     PRE_TARGETDEPS += rsgFix rsgFix2
 }
