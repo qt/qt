@@ -207,9 +207,10 @@ QGLSignalProxy *QGLSignalProxy::instance()
     \i \link setSampleBuffers() Multisample buffers.\endlink
     \endlist
 
-    You can also specify preferred bit depths for the depth buffer,
-    alpha buffer, accumulation buffer and the stencil buffer with the
-    functions: setDepthBufferSize(), setAlphaBufferSize(),
+    You can also specify preferred bit depths for the color buffer,
+    depth buffer, alpha buffer, accumulation buffer and the stencil
+    buffer with the functions: setRedBufferSize(), setGreenBufferSize(),
+    setBlueBufferSize(), setDepthBufferSize(), setAlphaBufferSize(),
     setAccumBufferSize() and setStencilBufferSize().
 
     Note that even if you specify that you prefer a 32 bit depth
@@ -293,19 +294,20 @@ static inline GLint qgluProject(GLdouble objx, GLdouble objy, GLdouble objz,
 }
 
 /*!
-    Constructs a QGLFormat object with the factory default settings:
+    Constructs a QGLFormat object with the following default settings:
     \list
     \i \link setDoubleBuffer() Double buffer:\endlink Enabled.
     \i \link setDepth() Depth buffer:\endlink Enabled.
     \i \link setRgba() RGBA:\endlink Enabled (i.e., color index disabled).
     \i \link setAlpha() Alpha channel:\endlink Disabled.
     \i \link setAccum() Accumulator buffer:\endlink Disabled.
-    \i \link setStencil() Stencil buffer:\endlink Disabled.
+    \i \link setStencil() Stencil buffer:\endlink Enabled.
     \i \link setStereo() Stereo:\endlink Disabled.
     \i \link setDirectRendering() Direct rendering:\endlink Enabled.
     \i \link setOverlay() Overlay:\endlink Disabled.
     \i \link setPlane() Plane:\endlink 0 (i.e., normal plane).
-    \i \link setSampleBuffers() Multisample buffers:\endlink Disabled.
+    \i \link setSampleBuffers() Multisample buffers:\endlink Enabled on
+       OpenGL/ES 2.0, disabled on other platforms.
     \endlist
 */
 
@@ -316,26 +318,26 @@ QGLFormat::QGLFormat()
 
 
 /*!
-    Creates a QGLFormat object that is a copy of the current \link
-    defaultFormat() application default format\endlink.
+    Creates a QGLFormat object that is a copy of the current
+    defaultFormat().
 
-    If \a options is not 0, this copy is modified by these format
-    options. The \a options parameter should be \c FormatOption values
-    OR'ed together.
+    If \a options is not 0, the default format is modified by the
+    specified format options. The \a options parameter should be
+    QGL::FormatOption values OR'ed together.
 
     This constructor makes it easy to specify a certain desired format
     in classes derived from QGLWidget, for example:
     \snippet doc/src/snippets/code/src_opengl_qgl.cpp 3
 
-    Note that there are \c FormatOption values to turn format settings
-    both on and off, e.g. \c DepthBuffer and \c NoDepthBuffer,
-    \c DirectRendering and \c IndirectRendering, etc.
+    Note that there are QGL::FormatOption values to turn format settings
+    both on and off, e.g. QGL::DepthBuffer and QGL::NoDepthBuffer,
+    QGL::DirectRendering and QGL::IndirectRendering, etc.
 
     The \a plane parameter defaults to 0 and is the plane which this
     format should be associated with. Not all OpenGL implementations
     supports overlay/underlay rendering planes.
 
-    \sa defaultFormat(), setOption()
+    \sa defaultFormat(), setOption(), setPlane()
 */
 
 QGLFormat::QGLFormat(QGL::FormatOptions options, int plane)
@@ -742,7 +744,7 @@ void QGLFormat::setOverlay(bool enable)
     is 0, which means the normal plane. The default for overlay
     formats is 1, which is the first overlay plane.
 
-    \sa setPlane()
+    \sa setPlane(), defaultOverlayFormat()
 */
 int QGLFormat::plane() const
 {
@@ -1225,7 +1227,7 @@ void QGLFormat::setDefaultFormat(const QGLFormat &f)
 /*!
     Returns the default QGLFormat for overlay contexts.
 
-    The factory default overlay format is:
+    The default overlay format is:
     \list
     \i \link setDoubleBuffer() Double buffer:\endlink Disabled.
     \i \link setDepth() Depth buffer:\endlink Disabled.
@@ -1236,6 +1238,7 @@ void QGLFormat::setDefaultFormat(const QGLFormat &f)
     \i \link setStereo() Stereo:\endlink Disabled.
     \i \link setDirectRendering() Direct rendering:\endlink Enabled.
     \i \link setOverlay() Overlay:\endlink Disabled.
+    \i \link setSampleBuffers() Multisample buffers:\endlink Disabled.
     \i \link setPlane() Plane:\endlink 1 (i.e., first overlay plane).
     \endlist
 
