@@ -120,7 +120,8 @@ src_webkit.target = sub-webkit
    src_tools_activeqt.depends = src_tools_idc src_gui
    src_plugins.depends = src_gui src_sql src_svg
    contains(QT_CONFIG, webkit)  {
-      src_webkit.depends = src_gui src_sql src_network src_xml src_phonon
+      src_webkit.depends = src_gui src_sql src_network src_xml 
+      contains(QT_CONFIG, phonon):src_webkit.depends += src_phonon
       #exists($$QT_SOURCE_TREE/src/3rdparty/webkit/JavaScriptCore/JavaScriptCore.pro): src_webkit.depends += src_javascriptcore
    }
    contains(QT_CONFIG, qt3support): src_plugins.depends += src_qt3support
