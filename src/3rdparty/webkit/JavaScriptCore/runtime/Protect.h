@@ -98,7 +98,7 @@ namespace JSC {
         
         JSValue get() const { return m_value; }
         operator JSValue() const { return m_value; }
-        JSValue operator->() const { return m_value; }
+        //JSValue operator->() const { return m_value; }
         
         operator bool() const { return m_value; }
         bool operator!() const { return !m_value; }

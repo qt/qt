@@ -105,6 +105,8 @@ private slots:
     void testCustomPageSizes();
     void printDialogCompleter();
 
+    void testActualNumCopies();
+
 private:
 };
 
@@ -957,6 +959,13 @@ void tst_QPrinter::printDialogCompleter()
     QTest::keyClick(&dialog, 'P');
     // The test passes if it doesn't crash.
 #endif
+}
+
+void tst_QPrinter::testActualNumCopies()
+{
+    QPrinter p;
+    p.setNumCopies(15);
+    QCOMPARE(p.actualNumCopies(), 15);
 }
 
 QTEST_MAIN(tst_QPrinter)

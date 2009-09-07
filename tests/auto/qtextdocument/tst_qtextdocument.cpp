@@ -100,6 +100,9 @@ private slots:
 
     void task240325();
 
+    void stylesheetFont_data();
+    void stylesheetFont();
+
     void toHtml_data();
     void toHtml();
     void toHtml2();
@@ -569,6 +572,63 @@ void tst_QTextDocument::task240325()
             QCOMPARE(text, QString::fromLatin1("Foobar"));
         }
     }
+}
+
+void tst_QTextDocument::stylesheetFont_data()
+{    
+    QTest::addColumn<QString>("stylesheet");
+    QTest::addColumn<QFont>("font");
+
+    {
+        QFont font;
+        font.setBold(true);
+        font.setPixelSize(64);
+
+        QTest::newRow("Regular font specification")
+                 << "font-size: 64px; font-weight: bold;"
+                 << font;
+    }
+
+
+    {
+        QFont font;
+        font.setBold(true);
+        font.setPixelSize(64);
+
+        QTest::newRow("Shorthand font specification")
+                << "font: normal bold 64px Arial;"
+                << font;
+    }
+
+}
+
+void tst_QTextDocument::stylesheetFont()
+{
+    QFETCH(QString, stylesheet);
+    QFETCH(QFont, font);
+
+    QString html = QString::fromLatin1("<html>"
+                                       "<body>"
+                                       "<div style=\"%1\" >"
+                                       "Foobar"
+                                       "</div>"
+                                       "</body>"
+                                       "</html>").arg(stylesheet);
+
+    qDebug() << html;
+    doc->setHtml(html);
+    QCOMPARE(doc->blockCount(), 1);
+
+    // First and only block
+    QTextBlock block = doc->firstBlock();
+
+    QString text = block.text();
+    QCOMPARE(text, QString::fromLatin1("Foobar"));
+
+    QFont actualFont = block.charFormat().font();
+
+    QCOMPARE(actualFont.bold(), font.bold());
+    QCOMPARE(actualFont.pixelSize(), font.pixelSize());
 }
 
 void tst_QTextDocument::noundo_moreIsModified()
@@ -1128,7 +1188,7 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("lists") << QTextDocumentFragment(&doc)
                           <<
                              QString("EMPTYBLOCK") +
-                             QString("<ul style=\"-qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li DEFAULTBLOCKSTYLE>Blah</li></ul>");
+                             QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li DEFAULTBLOCKSTYLE>Blah</li></ul>");
     }
 
     {
@@ -1151,7 +1211,7 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("charfmt-for-list-item") << QTextDocumentFragment(&doc)
                           <<
                              QString("EMPTYBLOCK") +
-                             QString("<ul style=\"-qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li style=\" color:#0000ff;\" DEFAULTBLOCKSTYLE><span style=\" color:#ff0000;\">Blah</span></li></ul>");
+                             QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blubb</li>\n<li style=\" color:#0000ff;\" DEFAULTBLOCKSTYLE><span style=\" color:#ff0000;\">Blah</span></li></ul>");
     }
 
     {
@@ -1181,7 +1241,7 @@ void tst_QTextDocument::toHtml_data()
         QTest::newRow("list-indent") << QTextDocumentFragment(&doc)
                                   <<
                                     QString("EMPTYBLOCK") +
-                                    QString("<ul style=\"-qt-list-indent: 4;\"><li DEFAULTBLOCKSTYLE>Blah</li></ul>");
+                                    QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 4;\"><li DEFAULTBLOCKSTYLE>Blah</li></ul>");
     }
 
     {
@@ -1444,6 +1504,20 @@ void tst_QTextDocument::toHtml_data()
                                       QString("<p OPENDEFAULTBLOCKSTYLE page-break-before:always;\">Foo</p>"
                                               "\n<p OPENDEFAULTBLOCKSTYLE page-break-before:always; page-break-after:always;\">Bar</p>"
                                               "\n<table border=\"1\" style=\" page-break-after:always;\" cellspacing=\"2\">\n<tr>\n<td></td></tr></table>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextListFormat listFmt;
+        listFmt.setStyle(QTextListFormat::ListDisc);
+
+        cursor.insertList(listFmt);
+        cursor.insertText("Blah");
+
+        QTest::newRow("list-ul-margin") << QTextDocumentFragment(&doc)
+                                        << QString("EMPTYBLOCK") +
+                                           QString("<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;\"><li DEFAULTBLOCKSTYLE>Blah</li></ul>");
     }
 }
 

@@ -331,7 +331,7 @@ public:
     WinTimerVec timerVec;
     WinTimerDict timerDict;
     void registerTimer(WinTimerInfo *t);
-    void unregisterTimer(WinTimerInfo *t);
+    void unregisterTimer(WinTimerInfo *t, bool closingDown = false);
     void sendTimerEvent(int timerId);
 
     // socket notifiers
@@ -557,10 +557,10 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
         qErrnoWarning("QEventDispatcherWin32::registerTimer: Failed to create a timer");
 }
 
-void QEventDispatcherWin32Private::unregisterTimer(WinTimerInfo *t)
+void QEventDispatcherWin32Private::unregisterTimer(WinTimerInfo *t, bool closingDown)
 {
     // mark timer as unused
-    if (!QObjectPrivate::get(t->obj)->inThreadChangeEvent)
+    if (!QObjectPrivate::get(t->obj)->inThreadChangeEvent && !closingDown)
         QAbstractEventDispatcherPrivate::releaseTimerId(t->timerId);
 
     if (t->interval == 0) {
@@ -1019,8 +1019,8 @@ void QEventDispatcherWin32::closingDown()
         unregisterSocketNotifier((*(d->sn_except.begin()))->obj);
 
     // clean up any timers
-    while (!d->timerDict.isEmpty())
-        unregisterTimer((*(d->timerDict.begin()))->timerId);
+    for (int i = 0; i < d->timerVec.count(); ++i)
+        d->unregisterTimer(d->timerVec.at(i), true);
 }
 
 bool QEventDispatcherWin32::event(QEvent *e)

@@ -215,7 +215,6 @@ public:
     void flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags flipFlags,
                      const QRegion &region, const QPoint &offset);
     void releaseDFBSurface(IDirectFBSurface *surface);
-    void erase(const QRegion &region);
 
     using QScreen::depth;
     static int depth(DFBSurfacePixelFormat format);

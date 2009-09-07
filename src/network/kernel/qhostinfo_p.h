@@ -47,7 +47,7 @@
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of the QLibrary class.  This header file may change from
+// of the QHostInfo class.  This header file may change from
 // version to version without notice, or even be removed.
 //
 // We mean it.
@@ -180,7 +180,8 @@ class QHostInfoPrivate
 public:
     inline QHostInfoPrivate()
         : err(QHostInfo::NoError),
-          errorStr(QLatin1String(QT_TRANSLATE_NOOP("QHostInfo", "Unknown error")))
+          errorStr(QLatin1String(QT_TRANSLATE_NOOP("QHostInfo", "Unknown error"))),
+          lookupId(0)
     {
     }
 

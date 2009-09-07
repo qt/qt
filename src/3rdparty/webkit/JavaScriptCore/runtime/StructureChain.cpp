@@ -25,6 +25,7 @@
 
 #include "config.h"
 #include "StructureChain.h"
+#include "Structure.h"
 
 #include "JSObject.h"
 #include "Structure.h"
@@ -44,6 +45,11 @@ StructureChain::StructureChain(Structure* head)
     for (Structure* current = head; current; current = current->storedPrototype().isNull() ? 0 : asObject(current->storedPrototype())->structure())
         m_vector[i++] = current;
     m_vector[i] = 0;
+}
+
+PassRefPtr<StructureChain> StructureChain::create(Structure* head)
+{
+    return adoptRef(new StructureChain(head));
 }
 
 bool StructureChain::isCacheable() const
