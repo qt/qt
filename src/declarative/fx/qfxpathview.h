@@ -66,7 +66,7 @@ class Q_DECLARATIVE_EXPORT QFxPathView : public QFxItem
     Q_PROPERTY(int count READ count)
     Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
     Q_PROPERTY(int pathItemCount READ pathItemCount WRITE setPathItemCount)
-    Q_CLASSINFO("DefaultProperty", "delegate")
+
 public:
     QFxPathView(QFxItem *parent=0);
     virtual ~QFxPathView();

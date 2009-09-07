@@ -43,7 +43,7 @@ Item {
             id: Views
             x: 2; width: parent.width - 4
             y:60 //Below the title bars
-            height: 320
+            height: 380
 
             Twitter.AuthView{
                 id: authView

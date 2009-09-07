@@ -94,11 +94,7 @@ Item {
                 wrap:true
                 color: "#151515"; highlightColor: "green"
             }
-            KeyProxy {
-                id: Proxy
-                anchors.fill: parent
-                targets: [(ReturnKey), (Editor)]
-            }
+            Keys.forwardTo: [(ReturnKey), (Editor)]
             Item {
                 id: ReturnKey
                 Keys.onReturnPressed: accept()
@@ -114,7 +110,7 @@ Item {
             PropertyChanges { target: TagButton; text: "OK" }
             PropertyChanges { target: TagButton; width: 28 }
             PropertyChanges { target: TagButton; height: 24 }
-            PropertyChanges { target: Proxy; focus: true }
+            PropertyChanges { target: txtEdit; focus: true }
         }
     ]
     transitions: [

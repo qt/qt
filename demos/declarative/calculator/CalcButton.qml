@@ -16,7 +16,7 @@ Rectangle {
     Text { anchors.centerIn: parent; text: operation; color: Palette.buttonText }
 
     MouseRegion {
-        id: MouseRegion
+        id: ClickRegion
         anchors.fill: parent
         onClicked: {
             doOp(operation);
@@ -28,7 +28,7 @@ Rectangle {
 
     states: [
         State {
-            name: "Pressed"; when: MouseRegion.pressed == true
+            name: "Pressed"; when: ClickRegion.pressed == true
             PropertyChanges { target: G1; color: Palette.dark }
             PropertyChanges { target: G2; color: Palette.button }
         },

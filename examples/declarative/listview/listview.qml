@@ -66,17 +66,14 @@ Rectangle {
         model: MyPetsModel; delegate: PetDelegate
         currentItemPositioning: "SnapAuto"; snapPosition: 125
         currentIndex: List1.currentIndex
-        children: [
-            // Position a static highlight rather than a normal highlight so that
-            // when the view is flicked, the highlight does not move.
-            // By positioning the highlight at the same position as the snapPosition
-            // the item under the highlight will always be the current item.
-            // Note that we specify the 'children' property.  This is because
-            // the default property of a ListView is 'delegate'.
-            Rectangle {
-                y: 125; width: 200; height: 50
-                color: "#FFFF88"; z: -1
-            }
-        ]
+
+        // Position a static highlight rather than a normal highlight so that
+        // when the view is flicked, the highlight does not move.
+        // By positioning the highlight at the same position as the snapPosition
+        // the item under the highlight will always be the current item.
+        Rectangle {
+            y: 125; width: 200; height: 50
+            color: "#FFFF88"; z: -1
+        }
     }
 }

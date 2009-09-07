@@ -33,7 +33,6 @@ HEADERS += \
         kernel/qsystemsemaphore.h \
         kernel/qsystemsemaphore_p.h \
         kernel/qfunctions_p.h \
-        kernel/qmetaobjectbuilder_p.h \
         kernel/qguard_p.h
 
 SOURCES += \
@@ -56,7 +55,6 @@ SOURCES += \
         kernel/qcoreglobaldata.cpp \
         kernel/qsharedmemory.cpp \
         kernel/qsystemsemaphore.cpp \
-        kernel/qmetaobjectbuilder.cpp \
         kernel/qpointer.cpp 
 
 win32 {
