@@ -16,7 +16,7 @@ no-png {
      SUBDIRS     += linguist
      symbian: SUBDIRS = designer
      wince*: SUBDIRS = qtestlib designer
-     unix:!mac:!embedded:contains(QT_CONFIG, qt3support):SUBDIRS += qtconfig
+     unix:!mac:!embedded:!embedded_lite:contains(QT_CONFIG, qt3support):SUBDIRS += qtconfig
      win32:!wince*:SUBDIRS += activeqt
 }
 

@@ -146,7 +146,7 @@ SOURCES += \
         widgets/qprintpreviewwidget.cpp \
         widgets/qactiontokeyeventmapper.cpp
 
-!embedded:mac {
+!embedded:!embedded_lite:mac {
     HEADERS += widgets/qmacnativewidget_mac.h \
                widgets/qmaccocoaviewcontainer_mac.h
     OBJECTIVE_HEADERS += widgets/qcocoatoolbardelegate_mac_p.h \ 

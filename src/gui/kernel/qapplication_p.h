@@ -571,6 +571,12 @@ public:
     void _q_readRX71MultiTouchEvents();
 #endif
 
+#ifdef Q_WS_LITE
+    static void handleMouseEvent(QWidget *tlw, const QMouseEvent &ev);
+    static void handleKeyEvent(QWidget *tlw, QKeyEvent *e);
+    static void handleGeometryChange(QWidget *tlw, const QRect &newRect);
+#endif
+
 private:
 #ifdef Q_WS_QWS
     QMap<const QScreen*, QRect> maxWindowRects;

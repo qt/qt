@@ -741,6 +741,8 @@ void QApplicationPrivate::construct(
 {
     initResources();
 
+    graphics_system_name = qgetenv("QT_DEFAULT_GRAPHICS_SYSTEM");
+
     qt_is_gui_used = (qt_appType != QApplication::Tty);
     process_cmdline();
     // Must be called before initialize()

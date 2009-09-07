@@ -27,7 +27,7 @@ HEADERS += \
 	dialogs/qwizard.h \
         dialogs/qprintpreviewdialog.h
 
-!embedded:mac {
+!embedded:!embedded_lite:mac {
     OBJECTIVE_SOURCES += dialogs/qcolordialog_mac.mm \
                          dialogs/qfiledialog_mac.mm \
                          dialogs/qfontdialog_mac.mm \
@@ -46,7 +46,7 @@ win32 {
     !win32-borland:!wince*: LIBS += -lshell32 	# the filedialog needs this library
 }
 
-!mac:!embedded:!symbian:unix {
+!mac:!embedded:!symbian:unix|embedded_lite {
         HEADERS += dialogs/qpagesetupdialog_unix_p.h
 	SOURCES += dialogs/qprintdialog_unix.cpp \
 		   dialogs/qpagesetupdialog_unix.cpp

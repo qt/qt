@@ -131,6 +131,12 @@ QT_END_HEADER
 
 #endif // Q_WS_QWS
 
+#if defined(Q_WS_LITE)
+
+typedef unsigned long  WId;
+
+#endif // Q_WS_LITE
+
 #if defined(Q_OS_SYMBIAN)
 class CCoeControl;
 typedef CCoeControl * WId;

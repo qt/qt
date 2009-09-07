@@ -60,6 +60,18 @@ QT_BEGIN_NAMESPACE
 
 class QPixmapFilter;
 
+class Q_GUI_EXPORT QGraphicsSystemScreen
+{
+public:
+    virtual ~QGraphicsSystemScreen();
+
+    virtual QRect geometry() const = 0;
+    virtual QRect availableGeometry() const;
+    virtual int depth() const = 0;
+    virtual QImage::Format format() const = 0;
+    virtual QSize physicalSize() const = 0;
+};
+
 class Q_GUI_EXPORT QGraphicsSystem
 {
 public:
@@ -67,6 +79,8 @@ public:
     virtual QWindowSurface *createWindowSurface(QWidget *widget) const = 0;
 
     virtual ~QGraphicsSystem() = 0;
+
+    virtual QList<QGraphicsSystemScreen *> screens() const;
 
     //### Remove this & change qpixmap.cpp & qbitmap.cpp once every platform is gaurenteed
     //    to have a graphics system.

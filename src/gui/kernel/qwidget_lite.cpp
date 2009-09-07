@@ -1,0 +1,616 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the QtGui module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights.  These rights are described in the Nokia Qt LGPL
+** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#include "qwidget.h"
+#include "qevent.h"
+#include "qapplication.h"
+#include "private/qbackingstore_p.h"
+#include "private/qwidget_p.h"
+#include "private/qgraphicssystem_p.h"
+#include "private/qapplication_p.h"
+
+QT_BEGIN_NAMESPACE
+
+void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool /*destroyOldWindow*/)
+{
+    Q_Q(QWidget);
+
+    Q_UNUSED(window);
+    Q_UNUSED(initializeWindow);
+    // XXX
+
+
+    Qt::WindowFlags flags = data.window_flags;
+
+#if 1
+    QWindowSurface *surface = q->windowSurface();
+    if (surface && (flags & Qt::Window))
+      data.window_flags = surface->setWindowFlags(data.window_flags);
+#endif
+//    qDebug() << "create_sys" << q;
+}
+
+void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
+{
+    Q_UNUSED(destroyWindow);
+    Q_UNUSED(destroySubWindows);
+    // XXX
+
+
+    if ((windowType() == Qt::Popup))
+        qApp->d_func()->closePopup(this);
+
+}
+
+void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)
+{
+    Q_Q(QWidget);
+
+    QWidget *oldParent = q->parentWidget();
+    Qt::WindowFlags oldFlags = data.window_flags;
+    if (parent != newparent) {
+        QObjectPrivate::setParent_helper(newparent); //### why does this have to be done in the _sys function???
+
+    }
+    if (!newparent) {
+        f |= Qt::Window;
+    }
+    data.window_flags = f;
+    if (f & Qt::Window) {
+        //qDebug() << "setParent_sys" << q << newparent << hex << f;
+        if (QWindowSurface *surface = q->windowSurface())
+            data.window_flags = surface->setWindowFlags(data.window_flags);
+    }
+    // XXX Reparenting child to toplevel or vice versa ###
+    if ((f&Qt::Window) && !(oldFlags&Qt::Window)) {
+        qDebug() << "setParent_sys() change to toplevel";
+        q->create(); //### this cannot be right
+    } else if ((f&Qt::Window) && !(oldFlags&Qt::Window)) {
+        qDebug() << "######## setParent_sys() change from toplevel not implemented ########";
+    }
+}
+
+QPoint QWidget::mapToGlobal(const QPoint &pos) const
+{
+    int           x=pos.x(), y=pos.y();
+    const QWidget* w = this;
+    while (w) {
+        x += w->data->crect.x();
+        y += w->data->crect.y();
+        w = w->isWindow() ? 0 : w->parentWidget();
+    }
+    return QPoint(x, y);
+}
+
+QPoint QWidget::mapFromGlobal(const QPoint &pos) const
+{
+    int           x=pos.x(), y=pos.y();
+    const QWidget* w = this;
+    while (w) {
+        x -= w->data->crect.x();
+        y -= w->data->crect.y();
+        w = w->isWindow() ? 0 : w->parentWidget();
+    }
+    return QPoint(x, y);
+}
+
+void QWidgetPrivate::updateSystemBackground() {}
+
+#ifndef QT_NO_CURSOR
+void QWidgetPrivate::setCursor_sys(const QCursor &cursor)
+{
+    Q_UNUSED(cursor);
+    Q_Q(QWidget);
+    if (q->isVisible())
+        updateCursor();
+}
+
+void QWidgetPrivate::unsetCursor_sys()
+{
+    Q_Q(QWidget);
+    if (q->isVisible())
+        updateCursor();
+}
+
+void QWidgetPrivate::updateCursor() const
+{
+    // XXX
+}
+
+#endif //QT_NO_CURSOR
+
+void QWidgetPrivate::setWindowTitle_sys(const QString &caption)
+{
+    Q_UNUSED(caption);
+    // XXX
+}
+
+void QWidgetPrivate::setWindowIcon_sys(bool /*forceReset*/)
+{
+}
+
+void QWidgetPrivate::setWindowIconText_sys(const QString &iconText)
+{
+    Q_UNUSED(iconText);
+}
+
+QWidget *qt_pressGrab = 0;
+QWidget *qt_mouseGrb = 0;
+static QWidget *keyboardGrb = 0;
+
+void QWidget::grabMouse()
+{
+    if (qt_mouseGrb)
+        qt_mouseGrb->releaseMouse();
+
+    // XXX
+    //qwsDisplay()->grabMouse(this,true);
+
+    qt_mouseGrb = this;
+    qt_pressGrab = 0;
+}
+
+#ifndef QT_NO_CURSOR
+void QWidget::grabMouse(const QCursor &cursor)
+{
+    Q_UNUSED(cursor);
+
+    if (qt_mouseGrb)
+        qt_mouseGrb->releaseMouse();
+
+    // XXX
+    //qwsDisplay()->grabMouse(this,true);
+    //qwsDisplay()->selectCursor(this, cursor.handle());
+    qt_mouseGrb = this;
+    qt_pressGrab = 0;
+}
+#endif
+
+void QWidget::releaseMouse()
+{
+    if (qt_mouseGrb == this) {
+        // XXX
+        //qwsDisplay()->grabMouse(this,false);
+        qt_mouseGrb = 0;
+    }
+}
+
+void QWidget::grabKeyboard()
+{
+    if (keyboardGrb)
+        keyboardGrb->releaseKeyboard();
+    // XXX
+    //qwsDisplay()->grabKeyboard(this, true);
+    keyboardGrb = this;
+}
+
+void QWidget::releaseKeyboard()
+{
+    if (keyboardGrb == this) {
+        // XXX
+        //qwsDisplay()->grabKeyboard(this, false);
+        keyboardGrb = 0;
+    }
+}
+
+QWidget *QWidget::mouseGrabber()
+{
+    if (qt_mouseGrb)
+        return qt_mouseGrb;
+    return qt_pressGrab;
+}
+
+QWidget *QWidget::keyboardGrabber()
+{
+    return keyboardGrb;
+}
+
+void QWidget::activateWindow()
+{
+    // XXX
+//    qDebug() << "QWidget::activateWindow" << this;
+    QApplication::setActiveWindow(this); //#####
+}
+
+void QWidgetPrivate::show_sys()
+{
+    Q_Q(QWidget);
+    q->setAttribute(Qt::WA_Mapped);
+    if (q->testAttribute(Qt::WA_DontShowOnScreen)) {
+        invalidateBuffer(q->rect());
+        return;
+    }
+
+    QApplication::postEvent(q, new QUpdateLaterEvent(q->rect()));
+
+    if (!q->isWindow())
+        return;
+
+    if (QWindowSurface *surface = q->windowSurface()) {
+         const QRect geomRect = q->geometry();
+         if (surface->geometry() != geomRect)
+             surface->setGeometry(geomRect);
+         surface->setVisible(true);
+     }
+
+    if (q->windowType() != Qt::Popup)
+        q->activateWindow(); //###
+}
+
+
+void QWidgetPrivate::hide_sys()
+{
+    Q_Q(QWidget);
+    q->setAttribute(Qt::WA_Mapped, false);
+    if (!q->isWindow()) {
+        QWidget *p = q->parentWidget();
+        if (p &&p->isVisible()) {
+            invalidateBuffer(q->rect());
+        }
+        return;
+    }
+    if (QWindowSurface *surface = q->windowSurface()) {
+         surface->setVisible(false);
+     }
+
+    //### we don't yet have proper focus event handling
+    if (q == QApplicationPrivate::active_window)
+        QApplication::setActiveWindow(0);
+
+}
+
+void QWidgetPrivate::setMaxWindowState_helper()
+{
+    // XXX
+}
+
+void QWidgetPrivate::setFullScreenSize_helper()
+{
+    // XXX
+}
+
+static Qt::WindowStates effectiveState(Qt::WindowStates state)
+ {
+     if (state & Qt::WindowMinimized)
+         return Qt::WindowMinimized;
+     else if (state & Qt::WindowFullScreen)
+         return Qt::WindowFullScreen;
+     else if (state & Qt::WindowMaximized)
+         return Qt::WindowMaximized;
+     return Qt::WindowNoState;
+ }
+
+void QWidget::setWindowState(Qt::WindowStates newstate)
+{
+    Q_D(QWidget);
+    Qt::WindowStates oldstate = windowState();
+    if (oldstate == newstate)
+        return;
+    if (isWindow() && !testAttribute(Qt::WA_WState_Created))
+        create();
+
+    data->window_state = newstate;
+    data->in_set_window_state = 1;
+    bool needShow = false;
+    Qt::WindowStates newEffectiveState = effectiveState(newstate);
+    Qt::WindowStates oldEffectiveState = effectiveState(oldstate);
+    if (isWindow() && newEffectiveState != oldEffectiveState) {
+        d->createTLExtra();
+        if (oldEffectiveState == Qt::WindowNoState) { //normal
+            d->topData()->normalGeometry = geometry();
+        } else if (oldEffectiveState == Qt::WindowFullScreen) {
+            setParent(0, d->topData()->savedFlags);
+            needShow = true;
+        } else if (oldEffectiveState == Qt::WindowMinimized) {
+            needShow = true;
+        }
+
+        if (newEffectiveState == Qt::WindowMinimized) {
+            //### not ideal...
+            hide();
+            needShow = false;
+        } else if (newEffectiveState == Qt::WindowFullScreen) {
+            d->topData()->savedFlags = windowFlags();
+            setParent(0, Qt::FramelessWindowHint | (windowFlags() & Qt::WindowStaysOnTopHint));
+            d->setFullScreenSize_helper();
+            raise();
+            needShow = true;
+        } else if (newEffectiveState == Qt::WindowMaximized) {
+            createWinId();
+            d->setMaxWindowState_helper();
+        } else { //normal
+            QRect r = d->topData()->normalGeometry;
+            if (r.width() >= 0) {
+                d->topData()->normalGeometry = QRect(0,0,-1,-1);
+                setGeometry(r);
+            }
+        }
+    }
+    data->in_set_window_state = 0;
+
+    if (needShow)
+        show();
+
+    if (newstate & Qt::WindowActive)
+        activateWindow();
+
+    QWindowStateChangeEvent e(oldstate);
+    QApplication::sendEvent(this, &e);
+}
+
+void QWidgetPrivate::setFocus_sys()
+{
+
+}
+
+void QWidgetPrivate::raise_sys()
+{
+    // XXX
+}
+
+void QWidgetPrivate::lower_sys()
+{
+    // XXX
+}
+
+void QWidgetPrivate::stackUnder_sys(QWidget*)
+{
+    // XXX
+}
+
+void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
+{
+    Q_Q(QWidget);
+    if (extra) {                                // any size restrictions?
+        w = qMin(w,extra->maxw);
+        h = qMin(h,extra->maxh);
+        w = qMax(w,extra->minw);
+        h = qMax(h,extra->minh);
+    }
+
+    QPoint oldp = q->geometry().topLeft();
+    QSize olds = q->size();
+    QRect r(x, y, w, h);
+
+    bool isResize = olds != r.size();
+    isMove = oldp != r.topLeft(); //### why do we have isMove as a parameter?
+
+
+    // We only care about stuff that changes the geometry, or may
+    // cause the window manager to change its state
+    if (r.size() == olds && oldp == r.topLeft())
+        return;
+
+    if (!data.in_set_window_state) {
+        q->data->window_state &= ~Qt::WindowMaximized;
+        q->data->window_state &= ~Qt::WindowFullScreen;
+        if (q->isWindow())
+            topData()->normalGeometry = QRect(0, 0, -1, -1);
+    }
+
+    QPoint oldPos = q->pos();
+    data.crect = r;
+
+    if (q->isVisible()) {
+
+        if (q->isWindow()) {
+            const QWidgetBackingStore *bs = maybeBackingStore();
+            if (bs->windowSurface)
+                bs->windowSurface->setGeometry(q->frameGeometry());
+        } else {
+            if (isMove && !isResize)
+                moveRect(QRect(oldPos, olds), x - oldPos.x(), y - oldPos.y());
+            else
+                invalidateBuffer_resizeHelper(oldPos, olds);
+        }
+
+        if (isMove) {
+            QMoveEvent e(q->pos(), oldPos);
+            QApplication::sendEvent(q, &e);
+        }
+        if (isResize) {
+            QResizeEvent e(r.size(), olds);
+            QApplication::sendEvent(q, &e);
+        }
+    } else { // not visible
+        if (isMove && q->pos() != oldPos)
+            q->setAttribute(Qt::WA_PendingMoveEvent, true);
+        if (isResize)
+            q->setAttribute(Qt::WA_PendingResizeEvent, true);
+    }
+
+}
+
+void QWidgetPrivate::setConstraints_sys()
+{
+}
+
+void QWidgetPrivate::scroll_sys(int dx, int dy)
+{
+    Q_Q(QWidget);
+    scrollChildren(dx, dy);
+    scrollRect(q->rect(), dx, dy);
+}
+
+void QWidgetPrivate::scroll_sys(int dx, int dy, const QRect &r)
+{
+    scrollRect(r, dx, dy);
+}
+
+static QGraphicsSystemScreen *qt_screenForWidget(const QWidget *w)
+{
+    if (!w)
+        return 0;
+    QRect frame = w->frameGeometry();
+    if (!w->isWindow())
+        frame.moveTopLeft(w->mapToGlobal(QPoint(0, 0)));
+    const QPoint p = (frame.topLeft() + frame.bottomRight()) / 2;
+
+    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
+    if (!gs) {
+        qWarning("qt_screenForWidget: no graphics system");
+        return 0;
+    }
+    QList<QGraphicsSystemScreen *> screens = gs->screens();
+
+    for (int i = 0; i < screens.size(); ++i) {
+        if (screens[i]->geometry().contains(p))
+            return screens[i];
+    }
+
+    // Assume screen zero if we have it.
+    if (!screens.isEmpty())
+        return screens[0];
+    else
+        qWarning("qt_screenForWidget: no screens");
+
+    return 0;
+}
+
+int QWidget::metric(PaintDeviceMetric m) const
+{
+    Q_D(const QWidget);
+
+    QGraphicsSystemScreen *screen = qt_screenForWidget(this);
+    if (!screen) {
+        if (m == PdmDpiX || m == PdmDpiY)
+              return 72;
+        return QPaintDevice::metric(m);
+    }
+    int val;
+    if (m == PdmWidth) {
+        val = data->crect.width();
+    } else if (m == PdmWidthMM) {
+        val = data->crect.width() * screen->physicalSize().width() / screen->geometry().width();
+    } else if (m == PdmHeight) {
+        val = data->crect.height();
+    } else if (m == PdmHeightMM) {
+        val = data->crect.height() * screen->physicalSize().height() / screen->geometry().height();
+    } else if (m == PdmDepth) {
+        return screen->depth();
+    } else if (m == PdmDpiX || m == PdmPhysicalDpiX) {
+        if (d->extra && d->extra->customDpiX)
+            return d->extra->customDpiX;
+        else if (d->parent)
+            return static_cast<QWidget *>(d->parent)->metric(m);
+        return qRound(screen->geometry().width() / double(screen->physicalSize().width() / 25.4));
+    } else if (m == PdmDpiY || m == PdmPhysicalDpiY) {
+        if (d->extra && d->extra->customDpiY)
+            return d->extra->customDpiY;
+        else if (d->parent)
+            return static_cast<QWidget *>(d->parent)->metric(m);
+        return qRound(screen->geometry().height() / double(screen->physicalSize().height() / 25.4));
+    } else {
+        val = QPaintDevice::metric(m);// XXX
+    }
+    return val;
+}
+
+void QWidgetPrivate::createSysExtra()
+{
+}
+
+void QWidgetPrivate::deleteSysExtra()
+{
+}
+
+void QWidgetPrivate::createTLSysExtra()
+{
+}
+
+void QWidgetPrivate::deleteTLSysExtra()
+{
+}
+
+void QWidgetPrivate::registerDropSite(bool on)
+{
+    Q_UNUSED(on);
+}
+
+void QWidgetPrivate::setMask_sys(const QRegion &region)
+{
+    Q_UNUSED(region);
+    // XXX
+}
+
+void QWidgetPrivate::updateFrameStrut()
+{
+    // XXX
+}
+
+void QWidgetPrivate::setWindowOpacity_sys(qreal level)
+{
+    Q_UNUSED(level);
+    // XXX
+}
+
+void QWidgetPrivate::setWSGeometry(bool dontShow, const QRect &oldRect)
+{
+    Q_UNUSED(dontShow);
+    Q_UNUSED(oldRect);
+    // XXX
+}
+
+QPaintEngine *QWidget::paintEngine() const
+{
+    qWarning("QWidget::paintEngine: Should no longer be called");
+    return 0; //##### @@@
+}
+
+QWindowSurface *QWidgetPrivate::createDefaultWindowSurface_sys()
+{
+    Q_Q(QWidget);
+    if (q->windowType() == Qt::Desktop)
+        return 0;
+    q->ensurePolished();
+
+    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
+    if (!gs)
+        return 0;
+
+    return gs->createWindowSurface(q);
+}
+
+void QWidgetPrivate::setModal_sys()
+{
+}
+
+QT_END_NAMESPACE

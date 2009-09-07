@@ -270,6 +270,9 @@ private:
     friend class QtopiaPrintEnginePrivate;
     friend class QProxyFontEngine;
 #endif
+#ifdef Q_WS_LITE
+    friend class QProxyFontEngine;
+#endif
     friend class QPainter;
     friend class QPainterPrivate;
     friend class QWidget;

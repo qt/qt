@@ -1133,7 +1133,7 @@ static QString getPath(QSettings::Format format, QSettings::Scope scope)
         if (env == 0) {
             userPath = homePath;
             userPath += QLatin1Char('/');
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS) || defined(Q_WS_LITE)
             userPath += QLatin1String("Settings");
 #else
             userPath += QLatin1String(".config");

@@ -33,7 +33,7 @@ contains( styles, all ) {
 	styles = mac windows windowsxp windowsvista
 }
 
-x11|embedded|!macx-*:styles -= mac
+x11|embedded|embedded_lite|!macx-*:styles -= mac
 
 x11{
     QMAKE_CXXFLAGS += $$QT_CFLAGS_QGTKSTYLE

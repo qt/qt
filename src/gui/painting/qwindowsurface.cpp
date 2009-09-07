@@ -349,4 +349,35 @@ void qt_scrollRectInImage(QImage &img, const QRect &rect, const QPoint &offset)
     }
 }
 
+
+#ifdef Q_WS_LITE
+/*!
+Requests setting the window flags of this surface to \a type. Returns the actual flags set.
+*/
+Qt::WindowFlags QWindowSurface::setWindowFlags(Qt::WindowFlags type)
+{
+    Q_UNUSED(type);
+    qDebug() << "QWindowSurface::setWindowFlags" << hex << type;
+    return Qt::Window;
+}
+
+/*!
+  Returns the effective window flags for this surface.
+*/
+Qt::WindowFlags QWindowSurface::windowFlags() const
+{
+    return Qt::Window;
+}
+
+/*!
+Reimplemented in subclasses to show the surface if \a visible is \c true, and hide it if \a visible is \c false.
+*/
+
+void QWindowSurface::setVisible(bool visible)
+{
+    Q_UNUSED(visible);
+}
+
+#endif
+
 QT_END_NAMESPACE

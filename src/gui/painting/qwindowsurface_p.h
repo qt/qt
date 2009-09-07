@@ -89,6 +89,11 @@ public:
     virtual QPoint offset(const QWidget *widget) const;
     inline QRect rect(const QWidget *widget) const;
 
+#ifdef Q_WS_LITE
+    virtual void setVisible(bool visible);
+    virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
+    virtual Qt::WindowFlags windowFlags() const;
+#endif
     bool hasStaticContentsSupport() const;
 
     void setStaticContents(const QRegion &region);

@@ -48,8 +48,16 @@
 #include <QDataStream>
 #include <QStringList>
 
+#ifdef Q_WS_QWS
 #include "qwindowsystem_qws.h"
 #include "qscreen_qws.h"
+#endif
+
+#ifdef Q_WS_LITE
+#include <private/qapplication_p.h>
+#include <QKeyEvent>
+#endif
+
 #include "qtimer.h"
 #include <stdlib.h>
 
@@ -352,7 +360,16 @@ QWSKeyboardHandler::~QWSKeyboardHandler()
 void QWSKeyboardHandler::processKeyEvent(int unicode, int keycode, Qt::KeyboardModifiers modifiers,
                         bool isPress, bool autoRepeat)
 {
+#if defined(Q_WS_QWS)
     qwsServer->processKeyEvent(unicode, keycode, modifiers, isPress, autoRepeat);
+#elif defined(Q_WS_LITE)
+    QEvent::Type type = isPress ? QEvent::KeyPress : QEvent::KeyRelease;
+    QString str;
+    if (unicode != 0xffff)
+        str = QString(unicode);
+    QKeyEvent ke(type, keycode, modifiers, str);
+    QApplicationPrivate::handleKeyEvent(0, &ke);
+#endif
 }
 
 /*!
@@ -375,6 +392,7 @@ void QWSKeyboardHandler::processKeyEvent(int unicode, int keycode, Qt::KeyboardM
  */
 int QWSKeyboardHandler::transformDirKey(int key)
 {
+#ifdef Q_WS_QWS
     static int dir_keyrot = -1;
     if (dir_keyrot < 0) {
         // get the rotation
@@ -387,6 +405,9 @@ int QWSKeyboardHandler::transformDirKey(int key)
     }
     int xf = qt_screen->transformOrientation() + dir_keyrot;
     return (key-Qt::Key_Left+xf)%4+Qt::Key_Left;
+#else
+    return 0;
+#endif
 }
 
 /*!
@@ -452,7 +473,7 @@ void QWSKeyboardHandler::endAutoRepeat()
 
     Maps \a keycode according to a keymap and sends that key event to the
     \l{Qt for Embedded Linux} server application.
- 
+
     Please see the \l{Qt for Embedded Linux Character Input} and the \l
     {kmap2qmap} documentations for a description on how to create and use
     keymap files.

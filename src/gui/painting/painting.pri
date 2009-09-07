@@ -136,7 +136,7 @@ unix:x11 {
                 painting/qpaintengine_x11.cpp
 }
 
-!embedded:!x11:mac {
+!embedded:!embedded_lite:!x11:mac {
         HEADERS += \
                 painting/qpaintengine_mac_p.h \
                 painting/qgraphicssystem_mac_p.h \
@@ -152,14 +152,14 @@ unix:x11 {
                 painting/qprintengine_mac.mm \
 }
 
-unix:!mac:!symbian {
+unix:!mac:!symbian|embedded_lite {
         HEADERS += \
                 painting/qprinterinfo_unix_p.h
         SOURCES += \
                 painting/qprinterinfo_unix.cpp
 }
 
-win32|x11|mac|embedded|symbian {
+win32|x11|mac|embedded|embedded_lite|symbian {
         SOURCES += painting/qbackingstore.cpp
         HEADERS += painting/qbackingstore_p.h
 }
@@ -176,13 +176,19 @@ embedded {
                 painting/qpaintdevice_qws.cpp
 }
 
+embedded_lite {
+        SOURCES += \
+                painting/qcolormap_lite.cpp \
+                painting/qpaintdevice_lite.cpp
+}
+
 symbian {
         SOURCES += \
                 painting/qregion_s60.cpp \
                 painting/qcolormap_s60.cpp
 }
 
-x11|embedded {
+x11|embedded|embedded_lite {
         contains(QT_CONFIG,qtopia) {
             DEFINES += QT_NO_CUPS QT_NO_LPR
         } else {
@@ -348,7 +354,7 @@ x11 {
         SOURCES += painting/qwindowsurface_x11.cpp
 }
 
-mac {
+!embedded:!embedded_lite:mac {
         HEADERS += painting/qwindowsurface_mac_p.h
         SOURCES += painting/qwindowsurface_mac.cpp
 }

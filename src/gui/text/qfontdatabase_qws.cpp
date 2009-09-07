@@ -40,8 +40,10 @@
 ****************************************************************************/
 
 #include "qdir.h"
+#if defined(Q_WS_QWS)
 #include "qscreen_qws.h" //so we can check for rotation
 #include "qwindowsystem_qws.h"
+#endif
 #include "qlibraryinfo.h"
 #include "qabstractfileengine.h"
 #include <QtCore/qsettings.h>
@@ -153,7 +155,11 @@ extern QString qws_fontCacheDir();
 #ifndef QT_FONTS_ARE_RESOURCES
 bool QFontDatabasePrivate::loadFromCache(const QString &fontPath)
 {
+#ifdef Q_WS_QWS
     const bool weAreTheServer = QWSServer::instance();
+#else
+    const bool weAreTheServer = true; // assume single-process
+#endif
 
     QString fontDirFile = fontPath + QLatin1String("/fontdir");
 
@@ -687,6 +693,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp,
 {
     QScopedPointer<QFontEngine> engine(loadSingleEngine(script, fp, request, family, foundry,
                                        style, size));
+#ifndef QT_NO_QWS_QPF
     if (!engine.isNull()
         && script == QUnicodeTables::Common
         && !(request.styleStrategy & QFont::NoFontMerging) && !engine->symbol) {
@@ -700,6 +707,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp,
         engine.take();
         engine.reset(fe);
     }
+#endif
     return engine.take();
 }
 

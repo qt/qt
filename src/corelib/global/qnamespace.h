@@ -1537,7 +1537,7 @@ public:
     typedef void *HANDLE;
 #elif defined(Q_WS_X11)
     typedef unsigned long HANDLE;
-#elif defined(Q_WS_QWS)
+#elif defined(Q_WS_QWS) || defined(Q_WS_LITE)
     typedef void * HANDLE;
 #elif defined(Q_OS_SYMBIAN)
     typedef unsigned long int HANDLE; // equivalent to TUint32

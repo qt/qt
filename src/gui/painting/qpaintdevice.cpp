@@ -59,10 +59,12 @@ QPaintDevice::~QPaintDevice()
 }
 
 
+#ifndef Q_WS_LITE
 int QPaintDevice::metric(PaintDeviceMetric) const
 {
     qWarning("QPaintDevice::metrics: Device has no metric information");
     return 0;
 }
+#endif
 
 QT_END_NAMESPACE

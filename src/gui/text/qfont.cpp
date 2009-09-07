@@ -172,6 +172,8 @@ Q_GUI_EXPORT int qt_defaultDpiX()
     if (!subScreens.isEmpty())
         screen = subScreens.at(0);
     dpi = qRound(screen->width() / (screen->physicalWidth() / qreal(25.4)));
+#elif defined(Q_WS_LITE)
+    dpi = 72;
 #elif defined(Q_OS_SYMBIAN)
     dpi = S60->defaultDpiX;
 #endif // Q_WS_X11
@@ -200,6 +202,8 @@ Q_GUI_EXPORT int qt_defaultDpiY()
     if (!subScreens.isEmpty())
         screen = subScreens.at(0);
     dpi = qRound(screen->height() / (screen->physicalHeight() / qreal(25.4)));
+#elif defined(Q_WS_LITE)
+    dpi = 72;
 #elif defined(Q_OS_SYMBIAN)
     dpi = S60->defaultDpiY;
 #endif // Q_WS_X11

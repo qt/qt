@@ -262,7 +262,7 @@ public:
 private:
     QPixmap *pm_cursor;
     int n_cursor;
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS) || defined(Q_WS_LITE)
     Qt::DropAction currentActionForOverrideCursor;
 #endif
 

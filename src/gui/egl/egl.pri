@@ -12,10 +12,14 @@ unix {
     embedded {
         SOURCES += egl/qegl_qws.cpp
     } else {
-        symbian {
-            SOURCES += egl/qegl_symbian.cpp
+        embedded_lite {
+            SOURCES += egl/qegl_lite.cpp
         } else {
-            SOURCES += egl/qegl_x11.cpp
+            symbian {
+                SOURCES += egl/qegl_symbian.cpp
+            } else {
+                SOURCES += egl/qegl_x11.cpp
+            }
         }
     }
 }

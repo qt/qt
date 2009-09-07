@@ -69,7 +69,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#if defined(Q_WS_QWS)
+#if defined(Q_WS_QWS) || defined(Q_WS_LITE)
 #define QT_QSETTINGS_ALWAYS_CASE_SENSITIVE_AND_FORGET_ORIGINAL_KEY_ORDER
 #endif
 

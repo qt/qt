@@ -50,6 +50,9 @@
 #ifdef Q_WS_MAC
 # include <private/qpixmap_mac_p.h>
 #endif
+#ifdef Q_WS_LITE
+# include <private/qpixmap_raster_p.h>
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -68,11 +71,26 @@ QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType typ
     return new QRasterPixmapData(type);
 #elif defined(Q_WS_MAC)
     return new QMacPixmapData(type);
+#elif defined(Q_WS_LITE)
+    return new QRasterPixmapData(type);
 #elif !defined(Q_WS_QWS)
 #error QGraphicsSystem::createDefaultPixmapData() not implemented
 #endif
     return 0;
 }
 
+QList<QGraphicsSystemScreen *> QGraphicsSystem::screens() const
+{
+    return QList<QGraphicsSystemScreen *>();
+}
+
+QGraphicsSystemScreen::~QGraphicsSystemScreen()
+{
+}
+
+QRect QGraphicsSystemScreen::availableGeometry() const
+{
+    return geometry();
+}
 
 QT_END_NAMESPACE

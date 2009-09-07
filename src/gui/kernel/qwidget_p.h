@@ -681,6 +681,12 @@ public:
     void updateCursor() const;
 #endif
     QScreen* getScreen() const;
+#elif defined(Q_WS_LITE)
+    void setMaxWindowState_helper();
+    void setFullScreenSize_helper();
+#ifndef QT_NO_CURSOR
+    void updateCursor() const;
+#endif
 #elif defined(Q_OS_SYMBIAN) // <--------------------------------------------------------- SYMBIAN
     static QWidget *mouseGrabber;
     static QWidget *keyboardGrabber;

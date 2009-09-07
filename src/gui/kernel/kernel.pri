@@ -181,7 +181,25 @@ embedded {
 
 }
 
-!embedded:!x11:mac {
+embedded_lite {
+	HEADERS += \
+		kernel/qgenericpluginfactory_lite.h \
+		kernel/qgenericplugin_lite.h
+		
+	SOURCES += \
+		kernel/qapplication_lite.cpp \
+		kernel/qclipboard_lite.cpp \
+		kernel/qcursor_lite.cpp \
+		kernel/qdnd_qws.cpp \
+		kernel/qdesktopwidget_lite.cpp \
+		kernel/qgenericpluginfactory_lite.cpp \
+		kernel/qgenericplugin_lite.cpp \
+		kernel/qkeymapper_qws.cpp \
+		kernel/qsound_lite.cpp \
+		kernel/qwidget_lite.cpp
+}
+
+!embedded:!embedded_lite:!x11:mac {
 	SOURCES += \
 		kernel/qclipboard_mac.cpp \
 		kernel/qmime_mac.cpp \

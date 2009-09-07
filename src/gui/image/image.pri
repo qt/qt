@@ -61,11 +61,14 @@ win32 {
 embedded {
     SOURCES += image/qpixmap_qws.cpp
 }
+embedded_lite {
+    SOURCES += image/qpixmap_lite.cpp
+}
 x11 {
     HEADERS += image/qpixmap_x11_p.h
     SOURCES += image/qpixmap_x11.cpp 
 }
-mac {
+!embedded:!embedded_lite:mac {
     HEADERS += image/qpixmap_mac_p.h
     SOURCES += image/qpixmap_mac.cpp
 }
