@@ -1509,6 +1509,10 @@ public:
         if (s) {
             if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return))
                 return true;
+            if (s->urls.count() == 1 && !s->isBuiltin[0] && !s->isLibrary[0] && url_return) {
+                *url_return = QUrl(s->urls[0]+"/").resolved(QUrl(QLatin1String(unqualifiedtype + ".qml")));
+                return true;
+            }
         }
         if (url_return) {
             *url_return = base.resolved(QUrl(QLatin1String(type + ".qml")));
