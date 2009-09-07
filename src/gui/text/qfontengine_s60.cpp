@@ -49,8 +49,8 @@
 
 #include <e32base.h>
 #include <e32std.h>
-#include <EIKENV.H>
-#include <GDI.H>
+#include <eikenv.h>
+#include <gdi.h>
 
 QT_BEGIN_NAMESPACE
 

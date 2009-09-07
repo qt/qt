@@ -50,7 +50,7 @@
 #include "qendian.h"
 #include <private/qcore_symbian_p.h>
 #if defined(QT_NO_FREETYPE)
-#include <OPENFONT.H>
+#include <openfont.h>
 #endif
 
 QT_BEGIN_NAMESPACE
