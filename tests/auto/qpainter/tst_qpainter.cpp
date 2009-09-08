@@ -202,6 +202,7 @@ private slots:
 
     void drawImage_task217400_data();
     void drawImage_task217400();
+    void drawImage_task258776();
     void drawRect_task215378();
     void drawRect_task247505();
 
@@ -3505,6 +3506,31 @@ void tst_QPainter::drawImage_task217400()
 #endif
         QCOMPARE(result, expected);
     }
+}
+
+void tst_QPainter::drawImage_task258776()
+{
+    QImage src(16, 16, QImage::Format_RGB888);
+    QImage dest(33, 33, QImage::Format_RGB888);
+    src.fill(0x00ff00);
+    dest.fill(0x0000ff);
+
+    QPainter painter(&dest);
+    painter.drawImage(QRectF(0.499, 0.499, 32, 32), src, QRectF(0, 0, 16, 16));
+    painter.end();
+
+    QImage expected(33, 33, QImage::Format_RGB32);
+    expected.fill(0xff0000);
+
+    painter.begin(&expected);
+    painter.drawImage(QRectF(0, 0, 32, 32), src);
+    painter.end();
+
+    dest = dest.convertToFormat(QImage::Format_RGB32);
+
+    dest.save("dest.png");
+    expected.save("expected.png");
+    QCOMPARE(dest, expected);
 }
 
 void tst_QPainter::clipRectSaveRestore()
