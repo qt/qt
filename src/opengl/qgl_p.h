@@ -519,15 +519,7 @@ extern QPaintEngine* qt_qgl_paint_engine();
 extern EGLDisplay qt_qgl_egl_display();
 #endif
 
-inline bool qt_gl_preferGL2Engine()
-{
-#if defined(QT_OPENGL_ES_2)
-    return true;
-#else
-    return (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
-           && qgetenv("QT_GL_USE_OPENGL1ENGINE").isEmpty();
-#endif
-}
+bool qt_gl_preferGL2Engine();
 
 inline GLenum qt_gl_preferredTextureFormat()
 {

@@ -141,6 +141,48 @@ QGLSignalProxy *QGLSignalProxy::instance()
     return theSignalProxy();
 }
 
+
+class QGLEngineSelector
+{
+public:
+    QGLEngineSelector() : engineType(QPaintEngine::MaxUser) { }
+
+    void setPreferredPaintEngine(QPaintEngine::Type type) {
+        if (type == QPaintEngine::OpenGL || type == QPaintEngine::OpenGL2)
+            engineType = type;
+    }
+
+    QPaintEngine::Type preferredPaintEngine() {
+        if (engineType == QPaintEngine::MaxUser) {
+            // No user-set engine - use the defaults
+#if defined(QT_OPENGL_ES_2)
+            engineType = QPaintEngine::OpenGL2;
+#else
+            // We can't do this in the constructor for this object because it
+            // needs to be called *before* the QApplication constructor
+            if ((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
+                && qgetenv("QT_GL_USE_OPENGL1ENGINE").isEmpty())
+                engineType = QPaintEngine::OpenGL2;
+            else
+                engineType = QPaintEngine::OpenGL;
+#endif
+        }
+        return engineType;
+    }
+
+private:
+    QPaintEngine::Type engineType;
+};
+
+Q_GLOBAL_STATIC(QGLEngineSelector, qgl_engine_selector)
+
+
+bool qt_gl_preferGL2Engine()
+{
+    return qgl_engine_selector()->preferredPaintEngine() == QPaintEngine::OpenGL2;
+}
+
+
 /*!
     \namespace QGL
     \inmodule QtOpenGL
@@ -180,6 +222,32 @@ QGLSignalProxy *QGLSignalProxy::instance()
 
     \sa {Sample Buffers Example}
 */
+
+/*!
+   \fn void QGL::setPreferredPaintEngine(QPaintEngine::Type engineType)
+
+   \since 4.6
+
+   Sets the preferred OpenGL paint engine that is used to draw onto
+   QGLWidgets, QGLPixelBuffers and QGLFrameBufferObjects with QPainter
+   in Qt.
+
+   The \a engineType parameter specifies which of the GL engines to
+   use. Only \c QPaintEngine::OpenGL and \c QPaintEngine::OpenGL2 are
+   valid parameters to this function. All other values are ignored.
+
+   By default, the \c QPaintEngine::OpenGL2 engine is used if GL/GLES
+   version 2.0 is available, otherwise \c QPaintEngine::OpenGL is
+   used.
+
+   \warning This function must be called before the QApplication
+   constructor is called.
+*/
+void QGL::setPreferredPaintEngine(QPaintEngine::Type engineType)
+{
+    qgl_engine_selector()->setPreferredPaintEngine(engineType);
+}
+
 
 /*****************************************************************************
   QGLFormat implementation

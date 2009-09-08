@@ -43,6 +43,7 @@
 #define QGL_H
 
 #include <QtGui/qwidget.h>
+#include <QtGui/qpaintengine.h>
 #include <QtOpenGL/qglcolormap.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qscopedpointer.h>
@@ -130,6 +131,8 @@ class QGLContextPrivate;
 // Namespace class:
 namespace QGL
 {
+    Q_OPENGL_EXPORT void setPreferredPaintEngine(QPaintEngine::Type engineType);
+
     enum FormatOption {
         DoubleBuffer            = 0x0001,
         DepthBuffer             = 0x0002,
