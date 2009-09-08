@@ -2052,6 +2052,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     case QImage::Format_RGB16:
         pixel_type = GL_UNSIGNED_SHORT_5_6_5;
         texture_format = GL_RGB;
+        format = GL_RGB;
         break;
     case QImage::Format_RGB32:
         if (format == GL_RGBA)
