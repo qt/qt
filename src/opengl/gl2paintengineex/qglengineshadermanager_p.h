@@ -142,7 +142,8 @@
 
     Masks are implementations of "qcolorp vec4 applyMask(qcolorp vec4 src)":
         qglslMaskFragmentShader
-        qglslRgbMaskFragmentShader
+        qglslRgbMaskFragmentShaderPass1
+        qglslRgbMaskFragmentShaderPass2
         qglslRgbMaskWithGammaFragmentShader
 
     Composition modes are "qcolorp vec4 compose(qcolorp vec4 src)":
@@ -321,7 +322,8 @@ public:
         ShockingPinkSrcFragmentShader,
 
         MaskFragmentShader,
-        RgbMaskFragmentShader,
+        RgbMaskFragmentShaderPass1,
+        RgbMaskFragmentShaderPass2,
         RgbMaskWithGammaFragmentShader,
 
         MultiplyCompositionModeFragmentShader,
@@ -376,7 +378,7 @@ public:
     QGLEngineShaderManager(QGLContext* context);
     ~QGLEngineShaderManager();
 
-    enum MaskType {NoMask, PixelMask, SubPixelMask, SubPixelWithGammaMask};
+    enum MaskType {NoMask, PixelMask, SubPixelMaskPass1, SubPixelMaskPass2, SubPixelWithGammaMask};
     enum PixelSrcType {
         ImageSrc = Qt::TexturePattern+1,
         NonPremultipliedImageSrc = Qt::TexturePattern+2,
