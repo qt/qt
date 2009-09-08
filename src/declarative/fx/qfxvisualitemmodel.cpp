@@ -243,6 +243,16 @@ public:
     QmlContext *m_context;
     QList<int> m_roles;
     QHash<int,QString> m_roleNames;
+    void ensureRoles() {
+        if (m_roles.isEmpty()) {
+            if (m_listModelInterface) {
+                m_roles = m_listModelInterface->roles();
+                for (int ii = 0; ii < m_roles.count(); ++ii) 
+                    m_roleNames.insert(m_roles.at(ii), 
+                                          m_listModelInterface->toString(m_roles.at(ii)));
+            }
+        }
+    }
 
     struct ObjectRef {
         ObjectRef(QObject *object=0) : obj(object), ref(1) {}
@@ -375,6 +385,7 @@ int QFxVisualDataModelDataMetaObject::createProperty(const char *name, const cha
             return QmlOpenMetaObject::createProperty(name, type);
     } else {
         const QLatin1String sname(name);
+        data->m_model->ensureRoles();
         for (QHash<int, QString>::ConstIterator iter = data->m_model->m_roleNames.begin();
             iter != data->m_model->m_roleNames.end(); ++iter) {
 
@@ -397,6 +408,7 @@ QFxVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &pro
             && data->m_model->m_modelList) {
         return data->m_model->m_modelList->at(data->m_index);
     } else if (data->m_model->m_listModelInterface) {
+        data->m_model->ensureRoles();
         for (QHash<int, QString>::ConstIterator iter = data->m_model->m_roleNames.begin();
             iter != data->m_model->m_roleNames.end(); ++iter) {
 
@@ -410,6 +422,7 @@ QFxVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &pro
             } 
         }
     } else if (data->m_model->m_abstractItemModel) {
+        data->m_model->ensureRoles();
         for (QHash<int, QString>::ConstIterator iter = data->m_model->m_roleNames.begin();
             iter != data->m_model->m_roleNames.end(); ++iter) {
 
@@ -560,12 +573,6 @@ void QFxVisualDataModel::setModel(const QVariant &model)
     if (object && (d->m_listModelInterface = qobject_cast<QListModelInterface *>(object))) {
         d->m_roles.clear();
         d->m_roleNames.clear();
-        if (d->m_listModelInterface) {
-            d->m_roles = d->m_listModelInterface->roles();
-            for (int ii = 0; ii < d->m_roles.count(); ++ii) 
-                d->m_roleNames.insert(d->m_roles.at(ii), 
-                                      d->m_listModelInterface->toString(d->m_roles.at(ii)));
-        }
 
         QObject::connect(d->m_listModelInterface, SIGNAL(itemsChanged(int,int,QList<int>)),
                          this, SLOT(_q_itemsChanged(int,int,QList<int>)));
