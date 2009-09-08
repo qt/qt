@@ -109,6 +109,7 @@ public:
     int width() const;
     int height() const;
     int ascent() const;
+    qreal naturalTextWidth() const;
 
     void setSelection(int start, int length);
 
@@ -408,6 +409,11 @@ inline bool QLineControl::hasSelectedText() const
 inline int QLineControl::width() const
 {
     return qRound(m_textLayout.lineAt(0).width()) + 1;
+}
+
+inline qreal QLineControl::naturalTextWidth() const
+{
+    return m_textLayout.lineAt(0).naturalTextWidth();
 }
 
 inline int QLineControl::height() const
