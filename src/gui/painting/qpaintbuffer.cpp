@@ -1740,7 +1740,7 @@ struct QPaintBufferCacheEntry
     QVariant::Type type;
     quint64 cacheKey;
 };
-Q_DECLARE_METATYPE(QPaintBufferCacheEntry);
+Q_DECLARE_METATYPE(QPaintBufferCacheEntry)
 
 QDataStream &operator<<(QDataStream &stream, const QPaintBufferCacheEntry &entry)
 {
