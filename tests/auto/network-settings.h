@@ -329,7 +329,7 @@ QByteArray QtNetworkSettings::imapExpectedReplySsl;
 #define Q_SET_DEFAULT_IAP
 #endif
 
-
+#ifdef QT_NETWORK_LIB
 class QtNetworkSettingsInitializerCode {
 public:
     QtNetworkSettingsInitializerCode() {
@@ -343,3 +343,4 @@ public:
     }
 };
 QtNetworkSettingsInitializerCode qtNetworkSettingsInitializer;
+#endif
