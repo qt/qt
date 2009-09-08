@@ -74,9 +74,34 @@ extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
     }                                                     \
 }
 
+#ifndef QT_OPENGL_ES
+#define DEFAULT_FORMAT GL_RGBA8
+#else
+#define DEFAULT_FORMAT GL_RGBA
+#endif
+
 class QGLFramebufferObjectFormatPrivate
 {
 public:
+    QGLFramebufferObjectFormatPrivate()
+        : ref(1),
+          samples(0),
+          attachment(QGLFramebufferObject::NoAttachment),
+          target(GL_TEXTURE_2D),
+          internal_format(DEFAULT_FORMAT)
+    {
+    }
+    QGLFramebufferObjectFormatPrivate
+            (const QGLFramebufferObjectFormatPrivate *other)
+        : ref(1),
+          samples(other->samples),
+          attachment(other->attachment),
+          target(other->target),
+          internal_format(other->internal_format)
+    {
+    }
+
+    QAtomicInt ref;
     int samples;
     QGLFramebufferObject::Attachment attachment;
     GLenum target;
@@ -109,6 +134,20 @@ public:
 */
 
 /*!
+    \internal
+*/
+void QGLFramebufferObjectFormat::detach()
+{
+    if (d->ref != 1) {
+        QGLFramebufferObjectFormatPrivate *newd
+            = new QGLFramebufferObjectFormatPrivate(d);
+        if (!d->ref.deref())
+            delete d;
+        d = newd;
+    }
+}
+
+/*!
     Creates a QGLFramebufferObjectFormat object for specifying
     the format of an OpenGL framebuffer object.
 
@@ -118,19 +157,9 @@ public:
     \sa samples(), attachment(), target(), internalTextureFormat()
 */
 
-#ifndef QT_OPENGL_ES
-#define DEFAULT_FORMAT GL_RGBA8
-#else
-#define DEFAULT_FORMAT GL_RGBA
-#endif
-
 QGLFramebufferObjectFormat::QGLFramebufferObjectFormat()
 {
     d = new QGLFramebufferObjectFormatPrivate;
-    d->samples = 0;
-    d->attachment = QGLFramebufferObject::NoAttachment;
-    d->target = GL_TEXTURE_2D;
-    d->internal_format = DEFAULT_FORMAT;
 }
 
 /*!
@@ -139,8 +168,8 @@ QGLFramebufferObjectFormat::QGLFramebufferObjectFormat()
 
 QGLFramebufferObjectFormat::QGLFramebufferObjectFormat(const QGLFramebufferObjectFormat &other)
 {
-    d = new QGLFramebufferObjectFormatPrivate;
-    *d = *other.d;
+    d = other.d;
+    d->ref.ref();
 }
 
 /*!
@@ -149,7 +178,12 @@ QGLFramebufferObjectFormat::QGLFramebufferObjectFormat(const QGLFramebufferObjec
 
 QGLFramebufferObjectFormat &QGLFramebufferObjectFormat::operator=(const QGLFramebufferObjectFormat &other)
 {
-    *d = *other.d;
+    if (d != other.d) {
+        other.d->ref.ref();
+        if (!d->ref.deref())
+            delete d;
+        d = other.d;
+    }
     return *this;
 }
 
@@ -158,7 +192,8 @@ QGLFramebufferObjectFormat &QGLFramebufferObjectFormat::operator=(const QGLFrame
 */
 QGLFramebufferObjectFormat::~QGLFramebufferObjectFormat()
 {
-    delete d;
+    if (!d->ref.deref())
+        delete d;
 }
 
 /*!
@@ -176,6 +211,7 @@ QGLFramebufferObjectFormat::~QGLFramebufferObjectFormat()
 */
 void QGLFramebufferObjectFormat::setSamples(int samples)
 {
+    detach();
     d->samples = samples;
 }
 
@@ -197,6 +233,7 @@ int QGLFramebufferObjectFormat::samples() const
 */
 void QGLFramebufferObjectFormat::setAttachment(QGLFramebufferObject::Attachment attachment)
 {
+    detach();
     d->attachment = attachment;
 }
 
@@ -219,6 +256,7 @@ QGLFramebufferObject::Attachment QGLFramebufferObjectFormat::attachment() const
 */
 void QGLFramebufferObjectFormat::setTextureTarget(GLenum target)
 {
+    detach();
     d->target = target;
 }
 
@@ -242,6 +280,7 @@ GLenum QGLFramebufferObjectFormat::textureTarget() const
 */
 void QGLFramebufferObjectFormat::setInternalTextureFormat(GLenum internalTextureFormat)
 {
+    detach();
     d->internal_format = internalTextureFormat;
 }
 
@@ -260,12 +299,14 @@ GLenum QGLFramebufferObjectFormat::internalTextureFormat() const
 /*! \internal */
 void QGLFramebufferObjectFormat::setTextureTarget(QMacCompatGLenum target)
 {
+    detach();
     d->target = target;
 }
 
 /*! \internal */
 void QGLFramebufferObjectFormat::setInternalTextureFormat(QMacCompatGLenum internalTextureFormat)
 {
+    detach();
     d->internal_format = internalTextureFormat;
 }
 #endif
@@ -871,7 +912,7 @@ QSize QGLFramebufferObject::size() const
 /*!
     Returns the format of this framebuffer object.
 */
-const QGLFramebufferObjectFormat &QGLFramebufferObject::format() const
+QGLFramebufferObjectFormat QGLFramebufferObject::format() const
 {
     Q_D(const QGLFramebufferObject);
     return d->format;
