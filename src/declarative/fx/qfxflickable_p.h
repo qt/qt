@@ -76,6 +76,9 @@ public:
     virtual void fixupY();
     void updateBeginningEnd();
 
+    void captureDelayedPress(QGraphicsSceneMouseEvent *event);
+    void clearDelayedPress();
+
 public:
     QFxItem *viewport;
     QmlTimeLineValueProxy<QFxItem> _moveX;
@@ -109,6 +112,10 @@ public:
     qreal reportedVelocitySmoothing;
     int flickTargetX;
     int flickTargetY;
+    QGraphicsSceneMouseEvent *delayedPressEvent;
+    QGraphicsItem *delayedPressTarget;
+    QBasicTimer delayedPressTimer;
+    int pressDelay;
 
     void updateVelocity();
     struct Velocity : public QmlTimeLineValue
