@@ -138,7 +138,7 @@ public:
 #endif
     TTypeUid::Ptr MopSupplyObject(TTypeUid id);
 
-    inline QWidget* widget() const { return qwidget; };
+    inline QWidget* widget() const { return qwidget; }
     void setWidget(QWidget *w);
     void sendInputEvent(QWidget *widget, QInputEvent *inputEvent);
     void setIgnoreFocusChanged(bool enabled) { m_ignoreFocusChanged = enabled; }

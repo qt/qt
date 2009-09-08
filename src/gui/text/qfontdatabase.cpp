@@ -334,7 +334,7 @@ QtFontStyle *QtFontFoundry::style(const QtFontStyle::Key &key, bool create)
             else
                 high = pos;
             pos = (high + low) / 2;
-        };
+        }
         pos = low;
     }
     if (!create)
@@ -693,7 +693,7 @@ QtFontFamily *QFontDatabasePrivate::family(const QString &f, bool create)
             else
                 low = pos;
             pos = (high + low) / 2;
-        };
+        }
         if (!res)
             return families[pos];
     }

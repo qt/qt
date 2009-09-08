@@ -95,7 +95,7 @@ public:
 
     virtual QPrinter::PrinterState printerState() const;
 
-    virtual Qt::HANDLE handle() const { return 0; };
+    virtual Qt::HANDLE handle() const { return 0; }
 
 private:
     Q_DISABLE_COPY(QPSPrintEngine)
