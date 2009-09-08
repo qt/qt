@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
 
 extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
-#define QGL_FUNC_CONTEXT QGLContext *ctx = d_ptr->ctx;
+#define QGL_FUNC_CONTEXT QGLContextGroup *ctx = d_ptr->ctx;
 
 #define QT_CHECK_GLERROR()                                \
 {                                                         \
@@ -97,7 +97,7 @@ public:
     \i \link setSamples() Number of samples per pixels.\endlink
     \i \link setAttachment() Depth and/or stencil attachments.\endlink
     \i \link setTextureTarget() Texture target.\endlink
-    \i \link setInternalFormat() Internal format.\endlink
+    \i \link setInternalTextureFormat() Internal texture format.\endlink
     \endlist
 
     Note that the desired attachments or number of samples per pixels might not
@@ -115,7 +115,7 @@ public:
     By default the format specifies a non-multisample framebuffer object with no
     attachments, texture target \c GL_TEXTURE_2D, and internal format \c GL_RGBA8.
 
-    \sa samples(), attachment(), target(), internalFormat()
+    \sa samples(), attachment(), target(), internalTextureFormat()
 */
 
 #ifndef QT_OPENGL_ES
@@ -234,23 +234,24 @@ GLenum QGLFramebufferObjectFormat::textureTarget() const
 }
 
 /*!
-    Sets the internal format of a framebuffer object's texture or multisample
-    framebuffer object's color buffer to \a internalFormat.
+    Sets the internal format of a framebuffer object's texture or
+    multisample framebuffer object's color buffer to
+    \a internalTextureFormat.
 
-    \sa internalFormat()
+    \sa internalTextureFormat()
 */
-void QGLFramebufferObjectFormat::setInternalFormat(GLenum internalFormat)
+void QGLFramebufferObjectFormat::setInternalTextureFormat(GLenum internalTextureFormat)
 {
-    d->internal_format = internalFormat;
+    d->internal_format = internalTextureFormat;
 }
 
 /*!
     Returns the internal format of a framebuffer object's texture or
     multisample framebuffer object's color buffer.
 
-    \sa setInternalFormat()
+    \sa setInternalTextureFormat()
 */
-GLenum QGLFramebufferObjectFormat::internalFormat() const
+GLenum QGLFramebufferObjectFormat::internalTextureFormat() const
 {
     return d->internal_format;
 }
@@ -263,16 +264,16 @@ void QGLFramebufferObjectFormat::setTextureTarget(QMacCompatGLenum target)
 }
 
 /*! \internal */
-void QGLFramebufferObjectFormat::setInternalFormat(QMacCompatGLenum internalFormat)
+void QGLFramebufferObjectFormat::setInternalTextureFormat(QMacCompatGLenum internalTextureFormat)
 {
-    d->internal_format = internalFormat;
+    d->internal_format = internalTextureFormat;
 }
 #endif
 
 class QGLFramebufferObjectPrivate
 {
 public:
-    QGLFramebufferObjectPrivate() : depth_stencil_buffer(0), valid(false), bound(false), ctx(0), previous_fbo(0), engine(0) {}
+    QGLFramebufferObjectPrivate() : depth_stencil_buffer(0), valid(false), ctx(0), previous_fbo(0), engine(0) {}
     ~QGLFramebufferObjectPrivate() {}
 
     void init(const QSize& sz, QGLFramebufferObject::Attachment attachment,
@@ -286,9 +287,8 @@ public:
     QSize size;
     QGLFramebufferObjectFormat format;
     uint valid : 1;
-    uint bound : 1;
     QGLFramebufferObject::Attachment fbo_attachment;
-    QGLContext *ctx; // for Windows extension ptrs
+    QGLContextGroup *ctx; // for Windows extension ptrs
     GLuint previous_fbo;
     mutable QPaintEngine *engine;
 };
@@ -340,9 +340,10 @@ bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
 void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::Attachment attachment,
                                        GLenum texture_target, GLenum internal_format, GLint samples)
 {
-    ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+    QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
+    ctx = QGLContextPrivate::contextGroup(currentContext);
     bool ext_detected = (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject);
-    if (!ext_detected || (ext_detected && !qt_resolve_framebufferobject_extensions(ctx)))
+    if (!ext_detected || (ext_detected && !qt_resolve_framebufferobject_extensions(currentContext)))
         return;
 
     size = sz;
@@ -466,7 +467,7 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
         fbo_attachment = QGLFramebufferObject::NoAttachment;
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER_EXT, currentContext->d_ptr->current_fbo);
     if (!valid) {
         if (color_buffer)
             glDeleteRenderbuffers(1, &color_buffer);
@@ -479,7 +480,7 @@ void QGLFramebufferObjectPrivate::init(const QSize &sz, QGLFramebufferObject::At
     format.setTextureTarget(target);
     format.setSamples(int(samples));
     format.setAttachment(fbo_attachment);
-    format.setInternalFormat(internal_format);
+    format.setInternalTextureFormat(internal_format);
 }
 
 /*!
@@ -636,7 +637,7 @@ QGLFramebufferObject::QGLFramebufferObject(const QSize &size, const QGLFramebuff
     : d_ptr(new QGLFramebufferObjectPrivate)
 {
     Q_D(QGLFramebufferObject);
-    d->init(size, format.attachment(), format.textureTarget(), format.internalFormat(), format.samples());
+    d->init(size, format.attachment(), format.textureTarget(), format.internalTextureFormat(), format.samples());
 }
 
 /*! \overload
@@ -649,7 +650,7 @@ QGLFramebufferObject::QGLFramebufferObject(int width, int height, const QGLFrame
     : d_ptr(new QGLFramebufferObjectPrivate)
 {
     Q_D(QGLFramebufferObject);
-    d->init(QSize(width, height), format.attachment(), format.textureTarget(), format.internalFormat(), format.samples());
+    d->init(QSize(width, height), format.attachment(), format.textureTarget(), format.internalTextureFormat(), format.samples());
 }
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
@@ -736,16 +737,19 @@ QGLFramebufferObject::~QGLFramebufferObject()
 
     delete d->engine;
 
-    if (isValid()
-        && (d->ctx == QGLContext::currentContext()
-            || qgl_share_reg()->checkSharing(d->ctx, QGLContext::currentContext())))
-    {
+    if (isValid()) {
+        const QGLContext *oldContext = QGLContext::currentContext();
+        bool switchContext = !oldContext || QGLContextPrivate::contextGroup(oldContext) != ctx;
+        if (switchContext)
+            const_cast<QGLContext *>(ctx->context())->makeCurrent();
         glDeleteTextures(1, &d->texture);
         if (d->color_buffer)
             glDeleteRenderbuffers(1, &d->color_buffer);
         if (d->depth_stencil_buffer)
             glDeleteRenderbuffers(1, &d->depth_stencil_buffer);
         glDeleteFramebuffers(1, &d->fbo);
+        if (oldContext && switchContext)
+            const_cast<QGLContext *>(oldContext)->makeCurrent();
     }
 }
 
@@ -791,7 +795,7 @@ bool QGLFramebufferObject::bind()
     Q_D(QGLFramebufferObject);
     QGL_FUNC_CONTEXT;
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, d->fbo);
-    d->bound = d->valid = d->checkFramebufferStatus();
+    d->valid = d->checkFramebufferStatus();
     const QGLContext *context = QGLContext::currentContext();
     if (d->valid && context) {
         // Save the previous setting to automatically restore in release().
@@ -822,7 +826,6 @@ bool QGLFramebufferObject::release()
 	return false;
     Q_D(QGLFramebufferObject);
     QGL_FUNC_CONTEXT;
-    d->bound = false;
 
     const QGLContext *context = QGLContext::currentContext();
     if (context) {
@@ -898,7 +901,7 @@ QImage QGLFramebufferObject::toImage() const
     bool wasBound = isBound();
     if (!wasBound)
         const_cast<QGLFramebufferObject *>(this)->bind();
-    QImage image = qt_gl_read_framebuffer(d->size, d->ctx->format().alpha(), true);
+    QImage image = qt_gl_read_framebuffer(d->size, format().textureTarget() != GL_RGB, true);
     if (!wasBound)
         const_cast<QGLFramebufferObject *>(this)->release();
 
@@ -970,16 +973,14 @@ bool QGLFramebufferObject::hasOpenGLFramebufferObjects()
 */
 void QGLFramebufferObject::drawTexture(const QRectF &target, GLuint textureId, GLenum textureTarget)
 {
-    Q_D(QGLFramebufferObject);
-    d->ctx->drawTexture(target, textureId, textureTarget);
+    const_cast<QGLContext *>(QGLContext::currentContext())->drawTexture(target, textureId, textureTarget);
 }
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
 /*! \internal */
 void QGLFramebufferObject::drawTexture(const QRectF &target, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget)
 {
-    Q_D(QGLFramebufferObject);
-    d->ctx->drawTexture(target, textureId, textureTarget);
+    const_cast<QGLContext *>(QGLContext::currentContext())->drawTexture(target, textureId, textureTarget);
 }
 #endif
 
@@ -995,16 +996,14 @@ void QGLFramebufferObject::drawTexture(const QRectF &target, QMacCompatGLuint te
 */
 void QGLFramebufferObject::drawTexture(const QPointF &point, GLuint textureId, GLenum textureTarget)
 {
-    Q_D(QGLFramebufferObject);
-    d->ctx->drawTexture(point, textureId, textureTarget);
+    const_cast<QGLContext *>(QGLContext::currentContext())->drawTexture(point, textureId, textureTarget);
 }
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
 /*! \internal */
 void QGLFramebufferObject::drawTexture(const QPointF &point, QMacCompatGLuint textureId, QMacCompatGLenum textureTarget)
 {
-    Q_D(QGLFramebufferObject);
-    d->ctx->drawTexture(point, textureId, textureTarget);
+    const_cast<QGLContext *>(QGLContext::currentContext())->drawTexture(point, textureId, textureTarget);
 }
 #endif
 
@@ -1101,7 +1100,7 @@ QGLFramebufferObject::Attachment QGLFramebufferObject::attachment() const
 bool QGLFramebufferObject::isBound() const
 {
     Q_D(const QGLFramebufferObject);
-    return d->bound;
+    return QGLContext::currentContext()->d_ptr->current_fbo == d->fbo;
 }
 
 /*!

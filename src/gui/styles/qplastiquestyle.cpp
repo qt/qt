@@ -5435,6 +5435,11 @@ int QPlastiqueStyle::styleHint(StyleHint hint, const QStyleOption *option, const
     case SH_Menu_SubMenuPopupDelay:
         ret = 96; // from Plastik
         break;
+#ifdef Q_WS_X11
+    case SH_DialogButtonBox_ButtonsHaveIcons:
+        ret = true;
+        break;
+#endif
 #ifndef Q_OS_WIN
     case SH_Menu_AllowActiveAndDisabled:
         ret = false;

@@ -336,6 +336,7 @@ public:
     virtual void keyReleased(QKeyEvent *event);
     virtual void inputMethodEvent(QInputMethodEvent *event);
     virtual QVariant inputMethodQuery(Qt::InputMethodQuery query) const;
+    virtual void componentComplete();
 
 private:
     QFxItemKeyFilter *m_next;
@@ -375,6 +376,11 @@ QVariant QFxItemKeyFilter::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     if (m_next) return m_next->inputMethodQuery(query);
     return QVariant();
+}
+
+void QFxItemKeyFilter::componentComplete()
+{
+    if (m_next) m_next->componentComplete();
 }
 
 class QFxKeyNavigationAttachedPrivate : public QObjectPrivate
@@ -912,11 +918,10 @@ public:
     QFxItem *item;
 };
 
-class QFxKeysAttached : public QObject, public QFxItemKeyFilter, public QmlParserStatus
+class QFxKeysAttached : public QObject, public QFxItemKeyFilter
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFxKeysAttached)
-    Q_INTERFACES(QmlParserStatus)
 
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
     Q_PROPERTY(QList<QFxItem *> *forwardTo READ forwardTo)
@@ -2496,6 +2501,8 @@ void QFxItem::componentComplete()
         d->_anchors->componentComplete();
         d->_anchors->d_func()->updateOnComplete();
     }
+    if (d->keyHandler)
+        d->keyHandler->componentComplete();
 }
 
 QmlStateGroup *QFxItemPrivate::states()

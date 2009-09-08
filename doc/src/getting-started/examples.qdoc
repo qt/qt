@@ -1045,7 +1045,11 @@
     \image animation-examples.png Animation
 
     \list
+	\o \l{animation/animatedtiles}{Animated Tiles}
+	\o \l{animation/appchooser}{Application Chooser}
+	\o \l{animation/easing}{Easing Curves}
     \o \l{animation/moveblocks}{Move Blocks}\raisedaster
+	\o \l{animation/states}{States}
     \o \l{animation/stickman}{Stick man}\raisedaster
     \endlist
 */

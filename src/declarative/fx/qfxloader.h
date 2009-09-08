@@ -54,12 +54,14 @@ class QFxLoaderPrivate;
 class Q_DECLARATIVE_EXPORT QFxLoader : public QFxItem
 {
     Q_OBJECT
+    Q_ENUMS(Status)
 
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
-    Q_PROPERTY(QFxItem *item READ item) //### NOTIFY itemChanged
+    Q_PROPERTY(QFxItem *item READ item NOTIFY itemChanged)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
     //### sourceItem
     //### sourceComponent
-    //### status, progress
     //### resizeMode { NoResize, SizeLoaderToItem (default), SizeItemToLoader }
 
 public:
@@ -69,10 +71,17 @@ public:
     QUrl source() const;
     void setSource(const QUrl &);
 
+    enum Status { Null, Ready, Loading, Error };
+    Status status() const;
+    qreal progress() const;
+
     QFxItem *item() const;
 
 Q_SIGNALS:
+    void itemChanged();
     void sourceChanged();
+    void statusChanged();
+    void progressChanged();
 
 private:
     Q_DISABLE_COPY(QFxLoader)

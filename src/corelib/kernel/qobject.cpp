@@ -3965,11 +3965,19 @@ QDebug operator<<(QDebug dbg, const QObject *o) {
     \relates QObject
 
     This macro registers one or several \l{QFlags}{flags types} to the
-    meta-object system.
+    meta-object system. It is typically used in a class definition to declare
+    that values of a given enum can be used as flags and combined using the
+    bitwise OR operator.
 
-    Example:
+    For example, in QLibrary, the \l{QLibrary::LoadHints}{LoadHints} flag is
+    declared in the following way:
 
-    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 39
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 39a
+
+    The declaration of the flags themselves is performed in the public section
+    of the QLibrary class itself, using the \l Q_DECLARE_FLAGS() macro:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 39b
 
     \note This macro takes care of registering individual flag values
     with the meta-object system, so it is unnecessary to use Q_ENUMS()

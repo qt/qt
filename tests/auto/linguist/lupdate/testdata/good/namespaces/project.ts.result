@@ -30,7 +30,7 @@
 <context>
     <name>Outer::Middle1::Different</name>
     <message>
-        <location filename="main.cpp" line="106/>
+        <location filename="main.cpp" line="106"/>
         <source>different namespaced class def</source>
         <translation type="unfinished"></translation>
     </message>

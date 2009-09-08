@@ -1507,7 +1507,8 @@ void QFxListView::itemsInserted(int modelIndex, int count)
         // Update the indexes of the following visible items.
         for (; index < d->visibleItems.count(); ++index) {
             FxListItem *listItem = d->visibleItems.at(index);
-            listItem->setPosition(listItem->position() + (pos - initialPos));
+            if (listItem->item != d->currentItem->item)
+                listItem->setPosition(listItem->position() + (pos - initialPos));
             if (listItem->index != -1)
                 listItem->index += count;
         }

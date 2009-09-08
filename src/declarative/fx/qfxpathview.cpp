@@ -128,6 +128,9 @@ QFxPathView::QFxPathView(QFxPathViewPrivate &dd, QFxItem *parent)
 
 QFxPathView::~QFxPathView()
 {
+    Q_D(QFxPathView);
+    if (d->ownModel)
+        delete d->model;
 }
 
 /*!

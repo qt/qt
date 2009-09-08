@@ -2653,6 +2653,7 @@ void tst_QNetworkReply::ioPutToFileFromSocket()
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), url);
@@ -2699,6 +2700,7 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), url);
@@ -2971,6 +2973,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
                this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), url);
@@ -3295,6 +3298,7 @@ void tst_QNetworkReply::uploadPerformance()
       QTimer::singleShot(5000, &generator, SLOT(stop()));
 
       QTestEventLoop::instance().enterLoop(10);
+      QCOMPARE(reply->error(), QNetworkReply::NoError);
       QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
@@ -3320,6 +3324,7 @@ void tst_QNetworkReply::httpUploadPerformance()
       generator.start();
       time.start();
       QTestEventLoop::instance().enterLoop(40);
+      QCOMPARE(reply->error(), QNetworkReply::NoError);
       QVERIFY(!QTestEventLoop::instance().timeout());
 
       qint64 elapsed = time.elapsed();
@@ -3387,6 +3392,7 @@ void tst_QNetworkReply::httpDownloadPerformance()
     QTime time;
     time.start();
     QTestEventLoop::instance().enterLoop(40);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     qint64 elapsed = time.elapsed();
@@ -3456,6 +3462,7 @@ void tst_QNetworkReply::downloadProgress()
 
     spy.clear();
     QTestEventLoop::instance().enterLoop(2);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(spy.count() > 0);
     QVERIFY(!reply->isRunning());

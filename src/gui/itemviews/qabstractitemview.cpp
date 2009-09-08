@@ -1537,8 +1537,7 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
     QPoint offset = d->offset();
     if ((command & QItemSelectionModel::Current) == 0)
         d->pressedPosition = pos + offset;
-
-    if (d->pressedPosition == QPoint(-1, -1))
+    else if (!indexAt(d->pressedPosition).isValid())
         d->pressedPosition = visualRect(currentIndex()).center() + offset;
 
     if (edit(index, NoEditTriggers, event))
@@ -2089,8 +2088,8 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
             // note that we don't check if the new current index is enabled because moveCursor() makes sure it is
             if (command & QItemSelectionModel::Current) {
                 d->selectionModel->setCurrentIndex(newCurrent, QItemSelectionModel::NoUpdate);
-                if (d->pressedPosition == QPoint(-1, -1))
-                    d->pressedPosition = visualRect(oldCurrent).center();
+                if (!indexAt(d->pressedPosition).isValid())
+                    d->pressedPosition = visualRect(oldCurrent).center() + d->offset();
                 QRect rect(d->pressedPosition - d->offset(), visualRect(newCurrent).center());
                 setSelection(rect, command);
             } else {

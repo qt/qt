@@ -1206,6 +1206,9 @@ int QWindowsStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWid
     case SH_ItemView_ArrowKeysNavigateIntoChildren:
         ret = true;
         break;
+    case SH_DialogButtonBox_ButtonsHaveIcons:
+        ret = 0;
+        break;
     default:
         ret = QCommonStyle::styleHint(hint, opt, widget, returnData);
         break;

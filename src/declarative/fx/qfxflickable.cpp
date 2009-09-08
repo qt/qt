@@ -148,6 +148,7 @@ QFxFlickablePrivate::QFxFlickablePrivate()
     , vWidth(-1), vHeight(-1), overShoot(true), flicked(false), moving(false), stealMouse(false)
     , pressed(false), atXEnd(false), atXBeginning(true), atYEnd(false), atYBeginning(true)
     , interactive(true), maxVelocity(-1), reportedVelocitySmoothing(100)
+    , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0)
     , horizontalVelocity(this), verticalVelocity(this), vTime(0), visibleArea(0)
 {
     fixupXEvent = QmlTimeLineEvent::timeLineEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupX>(&_moveX, this);
@@ -707,9 +708,55 @@ void QFxFlickable::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void QFxFlickable::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     Q_D(QFxFlickable);
+    d->clearDelayedPress();
     d->handleMouseReleaseEvent(event);
     event->accept();
     ungrabMouse();
+}
+
+void QFxFlickablePrivate::captureDelayedPress(QGraphicsSceneMouseEvent *event)
+{
+    Q_Q(QFxFlickable);
+    if (!q->scene() || pressDelay <= 0)
+        return;
+    delayedPressTarget = q->scene()->mouseGrabberItem();
+    delayedPressEvent = new QGraphicsSceneMouseEvent(event->type());
+    delayedPressEvent->setAccepted(false);
+    for (int i = 0x1; i <= 0x10; i <<= 1) {
+        if (event->buttons() & i) {
+            Qt::MouseButton button = Qt::MouseButton(i);
+            delayedPressEvent->setButtonDownPos(button, event->buttonDownPos(button));
+        }
+    }
+    delayedPressEvent->setScenePos(event->scenePos());
+    delayedPressEvent->setLastScenePos(event->lastScenePos());
+    delayedPressEvent->setPos(event->pos());
+    delayedPressEvent->setLastPos(event->lastPos());
+    delayedPressTimer.start(pressDelay, q);
+}
+
+void QFxFlickablePrivate::clearDelayedPress()
+{
+    if (delayedPressEvent) {
+        delayedPressTimer.stop();
+        delete delayedPressEvent;
+        delayedPressEvent = 0;
+    }
+}
+
+void QFxFlickable::timerEvent(QTimerEvent *event)
+{
+    Q_D(QFxFlickable);
+    if (event->timerId() == d->delayedPressTimer.timerId()) {
+        d->delayedPressTimer.stop();
+        if (d->delayedPressEvent) {
+            QFxItem *grabber = scene() ? qobject_cast<QFxItem*>(scene()->mouseGrabberItem()) : 0;
+            if (!grabber || grabber != this)
+                scene()->sendEvent(d->delayedPressTarget, d->delayedPressEvent);
+            delete d->delayedPressEvent;
+            d->delayedPressEvent = 0;
+        }
+    }
 }
 
 qreal QFxFlickable::minYExtent() const
@@ -996,22 +1043,34 @@ bool QFxFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
             d->handleMouseMoveEvent(&mouseEvent);
             break;
         case QEvent::GraphicsSceneMousePress:
+            if (d->delayedPressEvent)
+                return false;
+
             d->handleMousePressEvent(&mouseEvent);
+            d->captureDelayedPress(event);
             break;
         case QEvent::GraphicsSceneMouseRelease:
+            if (d->delayedPressEvent) {
+                scene()->sendEvent(d->delayedPressTarget, d->delayedPressEvent);
+                d->clearDelayedPress();
+            }
             d->handleMouseReleaseEvent(&mouseEvent);
             break;
         default:
             break;
         }
         grabber = qobject_cast<QFxItem*>(s->mouseGrabberItem());
-        if (grabber && d->stealMouse && !grabber->keepMouseGrab() && grabber != this)
+        if (grabber && d->stealMouse && !grabber->keepMouseGrab() && grabber != this) {
+            d->clearDelayedPress();
             grabMouse();
+        }
 
-        return d->stealMouse;
+        return d->stealMouse || d->delayedPressEvent;
     } else if (!d->lastPosTime.isNull()) {
         d->lastPosTime = QTime();
     }
+    if (mouseEvent.type() == QEvent::GraphicsSceneMouseRelease)
+        d->clearDelayedPress();
     return false;
 }
 
@@ -1053,6 +1112,31 @@ bool QFxFlickable::isFlicking() const
 {
     Q_D(const QFxFlickable);
     return d->flicked;
+}
+
+/*!
+    \qmlproperty int Flickable::pressDelay
+
+    This property holds the time to delay (ms) delivering a press to
+    children of the Flickable.  This can be useful where reacting
+    to a press before a flicking action has undesireable effects.
+
+    If the flickable is dragged/flicked before the delay times out
+    the press event will not be delivered.  If the button is released
+    within the timeout, both the press and release will be delivered.
+*/
+int QFxFlickable::pressDelay() const
+{
+    Q_D(const QFxFlickable);
+    return d->pressDelay;
+}
+
+void QFxFlickable::setPressDelay(int delay)
+{
+    Q_D(QFxFlickable);
+    if (d->pressDelay == delay)
+        return;
+    d->pressDelay = delay;
 }
 
 qreal QFxFlickable::reportedVelocitySmoothing() const

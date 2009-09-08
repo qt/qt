@@ -5347,6 +5347,8 @@ void tst_QWidget::moveChild()
     QFETCH(QPoint, offset);
 
     ColorWidget parent;
+    // prevent custom styles
+    parent.setStyle(new QWindowsStyle);
     ColorWidget child(&parent, Qt::blue);
 
 #ifndef Q_OS_WINCE
@@ -5397,6 +5399,8 @@ void tst_QWidget::moveChild()
 void tst_QWidget::showAndMoveChild()
 {
     QWidget parent(0, Qt::FramelessWindowHint);
+    // prevent custom styles
+    parent.setStyle(new QWindowsStyle);
     parent.resize(300, 300);
     parent.setPalette(Qt::red);
     parent.show();
@@ -6467,6 +6471,8 @@ void tst_QWidget::render()
     {
         QWidget window;
         window.resize(100, 100);
+        // prevent custom styles
+        window.setStyle(new QWindowsStyle);
         window.show();
 #ifdef Q_WS_X11
         qt_x11_wait_for_window_manager(&window);
@@ -6484,6 +6490,8 @@ void tst_QWidget::render()
         widget.resize(200, 200);
         widget.setAutoFillBackground(true);
         widget.setPalette(Qt::red);
+        // prevent custom styles
+        widget.setStyle(new QWindowsStyle);
         widget.show();
 #ifdef Q_WS_X11
         qt_x11_wait_for_window_manager(&widget);
@@ -6739,6 +6747,8 @@ void tst_QWidget::renderInvisible()
 void tst_QWidget::renderWithPainter()
 {
     QWidget widget;
+    // prevent custom styles
+    widget.setStyle(new QWindowsStyle);
     widget.show();
     widget.resize(70, 50);
     widget.setAutoFillBackground(true);

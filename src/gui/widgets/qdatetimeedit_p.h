@@ -89,7 +89,7 @@ public:
     QDateTime validateAndInterpret(QString &input, int &, QValidator::State &state,
                                    bool fixup = false) const;
     void clearSection(int index);
-    virtual QString displayText() const { return edit->displayText(); } // this is from QDateTimeParser
+    virtual QString displayText() const { return edit->text(); } // this is from QDateTimeParser
 
     int absoluteIndex(QDateTimeEdit::Section s, int index) const;
     int absoluteIndex(const SectionNode &s) const;

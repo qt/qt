@@ -37,7 +37,7 @@ namespace JSC {
 
     class StructureChain : public RefCounted<StructureChain> {
     public:
-        static PassRefPtr<StructureChain> create(Structure* head) { return adoptRef(new StructureChain(head)); }
+        static PassRefPtr<StructureChain> create(Structure* head);
         RefPtr<Structure>* head() { return m_vector.get(); }
         bool isCacheable() const;
 

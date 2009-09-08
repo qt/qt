@@ -59,6 +59,7 @@
 #include "QtCore/qthread.h"
 #include "QtCore/qthreadstorage.h"
 #include "QtCore/qhash.h"
+#include "QtCore/qatomic.h"
 #include "private/qwidget_p.h"
 #include "qcache.h"
 
@@ -127,7 +128,9 @@ QT_END_INCLUDE_NAMESPACE
 class QGLFormatPrivate
 {
 public:
-    QGLFormatPrivate() {
+    QGLFormatPrivate()
+        : ref(1)
+    {
         opts = QGL::DoubleBuffer | QGL::DepthBuffer | QGL::Rgba | QGL::DirectRendering | QGL::StencilBuffer;
 #if defined(QT_OPENGL_ES_2)
         opts |= QGL::SampleBuffers;
@@ -137,6 +140,22 @@ public:
         numSamples = -1;
         swapInterval = -1;
     }
+    QGLFormatPrivate(const QGLFormatPrivate *other)
+        : ref(1),
+          opts(other->opts),
+          pln(other->pln),
+          depthSize(other->depthSize),
+          accumSize(other->accumSize),
+          stencilSize(other->stencilSize),
+          redSize(other->redSize),
+          greenSize(other->greenSize),
+          blueSize(other->blueSize),
+          alphaSize(other->alphaSize),
+          numSamples(other->numSamples),
+          swapInterval(other->swapInterval)
+    {
+    }
+    QAtomicInt ref;
     QGL::FormatOptions opts;
     int pln;
     int depthSize;

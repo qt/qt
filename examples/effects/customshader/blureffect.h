@@ -52,9 +52,9 @@ public:
 
     void setBaseLine(qreal y) { m_baseLine = y; }
 
-    QRectF boundingRectFor(const QRectF &) const;
+    QRectF boundingRect() const;
 
-    void draw(QPainter *painter, QGraphicsEffectSource*);
+    void draw(QPainter *painter, QGraphicsEffectSource *source);
 
 private:
     void adjustForItem();

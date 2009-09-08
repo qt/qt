@@ -1,4 +1,5 @@
-/****************************************************************************
+/*
+*********************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
@@ -37,12 +38,13 @@
 **
 ** $QT_END_LICENSE$
 **
-****************************************************************************/
+*********************************************************************
+*/
 
 /********************************************************************************
 ** Form generated from reading UI file 'qtgradienteditor.ui'
 **
-** Created: Tue Aug 18 19:03:32 2009
+** Created: Fri Sep 4 10:17:14 2009
 **      by: Qt User Interface Compiler version 4.6.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -711,7 +713,6 @@ public:
         reflectButton->setToolTip(QApplication::translate("QtGradientEditor", "Reflect Spread", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
         reflectButton->setText(QApplication::translate("QtGradientEditor", "...", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(QtGradientEditor);
     } // retranslateUi
 
 };

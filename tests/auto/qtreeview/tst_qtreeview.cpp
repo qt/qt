@@ -2042,7 +2042,7 @@ void tst_QTreeView::scrollTo()
 
     view.show();
     view.setVerticalScrollMode(QAbstractItemView::ScrollPerItem); //some styles change that in Polish
-   
+
     view.resize(300, 200);
     //view.verticalScrollBar()->setValue(0);
 
@@ -2055,7 +2055,7 @@ void tst_QTreeView::scrollTo()
     QCOMPARE(view.verticalScrollBar()->value(), 5);
 
     view.scrollTo(model.index(60, 60, QModelIndex()));
-    
+
     CHECK_VISIBLE(60,60);
     view.scrollTo(model.index(60, 30, QModelIndex()));
     CHECK_VISIBLE(60,30);
@@ -3059,12 +3059,12 @@ void tst_QTreeView::task216717_updateChildren()
     tree.refreshed = false;
     QTreeWidgetItem *parent = new QTreeWidgetItem(QStringList() << "parent");
     tree.addTopLevelItem(parent);
-    QTest::qWait(100);
-    QVERIFY(tree.refreshed);
+    QTest::qWait(10);
+    QTRY_VERIFY(tree.refreshed);
     tree.refreshed = false;
     parent->addChild(new QTreeWidgetItem(QStringList() << "child"));
-    QTest::qWait(100);
-    QVERIFY(tree.refreshed);
+    QTest::qWait(10);
+    QTRY_VERIFY(tree.refreshed);
 
 }
 
@@ -3259,7 +3259,7 @@ void tst_QTreeView::task202039_closePersistentEditor()
     view.closePersistentEditor(current);
     QVERIFY(view.indexWidget(current) == 0);
 
-    //here was the bug: closing the persistent editor would not reset the state 
+    //here was the bug: closing the persistent editor would not reset the state
     //and it was impossible to go into editinon again
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0, view.visualRect(current).center());
     QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, view.visualRect(current).center());
@@ -3313,7 +3313,7 @@ void tst_QTreeView::task244304_clickOnDecoration()
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, rect.topLeft()+QPoint(-rect.left()/2,rect.height()/2));
     QVERIFY(!view.currentIndex().isValid());
     QVERIFY(view.isExpanded(item0.index()));
-  
+
     rect = view.visualRect(item1.index());
     //the item has no decoration, it should get selected
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, rect.topLeft()+QPoint(-rect.left()/2,rect.height()/2));

@@ -199,7 +199,7 @@ private:
 
     enum StringImplFlags {
         HasTerminatingNullCharacter,
-        InTable,
+        InTable
     };
 
     unsigned m_length;

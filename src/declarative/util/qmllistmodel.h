@@ -72,6 +72,14 @@ public:
     virtual int count() const;
     virtual QHash<int,QVariant> data(int index, const QList<int> &roles = (QList<int>())) const;
 
+    Q_INVOKABLE void clear();
+    Q_INVOKABLE void remove(int index);
+    Q_INVOKABLE void append(const QVariantMap& valuemap);
+    Q_INVOKABLE void insert(int index, const QVariantMap& valuemap);
+    Q_INVOKABLE void set(int index, const QVariantMap& valuemap);
+    Q_INVOKABLE void set(int index, const QString& property, const QVariant& value);
+    Q_INVOKABLE void move(int from, int to, int count);
+
 private:
     QVariant valueForNode(ModelNode *) const;
     mutable QStringList roleStrings;
