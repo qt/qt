@@ -407,7 +407,7 @@ void QmlListModel::remove(int index)
 {
     if (_root) {
         ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
-        _root->values.remove(index);
+        _root->values.removeAt(index);
         if (node)
             delete node;
         emit itemsRemoved(index,1);
