@@ -2147,6 +2147,7 @@ void QMacStyle::polish(QWidget* w)
         w->setWindowOpacity(QSysInfo::MacintoshVersion >= QSysInfo::MV_10_5 ? 0.985 : 0.94);
         if (!w->testAttribute(Qt::WA_SetPalette)) {
             QPixmap px(64, 64);
+            px.fill(Qt::white);
             HIThemeMenuDrawInfo mtinfo;
             mtinfo.version = qt_mac_hitheme_version;
             mtinfo.menuType = kThemeMenuTypePopUp;
