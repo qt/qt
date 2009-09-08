@@ -191,7 +191,7 @@ public:
     bool renderCxPm(QPixmap *pixmap);
     void cleanupColormaps();
 
-    QGLContext *glcx; // ### Keep for compatability with QGLDrawable (if that gets left in)
+    QGLContext *glcx;
     QGLWidgetGLPaintDevice glDevice;
     bool autoSwap;
 
@@ -340,60 +340,6 @@ public:
 Q_SIGNALS:
     void aboutToDestroyContext(const QGLContext *context);
 };
-
-#if 0
-class QGLPixelBuffer;
-class QGLFramebufferObject;
-class QWSGLWindowSurface;
-class QGLWindowSurface;
-class QGLPixmapData;
-class QGLDrawable {
-public:
-    QGLDrawable() : widget(0), buffer(0), fbo(0)
-#if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
-                  , wsurf(0)
-#endif
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-                  , pixmapData(0)
-#endif
-        {}
-    void setDevice(QPaintDevice *pdev);
-    void swapBuffers();
-    void makeCurrent();
-    void doneCurrent();
-    QSize size() const;
-    QGLFormat format() const;
-    GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA,
-                       QGLContext::BindOptions = QGLContext::InternalBindOption);
-    GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA,
-                       QGLContext::BindOptions = QGLContext::InternalBindOption);
-    QColor backgroundColor() const;
-    QGLContext *context() const;
-    bool autoFillBackground() const;
-    bool hasTransparentBackground() const;
-
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLPixmapData *copyOnBegin() const;
-#endif
-
-private:
-    bool wasBound;
-    QGLWidget *widget;
-    QGLPixelBuffer *buffer;
-    QGLFramebufferObject *fbo;
-#ifdef Q_WS_QWS
-    QWSGLWindowSurface *wsurf;
-#elif !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLWindowSurface *wsurf;
-#endif
-
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLPixmapData *pixmapData;
-#endif
-    int previous_fbo;
-};
-
-#endif
 
 // GL extension definitions
 class QGLExtensions {

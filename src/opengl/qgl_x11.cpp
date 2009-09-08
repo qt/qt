@@ -41,7 +41,6 @@
 
 #include "qgl.h"
 #include "qgl_p.h"
-#include "qglpaintdevice_p.h"
 
 #include "qmap.h"
 #include "qapplication.h"
@@ -1308,7 +1307,6 @@ void QGLWidget::setContext(QGLContext *context,
         d->glcx->doneCurrent();
     QGLContext* oldcx = d->glcx;
     d->glcx = context;
-//    d->glDevice.setContext(context); // ### Do this for all platforms
 
     if (parentWidget()) {
         // force creation of delay-created widgets

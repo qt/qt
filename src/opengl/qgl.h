@@ -385,7 +385,6 @@ private:
     friend class QGLPixelBuffer;
     friend class QGLPixelBufferPrivate;
     friend class QGLWidget;
-//    friend class QGLDrawable;
     friend class QGLWidgetPrivate;
     friend class QGLGlyphCache;
     friend class QOpenGLPaintEngine;

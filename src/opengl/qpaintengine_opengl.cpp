@@ -287,7 +287,6 @@ public Q_SLOTS:
     }
 
 private:
-//    QGLDrawable drawable;
     QGLPaintDevice* device;
 
     QGLFramebufferObject *offscreen;
@@ -436,7 +435,7 @@ inline void QGLOffscreen::release()
     DEBUG_ONCE_STR("QGLOffscreen: releasing offscreen");
 
     if (drawable_fbo)
-        device->context()->makeCurrent(); //###
+        device->ensureActiveTarget(); //###
     else
         offscreen->release();
 
@@ -765,7 +764,6 @@ public:
     GLubyte pen_color[4];
     GLubyte brush_color[4];
     QTransform::TransformationType txop;
-//    QGLDrawable drawable;
     QGLPaintDevice* device;
     QGLOffscreen offscreen;
 

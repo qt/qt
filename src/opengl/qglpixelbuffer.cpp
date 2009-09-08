@@ -114,7 +114,6 @@ void QGLPBufferGLPaintDevice::endPaint() {
 void QGLPBufferGLPaintDevice::setPBuffer(QGLPixelBuffer* pb)
 {
     pbuf = pb;
-//    setContext(pb->d_func()->qctx);
 }
 
 void QGLPixelBufferPrivate::common_init(const QSize &size, const QGLFormat &format, QGLWidget *shareWidget)
