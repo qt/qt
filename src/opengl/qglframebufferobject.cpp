@@ -100,6 +100,13 @@ public:
           internal_format(other->internal_format)
     {
     }
+    bool equals(const QGLFramebufferObjectFormatPrivate *other)
+    {
+        return samples == other->samples &&
+               attachment == other->attachment &&
+               target == other->target &&
+               internal_format == other->internal_format;
+    }
 
     QAtomicInt ref;
     int samples;
@@ -310,6 +317,27 @@ void QGLFramebufferObjectFormat::setInternalTextureFormat(QMacCompatGLenum inter
     d->internal_format = internalTextureFormat;
 }
 #endif
+
+/*!
+    Returns true if all the options of this framebuffer object format
+    are the same as \a other; otherwise returns false.
+*/
+bool QGLFramebufferObjectFormat::operator==(const QGLFramebufferObjectFormat& other) const
+{
+    if (d == other.d)
+        return true;
+    else
+        return d->equals(other.d);
+}
+
+/*!
+    Returns false if all the options of this framebuffer object format
+    are the same as \a other; otherwise returns true.
+*/
+bool QGLFramebufferObjectFormat::operator!=(const QGLFramebufferObjectFormat& other) const
+{
+    return !(*this == other);
+}
 
 class QGLFramebufferObjectPrivate
 {

@@ -80,12 +80,7 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
     for (int i = 0; !chosen && i < m_fbos.size(); ++i) {
         QGLFramebufferObject *fbo = m_fbos.at(i);
 
-        QGLFramebufferObjectFormat format = fbo->format();
-        if (format.samples() == requestFormat.samples()
-            && format.attachment() == requestFormat.attachment()
-            && format.textureTarget() == requestFormat.textureTarget()
-            && format.internalTextureFormat() == requestFormat.internalTextureFormat())
-        {
+        if (fbo->format() == requestFormat) {
             // choose the fbo with a matching format and the closest size
             if (!candidate || areaDiff(requestSize, candidate) > areaDiff(requestSize, fbo))
                 candidate = fbo;

@@ -159,6 +159,9 @@ public:
     void setInternalTextureFormat(QMacCompatGLenum internalTextureFormat);
 #endif
 
+    bool operator==(const QGLFramebufferObjectFormat& other) const;
+    bool operator!=(const QGLFramebufferObjectFormat& other) const;
+
 private:
     QGLFramebufferObjectFormatPrivate *d;
 
