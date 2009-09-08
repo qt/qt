@@ -63,6 +63,8 @@
 #include <QPlainTextEdit>
 #include <QDialog>
 
+#include "../../shared/util.h"
+
 Q_DECLARE_METATYPE(QAbstractItemDelegate::EndEditHint)
 
 //TESTED_CLASS=
@@ -862,6 +864,8 @@ void tst_QItemDelegate::decoration()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&table);
 #endif
+    QApplication::setActiveWindow(&table);
+    QTRY_COMPARE(QApplication::activeWindow(), &table);
 
     QVariant value;
     switch ((QVariant::Type)type) {
@@ -1164,10 +1168,7 @@ void tst_QItemDelegate::task257859_finalizeEdit()
     QDialog dialog;
     QTimer::singleShot(100, &dialog, SLOT(close()));
     dialog.exec();
-
-    QTest::qWait(100);
-
-    QVERIFY(!editor);
+    QTRY_VERIFY(!editor);
 }
 
 

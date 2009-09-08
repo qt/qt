@@ -1025,6 +1025,7 @@ void tst_QCompleter::multipleWidgets()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&window);
 #endif
+    QApplication::setActiveWindow(&window);
     QTest::qWait(50);
     QTRY_VERIFY(qApp->focusWidget() == comboBox);
     comboBox->lineEdit()->setText("it");
@@ -1058,6 +1059,7 @@ void tst_QCompleter::focusIn()
     window.show();
     QTest::qWait(100);
     window.activateWindow();
+    QApplication::setActiveWindow(&window);
     QTest::qWait(100);
 
     QTRY_COMPARE(qApp->activeWindow(), &window);
@@ -1322,8 +1324,10 @@ void tst_QCompleter::task253125_lineEditCompletion()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&edit);
 #endif
+    QTest::qWait(10);
+    QApplication::setActiveWindow(&edit);
+    QTRY_COMPARE(QApplication::activeWindow(), &edit);
 
-    QTest::qWait(100);
     QTest::keyClick(&edit, 'i');
     QCOMPARE(edit.completer()->currentCompletion(), QString("iota"));
     QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
@@ -1358,7 +1362,9 @@ void tst_QCompleter::task247560_keyboardNavigation()
     qt_x11_wait_for_window_manager(&edit);
 #endif
 
-    QTest::qWait(100);
+    QTest::qWait(10);
+    QApplication::setActiveWindow(&edit);
+    QTRY_COMPARE(QApplication::activeWindow(), &edit);
 
     QTest::keyClick(&edit, 'r');
     QTest::keyClick(edit.completer()->popup(), Qt::Key_Down);
