@@ -73,8 +73,8 @@ QString RewriteBinding::rewrite(QString code, unsigned position,
     unsigned startOfStatement = node->firstSourceLocation().begin() - _position;
     unsigned endOfStatement = node->lastSourceLocation().end() - _position;
 
-    _writer->replace(startOfStatement, 0, QLatin1String("(function() {\n"));
-    _writer->replace(endOfStatement, 0, QLatin1String("\n})"));
+    _writer->replace(startOfStatement, 0, QLatin1String("(function() { "));
+    _writer->replace(endOfStatement, 0, QLatin1String(" })"));
 
     w.write(&code);
 
