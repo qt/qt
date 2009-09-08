@@ -1661,6 +1661,10 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
     bool edited = edit(index, trigger, event);
 
+    //in the case the user presses on no item we might decide to clear the selection
+    if (d->selectionModel && !index.isValid())
+        d->selectionModel->select(QModelIndex(), selectionCommand(index, event));
+
     setState(NoState);
 
     if (click) {

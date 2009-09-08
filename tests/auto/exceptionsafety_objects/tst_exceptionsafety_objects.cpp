@@ -462,22 +462,62 @@ struct Integer
 
 int Integer::instanceCount = 0;
 
-template <template<typename T> class Container>
+struct IntegerMoveable
+    {
+    IntegerMoveable(int value = 42)
+        : val(value)
+    {
+        delete new int;
+        ++instanceCount;
+    }
+
+    IntegerMoveable(const IntegerMoveable &other)
+        : val(other.val)
+    {
+        delete new int;
+        ++instanceCount;
+    }
+
+    IntegerMoveable &operator=(const IntegerMoveable &other)
+    {
+        delete new int;
+        val = other.val;
+        return *this;
+    }
+
+    ~IntegerMoveable()
+    {
+        --instanceCount;
+    }
+
+    int value() const
+    {
+        return val;
+    }
+
+    int val;
+    static int instanceCount;
+    };
+
+int IntegerMoveable::instanceCount = 0;
+Q_DECLARE_TYPEINFO(IntegerMoveable, Q_MOVABLE_TYPE);
+
+template <typename T, template<typename> class Container >
 void containerInsertTest(QObject*)
 {
-    Container<Integer> container;
+    Container<T> container;
 
     // insert an item in an empty container
     try {
         container.insert(container.begin(), 41);
     } catch (...) {
         QVERIFY(container.isEmpty());
-        QCOMPARE(Integer::instanceCount, 0);
+        QCOMPARE(T::instanceCount, 0);
         return;
     }
 
     QCOMPARE(container.size(), 1);
-    QCOMPARE(Integer::instanceCount, 1);
+    QCOMPARE(T::instanceCount, 1);
 
     // insert an item before another item
     try {
@@ -485,11 +525,11 @@ void containerInsertTest(QObject*)
     } catch (...) {
         QCOMPARE(container.size(), 1);
         QCOMPARE(container.first().value(), 41);
-        QCOMPARE(Integer::instanceCount, 1);
+        QCOMPARE(T::instanceCount, 1);
         return;
     }
 
-    QCOMPARE(Integer::instanceCount, 2);
+    QCOMPARE(T::instanceCount, 2);
 
     // insert an item in between
     try {
@@ -498,24 +538,24 @@ void containerInsertTest(QObject*)
         QCOMPARE(container.size(), 2);
         QCOMPARE(container.first().value(), 41);
         QCOMPARE((container.begin() + 1)->value(), 42);
-        QCOMPARE(Integer::instanceCount, 2);
+        QCOMPARE(T::instanceCount, 2);
         return;
     }
 
-    QCOMPARE(Integer::instanceCount, 3);
+    QCOMPARE(T::instanceCount, 3);
 }
 
-template <template<typename T> class Container>
+template <typename T, template<typename> class Container>
 void containerAppendTest(QObject*)
 {
-    Container<Integer> container;
+    Container<T> container;
 
     // append to an empty container
     try {
         container.append(42);
     } catch (...) {
         QCOMPARE(container.size(), 0);
-        QCOMPARE(Integer::instanceCount, 0);
+        QCOMPARE(T::instanceCount, 0);
         return;
     }
 
@@ -525,15 +565,38 @@ void containerAppendTest(QObject*)
     } catch (...) {
         QCOMPARE(container.size(), 1);
         QCOMPARE(container.first().value(), 42);
-        QCOMPARE(Integer::instanceCount, 1);
+        QCOMPARE(T::instanceCount, 1);
         return;
     }
+
+    Container<T> container2;
+
+    try {
+        container2.append(44);
+    } catch (...) {
+        // don't care
+        return;
+    }
+    QCOMPARE(T::instanceCount, 3);
+
+    // append another container with one item
+    try {
+        container += container2;
+    } catch (...) {
+        QCOMPARE(container.size(), 2);
+        QCOMPARE(container.first().value(), 42);
+        QCOMPARE((container.begin() + 1)->value(), 43);
+        QCOMPARE(T::instanceCount, 3);
+        return;
+    }
+
+    QCOMPARE(T::instanceCount, 4);
 }
 
-template <template<typename T> class Container>
+template <typename T, template<typename> class Container>
 void containerEraseTest(QObject*)
 {
-    Container<Integer> container;
+    Container<T> container;
 
     try {
         container.append(42);
@@ -548,7 +611,7 @@ void containerEraseTest(QObject*)
 
     // sanity checks
     QCOMPARE(container.size(), 5);
-    QCOMPARE(Integer::instanceCount, 5);
+    QCOMPARE(T::instanceCount, 5);
 
     // delete the first one
     try {
@@ -556,20 +619,20 @@ void containerEraseTest(QObject*)
     } catch (...) {
         QCOMPARE(container.size(), 5);
         QCOMPARE(container.first().value(), 42);
-        QCOMPARE(Integer::instanceCount, 5);
+        QCOMPARE(T::instanceCount, 5);
         return;
     }
 
     QCOMPARE(container.size(), 4);
     QCOMPARE(container.first().value(), 43);
-    QCOMPARE(Integer::instanceCount, 4);
+    QCOMPARE(T::instanceCount, 4);
 
     // delete the last one
     try {
         container.erase(container.end() - 1);
     } catch (...) {
         QCOMPARE(container.size(), 4);
-        QCOMPARE(Integer::instanceCount, 4);
+        QCOMPARE(T::instanceCount, 4);
         return;
     }
 
@@ -577,7 +640,7 @@ void containerEraseTest(QObject*)
     QCOMPARE(container.first().value(), 43);
     QCOMPARE((container.begin() + 1)->value(), 44);
     QCOMPARE((container.begin() + 2)->value(), 45);
-    QCOMPARE(Integer::instanceCount, 3);
+    QCOMPARE(T::instanceCount, 3);
 
     // delete the middle one
     try {
@@ -587,14 +650,14 @@ void containerEraseTest(QObject*)
         QCOMPARE(container.first().value(), 43);
         QCOMPARE((container.begin() + 1)->value(), 44);
         QCOMPARE((container.begin() + 2)->value(), 45);
-        QCOMPARE(Integer::instanceCount, 3);
+        QCOMPARE(T::instanceCount, 3);
         return;
     }
 
     QCOMPARE(container.size(), 2);
     QCOMPARE(container.first().value(), 43);
     QCOMPARE((container.begin() + 1)->value(), 45);
-    QCOMPARE(Integer::instanceCount, 2);
+    QCOMPARE(T::instanceCount, 2);
 }
 
 template <template<typename T> class Container>
@@ -602,9 +665,12 @@ static void containerData()
 {
     QTest::addColumn<TestFunction>("testFunction");
 
-    QTest::newRow("insert") << static_cast<TestFunction>(containerInsertTest<Container>);
-    QTest::newRow("append") << static_cast<TestFunction>(containerAppendTest<Container>);
-    QTest::newRow("erase") << static_cast<TestFunction>(containerEraseTest<Container>);
+    QTest::newRow("insert static") << static_cast<TestFunction>(containerInsertTest<Integer, Container>);
+    QTest::newRow("append static") << static_cast<TestFunction>(containerAppendTest<Integer, Container>);
+    QTest::newRow("erase static") << static_cast<TestFunction>(containerEraseTest<Integer, Container>);
+    QTest::newRow("insert moveable") << static_cast<TestFunction>(containerInsertTest<IntegerMoveable, Container>);
+    QTest::newRow("append moveable") << static_cast<TestFunction>(containerAppendTest<IntegerMoveable, Container>);
+    QTest::newRow("erase moveable") << static_cast<TestFunction>(containerEraseTest<IntegerMoveable, Container>);
 }
 
 void tst_ExceptionSafetyObjects::vector_data()
@@ -616,7 +682,8 @@ void tst_ExceptionSafetyObjects::vector()
 {
     QFETCH(TestFunction, testFunction);
 
-    if (QLatin1String(QTest::currentDataTag()) == QLatin1String("insert"))
+    if (QLatin1String(QTest::currentDataTag()) == QLatin1String("insert static")
+        || QLatin1String(QTest::currentDataTag()) == QLatin1String("insert moveable"))
         QSKIP("QVector::insert is currently not strongly exception safe", SkipSingle);
 
     doOOMTest(testFunction, 0);

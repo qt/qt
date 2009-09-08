@@ -81,7 +81,7 @@
 
     \table
     \header \o New State                \o Description              \o QGesture Actions on Entering this State
-    \row    \o Qt::NoGesture        \o Initial value            \o emit \l {QGesture::cancelled()}{cancelled()}
+    \row    \o Qt::NoGesture        \o Initial value            \o emit \l {QGesture::canceled()}{canceled()}
     \row    \o Qt::GestureStarted   \o A continuous gesture has started \o emit \l{QGesture::started()}{started()} and emit \l{QGesture::triggered()}{triggered()}
     \row    \o Qt::GestureUpdated   \o A gesture continues      \o emit \l{QGesture::triggered()}{triggered()}
     \row    \o Qt::GestureFinished  \o A gesture has finished.  \o emit \l{QGesture::finished()}{finished()}
@@ -130,13 +130,13 @@
     then the gesture is considered to have finished whether or not the
     appropriate touch or mouse event has occurred. Also if a large jump in
     the position of the event occurs, as calculated by the \l {QPoint::manhattanLength()}{manhattanLength()}
-    call, then the gesture is cancelled by calling \l{QGesture::reset()}{reset()}
+    call, then the gesture is canceled by calling \l{QGesture::reset()}{reset()}
     which tidies up  and uses \l{QGesture::updateState()}{updateState()} to
-    change state to NoGesture which will result in the \l{QGesture::cancelled()}{cancelled()}
+    change state to NoGesture which will result in the \l{QGesture::canceled()}{canceled()}
     signal being emitted by the recognizer.
 
     ImageWidget handles the signals by connecting the slots to the signals,
-    although \c cancelled() is not connected here.
+    although \c canceled() is not connected here.
 
     \snippet doc/src/snippets/gestures/imageviewer/imagewidget.cpp  imagewidget-connect
 

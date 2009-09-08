@@ -54,8 +54,15 @@ information about a particular change.
    this is that Nokia focuses on OpenGL for desktop hardware accelerated
    rendering.
 
- - When mixing OpenGL and QPainter calls you need to surround your custom
-   OpenGL calls with QPainter::beginNativePainting() and
+ - The default engine used to draw onto OpenGL buffers has changed in
+   Qt 4.6. The QPaintEngine::OpenGL2 engine is now used as the default
+   engine. This *may* cause compatibility problems for applications
+   that use a mix of QPainter and native OpenGL calls to draw into a GL
+   buffer. Use the QGL::setPreferredPaintEngine() function to enforce
+   usage of the old GL paint engine.
+
+ - When mixing OpenGL and QPainter calls you need to surround your
+   custom OpenGL calls with QPainter::beginNativePainting() and
    QPainter::endNativePainting().
    This is to ensure that the paint engine flushes any pending drawing and sets
    up the GL modelview/projection matrices properly before you can issue custom

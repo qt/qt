@@ -56,6 +56,8 @@
 #include <qlineedit.h>
 #include <QBoxLayout>
 
+#include "../../shared/util.h"
+
 QT_FORWARD_DECLARE_CLASS(QWidget)
 
 //TESTED_CLASS=
@@ -168,6 +170,7 @@ void tst_QFocusEvent::initWidget()
 {
     // On X11 we have to ensure the event was processed before doing any checking, on Windows
     // this is processed straight away.
+    QApplication::setActiveWindow(childFocusWidgetOne);
 
     for (int i = 0; i < 1000; ++i) {
 	if (childFocusWidgetOne->isActiveWindow() && childFocusWidgetOne->hasFocus())
@@ -243,9 +246,9 @@ void tst_QFocusEvent::checkReason_BackTab()
 
     // Now test the backtab key
     QTest::keyClick( childFocusWidgetOne, Qt::Key_Backtab );
-    QTest::qWait(2000);
+    QTest::qWait(200);
 
-    QVERIFY(childFocusWidgetOne->focusOutEventRecieved);
+    QTRY_VERIFY(childFocusWidgetOne->focusOutEventRecieved);
     QVERIFY(childFocusWidgetTwo->focusInEventRecieved);
     QVERIFY(childFocusWidgetOne->focusOutEventLostFocus);
     QVERIFY(childFocusWidgetTwo->focusInEventGotFocus);
@@ -265,9 +268,9 @@ void tst_QFocusEvent::checkReason_Popup()
     Q3PopupMenu* popupMenu = new Q3PopupMenu( testFocusWidget );
     popupMenu->insertItem( "Test" );
     popupMenu->popup( QPoint(0,0) );
-    QTest::qWait(500);
+    QTest::qWait(50);
 
-    QVERIFY(childFocusWidgetOne->focusOutEventLostFocus);
+    QTRY_VERIFY(childFocusWidgetOne->focusOutEventLostFocus);
 
     QVERIFY( childFocusWidgetOne->hasFocus() );
     QVERIFY( !childFocusWidgetOne->focusInEventRecieved );
@@ -290,11 +293,11 @@ void tst_QFocusEvent::checkReason_Popup()
     QMenu* popupMenu = new QMenu( testFocusWidget );
     popupMenu->addMenu( "Test" );
     popupMenu->popup( QPoint(0,0) );
-    QTest::qWait(500);
+    QTest::qWait(50);
 
-    QVERIFY(childFocusWidgetOne->focusOutEventLostFocus);
+    QTRY_VERIFY(childFocusWidgetOne->focusOutEventLostFocus);
 
-    QVERIFY( childFocusWidgetOne->hasFocus() );
+    QTRY_VERIFY( childFocusWidgetOne->hasFocus() );
     QVERIFY( !childFocusWidgetOne->focusInEventRecieved );
     QVERIFY( childFocusWidgetOne->focusOutEventRecieved );
     QVERIFY( !childFocusWidgetTwo->focusInEventRecieved );
@@ -368,13 +371,13 @@ void tst_QFocusEvent::checkReason_focusWidget()
     QLineEdit edit1;
     QLineEdit edit2;
 
-    QVBoxLayout outerLayout; 
+    QVBoxLayout outerLayout;
     outerLayout.addWidget(&frame1);
     outerLayout.addWidget(&frame2);
     window1.setLayout(&outerLayout);
-    
-    QVBoxLayout leftLayout; 
-    QVBoxLayout rightLayout; 
+
+    QVBoxLayout leftLayout;
+    QVBoxLayout rightLayout;
     leftLayout.addWidget(&edit1);
     rightLayout.addWidget(&edit2);
     frame1.setLayout(&leftLayout);

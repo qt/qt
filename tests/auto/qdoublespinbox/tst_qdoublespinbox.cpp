@@ -52,6 +52,9 @@
 
 #include <qlineedit.h>
 #include <qdebug.h>
+
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=gui/widgets/qspinbox.h gui/widgets/qspinbox.cpp gui/widgets/qabstractspinbox.cpp gui/widgets/qabstractspinbox_p.h gui/widgets/qabstractspinbox.h
 
@@ -772,8 +775,8 @@ void tst_QDoubleSpinBox::editingFinished()
     layout->addWidget(box2);
 
     testFocusWidget->show();
-    QTest::qWait(100);
-    QVERIFY(box->isActiveWindow());
+    QTest::qWait(10);
+    QTRY_VERIFY(box->isActiveWindow());
     box->setFocus();
 
     QSignalSpy editingFinishedSpy1(box, SIGNAL(editingFinished()));
