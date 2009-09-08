@@ -84,10 +84,10 @@ public:
 protected:
     // Inline?
 //    void setContext(QGLContext* c);
-
+    GLuint m_previousFBO;
+    GLuint m_thisFBO;
 private:
 //    QGLContext* m_context;
-    GLuint         m_previousFBO;
 };
 
 

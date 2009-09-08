@@ -299,6 +299,12 @@ bool QGLFramebufferObjectFormat::operator!=(const QGLFramebufferObjectFormat& ot
     return !(*this == other);
 }
 
+void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f)
+{
+    fbo = f;
+    m_thisFBO = fbo->d_func()->fbo; // This shouldn't be needed
+}
+
 void QGLFBOGLPaintDevice::ensureActiveTarget()
 {
     QGLContext* ctx = const_cast<QGLContext*>(QGLContext::currentContext());
@@ -377,6 +383,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
     ctx = QGLContextPrivate::contextGroup(currentContext);
     glDevice.setFBO(q);
+
     bool ext_detected = (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject);
     if (!ext_detected || (ext_detected && !qt_resolve_framebufferobject_extensions(currentContext)))
         return;
@@ -388,6 +395,8 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     while (glGetError() != GL_NO_ERROR) {} // reset error state
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
+
+    glDevice.setFBO(q);
 
     QT_CHECK_GLERROR();
     // init texture

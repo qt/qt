@@ -1321,7 +1321,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->ctx->d_ptr->active_engine = this;
     d->last_created_state = 0;
 
-    d->device->beginPaint();
     QSize sz = d->device->size();
     d->width = sz.width();
     d->height = sz.height();
@@ -1333,8 +1332,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
 
     d->shaderManager = new QGLEngineShaderManager(d->ctx);
 
-    glViewport(0, 0, d->width, d->height);
-
     d->brushTextureDirty = true;
     d->brushUniformsDirty = true;
     d->matrixDirty = true;
@@ -1343,9 +1340,11 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->simpleShaderDepthUniformDirty = true;
     d->depthUniformDirty = true;
     d->opacityUniformDirty = true;
-    d->needsSync = false;
-
+    d->needsSync = true;
     d->use_system_clip = !systemClip().isEmpty();
+
+
+    d->device->beginPaint();
 
     if (!d->inRenderText) {
         glDisable(GL_DEPTH_TEST);
@@ -1358,21 +1357,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     glDisable(GL_MULTISAMPLE);
 #endif
 
-//    QGLPixmapData *source = d->drawable.copyOnBegin();
-//    if (source) {
-//        QGLContext *ctx = d->ctx;
-//
-//        d->transferMode(ImageDrawingMode);
-//
-//        glActiveTexture(GL_TEXTURE0 + QT_IMAGE_TEXTURE_UNIT);
-//        source->bind(false);
-//
-//        QRect rect(0, 0, source->width(), source->height());
-//        d->updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, false);
-//        d->drawTexture(QRectF(rect), QRectF(rect), rect.size(), true);
-//    }
-
-    d->systemStateChanged();
     return true;
 }
 

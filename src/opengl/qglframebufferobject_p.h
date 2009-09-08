@@ -110,10 +110,11 @@ public:
     virtual QPaintEngine* paintEngine() const {return fbo->paintEngine();}
     virtual QSize size() const {return fbo->size();}
     virtual QGLContext* context() const {return const_cast<QGLContext *>(QGLContext::currentContext());}
-    void setFBO(QGLFramebufferObject* f) {fbo = f; }
     virtual void ensureActiveTarget();
     virtual void beginPaint();
     virtual void endPaint();
+
+    void setFBO(QGLFramebufferObject* f);
 
 private:
     bool wasBound;

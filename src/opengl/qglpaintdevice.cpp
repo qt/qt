@@ -44,8 +44,10 @@
 #include <private/qglpixelbuffer_p.h>
 #include <private/qglframebufferobject_p.h>
 #include <private/qwindowsurface_gl_p.h>
+#include <private/qpixmapdata_gl_p.h>
 
 QGLPaintDevice::QGLPaintDevice()
+    : m_thisFBO(0)
 {
 }
 
@@ -56,14 +58,17 @@ QGLPaintDevice::~QGLPaintDevice()
 
 void QGLPaintDevice::beginPaint()
 {
-    // Record the currently bound FBO so we can restore it again
-    // in endPaint()
+    // Make sure our context is the current one:
     QGLContext *ctx = context();
-    ctx->makeCurrent();
+    if (ctx != QGLContext::currentContext())
+        ctx->makeCurrent();
+
+    // Record the currently bound FBO so we can restore it again
+    // in endPaint() and bind this device's FBO
     m_previousFBO = ctx->d_func()->current_fbo;
-    if (m_previousFBO != 0) {
-        ctx->d_ptr->current_fbo = 0;
-        glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+    if (m_previousFBO != m_thisFBO) {
+        ctx->d_ptr->current_fbo = m_thisFBO;
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_thisFBO);
     }
 }
 
@@ -73,8 +78,10 @@ void QGLPaintDevice::ensureActiveTarget()
     if (ctx != QGLContext::currentContext())
         ctx->makeCurrent();
 
-    if (ctx->d_ptr->current_fbo != 0)
-        glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
+    if (ctx->d_ptr->current_fbo != m_thisFBO) {
+        ctx->d_ptr->current_fbo = m_thisFBO;
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_thisFBO);
+    }
 }
 
 void QGLPaintDevice::endPaint()
@@ -193,6 +200,12 @@ QGLPaintDevice* QGLPaintDevice::getDevice(QPaintDevice* pd)
         case QInternal::FramebufferObject:
             glpd = &(static_cast<QGLFramebufferObject*>(pd)->d_func()->glDevice);
             break;
+        case QInternal::Pixmap: {
+            QPixmapData* pmd = static_cast<QPixmap*>(pd)->pixmapData();
+            Q_ASSERT(pmd->classId() == QPixmapData::OpenGLClass);
+            glpd = static_cast<QGLPixmapData*>(pmd)->glDevice();
+            break;
+        }
         default:
             qWarning("QGLPaintDevice::getDevice() - Unknown device type %d", pd->devType());
             break;
