@@ -335,10 +335,6 @@
     it's parent if it's z-value is negative. This flag enables setZValue() to
     toggle ItemStacksBehindParent.
 
-    \value ItemAutoDetectsFocusProxy The item will assign any child that
-    gains input focus as its focus proxy. See also focusProxy().
-    This flag was introduced in Qt 4.6.
-
     \value ItemIsPanel. The item is a panel. A panel provides activation and
     contained focus handling. Only one panel can be active at a time (see
     QGraphicsItem::isActive()). When no panel is active, QGraphicsScene
@@ -954,17 +950,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
         parent->itemChange(QGraphicsItem::ItemChildRemovedChange, thisPointerVariant);
     }
 
-    // Auto-update focus proxy. Any ancestor that has this as focus proxy 
-    //needs to be nulled.
-    QGraphicsItem *p = parent;
-    while (p) {
-        if ((p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) &&
-            (p->focusProxy() == q)) {
-            p->setFocusProxy(0);
-        }
-        p = p->d_ptr->parent;
-    }
-
     // Update toplevelitem list. If this item is being deleted, its parent
     // will be 0 but we don't want to register/unregister it in the TLI list.
     if (scene && !inDestructor) {
@@ -1043,17 +1028,6 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     // Restore the sub focus chain.
     if (lastSubFocusItem)
         lastSubFocusItem->d_ptr->setSubFocus();
-
-    // Auto-update focus proxy. The closest parent that detects
-    // focus proxies is updated as the proxy gains or loses focus.
-    p = newParent;
-    while (p) {
-        if (p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) {
-            p->setFocusProxy(q);
-            break;
-        }
-        p = p->d_ptr->parent;
-    }
 
     // Deliver post-change notification
     q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
@@ -2808,7 +2782,7 @@ void QGraphicsItem::clearFocus()
     Returns this item's focus proxy, or 0 if this item has no
     focus proxy.
 
-    \sa setFocusProxy(), ItemAutoDetectsFocusProxy, setFocus(), hasFocus()
+    \sa setFocusProxy(), setFocus(), hasFocus()
 */
 QGraphicsItem *QGraphicsItem::focusProxy() const
 {
@@ -2832,7 +2806,7 @@ QGraphicsItem *QGraphicsItem::focusProxy() const
     The focus proxy \a item must belong to the same scene as
     this item.
 
-    \sa focusProxy(), ItemAutoDetectsFocusProxy, setFocus(), hasFocus()
+    \sa focusProxy(), setFocus(), hasFocus()
 */
 void QGraphicsItem::setFocusProxy(QGraphicsItem *item)
 {
@@ -10567,9 +10541,6 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemNegativeZStacksBehindParent:
         str = "ItemNegativeZStacksBehindParent";
-        break;
-    case QGraphicsItem::ItemAutoDetectsFocusProxy:
-        str = "ItemAutoDetectsFocusProxy";
         break;
     case QGraphicsItem::ItemIsPanel:
         str = "ItemIsPanel";

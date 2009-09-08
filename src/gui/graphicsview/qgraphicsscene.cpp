@@ -653,19 +653,6 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
             return;
     }
 
-    // Auto-update focus proxy. The closest parent that detects
-    // focus proxies is updated as the proxy gains or loses focus.
-    if (item) {
-        QGraphicsItem *p = item->d_ptr->parent;
-        while (p) {
-            if (p->d_ptr->flags & QGraphicsItem::ItemAutoDetectsFocusProxy) {
-                p->setFocusProxy(item);
-                break;
-            }
-            p = p->d_ptr->parent;
-        }
-    }
-
     if (focusItem) {
         QFocusEvent event(QEvent::FocusOut, focusReason);
         lastFocusItem = focusItem;
