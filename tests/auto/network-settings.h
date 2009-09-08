@@ -73,3 +73,17 @@ public:
 #endif
 
 };
+
+class QtNetworkSettingsInitializerCode {
+public:
+    QtNetworkSettingsInitializerCode() {
+        QHostInfo testServerResult = QHostInfo::fromName(QtNetworkSettings::serverName());
+        if (testServerResult.error() != QHostInfo::NoError) {
+            qWarning() << "Could not lookup" << QtNetworkSettings::serverName();
+            qWarning() << "Please configure the test environment!";
+            qWarning() << "See /etc/hosts or network-settings.h";
+            qFatal("Exiting");
+        }
+    }
+};
+QtNetworkSettingsInitializerCode qtNetworkSettingsInitializer;
