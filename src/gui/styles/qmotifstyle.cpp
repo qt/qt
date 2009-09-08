@@ -2683,6 +2683,9 @@ QMotifStyle::styleHint(StyleHint hint, const QStyleOption *opt, const QWidget *w
     case SH_LineEdit_PasswordCharacter:
         ret = '*';
         break;
+    case SH_DialogButtonBox_ButtonsHaveIcons:
+        ret = 0;
+        break;
     default:
         ret = QCommonStyle::styleHint(hint, opt, widget, returnData);
         break;

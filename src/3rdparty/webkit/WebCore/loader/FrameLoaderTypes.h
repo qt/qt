@@ -42,7 +42,7 @@ namespace WebCore {
     enum PolicyAction {
         PolicyUse,
         PolicyDownload,
-        PolicyIgnore,
+        PolicyIgnore
     };
 
     enum FrameLoadType {

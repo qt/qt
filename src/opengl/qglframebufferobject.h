@@ -151,12 +151,12 @@ public:
     void setTextureTarget(GLenum target);
     GLenum textureTarget() const;
 
-    void setInternalFormat(GLenum internalFormat);
-    GLenum internalFormat() const;
+    void setInternalTextureFormat(GLenum internalTextureFormat);
+    GLenum internalTextureFormat() const;
 
 #ifdef Q_MAC_COMPAT_GL_FUNCTIONS
     void setTextureTarget(QMacCompatGLenum target);
-    void setInternalFormat(QMacCompatGLenum internalFormat);
+    void setInternalTextureFormat(QMacCompatGLenum internalTextureFormat);
 #endif
 
 private:

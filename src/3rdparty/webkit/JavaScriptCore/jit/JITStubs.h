@@ -223,6 +223,7 @@ namespace JITStubs { extern "C" {
     void JIT_STUB cti_op_debug(STUB_ARGS_DECLARATION);
 #ifdef QT_BUILD_SCRIPT_LIB
     void JIT_STUB cti_op_debug_catch(STUB_ARGS_DECLARATION);
+    void JIT_STUB cti_op_debug_return(STUB_ARGS_DECLARATION);
 #endif
     void JIT_STUB cti_op_end(STUB_ARGS_DECLARATION);
     void JIT_STUB cti_op_jmp_scopes(STUB_ARGS_DECLARATION);

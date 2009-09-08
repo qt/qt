@@ -79,6 +79,7 @@ private slots:
     void glWidgetReparent();
     void stackedFBOs();
     void colormap();
+    void fboFormat();
 };
 
 tst_QGL::tst_QGL()
@@ -230,9 +231,15 @@ void tst_QGL::getSetCheck()
 
     // bool QGLFormat::sampleBuffers()
     // void QGLFormat::setSampleBuffers(bool)
+#if !defined(QT_OPENGL_ES_2)
     QCOMPARE(false, obj1.sampleBuffers());
     QVERIFY(!obj1.testOption(QGL::SampleBuffers));
     QVERIFY(obj1.testOption(QGL::NoSampleBuffers));
+#else
+    QCOMPARE(true, obj1.sampleBuffers());
+    QVERIFY(obj1.testOption(QGL::SampleBuffers));
+    QVERIFY(!obj1.testOption(QGL::NoSampleBuffers));
+#endif
     obj1.setSampleBuffers(false);
     QCOMPARE(false, obj1.sampleBuffers());
     QVERIFY(obj1.testOption(QGL::NoSampleBuffers));
@@ -401,6 +408,154 @@ void tst_QGL::getSetCheck()
     QCOMPARE(TEST_INT_MIN, obj1.plane());
     obj1.setPlane(TEST_INT_MAX);
     QCOMPARE(TEST_INT_MAX, obj1.plane());
+
+    // operator== and operator!= for QGLFormat
+    QGLFormat format1;
+    QGLFormat format2;
+
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+    format1.setDoubleBuffer(false);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setDoubleBuffer(false);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setDepthBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setDepthBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setAccumBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setAccumBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setRedBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setRedBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setGreenBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setGreenBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setBlueBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setBlueBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setAlphaBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setAlphaBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setStencilBufferSize(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setStencilBufferSize(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setSamples(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setSamples(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setSwapInterval(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setSwapInterval(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    format1.setPlane(8);
+    QVERIFY(!(format1 == format2));
+    QVERIFY(format1 != format2);
+    format2.setPlane(8);
+    QVERIFY(format1 == format2);
+    QVERIFY(!(format1 != format2));
+
+    // Copy constructor and assignment for QGLFormat.
+    QGLFormat format3(format1);
+    QGLFormat format4;
+    QVERIFY(format1 == format3);
+    QVERIFY(format1 != format4);
+    format4 = format1;
+    QVERIFY(format1 == format4);
+
+    // Check that modifying a copy doesn't affect the original.
+    format3.setRedBufferSize(16);
+    format4.setPlane(16);
+    QCOMPARE(format1.redBufferSize(), 8);
+    QCOMPARE(format1.plane(), 8);
+
+    // Check the QGLFormat constructor that takes an option list.
+    QGLFormat format5
+        (QGL::DepthBuffer | QGL::StereoBuffers | QGL::ColorIndex, 3);
+    QVERIFY(format5.depth());
+    QVERIFY(format5.stereo());
+    QVERIFY(format5.doubleBuffer());        // From defaultFormat()
+    QVERIFY(!format5.hasOverlay());         // From defaultFormat()
+    QVERIFY(!format5.rgba());
+    QCOMPARE(format5.plane(), 3);
+
+    // The default format should be the same as QGLFormat().
+    QVERIFY(QGLFormat::defaultFormat() == QGLFormat());
+
+    // Modify the default format and check that it was changed.
+    QGLFormat::setDefaultFormat(format1);
+    QVERIFY(QGLFormat::defaultFormat() == format1);
+
+    // Restore the default format.
+    QGLFormat::setDefaultFormat(QGLFormat());
+    QVERIFY(QGLFormat::defaultFormat() == QGLFormat());
+
+    // Check the default overlay format's expected values.
+    QGLFormat overlay(QGLFormat::defaultOverlayFormat());
+    QCOMPARE(overlay.depthBufferSize(), -1);
+    QCOMPARE(overlay.accumBufferSize(), -1);
+    QCOMPARE(overlay.redBufferSize(), -1);
+    QCOMPARE(overlay.greenBufferSize(), -1);
+    QCOMPARE(overlay.blueBufferSize(), -1);
+    QCOMPARE(overlay.alphaBufferSize(), -1);
+    QCOMPARE(overlay.samples(), -1);
+    QCOMPARE(overlay.swapInterval(), -1);
+    QCOMPARE(overlay.plane(), 1);
+    QVERIFY(!overlay.sampleBuffers());
+    QVERIFY(!overlay.doubleBuffer());
+    QVERIFY(!overlay.depth());
+    QVERIFY(!overlay.rgba());
+    QVERIFY(!overlay.alpha());
+    QVERIFY(!overlay.accum());
+    QVERIFY(!overlay.stencil());
+    QVERIFY(!overlay.stereo());
+    QVERIFY(overlay.directRendering()); // Only option that should be on.
+    QVERIFY(!overlay.hasOverlay());     // Overlay doesn't need an overlay!
+
+    // Modify the default overlay format and check that it was changed.
+    QGLFormat::setDefaultOverlayFormat(format1);
+    QVERIFY(QGLFormat::defaultOverlayFormat() == format1);
+
+    // Restore the default overlay format.
+    QGLFormat::setDefaultOverlayFormat(overlay);
+    QVERIFY(QGLFormat::defaultOverlayFormat() == overlay);
 
     MyGLContext obj2(obj1);
     // bool QGLContext::windowCreated()
@@ -1222,6 +1377,61 @@ void tst_QGL::colormap()
     QVERIFY(cmap4.handle() == Qt::HANDLE(42));
     QVERIFY(!cmap4.isEmpty());
     QCOMPARE(cmap4.size(), 256);
+}
+
+#ifndef QT_OPENGL_ES
+#define DEFAULT_FORMAT GL_RGBA8
+#else
+#define DEFAULT_FORMAT GL_RGBA
+#endif
+
+#ifndef GL_TEXTURE_3D
+#define GL_TEXTURE_3D 0x806F
+#endif
+
+#ifndef GL_RGB16
+#define GL_RGB16 0x8054
+#endif
+
+void tst_QGL::fboFormat()
+{
+    // Check the initial conditions.
+    QGLFramebufferObjectFormat format1;
+    QCOMPARE(format1.samples(), 0);
+    QVERIFY(format1.attachment() == QGLFramebufferObject::NoAttachment);
+    QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_2D));
+    QCOMPARE(int(format1.internalTextureFormat()), int(DEFAULT_FORMAT));
+
+    // Modify the values and re-check.
+    format1.setSamples(8);
+    format1.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+    format1.setTextureTarget(GL_TEXTURE_3D);
+    format1.setInternalTextureFormat(GL_RGB16);
+    QCOMPARE(format1.samples(), 8);
+    QVERIFY(format1.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_3D));
+    QCOMPARE(int(format1.internalTextureFormat()), int(GL_RGB16));
+
+    // Make copies and check that they are the same.
+    QGLFramebufferObjectFormat format2(format1);
+    QGLFramebufferObjectFormat format3;
+    QCOMPARE(format2.samples(), 8);
+    QVERIFY(format2.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(int(format2.textureTarget()), int(GL_TEXTURE_3D));
+    QCOMPARE(int(format2.internalTextureFormat()), int(GL_RGB16));
+    format3 = format1;
+    QCOMPARE(format3.samples(), 8);
+    QVERIFY(format3.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(int(format3.textureTarget()), int(GL_TEXTURE_3D));
+    QCOMPARE(int(format3.internalTextureFormat()), int(GL_RGB16));
+
+    // Modify the copies and check that the original is unchanged.
+    format2.setSamples(9);
+    format3.setTextureTarget(GL_TEXTURE_2D);
+    QCOMPARE(format1.samples(), 8);
+    QVERIFY(format1.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_3D));
+    QCOMPARE(int(format1.internalTextureFormat()), int(GL_RGB16));
 }
 
 QTEST_MAIN(tst_QGL)

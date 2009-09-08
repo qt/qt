@@ -328,7 +328,7 @@ void tst_QMatrixNxN::setMatrix(QMatrix4x3& m, const qreal *values)
 // the internal data() array.
 void tst_QMatrixNxN::setMatrixDirect(QMatrix2x2& m, const qreal *values)
 {
-    float *data = m.data();
+    qreal *data = m.data();
     for (int row = 0; row < 2; ++row) {
         for (int col = 0; col < 2; ++col) {
             data[row + col * 2] = values[row * 2 + col];
@@ -337,7 +337,7 @@ void tst_QMatrixNxN::setMatrixDirect(QMatrix2x2& m, const qreal *values)
 }
 void tst_QMatrixNxN::setMatrixDirect(QMatrix3x3& m, const qreal *values)
 {
-    float *data = m.data();
+    qreal *data = m.data();
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 3; ++col) {
             data[row + col * 3] = values[row * 3 + col];
@@ -346,7 +346,7 @@ void tst_QMatrixNxN::setMatrixDirect(QMatrix3x3& m, const qreal *values)
 }
 void tst_QMatrixNxN::setMatrixDirect(QMatrix4x4& m, const qreal *values)
 {
-    float *data = m.data();
+    qreal *data = m.data();
     for (int row = 0; row < 4; ++row) {
         for (int col = 0; col < 4; ++col) {
             data[row + col * 4] = values[row * 4 + col];
@@ -355,7 +355,7 @@ void tst_QMatrixNxN::setMatrixDirect(QMatrix4x4& m, const qreal *values)
 }
 void tst_QMatrixNxN::setMatrixDirect(QMatrix4x3& m, const qreal *values)
 {
-    float *data = m.data();
+    qreal *data = m.data();
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 4; ++col) {
             data[row + col * 3] = values[row * 4 + col];
@@ -363,55 +363,42 @@ void tst_QMatrixNxN::setMatrixDirect(QMatrix4x3& m, const qreal *values)
     }
 }
 
-// qFuzzyCompare isn't always "fuzzy" enough to handle conversion
-// between float, double, and qreal.  So create "fuzzier" compares.
-static bool fuzzyCompare(float x, float y, qreal epsilon = 0.001)
+// QVector2/3/4D use float internally, which can sometimes lead
+// to precision issues when converting to and from qreal during
+// operations involving QMatrix4x4.  This fuzzy compare is slightly
+// "fuzzier" than the default qFuzzyCompare for qreal to compensate.
+static bool fuzzyCompare(qreal x, qreal y)
 {
-    float diff = x - y;
-    if (diff < 0.0f)
-        diff = -diff;
-    return (diff < epsilon);
+    return qFuzzyIsNull((float)(x - y));
 }
 
-static bool fuzzyCompare(const QVector3D &v1, const QVector3D &v2, qreal epsilon = 0.001)
+static bool fuzzyCompare(const QVector3D &v1, const QVector3D &v2)
 {
-    if (!fuzzyCompare(v1.x(), v2.x(), epsilon))
+    if (!fuzzyCompare(v1.x(), v2.x()))
         return false;
-    if (!fuzzyCompare(v1.y(), v2.y(), epsilon))
+    if (!fuzzyCompare(v1.y(), v2.y()))
         return false;
-    if (!fuzzyCompare(v1.z(), v2.z(), epsilon))
+    if (!fuzzyCompare(v1.z(), v2.z()))
         return false;
     return true;
-}
-
-static bool matrixFuzzyCompare(const QMatrix4x4 &m1, const QMatrix4x4 &m2)
-{
-    bool ret = true;
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            ret = ret && fuzzyCompare(m1(i, j), m2(i, j));
-        }
-    }
-
-    return ret;
 }
 
 // Determine if a matrix is the same as a specified array of values.
 // The values are assumed to be specified in row-major order.
 bool tst_QMatrixNxN::isSame(const QMatrix2x2& m, const qreal *values)
 {
-    const float *mv = m.constData();
+    const qreal *mv = m.constData();
     for (int row = 0; row < 2; ++row) {
         for (int col = 0; col < 2; ++col) {
             // Check the values using the operator() function.
-            if (!fuzzyCompare((float)(m(row, col)), (float)(values[row * 2 + col]))) {
+            if (!fuzzyCompare(m(row, col), values[row * 2 + col])) {
                 qDebug() << "floating-point failure at" << row << col << "actual =" << m(row, col) << "expected =" << values[row * 2 + col];
                 return false;
             }
 
             // Check the values using direct access, which verifies that the values
             // are stored internally in column-major order.
-            if (!fuzzyCompare((float)(mv[col * 2 + row]), (float)(values[row * 2 + col]))) {
+            if (!fuzzyCompare(mv[col * 2 + row], values[row * 2 + col])) {
                 qDebug() << "column floating-point failure at" << row << col << "actual =" << mv[col * 2 + row] << "expected =" << values[row * 2 + col];
                 return false;
             }
@@ -421,18 +408,18 @@ bool tst_QMatrixNxN::isSame(const QMatrix2x2& m, const qreal *values)
 }
 bool tst_QMatrixNxN::isSame(const QMatrix3x3& m, const qreal *values)
 {
-    const float *mv = m.constData();
+    const qreal *mv = m.constData();
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 3; ++col) {
             // Check the values using the operator() access function.
-            if (!fuzzyCompare((float)(m(row, col)), (float)(values[row * 3 + col]))) {
+            if (!fuzzyCompare(m(row, col), values[row * 3 + col])) {
                 qDebug() << "floating-point failure at" << row << col << "actual =" << m(row, col) << "expected =" << values[row * 3 + col];
                 return false;
             }
 
             // Check the values using direct access, which verifies that the values
             // are stored internally in column-major order.
-            if (!fuzzyCompare((float)(mv[col * 3 + row]), (float)(values[row * 3 + col]))) {
+            if (!fuzzyCompare(mv[col * 3 + row], values[row * 3 + col])) {
                 qDebug() << "column floating-point failure at" << row << col << "actual =" << mv[col * 3 + row] << "expected =" << values[row * 3 + col];
                 return false;
             }
@@ -442,18 +429,18 @@ bool tst_QMatrixNxN::isSame(const QMatrix3x3& m, const qreal *values)
 }
 bool tst_QMatrixNxN::isSame(const QMatrix4x4& m, const qreal *values)
 {
-    const float *mv = m.constData();
+    const qreal *mv = m.constData();
     for (int row = 0; row < 4; ++row) {
         for (int col = 0; col < 4; ++col) {
             // Check the values using the operator() access function.
-            if (!fuzzyCompare((float)(m(row, col)), (float)(values[row * 4 + col]))) {
+            if (!fuzzyCompare(m(row, col), values[row * 4 + col])) {
                 qDebug() << "floating-point failure at" << row << col << "actual =" << m(row, col) << "expected =" << values[row * 4 + col];
                 return false;
             }
 
             // Check the values using direct access, which verifies that the values
             // are stored internally in column-major order.
-            if (!fuzzyCompare((float)(mv[col * 4 + row]), (float)(values[row * 4 + col]))) {
+            if (!fuzzyCompare(mv[col * 4 + row], values[row * 4 + col])) {
                 qDebug() << "column floating-point failure at" << row << col << "actual =" << mv[col * 4 + row] << "expected =" << values[row * 4 + col];
                 return false;
             }
@@ -463,18 +450,18 @@ bool tst_QMatrixNxN::isSame(const QMatrix4x4& m, const qreal *values)
 }
 bool tst_QMatrixNxN::isSame(const QMatrix4x3& m, const qreal *values)
 {
-    const float *mv = m.constData();
+    const qreal *mv = m.constData();
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 4; ++col) {
             // Check the values using the operator() access function.
-            if (!fuzzyCompare((float)(m(row, col)), (float)(values[row * 4 + col]))) {
+            if (!fuzzyCompare(m(row, col), values[row * 4 + col])) {
                 qDebug() << "floating-point failure at" << row << col << "actual =" << m(row, col) << "expected =" << values[row * 4 + col];
                 return false;
             }
 
             // Check the values using direct access, which verifies that the values
             // are stored internally in column-major order.
-            if (!fuzzyCompare((float)(mv[col * 3 + row]), (float)(values[row * 4 + col]))) {
+            if (!fuzzyCompare(mv[col * 3 + row], values[row * 4 + col])) {
                 qDebug() << "column floating-point failure at" << row << col << "actual =" << mv[col * 3 + row] << "expected =" << values[row * 4 + col];
                 return false;
             }
@@ -533,7 +520,7 @@ void tst_QMatrixNxN::create2x2()
     qreal vals[4];
     m6.toValueArray(vals);
     for (int index = 0; index < 4; ++index)
-        QCOMPARE((float)(vals[index]), (float)(uniqueValues2[index]));
+        QCOMPARE(vals[index], uniqueValues2[index]);
 }
 
 // Test the creation of QMatrix3x3 objects in various ways:
@@ -568,7 +555,7 @@ void tst_QMatrixNxN::create3x3()
     qreal vals[9];
     m6.toValueArray(vals);
     for (int index = 0; index < 9; ++index)
-        QCOMPARE((float)(vals[index]), (float)(uniqueValues3[index]));
+        QCOMPARE(vals[index], uniqueValues3[index]);
 }
 
 // Test the creation of QMatrix4x4 objects in various ways:
@@ -603,7 +590,7 @@ void tst_QMatrixNxN::create4x4()
     qreal vals[16];
     m6.toValueArray(vals);
     for (int index = 0; index < 16; ++index)
-        QCOMPARE((float)(vals[index]), (float)(uniqueValues4[index]));
+        QCOMPARE(vals[index], uniqueValues4[index]);
 
     QMatrix4x4 m8
         (uniqueValues4[0], uniqueValues4[1], uniqueValues4[2], uniqueValues4[3],
@@ -645,7 +632,7 @@ void tst_QMatrixNxN::create4x3()
     qreal vals[12];
     m6.toValueArray(vals);
     for (int index = 0; index < 12; ++index)
-        QCOMPARE((float)(vals[index]), (float)(uniqueValues4x3[index]));
+        QCOMPARE(vals[index], uniqueValues4x3[index]);
 }
 
 // Test isIdentity() for 2x2 matrices.
@@ -1303,7 +1290,7 @@ void tst_QMatrixNxN::multiply4x3()
     QMatrix4x3 m1((const qreal *)m1Values);
     QMatrix3x4 m2((const qreal *)m2Values);
 
-    QGenericMatrix<3, 3, qreal, float> m4;
+    QGenericMatrix<3, 3, qreal> m4;
     m4 = m1 * m2;
     qreal values[9];
     m4.toValueArray(values);
@@ -1882,7 +1869,7 @@ void tst_QMatrixNxN::inverted4x4()
     Matrix4 m1alt;
     memcpy(m1alt.v, (const qreal *)m1Values, sizeof(m1alt.v));
 
-    QCOMPARE((float)(m1.determinant()), (float)(m4Determinant(m1alt)));
+    QCOMPARE(m1.determinant(), m4Determinant(m1alt));
 
     QMatrix4x4 m2;
     bool inv;
@@ -1917,7 +1904,7 @@ void tst_QMatrixNxN::inverted4x4()
 void tst_QMatrixNxN::orthonormalInverse4x4()
 {
     QMatrix4x4 m1;
-    QVERIFY(matrixFuzzyCompare(m1.inverted(), m1));
+    QVERIFY(qFuzzyCompare(m1.inverted(), m1));
 
     QMatrix4x4 m2;
     m2.rotate(45.0, 1.0, 0.0, 0.0);
@@ -1930,14 +1917,14 @@ void tst_QMatrixNxN::orthonormalInverse4x4()
     QMatrix4x4 m3 = m2;
     m3.inferSpecialType();
     bool invertible;
-    QVERIFY(matrixFuzzyCompare(m2.inverted(&invertible), m3.inverted()));
+    QVERIFY(qFuzzyCompare(m2.inverted(&invertible), m3.inverted()));
     QVERIFY(invertible);
 
     QMatrix4x4 m4;
     m4.rotate(45.0, 0.0, 1.0, 0.0);
     QMatrix4x4 m5 = m4;
     m5.inferSpecialType();
-    QVERIFY(matrixFuzzyCompare(m4.inverted(), m5.inverted()));
+    QVERIFY(qFuzzyCompare(m4.inverted(), m5.inverted()));
 
     QMatrix4x4 m6;
     m1.rotate(88, 0.0, 0.0, 1.0);
@@ -1945,7 +1932,7 @@ void tst_QMatrixNxN::orthonormalInverse4x4()
     m1.rotate(25, 1.0, 0.0, 0.0);
     QMatrix4x4 m7 = m6;
     m7.inferSpecialType();
-    QVERIFY(matrixFuzzyCompare(m6.inverted(), m7.inverted()));
+    QVERIFY(qFuzzyCompare(m6.inverted(), m7.inverted()));
 }
 
 // Test the generation and use of 4x4 scale matrices.
@@ -2345,7 +2332,7 @@ void tst_QMatrixNxN::rotate4x4()
     QMatrix4x4 m3(uniqueValues4);
     QMatrix4x4 m4(m3);
     m4.rotate(angle, x, y, z);
-    QVERIFY(matrixFuzzyCompare(m4, m3 * m1));
+    QVERIFY(qFuzzyCompare(m4, m3 * m1));
 
     // Null vectors don't make sense for quaternion rotations.
     if (x != 0 || y != 0 || z != 0) {
@@ -2417,8 +2404,8 @@ void tst_QMatrixNxN::rotate4x4()
 
     QPointF p3(2.0f, 3.0f);
     QPointF p4 = m1 * p3;
-    QVERIFY(fuzzyCompare((float)(p4.x()), p1x));
-    QVERIFY(fuzzyCompare((float)(p4.y()), p1y));
+    QVERIFY(fuzzyCompare(p4.x(), p1x));
+    QVERIFY(fuzzyCompare(p4.y(), p1y));
 
     if (x != 0 || y != 0 || z != 0) {
         QQuaternion q = QQuaternion::fromAxisAndAngle(QVector3D(x, y, z), angle);
@@ -2911,14 +2898,12 @@ void tst_QMatrixNxN::extractAxisRotation()
 
     m.extractAxisRotation(extractedAngle, extractedAxis);
  
-    qreal epsilon = 0.001;
- 
     if (angle > 180) {
-        QVERIFY(fuzzyCompare(360.0f - angle, extractedAngle, epsilon));
-        QVERIFY(fuzzyCompare(extractedAxis, -origAxis, epsilon));
+        QVERIFY(fuzzyCompare(360.0f - angle, extractedAngle));
+        QVERIFY(fuzzyCompare(extractedAxis, -origAxis));
     } else {
-        QVERIFY(fuzzyCompare(angle, extractedAngle, epsilon));
-        QVERIFY(fuzzyCompare(extractedAxis, origAxis, epsilon));
+        QVERIFY(fuzzyCompare(angle, extractedAngle));
+        QVERIFY(fuzzyCompare(extractedAxis, origAxis));
     }
 }
 
@@ -2959,11 +2944,9 @@ void tst_QMatrixNxN::extractTranslation()
 
     QVector3D vec = rotation.extractTranslation();
 
-    qreal epsilon = 0.001;
-   
-    QVERIFY(fuzzyCompare(vec.x(), x, epsilon));
-    QVERIFY(fuzzyCompare(vec.y(), y, epsilon));
-    QVERIFY(fuzzyCompare(vec.z(), z, epsilon));
+    QVERIFY(fuzzyCompare(vec.x(), x));
+    QVERIFY(fuzzyCompare(vec.y(), y));
+    QVERIFY(fuzzyCompare(vec.z(), z));
 
     QMatrix4x4 lookAt;
     QVector3D eye(1.5f, -2.5f, 2.5f);
@@ -2973,9 +2956,9 @@ void tst_QMatrixNxN::extractTranslation()
 
    QVector3D extEye = lookAt.extractTranslation();
 
-   QVERIFY(fuzzyCompare(eye.x(), -extEye.x(), epsilon));
-   QVERIFY(fuzzyCompare(eye.y(), -extEye.y(), epsilon));
-   QVERIFY(fuzzyCompare(eye.z(), -extEye.z(), epsilon));
+   QVERIFY(fuzzyCompare(eye.x(), -extEye.x()));
+   QVERIFY(fuzzyCompare(eye.y(), -extEye.y()));
+   QVERIFY(fuzzyCompare(eye.z(), -extEye.z()));
 }
 
 // Copy of "flagBits" in qmatrix4x4.h.
@@ -2990,7 +2973,7 @@ enum {
 // Structure that allows direct access to "flagBits" for testing.
 struct Matrix4x4
 {
-    float m[4][4];
+    qreal m[4][4];
     int flagBits;
 };
 
@@ -3134,8 +3117,8 @@ void tst_QMatrixNxN::convertQMatrix()
 
     QMatrix4x4 m6(m5);
     QPointF p6 = m6 * QPointF(100.0, 150.0);
-    QVERIFY(fuzzyCompare(p5.x(), p6.x(), 0.005));
-    QVERIFY(fuzzyCompare(p5.y(), p6.y(), 0.005));
+    QVERIFY(fuzzyCompare(p5.x(), p6.x()));
+    QVERIFY(fuzzyCompare(p5.y(), p6.y()));
 
     QMatrix m7 = m6.toAffine();
     QVERIFY(fuzzyCompare(m5.m11(), m7.m11()));
@@ -3181,8 +3164,8 @@ void tst_QMatrixNxN::convertQTransform()
 
     QMatrix4x4 m6(m5);
     QPointF p6 = m6 * QPointF(100.0, 150.0);
-    QVERIFY(fuzzyCompare(p5.x(), p6.x(), 0.005));
-    QVERIFY(fuzzyCompare(p5.y(), p6.y(), 0.005));
+    QVERIFY(fuzzyCompare(p5.x(), p6.x()));
+    QVERIFY(fuzzyCompare(p5.y(), p6.y()));
 
     QTransform m7 = m6.toTransform();
     QVERIFY(fuzzyCompare(m5.m11(), m7.m11()));

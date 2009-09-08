@@ -30,7 +30,6 @@
 #include "JSType.h"
 #include "JSValue.h"
 #include "PropertyMapHashTable.h"
-#include "StructureChain.h"
 #include "StructureTransitionTable.h"
 #include "TypeInfo.h"
 #include "UString.h"
@@ -47,6 +46,7 @@ namespace JSC {
 
     class PropertyNameArray;
     class PropertyNameArrayData;
+    class StructureChain;
 
     class Structure : public RefCounted<Structure> {
     public:

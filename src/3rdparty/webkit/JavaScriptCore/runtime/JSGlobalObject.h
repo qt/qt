@@ -27,6 +27,7 @@
 #include "NativeFunctionWrapper.h"
 #include "NumberPrototype.h"
 #include "StringPrototype.h"
+#include "StructureChain.h"
 #include <wtf/HashSet.h>
 #include <wtf/OwnPtr.h>
 

@@ -89,6 +89,8 @@
                                      \o gcc (\l{http:\\www.codesourcery.com}{Codesourcery version)}
     \row    \o Windows CE 5.0 (ARMv4i, x86, MIPS)
                                      \o MSVC 2005 WinCE 5.0 Standard (x86, pocket, smart, mipsii)
+    \row    \o Symbian (S60 3.1, 3.2 and 5.0)
+                                     \o RVCT, GCCE, WINSCW
     \endtable
 
     \section1 Tier 2 Platforms

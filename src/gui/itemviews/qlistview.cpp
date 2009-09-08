@@ -1804,12 +1804,12 @@ QItemSelection QListViewPrivate::selection(const QRect &rect) const
 
 void QCommonListViewBase::appendHiddenRow(int row)
 {
-    dd->hiddenRows.append(dd->model->index(row, 0));
+    dd->hiddenRows.append(dd->model->index(row, 0, qq->rootIndex()));
 }
 
 void QCommonListViewBase::removeHiddenRow(int row)
 {
-    dd->hiddenRows.remove(dd->hiddenRows.indexOf(dd->model->index(row, 0)));
+    dd->hiddenRows.remove(dd->hiddenRows.indexOf(dd->model->index(row, 0, qq->rootIndex())));
 }
 
 void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)

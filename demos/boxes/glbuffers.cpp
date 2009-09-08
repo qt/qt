@@ -372,7 +372,7 @@ void GLRenderTargetCube::getViewMatrix(QMatrix4x4& mat, int face)
         {-1.0f, -1.0f, +1.0f},
     };
 
-    memset(mat.data(), 0, sizeof(float) * 16);
+    mat.fill(0.0f);
     for (int i = 0; i < 3; ++i)
         mat(i, perm[face][i]) = signs[face][i];
     mat(3, 3) = 1.0f;

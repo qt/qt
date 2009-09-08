@@ -171,9 +171,9 @@ void tst_QMatrix4x4::multiplyDirect()
 
     QMatrix4x4 m3;
 
-    const float *m1data = m1.constData();
-    const float *m2data = m2.constData();
-    float *m3data = m3.data();
+    const qreal *m1data = m1.constData();
+    const qreal *m2data = m2.constData();
+    qreal *m3data = m3.data();
 
     QBENCHMARK {
         for (int row = 0; row < 4; ++row) {
@@ -266,9 +266,9 @@ void tst_QMatrix4x4::mapVectorDirect()
 {
     QFETCH(QMatrix4x4, m1);
 
-    const float *m1data = m1.constData();
-    float v[4] = {10.5f, -2.0f, 3.0f, 1.0f};
-    float result[4];
+    const qreal *m1data = m1.constData();
+    qreal v[4] = {10.5f, -2.0f, 3.0f, 1.0f};
+    qreal result[4];
 
     QBENCHMARK {
         for (int row = 0; row < 4; ++row) {
