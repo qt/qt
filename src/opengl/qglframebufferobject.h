@@ -93,7 +93,7 @@ public:
 
     virtual ~QGLFramebufferObject();
 
-    const QGLFramebufferObjectFormat &format() const;
+    QGLFramebufferObjectFormat format() const;
 
     bool isValid() const;
     bool isBound() const;
@@ -161,6 +161,8 @@ public:
 
 private:
     QGLFramebufferObjectFormatPrivate *d;
+
+    void detach();
 };
 
 QT_END_NAMESPACE
