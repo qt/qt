@@ -3,7 +3,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,65 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef QGESTURE_H
-#define QGESTURE_H
+/*!
+    \example animation/states
+    \title States Example
 
-#include <QtCore/qobject.h>
-#include <QtCore/qlist.h>
-#include <QtCore/qdatetime.h>
-#include <QtCore/qpoint.h>
-#include <QtCore/qrect.h>
-#include <QtCore/qmetatype.h>
+    The States example shows how to use the Qt state machine to play
+    animations.
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-class QGraphicsItem;
-class QGesturePrivate;
-class Q_GUI_EXPORT QGesture : public QObject
-{
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QGesture)
-
-    Q_PROPERTY(Qt::GestureState state READ state)
-    Q_PROPERTY(QObject* gestureTarget READ gestureTarget WRITE setGestureTarget)
-
-public:
-    explicit QGesture(QObject *gestureTarget = 0, QObject *parent = 0);
-    ~QGesture();
-
-    virtual bool filterEvent(QEvent *event) = 0;
-
-    void setGestureTarget(QObject *object);
-    QObject* gestureTarget() const;
-
-    void setGraphicsItem(QGraphicsItem *);
-    QGraphicsItem *graphicsItem() const;
-
-    Qt::GestureState state() const;
-
-protected:
-    QGesture(QGesturePrivate &dd, QObject *gestureTarget, QObject *parent);
-    bool eventFilter(QObject*, QEvent*);
-
-    virtual void reset();
-    void updateState(Qt::GestureState state);
-
-Q_SIGNALS:
-    void started();
-    void triggered();
-    void finished();
-    void canceled();
-
-private:
-    friend class QWidget;
-};
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QGESTURE_H
+    \image states-example.png
+*/

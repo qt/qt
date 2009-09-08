@@ -52,8 +52,8 @@
     \c{@} in the screenshot? That's you, the rogue. The \c{#}
     characters are walls, and the dots represent floor. In a real
     game, other ASCII characters would represent all kinds of objects
-    and creatures. For instance, ancient dragons (\c{D}'s) or food
-    rations (\c{%}'s). But let's not get carried away. In this game,
+    and creatures, for instance, ancient dragons (\c{D}s) or food
+    rations (\c{%}s). But let's not get carried away. In this game,
     the rogue is simply running around in an empty room.
 
     The rogue is moved with the keypad (2, 4, 8, 6). That aside, we
@@ -61,12 +61,12 @@
     types \c {q}. The player is then asked if he/she really wants to
     quit.
 
-    Most games have commands that need more than one key press and
-    that may require a different sequence of keys based on questions
-    asked the user. In this game, only the \c quit command falls under
-    this category, but for the sake of argument, let's imagine a
-    fully-fledged game with a rich set of commands. If we were to
-    implement these by catching key events in
+    Most games have commands that need more than one key press (we
+    think of consecutive presses, i.e., not of several keys being
+    pressed at the same time). In this game, only the \c quit command
+    falls under this category, but for the sake of argument, let's
+    imagine a fully-fledged game with a rich set of commands. If we
+    were to implement these by catching key events in
     \l{QWidget::}{keyPressEvent()}, we would have to keep a lot of
     class member variables to track the sequence of keys already typed
     (or find some other way of deducing the current state of a

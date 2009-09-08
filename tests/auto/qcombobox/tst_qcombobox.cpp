@@ -879,12 +879,12 @@ void tst_QComboBox::hide()
 {
     testWidget->addItem("foo");
     testWidget->showPopup();
-    QTest::qWait(500); //allow combobox effect to complete
-    QVERIFY(testWidget->view());
-    QVERIFY(testWidget->view()->isVisible());
+    QTest::qWait(200); //allow combobox effect to complete
+    QTRY_VERIFY(testWidget->view());
+    QTRY_VERIFY(testWidget->view()->isVisible());
     testWidget->hidePopup();
-    QTest::qWait(500); //allow combobox effect to complete
-    QVERIFY(!testWidget->view()->isVisible());
+    QTest::qWait(200); //allow combobox effect to complete
+    QTRY_VERIFY(!testWidget->view()->isVisible());
     testWidget->hide();
     QVERIFY(!testWidget->isVisible());
 }

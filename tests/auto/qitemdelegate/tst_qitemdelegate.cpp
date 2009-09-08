@@ -1155,7 +1155,7 @@ void tst_QItemDelegate::task257859_finalizeEdit()
     view.edit(index);
     QTest::qWait(30);
 
-    QList<QWidget*> lineEditors = qFindChildren<QWidget *>(view.viewport());
+    QList<QLineEdit *> lineEditors = qFindChildren<QLineEdit *>(view.viewport());
     QCOMPARE(lineEditors.count(), 1);
 
     QPointer<QWidget> editor = lineEditors.at(0);

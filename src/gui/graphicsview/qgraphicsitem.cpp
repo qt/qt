@@ -934,7 +934,7 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     }
 
     QGraphicsItem *lastSubFocusItem = subFocusItem;
-    if (subFocusItem) {
+    if (subFocusItem && !inDestructor) {
         // Update the child focus chain; when reparenting an item that has a
         // focus child, ensure that that focus child clears its focus child
         // chain from our parents before it's reparented.

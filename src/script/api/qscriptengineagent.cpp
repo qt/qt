@@ -146,11 +146,7 @@ void QScriptEngineAgentPrivate::returnEvent(const JSC::DebuggerCallFrame& frame,
 {
     Q_UNUSED(frame);
     Q_UNUSED(lineno);
-#if ENABLE(JIT)
-    functionExit(JSC::JSValue(), sourceID);
-#else
     Q_UNUSED(sourceID);
-#endif
 }
 
 void QScriptEngineAgentPrivate::exceptionThrow(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, bool hasHandler)

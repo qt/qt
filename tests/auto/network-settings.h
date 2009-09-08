@@ -143,8 +143,8 @@ public:
             }
             return QHostAddress(serverIp.data());
         }
-#endif
-        return QHostInfo::fromName(serverName()).addresses().first();
+#endif // Q_OS_SYMBIAN
+    return QHostInfo::fromName(serverName()).addresses().first();
     }
 #endif
 
@@ -161,12 +161,11 @@ public:
             }
             return imapExpectedReply.data();
         }
-#else
-		QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " );
+#endif
+        QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " );
         expected = expected.append(QtNetworkSettings::serverName().toAscii());
         expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
         return expected;
-#endif
     }
 
     static QByteArray expectedReplySSL()

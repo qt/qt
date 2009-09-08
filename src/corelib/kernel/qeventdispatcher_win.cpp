@@ -1021,6 +1021,8 @@ void QEventDispatcherWin32::closingDown()
     // clean up any timers
     for (int i = 0; i < d->timerVec.count(); ++i)
         d->unregisterTimer(d->timerVec.at(i), true);
+    d->timerVec.clear();
+    d->timerDict.clear();
 }
 
 bool QEventDispatcherWin32::event(QEvent *e)
