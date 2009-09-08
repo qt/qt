@@ -40,7 +40,9 @@
 ****************************************************************************/
 
 #include <QString>
+#ifdef QT_NETWORK_LIB
 #include <QtNetwork/QHostInfo>
+#endif
 
 
 #ifdef Q_OS_SYMBIAN
