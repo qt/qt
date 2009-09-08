@@ -865,15 +865,22 @@ QString QFSFileEngine::fileName(FileName file) const
         QString ret;
         if (!isRelativePathSymbian(d->filePath)) {
             if (d->filePath.size() > 2 && d->filePath.at(1) == QLatin1Char(':')
-                && d->filePath.at(2) != slashChar || // It's a drive-relative path, so Z:a.txt -> Z:\currentpath\a.txt
-                d->filePath.startsWith(slashChar)    // It's a absolute path to the current drive, so \a.txt -> Z:\a.txt
-                ) {
-                ret = QString(QDir::currentPath().left(2) + QDir::fromNativeSeparators(d->filePath));
+                && d->filePath.at(2) != slashChar){
+                // It's a drive-relative path, so C:a.txt -> C:/currentpath/a.txt,
+                // or if it's different drive than current, Z:a.txt -> Z:/a.txt
+                QString currentPath = QDir::currentPath();
+                if (0 == currentPath.left(1).compare(d->filePath.left(1), Qt::CaseInsensitive))
+                    ret = currentPath + slashChar + d->filePath.mid(2);
+                else
+                    ret = d->filePath.left(2) + slashChar + d->filePath.mid(2);
+            } else if (d->filePath.startsWith(slashChar)) {
+                // It's a absolute path to the current drive, so /a.txt -> C:/a.txt
+                ret = QDir::currentPath().left(2) + d->filePath;
             } else {
                 ret = d->filePath;
             }
         } else {
-            ret = QDir::cleanPath(QDir::currentPath() + slashChar + d->filePath);
+            ret = QDir::currentPath() + slashChar + d->filePath;
         }
 
         // The path should be absolute at this point.
@@ -888,6 +895,12 @@ QString QFSFileEngine::fileName(FileName file) const
             // Force uppercase drive letters.
             ret[0] = ret.at(0).toUpper();
         }
+
+        // Clean up the path
+        bool isDir = ret.endsWith(slashChar);
+        ret = QDir::cleanPath(ret);
+        if (isDir)
+            ret += slashChar;
 
         if (file == AbsolutePathName) {
             int slash = ret.lastIndexOf(slashChar);
