@@ -197,6 +197,7 @@ QmlType::QmlType(int type, int listType, int qmlListType,
 
 QmlType::~QmlType()
 {
+    delete d->m_customParser;
     delete d;
 }
 
