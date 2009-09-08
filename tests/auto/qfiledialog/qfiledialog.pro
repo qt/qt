@@ -16,3 +16,12 @@ wince*|symbian: {
 
 symbian:TARGET.EPOCHEAPSIZE="0x100 0x1000000"
 symbian:HEADERS += ../../../include/qtgui/private/qfileinfogatherer_p.h
+
+wince*: {
+    DEFINES += SRCDIR=\\\"./\\\"
+} symbian: {
+    TARGET.UID3 = 0xE0340003
+    DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
+} else {
+    DEFINES += SRCDIR=\\\"$$PWD/\\\"
+}

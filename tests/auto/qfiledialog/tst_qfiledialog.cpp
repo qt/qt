@@ -297,7 +297,8 @@ void tst_QFiledialog::filesSelectedSignal()
     QNonNativeFileDialog fd;
     fd.setViewMode(QFileDialog::List);
     fd.setOptions(QFileDialog::DontUseNativeDialog);
-    fd.setDirectory(QDir::homePath());
+    QDir testDir(SRCDIR"/../../..");
+    fd.setDirectory(testDir);
     QFETCH(QFileDialog::FileMode, fileMode);
     fd.setFileMode(fileMode);
     QSignalSpy spyFilesSelected(&fd, SIGNAL(filesSelected(const QStringList &)));

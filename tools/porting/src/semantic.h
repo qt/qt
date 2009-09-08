@@ -1,8 +1,8 @@
 /****************************************************************************
 **
+** Copyright (C) 2001-2004 Roberto Raggi
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Nokia Corporation (qt-info@nokia.com)
-** Copyright (C) 2001-2004 Roberto Raggi
 **
 ** This file is part of the qt3to4 porting application of the Qt Toolkit.
 **

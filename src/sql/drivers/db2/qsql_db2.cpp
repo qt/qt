@@ -908,8 +908,9 @@ bool QDB2Result::fetchFirst()
                        SQL_FETCH_FIRST,
                        0);
     if (r != SQL_SUCCESS && r != SQL_SUCCESS_WITH_INFO) {
-        setLastError(qMakeError(QCoreApplication::translate("QDB2Result", "Unable to fetch first"),
-                                QSqlError::StatementError, d));
+        if(r!= SQL_NO_DATA)
+            setLastError(qMakeError(QCoreApplication::translate("QDB2Result", "Unable to fetch first"),
+                                    QSqlError::StatementError, d));
         return false;
     }
     setAt(0);

@@ -350,6 +350,7 @@ private:
 
     QString m_generatedClass;
     QString m_mainFormVarName;
+    bool m_mainFormUsedInRetranslateUi;
 
     QString m_delayedInitialization;
     QTextStream m_delayedOut;

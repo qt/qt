@@ -32,6 +32,7 @@
 #include "MacroAssembler.h"
 #include "Opcode.h"
 #include "Structure.h"
+#include "StructureChain.h"
 #include <wtf/VectorTraits.h>
 
 #define POLYMORPHIC_LIST_CACHE_SIZE 8

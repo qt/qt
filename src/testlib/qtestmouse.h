@@ -113,8 +113,12 @@ namespace QTest
                 QTEST_ASSERT(false);
         }
         QSpontaneKeyEvent::setSpontaneous(&me);
-        if (!qApp->notify(widget, &me))
-            QTest::qWarn("Mouse event not accepted by receiving widget");
+        if (!qApp->notify(widget, &me)) {
+            static const char *mouseActionNames[] =
+                { "MousePress", "MouseRelease", "MouseClick", "MouseDClick", "MouseMove" };
+            QString warning = QString::fromLatin1("Mouse event \"%1\" not accepted by receiving widget");
+            QTest::qWarn(warning.arg(QString::fromLatin1(mouseActionNames[static_cast<int>(action)])).toAscii().data());
+        }
 
     }
 

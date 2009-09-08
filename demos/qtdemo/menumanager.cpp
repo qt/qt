@@ -324,9 +324,10 @@ void MenuManager::launchExample(const QString &name)
 
 #ifdef Q_OS_WIN
     //make sure it finds the dlls on windows
-    QString curpath = QString::fromLocal8Bit(qgetenv("PATH").constData());
-    QString newpath = QString("PATH=%1;%2").arg(QLibraryInfo::location(QLibraryInfo::BinariesPath), curpath);
-    process->setEnvironment(QStringList(newpath));
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert(QLatin1String("PATH"), QLibraryInfo::location(QLibraryInfo::BinariesPath) 
+               + QLatin1Char(';') + env.value(QLatin1String("Path")));
+    process->setProcessEnvironment(env);
 #endif
 
     if (info[name]["changedirectory"] != "false"){

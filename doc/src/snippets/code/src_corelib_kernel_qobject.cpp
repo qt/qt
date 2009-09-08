@@ -404,9 +404,25 @@ public:
 //! [38]
 
 
-//! [39]
-Q_FLAGS(Options Alignment)
-//! [39]
+//! [39a]
+class QLibrary : public QObject
+{
+    ...
+    Q_FLAGS(LoadHint LoadHints)
+    ...
+//! [39a]
+
+//! [39b]
+    ...
+public:
+    enum LoadHint {
+        ResolveAllSymbolsHint = 0x01,
+        ExportExternalSymbolsHint = 0x02,
+        LoadArchiveMemberHint = 0x04
+    };
+    Q_DECLARE_FLAGS(LoadHints, LoadHint)
+    ...
+//! [39b]
 
 
 //! [40]

@@ -24,6 +24,7 @@
  */
 
 #include "config.h"
+#include "Parser.h"
 #include "ParserArena.h"
 
 #include "Nodes.h"
@@ -55,6 +56,23 @@ void ParserArena::reset()
     deleteAllValues(m_deletableObjects);
     m_deletableObjects.shrink(0);
     m_refCountedObjects.shrink(0);
+}
+
+void* ParserArenaDeletable::operator new(size_t size, JSGlobalData* globalData)
+{
+    ParserArenaDeletable* deletable = static_cast<ParserArenaDeletable*>(fastMalloc(size));
+    globalData->parser->arena().deleteWithArena(deletable);
+    return deletable;
+}
+
+void* ParserArenaDeletable::operator new(size_t size)
+{
+    return fastMalloc(size);
+}
+
+void ParserArenaDeletable::operator delete(void* p)
+{
+    fastFree(p);
 }
 
 }

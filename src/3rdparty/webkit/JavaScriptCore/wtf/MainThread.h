@@ -34,7 +34,9 @@ namespace WTF {
 
 class Mutex;
 
-typedef void MainThreadFunction(void*);
+extern "C" {
+    typedef void MainThreadFunction(void*);
+}
 
 void callOnMainThread(MainThreadFunction*, void* context);
 

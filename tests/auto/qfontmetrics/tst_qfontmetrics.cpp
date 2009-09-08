@@ -180,7 +180,7 @@ void tst_QFontMetrics::elidedText()
     QFETCH(QString, text);
     QFontMetrics fm(font);
     int w = fm.width(text);
-    QString newtext = fm.elidedText(text,Qt::ElideRight,w, 0);
+    QString newtext = fm.elidedText(text,Qt::ElideRight,w+1, 0);
     QCOMPARE(text,newtext); // should not elide
     newtext = fm.elidedText(text,Qt::ElideRight,w-1, 0);
     QVERIFY(text != newtext); // should elide
@@ -212,10 +212,10 @@ void tst_QFontMetrics::elidedMultiLength()
     QFontMetrics fm = QFontMetrics(QFont());
     int width_long = fm.width(text1_long);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, 8000), text1_long);
-    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_long), text1_long);
+    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_long + 1), text1_long);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_long - 1), text1_short);
     int width_short = fm.width(text1_short);
-    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short), text1_short);
+    QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short + 1), text1_short);
     QCOMPARE(fm.elidedText(text1,Qt::ElideRight, width_short - 1), text1_small);
 
     // Not even wide enough for "small" - should use ellipsis

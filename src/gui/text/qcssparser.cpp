@@ -1171,7 +1171,7 @@ static void parseShorthandFontProperty(const QVector<Value> &values, QFont *font
 {
     font->setStyle(QFont::StyleNormal);
     font->setWeight(QFont::Normal);
-    *fontSizeAdjustment = 0;
+    *fontSizeAdjustment = -255;
 
     int i = 0;
     while (i < values.count()) {
