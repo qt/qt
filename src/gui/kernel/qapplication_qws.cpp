@@ -2202,6 +2202,8 @@ void qt_init(QApplicationPrivate *priv, int type)
 
     mouse_double_click_distance = read_int_env_var("QWS_DBLCLICK_DISTANCE", 5);
 
+    priv->inputContext = 0;
+
     int flags = 0;
     char *p;
     int argc = priv->argc;
@@ -2361,6 +2363,11 @@ void qt_cleanup()
 
     delete mouseInWidget;
     mouseInWidget = 0;
+
+#if !defined(QT_NO_IM)
+    delete QApplicationPrivate::inputContext;
+    QApplicationPrivate::inputContext = 0;
+#endif
 }
 
 
