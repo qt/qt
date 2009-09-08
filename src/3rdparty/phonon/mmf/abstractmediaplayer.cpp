@@ -443,7 +443,8 @@ qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds 
 
 void MMF::AbstractMediaPlayer::tick()
 {
-    emit tick(currentTime());
+	// For the MWC compiler, we need to qualify the base class.
+    emit MMF::AbstractPlayer::tick(currentTime());
 }
 
 QT_END_NAMESPACE

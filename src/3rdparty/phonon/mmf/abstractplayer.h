@@ -88,6 +88,14 @@ public:
 
     void setVideoOutput(VideoOutput* videoOutput);
 
+Q_SIGNALS:
+    void totalTimeChanged(qint64 length);
+    void finished();
+    void tick(qint64 time);
+    void stateChanged(Phonon::State oldState,
+                      Phonon::State newState);
+
+
 protected:
     virtual void videoOutputChanged();
 

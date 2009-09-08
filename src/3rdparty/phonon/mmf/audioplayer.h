@@ -87,9 +87,6 @@ public:
 #endif
 
     CPlayerType *player() const;
-Q_SIGNALS:
-    void totalTimeChanged(qint64 length);
-    void finished();
 
 private:
     void construct();

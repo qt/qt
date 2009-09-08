@@ -68,7 +68,6 @@ protected:
     // AbstractPlayer
     virtual void doSetTickInterval(qint32 interval);
 
-protected:
     virtual void doPlay() = 0;
     virtual void doPause() = 0;
     virtual void doStop() = 0;
@@ -120,11 +119,6 @@ protected:
 
 private:
     void doVolumeChanged();
-
-Q_SIGNALS:
-    void tick(qint64 time);
-    void stateChanged(Phonon::State oldState,
-                      Phonon::State newState);
 
 private Q_SLOTS:
     /**

@@ -73,10 +73,6 @@ public:
     // VideoOutputObserver
     virtual void videoOutputRegionChanged();
 
-Q_SIGNALS:
-    void totalTimeChanged(qint64 length);
-    void finished();
-
 private:
     void construct();
     VideoOutput& videoOutput();
