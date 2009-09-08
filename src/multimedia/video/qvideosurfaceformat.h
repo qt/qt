@@ -147,7 +147,7 @@ Q_MULTIMEDIA_EXPORT QDebug operator<<(QDebug, const QVideoSurfaceFormat &);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QVideoSurfaceFormat::FrameRate);
+Q_DECLARE_METATYPE(QVideoSurfaceFormat::FrameRate)
 Q_DECLARE_METATYPE(QVideoSurfaceFormat::Direction)
 Q_DECLARE_METATYPE(QVideoSurfaceFormat::YuvColorSpace)
 

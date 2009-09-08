@@ -96,7 +96,7 @@ Q_SIGNALS:
     void notify();
 
 private:
-    Q_DISABLE_COPY(QAudioInput);
+    Q_DISABLE_COPY(QAudioInput)
 
     QAbstractAudioInput* d;
 };
