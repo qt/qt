@@ -62,9 +62,9 @@ namespace QmlJS { namespace AST {
 class SourceLocation
 {
 public:
-    SourceLocation(quint32 offset = 0, quint32 length = 0)
+    SourceLocation(quint32 offset = 0, quint32 length = 0, quint32 line = 0, quint32 column = 0)
         : offset(offset), length(length),
-          startLine(0), startColumn(0)
+          startLine(line), startColumn(column)
     { }
 
     bool isValid() const { return length != 0; }
