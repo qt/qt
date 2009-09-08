@@ -84,6 +84,8 @@ public:
 
     QList<QmlError> errors() const;
 
+    qreal progress() const;
+
     QUrl url() const;
 
     virtual QObject *create(QmlContext *context = 0);
@@ -95,6 +97,7 @@ public:
 
 Q_SIGNALS:
     void statusChanged(QmlComponent::Status);
+    void progressChanged(qreal);
 
 protected:
     QmlComponent(QmlComponentPrivate &dd, QObject* parent);

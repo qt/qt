@@ -64,6 +64,7 @@ private:
         VMask = HMask << HSize,
 		CTShift = 9,
 		CTSize = 5,
+                WFHShift = CTShift + CTSize,
 		CTMask = ((0x1 << CTSize) - 1) << CTShift,
 		UnusedShift = CTShift + CTSize,
 		UnusedSize = 2
@@ -199,6 +200,17 @@ private:
     QSizePolicy(int i) : data(i) { }
 
     quint32 data;
+/*  use bit flags instead, keep it here for improved readability for now
+    quint32 horzPolicy : 4;
+    quint32 vertPolicy : 4;
+    quint32 hfw : 1;
+    quint32 ctype : 5;
+    quint32 wfh : 1;
+    quint32 padding : 1;   // we cannot use the highest bit
+    quint32 horStretch : 8;
+    quint32 verStretch : 8;
+*/
+
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QSizePolicy::ControlTypes)

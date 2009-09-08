@@ -144,14 +144,13 @@ private slots:
     void metaTypes();
 };
 
-// qFuzzyCompare isn't always "fuzzy" enough to handle conversion
-// between float, double, and qreal.  So create "fuzzier" compares.
-static bool fuzzyCompare(float x, float y)
+// QVector2/3/4D use float internally, which can sometimes lead
+// to precision issues when converting to and from qreal.
+// This fuzzy compare is slightly "fuzzier" than the default
+// qFuzzyCompare for qreal to compensate.
+static bool fuzzyCompare(qreal x, qreal y)
 {
-    float diff = x - y;
-    if (diff < 0.0f)
-        diff = -diff;
-    return (diff < 0.001);
+    return qFuzzyIsNull((float)(x - y));
 }
 
 // Test the creation of QVector2D objects in various ways:
@@ -577,8 +576,8 @@ void tst_QVector::length2()
     QFETCH(qreal, len);
 
     QVector2D v(x, y);
-    QCOMPARE((float)(v.length()), (float)len);
-    QCOMPARE((float)(v.lengthSquared()), (float)(x * x + y * y));
+    QCOMPARE(v.length(), len);
+    QCOMPARE(v.lengthSquared(), x * x + y * y);
 }
 
 // Test vector length computation for 3D vectors.
@@ -606,8 +605,8 @@ void tst_QVector::length3()
     QFETCH(qreal, len);
 
     QVector3D v(x, y, z);
-    QCOMPARE((float)(v.length()), (float)len);
-    QCOMPARE((float)(v.lengthSquared()), (float)(x * x + y * y + z * z));
+    QCOMPARE(v.length(), len);
+    QCOMPARE(v.lengthSquared(), x * x + y * y + z * z);
 }
 
 // Test vector length computation for 4D vectors.
@@ -639,8 +638,8 @@ void tst_QVector::length4()
     QFETCH(qreal, len);
 
     QVector4D v(x, y, z, w);
-    QCOMPARE((float)(v.length()), (float)len);
-    QCOMPARE((float)(v.lengthSquared()), (float)(x * x + y * y + z * z + w * w));
+    QCOMPARE(v.length(), len);
+    QCOMPARE(v.lengthSquared(), x * x + y * y + z * z + w * w);
 }
 
 // Test the unit vector conversion for 2D vectors.
@@ -660,9 +659,9 @@ void tst_QVector::normalized2()
     if (v.isNull())
         QVERIFY(u.isNull());
     else
-        QCOMPARE((float)(u.length()), (float)1.0f);
-    QCOMPARE((float)(u.x() * len), (float)(v.x()));
-    QCOMPARE((float)(u.y() * len), (float)(v.y()));
+        QVERIFY(fuzzyCompare(u.length(), qreal(1.0f)));
+    QVERIFY(fuzzyCompare(u.x() * len, v.x()));
+    QVERIFY(fuzzyCompare(u.y() * len, v.y()));
 }
 
 // Test the unit vector conversion for 3D vectors.
@@ -683,10 +682,10 @@ void tst_QVector::normalized3()
     if (v.isNull())
         QVERIFY(u.isNull());
     else
-        QCOMPARE((float)(u.length()), (float)1.0f);
-    QCOMPARE((float)(u.x() * len), (float)(v.x()));
-    QCOMPARE((float)(u.y() * len), (float)(v.y()));
-    QCOMPARE((float)(u.z() * len), (float)(v.z()));
+        QVERIFY(fuzzyCompare(u.length(), qreal(1.0f)));
+    QVERIFY(fuzzyCompare(u.x() * len, v.x()));
+    QVERIFY(fuzzyCompare(u.y() * len, v.y()));
+    QVERIFY(fuzzyCompare(u.z() * len, v.z()));
 }
 
 // Test the unit vector conversion for 4D vectors.
@@ -708,11 +707,11 @@ void tst_QVector::normalized4()
     if (v.isNull())
         QVERIFY(u.isNull());
     else
-        QCOMPARE((float)(u.length()), (float)1.0f);
-    QCOMPARE((float)(u.x() * len), (float)(v.x()));
-    QCOMPARE((float)(u.y() * len), (float)(v.y()));
-    QCOMPARE((float)(u.z() * len), (float)(v.z()));
-    QCOMPARE((float)(u.w() * len), (float)(v.w()));
+        QVERIFY(fuzzyCompare(u.length(), qreal(1.0f)));
+    QVERIFY(fuzzyCompare(u.x() * len, v.x()));
+    QVERIFY(fuzzyCompare(u.y() * len, v.y()));
+    QVERIFY(fuzzyCompare(u.z() * len, v.z()));
+    QVERIFY(fuzzyCompare(u.w() * len, v.w()));
 }
 
 // Test the unit vector conversion for 2D vectors.
@@ -732,7 +731,7 @@ void tst_QVector::normalize2()
     if (isNull)
         QVERIFY(v.isNull());
     else
-        QCOMPARE((float)(v.length()), (float)1.0f);
+        QVERIFY(fuzzyCompare(v.length(), qreal(1.0f)));
 }
 
 // Test the unit vector conversion for 3D vectors.
@@ -753,7 +752,7 @@ void tst_QVector::normalize3()
     if (isNull)
         QVERIFY(v.isNull());
     else
-        QCOMPARE((float)(v.length()), (float)1.0f);
+        QVERIFY(fuzzyCompare(v.length(), qreal(1.0f)));
 }
 
 // Test the unit vector conversion for 4D vectors.
@@ -775,7 +774,7 @@ void tst_QVector::normalize4()
     if (isNull)
         QVERIFY(v.isNull());
     else
-        QCOMPARE((float)(v.length()), (float)1.0f);
+        QVERIFY(fuzzyCompare(v.length(), qreal(1.0f)));
 }
 
 // Test the comparison operators for 2D vectors.

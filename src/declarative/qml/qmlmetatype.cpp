@@ -83,6 +83,7 @@ QT_BEGIN_NAMESPACE
 
 struct QmlMetaTypeData
 {
+    ~QmlMetaTypeData();
     QList<QmlType *> types;
     typedef QHash<int, QmlType *> Ids;
     Ids idToType;
@@ -100,6 +101,12 @@ struct QmlMetaTypeData
 };
 Q_GLOBAL_STATIC(QmlMetaTypeData, metaTypeData)
 Q_GLOBAL_STATIC(QReadWriteLock, metaTypeDataLock)
+
+QmlMetaTypeData::~QmlMetaTypeData()
+{
+    for (int i = 0; i < types.count(); ++i)
+        delete types.at(i);
+}
 
 class QmlTypePrivate
 {
@@ -190,6 +197,7 @@ QmlType::QmlType(int type, int listType, int qmlListType,
 
 QmlType::~QmlType()
 {
+    delete d->m_customParser;
     delete d;
 }
 

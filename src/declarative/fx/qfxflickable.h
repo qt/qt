@@ -71,6 +71,7 @@ class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
     Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
 
     Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive)
+    Q_PROPERTY(int pressDelay READ pressDelay WRITE setPressDelay)
 
     Q_PROPERTY(bool atXEnd READ isAtXEnd NOTIFY isAtBoundaryChanged)
     Q_PROPERTY(bool atYEnd READ isAtYEnd NOTIFY isAtBoundaryChanged)
@@ -107,6 +108,9 @@ public:
 
     bool isMoving() const;
     bool isFlicking() const;
+
+    int pressDelay() const;
+    void setPressDelay(int delay);
 
     qreal reportedVelocitySmoothing() const;
     void setReportedVelocitySmoothing(qreal);
@@ -148,6 +152,7 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void timerEvent(QTimerEvent *event);
 
     qreal visibleX() const;
     qreal visibleY() const;

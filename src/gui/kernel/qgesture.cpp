@@ -131,9 +131,9 @@ private:
     about the gesture is contained in the signal sender object.
 */
 
-/*! \fn void QGesture::cancelled()
+/*! \fn void QGesture::canceled()
 
-  The signal is emitted when the gesture is cancelled, for example the
+  The signal is emitted when the gesture is canceled, for example the
   reset() function is called while the gesture was in the process of
   emitting a triggered() signal.  Extended information about the
   gesture is contained in the sender object.
@@ -230,7 +230,7 @@ Qt::GestureState QGesture::state() const
   \a state, and it should be called after all the internal properties have been
   initialized.
 
-  \sa started(), triggered(), finished(), cancelled()
+  \sa started(), triggered(), finished(), canceled()
  */
 void QGesture::updateState(Qt::GestureState state)
 {
@@ -258,7 +258,7 @@ void QGesture::updateState(Qt::GestureState state)
     else if (state == Qt::GestureFinished)
         emit finished();
     else if (state == Qt::NoGesture)
-        emit cancelled();
+        emit canceled();
 
     if (state == Qt::GestureFinished) {
         // gesture is finished, so we reset the internal state.
@@ -301,7 +301,7 @@ QGraphicsItem* QGesture::graphicsItem() const
     Resets the internal state of the gesture. This function might be called by
     the filterEvent() implementation in a derived class, or by the user to
     cancel a gesture.  The base class implementation calls
-    updateState(Qt::NoGesture) which emits the cancelled()
+    updateState(Qt::NoGesture) which emits the canceled()
     signal if the state() of the gesture indicated it was active.
 */
 void QGesture::reset()

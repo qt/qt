@@ -15,7 +15,7 @@ Rectangle {
         states: [
             State {
                 name: "down"
-                when: MouseRegion.pressed == true
+                when: MouseRegionId.pressed == true
                 PropertyChanges {
                     target: HelloText
                     y: 160
@@ -39,7 +39,7 @@ Rectangle {
             }
         ]
     }
-    MouseRegion { id: MouseRegion; anchors.fill: HelloText }
+    MouseRegion { id: MouseRegionId; anchors.fill: HelloText }
     Grid {
         id: ColorPicker
         x: 0

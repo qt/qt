@@ -80,6 +80,8 @@ QmlParser::Object::~Object()
         prop->release();
     foreach(Property *prop, valueTypeProperties)
         prop->release();
+    foreach(const DynamicProperty &prop, dynamicProperties)
+        if (prop.defaultValue) prop.defaultValue->release();
 }
 
 const QMetaObject *Object::metaObject() const

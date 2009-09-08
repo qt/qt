@@ -555,33 +555,33 @@ void QFxTextInput::selectAll()
 
 void QFxTextInputPrivate::init()
 {
-        Q_Q(QFxTextInput);
-        control->setCursorWidth(1);
-        control->setPasswordCharacter(QLatin1Char('*'));
-        control->setLayoutDirection(Qt::LeftToRight);
-        q->setSmoothTransform(smooth);
-        q->setAcceptedMouseButtons(Qt::LeftButton);
-        q->setFlag(QGraphicsItem::ItemHasNoContents, false);
-        q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
-        q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
-                q, SLOT(cursorPosChanged()));
-        q->connect(control, SIGNAL(selectionChanged()),
-                q, SLOT(selectionChanged()));
-        q->connect(control, SIGNAL(textChanged(const QString &)),
-                q, SLOT(q_textChanged()));
-        q->connect(control, SIGNAL(accepted()),
-                q, SIGNAL(accepted()));
-        q->connect(control, SIGNAL(updateNeeded(const QRect &)),
-        //        q, SLOT(dirtyCache(const QRect &)));
-                q, SLOT(updateAll()));
-        q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
-                q, SLOT(updateAll()));
-        q->connect(control, SIGNAL(selectionChanged()),
-                q, SLOT(updateAll()));
-        q->updateSize();
-        oldValidity = control->hasAcceptableInput();
-        lastSelectionStart = 0;
-        lastSelectionEnd = 0;
+    Q_Q(QFxTextInput);
+    control->setCursorWidth(1);
+    control->setPasswordCharacter(QLatin1Char('*'));
+    control->setLayoutDirection(Qt::LeftToRight);
+    q->setSmoothTransform(smooth);
+    q->setAcceptedMouseButtons(Qt::LeftButton);
+    q->setFlag(QGraphicsItem::ItemHasNoContents, false);
+    q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);
+    q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
+               q, SLOT(cursorPosChanged()));
+    q->connect(control, SIGNAL(selectionChanged()),
+               q, SLOT(selectionChanged()));
+    q->connect(control, SIGNAL(textChanged(const QString &)),
+               q, SLOT(q_textChanged()));
+    q->connect(control, SIGNAL(accepted()),
+               q, SIGNAL(accepted()));
+    q->connect(control, SIGNAL(updateNeeded(const QRect &)),
+               //        q, SLOT(dirtyCache(const QRect &)));
+               q, SLOT(updateAll()));
+    q->connect(control, SIGNAL(cursorPositionChanged(int,int)),
+               q, SLOT(updateAll()));
+    q->connect(control, SIGNAL(selectionChanged()),
+               q, SLOT(updateAll()));
+    q->updateSize();
+    oldValidity = control->hasAcceptableInput();
+    lastSelectionStart = 0;
+    lastSelectionEnd = 0;
 }
 
 void QFxTextInput::cursorPosChanged()

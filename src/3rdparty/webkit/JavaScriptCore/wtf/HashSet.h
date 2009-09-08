@@ -204,7 +204,12 @@ namespace WTF {
     template<typename T, typename U, typename V>
     pair<typename HashSet<T, U, V>::iterator, bool> HashSet<T, U, V>::add(const ValueType& value)
     {
-        return m_impl.add(value);
+        pair<typename HashTable<T, T, IdentityExtractor<T>, U, V, V>::iterator, bool> p = m_impl.add(value);
+        typename HashSet<T, U, V>::iterator temp = p.first;
+        pair<typename HashSet<T, U, V>::iterator, bool> p2 = make_pair<typename HashSet<T, U, V>::iterator, bool>(temp, p.second);
+ //       p2.first = p.first;
+ //       p2.second = p.second;
+        return p2;
     }
 
     template<typename Value, typename HashFunctions, typename Traits>
@@ -213,7 +218,8 @@ namespace WTF {
     HashSet<Value, HashFunctions, Traits>::add(const T& value)
     {
         typedef HashSetTranslatorAdapter<ValueType, ValueTraits, T, HashTranslator> Adapter;
-        return m_impl.template addPassingHashCode<T, T, Adapter>(value, value);
+        pair<typename HashTableType::iterator, bool> p = m_impl.template addPassingHashCode<T, T, Adapter>(value, value);
+	return make_pair<iterator, bool>(p.first, p.second);
     }
 
     template<typename T, typename U, typename V>

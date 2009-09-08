@@ -925,12 +925,12 @@ void QDirectFBPaintEnginePrivate::setRenderHints(QPainter::RenderHints hints)
 
 void QDirectFBPaintEnginePrivate::prepareForBlit(bool alpha)
 {
-    quint32 blittingFlags = alpha ? DSBLIT_BLEND_ALPHACHANNEL : DSBLIT_NOFX;
+    DFBSurfaceBlittingFlags blittingFlags = alpha ? DSBLIT_BLEND_ALPHACHANNEL : DSBLIT_NOFX;
     if (opacity != 255) {
         blittingFlags |= DSBLIT_BLEND_COLORALPHA;
     }
     surface->SetColor(surface, 0xff, 0xff, 0xff, opacity);
-    surface->SetBlittingFlags(surface, DFBSurfaceBlittingFlags(blittingFlags));
+    surface->SetBlittingFlags(surface, blittingFlags);
 }
 
 static inline uint ALPHA_MUL(uint x, uint a)

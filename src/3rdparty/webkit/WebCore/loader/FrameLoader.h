@@ -355,7 +355,7 @@ namespace WebCore {
         enum LocalLoadPolicy {
             AllowLocalLoadsForAll,  // No restriction on local loads.
             AllowLocalLoadsForLocalAndSubstituteData,
-            AllowLocalLoadsForLocalOnly,
+            AllowLocalLoadsForLocalOnly
         };
         static void setLocalLoadPolicy(LocalLoadPolicy);
         static bool restrictAccessToLocal();

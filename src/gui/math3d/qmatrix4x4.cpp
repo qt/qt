@@ -103,7 +103,7 @@ QMatrix4x4::QMatrix4x4(const qreal *values)
 #if !defined(QT_NO_MEMBER_TEMPLATES) || defined(Q_QDOC)
 
 /*!
-    \fn QMatrix4x4::QMatrix4x4(const QGenericMatrix<N, M, qreal, float>& matrix)
+    \fn QMatrix4x4::QMatrix4x4(const QGenericMatrix<N, M, qreal>& matrix)
 
     Constructs a 4x4 matrix from the left-most 4 columns and top-most
     4 rows of \a matrix.  If \a matrix has less than 4 columns or rows,
@@ -114,7 +114,7 @@ QMatrix4x4::QMatrix4x4(const qreal *values)
 */
 
 /*!
-    \fn QGenericMatrix<N, M, qreal, float> QMatrix4x4::toGenericMatrix() const
+    \fn QGenericMatrix<N, M, qreal> QMatrix4x4::toGenericMatrix() const
 
     Constructs a NxM generic matrix from the left-most N columns and
     top-most M rows of this 4x4 matrix.  If N or M is greater than 4,
@@ -127,7 +127,7 @@ QMatrix4x4::QMatrix4x4(const qreal *values)
 #endif
 
 /*!
-    \fn QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, qreal, float>& matrix)
+    \fn QMatrix4x4 qGenericMatrixToMatrix4x4(const QGenericMatrix<N, M, qreal>& matrix)
     \relates QMatrix4x4
 
     Returns a 4x4 matrix constructed from the left-most 4 columns and
@@ -139,7 +139,7 @@ QMatrix4x4::QMatrix4x4(const qreal *values)
 */
 
 /*!
-    \fn QGenericMatrix<N, M, qreal, float> qGenericMatrixFromMatrix4x4(const QMatrix4x4& matrix)
+    \fn QGenericMatrix<N, M, qreal> qGenericMatrixFromMatrix4x4(const QMatrix4x4& matrix)
     \relates QMatrix4x4
 
     Returns a NxM generic matrix constructed from the left-most N columns
@@ -153,7 +153,7 @@ QMatrix4x4::QMatrix4x4(const qreal *values)
 /*!
     \internal
 */
-QMatrix4x4::QMatrix4x4(const float *values, int cols, int rows)
+QMatrix4x4::QMatrix4x4(const qreal *values, int cols, int rows)
 {
     for (int col = 0; col < 4; ++col) {
         for (int row = 0; row < 4; ++row) {
@@ -233,15 +233,16 @@ QMatrix4x4::QMatrix4x4(const QTransform& transform)
 }
 
 /*!
-    \fn qreal QMatrix4x4::operator()(int row, int column) const
+    \fn const qreal& QMatrix4x4::operator()(int row, int column) const
 
-    Returns the element at position (\a row, \a column) in this matrix.
+    Returns a constant reference to the element at position
+    (\a row, \a column) in this matrix.
 
     \sa column(), row()
 */
 
 /*!
-    \fn float& QMatrix4x4::operator()(int row, int column)
+    \fn qreal& QMatrix4x4::operator()(int row, int column)
 
     Returns a reference to the element at position (\a row, \a column)
     in this matrix so that the element can be assigned to.
@@ -312,8 +313,8 @@ QMatrix4x4::QMatrix4x4(const QTransform& transform)
 //     | A B C |
 // M = | D E F |   det(M) = A * (EI - HF) - B * (DI - GF) + C * (DH - GE)
 //     | G H I |
-static inline float matrixDet3
-    (const float m[4][4], int col0, int col1, int col2,
+static inline qreal matrixDet3
+    (const qreal m[4][4], int col0, int col1, int col2,
      int row0, int row1, int row2)
 {
     return m[col0][row0] *
@@ -328,9 +329,9 @@ static inline float matrixDet3
 }
 
 // Calculate the determinant of a 4x4 matrix.
-static inline float matrixDet4(const float m[4][4])
+static inline qreal matrixDet4(const qreal m[4][4])
 {
-    float det;
+    qreal det;
     det  = m[0][0] * matrixDet3(m, 1, 2, 3, 1, 2, 3);
     det -= m[1][0] * matrixDet3(m, 0, 2, 3, 1, 2, 3);
     det += m[2][0] * matrixDet3(m, 0, 1, 3, 1, 2, 3);
@@ -382,7 +383,7 @@ QMatrix4x4 QMatrix4x4::inverted(bool *invertible) const
 
     QMatrix4x4 inv(1); // The "1" says to not load the identity.
 
-    float det = matrixDet4(m);
+    qreal det = matrixDet4(m);
     if (det == 0.0f) {
         if (invertible)
             *invertible = false;
@@ -436,12 +437,12 @@ QMatrix3x3 QMatrix4x4::normalMatrix() const
         return inv;
     }
 
-    float det = matrixDet3(m, 0, 1, 2, 0, 1, 2);
+    qreal det = matrixDet3(m, 0, 1, 2, 0, 1, 2);
     if (det == 0.0f)
         return inv;
     det = 1.0f / det;
 
-    float *invm = inv.data();
+    qreal *invm = inv.data();
 
     // Invert and transpose in a single step.
     invm[0 + 0 * 3] =  (m[1][1] * m[2][2] - m[2][1] * m[1][2]) * det;
@@ -697,9 +698,9 @@ QMatrix4x4 operator/(const QMatrix4x4& matrix, qreal divisor)
 */
 QMatrix4x4& QMatrix4x4::scale(const QVector3D& vector)
 {
-    float vx = vector.xp;
-    float vy = vector.yp;
-    float vz = vector.zp;
+    qreal vx = vector.x();
+    qreal vy = vector.y();
+    qreal vz = vector.z();
     if (flagBits == Identity) {
         m[0][0] = vx;
         m[1][1] = vy;
@@ -743,28 +744,26 @@ QMatrix4x4& QMatrix4x4::scale(const QVector3D& vector)
 */
 QMatrix4x4& QMatrix4x4::scale(qreal x, qreal y)
 {
-    float vx(x);
-    float vy(y);
     if (flagBits == Identity) {
-        m[0][0] = vx;
-        m[1][1] = vy;
+        m[0][0] = x;
+        m[1][1] = y;
         flagBits = Scale;
     } else if (flagBits == Scale || flagBits == (Scale | Translation)) {
-        m[0][0] *= vx;
-        m[1][1] *= vy;
+        m[0][0] *= x;
+        m[1][1] *= y;
     } else if (flagBits == Translation) {
-        m[0][0] = vx;
-        m[1][1] = vy;
+        m[0][0] = x;
+        m[1][1] = y;
         flagBits |= Scale;
     } else {
-        m[0][0] *= vx;
-        m[0][1] *= vx;
-        m[0][2] *= vx;
-        m[0][3] *= vx;
-        m[1][0] *= vy;
-        m[1][1] *= vy;
-        m[1][2] *= vy;
-        m[1][3] *= vy;
+        m[0][0] *= x;
+        m[0][1] *= x;
+        m[0][2] *= x;
+        m[0][3] *= x;
+        m[1][0] *= y;
+        m[1][1] *= y;
+        m[1][2] *= y;
+        m[1][3] *= y;
         flagBits = General;
     }
     return *this;
@@ -780,36 +779,33 @@ QMatrix4x4& QMatrix4x4::scale(qreal x, qreal y)
 */
 QMatrix4x4& QMatrix4x4::scale(qreal x, qreal y, qreal z)
 {
-    float vx(x);
-    float vy(y);
-    float vz(z);
     if (flagBits == Identity) {
-        m[0][0] = vx;
-        m[1][1] = vy;
-        m[2][2] = vz;
+        m[0][0] = x;
+        m[1][1] = y;
+        m[2][2] = z;
         flagBits = Scale;
     } else if (flagBits == Scale || flagBits == (Scale | Translation)) {
-        m[0][0] *= vx;
-        m[1][1] *= vy;
-        m[2][2] *= vz;
+        m[0][0] *= x;
+        m[1][1] *= y;
+        m[2][2] *= z;
     } else if (flagBits == Translation) {
-        m[0][0] = vx;
-        m[1][1] = vy;
-        m[2][2] = vz;
+        m[0][0] = x;
+        m[1][1] = y;
+        m[2][2] = z;
         flagBits |= Scale;
     } else {
-        m[0][0] *= vx;
-        m[0][1] *= vx;
-        m[0][2] *= vx;
-        m[0][3] *= vx;
-        m[1][0] *= vy;
-        m[1][1] *= vy;
-        m[1][2] *= vy;
-        m[1][3] *= vy;
-        m[2][0] *= vz;
-        m[2][1] *= vz;
-        m[2][2] *= vz;
-        m[2][3] *= vz;
+        m[0][0] *= x;
+        m[0][1] *= x;
+        m[0][2] *= x;
+        m[0][3] *= x;
+        m[1][0] *= y;
+        m[1][1] *= y;
+        m[1][2] *= y;
+        m[1][3] *= y;
+        m[2][0] *= z;
+        m[2][1] *= z;
+        m[2][2] *= z;
+        m[2][3] *= z;
         flagBits = General;
     }
     return *this;
@@ -866,9 +862,9 @@ QMatrix4x4& QMatrix4x4::scale(qreal factor)
 */
 QMatrix4x4& QMatrix4x4::translate(const QVector3D& vector)
 {
-    float vx = vector.xp;
-    float vy = vector.yp;
-    float vz = vector.zp;
+    qreal vx = vector.x();
+    qreal vy = vector.y();
+    qreal vz = vector.z();
     if (flagBits == Identity) {
         m[3][0] = vx;
         m[3][1] = vy;
@@ -912,28 +908,26 @@ QMatrix4x4& QMatrix4x4::translate(const QVector3D& vector)
 */
 QMatrix4x4& QMatrix4x4::translate(qreal x, qreal y)
 {
-    float vx(x);
-    float vy(y);
     if (flagBits == Identity) {
-        m[3][0] = vx;
-        m[3][1] = vy;
+        m[3][0] = x;
+        m[3][1] = y;
         flagBits = Translation;
     } else if (flagBits == Translation) {
-        m[3][0] += vx;
-        m[3][1] += vy;
+        m[3][0] += x;
+        m[3][1] += y;
     } else if (flagBits == Scale) {
-        m[3][0] = m[0][0] * vx;
-        m[3][1] = m[1][1] * vy;
+        m[3][0] = m[0][0] * x;
+        m[3][1] = m[1][1] * y;
         m[3][2] = 0.;
         flagBits |= Translation;
     } else if (flagBits == (Scale | Translation)) {
-        m[3][0] += m[0][0] * vx;
-        m[3][1] += m[1][1] * vy;
+        m[3][0] += m[0][0] * x;
+        m[3][1] += m[1][1] * y;
     } else {
-        m[3][0] += m[0][0] * vx + m[1][0] * vy;
-        m[3][1] += m[0][1] * vx + m[1][1] * vy;
-        m[3][2] += m[0][2] * vx + m[1][2] * vy;
-        m[3][3] += m[0][3] * vx + m[1][3] * vy;
+        m[3][0] += m[0][0] * x + m[1][0] * y;
+        m[3][1] += m[0][1] * x + m[1][1] * y;
+        m[3][2] += m[0][2] * x + m[1][2] * y;
+        m[3][3] += m[0][3] * x + m[1][3] * y;
         if (flagBits == Rotation)
             flagBits |= Translation;
         else if (flagBits != (Rotation | Translation))
@@ -952,32 +946,29 @@ QMatrix4x4& QMatrix4x4::translate(qreal x, qreal y)
 */
 QMatrix4x4& QMatrix4x4::translate(qreal x, qreal y, qreal z)
 {
-    float vx(x);
-    float vy(y);
-    float vz(z);
     if (flagBits == Identity) {
-        m[3][0] = vx;
-        m[3][1] = vy;
-        m[3][2] = vz;
+        m[3][0] = x;
+        m[3][1] = y;
+        m[3][2] = z;
         flagBits = Translation;
     } else if (flagBits == Translation) {
-        m[3][0] += vx;
-        m[3][1] += vy;
-        m[3][2] += vz;
+        m[3][0] += x;
+        m[3][1] += y;
+        m[3][2] += z;
     } else if (flagBits == Scale) {
-        m[3][0] = m[0][0] * vx;
-        m[3][1] = m[1][1] * vy;
-        m[3][2] = m[2][2] * vz;
+        m[3][0] = m[0][0] * x;
+        m[3][1] = m[1][1] * y;
+        m[3][2] = m[2][2] * z;
         flagBits |= Translation;
     } else if (flagBits == (Scale | Translation)) {
-        m[3][0] += m[0][0] * vx;
-        m[3][1] += m[1][1] * vy;
-        m[3][2] += m[2][2] * vz;
+        m[3][0] += m[0][0] * x;
+        m[3][1] += m[1][1] * y;
+        m[3][2] += m[2][2] * z;
     } else {
-        m[3][0] += m[0][0] * vx + m[1][0] * vy + m[2][0] * vz;
-        m[3][1] += m[0][1] * vx + m[1][1] * vy + m[2][1] * vz;
-        m[3][2] += m[0][2] * vx + m[1][2] * vy + m[2][2] * vz;
-        m[3][3] += m[0][3] * vx + m[1][3] * vy + m[2][3] * vz;
+        m[3][0] += m[0][0] * x + m[1][0] * y + m[2][0] * z;
+        m[3][1] += m[0][1] * x + m[1][1] * y + m[2][1] * z;
+        m[3][2] += m[0][2] * x + m[1][2] * y + m[2][2] * z;
+        m[3][3] += m[0][3] * x + m[1][3] * y + m[2][3] * z;
         if (flagBits == Rotation)
             flagBits |= Translation;
         else if (flagBits != (Rotation | Translation))
@@ -1126,15 +1117,15 @@ QMatrix4x4& QMatrix4x4::rotate(const QQuaternion& quaternion)
     // Algorithm from:
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q54
     QMatrix4x4 m(1);
-    float xx = quaternion.xp * quaternion.xp;
-    float xy = quaternion.xp * quaternion.yp;
-    float xz = quaternion.xp * quaternion.zp;
-    float xw = quaternion.xp * quaternion.wp;
-    float yy = quaternion.yp * quaternion.yp;
-    float yz = quaternion.yp * quaternion.zp;
-    float yw = quaternion.yp * quaternion.wp;
-    float zz = quaternion.zp * quaternion.zp;
-    float zw = quaternion.zp * quaternion.wp;
+    qreal xx = quaternion.x() * quaternion.x();
+    qreal xy = quaternion.x() * quaternion.y();
+    qreal xz = quaternion.x() * quaternion.z();
+    qreal xw = quaternion.x() * quaternion.scalar();
+    qreal yy = quaternion.y() * quaternion.y();
+    qreal yz = quaternion.y() * quaternion.z();
+    qreal yw = quaternion.y() * quaternion.scalar();
+    qreal zz = quaternion.z() * quaternion.z();
+    qreal zw = quaternion.z() * quaternion.scalar();
     m.m[0][0] = 1.0f - 2 * (yy + zz);
     m.m[1][0] =        2 * (xy - zw);
     m.m[2][0] =        2 * (xz + yw);
@@ -1222,11 +1213,11 @@ QMatrix4x4& QMatrix4x4::ortho(qreal left, qreal right, qreal bottom, qreal top, 
         translate(QVector3D
             (-(left + right) / width,
              -(top + bottom) / invheight,
-             0.0f, 1));
+             0.0f));
         scale(QVector3D
             (2.0f / width,
              2.0f / invheight,
-             -1.0f, 1));
+             -1.0f));
         return *this;
     }
 #endif
@@ -1356,17 +1347,17 @@ QMatrix4x4& QMatrix4x4::lookAt(const QVector3D& eye, const QVector3D& center, co
 
     QMatrix4x4 m(1);
 
-    m.m[0][0] = side.xp;
-    m.m[1][0] = side.yp;
-    m.m[2][0] = side.zp;
+    m.m[0][0] = side.x();
+    m.m[1][0] = side.y();
+    m.m[2][0] = side.z();
     m.m[3][0] = 0.0f;
-    m.m[0][1] = upVector.xp;
-    m.m[1][1] = upVector.yp;
-    m.m[2][1] = upVector.zp;
+    m.m[0][1] = upVector.x();
+    m.m[1][1] = upVector.y();
+    m.m[2][1] = upVector.z();
     m.m[3][1] = 0.0f;
-    m.m[0][2] = -forward.xp;
-    m.m[1][2] = -forward.yp;
-    m.m[2][2] = -forward.zp;
+    m.m[0][2] = -forward.x();
+    m.m[1][2] = -forward.y();
+    m.m[2][2] = -forward.z();
     m.m[3][2] = 0.0f;
     m.m[0][3] = 0.0f;
     m.m[1][3] = 0.0f;
@@ -1434,9 +1425,9 @@ void QMatrix4x4::toValueArray(qreal *values) const
 */
 QMatrix QMatrix4x4::toAffine() const
 {
-    return QMatrix(qreal(m[0][0]), qreal(m[0][1]),
-                   qreal(m[1][0]), qreal(m[1][1]),
-                   qreal(m[3][0]), qreal(m[3][1]));
+    return QMatrix(m[0][0], m[0][1],
+                   m[1][0], m[1][1],
+                   m[3][0], m[3][1]);
 }
 
 static const qreal inv_dist_to_plane = 1. / 1024.;
@@ -1462,15 +1453,12 @@ QTransform QMatrix4x4::toTransform(qreal distanceToPlane) const
 {
     if (distanceToPlane == 1024.0f) {
         // Optimize the common case with constants.
-        return QTransform(qreal(m[0][0]), qreal(m[0][1]),
-                                qreal(m[0][3]) - qreal(m[0][2]) *
-                                                 inv_dist_to_plane,
-                          qreal(m[1][0]), qreal(m[1][1]),
-                                qreal(m[1][3]) - qreal(m[1][2]) *
-                                                 inv_dist_to_plane,
-                          qreal(m[3][0]), qreal(m[3][1]),
-                                qreal(m[3][3]) - qreal(m[3][2]) *
-                                                 inv_dist_to_plane);
+        return QTransform(m[0][0], m[0][1],
+                                m[0][3] - m[0][2] * inv_dist_to_plane,
+                          m[1][0], m[1][1],
+                                m[1][3] - m[1][2] * inv_dist_to_plane,
+                          m[3][0], m[3][1],
+                                m[3][3] - m[3][2] * inv_dist_to_plane);
     } else if (distanceToPlane != 0.0f) {
         // The following projection matrix is pre-multiplied with "matrix":
         //      | 1 0 0 0 |
@@ -1480,17 +1468,14 @@ QTransform QMatrix4x4::toTransform(qreal distanceToPlane) const
         // where d = -1 / distanceToPlane.  After projection, row 3 and
         // column 3 are dropped to form the final QTransform.
         qreal d = 1.0f / distanceToPlane;
-        return QTransform(qreal(m[0][0]), qreal(m[0][1]),
-                                qreal(m[0][3]) - qreal(m[0][2]) * d,
-                          qreal(m[1][0]), qreal(m[1][1]),
-                                qreal(m[1][3]) - qreal(m[1][2]) * d,
-                          qreal(m[3][0]), qreal(m[3][1]),
-                                qreal(m[3][3]) - qreal(m[3][2]) * d);
+        return QTransform(m[0][0], m[0][1], m[0][3] - m[0][2] * d,
+                          m[1][0], m[1][1], m[1][3] - m[1][2] * d,
+                          m[3][0], m[3][1], m[3][3] - m[3][2] * d);
     } else {
         // Orthographic projection: drop row 3 and column 3.
-        return QTransform(qreal(m[0][0]), qreal(m[0][1]), qreal(m[0][3]),
-                          qreal(m[1][0]), qreal(m[1][1]), qreal(m[1][3]),
-                          qreal(m[3][0]), qreal(m[3][1]), qreal(m[3][3]));
+        return QTransform(m[0][0], m[0][1], m[0][3],
+                          m[1][0], m[1][1], m[1][3],
+                          m[3][0], m[3][1], m[3][3]);
     }
 }
 
@@ -1618,28 +1603,25 @@ QRectF QMatrix4x4::mapRect(const QRectF& rect) const
 }
 
 /*!
-    \fn float *QMatrix4x4::data()
+    \fn qreal *QMatrix4x4::data()
 
-    Returns a pointer to the raw data of this matrix.  This is intended
-    for use with raw GL functions.
+    Returns a pointer to the raw data of this matrix.
 
     \sa constData(), inferSpecialType()
 */
 
 /*!
-    \fn const float *QMatrix4x4::data() const
+    \fn const qreal *QMatrix4x4::data() const
 
     Returns a constant pointer to the raw data of this matrix.
-    This is intended for use with raw GL functions.
 
     \sa constData()
 */
 
 /*!
-    \fn const float *QMatrix4x4::constData() const
+    \fn const qreal *QMatrix4x4::constData() const
 
     Returns a constant pointer to the raw data of this matrix.
-    This is intended for use with raw GL functions.
 
     \sa data()
 */
@@ -1695,7 +1677,7 @@ void QMatrix4x4::extractAxisRotation(qreal &angle, QVector3D &axis) const
 {
     // Orientation is dependent on the upper 3x3 matrix; subtract the
     // homogeneous scaling element from the trace of the 4x4 matrix
-    float tr = m[0][0] + m[1][1] + m[2][2];
+    qreal tr = m[0][0] + m[1][1] + m[2][2];
     qreal cosa = qreal(0.5f * (tr - 1.0f));
     angle = acos(cosa) * 180.0f / M_PI;
 
@@ -1708,38 +1690,38 @@ void QMatrix4x4::extractAxisRotation(qreal &angle, QVector3D &axis) const
     }
 
     if (angle < 180.0f) {
-        axis.xp = m[1][2] - m[2][1];
-        axis.yp = m[2][0] - m[0][2];
-        axis.zp = m[0][1] - m[1][0];
+        axis.setX(m[1][2] - m[2][1]);
+        axis.setY(m[2][0] - m[0][2]);
+        axis.setZ(m[0][1] - m[1][0]);
         axis.normalize();
         return;
     }
 
     // rads == PI
-    float tmp;
+    qreal tmp;
 
     // r00 is maximum
     if ((m[0][0] >= m[2][2]) && (m[0][0] >= m[1][1])) {
-        axis.xp = 0.5f * qSqrt(m[0][0] - m[1][1] - m[2][2] + 1.0f);
+        axis.setX(0.5f * qSqrt(m[0][0] - m[1][1] - m[2][2] + 1.0f));
         tmp = 0.5f / axis.x();
-        axis.yp = m[1][0] * tmp;
-        axis.zp = m[2][0] * tmp;
+        axis.setY(m[1][0] * tmp);
+        axis.setZ(m[2][0] * tmp);
     }
 
     // r11 is maximum
     if ((m[1][1] >= m[2][2]) && (m[1][1] >= m[0][0])) {
-        axis.yp = 0.5f * qSqrt(m[1][1] - m[0][0] - m[2][2] + 1.0f);
+        axis.setY(0.5f * qSqrt(m[1][1] - m[0][0] - m[2][2] + 1.0f));
         tmp = 0.5f / axis.y();
-        axis.xp = tmp * m[1][0];
-        axis.zp = tmp * m[2][1];
+        axis.setX(tmp * m[1][0]);
+        axis.setZ(tmp * m[2][1]);
     }
 
     // r22 is maximum
     if ((m[2][2] >= m[1][1]) && (m[2][2] >= m[0][0])) {
-        axis.zp = 0.5f * qSqrt(m[2][2] - m[0][0] - m[1][1] + 1.0f);
+        axis.setZ(0.5f * qSqrt(m[2][2] - m[0][0] - m[1][1] + 1.0f));
         tmp = 0.5f / axis.z();
-        axis.xp = m[2][0]*tmp;
-        axis.yp = m[2][1]*tmp;
+        axis.setX(m[2][0]*tmp);
+        axis.setY(m[2][1]*tmp);
     }
 }
 
@@ -1756,7 +1738,7 @@ QVector3D QMatrix4x4::extractTranslation() const
     return QVector3D
         (m[0][0] * m[3][0] + m[0][1] * m[3][1] + m[0][2] * m[3][2],
          m[1][0] * m[3][0] + m[1][1] * m[3][1] + m[1][2] * m[3][2],
-         m[2][0] * m[3][0] + m[2][1] * m[3][1] + m[2][2] * m[3][2], 1);
+         m[2][0] * m[3][0] + m[2][1] * m[3][1] + m[2][2] * m[3][2]);
 }
 #endif
 
@@ -1894,7 +1876,7 @@ QDataStream &operator>>(QDataStream &stream, QMatrix4x4 &matrix)
     for (int row = 0; row < 4; ++row) {
         for (int col = 0; col < 4; ++col) {
             stream >> x;
-            matrix(row, col) = float(x);
+            matrix(row, col) = qreal(x);
         }
     }
     matrix.inferSpecialType();

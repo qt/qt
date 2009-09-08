@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qgraphicsshadereffect.h"
+#include "qgraphicsshadereffect_p.h"
 #if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
 #include "qglshaderprogram.h"
 #include "gl2paintengineex/qglcustomshaderstage_p.h"
@@ -51,7 +51,7 @@
 
 QT_BEGIN_NAMESPACE
 
-/*!
+/*#
     \class QGraphicsShaderEffect
     \brief The QGraphicsShaderEffect class is the base class for creating
     custom GLSL shader effects in a QGraphicsScene.
@@ -175,7 +175,7 @@ public:
 #endif
 };
 
-/*!
+/*#
     Constructs a shader effect and attaches it to \a parent.
 */
 QGraphicsShaderEffect::QGraphicsShaderEffect(QObject *parent)
@@ -183,7 +183,7 @@ QGraphicsShaderEffect::QGraphicsShaderEffect(QObject *parent)
 {
 }
 
-/*!
+/*#
     Destroys this shader effect.
 */
 QGraphicsShaderEffect::~QGraphicsShaderEffect()
@@ -194,7 +194,7 @@ QGraphicsShaderEffect::~QGraphicsShaderEffect()
 #endif
 }
 
-/*!
+/*#
     Returns the source code for the pixel shader fragment for
     this shader effect.  The default is a shader that copies
     its incoming pixmap directly to the output with no effect
@@ -208,7 +208,7 @@ QByteArray QGraphicsShaderEffect::pixelShaderFragment() const
     return d->pixelShaderFragment;
 }
 
-/*!
+/*#
     Sets the source code for the pixel shader fragment for
     this shader effect to \a code.
 
@@ -238,7 +238,7 @@ void QGraphicsShaderEffect::setPixelShaderFragment(const QByteArray& code)
     }
 }
 
-/*!
+/*#
     \reimp
 */
 void QGraphicsShaderEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
@@ -277,7 +277,7 @@ void QGraphicsShaderEffect::draw(QPainter *painter, QGraphicsEffectSource *sourc
 #endif
 }
 
-/*!
+/*#
     Sets the custom uniform variables on this shader effect to
     be dirty.  The setUniforms() function will be called the next
     time the shader program corresponding to this effect is used.
@@ -296,7 +296,7 @@ void QGraphicsShaderEffect::setUniformsDirty()
 #endif
 }
 
-/*!
+/*#
     Sets custom uniform variables on the current GL context when
     \a program is about to be used by the paint engine.
 

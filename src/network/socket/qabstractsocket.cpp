@@ -453,6 +453,9 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       peerPort(0),
       socketEngine(0),
       cachedSocketDescriptor(-1),
+#ifdef Q_OS_LINUX
+      addToBytesAvailable(0),
+#endif
       readBufferMaxSize(0),
       readBuffer(QABSTRACTSOCKET_BUFFERSIZE),
       writeBuffer(QABSTRACTSOCKET_BUFFERSIZE),
@@ -461,6 +464,7 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       connectTimer(0),
       connectTimeElapsed(0),
       hostLookupId(-1),
+      socketType(QAbstractSocket::UnknownSocketType),
       state(QAbstractSocket::UnconnectedState),
       socketError(QAbstractSocket::UnknownSocketError)
 {

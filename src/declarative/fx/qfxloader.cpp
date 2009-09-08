@@ -111,9 +111,12 @@ void QFxLoader::setSource(const QUrl &url)
 
     d->source = url;
     d->item = 0;
+    emit itemChanged();
 
     if (d->source.isEmpty()) {
         emit sourceChanged();
+        emit statusChanged();
+        emit progressChanged();
         return;
     }
 
@@ -122,14 +125,22 @@ void QFxLoader::setSource(const QUrl &url)
         (*iter)->setOpacity(1.);
         d->item = (*iter);
         emit sourceChanged();
+        emit statusChanged();
+        emit progressChanged();
+        emit itemChanged();
     } else {
         d->qmlcomp =
             new QmlComponent(qmlEngine(this), d->source, this);
-        if (!d->qmlcomp->isLoading())
+        if (!d->qmlcomp->isLoading()) {
             d->_q_sourceLoaded();
-        else
+        } else {
             connect(d->qmlcomp, SIGNAL(statusChanged(QmlComponent::Status)),
                     this, SLOT(_q_sourceLoaded()));
+            connect(d->qmlcomp, SIGNAL(progressChanged(qreal)),
+                    this, SIGNAL(progressChanged()));
+            emit statusChanged();
+            emit progressChanged();
+        }
     }
 }
 
@@ -146,6 +157,8 @@ void QFxLoaderPrivate::_q_sourceLoaded()
             delete qmlcomp;
             qmlcomp = 0;
             emit q->sourceChanged();
+            emit q->statusChanged();
+            emit q->progressChanged();
             return;
         }
         QObject *obj = qmlcomp->create(ctxt);
@@ -163,7 +176,55 @@ void QFxLoaderPrivate::_q_sourceLoaded()
         delete qmlcomp;
         qmlcomp = 0;
         emit q->sourceChanged();
+        emit q->statusChanged();
+        emit q->progressChanged();
+        emit q->itemChanged();
     }
+}
+
+/*!
+    \qmlproperty enum Loader::status
+
+    This property holds the status of QML loading.  It can be one of:
+    \list
+    \o Null - no QML source has been set
+    \o Ready - the QML source has been loaded
+    \o Loading - the QML source is currently being loaded
+    \o Error - an error occurred while loading the QML source
+    \endlist
+
+    \sa progress
+*/
+
+/*!
+    \qmlproperty real Loader::progress
+
+    This property holds the progress of QML data loading, from 0.0 (nothing loaded)
+    to 1.0 (finished).
+
+    \sa status
+*/
+QFxLoader::Status QFxLoader::status() const
+{
+    Q_D(const QFxLoader);
+
+    if (d->qmlcomp)
+        return static_cast<QFxLoader::Status>(d->qmlcomp->status());
+
+    if (d->item)
+        return Ready;
+
+    return d->source.isEmpty() ? Null : Error;
+}
+
+qreal QFxLoader::progress() const
+{
+    Q_D(const QFxLoader);
+
+    if (d->qmlcomp)
+        return d->qmlcomp->progress();
+
+    return d->item ? 1.0 : 0.0;
 }
 
 /*!

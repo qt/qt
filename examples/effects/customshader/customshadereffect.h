@@ -43,7 +43,7 @@
 #define CUSTOMSHADEREFFECT_H
 
 #include <QGraphicsEffect>
-#include <QGraphicsShaderEffect>
+#include <QtOpenGL/private/qgraphicsshadereffect_p.h>
 #include <QGraphicsItem>
 
 class CustomShaderEffect: public QGraphicsShaderEffect
