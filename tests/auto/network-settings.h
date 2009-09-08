@@ -74,6 +74,7 @@ public:
 
 };
 
+#ifdef QT_NETWORK_LIB
 class QtNetworkSettingsInitializerCode {
 public:
     QtNetworkSettingsInitializerCode() {
@@ -87,3 +88,4 @@ public:
     }
 };
 QtNetworkSettingsInitializerCode qtNetworkSettingsInitializer;
+#endif
