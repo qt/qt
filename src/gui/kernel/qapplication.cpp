@@ -4687,7 +4687,11 @@ void QApplicationPrivate::emitLastWindowClosed()
 
     If \a enable is true, Qt::Key_Up and Qt::Key_Down are used to change focus.
 
-    This feature is available in Qt for Embedded Linux only.
+    This feature is available in Qt for Embedded Linux and Windows CE only.
+
+    \note On Windows CE this feature is disabled by default for touch device
+          mkspecs. To enable keypad navigation, build Qt with
+          QT_KEYPAD_NAVIGATION defined.
 
     \sa keypadNavigationEnabled()
 */
@@ -4700,7 +4704,11 @@ void QApplication::setKeypadNavigationEnabled(bool enable)
     Returns true if Qt is set to use keypad navigation; otherwise returns
     false. The default is false.
 
-    This feature is available in Qt for Embedded Linux only.
+    This feature is available in Qt for Embedded Linux and Windows CE only.
+
+    \note On Windows CE this feature is disabled by default for touch device
+          mkspecs. To enable keypad navigation, build Qt with
+          QT_KEYPAD_NAVIGATION defined.
 
     \sa setKeypadNavigationEnabled()
 */
