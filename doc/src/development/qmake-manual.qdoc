@@ -1977,7 +1977,7 @@ distinction between shared and
     \section1 QMAKE_CFLAGS_WARN_OFF
 
     This variable is not empty if the warn_off
-    \l{#TEMPLATE}{TEMPLATE} option is specified.  The value of this
+    \l{#CONFIG}{CONFIG} option is specified.  The value of this
     variable is typically handled by \c qmake or \l{#QMAKESPEC}{qmake.conf}
     and rarely needs to be modified.
 
@@ -1985,7 +1985,7 @@ distinction between shared and
     \section1 QMAKE_CFLAGS_WARN_ON
 
     This variable is not empty if the warn_on
-    \l{#TEMPLATE}{TEMPLATE} option is specified.
+    \l{#CONFIG}{CONFIG} option is specified.
     The value of this variable is typically handled by
     \c qmake or \l{#QMAKESPEC}{qmake.conf} and rarely needs
     to be modified.
