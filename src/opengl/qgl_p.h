@@ -237,13 +237,37 @@ private:
     friend class QGLContextPrivate;
 };
 
+// Reference to a QGLContext which automatically switches to another
+// shared context when the main one is destroyed.  If there is no
+// shared context to switch to, the context pointer is set to null.
+// Note: should be merged into QGLContextGroup at some point.
+class QGLContextReference : public QObject
+{
+    Q_OBJECT
+public:
+    QGLContextReference(const QGLContext *ctx);
+    ~QGLContextReference() {}
+
+    const QGLContext *context() const { return m_ctx; }
+
+    void ref() { m_ref.ref(); }
+    bool deref() { return m_ref.deref(); }
+
+private slots:
+    void aboutToDestroyContext(const QGLContext *ctx);
+
+private:
+    QAtomicInt m_ref;
+    const QGLContext *m_ctx;
+};
+
 class QGLTexture;
 
 class QGLContextPrivate
 {
     Q_DECLARE_PUBLIC(QGLContext)
 public:
-    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {group = new QGLContextGroup(context);}
+    explicit QGLContextPrivate(QGLContext *context) : internal_context(false), q_ptr(context) {reference = new QGLContextReference(context); group = new QGLContextGroup(context);}
     ~QGLContextPrivate();
     QGLTexture *bindTexture(const QImage &image, GLenum target, GLint format,
                             QGLContext::BindOptions options);
@@ -305,6 +329,7 @@ public:
     QGLContext *q_ptr;
     QGLFormat::OpenGLVersionFlags version_flags;
 
+    QGLContextReference *reference;
     QGLContextGroup *group;
     GLint max_texture_size;
 
@@ -552,6 +577,65 @@ public:
 private:
     QGLContext *m_oldContext;
     QGLContext *m_ctx;
+};
+
+// Put a guard around a GL object identifier and its context.
+// When the context goes away, a shared context will be used
+// in its place.  If there are no more shared contexts, then
+// the identifier is returned as zero - it is assumed that the
+// context destruction cleaned up the identifier in this case.
+class Q_OPENGL_EXPORT QGLSharedResourceGuard
+{
+public:
+    QGLSharedResourceGuard(const QGLContext *context)
+        : m_ctxref(0), m_id(0)
+    {
+        setContext(context);
+    }
+    QGLSharedResourceGuard(const QGLContext *context, GLuint id)
+        : m_ctxref(0), m_id(id)
+    {
+        setContext(context);
+    }
+    ~QGLSharedResourceGuard()
+    {
+        if (m_ctxref && !m_ctxref->deref())
+            delete m_ctxref;
+    }
+
+    const QGLContext *context() const
+    {
+        return m_ctxref ? m_ctxref->context() : 0;
+    }
+
+    void setContext(const QGLContext *context)
+    {
+        if (m_ctxref && !m_ctxref->deref())
+            delete m_ctxref;
+        if (context) {
+            m_ctxref = context->d_ptr->reference;
+            m_ctxref->ref();
+        } else {
+            m_ctxref = 0;
+        }
+    }
+
+    GLuint id() const
+    {
+        if (m_ctxref && m_ctxref->context())
+            return m_id;
+        else
+            return 0;
+    }
+
+    void setId(GLuint id)
+    {
+        m_id = id;
+    }
+
+private:
+    QGLContextReference *m_ctxref;
+    GLuint m_id;
 };
 
 QT_END_NAMESPACE
