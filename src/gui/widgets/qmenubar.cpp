@@ -1094,6 +1094,8 @@ void QMenuBar::mousePressEvent(QMouseEvent *e)
     if(e->button() != Qt::LeftButton)
         return;
 
+    d->mouseDown = true;
+
     QAction *action = d->actionAt(e->pos());
     if (!action || !d->isVisible(action)) {
         d->setCurrentAction(0);
@@ -1103,8 +1105,6 @@ void QMenuBar::mousePressEvent(QMouseEvent *e)
 #endif
         return;
     }
-
-    d->mouseDown = true;
 
     if(d->currentAction == action && d->popupState) {
         if(QMenu *menu = d->activeMenu) {
@@ -1252,10 +1252,11 @@ void QMenuBar::keyPressEvent(QKeyEvent *e)
 void QMenuBar::mouseMoveEvent(QMouseEvent *e)
 {
     Q_D(QMenuBar);
-    d->mouseDown = e->buttons() & Qt::LeftButton;
+    bool popupState = d->popupState || e->buttons() & Qt::LeftButton;
+    if (!d->mouseDown || !popupState)
+        return;
     QAction *action = d->actionAt(e->pos());
-    bool popupState = d->popupState || d->mouseDown;
-    if ((action && d->isVisible(action)) || !popupState)
+    if (action && d->isVisible(action))
         d->setCurrentAction(action, popupState);
 }
 
