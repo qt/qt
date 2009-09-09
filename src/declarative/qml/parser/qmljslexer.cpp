@@ -43,8 +43,6 @@
 #include "config.h"
 #endif
 
-#include <QDebug>
-
 #include "qmljsengine_p.h"
 #include "qmljslexer_p.h"
 #include "qmljsgrammar_p.h"
@@ -98,7 +96,7 @@ Lexer::Lexer(Engine *eng, bool tokenizeComments)
       parenthesesCount(0),
       prohibitAutomaticSemicolon(false),
       tokenizeComments(tokenizeComments)
-{qDebug()<<"--- new lexer";
+{
     driver->setLexer(this);
     // allocate space for read buffers
     buffer8 = new char[size8];
@@ -650,7 +648,6 @@ int Lexer::lex()
                     setDone(Other);
                 } else
                     state = Start;
-                qDebug() << "--- state is InSingleLineComment @" << startlineno << ":"<<startcolumn;
                 driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
             } else if (current == 0) {
                 driver->addComment(startpos, tokenLength(), startlineno, startcolumn);

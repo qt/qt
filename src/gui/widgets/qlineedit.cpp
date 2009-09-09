@@ -1808,7 +1808,7 @@ void QLineEdit::paintEvent(QPaintEvent *)
     // (cix).
     int minLB = qMax(0, -fm.minLeftBearing());
     int minRB = qMax(0, -fm.minRightBearing());
-    int widthUsed = d->control->width() + minRB;
+    int widthUsed = qRound(d->control->naturalTextWidth()) + 1 + minRB;
     if ((minLB + widthUsed) <=  lineRect.width()) {
         // text fits in lineRect; use hscroll for alignment
         switch (va & ~(Qt::AlignAbsolute|Qt::AlignVertical_Mask)) {

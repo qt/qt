@@ -535,6 +535,12 @@ void QPinchGesture::reset()
     QGesture::reset();
 }
 
+/*! \enum QPinchGesture::WhatChange
+  \value ScaleFactorChanged
+  \value RotationAngleChanged
+  \value CenterPointChanged
+*/
+
 /*!
     \property QPinchGesture::whatChanged
 

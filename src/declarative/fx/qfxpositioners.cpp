@@ -251,6 +251,18 @@ void QFxBasePositioner::prePositioning()
     d->_animated.clear();
     doPositioning();
     finishApplyTransitions();
+    //Set implicit size to the size of its children
+    //###To keep this valid, do we need to update on pos change as well?
+    qreal h = 0.0f;
+    qreal w = 0.0f;
+    foreach(QFxItem *child, d->_items){
+        if(!child->isVisible() || child->opacity() <= 0)
+            continue;
+        h = qMax(h, child->y() + child->height());
+        w = qMax(w, child->x() + child->width());
+    }
+    setImplicitHeight(h);
+    setImplicitWidth(w);
 }
 
 void QFxBasePositioner::applyTransition(const QList<QPair<QString, QVariant> >& changes, QFxItem* target, QmlStateOperation::ActionList &actions)

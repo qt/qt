@@ -49,6 +49,8 @@
 
 #include "qgroupbox.h"
 
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -81,7 +83,7 @@ private slots:
     void toggledVsClicked();
     void childrenAreDisabled();
     void propagateFocus();
-    
+
 private:
     bool checked;
     qint64 timeStamp;
@@ -467,7 +469,7 @@ void tst_QGroupBox::propagateFocus()
     box.show();
     box.setFocus();
     QTest::qWait(250);
-    QCOMPARE(qApp->focusWidget(), static_cast<QWidget*>(&lineEdit));
+    QTRY_COMPARE(qApp->focusWidget(), static_cast<QWidget*>(&lineEdit));
 }
 
 QTEST_MAIN(tst_QGroupBox)

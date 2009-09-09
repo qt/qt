@@ -230,9 +230,11 @@
         \o \c{QPushButton[flat="false"]}
         \o Matches instances of QPushButton that are not
            \l{QPushButton::}{flat}. You may use this selector to test
-           for any Qt property specified using Q_PROPERTY(). In
-           addition, the special \c class property is supported, for
-           the name of the class.
+           for any Qt \l{Qt's Property System}{property} that supports
+           QVariant::toString() (see the \l{QVariant::}{toString()}
+           function documentation for details). In addition, the
+           special \c class property is supported, for the name of the
+           class.
 
            This selector may also be used to test dynamic properties.
            For more information on customization using dynamic properties,

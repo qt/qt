@@ -93,7 +93,7 @@ public:
 
     virtual ~QGLFramebufferObject();
 
-    const QGLFramebufferObjectFormat &format() const;
+    QGLFramebufferObjectFormat format() const;
 
     bool isValid() const;
     bool isBound() const;
@@ -130,7 +130,8 @@ protected:
 private:
     Q_DISABLE_COPY(QGLFramebufferObject)
     QScopedPointer<QGLFramebufferObjectPrivate> d_ptr;
-    friend class QGLDrawable;
+    friend class QGLPaintDevice;
+    friend class QGLFBOGLPaintDevice;
 };
 
 class QGLFramebufferObjectFormatPrivate;
@@ -159,8 +160,13 @@ public:
     void setInternalTextureFormat(QMacCompatGLenum internalTextureFormat);
 #endif
 
+    bool operator==(const QGLFramebufferObjectFormat& other) const;
+    bool operator!=(const QGLFramebufferObjectFormat& other) const;
+
 private:
     QGLFramebufferObjectFormatPrivate *d;
+
+    void detach();
 };
 
 QT_END_NAMESPACE

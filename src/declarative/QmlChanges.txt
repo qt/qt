@@ -59,6 +59,8 @@ WebView: status        -> statusText
 WebView: mouseX        -> clickX (parameter to onDoubleClick)
 WebView: mouseY        -> clickY (parameter to onDoubleClick)
 WebView: cacheSize     -> pixelCacheSize
+Repeater: component    -> delegate
+Repeater: dataSource   -> model
 
 Additions:
 MouseRegion: add "acceptedButtons" property

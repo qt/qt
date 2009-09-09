@@ -323,7 +323,7 @@
             'runtime/TimeoutChecker.cpp',
             'runtime/TimeoutChecker.h',
             'runtime/Tracing.h',
-            'runtime/TypeInfo.h',
+            'runtime/JSTypeInfo.h',
             'runtime/UString.cpp',
             'runtime/UString.h',
             'wrec/CharacterClass.cpp',

@@ -58,6 +58,7 @@
 #include <private/qpaintengineex_p.h>
 #include <private/qglengineshadermanager_p.h>
 #include <private/qgl2pexvertexarray_p.h>
+#include <private/qglpaintdevice_p.h>
 
 enum EngineMode {
     ImageDrawingMode,
@@ -199,7 +200,7 @@ public:
     static QGLEngineShaderManager* shaderManagerForEngine(QGL2PaintEngineEx *engine) { return engine->d_func()->shaderManager; }
 
     QGL2PaintEngineEx* q;
-    QGLDrawable drawable;
+    QGLPaintDevice* device;
     int width, height;
     QGLContext *ctx;
     EngineMode mode;
