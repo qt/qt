@@ -5614,8 +5614,11 @@ QPixmapFilter *QOpenGLPaintEngine::createPixmapFilter(int type) const
     if (QGLContext::currentContext())
         return QGLContext::currentContext()->d_func()->createPixmapFilter(type);
     else
-#endif
         return 0;
+#else
+    Q_UNUSED(type);
+    return 0;
+#endif
 }
 
 

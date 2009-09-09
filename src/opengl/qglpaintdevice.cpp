@@ -180,8 +180,8 @@ QGLPaintDevice* QGLPaintDevice::getDevice(QPaintDevice* pd)
             glpd = &(static_cast<QGLFramebufferObject*>(pd)->d_func()->glDevice);
             break;
         case QInternal::Pixmap: {
-            QPixmapData* pmd = static_cast<QPixmap*>(pd)->pixmapData();
 #if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
+            QPixmapData* pmd = static_cast<QPixmap*>(pd)->pixmapData();
             Q_ASSERT(pmd->classId() == QPixmapData::OpenGLClass);
             glpd = static_cast<QGLPixmapData*>(pmd)->glDevice();
 #else
