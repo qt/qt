@@ -1954,7 +1954,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size,
 #endif
 
     if (handle == INVALID_HANDLE_VALUE) {
-        q->setError(QFile::UnspecifiedError, QLatin1String("No handle on file"));
+        q->setError(QFile::PermissionsError, qt_error_string(ERROR_ACCESS_DENIED));
         return 0;
     }
 
