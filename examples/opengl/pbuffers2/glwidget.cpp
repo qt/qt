@@ -136,6 +136,7 @@ void GLWidget::draw()
     QPainter p(this); // used for text overlay
 
     // save the GL state set for QPainter
+    p.beginNativePainting();
     saveGLState();
 
     // render the 'bubbles.svg' file into our pbuffer
@@ -206,6 +207,7 @@ void GLWidget::draw()
 
     // restore the GL state that QPainter expects
     restoreGLState();
+    p.endNativePainting();
 
     // draw the overlayed text using QPainter
     p.setPen(QColor(197, 197, 197, 157));
