@@ -1308,7 +1308,6 @@ void QGLWidget::setContext(QGLContext *context,
     QGLContext* oldcx = d->glcx;
     d->glcx = context;
 
-
     if (parentWidget()) {
         // force creation of delay-created widgets
         parentWidget()->winId();

@@ -100,7 +100,7 @@ private slots:
 #if QT_VERSION >= 0x040600
     void autoIncrementId();
 #endif
-    
+
     void task209485_removeFromGroupInEventHandler_data();
     void task209485_removeFromGroupInEventHandler();
 };
@@ -333,12 +333,12 @@ void tst_QButtonGroup::testSignals()
 
     QCOMPARE(clickedSpy.count(), 1);
     QCOMPARE(clickedIdSpy.count(), 1);
-    
-    int expectedId = -1;    
+
+    int expectedId = -1;
 #if QT_VERSION >= 0x040600
     expectedId = -2;
 #endif
-    
+
     QVERIFY(clickedIdSpy.takeFirst().at(0).toInt() == expectedId);
     QCOMPARE(pressedSpy.count(), 1);
     QCOMPARE(pressedIdSpy.count(), 1);

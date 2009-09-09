@@ -39,76 +39,74 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_GL_P_H
-#define QWINDOWSURFACE_GL_P_H
+#ifndef QGLPAINTDEVICE_P_H
+#define QGLPAINTDEVICE_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of the QLibrary class.  This header file may change from
+// of the QtOpenGL module.  This header file may change from
 // version to version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <qglobal.h>
+
+#include <qpaintdevice.h>
 #include <qgl.h>
-#include <private/qwindowsurface_p.h>
-#include <private/qglpaintdevice_p.h>
+
 
 QT_BEGIN_NAMESPACE
 
-class QPaintDevice;
-class QPoint;
-class QRegion;
-class QWidget;
-struct QGLWindowSurfacePrivate;
-
-class QGLWindowSurfaceGLPaintDevice : public QGLPaintDevice
+class QGLPaintDevice : public QPaintDevice
 {
 public:
-    QPaintEngine* paintEngine() const;
-    void endPaint();
-    QSize size() const;
-    int metric(PaintDeviceMetric m) const;
-    QGLContext* context() const;
-    QGLWindowSurfacePrivate* d;
+    QGLPaintDevice();
+    virtual ~QGLPaintDevice();
+
+    int devType() const {return QInternal::OpenGL;}
+
+    virtual void beginPaint();
+    virtual void ensureActiveTarget();
+    virtual void endPaint();
+
+    virtual QGLContext* context() const = 0;
+    QGLFormat format() const;
+    virtual QSize size() const = 0;
+
+    // returns the QGLPaintDevice for the given QPaintDevice
+    static QGLPaintDevice* getDevice(QPaintDevice*);
+
+protected:
+    GLuint m_previousFBO;
+    GLuint m_thisFBO;
 };
 
-class QGLWindowSurface : public QObject, public QWindowSurface // , public QPaintDevice
+
+// Wraps a QGLWidget
+class QGLWidget;
+class QGLWidgetGLPaintDevice : public QGLPaintDevice
 {
-    Q_OBJECT
 public:
-    QGLWindowSurface(QWidget *window);
-    ~QGLWindowSurface();
+    QGLWidgetGLPaintDevice();
 
-    QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    void setGeometry(const QRect &rect);
-    void updateGeometry();
-    bool scroll(const QRegion &area, int dx, int dy);
+    virtual QPaintEngine* paintEngine() const;
 
-    void beginPaint(const QRegion &region);
-    void endPaint(const QRegion &region);
+    // QGLWidgets need to do swapBufers in endPaint:
+    virtual void beginPaint();
+    virtual void endPaint();
+    virtual QSize size() const;
+    virtual QGLContext* context() const;
 
-    QImage *buffer(const QWidget *widget);
-
-    QGLContext *context() const;
-
-    static QGLFormat surfaceFormat;
-
-private slots:
-    void deleted(QObject *object);
+    void setWidget(QGLWidget*);
 
 private:
-    void hijackWindow(QWidget *widget);
-
-    QGLWindowSurfacePrivate *d_ptr;
+    friend class QGLWidget;
+    QGLWidget *glWidget;
 };
 
 QT_END_NAMESPACE
 
-#endif // QWINDOWSURFACE_GL_P_H
-
+#endif // QGLPAINTDEVICE_P_H

@@ -39,5 +39,5 @@
 **
 ****************************************************************************/
 
-#include "../wincewm60standard-msvc2005/qplatformdefs.h"
+#include "../common/wince/qplatformdefs.h"
 
