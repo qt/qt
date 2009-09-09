@@ -312,6 +312,8 @@ qreal QFxLoader::progress() const
     \o SizeLoaderToItem - the Loader will be sized to the size of the item, unless the size of the Loader has been otherwise specified.
     \o SizeItemToLoader - the item will be sized to the size of the Loader.
     \endlist
+
+    The default resizeMode is SizeLoaderToItem.
 */
 QFxLoader::ResizeMode QFxLoader::resizeMode() const
 {
