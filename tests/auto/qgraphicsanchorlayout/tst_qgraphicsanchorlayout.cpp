@@ -52,6 +52,7 @@ private slots:
     void simple();
     void simple_center();
     void simple_semifloat();
+    void layoutDirection();
     void diagonal();
     void parallel();
     void parallel2();
@@ -102,6 +103,39 @@ static void setAnchor(QGraphicsAnchorLayout *l,
 {
     l->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
     l->setAnchorSpacing(firstItem, firstEdge, secondItem, secondEdge, spacing);
+}
+
+static bool checkReverseDirection(QGraphicsWidget *w)
+{
+    QGraphicsLayout *l = w->layout();
+    Q_ASSERT(l);
+    qreal left, top, right, bottom;
+    l->getContentsMargins(&left, &top, &right, &bottom);
+    w->setLayoutDirection(Qt::LeftToRight);
+    QApplication::processEvents();
+    const QRectF lg = l->geometry();
+    QMap<QGraphicsLayoutItem *, QRectF> geometries;
+    for (int i = 0; i < l->count(); ++i) {
+        QGraphicsLayoutItem *w = l->itemAt(i);
+        geometries.insert(w, w->geometry());
+    }
+    w->setLayoutDirection(Qt::RightToLeft);
+    QApplication::processEvents();
+    lg.adjusted(+right, +top, -left, -bottom);
+    for (int i = 0; i < l->count(); ++i) {
+        QGraphicsLayoutItem *w = l->itemAt(i);
+        const QRectF rtlGeom = w->geometry();
+        const QRectF ltrGeom = geometries.value(w);
+        QRectF expectedGeom = ltrGeom;
+        expectedGeom.moveRight(lg.right() - (0 + ltrGeom.left()));
+        if (expectedGeom != rtlGeom) {
+            qDebug() << "layout->geometry():" << lg
+                     << "expected:" << expectedGeom
+                     << "actual:" << rtlGeom;
+            return false;
+        }
+    }
+    return true;
 }
 
 void tst_QGraphicsAnchorLayout::simple()
@@ -204,6 +238,46 @@ void tst_QGraphicsAnchorLayout::simple_semifloat()
     QCOMPARE(layoutMaximumSize, QSizeF(200, 20));
 }
 
+void tst_QGraphicsAnchorLayout::layoutDirection()
+{
+    QSizeF min(10, 10);
+    QSizeF pref(50, 10);
+    QSizeF max(100, 10);
+
+    QGraphicsWidget *a = createItem(min, pref, max, "a");
+    QGraphicsWidget *b = createItem(min, pref, max, "b");
+    QGraphicsWidget *c = createItem(min, pref, QSizeF(100, 20), "c");
+
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    l->setContentsMargins(0, 5, 10, 15);
+    // horizontal
+    setAnchor(l, l, Qt::AnchorLeft, a, Qt::AnchorLeft, 0);
+    setAnchor(l, a, Qt::AnchorRight, b, Qt::AnchorLeft, 0);
+    setAnchor(l, b, Qt::AnchorRight, l, Qt::AnchorRight, 0);
+    setAnchor(l, a, Qt::AnchorHorizontalCenter, c, Qt::AnchorLeft, 0);
+    setAnchor(l, c, Qt::AnchorRight, b, Qt::AnchorHorizontalCenter, 0);
+
+    // vertical
+    setAnchor(l, l, Qt::AnchorTop, a, Qt::AnchorTop, 0);
+    setAnchor(l, l, Qt::AnchorTop, b, Qt::AnchorTop, 0);
+    setAnchor(l, a, Qt::AnchorBottom, c, Qt::AnchorTop, 0);
+    setAnchor(l, b, Qt::AnchorBottom, c, Qt::AnchorTop, 0);
+    setAnchor(l, c, Qt::AnchorBottom, l, Qt::AnchorBottom, 0);
+
+    QCOMPARE(l->count(), 3);
+
+    QGraphicsWidget *p = new QGraphicsWidget(0, Qt::Window);
+    p->setLayoutDirection(Qt::LeftToRight);
+    p->setLayout(l);
+
+    QGraphicsScene scene;
+    QGraphicsView *view = new QGraphicsView(&scene);
+    scene.addItem(p);
+    p->show();
+    view->show();
+
+    QCOMPARE(checkReverseDirection(p), true);
+}
 
 void tst_QGraphicsAnchorLayout::diagonal()
 {
@@ -306,6 +380,8 @@ void tst_QGraphicsAnchorLayout::diagonal()
     QCOMPARE(d->geometry(), QRectF(0.0, 200.0, 100.0, 100.0));
     QCOMPARE(e->geometry(), QRectF(100.0, 200.0, 75.0, 100.0));
     QCOMPARE(p.size(), testA);
+
+    QCOMPARE(checkReverseDirection(&p), true);
 }
 
 void tst_QGraphicsAnchorLayout::parallel()
@@ -599,6 +675,8 @@ void tst_QGraphicsAnchorLayout::snakeOppositeDirections()
     QCOMPARE(b->geometry(), QRectF(90.0, 100.0, 10.0, 100.0));
     QCOMPARE(c->geometry(), QRectF(90.0, 200.0, 100.0, 100.0));
     QCOMPARE(p.size(), layoutMaximumSize);
+
+    QCOMPARE(checkReverseDirection(&p), true);
 }
 
 void tst_QGraphicsAnchorLayout::fairDistribution()
