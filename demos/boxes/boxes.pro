@@ -44,6 +44,6 @@ wince*: {
 win32-msvc* {
     QMAKE_CXXFLAGS -= -Zm200
     QMAKE_CFLAGS -= -Zm200
-    QMAKE_CXXFLAGS += -Zm1200
-    QMAKE_CFLAGS += -Zm1200
+    QMAKE_CXXFLAGS += -Zm500
+    QMAKE_CFLAGS += -Zm500
 }

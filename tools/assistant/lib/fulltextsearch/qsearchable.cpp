@@ -1,10 +1,17 @@
 /****************************************************************************
 **
-** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Nokia Corporation (qt-info@nokia.com)
+** Copyright (C) 2003-2006 Ben van Klinken and the CLucene Team.
+** All rights reserved.
 **
-** This file is part of the QCLucene library and is distributable under
-** the terms of the LGPL license as specified in the license.txt file.
+** Portion Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+**
+** This file may be used under the terms of the GNU Lesser General Public
+** License version 2.1 as published by the Free Software Foundation and
+** appearing in the file LICENSE.LGPL included in the packaging of this file.
+** Please review the following information to ensure the GNU Lesser General
+** Public License version 2.1 requirements will be met:
+** http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
 ****************************************************************************/
 
@@ -64,19 +71,19 @@ QCLuceneHits QCLuceneSearcher::search(const QCLuceneQuery &query)
     return search(query, QCLuceneFilter());
 }
 
-QCLuceneHits QCLuceneSearcher::search(const QCLuceneQuery &query, 
+QCLuceneHits QCLuceneSearcher::search(const QCLuceneQuery &query,
                                       const QCLuceneFilter &filter)
 {
     return QCLuceneHits(*this, query, filter);
 }
 
-QCLuceneHits QCLuceneSearcher::search(const QCLuceneQuery &query, 
+QCLuceneHits QCLuceneSearcher::search(const QCLuceneQuery &query,
                                       const QCLuceneSort &sort)
 {
     return QCLuceneHits(*this, query, QCLuceneFilter(), sort);
 }
 
-QCLuceneHits QCLuceneSearcher::search(const QCLuceneQuery &query, 
+QCLuceneHits QCLuceneSearcher::search(const QCLuceneQuery &query,
                                       const QCLuceneFilter &filter,
                                       const QCLuceneSort &sort)
 {
@@ -87,7 +94,7 @@ QCLuceneHits QCLuceneSearcher::search(const QCLuceneQuery &query,
 QCLuceneIndexSearcher::QCLuceneIndexSearcher(const QString &path)
     : QCLuceneSearcher()
 {
-    lucene::search::IndexSearcher *searcher = 
+    lucene::search::IndexSearcher *searcher =
         new lucene::search::IndexSearcher(path);
 
     reader.d->reader = searcher->getReader();
@@ -132,7 +139,7 @@ bool QCLuceneIndexSearcher::doc(qint32 i, QCLuceneDocument &document)
 QCLuceneMultiSearcher::QCLuceneMultiSearcher(const QList<QCLuceneSearchable> searchables)
 : QCLuceneSearcher()
 {
-    lucene::search::Searchable** list= 
+    lucene::search::Searchable** list=
         _CL_NEWARRAY(lucene::search::Searchable*, searchables.count());
 
     d->searchable = new lucene::search::MultiSearcher(list);
@@ -162,7 +169,7 @@ qint32 QCLuceneMultiSearcher::subDoc(qint32 index) const
 
     if (searcher == 0)
         return 0;
-    
+
     return qint32(searcher->subDoc(int32_t(index)));
 }
 
@@ -173,7 +180,7 @@ qint32 QCLuceneMultiSearcher::subSearcher(qint32 index) const
 
     if (searcher == 0)
         return 0;
-    
+
     return qint32(searcher->subSearcher(int32_t(index)));
 }
 
@@ -184,7 +191,7 @@ qint32 QCLuceneMultiSearcher::searcherIndex(qint32 index) const
 
     if (searcher == 0)
         return 0;
-    
+
     return qint32(searcher->searcherIndex(int32_t(index)));
 }
 

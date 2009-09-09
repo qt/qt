@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -62,6 +62,7 @@
 #include "QtCore/qatomic.h"
 #include "private/qwidget_p.h"
 #include "qcache.h"
+#include "qglpaintdevice_p.h"
 
 #ifndef QT_OPENGL_ES_1_CL
 #define q_vertexType float
@@ -174,6 +175,7 @@ class QGLWidgetPrivate : public QWidgetPrivate
     Q_DECLARE_PUBLIC(QGLWidget)
 public:
     QGLWidgetPrivate() : QWidgetPrivate()
+                       , disable_clear_on_painter_begin(false)
 #ifdef Q_WS_QWS
                        , wsurf(0)
 #endif
@@ -190,10 +192,13 @@ public:
     void cleanupColormaps();
 
     QGLContext *glcx;
+    QGLWidgetGLPaintDevice glDevice;
     bool autoSwap;
 
     QGLColormap cmap;
     QMap<QString, int> displayListCache;
+
+    bool disable_clear_on_painter_begin;
 
 #if defined(Q_WS_WIN)
     void updateColormap();
@@ -293,7 +298,6 @@ public:
     uint sharing : 1;
     uint initDone : 1;
     uint crWin : 1;
-    uint clear_on_painter_begin : 1;
     uint internal_context : 1;
     uint version_flags_cached : 1;
     QPaintDevice *paintDevice;
@@ -335,57 +339,6 @@ public:
     static QGLSignalProxy *instance();
 Q_SIGNALS:
     void aboutToDestroyContext(const QGLContext *context);
-};
-
-class QGLPixelBuffer;
-class QGLFramebufferObject;
-class QWSGLWindowSurface;
-class QGLWindowSurface;
-class QGLPixmapData;
-class QGLDrawable {
-public:
-    QGLDrawable() : widget(0), buffer(0), fbo(0)
-#if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
-                  , wsurf(0)
-#endif
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-                  , pixmapData(0)
-#endif
-        {}
-    void setDevice(QPaintDevice *pdev);
-    void swapBuffers();
-    void makeCurrent();
-    void doneCurrent();
-    QSize size() const;
-    QGLFormat format() const;
-    GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA,
-                       QGLContext::BindOptions = QGLContext::InternalBindOption);
-    GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA,
-                       QGLContext::BindOptions = QGLContext::InternalBindOption);
-    QColor backgroundColor() const;
-    QGLContext *context() const;
-    bool autoFillBackground() const;
-    bool hasTransparentBackground() const;
-
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLPixmapData *copyOnBegin() const;
-#endif
-
-private:
-    bool wasBound;
-    QGLWidget *widget;
-    QGLPixelBuffer *buffer;
-    QGLFramebufferObject *fbo;
-#ifdef Q_WS_QWS
-    QWSGLWindowSurface *wsurf;
-#elif !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLWindowSurface *wsurf;
-#endif
-
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    QGLPixmapData *pixmapData;
-#endif
-    int previous_fbo;
 };
 
 // GL extension definitions
@@ -519,15 +472,7 @@ extern QPaintEngine* qt_qgl_paint_engine();
 extern EGLDisplay qt_qgl_egl_display();
 #endif
 
-inline bool qt_gl_preferGL2Engine()
-{
-#if defined(QT_OPENGL_ES_2)
-    return true;
-#else
-    return (QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
-           && qgetenv("QT_GL_USE_OPENGL1ENGINE").isEmpty();
-#endif
-}
+bool qt_gl_preferGL2Engine();
 
 inline GLenum qt_gl_preferredTextureFormat()
 {

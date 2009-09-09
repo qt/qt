@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -2334,8 +2334,10 @@ void tst_QTableView::scrollTo()
     QtTestTableView view;
 
     view.show();
-    view.resize(columnWidth * 2, rowHeight * 2);
+    QSize forcedSize(columnWidth * 2, rowHeight * 2);
+    view.resize(forcedSize);
     QTest::qWait(0);
+    QTRY_COMPARE(view.size(), forcedSize);
 
     view.setModel(&model);
     view.setSpan(row, column, rowSpan, columnSpan);
@@ -2910,6 +2912,7 @@ void tst_QTableView::tabFocus()
     window.setFocus();
     QTest::qWait(100);
     window.activateWindow();
+    QApplication::setActiveWindow(&window);
     QTest::qWait(100);
 
     qApp->processEvents();
@@ -2926,43 +2929,43 @@ void tst_QTableView::tabFocus()
     for (int i = 0; i < 2; ++i) {
         // tab to view
         QTest::keyPress(qApp->focusWidget(), Qt::Key_Tab);
-        QVERIFY(!window.hasFocus());
+        QTRY_VERIFY(!window.hasFocus());
         QVERIFY(view->hasFocus());
         QVERIFY(!edit->hasFocus());
 
         // tab to edit
         QTest::keyPress(qApp->focusWidget(), Qt::Key_Tab);
+        QTRY_VERIFY(edit->hasFocus());
         QVERIFY(!window.hasFocus());
         QVERIFY(!view->hasFocus());
-        QVERIFY(edit->hasFocus());
     }
 
     // backtab to view
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Backtab);
+    QTRY_VERIFY(view->hasFocus());
     QVERIFY(!window.hasFocus());
-    QVERIFY(view->hasFocus());
     QVERIFY(!edit->hasFocus());
 
     // backtab to edit
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Backtab);
+    QTRY_VERIFY(edit->hasFocus());
     QVERIFY(!window.hasFocus());
     QVERIFY(!view->hasFocus());
-    QVERIFY(edit->hasFocus());
 
     QStandardItemModel *model = new QStandardItemModel;
     view->setModel(model);
 
     // backtab to view
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Backtab);
+    QTRY_VERIFY(view->hasFocus());
     QVERIFY(!window.hasFocus());
-    QVERIFY(view->hasFocus());
     QVERIFY(!edit->hasFocus());
 
     // backtab to edit
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Backtab);
+    QTRY_VERIFY(edit->hasFocus());
     QVERIFY(!window.hasFocus());
     QVERIFY(!view->hasFocus());
-    QVERIFY(edit->hasFocus());
 
     model->insertRow(0, new QStandardItem("Hei"));
     model->insertRow(0, new QStandardItem("Hei"));
@@ -2970,8 +2973,8 @@ void tst_QTableView::tabFocus()
 
     // backtab to view
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Backtab);
+    QTRY_VERIFY(view->hasFocus());
     QVERIFY(!window.hasFocus());
-    QVERIFY(view->hasFocus());
     QVERIFY(!edit->hasFocus());
 
     // backtab to edit doesn't work
@@ -2984,14 +2987,14 @@ void tst_QTableView::tabFocus()
 
     // backtab to edit
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Backtab);
+    QTRY_VERIFY(edit->hasFocus());
     QVERIFY(!window.hasFocus());
     QVERIFY(!view->hasFocus());
-    QVERIFY(edit->hasFocus());
 
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Tab);
-    QVERIFY(view->hasFocus());
+    QTRY_VERIFY(view->hasFocus());
     QTest::keyPress(qApp->focusWidget(), Qt::Key_Tab);
-    QVERIFY(edit->hasFocus());
+    QTRY_VERIFY(edit->hasFocus());
 
     delete model;
 }
