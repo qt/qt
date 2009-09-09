@@ -20,8 +20,6 @@ private slots:
 
 private:
     QFxView *createView(const QString &filename);
-    template<typename T>
-    T *findItem(QFxItem *parent, const QString &id, int index=-1);
 };
 
 tst_QFxLayouts::tst_QFxLayouts()
@@ -35,13 +33,13 @@ void tst_QFxLayouts::test_horizontal()
     canvas->execute();
     qApp->processEvents();
 
-    QFxRect *one = findItem<QFxRect>(canvas->root(), "one");
+    QFxRect *one = canvas->root()->findChild<QFxRect*>("one");
     QVERIFY(one != 0);
 
-    QFxRect *two = findItem<QFxRect>(canvas->root(), "two");
+    QFxRect *two = canvas->root()->findChild<QFxRect*>("two");
     QVERIFY(two != 0);
 
-    QFxRect *three = findItem<QFxRect>(canvas->root(), "three");
+    QFxRect *three = canvas->root()->findChild<QFxRect*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -59,13 +57,13 @@ void tst_QFxLayouts::test_horizontal_spacing()
     canvas->execute();
     qApp->processEvents();
 
-    QFxRect *one = findItem<QFxRect>(canvas->root(), "one");
+    QFxRect *one = canvas->root()->findChild<QFxRect*>("one");
     QVERIFY(one != 0);
 
-    QFxRect *two = findItem<QFxRect>(canvas->root(), "two");
+    QFxRect *two = canvas->root()->findChild<QFxRect*>("two");
     QVERIFY(two != 0);
 
-    QFxRect *three = findItem<QFxRect>(canvas->root(), "three");
+    QFxRect *three = canvas->root()->findChild<QFxRect*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -83,13 +81,13 @@ void tst_QFxLayouts::test_vertical()
     canvas->execute();
     qApp->processEvents();
 
-    QFxRect *one = findItem<QFxRect>(canvas->root(), "one");
+    QFxRect *one = canvas->root()->findChild<QFxRect*>("one");
     QVERIFY(one != 0);
 
-    QFxRect *two = findItem<QFxRect>(canvas->root(), "two");
+    QFxRect *two = canvas->root()->findChild<QFxRect*>("two");
     QVERIFY(two != 0);
 
-    QFxRect *three = findItem<QFxRect>(canvas->root(), "three");
+    QFxRect *three = canvas->root()->findChild<QFxRect*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -107,13 +105,13 @@ void tst_QFxLayouts::test_vertical_spacing()
     canvas->execute();
     qApp->processEvents();
 
-    QFxRect *one = findItem<QFxRect>(canvas->root(), "one");
+    QFxRect *one = canvas->root()->findChild<QFxRect*>("one");
     QVERIFY(one != 0);
 
-    QFxRect *two = findItem<QFxRect>(canvas->root(), "two");
+    QFxRect *two = canvas->root()->findChild<QFxRect*>("two");
     QVERIFY(two != 0);
 
-    QFxRect *three = findItem<QFxRect>(canvas->root(), "three");
+    QFxRect *three = canvas->root()->findChild<QFxRect*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -131,15 +129,15 @@ void tst_QFxLayouts::test_grid()
     canvas->execute();
     qApp->processEvents();
 
-    QFxRect *one = findItem<QFxRect>(canvas->root(), "one");
+    QFxRect *one = canvas->root()->findChild<QFxRect*>("one");
     QVERIFY(one != 0);
-    QFxRect *two = findItem<QFxRect>(canvas->root(), "two");
+    QFxRect *two = canvas->root()->findChild<QFxRect*>("two");
     QVERIFY(two != 0);
-    QFxRect *three = findItem<QFxRect>(canvas->root(), "three");
+    QFxRect *three = canvas->root()->findChild<QFxRect*>("three");
     QVERIFY(three != 0);
-    QFxRect *four = findItem<QFxRect>(canvas->root(), "four");
+    QFxRect *four = canvas->root()->findChild<QFxRect*>("four");
     QVERIFY(four != 0);
-    QFxRect *five = findItem<QFxRect>(canvas->root(), "five");
+    QFxRect *five = canvas->root()->findChild<QFxRect*>("five");
     QVERIFY(five != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -161,15 +159,15 @@ void tst_QFxLayouts::test_grid_spacing()
     canvas->execute();
     qApp->processEvents();
 
-    QFxRect *one = findItem<QFxRect>(canvas->root(), "one");
+    QFxRect *one = canvas->root()->findChild<QFxRect*>("one");
     QVERIFY(one != 0);
-    QFxRect *two = findItem<QFxRect>(canvas->root(), "two");
+    QFxRect *two = canvas->root()->findChild<QFxRect*>("two");
     QVERIFY(two != 0);
-    QFxRect *three = findItem<QFxRect>(canvas->root(), "three");
+    QFxRect *three = canvas->root()->findChild<QFxRect*>("three");
     QVERIFY(three != 0);
-    QFxRect *four = findItem<QFxRect>(canvas->root(), "four");
+    QFxRect *four = canvas->root()->findChild<QFxRect*>("four");
     QVERIFY(four != 0);
-    QFxRect *five = findItem<QFxRect>(canvas->root(), "five");
+    QFxRect *five = canvas->root()->findChild<QFxRect*>("five");
     QVERIFY(five != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -196,36 +194,6 @@ QFxView *tst_QFxLayouts::createView(const QString &filename)
     return canvas;
 }
 
-/*
-   Find an item with the specified objectName.  If index is supplied then the
-   item must also evaluate the {index} expression equal to index
-*/
-template<typename T>
-T *tst_QFxLayouts::findItem(QFxItem *parent, const QString &objectName, int index)
-{
-    const QMetaObject &mo = T::staticMetaObject;
-    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
-        QFxItem *item = qobject_cast<QFxItem*>(parent->QGraphicsObject::children().at(i));
-        if(!item)
-            continue;
-        //qDebug() << item << item->objectName();
-        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
-            if (index != -1) {
-                QmlExpression e(qmlContext(item), "index", item);
-                e.setTrackChange(false);
-                if (e.value().toInt() == index)
-                    return static_cast<T*>(item);
-            } else {
-                return static_cast<T*>(item);
-            }
-        }
-        item = findItem<T>(item, objectName, index);
-        if (item)
-            return static_cast<T*>(item);
-    }
-
-    return 0;
-}
 
 QTEST_MAIN(tst_QFxLayouts)
 
