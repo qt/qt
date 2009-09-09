@@ -334,6 +334,7 @@ QByteArray QtNetworkSettings::imapExpectedReplySsl;
 class QtNetworkSettingsInitializerCode {
 public:
     QtNetworkSettingsInitializerCode() {
+#ifdef Q_OS_SYMBIAN    
         // We have a non-trivial constructor in global static. 
         // The QtNetworkSettings::serverName() uses native API which assumes
         // Cleanup-stack to exist. That's why we create it here and install
@@ -346,9 +347,18 @@ public:
                 qWarning() << "Please configure the test environment!";
                 qWarning() << "See /etc/hosts or network-settings.h";
                 qFatal("Exiting");
-            }
-        )
+            }                
+        )        
         delete cleanupStack;
+#else        
+        QHostInfo testServerResult = QHostInfo::fromName(QtNetworkSettings::serverName());
+        if (testServerResult.error() != QHostInfo::NoError) {
+            qWarning() << "Could not lookup" << QtNetworkSettings::serverName();
+            qWarning() << "Please configure the test environment!";
+            qWarning() << "See /etc/hosts or network-settings.h";
+            qFatal("Exiting");
+        }   
+#endif           
     }
 };
 QtNetworkSettingsInitializerCode qtNetworkSettingsInitializer;
