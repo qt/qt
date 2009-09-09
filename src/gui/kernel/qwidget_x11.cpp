@@ -358,12 +358,17 @@ Q_GUI_EXPORT void qt_x11_wait_for_window_manager(QWidget* w)
     if (!w->testAttribute(Qt::WA_WState_Created))
         return;
     while (!XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), ReparentNotify, &ev)) {
-        if (XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), MapNotify, &ev))
-            break;
-        if (t.elapsed() > 500)
-            return; // give up, no event available
+        if (t.elapsed() > 2000)
+            return;
         qApp->syncX(); // non-busy wait
     }
+
+    while (!XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), MapNotify, &ev)) {
+        if (t.elapsed() > 2000)
+            return;
+        qApp->syncX(); // non-busy wait
+    }
+
     qApp->x11ProcessEvent(&ev);
     if (XCheckTypedWindowEvent(X11->display, w->effectiveWinId(), ConfigureNotify, &ev))
         qApp->x11ProcessEvent(&ev);
