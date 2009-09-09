@@ -1077,6 +1077,7 @@ protected:
     }
 
     void cleanCache() {
+        QGLShareContextScope scope(buffer_ctx);
         QGLGradientColorTableHash::const_iterator it = cache.constBegin();
         for (; it != cache.constEnd(); ++it) {
             const CacheInfo &cache_info = it.value();
