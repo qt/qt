@@ -461,8 +461,8 @@ void QmlListModel::remove(int index)
         FruitModel.insert(2, {"cost": 5.95, "name":"Pizza"})
     \endcode
 
-    If \a index is not in the list, sufficient empty items are
-    added to the list.
+    The \a index must be to an existing item in the list, or one past
+    the end of the list (equivalent to append).
 
     \sa set() append()
 */
@@ -471,7 +471,8 @@ void QmlListModel::insert(int index, const QScriptValue& valuemap)
     if (!_root)
         _root = new ModelNode;
     if (index >= _root->values.count()) {
-        set(index,valuemap);
+        if (index == _root->values.count())
+            append(valuemap);
         return;
     }
     ModelNode *mn = new ModelNode;
@@ -562,8 +563,7 @@ void QmlListModel::append(const QScriptValue& valuemap)
         FruitModel.set(3, {"cost": 5.95, "name":"Pizza"})
     \endcode
 
-    If \a index is not in the list, sufficient empty items are
-    added to the list.
+    The \a index must be an element in the list.
 
     \sa append()
 */
@@ -571,9 +571,10 @@ void QmlListModel::set(int index, const QScriptValue& valuemap)
 {
     if (!_root)
         _root = new ModelNode;
-    int initialcount = _root->values.count();
-    while (index > _root->values.count())
-        _root->values.append(qVariantFromValue(new ModelNode));
+    if ( index >= _root->values.count()) {
+        qWarning() << "ListModel::set index out of range:" << index;
+        return;
+    }
     if (index == _root->values.count())
         append(valuemap);
     else {
@@ -590,11 +591,7 @@ void QmlListModel::set(int index, const QScriptValue& valuemap)
             }
             roles.append(r);
         }
-        if (initialcount < index) {
-            emit itemsInserted(initialcount,index-initialcount+1);
-        } else {
-            emit itemsChanged(index,1,roles);
-        }
+        emit itemsChanged(index,1,roles);
     }
 }
 
@@ -607,8 +604,7 @@ void QmlListModel::set(int index, const QScriptValue& valuemap)
         FruitModel.set(3, "cost", 5.95)
     \endcode
 
-    If \a index is not in the list, sufficient empty items are
-    added to the list.
+    The \a index must be an element in the list.
 
     \sa append()
 */
@@ -616,9 +612,10 @@ void QmlListModel::set(int index, const QString& property, const QVariant& value
 {
     if (!_root)
         _root = new ModelNode;
-    int initialcount = _root->values.count();
-    while (index >= _root->values.count())
-        _root->values.append(qVariantFromValue(new ModelNode));
+    if ( index >= _root->values.count()) {
+        qWarning() << "ListModel::set index out of range:" << index;
+        return;
+    }
     ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
     int r = roleStrings.indexOf(property);
     if (r<0) {
@@ -630,10 +627,7 @@ void QmlListModel::set(int index, const QString& property, const QVariant& value
 
     if (node)
         node->setProperty(property,value);
-    if (initialcount < index)
-        emit itemsInserted(initialcount,index-initialcount+1);
-    else
-        emit itemsChanged(index,1,roles);
+    emit itemsChanged(index,1,roles);
 }
 
 
