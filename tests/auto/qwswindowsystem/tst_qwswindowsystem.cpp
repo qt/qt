@@ -239,6 +239,7 @@ void tst_QWSWindowSystem::windowOpacity()
                      QColor(255, 255, 255, 0));
     w2.setPalette(palette);
     QApplication::processEvents();
+    QApplication::processEvents();
     QCOMPARE(win1->allocatedRegion(), QRegion(rect));
     QCOMPARE(win2->allocatedRegion(), QRegion(rect));
     VERIFY_COLOR(rect, w1.color());
