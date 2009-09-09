@@ -382,7 +382,6 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
 {
     QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
     ctx = QGLContextPrivate::contextGroup(currentContext);
-    glDevice.setFBO(q);
 
     bool ext_detected = (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject);
     if (!ext_detected || (ext_detected && !qt_resolve_framebufferobject_extensions(currentContext)))
@@ -644,7 +643,6 @@ QGLFramebufferObject::QGLFramebufferObject(const QSize &size, GLenum target)
     : d_ptr(new QGLFramebufferObjectPrivate)
 {
     Q_D(QGLFramebufferObject);
-    d->glDevice.setFBO(this);
     d->init(this, size, NoAttachment, target, DEFAULT_FORMAT);
 }
 
