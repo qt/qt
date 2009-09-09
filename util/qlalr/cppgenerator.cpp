@@ -52,6 +52,7 @@ QString CppGenerator::trollCopyrightHeader() const
     "/****************************************************************************\n"
     "**\n"
     "** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).\n"
+    "** All rights reserved.\n"
     "** Contact: Nokia Corporation (qt-info@nokia.com)\n"
     "**\n"
     "** This file is part of the QtCore module of the Qt Toolkit.\n"
