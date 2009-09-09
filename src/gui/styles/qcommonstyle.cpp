@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -5126,6 +5126,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = Qt::LinksAccessibleByMouse;
         break;
     case SH_DialogButtonBox_ButtonsHaveIcons:
+#ifdef Q_WS_X11
+        return true;
+#endif
         ret = 0;
         break;
     case SH_SpellCheckUnderlineStyle:
@@ -5222,6 +5225,19 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
 
     if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (sp) {
+        case SP_DialogYesButton:
+        case SP_DialogOkButton:
+            pixmap = QIcon::fromTheme(QLatin1String("dialog-ok")).pixmap(16);
+            break;
+        case SP_DialogApplyButton:
+            pixmap = QIcon::fromTheme(QLatin1String("dialog-ok-apply")).pixmap(16);
+            break;
+        case SP_DialogDiscardButton:
+            pixmap = QIcon::fromTheme(QLatin1String("edit-delete")).pixmap(16);
+            break;
+        case SP_DialogCloseButton:
+            pixmap = QIcon::fromTheme(QLatin1String("dialog-close")).pixmap(16);
+            break;
         case SP_DirHomeIcon:
             pixmap = QIcon::fromTheme(QLatin1String("user-home")).pixmap(16);
             break;
@@ -5336,13 +5352,15 @@ QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *opti
         case SP_DialogHelpButton:
                 pixmap = QIcon::fromTheme(QLatin1String("help-contents")).pixmap(24);
                 break;
+        case SP_DialogNoButton:
         case SP_DialogCancelButton:
-                pixmap = QIcon::fromTheme(QLatin1String("process-stop")).pixmap(24);
+                pixmap = QIcon::fromTheme(QLatin1String("dialog-cancel"),
+                                         QIcon::fromTheme(QLatin1String("process-stop"))).pixmap(24);
                 break;
         case SP_DialogSaveButton:
                 pixmap = QIcon::fromTheme(QLatin1String("document-save")).pixmap(24);
                 break;
-            case SP_FileLinkIcon:
+        case SP_FileLinkIcon:
             pixmap = QIcon::fromTheme(QLatin1String("emblem-symbolic-link")).pixmap(16);
             if (!pixmap.isNull()) {
                 QPixmap fileIcon = QIcon::fromTheme(QLatin1String("text-x-generic")).pixmap(16);
@@ -5530,6 +5548,25 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
         case SP_DirOpenIcon:
                 icon = QIcon::fromTheme(QLatin1String("folder-open"));
                 break;
+        case SP_DialogSaveButton:
+                icon = QIcon::fromTheme(QLatin1String("document-save"));
+                break;
+        case SP_DialogApplyButton:
+                icon = QIcon::fromTheme(QLatin1String("dialog-ok-apply"));
+                break;
+        case SP_DialogYesButton:
+        case SP_DialogOkButton:
+                icon = QIcon::fromTheme(QLatin1String("dialog-ok"));
+                break;
+        case SP_DialogDiscardButton:
+                icon = QIcon::fromTheme(QLatin1String("edit-delete"));
+                break;
+        case SP_DialogResetButton:
+                icon = QIcon::fromTheme(QLatin1String("edit-clear"));
+                break;
+        case SP_DialogHelpButton:
+                icon = QIcon::fromTheme(QLatin1String("help-contents"));
+                break;
         case SP_FileIcon:
                 icon = QIcon::fromTheme(QLatin1String("text-x-generic"));
                 break;
@@ -5575,20 +5612,12 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
         case SP_ArrowLeft:
                 icon = QIcon::fromTheme(QLatin1String("go-previous"));
                 break;
-        case SP_DialogHelpButton:
-                icon = QIcon::fromTheme(QLatin1String("help-contents"));
-                break;
         case SP_DialogCancelButton:
-                icon = QIcon::fromTheme(QLatin1String("process-stop"));
+                icon = QIcon::fromTheme(QLatin1String("dialog-cancel"),
+                                        QIcon::fromTheme(QLatin1String("process-stop")));
                 break;
         case SP_DialogCloseButton:
                 icon = QIcon::fromTheme(QLatin1String("window-close"));
-                break;
-        case SP_DialogApplyButton:
-                icon = QIcon::fromTheme(QLatin1String("dialog-ok-apply"));
-                break;
-        case SP_DialogOkButton:
-                icon = QIcon::fromTheme(QLatin1String("dialog-ok"));
                 break;
         case SP_FileDialogDetailedView:
                 icon = QIcon::fromTheme(QLatin1String("view-list-details"));
@@ -5628,9 +5657,6 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
                 break;
         case SP_MediaVolumeMuted:
                 icon = QIcon::fromTheme(QLatin1String("audio-volume-muted"));
-                break;
-        case SP_DialogResetButton:
-                icon = QIcon::fromTheme(QLatin1String("edit-clear"));
                 break;
         case SP_ArrowForward:
             if (rtl)

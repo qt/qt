@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -217,6 +217,8 @@ private slots:
     void task250754_fontChange();
     void task200665_itemEntered();
     void task257481_emptyEditor();
+    void shiftArrowSelectionAfterScrolling();
+    void shiftSelectionAfterRubberbandSelection();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1261,6 +1263,115 @@ void tst_QAbstractItemView::task257481_emptyEditor()
     QVERIFY(!lineEditors.first()->size().isEmpty());
 }
 
+void tst_QAbstractItemView::shiftArrowSelectionAfterScrolling()
+{
+    QStandardItemModel model;
+    for (int i=0; i<10; ++i) {
+        QStandardItem *item = new QStandardItem(QString("%1").arg(i));
+        model.setItem(i, 0, item);
+    }
+
+    QListView view;
+    view.setFixedSize(150, 250);
+    view.setFlow(QListView::LeftToRight);
+    view.setGridSize(QSize(100, 100));
+    view.setSelectionMode(QListView::ExtendedSelection);
+    view.setViewMode(QListView::IconMode);
+    view.setModel(&model);
+    view.show();
+    QTest::qWait(30);
+
+    QModelIndex index0 = model.index(0, 0);
+    QModelIndex index1 = model.index(1, 0);
+    QModelIndex index9 = model.index(9, 0);
+
+    view.selectionModel()->setCurrentIndex(index0, QItemSelectionModel::NoUpdate);
+    QCOMPARE(view.currentIndex(), index0);
+
+    view.scrollTo(index9);
+    QTest::keyClick(&view, Qt::Key_Down, Qt::ShiftModifier);
+
+    QCOMPARE(view.currentIndex(), index1);
+    QModelIndexList selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 2);
+    QVERIFY(selected.contains(index0));
+    QVERIFY(selected.contains(index1));
+}
+
+void tst_QAbstractItemView::shiftSelectionAfterRubberbandSelection()
+{
+    QStandardItemModel model;
+    for (int i=0; i<3; ++i) {
+        QStandardItem *item = new QStandardItem(QString("%1").arg(i));
+        model.setItem(i, 0, item);
+    }
+
+    QListView view;
+    view.setFixedSize(150, 450);
+    view.setFlow(QListView::LeftToRight);
+    view.setGridSize(QSize(100, 100));
+    view.setSelectionMode(QListView::ExtendedSelection);
+    view.setViewMode(QListView::IconMode);
+    view.setModel(&model);
+    view.show();
+    QTest::qWait(30);
+
+    QModelIndex index0 = model.index(0, 0);
+    QModelIndex index1 = model.index(1, 0);
+    QModelIndex index2 = model.index(2, 0);
+
+    view.setCurrentIndex(index0);
+    QCOMPARE(view.currentIndex(), index0);
+
+    // Determine the points where the rubberband selection starts and ends
+    QPoint pressPos = view.visualRect(index1).bottomRight() + QPoint(1, 1);
+    QPoint releasePos = view.visualRect(index1).center();
+    QVERIFY(!view.indexAt(pressPos).isValid());
+    QCOMPARE(view.indexAt(releasePos), index1);
+
+    // Select item 1 using a rubberband selection
+    // The mouse move event has to be created manually because the QTest framework does not
+    // contain a function for mouse moves with buttons pressed
+    QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::NoModifier, pressPos);
+    QMouseEvent moveEvent(QEvent::MouseMove, releasePos, Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
+    bool moveEventReceived = qApp->notify(view.viewport(), &moveEvent);
+    QVERIFY(moveEventReceived);
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, releasePos);
+    QCOMPARE(view.currentIndex(), index1);
+
+    // Shift-click item 2
+    QPoint item2Pos = view.visualRect(index2).center();
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, Qt::ShiftModifier, item2Pos);
+    QCOMPARE(view.currentIndex(), index2);
+
+    // Verify that the selection worked OK
+    QModelIndexList selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 2);
+    QVERIFY(selected.contains(index1));
+    QVERIFY(selected.contains(index2));
+
+    // Select item 0 to revert the selection
+    view.setCurrentIndex(index0);
+    QCOMPARE(view.currentIndex(), index0);
+
+    // Repeat the same steps as above, but with a Shift-Arrow selection
+    QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::NoModifier, pressPos);
+    QMouseEvent moveEvent2(QEvent::MouseMove, releasePos, Qt::NoButton, Qt::LeftButton, Qt::NoModifier);
+    moveEventReceived = qApp->notify(view.viewport(), &moveEvent2);
+    QVERIFY(moveEventReceived);
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::NoModifier, releasePos);
+    QCOMPARE(view.currentIndex(), index1);
+
+    // Press Shift-Down
+    QTest::keyClick(&view, Qt::Key_Down, Qt::ShiftModifier);
+    QCOMPARE(view.currentIndex(), index2);
+
+    // Verify that the selection worked OK
+    selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 2);
+    QVERIFY(selected.contains(index1));
+    QVERIFY(selected.contains(index2));
+}
 
 QTEST_MAIN(tst_QAbstractItemView)
 #include "tst_qabstractitemview.moc"

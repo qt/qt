@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -43,6 +43,7 @@
 #define QGL_H
 
 #include <QtGui/qwidget.h>
+#include <QtGui/qpaintengine.h>
 #include <QtOpenGL/qglcolormap.h>
 #include <QtCore/qmap.h>
 #include <QtCore/qscopedpointer.h>
@@ -130,6 +131,8 @@ class QGLContextPrivate;
 // Namespace class:
 namespace QGL
 {
+    Q_OPENGL_EXPORT void setPreferredPaintEngine(QPaintEngine::Type engineType);
+
     enum FormatOption {
         DoubleBuffer            = 0x0001,
         DepthBuffer             = 0x0002,
@@ -382,7 +385,6 @@ private:
     friend class QGLPixelBuffer;
     friend class QGLPixelBufferPrivate;
     friend class QGLWidget;
-    friend class QGLDrawable;
     friend class QGLWidgetPrivate;
     friend class QGLGlyphCache;
     friend class QOpenGLPaintEngine;
@@ -394,6 +396,7 @@ private:
     friend class QGLPixmapFilterBase;
     friend class QGLTextureGlyphCache;
     friend class QGLShareRegister;
+    friend class QGLSharedResourceGuard;
     friend QGLFormat::OpenGLVersionFlags QGLFormat::openGLVersionFlags();
 #ifdef Q_WS_MAC
 public:
@@ -404,11 +407,13 @@ private:
 #endif
     friend class QGLFramebufferObject;
     friend class QGLFramebufferObjectPrivate;
+    friend class QGLFBOGLPaintDevice;
+    friend class QGLPaintDevice;
 private:
     Q_DISABLE_COPY(QGLContext)
 };
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(QGLContext::BindOptions);
+Q_DECLARE_OPERATORS_FOR_FLAGS(QGLContext::BindOptions)
 
 class Q_OPENGL_EXPORT QGLWidget : public QWidget
 {
@@ -539,6 +544,8 @@ private:
     friend class QGLContext;
     friend class QGLOverlayWidget;
     friend class QOpenGLPaintEngine;
+    friend class QGLPaintDevice;
+    friend class QGLWidgetGLPaintDevice;
 };
 
 

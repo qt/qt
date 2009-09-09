@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1432,6 +1432,55 @@ void tst_QGL::fboFormat()
     QVERIFY(format1.attachment() == QGLFramebufferObject::CombinedDepthStencil);
     QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_3D));
     QCOMPARE(int(format1.internalTextureFormat()), int(GL_RGB16));
+
+    // operator== and operator!= for QGLFramebufferObjectFormat.
+    QGLFramebufferObjectFormat format1c;
+    QGLFramebufferObjectFormat format2c;
+
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+    format1c.setSamples(8);
+    QVERIFY(!(format1c == format2c));
+    QVERIFY(format1c != format2c);
+    format2c.setSamples(8);
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+
+    format1c.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+    QVERIFY(!(format1c == format2c));
+    QVERIFY(format1c != format2c);
+    format2c.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+
+    format1c.setTextureTarget(GL_TEXTURE_3D);
+    QVERIFY(!(format1c == format2c));
+    QVERIFY(format1c != format2c);
+    format2c.setTextureTarget(GL_TEXTURE_3D);
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+
+    format1c.setInternalTextureFormat(GL_RGB16);
+    QVERIFY(!(format1c == format2c));
+    QVERIFY(format1c != format2c);
+    format2c.setInternalTextureFormat(GL_RGB16);
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+
+    QGLFramebufferObjectFormat format3c(format1c);
+    QGLFramebufferObjectFormat format4c;
+    QVERIFY(format1c == format3c);
+    QVERIFY(!(format1c != format3c));
+    format3c.setInternalTextureFormat(DEFAULT_FORMAT);
+    QVERIFY(!(format1c == format3c));
+    QVERIFY(format1c != format3c);
+
+    format4c = format1c;
+    QVERIFY(format1c == format4c);
+    QVERIFY(!(format1c != format4c));
+    format4c.setInternalTextureFormat(DEFAULT_FORMAT);
+    QVERIFY(!(format1c == format4c));
+    QVERIFY(format1c != format4c);
 }
 
 QTEST_MAIN(tst_QGL)

@@ -2,6 +2,8 @@ include(../src/src.pri)
 
 QT = core script network
 
+requires(contains(QT_CONFIG,script))
+
 CONFIG += qtestlib
 
 DESTDIR = ./

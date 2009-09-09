@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -157,6 +157,19 @@
 
 #define DEFAULT_TIMER_INTERVAL 16
 
+#ifdef Q_WS_WIN
+    /// Fix for Qt 4.7
+    //on windows if you're currently dragging a widget an inner eventloop was started by the system
+    //to make sure that this timer is getting fired, we need to make sure to use the system timers
+    //that will send a WM_TIMER event. We do that by settings the timer interval to 11
+    //It is 11 because QEventDispatcherWin32Private::registerTimer specifically checks if the interval
+    //is greater than 10 to determine if it should use a system timer (or the multimedia timer).
+#define STARTSTOP_TIMER_DELAY 11
+#else
+#define STARTSTOP_TIMER_DELAY 0
+#endif
+
+
 QT_BEGIN_NAMESPACE
 
 Q_GLOBAL_STATIC(QThreadStorage<QUnifiedTimer *>, unifiedTimer)
@@ -217,7 +230,7 @@ void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation)
     if (animations.contains(animation) || animationsToStart.contains(animation))
         return;
     animationsToStart << animation;
-    startStopAnimationTimer.start(0, this); // we delay the check if we should start/stop the global timer
+    startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this); // we delay the check if we should start/stop the global timer
 }
 
 void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
@@ -233,7 +246,7 @@ void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
     } else {
         animationsToStart.removeOne(animation);
     }
-    startStopAnimationTimer.start(0, this); // we delay the check if we should start/stop the global timer
+    startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this); // we delay the check if we should start/stop the global timer
 }
 
 

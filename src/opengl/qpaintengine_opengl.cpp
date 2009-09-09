@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -49,6 +49,7 @@
 #include "qbrush.h"
 #include "qgl.h"
 #include <private/qgl_p.h>
+#include <private/qglpaintdevice_p.h>
 #include <private/qpainter_p.h>
 #include "qmap.h"
 #include <private/qpaintengine_opengl_p.h>
@@ -75,7 +76,7 @@
 #include "qgl_cl_p.h"
 #endif
 
-#define QGL_FUNC_CONTEXT QGLContext *ctx = const_cast<QGLContext *>(drawable.context());
+#define QGL_FUNC_CONTEXT QGLContext *ctx = const_cast<QGLContext *>(device->context());
 
 #include <stdlib.h>
 #include "qpaintengine_opengl_p.h"
@@ -286,7 +287,7 @@ public Q_SLOTS:
     }
 
 private:
-    QGLDrawable drawable;
+    QGLPaintDevice* device;
 
     QGLFramebufferObject *offscreen;
     QGLContext *ctx;
@@ -305,7 +306,13 @@ private:
 
 inline void QGLOffscreen::setDevice(QPaintDevice *pdev)
 {
-    drawable.setDevice(pdev);
+    if (pdev->devType() == QInternal::OpenGL)
+        device = static_cast<QGLPaintDevice*>(pdev);
+    else
+        device = QGLPaintDevice::getDevice(pdev);
+
+    if (!device)
+        return;
 
     drawable_fbo = (pdev->devType() == QInternal::FramebufferObject);
 }
@@ -329,12 +336,12 @@ void QGLOffscreen::initialize()
     activated = true;
     initialized = true;
 
-    int dim = qMax(2048, static_cast<int>(qt_next_power_of_two(qMax(drawable.size().width(), drawable.size().height()))));
+    int dim = qMax(2048, static_cast<int>(qt_next_power_of_two(qMax(device->size().width(), device->size().height()))));
 
-    bool shared_context = qgl_share_reg()->checkSharing(drawable.context(), ctx);
+    bool shared_context = qgl_share_reg()->checkSharing(device->context(), ctx);
     bool would_fail = last_failed_size.isValid() &&
-                      (drawable.size().width() >= last_failed_size.width() ||
-                       drawable.size().height() >= last_failed_size.height());
+                      (device->size().width() >= last_failed_size.width() ||
+                       device->size().height() >= last_failed_size.height());
     bool needs_refresh = dim > mask_dim || !shared_context;
 
     if (needs_refresh && !would_fail) {
@@ -348,13 +355,13 @@ void QGLOffscreen::initialize()
             delete offscreen;
             offscreen = 0;
             mask_dim = 0;
-            last_failed_size = drawable.size();
+            last_failed_size = device->size();
         }
     }
 
     qt_mask_texture_cache()->setOffscreenSize(offscreenSize());
-    qt_mask_texture_cache()->setDrawableSize(drawable.size());
-    ctx = drawable.context();
+    qt_mask_texture_cache()->setDrawableSize(device->size());
+    ctx = device->context();
 #endif
 }
 
@@ -428,11 +435,11 @@ inline void QGLOffscreen::release()
     DEBUG_ONCE_STR("QGLOffscreen: releasing offscreen");
 
     if (drawable_fbo)
-        drawable.makeCurrent();
+        device->ensureActiveTarget(); //###
     else
         offscreen->release();
 
-    QSize sz(drawable.size());
+    QSize sz(device->size());
     glViewport(0, 0, sz.width(), sz.height());
 
     glMatrixMode(GL_PROJECTION);
@@ -455,7 +462,7 @@ inline bool QGLOffscreen::isBound() const
 
 inline QSize QGLOffscreen::drawableSize() const
 {
-    return drawable.size();
+    return device->size();
 }
 
 inline QSize QGLOffscreen::offscreenSize() const
@@ -757,7 +764,7 @@ public:
     GLubyte pen_color[4];
     GLubyte brush_color[4];
     QTransform::TransformationType txop;
-    QGLDrawable drawable;
+    QGLPaintDevice* device;
     QGLOffscreen offscreen;
 
     qreal inverseScale;
@@ -1070,6 +1077,7 @@ protected:
     }
 
     void cleanCache() {
+        QGLShareContextScope scope(buffer_ctx);
         QGLGradientColorTableHash::const_iterator it = cache.constBegin();
         for (; it != cache.constEnd(); ++it) {
             const CacheInfo &cache_info = it.value();
@@ -1167,7 +1175,7 @@ void QOpenGLPaintEnginePrivate::createGradientPaletteTexture(const QGradient& g)
 #ifdef QT_OPENGL_ES //###
     Q_UNUSED(g);
 #else
-    GLuint texId = qt_opengl_gradient_cache()->getBuffer(g, opacity, drawable.context());
+    GLuint texId = qt_opengl_gradient_cache()->getBuffer(g, opacity, device->context());
     glBindTexture(GL_TEXTURE_1D, texId);
     grad_palette = texId;
     if (g.spread() == QGradient::RepeatSpread || g.type() == QGradient::ConicalGradient)
@@ -1236,12 +1244,19 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
 {
     Q_D(QOpenGLPaintEngine);
 
-    d->drawable.setDevice(pdev);
+    if (pdev->devType() == QInternal::OpenGL)
+        d->device = static_cast<QGLPaintDevice*>(pdev);
+    else
+        d->device = QGLPaintDevice::getDevice(pdev);
+
+    if (!d->device)
+        return false;
+
     d->offscreen.setDevice(pdev);
     d->has_fast_pen = false;
     d->inverseScale = 1;
     d->opacity = 1;
-    d->drawable.makeCurrent();
+    d->device->beginPaint();
     d->matrix = QTransform();
     d->has_antialiasing = false;
     d->high_quality_antialiasing = false;
@@ -1256,7 +1271,7 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
     bool has_frag_program = (QGLExtensions::glExtensions & QGLExtensions::FragmentProgram)
                             && (pdev->devType() != QInternal::Pixmap);
 
-    QGLContext *ctx = const_cast<QGLContext *>(d->drawable.context());
+    QGLContext *ctx = const_cast<QGLContext *>(d->device->context());
     if (!ctx) {
         qWarning() << "QOpenGLPaintEngine: paint device doesn't have a valid GL context.";
         return false;
@@ -1265,9 +1280,9 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
     if (has_frag_program)
         has_frag_program = qt_resolve_frag_program_extensions(ctx) && qt_resolve_version_1_3_functions(ctx);
 
-    d->use_stencil_method = d->drawable.format().stencil()
+    d->use_stencil_method = d->device->format().stencil()
                             && (QGLExtensions::glExtensions & QGLExtensions::StencilWrap);
-    if (d->drawable.format().directRendering()
+    if (d->device->format().directRendering()
         && (d->use_stencil_method && QGLExtensions::glExtensions & QGLExtensions::StencilTwoSide))
         d->has_stencil_face_ext = qt_resolve_stencil_face_extension(ctx);
 
@@ -1333,23 +1348,7 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
 
     d->offscreen.begin();
 
-    if (d->drawable.context()->d_func()->clear_on_painter_begin && d->drawable.autoFillBackground()) {
-
-        if (d->drawable.hasTransparentBackground())
-            glClearColor(0.0, 0.0, 0.0, 0.0);
-        else {
-            const QColor &c = d->drawable.backgroundColor();
-            glClearColor(c.redF(), c.greenF(), c.blueF(), 1.0);
-        }
-
-        GLbitfield clearBits = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
-#ifndef QT_OPENGL_ES
-        clearBits |= GL_ACCUM_BUFFER_BIT;
-#endif
-        glClear(clearBits);
-    }
-
-    QSize sz(d->drawable.size());
+    QSize sz(d->device->size());
     glViewport(0, 0, sz.width(), sz.height()); // XXX (Embedded): We need a solution for GLWidgets that draw in a part or a bigger surface...
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -1366,7 +1365,7 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
 #ifdef QT_OPENGL_ES
     d->max_texture_size = ctx->d_func()->maxTextureSize();
 #else
-    bool shared_ctx = qgl_share_reg()->checkSharing(d->drawable.context(), d->shader_ctx);
+    bool shared_ctx = qgl_share_reg()->checkSharing(d->device->context(), d->shader_ctx);
 
     if (shared_ctx) {
         d->max_texture_size = d->shader_ctx->d_func()->maxTextureSize();
@@ -1382,7 +1381,7 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
                 glDeleteTextures(1, &d->drawable_texture);
             ctx->makeCurrent();
         }
-        d->shader_ctx = d->drawable.context();
+        d->shader_ctx = d->device->context();
         glGenTextures(1, &d->grad_palette);
 
         qt_mask_texture_cache()->clearCache();
@@ -1417,7 +1416,7 @@ bool QOpenGLPaintEngine::end()
     Q_D(QOpenGLPaintEngine);
     d->flushDrawQueue();
     d->offscreen.end();
-    QGLContext *ctx = const_cast<QGLContext *>(d->drawable.context());
+    QGLContext *ctx = const_cast<QGLContext *>(d->device->context());
     if (!ctx->d_ptr->internal_context) {
         glMatrixMode(GL_TEXTURE);
         glPopMatrix();
@@ -1434,8 +1433,7 @@ bool QOpenGLPaintEngine::end()
         glPopClientAttrib();
     }
 #endif
-    d->drawable.swapBuffers();
-    d->drawable.doneCurrent();
+    d->device->endPaint();
     qt_mask_texture_cache()->maintainCache();
 
     return true;
@@ -1961,7 +1959,7 @@ void QOpenGLPaintEnginePrivate::fillVertexArray(Qt::FillRule fillRule)
 
             const int left = rect.left();
             const int width = rect.width();
-            const int bottom = drawable.size().height() - (rect.bottom() + 1);
+            const int bottom = device->size().height() - (rect.bottom() + 1);
             const int height = rect.height();
 
             glScissor(left, bottom, width, height);
@@ -2242,7 +2240,7 @@ void QOpenGLPaintEnginePrivate::updateDepthClip()
 
         const int left = fastClip.left();
         const int width = fastClip.width();
-        const int bottom = drawable.size().height() - (fastClip.bottom() + 1);
+        const int bottom = device->size().height() - (fastClip.bottom() + 1);
         const int height = fastClip.height();
 
         glScissor(left, bottom, width, height);
@@ -2325,7 +2323,7 @@ void QOpenGLPaintEngine::updateClipRegion(const QRegion &clipRegion, Qt::ClipOpe
 
     // clipping is only supported when a stencil or depth buffer is
     // available
-    if (!d->drawable.format().depth())
+    if (!d->device->format().depth())
         return;
 
     d->use_system_clip = false;
@@ -2362,7 +2360,7 @@ void QOpenGLPaintEngine::updateClipRegion(const QRegion &clipRegion, Qt::ClipOpe
             path.addRect(untransformedRects[0]);
             path = d->matrix.map(path);
 
-            if (path.contains(QRectF(QPointF(), d->drawable.size())))
+            if (path.contains(QRectF(QPointF(), d->device->size())))
                 isScreenClip = true;
         }
     }
@@ -3369,7 +3367,7 @@ void QOpenGLPaintEnginePrivate::drawOffscreenPath(const QPainterPath &path)
 
     disableClipping();
 
-    GLuint program = qt_gl_program_cache()->getProgram(drawable.context(),
+    GLuint program = qt_gl_program_cache()->getProgram(device->context(),
                                                        FRAGMENT_PROGRAM_MASK_TRAPEZOID_AA, 0, true);
     QGLPathMaskGenerator maskGenerator(path, matrix, offscreen, program);
     addItem(qt_mask_texture_cache()->getMask(maskGenerator, this));
@@ -3506,7 +3504,7 @@ void QOpenGLPaintEngine::drawRects(const QRectF *rects, int rectCount)
 
             if (d->has_brush) {
                 d->disableClipping();
-                GLuint program = qt_gl_program_cache()->getProgram(d->drawable.context(),
+                GLuint program = qt_gl_program_cache()->getProgram(d->device->context(),
                                                                    FRAGMENT_PROGRAM_MASK_TRAPEZOID_AA, 0, true);
 
                 if (d->matrix.type() >= QTransform::TxProject) {
@@ -3916,7 +3914,7 @@ void QOpenGLPaintEnginePrivate::strokeLines(const QPainterPath &path)
 
     qreal penWidth = cpen.widthF();
 
-    GLuint program = qt_gl_program_cache()->getProgram(drawable.context(),
+    GLuint program = qt_gl_program_cache()->getProgram(device->context(),
                                                        FRAGMENT_PROGRAM_MASK_TRAPEZOID_AA, 0, true);
     QGLLineMaskGenerator maskGenerator(path, matrix, penWidth == 0 ? 1.0 : penWidth,
                                        offscreen, program);
@@ -4302,7 +4300,7 @@ void QOpenGLPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QR
     else {
         GLenum target = qt_gl_preferredTextureTarget();
         d->flushDrawQueue();
-        d->drawable.bindTexture(pm, target);
+        d->device->context()->bindTexture(pm, target);
         drawTextureRect(pm.width(), pm.height(), r, sr, target);
     }
 }
@@ -4337,9 +4335,11 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
 
         QGLTexture *tex;
         if (scaled.isNull())
-            tex = d->drawable.bindTexture(pm);
+            tex = d->device->context()->d_func()->bindTexture(pm, GL_TEXTURE_2D, GL_RGBA,
+                                                              QGLContext::InternalBindOption);
         else
-            tex = d->drawable.bindTexture(scaled);
+            tex = d->device->context()->d_func()->bindTexture(scaled, GL_TEXTURE_2D, GL_RGBA,
+                                                              QGLContext::InternalBindOption);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, d->use_smooth_pixmap_transform);
 
 #ifndef QT_OPENGL_ES
@@ -4416,7 +4416,7 @@ void QOpenGLPaintEngine::drawImage(const QRectF &r, const QImage &image, const Q
     else {
         GLenum target = qt_gl_preferredTextureTarget();
         d->flushDrawQueue();
-        d->drawable.bindTexture(image, target);
+        d->device->context()->bindTexture(image, target);
         drawTextureRect(image.width(), image.height(), r, sr, target);
     }
 }
@@ -4883,7 +4883,7 @@ void QOpenGLPaintEngine::drawTextItem(const QPointF &p, const QTextItem &textIte
     ti.fontEngine->getGlyphPositions(ti.glyphs, matrix, ti.flags, glyphs, positions);
 
     // make sure the glyphs we want to draw are in the cache
-    qt_glyph_cache()->cacheGlyphs(d->drawable.context(), ti, glyphs);
+    qt_glyph_cache()->cacheGlyphs(d->device->context(), ti, glyphs);
 
     d->setGradientOps(Qt::SolidPattern, QRectF()); // turns off gradient ops
     qt_glColor4ubv(d->pen_color);
@@ -4961,7 +4961,7 @@ void QOpenGLPaintEngine::drawEllipse(const QRectF &rect)
             glPushMatrix();
             glLoadIdentity();
 
-            GLuint program = qt_gl_program_cache()->getProgram(d->drawable.context(),
+            GLuint program = qt_gl_program_cache()->getProgram(d->device->context(),
                                                                FRAGMENT_PROGRAM_MASK_ELLIPSE_AA, 0, true);
             QGLEllipseMaskGenerator maskGenerator(rect,
                                                   d->matrix,
@@ -5096,10 +5096,10 @@ void QOpenGLPaintEnginePrivate::copyDrawable(const QRectF &rect)
     QRectF screen_rect = rect.adjusted(-1, -1, 1, 1);
 
     int left = qMax(0, static_cast<int>(screen_rect.left()));
-    int width = qMin(drawable.size().width() - left, static_cast<int>(screen_rect.width()) + 1);
+    int width = qMin(device->size().width() - left, static_cast<int>(screen_rect.width()) + 1);
 
-    int bottom = qMax(0, static_cast<int>(drawable.size().height() - screen_rect.bottom()));
-    int height = qMin(drawable.size().height() - bottom, static_cast<int>(screen_rect.height()) + 1);
+    int bottom = qMax(0, static_cast<int>(device->size().height() - screen_rect.bottom()));
+    int height = qMin(device->size().height() - bottom, static_cast<int>(screen_rect.height()) + 1);
 
     glBindTexture(GL_TEXTURE_2D, drawable_texture);
     glCopyTexSubImage2D(GL_TEXTURE_2D, 0, left, bottom, left, bottom, width, height);
@@ -5193,9 +5193,9 @@ void QOpenGLPaintEnginePrivate::composite(GLuint primitive, const q_vertexType *
         glActiveTexture(GL_TEXTURE0 + brush_texture_location);
 
         if (current_style == Qt::TexturePattern)
-            drawable.bindTexture(cbrush.textureImage());
+            device->context()->bindTexture(cbrush.textureImage());
         else
-            drawable.bindTexture(qt_imageForBrush(current_style, true));
+            device->context()->bindTexture(qt_imageForBrush(current_style, true));
 
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, use_smooth_pixmap_transform);
     }
@@ -5203,7 +5203,7 @@ void QOpenGLPaintEnginePrivate::composite(GLuint primitive, const q_vertexType *
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(2, q_vertexTypeEnum, 0, vertexArray);
     glEnable(GL_FRAGMENT_PROGRAM_ARB);
-    GLuint program = qt_gl_program_cache()->getProgram(drawable.context(),
+    GLuint program = qt_gl_program_cache()->getProgram(device->context(),
                                                        fragment_brush,
                                                        fragment_composition_mode, false);
     glBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, program);
@@ -5275,7 +5275,7 @@ void QOpenGLPaintEnginePrivate::drawItem(const QDrawQueueItem &item)
     setGradientOps(item.brush, item.location.screen_rect);
 
     composite(item.location.screen_rect, item.location.rect.topLeft() - item.location.screen_rect.topLeft()
-                                         - QPoint(0, offscreen.offscreenSize().height() - drawable.size().height()));
+                                         - QPoint(0, offscreen.offscreenSize().height() - device->size().height()));
 }
 
 void QOpenGLPaintEnginePrivate::flushDrawQueue()

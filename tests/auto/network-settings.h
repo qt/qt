@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -143,8 +143,8 @@ public:
             }
             return QHostAddress(serverIp.data());
         }
-#endif
-        return QHostInfo::fromName(serverName()).addresses().first();
+#endif // Q_OS_SYMBIAN
+    return QHostInfo::fromName(serverName()).addresses().first();
     }
 #endif
 
@@ -161,12 +161,11 @@ public:
             }
             return imapExpectedReply.data();
         }
-#else
-		QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " );
+#endif
+        QByteArray expected( "* OK [CAPABILITY IMAP4 IMAP4rev1 LITERAL+ ID STARTTLS LOGINDISABLED] " );
         expected = expected.append(QtNetworkSettings::serverName().toAscii());
         expected = expected.append(" Cyrus IMAP4 v2.3.11-Mandriva-RPM-2.3.11-6mdv2008.1 server ready\r\n");
         return expected;
-#endif
     }
 
     static QByteArray expectedReplySSL()
@@ -328,4 +327,20 @@ QByteArray QtNetworkSettings::imapExpectedReplySsl;
 #define Q_SET_DEFAULT_IAP QtNetworkSettings::setDefaultIap();
 #else
 #define Q_SET_DEFAULT_IAP
+#endif
+
+#ifdef QT_NETWORK_LIB
+class QtNetworkSettingsInitializerCode {
+public:
+    QtNetworkSettingsInitializerCode() {
+        QHostInfo testServerResult = QHostInfo::fromName(QtNetworkSettings::serverName());
+        if (testServerResult.error() != QHostInfo::NoError) {
+            qWarning() << "Could not lookup" << QtNetworkSettings::serverName();
+            qWarning() << "Please configure the test environment!";
+            qWarning() << "See /etc/hosts or network-settings.h";
+            qFatal("Exiting");
+        }
+    }
+};
+QtNetworkSettingsInitializerCode qtNetworkSettingsInitializer;
 #endif

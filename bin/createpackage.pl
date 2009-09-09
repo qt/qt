@@ -2,6 +2,7 @@
 #############################################################################
 ##
 ## Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+## All rights reserved.
 ## Contact: Nokia Corporation (qt-info@nokia.com)
 ##
 ## This file is part of the S60 port of the Qt Toolkit.
@@ -21,10 +22,9 @@
 ## ensure the GNU Lesser General Public License version 2.1 requirements
 ## will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 ##
-## In addition, as a special exception, Nokia gives you certain
-## additional rights.  These rights are described in the Nokia Qt LGPL
-## Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-## package.
+## In addition, as a special exception, Nokia gives you certain additional
+## rights.  These rights are described in the Nokia Qt LGPL Exception
+## version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 ##
 ## If you have questions regarding the use of this file, please contact
 ## Nokia at qt-info@nokia.com.
@@ -52,41 +52,69 @@ use strict;
 use Getopt::Long;
 # Use file name parsing module
 use File::Basename;
+# Use File::Spec services mainly rel2abs
+use File::Spec;
+# use CWD abs_bath, which is exported only on request
+use Cwd 'abs_path';
+
 
 sub Usage() {
-    print "\n";
-    print "==========================================================================================\n";
-    print "Convenience script for creating signed packages you can install on your phone.\n";
-    print "\n";
-    print "Usage: createpackage.pl [-i] templatepkg target-platform [certificate key [passphrase]]\n";
-    print "\n";
-    print "Where parameters are as follows:\n";
-    print "     [-i|install]    = Install the package right away using PC suite\n";
-    print "     [-p|preprocess] = Only preprocess the template .pkg file.\n";    
-    print "     templatepkg     = Name of .pkg file template\n";
-    print "     target          = Either debug or release\n";    
-    print "     platform        = One of the supported platform\n";
-    print "                       winscw | gcce | armv5 | armv6 | armv7\n";
-    print "     certificate     = The certificate file used for signing\n";
-    print "     key             = The certificate's private key file\n";
-    print "     passphrase      = The certificate's private key file's passphrase\n";
-    print "\n";
-    print "For example:\n";    
-    print "     createpackage.pl fluidlauncher_template.pkg release-armv5\n";        
-    print "\n";
-    print "If no certificate and key files are provided, either a RnD certificate or\n";
-    print "a self-signed certificate from Qt installation root directory is used.\n";
-    print "\n";
-    print "==========================================================================================\n";
+    print <<ENDUSAGESTRING;
+
+==============================================================================================
+Convenience script for creating signed packages you can install on your phone.
+
+Usage: createpackage.pl [options] templatepkg target-platform [certificate key [passphrase]]
+
+Where supported optiobns are as follows:
+     [-i|install]            = Install the package right away using PC suite
+     [-p|preprocess]         = Only preprocess the template .pkg file.
+     [-c|certfile=<file>]    = The file containing certificate information for signing.
+                               The file can have several certificates, each specified in
+                               separate line. The certificate, key and passphrase in line
+                               must be ';' separated. Lines starting with '#' are treated 
+                               as a comments. Also empty lines are ignored. The paths in 
+                               <file> can be absolute or relative to <file>.
+Where parameters are as follows:
+     templatepkg             = Name of .pkg file template
+     target                  = Either debug or release
+     platform                = One of the supported platform
+                               winscw | gcce | armv5 | armv6 | armv7
+     certificate             = The certificate file used for signing
+     key                     = The certificate's private key file
+     passphrase              = The certificate's private key file's passphrase
+
+Example:
+     createpackage.pl fluidlauncher_template.pkg release-armv5
+     
+Example with certfile:
+     createpackage.pl -c=mycerts.txt fluidlauncher_template.pkg release-armv5
+     
+     Content of 'mycerts.txt' must be something like this:
+        # This is comment line, also the empty lines are ignored
+        rd.cer;rd-key.pem
+        .\\cert\\mycert.cer;.\\cert\\mykey.key;yourpassword
+        X:\\QtS60\\selfsigned.cer;X:\\QtS60\\selfsigned.key
+
+If no certificate and key files are provided, either a RnD certificate or
+a self-signed certificate from Qt installation root directory is used.
+==============================================================================================
+
+ENDUSAGESTRING
+
     exit();
 }
 
 # Read given options
 my $install = "";
 my $preprocessonly = "";
-unless (GetOptions('i|install' => \$install, 'p|preprocess' => \$preprocessonly)){
+my $certfile = "";
+
+unless (GetOptions('i|install' => \$install, 'p|preprocess' => \$preprocessonly, 'c|certfile=s' => \$certfile)){
     Usage();
 }
+
+my $certfilepath = abs_path(dirname($certfile));
 
 # Read params to variables
 my $templatepkg = $ARGV[0];
@@ -155,6 +183,32 @@ if (length($certificate)) {
     }
 }
 
+# Read the certificates from file to two dimensional array
+my @certificates;
+if (length($certfile)) {
+    open CERTFILE, "<$certfile" or die $!;
+    while(<CERTFILE>){
+        s/#.*//;                            # ignore comments by erasing them
+        next if /^(\s)*$/;                  # skip blank lines
+        chomp;                              # remove trailing newline characters
+        my @certinfo = split(';', $_);      # split row to certinfo
+        
+        # Trim spaces
+        for(@certinfo) {
+            s/^\s+//;
+            s/\s+$//;
+        }        
+        
+        # Do some validation
+        unless(scalar(@certinfo) >= 2 && scalar(@certinfo) <= 3 && length($certinfo[0]) && length($certinfo[1]) ) {    
+            print "\nError: $certfile line '$_' does not contain valid information!\n";
+            Usage();            
+        }   
+
+        push @certificates, [@certinfo];    # push data to two dimensional array
+    }
+}
+
 # Remove any existing .sis packages
 unlink $unsigned_sis_name;
 unlink $signed_sis_name;
@@ -180,15 +234,27 @@ if ($preprocessonly) {
     exit;
 }
 
-# Create and sign SIS
+# Create SIS.
 system ("makesis $pkgoutput $unsigned_sis_name");
+
+# Sign SIS with certificate info given as an argument.
 system ("signsis $unsigned_sis_name $signed_sis_name $certificate $key $passphrase");
 
 # Check if creating signed SIS Succeeded
 stat($signed_sis_name);
 if( -e _ ) {
-    print ("\nSuccessfully created $signed_sis_name using certificate $certtext!\n");
+    print ("\nSuccessfully created $signed_sis_name using certificate: $certtext!\n");
 
+    # Sign with additional certificates & keys
+    for my $row ( @certificates ) {
+        # Get certificate absolute file names, relative paths are relative to certfilepath
+        my $abscert = File::Spec->rel2abs( $row->[0], $certfilepath);
+        my $abskey = File::Spec->rel2abs( $row->[1], $certfilepath);
+
+        system ("signsis $signed_sis_name $signed_sis_name $abscert $abskey $row->[2]");
+        print ("\tAdditionally signed the SIS with certificate: $row->[0]!\n");
+    }
+    
     # remove temporary pkg and unsigned sis
     unlink $pkgoutput;
     unlink $unsigned_sis_name;

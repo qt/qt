@@ -2876,7 +2876,6 @@ mng_retcode mng_create_ani_chrm (mng_datap  pData,
                                  mng_chunkp pChunk)
 #endif
 {
-  mng_ptr       pTemp;
   mng_ani_chrmp pCHRM;
 
 #ifdef MNG_SUPPORT_TRACE
@@ -2886,6 +2885,7 @@ mng_retcode mng_create_ani_chrm (mng_datap  pData,
   if (pData->bCacheplayback)           /* caching playback info ? */
   {
 #ifdef MNG_OPTIMIZE_OBJCLEANUP
+    mng_ptr       pTemp;
     mng_retcode iRetcode = create_obj_general (pData, sizeof (mng_ani_chrm),
                                                mng_free_obj_general,
                                                mng_process_ani_chrm,
@@ -3115,7 +3115,6 @@ mng_retcode mng_create_ani_iccp (mng_datap  pData,
                                  mng_chunkp pChunk)
 #endif
 {
-  mng_ptr       pTemp;
   mng_ani_iccpp pICCP;
 
 #ifdef MNG_SUPPORT_TRACE
@@ -3125,6 +3124,7 @@ mng_retcode mng_create_ani_iccp (mng_datap  pData,
   if (pData->bCacheplayback)           /* caching playback info ? */
   {
 #ifdef MNG_OPTIMIZE_OBJCLEANUP
+    mng_ptr       pTemp;
     mng_retcode iRetcode = create_obj_general (pData, sizeof (mng_ani_iccp),
                                                mng_free_ani_iccp,
                                                mng_process_ani_iccp,
@@ -3252,7 +3252,6 @@ mng_retcode mng_create_ani_bkgd (mng_datap  pData,
 mng_retcode mng_create_ani_bkgd (mng_datap  pData)
 #endif
 {
-  mng_ptr       pTemp;
   mng_ani_bkgdp pBKGD;
 
 #ifdef MNG_SUPPORT_TRACE
@@ -3262,6 +3261,7 @@ mng_retcode mng_create_ani_bkgd (mng_datap  pData)
   if (pData->bCacheplayback)           /* caching playback info ? */
   {
 #ifdef MNG_OPTIMIZE_OBJCLEANUP
+    mng_ptr       pTemp;
     mng_retcode iRetcode = create_obj_general (pData, sizeof (mng_ani_bkgd),
                                                mng_free_obj_general,
                                                mng_process_ani_bkgd,
@@ -4918,7 +4918,6 @@ mng_retcode mng_process_ani_term (mng_datap   pData,
 #ifndef MNG_SKIPCHUNK_SAVE
 mng_retcode mng_create_ani_save (mng_datap pData)
 {
-  mng_ptr       pTemp;
   mng_ani_savep pSAVE;
 
 #ifdef MNG_SUPPORT_TRACE
@@ -4928,6 +4927,7 @@ mng_retcode mng_create_ani_save (mng_datap pData)
   if (pData->bCacheplayback)           /* caching playback info ? */
   {
 #ifdef MNG_OPTIMIZE_OBJCLEANUP
+    mng_ptr       pTemp;
     mng_retcode iRetcode = create_obj_general (pData, sizeof (mng_ani_save),
                                                mng_free_obj_general,
                                                mng_process_ani_save,
@@ -5009,7 +5009,6 @@ mng_retcode mng_create_ani_seek (mng_datap  pData,
                                  mng_chunkp pChunk)
 #endif
 {
-  mng_ptr       pTemp;
   mng_ani_seekp pSEEK;
 
 #ifdef MNG_SUPPORT_TRACE
@@ -5019,6 +5018,7 @@ mng_retcode mng_create_ani_seek (mng_datap  pData,
   if (pData->bCacheplayback)           /* caching playback info ? */
   {
 #ifdef MNG_OPTIMIZE_OBJCLEANUP
+    mng_ptr       pTemp;
     mng_retcode iRetcode = create_obj_general (pData, sizeof (mng_ani_seek),
                                                mng_free_ani_seek,
                                                mng_process_ani_seek,
@@ -6106,7 +6106,7 @@ mng_retcode mng_create_ani_disc (mng_datap   pData,
 #endif
 {
   mng_ani_discp pDISC;
-  mng_retcode   iRetcode;
+  mng_retcode   iRetcode;      
 
 #ifdef MNG_SUPPORT_TRACE
   MNG_TRACE (pData, MNG_FN_CREATE_ANI_DISC, MNG_LC_START);

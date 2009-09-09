@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -140,7 +140,7 @@ private slots:
     void removeAll();
     void startWithDash();
     void undoRedo();
-    
+
     void specialValue();
     void textFromValue();
 
@@ -750,11 +750,13 @@ void tst_QSpinBox::editingFinished()
     QSpinBox *box2 = new QSpinBox(testFocusWidget);
     layout->addWidget(box2);
 
+    testFocusWidget->show();
+    QApplication::setActiveWindow(testFocusWidget);
     box->activateWindow();
-    QTest::qWait(1000);//qApp->processEvents();
+    QTest::qWait(100);//qApp->processEvents();
     box->setFocus();
 
-    QTRY_VERIFY(qApp->focusWidget() == box);
+    QTRY_COMPARE(qApp->focusWidget(), box);
 
     QSignalSpy editingFinishedSpy1(box, SIGNAL(editingFinished()));
     QSignalSpy editingFinishedSpy2(box2, SIGNAL(editingFinished()));
@@ -910,7 +912,7 @@ void tst_QSpinBox::undoRedo()
 void tst_QSpinBox::specialValue()
 {
     QString specialText="foo";
-    
+
     QWidget topWidget;
     QVBoxLayout layout(&topWidget);
     SpinBox spin(&topWidget);
@@ -937,7 +939,7 @@ void tst_QSpinBox::specialValue()
     QCOMPARE(spin.text(), QString("0"));
     QTest::keyClick(&spin, Qt::Key_Return);
     QCOMPARE(spin.text(), specialText);
-    
+
     spin.setValue(50);
     QTest::keyClick(&spin, Qt::Key_Return);
     QTest::keyClick(&spin, '0');
@@ -987,17 +989,17 @@ void tst_QSpinBox::sizeHint()
     QVERIFY(spinBox->sizeHintRequests > 0);
 
     // Suffix
-    spinBox->sizeHintRequests = 0; 
+    spinBox->sizeHintRequests = 0;
     spinBox->setSuffix(QLatin1String("abcdefghij"));
     qApp->processEvents();
-    QVERIFY(spinBox->sizeHintRequests > 0); 
+    QVERIFY(spinBox->sizeHintRequests > 0);
 
     // Range
-    spinBox->sizeHintRequests = 0; 
+    spinBox->sizeHintRequests = 0;
     spinBox->setRange(0, 1234567890);
     spinBox->setValue(spinBox->maximum());
     qApp->processEvents();
-    QVERIFY(spinBox->sizeHintRequests > 0); 
+    QVERIFY(spinBox->sizeHintRequests > 0);
 }
 
 QTEST_MAIN(tst_QSpinBox)

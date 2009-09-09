@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -1537,8 +1537,7 @@ void QAbstractItemView::mousePressEvent(QMouseEvent *event)
     QPoint offset = d->offset();
     if ((command & QItemSelectionModel::Current) == 0)
         d->pressedPosition = pos + offset;
-
-    if (d->pressedPosition == QPoint(-1, -1))
+    else if (!indexAt(d->pressedPosition).isValid())
         d->pressedPosition = visualRect(currentIndex()).center() + offset;
 
     if (edit(index, NoEditTriggers, event))
@@ -1661,6 +1660,10 @@ void QAbstractItemView::mouseReleaseEvent(QMouseEvent *event)
     bool selectedClicked = click && (event->button() & Qt::LeftButton) && d->pressedAlreadySelected;
     EditTrigger trigger = (selectedClicked ? SelectedClicked : NoEditTriggers);
     bool edited = edit(index, trigger, event);
+
+    //in the case the user presses on no item we might decide to clear the selection
+    if (d->selectionModel && !index.isValid())
+        d->selectionModel->select(QModelIndex(), selectionCommand(index, event));
 
     setState(NoState);
 
@@ -2089,8 +2092,8 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
             // note that we don't check if the new current index is enabled because moveCursor() makes sure it is
             if (command & QItemSelectionModel::Current) {
                 d->selectionModel->setCurrentIndex(newCurrent, QItemSelectionModel::NoUpdate);
-                if (d->pressedPosition == QPoint(-1, -1))
-                    d->pressedPosition = visualRect(oldCurrent).center();
+                if (!indexAt(d->pressedPosition).isValid())
+                    d->pressedPosition = visualRect(oldCurrent).center() + d->offset();
                 QRect rect(d->pressedPosition - d->offset(), visualRect(newCurrent).center());
                 setSelection(rect, command);
             } else {

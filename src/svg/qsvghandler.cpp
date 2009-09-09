@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtSvg module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -810,24 +810,27 @@ static bool resolveColor(const QStringRef &colorStr, QColor &color, QSvgHandler 
 
         case 'r':
             {
-                // starts with "rgb("
-                if (colorStrTr == QLatin1String("rgb(")) {
+                // starts with "rgb(", ends with ")" and consists of at least 7 characters "rgb(,,)"
+                if (colorStrTr.length() >= 7 && colorStrTr.at(colorStrTr.length() - 1) == QLatin1Char(')')
+                    && QStringRef(colorStrTr.string(), colorStrTr.position(), 4) == QLatin1String("rgb(")) {
                     const QChar *s = colorStrTr.constData() + 4;
                     QVector<qreal> compo = parseNumbersList(s);
                     //1 means that it failed after reaching non-parsable
                     //character which is going to be "%"
                     if (compo.size() == 1) {
-                        const QChar *s = colorStrTr.constData() + 4;
+                        s = colorStrTr.constData() + 4;
                         compo = parsePercentageList(s);
-                        compo[0] *= (qreal)2.55;
-                        compo[1] *= (qreal)2.55;
-                        compo[2] *= (qreal)2.55;
+                        for (int i = 0; i < compo.size(); ++i)
+                            compo[i] *= (qreal)2.55;
                     }
 
-                    color = QColor(int(compo[0]),
-                                   int(compo[1]),
-                                   int(compo[2]));
-                    return true;
+                    if (compo.size() == 3) {
+                        color = QColor(int(compo[0]),
+                                       int(compo[1]),
+                                       int(compo[2]));
+                        return true;
+                    }
+                    return false;
                 }
             }
             break;
@@ -1200,10 +1203,9 @@ static void parsePen(QSvgNode *node,
         }
 
         //stroke-width handling
-        qreal w = 0;
         if (!attributes.strokeWidth.isEmpty() && attributes.strokeWidth != QT_INHERIT) {
             QSvgHandler::LengthType lt;
-            prop->setWidth(w = parseLength(attributes.strokeWidth.toString(), lt, handler));
+            prop->setWidth(parseLength(attributes.strokeWidth.toString(), lt, handler));
         }
 
         //stroke-dasharray

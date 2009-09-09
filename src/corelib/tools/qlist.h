@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -367,21 +367,26 @@ Q_INLINE_TEMPLATE void QList<T>::node_copy(Node *from, Node *to, Node *src)
     if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
         QT_TRY {
             while(current != to) {
-                (current++)->v = new T(*reinterpret_cast<T*>((src++)->v));
+                current->v = new T(*reinterpret_cast<T*>(src->v));
+                ++current;
+                ++src;
             }
         } QT_CATCH(...) {
-            while (current != from)
-                delete reinterpret_cast<T*>(current--);
+            while (current-- != from)
+                delete reinterpret_cast<T*>(current->v);
             QT_RETHROW;
         }
 
     } else if (QTypeInfo<T>::isComplex) {
         QT_TRY {
-            while(current != to)
-                new (current++) T(*reinterpret_cast<T*>(src++));
+            while(current != to) {
+                new (current) T(*reinterpret_cast<T*>(src));
+                ++current;
+                ++src;
+            }
         } QT_CATCH(...) {
-            while (current != from)
-                (reinterpret_cast<T*>(current--))->~T();
+            while (current-- != from)
+                (reinterpret_cast<T*>(current))->~T();
             QT_RETHROW;
         }
     } else {

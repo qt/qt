@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -61,6 +61,8 @@
 #include <QtOpenGL>
 #endif
 #include <QMacStyle>
+
+#include "../../shared/util.h"
 
 static const Qt::WindowFlags DefaultWindowFlags
     = Qt::SubWindow | Qt::WindowSystemMenuHint
@@ -467,7 +469,7 @@ void tst_QMdiArea::subWindowActivated2()
     qt_x11_wait_for_window_manager(&mdiArea);
 #endif
 
-    QCOMPARE(spy.count(), 5);
+    QTRY_COMPARE(spy.count(), 5);
     QCOMPARE(mdiArea.activeSubWindow(), mdiArea.subWindowList().back());
     spy.clear();
 
@@ -493,7 +495,7 @@ void tst_QMdiArea::subWindowActivated2()
     qt_x11_wait_for_window_manager(&mdiArea);
 #endif
     QTest::qWait(100);
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QVERIFY(!mdiArea.activeSubWindow());
     QCOMPARE(mdiArea.currentSubWindow(), activeSubWindow);
     spy.clear();
@@ -503,7 +505,7 @@ void tst_QMdiArea::subWindowActivated2()
     qt_x11_wait_for_window_manager(&mdiArea);
 #endif
     QTest::qWait(100);
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
     spy.clear();
 
@@ -516,14 +518,14 @@ void tst_QMdiArea::subWindowActivated2()
     if (!macHasAccessToWindowsServer())
         QEXPECT_FAIL("", "showMinimized doesn't really minimize if you don't have access to the server", Abort);
 #endif
-    QTest::qWait(100);
+    QTest::qWait(10);
 #if defined(Q_WS_QWS)
     QEXPECT_FAIL("", "task 168682", Abort);
 #endif
 #ifdef Q_OS_WINCE
     QSKIP("Not fixed yet. See Task 197453", SkipAll);
 #endif
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QVERIFY(!mdiArea.activeSubWindow());
     QCOMPARE(mdiArea.currentSubWindow(), activeSubWindow);
     spy.clear();
@@ -533,7 +535,7 @@ void tst_QMdiArea::subWindowActivated2()
     qt_x11_wait_for_window_manager(&mdiArea);
 #endif
     QTest::qWait(100);
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
     QCOMPARE(mdiArea.activeSubWindow(), activeSubWindow);
     spy.clear();
 }
@@ -1734,6 +1736,7 @@ void tst_QMdiArea::tileSubWindows()
     qt_x11_wait_for_window_manager(&workspace);
 #endif
     qApp->processEvents();
+    QTRY_COMPARE(workspace.size(), QSize(350, 150));
 
     const QSize minSize(300, 100);
     foreach (QMdiSubWindow *subWindow, workspace.subWindowList())
@@ -1885,7 +1888,7 @@ void tst_QMdiArea::resizeMaximizedChildWindows()
         workspace.resize(workspaceSize + QSize(increment, increment));
         QTest::qWait(100);
         qApp->processEvents();
-        QCOMPARE(workspace.size(), workspaceSize + QSize(increment, increment));
+        QTRY_COMPARE(workspace.size(), workspaceSize + QSize(increment, increment));
         QCOMPARE(window->size(), windowSize + QSize(increment, increment));
         workspaceSize = workspace.size();
     }

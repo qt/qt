@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -59,6 +59,9 @@
 #include <QScrollBar>
 #include <QVBoxLayout>
 #include <QGraphicsEffect>
+
+#include "../../shared/util.h"
+
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -1933,7 +1936,7 @@ void tst_QGraphicsItem::zValue()
     QApplication::sendPostedEvents(); //glib workaround
 #endif
 
-    QVERIFY(!_paintedItems.isEmpty());
+    QTRY_VERIFY(!_paintedItems.isEmpty());
     QVERIFY((_paintedItems.size() % 4) == 0);
     for (int i = 0; i < 3; ++i)
         QVERIFY(_paintedItems.at(i)->zValue() < _paintedItems.at(i + 1)->zValue());
@@ -2917,6 +2920,7 @@ void tst_QGraphicsItem::hoverEventsGenerateRepaints()
     qApp->processEvents();
     qApp->processEvents();
 
+    QTRY_COMPARE(tester->repaints, 1);
 
     // Send a hover enter event
     QGraphicsSceneHoverEvent hoverEnterEvent(QEvent::GraphicsSceneHoverEnter);
@@ -7823,7 +7827,7 @@ void tst_QGraphicsItem::panel()
 
     QEvent activate(QEvent::WindowActivate);
     QEvent deactivate(QEvent::WindowDeactivate);
-    
+
     QApplication::sendEvent(&scene, &activate);
 
     // No previous activation, so the scene is active.

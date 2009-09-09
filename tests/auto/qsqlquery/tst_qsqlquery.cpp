@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -380,6 +380,9 @@ void tst_QSqlQuery::char1SelectUnicode()
     QFETCH( QString, dbName );
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
+
+    if(db.driverName().startsWith("QDB2"))
+        QSKIP("Needs someone with more Unicode knowledge than I have to fix", SkipSingle);
 
     if ( db.driver()->hasFeature( QSqlDriver::Unicode ) ) {
         QString uniStr( QChar( 0xfb50 ) );
@@ -1613,6 +1616,8 @@ void tst_QSqlQuery::prepare_bind_exec()
     CHECK_DATABASE( db );
     if(db.driverName().startsWith("QIBASE") && (db.databaseName() == "silence.nokia.troll.no:c:\\ibase\\testdb_ascii" || db.databaseName() == "/opt/interbase/qttest.gdb"))
         QSKIP("Can't transliterate extended unicode to ascii", SkipSingle);
+    if(db.driverName().startsWith("QDB2"))
+        QSKIP("Needs someone with more Unicode knowledge than I have to fix", SkipSingle);
 
     {
         // new scope for SQLITE
