@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Item {
-    width: 300
+    width: 320
     height: 500
 
     ListModel {
@@ -114,15 +114,23 @@ Item {
             MouseRegion { anchors.fill: parent;
                 onClicked: {
                     FruitModel.append({
-                        "name":"Pizza",
+                        "name":"Pizza Margarita",
                         "cost":5.95,
-                        "attributes":[{"description": "Supreme"},{"description": "Margarita"}]
+                        "attributes":[{"description": "Cheese"},{"description": "Tomato"}]
                     })
                 }
             }
         }
         Image { source: "content/pics/add.png"
-            MouseRegion { anchors.fill: parent; onClicked: FruitModel.insert(0,{"name":"Pizza", "cost":5.95}) }
+            MouseRegion { anchors.fill: parent;
+                onClicked: {
+                    FruitModel.insert(0,{
+                        "name":"Pizza Supreme",
+                        "cost":9.95,
+                        "attributes":[{"description": "Cheese"},{"description": "Tomato"},{"description": "The Works"}]
+                    })
+                }
+            }
         }
         Image { source: "content/pics/trash.png"
             MouseRegion { anchors.fill: parent; onClicked: FruitModel.clear() }
