@@ -1,8 +1,6 @@
 HEADERS += \
            fx/qfxanchors.h \
            fx/qfxanchors_p.h \
-           fx/qfxcomponentinstance.h \
-           fx/qfxcomponentinstance_p.h \
            fx/qfxevents_p.h \
            fx/qfxflickable.h \
            fx/qfxflickable_p.h \
@@ -49,7 +47,6 @@ HEADERS += \
 
 SOURCES += \
            fx/qfxanchors.cpp \
-           fx/qfxcomponentinstance.cpp \
            fx/qfxevents.cpp \
            fx/qfxflickable.cpp \
            fx/qfxflipable.cpp \

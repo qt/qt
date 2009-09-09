@@ -77,7 +77,6 @@ Q_DECLARE_PERFORMANCE_LOG(QFxPerf) {
     Q_DECLARE_PERFORMANCE_METRIC(CreateParticle)
     Q_DECLARE_PERFORMANCE_METRIC(ItemComponentComplete)
     Q_DECLARE_PERFORMANCE_METRIC(ImageComponentComplete)
-    Q_DECLARE_PERFORMANCE_METRIC(ComponentInstanceComponentComplete)
     Q_DECLARE_PERFORMANCE_METRIC(BaseLayoutComponentComplete)
     Q_DECLARE_PERFORMANCE_METRIC(TextComponentComplete)
     Q_DECLARE_PERFORMANCE_METRIC(QFxText_setText)

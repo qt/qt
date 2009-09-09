@@ -392,7 +392,7 @@
     the contact field.
 
     There are also two other ways to reuse components in QML.  A component
-    can be reused from within the same QML file using Component and ComponentInstance
+    can be reused from within the same QML file using Component and Loader
     elements.  The next code snippet produces three red rounded rectangles
     within a large blue rectangle.
 
