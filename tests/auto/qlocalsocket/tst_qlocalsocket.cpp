@@ -110,6 +110,7 @@ private slots:
     void writeToClientAndDisconnect();
 
     void debug();
+    void bytesWrittenSignal();
 
 
 #ifdef Q_OS_SYMBIAN
@@ -423,7 +424,7 @@ void tst_QLocalSocket::listenAndConnect()
         for (int j = 0; j < spyStateChanged.count(); ++j) {
             QLocalSocket::LocalSocketState s;
             s = qVariantValue<QLocalSocket::LocalSocketState>(spyStateChanged.at(j).at(0));
-	    qDebug() << s;
+            qDebug() << s;
         }
 #endif
         if (canListen)
@@ -508,11 +509,11 @@ void tst_QLocalSocket::sendData()
     if (server.hasPendingConnections()) {
         QString testLine = "test";
 #ifdef Q_OS_SYMBIAN
-    for (int i = 0; i < 25 * 1024; ++i)
+        for (int i = 0; i < 25 * 1024; ++i)
 #else
-	for (int i = 0; i < 50000; ++i)
+        for (int i = 0; i < 50000; ++i)
 #endif
-		testLine += "a";
+            testLine += "a";
         QLocalSocket *serverSocket = server.nextPendingConnection();
         QVERIFY(serverSocket);
         QCOMPARE(serverSocket->state(), QLocalSocket::ConnectedState);
@@ -646,7 +647,7 @@ public:
             ++tries;
         } while ((socket.error() == QLocalSocket::ServerNotFoundError
                   || socket.error() == QLocalSocket::ConnectionRefusedError)
-		 && tries < 1000);
+             && tries < 1000);
         if (tries == 0 && socket.state() != QLocalSocket::ConnectedState) {
             QVERIFY(socket.waitForConnected(3000));
             QVERIFY(socket.state() == QLocalSocket::ConnectedState);
@@ -738,8 +739,8 @@ void tst_QLocalSocket::threadedConnection()
     while (!clients.isEmpty()) {
         QVERIFY(clients.first()->wait(3000));
         Client *client =clients.takeFirst();
-	client->terminate();
-	delete client;
+        client->terminate();
+        delete client;
     }
 }
 
@@ -904,6 +905,52 @@ void tst_QLocalSocket::debug()
 {
     // Make sure this compiles
     qDebug() << QLocalSocket::ConnectionRefusedError << QLocalSocket::UnconnectedState;
+}
+
+class WriteThread : public QThread
+{
+Q_OBJECT
+public:
+    void run() {
+        QLocalSocket socket;
+        socket.connectToServer("qlocalsocket_readyread");
+
+        if (!socket.waitForConnected(3000))
+            exec();
+        connect(&socket, SIGNAL(bytesWritten(qint64)), 
+        this, SLOT(bytesWritten(qint64)), Qt::QueuedConnection);
+        socket.write("testing\n");
+        exec();
+    }
+public slots:
+   void bytesWritten(qint64) {
+        exit();
+   }
+
+private:
+};
+
+/*
+    Tests the emission of the bytesWritten(qint64)
+    signal.
+
+    Create a thread that will write to a socket.
+    If the bytesWritten(qint64) signal is generated, 
+    the slot connected to it will exit the thread,
+    indicating test success.  
+
+*/
+void tst_QLocalSocket::bytesWrittenSignal()
+{
+    QLocalServer server;
+    QVERIFY(server.listen("qlocalsocket_readyread"));
+    WriteThread writeThread;
+    writeThread.start();
+    bool timedOut = false;
+    QVERIFY(server.waitForNewConnection(3000, &timedOut));
+    QVERIFY(!timedOut);
+    QTest::qWait(2000);
+    QVERIFY(writeThread.wait(2000));
 }
 
 #ifdef Q_OS_SYMBIAN
