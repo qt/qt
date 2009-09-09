@@ -4335,10 +4335,11 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
     } else {
         d->flushDrawQueue();
 
+        QGLTexture *tex;
         if (scaled.isNull())
-            d->drawable.bindTexture(pm);
+            tex = d->drawable.bindTexture(pm);
         else
-            d->drawable.bindTexture(scaled);
+            tex = d->drawable.bindTexture(scaled);
         updateTextureFilter(GL_TEXTURE_2D, GL_REPEAT, d->use_smooth_pixmap_transform);
 
 #ifndef QT_OPENGL_ES
@@ -4350,6 +4351,15 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
 
         GLdouble tc_w = r.width()/pm.width();
         GLdouble tc_h = r.height()/pm.height();
+
+        // Rotate the texture so that it is aligned correctly and the
+        // wrapping is done correctly
+        if (tex->options & QGLContext::InvertedYBindOption) {
+            glMatrixMode(GL_TEXTURE);
+            glPushMatrix();
+            glRotatef(180.0, 0.0, 1.0, 0.0);
+            glRotatef(180.0, 0.0, 0.0, 1.0);
+        }
 
         q_vertexType vertexArray[4*2];
         q_vertexType texCoordArray[4*2];
@@ -4369,6 +4379,8 @@ void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, con
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         glDisableClientState(GL_VERTEX_ARRAY);
+        if (tex->options & QGLContext::InvertedYBindOption)
+            glPopMatrix();
 
         glDisable(GL_TEXTURE_2D);
 #ifndef QT_OPENGL_ES

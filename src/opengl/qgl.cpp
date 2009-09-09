@@ -4851,7 +4851,7 @@ QGLFormat QGLDrawable::format() const
     return QGLFormat();
 }
 
-GLuint QGLDrawable::bindTexture(const QImage &image, GLenum target, GLint format,
+QGLTexture *QGLDrawable::bindTexture(const QImage &image, GLenum target, GLint format,
                                 QGLContext::BindOptions options)
 {
     QGLTexture *texture = 0;
@@ -4866,10 +4866,10 @@ GLuint QGLDrawable::bindTexture(const QImage &image, GLenum target, GLint format
     else if (wsurf)
         texture = wsurf->context()->d_func()->bindTexture(image, target, format, options);
 #endif
-    return texture->id;
+    return texture;
 }
 
-GLuint QGLDrawable::bindTexture(const QPixmap &pixmap, GLenum target, GLint format,
+QGLTexture *QGLDrawable::bindTexture(const QPixmap &pixmap, GLenum target, GLint format,
                                 QGLContext::BindOptions options)
 {
     QGLTexture *texture = 0;
@@ -4883,7 +4883,7 @@ GLuint QGLDrawable::bindTexture(const QPixmap &pixmap, GLenum target, GLint form
     else if (wsurf)
         texture = wsurf->context()->d_func()->bindTexture(pixmap, target, format, options);
 #endif
-    return texture->id;
+    return texture;
 }
 
 QColor QGLDrawable::backgroundColor() const

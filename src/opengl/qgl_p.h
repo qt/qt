@@ -358,10 +358,12 @@ public:
     void doneCurrent();
     QSize size() const;
     QGLFormat format() const;
-    GLuint bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA,
-                       QGLContext::BindOptions = QGLContext::InternalBindOption);
-    GLuint bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D, GLint format = GL_RGBA,
-                       QGLContext::BindOptions = QGLContext::InternalBindOption);
+    QGLTexture *bindTexture(const QImage &image, GLenum target = GL_TEXTURE_2D,
+                            GLint format = GL_RGBA,
+                            QGLContext::BindOptions = QGLContext::InternalBindOption);
+    QGLTexture *bindTexture(const QPixmap &pixmap, GLenum target = GL_TEXTURE_2D,
+                            GLint format = GL_RGBA,
+                            QGLContext::BindOptions = QGLContext::InternalBindOption);
     QColor backgroundColor() const;
     QGLContext *context() const;
     bool autoFillBackground() const;
