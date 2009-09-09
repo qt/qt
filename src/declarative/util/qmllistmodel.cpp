@@ -47,6 +47,7 @@
 #include "qmlopenmetaobject.h"
 #include <qmlcontext.h>
 #include "qmllistmodel.h"
+#include <QtScript/qscriptvalueiterator.h>
 
 Q_DECLARE_METATYPE(QListModelInterface *)
 
@@ -67,6 +68,8 @@ struct ListModelData
     int instrCount;
     ListInstruction *instructions() const { return (ListInstruction *)((char *)this + sizeof(ListModelData)); }
 };
+
+static void dump(ModelNode *node, int ind);
 
 /*!
     \qmlclass ListModel 
@@ -140,7 +143,7 @@ struct ListModelData
             name: "Banana"
             cost: 1.95
             attributes: [
-                ListElement { description: "Tropical" }
+                ListElement { description: "Tropical" },
                 ListElement { description: "Seedless" }
             ]
         }
@@ -197,7 +200,7 @@ class ModelObject : public QObject
 {
     Q_OBJECT
 public:
-    ModelObject(ModelNode *);
+    ModelObject();
 
     void setValue(const QByteArray &name, const QVariant &val)
     {
@@ -205,8 +208,6 @@ public:
     }
 
 private:
-    ModelNode *_node;
-    bool _haveProperties;
     QmlOpenMetaObject *_mo;
 };
 
@@ -228,7 +229,7 @@ struct ModelNode
 
     ModelObject *object() {
         if (!objectCache) {
-            objectCache = new ModelObject(this);
+            objectCache = new ModelObject();
             QHash<QString, ModelNode *>::iterator it;
             for (it = properties.begin(); it != properties.end(); ++it) {
                 if (!(*it)->values.isEmpty())
@@ -236,6 +237,42 @@ struct ModelNode
             }
         }
         return objectCache;
+    }
+
+    void setListValue(const QScriptValue& valuelist) {
+        QScriptValueIterator it(valuelist);
+        values.clear();
+        while (it.hasNext()) {
+            it.next();
+            ModelNode *value = new ModelNode;
+            QScriptValue v = it.value();
+            if (v.isArray()) {
+                value->setListValue(v);
+            } else if (v.isObject()) {
+                value->setObjectValue(v);
+            } else {
+                value->values << v.toVariant();
+            }
+            values.append(qVariantFromValue(value));
+
+        }
+    }
+
+    void setObjectValue(const QScriptValue& valuemap) {
+        QScriptValueIterator it(valuemap);
+        while (it.hasNext()) {
+            it.next();
+            ModelNode *value = new ModelNode;
+            QScriptValue v = it.value();
+            if (v.isArray()) {
+                value->setListValue(v);
+            } else if (v.isObject()) {
+                value->setObjectValue(v);
+            } else {
+                value->values << v.toVariant();
+            }
+            properties.insert(it.name(),value);
+        }
     }
 
     void setProperty(const QString& prop, const QVariant& val) {
@@ -255,8 +292,8 @@ struct ModelNode
     ModelObject *objectCache;
 };
 
-ModelObject::ModelObject(ModelNode *node)
-: _node(node), _haveProperties(false), _mo(new QmlOpenMetaObject(this))
+ModelObject::ModelObject()
+: _mo(new QmlOpenMetaObject(this))
 {
 }
 
@@ -424,26 +461,22 @@ void QmlListModel::remove(int index)
         FruitModel.insert(2, {"cost": 5.95, "name":"Pizza"})
     \endcode
 
-    If \a index is not in the list, sufficient empty items are
-    added to the list.
+    The \a index must be to an existing item in the list, or one past
+    the end of the list (equivalent to append).
 
     \sa set() append()
 */
-void QmlListModel::insert(int index, const QVariantMap& valuemap)
+void QmlListModel::insert(int index, const QScriptValue& valuemap)
 {
     if (!_root)
         _root = new ModelNode;
     if (index >= _root->values.count()) {
-        set(index,valuemap);
+        if (index == _root->values.count())
+            append(valuemap);
         return;
     }
     ModelNode *mn = new ModelNode;
-    for (QVariantMap::const_iterator it=valuemap.begin(); it!=valuemap.end(); ++it) {
-        addRole(it.key());
-        ModelNode *value = new ModelNode;
-        value->values << it.value();
-        mn->properties.insert(it.key(),value);
-    }
+    mn->setObjectValue(valuemap);
     _root->values.insert(index,qVariantFromValue(mn));
     emit itemsInserted(index,1);
 }
@@ -506,17 +539,16 @@ void QmlListModel::move(int from, int to, int n)
 
     \sa set() remove()
 */
-void QmlListModel::append(const QVariantMap& valuemap)
+void QmlListModel::append(const QScriptValue& valuemap)
 {
+    if (!valuemap.isObject()) {
+        qWarning("ListModel::append: value is not an object");
+        return;
+    }
     if (!_root)
         _root = new ModelNode;
     ModelNode *mn = new ModelNode;
-    for (QVariantMap::const_iterator it=valuemap.begin(); it!=valuemap.end(); ++it) {
-        addRole(it.key());
-        ModelNode *value = new ModelNode;
-        value->values << it.value();
-        mn->properties.insert(it.key(),value);
-    }
+    mn->setObjectValue(valuemap);
     _root->values << qVariantFromValue(mn);
     emit itemsInserted(count()-1,1);
 }
@@ -531,37 +563,35 @@ void QmlListModel::append(const QVariantMap& valuemap)
         FruitModel.set(3, {"cost": 5.95, "name":"Pizza"})
     \endcode
 
-    If \a index is not in the list, sufficient empty items are
-    added to the list.
+    The \a index must be an element in the list.
 
     \sa append()
 */
-void QmlListModel::set(int index, const QVariantMap& valuemap)
+void QmlListModel::set(int index, const QScriptValue& valuemap)
 {
     if (!_root)
         _root = new ModelNode;
-    int initialcount = _root->values.count();
-    while (index > _root->values.count())
-        _root->values.append(qVariantFromValue(new ModelNode));
+    if ( index >= _root->values.count()) {
+        qWarning() << "ListModel::set index out of range:" << index;
+        return;
+    }
     if (index == _root->values.count())
         append(valuemap);
     else {
         ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
         QList<int> roles;
-        for (QVariantMap::const_iterator it=valuemap.begin(); it!=valuemap.end(); ++it) {
-            node->setProperty(it.key(),it.value());
-            int r = roleStrings.indexOf(it.key());
+        node->setObjectValue(valuemap);
+        QScriptValueIterator it(valuemap);
+        while (it.hasNext()) {
+            it.next();
+            int r = roleStrings.indexOf(it.name());
             if (r<0) {
                 r = roleStrings.count();
-                roleStrings << it.key();
+                roleStrings << it.name();
             }
             roles.append(r);
         }
-        if (initialcount < index) {
-            emit itemsInserted(initialcount,index-initialcount+1);
-        } else {
-            emit itemsChanged(index,1,roles);
-        }
+        emit itemsChanged(index,1,roles);
     }
 }
 
@@ -574,8 +604,7 @@ void QmlListModel::set(int index, const QVariantMap& valuemap)
         FruitModel.set(3, "cost", 5.95)
     \endcode
 
-    If \a index is not in the list, sufficient empty items are
-    added to the list.
+    The \a index must be an element in the list.
 
     \sa append()
 */
@@ -583,9 +612,10 @@ void QmlListModel::set(int index, const QString& property, const QVariant& value
 {
     if (!_root)
         _root = new ModelNode;
-    int initialcount = _root->values.count();
-    while (index >= _root->values.count())
-        _root->values.append(qVariantFromValue(new ModelNode));
+    if ( index >= _root->values.count()) {
+        qWarning() << "ListModel::set index out of range:" << index;
+        return;
+    }
     ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
     int r = roleStrings.indexOf(property);
     if (r<0) {
@@ -597,10 +627,7 @@ void QmlListModel::set(int index, const QString& property, const QVariant& value
 
     if (node)
         node->setProperty(property,value);
-    if (initialcount < index)
-        emit itemsInserted(initialcount,index-initialcount+1);
-    else
-        emit itemsChanged(index,1,roles);
+    emit itemsChanged(index,1,roles);
 }
 
 
@@ -806,7 +833,8 @@ ModelNode::~ModelNode()
         ModelNode *node = qvariant_cast<ModelNode *>(values.at(ii));
         if (node) { delete node; node = 0; }
     }
-    if (modelCache) { delete modelCache; modelCache = 0; }
+    if (modelCache) { modelCache->_root = 0/* ==this */; delete modelCache; modelCache = 0; }
+    if (objectCache) { delete objectCache; }
 }
 
 QT_END_NAMESPACE
