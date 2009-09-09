@@ -1016,7 +1016,7 @@ QS60StylePrivate::QS60StylePrivate()
 
 void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
 {
-    if (name == QLatin1String("foo")) {
+    if (QLatin1String(name) == QLatin1String("foo")) {
         // BaR
     } else {
         setStyleProperty(name, value);
@@ -1025,7 +1025,7 @@ void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVarian
 
 QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
 {
-    if (name == QLatin1String("foo"))
+    if (QLatin1String(name) == QLatin1String("foo"))
         return QLatin1String("Bar");
     else
         return styleProperty(name);
