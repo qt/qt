@@ -1,7 +1,3 @@
-#include "mousestatwidget.h"
-
-#include <QTabletEvent>
-#include <QPainter>
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
@@ -43,6 +39,10 @@
 **
 ****************************************************************************/
 
+#include "mousestatwidget.h"
+
+#include <QTabletEvent>
+#include <QPainter>
 #include <QTextOption>
 #include <QTest>
 
