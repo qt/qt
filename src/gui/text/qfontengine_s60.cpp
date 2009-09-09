@@ -74,7 +74,7 @@ QByteArray QFontEngineS60Extensions::getSfntTable(uint tag) const
     Q_ASSERT(m_trueTypeExtension->HasTrueTypeTable(tag));
     TInt error = KErrNone;
     TInt tableByteLength = 0;
-    TAny *table = m_trueTypeExtension->GetTrueTypeTable(error, tag, &tableByteLength);
+    TAny *table = q_check_ptr(m_trueTypeExtension->GetTrueTypeTable(error, tag, &tableByteLength));
     QByteArray result(static_cast<const char*>(table), tableByteLength);
     m_trueTypeExtension->ReleaseTrueTypeTable(table);
     return result;

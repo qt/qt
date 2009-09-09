@@ -347,6 +347,13 @@ template <> struct WidgetCreator<QDesktopWidget> : public AbstractTester
 };
 void tst_ExceptionSafetyObjects::widgets_data()
 {
+#ifdef Q_OS_SYMBIAN
+    // Initialise the S60 rasteriser, which crashes if started while out of memory
+    QImage image(20, 20, QImage::Format_RGB32); 
+    QPainter p(&image); 
+    p.drawText(0, 15, "foo"); 
+#endif
+
     QTest::addColumn<AbstractTester *>("widgetCreator");
 
 #undef NEWROW
@@ -392,9 +399,6 @@ void tst_ExceptionSafetyObjects::widgets_data()
     NEWROW(QToolBox);
     NEWROW(QToolButton);
     NEWROW(QStatusBar);
-    NEWROW(QSplitter);
-    NEWROW(QTextEdit);
-    NEWROW(QTextBrowser);
     NEWROW(QToolBar);
     NEWROW(QMenuBar);
     NEWROW(QMainWindow);
@@ -502,7 +506,7 @@ struct IntegerMoveable
 int IntegerMoveable::instanceCount = 0;
 Q_DECLARE_TYPEINFO(IntegerMoveable, Q_MOVABLE_TYPE);
 
-template <typename T, template<typename> class Container >
+template <typename T, template<typename> class Container>
 void containerInsertTest(QObject*)
 {
     Container<T> container;
