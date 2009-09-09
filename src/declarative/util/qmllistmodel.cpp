@@ -200,7 +200,7 @@ class ModelObject : public QObject
 {
     Q_OBJECT
 public:
-    ModelObject(ModelNode *);
+    ModelObject();
 
     void setValue(const QByteArray &name, const QVariant &val)
     {
@@ -208,8 +208,6 @@ public:
     }
 
 private:
-    ModelNode *_node;
-    bool _haveProperties;
     QmlOpenMetaObject *_mo;
 };
 
@@ -231,7 +229,7 @@ struct ModelNode
 
     ModelObject *object() {
         if (!objectCache) {
-            objectCache = new ModelObject(this);
+            objectCache = new ModelObject();
             QHash<QString, ModelNode *>::iterator it;
             for (it = properties.begin(); it != properties.end(); ++it) {
                 if (!(*it)->values.isEmpty())
@@ -294,8 +292,8 @@ struct ModelNode
     ModelObject *objectCache;
 };
 
-ModelObject::ModelObject(ModelNode *node)
-: _node(node), _haveProperties(false), _mo(new QmlOpenMetaObject(this))
+ModelObject::ModelObject()
+: _mo(new QmlOpenMetaObject(this))
 {
 }
 
@@ -841,7 +839,8 @@ ModelNode::~ModelNode()
         ModelNode *node = qvariant_cast<ModelNode *>(values.at(ii));
         if (node) { delete node; node = 0; }
     }
-    if (modelCache) { delete modelCache; modelCache = 0; }
+    if (modelCache) { modelCache->_root = 0/* ==this */; delete modelCache; modelCache = 0; }
+    if (objectCache) { delete objectCache; }
 }
 
 QT_END_NAMESPACE
