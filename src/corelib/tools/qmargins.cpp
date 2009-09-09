@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QMargins
     \ingroup painting
+    \since 4.6
 
     \brief The QMargins class defines the four margins of a rectangle. 
 

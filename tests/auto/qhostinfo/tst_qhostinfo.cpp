@@ -243,7 +243,7 @@ void tst_QHostInfo::lookupIPv4()
     lookupDone = false;
     QHostInfo::lookupHost(hostname, this, SLOT(resultsReady(const QHostInfo&)));
 
-    QTestEventLoop::instance().enterLoop(3);
+    QTestEventLoop::instance().enterLoop(10);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(lookupDone);
 
