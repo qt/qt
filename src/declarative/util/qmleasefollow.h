@@ -39,10 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef QFXCOMPONENTINSTANCE_H
-#define QFXCOMPONENTINSTANCE_H
+#ifndef QMLEASEFOLLOW_H
+#define QMLEASEFOLLOW_H
 
-#include <QtDeclarative/qfxitem.h>
+#include <QtCore/qobject.h>
+#include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlpropertyvaluesource.h>
 
 QT_BEGIN_HEADER
 
@@ -50,44 +52,46 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-//### remove
-//### add component property to Loader
-
-class QFxComponentInstancePrivate;
-class Q_DECLARATIVE_EXPORT QFxComponentInstance : public QFxItem
+class QmlMetaProperty;
+class QmlEaseFollowPrivate;
+class Q_DECLARATIVE_EXPORT QmlEaseFollow : public QObject, 
+                                           public QmlPropertyValueSource
 {
     Q_OBJECT
-    Q_PROPERTY(QmlComponent *component READ component WRITE setComponent)
-    Q_PROPERTY(QFxItem *instance READ instance)
-    Q_CLASSINFO("DefaultProperty", "component")
+    Q_DECLARE_PRIVATE(QmlEaseFollow)
+    Q_INTERFACES(QmlPropertyValueSource)
+    Q_ENUMS(ReversingMode)
+
+    Q_PROPERTY(qreal source READ sourceValue WRITE setSourceValue)
+    Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity)
+    Q_PROPERTY(qreal duration READ duration WRITE setDuration)
+    Q_PROPERTY(ReversingMode reversingMode READ reversingMode WRITE setReversingMode)
+
 public:
-    QFxComponentInstance(QFxItem *parent=0);
+    enum ReversingMode { Eased, Immediate, Sync };
 
-    QmlComponent *component() const;
-    void setComponent(QmlComponent *);
+    QmlEaseFollow(QObject *parent = 0);
+    ~QmlEaseFollow();
 
-    QFxItem *instance() const;
+    ReversingMode reversingMode() const;
+    void setReversingMode(ReversingMode);
 
-Q_SIGNALS:
-    void instanceChanged();
+    qreal sourceValue() const;
+    void setSourceValue(qreal);
 
-private Q_SLOTS:
-    void updateSize();
+    qreal velocity() const;
+    void setVelocity(qreal);
 
-private:
-    void create();
+    qreal duration() const;
+    void setDuration(qreal);
 
-protected:
-    QFxComponentInstance(QFxComponentInstancePrivate &dd, QFxItem *parent);
-
-private:
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxComponentInstance)
+    virtual void setTarget(const QmlMetaProperty &);
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxComponentInstance)
+QML_DECLARE_TYPE(QmlEaseFollow);
 
 QT_END_HEADER
 
-#endif // QFXCOMPONENTINSTANCE_H
+#endif // QMLEASEFOLLOW_H
