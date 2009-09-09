@@ -639,7 +639,7 @@ public:
     void setWaitForStop() { waitForStop = true; }
     void stop();
 
-    ThreadHandle nativeThread;
+    ThreadHandle nativeThreadHandle;
     QThread *qthread;
     QWaitCondition startCondition;
     QMutex mutex;
@@ -647,7 +647,7 @@ public:
     QWaitCondition stopCondition;
 protected:
     static void *runUnix(void *data);
-    static void runWin(void *data);
+    static unsigned __stdcall runWin(void *data);
 
     FunctionPointer functionPointer;
     void *data;
@@ -658,12 +658,13 @@ void NativeThreadWrapper::start(FunctionPointer functionPointer, void *data)
     this->functionPointer = functionPointer;
     this->data = data;
 #ifdef Q_OS_UNIX
-    const int state = pthread_create(&nativeThread, 0, NativeThreadWrapper::runUnix, this);
+    const int state = pthread_create(&nativeThreadHandle, 0, NativeThreadWrapper::runUnix, this);
     Q_UNUSED(state);
 #elif defined(Q_OS_WINCE)
-	nativeThread = CreateThread(NULL, 0 , (LPTHREAD_START_ROUTINE)NativeThreadWrapper::runWin , this, 0, NULL);
+	nativeThreadHandle = CreateThread(NULL, 0 , (LPTHREAD_START_ROUTINE)NativeThreadWrapper::runWin , this, 0, NULL);
 #elif defined Q_OS_WIN
-    nativeThread = (HANDLE)_beginthread(NativeThreadWrapper::runWin, 0, this);
+    unsigned thrdid = 0;
+    nativeThreadHandle = (Qt::HANDLE) _beginthreadex(NULL, 0, NativeThreadWrapper::runWin, this, 0, &thrdid);
 #endif
 }
 
@@ -677,9 +678,10 @@ void NativeThreadWrapper::startAndWait(FunctionPointer functionPointer, void *da
 void NativeThreadWrapper::join()
 {
 #ifdef Q_OS_UNIX
-    pthread_join(nativeThread, 0);
+    pthread_join(nativeThreadHandle, 0);
 #elif defined Q_OS_WIN
-    WaitForSingleObject(nativeThread, INFINITE);
+    WaitForSingleObject(nativeThreadHandle, INFINITE);
+    CloseHandle(nativeThreadHandle);
 #endif
 }
 
@@ -687,7 +689,7 @@ void *NativeThreadWrapper::runUnix(void *that)
 {
     NativeThreadWrapper *nativeThreadWrapper = reinterpret_cast<NativeThreadWrapper*>(that);
 
-    // Adoppt thread, create QThread object.
+    // Adopt thread, create QThread object.
     nativeThreadWrapper->qthread = QThread::currentThread();
 
     // Release main thread.
@@ -709,9 +711,10 @@ void *NativeThreadWrapper::runUnix(void *that)
     return 0;
 }
 
-void NativeThreadWrapper::runWin(void *data)
+unsigned __stdcall NativeThreadWrapper::runWin(void *data)
 {
     runUnix(data);
+    return 0;
 }
 
 void NativeThreadWrapper::stop()
