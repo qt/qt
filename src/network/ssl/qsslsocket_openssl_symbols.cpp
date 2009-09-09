@@ -145,10 +145,11 @@ DEFINEFUNC(int, RAND_status, void, DUMMYARG, return -1, return)
 DEFINEFUNC(void, RSA_free, RSA *a, a, return, DUMMYARG)
 DEFINEFUNC(void, sk_free, STACK *a, a, return, DUMMYARG)
 DEFINEFUNC(int, sk_num, STACK *a, a, return -1, return)
-DEFINEFUNC2(void, sk_pop_free, STACK *a, a, void (*b)(STACK*), b, return, DUMMYARG)
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
+DEFINEFUNC2(void, sk_pop_free, STACK *a, a, void (*b)(void*), b, return, DUMMYARG)
 DEFINEFUNC2(void *, sk_value, STACK *a, a, int b, b, return 0, return)
 #else
+DEFINEFUNC2(void, sk_pop_free, STACK *a, a, void (*b)(STACK*), b, return, DUMMYARG)
 DEFINEFUNC2(char *, sk_value, STACK *a, a, int b, b, return 0, return)
 #endif
 DEFINEFUNC(int, SSL_accept, SSL *a, a, return -1, return)
