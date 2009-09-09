@@ -1442,8 +1442,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParallelAnimation,QmlParallelAni
 void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
 {
     if (variant.type() != QVariant::String) {
-        if ((uint)type < QVariant::UserType)
-            variant.convert((QVariant::Type)type);
+        variant.convert((QVariant::Type)type);
         return;
     }
 
