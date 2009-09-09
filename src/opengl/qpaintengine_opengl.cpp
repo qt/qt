@@ -2116,7 +2116,7 @@ void QOpenGLPaintEngine::updatePen(const QPen &pen)
     Qt::PenStyle pen_style = pen.style();
     d->pen_brush_style = pen.brush().style();
     d->cpen = pen;
-    d->has_pen = (pen_style != Qt::NoPen);
+    d->has_pen = (pen_style != Qt::NoPen) && (d->pen_brush_style != Qt::NoBrush);
     d->updateUseEmulation();
 
     if (pen.isCosmetic()) {
