@@ -1198,6 +1198,7 @@ QGraphicsItem::~QGraphicsItem()
     d_ptr->removeExtraItemCache();
 
     clearFocus();
+
     if (!d_ptr->children.isEmpty()) {
         QList<QGraphicsItem *> oldChildren = d_ptr->children;
         qDeleteAll(oldChildren);
@@ -2750,7 +2751,7 @@ void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
     // Update the scene's focus item.
     if (d_ptr->scene) {
         QGraphicsItem *p = panel();
-        if ((!p && d_ptr->scene->isActive()) || p->isActive()) {
+        if ((!p && d_ptr->scene->isActive()) || (p && p->isActive())) {
             // Visible items immediately gain focus from scene.
             d_ptr->scene->d_func()->setFocusItemHelper(f, focusReason);
         }
@@ -2770,10 +2771,9 @@ void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
 */
 void QGraphicsItem::clearFocus()
 {
-    if (!d_ptr->scene)
-        return;
     // Invisible items with focus must explicitly clear subfocus.
     d_ptr->clearSubFocus();
+
     if (hasFocus()) {
         // If this item has the scene's input focus, clear it.
         d_ptr->scene->setFocusItem(0);
@@ -4856,10 +4856,15 @@ void QGraphicsItemPrivate::setSubFocus()
 {
     // Update focus child chain. Stop at panels, or if this item
     // is hidden, stop at the first item with a visible parent.
-    QGraphicsItem *item = q_ptr;
-    QGraphicsItem *parent = item;
+    QGraphicsItem *parent = q_ptr;
     do {
-        parent->d_func()->subFocusItem = item;
+        // Clear any existing ancestor's subFocusItem.
+        if (parent != q_ptr && parent->d_ptr->subFocusItem) {
+            if (parent->d_ptr->subFocusItem == q_ptr)
+                break;
+            parent->d_ptr->subFocusItem->d_ptr->clearSubFocus();
+        }
+        parent->d_ptr->subFocusItem = q_ptr;
     } while (!parent->isPanel() && (parent = parent->d_ptr->parent) && (visible || !parent->d_ptr->visible));
 
     if (!parent && scene && !scene->isActive())
@@ -4871,7 +4876,7 @@ void QGraphicsItemPrivate::setSubFocus()
 */
 void QGraphicsItemPrivate::clearSubFocus()
 {
-    // Reset focus child chain.
+    // Reset sub focus chain.
     QGraphicsItem *parent = q_ptr;
     do {
         if (parent->d_ptr->subFocusItem != q_ptr)

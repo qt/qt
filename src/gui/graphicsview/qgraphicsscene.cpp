@@ -1390,6 +1390,7 @@ QGraphicsScene::QGraphicsScene(qreal x, qreal y, qreal width, qreal height, QObj
 QGraphicsScene::~QGraphicsScene()
 {
     Q_D(QGraphicsScene);
+
     // Remove this scene from qApp's global scene list.
     qApp->d_func()->scene_list.removeAll(this);
 
@@ -2430,7 +2431,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
 
     // Ensure that newly added items that have subfocus set, gain
     // focus automatically if there isn't a focus item already.
-    if (!d->focusItem && item->focusItem())
+    if (!d->focusItem && item->focusItem() && item->isActive())
         item->focusItem()->setFocus();
 
     d->updateInputMethodSensitivityInViews();

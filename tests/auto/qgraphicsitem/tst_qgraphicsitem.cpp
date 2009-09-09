@@ -7620,6 +7620,7 @@ void tst_QGraphicsItem::subFocus()
     QCOMPARE(text2->focusItem(), (QGraphicsItem *)text2);
     text2->setParentItem(text);
     QCOMPARE(text->focusItem(), (QGraphicsItem *)text2);
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)text2);
     QVERIFY(!text->hasFocus());
     QVERIFY(text2->hasFocus());
 
@@ -7644,6 +7645,12 @@ void tst_QGraphicsItem::subFocus()
     QGraphicsRectItem *rect3 = new QGraphicsRectItem(rect2);
     rect3->setFlag(QGraphicsItem::ItemIsFocusable);
 
+    text->setData(0, "text");
+    text2->setData(0, "text2");
+    rect->setData(0, "rect");
+    rect2->setData(0, "rect2");
+    rect3->setData(0, "rect3");
+
     rect3->setFocus();
     QVERIFY(!rect3->hasFocus());
     QCOMPARE(rect->focusItem(), (QGraphicsItem *)rect3);
@@ -7651,6 +7658,10 @@ void tst_QGraphicsItem::subFocus()
     QCOMPARE(rect3->focusItem(), (QGraphicsItem *)rect3);
     rect->setParentItem(text2);
     QCOMPARE(text->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(text2->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(rect->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(rect2->focusItem(), (QGraphicsItem *)rect3);
+    QCOMPARE(rect3->focusItem(), (QGraphicsItem *)rect3);
     QVERIFY(!rect->hasFocus());
     QVERIFY(!rect2->hasFocus());
     QVERIFY(rect3->hasFocus());
