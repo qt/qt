@@ -483,11 +483,11 @@ void QFxTextInput::keyPressEvent(QKeyEvent* ev)
     if((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
             || (d->control->cursor() == d->control->text().length()
                 && ev->key() == Qt::Key_Right)){
-        //ignore moving off the end
+        //ignore when moving off the end
         ev->ignore();
-        return;
+    }else{
+        d->control->processKeyEvent(ev);
     }
-    d->control->processKeyEvent(ev);
     if (!ev->isAccepted())
         QFxPaintedItem::keyPressEvent(ev);
 }
