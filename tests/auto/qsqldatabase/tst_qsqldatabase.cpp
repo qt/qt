@@ -2015,7 +2015,10 @@ void tst_QSqlDatabase::odbc_testqGetString()
     CHECK_DATABASE(db);
 
     QSqlQuery q(db);
-    QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("testqGetString") + "(id int, vcvalue varchar(65538))"));
+    if (tst_Databases::isSqlServer(db))
+        QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("testqGetString") + "(id int, vcvalue varchar(MAX))"));
+    else
+        QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("testqGetString") + "(id int, vcvalue varchar(65538))"));
 
     QString largeString;
     largeString.fill('A', 65536);
