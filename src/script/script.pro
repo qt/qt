@@ -24,7 +24,17 @@ isEmpty(WEBKITDIR) {
     # FIXME: not needed once JSCBISON works
     # TODO: or leave it like this since the generated file is available anyway?
     SOURCES += $$WEBKITDIR/JavaScriptCore/generated/Grammar.cpp
+
+    # avoid warnings when parsing JavaScriptCore.pri
+    # (we don't care about generating files, we already have them generated)
+    defineTest(addExtraCompiler) {
+        return(true)
+    }
+    defineTest(addExtraCompilerWithHeader) {
+        return(true)
+    }
 } else {
+    message(using external WebKit from $$WEBKITDIR)
     CONFIG += building-libs
     CONFIG -= QTDIR_build
     include($$WEBKITDIR/WebKit.pri)
@@ -36,15 +46,6 @@ wince* {
     INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/os-wince
     INCLUDEPATH += $$WEBKITDIR/JavaScriptCore/os-win32
     LIBS += -lmmtimer
-}
-
-# avoid warnings when parsing JavaScriptCore.pri
-# (we don't care about generating files, we already have them generated)
-defineTest(addExtraCompiler) {
-    return(true)
-}
-defineTest(addExtraCompilerWithHeader) {
-    return(true)
 }
 
 include($$WEBKITDIR/JavaScriptCore/JavaScriptCore.pri)
