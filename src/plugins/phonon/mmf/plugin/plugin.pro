@@ -11,16 +11,14 @@ PHONON_MMF_DIR = $$QT_SOURCE_TREE/src/3rdparty/phonon/mmf
 phonon_mmf_audio_drm {
     LIBS += -lDrmAudioPlayUtility
 
-    # In the internal 5th SDK, DrmAudioSamplePlayer.h is placed in this
-    # folder, as opposed to the public, where it is placed in
-    # epoc32/include.
-    INCLUDEPATH *= /epoc32/include/osextensions
-
     DEFINES += QT_PHONON_MMF_AUDIO_DRM
 } else {
     LIBS += -lmediaclientaudio
 }
 
+# In the internal 5th SDK, DrmAudioSamplePlayer.h is placed in this folder, as
+# opposed to the public, where it is placed in epoc32/include. In some cases
+# it's needed for other headers as well.
 INCLUDEPATH += /epoc32/include/osextensions
 
 HEADERS +=                                           \
