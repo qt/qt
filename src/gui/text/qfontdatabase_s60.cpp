@@ -66,7 +66,7 @@ QFileInfoList alternativeFilePaths(const QString &path, const QStringList &nameF
     foreach (const QFileInfo &drive, QDir::drives())
         driveStrings.append(drive.absolutePath());
     driveStrings.sort();
-    const QString zDriveString("Z:/");
+    const QString zDriveString(QLatin1String("Z:/"));
     driveStrings.removeAll(zDriveString);
     driveStrings.prepend(zDriveString);
 

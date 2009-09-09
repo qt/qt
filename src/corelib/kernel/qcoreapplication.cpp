@@ -2184,10 +2184,10 @@ QStringList QCoreApplication::libraryPaths()
         QString installPathPlugins =  QLibraryInfo::location(QLibraryInfo::PluginsPath);
 #if defined(Q_OS_SYMBIAN)
         // Add existing path on all drives for relative PluginsPath in Symbian
-        if (installPathPlugins.at(1) != QChar(':')) {
+        if (installPathPlugins.at(1) != QChar(QLatin1Char(':'))) {
             QString tempPath = installPathPlugins;
-            if (tempPath.at(tempPath.length() - 1) != QChar('\\')) {
-                tempPath += QChar('\\');
+            if (tempPath.at(tempPath.length() - 1) != QDir::separator()) {
+                tempPath += QDir::separator();
             }
             RFs& fs = qt_s60GetRFs();
             TPtrC tempPathPtr(reinterpret_cast<const TText*> (tempPath.constData()));
