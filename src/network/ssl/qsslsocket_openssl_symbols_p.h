@@ -255,12 +255,14 @@ int q_PEM_write_bio_RSA_PUBKEY(BIO *a, RSA *b);
 void q_RAND_seed(const void *a, int b);
 int q_RAND_status();
 void q_RSA_free(RSA *a);
-void q_sk_free(STACK *a);
 int q_sk_num(STACK *a);
-void q_sk_pop_free(STACK *a, void (*b)(STACK *));
 #if OPENSSL_VERSION_NUMBER >= 0x10000000L
+void q_sk_free(_STACK *a);
+void q_sk_pop_free(STACK *a, void (*b)(void *));
 void * q_sk_value(STACK *a, int b);
 #else
+void q_sk_free(STACK *a);
+void q_sk_pop_free(STACK *a, void (*b)(STACK *));
 char * q_sk_value(STACK *a, int b);
 #endif
 int q_SSL_accept(SSL *a);
