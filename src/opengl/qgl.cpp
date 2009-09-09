@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -141,6 +141,48 @@ QGLSignalProxy *QGLSignalProxy::instance()
     return theSignalProxy();
 }
 
+
+class QGLEngineSelector
+{
+public:
+    QGLEngineSelector() : engineType(QPaintEngine::MaxUser) { }
+
+    void setPreferredPaintEngine(QPaintEngine::Type type) {
+        if (type == QPaintEngine::OpenGL || type == QPaintEngine::OpenGL2)
+            engineType = type;
+    }
+
+    QPaintEngine::Type preferredPaintEngine() {
+        if (engineType == QPaintEngine::MaxUser) {
+            // No user-set engine - use the defaults
+#if defined(QT_OPENGL_ES_2)
+            engineType = QPaintEngine::OpenGL2;
+#else
+            // We can't do this in the constructor for this object because it
+            // needs to be called *before* the QApplication constructor
+            if ((QGLFormat::openGLVersionFlags() & QGLFormat::OpenGL_Version_2_0)
+                && qgetenv("QT_GL_USE_OPENGL1ENGINE").isEmpty())
+                engineType = QPaintEngine::OpenGL2;
+            else
+                engineType = QPaintEngine::OpenGL;
+#endif
+        }
+        return engineType;
+    }
+
+private:
+    QPaintEngine::Type engineType;
+};
+
+Q_GLOBAL_STATIC(QGLEngineSelector, qgl_engine_selector)
+
+
+bool qt_gl_preferGL2Engine()
+{
+    return qgl_engine_selector()->preferredPaintEngine() == QPaintEngine::OpenGL2;
+}
+
+
 /*!
     \namespace QGL
     \inmodule QtOpenGL
@@ -180,6 +222,32 @@ QGLSignalProxy *QGLSignalProxy::instance()
 
     \sa {Sample Buffers Example}
 */
+
+/*!
+   \fn void QGL::setPreferredPaintEngine(QPaintEngine::Type engineType)
+
+   \since 4.6
+
+   Sets the preferred OpenGL paint engine that is used to draw onto
+   QGLWidgets, QGLPixelBuffers and QGLFrameBufferObjects with QPainter
+   in Qt.
+
+   The \a engineType parameter specifies which of the GL engines to
+   use. Only \c QPaintEngine::OpenGL and \c QPaintEngine::OpenGL2 are
+   valid parameters to this function. All other values are ignored.
+
+   By default, the \c QPaintEngine::OpenGL2 engine is used if GL/GLES
+   version 2.0 is available, otherwise \c QPaintEngine::OpenGL is
+   used.
+
+   \warning This function must be called before the QApplication
+   constructor is called.
+*/
+void QGL::setPreferredPaintEngine(QPaintEngine::Type engineType)
+{
+    qgl_engine_selector()->setPreferredPaintEngine(engineType);
+}
+
 
 /*****************************************************************************
   QGLFormat implementation
@@ -1292,6 +1360,9 @@ bool operator!=(const QGLFormat& a, const QGLFormat& b)
  *****************************************************************************/
 QGLContextPrivate::~QGLContextPrivate()
 {
+    if (!reference->deref())
+        delete reference;
+
     if (!group->m_refs.deref()) {
         Q_ASSERT(group->context() == q_ptr);
         delete group;
@@ -1331,7 +1402,6 @@ void QGLContextPrivate::init(QPaintDevice *dev, const QGLFormat &format)
     crWin = false;
     initDone = false;
     sharing = false;
-    clear_on_painter_begin = true;
     max_texture_size = -1;
     version_flags_cached = false;
     version_flags = QGLFormat::OpenGL_Version_None;
@@ -4186,7 +4256,7 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
     } else {
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
-        d->glcx->d_func()->clear_on_painter_begin = false;
+        d->disable_clear_on_painter_begin = true;
         if (engine->type() == QPaintEngine::OpenGL2) {
             qt_save_gl_state();
 #ifndef QT_OPENGL_ES_2
@@ -4216,7 +4286,7 @@ void QGLWidget::renderText(int x, int y, const QString &str, const QFont &font, 
         p->end();
         delete p;
         setAutoBufferSwap(auto_swap);
-        d->glcx->d_func()->clear_on_painter_begin = true;
+        d->disable_clear_on_painter_begin = false;
         if (engine->type() == QPaintEngine::OpenGL2)
             qt_restore_gl_state();
     }
@@ -4359,7 +4429,7 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
     } else {
         setAutoBufferSwap(false);
         // disable glClear() as a result of QPainter::begin()
-        d->glcx->d_func()->clear_on_painter_begin = false;
+        d->disable_clear_on_painter_begin = true;
         if (engine->type() == QPaintEngine::OpenGL2)
             qt_save_gl_state();
         p = new QPainter(this);
@@ -4399,7 +4469,7 @@ void QGLWidget::renderText(double x, double y, double z, const QString &str, con
         if (engine->type() == QPaintEngine::OpenGL2)
             qt_restore_gl_state();
         setAutoBufferSwap(auto_swap);
-        d->glcx->d_func()->clear_on_painter_begin = true;
+        d->disable_clear_on_painter_begin = false;
     }
 #ifndef QT_OPENGL_ES
     if (engine->type() == QPaintEngine::OpenGL2)
@@ -4747,6 +4817,8 @@ void QGLWidgetPrivate::initContext(QGLContext *context, const QGLWidget* shareWi
 {
     Q_Q(QGLWidget);
 
+    glDevice.setWidget(q);
+
     QGLExtensions::init();
     glcx = 0;
     autoSwap = true;
@@ -4781,242 +4853,6 @@ Q_OPENGL_EXPORT const QString qt_gl_library_name()
     return *qt_gl_lib_name();
 }
 #endif
-
-void QGLDrawable::setDevice(QPaintDevice *pdev)
-{
-    wasBound = false;
-    widget = 0;
-    buffer = 0;
-    fbo = 0;
-#ifdef Q_WS_QWS
-    wsurf = 0;
-#endif
-
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    if (pdev->devType() == QInternal::Pixmap) {
-        QPixmapData *data = static_cast<QPixmap *>(pdev)->pixmapData();
-        Q_ASSERT(data->classId() == QPixmapData::OpenGLClass);
-        pixmapData = static_cast<QGLPixmapData *>(data);
-
-        fbo = pixmapData->fbo();
-    }
-#else
-    Q_ASSERT(pdev->devType() != QInternal::Pixmap);
-#endif
-
-    if (pdev->devType() == QInternal::Widget)
-        widget = static_cast<QGLWidget *>(pdev);
-    else if (pdev->devType() == QInternal::Pbuffer)
-        buffer = static_cast<QGLPixelBuffer *>(pdev);
-    else if (pdev->devType() == QInternal::FramebufferObject)
-        fbo = static_cast<QGLFramebufferObject *>(pdev);
-#ifdef Q_WS_QWS
-    else if (pdev->devType() == QInternal::UnknownDevice)
-        wsurf = static_cast<QWSGLPaintDevice*>(pdev)->windowSurface();
-#elif !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    else if (pdev->devType() == QInternal::UnknownDevice)
-        wsurf = static_cast<QGLWindowSurface *>(pdev);
-#endif
-}
-
-void QGLDrawable::swapBuffers()
-{
-    if (widget) {
-        if (widget->autoBufferSwap())
-            widget->swapBuffers();
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    } else if (pixmapData) {
-        pixmapData->swapBuffers();
-#endif
-    } else {
-        glFlush();
-    }
-}
-
-void QGLDrawable::makeCurrent()
-{
-    previous_fbo = 0;
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    if (!pixmapData && !fbo) {
-#else
-    if (!fbo) {
-#endif
-        QGLContext *ctx = context();
-        previous_fbo = ctx->d_ptr->current_fbo;
-        ctx->d_ptr->current_fbo = 0;
-        if (previous_fbo)
-            glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
-    }
-
-    if (widget)
-        widget->makeCurrent();
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    else if (pixmapData)
-        pixmapData->makeCurrent();
-#endif
-    else if (buffer)
-        buffer->makeCurrent();
-#if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
-    else if (wsurf)
-        wsurf->context()->makeCurrent();
-#endif
-    else if (fbo) {
-        wasBound = fbo->isBound();
-        if (!wasBound)
-            fbo->bind();
-    }
-}
-
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-QGLPixmapData *QGLDrawable::copyOnBegin() const
-{
-    if (!pixmapData || pixmapData->isUninitialized())
-        return 0;
-    return pixmapData;
-}
-#endif
-
-void QGLDrawable::doneCurrent()
-{
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    if (pixmapData) {
-        pixmapData->doneCurrent();
-        return;
-    }
-#endif
-
-    if (previous_fbo) {
-        QGLContext *ctx = context();
-        ctx->d_ptr->current_fbo = previous_fbo;
-        glBindFramebuffer(GL_FRAMEBUFFER_EXT, previous_fbo);
-    }
-
-    if (fbo && !wasBound)
-        fbo->release();
-}
-
-QSize QGLDrawable::size() const
-{
-    if (widget) {
-        return QSize(widget->d_func()->glcx->device()->width(),
-                     widget->d_func()->glcx->device()->height());
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    } else if (pixmapData) {
-        return pixmapData->size();
-#endif
-    } else if (buffer) {
-        return buffer->size();
-    } else if (fbo) {
-        return fbo->size();
-    }
-#ifdef Q_WS_QWS
-    else if (wsurf)
-        return wsurf->window()->frameSize();
-#elif !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    else if (wsurf)
-        return QSize(wsurf->width(), wsurf->height());
-#endif
-    return QSize();
-}
-
-QGLFormat QGLDrawable::format() const
-{
-    if (widget)
-        return widget->format();
-    else if (buffer)
-        return buffer->format();
-#if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
-    else if (wsurf)
-        return wsurf->context()->format();
-#endif
-    else if (fbo && QGLContext::currentContext()) {
-        QGLFormat fmt = QGLContext::currentContext()->format();
-        fmt.setStencil(fbo->attachment() == QGLFramebufferObject::CombinedDepthStencil);
-        fmt.setDepth(fbo->attachment() != QGLFramebufferObject::NoAttachment);
-        return fmt;
-    }
-
-    return QGLFormat();
-}
-
-GLuint QGLDrawable::bindTexture(const QImage &image, GLenum target, GLint format,
-                                QGLContext::BindOptions options)
-{
-    QGLTexture *texture = 0;
-    options |= QGLContext::MemoryManagedBindOption;
-    if (widget)
-        texture = widget->d_func()->glcx->d_func()->bindTexture(image, target, format, options);
-    else if (buffer)
-        texture = buffer->d_func()->qctx->d_func()->bindTexture(image, target, format, options);
-    else if (fbo && QGLContext::currentContext())
-        texture = const_cast<QGLContext *>(QGLContext::currentContext())->d_func()->bindTexture(image, target, format, options);
-#if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
-    else if (wsurf)
-        texture = wsurf->context()->d_func()->bindTexture(image, target, format, options);
-#endif
-    return texture->id;
-}
-
-GLuint QGLDrawable::bindTexture(const QPixmap &pixmap, GLenum target, GLint format,
-                                QGLContext::BindOptions options)
-{
-    QGLTexture *texture = 0;
-    if (widget)
-        texture = widget->d_func()->glcx->d_func()->bindTexture(pixmap, target, format, options);
-    else if (buffer)
-        texture = buffer->d_func()->qctx->d_func()->bindTexture(pixmap, target, format, options);
-    else if (fbo && QGLContext::currentContext())
-        texture = const_cast<QGLContext *>(QGLContext::currentContext())->d_func()->bindTexture(pixmap, target, format, options);
-#if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
-    else if (wsurf)
-        texture = wsurf->context()->d_func()->bindTexture(pixmap, target, format, options);
-#endif
-    return texture->id;
-}
-
-QColor QGLDrawable::backgroundColor() const
-{
-    if (widget)
-        return widget->palette().brush(widget->backgroundRole()).color();
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    else if (pixmapData)
-        return pixmapData->fillColor();
-#endif
-    return QApplication::palette().brush(QPalette::Background).color();
-}
-
-bool QGLDrawable::hasTransparentBackground() const
-{
-    return widget && widget->testAttribute(Qt::WA_TranslucentBackground);
-}
-
-QGLContext *QGLDrawable::context() const
-{
-    if (widget)
-        return widget->d_func()->glcx;
-    else if (buffer)
-        return buffer->d_func()->qctx;
-    else if (fbo)
-        return const_cast<QGLContext *>(QGLContext::currentContext());
-#if defined(Q_WS_QWS) || (!defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL))
-    else if (wsurf)
-        return wsurf->context();
-#endif
-    return 0;
-}
-
-bool QGLDrawable::autoFillBackground() const
-{
-    if (widget)
-        return widget->autoFillBackground();
-#if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
-    else if (pixmapData)
-        return pixmapData->needsFill();
-#endif
-    else
-        return false;
-}
-
 
 bool QGLShareRegister::checkSharing(const QGLContext *context1, const QGLContext *context2) {
     bool sharing = (context1 && context2 && context1->d_ptr->group == context2->d_ptr->group);
@@ -5172,6 +5008,32 @@ void QGLContextResource::removeOne(const QGLContext *key)
             oldContext->makeCurrent();
     }
     m_resources.erase(it);
+}
+
+QGLContextReference::QGLContextReference(const QGLContext *ctx)
+    : m_ref(1), m_ctx(ctx)
+{
+    connect(QGLSignalProxy::instance(),
+            SIGNAL(aboutToDestroyContext(const QGLContext *)),
+            this, SLOT(aboutToDestroyContext(const QGLContext *)));
+}
+
+void QGLContextReference::aboutToDestroyContext(const QGLContext *ctx)
+{
+    // Bail out if our context is not being destroyed.
+    if (ctx != m_ctx || !m_ctx)
+        return;
+
+    // Find some other context that this one is shared with to take over.
+    QList<const QGLContext *> shares = qgl_share_reg()->shares(m_ctx);
+    shares.removeAll(m_ctx);
+    if (!shares.isEmpty()) {
+        m_ctx = shares[0];
+        return;
+    }
+
+    // No more contexts sharing with this one, so the reference is now invalid.
+    m_ctx = 0;
 }
 
 QT_END_NAMESPACE

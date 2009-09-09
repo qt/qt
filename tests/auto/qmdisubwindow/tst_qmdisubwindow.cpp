@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -62,6 +62,9 @@
 #if defined(Q_WS_MAC) && !defined(QT_NO_STYLE_MAC)
 #include <QMacStyle>
 #endif
+
+#include "../../shared/util.h"
+
 
 QT_BEGIN_NAMESPACE
 #if defined(Q_WS_X11)
@@ -1004,15 +1007,16 @@ void tst_QMdiSubWindow::setSystemMenu()
     qt_x11_wait_for_window_manager(&mainWindow);
 #endif
 
-    QVERIFY(subWindow->isVisible());
-    QPoint globalPopupPos = subWindow->mapToGlobal(subWindow->contentsRect().topLeft());
+    QTRY_VERIFY(subWindow->isVisible());
+    QPoint globalPopupPos;
 
     // Show system menu
     QVERIFY(!qApp->activePopupWidget());
     subWindow->showSystemMenu();
-    QTest::qWait(250);
-    QCOMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
-    QCOMPARE(systemMenu->mapToGlobal(QPoint(0, 0)), globalPopupPos);
+    QTest::qWait(25);
+    QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
+    QTRY_COMPARE(systemMenu->mapToGlobal(QPoint(0, 0)),
+                 (globalPopupPos = subWindow->mapToGlobal(subWindow->contentsRect().topLeft())) );
 
     systemMenu->hide();
     QVERIFY(!qApp->activePopupWidget());
@@ -1034,9 +1038,9 @@ void tst_QMdiSubWindow::setSystemMenu()
     // Show the new system menu
     QVERIFY(!qApp->activePopupWidget());
     subWindow->showSystemMenu();
-    QTest::qWait(250);
-    QCOMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
-    QCOMPARE(systemMenu->mapToGlobal(QPoint(0, 0)), globalPopupPos);
+    QTest::qWait(25);
+    QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
+    QTRY_COMPARE(systemMenu->mapToGlobal(QPoint(0, 0)), globalPopupPos);
 
     systemMenu->hide();
     QVERIFY(!qApp->activePopupWidget());
@@ -1048,12 +1052,12 @@ void tst_QMdiSubWindow::setSystemMenu()
     QWidget *menuLabel = subWindow->maximizedSystemMenuIconWidget();
     QVERIFY(menuLabel);
     subWindow->showSystemMenu();
-    QTest::qWait(250);
-    QCOMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
-    globalPopupPos = menuLabel->mapToGlobal(QPoint(0, menuLabel->y() + menuLabel->height()));
-    QCOMPARE(systemMenu->mapToGlobal(QPoint(0, 0)), globalPopupPos);
+    QTest::qWait(25);
+    QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
+     QCOMPARE(systemMenu->mapToGlobal(QPoint(0, 0)),
+              (globalPopupPos = menuLabel->mapToGlobal(QPoint(0, menuLabel->y() + menuLabel->height()))));
     systemMenu->hide();
-    QVERIFY(!qApp->activePopupWidget());
+    QTRY_VERIFY(!qApp->activePopupWidget());
     subWindow->showNormal();
 #endif
 
@@ -1064,11 +1068,11 @@ void tst_QMdiSubWindow::setSystemMenu()
 
     subWindow->showSystemMenu();
     QTest::qWait(250);
-    QCOMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
+    QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
     // + QPoint(1, 0) because topRight() == QPoint(left() + width() -1, top())
     globalPopupPos = subWindow->mapToGlobal(subWindow->contentsRect().topRight()) + QPoint(1, 0);
     globalPopupPos -= QPoint(systemMenu->sizeHint().width(), 0);
-    QCOMPARE(systemMenu->mapToGlobal(QPoint(0, 0)), globalPopupPos);
+    QTRY_COMPARE(systemMenu->mapToGlobal(QPoint(0, 0)), globalPopupPos);
 
     systemMenu->hide();
     QVERIFY(!qApp->activePopupWidget());
@@ -1081,10 +1085,10 @@ void tst_QMdiSubWindow::setSystemMenu()
     QVERIFY(menuLabel);
     subWindow->showSystemMenu();
     QTest::qWait(250);
-    QCOMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
+    QTRY_COMPARE(qApp->activePopupWidget(), qobject_cast<QWidget *>(systemMenu));
     globalPopupPos = menuLabel->mapToGlobal(QPoint(menuLabel->width(), menuLabel->y() + menuLabel->height()));
     globalPopupPos -= QPoint(systemMenu->sizeHint().width(), 0);
-    QCOMPARE(systemMenu->mapToGlobal(QPoint(0, 0)), globalPopupPos);
+    QTRY_COMPARE(systemMenu->mapToGlobal(QPoint(0, 0)), globalPopupPos);
 #endif
 
     delete systemMenu;
@@ -1902,7 +1906,7 @@ void tst_QMdiSubWindow::task_182852()
     mainWindow.show();
     mainWindow.menuBar()->setVisible(true);
     qApp->setActiveWindow(&mainWindow);
-    
+
     QString originalWindowTitle = QString::fromLatin1("MainWindow - [foo]");
     mainWindow.setWindowTitle(originalWindowTitle);
 
@@ -1917,7 +1921,7 @@ void tst_QMdiSubWindow::task_182852()
     window->showMaximized();
     qApp->processEvents();
     QVERIFY(window->isMaximized());
-    
+
     QCOMPARE(mainWindow.windowTitle(), QString::fromLatin1("%1 - [%2]")
             .arg(originalWindowTitle, window->widget()->windowTitle()));
 

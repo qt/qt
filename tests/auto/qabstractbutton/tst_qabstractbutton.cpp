@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -550,6 +550,7 @@ void tst_QAbstractButton::setShortcut()
 {
     QKeySequence seq( Qt::Key_A );
     testWidget->setShortcut( seq );
+    QApplication::setActiveWindow(testWidget);
 
     // must be active to get shortcuts
     for (int i = 0; !testWidget->isActiveWindow() && i < 100; ++i) {
@@ -557,8 +558,8 @@ void tst_QAbstractButton::setShortcut()
        QApplication::instance()->processEvents();
        QTest::qWait(100);
     }
-    QVERIFY(testWidget->isActiveWindow());    
-    
+    QVERIFY(testWidget->isActiveWindow());
+
     QTest::keyClick( testWidget, 'A' );
     QTest::qWait(300);                      // Animate click takes time
     QCOMPARE(click_count,  (uint)1);

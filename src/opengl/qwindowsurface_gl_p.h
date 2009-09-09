@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -56,6 +56,7 @@
 #include <qglobal.h>
 #include <qgl.h>
 #include <private/qwindowsurface_p.h>
+#include <private/qglpaintdevice_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,7 +66,18 @@ class QRegion;
 class QWidget;
 struct QGLWindowSurfacePrivate;
 
-class QGLWindowSurface : public QObject, public QWindowSurface, public QPaintDevice
+class QGLWindowSurfaceGLPaintDevice : public QGLPaintDevice
+{
+public:
+    QPaintEngine* paintEngine() const;
+    void endPaint();
+    QSize size() const;
+    int metric(PaintDeviceMetric m) const;
+    QGLContext* context() const;
+    QGLWindowSurfacePrivate* d;
+};
+
+class QGLWindowSurface : public QObject, public QWindowSurface // , public QPaintDevice
 {
     Q_OBJECT
 public:
@@ -86,11 +98,6 @@ public:
     QGLContext *context() const;
 
     static QGLFormat surfaceFormat;
-
-    QPaintEngine *paintEngine() const;
-
-protected:
-    int metric(PaintDeviceMetric metric) const;
 
 private slots:
     void deleted(QObject *object);

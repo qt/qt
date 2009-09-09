@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -52,6 +52,9 @@
 
 #include <qlineedit.h>
 #include <qdebug.h>
+
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=gui/widgets/qspinbox.h gui/widgets/qspinbox.cpp gui/widgets/qabstractspinbox.cpp gui/widgets/qabstractspinbox_p.h gui/widgets/qabstractspinbox.h
 
@@ -772,8 +775,8 @@ void tst_QDoubleSpinBox::editingFinished()
     layout->addWidget(box2);
 
     testFocusWidget->show();
-    QTest::qWait(100);
-    QVERIFY(box->isActiveWindow());
+    QTest::qWait(10);
+    QTRY_VERIFY(box->isActiveWindow());
     box->setFocus();
 
     QSignalSpy editingFinishedSpy1(box, SIGNAL(editingFinished()));

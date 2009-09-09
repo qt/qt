@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -55,6 +55,9 @@
 #include <qmenu.h>
 #include <qstyle.h>
 #include <qdebug.h>
+
+#include "../../shared/util.h"
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -437,15 +440,16 @@ void tst_QMenu::overrideMenuAction()
 	m->addAction(aQuit);
 
 	w.show();
-        QTest::qWait(200);
+    w.setFocus();
+    QTRY_VERIFY(w.hasFocus());
 
 	//test of the action inside the menu
 	QTest::keyClick(&w, Qt::Key_X, Qt::ControlModifier);
-    QCOMPARE(activated, aQuit);
+    QTRY_COMPARE(activated, aQuit);
 
 	//test if the menu still pops out
 	QTest::keyClick(&w, Qt::Key_F, Qt::AltModifier);
-    QVERIFY(m->isVisible());
+    QTRY_VERIFY(m->isVisible());
 
 	delete aFileMenu;
 
@@ -703,12 +707,12 @@ void tst_QMenu::task250673_activeMultiColumnSubMenuPosition()
     };
 
     QMenu sub;
-	
+
     if (sub.style()->styleHint(QStyle::SH_Menu_Scrollable, 0, &sub)) {
         //the style prevents the menus from getting columns
         QSKIP("the style doesn't support multiple columns, it makes the menu scrollable", SkipSingle);
     }
-	
+
     sub.addAction("Sub-Item1");
     QAction *subAction = sub.addAction("Sub-Item2");
 

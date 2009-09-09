@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -330,17 +330,17 @@ bool QDirectFBPixmapData::fromDataBufferDescription(const DFBDataBufferDescripti
 
 #endif
 
-void QDirectFBPixmapData::fromImage(const QImage &image,
+void QDirectFBPixmapData::fromImage(const QImage &img,
                                     Qt::ImageConversionFlags flags)
 {
-    if (image.depth() == 1) {
-        fromImage(image.convertToFormat(screen->alphaPixmapFormat()), flags);
+    if (img.depth() == 1) {
+        fromImage(img.convertToFormat(screen->alphaPixmapFormat()), flags);
         return;
     }
 
-    if (image.hasAlphaChannel()
+    if (img.hasAlphaChannel()
 #ifndef QT_NO_DIRECTFB_OPAQUE_DETECTION
-        && (flags & Qt::NoOpaqueDetection || QDirectFBPixmapData::hasAlphaChannel(image))
+        && (flags & Qt::NoOpaqueDetection || QDirectFBPixmapData::hasAlphaChannel(img))
 #endif
         ) {
         alpha = true;
@@ -349,13 +349,37 @@ void QDirectFBPixmapData::fromImage(const QImage &image,
         alpha = false;
         imageFormat = screen->pixelFormat();
     }
+    QImage image;
+    if (flags != Qt::AutoColor) {
+        image = img.convertToFormat(imageFormat, flags);
+        flags = Qt::AutoColor;
+    } else {
+        image = img;
+    }
 
-    dfbSurface = screen->createDFBSurface(image, imageFormat, QDirectFBScreen::TrackSurface|QDirectFBScreen::NoPreallocated);
+    IDirectFBSurface *imageSurface = screen->createDFBSurface(image, image.format(), QDirectFBScreen::DontTrackSurface);
+    if (!imageSurface) {
+        qWarning("QDirectFBPixmapData::fromImage()");
+        invalidate();
+        return;
+    }
+
+    dfbSurface = screen->createDFBSurface(image.size(), imageFormat, QDirectFBScreen::TrackSurface);
     if (!dfbSurface) {
         qWarning("QDirectFBPixmapData::fromImage()");
         invalidate();
         return;
     }
+
+    if (image.hasAlphaChannel()) {
+        dfbSurface->Clear(dfbSurface, 0, 0, 0, 0);
+        dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_BLEND_ALPHACHANNEL);
+    } else {
+        dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
+    }
+    dfbSurface->Blit(dfbSurface, imageSurface, 0, 0, 0);
+    imageSurface->Release(imageSurface);
+
     w = image.width();
     h = image.height();
     is_null = (w <= 0 || h <= 0);
