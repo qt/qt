@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -731,6 +731,8 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
     }
 
     QAbstractFileEngine::FileFlags ret = 0;
+    if (type & FlagsMask)
+        ret |= LocalDiskFlag;
     bool exists = d->doStat();
     if (!exists && !d->isSymlink())
         return ret;
@@ -796,7 +798,6 @@ QAbstractFileEngine::FileFlags QFSFileEngine::fileFlags(FileFlags type) const
         }
     }
     if (type & FlagsMask) {
-        ret |= LocalDiskFlag;
         if (exists)
             ret |= ExistsFlag;
 #if defined(Q_OS_SYMBIAN)
@@ -864,15 +865,22 @@ QString QFSFileEngine::fileName(FileName file) const
         QString ret;
         if (!isRelativePathSymbian(d->filePath)) {
             if (d->filePath.size() > 2 && d->filePath.at(1) == QLatin1Char(':')
-                && d->filePath.at(2) != slashChar || // It's a drive-relative path, so Z:a.txt -> Z:\currentpath\a.txt
-                d->filePath.startsWith(slashChar)    // It's a absolute path to the current drive, so \a.txt -> Z:\a.txt
-                ) {
-                ret = QString(QDir::currentPath().left(2) + QDir::fromNativeSeparators(d->filePath));
+                && d->filePath.at(2) != slashChar){
+                // It's a drive-relative path, so C:a.txt -> C:/currentpath/a.txt,
+                // or if it's different drive than current, Z:a.txt -> Z:/a.txt
+                QString currentPath = QDir::currentPath();
+                if (0 == currentPath.left(1).compare(d->filePath.left(1), Qt::CaseInsensitive))
+                    ret = currentPath + slashChar + d->filePath.mid(2);
+                else
+                    ret = d->filePath.left(2) + slashChar + d->filePath.mid(2);
+            } else if (d->filePath.startsWith(slashChar)) {
+                // It's a absolute path to the current drive, so /a.txt -> C:/a.txt
+                ret = QDir::currentPath().left(2) + d->filePath;
             } else {
                 ret = d->filePath;
             }
         } else {
-            ret = QDir::cleanPath(QDir::currentPath() + slashChar + d->filePath);
+            ret = QDir::currentPath() + slashChar + d->filePath;
         }
 
         // The path should be absolute at this point.
@@ -887,6 +895,12 @@ QString QFSFileEngine::fileName(FileName file) const
             // Force uppercase drive letters.
             ret[0] = ret.at(0).toUpper();
         }
+
+        // Clean up the path
+        bool isDir = ret.endsWith(slashChar);
+        ret = QDir::cleanPath(ret);
+        if (isDir)
+            ret += slashChar;
 
         if (file == AbsolutePathName) {
             int slash = ret.lastIndexOf(slashChar);

@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -79,6 +79,7 @@ private slots:
     void glWidgetReparent();
     void stackedFBOs();
     void colormap();
+    void fboFormat();
 };
 
 tst_QGL::tst_QGL()
@@ -230,9 +231,15 @@ void tst_QGL::getSetCheck()
 
     // bool QGLFormat::sampleBuffers()
     // void QGLFormat::setSampleBuffers(bool)
+#if !defined(QT_OPENGL_ES_2)
     QCOMPARE(false, obj1.sampleBuffers());
     QVERIFY(!obj1.testOption(QGL::SampleBuffers));
     QVERIFY(obj1.testOption(QGL::NoSampleBuffers));
+#else
+    QCOMPARE(true, obj1.sampleBuffers());
+    QVERIFY(obj1.testOption(QGL::SampleBuffers));
+    QVERIFY(!obj1.testOption(QGL::NoSampleBuffers));
+#endif
     obj1.setSampleBuffers(false);
     QCOMPARE(false, obj1.sampleBuffers());
     QVERIFY(obj1.testOption(QGL::NoSampleBuffers));
@@ -498,6 +505,57 @@ void tst_QGL::getSetCheck()
     format4.setPlane(16);
     QCOMPARE(format1.redBufferSize(), 8);
     QCOMPARE(format1.plane(), 8);
+
+    // Check the QGLFormat constructor that takes an option list.
+    QGLFormat format5
+        (QGL::DepthBuffer | QGL::StereoBuffers | QGL::ColorIndex, 3);
+    QVERIFY(format5.depth());
+    QVERIFY(format5.stereo());
+    QVERIFY(format5.doubleBuffer());        // From defaultFormat()
+    QVERIFY(!format5.hasOverlay());         // From defaultFormat()
+    QVERIFY(!format5.rgba());
+    QCOMPARE(format5.plane(), 3);
+
+    // The default format should be the same as QGLFormat().
+    QVERIFY(QGLFormat::defaultFormat() == QGLFormat());
+
+    // Modify the default format and check that it was changed.
+    QGLFormat::setDefaultFormat(format1);
+    QVERIFY(QGLFormat::defaultFormat() == format1);
+
+    // Restore the default format.
+    QGLFormat::setDefaultFormat(QGLFormat());
+    QVERIFY(QGLFormat::defaultFormat() == QGLFormat());
+
+    // Check the default overlay format's expected values.
+    QGLFormat overlay(QGLFormat::defaultOverlayFormat());
+    QCOMPARE(overlay.depthBufferSize(), -1);
+    QCOMPARE(overlay.accumBufferSize(), -1);
+    QCOMPARE(overlay.redBufferSize(), -1);
+    QCOMPARE(overlay.greenBufferSize(), -1);
+    QCOMPARE(overlay.blueBufferSize(), -1);
+    QCOMPARE(overlay.alphaBufferSize(), -1);
+    QCOMPARE(overlay.samples(), -1);
+    QCOMPARE(overlay.swapInterval(), -1);
+    QCOMPARE(overlay.plane(), 1);
+    QVERIFY(!overlay.sampleBuffers());
+    QVERIFY(!overlay.doubleBuffer());
+    QVERIFY(!overlay.depth());
+    QVERIFY(!overlay.rgba());
+    QVERIFY(!overlay.alpha());
+    QVERIFY(!overlay.accum());
+    QVERIFY(!overlay.stencil());
+    QVERIFY(!overlay.stereo());
+    QVERIFY(overlay.directRendering()); // Only option that should be on.
+    QVERIFY(!overlay.hasOverlay());     // Overlay doesn't need an overlay!
+
+    // Modify the default overlay format and check that it was changed.
+    QGLFormat::setDefaultOverlayFormat(format1);
+    QVERIFY(QGLFormat::defaultOverlayFormat() == format1);
+
+    // Restore the default overlay format.
+    QGLFormat::setDefaultOverlayFormat(overlay);
+    QVERIFY(QGLFormat::defaultOverlayFormat() == overlay);
 
     MyGLContext obj2(obj1);
     // bool QGLContext::windowCreated()
@@ -1319,6 +1377,110 @@ void tst_QGL::colormap()
     QVERIFY(cmap4.handle() == Qt::HANDLE(42));
     QVERIFY(!cmap4.isEmpty());
     QCOMPARE(cmap4.size(), 256);
+}
+
+#ifndef QT_OPENGL_ES
+#define DEFAULT_FORMAT GL_RGBA8
+#else
+#define DEFAULT_FORMAT GL_RGBA
+#endif
+
+#ifndef GL_TEXTURE_3D
+#define GL_TEXTURE_3D 0x806F
+#endif
+
+#ifndef GL_RGB16
+#define GL_RGB16 0x8054
+#endif
+
+void tst_QGL::fboFormat()
+{
+    // Check the initial conditions.
+    QGLFramebufferObjectFormat format1;
+    QCOMPARE(format1.samples(), 0);
+    QVERIFY(format1.attachment() == QGLFramebufferObject::NoAttachment);
+    QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_2D));
+    QCOMPARE(int(format1.internalTextureFormat()), int(DEFAULT_FORMAT));
+
+    // Modify the values and re-check.
+    format1.setSamples(8);
+    format1.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+    format1.setTextureTarget(GL_TEXTURE_3D);
+    format1.setInternalTextureFormat(GL_RGB16);
+    QCOMPARE(format1.samples(), 8);
+    QVERIFY(format1.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_3D));
+    QCOMPARE(int(format1.internalTextureFormat()), int(GL_RGB16));
+
+    // Make copies and check that they are the same.
+    QGLFramebufferObjectFormat format2(format1);
+    QGLFramebufferObjectFormat format3;
+    QCOMPARE(format2.samples(), 8);
+    QVERIFY(format2.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(int(format2.textureTarget()), int(GL_TEXTURE_3D));
+    QCOMPARE(int(format2.internalTextureFormat()), int(GL_RGB16));
+    format3 = format1;
+    QCOMPARE(format3.samples(), 8);
+    QVERIFY(format3.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(int(format3.textureTarget()), int(GL_TEXTURE_3D));
+    QCOMPARE(int(format3.internalTextureFormat()), int(GL_RGB16));
+
+    // Modify the copies and check that the original is unchanged.
+    format2.setSamples(9);
+    format3.setTextureTarget(GL_TEXTURE_2D);
+    QCOMPARE(format1.samples(), 8);
+    QVERIFY(format1.attachment() == QGLFramebufferObject::CombinedDepthStencil);
+    QCOMPARE(int(format1.textureTarget()), int(GL_TEXTURE_3D));
+    QCOMPARE(int(format1.internalTextureFormat()), int(GL_RGB16));
+
+    // operator== and operator!= for QGLFramebufferObjectFormat.
+    QGLFramebufferObjectFormat format1c;
+    QGLFramebufferObjectFormat format2c;
+
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+    format1c.setSamples(8);
+    QVERIFY(!(format1c == format2c));
+    QVERIFY(format1c != format2c);
+    format2c.setSamples(8);
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+
+    format1c.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+    QVERIFY(!(format1c == format2c));
+    QVERIFY(format1c != format2c);
+    format2c.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+
+    format1c.setTextureTarget(GL_TEXTURE_3D);
+    QVERIFY(!(format1c == format2c));
+    QVERIFY(format1c != format2c);
+    format2c.setTextureTarget(GL_TEXTURE_3D);
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+
+    format1c.setInternalTextureFormat(GL_RGB16);
+    QVERIFY(!(format1c == format2c));
+    QVERIFY(format1c != format2c);
+    format2c.setInternalTextureFormat(GL_RGB16);
+    QVERIFY(format1c == format2c);
+    QVERIFY(!(format1c != format2c));
+
+    QGLFramebufferObjectFormat format3c(format1c);
+    QGLFramebufferObjectFormat format4c;
+    QVERIFY(format1c == format3c);
+    QVERIFY(!(format1c != format3c));
+    format3c.setInternalTextureFormat(DEFAULT_FORMAT);
+    QVERIFY(!(format1c == format3c));
+    QVERIFY(format1c != format3c);
+
+    format4c = format1c;
+    QVERIFY(format1c == format4c);
+    QVERIFY(!(format1c != format4c));
+    format4c.setInternalTextureFormat(DEFAULT_FORMAT);
+    QVERIFY(!(format1c == format4c));
+    QVERIFY(format1c != format4c);
 }
 
 QTEST_MAIN(tst_QGL)

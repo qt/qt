@@ -22,13 +22,18 @@ HEADERS += qgl.h \
 	   qglpixelbuffer.h \
            qglpixelbuffer_p.h \
 	   qglframebufferobject.h  \
-        qglextensions_p.h
+           qglframebufferobject_p.h  \
+           qglextensions_p.h \
+           qglpaintdevice_p.h \
+
 
 SOURCES	+= qgl.cpp \
 	   qglcolormap.cpp \
 	   qglpixelbuffer.cpp \
 	   qglframebufferobject.cpp \
            qglextensions.cpp \
+           qglpaintdevice.cpp \
+
 
 !contains(QT_CONFIG, opengles2) {
     HEADERS += qpaintengine_opengl_p.h

@@ -24,6 +24,7 @@
 #include "CallFrame.h"
 #include "Identifier.h"
 #include "Structure.h"
+#include "StructureChain.h"
 #include <wtf/HashSet.h>
 #include <wtf/Vector.h>
 

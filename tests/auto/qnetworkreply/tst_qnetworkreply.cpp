@@ -1,6 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -20,10 +21,9 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights.  These rights are described in the Nokia Qt LGPL
-** Exception version 1.1, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
 ** If you have questions regarding the use of this file, please contact
 ** Nokia at qt-info@nokia.com.
@@ -2653,6 +2653,7 @@ void tst_QNetworkReply::ioPutToFileFromSocket()
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), url);
@@ -2699,6 +2700,7 @@ void tst_QNetworkReply::ioPutToFileFromLocalSocket()
 
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(10);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), url);
@@ -2971,6 +2973,7 @@ void tst_QNetworkReply::ioPostToHttpFromSocket()
                this, SLOT(proxyAuthenticationRequired(QNetworkProxy,QAuthenticator*)));
     disconnect(&manager, SIGNAL(authenticationRequired(QNetworkReply*,QAuthenticator*)),
                this, SLOT(authenticationRequired(QNetworkReply*,QAuthenticator*)));
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     QCOMPARE(reply->url(), url);
@@ -3295,6 +3298,7 @@ void tst_QNetworkReply::uploadPerformance()
       QTimer::singleShot(5000, &generator, SLOT(stop()));
 
       QTestEventLoop::instance().enterLoop(10);
+      QCOMPARE(reply->error(), QNetworkReply::NoError);
       QVERIFY(!QTestEventLoop::instance().timeout());
 }
 
@@ -3320,6 +3324,7 @@ void tst_QNetworkReply::httpUploadPerformance()
       generator.start();
       time.start();
       QTestEventLoop::instance().enterLoop(40);
+      QCOMPARE(reply->error(), QNetworkReply::NoError);
       QVERIFY(!QTestEventLoop::instance().timeout());
 
       qint64 elapsed = time.elapsed();
@@ -3387,6 +3392,7 @@ void tst_QNetworkReply::httpDownloadPerformance()
     QTime time;
     time.start();
     QTestEventLoop::instance().enterLoop(40);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     qint64 elapsed = time.elapsed();
@@ -3456,6 +3462,7 @@ void tst_QNetworkReply::downloadProgress()
 
     spy.clear();
     QTestEventLoop::instance().enterLoop(2);
+    QCOMPARE(reply->error(), QNetworkReply::NoError);
     QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(spy.count() > 0);
     QVERIFY(!reply->isRunning());
