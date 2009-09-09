@@ -21,6 +21,8 @@ phonon_mmf_audio_drm {
     LIBS += -lmediaclientaudio
 }
 
+INCLUDEPATH += /epoc32/include/osextensions
+
 HEADERS +=                                           \
            $$PHONON_MMF_DIR/abstractaudioeffect.h    \
            $$PHONON_MMF_DIR/abstractmediaplayer.h    \
