@@ -1938,6 +1938,7 @@ void tst_QGraphicsView::wheelEvent()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
+    QTest::qWait(250);
 
     // Send a wheel event with horizontal orientation.
     {
@@ -2941,10 +2942,10 @@ void tst_QGraphicsView::task239729_noViewUpdate()
     }
 
     view->show();
-    QTest::qWait(250);
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(view);
 #endif
+    QTest::qWait(250);
 
     EventSpy spy(view->viewport(), QEvent::Paint);
     QCOMPARE(spy.count(), 0);
@@ -3418,7 +3419,7 @@ void tst_QGraphicsView::exposeRegion()
     QRegion expectedExposeRegion = QRect(0, 0, 5, 5);
     expectedExposeRegion += QRect(viewport->rect().bottomRight() - QPoint(5, 5), QSize(5, 5));
     viewport->update(expectedExposeRegion);
-    qApp->processEvents();
+    QTest::qWait(125);
 
     // Make sure it triggers correct repaint on the view.
     QCOMPARE(view.lastUpdateRegions.size(), 1);
@@ -3488,7 +3489,7 @@ void tst_QGraphicsView::update()
     viewPrivate->processPendingUpdates();
     QVERIFY(viewPrivate->dirtyRegion.isEmpty());
     QVERIFY(viewPrivate->dirtyBoundingRect.isEmpty());
-    QTest::qWait(50);
+    QTest::qWait(150);
     if (!intersects) {
         QVERIFY(view.lastUpdateRegions.isEmpty());
     } else {
@@ -3504,6 +3505,11 @@ void tst_QGraphicsView::inputMethodSensitivity()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(300);
 
     QGraphicsRectItem *item = new QGraphicsRectItem;
 
@@ -3571,11 +3577,12 @@ void tst_QGraphicsView::inputMethodSensitivity()
 
 class InputContextTester : public QInputContext
 {
+    Q_OBJECT
+public:
     QString identifierName() { return QString(); }
     bool isComposing() const { return false; }
     QString language() { return QString(); }
     void reset() { ++resets; }
-public:
     int resets;
 };
 
@@ -3583,9 +3590,16 @@ void tst_QGraphicsView::inputContextReset()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    QVERIFY(view.testAttribute(Qt::WA_InputMethodEnabled));
 
     InputContextTester inputContext;
     view.setInputContext(&inputContext);
+
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(300);
 
     QGraphicsItem *item1 = new QGraphicsRectItem;
     item1->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemAcceptsInputMethod);
@@ -3596,6 +3610,8 @@ void tst_QGraphicsView::inputContextReset()
 
     inputContext.resets = 0;
     scene.setFocusItem(item1);
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *)item1);
+    QVERIFY(view.testAttribute(Qt::WA_InputMethodEnabled));
     QCOMPARE(inputContext.resets, 0);
 
     inputContext.resets = 0;

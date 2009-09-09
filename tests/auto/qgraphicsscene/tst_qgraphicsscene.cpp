@@ -1376,6 +1376,9 @@ void tst_QGraphicsScene::removeItem()
 void tst_QGraphicsScene::focusItem()
 {
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     QVERIFY(!scene.focusItem());
     QGraphicsItem *item = scene.addText("Qt");
     QVERIFY(!scene.focusItem());
@@ -1434,6 +1437,9 @@ protected:
 void tst_QGraphicsScene::focusItemLostFocus()
 {
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     FocusItem *item = new FocusItem;
     item->setTextInteractionFlags(Qt::TextEditorInteraction);
     scene.addItem(item);
@@ -1458,6 +1464,9 @@ void tst_QGraphicsScene::clear()
 void tst_QGraphicsScene::setFocusItem()
 {
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     QGraphicsItem *item = scene.addText("Qt");
     QVERIFY(!scene.focusItem());
     QVERIFY(!scene.hasFocus());
@@ -1885,6 +1894,9 @@ void tst_QGraphicsScene::mouseEventPropagation()
 
     // scene -> a -> b -> c -> d
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(a);
 
     // Prepare some events
@@ -2069,6 +2081,9 @@ void tst_QGraphicsScene::mouseEventPropagation_focus()
 
     // scene -> a -> b -> c -> d
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(a);
 
     // Prepare some events
@@ -2680,6 +2695,9 @@ void tst_QGraphicsScene::render()
 void tst_QGraphicsScene::contextMenuEvent()
 {
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     EventTester *item = new EventTester;
     scene.addItem(item);
     item->setFlag(QGraphicsItem::ItemIsFocusable);
@@ -3649,6 +3667,9 @@ void tst_QGraphicsScene::stickyFocus()
     QFETCH(bool, sticky);
 
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     QGraphicsTextItem *text = scene.addText("Hei");
     text->setTextInteractionFlags(Qt::TextEditorInteraction);
     text->setFocus();
@@ -3703,6 +3724,9 @@ void tst_QGraphicsScene::inputMethod()
     item->setFlags((QGraphicsItem::GraphicsItemFlags)flags);
 
     QGraphicsScene scene;
+    QEvent activate(QEvent::WindowActivate);
+    QApplication::sendEvent(&scene, &activate);
+
     scene.addItem(item);
     QInputMethodEvent event;
 

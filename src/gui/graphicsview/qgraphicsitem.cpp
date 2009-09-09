@@ -1026,8 +1026,12 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     dirtySceneTransform = 1;
 
     // Restore the sub focus chain.
-    if (lastSubFocusItem)
-        lastSubFocusItem->d_ptr->setSubFocus();
+    if (lastSubFocusItem) {
+        if (parent && parent->isActive())
+            lastSubFocusItem->setFocus();
+        else
+            lastSubFocusItem->d_ptr->setSubFocus();
+    }
 
     // Deliver post-change notification
     q->itemChange(QGraphicsItem::ItemParentHasChanged, newParentVariant);
@@ -2746,7 +2750,7 @@ void QGraphicsItem::setFocus(Qt::FocusReason focusReason)
     // Update the scene's focus item.
     if (d_ptr->scene) {
         QGraphicsItem *p = panel();
-        if (!p || p->isActive()) {
+        if ((!p && d_ptr->scene->isActive()) || p->isActive()) {
             // Visible items immediately gain focus from scene.
             d_ptr->scene->d_func()->setFocusItemHelper(f, focusReason);
         }
@@ -4850,13 +4854,16 @@ void QGraphicsItemPrivate::ensureSceneTransform()
 */
 void QGraphicsItemPrivate::setSubFocus()
 {
-    // Update focus child chain.
+    // Update focus child chain. Stop at panels, or if this item
+    // is hidden, stop at the first item with a visible parent.
     QGraphicsItem *item = q_ptr;
     QGraphicsItem *parent = item;
-    bool hidden = !visible;
     do {
         parent->d_func()->subFocusItem = item;
-    } while (!parent->isPanel() && (parent = parent->d_ptr->parent) && (!hidden || !parent->d_func()->visible));
+    } while (!parent->isPanel() && (parent = parent->d_ptr->parent) && (visible || !parent->d_ptr->visible));
+
+    if (!parent && scene && !scene->isActive())
+        scene->d_func()->lastFocusItem = q_ptr;
 }
 
 /*!

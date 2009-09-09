@@ -438,6 +438,8 @@ void tst_QGraphicsWidget::focusWidget()
     SubQGraphicsWidget *parent = new SubQGraphicsWidget;
     QCOMPARE(parent->focusWidget(), (QGraphicsWidget *)0);
     QGraphicsScene scene;
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
     scene.addItem(parent);
 
     QFETCH(int, childCount);
@@ -459,7 +461,9 @@ void tst_QGraphicsWidget::focusWidget()
 void tst_QGraphicsWidget::focusWidget2()
 {
     QGraphicsScene scene;
-    
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+
     QGraphicsWidget *widget = new QGraphicsWidget;
     EventSpy focusInSpy(widget, QEvent::FocusIn);
     EventSpy focusOutSpy(widget, QEvent::FocusOut);
@@ -561,6 +565,9 @@ void tst_QGraphicsWidget::focusPolicy_data()
 void tst_QGraphicsWidget::focusPolicy()
 {
     QGraphicsScene scene;
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+
     SubQGraphicsWidget *widget = new SubQGraphicsWidget;
     scene.addItem(widget);
     QCOMPARE(Qt::NoFocus, widget->focusPolicy());
@@ -788,6 +795,12 @@ void tst_QGraphicsWidget::initStyleOption()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
+
     view.setAlignment(Qt::AlignTop | Qt::AlignLeft);
     SubQGraphicsWidget *widget = new SubQGraphicsWidget;
     widget->setAcceptsHoverEvents(true);
@@ -1183,6 +1196,8 @@ void tst_QGraphicsWidget::setTabOrderAndReparent()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
+    QTest::qWait(250);
+
     int i;
     QGraphicsWidget *w1, *w2, *w3, *w4;
     for (i = 1; i < 4; ++i) {

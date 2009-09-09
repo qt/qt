@@ -554,6 +554,9 @@ void tst_QGraphicsProxyWidget::eventFilter()
     QFETCH(bool, fromObject);
 
     QGraphicsScene scene;
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     scene.addItem(proxy);
 
@@ -682,18 +685,18 @@ void tst_QGraphicsProxyWidget::focusInEvent_data()
 // protected void focusInEvent(QFocusEvent* event)
 void tst_QGraphicsProxyWidget::focusInEvent()
 {
+    // ### This test is just plain old broken
     QFETCH(bool, widgetHasFocus);
     QFETCH(bool, widgetCanHaveFocus);
 
-    QGraphicsView view;
-    QGraphicsScene scene(&view);
+    QGraphicsScene scene;
+    QEvent windowActivate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &windowActivate);
+
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setEnabled(true);
     scene.addItem(proxy);
     proxy->setVisible(true);
-    view.show();
-    QApplication::setActiveWindow(&view);
-    view.activateWindow();
 
     QWidget *widget = new QWidget;
     widget->resize(100, 100);
@@ -706,7 +709,11 @@ void tst_QGraphicsProxyWidget::focusInEvent()
 
     proxy->setWidget(widget);
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // <- shouldn't need to do this
-    QTRY_VERIFY(widget->isVisible() && view.isVisible());
+
+    // ### This test is just plain old broken - sending a focus in event
+    // does not cause items to gain input focus. The widget has focus
+    // because the proxy has focus, not because it got this event.
+
     QFocusEvent event(QEvent::FocusIn, Qt::TabFocusReason);
     event.ignore();
     proxy->call_focusInEvent(&event);
@@ -776,6 +783,10 @@ void tst_QGraphicsProxyWidget::focusNextPrevChild()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
     if (hasScene) {
         scene.addItem(proxy);
         proxy->show();
@@ -819,6 +830,9 @@ void tst_QGraphicsProxyWidget::focusOutEvent()
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     scene.addItem(proxy);
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
     QApplication::setActiveWindow(&view);
     view.activateWindow();
     view.setFocus();
@@ -1084,6 +1098,7 @@ void tst_QGraphicsProxyWidget::keyPressEvent()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
+    QTest::qWait(250);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
@@ -1122,6 +1137,10 @@ void tst_QGraphicsProxyWidget::keyReleaseEvent()
     QGraphicsScene scene;
     QGraphicsView view(&scene);
     view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(250);
 
     SubQGraphicsProxyWidget *proxy = new SubQGraphicsProxyWidget;
     proxy->setFlag(QGraphicsItem::ItemIsFocusable, true); // ### remove me!!!
