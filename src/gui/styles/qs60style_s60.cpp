@@ -117,7 +117,7 @@ private:
     static void checkAndUnCompressBitmap(CFbsBitmap*& aOriginalBitmap);
     static void unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap* aTrgBitmap, CFbsBitmap* aSrcBitmap);
     static void colorGroupAndIndex(QS60StyleEnums::SkinParts skinID,
-        TAknsItemID &colorGroup, int colorIndex);
+        TAknsItemID &colorGroup, int &colorIndex);
     static void fallbackInfo(const QS60StyleEnums::SkinParts &stylepart, TDes& fallbackFileName, TInt& fallbackIndex);
     static bool checkSupport(const int supportedRelease);
     static TAknsItemID checkAndUpdateReleaseSpecificGraphics(int part);
@@ -1331,7 +1331,7 @@ QSize QS60StylePrivate::screenSize()
 }
 
 void QS60StyleModeSpecifics::colorGroupAndIndex(
-    QS60StyleEnums::SkinParts skinID, TAknsItemID &colorGroup, int colorIndex)
+    QS60StyleEnums::SkinParts skinID, TAknsItemID &colorGroup, int &colorIndex)
 {
     switch(skinID) {
         case QS60StyleEnums::SP_QgnIndiSubMenu:

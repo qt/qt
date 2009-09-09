@@ -697,14 +697,12 @@ void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
     case Translate: {
         startElem *= 3;
         endElem   *= 3;
-        qreal from1, from2, from3;
-        qreal to1, to2, to3;
+        qreal from1, from2;
+        qreal to1, to2;
         from1 = m_args[startElem++];
         from2 = m_args[startElem++];
-        from3 = m_args[startElem++];
         to1   = m_args[endElem++];
         to2   = m_args[endElem++];
-        to3   = m_args[endElem++];
 
         qreal transXDiff = (to1-from1) * percentOfAnimation;
         qreal transX = from1 + transXDiff;
@@ -717,14 +715,12 @@ void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
     case Scale: {
         startElem *= 3;
         endElem   *= 3;
-        qreal from1, from2, from3;
-        qreal to1, to2, to3;
+        qreal from1, from2;
+        qreal to1, to2;
         from1 = m_args[startElem++];
         from2 = m_args[startElem++];
-        from3 = m_args[startElem++];
         to1   = m_args[endElem++];
         to2   = m_args[endElem++];
-        to3   = m_args[endElem++];
 
         qreal transXDiff = (to1-from1) * percentOfAnimation;
         qreal transX = from1 + transXDiff;
@@ -764,14 +760,10 @@ void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
     case SkewX: {
         startElem *= 3;
         endElem   *= 3;
-        qreal from1, from2, from3;
-        qreal to1, to2, to3;
+        qreal from1;
+        qreal to1;
         from1 = m_args[startElem++];
-        from2 = m_args[startElem++];
-        from3 = m_args[startElem++];
         to1   = m_args[endElem++];
-        to2   = m_args[endElem++];
-        to3   = m_args[endElem++];
 
         qreal transXDiff = (to1-from1) * percentOfAnimation;
         qreal transX = from1 + transXDiff;
@@ -782,14 +774,10 @@ void QSvgAnimateTransform::resolveMatrix(QSvgNode *node)
     case SkewY: {
         startElem *= 3;
         endElem   *= 3;
-        qreal from1, from2, from3;
-        qreal to1, to2, to3;
+        qreal from1;
+        qreal to1;
         from1 = m_args[startElem++];
-        from2 = m_args[startElem++];
-        from3 = m_args[startElem++];
         to1   = m_args[endElem++];
-        to2   = m_args[endElem++];
-        to3   = m_args[endElem++];
 
 
         qreal transYDiff = (to1 - from1) * percentOfAnimation;
