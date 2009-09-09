@@ -332,6 +332,7 @@ QGraphicsAnchorLayoutPrivate::QGraphicsAnchorLayoutPrivate()
     for (int i = 0; i < NOrientations; ++i) {
         spacings[i] = -1;
         graphSimplified[i] = false;
+        graphHasConflicts[i] = false;
     }
 }
 
@@ -1587,6 +1588,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     AnchorVertex *v = internalVertex(q, pickEdge(Qt::AnchorRight, orientation));
     GraphPath trunkPath = graphPaths[orientation].value(v);
 
+    bool feasible = true;
     if (!trunkConstraints.isEmpty()) {
 #if 0
         qDebug("Simplex used for trunk of %s",
@@ -1594,33 +1596,37 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
 #endif
 
         // Solve min and max size hints for trunk
-        QPair<qreal, qreal> minMax = solveMinMax(trunkConstraints, trunkPath);
-        sizeHints[orientation][Qt::MinimumSize] = minMax.first;
-        sizeHints[orientation][Qt::MaximumSize] = minMax.second;
+        qreal min, max;
+        feasible = solveMinMax(trunkConstraints, trunkPath, &min, &max);
 
         // Solve for preferred. The objective function is calculated from the constraints
         // and variables internally.
-        solvePreferred(trunkConstraints);
+        feasible &= solvePreferred(trunkConstraints);
 
-        // Propagate the new sizes down the simplified graph, ie. tell the
-        // group anchors to set their children anchors sizes.
+        if (feasible) {
+            // Propagate the new sizes down the simplified graph, ie. tell the
+            // group anchors to set their children anchors sizes.
 
-        // ### we calculated variables already a few times, can't we reuse that?
-        QList<AnchorData *> trunkVariables = getVariables(trunkConstraints);
+            // ### we calculated variables already a few times, can't we reuse that?
+            QList<AnchorData *> trunkVariables = getVariables(trunkConstraints);
 
-        for (int i = 0; i < trunkVariables.count(); ++i)
-            trunkVariables.at(i)->updateChildrenSizes();
+            for (int i = 0; i < trunkVariables.count(); ++i)
+                trunkVariables.at(i)->updateChildrenSizes();
 
-        // Calculate and set the preferred size for the layout from the edge sizes that
-        // were calculated above.
-        qreal pref(0.0);
-        foreach (const AnchorData *ad, trunkPath.positives) {
-            pref += ad->sizeAtPreferred;
+            // Calculate and set the preferred size for the layout from the edge sizes that
+            // were calculated above.
+            qreal pref(0.0);
+            foreach (const AnchorData *ad, trunkPath.positives) {
+                pref += ad->sizeAtPreferred;
+            }
+            foreach (const AnchorData *ad, trunkPath.negatives) {
+                pref -= ad->sizeAtPreferred;
+            }
+            sizeHints[orientation][Qt::MinimumSize] = min;
+            sizeHints[orientation][Qt::PreferredSize] = pref;
+            sizeHints[orientation][Qt::MaximumSize] = max;
+
         }
-        foreach (const AnchorData *ad, trunkPath.negatives) {
-            pref -= ad->sizeAtPreferred;
-        }
-        sizeHints[orientation][Qt::PreferredSize] = pref;
     } else {
 #if 0
         qDebug("Simplex NOT used for trunk of %s",
@@ -1654,29 +1660,34 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     // layout.
 
     // Solve the other only for preferred, skip trunk
-    for (int i = 1; i < parts.count(); ++i) {
-        QList<QSimplexConstraint *> partConstraints = parts[i];
-        QList<AnchorData *> partVariables = getVariables(partConstraints);
-        Q_ASSERT(!partVariables.isEmpty());
+    if (feasible) {
+        for (int i = 1; i < parts.count(); ++i) {
+            QList<QSimplexConstraint *> partConstraints = parts[i];
+            QList<AnchorData *> partVariables = getVariables(partConstraints);
+            Q_ASSERT(!partVariables.isEmpty());
 
-        sizeHintConstraints = constraintsFromSizeHints(partVariables);
-        partConstraints += sizeHintConstraints;
-        solvePreferred(partConstraints);
+            sizeHintConstraints = constraintsFromSizeHints(partVariables);
+            partConstraints += sizeHintConstraints;
+            feasible &= solvePreferred(partConstraints);
+            if (!feasible)
+                break;
 
-        // Propagate size at preferred to other sizes. Semi-floats
-        // always will be in their sizeAtPreferred.
-        for (int j = 0; j < partVariables.count(); ++j) {
-            AnchorData *ad = partVariables[j];
-            Q_ASSERT(ad);
-            ad->sizeAtMinimum = ad->sizeAtPreferred;
-            ad->sizeAtMaximum = ad->sizeAtPreferred;
-            ad->updateChildrenSizes();
+            // Propagate size at preferred to other sizes. Semi-floats
+            // always will be in their sizeAtPreferred.
+            for (int j = 0; j < partVariables.count(); ++j) {
+                AnchorData *ad = partVariables[j];
+                Q_ASSERT(ad);
+                ad->sizeAtMinimum = ad->sizeAtPreferred;
+                ad->sizeAtMaximum = ad->sizeAtPreferred;
+                ad->updateChildrenSizes();
+            }
+
+            // Delete the constraints, we won't use them anymore.
+            qDeleteAll(sizeHintConstraints);
+            sizeHintConstraints.clear();
         }
-
-        // Delete the constraints, we won't use them anymore.
-        qDeleteAll(sizeHintConstraints);
-        sizeHintConstraints.clear();
     }
+    graphHasConflicts[orientation] = !feasible;
 
     // Clean up our data structures. They are not needed anymore since
     // distribution uses just interpolation.
@@ -2141,47 +2152,48 @@ void QGraphicsAnchorLayoutPrivate::interpolateSequentialEdges(
         interpolateEdge(prev, data->m_edges.last(), orientation);
 }
 
-QPair<qreal, qreal>
-QGraphicsAnchorLayoutPrivate::solveMinMax(QList<QSimplexConstraint *> constraints,
-                                          GraphPath path)
+bool QGraphicsAnchorLayoutPrivate::solveMinMax(QList<QSimplexConstraint *> constraints,
+                                               GraphPath path, qreal *min, qreal *max)
 {
     QSimplex simplex;
-    simplex.setConstraints(constraints);
+    bool feasible = simplex.setConstraints(constraints);
+    if (feasible) {
+        // Obtain the objective constraint
+        QSimplexConstraint objective;
+        QSet<AnchorData *>::const_iterator iter;
+        for (iter = path.positives.constBegin(); iter != path.positives.constEnd(); ++iter)
+            objective.variables.insert(*iter, 1.0);
 
-    // Obtain the objective constraint
-    QSimplexConstraint objective;
-    QSet<AnchorData *>::const_iterator iter;
-    for (iter = path.positives.constBegin(); iter != path.positives.constEnd(); ++iter)
-        objective.variables.insert(*iter, 1.0);
+        for (iter = path.negatives.constBegin(); iter != path.negatives.constEnd(); ++iter)
+            objective.variables.insert(*iter, -1.0);
 
-    for (iter = path.negatives.constBegin(); iter != path.negatives.constEnd(); ++iter)
-        objective.variables.insert(*iter, -1.0);
+        simplex.setObjective(&objective);
 
-    simplex.setObjective(&objective);
+        // Calculate minimum values
+        *min = simplex.solveMin();
 
-    // Calculate minimum values
-    qreal min = simplex.solveMin();
+        // Save sizeAtMinimum results
+        QList<QSimplexVariable *> variables = simplex.constraintsVariables();
+        for (int i = 0; i < variables.size(); ++i) {
+            AnchorData *ad = static_cast<AnchorData *>(variables[i]);
+            Q_ASSERT(ad->result >= ad->minSize || qFuzzyCompare(ad->result, ad->minSize));
+            ad->sizeAtMinimum = ad->result;
+        }
 
-    // Save sizeAtMinimum results
-    QList<QSimplexVariable *> variables = simplex.constraintsVariables();
-    for (int i = 0; i < variables.size(); ++i) {
-        AnchorData *ad = static_cast<AnchorData *>(variables[i]);
-        ad->sizeAtMinimum = ad->result;
+        // Calculate maximum values
+        *max = simplex.solveMax();
+
+        // Save sizeAtMaximum results
+        for (int i = 0; i < variables.size(); ++i) {
+            AnchorData *ad = static_cast<AnchorData *>(variables[i]);
+            Q_ASSERT(ad->result <= ad->maxSize || qFuzzyCompare(ad->result, ad->maxSize));
+            ad->sizeAtMaximum = ad->result;
+        }
     }
-
-    // Calculate maximum values
-    qreal max = simplex.solveMax();
-
-    // Save sizeAtMaximum results
-    for (int i = 0; i < variables.size(); ++i) {
-        AnchorData *ad = static_cast<AnchorData *>(variables[i]);
-        ad->sizeAtMaximum = ad->result;
-    }
-
-    return qMakePair<qreal, qreal>(min, max);
+    return feasible;
 }
 
-void QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> constraints)
+bool QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> constraints)
 {
     QList<AnchorData *> variables = getVariables(constraints);
     QList<QSimplexConstraint *> preferredConstraints;
@@ -2228,25 +2240,35 @@ void QGraphicsAnchorLayoutPrivate::solvePreferred(QList<QSimplexConstraint *> co
 
 
     QSimplex *simplex = new QSimplex;
-    simplex->setConstraints(constraints + preferredConstraints);
-    simplex->setObjective(&objective);
+    bool feasible = simplex->setConstraints(constraints + preferredConstraints);
+    if (feasible) {
+        simplex->setObjective(&objective);
 
-    // Calculate minimum values
-    simplex->solveMin();
+        // Calculate minimum values
+        simplex->solveMin();
 
-    // Save sizeAtPreferred results
-    for (int i = 0; i < variables.size(); ++i) {
-        AnchorData *ad = static_cast<AnchorData *>(variables[i]);
-        ad->sizeAtPreferred = ad->result;
+        // Save sizeAtPreferred results
+        for (int i = 0; i < variables.size(); ++i) {
+            AnchorData *ad = static_cast<AnchorData *>(variables[i]);
+            ad->sizeAtPreferred = ad->result;
+        }
+
+        // Make sure we delete the simplex solver -before- we delete the
+        // constraints used by it.
+        delete simplex;
     }
-
-    // Make sure we delete the simplex solver -before- we delete the
-    // constraints used by it.
-    delete simplex;
-
     // Delete constraints and variables we created.
     qDeleteAll(preferredConstraints);
     qDeleteAll(preferredVariables);
+
+    return feasible;
+}
+
+bool QGraphicsAnchorLayoutPrivate::hasConflicts() const
+{
+    QGraphicsAnchorLayoutPrivate *that = const_cast<QGraphicsAnchorLayoutPrivate*>(this);
+    that->calculateGraphs();
+    return graphHasConflicts[0] || graphHasConflicts[1];
 }
 
 #ifdef QT_DEBUG

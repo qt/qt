@@ -478,9 +478,10 @@ public:
                                   Orientation orientation);
 
     // Linear Programming solver methods
-    QPair<qreal, qreal> solveMinMax(QList<QSimplexConstraint *> constraints,
-                                    GraphPath path);
-    void solvePreferred(QList<QSimplexConstraint *> constraints);
+    bool solveMinMax(QList<QSimplexConstraint *> constraints,
+                     GraphPath path, qreal *min, qreal *max);
+    bool solvePreferred(QList<QSimplexConstraint *> constraints);
+    bool hasConflicts() const;
 
 #ifdef QT_DEBUG
     void dumpGraph();
@@ -514,6 +515,7 @@ public:
 
     // ###
     bool graphSimplified[2];
+    bool graphHasConflicts[2];
 
     uint calculateGraphCacheDirty : 1;
 };

@@ -65,6 +65,7 @@ private slots:
     void setSpacing();
     void hardComplexS60();
     void delete_anchor();
+    void conflicts();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -100,7 +101,7 @@ static void setAnchor(QGraphicsAnchorLayout *l,
                       Qt::AnchorPoint firstEdge,
                       QGraphicsLayoutItem *secondItem,
                       Qt::AnchorPoint secondEdge,
-                      qreal spacing)
+                      qreal spacing = 0)
 {
     QGraphicsAnchor *anchor = l->addAnchor(firstItem, firstEdge, secondItem, secondEdge);
     anchor->setSpacing(spacing);
@@ -1100,6 +1101,47 @@ void tst_QGraphicsAnchorLayout::delete_anchor()
     delete p;
     delete view;
 
+}
+
+void tst_QGraphicsAnchorLayout::conflicts()
+{
+    QGraphicsWidget *a = createItem(QSizeF(80,10), QSizeF(90,10), QSizeF(100,10), "a");
+    QGraphicsWidget *b = createItem(QSizeF(10,10), QSizeF(20,10), QSizeF(30,10), "b");
+    QGraphicsWidget *c = createItem(QSizeF(10,10), QSizeF(20,10), QSizeF(30,10), "c");
+
+    QGraphicsAnchorLayout *l;
+    QGraphicsWidget *p = new QGraphicsWidget(0, Qt::Window);
+
+    l = new QGraphicsAnchorLayout;
+    l->setContentsMargins(0, 0, 0, 0);
+
+    // with the following setup, 'a' cannot be larger than 30 we will first have a Simplex conflict
+
+    // horizontal
+    setAnchor(l, l, Qt::AnchorLeft, b, Qt::AnchorLeft);
+    setAnchor(l, b, Qt::AnchorRight, c, Qt::AnchorLeft);
+    setAnchor(l, c, Qt::AnchorRight, l, Qt::AnchorRight);
+    setAnchor(l, b, Qt::AnchorHorizontalCenter, a, Qt::AnchorLeft);
+    setAnchor(l, a, Qt::AnchorRight, c, Qt::AnchorHorizontalCenter);
+
+    // vertical
+    setAnchor(l, l, Qt::AnchorTop, a, Qt::AnchorTop);
+    setAnchor(l, a, Qt::AnchorBottom, b, Qt::AnchorTop);
+    setAnchor(l, a, Qt::AnchorBottom, c, Qt::AnchorTop);
+    setAnchor(l, b, Qt::AnchorBottom, l, Qt::AnchorBottom);
+    setAnchor(l, c, Qt::AnchorBottom, l, Qt::AnchorBottom);
+
+    p->setLayout(l);
+
+    QCOMPARE(l->hasConflicts(), true);
+
+    a->setMinimumSize(QSizeF(29,10));
+    QCOMPARE(l->hasConflicts(), false);
+
+    // It will currently fail if we uncomment this:
+    //QEXPECT_FAIL("", "The constraints are just within their bounds in order to be feasible", Continue);
+    //a->setMinimumSize(QSizeF(30,10));
+    //QCOMPARE(l->hasConflicts(), false);
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)
