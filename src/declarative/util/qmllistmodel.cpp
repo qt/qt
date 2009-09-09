@@ -47,6 +47,7 @@
 #include "qmlopenmetaobject.h"
 #include <qmlcontext.h>
 #include "qmllistmodel.h"
+#include <QtScript/qscriptvalueiterator.h>
 
 Q_DECLARE_METATYPE(QListModelInterface *)
 
@@ -67,6 +68,8 @@ struct ListModelData
     int instrCount;
     ListInstruction *instructions() const { return (ListInstruction *)((char *)this + sizeof(ListModelData)); }
 };
+
+static void dump(ModelNode *node, int ind);
 
 /*!
     \qmlclass ListModel 
@@ -140,7 +143,7 @@ struct ListModelData
             name: "Banana"
             cost: 1.95
             attributes: [
-                ListElement { description: "Tropical" }
+                ListElement { description: "Tropical" },
                 ListElement { description: "Seedless" }
             ]
         }
@@ -236,6 +239,42 @@ struct ModelNode
             }
         }
         return objectCache;
+    }
+
+    void setListValue(const QScriptValue& valuelist) {
+        QScriptValueIterator it(valuelist);
+        values.clear();
+        while (it.hasNext()) {
+            it.next();
+            ModelNode *value = new ModelNode;
+            QScriptValue v = it.value();
+            if (v.isArray()) {
+                value->setListValue(v);
+            } else if (v.isObject()) {
+                value->setObjectValue(v);
+            } else {
+                value->values << v.toVariant();
+            }
+            values.append(qVariantFromValue(value));
+
+        }
+    }
+
+    void setObjectValue(const QScriptValue& valuemap) {
+        QScriptValueIterator it(valuemap);
+        while (it.hasNext()) {
+            it.next();
+            ModelNode *value = new ModelNode;
+            QScriptValue v = it.value();
+            if (v.isArray()) {
+                value->setListValue(v);
+            } else if (v.isObject()) {
+                value->setObjectValue(v);
+            } else {
+                value->values << v.toVariant();
+            }
+            properties.insert(it.name(),value);
+        }
     }
 
     void setProperty(const QString& prop, const QVariant& val) {
@@ -429,7 +468,7 @@ void QmlListModel::remove(int index)
 
     \sa set() append()
 */
-void QmlListModel::insert(int index, const QVariantMap& valuemap)
+void QmlListModel::insert(int index, const QScriptValue& valuemap)
 {
     if (!_root)
         _root = new ModelNode;
@@ -438,12 +477,7 @@ void QmlListModel::insert(int index, const QVariantMap& valuemap)
         return;
     }
     ModelNode *mn = new ModelNode;
-    for (QVariantMap::const_iterator it=valuemap.begin(); it!=valuemap.end(); ++it) {
-        addRole(it.key());
-        ModelNode *value = new ModelNode;
-        value->values << it.value();
-        mn->properties.insert(it.key(),value);
-    }
+    mn->setObjectValue(valuemap);
     _root->values.insert(index,qVariantFromValue(mn));
     emit itemsInserted(index,1);
 }
@@ -506,17 +540,16 @@ void QmlListModel::move(int from, int to, int n)
 
     \sa set() remove()
 */
-void QmlListModel::append(const QVariantMap& valuemap)
+void QmlListModel::append(const QScriptValue& valuemap)
 {
+    if (!valuemap.isObject()) {
+        qWarning("ListModel::append: value is not an object");
+        return;
+    }
     if (!_root)
         _root = new ModelNode;
     ModelNode *mn = new ModelNode;
-    for (QVariantMap::const_iterator it=valuemap.begin(); it!=valuemap.end(); ++it) {
-        addRole(it.key());
-        ModelNode *value = new ModelNode;
-        value->values << it.value();
-        mn->properties.insert(it.key(),value);
-    }
+    mn->setObjectValue(valuemap);
     _root->values << qVariantFromValue(mn);
     emit itemsInserted(count()-1,1);
 }
@@ -536,7 +569,7 @@ void QmlListModel::append(const QVariantMap& valuemap)
 
     \sa append()
 */
-void QmlListModel::set(int index, const QVariantMap& valuemap)
+void QmlListModel::set(int index, const QScriptValue& valuemap)
 {
     if (!_root)
         _root = new ModelNode;
@@ -548,12 +581,14 @@ void QmlListModel::set(int index, const QVariantMap& valuemap)
     else {
         ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
         QList<int> roles;
-        for (QVariantMap::const_iterator it=valuemap.begin(); it!=valuemap.end(); ++it) {
-            node->setProperty(it.key(),it.value());
-            int r = roleStrings.indexOf(it.key());
+        node->setObjectValue(valuemap);
+        QScriptValueIterator it(valuemap);
+        while (it.hasNext()) {
+            it.next();
+            int r = roleStrings.indexOf(it.name());
             if (r<0) {
                 r = roleStrings.count();
-                roleStrings << it.key();
+                roleStrings << it.name();
             }
             roles.append(r);
         }
